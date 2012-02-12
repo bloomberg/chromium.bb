@@ -27,7 +27,6 @@
 IPC_ENUM_TRAITS(AutomationMsg_NavigationResponseValues)
 IPC_ENUM_TRAITS(AutomationMsg_ExtensionProperty)
 IPC_ENUM_TRAITS(content::PageType)
-IPC_ENUM_TRAITS(content::SecurityStyle)
 
 IPC_STRUCT_BEGIN(AutomationMsg_Find_Params)
   // The word(s) to find on the page.
@@ -78,7 +77,7 @@ IPC_STRUCT_BEGIN(NavigationInfo)
   IPC_STRUCT_MEMBER(bool, ran_insecure_content)
 IPC_STRUCT_END()
 
-// A stripped down version of ContextMenuParams in webkit/glue/context_menu.h.
+// A stripped down version of ContextMenuParams.
 IPC_STRUCT_BEGIN(MiniContextMenuParams)
   // The x coordinate for displaying the menu.
   IPC_STRUCT_MEMBER(int, screen_x)

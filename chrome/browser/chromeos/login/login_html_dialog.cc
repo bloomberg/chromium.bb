@@ -141,7 +141,8 @@ bool LoginHtmlDialog::ShouldShowDialogTitle() const {
   return true;
 }
 
-bool LoginHtmlDialog::HandleContextMenu(const ContextMenuParams& params) {
+bool LoginHtmlDialog::HandleContextMenu(
+    const content::ContextMenuParams& params) {
   // Disable context menu.
   return true;
 }

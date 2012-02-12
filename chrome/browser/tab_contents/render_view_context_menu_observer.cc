@@ -4,7 +4,8 @@
 
 #include "chrome/browser/tab_contents/render_view_context_menu_observer.h"
 
-void RenderViewContextMenuObserver::InitMenu(const ContextMenuParams& params) {
+void RenderViewContextMenuObserver::InitMenu(
+    const content::ContextMenuParams& params) {
 }
 
 bool RenderViewContextMenuObserver::IsCommandIdSupported(int command_id) {

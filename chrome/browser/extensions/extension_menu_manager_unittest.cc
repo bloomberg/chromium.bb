@@ -20,10 +20,10 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/context_menu_params.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/glue/context_menu.h"
 
 using content::BrowserThread;
 using testing::_;
@@ -429,7 +429,7 @@ TEST_F(ExtensionMenuManagerTest, ExecuteCommand) {
   scoped_ptr<MockExtensionEventRouter> mock_event_router(
       new MockExtensionEventRouter(&profile));
 
-  ContextMenuParams params;
+  content::ContextMenuParams params;
   params.media_type = WebKit::WebContextMenuData::MediaTypeImage;
   params.src_url = GURL("http://foo.bar/image.png");
   params.page_url = GURL("http://foo.bar");

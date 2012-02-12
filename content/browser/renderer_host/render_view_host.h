@@ -37,7 +37,6 @@ class PowerSaveBlocker;
 class SessionStorageNamespace;
 class SkBitmap;
 class ViewMsg_Navigate;
-struct ContextMenuParams;
 struct MediaPlayerAction;
 struct ViewHostMsg_AccessibilityNotification_Params;
 struct ViewHostMsg_CreateWindow_Params;
@@ -52,10 +51,12 @@ class ListValue;
 }
 
 namespace content {
-struct FileChooserParams;
-struct Referrer;
 class RenderViewHostDelegate;
 class RenderViewHostObserver;
+struct FileChooserParams;
+struct ContextMenuParams;
+struct CustomContextMenuContext;
+struct Referrer;
 struct ShowDesktopNotificationHostMsgParams;
 }
 
@@ -69,7 +70,6 @@ class Range;
 
 namespace webkit_glue {
 struct WebAccessibility;
-struct CustomContextMenuContext;
 }  // namespace webkit_glue
 
 namespace WebKit {
@@ -453,11 +453,11 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
 
   // Executes custom context menu action that was provided from WebKit.
   void ExecuteCustomContextMenuCommand(
-      int action, const webkit_glue::CustomContextMenuContext& context);
+      int action, const content::CustomContextMenuContext& context);
 
   // Let the renderer know that the menu has been closed.
   void NotifyContextMenuClosed(
-      const webkit_glue::CustomContextMenuContext& context);
+      const content::CustomContextMenuContext& context);
 
   // Copies the image at location x, y to the clipboard (if there indeed is an
   // image at that location).
@@ -540,7 +540,7 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
   void OnMsgDidChangeLoadProgress(double load_progress);
   void OnMsgDocumentAvailableInMainFrame();
   void OnMsgDocumentOnLoadCompletedInMainFrame(int32 page_id);
-  void OnMsgContextMenu(const ContextMenuParams& params);
+  void OnMsgContextMenu(const content::ContextMenuParams& params);
   void OnMsgToggleFullscreen(bool enter_fullscreen);
   void OnMsgOpenURL(const GURL& url,
                     const content::Referrer& referrer,

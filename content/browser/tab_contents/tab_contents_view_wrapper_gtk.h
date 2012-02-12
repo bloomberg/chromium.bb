@@ -11,11 +11,11 @@
 #include "content/common/content_export.h"
 #include "ui/gfx/native_widget_types.h"
 
-struct ContextMenuParams;
 
 namespace content {
 
 class TabContentsViewGtk;
+struct ContextMenuParams;
 
 // An object that supplies the Gtk parent of TabContentsViewGtk. Embedders may
 // want to insert widgets that provide features that live with the
@@ -47,7 +47,7 @@ class CONTENT_EXPORT TabContentsViewWrapperGtk {
 
   // Complete hack because I have no idea where else to put this platform
   // specific crud.
-  virtual void ShowContextMenu(const ContextMenuParams& params) = 0;
+  virtual void ShowContextMenu(const content::ContextMenuParams& params) = 0;
 
   virtual ~TabContentsViewWrapperGtk() {}
 };

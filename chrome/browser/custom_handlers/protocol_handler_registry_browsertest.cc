@@ -23,7 +23,8 @@ namespace {
 
 class TestRenderViewContextMenu : public RenderViewContextMenu {
  public:
-  TestRenderViewContextMenu(WebContents* web_contents, ContextMenuParams params)
+  TestRenderViewContextMenu(WebContents* web_contents,
+                            content::ContextMenuParams params)
       : RenderViewContextMenu(web_contents, params) { }
 
   virtual void PlatformInit() { }
@@ -43,7 +44,7 @@ class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
   RegisterProtocolHandlerBrowserTest() { }
 
   TestRenderViewContextMenu* CreateContextMenu(GURL url) {
-    ContextMenuParams params;
+    content::ContextMenuParams params;
     params.media_type = WebKit::WebContextMenuData::MediaTypeNone;
     params.link_url = url;
     params.unfiltered_link_url = url;

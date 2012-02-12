@@ -33,6 +33,7 @@ class RenderViewImpl;
 
 namespace content {
 class GamepadSharedMemoryReader;
+struct CustomContextMenuContext;
 }
 
 namespace gfx {
@@ -59,10 +60,6 @@ class WebGamepads;
 class WebMouseEvent;
 struct WebCompositionUnderline;
 struct WebFileChooserParams;
-}
-
-namespace webkit_glue {
-struct CustomContextMenuContext;
 }
 
 class TransportDIB;
@@ -354,9 +351,9 @@ class PepperPluginDelegateImpl
       webkit::ppapi::PPB_Flash_Menu_Impl* menu,
       const gfx::Point& position) OVERRIDE;
   void OnContextMenuClosed(
-      const webkit_glue::CustomContextMenuContext& custom_context);
+      const content::CustomContextMenuContext& custom_context);
   void OnCustomContextMenuAction(
-      const webkit_glue::CustomContextMenuContext& custom_context,
+      const content::CustomContextMenuContext& custom_context,
       unsigned action);
   void CompleteShowContextMenu(int request_id,
                                bool did_select,

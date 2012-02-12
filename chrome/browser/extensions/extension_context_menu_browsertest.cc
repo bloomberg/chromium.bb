@@ -12,10 +12,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/common/context_menu_params.h"
 #include "net/base/mock_host_resolver.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 #include "ui/base/models/menu_model.h"
-#include "webkit/glue/context_menu.h"
 
 using WebKit::WebContextMenuData;
 using content::WebContents;
@@ -28,7 +28,7 @@ namespace {
 class TestRenderViewContextMenu : public RenderViewContextMenu {
  public:
   TestRenderViewContextMenu(WebContents* web_contents,
-                            const ContextMenuParams& params)
+                            const content::ContextMenuParams& params)
       : RenderViewContextMenu(web_contents, params) {}
 
   virtual ~TestRenderViewContextMenu() {}
@@ -138,7 +138,7 @@ class ExtensionContextMenuBrowserTest : public ExtensionBrowserTest {
                                         const GURL& frame_url) {
     WebContents* web_contents = browser->GetSelectedWebContents();
     WebContextMenuData data;
-    ContextMenuParams params(data);
+    content::ContextMenuParams params(data);
     params.page_url = page_url;
     params.link_url = link_url;
     params.frame_url = frame_url;

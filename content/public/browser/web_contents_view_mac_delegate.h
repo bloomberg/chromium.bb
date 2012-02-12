@@ -8,13 +8,13 @@
 
 #import <Cocoa/Cocoa.h>
 
-struct ContextMenuParams;
 class RenderWidgetHost;
 @protocol RenderWidgetHostViewMacDelegate;
 
 namespace content {
 
 class WebDragDestDelegate;
+struct ContextMenuParams;
 
 // This interface allows a client to extend the functionality of
 // WebContentsViewMac.
@@ -32,7 +32,7 @@ class WebContentsViewMacDelegate {
   virtual WebDragDestDelegate* DragDelegate() = 0;
 
   // Shows a context menu.
-  virtual void ShowContextMenu(const ContextMenuParams& params) = 0;
+  virtual void ShowContextMenu(const content::ContextMenuParams& params) = 0;
 
   // Notifications that the native view was created/destroyed.
   virtual void NativeViewCreated(NSView* view) = 0;

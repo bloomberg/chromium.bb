@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_OBSERVER_H_
 #pragma once
 
+namespace content {
 struct ContextMenuParams;
+}
 
 // The interface used for implementing context-menu items. The following
 // instruction describe how to implement a context-menu item with this
@@ -31,7 +33,7 @@ struct ContextMenuParams;
 //    MyMenuObserver(RenderViewContextMenuDelegate* d);
 //    ~MyMenuObserver();
 //
-//    virtual void InitMenu(const ContextMenuParams& params) OVERRIDE;
+//    virtual void InitMenu(const content::ContextMenuParams& params) OVERRIDE;
 //    virtual bool IsCommandIdSupported(int command_id) OVERRIDE;
 //    virtual bool IsCommandIdEnabled(int command_id) OVERRIDE;
 //    virtual void ExecuteCommand(int command_id) OVERRIDE;
@@ -40,7 +42,7 @@ struct ContextMenuParams;
 //    RenderViewContextMenuDelgate* delegate_;
 //  }
 //
-//  void MyMenuObserver::InitMenu(const ContextMenuParams& params) {
+//  void MyMenuObserver::InitMenu(const content::ContextMenuParams& params) {
 //    delegate_->AddMenuItem(IDC_MY_COMMAND,...);
 //  }
 //
@@ -83,7 +85,7 @@ class RenderViewContextMenuObserver {
   // Called when the RenderViewContextMenu class initializes a context menu. We
   // usually call RenderViewContextMenuDelegate::AddMenuItem() to add menu items
   // in this function.
-  virtual void InitMenu(const ContextMenuParams& params);
+  virtual void InitMenu(const content::ContextMenuParams& params);
 
   // Called when the RenderViewContextMenu class asks whether an observer
   // listens for the specified command ID. If this function returns true, the

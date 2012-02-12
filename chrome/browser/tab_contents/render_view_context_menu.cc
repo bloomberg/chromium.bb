@@ -70,10 +70,10 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/ssl_status.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_restriction.h"
+#include "content/public/common/ssl_status.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
@@ -239,7 +239,7 @@ static const int kSpellcheckRadioGroup = 1;
 
 RenderViewContextMenu::RenderViewContextMenu(
     WebContents* web_contents,
-    const ContextMenuParams& params)
+    const content::ContextMenuParams& params)
     : params_(params),
       source_web_contents_(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
@@ -271,7 +271,7 @@ static bool ExtensionPatternMatch(const URLPatternSet& patterns,
 
 // static
 bool RenderViewContextMenu::ExtensionContextAndPatternMatch(
-    const ContextMenuParams& params,
+    const content::ContextMenuParams& params,
     ExtensionMenuItem::ContextList contexts,
     const URLPatternSet& target_url_patterns) {
   bool has_link = !params.link_url.is_empty();
@@ -322,7 +322,7 @@ bool RenderViewContextMenu::ExtensionContextAndPatternMatch(
   return false;
 }
 
-static const GURL& GetDocumentURL(const ContextMenuParams& params) {
+static const GURL& GetDocumentURL(const content::ContextMenuParams& params) {
   return params.frame_url.is_empty() ? params.page_url : params.frame_url;
 }
 
@@ -331,7 +331,7 @@ static const GURL& GetDocumentURL(const ContextMenuParams& params) {
 // static
 ExtensionMenuItem::List RenderViewContextMenu::GetRelevantExtensionItems(
     const ExtensionMenuItem::List& items,
-    const ContextMenuParams& params,
+    const content::ContextMenuParams& params,
     Profile* profile,
     bool can_cross_incognito) {
   ExtensionMenuItem::List result;
@@ -1722,24 +1722,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_VIEWFRAMEINFO: {
-      // Deserialize the SSL info.
-      SSLStatus ssl;
-      if (!params_.security_info.empty()) {
-        int cert_id;
-        net::CertStatus cert_status;
-        int security_bits;
-        int connection_status;
-        SSLManager::DeserializeSecurityInfo(params_.security_info,
-                                            &cert_id,
-                                            &cert_status,
-                                            &security_bits,
-                                            &connection_status);
-        ssl.cert_id = cert_id;
-        ssl.cert_status = cert_status;
-        ssl.security_bits = security_bits;
-        ssl.connection_status = connection_status;
-      }
-      source_web_contents_->ShowPageInfo(params_.frame_url, ssl,
+      source_web_contents_->ShowPageInfo(params_.frame_url,
+                                         params_.security_info,
                                          false);  // Don't show the history.
       break;
     }

@@ -13,6 +13,7 @@
 #include "content/common/navigation_gesture.h"
 #include "content/common/view_message_enums.h"
 #include "content/public/common/common_param_traits.h"
+#include "content/public/common/context_menu_params.h"
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/page_zoom.h"
@@ -38,7 +39,6 @@
 #include "ui/base/range/range.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
-#include "webkit/glue/context_menu.h"
 #include "webkit/glue/webcookie.h"
 #include "webkit/glue/webmenuitem.h"
 #include "webkit/glue/webpreferences.h"
@@ -80,37 +80,6 @@ IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::IntAttribute)
 IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::Role)
 IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::State)
 IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::StringAttribute)
-
-IPC_STRUCT_TRAITS_BEGIN(ContextMenuParams)
-  IPC_STRUCT_TRAITS_MEMBER(media_type)
-  IPC_STRUCT_TRAITS_MEMBER(x)
-  IPC_STRUCT_TRAITS_MEMBER(y)
-  IPC_STRUCT_TRAITS_MEMBER(link_url)
-  IPC_STRUCT_TRAITS_MEMBER(unfiltered_link_url)
-  IPC_STRUCT_TRAITS_MEMBER(src_url)
-  IPC_STRUCT_TRAITS_MEMBER(is_image_blocked)
-  IPC_STRUCT_TRAITS_MEMBER(page_url)
-  IPC_STRUCT_TRAITS_MEMBER(keyword_url)
-  IPC_STRUCT_TRAITS_MEMBER(frame_url)
-  IPC_STRUCT_TRAITS_MEMBER(frame_content_state)
-  IPC_STRUCT_TRAITS_MEMBER(media_flags)
-  IPC_STRUCT_TRAITS_MEMBER(selection_text)
-  IPC_STRUCT_TRAITS_MEMBER(misspelled_word)
-  IPC_STRUCT_TRAITS_MEMBER(dictionary_suggestions)
-  IPC_STRUCT_TRAITS_MEMBER(speech_input_enabled)
-  IPC_STRUCT_TRAITS_MEMBER(spellcheck_enabled)
-  IPC_STRUCT_TRAITS_MEMBER(is_editable)
-#if defined(OS_MACOSX)
-  IPC_STRUCT_TRAITS_MEMBER(writing_direction_default)
-  IPC_STRUCT_TRAITS_MEMBER(writing_direction_left_to_right)
-  IPC_STRUCT_TRAITS_MEMBER(writing_direction_right_to_left)
-#endif  // OS_MACOSX
-  IPC_STRUCT_TRAITS_MEMBER(edit_flags)
-  IPC_STRUCT_TRAITS_MEMBER(security_info)
-  IPC_STRUCT_TRAITS_MEMBER(frame_charset)
-  IPC_STRUCT_TRAITS_MEMBER(custom_context)
-  IPC_STRUCT_TRAITS_MEMBER(custom_items)
-IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(EditCommand)
   IPC_STRUCT_TRAITS_MEMBER(name)
@@ -257,6 +226,43 @@ IPC_STRUCT_TRAITS_BEGIN(WebMenuItem)
   IPC_STRUCT_TRAITS_MEMBER(submenu)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(content::ContextMenuParams)
+  IPC_STRUCT_TRAITS_MEMBER(media_type)
+  IPC_STRUCT_TRAITS_MEMBER(x)
+  IPC_STRUCT_TRAITS_MEMBER(y)
+  IPC_STRUCT_TRAITS_MEMBER(link_url)
+  IPC_STRUCT_TRAITS_MEMBER(unfiltered_link_url)
+  IPC_STRUCT_TRAITS_MEMBER(src_url)
+  IPC_STRUCT_TRAITS_MEMBER(is_image_blocked)
+  IPC_STRUCT_TRAITS_MEMBER(page_url)
+  IPC_STRUCT_TRAITS_MEMBER(keyword_url)
+  IPC_STRUCT_TRAITS_MEMBER(frame_url)
+  IPC_STRUCT_TRAITS_MEMBER(frame_content_state)
+  IPC_STRUCT_TRAITS_MEMBER(media_flags)
+  IPC_STRUCT_TRAITS_MEMBER(selection_text)
+  IPC_STRUCT_TRAITS_MEMBER(misspelled_word)
+  IPC_STRUCT_TRAITS_MEMBER(dictionary_suggestions)
+  IPC_STRUCT_TRAITS_MEMBER(speech_input_enabled)
+  IPC_STRUCT_TRAITS_MEMBER(spellcheck_enabled)
+  IPC_STRUCT_TRAITS_MEMBER(is_editable)
+#if defined(OS_MACOSX)
+  IPC_STRUCT_TRAITS_MEMBER(writing_direction_default)
+  IPC_STRUCT_TRAITS_MEMBER(writing_direction_left_to_right)
+  IPC_STRUCT_TRAITS_MEMBER(writing_direction_right_to_left)
+#endif  // OS_MACOSX
+  IPC_STRUCT_TRAITS_MEMBER(edit_flags)
+  IPC_STRUCT_TRAITS_MEMBER(security_info)
+  IPC_STRUCT_TRAITS_MEMBER(frame_charset)
+  IPC_STRUCT_TRAITS_MEMBER(custom_context)
+  IPC_STRUCT_TRAITS_MEMBER(custom_items)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::CustomContextMenuContext)
+  IPC_STRUCT_TRAITS_MEMBER(is_pepper_menu)
+  IPC_STRUCT_TRAITS_MEMBER(request_id)
+  IPC_STRUCT_TRAITS_MEMBER(render_widget_id)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(content::FileChooserParams)
   IPC_STRUCT_TRAITS_MEMBER(mode)
   IPC_STRUCT_TRAITS_MEMBER(title)
@@ -304,10 +310,13 @@ IPC_STRUCT_TRAITS_BEGIN(content::RendererPreferences)
   IPC_STRUCT_TRAITS_MEMBER(default_zoom_level)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(webkit_glue::CustomContextMenuContext)
-  IPC_STRUCT_TRAITS_MEMBER(is_pepper_menu)
-  IPC_STRUCT_TRAITS_MEMBER(request_id)
-  IPC_STRUCT_TRAITS_MEMBER(render_widget_id)
+IPC_STRUCT_TRAITS_BEGIN(content::SSLStatus)
+  IPC_STRUCT_TRAITS_MEMBER(security_style)
+  IPC_STRUCT_TRAITS_MEMBER(cert_id)
+  IPC_STRUCT_TRAITS_MEMBER(cert_status)
+  IPC_STRUCT_TRAITS_MEMBER(security_bits)
+  IPC_STRUCT_TRAITS_MEMBER(connection_status)
+  IPC_STRUCT_TRAITS_MEMBER(content_status)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(webkit_glue::WebAccessibility)
@@ -820,13 +829,13 @@ IPC_MESSAGE_ROUTED1(ViewMsg_ScrollFocusedEditableNodeIntoRect, gfx::Rect)
 
 // Executes custom context menu action that was provided from WebKit.
 IPC_MESSAGE_ROUTED2(ViewMsg_CustomContextMenuAction,
-                    webkit_glue::CustomContextMenuContext /* custom_context */,
+                    content::CustomContextMenuContext /* custom_context */,
                     unsigned /* action */)
 
 // Sent in response to a ViewHostMsg_ContextMenu to let the renderer know that
 // the menu has been closed.
 IPC_MESSAGE_ROUTED1(ViewMsg_ContextMenuClosed,
-                    webkit_glue::CustomContextMenuContext /* custom_context */)
+                    content::CustomContextMenuContext /* custom_context */)
 
 // Tells the renderer to perform the specified navigation, interrupting any
 // existing navigation.
@@ -1313,7 +1322,7 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_FrameNavigate,
 // content area, and a context menu should be shown for it. The params
 // object contains information about the node(s) that were selected when the
 // user right clicked.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_ContextMenu, ContextMenuParams)
+IPC_MESSAGE_ROUTED1(ViewHostMsg_ContextMenu, content::ContextMenuParams)
 
 // Message to show a popup menu using native cocoa controls (Mac only).
 IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowPopup,

@@ -21,7 +21,6 @@
 class FilePath;
 class GURL;
 class TabContents;
-struct ContextMenuParams;
 struct NativeWebKeyboardEvent;
 
 namespace base {
@@ -34,6 +33,7 @@ class DownloadItem;
 class JavaScriptDialogCreator;
 class WebContents;
 class WebIntentsDispatcher;
+struct ContextMenuParams;
 struct FileChooserParams;
 struct SSLStatus;
 }
@@ -219,7 +219,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual int GetExtraRenderViewHeight() const;
 
   // Returns true if the context menu operation was handled by the delegate.
-  virtual bool HandleContextMenu(const ContextMenuParams& params);
+  virtual bool HandleContextMenu(const content::ContextMenuParams& params);
 
   // Returns true if the context menu command was handled
   virtual bool ExecuteContextMenuCommand(int command);

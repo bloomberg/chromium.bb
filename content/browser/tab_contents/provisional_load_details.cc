@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #include "content/browser/tab_contents/provisional_load_details.h"
 
-#include "content/browser/ssl/ssl_manager.h"
+#include "content/common/ssl_status_serialization.h"
+#include "net/base/net_errors.h"
 
 ProvisionalLoadDetails::ProvisionalLoadDetails(bool is_main_frame,
                                                bool is_in_page_navigation,
@@ -24,9 +24,7 @@ ProvisionalLoadDetails::ProvisionalLoadDetails(bool is_main_frame,
         ssl_connection_status_(0),
         is_error_page_(is_error_page),
         frame_id_(frame_id) {
-  SSLManager::DeserializeSecurityInfo(security_info,
-                                      &ssl_cert_id_,
-                                      &ssl_cert_status_,
-                                      &ssl_security_bits_,
-                                      &ssl_connection_status_);
+  content::DeserializeSecurityInfo(security_info, &ssl_cert_id_,
+                                   &ssl_cert_status_, &ssl_security_bits_,
+                                   &ssl_connection_status_);
 }

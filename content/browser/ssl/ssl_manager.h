@@ -60,18 +60,6 @@ class SSLManager : public content::NotificationObserver {
   static void NotifySSLInternalStateChanged(
       NavigationControllerImpl* controller);
 
-  // Convenience methods for serializing/deserializing the security info.
-  static std::string SerializeSecurityInfo(int cert_id,
-                                           net::CertStatus cert_status,
-                                           int security_bits,
-                                           int connection_status);
-  CONTENT_EXPORT static bool DeserializeSecurityInfo(
-      const std::string& state,
-      int* cert_id,
-      net::CertStatus* cert_status,
-      int* security_bits,
-      int* connection_status);
-
   // Construct an SSLManager for the specified tab.
   // If |delegate| is NULL, SSLPolicy::GetDefaultPolicy() is used.
   explicit SSLManager(NavigationControllerImpl* controller);

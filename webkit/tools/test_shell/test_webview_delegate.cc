@@ -495,19 +495,6 @@ bool TestWebViewDelegate::runModalBeforeUnloadDialog(
   return true;  // Allow window closure.
 }
 
-void TestWebViewDelegate::showContextMenu(
-    WebFrame* frame, const WebContextMenuData& data) {
-  CapturedContextMenuEvent context(data.mediaType,
-                                   data.mousePosition.x,
-                                   data.mousePosition.y);
-  captured_context_menu_events_.push_back(context);
-  last_context_menu_data_.reset(new WebContextMenuData(data));
-}
-
-void TestWebViewDelegate::ClearContextMenuData() {
-  last_context_menu_data_.reset();
-}
-
 
 
 

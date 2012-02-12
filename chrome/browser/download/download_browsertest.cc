@@ -52,10 +52,10 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/context_menu_params.h"
 #include "content/public/common/page_transition_types.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/glue/context_menu.h"
 
 using content::BrowserThread;
 using content::DownloadItem;
@@ -258,7 +258,7 @@ static DownloadManager* DownloadManagerForBrowser(Browser* browser) {
 class TestRenderViewContextMenu : public RenderViewContextMenu {
  public:
   TestRenderViewContextMenu(WebContents* web_contents,
-                            const ContextMenuParams& params)
+                            const content::ContextMenuParams& params)
       : RenderViewContextMenu(web_contents, params) {
   }
   virtual ~TestRenderViewContextMenu() {}
@@ -1801,7 +1801,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaGet) {
       new DownloadTestObserver(
           DownloadManagerForBrowser(browser()), 1, DownloadItem::COMPLETE,
           false, DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
-  ContextMenuParams context_menu_params;
+  content::ContextMenuParams context_menu_params;
   context_menu_params.media_type = WebKit::WebContextMenuData::MediaTypeImage;
   context_menu_params.src_url = url;
   context_menu_params.page_url = url;
@@ -1876,7 +1876,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaPost) {
       new DownloadTestObserver(
           DownloadManagerForBrowser(browser()), 1, DownloadItem::COMPLETE,
           false, DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
-  ContextMenuParams context_menu_params;
+  content::ContextMenuParams context_menu_params;
   context_menu_params.media_type = WebKit::WebContextMenuData::MediaTypeImage;
   context_menu_params.src_url = jpeg_url;
   context_menu_params.page_url = jpeg_url;

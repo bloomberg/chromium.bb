@@ -18,9 +18,9 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/context_menu_params.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/menu_model.h"
-#include "webkit/glue/context_menu.h"
 
 using content::WebContents;
 
@@ -29,7 +29,7 @@ namespace {
 class PlatformAppContextMenu : public RenderViewContextMenu {
  public:
   PlatformAppContextMenu(WebContents* web_contents,
-                         const ContextMenuParams& params)
+                         const content::ContextMenuParams& params)
       : RenderViewContextMenu(web_contents, params) {}
 
  protected:
@@ -131,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, EmptyContextMenu) {
   WebContents* web_contents = GetFirstPlatformAppWebContents();
   ASSERT_TRUE(web_contents);
   WebKit::WebContextMenuData data;
-  ContextMenuParams params(data);
+  content::ContextMenuParams params(data);
   PlatformAppContextMenu* menu = new PlatformAppContextMenu(web_contents,
       params);
   menu->Init();
@@ -150,7 +150,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenu) {
   WebContents* web_contents = GetFirstPlatformAppWebContents();
   ASSERT_TRUE(web_contents);
   WebKit::WebContextMenuData data;
-  ContextMenuParams params(data);
+  content::ContextMenuParams params(data);
   PlatformAppContextMenu* menu = new PlatformAppContextMenu(web_contents,
       params);
   menu->Init();

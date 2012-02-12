@@ -16,7 +16,6 @@
 #include "googleurl/src/gurl.h"
 #include "ui/base/ui_base_types.h"
 
-struct ContextMenuParams;
 
 namespace base {
 class ListValue;
@@ -26,6 +25,7 @@ template<class T> class PropertyAccessor;
 namespace content {
 class WebContents;
 class WebUIMessageHandler;
+struct ContextMenuParams;
 }
 
 namespace gfx {
@@ -82,7 +82,7 @@ class HtmlDialogUIDelegate {
   // customized menu.
   // Returns true iff you do NOT want the standard context menu to be
   // shown (because you want to handle it yourself).
-  virtual bool HandleContextMenu(const ContextMenuParams& params);
+  virtual bool HandleContextMenu(const content::ContextMenuParams& params);
 
   // A callback to allow the delegate to open a new URL inside |source|.
   // On return |out_new_contents| should contain the WebContents the URL

@@ -25,7 +25,7 @@ using content::WebContents;
 
 RenderViewContextMenuViews::RenderViewContextMenuViews(
     WebContents* web_contents,
-    const ContextMenuParams& params)
+    const content::ContextMenuParams& params)
     : RenderViewContextMenu(web_contents, params),
       menu_(NULL) {
 }

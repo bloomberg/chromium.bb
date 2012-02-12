@@ -87,7 +87,7 @@ bool ChooseMobileNetworkDialog::ShouldShowDialogTitle() const {
 }
 
 bool ChooseMobileNetworkDialog::HandleContextMenu(
-    const ContextMenuParams& params) {
+    const content::ContextMenuParams& params) {
   // Disable context menu.
   return true;
 }

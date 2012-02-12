@@ -63,7 +63,8 @@ bool WebContentsDelegate::CanDownload(WebContents* source, int request_id) {
   return true;
 }
 
-bool WebContentsDelegate::HandleContextMenu(const ContextMenuParams& params) {
+bool WebContentsDelegate::HandleContextMenu(
+    const content::ContextMenuParams& params) {
   return false;
 }
 

@@ -46,7 +46,7 @@ class SpellingMenuObserver : public RenderViewContextMenuObserver {
   virtual ~SpellingMenuObserver();
 
   // RenderViewContextMenuObserver implementation.
-  virtual void InitMenu(const ContextMenuParams& params) OVERRIDE;
+  virtual void InitMenu(const content::ContextMenuParams& params) OVERRIDE;
   virtual bool IsCommandIdSupported(int command_id) OVERRIDE;
   virtual bool IsCommandIdEnabled(int command_id) OVERRIDE;
   virtual void ExecuteCommand(int command_id) OVERRIDE;

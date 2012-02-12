@@ -377,7 +377,8 @@ void TabContentsViewGtk::ShowCreatedFullscreenWidget(int route_id) {
                                               gfx::Rect());
 }
 
-void TabContentsViewGtk::ShowContextMenu(const ContextMenuParams& params) {
+void TabContentsViewGtk::ShowContextMenu(
+    const content::ContextMenuParams& params) {
   // Allow delegates to handle the context menu operation first.
   if (web_contents()->GetDelegate() &&
       web_contents()->GetDelegate()->HandleContextMenu(params)) {

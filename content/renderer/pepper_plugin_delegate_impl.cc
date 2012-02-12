@@ -32,6 +32,7 @@
 #include "content/common/quota_dispatcher.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/context_menu_params.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/media/audio_input_message_filter.h"
@@ -67,7 +68,6 @@
 #include "ui/gfx/size.h"
 #include "ui/gfx/surface/transport_dib.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
-#include "webkit/glue/context_menu.h"
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/ppapi/file_path.h"
 #include "webkit/plugins/ppapi/ppb_file_io_impl.h"
@@ -1764,7 +1764,7 @@ int32_t PepperPluginDelegateImpl::ShowContextMenu(
   int request_id = pending_context_menus_.Add(
       new scoped_refptr<webkit::ppapi::PPB_Flash_Menu_Impl>(menu));
 
-  ContextMenuParams params;
+  content::ContextMenuParams params;
   params.x = position.x();
   params.y = position.y();
   params.custom_context.is_pepper_menu = true;
@@ -1794,7 +1794,7 @@ int32_t PepperPluginDelegateImpl::ShowContextMenu(
 }
 
 void PepperPluginDelegateImpl::OnContextMenuClosed(
-    const webkit_glue::CustomContextMenuContext& custom_context) {
+    const content::CustomContextMenuContext& custom_context) {
   int request_id = custom_context.request_id;
   scoped_refptr<webkit::ppapi::PPB_Flash_Menu_Impl>* menu_ptr =
       pending_context_menus_.Lookup(request_id);
@@ -1816,7 +1816,7 @@ void PepperPluginDelegateImpl::OnContextMenuClosed(
 }
 
 void PepperPluginDelegateImpl::OnCustomContextMenuAction(
-    const webkit_glue::CustomContextMenuContext& custom_context,
+    const content::CustomContextMenuContext& custom_context,
     unsigned action) {
   // Just save the action.
   DCHECK(!has_saved_context_menu_action_);

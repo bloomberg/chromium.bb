@@ -50,7 +50,7 @@ NSMenuItem* GetMenuItemByID(ui::MenuModel* model,
 
 RenderViewContextMenuMac::RenderViewContextMenuMac(
     WebContents* web_contents,
-    const ContextMenuParams& params,
+    const content::ContextMenuParams& params,
     NSView* parent_view)
     : RenderViewContextMenu(web_contents, params),
       parent_view_(parent_view) {

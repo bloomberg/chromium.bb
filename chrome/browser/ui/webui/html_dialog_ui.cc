@@ -103,7 +103,8 @@ ExternalHtmlDialogUI::ExternalHtmlDialogUI(content::WebUI* web_ui)
 ExternalHtmlDialogUI::~ExternalHtmlDialogUI() {
 }
 
-bool HtmlDialogUIDelegate::HandleContextMenu(const ContextMenuParams& params) {
+bool HtmlDialogUIDelegate::HandleContextMenu(
+    const content::ContextMenuParams& params) {
   return false;
 }
 

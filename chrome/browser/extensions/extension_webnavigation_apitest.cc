@@ -14,10 +14,10 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/context_menu_params.h"
 #include "net/base/mock_host_resolver.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
-#include "webkit/glue/context_menu.h"
 
 using content::WebContents;
 
@@ -26,7 +26,7 @@ namespace {
 class TestRenderViewContextMenu : public RenderViewContextMenu {
  public:
   TestRenderViewContextMenu(WebContents* web_contents,
-                            const ContextMenuParams& params)
+                            const content::ContextMenuParams& params)
       : RenderViewContextMenu(web_contents, params) {
   }
   virtual ~TestRenderViewContextMenu() {}
@@ -171,7 +171,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationUserAction) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   // This corresponds to "Open link in new tab".
-  ContextMenuParams params;
+  content::ContextMenuParams params;
   params.is_editable = false;
   params.media_type = WebKit::WebContextMenuData::MediaTypeNone;
   params.page_url = url;

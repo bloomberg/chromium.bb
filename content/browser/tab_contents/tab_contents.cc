@@ -36,6 +36,7 @@
 #include "content/browser/tab_contents/title_updated_details.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/intents_messages.h"
+#include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
@@ -1485,10 +1486,8 @@ void TabContents::OnDidLoadResourceFromMemoryCache(
   net::CertStatus cert_status = 0;
   int security_bits = -1;
   int connection_status = 0;
-  SSLManager::DeserializeSecurityInfo(security_info,
-                                      &cert_id, &cert_status,
-                                      &security_bits,
-                                      &connection_status);
+  content::DeserializeSecurityInfo(security_info, &cert_id, &cert_status,
+                                   &security_bits, &connection_status);
   LoadFromMemoryCacheDetails details(url, GetRenderProcessHost()->GetID(),
                                      cert_id, cert_status);
 

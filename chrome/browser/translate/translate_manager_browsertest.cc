@@ -294,7 +294,7 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
  public:
   static TestRenderViewContextMenu* CreateContextMenu(
       WebContents* web_contents) {
-    ContextMenuParams params;
+    content::ContextMenuParams params;
     params.media_type = WebKit::WebContextMenuData::MediaTypeNone;
     params.x = 0;
     params.y = 0;
@@ -323,7 +323,7 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
 
  private:
   TestRenderViewContextMenu(WebContents* web_contents,
-                            const ContextMenuParams& params)
+                            const content::ContextMenuParams& params)
       : RenderViewContextMenu(web_contents, params) {
   }
 

@@ -20,7 +20,7 @@ class MenuRunner;
 class RenderViewContextMenuViews : public RenderViewContextMenu {
  public:
   RenderViewContextMenuViews(content::WebContents* tab_contents,
-                             const ContextMenuParams& params);
+                             const content::ContextMenuParams& params);
 
   virtual ~RenderViewContextMenuViews();
 

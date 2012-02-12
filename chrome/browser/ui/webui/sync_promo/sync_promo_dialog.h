@@ -44,7 +44,8 @@ class SyncPromoDialog : public HtmlDialogUIDelegate {
   virtual void OnCloseContents(content::WebContents* source,
                                bool* out_close_dialog) OVERRIDE;
   virtual bool ShouldShowDialogTitle() const OVERRIDE;
-  virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
+  virtual bool HandleContextMenu(
+      const content::ContextMenuParams& params) OVERRIDE;
   virtual bool HandleOpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params,

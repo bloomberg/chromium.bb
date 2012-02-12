@@ -77,7 +77,7 @@ class MockDraggingRenderViewHostDelegateView
   virtual void ShowCreatedWidget(int route_id,
                                  const gfx::Rect& initial_pos) {}
   virtual void ShowCreatedFullscreenWidget(int route_id) {}
-  virtual void ShowContextMenu(const ContextMenuParams& params) {}
+  virtual void ShowContextMenu(const content::ContextMenuParams& params) {}
   virtual void ShowPopupMenu(const gfx::Rect& bounds,
                              int item_height,
                              double item_font_size,

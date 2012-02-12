@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/ssl_status.h"
+#include "content/public/common/ssl_status.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"

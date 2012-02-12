@@ -602,7 +602,7 @@ bool CloudPrintHtmlDialogDelegate::ShouldShowDialogTitle() const {
 }
 
 bool CloudPrintHtmlDialogDelegate::HandleContextMenu(
-    const ContextMenuParams& params) {
+    const content::ContextMenuParams& params) {
   return true;
 }
 

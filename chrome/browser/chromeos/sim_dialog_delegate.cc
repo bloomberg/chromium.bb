@@ -125,7 +125,8 @@ bool SimDialogDelegate::ShouldShowDialogTitle() const {
   return false;
 }
 
-bool SimDialogDelegate::HandleContextMenu(const ContextMenuParams& params) {
+bool SimDialogDelegate::HandleContextMenu(
+    const content::ContextMenuParams& params) {
   // Disable context menu.
   return true;
 }

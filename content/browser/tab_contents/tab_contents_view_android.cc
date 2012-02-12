@@ -147,7 +147,8 @@ void TabContentsViewAndroid::ShowCreatedFullscreenWidget(int route_id) {
   NOTIMPLEMENTED();
 }
 
-void TabContentsViewAndroid::ShowContextMenu(const ContextMenuParams& params) {
+void TabContentsViewAndroid::ShowContextMenu(
+    const content::ContextMenuParams& params) {
   NOTIMPLEMENTED();
 }
 

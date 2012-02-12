@@ -20,10 +20,10 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/public/common/context_menu_params.h"
 #include "grit/generated_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "webkit/glue/context_menu.h"
 
 using content::BrowserThread;
 
@@ -37,7 +37,7 @@ SpellingMenuObserver::SpellingMenuObserver(RenderViewContextMenuProxy* proxy)
 SpellingMenuObserver::~SpellingMenuObserver() {
 }
 
-void SpellingMenuObserver::InitMenu(const ContextMenuParams& params) {
+void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Exit if we are not in an editable element because we add a menu item only

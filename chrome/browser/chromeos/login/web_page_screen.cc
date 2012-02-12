@@ -30,7 +30,8 @@ bool WebPageScreen::ShouldAddNavigationToHistory(
   return false;
 }
 
-bool WebPageScreen::HandleContextMenu(const ContextMenuParams& params) {
+bool WebPageScreen::HandleContextMenu(
+    const content::ContextMenuParams& params) {
   // Just return true because we don't want to show context menue.
   return true;
 }

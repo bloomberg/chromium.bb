@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/context_menu.h"
+#include "content/public/common/context_menu_params.h"
+
+#include "content/common/ssl_status_serialization.h"
 #include "webkit/glue/glue_serialize.h"
 
-namespace webkit_glue {
+namespace content {
 
 const int32 CustomContextMenuContext::kCurrentRenderWidget = kint32max;
 
@@ -14,8 +16,6 @@ CustomContextMenuContext::CustomContextMenuContext()
       request_id(0),
       render_widget_id(kCurrentRenderWidget) {
 }
-
-}  // namespace webkit_glue
 
 ContextMenuParams::ContextMenuParams()
     : media_type(WebKit::WebContextMenuData::MediaTypeNone),
@@ -29,6 +29,9 @@ ContextMenuParams::ContextMenuParams()
       is_editable(false),
       edit_flags(0),
       referrer_policy(WebKit::WebReferrerPolicyDefault) {
+}
+
+ContextMenuParams::~ContextMenuParams() {
 }
 
 ContextMenuParams::ContextMenuParams(const WebKit::WebContextMenuData& data)
@@ -55,7 +58,6 @@ ContextMenuParams::ContextMenuParams(const WebKit::WebContextMenuData& data)
       writing_direction_right_to_left(data.writingDirectionRightToLeft),
 #endif  // OS_MACOSX
       edit_flags(data.editFlags),
-      security_info(data.securityInfo),
       frame_charset(data.frameEncoding.utf8()),
       referrer_policy(data.referrerPolicy) {
   for (size_t i = 0; i < data.dictionarySuggestions.size(); ++i)
@@ -69,7 +71,15 @@ ContextMenuParams::ContextMenuParams(const WebKit::WebContextMenuData& data)
     frame_content_state =
         webkit_glue::HistoryItemToString(data.frameHistoryItem);
   }
+
+  // Deserialize the SSL info.
+  if (!data.securityInfo.isEmpty()) {
+    DeserializeSecurityInfo(data.securityInfo,
+                            &security_info.cert_id,
+                            &security_info.cert_status,
+                            &security_info.security_bits,
+                            &security_info.connection_status);
+  }
 }
 
-ContextMenuParams::~ContextMenuParams() {
-}
+}  // namespace content

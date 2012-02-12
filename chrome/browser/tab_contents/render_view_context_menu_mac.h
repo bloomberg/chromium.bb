@@ -20,7 +20,7 @@
 class RenderViewContextMenuMac : public RenderViewContextMenu {
  public:
   RenderViewContextMenuMac(content::WebContents* web_contents,
-                           const ContextMenuParams& params,
+                           const content::ContextMenuParams& params,
                            NSView* parent_view);
   virtual ~RenderViewContextMenuMac();
   virtual void ExecuteCommand(int id) OVERRIDE;

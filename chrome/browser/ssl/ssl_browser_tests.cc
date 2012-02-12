@@ -19,9 +19,9 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/security_style.h"
+#include "content/public/common/ssl_status.h"
 #include "net/base/cert_status_flags.h"
 #include "net/test/test_server.h"
 

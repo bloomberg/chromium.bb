@@ -45,6 +45,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/context_menu_params.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
@@ -52,7 +53,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/fileapi/isolated_context.h"
-#include "webkit/glue/context_menu.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webdropdata.h"
 
@@ -1028,14 +1028,15 @@ void RenderViewHost::OnMsgDocumentOnLoadCompletedInMainFrame(int32 page_id) {
   delegate_->DocumentOnLoadCompletedInMainFrame(this, page_id);
 }
 
-void RenderViewHost::OnMsgContextMenu(const ContextMenuParams& params) {
+void RenderViewHost::OnMsgContextMenu(
+    const content::ContextMenuParams& params) {
   RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
   if (!view)
     return;
 
   // Validate the URLs in |params|.  If the renderer can't request the URLs
   // directly, don't show them in the context menu.
-  ContextMenuParams validated_params(params);
+  content::ContextMenuParams validated_params(params);
   int renderer_id = process()->GetID();
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
@@ -1397,12 +1398,12 @@ void RenderViewHost::EnableAutoResize(const gfx::Size& min_size,
 }
 
 void RenderViewHost::ExecuteCustomContextMenuCommand(
-    int action, const webkit_glue::CustomContextMenuContext& context) {
+    int action, const content::CustomContextMenuContext& context) {
   Send(new ViewMsg_CustomContextMenuAction(routing_id(), context, action));
 }
 
 void RenderViewHost::NotifyContextMenuClosed(
-    const webkit_glue::CustomContextMenuContext& context) {
+    const content::CustomContextMenuContext& context) {
   Send(new ViewMsg_ContextMenuClosed(routing_id(), context));
 }
 

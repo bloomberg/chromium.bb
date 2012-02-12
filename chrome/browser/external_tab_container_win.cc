@@ -49,7 +49,6 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/common/bindings_policy.h"
@@ -57,6 +56,7 @@
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/renderer_preferences.h"
+#include "content/public/common/ssl_status.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
@@ -618,7 +618,8 @@ ExternalTabContainer::GetJavaScriptDialogCreator() {
   return GetJavaScriptDialogCreatorInstance();
 }
 
-bool ExternalTabContainer::HandleContextMenu(const ContextMenuParams& params) {
+bool ExternalTabContainer::HandleContextMenu(
+    const content::ContextMenuParams& params) {
   if (!automation_) {
     NOTREACHED();
     return false;

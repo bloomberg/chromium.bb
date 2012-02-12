@@ -94,7 +94,8 @@ class TaskManagerDialogImpl : public HtmlDialogUIDelegate {
   virtual bool ShouldShowDialogTitle() const OVERRIDE {
     return false;
   }
-  virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE {
+  virtual bool HandleContextMenu(
+      const content::ContextMenuParams& params) OVERRIDE {
     return true;
   }
   virtual void StoreDialogSize(const gfx::Size& dialog_size) OVERRIDE {

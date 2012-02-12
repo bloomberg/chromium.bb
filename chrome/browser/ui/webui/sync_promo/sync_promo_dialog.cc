@@ -73,7 +73,8 @@ bool SyncPromoDialog::ShouldShowDialogTitle() const {
   return true;
 }
 
-bool SyncPromoDialog::HandleContextMenu(const ContextMenuParams& params) {
+bool SyncPromoDialog::HandleContextMenu(
+    const content::ContextMenuParams& params) {
   return true;
 }
 

@@ -90,7 +90,8 @@ class TabContentsViewViews : public views::Widget,
   virtual void ShowCreatedWidget(int route_id,
                                  const gfx::Rect& initial_pos) OVERRIDE;
   virtual void ShowCreatedFullscreenWidget(int route_id) OVERRIDE;
-  virtual void ShowContextMenu(const ContextMenuParams& params) OVERRIDE;
+  virtual void ShowContextMenu(
+      const content::ContextMenuParams& params) OVERRIDE;
   virtual void ShowPopupMenu(const gfx::Rect& bounds,
                              int item_height,
                              double item_font_size,

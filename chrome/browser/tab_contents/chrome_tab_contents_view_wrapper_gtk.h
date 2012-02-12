@@ -38,7 +38,8 @@ class ChromeTabContentsViewWrapperGtk
   virtual gboolean OnNativeViewFocusEvent(GtkWidget* widget,
                                           GtkDirectionType type,
                                           gboolean* return_value) OVERRIDE;
-  virtual void ShowContextMenu(const ContextMenuParams& params) OVERRIDE;
+  virtual void ShowContextMenu(
+      const content::ContextMenuParams& params) OVERRIDE;
 
  private:
   // Sets the location of the constrained windows.

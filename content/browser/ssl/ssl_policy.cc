@@ -18,9 +18,8 @@
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/ssl_status.h"
+#include "content/public/common/ssl_status.h"
 #include "content/public/common/url_constants.h"
-#include "net/base/cert_status_flags.h"
 #include "net/base/ssl_info.h"
 #include "webkit/glue/resource_type.h"
 

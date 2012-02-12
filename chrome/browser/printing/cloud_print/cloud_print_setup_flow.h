@@ -80,7 +80,8 @@ class CloudPrintSetupFlow : public HtmlDialogUIDelegate,
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;
   virtual bool ShouldShowDialogTitle() const OVERRIDE;
-  virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
+  virtual bool HandleContextMenu(
+      const content::ContextMenuParams& params) OVERRIDE;
 
   // GaiaAuthConsumer implementation.
   virtual void OnClientLoginSuccess(

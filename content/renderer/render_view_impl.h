@@ -90,6 +90,7 @@ class DocumentState;
 class P2PSocketDispatcher;
 class RenderViewObserver;
 class RenderViewTest;
+struct CustomContextMenuContext;
 struct FileChooserParams;
 }  // namespace content
 
@@ -107,7 +108,6 @@ class PluginInstance;
 }  // namespace webkit
 
 namespace webkit_glue {
-struct CustomContextMenuContext;
 class ImageResourceFetcher;
 class ResourceFetcher;
 }
@@ -780,7 +780,7 @@ class RenderViewImpl : public RenderWidget,
                        const PP_NetAddress_Private& remote_addr);
 #endif
   void OnContextMenuClosed(
-      const webkit_glue::CustomContextMenuContext& custom_context);
+      const content::CustomContextMenuContext& custom_context);
   void OnCopy();
   void OnCopyImageAt(int x, int y);
 #if defined(OS_MACOSX)
@@ -790,7 +790,7 @@ class RenderViewImpl : public RenderWidget,
   void OnCSSInsertRequest(const string16& frame_xpath,
                           const std::string& css);
   void OnCustomContextMenuAction(
-      const webkit_glue::CustomContextMenuContext& custom_context,
+      const content::CustomContextMenuContext& custom_context,
       unsigned action);
   void OnDelete();
   void OnDeterminePageLanguage();

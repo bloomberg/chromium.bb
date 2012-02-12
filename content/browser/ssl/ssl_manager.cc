@@ -16,12 +16,12 @@
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/ssl_status_serialization.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/browser/ssl_status.h"
-#include "net/base/cert_status_flags.h"
+#include "content/public/common/ssl_status.h"
 
 using content::BrowserThread;
 using content::NavigationController;
@@ -62,44 +62,6 @@ void SSLManager::NotifySSLInternalStateChanged(
       content::NOTIFICATION_SSL_INTERNAL_STATE_CHANGED,
       content::Source<content::BrowserContext>(controller->GetBrowserContext()),
       content::NotificationService::NoDetails());
-}
-
-// static
-std::string SSLManager::SerializeSecurityInfo(int cert_id,
-                                              net::CertStatus cert_status,
-                                              int security_bits,
-                                              int ssl_connection_status) {
-  Pickle pickle;
-  pickle.WriteInt(cert_id);
-  pickle.WriteUInt32(cert_status);
-  pickle.WriteInt(security_bits);
-  pickle.WriteInt(ssl_connection_status);
-  return std::string(static_cast<const char*>(pickle.data()), pickle.size());
-}
-
-// static
-bool SSLManager::DeserializeSecurityInfo(const std::string& state,
-                                         int* cert_id,
-                                         net::CertStatus* cert_status,
-                                         int* security_bits,
-                                         int* ssl_connection_status) {
-  DCHECK(cert_id && cert_status && security_bits && ssl_connection_status);
-  if (state.empty()) {
-    // No SSL used.
-    *cert_id = 0;
-    // The following are not applicable and are set to the default values.
-    *cert_status = 0;
-    *security_bits = -1;
-    *ssl_connection_status = 0;
-    return false;
-  }
-
-  Pickle pickle(state.data(), static_cast<int>(state.size()));
-  void * iter = NULL;
-  return pickle.ReadInt(&iter, cert_id) &&
-         pickle.ReadUInt32(&iter, cert_status) &&
-         pickle.ReadInt(&iter, security_bits) &&
-         pickle.ReadInt(&iter, ssl_connection_status);
 }
 
 SSLManager::SSLManager(NavigationControllerImpl* controller)
@@ -144,11 +106,11 @@ void SSLManager::DidCommitProvisionalLoad(
       net::CertStatus ssl_cert_status;
       int ssl_security_bits;
       int ssl_connection_status;
-      DeserializeSecurityInfo(details->serialized_security_info,
-                              &ssl_cert_id,
-                              &ssl_cert_status,
-                              &ssl_security_bits,
-                              &ssl_connection_status);
+      content::DeserializeSecurityInfo(details->serialized_security_info,
+                                       &ssl_cert_id,
+                                       &ssl_cert_status,
+                                       &ssl_security_bits,
+                                       &ssl_connection_status);
 
       // We may not have an entry if this is a navigation to an initial blank
       // page. Reset the SSL information and add the new data we have.

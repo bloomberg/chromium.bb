@@ -37,7 +37,8 @@ SpellCheckerSubMenuObserver::SpellCheckerSubMenuObserver(
 SpellCheckerSubMenuObserver::~SpellCheckerSubMenuObserver() {
 }
 
-void SpellCheckerSubMenuObserver::InitMenu(const ContextMenuParams& params) {
+void SpellCheckerSubMenuObserver::InitMenu(
+    const content::ContextMenuParams& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   spellcheck_enabled_ = params.spellcheck_enabled;

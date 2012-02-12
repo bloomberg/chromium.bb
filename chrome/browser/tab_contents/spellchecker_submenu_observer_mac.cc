@@ -34,7 +34,8 @@ SpellCheckerSubMenuObserver::SpellCheckerSubMenuObserver(
 SpellCheckerSubMenuObserver::~SpellCheckerSubMenuObserver() {
 }
 
-void SpellCheckerSubMenuObserver::InitMenu(const ContextMenuParams& params) {
+void SpellCheckerSubMenuObserver::InitMenu(
+    const content::ContextMenuParams& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   check_spelling_while_typing_ = params.spellcheck_enabled;

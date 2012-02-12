@@ -150,7 +150,8 @@ class ExternalTabContainer : public content::WebContentsDelegate,
   virtual bool CanDownload(content::WebContents* source,
                            int request_id) OVERRIDE;
   virtual bool OnGoToEntryOffset(int offset) OVERRIDE;
-  virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
+  virtual bool HandleContextMenu(
+      const content::ContextMenuParams& params) OVERRIDE;
   virtual bool ExecuteContextMenuCommand(int command) OVERRIDE;
   virtual void BeforeUnloadFired(content::WebContents* tab,
                                  bool proceed,
@@ -402,7 +403,7 @@ class TemporaryPopupExternalTabContainer : public ExternalTabContainer {
     return false;
   }
 
-  virtual bool HandleContextMenu(const ContextMenuParams& params) {
+  virtual bool HandleContextMenu(const content::ContextMenuParams& params) {
     NOTREACHED();
     return false;
   }

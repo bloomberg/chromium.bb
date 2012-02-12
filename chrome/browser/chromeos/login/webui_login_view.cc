@@ -380,7 +380,8 @@ views::Widget::InitParams::Type WebUILoginView::GetStatusAreaWidgetType() {
 
 // WebUILoginView private: -----------------------------------------------------
 
-bool WebUILoginView::HandleContextMenu(const ContextMenuParams& params) {
+bool WebUILoginView::HandleContextMenu(
+    const content::ContextMenuParams& params) {
   // Do not show the context menu.
 #ifndef NDEBUG
   return false;

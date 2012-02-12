@@ -114,7 +114,8 @@ class WebUILoginView : public views::WidgetDelegateView,
   typedef std::map<ui::Accelerator, std::string> AccelMap;
 
   // Overridden from content::WebContentsDelegate.
-  virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
+  virtual bool HandleContextMenu(
+      const content::ContextMenuParams& params) OVERRIDE;
   virtual void HandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) OVERRIDE;
   virtual bool IsPopupOrPanel(

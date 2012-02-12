@@ -346,8 +346,6 @@
         '../plugins/webview_plugin.h',
         'alt_error_page_resource_fetcher.cc',
         'alt_error_page_resource_fetcher.h',
-        'context_menu.cc',
-        'context_menu.h',
         'cpp_binding_example.cc',
         'cpp_binding_example.h',
         'cpp_bound_class.cc',

@@ -246,7 +246,8 @@ void TabContentsViewWin::ShowCreatedFullscreenWidget(int route_id) {
                                               gfx::Rect());
 }
 
-void TabContentsViewWin::ShowContextMenu(const ContextMenuParams& params) {
+void TabContentsViewWin::ShowContextMenu(
+    const content::ContextMenuParams& params) {
   NOTIMPLEMENTED();
 }
 

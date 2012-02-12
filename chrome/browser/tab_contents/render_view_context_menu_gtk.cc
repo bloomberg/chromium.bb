@@ -12,10 +12,10 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/context_menu_params.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/gtk_util.h"
-#include "webkit/glue/context_menu.h"
 
 using content::WebContents;
 
@@ -75,7 +75,7 @@ GtkWidget* GetMenuItemByID(ui::MenuModel* model,
 
 RenderViewContextMenuGtk::RenderViewContextMenuGtk(
     WebContents* web_contents,
-    const ContextMenuParams& params,
+    const content::ContextMenuParams& params,
     RenderWidgetHostView* view)
     : RenderViewContextMenu(web_contents, params) {
   GdkEventButton* event = view->GetLastMouseDown();

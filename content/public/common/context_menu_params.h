@@ -2,44 +2,46 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_CONTEXT_MENU_H_
-#define WEBKIT_GLUE_CONTEXT_MENU_H_
+#ifndef CONTENT_PUBLIC_COMMON_CONTEXT_MENU_PARAMS_H_
+#define CONTENT_PUBLIC_COMMON_CONTEXT_MENU_PARAMS_H_
+#pragma once
 
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/glue/webkit_glue_export.h"
+#include "content/common/content_export.h"
+#include "content/public/common/ssl_status.h"
 #include "webkit/glue/webmenuitem.h"
-
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebReferrerPolicy.h"
 
-namespace webkit_glue {
+namespace content {
 
-struct CustomContextMenuContext {
+struct CONTENT_EXPORT CustomContextMenuContext {
+  static const int32 kCurrentRenderWidget;
+
+  CustomContextMenuContext();
+
   bool is_pepper_menu;
   int request_id;
   // The routing ID of the render widget on which the context menu is shown.
   // It could also be |kCurrentRenderWidget|, which means the render widget that
   // the corresponding ViewHostMsg_ContextMenu is sent to.
   int32 render_widget_id;
-  WEBKIT_GLUE_EXPORT static const int32 kCurrentRenderWidget;
-
-  WEBKIT_GLUE_EXPORT CustomContextMenuContext();
 };
 
-}  // namespace webkit_glue
-
-// TODO(viettrungluu): Put this in the webkit_glue namespace.
-// Parameters structure for ViewHostMsg_ContextMenu.
 // FIXME(beng): This would be more useful in the future and more efficient
 //              if the parameters here weren't so literally mapped to what
 //              they contain for the ContextMenu task. It might be better
 //              to make the string fields more generic so that this object
 //              could be used for more contextual actions.
-struct WEBKIT_GLUE_EXPORT ContextMenuParams {
+struct CONTENT_EXPORT ContextMenuParams {
+  ContextMenuParams();
+  ContextMenuParams(const WebKit::WebContextMenuData& data);
+  ~ContextMenuParams();
+
   // This is the type of Context Node that the context menu was invoked on.
   WebKit::WebContextMenuData::MediaType media_type;
 
@@ -122,7 +124,7 @@ struct WEBKIT_GLUE_EXPORT ContextMenuParams {
   int edit_flags;
 
   // The security info for the resource we are showing the menu on.
-  std::string security_info;
+  SSLStatus security_info;
 
   // The character encoding of the frame on which the menu is invoked.
   std::string frame_charset;
@@ -130,12 +132,10 @@ struct WEBKIT_GLUE_EXPORT ContextMenuParams {
   // The referrer policy of the frame on which the menu is invoked.
   WebKit::WebReferrerPolicy referrer_policy;
 
-  webkit_glue::CustomContextMenuContext custom_context;
+  CustomContextMenuContext custom_context;
   std::vector<WebMenuItem> custom_items;
-
-  ContextMenuParams();
-  ContextMenuParams(const WebKit::WebContextMenuData& data);
-  ~ContextMenuParams();
 };
 
-#endif  // WEBKIT_GLUE_CONTEXT_MENU_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_COMMON_CONTEXT_MENU_PARAMS_H_

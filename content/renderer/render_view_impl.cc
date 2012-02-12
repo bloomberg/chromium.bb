@@ -42,6 +42,7 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/context_menu_params.h"
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -152,7 +153,6 @@
 #include "webkit/forms/form_field.h"
 #include "webkit/forms/password_form_dom_manager.h"
 #include "webkit/glue/alt_error_page_resource_fetcher.h"
-#include "webkit/glue/context_menu.h"
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/webdropdata.h"
@@ -1774,7 +1774,7 @@ bool RenderViewImpl::runModalBeforeUnloadDialog(
 
 void RenderViewImpl::showContextMenu(
     WebFrame* frame, const WebContextMenuData& data) {
-  ContextMenuParams params = ContextMenuParams(data);
+  content::ContextMenuParams params(data);
 
   // frame is NULL if invoked by BlockedPlugin.
   if (frame)
@@ -4063,7 +4063,7 @@ void RenderViewImpl::OnSetAltErrorPageURL(const GURL& url) {
 }
 
 void RenderViewImpl::OnCustomContextMenuAction(
-    const webkit_glue::CustomContextMenuContext& custom_context,
+    const content::CustomContextMenuContext& custom_context,
     unsigned action) {
   if (custom_context.is_pepper_menu)
     pepper_delegate_.OnCustomContextMenuAction(custom_context, action);
@@ -5022,7 +5022,7 @@ void RenderViewImpl::OnConnectTcpACK(
 #endif
 
 void RenderViewImpl::OnContextMenuClosed(
-    const webkit_glue::CustomContextMenuContext& custom_context) {
+    const content::CustomContextMenuContext& custom_context) {
   if (custom_context.is_pepper_menu)
     pepper_delegate_.OnContextMenuClosed(custom_context);
   else

@@ -81,6 +81,6 @@ bool KeyboardOverlayDelegate::ShouldShowDialogTitle() const {
 }
 
 bool KeyboardOverlayDelegate::HandleContextMenu(
-    const ContextMenuParams& params) {
+    const content::ContextMenuParams& params) {
   return true;
 }

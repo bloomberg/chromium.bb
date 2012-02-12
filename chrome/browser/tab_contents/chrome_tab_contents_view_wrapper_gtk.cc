@@ -97,14 +97,14 @@ gboolean ChromeTabContentsViewWrapperGtk::OnNativeViewFocusEvent(
 }
 
 void ChromeTabContentsViewWrapperGtk::ShowContextMenu(
-    const ContextMenuParams& params) {
+    const content::ContextMenuParams& params) {
   // Find out the RenderWidgetHostView that corresponds to the render widget on
   // which this context menu is showed, so that we can retrieve the last mouse
   // down event on the render widget and use it as the timestamp of the
   // activation event to show the context menu.
   RenderWidgetHostView* view = NULL;
   if (params.custom_context.render_widget_id !=
-      webkit_glue::CustomContextMenuContext::kCurrentRenderWidget) {
+      content::CustomContextMenuContext::kCurrentRenderWidget) {
     IPC::Channel::Listener* listener =
         view_->web_contents()->GetRenderProcessHost()->GetListenerByID(
             params.custom_context.render_widget_id);

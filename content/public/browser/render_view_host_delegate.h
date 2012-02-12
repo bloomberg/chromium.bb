@@ -27,7 +27,6 @@ class RenderViewHost;
 class SkBitmap;
 class TabContents;
 class WebKeyboardEvent;
-struct ContextMenuParams;
 struct NativeWebKeyboardEvent;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_FrameNavigate_Params;
@@ -49,6 +48,7 @@ namespace content {
 
 class BrowserContext;
 class WebContents;
+struct ContextMenuParams;
 struct FileChooserParams;
 struct GlobalRequestID;
 struct Referrer;
@@ -120,7 +120,7 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
 
     // A context menu should be shown, to be built using the context information
     // provided in the supplied params.
-    virtual void ShowContextMenu(const ContextMenuParams& params) = 0;
+    virtual void ShowContextMenu(const content::ContextMenuParams& params) = 0;
 
     // Shows a popup menu with the specified items.
     // This method should call RenderViewHost::DidSelectPopupMenuItemAt() or

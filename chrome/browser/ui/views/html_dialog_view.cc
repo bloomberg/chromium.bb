@@ -210,7 +210,8 @@ bool HtmlDialogView::ShouldShowDialogTitle() const {
   return true;
 }
 
-bool HtmlDialogView::HandleContextMenu(const ContextMenuParams& params) {
+bool HtmlDialogView::HandleContextMenu(
+    const content::ContextMenuParams& params) {
   if (delegate_)
     return delegate_->HandleContextMenu(params);
   return HtmlDialogTabContentsDelegate::HandleContextMenu(params);

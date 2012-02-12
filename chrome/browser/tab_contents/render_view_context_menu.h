@@ -17,9 +17,9 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/extensions/extension_menu_manager.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_observer.h"
+#include "content/public/common/context_menu_params.h"
 #include "content/public/common/page_transition_types.h"
 #include "ui/base/models/simple_menu_model.h"
-#include "webkit/glue/context_menu.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class ExtensionMenuItem;
@@ -122,7 +122,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   static const size_t kMaxSelectionTextLength;
 
   RenderViewContextMenu(content::WebContents* web_contents,
-                        const ContextMenuParams& params);
+                        const content::ContextMenuParams& params);
 
   virtual ~RenderViewContextMenu();
 
@@ -166,7 +166,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   // Attempts to get an ExtensionMenuItem given the id of a context menu item.
   ExtensionMenuItem* GetExtensionMenuItem(int id) const;
 
-  ContextMenuParams params_;
+  content::ContextMenuParams params_;
   content::WebContents* source_web_contents_;
   Profile* profile_;
 
@@ -186,12 +186,12 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   static bool IsDevToolsURL(const GURL& url);
   static bool IsInternalResourcesURL(const GURL& url);
   static bool ExtensionContextAndPatternMatch(
-      const ContextMenuParams& params,
+      const content::ContextMenuParams& params,
       ExtensionMenuItem::ContextList contexts,
       const URLPatternSet& target_url_patterns);
   static ExtensionMenuItem::List GetRelevantExtensionItems(
       const ExtensionMenuItem::List& items,
-      const ContextMenuParams& params,
+      const content::ContextMenuParams& params,
       Profile* profile,
       bool can_cross_incognito);
 

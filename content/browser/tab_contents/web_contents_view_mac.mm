@@ -344,7 +344,8 @@ void WebContentsViewMac::ShowCreatedFullscreenWidget(int route_id) {
   [widget_view_mac->GetNativeView() release];
 }
 
-void WebContentsViewMac::ShowContextMenu(const ContextMenuParams& params) {
+void WebContentsViewMac::ShowContextMenu(
+    const content::ContextMenuParams& params) {
   // Allow delegates to handle the context menu operation first.
   if (tab_contents_->GetDelegate() &&
       tab_contents_->GetDelegate()->HandleContextMenu(params)) {

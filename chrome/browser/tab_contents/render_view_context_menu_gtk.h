@@ -13,13 +13,16 @@
 #include "ui/gfx/point.h"
 
 class RenderWidgetHostView;
+
+namespace content {
 struct ContextMenuParams;
+}
 
 class RenderViewContextMenuGtk : public RenderViewContextMenu,
                                  public MenuGtk::Delegate {
  public:
   RenderViewContextMenuGtk(content::WebContents* web_contents,
-                           const ContextMenuParams& params,
+                           const content::ContextMenuParams& params,
                            RenderWidgetHostView* view);
 
   virtual ~RenderViewContextMenuGtk();

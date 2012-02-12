@@ -24,6 +24,8 @@
 #include "webkit/glue/web_io_operators.h"
 
 using WebKit::WebFrame;
+using WebKit::WebInputEvent;
+using WebKit::WebMouseEvent;
 using WebKit::WebString;
 using WebKit::WebTextDirection;
 using WebKit::WebURLError;
@@ -1144,4 +1146,27 @@ TEST_F(RenderViewImplTest, FindTitleForIntentsPage) {
   EXPECT_EQ(ASCIIToUTF16("a"), action);
   EXPECT_EQ(ASCIIToUTF16("t"), type);
   EXPECT_EQ(ASCIIToUTF16("title"), title);
+}
+
+TEST_F(RenderViewImplTest, ContextMenu) {
+  LoadHTML("<div>Page A</div>");
+
+  // Create a right click in the center of the iframe. (I'm hoping this will
+  // make this a bit more robust in case of some other formatting or other bug.)
+  WebMouseEvent mouse_event;
+  mouse_event.type = WebInputEvent::MouseDown;
+  mouse_event.button = WebMouseEvent::ButtonRight;
+  mouse_event.x = 250;
+  mouse_event.y = 250;
+  mouse_event.globalX = 250;
+  mouse_event.globalY = 250;
+
+  SendWebMouseEvent(mouse_event);
+
+  // Now simulate the corresponding up event which should display the menu
+  mouse_event.type = WebInputEvent::MouseUp;
+  SendWebMouseEvent(mouse_event);
+
+  EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
+      ViewHostMsg_ContextMenu::ID));
 }

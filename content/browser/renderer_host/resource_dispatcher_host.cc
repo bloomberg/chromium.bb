@@ -48,6 +48,7 @@
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/browser/worker_host/worker_service_impl.h"
 #include "content/common/resource_messages.h"
+#include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -1503,11 +1504,10 @@ bool ResourceDispatcherHost::CompleteResponseStarted(net::URLRequest* request) {
     int cert_id =
         CertStore::GetInstance()->StoreCert(request->ssl_info().cert,
                                             info->child_id());
-    response->security_info =
-        SSLManager::SerializeSecurityInfo(
-            cert_id, request->ssl_info().cert_status,
-            request->ssl_info().security_bits,
-            request->ssl_info().connection_status);
+    response->security_info = content::SerializeSecurityInfo(
+        cert_id, request->ssl_info().cert_status,
+        request->ssl_info().security_bits,
+        request->ssl_info().connection_status);
   } else {
     // We should not have any SSL state.
     DCHECK(!request->ssl_info().cert_status &&
@@ -1894,8 +1894,8 @@ void ResourceDispatcherHost::ResponseCompleted(net::URLRequest* request) {
   const net::SSLInfo& ssl_info = request->ssl_info();
   if (ssl_info.cert != NULL) {
     int cert_id = CertStore::GetInstance()->StoreCert(ssl_info.cert,
-                                                            info->child_id());
-    security_info = SSLManager::SerializeSecurityInfo(
+                                                      info->child_id());
+    security_info = content::SerializeSecurityInfo(
         cert_id, ssl_info.cert_status, ssl_info.security_bits,
         ssl_info.connection_status);
   }

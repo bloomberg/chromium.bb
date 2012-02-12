@@ -429,7 +429,6 @@
         '../../fileapi/test_file_set.h',
         '../../fileapi/webfilewriter_base_unittest.cc',
         '../../glue/bookmarklet_unittest.cc',
-        '../../glue/context_menu_unittest.cc',
         '../../glue/cpp_bound_class_unittest.cc',
         '../../glue/cpp_variant_unittest.cc',
         '../../glue/dom_operations_unittest.cc',

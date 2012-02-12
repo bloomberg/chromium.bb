@@ -12,7 +12,7 @@
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/ssl_status.h"
+#include "content/public/common/ssl_status.h"
 
 namespace content {
 

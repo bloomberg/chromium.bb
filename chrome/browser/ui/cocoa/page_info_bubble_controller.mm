@@ -21,7 +21,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/cert_store.h"
-#include "content/public/browser/ssl_status.h"
+#include "content/public/common/ssl_status.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "net/base/cert_status_flags.h"

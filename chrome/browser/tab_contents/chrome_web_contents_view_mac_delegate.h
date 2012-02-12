@@ -32,7 +32,8 @@ class ChromeWebContentsViewMacDelegate
       CreateRenderWidgetHostViewDelegate(
           RenderWidgetHost* render_widget_host) OVERRIDE;
   virtual content::WebDragDestDelegate* DragDelegate() OVERRIDE;
-  virtual void ShowContextMenu(const ContextMenuParams& params) OVERRIDE;
+  virtual void ShowContextMenu(
+      const content::ContextMenuParams& params) OVERRIDE;
   virtual void NativeViewCreated(NSView* view) OVERRIDE;
   virtual void NativeViewDestroyed(NSView* view) OVERRIDE;
 

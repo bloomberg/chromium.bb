@@ -21,7 +21,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-struct ContextMenuParams;
 
 class Extension;
 class Profile;
@@ -29,6 +28,7 @@ class SkBitmap;
 
 namespace content {
 class WebContents;
+struct ContextMenuParams;
 }
 
 // Represents a menu item added by an extension.
@@ -247,7 +247,7 @@ class ExtensionMenuManager : public content::NotificationObserver {
 
   // Called when a menu item is clicked on by the user.
   void ExecuteCommand(Profile* profile, content::WebContents* web_contents,
-                      const ContextMenuParams& params,
+                      const content::ContextMenuParams& params,
                       const ExtensionMenuItem::Id& menuItemId);
 
   // This returns a bitmap of width/height kFaviconSize, loaded either from an

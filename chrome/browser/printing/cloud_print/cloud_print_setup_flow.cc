@@ -200,7 +200,7 @@ bool CloudPrintSetupFlow::ShouldShowDialogTitle() const {
 }
 
 bool CloudPrintSetupFlow::HandleContextMenu(
-    const ContextMenuParams& params) {
+    const content::ContextMenuParams& params) {
   return true;
 }
 

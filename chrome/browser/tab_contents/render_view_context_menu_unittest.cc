@@ -2,16 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
-
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/glue/context_menu.h"
-
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 
 class RenderViewContextMenuTest : public testing::Test {
@@ -21,7 +17,7 @@ class RenderViewContextMenuTest : public testing::Test {
  protected:
   // Proxy defined here to minimize friend classes in RenderViewContextMenu
   static bool ExtensionContextAndPatternMatch(
-      const ContextMenuParams& params,
+      const content::ContextMenuParams& params,
       ExtensionMenuItem::ContextList contexts,
       const URLPatternSet& patterns) {
     return RenderViewContextMenu::ExtensionContextAndPatternMatch(params,
@@ -33,8 +29,8 @@ class RenderViewContextMenuTest : public testing::Test {
 };
 
 // Generates a ContextMenuParams that matches the specified contexts.
-static ContextMenuParams CreateParams(int contexts) {
-  ContextMenuParams rv;
+static content::ContextMenuParams CreateParams(int contexts) {
+  content::ContextMenuParams rv;
   rv.is_editable = false;
   rv.media_type = WebKit::WebContextMenuData::MediaTypeNone;
   rv.page_url = GURL("http://test.page/");
@@ -82,7 +78,7 @@ static URLPatternSet CreatePatternSet(const std::string& pattern) {
 }
 
 TEST_F(RenderViewContextMenuTest, TargetIgnoredForPage) {
-  ContextMenuParams params = CreateParams(0);
+  content::ContextMenuParams params = CreateParams(0);
 
   ExtensionMenuItem::ContextList contexts;
   contexts.Add(ExtensionMenuItem::PAGE);
@@ -93,7 +89,7 @@ TEST_F(RenderViewContextMenuTest, TargetIgnoredForPage) {
 }
 
 TEST_F(RenderViewContextMenuTest, TargetCheckedForLink) {
-  ContextMenuParams params = CreateParams(ExtensionMenuItem::LINK);
+  content::ContextMenuParams params = CreateParams(ExtensionMenuItem::LINK);
 
   ExtensionMenuItem::ContextList contexts;
   contexts.Add(ExtensionMenuItem::PAGE);
@@ -105,7 +101,7 @@ TEST_F(RenderViewContextMenuTest, TargetCheckedForLink) {
 }
 
 TEST_F(RenderViewContextMenuTest, TargetCheckedForImage) {
-  ContextMenuParams params = CreateParams(ExtensionMenuItem::IMAGE);
+  content::ContextMenuParams params = CreateParams(ExtensionMenuItem::IMAGE);
 
   ExtensionMenuItem::ContextList contexts;
   contexts.Add(ExtensionMenuItem::PAGE);
@@ -117,7 +113,7 @@ TEST_F(RenderViewContextMenuTest, TargetCheckedForImage) {
 }
 
 TEST_F(RenderViewContextMenuTest, TargetCheckedForVideo) {
-  ContextMenuParams params = CreateParams(ExtensionMenuItem::VIDEO);
+  content::ContextMenuParams params = CreateParams(ExtensionMenuItem::VIDEO);
 
   ExtensionMenuItem::ContextList contexts;
   contexts.Add(ExtensionMenuItem::PAGE);
@@ -129,7 +125,7 @@ TEST_F(RenderViewContextMenuTest, TargetCheckedForVideo) {
 }
 
 TEST_F(RenderViewContextMenuTest, TargetCheckedForAudio) {
-  ContextMenuParams params = CreateParams(ExtensionMenuItem::AUDIO);
+  content::ContextMenuParams params = CreateParams(ExtensionMenuItem::AUDIO);
 
   ExtensionMenuItem::ContextList contexts;
   contexts.Add(ExtensionMenuItem::PAGE);
@@ -141,8 +137,8 @@ TEST_F(RenderViewContextMenuTest, TargetCheckedForAudio) {
 }
 
 TEST_F(RenderViewContextMenuTest, MatchWhenLinkedImageMatchesTarget) {
-  ContextMenuParams params = CreateParams(ExtensionMenuItem::IMAGE |
-                                          ExtensionMenuItem::LINK);
+  content::ContextMenuParams params = CreateParams(ExtensionMenuItem::IMAGE |
+                                                   ExtensionMenuItem::LINK);
 
   ExtensionMenuItem::ContextList contexts;
   contexts.Add(ExtensionMenuItem::LINK);
@@ -154,8 +150,8 @@ TEST_F(RenderViewContextMenuTest, MatchWhenLinkedImageMatchesTarget) {
 }
 
 TEST_F(RenderViewContextMenuTest, MatchWhenLinkedImageMatchesSource) {
-  ContextMenuParams params = CreateParams(ExtensionMenuItem::IMAGE |
-                                          ExtensionMenuItem::LINK);
+  content::ContextMenuParams params = CreateParams(ExtensionMenuItem::IMAGE |
+                                                   ExtensionMenuItem::LINK);
 
   ExtensionMenuItem::ContextList contexts;
   contexts.Add(ExtensionMenuItem::LINK);
@@ -167,8 +163,8 @@ TEST_F(RenderViewContextMenuTest, MatchWhenLinkedImageMatchesSource) {
 }
 
 TEST_F(RenderViewContextMenuTest, NoMatchWhenLinkedImageMatchesNeither) {
-  ContextMenuParams params = CreateParams(ExtensionMenuItem::IMAGE |
-                                          ExtensionMenuItem::LINK);
+  content::ContextMenuParams params = CreateParams(ExtensionMenuItem::IMAGE |
+                                                   ExtensionMenuItem::LINK);
 
   ExtensionMenuItem::ContextList contexts;
   contexts.Add(ExtensionMenuItem::LINK);
@@ -180,7 +176,7 @@ TEST_F(RenderViewContextMenuTest, NoMatchWhenLinkedImageMatchesNeither) {
 }
 
 TEST_F(RenderViewContextMenuTest, TargetIgnoredForFrame) {
-  ContextMenuParams params = CreateParams(ExtensionMenuItem::FRAME);
+  content::ContextMenuParams params = CreateParams(ExtensionMenuItem::FRAME);
 
   ExtensionMenuItem::ContextList contexts;
   contexts.Add(ExtensionMenuItem::FRAME);
@@ -191,7 +187,7 @@ TEST_F(RenderViewContextMenuTest, TargetIgnoredForFrame) {
 }
 
 TEST_F(RenderViewContextMenuTest, TargetIgnoredForEditable) {
-  ContextMenuParams params = CreateParams(ExtensionMenuItem::EDITABLE);
+  content::ContextMenuParams params = CreateParams(ExtensionMenuItem::EDITABLE);
 
   ExtensionMenuItem::ContextList contexts;
   contexts.Add(ExtensionMenuItem::EDITABLE);
@@ -202,7 +198,8 @@ TEST_F(RenderViewContextMenuTest, TargetIgnoredForEditable) {
 }
 
 TEST_F(RenderViewContextMenuTest, TargetIgnoredForSelection) {
-  ContextMenuParams params = CreateParams(ExtensionMenuItem::SELECTION);
+  content::ContextMenuParams params =
+      CreateParams(ExtensionMenuItem::SELECTION);
 
   ExtensionMenuItem::ContextList contexts;
   contexts.Add(ExtensionMenuItem::SELECTION);
@@ -213,8 +210,8 @@ TEST_F(RenderViewContextMenuTest, TargetIgnoredForSelection) {
 }
 
 TEST_F(RenderViewContextMenuTest, TargetIgnoredForSelectionOnLink) {
-  ContextMenuParams params = CreateParams(ExtensionMenuItem::SELECTION |
-                                          ExtensionMenuItem::LINK);
+  content::ContextMenuParams params = CreateParams(
+      ExtensionMenuItem::SELECTION | ExtensionMenuItem::LINK);
 
   ExtensionMenuItem::ContextList contexts;
   contexts.Add(ExtensionMenuItem::SELECTION);
@@ -226,8 +223,8 @@ TEST_F(RenderViewContextMenuTest, TargetIgnoredForSelectionOnLink) {
 }
 
 TEST_F(RenderViewContextMenuTest, TargetIgnoredForSelectionOnImage) {
-  ContextMenuParams params = CreateParams(ExtensionMenuItem::SELECTION |
-                                          ExtensionMenuItem::IMAGE);
+  content::ContextMenuParams params = CreateParams(
+      ExtensionMenuItem::SELECTION | ExtensionMenuItem::IMAGE);
 
   ExtensionMenuItem::ContextList contexts;
   contexts.Add(ExtensionMenuItem::SELECTION);

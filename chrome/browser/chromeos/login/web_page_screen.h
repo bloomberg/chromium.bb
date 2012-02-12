@@ -28,7 +28,8 @@ class WebPageScreen : public content::WebContentsDelegate {
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
       content::NavigationType navigation_type) OVERRIDE;
-  virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
+  virtual bool HandleContextMenu(
+      const content::ContextMenuParams& params) OVERRIDE;
 
   // Called by |timeout_timer_|. Stops page fetching and closes screen.
   virtual void OnNetworkTimeout();
