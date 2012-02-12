@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/memory/singleton.h"
@@ -26,6 +27,8 @@ class FileStream;
 };
 
 namespace gdata {
+
+class GDataUploader;
 
 // HTTP errors that can be returned by GData service.
 enum GDataErrorCode {
@@ -310,29 +313,9 @@ class DocumentsService : public GDataService {
   // really live.
   // Callback for GetDocuments.
   void UpdateFilelist(GDataErrorCode status, base::Value* data);
-  scoped_ptr<base::Value> feed_value_;
-
-  // The following Test* and OnTest* methods are only used for testng uploading
-  // of file to Google Docs.
-  // Entry function to test uploading.
-  void TestUpload();
-  // Prepares content to be uploaded and calls ResumeUpload.
-  void TestPrepareUploadContent(GDataErrorCode code,
-                                int64 start_range_received,
-                                int64 end_range_received,
-                                UploadFileInfo* upload_file_info);
-  // Callback for InitiateUpload.
-  void OnTestUploadLocationReceived(GDataErrorCode status,
-                                    const UploadFileInfo& upload_file_info,
-                                    const GURL& upload_location);
-  // Callback for ResumeUpload.
-  void OnTestResumeUploadResponseReceived(
-      GDataErrorCode status,
-      const UploadFileInfo& upload_file_info,
-      int64 start_range_received,
-      int64 end_range_received);
 
   // Data members.
+  scoped_ptr<base::Value> feed_value_;
 
   // True if GetDocuments has been started.
   // We can't just check if |feed_value_| is NULL, because GetDocuments may have
@@ -342,6 +325,8 @@ class DocumentsService : public GDataService {
   // Queue of InitiateUpload callers while we wait for feed info from server
   // via GetDocuments.
   InitiateUploadCallerQueue initiate_upload_callers_;
+
+  scoped_ptr<GDataUploader> uploader_;
 
   DISALLOW_COPY_AND_ASSIGN(DocumentsService);
 };
