@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_INDEXED_DB_INDEXED_DB_DISPATCHER_H_
-#define CONTENT_RENDERER_INDEXED_DB_INDEXED_DB_DISPATCHER_H_
+#ifndef CONTENT_COMMON_INDEXED_DB_INDEXED_DB_DISPATCHER_H_
+#define CONTENT_COMMON_INDEXED_DB_INDEXED_DB_DISPATCHER_H_
 #pragma once
 
 #include <map>
@@ -247,4 +247,4 @@ class IndexedDBDispatcher : public webkit_glue::WorkerTaskRunner::Observer {
   DISALLOW_COPY_AND_ASSIGN(IndexedDBDispatcher);
 };
 
-#endif  // CONTENT_RENDERER_INDEXED_DB_INDEXED_DB_DISPATCHER_H_
+#endif  // CONTENT_COMMON_INDEXED_DB_INDEXED_DB_DISPATCHER_H_

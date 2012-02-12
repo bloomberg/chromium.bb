@@ -2,18 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/indexed_db/indexed_db_dispatcher.h"
+#include "content/common/indexed_db/indexed_db_dispatcher.h"
 
 #include "base/lazy_instance.h"
 #include "base/threading/thread_local.h"
+#include "content/common/child_thread.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
-#include "content/renderer/indexed_db/renderer_webidbcursor_impl.h"
-#include "content/renderer/indexed_db/renderer_webidbdatabase_impl.h"
-#include "content/renderer/indexed_db/renderer_webidbindex_impl.h"
-#include "content/renderer/indexed_db/renderer_webidbobjectstore_impl.h"
-#include "content/renderer/indexed_db/renderer_webidbtransaction_impl.h"
-#include "content/renderer/render_thread_impl.h"
-#include "content/renderer/render_view_impl.h"
+#include "content/common/indexed_db/proxy_webidbcursor_impl.h"
+#include "content/common/indexed_db/proxy_webidbdatabase_impl.h"
+#include "content/common/indexed_db/proxy_webidbindex_impl.h"
+#include "content/common/indexed_db/proxy_webidbobjectstore_impl.h"
+#include "content/common/indexed_db/proxy_webidbtransaction_impl.h"
 #include "ipc/ipc_channel.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabaseCallbacks.h"
@@ -179,11 +178,9 @@ void IndexedDBDispatcher::RequestIDBFactoryOpen(
   ResetCursorPrefetchCaches();
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
-  if (!web_frame)
-    return; // We must be shutting down.
-  RenderViewImpl* render_view = RenderViewImpl::FromWebView(web_frame->view());
-  if (!render_view)
-    return; // We must be shutting down.
+  if (!CurrentWorkerId() &&
+      !ChildThread::current()->IsWebFrameValid(web_frame))
+    return;
 
   IndexedDBHostMsg_FactoryOpen_Params params;
   params.thread_id = CurrentWorkerId();
@@ -200,11 +197,9 @@ void IndexedDBDispatcher::RequestIDBFactoryGetDatabaseNames(
   ResetCursorPrefetchCaches();
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
-  if (!web_frame)
-    return; // We must be shutting down.
-  RenderViewImpl* render_view = RenderViewImpl::FromWebView(web_frame->view());
-  if (!render_view)
-    return; // We must be shutting down.
+  if (!CurrentWorkerId() &&
+      !ChildThread::current()->IsWebFrameValid(web_frame))
+    return;
 
   IndexedDBHostMsg_FactoryGetDatabaseNames_Params params;
   params.thread_id = CurrentWorkerId();
@@ -221,11 +216,9 @@ void IndexedDBDispatcher::RequestIDBFactoryDeleteDatabase(
   ResetCursorPrefetchCaches();
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
-  if (!web_frame)
-    return; // We must be shutting down.
-  RenderViewImpl* render_view = RenderViewImpl::FromWebView(web_frame->view());
-  if (!render_view)
-    return; // We must be shutting down.
+  if (!CurrentWorkerId() &&
+      !ChildThread::current()->IsWebFrameValid(web_frame))
+    return;
 
   IndexedDBHostMsg_FactoryDeleteDatabase_Params params;
   params.thread_id = CurrentWorkerId();

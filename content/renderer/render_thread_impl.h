@@ -121,6 +121,9 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   virtual void ReleaseCachedFonts() OVERRIDE;
 #endif
 
+  // content::ChildThread:
+  virtual bool IsWebFrameValid(WebKit::WebFrame* frame) OVERRIDE;
+
   // GpuChannelHostFactory implementation:
   virtual bool IsMainThread() OVERRIDE;
   virtual bool IsIOThread() OVERRIDE;

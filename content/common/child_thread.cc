@@ -253,6 +253,11 @@ ChildThread* ChildThread::current() {
   return ChildProcess::current()->main_thread();
 }
 
+bool ChildThread::IsWebFrameValid(WebKit::WebFrame* frame) {
+  // Return false so that it is overridden in any process in which it is used.
+  return false;
+}
+
 void ChildThread::OnProcessFinalRelease() {
   if (on_channel_error_called_) {
     MessageLoop::current()->Quit();

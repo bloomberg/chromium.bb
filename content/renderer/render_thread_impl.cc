@@ -28,6 +28,9 @@
 #include "content/common/dom_storage_messages.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/indexed_db/indexed_db_dispatcher.h"
+#include "content/common/indexed_db/indexed_db_message_filter.h"
+#include "content/common/indexed_db/proxy_webidbfactory_impl.h"
 #include "content/common/npobject_util.h"
 #include "content/common/plugin_messages.h"
 #include "content/common/resource_dispatcher.h"
@@ -41,9 +44,6 @@
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/renderer/devtools_agent_filter.h"
 #include "content/renderer/gpu/compositor_thread.h"
-#include "content/renderer/indexed_db/indexed_db_dispatcher.h"
-#include "content/renderer/indexed_db/indexed_db_message_filter.h"
-#include "content/renderer/indexed_db/renderer_webidbfactory_impl.h"
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
@@ -682,6 +682,17 @@ void RenderThreadImpl::ReleaseCachedFonts() {
 }
 
 #endif  // OS_WIN
+
+bool RenderThreadImpl::IsWebFrameValid(WebKit::WebFrame* web_frame) {
+  if (!web_frame)
+    return false; // We must be shutting down.
+
+  RenderViewImpl* render_view = RenderViewImpl::FromWebView(web_frame->view());
+  if (!render_view)
+    return false; // We must be shutting down.
+
+  return true;
+}
 
 bool RenderThreadImpl::IsMainThread() {
   return !!current();

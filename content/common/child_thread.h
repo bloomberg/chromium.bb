@@ -25,6 +25,10 @@ class SyncChannel;
 class SyncMessageFilter;
 }
 
+namespace WebKit {
+class WebFrame;
+}
+
 // The main thread of a child process derives from this class.
 class CONTENT_EXPORT ChildThread : public IPC::Channel::Listener,
                                    public IPC::Message::Sender {
@@ -79,6 +83,8 @@ class CONTENT_EXPORT ChildThread : public IPC::Channel::Listener,
 
   // Returns the one child thread.
   static ChildThread* current();
+
+  virtual bool IsWebFrameValid(WebKit::WebFrame* frame);
 
  protected:
   friend class ChildProcess;
