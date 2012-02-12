@@ -413,9 +413,9 @@ cr.define('options', function() {
   };
 
   /**
-  * Shows the tab contents for the given navigation tab.
-  * @param {!Element} tab The tab that the user clicked.
-  */
+   * Shows the tab contents for the given navigation tab.
+   * @param {!Element} tab The tab that the user clicked.
+   */
   OptionsPage.showTab = function(tab) {
     // Search parents until we find a tab, or the nav bar itself. This allows
     // tabs to have child nodes, e.g. labels in separately-styled spans.

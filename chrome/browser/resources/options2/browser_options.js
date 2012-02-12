@@ -189,7 +189,7 @@ cr.define('options', function() {
           $('startup-section').hidden = true;
         }
 
-        $('manage-accounts-button').onclick, function(event) {
+        $('manage-accounts-button').onclick = function(event) {
           OptionsPage.navigateToPage('accounts');
           chrome.send('coreOptionsUserMetricsAction',
               ['Options_ManageAccounts']);

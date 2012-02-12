@@ -72,9 +72,6 @@ function load() {
                               BrowserOptions.getInstance(),
                               [$('advanced-settings')]);
   if (cr.isChromeOS) {
-    OptionsPage.registerSubPage(AccountsOptions.getInstance(),
-                                BrowserOptions.getInstance(),
-                                [$('manage-accounts-button')]);
     OptionsPage.registerSubPage(InternetOptions.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('internet-options-button')]);
@@ -182,6 +179,9 @@ function load() {
   OptionsPage.registerOverlay(SyncSetupOverlay.getInstance(),
                               BrowserOptions.getInstance());
   if (cr.isChromeOS) {
+    OptionsPage.registerOverlay(AccountsOptions.getInstance(),
+                                BrowserOptions.getInstance(),
+                                [$('manage-accounts-button')]);
     OptionsPage.registerOverlay(BluetoothOptions.getInstance(),
                                 AdvancedOptions.getInstance(),
                                 [$('bluetooth-add-device')]);
@@ -236,7 +236,7 @@ function load() {
   for (var i = 0; i < subpagesNavTabs.length; i++) {
     subpagesNavTabs[i].onclick = function(event) {
       OptionsPage.showTab(event.srcElement);
-    }
+    };
   }
 
   // Allow platform specific CSS rules.
