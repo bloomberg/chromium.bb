@@ -110,6 +110,12 @@
   <include src="autofill_edit_address_overlay.html">
   <include src="autofill_edit_creditcard_overlay.html">
   <include src="language_add_language_overlay.html">
+  <if expr="pp_ifdef('chromeos')">
+    <include src="chromeos/language_chewing_options.html">
+    <include src="chromeos/language_hangul_options.html">
+    <include src="chromeos/language_mozc_options.html">
+    <include src="chromeos/language_pinyin_options.html">
+  </if>
   <if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
     <include src="certificate_restore_overlay.html">
     <include src="certificate_backup_overlay.html">
@@ -157,12 +163,6 @@
          <div id="subpage-sheet-3" class="subpage-sheet">
            <button class="raw-button close-subpage custom-appearance"></button>
            <div class="subpage-sheet-contents">
-             <if expr="pp_ifdef('chromeos')">
-               <include src="chromeos/language_chewing_options.html">
-               <include src="chromeos/language_hangul_options.html">
-               <include src="chromeos/language_mozc_options.html">
-               <include src="chromeos/language_pinyin_options.html">
-             </if>
              <if expr="pp_ifdef('chromeos') and pp_ifdef('use_virtual_keyboard')">
                <include src="chromeos/virtual_keyboard.html">
              </if>

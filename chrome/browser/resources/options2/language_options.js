@@ -58,6 +58,10 @@ cr.define('options', function() {
                             this.handleVisibleChange_.bind(this));
 
       if (cr.isChromeOS) {
+        $('chewing-confirm').onclick = $('hangul-confirm').onclick =
+            $('mozc-confirm').onclick = $('pinyin-confirm').onclick =
+                OptionsPage.closeOverlay.bind(OptionsPage);
+
         this.initializeInputMethodList_();
         this.initializeLanguageCodeToInputMethodIdsMap_();
       }

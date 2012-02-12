@@ -82,28 +82,7 @@ function load() {
                               AdvancedOptions.getInstance(),
                               [$('privacyContentSettingsButton')]);
 
-  // LanguageOptions sub-pages.
   if (cr.isChromeOS) {
-    OptionsPage.registerSubPage(
-        new OptionsPage('languageChewing',
-                        templateData.languageChewingPageTabTitle,
-                        'languageChewingPage'),
-        LanguageOptions.getInstance());
-    OptionsPage.registerSubPage(
-        new OptionsPage('languageHangul',
-                        templateData.languageHangulPageTabTitle,
-                        'languageHangulPage'),
-        LanguageOptions.getInstance());
-    OptionsPage.registerSubPage(
-        new OptionsPage('languageMozc',
-                        templateData.languageMozcPageTabTitle,
-                        'languageMozcPage'),
-        LanguageOptions.getInstance());
-    OptionsPage.registerSubPage(
-        new OptionsPage('languagePinyin',
-                        templateData.languagePinyinPageTabTitle,
-                        'languagePinyinPage'),
-        LanguageOptions.getInstance());
     // Only use the VirtualKeyboardManager if the keyboard DOM elements (which
     // it will assume exists) are present (i.e. if we were built with
     // USE_VIRTUAL_KEYBOARD).
@@ -200,6 +179,26 @@ function load() {
                                 [$('pointer-settings-button')]);
     OptionsPage.registerOverlay(ProxyOptions.getInstance(),
                                 InternetOptions.getInstance());
+    OptionsPage.registerOverlay(
+        new OptionsPage('languageChewing',
+                        templateData.languageChewingPageTabTitle,
+                        'languageChewingPage'),
+        LanguageOptions.getInstance());
+    OptionsPage.registerOverlay(
+        new OptionsPage('languageHangul',
+                        templateData.languageHangulPageTabTitle,
+                        'languageHangulPage'),
+        LanguageOptions.getInstance());
+    OptionsPage.registerOverlay(
+        new OptionsPage('languageMozc',
+                        templateData.languageMozcPageTabTitle,
+                        'languageMozcPage'),
+        LanguageOptions.getInstance());
+    OptionsPage.registerOverlay(
+        new OptionsPage('languagePinyin',
+                        templateData.languagePinyinPageTabTitle,
+                        'languagePinyinPage'),
+        LanguageOptions.getInstance());
   }
   if (!cr.isWindows && !cr.isMac) {
     OptionsPage.registerOverlay(CertificateBackupOverlay.getInstance(),
