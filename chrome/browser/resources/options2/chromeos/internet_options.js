@@ -35,6 +35,9 @@ cr.define('options', function() {
         this.accesslocked = true;
       }
 
+      $('internet-options-confirm').onclick =
+          OptionsPage.closeOverlay.bind(OptionsPage);
+
       options.internet.NetworkElement.decorate($('wired-list'));
       $('wired-list').load(templateData.wiredList);
       options.internet.NetworkElement.decorate($('wireless-list'));

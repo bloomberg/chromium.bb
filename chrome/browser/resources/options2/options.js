@@ -71,11 +71,6 @@ function load() {
   OptionsPage.registerSubPage(AdvancedOptions.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('advanced-settings')]);
-  if (cr.isChromeOS) {
-    OptionsPage.registerSubPage(InternetOptions.getInstance(),
-                                BrowserOptions.getInstance(),
-                                [$('internet-options-button')]);
-  }
 
   // AdvancedOptions sub-pages.
   OptionsPage.registerSubPage(ContentSettings.getInstance(),
@@ -171,6 +166,9 @@ function load() {
                                 [$('change-picture-button')]);
     OptionsPage.registerOverlay(DetailsInternetPage.getInstance(),
                                 InternetOptions.getInstance());
+    OptionsPage.registerOverlay(InternetOptions.getInstance(),
+                                BrowserOptions.getInstance(),
+                                [$('internet-options-button')]);
     OptionsPage.registerOverlay(KeyboardOverlay.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('keyboard-settings-button')]);
