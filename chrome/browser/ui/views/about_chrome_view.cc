@@ -737,7 +737,7 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
         content::RecordAction(UserMetricsAction("UpgradeCheck_Upgraded"));
       restart_button_visible_ = true;
       const string16& update_string = UTF16ToWide(
-          l10n_util::GetStringUTF16(IDS_UPGRADE_SUCCESSFUL_RELAUNCH));
+          l10n_util::GetStringUTF16(IDS_OLD_UPGRADE_SUCCESSFUL_RELAUNCH));
       update_label_.SetText(update_string);
       show_success_indicator = true;
       break;

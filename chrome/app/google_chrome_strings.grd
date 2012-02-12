@@ -559,6 +559,9 @@ Google Chrome is unable to recover your settings.
       <message name="IDS_UPGRADE_SUCCESSFUL_NOVERSION" desc="Status label: Successfully upgraded">
         Google Chrome has been updated
       </message>
+      <message name="IDS_OLD_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated">
+        Relaunch Google Chrome to finish updating
+      </message>
       <message name="IDS_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated">
         Nearly up-to-date! Relaunch Google Chrome to finish updating.
       </message>

@@ -573,8 +573,11 @@ Chromium is unable to recover your settings.
       <message name="IDS_UPGRADE_SUCCESSFUL_NOVERSION" desc="Status label: Successfully upgraded">
         Chromium has been updated
       </message>
-      <message name="IDS_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated">
+      <message name="IDS_OLD_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated">
         Relaunch Chromium to finish updating
+      </message>
+      <message name="IDS_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated">
+        Nearly up-to-date! Relaunch Chromium to finish updating.
       </message>
       <message name="IDS_UPGRADE_UP_TO_DATE" desc="Status label: Already up to date">
         Chromium is up to date.
