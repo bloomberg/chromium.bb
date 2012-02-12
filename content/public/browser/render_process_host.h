@@ -169,11 +169,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Message::Sender,
   // Schedules the host for deletion and removes it from the all_hosts list.
   virtual void Cleanup() = 0;
 
-  // Listeners should call this when they've sent a "Close" message and
-  // they're waiting for a "Close_ACK", so that if the renderer process
-  // goes away we'll know that it was intentional rather than a crash.
-  virtual void ReportExpectingClose(int32 listener_id) = 0;
-
   // Track the count of pending views that are being swapped back in.  Called
   // by listeners to register and unregister pending views to prevent the
   // process from exiting.

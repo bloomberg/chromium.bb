@@ -5781,32 +5781,6 @@
    fun:_ZN8remoting14YuvToRgbTester7RunTestE7SkTSizeIiERK7SkIRect
 }
 
-{
-   bug_113655
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeIiEE8allocateEjPKv
-   fun:_ZNSt8_Rb_treeIiiSt9_IdentityIiESt4lessIiESaIiEE11_M_get_nodeEv
-   fun:_ZNSt8_Rb_treeIiiSt9_IdentityIiESt4lessIiESaIiEE14_M_create_nodeERKi
-   fun:_ZNSt8_Rb_treeIiiSt9_IdentityIiESt4lessIiESaIiEE10_M_insert_EPKSt18_Rb_tree_node_baseS8_RKi
-   fun:_ZNSt8_Rb_treeIiiSt9_IdentityIiESt4lessIiESaIiEE16_M_insert_uniqueERKi
-   fun:_ZNSt3setIiSt4lessIiESaIiEE6insertERKi
-   fun:_ZN21RenderProcessHostImpl20ReportExpectingCloseEi
-   fun:_ZN16RenderWidgetHost8ShutdownEv
-   fun:_ZN14RenderViewHost8ShutdownEv
-   fun:_ZN21RenderViewHostManagerD1Ev
-   fun:_ZN11TabContentsD0Ev
-   fun:_ZN10scoped_ptrIN7content11WebContentsEE5resetEPS1_
-   fun:_ZN11BalloonHost8ShutdownEv
-   fun:_ZN15BalloonViewHostD2Ev
-   fun:_ZN8chromeos15BalloonViewHostD0Ev
-   fun:_ZN10scoped_ptrI15BalloonViewHostED1Ev
-   fun:_ZN15BalloonViewImplD0Ev
-   fun:_ZN10scoped_ptrI11BalloonViewED1Ev
-   fun:_ZN7BalloonD0Ev
-   fun:_Z26STLDeleteContainerPointersISt15_Deque_iteratorIP7BalloonRS2_PS2_EEvT_S6_
-   fun:_Z17STLDeleteElementsISt5dequeIP7BalloonSaIS2_EEEvPT_
-}
 
 {
    bug_113796

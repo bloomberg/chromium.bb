@@ -164,9 +164,6 @@ void MockRenderProcessHost::Cleanup() {
   }
 }
 
-void MockRenderProcessHost::ReportExpectingClose(int32 listener_id) {
-}
-
 void MockRenderProcessHost::AddPendingView() {
 }
 

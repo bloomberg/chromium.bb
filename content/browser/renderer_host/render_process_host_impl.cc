@@ -1029,10 +1029,6 @@ void RenderProcessHostImpl::Cleanup() {
   }
 }
 
-void RenderProcessHostImpl::ReportExpectingClose(int32 listener_id) {
-  listeners_expecting_close_.insert(listener_id);
-}
-
 void RenderProcessHostImpl::AddPendingView() {
   pending_views_++;
 }

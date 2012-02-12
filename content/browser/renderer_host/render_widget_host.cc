@@ -193,7 +193,6 @@ void RenderWidgetHost::Init() {
 void RenderWidgetHost::Shutdown() {
   if (process_->HasConnection()) {
     // Tell the renderer object to close.
-    process_->ReportExpectingClose(routing_id_);
     bool rv = Send(new ViewMsg_Close(routing_id_));
     DCHECK(rv);
   }

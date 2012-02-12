@@ -78,7 +78,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
       OVERRIDE;
   virtual void Release(int listener_id) OVERRIDE;
   virtual void Cleanup() OVERRIDE;
-  virtual void ReportExpectingClose(int32 listener_id) OVERRIDE;
   virtual void AddPendingView() OVERRIDE;
   virtual void RemovePendingView() OVERRIDE;
   virtual void SetSuddenTerminationAllowed(bool enabled) OVERRIDE;
@@ -230,9 +229,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   int id_;
 
   content::BrowserContext* browser_context_;
-
-  // set of listeners that expect the renderer process to close
-  std::set<int> listeners_expecting_close_;
 
   // True if the process can be shut down suddenly.  If this is true, then we're
   // sure that all the RenderViews in the process can be shutdown suddenly.  If

@@ -57,7 +57,6 @@ class MockRenderProcessHost : public content::RenderProcessHost {
                       int routing_id) OVERRIDE;
   virtual void Release(int listener_id) OVERRIDE;
   virtual void Cleanup() OVERRIDE;
-  virtual void ReportExpectingClose(int32 listener_id) OVERRIDE;
   virtual void AddPendingView() OVERRIDE;
   virtual void RemovePendingView() OVERRIDE;
   virtual void SetSuddenTerminationAllowed(bool allowed) OVERRIDE;
