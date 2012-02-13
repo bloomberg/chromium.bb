@@ -27,17 +27,10 @@ cr.define('options', function() {
 
   /**
    * @type {Object.<string, boolean>} A map from extension id to a boolean
-   *     indicating whether its details section is expanded. This persists
-   *     between calls to decorate.
-   */
-  var showingDetails = {};
-
-  /**
-   * @type {Object.<string, boolean>} A map from extension id to a boolean
    *     indicating whether the incognito warning is showing. This persists
    *     between calls to decorate.
    */
-  var showingWarning = {};
+  var butterBarVisibility = {};
 
   ExtensionsList.prototype = {
     __proto__: HTMLDivElement.prototype,
@@ -97,14 +90,16 @@ cr.define('options', function() {
 
       // The 'allow in incognito' checkbox.
       var incognito = node.querySelector('.incognito-control');
+      var butterBar = node.querySelector('.butter-bar');
       incognito.addEventListener('click', function(e) {
-        var butterBar = node.querySelector('.butter-bar');
         var checked = e.target.checked;
+        butterBarVisibility[extension.id] = checked;
         butterBar.hidden = !checked || extension.is_hosted_app;
         chrome.send('extensionSettingsEnableIncognito',
                     [extension.id, String(checked)]);
       });
       incognito.querySelector('input').checked = extension.enabledIncognito;
+      butterBar.hidden = !butterBarVisibility[extension.id];
 
       // The 'allow file:// access' checkbox.
       if (extension.wantsFileAccess) {
