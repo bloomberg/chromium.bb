@@ -431,10 +431,8 @@ void DeviceSettingsProvider::UpdateValuesCache() {
       new_values_cache.SetBoolean(kReportDeviceVersionInfo,
           pol.device_reporting().report_version_info());
     }
-    if (pol.device_reporting().has_report_activity_times()) {
-      new_values_cache.SetBoolean(kReportDeviceActivityTimes,
-          pol.device_reporting().report_activity_times());
-    }
+    // TODO(dubroy): Re-add device activity time policy here when the UI
+    // to notify the user has been implemented (http://crosbug.com/26252).
     if (pol.device_reporting().has_report_boot_mode()) {
       new_values_cache.SetBoolean(kReportDeviceBootMode,
           pol.device_reporting().report_boot_mode());
