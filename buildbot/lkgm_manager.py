@@ -450,7 +450,9 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         if review_match:
           review = review_match.group(1)
           _, _, change_number = review.rpartition('/')
-          if current_committer == 'chrome-bot':
-            PrintLink('%s:%s' % (current_author, change_number), review)
-          else:
+          if current_committer != 'chrome-bot':
             PrintLink('CHUMP %s:%s' % (current_author, change_number), review)
+          elif self.build_type != constants.PALADIN_TYPE:
+            # Suppress re-printing changes we tried ourselves on paladin
+            # builders since they are redundant.
+            PrintLink('%s:%s' % (current_author, change_number), review)
