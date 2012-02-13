@@ -1364,13 +1364,11 @@ notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 			  device->grab->x, device->grab->y);
 
 	if (wd->sprite) {
-		weston_surface_damage_below(wd->sprite);
-
 		wd->sprite->geometry.x = device->x - wd->hotspot_x;
 		wd->sprite->geometry.y = device->y - wd->hotspot_y;
 		wd->sprite->geometry.dirty = 1;
 
-		weston_surface_damage(wd->sprite);
+		weston_compositor_schedule_repaint(ec);
 	}
 }
 
