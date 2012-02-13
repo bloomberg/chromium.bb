@@ -1645,8 +1645,10 @@ struct kernel_statfs {
                              "testq  %5,%5\n"
                              "jz     1f\n"
 
-                             /* childstack -= 2*sizeof(void *);
+                             /* Set up alignment of the child stack:
+                              * child_stack = (child_stack & ~0xF) - 16;
                               */
+                             "andq   $-16,%5\n"
                              "subq   $16,%5\n"
 
                              /* Push "arg" and "fn" onto the stack that will be
