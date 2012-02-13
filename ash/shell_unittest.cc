@@ -8,8 +8,10 @@
 #include "ash/shell_window_ids.h"
 #include "ash/test/aura_shell_test_base.h"
 #include "ash/wm/root_window_layout_manager.h"
+#include "ash/wm/shelf_layout_manager.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -415,5 +417,44 @@ TEST_F(ShellTest, ResizeRootWindow) {
   EXPECT_EQ(1080, launcher_widget->GetWindowScreenBounds().bottom());
 }
 #endif  // defined(OS_CHROMEOS)
+
+TEST_F(ShellTest, FullscreenWindowHidesShelf) {
+  ExpectAllContainers();
+  Shell* shell = Shell::GetInstance();
+
+  // Create a normal window.  It is not maximized.
+  views::Widget::InitParams widget_params(
+      views::Widget::InitParams::TYPE_WINDOW);
+  widget_params.bounds.SetRect(11, 22, 300, 400);
+  views::Widget* widget = CreateTestWindow(widget_params);
+  widget->Show();
+  EXPECT_FALSE(widget->IsMaximized());
+
+  // Test in the compact mode. There should be no shelf.
+  shell->ChangeWindowMode(Shell::MODE_COMPACT);
+  EXPECT_FALSE(Shell::GetInstance()->shelf());
+
+  // Test in the managed mode.
+  shell->ChangeWindowMode(Shell::MODE_MANAGED);
+  EXPECT_TRUE(Shell::GetInstance()->shelf()->visible());
+
+  widget->SetFullscreen(true);
+  EXPECT_FALSE(Shell::GetInstance()->shelf()->visible());
+
+  widget->Restore();
+  EXPECT_TRUE(Shell::GetInstance()->shelf()->visible());
+
+  // Test in the overlap mode.
+  shell->ChangeWindowMode(Shell::MODE_OVERLAPPING);
+  EXPECT_TRUE(Shell::GetInstance()->shelf()->visible());
+
+  widget->SetFullscreen(true);
+  EXPECT_FALSE(Shell::GetInstance()->shelf()->visible());
+
+  widget->Restore();
+  EXPECT_TRUE(Shell::GetInstance()->shelf()->visible());
+
+  widget->Close();
+}
 
 }  // namespace ash

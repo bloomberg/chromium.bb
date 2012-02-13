@@ -27,6 +27,7 @@ class Rect;
 namespace ash {
 namespace internal {
 
+class ShelfLayoutManager;
 class WorkspaceManagerTest;
 
 // WorkspaceManager manages multiple workspaces in the desktop.
@@ -92,6 +93,8 @@ class ASH_EXPORT WorkspaceManager : public aura::WindowObserver{
   // Returns a bounds aligned to the grid. Returns |bounds| if grid_size is 0.
   gfx::Rect AlignBoundsToGrid(const gfx::Rect& bounds);
 
+  void set_shelf(ShelfLayoutManager* shelf) { shelf_ = shelf; }
+
   // Overriden from aura::WindowObserver:
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,
@@ -108,6 +111,8 @@ class ASH_EXPORT WorkspaceManager : public aura::WindowObserver{
 
   void AddWorkspace(Workspace* workspace);
   void RemoveWorkspace(Workspace* workspace);
+
+  void UpdateShelfVisibility();
 
   // Returns the active workspace.
   Workspace* GetActiveWorkspace() const;
@@ -166,6 +171,9 @@ class ASH_EXPORT WorkspaceManager : public aura::WindowObserver{
 
   // See description above setter.
   bool open_new_windows_maximized_;
+
+  // Owned by the Shell container window LauncherContainer. May be NULL.
+  ShelfLayoutManager* shelf_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceManager);
 };

@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ash/wm/property_util.h"
+#include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/managed_workspace.h"
 #include "ash/wm/workspace/maximized_workspace.h"
@@ -84,7 +85,8 @@ WorkspaceManager::WorkspaceManager(aura::Window* contents_view)
       is_overview_(false),
       ignored_window_(NULL),
       grid_size_(0),
-      open_new_windows_maximized_(true) {
+      open_new_windows_maximized_(true),
+      shelf_(NULL) {
   DCHECK(contents_view);
 }
 
@@ -221,6 +223,7 @@ void WorkspaceManager::OnWindowPropertyChanged(aura::Window* window,
     // maximized to fullscreen. Adjust the bounds appropriately.
     SetFullScreenOrMaximizedBounds(window);
   }
+  UpdateShelfVisibility();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -257,6 +260,15 @@ void WorkspaceManager::RemoveWorkspace(Workspace* workspace) {
   }
 }
 
+void WorkspaceManager::UpdateShelfVisibility() {
+  if (!shelf_ || !active_workspace_)
+    return;
+  std::set<aura::Window*> windows;
+  windows.insert(active_workspace_->windows().begin(),
+                 active_workspace_->windows().end());
+  shelf_->SetVisible(!window_util::HasFullscreenWindow(windows));
+}
+
 Workspace* WorkspaceManager::GetActiveWorkspace() const {
   return active_workspace_;
 }
@@ -274,8 +286,10 @@ void WorkspaceManager::SetActiveWorkspace(Workspace* workspace) {
   if (active_workspace_)
     SetWindowLayerVisibility(active_workspace_->windows(), false);
   active_workspace_ = workspace;
-  if (active_workspace_)
+  if (active_workspace_) {
     SetWindowLayerVisibility(active_workspace_->windows(), true);
+    UpdateShelfVisibility();
+  }
 
   is_overview_ = false;
 }

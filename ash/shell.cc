@@ -40,6 +40,7 @@
 #include "ash/wm/workspace_controller.h"
 #include "ash/wm/workspace/workspace_event_filter.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
+#include "ash/wm/workspace/workspace_manager.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
@@ -205,6 +206,7 @@ Shell::Shell(ShellDelegate* delegate)
       accelerator_controller_(new AcceleratorController),
 #endif
       delegate_(delegate),
+      shelf_(NULL),
       window_mode_(MODE_OVERLAPPING),
       root_window_layout_(NULL),
       status_widget_(NULL) {
@@ -488,6 +490,8 @@ void Shell::SetupCompactWindowMode() {
   DCHECK(root_window_layout_);
   DCHECK(status_widget_);
 
+  shelf_ = NULL;
+
   // Clean out the old layout managers before we start.
   ResetLayoutManager(internal::kShellWindowId_DefaultContainer);
   ResetLayoutManager(internal::kShellWindowId_LauncherContainer);
@@ -541,6 +545,7 @@ void Shell::SetupNonCompactWindowMode() {
       new internal::ShelfLayoutManager(launcher_->widget(), status_widget_);
   GetContainer(internal::kShellWindowId_LauncherContainer)->
       SetLayoutManager(shelf_layout_manager);
+  shelf_ = shelf_layout_manager;
 
   internal::StatusAreaLayoutManager* status_area_layout_manager =
       new internal::StatusAreaLayoutManager(shelf_layout_manager);
@@ -553,6 +558,7 @@ void Shell::SetupNonCompactWindowMode() {
     // Workspace manager has its own layout managers.
     workspace_controller_.reset(
         new internal::WorkspaceController(default_container));
+    workspace_controller_->workspace_manager()->set_shelf(shelf_layout_manager);
   } else {
     // Default layout manager.
     internal::ToplevelLayoutManager* toplevel_layout_manager =

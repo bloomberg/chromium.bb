@@ -52,6 +52,7 @@ class FocusCycler;
 class InputMethodEventFilter;
 class RootWindowLayoutManager;
 class ShadowController;
+class ShelfLayoutManager;
 class StackingController;
 class TooltipController;
 class VisibilityController;
@@ -159,6 +160,8 @@ class ASH_EXPORT Shell {
 
   Launcher* launcher() { return launcher_.get(); }
 
+  internal::ShelfLayoutManager* shelf() const { return shelf_; }
+
   // Made available for tests.
   internal::ShadowController* shadow_controller() {
     return shadow_controller_.get();
@@ -232,6 +235,11 @@ class ASH_EXPORT Shell {
   // An event filter that pre-handles global accelerators.
   scoped_ptr<internal::AcceleratorFilter> accelerator_filter_;
 #endif
+
+  // The shelf for managing the launcher and the status widget in non-compact
+  // mode. Shell does not own the shelf. Instead, it is owned by container of
+  // the status area.
+  internal::ShelfLayoutManager* shelf_;
 
   // Can change at runtime.
   WindowMode window_mode_;
