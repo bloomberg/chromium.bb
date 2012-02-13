@@ -302,6 +302,7 @@ uint32_t saved_ebp;
 
 void ebp_exception_handler_wrapper(int prog_ctr, int stack_ptr);
 asm(".pushsection .text, \"ax\", @progbits\n"
+    ".p2align NACLENTRYALIGN\n"
     "ebp_exception_handler_wrapper:\n"
     "mov %ebp, saved_ebp\n"
     "jmp ebp_exception_handler\n"
