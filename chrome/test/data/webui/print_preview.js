@@ -55,7 +55,7 @@ PrintPreviewWebUITest.prototype = {
             disableColorOption: true,
             setColorAsDefault: true,
             disableCopiesOption: true,
-            printerDefaultDuplexValue: copiesSettings.SIMPLEX,
+            printerDefaultDuplexValue: print_preview.CopiesSettings.SIMPLEX,
           });
         }));
     var savedArgs = new SaveMockArguments();
@@ -259,7 +259,7 @@ TEST_F('PrintPreviewWebUITest', 'TestSectionsDisabled', function() {
           setColorAsDefault: true,
           disableCopiesOption: true,
           disableLandscapeOption: true,
-          printerDefaultDuplexValue: copiesSettings.SIMPLEX,
+          printerDefaultDuplexValue: print_preview.CopiesSettings.SIMPLEX,
         });
       }));
 
@@ -279,7 +279,7 @@ TEST_F('PrintPreviewWebUITest', 'TestColorSettings', function() {
           setColorAsDefault: true,
           disableCopiesOption: false,
           disableLandscapeOption: false,
-          printerDefaultDuplexValue: copiesSettings.SIMPLEX,
+          printerDefaultDuplexValue: print_preview.CopiesSettings.SIMPLEX,
         });
       }));
 
@@ -294,7 +294,7 @@ TEST_F('PrintPreviewWebUITest', 'TestColorSettings', function() {
           setColorAsDefault: false,
           disableCopiesOption: false,
           disableLandscapeOption: false,
-          printerDefaultDuplexValue: copiesSettings.SIMPLEX,
+          printerDefaultDuplexValue: print_preview.CopiesSettings.SIMPLEX,
         });
       }));
 
@@ -313,11 +313,11 @@ TEST_F('PrintPreviewWebUITest', 'TestDuplexSettings', function() {
           setColorAsDefault: false,
           disableCopiesOption: false,
           disableLandscapeOption: false,
-          printerDefaultDuplexValue: copiesSettings.SIMPLEX,
+          printerDefaultDuplexValue: print_preview.CopiesSettings.SIMPLEX,
         });
       }));
   updateControlsWithSelectedPrinterCapabilities();
-  expectEquals(copiesSettings.duplexMode, copiesSettings.SIMPLEX);
+  expectEquals(copiesSettings.duplexMode, print_preview.CopiesSettings.SIMPLEX);
   expectEquals(copiesSettings.twoSidedOption_.hidden, false);
 
   // If the printer default duplex value is UNKNOWN_DUPLEX_MODE, hide the
@@ -329,11 +329,13 @@ TEST_F('PrintPreviewWebUITest', 'TestDuplexSettings', function() {
           setColorAsDefault: false,
           disableCopiesOption: false,
           disableLandscapeOption: false,
-          printerDefaultDuplexValue: copiesSettings.UNKNOWN_DUPLEX_MODE,
+          printerDefaultDuplexValue:
+            print_preview.CopiesSettings.UNKNOWN_DUPLEX_MODE,
         });
       }));
   updateControlsWithSelectedPrinterCapabilities();
-  expectEquals(copiesSettings.duplexMode, copiesSettings.UNKNOWN_DUPLEX_MODE);
+  expectEquals(copiesSettings.duplexMode,
+               print_preview.CopiesSettings.UNKNOWN_DUPLEX_MODE);
   expectEquals(copiesSettings.twoSidedOption_.hidden, true);
 
   this.mockHandler.expects(once()).getPrinterCapabilities('FooDevice').
@@ -343,14 +345,15 @@ TEST_F('PrintPreviewWebUITest', 'TestDuplexSettings', function() {
           setColorAsDefault: false,
           disableCopiesOption: false,
           disableLandscapeOption: false,
-          printerDefaultDuplexValue: copiesSettings.SIMPLEX,
+          printerDefaultDuplexValue: print_preview.CopiesSettings.SIMPLEX,
         });
       }));
   updateControlsWithSelectedPrinterCapabilities();
   expectEquals(copiesSettings.twoSidedOption_.hidden, false);
-  expectEquals(copiesSettings.duplexMode, copiesSettings.SIMPLEX);
+  expectEquals(copiesSettings.duplexMode, print_preview.CopiesSettings.SIMPLEX);
   copiesSettings.twoSidedCheckbox.checked = true;
-  expectEquals(copiesSettings.duplexMode, copiesSettings.LONG_EDGE);
+  expectEquals(
+      copiesSettings.duplexMode, print_preview.CopiesSettings.LONG_EDGE);
 });
 
 // Test that changing the selected printer updates the preview.

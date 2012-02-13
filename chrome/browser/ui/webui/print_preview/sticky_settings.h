@@ -53,16 +53,23 @@ class StickySettings {
   printing::ColorModels color_model() const;
   bool headers_footers() const;
   FilePath* save_path();
+  printing::DuplexMode duplex_mode() const;
 
-  // Methods for storing settings.
-  void StoreColorModel(const base::DictionaryValue& settings);
-  void StoreMarginSettings(const base::DictionaryValue& settings);
-  void StoreHeadersFooters(const base::DictionaryValue& settings);
+  // Stores color model, duplex mode, margins and headers footers.
+  void Store(const base::DictionaryValue& settings);
+  // Stores last used printer name.
   void StorePrinterName(const std::string& printer_name);
+  // Stores last used printer cloud print data.
   void StoreCloudPrintData(const std::string& cloud_print_data);
+  // Stores the last path the user used to save to pdf.
   void StoreSavePath(const FilePath& path);
 
  private:
+  void StoreColorModel(const base::DictionaryValue& settings);
+  void StoreMarginSettings(const base::DictionaryValue& settings);
+  void StoreHeadersFooters(const base::DictionaryValue& settings);
+  void StoreDuplexMode(const base::DictionaryValue& settings);
+
   scoped_ptr<FilePath> save_path_;
   scoped_ptr<std::string> printer_name_;
   scoped_ptr<std::string> printer_cloud_print_data_;
@@ -70,6 +77,7 @@ class StickySettings {
   printing::MarginType margins_type_;
   scoped_ptr<printing::PageSizeMargins> page_size_margins_;
   bool headers_footers_;
+  printing::DuplexMode duplex_mode_;
 
   friend class ::PrintPreviewHandlerTest;
   FRIEND_TEST_ALL_PREFIXES(::PrintPreviewHandlerTest, StickyMarginsCustom);

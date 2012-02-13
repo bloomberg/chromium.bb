@@ -24,13 +24,14 @@ cr.define('print_preview', function() {
     this.twoSidedCheckbox_ = $('two-sided');
     this.twoSidedOption_ = $('two-sided-option');
 
-    // Constant values matches printing::DuplexMode enum. Not using const
-    // keyword because it is not allowed by JS strict mode.
-    this.SIMPLEX = 0;
-    this.LONG_EDGE = 1;
-    this.UNKNOWN_DUPLEX_MODE = -1;
+    this.previousDuplexMode_ = CopiesSettings.UNKNOWN_DUPLEX_MODE;
     this.addEventListeners_();
   }
+
+  // Constant values matches printing::DuplexMode enum.
+  CopiesSettings.SIMPLEX = 0;
+  CopiesSettings.LONG_EDGE = 1;
+  CopiesSettings.UNKNOWN_DUPLEX_MODE = -1;
 
   cr.addSingletonGetter(CopiesSettings);
 
@@ -69,11 +70,15 @@ cr.define('print_preview', function() {
      */
     get duplexMode() {
       if (this.twoSidedOption_.hidden)
-        return this.UNKNOWN_DUPLEX_MODE;
+        return CopiesSettings.UNKNOWN_DUPLEX_MODE;
       else if (this.twoSidedCheckbox_.checked)
-        return this.LONG_EDGE;
+        return CopiesSettings.LONG_EDGE;
       else
-        return this.SIMPLEX;
+        return CopiesSettings.SIMPLEX;
+    },
+
+    set previousDuplexMode(duplexMode) {
+      this.previousDuplexMode_ = duplexMode;
     },
 
     /**
@@ -161,8 +166,12 @@ cr.define('print_preview', function() {
      * @private
      */
     onPrinterCapabilitiesUpdated_: function(e) {
-      this.updateTwoSidedOption_(
-          e.printerCapabilities.printerDefaultDuplexValue);
+      var duplexValue = e.printerCapabilities.printerDefaultDuplexValue;
+      if (duplexValue != CopiesSettings.UNKNOWN_DUPLEX_MODE &&
+        this.previousDuplexMode_ != CopiesSettings.UNKNOWN_DUPLEX_MODE) {
+        duplexValue = this.previousDuplexMode_;
+      }
+      this.updateTwoSidedOption_(duplexValue);
       e.printerCapabilities.disableCopiesOption ?
           fadeOutOption(this.copiesOption_) :
           fadeInOption(this.copiesOption_);
@@ -204,7 +213,7 @@ cr.define('print_preview', function() {
       // hide the two sided option in preview tab UI.
       // Ref bug: http://crbug.com/89204
       this.twoSidedOption_.hidden =
-          (defaultDuplexValue == this.UNKNOWN_DUPLEX_MODE);
+          (defaultDuplexValue == CopiesSettings.UNKNOWN_DUPLEX_MODE);
 
       if (!this.twoSidedOption_.hidden)
         this.twoSidedCheckbox_.checked = !!defaultDuplexValue;

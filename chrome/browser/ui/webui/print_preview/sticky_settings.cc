@@ -13,7 +13,8 @@ namespace printing {
 StickySettings::StickySettings()
     : color_model_(printing::UNKNOWN_COLOR_MODEL),
       margins_type_(printing::DEFAULT_MARGINS),
-      headers_footers_(true) {}
+      headers_footers_(true),
+      duplex_mode_(printing::UNKNOWN_DUPLEX_MODE) {}
 
 StickySettings::~StickySettings() {}
 
@@ -61,6 +62,29 @@ void StickySettings::StoreHeadersFooters(
       printing::kSettingHeaderFooterEnabled, &headers_footers_);
 }
 
+void StickySettings::Store(const base::DictionaryValue& settings) {
+  // Storing last used color model.
+  StoreColorModel(settings);
+  // Storing last used duplex mode.
+  StoreDuplexMode(settings);
+
+  bool is_modifiable = false;
+  settings.GetBoolean(printing::kSettingPreviewModifiable, &is_modifiable);
+  if (is_modifiable) {
+    // Storing last used margin settings.
+    StoreMarginSettings(settings);
+    // Storing last used header and footer setting.
+    StoreHeadersFooters(settings);
+  }
+}
+
+void StickySettings::StoreDuplexMode(
+    const base::DictionaryValue& settings) {
+  int duplex_mode = printing::UNKNOWN_DUPLEX_MODE;
+  settings.GetInteger(printing::kSettingDuplexMode, &duplex_mode);
+  duplex_mode_ = static_cast<printing::DuplexMode>(duplex_mode);
+}
+
 void StickySettings::StorePrinterName(const std::string& printer_name) {
   printer_name_.reset(new std::string(printer_name));
 }
@@ -91,6 +115,10 @@ bool StickySettings::headers_footers() const {
 
 FilePath* StickySettings::save_path() {
   return save_path_.get();
+}
+
+printing::DuplexMode StickySettings::duplex_mode() const {
+  return duplex_mode_;
 }
 
 } // namespace printing

@@ -80,18 +80,13 @@ cr.define('print_preview', function() {
       this.colorOption_.setAttribute('aria-hidden', disableColorOption);
 
       var setColorAsDefault = e.printerCapabilities.setColorAsDefault;
-      if (e.printerCapabilities.printerColorModelForColor) {
-        this.printerColorModelForColor_ =
-            e.printerCapabilities.printerColorModelForColor;
-      } else {
-        this.printerColorModelForColor_ = ColorSettings.COLOR;
-      }
-      if (e.printerCapabilities.printerColorModelForBlack) {
-        this.printerColorModelForBlack_ =
-            e.printerCapabilities.printerColorModelForBlack;
-      } else {
-        this.printerColorModelForBlack_ = ColorSettings.GRAY;
-      }
+      this.printerColorModelForColor_ =
+          e.printerCapabilities.printerColorModelForColor ||
+          ColorSettings.COLOR;
+      this.printerColorModelForBlack_ =
+          e.printerCapabilities.printerColorModelForBlack ||
+          ColorSettings.GRAY;
+
       this.colorRadioButton_.checked = setColorAsDefault;
       this.bwRadioButton_.checked = !setColorAsDefault;
       setColor(this.colorRadioButton_.checked);

@@ -371,17 +371,8 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   if (!settings.get())
     return;
 
-  // Storing last used color model.
-  GetStickySettings()->StoreColorModel(*settings);
-
-  bool is_modifiable;
-  settings->GetBoolean(printing::kSettingPreviewModifiable, &is_modifiable);
-  if (is_modifiable) {
-    // Storing last used margin settings.
-    GetStickySettings()->StoreMarginSettings(*settings);
-    // Storing last used header and footer setting.
-    GetStickySettings()->StoreHeadersFooters(*settings);
-  }
+  // Storing last used settings.
+  GetStickySettings()->Store(*settings);
 
   // Never try to add headers/footers here. It's already in the generated PDF.
   settings->SetBoolean(printing::kSettingHeaderFooterEnabled, false);
@@ -656,6 +647,8 @@ void PrintPreviewHandler::SendInitialSettings(
   initial_settings.SetString(kCloudPrintData, cloud_print_data);
   initial_settings.SetBoolean(printing::kSettingHeaderFooterEnabled,
                               GetStickySettings()->headers_footers());
+  initial_settings.SetInteger(printing::kSettingDuplexMode,
+                              GetStickySettings()->duplex_mode());
 
 
 #if defined(OS_MACOSX)

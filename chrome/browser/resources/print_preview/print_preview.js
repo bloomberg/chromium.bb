@@ -199,6 +199,7 @@ function setInitialSettings(initialSettings) {
   printAutomaticallyInKioskMode =
       initialSettings['printAutomaticallyInKioskMode'];
   headerFooterSettings.setChecked(initialSettings['headerFooterEnabled']);
+  copiesSettings.previousDuplexMode = initialSettings['duplex'];
   setDefaultPrinter(initialSettings['printerName'],
                     initialSettings['cloudPrintData']);
 }
