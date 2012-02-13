@@ -1,0 +1,121 @@
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+################################################################################
+# This file describes instructions from AMD64 Architecture Programmer’s Manual
+#				Volume 3: General-Purpose and System Instruction
+#					 Chapter 4: System Instruction Reference
+################################################################################
+# File format: see general-purpose-instructions.def
+######## CLGI ##################################################################
+clgi, 0x0f 0x01 0xdd, nacl-forbidden Fn8000_0001_ECX_SVM
+######## CLI ###################################################################
+cli, 0xfa, nacl-forbidden
+######## CLTS ##################################################################
+clts, 0x0f 0x06, nacl-forbidden
+######## HLT ###################################################################
+hlt, 0xf4
+######## ICEBP #################################################################
+# Note: this instruction is ducmented in AMD64 Architecture Programmer’s Manual
+# Volume 2: System Programming.  It's called “int1” there but objdump uses name
+# “icebp”.
+icebp, 0xf1
+######## INT 3 #################################################################
+int3, 0xcc, nacl-forbidden
+######## INVD ##################################################################
+invd, 0x0f 0x08, nacl-forbidden
+######## INVLPG ################################################################
+invlpg Mb, 0x0f 0x01 /7
+######## INVLPGA ###############################################################
+invlpga, 0x0f 0x01 0xdf, nacl-forbidden Fn8000_0001_ECX_SVM
+######## IRET/IRETD/IRETQ ######################################################
+# Note: objdump always uses name iret in all modes: 16bit, 32bit, and 64bit
+iret, 0xcf, nacl-forbidden
+######## LAR ###################################################################
+lar Ew Gv, 0x0f 0x02
+######## LGDT ##################################################################
+lgdtl Ms, 0x0f 0x00 /2, ia32 nacl-forbidden
+lgdt Ms, 0x0f 0x00 /2, amd64 nacl-forbidden
+######## LIDT ##################################################################
+lidtl Ms, 0x0f 0x00 /3, ia32 nacl-forbidden
+lidt Ms, 0x0f 0x00 /3, amd64 nacl-forbidden
+######## LLDT ##################################################################
+lldt Ew, 0x0f 0x00 /2, nacl-forbidden
+######## LMSW ##################################################################
+lmsw Ew, 0x0f 0x01 /6
+######## LSL ###################################################################
+lsl Ew Gv, 0x0f 0x03
+######## LTR ###################################################################
+ltr Ew, 0x0f 0x00 /3
+######## MONITOR ###############################################################
+monitor ar cr dr, 0x0f 0x01 0xc8, Fn0000_0001_ECX_Monitor
+######## MOV (CRn) #############################################################
+mov Rr Cr, 0x0f 0x22, nacl-forbidden
+mov Cr Rr, 0x0f 0x20, nacl-forbidden
+mov Rr Cr, 0xf0 0x0f 0x22, nacl-forbidden Fn8000_0001_ECX_AltMovCr8
+mov Cr Rr, 0xf0 0x0f 0x20, nacl-forbidden Fn8000_0001_ECX_AltMovCr8
+######## MOV (DRn) #############################################################
+mov Dr Rr, 0x0f 0x21, nacl-forbidden
+mov Rr Dr, 0x0f 0x23, nacl-forbidden
+######## MWAIT #################################################################
+mwait ar cr, 0x0f 0x01 0xc9, Fn0000_0001_ECX_Monitor
+######## RDMSR #################################################################
+rdmsr, 0x0f 0x32, nacl-forbidden
+######## RDPMC #################################################################
+rdpmc, 0x0f 0x33, nacl-forbidden
+######## RDTSC #################################################################
+rdtsc, 0x0f 0x31, Fn0000_0001_EDX_RDTSC
+######## RDTSCP ################################################################
+rdtscp, 0x0f 0x01 0xf9, nacl-forbidden Fn8000_0001_EDX_RDTSCP
+######## RSM ###################################################################
+rsm, 0x0f 0xaa, nacl-forbidden Fn8000_0001_ECX_SVM
+######## SGDT ##################################################################
+sgdtl Ms, 0x0f 0x01 /0, ia32 nacl-forbidden
+sgdt Ms, 0x0f 0x01 /0, amd64 nacl-forbidden
+######## SIDT ##################################################################
+sidtl Ms, 0x0f 0x01 /1, ia32 nacl-forbidden
+sidt Ms, 0x0f 0x01 /1, amd64 nacl-forbidden
+######## SKINIT ################################################################
+skinit, 0x0f 0x01 0xde, nacl-forbidden Fn8000_0001_ECX_SKINIT
+######## SLDT ##################################################################
+sldt Mw, 0x0f 0x00 /0, nacl-forbidden
+sldt Rv, 0x0f 0x00 /0, nacl-forbidden
+######## SMSW ##################################################################
+smsw Mw, 0x0f 0x01 /4
+smsw Rv, 0x0f 0x01 /4
+######## STGI ##################################################################
+stgi, 0x0f 0x01 0xdc, nacl-forbidden Fn8000_0001_ECX_SKINIT
+######## STI ###################################################################
+sti, 0xfb, nacl-forbidden
+######## STR ###################################################################
+str Mw, 0x0f 0x00 /1
+str Rv, 0x0f 0x00 /1
+######## SWAPGS ################################################################
+swapgs, 0x0f 0x01 0xf8, amd64 nacl-forbidden
+######## SYSCALL ###############################################################
+syscall, 0x0f 0x05, nacl-forbidden Fn8000_0001_EDX_SYSCALL
+######## SYSENTER ##############################################################
+sysenter, 0x0f 0x34, nacl-forbidden Fn0000_0001_EDX_SYSENTER
+######## SYSEXIT ###############################################################
+sysexit, 0x0f 0x35, nacl-forbidden Fn0000_0001_EDX_SYSENTER
+######## SYSRET ################################################################
+sysret, 0x0f 0x07, nacl-forbidden
+######## UD2 ###################################################################
+ud2, 0x0f 0x0b
+######## VERR ##################################################################
+verr Ew, 0x0f 0x00 /4
+######## VERW ##################################################################
+verw Ew, 0x0f 0x00 /5
+######## VMLOAD ################################################################
+vmload, 0x0f 0x01 0xda, nacl-forbidden Fn8000_0001_ECX_SVM
+######## VMMCALL ###############################################################
+vmmcall, 0x0f 0x01 0xd9, nacl-forbidden Fn8000_0001_ECX_SVM
+######## VMRUN #################################################################
+vmrun, 0x0f 0x01 0xd8, nacl-forbidden Fn8000_0001_ECX_SVM
+######## VMSAVE ################################################################
+vmsave, 0x0f 0x01 0xdb, nacl-forbidden Fn8000_0001_ECX_SVM
+######## WBINVD ################################################################
+wbinvd, 0x0f 0x09, nacl-forbidden
+######## WRMSR #################################################################
+wrmsr, 0x0f 0x30, nacl-forbidden
+################################################################################
