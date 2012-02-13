@@ -383,7 +383,6 @@ shell_surface_set_toplevel(struct wl_client *client,
 	if (reset_shell_surface_type(surface))
 		return;
 
-	weston_surface_damage(surface->surface);
 	surface->type = SHELL_SURFACE_TOPLEVEL;
 }
 
@@ -408,7 +407,6 @@ shell_surface_set_transient(struct wl_client *client,
 	es->geometry.y = pes->geometry.y + y;
 	es->geometry.dirty = 1;
 
-	weston_surface_damage(es);
 	shsurf->type = SHELL_SURFACE_TRANSIENT;
 }
 
@@ -442,7 +440,6 @@ shell_surface_set_fullscreen(struct wl_client *client,
 	es->geometry.y = (output->current->height - es->geometry.height) / 2;
 	es->geometry.dirty = 1;
 	es->fullscreen_output = output;
-	weston_surface_damage(es);
 	shsurf->type = SHELL_SURFACE_FULLSCREEN;
 }
 
@@ -557,9 +554,7 @@ shell_surface_set_popup(struct wl_client *client,
 			int32_t x, int32_t y, uint32_t flags)
 {
 	struct shell_surface *shsurf = resource->data;
-	struct weston_surface *es = shsurf->surface;
 
-	weston_surface_damage(es);
 	shsurf->type = SHELL_SURFACE_POPUP;
 	shsurf->parent = parent_resource->data;
 	shsurf->popup.x = x;
