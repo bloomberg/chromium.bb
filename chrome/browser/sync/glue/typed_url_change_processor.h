@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -110,7 +110,7 @@ class TypedUrlChangeProcessor : public ChangeProcessor,
 
   // The set of pending changes that will be written out on the next
   // CommitChangesFromSyncModel() call.
-  TypedUrlModelAssociator::TypedUrlVector pending_new_urls_;
+  history::URLRows pending_new_urls_;
   TypedUrlModelAssociator::TypedUrlUpdateVector pending_updated_urls_;
   std::vector<GURL> pending_deleted_urls_;
   TypedUrlModelAssociator::TypedUrlVisitVector pending_new_visits_;

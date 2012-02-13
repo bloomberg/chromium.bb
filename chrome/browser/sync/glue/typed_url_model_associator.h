@@ -44,7 +44,6 @@ extern const char kTypedUrlTag[];
 class TypedUrlModelAssociator
   : public AbortablePerDataTypeAssociatorInterface<std::string, std::string> {
  public:
-  typedef std::vector<history::URLRow> TypedUrlVector;
   typedef std::vector<std::pair<history::URLID, history::URLRow> >
       TypedUrlUpdateVector;
   typedef std::vector<std::pair<GURL, std::vector<history::VisitInfo> > >
@@ -97,7 +96,7 @@ class TypedUrlModelAssociator
   // |sync_id| with that node's id.
   virtual bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id);
 
-  bool WriteToHistoryBackend(const TypedUrlVector* new_urls,
+  bool WriteToHistoryBackend(const history::URLRows* new_urls,
                              const TypedUrlUpdateVector* updated_urls,
                              const TypedUrlVisitVector* new_visits,
                              const history::VisitVector* deleted_visits);
@@ -114,7 +113,7 @@ class TypedUrlModelAssociator
                         TypedUrlVisitVector* visits_to_add,
                         history::VisitVector* visits_to_remove,
                         TypedUrlUpdateVector* updated_urls,
-                        TypedUrlVector* new_urls);
+                        history::URLRows* new_urls);
 
   // Given a TypedUrlSpecifics object, removes all visits that are older than
   // the current expiration time. Note that this can result in having no visits
