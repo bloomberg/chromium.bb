@@ -154,6 +154,23 @@ void ApplyUnderlineStyle(const ui::Range& range, gfx::RenderText* render_text) {
   }
 }
 
+// Returns updated |flags| to match platform-specific expected behavior.
+int AdjustPlatformSpecificFlags(const string16& text, int flags) {
+#if defined(OS_LINUX)
+  // TODO(asvitkine): On Linux, NO_ELLIPSIS really means MULTI_LINE.
+  //                  http://crbug.com/107357
+  if (flags & NO_ELLIPSIS)
+    flags |= MULTI_LINE;
+
+  // TODO(asvitkine): ash/tooltips/tooltip_controller.cc adds \n's to the string
+  //                  without passing MULTI_LINE.
+  if (text.find('\n') != string16::npos)
+    flags |= MULTI_LINE;
+#endif
+
+  return flags;
+}
+
 }  // anonymous namespace
 
 namespace gfx {
@@ -166,6 +183,7 @@ void CanvasSkia::SizeStringInt(const string16& text,
   DCHECK_GE(*width, 0);
   DCHECK_GE(*height, 0);
 
+  flags = AdjustPlatformSpecifcFlags(text, flags);
   if ((flags & MULTI_LINE) && *width != 0) {
     ui::WordWrapBehavior wrap_behavior = ui::TRUNCATE_LONG_WORDS;
     if (flags & CHARACTER_BREAK)
@@ -216,6 +234,8 @@ void CanvasSkia::DrawStringInt(const string16& text,
   if (!IntersectsClipRectInt(x, y, w, h))
     return;
 
+  flags = AdjustPlatformSpecifcFlags(text, flags);
+
   // TODO(asvitkine): On Windows, MULTI_LINE implies top alignment.
   //                  http://crbug.com/107357
   if (flags & MULTI_LINE) {
@@ -228,8 +248,11 @@ void CanvasSkia::DrawStringInt(const string16& text,
   ClipRect(rect);
 
   string16 adjusted_text = text;
-  if (IsTextRTL(flags, text))
+
+#if defined(OS_WIN)
+  if (IsTextRTL(flags, adjusted_text))
     base::i18n::AdjustStringForLocaleDirection(&adjusted_text);
+#endif
 
   scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
 
@@ -254,7 +277,21 @@ void CanvasSkia::DrawStringInt(const string16& text,
     }
   } else {
     ui::Range range = StripAcceleratorChars(flags, &adjusted_text);
-    if (!(flags & NO_ELLIPSIS))
+    bool elide_text = (flags & NO_ELLIPSIS) ? false : true;
+
+#if defined(OS_LINUX)
+    // On Linux, eliding really means fading the end of the string. But only
+    // for LTR text. RTL text is still elided (on the left) with "...".
+    if (elide_text) {
+      render_text->SetText(adjusted_text);
+      if (render_text->GetTextDirection() == base::i18n::LEFT_TO_RIGHT) {
+        render_text->set_fade_tail(true);
+        elide_text = false;
+      }
+    }
+#endif
+
+    if (elide_text)
       ElideTextAndAdjustRange(font, w, &adjusted_text, &range);
 
     rect.Offset(0, VAlignText(font, 1, flags, h));
@@ -311,6 +348,8 @@ void CanvasSkia::DrawStringWithHalo(const string16& text,
   DrawBitmapInt(text_bitmap, x - 1, y - 1);
 }
 
+// TODO(asvitkine): Remove the ifdef once all platforms use canvas_skia_skia.cc.
+#if defined(OS_WIN)
 void CanvasSkia::DrawFadeTruncatingString(
       const string16& text,
       CanvasSkia::TruncateFadeMode truncate_mode,
@@ -375,5 +414,6 @@ void CanvasSkia::DrawFadeTruncatingString(
   render_text->Draw(this);
   canvas_->restore();
 }
+#endif
 
 }  // namespace gfx
