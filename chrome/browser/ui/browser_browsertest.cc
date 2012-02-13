@@ -1071,7 +1071,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
 // menu is showing.
 // And on Chrome OS we do (http://crbug.com/113949).
 #if defined(OS_CHROMEOS)
-#define MAYBE_CloseWithAppMenuOpen FLAKY_CloseWithAppMenuOpen
+#define MAYBE_CloseWithAppMenuOpen DISABLED_CloseWithAppMenuOpen
 #else
 #define MAYBE_CloseWithAppMenuOpen CloseWithAppMenuOpen
 #endif
