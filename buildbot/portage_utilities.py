@@ -353,6 +353,17 @@ class EBuild(object):
       return '%s-%s' % (self.package, new_version)
 
   @classmethod
+  def GitRepoHasChanges(cls, directory):
+    """Returns True if there are changes in the given directory."""
+    # Refresh the index first. This squashes just metadata changes.
+    cros_build_lib.RunCommand(['git', 'update-index', '-q', '--refresh'],
+                              cwd=directory, print_cmd=cls.VERBOSE)
+    ret_obj = cros_build_lib.RunCommand(
+        ['git', 'diff-index', '--name-only', 'HEAD'], cwd=directory,
+        print_cmd=cls.VERBOSE, redirect_stdout=True)
+    return ret_obj.output not in [None, '']
+
+  @classmethod
   def UpdateCommitHashesForChanges(cls, changes, buildroot):
     """Updates the commit hashes for the EBuilds uprevved in changes."""
     overlay_list = FindOverlays(buildroot, 'both')
@@ -388,8 +399,11 @@ class EBuild(object):
                             latest_sha1)
 
     for overlay in modified_overlays:
-      EBuild.CommitChange('Updating commit hashes in ebuilds '
-                          'to match remote repository.', overlay=overlay)
+      # For commits to repos that merge, there won't actually be any changes.
+      # Filter these out.
+      if EBuild.GitRepoHasChanges(overlay):
+        EBuild.CommitChange('Updating commit hashes in ebuilds '
+                            'to match remote repository.', overlay=overlay)
 
 
 def BestEBuild(ebuilds):

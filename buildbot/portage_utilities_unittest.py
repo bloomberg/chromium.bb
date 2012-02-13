@@ -10,6 +10,7 @@ import fileinput
 import mox
 import os
 import re
+import shutil
 import sys
 import tempfile
 import unittest
@@ -288,6 +289,7 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(portage_utilities.EBuild, 'UpdateEBuild')
     self.mox.StubOutWithMock(portage_utilities.EBuild, 'CommitChange')
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
+    self.mox.StubOutWithMock(portage_utilities.EBuild, 'GitRepoHasChanges')
 
     patch1 = self.mox.CreateMock(cros_patch.GerritPatch)
     patch2 = self.mox.CreateMock(cros_patch.GerritPatch)
@@ -315,12 +317,29 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
     patch1.GetLatestSHA1ForProject().AndReturn('sha1')
     portage_utilities.EBuild.UpdateEBuild(ebuild1.ebuild_path,
                                           'CROS_WORKON_COMMIT', 'sha1')
+    portage_utilities.EBuild.GitRepoHasChanges('public_overlay').AndReturn(True)
     portage_utilities.EBuild.CommitChange(mox.IgnoreArg(),
                                           overlay='public_overlay')
     self.mox.ReplayAll()
     portage_utilities.EBuild.UpdateCommitHashesForChanges([patch1, patch2],
                                                           build_root)
     self.mox.VerifyAll()
+
+  def testGitRepoHasChanges(self):
+    """Tests that GitRepoHasChanges works correctly."""
+    tmp_dir = tempfile.mkdtemp('portage_utilities_unittest')
+    cros_build_lib.RunCommand(
+        ['git', 'clone', '--depth=1',
+         'http://git.chromium.org/chromiumos/chromite.git', tmp_dir])
+    # No changes yet as we just cloned the repo.
+    self.assertFalse(portage_utilities.EBuild.GitRepoHasChanges(tmp_dir))
+    # Update metadata but no real changes.
+    cros_build_lib.RunCommand('touch LICENSE', cwd=tmp_dir, shell=True)
+    self.assertFalse(portage_utilities.EBuild.GitRepoHasChanges(tmp_dir))
+    # A real change.
+    cros_build_lib.RunCommand('echo hi > LICENSE', cwd=tmp_dir, shell=True)
+    self.assertTrue(portage_utilities.EBuild.GitRepoHasChanges(tmp_dir))
+    shutil.rmtree(tmp_dir)
 
 
 class FindOverlaysTest(mox.MoxTestBase):
