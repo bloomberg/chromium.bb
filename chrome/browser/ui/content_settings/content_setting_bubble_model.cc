@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -261,7 +261,8 @@ class ContentSettingSingleRadioGroup
     radio_group.radio_items.push_back(radio_allow_label);
     radio_group.radio_items.push_back(radio_block_label);
     HostContentSettingsMap* map = profile()->GetHostContentSettingsMap();
-    CookieSettings* cookie_settings = CookieSettings::GetForProfile(profile());
+    CookieSettings* cookie_settings =
+        CookieSettings::Factory::GetForProfile(profile());
     ContentSetting most_restrictive_setting;
     SettingSource most_restrictive_setting_source = SETTING_SOURCE_NONE;
 

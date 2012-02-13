@@ -421,7 +421,7 @@ TEST_F(CloudPrintProxyPolicyTest,
             prefs->GetString(prefs::kCloudPrintEmail));
 }
 
-ProfileKeyedService* TestCloudPrintProxyServiceFactory(Profile* profile) {
+ProfileKeyedBase* TestCloudPrintProxyServiceFactory(Profile* profile) {
   TestCloudPrintProxyService* service = new TestCloudPrintProxyService(profile);
 
   service->GetMockServiceProcessControl()->SetConnectSuccessMockExpectations(

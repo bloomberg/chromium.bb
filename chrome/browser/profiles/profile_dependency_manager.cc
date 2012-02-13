@@ -44,13 +44,13 @@
 class Profile;
 
 void ProfileDependencyManager::AddComponent(
-    ProfileKeyedServiceFactory* component) {
+    ProfileKeyedBaseFactory* component) {
   all_components_.push_back(component);
   destruction_order_.clear();
 }
 
 void ProfileDependencyManager::RemoveComponent(
-    ProfileKeyedServiceFactory* component) {
+    ProfileKeyedBaseFactory* component) {
   all_components_.erase(std::remove(all_components_.begin(),
                                     all_components_.end(),
                                     component),
@@ -69,8 +69,8 @@ void ProfileDependencyManager::RemoveComponent(
   destruction_order_.clear();
 }
 
-void ProfileDependencyManager::AddEdge(ProfileKeyedServiceFactory* depended,
-                                       ProfileKeyedServiceFactory* dependee) {
+void ProfileDependencyManager::AddEdge(ProfileKeyedBaseFactory* depended,
+                                       ProfileKeyedBaseFactory* dependee) {
   edges_.insert(std::make_pair(depended, dependee));
   destruction_order_.clear();
 }
@@ -90,7 +90,7 @@ void ProfileDependencyManager::CreateProfileServices(Profile* profile,
     BuildDestructionOrder(profile);
 
   // Iterate in reverse destruction order for creation.
-  for (std::vector<ProfileKeyedServiceFactory*>::reverse_iterator rit =
+  for (std::vector<ProfileKeyedBaseFactory*>::reverse_iterator rit =
            destruction_order_.rbegin(); rit != destruction_order_.rend();
        ++rit) {
     if (!profile->IsOffTheRecord()) {
@@ -103,7 +103,7 @@ void ProfileDependencyManager::CreateProfileServices(Profile* profile,
       (*rit)->SetTestingFactory(profile, NULL);
     } else if ((*rit)->ServiceIsCreatedWithProfile()) {
       // Create the service.
-      (*rit)->GetServiceForProfile(profile, true);
+      (*rit)->GetBaseForProfile(profile, true);
     }
   }
 }
@@ -112,7 +112,7 @@ void ProfileDependencyManager::DestroyProfileServices(Profile* profile) {
   if (destruction_order_.empty())
     BuildDestructionOrder(profile);
 
-  for (std::vector<ProfileKeyedServiceFactory*>::const_iterator it =
+  for (std::vector<ProfileKeyedBaseFactory*>::const_iterator it =
            destruction_order_.begin(); it != destruction_order_.end(); ++it) {
     (*it)->ProfileShutdown(profile);
   }
@@ -122,7 +122,7 @@ void ProfileDependencyManager::DestroyProfileServices(Profile* profile) {
   dead_profile_pointers_.insert(profile);
 #endif
 
-  for (std::vector<ProfileKeyedServiceFactory*>::const_iterator it =
+  for (std::vector<ProfileKeyedBaseFactory*>::const_iterator it =
            destruction_order_.begin(); it != destruction_order_.end(); ++it) {
     (*it)->ProfileDestroyed(profile);
   }
@@ -204,12 +204,12 @@ void ProfileDependencyManager::BuildDestructionOrder(Profile* profile) {
 #endif
 
   // Step 1: Build a set of nodes with no incoming edges.
-  std::deque<ProfileKeyedServiceFactory*> queue;
+  std::deque<ProfileKeyedBaseFactory*> queue;
   std::copy(all_components_.begin(),
             all_components_.end(),
             std::back_inserter(queue));
 
-  std::deque<ProfileKeyedServiceFactory*>::iterator queue_end = queue.end();
+  std::deque<ProfileKeyedBaseFactory*>::iterator queue_end = queue.end();
   for (EdgeMap::const_iterator it = edges_.begin();
        it != edges_.end(); ++it) {
     queue_end = std::remove(queue.begin(), queue_end, it->second);
@@ -217,10 +217,10 @@ void ProfileDependencyManager::BuildDestructionOrder(Profile* profile) {
   queue.erase(queue_end, queue.end());
 
   // Step 2: Do the Kahn topological sort.
-  std::vector<ProfileKeyedServiceFactory*> output;
+  std::vector<ProfileKeyedBaseFactory*> output;
   EdgeMap edges(edges_);
   while (!queue.empty()) {
-    ProfileKeyedServiceFactory* node = queue.front();
+    ProfileKeyedBaseFactory* node = queue.front();
     queue.pop_front();
     output.push_back(node);
 
@@ -228,7 +228,7 @@ void ProfileDependencyManager::BuildDestructionOrder(Profile* profile) {
         edges.equal_range(node);
     EdgeMap::iterator it = range.first;
     while (it != range.second) {
-      ProfileKeyedServiceFactory* dest = it->second;
+      ProfileKeyedBaseFactory* dest = it->second;
       EdgeMap::iterator temp = it;
       it++;
       edges.erase(temp);
@@ -260,14 +260,14 @@ std::string ProfileDependencyManager::DumpGraphvizDependency() {
   std::string result("digraph {\n");
 
   // Make a copy of all components.
-  std::deque<ProfileKeyedServiceFactory*> components;
+  std::deque<ProfileKeyedBaseFactory*> components;
   std::copy(all_components_.begin(),
             all_components_.end(),
             std::back_inserter(components));
 
   // State all dependencies and remove |second| so we don't generate an
   // implicit dependency on the Profile hard coded node.
-  std::deque<ProfileKeyedServiceFactory*>::iterator components_end =
+  std::deque<ProfileKeyedBaseFactory*>::iterator components_end =
       components.end();
   result.append("  /* Dependencies */\n");
   for (EdgeMap::const_iterator it = edges_.begin(); it != edges_.end(); ++it) {
@@ -285,7 +285,7 @@ std::string ProfileDependencyManager::DumpGraphvizDependency() {
   // Every node that doesn't depend on anything else will implicitly depend on
   // the Profile.
   result.append("\n  /* Toplevel attachments */\n");
-  for (std::deque<ProfileKeyedServiceFactory*>::const_iterator it =
+  for (std::deque<ProfileKeyedBaseFactory*>::const_iterator it =
            components.begin(); it != components.end(); ++it) {
     result.append("  ");
     result.append((*it)->name());

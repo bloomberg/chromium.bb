@@ -123,7 +123,7 @@ class TestExtensionURLRequestContextGetter
   scoped_refptr<net::URLRequestContext> context_;
 };
 
-ProfileKeyedService* CreateTestDesktopNotificationService(Profile* profile) {
+ProfileKeyedBase* CreateTestDesktopNotificationService(Profile* profile) {
   return new DesktopNotificationService(profile, NULL);
 }
 
@@ -376,7 +376,7 @@ void TestingProfile::CreateTemplateURLFetcher() {
   template_url_fetcher_.reset(new TemplateURLFetcher(this));
 }
 
-static ProfileKeyedService* BuildTemplateURLService(Profile* profile) {
+static ProfileKeyedBase* BuildTemplateURLService(Profile* profile) {
   return new TemplateURLService(profile);
 }
 

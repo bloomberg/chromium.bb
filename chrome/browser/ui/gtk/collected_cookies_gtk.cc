@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -461,7 +461,7 @@ void CollectedCookiesGtk::AddExceptions(GtkTreeSelection* selection,
       last_domain_name = origin_node->GetTitle();
       Profile* profile = wrapper_->profile();
       origin_node->CreateContentException(
-          CookieSettings::GetForProfile(profile), setting);
+          CookieSettings::Factory::GetForProfile(profile), setting);
     }
   }
   g_list_foreach(paths, reinterpret_cast<GFunc>(gtk_tree_path_free), NULL);

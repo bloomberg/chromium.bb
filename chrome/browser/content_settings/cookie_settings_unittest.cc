@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,8 @@ class CookieSettingsTest : public testing::Test {
 
 TEST_F(CookieSettingsTest, CookiesBlockSingle) {
   TestingProfile profile;
-  CookieSettings* cookie_settings = CookieSettings::GetForProfile(&profile);
+  CookieSettings* cookie_settings =
+      CookieSettings::Factory::GetForProfile(&profile);
   cookie_settings->SetCookieSetting(
       ContentSettingsPattern::FromURL(kBlockedSite),
       ContentSettingsPattern::Wildcard(),
@@ -53,7 +54,8 @@ TEST_F(CookieSettingsTest, CookiesBlockSingle) {
 
 TEST_F(CookieSettingsTest, CookiesBlockThirdParty) {
   TestingProfile profile;
-  CookieSettings* cookie_settings = CookieSettings::GetForProfile(&profile);
+  CookieSettings* cookie_settings =
+      CookieSettings::Factory::GetForProfile(&profile);
   profile.GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
   EXPECT_FALSE(cookie_settings->IsReadingCookieAllowed(
       kBlockedSite, kFirstPartySite));
@@ -73,7 +75,8 @@ TEST_F(CookieSettingsTest, CookiesBlockThirdParty) {
 
 TEST_F(CookieSettingsTest, CookiesAllowThirdParty) {
   TestingProfile profile;
-  CookieSettings* cookie_settings = CookieSettings::GetForProfile(&profile);
+  CookieSettings* cookie_settings =
+      CookieSettings::Factory::GetForProfile(&profile);
   EXPECT_TRUE(cookie_settings->IsReadingCookieAllowed(
       kBlockedSite, kFirstPartySite));
   EXPECT_TRUE(cookie_settings->IsSettingCookieAllowed(
@@ -83,7 +86,8 @@ TEST_F(CookieSettingsTest, CookiesAllowThirdParty) {
 
 TEST_F(CookieSettingsTest, CookiesExplicitBlockSingleThirdParty) {
   TestingProfile profile;
-  CookieSettings* cookie_settings = CookieSettings::GetForProfile(&profile);
+  CookieSettings* cookie_settings =
+      CookieSettings::Factory::GetForProfile(&profile);
   cookie_settings->SetCookieSetting(
       ContentSettingsPattern::FromURL(kBlockedSite),
       ContentSettingsPattern::Wildcard(),
@@ -98,7 +102,8 @@ TEST_F(CookieSettingsTest, CookiesExplicitBlockSingleThirdParty) {
 
 TEST_F(CookieSettingsTest, CookiesExplicitSessionOnly) {
   TestingProfile profile;
-  CookieSettings* cookie_settings = CookieSettings::GetForProfile(&profile);
+  CookieSettings* cookie_settings =
+      CookieSettings::Factory::GetForProfile(&profile);
   cookie_settings->SetCookieSetting(
       ContentSettingsPattern::FromURL(kBlockedSite),
       ContentSettingsPattern::Wildcard(),
@@ -119,7 +124,8 @@ TEST_F(CookieSettingsTest, CookiesExplicitSessionOnly) {
 
 TEST_F(CookieSettingsTest, CookiesThirdPartyBlockedExplicitAllow) {
   TestingProfile profile;
-  CookieSettings* cookie_settings = CookieSettings::GetForProfile(&profile);
+  CookieSettings* cookie_settings =
+      CookieSettings::Factory::GetForProfile(&profile);
   cookie_settings->SetCookieSetting(
       ContentSettingsPattern::FromURL(kAllowedSite),
       ContentSettingsPattern::Wildcard(),
@@ -146,7 +152,8 @@ TEST_F(CookieSettingsTest, CookiesThirdPartyBlockedExplicitAllow) {
 
 TEST_F(CookieSettingsTest, CookiesBlockEverything) {
   TestingProfile profile;
-  CookieSettings* cookie_settings = CookieSettings::GetForProfile(&profile);
+  CookieSettings* cookie_settings =
+      CookieSettings::Factory::GetForProfile(&profile);
   cookie_settings->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
 
   EXPECT_FALSE(cookie_settings->IsReadingCookieAllowed(
@@ -159,7 +166,8 @@ TEST_F(CookieSettingsTest, CookiesBlockEverything) {
 
 TEST_F(CookieSettingsTest, CookiesBlockEverythingExceptAllowed) {
   TestingProfile profile;
-  CookieSettings* cookie_settings = CookieSettings::GetForProfile(&profile);
+  CookieSettings* cookie_settings =
+      CookieSettings::Factory::GetForProfile(&profile);
   cookie_settings->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
   cookie_settings->SetCookieSetting(
       ContentSettingsPattern::FromURL(kAllowedSite),
@@ -182,7 +190,8 @@ TEST_F(CookieSettingsTest, CookiesBlockEverythingExceptAllowed) {
 
 TEST_F(CookieSettingsTest, CookiesBlockSingleFirstParty) {
   TestingProfile profile;
-  CookieSettings* cookie_settings = CookieSettings::GetForProfile(&profile);
+  CookieSettings* cookie_settings =
+      CookieSettings::Factory::GetForProfile(&profile);
   cookie_settings->SetCookieSetting(
       ContentSettingsPattern::FromURL(kAllowedSite),
       ContentSettingsPattern::FromURL(kFirstPartySite),
@@ -228,7 +237,8 @@ TEST_F(CookieSettingsTest, CookiesBlockSingleFirstParty) {
 
 TEST_F(CookieSettingsTest, ExtensionsRegularSettings) {
   TestingProfile profile;
-  CookieSettings* cookie_settings = CookieSettings::GetForProfile(&profile);
+  CookieSettings* cookie_settings =
+      CookieSettings::Factory::GetForProfile(&profile);
   cookie_settings->SetCookieSetting(
       ContentSettingsPattern::FromURL(kBlockedSite),
       ContentSettingsPattern::Wildcard(),
@@ -241,7 +251,8 @@ TEST_F(CookieSettingsTest, ExtensionsRegularSettings) {
 
 TEST_F(CookieSettingsTest, ExtensionsOwnCookies) {
   TestingProfile profile;
-  CookieSettings* cookie_settings = CookieSettings::GetForProfile(&profile);
+  CookieSettings* cookie_settings =
+      CookieSettings::Factory::GetForProfile(&profile);
   cookie_settings->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
 
   // Extensions can always use cookies (and site data) in their own origin.
@@ -251,7 +262,8 @@ TEST_F(CookieSettingsTest, ExtensionsOwnCookies) {
 
 TEST_F(CookieSettingsTest, ExtensionsThirdParty) {
   TestingProfile profile;
-  CookieSettings* cookie_settings = CookieSettings::GetForProfile(&profile);
+  CookieSettings* cookie_settings =
+      CookieSettings::Factory::GetForProfile(&profile);
   profile.GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
 
   // XHRs stemming from extensions are exempt from third-party cookie blocking

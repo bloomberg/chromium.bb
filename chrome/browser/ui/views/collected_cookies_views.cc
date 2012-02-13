@@ -481,8 +481,8 @@ void CollectedCookiesViews::AddContentException(views::TreeView* tree_view,
   CookieTreeOriginNode* origin_node =
       static_cast<CookieTreeOriginNode*>(tree_view->GetSelectedNode());
   Profile* profile = wrapper_->profile();
-  origin_node->CreateContentException(CookieSettings::GetForProfile(profile),
-                                      setting);
+  origin_node->CreateContentException(
+      CookieSettings::Factory::GetForProfile(profile), setting);
   infobar_->UpdateVisibility(true, setting, origin_node->GetTitle());
   status_changed_ = true;
 }

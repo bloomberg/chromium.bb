@@ -729,8 +729,8 @@ ExtensionEventRouter* ProfileImpl::GetExtensionEventRouter() {
 ExtensionSpecialStoragePolicy*
     ProfileImpl::GetExtensionSpecialStoragePolicy() {
   if (!extension_special_storage_policy_.get()) {
-    extension_special_storage_policy_ =
-        new ExtensionSpecialStoragePolicy(CookieSettings::GetForProfile(this));
+    extension_special_storage_policy_ = new ExtensionSpecialStoragePolicy(
+        CookieSettings::Factory::GetForProfile(this));
   }
   return extension_special_storage_policy_.get();
 }

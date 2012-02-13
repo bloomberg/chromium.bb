@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,7 @@ class PluginPrefsFactory : public ProfileKeyedServiceFactory {
 
   // Factory function for use with
   // ProfileKeyedServiceFactory::SetTestingFactory.
-  static ProfileKeyedService* CreateWrapperForProfile(Profile* profile);
+  static ProfileKeyedBase* CreateWrapperForProfile(Profile* profile);
 
   // Some unit tests that deal with PluginPrefs don't run with a Profile. Let
   // them still register their preferences.

@@ -62,7 +62,7 @@ PluginPrefs* PluginPrefs::GetForProfile(Profile* profile) {
 
 // static
 PluginPrefs* PluginPrefs::GetForTestingProfile(Profile* profile) {
-  ProfileKeyedService* wrapper =
+  ProfileKeyedBase* wrapper =
       PluginPrefsFactory::GetInstance()->SetTestingFactoryAndUse(
           profile, &PluginPrefsFactory::CreateWrapperForProfile);
   return static_cast<PluginPrefsWrapper*>(wrapper)->plugin_prefs();

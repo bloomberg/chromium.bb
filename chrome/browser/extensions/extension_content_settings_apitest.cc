@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentSettings) {
   HostContentSettingsMap* map =
       browser()->profile()->GetHostContentSettingsMap();
   CookieSettings* cookie_settings =
-      CookieSettings::GetForProfile(browser()->profile());
+      CookieSettings::Factory::GetForProfile(browser()->profile());
 
   // Check default content settings by using an unknown URL.
   GURL example_url("http://www.example.com");

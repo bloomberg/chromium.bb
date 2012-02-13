@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, RedirectLoopCookies) {
 
   GURL test_url = test_server()->GetURL("files/redirect-loop.html");
 
-  CookieSettings::GetForProfile(browser()->profile())->
+  CookieSettings::Factory::GetForProfile(browser()->profile())->
       SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
 
   ui_test_utils::NavigateToURL(browser(), test_url);
@@ -62,7 +62,7 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, RedirectCrossOrigin) {
       host_port.port()));
   GURL test_url = test_server()->GetURL("server-redirect?" + redirect);
 
-  CookieSettings::GetForProfile(browser()->profile())->
+  CookieSettings::Factory::GetForProfile(browser()->profile())->
       SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
 
   ui_test_utils::NavigateToURL(browser(), test_url);

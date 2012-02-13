@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -83,11 +83,6 @@ class TestPersonalDataManager : public PersonalDataManager {
   TestPersonalDataManager() : autofill_enabled_(true) {
     set_metric_logger(new MockAutofillMetrics);
     CreateTestAutofillProfiles(&web_profiles_);
-  }
-
-  // Factory method for keyed service.  PersonalDataManager is NULL for testing.
-  static ProfileKeyedService* Build(Profile* profile) {
-    return NULL;
   }
 
   // Overridden to avoid a trip to the database. This should be a no-op except
@@ -297,7 +292,7 @@ void AutofillMetricsTest::SetUp() {
   Profile* profile = new TestingProfile();
   browser_context_.reset(profile);
   PersonalDataManagerFactory::GetInstance()->SetTestingFactory(
-      profile, TestPersonalDataManager::Build);
+      profile, NULL);
 
   TabContentsWrapperTestHarness::SetUp();
   autofill_manager_ = new TestAutofillManager(contents_wrapper(),

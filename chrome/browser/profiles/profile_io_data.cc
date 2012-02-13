@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -222,7 +222,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   params->audio_manager = g_browser_process->audio_manager();
 
   params->host_content_settings_map = profile->GetHostContentSettingsMap();
-  params->cookie_settings = CookieSettings::GetForProfile(profile);
+  params->cookie_settings = CookieSettings::Factory::GetForProfile(profile);
   params->host_zoom_map = profile->GetHostZoomMap();
   params->ssl_config_service = profile->GetSSLConfigService();
   base::Callback<Profile*(void)> profile_getter =

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -141,11 +141,11 @@ bool GetContentSettingFunction::RunImpl() {
       return false;
     }
     map = profile()->GetOffTheRecordProfile()->GetHostContentSettingsMap();
-    cookie_settings = CookieSettings::GetForProfile(
+    cookie_settings = CookieSettings::Factory::GetForProfile(
         profile()->GetOffTheRecordProfile());
   } else {
     map = profile()->GetHostContentSettingsMap();
-    cookie_settings = CookieSettings::GetForProfile(profile());
+    cookie_settings = CookieSettings::Factory::GetForProfile(profile());
   }
 
   ContentSetting setting;

@@ -244,8 +244,8 @@ void CollectedCookiesUIDelegate::AddContentException(
     CookieTreeOriginNode* origin_node, ContentSetting setting) {
   if (origin_node->CanCreateContentException()) {
     Profile* profile = wrapper_->profile();
-    origin_node->CreateContentException(CookieSettings::GetForProfile(profile),
-                                        setting);
+    origin_node->CreateContentException(
+        CookieSettings::Factory::GetForProfile(profile), setting);
 
     SetInfobarLabel(GetInfobarLabel(setting, origin_node->GetTitle()));
   }

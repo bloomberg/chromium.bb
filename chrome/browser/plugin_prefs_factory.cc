@@ -38,7 +38,7 @@ PluginPrefsWrapper* PluginPrefsFactory::GetWrapperForProfile(
 }
 
 // static
-ProfileKeyedService* PluginPrefsFactory::CreateWrapperForProfile(
+ProfileKeyedBase* PluginPrefsFactory::CreateWrapperForProfile(
     Profile* profile) {
   return GetInstance()->BuildServiceInstanceFor(profile);
 }

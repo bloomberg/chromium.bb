@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -224,7 +224,8 @@ TEST_F(ExtensionSpecialStoragePolicyTest, HasSessionOnlyOrigins) {
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
 
   TestingProfile profile;
-  CookieSettings* cookie_settings = CookieSettings::GetForProfile(&profile);
+  CookieSettings* cookie_settings =
+      CookieSettings::Factory::GetForProfile(&profile);
   scoped_refptr<ExtensionSpecialStoragePolicy> policy(
       new ExtensionSpecialStoragePolicy(cookie_settings));
 

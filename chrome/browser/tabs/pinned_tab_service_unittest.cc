@@ -17,7 +17,7 @@
 
 namespace {
 
-ProfileKeyedService* BuildPinnedTabService(Profile* profile) {
+ProfileKeyedBase* BuildPinnedTabService(Profile* profile) {
   return new PinnedTabService(profile);
 }
 

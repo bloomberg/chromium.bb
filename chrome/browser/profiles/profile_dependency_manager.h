@@ -16,26 +16,26 @@
 #endif
 
 class Profile;
-class ProfileKeyedServiceFactory;
+class ProfileKeyedBaseFactory;
 
 // A singleton that listens for profile destruction notifications and
-// rebroadcasts them to each ProfileKeyedServiceFactory in a safe order based
+// rebroadcasts them to each ProfileKeyedBaseFactory in a safe order based
 // on the stated dependencies by each service.
 class ProfileDependencyManager {
  public:
   // Adds/Removes a component from our list of live components. Removing will
   // also remove live dependency links.
-  void AddComponent(ProfileKeyedServiceFactory* component);
-  void RemoveComponent(ProfileKeyedServiceFactory* component);
+  void AddComponent(ProfileKeyedBaseFactory* component);
+  void RemoveComponent(ProfileKeyedBaseFactory* component);
 
   // Adds a dependency between two factories.
-  void AddEdge(ProfileKeyedServiceFactory* depended,
-               ProfileKeyedServiceFactory* dependee);
+  void AddEdge(ProfileKeyedBaseFactory* depended,
+               ProfileKeyedBaseFactory* dependee);
 
   // Called by each Profile to alert us of its creation. Several services want
   // to be started when a profile is created. Testing configuration is also
   // done at this time. (If you want your ProfileKeyedService to be started
-  // with the Profile, override ProfileKeyedServiceFactory::
+  // with the Profile, override ProfileKeyedBaseFactory::
   // ServiceIsCreatedWithProfile() to return true.)
   void CreateProfileServices(Profile* profile, bool is_testing_profile);
 
@@ -64,8 +64,8 @@ class ProfileDependencyManager {
   friend class ProfileDependencyManagerUnittests;
   friend struct DefaultSingletonTraits<ProfileDependencyManager>;
 
-  typedef std::multimap<ProfileKeyedServiceFactory*,
-                        ProfileKeyedServiceFactory*> EdgeMap;
+  typedef std::multimap<ProfileKeyedBaseFactory*,
+                        ProfileKeyedBaseFactory*> EdgeMap;
 
   ProfileDependencyManager();
   virtual ~ProfileDependencyManager();
@@ -75,7 +75,7 @@ class ProfileDependencyManager {
   void AssertFactoriesBuilt();
 
   // Using the dependency graph defined in |edges_|, fills |destruction_order_|
-  // so that Observe() can notify each ProfileKeyedServiceFactory in order.
+  // so that Observe() can notify each ProfileKeyedBaseFactory in order.
   void BuildDestructionOrder(Profile* profile);
 
 #ifndef NDEBUG
@@ -83,11 +83,11 @@ class ProfileDependencyManager {
   std::string DumpGraphvizDependency();
 #endif
 
-  std::vector<ProfileKeyedServiceFactory*> all_components_;
+  std::vector<ProfileKeyedBaseFactory*> all_components_;
 
   EdgeMap edges_;
 
-  std::vector<ProfileKeyedServiceFactory*> destruction_order_;
+  std::vector<ProfileKeyedBaseFactory*> destruction_order_;
 
   // Whether AssertFactoriesBuilt has been done.
   bool built_factories_;

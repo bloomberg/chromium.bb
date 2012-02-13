@@ -11,7 +11,7 @@ namespace protector {
 
 namespace {
 
-ProfileKeyedService* BuildMockProtectorService(Profile* profile) {
+ProfileKeyedBase* BuildMockProtectorService(Profile* profile) {
   return new MockProtectorService(profile);
 }
 

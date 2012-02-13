@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,7 +75,7 @@ class TemplateURLServiceTestingProfile : public TestingProfile {
 // SetKeywordSearchTermsForURL.
 class TestingTemplateURLService : public TemplateURLService {
  public:
-  static ProfileKeyedService* Build(Profile* profile) {
+  static ProfileKeyedBase* Build(Profile* profile) {
     return new TestingTemplateURLService(profile);
   }
 
