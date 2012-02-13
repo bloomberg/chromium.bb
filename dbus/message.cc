@@ -432,6 +432,7 @@ ErrorResponse* ErrorResponse::FromMethodCall(
 MessageWriter::MessageWriter(Message* message) :
     message_(message),
     container_is_open_(false) {
+  memset(&raw_message_iter_, 0, sizeof(raw_message_iter_));
   if (message)
     dbus_message_iter_init_append(message_->raw_message(), &raw_message_iter_);
 }
@@ -681,6 +682,7 @@ void MessageWriter::AppendVariantOfBasic(int dbus_type, const void* value) {
 
 MessageReader::MessageReader(Message* message)
     : message_(message) {
+  memset(&raw_message_iter_, 0, sizeof(raw_message_iter_));
   if (message)
     dbus_message_iter_init(message_->raw_message(), &raw_message_iter_);
 }
