@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_shutdown.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -250,8 +251,7 @@ bool g_session_manager_requested_shutdown = true;
 // shutdown process when closing browser windows won't be canceled.
 // Returns true if fast shutdown is successfully started.
 bool FastShutdown() {
-  if (chromeos::system::runtime_environment::IsRunningOnChromeOS()
-      && AreAllBrowsersCloseable()) {
+  if (AreAllBrowsersCloseable()) {
     BrowserList::NotifyAndTerminate(true);
     return true;
   }
@@ -339,9 +339,10 @@ void BrowserList::NotifyAndTerminate(bool fast_path) {
 #if defined(OS_CHROMEOS)
   NotifyWindowManagerAboutSignout();
   if (chromeos::system::runtime_environment::IsRunningOnChromeOS()) {
+    // If we're on a ChromeOS device, reboot if an update has been applied,
+    // or else signal the session manager to log out.
     chromeos::UpdateEngineClient* update_engine_client
         = chromeos::DBusThreadManager::Get()->GetUpdateEngineClient();
-    // If update has been installed, reboot, otherwise, sign out.
     if (update_engine_client->GetLastStatus().status ==
         chromeos::UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
       update_engine_client->RebootAfterUpdate();
@@ -349,11 +350,15 @@ void BrowserList::NotifyAndTerminate(bool fast_path) {
       chromeos::DBusThreadManager::Get()->GetSessionManagerClient()
           ->StopSession();
     }
-    return;
+  } else {
+    // If running the Chrome OS build, but we're not on the device, act
+    // as if we received signal from SessionManager.
+    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                     base::Bind(&BrowserList::ExitCleanly));
   }
-  // If running the Chrome OS build, but we're not on the device, fall through
-#endif
+#else
   AllBrowsersClosedAndAppExiting();
+#endif
 }
 
 // static
