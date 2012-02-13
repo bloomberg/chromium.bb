@@ -327,13 +327,15 @@ cr.define('omniboxDebug', function() {
     var output = document.getElementById('omnibox-debug-text');
     output.innerHTML = '';
 
-    // Display the results.
-    var showIncompleteResults =
-        document.getElementById('show-incomplete-results').checked;
-    var startIndex = showIncompleteResults ? 0 :
-        progressiveAutocompleteResults.length - 1;
-    for (var i = startIndex; i < progressiveAutocompleteResults.length; i++) {
-      addResultToOutput(progressiveAutocompleteResults[i]);
+    if (progressiveAutocompleteResults.length > 0) {  // if we have results
+      // Display the results.
+      var showIncompleteResults =
+          document.getElementById('show-incomplete-results').checked;
+      var startIndex = showIncompleteResults ? 0 :
+          progressiveAutocompleteResults.length - 1;
+      for (var i = startIndex; i < progressiveAutocompleteResults.length; i++) {
+        addResultToOutput(progressiveAutocompleteResults[i]);
+      }
     }
   }
 
