@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <string.h>
@@ -595,7 +595,7 @@ void Target::IgnoreThread(IThread* thread) {
   ThreadMap_t::iterator itr = threads_.find(id);
 
   if (itr != threads_.end()) threads_.erase(itr);
-  mutex_->Lock();
+  mutex_->Unlock();
 }
 
 
