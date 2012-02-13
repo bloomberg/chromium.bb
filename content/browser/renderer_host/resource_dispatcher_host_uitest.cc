@@ -82,8 +82,7 @@ TEST_F(ResourceDispatcherTest, ContentDispositionInline) {
 }
 
 // Test for bug #1091358.
-// Flaky: http://crbug.com/62595
-TEST_F(ResourceDispatcherTest, FLAKY_SyncXMLHttpRequest) {
+TEST_F(ResourceDispatcherTest, SyncXMLHttpRequest) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(test_server.Start());
