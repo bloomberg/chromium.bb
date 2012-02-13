@@ -161,7 +161,7 @@ struct input {
 	struct window *keyboard_focus;
 	uint32_t current_pointer_image;
 	uint32_t modifiers;
-	int32_t x, y, sx, sy;
+	int32_t sx, sy;
 	struct wl_list link;
 
 	struct widget *focus_widget;
@@ -1482,8 +1482,6 @@ input_handle_motion(void *data, struct wl_input_device *input_device,
 	struct widget *widget;
 	int pointer = POINTER_LEFT_PTR;
 
-	input->x = x;
-	input->y = y;
 	input->sx = sx;
 	input->sy = sy;
 
@@ -1614,8 +1612,6 @@ input_handle_pointer_focus(void *data,
 		input->pointer_focus = wl_surface_get_user_data(surface);
 		window = input->pointer_focus;
 
-		input->x = x;
-		input->y = y;
 		input->sx = sx;
 		input->sy = sy;
 
