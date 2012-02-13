@@ -4,12 +4,13 @@
 
 #include "chrome/browser/ui/webui/ssl_client_certificate_selector_webui_browsertest.h"
 
+#include "base/bind.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ssl/ssl_client_auth_requestor_mock.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/browser/ui/webui/ssl_client_certificate_selector_webui.h"
 #include "chrome/test/base/test_html_dialog_observer.h"
-#include "content/browser/ssl/ssl_client_auth_handler_mock.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -36,12 +37,13 @@ void SSLClientCertificateSelectorUITest::ShowSSLClientCertificateSelector() {
 
   // Show the SSL client certificate selector.
   SSLClientCertificateSelectorWebUI::ShowDialog(
-    browser()->GetSelectedTabContentsWrapper(),
-    cert_request_info_,
-    auth_handler_
-  );
+      browser()->GetSelectedTabContentsWrapper(),
+      auth_requestor_->http_network_session_,
+      auth_requestor_->cert_request_info_,
+      base::Bind(&SSLClientAuthRequestorMock::CertificateSelected,
+                 auth_requestor_));
 
-  EXPECT_CALL(*auth_handler_, CertificateSelectedNoNotify(::testing::_));
+  EXPECT_CALL(*auth_requestor_, CertificateSelected(::testing::_));
 
   // Tell the test which WebUI instance we are dealing with and complete
   // initialization of this test.
@@ -55,7 +57,7 @@ void SSLClientCertificateSelectorUITest::CleanUpOnMainThread() {
       base::Bind(&SSLClientCertificateSelectorUITest::CleanUpOnIOThread,
                  this));
   io_loop_finished_event_.Wait();
-  auth_handler_ = NULL;
+  auth_requestor_ = NULL;
   WebUIBrowserTest::CleanUpOnMainThread();
 }
 
@@ -63,7 +65,7 @@ void SSLClientCertificateSelectorUITest::SetUpOnIOThread() {
   url_request_ = new net::URLRequest(GURL("https://example"), NULL);
   url_request_->set_context(url_request_context_getter_->
       GetURLRequestContext());
-  auth_handler_ = new testing::StrictMock<SSLClientAuthHandlerMock>(
+  auth_requestor_ = new testing::StrictMock<SSLClientAuthRequestorMock>(
       url_request_,
       cert_request_info_);
   io_loop_finished_event_.Signal();

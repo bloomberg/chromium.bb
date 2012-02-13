@@ -115,23 +115,25 @@ std::string FormatComboBoxText(
 
 void SSLClientCertificateSelectorWebUI::ShowDialog(
     TabContentsWrapper* wrapper,
+    const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
-    SSLClientAuthHandler* delegate) {
+    const base::Callback<void(net::X509Certificate*)>& callback) {
   SSLClientCertificateSelectorWebUI* ui =
       new SSLClientCertificateSelectorWebUI(wrapper,
+                                            network_session,
                                             cert_request_info,
-                                            delegate);
+                                            callback);
   Profile* profile = wrapper->profile();
   ConstrainedHtmlUI::CreateConstrainedHtmlDialog(profile, ui, NULL, wrapper);
 }
 
 SSLClientCertificateSelectorWebUI::SSLClientCertificateSelectorWebUI(
     TabContentsWrapper* wrapper,
+    const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
-    SSLClientAuthHandler* delegate)
-    : wrapper_(wrapper),
-      cert_request_info_(cert_request_info),
-      delegate_(delegate) {
+    const base::Callback<void(net::X509Certificate*)>& callback)
+    : SSLClientAuthObserver(network_session, cert_request_info, callback),
+      wrapper_(wrapper) {
 
   ChromeWebUIDataSource* source = new ChromeWebUIDataSource(
       chrome::kChromeUISSLClientCertificateSelectorHost);
@@ -162,6 +164,10 @@ SSLClientCertificateSelectorWebUI::SSLClientCertificateSelectorWebUI(
 }
 
 SSLClientCertificateSelectorWebUI::~SSLClientCertificateSelectorWebUI() {
+}
+
+void SSLClientCertificateSelectorWebUI::OnCertSelectedByNotification() {
+  NOTIMPLEMENTED();
 }
 
 // HtmlDialogUIDelegate methods
@@ -199,29 +205,21 @@ void SSLClientCertificateSelectorWebUI::OnDialogClosed(
       list->GetDouble(0, &value)) {
     // User selected a certificate.
     size_t index = (size_t) value;
-    if (index < cert_request_info_->client_certs.size()) {
+    if (index < cert_request_info()->client_certs.size()) {
       scoped_refptr<net::X509Certificate> selected_cert(
-          cert_request_info_->client_certs[index]);
+          cert_request_info()->client_certs[index]);
       browser::UnlockCertSlotIfNecessary(
           selected_cert,
           browser::kCryptoModulePasswordClientAuth,
-          cert_request_info_->host_and_port,
-          base::Bind(&SSLClientCertificateSelectorWebUI::Unlocked,
-                     delegate_,
-                     selected_cert));
+          cert_request_info()->host_and_port,
+          base::Bind(&SSLClientCertificateSelectorWebUI::CertificateSelected,
+                     base::Unretained(this), selected_cert));
       return;
     }
   }
 
   // Anything else constitutes a cancel.
-  delegate_->CertificateSelected(NULL);
-  delegate_ = NULL;
-}
-
-// static
-void SSLClientCertificateSelectorWebUI::Unlocked(SSLClientAuthHandler* delegate,
-    net::X509Certificate* selected_cert) {
-  delegate->CertificateSelected(selected_cert);
+  CertificateSelected(NULL);
 }
 
 
@@ -249,20 +247,20 @@ void SSLClientCertificateSelectorWebUI::RequestDetails(
     const base::ListValue* args) {
   std::vector<std::string> nicknames;
   x509_certificate_model::GetNicknameStringsFromCertList(
-      cert_request_info_->client_certs,
+      cert_request_info()->client_certs,
       l10n_util::GetStringUTF8(IDS_CERT_SELECTOR_CERT_EXPIRED),
       l10n_util::GetStringUTF8(IDS_CERT_SELECTOR_CERT_NOT_YET_VALID),
       &nicknames);
 
-  DCHECK_EQ(nicknames.size(), cert_request_info_->client_certs.size());
+  DCHECK_EQ(nicknames.size(), cert_request_info()->client_certs.size());
 
   DictionaryValue dict;
-  dict.SetString("site", cert_request_info_->host_and_port.c_str());
+  dict.SetString("site", cert_request_info()->host_and_port.c_str());
   ListValue* certificates = new ListValue();
   ListValue* details = new ListValue();
-  for (size_t i = 0; i < cert_request_info_->client_certs.size(); ++i) {
+  for (size_t i = 0; i < cert_request_info()->client_certs.size(); ++i) {
     net::X509Certificate::OSCertHandle cert =
-        cert_request_info_->client_certs[i]->os_cert_handle();
+        cert_request_info()->client_certs[i]->os_cert_handle();
 
     certificates->Append(new StringValue(
         FormatComboBoxText(cert, nicknames[i])));
@@ -282,8 +280,8 @@ void SSLClientCertificateSelectorWebUI::ViewCertificate(
   double value = 0;
   if (args && args->GetDouble(0, &value)) {
     size_t index = (size_t) value;
-    if (index < cert_request_info_->client_certs.size())
-      ShowCertificateViewer(NULL, cert_request_info_->client_certs[index]);
+    if (index < cert_request_info()->client_certs.size())
+      ShowCertificateViewer(NULL, cert_request_info()->client_certs[index]);
   }
 }
 
@@ -294,29 +292,27 @@ namespace browser {
 
 void ShowSSLClientCertificateSelector(
     TabContentsWrapper* wrapper,
+    const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
-    SSLClientAuthHandler* delegate) {
+    const base::Callback<void(net::X509Certificate*)>& callback) {
   // TODO(jhawkins): move this into a non-webui location.
 #if defined(USE_AURA)
-  ShowNativeSSLClientCertificateSelector(wrapper,
-                                         cert_request_info,
-                                         delegate);
+  ShowNativeSSLClientCertificateSelector(
+      wrapper, network_session, cert_request_info, callback);
 #elif defined(OS_CHROMEOS)
-  SSLClientCertificateSelectorWebUI::ShowDialog(wrapper,
-                                                cert_request_info,
-                                                delegate);
+  SSLClientCertificateSelectorWebUI::ShowDialog(
+      wrapper, network_session, cert_request_info, callback);
 #else
   // TODO(rbyers): Remove the IsMoreWebUI check and (ideally) all #ifdefs onnce
   // we can select exactly one version of this dialog to use for each platform
   // at build time.  http://crbug.com/102775
-  if (chrome_web_ui::IsMoreWebUI())
-    SSLClientCertificateSelectorWebUI::ShowDialog(wrapper,
-                                                  cert_request_info,
-                                                  delegate);
-  else
-    ShowNativeSSLClientCertificateSelector(wrapper,
-                                           cert_request_info,
-                                           delegate);
+  if (chrome_web_ui::IsMoreWebUI()) {
+    SSLClientCertificateSelectorWebUI::ShowDialog(
+        wrapper, network_session, cert_request_info, callback);
+  } else {
+    ShowNativeSSLClientCertificateSelector(
+        wrapper, network_session, cert_request_info, callback);
+  }
 #endif
 }
 

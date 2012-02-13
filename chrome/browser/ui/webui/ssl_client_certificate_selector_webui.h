@@ -10,29 +10,33 @@
 #include <string>
 
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
-#include "net/base/ssl_cert_request_info.h"
-#include "content/browser/ssl/ssl_client_auth_handler.h"
+#include "chrome/browser/ssl/ssl_client_auth_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "net/base/ssl_cert_request_info.h"
 
 class TabContentsWrapper;
 
-class SSLClientCertificateSelectorWebUI : public HtmlDialogUIDelegate,
+class SSLClientCertificateSelectorWebUI : public SSLClientAuthObserver,
+                                          public HtmlDialogUIDelegate,
                                           content::WebUIMessageHandler {
  public:
   // Static factory method.
   static void ShowDialog(
       TabContentsWrapper* wrapper,
+      const net::HttpNetworkSession* network_session,
       net::SSLCertRequestInfo* cert_request_info,
-      SSLClientAuthHandler* delegate);
+      const base::Callback<void(net::X509Certificate*)>& callback);
 
  private:
-  SSLClientCertificateSelectorWebUI(TabContentsWrapper* wrapper,
-                                    net::SSLCertRequestInfo* cert_request_info,
-                                    SSLClientAuthHandler* delegate);
+  SSLClientCertificateSelectorWebUI(
+      TabContentsWrapper* wrapper,
+      const net::HttpNetworkSession* network_session,
+      net::SSLCertRequestInfo* cert_request_info,
+      const base::Callback<void(net::X509Certificate*)>& callback);
   virtual ~SSLClientCertificateSelectorWebUI();
 
-  // Shows the dialog
-  void ShowDialog();
+  // SSLClientAuthObserver methods
+  virtual void OnCertSelectedByNotification() OVERRIDE;
 
   // HtmlDialogUIDelegate methods
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;
@@ -59,13 +63,7 @@ class SSLClientCertificateSelectorWebUI : public HtmlDialogUIDelegate,
   // Called by JavaScript to show a certificate.
   void ViewCertificate(const base::ListValue* args);
 
-  // Callback for unlocking of the certificate when processing OK button.
-  static void Unlocked(SSLClientAuthHandler* delegate,
-                       net::X509Certificate* selected_cert);
-
   TabContentsWrapper* wrapper_;
-  scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;
-  scoped_refptr<SSLClientAuthHandler> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLClientCertificateSelectorWebUI);
 };

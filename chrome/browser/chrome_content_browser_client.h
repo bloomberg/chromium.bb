@@ -89,7 +89,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual void SelectClientCertificate(
       int render_process_id,
       int render_view_id,
-      SSLClientAuthHandler* handler) OVERRIDE;
+      const net::HttpNetworkSession* network_session,
+      net::SSLCertRequestInfo* cert_request_info,
+      const base::Callback<void(net::X509Certificate*)>& callback) OVERRIDE;
   virtual void AddNewCertificate(
       net::URLRequest* request,
       net::X509Certificate* cert,

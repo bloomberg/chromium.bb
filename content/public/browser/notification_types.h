@@ -153,13 +153,6 @@ enum NotificationType {
   // controller associated with the state change.
   NOTIFICATION_SSL_INTERNAL_STATE_CHANGED,
 
-  // The user accepted or dismissed a SSL client authentication request.
-  // The source is a Source<SSLClientAuthHandler>.  Details is a
-  // SSLClientAuthNotificationDetails which records specifies which
-  // SSLCertRequestInfo the request was for and which X509Certificate was
-  // selected (if any).
-  NOTIFICATION_SSL_CLIENT_AUTH_CERT_SELECTED,
-
 #if defined(OS_MACOSX)
   // This message is sent when the application is made active (Mac OS X only
   // at present). No source or details are passed.

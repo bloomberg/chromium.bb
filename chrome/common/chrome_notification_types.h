@@ -1012,6 +1012,11 @@ enum NotificationType {
   // BrowsingDataRemove::Remove was called.
   NOTIFICATION_BROWSING_DATA_REMOVED,
 
+  // The user accepted or dismissed a SSL client authentication request.
+  // The source is a Source<net::HttpNetworkSession>.  Details is a
+  // (std::pair<net::SSLCertRequestInfo*, net::X509Certificate*>).
+  NOTIFICATION_SSL_CLIENT_AUTH_CERT_SELECTED,
+
   // Note:-
   // Currently only Content and Chrome define and use notifications.
   // Custom notifications not belonging to Content and Chrome should start

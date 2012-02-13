@@ -15,6 +15,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
+#include "net/base/ssl_cert_request_info.h"
 #include "net/base/x509_certificate.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/table_model.h"
@@ -88,11 +89,10 @@ void CertificateSelectorTableModel::SetObserver(
 
 SSLClientCertificateSelector::SSLClientCertificateSelector(
     TabContentsWrapper* wrapper,
+    const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
-    SSLClientAuthHandler* delegate)
-    : SSLClientAuthObserver(cert_request_info, delegate),
-      cert_request_info_(cert_request_info),
-      delegate_(delegate),
+    const base::Callback<void(net::X509Certificate*)>& callback)
+    : SSLClientAuthObserver(network_session, cert_request_info, callback),
       model_(new CertificateSelectorTableModel(cert_request_info)),
       wrapper_(wrapper),
       window_(NULL),
@@ -119,7 +119,7 @@ void SSLClientCertificateSelector::Init() {
   layout->StartRow(0, column_set_id);
   string16 text = l10n_util::GetStringFUTF16(
       IDS_CLIENT_CERT_DIALOG_TEXT,
-      ASCIIToUTF16(cert_request_info_->host_and_port));
+      ASCIIToUTF16(cert_request_info()->host_and_port));
   views::Label* label = new views::Label(text);
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -151,8 +151,8 @@ net::X509Certificate* SSLClientCertificateSelector::GetSelectedCert() const {
   int selected = table_->FirstSelectedRow();
   if (selected >= 0 &&
       selected < static_cast<int>(
-          cert_request_info_->client_certs.size()))
-    return cert_request_info_->client_certs[selected];
+          cert_request_info()->client_certs.size()))
+    return cert_request_info()->client_certs[selected];
   return NULL;
 }
 
@@ -161,7 +161,6 @@ net::X509Certificate* SSLClientCertificateSelector::GetSelectedCert() const {
 
 void SSLClientCertificateSelector::OnCertSelectedByNotification() {
   DVLOG(1) << __FUNCTION__;
-  delegate_ = NULL;
   DCHECK(window_);
   window_->CloseConstrainedWindow();
 }
@@ -192,10 +191,7 @@ bool SSLClientCertificateSelector::IsDialogButtonEnabled(
 bool SSLClientCertificateSelector::Cancel() {
   DVLOG(1) << __FUNCTION__;
   StopObserving();
-  if (delegate_) {
-    delegate_->CertificateSelected(NULL);
-    delegate_ = NULL;
-  }
+  CertificateSelected(NULL);
 
   return true;
 }
@@ -205,9 +201,7 @@ bool SSLClientCertificateSelector::Accept() {
   net::X509Certificate* cert = GetSelectedCert();
   if (cert) {
     StopObserving();
-    delegate_->CertificateSelected(GetSelectedCert());
-    delegate_ = NULL;
-
+    CertificateSelected(cert);
     return true;
   }
 
@@ -291,13 +285,13 @@ namespace browser {
 
 void ShowNativeSSLClientCertificateSelector(
     TabContentsWrapper* wrapper,
+    const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
-    SSLClientAuthHandler* delegate) {
+    const base::Callback<void(net::X509Certificate*)>& callback) {
   DVLOG(1) << __FUNCTION__ << " " << wrapper;
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  (new SSLClientCertificateSelector(wrapper,
-                                   cert_request_info,
-                                   delegate))->Init();
+  (new SSLClientCertificateSelector(
+       wrapper, network_session, cert_request_info, callback))->Init();
 }
 
 #if !defined(USE_NSS) && !defined(USE_OPENSSL)
@@ -305,9 +299,11 @@ void ShowNativeSSLClientCertificateSelector(
 // under these conditions.  Add stub implementation for the required method.
 void ShowSSLClientCertificateSelector(
     TabContentsWrapper* wrapper,
+    const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
-    SSLClientAuthHandler* delegate) {
-  ShowNativeSSLClientCertificateSelector(wrapper, cert_request_info, delegate);
+    const base::Callback<void(net::X509Certificate*)>& callback) {
+  ShowNativeSSLClientCertificateSelector(
+      wrapper, network_session, cert_request_info, callback);
 }
 #endif
 

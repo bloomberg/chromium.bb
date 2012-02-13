@@ -24,7 +24,6 @@ class PluginProcessHost;
 class QuotaPermissionContext;
 class RenderViewHost;
 class ResourceDispatcherHost;
-class SSLClientAuthHandler;
 class SkBitmap;
 struct WebPreferences;
 
@@ -46,7 +45,9 @@ class CryptoModuleBlockingPasswordDelegate;
 namespace net {
 class CookieList;
 class CookieOptions;
+class HttpNetworkSession;
 class NetLog;
+class SSLCertRequestInfo;
 class SSLInfo;
 class URLRequest;
 class URLRequestContext;
@@ -232,12 +233,14 @@ class ContentBrowserClient {
       const base::Callback<void(bool)>& callback,
       bool* cancel_request) = 0;
 
-  // Selects a SSL client certificate and returns it to the |handler|. If no
-  // certificate was selected NULL is returned to the |handler|.
+  // Selects a SSL client certificate and returns it to the |callback|. If no
+  // certificate was selected NULL is returned to the |callback|.
   virtual void SelectClientCertificate(
       int render_process_id,
       int render_view_id,
-      SSLClientAuthHandler* handler) = 0;
+      const net::HttpNetworkSession* network_session,
+      net::SSLCertRequestInfo* cert_request_info,
+      const base::Callback<void(net::X509Certificate*)>& callback) = 0;
 
   // Adds a downloaded client cert. The embedder should ensure that there's
   // a private key for the cert, displays the cert to the user, and adds it upon

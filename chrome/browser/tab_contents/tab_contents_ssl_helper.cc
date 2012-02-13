@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
@@ -191,9 +190,11 @@ TabContentsSSLHelper::~TabContentsSSLHelper() {
 }
 
 void TabContentsSSLHelper::ShowClientCertificateRequestDialog(
-    scoped_refptr<SSLClientAuthHandler> handler) {
+    const net::HttpNetworkSession* network_session,
+    net::SSLCertRequestInfo* cert_request_info,
+    const base::Callback<void(net::X509Certificate*)>& callback) {
   browser::ShowSSLClientCertificateSelector(
-      tab_contents_, handler->cert_request_info(), handler);
+      tab_contents_, network_session, cert_request_info, callback);
 }
 
 void TabContentsSSLHelper::OnVerifyClientCertificateError(

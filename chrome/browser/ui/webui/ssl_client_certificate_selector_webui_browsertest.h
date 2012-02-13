@@ -16,7 +16,7 @@ class URLRequestContextGetter;
 class SSLCertRequestInfo;
 }
 
-class SSLClientAuthHandlerMock;
+class SSLClientAuthRequestorMock;
 
 namespace testing {
 template<class T> class StrictMock;
@@ -46,8 +46,8 @@ class SSLClientCertificateSelectorUITest : public WebUIBrowserTest {
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   net::URLRequest* url_request_;
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;
-  scoped_refptr<testing::StrictMock<SSLClientAuthHandlerMock> >
-      auth_handler_;
+  scoped_refptr<testing::StrictMock<SSLClientAuthRequestorMock> >
+      auth_requestor_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLClientCertificateSelectorUITest);
 };

@@ -14,11 +14,12 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/ssl/ssl_client_auth_observer.h"
 #import "chrome/browser/ui/cocoa/constrained_window_mac.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
+#include "net/base/ssl_cert_request_info.h"
 #include "net/base/x509_certificate.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -38,10 +39,6 @@ class NotificationProxy;
 
 @interface SSLClientCertificateSelectorCocoa : NSObject {
  @private
-  // The handler to report back to.
-  scoped_refptr<SSLClientAuthHandler> handler_;
-  // The certificate request we serve.
-  scoped_refptr<net::SSLCertRequestInfo> certRequestInfo_;
   // The list of identities offered to the user.
   scoped_nsobject<NSMutableArray> identities_;
   // The corresponding list of certificates.
@@ -52,8 +49,9 @@ class NotificationProxy;
   scoped_ptr<NotificationProxy> observer_;
 }
 
-- (id)initWithHandler:(SSLClientAuthHandler*)handler
-      certRequestInfo:(net::SSLCertRequestInfo*)certRequestInfo;
+- (id)initWithObserver:(const net::HttpNetworkSession*)networkSession
+       certRequestInfo:(net::SSLCertRequestInfo*)certRequestInfo
+         callback:(const base::Callback<void(net::X509Certificate*)>&)callback;
 - (void)onNotification;
 - (void)displayDialog:(TabContentsWrapper*)wrapper;
 @end
@@ -113,10 +111,11 @@ class ConstrainedSFChooseIdentityPanel
 
 class NotificationProxy : public SSLClientAuthObserver {
  public:
-  NotificationProxy(net::SSLCertRequestInfo* cert_request_info,
-                    SSLClientAuthHandler* handler,
+  NotificationProxy(const net::HttpNetworkSession* network_session,
+                    net::SSLCertRequestInfo* cert_request_info,
+                    const base::Callback<void(net::X509Certificate*)>& callback,
                     SSLClientCertificateSelectorCocoa* controller)
-      : SSLClientAuthObserver(cert_request_info, handler),
+      : SSLClientAuthObserver(network_session, cert_request_info, callback),
         controller_(controller) {
   }
 
@@ -135,13 +134,15 @@ namespace browser {
 
 void ShowSSLClientCertificateSelector(
     TabContentsWrapper* wrapper,
+    const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
-    SSLClientAuthHandler* delegate) {
+    const base::Callback<void(net::X509Certificate*)>& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   SSLClientCertificateSelectorCocoa* selector =
       [[[SSLClientCertificateSelectorCocoa alloc]
-          initWithHandler:delegate
-          certRequestInfo:cert_request_info] autorelease];
+          initWithObserver:network_session
+           certRequestInfo:cert_request_info
+                  callback:callback] autorelease];
   [selector displayDialog:wrapper];
 }
 
@@ -149,15 +150,15 @@ void ShowSSLClientCertificateSelector(
 
 @implementation SSLClientCertificateSelectorCocoa
 
-- (id)initWithHandler:(SSLClientAuthHandler*)handler
-      certRequestInfo:(net::SSLCertRequestInfo*)certRequestInfo {
-  DCHECK(handler);
+- (id)initWithObserver:(const net::HttpNetworkSession*)networkSession
+       certRequestInfo:(net::SSLCertRequestInfo*)certRequestInfo
+        callback:(const base::Callback<void(net::X509Certificate*)>&)callback {
+  DCHECK(networkSession);
   DCHECK(certRequestInfo);
   if ((self = [super init])) {
-    handler_ = handler;
-    certRequestInfo_ = certRequestInfo;
     window_ = NULL;
-    observer_.reset(new NotificationProxy(certRequestInfo, handler, self));
+    observer_.reset(new NotificationProxy(
+        networkSession, certRequestInfo, callback, self));
   }
   return self;
 }
@@ -179,33 +180,29 @@ void ShowSSLClientCertificateSelector(
 
   // Finally, tell the backend which identity (or none) the user selected.
   observer_->StopObserving();
-  if (handler_) {
-    handler_->CertificateSelected(cert);
-    handler_ = NULL;
-  }
+  observer_->CertificateSelected(cert);
   // Close the constrained window.
   DCHECK(window_);
   window_->CloseConstrainedWindow();
 }
 
 - (void)onNotification {
-  handler_ = NULL;
   window_->CloseConstrainedWindow();
 }
 
 - (void)displayDialog:(TabContentsWrapper*)wrapper {
   DCHECK(!window_);
   // Create an array of CFIdentityRefs for the certificates:
-  size_t numCerts = certRequestInfo_->client_certs.size();
+  size_t numCerts = observer_->cert_request_info()->client_certs.size();
   identities_.reset([[NSMutableArray alloc] initWithCapacity:numCerts]);
   for (size_t i = 0; i < numCerts; ++i) {
     SecCertificateRef cert;
-    cert = certRequestInfo_->client_certs[i]->os_cert_handle();
+    cert = observer_->cert_request_info()->client_certs[i]->os_cert_handle();
     SecIdentityRef identity;
     if (SecIdentityCreateWithCertificate(NULL, cert, &identity) == noErr) {
       [identities_ addObject:(id)identity];
       CFRelease(identity);
-      certificates_.push_back(certRequestInfo_->client_certs[i]);
+      certificates_.push_back(observer_->cert_request_info()->client_certs[i]);
     }
   }
 
@@ -213,7 +210,7 @@ void ShowSSLClientCertificateSelector(
   NSString* title = l10n_util::GetNSString(IDS_CLIENT_CERT_DIALOG_TITLE);
   NSString* message = l10n_util::GetNSStringF(
       IDS_CLIENT_CERT_DIALOG_TEXT,
-      ASCIIToUTF16(certRequestInfo_->host_and_port));
+      ASCIIToUTF16(observer_->cert_request_info()->host_and_port));
 
   // Create and set up a system choose-identity panel.
   SFChooseIdentityPanel* panel = [[SFChooseIdentityPanel alloc] init];

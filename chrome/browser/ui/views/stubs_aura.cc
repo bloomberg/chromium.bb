@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/callback.h"
 #include "base/logging.h"
 
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
@@ -25,6 +26,7 @@ class TabContents;
 class TabContentsWrapper;
 
 namespace net {
+class HttpNetworkSession;
 class SSLCertRequestInfo;
 class X509Certificate;
 }
@@ -37,8 +39,9 @@ namespace browser {
 #if defined(OS_WIN)
 void ShowSSLClientCertificateSelector(
     TabContentsWrapper* parent,
+    const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
-    SSLClientAuthHandler* delegate) {
+    const base::Callback<void(net::X509Certificate*)>& callback) {
   // TODO(beng):
   NOTIMPLEMENTED();
 }

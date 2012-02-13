@@ -2277,6 +2277,8 @@
         'browser/ssl/ssl_add_cert_handler_mac.mm',
         'browser/ssl/ssl_blocking_page.cc',
         'browser/ssl/ssl_blocking_page.h',
+        'browser/ssl/ssl_client_auth_observer.cc',
+        'browser/ssl/ssl_client_auth_observer.h',
         'browser/ssl/ssl_error_info.cc',
         'browser/ssl/ssl_error_info.h',
         'browser/ssl_client_certificate_selector.h',

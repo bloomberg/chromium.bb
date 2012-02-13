@@ -158,6 +158,7 @@
         'browser/search_engines/template_url_service_test_util.h',
         'browser/sessions/session_service_test_helper.cc',
         'browser/sessions/session_service_test_helper.h',
+        'browser/ssl/ssl_client_auth_requestor_mock.h',
         'browser/sync/profile_sync_service_mock.cc',
         'browser/sync/profile_sync_service_mock.h',
         'browser/sync/syncable/syncable_mock.cc',
@@ -253,8 +254,6 @@
         # production code code in libbrowser (in chrome.gyp).
         #'../content/browser/net/url_request_mock_http_job.cc',
         #'../content/browser/net/url_request_mock_http_job.h',
-        '../content/browser/ssl/ssl_client_auth_handler_mock.cc',
-        '../content/browser/ssl/ssl_client_auth_handler_mock.h',
         '../content/test/notification_observer_mock.cc',
         '../content/test/notification_observer_mock.h',
         '../ui/gfx/image/image_unittest_util.h',

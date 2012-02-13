@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
-#include "content/browser/ssl/ssl_client_auth_handler.h"
+#include "chrome/browser/ssl/ssl_client_auth_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/table/table_view_observer.h"
 #include "ui/views/view.h"
@@ -21,6 +21,11 @@
 // This header file exists only for testing.  Chrome should access the
 // certificate selector only through the cross-platform interface
 // chrome/browser/ssl_client_certificate_selector.h.
+
+namespace net {
+class SSLCertRequestInfo;
+class X509Certificate;
+}
 
 namespace views {
 class TableView;
@@ -38,8 +43,9 @@ class SSLClientCertificateSelector : public SSLClientAuthObserver,
  public:
   SSLClientCertificateSelector(
       TabContentsWrapper* wrapper,
+      const net::HttpNetworkSession* network_session,
       net::SSLCertRequestInfo* cert_request_info,
-      SSLClientAuthHandler* delegate);
+      const base::Callback<void(net::X509Certificate*)>& callback);
   virtual ~SSLClientCertificateSelector();
 
   void Init();
@@ -71,10 +77,6 @@ class SSLClientCertificateSelector : public SSLClientAuthObserver,
  private:
   void CreateCertTable();
   void CreateViewCertButton();
-
-  scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;
-
-  scoped_refptr<SSLClientAuthHandler> delegate_;
 
   scoped_ptr<CertificateSelectorTableModel> model_;
 

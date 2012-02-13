@@ -67,7 +67,6 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_url_handler.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
@@ -79,6 +78,7 @@
 #include "grit/ui_resources.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/cookie_options.h"
+#include "net/base/ssl_cert_request_info.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/glue/webpreferences.h"
@@ -892,7 +892,9 @@ void ChromeContentBrowserClient::AllowCertificateError(
 void ChromeContentBrowserClient::SelectClientCertificate(
     int render_process_id,
     int render_view_id,
-    SSLClientAuthHandler* handler) {
+    const net::HttpNetworkSession* network_session,
+    net::SSLCertRequestInfo* cert_request_info,
+    const base::Callback<void(net::X509Certificate*)>& callback) {
   WebContents* tab = tab_util::GetWebContentsByID(
       render_process_id, render_view_id);
   if (!tab) {
@@ -900,13 +902,11 @@ void ChromeContentBrowserClient::SelectClientCertificate(
     return;
   }
 
-  net::SSLCertRequestInfo* cert_request_info = handler->cert_request_info();
   GURL requesting_url("https://" + cert_request_info->host_and_port);
   DCHECK(requesting_url.is_valid()) << "Invalid URL string: https://"
                                     << cert_request_info->host_and_port;
 
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
-  DCHECK(profile);
   scoped_ptr<Value> filter(
       profile->GetHostContentSettingsMap()->GetWebsiteSetting(
           requesting_url,
@@ -925,7 +925,7 @@ void ChromeContentBrowserClient::SelectClientCertificate(
       for (size_t i = 0; i < all_client_certs.size(); ++i) {
         if (CertMatchesFilter(*all_client_certs[i], *filter_dict)) {
           // Use the first certificate that is matched by the filter.
-          handler->CertificateSelected(all_client_certs[i]);
+          callback.Run(all_client_certs[i]);
           return;
         }
       }
@@ -940,10 +940,11 @@ void ChromeContentBrowserClient::SelectClientCertificate(
     // If there is no TabContentsWrapper for the given WebContents then we can't
     // show the user a dialog to select a client certificate. So we simply
     // proceed with no client certificate.
-    handler->CertificateSelected(NULL);
+    callback.Run(NULL);
     return;
   }
-  wrapper->ssl_helper()->ShowClientCertificateRequestDialog(handler);
+  wrapper->ssl_helper()->ShowClientCertificateRequestDialog(
+      network_session, cert_request_info, callback);
 }
 
 void ChromeContentBrowserClient::AddNewCertificate(
