@@ -63,6 +63,12 @@ CookieSettings::Factory::Factory()
 
 CookieSettings::Factory::~Factory() {}
 
+void CookieSettings::Factory::RegisterUserPrefs(PrefService* user_prefs) {
+  user_prefs->RegisterBooleanPref(prefs::kBlockThirdPartyCookies,
+                                  false,
+                                  PrefService::SYNCABLE_PREF);
+}
+
 bool CookieSettings::Factory::ServiceRedirectedInIncognito() {
   return true;
 }
@@ -218,13 +224,6 @@ ContentSetting CookieSettings::GetCookieSetting(
   // We should always have a value, at least from the default provider.
   DCHECK(value.get());
   return content_settings::ValueToContentSetting(value.get());
-}
-
-// static
-void CookieSettings::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterBooleanPref(prefs::kBlockThirdPartyCookies,
-                             false,
-                             PrefService::SYNCABLE_PREF);
 }
 
 bool CookieSettings::ShouldBlockThirdPartyCookies() const {

@@ -127,10 +127,9 @@ class CookieSettings
     Factory();
     virtual ~Factory();
 
-    // |ProfileKeyedServiceFactory| methods:
+    // |ProfileKeyedBaseFactory| methods:
+    virtual void RegisterUserPrefs(PrefService* user_prefs) OVERRIDE;
     virtual bool ServiceRedirectedInIncognito() OVERRIDE;
-
-    // |RefcountedProfileKeyedServiceFactory| methods:
     virtual RefcountedProfileKeyedService* BuildServiceInstanceFor(
         Profile* profile) const OVERRIDE;
   };
