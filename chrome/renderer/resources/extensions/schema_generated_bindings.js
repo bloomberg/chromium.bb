@@ -15,17 +15,14 @@ var chrome = chrome || {};
 
   var chromeHidden = GetChromeHidden();
 
-  if (!chrome)
-    chrome = {};
-
-  function apiExists(path) {
-    var resolved = chrome;
-    path.split(".").forEach(function(next) {
-      if (resolved)
-        resolved = resolved[next];
-    });
-    return !!resolved;
-  }
+  // The object to generate the bindings for "internal" APIs in, so that
+  // extensions can't directly call them (without access to chromeHidden),
+  // but are still needed for internal mechanisms of extensions (e.g. events).
+  //
+  // This is distinct to the "*Private" APIs which are controlled via
+  // having strict permissions and aren't generated *anywhere* unless needed.
+  var internalAPIs = {};
+  chromeHidden.internalAPIs = internalAPIs;
 
   function forEach(dict, f) {
     for (key in dict) {
@@ -385,7 +382,9 @@ var chrome = chrome || {};
       if (!isSchemaNodeSupported(apiDef, platform, manifestVersion))
         return;
 
-      var module = chrome;
+      // See comment on internalAPIs at the top.
+      var module = apiDef.internal ? internalAPIs : chrome;
+
       var namespaces = apiDef.namespace.split('.');
       for (var index = 0, name; name = namespaces[index]; index++) {
         module[name] = module[name] || {};
@@ -574,12 +573,12 @@ var chrome = chrome || {};
     // TOOD(mihaip): remove this alias once the webstore stops calling
     // beginInstallWithManifest2.
     // See http://crbug.com/100242
-    if (apiExists("webstorePrivate")) {
+    if (chrome.webstorePrivate) {
       chrome.webstorePrivate.beginInstallWithManifest2 =
           chrome.webstorePrivate.beginInstallWithManifest3;
     }
 
-    if (apiExists("test"))
+    if (chrome.test)
       chrome.test.getApiDefinitions = GetExtensionAPIDefinition;
   });
 })();

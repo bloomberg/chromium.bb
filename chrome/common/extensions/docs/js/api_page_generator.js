@@ -260,10 +260,9 @@ function fetchContent(url, onSuccess, onError) {
 function renderTemplate() {
   schema.forEach(function(mod) {
     if (mod.namespace == pageBase) {
-      // Do not render page for modules which are marked as "nodoc": true.
-      if (mod.nodoc) {
+      // Do not render page for modules which have documentation disabled.
+      if (disableDocs(mod))
         return;
-      }
       // This page is an api page. Setup types and apiDefinition.
       module = mod;
       apiModuleName = API_MODULE_PREFIX + module.namespace;
@@ -425,7 +424,8 @@ function selectCurrentPageOnLeftNav() {
 
 function stableAPIs() {
   return schema.filter(function(module) {
-    return !module.nodoc && module.namespace.indexOf('experimental') < 0;
+    return !disableDocs(module) &&
+           module.namespace.indexOf('experimental') < 0;
   }).map(function(module) {
     return module.namespace;
   }).sort();
@@ -433,15 +433,8 @@ function stableAPIs() {
 
 function experimentalAPIs() {
   return schema.filter(function(module) {
-    return !module.nodoc && module.namespace.indexOf('experimental') == 0;
-  }).map(function(module) {
-    return module.namespace;
-  }).sort();
-}
-
-function devtoolsAPIs() {
-  return schema.filter(function(module) {
-    return !module.nodoc && module.namespace.indexOf('devtools.') === 0;
+    return !disableDocs(module) &&
+           module.namespace.indexOf('experimental') == 0;
   }).map(function(module) {
     return module.namespace;
   }).sort();
@@ -603,8 +596,8 @@ function getPropertyListFromObject(object) {
   }
   for (var p in properties) {
     var prop = properties[p];
-    // Do not render properties marked as "nodoc": true.
-    if (prop.nodoc) {
+    // Do not render properties with documentation disabled.
+    if (disableDocs(prop)) {
       continue;
     }
     prop.name = p;
@@ -671,4 +664,8 @@ function sortByName(a, b) {
     return 1;
   }
   return 0;
+}
+
+function disableDocs(obj) {
+  return !!obj.nodoc || !!obj.internal;
 }

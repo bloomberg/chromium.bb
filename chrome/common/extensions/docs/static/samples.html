@@ -14,10 +14,9 @@
   pageData.api_mapping = apiMapping;
   pageData.api_modules = [];
   schema.forEach(function(mod) {
-    if (mod.nodoc) {
-      return;
-    }
-    if (mod.namespace.indexOf('experimental') != -1) {
+    if (mod.nodoc ||
+        mod.internal ||
+        mod.namespace.indexOf('experimental') != -1) {
       return;
     }
     pageData.api_modules.push('chrome.' + mod.namespace);

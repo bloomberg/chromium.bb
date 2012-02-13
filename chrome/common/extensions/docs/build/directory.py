@@ -107,7 +107,8 @@ class ApiManifest(object):
           "chrome.tabs.onDetached" : "tabs.html#event-onDetatched"
         }
 
-      If the API namespace is defined "nodoc" then an empty dict is returned.
+      If the API namespace is defined "nodoc" or "internal" then an empty dict
+      is returned.
 
     Raises:
       Exception: If the key supplied is not a member of _MODULE_DOC_KEYS.
@@ -115,14 +116,14 @@ class ApiManifest(object):
     methods = []
     api_dict = {}
     namespace = module['namespace']
-    if module.has_key('nodoc'):
+    if self._disableDocs(module):
       return api_dict
     if key not in self._MODULE_DOC_KEYS:
       raise Exception("key %s must be one of %s" % (key, self._MODULE_DOC_KEYS))
     if module.has_key(key):
       methods.extend(module[key])
     for method in methods:
-      if method.has_key('nodoc'):
+      if self._disableDocs(method):
         continue
       method_name = 'chrome.%s.%s' % (namespace, method['name'])
       hashprefix = 'method'
@@ -136,9 +137,15 @@ class ApiManifest(object):
 
     Returns:
       The namespace """
-    # Exclude modules with a "nodoc" property.
+    # Exclude modules with documentation disabled.
     return set(module['namespace'].encode() for module in self._manifest
-               if "nodoc" not in module)
+               if not self._disableDocs(module))
+
+  def _disableDocs(self, obj):
+    for key in ['nodoc', 'internal']:
+      if key in obj and obj[key]:
+        return True
+    return False
 
   def getDocumentationLinks(self):
     """ Parses the extension API JSON manifest and returns a dict of all

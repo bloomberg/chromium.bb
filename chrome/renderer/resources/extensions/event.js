@@ -246,35 +246,47 @@ var chrome = chrome || {};
     this.detach_();
   };
 
+  // Gets the declarative API object, or undefined if this extension doesn't
+  // have access to it.
+  //
+  // This is defined as a function (rather than a variable) because it isn't
+  // accessible until the schema bindings have been generated.
+  function getDeclarativeAPI() {
+    if (chromeHidden.internalAPIs.experimental)
+      return chromeHidden.internalAPIs.experimental.declarative;
+    else
+      return undefined;
+  }
+
   chrome.Event.prototype.addRules = function(rules, opt_cb) {
     if (!this.eventOptions_.supportsRules)
       throw new Error("This event does not support rules.");
-    if (!chrome.experimental || !chrome.experimental.declarative) {
-      throw new Error("You must have access to the experimental.declarative " +
+    if (!getDeclarativeAPI()) {
+      throw new Error("You must have permission to use the declarative " +
                       "API to support rules in events");
     }
-    chrome.experimental.declarative.addRules(this.eventName_, rules, opt_cb);
+    getDeclarativeAPI().addRules(this.eventName_, rules, opt_cb);
   }
 
   chrome.Event.prototype.removeRules = function(ruleIdentifiers, opt_cb) {
     if (!this.eventOptions_.supportsRules)
       throw new Error("This event does not support rules.");
-    if (!chrome.experimental || !chrome.experimental.declarative) {
-      throw new Error("You must have access to the experimental.declarative " +
+    if (!getDeclarativeAPI()) {
+      throw new Error("You must have permission to use the declarative " +
                       "API to support rules in events");
     }
-    chrome.experimental.declarative.removeRules(
+    getDeclarativeAPI().removeRules(
         this.eventName_, ruleIdentifiers, opt_cb);
   }
 
   chrome.Event.prototype.getRules = function(ruleIdentifiers, cb) {
     if (!this.eventOptions_.supportsRules)
       throw new Error("This event does not support rules.");
-    if (!chrome.experimental || !chrome.experimental.declarative) {
-      throw new Error("You must have access to the experimental.declarative " +
+    if (!getDeclarativeAPI()) {
+      throw new Error("You must have permission to use the declarative " +
                       "API to support rules in events");
     }
-    chrome.experimental.declarative.getRules(
+    getDeclarativeAPI().getRules(
         this.eventName_, ruleIdentifiers, cb);
   }
 

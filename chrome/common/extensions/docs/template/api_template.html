@@ -129,7 +129,7 @@
             <a jsvalues=".href:'#' + getAnchorName('global', 'methods', $type)">Methods</a>
             <ol>
               <li jsselect="functions.sort(sortByName)"
-                  jsdisplay="!($this.nodoc)">
+                  jsdisplay="!disableDocs($this)">
                 <a jscontent="name"
                    jsvalues=".href:'#' + getAnchorName('method', name, $type)"
                    href="#method-anchor">methodName</a>
@@ -140,7 +140,7 @@
             <a jsvalues=".href:'#' + getAnchorName('global', 'events', $type)">Events</a>
             <ol>
               <li jsselect="events.sort(sortByName)"
-                  jsdisplay="!($this.nodoc)">
+                  jsdisplay="!disableDocs($this)">
                 <a jscontent="name"
                    jsvalues=".href:'#' + getAnchorName('event', name, $type)"
                    href="#event-anchor">eventName</a>
@@ -382,7 +382,7 @@
 
             <!-- iterates over all functions -->
             <div class="apiItem" jsselect="functions.sort(sortByName)"
-                 jsdisplay="!($this.nodoc)">
+                 jsdisplay="!disableDocs($this)">
               <a jsvalues=".name:getAnchorName('method', name, $scope)"></a> <!-- method-anchor -->
               <h4 jscontent="name">method name</h4>
 
@@ -459,7 +459,7 @@
             <h3 jscontent="$scope ? 'Events of ' + $scope : 'Events'">Events</h3>
             <!-- iterates over all events -->
             <div class="apiItem" jsselect="$this.events.sort(sortByName)"
-                 jsdisplay="!($this.nodoc)">
+                 jsdisplay="!disableDocs($this)">
               <a jsvalues=".name:getAnchorName('event', name, $scope)"></a>
               <h4 jscontent="name">event name</h4>
 

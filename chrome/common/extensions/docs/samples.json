@@ -68,6 +68,7 @@
     "chrome.experimental.devtools.console.addMessage": "experimental.devtools.console.html#method-addMessage",
     "chrome.experimental.devtools.console.getMessages": "experimental.devtools.console.html#method-getMessages",
     "chrome.experimental.devtools.console.onMessageAdded": "experimental.devtools.console.html#event-onMessageAdded",
+    "chrome.experimental.extension.onInstalled": "experimental.extension.html#event-onInstalled",
     "chrome.experimental.infobars.show": "experimental.infobars.html#method-show",
     "chrome.experimental.speechInput.isRecording": "experimental.speechInput.html#method-isRecording",
     "chrome.experimental.speechInput.onError": "experimental.speechInput.html#event-onError",
@@ -516,7 +517,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "20928606eac79b96493a7eae6f71c5210bbddb09",
+      "source_hash": "be5c852d38ee7b7d21483b2d070a1bdebbf6b27c",
       "zip_path": "examples\/api\/browsingData\/basic.zip"
     },
     {
