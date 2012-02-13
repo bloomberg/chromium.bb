@@ -178,13 +178,11 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
         return false;
       std::string tag = ix->url().spec();
 
-      // Should never see an empty tag.
-      if (tag.empty()) {
-        error->Reset(FROM_HERE,
-                     "Encountered history entry with an empty url.",
-                     model_type());
-        return false;
-      }
+      // Ignore URLs with an empty tag - shouldn't ever happen, but we've seen
+      // it occasionally (possibly due to importing bogus entries from other
+      // browsers).
+      if (tag.empty())
+        continue;
 
       history::VisitVector& visits = visit_vectors[ix->id()];
 
@@ -292,6 +290,11 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
         DVLOG(1) << "Deleting obsolete sync node with no visit "
                  << "transition info.";
         obsolete_nodes.push_back(sync_child_node.GetId());
+        continue;
+      }
+
+      if (typed_url.url().empty()) {
+        DVLOG(1) << "Ignoring empty URL in sync DB";
         continue;
       }
 
