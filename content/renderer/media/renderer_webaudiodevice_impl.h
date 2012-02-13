@@ -30,7 +30,7 @@ class RendererWebAudioDeviceImpl : public WebKit::WebAudioDevice,
   virtual size_t Render(const std::vector<float*>& audio_data,
                         size_t number_of_frames,
                         size_t audio_delay_milliseconds) OVERRIDE;
-  virtual void OnError() OVERRIDE;
+  virtual void OnRenderError() OVERRIDE;
 
  private:
   scoped_refptr<AudioDevice> audio_device_;

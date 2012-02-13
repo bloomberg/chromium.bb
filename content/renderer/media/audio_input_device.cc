@@ -222,6 +222,8 @@ void AudioInputDevice::OnStateChanged(AudioStreamState state) {
       break;
     case kAudioStreamError:
       DLOG(WARNING) << "AudioInputDevice::OnStateChanged(kError)";
+      if (callback_)
+        callback_->OnCaptureError();
       break;
     default:
       NOTREACHED();

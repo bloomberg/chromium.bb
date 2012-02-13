@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,9 +73,8 @@ void AudioInputRendererHost::OnError(
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&AudioInputRendererHost::DoHandleError, this,
-                 make_scoped_refptr(controller),
-                        error_code));
+      base::Bind(&AudioInputRendererHost::DoHandleError,
+          this, make_scoped_refptr(controller), error_code));
 }
 
 void AudioInputRendererHost::OnData(media::AudioInputController* controller,
@@ -311,9 +310,8 @@ void AudioInputRendererHost::OnGetVolume(int stream_id) {
 }
 
 void AudioInputRendererHost::SendErrorMessage(int stream_id) {
-  // TODO(henrika): error state for audio input is not unique
-  Send(new AudioMsg_NotifyStreamStateChanged(stream_id,
-                                             kAudioStreamError));
+  Send(new AudioInputMsg_NotifyStreamStateChanged(stream_id,
+                                                  kAudioStreamError));
 }
 
 void AudioInputRendererHost::DeleteEntries() {

@@ -191,7 +191,7 @@ void AudioDevice::SetVolumeOnIOThread(double volume) {
 void AudioDevice::OnStateChanged(AudioStreamState state) {
   if (state == kAudioStreamError) {
     DLOG(WARNING) << "AudioDevice::OnStateChanged(kError)";
-    callback_->OnError();
+    callback_->OnRenderError();
   }
 }
 

@@ -117,8 +117,10 @@ size_t WebRtcAudioDeviceImpl::Render(
   return number_of_frames;
 }
 
-void WebRtcAudioDeviceImpl::OnError() {
+void WebRtcAudioDeviceImpl::OnRenderError() {
+  DCHECK_EQ(MessageLoop::current(), ChildProcess::current()->io_message_loop());
   // TODO(henrika): Implement error handling.
+  LOG(ERROR) << "OnRenderError()";
 }
 
 void WebRtcAudioDeviceImpl::Capture(
@@ -178,8 +180,14 @@ void WebRtcAudioDeviceImpl::Capture(
   }
 }
 
+void WebRtcAudioDeviceImpl::OnCaptureError() {
+  DCHECK_EQ(MessageLoop::current(), ChildProcess::current()->io_message_loop());
+  // TODO(henrika): Implement error handling.
+  LOG(ERROR) << "OnCaptureError()";
+}
+
 void WebRtcAudioDeviceImpl::OnDeviceStarted(const std::string& device_id) {
-  VLOG(1) << "OnDeviceStarted (device_id=" << device_id << ")";
+  DVLOG(1) << "OnDeviceStarted (device_id=" << device_id << ")";
   // Empty string is an invalid device id. Do nothing if a valid device has
   // been started. Otherwise update the |recording_| state to false.
   if (!device_id.empty())
@@ -861,12 +869,14 @@ int32_t WebRtcAudioDeviceImpl::StereoRecording(bool* enabled) const {
 }
 
 int32_t WebRtcAudioDeviceImpl::SetRecordingChannel(const ChannelType channel) {
-  NOTIMPLEMENTED();
+  DVLOG(2) << "WARNING: WebRtcAudioDeviceImpl::SetRecordingChannel() "
+           << "NOT IMPLEMENTED";
   return -1;
 }
 
 int32_t WebRtcAudioDeviceImpl::RecordingChannel(ChannelType* channel) const {
-  NOTIMPLEMENTED();
+  DVLOG(2) << "WARNING: WebRtcAudioDeviceImpl::RecordingChannel() "
+           << "NOT IMPLEMENTED";
   return -1;
 }
 

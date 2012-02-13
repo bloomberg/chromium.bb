@@ -81,7 +81,7 @@ class CONTENT_EXPORT AudioRendererImpl
   virtual size_t Render(const std::vector<float*>& audio_data,
                         size_t number_of_frames,
                         size_t audio_delay_milliseconds) OVERRIDE;
-  virtual void OnError() OVERRIDE;
+  virtual void OnRenderError() OVERRIDE;
 
   // Accessors used by tests.
   base::Time earliest_end_time() const {

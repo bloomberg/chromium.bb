@@ -95,7 +95,7 @@
 //
 class CONTENT_EXPORT WebRtcAudioDeviceImpl
     : NON_EXPORTED_BASE(public webrtc::AudioDeviceModule),
-      public AudioDevice::RenderCallback,
+      public media::AudioRendererSink::RenderCallback,
       public AudioInputDevice::CaptureCallback,
       public AudioInputDevice::CaptureEventHandler {
  public:
@@ -115,12 +115,13 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   virtual size_t Render(const std::vector<float*>& audio_data,
                         size_t number_of_frames,
                         size_t audio_delay_milliseconds) OVERRIDE;
-  virtual void OnError() OVERRIDE;
+  virtual void OnRenderError() OVERRIDE;
 
   // AudioInputDevice::CaptureCallback implementation.
   virtual void Capture(const std::vector<float*>& audio_data,
                        size_t number_of_frames,
                        size_t audio_delay_milliseconds) OVERRIDE;
+  virtual void OnCaptureError() OVERRIDE;
 
   // AudioInputDevice::CaptureEventHandler implementation.
   virtual void OnDeviceStarted(const std::string& device_id) OVERRIDE;

@@ -52,6 +52,6 @@ size_t RendererWebAudioDeviceImpl::Render(const std::vector<float*>& audio_data,
   return number_of_frames;
 }
 
-void RendererWebAudioDeviceImpl::OnError() {
+void RendererWebAudioDeviceImpl::OnRenderError() {
   // TODO(crogers): implement error handling.
 }

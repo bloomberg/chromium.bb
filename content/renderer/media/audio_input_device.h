@@ -97,6 +97,7 @@ class CONTENT_EXPORT AudioInputDevice
     virtual void Capture(const std::vector<float*>& audio_data,
                          size_t number_of_frames,
                          size_t audio_delay_milliseconds) = 0;
+    virtual void OnCaptureError() = 0;
    protected:
     virtual ~CaptureCallback() {}
   };

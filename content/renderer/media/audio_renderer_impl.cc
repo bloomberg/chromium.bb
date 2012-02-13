@@ -245,7 +245,7 @@ size_t AudioRendererImpl::Render(const std::vector<float*>& audio_data,
   return filled_frames;
 }
 
-void AudioRendererImpl::OnError() {
+void AudioRendererImpl::OnRenderError() {
   host()->DisableAudioRenderer();
 }
 
