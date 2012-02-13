@@ -158,9 +158,30 @@ html[dir=rtl] #pointer-sensitivity-more {
   background: right center no-repeat;
   background-image: url("../shared/images/select.png");
   color: #333;
+  display: inline-block;
   line-height: 100%;
   opacity: 0.4;
+  overflow: hidden;
   padding-right: 20px;
+}
+
+.network-selector-label {
+  -webkit-box-sizing: content-box;
+  display: inline-block;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.network-group[connecting] .network-selector {
+  background-image: none;
+}
+
+.network-selector > .inline-spinner {
+  margin: 0 8px;
+  height: 14px;
+  width: 14px;
 }
 
 .network-menu {

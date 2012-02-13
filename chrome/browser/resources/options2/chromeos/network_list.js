@@ -80,22 +80,34 @@ cr.define('options.network', function() {
       categoryLabel.className = 'network-title';
       categoryLabel.textContent = templateData[title];
       textContent.appendChild(categoryLabel);
-      var selector = this.ownerDocument.createElement('span');
+      var selector = this.ownerDocument.createElement('div');
       selector.className = 'network-selector';
       textContent.appendChild(selector);
+      var selectorLabel = this.ownerDocument.createElement('div');
+      selectorLabel.className = 'network-selector-label';
+      selector.appendChild(selectorLabel);
       if (this.data_.networkList) {
         this.createMenu_();
         // TODO(kevers): Generalize method of setting default label.
         var defaultMessage = this.data_.key == 'wifi' ?
             'networkOffline' : 'joinNetwork';
-        selector.textContent = templateData[defaultMessage];
+        selectorLabel.textContent = templateData[defaultMessage];
         var list = this.data_.networkList;
         for (var i = 0; i < list.length; i++) {
           var networkDetails = list[i];
-          if (networkDetails.connected || networkDetails.connecting) {
-            selector.textContent = networkDetails.networkName;
+          if (networkDetails.connecting || networkDetails.connected) {
+            selectorLabel.textContent = networkDetails.networkName;
             networkIcon.style.backgroundImage = url(networkDetails.iconURL);
-            break;
+            // Only break when we see a connecting network as it is possible to
+            // have a connected network and a connecting network at the same
+            // time.
+            if (networkDetails.connecting) {
+              var spinner = this.ownerDocument.createElement('div');
+              spinner.className = 'inline-spinner';
+              selector.appendChild(spinner);
+              this.connecting = true;
+              break;
+            }
           }
         }
       }
@@ -106,7 +118,8 @@ cr.define('options.network', function() {
       // dialog.
 
       this.addEventListener('click', function() {
-        this.showMenu();
+        if (!this.connecting)
+          this.showMenu();
       });
     },
 
@@ -122,6 +135,13 @@ cr.define('options.network', function() {
       menu.hidden = true;
       Menu.decorate(menu);
       var addendum = [];
+      if (this.data_.key == 'wifi') {
+        addendum.push({label: localStrings.getString('joinOtherNetwork'),
+                       command: 'connect',
+                       data: {networkType: Constants.TYPE_WIFI,
+                              servicePath: '?'}});
+      }
+      var empty = true;
       var list = this.data_.networkList;
       if (list) {
         for (var i = 0; i < list.length; i++) {
@@ -130,16 +150,25 @@ cr.define('options.network', function() {
             // TODO(kevers): Check for a non-activated Cellular network.
             // If found, the menu item should trigger 'activate' instead
             // of 'connect'.
-            if (data.networkType != Constants.ETHERNET)
+            if (data.networkType != Constants.TYPE_ETHERNET) {
               this.createConnectCallback_(menu, data);
+              empty = false;
+            }
           } else if (data.connected) {
+            if (data.networkType == Constants.TYPE_WIFI) {
+              addendum.push({label: localStrings.getString('networkShare'),
+                            command: 'share',
+                            data: data});
+            }
             addendum.push({label: localStrings.getString('networkOptions'),
                            command: 'options',
                            data: data});
-            if (data.networkType == Constants.TYPE_WIFI) {
-              // TODO(kevers): Add support for disconnecting from other
-              // networks types.
-              addendum.push({label: localStrings.getString('disconnectWifi'),
+            if (data.networkType != Constants.TYPE_ETHERNET) {
+              // Add separator
+              addendum.push({});
+              var i18nKey = data.networkType == Constants.TYPE_WIFI ?
+                'disconnectWifi' : 'disconnect_button';
+              addendum.push({label: localStrings.getString(i18nKey),
                              command: 'disconnect',
                              data: data});
               var onlineMessage = this.ownerDocument.createElement('div');
@@ -152,12 +181,18 @@ cr.define('options.network', function() {
         }
       }
       if (addendum.length > 0) {
-        menu.appendChild(MenuItem.createSeparator());
+        if (!empty)
+          menu.appendChild(MenuItem.createSeparator());
         for (var i = 0; i < addendum.length; i++) {
-          this.createCallback_(menu,
-                               addendum[i].data,
-                               addendum[i].label,
-                               addendum[i].command);
+          var value = addendum[i];
+          if (value.data) {
+            this.createCallback_(menu,
+                                 value.data,
+                                 value.label,
+                                 value.command);
+          } else {
+            menu.appendChild(MenuItem.createSeparator());
+          }
         }
       }
       var parent = $('network-menus');
@@ -348,6 +383,13 @@ cr.define('options.network', function() {
       $('settings').removeEventListener('click', closeMenu_);
     }
   }
+
+  /**
+   * Whether the underlying network is currently connecting.
+   * Only used for display purpose.
+   * @type {boolean}
+   */
+  cr.defineProperty(NetworkListItem, 'connecting', cr.PropertyKind.BOOL_ATTR);
 
   // Export
   return {
