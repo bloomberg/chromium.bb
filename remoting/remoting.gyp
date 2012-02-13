@@ -155,18 +155,6 @@
   },
 
   'conditions': [
-    ['os_posix == 1', {
-      'targets': [
-        # Simple webserver for testing remoting client plugin.
-        {
-          'target_name': 'remoting_client_test_webserver',
-          'type': 'executable',
-          'sources': [
-            'tools/client_webserver/main.c',
-          ],
-        }
-      ],  # end of target 'remoting_client_test_webserver'
-    }],  # 'os_posix == 1'
     ['OS=="linux"', {
       'targets': [
         # Linux breakpad processing
