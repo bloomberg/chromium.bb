@@ -131,6 +131,7 @@
 #include "chrome/browser/ui/webui/feedback_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/options/content_settings_handler.h"
+#include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -5504,10 +5505,16 @@ void Browser::ShowSyncSetup() {
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(
           profile()->GetOriginalProfile());
-  if (service->HasSyncSetupCompleted())
+  if (service->HasSyncSetupCompleted()) {
     ShowOptionsTab(chrome::kPersonalOptionsSubPage);
-  else
+  } else if (SyncPromoUI::ShouldShowSyncPromo(profile())) {
+    GURL url(SyncPromoUI::GetSyncPromoURL(GURL(), false, std::string()));
+    browser::NavigateParams params(GetSingletonTabNavigateParams(GURL(url)));
+    params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
+    ShowSingletonTabOverwritingNTP(params);
+  } else {
     service->ShowLoginDialog();
+  }
 }
 
 void Browser::ToggleSpeechInput() {
