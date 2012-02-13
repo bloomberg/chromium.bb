@@ -79,7 +79,7 @@ h2 {
 }
 
 #update-status-icon.available {
-  background-image: url('chrome://theme/IDR_UPDATE_AVAILALBE');
+  background-image: url('chrome://theme/IDR_UPDATE_AVAILABLE');
 }
 
 #update-status-icon.up-to-date {
