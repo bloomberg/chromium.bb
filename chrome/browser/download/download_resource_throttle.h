@@ -6,18 +6,11 @@
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_RESOURCE_THROTTLE_H_
 #pragma once
 
-#include <string>
-
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "content/public/browser/resource_throttle.h"
-#include "googleurl/src/gurl.h"
 
-class ResourceDispatcherHost;
-
-namespace net {
-class URLRequest;
-}  // namespace net
+class GURL;
 
 // DownloadResourceThrottle is used to determine if a download should be
 // allowed. When a DownloadResourceThrottle is created it pauses the download
@@ -38,7 +31,7 @@ class DownloadResourceThrottle
   // content::ResourceThrottle implementation:
   virtual void WillStartRequest(bool* defer) OVERRIDE;
   virtual void WillRedirectRequest(const GURL& new_url, bool* defer) OVERRIDE;
-  virtual void WillReadRequest(bool* defer) OVERRIDE;
+  virtual void WillProcessResponse(bool* defer) OVERRIDE;
 
  private:
   virtual ~DownloadResourceThrottle();

@@ -34,10 +34,10 @@ class ThrottlingResourceHandler : public LayeredResourceHandler,
   virtual bool OnRequestRedirected(int request_id, const GURL& url,
                                    ResourceResponse* response,
                                    bool* defer) OVERRIDE;
+  virtual bool OnResponseStarted(int request_id,
+                                 content::ResourceResponse* response) OVERRIDE;
   virtual bool OnWillStart(int request_id, const GURL& url,
                            bool* defer) OVERRIDE;
-  virtual bool OnWillRead(int request_id, net::IOBuffer** buf, int* buf_size,
-                          int min_size) OVERRIDE;
   virtual void OnRequestClosed() OVERRIDE;
 
   // ResourceThrottleController implementation:
@@ -49,15 +49,13 @@ class ThrottlingResourceHandler : public LayeredResourceHandler,
 
   void ResumeStart();
   void ResumeRedirect();
-  void ResumeRead();
-
-  void WillReadRequest(bool* defer);
+  void ResumeResponse();
 
   enum DeferredStage {
     DEFERRED_NONE,
     DEFERRED_START,
     DEFERRED_REDIRECT,
-    DEFERRED_READ
+    DEFERRED_RESPONSE
   };
   DeferredStage deferred_stage_;
 

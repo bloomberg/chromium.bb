@@ -34,7 +34,7 @@ void DownloadResourceThrottle::WillRedirectRequest(const GURL& new_url,
   *defer = request_deferred_ = !request_allowed_;
 }
 
-void DownloadResourceThrottle::WillReadRequest(bool* defer) {
+void DownloadResourceThrottle::WillProcessResponse(bool* defer) {
   *defer = request_deferred_ = !request_allowed_;
 }
 

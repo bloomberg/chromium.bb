@@ -24,7 +24,7 @@ class ResourceThrottle {
 
   virtual void WillStartRequest(bool* defer) {}
   virtual void WillRedirectRequest(const GURL& new_url, bool* defer) {}
-  virtual void WillReadRequest(bool* defer) {}
+  virtual void WillProcessResponse(bool* defer) {}
 
  protected:
   ResourceThrottle() : controller_(NULL) {}

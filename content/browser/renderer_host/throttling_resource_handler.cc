@@ -72,20 +72,26 @@ bool ThrottlingResourceHandler::OnWillStart(int request_id,
   return next_handler_->OnWillStart(request_id, url, defer);
 }
 
-bool ThrottlingResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
-                                           int* buf_size, int min_size) {
+bool ThrottlingResourceHandler::OnResponseStarted(
+    int request_id,
+    content::ResourceResponse* response) {
   DCHECK_EQ(request_id_, request_id);
 
-  bool defer = false;
-  WillReadRequest(&defer);
-  if (defer) {
-    host_->PauseRequest(child_id_, request_id_, true);
-    return false;  // Do not read.
+  while (index_ < throttles_.size()) {
+    bool defer = false;
+    throttles_[index_]->WillProcessResponse(&defer);
+    index_++;
+    if (defer) {
+      host_->PauseRequest(child_id_, request_id_, true);
+      deferred_stage_ = DEFERRED_RESPONSE;
+      deferred_response_ = response;
+      return true;  // Do not cancel.
+    }
   }
 
   index_ = 0;  // Reset for next time.
 
-  return next_handler_->OnWillRead(request_id, buf, buf_size, min_size);
+  return next_handler_->OnResponseStarted(request_id, response);
 }
 
 void ThrottlingResourceHandler::OnRequestClosed() {
@@ -108,8 +114,8 @@ void ThrottlingResourceHandler::Resume() {
     case DEFERRED_REDIRECT:
       ResumeRedirect();
       break;
-    case DEFERRED_READ:
-      ResumeRead();
+    case DEFERRED_RESPONSE:
+      ResumeResponse();
       break;
   }
   deferred_stage_ = DEFERRED_NONE;
@@ -144,26 +150,15 @@ void ThrottlingResourceHandler::ResumeRedirect() {
   }
 }
 
-void ThrottlingResourceHandler::ResumeRead() {
-  bool defer = false;
-  WillReadRequest(&defer);
-  if (!defer) {
-    host_->PauseRequest(child_id_, request_id_, false);
-    // OnWillRead will be called again, and from there we'll call the
-    // next_handler_'s OnWillRead.
-  }
-}
+void ThrottlingResourceHandler::ResumeResponse() {
+  scoped_refptr<ResourceResponse> response;
+  deferred_response_.swap(response);
 
-void ThrottlingResourceHandler::WillReadRequest(bool* defer) {
-  *defer = false;
-  while (index_ < throttles_.size()) {
-    throttles_[index_]->WillReadRequest(defer);
-    index_++;
-    if (*defer) {
-      deferred_stage_ = DEFERRED_READ;
-      break;
-    }
-  }
+  // OnResponseStarted will pause again if necessary.
+  host_->PauseRequest(child_id_, request_id_, false);
+
+  if (!OnResponseStarted(request_id_, response))
+    Cancel();
 }
 
 }  // namespace content
