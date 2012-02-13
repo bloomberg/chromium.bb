@@ -1069,7 +1069,13 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
 
 // This test verifies we don't crash when closing the last window and the app
 // menu is showing.
-IN_PROC_BROWSER_TEST_F(BrowserTest, CloseWithAppMenuOpen) {
+// And on Chrome OS we do (http://crbug.com/113949).
+#if defined(OS_CHROMEOS)
+#define MAYBE_CloseWithAppMenuOpen FLAKY_CloseWithAppMenuOpen
+#else
+#define MAYBE_CloseWithAppMenuOpen CloseWithAppMenuOpen
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_CloseWithAppMenuOpen) {
   if (browser_defaults::kBrowserAliveWithNoWindows)
     return;
 
