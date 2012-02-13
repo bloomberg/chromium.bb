@@ -37,7 +37,8 @@ WebIntentPickerCocoa::WebIntentPickerCocoa()
       model_(NULL),
       browser_(NULL),
       controller_(nil),
-      weak_ptr_factory_(this) {
+      weak_ptr_factory_(this),
+      service_invoked(false) {
 }
 
 
@@ -49,7 +50,8 @@ WebIntentPickerCocoa::WebIntentPickerCocoa(Browser* browser,
      model_(model),
      browser_(browser),
      controller_(nil),
-     ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+     weak_ptr_factory_(this),
+     service_invoked(false) {
   model_->set_observer(this);
 
   DCHECK(browser);
@@ -145,7 +147,8 @@ void WebIntentPickerCocoa::OnInlineDisposition(WebIntentPickerModel* model) {
 
 void WebIntentPickerCocoa::OnCancelled() {
   DCHECK(delegate_);
-  delegate_->OnCancelled();
+  if (!service_invoked)
+    delegate_->OnCancelled();
   delegate_->OnClosing();
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
@@ -153,6 +156,7 @@ void WebIntentPickerCocoa::OnCancelled() {
 void WebIntentPickerCocoa::OnServiceChosen(size_t index) {
   DCHECK(delegate_);
   const WebIntentPickerModel::Item& item = model_->GetItemAt(index);
+  service_invoked = true;
   delegate_->OnServiceChosen(index, item.disposition);
 }
 

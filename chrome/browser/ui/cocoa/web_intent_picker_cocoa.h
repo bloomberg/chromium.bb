@@ -65,6 +65,9 @@ class WebIntentPickerCocoa : public WebIntentPicker,
   // Delegate for inline disposition tab contents.
   scoped_ptr<WebIntentInlineDispositionDelegate> inline_disposition_delegate_;
 
+  // Indicate that we invoked a service, instead of just closing/cancelling.
+  bool service_invoked;
+
   // Post a delayed task to do layout, if it isn't already pending.
   void PerformDelayedLayout();
 

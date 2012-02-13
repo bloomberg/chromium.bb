@@ -51,6 +51,7 @@ class WebIntentBubbleControllerTest : public CocoaTest {
   void CreatePicker() {
     picker_.reset(new WebIntentPickerCocoa());
     picker_->delegate_ = &delegate_;
+    picker_->model_ = &model_;
     window_ = nil;
     controller_ = nil;
   }
@@ -120,6 +121,7 @@ class WebIntentBubbleControllerTest : public CocoaTest {
   scoped_ptr<WebIntentPickerCocoa> picker_;
   MockIntentPickerDelegate delegate_;
   MessageLoopForUI message_loop_;
+  WebIntentPickerModel model_;  // The model used by the picker
 };
 
 TEST_F(WebIntentBubbleControllerTest, EmptyBubble) {
@@ -155,6 +157,21 @@ TEST_F(WebIntentBubbleControllerTest, CloseWillClose) {
 
   EXPECT_CALL(delegate_, OnCancelled());
   EXPECT_CALL(delegate_, OnClosing());
+  picker_->Close();
+
+  ignore_result(picker_.release());  // Closing |picker_| will self-destruct it.
+}
+
+TEST_F(WebIntentBubbleControllerTest, DontCancelAfterServiceInvokation) {
+  CreateBubble();
+  model_.AddItem(string16(), GURL(), WebIntentPickerModel::DISPOSITION_WINDOW);
+
+  EXPECT_CALL(delegate_, OnServiceChosen(
+      0, WebIntentPickerModel::DISPOSITION_WINDOW));
+  EXPECT_CALL(delegate_, OnCancelled()).Times(0);
+  EXPECT_CALL(delegate_, OnClosing());
+
+  picker_->OnServiceChosen(0);
   picker_->Close();
 
   ignore_result(picker_.release());  // Closing |picker_| will self-destruct it.
