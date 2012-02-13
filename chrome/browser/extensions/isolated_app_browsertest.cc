@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -175,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, NoCookieIsolationWithoutApp) {
 // RenderProcessHosts even if we hit the process limit.
 IN_PROC_BROWSER_TEST_F(IsolatedAppTest, ProcessOverflow) {
   // Set max renderers to 1 to force running out of processes.
-  content::RenderProcessHost::SetMaxRendererProcessCountForTest(1);
+  content::RenderProcessHost::SetMaxRendererProcessCount(1);
 
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());

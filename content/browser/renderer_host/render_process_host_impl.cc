@@ -202,11 +202,20 @@ class RendererURLRequestContextSelector
   scoped_refptr<net::URLRequestContextGetter> media_request_context_;
 };
 
-size_t max_renderer_count_override = 0;
+// the global list of all renderer processes
+base::LazyInstance<IDMap<content::RenderProcessHost> >::Leaky
+    g_all_hosts = LAZY_INSTANCE_INITIALIZER;
 
-size_t GetMaxRendererProcessCount() {
-  if (max_renderer_count_override)
-    return max_renderer_count_override;
+}  // namespace
+
+// Stores the maximum number of renderer processes the content module can
+// create.
+static size_t g_max_renderer_count_override = 0;
+
+// static
+size_t content::RenderProcessHost::GetMaxRendererProcessCount() {
+  if (g_max_renderer_count_override)
+    return g_max_renderer_count_override;
 
   // Defines the maximum number of renderer processes according to the
   // amount of installed memory as reported by the OS. The table
@@ -246,19 +255,12 @@ size_t GetMaxRendererProcessCount() {
   return max_count;
 }
 
-// the global list of all renderer processes
-base::LazyInstance<IDMap<content::RenderProcessHost> >::Leaky
-    g_all_hosts = LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
-
 // static
 bool g_run_renderer_in_process_ = false;
 
 // static
-void content::RenderProcessHost::SetMaxRendererProcessCountForTest(
-    size_t count) {
-  max_renderer_count_override = count;
+void content::RenderProcessHost::SetMaxRendererProcessCount(size_t count) {
+  g_max_renderer_count_override = count;
 }
 
 RenderProcessHostImpl::RenderProcessHostImpl(

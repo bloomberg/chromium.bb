@@ -220,9 +220,15 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Message::Sender,
       content::BrowserContext* browser_context, const GURL& site_url);
 
   // Overrides the default heuristic for limiting the max renderer process
-  // count.  This is useful for unit testing process limit behaviors.
+  // count.  This is useful for unit testing process limit behaviors.  It is
+  // also used to allow a command line parameter to configure the max number of
+  // renderer processes and should only be called once during startup.
   // A value of zero means to use the default heuristic.
-  static void SetMaxRendererProcessCountForTest(size_t count);
+  static void SetMaxRendererProcessCount(size_t count);
+
+  // Returns the current max number of renderer processes used by the content
+  // module.
+  static size_t GetMaxRendererProcessCount();
 };
 
 }  // namespace content.

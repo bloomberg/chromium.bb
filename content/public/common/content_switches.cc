@@ -495,6 +495,11 @@ const char kRendererCrashTest[]             = "renderer-crash-test";
 // Causes the process to run as renderer instead of as browser.
 const char kRendererProcess[]               = "renderer";
 
+// Overrides the default/calculated limit to the number of renderer processes.
+// Very high values for this setting can lead to high memory/resource usage
+// or instability.
+const char kRendererProcessLimit[]          = "renderer-process-limit";
+
 // Causes the renderer process to display a dialog on launch.
 const char kRendererStartupDialog[]         = "renderer-startup-dialog";
 

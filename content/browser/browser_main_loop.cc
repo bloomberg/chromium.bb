@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/download/download_file_manager.h"
@@ -26,6 +27,7 @@
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_shutdown.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/result_codes.h"
@@ -270,6 +272,15 @@ void BrowserMainLoop::EarlyInitialization() {
   // seem dependent on SSL initialization().
   if (parsed_command_line_.HasSwitch(switches::kEnableTcpFastOpen))
     net::set_tcp_fastopen_enabled(true);
+
+  if (parsed_command_line_.HasSwitch(switches::kRendererProcessLimit)) {
+    std::string limit_string = parsed_command_line_.GetSwitchValueASCII(
+        switches::kRendererProcessLimit);
+    size_t process_limit;
+    if (base::StringToSizeT(limit_string, &process_limit)) {
+      content::RenderProcessHost::SetMaxRendererProcessCount(process_limit);
+    }
+  }
 
   if (parts_.get())
     parts_->PostEarlyInitialization();

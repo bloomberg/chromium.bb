@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,9 +55,103 @@ base::ProcessHandle RenderProcessHostTest::ShowSingletonTab(const GURL& page) {
   return wc->GetRenderProcessHost()->GetHandle();
 }
 
+void RenderProcessHostTestWithCommandLine::SetUpCommandLine(
+    CommandLine* command_line) {
+  InProcessBrowserTest::SetUpCommandLine(command_line);
+  command_line->AppendSwitchASCII(switches::kRendererProcessLimit, "1");
+}
+
+// When we hit the max number of renderers, verify that the way we do process
+// sharing behaves correctly.  In particular, this test is verifying that even
+// when we hit the max process limit, that renderers of each type will wind up
+// in a process of that type, even if that means creating a new process.
+void RenderProcessHostTest::TestProcessOverflow() {
+  int tab_count = 1;
+  int host_count = 1;
+  WebContents* tab1 = NULL;
+  WebContents* tab2 = NULL;
+  content::RenderProcessHost* rph1 = NULL;
+  content::RenderProcessHost* rph2 = NULL;
+  content::RenderProcessHost* rph3 = NULL;
+
+#if defined(USE_VIRTUAL_KEYBOARD)
+  ++host_count;  // For the virtual keyboard.
+#endif
+
+  // Change the first tab to be the new tab page (TYPE_WEBUI).
+  GURL newtab(chrome::kTestNewTabURL);
+  ui_test_utils::NavigateToURL(browser(), newtab);
+  EXPECT_EQ(tab_count, browser()->tab_count());
+  tab1 = browser()->GetWebContentsAt(tab_count - 1);
+  rph1 = tab1->GetRenderProcessHost();
+  EXPECT_EQ(tab1->GetURL(), newtab);
+  EXPECT_EQ(host_count, RenderProcessHostCount());
+
+  // Create a new TYPE_TABBED tab.  It should be in its own process.
+  GURL page1("data:text/html,hello world1");
+  browser()->ShowSingletonTab(page1);
+  if (browser()->tab_count() == tab_count)
+    ui_test_utils::WaitForNewTab(browser());
+  tab_count++;
+  host_count++;
+  EXPECT_EQ(tab_count, browser()->tab_count());
+  tab1 = browser()->GetWebContentsAt(tab_count - 1);
+  rph2 = tab1->GetRenderProcessHost();
+  EXPECT_EQ(tab1->GetURL(), page1);
+  EXPECT_EQ(host_count, RenderProcessHostCount());
+  EXPECT_NE(rph1, rph2);
+
+  // Create another TYPE_TABBED tab.  It should share the previous process.
+  GURL page2("data:text/html,hello world2");
+  browser()->ShowSingletonTab(page2);
+  if (browser()->tab_count() == tab_count)
+    ui_test_utils::WaitForNewTab(browser());
+  tab_count++;
+  EXPECT_EQ(tab_count, browser()->tab_count());
+  tab2 = browser()->GetWebContentsAt(tab_count - 1);
+  EXPECT_EQ(tab2->GetURL(), page2);
+  EXPECT_EQ(host_count, RenderProcessHostCount());
+  EXPECT_EQ(tab2->GetRenderProcessHost(), rph2);
+
+  // Create another TYPE_WEBUI tab.  It should share the process with newtab.
+  // Note: intentionally create this tab after the TYPE_TABBED tabs to exercise
+  // bug 43448 where extension and WebUI tabs could get combined into normal
+  // renderers.
+  GURL history(chrome::kTestHistoryURL);
+  browser()->ShowSingletonTab(history);
+  if (browser()->tab_count() == tab_count)
+    ui_test_utils::WaitForNewTab(browser());
+  tab_count++;
+  EXPECT_EQ(tab_count, browser()->tab_count());
+  tab2 = browser()->GetWebContentsAt(tab_count - 1);
+  EXPECT_EQ(tab2->GetURL(), history);
+  EXPECT_EQ(host_count, RenderProcessHostCount());
+  EXPECT_EQ(tab2->GetRenderProcessHost(), rph1);
+
+  // Create a TYPE_EXTENSION tab.  It should be in its own process.
+  // (the bookmark manager is implemented as an extension)
+  GURL bookmarks(chrome::kTestBookmarksURL);
+  browser()->ShowSingletonTab(bookmarks);
+  if (browser()->tab_count() == tab_count)
+    ui_test_utils::WaitForNewTab(browser());
+  tab_count++;
+#if !defined(USE_VIRTUAL_KEYBOARD)
+  // The virtual keyboard already creates an extension process. So this
+  // should not increase the process count.
+  host_count++;
+#endif
+  EXPECT_EQ(tab_count, browser()->tab_count());
+  tab1 = browser()->GetWebContentsAt(tab_count - 1);
+  rph3 = tab1->GetRenderProcessHost();
+  EXPECT_EQ(tab1->GetURL(), bookmarks);
+  EXPECT_EQ(host_count, RenderProcessHostCount());
+  EXPECT_NE(rph1, rph3);
+  EXPECT_NE(rph2, rph3);
+}
+
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessPerTab) {
   // Set max renderers to 1 to force running out of processes.
-  content::RenderProcessHost::SetMaxRendererProcessCountForTest(1);
+  content::RenderProcessHost::SetMaxRendererProcessCount(1);
 
   CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   parsed_command_line.AppendSwitch(switches::kProcessPerTab);
@@ -147,93 +241,14 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, Backgrounding) {
 }
 #endif
 
-// When we hit the max number of renderers, verify that the way we do process
-// sharing behaves correctly.  In particular, this test is verifying that even
-// when we hit the max process limit, that renderers of each type will wind up
-// in a process of that type, even if that means creating a new process.
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessOverflow) {
   // Set max renderers to 1 to force running out of processes.
-  content::RenderProcessHost::SetMaxRendererProcessCountForTest(1);
+  content::RenderProcessHost::SetMaxRendererProcessCount(1);
+  TestProcessOverflow();
+}
 
-  int tab_count = 1;
-  int host_count = 1;
-  WebContents* tab1 = NULL;
-  WebContents* tab2 = NULL;
-  content::RenderProcessHost* rph1 = NULL;
-  content::RenderProcessHost* rph2 = NULL;
-  content::RenderProcessHost* rph3 = NULL;
-
-#if defined(USE_VIRTUAL_KEYBOARD)
-  ++host_count;  // For the virtual keyboard.
-#endif
-
-  // Change the first tab to be the new tab page (TYPE_WEBUI).
-  GURL newtab(chrome::kTestNewTabURL);
-  ui_test_utils::NavigateToURL(browser(), newtab);
-  EXPECT_EQ(tab_count, browser()->tab_count());
-  tab1 = browser()->GetWebContentsAt(tab_count - 1);
-  rph1 = tab1->GetRenderProcessHost();
-  EXPECT_EQ(tab1->GetURL(), newtab);
-  EXPECT_EQ(host_count, RenderProcessHostCount());
-
-  // Create a new TYPE_TABBED tab.  It should be in its own process.
-  GURL page1("data:text/html,hello world1");
-  browser()->ShowSingletonTab(page1);
-  if (browser()->tab_count() == tab_count)
-    ui_test_utils::WaitForNewTab(browser());
-  tab_count++;
-  host_count++;
-  EXPECT_EQ(tab_count, browser()->tab_count());
-  tab1 = browser()->GetWebContentsAt(tab_count - 1);
-  rph2 = tab1->GetRenderProcessHost();
-  EXPECT_EQ(tab1->GetURL(), page1);
-  EXPECT_EQ(host_count, RenderProcessHostCount());
-  EXPECT_NE(rph1, rph2);
-
-  // Create another TYPE_TABBED tab.  It should share the previous process.
-  GURL page2("data:text/html,hello world2");
-  browser()->ShowSingletonTab(page2);
-  if (browser()->tab_count() == tab_count)
-    ui_test_utils::WaitForNewTab(browser());
-  tab_count++;
-  EXPECT_EQ(tab_count, browser()->tab_count());
-  tab2 = browser()->GetWebContentsAt(tab_count - 1);
-  EXPECT_EQ(tab2->GetURL(), page2);
-  EXPECT_EQ(host_count, RenderProcessHostCount());
-  EXPECT_EQ(tab2->GetRenderProcessHost(), rph2);
-
-  // Create another TYPE_WEBUI tab.  It should share the process with newtab.
-  // Note: intentionally create this tab after the TYPE_TABBED tabs to exercise
-  // bug 43448 where extension and WebUI tabs could get combined into normal
-  // renderers.
-  GURL history(chrome::kTestHistoryURL);
-  browser()->ShowSingletonTab(history);
-  if (browser()->tab_count() == tab_count)
-    ui_test_utils::WaitForNewTab(browser());
-  tab_count++;
-  EXPECT_EQ(tab_count, browser()->tab_count());
-  tab2 = browser()->GetWebContentsAt(tab_count - 1);
-  EXPECT_EQ(tab2->GetURL(), history);
-  EXPECT_EQ(host_count, RenderProcessHostCount());
-  EXPECT_EQ(tab2->GetRenderProcessHost(), rph1);
-
-  // Create a TYPE_EXTENSION tab.  It should be in its own process.
-  // (the bookmark manager is implemented as an extension)
-  GURL bookmarks(chrome::kTestBookmarksURL);
-  browser()->ShowSingletonTab(bookmarks);
-  if (browser()->tab_count() == tab_count)
-    ui_test_utils::WaitForNewTab(browser());
-  tab_count++;
-#if !defined(USE_VIRTUAL_KEYBOARD)
-  // The virtual keyboard already creates an extension process. So this
-  // should not increase the process count.
-  host_count++;
-#endif
-  EXPECT_EQ(tab_count, browser()->tab_count());
-  tab1 = browser()->GetWebContentsAt(tab_count - 1);
-  rph3 = tab1->GetRenderProcessHost();
-  EXPECT_EQ(tab1->GetURL(), bookmarks);
-  EXPECT_EQ(host_count, RenderProcessHostCount());
-  EXPECT_NE(rph1, rph3);
-  EXPECT_NE(rph2, rph3);
+// Variation of the ProcessOverflow test, which is driven through command line
+// parameter instead of direct function call into the class.
+IN_PROC_BROWSER_TEST_F(RenderProcessHostTestWithCommandLine, ProcessOverflow) {
+  TestProcessOverflow();
 }
