@@ -551,11 +551,6 @@ void ProfileSyncService::RegisterNewDataType(syncable::ModelType data_type) {
                                                       profile_,
                                                       this));
       return;
-    case syncable::TYPED_URLS:
-          new browser_sync::TypedUrlDataTypeController(factory_.get(),
-                                                       profile_,
-                                                       this);
-      return;
     default:
       break;
   }
