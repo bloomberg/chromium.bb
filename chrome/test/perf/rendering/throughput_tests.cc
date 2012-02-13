@@ -221,4 +221,16 @@ IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasDemoGPU) {
   RunTest("canvas-demo", kInternal);
 }
 
+IN_PROC_BROWSER_TEST_F(ThroughputTestSW, CanvasSingleImageSW) {
+  AllowExternalDNS();
+  RunTest("canvas_single_image", kNone);
+  ResetAllowExternalDNS();
+}
+
+IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasSingleImageGPU) {
+  AllowExternalDNS();
+  RunTest("canvas_single_image", kNone);
+  ResetAllowExternalDNS();
+}
+
 }  // namespace
