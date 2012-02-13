@@ -173,7 +173,6 @@ class TestingProfile : public Profile {
       ExtensionSpecialStoragePolicy* extension_special_storage_policy);
   virtual ExtensionSpecialStoragePolicy*
       GetExtensionSpecialStoragePolicy() OVERRIDE;
-  virtual SSLHostState* GetSSLHostState() OVERRIDE;
   virtual FaviconService* GetFaviconService(ServiceAccessType access) OVERRIDE;
   virtual HistoryService* GetHistoryService(ServiceAccessType access) OVERRIDE;
   virtual HistoryService* GetHistoryServiceWithoutCreating() OVERRIDE;

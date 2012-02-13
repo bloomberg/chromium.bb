@@ -14,8 +14,14 @@
 #include "base/basictypes.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/x509_certificate.h"
+
+namespace content {
+class BrowserContext;
+}
 
 // SSLHostState
 //
@@ -26,10 +32,13 @@
 // controllers.
 
 class CONTENT_EXPORT SSLHostState
-    : NON_EXPORTED_BASE(public base::NonThreadSafe) {
+    : public content::NotificationObserver,
+      NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
-  SSLHostState();
-  ~SSLHostState();
+  static SSLHostState* GetFor(content::BrowserContext* browser_context);
+
+  explicit SSLHostState(content::BrowserContext* browser_context);
+  virtual ~SSLHostState();
 
   // Records that a host has run insecure content.
   void HostRanInsecureContent(const std::string& host, int pid);
@@ -48,6 +57,10 @@ class CONTENT_EXPORT SSLHostState
       net::X509Certificate* cert, const std::string& host);
 
  private:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
   // A BrokenHostEntry is a pair of (host, process_id) that indicates the host
   // contains insecure content in that renderer process.
   typedef std::pair<std::string, int> BrokenHostEntry;
@@ -59,6 +72,8 @@ class CONTENT_EXPORT SSLHostState
 
   // Certificate policies for each host.
   std::map<std::string, net::CertPolicy> cert_policy_for_host_;
+
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLHostState);
 };

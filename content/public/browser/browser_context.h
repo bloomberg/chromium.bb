@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/hash_tables.h"
+#include "content/common/content_export.h"
 
 namespace fileapi {
 class FileSystemContext;
@@ -27,7 +28,6 @@ class DatabaseTracker;
 class ChromeAppCacheService;
 class ChromeBlobStorageContext;
 class FilePath;
-class SSLHostState;
 class WebKitContext;
 
 namespace content {
@@ -40,9 +40,9 @@ class SpeechInputPreferences;
 
 // This class holds the context needed for a browsing session.
 // It lives on the UI thread.
-class BrowserContext {
+class CONTENT_EXPORT BrowserContext {
  public:
-  virtual ~BrowserContext() {}
+  virtual ~BrowserContext();
 
   // Returns the path of the directory where this context's data is stored.
   virtual FilePath GetPath() = 0;
@@ -50,11 +50,6 @@ class BrowserContext {
   // Return whether this context is incognito. Default is false.
   // This doesn't belong here; http://crbug.com/89628
   virtual bool IsOffTheRecord() = 0;
-
-  // Retrieves a pointer to the SSLHostState associated with this context.
-  // The SSLHostState is lazily created the first time that this method is
-  // called.
-  virtual SSLHostState* GetSSLHostState() = 0;
 
   // Returns the DownloadManager associated with this context.
   virtual content::DownloadManager* GetDownloadManager() = 0;

@@ -27,10 +27,6 @@ bool TestBrowserContext::IsOffTheRecord() {
   return false;
 }
 
-SSLHostState* TestBrowserContext::GetSSLHostState() {
-  return NULL;
-}
-
 DownloadManager* TestBrowserContext::GetDownloadManager() {
   return NULL;
 }

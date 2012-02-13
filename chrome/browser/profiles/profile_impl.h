@@ -51,7 +51,6 @@ class ProfileImpl : public Profile,
 
   // content::BrowserContext implementation:
   virtual FilePath GetPath() OVERRIDE;
-  virtual SSLHostState* GetSSLHostState() OVERRIDE;
   virtual content::DownloadManager* GetDownloadManager() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
@@ -229,7 +228,6 @@ class ProfileImpl : public Profile,
   scoped_ptr<ExtensionNavigationObserver> extension_navigation_observer_;
   scoped_refptr<ExtensionSpecialStoragePolicy>
       extension_special_storage_policy_;
-  scoped_ptr<SSLHostState> ssl_host_state_;
   scoped_ptr<NetPrefObserver> net_pref_observer_;
   scoped_ptr<TemplateURLFetcher> template_url_fetcher_;
   scoped_ptr<BookmarkModel> bookmark_bar_model_;

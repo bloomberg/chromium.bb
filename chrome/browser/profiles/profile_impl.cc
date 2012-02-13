@@ -97,7 +97,6 @@
 #include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/speech/speech_input_manager.h"
-#include "content/browser/ssl/ssl_host_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_service.h"
@@ -734,14 +733,6 @@ ExtensionSpecialStoragePolicy*
         new ExtensionSpecialStoragePolicy(CookieSettings::GetForProfile(this));
   }
   return extension_special_storage_policy_.get();
-}
-
-SSLHostState* ProfileImpl::GetSSLHostState() {
-  if (!ssl_host_state_.get())
-    ssl_host_state_.reset(new SSLHostState());
-
-  DCHECK(ssl_host_state_->CalledOnValidThread());
-  return ssl_host_state_.get();
 }
 
 void ProfileImpl::OnPrefsLoaded(bool success) {

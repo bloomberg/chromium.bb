@@ -30,6 +30,7 @@ include_rules = [
 
   "-content/browser",
   # TODO(jam): Need to remove all these and use only content/public. BUG=98716
+  # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
   "+content/browser/accessibility/browser_accessibility.h",
   "+content/browser/accessibility/browser_accessibility_cocoa.h",
   "+content/browser/accessibility/browser_accessibility_manager.h",
@@ -98,7 +99,6 @@ include_rules = [
   "+content/browser/speech/speech_recognizer.h",
   "+content/browser/ssl/ssl_client_auth_handler.h",
   "+content/browser/ssl/ssl_client_auth_handler_mock.h",
-  "+content/browser/ssl/ssl_host_state.h",
   "+content/browser/tab_contents/popup_menu_helper_mac.h",
   "+content/browser/tab_contents/provisional_load_details.h",
   "+content/browser/tab_contents/tab_contents_view_android.h",
@@ -115,6 +115,7 @@ include_rules = [
   "+content/browser/tab_contents/web_drag_source_mac.h",
   "+content/browser/trace_controller.h",
   "+content/browser/zygote_host_linux.h",
+  # DO NOT ADD ANY MORE ITEMS TO THE ABOVE LIST!
 
   "-content/common",
 

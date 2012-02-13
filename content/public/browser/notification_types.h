@@ -192,17 +192,17 @@ enum NotificationType {
   NOTIFICATION_APP_EXITING,
 
   // Indicates that a devtools window is opening. The source is the
-  // content::BrowserContext* and the details is the inspected RenderViewHost*.
+  // BrowserContext* and the details is the inspected RenderViewHost*.
   NOTIFICATION_DEVTOOLS_WINDOW_OPENING,
 
   // Indicates that a devtools window is closing. The source is the
-  // content::BrowserContext* and the details is the inspected RenderViewHost*.
+  // BrowserContext* and the details is the inspected RenderViewHost*.
   NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
 
   // Tabs --------------------------------------------------------------------
 
   // Sent when a tab is added to a WebContentsDelegate. The source is the
-  // WebContentsDelegate and the details is the added content::WebContents.
+  // WebContentsDelegate and the details is the added WebContents.
   NOTIFICATION_TAB_ADDED,
 
   // This notification is sent after a tab has been appended to the tab_strip.
@@ -373,20 +373,20 @@ enum NotificationType {
   // This notification is sent when a child process host has connected to a
   // child process.  There is no usable source, since it is sent from an
   // ephemeral task; register for AllSources() to receive this notification.
-  // The details are in a Details<content::ChildProcessData>.
+  // The details are in a Details<ChildProcessData>.
   NOTIFICATION_CHILD_PROCESS_HOST_CONNECTED,
 
   // This message is sent after a ChildProcessHost is disconnected from the
   // child process.  There is no usable source, since it is sent from an
   // ephemeral task; register for AllSources() to receive this notification.
-  // The details are in a Details<content::ChildProcessData>.
+  // The details are in a Details<ChildProcessData>.
   NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED,
 
   // This message is sent when a child process disappears
   // unexpectedly as a result of a crash.  There is no usable
   // source, since it is sent from an ephemeral task; register for
   // AllSources() to receive this notification.  The details are in
-  // a Details<content::ChildProcessData>.
+  // a Details<ChildProcessData>.
   NOTIFICATION_CHILD_PROCESS_CRASHED,
 
   // This message indicates that an instance of a particular child was
@@ -396,7 +396,7 @@ enum NotificationType {
   //
   // There is no usable source, since it is sent from an ephemeral task;
   // register for AllSources() to receive this notification.  The details are
-  // in a Details<content::ChildProcessData>.
+  // in a Details<ChildProcessData>.
   NOTIFICATION_CHILD_INSTANCE_CREATED,
 
   // Saved Pages -------------------------------------------------------------
@@ -420,6 +420,10 @@ enum NotificationType {
   // details is a string of the hostname for which the zoom changed.  In case
   // of a temporary zoom level change, the details is an empty string.
   NOTIFICATION_ZOOM_LEVEL_CHANGED,
+
+  // Sent when a BrowserContext is being deleted, in case any objects want to do
+  // related cleanup. The source is the BrowserContext.
+  NOTIFICATION_BROWSER_CONTEXT_DESTRUCTION,
 
   // Custom notifications used by the embedder should start from here.
   NOTIFICATION_CONTENT_END,

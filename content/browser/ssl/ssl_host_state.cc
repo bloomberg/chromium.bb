@@ -5,8 +5,26 @@
 #include "content/browser/ssl/ssl_host_state.h"
 
 #include "base/logging.h"
+#include "base/lazy_instance.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_types.h"
 
-SSLHostState::SSLHostState() {
+namespace {
+typedef std::map<content::BrowserContext*, SSLHostState*> HostStateMap;
+static base::LazyInstance<HostStateMap> g_host_state_map =
+    LAZY_INSTANCE_INITIALIZER;
+}
+
+SSLHostState* SSLHostState::GetFor(content::BrowserContext* browser_context) {
+  if (!g_host_state_map.Get().count(browser_context))
+    g_host_state_map.Get()[browser_context] = new SSLHostState(browser_context);
+  return g_host_state_map.Get()[browser_context];
+}
+
+SSLHostState::SSLHostState(content::BrowserContext* browser_context) {
+  registrar_.Add(this, content::NOTIFICATION_BROWSER_CONTEXT_DESTRUCTION,
+                 content::Source<content::BrowserContext>(browser_context));
 }
 
 SSLHostState::~SSLHostState() {
@@ -42,4 +60,10 @@ net::CertPolicy::Judgment SSLHostState::QueryPolicy(
   DCHECK(CalledOnValidThread());
 
   return cert_policy_for_host_[host].Check(cert);
+}
+
+void SSLHostState::Observe(int type,
+                           const content::NotificationSource& source,
+                           const content::NotificationDetails& details) {
+  delete this;
 }

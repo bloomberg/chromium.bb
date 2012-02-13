@@ -52,7 +52,6 @@ class OffTheRecordProfileImpl : public Profile,
   virtual ExtensionEventRouter* GetExtensionEventRouter() OVERRIDE;
   virtual ExtensionSpecialStoragePolicy*
       GetExtensionSpecialStoragePolicy() OVERRIDE;
-  virtual SSLHostState* GetSSLHostState() OVERRIDE;
   virtual GAIAInfoUpdateService* GetGAIAInfoUpdateService() OVERRIDE;
   virtual HistoryService* GetHistoryService(ServiceAccessType sat) OVERRIDE;
   virtual HistoryService* GetHistoryServiceWithoutCreating() OVERRIDE;
@@ -155,11 +154,6 @@ class OffTheRecordProfileImpl : public Profile,
 
   // Use a special WebKit context for OTR browsing.
   scoped_refptr<WebKitContext> webkit_context_;
-
-  // We don't want SSLHostState from the OTR profile to leak back to the main
-  // profile because then the main profile would learn some of the host names
-  // the user visited while OTR.
-  scoped_ptr<SSLHostState> ssl_host_state_;
 
   // Time we were started.
   Time start_time_;

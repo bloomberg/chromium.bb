@@ -16,7 +16,6 @@
 #include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
-#include "content/browser/ssl/ssl_host_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/geolocation_permission_context.h"
 #include "content/public/browser/speech_input_preferences.h"
@@ -127,12 +126,6 @@ FilePath ShellBrowserContext::GetPath() {
 
 bool ShellBrowserContext::IsOffTheRecord()  {
   return false;
-}
-
-SSLHostState* ShellBrowserContext::GetSSLHostState()  {
-  if (!ssl_host_state_.get())
-    ssl_host_state_.reset(new SSLHostState());
-  return ssl_host_state_.get();
 }
 
 DownloadManager* ShellBrowserContext::GetDownloadManager()  {

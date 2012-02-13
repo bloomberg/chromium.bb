@@ -48,7 +48,6 @@
 #include "content/browser/chrome_blob_storage_context.h"
 #include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
-#include "content/browser/ssl/ssl_host_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_service.h"
@@ -240,14 +239,6 @@ ExtensionEventRouter* OffTheRecordProfileImpl::GetExtensionEventRouter() {
 ExtensionSpecialStoragePolicy*
     OffTheRecordProfileImpl::GetExtensionSpecialStoragePolicy() {
   return GetOriginalProfile()->GetExtensionSpecialStoragePolicy();
-}
-
-SSLHostState* OffTheRecordProfileImpl::GetSSLHostState() {
-  if (!ssl_host_state_.get())
-    ssl_host_state_.reset(new SSLHostState());
-
-  DCHECK(ssl_host_state_->CalledOnValidThread());
-  return ssl_host_state_.get();
 }
 
 GAIAInfoUpdateService* OffTheRecordProfileImpl::GetGAIAInfoUpdateService() {

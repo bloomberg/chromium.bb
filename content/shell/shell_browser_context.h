@@ -13,7 +13,6 @@
 #include "content/public/browser/browser_context.h"
 
 class DownloadManager;
-class SSLHostState;
 
 namespace content {
 
@@ -30,7 +29,6 @@ class ShellBrowserContext : public BrowserContext {
   // BrowserContext implementation.
   virtual FilePath GetPath() OVERRIDE;
   virtual bool IsOffTheRecord() OVERRIDE;
-  virtual SSLHostState* GetSSLHostState() OVERRIDE;
   virtual DownloadManager* GetDownloadManager() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
@@ -54,7 +52,6 @@ class ShellBrowserContext : public BrowserContext {
 
   FilePath path_;
   scoped_ptr<ResourceContext> resource_context_;
-  scoped_ptr<SSLHostState> ssl_host_state_;
   scoped_refptr<ShellDownloadManagerDelegate> download_manager_delegate_;
   scoped_refptr<DownloadManager> download_manager_;
   scoped_refptr<net::URLRequestContextGetter> url_request_getter_;

@@ -32,6 +32,7 @@
     'public/browser/browser_child_process_host_delegate.h',
     'public/browser/browser_child_process_host_iterator.cc',
     'public/browser/browser_child_process_host_iterator.h',
+    'public/browser/browser_context.cc',
     'public/browser/browser_context.h',
     'public/browser/browser_main_parts.h',
     'public/browser/browser_main_runner.h',
