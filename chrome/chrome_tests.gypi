@@ -158,6 +158,7 @@
         'browser/search_engines/template_url_service_test_util.h',
         'browser/sessions/session_service_test_helper.cc',
         'browser/sessions/session_service_test_helper.h',
+        'browser/ssl/ssl_client_auth_requestor_mock.cc',
         'browser/ssl/ssl_client_auth_requestor_mock.h',
         'browser/sync/profile_sync_service_mock.cc',
         'browser/sync/profile_sync_service_mock.h',

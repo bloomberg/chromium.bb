@@ -7,13 +7,12 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
-#include "net/http/http_transaction_factory.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace net {
+class HttpNetworkSession;
 class SSLCertRequestInfo;
+class URLRequest;
 class X509Certificate;
 }
 
@@ -22,14 +21,9 @@ class SSLClientAuthRequestorMock
  public:
   SSLClientAuthRequestorMock(
       net::URLRequest* request,
-      net::SSLCertRequestInfo* cert_request_info)
-      : cert_request_info_(cert_request_info),
-        http_network_session_(
-            request->context()->http_transaction_factory()->GetSession()) {
-  }
+      net::SSLCertRequestInfo* cert_request_info);
   // NOTE: we need a vtable or else gmock blows up.
-  virtual ~SSLClientAuthRequestorMock() {
-  }
+  virtual ~SSLClientAuthRequestorMock();
 
   MOCK_METHOD1(CertificateSelected, void(net::X509Certificate* cert));
 
