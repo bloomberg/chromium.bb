@@ -25,7 +25,8 @@ namespace {
 
 enum ThroughputTestFlags {
   kNone = 0,
-  kInternal = 1 << 0 // Test uses internal test data.
+  kInternal = 1 << 0,  // Test uses internal test data.
+  kAllowExternalDNS = 1 << 1  // Test needs external DNS lookup.
 };
 
 const int kSpinUpTimeMs = 4 * 1000;
@@ -98,7 +99,13 @@ class ThroughputTest : public BrowserPerfTest {
     ASSERT_TRUE(file_util::PathExists(test_path))
         << "Missing test file: " << test_path.value();
 
+    if (flags & kAllowExternalDNS)
+      AllowExternalDNS();
+
     RunTestWithURL(test_name, net::FilePathToFileURL(test_path));
+
+    if (flags & kAllowExternalDNS)
+      ResetAllowExternalDNS();
   }
 
   void RunTestWithURL(const std::string& test_name, const GURL& gurl) {
@@ -222,15 +229,11 @@ IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasDemoGPU) {
 }
 
 IN_PROC_BROWSER_TEST_F(ThroughputTestSW, CanvasSingleImageSW) {
-  AllowExternalDNS();
-  RunTest("canvas_single_image", kNone);
-  ResetAllowExternalDNS();
+  RunTest("canvas_single_image", kAllowExternalDNS);
 }
 
 IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasSingleImageGPU) {
-  AllowExternalDNS();
-  RunTest("canvas_single_image", kNone);
-  ResetAllowExternalDNS();
+  RunTest("canvas_single_image", kAllowExternalDNS);
 }
 
 }  // namespace
