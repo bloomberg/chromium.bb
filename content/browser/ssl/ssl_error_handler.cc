@@ -78,7 +78,9 @@ void SSLErrorHandler::Dispatch() {
   }
 
   // Hand ourselves off to the SSLManager.
-  manager_ = web_contents->GetController().GetSSLManager();
+  manager_ =
+      static_cast<NavigationControllerImpl*>(&web_contents->GetController())->
+          ssl_manager();
   OnDispatched();
 }
 

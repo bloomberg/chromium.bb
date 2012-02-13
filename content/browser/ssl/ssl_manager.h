@@ -80,9 +80,6 @@ class SSLManager : public content::NotificationObserver {
   // Insecure content entry point.
   void DidRunInsecureContent(const std::string& security_origin);
 
-  // Called to determine if there were any processed SSL errors from request.
-  CONTENT_EXPORT bool ProcessedSSLErrorFromRequest() const;
-
   // Entry point for navigation.  This function begins the process of updating
   // the security UI when the main frame navigates to a new URL.
   //

@@ -13,11 +13,13 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/autofill_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/ssl/ssl_manager.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/ssl_status.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
+#include "net/base/cert_status_flags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/forms/password_form.h"
@@ -130,6 +132,12 @@ Profile* PasswordManagerDelegateImpl::GetProfileForPasswordManager() {
 }
 
 bool PasswordManagerDelegateImpl::DidLastPageLoadEncounterSSLErrors() {
-  return tab_contents_->web_contents()->GetController().GetSSLManager()->
-      ProcessedSSLErrorFromRequest();
+  content::NavigationEntry* entry =
+      tab_contents_->web_contents()->GetController().GetActiveEntry();
+  if (!entry) {
+    NOTREACHED();
+    return false;
+  }
+
+  return net::IsCertStatusError(entry->GetSSL().cert_status);
 }

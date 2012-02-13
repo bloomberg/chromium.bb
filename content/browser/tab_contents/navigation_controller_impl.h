@@ -76,7 +76,6 @@ class CONTENT_EXPORT NavigationControllerImpl
   virtual void GoToIndex(int index) OVERRIDE;
   virtual void GoToOffset(int offset) OVERRIDE;
   virtual void RemoveEntryAtIndex(int index) OVERRIDE;
-  virtual SSLManager* GetSSLManager() OVERRIDE;
   virtual SessionStorageNamespace* GetSessionStorageNamespace() const OVERRIDE;
   virtual void SetMaxRestoredPageID(int32 max_id) OVERRIDE;
   virtual int32 GetMaxRestoredPageID() const OVERRIDE;
@@ -165,6 +164,8 @@ class CONTENT_EXPORT NavigationControllerImpl
   bool IsURLInPageNavigation(const GURL& url) const;
 
   // Random data ---------------------------------------------------------------
+
+  SSLManager* ssl_manager() { return &ssl_manager_; }
 
   // Maximum number of entries before we start removing entries from the front.
   static void set_max_entry_count_for_testing(size_t max_entry_count) {

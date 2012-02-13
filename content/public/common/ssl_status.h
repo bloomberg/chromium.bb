@@ -46,8 +46,6 @@ struct CONTENT_EXPORT SSLStatus {
   int connection_status;
   // A combination of the ContentStatusFlags above.
   int content_status;
-
-  // Copy and assignment is explicitly allowed for this class.
 };
 
 }  // namespace content

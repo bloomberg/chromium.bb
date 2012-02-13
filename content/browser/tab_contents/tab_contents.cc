@@ -1512,7 +1512,7 @@ void TabContents::OnDidRunInsecureContent(
     content::RecordAction(
         UserMetricsAction("SSL.RanInsecureContentGoogle"));
   }
-  controller_.GetSSLManager()->DidRunInsecureContent(security_origin);
+  controller_.ssl_manager()->DidRunInsecureContent(security_origin);
   displayed_insecure_content_ = true;
   SSLManager::NotifySSLInternalStateChanged(&GetControllerImpl());
 }

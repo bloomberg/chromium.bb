@@ -131,16 +131,6 @@ void SSLManager::DidRunInsecureContent(const std::string& security_origin) {
       security_origin);
 }
 
-bool SSLManager::ProcessedSSLErrorFromRequest() const {
-  NavigationEntry* entry = controller_->GetActiveEntry();
-  if (!entry) {
-    NOTREACHED();
-    return false;
-  }
-
-  return net::IsCertStatusError(entry->GetSSL().cert_status);
-}
-
 void SSLManager::Observe(int type,
                          const content::NotificationSource& source,
                          const content::NotificationDetails& details) {
