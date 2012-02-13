@@ -312,6 +312,10 @@ weston_surface_update_transform_disable(struct weston_surface *surface)
 {
 	surface->transform.enabled = 0;
 
+	/* round off fractions when not transformed */
+	surface->geometry.x = roundf(surface->geometry.x);
+	surface->geometry.y = roundf(surface->geometry.y);
+
 	pixman_region32_init_rect(&surface->transform.boundingbox,
 				  surface->geometry.x,
 				  surface->geometry.y,
