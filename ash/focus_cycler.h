@@ -49,7 +49,6 @@ class FocusCycler : public ui::AcceleratorTarget {
 };
 
 }  // namespace internal
-
 }  // namespace ash
 
 #endif  // FOCUS_CYCLER_H_

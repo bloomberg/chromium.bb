@@ -28,6 +28,14 @@ gfx::Size StatusAreaView::GetPreferredSize() {
   return gfx::Size(status_mock_.width(), status_mock_.height());
 }
 
+views::Widget* StatusAreaView::GetWidget() {
+  return View::GetWidget();
+}
+
+const views::Widget* StatusAreaView::GetWidget() const {
+  return View::GetWidget();
+}
+
 void StatusAreaView::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawBitmapInt(status_mock_, 0, 0);
 }
