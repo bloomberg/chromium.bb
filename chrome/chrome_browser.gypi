@@ -2049,6 +2049,8 @@
         'browser/profiles/profile.h',
         'browser/profiles/profile_dependency_manager.cc',
         'browser/profiles/profile_dependency_manager.h',
+        'browser/profiles/profile_destroyer.cc',
+        'browser/profiles/profile_destroyer.h',
         'browser/profiles/profile_downloader.cc',
         'browser/profiles/profile_downloader.h',
         'browser/profiles/profile_downloader_delegate.h',
