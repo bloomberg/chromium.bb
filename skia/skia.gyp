@@ -340,6 +340,7 @@
         '../third_party/skia/src/effects/SkPorterDuff.cpp',
         '../third_party/skia/src/effects/SkPixelXorXfermode.cpp',
         '../third_party/skia/src/effects/SkRadialGradient_Table.h',
+        '../third_party/skia/src/effects/SkTableColorFilter.cpp',
         '../third_party/skia/src/effects/SkTransparentShader.cpp',
 
         '../third_party/skia/src/gpu/GrAAConvexPathRenderer.cpp',

@@ -2025,3 +2025,8 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_UnlockMouse)
 IPC_MESSAGE_ROUTED2(ViewHostMsg_DomOperationResponse,
                     std::string  /* json_string */,
                     int  /* automation_id */)
+
+// Enable or disable inverting of web content pixels, for users who prefer
+// white-on-black.
+IPC_MESSAGE_ROUTED1(ViewMsg_InvertWebContent,
+                    bool /* invert */)
