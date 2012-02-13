@@ -78,17 +78,14 @@ class ExamplesWindowContents : public WidgetDelegateView,
                                public ComboboxListener {
  public:
   explicit ExamplesWindowContents(bool quit_on_close)
-      : combobox_model_(new ComboboxModelExampleList),
-        combobox_(new Combobox(combobox_model_)),
+      : combobox_(new Combobox(&combobox_model_)),
         example_shown_(new View),
         status_label_(new Label),
         quit_on_close_(quit_on_close) {
     instance_ = this;
     combobox_->set_listener(this);
   }
-  virtual ~ExamplesWindowContents() {
-    delete combobox_model_;
-  }
+  virtual ~ExamplesWindowContents() {}
 
   // Prints a message in the status area, at the bottom of the window.
   void SetStatus(const std::string& status) {
@@ -112,7 +109,9 @@ class ExamplesWindowContents : public WidgetDelegateView,
   }
 
   // Overridden from View:
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child) {
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    View* parent,
+                                    View* child) OVERRIDE {
     if (is_add && child == this)
       InitExamplesWindow();
   }
@@ -122,9 +121,9 @@ class ExamplesWindowContents : public WidgetDelegateView,
                            int prev_index,
                            int new_index) OVERRIDE {
     DCHECK(combo_box && combo_box == combobox_);
-    DCHECK(new_index < combobox_model_->GetItemCount());
+    DCHECK(new_index < combobox_model_.GetItemCount());
     example_shown_->RemoveAllChildViews(false);
-    example_shown_->AddChildView(combobox_model_->GetItemViewAt(new_index));
+    example_shown_->AddChildView(combobox_model_.GetItemViewAt(new_index));
     example_shown_->RequestFocus();
     SetStatus(std::string());
     Layout();
@@ -146,10 +145,10 @@ class ExamplesWindowContents : public WidgetDelegateView,
     layout->StartRow(0 /* no expand */, 0);
     layout->AddView(combobox_);
 
-    if (combobox_model_->GetItemCount() > 0) {
+    if (combobox_model_.GetItemCount() > 0) {
       layout->StartRow(1, 0);
       example_shown_->SetLayoutManager(new FillLayout());
-      example_shown_->AddChildView(combobox_model_->GetItemViewAt(0));
+      example_shown_->AddChildView(combobox_model_.GetItemViewAt(0));
       layout->AddView(example_shown_);
     }
 
@@ -160,32 +159,32 @@ class ExamplesWindowContents : public WidgetDelegateView,
 
   // Adds all the individual examples to the combobox model.
   void AddExamples() {
-    combobox_model_->AddExample(new TreeViewExample);
-    combobox_model_->AddExample(new TableExample);
-    combobox_model_->AddExample(new BubbleExample);
-    combobox_model_->AddExample(new ButtonExample);
-    combobox_model_->AddExample(new ComboboxExample);
-    combobox_model_->AddExample(new DoubleSplitViewExample);
-    combobox_model_->AddExample(new LinkExample);
+    combobox_model_.AddExample(new TreeViewExample);
+    combobox_model_.AddExample(new TableExample);
+    combobox_model_.AddExample(new BubbleExample);
+    combobox_model_.AddExample(new ButtonExample);
+    combobox_model_.AddExample(new ComboboxExample);
+    combobox_model_.AddExample(new DoubleSplitViewExample);
+    combobox_model_.AddExample(new LinkExample);
 #if !defined(USE_AURA)
-    combobox_model_->AddExample(new MenuExample);
+    combobox_model_.AddExample(new MenuExample);
 #endif
-    combobox_model_->AddExample(new MessageBoxExample);
-    combobox_model_->AddExample(new NativeThemeButtonExample);
-    combobox_model_->AddExample(new NativeThemeCheckboxExample);
-    combobox_model_->AddExample(new ProgressBarExample);
-    combobox_model_->AddExample(new RadioButtonExample);
-    combobox_model_->AddExample(new ScrollViewExample);
-    combobox_model_->AddExample(new SingleSplitViewExample);
-    combobox_model_->AddExample(new TabbedPaneExample);
-    combobox_model_->AddExample(new TextExample);
-    combobox_model_->AddExample(new TextfieldExample);
-    combobox_model_->AddExample(new ThrobberExample);
-    combobox_model_->AddExample(new WidgetExample);
+    combobox_model_.AddExample(new MessageBoxExample);
+    combobox_model_.AddExample(new NativeThemeButtonExample);
+    combobox_model_.AddExample(new NativeThemeCheckboxExample);
+    combobox_model_.AddExample(new ProgressBarExample);
+    combobox_model_.AddExample(new RadioButtonExample);
+    combobox_model_.AddExample(new ScrollViewExample);
+    combobox_model_.AddExample(new SingleSplitViewExample);
+    combobox_model_.AddExample(new TabbedPaneExample);
+    combobox_model_.AddExample(new TextExample);
+    combobox_model_.AddExample(new TextfieldExample);
+    combobox_model_.AddExample(new ThrobberExample);
+    combobox_model_.AddExample(new WidgetExample);
   }
 
   static ExamplesWindowContents* instance_;
-  ComboboxModelExampleList* combobox_model_;
+  ComboboxModelExampleList combobox_model_;
   Combobox* combobox_;
   View* example_shown_;
   Label* status_label_;
