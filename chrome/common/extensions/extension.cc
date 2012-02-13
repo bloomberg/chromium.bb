@@ -3041,12 +3041,8 @@ bool Extension::IsSyncable() const {
 }
 
 bool Extension::ShouldDisplayInLauncher() const {
-  // The CWS needs to be treated as syncable app because it appears on the NTP
-  // and we need to make sure its position values are synced.
-  // If another case arises where we need to have a special case like the CWS,
-  // something more systematic should be done.
-  return location_ == Extension::INTERNAL ||
-      id() == extension_misc::kWebStoreAppId;
+  // All apps should be displayed on the NTP except for the Cloud Print App.
+  return is_app() && id() != extension_misc::kCloudPrintAppId;
 }
 
 ExtensionInfo::ExtensionInfo(const DictionaryValue* manifest,

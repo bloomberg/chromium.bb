@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -805,6 +805,7 @@ TEST(ExtensionTest, GenerateId) {
 namespace {
 enum SyncTestExtensionType {
   EXTENSION,
+  APP,
   USER_SCRIPT,
   THEME
 };
@@ -820,9 +821,10 @@ static scoped_refptr<Extension> MakeSyncTestExtension(
   source.SetString(extension_manifest_keys::kName,
                    "PossiblySyncableExtension");
   source.SetString(extension_manifest_keys::kVersion, "0.0.0.0");
-  if (type == THEME) {
+  if (type == APP)
+    source.SetString(extension_manifest_keys::kApp, "true");
+  if (type == THEME)
     source.Set(extension_manifest_keys::kTheme, new DictionaryValue());
-  }
   if (!update_url.is_empty()) {
     source.SetString(extension_manifest_keys::kUpdateURL,
                      update_url.spec());
@@ -905,6 +907,18 @@ TEST(ExtensionTest, GetSyncTypeUserScriptThirdPartyUpdateUrl) {
           USER_SCRIPT, GURL("http://third-party.update_url.com"), GURL(),
           Extension::INTERNAL, 0, FilePath()));
   EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
+}
+
+TEST(ExtensionTest, OnlyDisplayAppsInLauncher) {
+  scoped_refptr<Extension> extension(
+      MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
+                            Extension::INTERNAL, 0, FilePath()));
+  EXPECT_FALSE(extension->ShouldDisplayInLauncher());
+
+  scoped_refptr<Extension> app(
+      MakeSyncTestExtension(APP, GURL(), GURL("http://www.google.com"),
+                            Extension::INTERNAL, 0, FilePath()));
+  EXPECT_TRUE(app->ShouldDisplayInLauncher());
 }
 
 // These last 2 tests don't make sense on Chrome OS, where extension plugins
