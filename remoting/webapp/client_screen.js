@@ -188,6 +188,11 @@ function onClientStateChange_(oldState, newState) {
     // to the session object and should ignore any state changes.
     return;
   }
+
+  // Clear the PIN on successful connection, or on error if we're not going to
+  // automatically retry.
+  var clearPin = false;
+
   if (newState == remoting.ClientSession.State.CREATED) {
     remoting.debug.log('Created plugin');
 
@@ -202,6 +207,7 @@ function onClientStateChange_(oldState, newState) {
 
   } else if (newState == remoting.ClientSession.State.CONNECTED) {
     if (remoting.clientSession) {
+      clearPin = true;
       remoting.setMode(remoting.AppMode.IN_SESSION);
       remoting.toolbar.center();
       remoting.toolbar.preview();
@@ -228,8 +234,10 @@ function onClientStateChange_(oldState, newState) {
   } else if (newState == remoting.ClientSession.State.CONNECTION_FAILED) {
     remoting.debug.log('Client plugin reported connection failed: ' +
                        remoting.clientSession.error);
+    clearPin = true;
     if (remoting.clientSession.error ==
         remoting.ClientSession.ConnectionError.HOST_IS_OFFLINE) {
+      clearPin = false;
       retryConnectOrReportOffline_();
     } else if (remoting.clientSession.error ==
                remoting.ClientSession.ConnectionError.SESSION_REJECTED) {
@@ -242,6 +250,10 @@ function onClientStateChange_(oldState, newState) {
       showConnectError_(remoting.Error.GENERIC);
     } else {
       showConnectError_(remoting.Error.GENERIC);
+    }
+
+    if (clearPin) {
+      document.getElementById('pin-entry').value = '';
     }
 
   } else {
@@ -264,7 +276,8 @@ function retryConnectOrReportOffline_() {
     /** @param {boolean} success True if the refresh was successful. */
     var onDone = function(success) {
       if (success) {
-        remoting.connectMe2Me(remoting.hostId, false);
+        remoting.retryIfOffline = false;
+        remoting.connectMe2MeWithPin();
       } else {
         showConnectError_(remoting.Error.HOST_IS_OFFLINE);
       }
@@ -475,7 +488,6 @@ function connectMe2MeWithAccessToken_(token) {
   if (token) {
     /** @type {string} */
     var pin = document.getElementById('pin-entry').value;
-    document.getElementById('pin-entry').value = '';
 
     remoting.clientSession =
         new remoting.ClientSession(
