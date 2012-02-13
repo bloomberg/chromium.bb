@@ -108,6 +108,11 @@ class ASH_EXPORT Shell {
   // Toggles app list.
   void ToggleAppList();
 
+  // Dynamic window mode chooses between MODE_OVERLAPPING and MODE_COMPACT
+  // based on screen resolution and dynamically changes modes when the screen
+  // resolution changes (e.g. plugging in a monitor).
+  void set_dynamic_window_mode(bool value) { dynamic_window_mode_ = value; }
+
   // Changes the current window mode, which will cause all the open windows
   // to be laid out in the new mode and layout managers and event filters to be
   // installed or removed.
@@ -165,11 +170,6 @@ class ASH_EXPORT Shell {
   // Made available for tests.
   internal::ShadowController* shadow_controller() {
     return shadow_controller_.get();
-  }
-
-  // Force shell to start in overlapping window mode despite host window size.
-  static void set_window_mode_overlapping_for_test(bool overlapping) {
-    window_mode_overlapping_for_test_ = overlapping;
   }
 
  private:
@@ -241,6 +241,9 @@ class ASH_EXPORT Shell {
   // the status area.
   internal::ShelfLayoutManager* shelf_;
 
+  // Change window mode based on screen resolution.
+  bool dynamic_window_mode_;
+
   // Can change at runtime.
   WindowMode window_mode_;
 
@@ -249,9 +252,6 @@ class ASH_EXPORT Shell {
 
   // Status area with clock, Wi-Fi signal, etc.
   views::Widget* status_widget_;
-
-  // Locks shell to overlapping window mode despite host window size.
-  static bool window_mode_overlapping_for_test_;
 
   // Offset between the corner of the status area and the corner of the screen
   // when in the compact window mode.

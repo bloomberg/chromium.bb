@@ -88,8 +88,6 @@ void ViewEventTestBase::SetUp() {
   ui::CompositorTestSupport::Initialize();
 #if defined(USE_AURA)
   aura::RootWindow::GetInstance();
-  // Tests require Shell to come up in overlapping mode, despite small window.
-  ash::Shell::set_window_mode_overlapping_for_test(true);
   ash::Shell::CreateInstance(NULL);
 #endif
   window_ = views::Widget::CreateWindow(this);

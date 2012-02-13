@@ -43,9 +43,6 @@
 #elif defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
-#if defined(USE_AURA)
-#include "ash/shell.h"
-#endif
 
 namespace {
 
@@ -117,12 +114,6 @@ void InProcessBrowserTest::SetUp() {
   FilePath log_dir = logging::GetSessionLogFile(*command_line).DirName();
   file_util::CreateDirectory(log_dir);
 #endif  // defined(OS_CHROMEOS)
-
-#if defined(USE_AURA)
-  // Tests require Shell to come up in overlapping mode, despite a small window
-  // for which we would normally use compact mode.
-  ash::Shell::set_window_mode_overlapping_for_test(true);
-#endif
 
   host_resolver_ = new net::RuleBasedHostResolverProc(NULL);
 

@@ -286,40 +286,46 @@ TEST_F(ShellTest, IsScreenLocked) {
 }
 
 TEST_F(ShellTest, ComputeWindowMode) {
-  // Since we're testing window mode computations, don't force overlapping.
-  ash::Shell::set_window_mode_overlapping_for_test(false);
-
-  // Wide screens use normal window mode.
+  // By default, we use overlapping mode for large screens.
   Shell* shell = Shell::GetInstance();
   gfx::Size monitor_size(1440, 900);
-  CommandLine command_line(CommandLine::NO_PROGRAM);
+  CommandLine command_line_blank(CommandLine::NO_PROGRAM);
   EXPECT_EQ(Shell::MODE_OVERLAPPING,
-            shell->ComputeWindowMode(monitor_size, &command_line));
+            shell->ComputeWindowMode(monitor_size, &command_line_blank));
 
-  // Alex-sized screens need compact mode.
-  monitor_size.SetSize(1280, 800);
-  EXPECT_EQ(Shell::MODE_COMPACT,
-            shell->ComputeWindowMode(monitor_size, &command_line));
-
-  // ZGB-sized screens need compact mode.
-  monitor_size.SetSize(1366, 768);
-  EXPECT_EQ(Shell::MODE_COMPACT,
-            shell->ComputeWindowMode(monitor_size, &command_line));
-
-  // Even for a small screen, the user can force overlapping mode.
+  // By default, we use overlapping mode for small screens too.
   monitor_size.SetSize(800, 600);
-  command_line.AppendSwitchASCII(ash::switches::kAuraWindowMode,
-                                 ash::switches::kAuraWindowModeOverlapping);
   EXPECT_EQ(Shell::MODE_OVERLAPPING,
-            shell->ComputeWindowMode(monitor_size, &command_line));
+            shell->ComputeWindowMode(monitor_size, &command_line_blank));
 
   // Even for a large screen, the user can force compact mode.
   monitor_size.SetSize(1920, 1080);
-  CommandLine command_line2(CommandLine::NO_PROGRAM);
-  command_line2.AppendSwitchASCII(ash::switches::kAuraWindowMode,
-                                  ash::switches::kAuraWindowModeCompact);
+  CommandLine command_line_compact(CommandLine::NO_PROGRAM);
+  command_line_compact.AppendSwitchASCII(switches::kAuraWindowMode,
+                                         switches::kAuraWindowModeCompact);
   EXPECT_EQ(Shell::MODE_COMPACT,
-            shell->ComputeWindowMode(monitor_size, &command_line2));
+            shell->ComputeWindowMode(monitor_size, &command_line_compact));
+
+  // Now test dynamic window mode computation.
+  Shell::GetInstance()->set_dynamic_window_mode(true);
+
+  // Alex-sized screens need compact mode when choosing dynamically.
+  monitor_size.SetSize(1280, 800);
+  EXPECT_EQ(Shell::MODE_COMPACT,
+            shell->ComputeWindowMode(monitor_size, &command_line_blank));
+
+  // ZGB-sized screens need compact mode when choosing dynamically.
+  monitor_size.SetSize(1366, 768);
+  EXPECT_EQ(Shell::MODE_COMPACT,
+            shell->ComputeWindowMode(monitor_size, &command_line_blank));
+
+  // Even for a small screen, the user can force overlapping mode.
+  monitor_size.SetSize(800, 600);
+  CommandLine command_line_force(CommandLine::NO_PROGRAM);
+  command_line_force.AppendSwitchASCII(switches::kAuraWindowMode,
+                                         switches::kAuraWindowModeOverlapping);
+  EXPECT_EQ(Shell::MODE_OVERLAPPING,
+            shell->ComputeWindowMode(monitor_size, &command_line_force));
 }
 
 // Fails on Mac only.  Need to be corrected.  http://crbug.com/111279.
@@ -397,8 +403,8 @@ TEST_F(ShellTest, MAYBE_ChangeWindowMode) {
 // only relevant on Chrome OS devices.
 #if defined(OS_CHROMEOS)
 TEST_F(ShellTest, ResizeRootWindow) {
-  // Since we're testing window mode computations, don't force overlapping.
-  ash::Shell::set_window_mode_overlapping_for_test(false);
+  // Allow dynamic window mode switching.
+  Shell::GetInstance()->set_dynamic_window_mode(true);
 
   // Switching to a small screen enables compact window mode.
   RootWindow::GetInstance()->SetHostSize(gfx::Size(1024, 768));

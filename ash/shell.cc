@@ -193,8 +193,6 @@ void RestoreMaximizedWindows(aura::Window* container) {
 
 // static
 Shell* Shell::instance_ = NULL;
-// static
-bool Shell::window_mode_overlapping_for_test_ = false;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Shell, public:
@@ -207,6 +205,7 @@ Shell::Shell(ShellDelegate* delegate)
 #endif
       delegate_(delegate),
       shelf_(NULL),
+      dynamic_window_mode_(false),
       window_mode_(MODE_OVERLAPPING),
       root_window_layout_(NULL),
       status_widget_(NULL) {
@@ -277,11 +276,13 @@ void Shell::Init() {
   input_method_filter_.reset(new internal::InputMethodEventFilter);
   AddRootWindowEventFilter(input_method_filter_.get());
 
-  // On small screens we automatically enable --aura-window-mode=compact if the
-  // user has not explicitly set a window mode flag. This must happen before
-  // we create containers or layout managers.
-  gfx::Size monitor_size = gfx::Screen::GetPrimaryMonitorSize();
+  // Dynamic window mode affects window mode computation.
   CommandLine* command_line = CommandLine::ForCurrentProcess();
+  dynamic_window_mode_ = command_line->HasSwitch(
+      switches::kAuraDynamicWindowMode);
+
+  // Window mode must be set before computing containers or layout managers.
+  gfx::Size monitor_size = gfx::Screen::GetPrimaryMonitorSize();
   window_mode_ = ComputeWindowMode(monitor_size, command_line);
 
   aura::RootWindow* root_window = aura::RootWindow::GetInstance();
@@ -351,9 +352,6 @@ void Shell::Init() {
 
 Shell::WindowMode Shell::ComputeWindowMode(const gfx::Size& monitor_size,
                                            CommandLine* command_line) const {
-  if (window_mode_overlapping_for_test_)
-    return MODE_OVERLAPPING;
-
   // Some devices don't perform well with overlapping windows.
   if (command_line->HasSwitch(switches::kAuraForceCompactWindowMode))
     return MODE_COMPACT;
@@ -370,18 +368,18 @@ Shell::WindowMode Shell::ComputeWindowMode(const gfx::Size& monitor_size,
       return MODE_OVERLAPPING;
   }
 
-  // If the screen is wide we prefer overlapping windows so you can arrange
-  // them side by side.
-  if (monitor_size.width() > kOverlappingWindowModeWidthThreshold)
-    return Shell::MODE_OVERLAPPING;
+  // If we're trying to dynamically choose window mode based on screen
+  // resolution, use compact mode for narrow/short screens.
+  // TODO(jamescook): If we go with a simple variant of overlapping mode for
+  // small screens we should remove this and the dynamic mode switching code
+  // in SetupCompactWindowMode and SetupNonCompactWindowMode.
+  if (dynamic_window_mode_ &&
+      monitor_size.width() <= kOverlappingWindowModeWidthThreshold &&
+      monitor_size.height() <= kOverlappingWindowModeHeightThreshold)
+    return Shell::MODE_COMPACT;
 
-  // If the screen is tall we prefer overlapping windows so you have access
-  // to the launcher for easier switching.
-  if (monitor_size.height() > kOverlappingWindowModeHeightThreshold)
-    return Shell::MODE_OVERLAPPING;
-
-  // If the screen is small we prefer compact.
-  return Shell::MODE_COMPACT;
+  // Overlapping is the default.
+  return Shell::MODE_OVERLAPPING;
 }
 
 aura::Window* Shell::GetContainer(int container_id) {
