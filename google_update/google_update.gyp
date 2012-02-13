@@ -12,6 +12,9 @@
         '<(SHARED_INTERMEDIATE_DIR)/google_update/google_update_idl.h',
         '<(SHARED_INTERMEDIATE_DIR)/google_update/google_update_idl_i.c',
       ],
+      # This target exports a hard dependency because dependent targets may
+      # include google_update_idl.h, a generated header.
+      'hard_dependency': 1,
       'msvs_settings': {
         'VCMIDLTool': {
           'OutputDirectory': '<(SHARED_INTERMEDIATE_DIR)/google_update',
