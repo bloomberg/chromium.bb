@@ -34,8 +34,8 @@
 #include "chrome_frame/buggy_bho_handling.h"
 #include "chrome_frame/crash_reporting/crash_metrics.h"
 #include "chrome_frame/utils.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/invalidate_type.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/page_zoom.h"
 #include "grit/generated_resources.h"
 
