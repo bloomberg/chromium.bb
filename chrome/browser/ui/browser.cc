@@ -3868,12 +3868,10 @@ void Browser::OnStartDownload(WebContents* source,
     CloseContents(source);
 }
 
-void Browser::ShowPageInfo(content::BrowserContext* browser_context,
-                           const GURL& url,
+void Browser::ShowPageInfo(const GURL& url,
                            const SSLStatus& ssl,
                            bool show_history) {
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  window()->ShowPageInfo(profile, url, ssl, show_history);
+  window()->ShowPageInfo(profile_, url, ssl, show_history);
 }
 
 void Browser::ViewSourceForTab(WebContents* source, const GURL& page_url) {

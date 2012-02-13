@@ -44,7 +44,6 @@ class RenderProcessHost;
 class WebContentsDelegate;
 struct RendererPreferences;
 class SiteInstance;
-struct SSLStatus;
 // TODO(jam): of course we will have to rename WebContentsView etc to use
 // WebContents.
 class WebContentsView;
@@ -216,11 +215,6 @@ class WebContents : public PageNavigator {
   // Creates a new WebContents with the same state as this one. The returned
   // heap-allocated pointer is owned by the caller.
   virtual WebContents* Clone() = 0;
-
-  // Shows the page info.
-  virtual void ShowPageInfo(const GURL& url,
-                            const SSLStatus& ssl,
-                            bool show_history) = 0;
 
   // Window management ---------------------------------------------------------
 

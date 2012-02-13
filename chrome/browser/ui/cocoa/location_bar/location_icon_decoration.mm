@@ -6,6 +6,7 @@
 
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
+#include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -16,6 +17,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+using content::NavigationController;
 using content::NavigationEntry;
 using content::WebContents;
 
@@ -99,12 +101,14 @@ bool LocationIconDecoration::OnMousePressed(NSRect frame) {
     return true;
 
   WebContents* tab = owner_->GetWebContents();
-  NavigationEntry* nav_entry = tab->GetController().GetActiveEntry();
+  const NavigationController& controller = tab->GetController();
+  NavigationEntry* nav_entry = controller.GetActiveEntry();
   if (!nav_entry) {
     NOTREACHED();
     return true;
   }
-  tab->ShowPageInfo(nav_entry->GetURL(), nav_entry->GetSSL(), true);
+  Browser* browser = Browser::GetBrowserForController(&controller, NULL);
+  browser->ShowPageInfo(nav_entry->GetURL(), nav_entry->GetSSL(), true);
   return true;
 }
 

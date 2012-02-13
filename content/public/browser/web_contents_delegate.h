@@ -224,15 +224,6 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Returns true if the context menu command was handled
   virtual bool ExecuteContextMenuCommand(int command);
 
-  // Shows the page info using the specified information.
-  // |url| is the url of the page/frame the info applies to, |ssl| is the SSL
-  // information for that page/frame.  If |show_history| is true, a section
-  // showing how many times that URL has been visited is added to the page info.
-  virtual void ShowPageInfo(content::BrowserContext* browser_context,
-                            const GURL& url,
-                            const SSLStatus& ssl,
-                            bool show_history) {}
-
   // Opens source view for given tab contents that is navigated to the given
   // page url.
   virtual void ViewSourceForTab(WebContents* source, const GURL& page_url);

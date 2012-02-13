@@ -846,15 +846,6 @@ WebContents* TabContents::Clone() {
   return tc;
 }
 
-void TabContents::ShowPageInfo(const GURL& url,
-                               const SSLStatus& ssl,
-                               bool show_history) {
-  if (!delegate_)
-    return;
-
-  delegate_->ShowPageInfo(GetBrowserContext(), url, ssl, show_history);
-}
-
 void TabContents::AddNewContents(WebContents* new_contents,
                                  WindowOpenDisposition disposition,
                                  const gfx::Rect& initial_pos,

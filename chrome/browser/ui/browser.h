@@ -555,6 +555,9 @@ class Browser : public TabHandlerDelegate,
   void SavePage();
   void ViewSelectedSource();
   void ShowFindBar();
+  void ShowPageInfo(const GURL& url,
+                    const content::SSLStatus& ssl,
+                    bool show_history);
 
   // Returns true if the Browser supports the specified feature. The value of
   // this varies during the lifetime of the browser. For example, if the window
@@ -964,10 +967,6 @@ class Browser : public TabHandlerDelegate,
   virtual int GetExtraRenderViewHeight() const OVERRIDE;
   virtual void OnStartDownload(content::WebContents* source,
                                content::DownloadItem* download) OVERRIDE;
-  virtual void ShowPageInfo(content::BrowserContext* browser_context,
-                            const GURL& url,
-                            const content::SSLStatus& ssl,
-                            bool show_history) OVERRIDE;
   virtual void ViewSourceForTab(content::WebContents* source,
                                 const GURL& page_url) OVERRIDE;
   virtual void ViewSourceForFrame(

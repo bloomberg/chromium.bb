@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/click_handler.h"
 
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "content/public/browser/navigation_controller.h"
@@ -11,6 +12,7 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/views/view.h"
 
+using content::NavigationController;
 using content::NavigationEntry;
 using content::WebContents;
 
@@ -30,10 +32,13 @@ void ClickHandler::OnMouseReleased(const views::MouseEvent& event) {
     return;
 
   WebContents* tab = location_bar_->GetTabContentsWrapper()->web_contents();
-  NavigationEntry* nav_entry = tab->GetController().GetActiveEntry();
+  const NavigationController& controller = tab->GetController();
+  NavigationEntry* nav_entry = controller.GetActiveEntry();
   if (!nav_entry) {
     NOTREACHED();
     return;
   }
-  tab->ShowPageInfo(nav_entry->GetURL(), nav_entry->GetSSL(), true);
+
+  Browser* browser = Browser::GetBrowserForController(&controller, NULL);
+  browser->ShowPageInfo(nav_entry->GetURL(), nav_entry->GetSSL(), true);
 }

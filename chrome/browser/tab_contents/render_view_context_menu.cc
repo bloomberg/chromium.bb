@@ -90,6 +90,7 @@
 
 using content::ChildProcessSecurityPolicy;
 using content::DownloadManager;
+using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;
 using content::SSLStatus;
@@ -1678,10 +1679,10 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_VIEWPAGEINFO: {
-      NavigationEntry* nav_entry =
-          source_web_contents_->GetController().GetActiveEntry();
-      source_web_contents_->ShowPageInfo(nav_entry->GetURL(),
-                                         nav_entry->GetSSL(), true);
+      NavigationController* controller = &source_web_contents_->GetController();
+      NavigationEntry* nav_entry = controller->GetActiveEntry();
+      Browser* browser = Browser::GetBrowserForController(controller, NULL);      
+      browser->ShowPageInfo(nav_entry->GetURL(), nav_entry->GetSSL(), true);
       break;
     }
 
@@ -1721,9 +1722,9 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_VIEWFRAMEINFO: {
-      source_web_contents_->ShowPageInfo(params_.frame_url,
-                                         params_.security_info,
-                                         false);  // Don't show the history.
+      Browser* browser = Browser::GetBrowserForController(
+          &source_web_contents_->GetController(), NULL);
+      browser->ShowPageInfo(params_.frame_url, params_.security_info, false);
       break;
     }
 
