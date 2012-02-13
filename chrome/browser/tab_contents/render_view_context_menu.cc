@@ -63,13 +63,13 @@
 #include "content/browser/download/download_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/browser/speech/speech_input_preferences.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/speech_input_preferences.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_restriction.h"
@@ -1844,7 +1844,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       const bool filter = !prefs->GetBoolean(
           prefs::kSpeechInputFilterProfanities);
       prefs->SetBoolean(prefs::kSpeechInputFilterProfanities, filter);
-      profile_->GetSpeechInputPreferences()->set_filter_profanities(filter);
+      profile_->GetSpeechInputPreferences()->SetFilterProfanities(filter);
       break;
     }
 

@@ -38,7 +38,6 @@ class PasswordStore;
 class PrefService;
 class PromoCounter;
 class ProtocolHandlerRegistry;
-class SpeechInputPreferences;
 class TemplateURLFetcher;
 class TestingProfile;
 class TokenService;
@@ -61,6 +60,7 @@ class Predictor;
 }
 
 namespace content {
+class SpeechInputPreferences;
 class WebUI;
 }
 
@@ -194,7 +194,7 @@ class Profile : public content::BrowserContext {
   virtual content::HostZoomMap* GetHostZoomMap() = 0;
   virtual content::GeolocationPermissionContext*
       GetGeolocationPermissionContext() = 0;
-  virtual SpeechInputPreferences* GetSpeechInputPreferences() = 0;
+  virtual content::SpeechInputPreferences* GetSpeechInputPreferences() = 0;
   virtual quota::QuotaManager* GetQuotaManager() = 0;
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker() = 0;
   virtual WebKitContext* GetWebKitContext() = 0;

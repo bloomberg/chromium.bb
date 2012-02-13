@@ -405,7 +405,8 @@ content::GeolocationPermissionContext*
   return profile_->GetGeolocationPermissionContext();
 }
 
-SpeechInputPreferences* OffTheRecordProfileImpl::GetSpeechInputPreferences() {
+content::SpeechInputPreferences*
+    OffTheRecordProfileImpl::GetSpeechInputPreferences() {
   return profile_->GetSpeechInputPreferences();
 }
 

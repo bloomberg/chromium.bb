@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,17 +20,17 @@ ChromeSpeechInputPreferences::ChromeSpeechInputPreferences(
 ChromeSpeechInputPreferences::~ChromeSpeechInputPreferences() {
 }
 
-bool ChromeSpeechInputPreferences::filter_profanities() const {
+bool ChromeSpeechInputPreferences::FilterProfanities() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return filter_profanities_;
 }
 
-void ChromeSpeechInputPreferences::set_filter_profanities(
+void ChromeSpeechInputPreferences::SetFilterProfanities(
     bool filter_profanities) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&ChromeSpeechInputPreferences::set_filter_profanities,
+        base::Bind(&ChromeSpeechInputPreferences::SetFilterProfanities,
                    this, filter_profanities));
     return;
   }

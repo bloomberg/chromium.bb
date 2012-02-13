@@ -15,12 +15,17 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 
+namespace content {
+class SpeechInputPreferences;
+}
+
 namespace history {
 class TopSites;
 }
 
 namespace net {
 class CookieMonster;
+class URLRequestContextGetter;
 }
 
 namespace quota {
@@ -39,14 +44,9 @@ class HostContentSettingsMap;
 class PrefService;
 class ProfileDependencyManager;
 class ProfileSyncService;
-class SpeechInputPreferences;
 class TemplateURLService;
 class TestingPrefService;
 class WebKitContext;
-
-namespace net {
-class URLRequestContextGetter;
-}
 
 class TestingProfile : public Profile {
  public:
@@ -229,7 +229,7 @@ class TestingProfile : public Profile {
   virtual HostContentSettingsMap* GetHostContentSettingsMap() OVERRIDE;
   virtual content::GeolocationPermissionContext*
       GetGeolocationPermissionContext() OVERRIDE;
-  virtual SpeechInputPreferences* GetSpeechInputPreferences() OVERRIDE;
+  virtual content::SpeechInputPreferences* GetSpeechInputPreferences() OVERRIDE;
   virtual content::HostZoomMap* GetHostZoomMap() OVERRIDE;
   virtual std::wstring GetName();
   virtual void SetName(const std::wstring& name) {}
@@ -371,7 +371,7 @@ class TestingProfile : public Profile {
   scoped_refptr<content::GeolocationPermissionContext>
       geolocation_permission_context_;
 
-  scoped_refptr<SpeechInputPreferences> speech_input_preferences_;
+  scoped_refptr<content::SpeechInputPreferences> speech_input_preferences_;
 
   FilePath last_selected_directory_;
   scoped_refptr<history::TopSites> top_sites_;  // For history and thumbnails.

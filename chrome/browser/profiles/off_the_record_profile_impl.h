@@ -82,7 +82,7 @@ class OffTheRecordProfileImpl : public Profile,
   virtual content::HostZoomMap* GetHostZoomMap() OVERRIDE;
   virtual content::GeolocationPermissionContext*
       GetGeolocationPermissionContext() OVERRIDE;
-  virtual SpeechInputPreferences* GetSpeechInputPreferences() OVERRIDE;
+  virtual content::SpeechInputPreferences* GetSpeechInputPreferences() OVERRIDE;
   virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() OVERRIDE;
   virtual bool DidLastSessionExitCleanly() OVERRIDE;
   virtual BookmarkModel* GetBookmarkModel() OVERRIDE;

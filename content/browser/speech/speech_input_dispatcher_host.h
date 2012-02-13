@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,7 @@ class SpeechInputDispatcherHost : public content::BrowserMessageFilter,
   SpeechInputDispatcherHost(
       int render_process_id,
       net::URLRequestContextGetter* context_getter,
-      SpeechInputPreferences* speech_input_preferences,
+      content::SpeechInputPreferences* speech_input_preferences,
       content::ResourceContext* resource_context);
 
   // SpeechInputManager::Delegate methods.
@@ -63,7 +63,7 @@ class SpeechInputDispatcherHost : public content::BrowserMessageFilter,
   bool may_have_pending_requests_;  // Set if we received any speech IPC request
 
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
-  scoped_refptr<SpeechInputPreferences> speech_input_preferences_;
+  scoped_refptr<content::SpeechInputPreferences> speech_input_preferences_;
   content::ResourceContext* resource_context_;
 
   static SpeechInputManager* manager_;

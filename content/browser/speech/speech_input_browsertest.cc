@@ -66,7 +66,7 @@ class FakeSpeechInputManager : public SpeechInputManager {
       const std::string& language, const std::string& grammar,
       const std::string& origin_url,
       net::URLRequestContextGetter* context_getter,
-      SpeechInputPreferences* speech_input_prefs,
+      content::SpeechInputPreferences* speech_input_prefs,
       AudioManager* audio_manager) OVERRIDE {
     VLOG(1) << "StartRecognition invoked.";
     EXPECT_EQ(0, caller_id_);

@@ -702,7 +702,7 @@ TestingProfile::GetGeolocationPermissionContext() {
   return geolocation_permission_context_.get();
 }
 
-SpeechInputPreferences* TestingProfile::GetSpeechInputPreferences() {
+content::SpeechInputPreferences* TestingProfile::GetSpeechInputPreferences() {
   if (!speech_input_preferences_.get())
     speech_input_preferences_ = new ChromeSpeechInputPreferences(GetPrefs());
   return speech_input_preferences_.get();

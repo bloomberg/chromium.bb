@@ -27,7 +27,6 @@ class DatabaseTracker;
 class ChromeAppCacheService;
 class ChromeBlobStorageContext;
 class FilePath;
-class SpeechInputPreferences;
 class SSLHostState;
 class WebKitContext;
 
@@ -37,6 +36,7 @@ class DownloadManager;
 class GeolocationPermissionContext;
 class HostZoomMap;
 class ResourceContext;
+class SpeechInputPreferences;
 
 // This class holds the context needed for a browsing session.
 // It lives on the UI thread.

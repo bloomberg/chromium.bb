@@ -26,7 +26,6 @@ class ExtensionPrefValueMap;
 class NetPrefObserver;
 class PrefService;
 class PromoResourceService;
-class SpeechInputPreferences;
 class SSLConfigServiceManager;
 class VisitedLinkEventListener;
 
@@ -37,6 +36,10 @@ class LocaleChangeGuard;
 class Preferences;
 }
 #endif
+
+namespace content {
+class SpeechInputPreferences;
+}
 
 // The default profile implementation.
 class ProfileImpl : public Profile,
@@ -58,7 +61,7 @@ class ProfileImpl : public Profile,
   virtual content::HostZoomMap* GetHostZoomMap() OVERRIDE;
   virtual content::GeolocationPermissionContext*
       GetGeolocationPermissionContext() OVERRIDE;
-  virtual SpeechInputPreferences* GetSpeechInputPreferences() OVERRIDE;
+  virtual content::SpeechInputPreferences* GetSpeechInputPreferences() OVERRIDE;
   virtual quota::QuotaManager* GetQuotaManager() OVERRIDE;
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker() OVERRIDE;
   virtual WebKitContext* GetWebKitContext() OVERRIDE;
@@ -241,7 +244,7 @@ class ProfileImpl : public Profile,
   scoped_refptr<content::HostZoomMap> host_zoom_map_;
   scoped_refptr<content::GeolocationPermissionContext>
       geolocation_permission_context_;
-  scoped_refptr<SpeechInputPreferences> speech_input_preferences_;
+  scoped_refptr<content::SpeechInputPreferences> speech_input_preferences_;
   scoped_refptr<UserStyleSheetWatcher> user_style_sheet_watcher_;
   scoped_ptr<GAIAInfoUpdateService> gaia_info_update_service_;
   scoped_refptr<HistoryService> history_service_;

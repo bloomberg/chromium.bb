@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,18 +7,17 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "chrome/browser/prefs/pref_service.h"
-#include "content/browser/speech/speech_input_preferences.h"
+#include "content/public/browser/speech_input_preferences.h"
 
 class PrefService;
 
-class ChromeSpeechInputPreferences : public SpeechInputPreferences {
+class ChromeSpeechInputPreferences : public content::SpeechInputPreferences {
  public:
   explicit ChromeSpeechInputPreferences(PrefService* pref_service);
 
-  // SpeechInputPreferences methods.
-  virtual bool filter_profanities() const OVERRIDE;
-  virtual void set_filter_profanities(bool filter_profanities) OVERRIDE;
+  // Overridden from content::SpeechInputPreferences:
+  virtual bool FilterProfanities() const OVERRIDE;
+  virtual void SetFilterProfanities(bool filter_profanities) OVERRIDE;
 
  private:
   virtual ~ChromeSpeechInputPreferences();

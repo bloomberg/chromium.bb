@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,10 +13,9 @@
 #include "content/common/content_export.h"
 #include "ui/gfx/rect.h"
 
-class SpeechInputPreferences;
-
 namespace content {
 class ResourceContext;
+class SpeechInputPreferences;
 struct SpeechInputResult;
 }
 
@@ -69,17 +68,18 @@ class CONTENT_EXPORT SpeechInputManager : public SpeechRecognizerDelegate {
   // request.
   // |element_rect| is the display bounds of the html element requesting speech
   // input (in page coordinates).
-  virtual void StartRecognition(Delegate* delegate,
-                                int caller_id,
-                                int render_process_id,
-                                int render_view_id,
-                                const gfx::Rect& element_rect,
-                                const std::string& language,
-                                const std::string& grammar,
-                                const std::string& origin_url,
-                                net::URLRequestContextGetter* context_getter,
-                                SpeechInputPreferences* speech_input_prefs,
-                                AudioManager* audio_manager);
+  virtual void StartRecognition(
+      Delegate* delegate,
+      int caller_id,
+      int render_process_id,
+      int render_view_id,
+      const gfx::Rect& element_rect,
+      const std::string& language,
+      const std::string& grammar,
+      const std::string& origin_url,
+      net::URLRequestContextGetter* context_getter,
+      content::SpeechInputPreferences* speech_input_prefs,
+      AudioManager* audio_manager);
   virtual void CancelRecognition(int caller_id);
   virtual void CancelAllRequestsWithDelegate(Delegate* delegate);
   virtual void StopRecording(int caller_id);

@@ -16,10 +16,10 @@
 #include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
-#include "content/browser/speech/speech_input_preferences.h"
 #include "content/browser/ssl/ssl_host_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/geolocation_permission_context.h"
+#include "content/public/browser/speech_input_preferences.h"
 #include "content/shell/shell_browser_main.h"
 #include "content/shell/shell_download_manager_delegate.h"
 #include "content/shell/shell_resource_context.h"
@@ -76,12 +76,12 @@ class ShellSpeechInputPreferences : public SpeechInputPreferences {
   ShellSpeechInputPreferences() {
   }
 
-  // SpeechInputPreferences implementation.
-  virtual bool filter_profanities() const OVERRIDE {
+  // Overridden from SpeechInputPreferences:
+  virtual bool FilterProfanities() const OVERRIDE {
     return false;
   }
 
-  virtual void set_filter_profanities(bool filter_profanities) OVERRIDE {
+  virtual void SetFilterProfanities(bool filter_profanities) OVERRIDE {
   }
 
  private:

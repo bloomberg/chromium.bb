@@ -1,14 +1,14 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/browser/speech/speech_input_dispatcher_host.h"
 
 #include "base/lazy_instance.h"
-#include "content/browser/speech/speech_input_preferences.h"
 #include "content/common/speech_input_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/browser/speech_input_preferences.h"
 
 using content::BrowserThread;
 
@@ -115,7 +115,7 @@ void SpeechInputDispatcherHost::set_manager(SpeechInputManager* manager) {
 SpeechInputDispatcherHost::SpeechInputDispatcherHost(
     int render_process_id,
     net::URLRequestContextGetter* context_getter,
-    SpeechInputPreferences* speech_input_preferences,
+    content::SpeechInputPreferences* speech_input_preferences,
     content::ResourceContext* resource_context)
     : render_process_id_(render_process_id),
       may_have_pending_requests_(false),

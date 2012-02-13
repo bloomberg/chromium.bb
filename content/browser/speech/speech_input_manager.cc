@@ -6,10 +6,10 @@
 
 #include "base/bind.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/speech/speech_input_preferences.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/browser/speech_input_preferences.h"
 #include "content/public/common/view_type.h"
 #include "media/audio/audio_manager.h"
 
@@ -27,7 +27,7 @@ struct SpeechInputManager::SpeechInputParams {
                     const std::string& grammar,
                     const std::string& origin_url,
                     net::URLRequestContextGetter* context_getter,
-                    SpeechInputPreferences* speech_input_prefs,
+                    content::SpeechInputPreferences* speech_input_prefs,
                     AudioManager* audio_manager)
       : delegate(delegate),
         caller_id(caller_id),
@@ -51,7 +51,7 @@ struct SpeechInputManager::SpeechInputParams {
   std::string grammar;
   std::string origin_url;
   net::URLRequestContextGetter* context_getter;
-  SpeechInputPreferences* speech_input_prefs;
+  content::SpeechInputPreferences* speech_input_prefs;
   scoped_refptr<AudioManager> audio_manager_;
 };
 
@@ -114,7 +114,7 @@ void SpeechInputManager::StartRecognition(
     const std::string& grammar,
     const std::string& origin_url,
     net::URLRequestContextGetter* context_getter,
-    SpeechInputPreferences* speech_input_prefs,
+    content::SpeechInputPreferences* speech_input_prefs,
     AudioManager* audio_manager) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(
@@ -165,7 +165,7 @@ void SpeechInputManager::ProceedStartingRecognition(
   request->recognizer = new SpeechRecognizer(
       this, params.caller_id, params.language, params.grammar,
       params.context_getter, params.audio_manager_,
-      params.speech_input_prefs->filter_profanities(),
+      params.speech_input_prefs->FilterProfanities(),
       request_info_, can_report_metrics_ ? params.origin_url : "");
   request->is_active = false;
 
