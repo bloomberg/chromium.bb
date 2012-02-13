@@ -28,6 +28,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
 #import "content/browser/renderer_host/text_input_client_mac.h"
+#include "content/common/accessibility_messages.h"
 #include "content/common/edit_command.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/plugin_messages.h"
@@ -1126,7 +1127,7 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
 }
 
 void RenderWidgetHostViewMac::OnAccessibilityNotifications(
-    const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params) {
+    const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
   if (!GetBrowserAccessibilityManager()) {
     SetBrowserAccessibilityManager(
         BrowserAccessibilityManager::CreateEmptyDocument(
@@ -2039,7 +2040,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 
 - (void)doDefaultAction:(int32)accessibilityObjectId {
   RenderWidgetHost* rwh = renderWidgetHostView_->render_widget_host_;
-  rwh->Send(new ViewMsg_AccessibilityDoDefaultAction(
+  rwh->Send(new AccessibilityMsg_DoDefaultAction(
       rwh->routing_id(), accessibilityObjectId));
 }
 
@@ -2060,7 +2061,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
               accessibilityId:(int32)accessibilityObjectId {
   if (focus) {
     RenderWidgetHost* rwh = renderWidgetHostView_->render_widget_host_;
-    rwh->Send(new ViewMsg_SetAccessibilityFocus(
+    rwh->Send(new AccessibilityMsg_SetFocus(
         rwh->routing_id(), accessibilityObjectId));
   }
 }

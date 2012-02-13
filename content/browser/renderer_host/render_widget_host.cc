@@ -22,6 +22,7 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/common/accessibility_messages.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -1348,7 +1349,7 @@ void RenderWidgetHost::EnableRendererAccessibility() {
 
   if (process_->HasConnection()) {
     // Renderer accessibility wasn't enabled on process launch. Enable it now.
-    Send(new ViewMsg_EnableAccessibility(routing_id()));
+    Send(new AccessibilityMsg_Enable(routing_id()));
   }
 }
 
@@ -1420,28 +1421,28 @@ void RenderWidgetHost::SetEditCommandsForNextKeyEvent(
 }
 
 void RenderWidgetHost::AccessibilityDoDefaultAction(int object_id) {
-  Send(new ViewMsg_AccessibilityDoDefaultAction(routing_id(), object_id));
+  Send(new AccessibilityMsg_DoDefaultAction(routing_id(), object_id));
 }
 
 void RenderWidgetHost::AccessibilitySetFocus(int object_id) {
-  Send(new ViewMsg_SetAccessibilityFocus(routing_id(), object_id));
+  Send(new AccessibilityMsg_SetFocus(routing_id(), object_id));
 }
 
 void RenderWidgetHost::AccessibilityScrollToMakeVisible(
     int acc_obj_id, gfx::Rect subfocus) {
-  Send(new ViewMsg_AccessibilityScrollToMakeVisible(
+  Send(new AccessibilityMsg_ScrollToMakeVisible(
       routing_id(), acc_obj_id, subfocus));
 }
 
 void RenderWidgetHost::AccessibilityScrollToPoint(
     int acc_obj_id, gfx::Point point) {
-  Send(new ViewMsg_AccessibilityScrollToPoint(
+  Send(new AccessibilityMsg_ScrollToPoint(
       routing_id(), acc_obj_id, point));
 }
 
 void RenderWidgetHost::AccessibilitySetTextSelection(
     int object_id, int start_offset, int end_offset) {
-  Send(new ViewMsg_AccessibilitySetTextSelection(
+  Send(new AccessibilityMsg_SetTextSelection(
       routing_id(), object_id, start_offset, end_offset));
 }
 

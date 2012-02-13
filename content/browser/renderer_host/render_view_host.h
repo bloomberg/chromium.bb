@@ -37,8 +37,8 @@ class PowerSaveBlocker;
 class SessionStorageNamespace;
 class SkBitmap;
 class ViewMsg_Navigate;
+struct AccessibilityHostMsg_NotificationParams;
 struct MediaPlayerAction;
-struct ViewHostMsg_AccessibilityNotification_Params;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_ShowPopup_Params;
 struct ViewMsg_Navigate_Params;
@@ -583,7 +583,7 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
   void OnMsgShouldCloseACK(bool proceed);
   void OnMsgClosePageACK();
   void OnAccessibilityNotifications(
-      const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params);
+      const std::vector<AccessibilityHostMsg_NotificationParams>& params);
   void OnScriptEvalResponse(int id, const base::ListValue& result);
   void OnDidZoomURL(double zoom_level, bool remember, const GURL& url);
   void OnMediaNotification(int64 player_cookie,

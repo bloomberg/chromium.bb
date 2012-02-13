@@ -5,7 +5,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 
 #include "content/browser/accessibility/browser_accessibility_win.h"
-#include "content/common/view_messages.h"
+#include "content/common/accessibility_messages.h"
 
 using webkit_glue::WebAccessibility;
 
@@ -62,49 +62,49 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
     BrowserAccessibility* node) {
   LONG event_id = EVENT_MIN;
   switch (type) {
-    case ViewHostMsg_AccEvent::ACTIVE_DESCENDANT_CHANGED:
+    case AccessibilityNotificationActiveDescendantChanged:
       event_id = IA2_EVENT_ACTIVE_DESCENDANT_CHANGED;
       break;
-    case ViewHostMsg_AccEvent::CHECK_STATE_CHANGED:
+    case AccessibilityNotificationCheckStateChanged:
       event_id = EVENT_OBJECT_STATECHANGE;
       break;
-    case ViewHostMsg_AccEvent::CHILDREN_CHANGED:
+    case AccessibilityNotificationChildrenChanged:
       event_id = EVENT_OBJECT_REORDER;
       break;
-    case ViewHostMsg_AccEvent::FOCUS_CHANGED:
+    case AccessibilityNotificationFocusChanged:
       event_id = EVENT_OBJECT_FOCUS;
       break;
-    case ViewHostMsg_AccEvent::LOAD_COMPLETE:
+    case AccessibilityNotificationLoadComplete:
       event_id = IA2_EVENT_DOCUMENT_LOAD_COMPLETE;
       break;
-    case ViewHostMsg_AccEvent::VALUE_CHANGED:
+    case AccessibilityNotificationValueChangedD:
       event_id = EVENT_OBJECT_VALUECHANGE;
       break;
-    case ViewHostMsg_AccEvent::SELECTED_TEXT_CHANGED:
+    case AccessibilityNotificationSelectedTextChanged:
       event_id = IA2_EVENT_TEXT_CARET_MOVED;
       break;
-    case ViewHostMsg_AccEvent::LIVE_REGION_CHANGED:
+    case AccessibilityNotificationLiveRegionChanged:
       event_id = EVENT_OBJECT_REORDER;
       break;
-    case ViewHostMsg_AccEvent::TEXT_INSERTED:
+    case AccessibilityNotificationTextInserted:
       event_id = IA2_EVENT_TEXT_INSERTED;
       break;
-    case ViewHostMsg_AccEvent::TEXT_REMOVED:
+    case AccessibilityNotificationTextRemoved:
       event_id = IA2_EVENT_TEXT_REMOVED;
       break;
-    case ViewHostMsg_AccEvent::OBJECT_SHOW:
+    case AccessibilityNotificationObjectShow:
       event_id = EVENT_OBJECT_SHOW;
       break;
-    case ViewHostMsg_AccEvent::OBJECT_HIDE:
+    case AccessibilityNotificationObjectHide:
       event_id = EVENT_OBJECT_HIDE;
       break;
-    case ViewHostMsg_AccEvent::ALERT:
+    case AccessibilityNotificationAlert:
       event_id = EVENT_SYSTEM_ALERT;
       break;
-    case ViewHostMsg_AccEvent::MENU_LIST_VALUE_CHANGED:
+    case AccessibilityNotificationMenuListValueChanged:
       event_id = EVENT_OBJECT_VALUECHANGE;
       break;
-    case ViewHostMsg_AccEvent::SELECTED_CHILDREN_CHANGED:
+    case AccessibilityNotificationSelectedChildrenChanged:
       event_id = EVENT_OBJECT_SELECTIONWITHIN;
       break;
     default:
@@ -119,7 +119,7 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
   // If this is a layout complete notification (sent when a container scrolls)
   // and there is a descendant tracked object, send a notification on it.
   // TODO(dmazzoni): remove once http://crbug.com/113483 is fixed.
-  if (type == ViewHostMsg_AccEvent::LAYOUT_COMPLETE &&
+  if (type == AccessibilityNotificationLayoutComplete &&
       tracked_scroll_object_ &&
       tracked_scroll_object_->IsDescendantOf(node)) {
     NotifyWinEvent(IA2_EVENT_VISIBLE_DATA_CHANGED,

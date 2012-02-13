@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 
 #import "base/logging.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
-#include "content/common/view_messages.h"
+#include "content/common/accessibility_messages.h"
 
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
@@ -32,66 +32,66 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
   // Refer to AXObjectCache.mm (webkit).
   NSString* event_id = @"";
   switch (type) {
-    case ViewHostMsg_AccEvent::ACTIVE_DESCENDANT_CHANGED:
+    case AccessibilityNotificationActiveDescendantChanged:
       if (node->role() == WebAccessibility::ROLE_TREE)
         event_id = NSAccessibilitySelectedRowsChangedNotification;
       else
         event_id = NSAccessibilityFocusedUIElementChangedNotification;
-    case ViewHostMsg_AccEvent::ALERT:
+    case AccessibilityNotificationAlert:
       // Not used on Mac.
       return;
-    case ViewHostMsg_AccEvent::CHECK_STATE_CHANGED:
+    case AccessibilityNotificationCheckStateChanged:
       // Not used on Mac.
       return;
-    case ViewHostMsg_AccEvent::CHILDREN_CHANGED:
+    case AccessibilityNotificationChildrenChanged:
       // TODO(dtseng): no clear equivalent on Mac.
       return;
-    case ViewHostMsg_AccEvent::FOCUS_CHANGED:
+    case AccessibilityNotificationFocusChanged:
       event_id = NSAccessibilityFocusedUIElementChangedNotification;
       break;
-    case ViewHostMsg_AccEvent::LAYOUT_COMPLETE:
+    case AccessibilityNotificationLayoutComplete:
       event_id = @"AXLayoutComplete";
       break;
-    case ViewHostMsg_AccEvent::LIVE_REGION_CHANGED:
+    case AccessibilityNotificationLiveRegionChanged:
       event_id = @"AXLiveRegionChanged";
       break;
-    case ViewHostMsg_AccEvent::LOAD_COMPLETE:
+    case AccessibilityNotificationLoadComplete:
       event_id = @"AXLoadComplete";
       break;
-    case ViewHostMsg_AccEvent::MENU_LIST_VALUE_CHANGED:
+    case AccessibilityNotificationMenuListValueChanged:
       // Not used on Mac.
       return;
-    case ViewHostMsg_AccEvent::OBJECT_SHOW:
+    case AccessibilityNotificationObjectShow:
       // Not used on Mac.
       return;
-    case ViewHostMsg_AccEvent::OBJECT_HIDE:
+    case AccessibilityNotificationObjectHide:
       // Not used on Mac.
       return;
-    case ViewHostMsg_AccEvent::ROW_COUNT_CHANGED:
+    case AccessibilityNotificationRowCountChanged:
       event_id = NSAccessibilityRowCountChangedNotification;
       break;
-    case ViewHostMsg_AccEvent::ROW_COLLAPSED:
+    case AccessibilityNotificationRowCollapsed:
       event_id = @"AXRowCollapsed";
       break;
-    case ViewHostMsg_AccEvent::ROW_EXPANDED:
+    case AccessibilityNotificationRowExpanded:
       event_id = @"AXRowExpanded";
       break;
-    case ViewHostMsg_AccEvent::SCROLLED_TO_ANCHOR:
+    case AccessibilityNotificationScrolledToAnchor:
       // Not used on Mac.
       return;
-    case ViewHostMsg_AccEvent::SELECTED_CHILDREN_CHANGED:
+    case AccessibilityNotificationSelectedChildrenChanged:
       event_id = NSAccessibilitySelectedChildrenChangedNotification;
       break;
-    case ViewHostMsg_AccEvent::SELECTED_TEXT_CHANGED:
+    case AccessibilityNotificationSelectedTextChanged:
       event_id = NSAccessibilitySelectedTextChangedNotification;
       break;
-    case ViewHostMsg_AccEvent::TEXT_INSERTED:
+    case AccessibilityNotificationTextInserted:
       // Not used on Mac.
       return;
-    case ViewHostMsg_AccEvent::TEXT_REMOVED:
+    case AccessibilityNotificationTextRemoved:
       // Not used on Mac.
       return;
-    case ViewHostMsg_AccEvent::VALUE_CHANGED:
+    case AccessibilityNotificationValueChangedD:
       event_id = NSAccessibilityValueChangedNotification;
       break;
   }

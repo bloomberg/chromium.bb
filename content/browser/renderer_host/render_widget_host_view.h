@@ -37,8 +37,8 @@ class BackingStore;
 class BrowserAccessibilityManager;
 class RenderWidgetHost;
 class WebCursor;
+struct AccessibilityHostMsg_NotificationParams;
 struct NativeWebKeyboardEvent;
-struct ViewHostMsg_AccessibilityNotification_Params;
 
 namespace content {
 class RenderProcessHost;
@@ -348,7 +348,7 @@ class RenderWidgetHostView {
   const SkBitmap& background() const { return background_; }
 
   virtual void OnAccessibilityNotifications(
-      const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params) {
+      const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
   }
 
   BrowserAccessibilityManager* GetBrowserAccessibilityManager() const;

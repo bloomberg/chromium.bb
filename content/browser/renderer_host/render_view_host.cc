@@ -27,6 +27,7 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/common/accessibility_messages.h"
 #include "content/common/desktop_notification_messages.h"
 #include "content/common/drag_messages.h"
 #include "content/common/speech_input_messages.h"
@@ -770,8 +771,6 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionChanged, OnMsgSelectionChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionBoundsChanged,
                         OnMsgSelectionBoundsChanged)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AccessibilityNotifications,
-                        OnAccessibilityNotifications)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ScriptEvalResponse, OnScriptEvalResponse)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidZoomURL, OnDidZoomURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_MediaNotification, OnMediaNotification)
@@ -788,6 +787,8 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_WebUISend, OnWebUISend)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DomOperationResponse,
                         OnDomOperationResponse)
+    IPC_MESSAGE_HANDLER(AccessibilityHostMsg_Notifications,
+                        OnAccessibilityNotifications)
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(handled = RenderWidgetHost::OnMessageReceived(msg))
   IPC_END_MESSAGE_MAP_EX()
@@ -1439,16 +1440,16 @@ void RenderViewHost::StopFinding(content::StopFindAction action) {
 }
 
 void RenderViewHost::OnAccessibilityNotifications(
-    const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params) {
+    const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
   if (view() && !is_swapped_out_)
     view()->OnAccessibilityNotifications(params);
 
   if (!params.empty()) {
     for (unsigned i = 0; i < params.size(); i++) {
-      const ViewHostMsg_AccessibilityNotification_Params& param = params[i];
+      const AccessibilityHostMsg_NotificationParams& param = params[i];
 
-      if ((param.notification_type == ViewHostMsg_AccEvent::LAYOUT_COMPLETE ||
-           param.notification_type == ViewHostMsg_AccEvent::LOAD_COMPLETE) &&
+      if ((param.notification_type == AccessibilityNotificationLayoutComplete ||
+           param.notification_type == AccessibilityNotificationLoadComplete) &&
           save_accessibility_tree_for_testing_) {
         accessibility_tree_ = param.acc_tree;
 
@@ -1462,7 +1463,7 @@ void RenderViewHost::OnAccessibilityNotifications(
     }
   }
 
-  Send(new ViewMsg_AccessibilityNotifications_ACK(routing_id()));
+  Send(new AccessibilityMsg_Notifications_ACK(routing_id()));
 }
 
 void RenderViewHost::OnScriptEvalResponse(int id, const ListValue& result) {

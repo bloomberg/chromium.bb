@@ -80,13 +80,13 @@ class RendererAccessibility : public content::RenderViewObserver {
   void ClearBrowserTreeNode(BrowserTreeNode* browser_node);
 
   // Handlers for messages from the browser to the renderer.
-  void OnAccessibilityDoDefaultAction(int acc_obj_id);
-  void OnAccessibilityNotificationsAck();
+  void OnDoDefaultAction(int acc_obj_id);
+  void OnNotificationsAck();
   void OnChangeScrollPosition(int acc_obj_id, int scroll_x, int scroll_y);
   void OnScrollToMakeVisible(int acc_obj_id, gfx::Rect subfocus);
   void OnScrollToPoint(int acc_obj_id, gfx::Point point);
-  void OnEnableAccessibility();
-  void OnSetAccessibilityFocus(int acc_obj_id);
+  void OnEnable();
+  void OnSetFocus(int acc_obj_id);
 
   void OnSetTextSelection(int acc_obj_id, int start_offset, int end_offset);
 

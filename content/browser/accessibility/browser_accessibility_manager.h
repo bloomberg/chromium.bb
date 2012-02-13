@@ -22,7 +22,7 @@ class BrowserAccessibilityManagerWin;
 
 using webkit_glue::WebAccessibility;
 
-struct ViewHostMsg_AccessibilityNotification_Params;
+struct AccessibilityHostMsg_NotificationParams;
 
 // Class that can perform actions on behalf of the BrowserAccessibilityManager.
 class CONTENT_EXPORT BrowserAccessibilityDelegate {
@@ -70,8 +70,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
 
   virtual ~BrowserAccessibilityManager();
 
-  // Type is a ViewHostMsg_AccessibilityNotification_Type::int.
-  // We pass it as int so that we don't include the render message declaration
+  // Type is enum AccessibilityNotification.
+  // We pass it as int so that we don't include the message declaration
   // header here.
   virtual void NotifyAccessibilityEvent(
       int type,
@@ -128,7 +128,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
   // Called when the renderer process has notified us of about tree changes.
   // Send a notification to MSAA clients of the change.
   void OnAccessibilityNotifications(
-      const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params);
+      const std::vector<AccessibilityHostMsg_NotificationParams>& params);
 
   gfx::NativeView GetParentView();
 

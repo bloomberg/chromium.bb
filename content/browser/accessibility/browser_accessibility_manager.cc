@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "content/browser/accessibility/browser_accessibility.h"
-#include "content/common/view_messages.h"
+#include "content/common/accessibility_messages.h"
 
 using webkit_glue::WebAccessibility;
 
@@ -116,7 +116,7 @@ void BrowserAccessibilityManager::GotFocus() {
   if (!focus_)
     return;
 
-  NotifyAccessibilityEvent(ViewHostMsg_AccEvent::FOCUS_CHANGED, focus_);
+  NotifyAccessibilityEvent(AccessibilityNotificationFocusChanged, focus_);
 }
 
 void BrowserAccessibilityManager::Remove(int32 child_id, int32 renderer_id) {
@@ -131,9 +131,9 @@ void BrowserAccessibilityManager::Remove(int32 child_id, int32 renderer_id) {
 }
 
 void BrowserAccessibilityManager::OnAccessibilityNotifications(
-    const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params) {
+    const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
   for (uint32 index = 0; index < params.size(); index++) {
-    const ViewHostMsg_AccessibilityNotification_Params& param = params[index];
+    const AccessibilityHostMsg_NotificationParams& param = params[index];
 
     // Update the tree.
     UpdateNode(param.acc_tree, param.includes_children);
@@ -152,7 +152,7 @@ void BrowserAccessibilityManager::OnAccessibilityNotifications(
       continue;
     }
 
-    if (param.notification_type == ViewHostMsg_AccEvent::FOCUS_CHANGED) {
+    if (param.notification_type == AccessibilityNotificationFocusChanged) {
       SetFocus(node, false);
 
       // Don't send a native focus event if the window itself doesn't
@@ -165,11 +165,11 @@ void BrowserAccessibilityManager::OnAccessibilityNotifications(
     NotifyAccessibilityEvent(param.notification_type, node);
 
     // Set initial focus when a page is loaded.
-    if (param.notification_type == ViewHostMsg_AccEvent::LOAD_COMPLETE) {
+    if (param.notification_type == AccessibilityNotificationLoadComplete) {
       if (!focus_)
         SetFocus(root_, false);
       if (!delegate_ || delegate_->HasFocus())
-        NotifyAccessibilityEvent(ViewHostMsg_AccEvent::FOCUS_CHANGED, focus_);
+        NotifyAccessibilityEvent(AccessibilityNotificationFocusChanged, focus_);
     }
   }
 }
@@ -295,7 +295,7 @@ void BrowserAccessibilityManager::UpdateNode(
   if (focus_ && focus_->ref_count() == 1) {
     SetFocus(root_, true);
     if (!delegate_ || delegate_->HasFocus())
-      NotifyAccessibilityEvent(ViewHostMsg_AccEvent::FOCUS_CHANGED, focus_);
+      NotifyAccessibilityEvent(AccessibilityNotificationFocusChanged, focus_);
   }
 }
 
@@ -360,11 +360,11 @@ BrowserAccessibility* BrowserAccessibilityManager::CreateAccessibilityTree(
     root_ = instance;
 
   // Note: the purpose of send_show_events and children_can_send_show_events
-  // is so that we send a single OBJECT_SHOW event for the root of a subtree
+  // is so that we send a single ObjectShow event for the root of a subtree
   // that just appeared for the first time, but not on any descendant of
   // that subtree.
   if (send_show_events)
-    NotifyAccessibilityEvent(ViewHostMsg_AccEvent::OBJECT_SHOW, instance);
+    NotifyAccessibilityEvent(AccessibilityNotificationObjectShow, instance);
 
   instance->PostInitialize();
 

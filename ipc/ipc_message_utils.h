@@ -99,6 +99,7 @@ enum IPCMessageStart {
   JavaBridgeMsgStart,
   GamepadMsgStart,
   ShellMsgStart,
+  AccessibilityMsgStart,
   LastIPCMsgStart      // Must come last.
 };
 

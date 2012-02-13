@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
-#include "content/common/view_messages.h"
+#include "content/common/accessibility_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/webaccessibility.h"
 
@@ -227,10 +227,10 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects) {
   EXPECT_EQ(2, child3_accessible->index_in_parent());
 
   // Process a notification containing the changed subtree.
-  std::vector<ViewHostMsg_AccessibilityNotification_Params> params;
-  params.push_back(ViewHostMsg_AccessibilityNotification_Params());
-  ViewHostMsg_AccessibilityNotification_Params* msg = &params[0];
-  msg->notification_type = ViewHostMsg_AccEvent::CHILDREN_CHANGED;
+  std::vector<AccessibilityHostMsg_NotificationParams> params;
+  params.push_back(AccessibilityHostMsg_NotificationParams());
+  AccessibilityHostMsg_NotificationParams* msg = &params[0];
+  msg->notification_type = AccessibilityNotificationChildrenChanged;
   msg->acc_tree = tree2_root;
   msg->includes_children = true;
   msg->id = tree2_root.id;
@@ -433,10 +433,10 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
 
   // Process a notification containing the changed subtree rooted at
   // the container.
-  std::vector<ViewHostMsg_AccessibilityNotification_Params> params;
-  params.push_back(ViewHostMsg_AccessibilityNotification_Params());
-  ViewHostMsg_AccessibilityNotification_Params* msg = &params[0];
-  msg->notification_type = ViewHostMsg_AccEvent::CHILDREN_CHANGED;
+  std::vector<AccessibilityHostMsg_NotificationParams> params;
+  params.push_back(AccessibilityHostMsg_NotificationParams());
+  AccessibilityHostMsg_NotificationParams* msg = &params[0];
+  msg->notification_type = AccessibilityNotificationChildrenChanged;
   msg->acc_tree = tree2_container;
   msg->includes_children = true;
   msg->id = tree2_container.id;
@@ -538,10 +538,10 @@ TEST(BrowserAccessibilityManagerTest, TestMoveChildUp) {
   ASSERT_EQ(4, CountedBrowserAccessibility::global_obj_count_);
 
   // Process a notification containing the changed subtree.
-  std::vector<ViewHostMsg_AccessibilityNotification_Params> params;
-  params.push_back(ViewHostMsg_AccessibilityNotification_Params());
-  ViewHostMsg_AccessibilityNotification_Params* msg = &params[0];
-  msg->notification_type = ViewHostMsg_AccEvent::CHILDREN_CHANGED;
+  std::vector<AccessibilityHostMsg_NotificationParams> params;
+  params.push_back(AccessibilityHostMsg_NotificationParams());
+  AccessibilityHostMsg_NotificationParams* msg = &params[0];
+  msg->notification_type = AccessibilityNotificationChildrenChanged;
   msg->acc_tree = tree2_1;
   msg->includes_children = true;
   msg->id = tree2_1.id;
@@ -582,10 +582,10 @@ TEST(BrowserAccessibilityManagerTest, TestCreateEmptyDocument) {
   tree1_1.children.push_back(tree1_2);
 
   // Process a load complete.
-  std::vector<ViewHostMsg_AccessibilityNotification_Params> params;
-  params.push_back(ViewHostMsg_AccessibilityNotification_Params());
-  ViewHostMsg_AccessibilityNotification_Params* msg = &params[0];
-  msg->notification_type = ViewHostMsg_AccEvent::LOAD_COMPLETE;
+  std::vector<AccessibilityHostMsg_NotificationParams> params;
+  params.push_back(AccessibilityHostMsg_NotificationParams());
+  AccessibilityHostMsg_NotificationParams* msg = &params[0];
+  msg->notification_type = AccessibilityNotificationLoadComplete;
   msg->acc_tree = tree1_1;
   msg->includes_children = true;
   msg->id = tree1_1.id;

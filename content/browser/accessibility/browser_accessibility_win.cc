@@ -10,7 +10,7 @@
 #include "base/win/enum_variant.h"
 #include "base/win/scoped_comptr.h"
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
-#include "content/common/view_messages.h"
+#include "content/common/accessibility_messages.h"
 #include "net/base/escape.h"
 #include "ui/base/accessibility/accessible_text_utils.h"
 
@@ -2718,14 +2718,14 @@ void BrowserAccessibilityWin::PostInitialize() {
 
   // Fire an event when an alert first appears.
   if (role_ == WebAccessibility::ROLE_ALERT && first_time_)
-    manager_->NotifyAccessibilityEvent(ViewHostMsg_AccEvent::ALERT, this);
+    manager_->NotifyAccessibilityEvent(AccessibilityNotificationAlert, this);
 
   // Fire events if text has changed.
   string16 text = TextForIAccessibleText();
   if (previous_text_ != text) {
     if (!previous_text_.empty() && !text.empty()) {
       manager_->NotifyAccessibilityEvent(
-          ViewHostMsg_AccEvent::OBJECT_SHOW, this);
+          AccessibilityNotificationObjectShow, this);
     }
 
     // TODO(dmazzoni): Look into HIDE events, too.

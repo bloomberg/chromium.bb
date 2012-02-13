@@ -6,7 +6,7 @@
 #include "base/win/scoped_comptr.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
-#include "content/common/view_messages.h"
+#include "content/common/accessibility_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/win/atl_module.h"
 
@@ -188,12 +188,12 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
 
   // Notify the BrowserAccessibilityManager that the text child has changed.
   text.name = L"new text";
-  ViewHostMsg_AccessibilityNotification_Params param;
-  param.notification_type = ViewHostMsg_AccEvent::CHILDREN_CHANGED;
+  AccessibilityHostMsg_NotificationParams param;
+  param.notification_type = AccessibilityNotificationChildrenChanged;
   param.acc_tree = text;
   param.includes_children = true;
   param.id = text.id;
-  std::vector<ViewHostMsg_AccessibilityNotification_Params> notifications;
+  std::vector<AccessibilityHostMsg_NotificationParams> notifications;
   notifications.push_back(param);
   manager->OnAccessibilityNotifications(notifications);
 
@@ -260,12 +260,12 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChangeNoLeaks) {
   // Notify the BrowserAccessibilityManager that the div node and its children
   // were removed and ensure that only one BrowserAccessibility instance exists.
   root.children.clear();
-  ViewHostMsg_AccessibilityNotification_Params param;
-  param.notification_type = ViewHostMsg_AccEvent::CHILDREN_CHANGED;
+  AccessibilityHostMsg_NotificationParams param;
+  param.notification_type = AccessibilityNotificationChildrenChanged;
   param.acc_tree = root;
   param.includes_children = true;
   param.id = root.id;
-  std::vector<ViewHostMsg_AccessibilityNotification_Params> notifications;
+  std::vector<AccessibilityHostMsg_NotificationParams> notifications;
   notifications.push_back(param);
   manager->OnAccessibilityNotifications(notifications);
   ASSERT_EQ(1, CountedBrowserAccessibility::global_obj_count_);

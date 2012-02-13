@@ -8,7 +8,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
-#include "content/common/view_messages.h"
+#include "content/common/accessibility_messages.h"
 
 typedef WebAccessibility::BoolAttribute BoolAttribute;
 typedef WebAccessibility::FloatAttribute FloatAttribute;
@@ -184,13 +184,13 @@ void BrowserAccessibility::InternalReleaseReference(bool recursive) {
 
   ref_count_--;
   if (ref_count_ == 0) {
-    // Allow the object to fire a TEXT_REMOVED notification.
+    // Allow the object to fire a TextRemoved notification.
     name_.clear();
     value_.clear();
     PostInitialize();
 
     manager_->NotifyAccessibilityEvent(
-        ViewHostMsg_AccEvent::OBJECT_HIDE, this);
+        AccessibilityNotificationObjectHide, this);
 
     instance_active_ = false;
     manager_->Remove(child_id_, renderer_id_);

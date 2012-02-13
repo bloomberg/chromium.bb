@@ -42,7 +42,6 @@
 #include "webkit/glue/webcookie.h"
 #include "webkit/glue/webmenuitem.h"
 #include "webkit/glue/webpreferences.h"
-#include "webkit/glue/webaccessibility.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
 #if defined(OS_MACOSX)
@@ -56,7 +55,6 @@
 
 IPC_ENUM_TRAITS(CSSColors::CSSColorName)
 IPC_ENUM_TRAITS(NavigationGesture)
-IPC_ENUM_TRAITS(ViewHostMsg_AccEvent::Value)
 IPC_ENUM_TRAITS(ViewMsg_Navigate_Type::Value)
 IPC_ENUM_TRAITS(WebKit::WebContextMenuData::MediaType)
 IPC_ENUM_TRAITS(WebKit::WebMediaPlayerAction::Type)
@@ -74,12 +72,6 @@ IPC_ENUM_TRAITS(content::StopFindAction)
 IPC_ENUM_TRAITS(media::MediaLogEvent::Type)
 IPC_ENUM_TRAITS(ui::TextInputType)
 IPC_ENUM_TRAITS(ui::JavascriptMessageType)
-IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::BoolAttribute)
-IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::FloatAttribute)
-IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::IntAttribute)
-IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::Role)
-IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::State)
-IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::StringAttribute)
 
 IPC_STRUCT_TRAITS_BEGIN(EditCommand)
   IPC_STRUCT_TRAITS_MEMBER(name)
@@ -319,25 +311,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::SSLStatus)
   IPC_STRUCT_TRAITS_MEMBER(content_status)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(webkit_glue::WebAccessibility)
-  IPC_STRUCT_TRAITS_MEMBER(id)
-  IPC_STRUCT_TRAITS_MEMBER(name)
-  IPC_STRUCT_TRAITS_MEMBER(value)
-  IPC_STRUCT_TRAITS_MEMBER(role)
-  IPC_STRUCT_TRAITS_MEMBER(state)
-  IPC_STRUCT_TRAITS_MEMBER(location)
-  IPC_STRUCT_TRAITS_MEMBER(string_attributes)
-  IPC_STRUCT_TRAITS_MEMBER(int_attributes)
-  IPC_STRUCT_TRAITS_MEMBER(float_attributes)
-  IPC_STRUCT_TRAITS_MEMBER(bool_attributes)
-  IPC_STRUCT_TRAITS_MEMBER(children)
-  IPC_STRUCT_TRAITS_MEMBER(indirect_child_ids)
-  IPC_STRUCT_TRAITS_MEMBER(html_attributes)
-  IPC_STRUCT_TRAITS_MEMBER(line_breaks)
-  IPC_STRUCT_TRAITS_MEMBER(cell_ids)
-  IPC_STRUCT_TRAITS_MEMBER(unique_cell_ids)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(webkit_glue::WebCookie)
   IPC_STRUCT_TRAITS_MEMBER(name)
   IPC_STRUCT_TRAITS_MEMBER(value)
@@ -416,21 +389,6 @@ IPC_STRUCT_BEGIN(ViewHostMsg_CreateWorker_Params)
   // The ID of the appcache the main shared worker script resource was loaded
   // from, only valid for shared workers.
   IPC_STRUCT_MEMBER(int64, script_resource_appcache_id)
-IPC_STRUCT_END()
-
-IPC_STRUCT_BEGIN(ViewHostMsg_AccessibilityNotification_Params)
-  // Type of notification.
-  IPC_STRUCT_MEMBER(ViewHostMsg_AccEvent::Value, notification_type)
-
-  // ID of the node that the notification applies to.
-  IPC_STRUCT_MEMBER(int, id)
-
-  // The accessibility node tree.
-  IPC_STRUCT_MEMBER(webkit_glue::WebAccessibility, acc_tree)
-
-  // Whether children are included in this tree, otherwise it's just an
-  // update to this one node and existing children are left in place.
-  IPC_STRUCT_MEMBER(bool, includes_children)
 IPC_STRUCT_END()
 
 // Parameters structure for ViewHostMsg_FrameNavigate, which has too many data
@@ -1147,45 +1105,6 @@ IPC_MESSAGE_ROUTED3(ViewMsg_AsyncOpenFile_ACK,
 // window.navigator.onLine should be updated for all WebViews.
 IPC_MESSAGE_CONTROL1(ViewMsg_NetworkStateChanged,
                      bool /* online */)
-
-// Enable accessibility in the renderer process.
-IPC_MESSAGE_ROUTED0(ViewMsg_EnableAccessibility)
-
-// Relay a request from assistive technology to set focus to a given node.
-IPC_MESSAGE_ROUTED1(ViewMsg_SetAccessibilityFocus,
-                    int /* object id */)
-
-// Relay a request from assistive technology to perform the default action
-// on a given node.
-IPC_MESSAGE_ROUTED1(ViewMsg_AccessibilityDoDefaultAction,
-                    int /* object id */)
-
-// Relay a request from assistive technology to make a given object
-// visible by scrolling as many scrollable containers as possible.
-// In addition, if it's not possible to make the entire object visible,
-// scroll so that the |subfocus| rect is visible at least. The subfocus
-// rect is in local coordinates of the object itself.
-IPC_MESSAGE_ROUTED2(ViewMsg_AccessibilityScrollToMakeVisible,
-                    int /* object id */,
-                    gfx::Rect /* subfocus */)
-
-// Relay a request from assistive technology to move a given object
-// to a specific location, in the tab content area coordinate space, i.e.
-// (0, 0) is the top-left corner of the tab contents.
-IPC_MESSAGE_ROUTED2(ViewMsg_AccessibilityScrollToPoint,
-                    int /* object id */,
-                    gfx::Point /* new location */)
-
-// Relay a request from assistive technology to set the cursor or
-// selection within an editable text element.
-IPC_MESSAGE_ROUTED3(ViewMsg_AccessibilitySetTextSelection,
-                    int /* object id */,
-                    int /* New start offset */,
-                    int /* New end offset */)
-
-// Tells the render view that a ViewHostMsg_AccessibilityNotifications
-// message was processed and it can send addition notifications.
-IPC_MESSAGE_ROUTED0(ViewMsg_AccessibilityNotifications_ACK)
 
 // Reply to ViewHostMsg_OpenChannelToPpapiBroker
 // Tells the renderer that the channel to the broker has been created.
@@ -1922,12 +1841,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_AcceleratedSurfaceBuffersSwapped,
                     gfx::PluginWindowHandle /* window */,
                     uint64 /* surface_id */)
 #endif
-
-// Sent to notify the browser about renderer accessibility notifications.
-// The browser responds with a ViewMsg_AccessibilityNotifications_ACK.
-IPC_MESSAGE_ROUTED1(
-    ViewHostMsg_AccessibilityNotifications,
-    std::vector<ViewHostMsg_AccessibilityNotification_Params>)
 
 // Opens a file asynchronously. The response returns a file descriptor
 // and an error code from base/platform_file.h.

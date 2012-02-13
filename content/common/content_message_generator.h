@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "content/common/child_process_messages.h"
 
+#include "content/common/accessibility_messages.h"
 #include "content/common/appcache_messages.h"
 #include "content/common/clipboard_messages.h"
 #include "content/common/database_messages.h"

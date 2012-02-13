@@ -223,7 +223,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
 
   virtual void OnAccessibilityNotifications(
-      const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params
+      const std::vector<AccessibilityHostMsg_NotificationParams>& params
       ) OVERRIDE;
 
   virtual void PluginFocusChanged(bool focused, int plugin_id) OVERRIDE;
