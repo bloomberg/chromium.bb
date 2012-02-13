@@ -181,6 +181,7 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
 
   GestureState last_state = state_;
 
+  // NOTE: when modifying these state transitions, also update gestures.dot
   scoped_ptr<Gestures> gestures(new Gestures());
   GesturePoint& point = GesturePointForEvent(event);
   point.UpdateValues(event);
