@@ -406,12 +406,7 @@ policy::PolicyService* BrowserProcessImpl::policy_service() {
 #if defined(ENABLE_CONFIGURATION_POLICY)
   return browser_policy_connector()->GetPolicyService();
 #else
-  // Return a dummy instance that doesn't serve any policies.
-  if (!policy_service_.get()) {
-    policy::PolicyService::Providers emptyProviders;
-    policy_service_.reset(new policy::PolicyServiceImpl(emptyProviders));
-  }
-  return policy_service_.get();
+  return NULL;
 #endif
 }
 

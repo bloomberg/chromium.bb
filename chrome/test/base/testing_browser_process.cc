@@ -77,12 +77,7 @@ policy::PolicyService* TestingBrowserProcess::policy_service() {
   if (connector)
     service = connector->GetPolicyService();
 #else
-  // Return a dummy instance that doesn't serve any policies.
-  if (!policy_service_.get()) {
-    policy::PolicyService::Providers emptyProviders;
-    policy_service_.reset(new policy::PolicyServiceImpl(emptyProviders));
-  }
-  return policy_service_.get();
+  return NULL;
 #endif
   return service;
 }
