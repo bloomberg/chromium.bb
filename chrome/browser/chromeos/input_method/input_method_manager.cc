@@ -287,10 +287,14 @@ class InputMethodManagerImpl
     // should remember the last one regardless. See comments in
     // FlushImeConfig() for details.
     tentative_current_input_method_id_ = input_method_id;
-    // If the input method daemon is not running and the specified input
-    // method is a keyboard layout, switch the keyboard directly.
-    if (ibus_daemon_process_handle_ == base::kNullProcessHandle &&
-        InputMethodUtil::IsKeyboardLayout(input_method_id)) {
+
+    if (InputMethodUtil::IsKeyboardLayout(input_method_id)
+#if !defined(USE_AURA)
+        // TODO(yusukes): Remove this code when R18 stable is shipped.
+        // crosbug.com/26245
+        && ibus_daemon_process_handle_ == base::kNullProcessHandle
+#endif
+    ) {
       // We shouldn't use SetCurrentKeyboardLayoutByName() here. See
       // comments at ChangeCurrentInputMethod() for details.
       ChangeCurrentInputMethodFromId(input_method_id);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/input_method/ibus_input_methods.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
+#include "chrome/browser/chromeos/input_method/input_method_util.h"
 
 namespace chromeos {
 namespace input_method {
@@ -630,6 +631,10 @@ class IBusControllerImpl : public IBusController {
 
   // IBusController override.
   virtual bool ChangeInputMethod(const std::string& name) {
+#if defined(USE_AURA)
+    DCHECK(!InputMethodUtil::IsKeyboardLayout(name));
+#endif
+
     if (!IBusConnectionsAreAlive()) {
       LOG(ERROR) << "ChangeInputMethod: IBus connection is not alive";
       return false;
@@ -658,6 +663,14 @@ class IBusControllerImpl : public IBusController {
                                      NULL,  // cancellable
                                      NULL,  // callback
                                      NULL);  // user_data
+
+#if defined(USE_AURA)
+    // Since we don't have an IME for XKB layouts, when a global engine is
+    // switched from A (IME) to B (XKB) then back to A, "global-engine-changed"
+    // signal will not be emitted (note that on ibus-daemon side, A is always
+    // in use). To update the UI correctly, call the function manually.
+    IBusBusGlobalEngineChanged(ibus_, name.c_str());
+#endif
     return true;
   }
 
@@ -699,6 +712,7 @@ class IBusControllerImpl : public IBusController {
       case ImeConfigValue::kValueTypeStringList:
         GVariantBuilder variant_builder;
         g_variant_builder_init(&variant_builder, G_VARIANT_TYPE("as"));
+        DCHECK(!string_list.empty());
         const size_t size = string_list.size();  // don't use string_list_value.
         for (size_t i = 0; i < size; ++i) {
           g_variant_builder_add(&variant_builder, "s", string_list[i].c_str());
@@ -1192,7 +1206,13 @@ class IBusControllerImpl : public IBusController {
     for (size_t i = 0; i < requested_input_methods.size(); ++i) {
       const std::string& input_method = requested_input_methods[i];
       if (whitelist_.InputMethodIdIsWhitelisted(input_method.c_str())) {
+#if defined(USE_AURA)
+        if (!InputMethodUtil::IsKeyboardLayout(input_method)) {
+          out_filtered_input_methods->push_back(input_method);
+        }
+#else
         out_filtered_input_methods->push_back(input_method);
+#endif
       } else {
         LOG(ERROR) << "Unsupported input method: " << input_method;
       }
