@@ -141,6 +141,9 @@ TEST_F(RedirectTest, FLAKY_ClientEmptyReferer) {
 #elif defined(OS_WIN)
 // http://crbug.com/53091
 #define MAYBE_ClientCancelled FAILS_ClientCancelled
+#elif defined(OS_LINUX)
+// SimulateOSClick is broken on the Linux: http://crbug.com/113958
+#define MAYBE_ClientCancelled DISABLED_ClientCancelled
 #else
 #define MAYBE_ClientCancelled ClientCancelled
 #endif
