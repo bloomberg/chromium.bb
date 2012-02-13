@@ -35,8 +35,8 @@ SSLErrorHandler::SSLErrorHandler(ResourceDispatcherHost* rdh,
   request_id_.request_id = info->request_id();
 
   if (!ResourceDispatcherHost::RenderViewForRequest(request,
-                                                    &render_process_host_id_,
-                                                    &tab_contents_id_))
+                                                    &render_process_id_,
+                                                    &render_view_id_))
     NOTREACHED();
 
   // This makes sure we don't disappear on the IO thread until we've given an
@@ -66,7 +66,7 @@ void SSLErrorHandler::Dispatch() {
 
   WebContents* web_contents = NULL;
   RenderViewHost* render_view_host =
-      RenderViewHost::FromID(render_process_host_id_, tab_contents_id_);
+      RenderViewHost::FromID(render_process_id_, render_view_id_);
   if (render_view_host)
     web_contents = render_view_host->delegate()->GetAsWebContents();
 

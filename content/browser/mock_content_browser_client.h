@@ -84,10 +84,14 @@ class MockContentBrowserClient : public ContentBrowserClient {
   virtual void OpenItem(const FilePath& path) OVERRIDE;
   virtual void ShowItemInFolder(const FilePath& path) OVERRIDE;
   virtual void AllowCertificateError(
-      SSLCertErrorHandler* handler,
+      int render_process_id,
+      int render_view_id,
+      int cert_error,
+      const net::SSLInfo& ssl_info,
+      const GURL& request_url,
       bool overridable,
-      const base::Callback<void(SSLCertErrorHandler*, bool)>& callback)
-      OVERRIDE;
+      const base::Callback<void(bool)>& callback,
+      bool* cancel_request) OVERRIDE;
   virtual void SelectClientCertificate(
       int render_process_id,
       int render_view_id,

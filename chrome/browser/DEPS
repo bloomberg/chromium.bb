@@ -96,7 +96,6 @@ include_rules = [
   "+content/browser/renderer_host/test_render_view_host.h",
   "+content/browser/speech/speech_input_manager.h",
   "+content/browser/speech/speech_recognizer.h",
-  "+content/browser/ssl/ssl_cert_error_handler.h",
   "+content/browser/ssl/ssl_client_auth_handler.h",
   "+content/browser/ssl/ssl_client_auth_handler_mock.h",
   "+content/browser/ssl/ssl_host_state.h",

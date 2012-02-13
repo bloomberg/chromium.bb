@@ -76,8 +76,8 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
   // call this.
   void TakeNoAction();
 
-  int render_process_host_id() const { return render_process_host_id_; }
-  int tab_contents_id() const { return tab_contents_id_; }
+  int render_process_id() const { return render_process_id_; }
+  int render_view_id() const { return render_view_id_; }
 
  protected:
   friend class base::RefCountedThreadSafe<SSLErrorHandler>;
@@ -121,8 +121,8 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
 
   // We use these members to find the correct SSLManager when we arrive on
   // the UI thread.
-  int render_process_host_id_;
-  int tab_contents_id_;
+  int render_process_id_;
+  int render_view_id_;
 
   // The URL that we requested.
   // This read-only member can be accessed on any thread.

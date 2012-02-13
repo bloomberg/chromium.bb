@@ -67,7 +67,6 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_url_handler.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/ssl/ssl_cert_error_handler.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -858,13 +857,17 @@ void ChromeContentBrowserClient::ShowItemInFolder(const FilePath& path) {
 }
 
 void ChromeContentBrowserClient::AllowCertificateError(
-    SSLCertErrorHandler* handler,
+    int render_process_id,
+    int render_view_id,
+    int cert_error,
+    const net::SSLInfo& ssl_info,
+    const GURL& request_url,
     bool overridable,
-    const base::Callback<void(SSLCertErrorHandler*, bool)>& callback) {
+    const base::Callback<void(bool)>& callback,
+    bool* cancel_request) {
   // If the tab is being prerendered, cancel the prerender and the request.
   WebContents* tab = tab_util::GetWebContentsByID(
-      handler->render_process_host_id(),
-      handler->tab_contents_id());
+      render_process_id, render_view_id);
   if (!tab) {
     NOTREACHED();
     return;
@@ -874,16 +877,16 @@ void ChromeContentBrowserClient::AllowCertificateError(
           Profile::FromBrowserContext(tab->GetBrowserContext()));
   if (prerender_manager && prerender_manager->IsWebContentsPrerendering(tab)) {
     if (prerender_manager->prerender_tracker()->TryCancel(
-            handler->render_process_host_id(),
-            handler->tab_contents_id(),
+            render_process_id, render_view_id,
             prerender::FINAL_STATUS_SSL_ERROR)) {
-      handler->CancelRequest();
+      *cancel_request = true;
       return;
     }
   }
 
   // Otherwise, display an SSL blocking page.
-  new SSLBlockingPage(handler, overridable, callback);
+  new SSLBlockingPage(
+      tab, cert_error, ssl_info, request_url, overridable, callback);
 }
 
 void ChromeContentBrowserClient::SelectClientCertificate(

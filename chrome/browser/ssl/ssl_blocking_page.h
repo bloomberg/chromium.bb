@@ -11,10 +11,9 @@
 
 #include "base/callback.h"
 #include "base/string16.h"
+#include "net/base/ssl_info.h"
 #include "content/public/browser/interstitial_page_delegate.h"
-
-class GURL;
-class SSLCertErrorHandler;
+#include "googleurl/src/gurl.h"
 
 namespace base {
 class DictionaryValue;
@@ -31,9 +30,12 @@ class WebContents;
 class SSLBlockingPage : public content::InterstitialPageDelegate {
  public:
   SSLBlockingPage(
-      SSLCertErrorHandler* handler,
+      content::WebContents* web_contents,
+      int cert_error,
+      const net::SSLInfo& ssl_info,
+      const GURL& request_url,
       bool overridable,
-      const base::Callback<void(SSLCertErrorHandler*, bool)>& callback);
+      const base::Callback<void(bool)>& callback);
   virtual ~SSLBlockingPage();
 
   // A method that sets strings in the specified dictionary from the passed
@@ -57,16 +59,14 @@ class SSLBlockingPage : public content::InterstitialPageDelegate {
   void NotifyDenyCertificate();
   void NotifyAllowCertificate();
 
-  // The error we represent.  We will either call CancelRequest() or
-  // ContinueRequest() on this object.
-  scoped_refptr<SSLCertErrorHandler> handler_;
-
-  base::Callback<void(SSLCertErrorHandler*, bool)> callback_;
-
-  // Is the certificate error overridable or fatal?
-  bool overridable_;
+  base::Callback<void(bool)> callback_;
 
   content::WebContents* web_contents_;
+  int cert_error_;
+  net::SSLInfo ssl_info_;
+  GURL request_url_;
+  // Is the certificate error overridable or fatal?
+  bool overridable_;
   content::InterstitialPage* interstitial_page_;  // Owns us.
 
   DISALLOW_COPY_AND_ASSIGN(SSLBlockingPage);

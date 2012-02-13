@@ -24,7 +24,6 @@ class PluginProcessHost;
 class QuotaPermissionContext;
 class RenderViewHost;
 class ResourceDispatcherHost;
-class SSLCertErrorHandler;
 class SSLClientAuthHandler;
 class SkBitmap;
 struct WebPreferences;
@@ -48,6 +47,7 @@ namespace net {
 class CookieList;
 class CookieOptions;
 class NetLog;
+class SSLInfo;
 class URLRequest;
 class URLRequestContext;
 class X509Certificate;
@@ -219,11 +219,18 @@ class ContentBrowserClient {
   // Informs the embedder that a certificate error has occured.  If overridable
   // is true, the user can ignore the error and continue.  If it's false, then
   // the certificate error is severe and the user isn't allowed to proceed.  The
-  // embedder can call the callback asynchronously.
+  // embedder can call the callback asynchronously. If |cancel_request| is set
+  // to true, the request will be cancelled immediately and the callback won't
+  // be run.
   virtual void AllowCertificateError(
-      SSLCertErrorHandler* handler,
+      int render_process_id,
+      int render_view_id,
+      int cert_error,
+      const net::SSLInfo& ssl_info,
+      const GURL& request_url,
       bool overridable,
-      const base::Callback<void(SSLCertErrorHandler*, bool)>& callback) = 0;
+      const base::Callback<void(bool)>& callback,
+      bool* cancel_request) = 0;
 
   // Selects a SSL client certificate and returns it to the |handler|. If no
   // certificate was selected NULL is returned to the |handler|.

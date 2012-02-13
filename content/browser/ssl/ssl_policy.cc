@@ -161,7 +161,8 @@ void SSLPolicy::UpdateEntry(NavigationEntryImpl* entry,
     entry->GetSSL().content_status |= SSLStatus::DISPLAYED_INSECURE_CONTENT;
 }
 
-void SSLPolicy::OnAllowCertificate(SSLCertErrorHandler* handler, bool allow) {
+void SSLPolicy::OnAllowCertificate(scoped_refptr<SSLCertErrorHandler> handler,
+                                   bool allow) {
   if (allow) {
     // Default behavior for accepting a certificate.
     // Note that we should not call SetMaxSecurityStyle here, because the active
@@ -202,10 +203,19 @@ void SSLPolicy::OnCertErrorInternal(SSLCertErrorHandler* handler,
     return;
   }
 
+  bool cancel_request = false;
   content::GetContentClient()->browser()->AllowCertificateError(
-      handler,
+      handler->render_process_id(),
+      handler->render_view_id(),
+      handler->cert_error(),
+      handler->ssl_info(),
+      handler->request_url(),
       overridable,
-      base::Bind(&SSLPolicy::OnAllowCertificate, base::Unretained(this)));
+      base::Bind(&SSLPolicy::OnAllowCertificate, base::Unretained(this),
+                 make_scoped_refptr(handler)),
+      &cancel_request);
+  if (cancel_request)
+    handler->CancelRequest();
 }
 
 void SSLPolicy::InitializeEntryIfNeeded(NavigationEntryImpl* entry) {

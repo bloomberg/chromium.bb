@@ -191,9 +191,14 @@ void ShellContentBrowserClient::ShowItemInFolder(const FilePath& path) {
 }
 
 void ShellContentBrowserClient::AllowCertificateError(
-    SSLCertErrorHandler* handler,
+    int render_process_id,
+    int render_view_id,
+    int cert_error,
+    const net::SSLInfo& ssl_info,
+    const GURL& request_url,
     bool overridable,
-    const base::Callback<void(SSLCertErrorHandler*, bool)>& callback) {
+    const base::Callback<void(bool)>& callback,
+    bool* cancel_request) {
 }
 
 void ShellContentBrowserClient::SelectClientCertificate(

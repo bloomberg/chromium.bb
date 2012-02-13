@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "webkit/glue/resource_type.h"
 
 class SSLCertErrorHandler;
@@ -47,7 +48,8 @@ class SSLPolicy {
 
  private:
   // Callback that the user chose to accept or deny the certificate.
-  void OnAllowCertificate(SSLCertErrorHandler* handler, bool allow);
+  void OnAllowCertificate(scoped_refptr<SSLCertErrorHandler> handler,
+                          bool allow);
 
   // Helper method for derived classes handling certificate errors.
   // If the error can be overridden by the user, show a blocking page that
