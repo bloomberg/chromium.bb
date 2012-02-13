@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,17 +37,17 @@ int ChromeAppModeStart(const app_mode::ChromeAppModeInfo* info) {
     return 1;
   }
 
-  RAW_CHECK(info->chrome_versioned_path);
+  RAW_CHECK(!info->chrome_versioned_path.empty());
   FilePath* chrome_versioned_path = new FilePath(info->chrome_versioned_path);
   RAW_CHECK(!chrome_versioned_path->empty());
   chrome::SetOverrideVersionedDirectory(chrome_versioned_path);
 
   // TODO(viettrungluu): do something intelligent with data
-//  return ChromeMain(info->argc, info->argv);
+  //  return ChromeMain(info->argc, info->argv);
   // For now, a cheesy hack instead.
-  RAW_CHECK(info->app_mode_url);
+  RAW_CHECK(info->app_mode_url.size());
   std::string argv1(std::string("--app=") + info->app_mode_url);
-  RAW_CHECK(info->app_mode_id);
+  RAW_CHECK(info->app_mode_id.size());
   std::string argv2(std::string("--user-data-dir=/tmp/") + info->app_mode_id);
   char* argv[] = { info->argv[0],
                    const_cast<char*>(argv1.c_str()),

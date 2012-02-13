@@ -8,6 +8,9 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/file_path.h"
+#include "base/string16.h"
+
 // This file contains constants, interfaces, etc. which are common to the
 // browser application and the app mode loader (a.k.a. shim).
 
@@ -44,6 +47,10 @@ const unsigned kCurrentChromeAppModeInfoMinorVersion = 0;
 // version number. It may refuse to load if the major version of the structure
 // is different from the one it accepts.
 struct ChromeAppModeInfo {
+ public:
+  ChromeAppModeInfo();
+  ~ChromeAppModeInfo();
+
   // Major and minor version number of this structure.
   unsigned major_version;  // Required: all versions
   unsigned minor_version;  // Required: all versions
@@ -53,25 +60,25 @@ struct ChromeAppModeInfo {
   char** argv;  // Required: v1.0
 
   // Versioned path to the browser which is being loaded.
-  char* chrome_versioned_path;  // Required: v1.0
+  FilePath chrome_versioned_path;  // Required: v1.0
 
   // Information about the App Mode shortcut:
 
   // Path to the App Mode Loader application bundle originally run.
-  char* app_mode_bundle_path;  // Optional: v1.0
+  FilePath app_mode_bundle_path;  // Optional: v1.0
 
   // Short ID string, preferably derived from |app_mode_short_name|. Should be
   // safe for the file system.
-  char* app_mode_id;  // Required: v1.0
+  std::string app_mode_id;  // Required: v1.0
 
   // Short (e.g., one-word) UTF8-encoded name for the shortcut.
-  char* app_mode_short_name;  // Optional: v1.0
+  string16 app_mode_short_name;  // Optional: v1.0
 
   // Unrestricted (e.g., several-word) UTF8-encoded name for the shortcut.
-  char* app_mode_name;  // Optional: v1.0
+  string16 app_mode_name;  // Optional: v1.0
 
   // URL for the shortcut. Must be a valid URL.
-  char* app_mode_url;  // Required: v1.0
+  std::string app_mode_url;  // Required: v1.0
 };
 
 }  // namespace app_mode

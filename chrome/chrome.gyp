@@ -835,6 +835,8 @@
             '../base/base.gyp:base',
           ],
           'sources': [
+            'common/mac/app_mode_chrome_locator.h',
+            'common/mac/app_mode_chrome_locator.mm',
             'common/mac/app_mode_common.h',
             'common/mac/app_mode_common.mm',
           ],

@@ -4208,9 +4208,12 @@
           'dependencies': [
             '../base/base.gyp:test_support_base',
             '../testing/gtest.gyp:gtest',
+            'chrome.gyp:chrome',  # run time dependency
+            'common_constants',
             'app_mode_app_support',
           ],
           'sources': [
+            'common/mac/app_mode_chrome_locator_unittest.mm',
             'test/base/app_mode_app_tests.cc',
           ],
           'include_dirs': [
