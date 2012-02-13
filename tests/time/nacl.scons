@@ -10,7 +10,7 @@ nexe = env.ComponentProgram('gettimeofday_test',
                             EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
 
 node = env.CommandSelLdrTestNacl(
-    'gettimeofday_test.out',
-    nexe,
-    args=['-m'])
+  'gettimeofday_test.out',
+  nexe,
+  wrapper_program_prefix = ['python', env.File('time_check.py'), '-S', '--'])
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_gettimeofday_test')

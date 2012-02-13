@@ -401,7 +401,7 @@ int   NaCl_madvise(void           *start,
   /*
    * MADV_DONTNEED and MADV_NORMAL are needed
    */
-  NaClLog(2, "NaCl_madvise(0x%016"NACL_PRIxPTR", 0x%"NACL_PRIxS", 0x%x)\n",
+  NaClLog(5, "NaCl_madvise(0x%016"NACL_PRIxPTR", 0x%"NACL_PRIxS", 0x%x)\n",
           (uintptr_t) start, length, advice);
   switch (advice) {
     case MADV_DONTNEED:
@@ -421,7 +421,7 @@ int   NaCl_madvise(void           *start,
            cur_addr < end_addr;
            cur_addr += cur_chunk_size,
                cur_chunk_size = NaClProtectChunkSize(cur_addr, end_addr)) {
-        NaClLog(4,
+        NaClLog(5,
                 ("NaCl_madvise: MADV_DONTNEED"
                  " -> VirtualAlloc(0x%016"NACL_PRIxPTR","
                  " 0x%"NACL_PRIxPTR", MEM_RESET, PAGE_NOACCESS)\n"),
@@ -447,6 +447,6 @@ int   NaCl_madvise(void           *start,
     default:
       return -EINVAL;
   }
-  NaClLog(2, "NaCl_madvise: done\n");
+  NaClLog(5, "NaCl_madvise: done\n");
   return 0;
 }

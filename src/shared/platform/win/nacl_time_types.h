@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -41,10 +41,6 @@ struct NaClTimeState {
   uint64_t          system_time_start_ms;
   DWORD             ms_counter_start;
   uint64_t          epoch_start_ms;
-  /*
-   * Ensure that reported unix time is monotonically non-decreasing.
-   */
-  uint64_t          last_reported_time_ms;
 
   /*
    * Members in this block should have valid values iff !allow_low_resolution,
@@ -57,7 +53,6 @@ struct NaClTimeState {
   int64_t           qpc_frequency;
   int64_t           qpc_start;
   int64_t           last_qpc;
-  int64_t           last_reported_time_mks;
 };
 
 EXTERN_C_END

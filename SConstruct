@@ -1917,6 +1917,8 @@ def CommandSelLdrTestNacl(env, name, nexe,
                           glibc_static=False,
                           uses_ppapi=False,
                           skip_bootstrap=False,
+                          wrapper_program_prefix=None,
+                          # e.g., [ 'python', 'time_check.py', '--' ]
                           **extra):
   # Disable all sel_ldr tests for windows under coverage.
   # Currently several .S files block sel_ldr from being instrumented.
@@ -1979,7 +1981,8 @@ def CommandSelLdrTestNacl(env, name, nexe,
   if ShouldUseVerboseOptions(extra):
     env.MakeVerboseExtraOptions(name, log_verbosity, extra)
 
-  node = CommandTest(env, name, command, size, posix_path=True, **extra)
+  node = CommandTest(env, name, command, size, posix_path=True,
+                     wrapper_program_prefix=wrapper_program_prefix, **extra)
   if env.Bit('tests_use_irt'):
     env.Alias('irt_tests', node)
   return node
@@ -2049,6 +2052,7 @@ def SetTestName(node, name):
 
 def CommandTest(env, name, command, size='small', direct_emulation=True,
                 extra_deps=[], posix_path=False, capture_output=True,
+                wrapper_program_prefix=None,
                 **extra):
   if not name.endswith('.out') or name.startswith('$'):
     raise Exception('ERROR: bad test filename for test output %r' % name)
@@ -2097,6 +2101,11 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
   emulator = GetEmulator(env)
   if emulator and direct_emulation:
     command = [emulator] + command
+
+  # test wrapper should go outside of emulators like qemu, since the
+  # test wrapper code is not emulated.
+  if wrapper_program_prefix is not None:
+    command = wrapper_program_prefix + command
 
   script_flags.append('--perf_env_description')
   script_flags.append(env.GetPerfEnvDescription())

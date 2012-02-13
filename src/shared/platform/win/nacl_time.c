@@ -134,7 +134,7 @@ static int NaClCalibrateWindowsClockQpc(struct NaClTimeState *ntsp) {
   int sys_time_changed;
   int calibration_success = 0;
 
-  NaClLog(4, "Entered NaClCalibrateWindowsClockQpc\n");
+  NaClLog(5, "Entered NaClCalibrateWindowsClockQpc\n");
 
   GetSystemTimeAsFileTime(&ft_start);
   ft_prev = ft_start;
@@ -166,10 +166,8 @@ static int NaClCalibrateWindowsClockQpc(struct NaClTimeState *ntsp) {
   ntsp->system_time_start_ms = NaClFileTimeToMs(&ft_now);
   ntsp->qpc_start = counter_before.QuadPart + (counter_diff / 2);
   ntsp->last_qpc = counter_after.QuadPart;
-  ntsp->last_reported_time_mks =
-      ntsp->system_time_start_ms * kMicrosecondsPerMillisecond;
 
-  NaClLog(4,
+  NaClLog(5,
           "Leaving NaClCalibrateWindowsClockQpc : %d\n",
           calibration_success);
   return calibration_success;
@@ -196,14 +194,14 @@ static void NaClCalibrateWindowsClockMu(struct NaClTimeState *ntsp) {
   DWORD     ms_counter_after;
   uint32_t  ms_counter_diff;
 
-  NaClLog(4, "Entered NaClCalibrateWindowsClockMu\n");
+  NaClLog(5, "Entered NaClCalibrateWindowsClockMu\n");
   GetSystemTimeAsFileTime(&ft_start);
   ms_counter_before = timeGetTime();
   for (;;) {
     GetSystemTimeAsFileTime(&ft_now);
     ms_counter_after = timeGetTime();
     ms_counter_diff = ms_counter_after - (uint32_t) ms_counter_before;
-    NaClLog(4, "ms_counter_diff %u\n", ms_counter_diff);
+    NaClLog(5, "ms_counter_diff %u\n", ms_counter_diff);
     if (ms_counter_diff <= kMaxCalibrationDiff &&
         (ft_now.dwHighDateTime != ft_start.dwHighDateTime ||
          ft_now.dwLowDateTime != ft_start.dwLowDateTime)) {
@@ -221,7 +219,7 @@ static void NaClCalibrateWindowsClockMu(struct NaClTimeState *ntsp) {
    */
   ntsp->ms_counter_start = (DWORD) (ms_counter_before + (ms_counter_diff / 2));
 
-  NaClLog(4, "Leaving NaClCalibrateWindowsClockMu\n");
+  NaClLog(5, "Leaving NaClCalibrateWindowsClockMu\n");
 }
 
 void NaClAllowLowResolutionTimeOfDay() {
@@ -245,7 +243,7 @@ void NaClTimeInternalInit(struct NaClTimeState *ntsp) {
   } else {
     ntsp->wPeriodMin = tc.wPeriodMin;
     timeBeginPeriod(ntsp->wPeriodMin);
-    NaClLog(1, "NaClTimeInternalInit: timeBeginPeriod(%u)\n", ntsp->wPeriodMin);
+    NaClLog(4, "NaClTimeInternalInit: timeBeginPeriod(%u)\n", ntsp->wPeriodMin);
   }
   ntsp->time_resolution_ns = ntsp->wPeriodMin * NACL_NANOS_PER_MILLI;
 
@@ -261,8 +259,7 @@ void NaClTimeInternalInit(struct NaClTimeState *ntsp) {
   st.wMilliseconds = 0;
   SystemTimeToFileTime(&st, &ft);
   ntsp->epoch_start_ms = NaClFileTimeToMs(&ft);
-  ntsp->last_reported_time_ms = 0;
-  NaClLog(1, "Unix epoch start is  %"NACL_PRIu64"ms in Windows epoch time\n",
+  NaClLog(4, "Unix epoch start is  %"NACL_PRIu64"ms in Windows epoch time\n",
           ntsp->epoch_start_ms);
 
   NaClMutexCtor(&ntsp->mu);
@@ -288,6 +285,8 @@ void NaClTimeInternalInit(struct NaClTimeState *ntsp) {
 
     if (ntsp->can_use_qpc) {
       ntsp->qpc_frequency = qpc_freq.QuadPart;
+      NaClLog(4, "qpc_frequency = %"NACL_PRId64" (counts/s)\n",
+              ntsp->qpc_frequency);
       if (!NaClCalibrateWindowsClockQpc(ntsp))
         ntsp->can_use_qpc = 0;
     }
@@ -330,13 +329,16 @@ int NaClGetTimeOfDayInternQpc(struct nacl_abi_timeval *tv,
   int64_t drift_mks;
   int64_t drift_ms;
 
+  NaClLog(5, "Entered NaClGetTimeOfDayInternQpc\n");
   GetSystemTimeAsFileTime(&ft_now);
   QueryPerformanceCounter(&qpc);
   sys_now_mks = NaClFileTimeToMs(&ft_now) * kMicrosecondsPerMillisecond;
+  NaClLog(5, " sys_now_mks = %"NACL_PRId64" (us)\n", sys_now_mks);
 
   NaClMutexLock(&ntsp->mu);
 
   qpc_diff = qpc.QuadPart - ntsp->qpc_start;
+  NaClLog(5, " qpc_diff = %"NACL_PRId64" (counts)\n", qpc_diff);
   /*
    * Coarse qpc_now_mks to 10 microseconds resolution,
    * to match the other platforms and not make a side-channel
@@ -344,16 +346,22 @@ int NaClGetTimeOfDayInternQpc(struct nacl_abi_timeval *tv,
    */
   qpc_diff_mks = ((qpc_diff * (kMicrosecondsPerSecond / kCoarseMks)) /
       ntsp->qpc_frequency) * kCoarseMks;
+  NaClLog(5, " qpc_diff_mks = %"NACL_PRId64" (us)\n", qpc_diff_mks);
 
   qpc_now_mks = (ntsp->system_time_start_ms * kMicrosecondsPerMillisecond) +
       qpc_diff_mks;
+  NaClLog(5, " system_time_start_ms %"NACL_PRIu64"\n",
+          ntsp->system_time_start_ms);
+  NaClLog(5, " qpc_now_mks = %"NACL_PRId64" (us)\n", qpc_now_mks);
 
   if ((qpc_diff < 0) || (qpc.QuadPart < ntsp->last_qpc)) {
+    NaClLog(5, " need recalibration\n");
     if (allow_calibration) {
       NaClCalibrateWindowsClockQpc(ntsp);
       NaClMutexUnlock(&ntsp->mu);
       return NaClGetTimeOfDayInternQpc(tv, ntsp, 0);
     } else {
+      NaClLog(5, " ... but using coarse, system time instead.\n");
       /* use GetSystemTimeAsFileTime(), not QPC */
       qpc_now_mks = sys_now_mks;
     }
@@ -364,9 +372,11 @@ int NaClGetTimeOfDayInternQpc(struct nacl_abi_timeval *tv,
     drift_mks = qpc_now_mks - sys_now_mks;
 
   drift_ms = drift_mks / kMicrosecondsPerMillisecond;
+  NaClLog(5, " drift_ms = %"NACL_PRId64"\n", drift_ms);
 
   if (allow_calibration &&
       (drift_ms > kMaxMillsecondDriftBeforeRecalibration)) {
+    NaClLog(5, "drift_ms recalibration\n");
     NaClCalibrateWindowsClockQpc(ntsp);
     NaClMutexUnlock(&ntsp->mu);
     return NaClGetTimeOfDayInternQpc(tv, ntsp, 0);
@@ -374,9 +384,9 @@ int NaClGetTimeOfDayInternQpc(struct nacl_abi_timeval *tv,
 
   NaClMutexUnlock(&ntsp->mu);
 
-  if (qpc_now_mks < ntsp->last_reported_time_mks)
-    qpc_now_mks = ntsp->last_reported_time_mks;
-  ntsp->last_reported_time_mks = qpc_now_mks;
+  /* translate to unix time base */
+  qpc_now_mks = qpc_now_mks
+      - ntsp->epoch_start_ms * kMicrosecondsPerMillisecond;
 
   tv->nacl_abi_tv_sec =
       (nacl_abi_time_t)(qpc_now_mks / kMicrosecondsPerSecond);
@@ -432,15 +442,6 @@ int NaClGetTimeOfDayIntern(struct nacl_abi_timeval *tv,
   }
 
   unix_time_ms = t_ms - ntsp->epoch_start_ms;
-
-  /*
-   * Time is monotonically non-decreasing.
-   */
-  if (unix_time_ms < ntsp->last_reported_time_ms) {
-    unix_time_ms = ntsp->last_reported_time_ms;
-  } else {
-    ntsp->last_reported_time_ms = unix_time_ms;
-  }
 
   NaClMutexUnlock(&ntsp->mu);
 
