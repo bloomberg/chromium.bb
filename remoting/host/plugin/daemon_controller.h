@@ -11,6 +11,8 @@ namespace remoting {
 
 class DaemonController {
  public:
+  // Note that these enumeration values are duplicated in daemon_plugin.js and
+  // must be kept in sync.
   enum State {
     // Placeholder state for platforms on which the daemon process is not
     // implemented. The web-app will not show the corresponding UI. This value

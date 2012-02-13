@@ -13,6 +13,18 @@
       }
     }
   },
+  "ASK_PIN_DIALOG_DESCRIPTION": {
+    "message": "To protect access to this computer, please choose a PIN. This PIN will be required when connecting from another location.",
+    "description": "Explanatory text displayed when the user enables remote access or changes the PIN."
+  },
+  "ASK_PIN_DIALOG_LABEL": {
+    "message": "PIN",
+    "description": "Label next to the PIN entry edit box. The user must enter a PIN before enabling remote access to their computer."
+  },
+  "ASK_PIN_DIALOG_CONFIRM_LABEL": {
+    "message": "Re-type PIN",
+    "description": "Label next to the PIN confirmation edit box. The user must enter a PIN before enabling remote access to their computer."
+  },
   "CANCEL": {
     "message": "Cancel",
     "description": "Label for general-purpose Cancel buttons."
@@ -126,6 +138,26 @@
   "HOME_ACCESS_DESCRIPTION": {
     "message": "See and control a shared computer.",
     "description": "Description of the 'access' or 'client' functionality, displayed next to a button that instigates an access operation."
+  },
+  "HOME_DAEMON_ACTIVE_MESSAGE": {
+    "message": "You may securely access this computer from anywhere you sign in to Chromoting.",
+    "description": "Message displayed when the current computer is accepting remote connections."
+  },
+  "HOME_DAEMON_CHANGE_PIN_LINK": {
+    "message": "Change PIN",
+    "description": "Hyperlink displayed immediately after the message indicating that the current computer is accepting remote connectins. Clicking this link allows the user to change the PIN (personal identification number) for accessing this host."
+  },
+  "HOME_DAEMON_STOP_BUTTON": {
+    "message": "Disable remote connections",
+    "description": "Button displayed when the current computer is accepting remote connections. Clicking this button causes it to stop accepting remote connections."
+  },
+  "HOME_DAEMON_START_BUTTON": {
+    "message": "Enable remote connections",
+    "description": "Button displayed when the current computer is not accepting remote connections. Clicking this button causes it to start accepting remote connections."
+  },
+  "HOME_DAEMON_START_MESSAGE": {
+    "message": "To securely access this computer from anywhere you sign in to Chromoting, you must first enable remote connections.",
+    "description": "Message displayed when the current computer is not accepting remote connections, instructing the user how to enable them."
   },
   "HOME_MY_COMPUTERS_TITLE": {
     "message": "My Computers",

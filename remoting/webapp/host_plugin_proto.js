@@ -27,13 +27,13 @@ remoting.HostPlugin.prototype.localize = function(callback) {};
 
 /** @param {string} pin The new PIN.
  *  @return {boolean} True if the PIN was changed successfully. */
-remoting.HostPlugin.prototype.setDaemonPin = function(pin) {};
+remoting.HostPlugin.prototype.setDaemonPin = function(pin) { return false; };
 
 /** @return {boolean} True if successful (poll daemonState for completion). */
-remoting.HostPlugin.prototype.startDaemon = function() {};
+remoting.HostPlugin.prototype.startDaemon = function() { return false; };
 
-/** @return {void} Nothing. */
-remoting.HostPlugin.prototype.stopDaemon = function() {};
+/** @return {boolean} True if successful. */
+remoting.HostPlugin.prototype.stopDaemon = function() { return false; };
 
 /** @type {number} */ remoting.HostPlugin.prototype.state;
 
@@ -50,7 +50,7 @@ remoting.HostPlugin.prototype.stopDaemon = function() {};
 
 /** @type {string} */ remoting.HostPlugin.prototype.client;
 
-/** @type {number} The install/running state of the daemon process. */
+/** @type {remoting.DaemonPlugin.State} */
 remoting.HostPlugin.prototype.daemonState;
 
 /** @type {function(boolean):void} */

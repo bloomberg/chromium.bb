@@ -324,6 +324,18 @@ label {
   text-align: center;
 }
 
+#ask-pin-dialog {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 380px;
+  height: 180px;
+  margin-left: -200px;
+  border: 1px solid black;
+  background-color: #fff;
+  padding: 0 20px;
+}
+
 #cancel-button {
   float: __MSG_@@bidi_end_edge__;
 }
@@ -334,6 +346,20 @@ label {
 
 #current-email {
   color: rgba(0, 0, 0, 0.5);
+}
+
+#daemon-control {
+  margin-top: 50px;
+}
+
+#dialog-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+  opacity: 0.75;
 }
 
 #divider-top {

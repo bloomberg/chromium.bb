@@ -15,6 +15,8 @@ var remoting = remoting || {};
 /** @enum {string} */
 remoting.AppMode = {
   HOME: 'home',
+    HOME_DAEMON_ENABLED: 'home.daemon.enabled',
+    HOME_DAEMON_DISABLED: 'home.daemon.disabled',
   UNAUTHENTICATED: 'auth',
   CLIENT: 'client',
     CLIENT_UNCONNECTED: 'client.unconnected',

@@ -62,7 +62,9 @@ remoting.init = function() {
   }
 
   // No valid URL parameters, start up normally.
+  remoting.daemonPlugin = new remoting.DaemonPlugin();
   remoting.setMode(getAppStartupMode_());
+  remoting.askPinDialog = new remoting.AskPinDialog(remoting.daemonPlugin);
   if (isHostModeSupported_()) {
     var noShare = document.getElementById('chrome-os-no-share');
     noShare.parentNode.removeChild(noShare);
@@ -171,8 +173,10 @@ function getEmail_() {
  * @return {remoting.AppMode} The mode to start in.
  */
 function getAppStartupMode_() {
-  return remoting.oauth2.isAuthenticated() ? remoting.AppMode.HOME :
-      remoting.AppMode.UNAUTHENTICATED;
+  if (!remoting.oauth2.isAuthenticated()) {
+    return remoting.AppMode.UNAUTHENTICATED;
+  }
+  return remoting.daemonPlugin.uiMode();
 }
 
 /**
