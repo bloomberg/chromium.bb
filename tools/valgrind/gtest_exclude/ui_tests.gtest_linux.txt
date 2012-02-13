@@ -24,3 +24,5 @@ RunInBackgroundTest.RunInBackgroundBasicTest
 DOMStorageTest.RootLayoutTests
 # Fails consistently on ChromeOS. http://crbug.com/113828
 KioskModeTest.EnableKioskModeTest
+# Flakey on Chromium OS UI (valgrind)(9). http://crbug.com/114093
+BookmarksUITest.BookmarksLoaded
