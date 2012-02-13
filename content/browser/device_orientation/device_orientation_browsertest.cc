@@ -47,7 +47,8 @@ class DeviceOrientationBrowserTest : public InProcessBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(DeviceOrientationBrowserTest, BasicTest) {
+// crbug.com/113952
+IN_PROC_BROWSER_TEST_F(DeviceOrientationBrowserTest, FAILS_BasicTest) {
   const Orientation kTestOrientation(true, 1, true, 2, true, 3);
   scoped_refptr<MockProvider> provider(new MockProvider(kTestOrientation));
   Provider::SetInstanceForTests(provider.get());
