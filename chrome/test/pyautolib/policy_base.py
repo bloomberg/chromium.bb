@@ -45,20 +45,17 @@ if pyauto.PyUITest.IsChromeOS():
   # Find the path to the pyproto and add it to sys.path.
   # Prepend it so that google.protobuf is loaded from here.
   for path in pyauto_paths.GetBuildDirs():
-    p = os.path.join(path, 'pyproto', 'chrome', 'browser', 'policy', 'proto')
+    p = os.path.join(path, 'pyproto')
     if os.path.isdir(p):
-      sys.path = [p, os.path.join(p, 'device_management_pb')] + sys.path
+      sys.path = [p, os.path.join(p, 'chrome', 'browser', 'policy',
+                                  'proto')] + sys.path
       break
   sys.path.append('/usr/local')  # to import autotest libs.
 
-  # Temporarily ignore policy protobuf imports until crosbug.com/26220 is fixed
-  try:
-    import device_management_local_pb2 as dml
-    import device_management_backend_pb2 as dmb
-    from autotest.cros import constants
-    from autotest.cros import cros_ui
-  except:
-    pass
+  import device_management_local_pb2 as dml
+  import device_management_backend_pb2 as dmb
+  from autotest.cros import constants
+  from autotest.cros import cros_ui
 
 
 class PolicyTestBase(pyauto.PyUITest):
