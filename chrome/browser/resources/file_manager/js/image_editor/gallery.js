@@ -93,6 +93,8 @@ Gallery.prototype.initDom_ = function(shareActions) {
   this.imageContainer_.className = 'image-container';
   this.imageContainer_.addEventListener('click', (function() {
     this.filenameEdit_.blur();
+    if (this.isShowingVideo_())
+      this.mediaControls_.togglePlayStateWithFeedback();
   }).bind(this));
   this.container_.appendChild(this.imageContainer_);
 
@@ -136,7 +138,8 @@ Gallery.prototype.initDom_ = function(shareActions) {
   this.mediaControls_ = new VideoControls(
       this.mediaToolbar_,
       null /* onError */,
-      this.toggleFullscreen_.bind(this));
+      this.toggleFullscreen_.bind(this),
+      this.container_);
 
   this.arrowBox_ = this.document_.createElement('div');
   this.arrowBox_.className = 'arrow-box';
@@ -552,7 +555,7 @@ Gallery.prototype.onKeyDown_ = function(event) {
 
     case 'U+0020':  // Space toggles the video playback.
       if (this.isShowingVideo_()) {
-        this.mediaControls_.togglePlayState();
+        this.mediaControls_.togglePlayStateWithFeedback();
       }
       break;
 

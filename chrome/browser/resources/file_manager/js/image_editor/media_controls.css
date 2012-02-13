@@ -432,3 +432,46 @@
 .disabled .media-button.fullscreen {
   background-image: url(../../images/media/media_fullscreen_disabled.png);
 }
+
+.playback-state-icon {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 32px;
+  height: 32px;
+  margin-left: -16px;
+  margin-top: -16px;
+  border-radius: 5px;
+  pointer-events: none;
+  display: none;
+
+  background-color: #202020;
+  background-repeat: no-repeat;
+  background-position: center center;
+
+  opacity: 1;
+  -webkit-transform: scaleX(1) scaleY(1);
+
+  -webkit-transition-property: webkit-transform, opacity;
+  -webkit-transition-duration: 500ms;
+  -webkit-transition-timing-function: linear;
+
+  z-index: 2;
+}
+
+.playback-state-icon[visible] {
+  display: block;
+}
+
+.playback-state-icon[state] {
+  opacity: 0;
+  -webkit-transform: scaleX(3) scaleY(3);
+}
+
+.playback-state-icon[state='play'] {
+  background-image: url(../../images/media/media_play.png);
+}
+
+.playback-state-icon[state='pause'] {
+  background-image: url(../../images/media/media_pause.png);
+}

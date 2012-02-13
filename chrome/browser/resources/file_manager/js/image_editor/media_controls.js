@@ -53,10 +53,10 @@ MediaControls.formatTime_ = function(timeInSec) {
  * @return {HTMLElement}
  */
 MediaControls.prototype.createControl = function(className, opt_parent) {
-  opt_parent = opt_parent || this.container_;
+  var parent = opt_parent || this.container_;
   var control = this.document_.createElement('div');
   control.classList.add(className);
-  opt_parent.appendChild(control);
+  parent.appendChild(control);
   return control;
 };
 
@@ -93,14 +93,13 @@ MediaControls.prototype.isPlaying = function() {
 };
 
 MediaControls.prototype.togglePlayState = function() {
-  if (this.isPlaying()) {
-    this.media_.pause();
-  } else {
-    this.media_.play();
-  }
+  if (this.isPlaying())
+    this.pause();
+  else
+    this.play();
 };
 
-MediaControls.prototype.createPlayButton = function(opt_parent) {
+MediaControls.prototype.initPlayButton = function(opt_parent) {
   this.playButton_ =
     this.createButton('play', this.togglePlayState.bind(this), opt_parent);
 };
@@ -114,7 +113,7 @@ MediaControls.prototype.createPlayButton = function(opt_parent) {
 // than 800px.
 MediaControls.PROGRESS_RANGE = 1000;
 
-MediaControls.prototype.createTimeControls = function(opt_parent) {
+MediaControls.prototype.initTimeControls = function(opt_parent) {
   var timeControls = this.createControl('time-controls', opt_parent);
 
   this.progressSlider_ = new MediaControls.PreciseSlider(
@@ -140,7 +139,7 @@ MediaControls.prototype.displayProgress_ = function(current, duration) {
   this.currentTime_.textContent = MediaControls.formatTime_(current);
 };
 
-MediaControls.prototype.onProgressChange_ = function (value) {
+MediaControls.prototype.onProgressChange_ = function(value) {
   if (!this.media_.seekable || !this.media_.duration) {
     console.error("Inconsistent media state");
     return;
@@ -151,12 +150,12 @@ MediaControls.prototype.onProgressChange_ = function (value) {
   this.currentTime_.textContent = MediaControls.formatTime_(current);
 };
 
-MediaControls.prototype.onProgressDrag_ = function (on) {
+MediaControls.prototype.onProgressDrag_ = function(on) {
   if (on) {
     this.resumeAfterDrag_ = this.isPlaying();
     this.media_.pause();
   } else {
-    if (this.resumeAfterDrag_){
+    if (this.resumeAfterDrag_) {
       if (this.media_.ended)
         this.onMediaPlay_(false);
       else
@@ -169,7 +168,7 @@ MediaControls.prototype.onProgressDrag_ = function (on) {
  * Volume controls
  */
 
-MediaControls.prototype.createVolumeControls = function(opt_parent) {
+MediaControls.prototype.initVolumeControls = function(opt_parent) {
   var volumeControls = this.createControl('volume-controls', opt_parent);
 
   this.soundButton_ = this.createButton(
@@ -193,20 +192,20 @@ MediaControls.prototype.onSoundButtonClick_ = function() {
   this.onVolumeChange_(this.volume_.getValue());
 };
 
-MediaControls.getVolumeLevel_ = function (value) {
+MediaControls.getVolumeLevel_ = function(value) {
   if (value == 0) return 0;
   if (value <= 1/3) return 1;
   if (value <= 2/3) return 2;
   return 3;
 };
 
-MediaControls.prototype.onVolumeChange_ = function (value) {
+MediaControls.prototype.onVolumeChange_ = function(value) {
   this.media_.volume = value;
   this.volume_.setFilled(value);
   this.soundButton_.setAttribute('level', MediaControls.getVolumeLevel_(value));
 };
 
-MediaControls.prototype.onVolumeDrag_ = function (on) {
+MediaControls.prototype.onVolumeDrag_ = function(on) {
   if (on && (this.media_.volume != 0)) {
     this.savedVolume_ = this.media_.volume;
   }
@@ -271,11 +270,11 @@ MediaControls.prototype.onMediaDuration_ = function() {
 
   this.container_.classList.remove('disabled');
 
-  if (this.media_.seekable) {
-    this.progressSlider_.getContainer().classList.remove('readonly');
-  } else {
-    this.progressSlider_.getContainer().classList.add('readonly');
-  }
+  var sliderContainer = this.progressSlider_.getContainer();
+  if (this.media_.seekable)
+    sliderContainer.classList.remove('readonly');
+  else
+    sliderContainer.classList.add('readonly');
 
   var valueToString = function(value) {
     return MediaControls.formatTime_(this.media_.duration * value);
@@ -408,20 +407,20 @@ MediaControls.Slider.prototype.setFilled = function(proportion) {
  * @param {number} position in pixels.
  * @return {number} [0..1] proportion.
  */
-MediaControls.Slider.prototype.getProportion = function (position) {
+MediaControls.Slider.prototype.getProportion = function(position) {
   var rect = this.bar_.getBoundingClientRect();
   return Math.max(0, Math.min(1, (position - rect.left) / rect.width));
 };
 
-MediaControls.Slider.prototype.onInputChange_ = function () {
+MediaControls.Slider.prototype.onInputChange_ = function() {
   this.onChange_(this.getValue());
 };
 
-MediaControls.Slider.prototype.isDragging = function () {
+MediaControls.Slider.prototype.isDragging = function() {
   return this.isDragging_;
 };
 
-MediaControls.Slider.prototype.onInputDrag_ = function (on, event) {
+MediaControls.Slider.prototype.onInputDrag_ = function(on, event) {
   this.isDragging_ = on;
   this.onDrag_(on);
 };
@@ -448,11 +447,11 @@ MediaControls.PreciseSlider = function(
    */
   this.valueToString_ = null;
 
-  this.seekMark_ =  doc.createElement('div');
+  this.seekMark_ = doc.createElement('div');
   this.seekMark_.className = 'seek-mark';
   this.getBar().appendChild(this.seekMark_);
 
-  this.seekLabel_ =  doc.createElement('div');
+  this.seekLabel_ = doc.createElement('div');
   this.seekLabel_.className = 'seek-label';
   this.seekMark_.appendChild(this.seekLabel_);
 
@@ -490,7 +489,7 @@ MediaControls.PreciseSlider.prototype.setValueToStringFunction =
  *   MediaControls.PreciseSlider.NO_AUTO_HIDE means show until the next call.
  */
 MediaControls.PreciseSlider.prototype.showSeekMark_ =
-    function (ratio, timeout) {
+    function(ratio, timeout) {
   // Do not update the seek mark for the first 500ms after the drag is finished.
   if (this.latestMouseUpTime_ && (this.latestMouseUpTime_ + 500 > Date.now()))
     return;
@@ -515,12 +514,12 @@ MediaControls.PreciseSlider.prototype.showSeekMark_ =
   }
 };
 
-MediaControls.PreciseSlider.prototype.hideSeekMark_ = function () {
+MediaControls.PreciseSlider.prototype.hideSeekMark_ = function() {
   this.seekMarkTimer_ = null;
   this.seekMark_.classList.remove('visible');
 };
 
-MediaControls.PreciseSlider.prototype.onMouseMove_ = function (event) {
+MediaControls.PreciseSlider.prototype.onMouseMove_ = function(event) {
   this.latestSeekRatio_ = this.getProportion(event.clientX);
 
   var self = this;
@@ -539,11 +538,10 @@ MediaControls.PreciseSlider.prototype.onMouseMove_ = function (event) {
   }
 };
 
-MediaControls.PreciseSlider.prototype.onMouseOut_ = function (e) {
+MediaControls.PreciseSlider.prototype.onMouseOut_ = function(e) {
   for (var element = e.relatedTarget; element; element = element.parentNode) {
-    if (element == this.getContainer()) {
+    if (element == this.getContainer())
       return;
-    }
   }
   if (this.seekMarkTimer_) {
     clearTimeout(this.seekMarkTimer_);
@@ -552,7 +550,7 @@ MediaControls.PreciseSlider.prototype.onMouseOut_ = function (e) {
   this.hideSeekMark_();
 };
 
-MediaControls.PreciseSlider.prototype.onInputChange_ = function () {
+MediaControls.PreciseSlider.prototype.onInputChange_ = function() {
   MediaControls.Slider.prototype.onInputChange_.apply(this, arguments);
   if (this.isDragging()) {
     this.showSeekMark_(
@@ -560,7 +558,7 @@ MediaControls.PreciseSlider.prototype.onInputChange_ = function () {
   }
 };
 
-MediaControls.PreciseSlider.prototype.onInputDrag_ = function (on, event) {
+MediaControls.PreciseSlider.prototype.onInputDrag_ = function(on, event) {
   MediaControls.Slider.prototype.onInputDrag_.apply(this, arguments);
 
   if (on) {
@@ -582,22 +580,30 @@ MediaControls.PreciseSlider.prototype.onInputDrag_ = function (on, event) {
  * @param {HTMLElement} containerElement The container for the controls.
  * @param {function} onMediaError Function to display an error message.
  * @param {function} opt_fullScreenToggle Function to toggle fullscreen mode.
+ * @param {HTMLElement} opt_stateIconParent The parent for the icon that
+ *                      gives visual feedback when the playback state changes.
  * @constructor
  */
-function VideoControls(containerElement, onMediaError, opt_fullScreenToggle) {
+function VideoControls(containerElement, onMediaError,
+   opt_fullScreenToggle, opt_stateIconParent) {
   MediaControls.call(this, containerElement, onMediaError);
 
   this.container_.classList.add('video-controls');
 
-  this.createPlayButton();
+  this.initPlayButton();
 
-  this.createTimeControls();
+  this.initTimeControls();
 
-  this.createVolumeControls();
+  this.initVolumeControls();
 
   if (opt_fullScreenToggle) {
     this.fullscreenButton_ =
         this.createButton('fullscreen', opt_fullScreenToggle);
+  }
+
+  if (opt_stateIconParent) {
+    this.stateIcon_ = this.createControl(
+        'playback-state-icon', opt_stateIconParent);
   }
 }
 
@@ -605,4 +611,38 @@ VideoControls.prototype = { __proto__: MediaControls.prototype };
 
 VideoControls.prototype.onMediaComplete = function() {
   this.onMediaPlay_(false);  // Just update the UI.
+};
+
+VideoControls.prototype.togglePlayStateWithFeedback = function(e) {
+  this.togglePlayState();
+
+  var self = this;
+
+  var delay = function(action, opt_timeout) {
+    if (self.statusIconTimer_) {
+      clearTimeout(self.statusIconTimer_);
+    }
+    self.statusIconTimer_ = setTimeout(function() {
+      self.statusIconTimer_ = null;
+      action();
+    }, opt_timeout || 0);
+  };
+
+  function hideStatusIcon() {
+    self.stateIcon_.removeAttribute('visible');
+    self.stateIcon_.removeAttribute('state');
+  }
+
+  hideStatusIcon();
+
+  // The delays are required to trigger the layout between attribute changes.
+  // Otherwise everything just goes to the final state without the animation.
+  delay(function() {
+    self.stateIcon_.setAttribute('visible', true);
+    delay(function(){
+      self.stateIcon_.setAttribute(
+          'state', self.isPlaying() ? 'play' : 'pause');
+      delay(hideStatusIcon, 1000);  /* Twice the animation duration. */
+    });
+  });
 };
