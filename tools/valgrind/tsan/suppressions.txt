@@ -340,7 +340,7 @@
 }
 
 {
-   bug_100026
+   bug_100026a
    ThreadSanitizer:Race
    ...
    fun:std::*
@@ -352,7 +352,7 @@
 }
 
 {
-   bug_100026a
+   bug_100026b
    ThreadSanitizer:Race
    ...
    fun:std::*
