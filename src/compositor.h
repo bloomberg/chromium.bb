@@ -399,6 +399,10 @@ weston_surface_configure(struct weston_surface *surface,
 			 GLfloat x, GLfloat y, int width, int height);
 
 void
+weston_surface_set_position(struct weston_surface *surface,
+			    GLfloat x, GLfloat y);
+
+void
 weston_surface_assign_output(struct weston_surface *surface);
 
 void

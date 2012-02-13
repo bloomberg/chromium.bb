@@ -346,9 +346,9 @@ reset_shell_surface_type(struct shell_surface *surface)
 {
 	switch (surface->type) {
 	case SHELL_SURFACE_FULLSCREEN:
-		surface->surface->geometry.x = surface->saved_x;
-		surface->surface->geometry.y = surface->saved_y;
-		surface->surface->geometry.dirty = 1;
+		weston_surface_set_position(surface->surface,
+					    surface->saved_x,
+					    surface->saved_y);
 		surface->surface->fullscreen_output = NULL;
 		break;
 	case SHELL_SURFACE_PANEL:
@@ -402,10 +402,8 @@ shell_surface_set_transient(struct wl_client *client,
 
 	/* assign to parents output  */
 	es->output = pes->output;
- 
-	es->geometry.x = pes->geometry.x + x;
-	es->geometry.y = pes->geometry.y + y;
-	es->geometry.dirty = 1;
+ 	weston_surface_set_position(es, pes->geometry.x + x,
+					pes->geometry.y + y);
 
 	shsurf->type = SHELL_SURFACE_TRANSIENT;
 }
@@ -436,9 +434,9 @@ shell_surface_set_fullscreen(struct wl_client *client,
 
 	shsurf->saved_x = es->geometry.x;
 	shsurf->saved_y = es->geometry.y;
-	es->geometry.x = (output->current->width - es->geometry.width) / 2;
-	es->geometry.y = (output->current->height - es->geometry.height) / 2;
-	es->geometry.dirty = 1;
+	weston_surface_set_position(es,
+		(output->current->width - es->geometry.width) / 2,
+		(output->current->height - es->geometry.height) / 2);
 	es->fullscreen_output = output;
 	shsurf->type = SHELL_SURFACE_FULLSCREEN;
 }
@@ -533,9 +531,7 @@ shell_map_popup(struct shell_surface *shsurf, uint32_t time)
 	}
 	wl_list_insert(es->geometry.transformation_list.prev,
 		       &shsurf->popup.parent_transform.link);
-	es->geometry.x = shsurf->popup.x;
-	es->geometry.y = shsurf->popup.y;
-	es->geometry.dirty = 1;
+	weston_surface_set_position(es, shsurf->popup.x, shsurf->popup.y);
 
 	shsurf->popup.grab.input_device = device;
 	shsurf->popup.time = device->grab_time;
@@ -747,9 +743,8 @@ desktop_shell_set_background(struct wl_client *client,
 
 	wl_list_insert(&shell->backgrounds, &shsurf->link);
 
-	surface->geometry.x = shsurf->output->x;
-	surface->geometry.y = shsurf->output->y;
-	surface->geometry.dirty = 1;
+	weston_surface_set_position(surface, shsurf->output->x,
+				    shsurf->output->y);
 
 	wl_resource_post_event(resource,
 			       DESKTOP_SHELL_CONFIGURE,
@@ -786,9 +781,8 @@ desktop_shell_set_panel(struct wl_client *client,
 
 	wl_list_insert(&shell->panels, &shsurf->link);
 
-	surface->geometry.x = shsurf->output->x;
-	surface->geometry.y = shsurf->output->y;
-	surface->geometry.dirty = 1;
+	weston_surface_set_position(surface, shsurf->output->x,
+				    shsurf->output->y);
 
 	wl_resource_post_event(resource,
 			       DESKTOP_SHELL_CONFIGURE,
@@ -1266,12 +1260,10 @@ static void
 center_on_output(struct weston_surface *surface, struct weston_output *output)
 {
 	struct weston_mode *mode = output->current;
+	GLfloat x = (mode->width - surface->geometry.width) / 2;
+	GLfloat y = (mode->height - surface->geometry.height) / 2;
 
-	surface->geometry.x =
-		output->x + (mode->width - surface->geometry.width) / 2;
-	surface->geometry.y =
-		output->y + (mode->height - surface->geometry.height) / 2;
-	surface->geometry.dirty = 1;
+	weston_surface_set_position(surface, output->x + x, output->y + y);
 }
 
 static void
@@ -1304,8 +1296,8 @@ map(struct weston_shell *base,
 	/* initial positioning, see also configure() */
 	switch (surface_type) {
 	case SHELL_SURFACE_TOPLEVEL:
-		surface->geometry.x = 10 + random() % 400;
-		surface->geometry.y = 10 + random() % 400;
+		weston_surface_set_position(surface, 10 + random() % 400,
+					    10 + random() % 400);
 		break;
 	case SHELL_SURFACE_SCREENSAVER:
 	case SHELL_SURFACE_FULLSCREEN:

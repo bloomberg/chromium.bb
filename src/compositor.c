@@ -518,6 +518,15 @@ weston_surface_configure(struct weston_surface *surface,
 	surface->geometry.dirty = 1;
 }
 
+WL_EXPORT void
+weston_surface_set_position(struct weston_surface *surface,
+			    GLfloat x, GLfloat y)
+{
+	surface->geometry.x = x;
+	surface->geometry.y = y;
+	surface->geometry.dirty = 1;
+}
+
 WL_EXPORT uint32_t
 weston_compositor_get_time(void)
 {
@@ -1364,9 +1373,9 @@ notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 			  device->grab->x, device->grab->y);
 
 	if (wd->sprite) {
-		wd->sprite->geometry.x = device->x - wd->hotspot_x;
-		wd->sprite->geometry.y = device->y - wd->hotspot_y;
-		wd->sprite->geometry.dirty = 1;
+		weston_surface_set_position(wd->sprite,
+					    device->x - wd->hotspot_x,
+					    device->y - wd->hotspot_y);
 
 		weston_compositor_schedule_repaint(ec);
 	}
