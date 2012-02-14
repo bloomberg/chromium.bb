@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,6 +82,9 @@ int GpuMain(const content::MainFunctionParams& parameters) {
   base::win::ScopedCOMInitializer com_initializer;
 
 #if defined(OS_WIN)
+  // Preload this DLL because the sandbox prevents it from loading.
+  LoadLibrary(L"setupapi.dll");
+
   sandbox::TargetServices* target_services =
       parameters.sandbox_info->target_services;
   // Initialize H/W video decoding stuff which fails in the sandbox.
