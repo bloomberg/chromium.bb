@@ -322,7 +322,7 @@ class RepoRepository(object):
       True: If the manifests are different
       False: If the manifests are same
     """
-    black_list = ['path="chromium/']
+    black_list = ['="chromium/']
     logging.debug('Calling DiffManifests against %s', other_manifest)
 
     temp_manifest_file = tempfile.mktemp()
