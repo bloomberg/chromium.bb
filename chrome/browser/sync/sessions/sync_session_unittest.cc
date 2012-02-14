@@ -18,6 +18,7 @@
 #include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/browser/sync/test/engine/fake_model_worker.h"
 #include "chrome/browser/sync/test/engine/test_directory_setter_upper.h"
+#include "chrome/browser/sync/test/fake_extensions_activity_monitor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using syncable::WriteTransaction;
@@ -40,8 +41,10 @@ class SyncSessionTest : public testing::Test,
   }
 
   virtual void SetUp() {
-    context_.reset(new SyncSessionContext(NULL, NULL, this,
-        std::vector<SyncEngineEventListener*>(), NULL));
+    context_.reset(
+        new SyncSessionContext(
+            NULL, NULL, this, &extensions_activity_monitor_,
+            std::vector<SyncEngineEventListener*>(), NULL));
     routes_.clear();
     routes_[syncable::BOOKMARKS] = GROUP_UI;
     routes_[syncable::AUTOFILL] = GROUP_DB;
@@ -124,6 +127,7 @@ class SyncSessionTest : public testing::Test,
   scoped_ptr<SyncSessionContext> context_;
   std::vector<scoped_refptr<ModelSafeWorker> > workers_;
   ModelSafeRoutingInfo routes_;
+  FakeExtensionsActivityMonitor extensions_activity_monitor_;
 };
 
 TEST_F(SyncSessionTest, EnabledGroupsEmpty) {
@@ -179,8 +183,10 @@ TEST_F(SyncSessionTest, SetWriteTransaction) {
   TestDirectorySetterUpper db;
   db.SetUp();
   session_.reset();
-  context_.reset(new SyncSessionContext(NULL, db.manager(), this,
-      std::vector<SyncEngineEventListener*>(), NULL));
+  context_.reset(
+      new SyncSessionContext(
+          NULL, db.manager(), this, &extensions_activity_monitor_,
+          std::vector<SyncEngineEventListener*>(), NULL));
   session_.reset(MakeSession());
   context_->set_account_name(db.name());
   syncable::ScopedDirLookup dir(context_->directory_manager(),

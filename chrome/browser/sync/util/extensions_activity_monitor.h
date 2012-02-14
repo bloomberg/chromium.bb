@@ -7,35 +7,23 @@
 #pragma once
 
 #include <map>
+#include <string>
 
-#include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
-#include "base/synchronization/lock.h"
-#include "content/public/browser/notification_observer.h"
-
-namespace content {
-class NotificationRegistrar;
-}
+#include "base/basictypes.h"
 
 namespace browser_sync {
 
-// A class to monitor usage of extensions APIs to send to sync servers, with
-// the ability to purge data once sync servers have acknowledged it (successful
-// commit response).
+// An interface to monitor usage of extensions APIs to send to sync
+// servers, with the ability to purge data once sync servers have
+// acknowledged it (successful commit response).
 //
-// This can be used from any thread (it is a 'monitor' in the synchronization
-// sense as well), HOWEVER
-//
-// *** IT MUST BE DELETED FROM THE UI LOOP ***
-//
-// Consider using MessageLoop::DeleteSoon. (Yes, this means if you allocate
-// an ExtensionsActivityMonitor on a thread other than UI, you must 'new' it).
-class ExtensionsActivityMonitor : public content::NotificationObserver {
+// All abstract methods are called from the sync thread.
+class ExtensionsActivityMonitor {
  public:
   // A data record of activity performed by extension |extension_id|.
   struct Record {
-    Record() : bookmark_write_count(0U) {}
+    Record();
+    ~Record();
 
     // The human-readable ID identifying the extension responsible
     // for the activity reported in this Record.
@@ -48,31 +36,16 @@ class ExtensionsActivityMonitor : public content::NotificationObserver {
 
   typedef std::map<std::string, Record> Records;
 
-  // Creates an ExtensionsActivityMonitor to monitor extensions activities on
-  // BrowserThread::UI (it is not necessary to construct it on that thread).
-  ExtensionsActivityMonitor();
+  // Fill |buffer| with all current records and then clear the
+  // internal records.
+  virtual void GetAndClearRecords(Records* buffer) = 0;
+
+  // Merge |records| with the current set of records, adding the
+  // bookmark write counts for common Records.
+  virtual void PutRecords(const Records& records) = 0;
+
+ protected:
   virtual ~ExtensionsActivityMonitor();
-
-  // Fills |buffer| with snapshot of current records in constant time by
-  // swapping.  This is done mutually exclusively w.r.t methods of this class.
-  void GetAndClearRecords(Records* buffer);
-
-  // Add |records| piece-wise (by extension id) to the set of active records.
-  // This is done mutually exclusively w.r.t the methods of this class.
-  void PutRecords(const Records& records);
-
-  // content::NotificationObserver implementation.  Called on |ui_loop_|.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
- private:
-  void RegisterNotificationsOnUIThread();
-
-  Records records_;
-  mutable base::Lock records_lock_;
-
-  // Used only from UI loop.
-  scoped_ptr<content::NotificationRegistrar> registrar_;
 };
 
 }  // namespace browser_sync

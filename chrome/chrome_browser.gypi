@@ -2313,6 +2313,8 @@
         'browser/sync/glue/browser_thread_model_worker.h',
         'browser/sync/glue/change_processor.cc',
         'browser/sync/glue/change_processor.h',
+        'browser/sync/glue/chrome_extensions_activity_monitor.cc',
+        'browser/sync/glue/chrome_extensions_activity_monitor.h',
         'browser/sync/glue/data_type_controller.h',
         'browser/sync/glue/data_type_manager.cc',
         'browser/sync/glue/data_type_manager.h',

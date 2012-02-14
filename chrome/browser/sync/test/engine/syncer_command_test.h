@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@
 #include "chrome/browser/sync/test/engine/mock_connection_manager.h"
 #include "chrome/browser/sync/test/engine/fake_model_worker.h"
 #include "chrome/browser/sync/test/engine/test_directory_setter_upper.h"
+#include "chrome/browser/sync/test/fake_extensions_activity_monitor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -135,6 +136,7 @@ class SyncerCommandTestWithParam : public testing::TestWithParam<T>,
   void ResetContext() {
     context_.reset(new sessions::SyncSessionContext(
         mock_server_.get(), syncdb_->manager(), registrar(),
+        &extensions_activity_monitor_,
         std::vector<SyncEngineEventListener*>(), &mock_debug_info_getter_));
     context_->set_account_name(syncdb_->name());
     ClearSession();
@@ -207,6 +209,7 @@ class SyncerCommandTestWithParam : public testing::TestWithParam<T>,
   std::vector<scoped_refptr<ModelSafeWorker> > workers_;
   ModelSafeRoutingInfo routing_info_;
   NiceMock<MockDebugInfoGetter> mock_debug_info_getter_;
+  FakeExtensionsActivityMonitor extensions_activity_monitor_;
   DISALLOW_COPY_AND_ASSIGN(SyncerCommandTestWithParam);
 };
 

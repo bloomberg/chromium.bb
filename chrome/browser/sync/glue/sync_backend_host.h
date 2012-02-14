@@ -16,6 +16,7 @@
 #include "base/threading/thread.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/glue/backend_data_type_configurer.h"
+#include "chrome/browser/sync/glue/chrome_extensions_activity_monitor.h"
 #include "chrome/browser/sync/internal_api/includes/unrecoverable_error_handler.h"
 #include "chrome/browser/sync/internal_api/configure_reason.h"
 #include "chrome/browser/sync/internal_api/sync_manager.h"
@@ -279,6 +280,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
     DoInitializeOptions(
         MessageLoop* sync_loop,
         SyncBackendRegistrar* registrar,
+        ExtensionsActivityMonitor* extensions_activity_monitor,
         const WeakHandle<JsEventHandler>& event_handler,
         const GURL& service_url,
         MakeHttpBridgeFactoryFn make_http_bridge_factory_fn,
@@ -292,6 +294,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
 
     MessageLoop* sync_loop;
     SyncBackendRegistrar* registrar;
+    ExtensionsActivityMonitor* extensions_activity_monitor;
     WeakHandle<JsEventHandler> event_handler;
     GURL service_url;
     // Overridden by tests.
@@ -475,6 +478,8 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   const base::WeakPtr<SyncPrefs> sync_prefs_;
 
   sync_notifier::SyncNotifierFactory sync_notifier_factory_;
+
+  ChromeExtensionsActivityMonitor extensions_activity_monitor_;
 
   scoped_ptr<SyncBackendRegistrar> registrar_;
 

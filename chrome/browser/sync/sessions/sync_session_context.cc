@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,6 @@
 #include "chrome/browser/sync/sessions/debug_info_getter.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/util/extensions_activity_monitor.h"
-#include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
 
 namespace browser_sync {
 namespace sessions {
@@ -18,13 +15,14 @@ SyncSessionContext::SyncSessionContext(
     ServerConnectionManager* connection_manager,
     syncable::DirectoryManager* directory_manager,
     ModelSafeWorkerRegistrar* model_safe_worker_registrar,
+    ExtensionsActivityMonitor* extensions_activity_monitor,
     const std::vector<SyncEngineEventListener*>& listeners,
     DebugInfoGetter* debug_info_getter)
     : resolver_(NULL),
       connection_manager_(connection_manager),
       directory_manager_(directory_manager),
       registrar_(model_safe_worker_registrar),
-      extensions_activity_monitor_(new ExtensionsActivityMonitor()),
+      extensions_activity_monitor_(extensions_activity_monitor),
       notifications_enabled_(false),
       max_commit_batch_size_(kDefaultMaxCommitBatchSize),
       debug_info_getter_(debug_info_getter) {
@@ -42,11 +40,6 @@ SyncSessionContext::SyncSessionContext()
 }
 
 SyncSessionContext::~SyncSessionContext() {
-  // In unittests, there may be no UI thread, so the above will fail.
-  if (!BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE,
-                                extensions_activity_monitor_)) {
-    delete extensions_activity_monitor_;
-  }
 }
 
 void SyncSessionContext::SetUnthrottleTime(syncable::ModelTypeSet types,

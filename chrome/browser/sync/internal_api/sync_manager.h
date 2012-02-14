@@ -23,6 +23,7 @@
 class FilePath;
 
 namespace browser_sync {
+class ExtensionsActivityMonitor;
 class JsBackend;
 class JsEventHandler;
 class ModelSafeWorkerRegistrar;
@@ -452,6 +453,8 @@ class SyncManager {
             bool use_ssl,
             HttpPostProviderFactory* post_factory,
             browser_sync::ModelSafeWorkerRegistrar* registrar,
+            browser_sync::ExtensionsActivityMonitor*
+                extensions_activity_monitor,
             ChangeDelegate* change_delegate,
             const std::string& user_agent,
             const SyncCredentials& credentials,

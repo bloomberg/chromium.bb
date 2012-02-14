@@ -45,6 +45,7 @@
 #include "chrome/browser/sync/test/engine/test_directory_setter_upper.h"
 #include "chrome/browser/sync/test/engine/test_id_factory.h"
 #include "chrome/browser/sync/test/engine/test_syncable_utils.h"
+#include "chrome/browser/sync/test/fake_extensions_activity_monitor.h"
 #include "chrome/browser/sync/util/cryptographer.h"
 #include "chrome/browser/sync/util/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -208,8 +209,10 @@ class SyncerTest : public testing::Test,
     worker_ = new FakeModelWorker(GROUP_PASSIVE);
     std::vector<SyncEngineEventListener*> listeners;
     listeners.push_back(this);
-    context_.reset(new SyncSessionContext(mock_server_.get(),
-        syncdb_.manager(), this, listeners, NULL));
+    context_.reset(
+        new SyncSessionContext(
+            mock_server_.get(), syncdb_.manager(), this,
+            &extensions_activity_monitor_, listeners, NULL));
     context_->set_account_name(syncdb_.name());
     ASSERT_FALSE(context_->resolver());
     syncer_ = new Syncer();
@@ -495,6 +498,7 @@ class SyncerTest : public testing::Test,
   TestIdFactory ids_;
 
   TestDirectorySetterUpper syncdb_;
+  FakeExtensionsActivityMonitor extensions_activity_monitor_;
   scoped_ptr<MockConnectionManager> mock_server_;
 
   Syncer* syncer_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,6 +53,7 @@ class SyncSessionContext {
   SyncSessionContext(ServerConnectionManager* connection_manager,
                      syncable::DirectoryManager* directory_manager,
                      ModelSafeWorkerRegistrar* model_safe_worker_registrar,
+                     ExtensionsActivityMonitor* extensions_activity_monitor,
                      const std::vector<SyncEngineEventListener*>& listeners,
                      DebugInfoGetter* debug_info_getter);
 

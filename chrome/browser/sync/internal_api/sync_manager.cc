@@ -187,6 +187,8 @@ class SyncManager::SyncInternal
             bool use_ssl,
             HttpPostProviderFactory* post_factory,
             ModelSafeWorkerRegistrar* model_safe_worker_registrar,
+            browser_sync::ExtensionsActivityMonitor*
+                extensions_activity_monitor,
             ChangeDelegate* change_delegate,
             const std::string& user_agent,
             const SyncCredentials& credentials,
@@ -713,6 +715,7 @@ bool SyncManager::Init(
     bool use_ssl,
     HttpPostProviderFactory* post_factory,
     ModelSafeWorkerRegistrar* registrar,
+    browser_sync::ExtensionsActivityMonitor* extensions_activity_monitor,
     ChangeDelegate* change_delegate,
     const std::string& user_agent,
     const SyncCredentials& credentials,
@@ -731,6 +734,7 @@ bool SyncManager::Init(
                      use_ssl,
                      post_factory,
                      registrar,
+                     extensions_activity_monitor,
                      change_delegate,
                      user_agent,
                      credentials,
@@ -844,6 +848,7 @@ bool SyncManager::SyncInternal::Init(
     bool use_ssl,
     HttpPostProviderFactory* post_factory,
     ModelSafeWorkerRegistrar* model_safe_worker_registrar,
+    browser_sync::ExtensionsActivityMonitor* extensions_activity_monitor,
     ChangeDelegate* change_delegate,
     const std::string& user_agent,
     const SyncCredentials& credentials,
@@ -893,6 +898,7 @@ bool SyncManager::SyncInternal::Init(
         connection_manager_.get(),
         dir_manager(),
         model_safe_worker_registrar,
+        extensions_activity_monitor,
         listeners,
         &debug_info_event_listener_);
     context->set_account_name(credentials.email);

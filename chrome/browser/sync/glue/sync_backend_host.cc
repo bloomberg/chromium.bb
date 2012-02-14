@@ -301,6 +301,7 @@ void SyncBackendHost::Initialize(
   InitCore(DoInitializeOptions(
       sync_thread_.message_loop(),
       registrar_.get(),
+      &extensions_activity_monitor_,
       event_handler,
       sync_service_url,
       base::Bind(&MakeHttpBridgeFactory,
@@ -712,6 +713,7 @@ bool SyncBackendHost::IsDownloadingNigoriForTest() const {
 SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
     MessageLoop* sync_loop,
     SyncBackendRegistrar* registrar,
+    ExtensionsActivityMonitor* extensions_activity_monitor,
     const WeakHandle<JsEventHandler>& event_handler,
     const GURL& service_url,
     MakeHttpBridgeFactoryFn make_http_bridge_factory_fn,
@@ -723,6 +725,7 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
     UnrecoverableErrorHandler* unrecoverable_error_handler)
     : sync_loop(sync_loop),
       registrar(registrar),
+      extensions_activity_monitor(extensions_activity_monitor),
       event_handler(event_handler),
       service_url(service_url),
       make_http_bridge_factory_fn(make_http_bridge_factory_fn),
@@ -957,6 +960,7 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
       options.service_url.SchemeIsSecure(),
       options.make_http_bridge_factory_fn.Run(),
       options.registrar /* as ModelSafeWorkerRegistrar */,
+      options.extensions_activity_monitor,
       options.registrar /* as SyncManager::ChangeDelegate */,
       MakeUserAgentForSyncApi(),
       options.credentials,

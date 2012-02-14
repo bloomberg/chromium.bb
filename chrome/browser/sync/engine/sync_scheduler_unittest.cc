@@ -14,6 +14,7 @@
 #include "chrome/browser/sync/test/engine/fake_model_safe_worker_registrar.h"
 #include "chrome/browser/sync/test/engine/mock_connection_manager.h"
 #include "chrome/browser/sync/test/engine/test_directory_setter_upper.h"
+#include "chrome/browser/sync/test/fake_extensions_activity_monitor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -94,8 +95,11 @@ class SyncSchedulerTest : public testing::Test {
     registrar_.reset(new FakeModelSafeWorkerRegistrar(routing_info));
     connection_.reset(new MockConnectionManager(syncdb_.manager(), "Test"));
     connection_->SetServerReachable();
-    context_ = new SyncSessionContext(connection_.get(), syncdb_.manager(),
-        registrar_.get(), std::vector<SyncEngineEventListener*>(), NULL);
+    context_ =
+        new SyncSessionContext(
+            connection_.get(), syncdb_.manager(),
+            registrar_.get(), &extensions_activity_monitor_,
+            std::vector<SyncEngineEventListener*>(), NULL);
     context_->set_notifications_enabled(true);
     context_->set_account_name("Test");
     scheduler_.reset(
@@ -193,6 +197,7 @@ class SyncSchedulerTest : public testing::Test {
   MockSyncer* syncer_;
   MockDelayProvider* delay_;
   scoped_ptr<FakeModelSafeWorkerRegistrar> registrar_;
+  FakeExtensionsActivityMonitor extensions_activity_monitor_;
   MockDirectorySetterUpper syncdb_;
 };
 

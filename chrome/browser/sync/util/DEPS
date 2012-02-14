@@ -12,11 +12,6 @@ include_rules = [
   # unittests need this for mac osx keychain overriding
   "+chrome/browser/password_manager/encryptor.h",
 
-  # ExtensionsActivityMonitor
-  "+chrome/browser/bookmarks/bookmark_extension_api.h",
-  "+chrome/common/extensions",
-  "+chrome/common/chrome_notification_types.h",
-
   "+chrome/common/chrome_switches.h",
   "+chrome/common/net/gaia/gaia_constants.h",
   "+chrome/common/random.h",

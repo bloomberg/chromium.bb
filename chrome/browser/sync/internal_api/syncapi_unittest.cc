@@ -56,7 +56,9 @@
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/browser/sync/test/engine/test_user_share.h"
+#include "chrome/browser/sync/test/fake_extensions_activity_monitor.h"
 #include "chrome/browser/sync/util/cryptographer.h"
+#include "chrome/browser/sync/util/extensions_activity_monitor.h"
 #include "chrome/browser/sync/util/time.h"
 #include "chrome/test/base/values_test_util.h"
 #include "content/test/test_browser_thread.h"
@@ -64,6 +66,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using browser_sync::Cryptographer;
+using browser_sync::FakeExtensionsActivityMonitor;
 using browser_sync::HasArgsAsList;
 using browser_sync::HasDetailsAsDictionary;
 using browser_sync::KeyParams;
@@ -763,7 +766,8 @@ class SyncManagerTest : public testing::Test,
     sync_manager_.Init(temp_dir_.path(),
                        WeakHandle<JsEventHandler>(),
                        "bogus", 0, false,
-                       new TestHttpPostProviderFactory(), this, this, "bogus",
+                       new TestHttpPostProviderFactory(), this,
+                       &extensions_activity_monitor_, this, "bogus",
                        credentials, sync_notifier_mock_, "",
                        true /* setup_for_test_mode */,
                        &handler_mock);
@@ -931,6 +935,7 @@ class SyncManagerTest : public testing::Test,
   ScopedTempDir temp_dir_;
   // Sync Id's for the roots of the enabled datatypes.
   std::map<ModelType, int64> type_roots_;
+  FakeExtensionsActivityMonitor extensions_activity_monitor_;
   StrictMock<SyncNotifierMock>* sync_notifier_mock_;
 
  protected:
