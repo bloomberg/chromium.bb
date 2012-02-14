@@ -40,8 +40,8 @@ EnterBase::~EnterBase() {
   if (callback_.func) {
     // All async completions should have cleared the callback in SetResult().
     DCHECK(retval_ != PP_OK_COMPLETIONPENDING && retval_ != PP_OK);
-    MessageLoop::current()->PostTask(FROM_HERE, RunWhileLocked(base::Bind(
-        callback_.func, callback_.user_data, retval_)));
+    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+        callback_.func, callback_.user_data, retval_));
   }
 }
 
@@ -57,8 +57,8 @@ int32_t EnterBase::SetResult(int32_t result) {
 
   // This is a required callback, asynchronously issue it.
   // TODO(brettw) make this work on different threads, etc.
-  MessageLoop::current()->PostTask(FROM_HERE, RunWhileLocked(base::Bind(
-      callback_.func, callback_.user_data, result)));
+  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+      callback_.func, callback_.user_data, result));
 
   // Now that the callback will be issued in the future, we should return
   // "pending" to the caller, and not issue the callback again.
@@ -85,9 +85,9 @@ void EnterBase::SetStateForResourceError(PP_Resource pp_resource,
 
   if (callback_.func) {
     // Required callback, issue the async completion.
-    MessageLoop::current()->PostTask(FROM_HERE, RunWhileLocked(base::Bind(
+    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         callback_.func, callback_.user_data,
-        static_cast<int32_t>(PP_ERROR_BADRESOURCE))));
+        static_cast<int32_t>(PP_ERROR_BADRESOURCE)));
     callback_ = PP_BlockUntilComplete();
     retval_ = PP_OK_COMPLETIONPENDING;
   } else {
@@ -121,9 +121,9 @@ void EnterBase::SetStateForFunctionError(PP_Instance pp_instance,
 
   if (callback_.func) {
     // Required callback, issue the async completion.
-    MessageLoop::current()->PostTask(FROM_HERE, RunWhileLocked(base::Bind(
+    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         callback_.func, callback_.user_data,
-        static_cast<int32_t>(PP_ERROR_BADARGUMENT))));
+        static_cast<int32_t>(PP_ERROR_BADARGUMENT)));
     callback_ = PP_BlockUntilComplete();
     retval_ = PP_OK_COMPLETIONPENDING;
   } else {
@@ -145,7 +145,7 @@ void EnterBase::SetStateForFunctionError(PP_Instance pp_instance,
 }  // namespace subtle
 
 EnterResourceCreation::EnterResourceCreation(PP_Instance instance)
-    : EnterFunction<ResourceCreationAPI>(instance, true) {
+    : EnterFunctionNoLock<ResourceCreationAPI>(instance, true) {
 }
 
 EnterResourceCreation::~EnterResourceCreation() {

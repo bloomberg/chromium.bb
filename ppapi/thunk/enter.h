@@ -245,7 +245,7 @@ class EnterResourceNoLock : public EnterResource<ResourceT, false> {
 // class so we have this helper function to save template instantiations and
 // typing.
 class PPAPI_THUNK_EXPORT EnterResourceCreation
-    : public EnterFunction<ResourceCreationAPI> {
+    : public EnterFunctionNoLock<ResourceCreationAPI> {
  public:
   EnterResourceCreation(PP_Instance instance);
   ~EnterResourceCreation();
