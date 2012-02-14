@@ -74,7 +74,7 @@ int clock_getres(clockid_t clk_id, struct timespec *res) {
 }
 
 int clock_gettime(clockid_t clk_id, struct timespec *tp) {
-  return errno_call(NACL_SYSCALL(clock_getres)(clk_id, tp));
+  return errno_call(NACL_SYSCALL(clock_gettime)(clk_id, tp));
 }
 
 int sched_yield(void) {
