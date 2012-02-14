@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,11 +38,10 @@ static bool check_msgtable() {
   int highest_class_id = 0;
   std::vector<int> exemptions;
 
-  // Exclude test and other non-browser files from consideration.  Do not
-  // include message files used inside the actual chrome browser in this list.
+  // Exclude test files from consideration.  Do not include message
+  // files used inside the actual chrome browser in this list.
   exemptions.push_back(TestMsgStart);
   exemptions.push_back(FirefoxImporterUnittestMsgStart);
-  exemptions.push_back(ShellMsgStart);
 
   for (size_t i = 0; i < MSGTABLE_SIZE; ++i) {
     int class_id = IPC_MESSAGE_ID_CLASS(msgtable[i].id);
@@ -65,15 +64,9 @@ static bool check_msgtable() {
       highest_class_id = class_id;
   }
 
-  while (LastIPCMsgStart > highest_class_id + 1) {
-    std::vector<int>::iterator iter;
-    iter = find(exemptions.begin(), exemptions.end(), highest_class_id+1);
-    if (iter == exemptions.end()) {
+  if (LastIPCMsgStart > highest_class_id + 1) {
       std::cout << "Missing message file: gap before LastIPCMsgStart\n";
       result = false;
-      break;
-    }
-    ++highest_class_id;
   }
 
   if (!result)
