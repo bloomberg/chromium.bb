@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "content/browser/speech/speech_recognizer.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/speech_recognizer_delegate.h"
 #include "ui/gfx/rect.h"
@@ -28,6 +27,7 @@ class URLRequestContextGetter;
 }
 
 namespace speech_input {
+class SpeechRecognizer;
 
 // This is the gatekeeper for speech recognition in the browser process. It
 // handles requests received from various render views and makes sure only one
