@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/debug/leak_tracker.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
@@ -16,6 +17,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/metrics_service.h"
+#include "chrome/browser/net/sqlite_persistent_cookie_store.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -38,7 +40,10 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_client.h"
+#include "net/base/cookie_monster.h"
 #include "net/base/registry_controlled_domain.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
 #if defined(OS_WIN)
@@ -50,6 +55,9 @@ using content::NavigationEntry;
 using content::WebContents;
 
 namespace {
+
+// Filename suffix for the cookie database.
+const FilePath::CharType kCookiesFile[] = FILE_PATH_LITERAL(" Cookies");
 
 // The default URL prefix where browser fetches chunk updates, hashes,
 // and reports safe browsing hits.
@@ -85,7 +93,69 @@ void RecordGetHashCheckStatus(
   SafeBrowsingProtocolManager::RecordGetHashResult(is_download, result);
 }
 
+FilePath BaseFilename() {
+  FilePath path;
+  bool result = PathService::Get(chrome::DIR_USER_DATA, &path);
+  DCHECK(result);
+  return path.Append(chrome::kSafeBrowsingBaseFilename);
+}
+
 }  // namespace
+
+// Custom URLRequestContext used by SafeBrowsing requests, which are not
+// associated with a particular profile. We need to use a subclass of
+// URLRequestContext in order to provide the correct User-Agent.
+class SafeBrowsingURLRequestContext : public net::URLRequestContext {
+ public:
+  virtual const std::string& GetUserAgent(
+      const GURL& url) const OVERRIDE {
+    return content::GetUserAgent(url);
+  }
+
+ private:
+  base::debug::LeakTracker<SafeBrowsingURLRequestContext> leak_tracker_;
+};
+
+class SafeBrowsingURLRequestContextGetter
+    : public net::URLRequestContextGetter {
+ public:
+  explicit SafeBrowsingURLRequestContextGetter(
+      SafeBrowsingService* sb_service_);
+  virtual ~SafeBrowsingURLRequestContextGetter();
+
+  // Implementation for net::UrlRequestContextGetter.
+  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
+  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const
+      OVERRIDE;
+
+ private:
+  SafeBrowsingService* const sb_service_;  // Owned by BrowserProcess.
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
+
+  base::debug::LeakTracker<SafeBrowsingURLRequestContextGetter> leak_tracker_;
+};
+
+SafeBrowsingURLRequestContextGetter::SafeBrowsingURLRequestContextGetter(
+    SafeBrowsingService* sb_service)
+    : sb_service_(sb_service),
+      io_message_loop_proxy_(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)) {
+}
+
+SafeBrowsingURLRequestContextGetter::~SafeBrowsingURLRequestContextGetter() {}
+
+net::URLRequestContext*
+SafeBrowsingURLRequestContextGetter::GetURLRequestContext() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(sb_service_->url_request_context_);
+
+  return sb_service_->url_request_context_;
+}
+
+scoped_refptr<base::MessageLoopProxy>
+SafeBrowsingURLRequestContextGetter::GetIOMessageLoopProxy() const {
+  return io_message_loop_proxy_;
+}
 
 // static
 SafeBrowsingServiceFactory* SafeBrowsingService::factory_ = NULL;
@@ -175,17 +245,6 @@ SafeBrowsingService::SafeBrowsingService()
       closing_database_(false),
       download_urlcheck_timeout_ms_(kDownloadUrlCheckTimeoutMs),
       download_hashcheck_timeout_ms_(kDownloadHashCheckTimeoutMs) {
-#if !defined(OS_CHROMEOS)
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableClientSidePhishingDetection)) {
-    csd_service_.reset(
-        safe_browsing::ClientSideDetectionService::Create(
-            g_browser_process->system_request_context()));
-  }
-  download_service_.reset(new safe_browsing::DownloadProtectionService(
-      this,
-      g_browser_process->system_request_context()));
-#endif
 }
 
 SafeBrowsingService::~SafeBrowsingService() {
@@ -199,6 +258,25 @@ SafeBrowsingService::~SafeBrowsingService() {
 }
 
 void SafeBrowsingService::Initialize() {
+  url_request_context_getter_ =
+      new SafeBrowsingURLRequestContextGetter(this);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(
+          &SafeBrowsingService::InitURLRequestContextOnIOThread, this,
+          make_scoped_refptr(g_browser_process->system_request_context())));
+#if !defined(OS_CHROMEOS)
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableClientSidePhishingDetection)) {
+    csd_service_.reset(
+        safe_browsing::ClientSideDetectionService::Create(
+            url_request_context_getter_));
+  }
+  download_service_.reset(new safe_browsing::DownloadProtectionService(
+      this,
+      url_request_context_getter_));
+#endif
+
   // Track the safe browsing preference of existing profiles.
   // The SafeBrowsingService will be started if any existing profile has the
   // preference enabled. It will also listen for updates to the preferences.
@@ -226,6 +304,12 @@ void SafeBrowsingService::ShutDown() {
   // on it.
   csd_service_.reset();
   download_service_.reset();
+
+  url_request_context_getter_ = NULL;
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&SafeBrowsingService::DestroyURLRequestContextOnIOThread,
+                 this));
 }
 
 bool SafeBrowsingService::CanCheckUrl(const GURL& url) const {
@@ -527,10 +611,40 @@ void SafeBrowsingService::LogPauseDelay(base::TimeDelta time) {
   UMA_HISTOGRAM_LONG_TIMES("SB2.Delay", time);
 }
 
-void SafeBrowsingService::OnIOInitialize(
+void SafeBrowsingService::InitURLRequestContextOnIOThread(
+    net::URLRequestContextGetter* system_url_request_context_getter) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!url_request_context_.get());
+
+  scoped_refptr<net::CookieStore> cookie_store = new net::CookieMonster(
+      new SQLitePersistentCookieStore(
+          FilePath(BaseFilename().value() + kCookiesFile), false),
+      NULL);
+
+  url_request_context_ = new SafeBrowsingURLRequestContext;
+  // |system_url_request_context_getter| may be NULL during tests.
+  if (system_url_request_context_getter)
+    url_request_context_->CopyFrom(
+        system_url_request_context_getter->GetURLRequestContext());
+  url_request_context_->set_cookie_store(cookie_store);
+}
+
+void SafeBrowsingService::DestroyURLRequestContextOnIOThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  // Need to do the CheckForLeaks on IOThread instead of in ShutDown where
+  // url_request_context_getter_ is cleared,  since the URLRequestContextGetter
+  // will PostTask to IOTread to delete itself.
+  using base::debug::LeakTracker;
+  LeakTracker<SafeBrowsingURLRequestContextGetter>::CheckForLeaks();
+
+  DCHECK(url_request_context_.get());
+  url_request_context_ = NULL;
+}
+
+void SafeBrowsingService::StartOnIOThread(
     const std::string& client_key,
-    const std::string& wrapped_key,
-    net::URLRequestContextGetter* request_context_getter) {
+    const std::string& wrapped_key) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (enabled_)
     return;
@@ -578,7 +692,7 @@ void SafeBrowsingService::OnIOInitialize(
                                           client_name,
                                           client_key,
                                           wrapped_key,
-                                          request_context_getter,
+                                          url_request_context_getter_,
                                           info_url_prefix,
                                           mackey_url_prefix,
                                           disable_auto_update);
@@ -586,7 +700,7 @@ void SafeBrowsingService::OnIOInitialize(
   protocol_manager_->Initialize();
 }
 
-void SafeBrowsingService::OnIOShutdown() {
+void SafeBrowsingService::StopOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!enabled_)
     return;
@@ -699,12 +813,6 @@ SafeBrowsingDatabase* SafeBrowsingService::GetDatabase() {
   DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
   if (database_)
     return database_;
-
-  FilePath path;
-  bool result = PathService::Get(chrome::DIR_USER_DATA, &path);
-  DCHECK(result);
-  path = path.Append(chrome::kSafeBrowsingBaseFilename);
-
   const base::TimeTicks before = base::TimeTicks::Now();
 
   SafeBrowsingDatabase* database =
@@ -712,7 +820,7 @@ SafeBrowsingDatabase* SafeBrowsingService::GetDatabase() {
                                    enable_csd_whitelist_,
                                    enable_download_whitelist_);
 
-  database->Init(path);
+  database->Init(BaseFilename());
   {
     // Acquiring the lock here guarantees correct ordering between the writes to
     // the new database object above, and the setting of |databse_| below.
@@ -899,10 +1007,6 @@ void SafeBrowsingService::Start() {
       local_state->GetString(prefs::kSafeBrowsingWrappedKey);
   }
 
-  // We will issue network fetches using the system request context.
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter(
-    g_browser_process->system_request_context());
-
   CommandLine* cmdline = CommandLine::ForCurrentProcess();
   enable_download_protection_ =
       !cmdline->HasSwitch(switches::kSbDisableDownloadProtection);
@@ -926,14 +1030,14 @@ void SafeBrowsingService::Start() {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&SafeBrowsingService::OnIOInitialize,
-                 this, client_key, wrapped_key, request_context_getter));
+      base::Bind(&SafeBrowsingService::StartOnIOThread,
+                 this, client_key, wrapped_key));
 }
 
 void SafeBrowsingService::Stop() {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&SafeBrowsingService::OnIOShutdown, this));
+      base::Bind(&SafeBrowsingService::StopOnIOThread, this));
 }
 
 void SafeBrowsingService::OnCloseDatabase() {

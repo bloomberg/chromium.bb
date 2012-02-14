@@ -35,12 +35,14 @@ class PrefService;
 class SafeBrowsingDatabase;
 class SafeBrowsingProtocolManager;
 class SafeBrowsingServiceFactory;
+class SafeBrowsingURLRequestContextGetter;
 
 namespace base {
 class Thread;
 }
 
 namespace net {
+class URLRequestContext;
 class URLRequestContextGetter;
 }
 
@@ -341,14 +343,21 @@ class SafeBrowsingService
       content::BrowserThread::UI>;
   friend class base::DeleteHelper<SafeBrowsingService>;
   friend class SafeBrowsingServiceTest;
+  friend class SafeBrowsingURLRequestContextGetter;
 
-  // Called to initialize objects that are used on the io_thread.
-  void OnIOInitialize(const std::string& client_key,
-                      const std::string& wrapped_key,
-                      net::URLRequestContextGetter* request_context_getter);
+  void InitURLRequestContextOnIOThread(
+      net::URLRequestContextGetter* system_url_request_context_getter);
 
-  // Called to shutdown operations on the io_thread.
-  void OnIOShutdown();
+  void DestroyURLRequestContextOnIOThread();
+
+  // Called to initialize objects that are used on the io_thread.  This may be
+  // called multiple times during the life of the SafeBrowsingService.
+  void StartOnIOThread(const std::string& client_key,
+                       const std::string& wrapped_key);
+
+  // Called to shutdown operations on the io_thread. This may be called multiple
+  // times during the life of the SafeBrowsingService.
+  void StopOnIOThread();
 
   // Returns whether |database_| exists and is accessible.
   bool DatabaseAvailable() const;
@@ -502,6 +511,14 @@ class SafeBrowsingService
 
   // Lock used to prevent possible data races due to compiler optimizations.
   mutable base::Lock database_lock_;
+
+  // The SafeBrowsingURLRequestContextGetter used to access
+  // |url_request_context_|.
+  scoped_refptr<net::URLRequestContextGetter>
+      url_request_context_getter_;
+
+  // The SafeBrowsingURLRequestContext.
+  scoped_refptr<net::URLRequestContext> url_request_context_;
 
   // Handles interaction with SafeBrowsing servers.
   SafeBrowsingProtocolManager* protocol_manager_;

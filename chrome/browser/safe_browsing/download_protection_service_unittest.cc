@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -132,6 +132,7 @@ class DownloadProtectionServiceTest : public testing::Test {
     file_thread_.reset(new content::TestBrowserThread(BrowserThread::FILE));
     ASSERT_TRUE(file_thread_->Start());
     sb_service_ = new StrictMock<MockSafeBrowsingService>();
+    sb_service_->Initialize();
     signature_util_ = new StrictMock<MockSignatureUtil>();
     download_service_ = sb_service_->download_protection_service();
     download_service_->signature_util_ = signature_util_;
@@ -149,6 +150,7 @@ class DownloadProtectionServiceTest : public testing::Test {
   }
 
   virtual void TearDown() {
+    sb_service_->ShutDown();
     // Flush all of the thread message loops to ensure that there are no
     // tasks currently running.
     FlushThreadMessageLoops();

@@ -66,6 +66,8 @@
 
 using content::BrowserThread;
 
+class SafeBrowsingURLRequestContext;
+
 // The IOThread object must outlive any tasks posted to the IO thread before the
 // Quit task, so base::Bind() calls are not refcounted.
 
@@ -472,6 +474,8 @@ void IOThread::Init() {
 }
 
 void IOThread::CleanUp() {
+  base::debug::LeakTracker<SafeBrowsingURLRequestContext>::CheckForLeaks();
+
   delete sdch_manager_;
   sdch_manager_ = NULL;
 
