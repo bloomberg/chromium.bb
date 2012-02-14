@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
-#include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -64,7 +63,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
         weak_ptr_factory_(this) {
     power_manager_proxy_ = bus->GetObjectProxy(
         power_manager::kPowerManagerServiceName,
-        dbus::ObjectPath(power_manager::kPowerManagerServicePath));
+        power_manager::kPowerManagerServicePath);
 
     // Monitor the D-Bus signal for brightness changes. Only the power
     // manager knows the actual brightness level. We don't cache the

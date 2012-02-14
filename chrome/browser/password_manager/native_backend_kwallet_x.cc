@@ -15,7 +15,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
-#include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -104,8 +103,7 @@ void NativeBackendKWallet::InitOnDBThread(scoped_refptr<dbus::Bus> optional_bus,
     session_bus_ = new dbus::Bus(options);
   }
   kwallet_proxy_ =
-      session_bus_->GetObjectProxy(kKWalletServiceName,
-                                   dbus::ObjectPath(kKWalletPath));
+      session_bus_->GetObjectProxy(kKWalletServiceName, kKWalletPath);
   // kwalletd may not be running. If we get a temporary failure initializing it,
   // try to start it and then try again. (Note the short-circuit evaluation.)
   const InitResult result = InitWallet();
@@ -120,8 +118,7 @@ bool NativeBackendKWallet::StartKWalletd() {
   // Sadly kwalletd doesn't use DBus activation, so we have to make a call to
   // klauncher to start it.
   dbus::ObjectProxy* klauncher =
-      session_bus_->GetObjectProxy(kKLauncherServiceName,
-                                   dbus::ObjectPath(kKLauncherPath));
+      session_bus_->GetObjectProxy(kKLauncherServiceName, kKLauncherPath);
 
   dbus::MethodCall method_call(kKLauncherInterface,
                                "start_service_by_desktop_name");

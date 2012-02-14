@@ -10,7 +10,6 @@
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
-#include "dbus/object_path.h"
 
 namespace dbus {
 
@@ -97,7 +96,7 @@ void TestService::SendTestSignalFromRootInternal(const std::string& message) {
   // Use "/" just like dbus-send does.
   ExportedObject* root_object =
       bus_->GetExportedObject("org.chromium.TestService",
-                              dbus::ObjectPath("/"));
+                              "/");
   root_object->SendSignal(&signal);
 }
 
@@ -126,7 +125,7 @@ void TestService::Run(MessageLoop* message_loop) {
 
   exported_object_ = bus_->GetExportedObject(
       "org.chromium.TestService",
-      dbus::ObjectPath("/org/chromium/TestObject"));
+      "/org/chromium/TestObject");
 
   int num_methods = 0;
   exported_object_->ExportMethod(

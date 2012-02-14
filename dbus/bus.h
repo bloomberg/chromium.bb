@@ -17,7 +17,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "base/tracked_objects.h"
-#include "dbus/object_path.h"
 
 class MessageLoop;
 
@@ -113,7 +112,7 @@ class ObjectProxy;
 //   }
 //
 //   void OnExported(const std::string& interface_name,
-//                   const ObjectPath& object_path,
+//                   const std::string& object_path,
 //                   bool success) {
 //     // success is true if the method was exported successfully.
 //   }
@@ -195,13 +194,13 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
   //
   // Must be called in the origin thread.
   virtual ObjectProxy* GetObjectProxy(const std::string& service_name,
-                                      const ObjectPath& object_path);
+                                      const std::string& object_path);
 
   // Same as above, but also takes a bitfield of ObjectProxy::Options.
   // See object_proxy.h for available options.
   virtual ObjectProxy* GetObjectProxyWithOptions(
       const std::string& service_name,
-      const ObjectPath& object_path,
+      const std::string& object_path,
       int options);
 
   // Gets the exported object for the given service name and the object
@@ -220,7 +219,7 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
   //
   // Must be called in the origin thread.
   virtual ExportedObject* GetExportedObject(const std::string& service_name,
-                                            const ObjectPath& object_path);
+                                            const std::string& object_path);
 
   // Shuts down the bus and blocks until it's done. More specifically, this
   // function does the following:
@@ -354,7 +353,7 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
   // http://dbus.freedesktop.org/doc/api/html/group__DBusConnection.html
   //
   // BLOCKING CALL.
-  virtual bool TryRegisterObjectPath(const ObjectPath& object_path,
+  virtual bool TryRegisterObjectPath(const std::string& object_path,
                                      const DBusObjectPathVTable* vtable,
                                      void* user_data,
                                      DBusError* error);
@@ -362,7 +361,7 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
   // Unregister the object path.
   //
   // BLOCKING CALL.
-  virtual void UnregisterObjectPath(const ObjectPath& object_path);
+  virtual void UnregisterObjectPath(const std::string& object_path);
 
   // Posts the task to the message loop of the thread that created the bus.
   virtual void PostTaskToOriginThread(
@@ -462,7 +461,7 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
   // The following sets are used to check if rules/object_paths/filters
   // are properly cleaned up before destruction of the bus object.
   std::set<std::string> match_rules_added_;
-  std::set<ObjectPath> registered_object_paths_;
+  std::set<std::string> registered_object_paths_;
   std::set<std::pair<DBusHandleMessageFunction, void*> >
       filter_functions_added_;
 

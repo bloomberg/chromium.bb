@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,6 @@
 #include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_manager_client.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
-#include "dbus/object_path.h"
 
 namespace chromeos {
 
@@ -51,10 +50,9 @@ class BluetoothManagerImpl : public BluetoothManager,
   }
 
   // BluetoothManagerClient::Observer override.
-  virtual void AdapterRemoved(const dbus::ObjectPath& adapter) {
-    VLOG(1) << "AdapterRemoved: " << adapter.value();
-    if (default_adapter_.get() == NULL
-        || default_adapter_->Id() != adapter.value()) {
+  virtual void AdapterRemoved(const std::string& adapter) {
+    VLOG(1) << "AdapterRemoved: " << adapter;
+    if (default_adapter_.get() == NULL || default_adapter_->Id() != adapter) {
       return;
     }
     // The default adapter was removed.
@@ -64,8 +62,8 @@ class BluetoothManagerImpl : public BluetoothManager,
   }
 
   // BluetoothManagerClient::Observer override.
-  virtual void DefaultAdapterChanged(const dbus::ObjectPath& adapter) {
-    VLOG(1) << "DefaultAdapterChanged: " << adapter.value();
+  virtual void DefaultAdapterChanged(const std::string& adapter) {
+    VLOG(1) << "DefaultAdapterChanged: " << adapter;
     OnNewDefaultAdapter(adapter);
   }
 
@@ -75,13 +73,12 @@ class BluetoothManagerImpl : public BluetoothManager,
   }
 
   // We have updated info about the default adapter.
-  void OnNewDefaultAdapter(const dbus::ObjectPath& adapter) {
-    VLOG(1) << "OnNewDefaultAdapter: " << adapter.value();
-    if (default_adapter_.get() != NULL
-        && default_adapter_->Id() == adapter.value()) {
+  void OnNewDefaultAdapter(const std::string& adapter) {
+    VLOG(1) << "OnNewDefaultAdapter: " << adapter;
+    if (default_adapter_.get() != NULL && default_adapter_->Id() == adapter) {
       return;
     }
-    default_adapter_.reset(BluetoothAdapter::Create(adapter.value()));
+    default_adapter_.reset(BluetoothAdapter::Create(adapter));
     DCHECK(default_adapter_.get());
     FOR_EACH_OBSERVER(BluetoothManager::Observer, observers_,
                       DefaultAdapterChanged(default_adapter_.get()));
@@ -89,12 +86,12 @@ class BluetoothManagerImpl : public BluetoothManager,
 
   // Called by bluetooth_manager_client when our DefaultAdapter request is
   // complete
-  void OnDefaultAdapter(const dbus::ObjectPath& adapter, bool success) {
+  void OnDefaultAdapter(const std::string& adapter, bool success) {
     if (!success) {
       LOG(ERROR) << "OnDefaultAdapter: failed.";
       return;
     }
-    VLOG(1) << "OnDefaultAdapter: " << adapter.value();
+    VLOG(1) << "OnDefaultAdapter: " << adapter;
     OnNewDefaultAdapter(adapter);
   }
 

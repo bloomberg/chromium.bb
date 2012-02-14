@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 #include <string>
 
 #include "dbus/exported_object.h"
-#include "dbus/object_path.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace dbus {
@@ -19,7 +18,7 @@ class MockExportedObject : public ExportedObject {
  public:
   MockExportedObject(Bus* bus,
                      const std::string& service_name,
-                     const ObjectPath& object_path);
+                     const std::string& object_path);
   virtual ~MockExportedObject();
 
   MOCK_METHOD3(ExportMethodAndBlock,

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,6 @@
 #include "dbus/message.h"
 #include "dbus/mock_bus.h"
 #include "dbus/mock_object_proxy.h"
-#include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,10 +29,9 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
 
     // Create a mock proxy that behaves as NetworkManager.
     mock_network_manager_proxy_ =
-        new dbus::MockObjectProxy(
-            mock_bus_.get(),
-            "org.freedesktop.NetworkManager",
-            dbus::ObjectPath("/org/freedesktop/NetworkManager"));
+        new dbus::MockObjectProxy(mock_bus_.get(),
+                                  "org.freedesktop.NetworkManager",
+                                  "/org/freedesktop/NetworkManager");
     // Set an expectation so mock_network_manager_proxy_'s
     // CallMethodAndBlock() will use CreateNetowrkManagerProxyResponse()
     // to return responses.
@@ -46,10 +44,9 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
 
     // Create a mock proxy that behaves as NetworkManager/Devices/0.
     mock_device_proxy_ =
-        new dbus::MockObjectProxy(
-            mock_bus_.get(),
-            "org.freedesktop.NetworkManager",
-            dbus::ObjectPath("/org/freedesktop/NetworkManager/Devices/0"));
+        new dbus::MockObjectProxy(mock_bus_.get(),
+                                  "org.freedesktop.NetworkManager",
+                                  "/org/freedesktop/NetworkManager/Devices/0");
     EXPECT_CALL(*mock_device_proxy_,
                 CallMethodAndBlock(_, _))
         .WillRepeatedly(Invoke(
@@ -61,7 +58,7 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
         new dbus::MockObjectProxy(
             mock_bus_.get(),
             "org.freedesktop.NetworkManager",
-            dbus::ObjectPath("/org/freedesktop/NetworkManager/AccessPoint/0"));
+            "/org/freedesktop/NetworkManager/AccessPoint/0");
     EXPECT_CALL(*mock_access_point_proxy_,
                 CallMethodAndBlock(_, _))
         .WillRepeatedly(Invoke(
@@ -74,18 +71,18 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
     // mock_network_manager_proxy_.
     EXPECT_CALL(*mock_bus_, GetObjectProxy(
         "org.freedesktop.NetworkManager",
-        dbus::ObjectPath("/org/freedesktop/NetworkManager")))
+        "/org/freedesktop/NetworkManager"))
         .WillOnce(Return(mock_network_manager_proxy_.get()));
     // Likewise, set an expectation for mock_device_proxy_.
     EXPECT_CALL(*mock_bus_, GetObjectProxy(
         "org.freedesktop.NetworkManager",
-        dbus::ObjectPath("/org/freedesktop/NetworkManager/Devices/0")))
+        "/org/freedesktop/NetworkManager/Devices/0"))
         .WillOnce(Return(mock_device_proxy_.get()))
         .WillOnce(Return(mock_device_proxy_.get()));
     // Likewise, set an expectation for mock_access_point_proxy_.
     EXPECT_CALL(*mock_bus_, GetObjectProxy(
         "org.freedesktop.NetworkManager",
-        dbus::ObjectPath("/org/freedesktop/NetworkManager/AccessPoint/0")))
+        "/org/freedesktop/NetworkManager/AccessPoint/0"))
         .WillOnce(Return(mock_access_point_proxy_.get()));
 
     // ShutdownAndBlock() should be called.
@@ -118,9 +115,8 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
     if (method_call->GetInterface() == "org.freedesktop.NetworkManager" &&
         method_call->GetMember() == "GetDevices") {
       // The list of devices is asked. Return the object path.
-      std::vector<dbus::ObjectPath> object_paths;
-      object_paths.push_back(
-          dbus::ObjectPath("/org/freedesktop/NetworkManager/Devices/0"));
+      std::vector<std::string> object_paths;
+      object_paths.push_back("/org/freedesktop/NetworkManager/Devices/0");
 
       dbus::Response* response = dbus::Response::CreateEmpty();
       dbus::MessageWriter writer(response);
@@ -156,9 +152,8 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
       // The list of access points is asked. Return the object path.
       dbus::Response* response = dbus::Response::CreateEmpty();
       dbus::MessageWriter writer(response);
-      std::vector<dbus::ObjectPath> object_paths;
-      object_paths.push_back(
-          dbus::ObjectPath("/org/freedesktop/NetworkManager/AccessPoint/0"));
+      std::vector<std::string> object_paths;
+      object_paths.push_back("/org/freedesktop/NetworkManager/AccessPoint/0");
       writer.AppendArrayOfObjectPaths(object_paths);
       return response;
     }

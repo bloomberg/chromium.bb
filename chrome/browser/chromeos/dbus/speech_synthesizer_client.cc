@@ -9,7 +9,6 @@
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
-#include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -33,7 +32,7 @@ class SpeechSynthesizerClientImpl : public SpeechSynthesizerClient {
         weak_ptr_factory_(this) {
     proxy_ = bus->GetObjectProxy(
         speech_synthesis::kSpeechSynthesizerServiceName,
-        dbus::ObjectPath(speech_synthesis::kSpeechSynthesizerServicePath));
+        speech_synthesis::kSpeechSynthesizerServicePath);
   }
   virtual ~SpeechSynthesizerClientImpl() {}
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,6 @@
 #include "dbus/mock_bus.h"
 #include "dbus/mock_object_proxy.h"
 #include "dbus/mock_exported_object.h"
-#include "dbus/object_path.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,10 +31,9 @@ class MockTest : public testing::Test {
     mock_bus_ = new dbus::MockBus(options);
 
     // Create a mock proxy.
-    mock_proxy_ = new dbus::MockObjectProxy(
-        mock_bus_.get(),
-        "org.chromium.TestService",
-        dbus::ObjectPath("/org/chromium/TestObject"));
+    mock_proxy_ = new dbus::MockObjectProxy(mock_bus_.get(),
+                                            "org.chromium.TestService",
+                                            "/org/chromium/TestObject");
 
     // Set an expectation so mock_proxy's CallMethodAndBlock() will use
     // CreateMockProxyResponse() to return responses.
@@ -51,9 +49,8 @@ class MockTest : public testing::Test {
 
     // Set an expectation so mock_bus's GetObjectProxy() for the given
     // service name and the object path will return mock_proxy_.
-    EXPECT_CALL(*mock_bus_, GetObjectProxy(
-        "org.chromium.TestService",
-        dbus::ObjectPath("/org/chromium/TestObject")))
+    EXPECT_CALL(*mock_bus_, GetObjectProxy("org.chromium.TestService",
+                                          "/org/chromium/TestObject"))
         .WillOnce(Return(mock_proxy_.get()));
 
     // ShutdownAndBlock() will be called in TearDown().
@@ -133,7 +130,7 @@ TEST_F(MockTest, CallMethodAndBlock) {
   // Get an object proxy from the mock bus.
   dbus::ObjectProxy* proxy = mock_bus_->GetObjectProxy(
       "org.chromium.TestService",
-      dbus::ObjectPath("/org/chromium/TestObject"));
+      "/org/chromium/TestObject");
 
   // Create a method call.
   dbus::MethodCall method_call("org.chromium.TestInterface", "Echo");
@@ -162,7 +159,7 @@ TEST_F(MockTest, CallMethod) {
   // Get an object proxy from the mock bus.
   dbus::ObjectProxy* proxy = mock_bus_->GetObjectProxy(
       "org.chromium.TestService",
-      dbus::ObjectPath("/org/chromium/TestObject"));
+      "/org/chromium/TestObject");
 
   // Create a method call.
   dbus::MethodCall method_call("org.chromium.TestInterface", "Echo");

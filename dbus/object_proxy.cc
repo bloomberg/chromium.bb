@@ -13,7 +13,6 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "dbus/message.h"
-#include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "dbus/scoped_dbus_error.h"
 
@@ -43,7 +42,7 @@ namespace dbus {
 
 ObjectProxy::ObjectProxy(Bus* bus,
                          const std::string& service_name,
-                         const ObjectPath& object_path,
+                         const std::string& object_path,
                          int options)
     : bus_(bus),
       service_name_(service_name),

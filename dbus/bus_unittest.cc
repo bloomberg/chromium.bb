@@ -9,7 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
 #include "dbus/exported_object.h"
-#include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,21 +30,20 @@ TEST(BusTest, GetObjectProxy) {
 
   dbus::ObjectProxy* object_proxy1 =
       bus->GetObjectProxy("org.chromium.TestService",
-                          dbus::ObjectPath("/org/chromium/TestObject"));
+                          "/org/chromium/TestObject");
   ASSERT_TRUE(object_proxy1);
 
   // This should return the same object.
   dbus::ObjectProxy* object_proxy2 =
       bus->GetObjectProxy("org.chromium.TestService",
-                          dbus::ObjectPath("/org/chromium/TestObject"));
+                          "/org/chromium/TestObject");
   ASSERT_TRUE(object_proxy2);
   EXPECT_EQ(object_proxy1, object_proxy2);
 
   // This should not.
   dbus::ObjectProxy* object_proxy3 =
-      bus->GetObjectProxy(
-          "org.chromium.TestService",
-          dbus::ObjectPath("/org/chromium/DifferentTestObject"));
+      bus->GetObjectProxy("org.chromium.TestService",
+                          "/org/chromium/DifferentTestObject");
   ASSERT_TRUE(object_proxy3);
   EXPECT_NE(object_proxy1, object_proxy3);
 
@@ -59,7 +57,7 @@ TEST(BusTest, GetObjectProxyIgnoreUnknownService) {
   dbus::ObjectProxy* object_proxy1 =
       bus->GetObjectProxyWithOptions(
           "org.chromium.TestService",
-          dbus::ObjectPath("/org/chromium/TestObject"),
+          "/org/chromium/TestObject",
           dbus::ObjectProxy::IGNORE_SERVICE_UNKNOWN_ERRORS);
   ASSERT_TRUE(object_proxy1);
 
@@ -67,7 +65,7 @@ TEST(BusTest, GetObjectProxyIgnoreUnknownService) {
   dbus::ObjectProxy* object_proxy2 =
       bus->GetObjectProxyWithOptions(
           "org.chromium.TestService",
-          dbus::ObjectPath("/org/chromium/TestObject"),
+          "/org/chromium/TestObject",
           dbus::ObjectProxy::IGNORE_SERVICE_UNKNOWN_ERRORS);
   ASSERT_TRUE(object_proxy2);
   EXPECT_EQ(object_proxy1, object_proxy2);
@@ -76,7 +74,7 @@ TEST(BusTest, GetObjectProxyIgnoreUnknownService) {
   dbus::ObjectProxy* object_proxy3 =
       bus->GetObjectProxyWithOptions(
           "org.chromium.TestService",
-          dbus::ObjectPath("/org/chromium/DifferentTestObject"),
+          "/org/chromium/DifferentTestObject",
           dbus::ObjectProxy::IGNORE_SERVICE_UNKNOWN_ERRORS);
   ASSERT_TRUE(object_proxy3);
   EXPECT_NE(object_proxy1, object_proxy3);
@@ -90,21 +88,20 @@ TEST(BusTest, GetExportedObject) {
 
   dbus::ExportedObject* object_proxy1 =
       bus->GetExportedObject("org.chromium.TestService",
-                             dbus::ObjectPath("/org/chromium/TestObject"));
+                             "/org/chromium/TestObject");
   ASSERT_TRUE(object_proxy1);
 
   // This should return the same object.
   dbus::ExportedObject* object_proxy2 =
       bus->GetExportedObject("org.chromium.TestService",
-                             dbus::ObjectPath("/org/chromium/TestObject"));
+                             "/org/chromium/TestObject");
   ASSERT_TRUE(object_proxy2);
   EXPECT_EQ(object_proxy1, object_proxy2);
 
   // This should not.
   dbus::ExportedObject* object_proxy3 =
-      bus->GetExportedObject(
-          "org.chromium.TestService",
-          dbus::ObjectPath("/org/chromium/DifferentTestObject"));
+      bus->GetExportedObject("org.chromium.TestService",
+                             "/org/chromium/DifferentTestObject");
   ASSERT_TRUE(object_proxy3);
   EXPECT_NE(object_proxy1, object_proxy3);
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -22,7 +22,6 @@
 #include "dbus/mock_bus.h"
 #include "dbus/mock_exported_object.h"
 #include "dbus/mock_object_proxy.h"
-#include "dbus/object_path.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -81,7 +80,7 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
     mock_exported_object_ =
         new dbus::MockExportedObject(mock_bus_.get(),
                                      kLibCrosServiceName,
-                                     dbus::ObjectPath(kLibCrosServicePath));
+                                     kLibCrosServicePath);
 
     // |mock_exported_object_|'s ExportMethod() will use
     // |MockExportedObject().
@@ -103,7 +102,7 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
     mock_object_proxy_ =
         new dbus::MockObjectProxy(mock_bus_.get(),
                                   kLibCrosServiceName,
-                                  dbus::ObjectPath(kLibCrosServicePath));
+                                  kLibCrosServicePath);
     // |mock_object_proxy_|'s CallMethodAndBlock() will use
     // MockCallMethodAndBlock() to return responses.
     EXPECT_CALL(*mock_object_proxy_,

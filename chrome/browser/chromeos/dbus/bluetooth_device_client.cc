@@ -13,7 +13,6 @@
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
-#include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -54,24 +53,23 @@ class BluetoothDeviceClientImpl: public BluetoothDeviceClient,
 
  private:
   // BluetoothAdapterClient::Observer override.
-  virtual void DeviceCreated(const dbus::ObjectPath& adapter_path,
-                             const dbus::ObjectPath& object_path) OVERRIDE {
-    VLOG(1) << "DeviceCreated: " << object_path.value();
+  virtual void DeviceCreated(const std::string& adapter_path,
+                             const std::string& object_path) OVERRIDE {
+    VLOG(1) << "DeviceCreated: " << object_path;
   }
 
   // BluetoothAdapterClient::Observer override.
-  virtual void DeviceRemoved(const dbus::ObjectPath& adapter_path,
-                             const dbus::ObjectPath& object_path) OVERRIDE {
-    VLOG(1) << "DeviceRemoved: " << object_path.value();
+  virtual void DeviceRemoved(const std::string& adapter_path,
+                             const std::string& object_path) OVERRIDE {
+    VLOG(1) << "DeviceRemoved: " << object_path;
     RemoveObjectProxyForPath(object_path);
   }
 
   // Ensures that we have a dbus object proxy for a device with dbus
   // object path |object_path|, and if not, creates it stores it in
   // our |proxy_map_| map.
-  dbus::ObjectProxy* GetObjectProxyForPath(
-      const dbus::ObjectPath& object_path) {
-    VLOG(1) << "GetObjectProxyForPath: " << object_path.value();
+  dbus::ObjectProxy* GetObjectProxyForPath(const std::string& object_path) {
+    VLOG(1) << "GetObjectProxyForPath: " << object_path;
 
     ProxyMap::iterator it = proxy_map_.find(object_path);
     if (it != proxy_map_.end())
@@ -88,8 +86,8 @@ class BluetoothDeviceClientImpl: public BluetoothDeviceClient,
 
   // Removes the dbus object proxy for the device with dbus object path
   // |object_path| from our |proxy_map_| map.
-  void RemoveObjectProxyForPath(const dbus::ObjectPath& object_path) {
-    VLOG(1) << "RemoveObjectProxyForPath: " << object_path.value();
+  void RemoveObjectProxyForPath(const std::string& object_path) {
+    VLOG(1) << "RemoveObjectProxyForPath: " << object_path;
     proxy_map_.erase(object_path);
   }
 
@@ -100,7 +98,7 @@ class BluetoothDeviceClientImpl: public BluetoothDeviceClient,
   dbus::Bus* bus_;
 
   // We maintain a collection of dbus object proxies, one for each device.
-  typedef std::map<const dbus::ObjectPath, dbus::ObjectProxy*> ProxyMap;
+  typedef std::map<const std::string, dbus::ObjectProxy*> ProxyMap;
   ProxyMap proxy_map_;
 
   // List of observers interested in event notifications from us.
