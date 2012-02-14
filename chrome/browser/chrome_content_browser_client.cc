@@ -122,7 +122,7 @@
 #include "chrome/browser/tab_contents/chrome_web_contents_view_mac_delegate.h"
 #include "content/browser/tab_contents/web_contents_view_mac.h"
 #elif defined(OS_ANDROID)
-#include "content/browser/tab_contents/tab_contents_view_android.h"
+#include "content/browser/tab_contents/web_contents_view_android.h"
 #endif
 
 #if defined(USE_NSS)
@@ -323,7 +323,7 @@ content::WebContentsView* ChromeContentBrowserClient::CreateWebContentsView(
       chrome_web_contents_view_mac_delegate::CreateWebContentsViewMacDelegate(
           web_contents));
 #elif defined(OS_ANDROID)
-  return new TabContentsViewAndroid(web_contents);
+  return new WebContentsViewAndroid(web_contents);
 #else
 #error Need to create your platform WebContentsView here.
 #endif

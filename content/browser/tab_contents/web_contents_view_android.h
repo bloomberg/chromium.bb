@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_ANDROID_H_
-#define CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_ANDROID_H_
+#ifndef CONTENT_BROWSER_TAB_CONTENTS_WEB_CONTENTS_VIEW_ANDROID_H_
+#define CONTENT_BROWSER_TAB_CONTENTS_WEB_CONTENTS_VIEW_ANDROID_H_
 #pragma once
 
 #include "content/public/browser/web_contents_view.h"
 
-class TabContentsViewAndroid : public content::WebContentsView {
+class WebContentsViewAndroid : public content::WebContentsView {
  public:
-  explicit TabContentsViewAndroid(content::WebContents* web_contents);
-  virtual ~TabContentsViewAndroid();
+  explicit WebContentsViewAndroid(content::WebContents* web_contents);
+  virtual ~WebContentsViewAndroid();
 
   // WebContentsView implementation --------------------------------------------
 
@@ -74,7 +74,7 @@ class TabContentsViewAndroid : public content::WebContentsView {
   // The WebContents whose contents we display.
   content::WebContents* web_contents_;
 
-  DISALLOW_COPY_AND_ASSIGN(TabContentsViewAndroid);
+  DISALLOW_COPY_AND_ASSIGN(WebContentsViewAndroid);
 };
 
-#endif  // CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_ANDROID_H_
+#endif  // CONTENT_BROWSER_TAB_CONTENTS_WEB_CONTENTS_VIEW_ANDROID_H_
