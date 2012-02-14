@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/examples/example_base.h"
@@ -17,6 +18,8 @@ class Checkbox;
 class GridLayout;
 
 namespace examples {
+
+class ExampleComboboxModel;
 
 class TextExample : public ExampleBase,
                     public ButtonListener,
@@ -45,7 +48,6 @@ class TextExample : public ExampleBase,
   virtual void ItemChanged(Combobox* combo_box,
                            int prev_index,
                            int new_index) OVERRIDE;
-
 
   class TextExampleView;
   // The content of the scroll view.
@@ -83,6 +85,8 @@ class TextExample : public ExampleBase,
 
   // Check box to enable/disable underline style.
   Checkbox* underline_checkbox_;
+
+  scoped_ptr<ExampleComboboxModel> example_combobox_model_;
 
   DISALLOW_COPY_AND_ASSIGN(TextExample);
 };

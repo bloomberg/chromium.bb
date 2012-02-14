@@ -188,7 +188,8 @@ Combobox* TextExample::AddCombobox(GridLayout* layout,
                                    int count) {
   layout->StartRow(0, 0);
   layout->AddView(new Label(ASCIIToUTF16(name)));
-  Combobox* combo_box = new Combobox(new ExampleComboboxModel(strings, count));
+  example_combobox_model_.reset(new ExampleComboboxModel(strings, count));
+  Combobox* combo_box = new Combobox(example_combobox_model_.get());
   combo_box->SetSelectedItem(0);
   combo_box->set_listener(this);
   layout->AddView(combo_box, kNumColumns - 1, 1);
