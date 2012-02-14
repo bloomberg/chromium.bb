@@ -73,13 +73,11 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorPrefetch) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("cursor_prefetch.html"))));
 }
 
-// Flaky: http://crbug.com/70773
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, FLAKY_IndexTest) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, IndexTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("index_test.html"))));
 }
 
-// Flaky: http://crbug.com/70773
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, FLAKY_KeyPathTest) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, KeyPathTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("key_path_test.html"))));
 }
 
@@ -87,16 +85,11 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, TransactionGetTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("transaction_get_test.html"))));
 }
 
-#if defined(OS_WIN)
-// http://crbug.com/104306
-#define KeyTypesTest FLAKY_KeyTypesTest
-#endif
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, KeyTypesTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("key_types_test.html"))));
 }
 
-// Flaky: http://crbug.com/70773
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, FLAKY_ObjectStoreTest) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ObjectStoreTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("object_store_test.html"))));
 }
 
@@ -104,8 +97,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DatabaseTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("database_test.html"))));
 }
 
-// Flaky: http://crbug.com/70773
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, FLAKY_TransactionTest) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, TransactionTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("transaction_test.html"))));
 }
 
