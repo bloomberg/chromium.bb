@@ -118,6 +118,8 @@ class MockLoginUtils : public LoginUtils {
   virtual void TransferDefaultAuthCache(Profile* default_profile,
                                         Profile* new_profile) OVERRIDE;
 
+  virtual void StopBackgroundFetchers() OVERRIDE;
+
  private:
   std::string expected_username_;
   std::string expected_password_;

@@ -490,6 +490,11 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   g_browser_process->oom_priority_manager()->Stop();
 
+  // Stops LoginUtils background fetchers. This is needed because IO thread is
+  // going to stop soon after this function. The pending background jobs could
+  // cause it to crash during shutdown.
+  chromeos::LoginUtils::Get()->StopBackgroundFetchers();
+
   // Shutdown the upgrade detector for Chrome OS. The upgrade detector
   // stops monitoring changes from the update engine.
   if (UpgradeDetectorChromeos::GetInstance())

@@ -112,4 +112,7 @@ void MockLoginUtils::TransferDefaultAuthCache(Profile* default_profile,
                                               Profile* new_profile) {
 }
 
+void MockLoginUtils::StopBackgroundFetchers() {
+}
+
 }  // namespace chromeos

@@ -574,6 +574,7 @@ class LoginUtilsImpl : public LoginUtils,
                                       Profile* new_profile) OVERRIDE;
   virtual void TransferDefaultAuthCache(Profile* default_profile,
                                         Profile* new_profile) OVERRIDE;
+  virtual void StopBackgroundFetchers() OVERRIDE;
 
   // GaiaOAuthConsumer overrides.
   virtual void OnGetOAuthTokenSuccess(const std::string& oauth_token) OVERRIDE;
@@ -1181,6 +1182,12 @@ void LoginUtilsImpl::TransferDefaultAuthCache(Profile* default_profile,
       base::Bind(&TransferDefaultAuthCacheOnIOThread,
                  make_scoped_refptr(default_profile->GetRequestContext()),
                  make_scoped_refptr(profile->GetRequestContext())));
+}
+
+void LoginUtilsImpl::StopBackgroundFetchers() {
+  oauth_fetcher_.reset();
+  policy_oauth_fetcher_.reset();
+  oauth_login_verifier_.reset();
 }
 
 void LoginUtilsImpl::OnGetOAuthTokenSuccess(const std::string& oauth_token) {

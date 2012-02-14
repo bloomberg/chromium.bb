@@ -121,6 +121,9 @@ class LoginUtils {
   virtual void TransferDefaultAuthCache(Profile* default_profile,
                                         Profile* new_profile) = 0;
 
+  // Stops background fetchers.
+  virtual void StopBackgroundFetchers() = 0;
+
  protected:
   friend class ::BrowserGuestSessionNavigatorTest;
 
