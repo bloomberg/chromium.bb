@@ -855,14 +855,7 @@ TEST_F(WindowTest, Transform) {
             gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point()).ToString());
 }
 
-// Tests that gesture events are transformed correctly.
-// See http://crbug.com/111262
-#if defined(OS_WIN)
-#define MAYBE_TransformGesture FAILS_TransformGesture
-#else
-#define MAYBE_TransformGesture TransformGesture
-#endif
-TEST_F(WindowTest, MAYBE_TransformGesture) {
+TEST_F(WindowTest, TransformGesture) {
   RootWindow* root_window = RootWindow::GetInstance();
   gfx::Size size = root_window->GetHostSize();
 
