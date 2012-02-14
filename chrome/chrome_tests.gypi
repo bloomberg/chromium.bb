@@ -395,8 +395,8 @@
         '..',
       ],
       'sources': [
-        'browser/sync/internal_api/includes/unrecoverable_error_handler_mock.cc',
-        'browser/sync/internal_api/includes/unrecoverable_error_handler_mock.h',
+        'browser/sync/internal_api/includes/test_unrecoverable_error_handler.cc',
+        'browser/sync/internal_api/includes/test_unrecoverable_error_handler.h',
         'browser/sync/test/engine/test_user_share.cc',
         'browser/sync/test/engine/test_user_share.h',
       ],

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,7 +40,7 @@ void TestDirectorySetterUpper::reset_directory_manager(DirectoryManager* d) {
 
 void TestDirectorySetterUpper::SetUp() {
   Init();
-  ASSERT_TRUE(manager()->Open(name(), &delegate_, &handler_mock_,
+  ASSERT_TRUE(manager()->Open(name(), &delegate_, &handler_,
               NullTransactionObserver()));
 }
 
@@ -84,7 +84,7 @@ void ManuallyOpenedTestDirectorySetterUpper::SetUp() {
 
 void ManuallyOpenedTestDirectorySetterUpper::Open() {
   ASSERT_TRUE(
-      manager()->Open(name(), &delegate_, &handler_mock_,
+      manager()->Open(name(), &delegate_, &handler_,
       NullTransactionObserver()));
   was_opened_ = true;
 }
@@ -116,8 +116,8 @@ void TriggeredOpenTestDirectorySetterUpper::TearDown() {
 
 MockDirectorySetterUpper::MockDirectory::MockDirectory(
   const std::string& name,
-  browser_sync::UnrecoverableErrorHandler* handler_mock)
-      : Directory(handler_mock) {
+  browser_sync::UnrecoverableErrorHandler* handler)
+      : Directory(handler) {
   InitKernelForTest(name, &delegate_, NullTransactionObserver());
 }
 
@@ -130,7 +130,7 @@ MockDirectorySetterUpper::Manager::Manager(
 }
 
 MockDirectorySetterUpper::MockDirectorySetterUpper()
-    : directory_(new MockDirectory(name(), &handler_mock_)) {
+    : directory_(new MockDirectory(name(), &handler_)) {
 }
 
 MockDirectorySetterUpper::~MockDirectorySetterUpper() {}

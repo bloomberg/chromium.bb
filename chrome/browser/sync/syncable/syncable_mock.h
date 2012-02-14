@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "chrome/browser/sync/internal_api/includes/unrecoverable_error_handler_mock.h"
+#include "chrome/browser/sync/internal_api/includes/test_unrecoverable_error_handler.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/test/null_directory_change_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -31,7 +31,7 @@ class MockDirectory : public Directory {
 
  private:
   syncable::NullDirectoryChangeDelegate delegate_;
-  browser_sync::MockUnrecoverableErrorHandler mock_handler_;
+  browser_sync::TestUnrecoverableErrorHandler handler_;
 };
 
 class MockSyncableWriteTransaction : public syncable::WriteTransaction {

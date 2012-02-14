@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 #include "base/location.h"
 #include "chrome/browser/sync/test/null_transaction_observer.h"
 
-MockDirectory::MockDirectory() :Directory(&mock_handler_) {
+MockDirectory::MockDirectory() :Directory(&handler_) {
   InitKernelForTest("myk", &delegate_, syncable::NullTransactionObserver());
 }
 

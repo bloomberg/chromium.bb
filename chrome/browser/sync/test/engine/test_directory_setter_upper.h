@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -37,7 +37,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
-#include "chrome/browser/sync/internal_api/includes/unrecoverable_error_handler_mock.h"
+#include "chrome/browser/sync/internal_api/includes/test_unrecoverable_error_handler.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/test/null_directory_change_delegate.h"
@@ -74,7 +74,7 @@ class TestDirectorySetterUpper {
   void reset_directory_manager(syncable::DirectoryManager* d);
 
   syncable::NullDirectoryChangeDelegate delegate_;
-  MockUnrecoverableErrorHandler handler_mock_;
+  TestUnrecoverableErrorHandler handler_;
 
  private:
   void RunInvariantCheck(const syncable::ScopedDirLookup& dir);
@@ -124,7 +124,7 @@ class MockDirectorySetterUpper : public TestDirectorySetterUpper {
   class MockDirectory : public syncable::Directory {
    public:
      MockDirectory(const std::string& name,
-                   browser_sync::UnrecoverableErrorHandler* handler_mock);
+                   browser_sync::UnrecoverableErrorHandler* handler);
     virtual ~MockDirectory();
     MOCK_METHOD1(PurgeEntriesWithTypeIn, void(syncable::ModelTypeSet));
 
