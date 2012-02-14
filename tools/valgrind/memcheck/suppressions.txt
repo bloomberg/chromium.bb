@@ -5748,7 +5748,7 @@
    bug_112798_b
    Memcheck:Leak
    ...
-   fun:_ZN4aura6Window11SetPropertyEPKcPv
+   fun:_ZN4aura6Window11SetPropertyIPNS_6client18ActivationDelegateEEEvPKNS_14WindowPropertyIT_EES6_
    fun:_ZN4aura6client21SetActivationDelegateEPNS_6WindowEPNS0_18ActivationDelegateE
    fun:_ZN24RenderWidgetHostViewAuraC1EP16RenderWidgetHost
    fun:_ZN20RenderWidgetHostView19CreateViewForWidgetEP16RenderWidgetHost
@@ -5780,27 +5780,6 @@
    fun:_ZN8remoting29ConvertAndScaleYUVToRGB32RectEPKhS1_S1_iiRK7SkTSizeIiERK7SkIRectPhiS5_S8_S8_
    fun:_ZN8remoting14YuvToRgbTester7RunTestE7SkTSizeIiERK7SkIRect
 }
-
-
-{
-   bug_113796
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKPKviEEE8allocateEjS4_
-   fun:_ZNSt8_Rb_treeIPKvSt4pairIKS1_iESt10_Select1stIS4_ESt4lessIS1_ESaIS4_EE11_M_get_nodeEv
-   fun:_ZNSt8_Rb_treeIPKvSt4pairIKS1_iESt10_Select1stIS4_ESt4lessIS1_ESaIS4_EE14_M_create_nodeERKS4_
-   fun:_ZNSt8_Rb_treeIPKvSt4pairIKS1_iESt10_Select1stIS4_ESt4lessIS1_ESaIS4_EE10_M_insert_EPKSt18_Rb_tree_node_baseSD_RKS4_
-   fun:_ZNSt8_Rb_treeIPKvSt4pairIKS1_iESt10_Select1stIS4_ESt4lessIS1_ESaIS4_EE17_M_insert_unique_ESt23_Rb_tree_const_iteratorIS4_ERKS4_
-   fun:_ZNSt3mapIPKviSt4lessIS1_ESaISt4pairIKS1_iEEE6insertESt17_Rb_tree_iteratorIS6_ERKS6_
-   fun:_ZNSt3mapIPKviSt4lessIS1_ESaISt4pairIKS1_iEEEixERS5_
-   fun:_ZN4aura6Window19SetPropertyInternalEPKvii
-   fun:_ZN4aura6Window11SetPropertyIPNS_6client18ActivationDelegateEEEvPKNS_14WindowPropertyIT_EES6_
-   fun:_ZN4aura6client21SetActivationDelegateEPNS_6WindowEPNS0_18ActivationDelegateE
-   fun:_ZN24RenderWidgetHostViewAuraC1EP16RenderWidgetHost
-   fun:_ZN20RenderWidgetHostView19CreateViewForWidgetEP16RenderWidgetHost
-   ...
-}
-
 {
    bug_114000
    Memcheck:Leak
