@@ -12,7 +12,6 @@
 
 #include "base/file_path.h"
 #include "base/memory/singleton.h"
-#include "base/stl_util.h"
 #include "base/string16.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_function.h"
@@ -302,41 +301,24 @@ class DownloadsGetFileIconFunction : public AsyncDownloadsFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsGetFileIconFunction);
 };
 
-// Observes a single DownloadManager and many DownloadItems and dispatches
-// onCreated and onErased events.
-class ExtensionDownloadsEventRouter : public content::DownloadManager::Observer,
-                                      public content::DownloadItem::Observer {
+class ExtensionDownloadsEventRouter
+    : public content::DownloadManager::Observer {
  public:
   explicit ExtensionDownloadsEventRouter(Profile* profile);
   virtual ~ExtensionDownloadsEventRouter();
 
   virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;
   virtual void ManagerGoingDown(content::DownloadManager* manager) OVERRIDE;
-  virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE;
 
  private:
-  struct OnChangedStat {
-    OnChangedStat();
-    ~OnChangedStat();
-    int fires;
-    int total;
-  };
-
-  typedef std::map<int, content::DownloadItem*> ItemMap;
-  typedef std::map<int, base::DictionaryValue*> ItemJsonMap;
-  typedef std::map<int, OnChangedStat*> OnChangedStatMap;
-
   void Init(content::DownloadManager* manager);
   void DispatchEvent(const char* event_name, base::Value* json_arg);
+  typedef base::hash_map<int, content::DownloadItem*> ItemMap;
+  typedef std::set<int> DownloadIdSet;
 
   Profile* profile_;
   content::DownloadManager* manager_;
-  ItemMap downloads_;
-  ItemJsonMap item_jsons_;
-  STLValueDeleter<ItemJsonMap> delete_item_jsons_;
-  OnChangedStatMap on_changed_stats_;
-  STLValueDeleter<OnChangedStatMap> delete_on_changed_stats_;
+  DownloadIdSet downloads_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDownloadsEventRouter);
 };

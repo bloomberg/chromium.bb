@@ -860,9 +860,7 @@ void DownloadsGetFileIconFunction::OnIconURLExtracted(const std::string& url) {
 
 ExtensionDownloadsEventRouter::ExtensionDownloadsEventRouter(Profile* profile)
   : profile_(profile),
-    manager_(NULL),
-    delete_item_jsons_(&item_jsons_),
-    delete_on_changed_stats_(&on_changed_stats_) {
+    manager_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_);
   // Register a callback with the DownloadService for this profile to be called
@@ -878,149 +876,56 @@ ExtensionDownloadsEventRouter::ExtensionDownloadsEventRouter(Profile* profile)
 void ExtensionDownloadsEventRouter::Init(DownloadManager* manager) {
   DCHECK(manager_ == NULL);
   manager_ = manager;
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   manager_->AddObserver(this);
 }
 
 ExtensionDownloadsEventRouter::~ExtensionDownloadsEventRouter() {
   if (manager_ != NULL)
     manager_->RemoveObserver(this);
-  for (ItemMap::const_iterator iter = downloads_.begin();
-       iter != downloads_.end(); ++iter) {
-    if (iter->second != NULL)
-      iter->second->RemoveObserver(this);
-  }
-}
-
-ExtensionDownloadsEventRouter::OnChangedStat::OnChangedStat()
-  : fires(0),
-    total(0) {
-}
-
-ExtensionDownloadsEventRouter::OnChangedStat::~OnChangedStat() {
-  if (total > 0)
-    UMA_HISTOGRAM_PERCENTAGE("Download.OnChanged", (fires * 100 / total));
-}
-
-void ExtensionDownloadsEventRouter::OnDownloadUpdated(DownloadItem* item) {
-  int download_id = item->GetId();
-  if (item->GetState() == DownloadItem::REMOVING) {
-    // The REMOVING state indicates that this item is being erased.
-    // Let's unregister as an observer so that we don't see any more updates
-    // from it, dispatch the onErased event, and remove its json and is
-    // OnChangedStat from our maps.
-    downloads_.erase(download_id);
-    item->RemoveObserver(this);
-    DispatchEvent(extension_event_names::kOnDownloadErased,
-                  base::Value::CreateIntegerValue(download_id));
-    delete item_jsons_[download_id];
-    item_jsons_.erase(download_id);
-    delete on_changed_stats_[download_id];
-    on_changed_stats_.erase(download_id);
-    return;
-  }
-
-  base::DictionaryValue* old_json = item_jsons_[download_id];
-  scoped_ptr<base::DictionaryValue> new_json(DownloadItemToJSON(item));
-  scoped_ptr<base::DictionaryValue> delta(new base::DictionaryValue());
-  delta->SetInteger(kIdKey, download_id);
-  std::set<std::string> new_fields;
-  bool changed = false;
-
-  // For each field in the new json representation of the item except the
-  // bytesReceived field, if the field has changed from the previous old json,
-  // set the differences in the |delta| object and remember that something
-  // significant changed.
-  for (base::DictionaryValue::Iterator iter(*new_json.get());
-       iter.HasNext(); iter.Advance()) {
-    new_fields.insert(iter.key());
-    if (iter.key() != kBytesReceivedKey) {
-      base::Value* old_value = NULL;
-      if (!old_json->HasKey(iter.key()) ||
-          (old_json->Get(iter.key(), &old_value) &&
-           !iter.value().Equals(old_value))) {
-        delta->Set(iter.key() + ".new", iter.value().DeepCopy());
-        if (old_value)
-          delta->Set(iter.key() + ".old", old_value->DeepCopy());
-        changed = true;
-      }
-    }
-  }
-
-  // If a field was in the previous json but is not in the new json, set the
-  // difference in |delta|.
-  for (base::DictionaryValue::Iterator iter(*old_json);
-       iter.HasNext(); iter.Advance()) {
-    if (new_fields.find(iter.key()) == new_fields.end()) {
-      delta->Set(iter.key() + ".old", iter.value().DeepCopy());
-      changed = true;
-    }
-  }
-
-  // Update the OnChangedStat and dispatch the event if something significant
-  // changed. Replace the stored json with the new json.
-  ++(on_changed_stats_[download_id]->total);
-  if (changed) {
-    DispatchEvent(extension_event_names::kOnDownloadChanged, delta.release());
-    ++(on_changed_stats_[download_id]->fires);
-  }
-  item_jsons_[download_id]->Swap(new_json.get());
-}
-
-void ExtensionDownloadsEventRouter::OnDownloadOpened(DownloadItem* item) {
 }
 
 void ExtensionDownloadsEventRouter::ModelChanged(DownloadManager* manager) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(manager_ == manager);
-  typedef std::set<int> DownloadIdSet;
-
-  // Get all the download items.
   DownloadManager::DownloadVector current_vec;
   manager_->SearchDownloads(string16(), &current_vec);
-
-  // Populate set<>s of download item identifiers so that we can find
-  // differences between the old and the new set of download items.
-  DownloadIdSet current_set, prev_set;
-  for (ItemMap::const_iterator iter = downloads_.begin();
-       iter != downloads_.end(); ++iter) {
-    prev_set.insert(iter->first);
-  }
+  DownloadIdSet current_set;
   ItemMap current_map;
   for (DownloadManager::DownloadVector::const_iterator iter =
        current_vec.begin();
        iter != current_vec.end(); ++iter) {
     DownloadItem* item = *iter;
     int item_id = item->GetId();
-    CHECK(item_id >= 0);
+    // TODO(benjhayden): Remove the following line when every item's id >= 0,
+    // which will allow firing onErased events for items from the history.
+    if (item_id < 0) continue;
     DCHECK(current_map.find(item_id) == current_map.end());
     current_set.insert(item_id);
     current_map[item_id] = item;
   }
-  DownloadIdSet new_set;  // current_set - prev_set;
+  DownloadIdSet new_set;  // current_set - downloads_;
+  DownloadIdSet erased_set;  // downloads_ - current_set;
+  std::insert_iterator<DownloadIdSet> new_insertor(new_set, new_set.begin());
+  std::insert_iterator<DownloadIdSet> erased_insertor(
+      erased_set, erased_set.begin());
   std::set_difference(current_set.begin(), current_set.end(),
-                      prev_set.begin(), prev_set.end(),
-                      std::insert_iterator<DownloadIdSet>(
-                        new_set, new_set.begin()));
-
-  // For each download that was not in the old set of downloads but is in the
-  // new set of downloads, fire an onCreated event, register as an Observer of
-  // the item, store a json representation of the item so that we can easily
-  // find changes in that json representation, and make an OnChangedStat.
+                      downloads_.begin(), downloads_.end(),
+                      new_insertor);
+  std::set_difference(downloads_.begin(), downloads_.end(),
+                      current_set.begin(), current_set.end(),
+                      erased_insertor);
   for (DownloadIdSet::const_iterator iter = new_set.begin();
        iter != new_set.end(); ++iter) {
     scoped_ptr<base::DictionaryValue> item(
         DownloadItemToJSON(current_map[*iter]));
-    DispatchEvent(extension_event_names::kOnDownloadCreated, item->DeepCopy());
-    DCHECK(item_jsons_.find(*iter) == item_jsons_.end());
-    on_changed_stats_[*iter] = new OnChangedStat();
-    current_map[*iter]->AddObserver(this);
-    item_jsons_[*iter] = item.release();
+    DispatchEvent(extension_event_names::kOnDownloadCreated, item.release());
   }
-  downloads_.swap(current_map);
-
-  // Dispatching onErased is handled in OnDownloadUpdated when an item
-  // transitions to the REMOVING state.
+  for (DownloadIdSet::const_iterator iter = erased_set.begin();
+       iter != erased_set.end(); ++iter) {
+    DispatchEvent(extension_event_names::kOnDownloadErased,
+                  base::Value::CreateIntegerValue(*iter));
+  }
+  downloads_.swap(current_set);
 }
 
 void ExtensionDownloadsEventRouter::ManagerGoingDown(
