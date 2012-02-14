@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
+#include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -64,8 +65,9 @@ class CryptohomeClientImpl : public CryptohomeClient {
  public:
   explicit CryptohomeClientImpl(dbus::Bus* bus)
       : bus_(bus),
-        proxy_(bus->GetObjectProxy(cryptohome::kCryptohomeServiceName,
-                                   cryptohome::kCryptohomeServicePath)),
+        proxy_(bus->GetObjectProxy(
+            cryptohome::kCryptohomeServiceName,
+            dbus::ObjectPath(cryptohome::kCryptohomeServicePath))),
         weak_ptr_factory_(this),
         on_blocking_method_call_(false /* manual_reset */,
                                  false /* initially_signaled */) {

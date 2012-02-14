@@ -7,6 +7,7 @@
 #pragma once
 
 #include "dbus/bus.h"
+#include "dbus/object_path.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace dbus {
@@ -20,14 +21,14 @@ class MockBus : public Bus {
   virtual ~MockBus();
 
   MOCK_METHOD2(GetObjectProxy, ObjectProxy*(const std::string& service_name,
-                                            const std::string& object_path));
+                                            const ObjectPath& object_path));
   MOCK_METHOD3(GetObjectProxyWithOptions,
                ObjectProxy*(const std::string& service_name,
-                            const std::string& object_path,
+                            const ObjectPath& object_path,
                             int options));
   MOCK_METHOD2(GetExportedObject, ExportedObject*(
       const std::string& service_name,
-      const std::string& object_path));
+      const ObjectPath& object_path));
   MOCK_METHOD0(ShutdownAndBlock, void());
   MOCK_METHOD0(ShutdownOnDBusThreadAndBlock, void());
   MOCK_METHOD0(Connect, bool());
@@ -50,11 +51,11 @@ class MockBus : public Bus {
                               DBusError* error));
   MOCK_METHOD2(RemoveMatch, void(const std::string& match_rule,
                                  DBusError* error));
-  MOCK_METHOD4(TryRegisterObjectPath, bool(const std::string& object_path,
+  MOCK_METHOD4(TryRegisterObjectPath, bool(const ObjectPath& object_path,
                                            const DBusObjectPathVTable* vtable,
                                            void* user_data,
                                            DBusError* error));
-  MOCK_METHOD1(UnregisterObjectPath, void(const std::string& object_path));
+  MOCK_METHOD1(UnregisterObjectPath, void(const ObjectPath& object_path));
   MOCK_METHOD2(PostTaskToOriginThread, void(
       const tracked_objects::Location& from_here,
       const base::Closure& task));

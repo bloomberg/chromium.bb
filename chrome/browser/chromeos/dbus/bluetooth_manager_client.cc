@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
+#include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -26,7 +27,7 @@ class BluetoothManagerClientImpl : public BluetoothManagerClient {
 
     bluetooth_manager_proxy_ = bus->GetObjectProxy(
         bluetooth_manager::kBluetoothManagerServiceName,
-        bluetooth_manager::kBluetoothManagerServicePath);
+        dbus::ObjectPath(bluetooth_manager::kBluetoothManagerServicePath));
 
     bluetooth_manager_proxy_->ConnectToSignal(
         bluetooth_manager::kBluetoothManagerInterface,
@@ -91,13 +92,13 @@ class BluetoothManagerClientImpl : public BluetoothManagerClient {
   void AdapterAddedReceived(dbus::Signal* signal) {
     DCHECK(signal);
     dbus::MessageReader reader(signal);
-    std::string object_path;
+    dbus::ObjectPath object_path;
     if (!reader.PopObjectPath(&object_path)) {
       LOG(ERROR) << "AdapterAdded signal has incorrect parameters: "
-          << signal->ToString();
+                 << signal->ToString();
       return;
     }
-    VLOG(1) << "Adapter added: " << object_path;
+    VLOG(1) << "Adapter added: " << object_path.value();
     FOR_EACH_OBSERVER(Observer, observers_, AdapterAdded(object_path));
   }
 
@@ -112,13 +113,13 @@ class BluetoothManagerClientImpl : public BluetoothManagerClient {
   void AdapterRemovedReceived(dbus::Signal* signal) {
     DCHECK(signal);
     dbus::MessageReader reader(signal);
-    std::string object_path;
+    dbus::ObjectPath object_path;
     if (!reader.PopObjectPath(&object_path)) {
       LOG(ERROR) << "AdapterRemoved signal has incorrect parameters: "
-          << signal->ToString();
+                 << signal->ToString();
       return;
     }
-    VLOG(1) << "Adapter removed: " << object_path;
+    VLOG(1) << "Adapter removed: " << object_path.value();
     FOR_EACH_OBSERVER(Observer, observers_, AdapterRemoved(object_path));
   }
 
@@ -133,14 +134,14 @@ class BluetoothManagerClientImpl : public BluetoothManagerClient {
   void DefaultAdapterChangedReceived(dbus::Signal* signal) {
     DCHECK(signal);
     dbus::MessageReader reader(signal);
-    std::string adapter;
-    if (!reader.PopObjectPath(&adapter)) {
+    dbus::ObjectPath object_path;
+    if (!reader.PopObjectPath(&object_path)) {
       LOG(ERROR) << "DefaultAdapterChanged signal has incorrect parameters: "
-          << signal->ToString();
+                 << signal->ToString();
       return;
     }
-    VLOG(1) << "Default adapter changed: " << adapter;
-    FOR_EACH_OBSERVER(Observer, observers_, DefaultAdapterChanged(adapter));
+    VLOG(1) << "Default adapter changed: " << object_path.value();
+    FOR_EACH_OBSERVER(Observer, observers_, DefaultAdapterChanged(object_path));
   }
 
   // Called by dbus:: when the DefaultAdapterChanged signal is initially
@@ -157,15 +158,15 @@ class BluetoothManagerClientImpl : public BluetoothManagerClient {
                         dbus::Response* response) {
     // Parse response.
     bool success = false;
-    std::string adapter;
+    dbus::ObjectPath adapter;
     if (response != NULL) {
       dbus::MessageReader reader(response);
       if (!reader.PopObjectPath(&adapter)) {
         LOG(ERROR) << "DefaultAdapter response has incorrect parameters: "
-            << response->ToString();
+                   << response->ToString();
       } else {
         success = true;
-        LOG(INFO) << "OnDefaultAdapter: " << adapter;
+        LOG(INFO) << "OnDefaultAdapter: " << adapter.value();
       }
     } else {
       LOG(ERROR) << "Failed to get default adapter.";

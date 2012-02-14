@@ -8,7 +8,7 @@ namespace dbus {
 
 MockObjectProxy::MockObjectProxy(Bus* bus,
                                  const std::string& service_name,
-                                 const std::string& object_path)
+                                 const ObjectPath& object_path)
     : ObjectProxy(bus, service_name, object_path, DEFAULT_OPTIONS) {
 }
 

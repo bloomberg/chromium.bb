@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
+#include "dbus/object_path.h"
 
 namespace dbus {
 
@@ -36,7 +37,7 @@ class ExportedObject : public base::RefCountedThreadSafe<ExportedObject> {
   // constructor.
   ExportedObject(Bus* bus,
                  const std::string& service_name,
-                 const std::string& object_path);
+                 const ObjectPath& object_path);
 
   // Called to send a response from an exported method. Response* is the
   // response message. Callers should pass a NULL Response* in the event
@@ -157,7 +158,7 @@ class ExportedObject : public base::RefCountedThreadSafe<ExportedObject> {
 
   scoped_refptr<Bus> bus_;
   std::string service_name_;
-  std::string object_path_;
+  ObjectPath object_path_;
   bool object_is_registered_;
 
   // The method table where keys are absolute method names (i.e. interface

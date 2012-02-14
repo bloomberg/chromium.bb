@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
+#include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -105,8 +106,9 @@ bool MaybePopArrayOfStrings(dbus::MessageReader* reader,
 class CrosDisksClientImpl : public CrosDisksClient {
  public:
   explicit CrosDisksClientImpl(dbus::Bus* bus)
-      : proxy_(bus->GetObjectProxy(cros_disks::kCrosDisksServiceName,
-                                   cros_disks::kCrosDisksServicePath)),
+      : proxy_(bus->GetObjectProxy(
+          cros_disks::kCrosDisksServiceName,
+          dbus::ObjectPath(cros_disks::kCrosDisksServicePath))),
         weak_ptr_factory_(this) {
   }
 

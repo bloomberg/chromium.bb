@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
+#include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -40,7 +41,7 @@ class CrosDBusServiceImpl : public CrosDBusService {
 
     exported_object_ = bus_->GetExportedObject(
         kLibCrosServiceName,
-        kLibCrosServicePath);
+        dbus::ObjectPath(kLibCrosServicePath));
 
     for (size_t i = 0; i < service_providers_.size(); ++i)
       service_providers_[i]->Start(exported_object_);

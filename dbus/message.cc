@@ -10,6 +10,7 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
+#include "dbus/object_path.h"
 #include "third_party/protobuf/src/google/protobuf/message_lite.h"
 
 namespace {
@@ -157,10 +158,10 @@ std::string Message::ToStringInternal(const std::string& indent,
         break;
       }
       case OBJECT_PATH: {
-        std::string value;
+        ObjectPath value;
         if (!reader->PopObjectPath(&value))
           return kBrokenMessage;
-        output += indent + "object_path \"" + value + "\"\n";
+        output += indent + "object_path \"" + value.value() + "\"\n";
         break;
       }
       case ARRAY: {
@@ -224,7 +225,7 @@ std::string Message::ToString() {
   std::string headers;
   AppendStringHeader("message_type", GetMessageTypeAsString(), &headers);
   AppendStringHeader("destination", GetDestination(), &headers);
-  AppendStringHeader("path", GetPath(), &headers);
+  AppendStringHeader("path", GetPath().value(), &headers);
   AppendStringHeader("interface", GetInterface(), &headers);
   AppendStringHeader("member", GetMember(), &headers);
   AppendStringHeader("error_name", GetErrorName(), &headers);
@@ -244,9 +245,9 @@ void Message::SetDestination(const std::string& destination) {
   CHECK(success) << "Unable to allocate memory";
 }
 
-void Message::SetPath(const std::string& path) {
+void Message::SetPath(const ObjectPath& path) {
   const bool success = dbus_message_set_path(raw_message_,
-                                             path.c_str());
+                                             path.value().c_str());
   CHECK(success) << "Unable to allocate memory";
 }
 
@@ -287,9 +288,9 @@ std::string Message::GetDestination() {
   return destination ? destination : "";
 }
 
-std::string Message::GetPath() {
+ObjectPath Message::GetPath() {
   const char* path = dbus_message_get_path(raw_message_);
-  return path ? path : "";
+  return ObjectPath(path ? path : "");
 }
 
 std::string Message::GetInterface() {
@@ -490,8 +491,8 @@ void MessageWriter::AppendString(const std::string& value) {
   // bool AppendStringWithErrorChecking().
 }
 
-void MessageWriter::AppendObjectPath(const std::string& value) {
-  const char* pointer = value.c_str();
+void MessageWriter::AppendObjectPath(const ObjectPath& value) {
+  const char* pointer = value.value().c_str();
   AppendBasic(DBUS_TYPE_OBJECT_PATH, &pointer);
 }
 
@@ -587,7 +588,7 @@ void MessageWriter::AppendArrayOfStrings(
 }
 
 void MessageWriter::AppendArrayOfObjectPaths(
-    const std::vector<std::string>& object_paths) {
+    const std::vector<ObjectPath>& object_paths) {
   DCHECK(!container_is_open_);
   MessageWriter array_writer(message_);
   OpenArray("o", &array_writer);
@@ -652,8 +653,8 @@ void MessageWriter::AppendVariantOfString(const std::string& value) {
   AppendVariantOfBasic(DBUS_TYPE_STRING, &pointer);
 }
 
-void MessageWriter::AppendVariantOfObjectPath(const std::string& value) {
-  const char* pointer = value.c_str();
+void MessageWriter::AppendVariantOfObjectPath(const ObjectPath& value) {
+  const char* pointer = value.value().c_str();
   AppendVariantOfBasic(DBUS_TYPE_OBJECT_PATH, &pointer);
 }
 
@@ -746,11 +747,11 @@ bool MessageReader::PopString(std::string* value) {
   return success;
 }
 
-bool MessageReader::PopObjectPath(std::string* value) {
+bool MessageReader::PopObjectPath(ObjectPath* value) {
   char* tmp_value = NULL;
   const bool success = PopBasic(DBUS_TYPE_OBJECT_PATH, &tmp_value);
   if (success)
-    value->assign(tmp_value);
+    *value = ObjectPath(tmp_value);
   return success;
 }
 
@@ -805,12 +806,12 @@ bool MessageReader::PopArrayOfStrings(
 }
 
 bool MessageReader::PopArrayOfObjectPaths(
-    std::vector<std::string> *object_paths) {
+    std::vector<ObjectPath> *object_paths) {
   MessageReader array_reader(message_);
   if (!PopArray(&array_reader))
       return false;
   while (array_reader.HasMoreData()) {
-    std::string object_path;
+    ObjectPath object_path;
     if (!array_reader.PopObjectPath(&object_path))
       return false;
     object_paths->push_back(object_path);
@@ -882,11 +883,11 @@ bool MessageReader::PopVariantOfString(std::string* value) {
   return success;
 }
 
-bool MessageReader::PopVariantOfObjectPath(std::string* value) {
+bool MessageReader::PopVariantOfObjectPath(ObjectPath* value) {
   char* tmp_value = NULL;
   const bool success = PopVariantOfBasic(DBUS_TYPE_OBJECT_PATH, &tmp_value);
   if (success)
-    value->assign(tmp_value);
+    *value = ObjectPath(tmp_value);
   return success;
 }
 
