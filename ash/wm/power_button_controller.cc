@@ -7,6 +7,7 @@
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/root_window_event_filter.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/time.h"
@@ -473,6 +474,7 @@ void PowerButtonController::OnLockToShutdownTimeout() {
 void PowerButtonController::OnShutdownTimeout() {
   DCHECK(!shutting_down_);
   shutting_down_ = true;
+  ash::Shell::GetInstance()->root_filter()->set_update_cursor_visibility(false);
   aura::RootWindow::GetInstance()->ShowCursor(false);
   StartAnimation(ALL_CONTAINERS, ANIMATION_FAST_CLOSE);
   real_shutdown_timer_.Start(

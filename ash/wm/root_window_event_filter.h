@@ -28,6 +28,10 @@ class ASH_EXPORT RootWindowEventFilter : public aura::EventFilter {
   RootWindowEventFilter();
   virtual ~RootWindowEventFilter();
 
+  void set_update_cursor_visibility(bool update) {
+    update_cursor_visibility_ = update;
+  }
+
   // Adds/removes additional event filters.
   void AddFilter(aura::EventFilter* filter);
   void RemoveFilter(aura::EventFilter* filter);
@@ -63,6 +67,10 @@ class ASH_EXPORT RootWindowEventFilter : public aura::EventFilter {
 
   // Additional event filters that pre-handles events.
   ObserverList<aura::EventFilter, true> filters_;
+
+  // Should we show the mouse cursor when we see mouse movement and hide it when
+  // we see a touch event?
+  bool update_cursor_visibility_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowEventFilter);
 };

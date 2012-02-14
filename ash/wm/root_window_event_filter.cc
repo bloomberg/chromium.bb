@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/wm/activation_controller.h"
+#include "ash/wm/power_button_controller.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/event.h"
 #include "ui/aura/focus_manager.h"
@@ -43,7 +44,8 @@ gfx::NativeCursor CursorForWindowComponent(int window_component) {
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindowEventFilter, public:
 
-RootWindowEventFilter::RootWindowEventFilter() {
+RootWindowEventFilter::RootWindowEventFilter()
+    : update_cursor_visibility_(true) {
 }
 
 RootWindowEventFilter::~RootWindowEventFilter() {
@@ -77,8 +79,8 @@ bool RootWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
   // We must always update the cursor, otherwise the cursor can get stuck if an
   // event filter registered with us consumes the event.
   if (event->type() == ui::ET_MOUSE_MOVED) {
-    // Shows the cursor when mouse moved.
-    SetCursorVisible(target, event, true);
+    if (update_cursor_visibility_)
+      SetCursorVisible(target, event, true);
 
     UpdateCursor(target, event);
   }
@@ -100,8 +102,8 @@ ui::TouchStatus RootWindowEventFilter::PreHandleTouchEvent(
     return status;
 
   if (event->type() == ui::ET_TOUCH_PRESSED) {
-    // Hides the cursor when touch pressed.
-    SetCursorVisible(target, event, false);
+    if (update_cursor_visibility_)
+      SetCursorVisible(target, event, false);
 
     target->GetFocusManager()->SetFocusedWindow(target);
   }

@@ -36,6 +36,7 @@ void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
 #if defined(OS_CHROMEOS)
   if (chromeos::system::runtime_environment::IsRunningOnChromeOS())
     aura::RootWindow::set_use_fullscreen_host_window(true);
+    aura::RootWindow::set_hide_host_cursor(true);
 #endif
 
   // Shell takes ownership of ChromeShellDelegate.

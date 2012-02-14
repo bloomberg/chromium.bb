@@ -309,6 +309,10 @@ class RootWindowHostLinux : public RootWindowHost,
   // detect that they're there.
   bool IsWindowManagerPresent();
 
+  // Sets the cursor on |xwindow_| to |cursor|.  Does not check or update
+  // |current_cursor_|.
+  void SetCursorInternal(gfx::NativeCursor cursor);
+
   RootWindow* root_window_;
 
   // The display and the native X window hosting the root window.
@@ -321,9 +325,8 @@ class RootWindowHostLinux : public RootWindowHost,
   // Current Aura cursor.
   gfx::NativeCursor current_cursor_;
 
-  // The default cursor is showed after startup, and hidden when touch pressed.
-  // Once mouse moved, the cursor is immediately displayed.
-  bool is_cursor_visible_;
+  // Is the cursor currently shown?
+  bool cursor_shown_;
 
   // The invisible cursor.
   ::Cursor invisible_cursor_;
@@ -340,7 +343,7 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
       xwindow_(0),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       current_cursor_(aura::kCursorNull),
-      is_cursor_visible_(true),
+      cursor_shown_(true),
       bounds_(bounds) {
   XSetWindowAttributes swa;
   memset(&swa, 0, sizeof(swa));
@@ -371,7 +374,7 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
   base::MessagePumpX::SetDefaultDispatcher(this);
   MessageLoopForUI::current()->AddDestructionObserver(this);
 
-  // Initializes invisiable cursor.
+  // Initialize invisible cursor.
   char nodata[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
   XColor black;
   black.red = black.green = black.blue = 0;
@@ -379,6 +382,8 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
                                        nodata, 8, 8);
   invisible_cursor_ = XCreatePixmapCursor(xdisplay_, blank, blank,
                                           &black, &black, 0, 0);
+  if (RootWindow::hide_host_cursor())
+    XDefineCursor(xdisplay_, x_root_window_, invisible_cursor_);
 }
 
 RootWindowHostLinux::~RootWindowHostLinux() {
@@ -603,36 +608,23 @@ void RootWindowHostLinux::ReleaseCapture() {
 }
 
 void RootWindowHostLinux::SetCursor(gfx::NativeCursor cursor) {
-  if (cursor == kCursorNone && is_cursor_visible_) {
-    current_cursor_ = cursor;
-    ShowCursor(false);
-    return;
-  }
-
-  if (current_cursor_ == cursor)
+  if (cursor == current_cursor_)
     return;
   current_cursor_ = cursor;
+
   // Custom web cursors are handled directly.
   if (cursor == kCursorCustom)
     return;
-  int cursor_shape = CursorShapeFromNative(cursor);
-  ::Cursor xcursor = ui::GetXCursor(cursor_shape);
-  XDefineCursor(xdisplay_, xwindow_, xcursor);
+
+  if (cursor_shown_)
+    SetCursorInternal(cursor);
 }
 
 void RootWindowHostLinux::ShowCursor(bool show) {
-   if (show == is_cursor_visible_)
-     return;
-
-   is_cursor_visible_ = show;
-
-   if (show) {
-     int cursor_shape = CursorShapeFromNative(current_cursor_);
-     ::Cursor xcursor = ui::GetXCursor(cursor_shape);
-     XDefineCursor(xdisplay_, xwindow_, xcursor);
-   } else {
-     XDefineCursor(xdisplay_, xwindow_, invisible_cursor_);
-   }
+  if (show == cursor_shown_)
+    return;
+  cursor_shown_ = show;
+  SetCursorInternal(show ? current_cursor_ : kCursorNone);
 }
 
 gfx::Point RootWindowHostLinux::QueryMouseLocation() {
@@ -713,6 +705,14 @@ bool RootWindowHostLinux::IsWindowManagerPresent() {
   // of WM_Sn selections (where n is a screen number).
   ::Atom wm_s0_atom = XInternAtom(xdisplay_, "WM_S0", False);
   return XGetSelectionOwner(xdisplay_, wm_s0_atom) != None;
+}
+
+void RootWindowHostLinux::SetCursorInternal(gfx::NativeCursor cursor) {
+  ::Cursor xcursor =
+      cursor == kCursorNone ?
+      invisible_cursor_ :
+      ui::GetXCursor(CursorShapeFromNative(cursor));
+  XDefineCursor(xdisplay_, xwindow_, xcursor);
 }
 
 }  // namespace

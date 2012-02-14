@@ -58,9 +58,17 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
     return use_fullscreen_host_window_;
   }
 
+  static void set_hide_host_cursor(bool hide) {
+    hide_host_cursor_ = hide;
+  }
+  static bool hide_host_cursor() {
+    return hide_host_cursor_;
+  }
+
   ui::Compositor* compositor() { return compositor_.get(); }
   gfx::Point last_mouse_location() const { return last_mouse_location_; }
   gfx::NativeCursor last_cursor() const { return last_cursor_; }
+  bool cursor_shown() const { return cursor_shown_; }
   Window* mouse_pressed_handler() { return mouse_pressed_handler_; }
   Window* capture_window() { return capture_window_; }
   ScreenAura* screen() { return screen_; }
@@ -72,10 +80,13 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   void SetHostSize(const gfx::Size& size);
   gfx::Size GetHostSize() const;
 
-  // Shows the specified cursor.
+  // Sets the currently-displayed cursor. If the cursor was previously hidden
+  // via ShowCursor(false), it will remain hidden until ShowCursor(true) is
+  // called, at which point the cursor that was last set via SetCursor() will be
+  // used.
   void SetCursor(gfx::NativeCursor cursor);
 
-  // Sets current cursor visibility to |show|.
+  // Shows or hides the cursor.
   void ShowCursor(bool show);
 
   // Moves the cursor to the specified location relative to the root window.
@@ -260,6 +271,11 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // switches::kAuraHostWindowSize flag.
   static bool use_fullscreen_host_window_;
 
+  // If set before the RootWindow is created, the cursor will be drawn within
+  // the Aura root window but hidden outside of it, and it'll remain hidden
+  // after the Aura window is closed.
+  static bool hide_host_cursor_;
+
   // Used to schedule painting.
   base::WeakPtrFactory<RootWindow> schedule_paint_factory_;
 
@@ -274,6 +290,9 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   // Last cursor set.  Used for testing.
   gfx::NativeCursor last_cursor_;
+
+  // Is the cursor currently shown?  Used for testing.
+  bool cursor_shown_;
 
   ObserverList<RootWindowObserver> observers_;
 

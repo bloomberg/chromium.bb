@@ -65,6 +65,7 @@ void GetEventFiltersToNotify(Window* target, EventFilters* filters) {
 
 RootWindow* RootWindow::instance_ = NULL;
 bool RootWindow::use_fullscreen_host_window_ = false;
+bool RootWindow::hide_host_cursor_ = false;
 
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindow, public:
@@ -109,6 +110,7 @@ void RootWindow::SetCursor(gfx::NativeCursor cursor) {
 }
 
 void RootWindow::ShowCursor(bool show) {
+  cursor_shown_ = show;
   host_->ShowCursor(show);
 }
 
@@ -456,6 +458,7 @@ RootWindow::RootWindow()
       ALLOW_THIS_IN_INITIALIZER_LIST(event_factory_(this)),
       mouse_button_flags_(0),
       last_cursor_(kCursorNull),
+      cursor_shown_(true),
       screen_(new ScreenAura),
       capture_window_(NULL),
       mouse_pressed_handler_(NULL),

@@ -310,13 +310,13 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
     // with a small keyboard, u, i, o, p, ... keys might be repurposed as
     // cursor keys when Num Lock is on).
 #if defined(GOOGLE_CHROME_BUILD)
-      chromeos::input_method::InputMethodManager::GetInstance()->
-          GetXKeyboard()->SetNumLockEnabled(true);
+    chromeos::input_method::InputMethodManager::GetInstance()->
+        GetXKeyboard()->SetNumLockEnabled(true);
 #endif
 
 #if defined(USE_AURA)
-      initial_browser_window_observer_.reset(
-          new chromeos::InitialBrowserWindowObserver);
+    initial_browser_window_observer_.reset(
+        new chromeos::InitialBrowserWindowObserver);
 #endif
   }
 

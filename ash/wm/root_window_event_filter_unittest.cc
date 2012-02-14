@@ -464,5 +464,39 @@ TEST_F(RootWindowEventFilterTest, AdditionalFilters) {
   root_window_filter->RemoveFilter(f2.get());
 }
 
+// We should show and hide the cursor in response to mouse and touch events as
+// requested.
+TEST_F(RootWindowEventFilterTest, UpdateCursorVisibility) {
+  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  root_window->SetBounds(gfx::Rect(0, 0, 500, 500));
+  scoped_ptr<aura::Window> window(aura::test::CreateTestWindow(
+      SK_ColorWHITE, -1, gfx::Rect(0, 0, 500, 500), NULL));
+
+  internal::RootWindowEventFilter* root_window_filter =
+      static_cast<internal::RootWindowEventFilter*>(
+          root_window->event_filter());
+
+  aura::MouseEvent mouse_moved(
+      ui::ET_MOUSE_MOVED, gfx::Point(0, 0), gfx::Point(0, 0), 0x0);
+  aura::TouchEvent touch_pressed(
+      ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 0);
+
+  root_window_filter->set_update_cursor_visibility(true);
+  root_window->DispatchMouseEvent(&mouse_moved);
+  EXPECT_TRUE(root_window->cursor_shown());
+  root_window->DispatchTouchEvent(&touch_pressed);
+  EXPECT_FALSE(root_window->cursor_shown());
+  root_window->DispatchMouseEvent(&mouse_moved);
+  EXPECT_TRUE(root_window->cursor_shown());
+
+  root_window_filter->set_update_cursor_visibility(false);
+  root_window->ShowCursor(false);
+  root_window->DispatchMouseEvent(&mouse_moved);
+  EXPECT_FALSE(root_window->cursor_shown());
+  root_window->ShowCursor(true);
+  root_window->DispatchTouchEvent(&touch_pressed);
+  EXPECT_TRUE(root_window->cursor_shown());
+}
+
 }  // namespace test
 }  // namespace ash

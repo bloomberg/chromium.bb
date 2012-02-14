@@ -50,6 +50,7 @@ class AppList;
 class DragDropController;
 class FocusCycler;
 class InputMethodEventFilter;
+class RootWindowEventFilter;
 class RootWindowLayoutManager;
 class ShadowController;
 class ShelfLayoutManager;
@@ -148,6 +149,9 @@ class ASH_EXPORT Shell {
   }
 #endif  // !defined(OS_MACOSX)
 
+  internal::RootWindowEventFilter* root_filter() {
+    return root_filter_;
+  }
   internal::TooltipController* tooltip_controller() {
     return tooltip_controller_.get();
   }
@@ -198,6 +202,8 @@ class ASH_EXPORT Shell {
   void ResetLayoutManager(int container_id);
 
   static Shell* instance_;
+
+  internal::RootWindowEventFilter* root_filter_;  // not owned
 
   std::vector<WindowAndBoundsPair> to_restore_;
 

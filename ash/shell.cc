@@ -198,7 +198,8 @@ Shell* Shell::instance_ = NULL;
 // Shell, public:
 
 Shell::Shell(ShellDelegate* delegate)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+    : root_filter_(new internal::RootWindowEventFilter),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
 #if !defined(OS_MACOSX)
       nested_dispatcher_controller_(new NestedDispatcherController),
       accelerator_controller_(new AcceleratorController),
@@ -209,8 +210,8 @@ Shell::Shell(ShellDelegate* delegate)
       window_mode_(MODE_OVERLAPPING),
       root_window_layout_(NULL),
       status_widget_(NULL) {
-  aura::RootWindow::GetInstance()->SetEventFilter(
-      new internal::RootWindowEventFilter);
+  // Pass ownership of the filter to the root window.
+  aura::RootWindow::GetInstance()->SetEventFilter(root_filter_);
 }
 
 Shell::~Shell() {
