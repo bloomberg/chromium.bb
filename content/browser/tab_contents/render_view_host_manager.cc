@@ -610,7 +610,7 @@ void RenderViewHostManager::CommitPending() {
   if (will_focus_location_bar)
     delegate_->SetFocusToLocationBar(false);
   else if (focus_render_view && render_view_host_->view())
-    render_view_host_->view()->Focus();
+    RenderWidgetHostViewBase::FromRWHV(render_view_host_->view())->Focus();
 
   std::pair<RenderViewHost*, RenderViewHost*> details =
       std::make_pair(old_render_view_host, render_view_host_);

@@ -68,9 +68,11 @@ struct WebScreenInfo;
 // the surrounding environment and passing them to the RenderWidgetHost, and
 // for actually displaying the content of the RenderWidgetHost when it
 // changes.
-class RenderWidgetHostView {
+//
+// TODO(joi): Move this to content/public/browser
+class CONTENT_EXPORT RenderWidgetHostView {
  public:
-  CONTENT_EXPORT virtual ~RenderWidgetHostView();
+  virtual ~RenderWidgetHostView();
 
   // Platform-specific creator. Use this to construct new RenderWidgetHostViews
   // rather than using RenderWidgetHostViewWin & friends.
@@ -90,25 +92,8 @@ class RenderWidgetHostView {
   // a child window.
   virtual void InitAsChild(gfx::NativeView parent_view) = 0;
 
-  // Perform all the initialization steps necessary for this object to represent
-  // a popup (such as a <select> dropdown), then shows the popup at |pos|.
-  virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
-                           const gfx::Rect& pos) = 0;
-
-  // Perform all the initialization steps necessary for this object to represent
-  // a full screen window.
-  // |reference_host_view| is the view associated with the creating page that
-  // helps to position the full screen widget on the correct monitor.
-  virtual void InitAsFullscreen(RenderWidgetHostView* reference_host_view) = 0;
-
   // Returns the associated RenderWidgetHost.
   virtual RenderWidgetHost* GetRenderWidgetHost() const = 0;
-
-  // Notifies the View that it has become visible.
-  virtual void DidBecomeSelected() = 0;
-
-  // Notifies the View that it has been hidden.
-  virtual void WasHidden() = 0;
 
   // Tells the View to size itself to the specified size.
   virtual void SetSize(const gfx::Size& size) = 0;
@@ -123,14 +108,8 @@ class RenderWidgetHostView {
   virtual gfx::NativeViewId GetNativeViewId() const = 0;
   virtual gfx::NativeViewAccessible GetNativeViewAccessible() = 0;
 
-  // Moves all plugin windows as described in the given list.
-  virtual void MovePluginWindows(
-      const std::vector<webkit::npapi::WebPluginGeometry>& moves) = 0;
-
-  // Actually set/take focus to/from the associated View component.
+  // Set focus to the associated View component.
   virtual void Focus() = 0;
-  virtual void Blur() = 0;
-
   // Returns true if the View currently has the focus.
   virtual bool HasFocus() const = 0;
 
@@ -144,6 +123,111 @@ class RenderWidgetHostView {
 
   // Retrieve the bounds of the View, in screen coordinates.
   virtual gfx::Rect GetViewBounds() const = 0;
+
+  // Returns true if the View's context menu is showing.
+  virtual bool IsShowingContextMenu() const = 0;
+
+  // Tells the View whether the context menu is showing.
+  virtual void SetShowingContextMenu(bool showing) = 0;
+
+#if defined(OS_MACOSX)
+  // Set the view's active state (i.e., tint state of controls).
+  virtual void SetActive(bool active) = 0;
+
+  // Tells the view whether or not to accept first responder status.  If |flag|
+  // is true, the view does not accept first responder status and instead
+  // manually becomes first responder when it receives a mouse down event.  If
+  // |flag| is false, the view participates in the key-view chain as normal.
+  virtual void SetTakesFocusOnlyOnMouseDown(bool flag) = 0;
+
+  // Notifies the view that its enclosing window has changed visibility
+  // (minimized/unminimized, app hidden/unhidden, etc).
+  // TODO(stuartmorgan): This is a temporary plugin-specific workaround for
+  // <http://crbug.com/34266>. Once that is fixed, this (and the corresponding
+  // message and renderer-side handling) can be removed in favor of using
+  // WasHidden/DidBecomeSelected.
+  virtual void SetWindowVisibility(bool visible) = 0;
+
+  // Informs the view that its containing window's frame changed.
+  virtual void WindowFrameChanged() = 0;
+#endif  // defined(OS_MACOSX)
+
+#if defined(TOOLKIT_USES_GTK)
+  // Gets the event for the last mouse down.
+  virtual GdkEventButton* GetLastMouseDown() = 0;
+#if !defined(TOOLKIT_VIEWS)
+  // Builds a submenu containing all the gtk input method commands.
+  virtual gfx::NativeView BuildInputMethodsGtkMenu() = 0;
+#endif  // !defined(TOOLKIT_VIEWS)
+#endif  // defined(TOOLKIT_USES_GTK)
+
+  // TODO(joi): May be able to move into impl if RWHVMacDelegate stops
+  // being exposed to Chrome.
+  virtual void UnhandledWheelEvent(const WebKit::WebMouseWheelEvent& event) = 0;
+
+  // Subclasses should override this method to do what is appropriate to set
+  // the custom background for their platform.
+  virtual void SetBackground(const SkBitmap& background) = 0;
+  virtual const SkBitmap& GetBackground() = 0;
+
+  // TODO(joi): Remove this when we remove the dependency by chrome/
+  // on browser_accessibility* files in content.
+  virtual BrowserAccessibilityManager*
+      GetBrowserAccessibilityManager() const = 0;
+
+ protected:
+  RenderWidgetHostView();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostView);
+};
+
+// This is the larger RenderWidgetHostView interface exposed only
+// within content/, plus some basic implementation.
+//
+// TODO(joi): Extract a pure virtual interface from these additional
+// methods (named RenderWidgetHostViewPort?), move it to content/port,
+// and have content/ use that interface everywhere except where it is
+// using concrete implementation classes.  The RWHVBase class might
+// still exist for shared implementation between existing concrete
+// implementations.
+class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
+ public:
+  virtual ~RenderWidgetHostViewBase();
+
+  // Does the cast for you.
+  static RenderWidgetHostViewBase* FromRWHV(RenderWidgetHostView* rwhv);
+
+  // Convenience function instead of
+  // RenderWidgetHostView::CreateViewForWidget if you want a
+  // RenderWidgetHostViewBase.
+  static RenderWidgetHostViewBase* CreateViewForWidget(
+      RenderWidgetHost* widget);
+
+  // Perform all the initialization steps necessary for this object to represent
+  // a popup (such as a <select> dropdown), then shows the popup at |pos|.
+  virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
+                           const gfx::Rect& pos) = 0;
+
+  // Perform all the initialization steps necessary for this object to represent
+  // a full screen window.
+  // |reference_host_view| is the view associated with the creating page that
+  // helps to position the full screen widget on the correct monitor.
+  virtual void InitAsFullscreen(
+      RenderWidgetHostView* reference_host_view) = 0;
+
+  // Notifies the View that it has become visible.
+  virtual void DidBecomeSelected() = 0;
+
+  // Notifies the View that it has been hidden.
+  virtual void WasHidden() = 0;
+
+  // Moves all plugin windows as described in the given list.
+  virtual void MovePluginWindows(
+      const std::vector<webkit::npapi::WebPluginGeometry>& moves) = 0;
+
+  // Take focus from the associated View component.
+  virtual void Blur() = 0;
 
   // Sets the cursor to the one associated with the specified cursor_type
   virtual void UpdateCursor(const WebCursor& cursor) = 0;
@@ -195,18 +279,15 @@ class RenderWidgetHostView {
   virtual void SetTooltipText(const string16& tooltip_text) = 0;
 
   // Notifies the View that the renderer text selection has changed.
-  CONTENT_EXPORT virtual void SelectionChanged(const string16& text,
-                                               size_t offset,
-                                               const ui::Range& range);
+  virtual void SelectionChanged(const string16& text,
+                                size_t offset,
+                                const ui::Range& range);
 
   // Notifies the View that the renderer selection bounds has changed.
   // |start_rect| and |end_rect| are the bounds end of the selection in the
   // coordinate system of the render view.
   virtual void SelectionBoundsChanged(const gfx::Rect& start_rect,
                                       const gfx::Rect& end_rect) {}
-
-  // Tells the View whether the context menu is showing.
-  CONTENT_EXPORT virtual void SetShowingContextMenu(bool showing);
 
   // Allocate a backing store for this view.
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) = 0;
@@ -232,31 +313,11 @@ class RenderWidgetHostView {
   virtual void AcceleratedSurfaceSuspend() = 0;
 
 #if defined(OS_MACOSX)
-  // Tells the view whether or not to accept first responder status.  If |flag|
-  // is true, the view does not accept first responder status and instead
-  // manually becomes first responder when it receives a mouse down event.  If
-  // |flag| is false, the view participates in the key-view chain as normal.
-  virtual void SetTakesFocusOnlyOnMouseDown(bool flag) = 0;
-
   // Retrieve the bounds of the view, in cocoa view coordinates.
   // If the UI scale factor is 2, |GetViewBounds()| will return a size of e.g.
   // (400, 300) in pixels, while this method will return (200, 150).
   // Even though this returns an gfx::Rect, the result is NOT IN PIXELS.
   virtual gfx::Rect GetViewCocoaBounds() const = 0;
-
-  // Set the view's active state (i.e., tint state of controls).
-  virtual void SetActive(bool active) = 0;
-
-  // Notifies the view that its enclosing window has changed visibility
-  // (minimized/unminimized, app hidden/unhidden, etc).
-  // TODO(stuartmorgan): This is a temporary plugin-specific workaround for
-  // <http://crbug.com/34266>. Once that is fixed, this (and the corresponding
-  // message and renderer-side handling) can be removed in favor of using
-  // WasHidden/DidBecomeSelected.
-  virtual void SetWindowVisibility(bool visible) = 0;
-
-  // Informs the view that its containing window's frame changed.
-  virtual void WindowFrameChanged() = 0;
 
   // Informs the view that a plugin gained or lost focus.
   virtual void PluginFocusChanged(bool focused, int plugin_id) = 0;
@@ -300,12 +361,6 @@ class RenderWidgetHostView {
 #if defined(TOOLKIT_USES_GTK)
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id) = 0;
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) = 0;
-  // Gets the event for the last mouse down.
-  virtual GdkEventButton* GetLastMouseDown() = 0;
-#if !defined(TOOLKIT_VIEWS)
-  // Builds a submenu containing all the gtk input method commands.
-  virtual gfx::NativeView BuildInputMethodsGtkMenu() = 0;
-#endif  // !defined(TOOLKIT_VIEWS)
 #endif  // defined(TOOLKIT_USES_GTK)
 
 #if defined(OS_WIN) && !defined(USE_AURA)
@@ -321,8 +376,6 @@ class RenderWidgetHostView {
 
   virtual gfx::GLSurfaceHandle GetCompositingSurface() = 0;
 
-  virtual void UnhandledWheelEvent(const WebKit::WebMouseWheelEvent& event) = 0;
-
   // Because the associated remote WebKit instance can asynchronously
   // prevent-default on a dispatched touch event, the touch events are queued in
   // the GestureRecognizer until invocation of ProcessTouchAck releases it to be
@@ -337,29 +390,31 @@ class RenderWidgetHostView {
   virtual bool LockMouse() = 0;
   virtual void UnlockMouse() = 0;
 
+  virtual void OnAccessibilityNotifications(
+      const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
+  }
+
+  virtual void SetBackground(const SkBitmap& background) OVERRIDE;
+  virtual const SkBitmap& GetBackground() OVERRIDE;
+
+  virtual bool IsShowingContextMenu() const OVERRIDE;
+  virtual void SetShowingContextMenu(bool) OVERRIDE;
+
+  virtual BrowserAccessibilityManager*
+      GetBrowserAccessibilityManager() const OVERRIDE;
+
   void set_popup_type(WebKit::WebPopupType popup_type) {
     popup_type_ = popup_type;
   }
   WebKit::WebPopupType popup_type() const { return popup_type_; }
 
-  // Subclasses should override this method to do what is appropriate to set
-  // the custom background for their platform.
-  CONTENT_EXPORT virtual void SetBackground(const SkBitmap& background);
-  const SkBitmap& background() const { return background_; }
-
-  virtual void OnAccessibilityNotifications(
-      const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
-  }
-
-  BrowserAccessibilityManager* GetBrowserAccessibilityManager() const;
   void SetBrowserAccessibilityManager(BrowserAccessibilityManager* manager);
 
   bool mouse_locked() const { return mouse_locked_; }
-  bool showing_context_menu() const { return showing_context_menu_; }
 
  protected:
   // Interface class only, do not construct.
-  CONTENT_EXPORT RenderWidgetHostView();
+  RenderWidgetHostViewBase();
 
   // Whether this view is a popup and what kind of popup it is (select,
   // autofill...).
@@ -393,7 +448,7 @@ class RenderWidgetHostView {
   // Manager of the tree representation of the WebKit render tree.
   scoped_ptr<BrowserAccessibilityManager> browser_accessibility_manager_;
 
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostView);
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewBase);
 };
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_H_

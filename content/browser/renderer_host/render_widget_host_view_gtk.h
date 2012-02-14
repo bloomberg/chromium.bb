@@ -44,33 +44,42 @@ typedef struct _GtkSelectionData GtkSelectionData;
 // -----------------------------------------------------------------------------
 // See comments in render_widget_host_view.h about this class and its members.
 // -----------------------------------------------------------------------------
-class CONTENT_EXPORT RenderWidgetHostViewGtk : public RenderWidgetHostView {
+class RenderWidgetHostViewGtk : public RenderWidgetHostViewBase {
  public:
   virtual ~RenderWidgetHostViewGtk();
 
   // RenderWidgetHostView implementation.
   virtual void InitAsChild(gfx::NativeView parent_view) OVERRIDE;
-  virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
-                           const gfx::Rect& pos) OVERRIDE;
-  virtual void InitAsFullscreen(
-      RenderWidgetHostView* reference_host_view) OVERRIDE;
   virtual RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
-  virtual void DidBecomeSelected() OVERRIDE;
-  virtual void WasHidden() OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual void SetBounds(const gfx::Rect& rect) OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeViewId GetNativeViewId() const OVERRIDE;
   virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
-  virtual void MovePluginWindows(
-      const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE;
-  virtual void Focus() OVERRIDE;
-  virtual void Blur() OVERRIDE;
   virtual bool HasFocus() const OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
   virtual bool IsShowing() OVERRIDE;
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
+  virtual GdkEventButton* GetLastMouseDown() OVERRIDE;
+#if !defined(TOOLKIT_VIEWS)
+  virtual gfx::NativeView BuildInputMethodsGtkMenu() OVERRIDE;
+#endif  // !defined(TOOLKIT_VIEWS)
+  virtual void UnhandledWheelEvent(
+      const WebKit::WebMouseWheelEvent& event) OVERRIDE;
+  virtual void SetBackground(const SkBitmap& background) OVERRIDE;
+
+  // RenderWidgetHostViewBase implementation.
+  virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
+                           const gfx::Rect& pos) OVERRIDE;
+  virtual void InitAsFullscreen(
+      RenderWidgetHostView* reference_host_view) OVERRIDE;
+  virtual void DidBecomeSelected() OVERRIDE;
+  virtual void WasHidden() OVERRIDE;
+  virtual void MovePluginWindows(
+      const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE;
+  virtual void Focus() OVERRIDE;
+  virtual void Blur() OVERRIDE;
   virtual void UpdateCursor(const WebCursor& cursor) OVERRIDE;
   virtual void SetIsLoading(bool is_loading) OVERRIDE;
   virtual void TextInputStateChanged(ui::TextInputType type,
@@ -98,16 +107,8 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk : public RenderWidgetHostView {
       const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
       int gpu_host_id) OVERRIDE;
   virtual void AcceleratedSurfaceSuspend() OVERRIDE;
-  virtual void SetBackground(const SkBitmap& background) OVERRIDE;
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id) OVERRIDE;
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) OVERRIDE;
-  virtual GdkEventButton* GetLastMouseDown() OVERRIDE;
-#if !defined(TOOLKIT_VIEWS)
-  // Builds a submenu containing all the gtk input method commands.
-  virtual gfx::NativeView BuildInputMethodsGtkMenu() OVERRIDE;
-#endif
-  virtual void UnhandledWheelEvent(
-      const WebKit::WebMouseWheelEvent& event) OVERRIDE;
   virtual void ProcessTouchAck(bool processed) OVERRIDE;
   virtual void SetHasHorizontalScrollbar(
       bool has_horizontal_scrollbar) OVERRIDE;

@@ -29,7 +29,8 @@ class RenderWidgetHostViewMacTest : public RenderViewHostTestHarness {
     old_rwhv_ = rvh()->view();
 
     // Owned by its |cocoa_view()|, i.e. |rwhv_cocoa_|.
-    rwhv_mac_ = new RenderWidgetHostViewMac(rvh());
+    rwhv_mac_ = static_cast<RenderWidgetHostViewMac*>(
+        RenderWidgetHostView::CreateViewForWidget(rvh()));
     rwhv_cocoa_.reset([rwhv_mac_->cocoa_view() retain]);
   }
   virtual void TearDown() {
