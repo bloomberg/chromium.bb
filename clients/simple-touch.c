@@ -100,8 +100,7 @@ struct wl_shm_listener shm_listenter = {
 
 static void
 input_device_handle_motion(void *data, struct wl_input_device *input_device,
-			   uint32_t time,
-			   int32_t x, int32_t y, int32_t sx, int32_t sy)
+			   uint32_t time, int32_t sx, int32_t sy)
 {
 }
 
@@ -122,7 +121,7 @@ static void
 input_device_handle_pointer_focus(void *data,
 				  struct wl_input_device *input_device,
 				  uint32_t time, struct wl_surface *surface,
-				  int32_t x, int32_t y, int32_t sx, int32_t sy)
+				  int32_t sx, int32_t sy)
 {
 }
 

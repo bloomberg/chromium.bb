@@ -500,8 +500,7 @@ static const struct wl_output_listener output_listener = {
 /* parent input interface */
 static void
 input_handle_motion(void *data, struct wl_input_device *input_device,
-		     uint32_t time,
-		     int32_t x, int32_t y, int32_t sx, int32_t sy)
+		    uint32_t time, int32_t sx, int32_t sy)
 {
 	struct wayland_input *input = data;
 	struct wayland_compositor *c = input->compositor;
@@ -533,9 +532,9 @@ input_handle_key(void *data, struct wl_input_device *input_device,
 
 static void
 input_handle_pointer_focus(void *data,
-			    struct wl_input_device *input_device,
-			    uint32_t time, struct wl_surface *surface,
-			    int32_t x, int32_t y, int32_t sx, int32_t sy)
+			   struct wl_input_device *input_device,
+			   uint32_t time, struct wl_surface *surface,
+			   int32_t sx, int32_t sy)
 {
 	struct wayland_input *input = data;
 	struct wayland_output *output;

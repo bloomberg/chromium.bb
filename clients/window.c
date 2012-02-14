@@ -1474,8 +1474,7 @@ input_set_focus_widget(struct input *input, struct widget *focus,
 
 static void
 input_handle_motion(void *data, struct wl_input_device *input_device,
-		    uint32_t time,
-		    int32_t x, int32_t y, int32_t sx, int32_t sy)
+		    uint32_t time, int32_t sx, int32_t sy)
 {
 	struct input *input = data;
 	struct window *window = input->pointer_focus;
@@ -1598,7 +1597,7 @@ static void
 input_handle_pointer_focus(void *data,
 			   struct wl_input_device *input_device,
 			   uint32_t time, struct wl_surface *surface,
-			   int32_t x, int32_t y, int32_t sx, int32_t sy)
+			   int32_t sx, int32_t sy)
 {
 	struct input *input = data;
 	struct window *window;

@@ -208,8 +208,7 @@ weston_surface_move(struct weston_surface *es,
 
 	wl_input_device_start_grab(&wd->input_device, &move->grab, time);
 
-	wl_input_device_set_pointer_focus(&wd->input_device,
-					  NULL, time, 0, 0, 0, 0);
+	wl_input_device_set_pointer_focus(&wd->input_device, NULL, time, 0, 0);
 
 	return 0;
 }
@@ -317,8 +316,7 @@ weston_surface_resize(struct shell_surface *shsurf,
 
 	wl_input_device_start_grab(&wd->input_device, &resize->grab, time);
 
-	wl_input_device_set_pointer_focus(&wd->input_device,
-					  NULL, time, 0, 0, 0, 0);
+	wl_input_device_set_pointer_focus(&wd->input_device, NULL, time, 0, 0);
 
 	return 0;
 }
@@ -522,27 +520,24 @@ popup_grab_focus(struct wl_grab *grab, uint32_t time,
 	struct wl_client *client = priv->surface->surface.resource.client;
 
 	if (surface && surface->resource.client == client) {
-		wl_input_device_set_pointer_focus(device, surface, time,
-						  device->x, device->y, x, y);
+		wl_input_device_set_pointer_focus(device, surface, time, x, y);
 		grab->focus = surface;
 	} else {
-		wl_input_device_set_pointer_focus(device, NULL,
-						  time, 0, 0, 0, 0);
+		wl_input_device_set_pointer_focus(device, NULL, time, 0, 0);
 		grab->focus = NULL;
 	}
 }
 
 static void
 popup_grab_motion(struct wl_grab *grab,
-		  uint32_t time, int32_t x, int32_t y)
+		  uint32_t time, int32_t sx, int32_t sy)
 {
-	struct wl_input_device *device = grab->input_device;
 	struct wl_resource *resource;
 
 	resource = grab->input_device->pointer_focus_resource;
 	if (resource)
 		wl_resource_post_event(resource, WL_INPUT_DEVICE_MOTION,
-				       time, device->x, device->y, x, y);
+				       time, sx, sy);
 }
 
 static void
@@ -1178,7 +1173,7 @@ rotate_binding(struct wl_input_device *device, uint32_t time,
 		weston_matrix_init(&rotate->rotation);
 	}
 
-	wl_input_device_set_pointer_focus(device, NULL, time, 0, 0, 0, 0);
+	wl_input_device_set_pointer_focus(device, NULL, time, 0, 0);
 }
 
 static void
