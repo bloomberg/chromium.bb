@@ -243,9 +243,12 @@ static int r6_surface_init_linear(struct radeon_surface_manager *surf_man,
     /* the 32 alignment is for scanout, cb or db but to allow texture to be
      * easily bound as such we force this alignment to all surface
      */
-    xalign = MAX2(32, surf_man->hw_info.group_bytes / surf->bpe);
+    xalign = MAX2(1, surf_man->hw_info.group_bytes / surf->bpe);
     yalign = 1;
     zalign = 1;
+    if (surf->flags & RADEON_SURF_SCANOUT) {
+        xalign = MAX2((surf->bpe == 1) ? 64 : 32, xalign);
+    }
 
     /* build mipmap tree */
     for (i = start_level; i <= surf->last_level; i++) {
@@ -301,6 +304,9 @@ static int r6_surface_init_1d(struct radeon_surface_manager *surf_man,
     xalign = MAX2(tilew, xalign);
     yalign = tilew;
     zalign = 1;
+    if (surf->flags & RADEON_SURF_SCANOUT) {
+        xalign = MAX2((surf->bpe == 1) ? 64 : 32, xalign);
+    }
     if (!start_level) {
         surf->bo_alignment = MAX2(256, surf_man->hw_info.group_bytes);
     }
@@ -332,6 +338,9 @@ static int r6_surface_init_2d(struct radeon_surface_manager *surf_man,
              (tilew * surf->bpe * surf->nsamples);
     xalign = MAX2(tilew * surf_man->hw_info.num_banks, xalign);
     yalign = tilew * surf_man->hw_info.num_pipes;
+    if (surf->flags & RADEON_SURF_SCANOUT) {
+        xalign = MAX2((surf->bpe == 1) ? 64 : 32, xalign);
+    }
     if (!start_level) {
         surf->bo_alignment =
             MAX2(surf_man->hw_info.num_pipes *
@@ -545,6 +554,9 @@ static int eg_surface_init_1d(struct radeon_surface_manager *surf_man,
     xalign = MAX2(tilew, xalign);
     yalign = tilew;
     zalign = 1;
+    if (surf->flags & RADEON_SURF_SCANOUT) {
+        xalign = MAX2((surf->bpe == 1) ? 64 : 32, xalign);
+    }
     if (!start_level) {
         surf->bo_alignment = MAX2(256, surf_man->hw_info.group_bytes);
     }
