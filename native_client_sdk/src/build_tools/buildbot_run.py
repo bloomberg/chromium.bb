@@ -401,6 +401,7 @@ def CopyExamples(pepperdir, toolchains):
     oshelpers.Copy(['-v', os.path.join(SDK_EXAMPLE_DIR, filename), exampledir])
   for example in examples:
     CopyDir(os.path.join(SDK_EXAMPLE_DIR, example), exampledir)
+    AddMakeBat(exampledir)
 
 
 def BuildUpdater():
