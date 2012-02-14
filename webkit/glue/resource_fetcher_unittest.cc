@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -100,7 +100,7 @@ FetcherDelegate* FetcherDelegate::instance_ = NULL;
 
 // Test a fetch from the test server.
 // Flaky, http://crbug.com/51622.
-TEST_F(ResourceFetcherTests, FLAKY_ResourceFetcherDownload) {
+TEST_F(ResourceFetcherTests, DISABLED_ResourceFetcherDownload) {
   ASSERT_TRUE(test_server_.Start());
 
   WebFrame* frame = test_shell_->webView()->mainFrame();
@@ -132,7 +132,7 @@ TEST_F(ResourceFetcherTests, FLAKY_ResourceFetcherDownload) {
 }
 
 // Flaky, http://crbug.com/51622.
-TEST_F(ResourceFetcherTests, FLAKY_ResourceFetcherDidFail) {
+TEST_F(ResourceFetcherTests, DISABLED_ResourceFetcherDidFail) {
   ASSERT_TRUE(test_server_.Start());
 
   WebFrame* frame = test_shell_->webView()->mainFrame();
