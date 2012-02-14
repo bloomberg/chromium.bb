@@ -70,7 +70,6 @@
 #include "ui/gfx/image/image.h"
 #include "webkit/glue/window_open_disposition.h"
 
-using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;
 using content::WebContents;
@@ -1042,14 +1041,12 @@ gboolean LocationBarViewGtk::OnIconReleased(GtkWidget* sender,
     if (event->x == 0 && event->y == 0)
       return FALSE;
 
-    const NavigationController& controller = tab->GetController();
-    NavigationEntry* nav_entry = controller.GetActiveEntry();
+    NavigationEntry* nav_entry = tab->GetController().GetActiveEntry();
     if (!nav_entry) {
       NOTREACHED();
       return FALSE;
     }
-    Browser* browser = Browser::GetBrowserForController(&controller, NULL);
-    browser->ShowPageInfo(nav_entry->GetURL(), nav_entry->GetSSL(), true);
+    browser_->ShowPageInfo(nav_entry->GetURL(), nav_entry->GetSSL(), true);
     return TRUE;
   } else if (event->button == 2) {
     // When the user middle clicks on the location icon, try to open the
