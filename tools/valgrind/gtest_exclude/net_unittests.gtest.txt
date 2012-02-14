@@ -8,3 +8,6 @@ DirectoryListerTest.BigDirRecursiveTest
 # http://crbug.com/88228
 SSLClientSocketTest.Connect
 SSLClientSocketTest.ConnectClientAuthSendNullCert
+
+@ 'Flakey;' http://crbug.com/114164
+HTTPSRequestTest.HTTPSErrorsNoClobberTSSTest
