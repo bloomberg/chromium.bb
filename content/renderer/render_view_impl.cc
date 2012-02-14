@@ -325,18 +325,18 @@ static WebReferrerPolicy getReferrerPolicyFromRequest(
       WebKit::WebReferrerPolicyDefault;
 }
 
+NOINLINE static void CrashIntentionally() {
+  // NOTE(shess): Crash directly rather than using NOTREACHED() so
+  // that the signature is easier to triage in crash reports.
+  volatile int* zero = NULL;
+  *zero = 0;
+}
+
 static void MaybeHandleDebugURL(const GURL& url) {
   if (!url.SchemeIs(chrome::kChromeUIScheme))
     return;
   if (url == GURL(chrome::kChromeUICrashURL)) {
-    // NOTE(shess): Crash directly rather than using NOTREACHED() so
-    // that the signature is easier to triage in crash reports.
-    volatile int* zero = NULL;
-    *zero = 0;
-
-    // Just in case the compiler decides the above is undefined and
-    // optimizes it away.
-    NOTREACHED();
+    CrashIntentionally();
   } else if (url == GURL(chrome::kChromeUIKillURL)) {
     base::KillProcess(base::GetCurrentProcessHandle(), 1, false);
   } else if (url == GURL(chrome::kChromeUIHangURL)) {
