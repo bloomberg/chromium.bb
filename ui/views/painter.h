@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 namespace gfx {
 class Canvas;
 class Insets;
+class Rect;
 }
 class SkBitmap;
 
@@ -26,8 +27,9 @@ class VIEWS_EXPORT Painter {
  public:
   // A convenience method for painting a Painter in a particular region.
   // This translates the canvas to x/y and paints the painter.
-  static void PaintPainterAt(int x, int y, int w, int h,
-                             gfx::Canvas* canvas, Painter* painter);
+  static void PaintPainterAt(gfx::Canvas* canvas,
+                             Painter* painter,
+                             const gfx::Rect& rect);
 
   // Creates a painter that draws a gradient between the two colors.
   static Painter* CreateHorizontalGradient(SkColor c1, SkColor c2);

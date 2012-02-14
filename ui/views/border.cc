@@ -85,8 +85,7 @@ class BorderPainter : public Border {
   }
 
   void Paint(const View& view, gfx::Canvas* canvas) const {
-    Painter::PaintPainterAt(0, 0, view.width(), view.height(), canvas,
-                            painter_);
+    Painter::PaintPainterAt(canvas, painter_, view.GetLocalBounds());
   }
 
   virtual void GetInsets(gfx::Insets* insets) const {

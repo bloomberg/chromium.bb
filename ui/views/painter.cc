@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
 
 namespace views {
 
@@ -144,14 +145,13 @@ class ImagePainter : public Painter {
 }  // namespace
 
 // static
-void Painter::PaintPainterAt(int x, int y, int w, int h,
-                             gfx::Canvas* canvas, Painter* painter) {
+void Painter::PaintPainterAt(gfx::Canvas* canvas,
+                             Painter* painter,
+                             const gfx::Rect& rect) {
   DCHECK(canvas && painter);
-  if (w < 0 || h < 0)
-    return;
   canvas->Save();
-  canvas->Translate(gfx::Point(x, y));
-  painter->Paint(w, h, canvas);
+  canvas->Translate(rect.origin());
+  painter->Paint(rect.width(), rect.height(), canvas);
   canvas->Restore();
 }
 
