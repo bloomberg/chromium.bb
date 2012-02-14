@@ -2491,6 +2491,7 @@
         'app/chrome_version.rc.version',
         'browser/accessibility/accessibility_extension_apitest.cc',
         'browser/accessibility/dump_accessibility_tree_browsertest.cc',
+        'browser/app_controller_mac_browsertest.mm',
         'browser/autocomplete/autocomplete_browsertest.cc',
         'browser/autofill/form_structure_browsertest.cc',
         'browser/autofill/autofill_popup_view_browsertest.cc',

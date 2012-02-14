@@ -54,6 +54,7 @@ const char kBrowserTestType[] = "browser";
 InProcessBrowserTest::InProcessBrowserTest()
     : browser_(NULL),
       show_window_(false),
+      initial_window_required_(true),
       dom_automation_enabled_(false),
       tab_closeable_state_watcher_enabled_(false) {
 #if defined(OS_MACOSX)
@@ -285,10 +286,12 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
   pool.Recycle();
 #endif
 
-  browser_ = CreateBrowser(ProfileManager::GetDefaultProfile());
+  if (initial_window_required_) {
+    browser_ = CreateBrowser(ProfileManager::GetDefaultProfile());
 #if defined(OS_MACOSX)
-  pool.Recycle();
+    pool.Recycle();
 #endif
+  }
 
   // Pump any pending events that were created as a result of creating a
   // browser.

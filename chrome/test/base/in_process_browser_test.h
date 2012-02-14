@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -155,6 +155,9 @@ class InProcessBrowserTest : public BrowserTestBase {
   // Sets some test states (see below for comments).  Call this in your test
   // constructor.
   void set_show_window(bool show) { show_window_ = show; }
+  void set_initial_window_required(bool flag) {
+    initial_window_required_= flag;
+  }
   void EnableDOMAutomation() { dom_automation_enabled_ = true; }
   void EnableTabCloseableStateWatcher() {
     tab_closeable_state_watcher_enabled_ = true;
@@ -184,6 +187,9 @@ class InProcessBrowserTest : public BrowserTestBase {
   // Whether this test requires the browser windows to be shown (interactive
   // tests for example need the windows shown).
   bool show_window_;
+
+  // Whether this test requires an initial window.
+  bool initial_window_required_;
 
   // Whether the JavaScript can access the DOMAutomationController (a JS object
   // that can send messages back to the browser).

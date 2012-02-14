@@ -1006,10 +1006,21 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
       }
     }
   }
+
+  // Platform apps don't use browser windows so don't do anything if there are
+  // visible windows.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (flag && command_line.HasSwitch(switches::kAppId))
+    return YES;
+
   // Otherwise open a new window.
   {
     AutoReset<bool> auto_reset_in_run(&g_is_opening_new_window, true);
-    Browser::OpenEmptyWindow([self lastProfile]);
+    int return_code;
+    BrowserInit browser_init;
+    browser_init.LaunchBrowser(command_line, [self lastProfile], FilePath(),
+                               BrowserInit::IS_NOT_PROCESS_STARTUP,
+                               BrowserInit::IS_NOT_FIRST_RUN, &return_code);
   }
 
   // We've handled the reopen event, so return NO to tell AppKit not
