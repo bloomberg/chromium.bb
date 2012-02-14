@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -33,13 +34,6 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
-
-// TODO(kuan): these includes are only used for testing uploading of file to
-// gdata.
-#include "base/file_util.h"
-#include "base/path_service.h"
-#include "chrome/common/chrome_paths.h"
-#include "net/base/net_errors.h"
 
 using content::BrowserThread;
 
@@ -1130,19 +1124,19 @@ void DocumentsService::OnOAuth2RefreshTokenChanged() {
 
   // TODO(zelidrag): Remove this block once we properly wire these API calls
   // through extension API.
-#if defined(TEST_API)
-  if (!IsPartiallyAuthenticated())
-    return;
+  if (CommandLine::ForCurrentProcess()->HasSwitch("test-gdata")) {
+    if (!IsPartiallyAuthenticated())
+      return;
 
-  // TODO(zelidrag): Remove this becasue we probably don't want to fetch this
-  // before it is really needed.
-  if (!feed_value_.get() && !get_documents_started_) {
-    GetDocuments(base::Bind(&DocumentsService::UpdateFilelist,
-                            base::Unretained(this)));
+    // TODO(zelidrag): Remove this becasue we probably don't want to fetch this
+    // before it is really needed.
+    if (!feed_value_.get() && !get_documents_started_) {
+      GetDocuments(base::Bind(&DocumentsService::UpdateFilelist,
+                              base::Unretained(this)));
 
-    uploader_->TestUpload();
+      uploader_->TestUpload();
+    }
   }
-#endif
 }
 
 void DocumentsService::UpdateFilelist(GDataErrorCode status,

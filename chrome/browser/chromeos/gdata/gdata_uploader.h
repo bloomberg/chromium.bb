@@ -18,10 +18,18 @@ class GDataUploader {
   explicit GDataUploader(DocumentsService* docs_service);
   ~GDataUploader();
 
-  // Uploads a test file.
+  // TODO(achuith): create a browser test to test uploads.
   void TestUpload();
 
  private:
+  // Sets up a test upload and calls UploadFile.
+  void TestUploadOnFileThread();
+
+  // Uploads a file with given |title|, |content_type| from |file_path|.
+  void UploadFile(const std::string& title,
+                  const std::string& content_type,
+                  const FilePath& file_path);
+
   // DocumentsService callback for InitiateUpload.
   void OnUploadLocationReceived(GDataErrorCode code,
       const UploadFileInfo& in_upload_file_info,
@@ -32,6 +40,11 @@ class GDataUploader {
       int64 start_range_received,
       int64 end_range_received,
       UploadFileInfo* upload_file_info);
+
+  // net::FileStream::Read completion callback.
+  void ReadCompletionCallback(const UploadFileInfo& in_upload_file_info,
+      int64 bytes_to_read,
+      int bytes_read);
 
   // DocumentsService callback for ResumeUpload.
   void OnResumeUploadResponseReceived(GDataErrorCode code,
