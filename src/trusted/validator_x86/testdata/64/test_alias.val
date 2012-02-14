@@ -1,0 +1,7 @@
+VALIDATOR: 0000000000000003: f6 cb 00                                     test %bl, 0x0
+VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+VALIDATOR: 000000000000000c: f7 cb 00 00 00 00                            test %ebx, 0x0
+VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+VALIDATOR: Checking jump targets: 0 to 12
+VALIDATOR: Checking that basic blocks are aligned
+*** <input> IS UNSAFE ***

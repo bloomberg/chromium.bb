@@ -512,8 +512,12 @@ void NaClDefOneByteInsts(struct NaClSymbolTable* st) {
   NaClDefine("f3: Invalid", NACLi_INVALID, st, Other);
   NaClDefine("f4: Hlt", NACLi_386, st, Other);
   NaClDefine("f5: Cmc", NACLi_386, st, Other);
+  /* The "/1" encodings of "Test" are aliases of the "/0" encodings.
+   * "/0" is used by assemblers.  We disallow "/1" on the grounds of
+   * minimalism.
+   */
   NaClDefine("f6/0: Test $Eb, $Ib", NACLi_386, st, Compare);
-  NaClDefine("f6/1: Test $Eb, $Ib", NACLi_386, st, Compare);
+  NaClDefine("f6/1: Test $Eb, $Ib", NACLi_ILLEGAL, st, Compare);
   NaClDefine("f6/2: Not $Eb", NACLi_386, st, UnaryUpdate);
   NaClDefine("f6/3: Neg $Eb", NACLi_386, st, UnaryUpdate);
   NaClDefine("f6/4: Mul {%ax}, {%al}, $Eb", NACLi_386, st, Binary);
@@ -521,7 +525,7 @@ void NaClDefOneByteInsts(struct NaClSymbolTable* st) {
   NaClDefine("f6/6: Div {%ax}, {%al}, $Eb", NACLi_386, st, Binary);
   NaClDefine("f6/7: Idiv {%ax}, {%al},$Eb", NACLi_386, st, Binary);
   NaClDefine("f7/0: Test $Ev, $Iz", NACLi_386, st, Compare);
-  NaClDefine("f7/1: Test $Ev, $Iz", NACLi_386, st, Compare);
+  NaClDefine("f7/1: Test $Ev, $Iz", NACLi_ILLEGAL, st, Compare);
   NaClDefine("f7/2: Not $Ev", NACLi_386, st, UnaryUpdate);
   NaClDefine("f7/3: Neg $Ev", NACLi_386, st, UnaryUpdate);
   NaClDefine("f7/4: Mul {%redx}, {%reax}, $Ev", NACLi_386, st, O2Binary);

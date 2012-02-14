@@ -1550,10 +1550,8 @@ Target: x86-64 bit mode
     [P] DontCare $Eb (u), $Ib (u)
       E_Operand               OpUse
       I_Operand               OpUse
-  f6 / 1                      386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed OperandSize_b PartialInstruction
-    [P] DontCare $Eb (u), $Ib (u)
-      E_Operand               OpUse
-      I_Operand               OpUse
+  f6 / 1                      ILLEGAL OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed OperandSize_b NaClIllegal PartialInstruction
+    [P] DontCare(illegal)
   f6 / 2                      386 OpcodeInModRm OpcodeUsesModRm OpcodeLockable OperandSize_b PartialInstruction
     [P] DontCare $Eb (su)
       E_Operand               OpUse OpSet OpDest
@@ -1585,10 +1583,8 @@ Target: x86-64 bit mode
     [P] DontCare $Ev (u), $Iz (u)
       E_Operand               OpUse
       I_Operand               OpUse
-  f7 / 1                      386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed_z OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
-    [P] DontCare $Ev (u), $Iz (u)
-      E_Operand               OpUse
-      I_Operand               OpUse
+  f7 / 1                      ILLEGAL OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed_z OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o NaClIllegal PartialInstruction
+    [P] DontCare(illegal)
   f7 / 2                      386 OpcodeInModRm OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     [P] DontCare $Ev (suz)
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v

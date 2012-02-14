@@ -1798,7 +1798,7 @@ Target: x86-32 bit mode
     Test $Eb, $Ib
       E_Operand               OpUse
       I_Operand               OpUse
-  f6 / 1                      386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed OperandSize_b
+  f6 / 1                      ILLEGAL OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed OperandSize_b NaClIllegal
     Test $Eb, $Ib
       E_Operand               OpUse
       I_Operand               OpUse
@@ -1833,7 +1833,7 @@ Target: x86-32 bit mode
     Test $Ev, $Iz
       E_Operand               OpUse
       I_Operand               OpUse
-  f7 / 1                      386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed_z OpcodeAllowsData16 OperandSize_w OperandSize_v
+  f7 / 1                      ILLEGAL OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed_z OpcodeAllowsData16 OperandSize_w OperandSize_v NaClIllegal
     Test $Ev, $Iz
       E_Operand               OpUse
       I_Operand               OpUse
