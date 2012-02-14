@@ -31,12 +31,14 @@ import sys
 WHITELIST_EXTENSIONS = [
     'bash',
     'bat',
+    'dll',
     'dylib',
+    'exe',
     'pl',
     'py',
     'rb',
-    'sh',
     'sed',
+    'sh',
 ]
 
 # Files that end the following paths are whitelisted too.
