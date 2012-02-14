@@ -843,7 +843,7 @@ AutocompleteController::AutocompleteController(
       switches::kDisableHistoryURLProvider))
     providers_.push_back(new HistoryURLProvider(this, profile));
 #if !defined(OS_ANDROID)
-  // No search provider/"tab to search".
+  // No search provider/"tab to search" on Android.
   keyword_provider_ = new KeywordProvider(this, profile);
   providers_.push_back(keyword_provider_);
 #endif  // !OS_ANDROID
