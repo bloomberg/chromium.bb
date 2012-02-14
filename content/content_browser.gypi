@@ -104,7 +104,6 @@
     'public/browser/sensors_provider.h',
     'public/browser/site_instance.h',
     'public/browser/speech_input_preferences.h',
-    'public/browser/speech_recognizer_delegate.h',
     'public/browser/user_metrics.h',
     'public/browser/utility_process_host.h',
     'public/browser/web_contents.h',

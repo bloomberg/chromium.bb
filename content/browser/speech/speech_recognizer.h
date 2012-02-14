@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,10 +18,6 @@
 #include "content/public/common/speech_input_result.h"
 #include "media/audio/audio_input_controller.h"
 
-namespace content {
-class SpeechRecognizerDelegate;
-}
-
 namespace net {
 class URLRequestContextGetter;
 }
@@ -35,7 +31,57 @@ class CONTENT_EXPORT SpeechRecognizer
       public media::AudioInputController::EventHandler,
       public SpeechRecognitionRequestDelegate {
  public:
-  SpeechRecognizer(content::SpeechRecognizerDelegate* delegate,
+  // Implemented by the caller to receive recognition events.
+  class CONTENT_EXPORT Delegate {
+   public:
+    virtual void SetRecognitionResult(
+        int caller_id,
+        const content::SpeechInputResult& result) = 0;
+
+    // Invoked when the first audio packet was received from the audio capture
+    // device.
+    virtual void DidStartReceivingAudio(int caller_id) = 0;
+
+    // Invoked when audio recording stops, either due to the end pointer
+    // detecting silence in user input or if |StopRecording| was called. The
+    // delegate has to wait until |DidCompleteRecognition| is invoked before
+    // destroying the |SpeechRecognizer| object.
+    virtual void DidCompleteRecording(int caller_id) = 0;
+
+    // This is guaranteed to be the last method invoked in the recognition
+    // sequence and the |SpeechRecognizer| object can be freed up if necessary.
+    virtual void DidCompleteRecognition(int caller_id) = 0;
+
+    // Informs that the end pointer has started detecting speech.
+    virtual void DidStartReceivingSpeech(int caller_id) = 0;
+
+    // Informs that the end pointer has stopped detecting speech.
+    virtual void DidStopReceivingSpeech(int caller_id) = 0;
+
+    // Invoked if there was an error while recording or recognizing audio. The
+    // session has already been cancelled when this call is made and the DidXxxx
+    // callbacks will not be issued. It is safe to destroy/release the
+    // |SpeechRecognizer| object while processing this call.
+    virtual void OnRecognizerError(int caller_id,
+                                   content::SpeechInputError error) = 0;
+
+    // At the start of recognition, a short amount of audio is recorded to
+    // estimate the environment/background noise and this callback is issued
+    // after that is complete. Typically the delegate brings up any speech
+    // recognition UI once this callback is received.
+    virtual void DidCompleteEnvironmentEstimation(int caller_id) = 0;
+
+    // Informs of a change in the captured audio level, useful if displaying
+    // a microphone volume indicator while recording.
+    // The value of |volume| and |noise_volume| is in the [0.0, 1.0] range.
+    virtual void SetInputVolume(int caller_id, float volume,
+                                float noise_volume) = 0;
+
+   protected:
+    virtual ~Delegate() {}
+  };
+
+  SpeechRecognizer(Delegate* delegate,
                    int caller_id,
                    const std::string& language,
                    const std::string& grammar,
@@ -50,8 +96,7 @@ class CONTENT_EXPORT SpeechRecognizer
   // Starts audio recording and does recognition after recording ends. The same
   // SpeechRecognizer instance can be used multiple times for speech recognition
   // though each recognition request can be made only after the previous one
-  // completes (i.e. after receiving
-  // SpeechRecognizerDelegate::DidCompleteRecognition).
+  // completes (i.e. after receiving Delegate::DidCompleteRecognition).
   bool StartRecording();
 
   // Stops recording audio and starts recognition.
@@ -95,7 +140,7 @@ class CONTENT_EXPORT SpeechRecognizer
   // Helper method which closes the audio controller and blocks until done.
   void CloseAudioControllerSynchronously();
 
-  content::SpeechRecognizerDelegate* delegate_;
+  Delegate* delegate_;
   int caller_id_;
   std::string language_;
   std::string grammar_;
@@ -115,6 +160,12 @@ class CONTENT_EXPORT SpeechRecognizer
 
   DISALLOW_COPY_AND_ASSIGN(SpeechRecognizer);
 };
+
+// This typedef is to workaround the issue with certain versions of
+// Visual Studio where it gets confused between multiple Delegate
+// classes and gives a C2500 error. (I saw this error on the try bots -
+// the workaround was not needed for my machine).
+typedef SpeechRecognizer::Delegate SpeechRecognizerDelegate;
 
 }  // namespace speech_input
 
