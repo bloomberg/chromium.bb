@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -620,4 +620,25 @@ TEST(ExtensionURLPatternTest, Equals) {
     EXPECT_EQ(kEqualsTestCases[i].expected_equal, pattern1 == pattern2)
         << message;
   }
+}
+
+TEST(ExtensionURLPatternTest, CanReusePatternWithParse) {
+  URLPattern pattern1(URLPattern::SCHEME_ALL);
+  EXPECT_EQ(URLPattern::PARSE_SUCCESS, pattern1.Parse("http://aa.com/*"));
+  EXPECT_EQ(URLPattern::PARSE_SUCCESS, pattern1.Parse("http://bb.com/*"));
+
+  EXPECT_TRUE(pattern1.MatchesURL(GURL("http://bb.com/path")));
+  EXPECT_FALSE(pattern1.MatchesURL(GURL("http://aa.com/path")));
+
+  URLPattern pattern2(URLPattern::SCHEME_ALL, URLPattern::kAllUrlsPattern);
+  EXPECT_EQ(URLPattern::PARSE_SUCCESS, pattern2.Parse("http://aa.com/*"));
+
+  EXPECT_FALSE(pattern2.MatchesURL(GURL("http://bb.com/path")));
+  EXPECT_TRUE(pattern2.MatchesURL(GURL("http://aa.com/path")));
+  EXPECT_FALSE(pattern2.MatchesURL(GURL("http://sub.aa.com/path")));
+
+  URLPattern pattern3(URLPattern::SCHEME_ALL, "http://aa.com/*");
+  EXPECT_EQ(URLPattern::PARSE_SUCCESS, pattern3.Parse("http://aa.com:88/*"));
+  EXPECT_FALSE(pattern3.MatchesURL(GURL("http://aa.com/path")));
+  EXPECT_TRUE(pattern3.MatchesURL(GURL("http://aa.com:88/path")));
 }
