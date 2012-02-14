@@ -159,13 +159,13 @@ int AdjustPlatformSpecificFlags(const string16& text, int flags) {
 #if defined(OS_LINUX)
   // TODO(asvitkine): On Linux, NO_ELLIPSIS really means MULTI_LINE.
   //                  http://crbug.com/107357
-  if (flags & NO_ELLIPSIS)
-    flags |= MULTI_LINE;
+  if (flags & gfx::Canvas::NO_ELLIPSIS)
+    flags |= gfx::Canvas::MULTI_LINE;
 
   // TODO(asvitkine): ash/tooltips/tooltip_controller.cc adds \n's to the string
   //                  without passing MULTI_LINE.
   if (text.find('\n') != string16::npos)
-    flags |= MULTI_LINE;
+    flags |= gfx::Canvas::MULTI_LINE;
 #endif
 
   return flags;
@@ -183,7 +183,7 @@ void CanvasSkia::SizeStringInt(const string16& text,
   DCHECK_GE(*width, 0);
   DCHECK_GE(*height, 0);
 
-  flags = AdjustPlatformSpecifcFlags(text, flags);
+  flags = AdjustPlatformSpecificFlags(text, flags);
   if ((flags & MULTI_LINE) && *width != 0) {
     ui::WordWrapBehavior wrap_behavior = ui::TRUNCATE_LONG_WORDS;
     if (flags & CHARACTER_BREAK)
@@ -234,7 +234,7 @@ void CanvasSkia::DrawStringInt(const string16& text,
   if (!IntersectsClipRectInt(x, y, w, h))
     return;
 
-  flags = AdjustPlatformSpecifcFlags(text, flags);
+  flags = AdjustPlatformSpecificFlags(text, flags);
 
   // TODO(asvitkine): On Windows, MULTI_LINE implies top alignment.
   //                  http://crbug.com/107357
