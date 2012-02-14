@@ -1153,6 +1153,23 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * Restore the lead item that is present in the list but may be updated
+     * in the data model (supposed to be used inside a batch update). Usually
+     * such an item would be recreated in the redraw method. If reinsertion
+     * is undesirable (for instance to prevent losing focus) the item may be
+     * updated and restored. Assumed the listItem relates to the same data item
+     * as the lead item in the begin of the batch update.
+     *
+     * @param {ListItem} leadItem Already existing lead item.
+     */
+    restoreLeadItem: function(leadItem) {
+      delete this.cachedItems_[leadItem.listIndex];
+
+      leadItem.listIndex = this.selectionModel.leadIndex;
+      this.pinnedItem_ = this.cachedItems_[leadItem.listIndex] = leadItem;
+    },
+
+    /**
      * Invalidates list by removing cached items.
      */
     invalidate: function() {

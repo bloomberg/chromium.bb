@@ -496,6 +496,14 @@ FileManager.prototype = {
 
     this.directoryModel_.addEventListener('directory-changed',
                                           this.onDirectoryChanged_.bind(this));
+    var self = this;
+    this.directoryModel_.addEventListener('begin-update-files', function() {
+      self.currentList_.startBatchUpdates();
+    });
+    this.directoryModel_.addEventListener('end-update-files', function() {
+      self.restoreItemBeingRenamed_();
+      self.currentList_.endBatchUpdates();
+    });
     this.directoryModel_.addEventListener('scan-started',
                                           this.showSpinner_.bind(this, true));
     this.directoryModel_.addEventListener('scan-completed',
@@ -1671,7 +1679,12 @@ FileManager.prototype = {
    */
   FileManager.prototype.renderSize_ = function(entry, columnId, table) {
     var div = this.document_.createElement('div');
+    div.className = 'size';
+    this.updateSize_(div, entry);
+    return div;
+  };
 
+  FileManager.prototype.updateSize_ = function(div, entry) {
     // Unlike other rtl languages, Herbew use MB and writes the unit to the
     // right of the number. We use css trick to workaround this.
     if (navigator.language == 'he')
@@ -1684,8 +1697,6 @@ FileManager.prototype = {
         div.textContent = util.bytesToSi(entry.cachedSize_);
       }
     }, null, true);
-
-    return div;
   };
 
   /**
@@ -1697,7 +1708,12 @@ FileManager.prototype = {
    */
   FileManager.prototype.renderType_ = function(entry, columnId, table) {
     var div = this.document_.createElement('div');
+    div.className = 'type';
+    this.updateType_(div, entry);
+    return div;
+  };
 
+  FileManager.prototype.updateType_ = function(div, entry) {
     this.cacheEntryFileType(entry, function(entry) {
       var info = entry.cachedFileType_;
       if (info.name) {
@@ -1708,8 +1724,6 @@ FileManager.prototype = {
       } else
         div.textContent = '';
     }, true);
-
-    return div;
   };
 
   /**
@@ -1721,7 +1735,12 @@ FileManager.prototype = {
    */
   FileManager.prototype.renderDate_ = function(entry, columnId, table) {
     var div = this.document_.createElement('div');
+    div.className = 'date';
+    this.updateDate_(div, entry);
+    return div;
+  };
 
+  FileManager.prototype.updateDate_ = function(div, entry) {
     div.textContent = '...';
 
     var self = this;
@@ -1735,8 +1754,36 @@ FileManager.prototype = {
         div.textContent = self.shortDateFormatter_.format(entry.cachedMtime_);
       }
     }, null, true);
+  };
 
-    return div;
+  /**
+   * Restore the item which is being renamed while refreshing the file list. Do
+   * nothing if no item is being renamed or such an item disappeared.
+   *
+   * While refreshing file list it gets repopulated with new file entries.
+   * There is not a big difference wether DOM items stay the same or not.
+   * Except for the item that the user is renaming.
+   */
+  FileManager.prototype.restoreItemBeingRenamed_ = function() {
+    if (!this.isRenamingInProgress())
+      return;
+
+    var dm = this.directoryModel_;
+    var leadIndex = dm.fileListSelection.leadIndex;
+    if (leadIndex < 0)
+      return;
+
+    var leadEntry = dm.fileList.item(leadIndex);
+    if (this.renameInput_.currentEntry.fullPath != leadEntry.fullPath)
+      return;
+
+    var leadListItem = this.findListItemForNode_(this.renameInput_);
+    if (this.currentList_ == this.table_.list) {
+      this.updateType_(leadListItem.querySelector('.type'), leadEntry);
+      this.updateDate_(leadListItem.querySelector('.date'), leadEntry);
+      this.updateSize_(leadListItem.querySelector('.size'), leadEntry);
+    }
+    this.currentList_.restoreLeadItem(leadListItem);
   };
 
   /**

@@ -306,7 +306,7 @@ DirectoryModel.prototype = {
   },
 
   replaceFileList_: function(entries) {
-    // TODO(serya): Reinserting breaks renaming. Need to be merged gracefully.
+    cr.dispatchSimpleEvent(this, 'begin-update-files');
     this.fileListSelection_.beginChange();
 
     var selectedNames = this.selectedNames;
@@ -322,6 +322,7 @@ DirectoryModel.prototype = {
     this.fileListSelection_.leadIndex = leadIndex;
     this.leadName = leadName;
     this.fileListSelection_.endChange();
+    cr.dispatchSimpleEvent(this, 'end-update-files');
   },
 
   /**
