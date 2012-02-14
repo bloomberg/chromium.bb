@@ -381,7 +381,7 @@ void SQLiteOriginBoundCertStore::Backend::Commit() {
 
   sql::Statement add_smt(db_->GetCachedStatement(SQL_FROM_HERE,
       "INSERT INTO origin_bound_certs (origin, private_key, cert, cert_type, "
-      "expiration_time) VALUES (?,?,?,?,?)"));
+      "expiration_time, creation_time) VALUES (?,?,?,?,?,?)"));
   if (!add_smt) {
     NOTREACHED();
     return;
@@ -413,6 +413,7 @@ void SQLiteOriginBoundCertStore::Backend::Commit() {
         add_smt.BindBlob(2, cert.data(), cert.size());
         add_smt.BindInt(3, po->cert().type());
         add_smt.BindInt64(4, po->cert().expiration_time().ToInternalValue());
+        add_smt.BindInt64(5, po->cert().creation_time().ToInternalValue());
         if (!add_smt.Run())
           NOTREACHED() << "Could not add an origin bound cert to the DB.";
         break;

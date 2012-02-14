@@ -70,8 +70,8 @@ class SQLiteOriginBoundCertStoreTest : public testing::Test {
         net::DefaultOriginBoundCertStore::OriginBoundCert(
             "https://encrypted.google.com:8443",
             net::CLIENT_CERT_RSA_SIGN,
-            base::Time(),
-            base::Time(),
+            base::Time::FromInternalValue(1),
+            base::Time::FromInternalValue(2),
             "a", "b"));
   }
 
@@ -117,8 +117,8 @@ TEST_F(SQLiteOriginBoundCertStoreTest, TestPersistence) {
       net::DefaultOriginBoundCertStore::OriginBoundCert(
           "https://www.google.com/",
           net::CLIENT_CERT_ECDSA_SIGN,
-          base::Time(),
-          base::Time(),
+          base::Time::FromInternalValue(3),
+          base::Time::FromInternalValue(4),
           "c", "d"));
 
   ScopedVector<net::DefaultOriginBoundCertStore::OriginBoundCert> certs;
@@ -150,10 +150,14 @@ TEST_F(SQLiteOriginBoundCertStoreTest, TestPersistence) {
   ASSERT_EQ(net::CLIENT_CERT_RSA_SIGN, rsa_cert->type());
   ASSERT_STREQ("a", rsa_cert->private_key().c_str());
   ASSERT_STREQ("b", rsa_cert->cert().c_str());
+  ASSERT_EQ(1, rsa_cert->creation_time().ToInternalValue());
+  ASSERT_EQ(2, rsa_cert->expiration_time().ToInternalValue());
   ASSERT_STREQ("https://www.google.com/", ec_cert->origin().c_str());
   ASSERT_EQ(net::CLIENT_CERT_ECDSA_SIGN, ec_cert->type());
   ASSERT_STREQ("c", ec_cert->private_key().c_str());
   ASSERT_STREQ("d", ec_cert->cert().c_str());
+  ASSERT_EQ(3, ec_cert->creation_time().ToInternalValue());
+  ASSERT_EQ(4, ec_cert->expiration_time().ToInternalValue());
 
   // Now delete the cert and check persistence again.
   store_->DeleteOriginBoundCert(*certs[0]);
