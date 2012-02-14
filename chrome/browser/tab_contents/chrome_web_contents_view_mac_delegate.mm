@@ -48,7 +48,7 @@ void ChromeWebContentsViewMacDelegate::ShowContextMenu(
   // get called multiple times - if so, don't create another context menu.
   // TODO(asvitkine): Fix the renderer so that it doesn't do this.
   RenderWidgetHostView* widget_view = web_contents_->GetRenderWidgetHostView();
-  if (widget_view && widget_view->IsShowingContextMenu())
+  if (widget_view && widget_view->showing_context_menu())
     return;
 
   context_menu_.reset(

@@ -54,50 +54,33 @@ void SimulateUpdateRect(RenderWidgetHost* widget,
 
 // Subclass the RenderViewHost's view so that we can call Show(), etc.,
 // without having side-effects.
-class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
+class TestRenderWidgetHostView : public RenderWidgetHostView {
  public:
   explicit TestRenderWidgetHostView(RenderWidgetHost* rwh);
   virtual ~TestRenderWidgetHostView();
 
-  // RenderWidgetHostView implementation.
   virtual void InitAsChild(gfx::NativeView parent_view) OVERRIDE {}
+  virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
+                           const gfx::Rect& pos) OVERRIDE {}
+  virtual void InitAsFullscreen(
+      RenderWidgetHostView* reference_host_view) OVERRIDE {}
   virtual RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
+  virtual void DidBecomeSelected() OVERRIDE {}
+  virtual void WasHidden() OVERRIDE {}
   virtual void SetSize(const gfx::Size& size) OVERRIDE {}
   virtual void SetBounds(const gfx::Rect& rect) OVERRIDE {}
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeViewId GetNativeViewId() const OVERRIDE;
   virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
+  virtual void MovePluginWindows(
+      const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE {}
+  virtual void Focus() OVERRIDE {}
+  virtual void Blur() OVERRIDE {}
   virtual bool HasFocus() const OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
   virtual bool IsShowing() OVERRIDE;
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
-#if defined(OS_MACOSX)
-  virtual void SetActive(bool active) OVERRIDE;
-  virtual void SetTakesFocusOnlyOnMouseDown(bool flag) OVERRIDE {}
-  virtual void SetWindowVisibility(bool visible) OVERRIDE {}
-  virtual void WindowFrameChanged() OVERRIDE {}
-#endif  // defined(OS_MACOSX)
-#if defined(TOOLKIT_USES_GTK)
-  virtual GdkEventButton* GetLastMouseDown() OVERRIDE;
-#if !defined(TOOLKIT_VIEWS)
-  virtual gfx::NativeView BuildInputMethodsGtkMenu() OVERRIDE;
-#endif  // !defined(TOOLKIT_VIEWS)
-#endif  // defined(TOOLKIT_USES_GTK)
-  virtual void UnhandledWheelEvent(
-      const WebKit::WebMouseWheelEvent& event) OVERRIDE {}
-
-  // RenderWidgetHostViewBase implementation.
-  virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
-                           const gfx::Rect& pos) OVERRIDE {}
-  virtual void InitAsFullscreen(
-      RenderWidgetHostView* reference_host_view) OVERRIDE {}
-  virtual void DidBecomeSelected() OVERRIDE {}
-  virtual void WasHidden() OVERRIDE {}
-  virtual void MovePluginWindows(
-      const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE {}
-  virtual void Focus() OVERRIDE {}
-  virtual void Blur() OVERRIDE {}
   virtual void SetIsLoading(bool is_loading) OVERRIDE {}
   virtual void UpdateCursor(const WebCursor& cursor) OVERRIDE {}
   virtual void TextInputStateChanged(ui::TextInputType state,
@@ -121,7 +104,11 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
       int gpu_host_id) OVERRIDE;
   virtual void AcceleratedSurfaceSuspend() OVERRIDE;
 #if defined(OS_MACOSX)
+  virtual void SetTakesFocusOnlyOnMouseDown(bool flag) OVERRIDE {}
   virtual gfx::Rect GetViewCocoaBounds() const OVERRIDE;
+  virtual void SetActive(bool active) OVERRIDE;
+  virtual void SetWindowVisibility(bool visible) OVERRIDE {}
+  virtual void WindowFrameChanged() OVERRIDE {}
   virtual void PluginFocusChanged(bool focused, int plugin_id) OVERRIDE;
   virtual void StartPluginIme() OVERRIDE;
   virtual bool PostProcessEventForPluginIme(
@@ -147,6 +134,8 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE {}
   virtual gfx::Rect GetRootWindowBounds() OVERRIDE;
 #endif
+  virtual void UnhandledWheelEvent(
+      const WebKit::WebMouseWheelEvent& event) OVERRIDE { }
   virtual void ProcessTouchAck(bool processed) OVERRIDE { }
   virtual void SetHasHorizontalScrollbar(
       bool has_horizontal_scrollbar) OVERRIDE { }
@@ -163,6 +152,10 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
 #if defined(TOOLKIT_USES_GTK)
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id) OVERRIDE { }
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) OVERRIDE { }
+  virtual GdkEventButton* GetLastMouseDown() OVERRIDE;
+#if !defined(TOOLKIT_VIEWS)
+  virtual gfx::NativeView BuildInputMethodsGtkMenu() OVERRIDE;
+#endif  // !defined(TOOLKIT_VIEWS)
 #endif  // defined(TOOLKIT_USES_GTK)
 
   virtual gfx::GLSurfaceHandle GetCompositingSurface() OVERRIDE;

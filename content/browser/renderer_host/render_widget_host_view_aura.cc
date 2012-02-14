@@ -477,7 +477,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceRelease(
 #endif
 
 void RenderWidgetHostViewAura::SetBackground(const SkBitmap& background) {
-  RenderWidgetHostViewBase::SetBackground(background);
+  RenderWidgetHostView::SetBackground(background);
   host_->SetBackground(background);
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   window_->layer()->SetFillsBoundsOpaquely(background.isOpaque());
@@ -1085,7 +1085,7 @@ RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
 }
 
 // static
-void RenderWidgetHostViewBase::GetDefaultScreenInfo(
+void RenderWidgetHostView::GetDefaultScreenInfo(
     WebKit::WebScreenInfo* results) {
   const gfx::Size size = gfx::Screen::GetPrimaryMonitorSize();
   results->rect = WebKit::WebRect(0, 0, size.width(), size.height());

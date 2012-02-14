@@ -102,8 +102,8 @@ RenderWidgetHostView* WebContentsViewMac::CreateViewForWidget(
     return render_widget_host->view();
   }
 
-  RenderWidgetHostViewMac* view = static_cast<RenderWidgetHostViewMac*>(
-      RenderWidgetHostView::CreateViewForWidget(render_widget_host));
+  RenderWidgetHostViewMac* view =
+      new RenderWidgetHostViewMac(render_widget_host);
   if (delegate()) {
     NSObject<RenderWidgetHostViewMacDelegate>* rw_delegate =
         delegate()->CreateRenderWidgetHostViewDelegate(render_widget_host);

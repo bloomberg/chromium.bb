@@ -38,8 +38,8 @@ class WebTouchEvent;
 class ImageTransportClient;
 #endif
 
-class RenderWidgetHostViewAura
-    : public RenderWidgetHostViewBase,
+class CONTENT_EXPORT RenderWidgetHostViewAura
+    : NON_EXPORTED_BASE(public RenderWidgetHostView),
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
       public ui::CompositorObserver,
 #endif
@@ -49,34 +49,29 @@ class RenderWidgetHostViewAura
  public:
   virtual ~RenderWidgetHostViewAura();
 
-  // RenderWidgetHostView implementation.
-  virtual void InitAsChild(gfx::NativeView parent_view) OVERRIDE;
+  // Overridden from RenderWidgetHostView:
+  virtual void InitAsChild(gfx::NativeView parent_host_view) OVERRIDE;
+  virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
+                           const gfx::Rect& pos) OVERRIDE;
+  virtual void InitAsFullscreen(
+      RenderWidgetHostView* reference_host_view) OVERRIDE;
   virtual RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
+  virtual void DidBecomeSelected() OVERRIDE;
+  virtual void WasHidden() OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual void SetBounds(const gfx::Rect& rect) OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeViewId GetNativeViewId() const OVERRIDE;
   virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
+  virtual void MovePluginWindows(
+      const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE;
+  virtual void Focus() OVERRIDE;
+  virtual void Blur() OVERRIDE;
   virtual bool HasFocus() const OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
   virtual bool IsShowing() OVERRIDE;
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
-  virtual void UnhandledWheelEvent(
-      const WebKit::WebMouseWheelEvent& event) OVERRIDE;
-  virtual void SetBackground(const SkBitmap& background) OVERRIDE;
-
-  // Overridden from RenderWidgetHostViewBase:
-  virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
-                           const gfx::Rect& pos) OVERRIDE;
-  virtual void InitAsFullscreen(
-      RenderWidgetHostView* reference_host_view) OVERRIDE;
-  virtual void DidBecomeSelected() OVERRIDE;
-  virtual void WasHidden() OVERRIDE;
-  virtual void MovePluginWindows(
-      const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE;
-  virtual void Focus() OVERRIDE;
-  virtual void Blur() OVERRIDE;
   virtual void UpdateCursor(const WebCursor& cursor) OVERRIDE;
   virtual void SetIsLoading(bool is_loading) OVERRIDE;
   virtual void TextInputStateChanged(ui::TextInputType type,
@@ -108,8 +103,11 @@ class RenderWidgetHostViewAura
       TransportDIB::Handle* surface_handle) OVERRIDE;
   virtual void AcceleratedSurfaceRelease(uint64 surface_id) OVERRIDE;
 #endif
+  virtual void SetBackground(const SkBitmap& background) OVERRIDE;
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetRootWindowBounds() OVERRIDE;
+  virtual void UnhandledWheelEvent(
+      const WebKit::WebMouseWheelEvent& event) OVERRIDE;
   virtual void ProcessTouchAck(bool processed) OVERRIDE;
   virtual void SetHasHorizontalScrollbar(
       bool has_horizontal_scrollbar) OVERRIDE;

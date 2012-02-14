@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -103,8 +103,7 @@ TEST_F(RenderWidgetHostViewMacEditCommandHelperTest,
 
   // RenderWidgetHostViewMac self destructs (RenderWidgetHostViewMacCocoa
   // takes ownership) so no need to delete it ourselves.
-  RenderWidgetHostViewMac* rwhvm = static_cast<RenderWidgetHostViewMac*>(
-      RenderWidgetHostView::CreateViewForWidget(&render_widget));
+  RenderWidgetHostViewMac* rwhvm = new RenderWidgetHostViewMac(&render_widget);
 
   RenderWidgetHostViewMacOwner* rwhwvm_owner =
       [[[RenderWidgetHostViewMacOwner alloc]

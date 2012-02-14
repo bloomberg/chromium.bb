@@ -1085,14 +1085,14 @@ void RenderViewHost::OnRenderAutoResized(const gfx::Size& new_size) {
 
 void RenderViewHost::OnMsgDidChangeScrollbarsForMainFrame(
     bool has_horizontal_scrollbar, bool has_vertical_scrollbar) {
-  if (view_)
-    view_->SetHasHorizontalScrollbar(has_horizontal_scrollbar);
+  if (view())
+    view()->SetHasHorizontalScrollbar(has_horizontal_scrollbar);
 }
 
 void RenderViewHost::OnMsgDidChangeScrollOffsetPinningForMainFrame(
     bool is_pinned_to_left, bool is_pinned_to_right) {
-  if (view_)
-    view_->SetScrollOffsetPinning(is_pinned_to_left, is_pinned_to_right);
+  if (view())
+    view()->SetScrollOffsetPinning(is_pinned_to_left, is_pinned_to_right);
 }
 
 void RenderViewHost::OnMsgDidChangeNumWheelEvents(int count) {
@@ -1101,15 +1101,15 @@ void RenderViewHost::OnMsgDidChangeNumWheelEvents(int count) {
 void RenderViewHost::OnMsgSelectionChanged(const string16& text,
                                            size_t offset,
                                            const ui::Range& range) {
-  if (view_)
-    view_->SelectionChanged(text, offset, range);
+  if (view())
+    view()->SelectionChanged(text, offset, range);
 }
 
 void RenderViewHost::OnMsgSelectionBoundsChanged(
     const gfx::Rect& start_rect,
     const gfx::Rect& end_rect) {
-  if (view_)
-    view_->SelectionBoundsChanged(start_rect, end_rect);
+  if (view())
+    view()->SelectionBoundsChanged(start_rect, end_rect);
 }
 
 void RenderViewHost::OnMsgRunJavaScriptMessage(
@@ -1441,8 +1441,8 @@ void RenderViewHost::StopFinding(content::StopFindAction action) {
 
 void RenderViewHost::OnAccessibilityNotifications(
     const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
-  if (view_ && !is_swapped_out_)
-    view_->OnAccessibilityNotifications(params);
+  if (view() && !is_swapped_out_)
+    view()->OnAccessibilityNotifications(params);
 
   if (!params.empty()) {
     for (unsigned i = 0; i < params.size(); i++) {

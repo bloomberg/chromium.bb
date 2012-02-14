@@ -92,8 +92,8 @@ RenderWidgetHostView* TabContentsViewHelper::CreateNewWidget(
     WebKit::WebPopupType popup_type) {
   content::RenderProcessHost* process = web_contents->GetRenderProcessHost();
   RenderWidgetHost* widget_host = new RenderWidgetHost(process, route_id);
-  RenderWidgetHostViewBase* widget_view =
-      RenderWidgetHostViewBase::CreateViewForWidget(widget_host);
+  RenderWidgetHostView* widget_view =
+      RenderWidgetHostView::CreateViewForWidget(widget_host);
   if (!is_fullscreen) {
     // Popups should not get activated.
     widget_view->set_popup_type(popup_type);
@@ -167,8 +167,7 @@ RenderWidgetHostView* TabContentsViewHelper::ShowCreatedWidget(
   if (web_contents->GetDelegate())
     web_contents->GetDelegate()->RenderWidgetShowing();
 
-  RenderWidgetHostViewBase* widget_host_view =
-      RenderWidgetHostViewBase::FromRWHV(GetCreatedWidget(route_id));
+  RenderWidgetHostView* widget_host_view = GetCreatedWidget(route_id);
   if (is_fullscreen) {
     widget_host_view->InitAsFullscreen(web_contents->GetRenderWidgetHostView());
   } else {

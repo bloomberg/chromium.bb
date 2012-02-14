@@ -77,10 +77,10 @@ bool ShouldCoalesceMouseWheelEvents(const WebMouseWheelEvent& last_event,
 
 RenderWidgetHost::RenderWidgetHost(content::RenderProcessHost* process,
                                    int routing_id)
-    : view_(NULL),
-      renderer_initialized_(false),
+    : renderer_initialized_(false),
       hung_renderer_delay_ms_(kHungRendererDelayMs),
       renderer_accessible_(false),
+      view_(NULL),
       process_(process),
       routing_id_(routing_id),
       surface_id_(0),
@@ -152,16 +152,12 @@ RenderWidgetHost::~RenderWidgetHost() {
 }
 
 void RenderWidgetHost::SetView(RenderWidgetHostView* view) {
-  view_ = RenderWidgetHostViewBase::FromRWHV(view);
+  view_ = view;
 
   if (!view_) {
     GpuSurfaceTracker::Get()->SetSurfaceHandle(
         surface_id_, gfx::GLSurfaceHandle());
   }
-}
-
-RenderWidgetHostView* RenderWidgetHost::view() const {
-  return view_;
 }
 
 gfx::NativeViewId RenderWidgetHost::GetNativeViewId() const {
@@ -960,7 +956,7 @@ void RenderWidgetHost::OnMsgSetTooltipText(
     }
   }
   if (view())
-    view_->SetTooltipText(wrapped_tooltip_text);
+    view()->SetTooltipText(wrapped_tooltip_text);
 }
 
 void RenderWidgetHost::OnMsgRequestMove(const gfx::Rect& pos) {
@@ -1267,7 +1263,7 @@ void RenderWidgetHost::OnMsgGetScreenInfo(gfx::NativeViewId window_id,
   if (view_)
     view_->GetScreenInfo(results);
   else
-    RenderWidgetHostViewBase::GetDefaultScreenInfo(results);
+    RenderWidgetHostView::GetDefaultScreenInfo(results);
 }
 
 void RenderWidgetHost::OnMsgGetWindowRect(gfx::NativeViewId window_id,

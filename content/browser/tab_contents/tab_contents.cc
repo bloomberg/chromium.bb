@@ -292,7 +292,7 @@ TabContents::~TabContents() {
   if (GetNativeView()) {
     RenderViewHost* host = GetRenderViewHost();
     if (host && host->view())
-      RenderWidgetHostViewBase::FromRWHV(host->view())->WillWmDestroy();
+      host->view()->WillWmDestroy();
   }
 #endif
 
@@ -761,8 +761,7 @@ void TabContents::NotifyNavigationStateChanged(unsigned changed_flags) {
 
 void TabContents::DidBecomeSelected() {
   controller_.SetActive(true);
-  RenderWidgetHostViewBase* rwhv =
-      RenderWidgetHostViewBase::FromRWHV(GetRenderWidgetHostView());
+  RenderWidgetHostView* rwhv = GetRenderWidgetHostView();
   if (rwhv) {
     rwhv->DidBecomeSelected();
 #if defined(OS_MACOSX)
@@ -795,8 +794,7 @@ void TabContents::WasHidden() {
     // removes the |GetRenderViewHost()|; then when we actually destroy the
     // window, OnWindowPosChanged() notices and calls HideContents() (which
     // calls us).
-    RenderWidgetHostViewBase* rwhv =
-        RenderWidgetHostViewBase::FromRWHV(GetRenderWidgetHostView());
+    RenderWidgetHostView* rwhv = GetRenderWidgetHostView();
     if (rwhv)
       rwhv->WasHidden();
   }
@@ -808,8 +806,7 @@ void TabContents::WasHidden() {
 }
 
 void TabContents::ShowContents() {
-  RenderWidgetHostViewBase* rwhv =
-      RenderWidgetHostViewBase::FromRWHV(GetRenderWidgetHostView());
+  RenderWidgetHostView* rwhv = GetRenderWidgetHostView();
   if (rwhv)
     rwhv->DidBecomeSelected();
 }

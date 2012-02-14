@@ -32,7 +32,6 @@
 class BackingStore;
 struct EditCommand;
 class RenderWidgetHostView;
-class RenderWidgetHostViewBase;
 class TransportDIB;
 struct ViewHostMsg_UpdateRect_Params;
 class WebCursor;
@@ -156,7 +155,7 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   // never cache this pointer since it can become NULL if the renderer crashes,
   // instead you should always ask for it using the accessor.
   void SetView(RenderWidgetHostView* view);
-  RenderWidgetHostView* view() const;
+  RenderWidgetHostView* view() const { return view_; }
 
   content::RenderProcessHost* process() const { return process_; }
   int routing_id() const { return routing_id_; }
@@ -541,13 +540,6 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   void SetShouldAutoResize(bool enable);
 
  protected:
-  // The View associated with the RenderViewHost. The lifetime of this object
-  // is associated with the lifetime of the Render process. If the Renderer
-  // crashes, its View is destroyed and this pointer becomes NULL, even though
-  // render_view_host_ lives on to load another URL (creating a new View while
-  // doing so).
-  RenderWidgetHostViewBase* view_;
-
   // true if a renderer has once been valid. We use this flag to display a sad
   // tab only when we lose our renderer and not if a paint occurs during
   // initialization.
@@ -667,6 +659,13 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   // True if renderer accessibility is enabled. This should only be set when a
   // screenreader is detected as it can potentially slow down Chrome.
   bool renderer_accessible_;
+
+  // The View associated with the RenderViewHost. The lifetime of this object
+  // is associated with the lifetime of the Render process. If the Renderer
+  // crashes, its View is destroyed and this pointer becomes NULL, even though
+  // render_view_host_ lives on to load another URL (creating a new View while
+  // doing so).
+  RenderWidgetHostView* view_;
 
   // Created during construction but initialized during Init*(). Therefore, it
   // is guaranteed never to be NULL, but its channel may be NULL if the

@@ -244,7 +244,7 @@ class RenderWidgetHostViewGtkWidget {
     gdk_window_set_cursor(gtk_widget_get_window(widget), NULL);
     // If we are showing a context menu, maintain the illusion that webkit has
     // focus.
-    if (!host_view->IsShowingContextMenu()) {
+    if (!host_view->showing_context_menu()) {
       host_view->GetRenderWidgetHost()->SetActive(false);
       host_view->GetRenderWidgetHost()->Blur();
     }
@@ -907,7 +907,7 @@ void RenderWidgetHostViewGtk::SetTooltipText(const string16& tooltip_text) {
 void RenderWidgetHostViewGtk::SelectionChanged(const string16& text,
                                                size_t offset,
                                                const ui::Range& range) {
-  RenderWidgetHostViewBase::SelectionChanged(text, offset, range);
+  RenderWidgetHostView::SelectionChanged(text, offset, range);
 
   if (text.empty() || range.is_empty())
     return;
@@ -1027,7 +1027,7 @@ void RenderWidgetHostViewGtk::AcceleratedSurfaceSuspend() {
 
 
 void RenderWidgetHostViewGtk::SetBackground(const SkBitmap& background) {
-  RenderWidgetHostViewBase::SetBackground(background);
+  RenderWidgetHostView::SetBackground(background);
   host_->Send(new ViewMsg_SetBackground(host_->routing_id(), background));
 }
 
@@ -1409,7 +1409,7 @@ RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
 }
 
 // static
-void RenderWidgetHostViewBase::GetDefaultScreenInfo(
+void RenderWidgetHostView::GetDefaultScreenInfo(
     WebKit::WebScreenInfo* results) {
   GdkWindow* gdk_window =
       gdk_display_get_default_group(gdk_display_get_default());
