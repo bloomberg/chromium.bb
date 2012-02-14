@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -159,40 +159,40 @@ class NewTabUIStartupTest : public UIPerfTest {
 };
 
 // FLAKY: http://crbug.com/69940
-TEST_F(NewTabUIStartupTest, FLAKY_PerfRefCold) {
+TEST_F(NewTabUIStartupTest, DISABLED_PerfRefCold) {
   UseReferenceBuild();
   RunStartupTest("tab_cold_ref", false /* cold */, true /* important */,
                  UITestBase::DEFAULT_THEME);
 }
 
 // FLAKY: http://crbug.com/69940
-TEST_F(NewTabUIStartupTest, FLAKY_PerfCold) {
+TEST_F(NewTabUIStartupTest, DISABLED_PerfCold) {
   RunStartupTest("tab_cold", false /* cold */, true /* important */,
                  UITestBase::DEFAULT_THEME);
 }
 
 // FLAKY: http://crbug.com/69940
-TEST_F(NewTabUIStartupTest, FLAKY_PerfRefWarm) {
+TEST_F(NewTabUIStartupTest, DISABLED_PerfRefWarm) {
   UseReferenceBuild();
   RunStartupTest("tab_warm_ref", true /* warm */, true /* not important */,
                  UITestBase::DEFAULT_THEME);
 }
 
 // FLAKY: http://crbug.com/69940
-TEST_F(NewTabUIStartupTest, FLAKY_PerfWarm) {
+TEST_F(NewTabUIStartupTest, DISABLED_PerfWarm) {
   RunStartupTest("tab_warm", true /* warm */, true /* not important */,
                  UITestBase::DEFAULT_THEME);
 }
 
 // FLAKY: http://crbug.com/69940
-TEST_F(NewTabUIStartupTest, FLAKY_ComplexThemeCold) {
+TEST_F(NewTabUIStartupTest, DISABLED_ComplexThemeCold) {
   RunStartupTest("tab_complex_theme_cold", false /* cold */,
                  false /* not important */,
                  UITestBase::COMPLEX_THEME);
 }
 
 // FLAKY: http://crbug.com/69940
-TEST_F(NewTabUIStartupTest, FLAKY_NewTabTimingTestsCold) {
+TEST_F(NewTabUIStartupTest, DISABLED_NewTabTimingTestsCold) {
   RunNewTabTimingTest();
 }
 

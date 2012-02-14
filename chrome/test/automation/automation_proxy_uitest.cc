@@ -413,7 +413,7 @@ TEST_F(AutomationProxyTest2, GetActiveTabIndex) {
 
 // http://crbug.com/98071
 #if defined(OS_MACOSX)
-#define MAYBE_GetTabTitle FLAKY_GetTabTitle
+#define MAYBE_GetTabTitle DISABLED_GetTabTitle
 #else
 #define MAYBE_GetTabTitle GetTabTitle
 #endif
@@ -516,7 +516,7 @@ TEST_F(AutomationProxyTest, AcceleratorDownloads) {
 
 // http://crbug.com/109642
 #if defined(OS_MACOSX)
-#define MAYBE_AcceleratorExtensions FLAKY_AcceleratorExtensions
+#define MAYBE_AcceleratorExtensions DISABLED_AcceleratorExtensions
 #else
 #define MAYBE_AcceleratorExtensions AcceleratorExtensions
 #endif
@@ -657,7 +657,7 @@ TEST_F(AutomationProxyTest3, FrameDocumentCanBeAccessed) {
 }
 
 // Flaky, http://crbug.com/70937
-TEST_F(AutomationProxyTest, FLAKY_BlockedPopupTest) {
+TEST_F(AutomationProxyTest, DISABLED_BlockedPopupTest) {
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(window.get());
 
@@ -919,7 +919,7 @@ ProxyLauncher* ExternalTabUITest::CreateProxyLauncher() {
 
 // Create with specifying a url
 // Flaky, http://crbug.com/32293
-TEST_F(ExternalTabUITest, FLAKY_CreateExternalTab1) {
+TEST_F(ExternalTabUITest, DISABLED_CreateExternalTab1) {
   scoped_refptr<TabProxy> tab;
   TimedMessageLoopRunner loop(MessageLoop::current());
   ASSERT_THAT(mock_, testing::NotNull());
@@ -942,7 +942,7 @@ TEST_F(ExternalTabUITest, FLAKY_CreateExternalTab1) {
 
 // Create with empty url and then navigate
 // Flaky, http://crbug.com/32293
-TEST_F(ExternalTabUITest, FLAKY_CreateExternalTab2) {
+TEST_F(ExternalTabUITest, DISABLED_CreateExternalTab2) {
   scoped_refptr<TabProxy> tab;
   TimedMessageLoopRunner loop(MessageLoop::current());
   ASSERT_THAT(mock_, testing::NotNull());
@@ -965,7 +965,7 @@ TEST_F(ExternalTabUITest, FLAKY_CreateExternalTab2) {
 }
 
 // FLAKY: http://crbug.com/60409
-TEST_F(ExternalTabUITest, FLAKY_IncognitoMode) {
+TEST_F(ExternalTabUITest, DISABLED_IncognitoMode) {
   scoped_refptr<TabProxy> tab;
   TimedMessageLoopRunner loop(MessageLoop::current());
   ASSERT_THAT(mock_, testing::NotNull());
@@ -1007,7 +1007,7 @@ TEST_F(ExternalTabUITest, FLAKY_IncognitoMode) {
 }
 
 // FLAKY: http://crbug.com/44617
-TEST_F(ExternalTabUITest, FLAKY_TabPostMessage) {
+TEST_F(ExternalTabUITest, DISABLED_TabPostMessage) {
   scoped_refptr<TabProxy> tab;
   TimedMessageLoopRunner loop(MessageLoop::current());
   ASSERT_THAT(mock_, testing::NotNull());
@@ -1051,7 +1051,7 @@ TEST_F(ExternalTabUITest, FLAKY_TabPostMessage) {
 }
 
 // Flaky: http://crbug.com/62143
-TEST_F(ExternalTabUITest, FLAKY_PostMessageTarget)  {
+TEST_F(ExternalTabUITest, DISABLED_PostMessageTarget)  {
   net::TestServer test_server(
       net::TestServer::TYPE_HTTP,
       FilePath(FILE_PATH_LITERAL("chrome/test/data/external_tab")));
@@ -1400,7 +1400,7 @@ TEST_F(ExternalTabUITestPopupEnabled, MAYBE_UserGestureTargetBlank) {
 #endif  // defined(OS_WIN)
 
 // Flaky especially on Windows. See crbug.com/25039.
-TEST_F(AutomationProxyTest, FLAKY_AppModalDialogTest) {
+TEST_F(AutomationProxyTest, DISABLED_AppModalDialogTest) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   scoped_refptr<TabProxy> tab(browser->GetTab(0));

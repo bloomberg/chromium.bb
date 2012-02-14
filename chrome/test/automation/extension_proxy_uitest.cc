@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -151,7 +151,7 @@ TEST_F(ExtensionProxyUITest, DISABLED_ExecuteBrowserActionInActiveTabAsync) {
 }
 
 // Flaky, http://crbug.com/59441.
-TEST_F(ExtensionProxyUITest, FLAKY_MoveBrowserAction) {
+TEST_F(ExtensionProxyUITest, DISABLED_MoveBrowserAction) {
   int action_index;
 
   scoped_refptr<ExtensionProxy> rename_tab_extension =
@@ -182,7 +182,7 @@ TEST_F(ExtensionProxyUITest, FLAKY_MoveBrowserAction) {
 }
 
 // Flaky, http://crbug.com/59440.
-TEST_F(ExtensionProxyUITest, FLAKY_GetProperty) {
+TEST_F(ExtensionProxyUITest, DISABLED_GetProperty) {
   std::string id;
   ASSERT_TRUE(simple_extension_->GetId(&id));
   ASSERT_EQ("aiglobglfckejlcpcbdokbkbjeemfhno", id);

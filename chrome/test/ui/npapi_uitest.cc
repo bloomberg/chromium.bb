@@ -104,7 +104,7 @@ TEST_F(NPAPITesterBase, GetJavaScriptURL2) {
 }
 
 // Test is flaky on linux/cros/win builders.  http://crbug.com/71904
-TEST_F(NPAPITesterBase, FLAKY_GetURLRedirectNotification) {
+TEST_F(NPAPITesterBase, DISABLED_GetURLRedirectNotification) {
   const FilePath test_case(FILE_PATH_LITERAL("geturl_redirect_notify.html"));
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
@@ -138,7 +138,7 @@ TEST_F(NPAPITesterBase, NPObjectProxy) {
 // a synchronous paint event works correctly
 // http://crbug.com/44960
 TEST_F(NPAPIVisiblePluginTester,
-       FLAKY_SelfDeletePluginInvokeInSynchronousPaint) {
+       DISABLED_SelfDeletePluginInvokeInSynchronousPaint) {
   show_window_ = true;
   const FilePath test_case(
       FILE_PATH_LITERAL("execute_script_delete_in_paint.html"));
@@ -165,7 +165,7 @@ TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInNewStream) {
 #if defined(OS_MACOSX)
 #define MAYBE_DeletePluginInDeallocate DISABLED_DeletePluginInDeallocate
 #elif defined(OS_WIN)
-#define MAYBE_DeletePluginInDeallocate FLAKY_DeletePluginInDeallocate
+#define MAYBE_DeletePluginInDeallocate DISABLED_DeletePluginInDeallocate
 #else
 #define MAYBE_DeletePluginInDeallocate DeletePluginInDeallocate
 #endif
@@ -274,7 +274,7 @@ TEST_F(NPAPIVisiblePluginTester, SelfDeleteCreatePluginInNPNEvaluate) {
 #if defined(OS_MACOSX)
 #define MAYBE_OpenPopupWindowWithPlugin DISABLED_OpenPopupWindowWithPlugin
 #else
-#define MAYBE_OpenPopupWindowWithPlugin FLAKY_OpenPopupWindowWithPlugin
+#define MAYBE_OpenPopupWindowWithPlugin DISABLED_OpenPopupWindowWithPlugin
 #endif
 
 TEST_F(NPAPIVisiblePluginTester, MAYBE_OpenPopupWindowWithPlugin) {
@@ -315,7 +315,7 @@ TEST_F(NPAPITesterBase, PluginThreadAsyncCall) {
 // Test checking the privacy mode is on.
 #if defined(OS_LINUX)
 // http://crbug.com/104380
-#define PrivateEnabled FLAKY_PrivateEnabled
+#define PrivateEnabled DISABLED_PrivateEnabled
 #endif
 TEST_F(NPAPIIncognitoTester, PrivateEnabled) {
   const FilePath test_case(FILE_PATH_LITERAL("private.html"));
@@ -384,7 +384,7 @@ TEST_F(NPAPITesterBase, NoHangIfInitCrashes) {
 
 #if defined(OS_MACOSX)
 // http://crbug.com/111508
-#define PluginReferrerTest FLAKY_PluginReferrerTest
+#define PluginReferrerTest DISABLED_PluginReferrerTest
 #endif
 TEST_F(NPAPIVisiblePluginTester, PluginReferrerTest) {
   GURL url(URLRequestMockHTTPJob::GetMockUrl(

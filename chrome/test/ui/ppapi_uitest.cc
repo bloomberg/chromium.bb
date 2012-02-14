@@ -347,7 +347,8 @@ class NaClTestEnableHardwareExceptions : public PPAPINaClTest {
 #if !defined(ADDRESS_SANITIZER)
 
 TEST_PPAPI_IN_PROCESS(Broker)
-TEST_PPAPI_OUT_OF_PROCESS(FLAKY_Broker)
+// Flaky, http://crbug.com/111355
+TEST_PPAPI_OUT_OF_PROCESS(DISABLED_Broker)
 
 TEST_PPAPI_IN_PROCESS(Core)
 TEST_PPAPI_OUT_OF_PROCESS(Core)
@@ -368,7 +369,7 @@ TEST_PPAPI_NACL_VIA_HTTP(MAYBE_CursorControl)
 #define MAYBE_InputEvent DISABLED_InputEvent
 #elif defined(OS_MACOSX)
 // Flaky on Mac. http://crbug.com/109258
-#define MAYBE_InputEvent FLAKY_InputEvent
+#define MAYBE_InputEvent DISABLED_InputEvent
 #else
 #define MAYBE_InputEvent InputEvent
 #endif
@@ -557,7 +558,7 @@ TEST_PPAPI_NACL_VIA_HTTP(PostMessage_NoHandler)
 // directly to blame for the flakiness. It's possible that it's a more general
 // problem that is exposing itself only with one of the later tests in this
 // series.
-TEST_PPAPI_NACL_VIA_HTTP(FLAKY_PostMessage_ExtraParam)
+TEST_PPAPI_NACL_VIA_HTTP(DISABLED_PostMessage_ExtraParam)
 #else
 TEST_PPAPI_NACL_VIA_HTTP(PostMessage_ExtraParam)
 #endif
@@ -656,8 +657,9 @@ TEST_PPAPI_NACL_VIA_HTTP(DISABLED_Fullscreen)
 TEST_PPAPI_IN_PROCESS(FlashClipboard)
 TEST_PPAPI_OUT_OF_PROCESS(FlashClipboard)
 
+// http://crbug.com/63239
 #if defined(OS_POSIX)
-#define MAYBE_DirectoryReader FLAKY_DirectoryReader
+#define MAYBE_DirectoryReader DISABLED_DirectoryReader
 #else
 #define MAYBE_DirectoryReader DirectoryReader
 #endif
@@ -729,7 +731,7 @@ TEST_PPAPI_OUT_OF_PROCESS(Flash_GetCommandLineArgs)
 
 // Intermittently fails on OSX. http://crbug.com/111636
 #if defined(OS_MACOSX)
-#define MAYBE_WebSocket_CcInterfaces FLAKY_WebSocket_CcInterfaces
+#define MAYBE_WebSocket_CcInterfaces DISABLED_WebSocket_CcInterfaces
 #else
 #define MAYBE_WebSocket_CcInterfaces WebSocket_CcInterfaces
 #endif

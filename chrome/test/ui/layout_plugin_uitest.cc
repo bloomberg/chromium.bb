@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,7 +48,7 @@ TEST_F(LayoutPluginTester, UnloadNoCrash) {
 // Tests if a plugin executing a self deleting script using NPN_GetURL
 // works without crashing or hanging
 // Flaky: http://crbug.com/59327
-TEST_F(LayoutPluginTester, FLAKY_SelfDeletePluginGetUrl) {
+TEST_F(LayoutPluginTester, DISABLED_SelfDeletePluginGetUrl) {
   const FilePath test_case(FILE_PATH_LITERAL("self_delete_plugin_geturl.html"));
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
@@ -60,7 +60,7 @@ TEST_F(LayoutPluginTester, FLAKY_SelfDeletePluginGetUrl) {
 // Tests if a plugin executing a self deleting script using Invoke
 // works without crashing or hanging
 // Flaky. See http://crbug.com/30702
-TEST_F(LayoutPluginTester, FLAKY_SelfDeletePluginInvoke) {
+TEST_F(LayoutPluginTester, DISABLED_SelfDeletePluginInvoke) {
   const FilePath test_case(FILE_PATH_LITERAL("self_delete_plugin_invoke.html"));
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));

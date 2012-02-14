@@ -343,7 +343,7 @@ void StartupTest::RunPerfTestWithManyTabs(const char* graph, const char* trace,
 
 // http://crbug.com/101591
 #if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_PerfFewTabs FLAKY_PerfFewTabs
+#define MAYBE_PerfFewTabs DISABLED_PerfFewTabs
 #else
 #define MAYBE_PerfFewTabs PerfFewTabs
 #endif
@@ -368,18 +368,18 @@ TEST_F(StartupTest, PerfRestoreFewTabsReference) {
 
 #if defined(OS_MACOSX)
 // http://crbug.com/46609
-#define MAYBE_PerfSeveralTabsReference FLAKY_PerfSeveralTabsReference
-#define MAYBE_PerfSeveralTabs FLAKY_PerfSeveralTabs
+#define MAYBE_PerfSeveralTabsReference DISABLED_PerfSeveralTabsReference
+#define MAYBE_PerfSeveralTabs DISABLED_PerfSeveralTabs
 // http://crbug.com/52858
-#define MAYBE_PerfRestoreSeveralTabs FLAKY_PerfRestoreSeveralTabs
-#define MAYBE_PerfExtensionContentScript50 FLAKY_PerfExtensionContentScript50
+#define MAYBE_PerfRestoreSeveralTabs DISABLED_PerfRestoreSeveralTabs
+#define MAYBE_PerfExtensionContentScript50 DISABLED_PerfExtensionContentScript50
 #elif defined(OS_WIN)
 // http://crbug.com/46609
 #if !defined(NDEBUG)
 // http://crbug.com/102584
 #define MAYBE_PerfSeveralTabs DISABLED_PerfSeveralTabs
 #else
-#define MAYBE_PerfSeveralTabs FLAKY_PerfSeveralTabs
+#define MAYBE_PerfSeveralTabs DISABLED_PerfSeveralTabs
 #endif
 #define MAYBE_PerfSeveralTabsReference PerfSeveralTabsReference
 #define MAYBE_PerfRestoreSeveralTabs PerfRestoreSeveralTabs
@@ -393,7 +393,7 @@ TEST_F(StartupTest, PerfRestoreFewTabsReference) {
 
 // http://crbug.com/99604
 #if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_PerfComplexTheme FLAKY_PerfComplexTheme
+#define MAYBE_PerfComplexTheme DISABLED_PerfComplexTheme
 #else
 #define MAYBE_PerfComplexTheme PerfComplexTheme
 #endif
