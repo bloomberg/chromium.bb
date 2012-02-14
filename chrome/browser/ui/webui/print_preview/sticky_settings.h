@@ -23,15 +23,11 @@ namespace printing {
 struct PageSizeMargins;
 }
 
-FORWARD_DECLARE_TEST_ALL_PREFIXES(PrintPreviewHandlerTest, StickyMarginsCustom);
-FORWARD_DECLARE_TEST_ALL_PREFIXES(PrintPreviewHandlerTest,
-                                  StickyMarginsDefault);
-FORWARD_DECLARE_TEST_ALL_PREFIXES(PrintPreviewHandlerTest,
-                                  StickyMarginsCustomThenDefault);
-FORWARD_DECLARE_TEST_ALL_PREFIXES(PrintPreviewHandlerTest,
-                                  GetLastUsedMarginSettingsCustom);
-FORWARD_DECLARE_TEST_ALL_PREFIXES(PrintPreviewHandlerTest,
-                                  GetLastUsedMarginSettingsDefault);
+FORWARD_DECLARE_TEST(PrintPreviewHandlerTest, StickyMarginsCustom);
+FORWARD_DECLARE_TEST(PrintPreviewHandlerTest, StickyMarginsDefault);
+FORWARD_DECLARE_TEST(PrintPreviewHandlerTest, StickyMarginsCustomThenDefault);
+FORWARD_DECLARE_TEST(PrintPreviewHandlerTest, GetLastUsedMarginSettingsCustom);
+FORWARD_DECLARE_TEST(PrintPreviewHandlerTest, GetLastUsedMarginSettingsDefault);
 
 namespace printing {
 
