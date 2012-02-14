@@ -45,6 +45,8 @@ cr.define('options', function() {
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 
+      window.addEventListener('message', this.handleWindowMessage_.bind(this));
+
       // Sync (Sign in) section.
       this.updateSyncState_(templateData.syncData);
 
@@ -230,6 +232,22 @@ cr.define('options', function() {
         $('old-startup-last-text').hidden = true;
         $('new-startup-last-text').hidden = false;
       }
+    },
+
+    /**
+     * @inheritDoc
+     */
+    didShowPage: function() {
+      $('search-field').focus();
+    },
+
+    /**
+     * Handler for messages sent from the main uber page.
+     * @param {Event} e
+     */
+    handleWindowMessage_: function(e) {
+      if (e.data.method == 'frameSelected')
+        $('search-field').focus();
     },
 
     /**
