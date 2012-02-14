@@ -76,11 +76,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "content/common/content_export.h"
+#include "content/renderer/media/audio_device_thread.h"
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/media/scoped_loop_observer.h"
 #include "media/audio/audio_parameters.h"
-
-class AudioDeviceThread;
 
 // TODO(henrika): This class is based on the AudioDevice class and it has
 // many components in common. Investigate potential for re-factoring.
@@ -167,8 +166,6 @@ class CONTENT_EXPORT AudioInputDevice
   void StartOnIOThread();
   void ShutDownOnIOThread();
   void SetVolumeOnIOThread(double volume);
-  // Closes socket and joins with the audio thread.
-  void ShutDownAudioThread();
 
   void Send(IPC::Message* message);
 
@@ -202,7 +199,7 @@ class CONTENT_EXPORT AudioInputDevice
   // Our audio thread callback class.  See source file for details.
   class AudioThreadCallback;
 
-  scoped_ptr<AudioDeviceThread> audio_thread_;
+  AudioDeviceThread audio_thread_;
   scoped_ptr<AudioInputDevice::AudioThreadCallback> audio_callback_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AudioInputDevice);

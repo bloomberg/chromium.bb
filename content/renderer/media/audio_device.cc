@@ -11,7 +11,6 @@
 #include "content/common/child_process.h"
 #include "content/common/media/audio_messages.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/media/audio_device_thread.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/audio/audio_output_controller.h"
 #include "media/audio/audio_util.h"
@@ -101,6 +100,9 @@ void AudioDevice::Start() {
 
 void AudioDevice::Stop() {
   DCHECK(!message_loop()->BelongsToCurrentThread());
+
+  audio_thread_.Stop(ChildProcess::current()->main_thread()->message_loop());
+
   message_loop()->PostTask(FROM_HERE,
       base::Bind(&AudioDevice::ShutDownOnIOThread, this));
 }
@@ -168,7 +170,6 @@ void AudioDevice::PauseOnIOThread(bool flush) {
 
 void AudioDevice::ShutDownOnIOThread() {
   DCHECK(message_loop()->BelongsToCurrentThread());
-  // NOTE: |signal| may be NULL.
 
   // Make sure we don't call shutdown more than once.
   if (stream_id_) {
@@ -177,9 +178,9 @@ void AudioDevice::ShutDownOnIOThread() {
     filter_->RemoveDelegate(stream_id_);
     Send(new AudioHostMsg_CloseStream(stream_id_));
     stream_id_ = 0;
-
-    ShutDownAudioThread();
   }
+
+  audio_callback_.reset();
 }
 
 void AudioDevice::SetVolumeOnIOThread(double volume) {
@@ -211,8 +212,6 @@ void AudioDevice::OnStreamCreated(
   DCHECK_GE(socket_handle, 0);
 #endif
 
-  DCHECK(!audio_thread_.get());
-
   // Takes care of the case when Stop() is called before OnStreamCreated().
   if (!stream_id_) {
     base::SharedMemory::CloseHandle(handle);
@@ -223,8 +222,7 @@ void AudioDevice::OnStreamCreated(
 
   audio_callback_.reset(new AudioDevice::AudioThreadCallback(audio_parameters_,
       handle, length, callback_));
-  audio_thread_.reset(new AudioDeviceThread());
-  audio_thread_->Start(audio_callback_.get(), socket_handle, "AudioDevice");
+  audio_thread_.Start(audio_callback_.get(), socket_handle, "AudioDevice");
 
   // We handle the case where Play() and/or Pause() may have been called
   // multiple times before OnStreamCreated() gets called.
@@ -235,16 +233,6 @@ void AudioDevice::OnStreamCreated(
 
 void AudioDevice::Send(IPC::Message* message) {
   filter_->Send(message);
-}
-
-void AudioDevice::ShutDownAudioThread() {
-  DCHECK(message_loop()->BelongsToCurrentThread());
-
-  if (audio_thread_.get()) {
-    audio_thread_->Stop(ChildProcess::current()->main_thread()->message_loop());
-    audio_thread_.reset();
-    audio_callback_.reset();
-  }
 }
 
 void AudioDevice::WillDestroyCurrentMessageLoop() {

@@ -70,12 +70,11 @@
 #include "base/message_loop.h"
 #include "base/shared_memory.h"
 #include "content/common/content_export.h"
+#include "content/renderer/media/audio_device_thread.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/scoped_loop_observer.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_renderer_sink.h"
-
-class AudioDeviceThread;
 
 class CONTENT_EXPORT AudioDevice
     : NON_EXPORTED_BASE(public media::AudioRendererSink),
@@ -147,9 +146,6 @@ class CONTENT_EXPORT AudioDevice
 
   void Send(IPC::Message* message);
 
-  // Closes socket and joins with the audio thread.
-  void ShutDownAudioThread();
-
   // MessageLoop::DestructionObserver implementation for the IO loop.
   // If the IO loop dies before we do, we shut down the audio thread from here.
   virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
@@ -180,7 +176,7 @@ class CONTENT_EXPORT AudioDevice
   // Our audio thread callback class.  See source file for details.
   class AudioThreadCallback;
 
-  scoped_ptr<AudioDeviceThread> audio_thread_;
+  AudioDeviceThread audio_thread_;
   scoped_ptr<AudioDevice::AudioThreadCallback> audio_callback_;
 
 

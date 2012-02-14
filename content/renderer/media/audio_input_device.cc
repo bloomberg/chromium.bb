@@ -11,7 +11,6 @@
 #include "content/common/child_process.h"
 #include "content/common/media/audio_messages.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/media/audio_device_thread.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_util.h"
@@ -89,6 +88,8 @@ void AudioInputDevice::Stop() {
   DCHECK(!message_loop()->BelongsToCurrentThread());
   DVLOG(1) << "Stop()";
 
+  audio_thread_.Stop(ChildProcess::current()->main_thread()->message_loop());
+
   message_loop()->PostTask(FROM_HERE,
       base::Bind(&AudioInputDevice::ShutDownOnIOThread, this));
 }
@@ -142,12 +143,11 @@ void AudioInputDevice::ShutDownOnIOThread() {
     filter_->RemoveDelegate(stream_id_);
     Send(new AudioInputHostMsg_CloseStream(stream_id_));
 
-    ShutDownAudioThread();
-
     stream_id_ = 0;
     session_id_ = 0;
     pending_device_ready_ = false;
   }
+  audio_callback_.reset();
 }
 
 void AudioInputDevice::SetVolumeOnIOThread(double volume) {
@@ -169,7 +169,6 @@ void AudioInputDevice::OnStreamCreated(
   DCHECK_GE(socket_handle, 0);
 #endif
   DCHECK(length);
-  DCHECK(!audio_thread_.get());
   DVLOG(1) << "OnStreamCreated (stream_id=" << stream_id_ << ")";
 
   // Takes care of the case when Stop() is called before OnStreamCreated().
@@ -183,8 +182,7 @@ void AudioInputDevice::OnStreamCreated(
   audio_callback_.reset(
       new AudioInputDevice::AudioThreadCallback(audio_parameters_, handle,
                                                 length, callback_));
-  audio_thread_.reset(new AudioDeviceThread());
-  audio_thread_->Start(audio_callback_.get(), socket_handle,
+  audio_thread_.Start(audio_callback_.get(), socket_handle,
                        "AudioInputDevice");
 
   MessageLoop::current()->PostTask(FROM_HERE,
@@ -209,7 +207,9 @@ void AudioInputDevice::OnStateChanged(AudioStreamState state) {
 
       filter_->RemoveDelegate(stream_id_);
 
-      ShutDownAudioThread();
+      audio_thread_.Stop(
+          ChildProcess::current()->main_thread()->message_loop());
+      audio_callback_.reset();
 
       if (event_handler_)
         event_handler_->OnDeviceStopped();
@@ -257,16 +257,6 @@ void AudioInputDevice::OnDeviceReady(const std::string& device_id) {
 
 void AudioInputDevice::Send(IPC::Message* message) {
   filter_->Send(message);
-}
-
-void AudioInputDevice::ShutDownAudioThread() {
-  DCHECK_EQ(MessageLoop::current(), ChildProcess::current()->io_message_loop());
-
-  if (audio_thread_.get()) {
-    audio_thread_->Stop(ChildProcess::current()->main_thread()->message_loop());
-    audio_thread_.reset();
-    audio_callback_.reset();
-  }
 }
 
 void AudioInputDevice::WillDestroyCurrentMessageLoop() {
