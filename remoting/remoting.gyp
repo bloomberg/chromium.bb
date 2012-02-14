@@ -906,7 +906,6 @@
       'dependencies': [
         'remoting_base',
         'remoting_client',
-        'remoting_host',
         'remoting_jingle_glue',
         'remoting_protocol',
         '../base/base.gyp:base',
@@ -939,22 +938,6 @@
         'host/capturer_linux_unittest.cc',
         'host/capturer_mac_unittest.cc',
         'host/capturer_win_unittest.cc',
-        'host/chromoting_host_context_unittest.cc',
-        'host/chromoting_host_unittest.cc',
-        'host/client_session_unittest.cc',
-        'host/differ_block_unittest.cc',
-        'host/differ_unittest.cc',
-        'host/heartbeat_sender_unittest.cc',
-        'host/host_key_pair_unittest.cc',
-        'host/host_mock_objects.cc',
-        'host/host_mock_objects.h',
-        'host/it2me_host_user_interface.cc',
-        'host/it2me_host_user_interface.h',
-        'host/json_host_config_unittest.cc',
-        'host/log_to_server_unittest.cc',
-        'host/register_support_host_request_unittest.cc',
-        'host/screen_recorder_unittest.cc',
-        'host/server_log_entry_unittest.cc',
         'host/test_key_pair.h',
         'jingle_glue/fake_signal_strategy.cc',
         'jingle_glue/fake_signal_strategy.h',
@@ -989,6 +972,29 @@
         'run_all_unittests.cc',
       ],
       'conditions': [
+        ['chromeos == 0', {
+          'dependencies': [
+            'remoting_host'
+          ],
+          'sources': [
+            'host/chromoting_host_context_unittest.cc',
+            'host/chromoting_host_unittest.cc',
+            'host/client_session_unittest.cc',
+            'host/differ_block_unittest.cc',
+            'host/differ_unittest.cc',
+            'host/heartbeat_sender_unittest.cc',
+            'host/host_key_pair_unittest.cc',
+            'host/host_mock_objects.cc',
+            'host/host_mock_objects.h',
+            'host/it2me_host_user_interface.cc',
+            'host/it2me_host_user_interface.h',
+            'host/json_host_config_unittest.cc',
+            'host/log_to_server_unittest.cc',
+            'host/register_support_host_request_unittest.cc',
+            'host/screen_recorder_unittest.cc',
+            'host/server_log_entry_unittest.cc',
+          ]
+        }],
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             # Needed for the following #include chain:
