@@ -507,6 +507,50 @@ TEST_F(ShortcutsProviderTest, ClassifyAllMatchesInString) {
                                                     string16(),
                                                     ACMatchClassifications());
   ASSERT_EQ(0U, spans_j.size());
+
+  // Matches which end at beginning of classification merge properly.
+  data = ASCIIToUTF16("html password example");
+  matches.clear();
+  matches.push_back(ACMatchClassification(0, ACMatchClassification::DIM));
+  matches.push_back(ACMatchClassification(9, ACMatchClassification::NONE));
+  ACMatchClassifications spans_k =
+      ShortcutsProvider::ClassifyAllMatchesInString(ASCIIToUTF16("html pass"),
+                                                    data,
+                                                    matches);
+  ASSERT_EQ(4U, spans_k.size());
+  EXPECT_EQ(0U, spans_k[0].offset);
+  EXPECT_EQ(ACMatchClassification::DIM | ACMatchClassification::MATCH,
+            spans_k[0].style);
+  EXPECT_EQ(4U, spans_k[1].offset);
+  EXPECT_EQ(ACMatchClassification::DIM, spans_k[1].style);
+  EXPECT_EQ(5U, spans_k[2].offset);
+  EXPECT_EQ(ACMatchClassification::DIM | ACMatchClassification::MATCH,
+            spans_k[2].style);
+  EXPECT_EQ(9U, spans_k[3].offset);
+  EXPECT_EQ(ACMatchClassification::NONE, spans_k[3].style);
+
+  // Multiple matches with both beginning and end at beginning of
+  // classifications merge properly.
+  data = ASCIIToUTF16("http://a.co is great");
+  matches.clear();
+  matches.push_back(ACMatchClassification(0, ACMatchClassification::URL));
+  matches.push_back(ACMatchClassification(11, ACMatchClassification::NONE));
+  ACMatchClassifications spans_l =
+      ShortcutsProvider::ClassifyAllMatchesInString(ASCIIToUTF16("ht co"),
+                                                    data,
+                                                    matches);
+  ASSERT_EQ(4U, spans_l.size());
+  EXPECT_EQ(0U, spans_l[0].offset);
+  EXPECT_EQ(ACMatchClassification::URL | ACMatchClassification::MATCH,
+            spans_l[0].style);
+  EXPECT_EQ(2U, spans_l[1].offset);
+  EXPECT_EQ(ACMatchClassification::URL, spans_l[1].style);
+  EXPECT_EQ(9U, spans_l[2].offset);
+  EXPECT_EQ(ACMatchClassification::URL | ACMatchClassification::MATCH,
+            spans_l[2].style);
+  EXPECT_EQ(11U, spans_l[3].offset);
+  EXPECT_EQ(ACMatchClassification::NONE, spans_l[3].style);
+
 }
 
 TEST_F(ShortcutsProviderTest, CalculateScore) {

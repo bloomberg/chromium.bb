@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,7 +79,7 @@ ACMatchClassifications SpansFromString(const string16& value);
 // Adds match at the end if and only if its style is different from the last
 // match.
 void AddLastMatchIfNeeded(ACMatchClassifications* matches,
-                          int position,
+                          size_t position,
                           int style);
 }  // namespace shortcuts_provider
 

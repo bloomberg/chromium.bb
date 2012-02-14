@@ -177,13 +177,13 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
 ACMatchClassifications ShortcutsProvider::ClassifyAllMatchesInString(
     const string16& find_text,
     const string16& text,
-    const ACMatchClassifications& original_matches) {
+    const ACMatchClassifications& original_class) {
   DCHECK(!find_text.empty());
 
   base::i18n::BreakIterator term_iter(find_text,
                                       base::i18n::BreakIterator::BREAK_WORD);
   if (!term_iter.Init())
-    return original_matches;
+    return original_class;
 
   std::vector<string16> terms;
   while (term_iter.Advance()) {
@@ -195,12 +195,13 @@ ACMatchClassifications ShortcutsProvider::ClassifyAllMatchesInString(
   std::sort(terms.begin(), terms.end());
 
   // Find the earliest match of any word in |find_text| in the |text|. Add to
-  // |matches|. Move pointer after match. Repeat until all matches are found.
+  // |match_class|. Move pointer after match. Repeat until all matches are
+  // found.
   string16 text_lowercase(base::i18n::ToLower(text));
-  ACMatchClassifications matches;
-  // |matches| should start at the position 0, if the matched text start from
-  // the position 0, this will be poped from the vector further down.
-  matches.push_back(ACMatchClassification(0, ACMatchClassification::NONE));
+  ACMatchClassifications match_class;
+  // |match_class| should start at the position 0, if the matched text start
+  // from the position 0, this will be popped from the vector further down.
+  match_class.push_back(ACMatchClassification(0, ACMatchClassification::NONE));
   for (size_t last_position = 0; last_position < text_lowercase.length();) {
     size_t match_start = text_lowercase.length();
     size_t match_end = last_position;
@@ -219,34 +220,37 @@ ACMatchClassifications ShortcutsProvider::ClassifyAllMatchesInString(
       break;
 
     // Collapse adjacent ranges into one.
-    if (!matches.empty() && matches.back().offset == match_start)
-      matches.pop_back();
+    if (!match_class.empty() && match_class.back().offset == match_start)
+      match_class.pop_back();
 
-    shortcuts_provider::AddLastMatchIfNeeded(&matches, match_start,
+    shortcuts_provider::AddLastMatchIfNeeded(&match_class, match_start,
                                              ACMatchClassification::MATCH);
     if (match_end < text_lowercase.length()) {
-      shortcuts_provider::AddLastMatchIfNeeded(&matches, match_end,
+      shortcuts_provider::AddLastMatchIfNeeded(&match_class, match_end,
                                                ACMatchClassification::NONE);
     }
 
     last_position = match_end;
   }
 
-  // Merge matches with highlight data.
-  if (matches.empty())
-    return original_matches;
+  // Merge match-marking data with original classifications.
+  if (match_class.empty())
+    return original_class;
 
   ACMatchClassifications output;
-  for (ACMatchClassifications::const_iterator i = original_matches.begin(),
-       j = matches.begin(); i != original_matches.end();) {
+  for (ACMatchClassifications::const_iterator i = original_class.begin(),
+       j = match_class.begin(); i != original_class.end();) {
     shortcuts_provider::AddLastMatchIfNeeded(&output,
                                              std::max(i->offset, j->offset),
                                              i->style | j->style);
-    if ((j + 1) == matches.end() || (((i + 1) != original_matches.end()) &&
-        ((j + 1)->offset > (i + 1)->offset)))
-      ++i;
-    else
+    const size_t next_i_offset = (i + 1) == original_class.end() ?
+        static_cast<size_t>(-1) : (i + 1)->offset;
+    const size_t next_j_offset = (j + 1) == match_class.end() ?
+        static_cast<size_t>(-1) : (j + 1)->offset;
+    if (next_i_offset >= next_j_offset)
       ++j;
+    if (next_j_offset >= next_i_offset)
+      ++i;
   }
 
   return output;

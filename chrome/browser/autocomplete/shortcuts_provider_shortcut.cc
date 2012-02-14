@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "chrome/browser/autocomplete/shortcuts_provider_shortcut.h"
@@ -117,11 +117,14 @@ ACMatchClassifications SpansFromString(const string16& value) {
 // Adds match at the end if and only if its style is different from the last
 // match.
 void AddLastMatchIfNeeded(ACMatchClassifications* matches,
-                          int position,
+                          size_t position,
                           int style) {
   DCHECK(matches);
-  if (matches->empty() || matches->back().style != style)
+  if (matches->empty() || matches->back().style != style) {
+    if (!matches->empty())
+      DCHECK_GT(position, matches->back().offset);
     matches->push_back(ACMatchClassification(position, style));
+  }
 }
 
 }  // namespace shortcuts_provider

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -154,7 +154,7 @@ void AutocompleteMatch::ClassifyLocationInString(
   }
   // Classifying an empty match makes no sense and will lead to validation
   // errors later.
-  DCHECK(match_length > 0);
+  DCHECK_GT(match_length, 0U);
   classification->push_back(ACMatchClassification(match_location,
       (style | ACMatchClassification::MATCH) & ~ACMatchClassification::DIM));
 
@@ -190,8 +190,9 @@ void AutocompleteMatch::ValidateClassifications(
   }
 
   // The classifications should always cover the whole string.
-  DCHECK(!classifications.empty()) << "No classification for text";
-  DCHECK(classifications[0].offset == 0) << "Classification misses beginning";
+  DCHECK(!classifications.empty()) << "No classification for \"" << text << '"';
+  DCHECK_EQ(0U, classifications[0].offset)
+      << "Classification misses beginning for \"" << text << '"';
   if (classifications.size() == 1)
     return;
 
@@ -199,8 +200,10 @@ void AutocompleteMatch::ValidateClassifications(
   size_t last_offset = classifications[0].offset;
   for (ACMatchClassifications::const_iterator i(classifications.begin() + 1);
        i != classifications.end(); ++i) {
-    DCHECK(i->offset > last_offset) << "Classification unsorted";
-    DCHECK(i->offset < text.length()) << "Classification out of bounds";
+    DCHECK_GT(i->offset, last_offset)
+        << "Classification unsorted for \"" << text << '"';
+    DCHECK_LT(i->offset, text.length())
+        << "Classification out of bounds for \"" << text << '"';
     last_offset = i->offset;
   }
 }
