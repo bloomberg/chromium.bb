@@ -155,6 +155,8 @@ void AdvancedOptionsHandler::GetLocalizedValues(
 #else
       IDS_OPTIONS_LANGUAGE_AND_SPELLCHECK_BUTTON },
 #endif
+    { "advancedSectionBackButton",
+      IDS_OPTIONS_ADVANCED_SECTION_BACK_BUTTON },
     { "advancedSectionTitlePrivacy",
       IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY },
     { "advancedSectionTitleContent",

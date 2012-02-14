@@ -28,6 +28,9 @@ cr.define('options', function() {
       // Call base class implementation to starts preference initialization.
       OptionsPage.prototype.initializePage.call(this);
 
+      $('advanced-section-back-button').onclick =
+          OptionsPage.navigateToPage.bind(OptionsPage, this.parentPage.name);
+
       // Date and time section (CrOS only).
       if (cr.isChromeOS && AccountsOptions.loggedInAsGuest()) {
         // Disable time-related settings if we're not logged in as a real user.

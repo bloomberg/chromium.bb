@@ -171,7 +171,7 @@ html[touch-optimized] body {
   background-image: url('../../../../ui/resources/close_bar.png');
   height: 16px;
   min-width: 0;
-  position: relative;
+  position: fixed;
   top: 16px;
   width: 16px;
 }
@@ -185,12 +185,10 @@ html[touch-optimized] body {
 }
 
 html[dir='ltr'] .close-subpage {
-  float: right;
   right: 20px;
 }
 
 html[dir='rtl'] .close-subpage {
-  float: left;
   left: 20px;
 }
 

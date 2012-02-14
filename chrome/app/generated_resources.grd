@@ -9806,6 +9806,11 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Choose Another Directory...
       </message>
 
+      <!-- Advanced subpage back button -->
+      <message name="IDS_OPTIONS_ADVANCED_SECTION_BACK_BUTTON">
+        Return to settings...
+      </message>
+
       <!-- Advanced Section Titles -->
       <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY">
         Privacy
