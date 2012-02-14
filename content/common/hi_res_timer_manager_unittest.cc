@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
-TEST(HiResTimerManagerTest, FLAKY_ToggleOnOff) {
+// http://crbug.com/114048
+TEST(HiResTimerManagerTest, DISABLED_ToggleOnOff) {
   MessageLoop loop;
   scoped_ptr<base::SystemMonitor> system_monitor(new base::SystemMonitor());
   HighResolutionTimerManager manager;

@@ -247,12 +247,10 @@ TEST_F(DeviceOrientationProviderTest, MultipleObserversPushTest) {
   provider_->RemoveObserver(checker_c.get());
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_WIN)
 // Flakily DCHECKs on Linux. See crbug.com/104950.
-#define MAYBE_ObserverNotRemoved DISABLED_ObserverNotRemoved
-#elif defined(OS_WIN)
 // FLAKY on Win. See crbug.com/104950.
-#define MAYBE_ObserverNotRemoved FLAKY_ObserverNotRemoved
+#define MAYBE_ObserverNotRemoved DISABLED_ObserverNotRemoved
 #else
 #define MAYBE_ObserverNotRemoved ObserverNotRemoved
 #endif
@@ -278,7 +276,7 @@ TEST_F(DeviceOrientationProviderTest, MAYBE_ObserverNotRemoved) {
 
 #if defined(OS_WIN)
 // FLAKY on Win. See crbug.com/104950.
-#define MAYBE_StartFailing FLAKY_StartFailing
+#define MAYBE_StartFailing DISABLED_StartFailing
 #else
 #define MAYBE_StartFailing StartFailing
 #endif

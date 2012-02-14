@@ -185,7 +185,7 @@ TEST_F(WorkerTest, SingleSharedWorker) {
 
 // Flaky on Win XP only.  http://crbug.com/96435
 #if defined(OS_WIN)
-#define MultipleSharedWorkers FLAKY_MultipleSharedWorkers
+#define MultipleSharedWorkers DISABLED_MultipleSharedWorkers
 #endif
 TEST_F(WorkerTest, MultipleSharedWorkers) {
   RunTest(FilePath(FILE_PATH_LITERAL("multi_worker.html")), "shared=true");
@@ -193,7 +193,7 @@ TEST_F(WorkerTest, MultipleSharedWorkers) {
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
 // http://crbug.com/80446
-#define DISABLED_TerminateQueuedWorkers FLAKY_TerminateQueuedWorkers
+#define DISABLED_TerminateQueuedWorkers DISABLED_TerminateQueuedWorkers
 #endif
 TEST_F(WorkerTest, DISABLED_TerminateQueuedWorkers) {
   ASSERT_TRUE(WaitForProcessCountToBe(1, 0));
@@ -204,7 +204,7 @@ TEST_F(WorkerTest, DISABLED_TerminateQueuedWorkers) {
 
 #if defined(OS_LINUX)
 // http://crbug.com/30021
-#define IncognitoSharedWorkers FLAKY_IncognitoSharedWorkers
+#define IncognitoSharedWorkers DISABLED_IncognitoSharedWorkers
 #endif
 // Incognito windows should not share workers with non-incognito windows
 TEST_F(WorkerTest, IncognitoSharedWorkers) {
@@ -260,7 +260,7 @@ TEST_F(WorkerTest, DISABLED_WorkerClonePort) {
 }
 
 // http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
-TEST_F(WorkerTest, FLAKY_WorkerContextMultiPort) {
+TEST_F(WorkerTest, DISABLED_WorkerContextMultiPort) {
   RunWorkerFastLayoutTest("worker-context-multi-port.html");
 }
 
@@ -273,7 +273,7 @@ TEST_F(WorkerTest, WorkerMessagePortGC) {
 }
 
 // http://crbug.com/101996 (started flaking with WebKit roll 98537:98582).
-TEST_F(WorkerTest, FLAKY_WorkerMultiPort) {
+TEST_F(WorkerTest, DISABLED_WorkerMultiPort) {
   RunWorkerFastLayoutTest("worker-multi-port.html");
 }
 
@@ -442,7 +442,7 @@ TEST_F(WorkerTest, DISABLED_WorkerXhrHttpLayoutTests) {
 }
 
 // Flaky, http://crbug.com/34996.
-TEST_F(WorkerTest, FLAKY_MessagePorts) {
+TEST_F(WorkerTest, DISABLED_MessagePorts) {
   static const char* kLayoutTestFiles[] = {
     "message-channel-gc.html",
     "message-channel-gc-2.html",
@@ -477,14 +477,9 @@ TEST_F(WorkerTest, FLAKY_MessagePorts) {
     RunLayoutTest(kLayoutTestFiles[i], kNoHttpPort);
 }
 
-#if defined(OS_MACOSX)
-// See http://crbug.com/48664
-#define MAYBE_LimitPerPage DISABLED_LimitPerPage
-#else
-// See http://crbug.com/36800 for Windows/Linux
-#define MAYBE_LimitPerPage FLAKY_LimitPerPage
-#endif
-TEST_F(WorkerTest, MAYBE_LimitPerPage) {
+// OS X: http://crbug.com/48664
+// Windows/Linux: http://crbug.com/36800
+TEST_F(WorkerTest, DISABLED_LimitPerPage) {
   int max_workers_per_tab = WorkerServiceImpl::kMaxWorkersPerTabWhenSeparate;
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir),
                                        FilePath(kManyWorkersFile));
@@ -530,7 +525,7 @@ TEST_F(WorkerTest, DISABLED_LimitTotal) {
 }
 
 // Flaky, http://crbug.com/59786.
-TEST_F(WorkerTest, FLAKY_WorkerClose) {
+TEST_F(WorkerTest, DISABLED_WorkerClose) {
   scoped_refptr<TabProxy> tab(GetActiveTab());
   ASSERT_TRUE(tab.get());
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir),
@@ -543,7 +538,7 @@ TEST_F(WorkerTest, FLAKY_WorkerClose) {
 }
 
 // Flaky, http://crbug.com/70861.
-TEST_F(WorkerTest, FLAKY_QueuedSharedWorkerShutdown) {
+TEST_F(WorkerTest, DISABLED_QueuedSharedWorkerShutdown) {
   // Tests to make sure that queued shared workers are started up when
   // shared workers shut down.
   int max_workers_per_tab = WorkerServiceImpl::kMaxWorkersPerTabWhenSeparate;
@@ -561,7 +556,7 @@ TEST_F(WorkerTest, FLAKY_QueuedSharedWorkerShutdown) {
 }
 
 // Flaky, http://crbug.com/69881.
-TEST_F(WorkerTest, FLAKY_MultipleTabsQueuedSharedWorker) {
+TEST_F(WorkerTest, DISABLED_MultipleTabsQueuedSharedWorker) {
   // Tests to make sure that only one instance of queued shared workers are
   // started up even when those instances are on multiple tabs.
   int max_workers_per_tab = WorkerServiceImpl::kMaxWorkersPerTabWhenSeparate;
@@ -595,7 +590,7 @@ TEST_F(WorkerTest, FLAKY_MultipleTabsQueuedSharedWorker) {
 }
 
 // Flaky: http://crbug.com/48148
-TEST_F(WorkerTest, FLAKY_QueuedSharedWorkerStartedFromOtherTab) {
+TEST_F(WorkerTest, DISABLED_QueuedSharedWorkerStartedFromOtherTab) {
   // Tests to make sure that queued shared workers are started up when
   // an instance is launched from another tab.
   int max_workers_per_tab = WorkerServiceImpl::kMaxWorkersPerTabWhenSeparate;
@@ -705,7 +700,7 @@ TEST_F(WorkerFileSystemTest, SyncPersistent) {
 }
 
 // http://crbug.com/113510
-TEST_F(WorkerFileSystemTest, FLAKY_AsyncOperations) {
+TEST_F(WorkerFileSystemTest, DISABLED_AsyncOperations) {
   RunWorkerFileSystemLayoutTest("async-operations.html");
 }
 
@@ -718,7 +713,7 @@ TEST_F(WorkerFileSystemTest, FileEntryToURISync) {
 }
 
 // http://crbug.com/77442
-TEST_F(WorkerFileSystemTest, FLAKY_ResolveURLHttpTests) {
+TEST_F(WorkerFileSystemTest, DISABLED_ResolveURLHttpTests) {
   static const char* kLayoutTests[] = {
     "resolve-url.html",
     "resolve-url-sync.html"
@@ -732,7 +727,7 @@ TEST_F(WorkerFileSystemTest, FLAKY_ResolveURLHttpTests) {
 #define FileFromFileEntry DISABLED_FileFromFileEntry
 #else
 // http://crbug.com/101996
-#define FileFromFileEntry FLAKY_FileFromFileEntry
+#define FileFromFileEntry DISABLED_FileFromFileEntry
 #endif
 TEST_F(WorkerFileSystemTest, FileFromFileEntry) {
   RunWorkerFileSystemLayoutTest("file-from-file-entry.html");

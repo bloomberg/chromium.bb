@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -124,7 +124,7 @@ bool RendererAccessibilityBrowserTest::GetBoolAttr(
 
 // Marked flaky per http://crbug.com/101984
 IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
-                       FLAKY_CrossPlatformWebpageAccessibility) {
+                       DISABLED_CrossPlatformWebpageAccessibility) {
   // Create a data url and load it.
   const char url_str[] =
       "data:text/html,"

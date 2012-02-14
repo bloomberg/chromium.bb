@@ -104,7 +104,7 @@ TEST_F(ResourceDispatcherTest, SyncXMLHttpRequest) {
 }
 
 // http://code.google.com/p/chromium/issues/detail?id=62776
-TEST_F(ResourceDispatcherTest, FLAKY_SyncXMLHttpRequest_Disallowed) {
+TEST_F(ResourceDispatcherTest, DISABLED_SyncXMLHttpRequest_Disallowed) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(test_server.Start());
@@ -229,7 +229,7 @@ TEST_F(ResourceDispatcherTest, CrossSiteImmediateLoadOnunloadCookie) {
 
 #if defined(OS_WIN)
 // Seems to fail sometimes on Windows: http://crbug.com/80596
-#define MAYBE_CrossSiteNoUnloadOn204 FLAKY_CrossSiteNoUnloadOn204
+#define MAYBE_CrossSiteNoUnloadOn204 DISABLED_CrossSiteNoUnloadOn204
 #else
 #define MAYBE_CrossSiteNoUnloadOn204 CrossSiteNoUnloadOn204
 #endif
@@ -320,7 +320,7 @@ TEST_F(ResourceDispatcherTest, CrossSiteNavigationNonBuffered) {
 // doctor page) still runs the onunload handler and can support navigations
 // away from the link doctor page.  (Bug 1235537)
 // Flaky: http://crbug.com/100823
-TEST_F(ResourceDispatcherTest, FLAKY_CrossSiteNavigationErrorPage) {
+TEST_F(ResourceDispatcherTest, DISABLED_CrossSiteNavigationErrorPage) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(test_server.Start());

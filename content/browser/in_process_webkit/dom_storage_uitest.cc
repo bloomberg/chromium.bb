@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,7 +105,7 @@ TEST_F(DOMStorageTest, FAILS_RootLayoutTests) {
 }
 
 // Flakily fails on all platforms.  http://crbug.com/102641
-TEST_F(DOMStorageTest, FLAKY_EventLayoutTests) {
+TEST_F(DOMStorageTest, DISABLED_EventLayoutTests) {
   InitializeForLayoutTest(test_dir_, FilePath().AppendASCII("events"),
                           kNoHttpPort);
   AddJSTestResources();
@@ -191,7 +191,7 @@ TEST_F(DomStorageEmptyDatabaseTest, EmptyDirAfterGet) {
 }
 
 // Flaky, see http://crbug.com/73776
-TEST_F(DomStorageEmptyDatabaseTest, FLAKY_NonEmptyDirAfterSet) {
+TEST_F(DomStorageEmptyDatabaseTest, DISABLED_NonEmptyDirAfterSet) {
   NavigateToURL(TestUrl());
   ASSERT_TRUE(StorageDirIsEmpty());
 

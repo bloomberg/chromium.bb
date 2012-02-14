@@ -102,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, TransactionTest) {
 }
 
 // Flaky: http://crbug.com/70773
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, FLAKY_DoesntHangTest) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_DoesntHangTest) {
   SimpleTest(testUrl(FilePath(
       FILE_PATH_LITERAL("transaction_run_forever.html"))));
   ui_test_utils::CrashTab(browser()->GetSelectedWebContents());
