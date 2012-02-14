@@ -102,10 +102,10 @@ TEST_F(CWSIntentsRegistryTest, ValidQuery) {
   test_factory_.SetFakeResponse(kCWSQueryValid, kCWSResponseValid, true);
 
   CWSIntentsRegistry registry(&context_getter);
-  registry.GetIntentProviders(ASCIIToUTF16("http://webintents.org/edit"),
-                              ASCIIToUTF16("*/png"),
-                              base::Bind(&CWSIntentsRegistryTest::Callback,
-                                         base::Unretained(this)));
+  registry.GetIntentServices(ASCIIToUTF16("http://webintents.org/edit"),
+                             ASCIIToUTF16("*/png"),
+                             base::Bind(&CWSIntentsRegistryTest::Callback,
+                                        base::Unretained(this)));
 
   WaitForResults();
   ASSERT_EQ(1UL, extensions_.size());
@@ -121,12 +121,11 @@ TEST_F(CWSIntentsRegistryTest, InvalidQuery) {
   test_factory_.SetFakeResponse(kCWSQueryInvalid, kCWSResponseInvalid, true);
 
   CWSIntentsRegistry registry(&context_getter);
-  registry.GetIntentProviders(ASCIIToUTF16("foo"),
-                              ASCIIToUTF16("foo"),
-                              base::Bind(&CWSIntentsRegistryTest::Callback,
-                                         base::Unretained(this)));
+  registry.GetIntentServices(ASCIIToUTF16("foo"),
+                             ASCIIToUTF16("foo"),
+                             base::Bind(&CWSIntentsRegistryTest::Callback,
+                                        base::Unretained(this)));
 
   WaitForResults();
   EXPECT_EQ(0UL, extensions_.size());
 }
-

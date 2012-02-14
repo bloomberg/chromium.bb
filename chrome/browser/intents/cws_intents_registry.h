@@ -31,19 +31,19 @@ class CWSIntentsRegistry : public ProfileKeyedService,
     GURL icon_url;  // Where to retrieve an icon for this intent.
   };
 
-  // List of Intent extensions, as returned by GetIntentProviders's |callback|
+  // List of Intent extensions, as returned by GetIntentServices's |callback|
   typedef std::vector<IntentExtensionInfo> IntentExtensionList;
-  // Callback to return results from GetIntentProviders upon completion.
+  // Callback to return results from GetIntentServices upon completion.
   typedef base::Callback<void(const IntentExtensionList&)> ResultsCallback;
 
-  // Requests all intent providers matching |action| and |mimetype|.
+  // Requests all intent services matching |action| and |mimetype|.
   // |mimetype| must conform to definition as outlined for
-  // WebIntentsRegistry::GetIntentProviders.
+  // WebIntentsRegistry::GetIntentServices.
   // |callback| will be invoked upon retrieving results from CWS, returning
   // a list of matching Intent extensions.
-  void GetIntentProviders(const string16& action,
-                          const string16& mimetype,
-                          const ResultsCallback& callback);
+  void GetIntentServices(const string16& action,
+                         const string16& mimetype,
+                         const ResultsCallback& callback);
 
  private:
   // Make sure that only CWSIntentsRegistryFactory can create an instance of

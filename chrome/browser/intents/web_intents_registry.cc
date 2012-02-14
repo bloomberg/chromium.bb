@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,7 @@ namespace {
 // |type1| and |type2|. Wild cards are of the form '<type>/*' or '*'.
 bool MimeTypesAreEqual(const string16& type1, const string16& type2) {
   // We don't have a MIME matcher that allows patterns on both sides
-  // Instead, we do two comparison, treating each type in turn as a
+  // Instead, we do two comparisons, treating each type in turn as a
   // pattern. If either one matches, we consider this a MIME match.
   if (net::MatchesMimeType(UTF16ToUTF8(type1), UTF16ToUTF8(type2)))
     return true;
@@ -38,10 +38,10 @@ struct WebIntentsRegistry::IntentsQuery {
   Consumer* consumer_;
 
   // The particular action to filter for while searching through extensions.
-  // If |action_| is empty, return all extension-provided intents.
+  // If |action_| is empty, return all extension-provided services.
   string16 action_;
 
-  // The MIME type that was requested for this intent query.
+  // The MIME type that was requested for this service query.
   // Suppports wild cards.
   string16 type_;
 };
@@ -79,15 +79,16 @@ void WebIntentsRegistry::OnWebDataServiceRequestDone(
   IntentServiceList matching_services = static_cast<
       const WDResult<IntentServiceList>*>(result)->GetValue();
 
-  // Loop over all intents in all extensions, collect ones matching the query.
+  // Loop over all services in all extensions, collect ones
+  // matching the query.
   if (extension_service_) {
     const ExtensionSet* extensions = extension_service_->extensions();
     if (extensions) {
       for (ExtensionSet::const_iterator i(extensions->begin());
            i != extensions->end(); ++i) {
-        const IntentServiceList& intents((*i)->intents_services());
-        for (IntentServiceList::const_iterator j(intents.begin());
-             j != intents.end(); ++j) {
+        const IntentServiceList& services((*i)->intents_services());
+        for (IntentServiceList::const_iterator j(services.begin());
+             j != services.end(); ++j) {
           if (query->action_.empty() || query->action_ == j->action)
             matching_services.push_back(*j);
         }
@@ -95,7 +96,7 @@ void WebIntentsRegistry::OnWebDataServiceRequestDone(
     }
   }
 
-  // Filter out all intents not matching the query type.
+  // Filter out all services not matching the query type.
   IntentServiceList::iterator iter(matching_services.begin());
   while (iter != matching_services.end()) {
     if (MimeTypesAreEqual(iter->type, query->type_))
@@ -108,7 +109,7 @@ void WebIntentsRegistry::OnWebDataServiceRequestDone(
   delete query;
 }
 
-WebIntentsRegistry::QueryID WebIntentsRegistry::GetIntentProviders(
+WebIntentsRegistry::QueryID WebIntentsRegistry::GetIntentServices(
     const string16& action, const string16& mimetype, Consumer* consumer) {
   DCHECK(consumer);
   DCHECK(wds_.get());
@@ -124,7 +125,7 @@ WebIntentsRegistry::QueryID WebIntentsRegistry::GetIntentProviders(
   return query->query_id_;
 }
 
-WebIntentsRegistry::QueryID WebIntentsRegistry::GetAllIntentProviders(
+WebIntentsRegistry::QueryID WebIntentsRegistry::GetAllIntentServices(
     Consumer* consumer) {
   DCHECK(consumer);
   DCHECK(wds_.get());
@@ -139,22 +140,22 @@ WebIntentsRegistry::QueryID WebIntentsRegistry::GetAllIntentProviders(
   return query->query_id_;
 }
 
-// Trampoline consumer for calls to IntentProviderExists. Forwards existence
+// Trampoline consumer for calls to IntentServiceExists. Forwards existence
 // of the provided |service| to the provided |callback|.
-class ProviderCheckConsumer : public WebIntentsRegistry::Consumer {
+class ServiceCheckConsumer : public WebIntentsRegistry::Consumer {
  public:
-  ProviderCheckConsumer(const WebIntentServiceData& service,
-                        const base::Callback<void(bool)>& callback)
+  ServiceCheckConsumer(const WebIntentServiceData& service,
+                       const base::Callback<void(bool)>& callback)
       : callback_(callback),
         service_(service) {}
-  virtual ~ProviderCheckConsumer() {}
+  virtual ~ServiceCheckConsumer() {}
 
-  // Gets the list of all providers for a particular action. Check them all
-  // to see if |provider_| is already registered.
+  // Gets the list of all services for a particular action. Check them all
+  // to see if |service_| is already registered.
   virtual void OnIntentsQueryDone(
       WebIntentsRegistry::QueryID id,
       const WebIntentsRegistry::IntentServiceList& list) OVERRIDE {
-    scoped_ptr<ProviderCheckConsumer> self_deleter(this);
+    scoped_ptr<ServiceCheckConsumer> self_deleter(this);
 
     for (WebIntentsRegistry::IntentServiceList::const_iterator i = list.begin();
          i != list.end(); ++i) {
@@ -172,27 +173,27 @@ class ProviderCheckConsumer : public WebIntentsRegistry::Consumer {
   WebIntentServiceData service_;
 };
 
-WebIntentsRegistry::QueryID WebIntentsRegistry::IntentProviderExists(
-    const WebIntentServiceData& provider,
+WebIntentsRegistry::QueryID WebIntentsRegistry::IntentServiceExists(
+    const WebIntentServiceData& service,
     const base::Callback<void(bool)>& callback) {
   IntentsQuery* query = new IntentsQuery;
   query->query_id_ = next_query_id_++;
   query->type_ = ASCIIToUTF16("*");
-  query->consumer_ = new ProviderCheckConsumer(provider, callback);
+  query->consumer_ = new ServiceCheckConsumer(service, callback);
   query->pending_query_ = wds_->GetWebIntentServicesForURL(
-      UTF8ToUTF16(provider.service_url.spec()), this);
+      UTF8ToUTF16(service.service_url.spec()), this);
   queries_[query->pending_query_] = query;
 
   return query->query_id_;
 }
 
-void WebIntentsRegistry::RegisterIntentProvider(
+void WebIntentsRegistry::RegisterIntentService(
     const WebIntentServiceData& service) {
   DCHECK(wds_.get());
   wds_->AddWebIntentService(service);
 }
 
-void WebIntentsRegistry::UnregisterIntentProvider(
+void WebIntentsRegistry::UnregisterIntentService(
     const WebIntentServiceData& service) {
   DCHECK(wds_.get());
   wds_->RemoveWebIntentService(service);

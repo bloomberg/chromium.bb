@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -132,7 +132,7 @@ WebIntentsTreeNode* WebIntentsModel::GetNodeForHost(const std::string& host) {
 
 void WebIntentsModel::LoadModel() {
   NotifyObserverBeginBatch();
-  intents_registry_->GetAllIntentProviders(this);
+  intents_registry_->GetAllIntentServices(this);
 }
 
 void WebIntentsModel::OnIntentsQueryDone(

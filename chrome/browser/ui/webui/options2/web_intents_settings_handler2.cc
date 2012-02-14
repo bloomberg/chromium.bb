@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -126,7 +126,7 @@ void WebIntentsSettingsHandler::RemoveService(ServiceTreeNode* snode) {
     service.type = stype;  // Really need to iterate here.
   }
   service.title = snode->ServiceName();
-  web_intents_registry_->UnregisterIntentProvider(service);
+  web_intents_registry_->UnregisterIntentService(service);
   delete intents_tree_model_->Remove(snode->parent(), snode);
 }
 

@@ -21,7 +21,7 @@ namespace {
 
 class MockWebIntentsRegistry : public WebIntentsRegistry {
  public:
-  MOCK_METHOD1(RegisterIntentProvider,
+  MOCK_METHOD1(RegisterIntentService,
                void(const webkit_glue::WebIntentServiceData&));
 };
 
@@ -72,7 +72,7 @@ TEST_F(RegisterIntentHandlerInfoBarDelegateTest, Accept) {
       WebIntentsRegistryFactory::GetForProfile(profile()),
       service, NULL, GURL());
 
-  EXPECT_CALL(*web_intents_registry_, RegisterIntentProvider(service));
+  EXPECT_CALL(*web_intents_registry_, RegisterIntentService(service));
   delegate.Accept();
 }
 

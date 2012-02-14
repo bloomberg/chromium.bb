@@ -113,7 +113,7 @@ void CWSIntentsRegistry::OnURLFetchComplete(const content::URLFetcher* source) {
     query->callback_.Run(intents);
 }
 
-void CWSIntentsRegistry::GetIntentProviders(
+void CWSIntentsRegistry::GetIntentServices(
     const string16& action, const string16& mimetype,
     const ResultsCallback& cb) {
   scoped_ptr<IntentsQuery> query(new IntentsQuery);
@@ -133,4 +133,3 @@ void CWSIntentsRegistry::GetIntentProviders(
   queries_[handle] = query.release();
   queries_[handle]->url_fetcher_->Start();
 }
-

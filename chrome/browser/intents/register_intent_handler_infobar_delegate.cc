@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,7 +53,7 @@ string16 RegisterIntentHandlerInfoBarDelegate::GetButtonLabel(
 }
 
 bool RegisterIntentHandlerInfoBarDelegate::Accept() {
-  registry_->RegisterIntentProvider(service_);
+  registry_->RegisterIntentService(service_);
 
   // Register a temporary FavIcon in case we never visited the provider page.
   if (favicon_service_ && origin_url_ != service_.service_url)
@@ -100,11 +100,11 @@ void RegisterIntentHandlerInfoBarDelegate::MaybeShowIntentInfoBar(
     const GURL& origin_url) {
   DCHECK(infobar_helper);
   DCHECK(registry);
-  registry->IntentProviderExists(service,
-                                 base::Bind(&CheckProvider,
-                                            base::Unretained(infobar_helper),
-                                            registry,
-                                            service,
-                                            favicon_service,
-                                            origin_url));
+  registry->IntentServiceExists(service,
+                                base::Bind(&CheckProvider,
+                                           base::Unretained(infobar_helper),
+                                           registry,
+                                           service,
+                                           favicon_service,
+                                           origin_url));
 }

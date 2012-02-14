@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,7 +49,7 @@ class WebIntentsModelTest : public testing::Test {
       service.action = ASCIIToUTF16("SHARE");
       service.type = ASCIIToUTF16("text/url");
       service.title = ASCIIToUTF16("Google");
-      registry_.RegisterIntentProvider(service);
+      registry_.RegisterIntentService(service);
     }
     {
       webkit_glue::WebIntentServiceData service;
@@ -57,7 +57,7 @@ class WebIntentsModelTest : public testing::Test {
       service.action = ASCIIToUTF16("EDIT");
       service.type = ASCIIToUTF16("image/*");
       service.title = ASCIIToUTF16("Picasa");
-      registry_.RegisterIntentProvider(service);
+      registry_.RegisterIntentService(service);
     }
     {
       webkit_glue::WebIntentServiceData service;
@@ -65,7 +65,7 @@ class WebIntentsModelTest : public testing::Test {
       service.action = ASCIIToUTF16("SHARE");
       service.type = ASCIIToUTF16("text/url");
       service.title = ASCIIToUTF16("Digg");
-      registry_.RegisterIntentProvider(service);
+      registry_.RegisterIntentService(service);
     }
   }
 
@@ -193,7 +193,7 @@ TEST_F(WebIntentsModelTest, TestMultipleIntentsOnHost) {
   service.action = ASCIIToUTF16("EDIT");
   service.type = ASCIIToUTF16("text/plain");
   service.title = ASCIIToUTF16("Edit");
-  registry_.RegisterIntentProvider(service);
+  registry_.RegisterIntentService(service);
 
   WaitingWebIntentsObserver obs;
   WebIntentsModel intents_model(&registry_);
