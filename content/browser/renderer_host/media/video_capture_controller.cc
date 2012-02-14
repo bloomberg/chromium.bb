@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -190,12 +190,13 @@ void VideoCaptureController::StopCapture(
     client->event_handler->OnReadyToDelete(client->controller_id);
   }
 
+  int session_id = client->parameters.session_id;
   delete client;
   controller_clients_.remove(client);
 
   // No more clients. Stop device.
   if (controller_clients_.empty()) {
-    video_capture_manager_->Stop(current_params_.session_id,
+    video_capture_manager_->Stop(session_id,
         base::Bind(&VideoCaptureController::OnDeviceStopped, this));
     frame_info_available_ = false;
     state_ = video_capture::kStopping;
