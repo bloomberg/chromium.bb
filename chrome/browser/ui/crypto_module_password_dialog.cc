@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,17 +8,11 @@
 #include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/ui/views/window.h"
 #include "crypto/crypto_module_blocking_password_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-
-#if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/ui/views/crypto_module_password_dialog_view.h"
-#include "ui/views/widget/widget.h"
-#endif
 
 using content::BrowserThread;
 
@@ -94,25 +88,11 @@ class CryptoModuleBlockingDialogDelegate
 
 namespace browser {
 
-void ShowCryptoModulePasswordDialog(
-    const std::string& slot_name,
-    bool retry,
-    CryptoModulePasswordReason reason,
-    const std::string& server,
-    const CryptoModulePasswordCallback& callback) {
-#if defined(TOOLKIT_VIEWS)
-  CryptoModulePasswordDialogView* dialog =
-      new CryptoModulePasswordDialogView(
-          slot_name, reason, server, callback);
-  views::Widget* widget = CreateViewsWindow(NULL, dialog, STYLE_GENERIC);
-  widget->Show();
-#endif
-}
-
 crypto::CryptoModuleBlockingPasswordDelegate*
     NewCryptoModuleBlockingDialogDelegate(
         CryptoModulePasswordReason reason,
         const std::string& server) {
   return new CryptoModuleBlockingDialogDelegate(reason, server);
 }
+
 }  // namespace browser

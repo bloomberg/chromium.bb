@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/ui/views/window.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -15,10 +16,12 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/views/widget/widget.h"
 
 int kInputPasswordMinWidth = 8;
 
 namespace browser {
+
 // CryptoModulePasswordDialogView
 ////////////////////////////////////////////////////////////////////////////////
 CryptoModulePasswordDialogView::CryptoModulePasswordDialogView(
@@ -154,4 +157,18 @@ string16 CryptoModulePasswordDialogView::GetWindowTitle() const {
   return UTF8ToUTF16(l10n_util::GetStringUTF8(
       IDS_CRYPTO_MODULE_AUTH_DIALOG_TITLE));
 }
+
+void ShowCryptoModulePasswordDialog(
+    const std::string& slot_name,
+    bool retry,
+    CryptoModulePasswordReason reason,
+    const std::string& server,
+    const CryptoModulePasswordCallback& callback) {
+  CryptoModulePasswordDialogView* dialog =
+      new CryptoModulePasswordDialogView(
+          slot_name, reason, server, callback);
+  views::Widget* widget = CreateViewsWindow(NULL, dialog, STYLE_GENERIC);
+  widget->Show();
+}
+
 }  // namespace browser
