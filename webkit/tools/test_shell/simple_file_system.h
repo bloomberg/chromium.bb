@@ -10,6 +10,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_temp_dir.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFileSystem.h"
+#include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_operation_interface.h"
 #include "webkit/fileapi/file_system_types.h"
 #include <vector>
 
@@ -21,7 +23,6 @@ class WebURL;
 
 namespace fileapi {
 class FileSystemContext;
-class FileSystemOperationInterface;
 }
 
 class SimpleFileSystem
@@ -82,7 +83,31 @@ class SimpleFileSystem
  private:
   // Helpers.
   fileapi::FileSystemOperationInterface* GetNewOperation(
-      const WebKit::WebURL& path, WebKit::WebFileSystemCallbacks* callbacks);
+      const WebKit::WebURL& path);
+
+  // Callback Handlers
+  fileapi::FileSystemOperationInterface::StatusCallback FinishHandler(
+      WebKit::WebFileSystemCallbacks* callbacks);
+  fileapi::FileSystemOperationInterface::GetMetadataCallback GetMetadataHandler(
+      WebKit::WebFileSystemCallbacks* callbacks);
+  fileapi::FileSystemOperationInterface::ReadDirectoryCallback
+      ReadDirectoryHandler(WebKit::WebFileSystemCallbacks* callbacks);
+  fileapi::FileSystemContext::OpenFileSystemCallback OpenFileSystemHandler(
+      WebKit::WebFileSystemCallbacks* callbacks);
+  void DidFinish(WebKit::WebFileSystemCallbacks* callbacks,
+                 base::PlatformFileError result);
+  void DidGetMetadata(WebKit::WebFileSystemCallbacks* callbacks,
+                      base::PlatformFileError result,
+                      const base::PlatformFileInfo& info,
+                      const FilePath& platform_path);
+  void DidReadDirectory(
+      WebKit::WebFileSystemCallbacks* callbacks,
+      base::PlatformFileError result,
+      const std::vector<base::FileUtilProxy::Entry>& entries,
+      bool has_more);
+  void DidOpenFileSystem(WebKit::WebFileSystemCallbacks* callbacks,
+                         base::PlatformFileError result,
+                         const std::string& name, const GURL& root);
 
   // A temporary directory for FileSystem API.
   ScopedTempDir file_system_dir_;

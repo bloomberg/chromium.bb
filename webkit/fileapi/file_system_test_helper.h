@@ -24,7 +24,6 @@ class FilePath;
 
 namespace fileapi {
 
-class FileSystemCallbackDispatcher;
 class FileSystemContext;
 class FileSystemFileUtil;
 class FileSystemOperation;
@@ -63,8 +62,7 @@ class FileSystemTestOriginHelper {
   // This doesn't work with OFSFU.
   int64 ComputeCurrentOriginUsage() const;
 
-  FileSystemOperation* NewOperation(
-      FileSystemCallbackDispatcher* callback_dispatcher);
+  FileSystemOperation* NewOperation();
   FileSystemOperationContext* NewOperationContext();
 
   FileSystemContext* file_system_context() const {
