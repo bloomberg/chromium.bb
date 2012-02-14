@@ -37,6 +37,8 @@ class RootWindowHostMac : public RootWindowHost,
   virtual gfx::Size GetSize() const OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual gfx::Point GetLocationOnNativeScreen() const OVERRIDE;
+  virtual void SetCapture() OVERRIDE;
+  virtual void ReleaseCapture() OVERRIDE;
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
   virtual void ShowCursor(bool show) OVERRIDE;
   virtual gfx::Point QueryMouseLocation() OVERRIDE;
@@ -139,6 +141,12 @@ void RootWindowHostMac::SetSize(const gfx::Size& size) {
 
 gfx::Point RootWindowHostMac::GetLocationOnNativeScreen() const {
   return gfx::Point();
+}
+
+void RootWindowHostMac::SetCapture() {
+}
+
+void RootWindowHostMac::ReleaseCapture() {
 }
 
 void RootWindowHostMac::SetCursor(gfx::NativeCursor cursor) {
