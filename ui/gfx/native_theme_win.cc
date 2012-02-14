@@ -635,18 +635,18 @@ HRESULT NativeThemeWin::PaintMenuArrow(HDC hdc,
       base::win::ScopedCreateDC mem_dc(CreateCompatibleDC(hdc));
       base::win::ScopedBitmap mem_bitmap(CreateCompatibleBitmap(hdc, r.width(),
                                                                 r.height()));
-      base::win::ScopedSelectObject select_bitmap(mem_dc, mem_bitmap);
+      base::win::ScopedSelectObject select_bitmap(mem_dc.get(), mem_bitmap);
       // Copy and horizontally mirror the background from hdc into mem_dc. Use
       // a negative-width source rect, starting at the rightmost pixel.
-      StretchBlt(mem_dc, 0, 0, r.width(), r.height(),
+      StretchBlt(mem_dc.get(), 0, 0, r.width(), r.height(),
                  hdc, r.right()-1, r.y(), -r.width(), r.height(), SRCCOPY);
       // Draw the arrow.
       RECT theme_rect = {0, 0, r.width(), r.height()};
-      HRESULT result = draw_theme_(handle, mem_dc, MENU_POPUPSUBMENU,
+      HRESULT result = draw_theme_(handle, mem_dc.get(), MENU_POPUPSUBMENU,
                                    state_id, &theme_rect, NULL);
       // Copy and mirror the result back into mem_dc.
       StretchBlt(hdc, r.x(), r.y(), r.width(), r.height(),
-                 mem_dc, r.width()-1, 0, -r.width(), r.height(), SRCCOPY);
+                 mem_dc.get(), r.width()-1, 0, -r.width(), r.height(), SRCCOPY);
       return result;
     }
   }
@@ -1668,9 +1668,9 @@ HRESULT NativeThemeWin::PaintFrameControl(HDC hdc,
     return E_OUTOFMEMORY;
 
   base::win::ScopedCreateDC bitmap_dc(CreateCompatibleDC(NULL));
-  base::win::ScopedSelectObject select_bitmap(bitmap_dc, mask_bitmap);
+  base::win::ScopedSelectObject select_bitmap(bitmap_dc.get(), mask_bitmap);
   RECT local_rect = { 0, 0, width, height };
-  DrawFrameControl(bitmap_dc, &local_rect, type, state);
+  DrawFrameControl(bitmap_dc.get(), &local_rect, type, state);
 
   // We're going to use BitBlt with a b&w mask. This results in using the dest
   // dc's text color for the black bits in the mask, and the dest dc's
@@ -1699,7 +1699,11 @@ HRESULT NativeThemeWin::PaintFrameControl(HDC hdc,
   }
   COLORREF old_bg_color = SetBkColor(hdc, GetSysColor(bg_color_key));
   COLORREF old_text_color = SetTextColor(hdc, GetSysColor(text_color_key));
-  BitBlt(hdc, rect.x(), rect.y(), width, height, bitmap_dc, 0, 0, SRCCOPY);
+  BitBlt(hdc,
+         rect.x(), rect.y(), width, height,
+         bitmap_dc.get(),
+         0, 0,
+         SRCCOPY);
   SetBkColor(hdc, old_bg_color);
   SetTextColor(hdc, old_text_color);
 

@@ -211,7 +211,7 @@ void SendThumbnailCallback(
   // We can delete this DIB after sending it to Windows since Windows creates
   // a copy of the DIB and use it.
   base::win::ScopedCreateDC hdc(CreateCompatibleDC(NULL));
-  if (!hdc.Get()) {
+  if (!hdc.get()) {
     LOG(ERROR) << "cannot create a memory DC: " << GetLastError();
     return;
   }
@@ -222,7 +222,7 @@ void SendThumbnailCallback(
 
   void* bitmap_data = NULL;
   base::win::ScopedBitmap bitmap(
-      CreateDIBSection(hdc, reinterpret_cast<BITMAPINFO*>(&header),
+      CreateDIBSection(hdc.get(), reinterpret_cast<BITMAPINFO*>(&header),
                        DIB_RGB_COLORS, &bitmap_data, NULL, 0));
 
   if (!bitmap.Get() || !bitmap_data) {
@@ -274,7 +274,7 @@ void SendLivePreviewCallback(
   // We don't need to paste this tab image onto the frame image since Windows
   // automatically pastes it for us.
   base::win::ScopedCreateDC hdc(CreateCompatibleDC(NULL));
-  if (!hdc.Get()) {
+  if (!hdc.get()) {
     LOG(ERROR) << "cannot create a memory DC: " << GetLastError();
     return;
   }
@@ -285,7 +285,7 @@ void SendLivePreviewCallback(
 
   void* bitmap_data = NULL;
   base::win::ScopedBitmap bitmap(
-      CreateDIBSection(hdc.Get(), reinterpret_cast<BITMAPINFO*>(&header),
+      CreateDIBSection(hdc.get(), reinterpret_cast<BITMAPINFO*>(&header),
                        DIB_RGB_COLORS, &bitmap_data, NULL, 0));
   if (!bitmap.Get() || !bitmap_data) {
     LOG(ERROR) << "cannot create a bitmap: " << GetLastError();

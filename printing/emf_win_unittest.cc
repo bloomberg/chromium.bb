@@ -127,7 +127,7 @@ TEST_F(EmfPrintingTest, Enumerate) {
 TEST_F(EmfPrintingTest, PageBreak) {
   base::win::ScopedCreateDC dc(
       CreateDC(L"WINSPOOL", L"UnitTest Printer", NULL, NULL));
-  if (!dc.Get())
+  if (!dc.get())
     return;
   uint32 size;
   std::vector<BYTE> data;
@@ -153,11 +153,11 @@ TEST_F(EmfPrintingTest, PageBreak) {
   DOCINFO di = {0};
   di.cbSize = sizeof(DOCINFO);
   di.lpszDocName = L"Test Job";
-  int job_id = ::StartDoc(dc.Get(), &di);
+  int job_id = ::StartDoc(dc.get(), &di);
   Emf emf;
   EXPECT_TRUE(emf.InitFromData(&data.front(), size));
-  EXPECT_TRUE(emf.SafePlayback(dc.Get()));
-  ::EndDoc(dc.Get());
+  EXPECT_TRUE(emf.SafePlayback(dc.get()));
+  ::EndDoc(dc.get());
   // Since presumably the printer is not real, let us just delete the job from
   // the queue.
   HANDLE printer = NULL;
