@@ -466,6 +466,7 @@ class VMTestStageTest(AbstractStageTest):
                                        'test_harness'),
                           build_config=self.bot_id,
                           nplus1_archive_dir=self.fake_results_dir,
+                          whitelist_chrome_crashes=True,
                           test_type=constants.FULL_AU_TEST_TYPE)
     commands.ArchiveTestResults(self.build_root, self.fake_results_dir,
                                 prefix='').AndReturn('some tarball')
@@ -496,6 +497,7 @@ class VMTestStageTest(AbstractStageTest):
                                        'test_harness'),
                           build_config=self.bot_id,
                           nplus1_archive_dir=self.fake_results_dir,
+                          whitelist_chrome_crashes=True,
                           test_type=constants.SIMPLE_AU_TEST_TYPE)
     commands.ArchiveTestResults(self.build_root, self.fake_results_dir,
                                 prefix='').AndReturn('some tarball')

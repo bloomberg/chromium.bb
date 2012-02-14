@@ -767,6 +767,7 @@ class VMTestStage(BoardSpecificBuilderStage):
                                          'test_harness'),
                             test_type=self._build_config['vm_tests'],
                             nplus1_archive_dir=payloads_dir,
+                            whitelist_chrome_crashes=self._chrome_rev is None,
                             build_config=self._bot_id)
       tests_passed = True
 

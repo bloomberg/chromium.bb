@@ -310,7 +310,7 @@ def RunChromeSuite(buildroot, board, image_dir, results_dir):
 
 
 def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
-                 nplus1_archive_dir, build_config):
+                 nplus1_archive_dir, whitelist_chrome_crashes, build_config):
   """Runs the test harness suite."""
   results_dir_in_chroot = os.path.join(buildroot, 'chroot',
                                        results_dir.lstrip('/'))
@@ -335,6 +335,9 @@ def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
   else:
     cmd.append('--nplus1_archive_dir=%s' % nplus1_archive_dir)
     cmd.append('--build_config=%s' % build_config)
+
+  if whitelist_chrome_crashes:
+    cmd.append('--whitelist_chrome_crashes')
 
   result = cros_lib.RunCommand(cmd, cwd=cwd, error_ok=True, exit_code=True)
   if result.returncode:
