@@ -332,30 +332,6 @@ void Layer::StackRelativeTo(Layer* child, Layer* other, bool above) {
   web_layer_.insertChild(child->web_layer_, dest_i);
 }
 
-void Layer::GetLayerProperties(const ui::Transform& parent_transform,
-                               std::vector<LayerProperties>* traversal) {
-  if (!visible_ || opacity_ != 1.0f)
-    return;
-
-  ui::Transform current_transform;
-  if (transform().HasChange())
-    current_transform.ConcatTransform(transform());
-  current_transform.ConcatTranslate(
-      static_cast<float>(bounds().x()),
-      static_cast<float>(bounds().y()));
-  current_transform.ConcatTransform(parent_transform);
-
-  if (fills_bounds_opaquely_ && type_ != LAYER_NOT_DRAWN) {
-    LayerProperties properties;
-    properties.layer = this;
-    properties.transform_relative_to_root = current_transform;
-    traversal->push_back(properties);
-  }
-
-  for (size_t i = 0; i < children_.size(); i++)
-    children_[i]->GetLayerProperties(current_transform, traversal);
-}
-
 bool Layer::ConvertPointForAncestor(const Layer* ancestor,
                                     gfx::Point* point) const {
   ui::Transform transform;

@@ -211,12 +211,6 @@ class COMPOSITOR_EXPORT Layer :
   // StackBelow().
   void StackRelativeTo(Layer* child, Layer* other, bool above);
 
-  // Does a preorder traversal of layers starting with this layer. Omits layers
-  // which cannot punch a hole in another layer such as non visible layers
-  // and layers which don't fill their bounds opaquely.
-  void GetLayerProperties(const ui::Transform& current_transform,
-                          std::vector<LayerProperties>* traverasal);
-
   bool ConvertPointForAncestor(const Layer* ancestor, gfx::Point* point) const;
   bool ConvertPointFromAncestor(const Layer* ancestor, gfx::Point* point) const;
 
