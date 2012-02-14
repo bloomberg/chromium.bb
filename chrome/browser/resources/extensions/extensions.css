@@ -42,6 +42,10 @@ html.loading * {
   display: none;
 }
 
+.developer-extras > div {
+  margin: 5px 0;
+}
+
 /* Contents */
 
 #suggest-gallery {
@@ -92,7 +96,6 @@ html[dir="rtl"] .extension-list-item {
 
 .extension-description {
   -webkit-padding-end: 5px;
-  color: rgb(151, 156, 160);
   font-size: 13px;
   margin: 5px 0;
   white-space: normal;
@@ -103,6 +106,11 @@ html[dir="rtl"] .extension-list-item {
   -webkit-padding-start: 55px;
 }
 
+.extension-description,
+.extension-list-item-wrapper.disabled-extension .extension-details {
+  color: rgb(151, 156, 160);
+}
+
 .enable-checkbox-text {
   display: inline-block;
 }
@@ -111,11 +119,10 @@ html[dir="rtl"] .extension-list-item {
   font-weight: bold;
 }
 
-.extension-list-item-wrapper.disabled-extension .enabled-text {
-  display: none;
-}
-
-.extension-list-item-wrapper:not(.disabled-extension) .enable-text {
+.extension-list-item-wrapper.disabled-extension .enabled-text,
+.extension-list-item-wrapper:not(.disabled-extension) .enable-text,
+.extension-list-item-wrapper.disabled-extension .optional-controls,
+.extension-list-item-wrapper.disabled-extension .butter-bar {
   display: none;
 }
 
@@ -126,6 +133,13 @@ html[dir="rtl"] .extension-list-item {
 .extension-list-item a {
   -webkit-margin-start: 0.5em;
   display: inline-block;
+}
+
+.butter-bar {
+  background: rgb(255, 242, 153);
+  border-radius: 3px;
+  margin-top: 5px;
+  padding: 2px 5px;
 }
 
 /* Overlays */
