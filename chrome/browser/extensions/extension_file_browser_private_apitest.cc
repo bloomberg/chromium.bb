@@ -9,6 +9,8 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/browser_thread.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 
@@ -133,4 +135,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionFileBrowserPrivateApiTest, FileBrowserMount) {
       .WillRepeatedly(ReturnRef(volumes_));
 
   ASSERT_TRUE(RunComponentExtensionTest("filebrowser_mount"))  << message_;
+
+  ui_test_utils::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
+  ui_test_utils::RunAllPendingInMessageLoop();
 }
