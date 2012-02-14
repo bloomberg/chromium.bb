@@ -419,6 +419,7 @@ pfq.add_config('amd64-corei7-bin',
   amd64,
   boards=['amd64-corei7'],
   description='amd64-corei7 PFQ',
+  important=False,
 )
 
 incremental.add_config('x86-generic-incremental',
@@ -433,6 +434,11 @@ incremental.add_config('arm-tegra2-incremental',
 incremental.add_config('amd64-corei7-incremental',
   amd64,
   boards=['amd64-corei7'],
+)
+
+incremental.add_config('amd64-generic-incremental',
+  amd64,
+  boards=['amd64-generic'],
 )
 
 paladin.add_config('x86-generic-paladin',
@@ -452,6 +458,14 @@ paladin.add_config('amd64-corei7-paladin',
   amd64,
   boards=['amd64-corei7'],
   paladin_builder_name='amd64 corei7 paladin',
+  important=False,
+)
+
+paladin.add_config('amd64-generic-paladin',
+  amd64,
+  boards=['amd64-generic'],
+  paladin_builder_name='amd64 generic paladin',
+  important=False,
 )
 
 commit_queue.add_config('x86-generic-commit-queue',
@@ -470,6 +484,7 @@ commit_queue.add_config('amd64-corei7-commit-queue',
   amd64,
   boards=['amd64-corei7'],
   paladin_builder_name='amd64 corei7 commit queue',
+  important=False,
 )
 
 commit_queue.add_config('x86-mario-commit-queue',
@@ -505,6 +520,14 @@ chrome_pfq.add_config('amd64-corei7-chrome-pre-flight-queue',
   amd64,
   boards=['amd64-corei7'],
   chrome_rev=constants.CHROME_REV_LATEST,
+  important=False,
+)
+
+chrome_pfq.add_config('amd64-generic-chrome-pre-flight-queue',
+  amd64,
+  boards=['amd64-generic'],
+  chrome_rev=constants.CHROME_REV_LATEST,
+  important=False,
 )
 
 
@@ -533,6 +556,11 @@ cpfq_arm.add_config('arm-tegra2-tot-chrome-pfq-informational',
 chrome_pfq_info.add_config('amd64-corei7-tot-chrome-pfq-informational',
   amd64,
   boards=['amd64-corei7'],
+)
+
+chrome_pfq_info.add_config('amd64-generic-tot-chrome-pfq-informational',
+  amd64,
+  boards=['amd64-generic'],
 )
 
 # TODO(ferringb): Remove this builder config -- it isn't used anymore.
