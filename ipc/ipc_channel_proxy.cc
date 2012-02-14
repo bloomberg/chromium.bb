@@ -1,9 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/debug/trace_event.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -238,13 +239,23 @@ void ChannelProxy::Context::AddFilter(MessageFilter* filter) {
 
 // Called on the listener's thread
 void ChannelProxy::Context::OnDispatchMessage(const Message& message) {
+#ifdef IPC_MESSAGE_LOG_ENABLED
+  Logging* logger = Logging::GetInstance();
+  std::string name;
+  logger->GetMessageText(message.type(), &name, &message, NULL);
+  TRACE_EVENT1("task", "ChannelProxy::Context::OnDispatchMessage",
+               "name", name);
+#else
+  TRACE_EVENT1("task", "ChannelProxy::Context::OnDispatchMessage",
+               "type", message.type());
+#endif
+
   if (!listener_)
     return;
 
   OnDispatchConnected();
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
-  Logging* logger = Logging::GetInstance();
   if (message.type() == IPC_LOGGING_ID) {
     logger->OnReceivedLoggingMessage(message);
     return;
