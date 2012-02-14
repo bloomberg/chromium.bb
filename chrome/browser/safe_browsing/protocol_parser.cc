@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -140,6 +140,12 @@ bool SafeBrowsingProtocolParser::ParseUpdate(
 
   // Populated below.
   std::string list_name;
+
+  // If we requested the MAC, the response must start with a MAC command.
+  // This test ensures it is present, the value will be verified in the
+  // switch statement below.
+  if (!key.empty() && (length < 1 || data[0] != 'm'))
+    return false;
 
   while (length > 0) {
     std::string cmd_line;

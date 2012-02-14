@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -413,7 +413,8 @@ TEST(SafeBrowsingProtocolParsingTest, TestRedirects) {
 }
 
 TEST(SafeBrowsingProtocolParsingTest, TestRedirectsWithMac) {
-  std::string redirects("i:goog-phish-shavar\n"
+  std::string redirects("m:IZhFUj0bMPBMsGw7MMA-VIzrNLg=\n"
+    "i:goog-phish-shavar\n"
     "u:s.ytimg.com/safebrowsing/rd/goog-phish-shavar_s_6501-6505:6501-6505,"
     "pcY6iVeT9-CBQ3fdAF0rpnKjR1Y=\n"
     "u:s.ytimg.com/safebrowsing/rd/goog-phish-shavar_a_8001-8160:8001-8024,"
@@ -427,7 +428,8 @@ TEST(SafeBrowsingProtocolParsingTest, TestRedirectsWithMac) {
   const std::string key("58Lqn5WIP961x3zuLGo5Uw==");
   std::vector<SBChunkDelete> deletes;
   std::vector<ChunkUrl> urls;
-  EXPECT_TRUE(parser.ParseUpdate(redirects.data(),
+
+  ASSERT_TRUE(parser.ParseUpdate(redirects.data(),
                                  static_cast<int>(redirects.length()), key,
                                  &next_query_sec, &re_key,
                                  &reset, &deletes, &urls));
@@ -442,6 +444,13 @@ TEST(SafeBrowsingProtocolParsingTest, TestRedirectsWithMac) {
       "s.ytimg.com/safebrowsing/rd/goog-phish-shavar_a_8001-8160:8001-8024,"
       "8026-8045,8048-8049,8051-8134,8136-8152,8155-8160");
   EXPECT_EQ(urls[1].mac, "j6XXAEWnjYk9tVVLBSdQvIEq2Wg=");
+
+  std::string bad_redirects = redirects;
+  bad_redirects[0] = 'z';
+  EXPECT_FALSE(parser.ParseUpdate(bad_redirects.data(),
+                                 static_cast<int>(bad_redirects.length()), key,
+                                 &next_query_sec, &re_key,
+                                 &reset, &deletes, &urls));
 }
 
 // Test parsing various SafeBrowsing protocol headers.
@@ -761,8 +770,7 @@ TEST(SafeBrowsingProtocolParsingTest, TestZeroSizeSubChunk) {
 TEST(SafeBrowsingProtocolParsingTest, TestVerifyUpdateMac) {
   SafeBrowsingProtocolParser parser;
 
-  const std::string update =
-      "m:XIU0LiQhAPJq6dynXwHbygjS5tw=\n"
+  const std::string update_body =
       "n:1895\n"
       "i:goog-phish-shavar\n"
       "u:s.ytimg.com/safebrowsing/rd/goog-phish-shavar_s_6501-6505:6501-6505,"
@@ -795,18 +803,45 @@ TEST(SafeBrowsingProtocolParsingTest, TestVerifyUpdateMac) {
       "u:s.ytimg.com/safebrowsing/rd/goog-phish-shavar_a_8641-8800:8641-8689,"
         "8691-8731,8733-8786,x1Qf7hdNrO8b6yym03ZzNydDS1o=\n";
 
+  const std::string update = "m:XIU0LiQhAPJq6dynXwHbygjS5tw=\n" + update_body;
+
   bool re_key = false;
   bool reset = false;
   int next_update = -1;
   std::vector<SBChunkDelete> deletes;
   std::vector<ChunkUrl> urls;
   const std::string key("58Lqn5WIP961x3zuLGo5Uw==");
-  EXPECT_TRUE(parser.ParseUpdate(update.data(),
+
+  // Should pass with correct mac.
+  ASSERT_TRUE(parser.ParseUpdate(update.data(),
                                  static_cast<int>(update.size()), key,
                                  &next_update, &re_key,
                                  &reset, &deletes, &urls));
   EXPECT_FALSE(re_key);
   EXPECT_EQ(next_update, 1895);
+
+  // Should fail if mac is not present.
+  EXPECT_FALSE(parser.ParseUpdate(update_body.data(),
+                                  static_cast<int>(update_body.size()), key,
+                                  &next_update, &re_key,
+                                  &reset, &deletes, &urls));
+
+  std::string bad_update = update;
+  bad_update[1] = 'z';
+  // Should fail if mac command isn't formatted correctly.
+  EXPECT_FALSE(parser.ParseUpdate(bad_update.data(),
+                                  static_cast<int>(bad_update.size()), key,
+                                  &next_update, &re_key,
+                                  &reset, &deletes, &urls));
+
+  bad_update = update;
+  bad_update[5] ^= 1;
+  // Should fail if mac is incorrect.
+  EXPECT_FALSE(parser.ParseUpdate(bad_update.data(),
+                                  static_cast<int>(bad_update.size()), key,
+                                  &next_update, &re_key,
+                                  &reset, &deletes, &urls));
+
 }
 
 TEST(SafeBrowsingProtocolParsingTest, TestVerifyChunkMac) {
