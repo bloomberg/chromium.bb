@@ -8,7 +8,6 @@
 #include "base/process_util.h"
 #include "base/test/test_suite.h"
 #include "base/threading/platform_thread.h"
-#include "base/win/scoped_com_initializer.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome_frame/crash_server_init.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
@@ -19,6 +18,10 @@
 // To enable ATL-based code to run in this module
 class ChromeFrameUnittestsModule
     : public CAtlExeModuleT<ChromeFrameUnittestsModule> {
+ public:
+  static HRESULT InitializeCom() {
+    return CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+  }
 };
 
 ChromeFrameUnittestsModule _AtlModule;
@@ -31,7 +34,6 @@ void PureCall() {
 }
 
 int main(int argc, char **argv) {
-  base::win::ScopedCOMInitializer com_initializer;
   ScopedChromeFrameRegistrar::RegisterAndExitProcessIfDirected();
   base::EnableTerminationOnHeapCorruption();
   base::PlatformThread::SetName("ChromeFrame tests");
