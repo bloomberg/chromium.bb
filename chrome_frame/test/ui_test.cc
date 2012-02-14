@@ -380,6 +380,32 @@ TEST_P(FullTabUITest, DISABLED_TabCrashRefresh) {
   LaunchIEAndNavigate(GetSimplePageUrl());
 }
 
+// Test that window.print() on a page results in the native Windows print dialog
+// appearing rather than Chrome's in-page print preview.
+TEST_P(FullTabUITest, WindowPrintOpensNativePrintDialog) {
+  std::wstring window_print_url(GetTestUrl(L"window_print.html"));
+  std::wstring window_print_title(L"window.print");
+
+  const bool is_cf = GetParam().invokes_cf();
+  MockWindowObserver win_observer_mock;
+
+  // When the page is loaded, start watching for the Print dialog to appear.
+  EXPECT_CALL(ie_mock_, OnLoad(is_cf, StrEq(window_print_url)))
+      .WillOnce(WatchWindow(&win_observer_mock, "Print", ""));
+
+  // When the print dialog opens, close it.
+  EXPECT_CALL(win_observer_mock, OnWindowOpen(_))
+      .WillOnce(DoCloseWindow());
+
+  // When the print dialog closes, close the browser.
+  EXPECT_CALL(win_observer_mock, OnWindowClose(_))
+      .WillOnce(CloseBrowserMock(&ie_mock_));
+
+  // Launch IE and navigate to the window_print.html page, which will
+  // window.print() immediately after loading.
+  LaunchIEAndNavigate(window_print_url);
+}
+
 // Test fixture for tests related to the context menu UI. Since the context
 // menus for CF and IE are different, these tests are not parameterized.
 class ContextMenuTest : public MockIEEventSinkTest, public testing::Test {

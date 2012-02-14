@@ -270,6 +270,11 @@ void AutomationProxyCacheEntry::CreateProxy(ChromeFrameLaunchParams* params,
 
     command_line->AppendSwitch(switches::kDisablePopupBlocking);
 
+#if defined(GOOGLE_CHROME_BUILD)
+    // Chrome Frame should use the native print dialog.
+    command_line->AppendSwitch(switches::kDisablePrintPreview);
+#endif
+
     // Disable the "Whoa! Chrome has crashed." dialog, because that isn't very
     // useful for Chrome Frame users.
 #ifndef NDEBUG
