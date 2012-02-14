@@ -9,10 +9,12 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/protector/base_setting_change.h"
 #include "chrome/browser/protector/settings_change_global_error_delegate.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/global_error_service.h"
 #include "chrome/browser/ui/global_error_service_factory.h"
 #include "content/public/browser/browser_thread.h"
@@ -35,6 +37,7 @@ SettingsChangeGlobalError::SettingsChangeGlobalError(
       delegate_(delegate),
       profile_(NULL),
       closed_by_button_(false),
+      show_on_browser_activation_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(delegate_);
 }
@@ -67,9 +70,7 @@ int SettingsChangeGlobalError::MenuItemIconResourceID() {
 }
 
 void SettingsChangeGlobalError::ExecuteMenuItem(Browser* browser) {
-  // Cancel previously posted tasks.
-  weak_factory_.InvalidateWeakPtrs();
-  ShowBubbleView(browser);
+  ShowInBrowser(browser);
 }
 
 bool SettingsChangeGlobalError::HasBubbleView() {
@@ -113,9 +114,27 @@ void SettingsChangeGlobalError::BubbleViewCancelButtonPressed(
   delegate_->OnApplyChange(browser);
 }
 
+void SettingsChangeGlobalError::OnBrowserSetLastActive(
+    const Browser* browser) {
+  if (show_on_browser_activation_ && browser && browser->is_type_tabbed()) {
+    // A tabbed browser window got activated, show the error bubble again.
+    // Calling Show() immediately from here does not always work because the
+    // old browser window may still have focus.
+    // Multiple posted Show() calls are fine since the first successful one
+    // will invalidate all the weak pointers.
+    // Note that Show() will display the bubble in the last active browser
+    // (which may not be |browser| at the moment Show() is executed).
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&SettingsChangeGlobalError::Show,
+                   weak_factory_.GetWeakPtr()));
+  }
+}
+
 void SettingsChangeGlobalError::RemoveFromProfile() {
   if (profile_)
     GlobalErrorServiceFactory::GetForProfile(profile_)->RemoveGlobalError(this);
+  BrowserList::RemoveObserver(this);
   // This will delete |this|.
   delegate_->OnRemovedFromProfile();
 }
@@ -127,6 +146,12 @@ void SettingsChangeGlobalError::OnBubbleViewDidClose(Browser* browser) {
         base::Bind(&SettingsChangeGlobalError::OnInactiveTimeout,
                    weak_factory_.GetWeakPtr()),
         kMenuItemDisplayPeriodMs);
+    if (browser->window() &&
+        !platform_util::IsWindowActive(browser->window()->GetNativeHandle())) {
+      // Bubble closed because the entire window lost activation, display
+      // again when a window gets active.
+      show_on_browser_activation_ = true;
+    }
   } else {
     RemoveFromProfile();
   }
@@ -148,19 +173,27 @@ void SettingsChangeGlobalError::AddToProfile(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   profile_ = profile;
   GlobalErrorServiceFactory::GetForProfile(profile_)->AddGlobalError(this);
+  BrowserList::AddObserver(this);
   Show();
 }
 
 void SettingsChangeGlobalError::Show() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_);
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
-  if (!browser && profile_->HasOffTheRecordProfile()) {
-    browser = BrowserList::GetLastActiveWithProfile(
-        profile_->GetOffTheRecordProfile());
-  }
+  Browser* browser = BrowserList::FindTabbedBrowser(
+      profile_,
+      // match incognito
+      true);
   if (browser)
-    ShowBubbleView(browser);
+    ShowInBrowser(browser);
+}
+
+void SettingsChangeGlobalError::ShowInBrowser(Browser* browser) {
+  show_on_browser_activation_ = false;
+  // Cancel any previously posted tasks so that the global error
+  // does not get removed on timeout while still showing the bubble.
+  weak_factory_.InvalidateWeakPtrs();
+  ShowBubbleView(browser);
 }
 
 void SettingsChangeGlobalError::OnInactiveTimeout() {

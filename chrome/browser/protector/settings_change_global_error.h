@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/protector/base_setting_change.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/global_error.h"
 
 class Browser;
@@ -22,7 +23,8 @@ class BaseSettingChange;
 class SettingsChangeGlobalErrorDelegate;
 
 // Global error about unwanted settings changes.
-class SettingsChangeGlobalError : public GlobalError {
+class SettingsChangeGlobalError : public GlobalError,
+                                  public BrowserList::Observer {
  public:
   // Creates new global error about setting changes |change| which must not be
   // deleted until |delegate->OnRemovedFromProfile| is called. Uses |delegate|
@@ -38,6 +40,7 @@ class SettingsChangeGlobalError : public GlobalError {
   // Removes global error from its profile.
   void RemoveFromProfile();
 
+ private:
   // GlobalError implementation.
   virtual bool HasBadge() OVERRIDE;
   virtual int GetBadgeResourceID() OVERRIDE;
@@ -56,13 +59,22 @@ class SettingsChangeGlobalError : public GlobalError {
   virtual void BubbleViewAcceptButtonPressed(Browser* browser) OVERRIDE;
   virtual void BubbleViewCancelButtonPressed(Browser* browser) OVERRIDE;
 
- private:
+  // BrowserList::Observer implementation.
+  virtual void OnBrowserAdded(const Browser* browser) OVERRIDE {}
+  virtual void OnBrowserRemoved(const Browser* browser) OVERRIDE {}
+  virtual void OnBrowserSetLastActive(const Browser* browser) OVERRIDE;
+
   // Helper called on the UI thread to add this global error to the default
   // profile (stored in |profile_|).
   void AddToProfile(Profile* profile);
 
-  // Displays global error bubble. Must be called on the UI thread.
+  // Displays the bubble in the last active tabbed browser. Must be called
+  // on the UI thread.
   void Show();
+
+  // Displays the bubble in |browser|'s window. Must be called
+  // on the UI thread.
+  void ShowInBrowser(Browser* browser);
 
   // Called when the wrench menu item has been displayed for enough time
   // without user interaction.
@@ -79,6 +91,9 @@ class SettingsChangeGlobalError : public GlobalError {
 
   // True if user has dismissed the bubble by clicking on one of the buttons.
   bool closed_by_button_;
+
+  // True if the bubble has to be shown on the next browser window activation.
+  bool show_on_browser_activation_;
 
   base::WeakPtrFactory<SettingsChangeGlobalError> weak_factory_;
 
