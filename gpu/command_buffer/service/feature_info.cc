@@ -437,6 +437,16 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
             GL_LUMINANCE_ALPHA16F_EXT);
     }
   }
+
+  if (ext.Desire("GL_ANGLE_instanced_arrays") &&
+      (ext.Have("GL_ANGLE_instanced_arrays") ||
+       (ext.Have("GL_ARB_instanced_arrays") &&
+        ext.Have("GL_ARB_draw_instanced")))) {
+    AddExtensionString("GL_ANGLE_instanced_arrays");
+    feature_flags_.angle_instanced_arrays = true;
+    validators_.vertex_attribute.AddValue(GL_VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE);
+  }
+
 }
 
 void FeatureInfo::AddExtensionString(const std::string& str) {

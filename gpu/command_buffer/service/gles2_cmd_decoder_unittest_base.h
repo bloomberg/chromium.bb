@@ -307,6 +307,7 @@ class GLES2DecoderTestBase : public testing::Test {
       GLint level, GLenum error);
   void DoVertexAttribPointer(
       GLuint index, GLint size, GLenum type, GLsizei stride, GLuint offset);
+  void DoVertexAttribDivisorANGLE(GLuint index, GLuint divisor);
 
   void DoEnableVertexAttribArray(GLint index);
 

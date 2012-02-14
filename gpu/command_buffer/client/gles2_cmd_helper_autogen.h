@@ -1667,5 +1667,32 @@
     }
   }
 
+  void DrawArraysInstancedANGLE(
+      GLenum mode, GLint first, GLsizei count, GLsizei primcount) {
+    gles2::DrawArraysInstancedANGLE* c =
+        GetCmdSpace<gles2::DrawArraysInstancedANGLE>();
+    if (c) {
+      c->Init(mode, first, count, primcount);
+    }
+  }
+
+  void DrawElementsInstancedANGLE(
+      GLenum mode, GLsizei count, GLenum type, GLuint index_offset,
+      GLsizei primcount) {
+    gles2::DrawElementsInstancedANGLE* c =
+        GetCmdSpace<gles2::DrawElementsInstancedANGLE>();
+    if (c) {
+      c->Init(mode, count, type, index_offset, primcount);
+    }
+  }
+
+  void VertexAttribDivisorANGLE(GLuint index, GLuint divisor) {
+    gles2::VertexAttribDivisorANGLE* c =
+        GetCmdSpace<gles2::VertexAttribDivisorANGLE>();
+    if (c) {
+      c->Init(index, divisor);
+    }
+  }
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_
 

@@ -73,6 +73,26 @@ class GLES2DecoderWithShaderTest : public GLES2DecoderWithShaderTestBase {
   void CheckRenderbufferChangesMarkFBOAsNotComplete(bool bound_fbo);
 };
 
+class GLES2DecoderGeometryInstancingTest : public GLES2DecoderWithShaderTest {
+ public:
+  GLES2DecoderGeometryInstancingTest()
+      : GLES2DecoderWithShaderTest() {
+  }
+
+  virtual void SetUp() {
+    InitDecoder(
+        "GL_ANGLE_instanced_arrays", // extensions
+        true,                        // has alpha
+        true,                        // has depth
+        false,                       // has stencil
+        true,                        // request alpha
+        true,                        // request depth
+        false,                       // request stencil
+        true);                       // bind generates resource
+    SetupDefaultProgram();
+  }
+};
+
 class GLES2DecoderRGBBackbufferTest : public GLES2DecoderWithShaderTest {
  public:
   GLES2DecoderRGBBackbufferTest() { }
@@ -312,6 +332,239 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysInvalidCountFails) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
+TEST_F(GLES2DecoderWithShaderTest, DrawArraysInstancedANGLEFails) {
+  SetupTexture();
+  SetupVertexBuffer();
+  DoEnableVertexAttribArray(1);
+  DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
+
+  EXPECT_CALL(*gl_, DrawArraysInstancedANGLE(_, _, _, _))
+      .Times(0)
+      .RetiresOnSaturation();
+  DrawArraysInstancedANGLE cmd;
+  cmd.Init(GL_TRIANGLES, 0, kNumVertices, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
+TEST_F(GLES2DecoderGeometryInstancingTest,
+       DrawArraysInstancedANGLENoAttributesFails) {
+  SetupTexture();
+
+  EXPECT_CALL(*gl_, DrawArraysInstancedANGLE(_, _, _, _))
+      .Times(0)
+      .RetiresOnSaturation();
+  DrawArraysInstancedANGLE cmd;
+  cmd.Init(GL_TRIANGLES, 0, kNumVertices, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
+TEST_F(GLES2DecoderGeometryInstancingTest,
+       DrawArraysInstancedANGLESimulatedAttrib0) {
+  SetupTexture();
+  SetupVertexBuffer();
+  DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
+
+  AddExpectationsForSimulatedAttrib0(kNumVertices, kServiceBufferId);
+  SetupExpectationsForApplyingDefaultDirtyState();
+
+  DoVertexAttribDivisorANGLE(0, 1);
+  EXPECT_CALL(*gl_, DrawArraysInstancedANGLE(GL_TRIANGLES, 0, kNumVertices, 3))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, VertexAttribDivisorANGLE(0, 0))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, VertexAttribDivisorANGLE(0, 1))
+      .Times(1)
+      .RetiresOnSaturation();
+  DrawArraysInstancedANGLE cmd;
+  cmd.Init(GL_TRIANGLES, 0, kNumVertices, 3);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_F(GLES2DecoderGeometryInstancingTest,
+       DrawArraysInstancedANGLEMissingAttributesFails) {
+  DoEnableVertexAttribArray(1);
+
+  EXPECT_CALL(*gl_, DrawArraysInstancedANGLE(_, _, _, _))
+      .Times(0);
+  DrawArraysInstancedANGLE cmd;
+  cmd.Init(GL_TRIANGLES, 0, kNumVertices, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
+TEST_F(GLES2DecoderGeometryInstancingTest,
+       DrawArraysInstancedANGLEMissingAttributesZeroCountSucceeds) {
+  DoEnableVertexAttribArray(1);
+
+  EXPECT_CALL(*gl_, DrawArraysInstancedANGLE(_, _, _, _))
+      .Times(0);
+  DrawArraysInstancedANGLE cmd;
+  cmd.Init(GL_TRIANGLES, 0, 0, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_F(GLES2DecoderGeometryInstancingTest,
+       DrawArraysInstancedANGLEValidAttributesSucceeds) {
+  SetupTexture();
+  SetupVertexBuffer();
+  DoEnableVertexAttribArray(1);
+  DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
+  AddExpectationsForSimulatedAttrib0(kNumVertices, kServiceBufferId);
+  SetupExpectationsForApplyingDefaultDirtyState();
+
+  EXPECT_CALL(*gl_, DrawArraysInstancedANGLE(GL_TRIANGLES, 0, kNumVertices, 1))
+      .Times(1)
+      .RetiresOnSaturation();
+  DrawArraysInstancedANGLE cmd;
+  cmd.Init(GL_TRIANGLES, 0, kNumVertices, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_F(GLES2DecoderGeometryInstancingTest,
+       DrawArraysInstancedANGLEWithInvalidModeFails) {
+  SetupVertexBuffer();
+  DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
+
+  EXPECT_CALL(*gl_, DrawArraysInstancedANGLE(_, _, _, _))
+      .Times(0);
+  DrawArraysInstancedANGLE cmd;
+  cmd.Init(GL_QUADS, 0, 1, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+  cmd.Init(GL_POLYGON, 0, 1, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
+TEST_F(GLES2DecoderGeometryInstancingTest,
+       DrawArraysInstancedANGLEInvalidPrimcountFails) {
+  SetupVertexBuffer();
+  DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
+
+  EXPECT_CALL(*gl_, DrawArraysInstancedANGLE(_, _, _, _))
+      .Times(0);
+  DrawArraysInstancedANGLE cmd;
+  cmd.Init(GL_TRIANGLES, 0, 1, -1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+
+// Per-instance data is twice as large, but number of instances is half
+TEST_F(GLES2DecoderGeometryInstancingTest,
+       DrawArraysInstancedANGLELargeInstanceSucceeds) {
+  SetupTexture();
+  SetupVertexBuffer();
+  SetupExpectationsForApplyingDefaultDirtyState();
+  DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
+
+  DoEnableVertexAttribArray(0);
+  DoVertexAttribPointer(0, 4, GL_FLOAT, 0, 0);
+  DoVertexAttribDivisorANGLE(0, 1);
+  EXPECT_CALL(*gl_, DrawArraysInstancedANGLE(GL_TRIANGLES, 0, kNumVertices,
+                                             kNumVertices / 2))
+      .Times(1)
+      .RetiresOnSaturation();
+  DrawArraysInstancedANGLE cmd;
+  cmd.Init(GL_TRIANGLES, 0, kNumVertices, kNumVertices / 2);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+// Per-instance data is twice as large, but divisor is twice
+TEST_F(GLES2DecoderGeometryInstancingTest,
+       DrawArraysInstancedANGLELargeDivisorSucceeds) {
+  SetupTexture();
+  SetupVertexBuffer();
+  SetupExpectationsForApplyingDefaultDirtyState();
+  DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
+
+  DoEnableVertexAttribArray(0);
+  DoVertexAttribPointer(0, 4, GL_FLOAT, 0, 0);
+  DoVertexAttribDivisorANGLE(0, 2);
+  EXPECT_CALL(*gl_, DrawArraysInstancedANGLE(GL_TRIANGLES, 0, kNumVertices,
+                                             kNumVertices))
+      .Times(1)
+      .RetiresOnSaturation();
+  DrawArraysInstancedANGLE cmd;
+  cmd.Init(GL_TRIANGLES, 0, kNumVertices, kNumVertices);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_F(GLES2DecoderGeometryInstancingTest, DrawArraysInstancedANGLELargeFails) {
+  SetupTexture();
+  SetupVertexBuffer();
+  DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
+
+  DoEnableVertexAttribArray(0);
+  DoVertexAttribPointer(0, 2, GL_FLOAT, 0, 0);
+  DoVertexAttribDivisorANGLE(0, 1);
+  EXPECT_CALL(*gl_, DrawArraysInstancedANGLE(_, _, _, _))
+      .Times(0)
+      .RetiresOnSaturation();
+  DrawArraysInstancedANGLE cmd;
+  cmd.Init(GL_TRIANGLES, 0, kNumVertices, kNumVertices + 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  EXPECT_CALL(*gl_, DrawArraysInstancedANGLE(_, _, _, _))
+      .Times(0)
+      .RetiresOnSaturation();
+  cmd.Init(GL_TRIANGLES, 0, kNumVertices + 1, kNumVertices);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+// Per-index data is twice as large, but number of indices is half
+TEST_F(GLES2DecoderGeometryInstancingTest,
+       DrawArraysInstancedANGLELargeIndexSucceeds) {
+  SetupTexture();
+  SetupVertexBuffer();
+  SetupExpectationsForApplyingDefaultDirtyState();
+  DoVertexAttribPointer(1, 4, GL_FLOAT, 0, 0);
+
+  DoEnableVertexAttribArray(0);
+  DoVertexAttribPointer(0, 2, GL_FLOAT, 0, 0);
+  DoVertexAttribDivisorANGLE(0, 1);
+  EXPECT_CALL(*gl_, DrawArraysInstancedANGLE(GL_TRIANGLES, 0, kNumVertices / 2,
+                                             kNumVertices))
+      .Times(1)
+      .RetiresOnSaturation();
+  DrawArraysInstancedANGLE cmd;
+  cmd.Init(GL_TRIANGLES, 0, kNumVertices / 2, kNumVertices);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_F(GLES2DecoderGeometryInstancingTest,
+       DrawArraysInstancedANGLENoDivisor0Fails) {
+  SetupTexture();
+  SetupVertexBuffer();
+  DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
+
+  DoEnableVertexAttribArray(0);
+  DoVertexAttribPointer(0, 2, GL_FLOAT, 0, 0);
+  DoVertexAttribDivisorANGLE(0, 1);
+  DoVertexAttribDivisorANGLE(1, 1);
+  EXPECT_CALL(*gl_, DrawArraysInstancedANGLE(_, _, _, _))
+      .Times(0)
+      .RetiresOnSaturation();
+  DrawArraysInstancedANGLE cmd;
+  cmd.Init(GL_TRIANGLES, 0, kNumVertices, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
 TEST_F(GLES2DecoderWithShaderTest, DrawElementsNoAttributesSucceeds) {
   SetupTexture();
   SetupIndexBuffer();
@@ -480,6 +733,299 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsOddOffsetForUint16Fails) {
   EXPECT_CALL(*gl_, DrawElements(_, _, _, _)).Times(0);
   DrawElements cmd;
   cmd.Init(GL_TRIANGLES, kInvalidIndexRangeCount, GL_UNSIGNED_SHORT, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_F(GLES2DecoderWithShaderTest, DrawElementsInstancedANGLEFails) {
+  SetupTexture();
+  SetupVertexBuffer();
+  SetupIndexBuffer();
+  DoEnableVertexAttribArray(1);
+  DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
+
+  EXPECT_CALL(*gl_, DrawElementsInstancedANGLE(_, _, _, _, _))
+      .Times(0)
+      .RetiresOnSaturation();
+  DrawElementsInstancedANGLE cmd;
+  cmd.Init(GL_TRIANGLES, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
+           kValidIndexRangeStart * 2, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
+TEST_F(GLES2DecoderGeometryInstancingTest,
+       DrawElementsInstancedANGLENoAttributesFails) {
+  SetupTexture();
+  SetupIndexBuffer();
+
+  EXPECT_CALL(*gl_, DrawElementsInstancedANGLE(_, _, _, _, _))
+      .Times(0)
+      .RetiresOnSaturation();
+  DrawElementsInstancedANGLE cmd;
+  cmd.Init(GL_TRIANGLES, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
+           kValidIndexRangeStart * 2, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
+TEST_F(GLES2DecoderGeometryInstancingTest,
+       DrawElementsInstancedANGLESimulatedAttrib0) {
+  SetupTexture();
+  SetupVertexBuffer();
+  SetupIndexBuffer();
+  DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
+
+  AddExpectationsForSimulatedAttrib0(kMaxValidIndex + 1, kServiceBufferId);
+  SetupExpectationsForApplyingDefaultDirtyState();
+
+  DoVertexAttribDivisorANGLE(0, 1);
+  EXPECT_CALL(*gl_, DrawElementsInstancedANGLE(
+                        GL_TRIANGLES,
+                        kValidIndexRangeCount,
+                        GL_UNSIGNED_SHORT,
+                        BufferOffset(kValidIndexRangeStart * 2),
+                        3))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, VertexAttribDivisorANGLE(0, 0))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, VertexAttribDivisorANGLE(0, 1))
+      .Times(1)
+      .RetiresOnSaturation();
+  DrawElementsInstancedANGLE cmd;
+  cmd.Init(GL_TRIANGLES, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
+           kValidIndexRangeStart * 2, 3);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_F(GLES2DecoderGeometryInstancingTest,
+       DrawElementsInstancedANGLEMissingAttributesFails) {
+  SetupIndexBuffer();
+  DoEnableVertexAttribArray(1);
+
+  EXPECT_CALL(*gl_, DrawElementsInstancedANGLE(_, _, _, _, _))
+      .Times(0);
+  DrawElementsInstancedANGLE cmd;
+  cmd.Init(GL_TRIANGLES, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
+           kValidIndexRangeStart * 2, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
+TEST_F(GLES2DecoderGeometryInstancingTest,
+       DrawElementsInstancedANGLEMissingAttributesZeroCountSucceeds) {
+  SetupIndexBuffer();
+  DoEnableVertexAttribArray(1);
+
+  EXPECT_CALL(*gl_, DrawElementsInstancedANGLE(_, _, _, _, _))
+      .Times(0);
+  DrawElementsInstancedANGLE cmd;
+  cmd.Init(GL_TRIANGLES, 0, GL_UNSIGNED_SHORT,
+           kValidIndexRangeStart * 2, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_F(GLES2DecoderGeometryInstancingTest,
+       DrawElementsInstancedANGLEValidAttributesSucceeds) {
+  SetupIndexBuffer();
+  SetupTexture();
+  SetupVertexBuffer();
+  DoEnableVertexAttribArray(1);
+  DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
+  AddExpectationsForSimulatedAttrib0(kMaxValidIndex + 1, kServiceBufferId);
+  SetupExpectationsForApplyingDefaultDirtyState();
+
+  EXPECT_CALL(*gl_, DrawElementsInstancedANGLE(
+                        GL_TRIANGLES,
+                        kValidIndexRangeCount,
+                        GL_UNSIGNED_SHORT,
+                        BufferOffset(kValidIndexRangeStart * 2),
+                        1))
+      .Times(1)
+      .RetiresOnSaturation();
+  DrawElementsInstancedANGLE cmd;
+  cmd.Init(GL_TRIANGLES, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
+           kValidIndexRangeStart * 2, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_F(GLES2DecoderGeometryInstancingTest,
+       DrawElementsInstancedANGLEWithInvalidModeFails) {
+  SetupIndexBuffer();
+  SetupVertexBuffer();
+  DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
+
+  EXPECT_CALL(*gl_, DrawElementsInstancedANGLE(_, _, _, _, _))
+      .Times(0);
+  DrawElementsInstancedANGLE cmd;
+  cmd.Init(GL_QUADS, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
+           kValidIndexRangeStart * 2, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+  cmd.Init(GL_INVALID_ENUM, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
+           kValidIndexRangeStart * 2, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
+// Per-instance data is twice as large, but number of instances is half
+TEST_F(GLES2DecoderGeometryInstancingTest,
+       DrawElementsInstancedANGLELargeInstanceSucceeds) {
+  SetupTexture();
+  SetupIndexBuffer();
+  SetupVertexBuffer();
+  SetupExpectationsForApplyingDefaultDirtyState();
+  //Add offset so we're sure we're accessing data near the end of the buffer.
+  DoVertexAttribPointer(1, 2, GL_FLOAT, 0,
+                        (kNumVertices - kMaxValidIndex - 1) * 2 *
+                            sizeof(GLfloat));
+
+  DoEnableVertexAttribArray(0);
+  DoVertexAttribPointer(0, 4, GL_FLOAT, 0, 0);
+  DoVertexAttribDivisorANGLE(0, 1);
+  EXPECT_CALL(*gl_, DrawElementsInstancedANGLE(
+                        GL_TRIANGLES,
+                        kValidIndexRangeCount,
+                        GL_UNSIGNED_SHORT,
+                        BufferOffset(kValidIndexRangeStart * 2),
+                        kNumVertices / 2))
+      .Times(1)
+      .RetiresOnSaturation();
+  DrawElementsInstancedANGLE cmd;
+  cmd.Init(GL_TRIANGLES, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
+           kValidIndexRangeStart * 2, kNumVertices / 2);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+// Per-instance data is twice as large, but divisor is twice
+TEST_F(GLES2DecoderGeometryInstancingTest,
+       DrawElementsInstancedANGLELargeDivisorSucceeds) {
+  SetupTexture();
+  SetupIndexBuffer();
+  SetupVertexBuffer();
+  SetupExpectationsForApplyingDefaultDirtyState();
+  DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
+
+  DoEnableVertexAttribArray(0);
+  DoVertexAttribPointer(0, 4, GL_FLOAT, 0, 0);
+  DoVertexAttribDivisorANGLE(0, 2);
+  EXPECT_CALL(*gl_, DrawElementsInstancedANGLE(
+                        GL_TRIANGLES,
+                        kValidIndexRangeCount,
+                        GL_UNSIGNED_SHORT,
+                        BufferOffset(kValidIndexRangeStart * 2),
+                        kNumVertices))
+      .Times(1)
+      .RetiresOnSaturation();
+  DrawElementsInstancedANGLE cmd;
+  cmd.Init(GL_TRIANGLES, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
+           kValidIndexRangeStart * 2, kNumVertices);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_F(GLES2DecoderGeometryInstancingTest,
+       DrawElementsInstancedANGLELargeFails) {
+  SetupTexture();
+  SetupIndexBuffer();
+  SetupVertexBuffer();
+  DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
+
+  DoEnableVertexAttribArray(0);
+  DoVertexAttribPointer(0, 2, GL_FLOAT, 0, 0);
+  DoVertexAttribDivisorANGLE(0, 1);
+  EXPECT_CALL(*gl_, DrawElementsInstancedANGLE(_, _, _, _, _))
+      .Times(0)
+      .RetiresOnSaturation();
+  DrawElementsInstancedANGLE cmd;
+  cmd.Init(GL_TRIANGLES, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
+           kValidIndexRangeStart * 2, kNumVertices + 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  EXPECT_CALL(*gl_, DrawElementsInstancedANGLE(_, _, _, _, _))
+      .Times(0)
+      .RetiresOnSaturation();
+  cmd.Init(GL_TRIANGLES, kInvalidIndexRangeCount, GL_UNSIGNED_SHORT,
+           kInvalidIndexRangeStart * 2, kNumVertices);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_F(GLES2DecoderGeometryInstancingTest,
+       DrawElementsInstancedANGLEInvalidPrimcountFails) {
+  SetupTexture();
+  SetupIndexBuffer();
+  SetupVertexBuffer();
+  DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
+
+  DoEnableVertexAttribArray(0);
+  DoVertexAttribPointer(0, 2, GL_FLOAT, 0, 0);
+  DoVertexAttribDivisorANGLE(0, 1);
+  EXPECT_CALL(*gl_, DrawElementsInstancedANGLE(_, _, _, _, _))
+      .Times(0)
+      .RetiresOnSaturation();
+  DrawElementsInstancedANGLE cmd;
+  cmd.Init(GL_TRIANGLES, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
+           kValidIndexRangeStart * 2, -1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+// Per-index data is twice as large, but values of indices are smaller
+TEST_F(GLES2DecoderGeometryInstancingTest,
+       DrawElementsInstancedANGLELargeIndexSucceeds) {
+  SetupTexture();
+  SetupIndexBuffer();
+  SetupVertexBuffer();
+  SetupExpectationsForApplyingDefaultDirtyState();
+  DoVertexAttribPointer(1, 4, GL_FLOAT, 0, 0);
+
+  DoEnableVertexAttribArray(0);
+  DoVertexAttribPointer(0, 2, GL_FLOAT, 0, 0);
+  DoVertexAttribDivisorANGLE(0, 1);
+  EXPECT_CALL(*gl_, DrawElementsInstancedANGLE(
+                        GL_TRIANGLES,
+                        kValidIndexRangeCount,
+                        GL_UNSIGNED_SHORT,
+                        BufferOffset(kValidIndexRangeStart * 2),
+                        kNumVertices))
+      .Times(1)
+      .RetiresOnSaturation();
+  DrawElementsInstancedANGLE cmd;
+  cmd.Init(GL_TRIANGLES, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
+           kValidIndexRangeStart * 2, kNumVertices);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_F(GLES2DecoderGeometryInstancingTest,
+       DrawElementsInstancedANGLENoDivisor0Fails) {
+  SetupTexture();
+  SetupIndexBuffer();
+  SetupVertexBuffer();
+  DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
+
+  DoEnableVertexAttribArray(0);
+  DoVertexAttribPointer(0, 2, GL_FLOAT, 0, 0);
+  DoVertexAttribDivisorANGLE(0, 1);
+  DoVertexAttribDivisorANGLE(1, 1);
+  EXPECT_CALL(*gl_, DrawElementsInstancedANGLE(_, _, _, _, _))
+      .Times(0)
+      .RetiresOnSaturation();
+  DrawElementsInstancedANGLE cmd;
+  cmd.Init(GL_TRIANGLES, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
+           kValidIndexRangeStart * 2, kNumVertices);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
   EXPECT_EQ(GL_NO_ERROR, GetGLError());

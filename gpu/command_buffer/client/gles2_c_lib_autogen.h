@@ -601,6 +601,20 @@ void GLES2TexImageIOSurface2DCHROMIUM(
   gles2::GetGLContext()->TexImageIOSurface2DCHROMIUM(
       target, width, height, ioSurfaceId, plane);
 }
+void GLES2DrawArraysInstancedANGLE(
+    GLenum mode, GLint first, GLsizei count, GLsizei primcount) {
+  gles2::GetGLContext()->DrawArraysInstancedANGLE(
+      mode, first, count, primcount);
+}
+void GLES2DrawElementsInstancedANGLE(
+    GLenum mode, GLsizei count, GLenum type, const void* indices,
+    GLsizei primcount) {
+  gles2::GetGLContext()->DrawElementsInstancedANGLE(
+      mode, count, type, indices, primcount);
+}
+void GLES2VertexAttribDivisorANGLE(GLuint index, GLuint divisor) {
+  gles2::GetGLContext()->VertexAttribDivisorANGLE(index, divisor);
+}
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_C_LIB_AUTOGEN_H_
 

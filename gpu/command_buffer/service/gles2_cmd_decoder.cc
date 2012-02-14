@@ -1210,11 +1210,12 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   void ClearRealGLErrors();
 
   // Checks if the current program and vertex attributes are valid for drawing.
-  bool IsDrawValid(GLuint max_vertex_accessed);
+  bool IsDrawValid(GLuint max_vertex_accessed, GLsizei primcount);
 
   // Returns true if successful, simulated will be true if attrib0 was
   // simulated.
-  bool SimulateAttrib0(GLuint max_vertex_accessed, bool* simulated);
+  bool SimulateAttrib0(
+      GLuint max_vertex_accessed, bool* simulated);
   void RestoreStateForSimulatedAttrib0();
 
   // Returns true if textures were set.
@@ -1222,8 +1223,18 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   void RestoreStateForNonRenderableTextures();
 
   // Returns true if GL_FIXED attribs were simulated.
-  bool SimulateFixedAttribs(GLuint max_vertex_accessed, bool* simulated);
+  bool SimulateFixedAttribs(
+      GLuint max_vertex_accessed, bool* simulated, GLsizei primcount);
   void RestoreStateForSimulatedFixedAttribs();
+
+  // Handle DrawArrays and DrawElements for both instanced and non-instanced
+  // cases (primcount is 0 for non-instanced).
+  error::Error DoDrawArrays(
+      bool instanced, GLenum mode, GLint first, GLsizei count,
+      GLsizei primcount);
+  error::Error DoDrawElements(
+      bool instanced, GLenum mode, GLsizei count, GLenum type,
+      int32 offset, GLsizei primcount);
 
   // Gets the buffer id for a given target.
   BufferManager::BufferInfo* GetBufferInfoForTarget(GLenum target) {
@@ -4856,7 +4867,8 @@ bool GLES2DecoderImpl::ClearUnclearedTextures() {
   return true;
 }
 
-bool GLES2DecoderImpl::IsDrawValid(GLuint max_vertex_accessed) {
+bool GLES2DecoderImpl::IsDrawValid(
+    GLuint max_vertex_accessed, GLsizei primcount) {
   // NOTE: We specifically do not check current_program->IsValid() because
   // it could never be invalid since glUseProgram would have failed. While
   // glLinkProgram could later mark the program as invalid the previous
@@ -4866,6 +4878,9 @@ bool GLES2DecoderImpl::IsDrawValid(GLuint max_vertex_accessed) {
     // But GL says no ERROR.
     return false;
   }
+
+  // true if any enabled, used divisor is zero
+  bool divisor0 = false;
   // Validate all attribs currently enabled. If they are used by the current
   // program then check that they have enough elements to handle the draw call.
   // If they are not used by the current program check that they have a buffer
@@ -4878,8 +4893,10 @@ bool GLES2DecoderImpl::IsDrawValid(GLuint max_vertex_accessed) {
     const ProgramManager::ProgramInfo::VertexAttribInfo* attrib_info =
         current_program_->GetAttribInfoByLocation(info->index());
     if (attrib_info) {
+      divisor0 |= (info->divisor() == 0);
+      GLuint count = info->MaxVertexAccessed(primcount, max_vertex_accessed);
       // This attrib is used in the current program.
-      if (!info->CanAccess(max_vertex_accessed)) {
+      if (!info->CanAccess(count)) {
         SetGLError(GL_INVALID_OPERATION,
                    "glDrawXXX: attempt to access out of range vertices");
         return false;
@@ -4895,6 +4912,15 @@ bool GLES2DecoderImpl::IsDrawValid(GLuint max_vertex_accessed) {
       }
     }
   }
+
+  if (primcount && !divisor0) {
+    SetGLError(
+        GL_INVALID_OPERATION,
+        "glDrawXXX: attempt instanced render with all attributes having "
+        "non-zero divisors");
+    return false;
+  }
+
   return true;
 }
 
@@ -4957,6 +4983,9 @@ bool GLES2DecoderImpl::SimulateAttrib0(
 
   glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL);
 
+  if (info->divisor())
+    glVertexAttribDivisorANGLE(0, 0);
+
   *simulated = true;
   return true;
 }
@@ -4970,12 +4999,14 @@ void GLES2DecoderImpl::RestoreStateForSimulatedAttrib0() {
   glVertexAttribPointer(
       0, info->size(), info->type(), info->normalized(), info->gl_stride(),
       ptr);
+  if (info->divisor())
+    glVertexAttribDivisorANGLE(0, info->divisor());
   glBindBuffer(GL_ARRAY_BUFFER,
                bound_array_buffer_ ? bound_array_buffer_->service_id() : 0);
 }
 
 bool GLES2DecoderImpl::SimulateFixedAttribs(
-    GLuint max_vertex_accessed, bool* simulated) {
+    GLuint max_vertex_accessed, bool* simulated, GLsizei primcount) {
   DCHECK(simulated);
   *simulated = false;
   if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2)
@@ -4991,13 +5022,6 @@ bool GLES2DecoderImpl::SimulateFixedAttribs(
   // to be used normally. It's just here to pass that OpenGL ES 2.0 conformance
   // tests so we just add to the buffer attrib used.
 
-  // Compute the number of elements needed.
-  GLuint num_vertices = max_vertex_accessed + 1;
-  if (num_vertices == 0) {
-    SetGLError(GL_OUT_OF_MEMORY, "glDrawXXX: Simulating attrib 0");
-    return false;
-  }
-
   GLuint elements_needed = 0;
   const VertexAttribManager::VertexAttribInfoList& infos =
       vertex_attrib_manager_->GetEnabledVertexAttribInfos();
@@ -5006,8 +5030,15 @@ bool GLES2DecoderImpl::SimulateFixedAttribs(
     const VertexAttribManager::VertexAttribInfo* info = *it;
     const ProgramManager::ProgramInfo::VertexAttribInfo* attrib_info =
         current_program_->GetAttribInfoByLocation(info->index());
+    GLuint max_accessed = info->MaxVertexAccessed(primcount,
+                                                  max_vertex_accessed);
+    GLuint num_vertices = max_accessed + 1;
+    if (num_vertices == 0) {
+      SetGLError(GL_OUT_OF_MEMORY, "glDrawXXX: Simulating attrib 0");
+      return false;
+    }
     if (attrib_info &&
-        info->CanAccess(max_vertex_accessed) &&
+        info->CanAccess(max_accessed) &&
         info->type() == GL_FIXED) {
       GLuint elements_used = 0;
       if (!SafeMultiply(num_vertices,
@@ -5046,8 +5077,15 @@ bool GLES2DecoderImpl::SimulateFixedAttribs(
     const VertexAttribManager::VertexAttribInfo* info = *it;
     const ProgramManager::ProgramInfo::VertexAttribInfo* attrib_info =
         current_program_->GetAttribInfoByLocation(info->index());
+    GLuint max_accessed = info->MaxVertexAccessed(primcount,
+                                                  max_vertex_accessed);
+    GLuint num_vertices = max_accessed + 1;
+    if (num_vertices == 0) {
+      SetGLError(GL_OUT_OF_MEMORY, "glDrawXXX: Simulating attrib 0");
+      return false;
+    }
     if (attrib_info &&
-        info->CanAccess(max_vertex_accessed) &&
+        info->CanAccess(max_accessed) &&
         info->type() == GL_FIXED) {
       int num_elements = info->size() * kSizeOfFloat;
       int size = num_elements * num_vertices;
@@ -5077,17 +5115,21 @@ void GLES2DecoderImpl::RestoreStateForSimulatedFixedAttribs() {
                bound_array_buffer_ ? bound_array_buffer_->service_id() : 0);
 }
 
-error::Error GLES2DecoderImpl::HandleDrawArrays(
-    uint32 immediate_data_size, const gles2::DrawArrays& c) {
-  GLenum mode = static_cast<GLenum>(c.mode);
-  GLint first = static_cast<GLint>(c.first);
-  GLsizei count = static_cast<GLsizei>(c.count);
+error::Error GLES2DecoderImpl::DoDrawArrays(bool instanced,
+                                            GLenum mode,
+                                            GLint first,
+                                            GLsizei count,
+                                            GLsizei primcount) {
   if (!validators_->draw_mode.IsValid(mode)) {
     SetGLError(GL_INVALID_ENUM, "glDrawArrays: mode GL_INVALID_ENUM");
     return error::kNoError;
   }
   if (count < 0) {
     SetGLError(GL_INVALID_VALUE, "glDrawArrays: count < 0");
+    return error::kNoError;
+  }
+  if (primcount < 0) {
+    SetGLError(GL_INVALID_VALUE, "glDrawArrays: primcount < 0");
     return error::kNoError;
   }
   if (!CheckBoundFramebuffersValid("glDrawArrays")) {
@@ -5100,12 +5142,12 @@ error::Error GLES2DecoderImpl::HandleDrawArrays(
     return error::kNoError;
   }
 
-  if (count == 0) {
+  if (count == 0 || (instanced && primcount == 0)) {
     return error::kNoError;
   }
 
   GLuint max_vertex_accessed = first + count - 1;
-  if (IsDrawValid(max_vertex_accessed)) {
+  if (IsDrawValid(max_vertex_accessed, primcount)) {
     if (!ClearUnclearedTextures()) {
       SetGLError(GL_INVALID_VALUE, "glDrawArrays: out of memory");
       return error::kNoError;
@@ -5115,10 +5157,15 @@ error::Error GLES2DecoderImpl::HandleDrawArrays(
       return error::kNoError;
     }
     bool simulated_fixed_attribs = false;
-    if (SimulateFixedAttribs(max_vertex_accessed, &simulated_fixed_attribs)) {
+    if (SimulateFixedAttribs(max_vertex_accessed, &simulated_fixed_attribs,
+                             primcount)) {
       bool textures_set = SetBlackTextureForNonRenderableTextures();
       ApplyDirtyState();
-      glDrawArrays(mode, first, count);
+      if (!instanced) {
+        glDrawArrays(mode, first, count);
+      } else {
+        glDrawArraysInstancedANGLE(mode, first, count, primcount);
+      }
       if (textures_set) {
         RestoreStateForNonRenderableTextures();
       }
@@ -5137,18 +5184,41 @@ error::Error GLES2DecoderImpl::HandleDrawArrays(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderImpl::HandleDrawElements(
-    uint32 immediate_data_size, const gles2::DrawElements& c) {
+error::Error GLES2DecoderImpl::HandleDrawArrays(
+    uint32 immediate_data_size, const gles2::DrawArrays& c) {
+  return DoDrawArrays(false,
+                      static_cast<GLenum>(c.mode),
+                      static_cast<GLint>(c.first),
+                      static_cast<GLsizei>(c.count),
+                      0);
+}
+
+error::Error GLES2DecoderImpl::HandleDrawArraysInstancedANGLE(
+    uint32 immediate_data_size, const gles2::DrawArraysInstancedANGLE& c) {
+  if (!feature_info_->feature_flags().angle_instanced_arrays) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glDrawArraysInstancedANGLE: function not available");
+    return error::kNoError;
+  }
+  return DoDrawArrays(true,
+                      static_cast<GLenum>(c.mode),
+                      static_cast<GLint>(c.first),
+                      static_cast<GLsizei>(c.count),
+                      static_cast<GLsizei>(c.primcount));
+}
+
+error::Error GLES2DecoderImpl::DoDrawElements(bool instanced,
+                                              GLenum mode,
+                                              GLsizei count,
+                                              GLenum type,
+                                              int32 offset,
+                                              GLsizei primcount) {
   if (!bound_element_array_buffer_) {
     SetGLError(GL_INVALID_OPERATION,
                "glDrawElements: No element array buffer bound");
     return error::kNoError;
   }
 
-  GLenum mode = c.mode;
-  GLsizei count = c.count;
-  GLenum type = c.type;
-  int32 offset = c.index_offset;
   if (count < 0) {
     SetGLError(GL_INVALID_VALUE, "glDrawElements: count < 0");
     return error::kNoError;
@@ -5165,12 +5235,16 @@ error::Error GLES2DecoderImpl::HandleDrawElements(
     SetGLError(GL_INVALID_ENUM, "glDrawElements: type GL_INVALID_ENUM");
     return error::kNoError;
   }
+  if (primcount < 0) {
+    SetGLError(GL_INVALID_VALUE, "glDrawElements: primcount < 0");
+    return error::kNoError;
+  }
 
   if (!CheckBoundFramebuffersValid("glDrawElements")) {
     return error::kNoError;
   }
 
-  if (count == 0) {
+  if (count == 0 || (instanced && primcount == 0)) {
     return error::kNoError;
   }
 
@@ -5182,7 +5256,7 @@ error::Error GLES2DecoderImpl::HandleDrawElements(
     return error::kNoError;
   }
 
-  if (IsDrawValid(max_vertex_accessed)) {
+  if (IsDrawValid(max_vertex_accessed, primcount)) {
     if (!ClearUnclearedTextures()) {
       SetGLError(GL_INVALID_VALUE, "glDrawElements: out of memory");
       return error::kNoError;
@@ -5192,11 +5266,16 @@ error::Error GLES2DecoderImpl::HandleDrawElements(
       return error::kNoError;
     }
     bool simulated_fixed_attribs = false;
-    if (SimulateFixedAttribs(max_vertex_accessed, &simulated_fixed_attribs)) {
+    if (SimulateFixedAttribs(max_vertex_accessed, &simulated_fixed_attribs,
+                             primcount)) {
       bool textures_set = SetBlackTextureForNonRenderableTextures();
       ApplyDirtyState();
       const GLvoid* indices = reinterpret_cast<const GLvoid*>(offset);
-      glDrawElements(mode, count, type, indices);
+      if (!instanced) {
+        glDrawElements(mode, count, type, indices);
+      } else {
+        glDrawElementsInstancedANGLE(mode, count, type, indices, primcount);
+      }
       if (textures_set) {
         RestoreStateForNonRenderableTextures();
       }
@@ -5213,6 +5292,31 @@ error::Error GLES2DecoderImpl::HandleDrawElements(
     }
   }
   return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleDrawElements(
+    uint32 immediate_data_size, const gles2::DrawElements& c) {
+  return DoDrawElements(false,
+                        static_cast<GLenum>(c.mode),
+                        static_cast<GLsizei>(c.count),
+                        static_cast<GLenum>(c.type),
+                        static_cast<int32>(c.index_offset),
+                        0);
+}
+
+error::Error GLES2DecoderImpl::HandleDrawElementsInstancedANGLE(
+    uint32 immediate_data_size, const gles2::DrawElementsInstancedANGLE& c) {
+  if (!feature_info_->feature_flags().angle_instanced_arrays) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glDrawElementsInstancedANGLE: function not available");
+    return error::kNoError;
+  }
+  return DoDrawElements(true,
+                        static_cast<GLenum>(c.mode),
+                        static_cast<GLsizei>(c.count),
+                        static_cast<GLenum>(c.type),
+                        static_cast<int32>(c.index_offset),
+                        static_cast<GLsizei>(c.primcount));
 }
 
 GLuint GLES2DecoderImpl::DoGetMaxValueInBufferCHROMIUM(
@@ -5562,6 +5666,9 @@ void GLES2DecoderImpl::DoGetVertexAttribfv(
       params[2] = info->value().v[2];
       params[3] = info->value().v[3];
       break;
+    case GL_VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE:
+      *params = static_cast<GLfloat>(info->divisor());
+      break;
     default:
       NOTREACHED();
       break;
@@ -5600,6 +5707,9 @@ void GLES2DecoderImpl::DoGetVertexAttribiv(
       break;
     case GL_VERTEX_ATTRIB_ARRAY_NORMALIZED:
       *params = static_cast<GLint>(info->normalized());
+      break;
+    case GL_VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE:
+      *params = info->divisor();
       break;
     case GL_CURRENT_VERTEX_ATTRIB:
       params[0] = static_cast<GLint>(info->value().v[0]);
@@ -5811,6 +5921,27 @@ error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
   if (type != GL_FIXED) {
     glVertexAttribPointer(indx, size, type, normalized, stride, ptr);
   }
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleVertexAttribDivisorANGLE(
+    uint32 immediate_data_size, const gles2::VertexAttribDivisorANGLE& c) {
+  if (!feature_info_->feature_flags().angle_instanced_arrays) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glVertexAttribDivisorANGLE: function not available");
+  }
+  GLuint index = c.index;
+  GLuint divisor = c.divisor;
+  if (index >= group_->max_vertex_attribs()) {
+    SetGLError(GL_INVALID_VALUE,
+               "glVertexAttribDivisorANGLE: index out of range");
+    return error::kNoError;
+  }
+
+  vertex_attrib_manager_->SetDivisor(
+      index,
+      divisor);
+  glVertexAttribDivisorANGLE(index, divisor);
   return error::kNoError;
 }
 

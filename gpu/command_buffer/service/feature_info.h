@@ -30,7 +30,8 @@ class FeatureInfo : public base::RefCounted<FeatureInfo> {
           chromium_stream_texture(false),
           angle_translated_shader_source(false),
           angle_pack_reverse_row_order(false),
-          arb_texture_rectangle(false) {
+          arb_texture_rectangle(false),
+          angle_instanced_arrays(false) {
     }
 
     bool chromium_framebuffer_multisample;
@@ -44,6 +45,7 @@ class FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool angle_translated_shader_source;
     bool angle_pack_reverse_row_order;
     bool arb_texture_rectangle;
+    bool angle_instanced_arrays;
   };
 
   FeatureInfo();

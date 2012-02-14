@@ -1492,6 +1492,27 @@ _FUNCTION_INFO = {
     'extension': True,
     'decoder_func': 'DoTexStorage2DEXT',
   },
+  'DrawArraysInstancedANGLE': {
+    'type': 'Manual',
+    'cmd_args': 'GLenumDrawMode mode, GLint first, GLsizei count, '
+                'GLsizei primcount',
+    'extension': True,
+    'unit_test': False,
+  },
+  'DrawElementsInstancedANGLE': {
+    'type': 'Manual',
+    'cmd_args': 'GLenumDrawMode mode, GLsizei count, '
+                'GLenumIndexType type, GLuint index_offset, GLsizei primcount',
+    'extension': True,
+    'unit_test': False,
+    'client_test': False,
+  },
+  'VertexAttribDivisorANGLE': {
+    'type': 'Manual',
+    'cmd_args': 'GLuint index, GLuint divisor',
+    'extension': True,
+    'unit_test': False,
+  },
 
 }
 

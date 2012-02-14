@@ -264,7 +264,8 @@ class ClientSideBufferHelper {
           type_(GL_FLOAT),
           normalized_(GL_FALSE),
           pointer_(NULL),
-          gl_stride_(0) {
+          gl_stride_(0),
+          divisor_(0) {
     }
 
     bool enabled() const {
@@ -303,6 +304,10 @@ class ClientSideBufferHelper {
       return buffer_id_ == 0;
     }
 
+    GLuint divisor() const {
+      return divisor_;
+    }
+
     void SetInfo(
         GLuint buffer_id,
         GLint size,
@@ -316,6 +321,10 @@ class ClientSideBufferHelper {
       normalized_ = normalized;
       gl_stride_ = gl_stride;
       pointer_ = pointer;
+    }
+
+    void SetDivisor(GLuint divisor) {
+      divisor_ = divisor;
     }
 
    private:
@@ -340,6 +349,9 @@ class ClientSideBufferHelper {
     // The stride that will be used to access the buffer. This is the bogus GL
     // stride where 0 = compute the stride based on size and type.
     GLsizei gl_stride_;
+
+    // Divisor, for geometry instancing.
+    GLuint divisor_;
   };
 
   ClientSideBufferHelper(GLuint max_vertex_attribs,
@@ -390,6 +402,14 @@ class ClientSideBufferHelper {
     }
   }
 
+  void SetAttribDivisor(GLuint index, GLuint divisor) {
+    if (index < max_vertex_attribs_) {
+      VertexAttribInfo& info = vertex_attrib_infos_[index];
+
+      info.SetDivisor(divisor);
+    }
+  }
+
   // Gets the Attrib pointer for an attrib but only if it's a client side
   // pointer. Returns true if it got the pointer.
   bool GetAttribPointer(GLuint index, GLenum pname, void** ptr) const {
@@ -436,7 +456,8 @@ class ClientSideBufferHelper {
   void SetupSimulatedClientSideBuffers(
       GLES2Implementation* gl,
       GLES2CmdHelper* gl_helper,
-      GLsizei num_elements) {
+      GLsizei num_elements,
+      GLsizei primcount) {
     GLsizei total_size = 0;
     // Compute the size of the buffer we need.
     for (GLuint ii = 0; ii < max_vertex_attribs_; ++ii) {
@@ -445,8 +466,10 @@ class ClientSideBufferHelper {
         size_t bytes_per_element =
             GLES2Util::GetGLTypeSizeForTexturesAndBuffers(info.type()) *
             info.size();
+        GLsizei elements = (primcount && info.divisor() > 0) ?
+            ((primcount - 1) / info.divisor() + 1) : num_elements;
         total_size += RoundUpToMultipleOf4(
-            bytes_per_element * num_elements);
+            bytes_per_element * elements);
       }
     }
     gl_helper->BindBuffer(GL_ARRAY_BUFFER, array_buffer_id_);
@@ -463,8 +486,10 @@ class ClientSideBufferHelper {
             info.size();
         GLsizei real_stride = info.stride() ?
             info.stride() : static_cast<GLsizei>(bytes_per_element);
+        GLsizei elements = (primcount && info.divisor() > 0) ?
+            ((primcount - 1) / info.divisor() + 1) : num_elements;
         GLsizei bytes_collected = CollectData(
-            info.pointer(), bytes_per_element, real_stride, num_elements);
+            info.pointer(), bytes_per_element, real_stride, elements);
         gl->BufferSubDataHelper(
             GL_ARRAY_BUFFER, array_buffer_offset_, bytes_collected,
             collection_buffer_.get());
@@ -1057,7 +1082,7 @@ void GLES2Implementation::DrawElements(
   }
   if (have_client_side) {
     client_side_buffer_helper_->SetupSimulatedClientSideBuffers(
-        this, helper_, num_elements);
+        this, helper_, num_elements, 0);
   }
   helper_->DrawElements(mode, count, type, offset);
   if (have_client_side) {
@@ -1415,6 +1440,19 @@ void GLES2Implementation::VertexAttribPointer(
   helper_->VertexAttribPointer(index, size, type, normalized, stride,
                                ToGLuint(ptr));
 #endif  // !defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
+}
+
+void GLES2Implementation::VertexAttribDivisorANGLE(
+    GLuint index, GLuint divisor) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << this << "] glVertexAttribDivisorANGLE("
+      << index << ", "
+      << divisor << ") ");
+#if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
+  // Record the info on the client side.
+  client_side_buffer_helper_->SetAttribDivisor(index, divisor);
+#endif // defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
+  helper_->VertexAttribDivisorANGLE(index, divisor);
 }
 
 void GLES2Implementation::ShaderSource(
@@ -2464,7 +2502,7 @@ void GLES2Implementation::DrawArrays(GLenum mode, GLint first, GLsizei count) {
       client_side_buffer_helper_->HaveEnabledClientSideBuffers();
   if (have_client_side) {
     client_side_buffer_helper_->SetupSimulatedClientSideBuffers(
-        this, helper_, first + count);
+        this, helper_, first + count, 0);
   }
 #endif
   helper_->DrawArrays(mode, first, count);
@@ -2930,6 +2968,107 @@ void GLES2Implementation::PostSubBufferCHROMIUM(
     swap_buffers_tokens_.pop();
   }
 }
+
+void GLES2Implementation::DrawArraysInstancedANGLE(
+    GLenum mode, GLint first, GLsizei count, GLsizei primcount) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << this << "] glDrawArraysInstancedANGLE("
+      << GLES2Util::GetStringDrawMode(mode) << ", "
+      << first << ", " << count << ", " << primcount << ")");
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glDrawArraysInstancedANGLE: count < 0");
+    return;
+  }
+  if (primcount < 0) {
+    SetGLError(GL_INVALID_VALUE, "glDrawArraysInstancedANGLE: primcount < 0");
+    return;
+  }
+  if (primcount == 0) {
+    return;
+  }
+#if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
+  bool have_client_side =
+      client_side_buffer_helper_->HaveEnabledClientSideBuffers();
+  if (have_client_side) {
+    client_side_buffer_helper_->SetupSimulatedClientSideBuffers(
+        this, helper_, first + count, primcount);
+  }
+#endif
+  helper_->DrawArraysInstancedANGLE(mode, first, count, primcount);
+#if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
+  if (have_client_side) {
+    // Restore the user's current binding.
+    helper_->BindBuffer(GL_ARRAY_BUFFER, bound_array_buffer_id_);
+  }
+#endif
+}
+
+void GLES2Implementation::DrawElementsInstancedANGLE(
+    GLenum mode, GLsizei count, GLenum type, const void* indices,
+    GLsizei primcount) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << this << "] glDrawElementsInstancedANGLE("
+      << GLES2Util::GetStringDrawMode(mode) << ", "
+      << count << ", "
+      << GLES2Util::GetStringIndexType(type) << ", "
+      << static_cast<const void*>(indices) << ", "
+      << primcount << ")");
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE,
+               "glDrawElementsInstancedANGLE: count less than 0.");
+    return;
+  }
+  if (count == 0) {
+    return;
+  }
+  if (primcount < 0) {
+    SetGLError(GL_INVALID_VALUE,
+               "glDrawElementsInstancedANGLE: primcount < 0");
+    return;
+  }
+  if (primcount == 0) {
+    return;
+  }
+#if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
+  bool have_client_side =
+      client_side_buffer_helper_->HaveEnabledClientSideBuffers();
+  GLsizei num_elements = 0;
+  GLuint offset = ToGLuint(indices);
+  if (bound_element_array_buffer_id_ == 0) {
+    // Index buffer is client side array.
+    // Copy to buffer, scan for highest index.
+    num_elements = client_side_buffer_helper_->SetupSimulatedIndexBuffer(
+        this, helper_, count, type, indices);
+    offset = 0;
+  } else {
+    // Index buffer is GL buffer. Ask the service for the highest vertex
+    // that will be accessed. Note: It doesn't matter if another context
+    // changes the contents of any of the buffers. The service will still
+    // validate the indices. We just need to know how much to copy across.
+    if (have_client_side) {
+      num_elements = GetMaxValueInBufferCHROMIUMHelper(
+          bound_element_array_buffer_id_, count, type, ToGLuint(indices)) + 1;
+    }
+  }
+  if (have_client_side) {
+    client_side_buffer_helper_->SetupSimulatedClientSideBuffers(
+        this, helper_, num_elements, primcount);
+  }
+  helper_->DrawElementsInstancedANGLE(mode, count, type, offset, primcount);
+  if (have_client_side) {
+    // Restore the user's current binding.
+    helper_->BindBuffer(GL_ARRAY_BUFFER, bound_array_buffer_id_);
+  }
+  if (bound_element_array_buffer_id_ == 0) {
+    // Restore the element array binding.
+    helper_->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+  }
+#else
+  helper_->DrawElementsInstancedANGLE(
+      mode, count, type, ToGLuint(indices), primcount);
+#endif
+}
+
 
 }  // namespace gles2
 }  // namespace gpu

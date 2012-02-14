@@ -9261,6 +9261,147 @@ COMPILE_ASSERT(offsetof(TexImageIOSurface2DCHROMIUM, ioSurfaceId) == 16,
 COMPILE_ASSERT(offsetof(TexImageIOSurface2DCHROMIUM, plane) == 20,
                OffsetOf_TexImageIOSurface2DCHROMIUM_plane_not_20);
 
+struct DrawArraysInstancedANGLE {
+  typedef DrawArraysInstancedANGLE ValueType;
+  static const CommandId kCmdId = kDrawArraysInstancedANGLE;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(GLenum _mode, GLint _first, GLsizei _count, GLsizei _primcount) {
+    SetHeader();
+    mode = _mode;
+    first = _first;
+    count = _count;
+    primcount = _primcount;
+  }
+
+  void* Set(
+      void* cmd, GLenum _mode, GLint _first, GLsizei _count,
+      GLsizei _primcount) {
+    static_cast<ValueType*>(cmd)->Init(_mode, _first, _count, _primcount);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 mode;
+  int32 first;
+  int32 count;
+  int32 primcount;
+};
+
+COMPILE_ASSERT(sizeof(DrawArraysInstancedANGLE) == 20,
+               Sizeof_DrawArraysInstancedANGLE_is_not_20);
+COMPILE_ASSERT(offsetof(DrawArraysInstancedANGLE, header) == 0,
+               OffsetOf_DrawArraysInstancedANGLE_header_not_0);
+COMPILE_ASSERT(offsetof(DrawArraysInstancedANGLE, mode) == 4,
+               OffsetOf_DrawArraysInstancedANGLE_mode_not_4);
+COMPILE_ASSERT(offsetof(DrawArraysInstancedANGLE, first) == 8,
+               OffsetOf_DrawArraysInstancedANGLE_first_not_8);
+COMPILE_ASSERT(offsetof(DrawArraysInstancedANGLE, count) == 12,
+               OffsetOf_DrawArraysInstancedANGLE_count_not_12);
+COMPILE_ASSERT(offsetof(DrawArraysInstancedANGLE, primcount) == 16,
+               OffsetOf_DrawArraysInstancedANGLE_primcount_not_16);
+
+struct DrawElementsInstancedANGLE {
+  typedef DrawElementsInstancedANGLE ValueType;
+  static const CommandId kCmdId = kDrawElementsInstancedANGLE;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(
+      GLenum _mode, GLsizei _count, GLenum _type, GLuint _index_offset,
+      GLsizei _primcount) {
+    SetHeader();
+    mode = _mode;
+    count = _count;
+    type = _type;
+    index_offset = _index_offset;
+    primcount = _primcount;
+  }
+
+  void* Set(
+      void* cmd, GLenum _mode, GLsizei _count, GLenum _type,
+      GLuint _index_offset, GLsizei _primcount) {
+    static_cast<ValueType*>(
+        cmd)->Init(_mode, _count, _type, _index_offset, _primcount);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 mode;
+  int32 count;
+  uint32 type;
+  uint32 index_offset;
+  int32 primcount;
+};
+
+COMPILE_ASSERT(sizeof(DrawElementsInstancedANGLE) == 24,
+               Sizeof_DrawElementsInstancedANGLE_is_not_24);
+COMPILE_ASSERT(offsetof(DrawElementsInstancedANGLE, header) == 0,
+               OffsetOf_DrawElementsInstancedANGLE_header_not_0);
+COMPILE_ASSERT(offsetof(DrawElementsInstancedANGLE, mode) == 4,
+               OffsetOf_DrawElementsInstancedANGLE_mode_not_4);
+COMPILE_ASSERT(offsetof(DrawElementsInstancedANGLE, count) == 8,
+               OffsetOf_DrawElementsInstancedANGLE_count_not_8);
+COMPILE_ASSERT(offsetof(DrawElementsInstancedANGLE, type) == 12,
+               OffsetOf_DrawElementsInstancedANGLE_type_not_12);
+COMPILE_ASSERT(offsetof(DrawElementsInstancedANGLE, index_offset) == 16,
+               OffsetOf_DrawElementsInstancedANGLE_index_offset_not_16);
+COMPILE_ASSERT(offsetof(DrawElementsInstancedANGLE, primcount) == 20,
+               OffsetOf_DrawElementsInstancedANGLE_primcount_not_20);
+
+struct VertexAttribDivisorANGLE {
+  typedef VertexAttribDivisorANGLE ValueType;
+  static const CommandId kCmdId = kVertexAttribDivisorANGLE;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(GLuint _index, GLuint _divisor) {
+    SetHeader();
+    index = _index;
+    divisor = _divisor;
+  }
+
+  void* Set(void* cmd, GLuint _index, GLuint _divisor) {
+    static_cast<ValueType*>(cmd)->Init(_index, _divisor);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 index;
+  uint32 divisor;
+};
+
+COMPILE_ASSERT(sizeof(VertexAttribDivisorANGLE) == 12,
+               Sizeof_VertexAttribDivisorANGLE_is_not_12);
+COMPILE_ASSERT(offsetof(VertexAttribDivisorANGLE, header) == 0,
+               OffsetOf_VertexAttribDivisorANGLE_header_not_0);
+COMPILE_ASSERT(offsetof(VertexAttribDivisorANGLE, index) == 4,
+               OffsetOf_VertexAttribDivisorANGLE_index_not_4);
+COMPILE_ASSERT(offsetof(VertexAttribDivisorANGLE, divisor) == 8,
+               OffsetOf_VertexAttribDivisorANGLE_divisor_not_8);
+
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
 

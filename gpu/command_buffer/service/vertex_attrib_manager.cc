@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,7 @@ VertexAttribManager::VertexAttribInfo::VertexAttribInfo()
       normalized_(GL_FALSE),
       gl_stride_(0),
       real_stride_(16),
+      divisor_(0),
       list_(NULL) {
   value_.v[0] = 0.0f;
   value_.v[1] = 0.0f;

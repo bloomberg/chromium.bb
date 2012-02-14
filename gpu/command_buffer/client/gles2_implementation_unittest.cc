@@ -671,6 +671,76 @@ TEST_F(GLES2ImplementationTest, DrawArraysClientSideBuffers) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
+TEST_F(GLES2ImplementationTest, DrawArraysInstancedANGLEClientSideBuffers) {
+  static const float verts[][4] = {
+    { 12.0f, 23.0f, 34.0f, 45.0f, },
+    { 56.0f, 67.0f, 78.0f, 89.0f, },
+    { 13.0f, 24.0f, 35.0f, 46.0f, },
+  };
+  struct Cmds {
+    EnableVertexAttribArray enable1;
+    EnableVertexAttribArray enable2;
+    VertexAttribDivisorANGLE divisor;
+    BindBuffer bind_to_emu;
+    BufferData set_size;
+    BufferSubData copy_data1;
+    cmd::SetToken set_token1;
+    VertexAttribPointer set_pointer1;
+    BufferSubData copy_data2;
+    cmd::SetToken set_token2;
+    VertexAttribPointer set_pointer2;
+    DrawArraysInstancedANGLE draw;
+    BindBuffer restore;
+  };
+  const GLuint kEmuBufferId = GLES2Implementation::kClientSideArrayId;
+  const GLuint kAttribIndex1 = 1;
+  const GLuint kAttribIndex2 = 3;
+  const GLint kNumComponents1 = 3;
+  const GLint kNumComponents2 = 2;
+  const GLsizei kClientStride = sizeof(verts[0]);
+  const GLint kFirst = 1;
+  const GLsizei kCount = 2;
+  const GLuint kDivisor = 1;
+  const GLsizei kSize1 =
+      arraysize(verts) * kNumComponents1 * sizeof(verts[0][0]);
+  const GLsizei kSize2 =
+      1 * kNumComponents2 * sizeof(verts[0][0]);
+  const GLsizei kEmuOffset1 = 0;
+  const GLsizei kEmuOffset2 = kSize1;
+  const GLsizei kTotalSize = kSize1 + kSize2;
+
+  ExpectedMemoryInfo mem1 = GetExpectedMemory(kSize1);
+  ExpectedMemoryInfo mem2 = GetExpectedMemory(kSize2);
+
+  Cmds expected;
+  expected.enable1.Init(kAttribIndex1);
+  expected.enable2.Init(kAttribIndex2);
+  expected.divisor.Init(kAttribIndex2, kDivisor);
+  expected.bind_to_emu.Init(GL_ARRAY_BUFFER, kEmuBufferId);
+  expected.set_size.Init(GL_ARRAY_BUFFER, kTotalSize, 0, 0, GL_DYNAMIC_DRAW);
+  expected.copy_data1.Init(
+      GL_ARRAY_BUFFER, kEmuOffset1, kSize1, mem1.id, mem1.offset);
+  expected.set_token1.Init(GetNextToken());
+  expected.set_pointer1.Init(
+      kAttribIndex1, kNumComponents1, GL_FLOAT, GL_FALSE, 0, kEmuOffset1);
+  expected.copy_data2.Init(
+      GL_ARRAY_BUFFER, kEmuOffset2, kSize2, mem2.id, mem2.offset);
+  expected.set_token2.Init(GetNextToken());
+  expected.set_pointer2.Init(
+      kAttribIndex2, kNumComponents2, GL_FLOAT, GL_FALSE, 0, kEmuOffset2);
+  expected.draw.Init(GL_POINTS, kFirst, kCount, 1);
+  expected.restore.Init(GL_ARRAY_BUFFER, 0);
+  gl_->EnableVertexAttribArray(kAttribIndex1);
+  gl_->EnableVertexAttribArray(kAttribIndex2);
+  gl_->VertexAttribPointer(
+      kAttribIndex1, kNumComponents1, GL_FLOAT, GL_FALSE, kClientStride, verts);
+  gl_->VertexAttribPointer(
+      kAttribIndex2, kNumComponents2, GL_FLOAT, GL_FALSE, kClientStride, verts);
+  gl_->VertexAttribDivisorANGLE(kAttribIndex2, kDivisor);
+  gl_->DrawArraysInstancedANGLE(GL_POINTS, kFirst, kCount, 1);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationTest, DrawElementsClientSideBuffers) {
   static const float verts[][4] = {
     { 12.0f, 23.0f, 34.0f, 45.0f, },
@@ -835,6 +905,95 @@ TEST_F(GLES2ImplementationTest,
                            GL_FLOAT, GL_FALSE, kClientStride, verts);
   gl_->DrawElements(GL_POINTS, kCount, GL_UNSIGNED_SHORT,
                     reinterpret_cast<const void*>(kIndexOffset));
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, DrawElementsInstancedANGLEClientSideBuffers) {
+  static const float verts[][4] = {
+    { 12.0f, 23.0f, 34.0f, 45.0f, },
+    { 56.0f, 67.0f, 78.0f, 89.0f, },
+    { 13.0f, 24.0f, 35.0f, 46.0f, },
+  };
+  static const uint16 indices[] = {
+    1, 2,
+  };
+  struct Cmds {
+    EnableVertexAttribArray enable1;
+    EnableVertexAttribArray enable2;
+    VertexAttribDivisorANGLE divisor;
+    BindBuffer bind_to_index_emu;
+    BufferData set_index_size;
+    BufferSubData copy_data0;
+    cmd::SetToken set_token0;
+    BindBuffer bind_to_emu;
+    BufferData set_size;
+    BufferSubData copy_data1;
+    cmd::SetToken set_token1;
+    VertexAttribPointer set_pointer1;
+    BufferSubData copy_data2;
+    cmd::SetToken set_token2;
+    VertexAttribPointer set_pointer2;
+    DrawElementsInstancedANGLE draw;
+    BindBuffer restore;
+    BindBuffer restore_element;
+  };
+  const GLsizei kIndexSize = sizeof(indices);
+  const GLuint kEmuBufferId = GLES2Implementation::kClientSideArrayId;
+  const GLuint kEmuIndexBufferId =
+      GLES2Implementation::kClientSideElementArrayId;
+  const GLuint kAttribIndex1 = 1;
+  const GLuint kAttribIndex2 = 3;
+  const GLint kNumComponents1 = 3;
+  const GLint kNumComponents2 = 2;
+  const GLsizei kClientStride = sizeof(verts[0]);
+  const GLsizei kCount = 2;
+  const GLsizei kSize1 =
+      arraysize(verts) * kNumComponents1 * sizeof(verts[0][0]);
+  const GLsizei kSize2 =
+      1 * kNumComponents2 * sizeof(verts[0][0]);
+  const GLuint kDivisor = 1;
+  const GLsizei kEmuOffset1 = 0;
+  const GLsizei kEmuOffset2 = kSize1;
+  const GLsizei kTotalSize = kSize1 + kSize2;
+
+  ExpectedMemoryInfo mem1 = GetExpectedMemory(kIndexSize);
+  ExpectedMemoryInfo mem2 = GetExpectedMemory(kSize1);
+  ExpectedMemoryInfo mem3 = GetExpectedMemory(kSize2);
+
+  Cmds expected;
+  expected.enable1.Init(kAttribIndex1);
+  expected.enable2.Init(kAttribIndex2);
+  expected.divisor.Init(kAttribIndex2, kDivisor);
+  expected.bind_to_index_emu.Init(GL_ELEMENT_ARRAY_BUFFER, kEmuIndexBufferId);
+  expected.set_index_size.Init(
+      GL_ELEMENT_ARRAY_BUFFER, kIndexSize, 0, 0, GL_DYNAMIC_DRAW);
+  expected.copy_data0.Init(
+      GL_ELEMENT_ARRAY_BUFFER, 0, kIndexSize, mem1.id, mem1.offset);
+  expected.set_token0.Init(GetNextToken());
+  expected.bind_to_emu.Init(GL_ARRAY_BUFFER, kEmuBufferId);
+  expected.set_size.Init(GL_ARRAY_BUFFER, kTotalSize, 0, 0, GL_DYNAMIC_DRAW);
+  expected.copy_data1.Init(
+      GL_ARRAY_BUFFER, kEmuOffset1, kSize1, mem2.id, mem2.offset);
+  expected.set_token1.Init(GetNextToken());
+  expected.set_pointer1.Init(
+      kAttribIndex1, kNumComponents1, GL_FLOAT, GL_FALSE, 0, kEmuOffset1);
+  expected.copy_data2.Init(
+      GL_ARRAY_BUFFER, kEmuOffset2, kSize2, mem3.id, mem3.offset);
+  expected.set_token2.Init(GetNextToken());
+  expected.set_pointer2.Init(kAttribIndex2, kNumComponents2,
+                             GL_FLOAT, GL_FALSE, 0, kEmuOffset2);
+  expected.draw.Init(GL_POINTS, kCount, GL_UNSIGNED_SHORT, 0, 1);
+  expected.restore.Init(GL_ARRAY_BUFFER, 0);
+  expected.restore_element.Init(GL_ELEMENT_ARRAY_BUFFER, 0);
+  gl_->EnableVertexAttribArray(kAttribIndex1);
+  gl_->EnableVertexAttribArray(kAttribIndex2);
+  gl_->VertexAttribPointer(kAttribIndex1, kNumComponents1,
+                           GL_FLOAT, GL_FALSE, kClientStride, verts);
+  gl_->VertexAttribPointer(kAttribIndex2, kNumComponents2,
+                           GL_FLOAT, GL_FALSE, kClientStride, verts);
+  gl_->VertexAttribDivisorANGLE(kAttribIndex2, kDivisor);
+  gl_->DrawElementsInstancedANGLE(
+      GL_POINTS, kCount, GL_UNSIGNED_SHORT, indices, 1);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 

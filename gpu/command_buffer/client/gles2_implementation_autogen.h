@@ -1499,5 +1499,14 @@ void TexImageIOSurface2DCHROMIUM(
       target, width, height, ioSurfaceId, plane);
 }
 
+void DrawArraysInstancedANGLE(
+    GLenum mode, GLint first, GLsizei count, GLsizei primcount);
+
+void DrawElementsInstancedANGLE(
+    GLenum mode, GLsizei count, GLenum type, const void* indices,
+    GLsizei primcount);
+
+void VertexAttribDivisorANGLE(GLuint index, GLuint divisor);
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_
 

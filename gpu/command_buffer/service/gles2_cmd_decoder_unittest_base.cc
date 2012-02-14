@@ -763,6 +763,17 @@ void GLES2DecoderTestBase::DoVertexAttribPointer(
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
+void GLES2DecoderTestBase::DoVertexAttribDivisorANGLE(
+    GLuint index, GLuint divisor) {
+  EXPECT_CALL(*gl_,
+              VertexAttribDivisorANGLE(index, divisor))
+      .Times(1)
+      .RetiresOnSaturation();
+  VertexAttribDivisorANGLE cmd;
+  cmd.Init(index, divisor);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
 // GCC requires these declarations, but MSVC requires they not be present
 #ifndef COMPILER_MSVC
 const GLint GLES2DecoderTestBase::kMaxTextureSize;

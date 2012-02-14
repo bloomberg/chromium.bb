@@ -19,5 +19,8 @@
 // TODO(gman): GetTranslatedShaderSourceANGLE
 // TODO(gman): PostSubBufferCHROMIUM
 // TODO(gman): TexImageIOSurface2DCHROMIUM
+// TODO(gman): DrawArraysInstancedANGLE
+// TODO(gman): DrawElementsInstancedANGLE
+// TODO(gman): VertexAttribDivisorANGLE
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_3_AUTOGEN_H_
 

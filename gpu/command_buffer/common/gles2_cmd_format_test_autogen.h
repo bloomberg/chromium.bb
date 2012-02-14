@@ -3599,5 +3599,60 @@ TEST_F(GLES2FormatTest, TexImageIOSurface2DCHROMIUM) {
       next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, DrawArraysInstancedANGLE) {
+  DrawArraysInstancedANGLE& cmd = *GetBufferAs<DrawArraysInstancedANGLE>();
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLenum>(11),
+      static_cast<GLint>(12),
+      static_cast<GLsizei>(13),
+      static_cast<GLsizei>(14));
+  EXPECT_EQ(static_cast<uint32>(DrawArraysInstancedANGLE::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.mode);
+  EXPECT_EQ(static_cast<GLint>(12), cmd.first);
+  EXPECT_EQ(static_cast<GLsizei>(13), cmd.count);
+  EXPECT_EQ(static_cast<GLsizei>(14), cmd.primcount);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, DrawElementsInstancedANGLE) {
+  DrawElementsInstancedANGLE& cmd = *GetBufferAs<DrawElementsInstancedANGLE>();
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLenum>(11),
+      static_cast<GLsizei>(12),
+      static_cast<GLenum>(13),
+      static_cast<GLuint>(14),
+      static_cast<GLsizei>(15));
+  EXPECT_EQ(static_cast<uint32>(DrawElementsInstancedANGLE::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.mode);
+  EXPECT_EQ(static_cast<GLsizei>(12), cmd.count);
+  EXPECT_EQ(static_cast<GLenum>(13), cmd.type);
+  EXPECT_EQ(static_cast<GLuint>(14), cmd.index_offset);
+  EXPECT_EQ(static_cast<GLsizei>(15), cmd.primcount);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, VertexAttribDivisorANGLE) {
+  VertexAttribDivisorANGLE& cmd = *GetBufferAs<VertexAttribDivisorANGLE>();
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLuint>(11),
+      static_cast<GLuint>(12));
+  EXPECT_EQ(static_cast<uint32>(VertexAttribDivisorANGLE::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.index);
+  EXPECT_EQ(static_cast<GLuint>(12), cmd.divisor);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd));
+}
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_TEST_AUTOGEN_H_
 
