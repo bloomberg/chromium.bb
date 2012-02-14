@@ -290,31 +290,33 @@ class GIT(SCM):
 
 def _ParseSendChangeOptions(options):
   """Parse common options passed to _SendChangeHTTP and _SendChangeSVN."""
-  values = {}
+  values = [
+    ('user', options.user),
+    ('name', options.name),
+  ]
   if options.email:
-    values['email'] = options.email
-  values['user'] = options.user
-  values['name'] = options.name
-  if options.bot:
-    values['bot'] = ','.join(options.bot)
+    values.append(('email', options.email))
   if options.revision:
-    values['revision'] = options.revision
+    values.append(('revision', options.revision))
   if options.clobber:
-    values['clobber'] = 'true'
-  if options.testfilter:
-    values['testfilter'] = ','.join(options.testfilter)
+    values.append(('clobber', 'true'))
   if options.root:
-    values['root'] = options.root
+    values.append(('root', options.root))
   if options.patchlevel:
-    values['patchlevel'] = options.patchlevel
+    values.append(('patchlevel', options.patchlevel))
   if options.issue:
-    values['issue'] = options.issue
+    values.append(('issue', options.issue))
   if options.patchset:
-    values['patchset'] = options.patchset
+    values.append(('patchset', options.patchset))
   if options.target:
-    values['target'] = options.target
+    values.append(('target', options.target))
   if options.project:
-    values['project'] = options.project
+    values.append(('project', options.project))
+
+  for bot in options.bot:
+    values.append(('bot', bot))
+  for t in options.testfilter:
+    values.append(('testfilter', t))
   return values
 
 
@@ -328,8 +330,7 @@ def _SendChangeHTTP(options):
         'server port to connect to.')
 
   values = _ParseSendChangeOptions(options)
-  description = ''.join("%s=%s\n" % (k, v) for (k, v) in values.iteritems())
-  values['patch'] = options.diff
+  values.append(('patch', options.diff))
 
   url = 'http://%s:%s/send_try_patch' % (options.host, options.port)
   proxies = None
@@ -341,7 +342,7 @@ def _SendChangeHTTP(options):
       proxies = {'http': options.proxy, 'https': options.proxy}
 
   logging.info('Sending by HTTP')
-  logging.info(description)
+  logging.info(''.join("%s=%s\n" % (k, v) for k, v in values))
   logging.info(url)
   logging.info(options.diff)
   if options.dry_run:
@@ -353,8 +354,7 @@ def _SendChangeHTTP(options):
     logging.info('Done')
   except IOError, e:
     logging.info(str(e))
-    if (values.get('bot') and len(e.args) > 2 and
-        e.args[2] == 'got a bad status line'):
+    if options.bot and len(e.args) > 2 and e.args[2] == 'got a bad status line':
       raise NoTryServerAccess('%s is unaccessible. Bad --bot argument?' % url)
     else:
       raise NoTryServerAccess('%s is unaccessible. Reason: %s' % (url,
@@ -376,7 +376,7 @@ def _SendChangeSVN(options):
                             ' try server svn repository to connect to.')
 
   values = _ParseSendChangeOptions(options)
-  description = ''.join("%s=%s\n" % (k, v) for (k, v) in values.iteritems())
+  description = ''.join("%s=%s\n" % (k, v) for k, v in values)
   logging.info('Sending by SVN')
   logging.info(description)
   logging.info(options.svn_repo)
@@ -558,7 +558,7 @@ def TryChange(argv,
                    help="Override which project to use. Projects are defined "
                         "server-side to define what default bot set to use")
 
-  group.add_option("-t", "--testfilter", action="append",
+  group.add_option("-t", "--testfilter", action="append", default=[],
                    help="Add a gtest_filter to a test. Use multiple times to "
                         "specify filters for different tests. (i.e. "
                         "--testfilter base_unittests:ThreadTest.* "
