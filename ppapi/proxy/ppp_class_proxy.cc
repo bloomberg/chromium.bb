@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "ppapi/c/dev/ppp_class_deprecated.h"
 #include "ppapi/proxy/dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/shared_impl/api_id.h"
 
@@ -243,23 +244,28 @@ void PPP_Class_Proxy::OnMsgHasProperty(int64 ppp_class, int64 object,
                                        SerializedVarReceiveInput property,
                                        SerializedVarOutParam exception,
                                        bool* result) {
-  *result = ToPPPClass(ppp_class)->HasProperty(ToUserData(object),
-      property.Get(dispatcher()), exception.OutParam(dispatcher()));
+  *result = CallWhileUnlocked(ToPPPClass(ppp_class)->HasProperty,
+                              ToUserData(object),
+                              property.Get(dispatcher()),
+                              exception.OutParam(dispatcher()));
 }
 
 void PPP_Class_Proxy::OnMsgHasMethod(int64 ppp_class, int64 object,
                                      SerializedVarReceiveInput property,
                                      SerializedVarOutParam exception,
                                      bool* result) {
-  *result = ToPPPClass(ppp_class)->HasMethod(ToUserData(object),
-      property.Get(dispatcher()), exception.OutParam(dispatcher()));
+  *result = CallWhileUnlocked(ToPPPClass(ppp_class)->HasMethod,
+                              ToUserData(object),
+                              property.Get(dispatcher()),
+                              exception.OutParam(dispatcher()));
 }
 
 void PPP_Class_Proxy::OnMsgGetProperty(int64 ppp_class, int64 object,
                                        SerializedVarReceiveInput property,
                                        SerializedVarOutParam exception,
                                        SerializedVarReturnValue result) {
-  result.Return(dispatcher(), ToPPPClass(ppp_class)->GetProperty(
+  result.Return(dispatcher(), CallWhileUnlocked(
+      ToPPPClass(ppp_class)->GetProperty,
       ToUserData(object), property.Get(dispatcher()),
       exception.OutParam(dispatcher())));
 }
@@ -276,7 +282,7 @@ void PPP_Class_Proxy::OnMsgSetProperty(int64 ppp_class, int64 object,
                                        SerializedVarReceiveInput property,
                                        SerializedVarReceiveInput value,
                                        SerializedVarOutParam exception) {
-  ToPPPClass(ppp_class)->SetProperty(
+  CallWhileUnlocked(ToPPPClass(ppp_class)->SetProperty,
       ToUserData(object), property.Get(dispatcher()), value.Get(dispatcher()),
       exception.OutParam(dispatcher()));
 }
@@ -284,7 +290,7 @@ void PPP_Class_Proxy::OnMsgSetProperty(int64 ppp_class, int64 object,
 void PPP_Class_Proxy::OnMsgRemoveProperty(int64 ppp_class, int64 object,
                                           SerializedVarReceiveInput property,
                                           SerializedVarOutParam exception) {
-  ToPPPClass(ppp_class)->RemoveProperty(
+  CallWhileUnlocked(ToPPPClass(ppp_class)->RemoveProperty,
       ToUserData(object), property.Get(dispatcher()),
       exception.OutParam(dispatcher()));
 }
@@ -297,7 +303,7 @@ void PPP_Class_Proxy::OnMsgCall(
     SerializedVarReturnValue result) {
   uint32_t arg_count = 0;
   PP_Var* args = arg_vector.Get(dispatcher(), &arg_count);
-  result.Return(dispatcher(), ToPPPClass(ppp_class)->Call(
+  result.Return(dispatcher(), CallWhileUnlocked(ToPPPClass(ppp_class)->Call,
       ToUserData(object), method_name.Get(dispatcher()),
       arg_count, args, exception.OutParam(dispatcher())));
 }
@@ -309,12 +315,13 @@ void PPP_Class_Proxy::OnMsgConstruct(
     SerializedVarReturnValue result) {
   uint32_t arg_count = 0;
   PP_Var* args = arg_vector.Get(dispatcher(), &arg_count);
-  result.Return(dispatcher(), ToPPPClass(ppp_class)->Construct(
+  result.Return(dispatcher(), CallWhileUnlocked(
+      ToPPPClass(ppp_class)->Construct,
       ToUserData(object), arg_count, args, exception.OutParam(dispatcher())));
 }
 
 void PPP_Class_Proxy::OnMsgDeallocate(int64 ppp_class, int64 object) {
-  ToPPPClass(ppp_class)->Deallocate(ToUserData(object));
+  CallWhileUnlocked(ToPPPClass(ppp_class)->Deallocate, ToUserData(object));
 }
 
 }  // namespace proxy

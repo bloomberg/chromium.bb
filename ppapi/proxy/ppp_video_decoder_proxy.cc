@@ -122,32 +122,41 @@ void PPP_VideoDecoder_Proxy::OnMsgProvidePictureBuffers(
     const PP_Size& dimensions) {
   PP_Resource plugin_decoder = PluginGlobals::Get()->plugin_resource_tracker()->
       PluginResourceForHostResource(decoder);
-  ppp_video_decoder_impl_->ProvidePictureBuffers(
-      decoder.instance(), plugin_decoder, req_num_of_bufs, &dimensions);
+  CallWhileUnlocked(ppp_video_decoder_impl_->ProvidePictureBuffers,
+                    decoder.instance(),
+                    plugin_decoder,
+                    req_num_of_bufs,
+                    &dimensions);
 }
 
 void PPP_VideoDecoder_Proxy::OnMsgDismissPictureBuffer(
     const HostResource& decoder, int32_t picture_id) {
   PP_Resource plugin_decoder = PluginGlobals::Get()->plugin_resource_tracker()->
       PluginResourceForHostResource(decoder);
-  ppp_video_decoder_impl_->DismissPictureBuffer(
-      decoder.instance(), plugin_decoder, picture_id);
+  CallWhileUnlocked(ppp_video_decoder_impl_->DismissPictureBuffer,
+                    decoder.instance(),
+                    plugin_decoder,
+                    picture_id);
 }
 
 void PPP_VideoDecoder_Proxy::OnMsgPictureReady(
     const HostResource& decoder, const PP_Picture_Dev& picture) {
   PP_Resource plugin_decoder = PluginGlobals::Get()->plugin_resource_tracker()->
       PluginResourceForHostResource(decoder);
-  ppp_video_decoder_impl_->PictureReady(
-      decoder.instance(), plugin_decoder, &picture);
+  CallWhileUnlocked(ppp_video_decoder_impl_->PictureReady,
+                    decoder.instance(),
+                    plugin_decoder,
+                    &picture);
 }
 
 void PPP_VideoDecoder_Proxy::OnMsgNotifyError(
     const HostResource& decoder, PP_VideoDecodeError_Dev error) {
   PP_Resource plugin_decoder = PluginGlobals::Get()->plugin_resource_tracker()->
       PluginResourceForHostResource(decoder);
-  ppp_video_decoder_impl_->NotifyError(
-      decoder.instance(), plugin_decoder, error);
+  CallWhileUnlocked(ppp_video_decoder_impl_->NotifyError,
+                    decoder.instance(),
+                    plugin_decoder,
+                    error);
 }
 
 }  // namespace proxy

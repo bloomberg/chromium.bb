@@ -5,6 +5,7 @@
 #include "ppapi/proxy/ppapi_proxy_test.h"
 
 #include "ppapi/proxy/serialized_var.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 
 namespace ppapi {
 namespace proxy {
@@ -28,6 +29,7 @@ class SerializedVarTest : public PluginProxyTest {
 // Tests output arguments in the plugin. This is when the host calls into the
 // plugin and the plugin returns something via an out param, like an exception.
 TEST_F(SerializedVarTest, PluginSerializedVarInOutParam) {
+  ProxyAutoLock lock;
   PP_Var host_object = MakeObjectVar(0x31337);
 
   PP_Var plugin_object;
@@ -77,6 +79,7 @@ TEST_F(SerializedVarTest, PluginSerializedVarInOutParam) {
 // Tests output strings in the plugin. This is when the host calls into the
 // plugin with a string and the plugin returns it via an out param.
 TEST_F(SerializedVarTest, PluginSerializedStringVarInOutParam) {
+  ProxyAutoLock lock;
   PP_Var plugin_string;
   const std::string kTestString("elite");
   {
@@ -118,6 +121,7 @@ TEST_F(SerializedVarTest, PluginSerializedStringVarInOutParam) {
 // Tests receiving an argument and passing it back to the browser as an output
 // parameter.
 TEST_F(SerializedVarTest, PluginSerializedVarOutParam) {
+  ProxyAutoLock lock;
   PP_Var host_object = MakeObjectVar(0x31337);
 
   // Start tracking this object in the plugin.
@@ -157,6 +161,7 @@ TEST_F(SerializedVarTest, PluginSerializedVarOutParam) {
 // Tests the case that the plugin receives the same var twice as an input
 // parameter (not passing ownership).
 TEST_F(SerializedVarTest, PluginReceiveInput) {
+  ProxyAutoLock lock;
   PP_Var host_object = MakeObjectVar(0x31337);
 
   PP_Var plugin_object;
@@ -197,6 +202,7 @@ TEST_F(SerializedVarTest, PluginReceiveInput) {
 // Tests the case that the plugin receives the same vars twice as an input
 // parameter (not passing ownership) within a vector.
 TEST_F(SerializedVarTest, PluginVectorReceiveInput) {
+  ProxyAutoLock lock;
   PP_Var host_object = MakeObjectVar(0x31337);
 
   PP_Var* plugin_objects;
@@ -263,6 +269,7 @@ TEST_F(SerializedVarTest, PluginVectorReceiveInput) {
 // Tests the plugin receiving a var as a return value from the browser
 // two different times (passing ownership).
 TEST_F(SerializedVarTest, PluginReceiveReturn) {
+  ProxyAutoLock lock;
   PP_Var host_object = MakeObjectVar(0x31337);
 
   PP_Var plugin_object;
@@ -306,6 +313,7 @@ TEST_F(SerializedVarTest, PluginReceiveReturn) {
 // Returns a value from the browser to the plugin, then return that one ref
 // back to the browser.
 TEST_F(SerializedVarTest, PluginReturnValue) {
+  ProxyAutoLock lock;
   PP_Var host_object = MakeObjectVar(0x31337);
 
   PP_Var plugin_object;

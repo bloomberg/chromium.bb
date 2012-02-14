@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,7 +55,7 @@ void CallbackWrapper(PP_CompletionCallback callback, int32_t result) {
   TRACE_EVENT2("ppapi proxy", "CallOnMainThread callback",
                "Func", reinterpret_cast<void*>(callback.func),
                "UserData", callback.user_data);
-  PP_RunCompletionCallback(&callback, result);
+  CallWhileUnlocked(PP_RunCompletionCallback, &callback, result);
 }
 
 void CallOnMainThread(int delay_in_ms,
@@ -63,7 +63,7 @@ void CallOnMainThread(int delay_in_ms,
                       int32_t result) {
   GetMainThreadMessageLoop()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&CallbackWrapper, callback, result),
+      RunWhileLocked(base::Bind(&CallbackWrapper, callback, result)),
       delay_in_ms);
 }
 

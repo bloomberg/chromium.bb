@@ -58,7 +58,7 @@ PP_Var GetInstanceObject(PP_Instance /*instance*/) {
   // The 1 ref we got from CreateObject will be passed to the host. We want to
   // have a ref of our own.
   printf("GetInstanceObject called\n");
-  PpapiGlobals::Get()->GetVarTracker()->AddRefVar(instance_obj);
+  plugin_var_deprecated_if()->AddRef(instance_obj);
   return instance_obj;
 }
 

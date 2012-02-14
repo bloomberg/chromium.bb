@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/shared_impl/callback_tracker.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/resource.h"
 
 namespace ppapi {
@@ -49,8 +50,8 @@ void TrackedCallback::PostAbort() {
     if (!abort_impl_factory_.HasWeakPtrs()) {
       MessageLoop::current()->PostTask(
           FROM_HERE,
-          base::Bind(&TrackedCallback::Abort,
-                     abort_impl_factory_.GetWeakPtr()));
+          RunWhileLocked(base::Bind(&TrackedCallback::Abort,
+                                    abort_impl_factory_.GetWeakPtr())));
     }
   }
 }
@@ -69,7 +70,7 @@ void TrackedCallback::Run(int32_t result) {
     // Do this before running the callback in case of reentrancy (which
     // shouldn't happen, but avoid strange failures).
     MarkAsCompleted();
-    PP_RunCompletionCallback(&callback, result);
+    CallWhileUnlocked(PP_RunCompletionCallback, &callback, result);
   }
 }
 

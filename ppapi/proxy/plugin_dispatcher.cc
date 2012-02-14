@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,7 @@
 #include "ppapi/proxy/ppb_instance_proxy.h"
 #include "ppapi/proxy/ppp_class_proxy.h"
 #include "ppapi/proxy/resource_creation_proxy.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/resource.h"
 
 #if defined(OS_POSIX)
@@ -52,8 +53,11 @@ InstanceData::InstanceData()
 
 InstanceData::~InstanceData() {
   // Run any pending mouse lock callback to prevent leaks.
-  if (mouse_lock_callback.func)
-    PP_RunAndClearCompletionCallback(&mouse_lock_callback, PP_ERROR_ABORTED);
+  if (mouse_lock_callback.func) {
+    CallWhileUnlocked(PP_RunAndClearCompletionCallback,
+                      &mouse_lock_callback,
+                      static_cast<int32_t>(PP_ERROR_ABORTED));
+  }
 }
 
 PluginDispatcher::PluginDispatcher(base::ProcessHandle remote_process_handle,
@@ -164,17 +168,25 @@ bool PluginDispatcher::Send(IPC::Message* msg) {
                "Class", IPC_MESSAGE_ID_CLASS(msg->type()),
                "Line", IPC_MESSAGE_ID_LINE(msg->type()));
   // We always want plugin->renderer messages to arrive in-order. If some sync
-  // and some async messages are send in response to a synchronous
+  // and some async messages are sent in response to a synchronous
   // renderer->plugin call, the sync reply will be processed before the async
   // reply, and everything will be confused.
   //
   // Allowing all async messages to unblock the renderer means more reentrancy
   // there but gives correct ordering.
   msg->set_unblock(true);
+  if (msg->is_sync()) {
+    // Synchronous messages might be re-entrant, so we need to drop the lock.
+    ProxyAutoUnlock unlock;
+    return Dispatcher::Send(msg);
+  }
   return Dispatcher::Send(msg);
 }
 
 bool PluginDispatcher::OnMessageReceived(const IPC::Message& msg) {
+  // We need to grab the proxy lock to ensure that we don't collide with the
+  // plugin making pepper calls on a different thread.
+  ProxyAutoLock lock;
   TRACE_EVENT2("ppapi proxy", "PluginDispatcher::OnMessageReceived",
                "Class", IPC_MESSAGE_ID_CLASS(msg.type()),
                "Line", IPC_MESSAGE_ID_LINE(msg.type()));
