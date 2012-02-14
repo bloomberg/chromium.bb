@@ -415,14 +415,14 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
 // Visits a page with https error and then goes back using GoToOffset.
 #if defined(OS_MAC)
 // See bug 114185.
-#define DISABLED_ TestHTTPSExpiredCertAndGoBackViaMenu \
-        FLAKY_TestHTTPSExpiredCertAndGoBackViaMenu
+#define MAYBE_TestHTTPSExpiredCertAndGoBackViaMenu \
+        DISABLED_TestHTTPSExpiredCertAndGoBackViaMenu
 #else
 // Marked as flaky, see bug 40932.
-#define DISABLED_ TestHTTPSExpiredCertAndGoBackViaMenu \
+#define MAYBE_TestHTTPSExpiredCertAndGoBackViaMenu \
         FLAKY_TestHTTPSExpiredCertAndGoBackViaMenu
 #endif
-IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestHTTPSExpiredCertAndGoBackViaMenu) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSExpiredCertAndGoBackViaMenu) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(https_server_expired_.Start());
 
