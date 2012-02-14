@@ -29,6 +29,7 @@
 
 #include "client/ios/handler/ios_exception_minidump_generator.h"
 
+#include "client/minidump_file_writer-inl.h"
 #include "processor/scoped_ptr.h"
 
 namespace {
