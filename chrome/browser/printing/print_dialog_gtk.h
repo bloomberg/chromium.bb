@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,6 +42,7 @@ class PrintDialogGtk
                               const printing::PageRanges& ranges,
                               printing::PrintSettings* settings) OVERRIDE;
   virtual void ShowDialog(
+      bool has_selection,
       const PrintingContextGtk::PrintSettingsCallback& callback) OVERRIDE;
   virtual void PrintDocument(const printing::Metafile* metafile,
                              const string16& document_name) OVERRIDE;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,7 @@ class PrintDialogGtkInterface {
   // Shows the dialog and handles the response with |callback|. Only used when
   // printing with the native print dialog.
   virtual void ShowDialog(
+      bool has_selection,
       const PrintingContextGtk::PrintSettingsCallback& callback) = 0;
 
   // Prints the document named |document_name| contained in |metafile|.

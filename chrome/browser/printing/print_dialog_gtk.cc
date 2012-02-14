@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -231,6 +231,7 @@ bool PrintDialogGtk::UpdateSettings(const DictionaryValue& job_settings,
 }
 
 void PrintDialogGtk::ShowDialog(
+    bool has_selection,
     const PrintingContextGtk::PrintSettingsCallback& callback) {
   callback_ = callback;
 
@@ -256,6 +257,10 @@ void PrintDialogGtk::ShowDialog(
                                                 cap);
   gtk_print_unix_dialog_set_embed_page_setup(GTK_PRINT_UNIX_DIALOG(dialog_),
                                              TRUE);
+  gtk_print_unix_dialog_set_support_selection(GTK_PRINT_UNIX_DIALOG(dialog_),
+                                              TRUE);
+  gtk_print_unix_dialog_set_has_selection(GTK_PRINT_UNIX_DIALOG(dialog_),
+                                          has_selection);
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
   gtk_widget_show(dialog_);
 }
@@ -326,21 +331,38 @@ void PrintDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
       // Handle page ranges.
       PageRanges ranges_vector;
       gint num_ranges;
-      GtkPageRange* gtk_range =
-          gtk_print_settings_get_page_ranges(gtk_settings_, &num_ranges);
-      if (gtk_range) {
-        for (int i = 0; i < num_ranges; ++i) {
-          printing::PageRange range;
-          range.from = gtk_range[i].start;
-          range.to = gtk_range[i].end;
-          ranges_vector.push_back(range);
+      bool print_selection_only = false;
+      switch (gtk_print_settings_get_print_pages(gtk_settings_)) {
+        case GTK_PRINT_PAGES_RANGES: {
+          GtkPageRange* gtk_range =
+              gtk_print_settings_get_page_ranges(gtk_settings_, &num_ranges);
+          if (gtk_range) {
+            for (int i = 0; i < num_ranges; ++i) {
+              printing::PageRange range;
+              range.from = gtk_range[i].start;
+              range.to = gtk_range[i].end;
+              ranges_vector.push_back(range);
+            }
+            g_free(gtk_range);
+          }
+          break;
         }
-        g_free(gtk_range);
+        case GTK_PRINT_PAGES_SELECTION:
+          print_selection_only = true;
+          break;
+        case GTK_PRINT_PAGES_ALL:
+          // Leave |ranges_vector| empty to indicate print all pages.
+          break;
+        case GTK_PRINT_PAGES_CURRENT:
+        default:
+          NOTREACHED();
+          break;
       }
 
       PrintSettings settings;
       printing::PrintSettingsInitializerGtk::InitPrintSettings(
-          gtk_settings_, page_setup_, ranges_vector, false, &settings);
+          gtk_settings_, page_setup_, ranges_vector, print_selection_only,
+          &settings);
       context_->InitWithSettings(settings);
       callback_.Run(PrintingContextGtk::OK);
       callback_.Reset();

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,7 +62,7 @@ void PrintingContextGtk::AskUserForSettings(
     int max_pages,
     bool has_selection,
     const PrintSettingsCallback& callback) {
-  print_dialog_->ShowDialog(callback);
+  print_dialog_->ShowDialog(has_selection, callback);
 }
 
 PrintingContext::Result PrintingContextGtk::UseDefaultSettings() {
