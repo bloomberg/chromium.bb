@@ -1907,6 +1907,8 @@
         'browser/policy/policy_service.h',
         'browser/policy/policy_service_impl.cc',
         'browser/policy/policy_service_impl.h',
+        'browser/policy/policy_service_stub.cc',
+        'browser/policy/policy_service_stub.h',
         'browser/policy/policy_status_info.cc',
         'browser/policy/policy_status_info.h',
         'browser/policy/url_blacklist_manager.cc',
@@ -4307,10 +4309,17 @@
             'DEBUG_DEVTOOLS=1',
           ],
         }],
-        ['configuration_policy==0', {
+        ['configuration_policy==1', {
+          'sources!': [
+            'browser/policy/policy_service_stub.cc',
+            'browser/policy/policy_service_stub.h',
+          ],
+        }, {  # configuration_policy==0
           'sources/': [
             ['exclude', '^browser/policy/'],
-            ['include', '^browser/policy/policy_path_parser'],
+            ['include', 'browser/policy/policy_service.h'],
+            ['include', 'browser/policy/policy_service_stub.cc'],
+            ['include', 'browser/policy/policy_service_stub.h'],
           ],
         }],
         ['safe_browsing==1', {
