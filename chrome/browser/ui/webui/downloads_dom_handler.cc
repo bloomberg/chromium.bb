@@ -268,7 +268,7 @@ void DownloadsDOMHandler::HandleDrag(const ListValue* args) {
     gfx::NativeView view = web_ui()->GetWebContents()->GetNativeView();
     {
       // Enable nested tasks during DnD, while |DragDownload()| blocks.
-      MessageLoop::ScopedNestableTaskAllower allower(MessageLoop::current());
+      MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
       download_util::DragDownload(file, icon, view);
     }
   }

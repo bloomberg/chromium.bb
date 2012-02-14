@@ -746,16 +746,17 @@ bool ProfileSyncServiceHarness::AwaitStatusChangeWithTimeout(
   }
   scoped_refptr<StateChangeTimeoutEvent> timeout_signal(
       new StateChangeTimeoutEvent(this, reason));
-  MessageLoop* loop = MessageLoop::current();
-  bool did_allow_nestable_tasks = loop->NestableTasksAllowed();
-  loop->SetNestableTasksAllowed(true);
-  loop->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&StateChangeTimeoutEvent::Callback,
-                 timeout_signal.get()),
-      base::TimeDelta::FromMilliseconds(timeout_milliseconds));
-  loop->Run();
-  loop->SetNestableTasksAllowed(did_allow_nestable_tasks);
+  {
+    MessageLoop* loop = MessageLoop::current();
+    MessageLoop::ScopedNestableTaskAllower allow(loop);
+    loop->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&StateChangeTimeoutEvent::Callback,
+                   timeout_signal.get()),
+        base::TimeDelta::FromMilliseconds(timeout_milliseconds));
+    loop->Run();
+  }
+
   if (timeout_signal->Abort()) {
     DVLOG(1) << GetClientInfoString("AwaitStatusChangeWithTimeout succeeded");
     return true;

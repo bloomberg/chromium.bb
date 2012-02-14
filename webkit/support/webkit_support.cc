@@ -213,10 +213,8 @@ class WebKitClientMessageLoopImpl
     message_loop_ = NULL;
   }
   virtual void run() {
-    bool old_state = message_loop_->NestableTasksAllowed();
-    message_loop_->SetNestableTasksAllowed(true);
+    MessageLoop::ScopedNestableTaskAllower allow(message_loop_);
     message_loop_->Run();
-    message_loop_->SetNestableTasksAllowed(old_state);
   }
   virtual void quitNow() {
     message_loop_->QuitNow();
@@ -450,10 +448,8 @@ void MessageLoopSetNestableTasksAllowed(bool allowed) {
 
 void DispatchMessageLoop() {
   MessageLoop* current = MessageLoop::current();
-  bool old_state = current->NestableTasksAllowed();
-  current->SetNestableTasksAllowed(true);
+  MessageLoop::ScopedNestableTaskAllower allow(current);
   current->RunAllPending();
-  current->SetNestableTasksAllowed(old_state);
 }
 
 WebDevToolsAgentClient::WebKitClientMessageLoop* CreateDevToolsMessageLoop() {

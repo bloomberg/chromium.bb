@@ -211,10 +211,8 @@ PP_Bool ReadImageData(PP_Resource device_context_2d,
 }
 
 void RunMessageLoop(PP_Instance instance) {
-  bool old_state = MessageLoop::current()->NestableTasksAllowed();
-  MessageLoop::current()->SetNestableTasksAllowed(true);
+  MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
   MessageLoop::current()->Run();
-  MessageLoop::current()->SetNestableTasksAllowed(old_state);
 }
 
 void QuitMessageLoop(PP_Instance instance) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -202,11 +202,8 @@ bool PrintJob::FlushJob(int timeout_ms) {
                     MessageLoop::current(), &MessageLoop::Quit);
   }
 
-  bool old_state = MessageLoop::current()->NestableTasksAllowed();
-  MessageLoop::current()->SetNestableTasksAllowed(true);
+  MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
   MessageLoop::current()->Run();
-  // Restore task state.
-  MessageLoop::current()->SetNestableTasksAllowed(old_state);
 
   return true;
 }

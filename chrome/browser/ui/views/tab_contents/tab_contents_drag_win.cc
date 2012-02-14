@@ -312,12 +312,14 @@ void TabContentsDragWin::DoDragging(const WebDropData& drop_data,
 
   // We need to enable recursive tasks on the message loop so we can get
   // updates while in the system DoDragDrop loop.
-  bool old_state = MessageLoop::current()->NestableTasksAllowed();
-  MessageLoop::current()->SetNestableTasksAllowed(true);
   DWORD effect;
-  DoDragDrop(ui::OSExchangeDataProviderWin::GetIDataObject(data), drag_source_,
-             web_drag_utils_win::WebDragOpMaskToWinDragOpMask(ops), &effect);
-  MessageLoop::current()->SetNestableTasksAllowed(old_state);
+  {
+    MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
+    DoDragDrop(ui::OSExchangeDataProviderWin::GetIDataObject(data),
+               drag_source_,
+               web_drag_utils_win::WebDragOpMaskToWinDragOpMask(ops),
+               &effect);
+  }
 
   // This works because WebDragSource::OnDragSourceDrop uses PostTask to
   // dispatch the actual event.

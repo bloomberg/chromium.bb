@@ -266,8 +266,7 @@ void RunMessageLoop() {
   MessageLoopForUI* ui_loop =
       content::BrowserThread::CurrentlyOn(content::BrowserThread::UI) ?
           MessageLoopForUI::current() : NULL;
-  bool did_allow_task_nesting = loop->NestableTasksAllowed();
-  loop->SetNestableTasksAllowed(true);
+  MessageLoop::ScopedNestableTaskAllower allow(loop);
   if (ui_loop) {
 #if defined(USE_AURA)
     aura::RootWindow::GetInstance()->Run();
@@ -282,7 +281,6 @@ void RunMessageLoop() {
   } else {
     loop->Run();
   }
-  loop->SetNestableTasksAllowed(did_allow_task_nesting);
 }
 
 void RunAllPendingInMessageLoop() {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,10 +29,8 @@ class WebKitClientMessageLoopImpl
     message_loop_ = NULL;
   }
   virtual void run() {
-    bool old_state = message_loop_->NestableTasksAllowed();
-    message_loop_->SetNestableTasksAllowed(true);
+    MessageLoop::ScopedNestableTaskAllower allow(message_loop_);
     message_loop_->Run();
-    message_loop_->SetNestableTasksAllowed(old_state);
   }
   virtual void quitNow() {
     message_loop_->QuitNow();

@@ -223,11 +223,10 @@ void DragDownloadFile::AssertCurrentlyOnUIThread() {
 void DragDownloadFile::StartNestedMessageLoop() {
   AssertCurrentlyOnDragThread();
 
-  bool old_state = MessageLoop::current()->NestableTasksAllowed();
-  MessageLoop::current()->SetNestableTasksAllowed(true);
+  MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
   is_running_nested_message_loop_ = true;
   MessageLoop::current()->Run();
-  MessageLoop::current()->SetNestableTasksAllowed(old_state);
+  DCHECK(!is_running_nested_message_loop_);
 }
 
 void DragDownloadFile::QuitNestedMessageLoop() {

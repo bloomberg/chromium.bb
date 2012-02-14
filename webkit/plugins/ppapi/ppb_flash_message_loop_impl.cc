@@ -87,14 +87,12 @@ int32_t PPB_Flash_MessageLoop_Impl::InternalRun(
   // It is possible that the PPB_Flash_MessageLoop_Impl object has been
   // destroyed when the nested message loop exits.
   scoped_refptr<State> state_protector(state_);
-
-  bool old_value = MessageLoop::current()->NestableTasksAllowed();
-  MessageLoop::current()->SetNestableTasksAllowed(true);
-  MessageLoop::current()->Run();
-
+  {
+    MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
+    MessageLoop::current()->Run();
+  }
   // Don't access data members of the class below.
 
-  MessageLoop::current()->SetNestableTasksAllowed(old_value);
   return state_protector->result();
 }
 

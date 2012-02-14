@@ -506,11 +506,11 @@ void SyncChannel::WaitForReplyWithNestedMessageLoop(SyncContext* context) {
   sync_msg_queue->set_top_send_done_watcher(&send_done_watcher);
 
   send_done_watcher.StartWatching(context->GetSendDoneEvent(), context);
-  bool old_state = MessageLoop::current()->NestableTasksAllowed();
 
-  MessageLoop::current()->SetNestableTasksAllowed(true);
-  MessageLoop::current()->Run();
-  MessageLoop::current()->SetNestableTasksAllowed(old_state);
+  {
+    MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
+    MessageLoop::current()->Run();
+  }
 
   sync_msg_queue->set_top_send_done_watcher(old_send_done_event_watcher);
   if (old_send_done_event_watcher && old_event) {

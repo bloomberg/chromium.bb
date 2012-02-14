@@ -475,10 +475,10 @@ class SessionRestoreImpl : public content::NotificationObserver {
         base::Bind(&SessionRestoreImpl::OnGotSession, base::Unretained(this)));
 
     if (synchronous_) {
-      bool old_state = MessageLoop::current()->NestableTasksAllowed();
-      MessageLoop::current()->SetNestableTasksAllowed(true);
-      MessageLoop::current()->Run();
-      MessageLoop::current()->SetNestableTasksAllowed(old_state);
+      {
+        MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
+        MessageLoop::current()->Run();
+      }
       Browser* browser = ProcessSessionWindows(&windows_);
       delete this;
       return browser;

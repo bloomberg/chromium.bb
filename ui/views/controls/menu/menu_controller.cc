@@ -323,11 +323,11 @@ MenuItemView* MenuController::Run(Widget* parent,
   aura::client::GetDispatcherClient()->RunWithDispatcher(this,
       parent->GetNativeWindow(), true);
 #else
-  MessageLoopForUI* loop = MessageLoopForUI::current();
-  bool did_allow_task_nesting = loop->NestableTasksAllowed();
-  loop->SetNestableTasksAllowed(true);
-  loop->RunWithDispatcher(this);
-  loop->SetNestableTasksAllowed(did_allow_task_nesting);
+  {
+    MessageLoopForUI* loop = MessageLoopForUI::current();
+    MessageLoop::ScopedNestableTaskAllower allow(loop);
+    loop->RunWithDispatcher(this);
+  }
 #endif
 
   if (ViewsDelegate::views_delegate)

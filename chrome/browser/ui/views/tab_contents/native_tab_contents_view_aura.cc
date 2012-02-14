@@ -211,11 +211,12 @@ void NativeTabContentsViewAura::StartDragging(const WebDropData& drop_data,
 
   // We need to enable recursive tasks on the message loop so we can get
   // updates while in the system DoDragDrop loop.
-  bool old_state = MessageLoop::current()->NestableTasksAllowed();
-  MessageLoop::current()->SetNestableTasksAllowed(true);
-  int result_op = aura::client::GetDragDropClient()->StartDragAndDrop(
-      data, ConvertFromWeb(ops));
-  MessageLoop::current()->SetNestableTasksAllowed(old_state);
+  int result_op = 0;
+  {
+    MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
+    result_op = aura::client::GetDragDropClient()->StartDragAndDrop(
+        data, ConvertFromWeb(ops));
+  }
 
   EndDrag(ConvertToWeb(result_op));
   GetWebContents()->GetRenderViewHost()->DragSourceSystemDragEnded();

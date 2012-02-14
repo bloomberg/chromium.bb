@@ -63,10 +63,10 @@ bool SimpleMessageBoxViews::ShowYesNoBox(gfx::NativeWindow parent_window,
   aura::client::GetDispatcherClient()->RunWithDispatcher(dialog,
       parent_window, true);
 #else
-  bool old_state = MessageLoopForUI::current()->NestableTasksAllowed();
-  MessageLoopForUI::current()->SetNestableTasksAllowed(true);
-  MessageLoopForUI::current()->RunWithDispatcher(dialog);
-  MessageLoopForUI::current()->SetNestableTasksAllowed(old_state);
+  {
+    MessageLoop::ScopedNestableTaskAllower allow(MessageLoopForUI::current());
+    MessageLoopForUI::current()->RunWithDispatcher(dialog);
+  }
 #endif
 
   g_browser_process->ReleaseModule();

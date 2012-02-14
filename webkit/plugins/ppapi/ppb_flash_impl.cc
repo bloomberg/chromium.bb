@@ -199,10 +199,8 @@ int32_t Navigate11(PP_Resource request_id,
 }
 
 void RunMessageLoop(PP_Instance instance) {
-  bool old_state = MessageLoop::current()->NestableTasksAllowed();
-  MessageLoop::current()->SetNestableTasksAllowed(true);
+  MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
   MessageLoop::current()->Run();
-  MessageLoop::current()->SetNestableTasksAllowed(old_state);
 }
 
 void QuitMessageLoop(PP_Instance instance) {

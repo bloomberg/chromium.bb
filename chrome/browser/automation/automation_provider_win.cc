@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -149,11 +149,9 @@ void AutomationProvider::WindowSimulateDrag(
           false,
           MessageLoop::QuitClosure());
       MessageLoopForUI* loop = MessageLoopForUI::current();
-      bool did_allow_task_nesting = loop->NestableTasksAllowed();
-      loop->SetNestableTasksAllowed(true);
       views::AcceleratorHandler handler;
+      MessageLoop::ScopedNestableTaskAllower allow(loop);
       loop->RunWithDispatcher(&handler);
-      loop->SetNestableTasksAllowed(did_allow_task_nesting);
     }
     SendMessage(top_level_hwnd, up_message, wparam_flags,
                 MAKELPARAM(end.x, end.y));

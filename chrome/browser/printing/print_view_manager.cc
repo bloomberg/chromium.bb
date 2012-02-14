@@ -556,11 +556,10 @@ bool PrintViewManager::RunInnerMessageLoop() {
   inside_inner_message_loop_ = true;
 
   // Need to enable recursive task.
-  bool old_state = MessageLoop::current()->NestableTasksAllowed();
-  MessageLoop::current()->SetNestableTasksAllowed(true);
-  MessageLoop::current()->Run();
-  // Restore task state.
-  MessageLoop::current()->SetNestableTasksAllowed(old_state);
+  {
+    MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
+    MessageLoop::current()->Run();
+  }
 
   bool success = true;
   if (inside_inner_message_loop_) {
