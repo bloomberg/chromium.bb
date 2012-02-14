@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/time.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/speech_recognizer_delegate.h"
 #include "content/public/common/speech_input_result.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -56,7 +57,7 @@ const int SpeechRecognizer::kNumBitsPerAudioSample = 16;
 const int SpeechRecognizer::kNoSpeechTimeoutSec = 8;
 const int SpeechRecognizer::kEndpointerEstimationTimeMs = 300;
 
-SpeechRecognizer::SpeechRecognizer(Delegate* delegate,
+SpeechRecognizer::SpeechRecognizer(content::SpeechRecognizerDelegate* delegate,
                                    int caller_id,
                                    const std::string& language,
                                    const std::string& grammar,

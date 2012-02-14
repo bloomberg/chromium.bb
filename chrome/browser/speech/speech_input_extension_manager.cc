@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
+#include "content/browser/speech/speech_recognizer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -597,7 +598,7 @@ void SpeechInputExtensionManager::IsRecordingOnUIThread(
 }
 
 void SpeechInputExtensionManager::StartRecording(
-    speech_input::SpeechRecognizerDelegate* delegate,
+    content::SpeechRecognizerDelegate* delegate,
     net::URLRequestContextGetter* context_getter,
     content::ResourceContext* resource_context,
     int caller_id,

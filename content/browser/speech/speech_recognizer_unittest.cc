@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/speech/speech_recognizer.h"
+#include "content/public/browser/speech_recognizer_delegate.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/test_audio_input_controller_factory.h"
@@ -21,7 +22,7 @@ using media::TestAudioInputControllerFactory;
 
 namespace speech_input {
 
-class SpeechRecognizerTest : public SpeechRecognizerDelegate,
+class SpeechRecognizerTest : public content::SpeechRecognizerDelegate,
                              public testing::Test {
  public:
   SpeechRecognizerTest()
@@ -44,7 +45,7 @@ class SpeechRecognizerTest : public SpeechRecognizerDelegate,
     audio_packet_.resize(audio_packet_length_bytes);
   }
 
-  // SpeechRecognizer::Delegate methods.
+  // Overridden from content::SpeechRecognizerDelegate:
   virtual void SetRecognitionResult(
       int caller_id,
       const content::SpeechInputResult& result) OVERRIDE {

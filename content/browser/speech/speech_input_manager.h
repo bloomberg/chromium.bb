@@ -9,9 +9,12 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "content/browser/speech/speech_recognizer.h"
+#include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/speech_recognizer_delegate.h"
 #include "ui/gfx/rect.h"
+
+class AudioManager;
 
 namespace content {
 class ResourceContext;
@@ -19,13 +22,19 @@ class SpeechInputPreferences;
 struct SpeechInputResult;
 }
 
+namespace net {
+class URLRequestContextGetter;
+}
+
 namespace speech_input {
+class SpeechRecognizer;
 
 // This is the gatekeeper for speech recognition in the browser process. It
 // handles requests received from various render views and makes sure only one
 // of them can use speech recognition at a time. It also sends recognition
 // results and status events to the render views when required.
-class CONTENT_EXPORT SpeechInputManager : public SpeechRecognizerDelegate {
+class CONTENT_EXPORT SpeechInputManager
+    : public content::SpeechRecognizerDelegate {
  public:
   // Implemented by the dispatcher host to relay events to the render views.
   class Delegate {
@@ -84,7 +93,7 @@ class CONTENT_EXPORT SpeechInputManager : public SpeechRecognizerDelegate {
   virtual void CancelAllRequestsWithDelegate(Delegate* delegate);
   virtual void StopRecording(int caller_id);
 
-  // SpeechRecognizerDelegate methods.
+  // Overridden from content::SpeechRecognizerDelegate:
   virtual void DidStartReceivingAudio(int caller_id) OVERRIDE;
   virtual void SetRecognitionResult(
       int caller_id,
