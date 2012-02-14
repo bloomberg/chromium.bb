@@ -418,65 +418,6 @@ ArgumentToAbsolutePath() {
   cd "${savepwd}"
 }
 
-crostarball() {
-  local hgdir=$1
-  local reporev=$2
-  local naclrev_=$3
-  local tardir_=$4
-
-  StepBanner archive file list ${hgdir} ${reporev}
-  archive="${tardir}/pnacl-src-${naclrev_}-${hgdir}.tbz2"
-  hg archive -R "${TC_SRC}/${hgdir}" -t tbz2 -p "${hgdir}" "${archive}"
-}
-
-cros-tarball-all() {
-  if [ $# -ne 1 ]; then
-    Fatal "Usage: cros-tarball-all <dest_dir>"
-  fi
-  local tardir="$(ArgumentToAbsolutePath "$1")"
-  local naclrev=0
-  if [ -d .git ]; then
-    naclrev=$(git log | grep git-svn | \
-      head -1 | cut -d@ -f2 | cut -d\  -f1)
-  elif [ -d .svn ]; then
-    naclrev=$(svn info | grep Revision: | cut -d\  -f2)
-  fi
-
-  StepBanner "Src Tarballs for CrOS (NaCl ${naclrev}) to $(pwd)/${tardir}"
-
-  readonly manifestprefix="cros-manifest-${naclrev}"
-  # Keep things small..
-  # Skip dragonegg and google-perftools
-
-  rm -rf "${tardir}"
-  mkdir -p "${tardir}"
-
-  # TODO(jasonwkim): Keep this list updated
-  tar -C ${NACL_ROOT} -cvjf "${tardir}/pnacl-src-${naclrev}-build.tbz2" \
-    pnacl/build.sh \
-    pnacl/test.sh \
-    pnacl/DEPS \
-    pnacl/driver/ \
-    pnacl/scripts/ \
-    pnacl/support/ \
-    &
-
-  crostarball upstream ${UPSTREAM_REV} ${naclrev} ${tardir} &
-  crostarball binutils ${BINUTILS_REV} ${naclrev} ${tardir} &
-  crostarball newlib ${NEWLIB_REV} ${naclrev} ${tardir} &
-  crostarball compiler-rt ${COMPILER_RT_REV} ${naclrev} ${tardir} &
-
-  StepBanner generating archive for clang at ${CLANG_REV}
-
-  svn export -q -r ${CLANG_REV} ${TC_SRC}/clang "${tardir}/clang"
-  tar -C ${tardir} -cjf "${tardir}/pnacl-src-${naclrev}-clang.tbz2" clang &
-
-  wait
-  rm -rf "${tardir}/clang"
-  StepBanner Generated the following:
-  ls -l ${tardir}
-}
-
 hg-assert-safe-to-update() {
   local name="$1"
   local dir="$2"
