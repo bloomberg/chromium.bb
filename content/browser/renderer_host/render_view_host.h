@@ -397,6 +397,10 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
     save_accessibility_tree_for_testing_ = save;
   }
 
+  void set_send_accessibility_updated_notifications(bool send) {
+    send_accessibility_updated_notifications_ = send;
+  }
+
   const webkit_glue::WebAccessibility& accessibility_tree_for_testing() {
     return accessibility_tree_;
   }
@@ -684,6 +688,10 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
 
   // Whether the accessibility tree should be saved, for unit testing.
   bool save_accessibility_tree_for_testing_;
+
+  // Whether accessibility notifications are sent for all WebKit notifications
+  // for unit testing.
+  bool send_accessibility_updated_notifications_;
 
   // The most recently received accessibility tree - for unit testing only.
   webkit_glue::WebAccessibility accessibility_tree_;

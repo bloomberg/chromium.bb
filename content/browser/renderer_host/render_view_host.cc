@@ -132,6 +132,7 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
       sudden_termination_allowed_(false),
       session_storage_namespace_(session_storage),
       save_accessibility_tree_for_testing_(false),
+      send_accessibility_updated_notifications_(false),
       render_view_termination_status_(base::TERMINATION_STATUS_STILL_RUNNING) {
   if (!session_storage_namespace_) {
     session_storage_namespace_ = new SessionStorageNamespace(
@@ -1461,6 +1462,13 @@ void RenderViewHost::OnAccessibilityNotifications(
               content::NotificationService::NoDetails());
       }
     }
+  }
+
+  if (send_accessibility_updated_notifications_) {
+    content::NotificationService::current()->Notify(
+        content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
+        content::Source<RenderViewHost>(this),
+        content::NotificationService::NoDetails());
   }
 
   Send(new AccessibilityMsg_Notifications_ACK(routing_id()));
