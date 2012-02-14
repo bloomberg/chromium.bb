@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/perftimer.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
@@ -49,22 +50,39 @@ class ExtensionHost : public content::WebContentsDelegate,
  public:
   class ProcessCreationQueue;
 
+#if defined(TOOLKIT_VIEWS)
+  typedef ExtensionView PlatformExtensionView;
+#elif defined(OS_MACOSX)
+  typedef ExtensionViewMac PlatformExtensionView;
+#elif defined(TOOLKIT_GTK)
+  typedef ExtensionViewGtk PlatformExtensionView;
+#elif defined(OS_ANDROID)
+  // Android does not support extensions.
+  typedef void* PlatformExtensionView;
+#endif
+
   ExtensionHost(const Extension* extension,
                 content::SiteInstance* site_instance,
                 const GURL& url, content::ViewType host_type);
   virtual ~ExtensionHost();
 
 #if defined(TOOLKIT_VIEWS)
-  void set_view(ExtensionView* view) { view_.reset(view); }
-  const ExtensionView* view() const { return view_.get(); }
-  ExtensionView* view() { return view_.get(); }
-#elif defined(OS_MACOSX)
-  const ExtensionViewMac* view() const { return view_.get(); }
-  ExtensionViewMac* view() { return view_.get(); }
-#elif defined(TOOLKIT_GTK)
-  const ExtensionViewGtk* view() const { return view_.get(); }
-  ExtensionViewGtk* view() { return view_.get(); }
+  void set_view(PlatformExtensionView* view) { view_.reset(view); }
 #endif
+
+  const PlatformExtensionView* view() const {
+#if defined(OS_ANDROID)
+    NOTREACHED();
+#endif
+    return view_.get();
+  }
+
+  PlatformExtensionView* view() {
+#if defined(OS_ANDROID)
+    NOTREACHED();
+#endif
+    return view_.get();
+  }
 
   // Create an ExtensionView and tie it to this host and |browser|.  Note NULL
   // is a valid argument for |browser|.  Extension views may be bound to
@@ -190,13 +208,7 @@ class ExtensionHost : public content::WebContentsDelegate,
   Profile* profile_;
 
   // Optional view that shows the rendered content in the UI.
-#if defined(TOOLKIT_VIEWS)
-  scoped_ptr<ExtensionView> view_;
-#elif defined(OS_MACOSX)
-  scoped_ptr<ExtensionViewMac> view_;
-#elif defined(TOOLKIT_GTK)
-  scoped_ptr<ExtensionViewGtk> view_;
-#endif
+  scoped_ptr<PlatformExtensionView> view_;
 
   // The host for our HTML content.
   scoped_ptr<content::WebContents> host_contents_;
