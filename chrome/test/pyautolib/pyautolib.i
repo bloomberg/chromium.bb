@@ -142,6 +142,11 @@ class TabProxy {
   %feature("docstring", "Blocks until tab is completely restored.")
       WaitForTabToBeRestored;
   bool WaitForTabToBeRestored(uint32 timeout_ms);
+  %feature("docstring", "Simulates user action on the SSL blocking page."
+          "if |proceed| is true, this is equivalent to clicking the 'Proceed' "
+          "button, if false to 'Take me out of there' button.")
+      TakeActionOnSSLBlockingPage;
+  bool TakeActionOnSSLBlockingPage(bool proceed);
 
   // HTTP Auth
   %feature("docstring",

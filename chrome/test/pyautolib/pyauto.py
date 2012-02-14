@@ -803,6 +803,29 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     assert http_server.Stop(), 'Cloud not stop the HTTP server'
     logging.debug('Stopped HTTP server.')
 
+  def StartHttpsServer(self, cert_type, data_dir):
+    """Starts a local HTTPS TestServer serving files from |data_dir|.
+
+    Args:
+      cert_type: An instance of HTTPSOptions.ServerCertificate for three
+                 certificate types: ok, expired, or mismatch.
+      data_dir: The path where TestServer should serve files from. This is
+                appended to the source dir to get the final document root.
+
+    Returns:
+      Handle to the HTTPS TestServer
+    """
+    https_server = pyautolib.TestServer(
+        pyautolib.HTTPSOptions(cert_type), pyautolib.FilePath(data_dir))
+    assert https_server.Start(), 'Could not start HTTPS server.'
+    logging.debug('Start HTTPS server at "%s".' % data_dir)
+    return https_server
+
+  def StopHttpsServer(self, https_server):
+    assert https_server, 'HTTPS server not yet started.'
+    assert https_server.Stop(), 'Could not stop the HTTPS server.'
+    logging.debug('Stopped HTTPS server.')
+
   class ActionTimeoutChanger(object):
     """Facilitate temporary changes to action_timeout_ms.
 
