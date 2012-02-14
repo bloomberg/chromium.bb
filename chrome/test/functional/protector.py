@@ -185,11 +185,51 @@ class ProtectorTest(pyauto.PyUITest):
                      default_search['keyword'])
     # No longer showing the change.
     self.assertFalse(self.GetProtectorState()['showing_change'])
+    search_urls = [engine['url'] for engine in self.GetSearchEngineInfo()]
+    # Verify there are no duplicate search engines:
+    self.assertEqual(len(search_urls), len(set(search_urls)))
 
+  def testSearchEngineChangeWithMultipleWindows(self):
+    """Test that default search engine change is detected in multiple
+    browser windows.
+    """
+    # Get current search engine.
+    old_default_search = self._GetDefaultSearchEngine()
+    self.assertTrue(old_default_search)
+    # Close browser, change the search engine and start it again.
+    self.RestartBrowser(clear_profile=False,
+                        pre_launch_hook=self._ChangeDefaultSearchEngine)
+    # The change must be detected by Protector in first window
+    self.OpenNewBrowserWindow(True)
+    self.assertTrue(self.GetProtectorState(window_index=0)['showing_change'])
+    # Open another Browser Window
+    self.OpenNewBrowserWindow(True)
+    # The change must be detected by Protector in second window
+    self.assertTrue(self.GetProtectorState(window_index=1)['showing_change'])
+
+  def testSearchEngineChangeDiscardedOnRelaunchingBrowser(self):
+    """Verify that relaunching the browser while Protector is showing a change
+    discards it.
+    """
+    # Get current search engine.
+    old_default_search = self._GetDefaultSearchEngine()
+    self.assertTrue(old_default_search)
+    # Close browser, change the search engine and start it again.
+    self.RestartBrowser(clear_profile=False,
+                        pre_launch_hook=self._ChangeDefaultSearchEngine)
+    # The change must be detected by Protector.
+    self.assertTrue(self.GetProtectorState()['showing_change'])
+    default_search = self._GetDefaultSearchEngine()
+    self.assertEqual(old_default_search, default_search)
+    # After relaunching the browser, old search engine still must be active.
+    self.RestartBrowser(clear_profile=False)
+    default_search = self._GetDefaultSearchEngine()
+    self.assertEqual(old_default_search, default_search)
+    # No longer showing the change.
+    self.assertFalse(self.GetProtectorState()['showing_change'])
 
 # TODO(ivankr): more hijacking cases (remove the current default search engine,
 # add new search engines to the list, invalidate backup, etc).
-
 
 if __name__ == '__main__':
   pyauto_functional.Main()
