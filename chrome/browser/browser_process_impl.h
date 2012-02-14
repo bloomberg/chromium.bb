@@ -14,6 +14,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/debug/stack_trace.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/threading/non_thread_safe.h"
@@ -271,6 +272,10 @@ class BrowserProcessImpl : public BrowserProcess,
 #endif
 
   scoped_refptr<AudioManager> audio_manager_;
+
+  // TODO(eroman): Remove this when done debugging 113031. This tracks
+  // the callstack which released the final module reference count.
+  base::debug::StackTrace release_last_reference_callstack_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessImpl);
 };

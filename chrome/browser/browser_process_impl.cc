@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/debug/alias.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/synchronization/waitable_event.h"
@@ -244,7 +245,16 @@ static void Signal(base::WaitableEvent* event) {
 
 unsigned int BrowserProcessImpl::AddRefModule() {
   DCHECK(CalledOnValidThread());
-  CHECK(!IsShuttingDown());
+
+  // CHECK(!IsShuttingDown());
+  if (IsShuttingDown()) {
+    // Copy the stacktrace which released the final reference onto our stack so
+    // it will be available in the crash report for inspection.
+    base::debug::StackTrace callstack = release_last_reference_callstack_;
+    base::debug::Alias(&callstack);
+    CHECK(false);
+  }
+
   did_start_ = true;
   module_ref_count_++;
   return module_ref_count_;
@@ -255,6 +265,8 @@ unsigned int BrowserProcessImpl::ReleaseModule() {
   DCHECK_NE(0u, module_ref_count_);
   module_ref_count_--;
   if (0 == module_ref_count_) {
+    release_last_reference_callstack_ = base::debug::StackTrace();
+
     CHECK(MessageLoop::current()->is_running());
     // Allow UI and IO threads to do blocking IO on shutdown, since we do a lot
     // of it on shutdown for valid reasons.
