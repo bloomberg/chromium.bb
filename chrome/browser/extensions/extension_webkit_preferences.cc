@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_webkit_preferences.h"
 
+#include "base/command_line.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "webkit/glue/webpreferences.h"
 
@@ -42,6 +44,19 @@ void SetPreferences(const Extension* extension,
   // Enable WebGL features that regular pages can't access, since they add
   // more risk of fingerprinting.
   webkit_prefs->privileged_webgl_extensions_enabled = true;
+
+  // If this is a component extension, then apply the same poliy for
+  // accelerated compositing as for chrome: URLs (from
+  // TabContents::GetWebkitPrefs).  This is important for component extensions
+  // like the file manager which are sometimes loaded using chrome: URLs and
+  // sometimes loaded with chrome-extension: URLs - we should expect the
+  // performance characteristics to be similar in both cases.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (extension->location() == Extension::COMPONENT &&
+      !command_line.HasSwitch(switches::kAllowWebUICompositing)) {
+    webkit_prefs->accelerated_compositing_enabled = false;
+    webkit_prefs->accelerated_2d_canvas_enabled = false;
+  }
 }
 
 }  // extension_webkit_preferences

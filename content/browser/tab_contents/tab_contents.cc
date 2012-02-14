@@ -443,7 +443,6 @@ WebPreferences TabContents::GetWebkitPrefs(RenderViewHost* rvh,
   // Force accelerated compositing and 2d canvas off for chrome:, about: and
   // chrome-devtools: pages (unless it's specifically allowed).
   if ((url.SchemeIs(chrome::kChromeDevToolsScheme) ||
-      // Allow accelerated compositing for keyboard and log in screen.
       url.SchemeIs(chrome::kChromeUIScheme) ||
       (url.SchemeIs(chrome::kAboutScheme) &&
        url.spec() != chrome::kAboutBlankURL)) &&
