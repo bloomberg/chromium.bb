@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -368,9 +368,17 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSExpiredCertAndDontProceed) {
 }
 
 // Visits a page with https error and then goes back using Browser::GoBack.
+#if defined(OS_MAC)
+// See bug 114185.
+#define MAYBE_TestHTTPSExpiredCertAndGoBackViaButton \
+        DISABLED_TestHTTPSExpiredCertAndGoBackViaButton
+#else
 // Marked as flaky, see bug 40932.
+#define MAYBE_TestHTTPSExpiredCertAndGoBackViaButton \
+        FLAKY_TestHTTPSExpiredCertAndGoBackViaButton
+#endif
 IN_PROC_BROWSER_TEST_F(SSLUITest,
-                       FLAKY_TestHTTPSExpiredCertAndGoBackViaButton) {
+                       MAYBE_TestHTTPSExpiredCertAndGoBackViaButton) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(https_server_expired_.Start());
 
@@ -405,7 +413,15 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
 }
 
 // Visits a page with https error and then goes back using GoToOffset.
+#if defined(OS_MAC)
+// See bug 114185.
+#define DISABLED_ TestHTTPSExpiredCertAndGoBackViaMenu \
+        FLAKY_TestHTTPSExpiredCertAndGoBackViaMenu
+#else
 // Marked as flaky, see bug 40932.
+#define DISABLED_ TestHTTPSExpiredCertAndGoBackViaMenu \
+        FLAKY_TestHTTPSExpiredCertAndGoBackViaMenu
+#endif
 IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestHTTPSExpiredCertAndGoBackViaMenu) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(https_server_expired_.Start());
