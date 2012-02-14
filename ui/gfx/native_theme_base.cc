@@ -31,6 +31,8 @@ const SkColor kSliderThumbDarkGrey = SkColorSetRGB(0xea, 0xe5, 0xe0);
 const SkColor kSliderThumbBorderDarkGrey =
     SkColorSetRGB(0x9d, 0x96, 0x8e);
 
+const SkColor kMenuPopupBackgroundColor = SkColorSetRGB(210, 225, 246);
+
 // Get lightness adjusted color.
 SkColor BrightenColor(const color_utils::HSL& hsl, SkAlpha alpha,
     double lightness_amount) {
@@ -671,7 +673,7 @@ void NativeThemeBase::PaintMenuPopupBackground(
     State state,
     const gfx::Rect& rect,
     const MenuListExtraParams& menu_list) const {
-  canvas->drawColor(SkColorSetRGB(210, 225, 246), SkXfermode::kSrc_Mode);
+  canvas->drawColor(kMenuPopupBackgroundColor, SkXfermode::kSrc_Mode);
 }
 
 void NativeThemeBase::PaintMenuItemBackground(
