@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -122,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
 
 // This test is flaky as per http://crbug.com/74557.
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest,
-                       FLAKY_TabSpecificBrowserActionState) {
+                       DISABLED_TabSpecificBrowserActionState) {
   ASSERT_TRUE(RunExtensionTest("browser_action/tab_specific_state")) <<
       message_;
   const Extension* extension = GetSingleLoadedExtension();

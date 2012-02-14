@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,7 +53,7 @@ class MessageSender : public content::NotificationObserver {
 
 // Tests that message passing between extensions and content scripts works.
 // Flaky on the trybots. See http://crbug.com/96725.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_Messaging) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Messaging) {
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("messaging/connect")) << message_;
 }

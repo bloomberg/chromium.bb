@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,7 +105,7 @@ class ErrorPageTest : public InProcessBrowserTest {
 
 // See crbug.com/109669
 #if defined(USE_AURA)
-#define MAYBE_DNSError_Basic FLAKY_DNSError_Basic
+#define MAYBE_DNSError_Basic DISABLED_DNSError_Basic
 #else
 #define MAYBE_DNSError_Basic DNSError_Basic
 #endif
@@ -128,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_GoBack1) {
 
 // See crbug.com/109669
 #if defined(USE_AURA)
-#define MAYBE_DNSError_GoBack2 FLAKY_DNSError_GoBack2
+#define MAYBE_DNSError_GoBack2 DISABLED_DNSError_GoBack2
 #else
 #define MAYBE_DNSError_GoBack2 DNSError_GoBack2
 #endif
@@ -147,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, MAYBE_DNSError_GoBack2) {
 
 // See crbug.com/109669
 #if defined(USE_AURA)
-#define MAYBE_DNSError_GoBack2AndForward FLAKY_DNSError_GoBack2AndForward
+#define MAYBE_DNSError_GoBack2AndForward DISABLED_DNSError_GoBack2AndForward
 #else
 #define MAYBE_DNSError_GoBack2AndForward DNSError_GoBack2AndForward
 #endif
@@ -168,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, MAYBE_DNSError_GoBack2AndForward) {
 
 // See crbug.com/109669
 #if defined(USE_AURA)
-#define MAYBE_DNSError_GoBack2Forward2 FLAKY_DNSError_GoBack2Forward2
+#define MAYBE_DNSError_GoBack2Forward2 DISABLED_DNSError_GoBack2Forward2
 #else
 #define MAYBE_DNSError_GoBack2Forward2 DNSError_GoBack2Forward2
 #endif

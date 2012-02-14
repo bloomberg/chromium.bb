@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -474,7 +474,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillFormWithRepeatedField) {
 #if defined(OS_WIN)
 // Has been observed to fail on windows.  crbug.com/100062
 #define MAYBE_AutofillFormWithNonAutofillableField \
-    FLAKY_AutofillFormWithNonAutofillableField
+    DISABLED_AutofillFormWithNonAutofillableField
 #else
 #define MAYBE_AutofillFormWithNonAutofillableField \
     AutofillFormWithNonAutofillableField

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -690,7 +690,8 @@ TEST_F(ParallelAuthenticatorTest, DriveOnlineLogin) {
   RunResolve(auth_.get(), &message_loop_);
 }
 
-TEST_F(ParallelAuthenticatorTest, FLAKY_DriveNeedNewPassword) {
+// http://crbug.com/106538
+TEST_F(ParallelAuthenticatorTest, DISABLED_DriveNeedNewPassword) {
   FailOnLoginSuccess();  // Set failing on success as the default...
   // ...but expect ONE successful login first.
   ExpectLoginSuccess(username_, password_, result_, true);

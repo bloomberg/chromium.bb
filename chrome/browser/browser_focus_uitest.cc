@@ -75,7 +75,7 @@ using content::WebContents;
 #define MAYBE_TabsRememberFocusFindInPage FAILS_TabsRememberFocusFindInPage
 #elif defined(OS_WIN)
 // Flaky, http://crbug.com/62537.
-#define MAYBE_TabsRememberFocusFindInPage FLAKY_TabsRememberFocusFindInPage
+#define MAYBE_TabsRememberFocusFindInPage DISABLED_TabsRememberFocusFindInPage
 #endif
 
 namespace {
@@ -241,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, ClickingMovesFocus) {
 }
 
 // Flaky, http://crbug.com/69034.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FLAKY_BrowsersRememberFocus) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_BrowsersRememberFocus) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_TRUE(test_server()->Start());
 
@@ -416,7 +416,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_TabsRememberFocusFindInPage) {
 // Background window does not steal focus.
 // Flaky, http://crbug.com/62538.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest,
-                       FLAKY_BackgroundBrowserDontStealFocus) {
+                       DISABLED_BackgroundBrowserDontStealFocus) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_TRUE(test_server()->Start());
 
@@ -729,7 +729,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
 // Focus stays on page with interstitials.
 // http://crbug.com/81451
 #if defined(OS_MACOSX) || defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FLAKY_InterstitialFocus) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_InterstitialFocus) {
 #else
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
 #endif
@@ -769,7 +769,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
 // Make sure Find box can request focus, even when it is already open.
 // Flaky on mac and valgrind. http://crbug.com/67301.
 #if defined(OS_MACOSX)
-#define MAYBE_FindFocusTest FLAKY_FindFocusTest
+#define MAYBE_FindFocusTest DISABLED_FindFocusTest
 #else
 #define MAYBE_FindFocusTest FindFocusTest
 #endif
@@ -827,7 +827,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
 // Makes sure the focus is in the right location when opening the different
 // types of tabs.
 // Flaky, http://crbug.com/62539.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FLAKY_TabInitialFocus) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabInitialFocus) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
   // Open the history tab, focus should be on the tab contents.

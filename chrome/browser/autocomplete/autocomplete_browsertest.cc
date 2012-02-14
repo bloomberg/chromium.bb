@@ -31,7 +31,7 @@
 // Autocomplete test is flaky on ChromeOS.
 // http://crbug.com/52928
 #if defined(OS_CHROMEOS)
-#define MAYBE_Autocomplete FLAKY_Autocomplete
+#define MAYBE_Autocomplete DISABLED_Autocomplete
 #else
 #define MAYBE_Autocomplete Autocomplete
 #endif

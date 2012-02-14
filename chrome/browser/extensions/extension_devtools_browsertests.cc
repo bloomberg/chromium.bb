@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,7 +51,7 @@ static ExtensionHost* FindHostWithPath(ExtensionProcessManager* manager,
 
 // Tests for the experimental timeline extensions API.
 // TODO(johnnyg): crbug.com/52544 Test was broken by webkit r65510.
-IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, FLAKY_TimelineApi) {
+IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, DISABLED_TimelineApi) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("devtools").AppendASCII("timeline_api")));
 

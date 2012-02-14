@@ -112,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, Audio) {
 
 #if defined(OS_MACOSX)
 // http://crbug.com/95274 - Video is flaky on Mac.
-#define MAYBE_Video FLAKY_Video
+#define MAYBE_Video DISABLED_Video
 #else
 #define MAYBE_Video Video
 #endif

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -214,7 +214,7 @@ class ExtensionsLoadTest : public ExtensionStartupTestBase {
 
 // Fails inconsistently on Linux x64. http://crbug.com/80961
 #if defined(OS_LINUX) && defined(ARCH_CPU_64_BITS)
-#define Maybe_Test FLAKY_Test
+#define Maybe_Test DISABLED_Test
 #else
 #define Maybe_Test Test
 #endif

@@ -102,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabGetCurrent) {
 }
 
 // Flaky on the trybots. See http://crbug.com/96725.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_TabConnect) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_TabConnect) {
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("tabs/connect")) << message_;
 }
@@ -117,12 +117,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabReload) {
 
 // Test is timing out on linux and cros and flaky on others.
 // See http://crbug.com/83876
-#if defined(OS_LINUX)
-#define MAYBE_CaptureVisibleTabJpeg DISABLED_CaptureVisibleTabJpeg
-#else
-#define MAYBE_CaptureVisibleTabJpeg FLAKY_CaptureVisibleTabJpeg
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_CaptureVisibleTabJpeg) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_CaptureVisibleTabJpeg) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
   host_resolver()->AddRule("b.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
@@ -132,12 +127,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_CaptureVisibleTabJpeg) {
 
 // Test is timing out on linux and cros and flaky on others.
 // See http://crbug.com/83876
-#if defined(OS_LINUX)
-#define MAYBE_CaptureVisibleTabPng DISABLED_CaptureVisibleTabPng
-#else
-#define MAYBE_CaptureVisibleTabPng FLAKY_CaptureVisibleTabPng
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_CaptureVisibleTabPng) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_CaptureVisibleTabPng) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
   host_resolver()->AddRule("b.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());

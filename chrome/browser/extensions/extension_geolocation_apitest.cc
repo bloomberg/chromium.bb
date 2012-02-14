@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,8 +25,9 @@ class GeolocationApiTest : public ExtensionApiTest {
   content::MockGeolocation mock_geolocation_;
 };
 
+// http://crbug.com/68287
 IN_PROC_BROWSER_TEST_F(GeolocationApiTest,
-                       FLAKY_ExtensionGeolocationAccessFail) {
+                       DISABLED_ExtensionGeolocationAccessFail) {
   // Test that geolocation cannot be accessed from extension without permission.
   ASSERT_TRUE(RunExtensionTest("geolocation/no_permission")) << message_;
 }

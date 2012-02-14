@@ -444,8 +444,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsExperimentalExtensionTest,
 }
 
 // Tests that a content script is in the scripts list.
+// http://crbug.com/114104
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
-                       FLAKY_TestContentScriptIsPresent) {
+                       DISABLED_TestContentScriptIsPresent) {
   LoadExtension("simple_content_script");
   RunTest("testContentScriptIsPresent", kPageWithContentScript);
 }
@@ -497,7 +498,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleOnNavigateBack) {
 
 #if defined(OS_LINUX) || defined(OS_MACOSX)
 // http://crbug.com/103539
-#define TestReattachAfterCrash FLAKY_TestReattachAfterCrash
+#define TestReattachAfterCrash DISABLED_TestReattachAfterCrash
 #endif
 // Tests that inspector will reattach to inspected page when it is reloaded
 // after a crash. See http://crbug.com/101952
@@ -542,14 +543,11 @@ IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, MAYBE_InspectSharedWorker) {
 }
 
 // http://crbug.com/100538
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_PauseInSharedWorkerInitialization DISABLED_PauseInSharedWorkerInitialization
-#elif defined(OS_WIN)
-#define MAYBE_PauseInSharedWorkerInitialization FLAKY_PauseInSharedWorkerInitialization
 #else
 #define MAYBE_PauseInSharedWorkerInitialization PauseInSharedWorkerInitialization
 #endif
-// See http://crbug.com/100538
 
 // http://crbug.com/106114 is masking
 // MAYBE_PauseInSharedWorkerInitialization into

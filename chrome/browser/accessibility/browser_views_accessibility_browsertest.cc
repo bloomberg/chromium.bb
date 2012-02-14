@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -135,7 +135,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
 // info.
 // http://crbug.com/104132
 IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
-                       FLAKY_TestNonClientViewAccObj) {
+                       DISABLED_TestNonClientViewAccObj) {
   views::View* non_client_view =
   GetBrowserView()->GetWidget()->non_client_view();
 
@@ -148,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
 // accessibility info.
 // http://crbug.com/104132
 IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
-                       FLAKY_TestBrowserRootViewAccObj) {
+                       DISABLED_TestBrowserRootViewAccObj) {
   views::View* browser_root_view = GetBrowserView()->frame()->GetRootView();
 
   TestViewAccessibilityObject(
@@ -160,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
 // Retrieve accessibility object for browser view and verify accessibility info.
 // http://crbug.com/104132
 IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
-                       FLAKY_TestBrowserViewAccObj) {
+                       DISABLED_TestBrowserViewAccObj) {
   // Verify root view MSAA name and role.
   TestViewAccessibilityObject(
       GetBrowserView(),
@@ -171,7 +171,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
 // Retrieve accessibility object for toolbar view and verify accessibility info.
 // http://crbug.com/104132
 IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
-                       FLAKY_TestToolbarViewAccObj) {
+                       DISABLED_TestToolbarViewAccObj) {
   // Verify toolbar MSAA name and role.
   TestViewAccessibilityObject(
       GetToolbarView(),
@@ -182,7 +182,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
 // Retrieve accessibility object for Back button and verify accessibility info.
 // http://crbug.com/104132
 IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
-                       FLAKY_TestBackButtonAccObj) {
+                       DISABLED_TestBackButtonAccObj) {
   // Verify Back button MSAA name and role.
   TestViewAccessibilityObject(
       GetToolbarView()->GetViewByID(VIEW_ID_BACK_BUTTON),
@@ -194,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
 // info.
 // http://crbug.com/104132
 IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
-                       FLAKY_TestForwardButtonAccObj) {
+                       DISABLED_TestForwardButtonAccObj) {
   // Verify Forward button MSAA name and role.
   TestViewAccessibilityObject(
       GetToolbarView()->GetViewByID(VIEW_ID_FORWARD_BUTTON),
@@ -206,7 +206,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
 // info.
 // http://crbug.com/104132
 IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
-                       FLAKY_TestReloadButtonAccObj) {
+                       DISABLED_TestReloadButtonAccObj) {
   // Verify Reload button MSAA name and role.
   TestViewAccessibilityObject(
       GetToolbarView()->GetViewByID(VIEW_ID_RELOAD_BUTTON),
@@ -217,7 +217,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
 // Retrieve accessibility object for Home button and verify accessibility info.
 // http://crbug.com/104132
 IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
-                       FLAKY_TestHomeButtonAccObj) {
+                       DISABLED_TestHomeButtonAccObj) {
   // Verify Home button MSAA name and role.
   TestViewAccessibilityObject(
       GetToolbarView()->GetViewByID(VIEW_ID_HOME_BUTTON),
@@ -228,7 +228,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
 // Retrieve accessibility object for Star button and verify accessibility info.
 // http://crbug.com/104132
 IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
-                       FLAKY_TestStarButtonAccObj) {
+                       DISABLED_TestStarButtonAccObj) {
   // Verify Star button MSAA name and role.
   TestViewAccessibilityObject(
       GetToolbarView()->GetViewByID(VIEW_ID_STAR_BUTTON),
@@ -239,7 +239,8 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
 // Retrieve accessibility object for App menu button and verify accessibility
 // info.
 // http://crbug.com/104132
-IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest, FLAKY_TestAppMenuAccObj) {
+IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
+                       DISABLED_TestAppMenuAccObj) {
   // Verify App menu button MSAA name and role.
   TestViewAccessibilityObject(
       GetToolbarView()->GetViewByID(VIEW_ID_APP_MENU),
@@ -249,7 +250,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest, FLAKY_TestAppMenuAccObj) {
 
 // http://crbug.com/104132
 IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
-                       FLAKY_TestBookmarkBarViewAccObj) {
+                       DISABLED_TestBookmarkBarViewAccObj) {
   TestViewAccessibilityObject(
       GetBookmarkBarView(),
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_BOOKMARKS)),

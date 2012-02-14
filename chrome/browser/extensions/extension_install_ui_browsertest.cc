@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,7 +40,7 @@ class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
 // Flaky on linux. See http://crbug.com/86105
 #if defined(OS_LINUX)
 #define MAYBE_TestThemeInstallUndoResetsToDefault \
-FLAKY_TestThemeInstallUndoResetsToDefault
+DISABLED_TestThemeInstallUndoResetsToDefault
 #else
 #define MAYBE_TestThemeInstallUndoResetsToDefault \
 TestThemeInstallUndoResetsToDefault
@@ -75,7 +75,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
 // Flaky on linux. See http://crbug.com/86105
 #if defined(OS_LINUX)
 #define MAYBE_TestThemeInstallUndoResetsToPreviousTheme \
-FLAKY_TestThemeInstallUndoResetsToPreviousTheme
+DISABLED_TestThemeInstallUndoResetsToPreviousTheme
 #else
 #define MAYBE_TestThemeInstallUndoResetsToPreviousTheme \
 TestThemeInstallUndoResetsToPreviousTheme
