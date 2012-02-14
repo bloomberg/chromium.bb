@@ -26,7 +26,7 @@ class ProcessProxy : public base::RefCountedThreadSafe<ProcessProxy> {
  public:
   ProcessProxy();
 
-  // Open a process using command |command|. |pid| is set to new process' pid.
+  // Opens a process using command |command|. |pid| is set to new process' pid.
   bool Open(const std::string& command, pid_t* pid);
 
   // Triggers watcher object on |watch_thread|. |watch_thread| gets blocked, so
@@ -35,11 +35,15 @@ class ProcessProxy : public base::RefCountedThreadSafe<ProcessProxy> {
   bool StartWatchingOnThread(base::Thread* watch_thread,
                              const ProcessOutputCallback& callback);
 
-  // Send some data to the process.
+  // Sends some data to the process.
   bool Write(const std::string& text);
 
-  // Close. Must be called if we want this to be eventually deleted.
+  // Closes the process.
+  // Must be called if we want this to be eventually deleted.
   void Close();
+
+  // Notifies underlaying process of terminal size change.
+  bool OnTerminalResize(int width, int height);
 
  private:
   friend class base::RefCountedThreadSafe<ProcessProxy>;

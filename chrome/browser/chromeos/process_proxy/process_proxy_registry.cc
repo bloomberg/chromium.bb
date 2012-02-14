@@ -115,6 +115,14 @@ bool ProcessProxyRegistry::CloseProcess(pid_t pid) {
   return true;
 }
 
+bool ProcessProxyRegistry::OnTerminalResize(pid_t pid, int width, int height) {
+  std::map<pid_t, ProcessProxyInfo>::iterator it = proxy_map_.find(pid);
+  if (it == proxy_map_.end())
+    return false;
+
+  return it->second.proxy->OnTerminalResize(width, height);
+}
+
 void ProcessProxyRegistry::OnProcessOutput(pid_t pid,
     ProcessOutputType type, const std::string& data) {
   const char* type_str = ProcessOutputTypeToString(type);

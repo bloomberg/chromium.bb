@@ -82,6 +82,40 @@
             ]
           }
         ]
+      },
+      {
+        "name": "onTerminalResize",
+        "type": "function",
+        "description": "Notify the process with the id pid that terminal window size has changed.",
+        "parameters": [
+          {
+            "name": "pid",
+            "type": "integer",
+            "description": "The pid of the process."
+          },
+          {
+            "name": "width",
+            "type": "integer",
+            "description": "New window width (as column count)."
+          },
+          {
+            "name": "height",
+            "type": "integer",
+            "description": "New window height (as row count)."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "description": "Callback that will be called when sendInput method ends. Returns success.",
+            "parameters": [
+              {
+                "name": "success",
+                "type": "boolean"
+              }
+            ]
+          }
+        ]
       }
     ],
     "events": [

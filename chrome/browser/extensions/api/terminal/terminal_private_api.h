@@ -65,4 +65,16 @@ class CloseTerminalProcessFunction : public TerminalPrivateFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("terminalPrivate.closeTerminalProcess")
 };
 
+// Called by extension when terminal size changes.
+class OnTerminalResizeFunction : public TerminalPrivateFunction {
+ public:
+  virtual bool RunTerminalFunction() OVERRIDE;
+
+ private:
+  void OnResizeOnFileThread(pid_t pid, int width, int height);
+  void RespondOnUIThread(bool success);
+
+  DECLARE_EXTENSION_FUNCTION_NAME("terminalPrivate.onTerminalResize")
+};
+
 #endif  // CHROME_BROWSER_EXTENSIONS_API_TERMINAL_TERMINAL_PRIVATE_API_H_

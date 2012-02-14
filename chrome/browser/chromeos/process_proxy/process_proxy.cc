@@ -156,6 +156,19 @@ bool ProcessProxy::Write(const std::string& text) {
   return (bytes_written == static_cast<int>(data_size));
 }
 
+bool ProcessProxy::OnTerminalResize(int width, int height) {
+  if (width < 0 || height < 0)
+    return false;
+
+  winsize ws;
+  // Number of rows.
+  ws.ws_row = height;
+  // Number of columns.
+  ws.ws_col = width;
+
+  return (HANDLE_EINTR(ioctl(pt_pair_[PT_MASTER_FD], TIOCSWINSZ, &ws)) != -1);
+}
+
 ProcessProxy::~ProcessProxy() {
   // In case watcher did not started, we may get deleted without calling Close.
   // In that case we have to clean up created pipes. If watcher had been

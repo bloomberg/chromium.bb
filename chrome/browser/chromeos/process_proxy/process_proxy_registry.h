@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,12 +40,14 @@ class ProcessProxyRegistry {
   // Starts new ProcessProxy (which starts new process).
   bool OpenProcess(const std::string& command, pid_t* pid,
                    const ProcessOutputCallbackWithPid& callback);
-  // Send data to the process with id |pid|.
+  // Sends data to the process with id |pid|.
   bool SendInput(pid_t pid, const std::string& data);
-  // Stop the process with id |pid|.
+  // Stops the process with id |pid|.
   bool CloseProcess(pid_t pid);
+  // Reports terminal resize to process proxy.
+  bool OnTerminalResize(pid_t pid, int width, int height);
 
-  // Gets called when output gets detected. Currently used for testing.
+  // Currently used for testing.
   void SetOutputCallback(const ProcessOutputCallback& callback);
 
  private:
@@ -54,6 +56,7 @@ class ProcessProxyRegistry {
   ProcessProxyRegistry();
   ~ProcessProxyRegistry();
 
+  // Gets called when output gets detected.
   void OnProcessOutput(pid_t pid,
                        ProcessOutputType type,
                        const std::string& data);

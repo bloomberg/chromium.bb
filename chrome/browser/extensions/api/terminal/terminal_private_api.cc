@@ -179,3 +179,42 @@ void CloseTerminalProcessFunction::RespondOnUIThread(bool success) {
   result_.reset(new base::FundamentalValue(success));
   SendResponse(true);
 }
+
+bool OnTerminalResizeFunction::RunTerminalFunction() {
+  if (args_->GetSize() != 3)
+    return false;
+
+  pid_t pid;
+  if (!args_->GetInteger(0, &pid))
+    return false;
+
+  int width;
+  if (!args_->GetInteger(1, &width))
+    return false;
+
+  int height;
+  if (!args_->GetInteger(2, &height))
+    return false;
+
+  // Registry lives on the FILE thread.
+  content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&OnTerminalResizeFunction::OnResizeOnFileThread, this, pid,
+                 width, height));
+
+  return true;
+}
+
+void OnTerminalResizeFunction::OnResizeOnFileThread(pid_t pid,
+                                                    int width, int height) {
+  bool success = ProcessProxyRegistry::Get()->OnTerminalResize(pid,
+                                                               width, height);
+
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&OnTerminalResizeFunction::RespondOnUIThread, this,
+      success));
+}
+
+void OnTerminalResizeFunction::RespondOnUIThread(bool success) {
+  result_.reset(new base::FundamentalValue(success));
+  SendResponse(true);
+}

@@ -423,6 +423,7 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<OpenTerminalProcessFunction>();
   RegisterFunction<SendInputToTerminalProcessFunction>();
   RegisterFunction<CloseTerminalProcessFunction>();
+  RegisterFunction<OnTerminalResizeFunction>();
 
 #if defined(USE_VIRTUAL_KEYBOARD)
   // Input
