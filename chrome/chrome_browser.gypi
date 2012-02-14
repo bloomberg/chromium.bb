@@ -453,6 +453,8 @@
         'browser/chromeos/dbus/bluetooth_manager_client.h',
         'browser/chromeos/dbus/cros_disks_client.cc',
         'browser/chromeos/dbus/cros_disks_client.h',
+        'browser/chromeos/dbus/cryptohome_client.cc',
+        'browser/chromeos/dbus/cryptohome_client.h',
         'browser/chromeos/dbus/cros_dbus_service.cc',
         'browser/chromeos/dbus/cros_dbus_service.h',
         'browser/chromeos/dbus/dbus_thread_manager.cc',

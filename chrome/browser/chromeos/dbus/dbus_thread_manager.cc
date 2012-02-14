@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/dbus/bluetooth_manager_client.h"
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
 #include "chrome/browser/chromeos/dbus/cros_disks_client.h"
+#include "chrome/browser/chromeos/dbus/cryptohome_client.h"
 #include "chrome/browser/chromeos/dbus/image_burner_client.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/dbus/sensors_client.h"
@@ -61,6 +62,9 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     // Create the cros-disks client.
     cros_disks_client_.reset(
         CrosDisksClient::Create(system_bus_.get()));
+    // Create the Cryptohome client.
+    cryptohome_client_.reset(
+        CryptohomeClient::Create(system_bus_.get()));
     // Create the image burner client.
     image_burner_client_.reset(ImageBurnerClient::Create(system_bus_.get()));
     // Create the power manager client.
@@ -101,8 +105,13 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   }
 
   // DBusThreadManager override.
-  virtual CrosDisksClient* GetCrosDisksClient() {
+  virtual CrosDisksClient* GetCrosDisksClient() OVERRIDE {
     return cros_disks_client_.get();
+  }
+
+  // DBusThreadManager override.
+  virtual CryptohomeClient* GetCryptohomeClient() OVERRIDE {
+    return cryptohome_client_.get();
   }
 
   // DBusThreadManager override.
@@ -142,6 +151,7 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<BluetoothDeviceClient> bluetooth_device_client_;
   scoped_ptr<BluetoothManagerClient> bluetooth_manager_client_;
   scoped_ptr<CrosDisksClient> cros_disks_client_;
+  scoped_ptr<CryptohomeClient> cryptohome_client_;
   scoped_ptr<ImageBurnerClient> image_burner_client_;
   scoped_ptr<PowerManagerClient> power_manager_client_;
   scoped_ptr<SensorsClient> sensors_client_;
