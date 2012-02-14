@@ -98,6 +98,15 @@ STDMETHODIMP BrowserAccessibilityRelation::get_nTargets(long* n_targets) {
     return E_FAIL;
 
   *n_targets = static_cast<long>(target_ids_.size());
+
+  BrowserAccessibilityManager* manager = owner_->manager();
+  for (long i = *n_targets - 1; i >= 0; --i) {
+    BrowserAccessibility* result = manager->GetFromRendererID(target_ids_[i]);
+    if (!result || !result->instance_active()) {
+      *n_targets = 0;
+      break;
+    }
+  }
   return S_OK;
 }
 
@@ -117,7 +126,7 @@ STDMETHODIMP BrowserAccessibilityRelation::get_target(
   BrowserAccessibilityManager* manager = owner_->manager();
   BrowserAccessibility* result =
       manager->GetFromRendererID(target_ids_[target_index]);
-  if (!result->instance_active())
+  if (!result || !result->instance_active())
     return E_FAIL;
 
   *target = static_cast<IAccessible*>(
