@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
@@ -8,8 +8,7 @@
 # TODO(sehr): remove need for the warning flag removals below
 {
   'includes': [
-    # NOTE: this file also defines common dependencies.
-    'nonnacl_util.gypi',
+    '../../../build/common.gypi',
   ],
   'target_defaults': {
     'variables': {
@@ -32,13 +31,6 @@
           'WARNING_CFLAGS!': [
             '-pedantic',  # import is a gcc extension
             '-Wextra',
-          ]
-        },
-      }],
-      ['target_base=="nonnacl_util"', {
-        'xcode_settings': {
-          'WARNING_CFLAGS!': [
-            '-pedantic',  # import is a gcc extension
           ]
         },
       }],
@@ -65,11 +57,11 @@
     {
       'target_name': 'nonnacl_util',
       'type': 'static_library',
-      'variables': {
-        'target_base': 'nonnacl_util',
-      },
       'dependencies': [
         'sel_ldr_launcher',
+      ],
+      'includes': [
+        'nonnacl_util.gypi',
       ],
     },
   ],
@@ -95,11 +87,13 @@
           'target_name': 'nonnacl_util64',
           'type': 'static_library',
           'variables': {
-            'target_base': 'nonnacl_util',
             'win_target': 'x64',
           },
           'dependencies': [
             'sel_ldr_launcher64',
+          ],
+          'includes': [
+            'nonnacl_util.gypi',
           ],
         },
       ],
@@ -147,16 +141,3 @@
     }],
   ],
 }
-
-# TODO:
-# if env.Bit('linux'):
-#     env.Append(
-#         CCFLAGS=['-fPIC'],
-#     )
-#if env.Bit('mac'):
-#    # there are some issue with compiling ".mm" files
-#    env.FilterOut(CCFLAGS=['-pedantic'])
-#if env.Bit('windows'):
-#    env.Append(
-#        CPPDEFINES = ['XP_WIN', 'WIN32', '_WINDOWS'],
-#    )
