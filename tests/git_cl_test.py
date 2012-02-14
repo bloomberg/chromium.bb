@@ -7,6 +7,7 @@
 
 import os
 import StringIO
+import stat
 import sys
 import unittest
 
@@ -40,6 +41,16 @@ class WatchlistsMock(object):
   @staticmethod
   def GetWatchersForPaths(_):
     return ['joe@example.com']
+
+
+class CodereviewSettingsFileMock(object):
+  def __init__(self):
+    pass
+  # pylint: disable=R0201
+  def read(self):
+    return ("CODE_REVIEW_SERVER: gerrit.chromium.org\n" +
+            "GERRIT_HOST: gerrit.chromium.org\n" +
+            "GERRIT_PORT: 29418\n")
 
 
 class TestGitCl(TestCase):
@@ -387,6 +398,62 @@ class TestGitCl(TestCase):
         [],
         'desc\nTBR=reviewer@example.com\nBUG=\nR=another@example.com\n',
         ['reviewer@example.com', 'another@example.com'])
+
+
+  def test_config_gerrit_download_hook(self):
+    self.mock(git_cl, 'FindCodereviewSettingsFile', CodereviewSettingsFileMock)
+    def ParseCodereviewSettingsContent(content):
+      keyvals = {}
+      keyvals['CODE_REVIEW_SERVER'] = 'gerrit.chromium.org'
+      keyvals['GERRIT_HOST'] = 'gerrit.chromium.org'
+      keyvals['GERRIT_PORT'] = '29418'
+      return keyvals
+    self.mock(git_cl.gclient_utils, 'ParseCodereviewSettingsContent',
+              ParseCodereviewSettingsContent)
+    self.mock(git_cl.os, 'access', self._mocked_call)
+    self.mock(git_cl.os, 'chmod', self._mocked_call)
+    def AbsPath(path):
+      if not path.startswith('/'):
+        return os.path.join('/usr/local/src', path)
+      return path
+    self.mock(git_cl.os.path, 'abspath', AbsPath)
+    def Exists(path):
+      if path == '/usr/local/src/.git/hooks/commit-msg':
+        return False
+      # others paths, such as /usr/share/locale/....
+      return True
+    self.mock(git_cl.os.path, 'exists', Exists)
+    self.mock(git_cl.urllib, 'urlretrieve', self._mocked_call)
+    self.calls = [
+        ((['git', 'config', 'rietveld.server', 'gerrit.chromium.org'],), ''),
+        ((['git', 'config', '--unset-all', 'rietveld.cc'],), ''),
+        ((['git', 'config', '--unset-all', 'rietveld.tree-status-url'],), ''),
+        ((['git', 'config', '--unset-all', 'rietveld.viewvc-url'],), ''),
+        ((['git', 'config', 'gerrit.host', 'gerrit.chromium.org'],), ''),
+        ((['git', 'config', 'gerrit.port', '29418'],), ''),
+        # DownloadHooks(False)
+        ((['git', 'config', 'gerrit.host'],), 'gerrit.chromium.org'),
+        ((['git', 'config', 'rietveld.server'],), 'gerrit.chromium.org'),
+        ((['git', 'rev-parse', '--show-cdup'],), ''),
+        (('/usr/local/src/.git/hooks/commit-msg', os.X_OK,), False),
+        (('https://gerrit.chromium.org/tools/hooks/commit-msg',
+          '/usr/local/src/.git/hooks/commit-msg',), ''),
+        (('/usr/local/src/.git/hooks/commit-msg',
+          stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR,), ''),
+        # GetCodereviewSettingsInteractively
+        ((['git', 'config', 'rietveld.server'],), 'gerrit.chromium.org'),
+        (('Rietveld server (host[:port]) [https://gerrit.chromium.org]:',),
+         ''),
+        ((['git', 'config', 'rietveld.cc'],), ''),
+        (('CC list:',), ''),
+        ((['git', 'config', 'rietveld.tree-status-url'],), ''),
+        (('Tree status URL:',), ''),
+        ((['git', 'config', 'rietveld.viewvc-url'],), ''),
+        (('ViewVC URL:',), ''),
+        # DownloadHooks(True)
+        (('/usr/local/src/.git/hooks/commit-msg', os.X_OK,), True),
+        ]
+    git_cl.main(['config'])
 
 
 if __name__ == '__main__':

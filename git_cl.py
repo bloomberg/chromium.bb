@@ -11,9 +11,11 @@ import logging
 import optparse
 import os
 import re
+import stat
 import sys
 import textwrap
 import urlparse
+import urllib
 import urllib2
 
 try:
@@ -154,6 +156,8 @@ class Settings(object):
       cr_settings_file = FindCodereviewSettingsFile()
       if cr_settings_file:
         LoadCodereviewSettingsFromFile(cr_settings_file)
+        self.updated = True
+        DownloadHooks(False)
       self.updated = True
 
   def GetDefaultServerUrl(self, error_ok=False):
@@ -709,11 +713,6 @@ def LoadCodereviewSettingsFromFile(fileobj):
   if 'GERRIT_HOST' in keyvals and 'GERRIT_PORT' in keyvals:
     RunGit(['config', 'gerrit.host', keyvals['GERRIT_HOST']])
     RunGit(['config', 'gerrit.port', keyvals['GERRIT_PORT']])
-    # Install the standard commit-msg hook.
-    RunCommand(['scp', '-p', '-P', keyvals['GERRIT_PORT'],
-                '%s:hooks/commit-msg' % keyvals['GERRIT_HOST'],
-                os.path.join(settings.GetRoot(),
-                             '.git', 'hooks', 'commit-msg')])
 
   if 'PUSH_URL_CONFIG' in keyvals and 'ORIGIN_URL_CONFIG' in keyvals:
     #should be of the form
@@ -723,6 +722,31 @@ def LoadCodereviewSettingsFromFile(fileobj):
             keyvals['ORIGIN_URL_CONFIG']])
 
 
+def DownloadHooks(force):
+  """downloads hooks
+
+  Args:
+    force: True to update hooks. False to install hooks if not present.
+  """
+  if not settings.GetIsGerrit():
+    return
+  server_url = settings.GetDefaultServerUrl()
+  src = '%s/tools/hooks/commit-msg' % server_url
+  dst = os.path.join(settings.GetRoot(), '.git', 'hooks', 'commit-msg')
+  if not os.access(dst, os.X_OK):
+    if os.path.exists(dst):
+      if not force:
+        return
+      os.remove(dst)
+    try:
+      urllib.urlretrieve(src, dst)
+      os.chmod(dst, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
+    except Exception:
+      if os.path.exists(dst):
+        os.remove(dst)
+      DieWithError('\nFailed to download hooks from %s' % src)
+
+
 @usage('[repo root containing codereview.settings]')
 def CMDconfig(parser, args):
   """edit configuration for this tree"""
@@ -730,6 +754,7 @@ def CMDconfig(parser, args):
   _, args = parser.parse_args(args)
   if len(args) == 0:
     GetCodereviewSettingsInteractively()
+    DownloadHooks(True)
     return 0
 
   url = args[0]
@@ -738,6 +763,7 @@ def CMDconfig(parser, args):
 
   # Load code review settings and download hooks (if available).
   LoadCodereviewSettingsFromFile(urllib2.urlopen(url))
+  DownloadHooks(True)
   return 0
 
 
