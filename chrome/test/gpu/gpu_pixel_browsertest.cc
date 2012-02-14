@@ -173,6 +173,9 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
                    << img_revision_path.value()
                    << " as future reference.";
         rt = false;
+      } else {
+        LOG(INFO) << "Saved reference image to: "
+                  << img_revision_path.value();
       }
       if (!ref_img_path_.empty()) {
         LOG(ERROR) << "Can't read the local ref image: "
@@ -239,6 +242,9 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
       if (!WritePNGFile(gen_bmp, img_fail_path)) {
         LOG(ERROR) << "Can't save generated image to: "
                    << img_fail_path.value();
+      } else {
+        LOG(INFO) << "Saved generated image to: "
+                  << img_fail_path.value();
       }
     }
     if (save_diff) {
@@ -247,6 +253,9 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
       if (!WritePNGFile(diff_bmp, img_diff_path)) {
         LOG(ERROR) << "Can't save generated diff image to: "
                    << img_diff_path.value();
+      } else {
+        LOG(INFO) << "Saved difference image to: "
+                  << img_diff_path.value();
       }
     }
     return rt;
