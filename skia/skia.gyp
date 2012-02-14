@@ -903,6 +903,7 @@
             { # use_skia
               'defines': [
                 'SK_USE_MAC_CORE_TEXT',
+                'SK_USE_COLOR_LUMINANCE',
               ],
             }],
           ],
