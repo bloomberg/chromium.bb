@@ -8,11 +8,13 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
+#include "ui/gfx/gl/gl_switches.h"
 
 ImageTransportSurface::ImageTransportSurface() {
 }
@@ -160,9 +162,10 @@ void ImageTransportHelper::Resize(gfx::Size size) {
 }
 
 void ImageTransportHelper::SetSwapInterval() {
-  if (!stub_.get())
-    return;
-  stub_->SetSwapInterval();
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync))
+    Decoder()->GetGLContext()->SetSwapInterval(0);
+  else
+    Decoder()->GetGLContext()->SetSwapInterval(1);
 }
 
 bool ImageTransportHelper::MakeCurrent() {
@@ -194,7 +197,8 @@ PassThroughImageTransportSurface::PassThroughImageTransportSurface(
     gfx::GLSurface* surface,
     bool transport)
     : GLSurfaceAdapter(surface),
-      transport_(transport) {
+      transport_(transport),
+      did_set_swap_interval_(false) {
   helper_.reset(new ImageTransportHelper(this,
                                          manager,
                                          stub,
@@ -254,6 +258,14 @@ bool PassThroughImageTransportSurface::PostSubBuffer(
     helper_->SetScheduled(false);
   }
   return result;
+}
+
+bool PassThroughImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
+  if (!did_set_swap_interval_) {
+    helper_->SetSwapInterval();
+    did_set_swap_interval_ = true;
+  }
+  return true;
 }
 
 void PassThroughImageTransportSurface::OnBuffersSwappedACK() {

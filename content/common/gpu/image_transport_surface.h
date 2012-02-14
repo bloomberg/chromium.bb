@@ -109,6 +109,9 @@ class ImageTransportHelper : public IPC::Channel::Listener {
   // Make the surface's context current.
   bool MakeCurrent();
 
+  // Set the default swap interval on the surface.
+  void SetSwapInterval();
+
   void Suspend();
 
  private:
@@ -123,9 +126,6 @@ class ImageTransportHelper : public IPC::Channel::Listener {
 
   // Backbuffer resize callback.
   void Resize(gfx::Size size);
-
-  // Set the default swap interval on the surface.
-  void SetSwapInterval();
 
   // Weak pointers that point to objects that outlive this helper.
   ImageTransportSurface* surface_;
@@ -155,6 +155,7 @@ class PassThroughImageTransportSurface
   virtual void Destroy() OVERRIDE;
   virtual bool SwapBuffers() OVERRIDE;
   virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
+  virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
 
   // ImageTransportSurface implementation.
   virtual void OnNewSurfaceACK(
@@ -168,6 +169,7 @@ class PassThroughImageTransportSurface
   scoped_ptr<ImageTransportHelper> helper_;
   gfx::Size new_size_;
   bool transport_;
+  bool did_set_swap_interval_;
 
   DISALLOW_COPY_AND_ASSIGN(PassThroughImageTransportSurface);
 };

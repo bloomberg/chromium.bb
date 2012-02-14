@@ -138,19 +138,6 @@ bool GpuCommandBufferStub::HasMoreWork() {
   return scheduler_.get() && scheduler_->HasMoreWork();
 }
 
-void GpuCommandBufferStub::SetSwapInterval() {
-#if !defined(OS_MACOSX) && !defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-  // Set up swap interval for onscreen contexts.
-  if (!surface_->IsOffscreen()) {
-    decoder_->MakeCurrent();
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync))
-      context_->SetSwapInterval(0);
-    else
-      context_->SetSwapInterval(1);
-  }
-#endif
-}
-
 void GpuCommandBufferStub::Destroy() {
   // The scheduler has raw references to the decoder and the command buffer so
   // destroy it before those.
@@ -259,8 +246,6 @@ void GpuCommandBufferStub::OnInitialize(
   decoder_->SetMsgCallback(
       base::Bind(&GpuCommandBufferStub::SendConsoleMessage,
                  base::Unretained(this)));
-
-  SetSwapInterval();
 
   command_buffer_->SetPutOffsetChangeCallback(
       base::Bind(&gpu::GpuScheduler::PutChanged,

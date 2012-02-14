@@ -112,9 +112,6 @@ class GpuCommandBufferStub
   // Whether this command buffer needs to be polled again in the future.
   bool HasMoreWork();
 
-  // Set the swap interval according to the command line.
-  void SetSwapInterval();
-
   gpu::gles2::GLES2Decoder* decoder() const { return decoder_.get(); }
   gpu::GpuScheduler* scheduler() const { return scheduler_.get(); }
 
