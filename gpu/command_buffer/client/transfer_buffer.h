@@ -60,7 +60,8 @@ class TransferBufferInterface {
       unsigned int result_size,
       unsigned int min_buffer_size,
       unsigned int max_buffer_size,
-      unsigned int alignment) = 0;
+      unsigned int alignment,
+      unsigned int size_to_flush) = 0;
 
   virtual int GetShmId() = 0;
   virtual void* GetResultBuffer() = 0;
@@ -94,7 +95,8 @@ class TransferBuffer : public TransferBufferInterface {
       unsigned int result_size,
       unsigned int min_buffer_size,
       unsigned int max_buffer_size,
-      unsigned int alignment) OVERRIDE;
+      unsigned int alignment,
+      unsigned int size_to_flush) OVERRIDE;
   virtual int GetShmId() OVERRIDE;
   virtual void* GetResultBuffer() OVERRIDE;
   virtual int GetResultOffset() OVERRIDE;
@@ -130,6 +132,12 @@ class TransferBuffer : public TransferBufferInterface {
 
   // alignment for allocations
   unsigned int alignment_;
+
+  // Size at which to do an async flush. 0 = never.
+  unsigned int size_to_flush_;
+
+  // Number of bytes since we last flushed.
+  unsigned int bytes_since_last_flush_;
 
   // the current buffer.
   gpu::Buffer buffer_;

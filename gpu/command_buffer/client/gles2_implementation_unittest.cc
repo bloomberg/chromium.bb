@@ -116,7 +116,8 @@ class MockTransferBuffer : public TransferBufferInterface {
       unsigned int result_size,
       unsigned int /* min_buffer_size */,
       unsigned int /* max_buffer_size */,
-      unsigned int alignment) OVERRIDE;
+      unsigned int alignment,
+      unsigned int size_to_flush) OVERRIDE;
   virtual int GetShmId() OVERRIDE;
   virtual void* GetResultBuffer() OVERRIDE;
   virtual int GetResultOffset() OVERRIDE;
@@ -224,7 +225,8 @@ bool MockTransferBuffer::Initialize(
     unsigned int result_size,
     unsigned int /* min_buffer_size */,
     unsigned int /* max_buffer_size */,
-    unsigned int alignment) {
+    unsigned int alignment,
+    unsigned int /* size_to_flush */) {
   // Just check they match.
   return size_ == starting_buffer_size &&
          result_size_ == result_size &&

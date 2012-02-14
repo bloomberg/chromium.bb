@@ -30,10 +30,6 @@ CommandBuffer::State MockCommandBufferBase::GetLastState() {
   return state_;
 }
 
-void MockCommandBufferBase::Flush(int32 put_offset) {
-  state_.put_offset = put_offset;
-}
-
 void MockCommandBufferBase::SetGetOffset(int32 get_offset) {
   state_.get_offset = get_offset;
 }
@@ -98,6 +94,10 @@ int32 MockCommandBufferBase::RegisterTransferBuffer(
   return -1;
 }
 
+void MockCommandBufferBase::FlushHelper(int32 put_offset) {
+  state_.put_offset = put_offset;
+}
+
 void MockCommandBufferBase::SetToken(int32 token) {
   GPU_NOTREACHED();
   state_.token = token;
@@ -127,10 +127,28 @@ MockClientCommandBuffer::MockClientCommandBuffer() {
 MockClientCommandBuffer::~MockClientCommandBuffer() {
 }
 
+void MockClientCommandBuffer::Flush(int32 put_offset) {
+  FlushHelper(put_offset);
+}
+
 void MockClientCommandBuffer::DelegateToFake() {
   ON_CALL(*this, DestroyTransferBuffer(_))
       .WillByDefault(Invoke(
           this, &MockCommandBufferBase::DestroyTransferBufferHelper));
+}
+
+MockClientCommandBufferMockFlush::MockClientCommandBufferMockFlush() {
+  DelegateToFake();
+}
+
+MockClientCommandBufferMockFlush::~MockClientCommandBufferMockFlush() {
+}
+
+void MockClientCommandBufferMockFlush::DelegateToFake() {
+  MockClientCommandBuffer::DelegateToFake();
+  ON_CALL(*this, Flush(_))
+      .WillByDefault(Invoke(
+          this, &MockCommandBufferBase::FlushHelper));
 }
 
 }  // namespace gpu

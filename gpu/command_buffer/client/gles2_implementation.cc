@@ -628,7 +628,8 @@ bool GLES2Implementation::Initialize(
       kStartingOffset,
       min_transfer_buffer_size,
       max_transfer_buffer_size,
-      kAlignment)) {
+      kAlignment,
+      kSizeToFlush)) {
     return false;
   }
 

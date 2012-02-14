@@ -29,7 +29,6 @@ class MockCommandBufferBase : public CommandBuffer {
   virtual bool Initialize() OVERRIDE;
   virtual State GetState() OVERRIDE;
   virtual State GetLastState() OVERRIDE;
-  virtual void Flush(int32 put_offset) OVERRIDE;
   virtual State FlushSync(int32 put_offset, int32 last_known_get) OVERRIDE;
   virtual void SetGetBuffer(int transfer_buffer_id) OVERRIDE;
   virtual void SetGetOffset(int32 get_offset) OVERRIDE;
@@ -46,6 +45,7 @@ class MockCommandBufferBase : public CommandBuffer {
   // by CreateTransferBuffer. This is useful for testing expected ids.
   int32 GetNextFreeTransferBufferId();
 
+  void FlushHelper(int32 put_offset);
   void DestroyTransferBufferHelper(int32 id);
 
   virtual void OnFlush() = 0;
@@ -66,6 +66,18 @@ class MockClientCommandBuffer : public MockCommandBufferBase {
   // This is so we can use all the gmock functions when Flush is called.
   MOCK_METHOD0(OnFlush, void());
   MOCK_METHOD1(DestroyTransferBuffer, void(int32 id));
+
+  virtual void Flush(int32 put_offset) OVERRIDE;
+
+  void DelegateToFake();
+};
+
+class MockClientCommandBufferMockFlush : public MockClientCommandBuffer {
+ public:
+  MockClientCommandBufferMockFlush();
+  virtual ~MockClientCommandBufferMockFlush();
+
+  MOCK_METHOD1(Flush, void(int32 put_offset));
 
   void DelegateToFake();
 };
