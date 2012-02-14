@@ -180,6 +180,8 @@
       '-downloads.DownloadsTest.testDeclineDangerousDownload',
       # crbug.com/75724
       '-downloads.DownloadsTest.testSaveDangerousFile',
+      # crbug.com/114244
+      '-imports.ImportsTest.testImportSafariDataTwice',
       '-ntp.NTPTest.testLaunchAppNewWindow',  # crbug.com/79812
       # Causes browser crash.  crbug.com/93548
       '-notifications.NotificationsTest.testIncognitoNotification',
