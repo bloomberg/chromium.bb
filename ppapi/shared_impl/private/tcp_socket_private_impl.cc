@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,13 +22,13 @@ const int32_t TCPSocketPrivateImpl::kMaxWriteSize = 1024 * 1024;
 
 TCPSocketPrivateImpl::TCPSocketPrivateImpl(PP_Instance instance,
                                            uint32 socket_id)
-    : Resource(instance) {
+    : Resource(OBJECT_IS_IMPL, instance) {
   Init(socket_id);
 }
 
 TCPSocketPrivateImpl::TCPSocketPrivateImpl(const HostResource& resource,
                                            uint32 socket_id)
-    : Resource(resource) {
+    : Resource(OBJECT_IS_PROXY, resource) {
   Init(socket_id);
 }
 

@@ -67,7 +67,7 @@ WebFrame* GetFrameForResource(const Resource* resource) {
 
 PPB_URLLoader_Impl::PPB_URLLoader_Impl(PP_Instance instance,
                                        bool main_document_loader)
-    : Resource(instance),
+    : Resource(::ppapi::OBJECT_IS_IMPL, instance),
       main_document_loader_(main_document_loader),
       pending_callback_(),
       bytes_sent_(0),

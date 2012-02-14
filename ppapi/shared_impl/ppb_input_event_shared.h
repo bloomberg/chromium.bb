@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,15 +55,7 @@ class PPAPI_SHARED_EXPORT PPB_InputEvent_Shared
     : public Resource,
       public thunk::PPB_InputEvent_API {
  public:
-  struct InitAsImpl {};
-  struct InitAsProxy {};
-
-  // The dummy arguments control which version of Resource's constructor is
-  // called for this base class.
-  PPB_InputEvent_Shared(const InitAsImpl&,
-                        PP_Instance instance,
-                        const InputEventData& data);
-  PPB_InputEvent_Shared(const InitAsProxy&,
+  PPB_InputEvent_Shared(ResourceObjectType type,
                         PP_Instance instance,
                         const InputEventData& data);
 

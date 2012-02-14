@@ -86,7 +86,7 @@ class MessageLoopResource : public Resource, public PPB_MessageLoop_API {
 };
 
 MessageLoopResource::MessageLoopResource(PP_Instance instance)
-    : Resource(HostResource::MakeInstanceOnly(instance)),
+    : Resource(OBJECT_IS_PROXY, instance),
       nested_invocations_(0),
       destroyed_(false),
       should_destroy_(false) {

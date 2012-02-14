@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,14 +13,14 @@
 namespace ppapi {
 
 PPB_VideoDecoder_Shared::PPB_VideoDecoder_Shared(PP_Instance instance)
-    : Resource(instance),
+    : Resource(OBJECT_IS_IMPL, instance),
       graphics_context_(0),
       gles2_impl_(NULL) {
 }
 
 PPB_VideoDecoder_Shared::PPB_VideoDecoder_Shared(
     const HostResource& host_resource)
-    : Resource(host_resource),
+    : Resource(OBJECT_IS_PROXY, host_resource),
       graphics_context_(0),
       gles2_impl_(NULL) {
 }

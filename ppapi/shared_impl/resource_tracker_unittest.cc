@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,7 @@ int instance_was_deleted_count = 0;
 
 class MyMockResource : public Resource {
  public:
-  MyMockResource(PP_Instance instance) : Resource(instance) {
+  MyMockResource(PP_Instance instance) : Resource(OBJECT_IS_IMPL, instance) {
     mock_resource_alive_count++;
   }
   virtual ~MyMockResource() {

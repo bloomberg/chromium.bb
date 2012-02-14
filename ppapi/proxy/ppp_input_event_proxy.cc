@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,7 +97,7 @@ bool PPP_InputEvent_Proxy::OnMessageReceived(const IPC::Message& msg) {
 void PPP_InputEvent_Proxy::OnMsgHandleInputEvent(PP_Instance instance,
                                                  const InputEventData& data) {
   scoped_refptr<PPB_InputEvent_Shared> resource(new PPB_InputEvent_Shared(
-      PPB_InputEvent_Shared::InitAsProxy(), instance, data));
+      OBJECT_IS_PROXY, instance, data));
   ppp_input_event_impl_->HandleInputEvent(instance, resource->pp_resource());
 }
 
@@ -106,7 +106,7 @@ void PPP_InputEvent_Proxy::OnMsgHandleFilteredInputEvent(
     const InputEventData& data,
     PP_Bool* result) {
   scoped_refptr<PPB_InputEvent_Shared> resource(new PPB_InputEvent_Shared(
-      PPB_InputEvent_Shared::InitAsProxy(), instance, data));
+      OBJECT_IS_PROXY, instance, data));
   *result = ppp_input_event_impl_->HandleInputEvent(instance,
                                                     resource->pp_resource());
 }

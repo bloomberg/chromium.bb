@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ namespace proxy {
 Buffer::Buffer(const HostResource& resource,
                const base::SharedMemoryHandle& shm_handle,
                uint32_t size)
-    : Resource(resource),
+    : Resource(OBJECT_IS_PROXY, resource),
       shm_(shm_handle, false),
       size_(size),
       mapped_data_(NULL),

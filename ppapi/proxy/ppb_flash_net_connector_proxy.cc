@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,7 +79,7 @@ class FlashNetConnector : public PPB_Flash_NetConnector_API,
 };
 
 FlashNetConnector::FlashNetConnector(const HostResource& resource)
-    : Resource(resource),
+    : Resource(OBJECT_IS_PROXY, resource),
       socket_out_(NULL),
       local_addr_out_(NULL),
       remote_addr_out_(NULL) {

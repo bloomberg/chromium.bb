@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,17 +32,10 @@ InputEventData::InputEventData()
 InputEventData::~InputEventData() {
 }
 
-PPB_InputEvent_Shared::PPB_InputEvent_Shared(const InitAsImpl&,
+PPB_InputEvent_Shared::PPB_InputEvent_Shared(ResourceObjectType type,
                                              PP_Instance instance,
                                              const InputEventData& data)
-    : Resource(instance),
-      data_(data) {
-}
-
-PPB_InputEvent_Shared::PPB_InputEvent_Shared(const InitAsProxy&,
-                                             PP_Instance instance,
-                                             const InputEventData& data)
-    : Resource(HostResource::MakeInstanceOnly(instance)),
+    : Resource(type, instance),
       data_(data) {
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,7 +54,7 @@ class Broker : public PPB_Broker_API, public Resource {
 };
 
 Broker::Broker(const HostResource& resource)
-    : Resource(resource),
+    : Resource(OBJECT_IS_PROXY, resource),
       called_connect_(false),
       socket_handle_(base::kInvalidPlatformFileValue) {
 }

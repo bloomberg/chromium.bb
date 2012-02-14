@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,8 @@ namespace proxy {
 class PrivateFontFile : public Resource,
                         public PPB_PDFFont_API {
  public:
-  PrivateFontFile(const HostResource& resource) : Resource(resource) {
+  PrivateFontFile(const HostResource& resource)
+      : Resource(OBJECT_IS_PROXY, resource) {
   }
   virtual ~PrivateFontFile() {}
 

@@ -596,8 +596,7 @@ bool PluginInstance::SendCompositionEventWithUnderlineInformationToPlugin(
   else
     handled = true;  // Unfiltered events are assumed to be handled.
   scoped_refptr<PPB_InputEvent_Shared> event_resource(
-      new PPB_InputEvent_Shared(PPB_InputEvent_Shared::InitAsImpl(),
-                                pp_instance(), event));
+      new PPB_InputEvent_Shared(::ppapi::OBJECT_IS_IMPL, pp_instance(), event));
   handled |= PP_ToBool(plugin_input_event_interface_->HandleInputEvent(
       pp_instance(), event_resource->pp_resource()));
   return handled;
@@ -697,7 +696,7 @@ bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
         else
           rv = true;  // Unfiltered events are assumed to be handled.
         scoped_refptr<PPB_InputEvent_Shared> event_resource(
-            new PPB_InputEvent_Shared(PPB_InputEvent_Shared::InitAsImpl(),
+            new PPB_InputEvent_Shared(::ppapi::OBJECT_IS_IMPL,
                                       pp_instance(), events[i]));
 
         rv |= PP_ToBool(plugin_input_event_interface_->HandleInputEvent(
@@ -1054,7 +1053,7 @@ void PluginInstance::SendDidChangeView(const ViewData& previous_view) {
   sent_initial_did_change_view_ = true;
   ScopedPPResource resource(
       ScopedPPResource::PassRef(),
-      (new PPB_View_Shared(PPB_View_Shared::InitAsImpl(),
+      (new PPB_View_Shared(::ppapi::OBJECT_IS_IMPL,
                            pp_instance(), view_data_))->GetReference());
 
   instance_interface_->DidChangeView(pp_instance(), resource,

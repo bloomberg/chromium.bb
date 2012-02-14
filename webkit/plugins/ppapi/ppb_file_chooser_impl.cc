@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,7 +69,7 @@ PPB_FileChooser_Impl::PPB_FileChooser_Impl(
     PP_Instance instance,
     PP_FileChooserMode_Dev mode,
     const char* accept_mime_types)
-    : Resource(instance),
+    : Resource(::ppapi::OBJECT_IS_IMPL, instance),
       mode_(mode),
       next_chosen_file_index_(0) {
   if (accept_mime_types)

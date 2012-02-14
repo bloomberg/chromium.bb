@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,7 +48,9 @@ namespace chrome {
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
 class PrivateFontFile : public ppapi::Resource {
  public:
-  PrivateFontFile(PP_Instance instance, int fd) : Resource(instance), fd_(fd) {
+  PrivateFontFile(PP_Instance instance, int fd)
+      : Resource(ppapi::OBJECT_IS_IMPL, instance),
+        fd_(fd) {
   }
   virtual ~PrivateFontFile() {
   }

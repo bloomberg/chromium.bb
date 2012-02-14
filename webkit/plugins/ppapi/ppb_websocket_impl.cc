@@ -78,7 +78,7 @@ namespace webkit {
 namespace ppapi {
 
 PPB_WebSocket_Impl::PPB_WebSocket_Impl(PP_Instance instance)
-    : Resource(instance),
+    : Resource(::ppapi::OBJECT_IS_IMPL, instance),
       state_(PP_WEBSOCKETREADYSTATE_INVALID),
       error_was_received_(false),
       receive_callback_var_(NULL),

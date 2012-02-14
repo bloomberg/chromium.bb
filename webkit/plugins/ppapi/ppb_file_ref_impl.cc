@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,14 +80,14 @@ std::string GetNameForVirtualFilePath(const std::string& path) {
 
 PPB_FileRef_Impl::PPB_FileRef_Impl(const PPB_FileRef_CreateInfo& info,
                                    PPB_FileSystem_Impl* file_system)
-    : PPB_FileRef_Shared(PPB_FileRef_Shared::InitAsImpl(), info),
+    : PPB_FileRef_Shared(::ppapi::OBJECT_IS_IMPL, info),
       file_system_(file_system),
       external_file_system_path_() {
 }
 
 PPB_FileRef_Impl::PPB_FileRef_Impl(const PPB_FileRef_CreateInfo& info,
                                    const FilePath& external_file_path)
-    : PPB_FileRef_Shared(PPB_FileRef_Shared::InitAsImpl(), info),
+    : PPB_FileRef_Shared(::ppapi::OBJECT_IS_IMPL, info),
       file_system_(),
       external_file_system_path_(external_file_path) {
 }

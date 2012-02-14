@@ -73,7 +73,8 @@ class FileChooser : public Resource,
   DISALLOW_COPY_AND_ASSIGN(FileChooser);
 };
 
-FileChooser::FileChooser(const HostResource& resource) : Resource(resource) {
+FileChooser::FileChooser(const HostResource& resource)
+    : Resource(OBJECT_IS_PROXY, resource) {
 }
 
 FileChooser::~FileChooser() {

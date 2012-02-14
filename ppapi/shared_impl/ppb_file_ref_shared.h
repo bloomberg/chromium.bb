@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,11 +33,8 @@ class PPAPI_SHARED_EXPORT PPB_FileRef_Shared
     : public Resource,
       public thunk::PPB_FileRef_API {
  public:
-  struct InitAsImpl {};
-  struct InitAsProxy {};
-
-  PPB_FileRef_Shared(const InitAsImpl&, const PPB_FileRef_CreateInfo& info);
-  PPB_FileRef_Shared(const InitAsProxy&, const PPB_FileRef_CreateInfo& info);
+  PPB_FileRef_Shared(ResourceObjectType type,
+                     const PPB_FileRef_CreateInfo& info);
   virtual ~PPB_FileRef_Shared();
 
   // Resource overrides.

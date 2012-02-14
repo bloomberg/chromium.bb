@@ -13,11 +13,11 @@
 namespace ppapi {
 
 PPB_Graphics3D_Shared::PPB_Graphics3D_Shared(PP_Instance instance)
-    : Resource(instance) {
+    : Resource(OBJECT_IS_IMPL, instance) {
 }
 
 PPB_Graphics3D_Shared::PPB_Graphics3D_Shared(const HostResource& host_resource)
-    : Resource(host_resource) {
+    : Resource(OBJECT_IS_PROXY, host_resource) {
 }
 
 PPB_Graphics3D_Shared::~PPB_Graphics3D_Shared() {

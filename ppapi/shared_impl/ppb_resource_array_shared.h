@@ -18,20 +18,10 @@ class PPAPI_SHARED_EXPORT PPB_ResourceArray_Shared
     : public Resource,
       public thunk::PPB_ResourceArray_API {
  public:
-  struct InitAsImpl {};
-  struct InitAsProxy {};
-
-  // The dummy arguments control which version of Resource's constructor is
-  // called for this base class.
-  PPB_ResourceArray_Shared(const InitAsImpl&,
+  PPB_ResourceArray_Shared(ResourceObjectType type,
                            PP_Instance instance,
                            const PP_Resource elements[],
                            uint32_t size);
-  PPB_ResourceArray_Shared(const InitAsProxy&,
-                           PP_Instance instance,
-                           const PP_Resource elements[],
-                           uint32_t size);
-
   virtual ~PPB_ResourceArray_Shared();
 
   // Resource overrides.
@@ -42,8 +32,6 @@ class PPAPI_SHARED_EXPORT PPB_ResourceArray_Shared
   virtual PP_Resource GetAt(uint32_t index) OVERRIDE;
 
  private:
-  void Initialize(const PP_Resource elements[], uint32_t size);
-
   std::vector<PP_Resource> resources_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(PPB_ResourceArray_Shared);

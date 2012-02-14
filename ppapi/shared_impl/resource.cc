@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,23 +10,34 @@
 
 namespace ppapi {
 
-Resource::Resource(PP_Instance instance) {
+Resource::Resource(ResourceObjectType type, PP_Instance instance)
+    : host_resource_(HostResource::MakeInstanceOnly(instance)) {
   // The instance should always be valid (nonzero).
   DCHECK(instance);
 
-  // For the in-process case, the host resource and resource are the same.
-  //
-  // AddResource needs our instance() getter to work, and that goes through
-  // the host resource, so we need to fill that first even though we don't
-  // have a resource ID yet, then fill the resource in later.
-  host_resource_ = HostResource::MakeInstanceOnly(instance);
   pp_resource_ = PpapiGlobals::Get()->GetResourceTracker()->AddResource(this);
-  host_resource_.SetHostResource(instance, pp_resource_);
+  if (type == OBJECT_IS_IMPL) {
+    // For the in-process case, the host resource and resource are the same.
+    //
+    // Note that we need to have set the instance above (in the initializer
+    // list) since AddResource needs our instance() getter to work, and that
+    // goes through the host resource. When we get the "real" resource ID,
+    // we re-set the host_resource.
+    host_resource_.SetHostResource(instance, pp_resource_);
+  }
 }
 
-Resource::Resource(const HostResource& host_resource)
+Resource::Resource(ResourceObjectType type, const HostResource& host_resource)
     : host_resource_(host_resource) {
   pp_resource_ = PpapiGlobals::Get()->GetResourceTracker()->AddResource(this);
+  if (type == OBJECT_IS_IMPL) {
+    // When using this constructor for the implementation, the resource ID
+    // should not have been passed in.
+    DCHECK(host_resource_.host_resource() == 0);
+
+    // See previous constructor.
+    host_resource_.SetHostResource(host_resource.instance(), pp_resource_);
+  }
 }
 
 Resource::~Resource() {

@@ -29,7 +29,7 @@ namespace proxy {
 ImageData::ImageData(const HostResource& resource,
                      const PP_ImageDataDesc& desc,
                      ImageHandle handle)
-    : Resource(resource),
+    : Resource(OBJECT_IS_PROXY, resource),
       desc_(desc) {
 #if defined(OS_WIN)
   transport_dib_.reset(TransportDIB::CreateWithHandle(handle));

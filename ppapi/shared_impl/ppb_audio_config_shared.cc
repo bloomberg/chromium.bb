@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,15 +6,9 @@
 
 namespace ppapi {
 
-PPB_AudioConfig_Shared::PPB_AudioConfig_Shared(PP_Instance instance)
-    : Resource(instance),
-      sample_rate_(PP_AUDIOSAMPLERATE_NONE),
-      sample_frame_count_(0) {
-}
-
-PPB_AudioConfig_Shared::PPB_AudioConfig_Shared(
-    const HostResource& host_resource)
-    : Resource(host_resource),
+PPB_AudioConfig_Shared::PPB_AudioConfig_Shared(ResourceObjectType type,
+                                               PP_Instance instance)
+    : Resource(type, instance),
       sample_rate_(PP_AUDIOSAMPLERATE_NONE),
       sample_frame_count_(0) {
 }
@@ -22,25 +16,13 @@ PPB_AudioConfig_Shared::PPB_AudioConfig_Shared(
 PPB_AudioConfig_Shared::~PPB_AudioConfig_Shared() {
 }
 
-// static
-PP_Resource PPB_AudioConfig_Shared::CreateAsImpl(
+PP_Resource PPB_AudioConfig_Shared::Create(
+    ResourceObjectType type,
     PP_Instance instance,
     PP_AudioSampleRate sample_rate,
     uint32_t sample_frame_count) {
   scoped_refptr<PPB_AudioConfig_Shared> object(
-      new PPB_AudioConfig_Shared(instance));
-  if (!object->Init(sample_rate, sample_frame_count))
-    return 0;
-  return object->GetReference();
-}
-
-// static
-PP_Resource PPB_AudioConfig_Shared::CreateAsProxy(
-    PP_Instance instance,
-    PP_AudioSampleRate sample_rate,
-    uint32_t sample_frame_count) {
-  scoped_refptr<PPB_AudioConfig_Shared> object(new PPB_AudioConfig_Shared(
-      HostResource::MakeInstanceOnly(instance)));
+      new PPB_AudioConfig_Shared(type, instance));
   if (!object->Init(sample_rate, sample_frame_count))
     return 0;
   return object->GetReference();

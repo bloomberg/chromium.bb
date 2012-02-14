@@ -40,7 +40,7 @@ class FlashMessageLoop : public PPB_Flash_MessageLoop_API, public Resource {
 };
 
 FlashMessageLoop::FlashMessageLoop(const HostResource& resource)
-    : Resource(resource) {
+    : Resource(OBJECT_IS_PROXY, resource) {
 }
 
 FlashMessageLoop::~FlashMessageLoop() {

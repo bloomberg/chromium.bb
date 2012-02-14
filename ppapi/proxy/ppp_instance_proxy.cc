@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -239,7 +239,7 @@ void PPP_Instance_Proxy::OnPluginMsgDidChangeView(
 
   ScopedPPResource resource(
       ScopedPPResource::PassRef(),
-      (new PPB_View_Shared(PPB_View_Shared::InitAsProxy(),
+      (new PPB_View_Shared(OBJECT_IS_PROXY,
                            instance, new_data))->GetReference());
 
   combined_interface_->DidChangeView(instance, resource,

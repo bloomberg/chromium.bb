@@ -157,7 +157,7 @@ class URLLoader : public Resource, public PPB_URLLoader_API {
 };
 
 URLLoader::URLLoader(const HostResource& resource)
-    : Resource(resource),
+    : Resource(OBJECT_IS_PROXY, resource),
       bytes_sent_(-1),
       total_bytes_to_be_sent_(-1),
       bytes_received_(-1),

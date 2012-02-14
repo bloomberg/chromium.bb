@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,7 +80,7 @@ class CallbackShutdownTest : public TrackedCallbackTest {
 
 // Tests that callbacks are properly aborted on module shutdown.
 TEST_F(CallbackShutdownTest, AbortOnShutdown) {
-  scoped_refptr<Resource> resource(new Resource(pp_instance()));
+  scoped_refptr<Resource> resource(new Resource(OBJECT_IS_IMPL, pp_instance()));
 
   // Set up case (1) (see above).
   EXPECT_EQ(0U, info_did_run().run_count);
@@ -133,7 +133,8 @@ class CallbackResourceTest : public TrackedCallbackTest {
 
 class CallbackMockResource : public Resource {
  public:
-  CallbackMockResource(PP_Instance instance) : Resource(instance) {}
+  CallbackMockResource(PP_Instance instance)
+      : Resource(OBJECT_IS_IMPL, instance) {}
   ~CallbackMockResource() {}
 
   PP_Resource SetupForTest() {

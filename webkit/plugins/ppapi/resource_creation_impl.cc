@@ -70,8 +70,8 @@ PP_Resource ResourceCreationImpl::CreateAudioConfig(
     PP_Instance instance,
     PP_AudioSampleRate sample_rate,
     uint32_t sample_frame_count) {
-  return ::ppapi::PPB_AudioConfig_Shared::CreateAsImpl(instance, sample_rate,
-                                                       sample_frame_count);
+  return ::ppapi::PPB_AudioConfig_Shared::Create(
+      ::ppapi::OBJECT_IS_IMPL, instance, sample_rate, sample_frame_count);
 }
 
 PP_Resource ResourceCreationImpl::CreateAudioTrusted(
@@ -152,8 +152,9 @@ PP_Resource ResourceCreationImpl::CreateFontObject(
       ResourceHelper::PPInstanceToPluginInstance(instance);
   if (!plugin_instance)
     return 0;
-  return ::ppapi::PPB_Font_Shared::CreateAsImpl(
-      instance, *description, plugin_instance->delegate()->GetPreferences());
+  return ::ppapi::PPB_Font_Shared::Create(
+      ::ppapi::OBJECT_IS_IMPL, instance, *description,
+      plugin_instance->delegate()->GetPreferences());
 }
 
 PP_Resource ResourceCreationImpl::CreateGraphics2D(
@@ -209,7 +210,7 @@ PP_Resource ResourceCreationImpl::CreateKeyboardInputEvent(
     data.character_text = string_var->value();
   }
 
-  return (new PPB_InputEvent_Shared(PPB_InputEvent_Shared::InitAsImpl(),
+  return (new PPB_InputEvent_Shared(::ppapi::OBJECT_IS_IMPL,
                                     instance, data))->GetReference();
 }
 
@@ -238,7 +239,7 @@ PP_Resource ResourceCreationImpl::CreateMouseInputEvent(
   data.mouse_click_count = click_count;
   data.mouse_movement = *mouse_movement;
 
-  return (new PPB_InputEvent_Shared(PPB_InputEvent_Shared::InitAsImpl(),
+  return (new PPB_InputEvent_Shared(::ppapi::OBJECT_IS_IMPL,
                                     instance, data))->GetReference();
 }
 
@@ -252,7 +253,7 @@ PP_Resource ResourceCreationImpl::CreateResourceArray(
     const PP_Resource elements[],
     uint32_t size) {
   PPB_ResourceArray_Shared* object = new PPB_ResourceArray_Shared(
-      PPB_ResourceArray_Shared::InitAsImpl(), instance, elements, size);
+      ::ppapi::OBJECT_IS_IMPL, instance, elements, size);
   return object->GetReference();
 }
 
@@ -323,7 +324,7 @@ PP_Resource ResourceCreationImpl::CreateWheelInputEvent(
   data.wheel_ticks = *wheel_ticks;
   data.wheel_scroll_by_page = PP_ToBool(scroll_by_page);
 
-  return (new PPB_InputEvent_Shared(PPB_InputEvent_Shared::InitAsImpl(),
+  return (new PPB_InputEvent_Shared(::ppapi::OBJECT_IS_IMPL,
                                     instance, data))->GetReference();
 }
 

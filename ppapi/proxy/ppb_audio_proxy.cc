@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,7 +64,7 @@ Audio::Audio(const HostResource& audio_id,
              PP_Resource config_id,
              PPB_Audio_Callback callback,
              void* user_data)
-    : Resource(audio_id),
+    : Resource(OBJECT_IS_PROXY, audio_id),
       config_(config_id) {
   SetCallback(callback, user_data);
   PpapiGlobals::Get()->GetResourceTracker()->AddRefResource(config_);

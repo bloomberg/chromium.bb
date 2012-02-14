@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,14 +36,14 @@ PPB_FileIO_Shared::CallbackEntry::~CallbackEntry() {
 }
 
 PPB_FileIO_Shared::PPB_FileIO_Shared(PP_Instance instance)
-    : Resource(instance),
+    : Resource(OBJECT_IS_IMPL, instance),
       file_system_type_(PP_FILESYSTEMTYPE_INVALID),
       file_open_(false),
       pending_op_(OPERATION_NONE) {
 }
 
 PPB_FileIO_Shared::PPB_FileIO_Shared(const HostResource& host_resource)
-    : Resource(host_resource),
+    : Resource(OBJECT_IS_PROXY, host_resource),
       file_system_type_(PP_FILESYSTEMTYPE_INVALID),
       file_open_(false),
       pending_op_(OPERATION_NONE) {

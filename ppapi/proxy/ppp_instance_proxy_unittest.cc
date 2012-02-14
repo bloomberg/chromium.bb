@@ -164,7 +164,7 @@ TEST_F(PPP_Instance_ProxyTest, PPPInstance1_0) {
   ResetReceived();
   ScopedPPResource view_resource(
       ScopedPPResource::PassRef(),
-      (new PPB_View_Shared(PPB_View_Shared::InitAsImpl(),
+      (new PPB_View_Shared(OBJECT_IS_IMPL,
                            expected_instance, data))->GetReference());
   ppp_instance->DidChangeView(expected_instance, view_resource);
   did_change_view_called.Wait();

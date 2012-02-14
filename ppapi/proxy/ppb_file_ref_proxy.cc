@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,7 +76,7 @@ class FileRef : public PPB_FileRef_Shared {
 };
 
 FileRef::FileRef(const PPB_FileRef_CreateInfo& info)
-    : PPB_FileRef_Shared(PPB_FileRef_Shared::InitAsProxy(), info),
+    : PPB_FileRef_Shared(OBJECT_IS_PROXY, info),
       next_callback_id_(1) {
 }
 

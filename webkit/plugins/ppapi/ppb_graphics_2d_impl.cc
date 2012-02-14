@@ -154,7 +154,7 @@ struct PPB_Graphics2D_Impl::QueuedOperation {
 };
 
 PPB_Graphics2D_Impl::PPB_Graphics2D_Impl(PP_Instance instance)
-    : Resource(instance),
+    : Resource(::ppapi::OBJECT_IS_IMPL, instance),
       bound_instance_(NULL),
       offscreen_flush_pending_(false),
       is_always_opaque_(false),

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,23 +9,16 @@
 
 namespace ppapi {
 
-PPB_FileRef_Shared::PPB_FileRef_Shared(const InitAsImpl&,
+PPB_FileRef_Shared::PPB_FileRef_Shared(ResourceObjectType type,
                                        const PPB_FileRef_CreateInfo& info)
-    : Resource(info.resource.instance()),
+    : Resource(type, info.resource),
       create_info_(info) {
-  // Should not have been passed a host resource for the trusted constructor.
-  DCHECK(info.resource.is_null());
-
-  // Resource's constructor assigned a PP_Resource, so we can fill out our
-  // host resource now.
-  create_info_.resource = host_resource();
-  DCHECK(!create_info_.resource.is_null());
-}
-
-PPB_FileRef_Shared::PPB_FileRef_Shared(const InitAsProxy&,
-                                       const PPB_FileRef_CreateInfo& info)
-    : Resource(info.resource),
-      create_info_(info) {
+  if (type == OBJECT_IS_IMPL) {
+    // Resource's constructor assigned a PP_Resource, so we can fill out our
+    // host resource now.
+    create_info_.resource = host_resource();
+    DCHECK(!create_info_.resource.is_null());
+  }
 }
 
 PPB_FileRef_Shared::~PPB_FileRef_Shared() {

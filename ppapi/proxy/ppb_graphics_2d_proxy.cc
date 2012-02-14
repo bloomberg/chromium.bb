@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,7 +68,7 @@ class Graphics2D : public Resource, public thunk::PPB_Graphics2D_API {
 Graphics2D::Graphics2D(const HostResource& host_resource,
                        const PP_Size& size,
                        PP_Bool is_always_opaque)
-    : Resource(host_resource),
+    : Resource(OBJECT_IS_PROXY, host_resource),
       size_(size),
       is_always_opaque_(is_always_opaque) {
 }

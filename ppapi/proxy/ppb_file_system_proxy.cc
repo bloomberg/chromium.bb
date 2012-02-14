@@ -63,7 +63,7 @@ class FileSystem : public Resource, public PPB_FileSystem_API {
 
 FileSystem::FileSystem(const HostResource& host_resource,
                        PP_FileSystemType type)
-    : Resource(host_resource),
+    : Resource(OBJECT_IS_PROXY, host_resource),
       type_(type),
       called_open_(false) {
 }

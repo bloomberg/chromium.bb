@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,7 +97,7 @@ bool ConvertMenuData(const PP_Flash_Menu* in_menu,
 }  // namespace
 
 PPB_Flash_Menu_Impl::PPB_Flash_Menu_Impl(PP_Instance instance)
-    : Resource(instance),
+    : Resource(::ppapi::OBJECT_IS_IMPL, instance),
       selected_id_out_(NULL) {
 }
 

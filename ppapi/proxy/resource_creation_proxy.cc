@@ -76,8 +76,8 @@ PP_Resource ResourceCreationProxy::CreateAudioConfig(
     PP_Instance instance,
     PP_AudioSampleRate sample_rate,
     uint32_t sample_frame_count) {
-  return PPB_AudioConfig_Shared::CreateAsProxy(
-      instance, sample_rate, sample_frame_count);
+  return PPB_AudioConfig_Shared::Create(
+      OBJECT_IS_PROXY, instance, sample_rate, sample_frame_count);
 }
 
 PP_Resource ResourceCreationProxy::CreateAudioTrusted(PP_Instance instance) {
@@ -162,8 +162,8 @@ PP_Resource ResourceCreationProxy::CreateFontObject(
       PluginDispatcher::GetForInstance(instance);
   if (!dispatcher)
     return 0;
-  return PPB_Font_Shared::CreateAsProxy(instance, *description,
-                                        dispatcher->preferences());
+  return PPB_Font_Shared::Create(OBJECT_IS_PROXY, instance, *description,
+                                 dispatcher->preferences());
 }
 
 PP_Resource ResourceCreationProxy::CreateGraphics2D(PP_Instance instance,
@@ -205,7 +205,7 @@ PP_Resource ResourceCreationProxy::CreateKeyboardInputEvent(
     data.character_text = text_str->value();
   }
 
-  return (new PPB_InputEvent_Shared(PPB_InputEvent_Shared::InitAsProxy(),
+  return (new PPB_InputEvent_Shared(OBJECT_IS_PROXY,
                                     instance, data))->GetReference();
 }
 
@@ -234,7 +234,7 @@ PP_Resource ResourceCreationProxy::CreateMouseInputEvent(
   data.mouse_click_count = click_count;
   data.mouse_movement = *mouse_movement;
 
-  return (new PPB_InputEvent_Shared(PPB_InputEvent_Shared::InitAsProxy(),
+  return (new PPB_InputEvent_Shared(OBJECT_IS_PROXY,
                                     instance, data))->GetReference();
 }
 
@@ -260,7 +260,7 @@ PP_Resource ResourceCreationProxy::CreateResourceArray(
     const PP_Resource elements[],
     uint32_t size) {
   PPB_ResourceArray_Shared* object = new PPB_ResourceArray_Shared(
-      PPB_ResourceArray_Shared::InitAsProxy(), instance, elements, size);
+      OBJECT_IS_PROXY, instance, elements, size);
   return object->GetReference();
 }
 
@@ -294,8 +294,8 @@ PP_Resource ResourceCreationProxy::CreateURLLoader(PP_Instance instance) {
 PP_Resource ResourceCreationProxy::CreateURLRequestInfo(
     PP_Instance instance,
     const PPB_URLRequestInfo_Data& data) {
-  return (new PPB_URLRequestInfo_Shared(
-      HostResource::MakeInstanceOnly(instance), data))->GetReference();
+  return (new PPB_URLRequestInfo_Shared(OBJECT_IS_PROXY,
+                                        instance, data))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateVideoCapture(PP_Instance instance) {
@@ -337,7 +337,7 @@ PP_Resource ResourceCreationProxy::CreateWheelInputEvent(
   data.wheel_ticks = *wheel_ticks;
   data.wheel_scroll_by_page = PP_ToBool(scroll_by_page);
 
-  return (new PPB_InputEvent_Shared(PPB_InputEvent_Shared::InitAsProxy(),
+  return (new PPB_InputEvent_Shared(OBJECT_IS_PROXY,
                                     instance, data))->GetReference();
 }
 

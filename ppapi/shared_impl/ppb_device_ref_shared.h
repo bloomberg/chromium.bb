@@ -29,15 +29,7 @@ class PPAPI_SHARED_EXPORT PPB_DeviceRef_Shared
     : public Resource,
       public thunk::PPB_DeviceRef_API {
  public:
-  struct InitAsImpl {};
-  struct InitAsProxy {};
-
-  // The dummy arguments control which version of Resource's constructor is
-  // called for this base class.
-  PPB_DeviceRef_Shared(const InitAsImpl&,
-                       PP_Instance instance,
-                       const DeviceRefData& data);
-  PPB_DeviceRef_Shared(const InitAsProxy&,
+  PPB_DeviceRef_Shared(ResourceObjectType type,
                        PP_Instance instance,
                        const DeviceRefData& data);
 

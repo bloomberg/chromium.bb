@@ -69,17 +69,44 @@ FOR_ALL_PPAPI_RESOURCE_APIS(DECLARE_RESOURCE_CLASS)
 #undef DECLARE_RESOURCE_CLASS
 }  // namespace thunk
 
+// Resources have slightly different registration behaviors when the're an
+// in-process ("impl") resource in the host (renderer) process, or when they're
+// a proxied resource in the plugin process. This enum differentiates those
+// cases.
+enum ResourceObjectType {
+  OBJECT_IS_IMPL,
+  OBJECT_IS_PROXY
+};
+
 class PPAPI_SHARED_EXPORT Resource : public base::RefCounted<Resource> {
  public:
-  // For constructing non-proxied objects. This just takes the associated
-  // instance, and generates a new resource ID. The host resource will be the
-  // same as the newly-generated resource ID.
-  explicit Resource(PP_Instance instance);
+  // Constructor for impl and non-proxied, instance-only objects.
+  //
+  // For constructing "impl" (non-proxied) objects, this just takes the
+  // associated instance, and generates a new resource ID. The host resource
+  // will be the same as the newly-generated resource ID. For all objects in
+  // the renderer (host) process, you'll use this constructor and call it with
+  // OBJECT_IS_IMPL.
+  //
+  // For proxied objects, this will create an "instance-only" object which
+  // lives only in the plugin and doesn't have a corresponding object in the
+  // host. If you have a host resource ID, use the constructor below which
+  // takes that HostResource value.
+  explicit Resource(ResourceObjectType type, PP_Instance instance);
 
-  // For constructing proxied objects. This takes the resource generated in
-  // the host side, stores it, and allocates a "local" resource ID for use in
-  // the current process.
-  explicit Resource(const HostResource& host_resource);
+  // For constructing given a host resource.
+  //
+  // For OBJECT_IS_PROXY objects, this takes the resource generated in the host
+  // side, stores it, and allocates a "local" resource ID for use in the
+  // current process.
+  //
+  // For OBJECT_IS_IMPL, the host resource ID must be 0, since there should be
+  // no host resource generated (impl objects should generate their own). The
+  // reason for supporting this constructor at all for the IMPL case is that
+  // some shared objects use a host resource for both modes to keep things the
+  // same.
+  explicit Resource(ResourceObjectType type,
+                    const HostResource& host_resource);
 
   virtual ~Resource();
 

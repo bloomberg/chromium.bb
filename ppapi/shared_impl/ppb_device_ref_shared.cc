@@ -15,17 +15,10 @@ DeviceRefData::DeviceRefData()
     : type(PP_DEVICETYPE_DEV_INVALID) {
 }
 
-PPB_DeviceRef_Shared::PPB_DeviceRef_Shared(const InitAsImpl&,
+PPB_DeviceRef_Shared::PPB_DeviceRef_Shared(ResourceObjectType type,
                                            PP_Instance instance,
                                            const DeviceRefData& data)
-    : Resource(instance),
-      data_(data) {
-}
-
-PPB_DeviceRef_Shared::PPB_DeviceRef_Shared(const InitAsProxy&,
-                                           PP_Instance instance,
-                                           const DeviceRefData& data)
-    : Resource(HostResource::MakeInstanceOnly(instance)),
+    : Resource(type, instance),
       data_(data) {
 }
 

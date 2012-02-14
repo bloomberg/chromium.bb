@@ -302,41 +302,24 @@ bool PPB_Font_Shared::IsPPFontDescriptionValid(
 }
 
 // static
-PP_Resource PPB_Font_Shared::CreateAsImpl(
-    PP_Instance instance,
-    const PP_FontDescription_Dev& description,
-    const ::ppapi::Preferences& prefs) {
+PP_Resource PPB_Font_Shared::Create(ResourceObjectType type,
+                                    PP_Instance instance,
+                                    const PP_FontDescription_Dev& description,
+                                    const ::ppapi::Preferences& prefs) {
   if (!::ppapi::PPB_Font_Shared::IsPPFontDescriptionValid(description))
     return 0;
-  return (new PPB_Font_Shared(InitAsImpl(), instance, description,
+  return (new PPB_Font_Shared(type, instance, description,
                               prefs))->GetReference();
 }
 
-// static
-PP_Resource PPB_Font_Shared::CreateAsProxy(
-    PP_Instance instance,
-    const PP_FontDescription_Dev& description,
-    const ::ppapi::Preferences& prefs) {
-  if (!::ppapi::PPB_Font_Shared::IsPPFontDescriptionValid(description))
-    return 0;
-  return (new PPB_Font_Shared(InitAsProxy(), instance, description,
-                              prefs))->GetReference();
-}
-
-PPB_Font_Shared::PPB_Font_Shared(const InitAsImpl&,
-                                 PP_Instance pp_instance,
+PPB_Font_Shared::PPB_Font_Shared(ResourceObjectType type,
+                                 PP_Instance instance,
                                  const PP_FontDescription_Dev& desc,
                                  const ::ppapi::Preferences& prefs)
-    : Resource(pp_instance) {
-  Initialize(desc, prefs);
-}
-
-PPB_Font_Shared::PPB_Font_Shared(const InitAsProxy&,
-                                 PP_Instance pp_instance,
-                                 const PP_FontDescription_Dev& desc,
-                                 const ::ppapi::Preferences& prefs)
-    : Resource(HostResource::MakeInstanceOnly(pp_instance)) {
-  Initialize(desc, prefs);
+    : Resource(type, instance) {
+  StringVar* face_name = StringVar::FromPPVar(desc.face);
+  font_impl_.reset(new FontImpl(
+      desc, face_name ? face_name->value() : std::string(), prefs));
 }
 
 PPB_Font_Shared::~PPB_Font_Shared() {
@@ -423,14 +406,6 @@ int32_t PPB_Font_Shared::PixelOffsetForCharacter(const PP_TextRun_Dev* text,
     font_impl_->PixelOffsetForCharacter(run, char_offset, &result);
   }
   return result;
-}
-
-void PPB_Font_Shared::Initialize(const PP_FontDescription_Dev& desc,
-                                 const ::ppapi::Preferences& prefs) {
-  StringVar* face_name = StringVar::FromPPVar(desc.face);
-
-  font_impl_.reset(new FontImpl(
-      desc, face_name ? face_name->value() : std::string(), prefs));
 }
 
 }  // namespace ppapi

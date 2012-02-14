@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,11 +90,9 @@ class PPAPI_SHARED_EXPORT PPB_URLRequestInfo_Shared
     : public ::ppapi::Resource,
       public ::ppapi::thunk::PPB_URLRequestInfo_API {
  public:
-  // This constructor initializes the object as a proxy object with the given
-  // host resource.
-  PPB_URLRequestInfo_Shared(const HostResource& host_resource,
-                     const PPB_URLRequestInfo_Data& data);
-
+  PPB_URLRequestInfo_Shared(ResourceObjectType type,
+                            PP_Instance instance,
+                            const PPB_URLRequestInfo_Data& data);
   ~PPB_URLRequestInfo_Shared();
 
   // Resource overrides.
