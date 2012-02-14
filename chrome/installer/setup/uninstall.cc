@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -738,12 +738,8 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   if (is_chrome) {
     ClearRlzProductState();
 
-    if (auto_launch_util::WillLaunchAtLogin(
-        installer_state.target_path(),
-        ASCIIToUTF16(chrome::kInitialProfile))) {
-      auto_launch_util::SetWillLaunchAtLogin(
-          false, FilePath(), ASCIIToUTF16(chrome::kInitialProfile));
-    }
+    if (auto_launch_util::WillLaunchAtLogin(installer_state.target_path()))
+      auto_launch_util::SetWillLaunchAtLogin(false, FilePath());
   }
 
   // First delete shortcuts from Start->Programs, Desktop & Quick Launch.

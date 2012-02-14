@@ -218,8 +218,6 @@ cr.define('options', function() {
         $('set-as-default-browser').onclick = function(event) {
           chrome.send('becomeDefaultBrowser');
         };
-
-        $('auto-launch').onclick = this.handleAutoLaunchChanged_;
       }
 
       // Under the hood section.
@@ -340,16 +338,6 @@ cr.define('options', function() {
      */
     updateHomePageLabel_: function(label) {
       $('home-page-label').innerHTML = label;
-    },
-
-    /**
-      * Shows the autoLaunch preference and initializes its checkbox value.
-      * @param {bool} enabled Whether autolaunch is enabled or or not.
-      * @private
-      */
-    updateAutoLaunchState_: function(enabled) {
-      $('auto-launch-option').hidden = false;
-      $('auto-launch').checked = enabled;
     },
 
     /**
@@ -495,14 +483,6 @@ cr.define('options', function() {
     },
 
     /**
-     * Sets or clear whether Chrome should Auto-launch on computer startup.
-     * @private
-     */
-    handleAutoLaunchChanged_: function() {
-      chrome.send('toggleAutoLaunch', [$('auto-launch').checked]);
-    },
-
-    /**
      * Sends an asynchronous request for new autocompletion suggestions for the
      * the given query. When new suggestions are available, the C++ handler will
      * call updateAutocompleteSuggestions_.
@@ -633,7 +613,6 @@ cr.define('options', function() {
     'setThemesResetButtonEnabled',
     'updateAccountPicture',
     'updateAutocompleteSuggestions',
-    'updateAutoLaunchState',
     'updateHomePageLabel',
     'updateSearchEngines',
     'updateSyncState',

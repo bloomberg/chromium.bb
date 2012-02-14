@@ -81,10 +81,9 @@ class BrowserOptionsHandler
   // and whether Chrome is set to auto-launch at login. Gets a reply on the UI
   // thread (see CheckAutoLaunchCallback). A weak pointer to this is passed in
   // as a parameter to avoid the need to lock between this function and the
-  // destructor. |profile_path| is the full path to the current profile.
-  void CheckAutoLaunch(base::WeakPtr<BrowserOptionsHandler> weak_this,
-                       const FilePath& profile_path);
+  // destructor.
 
+  void CheckAutoLaunch(base::WeakPtr<BrowserOptionsHandler> weak_this);
   // Sets up (on the UI thread) the necessary bindings for toggling auto-launch
   // (if the user is part of the auto-launch and makes sure the HTML UI knows
   // whether Chrome will auto-launch at login.

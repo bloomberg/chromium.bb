@@ -143,8 +143,7 @@ static const int kMaxInfobarShown = 5;
 class AutolaunchInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   AutolaunchInfoBarDelegate(InfoBarTabHelper* infobar_helper,
-                            PrefService* prefs,
-                            Profile* profile);
+                            PrefService* prefs);
   virtual ~AutolaunchInfoBarDelegate();
 
  private:
@@ -168,9 +167,6 @@ class AutolaunchInfoBarDelegate : public ConfirmInfoBarDelegate {
   // Whether the info-bar should be dismissed on the next navigation.
   bool should_expire_;
 
-  // Weak pointer to the profile, not owned by us.
-  Profile* profile_;
-
   // Used to delay the expiration of the info-bar.
   base::WeakPtrFactory<AutolaunchInfoBarDelegate> weak_factory_;
 
@@ -179,13 +175,11 @@ class AutolaunchInfoBarDelegate : public ConfirmInfoBarDelegate {
 
 AutolaunchInfoBarDelegate::AutolaunchInfoBarDelegate(
     InfoBarTabHelper* infobar_helper,
-    PrefService* prefs,
-    Profile* profile)
+    PrefService* prefs)
     : ConfirmInfoBarDelegate(infobar_helper),
       prefs_(prefs),
       action_taken_(false),
       should_expire_(false),
-      profile_(profile),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   auto_launch_trial::UpdateInfobarShownMetric();
 
@@ -248,9 +242,7 @@ bool AutolaunchInfoBarDelegate::Cancel() {
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&auto_launch_util::SetWillLaunchAtLogin,
-                 auto_launch,
-                 FilePath(),
-                 profile_->GetPath().BaseName().value()));
+                 auto_launch, FilePath()));
   return true;
 }
 
@@ -373,7 +365,7 @@ void CheckAutoLaunchCallback() {
 
   infobar_helper->AddInfoBar(
       new AutolaunchInfoBarDelegate(infobar_helper,
-      tab->profile()->GetPrefs(), tab->profile()));
+      tab->profile()->GetPrefs()));
 }
 #endif
 
@@ -1487,21 +1479,12 @@ bool BrowserInit::LaunchWithProfile::CheckIfAutoLaunched(Profile* profile) {
   if (!auto_launch_trial::IsInAutoLaunchGroup())
     return false;
 
-  // Only supported on the main profile for now.
-  if (profile->GetPath().BaseName().value() !=
-      ASCIIToUTF16(chrome::kInitialProfile)) {
-    return false;
-  }
-
   int infobar_shown =
       profile->GetPrefs()->GetInteger(prefs::kShownAutoLaunchInfobar);
   if (infobar_shown >= kMaxInfobarShown)
     return false;
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kChromeFrame))
-    return false;
-
   if (command_line.HasSwitch(switches::kAutoLaunchAtStartup) ||
       first_run::IsChromeFirstRun()) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
