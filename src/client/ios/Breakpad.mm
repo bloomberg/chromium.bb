@@ -45,6 +45,7 @@
 #import "client/mac/handler/exception_handler.h"
 #import "client/mac/handler/minidump_generator.h"
 #import "client/ios/Breakpad.h"
+#import "client/ios/handler/ios_exception_minidump_generator.h"
 #import "client/mac/handler/protected_memory_allocator.h"
 
 #import <sys/stat.h>
@@ -174,6 +175,12 @@ class Breakpad {
   bool HandleMinidump(const char *dump_dir,
                       const char *minidump_id);
 
+  // NSException handler
+  static void UncaughtExceptionHandler(NSException *exception);
+
+  // Handle an uncaught NSException.
+  void HandleUncaughtException(NSException *exception);
+
   // Since ExceptionHandler (w/o namespace) is defined as typedef in OSX's
   // MachineExceptions.h, we have to explicitly name the handler.
   google_breakpad::ExceptionHandler *handler_; // The actual handler (STRONG)
@@ -181,7 +188,13 @@ class Breakpad {
   SimpleStringDictionary  *config_params_; // Create parameters (STRONG)
 
   ConfigFile config_file_;
+
+  // A static reference to the current Breakpad instance. Used for handling
+  // NSException.
+  static Breakpad *current_breakpad_;
 };
+
+Breakpad *Breakpad::current_breakpad_ = NULL;
 
 #pragma mark -
 #pragma mark Helper functions
@@ -241,11 +254,20 @@ bool Breakpad::HandleMinidumpCallback(const char *dump_dir,
 }
 
 //=============================================================================
+void Breakpad::UncaughtExceptionHandler(NSException *exception) {
+  NSSetUncaughtExceptionHandler(NULL);
+  if (current_breakpad_) {
+    current_breakpad_->HandleUncaughtException(exception);
+  }
+}
+
+//=============================================================================
 #pragma mark -
 
 //=============================================================================
 bool Breakpad::Initialize(NSDictionary *parameters) {
   // Initialize
+  current_breakpad_ = this;
   config_params_ = NULL;
   handler_ = NULL;
 
@@ -267,11 +289,14 @@ bool Breakpad::Initialize(NSDictionary *parameters) {
           google_breakpad::ExceptionHandler(
               config_params_->GetValueForKey(BREAKPAD_DUMP_DIRECTORY),
               0, &HandleMinidumpCallback, this, true, 0);
+  NSSetUncaughtExceptionHandler(&Breakpad::UncaughtExceptionHandler);
   return true;
 }
 
 //=============================================================================
 Breakpad::~Breakpad() {
+  NSSetUncaughtExceptionHandler(NULL);
+  current_breakpad_ = NULL;
   // Note that we don't use operator delete() on these pointers,
   // since they were allocated by ProtectedMemoryAllocator objects.
   //
@@ -499,6 +524,37 @@ bool Breakpad::HandleMinidump(const char *dump_dir,
 }
 
 //=============================================================================
+void Breakpad::HandleUncaughtException(NSException *exception) {
+  // Generate the minidump.
+  google_breakpad::IosExceptionMinidumpGenerator generator(exception);
+  const char *minidump_path =
+      config_params_->GetValueForKey(BREAKPAD_DUMP_DIRECTORY);
+  std::string minidump_id;
+  std::string minidump_filename = generator.UniqueNameInDirectory(minidump_path,
+                                                                  &minidump_id);
+  generator.Write(minidump_filename.c_str());
+
+  // Copy the config params and our custom parameter. This is necessary for 2
+  // reasons:
+  // 1- config_params_ is protected.
+  // 2- If the application crash while trying to handle this exception, a usual
+  //    report will be generated. This report must not contain these special
+  //    keys.
+  SimpleStringDictionary params = *config_params_;
+  params.SetKeyValue(BREAKPAD_SERVER_PARAMETER_PREFIX "type", "exception");
+  params.SetKeyValue(BREAKPAD_SERVER_PARAMETER_PREFIX "exceptionName",
+                     [[exception name] UTF8String]);
+  params.SetKeyValue(BREAKPAD_SERVER_PARAMETER_PREFIX "exceptionReason",
+                     [[exception reason] UTF8String]);
+
+  // And finally write the config file.
+  ConfigFile config_file;
+  config_file.WriteFile(minidump_path,
+                        &params,
+                        minidump_path,
+                        minidump_id.c_str());
+}
+
 //=============================================================================
 
 #pragma mark -

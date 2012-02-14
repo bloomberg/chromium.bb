@@ -82,7 +82,7 @@ class MinidumpGenerator {
   MinidumpGenerator();
   MinidumpGenerator(mach_port_t crashing_task, mach_port_t handler_thread);
 
-  ~MinidumpGenerator();
+  virtual ~MinidumpGenerator();
 
   // Return <dir>/<unique_name>.dmp
   // Sets |unique_name| (if requested) to the unique name for the minidump
@@ -106,13 +106,19 @@ class MinidumpGenerator {
   // the MinidumpGenerator class.
   static void GatherSystemInformation();
 
+ protected:
+  // Overridable Stream writers
+  virtual bool WriteExceptionStream(MDRawDirectory *exception_stream);
+
+  // Overridable Helper
+  virtual bool WriteThreadStream(mach_port_t thread_id, MDRawThread *thread);
+
  private:
-    typedef bool (MinidumpGenerator::*WriteStreamFN)(MDRawDirectory *);
+  typedef bool (MinidumpGenerator::*WriteStreamFN)(MDRawDirectory *);
 
   // Stream writers
   bool WriteThreadListStream(MDRawDirectory *thread_list_stream);
   bool WriteMemoryListStream(MDRawDirectory *memory_list_stream);
-  bool WriteExceptionStream(MDRawDirectory *exception_stream);
   bool WriteSystemInfoStream(MDRawDirectory *system_info_stream);
   bool WriteModuleListStream(MDRawDirectory *module_list_stream);
   bool WriteMiscInfoStream(MDRawDirectory *misc_info_stream);
@@ -128,7 +134,6 @@ class MinidumpGenerator {
                   MDMemoryDescriptor *stack_location);
   bool WriteContext(breakpad_thread_state_data_t state,
                     MDLocationDescriptor *register_location);
-  bool WriteThreadStream(mach_port_t thread_id, MDRawThread *thread);
   bool WriteCVRecord(MDRawModule *module, int cpu_type,
                      const char *module_path, bool in_memory);
   bool WriteModuleStream(unsigned int index, MDRawModule *module);
@@ -172,9 +177,11 @@ class MinidumpGenerator {
   explicit MinidumpGenerator(const MinidumpGenerator &);
   void operator=(const MinidumpGenerator &);
 
+ protected:
   // Use this writer to put the data to disk
   MinidumpFileWriter writer_;
 
+ private:
   // Exception information
   int exception_type_;
   int exception_code_;
@@ -199,6 +206,7 @@ class MinidumpGenerator {
   // directly from the system, even while handling an exception.
   mutable PageAllocator allocator_;
 
+ protected:
   // Blocks of memory written to the dump. These are all currently
   // written while writing the thread list stream, but saved here
   // so a memory list stream can be written afterwards.

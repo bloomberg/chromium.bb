@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		16BFA67014E195E9009704F8 /* ios_exception_minidump_generator.h in Headers */ = {isa = PBXBuildFile; fileRef = 16BFA66E14E195E9009704F8 /* ios_exception_minidump_generator.h */; };
+		16BFA67214E1965A009704F8 /* ios_exception_minidump_generator.mm in Sources */ = {isa = PBXBuildFile; fileRef = 16BFA67114E1965A009704F8 /* ios_exception_minidump_generator.mm */; };
 		16C7CCCB147D4A4300776EAD /* BreakpadDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 16C7C968147D4A4200776EAD /* BreakpadDefines.h */; };
 		16C7CCCC147D4A4300776EAD /* Breakpad.h in Headers */ = {isa = PBXBuildFile; fileRef = 16C7C96A147D4A4200776EAD /* Breakpad.h */; };
 		16C7CCCD147D4A4300776EAD /* Breakpad.mm in Sources */ = {isa = PBXBuildFile; fileRef = 16C7C96B147D4A4200776EAD /* Breakpad.mm */; };
@@ -55,6 +57,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		16BFA66E14E195E9009704F8 /* ios_exception_minidump_generator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ios_exception_minidump_generator.h; sourceTree = "<group>"; };
+		16BFA67114E1965A009704F8 /* ios_exception_minidump_generator.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ios_exception_minidump_generator.mm; sourceTree = "<group>"; };
 		16C7C968147D4A4200776EAD /* BreakpadDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BreakpadDefines.h; sourceTree = "<group>"; };
 		16C7C96A147D4A4200776EAD /* Breakpad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Breakpad.h; sourceTree = "<group>"; };
 		16C7C96B147D4A4200776EAD /* Breakpad.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Breakpad.mm; sourceTree = "<group>"; };
@@ -151,6 +155,15 @@
 			name = Classes;
 			sourceTree = "<group>";
 		};
+		16BFA66A14E195E9009704F8 /* handler */ = {
+			isa = PBXGroup;
+			children = (
+				16BFA67114E1965A009704F8 /* ios_exception_minidump_generator.mm */,
+				16BFA66E14E195E9009704F8 /* ios_exception_minidump_generator.h */,
+			);
+			path = handler;
+			sourceTree = "<group>";
+		};
 		16C7C965147D4A4200776EAD /* client */ = {
 			isa = PBXGroup;
 			children = (
@@ -185,6 +198,7 @@
 		16C7C969147D4A4200776EAD /* ios */ = {
 			isa = PBXGroup;
 			children = (
+				16BFA66A14E195E9009704F8 /* handler */,
 				16C7C96A147D4A4200776EAD /* Breakpad.h */,
 				16C7C96B147D4A4200776EAD /* Breakpad.mm */,
 			);
@@ -312,6 +326,7 @@
 				16C7CE90147D4A4300776EAD /* string_utilities.h in Headers */,
 				16C7CE94147D4A4300776EAD /* md5.h in Headers */,
 				16C7CEA8147D4A4300776EAD /* string_conversion.h in Headers */,
+				16BFA67014E195E9009704F8 /* ios_exception_minidump_generator.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -397,6 +412,7 @@
 				16C7CE8F147D4A4300776EAD /* string_utilities.cc in Sources */,
 				16C7CE93147D4A4300776EAD /* md5.cc in Sources */,
 				16C7CEA7147D4A4300776EAD /* string_conversion.cc in Sources */,
+				16BFA67214E1965A009704F8 /* ios_exception_minidump_generator.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -415,7 +431,6 @@
 					"\"$(SRCROOT)/../mac/build/Debug\"",
 				);
 				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -479,7 +494,6 @@
 					../../common/mac,
 				);
 				OTHER_LDFLAGS = "-ObjC";
-				PREBINDING = NO;
 				SDKROOT = iphoneos;
 			};
 			name = Debug;
@@ -497,7 +511,6 @@
 					../../common/mac,
 				);
 				OTHER_LDFLAGS = "-ObjC";
-				PREBINDING = NO;
 				SDKROOT = iphoneos;
 			};
 			name = Release;
