@@ -421,21 +421,19 @@ default_grab_focus(struct wl_grab *grab, uint32_t time,
 	if (device->button_count > 0)
 		return;
 
-	wl_input_device_set_pointer_focus(device, surface, time,
-					  device->x, device->y, x, y);
+	wl_input_device_set_pointer_focus(device, surface, time, x, y);
 }
 
 static void
 default_grab_motion(struct wl_grab *grab,
 		    uint32_t time, int32_t x, int32_t y)
 {
-	struct wl_input_device *device = grab->input_device;
 	struct wl_resource *resource;
 
 	resource = grab->input_device->pointer_focus_resource;
 	if (resource)
 		wl_resource_post_event(resource, WL_INPUT_DEVICE_MOTION,
-				       time, device->x, device->y, x, y);
+				       time, x, y);
 }
 
 static void
@@ -453,7 +451,6 @@ default_grab_button(struct wl_grab *grab,
 	if (device->button_count == 0 && state == 0)
 		wl_input_device_set_pointer_focus(device,
 						  device->current, time,
-						  device->x, device->y,
 						  device->current_x,
 						  device->current_y);
 }
@@ -519,7 +516,6 @@ WL_EXPORT void
 wl_input_device_set_pointer_focus(struct wl_input_device *device,
 				  struct wl_surface *surface,
 				  uint32_t time,
-				  int32_t x, int32_t y,
 				  int32_t sx, int32_t sy)
 {
 	struct wl_resource *resource;
@@ -532,7 +528,7 @@ wl_input_device_set_pointer_focus(struct wl_input_device *device,
 	     device->pointer_focus->resource.client != surface->resource.client))
 		wl_resource_post_event(device->pointer_focus_resource,
 				       WL_INPUT_DEVICE_POINTER_FOCUS,
-				       time, NULL, 0, 0, 0, 0);
+				       time, NULL, 0, 0);
 	if (device->pointer_focus_resource)
 		wl_list_remove(&device->pointer_focus_listener.link);
 
@@ -540,7 +536,7 @@ wl_input_device_set_pointer_focus(struct wl_input_device *device,
 	if (resource) {
 		wl_resource_post_event(resource,
 				       WL_INPUT_DEVICE_POINTER_FOCUS,
-				       time, surface, x, y, sx, sy);
+				       time, surface, sx, sy);
 		wl_list_insert(resource->destroy_listener_list.prev,
 			       &device->pointer_focus_listener.link);
 	}

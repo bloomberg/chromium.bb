@@ -269,7 +269,6 @@ void
 wl_input_device_set_pointer_focus(struct wl_input_device *device,
 				  struct wl_surface *surface,
 				  uint32_t time,
-				  int32_t x, int32_t y,
 				  int32_t sx, int32_t sy);
 
 void

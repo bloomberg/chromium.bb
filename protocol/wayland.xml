@@ -594,14 +594,11 @@
 
     <event name="motion">
       <description summary="pointer motion event">
-	Notification of pointer location change.  x,y are the absolute
-	location on the screen.  surface_[xy] are the location
-	relative to the focused surface.
+	Notification of pointer location change. The arguments surface_[xy]
+	are the location relative to the focused surface.
       </description>
 
       <arg name="time" type="uint"/>
-      <arg name="x" type="int"/>
-      <arg name="y" type="int"/>
       <arg name="surface_x" type="int"/>
       <arg name="surface_y" type="int"/>
     </event>
@@ -637,8 +634,6 @@
 
       <arg name="time" type="uint"/>
       <arg name="surface" type="object" interface="wl_surface"/>
-      <arg name="x" type="int"/>
-      <arg name="y" type="int"/>
       <arg name="surface_x" type="int"/>
       <arg name="surface_y" type="int"/>
     </event>
