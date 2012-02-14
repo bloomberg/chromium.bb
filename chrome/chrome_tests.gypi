@@ -1989,6 +1989,7 @@
         'browser/ui/window_snapshot/window_snapshot_mac_unittest.mm',
         'browser/user_style_sheet_watcher_unittest.cc',
         'browser/visitedlink/visitedlink_unittest.cc',
+        'browser/web_applications/web_app_mac_unittest.mm',
         'browser/web_applications/web_app_unittest.cc',
         'browser/web_resource/promo_resource_service_unittest.cc',
         'browser/webdata/autofill_entry_unittest.cc',

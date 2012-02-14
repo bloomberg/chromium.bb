@@ -4226,6 +4226,7 @@
         'browser/web_applications/web_app.cc',
         'browser/web_applications/web_app.h',
         'browser/web_applications/web_app_linux.cc',
+        'browser/web_applications/web_app_mac.h',
         'browser/web_applications/web_app_mac.mm',
         'browser/web_applications/web_app_win.cc',
         'browser/web_resource/notification_promo.cc',
