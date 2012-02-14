@@ -418,7 +418,7 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_iframeBasic) {
 
 const wchar_t kSrcPropertyTestPage[] = L"src_property_host.html";
 
-TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeIE_SrcProperty) {
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeIE_SrcProperty) {
   SimpleBrowserTest(IE, kSrcPropertyTestPage);
 }
 
@@ -443,7 +443,7 @@ TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeIE_CFInstanceDelay) {
 const wchar_t kCFIFallbackPage[] = L"CFInstance_fallback_host.html";
 
 // http://crbug.com/37088
-TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeIE_CFInstanceFallback) {
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeIE_CFInstanceFallback) {
   SimpleBrowserTest(IE, kCFIFallbackPage);
 }
 
@@ -470,7 +470,7 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceZeroSize) {
 const wchar_t kCFIIfrPostPage[] = L"CFInstance_iframe_post_host.html";
 
 // http://crbug.com/32321
-TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeIE_CFInstanceIfrPost) {
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeIE_CFInstanceIfrPost) {
   SimpleBrowserTest(IE, kCFIIfrPostPage);
 }
 
@@ -786,7 +786,7 @@ const wchar_t kWindowCloseTestUrl[] =
     L"window_close.html";
 
 // http://code.google.com/p/chromium/issues/detail?id=111074
-TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_WindowClose) {
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_WindowClose) {
   SimpleBrowserTest(IE, kWindowCloseTestUrl);
 }
 

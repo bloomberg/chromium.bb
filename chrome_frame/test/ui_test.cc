@@ -67,7 +67,8 @@ TEST_P(FullTabUITest, KeyboardInput) {
 }
 
 // Tests keyboard shortcuts for back and forward.
-TEST_P(FullTabUITest, FLAKY_KeyboardBackForward) {
+// http://code.google.com/p/chromium/issues/detail?id=114058
+TEST_P(FullTabUITest, DISABLED_KeyboardBackForward) {
   if (IsWorkstationLocked()) {
     LOG(ERROR) << "This test cannot be run in a locked workstation.";
     return;
@@ -238,7 +239,7 @@ TEST_P(FullTabUITest, AltD) {
 
 // Tests that the renderer has focus after navigation.
 // Flaky, see http://crbug.com/90791 .
-TEST_P(FullTabUITest, FLAKY_RendererHasFocus) {
+TEST_P(FullTabUITest, DISABLED_RendererHasFocus) {
   EXPECT_CALL(ie_mock_, OnLoad(GetParam().invokes_cf(),
                                StrEq(GetSimplePageUrl())))
       .WillOnce(testing::DoAll(
@@ -588,7 +589,7 @@ TEST_F(ContextMenuTest, CFInspector) {
 }
 
 // http://code.google.com/p/chromium/issues/detail?id=83114
-TEST_F(ContextMenuTest, FLAKY_CFSavePageAs) {
+TEST_F(ContextMenuTest, DISABLED_CFSavePageAs) {
   // Please see http://code.google.com/p/chromium/issues/detail?id=60987
   // for more information on why this test is disabled for Vista with IE7.
   if (base::win::GetVersion() == base::win::VERSION_VISTA &&
@@ -737,7 +738,7 @@ TEST_F(ContextMenuTest, IEBackForward) {
 
 // Test CF link context menu - Open link in new window.
 // Failing intermittently on IE6/7. See crbug.com/64794.
-TEST_F(ContextMenuTest, FLAKY_CFOpenLinkInNewWindow) {
+TEST_F(ContextMenuTest, DISABLED_CFOpenLinkInNewWindow) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
   MockIEEventSink new_window_mock;
   new_window_mock.ExpectAnyNavigations();
