@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,11 +79,10 @@ class HungCOMCallDetector
  public:
   HungCOMCallDetector()
       : is_hung_(false) {
-    LOG(INFO) << __FUNCTION__;
   }
 
   ~HungCOMCallDetector() {
-    LOG(INFO) << __FUNCTION__;
+    TearDown();
   }
 
   BEGIN_MSG_MAP(HungCOMCallDetector)
@@ -110,10 +109,16 @@ class HungCOMCallDetector
   }
 
   void TearDown() {
-    base::win::ScopedComPtr<IMessageFilter> prev_filter;
-    CoRegisterMessageFilter(prev_filter_.get(), prev_filter.Receive());
-    DestroyWindow();
-    m_hWnd = NULL;
+    if (prev_filter_) {
+      base::win::ScopedComPtr<IMessageFilter> prev_filter;
+      CoRegisterMessageFilter(prev_filter_.get(), prev_filter.Receive());
+      DCHECK(prev_filter.IsSameObject(this));
+      prev_filter_.Release();
+    }
+    if (IsWindow()) {
+      DestroyWindow();
+      m_hWnd = NULL;
+    }
   }
 
   STDMETHOD_(DWORD, HandleInComingCall)(DWORD call_type,

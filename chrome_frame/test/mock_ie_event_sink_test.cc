@@ -215,8 +215,10 @@ void MockIEEventSinkTest::LaunchIENavigateAndLoop(const std::wstring& url,
     loop_.RunFor(timeout);
   }
 
-  IEEventSink::SetAbnormalShutdown(hung_call_detector_->is_hung());
-  hung_call_detector_->TearDown();
+  if (hung_call_detector_) {
+    IEEventSink::SetAbnormalShutdown(hung_call_detector_->is_hung());
+    hung_call_detector_->TearDown();
+  }
 }
 
 FilePath MockIEEventSinkTest::GetTestFilePath(

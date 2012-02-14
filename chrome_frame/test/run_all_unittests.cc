@@ -8,6 +8,7 @@
 #include "base/process_util.h"
 #include "base/test/test_suite.h"
 #include "base/threading/platform_thread.h"
+#include "base/win/scoped_com_initializer.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome_frame/crash_server_init.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
@@ -20,6 +21,11 @@ class ChromeFrameUnittestsModule
     : public CAtlExeModuleT<ChromeFrameUnittestsModule> {
  public:
   static HRESULT InitializeCom() {
+    // Note that this only gets called in versions of ATL included in
+    // VS2008 and earlier. We still need it however since this gets called
+    // at static initialization time, before the ScopedCOMInitializer in main()
+    // and the default implementation of InitializeCom CoInitializes into the
+    // MTA.
     return CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
   }
 };
@@ -34,6 +40,7 @@ void PureCall() {
 }
 
 int main(int argc, char **argv) {
+  base::win::ScopedCOMInitializer com_initializer;
   ScopedChromeFrameRegistrar::RegisterAndExitProcessIfDirected();
   base::EnableTerminationOnHeapCorruption();
   base::PlatformThread::SetName("ChromeFrame tests");
