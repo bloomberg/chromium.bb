@@ -8,7 +8,6 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync/sync_ui_util.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/global_error_service.h"
 #include "chrome/browser/ui/global_error_service_factory.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
@@ -50,13 +49,6 @@ string16 SyncGlobalError::MenuItemLabel() {
 }
 
 void SyncGlobalError::ExecuteMenuItem(Browser* browser) {
-#if defined(OS_CHROMEOS)
-  if (service_->GetAuthError().state() != AuthError::NONE) {
-    DLOG(INFO) << "Signing out the user to fix a sync error.";
-    browser->ExecuteCommand(IDC_EXIT);
-    return;
-  }
-#endif
   service_->ShowErrorUI();
 }
 
@@ -84,7 +76,7 @@ void SyncGlobalError::OnBubbleViewDidClose(Browser* browser) {
 }
 
 void SyncGlobalError::BubbleViewAcceptButtonPressed(Browser* browser) {
-  ExecuteMenuItem(browser);
+  service_->ShowErrorUI();
 }
 
 void SyncGlobalError::BubbleViewCancelButtonPressed(Browser* browser) {
