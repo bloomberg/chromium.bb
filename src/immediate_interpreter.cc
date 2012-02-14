@@ -10,6 +10,7 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/logging.h"
+#include "gestures/include/util.h"
 
 using std::bind1st;
 using std::for_each;
@@ -200,7 +201,8 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       keyboard_palm_prevent_timeout_(prop_reg, "Keyboard Palm Prevent Timeout",
                                      0.5),
       motion_tap_prevent_timeout_(prop_reg, "Motion Tap Prevent Timeout",
-                                  0.05) {
+                                  0.05),
+      tapping_finger_min_separation_(prop_reg, "Tap Min Separation", 10.0) {
   memset(&prev_state_, 0, sizeof(prev_state_));
 }
 
@@ -736,6 +738,8 @@ void ImmediateInterpreter::UpdateTapState(
              tap_gs_fingers.begin(), e = tap_gs_fingers.end(); it != e; ++it)
       if (!prev_state_.GetFingerState(*it)) {
         // Gesturing finger wasn't in prev state. It's new.
+        if (FingerTooCloseToTap(*hwstate, *it))
+          continue;
         added_fingers.insert(*it);
         Log("TTC: Added %d", *it);
       }
@@ -954,6 +958,26 @@ void ImmediateInterpreter::UpdateTapState(
     default:  // so gcc doesn't complain about missing enums
       break;
   }
+}
+
+bool ImmediateInterpreter::FingerTooCloseToTap(const HardwareState& hwstate,
+                                               short finger_id) {
+  const FingerState* fs = hwstate.GetFingerState(finger_id);
+  if (!fs) {
+    Err("Missing finger state?");
+    return false;
+  }
+  const float kMinAllowableSq =
+      tapping_finger_min_separation_.val_ * tapping_finger_min_separation_.val_;
+  for (size_t i = 0; i < hwstate.finger_cnt; i++) {
+    const FingerState* iter_fs = &hwstate.fingers[i];
+    if (iter_fs == fs)
+      continue;
+    float dist_sq = DistSq(*fs, *iter_fs);
+    if (dist_sq < kMinAllowableSq)
+      return true;
+  }
+  return false;
 }
 
 void ImmediateInterpreter::SetPrevState(const HardwareState& hwstate) {

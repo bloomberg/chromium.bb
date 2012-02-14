@@ -860,6 +860,9 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     {0, 0, 0, 0, 80, 0, 5, 9, 70},  // thumb
     {0, 0, 0, 0, 50, 0, 4, 4, 91},
     {0, 0, 0, 0, 80, 0, 5, 9, 71},  // thumb-new id
+
+    {0, 0, 0, 0, 50, 0, 8.0, 4, 95},  // very close together fingers:
+    {0, 0, 0, 0, 50, 0, 8.1, 4, 96},
   };
   HWStateGs hwsgs[] = {
     // Simple 1-finger tap
@@ -1002,42 +1005,45 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     {{ 0.12, 0, 1, 1, &fs[2] }, -1, MkSet(93), kBL,   0, kSTB, false },
     {{ 0.22, 0, 0, 0, NULL   }, -1, MkSet(),     0, kBL, kTpC, true },
     {{ 0.90, 0, 0, 0, NULL   }, .9, MkSet(),   kBL, kBL, kIdl, false },
+    // right tap, very close fingers - shouldn't tap
+    {{ 0.00, 0, 2, 2, &fs[19] }, -1, MkSet(95, 96), 0, 0, kIdl, false },  // 119
+    {{ 0.01, 0, 0, 0, NULL    }, -1, MkSet(),       0, 0, kIdl, false },
     // T5R2 tap tests:
     // (1f and 2f tap w/o resting thumb and 1f w/ resting thumb are the same as
     // above)
     // 2f tap w/ resting thumb
-    {{ 0.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },  // 119
+    {{ 0.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },  // 121
     {{ 1.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kIdl, false },
     {{ 1.01, 0, 1, 3, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },
     {{ 1.02, 0, 2, 3, &fs[16] }, -1, MkSet(70, 91), 0, 0, kFTB, false },
     {{ 1.03, 0, 0, 2, NULL    }, -1, MkSet(),     0,   0, kFTB, false },
     {{ 1.04, 0, 1, 1, &fs[18] }, -1, MkSet(71), kBR, kBR, kIdl, false },
     // 3f tap w/o resting thumb
-    {{ 0.00, 0, 2, 3, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },  // 125
+    {{ 0.00, 0, 2, 3, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },  // 127
     {{ 0.01, 0, 0, 1, NULL   }, -1,  MkSet(),       0, 0, kFTB, false },
     {{ 0.02, 0, 0, 0, NULL   }, -1,  MkSet(),   kBR, kBR, kIdl, false },
     // 3f tap w/o resting thumb (slightly different)
-    {{ 0.00, 0, 2, 3, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },  // 128
+    {{ 0.00, 0, 2, 3, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },  // 130
     {{ 0.01, 0, 2, 3, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },
     {{ 0.02, 0, 0, 0, NULL   }, -1,  MkSet(),   kBR, kBR, kIdl, false },
     // 3f tap w/ resting thumb
-    {{ 0.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },  // 131
+    {{ 0.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },  // 133
     {{ 1.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kIdl, false },
     {{ 1.01, 0, 1, 4, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },
     {{ 1.02, 0, 2, 4, &fs[16] }, -1, MkSet(70, 91), 0, 0, kFTB, false },
     {{ 1.03, 0, 1, 1, &fs[16] }, -1, MkSet(70), kBR, kBR, kIdl, false },
     // 4f tap w/o resting thumb
-    {{ 0.00, 0, 2, 3, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },  // 136
+    {{ 0.00, 0, 2, 3, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },  // 138
     {{ 0.01, 0, 1, 4, &fs[0] }, -1,  MkSet(91),     0, 0, kFTB, false },
     {{ 0.02, 0, 2, 4, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },
     {{ 0.03, 0, 0, 0, NULL   }, -1,  MkSet(),   kBR, kBR, kIdl, false },
     // 4f tap w/ resting thumb
-    {{ 0.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },  // 140
+    {{ 0.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },  // 142
     {{ 1.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kIdl, false },
     {{ 1.01, 0, 1, 5, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },
     {{ 1.02, 0, 1, 1, &fs[16] }, -1, MkSet(70), kBR, kBR, kIdl, false },
     // 4f tap w/ resting thumb (slightly different)
-    {{ 0.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },  // 144
+    {{ 0.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },  // 146
     {{ 1.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kIdl, false },
     {{ 1.01, 0, 1, 5, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },
     {{ 1.02, 0, 2, 5, &fs[16] }, -1, MkSet(70, 91), 0, 0, kFTB, false },
@@ -1052,7 +1058,7 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
   std::copy(hwsgs, hwsgs + kT5R2TestFirstIndex, hwsgs_full + arraysize(hwsgs));
 
   vector<vector<FingerState> > thumb_fs(arraysize(hwsgs));
-  const FingerState& fs_thumb = fs[arraysize(fs) - 1];
+  const FingerState& fs_thumb = fs[18];
   for (size_t i = 0; i < kT5R2TestFirstIndex; ++i) {
     HardwareState* hs = &hwsgs_full[i + arraysize(hwsgs)].hws;
     vector<FingerState>& newfs = thumb_fs[i];
@@ -1094,6 +1100,7 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
       ii->SetHardwareProperties(hwprops);
       ii->drag_lock_enable_.val_ = 1;
       ii->motion_tap_prevent_timeout_.val_ = 0;
+      ii->tapping_finger_min_separation_.val_ = 1.0;
       ii->tap_drag_timeout_.val_ = 0.05;
       ii->tap_enable_.val_ = 1;
       ii->tap_move_dist_.val_ = 1.0;

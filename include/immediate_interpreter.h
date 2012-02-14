@@ -203,6 +203,10 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
                       unsigned* buttons_up,
                       stime_t* timeout);
 
+  // Returns true iff the given finger is too close to any other finger to
+  // realistically be doing a tap gesture.
+  bool FingerTooCloseToTap(const HardwareState& hwstate, short finger_id);
+
   // Does a deep copy of hwstate into prev_state_
   void SetPrevState(const HardwareState& hwstate);
 
@@ -359,6 +363,8 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Motion (pointer movement, scroll) must halt for this length of time [s]
   // before a tap can generate a click.
   DoubleProperty motion_tap_prevent_timeout_;
+  // A finger must be at least this far from other fingers when it taps [mm].
+  DoubleProperty tapping_finger_min_separation_;
 };
 
 }  // namespace gestures
