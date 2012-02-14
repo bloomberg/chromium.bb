@@ -108,14 +108,6 @@ void TabContentsViewAndroid::RemoveOverlayView() {
   NOTIMPLEMENTED();
 }
 
-void TabContentsViewAndroid::ConfirmTouchEvent(bool handled) {
-  NOTIMPLEMENTED();
-}
-
-void TabContentsViewAndroid::DidSetNeedTouchEvents(bool need_touch_events) {
-  NOTIMPLEMENTED();
-}
-
 void TabContentsViewAndroid::CreateNewWindow(
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {

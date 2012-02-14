@@ -15,6 +15,7 @@
 using base::StringPrintf;
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
+using base::android::GetClass;
 using base::android::GetMethodIDFromClassName;
 using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
@@ -167,8 +168,7 @@ NPVariant CallJNIMethod(jobject object, const JavaType& return_type,
         VOID_TO_NPVARIANT(result);
         break;
       }
-      std::string str =
-          base::android::ConvertJavaStringToUTF8(env, java_string.obj());
+      std::string str = base::android::ConvertJavaStringToUTF8(java_string);
       // Take a copy and pass ownership to the variant. We must allocate using
       // NPN_MemAlloc, to match NPN_ReleaseVariant, which uses NPN_MemFree.
       size_t length = str.length();
@@ -241,7 +241,8 @@ jvalue CoerceJavaScriptNumberToJavaValue(const NPVariant& variant,
           ConvertUTF8ToJavaString(
               AttachCurrentThread(),
               is_double ? StringPrintf("%.6lg", NPVARIANT_TO_DOUBLE(variant)) :
-                          base::Int64ToString(NPVARIANT_TO_INT32(variant))) :
+                          base::Int64ToString(NPVARIANT_TO_INT32(variant))).
+                              Release() :
           NULL;
       break;
     case JavaType::TypeBoolean:
@@ -281,7 +282,7 @@ jvalue CoerceJavaScriptBooleanToJavaValue(const NPVariant& variant,
     case JavaType::TypeString:
       result.l = coerce_to_string ?
           ConvertUTF8ToJavaString(AttachCurrentThread(),
-                                  boolean_value ? "true" : "false") :
+                                  boolean_value ? "true" : "false").Release() :
           NULL;
       break;
     case JavaType::TypeByte:
@@ -320,7 +321,7 @@ jvalue CoerceJavaScriptStringToJavaValue(const NPVariant& variant,
       result.l = ConvertUTF8ToJavaString(
           AttachCurrentThread(),
           base::StringPiece(NPVARIANT_TO_STRING(variant).UTF8Characters,
-                            NPVARIANT_TO_STRING(variant).UTF8Length));
+                            NPVARIANT_TO_STRING(variant).UTF8Length)).Release();
       break;
     case JavaType::TypeObject:
       // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to NULL. Spec
@@ -383,7 +384,7 @@ jobject CreateJavaArray(const JavaType& type, jsize length) {
     case JavaType::TypeDouble:
       return env->NewDoubleArray(length);
     case JavaType::TypeString: {
-      ScopedJavaLocalRef<jclass> clazz(env, env->FindClass("java/lang/String"));
+      ScopedJavaLocalRef<jclass> clazz(GetClass(env, "java/lang/String"));
       return env->NewObjectArray(length, clazz.obj(), NULL);
     }
     case JavaType::TypeVoid:
@@ -554,7 +555,8 @@ jvalue CoerceJavaScriptObjectToJavaValue(const NPVariant& variant,
       // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to
       // "undefined". Spec requires calling toString() on the Java object.
       result.l = coerce_to_string ?
-          ConvertUTF8ToJavaString(AttachCurrentThread(), "undefined") :
+          ConvertUTF8ToJavaString(AttachCurrentThread(), "undefined").
+              Release() :
           NULL;
       break;
     case JavaType::TypeByte:
@@ -607,7 +609,8 @@ jvalue CoerceJavaScriptNullOrUndefinedToJavaValue(const NPVariant& variant,
       // LIVECONNECT_COMPLIANCE: Existing behavior is to convert undefined to
       // "undefined". Spec requires converting undefined to NULL.
       result.l = (coerce_to_string && variant.type == NPVariantType_Void) ?
-          ConvertUTF8ToJavaString(AttachCurrentThread(), "undefined") :
+          ConvertUTF8ToJavaString(AttachCurrentThread(), "undefined").
+              Release() :
           NULL;
       break;
     case JavaType::TypeByte:

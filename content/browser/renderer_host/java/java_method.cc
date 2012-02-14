@@ -12,6 +12,7 @@
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
+using base::android::GetClass;
 using base::android::GetMethodID;
 using base::android::GetMethodIDFromClassName;
 using base::android::GetStaticMethodID;
@@ -42,9 +43,7 @@ struct ModifierClassTraits :
     JNIEnv* env = AttachCurrentThread();
     // Use placement new to initialize our instance in our preallocated space.
     return new (instance) ScopedJavaGlobalRef<jclass>(
-        ScopedJavaLocalRef<jclass>(
-            env,
-            static_cast<jclass>(env->FindClass(kJavaLangReflectModifier))));
+        GetClass(env, kJavaLangReflectModifier));
   }
 };
 
@@ -105,7 +104,7 @@ JavaMethod::JavaMethod(const base::android::JavaRef<jobject>& method)
           kJavaLangReflectMethod,
           kGetName,
           kReturningJavaLangString))));
-  name_ = ConvertJavaStringToUTF8(env, name.obj());
+  name_ = ConvertJavaStringToUTF8(name);
 }
 
 JavaMethod::~JavaMethod() {
@@ -186,7 +185,7 @@ void JavaMethod::EnsureTypesAndIDAreSetUp() const {
             kJavaLangClass,
             kGetName,
             kReturningJavaLangString))));
-    std::string name_utf8 = ConvertJavaStringToUTF8(env, name.obj());
+    std::string name_utf8 = ConvertJavaStringToUTF8(name);
     signature += BinaryNameToJNIName(name_utf8, &parameter_types_[i]);
   }
   signature += ")";
@@ -204,7 +203,7 @@ void JavaMethod::EnsureTypesAndIDAreSetUp() const {
           kJavaLangClass,
           kGetName,
           kReturningJavaLangString))));
-  signature += BinaryNameToJNIName(ConvertJavaStringToUTF8(env, name.obj()),
+  signature += BinaryNameToJNIName(ConvertJavaStringToUTF8(name),
                                    &return_type_);
 
   // Determine whether the method is static.
@@ -215,8 +214,7 @@ void JavaMethod::EnsureTypesAndIDAreSetUp() const {
                                                    kReturningInteger));
   bool is_static = env->CallStaticBooleanMethod(
       g_java_lang_reflect_modifier_class.Get().obj(),
-      GetStaticMethodID(env,
-                        g_java_lang_reflect_modifier_class.Get().obj(),
+      GetStaticMethodID(env, g_java_lang_reflect_modifier_class.Get(),
                         kIsStatic,
                         kIntegerReturningBoolean),
       modifiers);
@@ -229,10 +227,8 @@ void JavaMethod::EnsureTypesAndIDAreSetUp() const {
           kGetDeclaringClass,
           kReturningJavaLangClass))));
   id_ = is_static ?
-        GetStaticMethodID(env, declaring_class.obj(), name_.c_str(),
-                          signature.c_str()) :
-        GetMethodID(env, declaring_class.obj(), name_.c_str(),
-                    signature.c_str());
-
+      GetStaticMethodID(env, declaring_class, name_.c_str(),
+                        signature.c_str()) :
+      GetMethodID(env, declaring_class, name_.c_str(), signature.c_str());
   java_method_.Reset();
 }
