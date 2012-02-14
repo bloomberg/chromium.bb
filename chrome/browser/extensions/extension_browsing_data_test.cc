@@ -23,7 +23,7 @@ using namespace extension_function_test_utils;
 
 namespace {
 
-const char kRemoveEverythingArguments[] = "[1000, {"
+const char kRemoveEverythingArguments[] = "[{\"since\": 1000}, {"
     "\"appcache\": true, \"cache\": true, \"cookies\": true, "
     "\"downloads\": true, \"fileSystems\": true, \"formData\": true, "
     "\"history\": true, \"indexedDB\": true, \"localStorage\": true, "
@@ -70,7 +70,7 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest,
                                                   int expected_mask) {
     SCOPED_TRACE(key);
     EXPECT_EQ(NULL, RunFunctionAndReturnResult(new RemoveBrowsingDataFunction(),
-        std::string("[1, {\"") + key + "\": true}]", browser()));
+        std::string("[{\"since\": 1}, {\"") + key + "\": true}]", browser()));
     EXPECT_EQ(expected_mask, GetRemovalMask());
   }
 

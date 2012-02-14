@@ -3,9 +3,16 @@
     "namespace": "experimental.browsingData",
     "types": [
       {
-        "id": "RemovalRange",
-        "type": "number",
-        "description": "Remove data accumulated on or after this date, represented in milliseconds since the epoch ('Date().GetTime()')"
+        "id": "RemovalOptions",
+        "type": "object",
+        "description": "Options that determine exactly what data will be removed.",
+        "properties": {
+          "since": {
+            "type": "number",
+            "optional": true,
+            "description": "Remove data accumulated on or after this date, represented in milliseconds since the epoch ('Date().GetTime()'). If absent, defaults to 0 (which would remove everything)."
+          }
+        }
       }
     ],
     "functions": [
@@ -15,8 +22,8 @@
         "type": "function",
         "parameters": [
           {
-            "$ref": "RemovalRange",
-            "name": "since"
+            "$ref": "RemovalOptions",
+            "name": "options"
           },
           {
             "name": "dataToRemove",
@@ -105,8 +112,8 @@
         "type": "function",
         "parameters": [
           {
-            "$ref": "RemovalRange",
-            "name": "since"
+            "$ref": "RemovalOptions",
+            "name": "options"
           },
           {
             "name": "callback",
@@ -123,8 +130,8 @@
         "type": "function",
         "parameters": [
           {
-            "$ref": "RemovalRange",
-            "name": "since"
+            "$ref": "RemovalOptions",
+            "name": "options"
           },
           {
             "name": "callback",
@@ -141,8 +148,8 @@
         "type": "function",
         "parameters": [
           {
-            "$ref": "RemovalRange",
-            "name": "since"
+            "$ref": "RemovalOptions",
+            "name": "options"
           },
           {
             "name": "callback",
@@ -159,8 +166,8 @@
         "type": "function",
         "parameters": [
           {
-            "$ref": "RemovalRange",
-            "name": "since"
+            "$ref": "RemovalOptions",
+            "name": "options"
           },
           {
             "name": "callback",
@@ -177,8 +184,8 @@
         "type": "function",
         "parameters": [
           {
-            "$ref": "RemovalRange",
-            "name": "since"
+            "$ref": "RemovalOptions",
+            "name": "options"
           },
           {
             "name": "callback",
@@ -195,8 +202,8 @@
         "type": "function",
         "parameters": [
           {
-            "$ref": "RemovalRange",
-            "name": "since"
+            "$ref": "RemovalOptions",
+            "name": "options"
           },
           {
             "name": "callback",
@@ -213,8 +220,8 @@
         "type": "function",
         "parameters": [
           {
-            "$ref": "RemovalRange",
-            "name": "since"
+            "$ref": "RemovalOptions",
+            "name": "options"
           },
           {
             "name": "callback",
@@ -231,8 +238,8 @@
         "type": "function",
         "parameters": [
           {
-            "$ref": "RemovalRange",
-            "name": "since"
+            "$ref": "RemovalOptions",
+            "name": "options"
           },
           {
             "name": "callback",
@@ -249,8 +256,8 @@
         "type": "function",
         "parameters": [
           {
-            "$ref": "RemovalRange",
-            "name": "since"
+            "$ref": "RemovalOptions",
+            "name": "options"
           },
           {
             "name": "callback",
@@ -267,8 +274,8 @@
         "type": "function",
         "parameters": [
           {
-            "$ref": "RemovalRange",
-            "name": "since"
+            "$ref": "RemovalOptions",
+            "name": "options"
           },
           {
             "name": "callback",
@@ -285,8 +292,8 @@
         "type": "function",
         "parameters": [
           {
-            "$ref": "RemovalRange",
-            "name": "since"
+            "$ref": "RemovalOptions",
+            "name": "options"
           },
           {
             "name": "callback",
@@ -303,8 +310,8 @@
         "type": "function",
         "parameters": [
           {
-            "$ref": "RemovalRange",
-            "name": "since"
+            "$ref": "RemovalOptions",
+            "name": "options"
           },
           {
             "name": "callback",

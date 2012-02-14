@@ -24,7 +24,7 @@ using content::BrowserThread;
 
 namespace extension_browsing_data_api_constants {
 
-// Keys.
+// Type Keys.
 const char kAppCacheKey[] = "appcache";
 const char kCacheKey[] = "cache";
 const char kCookiesKey[] = "cookies";
@@ -38,6 +38,9 @@ const char kOriginBoundCertsKey[] = "originBoundCerts";
 const char kPasswordsKey[] = "passwords";
 const char kPluginDataKey[] = "pluginData";
 const char kWebSQLKey[] = "webSQL";
+
+// Option Keys.
+const char kSinceKey[] = "since";
 
 // Errors!
 const char kOneAtATimeError[] = "Only one 'browsingData' API call can run at"
@@ -113,8 +116,17 @@ bool BrowsingDataExtensionFunction::RunImpl() {
     return false;
   }
 
+  // Grab the initial |options| parameter, and parse out the arguments.
+  DictionaryValue* options;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &options));
+  DCHECK(options);
+
+  // If |ms_since_epoch| isn't set, default it to 0.
   double ms_since_epoch;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDouble(0, &ms_since_epoch));
+  if (!options->GetDouble(extension_browsing_data_api_constants::kSinceKey,
+                          &ms_since_epoch))
+    ms_since_epoch = 0;
+
   // base::Time takes a double that represents seconds since epoch. JavaScript
   // gives developers milliseconds, so do a quick conversion before populating
   // the object. Also, Time::FromDoubleT converts double time 0 to empty Time

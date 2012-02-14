@@ -241,7 +241,7 @@
             <a href="#types">Types</a>
             <ol>
               <li>
-                <a href="#type-RemovalRange">RemovalRange</a>
+                <a href="#type-RemovalOptions">RemovalOptions</a>
                 <ol>
                 </ol>
               </li>
@@ -279,12 +279,12 @@
 }</pre>
 <h2 id="usage">Usage</h2>
 <p>
-  This API provides a time-based mechanism for clearing a user's browsing data.
-  Your code should provide a timestamp which indicates the historical date after
-  which the user's browsing data should be removed. This timestamp is formatted
-  as the number of milliseconds since the Unix epoch (which can be retrieved
-  from a JavaScript <code>Date</code> object via the <code>getTime</code>
-  method).
+  The simplest use-case for this API is a a time-based mechanism for clearing a
+  user's browsing data. Your code should provide a timestamp which indicates the
+  historical date after which the user's browsing data should be removed. This
+  timestamp is formatted as the number of milliseconds since the Unix epoch
+  (which can be retrieved from a JavaScript <code>Date</code> object via the
+  <code>getTime</code> method).
 </p>
 <p>
   For example, to clear all of a user's browsing data from the last week, you
@@ -295,7 +295,9 @@
 };
 var millisecondsPerWeek = 1000 * 60 * 60 * 24 * 7;
 var oneWeekAgo = (new Date()).getTime() - millisecondsPerWeek;
-chrome.experimental.browsingData.remove(oneWeekAgo, {
+chrome.experimental.browsingData.remove({
+  "since": oneWeekAgo
+}, {
   "appcache": true,
   "cache": true,
   "cookies": true,
@@ -321,7 +323,9 @@ chrome.experimental.browsingData.remove(oneWeekAgo, {
 };
 var millisecondsPerWeek = 1000 * 60 * 60 * 24 * 7;
 var oneWeekAgo = (new Date()).getTime() - millisecondsPerWeek;
-chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
+chrome.experimental.browsingData.removeCookies({
+  "since": oneWeekAgo
+}, callback);</pre>
 <p class="caution">
   <strong>Important</strong>: Removing browsing data involves a good deal of
   heavy lifting in the background, and can take <em>tens of seconds</em> to
@@ -351,8 +355,8 @@ chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
               <h4>remove</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.browsingData.remove</span>(<span class="null"><span>RemovalRange</span>
-                      <var><span>since</span></var></span><span class="null"><span>, </span><span>object</span>
+                  <span>chrome.experimental.browsingData.remove</span>(<span class="null"><span>RemovalOptions</span>
+                      <var><span>options</span></var></span><span class="null"><span>, </span><span>object</span>
                       <var><span>dataToRemove</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
@@ -363,14 +367,14 @@ chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
                   <div>
                     <div>
           <dt>
-            <var>since</var>
+            <var>options</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.browsingData.html#type-RemovalRange">RemovalRange</a>
+                        <a href="experimental.browsingData.html#type-RemovalOptions">RemovalOptions</a>
                       </span>
                     </span>
                   )
@@ -775,8 +779,8 @@ chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
               <h4>removeAppcache</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.browsingData.removeAppcache</span>(<span class="null"><span>RemovalRange</span>
-                      <var><span>since</span></var></span><span class="optional"><span>, </span><span>function</span>
+                  <span>chrome.experimental.browsingData.removeAppcache</span>(<span class="null"><span>RemovalOptions</span>
+                      <var><span>options</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
                 <p>Clears websites' appcache data.</p>
@@ -786,14 +790,14 @@ chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
                   <div>
                     <div>
           <dt>
-            <var>since</var>
+            <var>options</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.browsingData.html#type-RemovalRange">RemovalRange</a>
+                        <a href="experimental.browsingData.html#type-RemovalOptions">RemovalOptions</a>
                       </span>
                     </span>
                   )
@@ -858,8 +862,8 @@ chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
               <h4>removeCache</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.browsingData.removeCache</span>(<span class="null"><span>RemovalRange</span>
-                      <var><span>since</span></var></span><span class="optional"><span>, </span><span>function</span>
+                  <span>chrome.experimental.browsingData.removeCache</span>(<span class="null"><span>RemovalOptions</span>
+                      <var><span>options</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
                 <p>Clears the browser's cache.</p>
@@ -869,14 +873,14 @@ chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
                   <div>
                     <div>
           <dt>
-            <var>since</var>
+            <var>options</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.browsingData.html#type-RemovalRange">RemovalRange</a>
+                        <a href="experimental.browsingData.html#type-RemovalOptions">RemovalOptions</a>
                       </span>
                     </span>
                   )
@@ -941,8 +945,8 @@ chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
               <h4>removeCookies</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.browsingData.removeCookies</span>(<span class="null"><span>RemovalRange</span>
-                      <var><span>since</span></var></span><span class="optional"><span>, </span><span>function</span>
+                  <span>chrome.experimental.browsingData.removeCookies</span>(<span class="null"><span>RemovalOptions</span>
+                      <var><span>options</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
                 <p>Clears the browser's cookies modified within a particular timeframe.</p>
@@ -952,14 +956,14 @@ chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
                   <div>
                     <div>
           <dt>
-            <var>since</var>
+            <var>options</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.browsingData.html#type-RemovalRange">RemovalRange</a>
+                        <a href="experimental.browsingData.html#type-RemovalOptions">RemovalOptions</a>
                       </span>
                     </span>
                   )
@@ -1024,8 +1028,8 @@ chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
               <h4>removeDownloads</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.browsingData.removeDownloads</span>(<span class="null"><span>RemovalRange</span>
-                      <var><span>since</span></var></span><span class="optional"><span>, </span><span>function</span>
+                  <span>chrome.experimental.browsingData.removeDownloads</span>(<span class="null"><span>RemovalOptions</span>
+                      <var><span>options</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
                 <p>Clears the browser's list of downloaded files (<em>not</em> the downloaded files themselves).</p>
@@ -1035,14 +1039,14 @@ chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
                   <div>
                     <div>
           <dt>
-            <var>since</var>
+            <var>options</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.browsingData.html#type-RemovalRange">RemovalRange</a>
+                        <a href="experimental.browsingData.html#type-RemovalOptions">RemovalOptions</a>
                       </span>
                     </span>
                   )
@@ -1107,8 +1111,8 @@ chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
               <h4>removeFileSystems</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.browsingData.removeFileSystems</span>(<span class="null"><span>RemovalRange</span>
-                      <var><span>since</span></var></span><span class="optional"><span>, </span><span>function</span>
+                  <span>chrome.experimental.browsingData.removeFileSystems</span>(<span class="null"><span>RemovalOptions</span>
+                      <var><span>options</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
                 <p>Clears websites' file system data.</p>
@@ -1118,14 +1122,14 @@ chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
                   <div>
                     <div>
           <dt>
-            <var>since</var>
+            <var>options</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.browsingData.html#type-RemovalRange">RemovalRange</a>
+                        <a href="experimental.browsingData.html#type-RemovalOptions">RemovalOptions</a>
                       </span>
                     </span>
                   )
@@ -1190,8 +1194,8 @@ chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
               <h4>removeFormData</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.browsingData.removeFormData</span>(<span class="null"><span>RemovalRange</span>
-                      <var><span>since</span></var></span><span class="optional"><span>, </span><span>function</span>
+                  <span>chrome.experimental.browsingData.removeFormData</span>(<span class="null"><span>RemovalOptions</span>
+                      <var><span>options</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
                 <p>Clears the browser's stored form data (autofill).</p>
@@ -1201,14 +1205,14 @@ chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
                   <div>
                     <div>
           <dt>
-            <var>since</var>
+            <var>options</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.browsingData.html#type-RemovalRange">RemovalRange</a>
+                        <a href="experimental.browsingData.html#type-RemovalOptions">RemovalOptions</a>
                       </span>
                     </span>
                   )
@@ -1273,8 +1277,8 @@ chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
               <h4>removeHistory</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.browsingData.removeHistory</span>(<span class="null"><span>RemovalRange</span>
-                      <var><span>since</span></var></span><span class="optional"><span>, </span><span>function</span>
+                  <span>chrome.experimental.browsingData.removeHistory</span>(<span class="null"><span>RemovalOptions</span>
+                      <var><span>options</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
                 <p>Clears the browser's history.</p>
@@ -1284,14 +1288,14 @@ chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
                   <div>
                     <div>
           <dt>
-            <var>since</var>
+            <var>options</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.browsingData.html#type-RemovalRange">RemovalRange</a>
+                        <a href="experimental.browsingData.html#type-RemovalOptions">RemovalOptions</a>
                       </span>
                     </span>
                   )
@@ -1356,8 +1360,8 @@ chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
               <h4>removeIndexedDB</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.browsingData.removeIndexedDB</span>(<span class="null"><span>RemovalRange</span>
-                      <var><span>since</span></var></span><span class="optional"><span>, </span><span>function</span>
+                  <span>chrome.experimental.browsingData.removeIndexedDB</span>(<span class="null"><span>RemovalOptions</span>
+                      <var><span>options</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
                 <p>Clears websites' IndexedDB data.</p>
@@ -1367,14 +1371,14 @@ chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
                   <div>
                     <div>
           <dt>
-            <var>since</var>
+            <var>options</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.browsingData.html#type-RemovalRange">RemovalRange</a>
+                        <a href="experimental.browsingData.html#type-RemovalOptions">RemovalOptions</a>
                       </span>
                     </span>
                   )
@@ -1439,8 +1443,8 @@ chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
               <h4>removeLocalStorage</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.browsingData.removeLocalStorage</span>(<span class="null"><span>RemovalRange</span>
-                      <var><span>since</span></var></span><span class="optional"><span>, </span><span>function</span>
+                  <span>chrome.experimental.browsingData.removeLocalStorage</span>(<span class="null"><span>RemovalOptions</span>
+                      <var><span>options</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
                 <p>Clears websites' local storage data.</p>
@@ -1450,14 +1454,14 @@ chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
                   <div>
                     <div>
           <dt>
-            <var>since</var>
+            <var>options</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.browsingData.html#type-RemovalRange">RemovalRange</a>
+                        <a href="experimental.browsingData.html#type-RemovalOptions">RemovalOptions</a>
                       </span>
                     </span>
                   )
@@ -1522,8 +1526,8 @@ chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
               <h4>removePasswords</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.browsingData.removePasswords</span>(<span class="null"><span>RemovalRange</span>
-                      <var><span>since</span></var></span><span class="optional"><span>, </span><span>function</span>
+                  <span>chrome.experimental.browsingData.removePasswords</span>(<span class="null"><span>RemovalOptions</span>
+                      <var><span>options</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
                 <p>Clears the browser's stored passwords.</p>
@@ -1533,14 +1537,14 @@ chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
                   <div>
                     <div>
           <dt>
-            <var>since</var>
+            <var>options</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.browsingData.html#type-RemovalRange">RemovalRange</a>
+                        <a href="experimental.browsingData.html#type-RemovalOptions">RemovalOptions</a>
                       </span>
                     </span>
                   )
@@ -1605,8 +1609,8 @@ chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
               <h4>removePluginData</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.browsingData.removePluginData</span>(<span class="null"><span>RemovalRange</span>
-                      <var><span>since</span></var></span><span class="optional"><span>, </span><span>function</span>
+                  <span>chrome.experimental.browsingData.removePluginData</span>(<span class="null"><span>RemovalOptions</span>
+                      <var><span>options</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
                 <p>Clears plugins' data.</p>
@@ -1616,14 +1620,14 @@ chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
                   <div>
                     <div>
           <dt>
-            <var>since</var>
+            <var>options</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.browsingData.html#type-RemovalRange">RemovalRange</a>
+                        <a href="experimental.browsingData.html#type-RemovalOptions">RemovalOptions</a>
                       </span>
                     </span>
                   )
@@ -1688,8 +1692,8 @@ chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
               <h4>removeWebSQL</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.browsingData.removeWebSQL</span>(<span class="null"><span>RemovalRange</span>
-                      <var><span>since</span></var></span><span class="optional"><span>, </span><span>function</span>
+                  <span>chrome.experimental.browsingData.removeWebSQL</span>(<span class="null"><span>RemovalOptions</span>
+                      <var><span>options</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
                 <p>Clears websites' WebSQL data.</p>
@@ -1699,14 +1703,14 @@ chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
                   <div>
                     <div>
           <dt>
-            <var>since</var>
+            <var>options</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.browsingData.html#type-RemovalRange">RemovalRange</a>
+                        <a href="experimental.browsingData.html#type-RemovalOptions">RemovalOptions</a>
                       </span>
                     </span>
                   )
@@ -1776,14 +1780,36 @@ chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
             <h3 id="types">Types</h3>
             <!-- iterates over all types -->
             <div class="apiItem">
-              <a name="type-RemovalRange"></a>
-              <h4>RemovalRange</h4>
+              <a name="type-RemovalOptions"></a>
+              <h4>RemovalOptions</h4>
               <div>
           <dt>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Options that determine exactly what data will be removed.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>since</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
                         <span>number</span>
@@ -1793,8 +1819,15 @@ chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
                 </div>
               </em>
           </dt>
-          <dd>Remove data accumulated on or after this date, represented in milliseconds since the epoch ('Date().GetTime()')</dd>
+          <dd>Remove data accumulated on or after this date, represented in milliseconds since the epoch ('Date().GetTime()'). If absent, defaults to 0 (which would remove everything).</dd>
           <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->

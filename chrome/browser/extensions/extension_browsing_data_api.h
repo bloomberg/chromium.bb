@@ -19,7 +19,7 @@ class PluginPrefs;
 
 namespace extension_browsing_data_api_constants {
 
-// Keys.
+// Type keys.
 extern const char kAppCacheKey[];
 extern const char kCacheKey[];
 extern const char kCookiesKey[];
@@ -32,6 +32,9 @@ extern const char kPluginDataKey[];
 extern const char kLocalStorageKey[];
 extern const char kPasswordsKey[];
 extern const char kWebSQLKey[];
+
+// Option keys.
+extern const char kSinceKey[];
 
 // Errors!
 extern const char kOneAtATimeError[];

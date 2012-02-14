@@ -29,12 +29,12 @@
 <h2 id="usage">Usage</h2>
 
 <p>
-  This API provides a time-based mechanism for clearing a user's browsing data.
-  Your code should provide a timestamp which indicates the historical date after
-  which the user's browsing data should be removed. This timestamp is formatted
-  as the number of milliseconds since the Unix epoch (which can be retrieved
-  from a JavaScript <code>Date</code> object via the <code>getTime</code>
-  method).
+  The simplest use-case for this API is a a time-based mechanism for clearing a
+  user's browsing data. Your code should provide a timestamp which indicates the
+  historical date after which the user's browsing data should be removed. This
+  timestamp is formatted as the number of milliseconds since the Unix epoch
+  (which can be retrieved from a JavaScript <code>Date</code> object via the
+  <code>getTime</code> method).
 </p>
 
 <p>
@@ -48,7 +48,9 @@
 
 var millisecondsPerWeek = 1000 * 60 * 60 * 24 * 7;
 var oneWeekAgo = (new Date()).getTime() - millisecondsPerWeek;
-chrome.experimental.browsingData.remove(oneWeekAgo, {
+chrome.experimental.browsingData.remove({
+  "since": oneWeekAgo
+}, {
   "appcache": true,
   "cache": true,
   "cookies": true,
@@ -77,7 +79,9 @@ chrome.experimental.browsingData.remove(oneWeekAgo, {
 
 var millisecondsPerWeek = 1000 * 60 * 60 * 24 * 7;
 var oneWeekAgo = (new Date()).getTime() - millisecondsPerWeek;
-chrome.experimental.browsingData.removeCookies(oneWeekAgo, callback);</pre>
+chrome.experimental.browsingData.removeCookies({
+  "since": oneWeekAgo
+}, callback);</pre>
 
 <p class="caution">
   <strong>Important</strong>: Removing browsing data involves a good deal of
