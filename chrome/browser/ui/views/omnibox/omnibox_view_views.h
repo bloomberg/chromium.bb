@@ -13,7 +13,6 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
-#include "content/public/browser/notification_observer.h"
 #include "ui/base/range/range.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/view.h"
@@ -44,7 +43,6 @@ class OSExchangeData;
 class OmniboxViewViews
     : public views::View,
       public OmniboxView,
-      public content::NotificationObserver,
 #if defined(OS_CHROMEOS)
       public
           chromeos::input_method::InputMethodManager::CandidateWindowObserver,
@@ -143,11 +141,6 @@ class OmniboxViewViews
   virtual int GetMaxEditWidth(int entry_width) const OVERRIDE;
   virtual views::View* AddToView(views::View* parent) OVERRIDE;
   virtual int OnPerformDrop(const views::DropTargetEvent& event) OVERRIDE;
-
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
 
   // views::TextfieldController:
   virtual void ContentsChanged(views::Textfield* sender,

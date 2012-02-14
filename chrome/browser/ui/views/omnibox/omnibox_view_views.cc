@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "grit/app_locale_settings.h"
@@ -223,15 +222,6 @@ void OmniboxViewViews::Init() {
   chromeos::input_method::InputMethodManager::GetInstance()->
       AddCandidateWindowObserver(this);
 #endif
-
-  // Manually invoke SetBaseColor() because TOOLKIT_VIEWS doesn't observe
-  // themes.
-  SetBaseColor();
-}
-
-void OmniboxViewViews::SetBaseColor() {
-  // TODO(oshima): Implement style change.
-  NOTIMPLEMENTED();
 }
 
 bool OmniboxViewViews::HandleAfterKeyEvent(const views::KeyEvent& event,
@@ -661,16 +651,6 @@ views::View* OmniboxViewViews::AddToView(views::View* parent) {
 int OmniboxViewViews::OnPerformDrop(const views::DropTargetEvent& event) {
   NOTIMPLEMENTED();
   return ui::DragDropTypes::DRAG_NONE;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// OmniboxViewViews, content::NotificationObserver implementation:
-
-void OmniboxViewViews::Observe(int type,
-                               const content::NotificationSource& source,
-                               const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
-  SetBaseColor();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
