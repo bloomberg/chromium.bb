@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -727,11 +727,7 @@ static DWORD __stdcall InitCrashReporterThread(void* param) {
       google_breakpad::ExceptionHandler::HANDLER_NONE,
       dump_type, pipe_name.c_str(), info->custom_info);
 
-  if (!g_breakpad->IsOutOfProcess()) {
-    // The out-of-process handler is unavailable.
-    scoped_ptr<base::Environment> env(base::Environment::Create());
-    env->SetVar(env_vars::kNoOOBreakpad, WideToUTF8(info->process_type));
-  } else {
+  if (g_breakpad->IsOutOfProcess()) {
     // Tells breakpad to handle breakpoint and single step exceptions.
     // This might break JIT debuggers, but at least it will always
     // generate a crashdump for these exceptions.

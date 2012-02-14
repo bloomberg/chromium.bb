@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,9 +77,6 @@ int GetMinimumFontSize() {
 }  // namespace
 
 void RecordBreakpadStatusUMA(MetricsService* metrics) {
-  DWORD len = ::GetEnvironmentVariableW(
-      ASCIIToWide(env_vars::kNoOOBreakpad).c_str() , NULL, 0);
-  metrics->RecordBreakpadRegistration((len == 0));
   metrics->RecordBreakpadHasDebugger(TRUE == ::IsDebuggerPresent());
 }
 
