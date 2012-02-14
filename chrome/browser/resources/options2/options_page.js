@@ -294,12 +294,15 @@ cr.define('options', function() {
    * @return {OptionPage} The visible overlay.
    */
   OptionsPage.getVisibleOverlay_ = function() {
+    var topmostPage = null;
     for (var name in this.registeredOverlayPages) {
       var page = this.registeredOverlayPages[name];
-      if (page.visible)
-        return page;
+      if (page.visible &&
+          (!topmostPage || page.nestingLevel > topmostPage.nestingLevel)) {
+        topmostPage = page;
+      }
     }
-    return null;
+    return topmostPage;
   };
 
   /**

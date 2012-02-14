@@ -102,11 +102,10 @@ cr.define('options', function() {
               this.enableSpellCheckPref,
               this.updateEnableSpellCheck_.bind(this));
         }
-
-        $('language-confirm').onclick = function() {
-          OptionsPage.closeOverlay();
-        };
       }
+
+      $('language-confirm').onclick =
+          OptionsPage.closeOverlay.bind(OptionsPage);
 
       // Listen to user clicks on the "Change touch keyboard settings..."
       // button (if it exists).

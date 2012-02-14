@@ -77,16 +77,6 @@ function load() {
                               AdvancedOptions.getInstance(),
                               [$('privacyContentSettingsButton')]);
 
-  if (cr.isChromeOS) {
-    // Only use the VirtualKeyboardManager if the keyboard DOM elements (which
-    // it will assume exists) are present (i.e. if we were built with
-    // USE_VIRTUAL_KEYBOARD).
-    if ($('language-options-virtual-keyboard')) {
-      OptionsPage.registerSubPage(VirtualKeyboardManager.getInstance(),
-                                  LanguageOptions.getInstance());
-    }
-  }
-
   // ContentSettings sub-pages.
   OptionsPage.registerSubPage(ContentSettingsExceptionsArea.getInstance(),
                               ContentSettings.getInstance());
@@ -197,6 +187,13 @@ function load() {
                         templateData.languagePinyinPageTabTitle,
                         'languagePinyinPage'),
         LanguageOptions.getInstance());
+    // Only use the VirtualKeyboardManager if the keyboard DOM elements (which
+    // it will assume exists) are present (i.e. if we were built with
+    // use_virtual_keyboard=1).
+    if ($('language-options-virtual-keyboard')) {
+      OptionsPage.registerOverlay(VirtualKeyboardManager.getInstance(),
+                                  LanguageOptions.getInstance());
+    }
   }
   if (!cr.isWindows && !cr.isMac) {
     OptionsPage.registerOverlay(CertificateBackupOverlay.getInstance(),
