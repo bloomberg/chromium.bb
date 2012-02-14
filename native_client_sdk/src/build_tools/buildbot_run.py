@@ -152,6 +152,14 @@ def GetNewlibToolchain(platform, arch):
   return os.path.join(tcdir, tcname)
 
 
+def GetPNaClToolchain(platform, arch):
+  tcdir = os.path.join(NACL_DIR, 'toolchain', '.tars')
+  if arch == 'x86':
+    tcname = 'naclsdk_pnacl_%s_%s_64.tgz' % (platform, arch)
+  else:
+    ErrorExit('Unknown architecture.')
+  return os.path.join(tcdir, tcname)
+
 def GetScons():
   if sys.platform in ['cygwin', 'win32']:
     return 'scons.bat'
@@ -164,15 +172,19 @@ def GetArchName(arch, xarch=None):
   return arch
 
 
-def GetToolchainNaClInclude(tcpath, arch, xarch=None):
+def GetToolchainNaClInclude(tcname, tcpath, arch, xarch=None):
   if arch == 'x86':
+    if tcname == 'pnacl':
+      return os.path.join(tcpath, 'newlib', 'sdk', 'include')
     return os.path.join(tcpath, 'x86_64-nacl', 'include')
   else:
     ErrorExit('Unknown architecture.')
 
 
-def GetToolchainNaClLib(tcpath, arch, xarch):
+def GetToolchainNaClLib(tcname, tcpath, arch, xarch):
   if arch == 'x86':
+    if tcname == 'pnacl':
+      return os.path.join(tcpath, 'newlib', 'sdk', 'lib')
     if str(xarch) == '32':
       return os.path.join(tcpath, 'x86_64-nacl', 'lib32')
     if str(xarch) == '64':
@@ -180,23 +192,27 @@ def GetToolchainNaClLib(tcpath, arch, xarch):
   ErrorExit('Unknown architecture.')
 
 
-def GetBuildArgs(tcname, tcpath, arch, xarch=None):
+def GetBuildArgs(tcname, tcpath, outdir, arch, xarch=None):
   """Return list of scons build arguments to generate user libraries."""
   scons = GetScons()
   mode = '--mode=opt-host,nacl'
   arch_name = GetArchName(arch, xarch)
   plat = 'platform=' + arch_name
-  bin = ('bindir=' +
-         BuildOutputDir('pepper_' + build_utils.ChromeMajorVersion(), 'tools'))
-  lib = 'libdir=' + GetToolchainNaClLib(tcpath, arch, xarch)
+  bin = 'bindir=' + os.path.join(outdir, 'tools')
+  lib = 'libdir=' + GetToolchainNaClLib(tcname, tcpath, arch, xarch)
   args = [scons, mode, plat, bin, lib, '-j10',
           'install_bin', 'install_lib']
   if tcname == 'glibc':
     args.append('--nacl_glibc')
+
+  if arch == 'pnacl':
+    args.append('bitcode=1')
+
+  print "Building %s (%s): %s" % (tcname, arch, ' '.join(args))
   return args
 
 
-header_map = {
+HEADER_MAP = {
   'newlib': {
       'pthread.h': 'src/untrusted/pthread/pthread.h',
       'semaphore.h': 'src/untrusted/pthread/semaphore.h',
@@ -224,7 +240,7 @@ header_map = {
 
 def InstallHeaders(tc_dst_inc, pepper_ver, tc_name):
   """Copies NaCl headers to expected locations in the toolchain."""
-  tc_map = header_map[tc_name]
+  tc_map = HEADER_MAP[tc_name]
   for filename in tc_map:
     src = os.path.join(NACL_DIR, tc_map[filename])
     dst = os.path.join(tc_dst_inc, filename)
@@ -284,70 +300,94 @@ def InstallHeaders(tc_dst_inc, pepper_ver, tc_name):
           os.path.join(tc_dst_inc, 'KHR'))
 
 
-def UntarToolchains(pepperdir, platform, arch):
+def UntarToolchains(pepperdir, platform, arch, toolchains):
   BuildStep('Untar Toolchains')
   tcname = platform + '_' + arch
   tmpdir = os.path.join(SRC_DIR, 'out', 'tc_temp')
   RemoveDir(tmpdir)
   MakeDir(tmpdir)
 
-  # Untar the newlib toolchains
-  tarfile = GetNewlibToolchain(platform, arch)
-  Run([sys.executable, CYGTAR, '-C', tmpdir, '-xf', tarfile], cwd=NACL_DIR)
+  if 'newlib' in toolchains:
+    # Untar the newlib toolchains
+    tarfile = GetNewlibToolchain(platform, arch)
+    Run([sys.executable, CYGTAR, '-C', tmpdir, '-xf', tarfile], cwd=NACL_DIR)
+  
+    # Then rename/move it to the pepper toolchain directory
+    srcdir = os.path.join(tmpdir, 'sdk', 'nacl-sdk')
+    newlibdir = os.path.join(pepperdir, 'toolchain', tcname + '_newlib')
+    MoveDir(srcdir, newlibdir)
 
-  # Then rename/move it to the pepper toolchain directory
-  srcdir = os.path.join(tmpdir, 'sdk', 'nacl-sdk')
-  newlibdir = os.path.join(pepperdir, 'toolchain', tcname + '_newlib')
-  print "Buildbot mv %s to %s" % (srcdir, newlibdir)
-  MoveDir(srcdir, newlibdir)
-  print "Done with buildbot move"
-  # Untar the glibc toolchains
-  tarfile = GetGlibcToolchain(platform, arch)
-  Run([sys.executable, CYGTAR, '-C', tmpdir, '-xf', tarfile], cwd=NACL_DIR)
+  if 'glibc' in toolchains:
+    # Untar the glibc toolchains
+    tarfile = GetGlibcToolchain(platform, arch)
+    Run([sys.executable, CYGTAR, '-C', tmpdir, '-xf', tarfile], cwd=NACL_DIR)
+  
+    # Then rename/move it to the pepper toolchain directory
+    srcdir = os.path.join(tmpdir, 'toolchain', tcname)
+    glibcdir = os.path.join(pepperdir, 'toolchain', tcname + '_glibc')
+    MoveDir(srcdir, glibcdir)
 
-  # Then rename/move it to the pepper toolchain directory
-  srcdir = os.path.join(tmpdir, 'toolchain', tcname)
-  glibcdir = os.path.join(pepperdir, 'toolchain', tcname + '_glibc')
-  MoveDir(srcdir, glibcdir)
+  # Untar the pnacl toolchains
+  if 'pnacl' in toolchains:
+    tmpdir = os.path.join(tmpdir, 'pnacl')
+    RemoveDir(tmpdir)
+    MakeDir(tmpdir)
+    tarfile = GetPNaClToolchain(platform, arch)
+    Run([sys.executable, CYGTAR, '-C', tmpdir, '-xf', tarfile], cwd=NACL_DIR)
+
+    # Then rename/move it to the pepper toolchain directory
+    pnacldir = os.path.join(pepperdir, 'toolchain', tcname + '_pnacl')
+    MoveDir(tmpdir, pnacldir)
 
 
-def BuildToolchains(pepperdir, platform, arch, pepper_ver):
+def BuildToolchains(pepperdir, platform, arch, pepper_ver, toolchains):
   BuildStep('SDK Items')
 
   tcname = platform + '_' + arch
   newlibdir = os.path.join(pepperdir, 'toolchain', tcname + '_newlib')
   glibcdir = os.path.join(pepperdir, 'toolchain', tcname + '_glibc')
+  pnacldir = os.path.join(pepperdir, 'toolchain', tcname + '_pnacl')
 
   # Run scons TC build steps
   if arch == 'x86':
-    Run(GetBuildArgs('newlib', newlibdir, 'x86', '32'), cwd=NACL_DIR)
-    Run(GetBuildArgs('newlib', newlibdir, 'x86', '64'), cwd=NACL_DIR)
+    if 'newlib' in toolchains:
+      Run(GetBuildArgs('newlib', newlibdir, pepperdir, 'x86', '32'),
+          cwd=NACL_DIR, shell=(platform=='win'))
+      Run(GetBuildArgs('newlib', newlibdir, pepperdir, 'x86', '64'),
+          cwd=NACL_DIR, shell=(platform=='win'))
+      InstallHeaders(GetToolchainNaClInclude('newlib', newlibdir, 'x86'),
+                     pepper_ver, 
+                     'newlib')
 
-    Run(GetBuildArgs('glibc', glibcdir, 'x86', '32'), cwd=NACL_DIR)
-    Run(GetBuildArgs('glibc', glibcdir, 'x86', '64'), cwd=NACL_DIR)
+    if 'glibc' in toolchains:
+      Run(GetBuildArgs('glibc', glibcdir, pepperdir, 'x86', '32'),
+          cwd=NACL_DIR, shell=(platform=='win'))
+      Run(GetBuildArgs('glibc', glibcdir, pepperdir, 'x86', '64'),
+          cwd=NACL_DIR, shell=(platform=='win'))
+      InstallHeaders(GetToolchainNaClInclude('glibc', glibcdir, 'x86'),
+                     pepper_ver,
+                     'glibc')
+
+    if 'pnacl' in toolchains:
+      Run(GetBuildArgs('pnacl', pnacldir, pepperdir, 'x86', '32'),
+          cwd=NACL_DIR, shell=(platform=='win'))
+      Run(GetBuildArgs('pnacl', pnacldir, pepperdir, 'x86', '64'),
+          cwd=NACL_DIR, shell=(platform=='win'))
+      InstallHeaders(GetToolchainNaClInclude('pnacl', pnacldir, 'x86'),
+                     pepper_ver, 
+                     'newlib')
   else:
     ErrorExit('Missing arch %s' % arch)
 
-  # Copy headers
-  if arch == 'x86':
-    InstallHeaders(GetToolchainNaClInclude(newlibdir, 'x86'),
-                   pepper_ver, 
-                   'newlib')
-    InstallHeaders(GetToolchainNaClInclude(glibcdir, 'x86'),
-                   pepper_ver,
-                   'glibc')
-  else:
-    ErrorExit('Missing arch %s' % arch)
 
-
-def CopyExamples(pepperdir, extras = []):
+def CopyExamples(pepperdir, toolchains):
   BuildStep('Copy examples')
   examples = [
       'dlopen', 'fullscreen_tumbler', 'gamepad', 'geturl',
       'hello_world_glibc', 'hello_world_interactive', 'hello_world_newlib',
       'input_events', 'load_progress', 'mouselock',
       'multithreaded_input_events', 'pi_generator', 'pong', 'sine_synth',
-      'tumbler'] + extras
+      'tumbler']
   files = ['favicon.ico', 'httpd.cmd', 'httpd.py', 'index.html', 'Makefile']
   if not os.path.exists(os.path.join(pepperdir, 'tools')):
     ErrorExit('Examples depend on missing tools.')
@@ -381,7 +421,8 @@ def BuildUpdater():
 
 def main(args):
   parser = optparse.OptionParser()
-
+  parser.add_option('--pnacl', help='Enable pnacl build.',
+      action='store_true', dest='pnacl', default=False)
   parser.add_option('--examples', help='Rebuild the examples.',
       action='store_true', dest='examples', default=False)
   parser.add_option('--update', help='Rebuild the updater.',
@@ -392,11 +433,14 @@ def main(args):
       action='store_true', dest='archive', default=False)
   parser.add_option('--release', help='PPAPI release version.',
       dest='release', default=None)
-
+  
   options, args = parser.parse_args(args[1:])
-
   platform = getos.GetPlatform()
   arch = 'x86'
+
+  toolchains = ['newlib', 'glibc']
+  if options.pnacl:
+    toolchains.append('pnacl')
 
   skip = options.examples or options.update
 
@@ -435,10 +479,10 @@ def main(args):
 
   # Clean out the temporary toolchain untar directory
   if not skip_untar:
-    UntarToolchains(pepperdir, platform, arch)
+    UntarToolchains(pepperdir, platform, arch, toolchains)
 
   if not skip_build:
-    BuildToolchains(pepperdir, platform, arch, pepper_ver)
+    BuildToolchains(pepperdir, platform, arch, pepper_ver, toolchains)
 
   BuildStep('Copy make OS helpers')
   CopyDir(os.path.join(SDK_SRC_DIR, 'tools', '*.py'),
@@ -449,7 +493,7 @@ def main(args):
                              os.path.join(pepperdir, 'tools' ,'make.exe'))
 
   if not skip_examples:
-    CopyExamples(pepperdir)
+    CopyExamples(pepperdir, toolchains)
 
   if not skip_tar:
     BuildStep('Tar Pepper Bundle')
