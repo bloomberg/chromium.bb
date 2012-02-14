@@ -291,7 +291,8 @@ class ContentMainRunnerImpl : public content::ContentMainRunner {
  public:
   ContentMainRunnerImpl()
       : is_initialized_(false),
-        is_shutdown_(false) {
+        is_shutdown_(false),
+        completed_basic_startup_(false) {
   }
 
   ~ContentMainRunnerImpl() {
@@ -370,6 +371,8 @@ class ContentMainRunnerImpl : public content::ContentMainRunner {
     int exit_code;
     if (delegate && delegate->BasicStartupComplete(&exit_code))
       return exit_code;
+
+    completed_basic_startup_ = true;
 
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
     std::string process_type =
@@ -500,12 +503,14 @@ class ContentMainRunnerImpl : public content::ContentMainRunner {
   virtual void Shutdown() OVERRIDE {
     DCHECK(is_initialized_);
     DCHECK(!is_shutdown_);
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-    std::string process_type =
+
+    if (completed_basic_startup_ && delegate_) {
+      const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+      std::string process_type =
           command_line.GetSwitchValueASCII(switches::kProcessType);
 
-    if (delegate_)
       delegate_->ProcessExiting(process_type);
+    }
 
 #if defined(OS_WIN)
 #ifdef _CRTDBG_MAP_ALLOC
@@ -531,6 +536,9 @@ class ContentMainRunnerImpl : public content::ContentMainRunner {
 
   // True if the runner has been shut down.
   bool is_shutdown_;
+
+  // True if basic startup was completed.
+  bool completed_basic_startup_;
 
   // The delegate will outlive this object.
   content::ContentMainDelegate* delegate_;
