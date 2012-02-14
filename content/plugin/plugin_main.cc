@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -141,7 +141,9 @@ int PluginMain(const content::MainFunctionParams& parameters) {
 
         // Warm up the device enumerator for webcam and microphone.
         base::win::ScopedComPtr<ICreateDevEnum> device_enumerator;
-        device_enumerator.CreateInstance(CLSID_SystemDeviceEnum);
+        device_enumerator.CreateInstance(CLSID_SystemDeviceEnum, NULL,
+                                         CLSCTX_INPROC_SERVER |
+                                         CLSCTX_INPROC_HANDLER);
 
         DelayedLowerToken(target_services);
       } else {
