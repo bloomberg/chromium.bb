@@ -1167,11 +1167,14 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     # Ensure that check for default search engine change has been performed.
     self._GetResultFromJSONRequest({'command': 'LoadSearchEngineInfo'})
 
-  def GetProtectorState(self):
+  def GetProtectorState(self, window_index=0):
     """Returns current Protector state.
 
     This will trigger Protector's check for changed settings if it hasn't been
     performed yet.
+
+    Args:
+      window_index: The window index, default is 0.
 
     Returns:
       A dictionary.
@@ -1181,7 +1184,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """
     self._EnsureProtectorCheck()
     cmd_dict = {'command': 'GetProtectorState'}
-    return self._GetResultFromJSONRequest(cmd_dict)
+    return self._GetResultFromJSONRequest(cmd_dict, windex=window_index)
 
   def ApplyProtectorChange(self):
     """Applies the change shown by Protector and closes the bubble.
