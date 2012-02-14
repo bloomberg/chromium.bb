@@ -279,14 +279,14 @@ class TouchSelectionControllerImpl::TouchContextMenuView
 
     canvas->DrawRect(GetLocalBounds(), paint);
 #else
-    // This is the same as COLOR_TOOLBAR.
     canvas->GetSkCanvas()->drawColor(SkColorSetRGB(210, 225, 246),
                                      SkXfermode::kSrc_Mode);
 #endif
   }
 
-  // ButtonListener
-  virtual void ButtonPressed(Button* sender, const views::Event& event) {
+  // Overridden from ButtonListener:
+  virtual void ButtonPressed(Button* sender,
+                             const views::Event& event) OVERRIDE {
     controller_->ExecuteCommand(sender->tag());
   }
 

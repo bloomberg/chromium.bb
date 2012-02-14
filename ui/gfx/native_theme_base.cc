@@ -671,9 +671,7 @@ void NativeThemeBase::PaintMenuPopupBackground(
     State state,
     const gfx::Rect& rect,
     const MenuListExtraParams& menu_list) const {
-  // This is the same as COLOR_TOOLBAR.
-  canvas->drawColor(SkColorSetRGB(210, 225, 246),
-                    SkXfermode::kSrc_Mode);
+  canvas->drawColor(SkColorSetRGB(210, 225, 246), SkXfermode::kSrc_Mode);
 }
 
 void NativeThemeBase::PaintMenuItemBackground(
