@@ -126,12 +126,5 @@ bitcode_env.AddNodeToTestSuite(node,
                                ['chrome_browser_tests'],
                                'run_pnacl_bad_browser_test',
                                is_broken=(is_broken or
-                                   bitcode_env.PPAPIBrowserTesterIsBroken() or
-                                   # pnacl_bad_browser_test started failing on
-                                   # X86-64 after Chrome deps roll.
-                                   # TODO(sehr): Re-enable this test.
-                                   env.Bit('target_x86_64') or
-                                   # TODO(jvoung) reenable
-                                   # http://code.google.com/p/nativeclient/issues/detail?id=2583
-                                   True))
+                                   bitcode_env.PPAPIBrowserTesterIsBroken()))
 
