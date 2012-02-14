@@ -445,7 +445,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsExperimentalExtensionTest,
 
 // Tests that a content script is in the scripts list.
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
-                       TestContentScriptIsPresent) {
+                       FLAKY_TestContentScriptIsPresent) {
   LoadExtension("simple_content_script");
   RunTest("testContentScriptIsPresent", kPageWithContentScript);
 }
