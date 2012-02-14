@@ -292,6 +292,26 @@ GURL UrlForExtension(const Extension* extension, const GURL& override_url) {
   return url;
 }
 
+// Parse two comma-separated integers from str. Return true on success.
+bool ParseCommaSeparatedIntegers(const std::string& str,
+                                 int* ret_num1,
+                                 int* ret_num2) {
+  size_t num1_size = str.find_first_of(',');
+  if (num1_size == std::string::npos)
+    return false;
+
+  size_t num2_pos = num1_size + 1;
+  size_t num2_size = str.size() - num2_pos;
+  int num1, num2;
+  if (!base::StringToInt(str.substr(0, num1_size), &num1) ||
+      !base::StringToInt(str.substr(num2_pos, num2_size), &num2))
+    return false;
+
+  *ret_num1 = num1;
+  *ret_num2 = num2;
+  return true;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -951,6 +971,10 @@ void Browser::SaveWindowPlacement(const gfx::Rect& bounds,
 }
 
 gfx::Rect Browser::GetSavedWindowBounds() const {
+  gfx::Rect restored_bounds = override_bounds_;
+  WindowSizer::GetBrowserWindowBounds(app_name_, restored_bounds, this,
+                                      &restored_bounds);
+
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   bool record_mode = parsed_command_line.HasSwitch(switches::kRecordMode);
   bool playback_mode = parsed_command_line.HasSwitch(switches::kPlaybackMode);
@@ -960,12 +984,25 @@ gfx::Rect Browser::GetSavedWindowBounds() const {
     // resize/moves in the playback to still work, and Second we want
     // playbacks to work (as much as possible) on machines w/ different
     // screen sizes.
-    return gfx::Rect(0, 0, 800, 600);
+    restored_bounds = gfx::Rect(0, 0, 800, 600);
   }
 
-  gfx::Rect restored_bounds = override_bounds_;
-  WindowSizer::GetBrowserWindowBounds(app_name_, restored_bounds, this,
-                                      &restored_bounds);
+  // The following options override playback/record.
+  if (parsed_command_line.HasSwitch(switches::kWindowSize)) {
+    std::string str =
+        parsed_command_line.GetSwitchValueASCII(switches::kWindowSize);
+    int width, height;
+    if (ParseCommaSeparatedIntegers(str, &width, &height))
+      restored_bounds.set_size(gfx::Size(width, height));
+  }
+  if (parsed_command_line.HasSwitch(switches::kWindowPosition)) {
+    std::string str =
+        parsed_command_line.GetSwitchValueASCII(switches::kWindowPosition);
+    int x, y;
+    if (ParseCommaSeparatedIntegers(str, &x, &y))
+      restored_bounds.set_origin(gfx::Point(x, y));
+  }
+
   return restored_bounds;
 }
 

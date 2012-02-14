@@ -302,6 +302,8 @@ extern const char kMaxSpdyConcurrentStreams[];
 extern const char kUserDataDir[];
 extern const char kVersion[];
 extern const char kWhitelistedExtensionID[];
+extern const char kWindowPosition[];
+extern const char kWindowSize[];
 extern const char kWinHttpProxyResolver[];
 extern const char kMemoryWidget[];
 

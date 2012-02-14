@@ -1109,6 +1109,12 @@ const char kVersion[]                       = "version";
 // Adds the given extension ID to all the permission whitelists.
 const char kWhitelistedExtensionID[]        = "whitelisted-extension-id";
 
+// Specify the initial window position: --window-position=x,y
+const char kWindowPosition[]                = "window-position";
+
+// Specify the initial window size: --window-size=w,h
+const char kWindowSize[]                    = "window-size";
+
 // Uses WinHTTP to fetch and evaluate PAC scripts. Otherwise the default is to
 // use Chromium's network stack to fetch, and V8 to evaluate.
 const char kWinHttpProxyResolver[]          = "winhttp-proxy-resolver";
