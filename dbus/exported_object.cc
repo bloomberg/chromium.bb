@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "base/time.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
+#include "dbus/object_path.h"
 #include "dbus/scoped_dbus_error.h"
 
 namespace dbus {
@@ -35,7 +36,7 @@ std::string GetAbsoluteMethodName(
 
 ExportedObject::ExportedObject(Bus* bus,
                                const std::string& service_name,
-                               const std::string& object_path)
+                               const ObjectPath& object_path)
     : bus_(bus),
       service_name_(service_name),
       object_path_(object_path),
@@ -175,8 +176,8 @@ bool ExportedObject::Register() {
                                                    this,
                                                    error.get());
   if (!success) {
-    LOG(ERROR) << "Failed to register the object: " << object_path_ << ": "
-               << (error.is_set() ? error.message() : "");
+    LOG(ERROR) << "Failed to register the object: " << object_path_.value()
+               << ": " << (error.is_set() ? error.message() : "");
     return false;
   }
 

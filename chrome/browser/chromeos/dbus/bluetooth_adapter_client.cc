@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
+#include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -142,11 +143,11 @@ bool PopArrayOfDictEntries(dbus::MessageReader* reader,
         break;
       }
       case dbus::Message::OBJECT_PATH: {
-        std::string value;
+        dbus::ObjectPath value;
         if (!variant_reader.PopObjectPath(&value)) {
           return false;
         }
-        dictionary->SetString(key, value);
+        dictionary->SetString(key, value.value());
         break;
       }
       case dbus::Message::ARRAY: {
@@ -208,8 +209,8 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
   }
 
   // BluetoothAdapterClient override.
-  virtual void StartDiscovery(const std::string& object_path) {
-    VLOG(1) << "StartDiscovery: " << object_path;
+  virtual void StartDiscovery(const dbus::ObjectPath& object_path) {
+    VLOG(1) << "StartDiscovery: " << object_path.value();
 
     dbus::MethodCall method_call(
         bluetooth_adapter::kBluetoothAdapterInterface,
@@ -225,8 +226,8 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
   }
 
   // BluetoothAdapterClient override.
-  virtual void StopDiscovery(const std::string& object_path) {
-    VLOG(1) << "StopDiscovery: " << object_path;
+  virtual void StopDiscovery(const dbus::ObjectPath& object_path) {
+    VLOG(1) << "StopDiscovery: " << object_path.value();
 
     dbus::MethodCall method_call(
         bluetooth_adapter::kBluetoothAdapterInterface,
@@ -243,21 +244,22 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
 
  private:
   // BluetoothManagerClient::Observer override.
-  virtual void AdapterAdded(const std::string& object_path) OVERRIDE {
-    VLOG(1) << "AdapterAdded: " << object_path;
+  virtual void AdapterAdded(const dbus::ObjectPath& object_path) OVERRIDE {
+    VLOG(1) << "AdapterAdded: " << object_path.value();
   }
 
   // BluetoothManagerClient::Observer override.
-  virtual void AdapterRemoved(const std::string& object_path) OVERRIDE {
-    VLOG(1) << "AdapterRemoved: " << object_path;
+  virtual void AdapterRemoved(const dbus::ObjectPath& object_path) OVERRIDE {
+    VLOG(1) << "AdapterRemoved: " << object_path.value();
     RemoveObjectProxyForPath(object_path);
   }
 
   // Ensures that we have a dbus object proxy for an adapter with dbus
   // object path |object_path|, and if not, creates it and stores it in
   // our |proxy_map_| map.
-  dbus::ObjectProxy* GetObjectProxyForPath(const std::string& object_path) {
-    VLOG(1) << "GetObjectProxyForPath: " << object_path;
+  dbus::ObjectProxy* GetObjectProxyForPath(
+      const dbus::ObjectPath& object_path) {
+    VLOG(1) << "GetObjectProxyForPath: " << object_path.value();
 
     ProxyMap::iterator it = proxy_map_.find(object_path);
     if (it != proxy_map_.end())
@@ -314,126 +316,129 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
 
   // Removes the dbus object proxy for the adapter with dbus object path
   // |object_path| from our |proxy_map_| map.
-  void RemoveObjectProxyForPath(const std::string& object_path) {
-    VLOG(1) << "RemoveObjectProxyForPath: " << object_path;
+  void RemoveObjectProxyForPath(const dbus::ObjectPath& object_path) {
+    VLOG(1) << "RemoveObjectProxyForPath: " << object_path.value();
     proxy_map_.erase(object_path);
   }
 
   // Called by dbus:: when a DeviceCreated signal is received.
-  void DeviceCreatedReceived(const std::string& object_path,
+  void DeviceCreatedReceived(const dbus::ObjectPath& object_path,
                              dbus::Signal* signal) {
     DCHECK(signal);
     dbus::MessageReader reader(signal);
-    std::string device_path;
+    dbus::ObjectPath device_path;
     if (!reader.PopObjectPath(&device_path)) {
-      LOG(ERROR) << object_path
-          << ": DeviceCreated signal has incorrect parameters: "
-          << signal->ToString();
+      LOG(ERROR) << object_path.value()
+                 << ": DeviceCreated signal has incorrect parameters: "
+                 << signal->ToString();
       return;
     }
-    VLOG(1) << object_path << ": Device created: " << device_path;
+    VLOG(1) << object_path.value() << ": Device created: "
+            << device_path.value();
 
     FOR_EACH_OBSERVER(BluetoothAdapterClient::Observer, observers_,
                       DeviceCreated(object_path, device_path));
   }
 
   // Called by dbus:: when the DeviceCreated signal is initially connected.
-  void DeviceCreatedConnected(const std::string& object_path,
+  void DeviceCreatedConnected(const dbus::ObjectPath& object_path,
                               const std::string& interface_name,
                               const std::string& signal_name,
                               bool success) {
-    LOG_IF(WARNING, !success) << object_path
-        << ": Failed to connect to DeviceCreated signal.";
+    LOG_IF(WARNING, !success) << object_path.value()
+                              << ": Failed to connect to DeviceCreated signal.";
   }
 
   // Called by dbus:: when a DeviceRemoved signal is received.
-  void DeviceRemovedReceived(const std::string& object_path,
+  void DeviceRemovedReceived(const dbus::ObjectPath& object_path,
                              dbus::Signal* signal) {
     DCHECK(signal);
     dbus::MessageReader reader(signal);
-    std::string device_path;
+    dbus::ObjectPath device_path;
     if (!reader.PopObjectPath(&device_path)) {
-      LOG(ERROR) << object_path
-          << ": DeviceRemoved signal has incorrect parameters: "
-          << signal->ToString();
+      LOG(ERROR) << object_path.value()
+                 << ": DeviceRemoved signal has incorrect parameters: "
+                 << signal->ToString();
       return;
     }
-    VLOG(1) << object_path << ": Device removed: " << device_path;
+    VLOG(1) << object_path.value() << ": Device removed: "
+            << device_path.value();
 
     FOR_EACH_OBSERVER(BluetoothAdapterClient::Observer, observers_,
                       DeviceRemoved(object_path, device_path));
   }
 
   // Called by dbus:: when the DeviceRemoved signal is initially connected.
-  void DeviceRemovedConnected(const std::string& object_path,
+  void DeviceRemovedConnected(const dbus::ObjectPath& object_path,
                               const std::string& interface_name,
                               const std::string& signal_name,
                               bool success) {
-    LOG_IF(WARNING, !success) << object_path
-        << ": Failed to connect to DeviceRemoved signal.";
+    LOG_IF(WARNING, !success) << object_path.value()
+                              << ": Failed to connect to DeviceRemoved signal.";
   }
 
   // Called by dbus:: when a PropertyChanged signal is received.
-  void PropertyChangedReceived(const std::string& object_path,
+  void PropertyChangedReceived(const dbus::ObjectPath& object_path,
                                dbus::Signal* signal) {
     DCHECK(signal);
     dbus::MessageReader reader(signal);
     std::string property_name;
     if (!reader.PopString(&property_name)) {
-      LOG(ERROR) << object_path
-          << ": PropertyChanged signal has incorrect parameters: "
-          << signal->ToString();
+      LOG(ERROR) << object_path.value()
+                 << ": PropertyChanged signal has incorrect parameters: "
+                 << signal->ToString();
       return;
     }
 
     if (property_name != bluetooth_adapter::kDiscoveringProperty) {
-      VLOG(1) << object_path << ": PropertyChanged: " << property_name;
+      VLOG(1) << object_path.value() << ": PropertyChanged: " << property_name;
       // We don't care.
       return;
     }
 
     bool discovering = false;
     if (!reader.PopVariantOfBool(&discovering)) {
-      LOG(ERROR) << object_path
-          << ": PropertyChanged signal has incorrect parameters: "
-          << signal->ToString();
+      LOG(ERROR) << object_path.value()
+                 << ": PropertyChanged signal has incorrect parameters: "
+                 << signal->ToString();
       return;
     }
-    VLOG(1) << object_path << ": PropertyChanged: Discovering = "
-        << discovering;
+    VLOG(1) << object_path.value() << ": PropertyChanged: Discovering = "
+            << discovering;
 
     FOR_EACH_OBSERVER(BluetoothAdapterClient::Observer, observers_,
                       DiscoveringPropertyChanged(object_path, discovering));
   }
 
   // Called by dbus:: when the PropertyChanged signal is initially connected.
-  void PropertyChangedConnected(const std::string& object_path,
+  void PropertyChangedConnected(const dbus::ObjectPath& object_path,
                                 const std::string& interface_name,
                                 const std::string& signal_name,
                                 bool success) {
-    LOG_IF(WARNING, !success) << object_path
+    LOG_IF(WARNING, !success)
+        << object_path.value()
         << ": Failed to connect to PropertyChanged signal.";
   }
 
   // Called by dbus:: when a DeviceFound signal is received.
-  void DeviceFoundReceived(const std::string& object_path,
+  void DeviceFoundReceived(const dbus::ObjectPath& object_path,
                            dbus::Signal* signal) {
     DCHECK(signal);
     dbus::MessageReader reader(signal);
     std::string address;
     if (!reader.PopString(&address)) {
-      LOG(ERROR) << object_path
-          << ": DeviceFound signal has incorrect parameters: "
-          << signal->ToString();
+      LOG(ERROR) << object_path.value()
+                 << ": DeviceFound signal has incorrect parameters: "
+                 << signal->ToString();
       return;
     }
-    VLOG(1) << object_path << ": Device found: " << address;
+    VLOG(1) << object_path.value() << ": Device found: " << address;
 
     DictionaryValue device_properties;
     if (!PopArrayOfDictEntries(&reader, signal, &device_properties)) {
-      LOG(ERROR) << object_path
-          << ": DeviceFound signal has incorrect parameters: "
-          << signal->ToString();
+      LOG(ERROR) << object_path.value()
+                 << ": DeviceFound signal has incorrect parameters: "
+                 << signal->ToString();
       return;
     }
 
@@ -442,52 +447,55 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
   }
 
   // Called by dbus:: when the DeviceFound signal is initially connected.
-  void DeviceFoundConnected(const std::string& object_path,
+  void DeviceFoundConnected(const dbus::ObjectPath& object_path,
                             const std::string& interface_name,
                             const std::string& signal_name,
                             bool success) {
-    LOG_IF(WARNING, !success) << object_path
-        << ": Failed to connect to DeviceFound signal.";
+    LOG_IF(WARNING, !success) << object_path.value()
+                              << ": Failed to connect to DeviceFound signal.";
   }
 
   // Called by dbus:: when a DeviceDisappeared signal is received.
-  void DeviceDisappearedReceived(const std::string&  object_path,
+  void DeviceDisappearedReceived(const dbus::ObjectPath& object_path,
                                  dbus::Signal* signal) {
     DCHECK(signal);
     dbus::MessageReader reader(signal);
     std::string address;
     if (!reader.PopString(&address)) {
-      LOG(ERROR) << object_path
-          << ": DeviceDisappeared signal has incorrect parameters: "
-          << signal->ToString();
+      LOG(ERROR) << object_path.value()
+                 << ": DeviceDisappeared signal has incorrect parameters: "
+                 << signal->ToString();
       return;
     }
-    VLOG(1) << object_path << ": Device disappeared: " << address;
+    VLOG(1) << object_path.value() << ": Device disappeared: " << address;
     FOR_EACH_OBSERVER(BluetoothAdapterClient::Observer, observers_,
                       DeviceDisappeared(object_path, address));
   }
 
   // Called by dbus:: when the DeviceDisappeared signal is initially connected.
-  void DeviceDisappearedConnected(const std::string& object_path,
+  void DeviceDisappearedConnected(const dbus::ObjectPath& object_path,
                                   const std::string& interface_name,
                                   const std::string& signal_name,
                                   bool success) {
-    LOG_IF(WARNING, !success) << object_path
+    LOG_IF(WARNING, !success)
+        << object_path.value()
         << ": Failed to connect to DeviceDisappeared signal.";
   }
 
   // Called when a response for StartDiscovery() is received.
-  void OnStartDiscovery(const std::string& object_path,
+  void OnStartDiscovery(const dbus::ObjectPath& object_path,
                         dbus::Response* response) {
-    VLOG(1) << "OnStartDiscovery: " << object_path;
-    LOG_IF(WARNING, !response) << object_path << ": OnStartDiscovery: failed.";
+    VLOG(1) << "OnStartDiscovery: " << object_path.value();
+    LOG_IF(WARNING, !response) << object_path.value()
+                               << ": OnStartDiscovery: failed.";
   }
 
   // Called when a response for StopDiscovery() is received.
-  void OnStopDiscovery(const std::string& object_path,
+  void OnStopDiscovery(const dbus::ObjectPath& object_path,
                        dbus::Response* response) {
-    VLOG(1) << "OnStopDiscovery: " << object_path;
-    LOG_IF(WARNING, !response) << object_path << ": OnStopDiscovery: failed.";
+    VLOG(1) << "OnStopDiscovery: " << object_path.value();
+    LOG_IF(WARNING, !response) << object_path.value()
+                               << ": OnStopDiscovery: failed.";
   }
 
   // Weak pointer factory for generating 'this' pointers that might live longer
@@ -497,7 +505,7 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
   dbus::Bus* bus_;
 
   // We maintain a collection of dbus object proxies, one for each adapter.
-  typedef std::map<const std::string, dbus::ObjectProxy*> ProxyMap;
+  typedef std::map<const dbus::ObjectPath, dbus::ObjectProxy*> ProxyMap;
   ProxyMap proxy_map_;
 
   // List of observers interested in event notifications from us.
@@ -521,13 +529,13 @@ class BluetoothAdapterClientStubImpl : public BluetoothAdapterClient {
   }
 
   // BluetoothAdapterClient override.
-  virtual void StartDiscovery(const std::string& object_path) {
-    VLOG(1) << "StartDiscovery: " << object_path;
+  virtual void StartDiscovery(const dbus::ObjectPath& object_path) {
+    VLOG(1) << "StartDiscovery: " << object_path.value();
   }
 
   // BluetoothAdapterClient override.
-  virtual void StopDiscovery(const std::string& object_path) {
-    VLOG(1) << "StopDiscovery: " << object_path;
+  virtual void StopDiscovery(const dbus::ObjectPath& object_path) {
+    VLOG(1) << "StopDiscovery: " << object_path.value();
   }
 };
 

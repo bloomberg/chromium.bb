@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
+#include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -23,7 +24,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
         weak_ptr_factory_(this) {
     session_manager_proxy_ = bus->GetObjectProxy(
         login_manager::kSessionManagerServiceName,
-        login_manager::kSessionManagerServicePath);
+        dbus::ObjectPath(login_manager::kSessionManagerServicePath));
 
     // Monitor the D-Bus signal for owner key changes.
     session_manager_proxy_->ConnectToSignal(

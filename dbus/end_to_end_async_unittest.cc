@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
+#include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "dbus/test_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -51,8 +52,9 @@ class EndToEndAsyncTest : public testing::Test {
     bus_options.dbus_thread_message_loop_proxy =
         dbus_thread_->message_loop_proxy();
     bus_ = new dbus::Bus(bus_options);
-    object_proxy_ = bus_->GetObjectProxy("org.chromium.TestService",
-                                         "/org/chromium/TestObject");
+    object_proxy_ = bus_->GetObjectProxy(
+        "org.chromium.TestService",
+        dbus::ObjectPath("/org/chromium/TestObject"));
     ASSERT_TRUE(bus_->HasDBusThread());
 
     // Connect to the "Test" signal of "org.chromium.TestInterface" from

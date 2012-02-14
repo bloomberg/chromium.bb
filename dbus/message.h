@@ -11,6 +11,7 @@
 #include <dbus/dbus.h>
 
 #include "base/basictypes.h"
+#include "dbus/object_path.h"
 
 namespace google {
 namespace protobuf {
@@ -80,7 +81,7 @@ class Message {
 
   // Sets the destination, the path, the interface, the member, etc.
   void SetDestination(const std::string& destination);
-  void SetPath(const std::string& path);
+  void SetPath(const ObjectPath& path);
   void SetInterface(const std::string& interface);
   void SetMember(const std::string& member);
   void SetErrorName(const std::string& error_name);
@@ -92,7 +93,7 @@ class Message {
   // Gets the destination, the path, the interface, the member, etc.
   // If not set, an empty string is returned.
   std::string GetDestination();
-  std::string GetPath();
+  ObjectPath GetPath();
   std::string GetInterface();
   std::string GetMember();
   std::string GetErrorName();
@@ -265,7 +266,7 @@ class MessageWriter {
   void AppendUint64(uint64 value);
   void AppendDouble(double value);
   void AppendString(const std::string& value);
-  void AppendObjectPath(const std::string& value);
+  void AppendObjectPath(const ObjectPath& value);
 
   // Opens an array. The array contents can be added to the array with
   // |sub_writer|. The client code must close the array with
@@ -302,7 +303,7 @@ class MessageWriter {
   // Appends the array of object paths. Arrays of object paths are often
   // used when exchanging object paths, hence it's worth having a
   // specialized function.
-  void AppendArrayOfObjectPaths(const std::vector<std::string>& object_paths);
+  void AppendArrayOfObjectPaths(const std::vector<ObjectPath>& object_paths);
 
   // Appends the protocol buffer as an array of bytes. The buffer is serialized
   // into an array of bytes before communication, since protocol buffers are not
@@ -326,7 +327,7 @@ class MessageWriter {
   void AppendVariantOfUint64(uint64 value);
   void AppendVariantOfDouble(double value);
   void AppendVariantOfString(const std::string& value);
-  void AppendVariantOfObjectPath(const std::string& value);
+  void AppendVariantOfObjectPath(const ObjectPath& value);
 
  private:
   // Helper function used to implement AppendByte etc.
@@ -374,7 +375,7 @@ class MessageReader {
   bool PopUint64(uint64* value);
   bool PopDouble(double* value);
   bool PopString(std::string* value);
-  bool PopObjectPath(std::string* value);
+  bool PopObjectPath(ObjectPath* value);
 
   // Sets up the given message reader to read an array at the current
   // iterator position.
@@ -409,7 +410,7 @@ class MessageReader {
   // Arrays of object paths are often used to communicate with D-Bus
   // services like NetworkManager, hence it's worth having a specialized
   // function.
-  bool PopArrayOfObjectPaths(std::vector<std::string>* object_paths);
+  bool PopArrayOfObjectPaths(std::vector<ObjectPath>* object_paths);
 
   // Gets the array of bytes at the current iterator position. It then parses
   // this binary blob into the protocol buffer supplied.
@@ -436,7 +437,7 @@ class MessageReader {
   bool PopVariantOfUint64(uint64* value);
   bool PopVariantOfDouble(double* value);
   bool PopVariantOfString(std::string* value);
-  bool PopVariantOfObjectPath(std::string* value);
+  bool PopVariantOfObjectPath(ObjectPath* value);
 
   // Get the data type of the value at the current iterator
   // position. INVALID_DATA will be returned if the iterator points to the

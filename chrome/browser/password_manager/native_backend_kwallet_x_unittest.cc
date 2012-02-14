@@ -20,6 +20,7 @@
 #include "dbus/message.h"
 #include "dbus/mock_bus.h"
 #include "dbus/mock_object_proxy.h"
+#include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -225,7 +226,7 @@ void NativeBackendKWalletTest::SetUp() {
   mock_klauncher_proxy_ =
       new dbus::MockObjectProxy(mock_session_bus_.get(),
                                 "org.kde.klauncher",
-                                "/KLauncher");
+                                dbus::ObjectPath("/KLauncher"));
   EXPECT_CALL(*mock_klauncher_proxy_,
               CallMethodAndBlock(_, _))
       .WillRepeatedly(Invoke(this,
@@ -234,7 +235,7 @@ void NativeBackendKWalletTest::SetUp() {
   mock_kwallet_proxy_ =
       new dbus::MockObjectProxy(mock_session_bus_.get(),
                                 "org.kde.kwalletd",
-                                "/modules/kwalletd");
+                                dbus::ObjectPath("/modules/kwalletd"));
   EXPECT_CALL(*mock_kwallet_proxy_,
               CallMethodAndBlock(_, _))
       .WillRepeatedly(Invoke(this,
@@ -242,11 +243,11 @@ void NativeBackendKWalletTest::SetUp() {
 
   EXPECT_CALL(*mock_session_bus_, GetObjectProxy(
       "org.kde.klauncher",
-      "/KLauncher"))
+      dbus::ObjectPath("/KLauncher")))
       .WillRepeatedly(Return(mock_klauncher_proxy_.get()));
   EXPECT_CALL(*mock_session_bus_, GetObjectProxy(
       "org.kde.kwalletd",
-      "/modules/kwalletd"))
+      dbus::ObjectPath("/modules/kwalletd")))
       .WillRepeatedly(Return(mock_kwallet_proxy_.get()));
 
   EXPECT_CALL(*mock_session_bus_,

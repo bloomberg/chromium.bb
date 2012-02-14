@@ -49,40 +49,40 @@ class BluetoothAdapterImpl : public BluetoothAdapter,
   virtual void StartDiscovery() {
     VLOG(1) << id_ << ": StartDiscovery";
     DCHECK(bluetooth_adapter_client_);
-    bluetooth_adapter_client_->StartDiscovery(id_);
+    bluetooth_adapter_client_->StartDiscovery(dbus::ObjectPath(id_));
   }
 
   virtual void StopDiscovery() {
     VLOG(1) << id_ << ": StopDiscovery";
     DCHECK(bluetooth_adapter_client_);
-    bluetooth_adapter_client_->StopDiscovery(id_);
+    bluetooth_adapter_client_->StopDiscovery(dbus::ObjectPath(id_));
   }
 
   // BluetoothAdapterClient::Observer override.
-  virtual void DiscoveringPropertyChanged(const std::string& object_path,
+  virtual void DiscoveringPropertyChanged(const dbus::ObjectPath& object_path,
                                           bool discovering) {
-    VLOG(1) << id_ << ": object_path = " << object_path << ", Discovering = "
-            << discovering;
-    if (object_path != id_) {
+    VLOG(1) << id_ << ": object_path = " << object_path.value()
+            << ", Discovering = " << discovering;
+    if (object_path.value() != id_) {
       return;
     }
     if (discovering) {
       FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                        DiscoveryStarted(object_path));
+                        DiscoveryStarted(object_path.value()));
     } else {
       FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                        DiscoveryEnded(object_path));
+                        DiscoveryEnded(object_path.value()));
     }
   }
 
   // BluetoothAdapterClient::Observer override.
-  virtual void DeviceFound(const std::string& object_path,
+  virtual void DeviceFound(const dbus::ObjectPath& object_path,
                            const std::string& address,
                            const base::DictionaryValue& device_properties) {
-    VLOG(1) << id_ << ": object_path = " << object_path << ", Device found: "
-            << address << " (with " << device_properties.size()
-            << " properties)";
-    if (object_path != id_) {
+    VLOG(1) << id_ << ": object_path = " << object_path.value()
+            << ", Device found: " << address << " (with "
+            << device_properties.size() << " properties)";
+    if (object_path.value() != id_) {
       return;
     }
     // TODO(vlaviano): later, we will want to persist the device.
@@ -90,18 +90,18 @@ class BluetoothAdapterImpl : public BluetoothAdapter,
         BluetoothDevice::Create(device_properties));
     if (device.get() != NULL) {
       FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                        DeviceFound(object_path, device.get()));
+                        DeviceFound(object_path.value(), device.get()));
     } else {
       LOG(WARNING) << "Could not create BluetoothDevice from properties.";
     }
   }
 
   // BluetoothAdapterClient::Observer override.
-  virtual void DeviceDisappeared(const std::string& object_path,
+  virtual void DeviceDisappeared(const dbus::ObjectPath& object_path,
                                  const std::string& address) {
-    VLOG(1) << id_ << ": object_path = " << object_path
+    VLOG(1) << id_ << ": object_path = " << object_path.value()
             << ", Device disappeared: " << address;
-    if (object_path != id_) {
+    if (object_path.value() != id_) {
       return;
     }
     // For now, we don't propagate this event to our observers.

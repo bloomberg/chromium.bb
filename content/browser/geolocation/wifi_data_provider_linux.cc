@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
+#include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 
 namespace {
@@ -56,12 +57,12 @@ class NetworkManagerWlanApi : public WifiDataProviderCommon::WlanApiInterface {
  private:
   // Enumerates the list of available network adapter devices known to
   // NetworkManager. Return true on success.
-  bool GetAdapterDeviceList(std::vector<std::string>* device_paths);
+  bool GetAdapterDeviceList(std::vector<dbus::ObjectPath>* device_paths);
 
   // Given the NetworkManager path to a wireless adapater, dumps the wifi scan
   // results and appends them to |data|. Returns false if a fatal error is
   // encountered such that the data set could not be populated.
-  bool GetAccessPointsForAdapter(const std::string& adapter_path,
+  bool GetAccessPointsForAdapter(const dbus::ObjectPath& adapter_path,
                                  WifiData::AccessPointDataSet* data);
 
   // Internal method used by |GetAccessPointsForAdapter|, given a wifi access
@@ -110,9 +111,9 @@ bool NetworkManagerWlanApi::InitWithBus(dbus::Bus* bus) {
   // system_bus_ will own all object proxies created from the bus.
   network_manager_proxy_ =
       system_bus_->GetObjectProxy(kNetworkManagerServiceName,
-                                  kNetworkManagerPath);
+                                  dbus::ObjectPath(kNetworkManagerPath));
   // Validate the proxy object by checking we can enumerate devices.
-  std::vector<std::string> adapter_paths;
+  std::vector<dbus::ObjectPath> adapter_paths;
   const bool success = GetAdapterDeviceList(&adapter_paths);
   VLOG(1) << "Init() result:  " << success;
   return success;
@@ -120,7 +121,7 @@ bool NetworkManagerWlanApi::InitWithBus(dbus::Bus* bus) {
 
 bool NetworkManagerWlanApi::GetAccessPointData(
     WifiData::AccessPointDataSet* data) {
-  std::vector<std::string> device_paths;
+  std::vector<dbus::ObjectPath> device_paths;
   if (!GetAdapterDeviceList(&device_paths)) {
     LOG(WARNING) << "Could not enumerate access points";
     return false;
@@ -130,8 +131,8 @@ bool NetworkManagerWlanApi::GetAccessPointData(
 
   // Iterate the devices, getting APs for each wireless adapter found
   for (size_t i = 0; i < device_paths.size(); ++i) {
-    const std::string& device_path = device_paths[i];
-    VLOG(1) << "Checking device: " << device_path;
+    const dbus::ObjectPath& device_path = device_paths[i];
+    VLOG(1) << "Checking device: " << device_path.value();
 
     dbus::ObjectProxy* device_proxy =
         system_bus_->GetObjectProxy(kNetworkManagerServiceName,
@@ -146,7 +147,8 @@ bool NetworkManagerWlanApi::GetAccessPointData(
             &method_call,
             dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
     if (!response.get()) {
-      LOG(WARNING) << "Failed to get the device type for " << device_path;
+      LOG(WARNING) << "Failed to get the device type for "
+                   << device_path.value();
       continue;  // Check the next device.
     }
     dbus::MessageReader reader(response.get());
@@ -170,7 +172,7 @@ bool NetworkManagerWlanApi::GetAccessPointData(
 }
 
 bool NetworkManagerWlanApi::GetAdapterDeviceList(
-    std::vector<std::string>* device_paths) {
+    std::vector<dbus::ObjectPath>* device_paths) {
   dbus::MethodCall method_call(kNetworkManagerInterface, "GetDevices");
   scoped_ptr<dbus::Response> response(
       network_manager_proxy_->CallMethodAndBlock(
@@ -191,7 +193,7 @@ bool NetworkManagerWlanApi::GetAdapterDeviceList(
 
 
 bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
-    const std::string& adapter_path, WifiData::AccessPointDataSet* data) {
+    const dbus::ObjectPath& adapter_path, WifiData::AccessPointDataSet* data) {
   // Create a proxy object for this wifi adapter, and ask it to do a scan
   // (or at least, dump its scan results).
   dbus::ObjectProxy* device_proxy =
@@ -205,23 +207,24 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
           &method_call,
           dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
   if (!response.get()) {
-    LOG(WARNING) << "Failed to get access points data for " << adapter_path;
+    LOG(WARNING) << "Failed to get access points data for "
+                 << adapter_path.value();
     return false;
   }
   dbus::MessageReader reader(response.get());
-  std::vector<std::string> access_point_paths;
+  std::vector<dbus::ObjectPath> access_point_paths;
   if (!reader.PopArrayOfObjectPaths(&access_point_paths)) {
-    LOG(WARNING) << "Unexpected response for " << adapter_path << ": "
+    LOG(WARNING) << "Unexpected response for " << adapter_path.value() << ": "
                  << response->ToString();
     return false;
   }
 
-  VLOG(1) << "Wireless adapter " << adapter_path << " found "
+  VLOG(1) << "Wireless adapter " << adapter_path.value() << " found "
           << access_point_paths.size() << " access points.";
 
   for (size_t i = 0; i < access_point_paths.size(); ++i) {
-    const std::string& access_point_path = access_point_paths[i];
-    VLOG(1) << "Checking access point: " << access_point_path;
+    const dbus::ObjectPath& access_point_path = access_point_paths[i];
+    VLOG(1) << "Checking access point: " << access_point_path.value();
 
     dbus::ObjectProxy* access_point_proxy =
         system_bus_->GetObjectProxy(kNetworkManagerServiceName,
@@ -237,15 +240,15 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
       dbus::MessageReader reader(response.get());
       dbus::MessageReader variant_reader(response.get());
       if (!reader.PopVariant(&variant_reader)) {
-        LOG(WARNING) << "Unexpected response for " << access_point_path << ": "
-                     << response->ToString();
+        LOG(WARNING) << "Unexpected response for " << access_point_path.value()
+                     << ": " << response->ToString();
         continue;
       }
       uint8* ssid_bytes = NULL;
       size_t ssid_length = 0;
       if (!variant_reader.PopArrayOfBytes(&ssid_bytes, &ssid_length)) {
-        LOG(WARNING) << "Unexpected response for " << access_point_path << ": "
-                     << response->ToString();
+        LOG(WARNING) << "Unexpected response for " << access_point_path.value()
+                     << ": " << response->ToString();
         continue;
       }
       std::string ssid(ssid_bytes, ssid_bytes + ssid_length);
@@ -260,8 +263,8 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
       dbus::MessageReader reader(response.get());
       std::string mac;
       if (!reader.PopVariantOfString(&mac)) {
-        LOG(WARNING) << "Unexpected response for " << access_point_path << ": "
-                     << response->ToString();
+        LOG(WARNING) << "Unexpected response for " << access_point_path.value()
+                     << ": " << response->ToString();
         continue;
       }
 
@@ -284,8 +287,8 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
       dbus::MessageReader reader(response.get());
       uint8 strength = 0;
       if (!reader.PopVariantOfByte(&strength)) {
-        LOG(WARNING) << "Unexpected response for " << access_point_path << ": "
-                     << response->ToString();
+        LOG(WARNING) << "Unexpected response for " << access_point_path.value()
+                     << ": " << response->ToString();
         continue;
       }
       // Convert strength as a percentage into dBs.
@@ -300,8 +303,8 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
       dbus::MessageReader reader(response.get());
       uint32 frequency = 0;
       if (!reader.PopVariantOfUint32(&frequency)) {
-        LOG(WARNING) << "Unexpected response for " << access_point_path << ": "
-                     << response->ToString();
+        LOG(WARNING) << "Unexpected response for " << access_point_path.value()
+                     << ": " << response->ToString();
         continue;
       }
 
@@ -309,7 +312,7 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
       access_point_data.channel =
           frquency_in_khz_to_channel(frequency * 1000);
     }
-    VLOG(1) << "Access point data of " << access_point_path << ": "
+    VLOG(1) << "Access point data of " << access_point_path.value() << ": "
             << "SSID: " << access_point_data.ssid << ", "
             << "MAC: " << access_point_data.mac_address << ", "
             << "Strength: " << access_point_data.radio_signal_strength << ", "

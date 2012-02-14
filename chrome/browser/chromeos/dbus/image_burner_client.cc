@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
+#include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -22,8 +23,9 @@ class ImageBurnerClientImpl : public ImageBurnerClient {
   explicit ImageBurnerClientImpl(dbus::Bus* bus)
       : proxy_(NULL),
         weak_ptr_factory_(this) {
-    proxy_ = bus->GetObjectProxy(imageburn::kImageBurnServiceName,
-                                 imageburn::kImageBurnServicePath);
+    proxy_ = bus->GetObjectProxy(
+        imageburn::kImageBurnServiceName,
+        dbus::ObjectPath(imageburn::kImageBurnServicePath));
     proxy_->ConnectToSignal(
         imageburn::kImageBurnServiceInterface,
         imageburn::kSignalBurnFinishedName,

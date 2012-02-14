@@ -20,6 +20,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
+#include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 
 using content::BrowserThread;
@@ -136,7 +137,7 @@ class KDEPowerSaveBlocker: public DBusPowerSaveBlocker::Delegate {
     scoped_refptr<dbus::ObjectProxy> object_proxy =
         DBusPowerSaveBlocker::GetInstance()->bus()->GetObjectProxy(
             "org.freedesktop.PowerManagement",
-            "/org/freedesktop/PowerManagement/Inhibit");
+            dbus::ObjectPath("/org/freedesktop/PowerManagement/Inhibit"));
     dbus::MethodCall method_call("org.freedesktop.PowerManagement.Inhibit",
                                  "Inhibit");
     dbus::MessageWriter message_writer(&method_call);
@@ -284,7 +285,7 @@ class GnomePowerSaveBlocker: public DBusPowerSaveBlocker::Delegate {
     scoped_refptr<dbus::ObjectProxy> object_proxy =
         DBusPowerSaveBlocker::GetInstance()->bus()->GetObjectProxy(
             "org.gnome.SessionManager",
-            "/org/gnome/SessionManager");
+            dbus::ObjectPath("/org/gnome/SessionManager"));
     dbus::MethodCall method_call("org.gnome.SessionManager", "Inhibit");
     dbus::MessageWriter message_writer(&method_call);
     base::Callback<void(dbus::Response*)> bus_callback;

@@ -16,6 +16,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
 #include "dbus/exported_object.h"
+#include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "dbus/scoped_dbus_error.h"
 
@@ -207,18 +208,19 @@ Bus::~Bus() {
 }
 
 ObjectProxy* Bus::GetObjectProxy(const std::string& service_name,
-                                 const std::string& object_path) {
+                                 const ObjectPath& object_path) {
   return GetObjectProxyWithOptions(service_name, object_path,
                                    ObjectProxy::DEFAULT_OPTIONS);
 }
 
 ObjectProxy* Bus::GetObjectProxyWithOptions(const std::string& service_name,
-                                            const std::string& object_path,
+                                            const dbus::ObjectPath& object_path,
                                             int options) {
   AssertOnOriginThread();
 
   // Check if we already have the requested object proxy.
-  const ObjectProxyTable::key_type key(service_name + object_path, options);
+  const ObjectProxyTable::key_type key(service_name + object_path.value(),
+                                       options);
   ObjectProxyTable::iterator iter = object_proxy_table_.find(key);
   if (iter != object_proxy_table_.end()) {
     return iter->second;
@@ -232,11 +234,11 @@ ObjectProxy* Bus::GetObjectProxyWithOptions(const std::string& service_name,
 }
 
 ExportedObject* Bus::GetExportedObject(const std::string& service_name,
-                                       const std::string& object_path) {
+                                       const ObjectPath& object_path) {
   AssertOnOriginThread();
 
   // Check if we already have the requested exported object.
-  const std::string key = service_name + object_path;
+  const std::string key = service_name + object_path.value();
   ExportedObjectTable::iterator iter = exported_object_table_.find(key);
   if (iter != exported_object_table_.end()) {
     return iter->second;
@@ -521,7 +523,7 @@ void Bus::RemoveMatch(const std::string& match_rule, DBusError* error) {
   match_rules_added_.erase(match_rule);
 }
 
-bool Bus::TryRegisterObjectPath(const std::string& object_path,
+bool Bus::TryRegisterObjectPath(const ObjectPath& object_path,
                                 const DBusObjectPathVTable* vtable,
                                 void* user_data,
                                 DBusError* error) {
@@ -530,13 +532,13 @@ bool Bus::TryRegisterObjectPath(const std::string& object_path,
 
   if (registered_object_paths_.find(object_path) !=
       registered_object_paths_.end()) {
-    LOG(ERROR) << "Object path already registered: " << object_path;
+    LOG(ERROR) << "Object path already registered: " << object_path.value();
     return false;
   }
 
   const bool success = dbus_connection_try_register_object_path(
       connection_,
-      object_path.c_str(),
+      object_path.value().c_str(),
       vtable,
       user_data,
       error);
@@ -545,20 +547,20 @@ bool Bus::TryRegisterObjectPath(const std::string& object_path,
   return success;
 }
 
-void Bus::UnregisterObjectPath(const std::string& object_path) {
+void Bus::UnregisterObjectPath(const ObjectPath& object_path) {
   DCHECK(connection_);
   AssertOnDBusThread();
 
   if (registered_object_paths_.find(object_path) ==
       registered_object_paths_.end()) {
     LOG(ERROR) << "Requested to unregister an unknown object path: "
-               << object_path;
+               << object_path.value();
     return;
   }
 
   const bool success = dbus_connection_unregister_object_path(
       connection_,
-      object_path.c_str());
+      object_path.value().c_str());
   CHECK(success) << "Unable to allocate memory";
   registered_object_paths_.erase(object_path);
 }

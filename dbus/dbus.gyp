@@ -25,6 +25,8 @@
         'exported_object.h',
         'message.cc',
         'message.h',
+        'object_path.cc',
+        'object_path.h',
         'object_proxy.cc',
         'object_proxy.h',
         'scoped_dbus_error.h',

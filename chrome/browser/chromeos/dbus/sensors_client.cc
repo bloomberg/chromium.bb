@@ -11,6 +11,7 @@
 #include "content/public/browser/sensors_provider.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
+#include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 
 using content::BrowserThread;
@@ -31,8 +32,9 @@ class SensorsClientImpl : public SensorsClient {
   explicit SensorsClientImpl(dbus::Bus* bus)
       : sensors_proxy_(NULL),
         weak_ptr_factory_(this) {
-    sensors_proxy_ = bus->GetObjectProxy(chromeos::kSensorsServiceName,
-                                         chromeos::kSensorsServicePath);
+    sensors_proxy_ = bus->GetObjectProxy(
+        chromeos::kSensorsServiceName,
+        dbus::ObjectPath(chromeos::kSensorsServicePath));
     sensors_proxy_->ConnectToSignal(
         chromeos::kSensorsServiceInterface,
         chromeos::kScreenOrientationChanged,

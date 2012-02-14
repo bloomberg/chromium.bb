@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/string_piece.h"
 #include "base/time.h"
+#include "dbus/object_path.h"
 
 namespace dbus {
 
@@ -35,7 +36,7 @@ class ObjectProxy : public base::RefCountedThreadSafe<ObjectProxy> {
   // Bus::GetObjectProxyWithOptions() instead of this constructor.
   ObjectProxy(Bus* bus,
               const std::string& service_name,
-              const std::string& object_path,
+              const ObjectPath& object_path,
               int options);
 
   // Options to be OR-ed together when calling Bus::GetObjectProxyWithOptions().
@@ -196,7 +197,7 @@ class ObjectProxy : public base::RefCountedThreadSafe<ObjectProxy> {
 
   scoped_refptr<Bus> bus_;
   std::string service_name_;
-  std::string object_path_;
+  ObjectPath object_path_;
 
   // True if the message filter was added.
   bool filter_added_;
