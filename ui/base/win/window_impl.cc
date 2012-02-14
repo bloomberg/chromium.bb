@@ -124,6 +124,8 @@ WindowImpl::WindowImpl()
 }
 
 WindowImpl::~WindowImpl() {
+  if (::IsWindow(hwnd_))
+    ui::SetWindowUserData(hwnd_, NULL);
 }
 
 void WindowImpl::Init(HWND parent, const gfx::Rect& bounds) {
