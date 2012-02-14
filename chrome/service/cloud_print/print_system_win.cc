@@ -406,10 +406,10 @@ class PrintSystemWin : public PrintSystem {
 
           HDC dc = CreateDC(L"WINSPOOL", UTF8ToWide(printer_name).c_str(),
                             NULL, pt_dev_mode.dm_);
-          if (!dc)
+          if (!dc) {
+            NOTREACHED();
             return false;
-
-          printer_dc_.Set(dc);
+          }
           hr = E_FAIL;
           DOCINFO di = {0};
           di.cbSize = sizeof(DOCINFO);
@@ -419,7 +419,8 @@ class PrintSystemWin : public PrintSystem {
           if (job_id_ <= 0)
             return false;
 
-          saved_dc_ = SaveDC(printer_dc_.get());
+          printer_dc_.Set(dc);
+          saved_dc_ = SaveDC(printer_dc_.Get());
           print_data_file_path_ = print_data_file_path;
           delegate_ = delegate;
           RenderNextPDFPages();
@@ -439,18 +440,18 @@ class PrintSystemWin : public PrintSystem {
       }
 
       void PreparePageDCForPrinting(HDC, double scale_factor) {
-        SetGraphicsMode(printer_dc_.get(), GM_ADVANCED);
+        SetGraphicsMode(printer_dc_.Get(), GM_ADVANCED);
         // Setup the matrix to translate and scale to the right place. Take in
         // account the scale factor.
         // Note that the printing output is relative to printable area of
         // the page. That is 0,0 is offset by PHYSICALOFFSETX/Y from the page.
-        int offset_x = ::GetDeviceCaps(printer_dc_.get(), PHYSICALOFFSETX);
-        int offset_y = ::GetDeviceCaps(printer_dc_.get(), PHYSICALOFFSETY);
+        int offset_x = ::GetDeviceCaps(printer_dc_.Get(), PHYSICALOFFSETX);
+        int offset_y = ::GetDeviceCaps(printer_dc_.Get(), PHYSICALOFFSETY);
         XFORM xform = {0};
         xform.eDx = static_cast<float>(-offset_x);
         xform.eDy = static_cast<float>(-offset_y);
         xform.eM11 = xform.eM22 = 1.0 / scale_factor;
-        SetWorldTransform(printer_dc_.get(), &xform);
+        SetWorldTransform(printer_dc_.Get(), &xform);
       }
 
       // ServiceUtilityProcessHost::Client implementation.
@@ -458,8 +459,8 @@ class PrintSystemWin : public PrintSystem {
           const printing::Emf& metafile,
           int highest_rendered_page_number,
           double scale_factor) OVERRIDE {
-        PreparePageDCForPrinting(printer_dc_.get(), scale_factor);
-        metafile.SafePlayback(printer_dc_.get());
+        PreparePageDCForPrinting(printer_dc_.Get(), scale_factor);
+        metafile.SafePlayback(printer_dc_.Get());
         bool done_printing = (highest_rendered_page_number !=
             last_page_printed_ + kPageCountPerBatch);
         last_page_printed_ = highest_rendered_page_number;
@@ -513,8 +514,8 @@ class PrintSystemWin : public PrintSystem {
         // If there is no delegate, then there is nothing pending to process.
         if (!delegate_)
           return;
-        RestoreDC(printer_dc_.get(), saved_dc_);
-        EndDoc(printer_dc_.get());
+        RestoreDC(printer_dc_.Get(), saved_dc_);
+        EndDoc(printer_dc_.Get());
         if (-1 == last_page_printed_) {
           delegate_->OnJobSpoolFailed();
         } else {
@@ -531,9 +532,9 @@ class PrintSystemWin : public PrintSystem {
         std::vector<printing::PageRange> page_ranges;
         page_ranges.push_back(range);
 
-        int printer_dpi = ::GetDeviceCaps(printer_dc_.get(), LOGPIXELSX);
-        int dc_width = GetDeviceCaps(printer_dc_.get(), PHYSICALWIDTH);
-        int dc_height = GetDeviceCaps(printer_dc_.get(), PHYSICALHEIGHT);
+        int printer_dpi = ::GetDeviceCaps(printer_dc_.Get(), LOGPIXELSX);
+        int dc_width = GetDeviceCaps(printer_dc_.Get(), PHYSICALWIDTH);
+        int dc_height = GetDeviceCaps(printer_dc_.Get(), PHYSICALHEIGHT);
         gfx::Rect render_area(0, 0, dc_width, dc_height);
         g_service_process->io_thread()->message_loop_proxy()->PostTask(
             FROM_HERE,

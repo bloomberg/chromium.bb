@@ -214,8 +214,8 @@ static int GetControlTextWidth(HWND control) {
   if (result) {
     base::win::ScopedGetDC dc(control);
     base::win::ScopedSelectObject font(
-        dc.get(), (HFONT)SendMessage(control, WM_GETFONT, 0, 0));
-    DrawText(dc.get(), text, -1, &rect, DT_CALCRECT|DT_SINGLELINE);
+        dc, (HFONT)SendMessage(control, WM_GETFONT, 0, 0));
+    DrawText(dc, text, -1, &rect, DT_CALCRECT|DT_SINGLELINE);
   }
   return rect.right;
 }

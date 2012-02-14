@@ -279,23 +279,23 @@ Metafile* PrintWebViewHelper::RenderPage(
       // Page used alpha blend, but printer doesn't support it.  Rewrite the
       // metafile and flatten out the transparency.
       base::win::ScopedGetDC screen_dc(NULL);
-      base::win::ScopedCreateDC bitmap_dc(CreateCompatibleDC(screen_dc.get()));
-      if (!bitmap_dc.get())
+      base::win::ScopedCreateDC bitmap_dc(CreateCompatibleDC(screen_dc));
+      if (!bitmap_dc)
         NOTREACHED() << "Bitmap DC creation failed";
-      SetGraphicsMode(bitmap_dc.get(), GM_ADVANCED);
+      SetGraphicsMode(bitmap_dc, GM_ADVANCED);
       void* bits = NULL;
       BITMAPINFO hdr;
       gfx::CreateBitmapHeader(page_size.width(), page_size.height(),
                               &hdr.bmiHeader);
       base::win::ScopedBitmap hbitmap(CreateDIBSection(
-        bitmap_dc.get(), &hdr, DIB_RGB_COLORS, &bits, NULL, 0));
+          bitmap_dc, &hdr, DIB_RGB_COLORS, &bits, NULL, 0));
       if (!hbitmap)
         NOTREACHED() << "Raster bitmap creation for printing failed";
 
-      base::win::ScopedSelectObject selectBitmap(bitmap_dc.get(), hbitmap);
+      base::win::ScopedSelectObject selectBitmap(bitmap_dc, hbitmap);
       RECT rect = { 0, 0, page_size.width(), page_size.height() };
       HBRUSH whiteBrush = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
-      FillRect(bitmap_dc.get(), &rect, whiteBrush);
+      FillRect(bitmap_dc, &rect, whiteBrush);
 
       Metafile* metafile2(new printing::NativeMetafile);
       metafile2->Init();
