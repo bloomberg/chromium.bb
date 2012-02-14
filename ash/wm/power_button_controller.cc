@@ -348,6 +348,11 @@ void PowerButtonController::OnStartingLock() {
   if (shutting_down_ || locked_)
     return;
 
+  // Ensure that the background layer is visible -- if the screen was locked via
+  // the wrench menu, we won't have already shown the background as part of the
+  // slow-close animation.
+  ShowBackgroundLayer();
+
   StartAnimation(ALL_BUT_SCREEN_LOCKER_AND_RELATED_CONTAINERS,
                  ANIMATION_FAST_CLOSE);
 

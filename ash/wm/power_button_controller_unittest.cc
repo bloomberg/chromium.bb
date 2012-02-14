@@ -448,5 +448,21 @@ TEST_F(PowerButtonControllerTest, PowerButtonPreemptsLockButton) {
   EXPECT_FALSE(test_api_->lock_timer_is_running());
 }
 
+// When the screen is locked without going through the usual power-button
+// slow-close path (e.g. via the wrench menu), test that we still show the
+// fast-close animation and display the background layer.
+TEST_F(PowerButtonControllerTest, LockWithoutButton) {
+  controller_->set_has_legacy_power_button_for_test(false);
+  controller_->OnLoginStateChange(true /*logged_in*/, false /*is_guest*/);
+  controller_->OnLockStateChange(false);
+
+  controller_->OnStartingLock();
+  EXPECT_TRUE(
+      test_api_->ContainerGroupIsAnimated(
+          PowerButtonController::ALL_BUT_SCREEN_LOCKER_AND_RELATED_CONTAINERS,
+          PowerButtonController::ANIMATION_FAST_CLOSE));
+  EXPECT_TRUE(test_api_->BackgroundLayerIsVisible());
+}
+
 }  // namespace test
 }  // namespace ash
