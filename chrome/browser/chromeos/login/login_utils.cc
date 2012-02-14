@@ -79,6 +79,7 @@
 #include "ui/gfx/gl/gl_switches.h"
 
 #if defined(USE_AURA)
+#include "ash/ash_switches.h"
 #include "ui/gfx/compositor/compositor_switches.h"
 #endif
 
@@ -1005,6 +1006,8 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       switches::kPpapiFlashVersion,
       switches::kTouchDevices,
 #if defined(USE_AURA)
+      ash::switches::kAuraForceCompactWindowMode,
+      ash::switches::kAuraPanelManager,
       switches::kUIEnablePartialSwap,
 #endif
       switches::kUseGL,
