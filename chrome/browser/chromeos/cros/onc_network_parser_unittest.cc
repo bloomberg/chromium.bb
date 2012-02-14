@@ -11,6 +11,7 @@
 #include "base/file_util.h"
 #include "base/json/json_value_serializer.h"
 #include "base/lazy_instance.h"
+#include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/stringprintf.h"
@@ -18,9 +19,13 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/net/pref_proxy_config_tracker_impl.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_pref_service.h"
+#include "content/test/test_browser_thread.h"
 #include "crypto/nss_util.h"
 #include "net/base/cert_database.h"
 #include "net/base/cert_type.h"
@@ -299,11 +304,11 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkWifiEAP2) {
   EXPECT_EQ(wifi->auto_connect(), false);
   EXPECT_EQ(wifi->eap_method(), EAP_METHOD_LEAP);
   EXPECT_EQ(wifi->eap_use_system_cas(), true);
-  EXPECT_EQ(wifi->GetEapIdentity(), "user");
+  EXPECT_EQ(wifi->eap_identity(), "user");
   CheckStringProperty(wifi, PROPERTY_INDEX_EAP_IDENTITY, "user");
   EXPECT_EQ(wifi->eap_passphrase(), "pass");
   CheckStringProperty(wifi, PROPERTY_INDEX_EAP_PASSWORD, "pass");
-  EXPECT_EQ(wifi->GetEapAnonymousIdentity(), "anon");
+  EXPECT_EQ(wifi->eap_anonymous_identity(), "anon");
   CheckStringProperty(wifi, PROPERTY_INDEX_EAP_ANONYMOUS_IDENTITY, "anon");
 }
 
@@ -750,6 +755,37 @@ TEST_F(OncNetworkParserTest, TestProxySettingsManual) {
   expected_bypass_rules.AddRuleFromString("google.com");
   expected_bypass_rules.AddRuleToBypassLocal();
   EXPECT_TRUE(expected_bypass_rules.Equals(rules.bypass_rules));
+}
+
+TEST(OncNetworkParserUserExpansionTest, GetUserExpandedValue) {
+  NetworkUIData::ONCSource source = NetworkUIData::ONC_SOURCE_USER_IMPORT;
+
+  // Setup environment needed by UserManager.
+  MessageLoop loop;
+  content::TestBrowserThread ui_thread(content::BrowserThread::UI, &loop);
+  base::ShadowingAtExitManager at_exit_manager;
+  ScopedTestingLocalState local_state(
+      static_cast<TestingBrowserProcess*>(g_browser_process));
+
+  base::StringValue login_id_pattern("a ${LOGIN_ID} b");
+  base::StringValue login_email_pattern("a ${LOGIN_EMAIL} b");
+
+  // No expansion if there is no user logged in.
+  EXPECT_EQ("a ${LOGIN_ID} b",
+            chromeos::OncNetworkParser::GetUserExpandedValue(
+                login_id_pattern, source));
+  EXPECT_EQ("a ${LOGIN_EMAIL} b",
+            chromeos::OncNetworkParser::GetUserExpandedValue(
+                login_email_pattern, source));
+
+  // Log in a user and check that the expansions work as expected.
+  UserManager::Get()->UserLoggedIn("onc@example.com");
+  EXPECT_EQ("a onc b",
+            chromeos::OncNetworkParser::GetUserExpandedValue(
+                login_id_pattern, source));
+  EXPECT_EQ("a onc@example.com b",
+            chromeos::OncNetworkParser::GetUserExpandedValue(
+                login_email_pattern, source));
 }
 
 }  // namespace chromeos

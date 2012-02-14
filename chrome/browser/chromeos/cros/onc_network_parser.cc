@@ -9,6 +9,7 @@
 
 #include "base/base64.h"
 #include "base/json/json_value_serializer.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "base/json/json_writer.h"  // for debug output only.
 #include "base/stringprintf.h"
 #include "base/values.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/common/net/x509_certificate_model.h"
+#include "content/public/browser/browser_thread.h"
 #include "crypto/encryptor.h"
 #include "crypto/hmac.h"
 #include "crypto/scoped_nss_types.h"
@@ -599,6 +601,36 @@ bool OncNetworkParser::ParseNestedObject(Network* network,
         IDS_NETWORK_CONFIG_ERROR_NETWORK_PROP_DICT_MALFORMED);
   }
   return !any_errors;
+}
+
+// static
+std::string OncNetworkParser::GetUserExpandedValue(
+    const base::Value& value,
+    NetworkUIData::ONCSource source) {
+  std::string string_value;
+  if (!value.GetAsString(&string_value))
+    return string_value;
+
+  // If running unit test, just return the original value.
+  if (!content::BrowserThread::IsMessageLoopValid(content::BrowserThread::UI))
+    return string_value;
+
+  if (source != NetworkUIData::ONC_SOURCE_USER_POLICY &&
+      source != NetworkUIData::ONC_SOURCE_USER_IMPORT) {
+    return string_value;
+  }
+
+  if (!UserManager::Get()->user_is_logged_in())
+    return string_value;
+
+  const User& logged_in_user(UserManager::Get()->logged_in_user());
+  ReplaceSubstringsAfterOffset(&string_value, 0,
+                               onc::substitutes::kLoginIDField,
+                               logged_in_user.GetAccountName());
+  ReplaceSubstringsAfterOffset(&string_value, 0,
+                               onc::substitutes::kEmailField,
+                               logged_in_user.email());
+  return string_value;
 }
 
 Network* OncNetworkParser::CreateNewNetwork(
@@ -1278,7 +1310,7 @@ bool OncWifiNetworkParser::ParseWifiValue(OncNetworkParser* parser,
 }
 
 // static
-bool OncWifiNetworkParser::ParseEAPValue(OncNetworkParser*,
+bool OncWifiNetworkParser::ParseEAPValue(OncNetworkParser* parser,
                                          PropertyIndex index,
                                          const base::Value& value,
                                          Network* network) {
@@ -1286,10 +1318,14 @@ bool OncWifiNetworkParser::ParseEAPValue(OncNetworkParser*,
     return false;
   WifiNetwork* wifi_network = static_cast<WifiNetwork*>(network);
   switch (index) {
-    case PROPERTY_INDEX_EAP_IDENTITY:
-      // TODO(crosbug.com/23751): Support string expansion.
-      wifi_network->set_eap_identity(GetStringValue(value));
+    case PROPERTY_INDEX_EAP_IDENTITY: {
+      const std::string expanded_identity(
+          GetUserExpandedValue(value, parser->onc_source()));
+      wifi_network->set_eap_identity(expanded_identity);
+      const StringValue expanded_identity_value(expanded_identity);
+      wifi_network->UpdatePropertyMap(index, expanded_identity_value);
       return true;
+    }
     case PROPERTY_INDEX_EAP_METHOD: {
       EAPMethod eap_method = ParseEAPMethod(GetStringValue(value));
       wifi_network->set_eap_method(eap_method);
@@ -1311,9 +1347,14 @@ bool OncWifiNetworkParser::ParseEAPValue(OncNetworkParser*,
       wifi_network->UpdatePropertyMap(index, *val.get());
       return true;
     }
-    case PROPERTY_INDEX_EAP_ANONYMOUS_IDENTITY:
-      wifi_network->set_eap_anonymous_identity(GetStringValue(value));
+    case PROPERTY_INDEX_EAP_ANONYMOUS_IDENTITY: {
+      const std::string expanded_identity(
+          GetUserExpandedValue(value, parser->onc_source()));
+      wifi_network->set_eap_anonymous_identity(expanded_identity);
+      const StringValue expanded_identity_value(expanded_identity);
+      wifi_network->UpdatePropertyMap(index, expanded_identity_value);
       return true;
+    }
     case PROPERTY_INDEX_EAP_CERT_ID:
       wifi_network->set_eap_client_cert_pkcs11_id(GetStringValue(value));
       return true;
@@ -1573,7 +1614,7 @@ ProviderType OncVirtualNetworkParser::GetCanonicalProviderType(
 }
 
 // static
-bool OncVirtualNetworkParser::ParseL2TPValue(OncNetworkParser*,
+bool OncVirtualNetworkParser::ParseL2TPValue(OncNetworkParser* parser,
                                              PropertyIndex index,
                                              const base::Value& value,
                                              Network* network) {
@@ -1584,10 +1625,14 @@ bool OncVirtualNetworkParser::ParseL2TPValue(OncNetworkParser*,
     case PROPERTY_INDEX_L2TPIPSEC_PASSWORD:
       virtual_network->set_user_passphrase(GetStringValue(value));
       return true;
-    case PROPERTY_INDEX_L2TPIPSEC_USER:
-      // TODO(crosbug.com/23751): Support string expansion.
-      virtual_network->set_username(GetStringValue(value));
+    case PROPERTY_INDEX_L2TPIPSEC_USER: {
+      const std::string expanded_user(
+          GetUserExpandedValue(value, parser->onc_source()));
+      virtual_network->set_username(expanded_user);
+      const StringValue expanded_user_value(expanded_user);
+      virtual_network->UpdatePropertyMap(index, expanded_user_value);
       return true;
+    }
     case PROPERTY_INDEX_SAVE_CREDENTIALS:
       // Note that the specification allows different settings for
       // IPsec credentials (PSK) and L2TP credentials (username and
@@ -1602,7 +1647,7 @@ bool OncVirtualNetworkParser::ParseL2TPValue(OncNetworkParser*,
 }
 
 // static
-bool OncVirtualNetworkParser::ParseOpenVPNValue(OncNetworkParser*,
+bool OncVirtualNetworkParser::ParseOpenVPNValue(OncNetworkParser* parser,
                                                 PropertyIndex index,
                                                 const base::Value& value,
                                                 Network* network) {
@@ -1613,10 +1658,14 @@ bool OncVirtualNetworkParser::ParseOpenVPNValue(OncNetworkParser*,
     case PROPERTY_INDEX_OPEN_VPN_PASSWORD:
       virtual_network->set_user_passphrase(GetStringValue(value));
       return true;
-    case PROPERTY_INDEX_OPEN_VPN_USER:
-      // TODO(crosbug.com/23751): Support string expansion.
-      virtual_network->set_username(GetStringValue(value));
+    case PROPERTY_INDEX_OPEN_VPN_USER: {
+      const std::string expanded_user(
+          GetUserExpandedValue(value, parser->onc_source()));
+      virtual_network->set_username(expanded_user);
+      const StringValue expanded_user_value(expanded_user);
+      virtual_network->UpdatePropertyMap(index, expanded_user_value);
       return true;
+    }
     case PROPERTY_INDEX_SAVE_CREDENTIALS:
       virtual_network->set_save_credentials(GetBooleanValue(value));
       return true;

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 
+#include "base/at_exit.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "testing/gtest/include/gtest/gtest.h"

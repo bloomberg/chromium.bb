@@ -1075,7 +1075,7 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
       }
 
       const std::string& eap_anonymous_identity =
-          (wifi ? wifi->GetEapAnonymousIdentity() : std::string());
+          (wifi ? wifi->eap_anonymous_identity() : std::string());
       identity_anonymous_textfield_->SetText(
           UTF8ToUTF16(eap_anonymous_identity));
     }
@@ -1119,7 +1119,7 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
 
     // Identity is always active.
     const std::string& eap_identity =
-        (wifi ? wifi->GetEapIdentity() : std::string());
+        (wifi ? wifi->eap_identity() : std::string());
     identity_textfield_->SetText(UTF8ToUTF16(eap_identity));
 
     // Passphrase

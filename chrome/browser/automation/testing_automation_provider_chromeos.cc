@@ -867,7 +867,7 @@ void TestingAutomationProvider::GetPrivateNetworkInfo(
     item->SetString("key", virt->psk_passphrase());
     item->SetString("cert_nss", virt->ca_cert_nss());
     item->SetString("cert_id", virt->client_cert_id());
-    item->SetString("username", virt->GetUserName());
+    item->SetString("username", virt->username());
     item->SetString("password", virt->user_passphrase());
     return_value->Set(virt->service_path(), item);
   }

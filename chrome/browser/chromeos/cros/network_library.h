@@ -761,9 +761,6 @@ class Network {
   Network(const std::string& service_path,
           ConnectionType type);
 
-  // Expands |value| with user account specific paramaters.
-  static std::string GetUserExpandedValue(const std::string& value);
-
   NetworkParser* network_parser() { return network_parser_.get(); }
   void SetNetworkParser(NetworkParser* parser);
 
@@ -814,6 +811,8 @@ class Network {
 
   // This allows the implementation classes access to privates.
   NETWORK_LIBRARY_IMPL_FRIENDS;
+
+  FRIEND_TEST_ALL_PREFIXES(NetworkLibraryTest, GetUserExpandedValue);
 
   // Use these functions at your peril.  They are used by the various
   // parsers to set state, and really shouldn't be used by anything else
@@ -925,9 +924,9 @@ class VirtualNetwork : public Network {
   const std::string& ca_cert_nss() const { return ca_cert_nss_; }
   const std::string& psk_passphrase() const { return psk_passphrase_; }
   const std::string& client_cert_id() const { return client_cert_id_; }
+  const std::string& username() const { return username_; }
   const std::string& user_passphrase() const { return user_passphrase_; }
   const std::string& group_name() const { return group_name_; }
-  std::string GetUserName() const;
 
   // Sets the well-known PKCS#11 slot and PIN for accessing certificates.
   void SetCertificateSlotAndPin(
@@ -1241,8 +1240,10 @@ class WifiNetwork : public WirelessNetwork {
   const std::string& eap_client_cert_pkcs11_id() const {
     return eap_client_cert_pkcs11_id_; }
   const bool eap_use_system_cas() const { return eap_use_system_cas_; }
-  std::string GetEapIdentity() const;
-  std::string GetEapAnonymousIdentity() const;
+  const std::string& eap_identity() const { return eap_identity_; }
+  const std::string& eap_anonymous_identity() const {
+    return eap_anonymous_identity_;
+  }
   const std::string& eap_passphrase() const { return eap_passphrase_; }
 
   const std::string& GetPassphrase() const;

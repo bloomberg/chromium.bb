@@ -90,7 +90,13 @@ class OncNetworkParser : public NetworkParser {
                          OncValueSignature* signature,
                          ParserPointer parser);
 
+  // Expands |value| with user account specific paramaters.
+  static std::string GetUserExpandedValue(const base::Value& value,
+                                          NetworkUIData::ONCSource source);
+
   const std::string& parse_error() const { return parse_error_; }
+
+  NetworkUIData::ONCSource onc_source() const { return onc_source_; }
 
  protected:
   OncNetworkParser();

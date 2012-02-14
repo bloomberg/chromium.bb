@@ -1110,7 +1110,7 @@ void InternetOptionsHandler::PopulateVPNDetails(
   dictionary->SetBoolean("remembered", remembered);
   dictionary->SetString("server_hostname", vpn->server_hostname());
   dictionary->SetString("provider_type", vpn->GetProviderTypeString());
-  dictionary->SetString("username", vpn->GetUserName());
+  dictionary->SetString("username", vpn->username());
 }
 
 void InternetOptionsHandler::SetActivationButtonVisibility(
