@@ -60,7 +60,6 @@
 #include "chrome/common/mac/cfbundle_blocker.h"
 #include "chrome/common/mac/objc_zombie.h"
 #include "grit/chromium_strings.h"
-#include "third_party/WebKit/Source/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #endif
 
@@ -587,15 +586,6 @@ void ChromeMainDelegate::PreSandboxStartup() {
 #if !defined(GOOGLE_CHROME_BUILD)
   if (command_line.HasSwitch(switches::kSingleProcess)) {
     content::RenderProcessHost::set_run_renderer_in_process(true);
-#if defined(OS_MACOSX)
-    // TODO(port-mac): This is from renderer_main_platform_delegate.cc.
-    // shess tried to refactor things appropriately, but it sprawled out
-    // of control because different platforms needed different styles of
-    // initialization.  Try again once we understand the process
-    // architecture needed and where it should live.
-    InitWebCoreSystemInterface();
-#endif
-
     InitializeChromeContentRendererClient();
   }
 #endif  // GOOGLE_CHROME_BUILD

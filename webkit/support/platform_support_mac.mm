@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,6 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "grit/webkit_resources.h"
-#include "third_party/WebKit/Source/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
 #include "ui/base/resource/data_pack.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/support/test_webkit_platform_support.h"
@@ -32,10 +31,8 @@ static NSAutoreleasePool* autorelease_pool;
 
 void BeforeInitialize(bool unit_test_mode) {
   [CrDrtApplication sharedApplication];
-  // Need to initialize NSAutoreleasePool before InitWebCoreSystemInterface().
   autorelease_pool = [[NSAutoreleasePool alloc] init];
   DCHECK(autorelease_pool);
-  InitWebCoreSystemInterface();
 }
 
 #if OBJC_API_VERSION == 2

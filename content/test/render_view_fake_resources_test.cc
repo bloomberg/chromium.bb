@@ -28,10 +28,6 @@
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/webkit_glue.h"
 
-#if defined(OS_MACOSX)
-#include "third_party/WebKit/Source/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
-#endif
-
 const int32 RenderViewFakeResourcesTest::kViewId = 5;
 
 RenderViewFakeResourcesTest::RenderViewFakeResourcesTest() {}
@@ -68,9 +64,6 @@ void RenderViewFakeResourcesTest::SetUp() {
   webkit_glue::SetJavaScriptFlags("--expose-gc");
   mock_process_.reset(new MockRenderProcess);
   render_thread_ = new RenderThreadImpl(kThreadName);
-#if defined(OS_MACOSX)
-  InitWebCoreSystemInterface();
-#endif
 
   // Tell the renderer to create a view, then wait until it's ready.
   // We can't call View::Create() directly here or else we won't get

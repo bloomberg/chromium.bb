@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,10 +15,6 @@
 
 #if defined(OS_WIN)
 #include "sandbox/src/sandbox.h"
-#endif
-
-#if defined(OS_MACOSX)
-#include "third_party/WebKit/Source/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
 #endif
 
 #if defined(OS_WIN)
@@ -44,12 +40,6 @@ int PpapiPluginMain(const content::MainFunctionParams& parameters) {
     else
       ChildProcess::WaitForDebugger("Ppapi");
   }
-
-#if defined(OS_MACOSX)
-  // TODO(viettrungluu): This is called in different places in processes that
-  // will run WebKit. This is stupid and error-prone.
-  InitWebCoreSystemInterface();
-#endif
 
   MessageLoop main_message_loop;
   base::PlatformThread::SetName("CrPPAPIMain");

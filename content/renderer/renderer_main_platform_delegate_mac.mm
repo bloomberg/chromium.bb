@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,6 @@
 #include "content/common/sandbox_mac.h"
 #include "content/public/common/content_switches.h"
 #include "content/common/sandbox_init_mac.h"
-#include "third_party/WebKit/Source/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
 
 RendererMainPlatformDelegate::RendererMainPlatformDelegate(
     const content::MainFunctionParams& parameters)
@@ -31,9 +30,6 @@ void RendererMainPlatformDelegate::PlatformInitialize() {
   // Initialize NSApplication up front.  Without this call, drawing of
   // native UI elements (e.g. buttons) in WebKit will explode.
   [NSApplication sharedApplication];
-
-  // Load WebKit system interfaces.
-  InitWebCoreSystemInterface();
 
   if (![NSThread isMultiThreaded]) {
     NSString* string = @"";
