@@ -190,6 +190,14 @@ def DeleteChroot(chroot_path):
     sys.exit(1)
 
 
+def _CreateLockFile(path):
+   """Create a lockfile via sudo that is writable by current user."""
+   cros_build_lib.SudoRunCommand(['touch', path], print_cmd=False)
+   cros_build_lib.SudoRunCommand(['chown', str(os.getuid()), path],
+                                 print_cmd=False)
+   cros_build_lib.SudoRunCommand(['chmod', '644', path], print_cmd=False)
+
+
 def EnterChroot(chroot_path, chrome_root, chrome_root_mount, additional_args):
   """Enters an existing SDK chroot"""
   cmd = ENTER_CHROOT + ['--chroot', chroot_path]
@@ -302,6 +310,8 @@ Action taken is the following:
     sys.exit(1)
 
   chroot_path = os.path.join(SRC_ROOT, options.chroot)
+  chroot_path = os.path.abspath(chroot_path)
+  chroot_path = os.path.normpath(chroot_path)
 
   if not options.sdk_version:
     sdk_version = sdk_latest_version
@@ -312,9 +322,12 @@ Action taken is the following:
     print "Not doing anything. The chroot you want to remove doesn't exist."
     sys.exit(0)
 
-  lock_path = os.path.join(os.path.dirname(chroot_path), '.chroot_lock')
-  with locking.FileLock(lock_path, 'chroot lock').read_lock() as lock:
-    with sudo.SudoKeepAlive():
+  lock_path = os.path.dirname(chroot_path)
+  lock_path = os.path.join(lock_path,
+                           '.%s_lock' % os.path.basename(chroot_path))
+  with sudo.SudoKeepAlive():
+    _CreateLockFile(lock_path)
+    with locking.FileLock(lock_path, 'chroot lock') as lock:
 
       if options.delete:
         lock.write_lock()
@@ -335,9 +348,8 @@ Action taken is the following:
         else:
           CreateChroot(options.sdk_url, sdk_version,
                        chroot_path, options.replace)
-        lock.read_lock()
-
       if options.enter:
+        lock.read_lock()
         EnterChroot(chroot_path, options.chrome_root,
                     options.chrome_root_mount, remaining_arguments)
 
