@@ -444,8 +444,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsExperimentalExtensionTest,
 }
 
 // Tests that a content script is in the scripts list.
+// http://crbug.com/114104
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
-                       TestContentScriptIsPresent) {
+                       FLAKY_TestContentScriptIsPresent) {
   LoadExtension("simple_content_script");
   RunTest("testContentScriptIsPresent", kPageWithContentScript);
 }
@@ -467,7 +468,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
 // Tests that pressing 'Pause' will pause script execution if the script
 // is already running.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseWhenScriptIsRunning) {
-  RunTest("testPauseWhenScriptIsRunning", kPauseWhenScriptIsRunning);
+  TestContentScriptIsPresentRunTest("testPauseWhenScriptIsRunning",
+                                    kPauseWhenScriptIsRunning);
 }
 
 // Tests network timing.
