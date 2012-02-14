@@ -38,6 +38,8 @@ class DownloadFilePicker : public content::DownloadManager::Observer,
 
   content::DownloadManager* download_manager_;
 
+  FilePath suggested_path_;
+
   // For managing select file dialogs.
   scoped_refptr<SelectFileDialog> select_file_dialog_;
 
