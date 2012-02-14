@@ -98,8 +98,7 @@ void DrawTextStartingFrom(gfx::Canvas* canvas,
 
   int flags = (text_direction_is_rtl ? gfx::Canvas::TEXT_ALIGN_RIGHT :
                                        gfx::Canvas::TEXT_ALIGN_LEFT);
-  flags |= gfx::Canvas::MULTI_LINE | gfx::Canvas::HIDE_PREFIX |
-           gfx::Canvas::NO_ELLIPSIS;
+  flags |= gfx::Canvas::HIDE_PREFIX | gfx::Canvas::NO_ELLIPSIS;
 
   // Iterate over each word in the text, or put in a more locale-neutral way:
   // iterate to the next line breaking opportunity.
