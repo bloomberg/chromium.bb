@@ -373,6 +373,22 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       status_value = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
     }
 
+    if (status_value == ChromeViewHostMsg_GetPluginInfo_Status::kClickToPlay) {
+      FilePath pdf_path;
+      bool success = PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path);
+      DCHECK(success);
+      if (plugin.path == pdf_path) {
+        status_value = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
+      } else {
+        for (size_t i = 0; i < plugin.mime_types.size(); ++i) {
+          if (plugin.mime_types[i].mime_type == "application/googletalk") {
+            status_value = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
+            break;
+          }
+        }
+      }
+    }
+
     switch (status_value) {
       case ChromeViewHostMsg_GetPluginInfo_Status::kNotFound: {
         NOTREACHED();
