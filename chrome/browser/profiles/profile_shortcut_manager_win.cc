@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/installer/util/auto_launch_util.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/shell_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -205,6 +206,15 @@ void UpdateChromeDesktopShortcutForProfile(
       false);
 }
 
+void DeleteAutoLaunchValueForProfile(
+    const FilePath& profile_path) {
+  if (auto_launch_util::WillLaunchAtLogin(FilePath(),
+                                          profile_path.BaseName().value())) {
+      auto_launch_util::SetWillLaunchAtLogin(
+          false, FilePath(), profile_path.BaseName().value());
+  }
+}
+
 }  // namespace
 
 ProfileShortcutManagerWin::ProfileShortcutManagerWin() {
@@ -315,6 +325,10 @@ void ProfileShortcutManagerWin::OnProfileWillBeRemoved(
 void ProfileShortcutManagerWin::OnProfileWasRemoved(
     const FilePath& profile_path,
     const string16& profile_name) {
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&DeleteAutoLaunchValueForProfile, profile_path));
+
   // If there is one profile left, we want to remove the badge and name from it.
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
