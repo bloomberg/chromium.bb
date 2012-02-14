@@ -187,7 +187,6 @@ class ChangeInfoUnittest(GclTestsBase):
       'UpdateRietveldDescription',
       'description', 'issue', 'name',
       'needs_upload', 'patch', 'patchset', 'reviewers', 'rietveld',
-      'subject',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(
@@ -314,7 +313,7 @@ class CMDuploadUnittest(GclTestsBase):
     gcl.GenerateDiff(files)
     gcl.upload.RealMain(['upload.py', '-y', '--server=https://my_server',
                          '-r', 'georges@example.com',
-                         '--message=\'\'', '--issue=1'],
+                         '--issue=1', '--title= '],
                          change_info.patch).AndReturn(("1",
                                                                     "2"))
     change_info.GetLocalRoot().AndReturn('proout')
@@ -358,7 +357,7 @@ class CMDuploadUnittest(GclTestsBase):
     gcl.GenerateDiff(change_info.GetFileNames())
     gcl.upload.RealMain(
         [ 'upload.py', '-y', '--server=https://my_server', '--server=a',
-          '--description_file=descfile', '--message=deescription'],
+          '--file=descfile'],
         change_info.patch).AndReturn(("1", "2"))
     gcl.os.remove('descfile')
     change_info.SendToRietveld("/lint/issue%s_%s" % ('1', '2'), timeout=1)
@@ -398,9 +397,9 @@ class CMDuploadUnittest(GclTestsBase):
     gcl.os.getcwd().AndReturn('somewhere')
     gcl.os.chdir(change_info.GetLocalRoot())
     gcl.GenerateDiff(change_info.GetFileNames())
-    gcl.upload.RealMain(['upload.py', '-y', '--server=https://my_server',
-        "--description_file=descfile",
-        "--message=deescription"], change_info.patch).AndReturn(("1", "2"))
+    gcl.upload.RealMain(
+        ['upload.py', '-y', '--server=https://my_server', "--file=descfile" ],
+        change_info.patch).AndReturn(("1", "2"))
     gcl.os.remove('descfile')
     change_info.SendToRietveld("/lint/issue%s_%s" % ('1', '2'), timeout=1)
     gcl.os.chdir('somewhere')
@@ -457,7 +456,7 @@ class CMDuploadUnittest(GclTestsBase):
     gcl.GenerateDiff(files)
     gcl.upload.RealMain(['upload.py', '-y', '--server=https://my_server',
                          '--reviewers=georges@example.com',
-                         '--message=\'\'', '--issue=1'],
+                         '--issue=1', '--title= '],
                          change_info.patch).AndReturn(("1", "2"))
     change_info.Save()
     change_info.PrimeLint()
@@ -486,7 +485,7 @@ class CMDuploadUnittest(GclTestsBase):
     gcl.GenerateDiff(change_info.GetFileNames())
     gcl.upload.RealMain(['upload.py', '-y', '--server=https://my_server',
                          '--reviewers=foo@example.com,bar@example.com',
-                         '--message=\'\'', '--issue=1'],
+                         '--issue=1', '--title= '],
                          change_info.patch).AndReturn(("1", "2"))
     change_info.Save()
     change_info.PrimeLint()

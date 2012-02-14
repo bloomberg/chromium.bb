@@ -285,7 +285,6 @@ class ChangeInfo(object):
     self.issue = int(issue)
     self.patchset = int(patchset)
     self._description = None
-    self._subject = None
     self._reviewers = None
     self._set_description(description)
     if files is None:
@@ -310,19 +309,11 @@ class ChangeInfo(object):
     parsed_lines = []
     reviewers_re = re.compile(REVIEWERS_REGEX)
     reviewers = ''
-    subject = ''
     for l in description.splitlines():
-      if not subject:
-        subject = l
       matched_reviewers = reviewers_re.match(l)
       if matched_reviewers:
         reviewers = matched_reviewers.group(1).split(',')
       parsed_lines.append(l)
-
-    if len(subject) > 100:
-      subject = subject[:97] + '...'
-
-    self._subject = subject
     self._reviewers = reviewers
     self._description = '\n'.join(parsed_lines)
 
@@ -331,10 +322,6 @@ class ChangeInfo(object):
   @property
   def reviewers(self):
     return self._reviewers
-
-  @property
-  def subject(self):
-    return self._subject
 
   def NeedsUpload(self):
     return self.needs_upload
@@ -859,18 +846,14 @@ def CMDupload(change_info, args):
 
   desc_file = None
   try:
-    if change_info.issue:  # Uploading a new patchset.
-      found_message = False
-      for arg in args:
-        if arg.startswith("--message") or arg.startswith("-m"):
-          found_message = True
-          break
-
-      if not found_message:
-        upload_arg.append("--message=''")
-
+    if change_info.issue:
+      # Uploading a new patchset.
       upload_arg.append("--issue=%d" % change_info.issue)
-    else: # First time we upload.
+
+      if not any(i.startswith('--message') or i.startswith('-m') for i in args):
+        upload_arg.append('--title= ')
+    else:
+      # First time we upload.
       handle, desc_file = tempfile.mkstemp(text=True)
       os.write(handle, change_info.description)
       os.close(handle)
@@ -888,9 +871,7 @@ def CMDupload(change_info, args):
         cc_list = ','.join(filter(None, [cc_list] + watchers))
       if cc_list:
         upload_arg.append("--cc=" + cc_list)
-      upload_arg.append("--description_file=%s" % desc_file)
-      if change_info.subject:
-        upload_arg.append("--message=" + change_info.subject)
+      upload_arg.append("--file=%s" % desc_file)
 
       if GetCodeReviewSetting("PRIVATE") == "True":
         upload_arg.append("--private")
