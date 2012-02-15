@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,8 +26,14 @@ namespace {
 // Corner radius for the progress bar's border.
 const int kCornerRadius = 3;
 
-// Progress bar's border width
+// Progress bar's border width.
 const int kBorderWidth = 1;
+
+const SkColor kBarColorStart = SkColorSetRGB(81, 138, 223);
+const SkColor kBarColorEnd = SkColorSetRGB(51, 103, 205);
+const SkColor kBackgroundColorStart = SkColorSetRGB(212, 212, 212);
+const SkColor kBackgroundColorEnd = SkColorSetRGB(252, 252, 252);
+const SkColor kBorderColor = SkColorSetRGB(144, 144, 144);
 
 void AddRoundRectPathWithPadding(int x, int y,
                                  int w, int h,
@@ -284,33 +290,15 @@ void ProgressBar::OnPaint(gfx::Canvas* canvas) {
                     kBorderWidth);
   }
 #else
-  SkColor bar_color_start = SkColorSetRGB(81, 138, 223);
-  SkColor bar_color_end = SkColorSetRGB(51, 103, 205);
-  SkColor background_color_start = SkColorSetRGB(212, 212, 212);
-  SkColor background_color_end = SkColorSetRGB(252, 252, 252);
-  SkColor border_color = SkColorSetRGB(144, 144, 144);
+  FillRoundRect(canvas, 0, 0, width(), height(), kCornerRadius,
+                kBackgroundColorStart, kBackgroundColorEnd, false);
 
-  FillRoundRect(canvas,
-                0, 0, width(), height(),
-                kCornerRadius,
-                background_color_start,
-                background_color_end,
-                false);
   if (progress_width > 1) {
-    FillRoundRect(canvas,
-                  0, 0,
-                  progress_width, height(),
-                  kCornerRadius,
-                  bar_color_start,
-                  bar_color_end,
-                  false);
+    FillRoundRect(canvas, 0, 0, progress_width, height(), kCornerRadius,
+                  kBarColorStart, kBarColorEnd, false);
   }
-  StrokeRoundRect(canvas,
-                  0, 0,
-                  width(), height(),
-                  kCornerRadius,
-                  border_color,
-                  kBorderWidth);
+  StrokeRoundRect(canvas, 0, 0, width(), height(), kCornerRadius,
+                  kBorderColor, kBorderWidth);
 #endif
 }
 
