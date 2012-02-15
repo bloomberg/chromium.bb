@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,6 +42,13 @@ void UninstallExtension(const FilePath& extensions_dir,
 // Loads and validates an extension from the specified directory. Returns NULL
 // on failure, with a description of the error in |error|.
 scoped_refptr<Extension> LoadExtension(const FilePath& extension_root,
+                                       Extension::Location location,
+                                       int flags,
+                                       std::string* error);
+
+// The same as LoadExtension except use the provided |extension_id|.
+scoped_refptr<Extension> LoadExtension(const FilePath& extension_root,
+                                       std::string extension_id,
                                        Extension::Location location,
                                        int flags,
                                        std::string* error);

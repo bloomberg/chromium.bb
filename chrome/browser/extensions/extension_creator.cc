@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,17 +78,35 @@ bool ExtensionCreator::InitializeInput(
     return false;
   }
 
+  return true;
+}
+
+bool ExtensionCreator::ValidateManifest(const FilePath& extension_dir,
+                                        crypto::RSAPrivateKey* key_pair) {
+  std::vector<uint8> public_key_bytes;
+  if (!key_pair->ExportPublicKey(&public_key_bytes)) {
+    error_message_ =
+        l10n_util::GetStringUTF8(IDS_EXTENSION_PUBLIC_KEY_FAILED_TO_EXPORT);
+    return false;
+  }
+
+  std::string public_key;
+  public_key.insert(public_key.begin(),
+                    public_key_bytes.begin(), public_key_bytes.end());
+
+  std::string extension_id;
+  if (!Extension::GenerateId(public_key, &extension_id))
+    return false;
+
   // Load the extension once. We don't really need it, but this does a lot of
   // useful validation of the structure.
   scoped_refptr<Extension> extension(
-      extension_file_util::LoadExtension(absolute_extension_dir,
+      extension_file_util::LoadExtension(extension_dir,
+                                         extension_id,
                                          Extension::INTERNAL,
                                          Extension::STRICT_ERROR_CHECKS,
                                          &error_message_));
-  if (!extension.get())
-    return false;  // LoadExtension already set error_message_.
-
-  return true;
+  return !!extension.get();
 }
 
 crypto::RSAPrivateKey* ExtensionCreator::ReadInputKey(const FilePath&
@@ -218,11 +236,7 @@ bool ExtensionCreator::WriteCRX(const FilePath& zip_path,
   }
 
   std::vector<uint8> public_key;
-  if (!private_key->ExportPublicKey(&public_key)) {
-    error_message_ =
-        l10n_util::GetStringUTF8(IDS_EXTENSION_PUBLIC_KEY_FAILED_TO_EXPORT);
-    return false;
-  }
+  CHECK(private_key->ExportPublicKey(&public_key));
 
   SandboxedExtensionUnpacker::ExtensionHeader header;
   memcpy(&header.magic, SandboxedExtensionUnpacker::kExtensionHeaderMagic,
@@ -277,6 +291,10 @@ bool ExtensionCreator::Run(const FilePath& extension_dir,
   else
     key_pair.reset(GenerateKey(output_private_key_path));
   if (!key_pair.get())
+    return false;
+
+  // Perform some extra validation by loading the extension.
+  if (!ValidateManifest(extension_dir, key_pair.get()))
     return false;
 
   ScopedTempDir temp_dir;

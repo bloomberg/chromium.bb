@@ -96,11 +96,15 @@ bool ChromeContentUtilityClient::Send(IPC::Message* message) {
 }
 
 void ChromeContentUtilityClient::OnUnpackExtension(
-    const FilePath& extension_path, int location, int creation_flags) {
+    const FilePath& extension_path,
+    const std::string& extension_id,
+    int location,
+    int creation_flags) {
   CHECK(location > Extension::INVALID);
   CHECK(location < Extension::NUM_LOCATIONS);
   ExtensionUnpacker unpacker(
       extension_path,
+      extension_id,
       static_cast<Extension::Location>(location),
       creation_flags);
   if (unpacker.Run() && unpacker.DumpImagesToFile() &&

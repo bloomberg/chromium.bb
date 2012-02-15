@@ -4643,6 +4643,27 @@ TEST_F(ExtensionServiceTest, InstallPriorityExternalLocalFile) {
   EXPECT_TRUE(pending->IsIdPending(kGoodId));
 }
 
+// This makes sure we can package and install CRX files that use whitelisted
+// permissions.
+TEST_F(ExtensionServiceTest, InstallWhitelistedExtension) {
+  std::string test_id = "hdkklepkcpckhnpgjnmbdfhehckloojk";
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kWhitelistedExtensionID, test_id);
+
+  InitializeEmptyExtensionService();
+  FilePath path = data_dir_
+      .AppendASCII("permissions");
+  FilePath pem_path = path
+      .AppendASCII("whitelist.pem");
+  path = path
+      .AppendASCII("whitelist");
+
+  const Extension* extension = PackAndInstallCRX(path, pem_path, INSTALL_NEW);
+  EXPECT_EQ(0u, GetErrors().size());
+  ASSERT_EQ(1u, service_->extensions()->size());
+  EXPECT_EQ(test_id, extension->id());
+}
+
 // Test that when multiple sources try to install an extension,
 // we consistently choose the right one. To make tests easy to read,
 // methods that fake requests to install crx files in several ways

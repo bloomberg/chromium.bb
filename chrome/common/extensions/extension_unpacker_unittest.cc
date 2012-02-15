@@ -44,7 +44,7 @@ public:
 
     unpacker_.reset(
         new ExtensionUnpacker(
-            crx_path, Extension::INTERNAL, Extension::NO_FLAGS));
+            crx_path, std::string(), Extension::INTERNAL, Extension::NO_FLAGS));
   }
 
  protected:

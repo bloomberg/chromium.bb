@@ -85,9 +85,12 @@ bool PathContainsParentDirectory(const FilePath& path) {
 }  // namespace
 
 ExtensionUnpacker::ExtensionUnpacker(const FilePath& extension_path,
+                                     const std::string& extension_id,
                                      Extension::Location location,
                                      int creation_flags)
-    : extension_path_(extension_path), location_(location),
+    : extension_path_(extension_path),
+      extension_id_(extension_id),
+      location_(location),
       creation_flags_(creation_flags) {
 }
 
@@ -174,16 +177,13 @@ bool ExtensionUnpacker::Run() {
   if (!parsed_manifest_.get())
     return false;  // Error was already reported.
 
-  // NOTE: Since the unpacker doesn't have the extension's public_id, the
-  // InitFromValue is allowed to generate a temporary id for the extension.
-  // ANY CODE THAT FOLLOWS SHOULD NOT DEPEND ON THE CORRECT ID OF THIS
-  // EXTENSION.
   std::string error;
   scoped_refptr<Extension> extension(Extension::Create(
       temp_install_dir_,
       location_,
       *parsed_manifest_,
       creation_flags_,
+      extension_id_,
       &error));
   if (!extension.get()) {
     SetError(error);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -241,6 +241,10 @@ class SandboxedExtensionUnpacker : public content::UtilityProcessHostClient {
 
   // The public key that was extracted from the CRX header.
   std::string public_key_;
+
+  // The extension's ID. This will be calculated from the public key in the crx
+  // header.
+  std::string extension_id_;
 
   // Time at which unpacking started. Used to compute the time unpacking takes.
   base::TimeTicks unpack_start_time_;

@@ -88,7 +88,7 @@ void MockExtensionService::AddExtensionWithIdAndPermissions(
   }
 
   std::string error;
-  scoped_refptr<Extension> extension(Extension::CreateWithId(
+  scoped_refptr<Extension> extension(Extension::Create(
       FilePath(),
       Extension::INTERNAL,
       manifest,

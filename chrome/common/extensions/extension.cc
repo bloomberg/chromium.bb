@@ -229,28 +229,29 @@ scoped_refptr<Extension> Extension::Create(const FilePath& path,
                                            const DictionaryValue& value,
                                            int flags,
                                            std::string* utf8_error) {
+  return Extension::Create(path,
+                           location,
+                           value,
+                           flags,
+                           std::string(),  // ID is ignored if empty.
+                           utf8_error);
+}
+
+scoped_refptr<Extension> Extension::Create(const FilePath& path,
+                                           Location location,
+                                           const DictionaryValue& value,
+                                           int flags,
+                                           const std::string& explicit_id,
+                                           std::string* utf8_error) {
   DCHECK(utf8_error);
   string16 error;
   scoped_refptr<Extension> extension = new Extension(path, location);
-
+  extension->id_ = explicit_id;
   if (!extension->InitFromValue(new extensions::Manifest(value.DeepCopy()),
                                 flags, &error)) {
     *utf8_error = UTF16ToUTF8(error);
     return NULL;
   }
-  return extension;
-}
-
-scoped_refptr<Extension> Extension::CreateWithId(const FilePath& path,
-                                                 Location location,
-                                                 const DictionaryValue& value,
-                                                 int flags,
-                                                 const std::string& explicit_id,
-                                                 std::string* error) {
-  scoped_refptr<Extension> extension = Create(
-      path, location, value, flags, error);
-  if (extension.get())
-    extension->id_ = explicit_id;
   return extension;
 }
 
@@ -1537,7 +1538,7 @@ bool Extension::InitFromValue(extensions::Manifest* manifest, int flags,
   if (manifest->HasKey(keys::kPublicKey)) {
     std::string public_key_bytes;
     if (!manifest->GetString(keys::kPublicKey,
-                         &public_key_) ||
+                             &public_key_) ||
         !ParsePEMKeyBytes(public_key_,
                           &public_key_bytes) ||
         !GenerateId(public_key_bytes, &id_)) {
@@ -1547,7 +1548,7 @@ bool Extension::InitFromValue(extensions::Manifest* manifest, int flags,
   } else if (flags & REQUIRE_KEY) {
     *error = ASCIIToUTF16(errors::kInvalidKey);
     return false;
-  } else {
+  } else if (id_.empty()) {
     // If there is a path, we generate the ID from it. This is useful for
     // development mode, because it keeps the ID stable across restarts and
     // reloading the extension.

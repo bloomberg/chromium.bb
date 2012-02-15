@@ -46,7 +46,7 @@ TEST(ExtensionAPI, Depends) {
   }
 
   std::string error;
-  scoped_refptr<Extension> extension(Extension::CreateWithId(
+  scoped_refptr<Extension> extension(Extension::Create(
       FilePath(), Extension::LOAD, manifest, Extension::NO_FLAGS, "x", &error));
   CHECK(extension.get());
   CHECK(error.empty());

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -93,7 +93,7 @@ class SandboxedExtensionUnpackerTest : public testing::Test {
         ", Crx path: " << crx_path.value();
 
     unpacker_.reset(new ExtensionUnpacker(
-        crx_path, Extension::INTERNAL, Extension::NO_FLAGS));
+        crx_path, std::string(), Extension::INTERNAL, Extension::NO_FLAGS));
 
     // Build a temp area where the extension will be unpacked.
     temp_path_ =

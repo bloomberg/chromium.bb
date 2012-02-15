@@ -49,6 +49,7 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
 
   // IPC message handlers.
   void OnUnpackExtension(const FilePath& extension_path,
+                         const std::string& extension_id,
                          int location, int creation_flags);
   void OnUnpackWebResource(const std::string& resource_data);
   void OnParseUpdateManifest(const std::string& xml);

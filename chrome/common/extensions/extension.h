@@ -211,14 +211,13 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                                          std::string* error);
 
   // In a few special circumstances, we want to create an Extension and give it
-  // an explicit id. Most consumers should just use the plain Create() method.
-  static scoped_refptr<Extension> CreateWithId(
-      const FilePath& path,
-      Location location,
-      const base::DictionaryValue& value,
-      int flags,
-      const std::string& explicit_id,
-      std::string* error);
+  // an explicit id. Most consumers should just use the other Create() method.
+  static scoped_refptr<Extension> Create(const FilePath& path,
+                                         Location location,
+                                         const base::DictionaryValue& value,
+                                         int flags,
+                                         const std::string& explicit_id,
+                                         std::string* error);
 
   // Given two install sources, return the one which should take priority
   // over the other. If an extension is installed from two sources A and B,

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -269,7 +269,8 @@ void SandboxedExtensionUnpacker::Start() {
             link_free_crx_path));
   } else {
     // Otherwise, unpack the extension in this process.
-    ExtensionUnpacker unpacker(temp_crx_path, location_, creation_flags_);
+    ExtensionUnpacker unpacker(
+        temp_crx_path, extension_id_, location_, creation_flags_);
     if (unpacker.Run() && unpacker.DumpImagesToFile() &&
         unpacker.DumpMessageCatalogsToFile()) {
       OnUnpackExtensionSucceeded(*unpacker.parsed_manifest());
@@ -320,7 +321,7 @@ void SandboxedExtensionUnpacker::StartProcessOnIOThread(
   host->SetExposedDir(temp_crx_path.DirName());
   host->Send(
       new ChromeUtilityMsg_UnpackExtension(
-          temp_crx_path, location_, creation_flags_));
+          temp_crx_path, extension_id_, location_, creation_flags_));
 }
 
 void SandboxedExtensionUnpacker::OnUnpackExtensionSucceeded(
@@ -544,8 +545,13 @@ bool SandboxedExtensionUnpacker::ValidateSignature() {
     return false;
   }
 
-  base::Base64Encode(std::string(reinterpret_cast<char*>(&key.front()),
-      key.size()), &public_key_);
+  std::string public_key =
+      std::string(reinterpret_cast<char*>(&key.front()), key.size());
+  base::Base64Encode(public_key, &public_key_);
+
+  if (!Extension::GenerateId(public_key, &extension_id_))
+    return false;
+
   return true;
 }
 

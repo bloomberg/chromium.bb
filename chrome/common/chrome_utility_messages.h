@@ -54,8 +54,9 @@ IPC_STRUCT_TRAITS_END()
 // These are messages from the browser to the utility process.
 // Tell the utility process to unpack the given extension file in its
 // directory and verify that it is valid.
-IPC_MESSAGE_CONTROL3(ChromeUtilityMsg_UnpackExtension,
+IPC_MESSAGE_CONTROL4(ChromeUtilityMsg_UnpackExtension,
                      FilePath /* extension_filename */,
+                     std::string /* extension_id */,
                      int /* Extension::Location */,
                      int /* InitFromValue flags */)
 

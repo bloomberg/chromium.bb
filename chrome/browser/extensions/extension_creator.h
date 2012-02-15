@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,6 +59,10 @@ class ExtensionCreator {
                        const FilePath& private_key_path,
                        const FilePath& private_key_output_path,
                        int run_flags);
+
+  // Validates the manifest by trying to load the extension.
+  bool ValidateManifest(const FilePath& extension_dir,
+                        crypto::RSAPrivateKey* key_pair);
 
   // Reads private key from |private_key_path|.
   crypto::RSAPrivateKey* ReadInputKey(const FilePath& private_key_path);

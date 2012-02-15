@@ -94,7 +94,7 @@ bool ShowExtensionInstallDialogForManifest(
   }
 
   std::string init_errors;
-  *dummy_extension = Extension::CreateWithId(
+  *dummy_extension = Extension::Create(
       FilePath(),
       Extension::INTERNAL,
       localized_manifest.get() ? *localized_manifest.get() : *manifest,

@@ -52,12 +52,12 @@ scoped_refptr<Extension> LoadExtensionWithLocation(
   int flags = Extension::NO_FLAGS;
   if (strict_error_checks)
     flags |= Extension::STRICT_ERROR_CHECKS;
-  return Extension::CreateWithId(path.DirName(),
-                                 location,
-                                 *value,
-                                 flags,
-                                 Extension::GenerateIdForPath(path),
-                                 error);
+  return Extension::Create(path.DirName(),
+                           location,
+                           *value,
+                           flags,
+                           Extension::GenerateIdForPath(path),
+                           error);
 }
 
 scoped_refptr<Extension> LoadExtension(const std::string& name,

@@ -124,6 +124,15 @@ scoped_refptr<Extension> LoadExtension(const FilePath& extension_path,
                                        Extension::Location location,
                                        int flags,
                                        std::string* error) {
+  return LoadExtension(
+      extension_path, std::string(), location, flags, error);
+}
+
+scoped_refptr<Extension> LoadExtension(const FilePath& extension_path,
+                                       std::string extension_id,
+                                       Extension::Location location,
+                                       int flags,
+                                       std::string* error) {
   scoped_ptr<DictionaryValue> manifest(LoadManifest(extension_path, error));
   if (!manifest.get())
     return NULL;
@@ -136,6 +145,7 @@ scoped_refptr<Extension> LoadExtension(const FilePath& extension_path,
       location,
       *manifest,
       flags,
+      extension_id,
       error));
   if (!extension.get())
     return NULL;
