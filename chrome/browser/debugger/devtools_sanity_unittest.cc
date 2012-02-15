@@ -444,9 +444,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsExperimentalExtensionTest,
 }
 
 // Tests that a content script is in the scripts list.
-// http://crbug.com/114104
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
-                       DISABLED_TestContentScriptIsPresent) {
+                       TestContentScriptIsPresent) {
   LoadExtension("simple_content_script");
   RunTest("testContentScriptIsPresent", kPageWithContentScript);
 }
