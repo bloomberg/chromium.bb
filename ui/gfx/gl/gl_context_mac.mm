@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -146,6 +146,25 @@ bool GLContext::SupportsDualGpus() {
   }
 
   if (found_online && found_offline) {
+    // Only switch GPUs dynamically on recent MacBook Pro models.
+    // Otherwise, keep the system on the discrete GPU for the lifetime
+    // of the browser process, since switching back and forth causes
+    // system stability issues. http://crbug.com/113703
+    std::string model;
+    int32 model_major, model_minor;
+    if (!base::mac::ParseModelIdentifier(base::mac::GetModelIdentifier(),
+                                         &model, &model_major, &model_minor)) {
+      return false;
+    }
+    if (model == "MacBookPro") {
+      const int kMacBookProFirstDualAMDIntelGPUModel = 8;
+      if (model_major < kMacBookProFirstDualAMDIntelGPUModel) {
+        // We're on an older MacBook Pro.
+        GLContextCGL::ForceUseOfDiscreteGPU();
+        return false;
+      }
+    }
+
     supports_dual_gpus = true;
   }
 

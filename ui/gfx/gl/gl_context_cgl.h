@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,11 +24,18 @@ class GLContextCGL : public GLContext {
   virtual void* GetHandle() OVERRIDE;
   virtual void SetSwapInterval(int interval) OVERRIDE;
 
+  // Expose ForceUseOfDiscreteGPU only to GLContext implementation.
+  friend class GLContext;
+
  private:
   void* context_;
   GpuPreference gpu_preference_;
 
   GpuPreference GetGpuPreference();
+
+  // Helper for dual-GPU support on systems where this is necessary
+  // for stability reasons.
+  static void ForceUseOfDiscreteGPU();
 
   DISALLOW_COPY_AND_ASSIGN(GLContextCGL);
 };
