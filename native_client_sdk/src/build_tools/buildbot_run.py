@@ -99,13 +99,25 @@ def Archive(filename):
   sys.stdout.flush()
 
 
-def AddMakeBat(makepath):
+def AddMakeBat(pepperdir, makepath):
   """Create a simple batch file to execute Make.
   
   Creates a simple batch file named make.bat for the Windows platform at the
-  given path, pointing to the Make executable in the SDK.""" 
+  given path, pointing to the Make executable in the SDK."""
+  
+  makepath = os.path.abspath(makepath)
+  if not makepath.startswith(pepperdir):
+    ErrorExit('Make.bat not relative to Pepper directory: ' + makepath)
+  
+  makeexe = os.path.abspath(os.path.join(pepperdir, 'tools'))
+  relpath = os.path.relpath(makeexe, makepath)
+
   fp = open(os.path.join(makepath, 'make.bat'), 'wb')
-  fp.write('@..\\..\\tools\\make.exe %*\n')
+  outpath = os.path.join(relpath, 'make.exe')
+
+  # Since make.bat is only used by Windows, for Windows path style
+  outpath = outpath.replace(os.path.sep, '\\')
+  fp.write('@%s %%*\n' % outpath)
   fp.close()
 
 
@@ -205,7 +217,7 @@ def GetBuildArgs(tcname, tcpath, outdir, arch, xarch=None):
   if tcname == 'glibc':
     args.append('--nacl_glibc')
 
-  if arch == 'pnacl':
+  if tcname == 'pnacl':
     args.append('bitcode=1')
 
   print "Building %s (%s): %s" % (tcname, arch, ' '.join(args))
@@ -380,28 +392,57 @@ def BuildToolchains(pepperdir, platform, arch, pepper_ver, toolchains):
     ErrorExit('Missing arch %s' % arch)
 
 
+EXAMPLE_MAP = {
+  'newlib': [
+    'fullscreen_tumbler',
+    'gamepad',
+    'geturl',
+    'hello_world_interactive', 
+    'hello_world_newlib',
+    'input_events',
+    'load_progress',
+    'mouselock',
+    'multithreaded_input_events',
+    'pi_generator',
+    'pong',
+    'sine_synth',
+    'tumbler',
+    'websocket'
+  ],
+  'glibc': [
+    'dlopen',
+    'hello_world_glibc',
+  ],
+  'pnacl': [
+    'hello_world_pnacl',
+  ],
+}
+
 def CopyExamples(pepperdir, toolchains):
   BuildStep('Copy examples')
-  examples = [
-      'dlopen', 'fullscreen_tumbler', 'gamepad', 'geturl',
-      'hello_world_glibc', 'hello_world_interactive', 'hello_world_newlib',
-      'input_events', 'load_progress', 'mouselock',
-      'multithreaded_input_events', 'pi_generator', 'pong', 'sine_synth',
-      'tumbler']
-  files = ['favicon.ico', 'httpd.cmd', 'httpd.py', 'index.html', 'Makefile']
+
   if not os.path.exists(os.path.join(pepperdir, 'tools')):
     ErrorExit('Examples depend on missing tools.')
   if not os.path.exists(os.path.join(pepperdir, 'toolchain')):
     ErrorExit('Examples depend on missing toolchains.')
+
   exampledir = os.path.join(pepperdir, 'examples')
   RemoveDir(exampledir)
   MakeDir(exampledir)
-  AddMakeBat(exampledir)
+  AddMakeBat(pepperdir, exampledir)
+
+  # Copy individual files
+  files = ['favicon.ico', 'httpd.cmd', 'httpd.py', 'index.html', 'Makefile']
   for filename in files:
     oshelpers.Copy(['-v', os.path.join(SDK_EXAMPLE_DIR, filename), exampledir])
+
+  # Add examples for supported toolchains
+  examples = []
+  for tc in toolchains:
+    examples.extend(EXAMPLE_MAP[tc])
   for example in examples:
     CopyDir(os.path.join(SDK_EXAMPLE_DIR, example), exampledir)
-    AddMakeBat(os.path.join(exampledir, example))
+    AddMakeBat(pepperdir, os.path.join(exampledir, example))
 
 
 def BuildUpdater():
