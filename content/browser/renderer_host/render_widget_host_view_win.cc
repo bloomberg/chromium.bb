@@ -329,8 +329,6 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       is_fullscreen_(false),
       ignore_mouse_movement_(true),
       composition_range_(ui::Range::InvalidRange()),
-      ignore_next_lbutton_message_at_same_location(false),
-      last_pointer_down_location_(0),
       touch_state_(this),
       pointer_down_context_(false),
       focus_on_editable_field_(false),
@@ -1437,15 +1435,6 @@ LRESULT RenderWidgetHostViewWin::OnMouseEvent(UINT message, WPARAM wparam,
                                               LPARAM lparam, BOOL& handled) {
   handled = TRUE;
 
-  if (ignore_next_lbutton_message_at_same_location &&
-      message == WM_LBUTTONDOWN) {
-    ignore_next_lbutton_message_at_same_location = false;
-    LPARAM last_location = last_pointer_down_location_;
-    last_pointer_down_location_ = 0;
-    if (last_location == lparam)
-      return 0;
-  }
-
   if (message == WM_MOUSELEAVE)
     ignore_mouse_movement_ = true;
 
@@ -2267,17 +2256,12 @@ LRESULT RenderWidgetHostViewWin::OnPointerMessage(
   lparam = MAKELPARAM(point.x, point.y);
 
   if (message == WM_POINTERDOWN) {
-    OnMouseEvent(WM_LBUTTONDOWN, MK_LBUTTON, lparam, handled);
-    ignore_next_lbutton_message_at_same_location = true;
-    last_pointer_down_location_ = lparam;
     SetFocus();
     pointer_down_context_ = true;
     received_focus_change_after_pointer_down_ = false;
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
         base::Bind(&RenderWidgetHostViewWin::ResetPointerDownContext,
                    weak_factory_.GetWeakPtr()), kPointerDownContextResetDelay);
-  } else if (message == WM_POINTERUP) {
-    OnMouseEvent(WM_LBUTTONUP, MK_LBUTTON, lparam, handled);
   }
   handled = FALSE;
   return 0;
