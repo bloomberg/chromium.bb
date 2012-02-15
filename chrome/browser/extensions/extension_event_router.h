@@ -118,8 +118,8 @@ class ExtensionEventRouter : public content::NotificationObserver {
                          const linked_ptr<ExtensionEvent>& event,
                          bool was_pending);
 
-  // Ensures that all non-persistent background pages that are interested in the
-  // given event are loaded, and queues the event if the page is not ready yet.
+  // Ensures that all lazy background pages that are interested in the given
+  // event are loaded, and queues the event if the page is not ready yet.
   // If |extension_id| is non-empty, we load only that extension's page
   // (assuming it is interested in the event).
   void LoadLazyBackgroundPagesForEvent(
@@ -136,12 +136,24 @@ class ExtensionEventRouter : public content::NotificationObserver {
   void DispatchPendingEvents(const std::string& extension_id);
 
  private:
-  // An extension listening to an event.
-  struct EventListener;
+  // The extension and process that contains the event listener for a given
+  // event.
+  struct ListenerProcess;
+
+  // A map between an event name and a set of extensions that are listening
+  // to that event.
+  typedef std::map<std::string, std::set<ListenerProcess> > ListenerMap;
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // Returns true if the given listener map contains a event listeners for
+  // the given event. If |extension_id| is non-empty, we also check that that
+  // extension is one of the listeners.
+  bool HasEventListenerImpl(const ListenerMap& listeners,
+                            const std::string& extension_id,
+                            const std::string& event_name);
 
   Profile* profile_;
 
@@ -149,14 +161,12 @@ class ExtensionEventRouter : public content::NotificationObserver {
 
   scoped_refptr<ExtensionDevToolsManager> extension_devtools_manager_;
 
-  // A map between an event name and a set of extensions that are listening
-  // to that event.
-  typedef std::map<std::string, std::set<EventListener> > ListenerMap;
+  // The list of active extension processes that are listening to events.
   ListenerMap listeners_;
 
-  // Keeps track of all the non-persistent background pages that are listening
-  // to events.
-  // TODO(mpcomplete): save to disk.
+  // The list of all the lazy (non-persistent) background pages that are
+  // listening to events. This is just a cache of the real list, which is
+  // stored on disk in the extension prefs.
   ListenerMap lazy_listeners_;
 
   // A map between an extension id and the queue of events pending

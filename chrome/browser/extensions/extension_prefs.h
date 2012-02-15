@@ -236,6 +236,11 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer,
   void SetActivePermissions(const std::string& extension_id,
                             const ExtensionPermissionSet* permissions);
 
+  // Returns the list of events that the given extension has registered for.
+  std::set<std::string> GetRegisteredEvents(const std::string& extension_id);
+  void SetRegisteredEvents(const std::string& extension_id,
+                           const std::set<std::string>& events);
+
   // Returns true if the user enabled this extension to be loaded in incognito
   // mode.
   bool IsIncognitoEnabled(const std::string& extension_id);

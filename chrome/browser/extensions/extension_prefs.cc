@@ -157,6 +157,10 @@ const char kPrefContentSettings[] = "content_settings";
 // A preference that contains extension-set content settings.
 const char kPrefIncognitoContentSettings[] = "incognito_content_settings";
 
+// A list of event names that this extension has registered from its lazy
+// background page.
+const char kRegisteredEvents[] = "events";
+
 // Provider of write access to a dictionary storing extension prefs.
 class ScopedExtensionPrefUpdate : public DictionaryPrefUpdate {
  public:
@@ -892,6 +896,35 @@ void ExtensionPrefs::SetActivePermissions(
     const ExtensionPermissionSet* permissions) {
   SetExtensionPrefPermissionSet(
       extension_id, kPrefActivePermissions, permissions);
+}
+
+std::set<std::string> ExtensionPrefs::GetRegisteredEvents(
+    const std::string& extension_id) {
+  std::set<std::string> events;
+  const DictionaryValue* extension = GetExtensionPref(extension_id);
+  if (!extension)
+    return events;
+
+  ListValue* value = NULL;
+  if (!extension->GetList(kRegisteredEvents, &value))
+    return events;
+
+  for (size_t i = 0; i < value->GetSize(); ++i) {
+    std::string event;
+    if (value->GetString(i, &event))
+      events.insert(event);
+  }
+  return events;
+}
+
+void ExtensionPrefs::SetRegisteredEvents(
+    const std::string& extension_id, const std::set<std::string>& events) {
+  ListValue* value = new ListValue();
+  for (std::set<std::string>::const_iterator it = events.begin();
+       it != events.end(); ++it) {
+    value->Append(new StringValue(*it));
+  }
+  UpdateExtensionPref(extension_id, kRegisteredEvents, value);
 }
 
 bool ExtensionPrefs::IsIncognitoEnabled(const std::string& extension_id) {

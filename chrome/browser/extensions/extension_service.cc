@@ -2017,7 +2017,7 @@ void ExtensionService::OnLoadedInstalledExtensions() {
       content::NotificationService::NoDetails());
 }
 
-void ExtensionService::AddExtension(const Extension* extension) {
+bool ExtensionService::AddExtension(const Extension* extension) {
   // Ensure extension is deleted unless we transfer ownership.
   scoped_refptr<const Extension> scoped_extension(extension);
 
@@ -2028,7 +2028,7 @@ void ExtensionService::AddExtension(const Extension* extension) {
       !extension->is_theme() &&
       extension->location() != Extension::COMPONENT &&
       !Extension::IsExternalLocation(extension->location()))
-    return;
+    return false;
 
   SetBeingUpgraded(extension, false);
 
@@ -2057,7 +2057,9 @@ void ExtensionService::AddExtension(const Extension* extension) {
         content::Source<Profile>(profile_),
         content::Details<const Extension>(extension));
     SyncExtensionChangeIfNeeded(*extension);
-    return;
+    // Although the extension is disabled, we technically did succeed in adding
+    // it to the list of installed extensions.
+    return true;
   }
 
   // All apps that are displayed in the launcher are ordered by their ordinals
@@ -2068,6 +2070,8 @@ void ExtensionService::AddExtension(const Extension* extension) {
   extensions_.Insert(scoped_extension);
   SyncExtensionChangeIfNeeded(*extension);
   NotifyExtensionLoaded(extension);
+
+  return true;
 }
 
 void ExtensionService::InitializePermissions(const Extension* extension) {
@@ -2262,13 +2266,13 @@ void ExtensionService::OnExtensionInstalled(
   extension_prefs_->SetDelaysNetworkRequests(
       extension->id(), extension->ImplicitlyDelaysNetworkStartup());
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_INSTALLED,
-      content::Source<Profile>(profile_),
-      content::Details<const Extension>(extension));
-
   // Transfer ownership of |extension| to AddExtension.
-  AddExtension(scoped_extension);
+  if (AddExtension(scoped_extension)) {
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_EXTENSION_INSTALLED,
+        content::Source<Profile>(profile_),
+        content::Details<const Extension>(extension));
+  }
 }
 
 const Extension* ExtensionService::GetExtensionByIdInternal(

@@ -32,6 +32,7 @@ using extensions::ExtensionAPI;
 namespace {
 
 const char kDispatchEvent[] = "Event.dispatchJSON";
+const char kOnInstalledEvent[] = "experimental.extension.onInstalled";
 
 void NotifyEventListenerRemovedOnIOThread(
     void* profile,
@@ -43,15 +44,15 @@ void NotifyEventListenerRemovedOnIOThread(
 
 }  // namespace
 
-struct ExtensionEventRouter::EventListener {
+struct ExtensionEventRouter::ListenerProcess {
   content::RenderProcessHost* process;
   std::string extension_id;
 
-  EventListener(content::RenderProcessHost* process,
+  ListenerProcess(content::RenderProcessHost* process,
                 const std::string& extension_id)
       : process(process), extension_id(extension_id) {}
 
-  bool operator<(const EventListener& that) const {
+  bool operator<(const ListenerProcess& that) const {
     if (process < that.process)
       return true;
     if (process == that.process && extension_id < that.extension_id)
@@ -101,6 +102,12 @@ ExtensionEventRouter::ExtensionEventRouter(Profile* profile)
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
                  content::Source<Profile>(profile_));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+                 content::Source<Profile>(profile_));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 content::Source<Profile>(profile_));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
+                 content::Source<Profile>(profile_));
   // TODO(tessamac): also get notified for background page crash/failure.
 }
 
@@ -110,7 +117,7 @@ void ExtensionEventRouter::AddEventListener(
     const std::string& event_name,
     content::RenderProcessHost* process,
     const std::string& extension_id) {
-  EventListener listener(process, extension_id);
+  ListenerProcess listener(process, extension_id);
   DCHECK_EQ(listeners_[event_name].count(listener), 0u) << event_name;
   listeners_[event_name].insert(listener);
 
@@ -128,7 +135,7 @@ void ExtensionEventRouter::RemoveEventListener(
     const std::string& event_name,
     content::RenderProcessHost* process,
     const std::string& extension_id) {
-  EventListener listener(process, extension_id);
+  ListenerProcess listener(process, extension_id);
   DCHECK_EQ(listeners_[event_name].count(listener), 1u) <<
       " PID=" << process->GetID() << " extension=" << extension_id <<
       " event=" << event_name;
@@ -155,31 +162,55 @@ void ExtensionEventRouter::RemoveEventListener(
 void ExtensionEventRouter::AddLazyEventListener(
     const std::string& event_name,
     const std::string& extension_id) {
-  EventListener lazy_listener(NULL, extension_id);
-  if (lazy_listeners_[event_name].count(lazy_listener) == 0)
-    lazy_listeners_[event_name].insert(lazy_listener);
+  ListenerProcess lazy_listener(NULL, extension_id);
+  bool is_new = lazy_listeners_[event_name].insert(lazy_listener).second;
+  if (is_new) {
+    ExtensionPrefs* prefs = profile_->GetExtensionService()->extension_prefs();
+    std::set<std::string> events = prefs->GetRegisteredEvents(extension_id);
+    bool prefs_is_new = events.insert(event_name).second;
+    if (prefs_is_new)
+      prefs->SetRegisteredEvents(extension_id, events);
+  }
 }
 
 void ExtensionEventRouter::RemoveLazyEventListener(
     const std::string& event_name,
     const std::string& extension_id) {
-  EventListener lazy_listener(NULL, extension_id);
-  lazy_listeners_[event_name].erase(lazy_listener);
+  ListenerProcess lazy_listener(NULL, extension_id);
+  bool did_exist = lazy_listeners_[event_name].erase(lazy_listener) > 0;
+  if (did_exist) {
+    ExtensionPrefs* prefs = profile_->GetExtensionService()->extension_prefs();
+    std::set<std::string> events = prefs->GetRegisteredEvents(extension_id);
+    bool prefs_did_exist = events.erase(event_name) > 0;
+    DCHECK(prefs_did_exist);
+    prefs->SetRegisteredEvents(extension_id, events);
+  }
 }
 
 bool ExtensionEventRouter::HasEventListener(const std::string& event_name) {
-  return (listeners_.find(event_name) != listeners_.end() &&
-          !listeners_[event_name].empty());
+  return (HasEventListenerImpl(listeners_, "", event_name) ||
+          HasEventListenerImpl(lazy_listeners_, "", event_name));
 }
 
 bool ExtensionEventRouter::ExtensionHasEventListener(
     const std::string& extension_id, const std::string& event_name) {
-  ListenerMap::iterator it = listeners_.find(event_name);
-  if (it == listeners_.end())
+  return (HasEventListenerImpl(listeners_, extension_id, event_name) ||
+          HasEventListenerImpl(lazy_listeners_, extension_id, event_name));
+}
+
+bool ExtensionEventRouter::HasEventListenerImpl(
+    const ListenerMap& listener_map,
+    const std::string& extension_id,
+    const std::string& event_name) {
+  ListenerMap::const_iterator it = listener_map.find(event_name);
+  if (it == listener_map.end())
     return false;
 
-  std::set<EventListener>& listeners = it->second;
-  for (std::set<EventListener>::iterator listener = listeners.begin();
+  const std::set<ListenerProcess>& listeners = it->second;
+  if (extension_id.empty())
+    return !listeners.empty();
+
+  for (std::set<ListenerProcess>::const_iterator listener = listeners.begin();
        listener != listeners.end(); ++listener) {
     if (listener->extension_id == extension_id)
       return true;
@@ -232,10 +263,8 @@ bool ExtensionEventRouter::CanDispatchEventNow(const Extension* extension) {
     // TODO(mpcomplete): this is incorrect. We need to check whether the page
     // has finished loading. If not, we can't dispatch the event (because the
     // listener hasn't been set up yet).
-    if (!pm->GetBackgroundHostForExtension(extension->id())) {
-      pm->CreateBackgroundHost(extension, extension->GetBackgroundURL());
+    if (!pm->GetBackgroundHostForExtension(extension->id()))
       return false;
-    }
   }
 
   return true;
@@ -263,11 +292,11 @@ void ExtensionEventRouter::DispatchEventImpl(
   if (it == listeners_.end())
     return;
 
-  std::set<EventListener>& listeners = it->second;
+  std::set<ListenerProcess>& listeners = it->second;
   ExtensionService* service = profile_->GetExtensionService();
 
   // Send the event only to renderers that are listening for it.
-  for (std::set<EventListener>::iterator listener = listeners.begin();
+  for (std::set<ListenerProcess>::iterator listener = listeners.begin();
        listener != listeners.end(); ++listener) {
     if (!extension_id.empty() && extension_id != listener->extension_id)
       continue;
@@ -317,13 +346,14 @@ void ExtensionEventRouter::LoadLazyBackgroundPagesForEvent(
     const std::string& extension_id,
     const linked_ptr<ExtensionEvent>& event) {
   ExtensionService* service = profile_->GetExtensionService();
+  ExtensionProcessManager* pm = profile_->GetExtensionProcessManager();
 
   ListenerMap::iterator it = lazy_listeners_.find(event->event_name);
   if (it == lazy_listeners_.end())
     return;
 
-  std::set<EventListener>& listeners = it->second;
-  for (std::set<EventListener>::iterator listener = listeners.begin();
+  std::set<ListenerProcess>& listeners = it->second;
+  for (std::set<ListenerProcess>::iterator listener = listeners.begin();
        listener != listeners.end(); ++listener) {
     if (!extension_id.empty() && extension_id != listener->extension_id)
       continue;
@@ -332,9 +362,8 @@ void ExtensionEventRouter::LoadLazyBackgroundPagesForEvent(
         listener->extension_id);
 
     if (extension && !CanDispatchEventNow(extension)) {
-      // TODO(mpcomplete): make sure Background Page notification doesn't
-      //                   happen before the event is added to the pending list.
       AppendEvent(extension->id(), event);
+      pm->CreateBackgroundHost(extension, extension->GetBackgroundURL());
     }
   }
 }
@@ -403,9 +432,10 @@ void ExtensionEventRouter::Observe(
       for (ListenerMap::iterator it = listeners_.begin();
            it != listeners_.end(); ) {
         ListenerMap::iterator current_it = it++;
-        for (std::set<EventListener>::iterator jt = current_it->second.begin();
+        for (std::set<ListenerProcess>::iterator jt =
+                 current_it->second.begin();
              jt != current_it->second.end(); ) {
-          std::set<EventListener>::iterator current_jt = jt++;
+          std::set<ListenerProcess>::iterator current_jt = jt++;
           if (current_jt->process == renderer) {
             RemoveEventListener(current_it->first,
                                 current_jt->process,
@@ -426,6 +456,41 @@ void ExtensionEventRouter::Observe(
       }
       break;
     }
+    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+      // Add all registered lazy listeners to our cache.
+      const Extension* extension =
+          content::Details<const Extension>(details).ptr();
+      std::set<std::string> registered_events =
+          profile_->GetExtensionService()->extension_prefs()->
+              GetRegisteredEvents(extension->id());
+      ListenerProcess lazy_listener(NULL, extension->id());
+      for (std::set<std::string>::iterator it = registered_events.begin();
+           it != registered_events.end(); ++it) {
+        lazy_listeners_[*it].insert(lazy_listener);
+      }
+      break;
+    }
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+      // Remove all registered lazy listeners from our cache.
+      UnloadedExtensionInfo* unloaded =
+          content::Details<UnloadedExtensionInfo>(details).ptr();
+      ListenerProcess lazy_listener(NULL, unloaded->extension->id());
+      for (ListenerMap::iterator it = lazy_listeners_.begin();
+           it != lazy_listeners_.end(); ++it) {
+        it->second.erase(lazy_listener);
+      }
+      break;
+    }
+    case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
+      // Dispatch the onInstalled event.
+      const Extension* extension =
+          content::Details<const Extension>(details).ptr();
+      AddLazyEventListener(kOnInstalledEvent, extension->id());
+      DispatchEventToExtension(
+          extension->id(), kOnInstalledEvent, "[]", NULL, GURL());
+      break;
+    }
+
     // TODO(tessamac): if background page crashed/failed clear queue.
     default:
       NOTREACHED();

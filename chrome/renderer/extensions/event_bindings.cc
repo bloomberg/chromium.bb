@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
+#include "chrome/common/chrome_view_type.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/url_constants.h"
@@ -17,6 +18,7 @@
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
+#include "chrome/renderer/extensions/extension_helper.h"
 #include "chrome/renderer/extensions/schema_generated_bindings.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/public/renderer/render_thread.h"
@@ -36,22 +38,6 @@ using WebKit::WebURL;
 using content::RenderThread;
 
 namespace {
-
-// A map of event names to the number of listeners for that event. We notify
-// the browser about event listeners when we transition between 0 and 1.
-typedef std::map<std::string, int> EventListenerCounts;
-
-struct SingletonData {
-  // A map of extension IDs to listener counts for that extension.
-  std::map<std::string, EventListenerCounts> listener_counts_;
-};
-
-static base::LazyInstance<SingletonData> g_singleton_data =
-    LAZY_INSTANCE_INITIALIZER;
-
-static EventListenerCounts& GetListenerCounts(const std::string& extension_id) {
-  return g_singleton_data.Get().listener_counts_[extension_id];
-}
 
 class ExtensionImpl : public ChromeV8Extension {
  public:
@@ -79,32 +65,31 @@ class ExtensionImpl : public ChromeV8Extension {
     DCHECK(args[0]->IsString() || args[0]->IsUndefined());
 
     if (args[0]->IsString()) {
-      ExtensionImpl* v8_extension = GetFromArguments<ExtensionImpl>(args);
+      ExtensionImpl* self = GetFromArguments<ExtensionImpl>(args);
       const ChromeV8ContextSet& context_set =
-          v8_extension->extension_dispatcher()->v8_context_set();
+          self->extension_dispatcher()->v8_context_set();
       ChromeV8Context* context = context_set.GetCurrent();
       CHECK(context);
-      EventListenerCounts& listener_counts =
-          GetListenerCounts(context->extension_id());
       std::string event_name(*v8::String::AsciiValue(args[0]));
 
-      if (!v8_extension->CheckCurrentContextAccessToExtensionAPI(event_name))
+      if (!self->CheckCurrentContextAccessToExtensionAPI(event_name))
         return v8::Undefined();
 
-      const ::Extension* extension = v8_extension->extension_dispatcher()->
-          extensions()->GetByID(context->extension_id());
-
+      EventListenerCounts& listener_counts =
+          self->listener_counts_[context->extension_id()];
       if (++listener_counts[event_name] == 1) {
         content::RenderThread::Get()->Send(
             new ExtensionHostMsg_AddListener(context->extension_id(),
                                              event_name));
-        // TODO(mpcomplete): restrict this to the bg page only.
-        // TODO(mpcomplete): figure out proper time to call RemoveLazyListener.
-        if (extension && !extension->background_page_persists()) {
-          content::RenderThread::Get()->Send(
-              new ExtensionHostMsg_AddLazyListener(context->extension_id(),
-                                                   event_name));
-        }
+      }
+
+      // This is called the first time the page has added a listener. Since
+      // the background page is the only lazy page, we know this is the first
+      // time this listener has been registered.
+      if (self->IsLazyBackgroundPage(context->extension_id())) {
+        content::RenderThread::Get()->Send(
+            new ExtensionHostMsg_AddLazyListener(context->extension_id(),
+                                                 event_name));
       }
     }
 
@@ -112,31 +97,63 @@ class ExtensionImpl : public ChromeV8Extension {
   }
 
   static v8::Handle<v8::Value> DetachEvent(const v8::Arguments& args) {
-    DCHECK(args.Length() == 1);
+    DCHECK(args.Length() == 2);
     // TODO(erikkay) should enforce that event name is a string in the bindings
     DCHECK(args[0]->IsString() || args[0]->IsUndefined());
 
-    if (args[0]->IsString()) {
-      ExtensionImpl* v8_extension = GetFromArguments<ExtensionImpl>(args);
+    if (args[0]->IsString() && args[1]->IsBoolean()) {
+      ExtensionImpl* self = GetFromArguments<ExtensionImpl>(args);
       const ChromeV8ContextSet& context_set =
-          v8_extension->extension_dispatcher()->v8_context_set();
+          self->extension_dispatcher()->v8_context_set();
       ChromeV8Context* context = context_set.GetCurrent();
       if (!context)
         return v8::Undefined();
 
       EventListenerCounts& listener_counts =
-          GetListenerCounts(context->extension_id());
+          self->listener_counts_[context->extension_id()];
       std::string event_name(*v8::String::AsciiValue(args[0]));
+      bool is_manual = args[1]->BooleanValue();
 
       if (--listener_counts[event_name] == 0) {
         content::RenderThread::Get()->Send(
             new ExtensionHostMsg_RemoveListener(context->extension_id(),
                                                 event_name));
       }
+
+      // DetachEvent is called when the last listener for the context is
+      // removed. If the context is the background page, and it removes the
+      // last listener manually, then we assume that it is no longer interested
+      // in being awakened for this event.
+      if (is_manual && self->IsLazyBackgroundPage(context->extension_id())) {
+        content::RenderThread::Get()->Send(
+            new ExtensionHostMsg_RemoveLazyListener(context->extension_id(),
+                                                    event_name));
+      }
     }
 
     return v8::Undefined();
   }
+
+ private:
+  // A map of event names to the number of contexts listening to that event.
+  // We notify the browser about event listeners when we transition between 0
+  // and 1.
+  typedef std::map<std::string, int> EventListenerCounts;
+
+  bool IsLazyBackgroundPage(const std::string& extension_id) {
+    content::RenderView* render_view = GetCurrentRenderView();
+    if (!render_view)
+      return false;
+
+    ExtensionHelper* helper = ExtensionHelper::Get(render_view);
+    const ::Extension* extension =
+        extension_dispatcher()->extensions()->GetByID(extension_id);
+    return (extension && !extension->background_page_persists() &&
+            helper->view_type() == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
+  }
+
+  // A map of extension IDs to listener counts for that extension.
+  std::map<std::string, EventListenerCounts> listener_counts_;
 };
 
 }  // namespace

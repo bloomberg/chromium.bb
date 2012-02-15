@@ -6,7 +6,7 @@ var chrome = chrome || {};
 (function () {
   native function GetChromeHidden();
   native function AttachEvent(eventName);
-  native function DetachEvent(eventName);
+  native function DetachEvent(eventName, manual);
   native function Print();
 
   var chromeHidden = GetChromeHidden();
@@ -157,7 +157,7 @@ var chrome = chrome || {};
 
     this.listeners_.splice(idx, 1);
     if (this.listeners_.length == 0) {
-      this.detach_();
+      this.detach_(true);
     }
   };
 
@@ -224,11 +224,11 @@ var chrome = chrome || {};
   };
 
   // Detaches this event object from its name.
-  chrome.Event.prototype.detach_ = function() {
+  chrome.Event.prototype.detach_ = function(manual) {
     var i = allAttachedEvents.indexOf(this);
     if (i >= 0)
       delete allAttachedEvents[i];
-    DetachEvent(this.eventName_);
+    DetachEvent(this.eventName_, manual);
     if (!this.eventName_)
       return;
 
@@ -243,7 +243,7 @@ var chrome = chrome || {};
   chrome.Event.prototype.destroy_ = function() {
     this.listeners_ = [];
     this.validate_ = [];
-    this.detach_();
+    this.detach_(false);
   };
 
   // Gets the declarative API object, or undefined if this extension doesn't
@@ -304,7 +304,7 @@ var chrome = chrome || {};
     for (var i = 0; i < allAttachedEvents.length; ++i) {
       var event = allAttachedEvents[i];
       if (event)
-        event.detach_();
+        event.detach_(false);
     }
   };
 
