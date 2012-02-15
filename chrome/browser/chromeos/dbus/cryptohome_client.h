@@ -23,8 +23,11 @@ namespace chromeos {
 // initializes the DBusThreadManager instance.
 class CryptohomeClient {
  public:
+  // A callback to handle AsyncCallStatus signals.
   typedef base::Callback<void(int async_id, bool return_status, int return_code)
                          > AsyncCallStatusHandler;
+  // A callback to handle responses of AsyncXXX methods.
+  typedef base::Callback<void(int async_id)> AsyncMethodCallback;
 
   virtual ~CryptohomeClient();
 
@@ -49,19 +52,19 @@ class CryptohomeClient {
   // succeeds.
   virtual void AsyncCheckKey(const std::string& username,
                              const std::string& key,
-                             base::Callback<void(int async_id)> callback) = 0;
+                             AsyncMethodCallback callback) = 0;
 
   // Calls AsyncMigrateKey method.  |callback| is called after the method call
   // succeeds.
   virtual void AsyncMigrateKey(const std::string& username,
                                const std::string& from_key,
                                const std::string& to_key,
-                               base::Callback<void(int async_id)> callback) = 0;
+                               AsyncMethodCallback callback) = 0;
 
   // Calls AsyncRemove method.  |callback| is called after the method call
   // succeeds.
   virtual void AsyncRemove(const std::string& username,
-                           base::Callback<void(int async_id)> callback) = 0;
+                           AsyncMethodCallback callback) = 0;
 
   // Calls GetSystemSalt method.  This method blocks until the call returns.
   // The original content of |salt| is lost.
@@ -72,11 +75,11 @@ class CryptohomeClient {
   virtual void AsyncMount(const std::string& username,
                           const std::string& key,
                           const bool create_if_missing,
-                          base::Callback<void(int async_id)> callback) = 0;
+                          AsyncMethodCallback callback) = 0;
 
   // Calls AsyncMountGuest method.  |callback| is called after the method call
   // succeeds.
-  virtual void AsyncMountGuest(base::Callback<void(int async_id)> callback) = 0;
+  virtual void AsyncMountGuest(AsyncMethodCallback callback) = 0;
 
   // Calls TpmIsReady method and returns true when the call succeeds.
   // This method blocks until the call returns.

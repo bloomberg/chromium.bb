@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
+#include "content/public/browser/browser_thread.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -100,8 +101,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   // CryptohomeClient override.
   virtual void AsyncCheckKey(const std::string& username,
                              const std::string& key,
-                             base::Callback<void(int async_id)> callback)
-      OVERRIDE {
+                             AsyncMethodCallback callback) OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeAsyncCheckKey);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(username);
@@ -116,8 +116,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   virtual void AsyncMigrateKey(const std::string& username,
                                const std::string& from_key,
                                const std::string& to_key,
-                               base::Callback<void(int async_id)> callback)
-      OVERRIDE {
+                               AsyncMethodCallback callback) OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeAsyncMigrateKey);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(username);
@@ -131,8 +130,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
   // CryptohomeClient override.
   virtual void AsyncRemove(const std::string& username,
-                           base::Callback<void(int async_id)> callback)
-      OVERRIDE {
+                           AsyncMethodCallback callback) OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeAsyncRemove);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(username);
@@ -153,8 +151,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   virtual void AsyncMount(const std::string& username,
                           const std::string& key,
                           const bool create_if_missing,
-                          base::Callback<void(int async_id)> callback)
-      OVERRIDE {
+                          AsyncMethodCallback callback) OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeAsyncMount);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(username);
@@ -170,8 +167,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  virtual void AsyncMountGuest(
-      base::Callback<void(int async_id)> callback) OVERRIDE {
+  virtual void AsyncMountGuest(AsyncMethodCallback callback) OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeAsyncMountGuest);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
@@ -324,7 +320,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   };
 
   // Handles the result of AsyncXXX methods.
-  void OnAsyncMethodCall(base::Callback<void(int async_id)> callback,
+  void OnAsyncMethodCall(AsyncMethodCallback callback,
                          dbus::Response* response) {
     if (!response)
       return;
@@ -406,16 +402,24 @@ class CryptohomeClientImpl : public CryptohomeClient {
 // A stub implementaion of CryptohomeClient.
 class CryptohomeClientStubImpl : public CryptohomeClient {
  public:
-  CryptohomeClientStubImpl() {}
+  CryptohomeClientStubImpl()
+      : weak_ptr_factory_(this),
+        async_call_id_(1),
+        tpm_is_ready_counter_(0),
+        locked_(false) {
+  }
+
   virtual ~CryptohomeClientStubImpl() {}
 
   // CryptohomeClient override.
   virtual void SetAsyncCallStatusHandler(AsyncCallStatusHandler handler)
       OVERRIDE {
+    async_call_status_handler_ = handler;
   }
 
   // CryptohomeClient override.
   virtual void ResetAsyncCallStatusHandler() OVERRIDE {
+    async_call_status_handler_.Reset();
   }
 
   // CryptohomeClient override.
@@ -427,22 +431,22 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   // CryptohomeClient override.
   virtual void AsyncCheckKey(const std::string& username,
                              const std::string& key,
-                             base::Callback<void(int async_id)> callback)
-      OVERRIDE {
+                             AsyncMethodCallback callback) OVERRIDE {
+    ReturnAsyncMethodResult(callback);
   }
 
   // CryptohomeClient override.
   virtual void AsyncMigrateKey(const std::string& username,
                                const std::string& from_key,
                                const std::string& to_key,
-                               base::Callback<void(int async_id)> callback)
-      OVERRIDE {
+                               AsyncMethodCallback callback) OVERRIDE {
+    ReturnAsyncMethodResult(callback);
   }
 
   // CryptohomeClient override.
   virtual void AsyncRemove(const std::string& username,
-                           base::Callback<void(int async_id)> callback)
-      OVERRIDE {
+                           AsyncMethodCallback callback) OVERRIDE {
+    ReturnAsyncMethodResult(callback);
   }
 
   // CryptohomeClient override.
@@ -457,18 +461,18 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   virtual void AsyncMount(const std::string& username,
                           const std::string& key,
                           const bool create_if_missing,
-                          base::Callback<void(int async_id)> callback)
-      OVERRIDE {
+                          AsyncMethodCallback callback) OVERRIDE {
+    ReturnAsyncMethodResult(callback);
   }
 
   // CryptohomeClient override.
-  virtual void AsyncMountGuest(
-      base::Callback<void(int async_id)> callback) OVERRIDE {
+  virtual void AsyncMountGuest(AsyncMethodCallback callback) OVERRIDE {
+    ReturnAsyncMethodResult(callback);
   }
 
   // CryptohomeClient override.
   virtual bool TpmIsReady(bool* ready) OVERRIDE {
-    *ready = true;
+    *ready = (tpm_is_ready_counter_++ > 20);
     return true;
   }
 
@@ -523,7 +527,13 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   virtual bool InstallAttributesGet(const std::string& name,
                                     std::vector<uint8>* value,
                                     bool* successful) OVERRIDE {
-    *successful = true;
+    if (install_attrs_.find(name) != install_attrs_.end()) {
+      *value = install_attrs_[name];
+      *successful = true;
+    } else {
+      value->clear();
+      *successful = false;
+    }
     return true;
   }
 
@@ -531,12 +541,14 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   virtual bool InstallAttributesSet(const std::string& name,
                                     const std::vector<uint8>& value,
                                     bool* successful) OVERRIDE {
+    install_attrs_[name] = value;
     *successful = true;
     return true;
   }
 
   // CryptohomeClient override.
   virtual bool InstallAttributesFinalize(bool* successful) OVERRIDE {
+    locked_ = true;
     *successful = true;
     return true;
   }
@@ -556,11 +568,41 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   // CryptohomeClient override.
   virtual bool InstallAttributesIsFirstInstall(bool* is_first_install) OVERRIDE
   {
-    *is_first_install = true;
+    *is_first_install = !locked_;
     return true;
   }
 
  private:
+  // Posts tasks which return fake results to the UI thread.
+  void ReturnAsyncMethodResult(AsyncMethodCallback callback) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&CryptohomeClientStubImpl::ReturnAsyncMethodResultInternal,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback));
+  }
+
+  // This method is used to implement ReturnAsyncMethodResult.
+  void ReturnAsyncMethodResultInternal(AsyncMethodCallback callback) {
+    callback.Run(async_call_id_);
+    if (!async_call_status_handler_.is_null()) {
+      content::BrowserThread::PostTask(
+          content::BrowserThread::UI, FROM_HERE,
+          base::Bind(async_call_status_handler_,
+                     async_call_id_,
+                     true,
+                     cryptohome::MOUNT_ERROR_NONE));
+    }
+    ++async_call_id_;
+  }
+
+  base::WeakPtrFactory<CryptohomeClientStubImpl> weak_ptr_factory_;
+  int async_call_id_;
+  AsyncCallStatusHandler async_call_status_handler_;
+  int tpm_is_ready_counter_;
+  std::map<std::string, std::vector<uint8> > install_attrs_;
+  bool locked_;
+
   DISALLOW_COPY_AND_ASSIGN(CryptohomeClientStubImpl);
 };
 
