@@ -277,16 +277,22 @@
 
   <interface name="wl_data_device" version="1">
     <request name="start_drag">
+      <description summary="start drag and drop operation">
+	This request asks the compositor to start a drag and drop
+	operation on behalf of the client.  The source argument is the
+	data source that provides the data for the eventual data
+	transfer.  The origin surface is the surface where the drag
+	originates and the client must have an active implicit grab
+	that matches the timestamp.  The icon surface is an optional
+	(can be nil) surface that provides an icon to be moved around
+	with the cursor.  Initially, the top-left corner of the icon
+	surface is placed at the cursor hotspot, but subsequent
+	surface.attach request can move the relative position.
+      </description>
       <arg name="source" type="object" interface="wl_data_source"/>
-      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="origin" type="object" interface="wl_surface"/>
+      <arg name="icon" type="object" interface="wl_surface"/>
       <arg name="time" type="uint"/>
-    </request>
-
-    <request name="attach">
-      <arg name="time" type="uint"/>
-      <arg name="buffer" type="object" interface="wl_buffer"/>
-      <arg name="x" type="int"/>
-      <arg name="y" type="int"/>
     </request>
 
     <request name="set_selection">

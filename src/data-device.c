@@ -240,7 +240,20 @@ drag_grab_button(struct wl_grab *grab,
 
 	if (device->button_count == 0 && state == 0) {
 		wl_input_device_end_grab(device, time);
+
+		if (device->drag_surface) {
+			struct wl_resource *surface_resource =
+				&device->drag_surface->resource;
+			struct wl_surface_interface *implementation =
+				(struct wl_surface_interface *)
+				surface_resource->object.implementation;
+
+			implementation->attach(surface_resource->client,
+					       surface_resource, NULL, 0, 0);
+		}
+
 		device->drag_data_source = NULL;
+		device->drag_surface = NULL;
 	}
 }
 
@@ -253,26 +266,23 @@ static const struct wl_grab_interface drag_grab_interface = {
 static void
 data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 		       struct wl_resource *source_resource,
-		       struct wl_resource *surface_resource, uint32_t time)
+		       struct wl_resource *origin_resource,
+		       struct wl_resource *icon_resource, uint32_t time)
 {
 	struct wl_input_device *device = resource->data;
 
-	/* FIXME: Check that client has implicit grab on the surface
-	 * that matches the given time. */
+	/* FIXME: Check that client has implicit grab on the origin
+	 * surface that matches the given time. */
 
 	/* FIXME: Check that the data source type array isn't empty. */
 
 	device->drag_grab.interface = &drag_grab_interface;
 	device->drag_data_source = source_resource->data;
 
-	wl_input_device_start_grab(device, &device->drag_grab, time);
-}
+	if (icon_resource)
+		device->drag_surface = icon_resource->data;
 
-static void
-data_device_attach(struct wl_client *client, struct wl_resource *resource,
-		   uint32_t time,
-		   struct wl_resource *buffer, int32_t x, int32_t y)
-{
+	wl_input_device_start_grab(device, &device->drag_grab, time);
 }
 
 static void
@@ -347,7 +357,6 @@ data_device_set_selection(struct wl_client *client,
 
 static const struct wl_data_device_interface data_device_interface = {
 	data_device_start_drag,
-	data_device_attach,
 	data_device_set_selection,
 };
 
