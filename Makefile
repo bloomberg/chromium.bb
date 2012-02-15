@@ -106,7 +106,7 @@ CXXFLAGS+=\
 endif
 
 all: $(SONAME)
-	cd $(KEYBOARD_TOUCHPAD_HELPER) && make clean && make
+	$(MAKE) -C $(KEYBOARD_TOUCHPAD_HELPER)
 
 $(SONAME): $(OBJECTS)
 	$(CXX) -shared -o $@ $(OBJECTS) -Wl,-h$(SONAME:$(OBJDIR)/%=%) \
@@ -121,7 +121,7 @@ $(OBJDIR)/%.o : src/%.cc
 	@mv $(@:$.o=$.d) $(DEPDIR)
 
 install: $(SONAME)
-	cd $(KEYBOARD_TOUCHPAD_HELPER) && make install
+	$(MAKE) -C $(KEYBOARD_TOUCHPAD_HELPER) install
 	install -D -m 0644 $(SONAME) \
 		$(DESTDIR)/usr/lib/$(SONAME:$(OBJDIR)/%=%)
 	ln -s $(SONAME:$(OBJDIR)/%=%) \
@@ -130,7 +130,7 @@ install: $(SONAME)
 		include/gestures.h $(DESTDIR)/usr/include/gestures/gestures.h
 
 clean:
-	cd $(KEYBOARD_TOUCHPAD_HELPER) && make clean
+	$(MAKE) -C $(KEYBOARD_TOUCHPAD_HELPER) clean
 	rm -rf $(OBJDIR) $(DEPDIR) $(TEST_EXE) html app.info app.info.orig
 
 # Unittest coverage
