@@ -430,7 +430,9 @@ remoting.isPinAuthSupported = function () {
   document.body.appendChild(plugin);
   var version = plugin.apiVersion;
   document.body.removeChild(plugin);
-  return version >= 4;
+  // Future version of the plugin will not have apiVersion. We assume
+  // that they support PINs.
+  return !version || version >= 4;
 };
 
 /**
