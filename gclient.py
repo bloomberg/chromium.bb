@@ -1300,10 +1300,14 @@ def CMDsync(parser, args):
                     help='skips any safesync_urls specified in '
                          'configured solutions and sync to head instead')
   parser.add_option('-D', '--delete_unversioned_trees', action='store_true',
-                    help='delete any dependency that have been removed from '
-                         'last sync as long as there is no local modification. '
-                         'Coupled with --force, it will remove them even with '
-                         'local modifications')
+                    help='Deletes from the working copy any dependencies that '
+                         'have been removed since the last sync, as long as '
+                         'there are no local modifications. When used with '
+                         '--force, such dependencies are removed even if they '
+                         'have local modifications. In addition, when used '
+                         'with --force, all untracked directories are removed '
+                         'from the working copy, exclusing those which are '
+                         'explicitly ignored in the repository.')
   parser.add_option('-R', '--reset', action='store_true',
                     help='resets any local changes before updating (git only)')
   parser.add_option('-M', '--merge', action='store_true',
@@ -1368,6 +1372,7 @@ def CMDrevert(parser, args):
   (options, args) = parser.parse_args(args)
   # --force is implied.
   options.force = True
+  options.delete_unversioned_trees = False
   client = GClient.LoadCurrentConfig(options)
   if not client:
     raise gclient_utils.Error('client not configured; see \'gclient config\'')

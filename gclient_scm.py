@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -441,6 +441,20 @@ class GitWrapper(SCMWrapper):
 
     if verbose:
       print('Checked out revision %s' % self.revinfo(options, (), None))
+
+    # If --force and --delete_unversioned_trees are specified, remove any
+    # untracked directories.
+    if options.force and options.delete_unversioned_trees:
+      # GIT.CaptureStatus() uses 'dit diff' to compare to a specific SHA1 (the
+      # merge-base by default), so doesn't include untracked files. So we use
+      # 'git ls-files --directory --others --exclude-standard' here directly.
+      paths = scm.GIT.Capture(
+          ['ls-files', '--directory', '--others', '--exclude-standard'],
+          self.checkout_path)
+      for path in (p for p in paths.splitlines() if p.endswith('/')):
+        print('\n_____ removing unversioned directory %s' % path)
+        gclient_utils.RemoveDirectory(os.path.join(self.checkout_path, path))
+
 
   def revert(self, options, args, file_list):
     """Reverts local modifications.
@@ -914,7 +928,7 @@ class SVNWrapper(SCMWrapper):
         if not options.force and not options.reset:
           # Look for local modifications but ignore unversioned files.
           for status in scm.SVN.CaptureStatus(None, self.checkout_path):
-            if status[0] != '?':
+            if status[0][0] != '?':
               raise gclient_utils.Error(
                   ('Can\'t switch the checkout to %s; UUID don\'t match and '
                    'there is local changes in %s. Delete the directory and '
@@ -938,6 +952,15 @@ class SVNWrapper(SCMWrapper):
     command = ['update', self.checkout_path]
     command = self._AddAdditionalUpdateFlags(command, options, revision)
     self._RunAndGetFileList(command, options, file_list, self._root_dir)
+
+    # If --force and --delete_unversioned_trees are specified, remove any
+    # untracked files and directories.
+    if options.force and options.delete_unversioned_trees:
+      for status in scm.SVN.CaptureStatus(None, self.checkout_path):
+        path = os.path.join(self.checkout_path, status[1])
+        if (status[0][0] == '?' and os.path.isdir(path)):
+          print('\n_____ removing unversioned directory %s' % status[1])
+          gclient_utils.RemoveDirectory(os.path.join(path))
 
   def updatesingle(self, options, args, file_list):
     filename = args.pop()
