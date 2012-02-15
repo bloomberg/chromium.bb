@@ -88,13 +88,20 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   virtual bool ShouldTabIconViewAnimate() const OVERRIDE;
   virtual SkBitmap GetFaviconForTabIconView() OVERRIDE;
 
- protected:
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
+  // Creates, adds and returns a new image button with |this| as its listener.
+  // Memory is owned by the caller.
+  views::ImageButton* InitWindowCaptionButton(int normal_bitmap_id,
+                                              int hot_bitmap_id,
+                                              int pushed_bitmap_id,
+                                              int mask_bitmap_id,
+                                              int accessibility_string_id);
+
   // Returns the thickness of the border that makes up the window frame edges.
   // This does not include any client edge.  If |restored| is true, acts as if
   // the window is restored regardless of the real mode.

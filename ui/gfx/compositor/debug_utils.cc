@@ -38,9 +38,21 @@ void PrintLayerHierarchyImp(const Layer* layer, int indent,
   if (mouse_inside_layer_bounds)
     buf << L'*';
   else
-    buf << L'+';
+    buf << L' ';
 
   buf << UTF8ToWide(layer->name()) << L' ' << layer;
+
+  switch (layer->type()) {
+    case Layer::LAYER_NOT_DRAWN:
+      buf << L" not_drawn";
+      break;
+    case Layer::LAYER_TEXTURED:
+      buf << L" textured";
+      break;
+    case Layer::LAYER_SOLID_COLOR:
+      buf << L" solid";
+      break;
+  }
 
   buf << L'\n' << UTF8ToWide(content_indent_str);
   buf << L"bounds: " << layer->bounds().x() << L',' << layer->bounds().y();

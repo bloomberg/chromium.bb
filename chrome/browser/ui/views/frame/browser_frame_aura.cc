@@ -272,6 +272,7 @@ BrowserFrameAura::BrowserFrameAura(BrowserFrame* browser_frame,
     // Background only needed for Aura-style windows.
     browser_view_->set_background(new ToolbarBackground(browser_view));
   }
+  GetNativeWindow()->SetName("BrowserFrameAura");
   GetNativeWindow()->AddObserver(window_property_watcher_.get());
 }
 

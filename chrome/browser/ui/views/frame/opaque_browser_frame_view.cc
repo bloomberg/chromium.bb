@@ -126,76 +126,28 @@ bool ConvertedContainsCheck(gfx::Rect bounds, const views::View* src,
 OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
                                                BrowserView* browser_view)
     : BrowserNonClientFrameView(frame, browser_view),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          minimize_button_(new views::ImageButton(this))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          maximize_button_(new views::ImageButton(this))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          restore_button_(new views::ImageButton(this))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          close_button_(new views::ImageButton(this))),
       window_icon_(NULL),
       frame_background_(new views::FrameBackground()) {
-  ui::ThemeProvider* tp = frame->GetThemeProvider();
-  SkColor color = tp->GetColor(ThemeService::COLOR_BUTTON_BACKGROUND);
-  SkBitmap* background =
-      tp->GetBitmapNamed(IDR_THEME_WINDOW_CONTROL_BACKGROUND);
-  // TODO(jamescook): Refactor button setup into one button setup function.
-  minimize_button_->SetImage(views::CustomButton::BS_NORMAL,
-                             tp->GetBitmapNamed(IDR_MINIMIZE));
-  minimize_button_->SetImage(views::CustomButton::BS_HOT,
-                             tp->GetBitmapNamed(IDR_MINIMIZE_H));
-  minimize_button_->SetImage(views::CustomButton::BS_PUSHED,
-                             tp->GetBitmapNamed(IDR_MINIMIZE_P));
-  if (browser_view->IsBrowserTypeNormal()) {
-    minimize_button_->SetBackground(color, background,
-        tp->GetBitmapNamed(IDR_MINIMIZE_BUTTON_MASK));
-  }
-  minimize_button_->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_ACCNAME_MINIMIZE));
-  AddChildView(minimize_button_);
-
-  maximize_button_->SetImage(views::CustomButton::BS_NORMAL,
-                             tp->GetBitmapNamed(IDR_MAXIMIZE));
-  maximize_button_->SetImage(views::CustomButton::BS_HOT,
-                             tp->GetBitmapNamed(IDR_MAXIMIZE_H));
-  maximize_button_->SetImage(views::CustomButton::BS_PUSHED,
-                             tp->GetBitmapNamed(IDR_MAXIMIZE_P));
-  if (browser_view->IsBrowserTypeNormal()) {
-    maximize_button_->SetBackground(color, background,
-        tp->GetBitmapNamed(IDR_MAXIMIZE_BUTTON_MASK));
-  }
-  maximize_button_->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_ACCNAME_MAXIMIZE));
-  AddChildView(maximize_button_);
-
-  restore_button_->SetImage(views::CustomButton::BS_NORMAL,
-                            tp->GetBitmapNamed(IDR_RESTORE));
-  restore_button_->SetImage(views::CustomButton::BS_HOT,
-                            tp->GetBitmapNamed(IDR_RESTORE_H));
-  restore_button_->SetImage(views::CustomButton::BS_PUSHED,
-                            tp->GetBitmapNamed(IDR_RESTORE_P));
-  if (browser_view->IsBrowserTypeNormal()) {
-    restore_button_->SetBackground(color, background,
-        tp->GetBitmapNamed(IDR_RESTORE_BUTTON_MASK));
-  }
-  restore_button_->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_ACCNAME_RESTORE));
-  AddChildView(restore_button_);
-
-  close_button_->SetImage(views::CustomButton::BS_NORMAL,
-                          tp->GetBitmapNamed(IDR_CLOSE));
-  close_button_->SetImage(views::CustomButton::BS_HOT,
-                          tp->GetBitmapNamed(IDR_CLOSE_H));
-  close_button_->SetImage(views::CustomButton::BS_PUSHED,
-                          tp->GetBitmapNamed(IDR_CLOSE_P));
-  if (browser_view->IsBrowserTypeNormal()) {
-    close_button_->SetBackground(color, background,
-        tp->GetBitmapNamed(IDR_CLOSE_BUTTON_MASK));
-  }
-  close_button_->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
-  AddChildView(close_button_);
+  minimize_button_ = InitWindowCaptionButton(IDR_MINIMIZE,
+                                             IDR_MINIMIZE_H,
+                                             IDR_MINIMIZE_P,
+                                             IDR_MINIMIZE_BUTTON_MASK,
+                                             IDS_ACCNAME_MINIMIZE);
+  maximize_button_ = InitWindowCaptionButton(IDR_MAXIMIZE,
+                                             IDR_MAXIMIZE_H,
+                                             IDR_MAXIMIZE_P,
+                                             IDR_MAXIMIZE_BUTTON_MASK,
+                                             IDS_ACCNAME_MAXIMIZE);
+  restore_button_ = InitWindowCaptionButton(IDR_RESTORE,
+                                            IDR_RESTORE_H,
+                                            IDR_RESTORE_P,
+                                            IDR_RESTORE_BUTTON_MASK,
+                                            IDS_ACCNAME_RESTORE);
+  close_button_ = InitWindowCaptionButton(IDR_CLOSE,
+                                          IDR_CLOSE_H,
+                                          IDR_CLOSE_P,
+                                          IDR_CLOSE_BUTTON_MASK,
+                                          IDS_ACCNAME_CLOSE);
 
   // Initializing the TabIconView is expensive, so only do it if we need to.
   if (browser_view->ShouldShowWindowIcon()) {
@@ -504,6 +456,32 @@ void OpaqueBrowserFrameView::Observe(
 
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, private:
+
+views::ImageButton* OpaqueBrowserFrameView::InitWindowCaptionButton(
+    int normal_bitmap_id,
+    int hot_bitmap_id,
+    int pushed_bitmap_id,
+    int mask_bitmap_id,
+    int accessibility_string_id) {
+  views::ImageButton* button = new views::ImageButton(this);
+  ui::ThemeProvider* tp = frame()->GetThemeProvider();
+  button->SetImage(views::CustomButton::BS_NORMAL,
+                   tp->GetBitmapNamed(normal_bitmap_id));
+  button->SetImage(views::CustomButton::BS_HOT,
+                   tp->GetBitmapNamed(hot_bitmap_id));
+  button->SetImage(views::CustomButton::BS_PUSHED,
+                   tp->GetBitmapNamed(pushed_bitmap_id));
+  if (browser_view()->IsBrowserTypeNormal()) {
+    button->SetBackground(
+        tp->GetColor(ThemeService::COLOR_BUTTON_BACKGROUND),
+        tp->GetBitmapNamed(IDR_THEME_WINDOW_CONTROL_BACKGROUND),
+        tp->GetBitmapNamed(mask_bitmap_id));
+  }
+  button->SetAccessibleName(
+      l10n_util::GetStringUTF16(accessibility_string_id));
+  AddChildView(button);
+  return button;
+}
 
 int OpaqueBrowserFrameView::FrameBorderThickness(bool restored) const {
   return (!restored && (frame()->IsMaximized() || frame()->IsFullscreen())) ?

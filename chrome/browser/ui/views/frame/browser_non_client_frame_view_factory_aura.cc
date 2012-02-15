@@ -22,12 +22,12 @@ BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
     return new PanelBrowserFrameView(
         frame, static_cast<PanelBrowserView*>(browser_view));
   }
+  if (ash::Shell::GetInstance()->IsWindowModeCompact())
+    return new CompactBrowserFrameView(frame, browser_view);
+
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(ash::switches::kAuraTranslucentFrames))
     return new BrowserNonClientFrameViewAura(frame, browser_view);
-
-  if (ash::Shell::GetInstance()->IsWindowModeCompact())
-    return new CompactBrowserFrameView(frame, browser_view);
 
   return new OpaqueBrowserFrameView(frame, browser_view);
 }
