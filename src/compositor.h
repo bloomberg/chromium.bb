@@ -251,6 +251,7 @@ struct weston_surface {
 	uint32_t alpha;
 	uint32_t visual;
 	int overlapped;
+	int pickable;
 
 	/* Surface geometry state, mutable.
 	 * If you change anything, set dirty = 1.

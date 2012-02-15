@@ -544,7 +544,7 @@ weston_compositor_pick_surface(struct weston_compositor *compositor,
 	struct weston_surface *surface;
 
 	wl_list_for_each(surface, &compositor->surface_list, link) {
-		if (surface->surface.resource.client == NULL)
+		if (!surface->pickable)
 			continue;
 		weston_surface_from_global(surface, x, y, sx, sy);
 		if (0 <= *sx && *sx < surface->geometry.width &&
@@ -1269,6 +1269,8 @@ compositor_create_surface(struct wl_client *client,
 	surface->surface.resource.object.implementation =
 		(void (**)(void)) &surface_interface;
 	surface->surface.resource.data = surface;
+
+	surface->pickable = 1;
 
 	wl_client_add_resource(client, &surface->surface.resource);
 }
