@@ -813,7 +813,7 @@ void TabRendererGtk::MoveCloseButtonWidget() {
 }
 
 void TabRendererGtk::PaintTab(GtkWidget* widget, GdkEventExpose* event) {
-  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
+  cairo_t* cr = gdk_cairo_create(gtk_widget_get_window(widget));
   gdk_cairo_rectangle(cr, &event->area);
   cairo_clip(cr);
 

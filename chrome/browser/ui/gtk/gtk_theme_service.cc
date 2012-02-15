@@ -498,7 +498,8 @@ void GtkThemeService::GetScrollbarColors(GdkColor* thumb_active_color,
   const int kWidth  = 100;
   const int kHeight = 20;
   GtkStyle*  style  = gtk_rc_get_style(scrollbar);
-  GdkPixmap* pm     = gdk_pixmap_new(window->window, kWidth, kHeight, -1);
+  GdkWindow* gdk_window = gtk_widget_get_window(window);
+  GdkPixmap* pm     = gdk_pixmap_new(gdk_window, kWidth, kHeight, -1);
   GdkRectangle rect = { 0, 0, kWidth, kHeight };
   unsigned char data[3 * kWidth * kHeight];
   for (int i = 0; i < 3; ++i) {
@@ -1098,7 +1099,7 @@ gboolean GtkThemeService::OnSeparatorExpose(GtkWidget* widget,
   if (UsingNativeTheme())
     return FALSE;
 
-  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
+  cairo_t* cr = gdk_cairo_create(gtk_widget_get_window(widget));
   gdk_cairo_rectangle(cr, &event->area);
   cairo_clip(cr);
 

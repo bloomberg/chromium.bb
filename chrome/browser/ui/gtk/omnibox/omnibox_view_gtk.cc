@@ -1296,7 +1296,8 @@ gboolean OmniboxViewGtk::HandleViewFocusIn(GtkWidget* sender,
   update_popup_without_focus_ = false;
 
   GdkModifierType modifiers;
-  gdk_window_get_pointer(text_view_->window, NULL, NULL, &modifiers);
+  GdkWindow* gdk_window = gtk_widget_get_window(text_view_);
+  gdk_window_get_pointer(gdk_window, NULL, NULL, &modifiers);
   model_->OnSetFocus((modifiers & GDK_CONTROL_MASK) != 0);
   controller_->OnSetFocus();
   // TODO(deanm): Some keyword hit business, etc here.
@@ -1551,7 +1552,8 @@ void OmniboxViewGtk::HandleDragDataReceived(GtkWidget* sender,
 
   // Don't try to PasteAndGo on drops originating from this omnibox. However, do
   // allow default behavior for such drags.
-  if (context->source_window == text_view_->window)
+  if (gdk_drag_context_get_source_window(context) ==
+      gtk_widget_get_window(text_view_))
     return;
 
   guchar* text = gtk_selection_data_get_text(selection_data);
@@ -1815,10 +1817,11 @@ gfx::Font OmniboxViewGtk::GetFont() {
     // If we haven't initialized the text view yet, just create a temporary one
     // whose style we can grab.
     GtkWidget* widget = text_view_ ? text_view_ : gtk_text_view_new();
+    GtkStyle* gtk_style = gtk_widget_get_style(widget);
     GtkRcStyle* rc_style = gtk_widget_get_modifier_style(widget);
     gfx::Font font((rc_style && rc_style->font_desc) ?
                    rc_style->font_desc :
-                   widget->style->font_desc);
+                   gtk_style->font_desc);
     if (!text_view_)
       g_object_unref(g_object_ref_sink(widget));
 

@@ -457,7 +457,7 @@ void LocationBarViewGtk::Update(const WebContents* contents) {
   if (theme_service_->UsingNativeTheme()) {
     // In GTK mode, we need our parent to redraw, as it draws the text entry
     // border.
-    gtk_widget_queue_draw(widget()->parent);
+    gtk_widget_queue_draw(gtk_widget_get_parent(widget()));
   } else {
     gtk_widget_queue_draw(widget());
   }
@@ -1018,7 +1018,7 @@ void LocationBarViewGtk::SetKeywordHintLabel(const string16& keyword) {
 }
 
 void LocationBarViewGtk::ShowFirstRunBubbleInternal() {
-  if (!location_entry_.get() || !widget()->window)
+  if (!location_entry_.get() || !gtk_widget_get_window(widget()))
     return;
 
   gfx::Rect bounds = gtk_util::WidgetBounds(location_icon_image_);
@@ -1395,7 +1395,7 @@ gboolean LocationBarViewGtk::ContentSettingImageViewGtk::OnExpose(
   gtk_widget_get_allocation(sender, &allocation);
   const int height = allocation.height;
 
-  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(sender->window));
+  cairo_t* cr = gdk_cairo_create(gtk_widget_get_window(sender));
   gdk_cairo_rectangle(cr, &event->area);
   cairo_clip(cr);
 

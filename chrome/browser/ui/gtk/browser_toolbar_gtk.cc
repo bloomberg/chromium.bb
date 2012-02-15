@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -477,7 +477,7 @@ gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
   if (theme_service_->UsingNativeTheme())
     return FALSE;
 
-  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
+  cairo_t* cr = gdk_cairo_create(gtk_widget_get_window(widget));
   gdk_cairo_rectangle(cr, &e->area);
   cairo_clip(cr);
 
@@ -624,7 +624,7 @@ void BrowserToolbarGtk::OnDragDataReceived(GtkWidget* widget,
     return;
   }
 
-  GURL url(reinterpret_cast<char*>(data->data));
+  GURL url(reinterpret_cast<const char*>(gtk_selection_data_get_data(data)));
   if (!url.is_valid())
     return;
 

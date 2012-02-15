@@ -47,6 +47,7 @@
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
+#include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -989,9 +990,10 @@ void BrowserTitlebar::SendEnterNotifyToCloseButtonIfUnderMouse() {
   g_value_set_boolean(&return_value, false);
 
   GdkEvent* event = gdk_event_new(GDK_ENTER_NOTIFY);
-  event->crossing.window = GTK_BUTTON(close_button_->widget())->event_window;
+  event->crossing.window =
+      gtk_button_get_event_window(GTK_BUTTON(close_button_->widget()));
   event->crossing.send_event = FALSE;
-  event->crossing.subwindow = close_button_->widget()->window;
+  event->crossing.subwindow = gtk_widget_get_window(close_button_->widget());
   event->crossing.time = gtk_util::XTimeNow();
   event->crossing.x = x;
   event->crossing.y = y;

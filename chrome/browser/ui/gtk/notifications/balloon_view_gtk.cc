@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -415,7 +415,7 @@ void BalloonViewImpl::OnCloseButton(GtkWidget* widget) {
 gboolean BalloonViewImpl::OnContentsExpose(GtkWidget* sender,
                                            GdkEventExpose* event) {
   TRACE_EVENT0("ui::gtk", "BalloonViewImpl::OnContentsExpose");
-  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(sender->window));
+  cairo_t* cr = gdk_cairo_create(gtk_widget_get_window(sender));
   gdk_cairo_rectangle(cr, &event->area);
   cairo_clip(cr);
 
@@ -439,7 +439,7 @@ gboolean BalloonViewImpl::OnContentsExpose(GtkWidget* sender,
 
 gboolean BalloonViewImpl::OnExpose(GtkWidget* sender, GdkEventExpose* event) {
   TRACE_EVENT0("ui::gtk", "BalloonViewImpl::OnExpose");
-  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(sender->window));
+  cairo_t* cr = gdk_cairo_create(gtk_widget_get_window(sender));
   gdk_cairo_rectangle(cr, &event->area);
   cairo_clip(cr);
 

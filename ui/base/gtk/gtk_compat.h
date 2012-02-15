@@ -56,6 +56,10 @@ inline void gtk_widget_style_attach(GtkWidget* widget) {
 #endif  // !GTK_CHECK_VERSION(2, 20, 0) || defined(GOOGLE_CHROME_BUILD)
 
 #if !GTK_CHECK_VERSION(2, 22, 0)
+inline GdkWindow* gdk_drag_context_get_source_window(GdkDragContext *context) {
+  return context->source_window;
+}
+
 inline gint gdk_visual_get_depth(GdkVisual* visual) {
   return visual->depth;
 }

@@ -117,7 +117,8 @@ void AutofillPopupViewGtk::HideInternal() {
 void AutofillPopupViewGtk::InvalidateRow(size_t row) {
   GdkRectangle row_rect = GetRectForRow(
       row, bounds_.width(), row_height_).ToGdkRectangle();
-  gdk_window_invalidate_rect(window_->window, &row_rect, FALSE);
+  GdkWindow* gdk_window = gtk_widget_get_window(window_);
+  gdk_window_invalidate_rect(gdk_window, &row_rect, FALSE);
 }
 
 gboolean AutofillPopupViewGtk::HandleButtonRelease(GtkWidget* widget,

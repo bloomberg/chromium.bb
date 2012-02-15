@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -143,8 +143,10 @@ void DraggedViewGtk::Attach(
 
   Resize(dragged_tab_width);
 
-  if (ui::IsScreenComposited())
-    gdk_window_set_opacity(container_->window, kOpaqueAlpha);
+  if (ui::IsScreenComposited()) {
+    GdkWindow* gdk_window = gtk_widget_get_window(container_);
+    gdk_window_set_opacity(gdk_window, kOpaqueAlpha);
+  }
 }
 
 void DraggedViewGtk::Resize(int width) {
@@ -156,8 +158,10 @@ void DraggedViewGtk::Detach() {
   attached_ = false;
   ResizeContainer();
 
-  if (ui::IsScreenComposited())
-    gdk_window_set_opacity(container_->window, kTransparentAlpha);
+  if (ui::IsScreenComposited()) {
+    GdkWindow* gdk_window = gtk_widget_get_window(container_);
+    gdk_window_set_opacity(gdk_window, kTransparentAlpha);
+  }
 }
 
 void DraggedViewGtk::Update() {
@@ -207,8 +211,9 @@ void DraggedViewGtk::AnimateToBounds(const gfx::Rect& bounds,
   animation_callback_ = callback;
 
   gint x, y, width, height;
-  gdk_window_get_origin(container_->window, &x, &y);
-  gdk_window_get_geometry(container_->window, NULL, NULL,
+  GdkWindow* gdk_window = gtk_widget_get_window(container_);
+  gdk_window_get_origin(gdk_window, &x, &y);
+  gdk_window_get_geometry(gdk_window, NULL, NULL,
                           &width, &height, NULL);
 
   animation_start_bounds_ = gfx::Rect(x, y, width, height);
@@ -230,7 +235,8 @@ void DraggedViewGtk::AnimationProgressed(const ui::Animation* animation) {
   int x = animation_start_bounds_.x() +
       static_cast<int>(delta_x * animation->GetCurrentValue());
   int y = animation_end_bounds_.y();
-  gdk_window_move(container_->window, x, y);
+  GdkWindow* gdk_window = gtk_widget_get_window(container_);
+  gdk_window_move(gdk_window, x, y);
 }
 
 void DraggedViewGtk::AnimationEnded(const ui::Animation* animation) {
@@ -313,7 +319,7 @@ void DraggedViewGtk::SetContainerColorMap() {
 }
 
 void DraggedViewGtk::SetContainerTransparency() {
-  cairo_t* cairo_context = gdk_cairo_create(container_->window);
+  cairo_t* cairo_context = gdk_cairo_create(gtk_widget_get_window(container_));
   if (!cairo_context)
     return;
 
@@ -372,7 +378,8 @@ void DraggedViewGtk::SetContainerShapeMask() {
   cairo_destroy(cairo_context);
 
   // Set the shape mask.
-  gdk_window_shape_combine_mask(container_->window, pixmap, 0, 0);
+  GdkWindow* gdk_window = gtk_widget_get_window(container_);
+  gdk_window_shape_combine_mask(gdk_window, pixmap, 0, 0);
   g_object_unref(pixmap);
 }
 
@@ -401,10 +408,10 @@ gboolean DraggedViewGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event) {
                   allocation.width - kTwiceDragFrameBorderSize,
                   allocation.height - tab_height -
                   kDragFrameBorderSize),
-        GDK_DRAWABLE(widget->window));
+        GDK_DRAWABLE(gtk_widget_get_window(widget)));
   }
 
-  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
+  cairo_t* cr = gdk_cairo_create(gtk_widget_get_window(widget));
   // Draw the border.
   if (!attached_) {
     cairo_set_line_width(cr, kDragFrameBorderSize);

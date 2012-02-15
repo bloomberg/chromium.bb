@@ -351,9 +351,10 @@ bool OmniboxPopupViewGtk::IsOpen() const {
 void OmniboxPopupViewGtk::InvalidateLine(size_t line) {
   // TODO(deanm): Is it possible to use some constant for the width, instead
   // of having to query the width of the window?
+  GdkWindow* gdk_window = gtk_widget_get_window(GTK_WIDGET(window_));
   GdkRectangle line_rect = GetRectForLine(
-      line, GetWindowRect(window_->window).width()).ToGdkRectangle();
-  gdk_window_invalidate_rect(window_->window, &line_rect, FALSE);
+      line, GetWindowRect(gdk_window).width()).ToGdkRectangle();
+  gdk_window_invalidate_rect(gdk_window, &line_rect, FALSE);
 }
 
 void OmniboxPopupViewGtk::UpdatePopupAppearance() {
@@ -385,7 +386,8 @@ gfx::Rect OmniboxPopupViewGtk::GetTargetBounds() {
 
 void OmniboxPopupViewGtk::PaintUpdatesNow() {
   // Paint our queued invalidations now, synchronously.
-  gdk_window_process_updates(window_->window, FALSE);
+  GdkWindow* gdk_window = gtk_widget_get_window(window_);
+  gdk_window_process_updates(gdk_window, FALSE);
 }
 
 void OmniboxPopupViewGtk::OnDragCanceled() {
@@ -439,8 +441,10 @@ void OmniboxPopupViewGtk::Observe(int type,
 
 void OmniboxPopupViewGtk::Show(size_t num_results) {
   gint origin_x, origin_y;
-  gdk_window_get_origin(location_bar_->window, &origin_x, &origin_y);
-  GtkAllocation allocation = location_bar_->allocation;
+  GdkWindow* gdk_window = gtk_widget_get_window(location_bar_);
+  gdk_window_get_origin(gdk_window, &origin_x, &origin_y);
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(location_bar_, &allocation);
 
   int horizontal_offset = 1;
   gtk_window_move(GTK_WINDOW(window_),
@@ -587,7 +591,7 @@ gboolean OmniboxPopupViewGtk::HandleExpose(GtkWidget* widget,
   if (window_rect.width() < (kIconAreaWidth * 3))
     return TRUE;
 
-  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
+  cairo_t* cr = gdk_cairo_create(gtk_widget_get_window(widget));
   gdk_cairo_rectangle(cr, &event->area);
   cairo_clip(cr);
 

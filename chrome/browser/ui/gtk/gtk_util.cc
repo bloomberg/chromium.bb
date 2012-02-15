@@ -336,7 +336,7 @@ void SetWindowSizeFromResources(GtkWindow* window,
     // controls, we should allow that too, so be careful to pick the
     // wider of the resources size and the natural window size.
 
-    gtk_widget_show_all(GTK_BIN(window)->child);
+    gtk_widget_show_all(gtk_bin_get_child(GTK_BIN(window)));
     GtkRequisition requisition;
     gtk_widget_size_request(GTK_WIDGET(window), &requisition);
     gtk_widget_set_size_request(
@@ -1116,7 +1116,7 @@ string16 GetStockPreferencesMenuLabel() {
 bool IsWidgetAncestryVisible(GtkWidget* widget) {
   GtkWidget* parent = widget;
   while (parent && gtk_widget_get_visible(parent))
-    parent = parent->parent;
+    parent = gtk_widget_get_parent(parent);
   return !parent;
 }
 

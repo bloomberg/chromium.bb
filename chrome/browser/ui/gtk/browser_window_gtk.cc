@@ -422,7 +422,7 @@ gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
   TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::OnCustomFrameExpose");
 
   // Draw the default background.
-  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
+  cairo_t* cr = gdk_cairo_create(gtk_widget_get_window(widget));
   gdk_cairo_rectangle(cr, &event->area);
   cairo_clip(cr);
 
@@ -2006,8 +2006,10 @@ gfx::Size BrowserWindowGtk::GetNonClientFrameSize() const {
 }
 
 void BrowserWindowGtk::InvalidateWindow() {
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(GTK_WIDGET(window_), &allocation);
   gdk_window_invalidate_rect(gtk_widget_get_window(GTK_WIDGET(window_)),
-                             &GTK_WIDGET(window_)->allocation, TRUE);
+                             &allocation, TRUE);
 }
 
 void BrowserWindowGtk::SaveWindowPosition() {

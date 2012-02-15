@@ -219,7 +219,7 @@ gboolean InfoBarGtk::OnBackgroundExpose(GtkWidget* sender,
   gtk_widget_get_allocation(sender, &allocation);
   const int height = allocation.height;
 
-  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(sender->window));
+  cairo_t* cr = gdk_cairo_create(gtk_widget_get_window(sender));
   gdk_cairo_rectangle(cr, &event->area);
   cairo_clip(cr);
 
