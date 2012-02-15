@@ -26,9 +26,9 @@ class ModelTest(unittest.TestCase):
     self.assertEquals(3, len(self.model.namespaces))
     self.assertTrue(self.permissions)
 
-  def testNamespaceNocompile(self):
+  def testNamespaceNoCompile(self):
     self.permissions_json[0]['namespace'] = 'something'
-    del self.permissions_json[0]['compile']
+    self.permissions_json[0]['nocompile'] = True
     self.model.AddNamespace(self.permissions_json[0],
         'path/to/something.json')
     self.assertEquals(3, len(self.model.namespaces))
@@ -42,7 +42,7 @@ class ModelTest(unittest.TestCase):
     self.assertRaises(AssertionError, self.model.AddNamespace,
         self.permissions_json[0], 'path/to/something.json')
 
-  def testFunctionNocompile(self):
+  def testFunctionNoCompile(self):
     # tabs.json has 2 functions marked as nocompile (connect, sendRequest)
     self.assertEquals(["captureVisibleTab", "create", "detectLanguage",
           "executeScript", "get", "getAllInWindow", "getCurrent",
@@ -77,7 +77,10 @@ class ModelTest(unittest.TestCase):
         ["active", "highlighted", "pinned", "status", "title", "url",
          "windowId", "windowType"],
         sorted(object_prop.properties.keys()))
-    # TODO(calamity): test choices
+
+  def testChoices(self):
+    self.assertEquals(model.PropertyType.CHOICES,
+        self.tabs.functions['move'].params[0].type_)
 
   def testPropertyNotImplemented(self):
     (self.permissions_json[0]['types'][0]
@@ -89,7 +92,19 @@ class ModelTest(unittest.TestCase):
     self.assertFalse(
         self.permissions.functions['contains'].params[0].description)
     self.assertEquals('True if the extension has the specified permissions.',
-        self.permissions.functions['contains'].callback.param.description)
+        self.permissions.functions['contains'].callback.params[0].description)
+
+  def testPropertyUnixName(self):
+    param = self.tabs.functions['move'].params[0]
+    self.assertEquals('tab_ids', param.unix_name)
+    self.assertRaises(AttributeError,
+        param.choices[model.PropertyType.INTEGER].GetUnixName)
+    param.choices[model.PropertyType.INTEGER].unix_name = 'asdf'
+    param.choices[model.PropertyType.INTEGER].unix_name = 'tab_ids_integer'
+    self.assertEquals('tab_ids_integer',
+        param.choices[model.PropertyType.INTEGER].unix_name)
+    self.assertRaises(AttributeError,
+        param.choices[model.PropertyType.INTEGER].SetUnixName, 'breakage')
 
 if __name__ == '__main__':
   unittest.main()

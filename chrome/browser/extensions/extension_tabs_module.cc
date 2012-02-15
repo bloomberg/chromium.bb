@@ -9,6 +9,7 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
@@ -39,6 +40,7 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/api/windows.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -67,6 +69,7 @@ using content::NavigationEntry;
 using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;
+using namespace extensions::api::windows;
 
 const int CaptureVisibleTabFunction::kDefaultQuality = 90;
 
@@ -215,22 +218,15 @@ QueryArg ParseBoolQueryArg(base::DictionaryValue* query, const char* key) {
 // Windows ---------------------------------------------------------------------
 
 bool GetWindowFunction::RunImpl() {
-  int window_id = extension_misc::kUnknownWindowId;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &window_id));
+  scoped_ptr<Get::Params> params(Get::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
 
   bool populate_tabs = false;
-  if (HasOptionalArgument(1)) {
-    DictionaryValue* args = NULL;
-    EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &args));
-
-    if (args->HasKey(keys::kPopulateKey)) {
-      EXTENSION_FUNCTION_VALIDATE(args->GetBoolean(keys::kPopulateKey,
-          &populate_tabs));
-    }
-  }
+  if (params->get_info.get() && params->get_info->populate.get())
+    populate_tabs = *params->get_info->populate;
 
   Browser* browser = NULL;
-  if (!GetBrowserFromWindowID(this, window_id, &browser))
+  if (!GetBrowserFromWindowID(this, params->window_id, &browser))
     return false;
 
   result_.reset(ExtensionTabUtil::CreateWindowValue(browser, populate_tabs));
@@ -238,16 +234,12 @@ bool GetWindowFunction::RunImpl() {
 }
 
 bool GetCurrentWindowFunction::RunImpl() {
-  bool populate_tabs = false;
-  if (HasOptionalArgument(0)) {
-    DictionaryValue* args = NULL;
-    EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
+  scoped_ptr<GetCurrent::Params> params(GetCurrent::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
 
-    if (args->HasKey(keys::kPopulateKey)) {
-      EXTENSION_FUNCTION_VALIDATE(args->GetBoolean(keys::kPopulateKey,
-          &populate_tabs));
-    }
-  }
+  bool populate_tabs = false;
+  if (params->get_info.get() && params->get_info->populate.get())
+    populate_tabs = *params->get_info->populate;
 
   Browser* browser = GetCurrentBrowser();
   if (!browser || !browser->window()) {
@@ -259,16 +251,13 @@ bool GetCurrentWindowFunction::RunImpl() {
 }
 
 bool GetLastFocusedWindowFunction::RunImpl() {
-  bool populate_tabs = false;
-  if (HasOptionalArgument(0)) {
-    DictionaryValue* args = NULL;
-    EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
+  scoped_ptr<GetLastFocused::Params> params(
+      GetLastFocused::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
 
-    if (args->HasKey(keys::kPopulateKey)) {
-      EXTENSION_FUNCTION_VALIDATE(args->GetBoolean(keys::kPopulateKey,
-          &populate_tabs));
-    }
-  }
+  bool populate_tabs = false;
+  if (params->get_info.get() && params->get_info->populate.get())
+    populate_tabs = *params->get_info->populate;
 
   Browser* browser = BrowserList::FindAnyBrowser(
       profile(), include_incognito());
@@ -281,16 +270,12 @@ bool GetLastFocusedWindowFunction::RunImpl() {
 }
 
 bool GetAllWindowsFunction::RunImpl() {
-  bool populate_tabs = false;
-  if (HasOptionalArgument(0)) {
-    DictionaryValue* args = NULL;
-    EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
+  scoped_ptr<GetAll::Params> params(GetAll::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
 
-    if (args->HasKey(keys::kPopulateKey)) {
-      EXTENSION_FUNCTION_VALIDATE(args->GetBoolean(keys::kPopulateKey,
-          &populate_tabs));
-    }
-  }
+  bool populate_tabs = false;
+  if (params->get_info.get() && params->get_info->populate.get())
+    populate_tabs = *params->get_info->populate;
 
   result_.reset(new ListValue());
   Profile* incognito_profile =

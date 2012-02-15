@@ -1,7 +1,6 @@
 [
   {
     "namespace": "windows",
-    "compile": true,
     "types": [
       {
         "id": "Window",
@@ -139,6 +138,7 @@
       },
       {
         "name": "create",
+        "nocompile": true,
         "type": "function",
         "description": "Creates (opens) a new browser with any optional sizing, position or default URL provided.",
         "parameters": [

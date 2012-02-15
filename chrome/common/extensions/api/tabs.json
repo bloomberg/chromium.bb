@@ -63,6 +63,7 @@
       },
       {
         "name": "connect",
+        "nocompile": true,
         "type": "function",
         "description": "Connects to the content script(s) in the specified tab. The <a href='extension.html#event-onConnect'>chrome.extension.onConnect</a> event is fired in each content script running in the specified tab for the current extension. For more details, see <a href='content_scripts.html#messaging'>Content Script Messaging</a>.",
         "parameters": [
@@ -87,6 +88,7 @@
       },
       {
         "name": "sendRequest",
+        "nocompile": true,
         "type": "function",
         "description": "Sends a single request to the content script(s) in the specified tab, with an optional callback to run when a response is sent back.  The <a href='extension.html#event-onRequest'>chrome.extension.onRequest</a> event is fired in each content script running in the specified tab for the current extension.",
         "parameters": [
@@ -349,6 +351,7 @@
             "name": "updateProperties",
             "properties": {
               "url": {
+                "type": "string",
                 "optional": true,
                 "description": "A URL to navigate the tab to."
               },

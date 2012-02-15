@@ -24,7 +24,7 @@
         "type": "object",
         "description": "Information about the volume.",
         "properties": {
-          "volume": {"type": "double", "description": "The value of the volume percent. This must be between 0.0 and 100.0."},
+          "volume": {"type": "number", "description": "The value of the volume percent. This must be between 0.0 and 100.0."},
           "isVolumeMuted": {"type": "boolean", "description": "True if the volume is muted."}
         }
       },

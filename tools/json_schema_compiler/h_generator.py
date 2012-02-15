@@ -35,22 +35,22 @@ class HGenerator(object):
       .Append('#include <vector>')
       .Append()
       .Append('#include "base/basictypes.h"')
+      .Append('#include "base/memory/linked_ptr.h"')
       .Append('#include "base/memory/scoped_ptr.h"')
       .Append('#include "base/values.h"')
       .Append()
-      .Append('using base::Value;')
-      .Append('using base::DictionaryValue;')
-      .Append('using base::ListValue;')
-      .Append()
     )
 
-    includes = self._cpp_type_generator.GenerateCppIncludes()
-    if not includes.IsEmpty():
-      (c.Concat(includes)
+    c.Concat(self._cpp_type_generator.GetRootNamespaceStart())
+    forward_declarations = (
+        self._cpp_type_generator.GenerateForwardDeclarations())
+    if not forward_declarations.IsEmpty():
+      (c.Append()
+        .Concat(forward_declarations)
         .Append()
       )
 
-    (c.Concat(self._cpp_type_generator.GetCppNamespaceStart())
+    (c.Concat(self._cpp_type_generator.GetNamespaceStart())
       .Append()
       .Append('//')
       .Append('// Types')
@@ -71,18 +71,48 @@ class HGenerator(object):
         .Append()
       )
     (c.Append()
-      .Append()
-      .Concat(self._cpp_type_generator.GetCppNamespaceEnd())
+      .Concat(self._cpp_type_generator.GetNamespaceEnd())
+      .Concat(self._cpp_type_generator.GetRootNamespaceEnd())
       .Append()
       .Append('#endif  // %s' % ifndef_name)
       .Append()
     )
     return c
 
+  def _GenerateFields(self, props):
+    """Generates the field declarations when declaring a type.
+    """
+    c = code.Code()
+    for prop in self._cpp_type_generator.GetExpandedChoicesInParams(props):
+      if prop.description:
+        c.Comment(prop.description)
+      c.Append('%s %s;' % (
+          self._cpp_type_generator.GetType(prop, wrap_optional=True),
+          prop.unix_name))
+      c.Append()
+    # Generate the enums needed for any fields with "choices"
+    for prop in props:
+      if prop.type_ == PropertyType.CHOICES:
+        c.Sblock('enum %(enum_type)s {')
+        c.Append(self._cpp_type_generator.GetChoiceEnumNoneValue(prop) + ',')
+        for choice in prop.choices.values():
+          c.Append(
+              self._cpp_type_generator.GetChoiceEnumValue( prop, choice.type_)
+              + ',')
+        (c.Eblock('};')
+          .Append()
+          .Append('%(enum_type)s %(name)s_type;')
+        )
+        c.Substitute({
+            'enum_type': self._cpp_type_generator.GetChoicesEnumType(prop),
+            'name': prop.unix_name
+        })
+    return c
+
   def _GenerateType(self, type_, serializable=True):
     """Generates a struct for a type.
     """
-    classname = cpp_util.CppName(type_.name)
+    classname = cpp_util.Classname(type_.name)
     c = code.Code()
     if type_.description:
       c.Comment(type_.description)
@@ -90,36 +120,23 @@ class HGenerator(object):
         .Append('~%(classname)s();')
         .Append('%(classname)s();')
         .Append()
-    )
-
-    for prop in type_.properties.values():
-      if prop.description:
-        c.Comment(prop.description)
-      if prop.optional:
-        c.Append('scoped_ptr<%s> %s;' %
-            (self._cpp_type_generator.GetType(prop, pad_for_generics=True),
-            prop.name))
-      else:
-        c.Append('%s %s;' %
-            (self._cpp_type_generator.GetType(prop), prop.name))
-      c.Append()
-
-    (c.Comment('Populates a %(classname)s object from a Value. Returns'
-               ' whether |out| was successfully populated.')
-      .Append('static bool Populate(const Value& value, %(classname)s* out);')
-      .Append()
+        .Concat(self._GenerateFields(type_.properties.values()))
+        .Comment('Populates a %(classname)s object from a Value. Returns'
+                 ' whether |out| was successfully populated.')
+        .Append('static bool Populate(const Value& value, %(classname)s* out);')
+        .Append()
     )
 
     if serializable:
       (c.Comment('Returns a new DictionaryValue representing the'
-                 ' serialized form of this %(classname)s object. Passes'
+                 ' serialized form of this %(classname)s object. Passes '
                  'ownership to caller.')
-        .Append('DictionaryValue* ToValue() const;')
+        .Append('scoped_ptr<DictionaryValue> ToValue() const;')
       )
     (c.Eblock()
-    .Sblock(' private:')
-      .Append('DISALLOW_COPY_AND_ASSIGN(%(classname)s);')
-    .Eblock('};')
+      .Sblock(' private:')
+        .Append('DISALLOW_COPY_AND_ASSIGN(%(classname)s);')
+      .Eblock('};')
     )
     c.Substitute({'classname': classname})
     return c
@@ -128,7 +145,7 @@ class HGenerator(object):
     """Generates the structs for a function.
     """
     c = code.Code()
-    (c.Sblock('namespace %s {' % cpp_util.CppName(function.name))
+    (c.Sblock('namespace %s {' % cpp_util.Classname(function.name))
         .Concat(self._GenerateFunctionParams(function))
         .Append()
         .Concat(self._GenerateFunctionResult(function))
@@ -145,16 +162,10 @@ class HGenerator(object):
     if function.params:
       c.Sblock('struct Params {')
       for param in function.params:
-        if param.description:
-          c.Comment(param.description)
         if param.type_ == PropertyType.OBJECT:
           c.Concat(self._GenerateType(param, serializable=False))
           c.Append()
-      for param in function.params:
-        c.Append('%s %s;' %
-            (self._cpp_type_generator.GetType(param), param.name))
-
-      (c.Append()
+      (c.Concat(self._GenerateFields(function.params))
         .Append('~Params();')
         .Append()
         .Append('static scoped_ptr<Params> Create(const ListValue& args);')
@@ -163,43 +174,32 @@ class HGenerator(object):
         .Append('Params();')
         .Append()
         .Append('DISALLOW_COPY_AND_ASSIGN(Params);')
+      .Eblock('};')
       )
-
-      c.Eblock('};')
 
     return c
 
   def _GenerateFunctionResult(self, function):
-    """Generates the struct for passing a function's result back.
+    """Generates functions for passing a function's result back.
     """
-    # TODO(calamity): Handle returning an object
     c = code.Code()
 
-    param = function.callback.param
-    # TODO(calamity): Put this description comment in less stupid place
-    if param.description:
-      c.Comment(param.description)
-    (c.Append('class Result {')
-      .Sblock(' public:')
-    )
-    arg = ''
-    # TODO(calamity): handle object
-    if param:
-      if param.type_ == PropertyType.REF:
-        arg =  'const %(type)s& %(name)s'
-      else:
-        arg = 'const %(type)s %(name)s'
-      arg = arg % {
-          'type': self._cpp_type_generator.GetType(param),
-          'name': param.name
-      }
-    (c.Append('static Value* Create(%s);' % arg)
-    .Eblock()
-    .Sblock(' private:')
-      .Append('Result() {};')
-      .Append('DISALLOW_COPY_AND_ASSIGN(Result);')
-    .Eblock('};')
-    )
+    c.Sblock('namespace Result {')
+    params = function.callback.params
+    if not params:
+      c.Append('Value* Create();')
+    else:
+      # If there is a single parameter, this is straightforward. However, if
+      # the callback parameter is of 'choices', this generates a Create method
+      # for each choice. This works because only 1 choice can be returned at a
+      # time.
+      for param in self._cpp_type_generator.GetExpandedChoicesInParams(params):
+        if param.description:
+          c.Comment(param.description)
+        c.Append('Value* Create(%s);' %
+            cpp_util.GetConstParameterDeclaration(
+              param, self._cpp_type_generator))
+    c.Eblock('};')
 
     return c
 

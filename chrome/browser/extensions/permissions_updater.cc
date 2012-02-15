@@ -100,7 +100,7 @@ void PermissionsUpdater::DispatchEvent(
   ListValue value;
   scoped_ptr<api::permissions::Permissions> permissions =
     PackPermissionSet(changed_permissions);
-  value.Append(permissions->ToValue());
+  value.Append(permissions->ToValue().release());
   std::string json_value;
   base::JSONWriter::Write(&value, false, &json_value);
   profile_->GetExtensionEventRouter()->DispatchEventToExtension(

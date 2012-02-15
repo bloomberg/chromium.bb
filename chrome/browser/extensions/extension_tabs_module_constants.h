@@ -31,7 +31,6 @@ extern const char kOldPositionKey[];
 extern const char kOldWindowIdKey[];
 extern const char kOpenerTabIdKey[];
 extern const char kPinnedKey[];
-extern const char kPopulateKey[];
 extern const char kQualityKey[];
 extern const char kHighlightedKey[];
 extern const char kSelectedKey[];

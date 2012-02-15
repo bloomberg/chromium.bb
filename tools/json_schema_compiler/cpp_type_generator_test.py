@@ -23,16 +23,22 @@ class CppTypeGeneratorTest(unittest.TestCase):
         'path/to/tabs.json')
     self.tabs = self.model.namespaces.get('tabs')
 
-  def testGenerateCppIncludes(self):
+  def testGenerateIncludesAndForwardDeclarations(self):
     manager = CppTypeGenerator('', self.windows, 'windows_api')
     manager.AddNamespace(self.tabs, 'tabs_api')
     self.assertEquals('#include "path/to/tabs_api.h"',
-        manager.GenerateCppIncludes().Render())
+        manager.GenerateIncludes().Render())
+    self.assertEquals(
+        'namespace tabs {\n'
+        'struct Tab;\n'
+        '}',
+        manager.GenerateForwardDeclarations().Render())
     manager = CppTypeGenerator('', self.permissions, 'permissions_api')
     manager.AddNamespace(self.permissions, 'permissions_api')
-    self.assertEquals('', manager.GenerateCppIncludes().Render())
+    self.assertEquals('', manager.GenerateIncludes().Render())
+    self.assertEquals('', manager.GenerateForwardDeclarations().Render())
 
-  def testGenerateCppIncludesMultipleTypes(self):
+  def testGenerateIncludesAndForwardDeclaratiosnMultipleTypes(self):
     m = model.Model()
     self.tabs_json[0]['types'].append(self.permissions_json[0]['types'][0])
     tabs_namespace = m.AddNamespace(self.tabs_json[0],
@@ -44,7 +50,23 @@ class CppTypeGeneratorTest(unittest.TestCase):
     manager = CppTypeGenerator('', windows, 'windows_api')
     manager.AddNamespace(tabs_namespace, 'tabs_api')
     self.assertEquals('#include "path/to/tabs_api.h"',
-        manager.GenerateCppIncludes().Render())
+        manager.GenerateIncludes().Render())
+    self.assertEquals(
+        'namespace tabs {\n'
+        'struct Tab;\n'
+        'struct Permissions;\n'
+        '}',
+        manager.GenerateForwardDeclarations().Render())
+
+  def testChoicesEnum(self):
+    manager = CppTypeGenerator('', self.tabs, 'tabs_api')
+    prop = self.tabs.functions['move'].params[0]
+    self.assertEquals('TAB_IDS_ARRAY',
+        manager.GetChoiceEnumValue(prop, model.PropertyType.ARRAY))
+    self.assertEquals('TAB_IDS_INTEGER',
+        manager.GetChoiceEnumValue(prop, model.PropertyType.INTEGER))
+    self.assertEquals('TabIdsType',
+        manager.GetChoicesEnumType(prop))
 
   def testGetTypeSimple(self):
     manager = CppTypeGenerator('', self.tabs, 'tabs_api')
@@ -60,9 +82,9 @@ class CppTypeGeneratorTest(unittest.TestCase):
 
   def testGetTypeArray(self):
     manager = CppTypeGenerator('', self.windows, 'windows_api')
-    self.assertEquals('std::vector<Window>',
+    self.assertEquals('std::vector<linked_ptr<Window> >',
         manager.GetType(
-        self.windows.functions['getAll'].callback.param))
+        self.windows.functions['getAll'].callback.params[0]))
     manager = CppTypeGenerator('', self.permissions, 'permissions_api')
     self.assertEquals('std::vector<std::string>',
         manager.GetType(
@@ -72,12 +94,12 @@ class CppTypeGeneratorTest(unittest.TestCase):
     manager = CppTypeGenerator('', self.tabs, 'tabs_api')
     self.assertEquals('Tab',
         manager.GetType(
-        self.tabs.functions['get'].callback.param))
+        self.tabs.functions['get'].callback.params[0]))
 
   def testGetTypeIncludedRef(self):
     manager = CppTypeGenerator('', self.windows, 'windows_api')
     manager.AddNamespace(self.tabs, 'tabs_api')
-    self.assertEquals('std::vector<tabs_api::Tab>',
+    self.assertEquals('std::vector<linked_ptr<tabs_api::Tab> >',
         manager.GetType(
         self.windows.types['Window'].properties['tabs']))
 
@@ -101,25 +123,42 @@ class CppTypeGeneratorTest(unittest.TestCase):
         pad_for_generics=True))
     self.assertEquals('bool',
         manager.GetType(
-        self.permissions.functions['contains'].callback.param,
+        self.permissions.functions['contains'].callback.params[0],
         pad_for_generics=True))
 
   def testNamespaceDeclaration(self):
     manager = CppTypeGenerator('extensions', self.permissions,
                                'permissions_api')
     self.assertEquals(
-        'namespace extensions {\n'
-        'namespace permissions_api {',
-        manager.GetCppNamespaceStart().Render())
+        'namespace extensions {',
+        manager.GetRootNamespaceStart().Render())
 
     manager = CppTypeGenerator('extensions::gen::api', self.permissions,
                                'permissions_api')
+    self.assertEquals('namespace permissions_api {',
+        manager.GetNamespaceStart().Render())
+    self.assertEquals('}  // permissions_api',
+        manager.GetNamespaceEnd().Render())
     self.assertEquals(
         'namespace extensions {\n'
         'namespace gen {\n'
-        'namespace api {\n'
-        'namespace permissions_api {',
-        manager.GetCppNamespaceStart().Render())
+        'namespace api {',
+        manager.GetRootNamespaceStart().Render())
+    self.assertEquals(
+        '}  // api\n'
+        '}  // gen\n'
+        '}  // extensions',
+        manager.GetRootNamespaceEnd().Render())
+
+  def testExpandChoicesInParams(self):
+    manager = CppTypeGenerator('extensions', self.tabs,
+                               'tabs_api')
+    props = self.tabs.functions['move'].params
+    self.assertEquals(2, len(props))
+    self.assertEquals(3, len(manager.GetExpandedChoicesInParams(props)))
+    self.assertEquals(['move_properties', 'tab_ids_array', 'tab_ids_integer'],
+        sorted([x.unix_name for x in manager.GetExpandedChoicesInParams(props)])
+    )
 
 if __name__ == '__main__':
   unittest.main()

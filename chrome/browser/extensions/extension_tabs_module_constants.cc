@@ -27,7 +27,6 @@ const char kOldPositionKey[] = "oldPosition";
 const char kOldWindowIdKey[] = "oldWindowId";
 const char kOpenerTabIdKey[] = "openerTabId";
 const char kPinnedKey[] = "pinned";
-const char kPopulateKey[] = "populate";
 const char kQualityKey[] = "quality";
 const char kHighlightedKey[] = "highlighted";
 const char kSelectedKey[] = "selected";

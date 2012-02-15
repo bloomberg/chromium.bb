@@ -73,23 +73,27 @@ if __name__ == '__main__':
     if not namespace:
       continue
 
-    out_file = cpp_util.CppName(namespace.name).lower() + filename_suffix
+    out_file = namespace.name + filename_suffix
     type_generator = cpp_type_generator.CppTypeGenerator(root_namespace,
                                                          namespace, out_file)
     for referenced_namespace in api_model.namespaces.values():
-      type_generator.AddNamespace(referenced_namespace,
-          cpp_util.CppName(referenced_namespace.name).lower() + filename_suffix)
+      type_generator.AddNamespace(
+          referenced_namespace,
+          cpp_util.Classname(referenced_namespace.name).lower() +
+              filename_suffix)
     cc_generator = cc_generator.CCGenerator(namespace, type_generator)
     cc_code = cc_generator.Generate().Render()
     h_generator = h_generator.HGenerator(namespace, type_generator)
     h_code = h_generator.Generate().Render()
 
     if dest_dir:
-      with open(os.path.join(dest_dir, namespace.source_file_dir,
-          out_file + '.cc'), 'w') as cc_file:
+      with open(
+          os.path.join(dest_dir, namespace.source_file_dir, out_file + '.cc'),
+          'w') as cc_file:
         cc_file.write(cc_code)
-      with open(os.path.join(dest_dir, namespace.source_file_dir,
-          out_file + '.h'), 'w') as h_file:
+      with open(
+          os.path.join(dest_dir, namespace.source_file_dir, out_file + '.h'),
+          'w') as h_file:
         h_file.write(h_code)
     else:
       print '%s.h' % out_file

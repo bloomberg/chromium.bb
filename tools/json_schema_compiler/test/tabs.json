@@ -1,7 +1,6 @@
 [
   {
     "namespace": "tabs",
-    "compile": true,
     "types": [
       {
         "id": "Tab",
@@ -338,6 +337,7 @@
             "properties": {
               "url": {
                 "optional": true,
+                "type": "string",
                 "description": "A URL to navigate the tab to."
               },
               "active": {

@@ -44,7 +44,6 @@ bool ignore_user_gesture_for_tests = false;
 
 bool ContainsPermissionsFunction::RunImpl() {
   scoped_ptr<Contains::Params> params(Contains::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
 
   scoped_refptr<ExtensionPermissionSet> permissions =
       UnpackPermissionSet(params->permissions, &error_);

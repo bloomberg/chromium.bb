@@ -1,7 +1,6 @@
 [
   {
     "namespace": "permissions",
-    "compile": true,
     "types": [
       {
         "id": "Permissions",

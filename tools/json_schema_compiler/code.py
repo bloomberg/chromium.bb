@@ -35,11 +35,14 @@ class Code(object):
     isolate any strings that haven't been substituted.
     """
     if not isinstance(obj, Code):
-      raise TypeError()
+      raise TypeError(type(obj))
     assert self is not obj
     for line in obj._code:
-      # line % () will fail if any substitution tokens are left in line
-      self._code.append(((' ' * self._indent_level) + line % ()).rstrip())
+      try:
+        # line % () will fail if any substitution tokens are left in line
+        self._code.append(((' ' * self._indent_level) + line % ()).rstrip())
+      except TypeError:
+        raise TypeError('Unsubstituted value when concatting\n' + line)
 
     return self
 

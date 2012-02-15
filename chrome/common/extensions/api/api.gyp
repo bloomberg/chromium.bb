@@ -3,14 +3,6 @@
 # found in the LICENSE file.
 
 {
-  'variables': {
-    'chromium_code': 1,
-    'json_schema_files': [
-      'permissions.json',
-    ],
-    'cc_dir': 'chrome/common/extensions/api',
-    'root_namespace': 'extensions::api',
-  },
   'targets': [
     {
       'target_name': 'api',
@@ -19,6 +11,17 @@
         '<@(json_schema_files)',
       ],
       'includes': ['../../../../build/json_schema_compile.gypi'],
+      'variables': {
+        'chromium_code': 1,
+        'json_schema_files': [
+          'experimental.declarative.json',
+          'permissions.json',
+          'tabs.json',
+          'windows.json',
+        ],
+        'cc_dir': 'chrome/common/extensions/api',
+        'root_namespace': 'extensions::api',
+      },
     },
   ],
 }
