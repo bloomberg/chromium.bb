@@ -289,7 +289,7 @@ char *GetCPUIDString(NaClCPUData* data) {
 }
 
 /* Returns true if the given feature is defined by the CPUID. */
-static Bool CheckCPUFeature(NaClCPUData* data, NaClCPUFeatureID fid) {
+static int CheckCPUFeature(NaClCPUData* data, NaClCPUFeatureID fid) {
   const CPUFeature *f = &CPUFeatureDescriptions[fid];
   uint32_t *fv = data->_featurev;
 #if 0
@@ -297,9 +297,9 @@ static Bool CheckCPUFeature(NaClCPUData* data, NaClCPUFeatureID fid) {
          fv[f->reg], f->mask);
 #endif
   if (fv[f->reg] & f->mask) {
-    return TRUE;
+    return 1;
   } else {
-    return FALSE;
+    return 0;
   }
 }
 
@@ -329,18 +329,18 @@ static void CheckNaClArchFeatures(NaClCPUData* data,
   const size_t kCPUID0Length = 12;
   char *cpuversionid;
   memset(features, 0, sizeof(*features));
-  if (data->_has_CPUID) features->f_cpuid_supported = TRUE;
+  if (data->_has_CPUID) features->f_cpuid_supported = 1;
   cpuversionid = CPUVersionID(data);
   if (strncmp(cpuversionid, Intel_CPUID0, kCPUID0Length) == 0) {
-    features->f_cpu_supported = TRUE;
+    features->f_cpu_supported = 1;
   } else if (strncmp(cpuversionid, AMD_CPUID0, kCPUID0Length) == 0) {
-    features->f_cpu_supported = TRUE;
+    features->f_cpu_supported = 1;
   }
 }
 
-Bool NaClArchSupported(CPUFeatures *features) {
-  return (Bool) (features->arch_features.f_cpuid_supported &&
-                 features->arch_features.f_cpu_supported);
+int NaClArchSupported(CPUFeatures *features) {
+  return (features->arch_features.f_cpuid_supported &&
+          features->arch_features.f_cpu_supported);
 }
 
 void NaClClearCPUFeatures(CPUFeatures *features) {
@@ -349,17 +349,17 @@ void NaClClearCPUFeatures(CPUFeatures *features) {
 
 void NaClSetAllCPUFeatures(CPUFeatures *features) {
   /* Be a little more pedantic than using memset because we don't know exactly
-   * how the structure is laid out.  If we use memset, Bools may be initialized
-   * to 0xff instead of TRUE... this isn't the end of the world but it can
+   * how the structure is laid out.  If we use memset, fields may be initialized
+   * to 0xff instead of 1 ... this isn't the end of the world but it can
    * create a skew if the structure is hashed, etc.
    */
   int id;
   /* Ensure any padding is zeroed. */
   NaClClearCPUFeatures(features);
-  features->arch_features.f_cpuid_supported = TRUE;
-  features->arch_features.f_cpu_supported = TRUE;
+  features->arch_features.f_cpuid_supported = 1;
+  features->arch_features.f_cpu_supported = 1;
   for (id = 0; id < NaClCPUFeature_Max; ++id) {
-    NaClSetCPUFeature(features, id, TRUE);
+    NaClSetCPUFeature(features, id, 1);
   }
 }
 
@@ -367,8 +367,9 @@ void NaClCopyCPUFeatures(CPUFeatures* target, const CPUFeatures* source) {
   memcpy(target, source, sizeof(CPUFeatures));
 }
 
-void NaClSetCPUFeature(CPUFeatures *features, NaClCPUFeatureID id, Bool state) {
-  features->data[id] = state;
+void NaClSetCPUFeature(CPUFeatures *features, NaClCPUFeatureID id,
+                       int state) {
+  features->data[id] = (char) state;
 }
 
 const char* NaClGetCPUFeatureName(NaClCPUFeatureID id) {
@@ -397,7 +398,7 @@ static void GetCPUFeatures(NaClCPUData* data, CPUFeatures *cpuf) {
    */
   if (!(NaClGetCPUFeature(cpuf, NaClCPUFeature_OSXSAVE)
         && (data->_xcrv[0] & 6) == 6)) {
-    NaClSetCPUFeature(cpuf, NaClCPUFeature_AVX, FALSE);
+    NaClSetCPUFeature(cpuf, NaClCPUFeature_AVX, 0);
   }
 }
 
@@ -413,12 +414,4 @@ void NaClGetCurrentCPUFeatures(CPUFeatures *cpu_features) {
   NaClCPUData cpu_data;
   NaClCPUDataGet(&cpu_data);
   GetCPUFeatures(&cpu_data, cpu_features);
-}
-
-void NaClValidatorGetCPUFeatures(Bool local_cpu, CPUFeatures *cpu_features) {
-  if (local_cpu) {
-    NaClGetCurrentCPUFeatures(cpu_features);
-  } else {
-    NaClSetAllCPUFeatures(cpu_features);
-  }
 }

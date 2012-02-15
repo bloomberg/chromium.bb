@@ -289,13 +289,12 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCopy,
      uint8_t *data_old,
      uint8_t *data_new,
      size_t size,
-     int bundle_size) {
+     int bundle_size,
+     CPUFeatures *cpu_features) {
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
   assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {
-    CPUFeatures cpu_features;
-    NaClGetCurrentCPUFeatures(&cpu_features);
-    if (!NaClArchSupported(&cpu_features)) {
+    if (!NaClArchSupported(cpu_features)) {
       status = NaClValidationFailedCpuNotSupported;
     } else {
       status = ((0 == NCCopyCode(data_old, data_new, guest_addr,
@@ -382,13 +381,12 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCopy,
      uint8_t *data_old,
      uint8_t *data_new,
      size_t size,
-     int bundle_size) {
+     int bundle_size,
+     CPUFeatures *cpu_features) {
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
   assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {
-    CPUFeatures cpu_features;
-    NaClGetCurrentCPUFeatures(&cpu_features);
-    if (!NaClArchSupported(&cpu_features)) {
+    if (!NaClArchSupported(cpu_features)) {
       status = NaClValidationFailedCpuNotSupported;
     } else {
       status = ((0 == NaClCopyCodeIter(data_old, data_new, guest_addr, size))

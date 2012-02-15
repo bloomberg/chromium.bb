@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -39,7 +39,7 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
                                    sb_kind,
                                    NaClApplyValidationDoStubout,
                                    guest_addr, data, size,
-                                   nap->bundle_size, TRUE);
+                                   nap->bundle_size, &nap->cpu_features);
   }
   if (status == NaClValidationSucceeded) {
     status = NACL_SUBARCH_NAME(ApplyValidator,
@@ -48,7 +48,7 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
                                    sb_kind,
                                    NaClApplyCodeValidation,
                                    guest_addr, data, size,
-                                   nap->bundle_size, TRUE);
+                                   nap->bundle_size, &nap->cpu_features);
   }
   return NaClValidateStatus(status);
 }
@@ -68,7 +68,8 @@ int NaClValidateCodeReplacement(struct NaClApp *nap, uintptr_t guest_addr,
       NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement,
                         NACL_TARGET_ARCH,
                         NACL_TARGET_SUBARCH)
-      (sb_kind, guest_addr, data_old, data_new, size, nap->bundle_size));
+      (sb_kind, guest_addr, data_old, data_new, size, nap->bundle_size,
+       &nap->cpu_features));
 }
 
 int NaClCopyCode(struct NaClApp *nap, uintptr_t guest_addr,
@@ -79,7 +80,8 @@ int NaClCopyCode(struct NaClApp *nap, uintptr_t guest_addr,
       NACL_SUBARCH_NAME(ApplyValidatorCopy,
                         NACL_TARGET_ARCH,
                         NACL_TARGET_SUBARCH)
-      (sb_kind, guest_addr, data_old, data_new, size, nap->bundle_size));
+      (sb_kind, guest_addr, data_old, data_new, size, nap->bundle_size,
+       &nap->cpu_features));
 }
 
 NaClErrorCode NaClValidateImage(struct NaClApp  *nap) {

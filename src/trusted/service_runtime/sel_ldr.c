@@ -76,6 +76,9 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
                                 struct NaClSyscallTableEntry *table) {
   struct NaClDescEffectorLdr  *effp;
 
+  /* Get the set of features that the CPU we're running on supports. */
+  NaClGetCurrentCPUFeatures(&nap->cpu_features);
+
   nap->addr_bits = NACL_MAX_ADDR_BITS;
 
   nap->stack_size = NACL_DEFAULT_STACK_MAX;

@@ -14,7 +14,6 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NACL_CPUID_H_
 
 #include "native_client/src/include/portability.h"
-#include "native_client/src/shared/utils/types.h"
 
 /* The list of features we can get from the CPUID instruction.
  * Do not modify this enum without making similar modifications to
@@ -56,14 +55,14 @@ typedef enum {
 
 /* Features needed to show that the architecture is supported. */
 typedef struct nacl_arch_features {
-  Bool f_cpuid_supported;  /* CPUID is defined for the hardward. */
-  Bool f_cpu_supported;    /* CPU is one we support. */
+  char f_cpuid_supported;  /* CPUID is defined for the hardward. */
+  char f_cpu_supported;    /* CPU is one we support. */
 } nacl_arch_features;
 
 /* Features we can get about the x86 hardware. */
 typedef struct cpu_feature_struct {
   nacl_arch_features arch_features;
-  Bool data[NaClCPUFeature_Max];
+  char data[NaClCPUFeature_Max];
 } CPUFeatures;
 
 /* Define the maximum length of a CPUID string.
@@ -123,11 +122,12 @@ void NaClSetAllCPUFeatures(CPUFeatures *features);
 void NaClClearCPUFeatures(CPUFeatures *features);
 
 /* Set a feature. */
-void NaClSetCPUFeature(CPUFeatures *features, NaClCPUFeatureID id, Bool state);
+void NaClSetCPUFeature(CPUFeatures *features, NaClCPUFeatureID id,
+                       int state);
 
 /* Query whether a feature is supported. */
-static INLINE Bool NaClGetCPUFeature(CPUFeatures *features,
-                                     NaClCPUFeatureID id) {
+static INLINE int NaClGetCPUFeature(CPUFeatures *features,
+                                    NaClCPUFeatureID id) {
   return features->data[id];
 }
 
@@ -140,12 +140,7 @@ void NaClCopyCPUFeatures(CPUFeatures* target, const CPUFeatures* source);
 /* Get the features for the CPU this code is running on. */
 void NaClGetCurrentCPUFeatures(CPUFeatures *cpu_features);
 
-/* Either get the features for the CPU this code is running on, or a
- * hypothetical CPU that supports all features.
- */
-void NaClValidatorGetCPUFeatures(Bool local_cpu, CPUFeatures *cpu_features);
-
 /* Returns true if CPUID is defined, and the CPU is supported. */
-Bool NaClArchSupported(CPUFeatures *features);
+int NaClArchSupported(CPUFeatures *features);
 
 #endif /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NACL_CPUID_H_ */

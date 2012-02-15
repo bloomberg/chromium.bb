@@ -62,22 +62,20 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, NACL_TARGET_ARCH, 32) (
     uint8_t *data,
     size_t size,
     int bundle_size,
-    Bool local_cpu) {
+    CPUFeatures *cpu_features) {
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
   assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {
-    CPUFeatures cpu_features;
-    NaClValidatorGetCPUFeatures(local_cpu, &cpu_features);
-    if (!NaClArchSupported(&cpu_features))
+    if (!NaClArchSupported(cpu_features))
       return NaClValidationFailedCpuNotSupported;
     switch (kind) {
       case NaClApplyCodeValidation:
         status = NCApplyValidatorSilently_x86_32(
-            guest_addr, data, size, bundle_size, &cpu_features);
+            guest_addr, data, size, bundle_size, cpu_features);
         break;
       case NaClApplyValidationDoStubout:
         status = NCApplyValidatorStubout_x86_32(
-            guest_addr, data, size, bundle_size, &cpu_features);
+            guest_addr, data, size, bundle_size, cpu_features);
         break;
       default:
         /* If reached, it isn't implemented (yet). */
@@ -93,17 +91,16 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement, x86, 32)
      uint8_t *data_old,
      uint8_t *data_new,
      size_t size,
-     int bundle_size) {
+     int bundle_size,
+     CPUFeatures *cpu_features) {
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
   assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {
-    CPUFeatures cpu_features;
-    NaClGetCurrentCPUFeatures(&cpu_features);
-    if (!NaClArchSupported(&cpu_features)) {
+    if (!NaClArchSupported(cpu_features)) {
       status = NaClValidationFailedCpuNotSupported;
     } else {
       status = NCValidateSegmentPair(data_old, data_new, guest_addr,
-                                     size, bundle_size, &cpu_features)
+                                     size, bundle_size, cpu_features)
         ? NaClValidationSucceeded : NaClValidationFailed;
     }
   }

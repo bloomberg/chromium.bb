@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -11,6 +11,7 @@
 
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability.h"
+#include "native_client/src/trusted/validator_arm/cpuid_arm.h"
 #include "native_client/src/trusted/validator_arm/validator.h"
 #include "native_client/src/trusted/validator_arm/model.h"
 #include "native_client/src/trusted/validator/ncvalidate.h"
@@ -71,9 +72,9 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, arm, 32) (
     uint8_t *data,
     size_t size,
     int bundle_size,
-    Bool local_cpu) {
+    NaClCPUFeaturesArm *cpu_features) {
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
-  UNREFERENCED_PARAMETER(local_cpu);
+  UNREFERENCED_PARAMETER(cpu_features);
   UNREFERENCED_PARAMETER(sb_kind);
   if (bundle_size == 16) {
     if (kind == NaClApplyCodeValidation) {
@@ -90,13 +91,15 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement, arm, 32)
      uint8_t *data_old,
      uint8_t *data_new,
      size_t size,
-     int bundle_size) {
+     int bundle_size,
+     NaClCPUFeaturesArm *cpu_features) {
   UNREFERENCED_PARAMETER(sb_kind);
   UNREFERENCED_PARAMETER(guest_addr);
   UNREFERENCED_PARAMETER(data_old);
   UNREFERENCED_PARAMETER(data_new);
   UNREFERENCED_PARAMETER(size);
   UNREFERENCED_PARAMETER(bundle_size);
+  UNREFERENCED_PARAMETER(cpu_features);
   return NaClValidationFailedNotImplemented;
 }
 
@@ -106,13 +109,15 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCopy, arm, 32)
      uint8_t *data_old,
      uint8_t *data_new,
      size_t size,
-     int bundle_size) {
+     int bundle_size,
+     NaClCPUFeaturesArm *cpu_features) {
   UNREFERENCED_PARAMETER(sb_kind);
   UNREFERENCED_PARAMETER(guest_addr);
   UNREFERENCED_PARAMETER(data_old);
   UNREFERENCED_PARAMETER(data_new);
   UNREFERENCED_PARAMETER(size);
   UNREFERENCED_PARAMETER(bundle_size);
+  UNREFERENCED_PARAMETER(cpu_features);
   return NaClValidationFailedNotImplemented;
 }
 

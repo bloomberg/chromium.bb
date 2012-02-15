@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -21,24 +21,26 @@
 #include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/utils/types.h"
+#include "native_client/src/trusted/validator/cpufeatures.h"
 #include "native_client/src/trusted/validator/ncvalidate.h"
-#include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
 
 static Bool FixUpSection(uintptr_t load_address,
                          unsigned char *code,
                          size_t code_size) {
   int bundle_size = 32;
   enum NaClSBKind sb_kind = NACL_SB_DEFAULT;
-  NaClValidationStatus status =
-      /* Start by stubbing out the code.
-       * We should not stub out any instructions based on the features
-       * of the CPU we are executing on now.
-       */
-      NACL_SUBARCH_NAME(ApplyValidator,
-                        NACL_TARGET_ARCH,
-                        NACL_TARGET_SUBARCH)
+  NaClValidationStatus status;
+  NaClCPUFeatures cpu_features;
+  /* Pretend that the CPU supports every feature so that we will only stub out
+   * instructions that NaCl will never allow under any condition.
+   */
+  NaClSetAllCPUFeatures(&cpu_features);
+
+  status = NACL_SUBARCH_NAME(ApplyValidator,
+                             NACL_TARGET_ARCH,
+                             NACL_TARGET_SUBARCH)
       (sb_kind, NaClApplyValidationDoStubout, load_address, code,
-       code_size,  bundle_size, FALSE);
+       code_size,  bundle_size, &cpu_features);
   if (status == NaClValidationSucceeded) {
     /* Now run the validator again, so that we report any errors
      * that were not fixed by stubbing out. This is done so that
@@ -48,7 +50,7 @@ static Bool FixUpSection(uintptr_t load_address,
                                NACL_TARGET_ARCH,
                                NACL_TARGET_SUBARCH)
         (sb_kind, NaClApplyCodeValidation, load_address, code, code_size,
-         bundle_size, FALSE);
+         bundle_size, &cpu_features);
   }
 
   switch (status) {

@@ -50,6 +50,8 @@
 
 #include "native_client/src/trusted/service_runtime/name_service/name_service.h"
 
+#include "native_client/src/trusted/validator/cpufeatures.h"
+
 EXTERN_C_BEGIN
 
 #define NACL_SERVICE_PORT_DESCRIPTOR    3
@@ -294,6 +296,8 @@ struct NaClApp {
   int                       running;
   int                       exit_status;
 
+
+  NaClCPUFeatures           cpu_features;
   int                       ignore_validator_result;
   int                       skip_validator;
   int                       validator_stub_out_mode;

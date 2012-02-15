@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -26,6 +26,7 @@
 
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/shared/utils/types.h"
+#include "native_client/src/trusted/validator/cpufeatures.h"
 
 EXTERN_C_BEGIN
 
@@ -98,6 +99,7 @@ typedef enum NaClApplyValidationKind {
  *    data - The contents of the code segment to be validated.
  *    size - The size of the code segment to be validated.
  *    bundle_size - The number of bytes in a code bundle.
+ *    cpu_features - The CPU features to support while validating.
  */
 extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator,
                                               NACL_TARGET_ARCH,
@@ -108,7 +110,7 @@ extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator,
     uint8_t                 *data,
     size_t                  size,
     int                     bundle_size,
-    Bool                    local_cpu);
+    NaClCPUFeatures         *cpu_features);
 
 /* Applies the validator, as used in a command-line tool to report issues.
  * Note: This is intentionally separated from ApplyValidator, since it need
@@ -123,6 +125,7 @@ extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator,
  *    data - The contents of the code segment to be validated.
  *    size - The size of the code segment to be validated.
  *    bundle_size - The number of bytes in a code bundle.
+ *    cpu_features - The CPU features to support while validating.
  */
 extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorVerbosely,
                                               NACL_TARGET_ARCH,
@@ -133,7 +136,7 @@ extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorVerbosely,
     uint8_t                 *data,
     size_t                  size,
     int                     bundle_size,
-    Bool                    local_cpu);
+    NaClCPUFeatures         *cpu_features);
 
 /* Applies validator to new code segment, assuming that it was updated
  * from the previously validated old code segment. Assumes that instruction
@@ -147,6 +150,7 @@ extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorVerbosely,
  *    data_new - The contents of the new code segment that should be validated.
  *    size - The size of the passed code segments.
  *    bundle_size - The number of bytes in a code bundle.
+ *    cpu_features - The CPU features to support while validating.
  */
 extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement,
                                               NACL_TARGET_ARCH,
@@ -156,7 +160,8 @@ extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement,
       uint8_t         *data_old,
       uint8_t         *data_new,
       size_t          size,
-      int             bundle_size);
+      int             bundle_size,
+      NaClCPUFeatures *cpu_features);
 
 /* Runs the validator to copy code from an existing code segment to a new
  * code segment.
@@ -173,6 +178,7 @@ extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement,
  *           code segment should be copied into.
  *    size - The size of the passed code segments.
  *    bundle_size - The number of bytes in a code bundle.
+ *    cpu_features - The CPU features to support while validating.
  */
 extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCopy,
                                               NACL_TARGET_ARCH,
@@ -182,7 +188,8 @@ extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCopy,
     uint8_t         *data_old,
     uint8_t         *data_new,
     size_t          size,
-    int             bundle_size);
+    int             bundle_size,
+    NaClCPUFeatures *cpu_features);
 
 EXTERN_C_END
 

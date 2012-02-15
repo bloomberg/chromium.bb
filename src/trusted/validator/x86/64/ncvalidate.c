@@ -84,22 +84,20 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, x86, 64) (
     uint8_t *data,
     size_t size,
     int bundle_size,
-    Bool local_cpu) {
+    CPUFeatures *cpu_features) {
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
   assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {
-    CPUFeatures cpu_features;
-    NaClValidatorGetCPUFeatures(local_cpu, &cpu_features);
-    if (!NaClArchSupported(&cpu_features))
+    if (!NaClArchSupported(cpu_features))
       return NaClValidationFailedCpuNotSupported;
     switch (kind) {
       case NaClApplyCodeValidation:
         status = NaClApplyValidatorSilently_x86_64(
-            guest_addr, data, size, bundle_size, &cpu_features);
+            guest_addr, data, size, bundle_size, cpu_features);
         break;
       case NaClApplyValidationDoStubout:
         status = NaClApplyValidatorStubout_x86_64(
-            guest_addr, data, size, bundle_size, &cpu_features);
+            guest_addr, data, size, bundle_size, cpu_features);
         break;
       default:
         break;
@@ -134,17 +132,16 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement, x86, 64)
      uint8_t *data_old,
      uint8_t *data_new,
      size_t size,
-     int bundle_size) {
+     int bundle_size,
+     CPUFeatures *cpu_features) {
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
   assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {
-    CPUFeatures cpu_features;
-    NaClGetCurrentCPUFeatures(&cpu_features);
-    if (!NaClArchSupported(&cpu_features)) {
+    if (!NaClArchSupported(cpu_features)) {
       status = NaClValidationFailedCpuNotSupported;
     } else {
       status = NaClApplyValidatorPair(guest_addr, data_old, data_new,
-                                      size, bundle_size, &cpu_features);
+                                      size, bundle_size, cpu_features);
     }
   }
   return status;

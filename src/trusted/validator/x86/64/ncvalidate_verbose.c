@@ -48,22 +48,20 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorVerbosely, x86, 64)
      uint8_t *data,
      size_t size,
      int bundle_size,
-     Bool local_cpu) {
+     CPUFeatures *cpu_features) {
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
   assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {
-    CPUFeatures cpu_features;
-    NaClValidatorGetCPUFeatures(local_cpu, &cpu_features);
-    if (!NaClArchSupported(&cpu_features))
+    if (!NaClArchSupported(cpu_features))
       return NaClValidationFailedCpuNotSupported;
     switch (kind) {
       case NaClApplyCodeValidation:
         status = NaClApplyValidatorVerbosely_x86_64(
-            guest_addr, data, size, bundle_size, &cpu_features);
+            guest_addr, data, size, bundle_size, cpu_features);
         break;
       case NaClApplyValidationDoStubout:
         status = NaClApplyValidatorStubout_x86_64(
-            guest_addr, data, size, bundle_size, &cpu_features);
+            guest_addr, data, size, bundle_size, cpu_features);
         break;
       default:
         /* If reached, it isn't implemented (yet). */
