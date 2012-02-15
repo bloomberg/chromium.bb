@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <string.h>
@@ -50,7 +50,9 @@ int NaClDescQuotaCtor(struct NaClDescQuota           *self,
 void NaClDescQuotaDtor(struct NaClRefCount *vself) {
   struct NaClDescQuota *self = (struct NaClDescQuota *) vself;
 
-  NaClRefCountUnref((struct NaClRefCount *) self->quota_interface);
+  if (NULL != self->quota_interface) {
+    NaClRefCountUnref((struct NaClRefCount *) self->quota_interface);
+  }
   NaClRefCountUnref((struct NaClRefCount *) self->desc);
   self->desc = NULL;
   NaClMutexDtor(&self->mu);

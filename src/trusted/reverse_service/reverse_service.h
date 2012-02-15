@@ -1,6 +1,6 @@
 /* -*- c++ -*- */
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -75,8 +75,7 @@ class ReverseInterface : public RefCountBase {
                                        int64_t bytes_to_write) {
     UNREFERENCED_PARAMETER(file_id);
     UNREFERENCED_PARAMETER(offset);
-    UNREFERENCED_PARAMETER(bytes_to_write);
-    return true;
+    return bytes_to_write;
   }
 
   // covariant impl of Ref()
