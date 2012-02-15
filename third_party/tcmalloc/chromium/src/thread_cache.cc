@@ -103,6 +103,7 @@ bool kernel_supports_tls = false;      // be conservative
 
 void ThreadCache::Init(pthread_t tid) {
   size_ = 0;
+  total_bytes_allocated_ = 0;
 
   max_size_ = 0;
   IncreaseCacheLimitLocked();
@@ -301,6 +302,11 @@ void ThreadCache::IncreaseCacheLimitLocked() {
 
 int ThreadCache::GetSamplePeriod() {
   return sampler_.GetSamplePeriod();
+}
+
+// static
+unsigned int ThreadCache::GetBytesAllocatedOnCurrentThread() {
+  return ThreadCache::GetThreadHeap()->GetTotalBytesAllocated();
 }
 
 void ThreadCache::InitModule() {

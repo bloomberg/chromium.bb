@@ -1130,6 +1130,8 @@ inline void* do_malloc_pages(ThreadCache* heap, size_t size) {
   Length num_pages = tcmalloc::pages(size);
   size = num_pages << kPageShift;
 
+  heap->AddToByteAllocatedTotal(size);  // Chromium profiling.
+
   if ((FLAGS_tcmalloc_sample_parameter > 0) && heap->SampleAllocation(size)) {
     result = DoSampledAllocation(size);
 
@@ -1158,6 +1160,12 @@ inline void* do_malloc(size_t size) {
   if (size <= kMaxSize) {
     size_t cl = Static::sizemap()->SizeClass(size);
     size = Static::sizemap()->class_to_size(cl);
+
+    // TODO(jar): If this has any detectable performance impact, it can be
+    // optimized by only tallying sizes if the profiler was activated to recall
+    // these tallies.  I don't think this is performance critical, but we really
+    // should measure it.
+    heap->AddToByteAllocatedTotal(size);  // Chromium profiling.
 
     if ((FLAGS_tcmalloc_sample_parameter > 0) && heap->SampleAllocation(size)) {
       ret = DoSampledAllocation(size);
