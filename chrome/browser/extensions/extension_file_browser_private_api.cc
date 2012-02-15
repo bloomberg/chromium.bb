@@ -144,6 +144,9 @@ bool GetFileBrowserHandlers(Profile* profile,
        iter != service->extensions()->end();
        ++iter) {
     const Extension* extension = *iter;
+    if (profile->IsOffTheRecord() &&
+        !service->IsIncognitoEnabled(extension->id()))
+      continue;
     if (!extension->file_browser_handlers())
       continue;
 
