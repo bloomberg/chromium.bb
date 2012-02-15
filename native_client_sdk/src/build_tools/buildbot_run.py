@@ -480,10 +480,11 @@ def main(args):
   platform = getos.GetPlatform()
   arch = 'x86'
 
-  toolchains = ['newlib', 'glibc']
-  if options.pnacl:
-    toolchains.append('pnacl')
-
+  if not options.pnacl:
+    toolchains = ['newlib', 'glibc']
+  else:
+    toolchains = ['pnacl']
+  print 'Building: ' + ' '.join(toolchains)
   skip = options.examples or options.update
 
   skip_examples = skip
@@ -540,6 +541,8 @@ def main(args):
   if not skip_tar:
     BuildStep('Tar Pepper Bundle')
     tarname = 'naclsdk_' + platform + '.bz2'
+    if 'pnacl' in toolchains:
+      tarname = 'p' + tarname
     tarfile = os.path.join(OUT_DIR, tarname)
     Run([sys.executable, CYGTAR, '-C', OUT_DIR, '-cjf', tarfile,
          'pepper_' + pepper_ver], cwd=NACL_DIR)
