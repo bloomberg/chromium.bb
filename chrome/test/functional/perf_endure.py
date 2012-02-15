@@ -41,6 +41,7 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     self._dom_node_count_results = []
     self._event_listener_count_results = []
     self._process_private_mem_results = []
+    self._v8_mem_used_results = []
     self._test_start_time = 0
 
   def ExtraChromeFlags(self):
@@ -119,6 +120,11 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     self._process_private_mem_results.append((elapsed_time,
                                               proc_info['private_mem']))
 
+    v8_info = self.GetV8HeapStats()  # First window, first tab.
+    v8_mem_used = v8_info['v8_memory_used'] / 1024.0  # Convert to KB.
+    logging.info('  V8 memory used: %f KB' % v8_mem_used)
+    self._v8_mem_used_results.append((elapsed_time, v8_mem_used))
+
     # Output the results seen so far, to be graphed.
     self._OutputPerfGraphValue(
         'TotalDOMNodeCount', self._dom_node_count_results, 'nodes',
@@ -131,6 +137,10 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     self._OutputPerfGraphValue(
         'ProcessPrivateMemory', self._process_private_mem_results, 'KB',
         graph_name='%s%s-ProcMem-Private' % (webapp_name, test_description),
+        units_x='seconds')
+    self._OutputPerfGraphValue(
+        'V8MemoryUsed', self._v8_mem_used_results, 'KB',
+        graph_name='%s%s-V8MemUsed' % (webapp_name, test_description),
         units_x='seconds')
 
   def _GetElement(self, find_by, value):
