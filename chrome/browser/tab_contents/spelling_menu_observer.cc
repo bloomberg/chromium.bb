@@ -159,7 +159,7 @@ bool SpellingMenuObserver::IsCommandIdEnabled(int command_id) {
 
   switch (command_id) {
     case IDC_SPELLCHECK_ADD_TO_DICTIONARY:
-      return !suggestions_.empty();
+      return !misspelled_word_.empty();
 
     case IDC_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS:
       return false;

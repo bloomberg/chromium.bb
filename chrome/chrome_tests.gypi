@@ -2701,6 +2701,7 @@
         'browser/spellchecker/spellcheck_host_browsertest.cc',
         'browser/ssl/ssl_browser_tests.cc',
         'browser/tab_contents/render_view_context_menu_browsertest.cc',
+        'browser/tab_contents/spelling_menu_observer_browsertest.cc',
         'browser/tab_first_render_watcher_browsertest.cc',
         'browser/task_manager/task_manager_browsertest.cc',
         'browser/task_manager/task_manager_browsertest_util.cc',
