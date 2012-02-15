@@ -368,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSExpiredCertAndDontProceed) {
 }
 
 // Visits a page with https error and then goes back using Browser::GoBack.
-#if defined(OS_MAC)
+#if defined(OS_MACOSX)
 // See bug 114185.
 #define MAYBE_TestHTTPSExpiredCertAndGoBackViaButton \
         DISABLED_TestHTTPSExpiredCertAndGoBackViaButton
@@ -413,7 +413,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
 }
 
 // Visits a page with https error and then goes back using GoToOffset.
-#if defined(OS_MAC)
+#if defined(OS_MACOSX)
 // See bug 114185.
 #define MAYBE_TestHTTPSExpiredCertAndGoBackViaMenu \
         DISABLED_TestHTTPSExpiredCertAndGoBackViaMenu
