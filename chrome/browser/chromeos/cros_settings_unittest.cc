@@ -225,12 +225,12 @@ TEST_F(CrosSettingsTest, SetOwner) {
   FetchPref(kDeviceOwner);
 }
 
-TEST_F(CrosSettingsTest, SetEphemeralUsers) {
-  base::FundamentalValue ephemeral_users(true);
-  AddExpectation(kAccountsPrefEphemeralUsers,
+TEST_F(CrosSettingsTest, SetEphemeralUsersEnabled) {
+  base::FundamentalValue ephemeral_users_enabled(true);
+  AddExpectation(kAccountsPrefEphemeralUsersEnabled,
                  base::Value::CreateBooleanValue(true));
-  SetPref(kAccountsPrefEphemeralUsers, &ephemeral_users);
-  FetchPref(kAccountsPrefEphemeralUsers);
+  SetPref(kAccountsPrefEphemeralUsersEnabled, &ephemeral_users_enabled);
+  FetchPref(kAccountsPrefEphemeralUsersEnabled);
 }
 
 }  // namespace chromeos

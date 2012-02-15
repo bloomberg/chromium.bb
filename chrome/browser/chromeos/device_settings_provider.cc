@@ -40,7 +40,7 @@ const char* kBooleanSettings[] = {
   kAccountsPrefAllowNewUser,
   kAccountsPrefAllowGuest,
   kAccountsPrefShowUserNamesOnSignIn,
-  kAccountsPrefEphemeralUsers,
+  kAccountsPrefEphemeralUsersEnabled,
   kSignedDataRoamingEnabled,
   kStatsReportingPref,
   kReportDeviceVersionInfo,
@@ -284,11 +284,13 @@ void DeviceSettingsProvider::SetInPolicy() {
       if ((*i)->GetAsString(&email))
         whitelist_proto->add_user_whitelist(email.c_str());
     }
-  } else if (prop == kAccountsPrefEphemeralUsers) {
-    em::EphemeralUsersProto* ephemeral_users = pol.mutable_ephemeral_users();
-    bool ephemeral_users_value = false;
-    if (value->GetAsBoolean(&ephemeral_users_value))
-      ephemeral_users->set_ephemeral_users(ephemeral_users_value);
+  } else if (prop == kAccountsPrefEphemeralUsersEnabled) {
+    em::EphemeralUsersEnabledProto* ephemeral_users_enabled =
+        pol.mutable_ephemeral_users_enabled();
+    bool ephemeral_users_enabled_value = false;
+    if (value->GetAsBoolean(&ephemeral_users_enabled_value))
+      ephemeral_users_enabled->set_ephemeral_users_enabled(
+          ephemeral_users_enabled_value);
     else
       NOTREACHED();
   } else {
@@ -351,7 +353,7 @@ void DeviceSettingsProvider::UpdateValuesCache() {
   // true is default permissive value and false is safe prohibitive value.
   // Exceptions:
   //   kSignedDataRoamingEnabled has a default value of false.
-  //   kAccountsPrefEphemeralUsers has a default value of false.
+  //   kAccountsPrefEphemeralUsersEnabled has a default value of false.
   if (pol.has_allow_new_users() &&
       pol.allow_new_users().has_allow_new_users() &&
       pol.allow_new_users().allow_new_users()) {
@@ -388,10 +390,10 @@ void DeviceSettingsProvider::UpdateValuesCache() {
       pol.data_roaming_enabled().data_roaming_enabled());
 
   new_values_cache.SetBoolean(
-      kAccountsPrefEphemeralUsers,
-      pol.has_ephemeral_users() &&
-      pol.ephemeral_users().has_ephemeral_users() &&
-      pol.ephemeral_users().ephemeral_users());
+      kAccountsPrefEphemeralUsersEnabled,
+      pol.has_ephemeral_users_enabled() &&
+      pol.ephemeral_users_enabled().has_ephemeral_users_enabled() &&
+      pol.ephemeral_users_enabled().ephemeral_users_enabled());
 
   // TODO(cmasone): NOTIMPLEMENTED() once http://crosbug.com/13052 is fixed.
   std::string serialized;
