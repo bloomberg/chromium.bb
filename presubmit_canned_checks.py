@@ -856,7 +856,7 @@ def PanProjectChecks(input_api, output_api,
         r'All rights reserved\.\n'
       r'.*? Use of this source code is governed by a BSD-style license that '
         r'can be\n'
-      r'.*? found in the LICENSE file\.( \*/)?\n'
+      r'.*? found in the LICENSE file\.(?: \*/)?\n'
   ) % {
       'year': input_api.time.strftime('%Y'),
       'project': project_name,
