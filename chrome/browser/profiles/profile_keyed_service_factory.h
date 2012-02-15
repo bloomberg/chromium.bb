@@ -24,13 +24,6 @@ class ProfileKeyedService;
 // shutdown/destruction order. In each derived classes' constructors, the
 // implementors must explicitly state which services are depended on.
 class ProfileKeyedServiceFactory : public ProfileKeyedBaseFactory {
- public:
-  // Associates |factory| with |profile| and immediately returns the created
-  // ProfileKeyedService. Since the factory will be used immediately, it may
-  // not be NULL;
-  ProfileKeyedService* SetTestingFactoryAndUse(Profile* profile,
-                                               FactoryFunction factory);
-
  protected:
   // ProfileKeyedServiceFactories must communicate with a
   // ProfileDependencyManager. For all non-test code, write your subclass

@@ -35,6 +35,12 @@ class ProfileKeyedBaseFactory {
   // service is destroyed.
   void SetTestingFactory(Profile* profile, FactoryFunction factory);
 
+  // Associates |factory| with |profile| and immediately returns the created
+  // ProfileKeyedService. Since the factory will be used immediately, it may
+  // not be NULL;
+  ProfileKeyedBase* SetTestingFactoryAndUse(Profile* profile,
+                                            FactoryFunction factory);
+
   // Registers preferences used in this service on the pref service of
   // |profile|. This is the public interface and is safe to be called multiple
   // times because testing code can have multiple services of the same type

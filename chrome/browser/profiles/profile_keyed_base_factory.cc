@@ -28,6 +28,14 @@ void ProfileKeyedBaseFactory::SetTestingFactory(Profile* profile,
   factories_[profile] = factory;
 }
 
+ProfileKeyedBase* ProfileKeyedBaseFactory::SetTestingFactoryAndUse(
+    Profile* profile,
+    FactoryFunction factory) {
+  DCHECK(factory);
+  SetTestingFactory(profile, factory);
+  return GetBaseForProfile(profile, true);
+}
+
 ProfileKeyedBaseFactory::ProfileKeyedBaseFactory(
     const char* name, ProfileDependencyManager* manager)
     : dependency_manager_(manager)

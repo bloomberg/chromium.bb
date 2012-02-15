@@ -13,34 +13,19 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 
-namespace {
-
-}  // namespace
-
-PluginPrefsWrapper::PluginPrefsWrapper(scoped_refptr<PluginPrefs> plugin_prefs)
-    : plugin_prefs_(plugin_prefs) {
-}
-
-PluginPrefsWrapper::~PluginPrefsWrapper() {}
-
-void PluginPrefsWrapper::Shutdown() {
-  plugin_prefs_->ShutdownOnUIThread();
-}
-
 // static
 PluginPrefsFactory* PluginPrefsFactory::GetInstance() {
   return Singleton<PluginPrefsFactory>::get();
 }
 
-PluginPrefsWrapper* PluginPrefsFactory::GetWrapperForProfile(
-    Profile* profile) {
-  return static_cast<PluginPrefsWrapper*>(GetServiceForProfile(profile, true));
-}
-
 // static
-ProfileKeyedBase* PluginPrefsFactory::CreateWrapperForProfile(
+ProfileKeyedBase* PluginPrefsFactory::CreatePrefsForProfile(
     Profile* profile) {
   return GetInstance()->BuildServiceInstanceFor(profile);
+}
+
+PluginPrefs* PluginPrefsFactory::GetPrefsForProfile(Profile* profile) {
+  return static_cast<PluginPrefs*>(GetBaseForProfile(profile, true));
 }
 
 void PluginPrefsFactory::ForceRegisterPrefsForTest(PrefService* prefs) {
@@ -48,18 +33,18 @@ void PluginPrefsFactory::ForceRegisterPrefsForTest(PrefService* prefs) {
 }
 
 PluginPrefsFactory::PluginPrefsFactory()
-    : ProfileKeyedServiceFactory("PluginPrefs",
-                                 ProfileDependencyManager::GetInstance()) {
+    : RefcountedProfileKeyedServiceFactory(
+          "PluginPrefs", ProfileDependencyManager::GetInstance()) {
 }
 
 PluginPrefsFactory::~PluginPrefsFactory() {}
 
-ProfileKeyedService* PluginPrefsFactory::BuildServiceInstanceFor(
+RefcountedProfileKeyedService* PluginPrefsFactory::BuildServiceInstanceFor(
     Profile* profile) const {
-  scoped_refptr<PluginPrefs> plugin_prefs(new PluginPrefs());
+  PluginPrefs* plugin_prefs = new PluginPrefs();
   plugin_prefs->set_profile(profile->GetOriginalProfile());
   plugin_prefs->SetPrefs(profile->GetPrefs());
-  return new PluginPrefsWrapper(plugin_prefs);
+  return plugin_prefs;
 }
 
 void PluginPrefsFactory::RegisterUserPrefs(PrefService* prefs) {

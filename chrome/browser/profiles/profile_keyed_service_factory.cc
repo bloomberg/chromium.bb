@@ -11,14 +11,6 @@
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 
-ProfileKeyedService* ProfileKeyedServiceFactory::SetTestingFactoryAndUse(
-    Profile* profile,
-    FactoryFunction factory) {
-  DCHECK(factory);
-  SetTestingFactory(profile, factory);
-  return GetServiceForProfile(profile, true);
-}
-
 ProfileKeyedServiceFactory::ProfileKeyedServiceFactory(
     const char* name, ProfileDependencyManager* manager)
     : ProfileKeyedBaseFactory(name, manager) {

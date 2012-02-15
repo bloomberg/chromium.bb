@@ -12,9 +12,9 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
+#include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 
 class Profile;
@@ -34,7 +34,7 @@ class PluginList;
 // This class stores information about whether a plug-in or a plug-in group is
 // enabled or disabled.
 // Except where otherwise noted, it can be used on every thread.
-class PluginPrefs : public base::RefCountedThreadSafe<PluginPrefs>,
+class PluginPrefs : public RefcountedProfileKeyedService,
                     public content::NotificationObserver {
  public:
   enum PolicyStatus {
@@ -62,10 +62,6 @@ class PluginPrefs : public base::RefCountedThreadSafe<PluginPrefs>,
   // This method should only be called on the UI thread.
   void SetPrefs(PrefService* prefs);
 
-  // Detaches from the PrefService before it is destroyed.
-  // As the name says, this method should only be called on the UI thread.
-  void ShutdownOnUIThread();
-
   // Enable or disable a plugin group.
   void EnablePluginGroup(bool enable, const string16& group_name);
 
@@ -91,6 +87,9 @@ class PluginPrefs : public base::RefCountedThreadSafe<PluginPrefs>,
   static void RegisterPrefs(PrefService* prefs);
 
   void set_profile(Profile* profile) { profile_ = profile; }
+
+  // RefCountedProfileKeyedBase method override.
+  virtual void ShutdownOnUIThread() OVERRIDE;
 
   // content::NotificationObserver method override.
   virtual void Observe(int type,

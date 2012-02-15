@@ -8,41 +8,20 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
-#include "chrome/browser/profiles/profile_keyed_service_factory.h"
+#include "chrome/browser/profiles/refcounted_profile_keyed_service_factory.h"
 
 class PluginPrefs;
 class PrefService;
 class Profile;
 class ProfileKeyedService;
 
-// A wrapper around PluginPrefs to own the reference to thre real object.
-//
-// This should totally go away; we need a generic bridge between PKSF and
-// scope_refptrs.
-class PluginPrefsWrapper : public ProfileKeyedService {
- public:
-  explicit PluginPrefsWrapper(scoped_refptr<PluginPrefs> plugin_prefs);
-  virtual ~PluginPrefsWrapper();
-
-  PluginPrefs* plugin_prefs() { return plugin_prefs_.get(); }
-
- private:
-  // ProfileKeyedService methods:
-  virtual void Shutdown() OVERRIDE;
-
-  scoped_refptr<PluginPrefs> plugin_prefs_;
-};
-
-class PluginPrefsFactory : public ProfileKeyedServiceFactory {
+class PluginPrefsFactory : public RefcountedProfileKeyedServiceFactory {
  public:
   static PluginPrefsFactory* GetInstance();
 
-  PluginPrefsWrapper* GetWrapperForProfile(Profile* profile);
+  PluginPrefs* GetPrefsForProfile(Profile* profile);
 
-  // Factory function for use with
-  // ProfileKeyedServiceFactory::SetTestingFactory.
-  static ProfileKeyedBase* CreateWrapperForProfile(Profile* profile);
+  static ProfileKeyedBase* CreatePrefsForProfile(Profile* profile);
 
   // Some unit tests that deal with PluginPrefs don't run with a Profile. Let
   // them still register their preferences.
@@ -54,9 +33,11 @@ class PluginPrefsFactory : public ProfileKeyedServiceFactory {
   PluginPrefsFactory();
   virtual ~PluginPrefsFactory();
 
-  // ProfileKeyedServiceFactory methods:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
+  // RefcountedProfileKeyedServiceFactory methods:
+  virtual RefcountedProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
+
+  // ProfileKeyedServiceFactory methods:
   virtual void RegisterUserPrefs(PrefService* prefs) OVERRIDE;
   virtual bool ServiceRedirectedInIncognito() OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() OVERRIDE;

@@ -53,19 +53,15 @@ base::LazyInstance<std::map<FilePath, bool> > g_default_plugin_state =
 
 // static
 PluginPrefs* PluginPrefs::GetForProfile(Profile* profile) {
-  PluginPrefsWrapper* wrapper =
-      PluginPrefsFactory::GetInstance()->GetWrapperForProfile(profile);
-  if (!wrapper)
-    return NULL;
-  return wrapper->plugin_prefs();
+  return PluginPrefsFactory::GetInstance()->GetPrefsForProfile(profile);
 }
 
 // static
 PluginPrefs* PluginPrefs::GetForTestingProfile(Profile* profile) {
-  ProfileKeyedBase* wrapper =
+  ProfileKeyedBase* prefs =
       PluginPrefsFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile, &PluginPrefsFactory::CreateWrapperForProfile);
-  return static_cast<PluginPrefsWrapper*>(wrapper)->plugin_prefs();
+          profile, &PluginPrefsFactory::CreatePrefsForProfile);
+  return static_cast<PluginPrefs*>(prefs);
 }
 
 void PluginPrefs::SetPluginListForTesting(
