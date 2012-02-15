@@ -10,7 +10,7 @@
 PROJECTS:=dlopen fullscreen_tumbler gamepad geturl hello_world_glibc
 PROJECTS+=hello_world_interactive hello_world_newlib input_events load_progress
 PROJECTS+=mouselock multithreaded_input_events pi_generator pong sine_synth
-PROJECTS+=tumbler
+PROJECTS+=tumbler websocket
 
 # Define the default target
 all:
