@@ -246,6 +246,13 @@ Shell::~Shell() {
   drag_drop_controller_.reset();
   window_cycle_controller_.reset();
 
+  // Launcher widget has a InputMethodBridge that references to
+  // input_method_filter_'s input_method_. So explicitly release launcher_
+  // before input_method_filter_. And this needs to be after we delete all
+  // containers in case there are still live browser windows which access
+  // LauncherModel during close.
+  launcher_.reset();
+
   DCHECK(instance_ == this);
   instance_ = NULL;
 }
