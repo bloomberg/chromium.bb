@@ -238,15 +238,19 @@ bool RealTPMTokenInfoDelegate::IsTokenAvailable() const {
 }
 
 bool RealTPMTokenInfoDelegate::IsTokenReady() const {
+  // Note: This should only be getting called from the UI thread, however
+  // if this does get called from another thread and token_ready_ is true,
+  // we can safely just return true here.
+  // TODO(stevenjb/gspencer): Clean this up to improve thread safety.
+  if (token_ready_)
+    return true;
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!token_ready_) {
-    // Retrieve token_name_ and user_pin_ here since they will never change
-    // and CryptohomeLibrary calls are not thread safe.
-    if (CrosLibrary::Get()->GetCryptohomeLibrary()->Pkcs11IsTpmTokenReady()) {
-      CrosLibrary::Get()->GetCryptohomeLibrary()->Pkcs11GetTpmTokenInfo(
-          &token_name_, &user_pin_);
-      token_ready_ = true;
-    }
+  // Retrieve token_name_ and user_pin_ here since they will never change
+  // and CryptohomeLibrary calls are not thread safe.
+  if (CrosLibrary::Get()->GetCryptohomeLibrary()->Pkcs11IsTpmTokenReady()) {
+    CrosLibrary::Get()->GetCryptohomeLibrary()->Pkcs11GetTpmTokenInfo(
+        &token_name_, &user_pin_);
+    token_ready_ = true;
   }
   return token_ready_;
 }
@@ -725,6 +729,7 @@ void UserManager::StubUserLoggedIn() {
 }
 
 void UserManager::NotifyOnLogin() {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_USER_CHANGED,
       content::Source<UserManager>(this),
@@ -752,6 +757,7 @@ void UserManager::NotifyOnLogin() {
     crypto::EnableTPMTokenForNSS(new RealTPMTokenInfoDelegate());
     CertLibrary* cert_library;
     cert_library = chromeos::CrosLibrary::Get()->GetCertLibrary();
+    // Note: this calls crypto::EnsureTPMTokenReady()
     cert_library->RequestCertificates();
   }
 
