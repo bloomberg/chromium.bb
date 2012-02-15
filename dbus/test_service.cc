@@ -11,11 +11,12 @@
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
+#include "dbus/property.h"
 
 namespace dbus {
 
-// Echo, SlowEcho, AsyncEcho, BrokenMethod.
-const int TestService::kNumMethodsToExport = 4;
+// Echo, SlowEcho, AsyncEcho, BrokenMethod, GetAll, Get, Set.
+const int TestService::kNumMethodsToExport = 7;
 
 TestService::Options::Options() {
 }
@@ -165,6 +166,33 @@ void TestService::Run(MessageLoop* message_loop) {
                  base::Unretained(this)));
   ++num_methods;
 
+  exported_object_->ExportMethod(
+       kPropertiesInterface,
+       kPropertiesGetAll,
+       base::Bind(&TestService::GetAllProperties,
+                  base::Unretained(this)),
+       base::Bind(&TestService::OnExported,
+                  base::Unretained(this)));
+  ++num_methods;
+
+  exported_object_->ExportMethod(
+       kPropertiesInterface,
+       kPropertiesGet,
+       base::Bind(&TestService::GetProperty,
+                  base::Unretained(this)),
+       base::Bind(&TestService::OnExported,
+                  base::Unretained(this)));
+  ++num_methods;
+
+  exported_object_->ExportMethod(
+       kPropertiesInterface,
+       kPropertiesSet,
+       base::Bind(&TestService::SetProperty,
+                  base::Unretained(this)),
+       base::Bind(&TestService::OnExported,
+                  base::Unretained(this)));
+  ++num_methods;
+
   // Just print an error message as we don't want to crash tests.
   // Tests will fail at a call to WaitUntilServiceIsStarted().
   if (num_methods != kNumMethodsToExport) {
@@ -211,6 +239,162 @@ void TestService::BrokenMethod(
     MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
   response_sender.Run(NULL);
+}
+
+
+void TestService::GetAllProperties(
+    MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  MessageReader reader(method_call);
+  std::string interface;
+  if (!reader.PopString(&interface)) {
+    response_sender.Run(NULL);
+    return;
+  }
+
+  // The properties response is a dictionary of strings identifying the
+  // property and a variant containing the property value. We return all
+  // of the properties, thus the response is:
+  //
+  // {
+  //   "Name": Variant<"TestService">,
+  //   "Version": Variant<10>,
+  //   "Methods": Variant<["Echo", "SlowEcho", "AsyncEcho", "BrokenMethod"]>,
+  //   "Objects": Variant<[objectpath:"/TestObjectPath"]>
+  // ]
+
+  Response* response = Response::FromMethodCall(method_call);
+  MessageWriter writer(response);
+
+  MessageWriter array_writer(NULL);
+  MessageWriter dict_entry_writer(NULL);
+  MessageWriter variant_writer(NULL);
+  MessageWriter variant_array_writer(NULL);
+
+  writer.OpenArray("{sv}", &array_writer);
+
+  array_writer.OpenDictEntry(&dict_entry_writer);
+  dict_entry_writer.AppendString("Name");
+  dict_entry_writer.AppendVariantOfString("TestService");
+  array_writer.CloseContainer(&dict_entry_writer);
+
+  array_writer.OpenDictEntry(&dict_entry_writer);
+  dict_entry_writer.AppendString("Version");
+  dict_entry_writer.AppendVariantOfInt16(10);
+  array_writer.CloseContainer(&dict_entry_writer);
+
+  array_writer.OpenDictEntry(&dict_entry_writer);
+  dict_entry_writer.AppendString("Methods");
+  dict_entry_writer.OpenVariant("as", &variant_writer);
+  variant_writer.OpenArray("s", &variant_array_writer);
+  variant_array_writer.AppendString("Echo");
+  variant_array_writer.AppendString("SlowEcho");
+  variant_array_writer.AppendString("AsyncEcho");
+  variant_array_writer.AppendString("BrokenMethod");
+  variant_writer.CloseContainer(&variant_array_writer);
+  dict_entry_writer.CloseContainer(&variant_writer);
+  array_writer.CloseContainer(&dict_entry_writer);
+
+  array_writer.OpenDictEntry(&dict_entry_writer);
+  dict_entry_writer.AppendString("Objects");
+  dict_entry_writer.OpenVariant("ao", &variant_writer);
+  variant_writer.OpenArray("o", &variant_array_writer);
+  variant_array_writer.AppendObjectPath(dbus::ObjectPath("/TestObjectPath"));
+  variant_writer.CloseContainer(&variant_array_writer);
+  dict_entry_writer.CloseContainer(&variant_writer);
+  array_writer.CloseContainer(&dict_entry_writer);
+
+  writer.CloseContainer(&array_writer);
+
+  response_sender.Run(response);
+}
+
+void TestService::GetProperty(
+    MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  MessageReader reader(method_call);
+  std::string interface;
+  if (!reader.PopString(&interface)) {
+    response_sender.Run(NULL);
+    return;
+  }
+
+  std::string name;
+  if (!reader.PopString(&name)) {
+    response_sender.Run(NULL);
+    return;
+  }
+
+  if (name != "Version") {
+    response_sender.Run(NULL);
+    return;
+  }
+
+  Response* response = Response::FromMethodCall(method_call);
+  MessageWriter writer(response);
+
+  writer.AppendVariantOfInt16(20);
+
+  response_sender.Run(response);
+}
+
+void TestService::SetProperty(
+    MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  MessageReader reader(method_call);
+  std::string interface;
+  if (!reader.PopString(&interface)) {
+    response_sender.Run(NULL);
+    return;
+  }
+
+  std::string name;
+  if (!reader.PopString(&name)) {
+    response_sender.Run(NULL);
+    return;
+  }
+
+  if (name != "Name") {
+    response_sender.Run(NULL);
+    return;
+  }
+
+  std::string value;
+  if (!reader.PopVariantOfString(&value)) {
+    response_sender.Run(NULL);
+    return;
+  }
+
+  SendPropertyChangedSignal(value);
+
+  Response* response = Response::FromMethodCall(method_call);
+  response_sender.Run(response);
+}
+
+void TestService::SendPropertyChangedSignal(const std::string& name) {
+  message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&TestService::SendPropertyChangedSignalInternal,
+                 base::Unretained(this),
+                 name));
+}
+
+void TestService::SendPropertyChangedSignalInternal(const std::string& name) {
+  dbus::Signal signal(kPropertiesInterface, kPropertiesChanged);
+  dbus::MessageWriter writer(&signal);
+  writer.AppendString("org.chromium.TestService");
+
+  MessageWriter array_writer(NULL);
+  MessageWriter dict_entry_writer(NULL);
+
+  writer.OpenArray("{sv}", &array_writer);
+  array_writer.OpenDictEntry(&dict_entry_writer);
+  dict_entry_writer.AppendString("Name");
+  dict_entry_writer.AppendVariantOfString(name);
+  array_writer.CloseContainer(&dict_entry_writer);
+  writer.CloseContainer(&array_writer);
+
+  exported_object_->SendSignal(&signal);
 }
 
 }  // namespace dbus
