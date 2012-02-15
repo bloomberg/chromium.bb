@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,11 +29,11 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
           totalTitles += data.message;
         });
       };
-      chrome.self.onConnect.addListener(eventListener);
+      chrome.extension.onConnect.addListener(eventListener);
       chrome.tabs.executeScript(tabId, script_file, pass(function() {
         assertEq(counter, 5);
         assertEq(totalTitles, 'frametest0test1test2test3');
-        chrome.self.onConnect.removeListener(eventListener);
+        chrome.extension.onConnect.removeListener(eventListener);
       }));
     },
 
@@ -49,7 +49,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
           newStyle += data.message;
         });
       };
-      chrome.self.onConnect.addListener(eventListener);
+      chrome.extension.onConnect.addListener(eventListener);
       chrome.tabs.insertCSS(tabId, css_file, function() {
         var script_file = {};
         script_file.file = 'script.js';
@@ -58,7 +58,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
           pass(function() {
             assertEq(newStyle, 'nonenonenonenone');
             assertEq(counter, 4);
-            chrome.self.onConnect.removeListener(eventListener);
+            chrome.extension.onConnect.removeListener(eventListener);
         }));
       });
     }

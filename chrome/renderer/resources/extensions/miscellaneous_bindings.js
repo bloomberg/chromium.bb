@@ -204,10 +204,11 @@ var chrome = chrome || {};
     manifestVersion = tempManifestVersion;
 
     chrome.extension = chrome.extension || {};
-    chrome.self = chrome.extension;
 
-    if (manifestVersion < 2)
+    if (manifestVersion < 2) {
+      chrome.self = chrome.extension;
       chrome.extension.inIncognitoTab = inIncognitoContext;
+    }
 
     chrome.extension.inIncognitoContext = inIncognitoContext;
 

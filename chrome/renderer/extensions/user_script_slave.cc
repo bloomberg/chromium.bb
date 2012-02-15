@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -310,8 +310,6 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
             WebScriptSource(WebString::fromUTF8(api_js_.as_string())));
       }
 
-      // Setup chrome.self to contain an Extension object with the correct
-      // ID.
       // TODO(aa): Can extension_id() ever be empty anymore?
       if (!script->extension_id().empty())
         isolated_world_id = GetIsolatedWorldIdForExtension(extension, frame);
