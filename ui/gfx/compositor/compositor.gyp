@@ -63,6 +63,11 @@
             '<(DEPTH)/third_party/angle/src/build_angle.gyp:libGLESv2',
           ],
         }],
+        ['use_canvas_skia_skia==1', {
+            'defines': [
+              'PER_TILE_PAINTING',
+          ],
+        }],
       ],
     },
     {

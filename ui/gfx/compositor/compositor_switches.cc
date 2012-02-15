@@ -21,4 +21,6 @@ const char kUIShowLayerBorders[] = "ui-show-layer-borders";
 // Show layer tree.
 const char kUIShowLayerTree[] = "ui-show-layer-tree";
 
+const char kUIEnablePerTilePainting[] = "ui-enable-per-tile-painting";
+
 }  // namespace switches

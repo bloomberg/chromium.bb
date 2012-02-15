@@ -136,6 +136,10 @@ Compositor::Compositor(CompositorDelegate* delegate,
       kTestRefreshRate : kDefaultRefreshRate;
   settings.partialSwapEnabled =
       command_line->HasSwitch(switches::kUIEnablePartialSwap);
+#if defined(PER_TILE_PAINTING)
+  settings.perTilePainting =
+    command_line->HasSwitch(switches::kUIEnablePerTilePainting);
+#endif
 
   host_ = WebKit::WebLayerTreeView::create(this, root_web_layer_, settings);
   root_web_layer_.setAnchorPoint(WebKit::WebFloatPoint(0.f, 0.f));
