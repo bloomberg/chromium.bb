@@ -137,6 +137,8 @@
         'common/extensions/extension_set.h',
         'common/extensions/extension_unpacker.cc',
         'common/extensions/extension_unpacker.h',
+        'common/extensions/feature.cc',
+        'common/extensions/feature.h',
         'common/extensions/file_browser_handler.cc',
         'common/extensions/file_browser_handler.h',
         'common/extensions/manifest.cc',
