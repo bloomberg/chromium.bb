@@ -227,12 +227,14 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   SetToastRegion(popup_->GetNativeView(),
                  preferred.width(), preferred.height());
 
-  // Time to show the window in a modal loop. We don't want this chrome
-  // instance trying to serve WM_COPYDATA requests, as we'll surely crash.
-  process_singleton->Lock(popup_->GetNativeView());
+  // Time to show the window in a modal loop. The ProcessSingleton should
+  // already be locked and it will not process WM_COPYDATA requests. Change the
+  // window to bring to foreground if a request arrives.
+  CHECK(process_singleton->locked());
+  process_singleton->SetForegroundWindow(popup_->GetNativeView());
   popup_->Show();
   MessageLoop::current()->Run();
-  process_singleton->Unlock();
+  process_singleton->SetForegroundWindow(NULL);
   return result_;
 }
 
