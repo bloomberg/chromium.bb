@@ -121,7 +121,7 @@ deps = {
     'src/tools/grit':
         Var('git_url') + '/external/grit-i18n.git@0bb959423818266efea82162f48ad83e5eb2e8b2',
     'src/tools/gyp':
-        Var('git_url') + '/external/gyp.git@5350adef1346c2c77b8d2ba7f83cd044f30668d9',
+        Var('git_url') + '/external/gyp.git@1d0f57578f1b2b4c58c6f5afaa0b22265ab9c095',
     'src/tools/page_cycler/acid3':
         Var('git_url') + '/chromium/deps/acid3.git@633fc66cc99ae5bb92b567c6beafde7a01cfdb49',
     'src/v8':
@@ -135,6 +135,8 @@ deps_os = {
             Var('git_url') + '/chromium/deps/xz.git@604fa85cc4e214aa0f418a2596ea865c0eed7a54',
         'src/chrome/tools/test/reference_build/chrome_mac':
             Var('git_url') + '/chromium/reference_builds/chrome_mac.git@dde16d147a5b8d0229f8adf8eee6d180fb9f4684',
+        'src/rlz':
+            Var('git_url') + '/external/rlz.git@9cf86e5a9f63c7416b673f012dd8b7507d500bec',
         'src/third_party/GTM':
             Var('git_url') + '/external/google-toolbox-for-mac.git@370bfbfa0a7f3177da752965cd63d3b377d742fb',
         'src/third_party/lighttpd':
@@ -168,7 +170,7 @@ deps_os = {
         'src/chrome_frame/tools/test/reference_build/chrome_win':
             Var('git_url') + '/chromium/reference_builds/chrome_win.git@b9f52667918a74977cb85eefd4e967150f852fbc',
         'src/rlz':
-            Var('git_url') + '/external/rlz.git@9e6b5c3990e1c24f19cff445362d0a2d5ee2bd2f',
+            Var('git_url') + '/external/rlz.git@9cf86e5a9f63c7416b673f012dd8b7507d500bec',
         'src/third_party/cygwin':
             Var('git_url') + '/chromium/deps/cygwin.git@06a117a90c15174436bfa20ceebbfdf43b7eb820',
         'src/third_party/ffmpeg/binaries/chromium/win/ia32':
