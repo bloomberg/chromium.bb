@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,6 +33,11 @@ UI_EXPORT std::string ConvertAcceleratorsFromWindowsStyle(
 
 // Removes the "&" accelerators from a Windows label.
 UI_EXPORT std::string RemoveWindowsStyleAccelerators(const std::string& label);
+
+// Escapes "&" characters by doubling them so that later calling
+// ConvertAcceleratorsFromWindowsStyle() will return the original string (except
+// with "_" characters doubled, to escape them for GTK).
+UI_EXPORT std::string EscapeWindowsStyleAccelerators(const std::string& label);
 
 // Makes a copy of |pixels| with the ordering changed from BGRA to RGBA.
 // The caller is responsible for free()ing the data. If |stride| is 0, it's

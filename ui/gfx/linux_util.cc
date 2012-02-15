@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/linux_util.h"
+#include "base/string_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkUnPreMultiply.h"
 #include "ui/gfx/rect.h"
@@ -20,10 +21,11 @@ namespace {
 // Common implementation of ConvertAcceleratorsFromWindowsStyle() and
 // RemoveWindowsStyleAccelerators().
 // Replaces all ampersands (as used in our grd files to indicate mnemonics)
-// to |target|. Similarly any underscores get replaced with two underscores as
+// to |target|, except ampersands appearing in pairs which are replaced by
+// a single ampersand. Any underscores get replaced with two underscores as
 // is needed by GTK.
-std::string ConvertAmperstandsTo(const std::string& label,
-                                 const std::string& target) {
+std::string ConvertAmpersandsTo(const std::string& label,
+                                const std::string& target) {
   std::string ret;
   ret.reserve(label.length() * 2);
   for (size_t i = 0; i < label.length(); ++i) {
@@ -69,11 +71,21 @@ double GetPangoResolution() {
 }
 
 std::string ConvertAcceleratorsFromWindowsStyle(const std::string& label) {
-  return ConvertAmperstandsTo(label, "_");
+  return ConvertAmpersandsTo(label, "_");
 }
 
 std::string RemoveWindowsStyleAccelerators(const std::string& label) {
-  return ConvertAmperstandsTo(label, "");
+  return ConvertAmpersandsTo(label, "");
+}
+
+// Replaces all ampersands in |label| with two ampersands. This effectively
+// escapes strings for later processing by ConvertAmpersandsTo(), so that
+// ConvertAmpersandsTo(EscapeWindowsStyleAccelerators(x), *) is |x| with
+// underscores doubled, making the string that appears to the user just |x|.
+std::string EscapeWindowsStyleAccelerators(const std::string& label) {
+  std::string ret;
+  ReplaceChars(label, "&", "&&", &ret);
+  return ret;
 }
 
 uint8_t* BGRAToRGBA(const uint8_t* pixels, int width, int height, int stride) {
