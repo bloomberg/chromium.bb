@@ -122,6 +122,8 @@
     'renderer/pepper_parent_context_provider.h',
     'renderer/pepper_platform_context_3d_impl.cc',
     'renderer/pepper_platform_context_3d_impl.h',
+    'renderer/pepper_platform_video_capture_impl.cc',
+    'renderer/pepper_platform_video_capture_impl.h',
     'renderer/pepper_plugin_delegate_impl.cc',
     'renderer/pepper_plugin_delegate_impl.h',
     'renderer/plugin_channel_host.cc',

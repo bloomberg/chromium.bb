@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/id_map.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/render_view_observer.h"
@@ -226,7 +227,8 @@ class PepperPluginDelegateImpl
   virtual PlatformImage2D* CreateImage2D(int width, int height) OVERRIDE;
   virtual PlatformContext3D* CreateContext3D() OVERRIDE;
   virtual PlatformVideoCapture* CreateVideoCapture(
-      media::VideoCapture::EventHandler* handler) OVERRIDE;
+      const std::string& device_id,
+      PlatformVideoCaptureEventHandler* handler) OVERRIDE;
   virtual PlatformVideoDecoder* CreateVideoDecoder(
       media::VideoDecodeAccelerator::Client* client,
       int32 command_buffer_route_id) OVERRIDE;
@@ -386,6 +388,9 @@ class PepperPluginDelegateImpl
   virtual bool IsInFullscreenMode() OVERRIDE;
   virtual void SampleGamepads(WebKit::WebGamepads* data) OVERRIDE;
   virtual bool IsPageVisible() const OVERRIDE;
+  virtual int EnumerateDevices(
+      PP_DeviceType_Dev type,
+      const EnumerateDevicesCallback& callback) OVERRIDE;
 
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -422,7 +427,25 @@ class PepperPluginDelegateImpl
 
   CONTENT_EXPORT int GetRoutingId() const;
 
+  typedef base::Callback<void (int /* request_id */,
+                               bool /* succeeded */,
+                               const std::string& /* label */)>
+      OpenDeviceCallback;
+
+  // Opens the specified device. The request ID passed into the callback will be
+  // the same as the return value. If successful, the label passed into the
+  // callback identifies a audio/video steam, which can be used to call
+  // CloseDevice() and GetSesssionID().
+  int OpenDevice(PP_DeviceType_Dev type,
+                 const std::string& device_id,
+                 const OpenDeviceCallback& callback);
+  void CloseDevice(const std::string& label);
+  // Gets audio/video session ID given a label.
+  int GetSessionID(PP_DeviceType_Dev type, const std::string& label);
+
  private:
+  class DeviceEnumerationEventHandler;
+
   // Asynchronously attempts to create a PPAPI broker for the given plugin.
   scoped_refptr<PpapiBrokerImpl> CreatePpapiBroker(
       webkit::ppapi::PluginModule* plugin_module);
@@ -485,6 +508,8 @@ class PepperPluginDelegateImpl
   webkit::ppapi::PluginInstance* last_mouse_event_target_;
 
   scoped_ptr<content::GamepadSharedMemoryReader> gamepad_shared_memory_reader_;
+
+  scoped_ptr<DeviceEnumerationEventHandler> device_enumeration_event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPluginDelegateImpl);
 };

@@ -7,7 +7,8 @@
  * This file defines the <code>PPB_VideoCapture_Dev</code> interface.
  */
 label Chrome {
-  M14 = 0.1
+  M14 = 0.1,
+  M18 = 0.2
 };
 
 /**
@@ -15,18 +16,22 @@ label Chrome {
  *
  * Theory of operation:
  * 1- Create a VideoCapture resource using Create.
- * 2- Start the capture using StartCapture. You pass in the requested info
+ * 2- Find available video capture devices using EnumerateDevices.
+ * 3- Open a video capture device. In addition to a device reference (0 can be
+ * used to indicate the default device), you pass in the requested info
  * (resolution, frame rate), as well as suggest a number of buffers you will
  * need.
- * 3- Receive the OnDeviceInfo callback, in PPP_VideoCapture_Dev, which will
+ * 4- Start the capture using StartCapture.
+ * 5- Receive the OnDeviceInfo callback, in PPP_VideoCapture_Dev, which will
  * give you the actual capture info (the requested one is not guaranteed), as
  * well as an array of buffers allocated by the browser.
- * 4- On every frame captured by the browser, OnBufferReady (in
+ * 6- On every frame captured by the browser, OnBufferReady (in
  * PPP_VideoCapture_Dev) is called with the index of the buffer from the array
  * containing the new frame. The buffer is now "owned" by the plugin, and the
  * browser won't reuse it until ReuseBuffer is called.
- * 5- When the plugin is done with the buffer, call ReuseBuffer
- * 6- Stop the capture using StopCapture.
+ * 7- When the plugin is done with the buffer, call ReuseBuffer.
+ * 8- Stop the capture using StopCapture.
+ * 9- Close the device.
  *
  * The browser may change the resolution based on the constraints of the system,
  * in which case OnDeviceInfo will be called again, with new buffers.
@@ -52,7 +57,7 @@ interface PPB_VideoCapture_Dev {
    * Starts the capture. |requested_info| is a pointer to a structure containing
    * the requested resolution and frame rate. |buffer_count| is the number of
    * buffers requested by the plugin. Note: it is only used as advisory, the
-   * browser may allocate more of fewer based on available resources.
+   * browser may allocate more or fewer based on available resources.
    * How many buffers depends on usage. At least 2 to make sure latency doesn't
    * cause lost frames. If the plugin expects to hold on to more than one buffer
    * at a time (e.g. to do multi-frame processing, like video encoding), it
@@ -61,10 +66,61 @@ interface PPB_VideoCapture_Dev {
    * Returns PP_ERROR_FAILED if called when the capture was already started, or
    * PP_OK on success.
    */
+  [version=0.1]
   int32_t StartCapture(
       [in] PP_Resource video_capture,
       [in] PP_VideoCaptureDeviceInfo_Dev requested_info,
       [in] uint32_t buffer_count);
+
+  /**
+   * Enumerates video capture devices. Once the operation is completed
+   * successfully, |devices| will be set to a PPB_ResourceArray_Dev resource,
+   * which holds a list of PPB_DeviceRef_Dev resources.
+   *
+   * Please note that:
+   * - this method ignores the previous value pointed to by |devices| (won't
+   *   release reference even if it is not 0);
+   * - |devices| must be valid until |callback| is called, if the method
+   *   returns PP_OK_COMPLETIONPENDING;
+   * - the ref count of the returned |devices| has already been increased by 1
+   *   for the caller.
+   */
+  [version=0.2]
+  int32_t EnumerateDevices(
+      [in] PP_Resource video_capture,
+      [out] PP_Resource devices,
+      [in] PP_CompletionCallback callback);
+
+  /**
+   * Opens a video capture device. |device_ref| identifies a video capture
+   * device. It could be one of the resource in the array returned by
+   * |EnumerateDevices()|, or 0 which means the default device.
+   * |requested_info| is a pointer to a structure containing the requested
+   * resolution and frame rate. |buffer_count| is the number of buffers
+   * requested by the plugin. Note: it is only used as advisory, the browser may
+   * allocate more or fewer based on available resources. How many buffers
+   * depends on usage. At least 2 to make sure latency doesn't cause lost
+   * frames. If the plugin expects to hold on to more than one buffer at a time
+   * (e.g. to do multi-frame processing, like video encoding), it should request
+   * that many more.
+   */
+  [version=0.2]
+  int32_t Open(
+      [in] PP_Resource video_capture,
+      [in] PP_Resource device_ref,
+      [in] PP_VideoCaptureDeviceInfo_Dev requested_info,
+      [in] uint32_t buffer_count,
+      [in] PP_CompletionCallback callback);
+
+  /**
+   * Starts the capture.
+   *
+   * Returns PP_ERROR_FAILED if called when the capture was already started, or
+   * PP_OK on success.
+   */
+  [version=0.2]
+  int32_t StartCapture(
+      [in] PP_Resource video_capture);
 
   /**
    * Allows the browser to reuse a buffer that was previously sent by
@@ -86,5 +142,15 @@ interface PPB_VideoCapture_Dev {
    * success.
    */
   int32_t StopCapture(
+      [in] PP_Resource video_capture);
+
+  /**
+   * Closes the video capture device, and stops capturing if necessary. It is
+   * not valid to call |Open()| again after a call to this method.
+   * If a video capture resource is destroyed while a device is still open, then
+   * it will be implicitly closed, so you are not required to call this method.
+   */
+  [version=0.2]
+  void Close(
       [in] PP_Resource video_capture);
 };

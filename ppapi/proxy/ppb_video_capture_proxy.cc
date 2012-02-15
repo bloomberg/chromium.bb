@@ -4,8 +4,7 @@
 
 #include "ppapi/proxy/ppb_video_capture_proxy.h"
 
-#include <vector>
-
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "ppapi/c/pp_errors.h"
@@ -18,6 +17,10 @@
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_buffer_proxy.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
+#include "ppapi/shared_impl/ppb_video_capture_shared.h"
+#include "ppapi/shared_impl/resource_tracker.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
 #include "ppapi/thunk/ppb_buffer_trusted_api.h"
 #include "ppapi/thunk/ppb_video_capture_api.h"
@@ -137,131 +140,151 @@ PPP_VideoCapture_Dev ppp_video_capture = {
 
 }  // namespace
 
-class VideoCapture : public ppapi::thunk::PPB_VideoCapture_API,
-                     public Resource {
+class VideoCapture : public PPB_VideoCapture_Shared {
  public:
-  VideoCapture(const HostResource& resource);
+  explicit VideoCapture(const HostResource& resource);
   virtual ~VideoCapture();
 
-  // Resource overrides.
-  virtual ppapi::thunk::PPB_VideoCapture_API* AsPPB_VideoCapture_API() OVERRIDE;
+  bool OnStatus(PP_VideoCaptureStatus_Dev status);
 
-  // PPB_VideoCapture_API implementation.
-  virtual int32_t StartCapture(
-      const PP_VideoCaptureDeviceInfo_Dev& requested_info,
-      uint32_t buffer_count) {
-    switch (status_) {
-      case PP_VIDEO_CAPTURE_STATUS_STARTING:
-      case PP_VIDEO_CAPTURE_STATUS_STARTED:
-      case PP_VIDEO_CAPTURE_STATUS_PAUSED:
-      default:
-        return PP_ERROR_FAILED;
-      case PP_VIDEO_CAPTURE_STATUS_STOPPED:
-      case PP_VIDEO_CAPTURE_STATUS_STOPPING:
-        break;
-    }
-    status_ = PP_VIDEO_CAPTURE_STATUS_STARTING;
-    GetDispatcher()->Send(new PpapiHostMsg_PPBVideoCapture_StartCapture(
-        API_ID_PPB_VIDEO_CAPTURE_DEV, host_resource(),
-        requested_info, buffer_count));
-    return PP_OK;
+  void set_status(PP_VideoCaptureStatus_Dev status) {
+    SetStatus(status, true);
   }
-
-  virtual int32_t ReuseBuffer(uint32_t buffer) {
-    if (buffer >= buffer_in_use_.size() || !buffer_in_use_[buffer])
-      return PP_ERROR_BADARGUMENT;
-    GetDispatcher()->Send(new PpapiHostMsg_PPBVideoCapture_ReuseBuffer(
-        API_ID_PPB_VIDEO_CAPTURE_DEV, host_resource(), buffer));
-    return PP_OK;
-  }
-
-  virtual int32_t StopCapture() {
-    switch (status_) {
-      case PP_VIDEO_CAPTURE_STATUS_STOPPED:
-      case PP_VIDEO_CAPTURE_STATUS_STOPPING:
-      default:
-        return PP_ERROR_FAILED;
-      case PP_VIDEO_CAPTURE_STATUS_STARTING:
-      case PP_VIDEO_CAPTURE_STATUS_STARTED:
-      case PP_VIDEO_CAPTURE_STATUS_PAUSED:
-        break;
-    }
-    buffer_in_use_.clear();
-    status_ = PP_VIDEO_CAPTURE_STATUS_STOPPING;
-    GetDispatcher()->Send(new PpapiHostMsg_PPBVideoCapture_StopCapture(
-        API_ID_PPB_VIDEO_CAPTURE_DEV, host_resource()));
-    return PP_OK;
-  }
-
-  bool OnStatus(uint32_t status) {
-    switch (status) {
-      case PP_VIDEO_CAPTURE_STATUS_STARTING:
-      case PP_VIDEO_CAPTURE_STATUS_STOPPING:
-      default:
-        // Those states are not sent by the browser.
-        NOTREACHED();
-        return false;
-      case PP_VIDEO_CAPTURE_STATUS_STARTED:
-        switch (status_) {
-          case PP_VIDEO_CAPTURE_STATUS_STARTING:
-          case PP_VIDEO_CAPTURE_STATUS_PAUSED:
-            break;
-          default:
-            return false;
-        }
-        break;
-      case PP_VIDEO_CAPTURE_STATUS_PAUSED:
-        switch (status_) {
-          case PP_VIDEO_CAPTURE_STATUS_STARTING:
-          case PP_VIDEO_CAPTURE_STATUS_STARTED:
-            break;
-          default:
-            return false;
-        }
-        break;
-      case PP_VIDEO_CAPTURE_STATUS_STOPPED:
-        if (status_ != PP_VIDEO_CAPTURE_STATUS_STOPPING)
-          return false;
-        break;
-    }
-    status_ = status;
-    return true;
-  }
-
-  void set_status(uint32_t status) { status_ = status; }
 
   void SetBufferCount(size_t count) {
     buffer_in_use_ = std::vector<bool>(count);
   }
+
   void SetBufferInUse(uint32_t buffer) {
     DCHECK(buffer < buffer_in_use_.size());
     buffer_in_use_[buffer] = true;
   }
 
  private:
+  // PPB_VideoCapture_Shared implementation.
+  virtual int32_t InternalEnumerateDevices(
+      PP_Resource* devices,
+      PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t InternalOpen(
+      const std::string& device_id,
+      const PP_VideoCaptureDeviceInfo_Dev& requested_info,
+      uint32_t buffer_count,
+      PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t InternalStartCapture() OVERRIDE;
+  virtual int32_t InternalReuseBuffer(uint32_t buffer) OVERRIDE;
+  virtual int32_t InternalStopCapture() OVERRIDE;
+  virtual void InternalClose() OVERRIDE;
+  virtual int32_t InternalStartCapture0_1(
+      const PP_VideoCaptureDeviceInfo_Dev& requested_info,
+      uint32_t buffer_count) OVERRIDE;
+  virtual const std::vector<DeviceRefData>&
+      InternalGetDeviceRefData() const OVERRIDE;
+
   PluginDispatcher* GetDispatcher() const {
     return PluginDispatcher::GetForResource(this);
   }
 
-  uint32_t status_;
   std::vector<bool> buffer_in_use_;
+
   DISALLOW_COPY_AND_ASSIGN(VideoCapture);
 };
 
 VideoCapture::VideoCapture(const HostResource& resource)
-    : Resource(OBJECT_IS_PROXY, resource),
-      status_(PP_VIDEO_CAPTURE_STATUS_STOPPED) {
+    : PPB_VideoCapture_Shared(resource) {
 }
 
 VideoCapture::~VideoCapture() {
+  Close();
 }
 
-ppapi::thunk::PPB_VideoCapture_API* VideoCapture::AsPPB_VideoCapture_API() {
-  return this;
+bool VideoCapture::OnStatus(PP_VideoCaptureStatus_Dev status) {
+  switch (status) {
+    case PP_VIDEO_CAPTURE_STATUS_STARTED:
+    case PP_VIDEO_CAPTURE_STATUS_PAUSED:
+    case PP_VIDEO_CAPTURE_STATUS_STOPPED:
+      return SetStatus(status, false);
+    case PP_VIDEO_CAPTURE_STATUS_STARTING:
+    case PP_VIDEO_CAPTURE_STATUS_STOPPING:
+      // Those states are not sent by the browser.
+      break;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+int32_t VideoCapture::InternalEnumerateDevices(PP_Resource* devices,
+                                               PP_CompletionCallback callback) {
+  devices_ = devices;
+  enumerate_devices_callback_ = new TrackedCallback(this, callback);
+  GetDispatcher()->Send(new PpapiHostMsg_PPBVideoCapture_EnumerateDevices(
+      API_ID_PPB_VIDEO_CAPTURE_DEV, host_resource()));
+  return PP_OK_COMPLETIONPENDING;
+}
+
+int32_t VideoCapture::InternalOpen(
+    const std::string& device_id,
+    const PP_VideoCaptureDeviceInfo_Dev& requested_info,
+    uint32_t buffer_count,
+    PP_CompletionCallback callback) {
+  // Disallow blocking call. The base class doesn't check this.
+  if (!callback.func)
+    return PP_ERROR_BLOCKS_MAIN_THREAD;
+
+  open_callback_ = new TrackedCallback(this, callback);
+  GetDispatcher()->Send(new PpapiHostMsg_PPBVideoCapture_Open(
+      API_ID_PPB_VIDEO_CAPTURE_DEV, host_resource(), device_id, requested_info,
+      buffer_count));
+  return PP_OK_COMPLETIONPENDING;
+}
+
+int32_t VideoCapture::InternalStartCapture() {
+  buffer_in_use_.clear();
+  GetDispatcher()->Send(new PpapiHostMsg_PPBVideoCapture_StartCapture(
+      API_ID_PPB_VIDEO_CAPTURE_DEV, host_resource()));
+  return PP_OK;
+}
+
+int32_t VideoCapture::InternalReuseBuffer(uint32_t buffer) {
+  if (buffer >= buffer_in_use_.size() || !buffer_in_use_[buffer])
+    return PP_ERROR_BADARGUMENT;
+  GetDispatcher()->Send(new PpapiHostMsg_PPBVideoCapture_ReuseBuffer(
+      API_ID_PPB_VIDEO_CAPTURE_DEV, host_resource(), buffer));
+  return PP_OK;
+}
+
+int32_t VideoCapture::InternalStopCapture() {
+  GetDispatcher()->Send(new PpapiHostMsg_PPBVideoCapture_StopCapture(
+      API_ID_PPB_VIDEO_CAPTURE_DEV, host_resource()));
+  return PP_OK;
+}
+
+void VideoCapture::InternalClose() {
+  GetDispatcher()->Send(new PpapiHostMsg_PPBVideoCapture_Close(
+      API_ID_PPB_VIDEO_CAPTURE_DEV, host_resource()));
+}
+
+int32_t VideoCapture::InternalStartCapture0_1(
+    const PP_VideoCaptureDeviceInfo_Dev& requested_info,
+    uint32_t buffer_count) {
+  buffer_in_use_.clear();
+  GetDispatcher()->Send(new PpapiHostMsg_PPBVideoCapture_StartCapture0_1(
+      API_ID_PPB_VIDEO_CAPTURE_DEV, host_resource(), requested_info,
+      buffer_count));
+  return PP_OK;
+}
+
+const std::vector<DeviceRefData>&
+    VideoCapture::InternalGetDeviceRefData() const {
+  // This should never be called at the plugin side.
+  NOTREACHED();
+  static std::vector<DeviceRefData> result;
+  return result;
 }
 
 PPB_VideoCapture_Proxy::PPB_VideoCapture_Proxy(Dispatcher* dispatcher)
-    : InterfaceProxy(dispatcher) {
+    : InterfaceProxy(dispatcher),
+      ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)) {
 }
 
 PPB_VideoCapture_Proxy::~PPB_VideoCapture_Proxy() {
@@ -285,12 +308,23 @@ bool PPB_VideoCapture_Proxy::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_VideoCapture_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBVideoCapture_Create, OnMsgCreate)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBVideoCapture_EnumerateDevices,
+                        OnMsgEnumerateDevices)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBVideoCapture_Open, OnMsgOpen)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBVideoCapture_StartCapture,
                         OnMsgStartCapture)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBVideoCapture_ReuseBuffer,
                         OnMsgReuseBuffer)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBVideoCapture_StopCapture,
                         OnMsgStopCapture)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBVideoCapture_Close, OnMsgClose)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBVideoCapture_StartCapture0_1,
+                        OnMsgStartCapture0_1)
+
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBVideoCapture_EnumerateDevicesACK,
+                        OnMsgEnumerateDevicesACK)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBVideoCapture_OpenACK,
+                        OnMsgOpenACK)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   // TODO(brettw) handle bad messages!
@@ -307,13 +341,35 @@ void PPB_VideoCapture_Proxy::OnMsgCreate(PP_Instance instance,
   }
 }
 
-void PPB_VideoCapture_Proxy::OnMsgStartCapture(
-    const HostResource& resource,
+void PPB_VideoCapture_Proxy::OnMsgEnumerateDevices(
+    const HostResource& resource) {
+  EnterHostFromHostResourceForceCallback<PPB_VideoCapture_API> enter(
+      resource, callback_factory_,
+      &PPB_VideoCapture_Proxy::EnumerateDevicesACKInHost, resource);
+
+  if (enter.succeeded())
+    enter.SetResult(enter.object()->EnumerateDevices(NULL, enter.callback()));
+}
+
+void PPB_VideoCapture_Proxy::OnMsgOpen(
+    const ppapi::HostResource& resource,
+    const std::string& device_id,
     const PP_VideoCaptureDeviceInfo_Dev& info,
     uint32_t buffers) {
+  EnterHostFromHostResourceForceCallback<PPB_VideoCapture_API> enter(
+      resource, callback_factory_, &PPB_VideoCapture_Proxy::OpenACKInHost,
+      resource);
+
+  if (enter.succeeded()) {
+    enter.SetResult(enter.object()->Open(device_id, info, buffers,
+                                         enter.callback()));
+  }
+}
+
+void PPB_VideoCapture_Proxy::OnMsgStartCapture(const HostResource& resource) {
   EnterHostFromHostResource<PPB_VideoCapture_API> enter(resource);
   if (enter.succeeded())
-    enter.object()->StartCapture(info, buffers);
+    enter.object()->StartCapture();
 }
 
 void PPB_VideoCapture_Proxy::OnMsgReuseBuffer(const HostResource& resource,
@@ -327,6 +383,56 @@ void PPB_VideoCapture_Proxy::OnMsgStopCapture(const HostResource& resource) {
   EnterHostFromHostResource<PPB_VideoCapture_API> enter(resource);
   if (enter.succeeded())
     enter.object()->StopCapture();
+}
+
+void PPB_VideoCapture_Proxy::OnMsgClose(const HostResource& resource) {
+  EnterHostFromHostResource<PPB_VideoCapture_API> enter(resource);
+  if (enter.succeeded())
+    enter.object()->Close();
+}
+
+void PPB_VideoCapture_Proxy::OnMsgStartCapture0_1(
+    const HostResource& resource,
+    const PP_VideoCaptureDeviceInfo_Dev& info,
+    uint32_t buffers) {
+  EnterHostFromHostResource<PPB_VideoCapture_API> enter(resource);
+  if (enter.succeeded())
+    enter.object()->StartCapture0_1(info, buffers);
+}
+
+void PPB_VideoCapture_Proxy::OnMsgEnumerateDevicesACK(
+    const HostResource& resource,
+    int32_t result,
+    const std::vector<ppapi::DeviceRefData>& devices) {
+  EnterPluginFromHostResource<PPB_VideoCapture_API> enter(resource);
+  if (enter.succeeded()) {
+    static_cast<VideoCapture*>(enter.object())->OnEnumerateDevicesComplete(
+        result, devices);
+  }
+}
+
+void PPB_VideoCapture_Proxy::OnMsgOpenACK(
+    const HostResource& resource,
+    int32_t result) {
+  EnterPluginFromHostResource<PPB_VideoCapture_API> enter(resource);
+  if (enter.succeeded())
+    static_cast<VideoCapture*>(enter.object())->OnOpenComplete(result);
+}
+
+void PPB_VideoCapture_Proxy::EnumerateDevicesACKInHost(
+    int32_t result,
+    const HostResource& resource) {
+  EnterHostFromHostResource<PPB_VideoCapture_API> enter(resource);
+  dispatcher()->Send(new PpapiMsg_PPBVideoCapture_EnumerateDevicesACK(
+      API_ID_PPB_VIDEO_CAPTURE_DEV, resource, result,
+      enter.succeeded() && result == PP_OK ?
+          enter.object()->GetDeviceRefData() : std::vector<DeviceRefData>()));
+}
+
+void PPB_VideoCapture_Proxy::OpenACKInHost(int32_t result,
+                                           const HostResource& resource) {
+  dispatcher()->Send(new PpapiMsg_PPBVideoCapture_OpenACK(
+      API_ID_PPB_VIDEO_CAPTURE_DEV, resource, result));
 }
 
 PPP_VideoCapture_Proxy::PPP_VideoCapture_Proxy(Dispatcher* dispatcher)
@@ -406,7 +512,7 @@ void PPP_VideoCapture_Proxy::OnMsgOnStatus(const HostResource& host_resource,
     return;
 
   VideoCapture* capture = static_cast<VideoCapture*>(enter.object());
-  if (!capture->OnStatus(status))
+  if (!capture->OnStatus(static_cast<PP_VideoCaptureStatus_Dev>(status)))
     return;
   ppp_video_capture_impl_->OnStatus(
       host_resource.instance(), capture->pp_resource(), status);

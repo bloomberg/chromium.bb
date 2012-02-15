@@ -66,7 +66,8 @@ MockPluginDelegate::CreateVideoDecoder(
 
 MockPluginDelegate::PlatformVideoCapture*
 MockPluginDelegate::CreateVideoCapture(
-    media::VideoCapture::EventHandler* handler){
+    const std::string& device_id,
+    PlatformVideoCaptureEventHandler* handler){
   return NULL;
 }
 
@@ -376,6 +377,12 @@ bool MockPluginDelegate::IsInFullscreenMode() {
 
 bool MockPluginDelegate::IsPageVisible() const {
   return true;
+}
+
+int MockPluginDelegate::EnumerateDevices(
+    PP_DeviceType_Dev type,
+    const EnumerateDevicesCallback& callback) {
+  return -1;
 }
 
 }  // namespace ppapi

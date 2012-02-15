@@ -31,7 +31,8 @@ class MockPluginDelegate : public PluginDelegate {
       media::VideoDecodeAccelerator::Client* client,
       int32 command_buffer_route_id);
   virtual PlatformVideoCapture* CreateVideoCapture(
-      media::VideoCapture::EventHandler* handler);
+      const std::string& device_id,
+      PlatformVideoCaptureEventHandler* handler);
   virtual PlatformAudio* CreateAudio(uint32_t sample_rate,
                                      uint32_t sample_count,
                                      PlatformAudioCommonClient* client);
@@ -157,6 +158,8 @@ class MockPluginDelegate : public PluginDelegate {
   virtual void SampleGamepads(WebKit::WebGamepads* data) OVERRIDE;
   virtual bool IsInFullscreenMode();
   virtual bool IsPageVisible() const;
+  virtual int EnumerateDevices(PP_DeviceType_Dev type,
+                               const EnumerateDevicesCallback& callback);
 };
 
 }  // namespace ppapi

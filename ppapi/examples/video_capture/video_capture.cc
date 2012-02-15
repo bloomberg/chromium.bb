@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,9 +8,11 @@
 #include <map>
 #include <vector>
 
+#include "ppapi/c/dev/ppb_video_capture_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_opengles2.h"
 #include "ppapi/cpp/dev/buffer_dev.h"
+#include "ppapi/cpp/dev/device_ref_dev.h"
 #include "ppapi/cpp/dev/video_capture_dev.h"
 #include "ppapi/cpp/dev/video_capture_client_dev.h"
 #include "ppapi/cpp/completion_callback.h"
@@ -19,6 +21,7 @@
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/rect.h"
+#include "ppapi/cpp/var.h"
 #include "ppapi/lib/gl/include/GLES2/gl2.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
@@ -49,6 +52,7 @@ class VCDemoInstance : public pp::Instance,
   // pp::Instance implementation (see PPP_Instance).
   virtual void DidChangeView(const pp::Rect& position,
                              const pp::Rect& clip_ignored);
+  virtual void HandleMessage(const pp::Var& message_data);
 
   // pp::Graphics3DClient implementation.
   virtual void Graphics3DContextLost() {
@@ -107,12 +111,15 @@ class VCDemoInstance : public pp::Instance,
 
   // GL-related functions.
   void InitGL();
-  void InitializeCapture();
   GLuint CreateTexture(int32_t width, int32_t height, int unit);
   void CreateGLObjects();
   void CreateShader(GLuint program, GLenum type, const char* source, int size);
   void PaintFinished(int32_t result);
   void CreateYUVTextures();
+
+  void Open(const pp::DeviceRef_Dev& device);
+  void EnumerateDevicesFinished(int32_t result);
+  void OpenFinished(int32_t result);
 
   pp::Size position_size_;
   bool is_painting_;
@@ -130,6 +137,8 @@ class VCDemoInstance : public pp::Instance,
 
   // Owned data.
   pp::Graphics3D* context_;
+
+  std::vector<pp::DeviceRef_Dev> devices_;
 };
 
 VCDemoInstance::VCDemoInstance(PP_Instance instance, pp::Module* module)
@@ -147,7 +156,10 @@ VCDemoInstance::VCDemoInstance(PP_Instance instance, pp::Module* module)
   gles2_if_ = static_cast<const struct PPB_OpenGLES2*>(
       module->GetBrowserInterface(PPB_OPENGLES2_INTERFACE));
   assert(gles2_if_);
-  InitializeCapture();
+
+  capture_info_.width = 320;
+  capture_info_.height = 240;
+  capture_info_.frames_per_second = 30;
 }
 
 VCDemoInstance::~VCDemoInstance() {
@@ -169,12 +181,33 @@ void VCDemoInstance::DidChangeView(
   Render();
 }
 
-void VCDemoInstance::InitializeCapture() {
-  capture_info_.width = 320;
-  capture_info_.height = 240;
-  capture_info_.frames_per_second = 30;
-
-  video_capture_.StartCapture(capture_info_, 4);
+void VCDemoInstance::HandleMessage(const pp::Var& message_data) {
+  if (message_data.is_string()) {
+    std::string event = message_data.AsString();
+    if (event == "PageInitialized") {
+      pp::CompletionCallback callback = callback_factory_.NewCallback(
+          &VCDemoInstance::EnumerateDevicesFinished);
+      video_capture_.EnumerateDevices(&devices_, callback);
+    } else if (event == "UseDefault") {
+      Open(pp::DeviceRef_Dev());
+    } else if (event == "UseDefault(v0.1)") {
+      const PPB_VideoCapture_Dev_0_1* video_capture_0_1 =
+          static_cast<const PPB_VideoCapture_Dev_0_1*>(
+              pp::Module::Get()->GetBrowserInterface(
+                  PPB_VIDEOCAPTURE_DEV_INTERFACE_0_1));
+      video_capture_0_1->StartCapture(video_capture_.pp_resource(),
+                                      &capture_info_, 4);
+    } else if (event == "Stop") {
+      video_capture_.StopCapture();
+    }
+  } else if (message_data.is_number()) {
+    int index = message_data.AsInt();
+    if (index >= 0 && index < static_cast<int>(devices_.size())) {
+      Open(devices_[index]);
+    } else {
+      assert(false);
+    }
+  }
 }
 
 void VCDemoInstance::InitGL() {
@@ -362,6 +395,39 @@ void VCDemoInstance::CreateYUVTextures() {
   height /= 2;
   texture_u_ = CreateTexture(width, height, 1);
   texture_v_ = CreateTexture(width, height, 2);
+}
+
+void VCDemoInstance::Open(const pp::DeviceRef_Dev& device) {
+  pp::CompletionCallback callback = callback_factory_.NewCallback(
+      &VCDemoInstance::OpenFinished);
+  video_capture_.Open(device, capture_info_, 4, callback);
+}
+
+void VCDemoInstance::EnumerateDevicesFinished(int32_t result) {
+  static const char* const kDelimiter = "#__#";
+
+  if (result == PP_OK) {
+    std::string device_names;
+    for (size_t index = 0; index < devices_.size(); ++index) {
+      pp::Var name = devices_[index].GetName();
+      assert(name.is_string());
+
+      if (index != 0)
+        device_names += kDelimiter;
+      device_names += name.AsString();
+    }
+    PostMessage(pp::Var(device_names));
+  } else {
+    PostMessage(pp::Var("EnumerationFailed"));
+  }
+}
+
+void VCDemoInstance::OpenFinished(int32_t result) {
+  if (result == PP_OK) {
+    video_capture_.StartCapture();
+  } else {
+    PostMessage(pp::Var("OpenFailed"));
+  }
 }
 
 pp::Instance* VCDemoModule::CreateInstance(PP_Instance instance) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,11 +9,11 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "media/video/capture/video_capture.h"
 #include "ppapi/c/dev/ppp_video_capture_dev.h"
+#include "ppapi/shared_impl/ppb_video_capture_shared.h"
 #include "ppapi/shared_impl/resource.h"
-#include "ppapi/thunk/ppb_video_capture_api.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
 
@@ -22,27 +22,17 @@ struct PP_VideoCaptureDeviceInfo_Dev;
 namespace webkit {
 namespace ppapi {
 
-class PPB_VideoCapture_Impl : public ::ppapi::Resource,
-                              public ::ppapi::thunk::PPB_VideoCapture_API,
-                              public media::VideoCapture::EventHandler {
+class PPB_VideoCapture_Impl
+    : public ::ppapi::PPB_VideoCapture_Shared,
+      public PluginDelegate::PlatformVideoCaptureEventHandler,
+      public base::SupportsWeakPtr<PPB_VideoCapture_Impl> {
  public:
   explicit PPB_VideoCapture_Impl(PP_Instance instance);
   virtual ~PPB_VideoCapture_Impl();
 
   bool Init();
 
-  // Resource overrides.
-  virtual PPB_VideoCapture_API* AsPPB_VideoCapture_API() OVERRIDE;
-  virtual void LastPluginRefWasDeleted() OVERRIDE;
-
-  // PPB_VideoCapture implementation.
-  virtual int32_t StartCapture(
-      const PP_VideoCaptureDeviceInfo_Dev& requested_info,
-      uint32_t buffer_count) OVERRIDE;
-  virtual int32_t ReuseBuffer(uint32_t buffer) OVERRIDE;
-  virtual int32_t StopCapture() OVERRIDE;
-
-  // media::VideoCapture::EventHandler implementation.
+  // PluginDelegate::PlatformVideoCaptureEventHandler implementation.
   virtual void OnStarted(media::VideoCapture* capture) OVERRIDE;
   virtual void OnStopped(media::VideoCapture* capture) OVERRIDE;
   virtual void OnPaused(media::VideoCapture* capture) OVERRIDE;
@@ -54,12 +44,43 @@ class PPB_VideoCapture_Impl : public ::ppapi::Resource,
   virtual void OnDeviceInfoReceived(
       media::VideoCapture* capture,
       const media::VideoCaptureParams& device_info) OVERRIDE;
+  virtual void OnInitialized(media::VideoCapture* capture,
+                             bool succeeded) OVERRIDE;
 
  private:
+  typedef std::vector< ::ppapi::DeviceRefData> DeviceRefDataVector;
+
+  // PPB_VideoCapture_Shared implementation.
+  virtual int32_t InternalEnumerateDevices(
+      PP_Resource* devices,
+      PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t InternalOpen(
+      const std::string& device_id,
+      const PP_VideoCaptureDeviceInfo_Dev& requested_info,
+      uint32_t buffer_count,
+      PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t InternalStartCapture() OVERRIDE;
+  virtual int32_t InternalReuseBuffer(uint32_t buffer) OVERRIDE;
+  virtual int32_t InternalStopCapture() OVERRIDE;
+  virtual void InternalClose() OVERRIDE;
+  virtual int32_t InternalStartCapture0_1(
+      const PP_VideoCaptureDeviceInfo_Dev& requested_info,
+      uint32_t buffer_count) OVERRIDE;
+  virtual const DeviceRefDataVector& InternalGetDeviceRefData() const OVERRIDE;
+
   void ReleaseBuffers();
   void SendStatus();
 
-  scoped_ptr<PluginDelegate::PlatformVideoCapture> platform_video_capture_;
+  void SetRequestedInfo(const PP_VideoCaptureDeviceInfo_Dev& device_info,
+                        uint32_t buffer_count);
+
+  void DetachPlatformVideoCapture();
+
+  void EnumerateDevicesCallbackFunc(int request_id,
+                                    bool succeeded,
+                                    const DeviceRefDataVector& devices);
+
+  scoped_refptr<PluginDelegate::PlatformVideoCapture> platform_video_capture_;
 
   size_t buffer_count_hint_;
   struct BufferInfo {
@@ -73,13 +94,10 @@ class PPB_VideoCapture_Impl : public ::ppapi::Resource,
   std::vector<BufferInfo> buffers_;
 
   const PPP_VideoCapture_Dev* ppp_videocapture_;
-  PP_VideoCaptureStatus_Dev status_;
 
-  // Signifies that the plugin has given up all its refs, but the object is
-  // still alive, possibly because the backend hasn't released the object as
-  // |EventHandler| yet. It can be removed if/when |EventHandler| is made to be
-  // refcounted (and made into a "member" of this object instead).
-  bool is_dead_;
+  DeviceRefDataVector devices_data_;
+
+  media::VideoCapture::VideoCaptureCapability capability_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_VideoCapture_Impl);
 };

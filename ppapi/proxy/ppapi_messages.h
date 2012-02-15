@@ -457,6 +457,15 @@ IPC_MESSAGE_ROUTED2(PpapiMsg_PPBURLLoader_CallbackComplete,
                     ppapi::HostResource /* loader */,
                     int32_t /* result */)
 
+// PPB_VideoCapture_Dev
+IPC_MESSAGE_ROUTED3(PpapiMsg_PPBVideoCapture_EnumerateDevicesACK,
+                    ppapi::HostResource /* video_capture */,
+                    int32_t /* result */,
+                    std::vector<ppapi::DeviceRefData> /* devices */)
+IPC_MESSAGE_ROUTED2(PpapiMsg_PPBVideoCapture_OpenACK,
+                    ppapi::HostResource /* video_capture */,
+                    int32_t /* result */)
+
 // PPP_VideoCapture_Dev
 IPC_MESSAGE_ROUTED3(
     PpapiMsg_PPPVideoCapture_OnDeviceInfo,
@@ -1111,15 +1120,26 @@ IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBVar_CreateObjectDeprecated,
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBVideoCapture_Create,
                            PP_Instance /* instance */,
                            ppapi::HostResource /* result */)
-IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBVideoCapture_StartCapture,
+IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBVideoCapture_EnumerateDevices,
+                    ppapi::HostResource /* video_capture */)
+IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBVideoCapture_Open,
                     ppapi::HostResource /* video_capture */,
+                    std::string /* device_id */,
                     PP_VideoCaptureDeviceInfo_Dev /* requested_info */,
                     uint32_t /* buffer_count */)
+IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBVideoCapture_StartCapture,
+                    ppapi::HostResource /* video_capture */)
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBVideoCapture_ReuseBuffer,
                     ppapi::HostResource /* video_capture */,
                     uint32_t /* buffer */)
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBVideoCapture_StopCapture,
                     ppapi::HostResource /* video_capture */)
+IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBVideoCapture_Close,
+                    ppapi::HostResource /* video_capture */)
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBVideoCapture_StartCapture0_1,
+                    ppapi::HostResource /* video_capture */,
+                    PP_VideoCaptureDeviceInfo_Dev /* requested_info */,
+                    uint32_t /* buffer_count */)
 
 // PPB_VideoDecoder.
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBVideoDecoder_Create,

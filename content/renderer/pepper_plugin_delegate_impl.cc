@@ -5,6 +5,7 @@
 #include "content/renderer/pepper_plugin_delegate_impl.h"
 
 #include <cmath>
+#include <map>
 #include <queue>
 
 #include "base/bind.h"
@@ -13,8 +14,6 @@
 #include "base/file_path.h"
 #include "base/file_util_proxy.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/string_split.h"
 #include "base/sync_socket.h"
 #include "base/time.h"
@@ -37,10 +36,12 @@
 #include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/media/audio_message_filter.h"
+#include "content/renderer/media/media_stream_dispatcher.h"
+#include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
 #include "content/renderer/media/pepper_platform_video_decoder_impl.h"
-#include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/p2p/p2p_transport_impl.h"
 #include "content/renderer/pepper_platform_context_3d_impl.h"
+#include "content/renderer/pepper_platform_video_capture_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
@@ -54,6 +55,7 @@
 #include "ppapi/c/private/ppb_flash_net_connector.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/ppb_device_ref_shared.h"
 #include "ppapi/shared_impl/platform_file.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
@@ -571,63 +573,42 @@ class QuotaCallbackTranslator : public QuotaDispatcher::Callback {
   PluginCallback callback_;
 };
 
-class PlatformVideoCaptureImpl
-    : public webkit::ppapi::PluginDelegate::PlatformVideoCapture {
- public:
-  PlatformVideoCaptureImpl(media::VideoCapture::EventHandler* handler)
-      : handler_proxy_(new media::VideoCaptureHandlerProxy(
-            handler, base::MessageLoopProxy::current())) {
-    VideoCaptureImplManager* manager =
-        RenderThreadImpl::current()->video_capture_impl_manager();
-    // 1 means the "default" video capture device.
-    // TODO(piman): Add a way to enumerate devices and pass them through the
-    // API.
-    video_capture_ = manager->AddDevice(1, handler_proxy_.get());
+media_stream::MediaStreamType FromPepperDeviceType(PP_DeviceType_Dev type) {
+  switch (type) {
+    case PP_DEVICETYPE_DEV_INVALID:
+      return media_stream::kNoService;
+    case PP_DEVICETYPE_DEV_AUDIOCAPTURE:
+      return media_stream::kAudioCapture;
+    case PP_DEVICETYPE_DEV_VIDEOCAPTURE:
+      return media_stream::kVideoCapture;
+    default:
+      NOTREACHED();
+      return media_stream::kNoService;
   }
+}
 
-  // Overrides from media::VideoCapture::EventHandler
-  virtual ~PlatformVideoCaptureImpl() {
-    VideoCaptureImplManager* manager =
-        RenderThreadImpl::current()->video_capture_impl_manager();
-    manager->RemoveDevice(1, handler_proxy_.get());
+PP_DeviceType_Dev FromMediaStreamType(media_stream::MediaStreamType type) {
+  switch (type) {
+    case media_stream::kNoService:
+      return PP_DEVICETYPE_DEV_INVALID;
+    case media_stream::kAudioCapture:
+      return PP_DEVICETYPE_DEV_AUDIOCAPTURE;
+    case media_stream::kVideoCapture:
+      return PP_DEVICETYPE_DEV_VIDEOCAPTURE;
+    default:
+      NOTREACHED();
+      return PP_DEVICETYPE_DEV_INVALID;
   }
+}
 
-  virtual void StartCapture(
-      EventHandler* handler,
-      const VideoCaptureCapability& capability) OVERRIDE {
-    DCHECK(handler == handler_proxy_->proxied());
-    video_capture_->StartCapture(handler_proxy_.get(), capability);
-  }
-
-  virtual void StopCapture(EventHandler* handler) OVERRIDE {
-    DCHECK(handler == handler_proxy_->proxied());
-    video_capture_->StopCapture(handler_proxy_.get());
-  }
-
-  virtual void FeedBuffer(scoped_refptr<VideoFrameBuffer> buffer) OVERRIDE {
-    video_capture_->FeedBuffer(buffer);
-  }
-
-  virtual bool CaptureStarted() OVERRIDE {
-    return handler_proxy_->state().started;
-  }
-
-  virtual int CaptureWidth() OVERRIDE {
-    return handler_proxy_->state().width;
-  }
-
-  virtual int CaptureHeight() OVERRIDE {
-    return handler_proxy_->state().height;
-  }
-
-  virtual int CaptureFrameRate() OVERRIDE {
-    return handler_proxy_->state().frame_rate;
-  }
-
- private:
-  scoped_ptr<media::VideoCaptureHandlerProxy> handler_proxy_;
-  media::VideoCapture* video_capture_;
-};
+ppapi::DeviceRefData FromStreamDeviceInfo(
+    const media_stream::StreamDeviceInfo& info) {
+  ppapi::DeviceRefData data;
+  data.id = info.device_id;
+  data.name = info.name;
+  data.type = FromMediaStreamType(info.stream_type);
+  return data;
+}
 
 class PluginInstanceLockTarget : public MouseLockDispatcher::LockTarget {
  public:
@@ -853,13 +834,128 @@ void PpapiBrokerImpl::ConnectPluginToBroker(
   client->BrokerConnected(ppapi::PlatformFileToInt(plugin_handle), result);
 }
 
+class PepperPluginDelegateImpl::DeviceEnumerationEventHandler
+    : public MediaStreamDispatcherEventHandler {
+ public:
+  DeviceEnumerationEventHandler() : next_id_(1) {
+  }
+
+  virtual ~DeviceEnumerationEventHandler() {
+    DCHECK(enumerate_callbacks_.empty());
+    DCHECK(open_callbacks_.empty());
+  }
+
+  int RegisterEnumerateDevicesCallback(
+      const EnumerateDevicesCallback& callback) {
+    enumerate_callbacks_[next_id_] = callback;
+    return next_id_++;
+  }
+
+  int RegisterOpenDeviceCallback(const OpenDeviceCallback& callback) {
+    open_callbacks_[next_id_] = callback;
+    return next_id_++;
+  }
+
+  // MediaStreamDispatcherEventHandler implementation.
+  virtual void OnStreamGenerated(
+      int request_id,
+      const std::string& label,
+      const media_stream::StreamDeviceInfoArray& audio_device_array,
+      const media_stream::StreamDeviceInfoArray& video_device_array) OVERRIDE {
+  }
+
+  virtual void OnStreamGenerationFailed(int request_id) OVERRIDE {
+  }
+
+  virtual void OnVideoDeviceFailed(const std::string& label,
+                                   int index) OVERRIDE {
+  }
+
+  virtual void OnAudioDeviceFailed(const std::string& label,
+                                   int index) OVERRIDE {
+  }
+
+  virtual void OnDevicesEnumerated(
+      int request_id,
+      const media_stream::StreamDeviceInfoArray& device_array) OVERRIDE {
+    NotifyDevicesEnumerated(request_id, true, device_array);
+  }
+
+  virtual void OnDevicesEnumerationFailed(int request_id) OVERRIDE {
+    NotifyDevicesEnumerated(request_id, false,
+                            media_stream::StreamDeviceInfoArray());
+  }
+
+  virtual void OnDeviceOpened(
+      int request_id,
+      const std::string& label,
+      const media_stream::StreamDeviceInfo& device_info) OVERRIDE {
+    NotifyDeviceOpened(request_id, true, label);
+  }
+
+  virtual void OnDeviceOpenFailed(int request_id) OVERRIDE {
+    NotifyDeviceOpened(request_id, false, "");
+  }
+
+ private:
+  void NotifyDevicesEnumerated(
+      int request_id,
+      bool succeeded,
+      const media_stream::StreamDeviceInfoArray& device_array) {
+    EnumerateCallbackMap::iterator iter = enumerate_callbacks_.find(request_id);
+    if (iter == enumerate_callbacks_.end()) {
+      NOTREACHED();
+      return;
+    }
+
+    EnumerateDevicesCallback callback = iter->second;
+    enumerate_callbacks_.erase(iter);
+
+    std::vector<ppapi::DeviceRefData> devices;
+    if (succeeded) {
+      devices.reserve(device_array.size());
+      for (media_stream::StreamDeviceInfoArray::const_iterator info =
+               device_array.begin(); info != device_array.end(); ++info) {
+        devices.push_back(FromStreamDeviceInfo(*info));
+      }
+    }
+    callback.Run(request_id, succeeded, devices);
+  }
+
+  void NotifyDeviceOpened(int request_id,
+                          bool succeeded,
+                          const std::string& label) {
+    OpenCallbackMap::iterator iter = open_callbacks_.find(request_id);
+    if (iter == open_callbacks_.end()) {
+      NOTREACHED();
+      return;
+    }
+
+    OpenDeviceCallback callback = iter->second;
+    open_callbacks_.erase(iter);
+
+    callback.Run(request_id, succeeded, label);
+  }
+
+  int next_id_;
+
+  typedef std::map<int, EnumerateDevicesCallback> EnumerateCallbackMap;
+  EnumerateCallbackMap enumerate_callbacks_;
+
+  typedef std::map<int, OpenDeviceCallback> OpenCallbackMap;
+  OpenCallbackMap open_callbacks_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeviceEnumerationEventHandler);
+};
+
 PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderViewImpl* render_view)
     : content::RenderViewObserver(render_view),
       render_view_(render_view),
       has_saved_context_menu_action_(false),
       saved_context_menu_action_(0),
       focused_plugin_(NULL),
-      last_mouse_event_target_(NULL) {
+      last_mouse_event_target_(NULL),
+      device_enumeration_event_handler_(new DeviceEnumerationEventHandler()) {
 }
 
 PepperPluginDelegateImpl::~PepperPluginDelegateImpl() {
@@ -1238,8 +1334,9 @@ webkit::ppapi::PluginDelegate::PlatformContext3D*
 
 webkit::ppapi::PluginDelegate::PlatformVideoCapture*
 PepperPluginDelegateImpl::CreateVideoCapture(
-      media::VideoCapture::EventHandler* handler) {
-  return new PlatformVideoCaptureImpl(handler);
+    const std::string& device_id,
+    PlatformVideoCaptureEventHandler* handler) {
+  return new PepperPlatformVideoCaptureImpl(AsWeakPtr(), device_id, handler);
 }
 
 webkit::ppapi::PluginDelegate::PlatformVideoDecoder*
@@ -1965,6 +2062,18 @@ bool PepperPluginDelegateImpl::IsPageVisible() const {
   return !render_view_->is_hidden();
 }
 
+int PepperPluginDelegateImpl::EnumerateDevices(
+    PP_DeviceType_Dev type,
+    const EnumerateDevicesCallback& callback) {
+  int request_id =
+      device_enumeration_event_handler_->RegisterEnumerateDevicesCallback(
+          callback);
+  render_view_->media_stream_dispatcher()->EnumerateDevices(
+      request_id, device_enumeration_event_handler_.get(),
+      FromPepperDeviceType(type), "");
+  return request_id;
+}
+
 bool PepperPluginDelegateImpl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PepperPluginDelegateImpl, message)
@@ -2064,6 +2173,36 @@ void PepperPluginDelegateImpl::OnUDPSocketSendToACK(uint32 plugin_dispatcher_id,
 
 int PepperPluginDelegateImpl::GetRoutingId() const {
   return render_view_->routing_id();
+}
+
+int PepperPluginDelegateImpl::OpenDevice(PP_DeviceType_Dev type,
+                                         const std::string& device_id,
+                                         const OpenDeviceCallback& callback) {
+  int request_id =
+      device_enumeration_event_handler_->RegisterOpenDeviceCallback(callback);
+  render_view_->media_stream_dispatcher()->OpenDevice(
+      request_id, device_enumeration_event_handler_.get(), device_id,
+      FromPepperDeviceType(type), "");
+  return request_id;
+}
+
+void PepperPluginDelegateImpl::CloseDevice(const std::string& label) {
+  render_view_->media_stream_dispatcher()->CloseDevice(label);
+}
+
+int PepperPluginDelegateImpl::GetSessionID(PP_DeviceType_Dev type,
+                                           const std::string& label) {
+  switch (type) {
+    case PP_DEVICETYPE_DEV_AUDIOCAPTURE:
+      return render_view_->media_stream_dispatcher()->audio_session_id(label,
+                                                                       0);
+    case PP_DEVICETYPE_DEV_VIDEOCAPTURE:
+      return render_view_->media_stream_dispatcher()->video_session_id(label,
+                                                                       0);
+    default:
+      NOTREACHED();
+      return 0;
+  }
 }
 
 ContentGLContext*

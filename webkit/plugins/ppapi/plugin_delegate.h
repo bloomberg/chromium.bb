@@ -6,6 +6,7 @@
 #define WEBKIT_PLUGINS_PPAPI_PLUGIN_DELEGATE_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/message_loop_proxy.h"
@@ -18,6 +19,7 @@
 #include "media/video/capture/video_capture.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ppapi/c/dev/pp_video_dev.h"
+#include "ppapi/c/dev/ppb_device_ref_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_instance.h"
@@ -50,6 +52,7 @@ class CommandBuffer;
 }
 
 namespace ppapi {
+struct DeviceRefData;
 struct Preferences;
 }
 
@@ -239,9 +242,22 @@ class PluginDelegate {
     virtual ~PlatformVideoDecoder() {}
   };
 
-  class PlatformVideoCapture : public media::VideoCapture {
+  class PlatformVideoCaptureEventHandler
+      : public media::VideoCapture::EventHandler {
+   public:
+    virtual ~PlatformVideoCaptureEventHandler() {}
+
+    virtual void OnInitialized(media::VideoCapture* capture,
+                               bool succeeded) = 0;
+  };
+
+  class PlatformVideoCapture : public media::VideoCapture,
+                               public base::RefCounted<PlatformVideoCapture> {
    public:
     virtual ~PlatformVideoCapture() {}
+
+    // Detaches the event handler and stops sending notifications to it.
+    virtual void DetachEventHandler() = 0;
   };
 
   // Provides access to the ppapi broker.
@@ -295,9 +311,14 @@ class PluginDelegate {
   // The caller will own the pointer returned from this.
   virtual PlatformContext3D* CreateContext3D() = 0;
 
-  // The caller will own the pointer returned from this.
+  // If |device_id| is empty, the default video capture device will be used. The
+  // user can start using the returned object to capture video right away.
+  // Otherwise, the specified device will be used. The user needs to wait till
+  // |handler| gets an OnInitialized() notification to start using the returned
+  // object.
   virtual PlatformVideoCapture* CreateVideoCapture(
-      media::VideoCapture::EventHandler* handler) = 0;
+      const std::string& device_id,
+      PlatformVideoCaptureEventHandler* handler) = 0;
 
   // The caller will own the pointer returned from this.
   virtual PlatformVideoDecoder* CreateVideoDecoder(
@@ -524,6 +545,17 @@ class PluginDelegate {
 
   // Returns true if the containing page is visible.
   virtual bool IsPageVisible() const = 0;
+
+  typedef base::Callback<
+      void (int /* request_id */,
+            bool /* succeeded */,
+            const std::vector< ::ppapi::DeviceRefData>& /* devices */)>
+      EnumerateDevicesCallback;
+
+  // Enumerates devices of the specified type. The request ID passed into the
+  // callback will be the same as the return value.
+  virtual int EnumerateDevices(PP_DeviceType_Dev type,
+                               const EnumerateDevicesCallback& callback) = 0;
 };
 
 }  // namespace ppapi
