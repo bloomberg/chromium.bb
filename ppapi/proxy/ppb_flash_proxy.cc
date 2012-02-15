@@ -20,6 +20,7 @@
 #include "ppapi/proxy/proxy_module.h"
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/scoped_pp_resource.h"
@@ -34,6 +35,7 @@ namespace proxy {
 namespace {
 
 void SetInstanceAlwaysOnTop(PP_Instance pp_instance, PP_Bool on_top) {
+  ProxyAutoLock lock;
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(pp_instance);
   if (dispatcher) {
     dispatcher->Send(new PpapiHostMsg_PPBFlash_SetInstanceAlwaysOnTop(
@@ -52,6 +54,7 @@ PP_Bool DrawGlyphs(PP_Instance instance,
                    uint32_t glyph_count,
                    const uint16_t glyph_indices[],
                    const PP_Point glyph_advances[]) {
+  ProxyAutoLock lock;
   Resource* image_data =
       PpapiGlobals::Get()->GetResourceTracker()->GetResource(pp_image_data);
   if (!image_data)
@@ -101,13 +104,14 @@ PP_Bool DrawGlyphs11(PP_Instance instance,
                      uint32_t glyph_count,
                      const uint16_t glyph_indices[],
                      const PP_Point glyph_advances[]) {
-  // Backwards-compatible version.
+  // Backwards-compatible version. DrawGlyphs locks; no need to lock here.
   return DrawGlyphs(instance, pp_image_data, font_desc, color, &position,
                     &clip, transformation, PP_TRUE, glyph_count, glyph_indices,
                     glyph_advances);
 }
 
 PP_Var GetProxyForURL(PP_Instance instance, const char* url) {
+  ProxyAutoLock lock;
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   if (!dispatcher)
     return PP_MakeUndefined();
@@ -141,11 +145,12 @@ int32_t Navigate(PP_Resource request_id,
 int32_t Navigate11(PP_Resource request_id,
                    const char* target,
                    bool from_user_action) {
-  // Backwards-compatible version.
+  // Backwards-compatible version. Navigate locks; no need to lock here.
   return Navigate(request_id, target, PP_FromBool(from_user_action));
 }
 
 void RunMessageLoop(PP_Instance instance) {
+  ProxyAutoLock lock;
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   if (!dispatcher)
     return;
@@ -156,6 +161,7 @@ void RunMessageLoop(PP_Instance instance) {
 }
 
 void QuitMessageLoop(PP_Instance instance) {
+  ProxyAutoLock lock;
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   if (!dispatcher)
     return;
@@ -164,6 +170,7 @@ void QuitMessageLoop(PP_Instance instance) {
 }
 
 double GetLocalTimeZoneOffset(PP_Instance instance, PP_Time t) {
+  ProxyAutoLock lock;
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   if (!dispatcher)
     return 0.0;
@@ -181,11 +188,13 @@ double GetLocalTimeZoneOffset(PP_Instance instance, PP_Time t) {
 }
 
 PP_Var GetCommandLineArgs(PP_Module /*pp_module*/) {
+  ProxyAutoLock lock;
   std::string args = ProxyModule::GetInstance()->GetFlashCommandLineArgs();
   return StringVar::StringToPPVar(args);
 }
 
 void PreLoadFontWin(const void* logfontw) {
+  ProxyAutoLock lock;
   PluginGlobals::Get()->plugin_proxy_delegate()->PreCacheFont(logfontw);
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 
 namespace ppapi {
 namespace proxy {
@@ -65,7 +66,7 @@ bool PPP_Graphics3D_Proxy::OnMessageReceived(const IPC::Message& msg) {
 
 void PPP_Graphics3D_Proxy::OnMsgContextLost(PP_Instance instance) {
   if (ppp_graphics_3d_impl_)
-    ppp_graphics_3d_impl_->Graphics3DContextLost(instance);
+    CallWhileUnlocked(ppp_graphics_3d_impl_->Graphics3DContextLost, instance);
 }
 
 }  // namespace proxy

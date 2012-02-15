@@ -23,4 +23,9 @@ void ProxyLock::Release() {
     lock->Release();
 }
 
+void CallWhileLocked(const base::Closure& closure) {
+  ProxyAutoLock lock;
+  closure.Run();
+}
+
 }  // namespace ppapi

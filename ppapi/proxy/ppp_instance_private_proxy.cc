@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 
 namespace ppapi {
 namespace proxy {
@@ -74,7 +75,8 @@ void PPP_Instance_Private_Proxy::OnMsgGetInstanceObject(
     PP_Instance instance,
     SerializedVarReturnValue result) {
   result.Return(dispatcher(),
-                ppp_instance_private_impl_->GetInstanceObject(instance));
+                CallWhileUnlocked(ppp_instance_private_impl_->GetInstanceObject,
+                                  instance));
 }
 
 }  // namespace proxy

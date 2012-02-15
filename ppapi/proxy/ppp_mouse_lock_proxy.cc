@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "ppapi/c/ppp_mouse_lock.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 
 namespace ppapi {
 namespace proxy {
@@ -71,7 +72,7 @@ bool PPP_MouseLock_Proxy::OnMessageReceived(const IPC::Message& msg) {
 
 void PPP_MouseLock_Proxy::OnMsgMouseLockLost(PP_Instance instance) {
   if (ppp_mouse_lock_impl_)
-    ppp_mouse_lock_impl_->MouseLockLost(instance);
+    CallWhileUnlocked(ppp_mouse_lock_impl_->MouseLockLost, instance);
 }
 
 }  // namespace proxy

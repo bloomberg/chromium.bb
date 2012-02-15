@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,7 @@
 #include "ppapi/proxy/ppp_class_proxy.h"
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/shared_impl/ppb_var_shared.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/var.h"
 
 namespace ppapi {
@@ -64,6 +65,7 @@ PluginDispatcher* CheckExceptionAndGetDispatcher(const PP_Var& object,
 bool HasProperty(PP_Var var,
                  PP_Var name,
                  PP_Var* exception) {
+  ProxyAutoLock lock;
   Dispatcher* dispatcher = CheckExceptionAndGetDispatcher(var, exception);
   if (!dispatcher)
     return false;
@@ -82,6 +84,7 @@ bool HasProperty(PP_Var var,
 bool HasMethod(PP_Var var,
                PP_Var name,
                PP_Var* exception) {
+  ProxyAutoLock lock;
   Dispatcher* dispatcher = CheckExceptionAndGetDispatcher(var, exception);
   if (!dispatcher)
     return false;
@@ -100,6 +103,7 @@ bool HasMethod(PP_Var var,
 PP_Var GetProperty(PP_Var var,
                    PP_Var name,
                    PP_Var* exception) {
+  ProxyAutoLock lock;
   Dispatcher* dispatcher = CheckExceptionAndGetDispatcher(var, exception);
   if (!dispatcher)
     return PP_MakeUndefined();
@@ -119,6 +123,7 @@ void EnumerateProperties(PP_Var var,
                          uint32_t* property_count,
                          PP_Var** properties,
                          PP_Var* exception) {
+  ProxyAutoLock lock;
   Dispatcher* dispatcher = CheckExceptionAndGetDispatcher(var, exception);
   if (!dispatcher) {
     *property_count = 0;
@@ -141,6 +146,7 @@ void SetProperty(PP_Var var,
                  PP_Var name,
                  PP_Var value,
                  PP_Var* exception) {
+  ProxyAutoLock lock;
   Dispatcher* dispatcher = CheckExceptionAndGetDispatcher(var, exception);
   if (!dispatcher)
     return;
@@ -158,6 +164,7 @@ void SetProperty(PP_Var var,
 void RemoveProperty(PP_Var var,
                     PP_Var name,
                     PP_Var* exception) {
+  ProxyAutoLock lock;
   Dispatcher* dispatcher = CheckExceptionAndGetDispatcher(var, exception);
   if (!dispatcher)
     return;
@@ -177,6 +184,7 @@ PP_Var Call(PP_Var object,
             uint32_t argc,
             PP_Var* argv,
             PP_Var* exception) {
+  ProxyAutoLock lock;
   Dispatcher* dispatcher = CheckExceptionAndGetDispatcher(object, exception);
   if (!dispatcher)
     return PP_MakeUndefined();
@@ -200,6 +208,7 @@ PP_Var Construct(PP_Var object,
                  uint32_t argc,
                  PP_Var* argv,
                  PP_Var* exception) {
+  ProxyAutoLock lock;
   Dispatcher* dispatcher = CheckExceptionAndGetDispatcher(object, exception);
   if (!dispatcher)
     return PP_MakeUndefined();
@@ -221,6 +230,7 @@ PP_Var Construct(PP_Var object,
 bool IsInstanceOf(PP_Var var,
                   const PPP_Class_Deprecated* ppp_class,
                   void** ppp_class_data) {
+  ProxyAutoLock lock;
   Dispatcher* dispatcher = CheckExceptionAndGetDispatcher(var, NULL);
   if (!dispatcher)
     return false;
@@ -239,6 +249,7 @@ bool IsInstanceOf(PP_Var var,
 PP_Var CreateObject(PP_Instance instance,
                     const PPP_Class_Deprecated* ppp_class,
                     void* ppp_class_data) {
+  ProxyAutoLock lock;
   Dispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   if (!dispatcher)
     return PP_MakeUndefined();
@@ -367,9 +378,9 @@ void PPB_Var_Deprecated_Proxy::OnMsgReleaseObject(int64 object_id) {
   // TODO(piman): See if we can fix the IPC code to enforce strict ordering, and
   // then remove this.
   MessageLoop::current()->PostNonNestableTask(FROM_HERE,
-      base::Bind(&PPB_Var_Deprecated_Proxy::DoReleaseObject,
-                 task_factory_.GetWeakPtr(),
-                 object_id));
+      RunWhileLocked(base::Bind(&PPB_Var_Deprecated_Proxy::DoReleaseObject,
+                     task_factory_.GetWeakPtr(),
+                     object_id)));
 }
 
 void PPB_Var_Deprecated_Proxy::OnMsgHasProperty(

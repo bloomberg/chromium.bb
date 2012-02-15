@@ -98,7 +98,9 @@ void PPP_InputEvent_Proxy::OnMsgHandleInputEvent(PP_Instance instance,
                                                  const InputEventData& data) {
   scoped_refptr<PPB_InputEvent_Shared> resource(new PPB_InputEvent_Shared(
       OBJECT_IS_PROXY, instance, data));
-  ppp_input_event_impl_->HandleInputEvent(instance, resource->pp_resource());
+  CallWhileUnlocked(ppp_input_event_impl_->HandleInputEvent,
+                    instance,
+                    resource->pp_resource());
 }
 
 void PPP_InputEvent_Proxy::OnMsgHandleFilteredInputEvent(
@@ -107,8 +109,9 @@ void PPP_InputEvent_Proxy::OnMsgHandleFilteredInputEvent(
     PP_Bool* result) {
   scoped_refptr<PPB_InputEvent_Shared> resource(new PPB_InputEvent_Shared(
       OBJECT_IS_PROXY, instance, data));
-  *result = ppp_input_event_impl_->HandleInputEvent(instance,
-                                                    resource->pp_resource());
+  *result = CallWhileUnlocked(ppp_input_event_impl_->HandleInputEvent,
+                              instance,
+                              resource->pp_resource());
 }
 
 }  // namespace proxy

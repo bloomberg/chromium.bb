@@ -55,6 +55,9 @@ class MessageLoopResource : public Resource, public PPB_MessageLoop_API {
 
   // Handles posting to the message loop if there is one, or the pending queue
   // if there isn't.
+  // NOTE: The given closure will be run *WITHOUT* acquiring the Proxy lock.
+  //       This only makes sense for user code and completely thread-safe
+  //       proxy operations (e.g., MessageLoop::QuitClosure).
   void PostClosure(const tracked_objects::Location& from_here,
                    const base::Closure& closure,
                    int64 delay_ms);
@@ -197,8 +200,9 @@ void MessageLoopResource::PostClosure(
     const base::Closure& closure,
     int64 delay_ms) {
   if (loop_.get()) {
-    loop_->PostDelayedTask(
-        from_here, closure, base::TimeDelta::FromMilliseconds(delay_ms));
+    loop_->PostDelayedTask(from_here,
+                           closure,
+                           base::TimeDelta::FromMilliseconds(delay_ms));
   } else {
     TaskInfo info;
     info.from_here = FROM_HERE;

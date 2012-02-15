@@ -6,6 +6,8 @@
 #define PPAPI_SHARED_IMPL_PROXY_LOCK_H_
 
 #include "base/basictypes.h"
+#include "base/bind.h"
+#include "base/callback.h"
 
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 
@@ -34,6 +36,7 @@ class PPAPI_SHARED_EXPORT ProxyLock {
   // Relinquish the proxy lock. If the lock has not been set, this does nothing.
   static void Release();
 
+ private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ProxyLock);
 };
 
@@ -68,6 +71,78 @@ class ProxyAutoUnlock {
   DISALLOW_COPY_AND_ASSIGN(ProxyAutoUnlock);
 };
 
+// A set of function template overloads for invoking a function pointer while
+// the ProxyLock is unlocked. This assumes that the luck is held.
+// CallWhileUnlocked unlocks the ProxyLock just before invoking the given
+// function. The lock is immediately re-acquired when the invoked function
+// function returns. CallWhileUnlocked returns whatever the given function
+// returned.
+//
+// Example usage:
+//   *result = CallWhileUnlocked(ppp_input_event_impl_->HandleInputEvent,
+//                               instance,
+//                               resource->pp_resource());
+template <class ReturnType>
+ReturnType CallWhileUnlocked(ReturnType (*function)()) {
+  ProxyAutoUnlock unlock;
+  return function();
+}
+template <class ReturnType, class P1>
+ReturnType CallWhileUnlocked(ReturnType (*function)(P1), const P1& p1) {
+  ProxyAutoUnlock unlock;
+  return function(p1);
+}
+template <class ReturnType, class P1, class P2>
+ReturnType CallWhileUnlocked(ReturnType (*function)(P1, P2),
+                             const P1& p1,
+                             const P2& p2) {
+  ProxyAutoUnlock unlock;
+  return function(p1, p2);
+}
+template <class ReturnType, class P1, class P2, class P3>
+ReturnType CallWhileUnlocked(ReturnType (*function)(P1, P2, P3),
+                             const P1& p1,
+                             const P2& p2,
+                             const P3& p3) {
+  ProxyAutoUnlock unlock;
+  return function(p1, p2, p3);
+}
+template <class ReturnType, class P1, class P2, class P3, class P4>
+ReturnType CallWhileUnlocked(ReturnType (*function)(P1, P2, P3, P4),
+                             const P1& p1,
+                             const P2& p2,
+                             const P3& p3,
+                             const P4& p4) {
+  ProxyAutoUnlock unlock;
+  return function(p1, p2, p3, p4);
+}
+template <class ReturnType, class P1, class P2, class P3, class P4, class P5>
+ReturnType CallWhileUnlocked(ReturnType (*function)(P1, P2, P3, P4, P5),
+                             const P1& p1,
+                             const P2& p2,
+                             const P3& p3,
+                             const P4& p4,
+                             const P5& p5) {
+  ProxyAutoUnlock unlock;
+  return function(p1, p2, p3, p4, p5);
+}
+
+// CallWhileLocked locks the ProxyLock and runs the given closure immediately.
+// The lock is released when CallWhileLocked returns. This function assumes the
+// lock is not held. This is mostly for use in RunWhileLocked; see below.
+void PPAPI_SHARED_EXPORT CallWhileLocked(const base::Closure& closure);
+
+// RunWhileLocked binds the given closure with CallWhileLocked and returns the
+// new Closure. This is for cases where you want to run a task, but you want to
+// ensure that the ProxyLock is acquired for the duration of the task.
+// Example usage:
+//   GetMainThreadMessageLoop()->PostDelayedTask(
+//     FROM_HERE,
+//     RunWhileLocked(base::Bind(&CallbackWrapper, callback, result)),
+//     delay_in_ms);
+inline base::Closure RunWhileLocked(const base::Closure& closure) {
+  return base::Bind(CallWhileLocked, closure);
+}
 
 }  // namespace ppapi
 
