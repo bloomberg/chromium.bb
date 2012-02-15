@@ -307,6 +307,69 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
     self._GetPerformanceStats(self._webapp_name, test_description,
                               self._tab_title_substring)
 
+  # TODO(dennisjeffrey): Remove this test once the Gmail team is done analyzing
+  # the results after the test runs for a period of time.
+  def testGmailComposeDiscardSleep(self):
+    """Like testGmailComposeDiscard, but sleeps for 10s between iterations.
+
+    This is a temporary test requested by the Gmail team to compare against the
+    results from testGmailComposeDiscard above.
+    """
+    test_description = 'ComposeDiscardSleep'
+
+    # Interact with Gmail for the duration of the test.  Here, we repeat the
+    # following sequence of interactions: click the "Compose" button, enter some
+    # text into the "To" field, enter some text into the "Subject" field, then
+    # click the "Discard" button to discard the message.
+    self._test_start_time = time.time()
+    last_perf_stats_time = time.time()
+    self._GetPerformanceStats(self._webapp_name, test_description,
+                              self._tab_title_substring)
+    iteration_num = 0
+    while time.time() - self._test_start_time < self._test_length_sec:
+      iteration_num += 1
+
+      if time.time() - last_perf_stats_time >= self._GET_PERF_STATS_INTERVAL:
+        last_perf_stats_time = time.time()
+        self._GetPerformanceStats(self._webapp_name, test_description,
+                                  self._tab_title_substring)
+
+      if iteration_num % 10 == 0:
+        remaining_time = self._test_length_sec - (
+                             time.time() - self._test_start_time)
+        logging.info('Chrome interaction #%d. Time remaining in test: %d sec.' %
+                     (iteration_num, remaining_time))
+
+      compose_button = self._wait.until(lambda _: self._GetElement(
+                                            self._driver.find_element_by_xpath,
+                                            '//div[text()="COMPOSE"]'))
+      compose_button.click()
+
+      to_field = self._wait.until(lambda _: self._GetElement(
+                                      self._driver.find_element_by_name, 'to'))
+      to_field.send_keys('nobody@nowhere.com')
+
+      subject_field = self._wait.until(lambda _: self._GetElement(
+                                           self._driver.find_element_by_name,
+                                           'subject'))
+      subject_field.send_keys('This message is about to be discarded')
+
+      discard_button = self._wait.until(lambda _: self._GetElement(
+                                            self._driver.find_element_by_xpath,
+                                            '//div[text()="Discard"]'))
+      discard_button.click()
+
+      # Wait for the message to be discarded, assumed to be true after the
+      # "To" field is removed from the webpage DOM.
+      self._wait.until(lambda _: not self._GetElement(
+                           self._driver.find_element_by_name, 'to'))
+
+      logging.debug('Sleeping 10 seconds.')
+      time.sleep(10)
+
+    self._GetPerformanceStats(self._webapp_name, test_description,
+                              self._tab_title_substring)
+
   def TestGmailAlternateThreadlistConversation(self):
     """Alternates between threadlist view and conversation view.
 
