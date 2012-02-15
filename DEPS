@@ -51,6 +51,7 @@ vars = {
   "webrtc_revision": "1538",
   "jsoncpp_revision": "248",
   "nss_revision": "117974",
+  "rlz_revision": "52",
 }
 
 deps = {
@@ -366,7 +367,7 @@ deps_os = {
        Var("nacl_tools_revision")),
 
     "src/rlz":
-      (Var("googlecode_url") % "rlz") + "/trunk@49",
+      (Var("googlecode_url") % "rlz") + "/trunk@" + Var("rlz_revision"),
 
     # Dependencies used by libjpeg-turbo
     "src/third_party/yasm/binaries":
@@ -394,6 +395,9 @@ deps_os = {
 
     "src/third_party/swig/mac":
       "/trunk/deps/third_party/swig/mac@" + Var("swig_revision"),
+
+    "src/rlz":
+      (Var("googlecode_url") % "rlz") + "/trunk@" + Var("rlz_revision"),
 
     # NSS, for SSLClientSocketNSS.
     "src/third_party/nss":
