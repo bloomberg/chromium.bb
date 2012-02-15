@@ -268,7 +268,7 @@ LRESULT ProcessSingleton::OnCopyData(HWND hwnd, const COPYDATASTRUCT* cds) {
     NOTIMPLEMENTED();
 #else
     // Attempt to place ourselves in the foreground / flash the task bar.
-    if (IsWindow(foreground_window_))
+    if (foreground_window_ != NULL && IsWindow(foreground_window_))
       SetForegroundWindow(foreground_window_);
 #endif
     return TRUE;
