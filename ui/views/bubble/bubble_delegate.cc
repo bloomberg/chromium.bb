@@ -43,33 +43,47 @@ Widget* CreateBubbleWidget(BubbleDelegateView* bubble, Widget* parent) {
 // Windows uses two widgets and some extra complexity to host partially
 // transparent native controls and use per-pixel HWND alpha on the border.
 // TODO(msw): Clean these up when Windows native controls are no longer needed.
-class BubbleBorderDelegateView : public WidgetDelegateView {
+class BubbleBorderDelegate : public WidgetDelegate,
+                             public Widget::Observer {
  public:
-  explicit BubbleBorderDelegateView(BubbleDelegateView* bubble)
-      : bubble_(bubble) {}
-  virtual ~BubbleBorderDelegateView() {}
+  BubbleBorderDelegate(BubbleDelegateView* bubble, Widget* widget)
+      : bubble_(bubble),
+        widget_(widget) {
+    bubble_->GetWidget()->AddObserver(this);
+  }
 
-  // WidgetDelegateView overrides:
-  virtual bool CanActivate() const OVERRIDE;
-  virtual NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
+  virtual ~BubbleBorderDelegate() {
+    if (bubble_ && bubble_->GetWidget())
+      bubble_->GetWidget()->RemoveObserver(this);
+  }
+
+  // WidgetDelegate overrides:
+  virtual bool CanActivate() const OVERRIDE { return false; }
+  virtual void DeleteDelegate() OVERRIDE { delete this; }
+  virtual Widget* GetWidget() OVERRIDE { return widget_; }
+  virtual const Widget* GetWidget() const OVERRIDE { return widget_; }
+  virtual NonClientFrameView* CreateNonClientFrameView() OVERRIDE {
+    return bubble_->CreateNonClientFrameView();
+  }
+
+  // Widget::Observer overrides:
+  virtual void OnWidgetClosing(Widget* widget) OVERRIDE {
+    bubble_ = NULL;
+    widget_->Close();
+  }
 
  private:
   BubbleDelegateView* bubble_;
+  Widget* widget_;
 
-  DISALLOW_COPY_AND_ASSIGN(BubbleBorderDelegateView);
+  DISALLOW_COPY_AND_ASSIGN(BubbleBorderDelegate);
 };
-
-bool BubbleBorderDelegateView::CanActivate() const { return false; }
-
-NonClientFrameView* BubbleBorderDelegateView::CreateNonClientFrameView() {
-  return bubble_->CreateNonClientFrameView();
-}
 
 // Create a widget to host the bubble's border.
 Widget* CreateBorderWidget(BubbleDelegateView* bubble, Widget* parent) {
   Widget* border_widget = new Widget();
   Widget::InitParams border_params(Widget::InitParams::TYPE_BUBBLE);
-  border_params.delegate = new BubbleBorderDelegateView(bubble);
+  border_params.delegate = new BubbleBorderDelegate(bubble, border_widget);
   border_params.transparent = true;
   border_params.parent_widget = parent;
   border_widget->Init(border_params);
@@ -132,7 +146,6 @@ Widget* BubbleDelegateView::CreateBubble(BubbleDelegateView* bubble_delegate) {
   // First set the contents view to initialize view bounds for widget sizing.
   bubble_widget->SetContentsView(bubble_delegate->GetContentsView());
   bubble_delegate->border_widget_ = CreateBorderWidget(bubble_delegate, parent);
-  bubble_delegate->border_widget_->AddObserver(bubble_delegate);
 #endif
 
   bubble_delegate->SizeToContents();
@@ -154,21 +167,6 @@ View* BubbleDelegateView::GetContentsView() {
 
 NonClientFrameView* BubbleDelegateView::CreateNonClientFrameView() {
   return new BubbleFrameView(arrow_location(), color(), margin());
-}
-
-void BubbleDelegateView::OnWidgetClosing(Widget* widget) {
-  // The border widget should not close before the bubble widget closes.
-  // TODO(msw): Remove this debugging code for http://crbug.com/109171.
-  CHECK_NE(widget, border_widget_);
-
-  if (widget == GetWidget()) {
-    widget->RemoveObserver(this);
-    if (border_widget_) {
-      border_widget_->RemoveObserver(this);
-      border_widget_->Close();
-      border_widget_ = NULL;
-    }
-  }
 }
 
 void BubbleDelegateView::OnWidgetVisibilityChanged(Widget* widget,
