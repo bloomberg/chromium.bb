@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,10 +17,7 @@ class DictionaryValue;
 class SyncSetupFlowHandler {
  public:
   // These functions control which part of the HTML is visible.
-  virtual void ShowOAuthLogin() = 0;
-  virtual void ShowGaiaLogin(const base::DictionaryValue& args) = 0;
-  virtual void ShowGaiaSuccessAndClose() = 0;
-  virtual void ShowGaiaSuccessAndSettingUp() = 0;
+  virtual void ShowFatalError() = 0;
   virtual void ShowConfigure(const base::DictionaryValue& args) = 0;
   virtual void ShowPassphraseEntry(const base::DictionaryValue& args) = 0;
   virtual void ShowSettingUp() = 0;

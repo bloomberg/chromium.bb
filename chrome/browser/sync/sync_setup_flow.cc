@@ -12,7 +12,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager.h"
@@ -37,37 +36,6 @@ void DisablePasswordSync(ProfileSyncService* service) {
   syncable::ModelTypeSet types = service->GetPreferredDataTypes();
   types.Remove(syncable::PASSWORDS);
   service->OnUserChoseDatatypes(false, types);
-}
-
-// Returns the next step for the non-fatal error case.
-SyncSetupWizard::State GetStepForNonFatalError(ProfileSyncService* service) {
-  // TODO(sync): Update this error handling to allow different platforms to
-  // display the error appropriately (http://crbug.com/92722) instead of
-  // navigating to a LOGIN state that is not supported on every platform.
-  if (service->IsPassphraseRequired()) {
-#if defined(OS_CHROMEOS)
-    // On ChromeOS, we never want to request login information; this state
-    // always represents an invalid secondary passphrase.
-    // TODO(sync): correctly handle auth errors on ChromeOS: crosbug.com/24647.
-    return SyncSetupWizard::ENTER_PASSPHRASE;
-#else
-    if (service->IsUsingSecondaryPassphrase())
-      return SyncSetupWizard::ENTER_PASSPHRASE;
-    return SyncSetupWizard::GetLoginState();
-#endif
-  }
-
-  const GoogleServiceAuthError& error = service->GetAuthError();
-  if (error.state() == GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS ||
-      error.state() == GoogleServiceAuthError::CAPTCHA_REQUIRED ||
-      error.state() == GoogleServiceAuthError::ACCOUNT_DELETED ||
-      error.state() == GoogleServiceAuthError::ACCOUNT_DISABLED ||
-      error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE) {
-    return SyncSetupWizard::GetLoginState();
-  }
-
-  NOTREACHED();
-  return SyncSetupWizard::FATAL_ERROR;
 }
 
 bool HasConfigurationChanged(const SyncConfiguration& configuration,
@@ -226,8 +194,6 @@ SyncSetupFlow* SyncSetupFlow::Run(ProfileSyncService* service,
                                   SyncSetupFlowContainer* container,
                                   SyncSetupWizard::State start,
                                   SyncSetupWizard::State end) {
-  if (start == SyncSetupWizard::NONFATAL_ERROR)
-    start = GetStepForNonFatalError(service);
   if ((start == SyncSetupWizard::CONFIGURE ||
        start == SyncSetupWizard::SYNC_EVERYTHING ||
        start == SyncSetupWizard::ENTER_PASSPHRASE) &&
@@ -239,24 +205,6 @@ SyncSetupFlow* SyncSetupFlow::Run(ProfileSyncService* service,
     return NULL;
   }
   return new SyncSetupFlow(start, end, container, service);
-}
-
-void SyncSetupFlow::GetArgsForGaiaLogin(DictionaryValue* args) {
-  const GoogleServiceAuthError& error = service_->GetAuthError();
-  if (!last_attempted_user_email_.empty()) {
-    args->SetString("user", last_attempted_user_email_);
-    args->SetInteger("error", error.state());
-    args->SetBoolean("editable_user", true);
-  } else {
-    string16 user;
-    user = UTF8ToUTF16(service_->profile()->GetPrefs()->GetString(
-        prefs::kGoogleServicesUsername));
-    args->SetString("user", user);
-    args->SetInteger("error", 0);
-    args->SetBoolean("editable_user", user.empty());
-  }
-
-  args->SetString("captchaUrl", error.captcha().image_url.spec());
 }
 
 void SyncSetupFlow::GetArgsForConfigure(DictionaryValue* args) {
@@ -364,7 +312,6 @@ void SyncSetupFlow::Focus() {
 }
 
 // A callback to notify the delegate that the dialog closed.
-// TODO(rickcam): Bug 90713: Handle OAUTH_LOGIN case here
 void SyncSetupFlow::OnDialogClosed(const std::string& json_retval) {
   DCHECK(json_retval.empty());
   container_->set_flow(NULL);  // Sever ties from the wizard.
@@ -375,14 +322,6 @@ void SyncSetupFlow::OnDialogClosed(const std::string& json_retval) {
 
   // Record the state at which the user cancelled the signon dialog.
   switch (current_state_) {
-    case SyncSetupWizard::GAIA_LOGIN:
-      ProfileSyncService::SyncEvent(
-          ProfileSyncService::CANCEL_FROM_SIGNON_WITHOUT_AUTH);
-      break;
-    case SyncSetupWizard::GAIA_SUCCESS:
-      ProfileSyncService::SyncEvent(
-          ProfileSyncService::CANCEL_DURING_SIGNON);
-      break;
     case SyncSetupWizard::CONFIGURE:
     case SyncSetupWizard::ENTER_PASSPHRASE:
     case SyncSetupWizard::SETTING_UP:
@@ -391,51 +330,12 @@ void SyncSetupFlow::OnDialogClosed(const std::string& json_retval) {
       ProfileSyncService::SyncEvent(
           ProfileSyncService::CANCEL_DURING_CONFIGURE);
       break;
-    case SyncSetupWizard::DONE:
-      // TODO(sync): rename this histogram; it's tracking authorization AND
-      // initial sync download time.
-      UMA_HISTOGRAM_MEDIUM_TIMES("Sync.UserPerceivedAuthorizationTime",
-                                 base::TimeTicks::Now() - login_start_time_);
-      break;
     default:
       break;
   }
 
-  service_->SetUIShouldDepictAuthInProgress(false);
   service_->OnUserCancelledDialog();
   delete this;
-}
-
-void SyncSetupFlow::OnUserSubmittedAuth(const std::string& username,
-                                        const std::string& password,
-                                        const std::string& captcha,
-                                        const std::string& access_code) {
-  last_attempted_user_email_ = username;
-  service_->SetUIShouldDepictAuthInProgress(true);
-
-  // If we're just being called to provide an ASP, then pass it to the
-  // SigninManager and wait for the next step.
-  if (!access_code.empty()) {
-    service_->signin()->ProvideSecondFactorAccessCode(access_code);
-    return;
-  }
-
-  // Kick off a sign-in through the signin manager.
-  SigninManager* signin = service_->signin();
-  signin->StartSignIn(username,
-                      password,
-                      signin->GetLoginAuthError().captcha().token,
-                      captcha);
-}
-
-void SyncSetupFlow::OnUserSubmittedOAuth(
-    const std::string& oauth1_request_token) {
-  GaiaOAuthFetcher* fetcher = new GaiaOAuthFetcher(
-      service_->signin(),
-      service_->profile()->GetRequestContext(),
-      service_->profile(),
-      GaiaConstants::kSyncServiceOAuth);
-  service_->signin()->StartOAuthSignIn(oauth1_request_token, fetcher);
 }
 
 void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
@@ -523,7 +423,6 @@ SyncSetupFlow::SyncSetupFlow(SyncSetupWizard::State start_state,
     : container_(container),
       current_state_(start_state),
       end_state_(end_state),
-      login_start_time_(base::TimeTicks::Now()),
       flow_handler_(NULL),
       service_(service),
       user_tried_creating_explicit_passphrase_(false),
@@ -533,33 +432,17 @@ SyncSetupFlow::SyncSetupFlow(SyncSetupWizard::State start_state,
 // Returns true if the flow should advance to |state| based on |current_state_|.
 bool SyncSetupFlow::ShouldAdvance(SyncSetupWizard::State state) {
   switch (state) {
-    case SyncSetupWizard::OAUTH_LOGIN:
-      return current_state_ == SyncSetupWizard::FATAL_ERROR ||
-             current_state_ == SyncSetupWizard::OAUTH_LOGIN ||
-             current_state_ == SyncSetupWizard::SETTING_UP;
-    case SyncSetupWizard::GAIA_LOGIN:
-      return current_state_ == SyncSetupWizard::FATAL_ERROR ||
-             current_state_ == SyncSetupWizard::GAIA_LOGIN ||
-             current_state_ == SyncSetupWizard::SETTING_UP;
-    case SyncSetupWizard::GAIA_SUCCESS:
-      return current_state_ == SyncSetupWizard::GAIA_LOGIN ||
-             current_state_ == SyncSetupWizard::OAUTH_LOGIN;
     case SyncSetupWizard::SYNC_EVERYTHING:  // Intentionally fall through.
     case SyncSetupWizard::CONFIGURE:
-      return current_state_ == SyncSetupWizard::GAIA_SUCCESS;
+      return current_state_ != SyncSetupWizard::SETTING_UP;
     case SyncSetupWizard::ENTER_PASSPHRASE:
-      return (service_->auto_start_enabled() &&
-              current_state_ == SyncSetupWizard::GAIA_LOGIN) ||
-             current_state_ == SyncSetupWizard::SYNC_EVERYTHING ||
+      return current_state_ == SyncSetupWizard::SYNC_EVERYTHING ||
              current_state_ == SyncSetupWizard::CONFIGURE ||
              current_state_ == SyncSetupWizard::SETTING_UP;
-    case SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR:
-      return current_state_ != SyncSetupWizard::ABORT;
     case SyncSetupWizard::SETTING_UP:
       return current_state_ == SyncSetupWizard::SYNC_EVERYTHING ||
              current_state_ == SyncSetupWizard::CONFIGURE ||
              current_state_ == SyncSetupWizard::ENTER_PASSPHRASE;
-    case SyncSetupWizard::NONFATAL_ERROR:  // Intentionally fall through.
     case SyncSetupWizard::FATAL_ERROR:
       return current_state_ != SyncSetupWizard::ABORT;
     case SyncSetupWizard::ABORT:
@@ -576,31 +459,9 @@ bool SyncSetupFlow::ShouldAdvance(SyncSetupWizard::State state) {
 void SyncSetupFlow::ActivateState(SyncSetupWizard::State state) {
   DCHECK(flow_handler_);
 
-  if (state == SyncSetupWizard::NONFATAL_ERROR)
-    state = GetStepForNonFatalError(service_);
-
   current_state_ = state;
 
   switch (state) {
-    case SyncSetupWizard::OAUTH_LOGIN: {
-      flow_handler_->ShowOAuthLogin();
-      break;
-    }
-    case SyncSetupWizard::GAIA_LOGIN: {
-      DictionaryValue args;
-      GetArgsForGaiaLogin(&args);
-      flow_handler_->ShowGaiaLogin(args);
-      break;
-    }
-    case SyncSetupWizard::GAIA_SUCCESS:
-      // Authentication is complete now.
-      service_->SetUIShouldDepictAuthInProgress(false);
-      if (end_state_ == SyncSetupWizard::GAIA_SUCCESS) {
-        flow_handler_->ShowGaiaSuccessAndClose();
-        break;
-      }
-      flow_handler_->ShowGaiaSuccessAndSettingUp();
-      break;
     case SyncSetupWizard::SYNC_EVERYTHING: {
       DictionaryValue args;
       GetArgsForConfigure(&args);
@@ -622,17 +483,6 @@ void SyncSetupFlow::ActivateState(SyncSetupWizard::State state) {
       flow_handler_->ShowPassphraseEntry(args);
       break;
     }
-    case SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR: {
-      // TODO(sync): We should expose a real "display an error" API on
-      // SyncSetupFlowHandler (crbug.com/92722) but for now just transition
-      // to the login state with a special error code.
-      DictionaryValue args;
-      GetArgsForGaiaLogin(&args);
-      args.SetInteger("error", GoogleServiceAuthError::SERVICE_UNAVAILABLE);
-      current_state_ = SyncSetupWizard::GAIA_LOGIN;
-      flow_handler_->ShowGaiaLogin(args);
-      break;
-    }
     case SyncSetupWizard::SETTING_UP: {
       flow_handler_->ShowSettingUp();
       break;
@@ -641,11 +491,7 @@ void SyncSetupFlow::ActivateState(SyncSetupWizard::State state) {
       // This shows the user the "Could not connect to server" error.
       // TODO(sync): Update this error handling to allow different platforms to
       // display the error appropriately (http://crbug.com/92722).
-      DictionaryValue args;
-      GetArgsForGaiaLogin(&args);
-      args.SetBoolean("fatalError", true);
-      current_state_ = SyncSetupWizard::GAIA_LOGIN;
-      flow_handler_->ShowGaiaLogin(args);
+      flow_handler_->ShowFatalError();
       break;
     }
     case SyncSetupWizard::DONE:

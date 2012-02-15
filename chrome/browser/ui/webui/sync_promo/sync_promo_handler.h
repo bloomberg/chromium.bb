@@ -25,8 +25,6 @@ class SyncPromoHandler : public SyncSetupHandler {
   virtual void RegisterMessages() OVERRIDE;
 
   // SyncSetupFlowHandler implementation.
-  virtual void ShowGaiaSuccessAndClose() OVERRIDE;
-  virtual void ShowGaiaSuccessAndSettingUp() OVERRIDE;
   virtual void ShowConfigure(const base::DictionaryValue& args) OVERRIDE;
 
   // content::NotificationObserver implementation.
@@ -35,9 +33,9 @@ class SyncPromoHandler : public SyncSetupHandler {
                        const content::NotificationDetails& details) OVERRIDE;
 
  protected:
-  virtual void StepWizardForShowSetupUI() OVERRIDE;
-
   virtual void ShowSetupUI() OVERRIDE;
+
+  virtual void RecordSignin() OVERRIDE;
 
  private:
   // JavaScript callback handler to close the sync promo.

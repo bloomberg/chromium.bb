@@ -68,8 +68,12 @@ const std::string& SigninManager::GetAuthenticatedUsername() {
 }
 
 void SigninManager::SetAuthenticatedUsername(const std::string& username) {
-  DCHECK(authenticated_username_.empty() ||
-         username == authenticated_username_);
+  if (!authenticated_username_.empty()) {
+    DLOG_IF(ERROR, username != authenticated_username_) <<
+        "Tried to change the authenticated username to something different: " <<
+        "Current: " << authenticated_username_ << ", New: " << username;
+    return;
+  }
   authenticated_username_ = username;
   // TODO(tim): We could go further in ensuring kGoogleServicesUsername and
   // authenticated_username_ are consistent once established (e.g. remove
@@ -192,6 +196,10 @@ const GoogleServiceAuthError& SigninManager::GetLoginAuthError() const {
   return last_login_auth_error_;
 }
 
+bool SigninManager::AuthInProgress() const {
+  return !possibly_invalid_username_.empty();
+}
+
 void SigninManager::OnClientLoginSuccess(const ClientLoginResult& result) {
   DCHECK(!browser_sync::IsUsingOAuth());
   last_result_ = result;
@@ -204,10 +212,8 @@ void SigninManager::OnGetUserInfoSuccess(const std::string& key,
                                          const std::string& value) {
   DCHECK(!browser_sync::IsUsingOAuth());
   DCHECK(key == kGetInfoEmailKey);
-  DCHECK(authenticated_username_.empty() || authenticated_username_ == value);
-
   last_login_auth_error_ = GoogleServiceAuthError::None();
-  authenticated_username_ = value;
+  SetAuthenticatedUsername(value);
   possibly_invalid_username_.clear();
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                   authenticated_username_);

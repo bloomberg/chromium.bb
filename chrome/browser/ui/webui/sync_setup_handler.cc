@@ -16,12 +16,15 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/browser/sync/util/oauth.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/url_constants.h"
@@ -182,9 +185,12 @@ SyncSetupHandler::SyncSetupHandler(ProfileManager* profile_manager)
 }
 
 SyncSetupHandler::~SyncSetupHandler() {
+  // Just exit if running unit tests (no actual WebUI is attached).
+  if (!web_ui())
+    return;
+
   // This case is hit when the user performs a back navigation.
-  if (flow_)
-    flow_->OnDialogClosed("");
+  CloseSyncSetup();
 }
 
 void SyncSetupHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
@@ -349,16 +355,41 @@ void SyncSetupHandler::GetStaticLocalizedValues(
   RegisterTitle(localized_strings, "syncSetupOverlay", IDS_SYNC_SETUP_TITLE);
 }
 
-void SyncSetupHandler::Initialize() {
+void SyncSetupHandler::StartConfigureSync() {
+  DCHECK(!flow_);
+  // We only get here if we're signed in, so no longer need our SigninTracker.
+  signin_tracker_.reset();
+  ProfileSyncService* service = GetSyncService();
+  service->get_wizard().Step(
+      service->HasSyncSetupCompleted() ?
+      SyncSetupWizard::CONFIGURE : SyncSetupWizard::SYNC_EVERYTHING);
+
+  // Attach this as the sync setup handler.
+  if (!service->get_wizard().AttachSyncSetupHandler(this)) {
+    LOG(ERROR) << "SyncSetupHandler attach failed!";
+    CloseOverlay();
+  }
+}
+
+bool SyncSetupHandler::IsActiveLogin() const {
+  LoginUIService* service = GetLoginUIService();
+  return service->current_login_ui() == web_ui();
 }
 
 void SyncSetupHandler::OnGetOAuthTokenSuccess(const std::string& oauth_token) {
-  flow_->OnUserSubmittedOAuth(oauth_token);
+  Profile* profile = Profile::FromWebUI(web_ui());
+  SigninManager* signin = GetSignin();
+  GaiaOAuthFetcher* fetcher = new GaiaOAuthFetcher(
+      signin,
+      profile->GetRequestContext(),
+      profile,
+      GaiaConstants::kSyncServiceOAuth);
+  signin->StartOAuthSignIn(oauth_token, fetcher);
 }
 
 void SyncSetupHandler::OnGetOAuthTokenFailure(
     const GoogleServiceAuthError& error) {
-  CloseSyncSetup();
+  CloseOverlay();
 }
 
 void SyncSetupHandler::RegisterMessages() {
@@ -388,35 +419,78 @@ void SyncSetupHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-// Ideal(?) solution here would be to mimic the ClientLogin overlay.  Since
-// this UI must render an external URL, that overlay cannot be used directly.
-// The current implementation is functional, but fails asthetically.
-// TODO(rickcam): Bug 90711: Update UI for OAuth sign-in flow
-void SyncSetupHandler::ShowOAuthLogin() {
-  DCHECK(browser_sync::IsUsingOAuth());
-
+SigninManager* SyncSetupHandler::GetSignin() const {
   Profile* profile = Profile::FromWebUI(web_ui());
-  oauth_login_.reset(new GaiaOAuthFetcher(this,
-                                          profile->GetRequestContext(),
-                                          profile,
-                                          GaiaConstants::kSyncServiceOAuth));
-  oauth_login_->SetAutoFetchLimit(GaiaOAuthFetcher::OAUTH1_REQUEST_TOKEN);
-  oauth_login_->StartGetOAuthToken();
+  return SigninManagerFactory::GetForProfile(profile);
 }
 
-void SyncSetupHandler::ShowGaiaLogin(const DictionaryValue& args) {
+void SyncSetupHandler::DisplayGaiaLogin(bool fatal_error) {
+  DisplayGaiaLoginWithErrorMessage(string16(), fatal_error);
+}
+
+void SyncSetupHandler::DisplayGaiaLoginWithErrorMessage(
+    const string16& error_message, bool fatal_error) {
   DCHECK(!browser_sync::IsUsingOAuth());
+  // If we're exiting from sync config (due to some kind of error), notify
+  // SyncSetupFlow.
+  if (flow_) {
+    flow_->OnDialogClosed(std::string());
+    flow_ = NULL;
+  }
+
+  // Setup args for the GAIA login screen:
+  // error_message: custom error message to display
+  // error: GoogleServiceAuthError from previous login attempt (0 if none)
+  // user: The email the user most recently entered.
+  // editable_user: Whether the username field should be editable.
+  SigninManager* signin = GetSignin();
+  std::string user;
+  int error;
+  bool editable_user;
+  if (!last_attempted_user_email_.empty()) {
+    // This is a repeat of a login attempt.
+    user = last_attempted_user_email_;
+    error = signin->GetLoginAuthError().state();
+    editable_user = true;
+  } else {
+    // Fresh login attempt - lock in the authenticated username if there is
+    // one (don't let the user change it).
+    user = signin->GetAuthenticatedUsername();
+    error = 0;
+    editable_user = user.empty();
+  }
+  DictionaryValue args;
+  args.SetString("user", user);
+  args.SetInteger("error", error);
+  args.SetBoolean("editable_user", editable_user);
+  if (!error_message.empty())
+    args.SetString("error_message", error_message);
+  if (fatal_error)
+    args.SetBoolean("fatalError", true);
   StringValue page("login");
   web_ui()->CallJavascriptFunction(
       "SyncSetupOverlay.showSyncSetupPage", page, args);
 }
 
-void SyncSetupHandler::ShowGaiaSuccessAndClose() {
+void SyncSetupHandler::RecordSignin() {
+  // By default, do nothing - subclasses can override.
+}
+
+void SyncSetupHandler::DisplayGaiaSuccessAndClose() {
+  // TODO(atwilson): Can we remove this now that we've changed the signin flow?
+  RecordSignin();
   web_ui()->CallJavascriptFunction("SyncSetupOverlay.showSuccessAndClose");
 }
 
-void SyncSetupHandler::ShowGaiaSuccessAndSettingUp() {
+void SyncSetupHandler::DisplayGaiaSuccessAndSettingUp() {
+  RecordSignin();
   web_ui()->CallJavascriptFunction("SyncSetupOverlay.showSuccessAndSettingUp");
+}
+
+void SyncSetupHandler::ShowFatalError() {
+  // For now, just send the user back to the login page. Ultimately we may want
+  // to give different feedback (especially for chromeos).
+  DisplayGaiaLogin(true);
 }
 
 void SyncSetupHandler::ShowConfigure(const DictionaryValue& args) {
@@ -447,9 +521,7 @@ void SyncSetupHandler::ShowSetupDone(const string16& user) {
   SyncPromoUI::SetUserSkippedSyncPromo(Profile::FromWebUI(web_ui()));
 
   Profile* profile = Profile::FromWebUI(web_ui());
-  ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-          profile);
+  ProfileSyncService* service = GetSyncService();
   if (!service->HasSyncSetupCompleted()) {
     FilePath profile_file_path = profile->GetPath();
     ProfileMetrics::LogProfileSyncSignIn(profile_file_path);
@@ -488,12 +560,58 @@ void SyncSetupHandler::HandleSubmitAuth(const ListValue* args) {
 
   string16 error_message;
   if (!IsLoginAuthDataValid(username, &error_message)) {
-    ShowLoginErrorMessage(error_message);
+    DisplayGaiaLoginWithErrorMessage(error_message, false);
     return;
   }
 
-  if (flow_)
-    flow_->OnUserSubmittedAuth(username, password, captcha, access_code);
+  TryLogin(username, password, captcha, access_code);
+}
+
+void SyncSetupHandler::TryLogin(const std::string& username,
+                                const std::string& password,
+                                const std::string& captcha,
+                                const std::string& access_code) {
+  DCHECK(IsActiveLogin());
+  // Make sure we are listening for signin traffic.
+  if (!signin_tracker_.get())
+    signin_tracker_.reset(new SigninTracker(Profile::FromWebUI(web_ui()),
+                                            this));
+
+  last_attempted_user_email_ = username;
+  // If we're just being called to provide an ASP, then pass it to the
+  // SigninManager and wait for the next step.
+  SigninManager* signin = GetSignin();
+  if (!access_code.empty()) {
+    signin->ProvideSecondFactorAccessCode(access_code);
+    return;
+  }
+
+  // Kick off a sign-in through the signin manager.
+  signin->StartSignIn(username,
+                      password,
+                      signin->GetLoginAuthError().captcha().token,
+                      captcha);
+}
+
+void SyncSetupHandler::GaiaCredentialsValid() {
+  DCHECK(IsActiveLogin());
+  // Gaia credentials are valid - update the UI.
+  DisplayGaiaSuccessAndSettingUp();
+}
+
+void SyncSetupHandler::SigninFailed() {
+  // Got a failed signin - this is either just a typical auth error, or a
+  // sync error (treat sync errors as "fatal errors" - i.e. non-auth errors).
+  DisplayGaiaLogin(GetSyncService()->unrecoverable_error_detected());
+}
+
+ProfileSyncService* SyncSetupHandler::GetSyncService() const {
+  return ProfileSyncServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
+}
+
+void SyncSetupHandler::SigninSuccess() {
+  DCHECK(GetSyncService()->sync_initialized());
+  StartConfigureSync();
 }
 
 void SyncSetupHandler::HandleConfigure(const ListValue* args) {
@@ -563,9 +681,7 @@ void SyncSetupHandler::HandleAttachHandler(const ListValue* args) {
 void SyncSetupHandler::HandleShowErrorUI(const ListValue* args) {
   DCHECK(!flow_);
 
-  Profile* profile = Profile::FromWebUI(web_ui());
-  ProfileSyncService* service = ProfileSyncServiceFactory::GetInstance()->
-      GetForProfile(profile);
+  ProfileSyncService* service = GetSyncService();
   DCHECK(service);
 
   service->ShowErrorUI();
@@ -573,52 +689,56 @@ void SyncSetupHandler::HandleShowErrorUI(const ListValue* args) {
 
 void SyncSetupHandler::HandleShowSetupUI(const ListValue* args) {
   DCHECK(!flow_);
-  if (FocusExistingWizard()) {
-    CloseOverlay();
-    return;
-  }
-
-  StepWizardForShowSetupUI();
-  ShowSetupUI();
+  OpenSyncSetup();
 }
 
 void SyncSetupHandler::CloseSyncSetup() {
+  // TODO(atwilson): Move UMA tracking of signin events out of sync module.
+  if (IsActiveLogin()) {
+    if (signin_tracker_.get()) {
+      ProfileSyncService::SyncEvent(
+          ProfileSyncService::CANCEL_DURING_SIGNON);
+    } else if (!flow_) {
+      ProfileSyncService::SyncEvent(
+          ProfileSyncService::CANCEL_FROM_SIGNON_WITHOUT_AUTH);
+    }
+  }
+
   if (flow_) {
     flow_->OnDialogClosed(std::string());
     flow_ = NULL;
   }
+  signin_tracker_.reset();
+  GetLoginUIService()->LoginUIClosed(web_ui());
 }
 
 void SyncSetupHandler::OpenSyncSetup() {
-  DCHECK(!flow_);
-
-  Profile* profile = Profile::FromWebUI(web_ui());
-  ProfileSyncService* service = ProfileSyncServiceFactory::GetInstance()->
-      GetForProfile(profile);
+  ProfileSyncService* service = GetSyncService();
   if (!service) {
     // If there's no sync service, the user tried to manually invoke a syncSetup
     // URL, but sync features are disabled.  We need to close the overlay for
     // this (rare) case.
+    DLOG(WARNING) << "Closing sync UI because sync is disabled";
     CloseOverlay();
     return;
   }
 
-  // If the wizard is already visible, it must be attached to another flow
-  // handler.
-  if (FocusExistingWizard()) {
-    CloseOverlay();
+  // If the wizard is already visible, just focus that one.
+  if (FocusExistingWizardIfPresent()) {
+    if (!IsActiveLogin())
+        CloseOverlay();
     return;
   }
 
-  // The wizard must be stepped before attaching. Allow subclasses to step the
-  // wizard to appropriate state.
-  StepWizardForShowSetupUI();
+  GetLoginUIService()->SetLoginUI(web_ui());
 
-  // Attach this as the sync setup handler, before calling ShowSetupUI().
-  if (!service->get_wizard().AttachSyncSetupHandler(this)) {
-    LOG(ERROR) << "SyncSetupHandler attach failed!";
-    CloseOverlay();
-    return;
+  if (!SigninTracker::AreServicesSignedIn(Profile::FromWebUI(web_ui()))) {
+    // User is not logged in - need to display login UI.
+    DisplayGaiaLogin(false);
+  } else {
+    // User is already logged in. They must have brought up the config wizard
+    // via the "Advanced..." button or the wrench menu.
+    StartConfigureSync();
   }
 
   ShowSetupUI();
@@ -626,22 +746,20 @@ void SyncSetupHandler::OpenSyncSetup() {
 
 // Private member functions.
 
-bool SyncSetupHandler::FocusExistingWizard() {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  ProfileSyncService* service = ProfileSyncServiceFactory::GetInstance()->
-      GetForProfile(profile);
-  if (!service)
+bool SyncSetupHandler::FocusExistingWizardIfPresent() {
+  LoginUIService* service = GetLoginUIService();
+  if (!service->current_login_ui())
     return false;
+  service->FocusLoginUI();
+  return true;
+}
 
-  // If the wizard is already visible, focus it.
-  if (service->get_wizard().IsVisible()) {
-    service->get_wizard().Focus();
-    return true;
-  }
-  return false;
+LoginUIService* SyncSetupHandler::GetLoginUIService() const {
+  return LoginUIServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
 }
 
 void SyncSetupHandler::CloseOverlay() {
+  CloseSyncSetup();
   web_ui()->CallJavascriptFunction("OptionsPage.closeOverlay");
 }
 
@@ -670,12 +788,4 @@ bool SyncSetupHandler::IsLoginAuthDataValid(const std::string& username,
   }
 
   return true;
-}
-
-void SyncSetupHandler::ShowLoginErrorMessage(const string16& error_message) {
-  DCHECK(flow_);
-  DictionaryValue args;
-  flow_->GetArgsForGaiaLogin(&args);
-  args.SetString("error_message", error_message);
-  ShowGaiaLogin(args);
 }

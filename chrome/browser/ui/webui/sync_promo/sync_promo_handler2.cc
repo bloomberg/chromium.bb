@@ -181,13 +181,6 @@ void SyncPromoHandler2::Observe(int type,
   }
 }
 
-void SyncPromoHandler2::StepWizardForShowSetupUI() {
-  ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-          Profile::FromWebUI(web_ui_));
-  service->get_wizard().Step(SyncSetupWizard::GetLoginState());
-}
-
 void SyncPromoHandler2::ShowSetupUI() {
   // We don't need to do anything here; The UI for the sync promo is already
   // displayed.
