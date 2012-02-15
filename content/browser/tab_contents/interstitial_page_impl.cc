@@ -273,7 +273,8 @@ void InterstitialPageImpl::Hide() {
   // (Note that in unit-tests the RVH may not have a view).
   if (render_view_host_->view() && render_view_host_->view()->HasFocus() &&
       tab_->GetRenderViewHost()->view()) {
-    tab_->GetRenderViewHost()->view()->Focus();
+    RenderWidgetHostViewBase::FromRWHV(
+        tab_->GetRenderViewHost()->view())->Focus();
   }
 
   render_view_host_->Shutdown();
@@ -594,7 +595,7 @@ void InterstitialPageImpl::SetSize(const gfx::Size& size) {
 
 void InterstitialPageImpl::Focus() {
   // Focus the native window.
-  render_view_host_->view()->Focus();
+  RenderWidgetHostViewBase::FromRWHV(render_view_host_->view())->Focus();
 }
 
 void InterstitialPageImpl::FocusThroughTabTraversal(bool reverse) {

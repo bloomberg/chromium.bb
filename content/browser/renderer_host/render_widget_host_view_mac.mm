@@ -220,7 +220,7 @@ RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
 }
 
 // static
-void RenderWidgetHostView::GetDefaultScreenInfo(
+void RenderWidgetHostViewBase::GetDefaultScreenInfo(
     WebKit::WebScreenInfo* results) {
   *results = WebKit::WebScreenInfoFactory::screenInfo(NULL);
 }
@@ -255,12 +255,6 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
 void RenderWidgetHostViewMac::SetDelegate(
     NSObject<RenderWidgetHostViewMacDelegate>* delegate) {
   [cocoa_view_ setRWHVDelegate:delegate];
-}
-
-namespace render_widget_host_view_mac {
-RenderWidgetHostView *CreateRenderWidgetHostView(RenderWidgetHost *widget) {
-    return new RenderWidgetHostViewMac(widget);
-}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -497,7 +491,7 @@ void RenderWidgetHostViewMac::UpdateCursorIfNecessary() {
   // a page? TODO(avi): decide
 
   // Don't update the cursor if a context menu is being shown.
-  if (showing_context_menu())
+  if (IsShowingContextMenu())
     return;
 
   // Can we synchronize to the event stream? Switch to -[NSWindow
@@ -695,7 +689,7 @@ void RenderWidgetHostViewMac::SelectionChanged(const string16& text,
 }
 
 void RenderWidgetHostViewMac::SetShowingContextMenu(bool showing) {
-  RenderWidgetHostView::SetShowingContextMenu(showing);
+  RenderWidgetHostViewBase::SetShowingContextMenu(showing);
 
   // If the menu was closed, restore the cursor to the saved version initially,
   // as the renderer will not re-send it if there was no change.
@@ -1120,7 +1114,7 @@ void RenderWidgetHostViewMac::WindowFrameChanged() {
 }
 
 void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
-  RenderWidgetHostView::SetBackground(background);
+  RenderWidgetHostViewBase::SetBackground(background);
   if (render_widget_host_)
     render_widget_host_->Send(new ViewMsg_SetBackground(
         render_widget_host_->routing_id(), background));

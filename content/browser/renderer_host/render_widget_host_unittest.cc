@@ -447,11 +447,11 @@ TEST_F(RenderWidgetHostTest, Background) {
 
   // Set the background and make sure we get back a copy.
   view->SetBackground(background);
-  EXPECT_EQ(4, view->background().width());
-  EXPECT_EQ(4, view->background().height());
-  EXPECT_EQ(background.getSize(), view->background().getSize());
+  EXPECT_EQ(4, view->GetBackground().width());
+  EXPECT_EQ(4, view->GetBackground().height());
+  EXPECT_EQ(background.getSize(), view->GetBackground().getSize());
   EXPECT_TRUE(0 == memcmp(background.getPixels(),
-                          view->background().getPixels(),
+                          view->GetBackground().getPixels(),
                           background.getSize()));
 
 #if defined(OS_WIN)

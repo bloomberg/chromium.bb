@@ -15,7 +15,13 @@
 #include "content/browser/renderer_host/gtk_window_utils.h"
 #endif
 
-RenderWidgetHostView::RenderWidgetHostView()
+RenderWidgetHostView::RenderWidgetHostView() {
+}
+
+RenderWidgetHostView::~RenderWidgetHostView() {
+}
+
+RenderWidgetHostViewBase::RenderWidgetHostViewBase()
     : popup_type_(WebKit::WebPopupTypeNone),
       mouse_locked_(false),
       showing_context_menu_(false),
@@ -23,34 +29,54 @@ RenderWidgetHostView::RenderWidgetHostView()
       selection_range_(ui::Range::InvalidRange()) {
 }
 
-RenderWidgetHostView::~RenderWidgetHostView() {
+RenderWidgetHostViewBase::~RenderWidgetHostViewBase() {
   DCHECK(!mouse_locked_);
 }
 
-void RenderWidgetHostView::SetBackground(const SkBitmap& background) {
+// static
+RenderWidgetHostViewBase* RenderWidgetHostViewBase::FromRWHV(
+    RenderWidgetHostView* rwhv) {
+  return static_cast<RenderWidgetHostViewBase*>(rwhv);
+}
+
+// static
+RenderWidgetHostViewBase* RenderWidgetHostViewBase::CreateViewForWidget(
+    RenderWidgetHost* widget) {
+  return FromRWHV(RenderWidgetHostView::CreateViewForWidget(widget));
+}
+
+void RenderWidgetHostViewBase::SetBackground(const SkBitmap& background) {
   background_ = background;
 }
 
+const SkBitmap& RenderWidgetHostViewBase::GetBackground() {
+  return background_;
+}
+
 BrowserAccessibilityManager*
-    RenderWidgetHostView::GetBrowserAccessibilityManager() const {
+    RenderWidgetHostViewBase::GetBrowserAccessibilityManager() const {
   return browser_accessibility_manager_.get();
 }
 
-void RenderWidgetHostView::SetBrowserAccessibilityManager(
+void RenderWidgetHostViewBase::SetBrowserAccessibilityManager(
     BrowserAccessibilityManager* manager) {
   browser_accessibility_manager_.reset(manager);
 }
 
-void RenderWidgetHostView::SelectionChanged(const string16& text,
-                                            size_t offset,
-                                            const ui::Range& range) {
+void RenderWidgetHostViewBase::SelectionChanged(const string16& text,
+                                                size_t offset,
+                                                const ui::Range& range) {
   selection_text_ = text;
   selection_text_offset_ = offset;
   selection_range_.set_start(range.start());
   selection_range_.set_end(range.end());
 }
 
-void RenderWidgetHostView::SetShowingContextMenu(bool showing) {
+bool RenderWidgetHostViewBase::IsShowingContextMenu() const {
+  return showing_context_menu_;
+}
+
+void RenderWidgetHostViewBase::SetShowingContextMenu(bool showing) {
   DCHECK_NE(showing_context_menu_, showing);
   showing_context_menu_ = showing;
 }
