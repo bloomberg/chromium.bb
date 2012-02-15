@@ -514,6 +514,14 @@ class GitWrapper(SCMWrapper):
           scm.GIT.IsGitSvn(cwd=self.checkout_path)):
         local_head = scm.GIT.GetGitSvnHeadRev(cwd=self.checkout_path)
         if not local_head or local_head < int(rev):
+          try:
+            logging.debug('Looking for git-svn configuration optimizations.')
+            if scm.GIT.Capture(['config', '--get', 'svn-remote.svn.fetch'],
+                             cwd=self.checkout_path):
+              scm.GIT.Capture(['fetch'], cwd=self.checkout_path)
+          except subprocess2.CalledProcessError:
+            logging.debug('git config --get svn-remote.svn.fetch failed, '
+                          'ignoring possible optimization.')
           if options.verbose:
             print('Running git svn fetch. This might take a while.\n')
           scm.GIT.Capture(['svn', 'fetch'], cwd=self.checkout_path)

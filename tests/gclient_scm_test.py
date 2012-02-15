@@ -1188,10 +1188,17 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
     gclient_scm.scm.GIT.GetSha1ForSvnRev(cwd=self.base_path, rev='1'
         ).AndReturn(self.fake_hash_1)
     gclient_scm.scm.GIT.GetSha1ForSvnRev(cwd=self.base_path, rev='3'
-        ).AndReturn(self.fake_hash_2)
+        ).MultipleTimes().AndReturn(self.fake_hash_2)
 
     # Ensure that we call git svn fetch if our LKGR is > the git-svn HEAD rev.
     self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'Capture', True)
+    gclient_scm.scm.GIT.Capture(['config', '--get', 'svn-remote.svn.fetch'],
+                                cwd=self.base_path).AndReturn('blah')
+    gclient_scm.scm.GIT.Capture(['fetch'], cwd=self.base_path)
+    gclient_scm.scm.GIT.Capture(['svn', 'fetch'], cwd=self.base_path)
+    error = subprocess2.CalledProcessError(1, 'cmd', '/cwd', 'stdout', 'stderr')
+    gclient_scm.scm.GIT.Capture(['config', '--get', 'svn-remote.svn.fetch'],
+                                cwd=self.base_path).AndRaise(error)
     gclient_scm.scm.GIT.Capture(['svn', 'fetch'], cwd=self.base_path)
 
     self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'IsGitSvn', True)
@@ -1211,15 +1218,20 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
 
     git_svn_scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                                     relpath=self.relpath)
-    # Without an existing checkout, this should fail. TODO(dbeam) Fix this.
+    # Without an existing checkout, this should fail.
+    # TODO(dbeam) Fix this. http://crbug.com/109184
     self.assertRaises(gclient_scm.gclient_utils.Error,
                       git_svn_scm.GetUsableRev, '1', options)
     # Given an SVN revision with a git-svn checkout, it should be translated to
     # a git sha1 and be usable.
     self.assertEquals(git_svn_scm.GetUsableRev('1', options),
                       self.fake_hash_1)
-    # Our fake HEAD rev is r2, so this should call git svn fetch to get more
-    # revs (pymox will complain if this doesn't happen).
+    # Our fake HEAD rev is r2, so this should call git fetch and git svn fetch
+    # to get more revs (pymox will complain if this doesn't happen). We mock an
+    # optimized checkout the first time, so this run should call git fetch.
+    self.assertEquals(git_svn_scm.GetUsableRev('3', options),
+                      self.fake_hash_2)
+    # The time we pretend we're not optimized, so no git fetch should fire.
     self.assertEquals(git_svn_scm.GetUsableRev('3', options),
                       self.fake_hash_2)
     # Given a git sha1 with a git-svn checkout, it should be used as is.
