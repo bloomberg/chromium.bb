@@ -211,7 +211,7 @@ void HistoryBackendTestDelegate::StartTopSitesMigration(int backend_id) {
 // http://crbug.com/114287
 #if defined(OS_WIN)
 #define MAYBE_Loaded DISABLED_Loaded
-#elif
+#else
 #define MAYBE_Loaded Loaded
 #endif // defined(OS_WIN)
 TEST_F(HistoryBackendTest, MAYBE_Loaded) {
