@@ -106,6 +106,9 @@ class RenderTextWin : public RenderText {
   SelectionModel FirstSelectionModelInsideRun(internal::TextRun* run);
   SelectionModel LastSelectionModelInsideRun(internal::TextRun* run);
 
+  // Cached HDC for performing Uniscribe API calls.
+  static HDC cached_hdc_;
+
   SCRIPT_CONTROL script_control_;
   SCRIPT_STATE script_state_;
 

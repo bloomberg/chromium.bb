@@ -11,7 +11,6 @@
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "ui/gfx/screen_compatible_dc_win.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/platform_font.h"
@@ -106,6 +105,9 @@ TextRun::~TextRun() {
 }
 
 }  // namespace internal
+
+// static
+HDC RenderTextWin::cached_hdc_ = NULL;
 
 RenderTextWin::RenderTextWin()
     : RenderText(),
@@ -586,7 +588,8 @@ void RenderTextWin::ItemizeLogicalText() {
 
 void RenderTextWin::LayoutVisualText() {
   HRESULT hr = E_FAIL;
-  ScopedTemporaryScreenCompatibleDC hdc;
+  if (!cached_hdc_)
+    cached_hdc_ = CreateCompatibleDC(NULL);
   std::vector<internal::TextRun*>::const_iterator run_iter;
   for (run_iter = runs_.begin(); run_iter < runs_.end(); ++run_iter) {
     internal::TextRun* run = *run_iter;
@@ -595,7 +598,7 @@ void RenderTextWin::LayoutVisualText() {
     bool tried_fallback = false;
 
     // Select the font desired for glyph generation.
-    SelectObject(hdc.get(), run->font.GetNativeFont());
+    SelectObject(cached_hdc_, run->font.GetNativeFont());
 
     run->logical_clusters.reset(new WORD[run_length]);
     run->glyph_count = 0;
@@ -604,7 +607,7 @@ void RenderTextWin::LayoutVisualText() {
     while (max_glyphs < kMaxGlyphs) {
       run->glyphs.reset(new WORD[max_glyphs]);
       run->visible_attributes.reset(new SCRIPT_VISATTR[max_glyphs]);
-      hr = ScriptShape(hdc.get(),
+      hr = ScriptShape(cached_hdc_,
                        &run->script_cache,
                        run_text,
                        run_length,
@@ -635,10 +638,10 @@ void RenderTextWin::LayoutVisualText() {
 
         // The run's font doesn't contain the required glyphs, use an alternate.
         // TODO(msw): support RenderText's font_list().
-        if (ChooseFallbackFont(hdc.get(), run->font, run_text, run_length,
+        if (ChooseFallbackFont(cached_hdc_, run->font, run_text, run_length,
                                &run->font)) {
           ScriptFreeCache(&run->script_cache);
-          SelectObject(hdc.get(), run->font.GetNativeFont());
+          SelectObject(cached_hdc_, run->font.GetNativeFont());
         }
 
         tried_fallback = true;
@@ -651,7 +654,7 @@ void RenderTextWin::LayoutVisualText() {
     if (run->glyph_count > 0) {
       run->advance_widths.reset(new int[run->glyph_count]);
       run->offsets.reset(new GOFFSET[run->glyph_count]);
-      hr = ScriptPlace(hdc.get(),
+      hr = ScriptPlace(cached_hdc_,
                        &run->script_cache,
                        run->glyphs.get(),
                        run->glyph_count,
