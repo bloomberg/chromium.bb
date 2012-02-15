@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,46 +86,48 @@ remoting.DebugLog.prototype.toggle = function() {
 
 /**
  * Update the statistics panel.
- * @param {Object.<string, number>} stats The connection statistics.
+ * @param {remoting.ClientSession.PerfStats} stats The connection statistics.
  */
 remoting.DebugLog.prototype.updateStatistics = function(stats) {
   var units = '';
-  var videoBandwidth = stats[remoting.ClientSession.STATS_KEY_VIDEO_BANDWIDTH];
-  if (videoBandwidth < 1024) {
-    units = 'Bps';
-  } else if (videoBandwidth < 1048576) {
-    units = 'KiBps';
-    videoBandwidth = videoBandwidth / 1024;
-  } else if (videoBandwidth < 1073741824) {
-    units = 'MiBps';
-    videoBandwidth = videoBandwidth / 1048576;
-  } else {
-    units = 'GiBps';
-    videoBandwidth = videoBandwidth / 1073741824;
+  var videoBandwidth = stats.videoBandwidth;
+  if (videoBandwidth != undefined) {
+    if (videoBandwidth < 1024) {
+      units = 'Bps';
+    } else if (videoBandwidth < 1048576) {
+      units = 'KiBps';
+      videoBandwidth = videoBandwidth / 1024;
+    } else if (videoBandwidth < 1073741824) {
+      units = 'MiBps';
+      videoBandwidth = videoBandwidth / 1048576;
+    } else {
+      units = 'GiBps';
+      videoBandwidth = videoBandwidth / 1073741824;
+    }
+  }
+
+  /**
+   * @param {number} value
+   * @param {string} units
+   * @returns {string} Formatted number.
+   */
+  function formatStatNumber(value, units) {
+    if (value != undefined) {
+      return value.toFixed(2) + ' ' + units;
+    } else {
+      return "n/a";
+    }
   }
 
   var statistics = document.getElementById('statistics');
-  this.statsElement.innerText =
-      'Bandwidth: ' + videoBandwidth.toFixed(2) + units +
-      ', Frame Rate: ' +
-          (stats[remoting.ClientSession.STATS_KEY_VIDEO_FRAME_RATE] ?
-           stats[remoting.ClientSession.STATS_KEY_VIDEO_FRAME_RATE].toFixed(2)
-              + ' fps' : 'n/a') +
-      ', Capture: ' +
-      stats[remoting.ClientSession.STATS_KEY_CAPTURE_LATENCY].toFixed(2) +
-      'ms' +
-      ', Encode: ' +
-      stats[remoting.ClientSession.STATS_KEY_ENCODE_LATENCY].toFixed(2) +
-      'ms' +
-      ', Decode: ' +
-      stats[remoting.ClientSession.STATS_KEY_DECODE_LATENCY].toFixed(2) +
-      'ms' +
-      ', Render: ' +
-      stats[remoting.ClientSession.STATS_KEY_RENDER_LATENCY].toFixed(2) +
-      'ms' +
-      ', Latency: ' +
-      stats[remoting.ClientSession.STATS_KEY_ROUNDTRIP_LATENCY].toFixed(2) +
-      'ms';
+  this.statsElement.innerText = (
+      'Bandwidth: ' + formatStatNumber(videoBandwidth, units) +
+      ', Frame Rate: ' + formatStatNumber(stats.videoFrameRate, 'fps') +
+      ', Capture: ' + formatStatNumber(stats.captureLatency, 'ms') +
+      ', Encode: ' + formatStatNumber(stats.encodeLatency, 'ms') +
+      ', Decode: ' + formatStatNumber(stats.decodeLatency, 'ms') +
+      ', Render: ' + formatStatNumber(stats.renderLatency, 'ms') +
+      ', Latency: ' + formatStatNumber(stats.roundtripLatency, 'ms'));
 };
 
 /**

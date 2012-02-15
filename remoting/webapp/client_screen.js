@@ -231,7 +231,7 @@ function onClientStateChange_(oldState, newState) {
       showConnectError_(remoting.Error.INVALID_ACCESS_CODE);
     }
 
-  } else if (newState == remoting.ClientSession.State.CONNECTION_FAILED) {
+  } else if (newState == remoting.ClientSession.State.FAILED) {
     remoting.debug.log('Client plugin reported connection failed: ' +
                        remoting.clientSession.error);
     clearPin = true;

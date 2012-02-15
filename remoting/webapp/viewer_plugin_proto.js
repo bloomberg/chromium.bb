@@ -13,6 +13,9 @@ var remoting = remoting || {};
  */
 remoting.ViewerPlugin = function() { };
 
+/** @param {string} message The message to send to the host. */
+remoting.ViewerPlugin.prototype.postMessage = function(message) {};
+
 /** @param {string} iq The Iq stanza received from the host. */
 remoting.ViewerPlugin.prototype.onIq = function(iq) {};
 

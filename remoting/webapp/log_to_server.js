@@ -109,7 +109,7 @@ remoting.LogToServer.isStartOfSession = function(state) {
  */
 remoting.LogToServer.isEndOfSession = function(state) {
   return ((state == remoting.ClientSession.State.CLOSED) ||
-      (state == remoting.ClientSession.State.CONNECTION_FAILED));
+      (state == remoting.ClientSession.State.FAILED));
 };
 
 /**

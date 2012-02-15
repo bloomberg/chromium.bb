@@ -78,7 +78,7 @@ remoting.ClientSession.State = {
   INITIALIZING: 2,
   CONNECTED: 3,
   CLOSED: 4,
-  CONNECTION_FAILED: 5
+  FAILED: 5
 };
 
 /** @enum {number} */
@@ -97,14 +97,34 @@ remoting.ClientSession.Mode = {
   ME2ME: 1
 };
 
+/**
+ * Type used for performance statistics collected by the plugin.
+ * @constructor
+ */
+remoting.ClientSession.PerfStats = function() {};
+/** @type {number} */
+remoting.ClientSession.PerfStats.prototype.videoBandwidth;
+/** @type {number} */
+remoting.ClientSession.PerfStats.prototype.videoFrameRate;
+/** @type {number} */
+remoting.ClientSession.PerfStats.prototype.captureLatency;
+/** @type {number} */
+remoting.ClientSession.PerfStats.prototype.encodeLatency;
+/** @type {number} */
+remoting.ClientSession.PerfStats.prototype.decodeLatency;
+/** @type {number} */
+remoting.ClientSession.PerfStats.prototype.renderLatency;
+/** @type {number} */
+remoting.ClientSession.PerfStats.prototype.roundtripLatency;
+
 // Keys for connection statistics.
-remoting.ClientSession.STATS_KEY_VIDEO_BANDWIDTH = 'video_bandwidth';
-remoting.ClientSession.STATS_KEY_VIDEO_FRAME_RATE = 'video_frame_rate';
-remoting.ClientSession.STATS_KEY_CAPTURE_LATENCY = 'capture_latency';
-remoting.ClientSession.STATS_KEY_ENCODE_LATENCY = 'encode_latency';
-remoting.ClientSession.STATS_KEY_DECODE_LATENCY = 'decode_latency';
-remoting.ClientSession.STATS_KEY_RENDER_LATENCY = 'render_latency';
-remoting.ClientSession.STATS_KEY_ROUNDTRIP_LATENCY = 'roundtrip_latency';
+remoting.ClientSession.STATS_KEY_VIDEO_BANDWIDTH = 'videoBandwidth';
+remoting.ClientSession.STATS_KEY_VIDEO_FRAME_RATE = 'videoFrameRate';
+remoting.ClientSession.STATS_KEY_CAPTURE_LATENCY = 'captureLatency';
+remoting.ClientSession.STATS_KEY_ENCODE_LATENCY = 'encodeLatency';
+remoting.ClientSession.STATS_KEY_DECODE_LATENCY = 'decodeLatency';
+remoting.ClientSession.STATS_KEY_RENDER_LATENCY = 'renderLatency';
+remoting.ClientSession.STATS_KEY_ROUNDTRIP_LATENCY = 'roundtripLatency';
 
 /**
  * The current state of the session.
@@ -113,7 +133,7 @@ remoting.ClientSession.STATS_KEY_ROUNDTRIP_LATENCY = 'roundtrip_latency';
 remoting.ClientSession.prototype.state = remoting.ClientSession.State.UNKNOWN;
 
 /**
- * The last connection error. Set when state is set to CONNECTION_FAILED.
+ * The last connection error. Set when state is set to FAILED.
  * @type {remoting.ClientSession.ConnectionError}
  */
 remoting.ClientSession.prototype.error =
@@ -136,20 +156,54 @@ remoting.ClientSession.prototype.onStateChange =
     function(oldState, newState) { };
 
 /**
+ * @param {Element} container The element to add the plugin to.
+ * @param {string} id Id to use for the plugin element .
+ * @return {remoting.ClientPlugin} Create plugin object for the locally
+ * installed plugin.
+ */
+remoting.ClientSession.prototype.createClientPlugin_ = function(container, id) {
+  var plugin = /** @type {remoting.ViewerPlugin} */
+      document.createElement('embed');
+
+  plugin.id = id;
+  plugin.src = 'about://none';
+  plugin.type = 'application/vnd.chromium.remoting-viewer';
+  plugin.width = 0;
+  plugin.height = 0;
+  plugin.tabIndex = 0;  // Required, otherwise focus() doesn't work.
+  container.appendChild(plugin);
+
+  return new remoting.ClientPluginV1(plugin);
+};
+
+/**
  * Adds <embed> element to |container| and readies the sesion object.
  *
  * @param {Element} container The element to add the plugin to.
  * @param {string} oauth2AccessToken A valid OAuth2 access token.
- * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.createPluginAndConnect =
     function(container, oauth2AccessToken) {
-  this.plugin = new remoting.ClientPlugin(container, this.PLUGIN_ID);
+  this.plugin = this.createClientPlugin_(container, this.PLUGIN_ID);
 
   this.plugin.element().focus();
   this.plugin.element().addEventListener('blur', this.refocusPlugin_, false);
 
-  if (!this.plugin.isLoaded()) {
+  /** @type {remoting.ClientSession} */
+  var that = this;
+  /** @param {boolean} result */
+  this.plugin.initialize(function(result) {
+      that.onPluginInitialized_(oauth2AccessToken, result);
+    });
+};
+
+/**
+ * @param {string} oauth2AccessToken
+ * @param {boolean} initialized
+ */
+remoting.ClientSession.prototype.onPluginInitialized_ =
+    function(oauth2AccessToken, initialized) {
+  if (!initialized) {
     remoting.debug.log('ERROR: remoting plugin not loaded');
     this.plugin.cleanup();
     delete this.plugin;
@@ -281,7 +335,7 @@ remoting.ClientSession.prototype.sendIq_ = function(msg) {
     remoting.wcs.sendIq(msg);
   } else {
     remoting.debug.log('Tried to send IQ before WCS was ready.');
-    this.setState_(remoting.ClientSession.State.CONNECTION_FAILED);
+    this.setState_(remoting.ClientSession.State.FAILED);
   }
 };
 
@@ -323,7 +377,7 @@ remoting.ClientSession.prototype.connectionStatusUpdateCallback =
     function(status, error) {
   if (status == remoting.ClientSession.State.CONNECTED) {
     this.onDesktopSizeChanged_();
-  } else if (status == remoting.ClientSession.State.CONNECTION_FAILED) {
+  } else if (status == remoting.ClientSession.State.FAILED) {
     this.error = /** @type {remoting.ClientSession.ConnectionError} */ (error);
   }
   this.setState_(/** @type {remoting.ClientSession.State} */ (status));
@@ -422,7 +476,7 @@ remoting.ClientSession.prototype.updateDimensions = function() {
 /**
  * Returns an associative array with a set of stats for this connection.
  *
- * @return {Object.<string, number>} The connection statistics.
+ * @return {remoting.ClientSession.PerfStats} The connection statistics.
  */
 remoting.ClientSession.prototype.getPerfStats = function() {
   return this.plugin.getPerfStats();
@@ -431,7 +485,7 @@ remoting.ClientSession.prototype.getPerfStats = function() {
 /**
  * Logs statistics.
  *
- * @param {Object.<string, number>} stats
+ * @param {remoting.ClientSession.PerfStats} stats
  */
 remoting.ClientSession.prototype.logStatistics = function(stats) {
   this.logToServer.logStatistics(stats, this.mode);
