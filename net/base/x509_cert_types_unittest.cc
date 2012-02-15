@@ -213,6 +213,7 @@ static const uint8 EntrustDN[] = {
 
 namespace net {
 
+#if defined(OS_MACOSX)
 TEST(X509TypesTest, Matching) {
   CertPrincipal spamco;
   spamco.common_name = "SpamCo Dept. Of Certificization";
@@ -249,6 +250,7 @@ TEST(X509TypesTest, Matching) {
   EXPECT_FALSE(bogus.Matches(spamco));
   EXPECT_FALSE(spamco.Matches(bogus));
 }
+#endif
 
 TEST(X509TypesTest, ParseDNVerisign) {
   CertPrincipal verisign;

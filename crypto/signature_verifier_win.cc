@@ -5,22 +5,9 @@
 #include "crypto/signature_verifier.h"
 
 #include "base/logging.h"
+#include "crypto/capi_util.h"
 
 #pragma comment(lib, "crypt32.lib")
-
-namespace {
-
-// Wrappers of malloc and free for CRYPT_DECODE_PARA, which requires the
-// WINAPI calling convention.
-void* WINAPI MyCryptAlloc(size_t size) {
-  return malloc(size);
-}
-
-void WINAPI MyCryptFree(void* p) {
-  free(p);
-}
-
-}  // namespace
 
 namespace crypto {
 
@@ -47,8 +34,8 @@ bool SignatureVerifier::VerifyInit(const uint8* signature_algorithm,
 
   CRYPT_DECODE_PARA decode_para;
   decode_para.cbSize = sizeof(decode_para);
-  decode_para.pfnAlloc = MyCryptAlloc;
-  decode_para.pfnFree = MyCryptFree;
+  decode_para.pfnAlloc = crypto::CryptAlloc;
+  decode_para.pfnFree = crypto::CryptFree;
   CERT_PUBLIC_KEY_INFO* cert_public_key_info = NULL;
   DWORD struct_len = 0;
   BOOL ok;
@@ -66,7 +53,7 @@ bool SignatureVerifier::VerifyInit(const uint8* signature_algorithm,
   ok = CryptImportPublicKeyInfo(provider_,
                                 X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
                                 cert_public_key_info, public_key_.receive());
-  free(cert_public_key_info);
+  crypto::CryptFree(cert_public_key_info);
   if (!ok)
     return false;
 
@@ -89,7 +76,7 @@ bool SignatureVerifier::VerifyInit(const uint8* signature_algorithm,
       hash_alg_id = CALG_SHA1;
     else if (!strcmp(signature_algorithm_id->pszObjId, szOID_RSA_MD5RSA))
       hash_alg_id = CALG_MD5;
-    free(signature_algorithm_id);
+    crypto::CryptFree(signature_algorithm_id);
     DCHECK_NE(static_cast<ALG_ID>(CALG_MD4), hash_alg_id);
     if (hash_alg_id == CALG_MD4)
       return false;  // Unsupported hash algorithm.
