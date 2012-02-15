@@ -11,7 +11,7 @@
 class Profile;
 class PrefService;
 
-// The Web UI handler for chrome://syncpromo.
+// The Web UI handler for chrome://signin.
 class SyncPromoUI : public content::WebUIController {
  public:
   enum Version {

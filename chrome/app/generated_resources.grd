@@ -11037,7 +11037,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         </message>
       </if>
 
-      <!-- Sync promo page chrome://syncpromo -->
+      <!-- Sync promo page chrome://signin -->
       <message name="IDS_SYNC_PROMO_TAB_TITLE" desc="The title of the sync promo tab.">
         Sign in
       </message>

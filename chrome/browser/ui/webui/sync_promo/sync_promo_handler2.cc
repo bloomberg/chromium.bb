@@ -88,7 +88,7 @@ WebUIMessageHandler* SyncPromoHandler2::Attach(content::WebUI* web_ui) {
   // time we need to interact with preferences.
   prefs_ = Profile::FromWebUI(web_ui)->GetPrefs();
   DCHECK(prefs_);
-  // Ignore events from view-source:chrome://syncpromo.
+  // Ignore events from view-source:chrome://signin.
   if (!web_ui->GetWebContents()->GetController().GetActiveEntry()->
           IsViewSourceMode()) {
     // Listen to see if the tab we're in gets closed.

@@ -67,7 +67,7 @@ const char kChromeUISettingsURL[] = "chrome://settings/";
 // the UberPage, AKA options2.
 const char kChromeUISettingsFrameURL[] = "chrome://settings-frame/";
 const char kChromeUISSLClientCertificateSelectorURL[] = "chrome://select-cert/";
-const char kChromeUISyncPromoURL[] = "chrome://syncpromo/";
+const char kChromeUISyncPromoURL[] = "chrome://signin/";
 const char kChromeUITaskManagerURL[] = "chrome://tasks/";
 const char kChromeUITermsURL[] = "chrome://terms/";
 const char kChromeUIThumbnailURL[] = "chrome://thumb/";
@@ -175,7 +175,7 @@ const char kChromeUISSLClientCertificateSelectorHost[] = "select-cert";
 const char kChromeUIStatsHost[] = "stats";
 const char kChromeUISyncHost[] = "sync";
 const char kChromeUISyncInternalsHost[] = "sync-internals";
-const char kChromeUISyncPromoHost[] = "syncpromo";
+const char kChromeUISyncPromoHost[] = "signin";
 const char kChromeUISyncResourcesHost[] = "syncresources";
 const char kChromeUITaskManagerHost[] = "tasks";
 const char kChromeUITCMallocHost[] = "tcmalloc";
