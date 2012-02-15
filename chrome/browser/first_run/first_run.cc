@@ -43,12 +43,6 @@
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 
-#if defined(OS_WIN)
-// TODO(port): move more code in back from the first_run_win.cc module.
-#include "chrome/installer/util/google_update_settings.h"
-#include "chrome/installer/util/install_util.h"
-#endif
-
 using content::UserMetricsAction;
 
 namespace {
@@ -198,7 +192,7 @@ void SetupMasterPrefsFromInstallPrefs(
   if (install_prefs->GetBool(
           installer::master_preferences::kDistroSuppressFirstRunBubble,
           &value) && value)
-    first_run::SetShowFirstRunBubblePref(false);
+    SetShowFirstRunBubblePref(false);
 
   if (install_prefs->GetBool(
           installer::master_preferences::kDistroImportHistoryPref,
@@ -268,6 +262,17 @@ void SetShowWelcomePagePrefIfNeeded(
           && value) {
     SetShowWelcomePagePref();
   }
+}
+
+bool SkipFirstRunUI(installer::MasterPreferences* install_prefs) {
+  // TODO(mirandac): Refactor skip-first-run-ui process into regular first run
+  // import process.  http://crbug.com/49647
+  // Note we are skipping all other master preferences if skip-first-run-ui
+  // is *not* specified. (That is, we continue only if skipping first run ui.)
+  bool value = false;
+  return (install_prefs->GetBool(
+          installer::master_preferences::kDistroSkipFirstRunPref,
+          &value) || !value);
 }
 
 // -- Platform-specific functions --
@@ -382,21 +387,6 @@ int ImportBookmarkFromFileIfNeeded(Profile* profile,
   }
   return return_code;
 }
-
-// TODO(jennyz): move this fucntion to first_run_win.cc for further refactoring.
-#if defined(OS_WIN)
-void SetRLZPref(first_run::MasterPrefs* out_prefs,
-                installer::MasterPreferences* install_prefs) {
-  // RLZ is currently a Windows-only phenomenon.  When it comes to the Mac/
-  // Linux, enable it here.
-  if (!install_prefs->GetInt(installer::master_preferences::kDistroPingDelay,
-                    &out_prefs->ping_delay)) {
-    // 90 seconds is the default that we want to use in case master
-    // preferences is missing, corrupt or ping_delay is missing.
-    out_prefs->ping_delay = 90;
-  }
-}
-#endif
 
 }  // namespace internal
 }  // namespace first_run
@@ -536,153 +526,3 @@ void FirstRunBubbleLauncher::Observe(
 }
 
 }  // namespace first_run
-
-// FirstRun -------------------------------------------------------------------
-
-// static
-bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
-                                        first_run::MasterPrefs* out_prefs) {
-  DCHECK(!user_data_dir.empty());
-
-  FilePath master_prefs_path;
-  scoped_ptr<installer::MasterPreferences>
-      install_prefs(first_run::internal::LoadMasterPrefs(&master_prefs_path));
-  if (!install_prefs.get())
-    return true;
-
-  out_prefs->new_tabs = install_prefs->GetFirstRunTabs();
-
-  bool value = false;
-
-#if defined(OS_WIN)
-  first_run::internal::SetRLZPref(out_prefs, install_prefs.get());
-  ShowPostInstallEULAIfNeeded(install_prefs.get());
-#endif
-
-  if (!first_run::internal::CopyPrefFile(user_data_dir, master_prefs_path))
-    return true;
-
-#if defined(OS_WIN)
-  DoDelayedInstallExtensionsIfNeeded(install_prefs.get());
-#endif
-
-  first_run::internal::SetupMasterPrefsFromInstallPrefs(out_prefs,
-      install_prefs.get());
-
-  // TODO(mirandac): Refactor skip-first-run-ui process into regular first run
-  // import process.  http://crbug.com/49647
-  // Note we are skipping all other master preferences if skip-first-run-ui
-  // is *not* specified. (That is, we continue only if skipping first run ui.)
-  if (!install_prefs->GetBool(
-          installer::master_preferences::kDistroSkipFirstRunPref,
-          &value) || !value) {
-    return true;
-  }
-
-#if !defined(OS_WIN)
-  // From here on we won't show first run so we need to do the work to show the
-  // bubble anyway, unless it's already been explicitly suppressed.
-  first_run::SetShowFirstRunBubblePref(true);
-#endif
-
-  // We need to be able to create the first run sentinel or else we cannot
-  // proceed because ImportSettings will launch the importer process which
-  // would end up here if the sentinel is not present.
-  if (!first_run::CreateSentinel())
-    return false;
-
-  first_run::internal::SetShowWelcomePagePrefIfNeeded(install_prefs.get());
-
-  std::string import_bookmarks_path;
-  install_prefs->GetString(
-      installer::master_preferences::kDistroImportBookmarksFromFilePref,
-      &import_bookmarks_path);
-
-#if defined(USE_AURA)
-  // TODO(saintlou):
-#elif defined(OS_WIN)
-  if (!first_run::internal::IsOrganicFirstRun()) {
-    // If search engines aren't explicitly imported, don't import.
-    if (!(out_prefs->do_import_items & importer::SEARCH_ENGINES)) {
-      out_prefs->dont_import_items |= importer::SEARCH_ENGINES;
-    }
-    // If home page isn't explicitly imported, don't import.
-    if (!(out_prefs->do_import_items & importer::HOME_PAGE)) {
-      out_prefs->dont_import_items |= importer::HOME_PAGE;
-    }
-    // If history isn't explicitly forbidden, do import.
-    if (!(out_prefs->dont_import_items & importer::HISTORY)) {
-      out_prefs->do_import_items |= importer::HISTORY;
-    }
-  }
-
-  if (out_prefs->do_import_items || !import_bookmarks_path.empty()) {
-    // There is something to import from the default browser. This launches
-    // the importer process and blocks until done or until it fails.
-    scoped_refptr<ImporterList> importer_list(new ImporterList(NULL));
-    importer_list->DetectSourceProfilesHack();
-    if (!first_run::internal::ImportSettingsWin(NULL,
-          importer_list->GetSourceProfileAt(0).importer_type,
-          out_prefs->do_import_items,
-          FilePath::FromWStringHack(UTF8ToWide(import_bookmarks_path)),
-          true)) {
-      LOG(WARNING) << "silent import failed";
-    }
-  }
-#else
-  if (!import_bookmarks_path.empty()) {
-    // There are bookmarks to import from a file.
-    FilePath path = FilePath::FromWStringHack(UTF8ToWide(
-        import_bookmarks_path));
-    if (!first_run::internal::ImportBookmarks(path)) {
-      LOG(WARNING) << "silent bookmark import failed";
-    }
-  }
-#endif
-
-  first_run::internal::SetDefaultBrowser(install_prefs.get());
-  return false;
-}
-
-#if defined(OS_WIN)
-void FirstRun::ShowPostInstallEULAIfNeeded(
-    installer::MasterPreferences* install_prefs) {
-  bool value = false;
-  if (install_prefs->GetBool(installer::master_preferences::kRequireEula,
-          &value) && value) {
-    // Show the post-installation EULA. This is done by setup.exe and the
-    // result determines if we continue or not. We wait here until the user
-    // dismisses the dialog.
-
-    // The actual eula text is in a resource in chrome. We extract it to
-    // a text file so setup.exe can use it as an inner frame.
-    FilePath inner_html;
-    if (WriteEULAtoTempFile(&inner_html)) {
-      int retcode = 0;
-      if (!LaunchSetupWithParam(installer::switches::kShowEula,
-                                inner_html.value(), &retcode) ||
-          (retcode != installer::EULA_ACCEPTED &&
-           retcode != installer::EULA_ACCEPTED_OPT_IN)) {
-        LOG(WARNING) << "EULA rejected. Fast exit.";
-        ::ExitProcess(1);
-      }
-      if (retcode == installer::EULA_ACCEPTED) {
-        VLOG(1) << "EULA : no collection";
-        GoogleUpdateSettings::SetCollectStatsConsent(false);
-      } else if (retcode == installer::EULA_ACCEPTED_OPT_IN) {
-        VLOG(1) << "EULA : collection consent";
-        GoogleUpdateSettings::SetCollectStatsConsent(true);
-      }
-    }
-  }
-}
-
-void FirstRun::DoDelayedInstallExtensionsIfNeeded(
-    installer::MasterPreferences* install_prefs) {
-  DictionaryValue* extensions = 0;
-  if (install_prefs->GetExtensionsBlock(&extensions)) {
-    VLOG(1) << "Extensions block found in master preferences";
-    FirstRun::DoDelayedInstallExtensions();
-  }
-}
-#endif

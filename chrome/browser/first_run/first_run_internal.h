@@ -63,6 +63,9 @@ void SetShowWelcomePagePrefIfNeeded(
 
 void SetDefaultBrowser(installer::MasterPreferences* install_prefs);
 
+// Returns true if the first-run-ui process should be skipped.
+bool SkipFirstRunUI(installer::MasterPreferences* install_prefs);
+
 // -- Platform-specific functions --
 
 // Gives the full path to the sentinel file. The file might not exist.
@@ -84,21 +87,10 @@ bool ImportSettings(Profile* profile,
                     scoped_refptr<ImporterList> importer_list,
                     int items_to_import);
 
-#if defined(OS_WIN)
-// TODO(jennyz): The following functions will be moved to first_run_win.cc
-// anonymous namespace once we move ProcessMasterPreferences() to first_run
-// namespace.
-
-bool ImportSettingsWin(Profile* profile,
-                       int importer_type,
-                       int items_to_import,
-                       const FilePath& import_bookmarks_path,
-                       bool skip_first_run_ui);
-
-// Sets RLZ preference.
-void SetRLZPref(first_run::MasterPrefs* out_prefs,
-                installer::MasterPreferences* install_prefs);
-#endif  // OS_WIN
+// Sets import preferences and launch the import process.
+void SetImportPreferencesAndLaunchImport(
+    MasterPrefs* out_prefs,
+    installer::MasterPreferences* install_prefs);
 
 #if !defined(USE_AURA)
 // AutoImport code which is common to all platforms.

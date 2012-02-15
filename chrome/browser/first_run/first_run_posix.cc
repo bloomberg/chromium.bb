@@ -98,6 +98,23 @@ bool ImportSettings(Profile* profile,
   return true;
 }
 
+void SetImportPreferencesAndLaunchImport(
+    MasterPrefs* out_prefs,
+    installer::MasterPreferences* install_prefs) {
+  std::string import_bookmarks_path;
+  install_prefs->GetString(
+      installer::master_preferences::kDistroImportBookmarksFromFilePref,
+      &import_bookmarks_path);
+  if (!import_bookmarks_path.empty()) {
+    // There are bookmarks to import from a file.
+    FilePath path = FilePath::FromWStringHack(UTF8ToWide(
+        import_bookmarks_path));
+    if (!ImportBookmarks(path)) {
+      LOG(WARNING) << "silent bookmark import failed";
+    }
+  }
+}
+
 }  // namespace internal
 }  // namespace first_run
 
@@ -108,6 +125,44 @@ namespace first_run {
 // (as this function will not be called on Mac).
 int ImportNow(Profile* profile, const CommandLine& cmdline) {
   return internal::ImportBookmarkFromFileIfNeeded(profile, cmdline);
+}
+
+bool ProcessMasterPreferences(const FilePath& user_data_dir,
+                              MasterPrefs* out_prefs) {
+  DCHECK(!user_data_dir.empty());
+
+  FilePath master_prefs_path;
+  scoped_ptr<installer::MasterPreferences>
+      install_prefs(internal::LoadMasterPrefs(&master_prefs_path));
+  if (!install_prefs.get())
+    return true;
+
+  out_prefs->new_tabs = install_prefs->GetFirstRunTabs();
+
+  if (!internal::CopyPrefFile(user_data_dir, master_prefs_path))
+    return true;
+
+  internal::SetupMasterPrefsFromInstallPrefs(out_prefs,
+      install_prefs.get());
+
+  if (!internal::SkipFirstRunUI(install_prefs.get()))
+    return true;
+
+  // From here on we won't show first run so we need to do the work to show the
+  // bubble anyway, unless it's already been explicitly suppressed.
+  SetShowFirstRunBubblePref(true);
+
+  // We need to be able to create the first run sentinel or else we cannot
+  // proceed because ImportSettings will launch the importer process which
+  // would end up here if the sentinel is not present.
+  if (!CreateSentinel())
+    return false;
+
+  internal::SetShowWelcomePagePrefIfNeeded(install_prefs.get());
+  internal::SetImportPreferencesAndLaunchImport(out_prefs, install_prefs.get());
+  internal::SetDefaultBrowser(install_prefs.get());
+
+  return false;
 }
 
 

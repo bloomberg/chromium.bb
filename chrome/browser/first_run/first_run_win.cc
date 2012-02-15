@@ -37,8 +37,10 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/worker_thread_ticker.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/master_preferences.h"
+#include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "content/public/browser/notification_service.h"
@@ -147,11 +149,12 @@ void PlatformSetup(Profile* profile) {
     CreateChromeQuickLaunchShortcut();
 }
 
-}  // namespace
-
-bool FirstRun::LaunchSetupWithParam(const std::string& param,
-                                    const std::wstring& value,
-                                    int* ret_code) {
+// Launches the setup exe with the given parameter/value on the command-line,
+// waits for its termination, returns its exit code in |*ret_code|, and
+// returns true if the exit code is valid.
+bool LaunchSetupWithParam(const std::string& param,
+                          const FilePath::StringType& value,
+                          int* ret_code) {
   FilePath exe_path;
   if (!PathService::Get(base::DIR_MODULE, &exe_path))
     return false;
@@ -175,7 +178,9 @@ bool FirstRun::LaunchSetupWithParam(const std::string& param,
   return (TRUE == ::GetExitCodeProcess(ph, reinterpret_cast<DWORD*>(ret_code)));
 }
 
-bool FirstRun::WriteEULAtoTempFile(FilePath* eula_path) {
+// Writes the EULA to a temporary file, returned in |*eula_path|, and returns
+// true if successful.
+bool WriteEULAtoTempFile(FilePath* eula_path) {
   base::StringPiece terms =
       ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_TERMS_HTML);
   if (terms.empty())
@@ -188,9 +193,65 @@ bool FirstRun::WriteEULAtoTempFile(FilePath* eula_path) {
   return good;
 }
 
-void FirstRun::DoDelayedInstallExtensions() {
+void ShowPostInstallEULAIfNeeded(installer::MasterPreferences* install_prefs) {
+  bool value = false;
+  if (install_prefs->GetBool(installer::master_preferences::kRequireEula,
+          &value) && value) {
+    // Show the post-installation EULA. This is done by setup.exe and the
+    // result determines if we continue or not. We wait here until the user
+    // dismisses the dialog.
+
+    // The actual eula text is in a resource in chrome. We extract it to
+    // a text file so setup.exe can use it as an inner frame.
+    FilePath inner_html;
+    if (WriteEULAtoTempFile(&inner_html)) {
+      int retcode = 0;
+      if (!LaunchSetupWithParam(installer::switches::kShowEula,
+                                inner_html.value(), &retcode) ||
+          (retcode != installer::EULA_ACCEPTED &&
+           retcode != installer::EULA_ACCEPTED_OPT_IN)) {
+        LOG(WARNING) << "EULA rejected. Fast exit.";
+        ::ExitProcess(1);
+      }
+      if (retcode == installer::EULA_ACCEPTED) {
+        VLOG(1) << "EULA : no collection";
+        GoogleUpdateSettings::SetCollectStatsConsent(false);
+      } else if (retcode == installer::EULA_ACCEPTED_OPT_IN) {
+        VLOG(1) << "EULA : collection consent";
+        GoogleUpdateSettings::SetCollectStatsConsent(true);
+      }
+    }
+  }
+}
+
+// Installs a task to do an extensions update check once the extensions system
+// is running.
+void DoDelayedInstallExtensions() {
   new FirstRunDelayedTasks(FirstRunDelayedTasks::INSTALL_EXTENSIONS);
 }
+
+void DoDelayedInstallExtensionsIfNeeded(
+    installer::MasterPreferences* install_prefs) {
+  DictionaryValue* extensions = 0;
+  if (install_prefs->GetExtensionsBlock(&extensions)) {
+    VLOG(1) << "Extensions block found in master preferences";
+    DoDelayedInstallExtensions();
+  }
+}
+
+void SetRLZPref(first_run::MasterPrefs* out_prefs,
+                installer::MasterPreferences* install_prefs) {
+  // RLZ is currently a Windows-only phenomenon.  When it comes to the Mac/
+  // Linux, enable it here.
+  if (!install_prefs->GetInt(installer::master_preferences::kDistroPingDelay,
+                    &out_prefs->ping_delay)) {
+    // 90 seconds is the default that we want to use in case master
+    // preferences is missing, corrupt or ping_delay is missing.
+    out_prefs->ping_delay = 90;
+  }
+}
+
+}  // namespace
 
 namespace {
 
@@ -354,11 +415,6 @@ int ImportFromBrowser(Profile* profile,
 }
 #endif  // !defined(USE_AURA)
 
-}  // namespace
-
-namespace first_run {
-namespace internal{
-
 bool ImportSettingsWin(Profile* profile,
                        int importer_type,
                        int items_to_import,
@@ -409,11 +465,16 @@ bool ImportSettingsWin(Profile* profile,
   return (import_runner.exit_code() == content::RESULT_CODE_NORMAL_EXIT);
 }
 
+}  // namespace
+
+namespace first_run {
+namespace internal{
+
 bool ImportSettings(Profile* profile,
                     scoped_refptr<ImporterHost> importer_host,
                     scoped_refptr<ImporterList> importer_list,
                     int items_to_import) {
-  return internal::ImportSettingsWin(
+  return ImportSettingsWin(
       profile,
       importer_list->GetSourceProfileAt(0).importer_type,
       items_to_import,
@@ -436,6 +497,44 @@ bool GetFirstRunSentinelFilePath(FilePath* path) {
 
   *path = first_run_sentinel.AppendASCII(kSentinelFile);
   return true;
+}
+
+void SetImportPreferencesAndLaunchImport(
+    MasterPrefs* out_prefs,
+    installer::MasterPreferences* install_prefs) {
+  std::string import_bookmarks_path;
+  install_prefs->GetString(
+      installer::master_preferences::kDistroImportBookmarksFromFilePref,
+      &import_bookmarks_path);
+
+  if (!IsOrganicFirstRun()) {
+    // If search engines aren't explicitly imported, don't import.
+    if (!(out_prefs->do_import_items & importer::SEARCH_ENGINES)) {
+      out_prefs->dont_import_items |= importer::SEARCH_ENGINES;
+    }
+    // If home page isn't explicitly imported, don't import.
+    if (!(out_prefs->do_import_items & importer::HOME_PAGE)) {
+      out_prefs->dont_import_items |= importer::HOME_PAGE;
+    }
+    // If history isn't explicitly forbidden, do import.
+    if (!(out_prefs->dont_import_items & importer::HISTORY)) {
+      out_prefs->do_import_items |= importer::HISTORY;
+    }
+  }
+
+  if (out_prefs->do_import_items || !import_bookmarks_path.empty()) {
+    // There is something to import from the default browser. This launches
+    // the importer process and blocks until done or until it fails.
+    scoped_refptr<ImporterList> importer_list(new ImporterList(NULL));
+    importer_list->DetectSourceProfilesHack();
+    if (!ImportSettingsWin(NULL,
+          importer_list->GetSourceProfileAt(0).importer_type,
+          out_prefs->do_import_items,
+          FilePath::FromWStringHack(UTF8ToWide(import_bookmarks_path)),
+          true)) {
+      LOG(WARNING) << "silent import failed";
+    }
+  }
 }
 
 }  // namespace internal
@@ -488,6 +587,45 @@ FilePath MasterPrefsPath() {
   if (!PathService::Get(base::DIR_EXE, &master_prefs))
     return FilePath();
   return master_prefs.AppendASCII(installer::kDefaultMasterPrefs);
+}
+
+bool ProcessMasterPreferences(const FilePath& user_data_dir,
+                              MasterPrefs* out_prefs) {
+  DCHECK(!user_data_dir.empty());
+
+  FilePath master_prefs_path;
+  scoped_ptr<installer::MasterPreferences>
+      install_prefs(internal::LoadMasterPrefs(&master_prefs_path));
+  if (!install_prefs.get())
+    return true;
+
+  out_prefs->new_tabs = install_prefs->GetFirstRunTabs();
+
+  SetRLZPref(out_prefs, install_prefs.get());
+  ShowPostInstallEULAIfNeeded(install_prefs.get());
+
+  if (!internal::CopyPrefFile(user_data_dir, master_prefs_path))
+    return true;
+
+  DoDelayedInstallExtensionsIfNeeded(install_prefs.get());
+
+  internal::SetupMasterPrefsFromInstallPrefs(out_prefs,
+      install_prefs.get());
+
+  if (!internal::SkipFirstRunUI(install_prefs.get()))
+    return true;
+
+  // We need to be able to create the first run sentinel or else we cannot
+  // proceed because ImportSettings will launch the importer process which
+  // would end up here if the sentinel is not present.
+  if (!CreateSentinel())
+    return false;
+
+  internal::SetShowWelcomePagePrefIfNeeded(install_prefs.get());
+  internal::SetImportPreferencesAndLaunchImport(out_prefs, install_prefs.get());
+  internal::SetDefaultBrowser(install_prefs.get());
+
+  return false;
 }
 
 }  // namespace first_run

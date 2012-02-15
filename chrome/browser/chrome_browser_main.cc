@@ -1259,7 +1259,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // is initialized.
   first_run_ui_bypass_ = false;  // True to skip first run UI.
   if (is_first_run_) {
-    first_run_ui_bypass_ = !FirstRun::ProcessMasterPreferences(
+    first_run_ui_bypass_ = !first_run::ProcessMasterPreferences(
         user_data_dir_, master_prefs_.get());
     AddFirstRunNewTabs(browser_init_.get(), master_prefs_->new_tabs);
 
