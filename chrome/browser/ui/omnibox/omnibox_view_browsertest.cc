@@ -1135,7 +1135,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
 // See http://crbug.com/19193: omnibox blocks ctrl-* commands
 //
 // Flaky on interactive tests (dbg), http://crbug.com/69433
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, FLAKY_BrowserAccelerators) {
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_BrowserAccelerators) {
   BrowserAcceleratorsTest();
 }
 
@@ -1188,7 +1188,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, NonSubstitutingKeywordTest) {
 
 #if defined(OS_POSIX)
 // Flaky on Mac 10.6, Linux http://crbug.com/84420
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, FLAKY_DeleteItem) {
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_DeleteItem) {
 #else
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DeleteItem) {
 #endif
@@ -1321,7 +1321,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
 
 // http://crbug.com/12316
 // Flaky, http://crbug.com/80934.
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, FLAKY_PasteReplacingAll) {
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_PasteReplacingAll) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
   AutocompletePopupModel* popup_model = omnibox_view->model()->popup_model();

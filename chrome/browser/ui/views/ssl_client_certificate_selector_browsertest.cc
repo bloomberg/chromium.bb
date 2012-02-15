@@ -340,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiTabTest, SelectSecond) {
 
 // http://crbug.com/103529
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiProfileTest,
-                       FLAKY_Escape) {
+                       DISABLED_Escape) {
   EXPECT_CALL(*auth_requestor_1_, CertificateSelected(NULL));
 
   EXPECT_TRUE(ui_test_utils::SendKeyPressSync(
@@ -356,7 +356,7 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiProfileTest,
 
 // http://crbug.com/103534
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiProfileTest,
-                       FLAKY_SelectDefault) {
+                       DISABLED_SelectDefault) {
   EXPECT_CALL(*auth_requestor_1_,
               CertificateSelected(mit_davidben_cert_.get()));
 

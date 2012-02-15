@@ -60,7 +60,7 @@ class BookmarksUITest : public UITest {
 };
 
 // http://code.google.com/p/chromium/issues/detail?id=39532
-TEST_F(BookmarksUITest, FLAKY_ShouldRedirectToExtension) {
+TEST_F(BookmarksUITest, DISABLED_ShouldRedirectToExtension) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
 
@@ -104,7 +104,7 @@ TEST_F(BookmarksUITest, CommandOpensBookmarksTab) {
 
 // http://crbug.com/91843
 #if defined(OS_LINUX)
-#define MAYBE_CommandAgainGoesBackToBookmarksTab FLAKY_CommandAgainGoesBackToBookmarksTab
+#define MAYBE_CommandAgainGoesBackToBookmarksTab DISABLED_CommandAgainGoesBackToBookmarksTab
 #else
 #define MAYBE_CommandAgainGoesBackToBookmarksTab CommandAgainGoesBackToBookmarksTab
 #endif
@@ -159,7 +159,7 @@ TEST_F(BookmarksUITest, TwoCommandsOneTab) {
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
 // http://crbug.com/104309
-#define BookmarksLoaded FLAKY_BookmarksLoaded
+#define BookmarksLoaded DISABLED_BookmarksLoaded
 #endif
 TEST_F(BookmarksUITest, BookmarksLoaded) {
   scoped_refptr<TabProxy> tab = GetBookmarksUITab();

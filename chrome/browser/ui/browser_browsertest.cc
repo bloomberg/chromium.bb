@@ -691,7 +691,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
 
 #if defined(OS_MACOSX) || defined(OS_LINUX)
 // http://crbug.com/83828. On Mac 10.6, the failure rate is 14%
-#define MAYBE_FaviconChange FLAKY_FaviconChange
+#define MAYBE_FaviconChange DISABLED_FaviconChange
 #else
 #define MAYBE_FaviconChange FaviconChange
 #endif
@@ -794,7 +794,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppIdSwitch) {
 #if defined(OS_WIN) || defined(OS_MACOSX)
 // http://crbug.com/46198: On XP/Vista, the failure rate is 5 ~ 6%.
 // On OS 10.5 it's 1%, 10.6 currently 4%.
-#define MAYBE_PageLanguageDetection FLAKY_PageLanguageDetection
+#define MAYBE_PageLanguageDetection DISABLED_PageLanguageDetection
 #else
 #define MAYBE_PageLanguageDetection PageLanguageDetection
 #endif
@@ -1197,7 +1197,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ForwardDisabledOnForward) {
 #if defined(OS_WIN)
 // see http://crbug.com/105306
 #define MAYBE_DisableMenuItemsWhenIncognitoIsForced \
-    FLAKY_DisableMenuItemsWhenIncognitoIsForced
+    DISABLED_DisableMenuItemsWhenIncognitoIsForced
 #else
 #define MAYBE_DisableMenuItemsWhenIncognitoIsForced \
     DisableMenuItemsWhenIncognitoIsForced

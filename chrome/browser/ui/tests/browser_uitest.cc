@@ -53,7 +53,7 @@ TEST_F(BrowserTest, SessionEnd) {
 // WindowOpenClose is flaky on ChromeOS and fails consistently on linux views.
 // See http://crbug.com/85763.
 #if defined (OS_CHROMEOS)
-#define MAYBE_WindowOpenClose FLAKY_WindowOpenClose
+#define MAYBE_WindowOpenClose DISABLED_WindowOpenClose
 #elif defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
 #define MAYBE_WindowOpenClose FAILS_WindowOpenClose
 #else

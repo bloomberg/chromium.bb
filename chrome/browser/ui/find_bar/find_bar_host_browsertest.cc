@@ -609,7 +609,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindDisappearOnNavigate) {
 #if defined(OS_MACOSX)
 // FindDisappearOnNewTabAndHistory is flaky, at least on Mac.
 // See http://crbug.com/43072
-#define FindDisappearOnNewTabAndHistory FLAKY_FindDisappearOnNewTabAndHistory
+#define FindDisappearOnNewTabAndHistory DISABLED_FindDisappearOnNewTabAndHistory
 #endif
 
 // Make sure Find box disappears when History/Downloads page is opened, and

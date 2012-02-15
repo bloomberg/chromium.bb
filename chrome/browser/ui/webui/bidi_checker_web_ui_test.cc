@@ -175,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL, TestCrashesPage) {
 
 #if defined(OS_WIN) || defined(OS_LINUX)
 // http://crbug.com/104129
-#define MAYBE_TestDownloadsPageLTR FLAKY_TestDownloadsPageLTR
+#define MAYBE_TestDownloadsPageLTR DISABLED_TestDownloadsPageLTR
 #else
 #define MAYBE_TestDownloadsPageLTR TestDownloadsPageLTR
 #endif
@@ -186,7 +186,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
 
 #if defined(OS_LINUX)
 // http://crbug.com/109262
-#define MAYBE_TestDownloadsPageRTL FLAKY_TestDownloadsPageRTL
+#define MAYBE_TestDownloadsPageRTL DISABLED_TestDownloadsPageRTL
 #else
 #define MAYBE_TestDownloadsPageRTL TestDownloadsPageRTL
 #endif
@@ -233,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL, TestSettingsPage) {
 
 #if defined(OS_MACOSX)
 // http://crbug.com/94642
-#define MAYBE_TestSettingsAutofillPage FLAKY_TestSettingsAutofillPage
+#define MAYBE_TestSettingsAutofillPage DISABLED_TestSettingsAutofillPage
 #elif defined(OS_WIN)
 // http://crbug.com/95425
 #define MAYBE_TestSettingsAutofillPage FAILS_TestSettingsAutofillPage

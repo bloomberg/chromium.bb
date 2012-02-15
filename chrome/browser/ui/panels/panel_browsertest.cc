@@ -797,7 +797,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateSettingsMenu) {
 }
 
 // Flaky: http://crbug.com/105445
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, FLAKY_AutoResize) {
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_AutoResize) {
   PanelManager::GetInstance()->enable_auto_sizing(true);
   PanelManager::GetInstance()->SetWorkAreaForTesting(
       gfx::Rect(0, 0, 1200, 900));  // bigger space is needed by this test

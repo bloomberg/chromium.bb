@@ -30,12 +30,7 @@ class WorkersUITest : public InProcessBrowserTest {
 };
 
 // The test fails on Mac OS X, see crbug.com/89583
-#if defined(OS_MACOSX)
-#define MAYBE_SharedWorkersList DISABLED_SharedWorkersList
-#else
-#define MAYBE_SharedWorkersList FLAKY_SharedWorkersList
-#endif
-IN_PROC_BROWSER_TEST_F(WorkersUITest, MAYBE_SharedWorkersList) {
+IN_PROC_BROWSER_TEST_F(WorkersUITest, DISABLED_SharedWorkersList) {
   ASSERT_TRUE(test_server()->Start());
   GURL url = test_server()->GetURL(kSharedWorkerTestPage);
   ui_test_utils::NavigateToURL(browser(), url);
