@@ -12,8 +12,19 @@ const bool kOSSupportsOtherBrowsers = false;
 const bool kOSSupportsOtherBrowsers = true;
 #endif
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && !defined(USE_AURA) || defined(TOOLKIT_USES_GTK)
+const bool kShowCancelButtonInTaskManager = true;
+#else
+const bool kShowCancelButtonInTaskManager = false;
+#endif
 
+#if defined(OS_CHROMEOS) && !defined(USE_AURA)
+const bool kShowHtmlTitleBarInTaskManager = true;
+#else
+const bool kShowHtmlTitleBarInTaskManager = false;
+#endif
+
+#if defined(OS_CHROMEOS)
 // Make the regular omnibox text two points larger than the nine-point font
 // used in the tab strip (11pt / 72pt/in * 96px/in = 14.667px).
 const int kAutocompleteEditFontPixelSize = 15;
@@ -43,16 +54,12 @@ const int kAutocompleteEditFontPixelSize = 14;
 const int kAutocompleteEditFontPixelSizeInPopup =
     kAutocompleteEditFontPixelSize * 5.0 / 6.0;
 
-const bool kShowCancelButtonInTaskManager = true;
-
 #if defined(TOOLKIT_VIEWS)
 const bool kCanToggleSystemTitleBar = false;
 #else
 const bool kCanToggleSystemTitleBar = true;
 #endif
 
-#else
-const bool kShowCancelButtonInTaskManager = false;
 #endif
 
 #if !defined(OS_CHROMEOS)

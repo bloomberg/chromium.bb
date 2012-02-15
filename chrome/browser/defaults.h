@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,6 +70,10 @@ extern const bool kAlwaysOpenIncognitoWindow;
 
 // Should the close button be shown in the Task Manager dialog?
 extern const bool kShowCancelButtonInTaskManager;
+
+// Should the title bar be shown by HTML in the Task Manager dialog?
+// It may be used when HTML dialog doesn't have its native title bar.
+extern const bool kShowHtmlTitleBarInTaskManager;
 
 // Preferred height of the bookmarks bar when shown on every page and
 // when shown only on the new tab page.

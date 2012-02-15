@@ -8,6 +8,7 @@
 #include "base/memory/singleton.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -53,9 +54,10 @@ class TaskManagerDialogImpl : public HtmlDialogUIDelegate {
   virtual GURL GetDialogContentURL() const OVERRIDE {
     std::string url_string(chrome::kChromeUITaskManagerURL);
     url_string += "?";
-#if defined(OS_CHROMEOS) && !defined(USE_AURA)
-    url_string += "showclose=1&showtitle=1&";
-#endif  // defined(OS_CHROMEOS)
+    if (browser_defaults::kShowCancelButtonInTaskManager)
+      url_string += "showclose=1&";
+    if (browser_defaults::kShowHtmlTitleBarInTaskManager)
+      url_string += "showtitle=1&";
     if (is_background_page_mode_)
       url_string += "background=1";
     return GURL(url_string);
