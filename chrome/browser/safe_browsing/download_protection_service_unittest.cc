@@ -458,13 +458,16 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
       info,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
-  // Run the message loop(s) until SendRequest is called.
-  FlushThreadMessageLoops();
 
-  TestURLFetcher* fetcher = factory.GetFetcherByID(0);
 #if !defined(OS_WIN)
+  // SendRequest is not called.  Wait for FinishRequest to call our callback.
+  msg_loop_.Run();
+  TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   EXPECT_EQ(NULL, fetcher);
 #else
+  // Run the message loop(s) until SendRequest is called.
+  FlushThreadMessageLoops();
+  TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   ClientDownloadRequest request;
   EXPECT_TRUE(request.ParseFromString(fetcher->upload_data()));
@@ -527,13 +530,16 @@ TEST_F(DownloadProtectionServiceTest,
       info,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
-  // Run the message loop(s) until SendRequest is called.
-  FlushThreadMessageLoops();
 
-  TestURLFetcher* fetcher = factory.GetFetcherByID(0);
 #if !defined(OS_WIN)
+  // SendRequest is not called.  Wait for FinishRequest to call our callback.
+  msg_loop_.Run();
+  TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   EXPECT_EQ(NULL, fetcher);
 #else
+  // Run the message loop(s) until SendRequest is called.
+  FlushThreadMessageLoops();
+  TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   ClientDownloadRequest request;
   EXPECT_TRUE(request.ParseFromString(fetcher->upload_data()));
