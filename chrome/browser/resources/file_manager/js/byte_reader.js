@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,6 +70,35 @@ ByteReader.readNullTerminatedString = function(dataView, pos, size, opt_end) {
   return String.fromCharCode.apply(null, codes);
 };
 
+/**
+ * Read as a sequence of UTF16 characters, returning them as a single string.
+ *
+ * This is a static utility function.  There is a member function with the
+ * same name which side-effects the current read position.
+ */
+ByteReader.readNullTerminatedStringUTF16 = function(
+    dataView, pos, bom, size, opt_end) {
+  ByteReader.validateRead(pos, size, opt_end || dataView.byteLength);
+
+  var littleEndian = false;
+  var start = 0;
+
+  if (bom) {
+    littleEndian = (dataView.getUint8(pos) == 0xFF);
+    start = 2;
+  }
+
+  var codes = [];
+
+  for (var i = start; i < size; i += 2) {
+    var code = dataView.getUint16(pos + i, littleEndian);
+    if (code == 0) break;
+    codes.push(code);
+  }
+
+  return String.fromCharCode.apply(null, codes);
+};
+
 ByteReader.base64Alphabet_ =
     ('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/').
     split('');
@@ -129,17 +158,20 @@ ByteReader.readImage = function(dataView, pos, size, opt_end) {
   opt_end = opt_end || dataView.byteLength;
   ByteReader.validateRead(pos, size, opt_end);
 
-  var format;
-  if (ByteReader.readString(dataView, pos, 4, opt_end) == '\x89PNG') {
-    format = 'png';
-  } else if (dataView.getUint16(pos, false) == 0xFFD8) {  // Always big endian.
-    format = 'jpeg';
-  } else {
-    format = 'unknown';
-  }
+  // Two bytes is enough to identify the mime type.
+  var prefixToMime = {
+     '\x89P' : 'png',
+     '\xFF\xD8' : 'jpeg',
+     'BM' : 'bmp',
+     'GI' : 'gif'
+  };
+
+  var prefix = ByteReader.readString(dataView, pos, 2, opt_end);
+  var mime = prefixToMime[prefix] ||
+      dataView.getUint16(pos, false).toString(16);  // For debugging.
 
   var b64 = ByteReader.readBase64(dataView, pos, size, opt_end);
-  return 'data:image/' + format + ';base64,' + b64;
+  return 'data:image/' + mime + ';base64,' + b64;
 };
 
 // Instance methods.
@@ -254,6 +286,34 @@ ByteReader.prototype.readNullTerminatedString = function(size, opt_end) {
     // If we've stopped reading because we found '0' but didn't hit size limit
     // then we should skip additional '0' character
     this.pos_++;
+  }
+
+  return rv;
+};
+
+
+/**
+ * Read as a sequence of UTF16 characters, returning them as a single string.
+ *
+ * Adjusts the current position on success.  Throws an exception if the
+ * read would go past the end of the buffer.
+ */
+ByteReader.prototype.readNullTerminatedStringUTF16 =
+    function(bom, size, opt_end) {
+  var rv = ByteReader.readNullTerminatedStringUTF16(
+      this.view_, this.pos_, bom, size, opt_end);
+
+  if (bom) {
+    // If the BOM word was present advance the position.
+    this.pos_ += 2;
+  }
+
+  this.pos_ += rv.length;
+
+  if (rv.length < size) {
+    // If we've stopped reading because we found '0' but didn't hit size limit
+    // then we should skip additional '0' character
+    this.pos_ += 2;
   }
 
   return rv;

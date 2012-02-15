@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,12 +59,18 @@ Id3Parser.prototype.readString_ = function(reader, encoding, size) {
   switch (encoding) {
     case Id3Parser.v2.ENCODING.ISO_8859_1:
       return reader.readNullTerminatedString(size);
-    case Id3Parser.v2.ENCODING.UTF_16BE:
+
     case Id3Parser.v2.ENCODING.UTF_16:
+      return reader.readNullTerminatedStringUTF16(true, size);
+
+    case Id3Parser.v2.ENCODING.UTF_16BE:
+      return reader.readNullTerminatedStringUTF16(false, size);
+
     case Id3Parser.v2.ENCODING.UTF_8:
+      // TODO: implement UTF_8. Fall through for now.
+
     default: {
-      // TODO: implement reading of unicode strings
-      this.error('Reading of unicode strings in ID3 tags is unimplemented');
+      this.log('Unsupported encoding in ID3 tag: ' + encoding);
       return '';
     }
   }
@@ -240,21 +246,21 @@ Id3Parser.prototype.parse = function (file, metadata, callback, onError) {
             var title = reader.readNullTerminatedString(30).trim();
 
             if (title.length > 0) {
-              id3v1.title = title;
+              metadata.title = title;
             }
 
             reader.seek(3 + 30, ByteReader.SEEK_BEG);
 
             var artist = reader.readNullTerminatedString(30).trim();
             if (artist.length > 0) {
-              id3v1.artist = artist;
+              metadata.artist = artist;
             }
 
             reader.seek(3 + 30 + 30, ByteReader.SEEK_BEG);
 
             var album = reader.readNullTerminatedString(30).trim();
             if (album.length > 0) {
-              id3v1.album = album;
+              metadata.album = album;
             }
           }
           this.nextStep();
@@ -345,6 +351,20 @@ Id3Parser.prototype.parse = function (file, metadata, callback, onError) {
                   });
             }
           }
+
+          function extract(propName, tags) {
+            for (var i = 1; i != arguments.length; i++) {
+              var tag = id3v2[arguments[i]];
+              if (tag && tag.value) {
+                metadata[propName] = tag.value;
+                break;
+              }
+            }
+          }
+
+          extract('album', 'TALB', 'TAL');
+          extract('title', 'TIT2', 'TT2');
+          extract('artist', 'TPE1', 'TP1');
 
           metadata.description.sort(function(a, b) {
             return Id3Parser.METADATA_ORDER.indexOf(a.key)-
@@ -584,14 +604,14 @@ Id3Parser.v2 = {
 
 
     /**
-     * UTF-16 [UTF-16] encoded Unicode [UNICODE] with BOM. All
+     * [UTF-16] encoded Unicode [UNICODE] with BOM. All
      * strings in the same frame SHALL have the same byteorder.
      * Terminated with $00 00.
      *
      * @const
      * @type {int}
      */
-    UTF_16BE : 1,
+    UTF_16 : 1,
 
     /**
      * UTF-16BE [UTF-16] encoded Unicode [UNICODE] without BOM.
@@ -600,7 +620,7 @@ Id3Parser.v2 = {
      * @const
      * @type {int}
      */
-    UTF_16 : 2,
+    UTF_16BE : 2,
 
     /**
      * UTF-8 [UTF-8] encoded Unicode [UNICODE]. Terminated with $00.
