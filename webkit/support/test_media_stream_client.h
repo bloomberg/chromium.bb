@@ -14,6 +14,8 @@
 
 namespace webkit_support {
 
+// TODO(tommyw): Remove deprecated class after corresponding
+// WebKit patch is committed.
 class MediaStreamUtil {
  public:
   virtual bool IsMockStream(const WebKit::WebURL& url) = 0;
@@ -21,16 +23,17 @@ class MediaStreamUtil {
 
 class TestMediaStreamClient : public webkit_media::MediaStreamClient {
  public:
-  explicit TestMediaStreamClient(MediaStreamUtil* media_stream_util);
+  // TODO(tommyw): Remove deprecated constructor after
+  // corresponding WebKit patch is committed.
+  explicit TestMediaStreamClient(MediaStreamUtil* media_stream_util) {}
+
+  TestMediaStreamClient() {}
   virtual ~TestMediaStreamClient() {}
 
   // Implement webkit_media::MediaStreamClient.
   virtual scoped_refptr<media::VideoDecoder> GetVideoDecoder(
       const GURL& url,
       media::MessageLoopFactory* message_loop_factory) OVERRIDE;
-
- private:
-  MediaStreamUtil* media_stream_util_;
 };
 
 }  // namespace webkit_support
