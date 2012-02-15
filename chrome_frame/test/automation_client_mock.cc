@@ -150,7 +150,7 @@ TEST(CFACWithChrome, CreateNotSoFast) {
 }
 
 // FLAKY: 114386.
-TEST(CFACWithChrome, FLAKY_NavigateOk) {
+TEST(CFACWithChrome, DISABLED_NavigateOk) {
   MockCFDelegate cfd;
   NavigationConstraintsImpl navigation_constraints;
 
@@ -199,7 +199,7 @@ TEST(CFACWithChrome, FLAKY_NavigateOk) {
 }
 
 // FLAKY: 114386.
-TEST(CFACWithChrome, FLAKY_NavigateFailed) {
+TEST(CFACWithChrome, DISABLED_NavigateFailed) {
   MockCFDelegate cfd;
   NavigationConstraintsImpl navigation_constraints;
   chrome_frame_test::TimedMsgLoop loop;

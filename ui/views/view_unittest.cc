@@ -2930,7 +2930,7 @@ TEST_F(ViewLayerTest, VisibilityChildLayers) {
 // This test creates a random View tree, and then randomly reorders child views,
 // reparents views etc. Unrelated changes can appear to break this test. So
 // marking this as FLAKY.
-TEST_F(ViewLayerTest, FLAKY_ViewLayerTreesInSync) {
+TEST_F(ViewLayerTest, DISABLED_ViewLayerTreesInSync) {
   View* content = new View;
   content->SetPaintToLayer(true);
   widget()->SetContentsView(content);
