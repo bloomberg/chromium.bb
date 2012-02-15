@@ -37,7 +37,7 @@ class AvatarButtonControllerTest : public CocoaProfileTest {
 };
 
 // Only fails on 10.5 for some reason <http://crbug.com/99469>.
-TEST_F(AvatarButtonControllerTest, FLAKY_AddRemoveProfiles) {
+TEST_F(AvatarButtonControllerTest, DISABLED_AddRemoveProfiles) {
   EXPECT_TRUE([button() isHidden]);
 
   testing_profile_manager()->CreateTestingProfile("one");
@@ -55,7 +55,7 @@ TEST_F(AvatarButtonControllerTest, FLAKY_AddRemoveProfiles) {
 }
 
 // Only fails on 10.5 for some reason <http://crbug.com/99469>.
-TEST_F(AvatarButtonControllerTest, FLAKY_DoubleOpen) {
+TEST_F(AvatarButtonControllerTest, DISABLED_DoubleOpen) {
   EXPECT_FALSE([controller() menuController]);
 
   [button() performClick:button()];

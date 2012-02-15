@@ -127,7 +127,7 @@ void SearchProviderTest::FinishIsSearchProviderInstalledTest(
 
 // Flaky on XP debug. http://crbug.com/62777
 #if defined(OS_WIN)
-#define MAYBE_TestIsSearchProviderInstalled FLAKY_TestIsSearchProviderInstalled
+#define MAYBE_TestIsSearchProviderInstalled DISABLED_TestIsSearchProviderInstalled
 #else
 #define MAYBE_TestIsSearchProviderInstalled TestIsSearchProviderInstalled
 #endif

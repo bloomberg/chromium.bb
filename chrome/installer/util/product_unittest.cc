@@ -47,7 +47,7 @@ class ProductTest : public TestWithTempDirAndDeleteTempOverrideKeys {
 
 // This test is flaky on Win, see http://crbug.com/100567
 #if defined(OS_WIN)
-#define MAYBE_ProductInstallBasic FLAKY_ProductInstallBasic
+#define MAYBE_ProductInstallBasic DISABLED_ProductInstallBasic
 #else
 #define MAYBE_ProductInstallBasic ProductInstallBasic
 #endif

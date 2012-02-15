@@ -302,7 +302,7 @@ void CloudPrintURLFetcherRetryBackoffTest::OnRequestGiveUp() {
 }
 
 // http://code.google.com/p/chromium/issues/detail?id=60426
-TEST_F(CloudPrintURLFetcherBasicTest, FLAKY_HandleRawResponse) {
+TEST_F(CloudPrintURLFetcherBasicTest, DISABLED_HandleRawResponse) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
   SetHandleRawResponse(true);
@@ -312,7 +312,7 @@ TEST_F(CloudPrintURLFetcherBasicTest, FLAKY_HandleRawResponse) {
 }
 
 // http://code.google.com/p/chromium/issues/detail?id=60426
-TEST_F(CloudPrintURLFetcherBasicTest, FLAKY_HandleRawData) {
+TEST_F(CloudPrintURLFetcherBasicTest, DISABLED_HandleRawData) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
@@ -343,7 +343,7 @@ TEST_F(CloudPrintURLFetcherOverloadTest, Protect) {
 }
 
 // http://code.google.com/p/chromium/issues/detail?id=60426
-TEST_F(CloudPrintURLFetcherRetryBackoffTest, FLAKY_GiveUp) {
+TEST_F(CloudPrintURLFetcherRetryBackoffTest, DISABLED_GiveUp) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 

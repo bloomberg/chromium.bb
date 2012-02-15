@@ -104,7 +104,7 @@ TEST_F(ImportantFileWriterTest, DoScheduledWrite) {
 }
 
 // Flaky - http://crbug.com/109292
-TEST_F(ImportantFileWriterTest, FLAKY_BatchingWrites) {
+TEST_F(ImportantFileWriterTest, DISABLED_BatchingWrites) {
   ImportantFileWriter writer(file_,
                              base::MessageLoopProxy::current());
   writer.set_commit_interval(base::TimeDelta::FromMilliseconds(25));

@@ -125,7 +125,7 @@ class CheckFalseTest : public UITest {
 
 #if defined(OS_WIN)
 // http://crbug.com/38497
-#define CheckFails FLAKY_CheckFails
+#define CheckFails DISABLED_CheckFails
 #elif defined(OS_MACOSX)
 // Crash service doesn't exist for the Mac yet: http://crbug.com/45243
 #define CheckFails DISABLED_CheckFails
@@ -160,7 +160,7 @@ class RendererCrashTest : public UITest {
 // Crash service doesn't exist for the Mac yet: http://crbug.com/45243
 #define MAYBE_Crash DISABLED_Crash
 #elif defined(OS_CHROME)
-#define MAYBE_Crash FLAKY_Crash
+#define MAYBE_Crash DISABLED_Crash
 #else
 #define MAYBE_Crash Crash
 #endif

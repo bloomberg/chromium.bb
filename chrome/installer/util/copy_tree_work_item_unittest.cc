@@ -508,7 +508,7 @@ TEST_F(CopyTreeWorkItemTest, NewNameAndCopyTest) {
 //    in the destination folder after Do() and should be rolled back after
 //    Rollback().
 // Flaky, http://crbug.com/59785.
-TEST_F(CopyTreeWorkItemTest, FLAKY_IfNotPresentTest) {
+TEST_F(CopyTreeWorkItemTest, DISABLED_IfNotPresentTest) {
   // Create source file
   FilePath file_name_from(test_dir_.path());
   file_name_from = file_name_from.AppendASCII("File_From");
@@ -590,7 +590,7 @@ TEST_F(CopyTreeWorkItemTest, FLAKY_IfNotPresentTest) {
 // Copy one file without rollback. The existing one in destination is in use.
 // Verify it is moved to backup location and stays there.
 // Flaky, http://crbug.com/59783.
-TEST_F(CopyTreeWorkItemTest, FLAKY_CopyFileInUseAndCleanup) {
+TEST_F(CopyTreeWorkItemTest, DISABLED_CopyFileInUseAndCleanup) {
   // Create source file
   FilePath file_name_from(test_dir_.path());
   file_name_from = file_name_from.AppendASCII("File_From");
@@ -663,7 +663,7 @@ TEST_F(CopyTreeWorkItemTest, FLAKY_CopyFileInUseAndCleanup) {
 
 // Copy a tree from source to destination.
 // Flaky, http://crbug.com/59784.
-TEST_F(CopyTreeWorkItemTest, FLAKY_CopyTree) {
+TEST_F(CopyTreeWorkItemTest, DISABLED_CopyTree) {
   // Create source tree
   FilePath dir_name_from(test_dir_.path());
   dir_name_from = dir_name_from.AppendASCII("from");
