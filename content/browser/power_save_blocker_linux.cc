@@ -16,7 +16,6 @@
 #include "base/memory/singleton.h"
 #include "base/message_loop_proxy.h"
 #include "base/nix/xdg_util.h"
-#include "base/threading/platform_thread.h"
 #include "content/public/browser/browser_thread.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -78,7 +77,8 @@ class DBusPowerSaveBlocker {
   // If |delegate_| is NULL, the application runs under an unsupported
   // desktop environment. In this case, the method doesn't do anything.
   void ApplyBlock(PowerSaveBlocker::PowerSaveBlockerType type) {
-    if (delegate_ != NULL) delegate_->ApplyBlock(type);
+    if (delegate_)
+      delegate_->ApplyBlock(type);
   }
 
   // Getter for the Bus object. Used by the Delegates to obtain object proxies.
@@ -102,7 +102,7 @@ class DBusPowerSaveBlocker {
 // Delegate implementation for KDE4.
 // It uses the org.freedesktop.PowerManagement interface.
 // Works on XFCE4, too.
-class KDEPowerSaveBlocker: public DBusPowerSaveBlocker::Delegate {
+class KDEPowerSaveBlocker : public DBusPowerSaveBlocker::Delegate {
  public:
   KDEPowerSaveBlocker()
       : inhibit_cookie_(0),
@@ -110,7 +110,8 @@ class KDEPowerSaveBlocker: public DBusPowerSaveBlocker::Delegate {
         postponed_uninhibit_call_(false) {}
   ~KDEPowerSaveBlocker() {}
 
-  virtual void ApplyBlock(PowerSaveBlocker::PowerSaveBlockerType type) {
+  virtual void ApplyBlock(
+      PowerSaveBlocker::PowerSaveBlockerType type) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(pending_inhibit_call_ || !postponed_uninhibit_call_);
 
@@ -191,7 +192,7 @@ class KDEPowerSaveBlocker: public DBusPowerSaveBlocker::Delegate {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(pending_inhibit_call_);
     pending_inhibit_call_ = false;
-    if (response != NULL) {
+    if (response) {
       dbus::MessageReader message_reader(response);
       if (message_reader.PopUint32(&inhibit_cookie_)) {
         if (postponed_uninhibit_call_) {
@@ -229,7 +230,7 @@ class KDEPowerSaveBlocker: public DBusPowerSaveBlocker::Delegate {
 };
 
 // Delegate implementation for Gnome, based on org.gnome.SessionManager
-class GnomePowerSaveBlocker: public DBusPowerSaveBlocker::Delegate {
+class GnomePowerSaveBlocker : public DBusPowerSaveBlocker::Delegate {
  public:
   // Inhibit flags defined in the org.gnome.SessionManager interface.
   // Can be OR'd together and passed as argument to the Inhibit() method
@@ -247,7 +248,8 @@ class GnomePowerSaveBlocker: public DBusPowerSaveBlocker::Delegate {
         postponed_uninhibit_calls_(0) {}
   ~GnomePowerSaveBlocker() {}
 
-  virtual void ApplyBlock(PowerSaveBlocker::PowerSaveBlockerType type) {
+  virtual void ApplyBlock(
+      PowerSaveBlocker::PowerSaveBlockerType type) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(postponed_uninhibit_calls_ <= pending_inhibit_calls_);
 
@@ -271,7 +273,8 @@ class GnomePowerSaveBlocker: public DBusPowerSaveBlocker::Delegate {
         postponed_uninhibit_calls_ < pending_inhibit_calls_) {
       ++postponed_uninhibit_calls_;
       // If the call was an Uninhibit, then we are done for the moment.
-      if (type == PowerSaveBlocker::kPowerSaveBlockPreventNone) return;
+      if (type == PowerSaveBlocker::kPowerSaveBlockPreventNone)
+        return;
     }
 
     // If we have an active inhibit request and no pending inhibit calls,
@@ -282,11 +285,12 @@ class GnomePowerSaveBlocker: public DBusPowerSaveBlocker::Delegate {
       ApplyBlock(PowerSaveBlocker::kPowerSaveBlockPreventNone);
     }
 
+    static const char kGnomeSessionManagerName[] = "org.gnome.SessionManager";
     scoped_refptr<dbus::ObjectProxy> object_proxy =
         DBusPowerSaveBlocker::GetInstance()->bus()->GetObjectProxy(
-            "org.gnome.SessionManager",
+            kGnomeSessionManagerName,
             dbus::ObjectPath("/org/gnome/SessionManager"));
-    dbus::MethodCall method_call("org.gnome.SessionManager", "Inhibit");
+    dbus::MethodCall method_call(kGnomeSessionManagerName, "Inhibit");
     dbus::MessageWriter message_writer(&method_call);
     base::Callback<void(dbus::Response*)> bus_callback;
 
@@ -360,7 +364,7 @@ class GnomePowerSaveBlocker: public DBusPowerSaveBlocker::Delegate {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK_GT(pending_inhibit_calls_, 0);
     --pending_inhibit_calls_;
-    if (response != NULL) {
+    if (response) {
       dbus::MessageReader message_reader(response);
       if (message_reader.PopUint32(&inhibit_cookie_)) {
         if (postponed_uninhibit_calls_ > 0) {
@@ -421,10 +425,11 @@ DBusPowerSaveBlocker::DBusPowerSaveBlocker() {
     case base::nix::DESKTOP_ENVIRONMENT_OTHER:
       // Not supported, so we exit.
       // We don't create D-Bus objects.
+      NOTIMPLEMENTED();
       break;
   }
 
-  if (delegate_ != NULL) {
+  if (delegate_) {
     dbus::Bus::Options options;
     options.bus_type = dbus::Bus::SESSION;
     options.connection_type = dbus::Bus::PRIVATE;
