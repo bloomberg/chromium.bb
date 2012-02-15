@@ -2900,8 +2900,10 @@ FileManager.prototype = {
    * @param {Event} event The click event.
    */
   FileManager.prototype.onDetailDoubleClick_ = function(event) {
-    if (this.isRenamingInProgress()) {
-      // Don't pay attention to double clicks during a rename.
+    if (this.isRenamingInProgress() ||
+        this.table_.firstChild.contains(event.target)) {
+      // Don't pay attention to double clicks during a rename or double clicks
+      // on the table header.
       return;
     }
 
