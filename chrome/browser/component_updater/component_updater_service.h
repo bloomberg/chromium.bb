@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -107,7 +107,7 @@ class ComponentUpdateService {
     virtual size_t UrlSizeLimit() = 0;
     // The source of contexts for all the url requests.
     virtual net::URLRequestContextGetter* RequestContext() = 0;
-    // True means that all ops are peformed in this process.
+    // True means that all ops are performed in this process.
     virtual bool InProcess() = 0;
     // The component updater will call this function when an interesting event
     // happens. It should be used mostly as a place to add application specific
@@ -120,7 +120,7 @@ class ComponentUpdateService {
   virtual Status Start() = 0;
 
   // Stop doing update checks. In-flight requests and pending installations
-  // will not be cancelled.
+  // will not be canceled.
   virtual Status Stop() = 0;
 
   // Add component to be checked for updates. You can call this method

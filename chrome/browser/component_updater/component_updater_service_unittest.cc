@@ -311,7 +311,7 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
 // Verify that we can check for updates and install one component. Besides
 // the notifications above NOTIFICATION_COMPONENT_UPDATE_FOUND and
 // NOTIFICATION_COMPONENT_UPDATE_READY should have been fired. We do two loops
-// so the second time arround there should be nothing left to do.
+// so the second time around there should be nothing left to do.
 // We also check that only 3 network requests are issued:
 // 1- manifest check
 // 2- download crx
@@ -377,7 +377,7 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
 }
 
 // This test checks that the "prodversionmin" value is handled correctly. In
-// particular there should not be an install because the minimun product
+// particular there should not be an install because the minimum product
 // version is much higher than of chrome.
 TEST_F(ComponentUpdaterTest, ProdVersionCheck) {
   MessageLoop message_loop;

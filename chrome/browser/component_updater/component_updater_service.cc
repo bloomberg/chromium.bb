@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -109,7 +109,7 @@ bool IsVersionNewer(const Version& current, const std::string& proposed) {
 }
 
 // Helper template class that allows our main class to have separate
-// OnURLFetchComplete() callbacks for diffent types of url requests
+// OnURLFetchComplete() callbacks for different types of url requests
 // they are differentiated by the |Ctx| type.
 template <typename Del, typename Ctx>
 class DelegateWithContext : public content::URLFetcherDelegate {
@@ -221,7 +221,7 @@ CrxComponent::~CrxComponent() {}
 // is called periodically to do the updgrades/installs or the update checks.
 // An important consideration here is to be as "low impact" as we can to the
 // rest of the browser, so even if we have many components registered and
-// elegible for update, we only do one thing at a time with pauses in between
+// eligible for update, we only do one thing at a time with pauses in between
 // the tasks. Also when we do network requests there is only one |url_fetcher_|
 // in flight at at a time.
 // There are no locks in this code, the main structure |work_items_| is mutated
@@ -260,7 +260,7 @@ class CrxUpdateService : public ComponentUpdateService {
     }
 
    private:
-    // Omaha update response XML was succesfuly parsed.
+    // Omaha update response XML was successfully parsed.
     void OnParseUpdateManifestSucceeded(const UpdateManifest::Results& r) {
       service_->OnParseUpdateManifestSucceeded(r);
     }
