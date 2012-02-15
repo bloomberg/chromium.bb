@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -149,7 +149,8 @@ TEST(CFACWithChrome, CreateNotSoFast) {
   client = NULL;
 }
 
-TEST(CFACWithChrome, NavigateOk) {
+// FLAKY: 114386.
+TEST(CFACWithChrome, FLAKY_NavigateOk) {
   MockCFDelegate cfd;
   NavigationConstraintsImpl navigation_constraints;
 
@@ -197,7 +198,8 @@ TEST(CFACWithChrome, NavigateOk) {
   client = NULL;
 }
 
-TEST(CFACWithChrome, NavigateFailed) {
+// FLAKY: 114386.
+TEST(CFACWithChrome, FLAKY_NavigateFailed) {
   MockCFDelegate cfd;
   NavigationConstraintsImpl navigation_constraints;
   chrome_frame_test::TimedMsgLoop loop;
