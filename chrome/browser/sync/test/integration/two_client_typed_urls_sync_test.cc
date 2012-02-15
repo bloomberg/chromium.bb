@@ -152,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddExpiredThenUpdate) {
 
 // TCM: 3705291
 // flaky, see crbug.com/108511
-IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, FLAKY_AddThenDelete) {
+IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, DISABLED_AddThenDelete) {
   const string16 kHistoryUrl(
       ASCIIToUTF16("http://www.add-one-history.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -213,7 +213,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, DisableEnableSync) {
 }
 
 // flaky, see crbug.com/108511
-IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, FLAKY_AddOneDeleteOther) {
+IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, DISABLED_AddOneDeleteOther) {
   const string16 kHistoryUrl(
       ASCIIToUTF16("http://www.add-one-delete-history.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -245,7 +245,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, FLAKY_AddOneDeleteOther) {
 
 // flaky, see crbug.com/108511
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
-                       FLAKY_AddOneDeleteOtherAddAgain) {
+                       DISABLED_AddOneDeleteOtherAddAgain) {
   const string16 kHistoryUrl(
       ASCIIToUTF16("http://www.add-delete-add-history.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";

@@ -180,7 +180,7 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
 };
 
 // Test is flaky: crbug.com/25926
-IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, FLAKY_NewUserLogin) {
+IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, DISABLED_NewUserLogin) {
   EXPECT_CALL(*mock_login_display_host_, SetStatusAreaEnabled(false))
       .Times(1);
   EXPECT_CALL(*mock_login_display_, SetUIEnabled(false))

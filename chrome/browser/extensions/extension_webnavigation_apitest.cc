@@ -118,7 +118,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationOpenTab) {
 }
 
 // This test has been timing out: 114208.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_WebNavigationReferenceFragment) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
+                       DISABLED_WebNavigationReferenceFragment) {
   FrameNavigationState::set_allow_extension_scheme(true);
 
   CommandLine::ForCurrentProcess()->AppendSwitch(

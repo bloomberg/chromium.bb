@@ -398,7 +398,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
 
 #if defined(OS_LINUX) || defined(OS_WIN)
 // http://crbug.com/93158.
-#define MAYBE_ReloadExtension FLAKY_ReloadExtension
+#define MAYBE_ReloadExtension DISABLED_ReloadExtension
 #else
 #define MAYBE_ReloadExtension ReloadExtension
 #endif

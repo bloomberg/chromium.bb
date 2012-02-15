@@ -377,7 +377,7 @@ TEST_F(SessionRestoreUITest, NormalAndPopup) {
 // we restore the tabbed browser url.
 // Flaky: http://crbug.com/29110
 TEST_F(SessionRestoreUITest,
-       FLAKY_RestoreAfterClosingTabbedBrowserWithAppAndLaunching) {
+       DISABLED_RestoreAfterClosingTabbedBrowserWithAppAndLaunching) {
   NavigateToURL(url1_);
 
   // Launch an app.
@@ -444,7 +444,7 @@ TEST_F(SessionRestoreUITest, TwoWindowsCloseOneRestoreOnlyOne) {
 // Unfortunately, the fix at http://codereview.chromium.org/6546078
 // breaks NTP background image refreshing, so ThemeSource had to revert to
 // replacing the existing data source.
-TEST_F(SessionRestoreUITest, FLAKY_ShareProcessesOnRestore) {
+TEST_F(SessionRestoreUITest, DISABLED_ShareProcessesOnRestore) {
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser_proxy.get() != NULL);
   int tab_count;

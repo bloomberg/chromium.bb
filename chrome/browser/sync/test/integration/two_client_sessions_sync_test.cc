@@ -144,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, BothChanged) {
 
 // Flaky on OSX (number of conflicting nodes is off). http://crbug.com/85294.
 #if defined(OS_MACOSX)
-#define MAYBE_FirstChangesAndSetsPassphrase FLAKY_FirstChangesAndSetsPassphrase
+#define MAYBE_FirstChangesAndSetsPassphrase DISABLED_FirstChangesAndSetsPassphrase
 #else
 #define MAYBE_FirstChangesAndSetsPassphrase FirstChangesAndSetsPassphrase
 #endif
@@ -197,7 +197,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
 // Flaky on OSX (number of conflicting nodes is off). http://crbug.com/85294.
 #if defined(OS_MACOSX)
 #define MAYBE_FirstChangesWhileSecondWaitingForPassphrase \
-        FLAKY_FirstChangesWhileSecondWaitingForPassphrase
+        DISABLED_FirstChangesWhileSecondWaitingForPassphrase
 #else
 #define MAYBE_FirstChangesWhileSecondWaitingForPassphrase \
         FirstChangesWhileSecondWaitingForPassphrase
@@ -306,7 +306,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
 // Flaky on OSX (number of conflicting nodes is off). http://crbug.com/85294.
 #if defined(OS_MACOSX)
 #define MAYBE_SecondChangesBeforeEncrAndPassphraseChange \
-        FLAKY_SecondChangesBeforeEncrAndPassphraseChange
+        DISABLED_SecondChangesBeforeEncrAndPassphraseChange
 #else
 #define MAYBE_SecondChangesBeforeEncrAndPassphraseChange \
         SecondChangesBeforeEncrAndPassphraseChange
@@ -366,7 +366,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
 // Flaky on OSX (number of conflicting nodes is off). http://crbug.com/85294.
 #if defined(OS_MACOSX)
 #define MAYBE_BothChangeWithEncryptionAndPassphrase \
-        FLAKY_BothChangeWithEncryptionAndPassphrase
+        DISABLED_BothChangeWithEncryptionAndPassphrase
 #else
 #define MAYBE_BothChangeWithEncryptionAndPassphrase \
         BothChangeWithEncryptionAndPassphrase

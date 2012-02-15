@@ -48,7 +48,8 @@ class TwoClientAutofillSyncTest : public SyncTest {
 };
 
 // Flaky, http://crbug.com/102687
-IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, FLAKY_WebDataServiceSanity) {
+IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest,
+                       DISABLED_WebDataServiceSanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Client0 adds a key.

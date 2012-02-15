@@ -40,7 +40,7 @@ class ViewSourceTest : public UITest {
 // set in the html was set successfully (it shouldn't because we rendered the
 // page in view source).
 // Flaky; see http://crbug.com/72201.
-TEST_F(ViewSourceTest, FLAKY_DoesBrowserRenderInViewSource) {
+TEST_F(ViewSourceTest, DISABLED_DoesBrowserRenderInViewSource) {
   ASSERT_TRUE(test_server_.Start());
 
   std::string cookie = "viewsource_cookie";
@@ -95,7 +95,7 @@ TEST_F(ViewSourceTest, ViewSourceInMenuEnabledOnANormalPage) {
 // from the menu.
 //
 // Occasionally crashes on all platforms, see http://crbug.com/69249
-TEST_F(ViewSourceTest, FLAKY_ViewSourceInMenuDisabledWhileViewingSource) {
+TEST_F(ViewSourceTest, DISABLED_ViewSourceInMenuDisabledWhileViewingSource) {
   ASSERT_TRUE(test_server_.Start());
 
   GURL url_viewsource(chrome::kViewSourceScheme + std::string(":") +
