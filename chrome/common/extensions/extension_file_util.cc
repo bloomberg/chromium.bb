@@ -632,8 +632,10 @@ FilePath GetUserDataTempDir() {
   // explicit thread check.
   base::ThreadRestrictions::AssertIOAllowed();
 
-  // Getting chrome::DIR_USER_DATA_TEMP is failing.  Use histogram to see why.
-  // TODO(skerner): Fix the problem, and remove this code.  crbug.com/70056
+  // The following enum used to be sent as a histogram to diagnose issues
+  // accessing the temp path (crbug/70056).  The histogram is gone, but
+  // the enum makes it clear exactly why the temp directory can not be
+  // accessed, which may aid debugging in the future.
   enum DirectoryCreationResult {
     SUCCESS = 0,
 
@@ -680,10 +682,6 @@ FilePath GetUserDataTempDir() {
     // Successfully created the Temp directory.
     result = SUCCESS;
   }
-
-  UMA_HISTOGRAM_ENUMERATION("Extensions.GetUserDataTempDir",
-                            result,
-                            NUM_DIRECTORY_CREATION_RESULTS);
 
   if (result == SUCCESS)
     return temp_path;
