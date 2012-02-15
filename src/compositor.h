@@ -130,7 +130,7 @@ struct weston_shell {
 	void (*lock)(struct weston_shell *shell);
 	void (*unlock)(struct weston_shell *shell);
 	void (*map)(struct weston_shell *shell, struct weston_surface *surface,
-		    int32_t width, int32_t height);
+		    int32_t width, int32_t height, int32_t sx, int32_t sy);
 	void (*configure)(struct weston_shell *shell,
 			  struct weston_surface *surface,
 			  GLfloat x, GLfloat y, int32_t width, int32_t height);

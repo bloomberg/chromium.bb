@@ -105,7 +105,7 @@ tablet_shell_set_state(struct tablet_shell *shell, int state)
 
 static void
 tablet_shell_map(struct weston_shell *base, struct weston_surface *surface,
-		       int32_t width, int32_t height)
+		       int32_t width, int32_t height, int32_t sx, int32_t sy)
 {
 	struct tablet_shell *shell =
 		container_of(base, struct tablet_shell, shell);

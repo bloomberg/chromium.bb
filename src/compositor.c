@@ -1176,7 +1176,7 @@ surface_attach(struct wl_client *client,
 		       &es->buffer_destroy_listener.link);
 
 	if (es->visual == WESTON_NONE_VISUAL) {
-		shell->map(shell, es, buffer->width, buffer->height);
+		shell->map(shell, es, buffer->width, buffer->height, sx, sy);
 	} else if (sx != 0 || sy != 0 ||
 		   es->geometry.width != buffer->width ||
 		   es->geometry.height != buffer->height) {

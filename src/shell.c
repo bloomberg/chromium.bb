@@ -1339,8 +1339,8 @@ center_on_output(struct weston_surface *surface, struct weston_output *output)
 }
 
 static void
-map(struct weston_shell *base,
-    struct weston_surface *surface, int32_t width, int32_t height)
+map(struct weston_shell *base, struct weston_surface *surface,
+    int32_t width, int32_t height, int32_t sx, int32_t sy)
 {
 	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
 	struct weston_compositor *compositor = shell->compositor;
@@ -1387,6 +1387,10 @@ map(struct weston_shell *base,
 		break;
 	case SHELL_SURFACE_POPUP:
 		shell_map_popup(shsurf, shsurf->popup.time);
+	case SHELL_SURFACE_NONE:
+		weston_surface_set_position(surface,
+					    surface->geometry.x + sx,
+					    surface->geometry.y + sy);
 		break;
 	default:
 		;
