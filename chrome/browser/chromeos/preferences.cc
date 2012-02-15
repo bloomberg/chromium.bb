@@ -15,8 +15,9 @@
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
-#include "chrome/browser/chromeos/system/screen_locker_settings.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
+#include "chrome/browser/chromeos/system/runtime_environment.h"
+#include "chrome/browser/chromeos/system/screen_locker_settings.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -575,6 +576,10 @@ void Preferences::UpdateModifierKeyMapping() {
 }
 
 void Preferences::UpdateAutoRepeatRate() {
+  // Avoid setting repeat rate on desktop dev environment.
+  if (!system::runtime_environment::IsRunningOnChromeOS())
+    return;
+
   input_method::AutoRepeatRate rate;
   rate.initial_delay_in_ms = language_xkb_auto_repeat_delay_pref_.GetValue();
   rate.repeat_interval_in_ms =
