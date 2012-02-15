@@ -29,55 +29,55 @@
 
   main := (one_instruction
     >{
-	begin = p;
-	disp_type = DISPNONE;
-	imm_operand = IMMNONE;
-	imm2_operand = IMMNONE;
-	data16_prefix = FALSE;
-	lock_prefix = FALSE;
-	repnz_prefix = FALSE;
-	repz_prefix = FALSE;
-	branch_not_taken = FALSE;
-	branch_taken = FALSE;
-	vex_prefix3 = 0x00;
+        begin = p;
+        disp_type = DISPNONE;
+        imm_operand = IMMNONE;
+        imm2_operand = IMMNONE;
+        data16_prefix = FALSE;
+        lock_prefix = FALSE;
+        repnz_prefix = FALSE;
+        repz_prefix = FALSE;
+        branch_not_taken = FALSE;
+        branch_taken = FALSE;
+        vex_prefix3 = 0x00;
     }
     @{
-	switch (disp_type) {
-	  case DISPNONE: instruction.rm.offset = 0; break;
-	  case DISP8: instruction.rm.offset = (uint64_t) *disp; break;
-	  case DISP16: instruction.rm.offset =
-	    (uint64_t) (disp[0] + 256U * disp[1]);
-	    break;
-	  case DISP32: instruction.rm.offset = (uint64_t)
-	    (disp[0] + 256U * (disp[1] + 256U * (disp[2] + 256U * (disp[3]))));
-	    break;
-	}
-	switch (imm_operand) {
-	  case IMMNONE: instruction.imm[0] = 0; break;
-	  case IMM2: instruction.imm[0] = imm[0] & 0x03; break;
-	  case IMM8: instruction.imm[0] = imm[0]; break;
-	  case IMM16: instruction.imm[0] = (uint64_t) (*imm + 256U * (imm[1]));
-	    break;
-	  case IMM32: instruction.imm[0] = (uint64_t)
-	    (imm[0] + 256U * (imm[1] + 256U * (imm[2] + 256U * (imm[3]))));
-	    break;
-	}
-	switch (imm2_operand) {
-	  case IMMNONE: instruction.imm[1] = 0; break;
-	  case IMM2: instruction.imm[1] = imm2[0] & 0x03; break;
-	  case IMM8: instruction.imm[1] = imm2[0]; break;
-	  case IMM16: instruction.imm[1] = (uint64_t)
-	    (imm2[0] + 256U * (imm2[1]));
-	    break;
-	  case IMM32: instruction.imm[1] = (uint64_t)
-	    (imm2[0] + 256U * (imm2[1] + 256U * (imm2[2] + 256U * (imm2[3]))));
-	    break;
-	}
-	process_instruction(begin, p+1, &instruction, userdata);
+        switch (disp_type) {
+          case DISPNONE: instruction.rm.offset = 0; break;
+          case DISP8: instruction.rm.offset = (uint64_t) *disp; break;
+          case DISP16: instruction.rm.offset =
+            (uint64_t) (disp[0] + 256U * disp[1]);
+            break;
+          case DISP32: instruction.rm.offset = (uint64_t)
+            (disp[0] + 256U * (disp[1] + 256U * (disp[2] + 256U * (disp[3]))));
+            break;
+        }
+        switch (imm_operand) {
+          case IMMNONE: instruction.imm[0] = 0; break;
+          case IMM2: instruction.imm[0] = imm[0] & 0x03; break;
+          case IMM8: instruction.imm[0] = imm[0]; break;
+          case IMM16: instruction.imm[0] = (uint64_t) (*imm + 256U * (imm[1]));
+            break;
+          case IMM32: instruction.imm[0] = (uint64_t)
+            (imm[0] + 256U * (imm[1] + 256U * (imm[2] + 256U * (imm[3]))));
+            break;
+        }
+        switch (imm2_operand) {
+          case IMMNONE: instruction.imm[1] = 0; break;
+          case IMM2: instruction.imm[1] = imm2[0] & 0x03; break;
+          case IMM8: instruction.imm[1] = imm2[0]; break;
+          case IMM16: instruction.imm[1] = (uint64_t)
+            (imm2[0] + 256U * (imm2[1]));
+            break;
+          case IMM32: instruction.imm[1] = (uint64_t)
+            (imm2[0] + 256U * (imm2[1] + 256U * (imm2[2] + 256U * (imm2[3]))));
+            break;
+        }
+        process_instruction(begin, p+1, &instruction, userdata);
     })*
     $!{ process_error(p, userdata);
-	result = 1;
-	goto error_detected;
+        result = 1;
+        goto error_detected;
     };
 
 }%%
@@ -129,8 +129,8 @@ enum imm_mode {
 };
 
 int DecodeChunkIA32(const uint8_t *data, size_t size,
-		    process_instruction_func process_instruction,
-		    process_error_func process_error, void *userdata) {
+                    process_instruction_func process_instruction,
+                    process_error_func process_error, void *userdata) {
   const uint8_t *p = data;
   const uint8_t *pe = data + size;
   const uint8_t *eof = pe;

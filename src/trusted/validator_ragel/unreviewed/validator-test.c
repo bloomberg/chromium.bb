@@ -22,7 +22,7 @@
 #pragma GCC diagnostic ignored "-Wdeclaration-after-statement"
 
 static void CheckBounds(unsigned char *data, size_t data_size,
-			void *ptr, size_t inside_size) {
+                        void *ptr, size_t inside_size) {
   assert(data <= (unsigned char *) ptr);
   assert((unsigned char *) ptr + inside_size <= data + data_size);
 }
@@ -44,14 +44,14 @@ void ReadFile(const char *filename, uint8_t **result, size_t *result_size) {
   data = malloc(file_size);
   if (data == NULL) {
     fprintf(stderr, "Unable to create memory image of input file: %s\n",
-	    filename);
+            filename);
     exit(1);
   }
   fseek(fp, 0, SEEK_SET);
   got = fread(data, 1, file_size, fp);
   if (got != file_size) {
     fprintf(stderr, "Unable to read data from input file: %s\n",
-	    filename);
+            filename);
     exit(1);
   }
   fclose(fp);
@@ -86,28 +86,28 @@ int ValidateFile(const char *filename, int repeat_count) {
       assert(memcmp(header->e_ident, ELFMAG, strlen(ELFMAG)) == 0);
 
       for (index = 0; index < header->e_shnum; ++index) {
-	Elf32_Shdr *section = (Elf32_Shdr *) (data + header->e_shoff +
-						   header->e_shentsize * index);
-	CheckBounds(data, data_size, section, sizeof(*section));
+        Elf32_Shdr *section = (Elf32_Shdr *) (data + header->e_shoff +
+                                                   header->e_shentsize * index);
+        CheckBounds(data, data_size, section, sizeof(*section));
 
-	if ((section->sh_flags & SHF_EXECINSTR) != 0) {
-	  struct ValidateState state;
-	  state.offset = data + section->sh_offset - section->sh_addr;
-	  if (section->sh_size <= 0xfff) {
-	    state.width = 4;
-	  } else if (section->sh_size <= 0xfffffff) {
-	    state.width = 8;
-	  } else {
-	    state.width = 12;
-	  }
-	  CheckBounds(data, data_size,
-		      data + section->sh_offset, section->sh_size);
-	  int res = ValidateChunkIA32(data + section->sh_offset,
-					section->sh_size, ProcessError, &state);
-	  if (res != 0) {
-	    return res;
-	  }
-	}
+        if ((section->sh_flags & SHF_EXECINSTR) != 0) {
+          struct ValidateState state;
+          state.offset = data + section->sh_offset - section->sh_addr;
+          if (section->sh_size <= 0xfff) {
+            state.width = 4;
+          } else if (section->sh_size <= 0xfffffff) {
+            state.width = 8;
+          } else {
+            state.width = 12;
+          }
+          CheckBounds(data, data_size,
+                      data + section->sh_offset, section->sh_size);
+          int res = ValidateChunkIA32(data + section->sh_offset,
+                                        section->sh_size, ProcessError, &state);
+          if (res != 0) {
+            return res;
+          }
+        }
       }
     }
   } else if (data[4] == 2) {
@@ -120,30 +120,30 @@ int ValidateFile(const char *filename, int repeat_count) {
       assert(memcmp(header->e_ident, ELFMAG, strlen(ELFMAG)) == 0);
 
       for (index = 0; index < header->e_shnum; ++index) {
-	Elf64_Shdr *section = (Elf64_Shdr *) (data + header->e_shoff +
-						   header->e_shentsize * index);
-	CheckBounds(data, data_size, section, sizeof(*section));
+        Elf64_Shdr *section = (Elf64_Shdr *) (data + header->e_shoff +
+                                                   header->e_shentsize * index);
+        CheckBounds(data, data_size, section, sizeof(*section));
 
-	if ((section->sh_flags & SHF_EXECINSTR) != 0) {
-	  struct ValidateState state;
-	  state.offset = data + section->sh_offset - section->sh_addr;
-	  if (section->sh_size <= 0xfff) {
-	    state.width = 4;
-	  } else if (section->sh_size <= 0xfffffff) {
-	    state.width = 8;
-	  } else if (section->sh_size <= 0xfffffffffffLL) {
-	    state.width = 12;
-	  } else {
-	    state.width = 16;
-	  }
-	  CheckBounds(data, data_size,
-		      data + section->sh_offset, section->sh_size);
-	  int res = ValidateChunkAMD64(data + section->sh_offset,
-					section->sh_size, ProcessError, &state);
-	  if (res != 0) {
-	    return res;
-	  }
-	}
+        if ((section->sh_flags & SHF_EXECINSTR) != 0) {
+          struct ValidateState state;
+          state.offset = data + section->sh_offset - section->sh_addr;
+          if (section->sh_size <= 0xfff) {
+            state.width = 4;
+          } else if (section->sh_size <= 0xfffffff) {
+            state.width = 8;
+          } else if (section->sh_size <= 0xfffffffffffLL) {
+            state.width = 12;
+          } else {
+            state.width = 16;
+          }
+          CheckBounds(data, data_size,
+                      data + section->sh_offset, section->sh_size);
+          int res = ValidateChunkAMD64(data + section->sh_offset,
+                                        section->sh_size, ProcessError, &state);
+          if (res != 0) {
+            return res;
+          }
+        }
       }
     }
   } else {

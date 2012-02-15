@@ -19,15 +19,15 @@ Some assumptions are made that does not allow parsing arbitrary dot files:
 
 An example of a dot file that can be parsed by this script:
 digraph one_instruction_x86_64 {
-	node [ shape = point ];
-	ENTRY;
-	node [ fixedsize = true, height = 0.65, shape = doublecircle ];
-	3;
-	node [ shape = circle ];
-	1 -> 2 [ label = "0..3 / action_1" ];
-	2 -> 3 [ label = "DEF / action_2" ];
-	1 -> 3 [ label = "15" ];
-	ENTRY -> 1 [ label = "IN" ];
+    node [ shape = point ];
+    ENTRY;
+    node [ fixedsize = true, height = 0.65, shape = doublecircle ];
+    3;
+    node [ shape = circle ];
+    1 -> 2 [ label = "0..3 / action_1" ];
+    2 -> 3 [ label = "DEF / action_2" ];
+    1 -> 3 [ label = "15" ];
+    ENTRY -> 1 [ label = "IN" ];
 }
 """
 

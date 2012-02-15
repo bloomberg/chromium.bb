@@ -72,27 +72,27 @@ enum register_name {
   REG_R13,
   REG_R14,
   REG_R15,
-  REG_RM,	/* Address in memory via rm field.			      */
-  REG_RIP,	/* RIP - used as base in x86-64 mode.			      */
-  REG_RIZ,	/* EIZ/RIZ - used as "always zero index" register.	      */
-  REG_IMM,	/* Fixed value in imm field.				      */
-  REG_IMM2,	/* Fixed value in second imm field.			      */
-  REG_DS_RBX,	/* Fox xlat: %ds(%rbx).					      */
-  REG_ES_RDI,	/* For string instructions: %es:(%rsi).			      */
-  REG_DS_RSI,	/* For string instructions: %ds:(%rdi).			      */
-  REG_PORT_DX,	/* 16-bit DX: for in/out instructions.			      */
-  REG_NONE,	/* For modrm: both index and base can be absent.	      */
-  REG_ST,	/* For x87 instructions: implicit %st.			      */
-  JMP_TO	/* Operand is jump target address: usually %rip+offset.	      */
+  REG_RM,       /* Address in memory via rm field.                            */
+  REG_RIP,      /* RIP - used as base in x86-64 mode.                         */
+  REG_RIZ,      /* EIZ/RIZ - used as "always zero index" register.            */
+  REG_IMM,      /* Fixed value in imm field.                                  */
+  REG_IMM2,     /* Fixed value in second imm field.                           */
+  REG_DS_RBX,   /* Fox xlat: %ds(%rbx).                                       */
+  REG_ES_RDI,   /* For string instructions: %es:(%rsi).                       */
+  REG_DS_RSI,   /* For string instructions: %ds:(%rdi).                       */
+  REG_PORT_DX,  /* 16-bit DX: for in/out instructions.                        */
+  REG_NONE,     /* For modrm: both index and base can be absent.              */
+  REG_ST,       /* For x87 instructions: implicit %st.                        */
+  JMP_TO        /* Operand is jump target address: usually %rip+offset.       */
 };
 
 typedef void (*process_error_func) (const uint8_t *ptr, void *userdata);
 
 int ValidateChunkAMD64(const uint8_t *data, size_t size,
-		       process_error_func process_error, void *userdata);
+                       process_error_func process_error, void *userdata);
 
 int ValidateChunkIA32(const uint8_t *data, size_t size,
-		      process_error_func process_error, void *userdata);
+                      process_error_func process_error, void *userdata);
 
 #ifdef __cplusplus
 }

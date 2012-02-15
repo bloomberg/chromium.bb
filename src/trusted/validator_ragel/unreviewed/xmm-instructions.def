@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 ################################################################################
 # This file describes instructions from AMD64 Architecture Programmer’s Manual
-#				Volume 4: 128-Bit and 256-Bit Media Instructions
+#                               Volume 4: 128-Bit and 256-Bit Media Instructions
 ################################################################################
 # File format: see general-purpose-instructions.def
 ######## ADDPD/VADDPD ##########################################################

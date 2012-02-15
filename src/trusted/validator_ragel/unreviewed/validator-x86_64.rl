@@ -41,26 +41,26 @@
 
   action check_access {
     if ((base == REG_RIP) || (base == REG_R15) ||
-	((base == REG_RSP) && (restricted_register != REG_RSP)) ||
-	((base == REG_RBP) && (restricted_register != REG_RBP))) {
+        ((base == REG_RSP) && (restricted_register != REG_RSP)) ||
+        ((base == REG_RBP) && (restricted_register != REG_RBP))) {
       if ((index == restricted_register) ||
-	  ((index == REG_RDI) &&
-	   (restricted_register == kSandboxedRsiRestrictedRdi))) {
-	BitmapClearBit(valid_targets, begin - data);
+          ((index == REG_RDI) &&
+           (restricted_register == kSandboxedRsiRestrictedRdi))) {
+        BitmapClearBit(valid_targets, begin - data);
       } else if ((index != REG_NONE) && (index != REG_RIZ)) {
-	fprintf(stderr,"Improper sandboxing in instruction %zx", begin - data);
-	exit(1);
+        fprintf(stderr,"Improper sandboxing in instruction %zx", begin - data);
+        exit(1);
       }
     } else if ((index == REG_RIP) || (index == REG_R15) ||
-	       ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-	       ((index == REG_RBP) && (restricted_register != REG_RBP))) {
+               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
+               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
       if ((base == restricted_register) ||
-	  ((base == REG_RDI) &&
-	   (restricted_register == kSandboxedRsiRestrictedRdi))) {
-	BitmapClearBit(valid_targets, begin - data);
+          ((base == REG_RDI) &&
+           (restricted_register == kSandboxedRsiRestrictedRdi))) {
+        BitmapClearBit(valid_targets, begin - data);
       } else if ((base != REG_NONE) && (base != REG_RIZ)) {
-	fprintf(stderr,"Improper sandboxing in instruction @%zx", begin - data);
-	exit(1);
+        fprintf(stderr,"Improper sandboxing in instruction @%zx", begin - data);
+        exit(1);
       }
     } else {
       fprintf(stderr,"Improper sandboxing in instruction @%zx", begin - data);
@@ -77,7 +77,7 @@
   }
   action rel32_operand {
     int32_t offset =
-	   (uint32_t) (p[-3] + 256U * (p[-2] + 256U * (p[-1] + 256U * (p[0]))));
+           (uint32_t) (p[-3] + 256U * (p[-2] + 256U * (p[-1] + 256U * (p[0]))));
     size_t jump_dest = offset + (p - data);
     check_jump_dest;
   }
@@ -97,58 +97,58 @@
     /* If Sandboxed Rsi is destroyed then we must note that.  */
     if (restricted_register == kSandboxedRsi) {
       for (i = 0; i < operands_count; ++i) {
-	if ((operands[i].write == TRUE) &&
-	    (operands[i].name == REG_RSI) &&
-	    ((operands[i].type == OperandSandboxRestricted) ||
-	     (operands[i].type == OperandSandboxUnrestricted))) {
-	  restricted_register = kNoRestrictedReg;
-	  break;
-	}
+        if ((operands[i].write == TRUE) &&
+            (operands[i].name == REG_RSI) &&
+            ((operands[i].type == OperandSandboxRestricted) ||
+             (operands[i].type == OperandSandboxUnrestricted))) {
+          restricted_register = kNoRestrictedReg;
+          break;
+        }
       }
     }
     if (restricted_register == kSandboxedRsi) {
       for (i = 0; i < operands_count; ++i) {
-	if ((operands[i].write == TRUE) &&
-	    (operands[i].name == REG_RDI) &&
-	    (operands[i].type == OperandSandboxRestricted)) {
-	  sandboxed_rsi_restricted_rdi = begin;
-	  restricted_register = kSandboxedRsiRestrictedRdi;
-	}
+        if ((operands[i].write == TRUE) &&
+            (operands[i].name == REG_RDI) &&
+            (operands[i].type == OperandSandboxRestricted)) {
+          sandboxed_rsi_restricted_rdi = begin;
+          restricted_register = kSandboxedRsiRestrictedRdi;
+        }
       }
     }
     if (restricted_register != kSandboxedRsiRestrictedRdi) {
       restricted_register = kNoRestrictedReg;
       for (i = 0; i < operands_count; ++i) {
-	if (operands[i].write && operands[i].name <= REG_R15) {
-	  if (operands[i].type == OperandSandboxRestricted) {
-	    if (operands[i].name == REG_R15) {
-	      printf("Incorrectly modified register %%r15 at the %zx\n",
-								      p - data);
-	      exit(1);
-	    } else {
-	      restricted_register = operands[i].name;
-	    }
-	  } else if (operands[i].type == OperandSandboxUnrestricted) {
-	    if (operands[i].name == REG_RBP) {
-	      printf("Incorrectly modified register %%rbp at the %zx\n",
-								      p - data);
-	      exit(1);
-	    } else if (operands[i].name == REG_RSP) {
-	      printf("Incorrectly modified register %%rsp at the %zx\n",
-								      p - data);
-	      exit(1);
-	    } else if (operands[i].name == REG_R15) {
-	      printf("Incorrectly modified register %%r15 at the %zx\n",
-								      p - data);
-	      exit(1);
-	    }
-	  } else if (operands[i].type == OperandNoSandboxEffect) {
-	    if (operands[i].name == REG_R15) {
-	      printf("Incorrectly modified register %%r15 at the %zx\n",
-								      p - data);
-	      exit(1);
-	    }
-	  }
+        if (operands[i].write && operands[i].name <= REG_R15) {
+          if (operands[i].type == OperandSandboxRestricted) {
+            if (operands[i].name == REG_R15) {
+              printf("Incorrectly modified register %%r15 at the %zx\n",
+                                                                      p - data);
+              exit(1);
+            } else {
+              restricted_register = operands[i].name;
+            }
+          } else if (operands[i].type == OperandSandboxUnrestricted) {
+            if (operands[i].name == REG_RBP) {
+              printf("Incorrectly modified register %%rbp at the %zx\n",
+                                                                      p - data);
+              exit(1);
+            } else if (operands[i].name == REG_RSP) {
+              printf("Incorrectly modified register %%rsp at the %zx\n",
+                                                                      p - data);
+              exit(1);
+            } else if (operands[i].name == REG_R15) {
+              printf("Incorrectly modified register %%r15 at the %zx\n",
+                                                                      p - data);
+              exit(1);
+            }
+          } else if (operands[i].type == OperandNoSandboxEffect) {
+            if (operands[i].name == REG_R15) {
+              printf("Incorrectly modified register %%r15 at the %zx\n",
+                                                                      p - data);
+              exit(1);
+            }
+          }
         }
       }
     }
@@ -156,55 +156,55 @@
 
   # Remove special instructions which are only allowed in special cases.
   normal_instruction = (one_instruction - (
-    (0x48 0x89 0xe5)		 | # mov %rsp,%rbp
-    (0x48 0x89 0xec)		 | # mov %rbp,%rsp
-    (0x48 0x81 0xe4 any{4})	 | # and $XXX,%rsp
-    (0x48 0x83 0xe4 any)	 | # and $XXX,%rsp
-    (0x4c 0x01 0xfd)		 | # add %r15,%rbp
-    (0x49 0x8d 0x2c 0x2f)	 | # lea (%r15,%rbp,1),%rbp
-    (0x4a 0x8d 0x6c 0x3d any)	 | # lea 0x0(%rbp,%r15,1),%rbp
-    (0x48 0x81 0xe5 any{4})	 | # and $XXX,%rsp
-    (0x48 0x83 0xe5 any)	 | # and $XXX,%rsp
-    (0x4c 0x01 0xfc)		 | # add %r15,%rsp
-    (0x4a 0x8d 0x24 0x3c)	 | # lea (%rsp,%r15,1),%rsp
-    (0x49 0x8d 0x34 0x37)	 | # lea (%r15,%rsi,1),%rsi
-    (0x49 0x8d 0x3c 0x3f)	   # lea (%r15,%rdi,1),%rdi
+    (0x48 0x89 0xe5)             | # mov %rsp,%rbp
+    (0x48 0x89 0xec)             | # mov %rbp,%rsp
+    (0x48 0x81 0xe4 any{4})      | # and $XXX,%rsp
+    (0x48 0x83 0xe4 any)         | # and $XXX,%rsp
+    (0x4c 0x01 0xfd)             | # add %r15,%rbp
+    (0x49 0x8d 0x2c 0x2f)        | # lea (%r15,%rbp,1),%rbp
+    (0x4a 0x8d 0x6c 0x3d any)    | # lea 0x0(%rbp,%r15,1),%rbp
+    (0x48 0x81 0xe5 any{4})      | # and $XXX,%rsp
+    (0x48 0x83 0xe5 any)         | # and $XXX,%rsp
+    (0x4c 0x01 0xfc)             | # add %r15,%rsp
+    (0x4a 0x8d 0x24 0x3c)        | # lea (%rsp,%r15,1),%rsp
+    (0x49 0x8d 0x34 0x37)        | # lea (%r15,%rsi,1),%rsi
+    (0x49 0x8d 0x3c 0x3f)          # lea (%r15,%rdi,1),%rdi
   )) @process_normal_instruction;
 
   special_instruction =
-    (0x48 0x89 0xe5)			   | # mov %rsp,%rbp
+    (0x48 0x89 0xe5)                       | # mov %rsp,%rbp
     (0x48 0x81 0xe4 any{3} (0x80 .. 0xff)) | # and $XXX,%rsp
-    (0x48 0x83 0xe4 (0x80 .. 0xff))	     # and $XXX,%rsp
+    (0x48 0x83 0xe4 (0x80 .. 0xff))          # and $XXX,%rsp
     @{ if (restricted_register == REG_RSP) {
-	 printf("Incorrectly modified register %%rsp at the %zx\n", p - data);
-	 exit(1);
+         printf("Incorrectly modified register %%rsp at the %zx\n", p - data);
+         exit(1);
        }
        restricted_register = kNoRestrictedReg;
     } |
-    (0x48 0x89 0xec)			   | # mov %rbp,%rsp
+    (0x48 0x89 0xec)                       | # mov %rbp,%rsp
     (0x48 0x81 0xe5 any{3} (0x80 .. 0xff)) | # and $XXX,%rsp
-    (0x48 0x83 0xe5 (0x80 .. 0xff))	     # and $XXX,%rsp
+    (0x48 0x83 0xe5 (0x80 .. 0xff))          # and $XXX,%rsp
     @{ if (restricted_register == REG_RBP) {
-	 printf("Incorrectly modified register %%rbp at the %zx\n", p - data);
-	 exit(1);
+         printf("Incorrectly modified register %%rbp at the %zx\n", p - data);
+         exit(1);
        }
        restricted_register = kNoRestrictedReg;
     } |
-    (0x4c 0x01 0xfd	       | # add %r15,%rbp
+    (0x4c 0x01 0xfd            | # add %r15,%rbp
      0x49 0x8d 0x2c 0x2f       | # lea (%r15,%rbp,1),%rbp
-     0x4a 0x8d 0x6c 0x3d 0x00)	 # lea 0x0(%rbp,%r15,1),%rbp
+     0x4a 0x8d 0x6c 0x3d 0x00)   # lea 0x0(%rbp,%r15,1),%rbp
     @{ if (restricted_register != REG_RBP) {
-	 printf("Incorrectly sandboxed %%rbp at the %zx\n", p - data);
-	 exit(1);
+         printf("Incorrectly sandboxed %%rbp at the %zx\n", p - data);
+         exit(1);
        }
        restricted_register = kNoRestrictedReg;
        BitmapClearBit(valid_targets, (begin - data));
     } |
-    (0x4c 0x01 0xfc	  | # add %r15,%rsp
+    (0x4c 0x01 0xfc       | # add %r15,%rsp
      0x4a 0x8d 0x24 0x3c)   # lea (%rsp,%r15,1),%rsp
     @{ if (restricted_register != REG_RSP) {
-	 printf("Incorrectly sandboxed %%rsp at the %zx\n", p - data);
-	 exit(1);
+         printf("Incorrectly sandboxed %%rsp at the %zx\n", p - data);
+         exit(1);
        }
        restricted_register = kNoRestrictedReg;
        BitmapClearBit(valid_targets, (begin - data));
@@ -218,11 +218,11 @@
      0x83 0xe6 0xe0 0x4c 0x01 0xfe 0xff (0xd6|0xe6) | # naclcall/jmp %esi, %r15
      0x83 0xe7 0xe0 0x4c 0x01 0xff 0xff (0xd7|0xe7))  # naclcall/jmp %edi, %r15
     @{ if (restricted_register == REG_RSP) {
-	 printf("Incorrectly modified register %%rsp at the %zx\n", p - data);
-	 exit(1);
+         printf("Incorrectly modified register %%rsp at the %zx\n", p - data);
+         exit(1);
        } else if (restricted_register == REG_RBP) {
-	 printf("Incorrectly modified register %%rbp at the %zx\n", p - data);
-	 exit(1);
+         printf("Incorrectly modified register %%rbp at the %zx\n", p - data);
+         exit(1);
        }
        BitmapClearBit(valid_targets, (p - data) - 4);
        BitmapClearBit(valid_targets, (p - data) - 1);
@@ -236,11 +236,11 @@
      0x41 0x83 0xe5 0xe0 0x4d 0x01 0xfd 0x41 0xff (0xd5|0xe5) | # naclcall/jmp
      0x41 0x83 0xe6 0xe0 0x4d 0x01 0xfe 0x41 0xff (0xd6|0xe6))  #   %r14d, %r15
     @{ if (restricted_register == REG_RSP) {
-	 printf("Incorrectly modified register %%rsp at the %zx\n", p - data);
-	 exit(1);
+         printf("Incorrectly modified register %%rsp at the %zx\n", p - data);
+         exit(1);
        } else if (restricted_register == REG_RBP) {
-	 printf("Incorrectly modified register %%rbp at the %zx\n", p - data);
-	 exit(1);
+         printf("Incorrectly modified register %%rbp at the %zx\n", p - data);
+         exit(1);
        }
        BitmapClearBit(valid_targets, (p - data) - 5);
        BitmapClearBit(valid_targets, (p - data) - 2);
@@ -248,62 +248,62 @@
     } |
     (0x49 0x8d 0x34 0x37) # lea (%r15,%rsi,1),%rsi
     @{ if (restricted_register == REG_RSI) {
-	 sandboxed_rsi = begin;
-	 restricted_register = kSandboxedRsi;
-       } else {
-	 restricted_register = kNoRestrictedReg;
-       }
-    } |
-    (0x49 0x8d 0x3c 0x3f) # lea (%r15,%rdi,1),%rdi
-    @{ if (restricted_register == REG_RDI) {
-	 sandboxed_rdi = begin;
-	 restricted_register = kSandboxedRdi;
-       } else if (restricted_register == kSandboxedRsiRestrictedRdi) {
-	 sandboxed_rdi = begin;
-	 restricted_register = kSandboxedRsiSandboxedRdi;
+         sandboxed_rsi = begin;
+         restricted_register = kSandboxedRsi;
        } else {
          restricted_register = kNoRestrictedReg;
        }
     } |
-    (0xac		       | # lods   %ds:(%rsi),%al
-     (data16|REXW_NONE)? 0xad)	 # lods   %ds:(%rsi),%ax/%eax/%rax
+    (0x49 0x8d 0x3c 0x3f) # lea (%r15,%rdi,1),%rdi
+    @{ if (restricted_register == REG_RDI) {
+         sandboxed_rdi = begin;
+         restricted_register = kSandboxedRdi;
+       } else if (restricted_register == kSandboxedRsiRestrictedRdi) {
+         sandboxed_rdi = begin;
+         restricted_register = kSandboxedRsiSandboxedRdi;
+       } else {
+         restricted_register = kNoRestrictedReg;
+       }
+    } |
+    (0xac                      | # lods   %ds:(%rsi),%al
+     (data16|REXW_NONE)? 0xad)   # lods   %ds:(%rsi),%ax/%eax/%rax
     @{ if (restricted_register != kSandboxedRsi) {
-	 printf("Incorrectly sandboxed %%rdi at the %zx\n", p - data);
-	 exit(1);
+         printf("Incorrectly sandboxed %%rdi at the %zx\n", p - data);
+         exit(1);
        }
        restricted_register = kNoRestrictedReg;
        BitmapClearBit(valid_targets, (begin - data));
        BitmapClearBit(valid_targets, (sandboxed_rdi - data));
     } |
-    (0xae		       | # scas   %ds:(%rsi),%al
+    (0xae                      | # scas   %ds:(%rsi),%al
      (data16|REXW_NONE)? 0xaf  | # scas   %ds:(%rsi),%ax/%eax/%rax
-     rep? 0xaa		       | # stos   %al,%es:(%rdi)
+     rep? 0xaa                 | # stos   %al,%es:(%rdi)
      (data16 |
       rep data16 |
-      data16 rep) 0xab	       | # stos   %ax,%es:(%rdi)
-      rep? REXW_NONE? 0xab)	 # stos   %eax/%rax,%es:(%rdi)
+      data16 rep) 0xab         | # stos   %ax,%es:(%rdi)
+      rep? REXW_NONE? 0xab)      # stos   %eax/%rax,%es:(%rdi)
     @{ if (restricted_register != kSandboxedRdi &&
-	   restricted_register != kSandboxedRsiSandboxedRdi) {
-	 printf("Incorrectly sandboxed %%rdi at the %zx\n", p - data);
-	 exit(1);
+           restricted_register != kSandboxedRsiSandboxedRdi) {
+         printf("Incorrectly sandboxed %%rdi at the %zx\n", p - data);
+         exit(1);
        }
        restricted_register = kNoRestrictedReg;
        BitmapClearBit(valid_targets, (begin - data));
        BitmapClearBit(valid_targets, (sandboxed_rdi - data));
     } |
-    (condrep? 0xa6	      | # cmpsb	   %es:(%rdi),%ds:(%rsi)
+    (condrep? 0xa6            | # cmpsb    %es:(%rdi),%ds:(%rsi)
      (data16 |
       condrep data16 |
-      data16 condrep) 0xa7    | # cmpsw	   %es:(%rdi),%ds:(%rsi)
+      data16 condrep) 0xa7    | # cmpsw    %es:(%rdi),%ds:(%rsi)
      condrep? REXW_NONE? 0xa7 | # cmps[lq] %es:(%rdi),%ds:(%rsi)
-     rep? 0xa4		      | # movsb	   %es:(%rdi),%ds:(%rsi)
+     rep? 0xa4                | # movsb    %es:(%rdi),%ds:(%rsi)
      (data16 |
       rep data16 |
-      data16 rep) 0xa5	      | # movsw	   %es:(%rdi),%ds:(%rsi)
-     rep? REXW_NONE? 0xa5)	# movs[lq] %es:(%rdi),%ds:(%rsi)
+      data16 rep) 0xa5        | # movsw    %es:(%rdi),%ds:(%rsi)
+     rep? REXW_NONE? 0xa5)      # movs[lq] %es:(%rdi),%ds:(%rsi)
     @{ if (restricted_register != kSandboxedRsiSandboxedRdi) {
-	 printf("Incorrectly sandboxed %%rsi or %%rdi at the %zx\n", p - data);
-	 exit(1);
+         printf("Incorrectly sandboxed %%rsi or %%rdi at the %zx\n", p - data);
+         exit(1);
        }
        restricted_register = kNoRestrictedReg;
        BitmapClearBit(valid_targets, (begin - data));
@@ -313,15 +313,15 @@
     };
 
   main := ((normal_instruction | special_instruction) >{
-	begin = p;
-	BitmapSetBit(valid_targets, p - data);
-	rex_prefix = FALSE;
-	vex_prefix2 = 0xe0;
-	vex_prefix3 = 0x00;
+        begin = p;
+        BitmapSetBit(valid_targets, p - data);
+        rex_prefix = FALSE;
+        vex_prefix2 = 0xe0;
+        vex_prefix3 = 0x00;
      })*
     $!{ process_error(p, userdata);
-	result = 1;
-	goto error_detected;
+        result = 1;
+        goto error_detected;
     };
 
 }%%
@@ -412,7 +412,7 @@ static inline void BitmapClearBit(uint8_t *bitmap, uint32_t index) {
 }
 
 static int CheckJumpTargets(uint8_t *valid_targets, uint8_t *jump_dests,
-			    size_t size) {
+                            size_t size) {
   size_t i;
   for (i = 0; i < size / 32; i++) {
     uint32_t jump_dest_mask = ((uint32_t *) jump_dests)[i];
@@ -426,7 +426,7 @@ static int CheckJumpTargets(uint8_t *valid_targets, uint8_t *jump_dests,
 }
 
 int ValidateChunkAMD64(const uint8_t *data, size_t size,
-		       process_error_func process_error, void *userdata) {
+                       process_error_func process_error, void *userdata) {
   const size_t bundle_size = 32;
   const size_t bundle_mask = bundle_size - 1;
 
@@ -438,9 +438,9 @@ int ValidateChunkAMD64(const uint8_t *data, size_t size,
 
   uint8_t rex_prefix, vex_prefix2, vex_prefix3;
   struct Operand {
-    unsigned int name	:5;
-    unsigned int type	:2;
-    bool	 write	:1;
+    unsigned int name   :5;
+    unsigned int type   :2;
+    bool         write  :1;
   } operands[5];
   enum register_name base, index;
   uint8_t operands_count, i;
