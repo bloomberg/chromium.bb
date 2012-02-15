@@ -291,20 +291,6 @@ void WebKitPlatformSupportImpl::histogramEnumeration(
   counter->Add(sample);
 }
 
-bool WebKitPlatformSupportImpl::isTraceEventEnabled() const {
-  return !!*base::debug::TraceLog::GetCategoryEnabled("webkit");
-}
-
-void WebKitPlatformSupportImpl::traceEventBegin(const char* name, void* id,
-                                                const char* extra) {
-  TRACE_EVENT_BEGIN_ETW(name, id, extra);
-}
-
-void WebKitPlatformSupportImpl::traceEventEnd(const char* name, void* id,
-                                              const char* extra) {
-  TRACE_EVENT_END_ETW(name, id, extra);
-}
-
 const unsigned char* WebKitPlatformSupportImpl::getTraceCategoryEnabledFlag(
     const char* category_name) {
   return TRACE_EVENT_API_GET_CATEGORY_ENABLED(category_name);
