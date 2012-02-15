@@ -417,8 +417,7 @@ void PanelBrowserWindowGtk::EnsurePanelFullyVisible() {
   // TODO(prasdt): to be implemented.
 }
 
-void PanelBrowserWindowGtk::ApplyVisualStyleForStrip(
-    PanelStripType newPanelStrip) {
+void PanelBrowserWindowGtk::ApplyVisualStyleForStrip() {
   // TODO(prasdt): to be implemented.
 }
 

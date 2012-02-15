@@ -301,8 +301,8 @@ void Panel::EnsureFullyVisible() {
   native_panel_->EnsurePanelFullyVisible();
 }
 
-void Panel::ApplyVisualStyleForStrip(PanelStripType newPanelStrip) {
-  native_panel_->ApplyVisualStyleForStrip(newPanelStrip);
+void Panel::ApplyVisualStyleForStrip() {
+  native_panel_->ApplyVisualStyleForStrip();
 }
 
 bool Panel::IsMaximized() const {

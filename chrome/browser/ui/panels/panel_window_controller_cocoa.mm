@@ -541,10 +541,12 @@ enum {
   return [[self titlebarView] iconOnlyWidthInScreenCoordinates];
 }
 
-- (void)applyVisualStyleForStrip:(PanelStripType)newPanelStrip {
-  if (windowShim_->panel()->manager()->is_full_screen())
+- (void)applyVisualStyleForStrip {
+  Panel* panel = windowShim_->panel();
+  if (panel->manager()->is_full_screen())
     return;
-  [[self window] setLevel:(newPanelStrip == OVERFLOW_STRIP ?
+  [[self window] setLevel:(
+      panel->panel_strip()->type() == PanelStrip::IN_OVERFLOW ?
       NSStatusWindowLevel + 1 : NSStatusWindowLevel)];
 }
 

@@ -19,14 +19,6 @@ class NativePanel;
 class PanelManager;
 class PanelStrip;
 
-// Type of the panel strip which currently manages the panel location,
-// visual state and size.
-// TODO(jianli): When we have PanelStrip base class, move it into PanelStrip.
-enum PanelStripType {
-  DOCKED_STRIP,
-  OVERFLOW_STRIP
-};
-
 // A platform independent implementation of BrowserWindow for Panels.  This
 // class would get the first crack at all the BrowserWindow calls for Panels and
 // do one or more of the following:
@@ -77,9 +69,7 @@ class Panel : public BrowserWindow,
   // top-most windows.
   void EnsureFullyVisible();
 
-  // TODO(jianli): When we can use Panel::currentStrip()->type(), the
-  // 'newPanelStrip' parameter can be removed.
-  void ApplyVisualStyleForStrip(PanelStripType newPanelStrip);
+  void ApplyVisualStyleForStrip();
 
   int TitleOnlyHeight() const;
 

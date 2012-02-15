@@ -184,7 +184,7 @@ void DockedPanelStrip::AddPanel(Panel* panel) {
   // Set panel properties for this strip.
   panel->SetAppIconVisibility(true);
   panel->set_draggable(!panel->has_temporary_layout());
-  panel->ApplyVisualStyleForStrip(DOCKED_STRIP);
+  panel->ApplyVisualStyleForStrip();
 
   if (panel->has_temporary_layout())
     panels_in_temporary_layout_.insert(panel);

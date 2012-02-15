@@ -426,7 +426,7 @@ void PanelBrowserView::EnsurePanelFullyVisible() {
 #endif
 }
 
-void PanelBrowserView::ApplyVisualStyleForStrip(PanelStripType newPanelStrip) {
+void PanelBrowserView::ApplyVisualStyleForStrip() {
 }
 
 PanelBrowserFrameView* PanelBrowserView::GetFrameView() const {

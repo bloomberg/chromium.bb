@@ -261,11 +261,10 @@ gfx::Size PanelBrowserWindowCocoa::IconOnlySize() const {
 void PanelBrowserWindowCocoa::EnsurePanelFullyVisible() {
 }
 
-void PanelBrowserWindowCocoa::ApplyVisualStyleForStrip(
-    PanelStripType newPanelStrip) {
+void PanelBrowserWindowCocoa::ApplyVisualStyleForStrip() {
   if (!is_shown_)
     return;
-  [controller_ applyVisualStyleForStrip:newPanelStrip];
+  [controller_ applyVisualStyleForStrip];
 }
 
 void PanelBrowserWindowCocoa::SetPanelAppIconVisibility(bool visible) {
