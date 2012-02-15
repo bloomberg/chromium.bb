@@ -318,6 +318,11 @@ IPC_MESSAGE_CONTROL0(GpuChannelMsg_CloseChannel)
 IPC_SYNC_MESSAGE_ROUTED0_1(GpuCommandBufferMsg_Initialize,
                            bool /* result */)
 
+// Sets the shared memory buffer used to hold the CommandBufferSharedState,
+// used to transmit the current state.
+IPC_SYNC_MESSAGE_ROUTED1_0(GpuCommandBufferMsg_SetSharedStateBuffer,
+                           int32 /* shm_id */)
+
 // Sets the shared memory buffer used for commands.
 IPC_SYNC_MESSAGE_ROUTED1_0(GpuCommandBufferMsg_SetGetBuffer,
                            int32 /* shm_id */)
@@ -339,7 +344,7 @@ IPC_SYNC_MESSAGE_ROUTED0_1(GpuCommandBufferMsg_GetStateFast,
 
 // Asynchronously synchronize the put and get offsets of both processes.
 // Caller passes its current put offset. Current state (including get offset)
-// is returned via an UpdateState message.
+// is returned in shared memory.
 IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_AsyncFlush,
                     int32 /* put_offset */,
                     uint32 /* flush_count */)
@@ -349,12 +354,6 @@ IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_AsyncFlush,
 // again to process any commands issued subsequent to unscheduling. The GPU
 // process actually sends it (deferred) to itself.
 IPC_MESSAGE_ROUTED0(GpuCommandBufferMsg_Rescheduled)
-
-// Return the current state of the command buffer following a request via
-// an AsyncGetState or AsyncFlush message. (This message is sent from the
-// GPU process to the renderer process.)
-IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_UpdateState,
-                    gpu::CommandBuffer::State /* state */)
 
 // Sent by the GPU process to display messages in the console.
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_ConsoleMsg,

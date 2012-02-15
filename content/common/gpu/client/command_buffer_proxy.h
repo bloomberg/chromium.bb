@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/gpu/client/gpu_video_decode_accelerator_host.h"
 #include "gpu/command_buffer/common/command_buffer.h"
+#include "gpu/command_buffer/common/command_buffer_shared.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
 
@@ -116,6 +117,9 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   void OnEchoAck();
   void OnConsoleMessage(const GPUCommandBufferConsoleMessage& message);
 
+  // Try to read an updated copy of the state from shared memory.
+  void TryUpdateState();
+
   // Local cache of id to transfer buffer mapping.
   typedef std::map<int32, gpu::Buffer> TransferBufferMap;
   TransferBufferMap transfer_buffers_;
@@ -127,6 +131,9 @@ class CommandBufferProxy : public gpu::CommandBuffer,
 
   // The last cached state received from the service.
   State last_state_;
+
+  // The shared memory area used to update state.
+  gpu::CommandBufferSharedState* shared_state_;
 
   // |*this| is owned by |*channel_| and so is always outlived by it, so using a
   // raw pointer is ok.

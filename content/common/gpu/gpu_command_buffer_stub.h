@@ -152,6 +152,7 @@ class GpuCommandBufferStub
   // Message handlers:
   void OnInitialize(IPC::Message* reply_message);
   void OnSetGetBuffer(int32 shm_id, IPC::Message* reply_message);
+  void OnSetSharedStateBuffer(int32 shm_id, IPC::Message* reply_message);
   void OnSetParent(int32 parent_route_id,
                    uint32 parent_texture_id,
                    IPC::Message* reply_message);

@@ -9,6 +9,7 @@
 #include "base/process_util.h"
 #include "base/debug/trace_event.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
+#include "gpu/command_buffer/common/command_buffer_shared.h"
 
 using ::base::SharedMemory;
 
@@ -16,6 +17,7 @@ namespace gpu {
 
 CommandBufferService::CommandBufferService()
     : ring_buffer_id_(-1),
+      shared_state_(NULL),
       num_entries_(0),
       get_offset_(0),
       put_offset_(0),
@@ -59,6 +61,13 @@ CommandBufferService::State CommandBufferService::GetLastState() {
   return GetState();
 }
 
+void CommandBufferService::UpdateState() {
+  if (shared_state_) {
+    CommandBufferService::State state = GetState();
+    shared_state_->Write(state);
+  }
+}
+
 CommandBufferService::State CommandBufferService::FlushSync(
     int32 put_offset, int32 last_known_get) {
   if (put_offset < 0 || put_offset > num_entries_) {
@@ -98,6 +107,15 @@ void CommandBufferService::SetGetBuffer(int32 transfer_buffer_id) {
   if (!get_buffer_change_callback_.is_null()) {
     get_buffer_change_callback_.Run(ring_buffer_id_);
   }
+
+  UpdateState();
+}
+
+void CommandBufferService::SetSharedStateBuffer(int32 transfer_buffer_id) {
+  gpu::Buffer buffer = GetTransferBuffer(transfer_buffer_id);
+  shared_state_ = reinterpret_cast<CommandBufferSharedState*>(buffer.ptr);
+
+  UpdateState();
 }
 
 void CommandBufferService::SetGetOffset(int32 get_offset) {

@@ -98,6 +98,8 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                                     OnInitialize);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_SetGetBuffer,
                                     OnSetGetBuffer);
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_SetSharedStateBuffer,
+                                    OnSetSharedStateBuffer);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_SetParent,
                                     OnSetParent);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_GetState, OnGetState);
@@ -294,6 +296,17 @@ void GpuCommandBufferStub::OnSetGetBuffer(
   Send(reply_message);
 }
 
+void GpuCommandBufferStub::OnSetSharedStateBuffer(
+    int32 shm_id, IPC::Message* reply_message) {
+  if (command_buffer_.get()) {
+    command_buffer_->SetSharedStateBuffer(shm_id);
+  } else {
+    DLOG(ERROR) << "no command_buffer.";
+    reply_message->set_reply_error();
+  }
+  Send(reply_message);
+}
+
 void GpuCommandBufferStub::OnSetParent(int32 parent_route_id,
                                        uint32 parent_texture_id,
                                        IPC::Message* reply_message) {
@@ -476,9 +489,7 @@ void GpuCommandBufferStub::ReportState() {
       gfx::GLContext::LosesAllContextsOnContextLost()) {
     channel_->LoseAllContexts();
   } else {
-    IPC::Message* msg = new GpuCommandBufferMsg_UpdateState(route_id_, state);
-    msg->set_unblock(true);
-    Send(msg);
+    command_buffer_->UpdateState();
   }
 }
 
