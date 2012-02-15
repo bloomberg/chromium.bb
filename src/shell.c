@@ -1421,6 +1421,8 @@ map(struct weston_shell *base,
 		}
 		do_configure = 0;
 		break;
+	case SHELL_SURFACE_NONE:
+		break;
 	default:
 		/* everything else just below the panel */
 		if (!wl_list_empty(&shell->panels)) {
