@@ -703,7 +703,7 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
 
   if (painter_.get()) {
-    painter_->Paint(width(), height(), canvas);
+    painter_->Paint(canvas, size());
   } else if (mode_ == POPUP) {
     canvas->TileImageInt(*GetThemeProvider()->GetBitmapNamed(
         IDR_LOCATIONBG_POPUPMODE_CENTER), 0, 0, 0, 0, width(), height());

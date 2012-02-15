@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -143,8 +143,9 @@ class RoundedRectPainter : public views::Painter {
       : border_(border) {
   }
 
-  virtual void Paint(int w, int h, gfx::Canvas* canvas) {
-    DrawRectWithBorder(w, h, border_, canvas);
+  // Overridden from views::Painter:
+  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE {
+    DrawRectWithBorder(size.width(), size.height(), border_, canvas);
   }
 
  private:

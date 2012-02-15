@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,10 +25,10 @@ gfx::Size NativeThemePainter::GetPreferredSize() {
   return theme->GetPartSize(delegate_->GetThemePart(), state, extra);
 }
 
-void NativeThemePainter::Paint(int w, int h, gfx::Canvas* canvas) {
+void NativeThemePainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
   const gfx::NativeTheme* native_theme = gfx::NativeTheme::instance();
   gfx::NativeTheme::Part part = delegate_->GetThemePart();
-  gfx::Rect rect(0, 0, w, h);
+  gfx::Rect rect(size);
 
   if (delegate_->GetThemeAnimation() != NULL &&
       delegate_->GetThemeAnimation()->is_animating()) {

@@ -92,7 +92,7 @@ class OptInButtonBorder : public views::Border {
     } else {
       painter = border_painter_.get();
     }
-    painter->Paint(view.width(), view.height(), canvas);
+    painter->Paint(canvas, view.size());
   }
 
   virtual void GetInsets(gfx::Insets* insets) const {
@@ -180,8 +180,9 @@ class AutocompletePopupContentsView::InstantOptInView
     canvas->Save();
     canvas->Translate(gfx::Point(kOptInBackgroundHInset,
                                  kOptInBackgroundVInset));
-    bg_painter_->Paint(width() - kOptInBackgroundHInset * 2,
-                       height() - kOptInBackgroundVInset * 2, canvas);
+    bg_painter_->Paint(canvas,
+                       gfx::Size(width() - kOptInBackgroundHInset * 2,
+                                 height() - kOptInBackgroundVInset * 2));
     canvas->DrawRect(gfx::Rect(0, 0, width() - kOptInBackgroundHInset * 2,
                                height() - kOptInBackgroundVInset * 2),
         ThemeService::GetDefaultColor(ThemeService::COLOR_TOOLBAR_SEPARATOR));

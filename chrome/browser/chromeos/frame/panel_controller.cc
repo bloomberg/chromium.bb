@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,8 +72,9 @@ class TitleBackgroundPainter : public views::Painter {
       : panel_controller_(controller) { }
 
  private:
-  virtual void Paint(int w, int h, gfx::Canvas* canvas) {
-    SkRect rect = {0, 0, w, h};
+  // Overridden from views::Painter:
+  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE {
+    SkRect rect = { 0, 0, size.width(), size.height() };
     SkPath path;
     SkScalar corners[] = {
         kTitleCornerRadius, kTitleCornerRadius,
@@ -85,7 +86,7 @@ class TitleBackgroundPainter : public views::Painter {
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);
     paint.setFlags(SkPaint::kAntiAlias_Flag);
-    SkPoint p[2] = { {0, 0}, {0, h} };
+    SkPoint p[2] = { {0, 0}, {0, size.height()} };
     SkColor colors[2] = {kTitleActiveGradientStart, kTitleActiveGradientEnd};
     if (panel_controller_->urgent()) {
       colors[0] = kTitleUrgentGradientStart;

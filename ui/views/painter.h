@@ -11,12 +11,14 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/views_export.h"
 
+class SkBitmap;
+
 namespace gfx {
 class Canvas;
 class Insets;
 class Rect;
+class Size;
 }
-class SkBitmap;
 
 namespace views {
 
@@ -48,7 +50,7 @@ class VIEWS_EXPORT Painter {
   virtual ~Painter() {}
 
   // Paints the painter in the specified region.
-  virtual void Paint(int w, int h, gfx::Canvas* canvas) = 0;
+  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) = 0;
 };
 
 // HorizontalPainter paints 3 images into a box: left, center and right. The
@@ -64,7 +66,7 @@ class VIEWS_EXPORT HorizontalPainter : public Painter {
   virtual ~HorizontalPainter() {}
 
   // Paints the images.
-  virtual void Paint(int w, int h, gfx::Canvas* canvas) OVERRIDE;
+  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE;
 
   // Height of the images.
   int height() const { return height_; }

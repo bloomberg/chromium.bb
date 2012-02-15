@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,7 +51,7 @@ void IconLabelBubbleView::SetImage(const SkBitmap& bitmap) {
 }
 
 void IconLabelBubbleView::OnPaint(gfx::Canvas* canvas) {
-  background_painter_.Paint(width(), height(), canvas);
+  background_painter_.Paint(canvas, size());
 }
 
 gfx::Size IconLabelBubbleView::GetPreferredSize() {

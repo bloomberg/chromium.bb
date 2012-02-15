@@ -31,8 +31,9 @@ class ShelfPainter : public views::Painter {
     image_ = *rb.GetImageNamed(IDR_AURA_LAUNCHER_BACKGROUND).ToSkBitmap();
   }
 
-  virtual void Paint(int w, int h, gfx::Canvas* canvas) OVERRIDE {
-    canvas->TileImageInt(image_, 0, 0, w, h);
+  // Overridden from views::Painter:
+  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE {
+    canvas->TileImageInt(image_, 0, 0, size.width(), size.height());
   }
 
  private:

@@ -29,14 +29,15 @@ class GradientPainter : public Painter {
   virtual ~GradientPainter() {
   }
 
-  void Paint(int w, int h, gfx::Canvas* canvas) {
+  // Overridden from Painter:
+  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE {
     SkPaint paint;
     SkPoint p[2];
     p[0].set(SkIntToScalar(0), SkIntToScalar(0));
     if (horizontal_)
-      p[1].set(SkIntToScalar(w), SkIntToScalar(0));
+      p[1].set(SkIntToScalar(size.width()), SkIntToScalar(0));
     else
-      p[1].set(SkIntToScalar(0), SkIntToScalar(h));
+      p[1].set(SkIntToScalar(0), SkIntToScalar(size.height()));
 
     SkShader* s =
         SkGradientShader::CreateLinear(p, colors_, NULL, 2,
@@ -46,9 +47,9 @@ class GradientPainter : public Painter {
     // Need to unref shader, otherwise never deleted.
     s->unref();
 
-    canvas->GetSkCanvas()->drawRectCoords(
-        SkIntToScalar(0), SkIntToScalar(0), SkIntToScalar(w), SkIntToScalar(h),
-        paint);
+    canvas->GetSkCanvas()->drawRectCoords(SkIntToScalar(0), SkIntToScalar(0),
+                                          SkIntToScalar(size.width()),
+                                          SkIntToScalar(size.height()), paint);
   }
 
  private:
@@ -72,8 +73,8 @@ class ImagePainter : public Painter {
   }
 
   // Paints the images.
-  virtual void Paint(int w, int h, gfx::Canvas* canvas) {
-    if (w == image_.width() && h == image_.height()) {
+  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE {
+    if (size.width() == image_.width() && size.height() == image_.height()) {
       // Early out if the size we're to render at equals the size of the image.
       canvas->DrawBitmapInt(image_, 0, 0);
       return;
@@ -85,44 +86,49 @@ class ImagePainter : public Painter {
     canvas->DrawBitmapInt(
         image_,
         insets_.left(), 0, image_.width() - insets_.width(), insets_.top(),
-        insets_.left(), 0, w - insets_.width(), insets_.top(), true);
+        insets_.left(), 0, size.width() - insets_.width(), insets_.top(), true);
     // Upper right.
     canvas->DrawBitmapInt(
         image_,
         image_.width() - insets_.right(), 0, insets_.right(), insets_.top(),
-        w - insets_.right(), 0, insets_.right(), insets_.top(), true);
+        size.width() - insets_.right(), 0, insets_.right(), insets_.top(),
+        true);
     // Right edge.
     canvas->DrawBitmapInt(
         image_,
         image_.width() - insets_.right(), insets_.top(),
         insets_.right(), image_.height() - insets_.height(),
-        w - insets_.right(), insets_.top(), insets_.right(),
-        h - insets_.height(), true);
+        size.width() - insets_.right(), insets_.top(), insets_.right(),
+        size.height() - insets_.height(), true);
     // Bottom right.
     canvas->DrawBitmapInt(
         image_,
         image_.width() - insets_.right(), image_.height() - insets_.bottom(),
         insets_.right(), insets_.bottom(),
-        w - insets_.right(), h - insets_.bottom(), insets_.right(),
+        size.width() - insets_.right(),
+        size.height() - insets_.bottom(), insets_.right(),
         insets_.bottom(), true);
     // Bottom edge.
     canvas->DrawBitmapInt(
         image_,
         insets_.left(), image_.height() - insets_.bottom(),
         image_.width() - insets_.width(), insets_.bottom(),
-        insets_.left(), h - insets_.bottom(), w - insets_.width(),
+        insets_.left(), size.height() - insets_.bottom(),
+        size.width() - insets_.width(),
         insets_.bottom(), true);
     // Bottom left.
     canvas->DrawBitmapInt(
         image_,
         0, image_.height() - insets_.bottom(), insets_.left(),
         insets_.bottom(),
-        0, h - insets_.bottom(), insets_.left(), insets_.bottom(), true);
+        0, size.height() - insets_.bottom(), insets_.left(), insets_.bottom(),
+        true);
     // Left.
     canvas->DrawBitmapInt(
         image_,
         0, insets_.top(), insets_.left(), image_.height() - insets_.height(),
-        0, insets_.top(), insets_.left(), h - insets_.height(), true);
+        0, insets_.top(), insets_.left(), size.height() - insets_.height(),
+        true);
     // Center.
     if (paint_center_) {
       canvas->DrawBitmapInt(
@@ -130,7 +136,8 @@ class ImagePainter : public Painter {
           insets_.left(), insets_.top(),
           image_.width() - insets_.width(), image_.height() - insets_.height(),
           insets_.left(), insets_.top(),
-          w - insets_.width(), h - insets_.height(), true);
+          size.width() - insets_.width(), size.height() - insets_.height(),
+          true);
     }
   }
 
@@ -151,7 +158,7 @@ void Painter::PaintPainterAt(gfx::Canvas* canvas,
   DCHECK(canvas && painter);
   canvas->Save();
   canvas->Translate(rect.origin());
-  painter->Paint(rect.width(), rect.height(), canvas);
+  painter->Paint(canvas, rect.size());
   canvas->Restore();
 }
 
@@ -181,19 +188,17 @@ HorizontalPainter::HorizontalPainter(const int image_resource_names[]) {
          images_[LEFT]->height() == images_[CENTER]->height());
 }
 
-void HorizontalPainter::Paint(int w, int h, gfx::Canvas* canvas) {
-  if (w < (images_[LEFT]->width() + images_[CENTER]->width() +
-            images_[RIGHT]->width())) {
+void HorizontalPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
+  if (size.width() < (images_[LEFT]->width() + images_[CENTER]->width() +
+      images_[RIGHT]->width())) {
     // No room to paint.
     return;
   }
   canvas->DrawBitmapInt(*images_[LEFT], 0, 0);
-  canvas->DrawBitmapInt(*images_[RIGHT], w - images_[RIGHT]->width(), 0);
-  canvas->TileImageInt(*images_[CENTER],
-                       images_[LEFT]->width(),
-                       0,
-                       w - images_[LEFT]->width() - images_[RIGHT]->width(),
-                       height_);
+  canvas->DrawBitmapInt(*images_[RIGHT],
+                        size.width() - images_[RIGHT]->width(), 0);
+  canvas->TileImageInt(*images_[CENTER], images_[LEFT]->width(), 0,
+      size.width() - images_[LEFT]->width() - images_[RIGHT]->width(), height_);
 }
 
 }  // namespace views
