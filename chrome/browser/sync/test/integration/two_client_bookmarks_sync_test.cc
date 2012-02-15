@@ -134,8 +134,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
 }
 
 // Test Scribe ID - 370489.
+// Flaky on Mac release builds. http://crbug.com/94941.
 IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
-                       SC_AddFirstBMWithFavicon) {
+                       DISABLED_SC_AddFirstBMWithFavicon) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
