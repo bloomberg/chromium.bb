@@ -106,12 +106,6 @@ class ProcessSingleton : public base::NonThreadSafe {
     foreground_window_ = foreground_window;
   }
 
-  // Changes the foreground window without changing the locked state.
-  void SetForegroundWindow(gfx::NativeWindow foreground_window) {
-    DCHECK(CalledOnValidThread());
-    foreground_window_ = foreground_window;
-  }
-
   // Allows the dispatch of CopyData messages.
   void Unlock() {
     DCHECK(CalledOnValidThread());
