@@ -23,7 +23,7 @@ class GoogleTest : public UITest {
 
 // Flakily fails under Valgrind, see http://crbug.com/85863.
 #if defined(OS_MACOSX)
-#define MAYBE_Crash FLAKY_Crash
+#define MAYBE_Crash DISABLED_Crash
 #else
 #define MAYBE_Crash Crash
 #endif  // defined(OS_MACOSX)

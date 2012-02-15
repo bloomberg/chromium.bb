@@ -118,22 +118,16 @@ TEST_F(KeyboardAccessTest, DISABLED_TestAltMenuKeyboardAccess) {
 }
 
 // Flaky, http://crbug.com/62311.
-TEST_F(KeyboardAccessTest, FLAKY_TestShiftAltMenuKeyboardAccess) {
+TEST_F(KeyboardAccessTest, DISABLED_TestShiftAltMenuKeyboardAccess) {
   TestMenuKeyboardAccess(true, ui::EF_SHIFT_DOWN);
 }
 
-#if defined(OS_CHROMEOS)
-// TODO(isherman): This test times out on ChromeOS.  We should merge it with
-// BrowserKeyEventsTest.ReservedAccelerators, but just disable for now.
-#define MAYBE_ReserveKeyboardAccelerators DISABLED_ReserveKeyboardAccelerators
-#else
-// Flaky, http://crbug.com/62311.
-#define MAYBE_ReserveKeyboardAccelerators FLAKY_ReserveKeyboardAccelerators
-#endif
-
 // Test that JavaScript cannot intercept reserved keyboard accelerators like
 // ctrl-t to open a new tab or ctrl-f4 to close a tab.
-TEST_F(KeyboardAccessTest, MAYBE_ReserveKeyboardAccelerators) {
+// TODO(isherman): This test times out on ChromeOS.  We should merge it with
+// BrowserKeyEventsTest.ReservedAccelerators, but just disable for now.
+// Flaky, http://crbug.com/62311.
+TEST_F(KeyboardAccessTest, DISABLED_ReserveKeyboardAccelerators) {
   const std::string kBadPage =
       "<html><script>"
       "document.onkeydown = function() {"

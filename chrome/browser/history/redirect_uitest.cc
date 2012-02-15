@@ -92,7 +92,7 @@ TEST_F(RedirectTest, Client) {
 }
 
 // http://code.google.com/p/chromium/issues/detail?id=62772
-TEST_F(RedirectTest, FLAKY_ClientEmptyReferer) {
+TEST_F(RedirectTest, DISABLED_ClientEmptyReferer) {
   ASSERT_TRUE(test_server_.Start());
 
   // Create the file contents, which will do a redirect to the
@@ -252,7 +252,7 @@ TEST_F(RedirectTest, ServerReference) {
 // B) does not take place.
 //
 // Flaky on XP and Vista, http://crbug.com/69390.
-TEST_F(RedirectTest, FLAKY_NoHttpToFile) {
+TEST_F(RedirectTest, DISABLED_NoHttpToFile) {
   ASSERT_TRUE(test_server_.Start());
   FilePath test_file(test_data_directory_);
   test_file = test_file.AppendASCII("http_to_file.html");

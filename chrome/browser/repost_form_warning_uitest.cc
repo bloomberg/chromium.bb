@@ -23,7 +23,7 @@ typedef UITest RepostFormWarningTest;
 
 #if defined(OS_WIN)
 // http://crbug.com/47228
-#define MAYBE_TestDoubleReload FLAKY_TestDoubleReload
+#define MAYBE_TestDoubleReload DISABLED_TestDoubleReload
 #else
 #define MAYBE_TestDoubleReload TestDoubleReload
 #endif
@@ -63,7 +63,7 @@ TEST_F(RepostFormWarningTest, MAYBE_TestDoubleReload) {
 
 #if defined(OS_WIN)
 // http://crbug.com/47228
-#define MAYBE_TestLoginAfterRepost FLAKY_TestLoginAfterRepost
+#define MAYBE_TestLoginAfterRepost DISABLED_TestLoginAfterRepost
 #else
 #define MAYBE_TestLoginAfterRepost TestLoginAfterRepost
 #endif

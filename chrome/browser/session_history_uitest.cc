@@ -83,7 +83,7 @@ class SessionHistoryTest : public UITest {
 #if defined(OS_WIN) || defined(OS_MACOSX)
 // See http://crbug.com/61619 on windows.
 // See http://crbug.com/102094 on mac.
-#define MAYBE_BasicBackForward FLAKY_BasicBackForward
+#define MAYBE_BasicBackForward DISABLED_BasicBackForward
 #else
 #define MAYBE_BasicBackForward BasicBackForward
 #endif
@@ -149,7 +149,7 @@ TEST_F(SessionHistoryTest, MAYBE_BasicBackForward) {
 // Test that back/forward works when navigating in subframes.
 #if defined(OS_WIN)
 // http://crbug.com/48833
-#define FrameBackForward FLAKY_FrameBackForward
+#define FrameBackForward DISABLED_FrameBackForward
 #endif
 TEST_F(SessionHistoryTest, FrameBackForward) {
   ASSERT_TRUE(test_server_.Start());
@@ -216,7 +216,7 @@ TEST_F(SessionHistoryTest, FrameBackForward) {
 
 // See http://crbug.com/61619
 // Test that back/forward preserves POST data and document state in subframes.
-TEST_F(SessionHistoryTest, FLAKY_FrameFormBackForward) {
+TEST_F(SessionHistoryTest, DISABLED_FrameFormBackForward) {
   ASSERT_TRUE(test_server_.Start());
 
   // about:blank should be loaded first.
@@ -321,7 +321,7 @@ TEST_F(SessionHistoryTest, DISABLED_CrossFrameFormBackForward) {
 
 #if defined(OS_WIN)
 // See http://crbug.com/61619
-#define MAYBE_FragmentBackForward FLAKY_FragmentBackForward
+#define MAYBE_FragmentBackForward DISABLED_FragmentBackForward
 #else
 #define MAYBE_FragmentBackForward FragmentBackForward
 #endif
@@ -399,7 +399,7 @@ TEST_F(SessionHistoryTest, MAYBE_FragmentBackForward) {
 //
 // TODO(brettw) bug 50648: fix flakyness. This test seems like it was failing
 // about 1/4 of the time on Vista by failing to execute JavascriptGo (see bug).
-TEST_F(SessionHistoryTest, FLAKY_JavascriptHistory) {
+TEST_F(SessionHistoryTest, DISABLED_JavascriptHistory) {
   ASSERT_TRUE(test_server_.Start());
 
   // about:blank should be loaded first.
@@ -490,7 +490,7 @@ TEST_F(SessionHistoryTest, FAILS_LocationReplace) {
 }
 
 // This test is flaky. See bug 22111.
-TEST_F(SessionHistoryTest, FLAKY_HistorySearchXSS) {
+TEST_F(SessionHistoryTest, DISABLED_HistorySearchXSS) {
   // about:blank should be loaded first.
   ASSERT_FALSE(tab_->GoBack());
   EXPECT_EQ(L"about:blank", GetTabTitle());
@@ -508,7 +508,7 @@ TEST_F(SessionHistoryTest, FLAKY_HistorySearchXSS) {
 
 #if defined(OS_WIN)
 // See http://crbug.com/61619
-#define MAYBE_LocationChangeInSubframe FLAKY_LocationChangeInSubframe
+#define MAYBE_LocationChangeInSubframe DISABLED_LocationChangeInSubframe
 #else
 #define MAYBE_LocationChangeInSubframe LocationChangeInSubframe
 #endif

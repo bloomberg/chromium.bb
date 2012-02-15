@@ -551,7 +551,8 @@ class SafeBrowsingServiceTestHelper
 };
 
 // See http://crbug.com/96459
-IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, FLAKY_SafeBrowsingSystemTest) {
+IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest,
+                       DISABLED_SafeBrowsingSystemTest) {
   LOG(INFO) << "Start test";
   const char* server_host = SafeBrowsingTestServer::Host();
   int server_port = SafeBrowsingTestServer::Port();

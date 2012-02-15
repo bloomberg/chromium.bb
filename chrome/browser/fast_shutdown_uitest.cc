@@ -84,7 +84,7 @@ class FastShutdown : public UITest {
 // This tests for a previous error where uninstalling an onbeforeunload handler
 // would enable fast shutdown even if an onunload handler still existed.
 // Flaky on all platforms, http://crbug.com/89173
-TEST_F(FastShutdown, FLAKY_SlowTermination) {
+TEST_F(FastShutdown, DISABLED_SlowTermination) {
   Init();
 
   // Only the name, domain and path are used in IsEquivalent(), so we don't care

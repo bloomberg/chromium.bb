@@ -19,13 +19,9 @@ class LoadTimingObserverUITest : public UITest {
   net::TestServer http_server_;
 };
 
+// http://crbug.com/102030
 // http://crbug.com/114390
-#if defined(OS_WIN)
-#define MAYBE_CacheHitAfterRedirect FLAKY_CacheHitAfterRedirect
-#else
-#define MAYBE_CacheHitAfterRedirect CacheHitAfterRedirect
-#endif
-TEST_F(LoadTimingObserverUITest, MAYBE_CacheHitAfterRedirect) {
+TEST_F(LoadTimingObserverUITest, DISABLED_CacheHitAfterRedirect) {
   ASSERT_TRUE(http_server_.Start());
   GURL cached_page = http_server_.GetURL("cachetime");
   std::string redirect = "server-redirect?" + cached_page.spec();

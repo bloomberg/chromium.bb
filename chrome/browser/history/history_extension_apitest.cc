@@ -31,7 +31,7 @@ IN_PROC_BROWSER_TEST_F(HistoryExtensionApiTest, TimedSearch) {
 
 #if defined(OS_WIN)
 // Flakily times out on Win - See http://crbug.com/88318
-#define MAYBE_Delete FLAKY_Delete
+#define MAYBE_Delete DISABLED_Delete
 #else
 #define MAYBE_Delete Delete
 #endif
@@ -40,14 +40,14 @@ IN_PROC_BROWSER_TEST_F(HistoryExtensionApiTest, MAYBE_Delete) {
 }
 
 // See crbug.com/79074
-IN_PROC_BROWSER_TEST_F(HistoryExtensionApiTest, FLAKY_GetVisits) {
+IN_PROC_BROWSER_TEST_F(HistoryExtensionApiTest, DISABLED_GetVisits) {
   ASSERT_TRUE(RunExtensionSubtest("history", "get_visits.html")) << message_;
 }
 
 #if defined(OS_WIN)
 // Searching for a URL right after adding it fails on win XP.
 // Fix this as part of crbug/76170.
-#define MAYBE_SearchAfterAdd FLAKY_SearchAfterAdd
+#define MAYBE_SearchAfterAdd DISABLED_SearchAfterAdd
 #else
 #define MAYBE_SearchAfterAdd SearchAfterAdd
 #endif

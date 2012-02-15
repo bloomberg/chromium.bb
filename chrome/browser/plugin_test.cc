@@ -139,7 +139,7 @@ TEST_F(PluginTest, Flash) {
 #elif defined(OS_POSIX)
       "libflashplayer.so"
 #endif
-      ;
+      "";
   TestPlugin("flash.html", kFlashQuery,
              TestTimeouts::action_max_timeout_ms(), false);
 }
@@ -170,7 +170,7 @@ TEST_F(ClickToPlayPluginTest, Flash) {
 
 #if defined(OS_WIN)
 // Flaky on Windows, see http://crbug.com/113057
-#define MAYBE_FlashDocument FLAKY_FlashDocument
+#define MAYBE_FlashDocument DISABLED_FlashDocument
 #else
 #define MAYBE_FlashDocument FlashDocument
 #endif
@@ -207,7 +207,7 @@ TEST_F(PluginTest, DISABLED_FlashSecurity) {
 // TODO(port) Port the following tests to platforms that have the required
 // plugins.
 // Flaky: http://crbug.com/55915
-TEST_F(PluginTest, FLAKY_Quicktime) {
+TEST_F(PluginTest, DISABLED_Quicktime) {
   TestPlugin("quicktime.html", "",
              TestTimeouts::action_max_timeout_ms(), false);
 }
@@ -234,7 +234,7 @@ TEST_F(PluginTest, FlashOctetStream) {
 
 #if defined(OS_WIN)
 // http://crbug.com/53926
-TEST_F(PluginTest, FLAKY_FlashLayoutWhilePainting) {
+TEST_F(PluginTest, DISABLED_FlashLayoutWhilePainting) {
 #else
 TEST_F(PluginTest, FlashLayoutWhilePainting) {
 #endif

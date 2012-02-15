@@ -38,7 +38,7 @@ TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInvokeInSynchronousMouseMove) {
 }
 
 // Flaky, http://crbug.com/60071.
-TEST_F(NPAPIVisiblePluginTester, FLAKY_GetURLRequest404Response) {
+TEST_F(NPAPIVisiblePluginTester, DISABLED_GetURLRequest404Response) {
   GURL url(URLRequestMockHTTPJob::GetMockUrl(
                FilePath(FILE_PATH_LITERAL(
                             "npapi/plugin_url_request_404.html"))));
