@@ -63,6 +63,7 @@ void SSLPolicy::OnCertError(SSLCertErrorHandler* handler) {
     case net::ERR_CERT_DATE_INVALID:
     case net::ERR_CERT_AUTHORITY_INVALID:
     case net::ERR_CERT_WEAK_SIGNATURE_ALGORITHM:
+    case net::ERR_CERT_WEAK_KEY:
       OnCertErrorInternal(handler, !handler->fatal());
       break;
     case net::ERR_CERT_NO_REVOCATION_MECHANISM:
