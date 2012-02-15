@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "cloud_print/virtual_driver/win/port_monitor/port_monitor.h"
 
 #include <lmcons.h>
+#include <shellapi.h>
 #include <shlobj.h>
 #include <strsafe.h>
 #include <userenv.h>
@@ -33,6 +34,8 @@ namespace cloud_print {
 const wchar_t kChromeExePath[] = L"google\\chrome\\application\\chrome.exe";
 const wchar_t kChromePathRegValue[] = L"PathToChromeExe";
 #endif
+const wchar_t kIePath[] = L"Internet Explorer\\iexplore.exe";
+const char kChromeInstallUrl[] = "http://www.google.com/chrome";
 
 const wchar_t kChromePathRegKey[] = L"Software\\Google\\CloudPrint";
 
@@ -171,11 +174,8 @@ void HandlePortUi(HWND hwnd, const string16& caption) {
   }
 }
 
-// Launches the Cloud Print dialog in Chrome.
-// xps_path references a file to print.
-// job_title is the title to be used for the resulting print job.
-bool LaunchPrintDialog(const string16& xps_path,
-                       const string16& job_title) {
+// Gets the primary token for the user that submitted the print job.
+bool GetUserToken(HANDLE* primary_token) {
   HANDLE token = NULL;
   if (!OpenThreadToken(GetCurrentThread(),
                       TOKEN_QUERY|TOKEN_DUPLICATE|TOKEN_ASSIGN_PRIMARY,
@@ -186,15 +186,29 @@ bool LaunchPrintDialog(const string16& xps_path,
   }
   base::win::ScopedHandle token_scoped(token);
   if (!DuplicateTokenEx(token,
-                       TOKEN_QUERY|TOKEN_DUPLICATE|TOKEN_ASSIGN_PRIMARY,
-                       NULL,
-                       SecurityImpersonation,
-                       TokenPrimary,
-                       &token)) {
+                        TOKEN_QUERY|TOKEN_DUPLICATE|TOKEN_ASSIGN_PRIMARY,
+                        NULL,
+                        SecurityImpersonation,
+                        TokenPrimary,
+                        primary_token)) {
     LOG(ERROR) << "Unable to get primary thread token.";
     return false;
   }
+  return true;
+}
+
+// Launches the Cloud Print dialog in Chrome.
+// xps_path references a file to print.
+// job_title is the title to be used for the resulting print job.
+bool LaunchPrintDialog(const string16& xps_path,
+                       const string16& job_title) {
+  HANDLE token = NULL;
+  if (!GetUserToken(&token)) {
+    LOG(ERROR) << "Unable to get user token.";
+    return false;
+  }
   base::win::ScopedHandle primary_token_scoped(token);
+
   FilePath chrome_path;
   if (!GetChromeExePath(&chrome_path)) {
     LOG(ERROR) << "Unable to get chrome exe path.";
@@ -212,6 +226,29 @@ bool LaunchPrintDialog(const string16& xps_path,
   options.as_user = primary_token_scoped;
   base::LaunchProcess(command_line, options, NULL);
   return true;
+}
+
+// Launches a page to allow the user to download chrome.
+// TODO(abodenha@chromium.org) Point to a custom page explaining what's wrong
+// rather than the generic chrome download page.  See
+// http://code.google.com/p/chromium/issues/detail?id=112019
+void LaunchChromeDownloadPage() {
+  HANDLE token = NULL;
+  if (!GetUserToken(&token)) {
+    LOG(ERROR) << "Unable to get user token.";
+    return;
+  }
+  base::win::ScopedHandle token_scoped(token);
+
+  FilePath ie_path;
+  PathService::Get(base::DIR_PROGRAM_FILESX86, &ie_path);
+  ie_path = ie_path.Append(kIePath);
+  CommandLine command_line(ie_path);
+  command_line.AppendArg(kChromeInstallUrl);
+
+  base::LaunchOptions options;
+  options.as_user = token_scoped;
+  base::LaunchProcess(command_line, options, NULL);
 }
 
 // Returns false if the print job is being run in a context
@@ -457,8 +494,10 @@ BOOL WINAPI Monitor2EndDocPort(HANDLE port_handle) {
                   port_data->job_id,
                   &job_title);
     }
-    LaunchPrintDialog(port_data->file_path->value().c_str(),
-                      job_title);
+    if (!LaunchPrintDialog(port_data->file_path->value().c_str(),
+                           job_title)) {
+      LaunchChromeDownloadPage();
+    }
   }
   if (port_data->printer_handle != NULL) {
     // Tell the spooler that the job is complete.
