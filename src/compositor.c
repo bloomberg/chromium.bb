@@ -1151,6 +1151,9 @@ surface_attach(struct wl_client *client,
 	struct weston_shell *shell = es->compositor->shell;
 	struct wl_buffer *buffer;
 
+	if (!buffer_resource && !es->output)
+		return;
+
 	weston_surface_damage_below(es);
 
 	if (es->buffer) {
@@ -1162,6 +1165,7 @@ surface_attach(struct wl_client *client,
 		wl_list_remove(&es->link);
 		es->visual = WESTON_NONE_VISUAL;
 		es->output = NULL;
+		es->buffer = NULL;
 		return;
 	}
 
