@@ -683,6 +683,7 @@ void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
   scoped_ptr<net::URLRequest> request(
       new net::URLRequest(url, resource_dispatcher_host_));
   request->set_referrer(referrer.spec());
+  download_stats::RecordDownloadSource(download_stats::INITIATED_BY_RENDERER);
   resource_dispatcher_host_->BeginDownload(
       request.Pass(),
       false,
@@ -691,8 +692,6 @@ void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
       render_process_id_,
       message.routing_id(),
       resource_context_);
-  download_stats::RecordDownloadCount(
-      download_stats::INITIATED_BY_RENDERER_COUNT);
 }
 
 void RenderMessageFilter::OnCheckNotificationPermission(

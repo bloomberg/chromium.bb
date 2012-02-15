@@ -10,6 +10,7 @@
 #include "base/process.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugin_installer_observer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -139,6 +140,8 @@ void PluginInstaller::StartInstalling(TabContentsWrapper* wrapper) {
   content::WebContents* web_contents = wrapper->web_contents();
   DownloadService* download_service =
       DownloadServiceFactory::GetForProfile(wrapper->profile());
+  download_util::RecordDownloadSource(
+      download_util::INITIATED_BY_PLUGIN_INSTALLER);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&BeginDownload,

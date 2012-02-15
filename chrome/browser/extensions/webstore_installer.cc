@@ -211,8 +211,8 @@ void WebstoreInstaller::StartDownload(FilePath file) {
   // The download url for the given extension is contained in |download_url_|.
   // We will navigate the current tab to this url to start the download. The
   // download system will then pass the crx to the CrxInstaller.
-  download_util::RecordDownloadCount(
-        download_util::INITIATED_BY_WEBSTORE_INSTALLER_COUNT);
+  download_util::RecordDownloadSource(
+        download_util::INITIATED_BY_WEBSTORE_INSTALLER);
   profile_->GetDownloadManager()->DownloadUrl(
       download_url_, referrer, "",
       false, -1, save_info, controller_->GetWebContents());

@@ -1502,8 +1502,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_SAVELINKAS: {
-      download_util::RecordDownloadCount(
-          download_util::INITIATED_BY_CONTEXT_MENU_COUNT);
+      download_util::RecordDownloadSource(
+          download_util::INITIATED_BY_CONTEXT_MENU);
       const GURL& referrer =
           params_.frame_url.is_empty() ? params_.page_url : params_.frame_url;
       const GURL& url = params_.link_url;
@@ -1523,8 +1523,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_CONTENT_CONTEXT_SAVEAVAS:
     case IDC_CONTENT_CONTEXT_SAVEIMAGEAS: {
-      download_util::RecordDownloadCount(
-          download_util::INITIATED_BY_CONTEXT_MENU_COUNT);
+      download_util::RecordDownloadSource(
+          download_util::INITIATED_BY_CONTEXT_MENU);
       const GURL& referrer =
           params_.frame_url.is_empty() ? params_.page_url : params_.frame_url;
       const GURL& url = params_.src_url;
@@ -1681,7 +1681,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_CONTENT_CONTEXT_VIEWPAGEINFO: {
       NavigationController* controller = &source_web_contents_->GetController();
       NavigationEntry* nav_entry = controller->GetActiveEntry();
-      Browser* browser = Browser::GetBrowserForController(controller, NULL);      
+      Browser* browser = Browser::GetBrowserForController(controller, NULL);
       browser->ShowPageInfo(nav_entry->GetURL(), nav_entry->GetSSL(), true);
       break;
     }

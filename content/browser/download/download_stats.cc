@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,11 @@ const int kAllInterruptReasonCodes[] = {
 void RecordDownloadCount(DownloadCountTypes type) {
   UMA_HISTOGRAM_ENUMERATION(
       "Download.Counts", type, DOWNLOAD_COUNT_TYPES_LAST_ENTRY);
+}
+
+void RecordDownloadSource(DownloadSource source) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Download.Sources", source, DOWNLOAD_SOURCE_LAST_ENTRY);
 }
 
 void RecordDownloadCompleted(const base::TimeTicks& start, int64 download_len) {

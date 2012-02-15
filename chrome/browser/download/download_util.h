@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -174,22 +174,50 @@ void RecordShelfClose(int size, int in_progress, bool autoclose);
 // Used for counting UMA stats. Similar to content's
 // download_stats::DownloadCountTypes but from the chrome layer.
 enum ChromeDownloadCountTypes {
-  // The download was initiated by navigating to a URL (e.g. by user click).
-  INITIATED_BY_NAVIGATION_COUNT = 0,
+  // A download *would* have been initiated, but it was blocked
+  // by the DownloadThrottlingResourceHandler.
+  BLOCKED_BY_THROTTLING = 0,
 
-  // The download was initiated by invoking a context menu within a page.
-  INITIATED_BY_CONTEXT_MENU_COUNT,
-
-  // The download was initiated by the WebStore installer.
-  INITIATED_BY_WEBSTORE_INSTALLER_COUNT,
-
-  // The download was initiated by the ImageBurner (cros).
-  INITIATED_BY_IMAGE_BURNER_COUNT,
-
-  DOWNLOAD_COUNT_TYPES_LAST_ENTRY,
+  // The "= 2" is to get around a feature of the histogram system
+  // which puts a floor of 1 for the minimum value for enum histograms
+  // to allow there to be a bucket for values outside the expected range.
+  // This isn't ideal since many (possibly most) enum histograms start
+  // at zero, but there isn't any practical negative effect in UMA;
+  // the zero value just uses the underflow bucket.  However, if
+  // a histogram only has one entry, it does result in a DCHECK because
+  // the maximum value of the histogram is greater than the minimum value.
+  // We solve this by bumping up the maximum value.  This assignment
+  // can be removed if any entries are added to this enum in the
+  // future.
+  CHROME_DOWNLOAD_COUNT_TYPES_LAST_ENTRY = 2
 };
 
+// Used for counting UMA stats. Similar to content's
+// download_stats::DownloadInitiattionSources but from the chrome layer.
+enum ChromeDownloadSource {
+  // The download was initiated by navigating to a URL (e.g. by user click).
+  INITIATED_BY_NAVIGATION = 0,
+
+  // The download was initiated by invoking a context menu within a page.
+  INITIATED_BY_CONTEXT_MENU,
+
+  // The download was initiated by the WebStore installer.
+  INITIATED_BY_WEBSTORE_INSTALLER,
+
+  // The download was initiated by the ImageBurner (cros).
+  INITIATED_BY_IMAGE_BURNER,
+
+  // The download was initiated by the plugin installer.
+  INITIATED_BY_PLUGIN_INSTALLER,
+
+  CHROME_DOWNLOAD_SOURCE_LAST_ENTRY,
+};
+
+// Increment one of the above counts.
 void RecordDownloadCount(ChromeDownloadCountTypes type);
+
+// Record initiation of a download from a specific source.
+void RecordDownloadSource(ChromeDownloadSource source);
 
 }  // namespace download_util
 

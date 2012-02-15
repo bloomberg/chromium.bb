@@ -425,8 +425,8 @@ void Downloader::OnFileStreamCreated(const GURL& url,
     save_info.file_stream = linked_ptr<net::FileStream>(file_stream);
     DownloadStarted(true, url);
 
-    download_util::RecordDownloadCount(
-        download_util::INITIATED_BY_IMAGE_BURNER_COUNT);
+    download_util::RecordDownloadSource(
+        download_util::INITIATED_BY_IMAGE_BURNER);
     download_manager->DownloadUrl(
         url,
         web_contents->GetURL(),

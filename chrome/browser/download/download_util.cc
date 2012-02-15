@@ -630,7 +630,12 @@ void RecordShelfClose(int size, int in_progress, bool autoclose) {
 
 void RecordDownloadCount(ChromeDownloadCountTypes type) {
   UMA_HISTOGRAM_ENUMERATION(
-      "Download.CountsChrome", type, DOWNLOAD_COUNT_TYPES_LAST_ENTRY);
+      "Download.CountsChrome", type, CHROME_DOWNLOAD_COUNT_TYPES_LAST_ENTRY);
+}
+
+void RecordDownloadSource(ChromeDownloadSource source) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Download.SourcesChrome", source, CHROME_DOWNLOAD_SOURCE_LAST_ENTRY);
 }
 
 }  // namespace download_util
