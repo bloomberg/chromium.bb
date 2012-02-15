@@ -827,6 +827,9 @@ weston_compositor_top(struct weston_compositor *compositor)
 		list = list->next;
 	if (list->next == &input_device->sprite->link)
 		list = list->next;
+	if (input_device->drag_surface &&
+	    list->next == &input_device->drag_surface->link)
+		list = list->next;
 
 	return list;
 }
@@ -965,6 +968,8 @@ weston_output_repaint(struct weston_output *output, int msecs)
 	pixman_region32_t opaque, new_damage, total_damage,
 		overlap, surface_overlap;
 	int32_t width, height;
+
+	weston_compositor_update_drag_surfaces(ec);
 
 	width = output->current->width +
 		output->border.left + output->border.right;
@@ -1326,6 +1331,10 @@ idle_handler(void *data)
 	return 1;
 }
 
+static  void
+weston_input_update_drag_surface(struct wl_input_device *input_device,
+				 int dx, int dy);
+
 WL_EXPORT void
 notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 {
@@ -1369,6 +1378,9 @@ notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 		else  if (y >= max_y)
 			y = max_y;
 	}
+
+	weston_input_update_drag_surface(device,
+					 x - device->x, y - device->y);
 
 	device->x = x;
 	device->y = y;
@@ -1498,6 +1510,9 @@ notify_pointer_focus(struct wl_input_device *device,
 	struct weston_compositor *compositor = wd->compositor;
 
 	if (output) {
+		weston_input_update_drag_surface(device, x - device->x,
+						 y - device->y);
+
 		device->x = x;
 		device->y = y;
 		compositor->focus = 1;
@@ -1787,6 +1802,59 @@ weston_input_device_release(struct weston_input_device *device)
 		destroy_surface(&device->sprite->surface.resource);
 
 	wl_input_device_release(&device->input_device);
+}
+
+static  void
+weston_input_update_drag_surface(struct wl_input_device *input_device,
+				 int dx, int dy)
+{
+	int surface_changed = 0;
+	struct weston_input_device *device = (struct weston_input_device *)
+		input_device;
+
+	if (!device->drag_surface && !input_device->drag_surface)
+		return;
+
+	if (device->drag_surface && input_device->drag_surface &&
+	    (&device->drag_surface->surface.resource !=
+	     &input_device->drag_surface->resource))
+		/* between calls to this funcion we got a new drag_surface */
+		surface_changed = 1;
+
+	if (!input_device->drag_surface || surface_changed) {
+		device->drag_surface->pickable = 1;
+		device->drag_surface = NULL;
+		if (!surface_changed)
+			return;
+	}
+
+	if (!device->drag_surface || surface_changed) {
+		device->drag_surface = (struct weston_surface *)
+			input_device->drag_surface;
+		device->drag_surface->pickable = 0;
+
+		weston_surface_set_position(device->drag_surface,
+					    input_device->x, input_device->y);
+	}
+
+	if (device->drag_surface->output == NULL &&
+	    device->drag_surface->buffer) {
+		wl_list_insert(weston_compositor_top(device->compositor),
+			       &device->drag_surface->link);
+	}
+
+	if (!dx && !dy)
+		return;
+
+	weston_surface_set_position(device->drag_surface,
+				    device->drag_surface->geometry.x + dx,
+				    device->drag_surface->geometry.y + dy);
+}
+
+WL_EXPORT void
+weston_compositor_update_drag_surfaces(struct weston_compositor *compositor)
+{
+	weston_input_update_drag_surface(compositor->input_device, 0, 0);
 }
 
 static void

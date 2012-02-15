@@ -1366,6 +1366,8 @@ map(struct weston_shell *base, struct weston_surface *surface,
 	surface->geometry.height = height;
 	surface->geometry.dirty = 1;
 
+	weston_compositor_update_drag_surfaces(compositor);
+
 	/* initial positioning, see also configure() */
 	switch (surface_type) {
 	case SHELL_SURFACE_TOPLEVEL:

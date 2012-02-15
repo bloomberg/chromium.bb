@@ -83,6 +83,7 @@ struct weston_input_device {
 	struct wl_input_device input_device;
 	struct weston_compositor *compositor;
 	struct weston_surface *sprite;
+	struct weston_surface *drag_surface;
 	int32_t hotspot_x, hotspot_y;
 	struct wl_list link;
 	uint32_t modifier_state;
@@ -368,6 +369,9 @@ void
 weston_compositor_wake(struct weston_compositor *compositor);
 void
 weston_compositor_activity(struct weston_compositor *compositor);
+void
+weston_compositor_update_drag_surfaces(struct weston_compositor *compositor);
+
 
 struct weston_binding;
 typedef void (*weston_binding_handler_t)(struct wl_input_device *device,
