@@ -319,13 +319,14 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     return unrecoverable_error_location_;
   }
 
-  // Reports whether the user is currently authenticating or not. This is used
+  // Tracks whether the user is currently authenticating or not. This is used
   // by the sync_ui_util helper routines to allow the UI to properly display
   // an "authenticating..." status message instead of an auth error when we are
   // in the process of trying to update credentials.
-  // TODO(atwilson): This state now resides in SigninManager - this method
-  // will be removed once we've cleaned up the callers. http://crbug.com/95269.
+  // TODO(atwilson): This state should reside up in the UI or in a profile-
+  // specific SyncUIUtil object rather than in ProfileSyncService.
   virtual bool UIShouldDepictAuthInProgress() const;
+  virtual void SetUIShouldDepictAuthInProgress(bool auth_in_progress);
 
   // Returns true if OnPassphraseRequired has been called for any reason.
   virtual bool IsPassphraseRequired() const;
@@ -514,13 +515,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     return configure_status_;
   }
 
-  // If true, the ProfileSyncService has detected that a new GAIA signin has
-  // succeeded, and is waiting for initialization to complete. This is used by
-  // the UI to differentiate between a new auth error (encountered as part of
-  // the initialization process) and a pre-existing auth error that just hasn't
-  // been cleared yet.
-  bool waiting_for_auth() const { return is_auth_in_progress_; }
-
   // ProfileKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
@@ -620,6 +614,13 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // want to startup once more.
   virtual void ReconfigureDatatypeManager();
 
+
+  // Time at which we begin an attempt a GAIA authorization.
+  base::TimeTicks auth_start_time_;
+
+  // Time at which error UI is presented for the new tab page.
+  base::TimeTicks auth_error_time_;
+
   // Factory used to create various dependent objects.
   scoped_ptr<ProfileSyncComponentsFactory> factory_;
 
@@ -644,8 +645,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Whether the SyncBackendHost has been initialized.
   bool backend_initialized_;
 
-  // Set to true if a signin has completed but we're still waiting for the
-  // backend to refresh its credentials.
+  // Various pieces of UI query this value to determine if they should show
+  // an "Authenticating.." type of message.  We are the only central place
+  // all auth attempts funnel through, so it makes sense to provide this.
+  // As its name suggests, this should NOT be used for anything other than UI.
   bool is_auth_in_progress_;
 
   SyncSetupWizard wizard_;

@@ -97,9 +97,6 @@ class SigninManager : public GaiaAuthConsumer,
   // there have been no login failures.
   virtual const GoogleServiceAuthError& GetLoginAuthError() const;
 
-  // Returns true if there's a signin in progress.
-  bool AuthInProgress() const;
-
   // GaiaAuthConsumer
   virtual void OnClientLoginSuccess(const ClientLoginResult& result) OVERRIDE;
   virtual void OnClientLoginFailure(

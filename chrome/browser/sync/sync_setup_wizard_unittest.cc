@@ -18,7 +18,6 @@
 #include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/options/options_sync_setup_handler.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
@@ -36,36 +35,26 @@ typedef GoogleServiceAuthError AuthError;
 
 class MockSyncSetupHandler : public OptionsSyncSetupHandler {
  public:
-  MockSyncSetupHandler()
-      : OptionsSyncSetupHandler(NULL),
-        login_ui_(new LoginUIService(NULL)) {}
+  MockSyncSetupHandler() : OptionsSyncSetupHandler(NULL) {}
 
   // SyncSetupFlowHandler implementation.
-  virtual void ShowFatalError() OVERRIDE {
-    ShowSetupDone(string16());
+  virtual void ShowGaiaLogin(const DictionaryValue& args) OVERRIDE {}
+  virtual void ShowGaiaSuccessAndClose() OVERRIDE {
+    flow()->OnDialogClosed("");
   }
+  virtual void ShowGaiaSuccessAndSettingUp() OVERRIDE {}
   virtual void ShowConfigure(const DictionaryValue& args) OVERRIDE {}
   virtual void ShowPassphraseEntry(const DictionaryValue& args) OVERRIDE {}
   virtual void ShowSettingUp() OVERRIDE {}
   virtual void ShowSetupDone(const string16& user) OVERRIDE {
-    if (flow())
-      flow()->OnDialogClosed("");
-  }
-
-  SyncSetupFlow* GetFlow() {
-    return flow();
+    flow()->OnDialogClosed("");
   }
 
   void CloseSetupUI() {
     ShowSetupDone(string16());
   }
 
-  virtual LoginUIService* GetLoginUIService() const OVERRIDE {
-    return login_ui_.get();
-  }
-
  private:
-  scoped_ptr<LoginUIService> login_ui_;
   DISALLOW_COPY_AND_ASSIGN(MockSyncSetupHandler);
 };
 
@@ -210,7 +199,8 @@ class SyncSetupWizardTest : public BrowserWithTestWindowTest {
  public:
   SyncSetupWizardTest()
       : wizard_(NULL),
-        service_(NULL) {}
+        service_(NULL),
+        flow_(NULL) {}
   virtual ~SyncSetupWizardTest() {}
   virtual TestingProfile* BuildProfile() {
     TestingProfile* profile = new TestingProfile();
@@ -237,16 +227,20 @@ class SyncSetupWizardTest : public BrowserWithTestWindowTest {
   virtual void TearDown() {
     wizard_ = NULL;
     service_ = NULL;
+    flow_ = NULL;
   }
 
  protected:
   void AttachSyncSetupHandler() {
-    wizard_->AttachSyncSetupHandler(&handler_);
+    flow_ = wizard_->AttachSyncSetupHandler(&handler_);
   }
 
   void CompleteSetup() {
-    wizard_->Step(SyncSetupWizard::SYNC_EVERYTHING);
+    // For a discrete run, we need to have ran through setup once.
+    wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
     AttachSyncSetupHandler();
+    wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
+    wizard_->Step(SyncSetupWizard::SYNC_EVERYTHING);
     wizard_->Step(SyncSetupWizard::SETTING_UP);
     wizard_->Step(SyncSetupWizard::DONE);
   }
@@ -258,12 +252,92 @@ class SyncSetupWizardTest : public BrowserWithTestWindowTest {
   // This pointer is owned by the |Service_|.
   SyncSetupWizard* wizard_;
   ProfileSyncServiceForWizardTest* service_;
+  SyncSetupFlow* flow_;
   MockSyncSetupHandler handler_;
 };
 
-TEST_F(SyncSetupWizardTest, ChooseDataTypesSetsPrefs) {
-  wizard_->Step(SyncSetupWizard::CONFIGURE);
+TEST_F(SyncSetupWizardTest, InitialStepLogin) {
+  ListValue credentials;
+  std::string auth = "{\"user\":\"";
+  auth += std::string(kTestUser) + "\",\"pass\":\"";
+  auth += std::string(kTestPassword) + "\",\"captcha\":\"";
+  auth += std::string(kTestCaptcha) + "\",\"access_code\":\"";
+  auth += std::string() + "\"}";
+  credentials.Append(new StringValue(auth));
+
+  EXPECT_FALSE(wizard_->IsVisible());
+  EXPECT_EQ(static_cast<SyncSetupFlow*>(NULL), flow_);
+  wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   AttachSyncSetupHandler();
+
+  EXPECT_TRUE(wizard_->IsVisible());
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
+  EXPECT_EQ(SyncSetupWizard::DONE, flow_->end_state_);
+
+  // Simulate the user submitting credentials.
+  handler_.HandleSubmitAuth(&credentials);
+  EXPECT_TRUE(wizard_->IsVisible());
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
+  EXPECT_EQ(kTestUser, service_->mock_signin_.username_);
+  EXPECT_EQ(kTestPassword, service_->mock_signin_.password_);
+  EXPECT_EQ(kTestCaptcha, service_->mock_signin_.captcha_);
+  EXPECT_FALSE(service_->user_cancelled_dialog_);
+  service_->ResetTestStats();
+
+  // Simulate failed credentials.
+  AuthError invalid_gaia(AuthError::INVALID_GAIA_CREDENTIALS);
+  flow_->last_attempted_user_email_ = kTestUser;
+  service_->set_last_auth_error(invalid_gaia);
+  wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
+  EXPECT_TRUE(wizard_->IsVisible());
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
+  DictionaryValue dialog_args;
+  flow_->GetArgsForGaiaLogin(&dialog_args);
+  EXPECT_EQ(4U, dialog_args.size());
+  std::string actual_user;
+  dialog_args.GetString("user", &actual_user);
+  EXPECT_EQ(kTestUser, actual_user);
+  int error = -1;
+  dialog_args.GetInteger("error", &error);
+  EXPECT_EQ(static_cast<int>(AuthError::INVALID_GAIA_CREDENTIALS), error);
+  flow_->last_attempted_user_email_ = kTestUser;
+  service_->set_last_auth_error(AuthError::None());
+
+  // Simulate captcha.
+  AuthError captcha_error(AuthError::FromCaptchaChallenge(
+      std::string(), GURL(kTestCaptchaUrl), GURL()));
+  flow_->last_attempted_user_email_ = kTestUser;
+  service_->set_last_auth_error(captcha_error);
+  wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
+  flow_->GetArgsForGaiaLogin(&dialog_args);
+  EXPECT_EQ(4U, dialog_args.size());
+  std::string captcha_url;
+  dialog_args.GetString("captchaUrl", &captcha_url);
+  EXPECT_EQ(kTestCaptchaUrl, GURL(captcha_url).spec());
+  error = -1;
+  dialog_args.GetInteger("error", &error);
+  EXPECT_EQ(static_cast<int>(AuthError::CAPTCHA_REQUIRED), error);
+  flow_->last_attempted_user_email_ = kTestUser;
+  service_->set_last_auth_error(AuthError::None());
+
+  // Simulate success.
+  wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
+  EXPECT_TRUE(wizard_->IsVisible());
+  wizard_->Step(SyncSetupWizard::SYNC_EVERYTHING);
+  EXPECT_EQ(SyncSetupWizard::SYNC_EVERYTHING, flow_->current_state_);
+
+  // That's all we're testing here, just move on to DONE.  We'll test the
+  // "choose data types" scenarios elsewhere.
+  wizard_->Step(SyncSetupWizard::SETTING_UP);  // No merge and sync.
+  wizard_->Step(SyncSetupWizard::DONE);  // No merge and sync.
+  EXPECT_FALSE(wizard_->IsVisible());
+}
+
+TEST_F(SyncSetupWizardTest, ChooseDataTypesSetsPrefs) {
+  wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
+  AttachSyncSetupHandler();
+  wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
+  wizard_->Step(SyncSetupWizard::CONFIGURE);
 
   ListValue data_type_choices_value;
   std::string data_type_choices =
@@ -293,6 +367,25 @@ TEST_F(SyncSetupWizardTest, ChooseDataTypesSetsPrefs) {
       syncable::APP_NOTIFICATIONS));
 }
 
+TEST_F(SyncSetupWizardTest, ShowErrorUIForPasswordTest) {
+  service_->ClearObservers();
+  CompleteSetup();
+
+  // Simulate an auth error and make sure the start and end state are set
+  // right.
+  service_->set_last_auth_error(
+      AuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+  service_->ShowErrorUI();
+  AttachSyncSetupHandler();
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
+  EXPECT_EQ(SyncSetupWizard::GAIA_SUCCESS, flow_->end_state_);
+  ASSERT_TRUE(wizard_->IsVisible());
+
+  // Make sure the wizard is dismissed.
+  wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
+  ASSERT_FALSE(wizard_->IsVisible());
+}
+
 TEST_F(SyncSetupWizardTest, ShowErrorUIForPassphraseTest) {
   service_->ClearObservers();
   CompleteSetup();
@@ -303,9 +396,8 @@ TEST_F(SyncSetupWizardTest, ShowErrorUIForPassphraseTest) {
   service_->set_is_using_secondary_passphrase(true);
   service_->ShowErrorUI();
   AttachSyncSetupHandler();
-  EXPECT_EQ(SyncSetupWizard::ENTER_PASSPHRASE,
-            handler_.GetFlow()->current_state_);
-  EXPECT_EQ(SyncSetupWizard::DONE, handler_.GetFlow()->end_state_);
+  EXPECT_EQ(SyncSetupWizard::ENTER_PASSPHRASE, flow_->current_state_);
+  EXPECT_EQ(SyncSetupWizard::DONE, flow_->end_state_);
   ASSERT_TRUE(wizard_->IsVisible());
 
   // Make sure the wizard is dismissed.
@@ -314,13 +406,14 @@ TEST_F(SyncSetupWizardTest, ShowErrorUIForPassphraseTest) {
 }
 
 TEST_F(SyncSetupWizardTest, EnterPassphraseRequired) {
-  wizard_->Step(SyncSetupWizard::CONFIGURE);
+  wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   AttachSyncSetupHandler();
+  wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
+  wizard_->Step(SyncSetupWizard::CONFIGURE);
   wizard_->Step(SyncSetupWizard::SETTING_UP);
   service_->set_passphrase_required_reason(sync_api::REASON_ENCRYPTION);
   wizard_->Step(SyncSetupWizard::ENTER_PASSPHRASE);
-  EXPECT_EQ(SyncSetupWizard::ENTER_PASSPHRASE,
-            handler_.GetFlow()->current_state_);
+  EXPECT_EQ(SyncSetupWizard::ENTER_PASSPHRASE, flow_->current_state_);
 
   ListValue value;
   value.Append(new StringValue("{\"passphrase\":\"myPassphrase\","
@@ -330,21 +423,49 @@ TEST_F(SyncSetupWizardTest, EnterPassphraseRequired) {
   CloseSetupUI();
 }
 
+TEST_F(SyncSetupWizardTest, DialogCancelled) {
+  wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
+  AttachSyncSetupHandler();
+  // Simulate the user closing the dialog.
+  CloseSetupUI();
+  EXPECT_FALSE(wizard_->IsVisible());
+  EXPECT_TRUE(service_->user_cancelled_dialog_);
+  EXPECT_EQ(std::string(), service_->mock_signin_.username_);
+  EXPECT_EQ(std::string(), service_->mock_signin_.password_);
+
+  wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
+  AttachSyncSetupHandler();
+  EXPECT_TRUE(wizard_->IsVisible());
+  wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
+
+  CloseSetupUI();
+  EXPECT_FALSE(wizard_->IsVisible());
+  EXPECT_TRUE(service_->user_cancelled_dialog_);
+  EXPECT_EQ(std::string(), service_->mock_signin_.username_);
+  EXPECT_EQ(std::string(), service_->mock_signin_.password_);
+}
+
 TEST_F(SyncSetupWizardTest, InvalidTransitions) {
+  wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
+  EXPECT_FALSE(wizard_->IsVisible());
+
   wizard_->Step(SyncSetupWizard::DONE);
   EXPECT_FALSE(wizard_->IsVisible());
 
-  wizard_->Step(SyncSetupWizard::SYNC_EVERYTHING);
+  wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   AttachSyncSetupHandler();
-  EXPECT_EQ(SyncSetupWizard::SYNC_EVERYTHING,
-            handler_.GetFlow()->current_state_);
-  EXPECT_TRUE(wizard_->IsVisible());
+
+  wizard_->Step(SyncSetupWizard::DONE);
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
+
+  wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
+  wizard_->Step(SyncSetupWizard::SYNC_EVERYTHING);
+  EXPECT_EQ(SyncSetupWizard::SYNC_EVERYTHING, flow_->current_state_);
 
   wizard_->Step(SyncSetupWizard::FATAL_ERROR);
-  // Stepping to FATAL_ERROR leaves us in a FATAL_ERROR state and blows away
-  // the SyncSetupFlow.
-  EXPECT_FALSE(wizard_->IsVisible());
-  EXPECT_TRUE(handler_.GetFlow() == NULL);
+  // Stepping to FATAL_ERROR sends us back to GAIA_LOGIN.
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
+  CloseSetupUI();
 }
 
 TEST_F(SyncSetupWizardTest, FullSuccessfulRunSetsPref) {
@@ -355,12 +476,15 @@ TEST_F(SyncSetupWizardTest, FullSuccessfulRunSetsPref) {
 }
 
 TEST_F(SyncSetupWizardTest, AbortedByPendingClear) {
-  wizard_->Step(SyncSetupWizard::SYNC_EVERYTHING);
+  wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   AttachSyncSetupHandler();
-  EXPECT_TRUE(wizard_->IsVisible());
-  wizard_->Step(SyncSetupWizard::ABORT);
-  // Stepping to ABORT should leave us in ABORT state, and should close the
-  // wizard.
+  wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
+  wizard_->Step(SyncSetupWizard::SYNC_EVERYTHING);
+  wizard_->Step(SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR);
+  // Stepping to SETUP_ABORTED should redirect us to GAIA_LOGIN state, since
+  // that's where we display the error.
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
+  CloseSetupUI();
   EXPECT_FALSE(wizard_->IsVisible());
 }
 
@@ -369,7 +493,7 @@ TEST_F(SyncSetupWizardTest, DiscreteRunChooseDataTypes) {
 
   wizard_->Step(SyncSetupWizard::CONFIGURE);
   AttachSyncSetupHandler();
-  EXPECT_EQ(SyncSetupWizard::DONE, handler_.GetFlow()->end_state_);
+  EXPECT_EQ(SyncSetupWizard::DONE, flow_->end_state_);
 
   wizard_->Step(SyncSetupWizard::SETTING_UP);
   wizard_->Step(SyncSetupWizard::DONE);
@@ -381,36 +505,107 @@ TEST_F(SyncSetupWizardTest, DiscreteRunChooseDataTypesAbortedByPendingClear) {
 
   wizard_->Step(SyncSetupWizard::CONFIGURE);
   AttachSyncSetupHandler();
-  EXPECT_TRUE(wizard_->IsVisible());
-  EXPECT_EQ(SyncSetupWizard::DONE, handler_.GetFlow()->end_state_);
-  wizard_->Step(SyncSetupWizard::ABORT);
-  // Stepping to ABORT should leave us in the ABORT state and close the dialog.
+  EXPECT_EQ(SyncSetupWizard::DONE, flow_->end_state_);
+  wizard_->Step(SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR);
+  // Stepping to SETUP_ABORTED should redirect us to GAIA_LOGIN state, since
+  // that's where we display the error.
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
+
+  CloseSetupUI();
   EXPECT_FALSE(wizard_->IsVisible());
 }
 
-TEST_F(SyncSetupWizardTest, EnterPassphrase) {
+TEST_F(SyncSetupWizardTest, DiscreteRunGaiaLogin) {
+  CompleteSetup();
+
+  wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
+  AttachSyncSetupHandler();
+  EXPECT_EQ(SyncSetupWizard::GAIA_SUCCESS, flow_->end_state_);
+
+  AuthError invalid_gaia(AuthError::INVALID_GAIA_CREDENTIALS);
+  flow_->last_attempted_user_email_ = kTestUser;
+  service_->set_last_auth_error(invalid_gaia);
+  wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
+  EXPECT_TRUE(wizard_->IsVisible());
+
+  DictionaryValue dialog_args;
+  flow_->GetArgsForGaiaLogin(&dialog_args);
+  EXPECT_EQ(4U, dialog_args.size());
+  std::string actual_user;
+  dialog_args.GetString("user", &actual_user);
+  EXPECT_EQ(kTestUser, actual_user);
+  int error = -1;
+  dialog_args.GetInteger("error", &error);
+  EXPECT_EQ(static_cast<int>(AuthError::INVALID_GAIA_CREDENTIALS), error);
+  flow_->last_attempted_user_email_ = kTestUser;
+  service_->set_last_auth_error(AuthError::None());
+
+  wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
+}
+
+TEST_F(SyncSetupWizardTest, NonFatalError) {
   CompleteSetup();
 
   // Set up the ENTER_PASSPHRASE case.
   service_->set_passphrase_required_reason(sync_api::REASON_ENCRYPTION);
   service_->set_is_using_secondary_passphrase(true);
-  wizard_->Step(SyncSetupWizard::ENTER_PASSPHRASE);
+  wizard_->Step(SyncSetupWizard::NONFATAL_ERROR);
   AttachSyncSetupHandler();
-  EXPECT_EQ(SyncSetupWizard::ENTER_PASSPHRASE,
-            handler_.GetFlow()->current_state_);
-  EXPECT_EQ(SyncSetupWizard::DONE, handler_.GetFlow()->end_state_);
+  EXPECT_EQ(SyncSetupWizard::ENTER_PASSPHRASE, flow_->current_state_);
+  EXPECT_EQ(SyncSetupWizard::DONE, flow_->end_state_);
   CloseSetupUI();
   EXPECT_FALSE(wizard_->IsVisible());
-}
 
-TEST_F(SyncSetupWizardTest, FatalErrorDuringConfigure) {
-  CompleteSetup();
+  // Reset.
+  service_->set_passphrase_required_reason(
+      sync_api::REASON_PASSPHRASE_NOT_REQUIRED);
+  service_->set_is_using_secondary_passphrase(false);
 
-  wizard_->Step(SyncSetupWizard::CONFIGURE);
+  // Test the various auth error states that lead to GAIA_LOGIN.
+
+  service_->set_last_auth_error(
+      AuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+  wizard_->Step(SyncSetupWizard::NONFATAL_ERROR);
   AttachSyncSetupHandler();
-  EXPECT_EQ(SyncSetupWizard::DONE, handler_.GetFlow()->end_state_);
-  wizard_->Step(SyncSetupWizard::FATAL_ERROR);
-  EXPECT_TRUE(handler_.GetFlow() == NULL);
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
+  EXPECT_EQ(SyncSetupWizard::DONE, flow_->end_state_);
+  CloseSetupUI();
+  EXPECT_FALSE(wizard_->IsVisible());
+
+  service_->set_last_auth_error(
+      AuthError(GoogleServiceAuthError::CAPTCHA_REQUIRED));
+  wizard_->Step(SyncSetupWizard::NONFATAL_ERROR);
+  AttachSyncSetupHandler();
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
+  EXPECT_EQ(SyncSetupWizard::DONE, flow_->end_state_);
+  CloseSetupUI();
+  EXPECT_FALSE(wizard_->IsVisible());
+
+  service_->set_last_auth_error(
+      AuthError(GoogleServiceAuthError::ACCOUNT_DELETED));
+  wizard_->Step(SyncSetupWizard::NONFATAL_ERROR);
+  AttachSyncSetupHandler();
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
+  EXPECT_EQ(SyncSetupWizard::DONE, flow_->end_state_);
+  CloseSetupUI();
+  EXPECT_FALSE(wizard_->IsVisible());
+
+  service_->set_last_auth_error(
+      AuthError(GoogleServiceAuthError::ACCOUNT_DISABLED));
+  wizard_->Step(SyncSetupWizard::NONFATAL_ERROR);
+  AttachSyncSetupHandler();
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
+  EXPECT_EQ(SyncSetupWizard::DONE, flow_->end_state_);
+  CloseSetupUI();
+  EXPECT_FALSE(wizard_->IsVisible());
+
+  service_->set_last_auth_error(
+      AuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
+  wizard_->Step(SyncSetupWizard::NONFATAL_ERROR);
+  AttachSyncSetupHandler();
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
+  EXPECT_EQ(SyncSetupWizard::DONE, flow_->end_state_);
+  CloseSetupUI();
   EXPECT_FALSE(wizard_->IsVisible());
 }
 
@@ -424,3 +619,29 @@ class SyncSetupWizardCrosTest : public SyncSetupWizardTest {
     return profile;
   }
 };
+
+// Tests a scenario where sync is disabled on chrome os on startup due to
+// an auth error (application specific password is needed).
+TEST_F(SyncSetupWizardCrosTest, CrosAuthSetup) {
+  wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
+
+  AttachSyncSetupHandler();
+  EXPECT_EQ(SyncSetupWizard::GAIA_SUCCESS, flow_->end_state_);
+
+  DictionaryValue dialog_args;
+  flow_->GetArgsForGaiaLogin(&dialog_args);
+  EXPECT_EQ(4U, dialog_args.size());
+  std::string actual_user;
+  dialog_args.GetString("user", &actual_user);
+  EXPECT_EQ(kTestUser, actual_user);
+  int error = -1;
+  dialog_args.GetInteger("error", &error);
+  EXPECT_EQ(0, error);
+  bool editable = true;
+  dialog_args.GetBoolean("editable_user", &editable);
+  EXPECT_FALSE(editable);
+  wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
+  EXPECT_TRUE(service_->user_cancelled_dialog_);
+  EXPECT_TRUE(service_->profile()->GetPrefs()->GetBoolean(
+      prefs::kSyncHasSetupCompleted));
+}

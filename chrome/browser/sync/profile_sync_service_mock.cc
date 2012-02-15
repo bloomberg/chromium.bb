@@ -4,6 +4,7 @@
 
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
 #include "chrome/browser/prefs/testing_pref_store.h"
+#include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -14,7 +15,7 @@
 ProfileSyncServiceMock::ProfileSyncServiceMock()
     : ProfileSyncService(NULL,
                          NULL,
-                         NULL,
+                         new SigninManager(),
                          ProfileSyncService::MANUAL_START) {
 }
 
@@ -26,6 +27,7 @@ ProfileSyncServiceMock::ProfileSyncServiceMock(
 }
 
 ProfileSyncServiceMock::~ProfileSyncServiceMock() {
+  delete signin();
 }
 
 // static

@@ -62,6 +62,9 @@ class SyncSetupFlow {
                             SyncSetupWizard::State start,
                             SyncSetupWizard::State end);
 
+  // Fills |args| with "user" and "error" arguments per our current state.
+  void GetArgsForGaiaLogin(DictionaryValue* args);
+
   // Fills |args| for the configure screen (Choose Data Types/Encryption)
   void GetArgsForConfigure(DictionaryValue* args);
 
@@ -78,6 +81,13 @@ class SyncSetupFlow {
   // Focuses the dialog.  This is useful in cases where the dialog has been
   // obscured by a browser window.
   void Focus();
+
+  void OnUserSubmittedAuth(const std::string& username,
+                           const std::string& password,
+                           const std::string& captcha,
+                           const std::string& access_code);
+
+  void OnUserSubmittedOAuth(const std::string& oauth1_request_token);
 
   void OnUserConfigured(const SyncConfiguration& configuration);
 
@@ -103,8 +113,7 @@ class SyncSetupFlow {
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest,
                            DiscreteRunChooseDataTypesAbortedByPendingClear);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, EnterPassphraseRequired);
-  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, EnterPassphrase);
-  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, FatalErrorDuringConfigure);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, NonFatalError);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, CrosAuthSetup);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, ShowErrorUIForPasswordTest);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, ShowErrorUIForPassphraseTest);
@@ -128,6 +137,9 @@ class SyncSetupFlow {
   SyncSetupWizard::State current_state_;
   SyncSetupWizard::State end_state_;  // The goal.
 
+  // Time that the GAIA_LOGIN step was received.
+  base::TimeTicks login_start_time_;
+
   // The handler needed for the entire flow. Weak reference.
   SyncSetupFlowHandler* flow_handler_;
 
@@ -141,6 +153,10 @@ class SyncSetupFlow {
   // Set to true if the user entered a passphrase, so we can appropriately
   // reflect this in the UI.
   bool user_tried_setting_passphrase_;
+
+  // Cache of the last name the client attempted to authenticate.
+  // TODO(atwilson): Move this out of here entirely and up into the UI layer.
+  std::string last_attempted_user_email_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSetupFlow);
 };
