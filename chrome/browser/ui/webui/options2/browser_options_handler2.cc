@@ -41,6 +41,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -335,18 +336,28 @@ void BrowserOptionsHandler::Initialize() {
   autocomplete_controller_.reset(new AutocompleteController(profile, this));
 
 #if defined(OS_WIN)
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&BrowserOptionsHandler::CheckAutoLaunch,
-                 weak_ptr_factory_for_ui_.GetWeakPtr(),
-                 weak_ptr_factory_for_file_.GetWeakPtr()));
-  weak_ptr_factory_for_ui_.DetachFromThread();
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (!command_line.HasSwitch(switches::kChromeFrame) &&
+      !command_line.HasSwitch(switches::kUserDataDir)) {
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+        base::Bind(&BrowserOptionsHandler::CheckAutoLaunch,
+                   weak_ptr_factory_for_ui_.GetWeakPtr(),
+                   weak_ptr_factory_for_file_.GetWeakPtr(),
+                   profile->GetPath()));
+    weak_ptr_factory_for_ui_.DetachFromThread();
+  }
 #endif
 }
 
 void BrowserOptionsHandler::CheckAutoLaunch(
-    base::WeakPtr<BrowserOptionsHandler> weak_this) {
+    base::WeakPtr<BrowserOptionsHandler> weak_this,
+    const FilePath& profile_path) {
 #if defined(OS_WIN)
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  // Auto-launch is not supported for secondary profiles yet.
+  if (profile_path.BaseName().value() != ASCIIToUTF16(chrome::kInitialProfile))
+    return;
 
   // Pass in weak pointer to this to avoid race if BrowserOptionsHandler is
   // deleted.
@@ -354,7 +365,9 @@ void BrowserOptionsHandler::CheckAutoLaunch(
       base::Bind(&BrowserOptionsHandler::CheckAutoLaunchCallback,
                  weak_this,
                  auto_launch_trial::IsInAutoLaunchGroup(),
-                 auto_launch_util::WillLaunchAtLogin(FilePath())));
+                 auto_launch_util::WillLaunchAtLogin(
+                     FilePath(),
+                     profile_path.BaseName().value())));
 #endif
 }
 
@@ -371,7 +384,7 @@ void BrowserOptionsHandler::CheckAutoLaunchCallback(
 
     base::FundamentalValue enabled(will_launch_at_login);
     web_ui()->CallJavascriptFunction("BrowserOptions.updateAutoLaunchState",
-      enabled);
+                                     enabled);
   }
 #endif
 }
@@ -597,9 +610,11 @@ void BrowserOptionsHandler::ToggleAutoLaunch(const ListValue* args) {
 
   // Make sure we keep track of how many disable and how many enable.
   auto_launch_trial::UpdateToggleAutoLaunchMetric(enable);
+  Profile* profile = Profile::FromWebUI(web_ui());
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&auto_launch_util::SetWillLaunchAtLogin, enable, FilePath()));
+      base::Bind(&auto_launch_util::SetWillLaunchAtLogin, enable,
+                 FilePath(), profile->GetPath().BaseName().value()));
 #endif  // OS_WIN
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/util/auto_launch_util.h"
@@ -423,7 +424,9 @@ InstallStatus InstallOrUpdateProduct(
             &auto_launch_chrome);
         if (auto_launch_chrome) {
           auto_launch_util::SetWillLaunchAtLogin(
-              true, installer_state.target_path());
+              true,
+              installer_state.target_path(),
+              ASCIIToUTF16(chrome::kInitialProfile));
         }
       }
     }

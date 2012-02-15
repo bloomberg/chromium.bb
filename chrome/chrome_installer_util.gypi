@@ -107,6 +107,7 @@
             '<(DEPTH)/chrome/chrome_resources.gyp:chrome_strings',
             '<(DEPTH)/content/content.gyp:content_common',
             '<(DEPTH)/courgette/courgette.gyp:courgette_lib',
+            '<(DEPTH)/crypto/crypto.gyp:crypto',
             '<(DEPTH)/third_party/bspatch/bspatch.gyp:bspatch',
             '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
             '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
