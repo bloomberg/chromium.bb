@@ -260,35 +260,35 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, JavascriptAlertActivatesTab) {
 
 
 
-#if defined(OS_WIN)
-// http://crbug.com/75274. On XP crashes inside
-// URLFetcher::Core::Registry::RemoveURLFetcherCore.
-#define MAYBE_ThirtyFourTabs FLAKY_ThirtyFourTabs
-#else
-#define MAYBE_ThirtyFourTabs ThirtyFourTabs
-#endif
-
 // Create 34 tabs and verify that a lot of processes have been created. The
 // exact number of processes depends on the amount of memory. Previously we
 // had a hard limit of 31 processes and this test is mainly directed at
 // verifying that we don't crash when we pass this limit.
 // Warning: this test can take >30 seconds when running on a slow (low
 // memory?) Mac builder.
-IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_ThirtyFourTabs) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, ThirtyFourTabs) {
   GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
                                      FilePath(kTitle2File)));
 
   // There is one initial tab.
-  for (int ix = 0; ix != 33; ++ix)
+  const int kTabCount = 34;
+  for (int ix = 0; ix != (kTabCount - 1); ++ix)
     browser()->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_TYPED);
-  EXPECT_EQ(34, browser()->tab_count());
+  EXPECT_EQ(kTabCount, browser()->tab_count());
 
-  // See browser\renderer_host\render_process_host.cc for the algorithm to
-  // decide how many processes to create.
+  // See GetMaxRendererProcessCount() in
+  // content/browser/renderer_host/render_process_host_impl.cc
+  // for the algorithm to decide how many processes to create.
+  const int kExpectedProcessCount =
+#if defined(ARCH_CPU_64_BITS)
+      17;
+#else
+      25;
+#endif
   if (base::SysInfo::AmountOfPhysicalMemoryMB() >= 2048) {
-    EXPECT_GE(CountRenderProcessHosts(), 24);
+    EXPECT_GE(CountRenderProcessHosts(), kExpectedProcessCount);
   } else {
-    EXPECT_LE(CountRenderProcessHosts(), 23);
+    EXPECT_LT(CountRenderProcessHosts(), kExpectedProcessCount);
   }
 }
 
@@ -1396,7 +1396,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCommandDisable) {
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_PRINT));
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SAVE_PAGE));
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_ENCODING_MENU));
-
 }
 
 class MockWebContentsObserver : public WebContentsObserver {

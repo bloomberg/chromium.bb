@@ -218,39 +218,35 @@ size_t content::RenderProcessHost::GetMaxRendererProcessCount() {
     return g_max_renderer_count_override;
 
   // Defines the maximum number of renderer processes according to the
-  // amount of installed memory as reported by the OS. The table
-  // values are calculated by assuming that you want the renderers to
-  // use half of the installed ram and assuming that each tab uses
-  // ~40MB, however the curve is not linear but piecewise linear with
-  // interleaved slopes of 3 and 2.
-  // If you modify this table you need to adjust browser\browser_uitest.cc
-  // to match the expected number of processes.
-
-  static const size_t kMaxRenderersByRamTier[] = {
-    3,                        // less than 256MB
-    6,                        //  256MB
-    9,                        //  512MB
-    12,                       //  768MB
-    14,                       // 1024MB
-    18,                       // 1280MB
-    20,                       // 1536MB
-    22,                       // 1792MB
-    24,                       // 2048MB
-    26,                       // 2304MB
-    29,                       // 2560MB
-    32,                       // 2816MB
-    35,                       // 3072MB
-    38,                       // 3328MB
-    40                        // 3584MB
-  };
+  // amount of installed memory as reported by the OS. The calculation
+  // assumes that you want the renderers to use half of the installed
+  // RAM and assuming that each tab uses ~40MB.
+  // If you modify this assumption, you need to adjust the
+  // ThirtyFourTabs test to match the expected number of processes.
+  //
+  // With the given amounts of installed memory below on a 32-bit CPU,
+  // the maximum renderer count will roughly be as follows:
+  //
+  //   128 MB -> 3
+  //   512 MB -> 6
+  //  1024 MB -> 12
+  //  4096 MB -> 51
+  // 16384 MB -> 82 (kMaxRendererProcessCount)
 
   static size_t max_count = 0;
   if (!max_count) {
-    size_t memory_tier = base::SysInfo::AmountOfPhysicalMemoryMB() / 256;
-    if (memory_tier >= arraysize(kMaxRenderersByRamTier))
-      max_count = content::kMaxRendererProcessCount;
-    else
-      max_count = kMaxRenderersByRamTier[memory_tier];
+    const size_t kEstimatedTabMemoryUsage =
+#if defined(ARCH_CPU_64_BITS)
+        60;  // In MB
+#else
+        40;  // In MB
+#endif
+    max_count = base::SysInfo::AmountOfPhysicalMemoryMB() / 2;
+    max_count /= kEstimatedTabMemoryUsage;
+
+    const size_t kMinRendererProcessCount = 3;
+    max_count = std::max(max_count, kMinRendererProcessCount);
+    max_count = std::min(max_count, content::kMaxRendererProcessCount);
   }
   return max_count;
 }

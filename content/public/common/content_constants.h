@@ -4,8 +4,8 @@
 
 // A handful of resource-like constants related to the Content application.
 
-#ifndef CONTENT_PUBLIC_COMMON_CHROME_CONSTANTS_H_
-#define CONTENT_PUBLIC_COMMON_CHROME_CONSTANTS_H_
+#ifndef CONTENT_PUBLIC_COMMON_CONTENT_CONSTANTS_H_
+#define CONTENT_PUBLIC_COMMON_CONTENT_CONSTANTS_H_
 #pragma once
 
 #include <stddef.h>         // For size_t
@@ -14,7 +14,7 @@
 
 namespace content {
 
-CONTENT_EXPORT extern const unsigned int kMaxRendererProcessCount;
+CONTENT_EXPORT extern const size_t kMaxRendererProcessCount;
 
 // The maximum number of session history entries per tab.
 extern const int kMaxSessionHistoryEntries;
@@ -38,4 +38,4 @@ extern const int kStatsMaxCounters;
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_COMMON_CHROME_CONSTANTS_H_
+#endif  // CONTENT_PUBLIC_COMMON_CONTENT_CONSTANTS_H_
