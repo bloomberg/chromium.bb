@@ -106,7 +106,8 @@ class HistoryService : public CancelableRequestProvider,
 
   // Triggers the backend to load if it hasn't already, and then returns whether
   // it's finished loading.
-  bool BackendLoaded();
+  // Note: Virtual needed for mocking.
+  virtual bool BackendLoaded();
 
   // Returns true if the backend has finished loading.
   bool backend_loaded() const { return backend_loaded_; }

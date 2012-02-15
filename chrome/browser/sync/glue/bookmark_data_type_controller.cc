@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/history/history.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -30,18 +31,31 @@ BookmarkDataTypeController::BookmarkDataTypeController(
 BookmarkDataTypeController::~BookmarkDataTypeController() {
 }
 
-// We want to start the bookmark model before we begin associating.
-bool BookmarkDataTypeController::StartModels() {
-  // If the bookmarks model is loaded, continue with association.
+// Check that both the bookmark model and the history service (for favicons)
+// are loaded.
+bool BookmarkDataTypeController::DependentsLoaded() {
   BookmarkModel* bookmark_model = profile_->GetBookmarkModel();
-  if (bookmark_model && bookmark_model->IsLoaded()) {
-    return true;  // Continue to Associate().
-  }
+  if (!bookmark_model || !bookmark_model->IsLoaded())
+    return false;
 
-  // Add an observer and continue when the bookmarks model is loaded.
-  registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
-                 content::Source<Profile>(sync_service_->profile()));
-  return false;  // Don't continue Start.
+  HistoryService* history =
+      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  if (!history || !history->BackendLoaded())
+    return false;
+
+  // All necessary services are loaded.
+  return true;
+}
+
+bool BookmarkDataTypeController::StartModels() {
+  if (!DependentsLoaded()) {
+    registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
+                   content::Source<Profile>(sync_service_->profile()));
+    registrar_.Add(this, chrome::NOTIFICATION_HISTORY_LOADED,
+                   content::Source<Profile>(sync_service_->profile()));
+    return false;
+  }
+  return true;
 }
 
 // Cleanup for our extra registrar usage.
@@ -54,9 +68,14 @@ void BookmarkDataTypeController::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED, type);
-  registrar_.RemoveAll();
   DCHECK_EQ(state_, MODEL_STARTING);
+  if (type != chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED &&
+      type != chrome::NOTIFICATION_HISTORY_LOADED) {
+    return;
+  }
+  if (!DependentsLoaded())
+    return;
+  registrar_.RemoveAll();
   state_ = ASSOCIATING;
   Associate();
 }
