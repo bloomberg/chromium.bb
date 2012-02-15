@@ -791,13 +791,12 @@ class HWTestStage(BoardSpecificBuilderStage):
   option_name = 'tests'
 
   def __init__(self, bot_id, options, build_config, board, archive_stage,
-               suite, platform):
+               suite):
     super(HWTestStage, self).__init__(bot_id, options, build_config, board,
                                       suffix=' [%s]' % suite)
-    self._archive_url = archive_stage.GetGSUploadLocation()
     self._archive_stage = archive_stage
+    self.bot_id = bot_id
     self._suite = suite
-    self._platform = platform
 
   def _PerformStage(self):
     if not self._archive_stage.WaitForVMTestStatus():
@@ -806,7 +805,8 @@ class HWTestStage(BoardSpecificBuilderStage):
     if not self._archive_stage.WaitForHWTestUploads():
       raise Exception('Missing uploads.')
 
-    commands.RunHWTestSuite(self._archive_url, self._suite, self._platform,
+    build = '%s/%s' % (self.bot_id, self._archive_stage.GetVersion())
+    commands.RunHWTestSuite(build, self._suite, self._current_board,
                             self._options.debug)
 
 

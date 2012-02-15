@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -383,22 +383,26 @@ def ArchiveTestResults(buildroot, test_results_dir, prefix):
     cros_lib.Warning('========================================================')
 
 
-def RunHWTestSuite(archive_url, suite, platform, debug):
+def RunHWTestSuite(build, suite, board, debug):
   """Run the test suite in the Autotest lab.
 
   Args:
-    archive_url: Google Storage URL.
+    build: The build is described as the bot_id and the build version.
+      e.g. x86-mario-release/R18-1655.0.0-a1-b1584.
     suite: Name of the Autotest suite.
-    platform: Platform to to run the test on.
+    board: The board the test suite should be scheduled against.
     debug: Whether we are in debug mode.
   """
-  if not debug:
-    cmd = [_AUTOTEST_RPC_CLIENT,
-           'master2', # TODO(frankf): Pass master_host param to cbuildbot.
-           'RunJob',
-           '--image_url=%s' % archive_url,
-           '--suite_name=%s' % suite,
-           '--board_type=%s' % platform]
+  # TODO(scottz): RPC client option names are misnomers crosbug.com/26445.
+  cmd = [_AUTOTEST_RPC_CLIENT,
+         'master2', # TODO(frankf): Pass master_host param to cbuildbot.
+         'RunSuite',
+         '--image_url=%s' % build,
+         '--suite_name=%s' % suite,
+         '--board_type=%s' % board]
+  if debug:
+    cros_lib.Info('RunHWTestSuite would run: %s' % ' '.join(cmd))
+  else:
     cros_lib.RunCommand(cmd)
 
 

@@ -358,8 +358,7 @@ class SimpleBuilder(Builder):
                 stages.HWTestStage,
                 board,
                 archive_stage=archive_stage,
-                suite=suite,
-                platform=self.build_config['platform'])
+                suite=suite)
             steps.append(hw_test_stage.Run)
       steps += [unit_test_stage.Run, prebuilts_stage.Run]
       # Run the steps in parallel. If any exceptions occur, RunParallelSteps

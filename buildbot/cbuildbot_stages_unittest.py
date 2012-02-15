@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -549,24 +549,23 @@ class HWTestStageTest(AbstractStageTest):
     self.bot_id = 'x86-mario-release'
     self.build_config = config.config[self.bot_id].copy()
     self.archive_stage_mock = self.mox.CreateMock(stages.ArchiveStage)
-    self.platform = 'netbook_MARIO'
     self.suite = 'bvt'
 
   def ConstructStage(self):
     return stages.HWTestStage(self.bot_id, self.options, self.build_config,
                               self._current_board, self.archive_stage_mock,
-                              self.suite, self.platform)
+                              self.suite)
 
   def testWithSuite(self):
     """Test if run correctly with a test suite."""
-    self.archive_stage_mock.GetGSUploadLocation().AndReturn('some_url')
     self.archive_stage_mock.WaitForVMTestStatus().AndReturn(True)
     self.archive_stage_mock.WaitForHWTestUploads().AndReturn(True)
-
     self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
-    commands.RunHWTestSuite('some_url',
+    build = '%s/%s' % (self.bot_id,
+                       self.archive_stage_mock.GetVersion().AndReturn('ver'))
+    commands.RunHWTestSuite(build,
                             self.suite,
-                            self.platform,
+                            self._current_board,
                             False)
 
     self.mox.ReplayAll()
