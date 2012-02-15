@@ -31,6 +31,7 @@ namespace internal {
 
 WorkspaceEventFilter::WorkspaceEventFilter(aura::Window* owner)
     : ToplevelWindowEventFilter(owner),
+      owner_(owner),
       drag_state_(DRAG_NONE),
       hovered_window_(NULL) {
 }
@@ -43,7 +44,7 @@ WorkspaceEventFilter::~WorkspaceEventFilter() {
 bool WorkspaceEventFilter::PreHandleMouseEvent(aura::Window* target,
                                                aura::MouseEvent* event) {
   WorkspaceLayoutManager* layout_manager =
-      static_cast<WorkspaceLayoutManager*>(owner()->layout_manager());
+      static_cast<WorkspaceLayoutManager*>(owner_->layout_manager());
   DCHECK(layout_manager);
 
   // TODO(oshima|derat): Incorporate the logic below and introduce DragObserver
@@ -102,26 +103,8 @@ void WorkspaceEventFilter::OnWindowDestroyed(aura::Window* window) {
 }
 
 bool WorkspaceEventFilter::UpdateDragState() {
-  DCHECK_EQ(DRAG_NONE, drag_state_);
-  switch (window_component()) {
-    case HTCAPTION:
-      drag_state_ = DRAG_MOVE;
-      break;
-    case HTTOP:
-    case HTTOPRIGHT:
-    case HTRIGHT:
-    case HTBOTTOMRIGHT:
-    case HTBOTTOM:
-    case HTBOTTOMLEFT:
-    case HTLEFT:
-    case HTTOPLEFT:
-    case HTGROWBOX:
-      drag_state_ = DRAG_RESIZE;
-      break;
-    default:
-      return false;
-  }
-  return true;
+  // TODO(sky): nuke this method.
+  return false;
 }
 
 void WorkspaceEventFilter::UpdateHoveredWindow(

@@ -24,6 +24,8 @@ class Window;
 
 namespace ash {
 
+class WindowResizer;
+
 class ASH_EXPORT ToplevelWindowEventFilter :
       public aura::EventFilter,
       public aura::client::WindowMoveClient {
@@ -35,6 +37,7 @@ class ASH_EXPORT ToplevelWindowEventFilter :
   // fall on a grid of the specified size. The default is 0, meaning the x,y and
   // width,height are not restricted in anyway.
   void set_grid_size(int size) { grid_size_ = size; }
+  int grid_size() const { return grid_size_; }
 
   // Overridden from aura::EventFilter:
   virtual bool PreHandleKeyEvent(aura::Window* target,
@@ -51,19 +54,7 @@ class ASH_EXPORT ToplevelWindowEventFilter :
   virtual void RunMoveLoop(aura::Window* source) OVERRIDE;
   virtual void EndMoveLoop() OVERRIDE;
 
- protected:
-  aura::Window* owner() { return owner_; }
-
-  // Returns the |window_component_|. See the variable definition below for
-  // more details.
-  int window_component() const { return window_component_; }
-
  private:
-  // Moves the target window and all of its parents to the front of their
-  // respective z-orders.
-  // NOTE: this does NOT activate the window.
-  void MoveWindowToFront(aura::Window* target);
-
   // Invoked when the mouse is released to cleanup after a drag.
   void CompleteDrag(aura::Window* window);
 
@@ -71,66 +62,16 @@ class ASH_EXPORT ToplevelWindowEventFilter :
   // The return value is returned by OnMouseEvent() above.
   bool HandleDrag(aura::Window* target, aura::LocatedEvent* event);
 
-  // Updates |mouse_down_offset_in_parent_| and |mouse_down_bounds_| from
-  // |location|.
-  void UpdateMouseDownLocation(aura::Window* target,
-                               const gfx::Point& location);
-
-  // Updates the |window_component_| using the |event|'s location.
-  void UpdateWindowComponentForEvent(aura::Window* window,
-                                     aura::LocatedEvent* event);
-
-  // Calculates the new origin of the window during a drag.
-  gfx::Point GetOriginForDrag(int bounds_change,
-                              int delta_x,
-                              int delta_y) const;
-
-  // Calculates the new size of the |target| window during a drag.
-  // If the size is constrained, |delta_x| and |delta_y| may be clamped.
-  gfx::Size GetSizeForDrag(int bounds_change,
-                           aura::Window* target,
-                           int* delta_x,
-                           int* delta_y) const;
-
-  // Calculates new width of a window during a drag where the mouse
-  // position changed by |delta_x|.  |delta_x| may be clamped if the window
-  // size is constrained by |min_width|.
-  int GetWidthForDrag(aura::Window* target,
-                      int size_change_direction,
-                      int min_width,
-                      int* delta_x) const;
-
-  // Calculates new height of a window during a drag where the mouse
-  // position changed by |delta_y|.  |delta_y| may be clamped if the window
-  // size is constrained by |min_height|.
-  int GetHeightForDrag(aura::Window* target,
-                       int size_change_direction,
-                       int min_height,
-                       int* delta_y) const;
-
-  aura::Window* owner_;
-
-  // The mouse position in the target window when the mouse was pressed, in
-  // the target window's parent's coordinates.
-  gfx::Point mouse_down_offset_in_parent_;
-
-  // The bounds of the target window when the mouse was pressed.
-  gfx::Rect mouse_down_bounds_;
-
   // Are we running a nested message loop from RunMoveLoop().
   bool in_move_loop_;
-
-  // The window component (hit-test code) the mouse is currently over.
-  int window_component_;
 
   // Set of touch ids currently pressed.
   std::set<int> pressed_touch_ids_;
 
-  // Set to true if HandleDrag resized or moved the window.
-  bool did_move_or_resize_;
-
   // See description above setter.
   int grid_size_;
+
+  scoped_ptr<WindowResizer> window_resizer_;
 
   DISALLOW_COPY_AND_ASSIGN(ToplevelWindowEventFilter);
 };

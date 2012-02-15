@@ -34,6 +34,9 @@ ASH_EXPORT const gfx::Rect* GetRestoreBounds(aura::Window* window);
 // Deletes and clears the restore bounds property on |window|.
 ASH_EXPORT void ClearRestoreBounds(aura::Window* window);
 
+// Toggles the maximized state of the specified window.
+ASH_EXPORT void ToggleMaximizedState(aura::Window* window);
+
 }
 
 #endif  // ASH_WM_PROPERTY_UTIL_H_

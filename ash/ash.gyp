@@ -177,6 +177,8 @@
         'wm/window_modality_controller.h',
         'wm/window_properties.cc',
         'wm/window_properties.h',
+        'wm/window_resizer.cc',
+        'wm/window_resizer.h',
         'wm/window_util.cc',
         'wm/window_util.h',
         'wm/workspace_controller.cc',

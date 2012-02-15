@@ -47,6 +47,8 @@ class WorkspaceEventFilter : public ToplevelWindowEventFilter,
   // the look of the caption area based on mouse-hover.
   void UpdateHoveredWindow(aura::Window* toplevel);
 
+  aura::Window* owner_;
+
   DragState drag_state_;
 
   // Top-level window under the mouse cursor.

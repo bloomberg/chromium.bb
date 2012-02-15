@@ -4,6 +4,7 @@
 
 #include "ash/wm/property_util.h"
 
+#include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
@@ -28,6 +29,12 @@ const gfx::Rect* GetRestoreBounds(aura::Window* window) {
 void ClearRestoreBounds(aura::Window* window) {
   delete GetRestoreBounds(window);
   window->ClearProperty(aura::client::kRestoreBoundsKey);
+}
+
+void ToggleMaximizedState(aura::Window* window) {
+  window->SetProperty(aura::client::kShowStateKey,
+                      window_util::IsWindowMaximized(window) ?
+                          ui::SHOW_STATE_NORMAL : ui::SHOW_STATE_MAXIMIZED);
 }
 
 }
