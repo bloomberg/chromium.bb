@@ -55,6 +55,7 @@ struct dnd_drag {
 	int x_offset, y_offset;
 	const char *mime_type;
 
+	struct wl_surface *drag_surface;
 	struct wl_data_source *data_source;
 };
 
@@ -256,8 +257,7 @@ data_source_target(void *data,
 		surface = dnd_drag->translucent;
 
 	buffer = display_get_buffer_for_surface(dnd->display, surface);
-	wl_data_device_attach(device, dnd_drag->time, buffer,
-				  dnd_drag->hotspot_x, dnd_drag->hotspot_y);
+	wl_surface_attach(dnd_drag->drag_surface, buffer, 0, 0);
 }
 
 static void
@@ -289,7 +289,9 @@ data_source_cancelled(void *data, struct wl_data_source *source)
 	/* Destroy the item that has been dragged out */
 	cairo_surface_destroy(dnd_drag->item->surface);
 	free(dnd_drag->item);
-	
+
+	wl_surface_destroy(dnd_drag->drag_surface);
+
 	cairo_surface_destroy(dnd_drag->translucent);
 	cairo_surface_destroy(dnd_drag->opaque);
 	free(dnd_drag);
@@ -361,6 +363,9 @@ dnd_button_handler(struct widget *widget,
 	struct item *item;
 	struct rectangle allocation;
 	struct dnd_drag *dnd_drag;
+	struct display *display;
+	struct wl_compositor *compositor;
+	struct wl_buffer *buffer;
 	int i;
 
 	widget_get_allocation(dnd->widget, &allocation);
@@ -385,6 +390,11 @@ dnd_button_handler(struct widget *widget,
 			}
 		}
 
+		display = window_get_display(dnd->window);
+		compositor = display_get_compositor(display);
+		dnd_drag->drag_surface =
+			wl_compositor_create_surface(compositor);
+
 		dnd_drag->data_source =
 			display_create_data_source(dnd->display);
 		wl_data_source_add_listener(dnd_drag->data_source,
@@ -397,6 +407,7 @@ dnd_button_handler(struct widget *widget,
 		wl_data_device_start_drag(input_get_data_device(input),
 					  dnd_drag->data_source,
 					  window_get_wl_surface(dnd->window),
+					  dnd_drag->drag_surface,
 					  time);
 
 		input_set_pointer_image(input, time, POINTER_DRAGGING);
@@ -405,6 +416,10 @@ dnd_button_handler(struct widget *widget,
 			create_drag_cursor(dnd_drag, item, x, y, 1);
 		dnd_drag->translucent =
 			create_drag_cursor(dnd_drag, item, x, y, 0.2);
+
+		buffer = display_get_buffer_for_surface(dnd->display, dnd_drag->translucent);
+		wl_surface_attach(dnd_drag->drag_surface, buffer,
+				  -dnd_drag->hotspot_x, -dnd_drag->hotspot_y);
 
 		window_schedule_redraw(dnd->window);
 	}
