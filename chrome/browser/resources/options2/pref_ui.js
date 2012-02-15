@@ -57,7 +57,7 @@ cr.define('options', function() {
 
     el.controlledBy = event.value['controlledBy'];
 
-    OptionsPage.updateManagedBannerVisibility();
+    BrowserOptions.updateManagedBannerVisibility();
   }
 
   /////////////////////////////////////////////////////////////////////////////

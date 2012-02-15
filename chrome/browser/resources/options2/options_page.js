@@ -908,43 +908,6 @@ cr.define('options', function() {
     initializePage: function() {},
 
     /**
-     * Updates managed banner visibility state. This function iterates over
-     * all input fields of a window and if any of these is marked as managed
-     * it triggers the managed banner to be visible. The banner can be enforced
-     * being on through the managed flag of this class but it can not be forced
-     * being off if managed items exist.
-     */
-    updateManagedBannerVisibility: function() {
-      var bannerDiv = $('managed-prefs-banner');
-
-      var controlledByPolicy = false;
-      var controlledByExtension = false;
-      var inputElements = this.pageDiv.querySelectorAll('input[controlled-by]');
-      for (var i = 0, len = inputElements.length; i < len; i++) {
-        if (inputElements[i].controlledBy == 'policy')
-          controlledByPolicy = true;
-        else if (inputElements[i].controlledBy == 'extension')
-          controlledByExtension = true;
-      }
-      if (!controlledByPolicy && !controlledByExtension) {
-        bannerDiv.hidden = true;
-      } else {
-        bannerDiv.hidden = false;
-        var height = window.getComputedStyle(bannerDiv).height;
-        if (controlledByPolicy && !controlledByExtension) {
-          $('managed-prefs-text').textContent =
-              templateData.policyManagedPrefsBannerText;
-        } else if (!controlledByPolicy && controlledByExtension) {
-          $('managed-prefs-text').textContent =
-              templateData.extensionManagedPrefsBannerText;
-        } else if (controlledByPolicy && controlledByExtension) {
-          $('managed-prefs-text').textContent =
-              templateData.policyAndExtensionManagedPrefsBannerText;
-        }
-      }
-    },
-
-    /**
      * Gets page visibility state.
      */
     get visible() {
@@ -963,11 +926,6 @@ cr.define('options', function() {
       this.pageDiv.classList.remove('shake');
 
       OptionsPage.updatePageFreezeStates();
-
-      // The managed prefs banner is global, so after any visibility change
-      // update it based on the topmost page, not necessarily this page
-      // (e.g., if an ancestor is made visible after a child).
-      OptionsPage.updateManagedBannerVisibility();
 
       // A subpage was shown or hidden.
       if (!this.isOverlay && this.nestingLevel > 0)
