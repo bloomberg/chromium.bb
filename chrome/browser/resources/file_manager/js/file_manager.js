@@ -1287,10 +1287,7 @@ FileManager.prototype = {
         return;
 
       case 'rename':
-        var index = this.currentList_.selectionModel.selectedIndex;
-        var item = this.currentList_.getListItemByIndex(index);
-        if (item)
-          this.initiateRename_(item);
+        this.initiateRename_();
         return;
 
       case 'delete':
@@ -3066,7 +3063,8 @@ FileManager.prototype = {
       return;
     if (this.allowRenameClick_(event, item)) {
       event.preventDefault();
-      this.initiateRename_(item);
+      this.directoryModel_.fileListSelection.selectedIndex = item.listIndex;
+      this.initiateRename_();
     }
   };
 
@@ -3139,7 +3137,10 @@ FileManager.prototype = {
     return false;
   };
 
-  FileManager.prototype.initiateRename_ = function(item) {
+  FileManager.prototype.initiateRename_ = function() {
+    var item = this.currentList_.ensureLeadItemExists();
+    if (!item)
+      return;
     var label = item.querySelector('.filename-label');
     var input = this.renameInput_;
 
@@ -3274,41 +3275,58 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.onNewFolderCommand_ = function(event) {
+    var defaultName = str('DEFAULT_NEW_FOLDER_NAME');
+
+    // Find a name that doesn't exist in the data model.
+    var files = this.directoryModel_.fileList;
+    var hash = {};
+    for (var i = 0; i < files.length; i++) {
+      var name = files.item(i).name;
+      // Filtering names prevents from conflicts with prototype's names
+      // and '__proto__'.
+      if (name.substring(0, defaultName.length) == defaultName)
+        hash[name] = 1;
+    }
+
+    var baseName = defaultName;
+    var separator = '';
+    var suffix = '';
+    var index = '';
+
+    function advance() {
+      separator = ' (';
+      suffix = ')';
+      index++;
+    }
+
+    function current() {
+      return baseName + separator + index + suffix;
+    }
+
+    // Accessing hasOwnProperty is safe since hash properties filtered.
+    while (hash.hasOwnProperty(current())) {
+      advance();
+    }
+
     var self = this;
-
-    function onNameSelected(name) {
-      var valid = self.validateFileName_(name, function() {
-        promptForName(name);
-      });
-
-      if (!valid) {
-        // Validation failed.  User will be prompted for a new name after they
-        // dismiss the validation error dialog.
-        return;
-      }
-
-      self.createNewFolder(name);
+    var list = self.currentList_;
+    function tryCreate() {
+      self.directoryModel_.createDirectory(current(),
+                                           onSuccess, onError);
     }
 
-    function promptForName(suggestedName) {
-      self.prompt.show(str('NEW_FOLDER_PROMPT'), suggestedName, onNameSelected);
+    function onSuccess(entry) {
+      metrics.recordUserAction('CreateNewFolder');
+      list.selectedItem = entry;
+      self.initiateRename_();
     }
 
-    promptForName(str('DEFAULT_NEW_FOLDER_NAME'));
-  };
-
-  FileManager.prototype.createNewFolder = function(name, opt_callback) {
-    metrics.recordUserAction('CreateNewFolder');
-
-    var self = this;
-
-    function onError(err) {
-      self.alert.show(strf('ERROR_CREATING_FOLDER', name,
-                           util.getFileErrorMnemonic(err.code)));
+    function onError(error) {
+      self.alert.show(strf('ERROR_CREATING_FOLDER', current(),
+                           util.getFileErrorMnemonic(error.code)));
     }
 
-    var onSuccess = opt_callback || function() {};
-    this.directoryModel_.createDirectory(name, onSuccess, onError);
+    tryCreate();
   };
 
   FileManager.prototype.onDetailViewButtonClick_ = function(event) {

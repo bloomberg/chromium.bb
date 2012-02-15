@@ -455,8 +455,10 @@ DirectoryModel.prototype = {
           self.selectEntry(name);
           successCallback(existing[0]);
         } else {
+          self.fileListSelection.beginChange();
           fileList.splice(0, 0, newEntry);
           self.selectEntry(name);
+          self.fileListSelection.endChange();
           successCallback(newEntry);
         }
       });

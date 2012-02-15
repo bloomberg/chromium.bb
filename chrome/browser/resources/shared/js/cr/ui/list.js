@@ -225,7 +225,7 @@ cr.define('cr.ui', function() {
 
     /**
      * Convenience alias for selectionModel.selectedItem
-     * @type {cr.ui.ListItem}
+     * @type {*}
      */
     get selectedItem() {
       var dataModel = this.dataModel;
@@ -246,7 +246,7 @@ cr.define('cr.ui', function() {
 
     /**
      * Convenience alias for selectionModel.selectedItems
-     * @type {!Array<cr.ui.ListItem>}
+     * @type {!Array<*>}
      */
     get selectedItems() {
       var indexes = this.selectionModel.selectedIndexes;
@@ -1098,12 +1098,13 @@ cr.define('cr.ui', function() {
           this.removeChild(this.pinnedItem_);
         this.pinnedItem_ = undefined;
       }
-      if (!this.pinnedItem_ && cachedItems[leadIndex] &&
-          cachedItems[leadIndex].parentNode == this) {
-        this.pinnedItem_ = cachedItems[leadIndex];
-      }
 
       this.mergeItems(firstIndex, lastIndex, cachedItems, newCachedItems);
+
+      if (!this.pinnedItem_ && newCachedItems[leadIndex] &&
+          newCachedItems[leadIndex].parentNode == this) {
+        this.pinnedItem_ = newCachedItems[leadIndex];
+      }
 
       this.afterFiller_.style.height = afterFillerHeight + 'px';
 
@@ -1195,6 +1196,48 @@ cr.define('cr.ui', function() {
      * @param {number} index The index of the activated item.
      */
     activateItemAtIndex: function(index) {
+    },
+
+    /**
+     * Returns a ListItem for the leadIndex. If the item isn't present in the
+     * list creates it and inserts to the list (may be invisible if it's out of
+     * the visible range).
+     *
+     * Item returned from this method won't be removed until it remains a lead
+     * item or til the data model changes (unlike other items that could be
+     * removed when they go out of the visible range).
+     *
+     * @return {cr.ui.ListItem}
+     */
+    ensureLeadItemExists: function() {
+      var index = this.selectionModel.leadIndex;
+      if (index < 0)
+        return null;
+      var cachedItems = this.cachedItems_ || {};
+
+      var item = cachedItems[index] ||
+                 this.createItem(this.dataModel.item(index));
+      if (this.pinnedItem_ != item && this.pinnedItem_ &&
+          this.pinnedItem_.hidden) {
+        this.removeChild(this.pinnedItem_);
+      }
+      this.pinnedItem_ = item;
+      cachedItems[index] = item;
+      item.listIndex = index;
+      if (item.parentNode == this)
+        return item;
+
+      if (this.batchCount_ != 0)
+        item.hidden = true;
+
+      // Item will get to the right place in redraw. Choose place to insert
+      // reducing items reinsertion.
+      if (index <= this.firstIndex_)
+        this.insertBefore(item, this.beforeFiller_.nextSibling);
+      else
+        this.insertBefore(item, this.afterFiller_);
+      this.redraw();
+      return item;
     },
   };
 
