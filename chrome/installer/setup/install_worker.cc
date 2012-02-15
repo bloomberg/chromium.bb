@@ -210,6 +210,15 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
                                          L"InstallDate",
                                          InstallUtil::GetCurrentDate(),
                                          false);
+
+    const std::vector<uint16>& version_components = new_version.components();
+    if (version_components.size() == 4) {
+      // Our version should be in major.minor.build.rev.
+      install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
+          L"VersionMajor", static_cast<DWORD>(version_components[2]), true);
+      install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
+          L"VersionMinor", static_cast<DWORD>(version_components[3]), true);
+    }
   }
 }
 
