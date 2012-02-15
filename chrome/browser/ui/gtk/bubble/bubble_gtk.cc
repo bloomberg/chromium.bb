@@ -457,6 +457,13 @@ void BubbleGtk::HandlePointerAndKeyboardUngrabbedByContent() {
     GrabPointerAndKeyboard();
 }
 
+void BubbleGtk::StopGrabbingInput() {
+  if (!grab_input_)
+    return;
+  grab_input_ = false;
+  gtk_grab_remove(window_);
+}
+
 void BubbleGtk::Close() {
   // We don't need to ungrab the pointer or keyboard here; the X server will
   // automatically do that when we destroy our window.

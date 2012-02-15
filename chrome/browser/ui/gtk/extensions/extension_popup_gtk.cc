@@ -60,6 +60,14 @@ ExtensionPopupGtk::ExtensionPopupGtk(Browser* browser,
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  content::Source<Profile>(host->profile()));
+
+  registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
+                 content::Source<Profile>(host->profile()));
+
+  if (!being_inspected_) {
+    registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_WINDOW_OPENING,
+                   content::Source<Profile>(host->profile()));
+  }
 }
 
 ExtensionPopupGtk::~ExtensionPopupGtk() {
@@ -91,9 +99,20 @@ void ExtensionPopupGtk::Observe(int type,
       if (content::Details<ExtensionHost>(host_.get()) == details)
         DestroyPopup();
       break;
+    case content::NOTIFICATION_DEVTOOLS_WINDOW_OPENING:
+      // Make sure it's the devtools window that is inspecting our popup.
+      if (content::Details<RenderViewHost>(host_->render_view_host()) !=
+          details)
+        break;
+
+      // Make sure that the popup won't go away when the inspector is activated.
+      if (bubble_)
+        bubble_->StopGrabbingInput();
+      break;
     case content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING:
-      // Make sure its the devtools window that inspecting our popup.
-      if (content::Details<RenderViewHost>(host_->render_view_host()) != details)
+      // Make sure it's the devtools window that is inspecting our popup.
+      if (content::Details<RenderViewHost>(host_->render_view_host()) !=
+          details)
         break;
 
       // If the devtools window is closing, we post a task to ourselves to
@@ -141,12 +160,8 @@ void ExtensionPopupGtk::ShowPopup() {
     return;
   }
 
-  if (being_inspected_) {
+  if (being_inspected_)
     DevToolsWindow::OpenDevToolsWindow(host_->render_view_host());
-    // Listen for the the devtools window closing.
-    registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
-        content::Source<content::BrowserContext>(host_->profile()));
-  }
 
   // Only one instance should be showing at a time. Get rid of the old one, if
   // any. Typically, |current_extension_popup_| will be NULL, but it can be

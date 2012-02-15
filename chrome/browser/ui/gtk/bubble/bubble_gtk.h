@@ -95,6 +95,12 @@ class BubbleGtk : public content::NotificationObserver {
   // in them.
   void HandlePointerAndKeyboardUngrabbedByContent();
 
+  // Change an input-grabbing bubble into a non-input-grabbing bubble. This
+  // allows a window to change from auto closing when it loses to focus to being
+  // a window that does not auto close, and is useful if an auto closing window
+  // starts being inspected.
+  void StopGrabbingInput();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(BubbleGtkTest, ArrowLocation);
   FRIEND_TEST_ALL_PREFIXES(BubbleGtkTest, NoArrow);
