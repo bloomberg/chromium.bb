@@ -19,8 +19,11 @@
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/event_disposition.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
@@ -138,6 +141,131 @@ GList* GetIconList() {
                             rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_32));
   icon_list = g_list_append(icon_list,
                             rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_16));
+  return icon_list;
+}
+
+// Returns the avatar icon for |profile|.
+//
+// Returns NULL if there is only one profile; always returns an icon for
+// Incognito profiles.
+//
+// The returned pixbuf must not be unreferenced or freed because it's owned by
+// either the resource bundle or the profile info cache.
+GdkPixbuf* GetAvatarIcon(Profile* profile) {
+  if (profile->IsOffTheRecord()) {
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    return rb.GetNativeImageNamed(IDR_OTR_ICON);
+  }
+
+  const ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+
+  if (!ProfileManager::IsMultipleProfilesEnabled() ||
+      cache.GetNumberOfProfiles() < 2)
+    return NULL;
+
+  const size_t index = cache.GetIndexOfProfileWithPath(profile->GetPath());
+
+  return (index != std::string::npos ?
+          cache.GetAvatarIconOfProfileAtIndex(index) :
+          static_cast<GdkPixbuf*>(NULL));
+}
+
+// Gets the Chrome product icon.
+//
+// If it doesn't find the icon in |theme|, it looks among the icons packaged
+// with Chrome.
+//
+// Supported values of |size| are 16, 32, and 64. If the Chrome icon is found
+// in |theme|, the returned icon may not be of the requested size if |size|
+// has an unsupported value (GTK might scale it). If the Chrome icon is not
+// found in |theme|, and |size| has an unsupported value, the program will be
+// aborted with CHECK(false).
+//
+// The caller is responsible for calling g_object_unref() on the returned
+// pixbuf.
+GdkPixbuf* GetChromeIcon(GtkIconTheme* theme, const int size) {
+  if (gtk_icon_theme_has_icon(theme, kIconName)) {
+    GdkPixbuf* icon =
+        gtk_icon_theme_load_icon(theme,
+                                 kIconName,
+                                 size,
+                                 static_cast<GtkIconLookupFlags>(0),
+                                 0);
+    GdkPixbuf* icon_copy = gdk_pixbuf_copy(icon);
+    g_object_unref(icon);
+    return icon_copy;
+  }
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  int id = 0;
+
+  switch (size) {
+    case 16: id = IDR_PRODUCT_LOGO_16; break;
+    case 32: id = IDR_PRODUCT_LOGO_32; break;
+    case 64: id = IDR_PRODUCT_LOGO_64; break;
+    default: CHECK(false); break;
+  }
+
+  return gdk_pixbuf_copy(rb.GetNativeImageNamed(id));
+}
+
+// Adds |emblem| to the bottom-right corner of |icon|.
+//
+// Taking the ceiling of the scaled destination rect's dimensions (|dest_w|
+// and |dest_h|) because, if the destination rect is larger than the scaled
+// emblem, gdk_pixbuf_composite() will replicate the edge pixels of the emblem
+// to fill the gap, which is better than a cropped emblem, I think.
+void AddEmblem(const GdkPixbuf* emblem, GdkPixbuf* icon) {
+  const int iw = gdk_pixbuf_get_width(icon);
+  const int ih = gdk_pixbuf_get_height(icon);
+  const int ew = gdk_pixbuf_get_width(emblem);
+  const int eh = gdk_pixbuf_get_height(emblem);
+
+  const double emblem_scale =
+      (static_cast<double>(ih) / static_cast<double>(eh)) * 0.5;
+  const int dest_w = ::ceil(ew * emblem_scale);
+  const int dest_h = ::ceil(eh * emblem_scale);
+  const int x = iw - dest_w;  // Used for offset_x and dest_x.
+  const int y = ih - dest_h;  // Used for offset_y and dest_y.
+
+  gdk_pixbuf_composite(emblem, icon,
+                       x, y,
+                       dest_w, dest_h,
+                       x, y,
+                       emblem_scale, emblem_scale,
+                       GDK_INTERP_BILINEAR, 255);
+}
+
+// Returns a list containing Chrome icons of various sizes emblemed with the
+// |profile|'s avatar.
+//
+// If there is only one profile, no emblem is added, but icons for Incognito
+// profiles will always get the Incognito emblem.
+//
+// The caller owns the list and all the icons it contains will have had their
+// reference counts incremented. Therefore the caller should unreference each
+// element before freeing the list.
+GList* GetIconListWithAvatars(GtkWindow* window, Profile* profile) {
+  GtkIconTheme* theme =
+      gtk_icon_theme_get_for_screen(gtk_widget_get_screen(GTK_WIDGET(window)));
+
+  GdkPixbuf* icon_16 = GetChromeIcon(theme, 16);
+  GdkPixbuf* icon_32 = GetChromeIcon(theme, 32);
+  GdkPixbuf* icon_64 = GetChromeIcon(theme, 64);
+
+  const GdkPixbuf* avatar = GetAvatarIcon(profile);
+  if (avatar) {
+    AddEmblem(avatar, icon_16);
+    AddEmblem(avatar, icon_32);
+    AddEmblem(avatar, icon_64);
+  }
+
+  GList* icon_list = NULL;
+  icon_list = g_list_append(icon_list, icon_64);
+  icon_list = g_list_append(icon_list, icon_32);
+  icon_list = g_list_append(icon_list, icon_16);
+
   return icon_list;
 }
 
@@ -547,12 +675,6 @@ bool WidgetContainsCursor(GtkWidget* widget) {
   return WidgetBounds(widget).Contains(x, y);
 }
 
-void SetWindowIcon(GtkWindow* window) {
-  GList* icon_list = GetIconList();
-  gtk_window_set_icon_list(window, icon_list);
-  g_list_free(icon_list);
-}
-
 void SetDefaultWindowIcon(GtkWindow* window) {
   GtkIconTheme* theme =
       gtk_icon_theme_get_for_screen(gtk_widget_get_screen(GTK_WIDGET(window)));
@@ -571,6 +693,19 @@ void SetDefaultWindowIcon(GtkWindow* window) {
     gtk_window_set_icon_list(window, icon_list);
     g_list_free(icon_list);
   }
+}
+
+void SetWindowIcon(GtkWindow* window, Profile* profile) {
+  GList* icon_list = GetIconListWithAvatars(window, profile);
+  gtk_window_set_icon_list(window, icon_list);
+  g_list_foreach(icon_list, reinterpret_cast<GFunc>(g_object_unref), NULL);
+  g_list_free(icon_list);
+}
+
+void SetWindowIcon(GtkWindow* window, Profile* profile, GdkPixbuf* icon) {
+  const GdkPixbuf* avatar = GetAvatarIcon(profile);
+  if (avatar) AddEmblem(avatar, icon);
+  gtk_window_set_icon(window, icon);
 }
 
 GtkWidget* AddButtonToDialog(GtkWidget* dialog, const gchar* text,

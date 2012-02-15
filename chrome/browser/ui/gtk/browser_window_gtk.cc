@@ -356,6 +356,12 @@ void BrowserWindowGtk::Init() {
   use_custom_frame_pref_.Init(prefs::kUseCustomChromeFrame,
       browser_->profile()->GetPrefs(), this);
 
+  // Register to be notified of changes to the profile's avatar icon.
+  if (!browser_->profile()->IsOffTheRecord()) {
+    registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
+                   content::NotificationService::AllSources());
+  }
+
   // In some (older) versions of compiz, raising top-level windows when they
   // are partially off-screen causes them to get snapped back on screen, not
   // always even on the current virtual desktop.  If we are running under
@@ -1263,6 +1269,12 @@ void BrowserWindowGtk::Observe(int type,
       }
       break;
     }
+    case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED:
+      // The profile avatar icon may have changed.
+      gtk_util::SetWindowIcon(window_, browser_->profile());
+      break;
+    default:
+      break;
   }
 }
 
@@ -1871,12 +1883,16 @@ void BrowserWindowGtk::InitWidgets() {
   UpdateCustomFrame();
 
   // We have to call this after the first window is created, but after that only
-  // when the theme changes.
+  // when the theme changes. This sets the icon that will be used for windows
+  // that have not explicitly been assigned an icon.
   static bool default_icon_set = false;
   if (!default_icon_set) {
     gtk_util::SetDefaultWindowIcon(window_);
     default_icon_set = true;
   }
+  // Set this window's (potentially profile-avatar-emblemed) icon, overriding
+  // the default.
+  gtk_util::SetWindowIcon(window_, browser_->profile());
 
   gtk_container_add(GTK_CONTAINER(window_), window_container_);
   gtk_widget_show(window_container_);

@@ -161,14 +161,26 @@ int MirroredXCoordinate(GtkWidget* widget, int x);
 // Returns true if the pointer is currently inside the widget.
 bool WidgetContainsCursor(GtkWidget* widget);
 
-// Sets the icon of |window| to the product icon (potentially used in window
-// border or alt-tab list).
-void SetWindowIcon(GtkWindow* window);
-
-// Sets the default window icon for all windows created in this app. |window|
-// is used to determine if a themed icon exists. If so, we use that icon,
-// otherwise we use the icon packaged with Chrome.
+// Sets the default window icon for all windows created in this app. This icon
+// will only be used if a window has not explicitly been assigned an icon
+// (e.g. by SetWindowIcon()).
+//
+// |window| is only used to determine if a themed icon exists. If so, we use
+// that icon, otherwise we use the icon packaged with Chrome.
 void SetDefaultWindowIcon(GtkWindow* window);
+
+// Sets the icon of |window| to the Chrome product icon, overlaid with
+// |profile|'s avatar icon (or the Incognito icon for Incognito windows). It
+// first looks for a themed icon, then falls back to the product icons
+// packaged with Chrome.
+void SetWindowIcon(GtkWindow* window, Profile* profile);
+
+// Sets the icon of |window| to |icon|, overlaid with |profile|'s avatar icon
+// (or the Incognito icon for Incognito windows). It first looks for a themed
+// icon, then falls back to the product icons packaged with Chrome.
+//
+// Note that |icon| will be modified by this function.
+void SetWindowIcon(GtkWindow* window, Profile* profile, GdkPixbuf* icon);
 
 // Adds an action button with the given text to the dialog. Only useful when you
 // want a stock icon but not the stock text to go with it. Returns the button.

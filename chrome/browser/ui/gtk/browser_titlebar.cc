@@ -614,12 +614,13 @@ void BrowserTitlebar::UpdateTitleAndIcon() {
         // Update the system app icon.  We don't need to update the icon in the
         // top left of the custom frame, that will get updated when the
         // throbber is updated.
+        Profile* profile = browser_window_->browser()->profile();
         SkBitmap icon = browser_window_->browser()->GetCurrentPageIcon();
         if (icon.empty()) {
-          gtk_util::SetWindowIcon(window_);
+          gtk_util::SetWindowIcon(window_, profile);
         } else {
           GdkPixbuf* icon_pixbuf = gfx::GdkPixbufFromSkBitmap(&icon);
-          gtk_window_set_icon(window_, icon_pixbuf);
+          gtk_util::SetWindowIcon(window_, profile, icon_pixbuf);
           g_object_unref(icon_pixbuf);
         }
         break;

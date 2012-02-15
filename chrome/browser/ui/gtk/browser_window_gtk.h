@@ -552,6 +552,8 @@ class BrowserWindowGtk : public BrowserWindow,
   // position is unimportant.
   bool debounce_timer_disabled_;
 
+  content::NotificationRegistrar registrar_;
+
   DISALLOW_COPY_AND_ASSIGN(BrowserWindowGtk);
 };
 
