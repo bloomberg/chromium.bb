@@ -465,7 +465,6 @@ paladin.add_config('amd64-generic-paladin',
   amd64,
   boards=['amd64-generic'],
   paladin_builder_name='amd64 generic paladin',
-  important=False,
 )
 
 commit_queue.add_config('x86-generic-commit-queue',
@@ -527,7 +526,6 @@ chrome_pfq.add_config('amd64-generic-chrome-pre-flight-queue',
   amd64,
   boards=['amd64-generic'],
   chrome_rev=constants.CHROME_REV_LATEST,
-  important=False,
 )
 
 
