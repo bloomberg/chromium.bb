@@ -103,6 +103,7 @@ RenderWidgetHost::RenderWidgetHost(content::RenderProcessHost* process,
       text_direction_canceled_(false),
       suppress_next_char_events_(false),
       pending_mouse_lock_request_(false),
+      has_touch_handler_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   if (routing_id_ == MSG_ROUTING_NONE) {
     routing_id_ = process_->GetNextRoutingID();
@@ -224,6 +225,8 @@ bool RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_HandleInputEvent_ACK, OnMsgInputEventAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnMsgFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Blur, OnMsgBlur)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeNumTouchEvents,
+                        OnMsgDidChangeNumTouchEvents)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnMsgSetCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputStateChanged,
                         OnMsgTextInputStateChanged)
@@ -1209,6 +1212,10 @@ void RenderWidgetHost::OnMsgBlur() {
   // Only RenderViewHost can deal with that message.
   content::RecordAction(UserMetricsAction("BadMessageTerminate_RWH5"));
   process()->ReceivedBadMessage();
+}
+
+void RenderWidgetHost::OnMsgDidChangeNumTouchEvents(int count) {
+  has_touch_handler_ = count > 0;
 }
 
 void RenderWidgetHost::OnMsgSetCursor(const WebCursor& cursor) {

@@ -893,8 +893,9 @@ ui::TouchStatus RenderWidgetHostViewAura::OnTouchEvent(
   WebKit::WebTouchPoint* point = content::UpdateWebTouchEvent(event,
       &touch_event_);
 
-  // Forward the touch event only if a touch point was updated.
-  if (point) {
+  // Forward the touch event only if a touch point was updated, and there's a
+  // touch-event handler in the page.
+  if (point && host_->has_touch_handler()) {
     host_->ForwardTouchEvent(touch_event_);
     UpdateWebTouchEventAfterDispatch(&touch_event_, point);
     return DecideTouchStatus(touch_event_, point);

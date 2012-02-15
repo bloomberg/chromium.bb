@@ -1589,6 +1589,10 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_DidChangeScrollbarsForMainFrame,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_DidChangeNumWheelEvents,
                     int /* count */)
 
+// Notifies that the number of JavaScript touch event handlers changed.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_DidChangeNumTouchEvents,
+                    int /* count */)
+
 // A message from HTML-based UI.  When (trusted) Javascript calls
 // send(message, args), this message is sent to the browser.
 IPC_MESSAGE_ROUTED3(ViewHostMsg_WebUISend,

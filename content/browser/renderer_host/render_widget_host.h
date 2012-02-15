@@ -400,6 +400,8 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
 
   const gfx::Point& last_scroll_offset() const { return last_scroll_offset_; }
 
+  bool has_touch_handler() const { return has_touch_handler_; }
+
   // Notification that the user has made some kind of input that could
   // perform an action. See OnUserGesture for more details.
   void StartUserGesture();
@@ -588,6 +590,7 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
                           bool processed);
   virtual void OnMsgFocus();
   virtual void OnMsgBlur();
+  void OnMsgDidChangeNumTouchEvents(int count);
 
   void OnMsgSetCursor(const WebCursor& cursor);
   void OnMsgTextInputStateChanged(ui::TextInputType type,
@@ -809,6 +812,11 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   gfx::Point last_scroll_offset_;
 
   bool pending_mouse_lock_request_;
+
+  // Keeps track of whether the webpage has any touch event handler. If it does,
+  // then touch events are sent to the renderer. Otherwise, the touch events are
+  // not sent to the renderer.
+  bool has_touch_handler_;
 
   base::WeakPtrFactory<RenderWidgetHost> weak_factory_;
 
