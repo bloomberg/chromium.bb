@@ -133,6 +133,9 @@ cr.define('options', function() {
     if (updateHistory)
       this.updateHistoryState_();
 
+    // Update tab title.
+    this.setTitle_(targetPage.title);
+
     // Notify pages if they were shown.
     for (var name in this.registeredPages) {
       var page = this.registeredPages[name];
@@ -254,6 +257,7 @@ cr.define('options', function() {
                          {pageName: page.name},
                          page.title,
                          '/' + page.name);
+
     // Update tab title.
     this.setTitle_(page.title);
   };
@@ -276,6 +280,9 @@ cr.define('options', function() {
       overlay.visible = true;
       if (overlay.didShowPage) overlay.didShowPage();
     }
+
+    // Update tab title.
+    this.setTitle_(overlay.title);
 
     return true;
   };
