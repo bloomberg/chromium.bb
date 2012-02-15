@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include <errno.h>
 #include <limits.h>
+#include <pthread.h>
 #include <signal.h>
 #include <sys/resource.h>
 #include <unistd.h>
@@ -231,7 +232,7 @@ void ChromeBrowserMainPartsPosix::PostMainMessageLoopStart() {
   } else {
     g_shutdown_pipe_read_fd = pipefd[0];
     g_shutdown_pipe_write_fd = pipefd[1];
-    const size_t kShutdownDetectorThreadStackSize = 4096;
+    const size_t kShutdownDetectorThreadStackSize = PTHREAD_STACK_MIN;
     // TODO(viettrungluu,willchan): crbug.com/29675 - This currently leaks, so
     // if you change this, you'll probably need to change the suppression.
     if (!base::PlatformThread::CreateNonJoinable(
