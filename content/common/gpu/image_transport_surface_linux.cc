@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(ENABLE_GPU)
-
 #include "content/common/gpu/image_transport_surface.h"
 
 // This conflicts with the defines in Xlib.h and must come first.
@@ -14,23 +12,27 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/Xcomposite.h>
 
+// Note: these must be included before anything that includes gl_bindings.h
+// They're effectively standard library headers.
+#include "third_party/khronos/EGL/egl.h"
+#include "third_party/khronos/EGL/eglext.h"
+#include "third_party/mesa/MesaLib/include/GL/osmesa.h"
+
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/debug/trace_event.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
+#include "content/common/gpu/texture_image_transport_surface.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
-#include "third_party/angle/include/EGL/egl.h"
-#include "third_party/angle/include/EGL/eglext.h"
-#include "third_party/mesa/MesaLib/include/GL/osmesa.h"
-#include "ui/gfx/rect.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_surface_egl.h"
 #include "ui/gfx/gl/gl_surface_glx.h"
 #include "ui/gfx/gl/gl_surface_osmesa.h"
+#include "ui/gfx/rect.h"
 
 namespace {
 
@@ -942,19 +944,24 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     gfx::GLSurfaceHandle handle) {
   scoped_refptr<gfx::GLSurface> surface;
   if (!handle.handle) {
-    switch (gfx::GetGLImplementation()) {
-      case gfx::kGLImplementationDesktopGL:
-        surface = new GLXImageTransportSurface(manager, stub);
-        break;
-      case gfx::kGLImplementationEGLGLES2:
-        surface = new EGLImageTransportSurface(manager, stub);
-        break;
-      case gfx::kGLImplementationOSMesaGL:
-        surface = new OSMesaImageTransportSurface(manager, stub);
-        break;
-      default:
-        NOTREACHED();
-        return NULL;
+    DCHECK(handle.transport);
+    if (!handle.parent_client_id) {
+      switch (gfx::GetGLImplementation()) {
+        case gfx::kGLImplementationDesktopGL:
+          surface = new GLXImageTransportSurface(manager, stub);
+          break;
+        case gfx::kGLImplementationEGLGLES2:
+          surface = new EGLImageTransportSurface(manager, stub);
+          break;
+        case gfx::kGLImplementationOSMesaGL:
+          surface = new OSMesaImageTransportSurface(manager, stub);
+          break;
+        default:
+          NOTREACHED();
+          return NULL;
+      }
+    } else {
+      surface = new TextureImageTransportSurface(manager, stub, handle);
     }
   } else {
     surface = gfx::GLSurface::CreateViewGLSurface(false, handle.handle);
@@ -971,5 +978,3 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
   else
     return NULL;
 }
-
-#endif  // defined(USE_GPU)

@@ -184,6 +184,8 @@
     'common/gpu/image_transport_surface_win.cc',
     'common/gpu/media/gpu_video_decode_accelerator.cc',
     'common/gpu/media/gpu_video_decode_accelerator.h',
+    'common/gpu/texture_image_transport_surface.h',
+    'common/gpu/texture_image_transport_surface.cc',
     'common/handle_enumerator_win.cc',
     'common/handle_enumerator_win.h',
     'common/hi_res_timer_manager_posix.cc',

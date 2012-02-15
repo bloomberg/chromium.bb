@@ -143,6 +143,12 @@ void GpuCommandBufferStub::Destroy() {
   // destroy it before those.
   scheduler_.reset();
 
+  if (decoder_.get())
+    decoder_->MakeCurrent();
+  FOR_EACH_OBSERVER(DestructionObserver,
+                    destruction_observers_,
+                    OnWillDestroyStub(this));
+
   if (decoder_.get()) {
     decoder_->Destroy();
     decoder_.reset();
@@ -514,6 +520,16 @@ void GpuCommandBufferStub::SendConsoleMessage(
       route_id_, console_message);
   msg->set_unblock(true);
   Send(msg);
+}
+
+void GpuCommandBufferStub::AddDestructionObserver(
+    DestructionObserver* observer) {
+  destruction_observers_.AddObserver(observer);
+}
+
+void GpuCommandBufferStub::RemoveDestructionObserver(
+    DestructionObserver* observer) {
+  destruction_observers_.RemoveObserver(observer);
 }
 
 bool GpuCommandBufferStub::has_surface_state() {

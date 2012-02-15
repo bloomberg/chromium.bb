@@ -13,6 +13,7 @@
 
 #include "base/id_map.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
@@ -71,6 +72,14 @@ class GpuCommandBufferStub
       public GpuCommandBufferStubBase,
       public base::SupportsWeakPtr<GpuCommandBufferStub> {
  public:
+  class DestructionObserver {
+   public:
+    ~DestructionObserver() {}
+
+    // Called in Destroy(), before the context/surface are released.
+    virtual void OnWillDestroyStub(GpuCommandBufferStub* stub) = 0;
+  };
+
   GpuCommandBufferStub(
       GpuChannel* channel,
       GpuCommandBufferStub* share_group,
@@ -128,6 +137,11 @@ class GpuCommandBufferStub
 
   // Sends a message to the console.
   void SendConsoleMessage(int32 id, const std::string& message);
+
+  gfx::GLSurface* surface() const { return surface_; }
+
+  void AddDestructionObserver(DestructionObserver* observer);
+  void RemoveDestructionObserver(DestructionObserver* observer);
 
  private:
   void Destroy();
@@ -204,6 +218,8 @@ class GpuCommandBufferStub
   // Zero or more video decoders owned by this stub, keyed by their
   // decoder_route_id.
   IDMap<GpuVideoDecodeAccelerator, IDMapOwnPointer> video_decoders_;
+
+  ObserverList<DestructionObserver> destruction_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuCommandBufferStub);
 };
