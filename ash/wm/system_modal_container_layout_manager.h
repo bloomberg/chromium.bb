@@ -54,6 +54,7 @@ class ASH_EXPORT SystemModalContainerLayoutManager
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,
                                        intptr_t old) OVERRIDE;
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
   // Overridden from ui::ImplicitAnimationObserver:
   virtual void OnImplicitAnimationsCompleted() OVERRIDE;

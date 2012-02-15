@@ -28,6 +28,8 @@ const int kModifierMask = (ui::EF_SHIFT_DOWN |
 
 base::MessagePumpDispatcher::DispatchStatus AcceleratorDispatcher::Dispatch(
     XEvent* xev) {
+  if (!associated_window_)
+    return EVENT_QUIT;
   if (!associated_window_->CanReceiveEvents())
     return aura::RootWindow::GetInstance()->GetDispatcher()->Dispatch(xev);
 

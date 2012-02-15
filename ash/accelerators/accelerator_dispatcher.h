@@ -9,6 +9,7 @@
 #include "ash/ash_export.h"
 #include "base/message_loop.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_observer.h"
 
 namespace ash {
 
@@ -16,10 +17,12 @@ namespace ash {
 // Wraps a nested dispatcher to which control is passed if no accelerator key
 // has been pressed.
 // TODO(pkotwicz): Port AcceleratorDispatcher to mac.
-class ASH_EXPORT AcceleratorDispatcher : public MessageLoop::Dispatcher {
+class ASH_EXPORT AcceleratorDispatcher : public MessageLoop::Dispatcher,
+                                         public aura::WindowObserver {
  public:
   explicit AcceleratorDispatcher(MessageLoop::Dispatcher* nested_dispatcher,
                                  aura::Window* associated_window);
+  virtual ~AcceleratorDispatcher();
 
 #if defined(USE_X11)
   virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(
@@ -27,6 +30,9 @@ class ASH_EXPORT AcceleratorDispatcher : public MessageLoop::Dispatcher {
 #elif defined(OS_WIN)
   bool AcceleratorDispatcher::Dispatch(const MSG& msg) OVERRIDE;
 #endif
+
+  // aura::WindowObserver overrides:
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
  private:
   MessageLoop::Dispatcher* nested_dispatcher_;

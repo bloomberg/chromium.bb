@@ -121,6 +121,13 @@ void SystemModalContainerLayoutManager::OnWindowPropertyChanged(
   }
 }
 
+void SystemModalContainerLayoutManager::OnWindowDestroying(
+    aura::Window* window) {
+  if (modal_screen_ && modal_screen_->GetNativeView() == window)
+    modal_screen_ = NULL;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // SystemModalContainerLayoutManager,
 //     ui::ImplicitAnimationObserver implementation:

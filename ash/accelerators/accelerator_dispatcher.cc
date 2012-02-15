@@ -11,7 +11,17 @@ AcceleratorDispatcher::AcceleratorDispatcher(
     : nested_dispatcher_(nested_dispatcher),
       associated_window_(associated_window) {
   DCHECK(nested_dispatcher_);
-  DCHECK(associated_window_);
+  associated_window_->AddObserver(this);
+}
+
+AcceleratorDispatcher::~AcceleratorDispatcher() {
+  if (associated_window_)
+    associated_window_->RemoveObserver(this);
+}
+
+void AcceleratorDispatcher::OnWindowDestroying(aura::Window* window) {
+  if (associated_window_ == window)
+    associated_window_ = NULL;
 }
 
 }  // namespace ash

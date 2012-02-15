@@ -124,6 +124,17 @@ BalloonViewImpl::~BalloonViewImpl() {
 }
 
 void BalloonViewImpl::Close(bool by_user) {
+  animation_->Stop();
+  html_contents_->Shutdown();
+  // Detach contents from widget before then close.
+  // This is necessary because a widget may be deleted
+  // after this when chrome is shutting down.
+  html_container_->GetRootView()->RemoveAllChildViews(true);
+  html_container_->Close();
+  frame_container_->GetRootView()->RemoveAllChildViews(true);
+  frame_container_->Close();
+  // Post the tast at the end to sure this this WidgetDelegate
+  // instance is avaiable when Widget::CloseNow gets called.
   MessageLoop::current()->PostTask(FROM_HERE,
                                    base::Bind(&BalloonViewImpl::DelayedClose,
                                               method_factory_.GetWeakPtr(),
@@ -176,13 +187,6 @@ void BalloonViewImpl::ButtonPressed(views::Button* sender,
 }
 
 void BalloonViewImpl::DelayedClose(bool by_user) {
-  html_contents_->Shutdown();
-  html_container_->CloseNow();
-  // The BalloonViewImpl has to be detached from frame_container_ now
-  // because CloseNow on linux/views destroys the view hierachy
-  // asynchronously.
-  frame_container_->GetRootView()->RemoveAllChildViews(true);
-  frame_container_->CloseNow();
   balloon_->OnClose(by_user);
 }
 
