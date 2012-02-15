@@ -2,7 +2,8 @@
 // To generate a pdf:
 // dot -Tpdf -ooutput.pdf gestures.dot 
 //
-// TODO (tdresser) Add this to a public design document on chromium.org.
+// If you alter this diagram, please update:
+// sites.google.com/a/chromium.org/dev/developers/design-documents/aura/gesture-recognizer
 
 digraph G {
 ratio = 1;
