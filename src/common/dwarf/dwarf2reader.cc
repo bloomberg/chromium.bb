@@ -39,6 +39,7 @@
 #include <string.h>
 
 #include <map>
+#include <memory>
 #include <stack>
 #include <utility>
 
