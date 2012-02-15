@@ -83,7 +83,6 @@ class SVNWrapperTestCase(BaseTestCase):
       self.nohooks = False
       # TODO(maruel): Test --jobs > 1.
       self.jobs = 1
-      self.delete_unversioned_trees = False
 
   def Options(self, *args, **kwargs):
     return self.OptionsObject(*args, **kwargs)
@@ -368,12 +367,11 @@ class SVNWrapperTestCase(BaseTestCase):
     # Cheat a bit here.
     gclient_scm.scm.SVN._CaptureInfo([file_info['URL']], None
         ).AndReturn(file_info)
-    gclient_scm.scm.SVN.Capture(['--version'], None
-        ).AndReturn('svn, version 1.5.1 (r32289)')
-
     additional_args = []
     if options.manually_grab_svn_rev:
       additional_args = ['--revision', str(file_info['Revision'])]
+    gclient_scm.scm.SVN.Capture(['--version'], None
+        ).AndReturn('svn, version 1.5.1 (r32289)')
     additional_args.extend(['--force', '--ignore-externals'])
     files_list = []
     gclient_scm.scm.SVN.RunAndGetFileList(
@@ -385,97 +383,6 @@ class SVNWrapperTestCase(BaseTestCase):
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
     scm.update(options, (), files_list)
-
-  def testUpdateForceNoDeleteUnversionedTrees(self):
-    options = self.Options(verbose=True)
-    options.force = True
-
-    file_info = {
-      'Repository Root': 'blah',
-      'URL': self.url,
-      'UUID': 'ABC',
-      'Revision': 42,
-    }
-    gclient_scm.os.path.exists(join(self.base_path, '.git')).AndReturn(False)
-    gclient_scm.os.path.exists(join(self.base_path, '.hg')).AndReturn(False)
-
-    # Create an untracked file and directory.
-    dotted_path = join(self.base_path, '.')
-    gclient_scm.scm.SVN.CaptureStatus(None, dotted_path
-        ).AndReturn([['?  ', 'dir'], ['?  ', 'file']])
-
-    # Checkout or update.
-    gclient_scm.os.path.exists(self.base_path).AndReturn(True)
-    gclient_scm.scm.SVN._CaptureInfo([], dotted_path).AndReturn(file_info)
-    gclient_scm.scm.SVN._CaptureInfo([file_info['URL']], None
-        ).AndReturn(file_info)
-    gclient_scm.scm.SVN.Capture(['--version'], None
-        ).AndReturn('svn, version 1.5.1 (r32289)')
-
-    additional_args = []
-    if options.manually_grab_svn_rev:
-      additional_args = ['--revision', str(file_info['Revision'])]
-    additional_args.extend(['--force', '--ignore-externals'])
-    files_list = []
-    gclient_scm.scm.SVN.RunAndGetFileList(
-        options.verbose,
-        ['update', self.base_path] + additional_args,
-        cwd=self.root_dir, file_list=files_list)
-
-    self.mox.ReplayAll()
-    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
-                            relpath=self.relpath)
-    scm.update(options, (), files_list)
-
-  def testUpdateForceDeleteUnversionedTrees(self):
-    options = self.Options(verbose=True)
-    options.force = True
-    options.delete_unversioned_trees = True
-
-    file_info = {
-      'Repository Root': 'blah',
-      'URL': self.url,
-      'UUID': 'ABC',
-      'Revision': 42,
-    }
-    gclient_scm.os.path.exists(join(self.base_path, '.git')).AndReturn(False)
-    gclient_scm.os.path.exists(join(self.base_path, '.hg')).AndReturn(False)
-
-    # Create an untracked file and directory.
-    dotted_path = join(self.base_path, '.')
-    gclient_scm.scm.SVN.CaptureStatus(None, dotted_path
-        ).AndReturn([['?  ', 'dir'], ['?  ', 'file']])
-
-    # Checkout or update.
-    gclient_scm.os.path.exists(self.base_path).AndReturn(True)
-    gclient_scm.scm.SVN._CaptureInfo([], dotted_path).AndReturn(file_info)
-    gclient_scm.scm.SVN._CaptureInfo([file_info['URL']], None
-        ).AndReturn(file_info)
-    gclient_scm.scm.SVN.Capture(['--version'], None
-        ).AndReturn('svn, version 1.5.1 (r32289)')
-
-    # Confirm that the untracked file is removed.
-    gclient_scm.scm.SVN.CaptureStatus(None, self.base_path
-        ).AndReturn([['?  ', 'dir'], ['?  ', 'file']])
-    gclient_scm.os.path.isdir(join(self.base_path, 'dir')).AndReturn(True)
-    gclient_scm.os.path.isdir(join(self.base_path, 'file')).AndReturn(False)
-    gclient_scm.gclient_utils.RemoveDirectory(join(self.base_path, 'dir'))
-
-    additional_args = []
-    if options.manually_grab_svn_rev:
-      additional_args = ['--revision', str(file_info['Revision'])]
-    additional_args.extend(['--force', '--ignore-externals'])
-    files_list = []
-    gclient_scm.scm.SVN.RunAndGetFileList(
-        options.verbose,
-        ['update', self.base_path] + additional_args,
-        cwd=self.root_dir, file_list=files_list)
-
-    self.mox.ReplayAll()
-    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
-                            relpath=self.relpath)
-    scm.update(options, (), files_list)
-    self.checkstdout('\n_____ removing unversioned directory dir\n')
 
   def testUpdateSingleCheckout(self):
     options = self.Options(verbose=True)
@@ -682,7 +589,6 @@ class BaseGitWrapperTestCase(GCBaseTestCase, StdoutCheck, TestCaseUtils,
       self.reset = False
       self.nohooks = False
       self.merge = False
-      self.delete_unversioned_trees = False
 
   sample_git_import = """blob
 mark :1
@@ -988,62 +894,6 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
         '\n_____ . at refs/heads/master\n'
         'Updating 069c602..a7142dc\nFast-forward\n a |    1 +\n b |    1 +\n'
         ' 2 files changed, 2 insertions(+), 0 deletions(-)\n\n')
-
-  def testUpdateForceNoDeleteUnversionedTrees(self):
-    if not self.enabled:
-      return
-    options = self.Options()
-    options.force = True
-
-    dir_path = join(self.base_path, 'c')
-    os.mkdir(dir_path)
-    open(join(dir_path, 'nested'), 'w').writelines('new\n')
-
-    file_path = join(self.base_path, 'file')
-    open(file_path, 'w').writelines('new\n')
-
-    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
-                                relpath=self.relpath)
-    file_list = []
-    scm.update(options, (), file_list)
-    self.assert_(gclient_scm.os.path.isdir(dir_path))
-    self.assert_(gclient_scm.os.path.isfile(file_path))
-    self.checkstdout(
-        '\n________ running \'git reset --hard HEAD\' in \'%s\''
-        '\nHEAD is now at 069c602 A and B\n'
-        '\n_____ . at refs/heads/master\n'
-        'Updating 069c602..a7142dc\nFast-forward\n a |    1 +\n b |    1 +\n'
-        ' 2 files changed, 2 insertions(+), 0 deletions(-)\n\n'
-        % join(self.root_dir, '.'))
-
-  def testUpdateForceDeleteUnversionedTrees(self):
-    if not self.enabled:
-      return
-    options = self.Options()
-    options.force = True
-    options.delete_unversioned_trees = True
-
-    dir_path = join(self.base_path, 'dir')
-    os.mkdir(dir_path)
-    open(join(dir_path, 'nested'), 'w').writelines('new\n')
-
-    file_path = join(self.base_path, 'file')
-    open(file_path, 'w').writelines('new\n')
-
-    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
-                                relpath=self.relpath)
-    file_list = []
-    scm.update(options, (), file_list)
-    self.assert_(not gclient_scm.os.path.isdir(dir_path))
-    self.assert_(gclient_scm.os.path.isfile(file_path))
-    self.checkstdout(
-        '\n________ running \'git reset --hard HEAD\' in \'%s\''
-        '\nHEAD is now at 069c602 A and B\n'
-        '\n_____ . at refs/heads/master\n'
-        'Updating 069c602..a7142dc\nFast-forward\n a |    1 +\n b |    1 +\n'
-        ' 2 files changed, 2 insertions(+), 0 deletions(-)\n\n'
-        '\n_____ removing unversioned directory dir/\n' % join(self.root_dir,
-                                                               '.'))
 
   def testUpdateUnstagedConflict(self):
     if not self.enabled:
