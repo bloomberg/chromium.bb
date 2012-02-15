@@ -830,10 +830,19 @@ class SDKTestStage(bs.BuilderStage):
     cmd = ['chmod', 'a+r', tarball_location]
     cros_lib.SudoRunCommand(cmd, cwd=board_location)
 
+    new_chroot_cmd = ['cros_sdk', '--chroot', 'new-sdk-chroot']
     # Build a new SDK using the tarball.
-    cmd = ['cros_sdk', '--download', '--chroot', 'new-sdk-chroot', '--replace',
-           '--url', 'file://' + tarball_location]
+    cmd = new_chroot_cmd + ['--download', '--replace',
+        '--url', 'file://' + tarball_location]
     cros_lib.RunCommand(cmd, cwd=self._build_root)
+
+    for board in cbuildbot_config.SDK_TEST_BOARDS:
+      cmd = new_chroot_cmd + ['--', './setup_board',
+          '--board', board]
+      cros_lib.RunCommand(cmd, cwd=self._build_root)
+      cmd = new_chroot_cmd + ['--', './build_packages',
+          '--board', board, '--nousepkg']
+      cros_lib.RunCommand(cmd, cwd=self._build_root)
 
 
 class ArchiveStage(BoardSpecificBuilderStage):

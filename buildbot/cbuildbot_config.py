@@ -386,6 +386,8 @@ internal = _config(
   git_url=constants.MANIFEST_INT_URL,
 )
 
+SDK_TEST_BOARDS = ['amd64-generic', 'tegra2', 'x86-generic']
+
 full.add_config('chromiumos-sdk',
   # The amd64-host has to be last as that is when the toolchains
   # are bundled up for inclusion in the sdk.
