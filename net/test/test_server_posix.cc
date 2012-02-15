@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,7 +70,7 @@ bool ReadData(int fd, ssize_t bytes_max, uint8* buffer,
     int rv = HANDLE_EINTR(poll(poll_fds, 1,
                                remaining_time->InMilliseconds()));
     if (rv != 1) {
-      LOG(ERROR) << "Failed to poll for the child file descriptor.";
+      PLOG(ERROR) << "poll() failed for child file descriptor";
       return false;
     }
 
