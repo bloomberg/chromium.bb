@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -91,7 +91,7 @@ class ChromeSpeechInputManager::OptionalRequestInfo
   base::Lock lock_;
   std::string value_;
   bool can_report_metrics_;
-  scoped_refptr<AudioManager> audio_manager_;
+  AudioManager* audio_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(OptionalRequestInfo);
 };

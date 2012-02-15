@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -151,7 +151,7 @@ class CONTENT_EXPORT SpeechRecognizer
   scoped_ptr<SpeechRecognitionRequest> request_;
   scoped_refptr<media::AudioInputController> audio_controller_;
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
-  scoped_refptr<AudioManager> audio_manager_;
+  AudioManager* audio_manager_;
   AudioEncoder::Codec codec_;
   scoped_ptr<AudioEncoder> encoder_;
   Endpointer endpointer_;

@@ -139,7 +139,7 @@ class CONTENT_EXPORT MediaStreamManager
   // All non-closed request.
   typedef std::map<std::string, DeviceRequest> DeviceRequests;
   DeviceRequests requests_;
-  scoped_refptr<AudioManager> audio_manager_;
+  AudioManager* audio_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamManager);
 };

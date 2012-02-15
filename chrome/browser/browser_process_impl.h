@@ -271,7 +271,7 @@ class BrowserProcessImpl : public BrowserProcess,
   scoped_refptr<CRLSetFetcher> crl_set_fetcher_;
 #endif
 
-  scoped_refptr<AudioManager> audio_manager_;
+  scoped_ptr<AudioManager> audio_manager_;
 
   // TODO(eroman): Remove this when done debugging 113031. This tracks
   // the callstack which released the final module reference count.

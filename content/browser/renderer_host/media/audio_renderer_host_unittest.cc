@@ -158,12 +158,12 @@ class AudioRendererHostTest : public testing::Test {
                                            message_loop_.get()));
     ui_thread_.reset(new BrowserThreadImpl(BrowserThread::UI,
                                            message_loop_.get()));
-    audio_manager_ = AudioManager::Create();
+    audio_manager_.reset(AudioManager::Create());
     observer_.reset(new MockMediaObserver());
     content::MockResourceContext* context =
         content::MockResourceContext::GetInstance();
     context->set_media_observer(observer_.get());
-    context->set_audio_manager(audio_manager_);
+    context->set_audio_manager(audio_manager_.get());
     host_ = new MockAudioRendererHost(context);
 
     // Simulate IPC channel connected.
@@ -187,7 +187,7 @@ class AudioRendererHostTest : public testing::Test {
         content::MockResourceContext::GetInstance();
     context->set_audio_manager(NULL);
     context->set_media_observer(NULL);
-    audio_manager_ = NULL;
+    audio_manager_.reset();
 
     io_thread_.reset();
     ui_thread_.reset();
@@ -315,7 +315,7 @@ class AudioRendererHostTest : public testing::Test {
   scoped_ptr<MessageLoop> message_loop_;
   scoped_ptr<BrowserThreadImpl> io_thread_;
   scoped_ptr<BrowserThreadImpl> ui_thread_;
-  scoped_refptr<AudioManager> audio_manager_;
+  scoped_ptr<AudioManager> audio_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererHostTest);
 };

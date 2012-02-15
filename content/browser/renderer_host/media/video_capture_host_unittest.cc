@@ -204,12 +204,12 @@ class VideoCaptureHostTest : public testing::Test {
     io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
                                            message_loop_.get()));
 
-    audio_manager_ = AudioManager::Create();
+    audio_manager_.reset(AudioManager::Create());
 
     // Create a MediaStreamManager instance and hand over pointer to
     // ResourceContext.
     media_stream_manager_.reset(new media_stream::MediaStreamManager(
-        audio_manager_));
+        audio_manager_.get()));
 
 #ifndef TEST_REAL_CAPTURE_DEVICE
     media_stream_manager_->UseFakeDevice();
@@ -370,7 +370,7 @@ class VideoCaptureHostTest : public testing::Test {
   scoped_ptr<BrowserThreadImpl> ui_thread_;
   scoped_ptr<BrowserThreadImpl> io_thread_;
   scoped_ptr<media_stream::MediaStreamManager> media_stream_manager_;
-  scoped_refptr<AudioManager> audio_manager_;
+  scoped_ptr<AudioManager> audio_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureHostTest);
 };

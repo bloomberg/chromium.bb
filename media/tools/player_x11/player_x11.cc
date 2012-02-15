@@ -245,8 +245,8 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  scoped_refptr<AudioManager> audio_manager(AudioManager::Create());
-  g_audio_manager = audio_manager;
+  scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
+  g_audio_manager = audio_manager.get();
 
   logging::InitLogging(
       NULL,

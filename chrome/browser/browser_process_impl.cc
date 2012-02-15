@@ -637,10 +637,10 @@ CRLSetFetcher* BrowserProcessImpl::crl_set_fetcher() {
 
 AudioManager* BrowserProcessImpl::audio_manager() {
   DCHECK(CalledOnValidThread());
-  if (!audio_manager_)
-    audio_manager_ = AudioManager::Create();
+  if (!audio_manager_.get())
+    audio_manager_.reset(AudioManager::Create());
 
-  return audio_manager_;
+  return audio_manager_.get();
 }
 
 void BrowserProcessImpl::ResourceDispatcherHostCreated() {

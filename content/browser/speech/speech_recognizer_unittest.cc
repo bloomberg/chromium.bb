@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,7 @@ class SpeechRecognizerTest : public SpeechRecognizerDelegate,
         error_(content::SPEECH_INPUT_ERROR_NONE),
         volume_(-1.0f) {
     recognizer_ = new SpeechRecognizer(this, 1, std::string(), std::string(),
-                                       NULL, audio_manager_, false,
+                                       NULL, audio_manager_.get(), false,
                                        std::string(), std::string());
     int audio_packet_length_bytes =
         (SpeechRecognizer::kAudioSampleRate *
@@ -112,7 +112,7 @@ class SpeechRecognizerTest : public SpeechRecognizerDelegate,
   MessageLoopForIO message_loop_;
   BrowserThreadImpl io_thread_;
   scoped_refptr<SpeechRecognizer> recognizer_;
-  scoped_refptr<AudioManager> audio_manager_;
+  scoped_ptr<AudioManager> audio_manager_;
   bool recording_complete_;
   bool recognition_complete_;
   bool result_received_;

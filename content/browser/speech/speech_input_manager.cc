@@ -52,7 +52,7 @@ struct SpeechInputManager::SpeechInputParams {
   std::string origin_url;
   net::URLRequestContextGetter* context_getter;
   content::SpeechInputPreferences* speech_input_prefs;
-  scoped_refptr<AudioManager> audio_manager_;
+  AudioManager* audio_manager_;
 };
 
 SpeechInputManager::SpeechInputManager()

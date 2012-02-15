@@ -85,7 +85,7 @@ class Movie {
 
   scoped_refptr<Pipeline> pipeline_;
   scoped_ptr<media::MessageLoopFactory> message_loop_factory_;
-  scoped_refptr<AudioManager> audio_manager_;
+  scoped_ptr<AudioManager> audio_manager_;
 
   bool enable_audio_;
   bool enable_draw_;

@@ -66,7 +66,8 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   EventHandlerMap event_handlers_;
   typedef std::map<int, media::AudioDeviceName> AudioInputDeviceMap;
   AudioInputDeviceMap devices_;
-  scoped_refptr<AudioManager> audio_manager_;
+  // TODO(tommi): Is it necessary to store this as a member?
+  AudioManager* audio_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioInputDeviceManager);
 };

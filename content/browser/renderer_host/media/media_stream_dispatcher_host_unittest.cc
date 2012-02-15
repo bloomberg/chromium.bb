@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -151,11 +151,11 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
                                            message_loop_.get()));
 
-    audio_manager_ = AudioManager::Create();
+    audio_manager_.reset(AudioManager::Create());
 
     // Create a MediaStreamManager instance and hand over pointer to
     // ResourceContext.
-    media_stream_manager_.reset(new MediaStreamManager(audio_manager_));
+    media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
     // Make sure we use fake devices to avoid long delays.
     media_stream_manager_->UseFakeDevice();
     content::MockResourceContext::GetInstance()->set_media_stream_manager(
@@ -204,7 +204,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   scoped_ptr<BrowserThreadImpl> ui_thread_;
   scoped_ptr<BrowserThreadImpl> io_thread_;
   scoped_ptr<MediaStreamManager> media_stream_manager_;
-  scoped_refptr<AudioManager> audio_manager_;
+  scoped_ptr<AudioManager> audio_manager_;
 };
 
 TEST_F(MediaStreamDispatcherHostTest, GenerateStream) {

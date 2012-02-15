@@ -162,7 +162,7 @@ void WebRTCAudioDeviceTest::InitializeIOThread(const char* thread_name) {
   io_thread_.reset(new content::TestBrowserThread(content::BrowserThread::IO,
                                                   MessageLoop::current()));
 
-  audio_manager_ = AudioManager::Create();
+  audio_manager_.reset(AudioManager::Create());
 
   // Populate our resource context.
   test_request_context_ = new TestURLRequestContext();
@@ -170,9 +170,9 @@ void WebRTCAudioDeviceTest::InitializeIOThread(const char* thread_name) {
   media_observer_.reset(new MockMediaObserver());
   resource_context_->set_media_observer(media_observer_.get());
   media_stream_manager_.reset(new media_stream::MediaStreamManager(
-      audio_manager_));
+      audio_manager_.get()));
   resource_context_->set_media_stream_manager(media_stream_manager_.get());
-  resource_context_->set_audio_manager(audio_manager_);
+  resource_context_->set_audio_manager(audio_manager_.get());
 
   // Create an IPC channel that handles incoming messages on the IO thread.
   CreateChannel(thread_name);
@@ -182,8 +182,7 @@ void WebRTCAudioDeviceTest::UninitializeIOThread() {
   resource_context_.reset();
   media_stream_manager_.reset();
 
-  EXPECT_TRUE(audio_manager_->HasOneRef());
-  audio_manager_ = NULL;
+  audio_manager_.reset();
   test_request_context_ = NULL;
   initialize_com_.reset();
 }
@@ -282,7 +281,7 @@ void WebRTCAudioDeviceTest::WaitForIOThreadCompletion() {
 }
 
 void WebRTCAudioDeviceTest::WaitForAudioManagerCompletion() {
-  if (audio_manager_)
+  if (audio_manager_.get())
     WaitForMessageLoopCompletion(audio_manager_->GetMessageLoop());
 }
 

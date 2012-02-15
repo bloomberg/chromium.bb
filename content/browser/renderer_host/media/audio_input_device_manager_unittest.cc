@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -104,9 +104,9 @@ class AudioInputDeviceManagerTest : public testing::Test {
     message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
     io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
                                            message_loop_.get()));
-    audio_manager_ = AudioManager::Create();
+    audio_manager_.reset(AudioManager::Create());
 
-    manager_.reset(new AudioInputDeviceManager(audio_manager_));
+    manager_.reset(new AudioInputDeviceManager(audio_manager_.get()));
     audio_input_listener_.reset(new MockAudioInputDeviceManagerListener());
     manager_->Register(audio_input_listener_.get());
 
@@ -128,7 +128,7 @@ class AudioInputDeviceManagerTest : public testing::Test {
   scoped_ptr<BrowserThreadImpl> io_thread_;
   scoped_ptr<AudioInputDeviceManager> manager_;
   scoped_ptr<MockAudioInputDeviceManagerListener> audio_input_listener_;
-  scoped_refptr<AudioManager> audio_manager_;
+  scoped_ptr<AudioManager> audio_manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioInputDeviceManagerTest);
