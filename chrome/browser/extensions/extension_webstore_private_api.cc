@@ -475,8 +475,8 @@ bool GetWebGLStatusFunction::IsWebGLAllowed(GpuDataManager* manager) {
   if (!manager->GpuAccessAllowed()) {
     webgl_allowed = false;
   } else {
-    uint32 blacklist_flags = manager->GetGpuFeatureFlags().flags();
-    if (blacklist_flags & GpuFeatureFlags::kGpuFeatureWebgl)
+    uint32 blacklist_type = manager->GetGpuFeatureType();
+    if (blacklist_type & content::GPU_FEATURE_TYPE_WEBGL)
       webgl_allowed = false;
   }
   return webgl_allowed;

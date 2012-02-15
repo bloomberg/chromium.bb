@@ -414,14 +414,14 @@ WebPreferences TabContents::GetWebkitPrefs(RenderViewHost* rvh,
   {  // Certain GPU features might have been blacklisted.
     GpuDataManager* gpu_data_manager = GpuDataManager::GetInstance();
     DCHECK(gpu_data_manager);
-    uint32 blacklist_flags = gpu_data_manager->GetGpuFeatureFlags().flags();
-    if (blacklist_flags & GpuFeatureFlags::kGpuFeatureAcceleratedCompositing)
+    uint32 blacklist_type = gpu_data_manager->GetGpuFeatureType();
+    if (blacklist_type & content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING)
       prefs.accelerated_compositing_enabled = false;
-    if (blacklist_flags & GpuFeatureFlags::kGpuFeatureWebgl)
+    if (blacklist_type & content::GPU_FEATURE_TYPE_WEBGL)
       prefs.experimental_webgl_enabled = false;
-    if (blacklist_flags & GpuFeatureFlags::kGpuFeatureAccelerated2dCanvas)
+    if (blacklist_type & content::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS)
       prefs.accelerated_2d_canvas_enabled = false;
-    if (blacklist_flags & GpuFeatureFlags::kGpuFeatureMultisampling)
+    if (blacklist_type & content::GPU_FEATURE_TYPE_MULTISAMPLING)
       prefs.gl_multisampling_enabled = false;
 
     // Accelerated video and animation are slower than regular when using a

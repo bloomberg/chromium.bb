@@ -13,6 +13,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/gpu_blacklist.h"
+#include "chrome/browser/gpu_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
@@ -218,7 +220,7 @@ void TracingMessageHandler::OnTracingControllerInitialized(
     }
 
     dict->SetString("blacklist_version",
-        GpuDataManager::GetInstance()->GetBlacklistVersion());
+        GpuBlacklist::GetInstance()->GetVersion());
     web_ui()->CallJavascriptFunction("tracingController.onClientInfoUpdate",
                                      *dict);
   }
@@ -232,10 +234,10 @@ void TracingMessageHandler::OnBeginRequestBufferPercentFull(
 void TracingMessageHandler::OnGpuInfoUpdate() {
   // Get GPU Info.
   scoped_ptr<base::DictionaryValue> gpu_info_val(
-      gpu_data_manager_->GpuInfoAsDictionaryValue());
+      gpu_util::GpuInfoAsDictionaryValue());
 
   // Add in blacklisting features
-  Value* feature_status = gpu_data_manager_->GetFeatureStatus();
+  Value* feature_status = gpu_util::GetFeatureStatus();
   if (feature_status)
     gpu_info_val->Set("featureStatus", feature_status);
 

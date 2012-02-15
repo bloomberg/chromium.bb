@@ -25,6 +25,7 @@
 #include "content/gpu/gpu_child_thread.h"
 #include "content/gpu/gpu_process.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "ipc/ipc_channel_handle.h"
@@ -605,11 +606,8 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
   cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                              arraysize(kSwitchNames));
 
-  // If --ignore-gpu-blacklist is passed in, don't send in crash reports
-  // because GPU is expected to be unreliable.
-  if (browser_command_line.HasSwitch(switches::kIgnoreGpuBlacklist) &&
-      !cmd_line->HasSwitch(switches::kDisableBreakpad))
-    cmd_line->AppendSwitch(switches::kDisableBreakpad);
+  content::GetContentClient()->browser()->AppendExtraCommandLineSwitches(
+      cmd_line, process_->GetData().id);
 
   GpuDataManager::GetInstance()->AppendGpuCommandLine(cmd_line);
 

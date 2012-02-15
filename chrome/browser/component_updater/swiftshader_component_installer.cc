@@ -168,8 +168,8 @@ void UpdateChecker::OnGpuInfoUpdate() {
   GpuDataManager *gpu_data_manager = GpuDataManager::GetInstance();
 
   if (!gpu_data_manager->GpuAccessAllowed() ||
-      (gpu_data_manager->GetGpuFeatureFlags().flags() &
-       GpuFeatureFlags::kGpuFeatureWebgl) ||
+      (gpu_data_manager->GetGpuFeatureType() &
+       content::GPU_FEATURE_TYPE_WEBGL) ||
       gpu_data_manager->software_rendering()) {
     gpu_data_manager->RemoveObserver(this);
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));

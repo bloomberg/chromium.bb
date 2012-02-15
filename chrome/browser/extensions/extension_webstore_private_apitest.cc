@@ -14,17 +14,19 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_webstore_private_api.h"
 #include "chrome/browser/extensions/webstore_installer.h"
+#include "chrome/browser/gpu_blacklist.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/gpu/gpu_blacklist.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "net/base/mock_host_resolver.h"
 #include "ui/gfx/gl/gl_switches.h"
+
+using content::GpuFeatureType;
 
 using namespace extension_function_test_utils;
 
@@ -304,14 +306,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstoreGetWebGLStatusTest, Blocked) {
       "  ]\n"
       "}";
   scoped_ptr<Version> os_version(Version::GetVersionFromString("1.0"));
-  GpuBlacklist* blacklist = new GpuBlacklist("1.0");
+  GpuBlacklist* blacklist = GpuBlacklist::GetInstance();
 
   ASSERT_TRUE(blacklist->LoadGpuBlacklist(
-      json_blacklist, GpuBlacklist::kAllOs));
-  GpuDataManager::GetInstance()->SetGpuBlacklist(blacklist);
-  GpuFeatureFlags flags = GpuDataManager::GetInstance()->GetGpuFeatureFlags();
-  EXPECT_EQ(
-      flags.flags(), static_cast<uint32>(GpuFeatureFlags::kGpuFeatureWebgl));
+      "1.0", json_blacklist, GpuBlacklist::kAllOs));
+  blacklist->UpdateGpuDataManager();
+  GpuFeatureType type = GpuDataManager::GetInstance()->GetGpuFeatureType();
+  EXPECT_EQ(type, content::GPU_FEATURE_TYPE_WEBGL);
 
   bool webgl_allowed = false;
   RunTest(webgl_allowed);

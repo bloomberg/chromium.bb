@@ -1481,6 +1481,8 @@
         'browser/google/google_update_settings_unittest.cc',
         'browser/google/google_url_tracker_unittest.cc',
         'browser/google/google_util_unittest.cc',
+        'browser/gpu_blacklist_unittest.cc',
+        'browser/gpu_util_unittest.cc',
         'browser/history/expire_history_backend_unittest.cc',
         'browser/history/history_backend_unittest.cc',
         'browser/history/history_querying_unittest.cc',

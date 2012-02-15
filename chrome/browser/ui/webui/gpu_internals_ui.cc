@@ -13,6 +13,8 @@
 #include "base/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/values.h"
+#include "chrome/browser/gpu_blacklist.h"
+#include "chrome/browser/gpu_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/chrome_version_info.h"
@@ -204,7 +206,7 @@ Value* GpuMessageHandler::OnRequestClientInfo(const ListValue* list) {
   dict->SetString("graphics_backend", "Core Graphics");
 #endif
   dict->SetString("blacklist_version",
-      GpuDataManager::GetInstance()->GetBlacklistVersion());
+      GpuBlacklist::GetInstance()->GetVersion());
 
   GpuPerformanceStats stats =
       GpuDataManager::GetInstance()->GetPerformanceStats();
@@ -222,10 +224,10 @@ Value* GpuMessageHandler::OnRequestLogMessages(const ListValue*) {
 void GpuMessageHandler::OnGpuInfoUpdate() {
   // Get GPU Info.
   scoped_ptr<base::DictionaryValue> gpu_info_val(
-      gpu_data_manager_->GpuInfoAsDictionaryValue());
+      gpu_util::GpuInfoAsDictionaryValue());
 
   // Add in blacklisting features
-  Value* feature_status = gpu_data_manager_->GetFeatureStatus();
+  Value* feature_status = gpu_util::GetFeatureStatus();
   if (feature_status)
     gpu_info_val->Set("featureStatus", feature_status);
 

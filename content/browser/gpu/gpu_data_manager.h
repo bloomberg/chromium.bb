@@ -17,11 +17,10 @@
 #include "base/values.h"
 #include "content/browser/gpu/gpu_performance_stats.h"
 #include "content/common/content_export.h"
-#include "content/common/gpu/gpu_feature_flags.h"
+#include "content/public/common/gpu_feature_type.h"
 #include "content/public/common/gpu_info.h"
 
 class CommandLine;
-class GpuBlacklist;
 
 class CONTENT_EXPORT GpuDataManager {
  public:
@@ -51,46 +50,14 @@ class CONTENT_EXPORT GpuDataManager {
     return complete_gpu_info_available_;
   }
 
-  // Returns status of various GPU features. This is two parted:
-  // {
-  //    featureStatus: []
-  //    problems: []
-  // }
-  //
-  // Each entry in feature_status has:
-  // {
-  //    name:  "name of feature"
-  //    status: "enabled" | "unavailable_software" | "unavailable_off" |
-  //            "software" | "disabled_off" | "disabled_softare";
-  // }
-  //
-  // The features reported are not 1:1 with GpuFeatureType. Rather, they are:
-  //    '2d_canvas'
-  //    '3d_css'
-  //    'composting',
-  //    'webgl',
-  //    'multisampling'
-  //
-  // Each problems has:
-  // {
-  //    "description": "Your GPU is too old",
-  //    "crBugs": [1234],
-  //    "webkitBugs": []
-  // }
-  //
-  // Caller is responsible for deleting the returned value.
-  Value* GetFeatureStatus();
-
   GpuPerformanceStats GetPerformanceStats() const;
-
-  std::string GetBlacklistVersion() const;
 
   void AddLogMessage(Value* msg);
 
   const ListValue& log_messages() const;
 
   // Can be called on any thread.
-  GpuFeatureFlags GetGpuFeatureFlags();
+  content::GpuFeatureType GetGpuFeatureType();
 
   // This indicator might change because we could collect more GPU info or
   // because the GPU blacklist could be updated.
@@ -118,15 +85,11 @@ class CONTENT_EXPORT GpuDataManager {
   // kDisableGLMultisampling.
   void AppendGpuCommandLine(CommandLine* command_line);
 
-  // Gives ownership of the built-in blacklist.  This is always called on the
-  // UI thread.
-  void SetGpuBlacklist(GpuBlacklist* gpu_blacklist);
+  // Gives the new feature flags.  This is always called on the UI thread.
+  void SetGpuFeatureType(content::GpuFeatureType feature_type);
 
   // This gets called when switching GPU might have happened.
   void HandleGpuSwitch();
-
-  // Returns the Gpu Info as a DictionaryValue.
-  DictionaryValue* GpuInfoAsDictionaryValue() const;
 
   // Returns true if the software rendering should currently be used.
   bool software_rendering();
@@ -139,68 +102,6 @@ class CONTENT_EXPORT GpuDataManager {
   void BlacklistCard();
 
  private:
-  class UserFlags {
-   public:
-    UserFlags();
-
-    void Initialize();
-
-    bool disable_accelerated_2d_canvas() const {
-      return disable_accelerated_2d_canvas_;
-    }
-
-    bool disable_accelerated_compositing() const {
-      return disable_accelerated_compositing_;
-    }
-
-    bool disable_accelerated_layers() const {
-      return disable_accelerated_layers_;
-    }
-
-    bool disable_experimental_webgl() const {
-      return disable_experimental_webgl_;
-    }
-
-    bool disable_gl_multisampling() const { return disable_gl_multisampling_; }
-
-    bool disable_software_rasterizer() const {
-      return disable_software_rasterizer_;
-    }
-
-    bool ignore_gpu_blacklist() const { return ignore_gpu_blacklist_; }
-
-    bool skip_gpu_data_loading() const { return skip_gpu_data_loading_; }
-
-    const std::string& use_gl() const { return use_gl_; }
-
-    bool blacklist_accelerated_compositing() const {
-      return blacklist_accelerated_compositing_;
-    }
-
-    bool blacklist_webgl() const { return blacklist_webgl_; }
-
-   private:
-    // Manage the correlations between switches.
-    void ApplyPolicies();
-
-    bool disable_accelerated_2d_canvas_;
-    bool disable_accelerated_compositing_;
-    bool disable_accelerated_layers_;
-    bool disable_experimental_webgl_;
-    bool disable_gl_multisampling_;
-    bool disable_software_rasterizer_;
-
-    bool ignore_gpu_blacklist_;
-    bool skip_gpu_data_loading_;
-
-    std::string use_gl_;
-
-    // Flags to disallow running accelerated compositing or webgl on the GPU.
-    // Software rendering is still allowed.
-    bool blacklist_accelerated_compositing_;
-    bool blacklist_webgl_;
-  };
-
   typedef ObserverListThreadSafe<GpuDataManager::Observer>
       GpuDataManagerObserverList;
 
@@ -211,13 +112,9 @@ class CONTENT_EXPORT GpuDataManager {
 
   void Initialize();
 
-  // Check if we should go ahead and use gpu blacklist.
-  // If not, return NULL; otherwise, update and return the current list.
-  GpuBlacklist* GetGpuBlacklist() const;
-
   // If flags hasn't been set and GPUInfo is available, run through blacklist
   // and compute the flags.
-  void UpdateGpuFeatureFlags();
+  void UpdateGpuFeatureType(content::GpuFeatureType embedder_feature_type);
 
   // Notify all observers whenever there is a GPU info update.
   void NotifyGpuInfoUpdate();
@@ -234,25 +131,17 @@ class CONTENT_EXPORT GpuDataManager {
   // and gl_renderer.
   static bool Merge(content::GPUInfo* object, const content::GPUInfo& other);
 
-  // Determin if accelerated-2d-canvas is supported, which depends on whether
-  // lose_context could happen and whether skia is the backend.
-  bool supportsAccelerated2dCanvas() const;
-
   // Try to switch to software rendering, if possible and necessary.
   void EnableSoftwareRenderingIfNecessary();
 
   bool complete_gpu_info_already_requested_;
   bool complete_gpu_info_available_;
 
-  GpuFeatureFlags gpu_feature_flags_;
-  GpuFeatureFlags preliminary_gpu_feature_flags_;
-
-  UserFlags user_flags_;
+  content::GpuFeatureType gpu_feature_type_;
+  content::GpuFeatureType preliminary_gpu_feature_type_;
 
   content::GPUInfo gpu_info_;
   mutable base::Lock gpu_info_lock_;
-
-  scoped_ptr<GpuBlacklist> gpu_blacklist_;
 
   // Observers.
   const scoped_refptr<GpuDataManagerObserverList> observer_list_;

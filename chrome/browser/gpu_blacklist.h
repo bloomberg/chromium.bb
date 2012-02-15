@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_GPU_GPU_BLACKLIST_H_
-#define CONTENT_BROWSER_GPU_GPU_BLACKLIST_H_
+#ifndef CHROME_BROWSER_GPU_BLACKLIST_H_
+#define CHROME_BROWSER_GPU_BLACKLIST_H_
 #pragma once
 
 #include <string>
@@ -13,21 +13,19 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/singleton.h"
 #include "base/values.h"
-#include "content/common/content_export.h"
-#include "content/common/gpu/gpu_feature_flags.h"
+#include "content/browser/gpu/gpu_data_manager.h"
+#include "content/public/common/gpu_feature_type.h"
 
+class GpuDataManager;
 class Version;
-
-namespace base {
-class DictionaryValue;
-}
 
 namespace content {
 struct GPUInfo;
 }
 
-class CONTENT_EXPORT GpuBlacklist {
+class GpuBlacklist : public GpuDataManager::Observer {
  public:
   enum OsType {
     kOsLinux,
@@ -45,38 +43,44 @@ class CONTENT_EXPORT GpuBlacklist {
     kAllOs
   };
 
-  explicit GpuBlacklist(const std::string& browser_version_string);
-  ~GpuBlacklist();
+  // Getter for the singleton. This will return NULL on failure.
+  static GpuBlacklist* GetInstance();
+
+  virtual ~GpuBlacklist();
 
   // Loads blacklist information from a json file.
   // If failed, the current GpuBlacklist is un-touched.
-  bool LoadGpuBlacklist(const std::string& json_context, OsFilter os_filter);
-  bool LoadGpuBlacklist(const base::DictionaryValue& parsed_json,
+  bool LoadGpuBlacklist(const std::string& browser_version_string,
+                        const std::string& json_context,
                         OsFilter os_filter);
 
   // Collects system information and combines them with gpu_info and blacklist
   // information to determine gpu feature flags.
   // If os is kOsAny, use the current OS; if os_version is null, use the
   // current OS version.
-  GpuFeatureFlags DetermineGpuFeatureFlags(OsType os,
-                                           Version* os_version,
-                                           const content::GPUInfo& gpu_info);
+  content::GpuFeatureType DetermineGpuFeatureType(
+      OsType os, Version* os_version, const content::GPUInfo& gpu_info);
+
+  // Helper function that calls DetermineGpuFeatureType and sets the updated
+  // features on GpuDataManager.
+  void UpdateGpuDataManager();
 
   // Collects the active entries that set the "feature" flag from the last
-  // DetermineGpuFeatureFlags() call.  This tells which entries are responsible
+  // DetermineGpuFeatureType() call.  This tells which entries are responsible
   // for raising a certain flag, i.e, for blacklisting a certain feature.
   // Examples of "feature":
-  //   kGpuFeatureAll - any of the supported features;
-  //   kGpuFeatureWebgl - a single feature;
-  //   kGpuFeatureWebgl | kGpuFeatureAcceleratedCompositing - two features.
+  //   GPU_FEATURE_TYPE_ALL - any of the supported features;
+  //   GPU_FEATURE_TYPE_WEBGL - a single feature;
+  //   GPU_FEATURE_TYPE_WEBGL | GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING
+  //       - two features.
   // If disabled set to true, return entries that are disabled; otherwise,
   // return enabled entries.
-  void GetGpuFeatureFlagEntries(GpuFeatureFlags::GpuFeatureType feature,
+  void GetGpuFeatureTypeEntries(content::GpuFeatureType feature,
                                 std::vector<uint32>& entry_ids,
                                 bool disabled) const;
 
   // Returns the description and bugs from active entries from the last
-  // DetermineGpuFeatureFlags() call.
+  // DetermineGpuFeatureType() call.
   //
   // Each problems has:
   // {
@@ -89,16 +93,12 @@ class CONTENT_EXPORT GpuBlacklist {
   // Return the largest entry id.  This is used for histogramming.
   uint32 max_entry_id() const;
 
-  // Collects the version of the current blacklist.  Returns false and sets
-  // major and minor to 0 on failure.
-  bool GetVersion(uint16* major, uint16* monir) const;
-
-  // Collects the version of the current blacklist from a parsed json file.
-  // Returns false and sets major and minor to 0 on failure.
-  static bool GetVersion(
-      const base::DictionaryValue& parsed_json, uint16* major, uint16* minor);
+  // Returns the version of the current blacklist.
+  std::string GetVersion() const;
 
  private:
+  friend class GpuBlacklistTest;
+  friend struct DefaultSingletonTraits<GpuBlacklist>;
   FRIEND_TEST_ALL_PREFIXES(GpuBlacklistTest, CurrentBlacklistValidation);
   FRIEND_TEST_ALL_PREFIXES(GpuBlacklistTest, UnknownField);
   FRIEND_TEST_ALL_PREFIXES(GpuBlacklistTest, UnknownExceptionField);
@@ -224,8 +224,8 @@ class CONTENT_EXPORT GpuBlacklist {
     const std::vector<int>& cr_bugs() const { return cr_bugs_; }
     const std::vector<int>& webkit_bugs() const { return webkit_bugs_; }
 
-    // Returns the GpuFeatureFlags.
-    GpuFeatureFlags GetGpuFeatureFlags() const;
+    // Returns the GpuFeatureType.
+    content::GpuFeatureType GetGpuFeatureType() const;
 
     // Returns true if an unknown field is encountered.
     bool contains_unknown_fields() const {
@@ -290,7 +290,7 @@ class CONTENT_EXPORT GpuBlacklist {
     scoped_ptr<VersionInfo> driver_date_info_;
     scoped_ptr<StringInfo> gl_vendor_info_;
     scoped_ptr<StringInfo> gl_renderer_info_;
-    scoped_ptr<GpuFeatureFlags> feature_flags_;
+    content::GpuFeatureType feature_type_;
     std::vector<ScopedGpuBlacklistEntry> exceptions_;
     bool contains_unknown_fields_;
     bool contains_unknown_features_;
@@ -298,6 +298,11 @@ class CONTENT_EXPORT GpuBlacklist {
 
   // Gets the current OS type.
   static OsType GetOsType();
+
+  GpuBlacklist();
+
+  bool LoadGpuBlacklist(const base::DictionaryValue& parsed_json,
+                        OsFilter os_filter);
 
   void Clear();
 
@@ -307,13 +312,14 @@ class CONTENT_EXPORT GpuBlacklist {
   BrowserVersionSupport IsEntrySupportedByCurrentBrowserVersion(
       base::DictionaryValue* value);
 
+  // GpuDataManager::Observer implementation.
+  virtual void OnGpuInfoUpdate() OVERRIDE;
+
   // Returns the number of entries.  This is only for tests.
   size_t num_entries() const;
 
   // Check if any entries contain unknown fields.  This is only for tests.
   bool contains_unknown_fields() const { return contains_unknown_fields_; }
-
-  void SetBrowserVersion(const std::string& version_string);
 
   scoped_ptr<Version> version_;
   std::vector<ScopedGpuBlacklistEntry> blacklist_;
@@ -321,8 +327,8 @@ class CONTENT_EXPORT GpuBlacklist {
   scoped_ptr<Version> browser_version_;
 
   // This records all the blacklist entries that are appliable to the current
-  // user machine.  It is updated everytime DetermineGpuFeatureFlags() is
-  // called and is used later by GetGpuFeatureFlagEntries().
+  // user machine.  It is updated everytime DetermineGpuFeatureType() is
+  // called and is used later by GetGpuFeatureTypeEntries().
   std::vector<ScopedGpuBlacklistEntry> active_entries_;
 
   uint32 max_entry_id_;
@@ -332,4 +338,4 @@ class CONTENT_EXPORT GpuBlacklist {
   DISALLOW_COPY_AND_ASSIGN(GpuBlacklist);
 };
 
-#endif  // CONTENT_BROWSER_GPU_GPU_BLACKLIST_H_
+#endif  // CHROME_BROWSER_GPU_BLACKLIST_H_

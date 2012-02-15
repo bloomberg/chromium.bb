@@ -56,7 +56,6 @@ include_rules = [
   "+content/browser/find_pasteboard.h",
   "+content/browser/font_list_async.h",
   "+content/browser/geolocation/wifi_data_provider_common.h",
-  "+content/browser/gpu/gpu_blacklist.h",
   "+content/browser/gpu/gpu_data_manager.h",
   "+content/browser/in_process_webkit/dom_storage_context.h",
   "+content/browser/in_process_webkit/session_storage_namespace.h",

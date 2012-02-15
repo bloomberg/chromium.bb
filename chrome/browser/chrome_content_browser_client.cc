@@ -703,6 +703,12 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 
     command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                                    arraysize(kSwitchNames));
+  } else if (process_type == switches::kGpuProcess) {
+    // If --ignore-gpu-blacklist is passed in, don't send in crash reports
+    // because GPU is expected to be unreliable.
+    if (browser_command_line.HasSwitch(switches::kIgnoreGpuBlacklist) &&
+        !command_line->HasSwitch(switches::kDisableBreakpad))
+      command_line->AppendSwitch(switches::kDisableBreakpad);
   }
 
   // The command line switch kEnableBenchmarking needs to be specified along

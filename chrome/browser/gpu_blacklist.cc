@@ -2,19 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/gpu/gpu_blacklist.h"
+#include "chrome/browser/gpu_blacklist.h"
 
+#include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
-#include "base/string_piece.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
-#include "base/stringprintf.h"
 #include "base/sys_info.h"
-#include "base/values.h"
 #include "base/version.h"
+#include "chrome/browser/gpu_util.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/gpu_info.h"
+
+using content::GpuFeatureType;
 
 namespace {
 
@@ -438,6 +440,7 @@ GpuBlacklist::GpuBlacklistEntry::GpuBlacklistEntry()
     : id_(0),
       disabled_(false),
       vendor_id_(0),
+      feature_type_(content::GPU_FEATURE_TYPE_UNKNOWN),
       contains_unknown_fields_(false),
       contains_unknown_features_(false) {
 }
@@ -528,25 +531,24 @@ bool GpuBlacklist::GpuBlacklistEntry::SetBlacklistedFeatures(
   size_t size = blacklisted_features.size();
   if (size == 0)
     return false;
-  uint32 flags = 0;
+  int feature_type = content::GPU_FEATURE_TYPE_UNKNOWN;
   for (size_t i = 0; i < size; ++i) {
-    GpuFeatureFlags::GpuFeatureType type =
-        GpuFeatureFlags::StringToGpuFeatureType(blacklisted_features[i]);
+    GpuFeatureType type =
+        gpu_util::StringToGpuFeatureType(blacklisted_features[i]);
     switch (type) {
-      case GpuFeatureFlags::kGpuFeatureAccelerated2dCanvas:
-      case GpuFeatureFlags::kGpuFeatureAcceleratedCompositing:
-      case GpuFeatureFlags::kGpuFeatureWebgl:
-      case GpuFeatureFlags::kGpuFeatureMultisampling:
-      case GpuFeatureFlags::kGpuFeatureAll:
-        flags |= type;
+      case content::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS:
+      case content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING:
+      case content::GPU_FEATURE_TYPE_WEBGL:
+      case content::GPU_FEATURE_TYPE_MULTISAMPLING:
+      case content::GPU_FEATURE_TYPE_ALL:
+        feature_type |= type;
         break;
-      case GpuFeatureFlags::kGpuFeatureUnknown:
+      case content::GPU_FEATURE_TYPE_UNKNOWN:
         contains_unknown_features_ = true;
         break;
     }
   }
-  feature_flags_.reset(new GpuFeatureFlags());
-  feature_flags_->set_flags(flags);
+  feature_type_ = static_cast<GpuFeatureType>(feature_type);
   return true;
 }
 
@@ -617,22 +619,33 @@ bool GpuBlacklist::GpuBlacklistEntry::disabled() const {
   return disabled_;
 }
 
-GpuFeatureFlags GpuBlacklist::GpuBlacklistEntry::GetGpuFeatureFlags() const {
-  return *feature_flags_;
+GpuFeatureType GpuBlacklist::GpuBlacklistEntry::GetGpuFeatureType() const {
+  return feature_type_;
 }
 
-GpuBlacklist::GpuBlacklist(const std::string& browser_version_string)
+// static
+GpuBlacklist* GpuBlacklist::GetInstance() {
+  return Singleton<GpuBlacklist>::get();
+}
+
+GpuBlacklist::GpuBlacklist()
     : max_entry_id_(0),
       contains_unknown_fields_(false) {
-  SetBrowserVersion(browser_version_string);
+  GpuDataManager::GetInstance()->AddObserver(this);
 }
 
 GpuBlacklist::~GpuBlacklist() {
   Clear();
+  GpuDataManager::GetInstance()->RemoveObserver(this);
 }
 
 bool GpuBlacklist::LoadGpuBlacklist(
-    const std::string& json_context, GpuBlacklist::OsFilter os_filter) {
+    const std::string& browser_version_string,
+    const std::string& json_context,
+    GpuBlacklist::OsFilter os_filter) {
+  browser_version_.reset(Version::GetVersionFromString(browser_version_string));
+  DCHECK(browser_version_.get() != NULL);
+
   scoped_ptr<Value> root;
   root.reset(base::JSONReader::Read(json_context, false));
   if (root.get() == NULL || !root->IsType(Value::TYPE_DICTIONARY))
@@ -703,12 +716,12 @@ bool GpuBlacklist::LoadGpuBlacklist(
   return true;
 }
 
-GpuFeatureFlags GpuBlacklist::DetermineGpuFeatureFlags(
+GpuFeatureType GpuBlacklist::DetermineGpuFeatureType(
     GpuBlacklist::OsType os,
     Version* os_version,
     const content::GPUInfo& gpu_info) {
   active_entries_.clear();
-  GpuFeatureFlags flags;
+  int type = 0;
 
   if (os == kOsAny)
     os = GetOsType();
@@ -726,20 +739,27 @@ GpuFeatureFlags GpuBlacklist::DetermineGpuFeatureFlags(
   for (size_t i = 0; i < blacklist_.size(); ++i) {
     if (blacklist_[i]->Contains(os, *os_version, gpu_info)) {
       if (!blacklist_[i]->disabled())
-        flags.Combine(blacklist_[i]->GetGpuFeatureFlags());
+        type |= blacklist_[i]->GetGpuFeatureType();
       active_entries_.push_back(blacklist_[i]);
     }
   }
-  return flags;
+  return static_cast<GpuFeatureType>(type);
 }
 
-void GpuBlacklist::GetGpuFeatureFlagEntries(
-    GpuFeatureFlags::GpuFeatureType feature,
+void GpuBlacklist::UpdateGpuDataManager() {
+  content::GpuFeatureType feature_type = DetermineGpuFeatureType(
+      GpuBlacklist::kOsAny, NULL, GpuDataManager::GetInstance()->gpu_info());
+  GpuDataManager::GetInstance()->SetGpuFeatureType(feature_type);
+  gpu_util::UpdateStats();
+}
+
+void GpuBlacklist::GetGpuFeatureTypeEntries(
+    content::GpuFeatureType feature,
     std::vector<uint32>& entry_ids,
     bool disabled) const {
   entry_ids.clear();
   for (size_t i = 0; i < active_entries_.size(); ++i) {
-    if (((feature & active_entries_[i]->GetGpuFeatureFlags().flags()) != 0) &&
+    if (((feature & active_entries_[i]->GetGpuFeatureType()) != 0) &&
         disabled == active_entries_[i]->disabled())
       entry_ids.push_back(active_entries_[i]->id());
   }
@@ -779,37 +799,18 @@ uint32 GpuBlacklist::max_entry_id() const {
   return max_entry_id_;
 }
 
-bool GpuBlacklist::GetVersion(uint16* major, uint16* minor) const {
-  DCHECK(major && minor);
-  *major = 0;
-  *minor = 0;
+std::string GpuBlacklist::GetVersion() const {
   if (version_.get() == NULL)
-    return false;
+    return std::string();
   const std::vector<uint16>& components_reference = version_->components();
   if (components_reference.size() != 2)
-    return false;
-  *major = components_reference[0];
-  *minor = components_reference[1];
-  return true;
-}
+    return std::string();
 
-bool GpuBlacklist::GetVersion(
-    const DictionaryValue& parsed_json, uint16* major, uint16* minor) {
-  DCHECK(major && minor);
-  *major = 0;
-  *minor = 0;
-  std::string version_string;
-  if (!parsed_json.GetString("version", &version_string))
-    return false;
-  scoped_ptr<Version> version(Version::GetVersionFromString(version_string));
-  if (version.get() == NULL)
-    return false;
-  const std::vector<uint16>& components_reference = version->components();
-  if (components_reference.size() != 2)
-    return false;
-  *major = components_reference[0];
-  *minor = components_reference[1];
-  return true;
+  std::string version_string =
+      base::UintToString(static_cast<unsigned>(components_reference[0])) +
+      "." +
+      base::UintToString(static_cast<unsigned>(components_reference[1]));
+  return version_string;
 }
 
 GpuBlacklist::OsType GpuBlacklist::GetOsType() {
@@ -857,8 +858,6 @@ GpuBlacklist::IsEntrySupportedByCurrentBrowserVersion(
   return kSupported;
 }
 
-void GpuBlacklist::SetBrowserVersion(const std::string& version_string) {
-  browser_version_.reset(Version::GetVersionFromString(version_string));
-  DCHECK(browser_version_.get() != NULL);
+void GpuBlacklist::OnGpuInfoUpdate() {
+  UpdateGpuDataManager();
 }
-

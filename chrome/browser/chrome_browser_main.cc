@@ -44,6 +44,8 @@
 #include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/gpu_blacklist.h"
+#include "chrome/browser/gpu_util.h"
 #include "chrome/browser/instant/instant_field_trial.h"
 #include "chrome/browser/jankometer.h"
 #include "chrome/browser/language_usage_metrics.h"
@@ -94,7 +96,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profiling.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "content/browser/gpu/gpu_blacklist.h"
 #include "content/browser/gpu/gpu_data_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
@@ -453,8 +454,8 @@ Profile* CreateProfile(const content::MainFunctionParams& parameters,
 // gpu feature flags.
 void InitializeGpuDataManager(const CommandLine& parsed_command_line) {
   GpuDataManager::GetInstance();
-
-  if (parsed_command_line.HasSwitch(switches::kSkipGpuDataLoading))
+  if (parsed_command_line.HasSwitch(switches::kSkipGpuDataLoading) ||
+      parsed_command_line.HasSwitch(switches::kIgnoreGpuBlacklist))
     return;
 
   const base::StringPiece gpu_blacklist_json(
@@ -463,11 +464,12 @@ void InitializeGpuDataManager(const CommandLine& parsed_command_line) {
   chrome::VersionInfo version_info;
   std::string chrome_version_string =
       version_info.is_valid() ? version_info.Version() : "0";
-  GpuBlacklist* gpu_blacklist = new GpuBlacklist(chrome_version_string);
+  GpuBlacklist* gpu_blacklist = GpuBlacklist::GetInstance();
   bool succeed = gpu_blacklist->LoadGpuBlacklist(
-      gpu_blacklist_json.as_string(), GpuBlacklist::kCurrentOsOnly);
+      chrome_version_string, gpu_blacklist_json.as_string(),
+      GpuBlacklist::kCurrentOsOnly);
   DCHECK(succeed);
-  GpuDataManager::GetInstance()->SetGpuBlacklist(gpu_blacklist);
+  gpu_blacklist->UpdateGpuDataManager();
 }
 
 #if defined(OS_MACOSX)
