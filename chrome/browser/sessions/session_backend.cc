@@ -318,22 +318,22 @@ bool SessionBackend::AppendCommandsToFile(net::FileStream* file,
       UMA_HISTOGRAM_COUNTS("TabRestore.command_size", total_size);
     else
       UMA_HISTOGRAM_COUNTS("SessionRestore.command_size", total_size);
-    wrote = file->Write(reinterpret_cast<const char*>(&total_size),
-                        sizeof(total_size), net::CompletionCallback());
+    wrote = file->WriteSync(reinterpret_cast<const char*>(&total_size),
+                            sizeof(total_size));
     if (wrote != sizeof(total_size)) {
       NOTREACHED() << "error writing";
       return false;
     }
     id_type command_id = (*i)->id();
-    wrote = file->Write(reinterpret_cast<char*>(&command_id),
-                        sizeof(command_id), net::CompletionCallback());
+    wrote = file->WriteSync(reinterpret_cast<char*>(&command_id),
+                            sizeof(command_id));
     if (wrote != sizeof(command_id)) {
       NOTREACHED() << "error writing";
       return false;
     }
     if (content_size > 0) {
-      wrote = file->Write(reinterpret_cast<char*>((*i)->contents()),
-                          content_size, net::CompletionCallback());
+      wrote = file->WriteSync(reinterpret_cast<char*>((*i)->contents()),
+                              content_size);
       if (wrote != content_size) {
         NOTREACHED() << "error writing";
         return false;
@@ -378,8 +378,8 @@ net::FileStream* SessionBackend::OpenAndWriteHeader(const FilePath& path) {
   FileHeader header;
   header.signature = kFileSignature;
   header.version = kFileCurrentVersion;
-  int wrote = file->Write(reinterpret_cast<char*>(&header),
-                          sizeof(header), net::CompletionCallback());
+  int wrote = file->WriteSync(reinterpret_cast<char*>(&header),
+                              sizeof(header));
   if (wrote != sizeof(header))
     return NULL;
   return file.release();

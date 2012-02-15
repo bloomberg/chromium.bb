@@ -147,7 +147,7 @@ int WebFileUtilitiesImpl::readFromFile(base::PlatformFile handle,
   std::string buffer;
   buffer.resize(length);
   net::FileStream file_stream(handle, base::PLATFORM_FILE_READ, NULL);
-  return file_stream.Read(data, length, net::CompletionCallback());
+  return file_stream.ReadSync(data, length);
 }
 
 int WebFileUtilitiesImpl::writeToFile(base::PlatformFile handle,
@@ -156,7 +156,7 @@ int WebFileUtilitiesImpl::writeToFile(base::PlatformFile handle,
   if (handle == base::kInvalidPlatformFileValue || !data || length <= 0)
     return -1;
   net::FileStream file_stream(handle, base::PLATFORM_FILE_WRITE, NULL);
-  return file_stream.Write(data, length, net::CompletionCallback());
+  return file_stream.WriteSync(data, length);
 }
 
 }  // namespace webkit_glue

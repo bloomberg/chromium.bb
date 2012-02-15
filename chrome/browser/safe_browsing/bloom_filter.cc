@@ -99,8 +99,8 @@ BloomFilter* BloomFilter::LoadFile(const FilePath& filter_name) {
 
   // Make sure we have a file version that we can understand.
   int file_version;
-  int bytes_read = filter.Read(reinterpret_cast<char*>(&file_version),
-                               sizeof(file_version), net::CompletionCallback());
+  int bytes_read = filter.ReadSync(reinterpret_cast<char*>(&file_version),
+                                   sizeof(file_version));
   if (bytes_read != sizeof(file_version) || file_version != kFileVersion) {
     RecordFailure(FAILURE_FILTER_READ_VERSION);
     return NULL;
@@ -108,8 +108,8 @@ BloomFilter* BloomFilter::LoadFile(const FilePath& filter_name) {
 
   // Get all the random hash keys.
   int num_keys;
-  bytes_read = filter.Read(reinterpret_cast<char*>(&num_keys),
-                           sizeof(num_keys), net::CompletionCallback());
+  bytes_read = filter.ReadSync(reinterpret_cast<char*>(&num_keys),
+                               sizeof(num_keys));
   if (bytes_read != sizeof(num_keys) ||
       num_keys < 1 || num_keys > kNumHashKeys) {
     RecordFailure(FAILURE_FILTER_READ_NUM_KEYS);
@@ -119,8 +119,7 @@ BloomFilter* BloomFilter::LoadFile(const FilePath& filter_name) {
   HashKeys hash_keys;
   for (int i = 0; i < num_keys; ++i) {
     HashKey key;
-    bytes_read = filter.Read(
-        reinterpret_cast<char*>(&key), sizeof(key), net::CompletionCallback());
+    bytes_read = filter.ReadSync(reinterpret_cast<char*>(&key), sizeof(key));
     if (bytes_read != sizeof(key)) {
       RecordFailure(FAILURE_FILTER_READ_KEY);
       return NULL;
@@ -140,7 +139,7 @@ BloomFilter* BloomFilter::LoadFile(const FilePath& filter_name) {
 
   int byte_size = static_cast<int>(remaining64);
   scoped_array<char> data(new char[byte_size]);
-  bytes_read = filter.Read(data.get(), byte_size, net::CompletionCallback());
+  bytes_read = filter.ReadSync(data.get(), byte_size);
   if (bytes_read < byte_size) {
     RecordFailure(FAILURE_FILTER_READ_DATA_SHORT);
     return NULL;
@@ -163,29 +162,29 @@ bool BloomFilter::WriteFile(const FilePath& filter_name) const {
 
   // Write the version information.
   int version = kFileVersion;
-  int bytes_written = filter.Write(reinterpret_cast<char*>(&version),
-                                   sizeof(version), net::CompletionCallback());
+  int bytes_written = filter.WriteSync(reinterpret_cast<char*>(&version),
+                                       sizeof(version));
   if (bytes_written != sizeof(version))
     return false;
 
   // Write the number of random hash keys.
   int num_keys = static_cast<int>(hash_keys_.size());
-  bytes_written = filter.Write(reinterpret_cast<char*>(&num_keys),
-                               sizeof(num_keys), net::CompletionCallback());
+  bytes_written = filter.WriteSync(reinterpret_cast<char*>(&num_keys),
+                                   sizeof(num_keys));
   if (bytes_written != sizeof(num_keys))
     return false;
 
   for (int i = 0; i < num_keys; ++i) {
     bytes_written =
-        filter.Write(reinterpret_cast<const char*>(&hash_keys_[i]),
-                     sizeof(hash_keys_[i]), net::CompletionCallback());
+        filter.WriteSync(reinterpret_cast<const char*>(&hash_keys_[i]),
+                         sizeof(hash_keys_[i]));
     if (bytes_written != sizeof(hash_keys_[i]))
       return false;
   }
 
   // Write the filter data.
   bytes_written =
-      filter.Write(data_.get(), byte_size_, net::CompletionCallback());
+      filter.WriteSync(data_.get(), byte_size_);
   if (bytes_written != byte_size_)
     return false;
 

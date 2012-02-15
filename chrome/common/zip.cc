@@ -29,8 +29,7 @@ bool AddFileToZip(zipFile zip_file, const FilePath& src_dir) {
   int num_bytes;
   char buf[zip::internal::kZipBufSize];
   do {
-    num_bytes = stream.Read(buf, zip::internal::kZipBufSize,
-                            net::CompletionCallback());
+    num_bytes = stream.ReadSync(buf, zip::internal::kZipBufSize);
     if (num_bytes > 0) {
       if (ZIP_OK != zipWriteInFileInZip(zip_file, buf, num_bytes)) {
         DLOG(ERROR) << "Could not write data to zip for path "

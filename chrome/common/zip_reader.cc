@@ -210,8 +210,7 @@ bool ZipReader::ExtractCurrentEntryToFilePath(
       break;
     } else if (num_bytes_read > 0) {
       // Some data is read. Write it to the output file.
-      if (num_bytes_read != stream.Write(buf, num_bytes_read,
-                                         net::CompletionCallback())) {
+      if (num_bytes_read != stream.WriteSync(buf, num_bytes_read)) {
         success = false;
         break;
       }

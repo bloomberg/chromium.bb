@@ -278,6 +278,17 @@ int64 FileStream::Available() {
 
 int FileStream::Read(
     char* buf, int buf_len, const CompletionCallback& callback) {
+  DCHECK(async_context_.get());
+  return ReadInternal(buf, buf_len, callback);
+}
+
+int FileStream::ReadSync(char* buf, int buf_len) {
+  DCHECK(!async_context_.get());
+  return ReadInternal(buf, buf_len, CompletionCallback());
+}
+
+int FileStream::ReadInternal(
+    char* buf, int buf_len, const CompletionCallback& callback) {
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
@@ -325,7 +336,7 @@ int FileStream::ReadUntilComplete(char *buf, int buf_len) {
   int bytes_total = 0;
 
   do {
-    int bytes_read = Read(buf, to_read, CompletionCallback());
+    int bytes_read = ReadSync(buf, to_read);
     if (bytes_read <= 0) {
       if (bytes_total == 0)
         return bytes_read;
@@ -342,6 +353,18 @@ int FileStream::ReadUntilComplete(char *buf, int buf_len) {
 }
 
 int FileStream::Write(
+    const char* buf, int buf_len, const CompletionCallback& callback) {
+  DCHECK(async_context_.get());
+  return WriteInternal(buf, buf_len, callback);
+}
+
+int FileStream::WriteSync(
+    const char* buf, int buf_len) {
+  DCHECK(!async_context_.get());
+  return WriteInternal(buf, buf_len, CompletionCallback());
+}
+
+int FileStream::WriteInternal(
     const char* buf, int buf_len, const CompletionCallback& callback) {
   if (!IsOpen())
     return ERR_UNEXPECTED;
