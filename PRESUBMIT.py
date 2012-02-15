@@ -334,13 +334,15 @@ def CheckChangeOnCommit(input_api, output_api):
 
 
 def GetPreferredTrySlaves(project, change):
-  only_objc_files = all(
-      f.LocalPath().endswith(('.mm', '.m')) for f in change.AffectedFiles())
+  affected_files = change.LocalPaths()
+  only_objc_files = all(f.endswith(('.mm', '.m')) for f in affected_files)
   if only_objc_files:
     return ['mac_rel']
   preferred = ['win_rel', 'linux_rel', 'mac_rel']
+  if any(f.endswith(('.h', '.cc', '.cpp', '.cxx')) for f in affected_files):
+    preferred.append('linux_clang')
   aura_re = '_aura[^/]*[.][^/]*'
-  if any(re.search(aura_re, f.LocalPath()) for f in change.AffectedFiles()):
+  if any(re.search(aura_re, f) for f in affected_files):
     preferred.append('linux_chromeos')
   # For bringup (staging of upstream work) we must be careful to not
   # overload Android infrastructure.  Keeping Android try decisions in a
@@ -351,8 +353,8 @@ def GetPreferredTrySlaves(project, change):
   # android builder, use the android try server.
   android_re_list = ('^base/', '^ipc/', '^net/', '^sql/', '^jingle/',
                      '^build/common.gypi$')
-  for f in change.AffectedFiles():
-    if any(re.search(r, f.LocalPath()) for r in android_re_list):
+  for f in affected_files:
+    if any(re.search(r, f) for r in android_re_list):
       preferred.append('android')
       break
   return preferred
