@@ -40,6 +40,9 @@ chrome.fileBrowserPrivate = {
   viewFiles: function(selectedFiles) {
     console.log('viewFiles called: ' + selectedFiles.length +
                 ' files selected');
+    chrome.mediaPlayerPrivate.setPlaylist_({
+      items: selectedFiles.map(function(url) { return {path: url} })
+    });
   },
 
   /**
@@ -170,9 +173,7 @@ chrome.fileBrowserPrivate = {
   getMountPoints: function(callback) {
     // This will work in harness.
     var path = 'filesystem:file:///persistent/media';
-    var result = {};
-    result[path] = {mountPath: path, type: 'file'};
-    callback(result);
+    callback([{mountPath: path, type: 'file'}]);
   },
 
   removeMount: function(mountPoint) {
@@ -390,4 +391,47 @@ chrome.metricsPrivate = {
   recordTime: function() {},
   recordUserAction: function() {},
   recordValue: function() {}
+};
+
+chrome.mediaPlayerPrivate = {
+
+  onPlaylistChanged: new MockEventSource(),
+
+  setPlaylist_: function(playlist) {
+    this.playlist_ = playlist;
+
+    if (this.popup_) {
+      this.onPlaylistChanged.notify();
+      return;
+    }
+
+    // Using global document is OK for the test harness.
+    this.popup_ = document.createElement('iframe');
+    this.popup_.scrolling = 'no';
+    this.popup_.style.cssText = 'position:absolute; border:none; z-index:10;' +
+        'width:280px; height:0; right:10px; bottom:80px';
+
+    document.body.appendChild(this.popup_);
+
+    this.popup_.onload = function() {
+      var win = this.popup_.contentWindow;
+      win.chrome = chrome;
+      win.AudioPlayer.load();
+    }.bind(this);
+
+    this.popup_.src = "mediaplayer.html?no_auto_load";
+  },
+
+  getPlaylist: function(flag, callback) {
+    callback(this.playlist_);
+  },
+
+  setWindowHeight: function(height) {
+    this.popup_.style.height = height + 'px';
+  },
+
+  closeWindow: function() {
+    this.popup_.parentNode.removeChild(this.popup_);
+    this.popup_ = null;
+  }
 };

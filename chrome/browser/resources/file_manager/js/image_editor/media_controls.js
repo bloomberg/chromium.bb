@@ -113,10 +113,13 @@ MediaControls.prototype.initPlayButton = function(opt_parent) {
 // than 800px.
 MediaControls.PROGRESS_RANGE = 1000;
 
-MediaControls.prototype.initTimeControls = function(opt_parent) {
+MediaControls.prototype.initTimeControls = function(opt_seekMark, opt_parent) {
   var timeControls = this.createControl('time-controls', opt_parent);
 
-  this.progressSlider_ = new MediaControls.PreciseSlider(
+  var sliderConstructor =
+      opt_seekMark ? MediaControls.PreciseSlider : MediaControls.Slider;
+
+  this.progressSlider_ = new sliderConstructor(
       this.createControl('progress', timeControls),
       0, /* value */
       MediaControls.PROGRESS_RANGE,
@@ -232,8 +235,10 @@ MediaControls.prototype.attachMedia = function(mediaElement) {
   // Reset the UI.
   this.playButton_.classList.remove('playing');
   this.displayProgress_(0, 1);
-  /* Copy the volume from the UI to the media element. */
-  this.onVolumeChange_(this.volume_.getValue());
+  if (this.volume_) {
+    /* Copy the volume from the UI to the media element. */
+    this.onVolumeChange_(this.volume_.getValue());
+  }
 
   this.container_.classList.add('disabled');
 };
@@ -282,7 +287,8 @@ MediaControls.prototype.onMediaDuration_ = function() {
 
   this.duration_.textContent = valueToString(1);
 
-  this.progressSlider_.setValueToStringFunction(valueToString);
+  if (this.progressSlider_.setValueToStringFunction)
+    this.progressSlider_.setValueToStringFunction(valueToString);
 };
 
 MediaControls.prototype.onMediaProgress_ = function(e) {
@@ -592,7 +598,7 @@ function VideoControls(containerElement, onMediaError,
 
   this.initPlayButton();
 
-  this.initTimeControls();
+  this.initTimeControls(true /* show seek mark */);
 
   this.initVolumeControls();
 
@@ -645,4 +651,32 @@ VideoControls.prototype.togglePlayStateWithFeedback = function(e) {
       delay(hideStatusIcon, 1000);  /* Twice the animation duration. */
     });
   });
+};
+
+
+/**
+ * Create audio controls.
+ *
+ * @param {HTMLElement} container
+ * @param {function(boolean)} advanceTrack Parameter: true=forward.
+ * @constructor
+ */
+function AudioControls(container, advanceTrack) {
+  MediaControls.call(this, container, null /* onError */);
+
+  this.container_.classList.add('audio-controls');
+
+  this.advanceTrack_ =  advanceTrack;
+
+  this.initPlayButton();
+  this.initTimeControls(false /* no seek mark */);
+  /* No volume controls */
+  this.createButton('previous', this.advanceTrack_.bind(null, false));
+  this.createButton('next', this.advanceTrack_.bind(null, true));
+}
+
+AudioControls.prototype = { __proto__: MediaControls.prototype };
+
+AudioControls.prototype.onMediaComplete = function() {
+  this.advanceTrack_(true);
 };

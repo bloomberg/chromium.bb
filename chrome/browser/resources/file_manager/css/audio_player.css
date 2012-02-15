@@ -1,0 +1,239 @@
+/*
+ * Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+body {
+  padding: 0;
+}
+
+.audio-player {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+
+  color: white;
+  background-color: #1d1d1d;
+
+  font-family: Open Sans,Droid Sans Fallback,sans-serif;
+  font-size: 13pt;
+}
+
+/* Title buttons.
+   In the collapsed/single-track mode they overlap the first track. */
+
+.title-button {
+  position: absolute;
+  width: 29px;
+  height: 29px;
+  top: 0;
+  opacity: 0.4;
+  cursor: pointer;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+.title-button:hover {
+  background-color: #3c7eff !important;
+  opacity: 1;
+}
+
+.audio-player:not(.collapsed):not(.single-track) > .title-button {
+  background-color: #1f1f1f;
+}
+
+.title-button.close {
+  right: 0;
+  background-image: url(../images/media/media_close.png);
+}
+
+.title-button.collapse {
+  right: 29px;
+  background-image: url(../images/media/media_collapse.png);
+}
+
+.collapsed .title-button.collapse {
+  background-image: url(../images/media/media_expand.png);
+}
+
+.single-track .title-button.collapse {
+  display: none;
+}
+
+/* Playlist. */
+
+.audio-player > .playlist {
+  position: absolute;
+
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+  top: -1px;  /* Hide the border in the collapsed state. */
+  left: 0;
+  right: 0;
+  bottom: 35px;  /* Room for the controls bar. */
+
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-box-align: center;
+  -webkit-box-pack: start;
+
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.audio-player:not(.collapsed):not(.single-track) > .playlist {
+  top: 29px;  /* Room for the title buttons. */
+}
+
+.track {
+  width: 100%;
+  height: 58px;
+
+  display: none;
+  -webkit-box-orient: horizontal;
+  -webkit-box-align: center;
+  -webkit-box-pack: start;
+}
+
+.audio-player:not(.collapsed):not(.single-track) .track,
+.track.selected {
+  display: -webkit-box;
+}
+
+.track.selected {
+  background-color: #2d2d2d;
+}
+
+.track:hover {
+  background-color: #272727 !important;
+}
+
+.track .art {
+  width: 48px;
+  height: 48px;
+  margin: 4px 8px 4px 4px;
+}
+
+.track .data {
+  width: 220px;
+  margin-right: 4px;
+
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-box-pack: center;
+
+  opacity: 0.7;
+}
+
+.track.selected .data {
+  opacity: 1;
+}
+
+.track .data .data-title,
+.track .data .data-artist {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.track .data .data-title {
+  font-weight: bold;
+}
+
+/* Controls bar. */
+
+.audio-controls {
+  position: absolute;
+
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 30px;
+  padding: 0 5px 4px 10px;
+
+  background-color: #2D2D2D;
+
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+}
+
+.audio-controls .time-controls {
+  margin-left: 12px;
+  margin-right: 10px;
+}
+
+.media-button.previous {
+  background-image: url(../images/media/media_previous.png);
+}
+
+.media-button.next {
+  background-image: url(../images/media/media_next.png);
+}
+
+.single-track .media-button.next,
+.single-track .media-button.previous {
+  display: none;
+}
+
+/* Customized scrollbar for the playlist. */
+
+::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+
+::-webkit-scrollbar-button {
+  height: 0px;
+  width: 0px;
+}
+
+::-webkit-scrollbar-thumb {
+  min-height: 28px;
+  padding-top: 100px;
+  background-clip: padding-box;
+  background-color: rgba(255,255,255,0.05);
+  -webkit-box-shadow: inset 1px 1px 0px rgba(0,0,0,0.10),
+                      inset 0px -1px 0px  rgba(0,0,0,0.07);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255,255,255,0.13);
+  -webkit-box-shadow: inset 1px 1px 1px rgba(0,0,0,0.25);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background-color: rgba(255,255,255,0.2);
+  -webkit-box-shadow: inset 1px 1px 3px rgba(0,0,0,0.35);
+}
+
+::-webkit-scrollbar-thumb:vertical {
+  border-top: 0px solid transparent;
+  border-bottom: 0px solid transparent;
+  border-right: 0px solid transparent;
+  border-left: 5px solid transparent;
+}
+
+::-webkit-scrollbar-track:hover {
+  background-color: rgba(0,0,0,0.05);
+   -webkit-box-shadow: inset 1px 0px 0px  rgba(0,0,0,0.10);
+}
+
+::-webkit-scrollbar-track:active {
+  background-color: rgba(0,0,0,0.05);
+  -webkit-box-shadow: inset 1px 0px 0px  rgba(0,0,0,0.14),
+                      inset -1px -1px 0px  rgba(0,0,0,0.07);
+}
+
+::-webkit-scrollbar-track:vertical {
+  border-right: 0px solid transparent;
+  border-left: 5px solid transparent;
+  background-clip: padding-box;
+  background-color: transparent;
+}
