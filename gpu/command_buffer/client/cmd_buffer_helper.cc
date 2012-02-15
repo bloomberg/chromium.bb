@@ -115,6 +115,10 @@ bool CommandBufferHelper::Finish() {
   if (!usable()) {
     return false;
   }
+  // If there is no work just exit.
+  if (put_ == get_offset()) {
+    return true;
+  }
   GPU_DCHECK(HaveRingBuffer());
   do {
     // Do not loop forever if the flush fails, meaning the command buffer reader
