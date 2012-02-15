@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/synchronization/lock.h"
 #include "base/version.h"
 #include "base/win/iat_patch_function.h"
 #include "base/win/registry.h"
@@ -126,6 +127,45 @@ void ClearSavedKeyState() {
   memset(g_saved_key_state, 0, sizeof(g_saved_key_state));
 }
 
+// Helper objects for patching VirtualQuery, VirtualAlloc, VirtualProtect.
+base::LazyInstance<base::win::IATPatchFunction> g_iat_patch_virtual_alloc =
+    LAZY_INSTANCE_INITIALIZER;
+LPVOID (WINAPI *g_iat_orig_virtual_alloc)(LPVOID address,
+                                          SIZE_T size,
+                                          DWORD allocation_type,
+                                          DWORD protect);
+
+base::LazyInstance<base::win::IATPatchFunction> g_iat_patch_virtual_protect =
+    LAZY_INSTANCE_INITIALIZER;
+BOOL (WINAPI *g_iat_orig_virtual_protect)(LPVOID address,
+                                          SIZE_T size,
+                                          DWORD new_protect,
+                                          PDWORD old_protect);
+
+base::LazyInstance<base::win::IATPatchFunction> g_iat_patch_virtual_free =
+    LAZY_INSTANCE_INITIALIZER;
+BOOL (WINAPI *g_iat_orig_virtual_free)(LPVOID address,
+                                       SIZE_T size,
+                                       DWORD free_type);
+
+const size_t kMaxPluginExecMemSize = 64 * 1024 * 1024;  // 64mb.
+const DWORD kExecPageMask = PAGE_EXECUTE | PAGE_EXECUTE_READ |
+                            PAGE_EXECUTE_READWRITE;
+static volatile intptr_t g_max_exec_mem_size;
+static intptr_t g_exec_mem_size = 0;
+static scoped_ptr<base::Lock> g_exec_mem_lock;
+
+size_t UpdateExecMemSize(intptr_t size) {
+  base::AutoLock locked(*g_exec_mem_lock);
+  g_exec_mem_size += size;
+  // Floor to zero since shutdown may unmap pages created before our hooks.
+  if (g_exec_mem_size < 0)
+    g_exec_mem_size = 0;
+  if (g_exec_mem_size > g_max_exec_mem_size)
+    g_max_exec_mem_size = g_exec_mem_size;
+
+  return g_exec_mem_size;
+}
 
 // http://crbug.com/16114
 // Enforces providing a valid device context in NPWindow, so that NPP_SetWindow
@@ -307,6 +347,71 @@ SHORT WINAPI WebPluginDelegateImpl::GetKeyStatePatch(int vkey) {
   return g_iat_orig_get_key_state(vkey);
 }
 
+// We need to track RX memory usage in plugins to prevent JIT spraying attacks.
+// This is done by hooking VirtualAlloc, VirtualProtect, and VirtualFree.
+LPVOID WINAPI WebPluginDelegateImpl::VirtualAllocPatch(LPVOID address,
+                                                       SIZE_T size,
+                                                       DWORD allocation_type,
+                                                       DWORD protect) {
+  void* p = g_iat_orig_virtual_alloc(address, size, allocation_type, protect);
+  if (size && p && (protect & kExecPageMask)) {
+    bool limit_exceeded = UpdateExecMemSize(static_cast<intptr_t>(size)) >
+                          kMaxPluginExecMemSize;
+#ifndef NDEBUG  // TODO(jschuh): Do this in release after we get numbers.
+    if (limit_exceeded)
+      ::DebugBreak();
+#endif
+  }
+  return p;
+}
+
+BOOL WINAPI WebPluginDelegateImpl::VirtualProtectPatch(LPVOID address,
+                                                       SIZE_T size,
+                                                       DWORD new_protect,
+                                                       PDWORD old_protect) {
+  if (g_iat_orig_virtual_protect(address, size, new_protect, old_protect)) {
+    bool is_exec = !!(new_protect & kExecPageMask);
+    bool was_exec = !!(*old_protect & kExecPageMask);
+    if (is_exec && !was_exec) {
+      bool limit_exceeded = UpdateExecMemSize(static_cast<intptr_t>(size)) >
+                            kMaxPluginExecMemSize;
+#ifndef NDEBUG  // TODO(jschuh): Do this in release after we get numbers.
+      if (limit_exceeded)
+        ::DebugBreak();
+#endif
+    } else if (!is_exec && was_exec) {
+      UpdateExecMemSize(-(static_cast<intptr_t>(size)));
+    }
+
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+BOOL WINAPI WebPluginDelegateImpl::VirtualFreePatch(LPVOID address,
+                                                    SIZE_T size,
+                                                    DWORD free_type) {
+  MEMORY_BASIC_INFORMATION mem_info;
+  if (::VirtualQuery(address, &mem_info, sizeof(mem_info))) {
+    size_t exec_size = 0;
+    void* base_address = mem_info.AllocationBase;
+    do {
+      if (mem_info.Protect & kExecPageMask)
+        exec_size += mem_info.RegionSize;
+      BYTE* next = reinterpret_cast<BYTE*>(mem_info.BaseAddress) +
+          mem_info.RegionSize;
+      if (!::VirtualQuery(next, &mem_info, sizeof(mem_info)))
+        break;
+    } while (base_address == mem_info.AllocationBase);
+
+    if (exec_size)
+      UpdateExecMemSize(-(static_cast<intptr_t>(exec_size)));
+  }
+
+  return g_iat_orig_virtual_free(address, size, free_type);
+}
+
 WebPluginDelegateImpl::WebPluginDelegateImpl(
     gfx::PluginWindowHandle containing_view,
     PluginInstance *instance)
@@ -351,7 +456,8 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
     if (filename == kBuiltinFlashPlugin &&
         base::win::GetVersion() >= base::win::VERSION_VISTA) {
       quirks_ |= PLUGIN_QUIRK_REPARENT_IN_BROWSER |
-                 PLUGIN_QUIRK_PATCH_GETKEYSTATE;
+                 PLUGIN_QUIRK_PATCH_GETKEYSTATE |
+                 PLUGIN_QUIRK_PATCH_VM_API;
     }
     quirks_ |= PLUGIN_QUIRK_EMULATE_IME;
   } else if (filename == kAcrobatReaderPlugin) {
@@ -516,6 +622,32 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
         WebPluginDelegateImpl::GetKeyStatePatch);
   }
 
+  // Hook the VM calls so we can track the amount of executable memory being
+  // allocated by Flash (and potentially other plugins).
+  if (quirks_ & PLUGIN_QUIRK_PATCH_VM_API) {
+    if (!g_exec_mem_lock.get())
+      g_exec_mem_lock.reset(new base::Lock());
+
+    if (!g_iat_patch_virtual_alloc.Pointer()->is_patched()) {
+      g_iat_orig_virtual_alloc = ::VirtualAlloc;
+      g_iat_patch_virtual_alloc.Pointer()->Patch(
+          L"gcswf32.dll", "kernel32.dll", "VirtualAlloc",
+          WebPluginDelegateImpl::VirtualAllocPatch);
+    }
+    if (!g_iat_patch_virtual_protect.Pointer()->is_patched()) {
+      g_iat_orig_virtual_protect = ::VirtualProtect;
+      g_iat_patch_virtual_protect.Pointer()->Patch(
+          L"gcswf32.dll", "kernel32.dll", "VirtualProtect",
+          WebPluginDelegateImpl::VirtualProtectPatch);
+    }
+    if (!g_iat_patch_virtual_free.Pointer()->is_patched()) {
+      g_iat_orig_virtual_free = ::VirtualFree;
+      g_iat_patch_virtual_free.Pointer()->Patch(
+          L"gcswf32.dll", "kernel32.dll", "VirtualFree",
+          WebPluginDelegateImpl::VirtualFreePatch);
+    }
+  }
+
   return true;
 }
 
@@ -526,6 +658,12 @@ void WebPluginDelegateImpl::PlatformDestroyInstance() {
   // Unpatch if this is the last plugin instance.
   if (instance_->plugin_lib()->instance_count() != 1)
     return;
+
+  // Pass back the stats for max executable memory.
+  if (quirks_ & PLUGIN_QUIRK_PATCH_VM_API) {
+    plugin_->ReportExecutableMemory(g_max_exec_mem_size);
+    g_max_exec_mem_size = 0;
+  }
 
   if (g_iat_patch_set_cursor.Pointer()->is_patched())
     g_iat_patch_set_cursor.Pointer()->Unpatch();

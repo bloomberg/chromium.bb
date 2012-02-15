@@ -18,6 +18,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -102,6 +103,11 @@ void PluginProcessHost::OnReparentPluginWindow(HWND window, HWND parent) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(ReparentPluginWindowHelper, window, parent));
+}
+
+void PluginProcessHost::OnReportExecutableMemory(size_t size) {
+  // TODO(jschuh): move this into the plugin process once it supports UMA.
+  UMA_HISTOGRAM_MEMORY_KB("Plugin.ExecPageSizeKB", size / 1024);
 }
 #endif  // defined(OS_WIN)
 
@@ -302,6 +308,8 @@ bool PluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
                         OnPluginWindowDestroyed)
     IPC_MESSAGE_HANDLER(PluginProcessHostMsg_ReparentPluginWindow,
                         OnReparentPluginWindow)
+    IPC_MESSAGE_HANDLER(PluginProcessHostMsg_ReportExecutableMemory,
+                        OnReportExecutableMemory)
 #endif
 #if defined(TOOLKIT_USES_GTK)
     IPC_MESSAGE_HANDLER(PluginProcessHostMsg_MapNativeViewId,

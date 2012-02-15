@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -96,6 +96,9 @@ IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_PluginWindowDestroyed,
 IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_ReparentPluginWindow,
                      HWND /* window */,
                      HWND /* parent */)
+
+IPC_MESSAGE_CONTROL1(PluginProcessHostMsg_ReportExecutableMemory,
+                     uint32_t /* size */)
 #endif
 
 #if defined(USE_X11)

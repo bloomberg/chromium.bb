@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,6 +84,7 @@ class WebPlugin {
   // Cancels a pending request.
   virtual void SetWindowlessPumpEvent(HANDLE pump_messages_event) = 0;
   virtual void ReparentPluginWindow(HWND window, HWND parent) = 0;
+  virtual void ReportExecutableMemory(size_t size) = 0;
 #endif
   virtual void CancelResource(unsigned long id) = 0;
   virtual void Invalidate() = 0;
