@@ -1102,6 +1102,21 @@
     ['OS=="win"',
       { 'targets': [
         {
+          # For historical reasons, chrome/chrome.sln has been the entry point
+          # for new Chrome developers. To assist development, include several
+          # core unittests that are otherwise only accessible side-by-side with
+          # chrome via all/all.sln.
+          'target_name': 'unittests',
+          'type': 'none',
+          'dependencies': [
+            '../base/base.gyp:base_unittests',
+            '../content/content.gyp:content_browsertests',
+            '../content/content.gyp:content_unittests',
+            '../net/net.gyp:net_unittests',
+            '../ui/ui.gyp:ui_unittests',
+          ],
+        },
+        {
           'target_name': 'chrome_version_resources',
           'type': 'none',
           'dependencies': [
