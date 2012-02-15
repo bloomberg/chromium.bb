@@ -6,6 +6,7 @@
 
 #include "base/atomicops.h"
 #include "base/bind.h"
+#include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
@@ -184,30 +185,21 @@ class BrowserThreadMessageLoopProxy : public base::MessageLoopProxy {
   }
 
   // MessageLoopProxy implementation.
-  virtual bool PostTask(const tracked_objects::Location& from_here,
-                        const base::Closure& task) {
-    return BrowserThread::PostTask(id_, from_here, task);
-  }
-
-  virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
-                               const base::Closure& task, int64 delay_ms) {
+  virtual bool PostDelayedTask(
+      const tracked_objects::Location& from_here,
+      const base::Closure& task, int64 delay_ms) OVERRIDE{
     return BrowserThread::PostDelayedTask(id_, from_here, task, delay_ms);
-  }
-
-  virtual bool PostNonNestableTask(const tracked_objects::Location& from_here,
-                                   const base::Closure& task) {
-    return BrowserThread::PostNonNestableTask(id_, from_here, task);
   }
 
   virtual bool PostNonNestableDelayedTask(
       const tracked_objects::Location& from_here,
       const base::Closure& task,
-      int64 delay_ms) {
+      int64 delay_ms) OVERRIDE {
     return BrowserThread::PostNonNestableDelayedTask(id_, from_here, task,
                                                      delay_ms);
   }
 
-  virtual bool BelongsToCurrentThread() {
+  virtual bool RunsTasksOnCurrentThread() const OVERRIDE {
     return BrowserThread::CurrentlyOn(id_);
   }
 

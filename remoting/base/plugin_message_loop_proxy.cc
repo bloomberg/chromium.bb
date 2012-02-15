@@ -24,12 +24,6 @@ void PluginMessageLoopProxy::Detach() {
   }
 }
 
-bool PluginMessageLoopProxy::PostTask(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task) {
-  return PostDelayedTask(from_here, task, 0);
-}
-
 bool PluginMessageLoopProxy::PostDelayedTask(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
@@ -44,13 +38,6 @@ bool PluginMessageLoopProxy::PostDelayedTask(
       delay_ms, &PluginMessageLoopProxy::TaskSpringboard, springpad_closure);
 }
 
-bool PluginMessageLoopProxy::PostNonNestableTask(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task) {
-  // All tasks running on this message loop are non-nestable.
-  return PostTask(from_here, task);
-}
-
 bool PluginMessageLoopProxy::PostNonNestableDelayedTask(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
@@ -59,7 +46,7 @@ bool PluginMessageLoopProxy::PostNonNestableDelayedTask(
   return PostDelayedTask(from_here, task, delay_ms);
 }
 
-bool PluginMessageLoopProxy::BelongsToCurrentThread() {
+bool PluginMessageLoopProxy::RunsTasksOnCurrentThread() const {
   // In pepper plugins ideally we should use pp::Core::IsMainThread,
   // but it is problematic because we would need to keep reference to
   // Core somewhere, e.g. make the delegate ref-counted.
