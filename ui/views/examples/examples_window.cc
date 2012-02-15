@@ -7,11 +7,12 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
+#include "base/memory/scoped_vector.h"
 #include "base/process_util.h"
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
-#include "ui/base/ui_base_paths.h"
 #include "ui/base/models/combobox_model.h"
+#include "ui/base/ui_base_paths.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
@@ -69,7 +70,7 @@ class ComboboxModelExampleList : public ui::ComboboxModel {
   }
 
  private:
-  std::vector<ExampleBase*> example_list_;
+  ScopedVector<ExampleBase> example_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ComboboxModelExampleList);
 };
