@@ -124,7 +124,7 @@ html[dir=rtl] #pointer-sensitivity-more {
 
 #network-list {
   min-height: 0;
-  width: 300px;
+  width: 320px;
 }
 
 .network-group {
@@ -142,10 +142,34 @@ html[dir=rtl] #pointer-sensitivity-more {
 }
 
 .network-icon {
-  background: center center no-repeat;
+  background-position: left top;
   display: block;
-  height: 42px;
-  width: 50px;
+  height: 23px;
+  margin-right: 8px;
+  width: 23px;
+}
+
+@-webkit-keyframes connecting-animation {
+  0% { background-position: 0 25%; }
+  12.5% { background-position: 0 50%; }
+  25%  { background-position: 0 75%; }
+  37.5%  { background-position: 0 100%; }
+  50%  { background-position: 0 100%; }
+  62.5%  { background-position: 0 75%; }
+  75%  { background-position: 0 50%; }
+  87.5%  { background-position: 0 25%; }
+}
+
+.network-wifi {
+  background-image: url('chrome://theme/IDR_STATUSBAR_NETWORK_ARCS');
+}
+
+.network-cellular {
+  background-image: url('chrome://theme/IDR_STATUSBAR_NETWORK_BARS');
+}
+
+.network-connecting {
+  -webkit-animation: connecting-animation 1s step-end infinite;
 }
 
 .network-title {
@@ -154,34 +178,21 @@ html[dir=rtl] #pointer-sensitivity-more {
   padding-top: 6px;
 }
 
-.network-selector {
-  background: right center no-repeat;
-  background-image: url("../shared/images/select.png");
+.network-subtitle {
   color: #333;
   display: inline-block;
   line-height: 100%;
+  max-width: 260px;
   opacity: 0.4;
-  overflow: hidden;
-  padding-right: 20px;
-}
-
-.network-selector-label {
-  -webkit-box-sizing: content-box;
-  display: inline-block;
-  max-width: 220px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.network-group[connecting] .network-selector {
-  background-image: none;
-}
-
-.network-selector > .inline-spinner {
-  margin: 0 8px;
-  height: 14px;
-  width: 14px;
+.network-selector {
+  background: right center no-repeat;
+  background-image: url("../shared/images/select.png");
+  padding-right: 20px;
 }
 
 .network-menu {
@@ -191,7 +202,7 @@ html[dir=rtl] #pointer-sensitivity-more {
   max-height: 500px;
   overflow-y: auto;
   position: absolute;
-  width: 300px;
+  width: 320px;
   z-index: 1;
 }
 
@@ -209,7 +220,7 @@ html[dir=rtl] #pointer-sensitivity-more {
   text-overflow: ellipsis;
   vertical-align: middle;
   white-space: nowrap;
-  width: 260px;
+  width: 280px;
 }
 
 .network-menu-header {
@@ -230,4 +241,3 @@ html[dir=rtl] #pointer-sensitivity-more {
 .network-menu > hr {
   opacity: 0.4;
 }
-

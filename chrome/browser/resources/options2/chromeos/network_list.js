@@ -35,6 +35,7 @@ cr.define('options.network', function() {
   /**
    * Create an element in the network list for controlling network
    * connectivity.
+   * @param{Object} data Description of the network list or command.
    * @constructor
    */
   function NetworkListItem(data) {
@@ -47,7 +48,7 @@ cr.define('options.network', function() {
   }
 
   /**
-   * Decorates an element as a NetworkList.
+   * Decorate an element as a NetworkListItem.
    * @param{!Element} el The element to decorate.
    */
   NetworkListItem.decorate = function(el) {
@@ -59,20 +60,92 @@ cr.define('options.network', function() {
     __proto__: ListItem.prototype,
 
     /**
-     * Description of the network.
-     * @type {{key: string,
-     *         networkList: Array}}
+     * Description of the network group or control.
+     * @type{Object.<string,Object>}
      * @private
      */
     data_: null,
+
+    /**
+     * Element for the control's subtitle.
+     * @type{Element|null}
+     * @private
+     */
+    subtitle_: null,
+
+    /**
+     * Icon for the network control.
+     * @type{Element|null}
+     * @private
+     */
+    icon_: null,
+
+    /**
+     * Indicates if in the process of connecting to a network.
+     * @type{boolean}
+     * @private
+     */
+    connecting_: false,
+
+    /**
+     * Description of the network control.
+     * @type{Object}
+     */
+    get data() {
+      return this.data_;
+    },
+
+    /**
+     * Text label for the subtitle.
+     * @type{string}
+     */
+    set subtitle(text) {
+      this.subtitle_.textContent = text;
+    },
+
+    /**
+     * URL for the network icon.
+     * @type{string}
+     */
+    set iconURL(iconURL) {
+      this.icon_.style.backgroundImage = url(iconURL);
+    },
+
+    /**
+     * Type of network icon.  Each type corresponds to a CSS rule.
+     * @type{string}
+     */
+    set iconType(type) {
+      this.icon_.classList.add('network-' + type);
+    },
+
+    /**
+     * Indicates if the network is in the process of being connected.
+     * @type{boolean}
+     */
+    set connecting(state) {
+      this.connecting_ = state;
+      if (state)
+        this.icon_.classList.add('network-connecting');
+      else
+        this.icon_.classList.remove('network-connecting');
+    },
+
+    get connecting() {
+      return this.connecting_;
+    },
+
+    showSelector: function() {
+      this.subtitle_.classList.add('network-selector');
+    },
 
     /* @inheritDoc */
     decorate: function() {
       ListItem.prototype.decorate.call(this);
       this.className = 'network-group';
-      var networkIcon = this.ownerDocument.createElement('div');
-      networkIcon.className = 'network-icon';
-      this.appendChild(networkIcon);
+      this.icon_ = this.ownerDocument.createElement('div');
+      this.icon_.className = 'network-icon';
+      this.appendChild(this.icon_);
       var textContent = this.ownerDocument.createElement('div');
       this.appendChild(textContent);
       var categoryLabel = this.ownerDocument.createElement('div');
@@ -80,47 +153,65 @@ cr.define('options.network', function() {
       categoryLabel.className = 'network-title';
       categoryLabel.textContent = templateData[title];
       textContent.appendChild(categoryLabel);
-      var selector = this.ownerDocument.createElement('div');
-      selector.className = 'network-selector';
-      textContent.appendChild(selector);
-      var selectorLabel = this.ownerDocument.createElement('div');
-      selectorLabel.className = 'network-selector-label';
-      selector.appendChild(selectorLabel);
-      if (this.data_.networkList) {
-        this.createMenu_();
-        // TODO(kevers): Generalize method of setting default label.
-        var defaultMessage = this.data_.key == 'wifi' ?
-            'networkOffline' : 'joinNetwork';
-        selectorLabel.textContent = templateData[defaultMessage];
-        var list = this.data_.networkList;
-        for (var i = 0; i < list.length; i++) {
-          var networkDetails = list[i];
-          if (networkDetails.connecting || networkDetails.connected) {
-            selectorLabel.textContent = networkDetails.networkName;
-            networkIcon.style.backgroundImage = url(networkDetails.iconURL);
-            // Only break when we see a connecting network as it is possible to
-            // have a connected network and a connecting network at the same
-            // time.
-            if (networkDetails.connecting) {
-              var spinner = this.ownerDocument.createElement('div');
-              spinner.className = 'inline-spinner';
-              selector.appendChild(spinner);
-              this.connecting = true;
-              break;
-            }
+      this.subtitle_ = this.ownerDocument.createElement('div');
+      this.subtitle_.className = 'network-subtitle';
+      textContent.appendChild(this.subtitle_);
+    },
+  };
+
+  /**
+   * Creates a control for selecting or configuring a network connection based
+   * on the type of connection (e.g. wifi versus vpn).
+   * @param{{key: string,
+   *         networkList: Array.<Object>} data  Description of the network.
+   * @constructor
+   */
+  function NetworkSelectorItem(data) {
+    var el = new NetworkListItem(data);
+    el.__proto__ = NetworkSelectorItem.prototype;
+    el.decorate();
+    return el;
+  }
+
+  NetworkSelectorItem.prototype = {
+    __proto__: NetworkListItem.prototype,
+
+    /* @inheritDoc */
+    decorate: function() {
+      this.createMenu_();
+      // TODO(kevers): Generalize method of setting default label.
+      var defaultMessage = this.data_.key == 'wifi' ?
+          'networkOffline' : 'networkNotConnected';
+      this.subtitle = templateData[defaultMessage];
+      var list = this.data_.networkList;
+      var candidateURL = null;
+      for (var i = 0; i < list.length; i++) {
+        var networkDetails = list[i];
+        if (networkDetails.connecting || networkDetails.connected) {
+          this.subtitle = networkDetails.networkName;
+          candidateURL = networkDetails.iconURL;
+          // Only break when we see a connecting network as it is possible to
+          // have a connected network and a connecting network at the same
+          // time.
+          if (networkDetails.connecting) {
+            this.connecting = true;
+            candidateURL = null;
+            break;
           }
         }
       }
-      // TODO(kevers): Add default icon when no network is connected or
-      // connecting.
-      // TODO(kevers): Add support for other types of list items including a
-      // toggle control for airplane mode, and a control for a new conenction
-      // dialog.
-
-      this.addEventListener('click', function() {
-        if (!this.connecting)
+      if (candidateURL)
+        this.iconURL = candidateURL;
+      else
+        this.iconType = this.data.key;
+      if(!this.connecting) {
+        this.addEventListener('click', function() {
           this.showMenu();
-      });
+        });
+        this.showSelector();
+      }
+      // TODO(kevers): Add default icon for VPN when disconnected or in the
+      // process of connecting.
     },
 
     /**
@@ -250,7 +341,7 @@ cr.define('options.network', function() {
      * @private
      */
     getMenuName_: function() {
-      return this.data_.key + '-netowrk-menu';
+      return this.data_.key + '-network-menu';
     },
 
     /**
@@ -272,6 +363,34 @@ cr.define('options.network', function() {
     },
   };
 
+
+  /**
+   * Creates a button-like control for configurating internet connectivity.
+   * @param{{key: string,
+   *         subtitle: string,
+   *         command: function} data  Description of the network control.
+   * @constructor
+   */
+  function NetworkButtonItem(data) {
+    var el = new NetworkListItem(data);
+    el.__proto__ = NetworkButtonItem.prototype;
+    el.decorate();
+    return el;
+  }
+
+  NetworkButtonItem.prototype = {
+    __proto__: NetworkListItem.prototype,
+
+    /* @inheritDoc */
+    decorate: function() {
+      if (this.data.subtitle)
+        this.subtitle = this.data.subtitle;
+      // TODO(kevers): Wire up the command.
+      // TODO(kevers): Add icon.
+    },
+  };
+
+
   /**
    * A list of controls for manipulating network connectivity.
    * @constructor
@@ -286,6 +405,12 @@ cr.define('options.network', function() {
       List.prototype.decorate.call(this);
       this.addEventListener('blur', this.onBlur_);
       this.dataModel = new ArrayDataModel([]);
+      this.update({key: 'wifi', networkList: []});
+      this.update({key: 'cellular', networkList: []});
+      this.update({key: 'vpn', networkList: []});
+      this.update({key: 'airplaneMode',
+                   subtitle:  localStrings.getString('airplaneModeLabel'),
+                   command: toggleAirplaneMode_});
     },
 
     /**
@@ -328,7 +453,10 @@ cr.define('options.network', function() {
 
     /** @inheritDoc */
     createItem: function(entry) {
-      return new NetworkListItem(entry);
+      if (entry.networkList)
+        return new NetworkSelectorItem(entry);
+      if (entry.command)
+        return new NetworkButtonItem(entry);
     },
   };
 
@@ -338,6 +466,9 @@ cr.define('options.network', function() {
    *     corresponding state.
    */
   NetworkList.refreshNetworkData = function(data) {
+    // TODO(kevers):  Add ethernet if connected.
+    // TODO(kevers): Store off list of remembered networks for use in the
+    // "preferred networks" tab of the "More options..." dialog.
     loadData_('wifi',
               data.wirelessList,
               function(data) {
@@ -352,7 +483,7 @@ cr.define('options.network', function() {
   };
 
   /**
-   * Updates the list of available networks and their status filtered by
+   * Updates the list of available networks and their status, filtered by
    * network type.
    * @param{string} category The type of network.
    * @param{Array} list The list of networks and their status.
@@ -385,11 +516,12 @@ cr.define('options.network', function() {
   }
 
   /**
-   * Whether the underlying network is currently connecting.
-   * Only used for display purpose.
-   * @type {boolean}
+   * Toggles airplane mode.
+   * @private
    */
-  cr.defineProperty(NetworkListItem, 'connecting', cr.PropertyKind.BOOL_ATTR);
+  function toggleAirplaneMode_() {
+    // TODO(kevers): Implement me.
+  }
 
   // Export
   return {
