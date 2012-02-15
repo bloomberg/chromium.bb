@@ -179,7 +179,13 @@ TEST_F(OAuth2AccessTokenFetcherTest, DISABLED_MakeGetAccessTokenBody) {
   }
 }
 
-TEST_F(OAuth2AccessTokenFetcherTest, ParseGetAccessTokenResponse) {
+// http://crbug.com/114215
+#if defined(OS_WIN)
+#define MAYBE_ParseGetAccessTokenResponse DISABLED_ParseGetAccessTokenResponse
+#else
+#define MAYBE_ParseGetAccessTokenResponse ParseGetAccessTokenResponse
+#endif // defined(OS_WIN)
+TEST_F(OAuth2AccessTokenFetcherTest, MAYBE_ParseGetAccessTokenResponse) {
   {  // No body.
     TestURLFetcher url_fetcher(0, GURL("www.google.com"), NULL);
 
