@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -20,6 +20,9 @@ source ../../pnacl/scripts/common-tools.sh
 readonly NACL_ROOT="$(GetAbsolutePath "../../")"
 SetScriptPath "$(pwd)/run_all.sh"
 SetLogDirectory "${NACL_ROOT}/toolchain/test-log"
+readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
+readonly TESTS_ARCHIVE=arm_spec.tar.gz
+
 
 ######################################################################
 # CONFIGURATION
@@ -664,70 +667,43 @@ TimedBuildAndRunBenchmarks() {
 }
 
 #@
-#@ ArchivedRunOnArmHW <user> <ip> <setup> [usual var-args for RunBenchmarks]
+#@ UploadArmBinaries <build name> <setup> [usual var-args for RunBenchmarks]
 #@
-#@   Copies ARM binaries built from a local QEMU run of spec to a remote
-#@   ARM machine, and runs the tests without QEMU.
+#@   Archives ARM binaries built from a local QEMU run of spec
 #@
 #@   Note: <setup> should be the QEMU setup (e.g., SetupPnaclArmOpt)
 #@   Note: As with the other modes in this script, this script should be
 #@   run from the directory of the script (not the native_client directory).
 #@
-ArchivedRunOnArmHW() {
-  local USER=$1
-  local ARM_MACHINE_IP=$2
-  # Assume binaries built w/ this setup (e.g. SetupPnaclArmOpt).
-  # We will use this to determine a setup that doesn't use Qemu.
-  local SPEC_SETUP=$3
-  local SPEC_SETUP_HW=${SPEC_SETUP}HW
-
+UploadArmBinaries() {
+  local BUILD_NAME=$1
   # The rest of args should be the usual var-args for RunBenchmarks.
-  shift 3
+  shift 1
   local BENCH_LIST=$(GetBenchmarkList "$@")
 
-  local TAR_TO=/tmp
-  local SEL_ARCHIVE_ZIPPED=arm_sel_ldr.tar.gz
-  local TESTS_ARCHIVE=arm_spec.tar
-  local TESTS_ARCHIVE_ZIPPED=arm_spec.tar.gz
-  local REMOTE_BUILD_DIR=/build/nacl_build_spec
+  local UNZIPPED_TAR=$(basename ${TESTS_ARCHIVE} .gz)
 
   # Switch to native_client directory (from tests/spec2k) so that
   # when we extract, the builder will have a more natural directory layout.
   local TAR_FROM="../.."
-  tar -C ${TAR_FROM} -czvf ${TAR_TO}/${SEL_ARCHIVE_ZIPPED} \
-    scons-out/opt-${SCONS_BUILD_PLATFORM}-arm/staging/sel_ldr \
-    scons-out/nacl_irt-arm/staging/irt_core.nexe
   # Carefully tar only the parts of the spec harness that we need.
   (cd ${TAR_FROM} ;
-    find tests/spec2k -type f -maxdepth 1 -print |
-    xargs tar --no-recursion -cvf ${TAR_TO}/${TESTS_ARCHIVE})
-  tar -C ${TAR_FROM} -rvf ${TAR_TO}/${TESTS_ARCHIVE} tests/spec2k/bin
+    find tests/spec2k -maxdepth 1 -type f -print |
+    xargs tar --no-recursion -cvf ${UNZIPPED_TAR})
+  tar -C ${TAR_FROM} -rvf ${UNZIPPED_TAR} tests/spec2k/bin
   for i in ${BENCH_LIST} ; do
-    tar -C ${TAR_FROM} -rvf ${TAR_TO}/${TESTS_ARCHIVE} tests/spec2k/$i
+    tar -C ${TAR_FROM} -rvf ${UNZIPPED_TAR} tests/spec2k/$i
   done
-  gzip -f ${TAR_TO}/${TESTS_ARCHIVE}
-
-  # Clean remote directory and copy over.
-  echo "==== Nuking remote build dir: ${REMOTE_BUILD_DIR}"
-  local CLEAN_CMD="(rm -rf ${REMOTE_BUILD_DIR} && \
-    mkdir -p ${REMOTE_BUILD_DIR})"
-  ssh ${USER}@${ARM_MACHINE_IP} ${CLEAN_CMD}
-  echo "==== Copying files to: ${REMOTE_BUILD_DIR}"
-  scp ${TAR_TO}/${SEL_ARCHIVE_ZIPPED} \
-      ${TAR_TO}/${TESTS_ARCHIVE_ZIPPED} \
-      ${USER}@${ARM_MACHINE_IP}:${REMOTE_BUILD_DIR}/.
-  rm ${TAR_TO}/${SEL_ARCHIVE_ZIPPED} ${TAR_TO}/${TESTS_ARCHIVE_ZIPPED}
-
-  # Now try to remotely run.
-  echo "Extracting to ${REMOTE_BUILD_DIR} and running"
-  local EXTRACT_RUN_CMD="(cd ${REMOTE_BUILD_DIR}; \
-    tar -xzvf ${SEL_ARCHIVE_ZIPPED} && \
-    tar -xzvf ${TESTS_ARCHIVE_ZIPPED}; \
-    cd tests/spec2k; \
-    ./run_all.sh RunTimedBenchmarks ${SPEC_SETUP_HW} $@)"
-  ssh ${USER}@${ARM_MACHINE_IP} ${EXTRACT_RUN_CMD}
+  gzip -f ${UNZIPPED_TAR}
+  (cd ${NACL_ROOT};
+    ${UP_DOWN_LOAD} UploadArmBinariesForHWBots ${BUILD_NAME} \
+      ${TESTS_ARCHIVE})
 }
 
+DownloadArmBinaries() {
+  (cd ${NACL_ROOT};
+    ${UP_DOWN_LOAD} DownloadArmBinariesForHWBots ${BUILD_NAME} ${TESTS_ARCHIVE})
+}
 
 #@
 #@ PopulateFromSpecHarness <path> <benchmark>*

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -91,11 +91,14 @@ readonly SO_DIR
 BUILD_ARCH=$(uname -m)
 BUILD_ARCH_X8632=false
 BUILD_ARCH_X8664=false
+BUILD_ARCH_ARM=false
 if [ "${BUILD_ARCH}" == "i386" ] ||
    [ "${BUILD_ARCH}" == "i686" ] ; then
   BUILD_ARCH_X8632=true
 elif [ "${BUILD_ARCH}" == "x86_64" ] ; then
   BUILD_ARCH_X8664=true
+elif [ "${BUILD_ARCH}" == "armv7l" ] ; then
+  BUILD_ARCH_ARM=true
 else
   echo "Unknown build arch '${BUILD_ARCH}'"
   exit -1
@@ -108,11 +111,14 @@ readonly BUILD_ARCH_X8664
 HOST_ARCH=${HOST_ARCH:-${BUILD_ARCH}}
 HOST_ARCH_X8632=false
 HOST_ARCH_X8664=false
+HOST_ARCH_ARM=false
 if [ "${HOST_ARCH}" == "i386" ] ||
    [ "${HOST_ARCH}" == "i686" ] ; then
   HOST_ARCH_X8632=true
 elif [ "${HOST_ARCH}" == "x86_64" ] ; then
   HOST_ARCH_X8664=true
+elif [ "${HOST_ARCH}" == "armv7l" ] ; then
+  HOST_ARCH_ARM=true
 else
   echo "Unknown host arch '${HOST_ARCH}'"
   exit -1
@@ -120,6 +126,7 @@ fi
 readonly HOST_ARCH
 readonly HOST_ARCH_X8632
 readonly HOST_ARCH_X8664
+readonly HOST_ARCH_ARM
 
 if [ "${BUILD_ARCH}" != "${HOST_ARCH}" ]; then
   if ! { ${BUILD_ARCH_X8664} && ${HOST_ARCH_X8632}; }; then

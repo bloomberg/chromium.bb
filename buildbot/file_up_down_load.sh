@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
@@ -144,7 +144,7 @@ ShowRecentArmUntrustedToolchains() {
 UploadArmBinariesForHWBots() {
   name=$1
   tarball=$2
-  Upload ${tarball} ${BASE_BETWEEN_BOTS}/${name}/build.tgz
+  Upload ${tarball} ${BASE_BETWEEN_BOTS}/${name}/$(basename ${tarball})
 }
 
 
@@ -152,7 +152,7 @@ DownloadArmBinariesForHWBots() {
   name=$1
   tarball=$2
   curl -L \
-     ${URL_PREFIX_RAW}/${BASE_BETWEEN_BOTS}/${name}/build.tgz \
+     ${URL_PREFIX_RAW}/${BASE_BETWEEN_BOTS}/${name}/$(basename ${tarball}) \
      -o ${tarball}
 }
 
@@ -163,7 +163,7 @@ DownloadArmBinariesForHWBots() {
 UploadArmBinariesForHWBotsTry() {
   name=$1
   tarball=$2
-  Upload ${tarball} ${BASE_BETWEEN_BOTS_TRY}/${name}/build.tgz
+  Upload ${tarball} ${BASE_BETWEEN_BOTS_TRY}/${name}/$(basename ${tarball})
 }
 
 
@@ -171,7 +171,7 @@ DownloadArmBinariesForHWBotsTry() {
   name=$1
   tarball=$2
   curl -L \
-     ${URL_PREFIX_RAW}/${BASE_BETWEEN_BOTS_TRY}/${name}/build.tgz \
+     ${URL_PREFIX_RAW}/${BASE_BETWEEN_BOTS_TRY}/${name}/$(basename ${tarball})\
      -o ${tarball}
 }
 

@@ -65,13 +65,13 @@ archive-for-hw-bots() {
     \( -name '*.[so]' -o -name '*.bc' -o -name '*.pexe' -o -name '*.ll' \) \
     -print0 | xargs -0 rm -f
 
-  tar cvfz arm.tgz scons-out/
+  tar cvfz arm-tcb.tgz scons-out/
 
   echo "@@@BUILD_STEP archive_binaries@@@"
   if [[ ${try} == "try" ]] ; then
-    ${UP_DOWN_LOAD} UploadArmBinariesForHWBotsTry ${name} arm.tgz
+    ${UP_DOWN_LOAD} UploadArmBinariesForHWBotsTry ${name} arm-tcb.tgz
   else
-    ${UP_DOWN_LOAD} UploadArmBinariesForHWBots ${name} arm.tgz
+    ${UP_DOWN_LOAD} UploadArmBinariesForHWBots ${name} arm-tcb.tgz
   fi
 }
 
@@ -82,14 +82,14 @@ unarchive-for-hw-bots() {
 
   echo "@@@BUILD_STEP fetch_binaries@@@"
   if [[ ${try} == "try" ]] ; then
-    ${UP_DOWN_LOAD} DownloadArmBinariesForHWBotsTry ${name} arm.tgz
+    ${UP_DOWN_LOAD} DownloadArmBinariesForHWBotsTry ${name} arm-tcb.tgz
   else
-    ${UP_DOWN_LOAD} DownloadArmBinariesForHWBots ${name} arm.tgz
+    ${UP_DOWN_LOAD} DownloadArmBinariesForHWBots ${name} arm-tcb.tgz
   fi
 
   echo "@@@BUILD_STEP untar_binaries@@@"
   rm -rf scons-out/
-  tar xvfz arm.tgz --no-same-owner
+  tar xvfz arm-tcb.tgz --no-same-owner
 }
 
 # Build with gyp - this only exercises the trusted TC and hence this only

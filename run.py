@@ -209,9 +209,8 @@ def main(argv):
 
 
 def RunSelLdr(args):
-  # TODO(pdox): If we are running this script on ARM, skip the emulator.
   prefix = []
-  if env.arch == 'arm':
+  if GetBuildArch().find('arm') == -1 and env.arch == 'arm':
     prefix = [ env.qemu, '-cpu', 'cortex-a8']
     args = ['-Q'] + args
 
