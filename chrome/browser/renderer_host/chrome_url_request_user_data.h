@@ -6,9 +6,13 @@
 #define CHROME_BROWSER_RENDERER_HOST_CHROME_URL_REQUEST_USER_DATA_H_
 #pragma once
 
-#include "net/url_request/url_request.h"
+#include "base/supports_user_data.h"
 
-class ChromeURLRequestUserData : public net::URLRequest::UserData {
+namespace net {
+class URLRequest;
+}
+
+class ChromeURLRequestUserData : public base::SupportsUserData::Data {
  public:
   bool is_prerender() const { return is_prerender_; }
   void set_is_prerender(bool is_prerender) { is_prerender_ = is_prerender; }

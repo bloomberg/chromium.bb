@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "net/url_request/url_request.h"
 #include "webkit/appcache/appcache.h"
 #include "webkit/appcache/appcache_backend_impl.h"
 #include "webkit/appcache/appcache_policy.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/renderer_host/chrome_url_request_user_data.h"
 
+#include "net/url_request/url_request.h"
+
 namespace {
 
 const char* const kKeyName = "chrome_url_request_user_data";

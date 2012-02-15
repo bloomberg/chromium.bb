@@ -92,7 +92,7 @@ class SSLHostStateTest : public testing::Test {
 };
 
 TEST_F(SSLHostStateTest, DidHostRunInsecureContent) {
-  SSLHostState state(NULL);
+  SSLHostState state;
 
   EXPECT_FALSE(state.DidHostRunInsecureContent("www.google.com", 42));
   EXPECT_FALSE(state.DidHostRunInsecureContent("www.google.com", 191));
@@ -116,7 +116,7 @@ TEST_F(SSLHostStateTest, QueryPolicy) {
       net::X509Certificate::CreateFromBytes(
           reinterpret_cast<const char*>(google_der), sizeof(google_der)));
 
-  SSLHostState state(NULL);
+  SSLHostState state;
 
   EXPECT_EQ(state.QueryPolicy(google_cert.get(), "www.google.com"),
             net::CertPolicy::UNKNOWN);

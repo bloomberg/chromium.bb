@@ -270,7 +270,7 @@ URLRequestTestDelayedStartJob*
 URLRequestTestDelayedStartJob::list_head_ = NULL;
 
 // Associated with an URLRequest to determine if the URLRequest gets deleted.
-class TestUserData : public net::URLRequest::UserData {
+class TestUserData : public base::SupportsUserData::Data {
  public:
   explicit TestUserData(bool* was_deleted)
       : was_deleted_(was_deleted) {
@@ -291,7 +291,7 @@ class TestResourceDispatcherHostDelegate
       : defer_start_(false) {
   }
 
-  void set_url_request_user_data(net::URLRequest::UserData* user_data) {
+  void set_url_request_user_data(base::SupportsUserData::Data* user_data) {
     user_data_.reset(user_data);
   }
 
@@ -321,7 +321,7 @@ class TestResourceDispatcherHostDelegate
 
  private:
   bool defer_start_;
-  scoped_ptr<net::URLRequest::UserData> user_data_;
+  scoped_ptr<base::SupportsUserData::Data> user_data_;
 };
 
 class ResourceDispatcherHostTest : public testing::Test,

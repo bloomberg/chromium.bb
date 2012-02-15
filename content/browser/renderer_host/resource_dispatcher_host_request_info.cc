@@ -7,6 +7,7 @@
 #include "content/browser/renderer_host/resource_handler.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
+#include "net/url_request/url_request.h"
 #include "webkit/blob/blob_data.h"
 
 ResourceDispatcherHostRequestInfo::ResourceDispatcherHostRequestInfo(

@@ -6,7 +6,7 @@
 #define WEBKIT_APPCACHE_APPCACHE_REQUEST_HANDLER_H_
 
 #include "base/compiler_specific.h"
-#include "net/url_request/url_request.h"
+#include "base/supports_user_data.h"
 #include "webkit/appcache/appcache_entry.h"
 #include "webkit/appcache/appcache_export.h"
 #include "webkit/appcache/appcache_host.h"
@@ -27,7 +27,7 @@ class AppCacheURLRequestJob;
 // should use AppCacheHost::CreateRequestHandler to manufacture instances
 // that can retrieve resources for a particular host.
 class APPCACHE_EXPORT AppCacheRequestHandler
-    : NON_EXPORTED_BASE(public net::URLRequest::UserData),
+    : public base::SupportsUserData::Data,
       public AppCacheHost::Observer,
       public AppCacheStorage::Delegate  {
  public:

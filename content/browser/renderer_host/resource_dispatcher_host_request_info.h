@@ -9,13 +9,14 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
+#include "base/supports_user_data.h"
 #include "base/time.h"
 #include "content/common/content_export.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/referrer.h"
 #include "net/base/load_states.h"
-#include "net/url_request/url_request.h"
 #include "webkit/glue/resource_type.h"
 
 class ResourceDispatcherHost;
@@ -28,13 +29,17 @@ class ResourceContext;
 class ResourceDispatcherHostLoginDelegate;
 }
 
+namespace net {
+class URLRequest;
+}
+
 namespace webkit_blob {
 class BlobData;
 }
 
 // Holds the data ResourceDispatcherHost associates with each request.
 // Retrieve this data by calling ResourceDispatcherHost::InfoForRequest.
-class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
+class ResourceDispatcherHostRequestInfo : public base::SupportsUserData::Data {
  public:
   // This will take a reference to the handler.
   CONTENT_EXPORT ResourceDispatcherHostRequestInfo(

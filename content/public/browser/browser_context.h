@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/hash_tables.h"
+#include "base/supports_user_data.h"
 #include "content/common/content_export.h"
 
 namespace fileapi {
@@ -40,9 +41,9 @@ class SpeechInputPreferences;
 
 // This class holds the context needed for a browsing session.
 // It lives on the UI thread.
-class CONTENT_EXPORT BrowserContext {
+class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
  public:
-  virtual ~BrowserContext();
+   virtual ~BrowserContext() {}
 
   // Returns the path of the directory where this context's data is stored.
   virtual FilePath GetPath() = 0;

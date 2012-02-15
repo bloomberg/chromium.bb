@@ -414,10 +414,6 @@ enum NotificationType {
   // of a temporary zoom level change, the details is an empty string.
   NOTIFICATION_ZOOM_LEVEL_CHANGED,
 
-  // Sent when a BrowserContext is being deleted, in case any objects want to do
-  // related cleanup. The source is the BrowserContext.
-  NOTIFICATION_BROWSER_CONTEXT_DESTRUCTION,
-
   // Custom notifications used by the embedder should start from here.
   NOTIFICATION_CONTENT_END,
 };
