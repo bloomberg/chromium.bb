@@ -691,7 +691,7 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   int x = toolbar_bounds.x();
   int w = toolbar_bounds.width();
   int y = toolbar_bounds.y();
-  int h = toolbar_bounds.bottom();
+  int h = toolbar_bounds.height();
 
   // Gross hack: We split the toolbar images into two pieces, since sometimes
   // (popup mode) the toolbar isn't tall enough to show the whole image.  The
