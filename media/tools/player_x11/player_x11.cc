@@ -29,6 +29,7 @@
 #include "media/filters/file_data_source.h"
 #include "media/filters/null_audio_renderer.h"
 #include "media/filters/video_renderer_base.h"
+#include "media/tools/player_x11/data_source_logger.h"
 #include "media/tools/player_x11/gl_video_renderer.h"
 #include "media/tools/player_x11/x11_video_renderer.h"
 
@@ -51,6 +52,14 @@ class MessageLoopQuitter {
   MessageLoop* loop_;
   DISALLOW_COPY_AND_ASSIGN(MessageLoopQuitter);
 };
+
+scoped_refptr<media::FileDataSource> CreateFileDataSource(
+    const std::string& file) {
+  scoped_refptr<media::FileDataSource> file_data_source(
+      new media::FileDataSource());
+  CHECK_EQ(file_data_source->Initialize(file), media::PIPELINE_OK);
+  return file_data_source;
+}
 
 // Initialize X11. Returns true if successful. This method creates the X11
 // window. Further initialization is done in X11VideoRenderer.
@@ -97,7 +106,7 @@ void Paint(MessageLoop* message_loop, const PaintCB& paint_cb) {
 
 // TODO(vrk): Re-enabled audio. (crbug.com/112159)
 bool InitPipeline(MessageLoop* message_loop,
-                  const char* filename,
+                  const scoped_refptr<media::DataSource>& data_source,
                   const PaintCB& paint_cb,
                   bool /* enable_audio */,
                   scoped_refptr<media::Pipeline>* pipeline,
@@ -106,13 +115,6 @@ bool InitPipeline(MessageLoop* message_loop,
   // Load media libraries.
   if (!media::InitializeMediaLibrary(FilePath())) {
     std::cout << "Unable to initialize the media library." << std::endl;
-    return false;
-  }
-
-  // Open the file.
-  scoped_refptr<media::FileDataSource> data_source =
-      new media::FileDataSource();
-  if (data_source->Initialize(filename) != media::PIPELINE_OK) {
     return false;
   }
 
@@ -138,7 +140,7 @@ bool InitPipeline(MessageLoop* message_loop,
   *pipeline = new media::Pipeline(message_loop, new media::MediaLog());
   media::PipelineStatusNotification note;
   (*pipeline)->Start(
-      collection.Pass(), filename, media::PipelineStatusCB(),
+      collection.Pass(), "", media::PipelineStatusCB(),
       media::PipelineStatusCB(), media::NetworkEventCB(),
       note.Callback());
 
@@ -225,31 +227,26 @@ void PeriodicalUpdate(
 
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;
+  CommandLine::Init(argc, argv);
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  std::string filename = command_line->GetSwitchValueASCII("file");
 
-  scoped_refptr<AudioManager> audio_manager(AudioManager::Create());
-  g_audio_manager = audio_manager;
-
-  // Read arguments.
-  if (argc == 1) {
+  if (filename.empty()) {
     std::cout << "Usage: " << argv[0] << " --file=FILE" << std::endl
               << std::endl
               << "Optional arguments:" << std::endl
               << "  [--audio]"
               << "  [--alsa-device=DEVICE]"
-              << "  [--use-gl]" << std::endl
+              << "  [--use-gl]"
+              << "  [--streaming]" << std::endl
               << " Press [ESC] to stop" << std::endl
               << " Press [SPACE] to toggle pause/play" << std::endl
               << " Press mouse left button to seek" << std::endl;
     return 1;
   }
 
-  // Read command line.
-  CommandLine::Init(argc, argv);
-  std::string filename =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII("file");
-  bool enable_audio = CommandLine::ForCurrentProcess()->HasSwitch("audio");
-  bool use_gl = CommandLine::ForCurrentProcess()->HasSwitch("use-gl");
-  bool audio_only = false;
+  scoped_refptr<AudioManager> audio_manager(AudioManager::Create());
+  g_audio_manager = audio_manager;
 
   logging::InitLogging(
       NULL,
@@ -276,7 +273,7 @@ int main(int argc, char** argv) {
   thread->Start();
 
   PaintCB paint_cb;
-  if (use_gl) {
+  if (command_line->HasSwitch("use-gl")) {
     paint_cb = base::Bind(
         &GlVideoRenderer::Paint, new GlVideoRenderer(g_display, g_window));
   } else {
@@ -284,17 +281,18 @@ int main(int argc, char** argv) {
         &X11VideoRenderer::Paint, new X11VideoRenderer(g_display, g_window));
   }
 
-  if (InitPipeline(thread->message_loop(), filename.c_str(),
-                   paint_cb, enable_audio, &pipeline, &message_loop,
-                   message_loop_factory.get())) {
+  scoped_refptr<media::DataSource> data_source(
+      new DataSourceLogger(CreateFileDataSource(filename),
+                           command_line->HasSwitch("streaming")));
+
+  if (InitPipeline(thread->message_loop(), data_source,
+                   paint_cb, command_line->HasSwitch("audio"),
+                   &pipeline, &message_loop, message_loop_factory.get())) {
     // Main loop of the application.
     g_running = true;
 
-    // Check if video is present.
-    audio_only = !pipeline->HasVideo();
-
     message_loop.PostTask(FROM_HERE, base::Bind(
-        &PeriodicalUpdate, pipeline, &message_loop, audio_only));
+        &PeriodicalUpdate, pipeline, &message_loop, !pipeline->HasVideo()));
     message_loop.Run();
   } else {
     std::cout << "Pipeline initialization failed..." << std::endl;
