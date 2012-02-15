@@ -136,7 +136,6 @@ bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
 
     create_node.SetTitle(UTF8ToWide(tag));
     model_associator_->WriteToSyncNode(url, visit_vector, &create_node);
-    model_associator_->Associate(&tag, create_node.GetId());
   }
   return true;
 }
@@ -154,15 +153,10 @@ void TypedUrlChangeProcessor::HandleURLsDeleted(
     for (std::set<GURL>::iterator url = details->urls.begin();
          url != details->urls.end(); ++url) {
       sync_api::WriteNode sync_node(&trans);
-      int64 sync_id = model_associator_->GetSyncIdFromChromeId(url->spec());
-      if (sync_api::kInvalidId != sync_id) {
-        if (!sync_node.InitByIdLookup(sync_id)) {
-          error_handler()->OnUnrecoverableError(FROM_HERE,
-              "Typed url node lookup failed.");
-          return;
-        }
-        model_associator_->Disassociate(sync_node.GetId());
+      if (sync_node.InitByClientTagLookup(syncable::TYPED_URLS, url->spec())) {
         sync_node.Remove();
+      } else {
+        NOTREACHED() << "Cannot delete node from sync DB: " << url->spec();
       }
     }
   }
@@ -222,10 +216,6 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
           "Typed URL delete change does not have necessary specifics.";
       GURL url(it->specifics.GetExtension(sync_pb::typed_url).url());
       pending_deleted_urls_.push_back(url);
-      // It's OK to disassociate here (before the items are actually deleted)
-      // as we're guaranteed to either get a CommitChanges call or we'll hit
-      // an unrecoverable error which will blow away the model associator.
-      model_associator_->Disassociate(it->id);
       continue;
     }
 
@@ -260,13 +250,6 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
           FROM_HERE, "Could not get existing url's visits.");
       return;
     }
-
-    // It's possible that this item was ignored previously due to being expired
-    // or invalid, so it isn't yet associated even though technically it's an
-    // UPDATE not an ADD because it's already in the sync DB. So associate it
-    // if it's not yet associated (http://crbug.com/112144).
-    if (!model_associator_->IsAssociated(typed_url.url()))
-      model_associator_->Associate(&typed_url.url(), it->id);
   }
 }
 

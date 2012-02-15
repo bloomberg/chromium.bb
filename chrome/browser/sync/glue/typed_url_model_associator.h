@@ -41,8 +41,7 @@ extern const char kTypedUrlTag[];
 // * Persisting model associations and loading them back.
 // We do not check if we have local data before this run; we always
 // merge and sync.
-class TypedUrlModelAssociator
-  : public AbortablePerDataTypeAssociatorInterface<std::string, std::string> {
+class TypedUrlModelAssociator : public AssociatorInterface {
  public:
   typedef std::vector<std::pair<history::URLID, history::URLRow> >
       TypedUrlUpdateVector;
@@ -54,16 +53,17 @@ class TypedUrlModelAssociator
                           history::HistoryBackend* history_backend);
   virtual ~TypedUrlModelAssociator();
 
-  // PerDataTypeAssociatorInterface implementation.
+  // AssociatorInterface implementation.
   //
   // Iterates through the sync model looking for matched pairs of items.
   virtual bool AssociateModels(SyncError* error) OVERRIDE;
 
-  // Delete all typed url nodes.
-  bool DeleteAllNodes(sync_api::WriteTransaction* trans);
-
   // Clears all associations.
   virtual bool DisassociateModels(SyncError* error) OVERRIDE;
+
+  // Called from the main thread, to abort the currently active model
+  // association (for example, if we are shutting down).
+  virtual void AbortAssociation() OVERRIDE;
 
   // The has_nodes out param is true if the sync model has nodes other
   // than the permanent tagged nodes.
@@ -71,30 +71,8 @@ class TypedUrlModelAssociator
 
   virtual bool CryptoReadyIfNecessary() OVERRIDE;
 
-  // Not implemented.
-  virtual const std::string* GetChromeNodeFromSyncId(int64 sync_id) OVERRIDE;
-
-  // Not implemented.
-  virtual bool InitSyncNodeFromChromeId(const std::string& node_id,
-                                        sync_api::BaseNode* sync_node) OVERRIDE;
-
-  // Returns the sync id for the given typed_url name, or sync_api::kInvalidId
-  // if the typed_url name is not associated to any sync id.
-  virtual int64 GetSyncIdFromChromeId(const std::string& node_id) OVERRIDE;
-
-  // Associates the given typed_url name with the given sync id.
-  virtual void Associate(const std::string* node, int64 sync_id) OVERRIDE;
-
-  // Makes sure that the node with the specified tag is already in our
-  // association map.
-  bool IsAssociated(const std::string& node_tag);
-
-  // Remove the association that corresponds to the given sync id.
-  virtual void Disassociate(int64 sync_id) OVERRIDE;
-
-  // Returns whether a node with the given permanent tag was found and update
-  // |sync_id| with that node's id.
-  virtual bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id);
+  // Delete all typed url nodes.
+  bool DeleteAllNodes(sync_api::WriteTransaction* trans);
 
   bool WriteToHistoryBackend(const history::URLRows* new_urls,
                              const TypedUrlUpdateVector* updated_urls,
@@ -181,23 +159,26 @@ class TypedUrlModelAssociator
   static void UpdateURLRowFromTypedUrlSpecifics(
       const sync_pb::TypedUrlSpecifics& specifics, history::URLRow* url_row);
 
- private:
-  typedef std::map<std::string, int64> TypedUrlToSyncIdMap;
-  typedef std::map<int64, std::string> SyncIdToTypedUrlMap;
+ protected:
+  // Returns true if pending_abort_ is true. Overridable by tests.
+  virtual bool IsAbortPending();
 
+ private:
   // Helper function that determines if we should ignore a URL for the purposes
-  // of sync, because it's import-only.
+  // of sync, because it contains invalid data or is import-only.
   bool ShouldIgnoreUrl(const history::URLRow& url,
                        const history::VisitVector& visits);
 
   ProfileSyncService* sync_service_;
   history::HistoryBackend* history_backend_;
-  int64 typed_url_node_id_;
 
   MessageLoop* expected_loop_;
 
-  TypedUrlToSyncIdMap id_map_;
-  SyncIdToTypedUrlMap id_map_inverse_;
+  // Lock to ensure exclusive access to the pending_abort_ flag.
+  base::Lock pending_abort_lock_;
+
+  // Set to true if there's a pending abort.
+  bool pending_abort_;
 
   DISALLOW_COPY_AND_ASSIGN(TypedUrlModelAssociator);
 };

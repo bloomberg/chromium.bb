@@ -61,8 +61,8 @@ TypedUrlModelAssociator::TypedUrlModelAssociator(
     history::HistoryBackend* history_backend)
     : sync_service_(sync_service),
       history_backend_(history_backend),
-      typed_url_node_id_(sync_api::kInvalidId),
-      expected_loop_(MessageLoop::current()) {
+      expected_loop_(MessageLoop::current()),
+      pending_abort_(false) {
   DCHECK(sync_service_);
   // history_backend_ may be null for unit tests (since it's not mockable).
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -105,6 +105,12 @@ bool TypedUrlModelAssociator::FixupURLAndGetVisits(
 
 bool TypedUrlModelAssociator::ShouldIgnoreUrl(
     const history::URLRow& url, const history::VisitVector& visits) {
+  // Ignore empty URLs. Not sure how this can happen (maybe import from other
+  // busted browsers, or misuse of the history API, or just plain bugs) but we
+  // can't deal with them.
+  if (url.url().spec().empty())
+    return true;
+
   // We ignore URLs that where imported, but have never been visited by
   // chromium.
   static const int kLastImportedSource = history::SOURCE_EXTENSION;
@@ -177,13 +183,8 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
       if (IsAbortPending())
         return false;
       std::string tag = ix->url().spec();
-
-      // Ignore URLs with an empty tag - shouldn't ever happen, but we've seen
-      // it occasionally (possibly due to importing bogus entries from other
-      // browsers).
-      if (tag.empty())
-        continue;
-
+      // Empty URLs should be filtered out by ShouldIgnoreUrl() previously.
+      DCHECK(!tag.empty());
       history::VisitVector& visits = visit_vectors[ix->id()];
 
       sync_api::ReadNode node(&trans);
@@ -239,8 +240,6 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
               std::pair<GURL, std::vector<history::VisitInfo> >(ix->url(),
                                                                 added_visits));
         }
-
-        Associate(&tag, node.GetId());
       } else {
         // Sync has never seen this URL before.
         sync_api::WriteNode node(&trans);
@@ -254,8 +253,6 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
 
         node.SetTitle(UTF8ToWide(tag));
         WriteToSyncNode(*ix, visits, &node);
-
-        Associate(&tag, node.GetId());
       }
 
       current_urls.insert(tag);
@@ -316,9 +313,6 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
                          model_type());
             return false;
         }
-
-        // Add this to our association map.
-        Associate(&filtered_url.url(), sync_child_node.GetId());
       }
     }
 
@@ -414,44 +408,47 @@ sync_pb::TypedUrlSpecifics TypedUrlModelAssociator::FilterExpiredVisits(
 
 bool TypedUrlModelAssociator::DeleteAllNodes(
     sync_api::WriteTransaction* trans) {
-  // TODO(sync): Add code to make this an explicit "delete" command rather than
-  // a list of nodes to avoid having to store tombstones on the server
-  // (http://crbug.com/80179).
   DCHECK(expected_loop_ == MessageLoop::current());
-  for (TypedUrlToSyncIdMap::iterator node_id = id_map_.begin();
-       node_id != id_map_.end(); ++node_id) {
-    sync_api::WriteNode sync_node(trans);
-    if (!sync_node.InitByIdLookup(node_id->second)) {
+
+  // Just walk through all our child nodes and delete them.
+  sync_api::ReadNode typed_url_root(trans);
+  if (!typed_url_root.InitByTagLookup(kTypedUrlTag)) {
+    LOG(ERROR) << "Could not lookup root node";
+    return false;
+  }
+  int64 sync_child_id = typed_url_root.GetFirstChildId();
+  while (sync_child_id != sync_api::kInvalidId) {
+    sync_api::WriteNode sync_child_node(trans);
+    if (!sync_child_node.InitByIdLookup(sync_child_id)) {
       LOG(ERROR) << "Typed url node lookup failed.";
       return false;
     }
-    sync_node.Remove();
+    sync_child_id = sync_child_node.GetSuccessorId();
+    sync_child_node.Remove();
   }
-
-  id_map_.clear();
-  id_map_inverse_.clear();
   return true;
 }
 
 bool TypedUrlModelAssociator::DisassociateModels(SyncError* error) {
-  id_map_.clear();
-  id_map_inverse_.clear();
   return true;
+}
+
+void TypedUrlModelAssociator::AbortAssociation() {
+  base::AutoLock lock(pending_abort_lock_);
+  pending_abort_ = true;
+}
+
+bool TypedUrlModelAssociator::IsAbortPending() {
+  base::AutoLock lock(pending_abort_lock_);
+  return pending_abort_;
 }
 
 bool TypedUrlModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   DCHECK(has_nodes);
   *has_nodes = false;
-  int64 typed_url_sync_id;
-  if (!GetSyncIdForTaggedNode(kTypedUrlTag, &typed_url_sync_id)) {
-    LOG(ERROR) << "Server did not create the top-level typed_url node. We "
-               << "might be running against an out-of-date server.";
-    return false;
-  }
   sync_api::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
-
-  sync_api::ReadNode typed_url_node(&trans);
-  if (!typed_url_node.InitByIdLookup(typed_url_sync_id)) {
+  sync_api::ReadNode sync_node(&trans);
+  if (!sync_node.InitByTagLookup(kTypedUrlTag)) {
     LOG(ERROR) << "Server did not create the top-level typed_url node. We "
                << "might be running against an out-of-date server.";
     return false;
@@ -459,58 +456,7 @@ bool TypedUrlModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
 
   // The sync model has user created nodes if the typed_url folder has any
   // children.
-  *has_nodes = typed_url_node.HasChildren();
-  return true;
-}
-
-const std::string* TypedUrlModelAssociator::GetChromeNodeFromSyncId(
-    int64 sync_id) {
-  return NULL;
-}
-
-bool TypedUrlModelAssociator::InitSyncNodeFromChromeId(
-    const std::string& node_id,
-    sync_api::BaseNode* sync_node) {
-  return false;
-}
-
-int64 TypedUrlModelAssociator::GetSyncIdFromChromeId(
-    const std::string& typed_url) {
-  TypedUrlToSyncIdMap::const_iterator iter = id_map_.find(typed_url);
-  return iter == id_map_.end() ? sync_api::kInvalidId : iter->second;
-}
-
-void TypedUrlModelAssociator::Associate(
-    const std::string* typed_url, int64 sync_id) {
-  DCHECK(expected_loop_ == MessageLoop::current());
-  DCHECK(!IsAssociated(*typed_url));
-  DCHECK_NE(sync_api::kInvalidId, sync_id);
-  DCHECK(id_map_inverse_.find(sync_id) == id_map_inverse_.end());
-  id_map_[*typed_url] = sync_id;
-  id_map_inverse_[sync_id] = *typed_url;
-}
-
-bool TypedUrlModelAssociator::IsAssociated(const std::string& typed_url) {
-  DCHECK(expected_loop_ == MessageLoop::current());
-  return id_map_.find(typed_url) != id_map_.end();
-}
-
-void TypedUrlModelAssociator::Disassociate(int64 sync_id) {
-  DCHECK(expected_loop_ == MessageLoop::current());
-  SyncIdToTypedUrlMap::iterator iter = id_map_inverse_.find(sync_id);
-  if (iter == id_map_inverse_.end())
-    return;
-  CHECK(id_map_.erase(iter->second));
-  id_map_inverse_.erase(iter);
-}
-
-bool TypedUrlModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
-                                                     int64* sync_id) {
-  sync_api::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
-  sync_api::ReadNode sync_node(&trans);
-  if (!sync_node.InitByTagLookup(tag.c_str()))
-    return false;
-  *sync_id = sync_node.GetId();
+  *has_nodes = sync_node.HasChildren();
   return true;
 }
 
@@ -520,13 +466,6 @@ bool TypedUrlModelAssociator::WriteToHistoryBackend(
     const TypedUrlVisitVector* new_visits,
     const history::VisitVector* deleted_visits) {
   if (new_urls) {
-#ifndef NDEBUG
-    // All of these URLs should already have been associated.
-    for (history::URLRows::const_iterator url = new_urls->begin();
-         url != new_urls->end(); ++url) {
-      DCHECK(IsAssociated(url->url().spec()));
-    }
-#endif
     history_backend_->AddPagesWithDetails(*new_urls, history::SOURCE_SYNCED);
   }
   if (updated_urls) {
@@ -536,7 +475,6 @@ bool TypedUrlModelAssociator::WriteToHistoryBackend(
       // visit_count or typed_count values here, because either one (or both)
       // could be zero in the case of bookmarks, or in the case of a URL
       // transitioning from non-typed to typed as a result of this sync.
-      DCHECK(IsAssociated(url->second.url().spec()));
       if (!history_backend_->UpdateURL(url->first, url->second)) {
         LOG(ERROR) << "Could not update page: " << url->second.url().spec();
         return false;
@@ -546,7 +484,6 @@ bool TypedUrlModelAssociator::WriteToHistoryBackend(
   if (new_visits) {
     for (TypedUrlVisitVector::const_iterator visits = new_visits->begin();
          visits != new_visits->end(); ++visits) {
-      DCHECK(IsAssociated(visits->first.spec()));
       // If there are no visits to add, just skip this.
       if (visits->second.empty())
         continue;

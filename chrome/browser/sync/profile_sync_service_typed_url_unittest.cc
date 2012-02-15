@@ -750,6 +750,10 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemoveAll) {
   CreateRootHelper create_root(this, syncable::TYPED_URLS);
   StartSyncService(create_root.callback());
 
+  history::URLRows new_sync_entries;
+  GetTypedUrlsFromSyncDB(&new_sync_entries);
+  ASSERT_EQ(2U, new_sync_entries.size());
+
   history::URLsDeletedDetails changes;
   changes.all_history = true;
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&history_thread_));
@@ -757,7 +761,6 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemoveAll) {
                    content::Source<Profile>(&profile_),
                    content::Details<history::URLsDeletedDetails>(&changes));
 
-  history::URLRows new_sync_entries;
   GetTypedUrlsFromSyncDB(&new_sync_entries);
   ASSERT_EQ(0U, new_sync_entries.size());
 }
