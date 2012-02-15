@@ -3,10 +3,19 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/file_path.h"
+#include "base/file_util.h"
+#include "base/json/json_reader.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/stringprintf.h"
+#include "base/string_number_conversions.h"
 #include "base/test/trace_event_analyzer.h"
+#include "base/values.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/window_snapshot/window_snapshot.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/test_switches.h"
@@ -14,19 +23,28 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/perf/browser_perf_test.h"
 #include "chrome/test/perf/perf_test.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/gl/gl_switches.h"
 
 namespace {
 
-enum ThroughputTestFlags {
+enum RunTestFlags {
   kNone = 0,
   kInternal = 1 << 0,  // Test uses internal test data.
   kAllowExternalDNS = 1 << 1  // Test needs external DNS lookup.
+};
+
+enum ThroughputTestFlags {
+  kSW = 0,
+  kGPU = 1 << 0
 };
 
 const int kSpinUpTimeMs = 4 * 1000;
@@ -35,17 +53,86 @@ const int kIgnoreSomeFrames = 3;
 
 class ThroughputTest : public BrowserPerfTest {
  public:
-  explicit ThroughputTest(bool use_gpu) : use_gpu_(use_gpu) {}
+  explicit ThroughputTest(ThroughputTestFlags flags) :
+      use_gpu_(flags & kGPU),
+      spinup_time_ms_(kSpinUpTimeMs),
+      run_time_ms_(kRunTimeMs) {}
 
   bool IsGpuAvailable() const {
     return CommandLine::ForCurrentProcess()->HasSwitch("enable-gpu");
   }
 
-  GURL GetURLFromCommandLine() {
-    CommandLine::StringType extra_chrome_flags =
+  // Parse flags from JSON to control the test behavior.
+  bool ParseFlagsFromJSON(const FilePath& json_dir,
+                          const std::string& json,
+                          int index) {
+    scoped_ptr<base::Value> root;
+    root.reset(base::JSONReader::Read(json, false));
+
+    ListValue* root_list = NULL;
+    if (!root.get() || !root->GetAsList(&root_list))
+      return false;
+
+    DictionaryValue* item = NULL;
+    if (!root_list->GetDictionary(index, &item))
+      return false;
+
+    std::string str;
+    if (!item->GetStringASCII("url", &str))
+      return false;
+    gurl_ = GURL(str);
+
+    FilePath::StringType cache_dir;
+    if (item->GetString("local_path", &cache_dir))
+      local_cache_path_ = json_dir.Append(cache_dir);
+
+    int num;
+    if (item->GetInteger("spinup_time", &num))
+      spinup_time_ms_ = num * 1000;
+    if (item->GetInteger("run_time", &num))
+      run_time_ms_ = num * 1000;
+
+    DictionaryValue* pixel = NULL;
+    if (item->GetDictionary("wait_pixel", &pixel)) {
+      int x, y, r, g, b;
+      ListValue* color;
+      if (pixel->GetInteger("x", &x) &&
+          pixel->GetInteger("y", &y) &&
+          pixel->GetString("op", &str) &&
+          pixel->GetList("color", &color) &&
+          color->GetInteger(0, &r) &&
+          color->GetInteger(1, &g) &&
+          color->GetInteger(2, &b)) {
+        wait_for_pixel_.reset(new WaitPixel(x, y, r, g, b, str));
+      } else {
+        LOG(ERROR) << "invalid wait_pixel args";
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // Parse extra-chrome-flags for extra command line flags.
+  void ParseFlagsFromCommandLine() {
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kExtraChromeFlags))
+      return;
+    CommandLine::StringType flags =
         CommandLine::ForCurrentProcess()->GetSwitchValueNative(
             switches::kExtraChromeFlags);
-    return GURL(extra_chrome_flags);
+    if (MatchPattern(flags, FILE_PATH_LITERAL("*.json:*"))) {
+      CommandLine::StringType::size_type colon_pos = flags.find_last_of(':');
+      CommandLine::StringType::size_type num_pos = colon_pos + 1;
+      int index;
+      ASSERT_TRUE(base::StringToInt(
+          flags.substr(num_pos, flags.size() - num_pos), &index));
+      FilePath filepath(flags.substr(0, colon_pos));
+      std::string json;
+      ASSERT_TRUE(file_util::ReadFileToString(filepath, &json));
+      ASSERT_TRUE(ParseFlagsFromJSON(filepath.DirName(), json, index));
+    } else {
+      gurl_ = GURL(flags);
+    }
   }
 
   void AllowExternalDNS() {
@@ -62,11 +149,17 @@ class ThroughputTest : public BrowserPerfTest {
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     BrowserPerfTest::SetUpCommandLine(command_line);
+    ParseFlagsFromCommandLine();
+    if (!local_cache_path_.value().empty()) {
+      // If --record-mode is already specified, don't set playback-mode.
+      if (!command_line->HasSwitch(switches::kRecordMode))
+        command_line->AppendSwitch(switches::kPlaybackMode);
+      command_line->AppendSwitchNative(switches::kDiskCacheDir,
+                                       local_cache_path_.value());
+      LOG(INFO) << local_cache_path_.value();
+    }
     // We are measuring throughput, so we don't want any FPS throttling.
     command_line->AppendSwitch(switches::kDisableGpuVsync);
-    // Default behavior is to thumbnail the tab after 0.5 seconds, causing
-    // a nasty frame hitch and disturbing the latency test. Fix that:
-    command_line->AppendSwitch(switches::kEnableInBrowserThumbnailing);
     command_line->AppendSwitch(switches::kAllowFileAccessFromFiles);
     // Enable or disable GPU acceleration.
     if (use_gpu_) {
@@ -85,7 +178,50 @@ class ThroughputTest : public BrowserPerfTest {
     ui_test_utils::RunMessageLoop();
   }
 
-  void RunTest(const std::string& test_name, ThroughputTestFlags flags) {
+  // Take snapshot of the current tab, encode it as PNG, and save to a SkBitmap.
+  bool TabSnapShotToImage(SkBitmap* bitmap) {
+    CHECK(bitmap);
+    std::vector<unsigned char> png;
+
+    gfx::Rect root_bounds = browser()->window()->GetBounds();
+    gfx::Rect tab_contents_bounds;
+    browser()->GetSelectedWebContents()->GetContainerBounds(
+        &tab_contents_bounds);
+
+    gfx::Rect snapshot_bounds(tab_contents_bounds.x() - root_bounds.x(),
+                              tab_contents_bounds.y() - root_bounds.y(),
+                              tab_contents_bounds.width(),
+                              tab_contents_bounds.height());
+
+    gfx::NativeWindow native_window = browser()->window()->GetNativeHandle();
+    if (!browser::GrabWindowSnapshot(native_window, &png, snapshot_bounds)) {
+      LOG(ERROR) << "browser::GrabWindowSnapShot() failed";
+      return false;
+    }
+
+    if (!gfx::PNGCodec::Decode(reinterpret_cast<unsigned char*>(&*png.begin()),
+                               png.size(), bitmap)) {
+      LOG(ERROR) << "Decode PNG to a SkBitmap failed";
+      return false;
+    }
+    return true;
+  }
+
+  // Check a pixel color every second until it passes test.
+  void WaitForPixelColor() {
+    if (wait_for_pixel_.get()) {
+      bool success = false;
+      do {
+        SkBitmap bitmap;
+        ASSERT_TRUE(TabSnapShotToImage(&bitmap));
+        success = wait_for_pixel_->IsDone(bitmap);
+        if (!success)
+          Wait(1000);
+      } while (!success);
+    }
+  }
+
+  void RunTest(const std::string& test_name, RunTestFlags flags) {
     // Set path to test html.
     FilePath test_path;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_path));
@@ -99,40 +235,45 @@ class ThroughputTest : public BrowserPerfTest {
     ASSERT_TRUE(file_util::PathExists(test_path))
         << "Missing test file: " << test_path.value();
 
-    if (flags & kAllowExternalDNS)
-      AllowExternalDNS();
-
-    RunTestWithURL(test_name, net::FilePathToFileURL(test_path));
-
-    if (flags & kAllowExternalDNS)
-      ResetAllowExternalDNS();
+    gurl_ = net::FilePathToFileURL(test_path);
+    RunTestWithURL(test_name, flags);
   }
 
-  void RunTestWithURL(const std::string& test_name, const GURL& gurl) {
+  void RunTestWithURL(RunTestFlags flags) {
+    RunTestWithURL(gurl_.possibly_invalid_spec(), flags);
+  }
+
+  void RunTestWithURL(const std::string& test_name, RunTestFlags flags) {
     using trace_analyzer::Query;
     using trace_analyzer::TraceAnalyzer;
     using trace_analyzer::TraceEventVector;
 
     if (use_gpu_ && !IsGpuAvailable()) {
       LOG(WARNING) << "Test skipped: requires gpu. Pass --enable-gpu on the "
-                      "command line if use of GPU is desired.\n";
+                      "command line if use of GPU is desired.";
       return;
     }
+
+    if (flags & kAllowExternalDNS)
+      AllowExternalDNS();
 
     std::string json_events;
     TraceEventVector events_sw, events_gpu;
     scoped_ptr<TraceAnalyzer> analyzer;
 
-    LOG(INFO) << gurl.possibly_invalid_spec();
+    LOG(INFO) << gurl_.possibly_invalid_spec();
     ui_test_utils::NavigateToURLWithDisposition(
-        browser(), gurl, CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
+        browser(), gurl_, CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
     ui_test_utils::WaitForLoadStop(browser()->GetSelectedWebContents());
 
     // Let the test spin up.
-    LOG(INFO) << "Spinning up test...\n";
+    LOG(INFO) << "Spinning up test...";
     ASSERT_TRUE(tracing::BeginTracing("test_gpu"));
-    Wait(kSpinUpTimeMs);
+    Wait(spinup_time_ms_);
     ASSERT_TRUE(tracing::EndTracing(&json_events));
+
+    // Wait for a pixel color to change (if requested).
+    WaitForPixelColor();
 
     // Check if GPU is rendering:
     analyzer.reset(TraceAnalyzer::Create(json_events));
@@ -142,9 +283,9 @@ class ThroughputTest : public BrowserPerfTest {
     EXPECT_EQ(use_gpu_, ran_on_gpu);
 
     // Let the test run for a while.
-    LOG(INFO) << "Running test...\n";
+    LOG(INFO) << "Running test...";
     ASSERT_TRUE(tracing::BeginTracing("test_fps"));
-    Wait(kRunTimeMs);
+    Wait(run_time_ms_);
     ASSERT_TRUE(tracing::EndTracing(&json_events));
 
     // Search for frame ticks. We look for both SW and GPU frame ticks so that
@@ -162,14 +303,13 @@ class ThroughputTest : public BrowserPerfTest {
       frames = &events_sw;
       EXPECT_EQ(0u, events_gpu.size());
     }
-    printf("Frame tick events: %d\n", static_cast<int>(frames->size()));
     ASSERT_GT(frames->size(), 20u);
     // Cull a few leading and trailing events as they might be unreliable.
     TraceEventVector rate_events(frames->begin() + kIgnoreSomeFrames,
                                  frames->end() - kIgnoreSomeFrames);
     trace_analyzer::RateStats stats;
     ASSERT_TRUE(GetRateStats(rate_events, &stats));
-    printf("FPS = %f\n", 1000000.0 / stats.mean_us);
+    LOG(INFO) << "FPS = " << 1000000.0 / stats.mean_us;
 
     // Print perf results.
     double mean_ms = stats.mean_us / 1000.0;
@@ -179,23 +319,73 @@ class ThroughputTest : public BrowserPerfTest {
                                                     std_dev_ms);
     perf_test::PrintResultMeanAndError(test_name, "", trace_name,
                                        mean_and_error, "frame_time", true);
+
+    if (flags & kAllowExternalDNS)
+      ResetAllowExternalDNS();
   }
 
  private:
+  // WaitPixel checks a color against the color at the given pixel coordinates
+  // of an SkBitmap.
+  class WaitPixel {
+   enum Operator {
+     EQUAL,
+     NOT_EQUAL
+   };
+   public:
+    WaitPixel(int x, int y, int r, int g, int b, const std::string& op) :
+        x_(x), y_(y), r_(r), g_(g), b_(b) {
+      if (op == "!=")
+        op_ = EQUAL;
+      else if (op == "==")
+        op_ = NOT_EQUAL;
+      else
+        CHECK(false) << "op value \"" << op << "\" is not supported";
+    }
+    bool IsDone(const SkBitmap& bitmap) {
+      SkColor color = bitmap.getColor(x_, y_);
+      int r = SkColorGetR(color);
+      int g = SkColorGetG(color);
+      int b = SkColorGetB(color);
+      LOG(INFO) << "color("  << x_ << "," << y_ << "): " <<
+                   r << "," << g << "," << b;
+      switch (op_) {
+        case EQUAL:
+          return r != r_ || g != g_ || b != b_;
+        case NOT_EQUAL:
+          return r == r_ && g == g_ && b == b_;
+        default:
+          return false;
+      }
+    }
+   private:
+    int x_;
+    int y_;
+    int r_;
+    int g_;
+    int b_;
+    Operator op_;
+  };
+
   bool use_gpu_;
+  int spinup_time_ms_;
+  int run_time_ms_;
+  FilePath local_cache_path_;
+  GURL gurl_;
   scoped_ptr<net::ScopedDefaultHostResolverProc> host_resolver_override_;
+  scoped_ptr<WaitPixel> wait_for_pixel_;
 };
 
 // For running tests on GPU:
 class ThroughputTestGPU : public ThroughputTest {
  public:
-  ThroughputTestGPU() : ThroughputTest(true) {}
+  ThroughputTestGPU() : ThroughputTest(kGPU) {}
 };
 
 // For running tests on Software:
 class ThroughputTestSW : public ThroughputTest {
  public:
-  ThroughputTestSW() : ThroughputTest(false) {}
+  ThroughputTestSW() : ThroughputTest(kSW) {}
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -204,16 +394,27 @@ class ThroughputTestSW : public ThroughputTest {
 // Run this test with a URL on the command line:
 // performance_browser_tests --gtest_also_run_disabled_tests --enable-gpu
 //     --gtest_filter=ThroughputTest*URL --extra-chrome-flags=http://...
+// or, specify a json file with a list of tests, and the index of the test:
+//     --extra-chrome-flags=path/to/tests.json:0
+// The json format is an array of tests, for example:
+// [
+// {"url":"http://...",
+//  "spinup_time":5,
+//  "run_time":10,
+//  "local_path":"path/to/disk-cache-dir",
+//  "wait_pixel":{"x":10,"y":10,"op":"!=","color":[24,24,24]}},
+// {"url":"http://..."}
+// ]
+// The only required argument is url. If local_path is set, the test goes into
+// playback-mode and only loads files from the specified cache. If wait_pixel is
+// specified, then after spinup_time the test waits for the color at the
+// specified pixel coordinate to match the given color with the given operator.
 IN_PROC_BROWSER_TEST_F(ThroughputTestSW, DISABLED_TestURL) {
-  AllowExternalDNS();
-  RunTestWithURL("URL", GetURLFromCommandLine());
-  ResetAllowExternalDNS();
+  RunTestWithURL(kAllowExternalDNS);
 }
 
 IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, DISABLED_TestURL) {
-  AllowExternalDNS();
-  RunTestWithURL("URL", GetURLFromCommandLine());
-  ResetAllowExternalDNS();
+  RunTestWithURL(kAllowExternalDNS);
 }
 
 IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, Particles) {
