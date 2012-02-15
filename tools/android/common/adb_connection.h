@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TOOLS_ANDROID_COMMON_ADB_CONNECTION_H__
-#define TOOLS_ANDROID_COMMON_ADB_CONNECTION_H__
+#ifndef TOOLS_ANDROID_COMMON_ADB_CONNECTION_H_
+#define TOOLS_ANDROID_COMMON_ADB_CONNECTION_H_
 #pragma once
 
 namespace tools {
@@ -15,5 +15,5 @@ int ConnectAdbHostSocket(const char* forward_to);
 
 }  // namespace tools
 
-#endif  // TOOLS_ANDROID_COMMON_ADB_CONNECTION_H__
+#endif  // TOOLS_ANDROID_COMMON_ADB_CONNECTION_H_
 

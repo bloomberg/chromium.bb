@@ -13,15 +13,13 @@
       ],
       'sources': [
         'adb_connection.cc',
+        'adb_connection.h',
         'daemon.cc',
+        'daemon.h',
         'net.cc',
+        'net.h',
       ],
     },
   ],
 }
 
-# Local Variables:
-# tab-width:2
-# indent-tabs-mode:nil
-# End:
-# vim: set expandtab tabstop=2 shiftwidth=2:
