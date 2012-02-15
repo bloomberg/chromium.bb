@@ -18,9 +18,6 @@
 #include "content/public/browser/notification_source.h"
 
 namespace {
-// Invalid panel index.
-const size_t kInvalidPanelIndex = static_cast<size_t>(-1);
-
 // Width to height ratio is used to compute the default width or height
 // when only one value is provided.
 const double kPanelDefaultWidthToHeightRatio = 1.62;  // golden ratio
@@ -62,7 +59,7 @@ DockedPanelStrip::DockedPanelStrip(PanelManager* panel_manager)
       minimized_panel_count_(0),
       are_titlebars_up_(false),
       disable_layout_refresh_(false),
-      dragging_panel_index_(kInvalidPanelIndex),
+      dragging_panel_(NULL),
       dragging_panel_original_x_(0),
       delayed_titlebar_action_(NO_ACTION),
       titlebar_action_factory_(this) {
@@ -222,7 +219,7 @@ bool DockedPanelStrip::RemovePanel(Panel* panel) {
     return false;
 
   // If we're in the process of dragging, delay the removal.
-  if (dragging_panel_index_ != kInvalidPanelIndex) {
+  if (dragging_panel_) {
     panels_pending_to_remove_.push_back(panel);
     return true;
   }
@@ -256,27 +253,24 @@ bool DockedPanelStrip::DoRemove(Panel* panel) {
 }
 
 void DockedPanelStrip::StartDragging(Panel* panel) {
-  for (size_t i = 0; i < panels_.size(); ++i) {
-    if (panels_[i] == panel) {
-      dragging_panel_index_ = i;
-      dragging_panel_bounds_ = panel->GetBounds();
-      dragging_panel_original_x_ = dragging_panel_bounds_.x();
-      break;
-    }
-  }
+  dragging_panel_iterator_ = find(panels_.begin(), panels_.end(), panel);
+  DCHECK(dragging_panel_iterator_ != panels_.end());
+
+  dragging_panel_ = panel;
+  dragging_panel_bounds_ = panel->GetBounds();
+  dragging_panel_original_x_ = dragging_panel_bounds_.x();
 }
 
 void DockedPanelStrip::Drag(int delta_x) {
-  DCHECK(dragging_panel_index_ != kInvalidPanelIndex);
+  DCHECK(dragging_panel_);
 
   if (!delta_x)
     return;
 
   // Moves this panel to the dragging position.
-  Panel* dragging_panel = panels_[dragging_panel_index_];
-  gfx::Rect new_bounds(dragging_panel->GetBounds());
+  gfx::Rect new_bounds(dragging_panel_->GetBounds());
   new_bounds.set_x(new_bounds.x() + delta_x);
-  dragging_panel->SetPanelBounds(new_bounds);
+  dragging_panel_->SetPanelBounds(new_bounds);
 
   // Checks and processes other affected panels.
   if (delta_x > 0)
@@ -286,20 +280,19 @@ void DockedPanelStrip::Drag(int delta_x) {
 }
 
 void DockedPanelStrip::DragLeft() {
-  Panel* dragging_panel = panels_[dragging_panel_index_];
-
   // This is the left corner of the dragging panel. We use it to check against
   // all the panels on its left.
-  int dragging_panel_left_boundary = dragging_panel->GetBounds().x();
+  int dragging_panel_left_boundary = dragging_panel_->GetBounds().x();
 
   // This is the right corner which a panel will be moved to.
   int current_panel_right_boundary =
       dragging_panel_bounds_.x() + dragging_panel_bounds_.width();
 
   // Checks the panels to the left of the dragging panel.
-  size_t current_panel_index = dragging_panel_index_ + 1;
-  for (; current_panel_index < panels_.size(); ++current_panel_index) {
-    Panel* current_panel = panels_[current_panel_index];
+  Panels::iterator current_panel_iterator = dragging_panel_iterator_;
+  ++current_panel_iterator;
+  for (; current_panel_iterator != panels_.end(); ++current_panel_iterator) {
+    Panel* current_panel = *current_panel_iterator;
 
     // Current panel will only be affected if the left corner of dragging
     // panel goes beyond the middle position of the current panel.
@@ -313,36 +306,32 @@ void DockedPanelStrip::DragLeft() {
     current_panel_right_boundary -= bounds.width() + kPanelsHorizontalSpacing;
     current_panel->SetPanelBounds(bounds);
 
-    // Updates the index of current panel since it has been moved to the
-    // position of previous panel.
-    panels_[current_panel_index - 1] = current_panel;
+    // Swaps current panel and dragging panel.
+    *dragging_panel_iterator_ = current_panel;
+    *current_panel_iterator = dragging_panel_;
+    dragging_panel_iterator_ = current_panel_iterator;
   }
 
-  // Updates the position and index of dragging panel as the result of moving
-  // other affected panels.
-  if (current_panel_index != dragging_panel_index_ + 1) {
-    dragging_panel_bounds_.set_x(current_panel_right_boundary -
-                                 dragging_panel_bounds_.width());
-    dragging_panel_index_ = current_panel_index - 1;
-    panels_[dragging_panel_index_] = dragging_panel;
-  }
+  // Updates the potential final position of dragging panel as the result of
+  // swapping with panels on its left.
+  dragging_panel_bounds_.set_x(current_panel_right_boundary -
+                               dragging_panel_bounds_.width());
 }
 
 void DockedPanelStrip::DragRight() {
-  Panel* dragging_panel = panels_[dragging_panel_index_];
-
   // This is the right corner of the dragging panel. We use it to check against
   // all the panels on its right.
-  int dragging_panel_right_boundary = dragging_panel->GetBounds().x() +
-      dragging_panel->GetBounds().width() - 1;
+  int dragging_panel_right_boundary = dragging_panel_->GetBounds().x() +
+      dragging_panel_->GetBounds().width() - 1;
 
   // This is the left corner which a panel will be moved to.
   int current_panel_left_boundary = dragging_panel_bounds_.x();
 
   // Checks the panels to the right of the dragging panel.
-  int current_panel_index = static_cast<int>(dragging_panel_index_) - 1;
-  for (; current_panel_index >= 0; --current_panel_index) {
-    Panel* current_panel = panels_[current_panel_index];
+  Panels::iterator current_panel_iterator = dragging_panel_iterator_;
+  while (current_panel_iterator != panels_.begin()) {
+    current_panel_iterator--;
+    Panel* current_panel = *current_panel_iterator;
 
     // Current panel will only be affected if the right corner of dragging
     // panel goes beyond the middle position of the current panel.
@@ -356,32 +345,26 @@ void DockedPanelStrip::DragRight() {
     current_panel_left_boundary += bounds.width() + kPanelsHorizontalSpacing;
     current_panel->SetPanelBounds(bounds);
 
-    // Updates the index of current panel since it has been moved to the
-    // position of previous panel.
-    panels_[current_panel_index + 1] = current_panel;
+    // Swaps current panel and dragging panel.
+    *dragging_panel_iterator_ = current_panel;
+    *current_panel_iterator = dragging_panel_;
+    dragging_panel_iterator_ = current_panel_iterator;
   }
 
-  // Updates the position and index of dragging panel as the result of moving
-  // other affected panels.
-  if (current_panel_index != static_cast<int>(dragging_panel_index_) - 1) {
-    dragging_panel_bounds_.set_x(current_panel_left_boundary);
-    dragging_panel_index_ = current_panel_index + 1;
-    panels_[dragging_panel_index_] = dragging_panel;
-  }
+  // Updates the potential final position of dragging panel as the result of
+  // swapping with panels on its right.
+  dragging_panel_bounds_.set_x(current_panel_left_boundary);
 }
 
 void DockedPanelStrip::EndDragging(bool cancelled) {
-  DCHECK(dragging_panel_index_ != kInvalidPanelIndex);
+  DCHECK(dragging_panel_);
 
-  if (cancelled) {
-    Drag(dragging_panel_original_x_ -
-         panels_[dragging_panel_index_]->GetBounds().x());
-  } else {
-    panels_[dragging_panel_index_]->SetPanelBounds(
-        dragging_panel_bounds_);
-  }
+  if (cancelled)
+    Drag(dragging_panel_original_x_ - dragging_panel_->GetBounds().x());
+  else
+    dragging_panel_->SetPanelBounds(dragging_panel_bounds_);
 
-  dragging_panel_index_ = kInvalidPanelIndex;
+  dragging_panel_ = NULL;
 
   DelayedRemove();
 }
@@ -685,16 +668,18 @@ void DockedPanelStrip::OnAutoHidingDesktopBarVisibilityChanged(
 }
 
 void DockedPanelStrip::OnFullScreenModeChanged(bool is_full_screen) {
-  for (size_t i = 0; i < panels_.size(); ++i)
-    panels_[i]->FullScreenModeChanged(is_full_screen);
+  for (Panels::const_iterator iter = panels_.begin();
+       iter != panels_.end(); ++iter) {
+    (*iter)->FullScreenModeChanged(is_full_screen);
+  }
 }
 
 void DockedPanelStrip::RefreshLayout() {
   int rightmost_position = StartingRightPosition();
 
-  size_t panel_index = 0;
-  for (; panel_index < panels_.size(); ++panel_index) {
-    Panel* panel = panels_[panel_index];
+  Panels::const_iterator panel_iter = panels_.begin();
+  for (; panel_iter != panels_.end(); ++panel_iter) {
+    Panel* panel = *panel_iter;
     gfx::Rect new_bounds(panel->GetBounds());
     int x = rightmost_position - new_bounds.width();
 
@@ -720,13 +705,23 @@ void DockedPanelStrip::RefreshLayout() {
   // Add/remove panels from/to overflow. A change in work area or the
   // resize/removal of a panel may affect how many panels fit in the strip.
   OverflowPanelStrip* overflow_strip = panel_manager_->overflow_strip();
-  if (panel_index < panels_.size()) {
-    // Move panels to overflow in reverse to maintain their order.
+  if (panel_iter != panels_.end()) {
     // Prevent layout refresh when panel is removed from this strip.
     disable_layout_refresh_ = true;
-    for (size_t overflow_index = panels_.size() - 1;
-         overflow_index >= panel_index; --overflow_index)
-      panels_[overflow_index]->MoveToStrip(overflow_strip);
+
+    // Keep track of panels to move to overflow in a separate storage since
+    // removing it from the list will invalidate the iterator.
+    std::vector<Panel*> panels_to_move_to_overflow;
+    for (; panel_iter != panels_.end(); ++panel_iter)
+      panels_to_move_to_overflow.push_back(*panel_iter);
+
+    // Move panels to overflow in reverse to maintain their order.
+    for (std::vector<Panel*>::reverse_iterator iter =
+             panels_to_move_to_overflow.rbegin();
+         iter != panels_to_move_to_overflow.rend(); ++iter) {
+      (*iter)->MoveToStrip(overflow_strip);
+    }
+
     disable_layout_refresh_ = false;
   } else {
     // Attempt to add more panels from overflow to the strip.
@@ -749,7 +744,7 @@ void DockedPanelStrip::DelayedMovePanelToOverflow(Panel* panel) {
 
 void DockedPanelStrip::CloseAll() {
   // This should only be called at the end of tests to clean up.
-  DCHECK(dragging_panel_index_ == kInvalidPanelIndex);
+  DCHECK(!dragging_panel_);
   DCHECK(panels_in_temporary_layout_.empty());
 
   // Make a copy of the iterator as closing panels can modify the vector.
@@ -762,5 +757,5 @@ void DockedPanelStrip::CloseAll() {
 }
 
 bool DockedPanelStrip::is_dragging_panel() const {
-  return dragging_panel_index_ != kInvalidPanelIndex;
+  return dragging_panel_ != NULL;
 }

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_PANELS_DOCKED_PANEL_STRIP_H_
 #pragma once
 
+#include <list>
 #include <set>
 #include <vector>
 #include "base/basictypes.h"
@@ -26,7 +27,7 @@ class PanelManager;
 class DockedPanelStrip : public PanelStrip,
                          public PanelMouseWatcherObserver {
  public:
-  typedef std::vector<Panel*> Panels;
+  typedef std::list<Panel*> Panels;
 
   explicit DockedPanelStrip(PanelManager* panel_manager);
   virtual ~DockedPanelStrip();
@@ -148,7 +149,7 @@ class DockedPanelStrip : public PanelStrip,
 
   // Stores the panels that are pending to remove. We want to delay the removal
   // when we're in the process of the dragging.
-  Panels panels_pending_to_remove_;
+  std::vector<Panel*> panels_pending_to_remove_;
 
   // Stores newly created panels that have a temporary layout until they
   // are moved to overflow after a delay.
@@ -162,7 +163,8 @@ class DockedPanelStrip : public PanelStrip,
   bool disable_layout_refresh_;
 
   // Panel to drag.
-  size_t dragging_panel_index_;
+  Panel* dragging_panel_;
+  Panels::iterator dragging_panel_iterator_;
 
   // Original x coordinate of the panel to drag. This is used to get back to
   // the original position when we cancel the dragging.

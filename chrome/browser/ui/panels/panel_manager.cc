@@ -253,7 +253,11 @@ int PanelManager::num_panels() const {
 }
 
 std::vector<Panel*> PanelManager::panels() const {
-  std::vector<Panel*> panels = docked_strip_->panels();
+  std::vector<Panel*> panels;
+  for (DockedPanelStrip::Panels::const_iterator iter =
+           docked_strip_->panels().begin();
+       iter != docked_strip_->panels().end(); ++iter)
+    panels.push_back(*iter);
   for (OverflowPanelStrip::Panels::const_iterator iter =
            overflow_strip_->panels().begin();
        iter != overflow_strip_->panels().end(); ++iter)
