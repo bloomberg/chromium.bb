@@ -317,10 +317,7 @@ arm = _config(
   factory_install_netboot=True,
 )
 
-amd64 = _config(
-  unittests=False,
-  vm_tests=None,
-)
+amd64 = _config()
 
 
 # Builder-specific mixins
@@ -415,13 +412,6 @@ pfq.add_config('arm-tegra2-bin',
   description='arm-tegra2 PFQ',
 )
 
-pfq.add_config('amd64-corei7-bin',
-  amd64,
-  boards=['amd64-corei7'],
-  description='amd64-corei7 PFQ',
-  important=False,
-)
-
 incremental.add_config('x86-generic-incremental',
   boards=['x86-generic'],
 )
@@ -431,14 +421,11 @@ incremental.add_config('arm-tegra2-incremental',
   boards=['tegra2'],
 )
 
-incremental.add_config('amd64-corei7-incremental',
-  amd64,
-  boards=['amd64-corei7'],
-)
-
 incremental.add_config('amd64-generic-incremental',
   amd64,
   boards=['amd64-generic'],
+  # This builder runs on a VM, so it can't run VM tests.
+  vm_tests=None,
 )
 
 paladin.add_config('x86-generic-paladin',
@@ -452,13 +439,6 @@ paladin.add_config('arm-tegra2-paladin',
   arm,
   boards=['tegra2'],
   paladin_builder_name='tegra2 paladin',
-)
-
-paladin.add_config('amd64-corei7-paladin',
-  amd64,
-  boards=['amd64-corei7'],
-  paladin_builder_name='amd64 corei7 paladin',
-  important=False,
 )
 
 paladin.add_config('amd64-generic-paladin',
@@ -477,13 +457,6 @@ commit_queue.add_config('arm-tegra2-commit-queue',
   arm,
   boards=['tegra2'],
   paladin_builder_name='tegra2 commit queue',
-)
-
-commit_queue.add_config('amd64-corei7-commit-queue',
-  amd64,
-  boards=['amd64-corei7'],
-  paladin_builder_name='amd64 corei7 commit queue',
-  important=False,
 )
 
 commit_queue.add_config('x86-mario-commit-queue',
@@ -515,17 +488,12 @@ chrome_pfq.add_config('arm-tegra2-chrome-pre-flight-queue',
   chrome_rev=constants.CHROME_REV_LATEST,
 )
 
-chrome_pfq.add_config('amd64-corei7-chrome-pre-flight-queue',
-  amd64,
-  boards=['amd64-corei7'],
-  chrome_rev=constants.CHROME_REV_LATEST,
-  important=False,
-)
-
 chrome_pfq.add_config('amd64-generic-chrome-pre-flight-queue',
   amd64,
   boards=['amd64-generic'],
   chrome_rev=constants.CHROME_REV_LATEST,
+  # This builder runs on a VM, so it can't run VM tests.
+  vm_tests=None,
 )
 
 
@@ -603,12 +571,6 @@ _toolchain.add_config('arm-tegra2-seaboard-toolchain', arm,
 
 full.add_config('amd64-generic-full',
   boards=['amd64-generic'],
-)
-
-full.add_config('amd64-corei7-full',
-  boards=['amd64-corei7'],
-  unittests=False,
-  vm_tests=None,
 )
 
 _config.add_raw_config('x86-generic-asan',
