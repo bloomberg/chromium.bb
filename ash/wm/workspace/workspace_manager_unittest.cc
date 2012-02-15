@@ -355,11 +355,6 @@ TEST_F(WorkspaceManagerTest, SnapToGrid) {
   w1->SetBounds(gfx::Rect(1, 6, 25, 30));
   w1->SetParent(viewport());
   EXPECT_EQ(gfx::Rect(0, 8, 24, 32), w1->bounds());
-
-  // Verify snap to grid when bounds are set after parented.
-  w1.reset(CreateTestWindow());
-  w1->SetBounds(gfx::Rect(1, 6, 25, 30));
-  EXPECT_EQ(gfx::Rect(0, 8, 24, 32), w1->bounds());
 }
 
 // Assertions around a fullscreen window.

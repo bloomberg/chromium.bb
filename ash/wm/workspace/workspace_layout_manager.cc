@@ -85,6 +85,7 @@ void WorkspaceLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
     SetChildBoundsDirect(child,
                          gfx::Screen::GetMonitorAreaNearestWindow(child));
   } else {
+    // Align non-maximized/fullscreen windows to a grid.
     SetChildBoundsDirect(
         child, workspace_manager_->AlignBoundsToGrid(child->GetTargetBounds()));
   }
@@ -110,17 +111,12 @@ void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(
 void WorkspaceLayoutManager::SetChildBounds(
     aura::Window* child,
     const gfx::Rect& requested_bounds) {
-  if (child == workspace_manager_->ignored_window() ||
-      !workspace_manager_->IsManagedWindow(child)) {
-    // Allow requests for |ignored_window_| or unmanaged windows.
-    SetChildBoundsDirect(child, requested_bounds);
-  } else if (!window_util::IsWindowMaximized(child) &&
-             !window_util::IsWindowFullscreen(child)) {
-    // Align normal windows to the grid.
-    SetChildBoundsDirect(
-        child, workspace_manager_->AlignBoundsToGrid(requested_bounds));
-  }
-  // All other requests we ignore.
+  gfx::Rect child_bounds(requested_bounds);
+  if (window_util::IsWindowMaximized(child))
+    child_bounds = gfx::Screen::GetMonitorWorkAreaNearestWindow(child);
+  else if (window_util::IsWindowFullscreen(child))
+    child_bounds = gfx::Screen::GetMonitorAreaNearestWindow(child);
+  SetChildBoundsDirect(child, child_bounds);
 }
 
 }  // namespace internal
