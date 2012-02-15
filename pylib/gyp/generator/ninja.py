@@ -831,20 +831,35 @@ class NinjaWriter:
 
     # Compute filename prefix: the product prefix, or a default for
     # the product type.
-    DEFAULT_PREFIX = {
-      'loadable_module': 'lib',
-      'shared_library': 'lib',
-      'static_library': 'lib',
-      }
+    if self.flavor == 'win':
+      DEFAULT_PREFIX = {
+        'loadable_module': 'lib',
+        'shared_library': 'lib',
+        'static_library': 'lib',
+        }
+    else:
+      DEFAULT_PREFIX = {
+        'loadable_module': '',
+        'shared_library': '',
+        'static_library': '',
+        }
     prefix = spec.get('product_prefix', DEFAULT_PREFIX.get(type, ''))
 
     # Compute filename extension: the product extension, or a default
     # for the product type.
-    DEFAULT_EXTENSION = {
-      'static_library': 'a',
-      'loadable_module': 'so',
-      'shared_library': 'so',
-      }
+    if self.flavor == 'win':
+      DEFAULT_EXTENSION = {
+        'static_library': 'lib',
+        'loadable_module': 'dll',
+        'shared_library': 'dll',
+        'executable': 'exe',
+        }
+    else:
+      DEFAULT_EXTENSION = {
+        'static_library': 'a',
+        'loadable_module': 'so',
+        'shared_library': 'so',
+        }
     extension = spec.get('product_extension',
                          DEFAULT_EXTENSION.get(type, ''))
     if extension:
@@ -1052,19 +1067,24 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
               '$cflags_pch_cc -c $in -o $out'),
       depfile='$out.d')
   else:
-    # TODO(scottmg): Decide how /showIncludes handling should work in ninja.
+    # TODO(scottmg): Requires deplist branch of ninja for now (for
+    # /showIncludes handling).
     master_ninja.rule(
       'cc',
       description='CC $out',
-      command=('$cc /nologo $defines $includes $cflags $cflags_c '
-              '$cflags_pch_c /c $in /Fo$out'),
-      depfile='$out.d')
+      command=('cmd /c $cc /nologo /showIncludes '
+               '$defines $includes $cflags $cflags_c '
+               '$cflags_pch_c /c $in /Fo$out '
+               '| ninja-deplist-helper -f cl -o $out.dl'),
+      deplist='$out.dl')
     master_ninja.rule(
       'cxx',
       description='CXX $out',
-      command=('$cxx /nologo $defines $includes $cflags $cflags_cc '
-              '$cflags_pch_cc /c $in /Fo$out'),
-      depfile='$out.d')
+      command=('cmd /c $cxx /nologo /showIncludes '
+               '$defines $includes $cflags $cflags_cc '
+               '$cflags_pch_cc /c $in /Fo$out '
+               '| ninja-deplist-helper -f cl -o $out.dl'),
+      deplist='$out.dl')
 
   if flavor != 'mac' and flavor != 'win':
     master_ninja.rule(
@@ -1094,15 +1114,15 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.rule(
       'solink',
       description='SOLINK $out',
-      command=('$ld /nologo /DLL $ldflags /OUT:$out.dll $in $libs'))
+      command=('$ld /nologo /DLL $ldflags /OUT:$out $in $libs'))
     master_ninja.rule(
       'solink_module',
       description='SOLINK(module) $out',
-      command=('$ld /nologo /DLL $ldflags /OUT:$out.dll $in $libs'))
+      command=('$ld /nologo /DLL $ldflags /OUT:$out $in $libs'))
     master_ninja.rule(
       'link',
       description='LINK $out',
-      command=('$ld /nologo $ldflags /OUT:$out.exe $in $libs'))
+      command=('$ld /nologo $ldflags /OUT:$out $in $libs'))
   else:
     master_ninja.rule(
       'objc',
