@@ -81,10 +81,10 @@ const char kGetStartedOwnerParam[] = "first";
 const char kCreateAccountURL[] =
     "https://www.google.com/accounts/NewAccount?service=mail";
 
-// ChromeVox tutorial URL.
-const char kChromeVoxTutorialURL[] =
-    "http://google-axs-chrome.googlecode.com/"
-    "svn/trunk/chromevox_tutorial/interactive_tutorial_start.html";
+// ChromeVox tutorial URL (used in place of "getting started" url when
+// accessibility is enabled).
+const char kChromeVoxTutorialURLPattern[] =
+    "http://www.chromevox.com/tutorial/index.html?lang=%s";
 
 // Landing URL when launching Guest mode to fix captive portal.
 const char kCaptivePortalLaunchURL[] = "http://www.google.com/";
@@ -700,9 +700,9 @@ void ExistingUserController::InitializeStartUrls() const {
   const std::string current_locale =
       StringToLowerASCII(prefs->GetString(prefs::kApplicationLocale));
   std::string start_url;
-  if (prefs->GetBoolean(prefs::kSpokenFeedbackEnabled) &&
-      current_locale.find("en") != std::string::npos) {
-    start_url = kChromeVoxTutorialURL;
+  if (prefs->GetBoolean(prefs::kSpokenFeedbackEnabled)) {
+    const char* url = kChromeVoxTutorialURLPattern;
+    start_url = base::StringPrintf(url, current_locale.c_str());
   } else {
     const char* url = kGetStartedURLPattern;
     start_url = base::StringPrintf(url, current_locale.c_str());
