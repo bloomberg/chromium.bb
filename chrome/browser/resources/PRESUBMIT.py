@@ -36,7 +36,7 @@ def _CommonChecks(input_api, output_api):
 
   try:
     sys.path.insert(0, resources)
-    from web_dev_style import css_checker
+    from web_dev_style import css_checker, js_checker
 
     # TODO(dbeam): Remove this filter eventually when ready.
     def file_filter(affected_file):
@@ -46,6 +46,8 @@ def _CommonChecks(input_api, output_api):
 
     results.extend(css_checker.CSSChecker(input_api, output_api,
                                           file_filter=file_filter).RunChecks())
+    results.extend(js_checker.JSChecker(input_api, output_api,
+                                        file_filter=file_filter).RunChecks())
   finally:
     sys.path = old_path
 
