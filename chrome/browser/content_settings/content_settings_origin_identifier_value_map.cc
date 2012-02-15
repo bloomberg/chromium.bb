@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -149,6 +149,9 @@ void OriginIdentifierValueMap::SetValue(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     Value* value) {
+  DCHECK(primary_pattern.IsValid());
+  DCHECK(secondary_pattern.IsValid());
+  DCHECK(value);
   EntryMapKey key(content_type, resource_identifier);
   PatternPair patterns(primary_pattern, secondary_pattern);
   // This will create the entry and the linked_ptr if needed.

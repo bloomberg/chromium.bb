@@ -231,19 +231,27 @@ void FullscreenController::OnAcceptFullscreenPermission(
   DCHECK_NE(tab_fullscreen_accepted_, fullscreen);
 
   HostContentSettingsMap* settings_map = profile_->GetHostContentSettingsMap();
+  ContentSettingsPattern pattern = ContentSettingsPattern::FromURL(url);
   if (mouse_lock) {
     DCHECK_EQ(mouse_lock_state_, MOUSELOCK_REQUESTED);
-    settings_map->SetContentSetting(ContentSettingsPattern::FromURL(url),
-        ContentSettingsPattern::Wildcard(), CONTENT_SETTINGS_TYPE_MOUSELOCK,
-        std::string(), CONTENT_SETTING_ALLOW);
+    // TODO(markusheintz): We should allow patterns for all possible URLs here.
+    if (pattern.IsValid()) {
+      settings_map->SetContentSetting(
+          pattern, ContentSettingsPattern::Wildcard(),
+          CONTENT_SETTINGS_TYPE_MOUSELOCK, std::string(),
+          CONTENT_SETTING_ALLOW);
+    }
     mouse_lock_state_ =
         fullscreened_tab_->web_contents()->GotResponseToLockMouseRequest(true) ?
         MOUSELOCK_ACCEPTED : MOUSELOCK_NOT_REQUESTED;
   }
   if (!tab_fullscreen_accepted_) {
-    settings_map->SetContentSetting(ContentSettingsPattern::FromURL(url),
-        ContentSettingsPattern::Wildcard(), CONTENT_SETTINGS_TYPE_FULLSCREEN,
-        std::string(), CONTENT_SETTING_ALLOW);
+    if (pattern.IsValid()) {
+      settings_map->SetContentSetting(
+          pattern, ContentSettingsPattern::Wildcard(),
+          CONTENT_SETTINGS_TYPE_FULLSCREEN, std::string(),
+          CONTENT_SETTING_ALLOW);
+    }
     tab_fullscreen_accepted_ = true;
   }
   UpdateFullscreenExitBubbleContent();

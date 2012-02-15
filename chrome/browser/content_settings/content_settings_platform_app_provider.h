@@ -5,11 +5,16 @@
 #ifndef CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_PLATFORM_APP_PROVIDER_H_
 #define CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_PLATFORM_APP_PROVIDER_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/content_settings/content_settings_observable_provider.h"
 #include "chrome/browser/content_settings/content_settings_origin_identifier_value_map.h"
+#include "chrome/common/content_settings.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+
+class Extension;
+class ExtensionService;
 
 namespace content_settings {
 
@@ -17,7 +22,7 @@ namespace content_settings {
 class PlatformAppProvider : public ObservableProvider,
                             public content::NotificationObserver {
  public:
-  PlatformAppProvider();
+  explicit PlatformAppProvider(ExtensionService* extension_service);
 
   virtual ~PlatformAppProvider();
 
@@ -44,11 +49,14 @@ class PlatformAppProvider : public ObservableProvider,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
  private:
+  void SetContentSettingForExtension(const Extension* extension,
+                                     ContentSetting setting);
+
   OriginIdentifierValueMap value_map_;
 
   // Used around accesses to the |value_map_| list to guarantee thread safety.
   mutable base::Lock lock_;
-  content::NotificationRegistrar* registrar_;
+  scoped_ptr<content::NotificationRegistrar> registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformAppProvider);
 };

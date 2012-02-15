@@ -86,9 +86,12 @@ HostContentSettingsMap::HostContentSettingsMap(
     bool incognito)
     : prefs_(prefs),
       is_off_the_record_(incognito) {
-  content_settings::PlatformAppProvider* platform_app_provider =
-      new content_settings::PlatformAppProvider();
-  content_settings_providers_[PLATFORM_APP_PROVIDER] = platform_app_provider;
+  if (extension_service) {
+    content_settings::PlatformAppProvider* platform_app_provider =
+        new content_settings::PlatformAppProvider(extension_service);
+    platform_app_provider->AddObserver(this);
+    content_settings_providers_[PLATFORM_APP_PROVIDER] = platform_app_provider;
+  }
 
   content_settings::ObservableProvider* policy_provider =
       new content_settings::PolicyProvider(prefs_);

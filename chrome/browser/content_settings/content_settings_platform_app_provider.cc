@@ -6,6 +6,7 @@
 
 #include "chrome/browser/content_settings/content_settings_rule.h"
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
@@ -17,14 +18,19 @@
 
 namespace content_settings {
 
-PlatformAppProvider::PlatformAppProvider()
+PlatformAppProvider::PlatformAppProvider(ExtensionService* extension_service)
     : registrar_(new content::NotificationRegistrar) {
+  Profile* profile = extension_service->profile();
   registrar_->Add(this, chrome::NOTIFICATION_EXTENSION_HOST_CREATED,
-                  content::NotificationService::AllSources());
+                  content::Source<Profile>(profile));
+  registrar_->Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+                  content::Source<Profile>(profile));
+  registrar_->Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                  content::Source<Profile>(profile));
 }
 
 PlatformAppProvider::~PlatformAppProvider() {
-  DCHECK(!registrar_);
+  DCHECK(!registrar_.get());
 }
 
 RuleIterator* PlatformAppProvider::GetRuleIterator(
@@ -49,30 +55,68 @@ void PlatformAppProvider::ClearAllContentSettingsRules(
 void PlatformAppProvider::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_EXTENSION_HOST_CREATED);
-  const ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
-  if (!host->extension()->is_platform_app())
-    return;
-
-  base::AutoLock lock(lock_);
-  scoped_ptr<ContentSettingsPattern::BuilderInterface> pattern_builder(
-      ContentSettingsPattern::CreateBuilder(false));
-  pattern_builder->WithScheme(chrome::kExtensionScheme);
-  pattern_builder->WithHost(host->extension()->id());
-  pattern_builder->WithPathWildcard();
-
-  value_map_.SetValue(pattern_builder->Build(),
-                      ContentSettingsPattern::Wildcard(),
-                      CONTENT_SETTINGS_TYPE_PLUGINS,
-                      ResourceIdentifier(""),
-                      Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+  switch (type) {
+    case chrome::NOTIFICATION_EXTENSION_HOST_CREATED: {
+      const ExtensionHost* host =
+          content::Details<ExtensionHost>(details).ptr();
+      if (host->extension()->is_platform_app())
+        SetContentSettingForExtension(host->extension(), CONTENT_SETTING_BLOCK);
+      break;
+    }
+    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+      const Extension* extension = content::Details<Extension>(details).ptr();
+      if (extension->plugins().size() > 0)
+        SetContentSettingForExtension(extension, CONTENT_SETTING_ALLOW);
+      break;
+    }
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+      const UnloadedExtensionInfo& info =
+          *(content::Details<UnloadedExtensionInfo>(details).ptr());
+      if (info.extension->plugins().size() > 0)
+        SetContentSettingForExtension(info.extension, CONTENT_SETTING_DEFAULT);
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
 }
 
 void PlatformAppProvider::ShutdownOnUIThread() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  registrar_->RemoveAll();
-  delete registrar_;
-  registrar_ = NULL;
+  RemoveAllObservers();
+  registrar_.reset();
+}
+
+void PlatformAppProvider::SetContentSettingForExtension(
+    const Extension* extension,
+    ContentSetting setting) {
+  scoped_ptr<ContentSettingsPattern::BuilderInterface> pattern_builder(
+      ContentSettingsPattern::CreateBuilder(false));
+  pattern_builder->WithScheme(chrome::kExtensionScheme);
+  pattern_builder->WithHost(extension->id());
+  pattern_builder->WithPathWildcard();
+
+  ContentSettingsPattern primary_pattern = pattern_builder->Build();
+  ContentSettingsPattern secondary_pattern = ContentSettingsPattern::Wildcard();
+  {
+    base::AutoLock lock(lock_);
+    if (setting == CONTENT_SETTING_DEFAULT) {
+      value_map_.DeleteValue(primary_pattern,
+                             secondary_pattern,
+                             CONTENT_SETTINGS_TYPE_PLUGINS,
+                             ResourceIdentifier(""));
+    } else {
+      value_map_.SetValue(primary_pattern,
+                          secondary_pattern,
+                          CONTENT_SETTINGS_TYPE_PLUGINS,
+                          ResourceIdentifier(""),
+                          Value::CreateIntegerValue(setting));
+    }
+  }
+  NotifyObservers(primary_pattern,
+                  secondary_pattern,
+                  CONTENT_SETTINGS_TYPE_PLUGINS,
+                  ResourceIdentifier(""));
 }
 
 }  // namespace content_settings

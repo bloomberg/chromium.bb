@@ -210,8 +210,6 @@ bool ContentSettingsPattern::Builder::Validate(const PatternParts& parts) {
 
   // If the pattern is for an extension URL test if it is valid.
   if (parts.scheme == std::string(chrome::kExtensionScheme) &&
-      !parts.host.empty() &&
-      !parts.has_domain_wildcard &&
       parts.port.empty() &&
       !parts.is_port_wildcard) {
     return true;
