@@ -481,11 +481,12 @@ void NaClValidatorStateIterFinish(NaClValidatorState *vstate) {
   NaClValidatorStateIterFinishInline(vstate);
 }
 
-NaClValidatorState *NaClValidatorStateCreate(const NaClPcAddress vbase,
-                                             const NaClMemorySize codesize,
-                                             const uint8_t alignment,
-                                             const NaClOpKind base_register,
-                                             const CPUFeatures *features) {
+NaClValidatorState *NaClValidatorStateCreate(
+    const NaClPcAddress vbase,
+    const NaClMemorySize codesize,
+    const uint8_t alignment,
+    const NaClOpKind base_register,
+    const NaClCPUFeaturesX86 *features) {
   NaClValidatorState *vstate;
   NaClValidatorState *return_value = NULL;
   DEBUG(NaClLog(LOG_INFO,

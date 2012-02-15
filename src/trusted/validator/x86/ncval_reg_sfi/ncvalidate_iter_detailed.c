@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -12,7 +12,7 @@ NaClValidatorState* NaClValidatorStateCreateDetailed(
     const NaClMemorySize sz,
     const uint8_t alignment,
     const NaClOpKind base_register,
-    const CPUFeatures* features) {
+    const NaClCPUFeaturesX86* features) {
   NaClValidatorState* state =
       NaClValidatorStateCreate(vbase, sz, alignment, base_register, features);
   if (state != NULL) {

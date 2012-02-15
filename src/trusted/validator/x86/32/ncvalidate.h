@@ -28,6 +28,6 @@ NaClValidationStatus NCApplyValidatorStubout_x86_32(
     uint8_t *data,
     size_t size,
     int bundle_size,
-    CPUFeatures *cpu_features);
+    NaClCPUFeaturesX86 *cpu_features);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_32_NCVALIDATE_H_ */

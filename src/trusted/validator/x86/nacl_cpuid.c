@@ -338,16 +338,16 @@ static void CheckNaClArchFeatures(NaClCPUData* data,
   }
 }
 
-int NaClArchSupported(CPUFeatures *features) {
+int NaClArchSupported(NaClCPUFeaturesX86 *features) {
   return (features->arch_features.f_cpuid_supported &&
           features->arch_features.f_cpu_supported);
 }
 
-void NaClClearCPUFeatures(CPUFeatures *features) {
+void NaClClearCPUFeatures(NaClCPUFeaturesX86 *features) {
   memset(features, 0, sizeof(*features));
 }
 
-void NaClSetAllCPUFeatures(CPUFeatures *features) {
+void NaClSetAllCPUFeatures(NaClCPUFeaturesX86 *features) {
   /* Be a little more pedantic than using memset because we don't know exactly
    * how the structure is laid out.  If we use memset, fields may be initialized
    * to 0xff instead of 1 ... this isn't the end of the world but it can
@@ -363,11 +363,12 @@ void NaClSetAllCPUFeatures(CPUFeatures *features) {
   }
 }
 
-void NaClCopyCPUFeatures(CPUFeatures* target, const CPUFeatures* source) {
-  memcpy(target, source, sizeof(CPUFeatures));
+void NaClCopyCPUFeatures(NaClCPUFeaturesX86* target,
+                         const NaClCPUFeaturesX86* source) {
+  memcpy(target, source, sizeof(NaClCPUFeaturesX86));
 }
 
-void NaClSetCPUFeature(CPUFeatures *features, NaClCPUFeatureID id,
+void NaClSetCPUFeature(NaClCPUFeaturesX86 *features, NaClCPUFeatureID id,
                        int state) {
   features->data[id] = (char) state;
 }
@@ -382,7 +383,7 @@ const char* NaClGetCPUFeatureName(NaClCPUFeatureID id) {
  * the hardware. Hence, if a race occurs, the validator may reject
  * some features that should not be rejected.
  */
-static void GetCPUFeatures(NaClCPUData* data, CPUFeatures *cpuf) {
+static void GetCPUFeatures(NaClCPUData* data, NaClCPUFeaturesX86 *cpuf) {
   int id;
   NaClClearCPUFeatures(cpuf);
   CheckNaClArchFeatures(data, &cpuf->arch_features);
@@ -410,7 +411,7 @@ void NaClCPUDataGet(NaClCPUData* data) {
   CacheGetCPUIDString(data);
 }
 
-void NaClGetCurrentCPUFeatures(CPUFeatures *cpu_features) {
+void NaClGetCurrentCPUFeatures(NaClCPUFeaturesX86 *cpu_features) {
   NaClCPUData cpu_data;
   NaClCPUDataGet(&cpu_data);
   GetCPUFeatures(&cpu_data, cpu_features);

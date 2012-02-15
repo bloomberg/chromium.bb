@@ -58,7 +58,7 @@ void NCValidateSetNumDiagnostics(struct NCValidatorState *vstate,
 struct NCValidatorState *NCValidateInit(const NaClPcAddress vbase,
                                         const NaClMemorySize codesize,
                                         const uint8_t alignment,
-                                        CPUFeatures *features);
+                                        NaClCPUFeaturesX86 *features);
 
 /*
  * Allows "stub out mode" to be enabled, in which some unsafe
@@ -98,7 +98,7 @@ void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase,
  */
 int NCValidateSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
                           NaClPcAddress vbase, size_t sz, uint8_t alignment,
-                          CPUFeatures *features);
+                          NaClCPUFeaturesX86 *features);
 
 /* Check targets and alignment. Returns non-zero if there are */
 /* safety issues, else returns 1                              */

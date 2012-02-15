@@ -137,9 +137,9 @@ void NCBadInstructionError(const struct NCDecoderInst *dinst,
  * it uses the injected value this pointer points to as the corresponding
  * CPU id results to use.
  */
-static CPUFeatures *nc_validator_features = NULL;
+static NaClCPUFeaturesX86 *nc_validator_features = NULL;
 
-void NCValidateSetCPUFeatures(CPUFeatures *new_features) {
+void NCValidateSetCPUFeatures(NaClCPUFeaturesX86 *new_features) {
   nc_validator_features = new_features;
 }
 
@@ -333,7 +333,7 @@ static void NCJumpSummarize(struct NCValidatorState* vstate);
 struct NCValidatorState *NCValidateInit(const NaClPcAddress vbase,
                                         const NaClPcAddress codesize,
                                         const uint8_t alignment,
-                                        CPUFeatures *features) {
+                                        NaClCPUFeaturesX86 *features) {
   struct NCValidatorState *vstate = NULL;
 
   dprint(("NCValidateInit(%"NACL_PRIxNaClPcAddressAll
@@ -710,7 +710,7 @@ static const size_t kMaxValidInstLength = 11;
 static const int kModRmModFieldDefinesRegisterRef = 0x3;
 
 static Bool ValidateInst(const NCDecoderInst *dinst) {
-  CPUFeatures *cpufeatures;
+  NaClCPUFeaturesX86 *cpufeatures;
   int squashme = 0;
   NCValidatorState* vstate;
   if (dinst == NULL) return TRUE;
@@ -985,7 +985,7 @@ void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase, NaClMemorySize sz,
 
 int NCValidateSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
                           NaClPcAddress vbase, size_t sz, uint8_t alignment,
-                          CPUFeatures *features) {
+                          NaClCPUFeaturesX86 *features) {
   /* TODO(karl): Refactor to use inheritance from NCDecoderStatePair? */
   NCDecoderStatePair pair;
   NCValidatorState* new_vstate;

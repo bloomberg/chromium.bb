@@ -26,7 +26,7 @@
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate_internaltypes.h"
 
 /* Define the set of CPU features to use while validating. */
-static CPUFeatures g_ncval_cpu_features;
+static NaClCPUFeaturesX86 g_ncval_cpu_features;
 
 void Info(const char *fmt, ...)
 {

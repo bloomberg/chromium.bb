@@ -12,7 +12,7 @@
 #if NACL_ARCH(NACL_TARGET_ARCH) == NACL_x86
 
 #include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
-typedef CPUFeatures NaClCPUFeatures;
+typedef NaClCPUFeaturesX86 NaClCPUFeatures;
 
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
 

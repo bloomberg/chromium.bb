@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -28,7 +28,7 @@ struct NaClInstIter;
 /* Defines the set of cpu feature checks applied to the code. */
 typedef struct NaClCpuCheckState {
   /* The standard CPU features. */
-  CPUFeatures cpu_features;
+  NaClCPUFeaturesX86 cpu_features;
   /* Check that both f_CMOV and f_x87 is defined. */
   Bool f_CMOV_and_x87;
   /* Check that either f_MMX or f_SSE2 is defined. */

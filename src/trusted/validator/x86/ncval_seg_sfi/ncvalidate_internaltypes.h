@@ -61,7 +61,7 @@ typedef struct NCValidatorState {
    */
   NCDecoderState dstate;
   NCDecoderInst inst_buffer[kNCValidatorInstBufferSize];
-  CPUFeatures cpufeatures;  /* from CPUID bit masks; see nacl_cpuid.c */
+  NaClCPUFeaturesX86 cpufeatures;  /* from CPUID bit masks; see nacl_cpuid.c */
   NaClPcAddress iadrbase;
   NaClMemorySize codesize;
   uint8_t alignment;

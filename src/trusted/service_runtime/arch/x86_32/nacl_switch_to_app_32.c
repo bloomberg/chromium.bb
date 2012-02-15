@@ -24,7 +24,7 @@
 static NORETURN_PTR void (*NaClSwitch)(struct NaClThreadContext *context);
 
 void NaClInitSwitchToApp(struct NaClApp *nap) {
-  CPUFeatures cpu_features;
+  NaClCPUFeaturesX86 cpu_features;
 
   UNREFERENCED_PARAMETER(nap);
 

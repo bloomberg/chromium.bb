@@ -25,7 +25,7 @@ static NaClValidationStatus NCApplyValidatorSilently_x86_32(
     uint8_t *data,
     size_t size,
     int bundle_size,
-    CPUFeatures *cpu_features) {
+    NaClCPUFeaturesX86 *cpu_features) {
   struct NCValidatorState *vstate;
   int validator_result = 0;
 
@@ -43,7 +43,7 @@ NaClValidationStatus NCApplyValidatorStubout_x86_32(
     uint8_t *data,
     size_t size,
     int bundle_size,
-    CPUFeatures *cpu_features) {
+    NaClCPUFeaturesX86 *cpu_features) {
   struct NCValidatorState *vstate;
 
   vstate = NCValidateInitDetailed(guest_addr, size, bundle_size, cpu_features);
@@ -62,7 +62,7 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, NACL_TARGET_ARCH, 32) (
     uint8_t *data,
     size_t size,
     int bundle_size,
-    CPUFeatures *cpu_features) {
+    NaClCPUFeaturesX86 *cpu_features) {
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
   assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {
@@ -92,7 +92,7 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement, x86, 32)
      uint8_t *data_new,
      size_t size,
      int bundle_size,
-     CPUFeatures *cpu_features) {
+     NaClCPUFeaturesX86 *cpu_features) {
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
   assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {

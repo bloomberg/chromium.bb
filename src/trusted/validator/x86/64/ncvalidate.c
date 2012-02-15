@@ -24,7 +24,7 @@ NaClValidationStatus NaClValidatorSetup_x86_64(
     uintptr_t guest_addr,
     size_t size,
     int bundle_size,
-    CPUFeatures *cpu_features,
+    NaClCPUFeaturesX86 *cpu_features,
     struct NaClValidatorState** vstate_ptr) {
   *vstate_ptr = NaClValidatorStateCreate(guest_addr, size, bundle_size, RegR15,
                                          cpu_features);
@@ -50,7 +50,7 @@ static NaClValidationStatus NaClApplyValidatorSilently_x86_64(
     uint8_t *data,
     size_t size,
     int bundle_size,
-    CPUFeatures *cpu_features) {
+    NaClCPUFeaturesX86 *cpu_features) {
   struct NaClValidatorState *vstate;
   NaClValidationStatus status =
       NaClValidatorSetup_x86_64(guest_addr, size, bundle_size, cpu_features,
@@ -66,7 +66,7 @@ NaClValidationStatus NaClApplyValidatorStubout_x86_64(
     uint8_t *data,
     size_t size,
     int bundle_size,
-    CPUFeatures *cpu_features) {
+    NaClCPUFeaturesX86 *cpu_features) {
   struct NaClValidatorState *vstate;
   NaClValidationStatus status =
       NaClValidatorSetup_x86_64(guest_addr, size, bundle_size, cpu_features,
@@ -84,7 +84,7 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, x86, 64) (
     uint8_t *data,
     size_t size,
     int bundle_size,
-    CPUFeatures *cpu_features) {
+    NaClCPUFeaturesX86 *cpu_features) {
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
   assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {
@@ -112,7 +112,7 @@ static NaClValidationStatus NaClApplyValidatorPair(
     uint8_t *data_new,
     size_t size,
     int bundle_size,
-    CPUFeatures *cpu_features) {
+    NaClCPUFeaturesX86 *cpu_features) {
   int is_ok;
   struct NaClValidatorState *vstate;
   NaClValidationStatus status =
@@ -133,7 +133,7 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement, x86, 64)
      uint8_t *data_new,
      size_t size,
      int bundle_size,
-     CPUFeatures *cpu_features) {
+     NaClCPUFeaturesX86 *cpu_features) {
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
   assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {

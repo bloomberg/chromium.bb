@@ -17,7 +17,7 @@
 #include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
 
 int main(int argc, char *argv[]) {
-  CPUFeatures fv;
+  NaClCPUFeaturesX86 fv;
   NaClCPUData cpu_data;
   int feature_id;
   NaClCPUDataGet(&cpu_data);

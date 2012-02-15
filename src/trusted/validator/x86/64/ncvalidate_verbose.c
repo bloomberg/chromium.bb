@@ -28,7 +28,7 @@ static NaClValidationStatus NaClApplyValidatorVerbosely_x86_64(
     uint8_t *data,
     size_t size,
     int bundle_size,
-    CPUFeatures *cpu_features) {
+    NaClCPUFeaturesX86 *cpu_features) {
   struct NaClValidatorState *vstate;
   NaClValidationStatus status =
       NaClValidatorSetup_x86_64(guest_addr, size, bundle_size, cpu_features,
@@ -48,7 +48,7 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorVerbosely, x86, 64)
      uint8_t *data,
      size_t size,
      int bundle_size,
-     CPUFeatures *cpu_features) {
+     NaClCPUFeaturesX86 *cpu_features) {
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
   assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {

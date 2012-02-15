@@ -97,7 +97,7 @@ static Bool NACL_FLAGS_analyze_segments = FALSE;
 static int NACL_FLAGS_validate_attempts = 1;
 
 /* Define the set of CPU features to use while validating. */
-static CPUFeatures ncval_cpu_features;
+static NaClCPUFeaturesX86 ncval_cpu_features;
 
 /* Define whether timing should be applied when running the validator. */
 static Bool NACL_FLAGS_print_timing = FALSE;

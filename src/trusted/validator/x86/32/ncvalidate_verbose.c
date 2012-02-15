@@ -30,7 +30,7 @@ static NaClValidationStatus NCApplyValidatorVerbosely_x86_32(
     uint8_t *data,
     size_t size,
     int bundle_size,
-    CPUFeatures *cpu_features) {
+    NaClCPUFeaturesX86 *cpu_features) {
   int validator_result = 0;
   struct NCValidatorState *vstate;
 
@@ -52,7 +52,7 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorVerbosely, x86, 32)
      uint8_t *data,
      size_t size,
      int bundle_size,
-     CPUFeatures *cpu_features) {
+     NaClCPUFeaturesX86 *cpu_features) {
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
   assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {

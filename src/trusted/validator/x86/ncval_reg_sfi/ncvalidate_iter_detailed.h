@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -76,6 +76,6 @@ NaClValidatorState* NaClValidatorStateCreateDetailed(
     const NaClMemorySize sz,
     const uint8_t alignment,
     const NaClOpKind base_register,
-    const CPUFeatures* features);
+    const NaClCPUFeaturesX86* features);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NCVALIDATE_ITER_DETAILED_H__ */

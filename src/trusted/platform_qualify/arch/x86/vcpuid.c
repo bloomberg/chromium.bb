@@ -529,7 +529,7 @@ static int DoTest(int (*thetest)(), const char *s) {
 # error Please specify platform as NACL_LINUX, NACL_OSX or NACL_WINDOWS
 #endif
 
-static int DoCPUFeatureTest(CPUFeatures *features, NaClCPUFeatureID id,
+static int DoCPUFeatureTest(NaClCPUFeaturesX86 *features, NaClCPUFeatureID id,
                             int (*thetest)()) {
   if (NaClGetCPUFeature(features, id))
     return DoTest(thetest, NaClGetCPUFeatureName(id));
@@ -545,7 +545,7 @@ static void PrintFail(const char *why) {
 #define TEST_NEGATIVE_CASE 0
 int CPUIDImplIsValid() {
   int rcode;
-  CPUFeatures cpuf;
+  NaClCPUFeaturesX86 cpuf;
   NaClGetCurrentCPUFeatures(&cpuf);
 
   if (!cpuf.arch_features.f_cpuid_supported) {

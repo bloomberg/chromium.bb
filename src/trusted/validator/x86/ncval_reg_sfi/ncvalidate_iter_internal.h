@@ -54,7 +54,7 @@ struct NaClValidatorState {
   /* Holds the error reporting object to use. */
   NaClErrorReporter* error_reporter;
   /* Holds the cpu features of the machine it is running on. */
-  CPUFeatures cpu_features;
+  NaClCPUFeaturesX86 cpu_features;
   /* Flag controlling whether an opcode histogram is collected while
    * validating.
    */

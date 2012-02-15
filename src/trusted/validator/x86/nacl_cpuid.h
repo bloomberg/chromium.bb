@@ -63,7 +63,7 @@ typedef struct nacl_arch_features {
 typedef struct cpu_feature_struct {
   nacl_arch_features arch_features;
   char data[NaClCPUFeature_Max];
-} CPUFeatures;
+} NaClCPUFeaturesX86;
 
 /* Define the maximum length of a CPUID string.
  *
@@ -116,17 +116,17 @@ void NaClCPUDataGet(NaClCPUData* data);
 char *GetCPUIDString(NaClCPUData* data);
 
 /* Set cpu check state fields to all true. */
-void NaClSetAllCPUFeatures(CPUFeatures *features);
+void NaClSetAllCPUFeatures(NaClCPUFeaturesX86 *features);
 
 /* Clear cpu check state fields (i.e. set all fields to false). */
-void NaClClearCPUFeatures(CPUFeatures *features);
+void NaClClearCPUFeatures(NaClCPUFeaturesX86 *features);
 
 /* Set a feature. */
-void NaClSetCPUFeature(CPUFeatures *features, NaClCPUFeatureID id,
+void NaClSetCPUFeature(NaClCPUFeaturesX86 *features, NaClCPUFeatureID id,
                        int state);
 
 /* Query whether a feature is supported. */
-static INLINE int NaClGetCPUFeature(CPUFeatures *features,
+static INLINE int NaClGetCPUFeature(NaClCPUFeaturesX86 *features,
                                     NaClCPUFeatureID id) {
   return features->data[id];
 }
@@ -135,12 +135,13 @@ static INLINE int NaClGetCPUFeature(CPUFeatures *features,
 const char* NaClGetCPUFeatureName(NaClCPUFeatureID id);
 
 /* Copy a set of cpu features. */
-void NaClCopyCPUFeatures(CPUFeatures* target, const CPUFeatures* source);
+void NaClCopyCPUFeatures(NaClCPUFeaturesX86* target,
+                         const NaClCPUFeaturesX86* source);
 
 /* Get the features for the CPU this code is running on. */
-void NaClGetCurrentCPUFeatures(CPUFeatures *cpu_features);
+void NaClGetCurrentCPUFeatures(NaClCPUFeaturesX86 *cpu_features);
 
 /* Returns true if CPUID is defined, and the CPU is supported. */
-int NaClArchSupported(CPUFeatures *features);
+int NaClArchSupported(NaClCPUFeaturesX86 *features);
 
 #endif /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NACL_CPUID_H_ */

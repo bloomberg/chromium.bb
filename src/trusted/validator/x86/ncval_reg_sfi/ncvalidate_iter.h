@@ -99,11 +99,12 @@ typedef struct NaClValidatorState NaClValidatorState;
  *   A pointer to an initialized validator state if everything is ok, NULL
  *  otherwise.
  */
-NaClValidatorState* NaClValidatorStateCreate(const NaClPcAddress vbase,
-                                             const NaClMemorySize codesize,
-                                             const uint8_t alignment,
-                                             const NaClOpKind base_register,
-                                             const CPUFeatures *features);
+NaClValidatorState* NaClValidatorStateCreate(
+    const NaClPcAddress vbase,
+    const NaClMemorySize codesize,
+    const uint8_t alignment,
+    const NaClOpKind base_register,
+    const NaClCPUFeaturesX86 *features);
 
 /* Returns true if the instruction iterator of the validator has any more
  * instructions. Also does any necessary internal caching if there are
