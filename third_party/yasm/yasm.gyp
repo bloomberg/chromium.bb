@@ -545,11 +545,11 @@
           'xcode_settings': {
             'WARNING_CFLAGS': [
               # re2c is missing CLOSEVOP from one switch.
-              '-Wno-switch-enum',
+              '-Wno-switch',
             ],
           },
           'cflags': [
-            '-Wno-switch-enum',
+            '-Wno-switch',
           ],
         }],
       ],

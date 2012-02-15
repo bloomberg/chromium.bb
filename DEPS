@@ -41,7 +41,7 @@ vars = {
   "libphonenumber_revision": "425",
   "libvpx_revision": "119942",
   "lss_revision": "9",
-  "ffmpeg_revision": "120865",
+  "ffmpeg_revision": "122092",
   "sfntly_revision": "118",
   "skia_revision": "3180",
   # Three lines of non-changing comments so that
@@ -50,7 +50,7 @@ vars = {
   "v8_revision": "10703",
   "webrtc_revision": "1538",
   "jsoncpp_revision": "248",
-  "nss_revision": "117974",
+  "nss_revision": "122093",
   "rlz_revision": "52",
 }
 
@@ -87,7 +87,7 @@ deps = {
     "/trunk/deps/third_party/WebKit@76115",
 
   "src/third_party/icu":
-    "/trunk/deps/third_party/icu46@121777",
+    "/trunk/deps/third_party/icu46@122103",
 
   "src/third_party/hunspell":
    "/trunk/deps/third_party/hunspell@110423",
