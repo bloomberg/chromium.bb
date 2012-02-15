@@ -281,10 +281,9 @@ void SpdySM::OnControl(const SpdyControlFrame* frame) {
   }
 }
 
-bool SpdySM::OnControlFrameHeaderData(
-    const spdy::SpdyControlFrame* control_frame,
-    const char* header_data,
-    size_t len) {
+bool SpdySM::OnControlFrameHeaderData(spdy::SpdyStreamId stream_id,
+                                      const char* header_data,
+                                      size_t len) {
   DCHECK(false);
   return false;
 }
