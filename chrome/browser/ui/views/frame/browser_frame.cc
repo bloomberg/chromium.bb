@@ -67,6 +67,16 @@ void BrowserFrame::InitBrowserFrame() {
     // from being changed to top-most after the window is created without
     // activation.
     params.type = views::Widget::InitParams::TYPE_PANEL;
+  } else if (browser_view_->browser()->is_type_popup()) {
+#if defined(USE_AURA)
+    // Note: InitParams::TYPE_POPUP is currently used by transient windows
+    // which do not have a NonClientFrameView. Use TYPE_BUBBLE instead.
+    params.type = views::Widget::InitParams::TYPE_BUBBLE;
+    // In compact mode there is no launcher, so we need to keep panels always
+    // on top so they do not get lost.
+    if (ash::Shell::GetInstance()->IsWindowModeCompact())
+      params.keep_on_top = true;
+#endif
   }
 #if defined(USE_AURA)
   CommandLine* command_line = CommandLine::ForCurrentProcess();
