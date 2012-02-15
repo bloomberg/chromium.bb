@@ -242,10 +242,19 @@ TEST_F(UnloadTest, DISABLED_CrossSiteInfiniteBeforeUnloadAsync) {
   NavigateToNolistenersFileTwiceAsync();
 }
 
+#if defined(OS_LINUX)
+// Flaky 86469.
+#define MAYBE_CrossSiteInfiniteBeforeUnloadSync \
+    DISABLED_CrossSiteInfiniteBeforeUnloadSync
+#else
+#define MAYBE_CrossSiteInfiniteBeforeUnloadSync \
+    CrossSiteInfiniteBeforeUnloadSync
+#endif
+
 // Navigate to a page with an infinite beforeunload handler.
 // Then two two sync crosssite requests to ensure
 // we correctly nav to each one.
-TEST_F(UnloadTest, CrossSiteInfiniteBeforeUnloadSync) {
+TEST_F(UnloadTest, MAYBE_CrossSiteInfiniteBeforeUnloadSync) {
   // Tests makes no sense in single-process mode since the renderer is hung.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return;
@@ -359,7 +368,7 @@ TEST_F(UnloadTest, BrowserCloseInfiniteUnload) {
   LoadUrlAndQuitBrowser(INFINITE_UNLOAD_HTML, L"infiniteunload");
 }
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_LINUX)
 // Flakily fails, times out: http://crbug.com/78803
 // Flakily fails: http://crbug.com/86469
 #define MAYBE_BrowserCloseInfiniteBeforeUnload \
@@ -376,9 +385,16 @@ TEST_F(UnloadTest, MAYBE_BrowserCloseInfiniteBeforeUnload) {
   LoadUrlAndQuitBrowser(INFINITE_BEFORE_UNLOAD_HTML, L"infinitebeforeunload");
 }
 
+#if defined(OS_LINUX)
+// Flaky 86469.
+#define MAYBE_BrowserCloseInfiniteUnloadAlert \
+        DISABLED_BrowserCloseInfiniteUnloadAlert
+#else
+#define MAYBE_BrowserCloseInfiniteUnloadAlert BrowserCloseInfiniteUnloadAlert
+#endif
 // Tests closing the browser on a page with an unload listener registered where
 // the unload handler has an infinite loop followed by an alert.
-TEST_F(UnloadTest, BrowserCloseInfiniteUnloadAlert) {
+TEST_F(UnloadTest, MAYBE_BrowserCloseInfiniteUnloadAlert) {
   // Tests makes no sense in single-process mode since the renderer is hung.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return;
