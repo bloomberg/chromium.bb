@@ -222,7 +222,7 @@ std::string ConvertIPv6AddressToString(const sockaddr_in6* a,
 
   return description;
 }
-#endif  // OS_WIN || OS_MAC
+#endif  // OS_WIN || OS_MACOSX
 
 PP_Var Describe(PP_Module /*module*/,
                 const struct PP_NetAddress_Private* addr,
