@@ -663,6 +663,11 @@ internal_arm_paladin.add_config('kaen-paladin',
   boards=['tegra2_kaen'],
 )
 
+internal_arm_paladin.add_config('ironhide-paladin',
+  boards=['ironhide'],
+  important=False,
+)
+
 internal_paladin.add_config('zgb-paladin',
   boards=['x86-zgb'],
   important=False,
