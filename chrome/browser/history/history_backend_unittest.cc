@@ -208,7 +208,13 @@ void HistoryBackendTestDelegate::StartTopSitesMigration(int backend_id) {
   test_->backend_->MigrateThumbnailsDatabase();
 }
 
-TEST_F(HistoryBackendTest, Loaded) {
+// http://crbug.com/114287
+#if defined(OS_WIN)
+#define MAYBE_Loaded DISABLED_Loaded
+#elif
+#define MAYBE_Loaded Loaded
+#endif // defined(OS_WIN)
+TEST_F(HistoryBackendTest, MAYBE_Loaded) {
   ASSERT_TRUE(backend_.get());
   ASSERT_TRUE(loaded_);
 }
