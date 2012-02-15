@@ -26,13 +26,8 @@ class DownloadsApiTest : public ExtensionApiTest {
   ScopedTempDir tmpdir;
 };
 
-// Disabled on Mac. http://crbug.com/101170
-#if defined(OS_MACOSX)
-  #define MAYBE_Downloads DISABLED_Downloads
-#else
-  #define MAYBE_Downloads Downloads
-#endif
-IN_PROC_BROWSER_TEST_F(DownloadsApiTest, MAYBE_Downloads) {
+// http://crbug.com/101170
+IN_PROC_BROWSER_TEST_F(DownloadsApiTest, FAILS_DownloadsApiTest) {
   SetUpTempDownloadsDir();
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("downloads")) << message_;
