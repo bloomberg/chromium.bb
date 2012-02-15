@@ -510,10 +510,12 @@ class ChromeEndureDocsTest(ChromeEndureBaseTest):
     # Log into a test Google account and open up Google Docs.
     self._LoginToGoogleAccount()
     self.NavigateToURL('http://docs.google.com')
-    loaded_tab_title = self.GetActiveTabTitle()
-    self.assertTrue(self._tab_title_substring in loaded_tab_title,
-                    msg='Loaded tab title does not contain "Docs": "%s"' %
-                        loaded_tab_title)
+    self.assertTrue(
+        self.WaitUntil(lambda: self._tab_title_substring in
+                               self.GetActiveTabTitle(),
+                       timeout=60, expect_retval=True, retry_sleep=1),
+        msg='Timed out waiting for Docs to load. Tab title is: %s' %
+            self.GetActiveTabTitle())
 
     # Interact with Google Docs for the duration of the test.  Here, we repeat
     # the following sequence of interactions: click the "Owned by me" button,
