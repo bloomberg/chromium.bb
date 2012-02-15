@@ -47,10 +47,13 @@ namespace {
 // TODO(tsepez) chrome-extension: permits the ChromeVox screen reader
 //     extension to function on these pages.  Remove it when the extension
 //     is updated to stop injecting script into the pages.
-const char kChromeURLContentSecurityPolicyHeader[] =
-    "X-WebKit-CSP: object-src 'self'; script-src chrome://resources "
+const char kChromeURLContentSecurityPolicyHeaderBase[] =
+    "X-WebKit-CSP: script-src chrome://resources "
     "chrome-extension://mndnfokpggljbaajbnioimlmbfngpief "
-    "'self' 'unsafe-eval'";
+    "'self' 'unsafe-eval'; ";
+
+// TODO(tsepez) The following should be replaced with a centralized table.
+// See crbug.com/104631.
 
 // If you are inserting new exemptions into this list, then you have a bug.
 // It is not acceptable to disable content-security-policy on chrome:// pages
@@ -89,8 +92,43 @@ class ChromeURLContentSecurityPolicyExceptionSet
   }
 };
 
+// It is OK to add URLs to this set which slightly reduces the CSP for them.
+class ChromeURLContentSecurityPolicyObjectTagSet
+    : public std::set<std::string> {
+ public:
+  ChromeURLContentSecurityPolicyObjectTagSet() : std::set<std::string>() {
+    insert(chrome::kChromeUIPrintHost);
+  }
+};
+
 base::LazyInstance<ChromeURLContentSecurityPolicyExceptionSet>
-    g_chrome_url_content_security_policy_exceptions = LAZY_INSTANCE_INITIALIZER;
+    g_chrome_url_content_security_policy_exception_set =
+        LAZY_INSTANCE_INITIALIZER;
+
+base::LazyInstance<ChromeURLContentSecurityPolicyObjectTagSet>
+    g_chrome_url_content_security_policy_object_tag_set =
+        LAZY_INSTANCE_INITIALIZER;
+
+// Determine the least-privileged content security policy header, if any,
+// that is compatible with a given WebUI URL, and append it to the existing
+// response headers.
+void AddContentSecurityPolicyHeader(
+    const GURL& url, net::HttpResponseHeaders* headers) {
+  ChromeURLContentSecurityPolicyExceptionSet* exceptions =
+      g_chrome_url_content_security_policy_exception_set.Pointer();
+
+  if (exceptions->find(url.host()) == exceptions->end()) {
+    std::string base = kChromeURLContentSecurityPolicyHeaderBase;
+    ChromeURLContentSecurityPolicyObjectTagSet* object_tag_set =
+        g_chrome_url_content_security_policy_object_tag_set.Pointer();
+
+    base.append(object_tag_set->find(url.host()) == object_tag_set->end() ?
+                "object-src 'none';" :
+                "object-src 'self';");
+
+    headers->AddHeader(base);
+  }
+}
 
 // Parse a URL into the components used to resolve its request. |source_name|
 // is the hostname and |path| is the remaining portion of the URL.
@@ -215,10 +253,7 @@ void URLRequestChromeJob::GetResponseInfo(net::HttpResponseInfo* info) {
   // status code of 200. Without this they return a 0, which makes the status
   // indistiguishable from other error types. Instant relies on getting a 200.
   info->headers = new net::HttpResponseHeaders("HTTP/1.1 200 OK");
-  ChromeURLContentSecurityPolicyExceptionSet* exceptions =
-      g_chrome_url_content_security_policy_exceptions.Pointer();
-  if (exceptions->find(request_->url().host()) == exceptions->end())
-    info->headers->AddHeader(kChromeURLContentSecurityPolicyHeader);
+  AddContentSecurityPolicyHeader(request_->url(), info->headers);
 }
 
 void URLRequestChromeJob::DataAvailable(RefCountedMemory* bytes) {
