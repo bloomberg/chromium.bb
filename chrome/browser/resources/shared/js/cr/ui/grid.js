@@ -94,8 +94,69 @@ cr.define('cr.ui', function() {
       // inline-block elements according to css spec which are thumbnail items.
 
       var width = size.width + Math.min(size.marginLeft, size.marginRight);
+      var height = size.width + Math.min(size.marginTop, size.marginBottom);
 
-      return width ? Math.floor(this.clientWidth / width) : 0;
+      if (!width || !height)
+        return 0;
+
+      var itemCount = this.dataModel ? this.dataModel.length : 0;
+      if (!itemCount)
+        return 0;
+
+      var columns = Math.floor(this.clientWidthWithoutScrollbar_ / width);
+      if (!columns)
+        return 0;
+
+      var rows = Math.ceil(itemCount / columns);
+      if (rows * height <= this.clientHeight_)
+        return columns;
+
+      return Math.floor(this.clientWidthWithScrollbar_ / width);
+    },
+
+    /**
+     * Measure and cache client width and height with and without scrollbar.
+     * Must be updated when offsetWidth and/or offsetHeight changed.
+     */
+    updateMetrics_: function() {
+      // Check changings that may affect number of columns.
+      var offsetWidth = this.offsetWidth;
+      var offsetHeight = this.offsetHeight;
+      var overflowY = getComputedStyle(this).overflowY;
+
+      if (this.lastOffsetWidth_ == offsetWidth &&
+          this.lastOverflowY == overflowY) {
+        this.lastOffsetHeight_ = offsetHeight;
+        return;
+      }
+
+      this.lastOffsetWidth_ = offsetWidth;
+      this.lastOffsetHeight_ = offsetHeight;
+      this.lastOverflowY = overflowY;
+      this.columns_ = 0;
+
+      if (overflowY == 'auto' && offsetWidth > 0) {
+        // Column number may depend on whether scrollbar is present or not.
+        var originalClientWidth = this.clientWidth;
+        // At first make sure there is no scrollbar and calculate clientWidth
+        // (triggers reflow).
+        this.style.overflowY = 'hidden';
+        this.clientWidthWithoutScrollbar_ = this.clientWidth;
+        this.clientHeight_ = this.clientHeight;
+        if (this.clientWidth != originalClientWidth) {
+          // If clientWidth changed then previously scrollbar was shown.
+          this.clientWidthWithScrollbar_ = originalClientWidth;
+        } else {
+          // Show scrollbar and recalculate clientWidth (triggers reflow).
+          this.style.overflowY = 'scroll';
+          this.clientWidthWithScrollbar_ = this.clientWidth;
+        }
+        this.style.overflowY = '';
+      } else {
+        this.clientWidthWithoutScrollbar_ = this.clientWidthWithScrollbar_ =
+            this.clientWidth;
+        this.clientHeight_ = this.clientHeight;
+      }
     },
 
     /**
@@ -257,6 +318,18 @@ cr.define('cr.ui', function() {
       // Non-items are before-, afterFiller and spacers added in mergeItems.
       return child.nodeType == Node.ELEMENT_NODE &&
              !child.classList.contains('spacer');
+    },
+
+    redraw: function() {
+      this.updateMetrics_();
+      var itemCount = this.dataModel ? this.dataModel.length : 0;
+      if (this.lastItemCount_ != itemCount) {
+        this.lastItemCount_ = itemCount;
+        // Force recalculation.
+        this.columns_ = 0;
+      }
+
+      List.prototype.redraw.call(this);
     }
   };
 
