@@ -1688,8 +1688,6 @@
         'browser/net/net_pref_observer.h',
         'browser/net/network_stats.cc',
         'browser/net/network_stats.h',
-        'browser/net/passive_log_collector.cc',
-        'browser/net/passive_log_collector.h',
         'browser/net/preconnect.cc',
         'browser/net/preconnect.h',
         'browser/net/predictor.cc',

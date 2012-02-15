@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,8 +40,6 @@ var SourceTracker = (function() {
       // Needed to simplify deletion, identify associated GUI elements, etc.
       this.nextSourcelessEventId_ = -1;
 
-      this.numPassivelyCapturedEvents_ = 0;
-
       // Ordered list of log entries.  Needed to maintain original order when
       // generating log dumps
       this.capturedEvents_ = [];
@@ -67,16 +65,8 @@ var SourceTracker = (function() {
      * Returns the number of events that were captured while we were
      * listening for events.
      */
-    getNumActivelyCapturedEvents: function() {
-      return this.capturedEvents_.length - this.numPassivelyCapturedEvents_;
-    },
-
-    /**
-     * Returns the number of events that were captured passively by the
-     * browser prior to when the net-internals page was started.
-     */
-    getNumPassivelyCapturedEvents: function() {
-      return this.numPassivelyCapturedEvents_;
+    getNumCapturedEvents: function() {
+      return this.capturedEvents_.length;
     },
 
     /**
@@ -95,28 +85,6 @@ var SourceTracker = (function() {
      */
     getSourceEntry: function(id) {
       return this.sourceEntries_[id];
-    },
-
-    onReceivedPassiveLogEntries: function(logEntries) {
-      // Due to an expected race condition, it is possible to receive actively
-      // captured log entries before the passively logged entries are received.
-      //
-      // When that happens, we create a copy of the actively logged entries,
-      // delete all entries, and, after handling all the passively logged
-      // entries, add back the deleted actively logged entries.
-      var earlyActivelyCapturedEvents = this.capturedEvents_.slice(0);
-      if (earlyActivelyCapturedEvents.length > 0)
-        this.deleteAllSourceEntries();
-
-      this.numPassivelyCapturedEvents_ = logEntries.length;
-      for (var i = 0; i < logEntries.length; ++i)
-        logEntries[i].wasPassivelyCaptured = true;
-
-      this.onReceivedLogEntries(logEntries);
-
-      // Add back early actively captured events, if any.
-      if (earlyActivelyCapturedEvents.length)
-        this.onReceivedLogEntries(earlyActivelyCapturedEvents);
     },
 
     /**
@@ -179,11 +147,8 @@ var SourceTracker = (function() {
       var newEventList = [];
       for (var i = 0; i < this.capturedEvents_.length; ++i) {
         var id = this.capturedEvents_[i].source.id;
-        if (id in sourceIdDict) {
-          if (this.capturedEvents_[i].wasPassivelyCaptured)
-            --this.numPassivelyCapturedEvents_;
+        if (id in sourceIdDict)
           continue;
-        }
         newEventList.push(this.capturedEvents_[i]);
       }
       this.capturedEvents_ = newEventList;

@@ -1,10 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/net/chrome_net_log.h"
-
-#include <algorithm>
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -13,7 +11,6 @@
 #include "base/values.h"
 #include "chrome/browser/net/load_timing_observer.h"
 #include "chrome/browser/net/net_log_logger.h"
-#include "chrome/browser/net/passive_log_collector.h"
 #include "chrome/common/chrome_switches.h"
 
 ChromeNetLog::ThreadSafeObserverImpl::ThreadSafeObserverImpl(LogLevel log_level)
@@ -46,16 +43,6 @@ void ChromeNetLog::ThreadSafeObserverImpl::SetLogLevel(
   net_log_->UpdateLogLevel();
 }
 
-void ChromeNetLog::ThreadSafeObserverImpl::
-AddAsObserverAndGetAllPassivelyCapturedEvents(
-    ChromeNetLog* net_log,
-    EntryList* entries) {
-  DCHECK(!net_log_);
-  net_log_ = net_log;
-  net_log_->AddObserverAndGetAllPassivelyCapturedEvents(&internal_observer_,
-                                                        entries);
-}
-
 void ChromeNetLog::ThreadSafeObserverImpl::AssertNetLogLockAcquired() const {
   if (net_log_)
     net_log_->lock_.AssertAcquired();
@@ -82,27 +69,10 @@ void ChromeNetLog::ThreadSafeObserverImpl::PassThroughObserver::SetLogLevel(
   log_level_ = log_level;
 }
 
-ChromeNetLog::Entry::Entry(uint32 order,
-                           net::NetLog::EventType type,
-                           const base::TimeTicks& time,
-                           net::NetLog::Source source,
-                           net::NetLog::EventPhase phase,
-                           net::NetLog::EventParameters* params)
-    : order(order),
-      type(type),
-      time(time),
-      source(source),
-      phase(phase),
-      params(params) {
-}
-
-ChromeNetLog::Entry::~Entry() {}
-
 ChromeNetLog::ChromeNetLog()
     : last_id_(0),
       base_log_level_(LOG_BASIC),
       effective_log_level_(LOG_BASIC),
-      passive_collector_(new PassiveLogCollector),
       load_timing_observer_(new LoadTimingObserver) {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   // Adjust base log level based on command line switch, if present.
@@ -119,7 +89,6 @@ ChromeNetLog::ChromeNetLog()
     }
   }
 
-  passive_collector_->AddAsObserver(this);
   load_timing_observer_->AddAsObserver(this);
 
   if (command_line->HasSwitch(switches::kLogNetLog)) {
@@ -130,7 +99,6 @@ ChromeNetLog::ChromeNetLog()
 }
 
 ChromeNetLog::~ChromeNetLog() {
-  passive_collector_->RemoveAsObserver();
   load_timing_observer_->RemoveAsObserver();
   if (net_log_logger_.get()) {
     net_log_logger_->RemoveAsObserver();
@@ -162,7 +130,8 @@ net::NetLog::LogLevel ChromeNetLog::GetLogLevel() const {
 void ChromeNetLog::AddThreadSafeObserver(
     net::NetLog::ThreadSafeObserver* observer) {
   base::AutoLock lock(lock_);
-  AddObserverWhileLockHeld(observer);
+  observers_.AddObserver(observer);
+  UpdateLogLevel();
 }
 
 void ChromeNetLog::RemoveThreadSafeObserver(
@@ -170,23 +139,6 @@ void ChromeNetLog::RemoveThreadSafeObserver(
   base::AutoLock lock(lock_);
   observers_.RemoveObserver(observer);
   UpdateLogLevel();
-}
-
-void ChromeNetLog::AddObserverAndGetAllPassivelyCapturedEvents(
-    net::NetLog::ThreadSafeObserver* observer, EntryList* passive_entries) {
-  base::AutoLock lock(lock_);
-  AddObserverWhileLockHeld(observer);
-  passive_collector_->GetAllCapturedEvents(passive_entries);
-}
-
-void ChromeNetLog::GetAllPassivelyCapturedEvents(EntryList* passive_entries) {
-  base::AutoLock lock(lock_);
-  passive_collector_->GetAllCapturedEvents(passive_entries);
-}
-
-void ChromeNetLog::ClearAllPassivelyCapturedEvents() {
-  base::AutoLock lock(lock_);
-  passive_collector_->Clear();
 }
 
 void ChromeNetLog::UpdateLogLevel() {
@@ -203,10 +155,4 @@ void ChromeNetLog::UpdateLogLevel() {
   }
   base::subtle::NoBarrier_Store(&effective_log_level_,
                                 new_effective_log_level);
-}
-
-void ChromeNetLog::AddObserverWhileLockHeld(
-    net::NetLog::ThreadSafeObserver* observer) {
-  observers_.AddObserver(observer);
-  UpdateLogLevel();
 }

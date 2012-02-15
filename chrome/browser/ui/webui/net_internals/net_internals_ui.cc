@@ -29,7 +29,6 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/connection_tester.h"
-#include "chrome/browser/net/passive_log_collector.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -303,10 +302,6 @@ class NetInternalsMessageHandler::IOThreadImpl
   // Called once the WebUI has been deleted (i.e. renderer went away), on the
   // IO thread.
   void Detach();
-
-  // Sends all passive log entries in |passive_entries| to the Javascript
-  // handler, called on the IO thread.
-  void SendPassiveLogEntries(const ChromeNetLog::EntryList& passive_entries);
 
   // Called when the WebUI is deleted.  Prevents calling Javascript functions
   // afterwards.  Called on UI thread.
@@ -807,23 +802,6 @@ void NetInternalsMessageHandler::IOThreadImpl::Detach() {
   connection_tester_.reset();
 }
 
-void NetInternalsMessageHandler::IOThreadImpl::SendPassiveLogEntries(
-    const ChromeNetLog::EntryList& passive_entries) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ListValue* dict_list = new ListValue();
-  for (size_t i = 0; i < passive_entries.size(); ++i) {
-    const ChromeNetLog::Entry& e = passive_entries[i];
-    dict_list->Append(net::NetLog::EntryToDictionaryValue(e.type,
-                                                          e.time,
-                                                          e.source,
-                                                          e.phase,
-                                                          e.params,
-                                                          false));
-  }
-
-  SendJavascriptCommand("receivedPassiveLogEntries", dict_list);
-}
-
 void NetInternalsMessageHandler::IOThreadImpl::OnWebUIDeleted() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   was_webui_deleted_ = true;
@@ -839,10 +817,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
 
   // Register with network stack to observe events.
   is_observing_log_ = true;
-  ChromeNetLog::EntryList entries;
-  AddAsObserverAndGetAllPassivelyCapturedEvents(io_thread_->net_log(),
-                                                &entries);
-  SendPassiveLogEntries(entries);
+  AddAsObserver(io_thread_->net_log());
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetProxySettings(

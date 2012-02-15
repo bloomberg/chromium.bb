@@ -1539,7 +1539,6 @@
         'browser/net/http_server_properties_manager_unittest.cc',
         'browser/net/load_timing_observer_unittest.cc',
         'browser/net/network_stats_unittest.cc',
-        'browser/net/passive_log_collector_unittest.cc',
         'browser/net/predictor_unittest.cc',
         'browser/net/pref_proxy_config_tracker_impl_unittest.cc',
         'browser/net/quoted_printable_unittest.cc',

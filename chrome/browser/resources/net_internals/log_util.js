@@ -187,8 +187,8 @@ log_util = (function() {
     // Check for validity of each log entry, and then add the ones that pass.
     // Since the events are kept around, and we can't just hide a single view
     // on a bad event, we have more error checking for them than other data.
-    var validPassiveEvents = [];
-    var validActiveEvents = [];
+    var validEvents = [];
+    var numDeprecatedPassiveEvents = 0;
     for (var eventIndex = 0; eventIndex < logDump.events.length; ++eventIndex) {
       var event = logDump.events[eventIndex];
       if (typeof(event) == 'object' && typeof(event.source) == 'object' &&
@@ -197,21 +197,28 @@ log_util = (function() {
           getKeyWithValue(LogSourceType, event.source.type) != '?' &&
           getKeyWithValue(LogEventPhase, event.phase) != '?') {
         if (event.wasPassivelyCaptured) {
-          validPassiveEvents.push(event);
-        } else {
-          validActiveEvents.push(event);
+          // NOTE: Up until Chrome 18, log dumps included "passively captured"
+          // events. These are no longer supported, so skip past them
+          // to avoid confusing the rest of the code.
+          numDeprecatedPassiveEvents++;
+          continue;
         }
+        validEvents.push(event);
       }
     }
-    g_browser.sourceTracker.onReceivedPassiveLogEntries(validPassiveEvents);
-    g_browser.sourceTracker.onReceivedLogEntries(validActiveEvents);
+    g_browser.sourceTracker.onReceivedLogEntries(validEvents);
 
-    var numInvalidEvents = logDump.events.length
-                               - validPassiveEvents.length
-                               - validActiveEvents.length;
+    var numInvalidEvents = logDump.events.length -
+        (validEvents.length + numDeprecatedPassiveEvents);
     if (numInvalidEvents > 0) {
       errorString += 'Unable to load ' + numInvalidEvents +
                      ' events, due to invalid data.\n\n';
+    }
+
+    if (numDeprecatedPassiveEvents > 0) {
+      errorString += 'Discarded ' + numDeprecatedPassiveEvents +
+          ' passively collected events. Use an older version of Chrome to' +
+          ' load this dump if you want to see them.\n\n';
     }
 
     // Update all views with data from the file.  Show only those views which

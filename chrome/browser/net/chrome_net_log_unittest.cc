@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,6 @@ class ChromeNetLogTestThread : public base::SimpleThread {
       log_->AddEntry(net::NetLog::TYPE_SOCKET_ALIVE, base::TimeTicks(),
                      source, net::NetLog::PHASE_BEGIN, NULL);
     }
-    log_->ClearAllPassivelyCapturedEvents();
   }
 
   void ReallyStart() {
@@ -48,14 +47,41 @@ class ChromeNetLogTestThread : public base::SimpleThread {
   DISALLOW_COPY_AND_ASSIGN(ChromeNetLogTestThread);
 };
 
+class CountingObserver : public ChromeNetLog::ThreadSafeObserverImpl {
+ public:
+  CountingObserver()
+      : ChromeNetLog::ThreadSafeObserverImpl(net::NetLog::LOG_ALL),
+        count_(0) {}
+
+  virtual void OnAddEntry(net::NetLog::EventType type,
+                          const base::TimeTicks& time,
+                          const net::NetLog::Source& source,
+                          net::NetLog::EventPhase phase,
+                          net::NetLog::EventParameters* params) OVERRIDE {
+    count_++;
+  }
+
+  int count() const { return count_; }
+
+ private:
+  int count_;
+};
+
 }  // namespace
 
-// Attempts to check thread safety, exercising checks in ChromeNetLog and
-// PassiveLogCollector.
+// Makes sure that events are dispatched to all observers, and that this
+// operation works correctly when run on multiple threads.
 TEST(ChromeNetLogTest, NetLogThreads) {
   ChromeNetLog log;
   ChromeNetLogTestThread threads[kThreads];
 
+  // Attach some observers
+  CountingObserver observers[3];
+  for (size_t i = 0; i < arraysize(observers); ++i)
+    observers[i].AddAsObserver(&log);
+
+  // Run a bunch of threads to completion, each of which will emit events to
+  // |log|.
   for (int i = 0; i < kThreads; ++i) {
     threads[i].Init(&log);
     threads[i].Start();
@@ -67,7 +93,12 @@ TEST(ChromeNetLogTest, NetLogThreads) {
   for (int i = 0; i < kThreads; ++i)
     threads[i].Join();
 
-  ChromeNetLog::EntryList entries;
-  log.GetAllPassivelyCapturedEvents(&entries);
-  EXPECT_EQ(0u, entries.size());
+  // Check that each observer saw the emitted events.
+  const int kTotalEvents = kThreads * kEvents;
+  for (size_t i = 0; i < arraysize(observers); ++i)
+    EXPECT_EQ(kTotalEvents, observers[i].count());
+
+  // Detach all the observers
+  for (size_t i = 0; i < arraysize(observers); ++i)
+    observers[i].RemoveAsObserver();
 }

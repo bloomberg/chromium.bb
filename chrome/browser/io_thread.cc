@@ -25,7 +25,6 @@
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/connect_interceptor.h"
-#include "chrome/browser/net/passive_log_collector.h"
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
@@ -557,11 +556,6 @@ void IOThread::ChangedToOnTheRecordOnIOThread() {
   // Clear the host cache to avoid showing entries from the OTR session
   // in about:net-internals.
   ClearHostCache();
-
-  // Clear all of the passively logged data.
-  // TODO(eroman): this is a bit heavy handed, really all we need to do is
-  //               clear the data pertaining to incognito context.
-  net_log_->ClearAllPassivelyCapturedEvents();
 }
 
 void IOThread::InitSystemRequestContext() {

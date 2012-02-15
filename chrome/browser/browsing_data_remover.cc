@@ -22,7 +22,6 @@
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/password_manager/password_store.h"
@@ -411,13 +410,6 @@ void BrowsingDataRemover::NotifyAndDeleteIfDone() {
   // TODO(brettw) bug 1139736: see TODO in Observe() above.
   if (!all_done())
     return;
-
-  // The NetLog contains download history, but may also contain form data,
-  // cookies and passwords.  Simplest just to always clear it.  Must be cleared
-  // after the cache, as cleaning up the disk cache exposes some of the history
-  // in the NetLog.
-  if (g_browser_process->net_log())
-    g_browser_process->net_log()->ClearAllPassivelyCapturedEvents();
 
   set_removing(false);
 

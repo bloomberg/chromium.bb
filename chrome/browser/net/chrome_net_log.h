@@ -1,12 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_NET_CHROME_NET_LOG_H_
 #define CHROME_BROWSER_NET_CHROME_NET_LOG_H_
 #pragma once
-
-#include <vector>
 
 #include "base/atomicops.h"
 #include "base/memory/scoped_ptr.h"
@@ -17,7 +15,6 @@
 
 class LoadTimingObserver;
 class NetLogLogger;
-class PassiveLogCollector;
 
 // ChromeNetLog is an implementation of NetLog that dispatches network log
 // messages to a list of observers.
@@ -25,35 +22,8 @@ class PassiveLogCollector;
 // All methods are thread safe, with the exception that no ChromeNetLog or
 // ChromeNetLog::ThreadSafeObserverImpl functions may be called by an observer's
 // OnAddEntry() method.  Doing so will result in a deadlock.
-//
-// By default, ChromeNetLog will attach the observer PassiveLogCollector which
-// will keep track of recent request information (which used when displaying
-// the about:net-internals page).
-//
 class ChromeNetLog : public net::NetLog {
  public:
-  // This structure encapsulates all of the parameters of an event,
-  // including an "order" field that identifies when it was captured relative
-  // to other events.
-  struct Entry {
-    Entry(uint32 order,
-          net::NetLog::EventType type,
-          const base::TimeTicks& time,
-          net::NetLog::Source source,
-          net::NetLog::EventPhase phase,
-          net::NetLog::EventParameters* params);
-    ~Entry();
-
-    uint32 order;
-    net::NetLog::EventType type;
-    base::TimeTicks time;
-    net::NetLog::Source source;
-    net::NetLog::EventPhase phase;
-    scoped_refptr<net::NetLog::EventParameters> params;
-  };
-
-  typedef std::vector<Entry> EntryList;
-
   // Base class for observing the events logged by the network
   // stack. This has some nice-to-have functionality for use by code
   // within chrome/, but any net::NetLog::ThreadSafeObserver may be
@@ -66,8 +36,7 @@ class ChromeNetLog : public net::NetLog {
   class ThreadSafeObserverImpl {
    public:
     // Observers that need to see the full granularity of events can
-    // specify LOG_ALL. However doing so will have performance consequences,
-    // and may cause PassiveLogCollector to use more memory than anticipated.
+    // specify LOG_ALL.
     explicit ThreadSafeObserverImpl(LogLevel log_level);
     virtual ~ThreadSafeObserverImpl();
 
@@ -84,10 +53,6 @@ class ChromeNetLog : public net::NetLog {
     void RemoveAsObserver();
 
     void SetLogLevel(LogLevel log_level);
-
-    void AddAsObserverAndGetAllPassivelyCapturedEvents(
-        ChromeNetLog *net_log,
-        EntryList* passive_entries);
 
    protected:
     void AssertNetLogLockAcquired() const;
@@ -135,35 +100,21 @@ class ChromeNetLog : public net::NetLog {
   virtual uint32 NextID() OVERRIDE;
   virtual LogLevel GetLogLevel() const OVERRIDE;
 
-  void GetAllPassivelyCapturedEvents(EntryList* passive_entries);
-
-  void ClearAllPassivelyCapturedEvents();
-
   LoadTimingObserver* load_timing_observer() {
     return load_timing_observer_.get();
   }
 
  private:
-  void AddObserverWhileLockHeld(ThreadSafeObserver* observer);
-
   // NetLog implementation
   virtual void AddThreadSafeObserver(ThreadSafeObserver* observer) OVERRIDE;
   virtual void RemoveThreadSafeObserver(ThreadSafeObserver* observer) OVERRIDE;
-
-  // Adds |observer| and writes all passively captured events to
-  // |passive_entries|. Guarantees that no events in |passive_entries| will be
-  // sent to |observer| and all future events that have yet been sent to the
-  // PassiveLogCollector will be sent to |observer|.
-  void AddObserverAndGetAllPassivelyCapturedEvents(ThreadSafeObserver* observer,
-                                                   EntryList* passive_entries);
-
 
   // Called whenever an observer is added or removed, or changes its log level.
   // Must have acquired |lock_| prior to calling.
   void UpdateLogLevel();
 
-  // |lock_| protects access to |observers_| and, indirectly, to
-  // |passive_collector_|.  Should not be acquired by observers.
+  // |lock_| protects access to |observers_| and, indirectly, to. Should not
+  // be acquired by observers.
   base::Lock lock_;
 
   // Last assigned source ID.  Incremented to get the next one.
@@ -175,9 +126,6 @@ class ChromeNetLog : public net::NetLog {
 
   // The current log level.
   base::subtle::Atomic32 effective_log_level_;
-
-  // Not thread safe.  Must only be used when |lock_| is acquired.
-  scoped_ptr<PassiveLogCollector> passive_collector_;
 
   scoped_ptr<LoadTimingObserver> load_timing_observer_;
   scoped_ptr<NetLogLogger> net_log_logger_;

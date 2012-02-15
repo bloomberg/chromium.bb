@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,9 +24,7 @@ var CaptureView = (function() {
     byteLoggingCheckbox.onclick =
         this.onSetByteLogging_.bind(this, byteLoggingCheckbox);
 
-    this.activelyCapturedCountBox_ = $(CaptureView.ACTIVELY_CAPTURED_COUNT_ID);
-    this.passivelyCapturedCountBox_ =
-        $(CaptureView.PASSIVELY_CAPTURED_COUNT_ID);
+    this.capturedEventsCountBox_ = $(CaptureView.CAPTURED_EVENTS_COUNT_ID);
     $(CaptureView.DELETE_ALL_ID).onclick =
         g_browser.sourceTracker.deleteAllSourceEntries.bind(
             g_browser.sourceTracker);
@@ -45,10 +43,7 @@ var CaptureView = (function() {
   // IDs for special HTML elements in capture_view.html
   CaptureView.MAIN_BOX_ID = 'capture-view-tab-content';
   CaptureView.BYTE_LOGGING_CHECKBOX_ID = 'capture-view-byte-logging-checkbox';
-  CaptureView.PASSIVELY_CAPTURED_COUNT_ID =
-      'capture-view-passively-captured-count';
-  CaptureView.ACTIVELY_CAPTURED_COUNT_ID =
-      'capture-view-actively-captured-count';
+  CaptureView.CAPTURED_EVENTS_COUNT_ID = 'capture-view-captured-events-count';
   CaptureView.DELETE_ALL_ID = 'capture-view-delete-all';
   CaptureView.TIP_ANCHOR_ID = 'capture-view-tip-anchor';
   CaptureView.TIP_DIV_ID = 'capture-view-tip-div';
@@ -104,10 +99,8 @@ var CaptureView = (function() {
      * Updates the counters showing how many events have been captured.
      */
     updateEventCounts_: function() {
-      this.activelyCapturedCountBox_.textContent =
-          g_browser.sourceTracker.getNumActivelyCapturedEvents();
-      this.passivelyCapturedCountBox_.textContent =
-          g_browser.sourceTracker.getNumPassivelyCapturedEvents();
+      this.capturedEventsCountBox_.textContent =
+          g_browser.sourceTracker.getNumCapturedEvents();
     },
 
     /**

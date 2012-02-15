@@ -21,9 +21,7 @@ function canCollapseBeginWithEnd(beginEntry) {
          beginEntry.isBegin() &&
          beginEntry.end &&
          beginEntry.end.index == beginEntry.index + 1 &&
-         (!beginEntry.orig.params || !beginEntry.end.orig.params) &&
-         beginEntry.orig.wasPassivelyCaptured ==
-             beginEntry.end.orig.wasPassivelyCaptured;
+         (!beginEntry.orig.params || !beginEntry.end.orig.params);
 }
 
 /**
@@ -47,9 +45,6 @@ printLogEntriesAsText = function(logEntries, parent) {
     // both have extra parameters.
     if (!entry.isEnd() || !canCollapseBeginWithEnd(entry.begin)) {
       tablePrinter.addRow();
-
-      // Annotate this entry with "(P)" if it was passively captured.
-      tablePrinter.addCell(entry.orig.wasPassivelyCaptured ? '(P) ' : '');
 
       tablePrinter.addCell('t=');
       var date = timeutil.convertTimeTicksToDate(entry.orig.time) ;
@@ -80,9 +75,8 @@ printLogEntriesAsText = function(logEntries, parent) {
 
     // Output the extra parameters.
     if (entry.orig.params != undefined) {
-      // Those 6 skipped cells are: passive annotation, two for "t=", and
-      // three for "st=".
-      tablePrinter.setNewRowCellIndent(6 + entry.getDepth());
+      // Those 5 skipped cells are: two for "t=", and three for "st=".
+      tablePrinter.setNewRowCellIndent(5 + entry.getDepth());
       addRowsForExtraParams(tablePrinter,
                             entry.orig,
                             g_browser.sourceTracker.getSecurityStripping());
