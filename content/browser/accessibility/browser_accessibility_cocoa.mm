@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -179,7 +179,7 @@ RoleMap BuildRoleMap() {
     { WebAccessibility::ROLE_TAB_PANEL, NSAccessibilityGroupRole },
     { WebAccessibility::ROLE_TABLE, NSAccessibilityTableRole },
     { WebAccessibility::ROLE_TABLE_HEADER_CONTAINER, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_TAB_GROUP, NSAccessibilityTabGroupRole },
+    { WebAccessibility::ROLE_TAB_GROUP_UNUSED, NSAccessibilityTabGroupRole },
     { WebAccessibility::ROLE_TEXTAREA, NSAccessibilityTextAreaRole },
     { WebAccessibility::ROLE_TEXT_FIELD, NSAccessibilityTextFieldRole },
     { WebAccessibility::ROLE_TIMER, NSAccessibilityGroupRole },

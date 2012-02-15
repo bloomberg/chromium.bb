@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -216,7 +216,7 @@ WebAccessibility::Role ConvertRole(WebKit::WebAccessibilityRole role) {
     case WebKit::WebAccessibilityRoleTab:
       return WebAccessibility::ROLE_TAB;
     case WebKit::WebAccessibilityRoleTabGroup:
-      return WebAccessibility::ROLE_TAB_GROUP;
+      return WebAccessibility::ROLE_TAB_GROUP_UNUSED;
     case WebKit::WebAccessibilityRoleTabList:
       return WebAccessibility::ROLE_TAB_LIST;
     case WebKit::WebAccessibilityRoleTabPanel:
@@ -494,7 +494,7 @@ std::string WebAccessibility::DebugString(bool recursive,
     case ROLE_TAB: result += " TAB"; break;
     case ROLE_TABLE: result += " TABLE"; break;
     case ROLE_TABLE_HEADER_CONTAINER: result += " TABLE_HDR_CONTAINER"; break;
-    case ROLE_TAB_GROUP: result += " TAB_GROUP"; break;
+    case ROLE_TAB_GROUP_UNUSED: result += " TAB_GROUP_UNUSED"; break;
     case ROLE_TAB_LIST: result += " TAB_LIST"; break;
     case ROLE_TAB_PANEL: result += " TAB_PANEL"; break;
     case ROLE_TEXTAREA: result += " TEXTAREA"; break;

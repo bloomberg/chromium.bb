@@ -3251,10 +3251,15 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia2_role_ = IA2_ROLE_SECTION;
       ia_state_|= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_TAB_GROUP:
-    case WebAccessibility::ROLE_TAB_LIST:
-    case WebAccessibility::ROLE_TAB_PANEL:
+    case WebAccessibility::ROLE_TAB_GROUP_UNUSED:
+      NOTREACHED();
       ia_role_ = ROLE_SYSTEM_PAGETABLIST;
+      break;
+    case WebAccessibility::ROLE_TAB_LIST:
+      ia_role_ = ROLE_SYSTEM_PAGETABLIST;
+      break;
+    case WebAccessibility::ROLE_TAB_PANEL:
+      ia_role_ = ROLE_SYSTEM_PROPERTYPAGE;
       break;
     case WebAccessibility::ROLE_TEXTAREA:
       ia_role_ = ROLE_SYSTEM_TEXT;

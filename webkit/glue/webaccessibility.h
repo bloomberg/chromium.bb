@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -113,7 +113,7 @@ struct WEBKIT_GLUE_EXPORT WebAccessibility {
     ROLE_TAB,
     ROLE_TABLE,
     ROLE_TABLE_HEADER_CONTAINER,
-    ROLE_TAB_GROUP,
+    ROLE_TAB_GROUP_UNUSED,  // WebKit doesn't use (uses ROLE_TAB_LIST)
     ROLE_TAB_LIST,
     ROLE_TAB_PANEL,
     ROLE_TEXTAREA,
