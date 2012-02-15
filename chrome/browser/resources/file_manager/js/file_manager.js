@@ -756,17 +756,6 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.computeIconType_ = function(entry) {
-    // TODO(dgozman): refactor this to use proper icons in left panel,
-    // and do not depend on mountPoints.
-    var deviceNumber = this.getDeviceNumber(entry);
-    if (deviceNumber != undefined) {
-      if (this.mountPoints_[deviceNumber].mountCondition == '')
-        return 'device';
-      var mountCondition = this.mountPoints_[deviceNumber].mountCondition;
-      if (mountCondition == 'unknown_filesystem' ||
-          mountCondition == 'unsupported_filesystem')
-        return 'unreadable';
-    }
     if (entry.isDirectory)
       return 'folder';
 
@@ -789,11 +778,6 @@ FileManager.prototype = {
 
   FileManager.prototype.computeFileType_ = function(entry) {
     if (entry.isDirectory) {
-      var deviceNumber = this.getDeviceNumber(entry);
-      // The type field is used for sorting. Starting dot maked devices and
-      // directories to precede files.
-      if (deviceNumber != undefined)
-        return {name: 'DEVICE', type: '.device'};
       return {name: 'FOLDER', type: '.folder'};
     }
 
@@ -1598,7 +1582,19 @@ FileManager.prototype = {
 
     var div = this.document_.createElement('div');
     div.className = 'root-label';
-    div.setAttribute('icon', rootType);
+
+    var icon = rootType;
+    var deviceNumber = this.getDeviceNumber(entry);
+
+    if (deviceNumber != undefined) {
+      var mountCondition = this.mountPoints_[deviceNumber].mountCondition;
+      if (mountCondition == 'unknown_filesystem' ||
+          mountCondition == 'unsupported_filesystem')
+        icon = 'unreadable';
+    }
+
+    div.setAttribute('icon', icon);
+
     div.textContent = this.getRootLabel_(entry.fullPath);
     li.appendChild(div);
 
@@ -2272,9 +2268,10 @@ FileManager.prototype = {
         changeDirectoryTo = '/' + DirectoryModel.DOWNLOADS_DIRECTORY;
       }
 
-      // In the case of success, roots are changed and should be rescanned.
-      if (event.status == 'success')
-        self.directoryModel_.updateRoots(changeDirectoryTo);
+      // Even if something failed root list should be rescanned.
+      // Failed mounts can "give" us new devices which might be formatted,
+      // so we have to refresh root list then.
+      self.directoryModel_.updateRoots(changeDirectoryTo);
     });
   };
 

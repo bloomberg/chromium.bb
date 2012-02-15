@@ -280,6 +280,10 @@ li.root-item > .spacer {
   background-image: url('../images/filetype_device.png');
 }
 
+.root-label[icon=unreadable] {
+  background-image: url('../images/filetype_unreadable_device.png');
+}
+
 .dialog-container[sidebar] .breadcrumbs .root-label {
   -webkit-padding-start: 0;
   background-image: none;
