@@ -49,7 +49,7 @@
 #include <cairo-gl.h>
 #endif
 
-#include <X11/extensions/XKBcommon.h>
+#include <xkbcommon/xkbcommon.h>
 #include <X11/X.h>
 
 #include <linux/input.h>

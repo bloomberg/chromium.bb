@@ -23,7 +23,7 @@
 #ifndef _WINDOW_H_
 #define _WINDOW_H_
 
-#include <X11/extensions/XKBcommon.h>
+#include <xkbcommon/xkbcommon.h>
 #include <glib.h>
 #include <wayland-client.h>
 #include <cairo.h>
