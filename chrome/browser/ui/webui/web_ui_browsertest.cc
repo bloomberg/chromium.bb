@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/browser/ui/webui/test_chrome_web_ui_controller_factory.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_paths.h"

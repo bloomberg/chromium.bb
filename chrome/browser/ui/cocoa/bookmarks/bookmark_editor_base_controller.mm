@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,23 +62,22 @@
 
 // static; implemented for each platform.  Update this function for new
 // classes derived from BookmarkEditorBaseController.
-void BookmarkEditor::ShowNative(gfx::NativeWindow parent_hwnd,
-                                Profile* profile,
-                                const BookmarkNode* parent,
-                                const EditDetails& details,
-                                Configuration configuration) {
+void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
+                          Profile* profile,
+                          const EditDetails& details,
+                          Configuration configuration) {
   BookmarkEditorBaseController* controller = nil;
   if (details.type == EditDetails::NEW_FOLDER) {
     controller = [[BookmarkAllTabsController alloc]
                   initWithParentWindow:parent_hwnd
                                profile:profile
-                                parent:parent
+                                parent:details.parent_node
                          configuration:configuration];
   } else {
     controller = [[BookmarkEditorController alloc]
                   initWithParentWindow:parent_hwnd
                                profile:profile
-                                parent:parent
+                                parent:details.parent_node
                                   node:details.existing_node
                          configuration:configuration];
   }

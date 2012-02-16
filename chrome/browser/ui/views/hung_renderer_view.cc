@@ -568,7 +568,7 @@ static HungRendererDialogView* CreateHungRendererDialogView() {
 
 namespace browser {
 
-void ShowNativeHungRendererDialog(WebContents* contents) {
+void ShowHungRendererDialog(WebContents* contents) {
   if (!logging::DialogsAreSuppressed()) {
     if (!g_instance)
       g_instance = CreateHungRendererDialogView();
@@ -576,7 +576,7 @@ void ShowNativeHungRendererDialog(WebContents* contents) {
   }
 }
 
-void HideNativeHungRendererDialog(WebContents* contents) {
+void HideHungRendererDialog(WebContents* contents) {
   if (!logging::DialogsAreSuppressed() && g_instance)
     g_instance->EndForWebContents(contents);
 }

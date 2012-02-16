@@ -4985,12 +4985,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_WEBGL_DESCRIPTION" desc="Description for the flag to disable WebGL.">
         Disable WebGL.
       </message>
-      <message name="IDS_FLAGS_USE_MORE_WEBUI_NAME" desc="Title for the flag to use more WebUI.">
-        Enable experimental WebUI
-      </message>
-      <message name="IDS_FLAGS_USE_MORE_WEBUI_DESCRIPTION" desc="Description for the flag to use more WebUI.">
-        Enable experimental HTML implementations of some minor UI components such as various dialogs.
-      </message>
       <message name="IDS_FLAGS_ENABLE_HTTP_PIPELINING_NAME" desc="Title for the flag to enable HTTP pipelining">
         HTTP Pipelining
       </message>
@@ -5104,6 +5098,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_SHADOW_DOM_DESCRIPTION" desc="Description for the flag to enable Shadow DOM.">
         This API allows web applications to use Web Components.
+      </message>
+      <message name="IDS_FLAGS_WEBUI_TASK_MANAGER_NAME" desc="Title for the flag to use the WebUI task manager.">
+        Enable experimental task manager.
+      </message>
+      <message name="IDS_FLAGS_WEBUI_TASK_MANAGER_DESCRIPTION" desc="Description for the flag to use the WebUI task manager.">
+        Enable experimental HTML implementation of the task manager dialog.
       </message>
       <message name="IDS_FLAGS_APP_INSTALL_HINT_NAME" desc="Name for the flag to show the app install hint on the NTP.">
         NTP App Install Hint

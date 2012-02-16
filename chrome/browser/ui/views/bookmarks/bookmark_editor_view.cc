@@ -50,14 +50,16 @@ const int kNewFolderButtonID = 1002;
 }  // namespace
 
 // static
-void BookmarkEditor::ShowNative(gfx::NativeWindow parent_hwnd,
-                                Profile* profile,
-                                const BookmarkNode* parent,
-                                const EditDetails& details,
-                                Configuration configuration) {
+void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
+                          Profile* profile,
+                          const EditDetails& details,
+                          Configuration configuration) {
   DCHECK(profile);
   BookmarkEditorView* editor =
-      new BookmarkEditorView(profile, parent, details, configuration);
+      new BookmarkEditorView(profile,
+                             details.parent_node,
+                             details,
+                             configuration);
   editor->Show(parent_hwnd);
 }
 

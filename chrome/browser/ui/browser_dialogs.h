@@ -67,14 +67,6 @@ void ShowExtensionInstalledBubble(const Extension* extension,
 void ShowHungRendererDialog(content::WebContents* contents);
 void HideHungRendererDialog(content::WebContents* contents);
 
-// Native implementations of hung renderer dialogs.
-void ShowNativeHungRendererDialog(content::WebContents* contents);
-void HideNativeHungRendererDialog(content::WebContents* contents);
-
-// Show the edit search engine dialog.
-void ConfirmAddSearchProvider(const TemplateURL* template_url,
-                              Profile* profile);
-
 // Shows a tab-modal dialog box.
 void ShowTabModalConfirmDialog(TabModalConfirmDialogDelegate* delegate,
                                TabContentsWrapper* wrapper);

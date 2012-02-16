@@ -128,7 +128,6 @@
 #include "chrome/browser/ui/tabs/dock_info.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
-#include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/browser/ui/webui/feedback_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/options/content_settings_handler.h"
@@ -4199,21 +4198,7 @@ void Browser::OnInstallApplication(TabContentsWrapper* source,
 
 void Browser::ConfirmAddSearchProvider(const TemplateURL* template_url,
                                        Profile* profile) {
-#if defined(USE_AURA)
   window()->ConfirmAddSearchProvider(template_url, profile);
-#elif defined(OS_CHROMEOS)
-  // Use a WebUI implementation of the dialog.
-  browser::ConfirmAddSearchProvider(template_url, profile);
-#else
-  // TODO(rbyers): Remove the IsMoreWebUI check and (ideally) all #ifdefs once
-  // we can select exactly one version of this dialog to use for each platform
-  // at build time.
-  if (chrome_web_ui::IsMoreWebUI())
-    browser::ConfirmAddSearchProvider(template_url, profile);
-  else
-    // Platform-specific implementation of the dialog.
-    window()->ConfirmAddSearchProvider(template_url, profile);
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

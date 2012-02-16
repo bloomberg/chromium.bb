@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -219,7 +219,7 @@ class WebContentsObserverBridge : public content::WebContentsObserver {
 
 namespace browser {
 
-void ShowNativeHungRendererDialog(WebContents* contents) {
+void ShowHungRendererDialog(WebContents* contents) {
   if (!logging::DialogsAreSuppressed()) {
     if (!g_instance)
       g_instance = [[HungRendererController alloc]
@@ -228,7 +228,7 @@ void ShowNativeHungRendererDialog(WebContents* contents) {
   }
 }
 
-void HideNativeHungRendererDialog(WebContents* contents) {
+void HideHungRendererDialog(WebContents* contents) {
   if (!logging::DialogsAreSuppressed() && g_instance)
     [g_instance endForWebContents:contents];
 }

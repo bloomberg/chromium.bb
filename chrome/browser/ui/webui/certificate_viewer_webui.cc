@@ -10,23 +10,20 @@
 #include "base/utf_string_conversions.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
+#include "chrome/browser/ui/constrained_window.h"
+#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/certificate_dialogs.h"
 #include "chrome/browser/ui/dialog_style.h"
-#include "chrome/browser/ui/webui/chrome_web_ui.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/webui/constrained_html_ui.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "grit/generated_resources.h"
-
-#if defined(USE_AURA)
-#include "chrome/browser/ui/constrained_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/webui/constrained_html_ui.h"
-#endif
 
 using content::WebContents;
 using content::WebUIMessageHandler;
@@ -39,22 +36,10 @@ const int kDefaultHeight = 600;
 
 }  // namespace
 
-// Shows a certificate using the native or WebUI certificate viewer on
-// platforms where we supply our own (Mac and Windows have one built into the
-// OS we use instead).
+// Shows a certificate using the WebUI certificate viewer.
 void ShowCertificateViewer(gfx::NativeWindow parent,
                            net::X509Certificate* cert) {
-#if defined(USE_AURA) || defined(OS_CHROMEOS)
   CertificateViewerDialog::ShowDialog(parent, cert);
-#else
-  // TODO(rbyers): Decide whether to replace the GTK certificate viewier on
-  // Linux with the WebUI version, and (either way) remove this IsMoreWebUI
-  // check.
-  if (chrome_web_ui::IsMoreWebUI())
-    CertificateViewerDialog::ShowDialog(parent, cert);
-  else
-    ShowNativeCertificateViewer(parent, cert);
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -83,7 +68,6 @@ void CertificateViewerDialog::Show(gfx::NativeWindow parent) {
   // TODO(oshima): Should get browser from parent.
   Browser* browser = BrowserList::GetLastActive();
   DCHECK(browser);
-#if defined(USE_AURA)
   TabContentsWrapper* current_wrapper =
       browser->GetSelectedTabContentsWrapper();
   // TODO(bshe): UI tweaks needed for AURA html Dialog, such as add padding on
@@ -93,12 +77,6 @@ void CertificateViewerDialog::Show(gfx::NativeWindow parent) {
       this,
       NULL,
       current_wrapper)->window()->GetNativeWindow();
-#elif defined(OS_CHROMEOS)
-  window_ = browser->BrowserShowHtmlDialog(this, parent,
-      static_cast<DialogStyle>(STYLE_XBAR | STYLE_FLUSH_CONTENT));
-#else
-  window_ = browser->BrowserShowHtmlDialog(this, parent, STYLE_GENERIC);
-#endif
 }
 
 ui::ModalType CertificateViewerDialog::GetDialogModalType() const {

@@ -1090,10 +1090,6 @@ const char kTryChromeAgain[]                = "try-chrome-again";
 // Runs un-installation steps that were done by chrome first-run.
 const char kUninstall[]                     = "uninstall";
 
-// Uses WebUI versions of dialogs when available (rather than platform-native
-// implementations).
-const char kUseMoreWebUI[]                  = "use-more-webui";
-
 // Uses Spdy for the transport protocol instead of HTTP. This is a temporary
 // testing flag.
 const char kUseSpdy[]                       = "use-spdy";
@@ -1113,6 +1109,9 @@ const char kUserDataDir[]                   = "user-data-dir";
 
 // Prints version information and quits.
 const char kVersion[]                       = "version";
+
+// Use experimental WebUI task manager dialog.
+const char kWebUITaskManager[]              = "webui-task-manager";
 
 // Adds the given extension ID to all the permission whitelists.
 const char kWhitelistedExtensionID[]        = "whitelisted-extension-id";

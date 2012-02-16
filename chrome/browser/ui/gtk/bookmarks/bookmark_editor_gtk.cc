@@ -259,14 +259,16 @@ class BookmarkEditorGtk::ContextMenuController
 };
 
 // static
-void BookmarkEditor::ShowNative(gfx::NativeWindow parent_hwnd,
-                                Profile* profile,
-                                const BookmarkNode* parent,
-                                const EditDetails& details,
-                                Configuration configuration) {
+void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
+                          Profile* profile,
+                          const EditDetails& details,
+                          Configuration configuration) {
   DCHECK(profile);
   BookmarkEditorGtk* editor =
-      new BookmarkEditorGtk(parent_hwnd, profile, parent, details,
+      new BookmarkEditorGtk(parent_hwnd,
+                            profile,
+                            details.parent_node,
+                            details,
                             configuration);
   editor->Show();
 }

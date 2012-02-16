@@ -434,13 +434,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableAutologin)
   },
   {
-    "use-more-webui",
-    IDS_FLAGS_USE_MORE_WEBUI_NAME,
-    IDS_FLAGS_USE_MORE_WEBUI_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kUseMoreWebUI)
-  },
-  {
     "enable-http-pipelining",
     IDS_FLAGS_ENABLE_HTTP_PIPELINING_NAME,
     IDS_FLAGS_ENABLE_HTTP_PIPELINING_DESCRIPTION,
@@ -575,6 +568,13 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_EXTENSION_ACTIVITY_UI_DESCRIPTION,
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableExtensionActivityUI)
+  },
+  {
+    "webui-task-manager",
+    IDS_FLAGS_WEBUI_TASK_MANAGER_NAME,
+    IDS_FLAGS_WEBUI_TASK_MANAGER_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kWebUITaskManager)
   },
 };
 

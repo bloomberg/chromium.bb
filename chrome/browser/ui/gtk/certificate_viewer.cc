@@ -709,14 +709,14 @@ void CertificateViewer::Show() {
 
 } // namespace
 
-void ShowNativeCertificateViewer(gfx::NativeWindow parent,
-                                 net::X509Certificate::OSCertHandle cert) {
+void ShowCertificateViewer(gfx::NativeWindow parent,
+                           net::X509Certificate::OSCertHandle cert) {
   net::X509Certificate::OSCertHandles cert_chain;
   x509_certificate_model::GetCertChainFromCert(cert, &cert_chain);
   (new CertificateViewer(parent, cert_chain))->Show();
 }
 
-void ShowNativeCertificateViewer(gfx::NativeWindow parent,
-                                 net::X509Certificate* cert) {
-  ShowNativeCertificateViewer(parent, cert->os_cert_handle());
+void ShowCertificateViewer(gfx::NativeWindow parent,
+                           net::X509Certificate* cert) {
+  ShowCertificateViewer(parent, cert->os_cert_handle());
 }

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/browser/ui/webui/web_ui_browsertest.h"
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/common/url_constants.h"
@@ -27,9 +26,6 @@ class CertificateViewerUITest : public WebUIBrowserTest {
 };
 
 void CertificateViewerUITest::ShowCertificateViewer() {
-  // Enable more WebUI to use WebUI certificate viewer.
-  chrome_web_ui::OverrideMoreWebUI(true);
-
   scoped_refptr<net::X509Certificate> google_cert(
       net::X509Certificate::CreateFromBytes(
           reinterpret_cast<const char*>(google_der), sizeof(google_der)));

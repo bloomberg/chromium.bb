@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,19 +96,6 @@ class BookmarkEditor {
 
   // Shows the bookmark all tabs dialog.
   static void ShowBookmarkAllTabsDialog(Browser* browser);
-
- private:
-  // Shows the native bookmark editor.
-  // TODO(flackr): Remove parent argument.
-  static void ShowNative(gfx::NativeWindow parent_window,
-                         Profile* profile,
-                         const BookmarkNode* parent,
-                         const EditDetails& details,
-                         Configuration configuration);
-
-  // Shows the WebUI bookmark editor.
-  static void ShowWebUI(Profile* profile,
-                        const EditDetails& details);
 };
 
 #endif  // CHROME_BROWSER_BOOKMARKS_BOOKMARK_EDITOR_H_

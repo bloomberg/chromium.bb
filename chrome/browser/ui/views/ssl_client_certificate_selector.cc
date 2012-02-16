@@ -283,7 +283,7 @@ void SSLClientCertificateSelector::CreateViewCertButton() {
 
 namespace browser {
 
-void ShowNativeSSLClientCertificateSelector(
+void ShowSSLClientCertificateSelector(
     TabContentsWrapper* wrapper,
     const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
@@ -293,18 +293,5 @@ void ShowNativeSSLClientCertificateSelector(
   (new SSLClientCertificateSelector(
        wrapper, network_session, cert_request_info, callback))->Init();
 }
-
-#if !defined(USE_NSS) && !defined(USE_OPENSSL)
-// The webui version of the SSL client cert selector is excluded from the build
-// under these conditions.  Add stub implementation for the required method.
-void ShowSSLClientCertificateSelector(
-    TabContentsWrapper* wrapper,
-    const net::HttpNetworkSession* network_session,
-    net::SSLCertRequestInfo* cert_request_info,
-    const base::Callback<void(net::X509Certificate*)>& callback) {
-  ShowNativeSSLClientCertificateSelector(
-      wrapper, network_session, cert_request_info, callback);
-}
-#endif
 
 }  // namespace browser

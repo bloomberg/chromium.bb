@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
-#include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/browser/ui/webui/task_manager_dialog.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
@@ -323,7 +322,7 @@ void PanelBrowserView::ShowTaskManagerForPanel() {
   TaskManagerDialog::Show();
 #else
   // Uses WebUI TaskManager when swiches is set. It is beta feature.
-  if (chrome_web_ui::IsMoreWebUI()) {
+  if (TaskManagerDialog::UseWebUITaskManager()) {
     TaskManagerDialog::Show();
   } else {
     ShowTaskManager();

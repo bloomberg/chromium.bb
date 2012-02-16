@@ -2760,9 +2760,6 @@
         'browser/ui/webui/options/password_manager_browsertest.js',
         'browser/ui/webui/options/personal_options_browsertest.js',
         'browser/ui/webui/options/search_engine_manager_browsertest.js',
-        'browser/ui/webui/ssl_client_certificate_selector_browsertest.js',
-        'browser/ui/webui/ssl_client_certificate_selector_webui_browsertest.cc',
-        'browser/ui/webui/ssl_client_certificate_selector_webui_browsertest.h',
         'browser/ui/webui/sync_promo/sync_promo_dialog_browsertest.cc',
         'browser/ui/webui/sync_setup_browsertest.js',
         'browser/ui/webui/test_html_dialog_ui_delegate.cc',
@@ -2802,11 +2799,6 @@
         'test/data/webui/chrome_send_browsertest.cc',
         'test/data/webui/chrome_send_browsertest.h',
         'test/data/webui/chrome_send_browsertest.js',
-        'test/data/webui/edit_search_engine_dialog_browsertest.cc',
-        'test/data/webui/edit_search_engine_dialog_browsertest.h',
-        'test/data/webui/edit_search_engine_dialog_browsertest.js',
-        'test/data/webui/hung_renderer_dialog_test.js',
-        'test/data/webui/hung_renderer_dialog_ui_test-inl.h',
         'test/data/webui/mock4js_browsertest.js',
         'test/data/webui/net_internals/dns_view.js',
         'test/data/webui/net_internals/hsts_view.js',
@@ -2896,6 +2888,8 @@
             'browser/extensions/api/terminal/terminal_private_apitest.cc',
             'browser/oom_priority_manager_browsertest.cc',
             'browser/ui/views/status_icons/status_tray_chromeos_browsertest.cc',
+            'test/data/webui/certificate_viewer_dialog_test.js',
+            'test/data/webui/certificate_viewer_ui_test-inl.h',
           ],
         }, { #else: OS == "chromeos"
           'sources/': [
@@ -2909,9 +2903,15 @@
             # chromeos does not use cross-platform panels
             'browser/ui/panels/panel_app_browsertest.cc',
             'browser/ui/panels/panel_browser_view_browsertest.cc',
+            'test/data/webui/certificate_viewer_dialog_test.js',
+            'test/data/webui/certificate_viewer_ui_test-inl.h',
           ],
           'conditions': [
             ['use_aura==1', {
+              'sources': [
+                'test/data/webui/certificate_viewer_dialog_test.js',
+                'test/data/webui/certificate_viewer_ui_test-inl.h',
+              ],
               'sources/': [
                 ['exclude', '^browser/chromeos/notifications/notification_browsertest.cc'],
                 ['exclude', '^browser/chromeos/panels/panel_browsertest.cc'],
@@ -3123,13 +3123,6 @@
             '../v8/tools/gyp/v8.gyp:v8_shell#host',
             # run time dependency
             '../webkit/webkit.gyp:copy_npapi_test_plugin',
-          ],
-        }],
-        ['use_nss==0 and use_openssl==0', {
-          'sources!': [
-            'browser/ui/webui/ssl_client_certificate_selector_browsertest.js',
-            'browser/ui/webui/ssl_client_certificate_selector_webui_browsertest.cc',
-            'browser/ui/webui/ssl_client_certificate_selector_webui_browsertest.h',
           ],
         }],
         ['component=="shared_library" and incremental_chrome_dll!=1', {

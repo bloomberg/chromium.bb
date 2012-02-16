@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/webui/crashes_ui.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/downloads_ui.h"
-#include "chrome/browser/ui/webui/edit_search_engine_dialog_ui_webui.h"
 #include "chrome/browser/ui/webui/extensions/extension_activity_ui.h"
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
 #include "chrome/browser/ui/webui/feedback_ui.h"
@@ -30,7 +29,6 @@
 #include "chrome/browser/ui/webui/gpu_internals_ui.h"
 #include "chrome/browser/ui/webui/history_ui.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
-#include "chrome/browser/ui/webui/hung_renderer_dialog_ui.h"
 #include "chrome/browser/ui/webui/media/media_internals_ui.h"
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 #include "chrome/browser/ui/webui/network_action_predictor/network_action_predictor_ui.h"
@@ -80,12 +78,8 @@
 #include "chrome/browser/ui/webui/conflicts_ui.h"
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if (defined(USE_NSS) || defined(USE_OPENSSL)) && defined(USE_AURA)
 #include "chrome/browser/ui/webui/certificate_viewer_ui.h"
-#endif
-
-#if !defined(USE_AURA)
-#include "chrome/browser/ui/webui/input_window_dialog_ui.h"
 #endif
 
 using content::WebContents;
@@ -184,8 +178,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
     return &NewWebUI<ConstrainedHtmlUI>;
   if (url.host() == chrome::kChromeUIDownloadsHost)
     return &NewWebUI<DownloadsUI>;
-  if (url.host() == chrome::kChromeUIEditSearchEngineDialogHost)
-    return &NewWebUI<EditSearchEngineDialogUI>;
   if (url.host() == chrome::kChromeUIExtensionsFrameHost)
     return &NewWebUI<ExtensionsUI>;
   if (url.host() == chrome::kChromeUIFeedbackHost)
@@ -200,8 +192,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
     return &NewWebUI<HelpUI>;
   if (url.host() == chrome::kChromeUIHistoryHost)
     return &NewWebUI<HistoryUI>;
-  if (url.host() == chrome::kChromeUIHungRendererDialogHost)
-    return &NewWebUI<HungRendererDialogUI>;
   if (url.host() == chrome::kChromeUIMediaInternalsHost)
     return &NewWebUI<MediaInternalsUI>;
   if (url.host() == chrome::kChromeUINetInternalsHost)
@@ -216,8 +206,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
     return &NewWebUI<ProfilerUI>;
   if (url.host() == chrome::kChromeUIQuotaInternalsHost)
     return &NewWebUI<QuotaInternalsUI>;
-  if (url.host() == chrome::kChromeUISSLClientCertificateSelectorHost)
-    return &NewWebUI<ConstrainedHtmlUI>;
   if (url.host() == chrome::kChromeUISessionsHost)
     return &NewWebUI<SessionsUI>;
   if (url.host() == chrome::kChromeUISyncInternalsHost)
@@ -249,7 +237,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
   if (url.host() == chrome::kChromeUIConflictsHost)
     return &NewWebUI<ConflictsUI>;
 #endif
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if (defined(USE_NSS) || defined(USE_OPENSSL)) && defined(USE_AURA)
   if (url.host() == chrome::kChromeUICertificateViewerHost)
     return &NewWebUI<CertificateViewerUI>;
 #endif
@@ -294,11 +282,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
       url.host() == chrome::kChromeUITabModalConfirmDialogHost) {
     return &NewWebUI<ConstrainedHtmlUI>;
   }
-#endif
-
-#if !defined(USE_AURA)
-  if (url.host() == chrome::kChromeUIInputWindowDialogHost)
-    return &NewWebUI<InputWindowDialogUI>;
 #endif
 
   if (url.host() == chrome::kChromeUIPrintHost &&

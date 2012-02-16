@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,16 +24,6 @@ namespace browser {
 // when the dialog closes in call cases; if the user cancels the dialog, we call
 // with a NULL certificate.
 void ShowSSLClientCertificateSelector(
-    TabContentsWrapper* wrapper,
-    const net::HttpNetworkSession* network_session,
-    net::SSLCertRequestInfo* cert_request_info,
-    const base::Callback<void(net::X509Certificate*)>& callback);
-
-// Same as above, but doesn't check the UseMoreWebUI flag.  It just calls the
-// native implementation.  This lets us have both the WebUI implementation and
-// the native implementation linked in at the same time and switchable behind
-// a run-time flag.
-void ShowNativeSSLClientCertificateSelector(
     TabContentsWrapper* wrapper,
     const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/task_manager_dialog.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "grit/google_chrome_strings.h"
@@ -194,4 +196,10 @@ void TaskManagerDialog::ShowBackgroundPages() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&TaskManagerDialogImpl::Show, true));
+}
+
+// static
+bool TaskManagerDialog::UseWebUITaskManager() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kWebUITaskManager);
 }

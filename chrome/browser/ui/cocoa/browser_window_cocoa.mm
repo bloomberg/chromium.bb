@@ -35,7 +35,6 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/page_info_bubble.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/browser/ui/webui/task_manager_dialog.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -405,7 +404,7 @@ void BrowserWindowCocoa::ShowTaskManager() {
   TaskManagerDialog::Show();
 #else
   // Uses WebUI TaskManager when swiches is set. It is beta feature.
-  if (chrome_web_ui::IsMoreWebUI()) {
+  if (TaskManagerDialog::UseWebUITaskManager()) {
     TaskManagerDialog::Show();
   } else {
     TaskManagerMac::Show(false);
@@ -418,7 +417,7 @@ void BrowserWindowCocoa::ShowBackgroundPages() {
   TaskManagerDialog::ShowBackgroundPages();
 #else
   // Uses WebUI TaskManager when swiches is set. It is beta feature.
-  if (chrome_web_ui::IsMoreWebUI()) {
+  if (TaskManagerDialog::UseWebUITaskManager()) {
     TaskManagerDialog::ShowBackgroundPages();
   } else {
     TaskManagerMac::Show(true);

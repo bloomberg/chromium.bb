@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,7 +45,8 @@ CertificateViewerUITestAsync.prototype = {
 // viewers.
 GEN('#include "chrome/test/data/webui/certificate_viewer_ui_test-inl.h"');
 GEN('')
-GEN('#if !defined(OS_POSIX) || defined(OS_MACOSX)')
+GEN('#if (!defined(USE_NSS) && !defined(USE_OPENSSL)) || \')
+GEN('    !defined(USE_AURA)')
 GEN('#define MAYBE_testDialogURL DISABLED_testDialogURL')
 GEN('#define MAYBE_testCN DISABLED_testCN')
 GEN('#define MAYBE_testDetails DISABLED_testDetails')

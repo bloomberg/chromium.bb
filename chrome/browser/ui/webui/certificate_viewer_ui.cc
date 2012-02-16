@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,12 +14,7 @@
 #include "grit/generated_resources.h"
 
 CertificateViewerUI::CertificateViewerUI(content::WebUI* web_ui)
-#if defined(USE_AURA)
     : ConstrainedHtmlUI(web_ui) {
-#else
-    : HtmlDialogUI(web_ui) {
-#endif
-
   // Set up the chrome://view-cert source.
   ChromeWebUIDataSource* html_source =
       new ChromeWebUIDataSource(chrome::kChromeUICertificateViewerHost);
