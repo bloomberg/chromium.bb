@@ -335,12 +335,9 @@ void NTPResourceCache::CreateNewTabHTML() {
   localized_strings.SetString("webStoreLink",
       GetUrlWithLang(GURL(extension_urls::GetWebstoreLaunchURL())));
   localized_strings.SetBoolean("isWebStoreExperimentEnabled",
-      NewTabUI::IsWebStoreExperimentEnabled());
-  localized_strings.SetString("appInstallHintUrl",
-      chrome::kNtpAppInstallHintURL);
+      NewTabUI::ShouldShowWebStoreFooterLink());
   localized_strings.SetBoolean("appInstallHintEnabled",
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kNtpAppInstallHint));
+      NewTabUI::ShouldShowAppInstallHint());
 
 #if defined(OS_CHROMEOS)
   localized_strings.SetString("expandMenu",

@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/i18n/rtl.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
@@ -200,9 +201,6 @@ void AppLauncherHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("uninstallApp",
       base::Bind(&AppLauncherHandler::HandleUninstallApp,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("hideAppsPromo",
-      base::Bind(&AppLauncherHandler::HandleHideAppsPromo,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("createAppShortcut",
       base::Bind(&AppLauncherHandler::HandleCreateAppShortcut,
@@ -616,16 +614,6 @@ void AppLauncherHandler::HandleUninstallApp(const ListValue* args) {
   }
 }
 
-void AppLauncherHandler::HandleHideAppsPromo(const ListValue* args) {
-  // If the user has intentionally hidden the promotion, we'll uninstall all the
-  // default apps (we know the user hasn't installed any apps on their own at
-  // this point, or the promotion wouldn't have been shown).
-  // TODO(estade): this isn't used right now as we sort out the future of the
-  // apps promo on ntp4.
-  UninstallDefaultApps();
-  extension_service_->apps_promo()->HidePromo();
-}
-
 void AppLauncherHandler::HandleCreateAppShortcut(const ListValue* args) {
   std::string extension_id;
   CHECK(args->GetString(0, &extension_id));
@@ -873,6 +861,16 @@ void AppLauncherHandler::RecordAppLaunchByURL(
 
   UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram, bucket,
                             extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+
+  static const bool webstore_link_experiment_exists =
+      base::FieldTrialList::TrialExists(kWebStoreLinkExperiment);
+  if (webstore_link_experiment_exists) {
+    UMA_HISTOGRAM_ENUMERATION(
+        base::FieldTrial::MakeName(extension_misc::kAppLaunchHistogram,
+                                   kWebStoreLinkExperiment),
+        bucket,
+        extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+  }
 }
 
 void AppLauncherHandler::PromptToEnableApp(const std::string& extension_id) {

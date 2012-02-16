@@ -73,9 +73,6 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
   // Callback for the "uninstallApp" message.
   void HandleUninstallApp(const base::ListValue* args);
 
-  // Callback for the "hideAppPromo" message.
-  void HandleHideAppsPromo(const base::ListValue* args);
-
   // Callback for the "createAppShortcut" message.
   void HandleCreateAppShortcut(const base::ListValue* args);
 

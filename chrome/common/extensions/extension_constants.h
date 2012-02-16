@@ -468,6 +468,9 @@ namespace extension_misc {
     // User clicked web store link on the NTP footer.
     APP_LAUNCH_NTP_WEBSTORE_FOOTER,
 
+    // User clicked [+] icon in apps page.
+    APP_LAUNCH_NTP_WEBSTORE_PLUS_ICON,
+
     APP_LAUNCH_BUCKET_BOUNDARY,
     APP_LAUNCH_BUCKET_INVALID
   };

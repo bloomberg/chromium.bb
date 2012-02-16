@@ -16,6 +16,7 @@ cr.define('ntp4', function() {
     NTP_RECENTLY_CLOSED: 4,
     NTP_APP_RE_ENABLE: 16,
     NTP_WEBSTORE_FOOTER: 18,
+    NTP_WEBSTORE_PLUS_ICON: 19,
   };
 
   // Histogram buckets for UMA tracking of where a DnD drop came from.
@@ -648,6 +649,11 @@ cr.define('ntp4', function() {
 
       if (templateData.appInstallHintEnabled) {
         this.appInstallHint_ = $('app-install-hint-template').cloneNode(true);
+        this.appInstallHint_.addEventListener('click', function(e) {
+          chrome.send('recordAppLaunchByURL',
+              [encodeURIComponent(this.href),
+               APP_LAUNCH.NTP_WEBSTORE_PLUS_ICON]);
+        });
         this.content_.appendChild(this.appInstallHint_);
       }
 
@@ -881,9 +887,14 @@ cr.define('ntp4', function() {
       if (!this.appInstallHint_)
         return;
 
-      var layout = this.layoutValues_;
-
       var index = this.tileElements_.length;
+      if (index >= 18) {
+        this.appInstallHint_.hidden = true;
+        return;
+      }
+
+      this.appInstallHint_.hidden = false;
+      var layout = this.layoutValues_;
       var col = index % layout.numRowTiles;
       var row = Math.floor(index / layout.numRowTiles);
       var realX = this.tileGrid_.offsetLeft +

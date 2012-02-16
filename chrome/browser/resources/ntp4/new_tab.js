@@ -113,15 +113,19 @@ cr.define('ntp4', function() {
                               false);
     chrome.send('getMostVisited');
 
+    var webstoreLink = localStrings.getString('webStoreLink');
     if (templateData.isWebStoreExperimentEnabled) {
-      var webstoreLink = localStrings.getString('webStoreLink');
       var url = appendParam(webstoreLink, 'utm_source', 'chrome-ntp-launcher');
       $('chrome-web-store-href').href = url;
-
       $('chrome-web-store-href').addEventListener('click',
           onChromeWebStoreButtonClick);
 
       $('footer-content').classList.add('enable-cws-experiment');
+    }
+
+    if (templateData.appInstallHintEnabled) {
+      var url = appendParam(webstoreLink, 'utm_source', 'chrome-ntp-plus-icon');
+      $('app-install-hint-template').href = url;
     }
 
     if (localStrings.getString('login_status_message')) {

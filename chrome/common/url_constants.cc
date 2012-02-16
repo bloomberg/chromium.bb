@@ -398,10 +398,6 @@ const char kSyncErrorsHelpURL[] =
 const char kSyncCreateNewAccountURL[] =
     "https://www.google.com/accounts/NewAccount?service=chromiumsync";
 
-const char kNtpAppInstallHintURL[] =
-    "https://chrome.google.com/webstore/category/collection/editors_picks"
-    "&utm_source=ntp_app_hint";
-
 const char* const kChromeDebugURLs[] = {
   kChromeUICrashURL,
   kChromeUIKillURL,

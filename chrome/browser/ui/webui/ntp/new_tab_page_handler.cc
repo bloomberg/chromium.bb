@@ -29,6 +29,9 @@ static const int kIntroDisplayMax = 10;
 static const char kNtp4IntroURL[] =
   "http://www.google.com/support/chrome/bin/answer.py?answer=95451";
 
+static const char kDefaultPageTypeHistogram[] =
+    "NewTabPage.DefaultPageType";
+
 NewTabPageHandler::NewTabPageHandler() : page_switch_count_(0) {
 }
 
@@ -42,15 +45,24 @@ void NewTabPageHandler::RegisterMessages() {
   PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
   int shown_page_type = prefs->GetInteger(prefs::kNtpShownPage) >>
       kPageIdOffset;
-  UMA_HISTOGRAM_ENUMERATION("NewTabPage.DefaultPageType",
+  UMA_HISTOGRAM_ENUMERATION(kDefaultPageTypeHistogram,
                             shown_page_type, kHistogramEnumerationMax);
 
   static bool default_apps_trial_exists =
       base::FieldTrialList::TrialExists(kDefaultAppsTrialName);
   if (default_apps_trial_exists) {
     UMA_HISTOGRAM_ENUMERATION(
-        base::FieldTrial::MakeName("NewTabPage.DefaultPageType",
+        base::FieldTrial::MakeName(kDefaultPageTypeHistogram,
                                    kDefaultAppsTrialName),
+        shown_page_type, kHistogramEnumerationMax);
+  }
+
+  static const bool webstore_link_experiment_exists =
+      base::FieldTrialList::TrialExists(kWebStoreLinkExperiment);
+  if (webstore_link_experiment_exists) {
+    UMA_HISTOGRAM_ENUMERATION(
+        base::FieldTrial::MakeName(kDefaultPageTypeHistogram,
+                                   kWebStoreLinkExperiment),
         shown_page_type, kHistogramEnumerationMax);
   }
 
