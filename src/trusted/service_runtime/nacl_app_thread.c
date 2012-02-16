@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -10,8 +10,9 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
-#include "native_client/src/trusted/service_runtime/nacl_desc_effector_ldr.h"
 
+#include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
+#include "native_client/src/trusted/service_runtime/nacl_desc_effector_ldr.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_oop_debugger_hooks.h"
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"
@@ -55,6 +56,8 @@ void WINAPI NaClThreadLauncher(void *state) {
           NaClGetThreadCtxSp(&natp->user));
 
   thread_idx = NaClGetThreadIdx(natp);
+  CHECK(0 < thread_idx);
+  CHECK(thread_idx < NACL_THREAD_MAX);
   NaClTlsSetIdx(thread_idx);
   nacl_thread[thread_idx] = natp;
   nacl_user[thread_idx] = &natp->user;

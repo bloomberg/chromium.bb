@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -36,6 +36,14 @@ static void NaClThreadStartupCheck() {
 }
 
 
+/*
+ * The thread indices are "virtual" segment selectors for x86-64.  In
+ * x86-32, the allocation is done via the LDT, and a zero segment
+ * selector is an illegal value.  Here, we emulate that -- though we
+ * can have more than 4k threads -- and return NACL_TLS_INDEX_INVALID
+ * (0) as an error.
+ */
+
 static int NaClThreadIdxInit () {
   size_t i;
 
@@ -55,13 +63,16 @@ static void NaClThreadIdxFini() {
 }
 
 /*
- * Returns -1 for error, [0, NACL_ARRAY_SIZE(gNaClThreadIdxInUse)) on success.
+ * Returns NACL_TLS_INDEX_INVALID (0) for error, [1, NACL_THREAD_MAX)
+ * on success.  Since we are essentially allocating indices in an
+ * array and array indexing is zero-based, we just skip the first
+ * entry.
  */
 static int NaClThreadIdxAllocate() {
   size_t i;
 
   NaClXMutexLock(&gNaClTlsMu);
-  for (i = 0; i < kNumThreads; i++) {
+  for (i = 1; i < kNumThreads; i++) {
     if (!gNaClThreadIdxInUse[i]) {
       gNaClThreadIdxInUse[i] = 1;
       break;
@@ -69,11 +80,11 @@ static int NaClThreadIdxAllocate() {
   }
   NaClXMutexUnlock(&gNaClTlsMu);
 
-  if (NACL_ARRAY_SIZE(gNaClThreadIdxInUse) != i) {
+  if (kNumThreads != i) {
     return (int) i;
   }
   NaClLog(LOG_ERROR, "NaClAllocateThreadIdx: no more slots for a thread\n");
-  return -1;
+  return NACL_TLS_INDEX_INVALID;
 }
 
 static void NaClThreadIdxFree(uint32_t i) {
@@ -173,15 +184,14 @@ uint32_t NaClTlsAllocate(struct NaClAppThread *natp,
 
   i = NaClThreadIdxAllocate();
 
-  if (-1 == i) {
+  if (NACL_TLS_INDEX_INVALID == i) {
     NaClLog(LOG_ERROR, "NaClTlsAllocate: no more slots for a thread\n");
     return NACL_TLS_INDEX_INVALID;
   }
 
   natp->user.tls_base = base_addr;
 
-  /* bias by 1: successful return value is never 0 */
-  return i + 1;
+  return i;
 }
 
 
@@ -229,7 +239,7 @@ void NaClTlsFree(struct NaClAppThread *natp) {
   int tls_idx;
 
   tls_idx = NaClGetThreadIdx(natp);
-  NaClThreadIdxFree(tls_idx - 1);
+  NaClThreadIdxFree(tls_idx);
   /*
    * don't do
    *
@@ -272,26 +282,22 @@ void NaClTlsFini() {
 
 
 /*
- * The API, defined for x86-32, requires that we return 0 for error.
- * This was because 0 is an illegal segment selector value.  Since we
- * are essentially allocating indices in an array and array indexing
- * is zero-based, we must bias the result.
+ * The API, defined for x86-32, requires that we return
+ * NACL_TLS_INDEX_INVALID (0) for error.  This was because 0 is an
+ * illegal segment selector value.
  */
 uint32_t NaClTlsAllocate(struct NaClAppThread *natp,
                          void                 *base_addr) {
   int i;
 
   i = NaClThreadIdxAllocate();
-  if (-1 == i) {
+  if (NACL_TLS_INDEX_INVALID == i) {
     NaClLog(LOG_ERROR, "NaClTlsAllocate: no more slots for a thread\n");
-    return 0;
+    return NACL_TLS_INDEX_INVALID;
   }
   natp->user.tls_base = base_addr;
 
-  /*
-   * since we return 0 for error, we bias the result.
-   */
-  return i + 1;
+  return i;
 }
 
 
@@ -318,7 +324,7 @@ void NaClTlsFree(struct NaClAppThread *natp) {
                  uint32_t             tls_idx;
 
   tls_idx = NaClGetThreadIdx(natp);
-  NaClThreadIdxFree(tls_idx - 1);
+  NaClThreadIdxFree(tls_idx);
 }
 
 uint32_t NaClTlsChange(struct NaClAppThread   *natp,
