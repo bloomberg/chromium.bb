@@ -672,15 +672,9 @@ cr.define('options', function() {
     var containers = [$('overlay-container-1'), $('overlay-container-2')];
     for (var i = 0; i < containers.length; i++) {
       var overlay = containers[i];
-      overlay.onclick = function(e) {
-        // Only shake if the overlay was the target of the click.
-        if (this == e.target)
-          this.querySelector('.page:not([hidden])').classList.add('shake');
-      };
-
-      overlay.addEventListener('webkitAnimationEnd', function(e) {
-        e.target.classList.remove('shake');
-      });
+      cr.ui.overlay.setupOverlay(overlay);
+      overlay.addEventListener('closeOverlay',
+                               OptionsPage.closeOverlay.bind(OptionsPage));
     }
   };
 
@@ -711,8 +705,8 @@ cr.define('options', function() {
       return;
 
     if (topPage.isOverlay) {
-      // If an overlay is visible, that defines the tab loop.
-      focusableItemsRoot = topPage.pageDiv;
+      // This case is handled in overlay.js.
+      return;
     } else {
       // If a subpage is visible, use its parent as the tab loop constraint.
       // (The parent is used because it contains the close button.)
@@ -848,12 +842,9 @@ cr.define('options', function() {
    * @private
    */
   OptionsPage.keyDownEventHandler_ = function(event) {
-    // Close the top overlay or sub-page on esc.
-    if (event.keyCode == 27) {  // Esc
-      if (this.isOverlayVisible_())
-        this.closeOverlay();
-      else
-        this.closeTopSubPage_();
+    if (event.keyCode == 27 &&  // Esc
+        !this.isOverlayVisible_) {
+      this.closeTopSubPage_();
     }
   };
 
@@ -921,9 +912,8 @@ cr.define('options', function() {
       if ((this.visible && visible) || (!this.visible && !visible))
         return;
 
-      this.setContainerVisibility_(visible);
       this.pageDiv.hidden = !visible;
-      this.pageDiv.classList.remove('shake');
+      this.setContainerVisibility_(visible);
 
       OptionsPage.updatePageFreezeStates();
 

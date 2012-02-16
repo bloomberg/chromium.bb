@@ -118,6 +118,8 @@ without changes to the corresponding grd file. -->
                file="shared/js/cr/ui/menu_button.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_MENU_ITEM"
                file="shared/js/cr/ui/menu_item.js" type="BINDATA" />
+      <include name="IDR_SHARED_JS_CR_UI_OVERLAY"
+               file="shared/js/cr/ui/overlay.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_POSITION_UTIL"
                file="shared/js/cr/ui/position_util.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_SPLITTER"

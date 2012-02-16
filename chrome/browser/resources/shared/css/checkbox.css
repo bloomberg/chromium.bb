@@ -39,6 +39,7 @@ input[type='checkbox']:not(:disabled):active {
 }
 
 input[type='checkbox']:checked::before {
+  -webkit-user-select: none;
   color: #808080;
   content: url('../images/checkmark.png');
   font-size: 13px;  /* Explicitly set the font size so that the positioning
