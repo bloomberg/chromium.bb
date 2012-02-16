@@ -97,18 +97,6 @@
                 ],
               },
             ],
-            # TODO(rkc): Remove once crosbug.com/15266 is fixed.
-            ['profiling==1', {
-              'ldflags': ['-nopie'],
-            }, {
-              # Building with -pie needs investigating on ARM.
-              # For now, at least use it on Linux Intel.
-              'conditions': [
-                ['(target_arch=="x64" or target_arch=="ia32") and linux_disable_pie!=1', {
-                  'ldflags': ['-pie'],
-                }],
-              ],
-            }],
             ['use_system_xdg_utils==0', {
               'copies': [
                 {
