@@ -325,7 +325,7 @@ const std::string VPNConfigView::GetPSKPassphrase() const {
   if (psk_passphrase_textfield_ &&
       enable_psk_passphrase_ &&
       psk_passphrase_textfield_->visible())
-    return GetPassphraseFromField(psk_passphrase_textfield_);
+    return GetTextFromField(psk_passphrase_textfield_, false);
   return std::string();
 }
 
@@ -334,7 +334,7 @@ const std::string VPNConfigView::GetUsername() const {
 }
 
 const std::string VPNConfigView::GetUserPassphrase() const {
-  return GetPassphraseFromField(user_passphrase_textfield_);
+  return GetTextFromField(user_passphrase_textfield_, false);
 }
 
 const std::string VPNConfigView::GetGroupName() const {
@@ -481,8 +481,11 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
     psk_passphrase_label_ =  new views::Label(l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_PSK_PASSPHRASE));
     layout->AddView(psk_passphrase_label_);
-    psk_passphrase_textfield_ = new PassphraseTextfield(vpn);
+    psk_passphrase_textfield_ = new views::Textfield(
+        views::Textfield::STYLE_OBSCURED);
     psk_passphrase_textfield_->SetController(this);
+    if (vpn && !vpn->psk_passphrase().empty())
+      psk_passphrase_textfield_->SetText(UTF8ToUTF16(vpn->psk_passphrase()));
     layout->AddView(psk_passphrase_textfield_);
     layout->AddView(
         new ControlledSettingIndicatorView(psk_passphrase_ui_data_));
@@ -546,9 +549,12 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
   layout->StartRow(0, column_view_set_id);
   layout->AddView(new views::Label(l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USER_PASSPHRASE)));
-  user_passphrase_textfield_ = new PassphraseTextfield(vpn);
+  user_passphrase_textfield_ = new views::Textfield(
+      views::Textfield::STYLE_OBSCURED);
   user_passphrase_textfield_->SetController(this);
   user_passphrase_textfield_->SetEnabled(user_passphrase_ui_data_.editable());
+  if (vpn && !vpn->user_passphrase().empty())
+    user_passphrase_textfield_->SetText(UTF8ToUTF16(vpn->user_passphrase()));
   layout->AddView(user_passphrase_textfield_);
   layout->AddView(new ControlledSettingIndicatorView(user_passphrase_ui_data_));
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
@@ -777,13 +783,6 @@ const std::string VPNConfigView::GetTextFromField(
   std::string result;
   TrimWhitespaceASCII(untrimmed, TRIM_ALL, &result);
   return result;
-}
-
-const std::string VPNConfigView::GetPassphraseFromField(
-    PassphraseTextfield* textfield) const {
-  if (!textfield)
-    return std::string();
-  return textfield->GetPassphrase();
 }
 
 void VPNConfigView::ParseVPNUIProperty(NetworkPropertyUIData* property_ui_data,

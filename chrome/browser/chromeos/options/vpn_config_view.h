@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,6 @@
 #include "base/string16.h"
 #include "chrome/browser/chromeos/cros/cert_library.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
-#include "chrome/browser/chromeos/options/passphrase_textfield.h"
 #include "chrome/browser/ui/select_file_dialog.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
@@ -88,10 +87,6 @@ class VPNConfigView : public ChildNetworkConfigView,
   const std::string GetTextFromField(views::Textfield* textfield,
                                      bool trim_whitespace) const;
 
-  // Get passphrase from input field.
-  const std::string GetPassphraseFromField(
-      PassphraseTextfield* textfield) const;
-
   // Convenience methods to get text from input field or cached VirtualNetwork.
   const std::string GetService() const;
   const std::string GetServer() const;
@@ -138,13 +133,13 @@ class VPNConfigView : public ChildNetworkConfigView,
   views::Combobox* provider_type_combobox_;
   views::Label* provider_type_text_label_;
   views::Label* psk_passphrase_label_;
-  PassphraseTextfield* psk_passphrase_textfield_;
+  views::Textfield* psk_passphrase_textfield_;
   views::Label* user_cert_label_;
   views::Combobox* user_cert_combobox_;
   views::Label* server_ca_cert_label_;
   views::Combobox* server_ca_cert_combobox_;
   views::Textfield* username_textfield_;
-  PassphraseTextfield* user_passphrase_textfield_;
+  views::Textfield* user_passphrase_textfield_;
   views::Label* otp_label_;
   views::Textfield* otp_textfield_;
   views::Label* group_name_label_;
