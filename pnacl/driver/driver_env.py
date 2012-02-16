@@ -56,8 +56,7 @@ INITIAL_ENV = {
   'DRY_RUN'     : '0',
   'DEBUG'       : '0',    # Print out internal actions
   'RECURSE'     : '0',    # In a recursive driver call
-  'SAVE_TEMPS'  : '1',    # Do not clean up temporary files
-                          # TODO(pdox): Disable for SDK version
+  'SAVE_TEMPS'  : '0',    # Do not clean up temporary files
   'SANDBOXED'   : '0',    # Use sandboxed toolchain for this arch. (main switch)
   'SRPC'        : '1',    # Use SRPC sandboxed toolchain
   'FORCE_INTERMEDIATE_S': '0',
