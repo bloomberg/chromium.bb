@@ -826,11 +826,15 @@ void VirtualNetwork::SetL2TPIPsecPSKCredentials(
     const std::string& username,
     const std::string& user_passphrase,
     const std::string& group_name) {
-  SetStringProperty(flimflam::kL2tpIpsecPskProperty,
-                    psk_passphrase, &psk_passphrase_);
+  if (!psk_passphrase.empty()) {
+    SetStringProperty(flimflam::kL2tpIpsecPskProperty,
+                      psk_passphrase, &psk_passphrase_);
+  }
   SetStringProperty(flimflam::kL2tpIpsecUserProperty, username, &username_);
-  SetStringProperty(flimflam::kL2tpIpsecPasswordProperty,
-                    user_passphrase, &user_passphrase_);
+  if (!user_passphrase.empty()) {
+    SetStringProperty(flimflam::kL2tpIpsecPasswordProperty,
+                      user_passphrase, &user_passphrase_);
+  }
   SetStringProperty(flimflam::kL2tpIpsecGroupNameProperty,
                     group_name, &group_name_);
 }
@@ -843,8 +847,10 @@ void VirtualNetwork::SetL2TPIPsecCertCredentials(
   SetStringProperty(flimflam::kL2tpIpsecClientCertIdProperty,
                     client_cert_id, &client_cert_id_);
   SetStringProperty(flimflam::kL2tpIpsecUserProperty, username, &username_);
-  SetStringProperty(flimflam::kL2tpIpsecPasswordProperty,
-                    user_passphrase, &user_passphrase_);
+  if (!user_passphrase.empty()) {
+    SetStringProperty(flimflam::kL2tpIpsecPasswordProperty,
+                      user_passphrase, &user_passphrase_);
+  }
   SetStringProperty(flimflam::kL2tpIpsecGroupNameProperty,
                     group_name, &group_name_);
 }
@@ -5283,16 +5289,25 @@ void NetworkLibraryImplStub::Init() {
         "  \"NetworkConfigurations\": ["
         "    {"
         "      \"GUID\": \"guid\","
-        "      \"Type\": \"WiFi\","
-        "      \"WiFi\": {"
-        "        \"Security\": \"WEP\","
-        "        \"SSID\": \"MySSID\","
+        "      \"Type\": \"VPN\","
+        "      \"Name\": \"VPNtest\","
+        "      \"VPN\": {"
+        "        \"Host\": \"172.22.12.98\","
+        "        \"Type\": \"L2TP-IPsec\","
+        "        \"IPsec\": {"
+        "          \"AuthenticationType\": \"PSK\","
+        "          \"IKEVersion\": 2,"
+        "          \"PSK\": \"chromeos\","
+        "        },"
+        "        \"L2TP\": {"
+        "          \"Username\": \"vpntest\","
+        "        }"
         "      }"
         "    }"
         "  ],"
         "  \"Certificates\": []"
         "}");
-  LoadOncNetworks(test_blob, "", NetworkUIData::ONC_SOURCE_USER_IMPORT, NULL);
+//  LoadOncNetworks(test_blob, "", NetworkUIData::ONC_SOURCE_USER_IMPORT, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////
