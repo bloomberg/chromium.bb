@@ -36,7 +36,8 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
       self._test_length_sec = int(os.environ['TEST_LENGTH_SEC'])
 
     # Set up a remote inspector client associated with tab 0.
-    self._snapshotter = remote_inspector_client.PerformanceSnapshotter()
+    self._remote_inspector_client = (
+        remote_inspector_client.RemoteInspectorClient())
 
     self._dom_node_count_results = []
     self._event_listener_count_results = []
@@ -103,7 +104,7 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     elapsed_time = time.time() - self._test_start_time
     elapsed_time = int(round(elapsed_time))
 
-    memory_counts = self._snapshotter.GetMemoryObjectCounts()
+    memory_counts = self._remote_inspector_client.GetMemoryObjectCounts()
 
     dom_node_count = memory_counts['DOMNodeCount']
     logging.info('  Total DOM node count: %d nodes' % dom_node_count)

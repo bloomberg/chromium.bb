@@ -3,38 +3,34 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Performance snapshot utility for pyauto tests.
+"""Chrome remote inspector utility for pyauto tests.
 
-Wrapper around Chrome DevTools (mimics the front-end) to collect profiling info
-associated with a Chrome tab.  This script collects snapshots of the v8
-(Javascript engine) heap associated with the Chrome tab.
+This script provides a python interface that acts as a front-end for Chrome's
+remote inspector module, communicating via sockets to interact with Chrome in
+the same way that the Developer Tools does.  This -- in theory -- should allow
+a pyauto test to do anything that Chrome's Developer Tools does, as long as the
+appropriate communication with the remote inspector is implemented in this
+script.
 
-Assumption: there must already be a running Chrome instance on the local machine
-that has been passed flag '--remote-debugging-port=9222' to enable remote
-debugging on port 9222.
+This script assumes that Chrome is already running on the local machine with
+flag '--remote-debugging-port=9222' to enable remote debugging on port 9222.
 
-This script can be run directly from the command line.  Run with '-h' to see
-the accepted options.  Option -i allows the script to be run in interactive
-mode, which continually prompts the user to take a snapshot or quit the program.
-This is useful for on-demand snapshotting while the user manually interacts with
-a running browser.
-
-To take v8 heap snapshots from another automated script (e.g., from pyauto):
+To use this module, create an instance of class RemoteInspectorClient, then
+call the appropriate function in that class to perform the desired action.  For
+example, to take v8 heap snapshots from a pyauto test:
 
 import remote_inspector_client
-snapshotter = remote_inspector_client.PerformanceSnapshotter()
-snapshot_info = snapshotter.HeapSnapshot()
-new_snapshot_info = snapshotter.HeapSnapshot()
-
-HeapSnapshot() returns a list of dictionaries, where each dictionary contains
-the summarized info for a single v8 heap snapshot.  See the initialization
-parameters for class PerformanceSnapshotter to control how snapshots are taken.
+my_client = remote_inspector_client.RemoteInspectorClient()
+snapshot_info = my_client.HeapSnapshot()
+// Do some stuff...
+new_snapshot_info = my_client.HeapSnapshot()
 """
 
 import asyncore
 import datetime
 import logging
 import optparse
+import pprint
 import simplejson
 import socket
 import sys
@@ -54,7 +50,7 @@ class _V8HeapSnapshotParser(object):
   _CHILD_TYPES = ['context', 'element', 'property', 'internal', 'hidden',
                   'shortcut', 'weak']
   _NODE_TYPES = ['hidden', 'array', 'string', 'object', 'code', 'closure',
-                 'regexp', 'number', 'native']
+                 'regexp', 'number', 'native', 'synthetic']
 
   @staticmethod
   def ParseSnapshotData(raw_data):
@@ -477,7 +473,7 @@ class _RemoteInspectorBaseThread(threading.Thread):
     pass
 
   def run(self):
-    """Start _PerformanceSnapshotterThread; overridden from threading.Thread.
+    """Start this thread; overridden from threading.Thread.
 
     Should be overridden in a subclass.
     """
@@ -608,8 +604,8 @@ class _PerformanceSnapshotterThread(_RemoteInspectorBaseThread):
   """Manages communication with a remote Chrome to take v8 heap snapshots.
 
   Public Attributes:
-    collected_heap_snapshot_data: A list of dictionaries, where each dictionary
-                                  contains the information for a taken snapshot.
+    collected_heap_snapshot_data: A dictionary containing the information for a
+                                  taken v8 heap snapshot.
   """
   _HEAP_SNAPSHOT_MESSAGES = [
     'Page.getResourceTree',
@@ -619,39 +615,23 @@ class _PerformanceSnapshotterThread(_RemoteInspectorBaseThread):
     'Profiler.getProfile',
   ]
 
-  def __init__(
-      self, tab_index, output_file, interval, num_snapshots, verbose,
-      show_socket_messages, interactive_mode):
+  def __init__(self, tab_index, verbose, show_socket_messages):
     """Initialize.
 
     Args:
       tab_index: The integer index of the tab in the remote Chrome instance to
                  use for snapshotting.
-      output_file: The string name of an output file in which to write results.
-                   Use None to refrain from writing results to an output file.
-      interval: An integer number of seconds to wait after a snapshot is
-                completed, before starting the next snapshot.
-      num_snapshots: An integer number of snapshots to take before terminating.
-                     Use 0 to take snapshots indefinitely (you must manually
-                     kill the script in this case).
       verbose: A boolean indicating whether or not to use verbose logging.
       show_socket_messages: A boolean indicating whether or not to show the
                             socket messages sent/received when communicating
                             with the remote Chrome instance.
-      interactive_mode: A boolean indicating whether or not to take snapshots
-                        in interactive mode.
     """
     _RemoteInspectorBaseThread.__init__(self, tab_index, verbose,
                                         show_socket_messages)
 
-    self._output_file = output_file
-    self._interval = interval
-    self._num_snapshots = num_snapshots
-    self._interactive_mode = interactive_mode
-
     self._current_heap_snapshot = []
     self._url = ''
-    self.collected_heap_snapshot_data = []
+    self.collected_heap_snapshot_data = {}
     self.last_snapshot_start_time = 0
 
   def HandleReply(self, reply_dict):
@@ -697,23 +677,11 @@ class _PerformanceSnapshotterThread(_RemoteInspectorBaseThread):
         total_size_str = self._ConvertBytesToHumanReadableString(total_size)
         timestamp = time.time()
 
-        self.collected_heap_snapshot_data.append(
-            {'url': self._url,
-             'timestamp': timestamp,
-             'total_v8_node_count': num_nodes,
-             'total_heap_size': total_size,})
-
-        if self._output_file:
-          f = open(self._output_file, 'a')
-          f.write('\n')
-          now = datetime.datetime.now()
-          f.write('[%s]\nSnapshot for: %s\n' %
-                  (now.strftime('%Y-%B-%d %I:%M:%S %p'), self._url))
-          f.write('  Total node count: %d\n' % num_nodes)
-          f.write('  Total shallow size: %s\n' % total_size_str)
-          f.close()
-        self._logger.debug('Heap snapshot analysis complete (%s).',
-                           total_size_str)
+        self.collected_heap_snapshot_data = {
+            'url': self._url,
+            'timestamp': timestamp,
+            'total_v8_node_count': num_nodes,
+            'total_heap_size': total_size}
 
   @staticmethod
   def _ConvertBytesToHumanReadableString(num_bytes):
@@ -732,25 +700,10 @@ class _PerformanceSnapshotterThread(_RemoteInspectorBaseThread):
     else:
       return '%.2f MB' % (num_bytes / 1048576.0)
 
-  def _ResetRequests(self):
-    """Clears snapshot-related info in preparation for a new snapshot."""
-    self._requests = []
-    self._current_heap_snapshot = []
-    self._url = ''
-
-  def _TakeHeapSnapshot(self):
-    """Takes a heap snapshot by communicating with _DevToolsSocketClient.
-
-    Returns:
-      A boolean indicating whether the heap snapshot was taken successfully.
-      This can be False if the current thread is killed before the snapshot
-      is finished being taken.
-    """
-    if self._killed:
-      return False
+  def run(self):
+    """Start _PerformanceSnapshotterThread; overridden from threading.Thread."""
     self.last_snapshot_start_time = time.time()
     self._logger.debug('Taking heap snapshot...')
-    self._ResetRequests()
 
     # Prepare the request list.
     for message in self._HEAP_SNAPSHOT_MESSAGES:
@@ -765,47 +718,10 @@ class _PerformanceSnapshotterThread(_RemoteInspectorBaseThread):
       self._client.SendMessage(str(request))
       while not request.is_complete:
         if self._killed:
-          return False
-        time.sleep(0.1)
-    return True
-
-  def run(self):
-    """Start _PerformanceSnapshotterThread; overridden from threading.Thread."""
-    if self._interactive_mode:
-      # Carry out interactive snapshotting.
-      self._logger.debug('Entering interactive snapshotting mode.')
-      while True:
-        inp = raw_input('Enter "s" to take a heap snapshot, or "q" to quit> ')
-        if inp.lower() in ['s']:
-          if not self._TakeHeapSnapshot():
-            return
-        elif inp.lower() in ['q', 'quit']:
           self._client.close()
-          self._logger.debug('Snapshotter thread finished.')
           return
-    else:
-      # Carry out automatic periodic snapshotting.
-      if self._num_snapshots == 0:
-        # Snapshot indefinitely until the user manually terminates the process.
-        self._logger.debug('Entering forever snapshot mode.')
-        while True:
-          if not self._TakeHeapSnapshot():
-            return
-          self._logger.debug('Waiting %d seconds...', self._interval)
-          time.sleep(self._interval)
-      else:
-        # Perform the requested number of snapshots, then terminate.
-        self._logger.debug('Entering %d snapshot mode.', self._num_snapshots)
-        for snapshot_num in range(self._num_snapshots):
-          if not self._TakeHeapSnapshot():
-            return
-          self._logger.debug('Completed snapshot %d of %d.', snapshot_num + 1,
-                             self._num_snapshots)
-          if snapshot_num + 1 < self._num_snapshots:
-            self._logger.debug('Waiting %d seconds...',  self._interval)
-            time.sleep(self._interval)
-        self._client.close()
-        self._logger.debug('Snapshotter thread finished.')
+        time.sleep(0.1)
+    self._client.close()
 
 
 class _GarbageCollectThread(_RemoteInspectorBaseThread):
@@ -890,60 +806,41 @@ class _MemoryCountThread(_RemoteInspectorBaseThread):
 
 # TODO(dennisjeffrey): The "verbose" option used in this file should re-use
 # pyauto's verbose flag.
-class PerformanceSnapshotter(object):
+class RemoteInspectorClient(object):
   """Main class for taking v8 heap snapshots.
 
   Public Methods:
-    HeapSnapshot: Begins taking heap snapshots according to the initialization
-                  parameters for the current object.
+    HeapSnapshot: Takes a v8 heap snapshot and returns the summarized data.
     GarbageCollect: Forces a garbage collection.
-    SetInteractiveMode: Sets the current object to take snapshots in interactive
-                        mode. Only used by the main() function in this script
-                        when the 'interactive mode' command-line flag is set.
+    GetMemoryObjectCounts: Retrieves memory object count information.
   """
-  DEFAULT_SNAPSHOT_INTERVAL = 30
-
   # TODO(dennisjeffrey): Allow a user to specify a window index too (not just a
   # tab index), when running through PyAuto.
-  def __init__(
-      self, tab_index=0, output_file=None, interval=DEFAULT_SNAPSHOT_INTERVAL,
-      num_snapshots=1, verbose=False, show_socket_messages=False):
+  def __init__(self, tab_index=0, verbose=False, show_socket_messages=False):
     """Initialize.
 
     Args:
       tab_index: The integer index of the tab in the remote Chrome instance to
                  use for snapshotting.  Defaults to 0 (the first tab).
-      output_file: The string name of an output file in which to write results.
-                   Use None to refrain from writing results to an output file.
-      interval: An integer number of seconds to wait after a snapshot is
-                completed, before starting the next snapshot.
-      num_snapshots: An integer number of snapshots to take before terminating.
-                     Use 0 to take snapshots indefinitely (you must manually
-                     kill the script in this case).
       verbose: A boolean indicating whether or not to use verbose logging.
       show_socket_messages: A boolean indicating whether or not to show the
                             socket messages sent/received when communicating
                             with the remote Chrome instance.
     """
     self._tab_index = tab_index
-    self._output_file = output_file
-    self._interval = interval
-    self._num_snapshots = num_snapshots
     self._verbose = verbose
     self._show_socket_messages = show_socket_messages
 
     logging.basicConfig()
-    self._logger = logging.getLogger('PerformanceSnapshotter')
+    self._logger = logging.getLogger('RemoteInspectorClient')
     self._logger.setLevel([logging.WARNING, logging.DEBUG][verbose])
 
-    self._interactive_mode = False
-
   def HeapSnapshot(self):
-    """Takes v8 heap snapshots until done, according to initialization params.
+    """Takes a v8 heap snapshot.
 
     Returns:
-      A list of dictionaries, where each dictionary contains the summarized
-      information for a single v8 heap snapshot that was taken:
+      A dictionary containing the summarized information for a single v8 heap
+      snapshot that was taken:
       {
         'url': string,  # URL of the webpage that was snapshotted.
         'timestamp': float,  # Time when snapshot taken (seconds since epoch).
@@ -952,8 +849,7 @@ class PerformanceSnapshotter(object):
       }
     """
     snapshotter_thread = _PerformanceSnapshotterThread(
-        self._tab_index, self._output_file, self._interval, self._num_snapshots,
-        self._verbose, self._show_socket_messages, self._interactive_mode)
+        self._tab_index, self._verbose, self._show_socket_messages)
     snapshotter_thread.start()
     try:
       while asyncore.socket_map:
@@ -962,9 +858,7 @@ class PerformanceSnapshotter(object):
         asyncore.loop(timeout=1, count=1, use_poll=True)
     except KeyboardInterrupt:
       pass
-    self._logger.debug('Waiting for snapshotter thread to die...')
     snapshotter_thread.join()
-    self._logger.debug('Done taking snapshots.')
     return snapshotter_thread.collected_heap_snapshot_data
 
   def GarbageCollect(self):
@@ -1008,10 +902,6 @@ class PerformanceSnapshotter(object):
     }
     return result
 
-  def SetInteractiveMode(self):
-    """Sets the current object to take snapshots in interactive mode."""
-    self._interactive_mode = True
-
 
 def main():
   """Main function to enable running this script from the command line."""
@@ -1020,25 +910,6 @@ def main():
   parser.add_option(
       '-t', '--tab-index', dest='tab_index', type='int', default=0,
       help='Index of the tab to snapshot. Defaults to 0 (first tab).')
-  parser.add_option(
-      '-f', '--file', dest='output_file',
-      help='Output file name (will append). Defaults to None, meaning that no '
-           'file output is written.')
-  parser.add_option(
-      '-g', '--gap-time', dest='interval', type='int',
-      default=PerformanceSnapshotter.DEFAULT_SNAPSHOT_INTERVAL,
-      help='Gap of time to wait in-between snapshots (in seconds). Defaults '
-           'to %d seconds.' % PerformanceSnapshotter.DEFAULT_SNAPSHOT_INTERVAL)
-  parser.add_option(
-      '-n', '--num-snapshots', dest='num_snapshots', type='int', default=0,
-      help='Number of snapshots to take before terminating. Defaults to 0 '
-           '(infinite): in this case, you must manually terminate the program.')
-  parser.add_option(
-      '-i', '--interactive-mode', dest='interactive_mode', default=False,
-      action='store_true',
-      help='Run in interactive mode. This mode prompts the user for input. '
-           'Enter "s" to take a snapshot. Enter "q" to end the program. When '
-           'run in this mode, the "-g" and "-n" flags are ignored.')
   parser.add_option(
       '-s', '--show-socket-messages', dest='show_socket_messages',
       default=False, action='store_true',
@@ -1050,18 +921,13 @@ def main():
 
   options, args = parser.parse_args()
 
-  # Begin taking v8 heap snapshots.
-  snapshotter = PerformanceSnapshotter(
-      tab_index=options.tab_index, output_file=options.output_file,
-      interval=options.interval, num_snapshots=options.num_snapshots,
-      verbose=options.verbose,
+  my_client = RemoteInspectorClient(
+      tab_index=options.tab_index, verbose=options.verbose,
       show_socket_messages=options.show_socket_messages)
 
-  if options.interactive_mode:
-    snapshotter.SetInteractiveMode()
-
-  snapshotter.HeapSnapshot()
-  return 0
+  print 'Taking heap snapshot...'
+  pp = pprint.PrettyPrinter(indent=2)
+  pp.pprint(my_client.HeapSnapshot())
 
 
 if __name__ == '__main__':
