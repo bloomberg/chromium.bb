@@ -1742,13 +1742,6 @@
    fun:chromeos::::GViewRequestInterceptorTest::SetUp
 }
 {
-   bug_108398
-   Heapcheck:Leak
-   ...
-   fun:BrowserThemePack::BuildFromExtension
-   fun:BrowserThemePackTest_CanBuildAndReadPack_Test::TestBody
-}
-{
    bug_109613
    Heapcheck:Leak
    fun:AutofillProfileSyncableServiceTest::SetUp

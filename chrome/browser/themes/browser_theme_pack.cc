@@ -333,13 +333,13 @@ BrowserThemePack::~BrowserThemePack() {
 }
 
 // static
-BrowserThemePack* BrowserThemePack::BuildFromExtension(
+scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromExtension(
     const Extension* extension) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(extension);
   DCHECK(extension->is_theme());
 
-  scoped_refptr<BrowserThemePack> pack = new BrowserThemePack;
+  scoped_refptr<BrowserThemePack> pack(new BrowserThemePack);
   pack->BuildHeader(extension);
   pack->BuildTintsFromJSON(extension->GetThemeTints());
   pack->BuildColorsFromJSON(extension->GetThemeColors());
@@ -352,10 +352,8 @@ BrowserThemePack* BrowserThemePack::BuildFromExtension(
                                 &file_paths);
   pack->BuildSourceImagesArray(file_paths);
 
-  if (!pack->LoadRawBitmapsTo(file_paths, &pack->prepared_images_)) {
-    delete pack;
+  if (!pack->LoadRawBitmapsTo(file_paths, &pack->prepared_images_))
     return NULL;
-  }
 
   pack->GenerateFrameImages(&pack->prepared_images_);
 
@@ -366,7 +364,7 @@ BrowserThemePack* BrowserThemePack::BuildFromExtension(
   pack->GenerateTabBackgroundImages(&pack->prepared_images_);
 
   // The BrowserThemePack is now in a consistent state.
-  return pack.release();
+  return pack;
 }
 
 // static

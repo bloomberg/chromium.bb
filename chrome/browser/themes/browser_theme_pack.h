@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,7 +52,8 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
   // Builds the theme pack from all data from |extension|. This is often done
   // on a separate thread as it takes so long. This can fail and return NULL in
   // the case where the theme has invalid data.
-  static BrowserThemePack* BuildFromExtension(const Extension* extension);
+  static scoped_refptr<BrowserThemePack> BuildFromExtension(
+      const Extension* extension);
 
   // Builds the theme pack from a previously performed WriteToDisk(). This
   // operation should be relatively fast, as it should be an mmap() and some
