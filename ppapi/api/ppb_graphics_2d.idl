@@ -240,12 +240,9 @@ interface PPB_Graphics2D {
    * and no callback will be scheduled.
    */
 
-  /*
-   * TODO(darin): We should ensure that the completion callback always runs, so
+  /* TODO(darin): We should ensure that the completion callback always runs, so
    * that it is easier for consumers to manage memory referenced by a callback.
-   */
-
-  /*
+   *
    * TODO(): Add back in the synchronous mode description once we have support
    * for it.
    */

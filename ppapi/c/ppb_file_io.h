@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_file_io.idl modified Thu Jan 12 16:13:13 2012. */
+/* From ppb_file_io.idl modified Wed Feb 15 15:55:56 2012. */
 
 #ifndef PPAPI_C_PPB_FILE_IO_H_
 #define PPAPI_C_PPB_FILE_IO_H_
@@ -170,7 +170,7 @@ struct PPB_FileIO_1_0 {
    * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
    * completion of Read().
    *
-   * @return An The number of bytes read an error code from
+   * @return The number of bytes read or an error code from
    * <code>pp_errors.h</code>. If the return value is 0, then end-of-file was
    * reached. It is valid to call Read() multiple times with a completion
    * callback to queue up parallel reads from the file, but pending reads
@@ -194,7 +194,7 @@ struct PPB_FileIO_1_0 {
    * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
    * completion of Write().
    *
-   * @return An The number of bytes written or an error code from
+   * @return The number of bytes written or an error code from
    * <code>pp_errors.h</code>. If the return value is 0, then end-of-file was
    * reached. It is valid to call Write() multiple times with a completion
    * callback to queue up parallel writes to the file, but pending writes
