@@ -100,9 +100,8 @@ void ClockMenuButton::UpdateText() {
       time,
       use_24hour_clock_ ? base::k24HourClock : base::k12HourClock,
       base::kDropAmPm));
-  string16 friendly_time_string(base::TimeFormatFriendlyDateAndTime(time));
-  SetTooltipText(friendly_time_string);
-  SetAccessibleName(friendly_time_string);
+  SetTooltipText(base::TimeFormatFriendlyDate(time));
+  SetAccessibleName(base::TimeFormatFriendlyDateAndTime(time));
   SchedulePaint();
 }
 
