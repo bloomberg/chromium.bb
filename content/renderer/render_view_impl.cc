@@ -2109,10 +2109,10 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
   // GpuVideoDecodeAccelerator so we don't even try to use it on other
   // platforms.  This is a startup-time optimization.  When new VDA
   // implementations are added, relax the #if above.
-  WebKit::WebGraphicsContext3D* wk_context3d = webview()->graphicsContext3D();
-  if (wk_context3d) {
-    WebGraphicsContext3DCommandBufferImpl* context3d =
-        static_cast<WebGraphicsContext3DCommandBufferImpl*>(wk_context3d);
+  WebGraphicsContext3DCommandBufferImpl* context3d =
+      static_cast<WebGraphicsContext3DCommandBufferImpl*>(
+          webview()->graphicsContext3D());
+  if (context3d && context3d->makeContextCurrent()) {
     GpuChannelHost* gpu_channel_host =
         RenderThreadImpl::current()->EstablishGpuChannelSync(
             content::CAUSE_FOR_GPU_LAUNCH_VIDEODECODEACCELERATOR_INITIALIZE);
