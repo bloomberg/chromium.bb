@@ -9,7 +9,7 @@ var remoting = remoting || {};
 
 function onLoad() {
   var goHome = function() {
-    window.location.replace(chrome.extension.getURL('choice.html'));
+    window.location.replace(chrome.extension.getURL('main.html'));
   };
   var goEnterAccessCode = function() {
     remoting.setMode(remoting.AppMode.CLIENT_UNCONNECTED);

@@ -5,7 +5,7 @@
   "default_locale": "en",
   "app": {
     "launch": {
-      "local_path": "choice.html"
+      "local_path": "main.html"
     }
   },
   "icons": {

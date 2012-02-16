@@ -72,7 +72,9 @@ remoting.setMode = function(mode) {
   } else {
     document.addEventListener('keydown', remoting.DebugLog.onKeydown, false);
   }
-  if (mode == remoting.AppMode.HOME) {
+  if (mode == remoting.AppMode.HOME ||
+      mode == remoting.AppMode.HOME_DAEMON_ENABLED ||
+      mode == remoting.AppMode.HOME_DAEMON_DISABLED) {
     var display = function() { remoting.hostList.display(); };
     remoting.hostList.refresh(display);
   }
