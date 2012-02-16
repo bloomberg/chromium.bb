@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -323,11 +323,22 @@ bool ProxyConfigServiceImpl::ProxyConfig::DeserializeForDevice(
 
 bool ProxyConfigServiceImpl::ProxyConfig::SerializeForNetwork(
     std::string* output) {
-  scoped_ptr<DictionaryValue> proxy_dict(ToPrefProxyConfig());
-  if (!proxy_dict.get())
+  scoped_ptr<DictionaryValue> proxy_dict_ptr(ToPrefProxyConfig());
+  if (!proxy_dict_ptr.get())
     return false;
+
+  // Return empty string for direct mode for portal check to work correctly.
+  DictionaryValue *dict = proxy_dict_ptr.get();
+  ProxyConfigDictionary proxy_dict(dict);
+  ProxyPrefs::ProxyMode mode;
+  if (proxy_dict.GetMode(&mode)) {
+    if (mode == ProxyPrefs::MODE_DIRECT) {
+      output->clear();
+      return true;
+    }
+  }
   JSONStringValueSerializer serializer(output);
-  return serializer.Serialize(*proxy_dict.get());
+  return serializer.Serialize(*dict);
 }
 
 //----------- ProxyConfigServiceImpl::ProxyConfig: private methods -------------

@@ -677,7 +677,7 @@ std::string Network::GetErrorString() const {
 }
 
 void Network::SetProxyConfig(const std::string& proxy_config) {
-  SetStringProperty(
+  SetOrClearStringProperty(
       flimflam::kProxyConfigProperty, proxy_config, &proxy_config_);
 }
 
