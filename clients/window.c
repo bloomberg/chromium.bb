@@ -50,6 +50,7 @@
 #endif
 
 #include <X11/extensions/XKBcommon.h>
+#include <X11/X.h>
 
 #include <linux/input.h>
 #include <wayland-client.h>
@@ -99,6 +100,7 @@ struct display {
 enum {
 	TYPE_TOPLEVEL,
 	TYPE_FULLSCREEN,
+	TYPE_MAXIMIZED,
 	TYPE_TRANSIENT,
 	TYPE_MENU,
 	TYPE_CUSTOM
@@ -789,6 +791,9 @@ window_set_type(struct window *window)
 	switch (window->type) {
 	case TYPE_FULLSCREEN:
 		wl_shell_surface_set_fullscreen(window->shell_surface);
+		break;
+	case TYPE_MAXIMIZED:
+		wl_shell_surface_set_maximized(window->shell_surface, NULL);
 		break;
 	case TYPE_TOPLEVEL:
 		wl_shell_surface_set_toplevel(window->shell_surface);
@@ -1566,9 +1571,14 @@ input_handle_key(void *data, struct wl_input_device *input_device,
 	else
 		input->modifiers &= ~d->xkb->map->modmap[code];
 
-	if (window->key_handler)
-		(*window->key_handler)(window, input, time, key, sym, state,
-				       window->user_data);
+	if (key == KEY_F5 && input->modifiers == Mod4Mask) {
+		if (state)
+			window_set_maximized(window,
+					     window->type != TYPE_MAXIMIZED);
+	} else if (window->key_handler) {
+		(*window->key_handler)(window, input, time, key,
+				       sym, state, window->user_data);
+	}
 }
 
 static void
@@ -2170,6 +2180,28 @@ window_set_fullscreen(struct window *window, int fullscreen)
 	}
 
 	window_schedule_resize(window, width, height);
+}
+
+void
+window_set_maximized(struct window *window, int maximized)
+{
+	if (!window->display->shell)
+		return;
+
+	if ((window->type == TYPE_MAXIMIZED) == maximized)
+		return;
+
+	if (window->type == TYPE_TOPLEVEL) {
+		window->saved_allocation = window->allocation;
+		wl_shell_surface_set_maximized(window->shell_surface, NULL);
+		window->type = TYPE_MAXIMIZED;
+	} else {
+		wl_shell_surface_set_toplevel(window->shell_surface);
+		window->type = TYPE_TOPLEVEL;
+		window_schedule_resize(window,
+				       window->saved_allocation.width,
+				       window->saved_allocation.height);
+	}
 }
 
 void

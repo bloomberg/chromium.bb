@@ -271,6 +271,9 @@ void
 window_set_fullscreen(struct window *window, int fullscreen);
 
 void
+window_set_maximized(struct window *window, int maximized);
+
+void
 window_set_custom(struct window *window);
 
 void
