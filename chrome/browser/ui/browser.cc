@@ -2377,12 +2377,17 @@ void Browser::OpenSyncMyBookmarksDialog() {
 
 void Browser::OpenAboutChromeDialog() {
   content::RecordAction(UserMetricsAction("AboutChrome"));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableUberPage)) {
 #if defined(OS_CHROMEOS)
-  std::string chrome_settings(chrome::kChromeUISettingsURL);
-  ShowSingletonTab(GURL(chrome_settings.append(chrome::kAboutOptionsSubPage)));
+    std::string chrome_settings(chrome::kChromeUISettingsURL);
+    ShowSingletonTab(
+        GURL(chrome_settings.append(chrome::kAboutOptionsSubPage)));
 #else
-  window_->ShowAboutChromeDialog();
+    window_->ShowAboutChromeDialog();
 #endif
+  } else {
+    ShowSingletonTab(GURL(chrome::kChromeUIUberURL));
+  }
 }
 
 void Browser::OpenUpdateChromeDialog() {
