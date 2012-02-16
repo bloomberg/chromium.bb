@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,7 +64,6 @@ class NativeTabContentsViewWin : public views::NativeWidgetWin,
   virtual void OnSize(UINT param, const WTL::CSize& size) OVERRIDE;
   virtual LRESULT OnNCCalcSize(BOOL w_param, LPARAM l_param) OVERRIDE;
   virtual void OnNCPaint(HRGN rgn) OVERRIDE;
-  virtual LRESULT OnNCHitTest(const CPoint& point) OVERRIDE;
 
   // Backend for all scroll messages, the |message| parameter indicates which
   // one it is.

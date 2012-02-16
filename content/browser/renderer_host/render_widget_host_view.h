@@ -23,7 +23,6 @@
 #include "content/common/content_export.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "ui/base/ime/text_input_type.h"
@@ -130,9 +129,6 @@ class CONTENT_EXPORT RenderWidgetHostView {
 
   // Tells the View whether the context menu is showing.
   virtual void SetShowingContextMenu(bool showing) = 0;
-
-  // The region specified will be transparent to mouse clicks.
-  virtual void SetTransparentRegion(SkRegion* region) {}
 
 #if defined(OS_MACOSX)
   // Set the view's active state (i.e., tint state of controls).
