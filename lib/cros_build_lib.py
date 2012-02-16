@@ -13,6 +13,7 @@ import sys
 import time
 from terminal import Color
 import xml.sax
+import functools
 
 
 STRICT_SUDO = False
@@ -94,6 +95,14 @@ class RunCommandError(Exception):
     return not self.__eq__(other)
 
 
+class TerminateRunCommandError(RunCommandError):
+  """We were signalled to shutdown while running a command.
+
+  Client code shouldn't generally know, nor care about this class.  It's
+  used internally to suppress retry attempts when we're signalled to die.
+  """
+
+
 def SudoRunCommand(cmd, **kwds):
   """
   Run a command via sudo.
@@ -142,13 +151,102 @@ def SudoRunCommand(cmd, **kwds):
   return RunCommand(final_command, **kwds)
 
 
+def _KillChildProcess(proc, kill_timeout, cmd, original_handler, signum, frame):
+  """Functor that when curried w/ the appropriate arguments, is used as a signal
+  handler by RunCommand.
+
+  This is internal to Runcommand.  No other code should use this.
+  """
+  if signum:
+    # If we've been invoked because of a signal, ignore delivery of that signal
+    # from this point forward.  The invoking context of _KillChildProcess
+    # restores signal delivery to what it was prior; we suppress future delivery
+    # till then since this code handles SIGINT/SIGTERM fully including
+    # delivering the signal to the original handler on the way out.
+    signal.signal(signum, signal.SIG_IGN)
+
+  # Do not trust Popen's returncode alone; we can be invoked from contexts where
+  # the Popen instance was created, but no process was generated.
+  if proc.returncode is None and proc.pid is not None:
+    try:
+      proc.terminate()
+      while proc.poll() is None and kill_timeout >= 0:
+        time.sleep(0.1)
+        kill_timeout -= 0.1
+
+      if proc.poll() is None:
+        # Still doesn't want to die.  Too bad, so sad, time to die.
+        proc.kill()
+    except EnvironmentError, e:
+      print "Ignoring unhandled exception in _KillChildProcess: %s" % (e,)
+
+    # Ensure our child process has been reaped.
+    proc.wait()
+
+  if original_handler:
+    original_handler(signum, frame)
+  elif signum is not None:
+    # Mock up our own, matching exit code for signalling.
+    raise TerminateRunCommandError("Received signal %i" % signum, cmd,
+                                   signum << 8)
+
+
+class _Popen(subprocess.Popen):
+
+  """
+  subprocess.Popen derivative customized for our usage.
+
+  Specifically, we fix terminate/send_signal/kill to work if the child process
+  was a setuid binary; on vanilla kernels, the parent can wax the child
+  regardless, on goobuntu this aparently isn't allowed, thus we fall back
+  to the sudo machinery we have.
+
+  While we're overriding send_signal, we also suppress ESRCH being raised
+  if the process has exited, and suppress signaling all together if the process
+  has knowingly been waitpid'd already.
+  """
+
+  def send_signal(self, signum):
+    if self.returncode is not None:
+      # The original implementation in Popen would allow signal'ing whatever
+      # process now occupies this pid, even if the Popen object had waitpid'd.
+      # Since we can escalate to sudo kill, we do not want to allow that.
+      # Fixing this addresses that angle, and makes the API less sucky in the
+      # process.
+      return
+
+    try:
+      os.kill(self.pid, signum)
+    except EnvironmentError, e:
+      if e.errno == errno.EPERM:
+        # Kill returns either 0 (signal delivered), or 1 (signal wasn't
+        # delivered).  This isn't particularly informative, but we still
+        # need that info to decide what to do, thus the error_code_ok=True.
+        ret = SudoRunCommand(['kill', '-%i' % signum, str(self.pid)],
+                             print_cmd=False, redirect_stdout=True,
+                             redirect_stderr=True, error_code_ok=True)
+        if ret.returncode == 1:
+          # The kill binary doesn't distinguish between permission denied,
+          # and the pid is missing.  Denied can only occur under weird
+          # grsec/selinux policies.  We ignore that potential and just
+          # assume the pid was already dead and try to reap it.
+          self.poll()
+      elif e.errno == errno.ESRCH:
+        # Since we know the process is dead, reap it now.
+        # Normally Popen would throw this error- we suppress it since frankly
+        # that's a misfeature and we're already overriding this method.
+        self.poll()
+      else:
+        raise
+
+
 def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
                exit_code=True, redirect_stdout=False, redirect_stderr=False,
                cwd=None, input=None, enter_chroot=False, shell=False,
                env=None, extra_env=None, ignore_sigint=False,
                combine_stdout_stderr=False, log_stdout_to_file=None,
                chroot_args=None, debug_level=DebugLevel.INFO,
-               error_code_ok=False):
+               error_code_ok=False, kill_timeout=1):
   """Runs a command.
 
   Args:
@@ -192,6 +290,9 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
     error_code_ok: Does not raise an exception when command returns a non-zero
                    exit code.  Instead, returns the CommandResult object
                    containing the exit code.
+    kill_timeout: If we're interrupted, how long should we give the invoked
+                  process to shutdown from a SIGTERM before we SIGKILL it.
+                  Specified in seconds.
   Returns:
     A CommandResult object.
 
@@ -208,6 +309,10 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
   assert DebugLevel.IsValidDebugLevel(debug_level), 'Invalid debug level'
   assert debug_level <= DebugLevel.INFO, 'Valid debug levels are DEBUG and INFO'
   mute_output = DebugLevel.GetCurrentDebugLevel() > debug_level
+
+  # Force the timeout to float; in the process, if it's not convertible,
+  # a self-explanatory exception will be thrown.
+  kill_timeout = float(kill_timeout)
 
   # Modify defaults based on parameters.
   if log_stdout_to_file:
@@ -276,17 +381,30 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
       Print('RunCommand: %r' % cmd, debug_level)
   cmd_result.cmd = cmd
 
+  proc = None
   try:
-    proc = subprocess.Popen(cmd, cwd=cwd, stdin=stdin, stdout=stdout,
-                            stderr=stderr, shell=False, env=env,
-                            close_fds=True)
+    proc = _Popen(cmd, cwd=cwd, stdin=stdin, stdout=stdout,
+                  stderr=stderr, shell=False, env=env,
+                  close_fds=True)
+
     if ignore_sigint:
       old_sigint = signal.signal(signal.SIGINT, signal.SIG_IGN)
+    else:
+      old_sigint = signal.getsignal(signal.SIGINT)
+      signal.signal(signal.SIGINT,
+                    functools.partial(_KillChildProcess, proc, kill_timeout,
+                                      cmd, old_sigint))
+
+    old_sigterm = signal.getsignal(signal.SIGTERM)
+    signal.signal(signal.SIGTERM,
+                  functools.partial(_KillChildProcess, proc, kill_timeout,
+                                    cmd, old_sigterm))
+
     try:
       (cmd_result.output, cmd_result.error) = proc.communicate(input)
     finally:
-      if ignore_sigint:
-        signal.signal(signal.SIGINT, old_sigint)
+      signal.signal(signal.SIGINT, old_sigint)
+      signal.signal(signal.SIGTERM, old_sigterm)
 
     cmd_result.returncode = proc.returncode
 
@@ -306,6 +424,10 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
     else:
       Warning(str(e))
   finally:
+    if proc is not None:
+      # Ensure the process is dead.
+      _KillChildProcess(proc, kill_timeout, cmd, None, None, None)
+
     if file_handle:
       file_handle.close()
 
@@ -789,11 +911,18 @@ def RunCommandWithRetries(max_retry, *args, **kwds):
   """
   try:
     return RunCommand(*args, **kwds)
+  except TerminateRunCommandError:
+    raise
   except RunCommandError:
     # pylint: disable=W0612
     for attempt in xrange(max_retry):
       try:
         return RunCommand(*args, **kwds)
+      except TerminateRunCommandError:
+        # Unfortunately, there is no right answer for this case- do we expose
+        # the original error?  Or do we indicate we were told to die?
+        # Right now we expose that we were sigtermed, this is open for debate.
+        raise
       except RunCommandError:
         # We intentionally ignore any failures in later attempts since we'll
         # throw the original failure if all retries fail.

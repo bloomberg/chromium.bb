@@ -274,9 +274,12 @@ class Builder(object):
       args_to_append += ['--validation_pool', vp_file]
 
     # Re-run the command in the buildroot.
+    # Finally, be generous and give the invoked cbuildbot 30s to shutdown
+    # when something occurs.  It should exit quicker, but the sigterm may
+    # hit while the system is particularly busy.
     return_obj = cros_lib.RunCommand(
         [_PATH_TO_CBUILDBOT] + sys.argv[1:] + args_to_append,
-        cwd=self.options.buildroot, error_code_ok=True)
+        cwd=self.options.buildroot, error_code_ok=True, kill_timeout=30)
     return return_obj.returncode == 0
 
   def Run(self):
