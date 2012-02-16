@@ -72,10 +72,7 @@ void JSModalDialogViews::CancelAppModalDialog() {
 // JSModalDialogViews, views::DialogDelegate implementation:
 
 int JSModalDialogViews::GetDefaultDialogButton() const {
-  if (parent_->javascript_message_type() == ui::JAVASCRIPT_MESSAGE_TYPE_ALERT)
-    return ui::DIALOG_BUTTON_OK;
-
-  return ui::DIALOG_BUTTON_CANCEL;
+  return ui::DIALOG_BUTTON_OK;
 }
 
 int JSModalDialogViews::GetDialogButtons() const {
