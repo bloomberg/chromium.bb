@@ -20,7 +20,9 @@ import sys
 
 def main(args):
   executor = MacTool()
-  executor.Dispatch(args)
+  exit_code = executor.Dispatch(args)
+  if exit_code is not None:
+    sys.exit(exit_code)
 
 
 class MacTool(object):
@@ -33,7 +35,7 @@ class MacTool(object):
       raise Exception("Not enough arguments")
 
     method = "Exec%s" % self._CommandifyName(args[0])
-    getattr(self, method)(*args[1:])
+    return getattr(self, method)(*args[1:])
 
   def _CommandifyName(self, name_string):
     """Transforms a tool name like copy-info-plist to CopyInfoPlist"""
