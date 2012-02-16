@@ -89,6 +89,12 @@ class _TeeProcess(multiprocessing.Process):
     # Close input file.
     input_file.close()
 
+    # Finally, kill ourself.
+    # Specifically do it in a fashion that ensures no inherited
+    # cleanup code from our parent process is ran- leave that to
+    # the parent.
+    os._exit(0)
+
 
 class Tee(cros_build_lib.MasterPidContextManager):
   """Class that handles tee-ing output to a file."""
