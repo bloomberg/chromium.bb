@@ -834,15 +834,15 @@ class NinjaWriter:
     # the product type.
     if self.flavor == 'win':
       DEFAULT_PREFIX = {
-        'loadable_module': 'lib',
-        'shared_library': 'lib',
-        'static_library': 'lib',
-        }
-    else:
-      DEFAULT_PREFIX = {
         'loadable_module': '',
         'shared_library': '',
         'static_library': '',
+        }
+    else:
+      DEFAULT_PREFIX = {
+        'loadable_module': 'lib',
+        'shared_library': 'lib',
+        'static_library': 'lib',
         }
     prefix = spec.get('product_prefix', DEFAULT_PREFIX.get(type, ''))
 
