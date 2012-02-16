@@ -12,8 +12,7 @@ body {
 }
 
 body {
-  background: -webkit-gradient(radial, center center, 0, center center, 400,
-              from(#fefefe), to(#efefef)) center center no-repeat;
+  background: #F1F1F1;
   font-size: 14px;
   margin: 0;
   overflow: hidden;
