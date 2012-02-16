@@ -75,6 +75,7 @@
 #include "content/browser/renderer_host/text_input_client_message_filter.h"
 #include "content/browser/resolve_proxy_msg_helper.h"
 #include "content/browser/speech/speech_input_dispatcher_host.h"
+#include "content/browser/speech/speech_recognizer.h"
 #include "content/browser/trace_message_filter.h"
 #include "content/browser/worker_host/worker_message_filter.h"
 #include "content/common/child_process_host_impl.h"

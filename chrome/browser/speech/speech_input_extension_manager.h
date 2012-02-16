@@ -6,10 +6,14 @@
 #define CHROME_BROWSER_SPEECH_SPEECH_INPUT_EXTENSION_MANAGER_H_
 #pragma once
 
-#include "base/synchronization/lock.h"
-#include "content/browser/speech/speech_recognizer.h"
-#include "content/public/browser/notification_observer.h"
 #include <string>
+
+#include "base/callback_forward.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/synchronization/lock.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/speech_recognizer_delegate.h"
 
 class Extension;
 class Profile;
@@ -24,6 +28,10 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace speech_input {
+class SpeechRecognizer;
+}
+
 // Used for API tests.
 class SpeechInputExtensionInterface {
  public:
@@ -32,7 +40,7 @@ class SpeechInputExtensionInterface {
 
   // Called from the IO thread.
   virtual void StartRecording(
-      speech_input::SpeechRecognizerDelegate* delegate,
+      content::SpeechRecognizerDelegate* delegate,
       net::URLRequestContextGetter* context_getter,
       content::ResourceContext* resource_context,
       int caller_id,
@@ -57,7 +65,7 @@ class SpeechInputExtensionInterface {
 // associated to the given profile.
 class SpeechInputExtensionManager
     : public base::RefCountedThreadSafe<SpeechInputExtensionManager>,
-      public speech_input::SpeechRecognizerDelegate,
+      public content::SpeechRecognizerDelegate,
       public content::NotificationObserver,
       private SpeechInputExtensionInterface {
  public:
@@ -147,7 +155,7 @@ class SpeechInputExtensionManager
   virtual bool HasValidRecognizer() OVERRIDE;
 
   virtual void StartRecording(
-      speech_input::SpeechRecognizerDelegate* delegate,
+      content::SpeechRecognizerDelegate* delegate,
       net::URLRequestContextGetter* context_getter,
       content::ResourceContext* resource_context,
       int caller_id,

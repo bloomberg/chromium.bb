@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/speech/speech_input_extension_api.h"
@@ -11,7 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/browser/speech/speech_recognizer.h"
+#include "content/public/browser/speech_recognizer_delegate.h"
 #include "content/public/common/speech_input_result.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -70,7 +71,7 @@ class SpeechInputExtensionApiTest : public ExtensionApiTest,
   }
 
   virtual void StartRecording(
-      speech_input::SpeechRecognizerDelegate* delegate,
+      content::SpeechRecognizerDelegate* delegate,
       net::URLRequestContextGetter* context_getter,
       content::ResourceContext* resource_context,
       int caller_id,
@@ -123,7 +124,7 @@ SpeechInputExtensionApiTest::~SpeechInputExtensionApiTest() {
 }
 
 void SpeechInputExtensionApiTest::StartRecording(
-      speech_input::SpeechRecognizerDelegate* delegate,
+      content::SpeechRecognizerDelegate* delegate,
       net::URLRequestContextGetter* context_getter,
       content::ResourceContext* resource_context,
       int caller_id,
