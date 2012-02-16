@@ -77,7 +77,7 @@ def InvertRelativePath(path):
   # Only need to handle relative paths into subdirectories for now.
   assert '..' not in path, path
   depth = len(path.split(os.path.sep))
-  return '/'.join(['..'] * depth)
+  return os.path.sep.join(['..'] * depth)
 
 
 class Target:
@@ -201,6 +201,7 @@ class NinjaWriter:
         path = path.replace(PRODUCT_DIR, product_dir)
       else:
         path = path.replace(PRODUCT_DIR + '/', '')
+        path = path.replace(PRODUCT_DIR + '\\', '')
         path = path.replace(PRODUCT_DIR, '.')
 
     INTERMEDIATE_DIR = '$!INTERMEDIATE_DIR'
@@ -911,7 +912,7 @@ class NinjaWriter:
     elif type == 'shared_library':
       libdir = 'lib'
       if self.toolset != 'target':
-        libdir = 'lib/%s' % self.toolset
+        libdir = os.path.join('lib', '%s' % self.toolset)
       return os.path.join(libdir, filename)
     else:
       return self.GypPathToUniqueOutput(filename, qualified=False)
@@ -940,10 +941,19 @@ class NinjaWriter:
     # gyp dictates that commands are run from the base directory.
     # cd into the directory before running, and adjust paths in
     # the arguments to point to the proper locations.
-    cd = 'cd %s; ' % self.build_to_base
+    if self.flavor == 'win':
+      cd = 'cmd /s /c "cd %s && ' % self.build_to_base
+    else:
+      cd = 'cd %s; ' % self.build_to_base
     args = [self.ExpandSpecial(arg, self.base_to_build) for arg in args]
     env = self.ComputeExportEnvString(env)
-    command = gyp.common.EncodePOSIXShellList(args)
+    if self.flavor == 'win':
+      # TODO(scottmg): Really don't want encourage cygwin, but I'm not sure
+      # how much sh is depended upon. For now, double quote args to make most
+      # things work.
+      command = args[0] + ' "' + '" "'.join(args[1:]) + '""'
+    else:
+      command = gyp.common.EncodePOSIXShellList(args)
     if env:
       # If an environment is passed in, variables in the command should be
       # read from it, instead of from ninja's internal variables.
@@ -984,6 +994,7 @@ def CalculateVariables(default_variables, params):
     generator_extra_sources_for_rules = getattr(xcode_generator,
         'generator_extra_sources_for_rules', [])
   elif flavor == 'win':
+    default_variables.setdefault('OS', 'win')
     default_variables.setdefault('EXECUTABLE_SUFFIX', '.exe')
     default_variables.setdefault('STATIC_LIB_PREFIX', '')
     default_variables.setdefault('STATIC_LIB_SUFFIX', '.lib')
@@ -995,7 +1006,8 @@ def CalculateVariables(default_variables, params):
       operating_system = 'linux'  # Keep this legacy behavior for now.
     default_variables.setdefault('OS', operating_system)
     default_variables.setdefault('SHARED_LIB_SUFFIX', '.so')
-    default_variables.setdefault('SHARED_LIB_DIR', '$!PRODUCT_DIR/lib')
+    default_variables.setdefault('SHARED_LIB_DIR',
+                                 os.path.join('$!PRODUCT_DIR', 'lib'))
     default_variables.setdefault('LIB_DIR', '')
 
 
@@ -1110,7 +1122,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.rule(
       'alink',
       description='AR $out',
-      command='lib /nologo /OUT:$out.lib $in')
+      command='lib /nologo /OUT:$out $in')
     master_ninja.rule(
       'solink',
       description='SOLINK $out',
