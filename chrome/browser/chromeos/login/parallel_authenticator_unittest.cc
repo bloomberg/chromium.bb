@@ -84,7 +84,6 @@ class ParallelAuthenticatorTest : public testing::Test {
   ParallelAuthenticatorTest()
       : message_loop_(MessageLoop::TYPE_UI),
         ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE),
         io_thread_(BrowserThread::IO),
         username_("me@nowhere.org"),
         password_("fakepass") {
@@ -108,7 +107,6 @@ class ParallelAuthenticatorTest : public testing::Test {
 
     mock_library_ = new MockCryptohomeLibrary();
     test_api->SetCryptohomeLibrary(mock_library_, true);
-    file_thread_.Start();
     io_thread_.Start();
 
     auth_ = new ParallelAuthenticator(&consumer_);
@@ -136,29 +134,6 @@ class ParallelAuthenticatorTest : public testing::Test {
     EXPECT_EQ(WriteFile(out, data, data_len), data_len);
     EXPECT_TRUE(CloseFile(tmp_file));
     return out;
-  }
-
-  FilePath FakeLocalaccountFile(const std::string& ascii) {
-    FilePath exe_dir;
-    FilePath local_account_file;
-    PathService::Get(base::DIR_EXE, &exe_dir);
-    FILE* tmp_file = CreateAndOpenTemporaryFileInDir(exe_dir,
-                                                     &local_account_file);
-    int ascii_len = ascii.length();
-    EXPECT_NE(tmp_file, static_cast<FILE*>(NULL));
-    EXPECT_EQ(WriteFile(local_account_file, ascii.c_str(), ascii_len),
-              ascii_len);
-    EXPECT_TRUE(CloseFile(tmp_file));
-    return local_account_file;
-  }
-
-  void ReadLocalaccountFile(ParallelAuthenticator* auth,
-                            const std::string& filename) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&ParallelAuthenticator::LoadLocalaccount, auth, filename));
-    file_thread_.Stop();
-    file_thread_.Start();
   }
 
   // Allow test to fail and exit gracefully, even if OnLoginFailure()
@@ -227,7 +202,6 @@ class ParallelAuthenticatorTest : public testing::Test {
 
   MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
 
   std::string username_;
@@ -246,31 +220,6 @@ class ParallelAuthenticatorTest : public testing::Test {
   scoped_refptr<ParallelAuthenticator> auth_;
   scoped_ptr<TestAttemptState> state_;
 };
-
-TEST_F(ParallelAuthenticatorTest, ReadLocalaccount) {
-  FilePath tmp_file_path = FakeLocalaccountFile(username_);
-
-  ReadLocalaccountFile(auth_.get(), tmp_file_path.BaseName().value());
-  EXPECT_EQ(auth_->localaccount_, username_);
-  Delete(tmp_file_path, false);
-}
-
-TEST_F(ParallelAuthenticatorTest, ReadLocalaccountTrailingWS) {
-  FilePath tmp_file_path =
-      FakeLocalaccountFile(base::StringPrintf("%s\n", username_.c_str()));
-
-  ReadLocalaccountFile(auth_.get(), tmp_file_path.BaseName().value());
-  EXPECT_EQ(auth_->localaccount_, username_);
-  Delete(tmp_file_path, false);
-}
-
-TEST_F(ParallelAuthenticatorTest, ReadNoLocalaccount) {
-  FilePath tmp_file_path = FakeLocalaccountFile(username_);
-  EXPECT_TRUE(Delete(tmp_file_path, false));  // Ensure non-existent file.
-
-  ReadLocalaccountFile(auth_.get(), tmp_file_path.BaseName().value());
-  EXPECT_EQ(auth_->localaccount_, std::string());
-}
 
 TEST_F(ParallelAuthenticatorTest, OnLoginSuccess) {
   EXPECT_CALL(consumer_, OnLoginSuccess(username_, password_, result_, false,
@@ -709,38 +658,6 @@ TEST_F(ParallelAuthenticatorTest, DISABLED_DriveNeedNewPassword) {
   RunResolve(auth_.get(), &message_loop_);
 }
 
-TEST_F(ParallelAuthenticatorTest, DriveLocalLogin) {
-  ExpectGuestLoginSuccess();
-  FailOnLoginFailure();
-
-  // Set up mock cryptohome library to respond as though a tmpfs mount
-  // attempt has occurred and succeeded.
-  mock_library_->SetUp(true, 0);
-  EXPECT_CALL(*mock_library_, AsyncMountForBwsi(_))
-      .Times(1)
-      .RetiresOnSaturation();
-
-  // Pre-set test state as though an online login attempt failed to complete,
-  // and that a cryptohome mount attempt failed because the user doesn't exist.
-  GoogleServiceAuthError error =
-      GoogleServiceAuthError::FromConnectionError(net::ERR_CONNECTION_RESET);
-  LoginFailure failure =
-      LoginFailure::FromNetworkAuthFailure(error);
-  state_->PresetOnlineLoginStatus(result_, failure);
-  state_->PresetCryptohomeStatus(
-      false,
-      chromeos::kCryptohomeMountErrorUserDoesNotExist);
-  SetAttemptState(auth_, state_.release());
-
-  // Deal with getting the localaccount file
-  FilePath tmp_file_path = FakeLocalaccountFile(username_);
-  ReadLocalaccountFile(auth_.get(), tmp_file_path.BaseName().value());
-
-  RunResolve(auth_.get(), &message_loop_);
-
-  Delete(tmp_file_path, false);
-}
-
 TEST_F(ParallelAuthenticatorTest, DriveUnlock) {
   ExpectLoginSuccess(username_, std::string(), result_, false);
   FailOnLoginFailure();
@@ -757,30 +674,6 @@ TEST_F(ParallelAuthenticatorTest, DriveUnlock) {
 
   auth_->AuthenticateToUnlock(username_, "");
   message_loop_.Run();
-}
-
-TEST_F(ParallelAuthenticatorTest, DriveLocalUnlock) {
-  ExpectLoginSuccess(username_, std::string(), result_, false);
-  FailOnLoginFailure();
-
-  // Set up mock cryptohome library to fail a cryptohome key-check
-  // attempt.
-  mock_library_->SetUp(false, 0);
-  EXPECT_CALL(*mock_library_, AsyncCheckKey(username_, _, _))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_library_, HashPassword(_))
-      .WillOnce(Return(std::string()))
-      .RetiresOnSaturation();
-
-  // Deal with getting the localaccount file
-  FilePath tmp_file_path = FakeLocalaccountFile(username_);
-  ReadLocalaccountFile(auth_.get(), tmp_file_path.BaseName().value());
-
-  auth_->AuthenticateToUnlock(username_, "");
-  message_loop_.Run();
-
-  Delete(tmp_file_path, false);
 }
 
 }  // namespace chromeos

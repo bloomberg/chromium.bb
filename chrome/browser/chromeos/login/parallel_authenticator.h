@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,8 +44,7 @@ class ResolveChecker;
 
 // Authenticates a Chromium OS user against the Google Accounts ClientLogin API.
 //
-// Simultaneously attempts authentication both offline and online, failing over
-// to the "localaccount" in the event that authentication fails.
+// Simultaneously attempts authentication both offline and online.
 //
 // At a high, level, here's what happens:
 // AuthenticateToLogin() creates an OnlineAttempt and a CryptohomeOp that
@@ -75,8 +74,8 @@ class ParallelAuthenticator : public Authenticator,
     OFFLINE_LOGIN,   // Login succeeded offline.
     ONLINE_LOGIN,    // Offline and online login succeeded.
     UNLOCK,          // Screen unlock succeeded.
-    LOCAL_LOGIN,     // Login with localaccount succeded.
     ONLINE_FAILED,   // Online login disallowed, but offline succeeded.
+    GUEST_LOGIN,     // Logged in guest mode.
     LOGIN_FAILED     // Login denied.
   };
 
@@ -156,9 +155,6 @@ class ParallelAuthenticator : public Authenticator,
   // Must be called on the IO thread.
   virtual void Resolve() OVERRIDE;
 
-  // Call this on the FILE thread.
-  void CheckLocalaccount(const LoginFailure& error);
-
   void OnOffTheRecordLoginSuccess();
   void OnPasswordChangeDetected(
       const GaiaAuthConsumer::ClientLoginResult& credentials);
@@ -221,16 +217,6 @@ class ParallelAuthenticator : public Authenticator,
   // Returns false if the key can not be loaded/created.
   bool LoadSupplementalUserKey();
 
-  // If we haven't already, looks in a file called |filename| next to
-  // the browser executable for a "localaccount" name, and retrieves it
-  // if one is present.  If someone attempts to authenticate with this
-  // username, we will mount a tmpfs for them and let them use the
-  // browser.
-  // Should only be called on the FILE thread.
-  void LoadLocalaccount(const std::string& filename);
-
-  void SetLocalaccount(const std::string& new_name);
-
   // Records OAuth1 access token verification failure for |user_account|.
   void RecordOAuthCheckFailure(const std::string& user_account);
 
@@ -238,14 +224,8 @@ class ParallelAuthenticator : public Authenticator,
   // an external authentication provider (i.e. GAIA extension).
   void ResolveLoginCompletionStatus();
 
-    // Name of a file, next to chrome, that contains a local account username.
-  static const char kLocalaccountFile[];
-
   // Milliseconds until we timeout our attempt to hit ClientLogin.
   static const int kClientLoginTimeoutMs;
-
-  // Milliseconds until we re-check whether we've gotten the localaccount name.
-  static const int kLocalaccountRetryIntervalMs;
 
   // Handles all net communications with Gaia.
   scoped_ptr<GaiaAuthFetcher> gaia_authenticator_;
@@ -269,20 +249,11 @@ class ParallelAuthenticator : public Authenticator,
   bool already_reported_success_;
   base::Lock success_lock_;  // A lock around already_reported_success_.
 
-  // Status relating to the local "backdoor" account.
-  std::string localaccount_;
-  bool checked_for_localaccount_;  // Needed because empty localaccount_ is ok.
-  base::Lock localaccount_lock_;  // A lock around checked_for_localaccount_.
-
   // True if we use OAuth-based authentication flow.
   bool using_oauth_;
 
   friend class ResolveChecker;
   friend class ParallelAuthenticatorTest;
-  FRIEND_TEST_ALL_PREFIXES(ParallelAuthenticatorTest, ReadLocalaccount);
-  FRIEND_TEST_ALL_PREFIXES(ParallelAuthenticatorTest,
-                           ReadLocalaccountTrailingWS);
-  FRIEND_TEST_ALL_PREFIXES(ParallelAuthenticatorTest, ReadNoLocalaccount);
   DISALLOW_COPY_AND_ASSIGN(ParallelAuthenticator);
 };
 

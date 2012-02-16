@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,17 +47,11 @@ using file_util::ReadFileToString;
 namespace chromeos {
 
 // static
-const char ParallelAuthenticator::kLocalaccountFile[] = "localaccount";
-
-// static
 const int ParallelAuthenticator::kClientLoginTimeoutMs = 10000;
-// static
-const int ParallelAuthenticator::kLocalaccountRetryIntervalMs = 20;
 
 ParallelAuthenticator::ParallelAuthenticator(LoginStatusConsumer* consumer)
     : Authenticator(consumer),
       already_reported_success_(false),
-      checked_for_localaccount_(false),
       using_oauth_(
           CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kWebUILogin) &&
@@ -103,11 +97,6 @@ void ParallelAuthenticator::AuthenticateToLogin(
                                         this);
     current_online_->Initiate(profile);
   }
-
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&ParallelAuthenticator::LoadLocalaccount, this,
-                 std::string(kLocalaccountFile)));
 }
 
 void ParallelAuthenticator::CompleteLogin(Profile* profile,
@@ -146,11 +135,6 @@ void ParallelAuthenticator::CompleteLogin(Profile* profile,
         BrowserThread::IO, FROM_HERE,
         base::Bind(&ParallelAuthenticator::ResolveLoginCompletionStatus, this));
   }
-
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&ParallelAuthenticator::LoadLocalaccount, this,
-                 std::string(kLocalaccountFile)));
 }
 
 void ParallelAuthenticator::AuthenticateToUnlock(const std::string& username,
@@ -159,10 +143,6 @@ void ParallelAuthenticator::AuthenticateToUnlock(const std::string& username,
       new AuthAttemptState(
           Authenticator::Canonicalize(username),
           CrosLibrary::Get()->GetCryptohomeLibrary()->HashPassword(password)));
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&ParallelAuthenticator::LoadLocalaccount, this,
-                 std::string(kLocalaccountFile)));
   key_checker_ = CryptohomeOp::CreateCheckKeyAttempt(current_state_.get(),
                                                      this);
   // Sadly, this MUST be on the UI thread due to sending DBus traffic :-/
@@ -216,41 +196,6 @@ void ParallelAuthenticator::OnPasswordChangeDetected(
     const GaiaAuthConsumer::ClientLoginResult& credentials) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   consumer_->OnPasswordChangeDetected(credentials);
-}
-
-void ParallelAuthenticator::CheckLocalaccount(const LoginFailure& error) {
-  {
-    base::AutoLock for_this_block(localaccount_lock_);
-    VLOG(2) << "Checking localaccount";
-    if (!checked_for_localaccount_) {
-      BrowserThread::PostDelayedTask(
-          BrowserThread::FILE, FROM_HERE,
-          base::Bind(&ParallelAuthenticator::CheckLocalaccount, this, error),
-          kLocalaccountRetryIntervalMs);
-      return;
-    }
-  }
-
-  if (!localaccount_.empty() && localaccount_ == current_state_->username) {
-    // Success.  Go mount a tmpfs for the profile, if necessary.
-    if (!current_state_->unlock) {
-      guest_mounter_ =
-          CryptohomeOp::CreateMountGuestAttempt(current_state_.get(), this);
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&CryptohomeOp::Initiate, guest_mounter_.get()));
-    } else {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&ParallelAuthenticator::OnLoginSuccess, this,
-                     GaiaAuthConsumer::ClientLoginResult(), false));
-    }
-  } else {
-    // Not the localaccount.  Fail, passing along cached error info.
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&ParallelAuthenticator::OnLoginFailure, this, error));
-  }
 }
 
 void ParallelAuthenticator::OnLoginFailure(const LoginFailure& error) {
@@ -362,8 +307,7 @@ void ParallelAuthenticator::Resolve() {
                      LoginFailure(LoginFailure::DATA_REMOVAL_FAILED)));
       break;
     case FAILED_TMPFS:
-      // In this case, we tried to mount a tmpfs for BWSI or the localaccount
-      // user and failed.
+      // In this case, we tried to mount a tmpfs for BWSI and failed.
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           base::Bind(&ParallelAuthenticator::OnLoginFailure, this,
@@ -458,17 +402,19 @@ void ParallelAuthenticator::Resolve() {
           base::Bind(&ParallelAuthenticator::OnLoginSuccess, this,
                      current_state_->credentials(), request_pending));
       break;
-    case LOCAL_LOGIN:
+    case GUEST_LOGIN:
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           base::Bind(&ParallelAuthenticator::OnOffTheRecordLoginSuccess, this));
       break;
     case LOGIN_FAILED:
       current_state_->ResetCryptohomeStatus();
-      BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
-          base::Bind(&ParallelAuthenticator::CheckLocalaccount, this,
-                     current_state_->online_outcome()));
+      BrowserThread::PostTask(BrowserThread::UI,
+                              FROM_HERE,
+                              base::Bind(
+                                  &ParallelAuthenticator::OnLoginFailure,
+                                  this,
+                                  current_state_->online_outcome()));
       break;
     default:
       NOTREACHED();
@@ -580,7 +526,7 @@ ParallelAuthenticator::ResolveCryptohomeSuccessState() {
   if (data_remover_.get())
     return CREATE_NEW;
   if (guest_mounter_.get())
-    return LOCAL_LOGIN;
+    return GUEST_LOGIN;
   if (key_migrator_.get())
     return RECOVER_MOUNT;
   if (key_checker_.get())
@@ -631,36 +577,6 @@ ParallelAuthenticator::ResolveOnlineSuccessState(
     default:
       NOTREACHED();
       return offline_state;
-  }
-}
-
-void ParallelAuthenticator::LoadLocalaccount(const std::string& filename) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  {
-    base::AutoLock for_this_block(localaccount_lock_);
-    if (checked_for_localaccount_)
-      return;
-  }
-  FilePath localaccount_file;
-  std::string localaccount;
-  if (PathService::Get(base::DIR_EXE, &localaccount_file)) {
-    localaccount_file = localaccount_file.Append(filename);
-    VLOG(2) << "Looking for localaccount in " << localaccount_file.value();
-
-    ReadFileToString(localaccount_file, &localaccount);
-    TrimWhitespaceASCII(localaccount, TRIM_TRAILING, &localaccount);
-    VLOG(1) << "Loading localaccount: " << localaccount;
-  } else {
-    VLOG(1) << "Assuming no localaccount";
-  }
-  SetLocalaccount(localaccount);
-}
-
-void ParallelAuthenticator::SetLocalaccount(const std::string& new_name) {
-  localaccount_ = new_name;
-  {  // extra braces for clarity about AutoLock scope.
-    base::AutoLock for_this_block(localaccount_lock_);
-    checked_for_localaccount_ = true;
   }
 }
 
