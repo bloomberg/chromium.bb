@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "chrome/common/extensions/api/extension_api.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/chrome_private_custom_bindings.h"
@@ -144,13 +145,20 @@ std::string GetAPIName(const std::string& v8_extension_name) {
 }
 
 bool AllowAPIInjection(const std::string& api_name,
-                       const Extension& extension) {
+                       const Extension& extension,
+                       ChromeV8Context::ContextType context_type) {
   CHECK(api_name != "");
 
   // As in ExtensionAPI::GetSchemasForExtension, we need to allow any bindings
   // for an API that the extension *might* have permission to use.
-  return extension.required_permission_set()->HasAnyAccessToAPI(api_name) ||
-         extension.optional_permission_set()->HasAnyAccessToAPI(api_name);
+  bool allowed =
+      extension.required_permission_set()->HasAnyAccessToAPI(api_name) ||
+      extension.optional_permission_set()->HasAnyAccessToAPI(api_name);
+
+  if (allowed && context_type == ChromeV8Context::CONTENT_SCRIPT)
+    allowed = !ExtensionAPI::GetInstance()->IsWholeAPIPrivileged(api_name);
+
+  return allowed;
 }
 
 }  // namespace custom_bindings_util

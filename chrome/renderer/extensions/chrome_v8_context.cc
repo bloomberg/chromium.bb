@@ -22,18 +22,30 @@ const char kChromeHidden[] = "chromeHidden";
 const char kValidateCallbacks[] = "validateCallbacks";
 #endif
 
-}  // namespace
+std::string GetContextTypeDescription(
+    ChromeV8Context::ContextType context_type) {
+  switch (context_type) {
+    case ChromeV8Context::OTHER:          return "other";
+    case ChromeV8Context::CONTENT_SCRIPT: return "content script";
+  }
+  NOTREACHED();
+  return "";
+}
 
+}  // namespace
 
 ChromeV8Context::ChromeV8Context(v8::Handle<v8::Context> v8_context,
                                  WebKit::WebFrame* web_frame,
-                                 const std::string& extension_id)
+                                 const std::string& extension_id,
+                                 ChromeV8Context::ContextType context_type)
     : v8_context_(v8::Persistent<v8::Context>::New(v8_context)),
       web_frame_(web_frame),
-      extension_id_(extension_id) {
+      extension_id_(extension_id),
+      context_type_(context_type) {
   VLOG(1) << "Created context for extension\n"
-          << "  id:    " << extension_id << "\n"
-          << "  frame: " << web_frame_;
+          << "  id:           " << extension_id << "\n"
+          << "  frame:        " << web_frame_ << "\n"
+          << "  context type: " << GetContextTypeDescription(context_type);
 }
 
 ChromeV8Context::~ChromeV8Context() {

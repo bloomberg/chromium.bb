@@ -1,6 +1,7 @@
 [
   {
     "namespace": "storage",
+    "unprivileged": true,
     "types": [
       {
         "id": "StorageChange",
@@ -24,7 +25,6 @@
         "functions": [
           {
             "name": "get",
-            "unprivileged": true,
             "type": "function",
             "description": "Gets one or more items from storage.",
             "parameters": [
@@ -61,7 +61,6 @@
           },
           {
             "name": "getBytesInUse",
-            "unprivileged": true,
             "type": "function",
             "description": "Gets the amount of space (in bytes) being used by one or more items.",
             "parameters": [
@@ -90,7 +89,6 @@
           },
           {
             "name": "set",
-            "unprivileged": true,
             "type": "function",
             "description": "Sets multiple items.",
             "parameters": [
@@ -112,7 +110,6 @@
           },
           {
             "name": "remove",
-            "unprivileged": true,
             "type": "function",
             "description": "Removes one or more items from storage.",
             "parameters": [
@@ -135,7 +132,6 @@
           },
           {
             "name": "clear",
-            "unprivileged": true,
             "type": "function",
             "description": "Removes all items from storage.",
             "parameters": [
@@ -154,7 +150,6 @@
     "events": [
       {
         "name": "onChanged",
-        "unprivileged": true,
         "type": "function",
         "description": "Fired when one or more items change.",
         "parameters": [
@@ -177,25 +172,21 @@
       "sync": {
         "$ref": "StorageArea",
         "description": "Items under the \"sync\" namespace are synced using Chrome Sync.",
-        "unprivileged": true,
         "value": [ "sync" ],
         "properties": {
           "QUOTA_BYTES": {
             "type": "integer",
             "value": "102400",
-            "unprivileged": true,
             "description": "The maximum total amount (in bytes) of data that can be stored in sync storage."
           },
           "QUOTA_BYTES_PER_ITEM": {
             "type": "integer",
             "value": "2048",
-            "unprivileged": true,
             "description": "The maximum size (in bytes) of each individual item in sync storage."
           },
           "MAX_ITEMS": {
             "type": "integer",
             "value": "512",
-            "unprivileged": true,
             "description": "The maximum number of items that can be stored in sync storage."
           }
         }
@@ -203,13 +194,11 @@
       "local": {
         "$ref": "StorageArea",
         "description": "Items under the \"local\" namespace are local to each machine.",
-        "unprivileged": true,
         "value": [ "local" ],
         "properties": {
           "QUOTA_BYTES": {
             "type": "integer",
             "value": "5120000",
-            "unprivileged": true,
             "description": "The maximum amount (in bytes) of data that can be stored in local storage. This value may be ignored if the extension has the <code>unlimitedStorage</code> permission."
           }
         }

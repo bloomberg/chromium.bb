@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 
 class Extension;
@@ -33,10 +34,12 @@ std::vector<v8::Extension*> GetAll(ExtensionDispatcher* extension_dispatcher);
 std::string GetAPIName(const std::string& v8_extension_name);
 
 // Returns whether the custom binding for an API should be allowed to run for
-// |extension|.  This is based on whether the extension has any permission
-// (required or optional) for that API.
+// |extension|. This is based on whether the extension has any permission
+// (required or optional) for that API, and what context the APIs are intended
+// to run in.
 bool AllowAPIInjection(const std::string& api_name,
-                       const Extension& extension);
+                       const Extension& extension,
+                       ChromeV8Context::ContextType context_type);
 
 }  // namespace custom_bindings_util
 

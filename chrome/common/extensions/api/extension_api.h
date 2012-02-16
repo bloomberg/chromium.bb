@@ -7,6 +7,7 @@
 #pragma once
 
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -33,11 +34,16 @@ class ExtensionAPI {
   // Returns the single instance of this class.
   static ExtensionAPI* GetInstance();
 
-  // Returns ture if |name| is a privileged API. Privileged APIs can only be
-  // called from extension code which is running in its own designated extension
-  // process. They cannot be called from extension code running in content
-  // scripts, or other low-privileged processes.
+  // Returns true if |name| is a privileged API path. Privileged paths can only
+  // be called from extension code which is running in its own designated
+  // extension process. They cannot be called from extension code running in
+  // content scripts, or other low-privileged contexts.
   bool IsPrivileged(const std::string& name) const;
+
+  // Returns whether *every* path in the API is privileged. This will be false
+  // for APIs such as "storage" which is entirely unprivileged, and "test"
+  // which has unprivileged components.
+  bool IsWholeAPIPrivileged(const std::string& api_name) const;
 
   // Gets a map of API name (aka namespace) to API schema.
   const SchemaMap& schemas() { return schemas_; }
@@ -87,6 +93,12 @@ class ExtensionAPI {
 
   // Schemas for each namespace.
   SchemaMap schemas_;
+
+  // APIs that are entirely unprivileged.
+  std::set<std::string> completely_unprivileged_apis_;
+
+  // APIs that are not entirely unprivileged, but have unprivileged components.
+  std::set<std::string> partially_unprivileged_apis_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionAPI);
 };

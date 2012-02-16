@@ -160,7 +160,13 @@ class ExtensionImpl : public ChromeV8Extension {
     size_t api_index = 0;
     for (ExtensionAPI::SchemaMap::iterator it = schemas.begin();
         it != schemas.end(); ++it) {
-      api->Set(api_index, GetV8SchemaForAPI(self, context, it->first));
+      std::string api_name = it->first;
+      // For content scripts, only allow APIs that have unprivileged components.
+      if (v8_context->context_type() == ChromeV8Context::CONTENT_SCRIPT &&
+          ExtensionAPI::GetInstance()->IsWholeAPIPrivileged(api_name)) {
+        continue;
+      }
+      api->Set(api_index, GetV8SchemaForAPI(self, context, api_name));
       ++api_index;
     }
 

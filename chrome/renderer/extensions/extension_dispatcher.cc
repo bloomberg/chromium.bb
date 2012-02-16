@@ -35,8 +35,16 @@
 #include "v8/include/v8.h"
 
 namespace {
+
 static const int64 kInitialExtensionIdleHandlerDelayMs = 5*1000;
 static const int64 kMaxExtensionIdleHandlerDelayMs = 5*60*1000;
+
+ChromeV8Context::ContextType ExtensionGroupToContextType(int extension_group) {
+  if (extension_group == EXTENSION_GROUP_CONTENT_SCRIPTS)
+    return ChromeV8Context::CONTENT_SCRIPT;
+  return ChromeV8Context::OTHER;
+}
+
 }
 
 using namespace extensions;
@@ -272,11 +280,25 @@ bool ExtensionDispatcher::AllowScriptExtension(
   return AllowScriptExtension(frame, v8_extension_name, extension_group, 0);
 }
 
+namespace {
+
+// This is what the extension_group variable will be when DidCreateScriptContext
+// is called. We know because it's the same as what AllowScriptExtension gets
+// passed, and the two functions are called sequentially from WebKit.
+//
+// TODO(koz): Plumb extension_group through to AllowScriptExtension() from
+// WebKit.
+static int hack_DidCreateScriptContext_extension_group = 0;
+
+}
+
 bool ExtensionDispatcher::AllowScriptExtension(
     WebFrame* frame,
     const std::string& v8_extension_name,
     int extension_group,
     int world_id) {
+  hack_DidCreateScriptContext_extension_group = extension_group;
+
   // NULL in unit tests.
   if (!RenderThread::Get())
     return true;
@@ -291,7 +313,10 @@ bool ExtensionDispatcher::AllowScriptExtension(
 
   // Extension-only bindings should be restricted to content scripts and
   // extension-blessed URLs.
-  if (extension_group == EXTENSION_GROUP_CONTENT_SCRIPTS ||
+  ChromeV8Context::ContextType context_type =
+      ExtensionGroupToContextType(extension_group);
+
+  if (context_type == ChromeV8Context::CONTENT_SCRIPT ||
       extensions_.ExtensionBindingsAllowed(ExtensionURLInfo(
           frame->document().securityOrigin(),
           UserScriptSlave::GetDataSourceURLForFrame(frame)))) {
@@ -315,7 +340,7 @@ bool ExtensionDispatcher::AllowScriptExtension(
         return false;
       }
       return custom_bindings_util::AllowAPIInjection(
-          custom_binding_api_name, *extension);
+          custom_binding_api_name, *extension, context_type);
     }
 
     return true;
@@ -327,7 +352,12 @@ bool ExtensionDispatcher::AllowScriptExtension(
 void ExtensionDispatcher::DidCreateScriptContext(
     WebFrame* frame, v8::Handle<v8::Context> v8_context, int world_id) {
   ChromeV8Context* context =
-      new ChromeV8Context(v8_context, frame, GetExtensionID(frame, world_id));
+      new ChromeV8Context(
+          v8_context,
+          frame,
+          GetExtensionID(frame, world_id),
+          ExtensionGroupToContextType(
+              hack_DidCreateScriptContext_extension_group));
   v8_context_set_.Add(context);
 
   const Extension* extension = extensions_.GetByID(context->extension_id());

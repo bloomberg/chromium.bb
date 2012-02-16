@@ -4,6 +4,7 @@
 
 #include "chrome/common/extensions/api/extension_api.h"
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -35,6 +36,26 @@ void GetMissingDependencies(
     if (dependencies->GetString(i, &api_name) && !reference.count(api_name))
       out->insert(api_name);
   }
+}
+
+// Returns whether the list at |name_space_node|.|child_kind| contains any
+// children with an { "unprivileged": true } property.
+bool HasUnprivilegedChild(const DictionaryValue* name_space_node,
+                          const std::string& child_kind) {
+  ListValue* child_list = NULL;
+  name_space_node->GetList(child_kind, &child_list);
+  if (!child_list)
+    return false;
+
+  for (size_t i = 0; i < child_list->GetSize(); ++i) {
+    DictionaryValue* item = NULL;
+    CHECK(child_list->GetDictionary(i, &item));
+    bool unprivileged = false;
+    if (item->GetBoolean("unprivileged", &unprivileged))
+      return unprivileged;
+  }
+
+  return false;
 }
 
 }  // namespace
@@ -137,31 +158,59 @@ ExtensionAPI::ExtensionAPI() {
   for (size_t i = 0; i < arraysize(kJsonApiResourceIds); i++) {
     LoadSchemaFromResource(kJsonApiResourceIds[i]);
   }
+
+  // Populate {completely,partially}_unprivileged_apis_.
+  for (SchemaMap::iterator it = schemas_.begin(); it != schemas_.end(); ++it) {
+    bool unprivileged = false;
+    it->second->GetBoolean("unprivileged", &unprivileged);
+    if (unprivileged) {
+      completely_unprivileged_apis_.insert(it->first);
+      continue;
+    }
+
+    // Only need to look at functions/events; even though there are unprivileged
+    // properties (e.g. in extensions), access to those never reaches C++ land.
+    if (HasUnprivilegedChild(it->second.get(), "functions") ||
+        HasUnprivilegedChild(it->second.get(), "events")) {
+      partially_unprivileged_apis_.insert(it->first);
+    }
+  }
 }
 
 ExtensionAPI::~ExtensionAPI() {
 }
 
 bool ExtensionAPI::IsPrivileged(const std::string& full_name) const {
-  std::vector<std::string> split_full_name;
-  base::SplitString(full_name, '.', &split_full_name);
-  std::string name = split_full_name.back();
-  split_full_name.pop_back();
-  std::string name_space = JoinString(split_full_name, '.');
+  std::string api_name;
+  std::string child_name;
 
-  // HACK(kalman): explicitly mark all Storage API methods as unprivileged.
-  // TODO(kalman): solve this in a more general way; the problem is that
-  // functions-on-properties are not found with the following algorithm.
-  if (name_space == "storage")
+  {
+    std::vector<std::string> split;
+    base::SplitString(full_name, '.', &split);
+    std::reverse(split.begin(), split.end());
+
+    api_name = split.back();
+    split.pop_back();
+    if (api_name == "experimental") {
+      api_name += "." + split.back();
+      split.pop_back();
+    }
+
+    // This only really works properly if split.size() == 1, however:
+    //  - if it's empty, it's ok to leave child_name empty; presumably there's
+    //    no functions or events with empty names.
+    //  - if it's > 1, we can just do our best.
+    if (split.size() > 0)
+      child_name = split[0];
+  }
+
+  if (completely_unprivileged_apis_.count(api_name))
     return false;
 
-  const base::DictionaryValue* name_space_node = GetSchema(name_space);
-  if (!name_space_node)
-    return true;
-
-  if (!IsChildNamePrivileged(name_space_node, "functions", name) ||
-      !IsChildNamePrivileged(name_space_node, "events", name)) {
-    return false;
+  if (partially_unprivileged_apis_.count(api_name)) {
+    const DictionaryValue* schema = GetSchema(api_name);
+    return IsChildNamePrivileged(schema, "functions", child_name) &&
+           IsChildNamePrivileged(schema, "events", child_name);
   }
 
   return true;
@@ -243,4 +292,9 @@ void ExtensionAPI::GetSchemasForPermissions(
   }
 }
 
+bool ExtensionAPI::IsWholeAPIPrivileged(const std::string& api_name) const {
+  return !completely_unprivileged_apis_.count(api_name) &&
+         !partially_unprivileged_apis_.count(api_name);
 }
+
+}  // namespace extensions

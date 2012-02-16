@@ -404,32 +404,34 @@ var chrome = chrome || {};
         });
       }
 
+      // Returns whether access to the content of a schema should be denied,
+      // based on the presence of "unprivileged" and whether this is an
+      // extension process (versus e.g. a content script).
+      function isSchemaAccessAllowed(itemSchema) {
+        return isExtensionProcess ||
+               apiDef.unprivileged ||
+               itemSchema.unprivileged;
+      }
+
       // Adds a getter that throws an access denied error to object |module|
       // for property |name|.
-      //
-      // Returns true if the getter was necessary (access is disallowed), or
-      // false otherwise.
-      function addUnprivilegedAccessGetter(module, name, allowUnprivileged) {
-        if (allowUnprivileged || isExtensionProcess)
-          return false;
-
+      function addUnprivilegedAccessGetter(module, name) {
         module.__defineGetter__(name, function() {
           throw new Error(
               '"' + name + '" can only be used in extension processes. See ' +
               'the content scripts documentation for more details.');
         });
-        return true;
       }
 
       // Setup Functions.
       if (apiDef.functions) {
         apiDef.functions.forEach(function(functionDef) {
+          if (functionDef.name in module)
+            return;
           if (!isSchemaNodeSupported(functionDef, platform, manifestVersion))
             return;
-
-          if (functionDef.name in module ||
-              addUnprivilegedAccessGetter(module, functionDef.name,
-                                          functionDef.unprivileged)) {
+          if (!isSchemaAccessAllowed(functionDef)) {
+            addUnprivilegedAccessGetter(module, functionDef.name);
             return;
           }
 
@@ -469,12 +471,12 @@ var chrome = chrome || {};
       // Setup Events
       if (apiDef.events) {
         apiDef.events.forEach(function(eventDef) {
+          if (eventDef.name in module)
+            return;
           if (!isSchemaNodeSupported(eventDef, platform, manifestVersion))
             return;
-
-          if (eventDef.name in module ||
-              addUnprivilegedAccessGetter(module, eventDef.name,
-                                          eventDef.unprivileged)) {
+          if (!isSchemaAccessAllowed(eventDef)) {
+            addUnprivilegedAccessGetter(module, eventDef.name);
             return;
           }
 
@@ -491,66 +493,59 @@ var chrome = chrome || {};
         });
       }
 
-      function addProperties(m, def) {
-        // Parse any values defined for properties.
-        if (def.properties) {
-          forEach(def.properties, function(prop, property) {
-            if (!isSchemaNodeSupported(property, platform, manifestVersion))
-              return;
+      function addProperties(m, parentDef) {
+        var properties = parentDef.properties;
+        if (!properties)
+          return;
 
-            if (prop in m ||
-                addUnprivilegedAccessGetter(m, prop, property.unprivileged)) {
-              return;
-            }
+        forEach(properties, function(propertyName, propertyDef) {
+          if (propertyName in m)
+            return;
+          if (!isSchemaNodeSupported(propertyDef, platform, manifestVersion))
+            return;
+          if (!isSchemaAccessAllowed(propertyDef)) {
+            addUnprivilegedAccessGetter(m, propertyName);
+            return;
+          }
 
-            var value = property.value;
-            if (value) {
-              if (property.type === 'integer') {
-                value = parseInt(value);
-              } else if (property.type === 'boolean') {
-                value = value === "true";
-              } else if (property["$ref"]) {
-                var constructor = customTypes[property["$ref"]];
-                if (!constructor)
-                  throw new Error("No custom binding for " + property["$ref"]);
-                var args = value;
-                // For an object property, |value| is an array of constructor
-                // arguments, but we want to pass the arguments directly
-                // (i.e. not as an array), so we have to fake calling |new| on
-                // the constructor.
-                value = { __proto__: constructor.prototype };
-                constructor.apply(value, args);
-                // Recursively add properties.
-                addProperties(value, property);
-              } else if (property.type === 'object') {
-                // Recursively add properties.
-                addProperties(value, property);
-              } else if (property.type !== 'string') {
-                throw "NOT IMPLEMENTED (extension_api.json error): Cannot " +
-                    "parse values for type \"" + property.type + "\"";
-              }
+          var value = propertyDef.value;
+          if (value) {
+            if (propertyDef.type === 'integer') {
+              value = parseInt(value);
+            } else if (propertyDef.type === 'boolean') {
+              value = value === "true";
+            } else if (propertyDef["$ref"]) {
+              var constructor = customTypes[propertyDef["$ref"]];
+              if (!constructor)
+                throw new Error("No custom binding for " + propertyDef["$ref"]);
+              var args = value;
+              // For an object propertyDef, |value| is an array of constructor
+              // arguments, but we want to pass the arguments directly
+              // (i.e. not as an array), so we have to fake calling |new| on
+              // the constructor.
+              value = { __proto__: constructor.prototype };
+              constructor.apply(value, args);
+              // Recursively add properties.
+              addProperties(value, propertyDef);
+            } else if (propertyDef.type === 'object') {
+              // Recursively add properties.
+              addProperties(value, propertyDef);
+            } else if (propertyDef.type !== 'string') {
+              throw "NOT IMPLEMENTED (extension_api.json error): Cannot " +
+                  "parse values for type \"" + propertyDef.type + "\"";
             }
-            if (value) {
-              m[prop] = value;
-            }
-          });
-        }
+          }
+          if (value) {
+            m[propertyName] = value;
+          }
+        });
       }
 
       addProperties(module, apiDef);
     });
 
-    // TODO(aa): The rest of the crap below this really needs to be factored out
-    // with a clean API boundary. Right now it is too soupy for me to feel
-    // comfortable running in content scripts. What if people are just
-    // overwriting random APIs? That would bypass our content script access
-    // checks.
-    if (!isExtensionProcess)
-      return;
-
-    // TODO(kalman/aa): "The rest of this crap..." comment above. Only run the
-    // custom hooks in extension processes, to maintain current behaviour. We
-    // should fix this this with a smaller hammer.
+    // Run the non-declarative custom hooks after all the schemas have been
+    // generated, in case hooks depend on other APIs being available.
     apiDefinitions.forEach(function(apiDef) {
       if (!isSchemaNodeSupported(apiDef, platform, manifestVersion))
         return;
@@ -570,7 +565,7 @@ var chrome = chrome || {};
       }, extensionId);
     });
 
-    // TOOD(mihaip): remove this alias once the webstore stops calling
+    // TODO(mihaip): remove this alias once the webstore stops calling
     // beginInstallWithManifest2.
     // See http://crbug.com/100242
     if (chrome.webstorePrivate) {

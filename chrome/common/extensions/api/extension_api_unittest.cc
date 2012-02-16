@@ -31,6 +31,31 @@ TEST(ExtensionAPI, IsPrivileged) {
   // Exists, but privileged.
   EXPECT_TRUE(extension_api->IsPrivileged("extension.getViews"));
   EXPECT_TRUE(extension_api->IsPrivileged("history.search"));
+
+  // Whole APIs that are unprivileged.
+  EXPECT_FALSE(extension_api->IsPrivileged("storage.local"));
+  EXPECT_FALSE(extension_api->IsPrivileged("storage.local.onChanged"));
+  EXPECT_FALSE(extension_api->IsPrivileged("storage.local.set"));
+  EXPECT_FALSE(extension_api->IsPrivileged("storage.local.MAX_ITEMS"));
+  EXPECT_FALSE(extension_api->IsPrivileged("storage.set"));
+}
+
+TEST(ExtensionAPI, IsWholeAPIPrivileged) {
+  ExtensionAPI* extension_api = ExtensionAPI::GetInstance();
+
+  // Completely unprivileged.
+  EXPECT_FALSE(extension_api->IsWholeAPIPrivileged("storage"));
+
+  // Partially unprivileged.
+  EXPECT_FALSE(extension_api->IsWholeAPIPrivileged("extension"));
+  EXPECT_FALSE(extension_api->IsWholeAPIPrivileged("test"));
+
+  // Nothing unprivileged.
+  EXPECT_TRUE(extension_api->IsWholeAPIPrivileged("history"));
+
+  // Paranoid above... paranoid here, too.
+  EXPECT_TRUE(extension_api->IsWholeAPIPrivileged(""));
+  EXPECT_TRUE(extension_api->IsWholeAPIPrivileged("<unknown-namespace>"));
 }
 
 TEST(ExtensionAPI, Depends) {
@@ -47,7 +72,7 @@ TEST(ExtensionAPI, Depends) {
 
   std::string error;
   scoped_refptr<Extension> extension(Extension::Create(
-      FilePath(), Extension::LOAD, manifest, Extension::NO_FLAGS, "x", &error));
+      FilePath(), Extension::LOAD, manifest, Extension::NO_FLAGS, &error));
   CHECK(extension.get());
   CHECK(error.empty());
 
