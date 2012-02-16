@@ -64,8 +64,9 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
   // Tells the GPU process to create a new channel for communication with a
   // client. Once the GPU process responds asynchronously with the IPC handle
   // and GPUInfo, we call the callback.
-  void EstablishGpuChannel(
-      int client_id, const EstablishChannelCallback& callback);
+  void EstablishGpuChannel(int client_id,
+                           int share_client_id,
+                           const EstablishChannelCallback& callback);
 
   typedef base::Callback<void(int32)> CreateCommandBufferCallback;
 

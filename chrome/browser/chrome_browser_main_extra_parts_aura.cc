@@ -29,10 +29,6 @@ ChromeBrowserMainExtraPartsAura::ChromeBrowserMainExtraPartsAura()
 }
 
 void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestCompositor)) {
-    ui::SetupTestCompositor();
-  }
-
 #if defined(OS_CHROMEOS)
   if (chromeos::system::runtime_environment::IsRunningOnChromeOS()) {
     aura::RootWindow::set_use_fullscreen_host_window(true);

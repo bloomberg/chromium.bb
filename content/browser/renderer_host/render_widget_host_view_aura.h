@@ -8,6 +8,8 @@
 
 #include <map>
 
+#include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/common/content_export.h"
 #include "ui/aura/client/activation_delegate.h"
@@ -16,11 +18,6 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/compositor/compositor_observer.h"
 #include "webkit/glue/webcursor.h"
-
-#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-#include "base/callback.h"
-#include "base/memory/ref_counted.h"
-#endif
 
 namespace gfx {
 class Canvas;
@@ -34,15 +31,11 @@ namespace WebKit {
 class WebTouchEvent;
 }
 
-#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
 class ImageTransportClient;
-#endif
 
 class RenderWidgetHostViewAura
     : public RenderWidgetHostViewBase,
-#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
       public ui::CompositorObserver,
-#endif
       public ui::TextInputClient,
       public aura::WindowDelegate,
       public aura::client::ActivationDelegate {
@@ -100,14 +93,12 @@ class RenderWidgetHostViewAura
       const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
       int gpu_host_id) OVERRIDE;
   virtual void AcceleratedSurfaceSuspend() OVERRIDE;
-#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   virtual void AcceleratedSurfaceNew(
       int32 width,
       int32 height,
       uint64* surface_id,
       TransportDIB::Handle* surface_handle) OVERRIDE;
   virtual void AcceleratedSurfaceRelease(uint64 surface_id) OVERRIDE;
-#endif
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetRootWindowBounds() OVERRIDE;
   virtual void ProcessTouchAck(bool processed) OVERRIDE;
@@ -175,10 +166,8 @@ class RenderWidgetHostViewAura
   class WindowObserver;
   friend class WindowObserver;
 
-#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   // Overridden from ui::CompositorObserver:
   virtual void OnCompositingEnded(ui::Compositor* compositor) OVERRIDE;
-#endif
 
   void UpdateCursorIfOverSelf();
   void UpdateExternalTexture();
@@ -246,14 +235,14 @@ class RenderWidgetHostViewAura
   // Current tooltip text.
   string16 tooltip_;
 
-#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   std::vector< base::Callback<void(void)> > on_compositing_ended_callbacks_;
 
   std::map<uint64, scoped_refptr<ImageTransportClient> >
       image_transport_clients_;
 
   gfx::PluginWindowHandle current_surface_;
-#endif
+
+  gfx::GLSurfaceHandle shared_surface_handle_;
 
   // If non-NULL we're in OnPaint() and this is the supplied canvas.
   gfx::Canvas* paint_canvas_;

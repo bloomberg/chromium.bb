@@ -90,7 +90,7 @@ class GpuChannelHost : public IPC::Message::Sender,
   };
 
   // Called on the render thread
-  explicit GpuChannelHost(GpuChannelHostFactory* factory);
+  GpuChannelHost(GpuChannelHostFactory* factory, int client_id);
   virtual ~GpuChannelHost();
 
   // Connect to GPU process channel.
@@ -158,6 +158,7 @@ class GpuChannelHost : public IPC::Message::Sender,
   void ForciblyCloseChannel();
 
   GpuChannelHostFactory* factory() const { return factory_; }
+  int client_id() const { return client_id_; }
 
  private:
   // A filter used internally to route incoming messages from the IO thread
@@ -184,6 +185,7 @@ class GpuChannelHost : public IPC::Message::Sender,
   };
 
   GpuChannelHostFactory* factory_;
+  int client_id_;
 
   State state_;
 

@@ -165,6 +165,7 @@ extern const char kTouchOptimizedUI[];
 extern const char kTraceStartup[];
 extern const char kTraceStartupFile[];
 extern const char kTraceStartupDuration[];
+extern const char kUIUseGPUProcess[];
 CONTENT_EXPORT extern const char kUserAgent[];
 extern const char kUtilityCmdPrefix[];
 CONTENT_EXPORT extern const char kUtilityProcess[];
@@ -193,6 +194,10 @@ CONTENT_EXPORT extern const char kRendererCheckFalseTest[];
 #endif
 
 extern const char kEnablePerTilePainting[];
+
+#if defined(USE_AURA)
+CONTENT_EXPORT extern const char kTestCompositor[];
+#endif
 
 }  // namespace switches
 

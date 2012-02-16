@@ -263,6 +263,14 @@ CommandBufferProxy* ContentGLContext::GetCommandBufferProxy() {
   return command_buffer_;
 }
 
+int ContentGLContext::GetChannelID() {
+  return channel_->client_id();
+}
+
+int ContentGLContext::GetContextID() {
+  return command_buffer_->route_id();
+}
+
 bool ContentGLContext::SetSurfaceVisible(bool visible) {
   return GetCommandBufferProxy()->SetSurfaceVisible(visible);
 }
