@@ -669,7 +669,7 @@ void NativeWidgetAura::OnBlur() {
     InputMethod* input_method = widget->GetInputMethod();
     input_method->OnBlur();
   }
-  delegate_->OnNativeBlur(NULL);
+  delegate_->OnNativeBlur(window_->GetFocusManager()->GetFocusedWindow());
 }
 
 bool NativeWidgetAura::OnKeyEvent(aura::KeyEvent* event) {
