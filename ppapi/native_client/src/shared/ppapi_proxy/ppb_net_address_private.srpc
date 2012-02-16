@@ -47,7 +47,7 @@
     {'name': 'PPB_NetAddress_Private_GetFamily',
      'inputs': [['addr', 'char[]'],                  # PP_NetAddress_Private*
                ],
-     'outputs': [['addr_family', 'int32_t'],         # uint16_t
+     'outputs': [['addr_family', 'int32_t'],  # PP_NetAddressFamily_Private
                 ]
     },
     {'name': 'PPB_NetAddress_Private_GetPort',

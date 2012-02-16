@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_net_address_private.idl,
- *   modified Sun Feb  5 10:36:30 2012.
+ *   modified Tue Feb 14 17:56:23 2012.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NET_ADDRESS_PRIVATE_H_
@@ -25,6 +25,29 @@
  * This file defines the <code>PPB_NetAddress_Private</code> interface.
  */
 
+
+/**
+ * @addtogroup Enums
+ * @{
+ */
+typedef enum {
+  /**
+   * The address family is unspecified.
+   */
+  PP_NETADDRESSFAMILY_UNSPECIFIED = 0,
+  /**
+   * The Internet Protocol version 4 (IPv4) address family.
+   */
+  PP_NETADDRESSFAMILY_IPV4 = 1,
+  /**
+   * The Internet Protocol version 6 (IPv6) address family.
+   */
+  PP_NETADDRESSFAMILY_IPV6 = 2
+} PP_NetAddressFamily_Private;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_NetAddressFamily_Private, 4);
+/**
+ * @}
+ */
 
 /**
  * @addtogroup Structs
@@ -82,7 +105,8 @@ struct PPB_NetAddress_Private_1_0 {
   /**
    * Gets the address family.
    */
-  uint16_t (*GetFamily)(const struct PP_NetAddress_Private* addr);
+  PP_NetAddressFamily_Private (*GetFamily)(
+      const struct PP_NetAddress_Private* addr);
   /**
    * Gets the port. The port is returned in host byte order.
    */

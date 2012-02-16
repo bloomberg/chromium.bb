@@ -193,8 +193,9 @@ void PpbNetAddressPrivateRpcServer::PPB_NetAddress_Private_GetFamily(
     return;
   }
 
-  *addr_family = PPBNetAddressPrivateInterface()->GetFamily(
-      reinterpret_cast<PP_NetAddress_Private*>(addr));
+  *addr_family = static_cast<int32_t>(
+      PPBNetAddressPrivateInterface()->GetFamily(
+          reinterpret_cast<PP_NetAddress_Private*>(addr)));
 
   DebugPrintf("PPB_NetAddress_Private::GetFamily\n");
 

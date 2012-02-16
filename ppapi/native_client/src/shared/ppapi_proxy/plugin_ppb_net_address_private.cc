@@ -159,15 +159,15 @@ void GetAnyAddress(PP_Bool is_ipv6, PP_NetAddress_Private* addr) {
               NaClSrpcErrorString(srpc_result));
 }
 
-uint16_t GetFamily(const PP_NetAddress_Private* addr) {
+PP_NetAddressFamily_Private GetFamily(const PP_NetAddress_Private* addr) {
   DebugPrintf("PPB_NetAddress_Private::GetFamily\n");
 
   nacl_abi_size_t addr_bytes =
       static_cast<nacl_abi_size_t>(sizeof(PP_NetAddress_Private));
   char* const raw_addr =
       reinterpret_cast<char*>(const_cast<PP_NetAddress_Private*>(addr));
-  int32_t addr_family;
 
+  int32_t addr_family = PP_NETADDRESSFAMILY_UNSPECIFIED;
   NaClSrpcError srpc_result =
       PpbNetAddressPrivateRpcClient::PPB_NetAddress_Private_GetFamily(
           GetMainSrpcChannel(),
@@ -177,7 +177,9 @@ uint16_t GetFamily(const PP_NetAddress_Private* addr) {
   DebugPrintf("PPB_NetAddress_Private::GetFamily: %s\n",
               NaClSrpcErrorString(srpc_result));
 
-  return static_cast<uint16_t>(static_cast<uint32_t>(addr_family));
+  if (srpc_result == NACL_SRPC_RESULT_OK)
+    return static_cast<PP_NetAddressFamily_Private>(addr_family);
+  return PP_NETADDRESSFAMILY_UNSPECIFIED;
 }
 
 uint16_t GetPort(const PP_NetAddress_Private* addr) {

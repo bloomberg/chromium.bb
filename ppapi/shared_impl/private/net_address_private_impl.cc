@@ -28,6 +28,9 @@
 #endif
 
 #if defined(OS_WIN)
+// The type of |sockaddr::sa_family|.
+typedef ADDRESS_FAMILY sa_family_t;
+
 #define s6_addr16 u.Word
 #endif
 
@@ -48,37 +51,58 @@ COMPILE_ASSERT(sizeof(reinterpret_cast<PP_NetAddress_Private*>(0)->data) >=
                sizeof(sockaddr_storage), PP_NetAddress_Private_data_too_small);
 #endif
 
-uint16_t GetFamily(const PP_NetAddress_Private* addr) {
+sa_family_t GetFamilyInternal(const PP_NetAddress_Private* addr) {
   return reinterpret_cast<const sockaddr*>(addr->data)->sa_family;
 }
 
-uint16_t GetPort(const PP_NetAddress_Private* addr) {
-  if (GetFamily(addr) == AF_INET)  {
-    const sockaddr_in* a = reinterpret_cast<const sockaddr_in*>(addr->data);
-    return ntohs(a->sin_port);
-  } else if (GetFamily(addr) == AF_INET6)  {
-    const sockaddr_in6* a = reinterpret_cast<const sockaddr_in6*>(addr->data);
-    return ntohs(a->sin6_port);
+PP_NetAddressFamily_Private GetFamily(const PP_NetAddress_Private* addr) {
+  switch (GetFamilyInternal(addr)) {
+    case AF_INET:
+      return PP_NETADDRESSFAMILY_IPV4;
+    case AF_INET6:
+      return PP_NETADDRESSFAMILY_IPV6;
+    default:
+      return PP_NETADDRESSFAMILY_UNSPECIFIED;
   }
+}
 
-  return 0;
+uint16_t GetPort(const PP_NetAddress_Private* addr) {
+  switch (GetFamilyInternal(addr)) {
+    case AF_INET: {
+      const sockaddr_in* a = reinterpret_cast<const sockaddr_in*>(addr->data);
+      return ntohs(a->sin_port);
+    }
+    case AF_INET6: {
+      const sockaddr_in6* a = reinterpret_cast<const sockaddr_in6*>(addr->data);
+      return ntohs(a->sin6_port);
+    }
+    default:
+      return 0;
+  }
 }
 
 PP_Bool GetAddress(const PP_NetAddress_Private* addr,
                    void* address,
                    uint16_t address_size) {
-  if (GetFamily(addr) == AF_INET)  {
-    const sockaddr_in* a = reinterpret_cast<const sockaddr_in*>(addr->data);
-    if (address_size >= sizeof(a->sin_addr.s_addr))  {
-      memcpy(address, &(a->sin_addr.s_addr), sizeof(a->sin_addr.s_addr));
-      return PP_TRUE;
+  switch (GetFamilyInternal(addr)) {
+    case AF_INET: {
+      const sockaddr_in* a = reinterpret_cast<const sockaddr_in*>(addr->data);
+      if (address_size >= sizeof(a->sin_addr.s_addr))  {
+        memcpy(address, &(a->sin_addr.s_addr), sizeof(a->sin_addr.s_addr));
+        return PP_TRUE;
+      }
+      break;
     }
-  } else if (GetFamily(addr) == AF_INET6)  {
-    const sockaddr_in6* a = reinterpret_cast<const sockaddr_in6*>(addr->data);
-    if (address_size >= sizeof(a->sin6_addr.s6_addr)) {
-      memcpy(address, &(a->sin6_addr.s6_addr), sizeof(a->sin6_addr.s6_addr));
-      return PP_TRUE;
+    case AF_INET6: {
+      const sockaddr_in6* a = reinterpret_cast<const sockaddr_in6*>(addr->data);
+      if (address_size >= sizeof(a->sin6_addr.s6_addr)) {
+        memcpy(address, &(a->sin6_addr.s6_addr), sizeof(a->sin6_addr.s6_addr));
+        return PP_TRUE;
+      }
+      break;
     }
+    default:
+      break;
   }
 
   return PP_FALSE;
@@ -90,25 +114,29 @@ PP_Bool AreHostsEqual(const PP_NetAddress_Private* addr1,
       !NetAddressPrivateImpl::ValidateNetAddress(*addr2))
     return PP_FALSE;
 
-  if (GetFamily(addr1) != GetFamily(addr2))
+  sa_family_t addr1_family = GetFamilyInternal(addr1);
+  if (addr1_family != GetFamilyInternal(addr2))
     return PP_FALSE;
 
-  if (GetFamily(addr1) == AF_INET) {
-    const sockaddr_in* a1 = reinterpret_cast<const sockaddr_in*>(addr1->data);
-    const sockaddr_in* a2 = reinterpret_cast<const sockaddr_in*>(addr2->data);
-    return PP_FromBool(a1->sin_addr.s_addr == a2->sin_addr.s_addr);
+  switch (addr1_family) {
+    case AF_INET: {
+      const sockaddr_in* a1 = reinterpret_cast<const sockaddr_in*>(addr1->data);
+      const sockaddr_in* a2 = reinterpret_cast<const sockaddr_in*>(addr2->data);
+      return PP_FromBool(a1->sin_addr.s_addr == a2->sin_addr.s_addr);
+    }
+    case AF_INET6: {
+      const sockaddr_in6* a1 =
+          reinterpret_cast<const sockaddr_in6*>(addr1->data);
+      const sockaddr_in6* a2 =
+          reinterpret_cast<const sockaddr_in6*>(addr2->data);
+      return PP_FromBool(a1->sin6_flowinfo == a2->sin6_flowinfo &&
+                         memcmp(&a1->sin6_addr, &a2->sin6_addr,
+                                sizeof(a1->sin6_addr)) == 0 &&
+                         a1->sin6_scope_id == a2->sin6_scope_id);
+    }
+    default:
+      return PP_FALSE;
   }
-
-  if (GetFamily(addr1) == AF_INET6) {
-    const sockaddr_in6* a1 = reinterpret_cast<const sockaddr_in6*>(addr1->data);
-    const sockaddr_in6* a2 = reinterpret_cast<const sockaddr_in6*>(addr2->data);
-    return PP_FromBool(a1->sin6_flowinfo == a2->sin6_flowinfo &&
-                       memcmp(&a1->sin6_addr, &a2->sin6_addr,
-                              sizeof(a1->sin6_addr)) == 0 &&
-                       a1->sin6_scope_id == a2->sin6_scope_id);
-  }
-
-  return PP_FALSE;
 }
 
 PP_Bool AreEqual(const PP_NetAddress_Private* addr1,
@@ -119,19 +147,22 @@ PP_Bool AreEqual(const PP_NetAddress_Private* addr1,
     return PP_FALSE;
 
   // Note: Here, we know that |addr1| and |addr2| have the same family.
-  if (GetFamily(addr1) == AF_INET) {
-    const sockaddr_in* a1 = reinterpret_cast<const sockaddr_in*>(addr1->data);
-    const sockaddr_in* a2 = reinterpret_cast<const sockaddr_in*>(addr2->data);
-    return PP_FromBool(a1->sin_port == a2->sin_port);
+  switch (GetFamilyInternal(addr1)) {
+    case AF_INET: {
+      const sockaddr_in* a1 = reinterpret_cast<const sockaddr_in*>(addr1->data);
+      const sockaddr_in* a2 = reinterpret_cast<const sockaddr_in*>(addr2->data);
+      return PP_FromBool(a1->sin_port == a2->sin_port);
+    }
+    case AF_INET6: {
+      const sockaddr_in6* a1 =
+          reinterpret_cast<const sockaddr_in6*>(addr1->data);
+      const sockaddr_in6* a2 =
+          reinterpret_cast<const sockaddr_in6*>(addr2->data);
+      return PP_FromBool(a1->sin6_port == a2->sin6_port);
+    }
+    default:
+      return PP_FALSE;
   }
-
-  if (GetFamily(addr1) == AF_INET6) {
-    const sockaddr_in6* a1 = reinterpret_cast<const sockaddr_in6*>(addr1->data);
-    const sockaddr_in6* a2 = reinterpret_cast<const sockaddr_in6*>(addr2->data);
-    return PP_FromBool(a1->sin6_port == a2->sin6_port);
-  }
-
-  return PP_FALSE;
 }
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
@@ -236,7 +267,7 @@ PP_Var Describe(PP_Module /*module*/,
   // |getnameinfo()| collapses length-one runs of zeros (and also doesn't
   // display the scope).
   // TODO(viettrungluu): Consider switching to this on Linux.
-  switch (GetFamily(addr)) {
+  switch (GetFamilyInternal(addr)) {
     case AF_INET: {
       const sockaddr_in* a = reinterpret_cast<const sockaddr_in*>(addr->data);
       return StringVar::StringToPPVar(
@@ -268,19 +299,20 @@ PP_Bool ReplacePort(const struct PP_NetAddress_Private* src_addr,
   if (!NetAddressPrivateImpl::ValidateNetAddress(*src_addr))
     return PP_FALSE;
 
-  if (GetFamily(src_addr) == AF_INET) {
-    memmove(dest_addr, src_addr, sizeof(*src_addr));
-    reinterpret_cast<sockaddr_in*>(dest_addr->data)->sin_port = htons(port);
-    return PP_TRUE;
+  switch (GetFamilyInternal(src_addr)) {
+    case AF_INET: {
+      memmove(dest_addr, src_addr, sizeof(*src_addr));
+      reinterpret_cast<sockaddr_in*>(dest_addr->data)->sin_port = htons(port);
+      return PP_TRUE;
+    }
+    case AF_INET6: {
+      memmove(dest_addr, src_addr, sizeof(*src_addr));
+      reinterpret_cast<sockaddr_in6*>(dest_addr->data)->sin6_port = htons(port);
+      return PP_TRUE;
+    }
+    default:
+      return PP_FALSE;
   }
-
-  if (GetFamily(src_addr) == AF_INET6) {
-    memmove(dest_addr, src_addr, sizeof(*src_addr));
-    reinterpret_cast<sockaddr_in6*>(dest_addr->data)->sin6_port = htons(port);
-    return PP_TRUE;
-  }
-
-  return PP_FALSE;
 }
 
 void GetAnyAddress(PP_Bool is_ipv6, PP_NetAddress_Private* addr) {
@@ -343,13 +375,20 @@ bool NetAddressPrivateImpl::ValidateNetAddress(
     return false;
 
   // TODO(viettrungluu): more careful validation?
-  // Just do a size check for AF_INET.
-  if (GetFamily(&addr) == AF_INET && addr.size >= sizeof(sockaddr_in))
-    return true;
-
-  // Ditto for AF_INET6.
-  if (GetFamily(&addr) == AF_INET6 && addr.size >= sizeof(sockaddr_in6))
-    return true;
+  switch (GetFamilyInternal(&addr)) {
+    case AF_INET:
+      // Just do a size check for AF_INET.
+      if (addr.size >= sizeof(sockaddr_in))
+        return true;
+      break;
+    case AF_INET6:
+      // Ditto for AF_INET6.
+      if (addr.size >= sizeof(sockaddr_in6))
+        return true;
+      break;
+    default:
+      break;
+  }
 
   // Reject everything else.
   return false;

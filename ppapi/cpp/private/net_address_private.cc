@@ -8,7 +8,6 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
 #include "ppapi/cpp/var.h"
-#include "ppapi/c/private/ppb_net_address_private.h"
 
 namespace pp {
 
@@ -82,9 +81,10 @@ void NetAddressPrivate::GetAnyAddress(bool is_ipv6,
 }
 
 // static
-uint16_t NetAddressPrivate::GetFamily(const PP_NetAddress_Private& addr) {
+PP_NetAddressFamily_Private NetAddressPrivate::GetFamily(
+    const PP_NetAddress_Private& addr) {
   if (!has_interface<PPB_NetAddress_Private>())
-    return 0;
+    return PP_NETADDRESSFAMILY_UNSPECIFIED;
   return get_interface<PPB_NetAddress_Private>()->GetFamily(&addr);
 }
 

@@ -8,8 +8,7 @@
 #include <string>
 
 #include "ppapi/c/pp_stdint.h"
-
-struct PP_NetAddress_Private;
+#include "ppapi/c/private/ppb_net_address_private.h"
 
 namespace pp {
 
@@ -28,7 +27,8 @@ class NetAddressPrivate {
                           uint16_t port,
                           PP_NetAddress_Private* addr_out);
   static void GetAnyAddress(bool is_ipv6, PP_NetAddress_Private* addr);
-  static uint16_t GetFamily(const PP_NetAddress_Private& addr);
+  static PP_NetAddressFamily_Private GetFamily(
+      const PP_NetAddress_Private& addr);
   static uint16_t GetPort(const PP_NetAddress_Private& addr);
   static bool GetAddress(const PP_NetAddress_Private& addr,
                          void* address, uint16_t address_size);

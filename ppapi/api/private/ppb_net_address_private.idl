@@ -12,6 +12,22 @@ label Chrome {
     M18 = 1.0
 };
 
+[assert_size(4)]
+enum PP_NetAddressFamily_Private {
+  /**
+   * The address family is unspecified.
+   */
+  PP_NETADDRESSFAMILY_UNSPECIFIED = 0,
+  /**
+   * The Internet Protocol version 4 (IPv4) address family.
+   */
+  PP_NETADDRESSFAMILY_IPV4 = 1,
+  /**
+   * The Internet Protocol version 6 (IPv6) address family.
+   */
+  PP_NETADDRESSFAMILY_IPV6 = 2
+};
+
 /**
  * This is an opaque type holding a network address.
  */
@@ -64,8 +80,8 @@ interface PPB_NetAddress_Private {
     * Gets the address family.
     */
   [version=1.0]
-  uint16_t GetFamily([in] PP_NetAddress_Private addr);
-  
+  PP_NetAddressFamily_Private GetFamily([in] PP_NetAddress_Private addr);
+
   /**
     * Gets the port. The port is returned in host byte order.
     */
