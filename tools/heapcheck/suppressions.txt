@@ -107,7 +107,6 @@
    fun:base::DefaultLazyInstanceTraits::New
    ...
    fun:crypto::EnsureNSSInit
-   fun:URLFetcherTest::SetUp
 }
 {
    bug_66941_a
@@ -218,7 +217,13 @@
    ...
    fun:tracked_objects::ThreadData::TallyA*
 }
-
+# http://crbug.com/86301
+{
+   Intentional leak in MessageLoopProxyTest.PostTaskAndReply_DeadReplyLoopDoesNotDelete
+   Heapcheck:Leak
+   ...
+   fun:*MessageLoopProxyTest_PostTaskAndReply_DeadReplyLoopDoesNotDelete_Test*
+}
 
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
@@ -247,9 +252,6 @@
    fun:net::SSLClientSocketNSS::DoHandshake
    fun:net::SSLClientSocketNSS::DoHandshakeLoop
    fun:net::SSLClientSocketNSS::Connect
-   fun:net::SSLConnectJob::DoSSLConnect
-   fun:net::SSLConnectJob::DoLoop
-   fun:net::SSLConnectJob::OnIOComplete
 }
 {
    bug_17540
@@ -1329,17 +1331,6 @@
    fun:net::::InitSocketPoolHelper
    fun:net::ClientSocketPoolManager::InitSocketHandleForRawConnect
    fun:notifier::ProxyResolvingClientSocket::ProcessProxyResolveDone
-}
-{
-   bug_86301
-   Heapcheck:Leak
-   ...
-   fun:*MessageLoopProxyTest_PostTaskAndReply_DeadReplyLoopDoesNotDelete_Test*
-   ...
-   fun:testing::UnitTest::Run
-   fun:base::TestSuite::Run
-   fun:main
-   fun:__libc_start_main
 }
 {
    bug_86468
