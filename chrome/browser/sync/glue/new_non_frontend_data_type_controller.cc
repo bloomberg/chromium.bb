@@ -225,13 +225,13 @@ void NewNonFrontendDataTypeController::Stop() {
 }
 
 void NewNonFrontendDataTypeController::ClearSharedChangeProcessor() {
-  // We are called only from StartDoneImpl() or Stop(), both of which
-  // can be called only after a call to Start().  Therefore,
-  // |shared_change_processor_| should not be NULL.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(shared_change_processor_.get());
-  shared_change_processor_->Disconnect();
-  shared_change_processor_ = NULL;
+  // |shared_change_processor_| can already be NULL if Stop() is
+  // called after StartDoneImpl(_, DISABLED, _).
+  if (shared_change_processor_.get()) {
+    shared_change_processor_->Disconnect();
+    shared_change_processor_ = NULL;
+  }
 }
 
 void NewNonFrontendDataTypeController::StopLocalServiceAsync() {

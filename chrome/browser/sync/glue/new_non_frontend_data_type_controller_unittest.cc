@@ -32,6 +32,7 @@ using base::WaitableEvent;
 using content::BrowserThread;
 using syncable::AUTOFILL_PROFILE;
 using testing::_;
+using testing::AtLeast;
 using testing::DoAll;
 using testing::InvokeWithoutArgs;
 using testing::Mock;
@@ -222,7 +223,7 @@ class SyncNewNonFrontendDataTypeControllerTest : public testing::Test {
 
   void SetStartFailExpectations(DataTypeController::StartResult result) {
     EXPECT_CALL(syncable_service_, StopSyncing(_));
-    EXPECT_CALL(*dtc_mock_, StopModels());
+    EXPECT_CALL(*dtc_mock_, StopModels()).Times(AtLeast(1));
     EXPECT_CALL(*dtc_mock_, RecordStartFailure(result));
     EXPECT_CALL(start_callback_, Run(result,_));
   }
@@ -298,6 +299,9 @@ TEST_F(SyncNewNonFrontendDataTypeControllerTest, AbortDuringStartModels) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, new_non_frontend_dtc_->state());
 }
 
+// Start the DTC and have MergeDataAndStartSyncing() return an error.
+// The DTC should become disabled, and the DTC should still stop
+// cleanly.
 TEST_F(SyncNewNonFrontendDataTypeControllerTest, StartAssociationFailed) {
   SetStartExpectations();
   EXPECT_CALL(*change_processor_, Connect(_,_,_,_)).
@@ -319,6 +323,8 @@ TEST_F(SyncNewNonFrontendDataTypeControllerTest, StartAssociationFailed) {
       base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   WaitForDTC();
   EXPECT_EQ(DataTypeController::DISABLED, new_non_frontend_dtc_->state());
+  new_non_frontend_dtc_->Stop();
+  EXPECT_EQ(DataTypeController::NOT_RUNNING, new_non_frontend_dtc_->state());
 }
 
 TEST_F(SyncNewNonFrontendDataTypeControllerTest,
