@@ -35,20 +35,6 @@
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/widget.h"
 
-// Drag and drop for aura in linux hasn't been implemented yet.
-// Bug http://crbug.com/97845
-#if defined(USE_AURA) && defined(OS_LINUX)
-#define MAYBE_DragAndDrop_InitiateDrag DISABLED_DragAndDrop_InitiateDrag
-#define MAYBE_DragAndDrop_ToTheLeft DISABLED_DragAndDrop_ToTheLeft
-#define MAYBE_DragAndDrop_ToTheRight DISABLED_DragAndDrop_ToTheRight
-#define MAYBE_DragAndDrop_Canceled DISABLED_DragAndDrop_Canceled
-#else
-#define MAYBE_DragAndDrop_InitiateDrag DragAndDrop_InitiateDrag
-#define MAYBE_DragAndDrop_ToTheLeft DragAndDrop_ToTheLeft
-#define MAYBE_DragAndDrop_ToTheRight DragAndDrop_ToTheRight
-#define MAYBE_DragAndDrop_Canceled DragAndDrop_Canceled
-#endif  // OS_LINUX && USE_AURA
-
 namespace {
 
 // A wrapper of Textfield to intercept the result of OnKeyPressed() and
@@ -801,7 +787,7 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_AcceptDrop) {
 }
 #endif
 
-TEST_F(NativeTextfieldViewsTest, MAYBE_DragAndDrop_InitiateDrag) {
+TEST_F(NativeTextfieldViewsTest, DragAndDrop_InitiateDrag) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16("hello string world"));
 
@@ -839,7 +825,7 @@ TEST_F(NativeTextfieldViewsTest, MAYBE_DragAndDrop_InitiateDrag) {
       textfield_view_->GetDragOperationsForView(textfield_view_, kStringPoint));
 }
 
-TEST_F(NativeTextfieldViewsTest, MAYBE_DragAndDrop_ToTheRight) {
+TEST_F(NativeTextfieldViewsTest, DragAndDrop_ToTheRight) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16("hello world"));
 
@@ -893,7 +879,7 @@ TEST_F(NativeTextfieldViewsTest, MAYBE_DragAndDrop_ToTheRight) {
   EXPECT_STR_EQ("h welloorld", textfield_->text());
 }
 
-TEST_F(NativeTextfieldViewsTest, MAYBE_DragAndDrop_ToTheLeft) {
+TEST_F(NativeTextfieldViewsTest, DragAndDrop_ToTheLeft) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16("hello world"));
 
@@ -946,7 +932,7 @@ TEST_F(NativeTextfieldViewsTest, MAYBE_DragAndDrop_ToTheLeft) {
   EXPECT_STR_EQ("h worlellod", textfield_->text());
 }
 
-TEST_F(NativeTextfieldViewsTest, MAYBE_DragAndDrop_Canceled) {
+TEST_F(NativeTextfieldViewsTest, DragAndDrop_Canceled) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16("hello world"));
 
