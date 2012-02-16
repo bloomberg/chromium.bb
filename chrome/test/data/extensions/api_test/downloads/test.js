@@ -551,6 +551,13 @@ chrome.test.getConfig(function(testConfig) {
       for (var id = 0; id < nextId; ++id) {
         downloads.cancel(id, chrome.test.callback(makeCallback(id)));
       }
+    },
+
+    function callNotifyPass() {
+      chrome.test.notifyPass();
+      setTimeout(chrome.test.callback(function() {
+        console.log('');
+      }), 0);
     }
   ]);
 });
