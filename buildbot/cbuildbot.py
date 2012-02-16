@@ -10,7 +10,6 @@ Used by Chromium OS buildbot configuration for all Chromium OS builds including
 full and pre-flight-queue builds.
 """
 
-import cgroup
 import distutils.version
 import glob
 import optparse
@@ -27,10 +26,12 @@ from chromite.buildbot import cbuildbot_background as background
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_stages as stages
 from chromite.buildbot import cbuildbot_results as results_lib
+from chromite.buildbot import cgroup
 from chromite.buildbot import patch as cros_patch
 from chromite.buildbot import remote_try
 from chromite.buildbot import repository
 from chromite.buildbot import tee
+
 from chromite.lib import cros_build_lib as cros_lib
 from chromite.lib import sudo
 
@@ -259,8 +260,11 @@ class Builder(object):
       self._WriteCheckpoint()
 
     # Re-write paths to use absolute paths.
-    args_to_append = ['--resume', '--buildroot',
+    # Suppress any timeout options given from the commandline in the
+    # invoked cbuildbot; our timeout will enforce it instead.
+    args_to_append = ['--resume', '--timeout', '0', '--buildroot',
                       os.path.abspath(self.options.buildroot)]
+
     if self.options.chrome_root:
       args_to_append += ['--chrome_root',
                          os.path.abspath(self.options.chrome_root)]
@@ -759,6 +763,10 @@ def _CreateParser():
                          "default, if this option isn't given but cbuildbot "
                          'is invoked from a repo checkout, cbuildbot will '
                          'use the repo root.')
+  group.add_option('--timeout', action='store', type='int', default=0,
+                    help="Specify the maximum amount of time this job can run "
+                         "for, at which point the build will be aborted.  If "
+                         "set to zero, then there is no timeout")
   group.add_option('--notests', action='store_false', dest='tests',
                     default=True,
                     help='Override values from buildconfig and run no tests.')
@@ -926,9 +934,11 @@ def main(argv=None):
 
   with sudo.SudoKeepAlive():
     with cros_lib.AllowDisabling(options.cgroups, cgroup.CGroup):
-      if not options.buildbot:
-        build_config = cbuildbot_config.OverrideConfigForTrybot(build_config)
-      _RunBuildStagesWrapper(bot_id, options, build_config)
+      with cros_lib.AllowDisabling(options.timeout > 0,
+                                   cros_lib.Timeout, options.timeout):
+        if not options.buildbot:
+          build_config = cbuildbot_config.OverrideConfigForTrybot(build_config)
+        _RunBuildStagesWrapper(bot_id, options, build_config)
 
 
 if __name__ == '__main__':

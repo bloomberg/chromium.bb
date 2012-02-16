@@ -1052,6 +1052,57 @@ def AllowDisabling(enabled, functor, *args, **kwds):
   return _NoOpContextManager()
 
 
+@contextlib.contextmanager
+def Timeout(max_run_time):
+  """ContextManager that alarms if code is ran for too long.
+
+  This implementation is fairly simple, thus multiple timeouts
+  cannot be active at the same time.
+
+  Additionally, if the timout has elapsed, it'll trigger a SystemExit
+  exception w/in the invoking code, ultimately propagating that passed
+  itself.  If the underlying code tries to suppress the SystemExit, once
+  a minute it'll retrigger SystemExit until control is returned to this
+  manager.
+
+  Args:
+    max_run_time: a positive integer.
+  """
+  max_run_time = long(max_run_time)
+  if max_run_time <= 0:
+    raise ValueError("max_run_time must be greater than zero")
+
+  # pylint: disable=W0613
+  def kill_us(sig_num, frame):
+    # While this SystemExit *should* crash it's way back up the
+    # stack to our exit handler, we do have live/production code
+    # that uses blanket except statements which could suppress this.
+    # As such, keep scheduling alarms until our exit handler runs.
+    # Note that there is a potential conflict via this code, and
+    # RunCommand's kill_timeout; thus we set the alarming interval
+    # fairly high.
+    signal.alarm(60)
+    raise SystemExit("Timeout occured- waited %i seconds, failing."
+                     % max_run_time)
+
+  original_handler = signal.signal(signal.SIGALRM, kill_us)
+  remaining_timeout = signal.alarm(max_run_time)
+  if remaining_timeout:
+    # Restore things to the way they were.
+    signal.signal(signal.SIGALRM, original_handler)
+    signal.alarm(remaining_timeout)
+    # ... and now complain.  Unfortunately we can't easily detect this
+    # upfront, thus the reset dance above.
+    raise Exception("_Timeout cannot be used in parallel to other alarm "
+                    "handling code; failing")
+  try:
+    yield
+  finally:
+    # Cancel the alarm request and restore the original handler.
+    signal.alarm(0)
+    signal.signal(signal.SIGALRM, original_handler)
+
+
 # Support having this module test itself if run as __main__, by leveraging
 # the corresponding unittest module.
 # Also, the unittests serve as extra documentation.
