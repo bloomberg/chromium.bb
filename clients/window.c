@@ -1553,7 +1553,7 @@ input_handle_key(void *data, struct wl_input_device *input_device,
 	struct display *d = input->display;
 	uint32_t code, sym, level;
 
-	code = key + d->xkb->min_key_code;
+	code = key + 8;
 	if (!window || window->keyboard_device != input)
 		return;
 
