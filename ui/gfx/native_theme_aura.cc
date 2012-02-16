@@ -13,7 +13,7 @@
 
 namespace {
 
-const SkColor kMenuBackgroundColor = SkColorSetRGB(0xED, 0xED, 0xED);
+const SkColor kMenuBackgroundColor = SK_ColorWHITE;
 
 // Theme colors returned by GetSystemColor().
 const SkColor kInvalidColorIdColor = SkColorSetRGB(255, 0, 128);
@@ -32,7 +32,7 @@ const SkColor kTextButtonHoverColor = kTextButtonEnabledColor;
 const SkColor kEnabledMenuItemForegroundColor = SK_ColorBLACK;
 const SkColor kDisabledMenuItemForegroundColor =
     SkColorSetRGB(0x80, 0x80, 0x80);
-const SkColor kFocusedMenuItemBackgroundColor = SkColorSetRGB(0xDC, 0xE4, 0xFA);
+const SkColor kFocusedMenuItemBackgroundColor = SkColorSetRGB(0xF1, 0xF1, 0xF1);
 // Textfield:
 const SkColor kTextfieldDefaultColor = SK_ColorBLACK;
 const SkColor kTextfieldDefaultBackground = SK_ColorWHITE;
