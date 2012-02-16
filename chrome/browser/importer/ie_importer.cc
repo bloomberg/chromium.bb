@@ -593,8 +593,6 @@ void IEImporter::ImportSearchEngines() {
       GURL gurl = GURL(url);
       template_url->set_keyword(TemplateURLService::GenerateKeyword(gurl,
                                                                     false));
-      template_url->set_logo_id(
-          TemplateURLPrepopulateData::GetSearchEngineLogo(gurl));
       template_url->set_show_in_default_list(true);
       search_engines_map[url] = template_url;
     }

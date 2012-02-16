@@ -432,12 +432,6 @@ void Panel::DisableInactiveFrame() {
   NOTIMPLEMENTED();
 }
 
-void Panel::ConfirmSetDefaultSearchProvider(WebContents* web_contents,
-                                            TemplateURL* template_url,
-                                            Profile* profile) {
-  NOTIMPLEMENTED();
-}
-
 void Panel::ConfirmAddSearchProvider(const TemplateURL* template_url,
                                      Profile* profile) {
   NOTIMPLEMENTED();

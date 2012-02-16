@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,8 +23,7 @@ class TemplateURLFetcher {
  public:
   enum ProviderType {
     AUTODETECTED_PROVIDER,
-    EXPLICIT_PROVIDER,  // Supplied by Javascript.
-    EXPLICIT_DEFAULT_PROVIDER  // Supplied by Javascript as default provider.
+    EXPLICIT_PROVIDER  // Supplied by Javascript.
   };
 
   // Creates a TemplateURLFetcher with the specified Profile.

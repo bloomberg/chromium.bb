@@ -224,16 +224,6 @@ class BrowserWindow {
   // provided here since the functionality is Windows-specific.
   virtual void DisableInactiveFrame() {}
 
-  // Shows a confirmation dialog box for setting the default search engine
-  // described by |template_url|. Takes ownership of |template_url|.
-  virtual void ConfirmSetDefaultSearchProvider(
-      content::WebContents* web_contents,
-      TemplateURL* template_url,
-      Profile* profile) {
-    // TODO(levin): Implement this for non-Windows platforms and make it pure.
-    // http://crbug.com/38475
-  }
-
   // Shows a confirmation dialog box for adding a search engine described by
   // |template_url|. Takes ownership of |template_url|.
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,

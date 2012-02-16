@@ -276,10 +276,6 @@ class BrowserView : public BrowserWindow,
   virtual bool IsPanel() const OVERRIDE;
   virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
   virtual void DisableInactiveFrame() OVERRIDE;
-  virtual void ConfirmSetDefaultSearchProvider(
-      content::WebContents* web_contents,
-      TemplateURL* template_url,
-      Profile* profile) OVERRIDE;
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
                                         Profile* profile) OVERRIDE;
   virtual void ToggleBookmarkBar() OVERRIDE;

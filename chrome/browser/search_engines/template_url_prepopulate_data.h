@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,9 +42,6 @@ TemplateURL* GetPrepopulatedDefaultSearch(PrefService* prefs);
 // as the given url.  The caller is responsible for deleting the returned
 // TemplateURL.
 TemplateURL* GetEngineForOrigin(PrefService* prefs, const GURL& url_to_find);
-
-// Returns search engine logo for URLs known to have a search engine logo.
-int GetSearchEngineLogo(const GURL& url_to_find);
 
 // Returns the prepopulated search provider whose search URL origin matches the
 // origin of |search_url| or NULL if none is found. The caller is responsible

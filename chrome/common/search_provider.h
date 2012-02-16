@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,10 +15,6 @@ enum OSDDType {
 
   // The Open Search Description URL was given by Javascript.
   EXPLICIT_PROVIDER,
-
-  // The Open Search Description URL was given by Javascript to be the new
-  // default search engine.
-  EXPLICIT_DEFAULT_PROVIDER
 };
 
 // The install state of the search provider (not installed, installed, default).

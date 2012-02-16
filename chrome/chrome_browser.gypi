@@ -3529,8 +3529,6 @@
         'browser/ui/views/database_info_view.h',
         'browser/ui/views/database_open_info_view.cc',
         'browser/ui/views/database_open_info_view.h',
-        'browser/ui/views/default_search_view.cc',
-        'browser/ui/views/default_search_view.h',
         'browser/ui/views/detachable_toolbar_view.cc',
         'browser/ui/views/detachable_toolbar_view.h',
         'browser/ui/views/dialog_stubs_gtk.cc',

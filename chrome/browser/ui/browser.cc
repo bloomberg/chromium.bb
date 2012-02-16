@@ -4197,13 +4197,6 @@ void Browser::OnInstallApplication(TabContentsWrapper* source,
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, SearchEngineTabHelperDelegate implementation:
 
-void Browser::ConfirmSetDefaultSearchProvider(WebContents* web_contents,
-                                              TemplateURL* template_url,
-                                              Profile* profile) {
-  window()->ConfirmSetDefaultSearchProvider(web_contents, template_url,
-                                            profile);
-}
-
 void Browser::ConfirmAddSearchProvider(const TemplateURL* template_url,
                                        Profile* profile) {
 #if defined(USE_AURA)

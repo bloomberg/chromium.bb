@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,13 +17,6 @@ class WebContents;
 // SearchEngineTabHelper and to provide necessary functionality.
 class SearchEngineTabHelperDelegate {
  public:
-  // Shows a confirmation dialog box for setting the default search engine
-  // described by |template_url|. Takes ownership of |template_url|.
-  virtual void ConfirmSetDefaultSearchProvider(
-      content::WebContents* tab_contents,
-      TemplateURL* template_url,
-      Profile* profile) = 0;
-
   // Shows a confirmation dialog box for adding a search engine described by
   // |template_url|. Takes ownership of |template_url|.
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,

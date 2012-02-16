@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,10 +51,6 @@ class KeywordTableTest : public testing::Test {
     url->SetPrepopulateId(id);
   }
 
-  static void set_logo_id(TemplateURL* url, int id) {
-    url->set_logo_id(id);
-  }
-
   FilePath file_;
 
  private:
@@ -85,7 +81,6 @@ TEST_F(KeywordTableTest, Keywords) {
   template_url.add_input_encoding("UTF-8");
   template_url.add_input_encoding("UTF-16");
   set_prepopulate_id(&template_url, 10);
-  set_logo_id(&template_url, 1000);
   template_url.set_created_by_policy(true);
   template_url.SetInstantURL("http://instant/", 0, 0);
   SetID(1, &template_url);
@@ -128,8 +123,6 @@ TEST_F(KeywordTableTest, Keywords) {
 
   EXPECT_EQ(10, restored_url->prepopulate_id());
 
-  EXPECT_EQ(1000, restored_url->logo_id());
-
   EXPECT_TRUE(restored_url->created_by_policy());
 
   ASSERT_TRUE(restored_url->instant_url());
@@ -171,7 +164,6 @@ TEST_F(KeywordTableTest, KeywordMisc) {
   template_url.add_input_encoding("UTF-8");
   template_url.add_input_encoding("UTF-16");
   set_prepopulate_id(&template_url, 10);
-  set_logo_id(&template_url, 1000);
   template_url.set_created_by_policy(true);
   template_url.SetInstantURL("http://instant/", 0, 0);
   SetID(10, &template_url);
@@ -318,19 +310,17 @@ TEST_F(KeywordTableTest, GetTableContents) {
   EXPECT_EQ(ASCIIToUTF16("url"), template_url.keyword());
   template_url.add_input_encoding("Shift_JIS");
   set_prepopulate_id(&template_url, 5);
-  set_logo_id(&template_url, 2000);
   template_url.SetInstantURL("http://instant2/", 0, 0);
   SetID(2, &template_url);
   template_url.set_sync_guid("FEDC-BA09-8765-4321");
   ASSERT_TRUE(db.GetKeywordTable()->AddKeyword(template_url));
 
   const char kTestContents[] =
-      "1short_namekeywordhttp://favicon.url/http://url/1001"
-      "url200000"
-      "1234-5678-90AB-CDEF"
-      "2short_nameurlhttp://favicon.url/http://url/1http://originating.url/"
-      "00Shift_JIS1url25120000http://instant2/0"
-      "FEDC-BA09-8765-4321";
+      "1" "short_name" "keyword" "http://favicon.url/" "http://url/1001"
+      "url" "200000" "1234-5678-90AB-CDEF"
+      "2" "short_name" "url" "http://favicon.url/" "http://url/1"
+      "http://originating.url/" "00" "Shift_JIS" "1" "url" "25100"
+      "http://instant2/0" "FEDC-BA09-8765-4321";
 
   std::string contents;
   ASSERT_TRUE(db.GetKeywordTable()->GetTableContents("keywords", &contents));
@@ -369,19 +359,17 @@ TEST_F(KeywordTableTest, GetTableContentsOrdering) {
   EXPECT_EQ(ASCIIToUTF16("url"), template_url.keyword());
   template_url.add_input_encoding("Shift_JIS");
   set_prepopulate_id(&template_url, 5);
-  set_logo_id(&template_url, 2000);
   template_url.SetInstantURL("http://instant2/", 0, 0);
   SetID(1, &template_url);
   template_url.set_sync_guid("FEDC-BA09-8765-4321");
   ASSERT_TRUE(db.GetKeywordTable()->AddKeyword(template_url));
 
   const char kTestContents[] =
-      "1short_nameurlhttp://favicon.url/http://url/1http://originating.url/"
-      "00Shift_JIS1url25120000http://instant2/0"
-      "FEDC-BA09-8765-4321"
-      "2short_namekeywordhttp://favicon.url/http://url/1001"
-      "url200000"
-      "1234-5678-90AB-CDEF";
+      "1" "short_name" "url" "http://favicon.url/" "http://url/1"
+      "http://originating.url/" "00" "Shift_JIS" "1" "url" "25100"
+      "http://instant2/0" "FEDC-BA09-8765-4321"
+      "2" "short_name" "keyword" "http://favicon.url/" "http://url/1001"
+      "url" "200000" "1234-5678-90AB-CDEF";
 
   std::string contents;
   ASSERT_TRUE(db.GetKeywordTable()->GetTableContents("keywords", &contents));
@@ -417,7 +405,6 @@ TEST_F(KeywordTableTest, UpdateKeyword) {
   EXPECT_EQ(ASCIIToUTF16("url"), template_url.keyword());
   template_url.add_input_encoding("Shift_JIS");
   set_prepopulate_id(&template_url, 5);
-  set_logo_id(&template_url, 2000);
   template_url.SetInstantURL("http://instant2/", 0, 0);
   EXPECT_TRUE(db.GetKeywordTable()->UpdateKeyword(template_url));
 
@@ -452,8 +439,6 @@ TEST_F(KeywordTableTest, UpdateKeyword) {
   EXPECT_EQ(template_url.id(), restored_url->id());
 
   EXPECT_EQ(template_url.prepopulate_id(), restored_url->prepopulate_id());
-
-  EXPECT_EQ(template_url.logo_id(), restored_url->logo_id());
 
   EXPECT_TRUE(restored_url->instant_url());
   EXPECT_EQ(template_url.instant_url()->url(),

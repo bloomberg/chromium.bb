@@ -635,7 +635,6 @@ TemplateURL::TemplateURL()
       created_by_policy_(false),
       usage_count_(0),
       search_engine_type_(SEARCH_ENGINE_OTHER),
-      logo_id_(kNoSearchEngineLogo),
       prepopulate_id_(0),
       sync_guid_(guid::GenerateGUID()) {
 }

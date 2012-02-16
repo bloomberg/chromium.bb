@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,17 +26,6 @@ TemplateURLFetcherUICallbacks::TemplateURLFetcherUICallbacks(
 }
 
 TemplateURLFetcherUICallbacks::~TemplateURLFetcherUICallbacks() {
-}
-
-void TemplateURLFetcherUICallbacks::ConfirmSetDefaultSearchProvider(
-    TemplateURL* template_url,
-    Profile* profile) {
-  scoped_ptr<TemplateURL> owned_template_url(template_url);
-  if (!source_ || !source_->delegate() || !web_contents_)
-      return;
-
-  source_->delegate()->ConfirmSetDefaultSearchProvider(web_contents_,
-      owned_template_url.release(), profile);
 }
 
 void TemplateURLFetcherUICallbacks::ConfirmAddSearchProvider(

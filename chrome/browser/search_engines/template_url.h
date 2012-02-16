@@ -484,9 +484,6 @@ class TemplateURL {
     return search_engine_type_;
   }
 
-  void set_logo_id(int logo_id) { logo_id_ = logo_id; }
-  int logo_id() const { return logo_id_; }
-
   // Returns the unique identifier of this TemplateURL. The unique ID is set
   // by the TemplateURLService when the TemplateURL is added to it.
   TemplateURLID id() const { return id_; }
@@ -549,7 +546,6 @@ class TemplateURL {
   bool created_by_policy_;
   int usage_count_;
   SearchEngineType search_engine_type_;
-  int logo_id_;
   int prepopulate_id_;
   // The primary unique identifier for Sync. This is only set on TemplateURLs
   // that have been associated with Sync.

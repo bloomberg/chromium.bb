@@ -51,7 +51,6 @@
 #include "chrome/browser/ui/views/avatar_menu_button.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
-#include "chrome/browser/ui/views/default_search_view.h"
 #include "chrome/browser/ui/views/download/download_in_progress_dialog_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/browser_window_move_observer.h"
@@ -1075,17 +1074,6 @@ void BrowserView::DisableInactiveFrame() {
 #if defined(OS_WIN) && !defined(USE_AURA)
   frame_->DisableInactiveRendering();
 #endif  // No tricks are needed to get the right behavior on Linux.
-}
-
-void BrowserView::ConfirmSetDefaultSearchProvider(WebContents* web_contents,
-                                                  TemplateURL* template_url,
-                                                  Profile* profile) {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  DefaultSearchView::Show(web_contents, template_url, profile);
-#else
-  // TODO(levin): Implement for other platforms. Right now this is behind
-  // a command line flag which is off. http://crbug.com/38475
-#endif
 }
 
 void BrowserView::ConfirmAddSearchProvider(const TemplateURL* template_url,

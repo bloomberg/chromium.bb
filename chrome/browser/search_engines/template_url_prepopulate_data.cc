@@ -54,9 +54,8 @@ struct PrepopulatedEngine {
                                      // suggestions.
   const wchar_t* const instant_url;  // If NULL, this engine does not support
                                      // instant.
-  // SEARCH_ENGINE_OTHER if no logo is available.
+  // SEARCH_ENGINE_OTHER if there is no matching type.
   const SearchEngineType search_engine_type;
-  const int logo_id;  // Id for logo image in search engine dialog.
   // Unique id for this prepopulate engine (corresponds to
   // TemplateURL::prepopulate_id). This ID must be greater than zero and must
   // remain the same for a particular site regardless of how the url changes;
@@ -95,7 +94,6 @@ const PrepopulatedEngine abcsok = {
   NULL,
   NULL,
   SEARCH_ENGINE_ABCSOK,
-  IDR_SEARCH_ENGINE_LOGO_ABCSOK,
   72,
 };
 
@@ -108,7 +106,6 @@ const PrepopulatedEngine altavista = {
   NULL,
   NULL,
   SEARCH_ENGINE_ALTAVISTA,
-  IDR_SEARCH_ENGINE_LOGO_ALTAVISTA,
   89,
 };
 
@@ -121,7 +118,6 @@ const PrepopulatedEngine altavista_ar = {
   NULL,
   NULL,
   SEARCH_ENGINE_ALTAVISTA,
-  IDR_SEARCH_ENGINE_LOGO_ALTAVISTA,
   89,
 };
 
@@ -134,7 +130,6 @@ const PrepopulatedEngine altavista_se = {
   NULL,
   NULL,
   SEARCH_ENGINE_ALTAVISTA,
-  IDR_SEARCH_ENGINE_LOGO_ALTAVISTA,
   89,
 };
 
@@ -147,7 +142,6 @@ const PrepopulatedEngine aol = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_AOL,
   35,
 };
 
@@ -160,7 +154,6 @@ const PrepopulatedEngine araby = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   12,
 };
 
@@ -173,7 +166,6 @@ const PrepopulatedEngine ask = {
   L"http://ss.ask.com/query?q={searchTerms}&li=ff",
   NULL,
   SEARCH_ENGINE_ASK,
-  IDR_SEARCH_ENGINE_LOGO_ASK,
   4,
 };
 
@@ -186,7 +178,6 @@ const PrepopulatedEngine ask_de = {
   L"http://ss.de.ask.com/query?q={searchTerms}&li=ff",
   NULL,
   SEARCH_ENGINE_ASK,
-  IDR_SEARCH_ENGINE_LOGO_ASK,
   4,
 };
 
@@ -199,7 +190,6 @@ const PrepopulatedEngine ask_es = {
   L"http://ss.es.ask.com/query?q={searchTerms}&li=ff",
   NULL,
   SEARCH_ENGINE_ASK,
-  IDR_SEARCH_ENGINE_LOGO_ASK,
   4,
 };
 
@@ -212,7 +202,6 @@ const PrepopulatedEngine ask_it = {
   L"http://ss.it.ask.com/query?q={searchTerms}&li=ff",
   NULL,
   SEARCH_ENGINE_ASK,
-  IDR_SEARCH_ENGINE_LOGO_ASK,
   4,
 };
 
@@ -225,7 +214,6 @@ const PrepopulatedEngine ask_nl = {
   L"http://ss.nl.ask.com/query?q={searchTerms}&li=ff",
   NULL,
   SEARCH_ENGINE_ASK,
-  IDR_SEARCH_ENGINE_LOGO_ASK,
   4,
 };
 
@@ -238,7 +226,6 @@ const PrepopulatedEngine ask_uk = {
   L"http://ss.uk.ask.com/query?q={searchTerms}&li=ff",
   NULL,
   SEARCH_ENGINE_ASK,
-  IDR_SEARCH_ENGINE_LOGO_ASK,
   4,
 };
 
@@ -251,7 +238,6 @@ const PrepopulatedEngine atlas_cz = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   27,
 };
 
@@ -264,7 +250,6 @@ const PrepopulatedEngine atlas_sk = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   27,
 };
 
@@ -277,7 +262,6 @@ const PrepopulatedEngine baidu = {
   NULL,
   NULL,
   SEARCH_ENGINE_BAIDU,
-  IDR_SEARCH_ENGINE_LOGO_BAIDU,
   21,
 };
 
@@ -290,7 +274,6 @@ const PrepopulatedEngine bing = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -303,7 +286,6 @@ const PrepopulatedEngine bing_ar_XA = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   7,  // Can't be 3 as this has to appear in the Arabian countries' lists
       // alongside bing_en_XA.
 };
@@ -317,7 +299,6 @@ const PrepopulatedEngine bing_bg_BG = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -330,7 +311,6 @@ const PrepopulatedEngine bing_cs_CZ = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -343,7 +323,6 @@ const PrepopulatedEngine bing_da_DK = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -356,7 +335,6 @@ const PrepopulatedEngine bing_de_AT = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -369,7 +347,6 @@ const PrepopulatedEngine bing_de_CH = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -382,7 +359,6 @@ const PrepopulatedEngine bing_de_DE = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -395,7 +371,6 @@ const PrepopulatedEngine bing_el_GR = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -408,7 +383,6 @@ const PrepopulatedEngine bing_en_AU = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -421,7 +395,6 @@ const PrepopulatedEngine bing_en_CA = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -434,7 +407,6 @@ const PrepopulatedEngine bing_en_GB = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -447,7 +419,6 @@ const PrepopulatedEngine bing_en_ID = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -460,7 +431,6 @@ const PrepopulatedEngine bing_en_IE = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -473,7 +443,6 @@ const PrepopulatedEngine bing_en_IN = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -486,7 +455,6 @@ const PrepopulatedEngine bing_en_MY = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -499,7 +467,6 @@ const PrepopulatedEngine bing_en_NZ = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -512,7 +479,6 @@ const PrepopulatedEngine bing_en_PH = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -525,7 +491,6 @@ const PrepopulatedEngine bing_en_SG = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -538,7 +503,6 @@ const PrepopulatedEngine bing_en_US = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -551,7 +515,6 @@ const PrepopulatedEngine bing_en_XA = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -564,7 +527,6 @@ const PrepopulatedEngine bing_en_ZA = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -577,7 +539,6 @@ const PrepopulatedEngine bing_es_AR = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -590,7 +551,6 @@ const PrepopulatedEngine bing_es_CL = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -603,7 +563,6 @@ const PrepopulatedEngine bing_es_ES = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -616,7 +575,6 @@ const PrepopulatedEngine bing_es_MX = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -629,7 +587,6 @@ const PrepopulatedEngine bing_es_XL = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -642,7 +599,6 @@ const PrepopulatedEngine bing_et_EE = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -655,7 +611,6 @@ const PrepopulatedEngine bing_fi_FI = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -668,7 +623,6 @@ const PrepopulatedEngine bing_fr_BE = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   7,
 };
 
@@ -681,7 +635,6 @@ const PrepopulatedEngine bing_fr_CA = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   7,
 };
 
@@ -694,7 +647,6 @@ const PrepopulatedEngine bing_fr_CH = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   7,
 };
 
@@ -707,7 +659,6 @@ const PrepopulatedEngine bing_fr_FR = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -720,7 +671,6 @@ const PrepopulatedEngine bing_he_IL = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -733,7 +683,6 @@ const PrepopulatedEngine bing_hr_HR = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -746,7 +695,6 @@ const PrepopulatedEngine bing_hu_HU = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -759,7 +707,6 @@ const PrepopulatedEngine bing_it_IT = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -772,7 +719,6 @@ const PrepopulatedEngine bing_ja_JP = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -785,7 +731,6 @@ const PrepopulatedEngine bing_ko_KR = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -798,7 +743,6 @@ const PrepopulatedEngine bing_lt_LT = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -811,7 +755,6 @@ const PrepopulatedEngine bing_lv_LV = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -824,7 +767,6 @@ const PrepopulatedEngine bing_nb_NO = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -837,7 +779,6 @@ const PrepopulatedEngine bing_nl_BE = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -850,7 +791,6 @@ const PrepopulatedEngine bing_nl_NL = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -863,7 +803,6 @@ const PrepopulatedEngine bing_pl_PL = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -876,7 +815,6 @@ const PrepopulatedEngine bing_pt_BR = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -889,7 +827,6 @@ const PrepopulatedEngine bing_pt_PT = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -902,7 +839,6 @@ const PrepopulatedEngine bing_ro_RO = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -915,7 +851,6 @@ const PrepopulatedEngine bing_ru_RU = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -928,7 +863,6 @@ const PrepopulatedEngine bing_sl_SI = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -941,7 +875,6 @@ const PrepopulatedEngine bing_sk_SK = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -954,7 +887,6 @@ const PrepopulatedEngine bing_sv_SE = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -967,7 +899,6 @@ const PrepopulatedEngine bing_th_TH = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -980,7 +911,6 @@ const PrepopulatedEngine bing_tr_TR = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -993,7 +923,6 @@ const PrepopulatedEngine bing_uk_UA = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -1006,7 +935,6 @@ const PrepopulatedEngine bing_zh_CN = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -1019,7 +947,6 @@ const PrepopulatedEngine bing_zh_HK = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -1032,7 +959,6 @@ const PrepopulatedEngine bing_zh_TW = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   NULL,
   SEARCH_ENGINE_BING,
-  IDR_SEARCH_ENGINE_LOGO_BING,
   3,
 };
 
@@ -1045,7 +971,6 @@ const PrepopulatedEngine centrum_cz = {
   NULL,
   NULL,
   SEARCH_ENGINE_CENTRUM,
-  IDR_SEARCH_ENGINE_LOGO_CENTRUM,
   26,
 };
 
@@ -1058,7 +983,6 @@ const PrepopulatedEngine centrum_sk = {
   NULL,
   NULL,
   SEARCH_ENGINE_CENTRUM,
-  IDR_SEARCH_ENGINE_LOGO_CENTRUM,
   26,
 };
 
@@ -1071,7 +995,6 @@ const PrepopulatedEngine daum = {
   L"http://sug.search.daum.net/search_nsuggest?mod=fxjson&q={searchTerms}",
   NULL,
   SEARCH_ENGINE_DAUM,
-  IDR_SEARCH_ENGINE_LOGO_DAUM,
   68,
 };
 
@@ -1084,7 +1007,6 @@ const PrepopulatedEngine delfi_lt = {
   NULL,
   NULL,
   SEARCH_ENGINE_DELFI,
-  IDR_SEARCH_ENGINE_LOGO_DELFI,
   45,
 };
 
@@ -1097,7 +1019,6 @@ const PrepopulatedEngine delfi_lv = {
   NULL,
   NULL,
   SEARCH_ENGINE_DELFI,
-  IDR_SEARCH_ENGINE_LOGO_DELFI,
   45,
 };
 
@@ -1110,7 +1031,6 @@ const PrepopulatedEngine diri = {
   NULL,
   NULL,
   SEARCH_ENGINE_DIRI,
-  IDR_SEARCH_ENGINE_LOGO_DIRI,
   32,
 };
 
@@ -1123,7 +1043,6 @@ const PrepopulatedEngine eniro_fi = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   29,
 };
 
@@ -1136,7 +1055,6 @@ const PrepopulatedEngine eniro_se = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   29,
 };
 
@@ -1149,7 +1067,6 @@ const PrepopulatedEngine fonecta_02_fi = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   46,
 };
 
@@ -1163,7 +1080,6 @@ const PrepopulatedEngine go = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   40,
 };
 
@@ -1176,7 +1092,6 @@ const PrepopulatedEngine goo = {
   NULL,
   NULL,
   SEARCH_ENGINE_GOO,
-  IDR_SEARCH_ENGINE_LOGO_GOO,
   23,
 };
 
@@ -1196,7 +1111,6 @@ const PrepopulatedEngine google = {
       L"{google:instantFieldTrialGroupParameter}"
       L"ie={inputEncoding}&ion=1{searchTerms}",
   SEARCH_ENGINE_GOOGLE,
-  IDR_SEARCH_ENGINE_LOGO_GOOGLE,
   1,
 };
 
@@ -1209,7 +1123,6 @@ const PrepopulatedEngine guruji = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   38,
 };
 
@@ -1222,7 +1135,6 @@ const PrepopulatedEngine hispavista = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   18,
 };
 
@@ -1235,7 +1147,6 @@ const PrepopulatedEngine in = {
   NULL,
   NULL,
   SEARCH_ENGINE_IN,
-  IDR_SEARCH_ENGINE_LOGO_IN,
   54,
 };
 
@@ -1248,7 +1159,6 @@ const PrepopulatedEngine jabse = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   19,
 };
 
@@ -1261,7 +1171,6 @@ const PrepopulatedEngine jubii = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   28,
 };
 
@@ -1274,7 +1183,6 @@ const PrepopulatedEngine kvasir = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   73,
 };
 
@@ -1287,7 +1195,6 @@ const PrepopulatedEngine latne = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   71,
 };
 
@@ -1300,7 +1207,6 @@ const PrepopulatedEngine leit = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   59,
 };
 
@@ -1313,7 +1219,6 @@ const PrepopulatedEngine libero = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   63,
 };
 
@@ -1326,7 +1231,6 @@ const PrepopulatedEngine mail_ru = {
   L"http://suggests.go.mail.ru/chrome?q={searchTerms}",
   NULL,
   SEARCH_ENGINE_MAILRU,
-  IDR_SEARCH_ENGINE_LOGO_MAILRU,
   83,
 };
 
@@ -1339,7 +1243,6 @@ const PrepopulatedEngine maktoob = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   13,
 };
 
@@ -1352,7 +1255,6 @@ const PrepopulatedEngine masrawy = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   14,
 };
 
@@ -1365,7 +1267,6 @@ const PrepopulatedEngine mynet = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   101,
 };
 
@@ -1378,7 +1279,6 @@ const PrepopulatedEngine najdi = {
   NULL,
   NULL,
   SEARCH_ENGINE_NAJDI,
-  IDR_SEARCH_ENGINE_LOGO_NAJDI,
   87,
 };
 
@@ -1391,7 +1291,6 @@ const PrepopulatedEngine nate = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   69,
 };
 
@@ -1406,7 +1305,6 @@ const PrepopulatedEngine naver = {
       L"q={searchTerms}",
   NULL,
   SEARCH_ENGINE_NAVER,
-  IDR_SEARCH_ENGINE_LOGO_NAVER,
   67,
 };
 
@@ -1419,7 +1317,6 @@ const PrepopulatedEngine neti = {
   NULL,
   NULL,
   SEARCH_ENGINE_NETI,
-  IDR_SEARCH_ENGINE_LOGO_NETI,
   44,
 };
 
@@ -1432,7 +1329,6 @@ const PrepopulatedEngine netsprint = {
   NULL,
   NULL,
   SEARCH_ENGINE_NETSPRINT,
-  IDR_SEARCH_ENGINE_LOGO_NETSPRINT,
   30,
 };
 
@@ -1445,7 +1341,6 @@ const PrepopulatedEngine nur_kz = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   20,
 };
 
@@ -1458,7 +1353,6 @@ const PrepopulatedEngine ok = {
   NULL,
   NULL,
   SEARCH_ENGINE_OK,
-  IDR_SEARCH_ENGINE_LOGO_OK,
   6,
 };
 
@@ -1471,7 +1365,6 @@ const PrepopulatedEngine onet = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   75,
 };
 
@@ -1484,7 +1377,6 @@ const PrepopulatedEngine pogodak_rs = {
   NULL,
   NULL,
   SEARCH_ENGINE_POGODAK,
-  IDR_SEARCH_ENGINE_LOGO_POGODAK,
   24,
 };
 
@@ -1497,7 +1389,6 @@ const PrepopulatedEngine rambler = {
   NULL,
   NULL,
   SEARCH_ENGINE_RAMBLER,
-  IDR_SEARCH_ENGINE_LOGO_RAMBLER,
   16,
 };
 
@@ -1510,7 +1401,6 @@ const PrepopulatedEngine rediff = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   37,
 };
 
@@ -1523,7 +1413,6 @@ const PrepopulatedEngine rednano = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   41,
 };
 
@@ -1536,7 +1425,6 @@ const PrepopulatedEngine sanook = {
   NULL,
   NULL,
   SEARCH_ENGINE_SANOOK,
-  IDR_SEARCH_ENGINE_LOGO_SANOOK,
   100,
 };
 
@@ -1549,7 +1437,6 @@ const PrepopulatedEngine sapo = {
   L"http://pesquisa.sapo.pt/livesapo?q={searchTerms}",
   NULL,
   SEARCH_ENGINE_SAPO,
-  IDR_SEARCH_ENGINE_LOGO_SAPO,
   77,
 };
 
@@ -1562,7 +1449,6 @@ const PrepopulatedEngine search_de_CH = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   51,
 };
 
@@ -1575,7 +1461,6 @@ const PrepopulatedEngine search_fr_CH = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   22,
 };
 
@@ -1589,7 +1474,6 @@ const PrepopulatedEngine seznam = {
       L"encoding={inputEncoding}&response_encoding=utf-8",
   NULL,
   SEARCH_ENGINE_SEZNAM,
-  IDR_SEARCH_ENGINE_LOGO_SEZNAM,
   25,
 };
 
@@ -1602,7 +1486,6 @@ const PrepopulatedEngine spray = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   99,
 };
 
@@ -1615,7 +1498,6 @@ const PrepopulatedEngine terra_ar = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   90,
 };
 
@@ -1628,7 +1510,6 @@ const PrepopulatedEngine terra_es = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   90,
 };
 
@@ -1641,7 +1522,6 @@ const PrepopulatedEngine tut = {
   NULL,
   NULL,
   SEARCH_ENGINE_TUT,
-  IDR_SEARCH_ENGINE_LOGO_TUT,
   17,
 };
 
@@ -1654,7 +1534,6 @@ const PrepopulatedEngine uol = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   82,
 };
 
@@ -1667,7 +1546,6 @@ const PrepopulatedEngine virgilio = {
   NULL,
   NULL,
   SEARCH_ENGINE_VIRGILIO,
-  IDR_SEARCH_ENGINE_LOGO_VIRGILIO,
   62,
 };
 
@@ -1680,7 +1558,6 @@ const PrepopulatedEngine walla = {
   NULL,
   NULL,
   SEARCH_ENGINE_WALLA,
-  IDR_SEARCH_ENGINE_LOGO_WALLA,
   55,
 };
 
@@ -1693,7 +1570,6 @@ const PrepopulatedEngine wp = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   76,
 };
 
@@ -1706,7 +1582,6 @@ const PrepopulatedEngine yahoo = {
   L"http://ff.search.yahoo.com/gossip?output=fxjson&command={searchTerms}",
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -1724,7 +1599,6 @@ const PrepopulatedEngine yahoo_ar = {
       L"command={searchTerms}",
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -1738,7 +1612,6 @@ const PrepopulatedEngine yahoo_at = {
   NULL,
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -1753,7 +1626,6 @@ const PrepopulatedEngine yahoo_au = {
       L"command={searchTerms}",
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -1768,7 +1640,6 @@ const PrepopulatedEngine yahoo_br = {
       L"command={searchTerms}",
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -1783,7 +1654,6 @@ const PrepopulatedEngine yahoo_ca = {
       L"command={searchTerms}",
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -1797,7 +1667,6 @@ const PrepopulatedEngine yahoo_ch = {
   NULL,
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -1812,7 +1681,6 @@ const PrepopulatedEngine yahoo_cl = {
       L"command={searchTerms}",
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -1828,7 +1696,6 @@ const PrepopulatedEngine yahoo_cn = {
   NULL,
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -1843,7 +1710,6 @@ const PrepopulatedEngine yahoo_co = {
       L"command={searchTerms}",
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -1858,7 +1724,6 @@ const PrepopulatedEngine yahoo_de = {
       L"command={searchTerms}",
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -1872,7 +1737,6 @@ const PrepopulatedEngine yahoo_dk = {
   NULL,
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -1887,7 +1751,6 @@ const PrepopulatedEngine yahoo_es = {
       L"command={searchTerms}",
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -1901,7 +1764,6 @@ const PrepopulatedEngine yahoo_fi = {
   NULL,
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -1916,7 +1778,6 @@ const PrepopulatedEngine yahoo_fr = {
       L"command={searchTerms}",
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -1933,7 +1794,6 @@ const PrepopulatedEngine yahoo_hk = {
   NULL,
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -1948,7 +1808,6 @@ const PrepopulatedEngine yahoo_id = {
       L"command={searchTerms}",
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -1963,7 +1822,6 @@ const PrepopulatedEngine yahoo_in = {
       L"command={searchTerms}",
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -1978,7 +1836,6 @@ const PrepopulatedEngine yahoo_it = {
       L"command={searchTerms}",
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -1992,7 +1849,6 @@ const PrepopulatedEngine yahoo_jp = {
   NULL,
   NULL,
   SEARCH_ENGINE_YAHOOJP,
-  IDR_SEARCH_ENGINE_LOGO_YAHOOJP,
   2,
 };
 
@@ -2007,7 +1863,6 @@ const PrepopulatedEngine yahoo_kr = {
      L"ei=utf8&eo=utf8&command={searchTerms}",
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -2022,7 +1877,6 @@ const PrepopulatedEngine yahoo_malaysia = {
       L"command={searchTerms}",
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -2037,7 +1891,6 @@ const PrepopulatedEngine yahoo_mx = {
       L"command={searchTerms}",
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -2051,7 +1904,6 @@ const PrepopulatedEngine yahoo_nl = {
   NULL,
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -2065,7 +1917,6 @@ const PrepopulatedEngine yahoo_no = {
   NULL,
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -2080,7 +1931,6 @@ const PrepopulatedEngine yahoo_nz = {
       L"command={searchTerms}",
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -2095,7 +1945,6 @@ const PrepopulatedEngine yahoo_pe = {
       L"command={searchTerms}",
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -2110,7 +1959,6 @@ const PrepopulatedEngine yahoo_ph = {
       L"command={searchTerms}",
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -2124,7 +1972,6 @@ const PrepopulatedEngine yahoo_qc = {
   NULL,
   NULL,
   SEARCH_ENGINE_YAHOOQC,
-  IDR_SEARCH_ENGINE_LOGO_YAHOOQC,
   5,  // Can't be 2 as this has to appear in the Canada list alongside yahoo_ca.
 };
 
@@ -2138,7 +1985,6 @@ const PrepopulatedEngine yahoo_ru = {
   NULL,
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -2152,7 +1998,6 @@ const PrepopulatedEngine yahoo_se = {
   NULL,
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -2167,7 +2012,6 @@ const PrepopulatedEngine yahoo_sg = {
       L"command={searchTerms}",
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -2182,7 +2026,6 @@ const PrepopulatedEngine yahoo_th = {
       L"command={searchTerms}",
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -2198,7 +2041,6 @@ const PrepopulatedEngine yahoo_tw = {
   NULL,
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -2213,7 +2055,6 @@ const PrepopulatedEngine yahoo_uk = {
       L"command={searchTerms}",
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -2228,7 +2069,6 @@ const PrepopulatedEngine yahoo_ve = {
       L"command={searchTerms}",
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -2243,7 +2083,6 @@ const PrepopulatedEngine yahoo_vn = {
       L"command={searchTerms}",
   NULL,
   SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
   2,
 };
 
@@ -2256,7 +2095,6 @@ const PrepopulatedEngine yamli = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  kNoSearchEngineLogo,
   11,
 };
 
@@ -2269,7 +2107,6 @@ const PrepopulatedEngine yandex_ru = {
   L"http://suggest.yandex.net/suggest-ff.cgi?part={searchTerms}",
   NULL,
   SEARCH_ENGINE_YANDEX,
-  IDR_SEARCH_ENGINE_LOGO_YANDEX,
   15,
 };
 
@@ -2282,7 +2119,6 @@ const PrepopulatedEngine yandex_ua = {
   L"http://suggest.yandex.net/suggest-ff.cgi?part={searchTerms}",
   NULL,
   SEARCH_ENGINE_YANDEX,
-  IDR_SEARCH_ENGINE_LOGO_YANDEX,
   15,
 };
 
@@ -2295,7 +2131,6 @@ const PrepopulatedEngine zoznam = {
   NULL,
   NULL,
   SEARCH_ENGINE_ZOZNAM,
-  IDR_SEARCH_ENGINE_LOGO_ZOZNAM,
   85,
 };
 
@@ -3355,7 +3190,6 @@ TemplateURL* MakePrepopulatedTemplateURL(const wchar_t* name,
                                          const wchar_t* instant_url,
                                          const char* encoding,
                                          SearchEngineType search_engine_type,
-                                         int logo_id,
                                          int id) {
   TemplateURL* new_turl = new TemplateURL();
   new_turl->SetURL(WideToUTF8(search_url), 0, 0);
@@ -3378,7 +3212,6 @@ TemplateURL* MakePrepopulatedTemplateURL(const wchar_t* name,
   turl_encodings.push_back(encoding);
   new_turl->set_input_encodings(turl_encodings);
   new_turl->set_search_engine_type(search_engine_type);
-  new_turl->set_logo_id(logo_id);
   new_turl->SetPrepopulateId(id);
   return new_turl;
 }
@@ -3401,7 +3234,6 @@ void GetPrepopulatedTemplateFromPrefs(PrefService* prefs,
   std::string favicon_url;
   std::string encoding;
   int search_engine_type;
-  int logo_id;
   int id;
 
   size_t num_engines = list->GetSize();
@@ -3418,7 +3250,6 @@ void GetPrepopulatedTemplateFromPrefs(PrefService* prefs,
         engine->Get("encoding", &val) && val->GetAsString(&encoding) &&
         engine->Get("search_engine_type", &val) && val->GetAsInteger(
             &search_engine_type) &&
-        engine->Get("logo_id", &val) && val->GetAsInteger(&logo_id) &&
         engine->Get("id", &val) && val->GetAsInteger(&id)) {
       // These next fields are not allowed to be empty.
       if (search_url.empty() || favicon_url.empty() || encoding.empty())
@@ -3438,7 +3269,6 @@ void GetPrepopulatedTemplateFromPrefs(PrefService* prefs,
         UTF8ToWide(instant_url).c_str(),
         encoding.c_str(),
         static_cast<SearchEngineType>(search_engine_type),
-        logo_id,
         id));
   }
 }
@@ -3454,7 +3284,6 @@ TemplateURL* MakePrepopulateTemplateURLFromPrepopulateEngine(
                                      engine.instant_url,
                                      engine.encoding,
                                      engine.search_engine_type,
-                                     engine.logo_id,
                                      engine.id);
 }
 
@@ -3522,7 +3351,7 @@ TemplateURL* GetEngineForOrigin(PrefService* prefs, const GURL& url_to_find) {
   GURL origin_to_find = url_to_find.GetOrigin();
 
   // Let's first try to find the url in the defaults. (In case the name
-  // of logo is different for the current locale versus others.)
+  // is different for the current locale versus others.)
   ScopedVector<TemplateURL> loaded_urls;
   size_t default_search_index;
   GetPrepopulatedEngines(prefs, &loaded_urls.get(), &default_search_index);
@@ -3545,17 +3374,6 @@ TemplateURL* GetEngineForOrigin(PrefService* prefs, const GURL& url_to_find) {
       return MakePrepopulateTemplateURLFromPrepopulateEngine(*kAllEngines[i]);
   }
   return NULL;
-}
-
-int GetSearchEngineLogo(const GURL& url_to_find) {
-  GURL origin_to_find = url_to_find.GetOrigin();
-  for (size_t i = 0; i < arraysize(kAllEngines); ++i) {
-    std::string url_utf8_string(ToUTF8(kAllEngines[i]->search_url));
-    GURL url(url_utf8_string);
-    if (origin_to_find == url.GetOrigin())
-      return kAllEngines[i]->logo_id;
-  }
-  return kNoSearchEngineLogo;
 }
 
 TemplateURL* FindPrepopulatedEngine(const std::string& search_url) {

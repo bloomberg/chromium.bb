@@ -153,7 +153,7 @@ void TemplateURLFetcher::RequestDelegate::OnURLFetchComplete(
 void TemplateURLFetcher::RequestDelegate::AddSearchProvider() {
   DCHECK(template_url_.get());
   if (provider_type_ != AUTODETECTED_PROVIDER || keyword_.empty()) {
-    // Generate new keyword from URL in OSDD for none autodetected case.
+    // Generate new keyword from URL in OSDD for non-autodetected case.
     // Previous keyword was generated from URL where OSDD was placed and
     // it gives wrong result when OSDD is located on third party site that
     // has nothing in common with search engine in OSDD.
@@ -178,43 +178,12 @@ void TemplateURLFetcher::RequestDelegate::AddSearchProvider() {
 
     existing_url = NULL;
 
-    // Try to generate a keyword automatically when we are setting the default
-    // provider. The keyword isn't as important in this case.
-    if (provider_type_ == EXPLICIT_DEFAULT_PROVIDER) {
-      // The loop numbers are arbitrary and are simply a strong effort.
-      string16 new_keyword;
-      for (int i = 0; i < 100; ++i) {
-        // Concatenate a number at end of the keyword and try that.
-        new_keyword = keyword_;
-        // Try the keyword alone the first time
-        if (i > 0)
-          new_keyword.append(base::IntToString16(i));
-        if (!model->GetTemplateURLForKeyword(new_keyword) ||
-            model->CanReplaceKeyword(new_keyword,
-                                     GURL(template_url_->url()->url()),
-                                     &existing_url)) {
-          break;
-        }
-        new_keyword.clear();
-        existing_url = NULL;
-      }
-
-      if (new_keyword.empty()) {
-        // A keyword could not be found. This user must have a lot of numerical
-        // keywords built up.
-        fetcher_->RequestCompleted(this);
-        // WARNING: RequestCompleted deletes us.
-        return;
-      }
-      keyword_ = new_keyword;
-    } else {
-      // If we're coming from JS (neither autodetected nor failure to load the
-      // template URL model) and this URL already exists in the model, we bring
-      // up the EditKeywordController to edit it.  This is helpful feedback in
-      // the case of clicking a button twice, and annoying in the case of a
-      // page that calls AddSearchProvider() in JS without a user action.
-      keyword_.clear();
-    }
+    // If we're coming from JS (neither autodetected nor failure to load the
+    // template URL model) and this URL already exists in the model, we bring up
+    // the EditKeywordController to edit it.  This is helpful feedback in the
+    // case of clicking a button twice, and annoying in the case of a page that
+    // calls AddSearchProvider() in JS without a user action.
+    keyword_.clear();
   }
 
   if (existing_url)
@@ -247,9 +216,8 @@ void TemplateURLFetcher::RequestDelegate::AddSearchProvider() {
                                            fetcher_->profile());
       break;
 
-    case EXPLICIT_DEFAULT_PROVIDER:
-      callbacks_->ConfirmSetDefaultSearchProvider(template_url_.release(),
-                                                  fetcher_->profile());
+    default:
+      NOTREACHED();
       break;
   }
 
@@ -285,9 +253,10 @@ void TemplateURLFetcher::ScheduleDownload(
   if (!url_model)
     return;
 
-  // Avoid certain checks for the default provider because we'll do the load
-  // and try to brute force a unique keyword for it.
-  if (provider_type != TemplateURLFetcher::EXPLICIT_DEFAULT_PROVIDER) {
+  // For a JS-added OSDD, the provided keyword is irrelevant because we will
+  // generate a keyword later from the OSDD content.  For the autodetected case,
+  // we need a valid keyword up front.
+  if (provider_type == TemplateURLFetcher::AUTODETECTED_PROVIDER) {
     if (!url_model->loaded()) {
       url_model->Load();
       return;
@@ -305,13 +274,7 @@ void TemplateURLFetcher::ScheduleDownload(
   // Make sure we aren't already downloading this request.
   for (std::vector<RequestDelegate*>::iterator i = requests_->begin();
        i != requests_->end(); ++i) {
-    bool keyword_or_osdd_match = (*i)->url() == osdd_url ||
-        (*i)->keyword() == keyword;
-    bool same_type_or_neither_is_default =
-        (*i)->provider_type() == provider_type ||
-        ((*i)->provider_type() != EXPLICIT_DEFAULT_PROVIDER &&
-         provider_type != EXPLICIT_DEFAULT_PROVIDER);
-    if (keyword_or_osdd_match && same_type_or_neither_is_default)
+    if ((*i)->url() == osdd_url || (*i)->keyword() == keyword)
       return;
   }
 

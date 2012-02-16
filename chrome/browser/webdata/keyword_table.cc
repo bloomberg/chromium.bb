@@ -78,7 +78,7 @@ void BindURLToStatement(const TemplateURL& url, sql::Statement* s) {
                 std::string());
   s->BindInt(11, url.prepopulate_id());
   s->BindInt(12, url.autogenerate_keyword() ? 1 : 0);
-  s->BindInt(13, url.logo_id());
+  s->BindInt(13, 0);
   s->BindBool(14, url.created_by_policy());
   s->BindString(15, url.instant_url() ? url.instant_url()->url() :
                 std::string());
@@ -560,8 +560,6 @@ void KeywordTable::GetURLFromStatement(
   url->SetPrepopulateId(s.ColumnInt(12));
 
   url->set_autogenerate_keyword(s.ColumnInt(13) == 1);
-
-  url->set_logo_id(s.ColumnInt(14));
 
   url->set_created_by_policy(s.ColumnBool(15));
 

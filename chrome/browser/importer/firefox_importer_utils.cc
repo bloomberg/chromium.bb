@@ -219,8 +219,6 @@ void ParseSearchEnginesFromXMLFiles(const std::vector<FilePath>& xml_files,
       GURL gurl = GURL(url);
       template_url->set_keyword(
           TemplateURLService::GenerateKeyword(gurl, false));
-      template_url->set_logo_id(
-          TemplateURLPrepopulateData::GetSearchEngineLogo(gurl));
       template_url->set_show_in_default_list(true);
       search_engine_for_url[url] = template_url;
       if (!default_turl)

@@ -44,7 +44,7 @@ class Statement;
 //   suggest_url
 //   prepopulate_id         See TemplateURL::prepopulate_id.
 //   autogenerate_keyword
-//   logo_id                See TemplateURL::logo_id
+//   logo_id                Deprecated, to be removed; see crbug.com/113248.
 //   created_by_policy      See TemplateURL::created_by_policy.  This was added
 //                          in version 26.
 //   instant_url            See TemplateURL::instant_url.  This was added
