@@ -481,7 +481,7 @@ def main(args):
   arch = 'x86'
 
   builder_name = os.getenv('BUILDBOT_BUILDERNAME','')
-  if builder_name.find('pnacl') >= 0 and builder_name.find('pnacl') >= 0:
+  if builder_name.find('pnacl') >= 0 and builder_name.find('sdk') >= 0:
     options.pnacl = True
 
   if options.pnacl:
@@ -497,6 +497,7 @@ def main(args):
   skip_build = skip
   skip_tar = skip or options.skip_tar
 
+
   if options.examples: skip_examples = False
   if options.update: skip_update = False
 
@@ -510,6 +511,9 @@ def main(args):
     pepper_ver = options.release
   print 'Building PEPPER %s at %s' % (pepper_ver, clnumber)
 
+  if not skip_build:
+    BuildStep('Rerun hooks to get toolchains')
+    Run(['gclient', 'runhooks'], cwd=SRC_DIR, shell=True)
 
   BuildStep('Clean Pepper Dir')
   pepperdir = os.path.join(SRC_DIR, 'out', 'pepper_' + pepper_ver)
