@@ -11,6 +11,7 @@
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/size.h"
 
 // This class is responsible for managing rendering surfaces exposed to the
 // GPU process. Every surface gets registered to this class, and gets an ID.
@@ -56,6 +57,19 @@ class GpuSurfaceTracker {
   // Gets the native handle for the given surface.
   // Note: This is an O(log N) lookup.
   gfx::GLSurfaceHandle GetSurfaceHandle(int surface_id);
+
+#if defined(OS_WIN) && !defined(USE_AURA)
+  // This is a member of GpuSurfaceTracker because it holds the lock for its
+  // duration. This prevents the AcceleratedSurface that it posts to from being
+  // destroyed by the main thread during that time. This function is only called
+  // on the IO thread. This function only posts tasks asynchronously. If it
+  // were to synchronously call the UI thread, there would be a possiblity of
+  // deadlock.
+  void AsyncPresentAndAcknowledge(int surface_id,
+                                  const gfx::Size& size,
+                                  int64 surface_handle,
+                                  const base::Closure& completion_task);
+#endif
 
   // Gets the global instance of the surface tracker. Identical to Get(), but
   // named that way for the implementation of Singleton.

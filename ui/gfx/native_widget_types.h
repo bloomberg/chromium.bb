@@ -97,6 +97,8 @@ class ChromeView;
 #endif
 class SkBitmap;
 
+class AcceleratedSurface;
+
 namespace gfx {
 
 #if defined(USE_AURA)
@@ -261,7 +263,8 @@ struct GLSurfaceHandle {
       : handle(kNullPluginWindow),
         transport(false),
         parent_client_id(0),
-        parent_context_id(0) {
+        parent_context_id(0),
+        accelerated_surface(NULL) {
     parent_texture_id[0] = 0;
     parent_texture_id[1] = 0;
   }
@@ -269,7 +272,8 @@ struct GLSurfaceHandle {
       : handle(handle_),
         transport(transport_),
         parent_client_id(0),
-        parent_context_id(0) {
+        parent_context_id(0),
+        accelerated_surface(NULL) {
     parent_texture_id[0] = 0;
     parent_texture_id[1] = 0;
   }
@@ -279,6 +283,10 @@ struct GLSurfaceHandle {
   uint32 parent_client_id;
   uint32 parent_context_id;
   uint32 parent_texture_id[2];
+
+  // This member does not get serialized and will be null when the
+  // GPUSurfaceHandle is deserialied.
+  AcceleratedSurface* accelerated_surface;
 };
 
 // AcceleratedWidget provides a surface to compositors to paint pixels.
