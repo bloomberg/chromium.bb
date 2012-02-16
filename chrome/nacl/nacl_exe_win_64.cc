@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,9 +48,7 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t*, int) {
   base::AtExitManager exit_manager;
   CommandLine::Init(0, NULL);
 
-  wchar_t path[MAX_PATH];
-  ::GetModuleFileNameW(NULL, path, MAX_PATH);
-  InitCrashReporterWithDllPath(std::wstring(path));
+  InitCrashReporter();
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   std::string process_type =

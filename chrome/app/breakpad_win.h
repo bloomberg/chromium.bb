@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,9 +12,9 @@
 // The maximum number of 64-char URL chunks we will report.
 static const int kMaxUrlChunks = 8;
 
-// Calls InitCrashReporterThread in it's own thread for the browser process
+// Calls InitCrashReporterThread in its own thread for the browser process
 // or directly for the plugin and renderer process.
-void InitCrashReporterWithDllPath(const std::wstring& dll_path);
+void InitCrashReporter();
 
 // Intercepts a crash but does not process it, just ask if we want to restart
 // the browser or not.

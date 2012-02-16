@@ -197,11 +197,11 @@ void SetPluginPath(const std::wstring& path) {
 
 // Returns the custom info structure based on the dll in parameter and the
 // process type.
-google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& dll_path,
+google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
                                                  const std::wstring& type,
                                                  const std::wstring& channel) {
   scoped_ptr<FileVersionInfo>
-      version_info(FileVersionInfo::CreateFileVersionInfo(FilePath(dll_path)));
+      version_info(FileVersionInfo::CreateFileVersionInfo(FilePath(exe_path)));
 
   std::wstring version, product;
   std::wstring special_build;
@@ -329,7 +329,7 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& dll_path,
 // Contains the information needed by the worker thread.
 struct CrashReporterInfo {
   google_breakpad::CustomClientInfo* custom_info;
-  std::wstring dll_path;
+  std::wstring exe_path;
   std::wstring process_type;
 };
 
@@ -610,7 +610,7 @@ static DWORD __stdcall InitCrashReporterThread(void* param) {
       reinterpret_cast<CrashReporterInfo*>(param));
 
   bool is_per_user_install =
-      InstallUtil::IsPerUserInstall(info->dll_path.c_str());
+      InstallUtil::IsPerUserInstall(info->exe_path.c_str());
 
   std::wstring channel_string;
   GoogleUpdateSettings::GetChromeChannelAndModifiers(!is_per_user_install,
@@ -618,7 +618,7 @@ static DWORD __stdcall InitCrashReporterThread(void* param) {
 
   // GetCustomInfo can take a few milliseconds to get the file information, so
   // we do it here so it can run in a separate thread.
-  info->custom_info = GetCustomInfo(info->dll_path, info->process_type,
+  info->custom_info = GetCustomInfo(info->exe_path, info->process_type,
                                     channel_string);
 
   google_breakpad::ExceptionHandler::MinidumpCallback callback = NULL;
@@ -746,7 +746,7 @@ void InitDefaultCrashCallback(LPTOP_LEVEL_EXCEPTION_FILTER filter) {
   previous_filter = SetUnhandledExceptionFilter(filter);
 }
 
-void InitCrashReporterWithDllPath(const std::wstring& dll_path) {
+void InitCrashReporter() {
   const CommandLine& command = *CommandLine::ForCurrentProcess();
   if (!command.HasSwitch(switches::kDisableBreakpad)) {
     // Disable the message box for assertions.
@@ -759,7 +759,10 @@ void InitCrashReporterWithDllPath(const std::wstring& dll_path) {
     if (info->process_type.empty())
       info->process_type = L"browser";
 
-    info->dll_path = dll_path;
+    wchar_t exe_path[MAX_PATH];
+    exe_path[0] = 0;
+    GetModuleFileNameW(NULL, exe_path, MAX_PATH);
+    info->exe_path = exe_path;
 
     // If this is not the browser, we can't be sure that we will be able to
     // initialize the crash_handler in another thread, so we run it right away.

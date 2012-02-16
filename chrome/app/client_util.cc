@@ -413,7 +413,7 @@ int MainDllLoader::Launch(HINSTANCE instance,
   scoped_ptr<base::Environment> env(base::Environment::Create());
   env->SetVar(chrome::kChromeVersionEnvVar, WideToUTF8(version));
 
-  InitCrashReporterWithDllPath(file);
+  InitCrashReporter();
   OnBeforeLaunch(file);
 
   DLL_MAIN entry_point =
