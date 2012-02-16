@@ -91,8 +91,10 @@
             'HAVE_AV_CONFIG_H',
             '_POSIX_C_SOURCE=200112',
             '_XOPEN_SOURCE=600',
+            'PIC',
           ],
           'cflags': [
+            '-fPIC',
             '-fomit-frame-pointer',
           ],
           'includes': [
@@ -139,25 +141,10 @@
             ['target_arch == "ia32"', {
               'cflags!': [
                 # Turn off valgrind build option that breaks ffmpeg builds.
-                # Allows config.h HAVE_EBP_AVAILABLE 1 and HAVE_EBX_AVAILABLE 1
                 '-fno-omit-frame-pointer',
               ],
             }],  # target_arch == "ia32"
-            ['target_arch == "x64"', {
-              # x64 requires PIC for shared libraries. This is opposite
-              # of ia32 where due to a slew of inline assembly using ebx,
-              # FFmpeg CANNOT be built with PIC.
-              'defines': [
-                'PIC',
-              ],
-              'cflags': [
-                '-fPIC',
-              ],
-            }],  # target_arch == "x64"
             ['target_arch == "arm"', {
-              'defines': [
-                'PIC',
-              ],
               # TODO(ihf): See the long comment in build_ffmpeg.sh
               # We want to be consistent with CrOS and have configured
               # ffmpeg for thumb. Protect yourself from -marm.
@@ -165,7 +152,6 @@
                 '-marm',
               ],
               'cflags': [
-                '-fPIC',
                 '-mthumb',
                 '-march=armv7-a',
                 '-mtune=cortex-a8',
@@ -258,6 +244,9 @@
               ],
             }],
             ['OS == "mac"', {
+              'defines': [
+                '_DARWIN_C_SOURCE',
+              ],
               'conditions': [
                 ['mac_breakpad == 1', {
                   'variables': {
@@ -273,15 +262,14 @@
               },
               'xcode_settings': {
                 'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',  # No -fvisibility=hidden
-                'GCC_DYNAMIC_NO_PIC': 'YES',         # -mdynamic-no-pic
-                                                     # (equiv -fno-PIC)
                 'DYLIB_INSTALL_NAME_BASE': '@loader_path',
                 'LIBRARY_SEARCH_PATHS': [
                   '<(shared_generated_dir)'
                 ],
                 'OTHER_LDFLAGS': [
-                  # This is needed because FFmpeg cannot be built as PIC, and
-                  # thus we need to instruct the linker to allow relocations
+                  # This is needed because even though FFmpeg now builds with
+                  # -fPIC, it's not quite a complete PIC build, only partial :(
+                  # Thus we need to instruct the linker to allow relocations
                   # for read-only segments for this target to be able to
                   # generated the shared library on Mac.
                   #

@@ -13,18 +13,7 @@
 #   error: can't find a register in class ‘GENERAL_REGS’ while reloading ‘asm’
 #
 # This modification should only be required on ia32, and not x64.
-#
-# Note that HAVE_EBX_AVAILABLE is another flag available in config.h.  One would
-# think that setting this to 0 would allow for ffmpeg to be built with -fPIC.
-# However, not all the assembly blocks requiring 6 registers are excluded by
-# this flag.
 
 set -e
 
-sed -i.orig -e '
-/HAVE_EBP_AVAILABLE/ {
-c\
-#define HAVE_EBP_AVAILABLE 0
-}
-' \
-$1
+sed -i.orig -e 's/HAVE_EBP_AVAILABLE 1/HAVE_EBP_AVAILABLE 0/g' $1

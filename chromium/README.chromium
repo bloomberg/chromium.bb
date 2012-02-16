@@ -185,27 +185,23 @@ Here is a list of gotchas that have shown up.
        'GENERAL_REGS' while reloading 'asm'
        cabac.h:527: error: 'asm' operand has impossible constraints
 
-  2) On ia32, FFmpeg cannot be built with -fPIC, again due to assembly
-     issues. There may be a workaround, but the performance impact is
-     unknown.
-
-  3) Sometimes, with -O0, invalid code will be exposed because dead-branch
+  2) Sometimes, with -O0, invalid code will be exposed because dead-branch
      pruning is disabled in gcc.  This can manifest itself as strange link
      issues or compile issues.  Be careful to read all warnings in this case.
 
-  4) Since config.h is generated via ./configure, the generated file will
+  3) Since config.h is generated via ./configure, the generated file will
      be sensitive to the configuration of the machine it was produced on.
      In particular, yasm does not seem to always be detected if
      cross-compiling for 32-bit on a 64-bit machine. Since yasm is built in
      tree, make sure to force things with --enable-yasm.
 
-  5) yasm needs to be installed on mac and windows if not already there.
+  4) yasm needs to be installed on mac and windows if not already there.
 
-  6) Similar to issue #4, ./configure may detect the presence of SDL and
+  5) Similar to issue #4, ./configure may detect the presence of SDL and
      adjust config.h accordingly. This is harmless because all the SDL
      related code has been disabled in our configuration.
 
-  7) On ia32, we want to be able to compile with WITHOUT -fomit-frame-pointer
+  6) On Mac ia32, we want to be able to compile WITHOUT -fomit-frame-pointer
      (so breakpad can function).  To do this, we need to disable the use of the
      EBP register, otherwise some of FFmpeg's inline assembly will cause
      compilation errors similar to gotcha #1.  For more details, see the file
@@ -321,9 +317,7 @@ Detailed Directions:
      of output.  If there is more than one, figure out if the differences
      in compiler flags are significant, and then use your best judgment.
 
-     Look at gotcha #2 in for notes about the -fPIC flag in particular.
-
-  8) Examine the output from step 7 and update the compiler flags in
+  8) Examine the output from step 6 and update the compiler flags in
      ffmpeg.gyp. For easier cut/paste, append the following to the previous
      command line to isolate each flag on its own line and add
      single-quotes:

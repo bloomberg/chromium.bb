@@ -12,10 +12,4 @@
 # not yet used there.
 set -e
 
-sed -i.orig -e '
-/HAVE_POSIX_MEMALIGN/ {
-c\
-#define HAVE_POSIX_MEMALIGN 0
-}
-' \
-$1
+sed -i.orig -e 's/HAVE_POSIX_MEMALIGN 1/HAVE_POSIX_MEMALIGN 0/g' $1

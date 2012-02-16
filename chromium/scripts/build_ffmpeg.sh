@@ -24,6 +24,9 @@ if [ "$3" = "" -o "$4" != "" ]; then
   echo " linux arm/arm-neon should be run inside of CrOS chroot."
   echo " mac and win have to be run on Mac and Windows 7 (under mingw)."
   echo
+  echo " mac - ensure the Chromium (not Apple) version of clang is in the path,"
+  echo " usually found under src/third_party/llvm-build/Release+Asserts/bin"
+  echo
   echo "The path should be absolute and point at Chromium's copy of FFmpeg."
   echo "This corresponds to:"
   echo "  chrome/trunk/deps/third_party/ffmpeg"
@@ -157,17 +160,13 @@ function build {
 
   # Configure and check for exit status.
   echo "Configuring $CONFIG..."
-  echo "$FFMPEG_PATH/configure $*"
-  $FFMPEG_PATH/configure $*
+  CMD="$FFMPEG_PATH/configure $*"
+  echo $CMD
+  eval $CMD
 
   if [ ! -f config.h ]; then
     echo "Configure failed!"
     exit 1
-  fi
-
-  if [ $TARGET_ARCH = "ia32" ]; then
-    echo $FFMPEG_PATH/chromium/scripts/munge_config_optimizations.sh config.h
-    $FFMPEG_PATH/chromium/scripts/munge_config_optimizations.sh config.h
   fi
 
   # TODO(ihf): Remove munge_config_posix_memalign.sh when
@@ -176,8 +175,17 @@ function build {
   # in OSX 10.6 (configure finds it) but we can't use it yet. Just check
   # common.gypi for 'mac_deployment_target%': '10.5'.
   if [ $TARGET_OS = "mac" ]; then
-    echo $FFMPEG_PATH/chromium/scripts/munge_config_posix_memalign.sh config.h
+    # Required to get Mac ia32 builds compiling with -fno-omit-frame-pointer,
+    # which is required for accurate stack traces.  See http://crbug.com/115170.
+    if [ $TARGET_ARCH = "ia32" ]; then
+      echo "Forcing HAVE_EBP_AVAILABLE to 0 in config.h and config.asm"
+      $FFMPEG_PATH/chromium/scripts/munge_config_optimizations.sh config.h
+      $FFMPEG_PATH/chromium/scripts/munge_config_optimizations.sh config.asm
+    fi
+
+    echo "Forcing POSIX_MEMALIGN to 0 in config.h and config.asm"
     $FFMPEG_PATH/chromium/scripts/munge_config_posix_memalign.sh config.h
+    $FFMPEG_PATH/chromium/scripts/munge_config_posix_memalign.sh config.asm
   fi
 
   if [ "$HOST_OS" = "$TARGET_OS" ]; then
@@ -235,7 +243,13 @@ add_flag_common --disable-swscale
 add_flag_common --disable-amd3dnow
 add_flag_common --disable-amd3dnowext
 add_flag_common --enable-shared
-add_flag_common --optflags=-O2
+
+# --optflags doesn't append multiple entries, so set all at once.
+if [[ "$TARGET_OS" = "mac" && "$TARGET_ARCH" = "ia32" ]]; then
+  add_flag_common --optflags="\"-fno-omit-frame-pointer -O2\""
+else
+  add_flag_common --optflags=-O2
+fi
 
 # Common codecs.
 add_flag_common --enable-decoder=theora,vorbis,vp8
@@ -252,8 +266,6 @@ if [ "$TARGET_OS" = "linux" ]; then
     add_flag_common --arch=i686
     add_flag_common --enable-yasm
     add_flag_common --extra-cflags=-m32
-    # Adding fPIC since revision 53745.
-    add_flag_common --extra-cflags=-fPIC
     add_flag_common --extra-ldflags=-m32
   elif [ "$TARGET_ARCH" = "arm" ]; then
     # This if-statement essentially is for chroot tegra2.
@@ -328,6 +340,8 @@ if [ "$TARGET_OS" = "win" ]; then
     echo "merge of config files with new linux ia32 config.h by hand."
     exit
   fi
+else
+  add_flag_common --enable-pic
 fi
 
 # Should be run on Mac.
@@ -338,6 +352,8 @@ if [ "$TARGET_OS" = "mac" ]; then
       add_flag_common --enable-yasm
       add_flag_common --extra-cflags=-m32
       add_flag_common --extra-ldflags=-m32
+      add_flag_common --cc=clang
+      add_flag_common --cxx=clang++
     else
       echo "Error: Unknown TARGET_ARCH=$TARGET_ARCH for TARGET_OS=$TARGET_OS!"
       exit
@@ -347,6 +363,9 @@ if [ "$TARGET_OS" = "mac" ]; then
     echo "merge of config files with new linux ia32 config.h by hand."
     exit
   fi
+  # Configure seems to enable VDA despite --disable-everything if you have
+  # XCode installed, so force disable it.
+  add_flag_common --disable-vda
 fi
 
 # Chromium & ChromiumOS specific configuration.

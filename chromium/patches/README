@@ -17,6 +17,10 @@ ugly/
   testing after roll to ea4037162fb0afa871e5312a7b23c828d2b85066.  See code
   review at https://chromiumcodereview.appspot.com/9373002/ for more details.
 
+59_support_no_omit_frame_pointer_mac.patch
+  dalecurtis: We need to compile with -fno-omit-frame-pointer on ia32 Mac for
+  breakpad support.  See http://crbug.com/115170
+
 from_upstream/
 58_libav_mp3_fixes.patch
   dalecurtis: Cherry-pick of fixes from libav for checked bitstream reader
