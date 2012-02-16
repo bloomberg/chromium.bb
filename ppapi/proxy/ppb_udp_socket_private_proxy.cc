@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,7 +54,8 @@ UDPSocket::~UDPSocket() {
 }
 
 void UDPSocket::SendBind(const PP_NetAddress_Private& addr) {
-  SendToBrowser(new PpapiHostMsg_PPBUDPSocket_Bind(socket_id_, addr));
+  SendToBrowser(new PpapiHostMsg_PPBUDPSocket_Bind(
+      API_ID_PPB_UDPSOCKET_PRIVATE, socket_id_, addr));
 }
 
 void UDPSocket::SendRecvFrom(int32_t num_bytes) {

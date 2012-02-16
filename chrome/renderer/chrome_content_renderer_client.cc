@@ -106,11 +106,6 @@ using content::RenderThread;
 
 namespace {
 
-const char* kPredefinedAllowedSocketOrigins[] = {
-  "okddffdblfhhnmhodogpojmfkjmhinfp",  // Test SSH Client
-  "pnhechapfaindjhompbnflcldabbghjo"   // HTerm App (SSH Client)
-};
-
 static void AppendParams(const std::vector<string16>& additional_names,
                          const std::vector<string16>& additional_values,
                          WebVector<WebString>* existing_names,
@@ -143,18 +138,6 @@ static void AppendParams(const std::vector<string16>& additional_names,
 namespace chrome {
 
 ChromeContentRendererClient::ChromeContentRendererClient() {
-  for (size_t i = 0; i < arraysize(kPredefinedAllowedSocketOrigins); ++i)
-    allowed_socket_origins_.insert(kPredefinedAllowedSocketOrigins[i]);
-
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  std::string allowed_list =
-      command_line.GetSwitchValueASCII(switches::kAllowNaClSocketAPI);
-  if (!allowed_list.empty()) {
-    StringTokenizer t(allowed_list, ",");
-    while (t.GetNext()) {
-      allowed_socket_origins_.insert(t.token());
-    }
-  }
 }
 
 ChromeContentRendererClient::~ChromeContentRendererClient() {
@@ -859,11 +842,6 @@ bool ChromeContentRendererClient::IsOtherExtensionWithWebRequestInstalled() {
 void ChromeContentRendererClient::RegisterPPAPIInterfaceFactories(
     webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager) {
   factory_manager->RegisterFactory(ChromePPAPIInterfaceFactory);
-}
-
-bool ChromeContentRendererClient::AllowSocketAPI(const GURL& url) {
-  return allowed_socket_origins_.find(url.host()) !=
-      allowed_socket_origins_.end();
 }
 
 }  // namespace chrome

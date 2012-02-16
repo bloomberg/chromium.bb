@@ -314,6 +314,10 @@ std::string ShellContentBrowserClient::GetDefaultDownloadName() {
   return "download";
 }
 
+bool ShellContentBrowserClient::AllowSocketAPI(const GURL& url) {
+  return false;
+}
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 int ShellContentBrowserClient::GetCrashSignalFD(
     const CommandLine& command_line) {

@@ -802,11 +802,13 @@ IPC_SYNC_MESSAGE_CONTROL2_1(PpapiHostMsg_PPBTCPSocket_Create,
                             int32 /* routing_id */,
                             uint32 /* plugin_dispatcher_id */,
                             uint32 /* socket_id */)
-IPC_MESSAGE_CONTROL3(PpapiHostMsg_PPBTCPSocket_Connect,
+IPC_MESSAGE_CONTROL4(PpapiHostMsg_PPBTCPSocket_Connect,
+                     int32 /* routing_id */,
                      uint32 /* socket_id */,
                      std::string /* host */,
                      uint16_t /* port */)
-IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBTCPSocket_ConnectWithNetAddress,
+IPC_MESSAGE_CONTROL3(PpapiHostMsg_PPBTCPSocket_ConnectWithNetAddress,
+                     int32 /* routing_id */,
                      uint32 /* socket_id */,
                      PP_NetAddress_Private /* net_addr */)
 IPC_MESSAGE_CONTROL3(PpapiHostMsg_PPBTCPSocket_SSLHandshake,
@@ -827,7 +829,8 @@ IPC_SYNC_MESSAGE_CONTROL2_1(PpapiHostMsg_PPBUDPSocket_Create,
                             int32 /* routing_id */,
                             uint32 /* plugin_dispatcher_id */,
                             uint32 /* socket_id */)
-IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBUDPSocket_Bind,
+IPC_MESSAGE_CONTROL3(PpapiHostMsg_PPBUDPSocket_Bind,
+                     int32 /* routing_id */,
                      uint32 /* socket_id */,
                      PP_NetAddress_Private /* net_addr */)
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBUDPSocket_RecvFrom,

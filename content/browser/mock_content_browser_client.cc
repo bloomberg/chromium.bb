@@ -294,6 +294,10 @@ std::string MockContentBrowserClient::GetDefaultDownloadName() {
   return std::string();
 }
 
+bool MockContentBrowserClient::AllowSocketAPI(const GURL& url) {
+  return false;
+}
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 int MockContentBrowserClient::GetCrashSignalFD(
     const CommandLine& command_line) {

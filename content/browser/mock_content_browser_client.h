@@ -147,6 +147,7 @@ class MockContentBrowserClient : public ContentBrowserClient {
   virtual void ClearCookies(RenderViewHost* rvh)  OVERRIDE;
   virtual FilePath GetDefaultDownloadDirectory() OVERRIDE;
   virtual std::string GetDefaultDownloadName() OVERRIDE;
+  virtual bool AllowSocketAPI(const GURL& url) OVERRIDE;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   virtual int GetCrashSignalFD(const CommandLine& command_line) OVERRIDE;

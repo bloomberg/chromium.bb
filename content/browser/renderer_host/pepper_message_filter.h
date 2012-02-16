@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,11 +40,15 @@ class HostResolver;
 // handle requests that out-of-process plugins send directly to the browser.
 class PepperMessageFilter : public content::BrowserMessageFilter {
  public:
-  explicit PepperMessageFilter(content::ResourceContext* resource_context);
+  PepperMessageFilter(int process_id,
+                      content::ResourceContext* resource_context);
   explicit PepperMessageFilter(net::HostResolver* host_resolver);
   virtual ~PepperMessageFilter();
 
   // content::BrowserMessageFilter methods.
+  virtual void OverrideThreadForMessage(
+      const IPC::Message& message,
+      content::BrowserThread::ID* thread) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
@@ -95,8 +99,12 @@ class PepperMessageFilter : public content::BrowserMessageFilter {
   void OnTCPCreate(int32 routing_id,
                    uint32 plugin_dispatcher_id,
                    uint32* socket_id);
-  void OnTCPConnect(uint32 socket_id, const std::string& host, uint16_t port);
-  void OnTCPConnectWithNetAddress(uint32 socket_id,
+  void OnTCPConnect(int32 routing_id,
+                    uint32 socket_id,
+                    const std::string& host,
+                    uint16_t port);
+  void OnTCPConnectWithNetAddress(int32 routing_id,
+                                  uint32 socket_id,
                                   const PP_NetAddress_Private& net_addr);
   void OnTCPSSLHandshake(uint32 socket_id,
                          const std::string& server_name,
@@ -108,18 +116,40 @@ class PepperMessageFilter : public content::BrowserMessageFilter {
   void OnUDPCreate(int32 routing_id,
                    uint32 plugin_dispatcher_id,
                    uint32* socket_id);
-  void OnUDPBind(uint32 socket_id, const PP_NetAddress_Private& addr);
+  void OnUDPBind(int32 routing_id,
+                 uint32 socket_id,
+                 const PP_NetAddress_Private& addr);
   void OnUDPRecvFrom(uint32 socket_id, int32_t num_bytes);
   void OnUDPSendTo(uint32 socket_id,
                    const std::string& data,
                    const PP_NetAddress_Private& addr);
   void OnUDPClose(uint32 socket_id);
 
+  void DoTCPConnect(bool allowed,
+                    int32 routing_id,
+                    uint32 socket_id,
+                    const std::string& host,
+                    uint16_t port);
+  void DoTCPConnectWithNetAddress(bool allowed,
+                                  int32 routing_id,
+                                  uint32 socket_id,
+                                  const PP_NetAddress_Private& net_addr);
+  void DoUDPBind(bool allowed,
+                 int32 routing_id,
+                 uint32 socket_id,
+                 const PP_NetAddress_Private& addr);
+
   // Callback when the font list has been retrieved on a background thread.
   void GetFontFamiliesComplete(IPC::Message* reply_msg,
                                scoped_refptr<content::FontListResult> result);
 
   uint32 GenerateSocketID();
+
+  // Return true if render with given ID can use socket APIs.
+  bool CanUseSocketAPIs(int32 render_id);
+
+  // Render process ID.
+  int process_id_;
 
   // When non-NULL, this should be used instead of the host_resolver_.
   content::ResourceContext* const resource_context_;

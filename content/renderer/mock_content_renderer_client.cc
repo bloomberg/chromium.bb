@@ -136,8 +136,4 @@ void MockContentRendererClient::RegisterPPAPIInterfaceFactories(
     webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager) {
 }
 
-bool MockContentRendererClient::AllowSocketAPI(const GURL& url) {
-  return false;
-}
-
 }  // namespace content

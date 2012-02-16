@@ -122,8 +122,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   virtual void RegisterPPAPIInterfaceFactories(
       webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager) OVERRIDE;
 
-  virtual bool AllowSocketAPI(const GURL& url) OVERRIDE;
-
   SpellCheck* spellcheck() const { return spellcheck_.get(); }
 
   WebKit::WebPlugin* CreatePlugin(
@@ -159,9 +157,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   scoped_ptr<SpellCheck> spellcheck_;
   scoped_ptr<VisitedLinkSlave> visited_link_slave_;
   scoped_ptr<safe_browsing::PhishingClassifierFilter> phishing_classifier_;
-
-  // Set of origins that can use TCP/UDP private APIs from NaCl.
-  std::set<std::string> allowed_socket_origins_;
 };
 
 }  // namespace chrome

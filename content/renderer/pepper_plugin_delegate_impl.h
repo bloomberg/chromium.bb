@@ -453,16 +453,6 @@ class PepperPluginDelegateImpl
   // Implementation of PepperParentContextProvider.
   virtual ContentGLContext* GetParentContextForPlatformContext3D() OVERRIDE;
 
-  // Helper function to check that TCP/UDP private APIs are allowed for current
-  // page. This check actually allows socket usage for NativeClient code only.
-  // It is better to move this check to browser process but Pepper message
-  // filters in browser process have no context about page that sent
-  // the request. Doing this check in render process is safe because NaCl code
-  // is executed in separate NaCl process.
-  // TODO(dpolukhin, yzshen): make the check consistent for in- and out-process
-  // cases and do the check during socket creation in the browser process.
-  bool CanUseSocketAPIs();
-
   MouseLockDispatcher::LockTarget* GetOrCreateLockTargetAdapter(
       webkit::ppapi::PluginInstance* instance);
   void UnSetAndDeleteLockTargetAdapter(webkit::ppapi::PluginInstance* instance);

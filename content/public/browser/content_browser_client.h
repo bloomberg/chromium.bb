@@ -344,6 +344,9 @@ class ContentBrowserClient {
   // else we should do with the file.
   virtual std::string GetDefaultDownloadName() = 0;
 
+  // Returns true if given origin can use TCP/UDP sockets.
+  virtual bool AllowSocketAPI(const GURL& url) = 0;
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Can return an optional fd for crash handling, otherwise returns -1. The
   // passed |command_line| will be used to start the process in question.

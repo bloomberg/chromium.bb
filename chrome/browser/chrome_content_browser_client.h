@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROME_CONTENT_BROWSER_CLIENT_H_
 #pragma once
 
+#include <set>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -15,6 +16,9 @@ namespace chrome {
 
 class ChromeContentBrowserClient : public content::ContentBrowserClient {
  public:
+  ChromeContentBrowserClient();
+  virtual ~ChromeContentBrowserClient();
+
   virtual content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) OVERRIDE;
   virtual content::WebContentsView* CreateWebContentsView(
@@ -141,6 +145,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual void ClearCookies(RenderViewHost* rvh) OVERRIDE;
   virtual FilePath GetDefaultDownloadDirectory() OVERRIDE;
   virtual std::string GetDefaultDownloadName() OVERRIDE;
+  virtual bool AllowSocketAPI(const GURL& url) OVERRIDE;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   virtual int GetCrashSignalFD(const CommandLine& command_line) OVERRIDE;
@@ -153,6 +158,12 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       crypto::CryptoModuleBlockingPasswordDelegate* GetCryptoPasswordDelegate(
           const GURL& url) OVERRIDE;
 #endif
+
+ private:
+  // Set of origins that can use TCP/UDP private APIs from NaCl.
+  std::set<std::string> allowed_socket_origins_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeContentBrowserClient);
 };
 
 }  // namespace chrome

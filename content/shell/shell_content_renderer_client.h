@@ -79,7 +79,6 @@ class ShellContentRendererClient : public ContentRendererClient {
                                       const std::string& value) OVERRIDE;
   virtual void RegisterPPAPIInterfaceFactories(
       webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager) OVERRIDE;
-  virtual bool AllowSocketAPI(const GURL& url) OVERRIDE;
 
  private:
   scoped_ptr<ShellRenderProcessObserver> shell_observer_;

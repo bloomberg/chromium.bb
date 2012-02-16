@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,11 +34,15 @@ class PepperTCPSocket {
                   uint32 socket_id);
   ~PepperTCPSocket();
 
+  int routing_id() { return routing_id_; }
+
   void Connect(const std::string& host, uint16_t port);
   void ConnectWithNetAddress(const PP_NetAddress_Private& net_addr);
   void SSLHandshake(const std::string& server_name, uint16_t server_port);
   void Read(int32 bytes_to_read);
   void Write(const std::string& data);
+
+  void SendConnectACKError();
 
  private:
   enum ConnectionState {
@@ -59,7 +63,6 @@ class PepperTCPSocket {
 
   void StartConnect(const net::AddressList& addresses);
 
-  void SendConnectACKError();
   void SendReadACKError();
   void SendWriteACKError();
   void SendSSLHandshakeACK(bool succeeded);

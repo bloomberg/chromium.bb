@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,12 +33,15 @@ class PepperUDPSocket {
                   uint32 socket_id);
   ~PepperUDPSocket();
 
+  int routing_id() { return routing_id_; }
+
   void Bind(const PP_NetAddress_Private& addr);
   void RecvFrom(int32_t num_bytes);
   void SendTo(const std::string& data, const PP_NetAddress_Private& addr);
 
- private:
   void SendBindACK(bool result);
+
+ private:
   void SendRecvFromACKError();
   void SendSendToACKError();
 

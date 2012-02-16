@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/string_tokenizer.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/breakpad_mac.h"
 #include "chrome/browser/browser_about_handler.h"
@@ -136,6 +137,11 @@ using content::SiteInstance;
 using content::WebContents;
 
 namespace {
+
+const char* kPredefinedAllowedSocketOrigins[] = {
+  "okddffdblfhhnmhodogpojmfkjmhinfp",  // Test SSH Client
+  "pnhechapfaindjhompbnflcldabbghjo"   // HTerm App (SSH Client)
+};
 
 // Handles rewriting Web UI URLs.
 bool HandleWebUI(GURL* url, content::BrowserContext* browser_context) {
@@ -268,6 +274,24 @@ void FillFontFamilyMap(const PrefService* prefs,
 }  // namespace
 
 namespace chrome {
+
+ChromeContentBrowserClient::ChromeContentBrowserClient() {
+  for (size_t i = 0; i < arraysize(kPredefinedAllowedSocketOrigins); ++i)
+    allowed_socket_origins_.insert(kPredefinedAllowedSocketOrigins[i]);
+
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  std::string allowed_list =
+      command_line.GetSwitchValueASCII(switches::kAllowNaClSocketAPI);
+  if (!allowed_list.empty()) {
+    StringTokenizer t(allowed_list, ",");
+    while (t.GetNext()) {
+      allowed_socket_origins_.insert(t.token());
+    }
+  }
+}
+
+ChromeContentBrowserClient::~ChromeContentBrowserClient() {
+}
 
 content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
@@ -640,7 +664,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     static const char* const kSwitchNames[] = {
       switches::kAllowHTTPBackgroundPage,
       switches::kAllowLegacyExtensionManifests,
-      switches::kAllowNaClSocketAPI,
       switches::kAllowScriptingGallery,
       switches::kAppsCheckoutURL,
       switches::kAppsGalleryURL,
@@ -1308,6 +1331,11 @@ FilePath ChromeContentBrowserClient::GetDefaultDownloadDirectory() {
 
 std::string ChromeContentBrowserClient::GetDefaultDownloadName() {
   return l10n_util::GetStringUTF8(IDS_DEFAULT_DOWNLOAD_FILENAME);
+}
+
+bool ChromeContentBrowserClient::AllowSocketAPI(const GURL& url) {
+  return url.is_valid() &&
+      allowed_socket_origins_.find(url.host()) != allowed_socket_origins_.end();
 }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

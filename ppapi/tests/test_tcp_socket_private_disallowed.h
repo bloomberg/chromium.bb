@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,7 @@ class TestTCPSocketPrivateDisallowed : public TestCase {
   virtual void RunTests(const std::string& filter);
 
  private:
-  std::string TestCreate();
+  std::string TestConnect();
 
   const PPB_TCPSocket_Private* tcp_socket_private_interface_;
 };
