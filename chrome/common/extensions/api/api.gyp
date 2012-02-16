@@ -14,7 +14,6 @@
       'variables': {
         'chromium_code': 1,
         'json_schema_files': [
-          'experimental.declarative.json',
           'permissions.json',
           'tabs.json',
           'windows.json',
