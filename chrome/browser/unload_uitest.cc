@@ -402,7 +402,7 @@ TEST_F(UnloadTest, MAYBE_BrowserCloseInfiniteUnloadAlert) {
   LoadUrlAndQuitBrowser(INFINITE_UNLOAD_ALERT_HTML, L"infiniteunloadalert");
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
 // Flakily fails, times out: http://crbug.com/78803
 #define MAYBE_BrowserCloseInfiniteBeforeUnloadAlert \
     DISABLED_BrowserCloseInfiniteBeforeUnloadAlert
