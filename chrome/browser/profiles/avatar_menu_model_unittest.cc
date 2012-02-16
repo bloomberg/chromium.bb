@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,6 +38,10 @@ class AvatarMenuModelTest : public testing::Test {
 
   virtual void SetUp() {
     ASSERT_TRUE(manager_.SetUp());
+#if defined(OS_CHROMEOS)
+    // AvatarMenu and multiple profiles works after user logged in.
+    manager_.SetLoggedIn(true);
+#endif
   }
 
   Browser* browser() { return NULL; }

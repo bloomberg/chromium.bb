@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,6 +55,9 @@ class TestingProfileManager {
   // Deletes the cache instance. This is useful for testing that the cache is
   // properly persisting data.
   void DeleteProfileInfoCache();
+
+  // Sets ProfileManager's logged_in state. This is only useful on ChromeOS.
+  void SetLoggedIn(bool logged_in);
 
   // Helper accessors.
   ProfileManager* profile_manager();

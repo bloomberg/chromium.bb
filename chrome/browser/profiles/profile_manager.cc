@@ -266,6 +266,12 @@ FilePath ProfileManager::GetInitialProfileDir() {
 }
 
 Profile* ProfileManager::GetLastUsedProfile(const FilePath& user_data_dir) {
+#if defined(OS_CHROMEOS)
+  // Use default login profile if user has not logged in yet.
+  if (!logged_in_)
+    return GetDefaultProfile(user_data_dir);
+#endif
+
   FilePath last_used_profile_dir(user_data_dir);
   std::string last_profile_used;
   PrefService* local_state = g_browser_process->local_state();

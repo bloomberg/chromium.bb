@@ -94,6 +94,14 @@ void TestingProfileManager::DeleteTestingProfile(const std::string& name) {
   profile_manager_->profiles_info_.erase(profile->GetPath());
 }
 
+void TestingProfileManager::DeleteProfileInfoCache() {
+  profile_manager_->profile_info_cache_.reset(NULL);
+}
+
+void TestingProfileManager::SetLoggedIn(bool logged_in) {
+  profile_manager_->logged_in_ = logged_in;
+}
+
 ProfileManager* TestingProfileManager::profile_manager() {
   DCHECK(called_set_up_);
   return profile_manager_;
@@ -102,10 +110,6 @@ ProfileManager* TestingProfileManager::profile_manager() {
 ProfileInfoCache* TestingProfileManager::profile_info_cache() {
   DCHECK(called_set_up_);
   return &profile_manager_->GetProfileInfoCache();
-}
-
-void TestingProfileManager::DeleteProfileInfoCache() {
-  profile_manager_->profile_info_cache_.reset(NULL);
 }
 
 void TestingProfileManager::SetUpInternal() {
