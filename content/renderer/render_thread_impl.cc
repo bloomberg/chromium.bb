@@ -174,8 +174,8 @@ RenderThreadImpl::RenderThreadImpl(const std::string& channel_name)
 void RenderThreadImpl::Init() {
   TRACE_EVENT_BEGIN_ETW("RenderThreadImpl::Init", 0, "");
 
-#if defined(OS_MACOSX)
-  // On Mac, the select popups are rendered by the browser.
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+  // On Mac and Android, the select popups are rendered by the browser.
   WebKit::WebView::setUseExternalPopupMenus(true);
 #endif
 
