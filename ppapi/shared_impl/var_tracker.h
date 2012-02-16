@@ -61,6 +61,8 @@ class PPAPI_SHARED_EXPORT VarTracker {
   // Create a new array buffer of size |size_in_bytes|. Return a PP_Var that
   // that references it and has an initial reference-count of 1.
   PP_Var MakeArrayBufferPPVar(uint32 size_in_bytes);
+  // Same as above, but copy the contents of |data| in to the new array buffer.
+  PP_Var MakeArrayBufferPPVar(uint32 size_in_bytes, const void* data);
 
   // Return a vector containing all PP_Vars that are in the tracker. This is
   // to help implement PPB_Testing_Dev.GetLiveVars and should generally not be

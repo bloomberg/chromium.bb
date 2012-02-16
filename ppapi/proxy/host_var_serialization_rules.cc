@@ -35,8 +35,8 @@ PP_Var HostVarSerializationRules::BeginReceiveCallerOwned(
 }
 
 void HostVarSerializationRules::EndReceiveCallerOwned(const PP_Var& var) {
-  if (var.type == PP_VARTYPE_STRING) {
-    // Destroy the string.
+  if (var.type != PP_VARTYPE_OBJECT && var.type >= PP_VARTYPE_STRING) {
+    // Release our reference to the local Var.
     PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(var);
   }
 }

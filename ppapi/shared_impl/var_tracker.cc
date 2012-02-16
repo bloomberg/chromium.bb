@@ -4,6 +4,8 @@
 
 #include "ppapi/shared_impl/var_tracker.h"
 
+#include <string.h>
+
 #include <limits>
 
 #include "base/logging.h"
@@ -161,6 +163,15 @@ PP_Var VarTracker::MakeArrayBufferPPVar(uint32 size_in_bytes) {
   scoped_refptr<ArrayBufferVar> array_buffer(CreateArrayBuffer(size_in_bytes));
   if (!array_buffer)
     return PP_MakeNull();
+  return array_buffer->GetPPVar();
+}
+
+PP_Var VarTracker::MakeArrayBufferPPVar(uint32 size_in_bytes,
+                                        const void* data) {
+  scoped_refptr<ArrayBufferVar> array_buffer(CreateArrayBuffer(size_in_bytes));
+  if (!array_buffer)
+    return PP_MakeNull();
+  memcpy(array_buffer->Map(), data, size_in_bytes);
   return array_buffer->GetPPVar();
 }
 

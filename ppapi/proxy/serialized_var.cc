@@ -5,11 +5,13 @@
 #include "ppapi/proxy/serialized_var.h"
 
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "ipc/ipc_message_utils.h"
 #include "ppapi/proxy/dispatcher.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/ppapi_param_traits.h"
 #include "ppapi/proxy/var_serialization_rules.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var.h"
 
 namespace ppapi {
@@ -116,10 +118,24 @@ void SerializedVar::Inner::WriteToMessage(IPC::Message* m) const {
       m->WriteString(string_var ? *string_var->ptr() : std::string());
       break;
     }
-    case PP_VARTYPE_ARRAY_BUFFER:
-      // TODO(dmichael): Proxy ArrayBuffer.
-      NOTIMPLEMENTED();
+    case PP_VARTYPE_ARRAY_BUFFER: {
+      // TODO(dmichael) in the case of an invalid var ID, it would be nice
+      // to send something to the other side such that a 0 ID would be
+      // generated there. Then the function implementing the interface can
+      // handle the invalid string as if it was in process rather than seeing
+      // what looks like a valid empty ArraryBuffer.
+      ArrayBufferVar* buffer_var = ArrayBufferVar::FromPPVar(var_);
+      if (buffer_var) {
+        // TODO(dmichael): If it wasn't already Mapped, Unmap it. (Though once
+        //                 we use shared memory, this will probably be
+        //                 completely different anyway).
+        m->WriteData(static_cast<const char*>(buffer_var->Map()),
+                     buffer_var->ByteLength());
+      } else {
+        m->WriteData(NULL, 0);
+      }
       break;
+    }
     case PP_VARTYPE_OBJECT:
       m->WriteInt64(var_.value.as_id);
       break;
@@ -174,6 +190,16 @@ bool SerializedVar::Inner::ReadFromMessage(const IPC::Message* m, void** iter) {
       std::string string_from_ipc;
       success = m->ReadString(iter, &string_from_ipc);
       var_ = StringVar::SwapValidatedUTF8StringIntoPPVar(&string_from_ipc);
+      break;
+    }
+    case PP_VARTYPE_ARRAY_BUFFER: {
+      int length = 0;
+      const char* message_bytes = NULL;
+      success = m->ReadData(iter, &message_bytes, &length);
+      if (success) {
+        var_ = PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
+            length, message_bytes);
+      }
       break;
     }
     case PP_VARTYPE_OBJECT:

@@ -491,8 +491,9 @@ void PPB_Instance_Proxy::OnHostMsgClearInputEvents(PP_Instance instance,
     enter.functions()->ClearInputEventRequest(instance, event_classes);
 }
 
-void PPB_Instance_Proxy::OnHostMsgPostMessage(PP_Instance instance,
-                                          SerializedVarReceiveInput message) {
+void PPB_Instance_Proxy::OnHostMsgPostMessage(
+    PP_Instance instance,
+    SerializedVarReceiveInput message) {
   EnterInstanceNoLock enter(instance, false);
   if (enter.succeeded())
     enter.functions()->PostMessage(instance, message.Get(dispatcher()));

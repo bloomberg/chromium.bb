@@ -41,11 +41,11 @@ PP_Var PluginVarSerializationRules::BeginReceiveCallerOwned(
 }
 
 void PluginVarSerializationRules::EndReceiveCallerOwned(const PP_Var& var) {
-  if (var.type == PP_VARTYPE_STRING) {
-    // Destroy the string.
-    var_tracker_->ReleaseVar(var);
-  } else if (var.type == PP_VARTYPE_OBJECT) {
+  if (var.type == PP_VARTYPE_OBJECT) {
     var_tracker_->StopTrackingObjectWithNoReference(var);
+  } else if (var.type >= PP_VARTYPE_STRING) {
+    // Release our reference to the local Var.
+    var_tracker_->ReleaseVar(var);
   }
 }
 
@@ -108,7 +108,7 @@ void PluginVarSerializationRules::EndSendPassRef(const PP_Var& var,
   if (var.type == PP_VARTYPE_OBJECT) {
     var_tracker_->ReleaseHostObject(
         static_cast<PluginDispatcher*>(dispatcher), var);
-  } else if (var.type == PP_VARTYPE_STRING) {
+  } else if (var.type >= PP_VARTYPE_STRING) {
     var_tracker_->ReleaseVar(var);
   }
 }
