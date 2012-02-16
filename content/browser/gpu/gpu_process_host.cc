@@ -409,7 +409,6 @@ void GpuProcessHost::OnChannelConnected(int32 peer_pid) {
 
 void GpuProcessHost::EstablishGpuChannel(
     int client_id,
-    int share_client_id,
     const EstablishChannelCallback& callback) {
   DCHECK(CalledOnValidThread());
   TRACE_EVENT0("gpu", "GpuProcessHostUIShim::EstablishGpuChannel");
@@ -422,7 +421,7 @@ void GpuProcessHost::EstablishGpuChannel(
     return;
   }
 
-  if (Send(new GpuMsg_EstablishChannel(client_id, share_client_id))) {
+  if (Send(new GpuMsg_EstablishChannel(client_id, 0))) {
     channel_requests_.push(callback);
   } else {
     EstablishChannelError(

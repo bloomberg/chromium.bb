@@ -454,8 +454,6 @@
     'browser/renderer_host/gtk_window_utils.h',
     'browser/renderer_host/image_transport_client.cc',
     'browser/renderer_host/image_transport_client.h',
-    'browser/renderer_host/image_transport_factory.cc',
-    'browser/renderer_host/image_transport_factory.h',
     'browser/renderer_host/java/java_bound_object.cc',
     'browser/renderer_host/java/java_bound_object.h',
     'browser/renderer_host/java/java_bridge_channel_host.cc',
@@ -818,8 +816,6 @@
       ],
     }, {
       'sources/': [
-        ['exclude', '^browser/renderer_host/image_transport_factory.cc'],
-        ['exclude', '^browser/renderer_host/image_transport_factory.h'],
         ['exclude', '^browser/renderer_host/render_widget_host_view_aura.cc'],
         ['exclude', '^browser/renderer_host/render_widget_host_view_aura.h'],
       ],

@@ -5,7 +5,6 @@
 #include "ui/gfx/compositor/compositor.h"
 
 #include "base/command_line.h"
-#include "base/threading/thread_restrictions.h"
 #include "third_party/skia/include/images/SkImageEncoder.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositor.h"
@@ -19,6 +18,7 @@
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_surface.h"
 #include "ui/gfx/gl/gl_implementation.h"
+#include "ui/gfx/gl/scoped_make_current.h"
 #include "webkit/glue/webthread_impl.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 
@@ -31,90 +31,82 @@ webkit_glue::WebThreadImpl* g_compositor_thread = NULL;
 
 bool test_compositor_enabled = false;
 
-ui::ContextFactory* g_context_factory = NULL;
-
 }  // anonymous namespace
 
 namespace ui {
 
+SharedResources::SharedResources() : initialized_(false) {
+}
+
+
+SharedResources::~SharedResources() {
+}
+
 // static
-ContextFactory* ContextFactory::GetInstance() {
-  // We leak the shared resources so that we don't race with
+SharedResources* SharedResources::GetInstance() {
+  // We use LeakySingletonTraits so that we don't race with
   // the tear down of the gl_bindings.
-  if (!g_context_factory) {
-    if (test_compositor_enabled) {
-      VLOG(1) << "Using TestSharedResource";
-      g_context_factory = new TestContextFactory();
-    } else {
-      VLOG(1) << "Using DefaultSharedResource";
-      scoped_ptr<DefaultContextFactory> instance(
-          new DefaultContextFactory());
-      if (instance->Initialize())
-        g_context_factory = instance.release();
+  SharedResources* instance = Singleton<SharedResources,
+      LeakySingletonTraits<SharedResources> >::get();
+  if (instance->Initialize()) {
+    return instance;
+  } else {
+    instance->Destroy();
+    return NULL;
+  }
+}
+
+bool SharedResources::Initialize() {
+  if (initialized_)
+    return true;
+
+  {
+    // The following line of code exists soley to disable IO restrictions
+    // on this thread long enough to perform the GL bindings.
+    // TODO(wjmaclean) Remove this when GL initialisation cleaned up.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    if (!gfx::GLSurface::InitializeOneOff() ||
+        gfx::GetGLImplementation() == gfx::kGLImplementationNone) {
+      LOG(ERROR) << "Could not load the GL bindings";
+      return false;
     }
   }
-  return g_context_factory;
-}
 
-// static
-void ContextFactory::SetInstance(ContextFactory* instance) {
-  DCHECK(!g_context_factory);
-  g_context_factory = instance;
-}
-
-TestContextFactory::TestContextFactory() {
-}
-
-TestContextFactory::~TestContextFactory() {
-}
-
-WebKit::WebGraphicsContext3D* TestContextFactory::CreateContext(
-    ui::Compositor* compositor) {
-  ui::TestWebGraphicsContext3D* test_context =
-    new ui::TestWebGraphicsContext3D();
-  test_context->Initialize();
-  return test_context;
-}
-void TestContextFactory::RemoveCompositor(ui::Compositor* compositor) {
-}
-
-DefaultContextFactory::DefaultContextFactory() {
-}
-
-DefaultContextFactory::~DefaultContextFactory() {
-}
-
-bool DefaultContextFactory::Initialize() {
-  // The following line of code exists soley to disable IO restrictions
-  // on this thread long enough to perform the GL bindings.
-  // TODO(wjmaclean) Remove this when GL initialisation cleaned up.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-  if (!gfx::GLSurface::InitializeOneOff() ||
-      gfx::GetGLImplementation() == gfx::kGLImplementationNone) {
-    LOG(ERROR) << "Could not load the GL bindings";
+  surface_ = gfx::GLSurface::CreateOffscreenGLSurface(false, gfx::Size(1, 1));
+  if (!surface_.get()) {
+    LOG(ERROR) << "Unable to create offscreen GL surface.";
     return false;
   }
+
+  context_ = gfx::GLContext::CreateGLContext(
+      NULL, surface_.get(), gfx::PreferIntegratedGpu);
+  if (!context_.get()) {
+    LOG(ERROR) << "Unable to create GL context.";
+    return false;
+  }
+
+  initialized_ = true;
   return true;
 }
 
-WebKit::WebGraphicsContext3D* DefaultContextFactory::CreateContext(
-    Compositor* compositor) {
-  WebKit::WebGraphicsContext3D::Attributes attrs;
-  attrs.shareResources = true;
-  WebKit::WebGraphicsContext3D* context =
-      webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWindow(
-          attrs, compositor->widget(), share_group_.get());
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kDisableUIVsync)) {
-    context->makeContextCurrent();
-    gfx::GLContext* gl_context = gfx::GLContext::GetCurrent();
-    gl_context->SetSwapInterval(1);
-    gl_context->ReleaseCurrent(NULL);
-  }
-  return context;
+void SharedResources::Destroy() {
+  context_ = NULL;
+  surface_ = NULL;
+
+  initialized_ = false;
 }
 
-void DefaultContextFactory::RemoveCompositor(Compositor* compositor) {
+gfx::ScopedMakeCurrent* SharedResources::GetScopedMakeCurrent() {
+  DCHECK(initialized_);
+  if (initialized_)
+    return new gfx::ScopedMakeCurrent(context_.get(), surface_.get());
+  else
+    return NULL;
+}
+
+gfx::GLShareGroup* SharedResources::GetShareGroup() {
+  DCHECK(initialized_);
+  return context_->share_group();
 }
 
 Texture::Texture(bool flipped, const gfx::Size& size)
@@ -133,8 +125,7 @@ Compositor::Compositor(CompositorDelegate* delegate,
       size_(size),
       root_layer_(NULL),
       widget_(widget),
-      root_web_layer_(WebKit::WebLayer::create()),
-      swap_posted_(false) {
+      root_web_layer_(WebKit::WebLayer::create()) {
   WebKit::WebLayerTreeView::Settings settings;
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   settings.showFPSCounter =
@@ -162,7 +153,6 @@ Compositor::~Compositor() {
   host_.setRootLayer(NULL);
   if (root_layer_)
     root_layer_->SetCompositor(NULL);
-  ContextFactory::GetInstance()->RemoveCompositor(this);
 }
 
 void Compositor::Initialize(bool use_thread) {
@@ -204,7 +194,7 @@ void Compositor::Draw(bool force_clear) {
     return;
 
   host_.composite();
-  if (!g_compositor_thread && !swap_posted_)
+  if (!g_compositor_thread)
     NotifyEnd();
 }
 
@@ -252,22 +242,6 @@ bool Compositor::HasObserver(CompositorObserver* observer) {
   return observer_list_.HasObserver(observer);
 }
 
-void Compositor::OnSwapBuffersPosted() {
-  swap_posted_ = true;
-}
-
-void Compositor::OnSwapBuffersComplete() {
-  DCHECK(swap_posted_);
-  swap_posted_ = false;
-  NotifyEnd();
-}
-
-void Compositor::OnSwapBuffersAborted() {
-  if (swap_posted_) {
-    swap_posted_ = false;
-    NotifyEnd();
-  }
-}
 
 void Compositor::updateAnimations(double frameBeginTime) {
 }
@@ -280,7 +254,29 @@ void Compositor::applyScrollAndScale(const WebKit::WebSize& scrollDelta,
 }
 
 WebKit::WebGraphicsContext3D* Compositor::createContext3D() {
-  return ContextFactory::GetInstance()->CreateContext(this);
+  WebKit::WebGraphicsContext3D* context;
+  if (test_compositor_enabled) {
+    // Use context that results in no rendering to the screen.
+    TestWebGraphicsContext3D* test_context = new TestWebGraphicsContext3D();
+    test_context->Initialize();
+    context = test_context;
+  } else {
+    gfx::GLShareGroup* share_group =
+        SharedResources::GetInstance()->GetShareGroup();
+    WebKit::WebGraphicsContext3D::Attributes attrs;
+    context = webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWindow(
+        attrs, widget_, share_group);
+  }
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switches::kDisableUIVsync)) {
+    context->makeContextCurrent();
+    gfx::GLContext* gl_context = gfx::GLContext::GetCurrent();
+    gl_context->SetSwapInterval(1);
+    gl_context->ReleaseCurrent(NULL);
+  }
+
+  return context;
 }
 
 void Compositor::didCompleteSwapBuffers() {
@@ -332,14 +328,6 @@ COMPOSITOR_EXPORT void SetupTestCompositor() {
 
 COMPOSITOR_EXPORT void DisableTestCompositor() {
   test_compositor_enabled = false;
-  if (g_context_factory) {
-    delete g_context_factory;
-    g_context_factory = NULL;
-  }
-}
-
-COMPOSITOR_EXPORT bool IsTestCompositorEnabled() {
-  return test_compositor_enabled;
 }
 
 }  // namespace ui

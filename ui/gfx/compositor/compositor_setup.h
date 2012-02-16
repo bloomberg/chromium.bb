@@ -22,7 +22,6 @@ COMPOSITOR_EXPORT void SetupTestCompositor();
 
 // Disables the test compositor so that the normal compositor is used.
 COMPOSITOR_EXPORT void DisableTestCompositor();
-COMPOSITOR_EXPORT bool IsTestCompositorEnabled();
 #endif
 
 }  // namespace ui

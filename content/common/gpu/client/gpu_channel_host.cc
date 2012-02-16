@@ -99,9 +99,8 @@ void GpuChannelHost::MessageFilter::OnChannelError() {
                       base::Bind(&GpuChannelHost::OnChannelError, parent_));
 }
 
-GpuChannelHost::GpuChannelHost(GpuChannelHostFactory* factory, int client_id)
+GpuChannelHost::GpuChannelHost(GpuChannelHostFactory* factory)
     : factory_(factory),
-      client_id_(client_id),
       state_(kUnconnected) {
 }
 

@@ -37,10 +37,6 @@
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/tcp_client_socket.h"
 
-#if defined(USE_AURA)
-#include "content/browser/renderer_host/image_transport_factory.h"
-#endif
-
 #if defined(OS_WIN)
 #include <windows.h>
 #include <commctrl.h>
@@ -413,9 +409,6 @@ void BrowserMainLoop::CreateThreads() {
   }
 
   BrowserGpuChannelHostFactory::Initialize();
-#if defined(USE_AURA)
-  ImageTransportFactory::Initialize();
-#endif
 
   BrowserThreadsStarted();
 
@@ -462,9 +455,6 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   if (resource_dispatcher_host_.get())
     resource_dispatcher_host_.get()->Shutdown();
 
-#if defined(USE_AURA)
-  ImageTransportFactory::Terminate();
-#endif
   BrowserGpuChannelHostFactory::Terminate();
 
   // Must be size_t so we can subtract from it.

@@ -39,10 +39,6 @@ void BrowserGpuChannelHostFactory::Terminate() {
   delete instance();
 }
 
-BrowserGpuChannelHostFactory* BrowserGpuChannelHostFactory::Get() {
-  return static_cast<BrowserGpuChannelHostFactory*>(instance());
-}
-
 BrowserGpuChannelHostFactory::BrowserGpuChannelHostFactory()
     : gpu_client_id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()),
       shutdown_event_(new base::WaitableEvent(true, false)),
@@ -146,7 +142,6 @@ void BrowserGpuChannelHostFactory::EstablishGpuChannelOnIO(
 
   host->EstablishGpuChannel(
       gpu_client_id_,
-      0,
       base::Bind(&BrowserGpuChannelHostFactory::GpuChannelEstablishedOnIO,
                  request));
 }
@@ -207,7 +202,7 @@ GpuChannelHost* BrowserGpuChannelHostFactory::EstablishGpuChannelSync(
   browser_process_for_gpu = base::GetCurrentProcessHandle();
 #endif
 
-  gpu_channel_ = new GpuChannelHost(this, gpu_client_id_);
+  gpu_channel_ = new GpuChannelHost(this);
   gpu_channel_->set_gpu_info(request.gpu_info);
   content::GetContentClient()->SetGpuInfo(request.gpu_info);
 

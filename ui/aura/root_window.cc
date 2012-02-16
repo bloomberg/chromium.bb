@@ -132,11 +132,6 @@ void RootWindow::Run() {
 }
 
 void RootWindow::Draw() {
-  if (waiting_on_compositing_end_) {
-    draw_on_compositing_end_ = true;
-    return;
-  }
-  waiting_on_compositing_end_ = true;
   compositor_->Draw(false);
 }
 
@@ -454,17 +449,6 @@ void RootWindow::ScheduleDraw() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// RootWindow, ui::CompositorObserver implementation:
-
-void RootWindow::OnCompositingEnded(ui::Compositor*) {
-  waiting_on_compositing_end_ = false;
-  if (draw_on_compositing_end_) {
-    draw_on_compositing_end_ = false;
-    Draw();
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // RootWindow, private:
 
 RootWindow::RootWindow()
@@ -483,9 +467,7 @@ RootWindow::RootWindow()
       touch_event_handler_(NULL),
       gesture_handler_(NULL),
       gesture_recognizer_(GestureRecognizer::Create()),
-      synthesize_mouse_move_(false),
-      waiting_on_compositing_end_(false),
-      draw_on_compositing_end_(false) {
+      synthesize_mouse_move_(false) {
   SetName("RootWindow");
   gfx::Screen::SetInstance(screen_);
   last_mouse_location_ = host_->QueryMouseLocation();
@@ -494,11 +476,9 @@ RootWindow::RootWindow()
   compositor_.reset(new ui::Compositor(this, host_->GetAcceleratedWidget(),
       host_->GetSize()));
   DCHECK(compositor_.get());
-  compositor_->AddObserver(this);
 }
 
 RootWindow::~RootWindow() {
-  compositor_->RemoveObserver(this);
   // Make sure to destroy the compositor before terminating so that state is
   // cleared and we don't hit asserts.
   compositor_.reset();

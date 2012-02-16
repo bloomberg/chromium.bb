@@ -13,12 +13,11 @@
 namespace gfx {
 class Size;
 }
-class ImageTransportFactory;
 
 // This is a client for ImageTransportSurface, that handles the
 // platform-specific task of binding the transport surface to a GL texture.
-// The GL texture is allocated in the ImageTransportFactory context, and the
-// data is only valid after the first Update().
+// The GL texture is allocated in the SharedResources context, and the data is
+// only valid after the first Update().
 class ImageTransportClient : public ui::Texture {
  public:
   virtual ~ImageTransportClient() {}
@@ -34,7 +33,7 @@ class ImageTransportClient : public ui::Texture {
   virtual TransportDIB::Handle Handle() const = 0;
 
   // Creates a platform-specific client.
-  static ImageTransportClient* Create(ImageTransportFactory* factory,
+  static ImageTransportClient* Create(ui::SharedResources* resources,
                                       const gfx::Size& size);
 
  protected:

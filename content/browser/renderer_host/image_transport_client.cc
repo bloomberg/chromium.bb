@@ -11,7 +11,6 @@
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "content/browser/renderer_host/image_transport_factory.h"
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
 #include "ui/gfx/gl/gl_bindings.h"
@@ -43,31 +42,30 @@ GLuint CreateTexture() {
 
 class ImageTransportClientEGL : public ImageTransportClient {
  public:
-  ImageTransportClientEGL(ImageTransportFactory* factory, const gfx::Size& size)
+  ImageTransportClientEGL(ui::SharedResources* resources, const gfx::Size& size)
       : ImageTransportClient(true, size),
-        factory_(factory),
+        resources_(resources),
         image_(NULL) {
   }
 
   virtual ~ImageTransportClientEGL() {
-    scoped_ptr<gfx::ScopedMakeCurrent> bind(factory_->GetScopedMakeCurrent());
+    scoped_ptr<gfx::ScopedMakeCurrent> bind(resources_->GetScopedMakeCurrent());
     if (image_)
       eglDestroyImageKHR(gfx::GLSurfaceEGL::GetHardwareDisplay(), image_);
-    unsigned int texture = texture_id();
-    if (texture)
-      glDeleteTextures(1, &texture);
+    if (texture_id_)
+      glDeleteTextures(1, &texture_id_);
     glFlush();
   }
 
   virtual bool Initialize(uint64* surface_handle) {
-    scoped_ptr<gfx::ScopedMakeCurrent> bind(factory_->GetScopedMakeCurrent());
+    scoped_ptr<gfx::ScopedMakeCurrent> bind(resources_->GetScopedMakeCurrent());
     image_ = eglCreateImageKHR(
         gfx::GLSurfaceEGL::GetHardwareDisplay(), EGL_NO_CONTEXT,
         EGL_NATIVE_PIXMAP_KHR, reinterpret_cast<void*>(*surface_handle), NULL);
     if (!image_)
       return false;
-    set_texture_id(CreateTexture());
-    glBindTexture(GL_TEXTURE_2D, texture_id());
+    texture_id_ = CreateTexture();
+    glBindTexture(GL_TEXTURE_2D, texture_id_);
     glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, image_);
     glFlush();
     return true;
@@ -79,7 +77,7 @@ class ImageTransportClientEGL : public ImageTransportClient {
   }
 
  private:
-  ImageTransportFactory* factory_;
+  ui::SharedResources* resources_;
   EGLImageKHR image_;
 };
 
@@ -87,16 +85,16 @@ class ImageTransportClientEGL : public ImageTransportClient {
 
 class ImageTransportClientGLX : public ImageTransportClient {
  public:
-  ImageTransportClientGLX(ImageTransportFactory* factory, const gfx::Size& size)
+  ImageTransportClientGLX(ui::SharedResources* resources, const gfx::Size& size)
       : ImageTransportClient(false, size),
-        factory_(factory),
+        resources_(resources),
         pixmap_(0),
         glx_pixmap_(0),
         acquired_(false) {
   }
 
   virtual ~ImageTransportClientGLX() {
-    scoped_ptr<gfx::ScopedMakeCurrent> bind(factory_->GetScopedMakeCurrent());
+    scoped_ptr<gfx::ScopedMakeCurrent> bind(resources_->GetScopedMakeCurrent());
     Display* dpy = base::MessagePumpForUI::GetDefaultXDisplay();
     if (glx_pixmap_) {
       if (acquired_)
@@ -105,9 +103,8 @@ class ImageTransportClientGLX : public ImageTransportClient {
     }
     if (pixmap_)
       XFreePixmap(dpy, pixmap_);
-    unsigned int texture = texture_id();
-    if (texture)
-      glDeleteTextures(1, &texture);
+    if (texture_id_)
+      glDeleteTextures(1, &texture_id_);
     glFlush();
   }
 
@@ -115,7 +112,7 @@ class ImageTransportClientGLX : public ImageTransportClient {
     TRACE_EVENT0("renderer_host", "ImageTransportClientGLX::Initialize");
     Display* dpy = base::MessagePumpForUI::GetDefaultXDisplay();
 
-    scoped_ptr<gfx::ScopedMakeCurrent> bind(factory_->GetScopedMakeCurrent());
+    scoped_ptr<gfx::ScopedMakeCurrent> bind(resources_->GetScopedMakeCurrent());
     if (!InitializeOneOff(dpy))
       return false;
 
@@ -133,7 +130,7 @@ class ImageTransportClientGLX : public ImageTransportClient {
 
     glx_pixmap_ = glXCreatePixmap(dpy, fbconfig_.Get(), pixmap_, pixmapAttribs);
 
-    set_texture_id(CreateTexture());
+    texture_id_ = CreateTexture();
     glFlush();
     return true;
   }
@@ -141,8 +138,8 @@ class ImageTransportClientGLX : public ImageTransportClient {
   virtual void Update() {
     TRACE_EVENT0("renderer_host", "ImageTransportClientGLX::Update");
     Display* dpy = base::MessagePumpForUI::GetDefaultXDisplay();
-    scoped_ptr<gfx::ScopedMakeCurrent> bind(factory_->GetScopedMakeCurrent());
-    glBindTexture(GL_TEXTURE_2D, texture_id());
+    scoped_ptr<gfx::ScopedMakeCurrent> bind(resources_->GetScopedMakeCurrent());
+    glBindTexture(GL_TEXTURE_2D, texture_id_);
     if (acquired_)
       glXReleaseTexImageEXT(dpy, glx_pixmap_, GLX_FRONT_LEFT_EXT);
     glXBindTexImageEXT(dpy, glx_pixmap_, GLX_FRONT_LEFT_EXT, NULL);
@@ -221,7 +218,7 @@ class ImageTransportClientGLX : public ImageTransportClient {
     return initialized;
   }
 
-  ImageTransportFactory* factory_;
+  ui::SharedResources* resources_;
   XID pixmap_;
   XID glx_pixmap_;
   bool acquired_;
@@ -233,18 +230,17 @@ base::LazyInstance<GLXFBConfig> ImageTransportClientGLX::fbconfig_ =
 
 class ImageTransportClientOSMesa : public ImageTransportClient {
  public:
-  ImageTransportClientOSMesa(ImageTransportFactory* factory,
+  ImageTransportClientOSMesa(ui::SharedResources* resources,
                              const gfx::Size& size)
       : ImageTransportClient(false, size),
-        factory_(factory) {
+        resources_(resources) {
   }
 
   virtual ~ImageTransportClientOSMesa() {
-    unsigned int texture = texture_id();
-    if (texture) {
+    if (texture_id_) {
       scoped_ptr<gfx::ScopedMakeCurrent> bind(
-          factory_->GetScopedMakeCurrent());
-      glDeleteTextures(1, &texture);
+          resources_->GetScopedMakeCurrent());
+      glDeleteTextures(1, &texture_id_);
       glFlush();
     }
   }
@@ -261,21 +257,21 @@ class ImageTransportClientOSMesa : public ImageTransportClient {
     *surface_handle = next_handle_++;
 
     shared_mem_.reset(
-        TransportDIB::Create(size().GetArea() * 4,  // GL_RGBA=4 B/px
+        TransportDIB::Create(size_.GetArea() * 4,  // GL_RGBA=4 B/px
         *surface_handle));
     if (!shared_mem_.get())
       return false;
 
-    scoped_ptr<gfx::ScopedMakeCurrent> bind(factory_->GetScopedMakeCurrent());
-    set_texture_id(CreateTexture());
+    scoped_ptr<gfx::ScopedMakeCurrent> bind(resources_->GetScopedMakeCurrent());
+    texture_id_ = CreateTexture();
     glFlush();
     return true;
   }
 
   virtual void Update() {
-    glBindTexture(GL_TEXTURE_2D, texture_id());
+    glBindTexture(GL_TEXTURE_2D, texture_id_);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-                 size().width(), size().height(), 0,
+                 size_.width(), size_.height(), 0,
                  GL_RGBA, GL_UNSIGNED_BYTE, shared_mem_->memory());
     glFlush();
   }
@@ -283,7 +279,7 @@ class ImageTransportClientOSMesa : public ImageTransportClient {
   virtual TransportDIB::Handle Handle() const { return shared_mem_->handle(); }
 
  private:
-  ImageTransportFactory* factory_;
+  ui::SharedResources* resources_;
   scoped_ptr<TransportDIB> shared_mem_;
   static uint32 next_handle_;
 };
@@ -298,17 +294,17 @@ ImageTransportClient::ImageTransportClient(bool flipped, const gfx::Size& size)
 }
 
 ImageTransportClient* ImageTransportClient::Create(
-    ImageTransportFactory* factory,
+    ui::SharedResources* resources,
     const gfx::Size& size) {
   switch (gfx::GetGLImplementation()) {
 #if !defined(USE_WAYLAND)
     case gfx::kGLImplementationOSMesaGL:
-      return new ImageTransportClientOSMesa(factory, size);
+      return new ImageTransportClientOSMesa(resources, size);
     case gfx::kGLImplementationDesktopGL:
-      return new ImageTransportClientGLX(factory, size);
+      return new ImageTransportClientGLX(resources, size);
 #endif
     case gfx::kGLImplementationEGLGLES2:
-      return new ImageTransportClientEGL(factory, size);
+      return new ImageTransportClientEGL(resources, size);
     default:
       NOTREACHED();
       return NULL;

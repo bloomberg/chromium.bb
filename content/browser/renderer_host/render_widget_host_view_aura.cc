@@ -4,11 +4,8 @@
 
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 
-#include "base/bind.h"
 #include "base/logging.h"
 #include "content/browser/renderer_host/backing_store_skia.h"
-#include "content/browser/renderer_host/image_transport_factory.h"
-#include "content/browser/renderer_host/image_transport_client.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/web_input_event_aura.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -28,10 +25,14 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
-#include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
+
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
+#include "base/bind.h"
+#include "content/browser/renderer_host/image_transport_client.h"
+#endif
 
 using WebKit::WebTouchEvent;
 
@@ -101,10 +102,12 @@ class RenderWidgetHostViewAura::WindowObserver : public aura::WindowObserver {
 
     // Overridden from aura::WindowObserver:
   virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE {
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
     // TODO: It would be better to not use aura::RootWindow here
     ui::Compositor* compositor = view_->GetCompositor();
     if (compositor && compositor->HasObserver(view_))
       compositor->RemoveObserver(view_);
+#endif
   }
 
  private:
@@ -126,7 +129,9 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       can_compose_inline_(true),
       has_composition_text_(false),
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
       current_surface_(gfx::kNullPluginWindow),
+#endif
       paint_canvas_(NULL),
       synthetic_move_sent_(false) {
   host_->SetView(this);
@@ -326,10 +331,6 @@ void RenderWidgetHostViewAura::RenderViewGone(base::TerminationStatus status,
 }
 
 void RenderWidgetHostViewAura::Destroy() {
-  if (!shared_surface_handle_.is_null()) {
-    ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-    factory->DestroySharedSurfaceHandle(shared_surface_handle_);
-  }
   delete window_;
 }
 
@@ -361,6 +362,7 @@ void RenderWidgetHostViewAura::OnAcceleratedCompositingStateChange() {
 }
 
 void RenderWidgetHostViewAura::UpdateExternalTexture() {
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   if (current_surface_ != gfx::kNullPluginWindow &&
       host_->is_accelerated_compositing_active()) {
     ImageTransportClient* container =
@@ -371,11 +373,13 @@ void RenderWidgetHostViewAura::UpdateExternalTexture() {
   } else {
     window_->SetExternalTexture(NULL);
   }
+#endif
 }
 
 void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
     int gpu_host_id) {
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   current_surface_ = params.surface_handle;
   UpdateExternalTexture();
 
@@ -396,11 +400,15 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
     if (!compositor->HasObserver(this))
       compositor->AddObserver(this);
   }
+#else
+  NOTREACHED();
+#endif
 }
 
 void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
     const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
     int gpu_host_id) {
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   current_surface_ = params.surface_handle;
   UpdateExternalTexture();
 
@@ -428,20 +436,25 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
     if (!compositor->HasObserver(this))
       compositor->AddObserver(this);
   }
+#else
+  NOTREACHED();
+#endif
 }
 
 void RenderWidgetHostViewAura::AcceleratedSurfaceSuspend() {
 }
 
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
 void RenderWidgetHostViewAura::AcceleratedSurfaceNew(
       int32 width,
       int32 height,
       uint64* surface_handle,
       TransportDIB::Handle* shm_handle) {
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  scoped_refptr<ImageTransportClient> surface(factory->CreateTransportClient(
-        gfx::Size(width, height), surface_handle));
-  if (!surface) {
+  ui::SharedResources* instance = ui::SharedResources::GetInstance();
+  DCHECK(instance);
+  scoped_refptr<ImageTransportClient> surface(
+      ImageTransportClient::Create(instance, gfx::Size(width, height)));
+  if (!surface || !surface->Initialize(surface_handle)) {
     LOG(ERROR) << "Failed to create ImageTransportClient";
     return;
   }
@@ -461,11 +474,14 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceRelease(
   }
   image_transport_clients_.erase(surface_handle);
 }
+#endif
 
 void RenderWidgetHostViewAura::SetBackground(const SkBitmap& background) {
   RenderWidgetHostViewBase::SetBackground(background);
   host_->SetBackground(background);
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   window_->layer()->SetFillsBoundsOpaquely(background.isOpaque());
+#endif
 }
 
 void RenderWidgetHostViewAura::GetScreenInfo(WebKit::WebScreenInfo* results) {
@@ -503,14 +519,20 @@ void RenderWidgetHostViewAura::SetScrollOffsetPinning(
   // Not needed. Mac-only.
 }
 
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
 gfx::GLSurfaceHandle RenderWidgetHostViewAura::GetCompositingSurface() {
-  ui::Compositor* compositor = GetCompositor();
-  if (shared_surface_handle_.is_null() && compositor) {
-    ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-    shared_surface_handle_ = factory->CreateSharedSurfaceHandle(compositor);
-  }
-  return shared_surface_handle_;
+  return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, true);
 }
+#else
+gfx::GLSurfaceHandle RenderWidgetHostViewAura::GetCompositingSurface() {
+  // TODO(oshima): The original implementation was broken as
+  // GtkNativeViewManager doesn't know about NativeWidgetGtk. Figure
+  // out if this makes sense without compositor. If it does, then find
+  // out the right way to handle.
+  NOTIMPLEMENTED();
+  return gfx::GLSurfaceHandle();
+}
+#endif
 
 bool RenderWidgetHostViewAura::LockMouse() {
   aura::RootWindow* root_window = window_->GetRootWindow();
