@@ -122,6 +122,7 @@ class PrerenderContents : public content::NotificationObserver,
   const GURL& prerender_url() const { return prerender_url_; }
   const content::Referrer& referrer() const { return referrer_; }
   bool has_stopped_loading() const { return has_stopped_loading_; }
+  bool has_finished_loading() const { return has_finished_loading_; }
   bool prerendering_has_started() const { return prerendering_has_started_; }
   MatchCompleteStatus match_complete_status() const {
     return match_complete_status_;
@@ -165,6 +166,10 @@ class PrerenderContents : public content::NotificationObserver,
       const GURL& validated_url,
       bool is_error_page,
       RenderViewHost* render_view_host) OVERRIDE;
+  virtual void DidFinishLoad(int64 frame_id,
+                             const GURL& validated_url,
+                             bool is_main_frame) OVERRIDE;
+
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
 
   // content::NotificationObserver
@@ -285,6 +290,9 @@ class PrerenderContents : public content::NotificationObserver,
   std::vector<GURL> alias_urls_;
 
   bool has_stopped_loading_;
+
+  // True when the main frame has finished loading.
+  bool has_finished_loading_;
 
   // This must be the same value as the PrerenderTracker has recorded for
   // |this|, when |this| has a RenderView.

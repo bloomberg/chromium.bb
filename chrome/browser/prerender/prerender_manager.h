@@ -169,6 +169,10 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // is prerendering a page.
   bool IsWebContentsPrerendering(content::WebContents* web_contents) const;
 
+  // Returns true if there is a prerendered page for the given URL and it has
+  // finished loading. Only valid if called before MaybeUsePrerenderedPage.
+  bool DidPrerenderFinishLoading(const GURL& url) const;
+
   // Maintaining and querying the set of WebContents belonging to this
   // PrerenderManager that are currently showing prerendered pages.
   void MarkWebContentsAsPrerendered(content::WebContents* web_contents);

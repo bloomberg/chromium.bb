@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/time.h"
+#include "ui/gfx/rect.h"
 
 namespace prerender {
 
@@ -27,6 +28,10 @@ struct Config {
 
   // Is https allowed?
   bool https_allowed;
+
+  // The default tab bounds used as the prerenderer tab size when the active tab
+  // cannot be accessed.
+  gfx::Rect default_tab_bounds;
 };
 
 }  // namespace prerender

@@ -268,11 +268,17 @@ bool PrerenderManager::AddPrerenderFromLinkRelPrerender(
     int route_id,
     const GURL& url,
     const content::Referrer& referrer) {
+#if defined(OS_ANDROID)
+  // TODO(jcivelli): http://crbug.com/113322 We should have an option to disable
+  //                link-prerender and enable omnibox-prerender only.
+  return false;
+#else
   std::pair<int, int> child_route_id_pair = std::make_pair(process_id,
                                                            route_id);
 
   return AddPrerender(ORIGIN_LINK_REL_PRERENDER, child_route_id_pair,
                       url, referrer, NULL);
+#endif
 }
 
 bool PrerenderManager::AddPrerenderFromOmnibox(
@@ -634,6 +640,12 @@ bool PrerenderManager::IsWebContentsPrerendering(
   return false;
 }
 
+bool PrerenderManager::DidPrerenderFinishLoading(const GURL& url) const {
+  DCHECK(CalledOnValidThread());
+  PrerenderContents* contents = FindEntry(url);
+  return contents ? contents->has_finished_loading() : false;
+}
+
 void PrerenderManager::MarkWebContentsAsPrerendered(WebContents* web_contents) {
   DCHECK(CalledOnValidThread());
   prerendered_tab_contents_set_.insert(web_contents);
@@ -828,11 +840,15 @@ bool PrerenderManager::AddPrerender(
   // true, so that case needs to be explicitly checked for.
   // TODO(tburkard): Figure out how to cancel prerendering in the opposite
   // case, when a new tab is added to a process used for prerendering.
+  // On Android we do reuse processes as we have a limited number of them and we
+  // still want the benefits of prerendering even when several tabs are open.
+#if !defined(OS_ANDROID)
   if (content::RenderProcessHost::ShouldTryToUseExistingProcessHost() &&
       !content::RenderProcessHost::run_renderer_in_process()) {
     RecordFinalStatus(origin, experiment, FINAL_STATUS_TOO_MANY_PROCESSES);
     return false;
   }
+#endif
 
   // Check if enough time has passed since the last prerender.
   if (!DoesRateLimitAllowPrerender()) {

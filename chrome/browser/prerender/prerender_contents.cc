@@ -220,6 +220,7 @@ PrerenderContents::PrerenderContents(
       profile_(profile),
       page_id_(0),
       has_stopped_loading_(false),
+      has_finished_loading_(false),
       final_status_(FINAL_STATUS_MAX),
       prerendering_has_started_(false),
       match_complete_status_(MATCH_COMPLETE_DEFAULT),
@@ -253,7 +254,7 @@ void PrerenderContents::StartPrerendering(
   prerender_contents_.reset(new TabContentsWrapper(new_contents));
   content::WebContentsObserver::Observe(new_contents);
 
-  gfx::Rect tab_bounds(640, 480);
+  gfx::Rect tab_bounds = prerender_manager_->config().default_tab_bounds;
   if (source_render_view_host) {
     DCHECK(source_render_view_host->view() != NULL);
     WebContents* source_wc =
@@ -531,7 +532,15 @@ void PrerenderContents::DidStartProvisionalLoadForFrame(
     // case, the spinner would start again in the browser, so we must reset
     // has_stopped_loading_ so that the spinner won't be stopped.
     has_stopped_loading_ = false;
+    has_finished_loading_ = false;
   }
+}
+
+void PrerenderContents::DidFinishLoad(int64 frame_id,
+                                      const GURL& validated_url,
+                                      bool is_main_frame) {
+  if (is_main_frame)
+    has_finished_loading_ = true;
 }
 
 bool PrerenderContents::ShouldSuppressDialogs() {
