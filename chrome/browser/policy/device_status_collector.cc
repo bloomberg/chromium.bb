@@ -146,7 +146,7 @@ void DeviceStatusCollector::PruneStoredActivityPeriods(Time base_time) {
       base_time + TimeDelta::FromDays(max_stored_future_activity_days_);
   const Time epoch = Time::UnixEpoch();
 
-  DictionaryValue* copy = activity_times->DeepCopy();
+  scoped_ptr<DictionaryValue> copy(activity_times->DeepCopy());
   for (DictionaryValue::key_iterator it = activity_times->begin_keys();
        it != activity_times->end_keys(); ++it) {
     int64 timestamp;
