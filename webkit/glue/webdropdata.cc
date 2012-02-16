@@ -6,57 +6,39 @@
 
 #include <utility>
 
-#include "base/string_util.h"
-#include "base/logging.h"
-#include "base/utf_string_conversions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebDragData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
-#include "ui/base/clipboard/clipboard.h"
 
 using WebKit::WebData;
 using WebKit::WebDragData;
 using WebKit::WebString;
 using WebKit::WebVector;
 
-WebDropData::WebDropData(const WebDragData& drag_data) {
-  const WebVector<WebDragData::Item>& item_list = drag_data.items();
-  for (size_t i = 0; i < item_list.size(); ++i) {
-    const WebDragData::Item& item = item_list[i];
-    switch (item.storageType) {
-      case WebDragData::Item::StorageTypeString: {
-        if (EqualsASCII(item.stringType, ui::Clipboard::kMimeTypeText)) {
-          plain_text = item.stringData;
-          break;
-        }
-        if (EqualsASCII(item.stringType, ui::Clipboard::kMimeTypeURIList)) {
-          url = GURL(item.stringData);
-          url_title = item.title;
-          break;
-        }
-        if (EqualsASCII(item.stringType, ui::Clipboard::kMimeTypeDownloadURL)) {
-          download_metadata = item.stringData;
-          break;
-        }
-        if (EqualsASCII(item.stringType, ui::Clipboard::kMimeTypeHTML)) {
-          text_html = item.stringData;
-          html_base_url = item.baseURL;
-          break;
-        }
-        custom_data.insert(std::make_pair(item.stringType, item.stringData));
-        break;
-    }
-      case WebDragData::Item::StorageTypeBinaryData:
-      file_contents.assign(item.binaryData.data(),
-                           item.binaryData.size());
-      file_description_filename = item.title;
-      break;
-    case WebDragData::Item::StorageTypeFilename:
-      // We don't currently use this.
-      NOTREACHED();
-    };
+WebDropData::WebDropData(const WebDragData& drag_data)
+    : url(drag_data.url()),
+      url_title(drag_data.urlTitle()),
+      download_metadata(drag_data.downloadMetadata()),
+      plain_text(drag_data.plainText()),
+      text_html(drag_data.htmlText()),
+      html_base_url(drag_data.htmlBaseURL()),
+      file_description_filename(drag_data.fileContentFilename()) {
+  if (drag_data.containsFilenames()) {
+    WebVector<WebString> filenames_copy;
+    drag_data.filenames(filenames_copy);
+    for (size_t i = 0; i < filenames_copy.size(); ++i)
+      filenames.push_back(filenames_copy[i]);
+  }
+  WebData contents = drag_data.fileContent();
+  if (!contents.isEmpty())
+    file_contents.assign(contents.data(), contents.size());
+  const WebVector<WebDragData::CustomData>& custom_data_alias =
+      drag_data.customData();
+  for (size_t i = 0; i < custom_data_alias.size(); ++i) {
+    custom_data.insert(std::make_pair(custom_data_alias[i].type,
+                                      custom_data_alias[i].data));
   }
 }
 
@@ -67,65 +49,28 @@ WebDropData::~WebDropData() {
 }
 
 WebDragData WebDropData::ToDragData() const {
-  std::vector<WebDragData::Item> item_list;
-
-  // These fields are currently unused when dragging into WebKit.
-  DCHECK(download_metadata.empty());
-  DCHECK(file_contents.empty());
-  DCHECK(file_description_filename.empty());
-
-  // TODO(dcheng): We need a way to distinguish between null and empty strings.
-  if (!plain_text.empty()) {
-    WebDragData::Item item;
-    item.storageType = WebDragData::Item::StorageTypeString;
-    item.stringType = WebString::fromUTF8(ui::Clipboard::kMimeTypeText);
-    item.stringData = plain_text;
-    item_list.push_back(item);
-  }
-
-  if (!url.is_empty()) {
-    WebDragData::Item item;
-    item.storageType = WebDragData::Item::StorageTypeString;
-    item.stringType = WebString::fromUTF8(ui::Clipboard::kMimeTypeURIList);
-    item.stringData = WebString::fromUTF8(url.spec());
-    item.title = url_title;
-    item_list.push_back(item);
-  }
-
-  if (!text_html.empty()) {
-    WebDragData::Item item;
-    item.storageType = WebDragData::Item::StorageTypeString;
-    item.stringType = WebString::fromUTF8(ui::Clipboard::kMimeTypeHTML);
-    item.stringData = text_html;
-    item.baseURL = html_base_url;
-    item_list.push_back(item);
-  }
-
-  for (std::vector<string16>::const_iterator it = filenames.begin();
-       it != filenames.end();
-       ++it) {
-    WebDragData::Item item;
-    item.storageType = WebDragData::Item::StorageTypeFilename;
-    item.filenameData = *it;
-    item_list.push_back(item);
-  }
-
-  for (std::map<string16, string16>::const_iterator it = custom_data.begin();
-       it != custom_data.end();
-       ++it) {
-    WebDragData::Item item;
-    item.storageType = WebDragData::Item::StorageTypeString;
-    item.stringType = it->first;
-    item.stringData = it->second;
-    item_list.push_back(item);
-  }
-
   WebDragData result;
   result.initialize();
-  result.setItems(item_list);
+  result.setURL(url);
+  result.setURLTitle(url_title);
+  result.setFilenames(filenames);
 #ifdef WEBKIT_DRAG_DROP_SUPPORT_FILESYSTEM
   // TODO(kinuko): remove this ifdef once we update the WebKit API.
   result.setFilesystemId(filesystem_id);
 #endif
+  result.setPlainText(plain_text);
+  result.setHTMLText(text_html);
+  result.setHTMLBaseURL(html_base_url);
+  result.setFileContentFilename(file_description_filename);
+  result.setFileContent(WebData(file_contents.data(), file_contents.size()));
+  WebVector<WebDragData::CustomData> custom_data_vector(custom_data.size());
+  size_t i = 0;
+  for (std::map<string16, string16>::const_iterator it = custom_data.begin();
+       it != custom_data.end();
+       ++it, ++i) {
+    WebDragData::CustomData data = {it->first, it->second};
+    custom_data_vector[i] = data;
+  }
+  result.setCustomData(custom_data_vector);
   return result;
 }

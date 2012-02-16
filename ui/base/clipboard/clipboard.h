@@ -41,13 +41,6 @@ namespace ui {
 
 class UI_EXPORT Clipboard {
  public:
-  // MIME type constants.
-  static const char kMimeTypeText[];
-  static const char kMimeTypeURIList[];
-  static const char kMimeTypeDownloadURL[];
-  static const char kMimeTypeHTML[];
-  static const char kMimeTypePNG[];
-
   // Platform neutral holder for native data representation of a clipboard type.
   struct UI_EXPORT FormatType {
     FormatType();
@@ -329,6 +322,11 @@ class UI_EXPORT Clipboard {
   GtkClipboard* clipboard_;
   GtkClipboard* primary_selection_;
 #endif
+
+  // MIME type constants.
+  static const char kMimeTypeText[];
+  static const char kMimeTypeHTML[];
+  static const char kMimeTypePNG[];
 
   DISALLOW_COPY_AND_ASSIGN(Clipboard);
 };
