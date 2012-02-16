@@ -513,7 +513,7 @@ def main(args):
 
   if not skip_build:
     BuildStep('Rerun hooks to get toolchains')
-    Run(['gclient', 'runhooks'], cwd=SRC_DIR, shell=True)
+    Run(['gclient', 'runhooks'], cwd=SRC_DIR, shell=(platform=='win'))
 
   BuildStep('Clean Pepper Dir')
   pepperdir = os.path.join(SRC_DIR, 'out', 'pepper_' + pepper_ver)
