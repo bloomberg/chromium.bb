@@ -218,12 +218,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
     return &NewWebUI<QuotaInternalsUI>;
   if (url.host() == chrome::kChromeUISSLClientCertificateSelectorHost)
     return &NewWebUI<ConstrainedHtmlUI>;
-  if (url.host() == chrome::kChromeUISettingsFrameHost)
-    return &NewWebUI<options2::OptionsUI>;
   if (url.host() == chrome::kChromeUISessionsHost)
     return &NewWebUI<SessionsUI>;
-  if (url.host() == chrome::kChromeUISettingsHost)
-    return &NewWebUI<OptionsUI>;
   if (url.host() == chrome::kChromeUISyncInternalsHost)
     return &NewWebUI<SyncInternalsUI>;
   if (url.host() == chrome::kChromeUISyncResourcesHost)
@@ -242,6 +238,13 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
   /****************************************************************************
    * OS Specific #defines
    ***************************************************************************/
+#if !defined(OS_ANDROID)
+  // Android doesn't use the Options/Options2 pages
+  if (url.host() == chrome::kChromeUISettingsFrameHost)
+    return &NewWebUI<options2::OptionsUI>;
+  if (url.host() == chrome::kChromeUISettingsHost)
+    return &NewWebUI<OptionsUI>;
+#endif
 #if defined(OS_WIN)
   if (url.host() == chrome::kChromeUIConflictsHost)
     return &NewWebUI<ConflictsUI>;
@@ -497,11 +500,14 @@ RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
   if (page_url.host() == chrome::kChromeUIFlashHost)
     return FlashUI::GetFaviconResourceBytes();
 
+#if !defined(OS_ANDROID)
+  // Android doesn't use the Options/Options2 pages
   if (page_url.host() == chrome::kChromeUISettingsHost)
     return OptionsUI::GetFaviconResourceBytes();
 
   if (page_url.host() == chrome::kChromeUISettingsFrameHost)
     return options2::OptionsUI::GetFaviconResourceBytes();
+#endif
 
   if (page_url.host() == chrome::kChromeUIPluginsHost)
     return PluginsUI::GetFaviconResourceBytes();
