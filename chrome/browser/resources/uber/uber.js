@@ -217,7 +217,8 @@ cr.define('uber', function() {
     if (lastSelected)
       lastSelected.classList.remove('selected');
     container.classList.add('selected');
-    document.title = container.dataset.title;
+    if (container.dataset.title)
+      document.title = container.dataset.title;
     $('favicon').href = container.dataset.favicon;
 
     enableScrollEasing();
