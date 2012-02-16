@@ -765,6 +765,9 @@ const char kNodeRemovedSignal[] = "NodeRemoved";
 // Bluetooth Device properties.
 const char kAddressProperty[] = "Address";
 const char kNameProperty[] = "Name";
+const char kVendorProperty[] = "Vendor";
+const char kProductProperty[] = "Product";
+const char kVersionProperty[] = "Version";
 const char kIconProperty[] = "Icon";
 const char kClassProperty[] = "Class";
 const char kUUIDsProperty[] = "UUIDs";
