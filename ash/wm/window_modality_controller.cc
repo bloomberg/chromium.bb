@@ -39,7 +39,7 @@ aura::Window* WindowModalityController::GetWindowModalTransient(
   for (it = window->transient_children().begin();
        it != window->transient_children().end();
        ++it) {
-    if (TransientChildIsWindowModal(*it)) {
+    if (TransientChildIsWindowModal(*it) && (*it)->IsVisible()) {
       if (!(*it)->transient_children().empty())
         return GetWindowModalTransient(*it);
       return *it;

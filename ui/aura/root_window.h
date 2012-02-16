@@ -227,6 +227,11 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   void OnWindowAddedToRootWindow(Window* window);
   void OnWindowRemovedFromRootWindow(Window* window);
 
+  // Called when a window becomes invisible, either by being removed
+  // from root window hierachy, via SetVisible(false) or being destroyed.
+  // |destroyed| is set to true when the window is being destroyed.
+  void OnWindowHidden(Window* invisible, bool destroyed);
+
   // Overridden from Window:
   virtual bool CanFocus() const OVERRIDE;
   virtual bool CanReceiveEvents() const OVERRIDE;

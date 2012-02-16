@@ -9,6 +9,7 @@
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/activation_delegate.h"
+#include "ui/aura/client/activation_client.h"
 #include "ui/aura/cursor.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
@@ -89,6 +90,10 @@ TEST_F(RootWindowEventFilterTest, Focus) {
       new aura::test::ColorTestWindowDelegate(SK_ColorRED);
   scoped_ptr<aura::Window> w122(aura::test::CreateTestWindowWithDelegate(
       w122delegate, -122, gfx::Rect(10, 5, 5, 5), w12.get()));
+  aura::test::ColorTestWindowDelegate* w123delegate =
+      new aura::test::ColorTestWindowDelegate(SK_ColorRED);
+  scoped_ptr<aura::Window> w123(aura::test::CreateTestWindowWithDelegate(
+      w123delegate, -123, gfx::Rect(15, 5, 5, 5), w12.get()));
   scoped_ptr<aura::Window> w13(aura::test::CreateTestWindow(
       SK_ColorGRAY, -13, gfx::Rect(5, 470, 50, 50), w1.get()));
 
@@ -116,10 +121,48 @@ TEST_F(RootWindowEventFilterTest, Focus) {
   root_window->DispatchKeyEvent(&keyev);
   EXPECT_EQ(ui::VKEY_E, w122delegate->last_key_code());
 
-  // Removing the focused window from parent should reset the focused window.
+  // Hiding the focused window will set the focus to its parent if
+  // it's focusable.
+  w122->Hide();
+  EXPECT_EQ(w12->GetFocusManager(), w122->GetFocusManager());
+  EXPECT_EQ(w12.get(), w12->GetFocusManager()->GetFocusedWindow());
+
+  // Sets the focus back to w122.
+  w122->Show();
+  w122->Focus();
+  EXPECT_EQ(w122.get(), w12->GetFocusManager()->GetFocusedWindow());
+
+  // Removing the focused window from parent should set the focus to
+  // its parent if it's focusable.
   w12->RemoveChild(w122.get());
   EXPECT_EQ(NULL, w122->GetFocusManager());
+  EXPECT_EQ(w12.get(), w12->GetFocusManager()->GetFocusedWindow());
+
+  // Set the focus to w123, but make the w1 not activatable.
+  TestActivationDelegate *activation_delegate = new
+      TestActivationDelegate(false);
+  w123->Focus();
+  EXPECT_EQ(w123.get(), w12->GetFocusManager()->GetFocusedWindow());
+  aura::client::SetActivationDelegate(w1.get(), activation_delegate);
+
+  // Hiding the focused window will set the focus to NULL because
+  // parent window is not focusable.
+  w123->Hide();
+  EXPECT_EQ(w12->GetFocusManager(), w123->GetFocusManager());
   EXPECT_EQ(NULL, w12->GetFocusManager()->GetFocusedWindow());
+  EXPECT_FALSE(root_window->DispatchKeyEvent(&keyev));
+
+  // Set the focus back to w123
+  aura::client::SetActivationDelegate(w1.get(), NULL);
+  w123->Show();
+  w123->Focus();
+  EXPECT_EQ(w123.get(), w12->GetFocusManager()->GetFocusedWindow());
+  aura::client::SetActivationDelegate(w1.get(), activation_delegate);
+
+  // Removing the focused window will set the focus to NULL because
+  // parent window is not focusable.
+  w12->RemoveChild(w123.get());
+  EXPECT_EQ(NULL, w123->GetFocusManager());
   EXPECT_FALSE(root_window->DispatchKeyEvent(&keyev));
 }
 

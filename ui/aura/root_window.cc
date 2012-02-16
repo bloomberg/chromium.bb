@@ -278,36 +278,7 @@ void RootWindow::OnNativeScreenResized(const gfx::Size& size) {
 }
 
 void RootWindow::OnWindowDestroying(Window* window) {
-  // Update the focused window state if the window was focused.
-  if (focused_window_ == window) {
-    Window* transient_parent = focused_window_->transient_parent();
-    if (transient_parent) {
-      // Has to be removed from the transient parent before focusing, otherwise
-      // |window| will be focused again.
-      transient_parent->RemoveTransientChild(window);
-      SetFocusedWindow(transient_parent);
-    } else {
-      SetFocusedWindow(focused_window_->parent());
-    }
-  }
-
-  // When a window is being destroyed it's likely that the WindowDelegate won't
-  // want events, so we reset the mouse_pressed_handler_ and capture_window_ and
-  // don't sent it release/capture lost events.
-  if (mouse_pressed_handler_ == window)
-    mouse_pressed_handler_ = NULL;
-  if (mouse_moved_handler_ == window)
-    mouse_moved_handler_ = NULL;
-  if (capture_window_ == window) {
-    capture_window_ = NULL;
-    host_->ReleaseCapture();
-  }
-  if (touch_event_handler_ == window)
-    touch_event_handler_ = NULL;
-  if (gesture_handler_ == window)
-    gesture_handler_ = NULL;
-
-  gesture_recognizer_->FlushTouchQueue(window);
+  OnWindowHidden(window, true);
 
   if (window->IsVisible() &&
       window->ContainsPointInRoot(last_mouse_location_)) {
@@ -325,6 +296,9 @@ void RootWindow::OnWindowBoundsChanged(Window* window,
 }
 
 void RootWindow::OnWindowVisibilityChanged(Window* window, bool is_visible) {
+  if (!is_visible)
+    OnWindowHidden(window, false);
+
   if (window->ContainsPointInRoot(last_mouse_location_))
     PostMouseMoveEventAfterWindowChange();
 }
@@ -657,29 +631,55 @@ bool RootWindow::ProcessGestures(GestureRecognizer::Gestures* gestures) {
 void RootWindow::OnWindowRemovedFromRootWindow(Window* detached) {
   DCHECK(capture_window_ != this);
 
-  // If the ancestor of the capture window is detached,
-  // release the capture.
-  if (detached->Contains(capture_window_) && detached != this)
-    ReleaseCapture(capture_window_);
-
-  // If the ancestor of the focused window is detached,
-  // release the focus.
-  if (detached->Contains(focused_window_))
-    SetFocusedWindow(NULL);
-
-  // If the ancestor of any event handler windows are detached, release the
-  // pointer to those windows.
-  if (detached->Contains(mouse_pressed_handler_))
-    mouse_pressed_handler_ = NULL;
-  if (detached->Contains(mouse_moved_handler_))
-    mouse_moved_handler_ = NULL;
-  if (detached->Contains(touch_event_handler_))
-    touch_event_handler_ = NULL;
+  OnWindowHidden(detached, false);
 
   if (detached->IsVisible() &&
       detached->ContainsPointInRoot(last_mouse_location_)) {
     PostMouseMoveEventAfterWindowChange();
   }
+}
+
+void RootWindow::OnWindowHidden(Window* invisible, bool destroyed) {
+  // Update the focused window state if the invisible window contains
+  // focused_window.
+  if (invisible->Contains(focused_window_)) {
+    Window* focus_to = invisible->transient_parent();
+    if (focus_to) {
+      // Has to be removed from the transient parent before focusing, otherwise
+      // |window| will be focused again.
+      if (destroyed)
+        focus_to->RemoveTransientChild(invisible);
+    } else {
+      // If the invisible view has no visible transient window, focus to the
+      // topmost visible parent window.
+      focus_to = invisible->parent();
+    }
+    if (focus_to &&
+        (!focus_to->IsVisible() ||
+         (client::GetActivationClient() &&
+          !client::GetActivationClient()->CanFocusWindow(focus_to)))) {
+      focus_to = NULL;
+    }
+    SetFocusedWindow(focus_to);
+  }
+  // If the ancestor of the capture window is hidden,
+  // release the capture.
+  if (invisible->Contains(capture_window_) && invisible != this)
+    ReleaseCapture(capture_window_);
+
+  // If the ancestor of any event handler windows are invisible, release the
+  // pointer to those windows.
+  if (invisible->Contains(mouse_pressed_handler_))
+    mouse_pressed_handler_ = NULL;
+  if (invisible->Contains(mouse_moved_handler_))
+    mouse_moved_handler_ = NULL;
+  if (invisible->Contains(touch_event_handler_))
+    touch_event_handler_ = NULL;
+
+  if (invisible->Contains(gesture_handler_))
+    gesture_handler_ = NULL;
+
+  gesture_recognizer_->FlushTouchQueue(invisible);
 }
 
 void RootWindow::OnWindowAddedToRootWindow(Window* attached) {

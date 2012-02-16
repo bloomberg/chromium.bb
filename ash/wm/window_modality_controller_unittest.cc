@@ -161,6 +161,13 @@ TEST_F(WindowModalityControllerTest, NestedModalsOuterClosed) {
   ActivateWindow(w1.get());
   EXPECT_TRUE(IsActiveWindow(w111));
 
+  w111->Hide();
+  EXPECT_TRUE(IsActiveWindow(w11.get()));
+
+  // TODO(oshima): Re-showing doesn't set the focus back to
+  // modal window. There is no such use case right now, but it
+  // probably should.
+
   w11.reset();
   EXPECT_TRUE(IsActiveWindow(w1.get()));
 }
