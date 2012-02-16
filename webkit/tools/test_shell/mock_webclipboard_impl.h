@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -10,6 +10,9 @@
 #ifndef WEBKIT_TOOLS_TEST_SHELL_MOCK_WEBCLIPBOARD_IMPL_H_
 #define WEBKIT_TOOLS_TEST_SHELL_MOCK_WEBCLIPBOARD_IMPL_H_
 
+#include <map>
+
+#include "base/string16.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebClipboard.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebDragData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebImage.h"
@@ -45,10 +48,12 @@ class MockWebClipboardImpl : public WebKit::WebClipboard {
   virtual void writeDataObject(const WebKit::WebDragData& data);
 
  private:
+  void clear();
+
   WebKit::WebString m_plainText;
   WebKit::WebString m_htmlText;
   WebKit::WebImage m_image;
-  WebKit::WebVector<WebKit::WebDragData::CustomData> m_customData;
+  std::map<string16, string16> m_customData;
   bool m_writeSmartPaste;
 };
 
