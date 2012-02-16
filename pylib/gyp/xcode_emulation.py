@@ -294,6 +294,17 @@ class XcodeSettings(object):
       archs = ['i386']
     cflags.append('-arch ' + archs[0])
 
+    if archs[0] in ('i386', 'x86_64'):
+      if self._Test('GCC_ENABLE_SSE3_EXTENSIONS', 'YES', default='NO'):
+        cflags.append('-msse3')
+      if self._Test('GCC_ENABLE_SUPPLEMENTAL_SSE3_INSTRUCTIONS', 'YES',
+                    default='NO'):
+        cflags.append('-mssse3')  # Note 3rd 's'.
+      if self._Test('GCC_ENABLE_SSE41_EXTENSIONS', 'YES', default='NO'):
+        cflags.append('-msse4.1')
+      if self._Test('GCC_ENABLE_SSE42_EXTENSIONS', 'YES', default='NO'):
+        cflags.append('-msse4.2')
+
     cflags += self._Settings().get('OTHER_CFLAGS', [])
     cflags += self._Settings().get('WARNING_CFLAGS', [])
 
