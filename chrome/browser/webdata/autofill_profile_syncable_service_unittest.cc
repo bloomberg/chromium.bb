@@ -110,14 +110,6 @@ class AutofillProfileSyncableServiceTest : public testing::Test {
     sync_processor_.reset(new MockSyncChangeProcessor);
   }
 
-  virtual void TearDown() OVERRIDE {
-    // Each test passes ownership of the sync processor to the SyncableService.
-    // We don't release it immediately so we can verify the mock calls, so
-    // release it at teardown. Any test that doesn't call
-    // MergeDataAndStartSyncing or set_sync_processor must ensure the
-    // sync_processor_ gets properly reset.
-    ignore_result(sync_processor_.release());
-  }
  protected:
   MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
@@ -181,7 +173,7 @@ TEST_F(AutofillProfileSyncableServiceTest, MergeDataAndStartSyncing) {
 
   // Takes ownership of sync_processor_.
   autofill_syncable_service_.MergeDataAndStartSyncing(
-      syncable::AUTOFILL_PROFILE, data_list, sync_processor_.get());
+      syncable::AUTOFILL_PROFILE, data_list, sync_processor_.release());
   autofill_syncable_service_.StopSyncing(syncable::AUTOFILL_PROFILE);
 }
 
@@ -211,7 +203,7 @@ TEST_F(AutofillProfileSyncableServiceTest, GetAllSyncData) {
   SyncDataList data_list;
   // Takes ownership of sync_processor_.
   autofill_syncable_service_.MergeDataAndStartSyncing(
-      syncable::AUTOFILL_PROFILE, data_list, sync_processor_.get());
+      syncable::AUTOFILL_PROFILE, data_list, sync_processor_.release());
 
   SyncDataList data =
       autofill_syncable_service_.GetAllSyncData(syncable::AUTOFILL_PROFILE);
@@ -248,7 +240,7 @@ TEST_F(AutofillProfileSyncableServiceTest, ProcessSyncChanges) {
       .Times(1)
       .WillOnce(Return(true));
 
-  autofill_syncable_service_.set_sync_processor(sync_processor_.get());
+  autofill_syncable_service_.set_sync_processor(sync_processor_.release());
   SyncError error = autofill_syncable_service_.ProcessSyncChanges(
       FROM_HERE, change_list);
 
@@ -265,7 +257,7 @@ TEST_F(AutofillProfileSyncableServiceTest, ActOnChange) {
                                       syncable::AUTOFILL_PROFILE)));
   EXPECT_CALL(*sync_processor_, ProcessSyncChanges(_, _)).Times(2);
 
-  autofill_syncable_service_.set_sync_processor(sync_processor_.get());
+  autofill_syncable_service_.set_sync_processor(sync_processor_.release());
   autofill_syncable_service_.ActOnChange(change1);
   autofill_syncable_service_.ActOnChange(change2);
 }
