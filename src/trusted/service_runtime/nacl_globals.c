@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -24,6 +24,9 @@ struct NaClThreadContext    *nacl_user[NACL_THREAD_MAX] = {NULL};
 struct NaClThreadContext    *nacl_sys[NACL_THREAD_MAX] = {NULL};
 struct NaClAppThread        *nacl_thread[NACL_THREAD_MAX] = {NULL};
 uint32_t                    nacl_tls[NACL_THREAD_MAX] = {0};
+#if NACL_WINDOWS
+uint32_t                    nacl_thread_ids[NACL_THREAD_MAX] = {0};
+#endif
 
 /*
  * Hack for gdb.  This records xlate_base in a place where (1) gdb can find it,

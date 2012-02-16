@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -19,8 +19,26 @@ struct NaClAppThread;
 struct NaClMutex;
 struct NaClApp;
 
+#if NACL_WINDOWS
+__declspec(dllexport)
+/*
+ * This array is exported so that it can be used by a debugger.  However, it is
+ * not a stable interface and it may change or be removed in the future.  A
+ * debugger using this interface could break.
+ */
+#endif
 extern struct NaClThreadContext *nacl_user[];
 extern struct NaClThreadContext *nacl_sys[];
+#if NACL_WINDOWS
+/*
+ * NaCl Idx -> Thread ID mapping. Gdb scans this array to find NaCl index
+ * by Thread ID.
+ *
+ * This is not a stable interface and it may change or be removed in
+ * the future.  A debugger using this interface could break.
+ */
+__declspec(dllexport) extern uint32_t nacl_thread_ids[];
+#endif
 /*
  * nacl_user and nacl_sys are accessed w/o holding any locks.  once a
  * thread is live, only that thread itself may read/write the register
