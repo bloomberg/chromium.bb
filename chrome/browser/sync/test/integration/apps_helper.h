@@ -22,8 +22,9 @@ bool HasSameAppsAsVerifier(int index) WARN_UNUSED_RESULT;
 // Returns true iff all existing profiles have the same apps as the verifier.
 bool AllProfilesHaveSameAppsAsVerifier() WARN_UNUSED_RESULT;
 
-// Installs the app for the given index to |profile|.
-void InstallApp(Profile* profile, int index);
+// Installs the app for the given index to |profile|, and returns the extension
+// ID of the new app.
+std::string InstallApp(Profile* profile, int index);
 
 // Uninstalls the app for the given index from |profile|. Assumes that it was
 // previously installed.

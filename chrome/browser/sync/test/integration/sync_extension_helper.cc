@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/pending_extension_info.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/string_ordinal.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -59,13 +60,16 @@ void SyncExtensionHelper::SetupIfNecessary(SyncTest* test) {
   setup_completed_ = true;
 }
 
-void SyncExtensionHelper::InstallExtension(
+std::string SyncExtensionHelper::InstallExtension(
     Profile* profile, const std::string& name, Extension::Type type) {
   scoped_refptr<Extension> extension = GetExtension(profile, name, type);
-  ASSERT_TRUE(extension.get()) << "Could not get extension " << name
-                               << " (profile = " << profile << ")";
+  if (!extension.get()) {
+    NOTREACHED() << "Could not install extension " << name;
+    return "";
+  }
   profile->GetExtensionService()->OnExtensionInstalled(
       extension, extension->UpdatesFromGallery(), StringOrdinal());
+  return extension->id();
 }
 
 void SyncExtensionHelper::UninstallExtension(

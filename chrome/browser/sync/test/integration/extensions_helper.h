@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,8 +28,9 @@ bool AllProfilesHaveSameExtensionsAsVerifier() WARN_UNUSED_RESULT;
 // Returns true iff all existing profiles have the same extensions.
 bool AllProfilesHaveSameExtensions() WARN_UNUSED_RESULT;
 
-// Installs the extension for the given index to |profile|.
-void InstallExtension(Profile* profile, int index);
+// Installs the extension for the given index to |profile|, and returns the
+// extension ID of the new extension.
+std::string InstallExtension(Profile* profile, int index);
 
 // Uninstalls the extension for the given index from |profile|. Assumes that
 // it was previously installed.

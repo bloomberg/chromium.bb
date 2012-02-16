@@ -40,7 +40,7 @@ bool AllProfilesHaveSameAppsAsVerifier() {
   return true;
 }
 
-void InstallApp(Profile* profile, int index) {
+std::string InstallApp(Profile* profile, int index) {
   return SyncExtensionHelper::GetInstance()->InstallExtension(
       profile, CreateFakeAppName(index), Extension::TYPE_HOSTED_APP);
 }
