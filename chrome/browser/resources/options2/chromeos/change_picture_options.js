@@ -170,7 +170,7 @@ cr.define('options', function() {
      * @type {string}
      */
     get currentUserImageUrl() {
-      return 'chrome://userimage/' + PersonalOptions.getLoggedInUsername() +
+      return 'chrome://userimage/' + BrowserOptions.getLoggedInUsername() +
           '?id=' + (new Date()).getTime();
     },
 
