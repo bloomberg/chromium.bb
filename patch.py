@@ -37,6 +37,15 @@ class FilePatchBase(object):
     # Set when the file is copied or moved.
     self.source_filename = None
 
+  @property
+  def filename_utf8(self):
+    return self.filename.encode('utf-8')
+
+  @property
+  def source_filename_utf8(self):
+    if self.source_filename is not None:
+      return self.source_filename.encode('utf-8')
+
   @staticmethod
   def _process_filename(filename):
     filename = filename.replace('\\', '/')
@@ -88,8 +97,8 @@ class FilePatchBase(object):
       out += ' '
     out += '  '
     if self.source_filename:
-      out += '%s->' % self.source_filename
-    return out + str(self.filename)
+      out += '%s->' % self.source_filename_utf8
+    return out + self.filename_utf8
 
 
 class FilePatchDelete(FilePatchBase):
@@ -153,25 +162,27 @@ class FilePatchDiff(FilePatchBase):
       # patch is stupid. It patches the source_filename instead so get rid of
       # any source_filename reference if needed.
       return (
-          self.diff_header.replace(self.source_filename, self.filename) +
+          self.diff_header.replace(
+              self.source_filename_utf8, self.filename_utf8) +
           self.diff_hunks)
 
   def set_relpath(self, relpath):
-    old_filename = self.filename
-    old_source_filename = self.source_filename or self.filename
+    old_filename = self.filename_utf8
+    old_source_filename = self.source_filename_utf8 or self.filename_utf8
     super(FilePatchDiff, self).set_relpath(relpath)
     # Update the header too.
-    source_filename = self.source_filename or self.filename
+    filename = self.filename_utf8
+    source_filename = self.source_filename_utf8 or self.filename_utf8
     lines = self.diff_header.splitlines(True)
     for i, line in enumerate(lines):
       if line.startswith('diff --git'):
         lines[i] = line.replace(
             'a/' + old_source_filename, source_filename).replace(
-                'b/' + old_filename, self.filename)
+                'b/' + old_filename, filename)
       elif re.match(r'^\w+ from .+$', line) or line.startswith('---'):
         lines[i] = line.replace(old_source_filename, source_filename)
       elif re.match(r'^\w+ to .+$', line) or line.startswith('+++'):
-        lines[i] = line.replace(old_filename, self.filename)
+        lines[i] = line.replace(old_filename, filename)
     self.diff_header = ''.join(lines)
 
   def _split_header(self, diff):
@@ -197,7 +208,7 @@ class FilePatchDiff(FilePatchBase):
 
     # Mangle any \\ in the header to /.
     header_lines = ('Index:', 'diff', 'copy', 'rename', '+++', '---')
-    basename = os.path.basename(self.filename)
+    basename = os.path.basename(self.filename_utf8)
     for i in xrange(len(header)):
       if (header[i].split(' ', 1)[0] in header_lines or
           header[i].endswith(basename)):
@@ -314,7 +325,7 @@ class FilePatchDiff(FilePatchBase):
       new = self.mangle(match.group(2))
 
       # The rename is about the new file so the old file can be anything.
-      if new not in (self.filename, 'dev/null'):
+      if new not in (self.filename_utf8, 'dev/null'):
         self._fail('Unexpected git diff output name %s.' % new)
       if old == 'dev/null' and new == 'dev/null':
         self._fail('Unexpected /dev/null git diff.')
@@ -323,9 +334,9 @@ class FilePatchDiff(FilePatchBase):
     if not old or not new:
       self._fail('Unexpected git diff; couldn\'t find git header.')
 
-    if old not in (self.filename, 'dev/null'):
+    if old not in (self.filename_utf8, 'dev/null'):
       # Copy or rename.
-      self.source_filename = old
+      self.source_filename = old.decode('utf-8')
       self.is_new = True
 
     last_line = ''
@@ -337,7 +348,7 @@ class FilePatchDiff(FilePatchBase):
 
     # Cheap check to make sure the file name is at least mentioned in the
     # 'diff' header. That the only remaining invariant.
-    if not self.filename in self.diff_header:
+    if not self.filename_utf8 in self.diff_header:
       self._fail('Diff seems corrupted.')
 
   def _verify_git_header_process_line(self, lines, line, last_line):
@@ -349,7 +360,7 @@ class FilePatchDiff(FilePatchBase):
     http://www.kernel.org/pub/software/scm/git/docs/git-diff.html
     """
     match = re.match(r'^(rename|copy) from (.+)$', line)
-    old = self.source_filename or self.filename
+    old = self.source_filename_utf8 or self.filename_utf8
     if match:
       if old != match.group(2):
         self._fail('Unexpected git diff input name for line %s.' % line)
@@ -361,7 +372,7 @@ class FilePatchDiff(FilePatchBase):
 
     match = re.match(r'^(rename|copy) to (.+)$', line)
     if match:
-      if self.filename != match.group(2):
+      if self.filename_utf8 != match.group(2):
         self._fail('Unexpected git diff output name for line %s.' % line)
       if not last_line.startswith('%s from ' % match.group(1)):
         self._fail(
@@ -404,7 +415,7 @@ class FilePatchDiff(FilePatchBase):
         self._fail('Unexpected git diff: --- not following +++.')
       if '/dev/null' == match.group(1):
         self.is_delete = True
-      elif self.filename != self.mangle(match.group(1)):
+      elif self.filename_utf8 != self.mangle(match.group(1)):
         self._fail(
             'Unexpected git diff: %s != %s.' % (self.filename, match.group(1)))
       if lines:
@@ -429,7 +440,7 @@ class FilePatchDiff(FilePatchBase):
 
     # Cheap check to make sure the file name is at least mentioned in the
     # 'diff' header. That the only remaining invariant.
-    if not self.filename in self.diff_header:
+    if not self.filename_utf8 in self.diff_header:
       self._fail('Diff seems corrupted.')
 
   def _verify_svn_header_process_line(self, lines, line, last_line):
@@ -443,9 +454,9 @@ class FilePatchDiff(FilePatchBase):
         self._fail('--- and +++ are reversed')
       if match.group(1) == '/dev/null':
         self.is_new = True
-      elif self.mangle(match.group(1)) != self.filename:
+      elif self.mangle(match.group(1)) != self.filename_utf8:
         # guess the source filename.
-        self.source_filename = match.group(1)
+        self.source_filename = match.group(1).decode('utf-8')
         self.is_new = True
       if not lines or not lines[0].startswith('+++'):
         self._fail('Nothing after header.')
@@ -457,7 +468,7 @@ class FilePatchDiff(FilePatchBase):
         self._fail('Unexpected diff: --- not following +++.')
       if match.group(1) == '/dev/null':
         self.is_delete = True
-      elif self.mangle(match.group(1)) != self.filename:
+      elif self.mangle(match.group(1)) != self.filename_utf8:
         self._fail('Unexpected diff: %s.' % match.group(1))
       if lines:
         self._fail('Crap after +++')
@@ -479,10 +490,10 @@ class PatchSet(object):
       Deletes are last.
       """
       if p.source_filename:
-        return (p.is_delete, p.source_filename, p.filename)
+        return (p.is_delete, p.source_filename_utf8, p.filename_utf8)
       else:
         # tuple are always greater than string, abuse that fact.
-        return (p.is_delete, (p.filename,), p.filename)
+        return (p.is_delete, (p.filename_utf8,), p.filename_utf8)
 
     self.patches = sorted(patches, key=key)
 

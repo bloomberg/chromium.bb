@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding: utf-8
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -274,6 +275,19 @@ class PatchTest(unittest.TestCase):
     self._check_patch(
         p, 'file_b', RAW.MINIMAL_RENAME, source_filename='file_a', is_new=True,
         nb_hunks=0)
+
+  def testUnicodeFilenameGet(self):
+    p = patch.FilePatchDiff(u'filé_b', RAW.RENAME_UTF8, [])
+    self._check_patch(
+        p, u'filé_b', RAW.RENAME_UTF8, source_filename=u'file_à', is_new=True,
+        nb_hunks=1)
+    self.assertTrue(isinstance(p.get(False), str))
+    p.set_relpath('foo')
+    self.assertTrue(isinstance(p.get(False), str))
+    self.assertEquals(u'foo/file_à'.encode('utf-8'), p.source_filename_utf8)
+    self.assertEquals(u'foo/file_à', p.source_filename)
+    self.assertEquals(u'foo/filé_b'.encode('utf-8'), p.filename_utf8)
+    self.assertEquals(u'foo/filé_b', p.filename)
 
   def testGitCopyPartial(self):
     p = patch.FilePatchDiff('wtf2', GIT.COPY_PARTIAL, [])

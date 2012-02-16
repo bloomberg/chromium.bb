@@ -1,3 +1,4 @@
+# coding: utf-8
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -121,6 +122,18 @@ class RAW(object):
       '@@ -1 +1 @@\n'
       '-{"traces": {"1t_proc": ["2.0", "0.0"], "1t_proc_ref": ["1.0", ...\n'
       '+{"traces": {"1t_proc": ["2.0", "0.0"], "1t_proc_ref": ["1.0", ...\n')
+
+  RENAME_UTF8 = (
+      u'--- file_à\n'
+      u'+++ filé_b\n'
+      u'@@ -3,6 +3,7 @@ bb\n'
+      u' ccc\n'
+      u' ddé\n'
+      u' e\n'
+      u'+FÔÒ!\n'
+      u' ff\n'
+      u' ggg\n'
+      u' hh\n').encode('utf-8')
 
 
 class GIT(object):
