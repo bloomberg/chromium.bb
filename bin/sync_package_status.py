@@ -289,6 +289,7 @@ class Syncer(object):
                         ])
 
   __slots__ = [
+    'default_owner',  # Default owner to use when creating issues
     'owners',         # Set of owners to select (None means no filter)
     'pretend',        # If True, make no real changes
     'scomm',          # SpreadsheetComm
@@ -306,6 +307,7 @@ class Syncer(object):
 
     self.teams = None
     self.owners = None
+    self.default_owner = None
 
     self.pretend = pretend
     self.verbose = verbose
@@ -352,14 +354,21 @@ class Syncer(object):
     return None
 
   def SetOwnerFilter(self, ownerarg):
-    """Set owner filter using colon-separated owner names in |ownerarg|"""
+    """Set owner filter using colon-separated owner names in |ownerarg|."""
     if ownerarg:
       self.owners = set([self._ReduceOwnerName(o) for o in ownerarg.split(':')])
     else:
       self.owners = None
 
+  def SetDefaultOwner(self, default_owner):
+    """Use |default_owner| as isue owner when none set in spreadsheet."""
+    if default_owner and default_owner == 'me':
+      self.default_owner = os.environ['USER']
+    else:
+      self.default_owner = default_owner
+
   def _RowPassesFilters(self, row):
-    """Return true if |row| passes any team/owner filters"""
+    """Return true if |row| passes any team/owner filters."""
     if self.teams:
       team = self._ReduceTeamName(row[COL_TEAM])
       if team not in self.teams:
@@ -451,6 +460,8 @@ class Syncer(object):
     if owner:
       owner = owner + '@chromium.org'
       status = 'Available'
+    elif self.default_owner:
+      owner = self.default_owner + '@chromium.org.'
     else:
       owner = None # Rather than ''
 
@@ -561,6 +572,16 @@ def _CreateOptParser():
             '\n'
             'Use the --team and --owner options to operate only on '
             'packages assigned to particular owners or teams.\n'
+            'Generally, running without a team or owner filter is '
+            'not intended, so use --team=all and/or --owner=all.\n'
+            '\n'
+            'Issues will be assigned to the owner of the package in the '
+            'spreadsheet, if available.  If not, the owner defaults\n'
+            'to value given to --default-owner.\n'
+            '\n'
+            'The --owner and --default-owner options accept "me" as an '
+            'argument, which is only useful if your username matches\n'
+            'your chromium account name.\n'
             '\n' %
             (SS_KEY, PKGS_WS_NAME)
             )
@@ -585,6 +606,9 @@ def _CreateOptParser():
   parser.add_option('--team', dest='team', type='string', action='store',
                     default=None,
                     help='Filter by team; colon-separated %s' % teamhelp)
+  parser.add_option('--default-owner', dest='default_owner',
+                    type='string', action='store', default=None,
+                    help='Specify issue owner to use when package has no owner')
   parser.add_option('--owner', dest='owner', type='string', action='store',
                     default=None,
                     help='Filter by package owner;'
@@ -595,6 +619,34 @@ def _CreateOptParser():
 
   return parser
 
+
+def _CheckOptions(options):
+  """Vet the options."""
+  me = os.environ['USER']
+
+  if not options.email and not os.path.exists(options.cred_file):
+    options.email = me
+    oper.Notice('Assuming your chromium email is %s@chromium.org.'
+                '  Override with --email.' % options.email)
+
+  if not options.team and not options.owner:
+    oper.Notice('Without --owner or --team filters this will run for all'
+                ' packages in the spreadsheet (same as --team=all).')
+    prompt = 'Are you sure you want to run for all packages?'
+    if 'no' == cros_lib.YesNoPrompt(default='no', prompt=prompt):
+      sys.exit(0)
+
+  if options.team and options.team == 'all':
+    options.team = None
+
+  if options.owner and options.owner == 'all':
+    options.owner = None
+
+  if options.owner and options.owner == 'me':
+    options.owner = me
+    oper.Notice('Using %r for owner filter (from $USER envvar)' % options.owner)
+
+
 def main():
   """Main function."""
   parser = _CreateOptParser()
@@ -602,10 +654,7 @@ def main():
 
   oper.verbose = options.verbose
 
-  if not options.email and not os.path.exists(options.cred_file):
-    options.email = os.environ['USER']
-    oper.Notice('Assuming your chromium email is %s@chromium.org.'
-                '  Override with --email.' % options.email)
+  _CheckOptions(options)
 
   creds = gdata_lib.Creds()
   if options.email:
@@ -623,6 +672,8 @@ def main():
     syncer.SetTeamFilter(options.team)
   if options.owner:
     syncer.SetOwnerFilter(options.owner)
+  if options.default_owner:
+    syncer.SetDefaultOwner(options.default_owner)
 
   try:
     syncer.Sync()
