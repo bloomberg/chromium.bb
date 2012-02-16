@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,7 +22,6 @@
 
 namespace plugin {
 
-class BrowserInterface;
 class Plugin;
 class ServiceRuntime;
 class SrpcParams;
@@ -32,11 +31,9 @@ class SrpcParams;
 class NaClSubprocess {
  public:
   NaClSubprocess(const nacl::string& description,
-                 BrowserInterface* browser_interface,
                  ServiceRuntime* service_runtime,
                  SrpcClient* srpc_client)
     : description_(description),
-      browser_interface_(browser_interface),
       service_runtime_(service_runtime),
       srpc_client_(srpc_client) {
   }
@@ -49,10 +46,9 @@ class NaClSubprocess {
 
   // The socket used for communicating w/ the NaCl module.
   SrpcClient* srpc_client() const { return srpc_client_.get(); }
-  void set_socket(SrpcClient* srpc_client) { srpc_client_.reset(srpc_client); }
 
   // A basic description of the subprocess.
-  nacl::string description() const;
+  nacl::string description() const { return description_; }
 
   // A detailed description of the subprocess that may contain addresses.
   // Only use for debugging, but do not expose this to untrusted webapps.
@@ -61,11 +57,6 @@ class NaClSubprocess {
   // Start up interfaces.
   bool StartSrpcServices();
   bool StartJSObjectProxy(Plugin* plugin, ErrorInfo* error_info);
-
-  // Interact.
-  bool HasMethod(uintptr_t method_id) const;
-  bool InitParams(uintptr_t method_id, SrpcParams* params) const;
-  bool Invoke(uintptr_t method_id, SrpcParams* params) const;
 
   // Invoke an Srpc Method.  |out_params| must be allocated and cleaned up
   // outside of this function, but it will be initialized by this function, and
@@ -83,10 +74,6 @@ class NaClSubprocess {
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(NaClSubprocess);
 
-  bool SetupSrpcInvocation(const nacl::string& method_name,
-                           SrpcParams* params,
-                           uintptr_t* kMethodIdent);
-
   bool VInvokeSrpcMethod(const nacl::string& method_name,
                          const nacl::string& signature,
                          SrpcParams* params,
@@ -94,7 +81,6 @@ class NaClSubprocess {
 
   nacl::string description_;
 
-  BrowserInterface* browser_interface_;
   // The service runtime representing the NaCl module instance.
   nacl::scoped_ptr<ServiceRuntime> service_runtime_;
   // Ownership of srpc_client taken from the service runtime.

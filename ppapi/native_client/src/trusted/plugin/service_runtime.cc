@@ -9,11 +9,9 @@
 #include "native_client/src/trusted/plugin/service_runtime.h"
 
 #include <string.h>
-#include <map>
 #include <set>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "base/compiler_specific.h"
 
@@ -33,12 +31,6 @@
 #include "native_client/src/trusted/desc/nrd_xfer_effector.h"
 #include "native_client/src/trusted/handle_pass/browser_handle.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
-
-// browser_interface includes portability.h for uintptr_t etc, but it
-// also transitively includes windows.h, where PostMessage gets
-// defined as a preprocessor symbol
-#include "native_client/src/trusted/plugin/browser_interface.h"
-
 #include "native_client/src/trusted/plugin/manifest.h"
 
 // This is here due to a Windows API collision; plugin.h through
@@ -49,7 +41,6 @@
 #endif
 #include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
-#include "native_client/src/trusted/plugin/scriptable_handle.h"
 #include "native_client/src/trusted/plugin/srpc_client.h"
 #include "native_client/src/trusted/plugin/utility.h"
 
@@ -61,8 +52,6 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/core.h"
 #include "ppapi/cpp/completion_callback.h"
-
-using std::vector;
 
 namespace plugin {
 
@@ -143,8 +132,7 @@ void PluginReverseInterface::Log_MainThreadContinuation(
   NaClLog(4,
           "PluginReverseInterface::Log_MainThreadContinuation(%s)\n",
           p->message.c_str());
-  plugin_->browser_interface()->AddToConsole(static_cast<Plugin*>(plugin_),
-                                             p->message);
+  plugin_->AddToConsole(p->message);
 }
 void PluginReverseInterface::PostMessage_MainThreadContinuation(
     PostMessageResource* p,
@@ -387,11 +375,8 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin,
                                pp::CompletionCallback crash_cb)
     : plugin_(plugin),
       should_report_uma_(should_report_uma),
-      browser_interface_(plugin->browser_interface()),
       reverse_service_(NULL),
       subprocess_(NULL),
-      async_receive_desc_(NULL),
-      async_send_desc_(NULL),
       anchor_(new nacl::WeakRefAnchor()),
       rev_interface_(new PluginReverseInterface(anchor_, plugin,
                                                 manifest,
@@ -513,7 +498,7 @@ bool ServiceRuntime::Start(nacl::DescWrapper* nacl_desc,
                  reinterpret_cast<void*>(nacl_desc)));
 
   nacl::scoped_ptr<nacl::SelLdrLauncher>
-      tmp_subprocess(new(std::nothrow) nacl::SelLdrLauncher());
+      tmp_subprocess(new nacl::SelLdrLauncher());
   if (NULL == tmp_subprocess.get()) {
     PLUGIN_PRINTF(("ServiceRuntime::Start (subprocess create failed)\n"));
     error_info->SetReport(ERROR_SEL_LDR_CREATE_LAUNCHER,
@@ -527,10 +512,6 @@ bool ServiceRuntime::Start(nacl::DescWrapper* nacl_desc,
                           "ServiceRuntime: failed to start");
     return false;
   }
-
-  async_receive_desc_.reset(
-      plugin()->wrapper_factory()->MakeImcSock(sockets[1]));
-  async_send_desc_.reset(plugin()->wrapper_factory()->MakeImcSock(sockets[2]));
 
   subprocess_.reset(tmp_subprocess.release());
   if (!InitCommunication(nacl_desc, error_info)) {
@@ -552,7 +533,7 @@ SrpcClient* ServiceRuntime::SetupAppChannel() {
   } else {
     PLUGIN_PRINTF(("ServiceRuntime::SetupAppChannel (conect_desc=%p)\n",
                    static_cast<void*>(connect_desc)));
-    SrpcClient* srpc_client = SrpcClient::New(plugin(), connect_desc);
+    SrpcClient* srpc_client = SrpcClient::New(connect_desc);
     PLUGIN_PRINTF(("ServiceRuntime::SetupAppChannel (srpc_client=%p)\n",
                    static_cast<void*>(srpc_client)));
     delete connect_desc;

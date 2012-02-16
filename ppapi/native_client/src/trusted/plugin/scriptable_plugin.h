@@ -1,25 +1,16 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // The browser scriptable container class.  The methods on this class
 // are defined in the specific API directories.
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SCRIPTABLE_HANDLE_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SCRIPTABLE_HANDLE_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SCRIPTABLE_PLUGIN_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SCRIPTABLE_PLUGIN_H_
 
-#include "native_client/src/trusted/plugin/scriptable_handle.h"
-
-#include <stdio.h>
-#include <string.h>
-
-#include <set>
-#include <string>
 #include <vector>
 
-#include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/plugin/utility.h"
 #include "ppapi/cpp/dev/scriptable_object_deprecated.h"
@@ -28,35 +19,26 @@
 namespace plugin {
 
 // Forward declarations for externals.
-class DescBasedHandle;
 class Plugin;
 
-// ScriptableHandle encapsulates objects that are scriptable from the browser.
-class ScriptableHandle : public pp::deprecated::ScriptableObject {
+// ScriptablePlugin encapsulates plugins that are scriptable from the browser.
+class ScriptablePlugin : public pp::deprecated::ScriptableObject {
  public:
-  // Factory methods for creation.
-  static ScriptableHandle* NewPlugin(Plugin* plugin);
-  static ScriptableHandle* NewDescHandle(DescBasedHandle* desc_handle);
+  // Factory method.
+  static ScriptablePlugin* NewPlugin(Plugin* plugin);
 
   // If not NULL, this var should be reused to pass this object to the browser.
   pp::VarPrivate* var() { return var_; }
 
-  // Check that a pointer is to a validly created ScriptableHandle.
-  static bool is_valid(const ScriptableHandle* handle);
-  static void Unref(ScriptableHandle** handle);
+  static void Unref(ScriptablePlugin** handle);
 
   // Get the contained plugin object.  NULL if this contains a descriptor.
   Plugin* plugin() const { return plugin_; }
 
-  // Get the contained descriptor object.  NULL if this contains a plugin.
-  // OBSOLETE -- this support is only needed for SRPC descriptor passing.
-  // TODO(polina): Remove this support when SRPC descriptor passing is removed.
-  DescBasedHandle* desc_handle() const { return desc_handle_; }
-
   // This function is called when we are about to share the object owned by the
   // plugin with the browser. Since reference counting on the browser side is
   // handled via pp::Var's, we create the var() here if not created already.
-  ScriptableHandle* AddRef();
+  ScriptablePlugin* AddRef();
   // Remove a browser reference to this object.
   // Delete the object when the ref count becomes 0.
   // If var() is set, we delete it. Otherwise, we delete the object itself.
@@ -96,14 +78,13 @@ class ScriptableHandle : public pp::deprecated::ScriptableObject {
                             pp::Var* exception);
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(ScriptableHandle);
+  NACL_DISALLOW_COPY_AND_ASSIGN(ScriptablePlugin);
   // Prevent construction from outside the class: must use factory New()
   // method instead.
-  explicit ScriptableHandle(Plugin* plugin);
-  explicit ScriptableHandle(DescBasedHandle* desc_handle);
+  explicit ScriptablePlugin(Plugin* plugin);
   // This will be called when both the plugin and the browser clear all
   // references to this object.
-  virtual ~ScriptableHandle();
+  virtual ~ScriptablePlugin();
 
   // When we pass the object owned by the plugin to the browser, we need to wrap
   // it in a pp::VarPrivate, which also registers the object with the browser
@@ -123,12 +104,8 @@ class ScriptableHandle : public pp::deprecated::ScriptableObject {
 
   // The contained plugin object.
   Plugin* plugin_;
-  // OBSOLETE -- this support is only needed for SRPC descriptor passing.
-  // TODO(polina): Remove this support when SRPC descriptor passing is removed.
-  // The contained descriptor handle object.
-  DescBasedHandle* desc_handle_;
 };
 
 }  // namespace plugin
 
-#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SCRIPTABLE_HANDLE_H_
+#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SCRIPTABLE_PLUGIN_H_

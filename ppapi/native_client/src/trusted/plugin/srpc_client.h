@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -22,7 +22,6 @@ class DescWrapper;
 
 namespace plugin {
 
-class BrowserInterface;
 class ErrorInfo;
 class MethodInfo;
 class Plugin;
@@ -32,21 +31,21 @@ class SrpcParams;
 class SrpcClient {
  public:
   // Factory method for creating SrpcClients.
-  static SrpcClient* New(Plugin* plugin, nacl::DescWrapper* wrapper);
+  static SrpcClient* New(nacl::DescWrapper* wrapper);
 
   //  Init is passed a DescWrapper.  The SrpcClient performs service
   //  discovery and provides the interface for future rpcs.
-  bool Init(BrowserInterface* browser_interface, nacl::DescWrapper* socket);
+  bool Init(nacl::DescWrapper* socket);
 
   //  The destructor closes the connection to sel_ldr.
   ~SrpcClient();
 
   bool StartJSObjectProxy(Plugin* plugin, ErrorInfo* error_info);
   //  Test whether the SRPC service has a given method.
-  bool HasMethod(uintptr_t method_id);
+  bool HasMethod(const nacl::string& method_name);
   //  Invoke an SRPC method.
-  bool Invoke(uintptr_t method_id, SrpcParams* params);
-  bool InitParams(uintptr_t method_id, SrpcParams* params);
+  bool Invoke(const nacl::string& method_name, SrpcParams* params);
+  bool InitParams(const nacl::string& method_name, SrpcParams* params);
 
   // Attach a service for reverse-direction (from .nexe) RPCs.
   void AttachService(NaClSrpcService* service, void* instance_data);
@@ -55,11 +54,10 @@ class SrpcClient {
   NACL_DISALLOW_COPY_AND_ASSIGN(SrpcClient);
   SrpcClient();
   void GetMethods();
-  typedef std::map<uintptr_t, MethodInfo*> Methods;
+  typedef std::map<nacl::string, MethodInfo*> Methods;
   Methods methods_;
   NaClSrpcChannel srpc_channel_;
   bool srpc_channel_initialised_;
-  BrowserInterface* browser_interface_;
 };
 
 }  // namespace plugin

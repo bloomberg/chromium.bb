@@ -11,12 +11,12 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_sync_raii.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
-#include "native_client/src/trusted/plugin/browser_interface.h"
 #include "native_client/src/trusted/plugin/manifest.h"
 #include "native_client/src/trusted/plugin/nacl_subprocess.h"
 #include "native_client/src/trusted/plugin/nexe_arch.h"
 #include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
+#include "native_client/src/trusted/plugin/srpc_params.h"
 #include "native_client/src/trusted/plugin/utility.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 

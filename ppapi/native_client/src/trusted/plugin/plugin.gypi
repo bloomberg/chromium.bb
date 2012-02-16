@@ -5,24 +5,20 @@
 {
   'variables': {
     'common_sources': [
-      'array_ppapi.cc',
-      'browser_interface.cc',
-      'desc_based_handle.cc',
       'file_downloader.cc',
       'json_manifest.cc',
-      'method_map.cc',
       'module_ppapi.cc',
       'nacl_subprocess.cc',
       'nexe_arch.cc',
       'plugin.cc',
       'pnacl_coordinator.cc',
       'pnacl_resources.cc',
-      'scriptable_handle.cc',
+      'scriptable_plugin.cc',
       'service_runtime.cc',
       'srpc_client.cc',
+      'srpc_params.cc',
       'string_encoding.cc',
       'utility.cc',
-      'var_utils.cc',
     ],
     # Append the arch-specific ISA code to common_sources.
     'conditions': [

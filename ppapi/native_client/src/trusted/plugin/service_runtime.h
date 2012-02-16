@@ -14,12 +14,11 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/nacl_string.h"
-#include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "native_client/src/trusted/reverse_service/reverse_service.h"
-#include "native_client/src/trusted/plugin/utility.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
+#include "native_client/src/trusted/plugin/utility.h"
+#include "native_client/src/trusted/reverse_service/reverse_service.h"
 #include "native_client/src/trusted/weak_ref/weak_ref.h"
 
 #include "ppapi/cpp/completion_callback.h"
@@ -31,7 +30,6 @@ struct SelLdrLauncher;
 
 namespace plugin {
 
-class BrowserInterface;
 class ErrorInfo;
 class Manifest;
 class Plugin;
@@ -189,9 +187,6 @@ class ServiceRuntime {
   int exit_status();  // const, but grabs mutex etc.
   void set_exit_status(int exit_status);
 
-  nacl::DescWrapper* async_receive_desc() { return async_receive_desc_.get(); }
-  nacl::DescWrapper* async_send_desc() { return async_send_desc_.get(); }
-
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ServiceRuntime);
   bool InitCommunication(nacl::DescWrapper* shm, ErrorInfo* error_info);
@@ -199,16 +194,8 @@ class ServiceRuntime {
   NaClSrpcChannel command_channel_;
   Plugin* plugin_;
   bool should_report_uma_;
-  BrowserInterface* browser_interface_;
   nacl::ReverseService* reverse_service_;
   nacl::scoped_ptr<nacl::SelLdrLauncher> subprocess_;
-
-  // We need two IMC sockets rather than one because IMC sockets are
-  // not full-duplex on Windows.
-  // See http://code.google.com/p/nativeclient/issues/detail?id=690.
-  // TODO(mseaborn): We should not have to work around this.
-  nacl::scoped_ptr<nacl::DescWrapper> async_receive_desc_;
-  nacl::scoped_ptr<nacl::DescWrapper> async_send_desc_;
 
   nacl::WeakRefAnchor* anchor_;
 

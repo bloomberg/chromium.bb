@@ -9,9 +9,7 @@
 
 #include "native_client/src/trusted/plugin/plugin.h"
 
-#include <assert.h>
 #include <fcntl.h>
-#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,7 +22,6 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
@@ -33,26 +30,21 @@
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/shared/platform/nacl_check.h"
-#include "native_client/src/shared/platform/nacl_time.h"
 #include "native_client/src/shared/ppapi_proxy/browser_ppp.h"
-#include "native_client/src/trusted/desc/nacl_desc_base.h"
-#include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/handle_pass/browser_handle.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
-#include "native_client/src/trusted/plugin/browser_interface.h"
-#include "native_client/src/trusted/plugin/desc_based_handle.h"
 #include "native_client/src/trusted/plugin/json_manifest.h"
 #include "native_client/src/trusted/plugin/nacl_subprocess.h"
 #include "native_client/src/trusted/plugin/nexe_arch.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
-#include "native_client/src/trusted/plugin/scriptable_handle.h"
+#include "native_client/src/trusted/plugin/scriptable_plugin.h"
 #include "native_client/src/trusted/plugin/service_runtime.h"
 #include "native_client/src/trusted/plugin/string_encoding.h"
 #include "native_client/src/trusted/plugin/utility.h"
-#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 
+#include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/dev/ppp_find_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/dev/ppp_scrollbar_dev.h"
@@ -60,6 +52,7 @@
 #include "ppapi/c/dev/ppp_widget_dev.h"
 #include "ppapi/c/dev/ppp_zoom_dev.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppp_input_event.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/ppp_mouse_lock.h"
@@ -83,12 +76,6 @@ using ppapi_proxy::BrowserPpp;
 namespace plugin {
 
 namespace {
-
-bool GetReadyStateProperty(void* obj, SrpcParams* params) {
-  Plugin* plugin = static_cast<Plugin*>(obj);
-  params->outs()[0]->u.ival = plugin->nacl_ready_state();
-  return true;
-}
 
 const char* const kTypeAttribute = "type";
 // The "src" attribute of the <embed> tag.  The value is expected to be either
@@ -115,24 +102,6 @@ const char* const kDataUriScheme = "data";
 
 // The key used to find the dictionary nexe URLs in the manifest file.
 const char* const kNexesKey = "nexes";
-
-bool GetLastError(void* obj, SrpcParams* params) {
-  NaClSrpcArg** outs = params->outs();
-  PLUGIN_PRINTF(("GetLastError (obj=%p)\n", obj));
-
-  Plugin* plugin = static_cast<Plugin*>(obj);
-  outs[0]->arrays.str = strdup(plugin->last_error_string().c_str());
-  return true;
-}
-
-bool GetExitStatus(void* obj, SrpcParams* params) {
-  NaClSrpcArg** outs = params->outs();
-  PLUGIN_PRINTF(("GetExitStatus (obj=%p)\n", obj));
-
-  Plugin* plugin = static_cast<Plugin*>(obj);
-  outs[0]->u.ival = plugin->exit_status();
-  return true;
-}
 
 // Up to 20 seconds
 const int64_t kTimeSmallMin = 1;         // in ms
@@ -505,80 +474,52 @@ class ZoomAdapter : public pp::Zoom_Dev {
 
 }  // namespace
 
-bool Plugin::ExperimentalJavaScriptApisAreEnabled() {
-  return getenv("NACL_ENABLE_EXPERIMENTAL_JAVASCRIPT_APIS") != NULL;
-}
-
 static int const kAbiHeaderBuffer = 256;  // must be at least EI_ABIVERSION + 1
 
-void Plugin::LoadMethods() {
-  PLUGIN_PRINTF(("Plugin::LoadMethods ()\n"));
-  // Properties implemented by Plugin.
-  AddPropertyGet(GetReadyStateProperty, "readyState", "i");
+void Plugin::AddPropertyGet(const nacl::string& prop_name,
+                            Plugin::PropertyGetter getter) {
+  PLUGIN_PRINTF(("Plugin::AddPropertyGet (prop_name='%s')\n",
+                 prop_name.c_str()));
+  property_getters_[nacl::string(prop_name)] = getter;
 }
 
-bool Plugin::HasMethod(uintptr_t method_id, CallType call_type) {
-  PLUGIN_PRINTF(("Plugin::HasMethod (method_id=%x)\n",
-                 static_cast<int>(method_id)));
-  if (GetMethodInfo(method_id, call_type)) {
-    PLUGIN_PRINTF(("true\n"));
-    return true;
-  }
-  if (!ExperimentalJavaScriptApisAreEnabled()) {
-    PLUGIN_PRINTF(("false\n"));
-    return false;
-  }
-  if (call_type != METHOD_CALL) {
-    // SRPC nexes can only export methods.
-    PLUGIN_PRINTF(("false\n"));
-    return false;
-  }
-  bool has_method = main_subprocess_.HasMethod(method_id);
-  PLUGIN_PRINTF(("%s\n", (has_method ? "true" : "false")));
-  return has_method;
+bool Plugin::HasProperty(const nacl::string& prop_name) {
+  PLUGIN_PRINTF(("Plugin::HasProperty (prop_name=%s)\n",
+                 prop_name.c_str()));
+  return property_getters_[prop_name] != NULL;
 }
 
-bool Plugin::InitParams(uintptr_t method_id,
-                        CallType call_type,
-                        SrpcParams* params) {
-  MethodInfo* method_info = GetMethodInfo(method_id, call_type);
-  PLUGIN_PRINTF(("Plugin::InitParams (id=%"NACL_PRIxPTR", method_info=%p)\n",
-                 method_id, method_info));
-  if (NULL != method_info) {
-    return params->Init(method_info->ins(), method_info->outs());
-  }
-  if (!ExperimentalJavaScriptApisAreEnabled()) {
+bool Plugin::GetProperty(const nacl::string& prop_name,
+                         NaClSrpcArg* prop_value) {
+  PLUGIN_PRINTF(("Plugin::GetProperty (prop_name=%s)\n", prop_name.c_str()));
+
+  PropertyGetter getter = property_getters_[prop_name];
+  if (NULL == getter) {
     return false;
   }
-  if (call_type != METHOD_CALL) {
-    // SRPC nexes can only export methods.
-    return false;
-  }
-  return main_subprocess_.InitParams(method_id, params);
+  (this->*getter)(prop_value);
+  return true;
 }
 
-bool Plugin::Invoke(uintptr_t method_id,
-                    CallType call_type,
-                    SrpcParams* params) {
-  MethodInfo* method_info = GetMethodInfo(method_id, call_type);
-
-  if (NULL != method_info && NULL != method_info->function_ptr()) {
-    return method_info->function_ptr()(static_cast<void*>(this), params);
-  }
-  if (!ExperimentalJavaScriptApisAreEnabled()) {
-    return false;
-  }
-  if (call_type != METHOD_CALL) {
-    // SRPC nexes can only export methods.
-    return false;
-  }
-  return main_subprocess_.Invoke(method_id, params);
+void Plugin::GetExitStatus(NaClSrpcArg* prop_value) {
+  PLUGIN_PRINTF(("GetExitStatus (this=%p)\n", reinterpret_cast<void*>(this)));
+  prop_value->tag = NACL_SRPC_ARG_TYPE_INT;
+  prop_value->u.ival = exit_status();
 }
 
-bool Plugin::Init(BrowserInterface* browser_interface,
-                  int argc,
-                  char* argn[],
-                  char* argv[]) {
+void Plugin::GetLastError(NaClSrpcArg* prop_value) {
+  PLUGIN_PRINTF(("GetLastError (this=%p)\n", reinterpret_cast<void*>(this)));
+  prop_value->tag = NACL_SRPC_ARG_TYPE_STRING;
+  prop_value->arrays.str = strdup(last_error_string().c_str());
+}
+
+void Plugin::GetReadyStateProperty(NaClSrpcArg* prop_value) {
+  PLUGIN_PRINTF(("GetReadyState (this=%p)\n", reinterpret_cast<void*>(this)));
+  prop_value->tag = NACL_SRPC_ARG_TYPE_INT;
+  prop_value->u.ival = nacl_ready_state();
+}
+
+bool Plugin::Init(int argc, char* argn[], char* argv[]) {
   PLUGIN_PRINTF(("Plugin::Init (instance=%p)\n", static_cast<void*>(this)));
 
 #ifdef NACL_OSX
@@ -591,10 +532,9 @@ bool Plugin::Init(BrowserInterface* browser_interface,
   pp::TextInput_Dev(this).SetTextInputType(PP_TEXTINPUT_TYPE_NONE);
 #endif
 
-  browser_interface_ = browser_interface;
   // Remember the embed/object argn/argv pairs.
-  argn_ = new(std::nothrow) char*[argc];
-  argv_ = new(std::nothrow) char*[argc];
+  argn_ = new char*[argc];
+  argv_ = new char*[argc];
   argc_ = 0;
   for (int i = 0; i < argc; ++i) {
     if (NULL != argn_ && NULL != argv_) {
@@ -619,8 +559,12 @@ bool Plugin::Init(BrowserInterface* browser_interface,
   PLUGIN_PRINTF(("Plugin::Init (wrapper_factory=%p)\n",
                  static_cast<void*>(wrapper_factory_)));
 
-  // Set up the scriptable methods for the plugin.
-  LoadMethods();
+  // Export a property to allow us to get the exit status of a nexe.
+  AddPropertyGet("exitStatus", &Plugin::GetExitStatus);
+  // Export a property to allow us to get the last error description.
+  AddPropertyGet("lastError", &Plugin::GetLastError);
+  // Export a property to allow us to get the ready state of a nexe during load.
+  AddPropertyGet("readyState", &Plugin::GetReadyStateProperty);
 
   PLUGIN_PRINTF(("Plugin::Init (return 1)\n"));
   // Return success.
@@ -670,53 +614,6 @@ bool Plugin::LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
   return true;
 }
 
-bool Plugin::StartSrpcServicesCommon(NaClSubprocess* subprocess,
-                                     ErrorInfo* error_info) {
-  if (!subprocess->StartSrpcServices()) {
-    error_info->SetReport(ERROR_SRPC_CONNECTION_FAIL,
-                          "SRPC connection failure for " +
-                          subprocess->description());
-    return false;
-  }
-  PLUGIN_PRINTF(("Plugin::StartSrpcServicesCommon (established srpc_client "
-                 "%p)\n",
-                 static_cast<void*>(subprocess->srpc_client())));
-  return true;
-}
-
-bool Plugin::StartSrpcServices(NaClSubprocess* subprocess,
-                               ErrorInfo* error_info) {
-  if (!StartSrpcServicesCommon(subprocess, error_info)) {
-    return false;
-  }
-  // TODO(jvoung): This next bit is likely not needed...
-  // If StartSrpcServices is only in the JS API that is just for SRPC nexes
-  // (namely __startSrpcServices), then attempts to start the JS proxy
-  // will fail anyway?
-  // If that is the case, by removing the following line,
-  // the StartSrpcServices == StartSrpcServicesCommon.
-  // We still need this function though, to launch helper SRPC nexes within
-  // the plugin.
-  return StartJSObjectProxy(subprocess, error_info);
-}
-
-bool Plugin::StartJSObjectProxy(NaClSubprocess* subprocess,
-                                ErrorInfo* error_info) {
-  if (!subprocess->StartJSObjectProxy(this, error_info)) {
-    // TODO(sehr,polina): rename the function and env var
-    // to ExperimentalJavaScriptApisAreEnabled.
-    if (error_info->error_code() == ERROR_START_PROXY_CHECK_PPP &&
-        ExperimentalJavaScriptApisAreEnabled()) {
-      // It is not an error for the proxy to fail to find PPP methods if
-      // experimental APIs are enabled. This means we have an SRPC nexe.
-      error_info->Reset();
-    } else {
-      return false;
-    }
-  }
-  return true;
-}
-
 bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
                             ErrorInfo* error_info,
                             pp::CompletionCallback init_done_cb,
@@ -736,8 +633,13 @@ bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
 }
 
 bool Plugin::LoadNaClModuleContinuationIntern(ErrorInfo* error_info) {
-  if (!(StartSrpcServicesCommon(&main_subprocess_, error_info)
-        && StartJSObjectProxy(&main_subprocess_, error_info))) {
+  if (!main_subprocess_.StartSrpcServices()) {
+    error_info->SetReport(ERROR_SRPC_CONNECTION_FAIL,
+                          "SRPC connection failure for " +
+                          main_subprocess_.description());
+    return false;
+  }
+  if (!main_subprocess_.StartJSObjectProxy(this, error_info)) {
     return false;
   }
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (%s)\n",
@@ -749,7 +651,7 @@ NaClSubprocess* Plugin::LoadHelperNaClModule(nacl::DescWrapper* wrapper,
                                              const Manifest* manifest,
                                              ErrorInfo* error_info) {
   nacl::scoped_ptr<NaClSubprocess> nacl_subprocess(
-      new NaClSubprocess("helper module", browser_interface_, NULL, NULL));
+      new NaClSubprocess("helper module", NULL, NULL));
   if (NULL == nacl_subprocess.get()) {
     error_info->SetReport(ERROR_SEL_LDR_INIT,
                           "unable to allocate helper subprocess.");
@@ -758,23 +660,28 @@ NaClSubprocess* Plugin::LoadHelperNaClModule(nacl::DescWrapper* wrapper,
 
   // Do not report UMA stats for translator-related nexes.
   // TODO(sehr): define new UMA stats for translator related nexe events.
-  if (!(LoadNaClModuleCommon(wrapper, nacl_subprocess.get(), manifest,
-                             false, error_info,
-                             pp::BlockUntilComplete(),
-                             pp::BlockUntilComplete())
-        // We need not wait for the init_done callback.  We can block
-        // here in StartSrpcServicesCommon, since helper NaCl modules
-        // are spawned from a private thread.
-        //
-        // TODO(bsy): if helper module crashes, we should abort.
-        // crash_cb is not used here, so we are relying on crashes
-        // being detected in StartSrpcServicesCommon or later.
-        //
-        // NB: More refactoring might be needed, however, if helper
-        // NaCl modules have their own manifest.  Currently the
-        // manifest is a per-plugin-instance object, not a per
-        // NaClSubprocess object.
-        && StartSrpcServicesCommon(nacl_subprocess.get(), error_info))) {
+  if (!LoadNaClModuleCommon(wrapper, nacl_subprocess.get(), manifest,
+                            false, error_info,
+                            pp::BlockUntilComplete(),
+                            pp::BlockUntilComplete())) {
+    return NULL;
+  }
+  // We need not wait for the init_done callback.  We can block
+  // here in StartSrpcServices, since helper NaCl modules
+  // are spawned from a private thread.
+  //
+  // TODO(bsy): if helper module crashes, we should abort.
+  // crash_cb is not used here, so we are relying on crashes
+  // being detected in StartSrpcServices or later.
+  //
+  // NB: More refactoring might be needed, however, if helper
+  // NaCl modules have their own manifest.  Currently the
+  // manifest is a per-plugin-instance object, not a per
+  // NaClSubprocess object.
+  if (!nacl_subprocess->StartSrpcServices()) {
+    error_info->SetReport(ERROR_SRPC_CONNECTION_FAIL,
+                          "SRPC connection failure for " +
+                          nacl_subprocess->description());
     return NULL;
   }
 
@@ -792,31 +699,6 @@ char* Plugin::LookupArgument(const char* key) {
     }
   }
   return NULL;
-}
-
-void Plugin::AddPropertyGet(RpcFunction function_ptr,
-                            const char* name,
-                            const char* outs) {
-  uintptr_t method_id = browser_interface()->StringToIdentifier(name);
-  PLUGIN_PRINTF(("Plugin::AddPropertyGet (name='%s', id=%"
-                 NACL_PRIxPTR")\n", name, method_id));
-  MethodInfo* new_method = new MethodInfo(function_ptr, name, "", outs);
-  property_get_methods_.AddMethod(method_id, new_method);
-}
-
-MethodInfo* Plugin::GetMethodInfo(uintptr_t method_id, CallType call_type) {
-  MethodInfo* method_info = NULL;
-  switch (call_type) {
-    case PROPERTY_GET:
-      method_info = property_get_methods_.GetMethod(method_id);
-      break;
-    case PROPERTY_SET:
-    case METHOD_CALL:
-      break;
-  }
-  PLUGIN_PRINTF(("Plugin::GetMethodInfo (id=%"NACL_PRIxPTR", "
-                 "return %p)\n", method_id, static_cast<void*>(method_info)));
-  return method_info;
 }
 
 // Suggested names for progress event types, per
@@ -880,7 +762,7 @@ Plugin* Plugin::New(PP_Instance pp_instance) {
     return NULL;
   }
 #endif
-  Plugin* plugin = new(std::nothrow) Plugin(pp_instance);
+  Plugin* plugin = new Plugin(pp_instance);
   PLUGIN_PRINTF(("Plugin::New (plugin=%p)\n", static_cast<void*>(plugin)));
   if (plugin == NULL) {
     return NULL;
@@ -897,18 +779,13 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
   HistogramEnumerateOsArch(GetSandboxISA());
   init_time_ = NaClGetTimeOfDayMicroseconds();
 
-  scoped_ptr<BrowserInterface> browser_interface(
-      new(std::nothrow) BrowserInterface);
-  if (browser_interface == NULL) {
-    return false;
-  }
-  ScriptableHandle* handle = ScriptableHandle::NewPlugin(this);
-  if (handle == NULL)
+  ScriptablePlugin* scriptable_plugin = ScriptablePlugin::NewPlugin(this);
+  if (scriptable_plugin == NULL)
     return false;
 
-  set_scriptable_handle(handle);
+  set_scriptable_plugin(scriptable_plugin);
   PLUGIN_PRINTF(("Plugin::Init (scriptable_handle=%p)\n",
-                 static_cast<void*>(scriptable_handle())));
+                 static_cast<void*>(scriptable_plugin_)));
   url_util_ = pp::URLUtil_Dev::Get();
   if (url_util_ == NULL)
     return false;
@@ -917,7 +794,6 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
                  static_cast<const void*>(url_util_)));
 
   bool status = Plugin::Init(
-      browser_interface.release(),
       static_cast<int>(argc),
       // TODO(polina): Can we change the args on our end to be const to
       // avoid these ugly casts?
@@ -972,11 +848,6 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
     }
   }
 
-  // Export a property to allow us to get the last error description.
-  AddPropertyGet(GetLastError, "lastError", "s");
-  // Export a property to allow us to get the nexe exit status.
-  AddPropertyGet(GetExitStatus, "exitStatus", "i");
-
   PLUGIN_PRINTF(("Plugin::Init (status=%d)\n", status));
   return status;
 }
@@ -984,12 +855,11 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
 
 Plugin::Plugin(PP_Instance pp_instance)
     : pp::InstancePrivate(pp_instance),
-      browser_interface_(NULL),
-      scriptable_handle_(NULL),
+      scriptable_plugin_(NULL),
       argc_(-1),
       argn_(NULL),
       argv_(NULL),
-      main_subprocess_("main subprocess", NULL, NULL, NULL),
+      main_subprocess_("main subprocess", NULL, NULL),
       nacl_ready_state_(UNSENT),
       nexe_error_reported_(false),
       wrapper_factory_(NULL),
@@ -1010,9 +880,9 @@ Plugin::Plugin(PP_Instance pp_instance)
 Plugin::~Plugin() {
   int64_t shutdown_start = NaClGetTimeOfDayMicroseconds();
 
-  PLUGIN_PRINTF(("Plugin::~Plugin (this=%p, scriptable_handle=%p)\n",
+  PLUGIN_PRINTF(("Plugin::~Plugin (this=%p, scriptable_plugin=%p)\n",
                  static_cast<void*>(this),
-                 static_cast<void*>(scriptable_handle())));
+                 static_cast<void*>(scriptable_plugin())));
 
   // If the proxy has been shutdown before now, it's likely the plugin suffered
   // an error while loading.
@@ -1029,8 +899,8 @@ Plugin::~Plugin() {
   url_downloaders_.erase(url_downloaders_.begin(), url_downloaders_.end());
 
   ShutdownProxy();
-  ScriptableHandle* scriptable_handle_ = scriptable_handle();
-  ScriptableHandle::Unref(&scriptable_handle_);
+  ScriptablePlugin* scriptable_plugin_ = scriptable_plugin();
+  ScriptablePlugin::Unref(&scriptable_plugin_);
 
   // ShutDownSubprocesses shuts down the main subprocess, which shuts
   // down the main ServiceRuntime object, which kills the subprocess.
@@ -1059,7 +929,6 @@ Plugin::~Plugin() {
   ShutDownSubprocesses();
 
   delete wrapper_factory_;
-  delete browser_interface_;
   delete[] argv_;
   delete[] argn_;
 
@@ -1145,8 +1014,8 @@ pp::Var Plugin::GetInstanceObject() {
   PLUGIN_PRINTF(("Plugin::GetInstanceObject (this=%p)\n",
                  static_cast<void*>(this)));
   // The browser will unref when it discards the var for this object.
-  ScriptableHandle* handle =
-      static_cast<ScriptableHandle*>(scriptable_handle()->AddRef());
+  ScriptablePlugin* handle =
+      static_cast<ScriptablePlugin*>(scriptable_plugin()->AddRef());
   pp::Var* handle_var = handle->var();
   PLUGIN_PRINTF(("Plugin::GetInstanceObject (handle=%p, handle_var=%p)\n",
                  static_cast<void*>(handle), static_cast<void*>(handle_var)));
@@ -1356,8 +1225,7 @@ bool Plugin::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
                    error_info->message().c_str()));
     return false;
   }
-  nacl::scoped_ptr<BrowserPpp> ppapi_proxy(
-      new(std::nothrow) BrowserPpp(srpc_channel, this));
+  nacl::scoped_ptr<BrowserPpp> ppapi_proxy(new BrowserPpp(srpc_channel, this));
   PLUGIN_PRINTF(("Plugin::StartProxiedExecution (ppapi_proxy=%p)\n",
                  static_cast<void*>(ppapi_proxy.get())));
   if (ppapi_proxy.get() == NULL) {
@@ -1400,12 +1268,12 @@ bool Plugin::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
   ppapi_proxy_ = ppapi_proxy.release();
 
   // Create PPP* interface adapters to forward calls to .nexe.
-  find_adapter_.reset(new(std::nothrow) FindAdapter(this));
-  mouse_lock_adapter_.reset(new(std::nothrow) MouseLockAdapter(this));
-  printing_adapter_.reset(new(std::nothrow) PrintingAdapter(this));
-  selection_adapter_.reset(new(std::nothrow) SelectionAdapter(this));
-  widget_client_adapter_.reset(new(std::nothrow) WidgetClientAdapter(this));
-  zoom_adapter_.reset(new(std::nothrow) ZoomAdapter(this));
+  find_adapter_.reset(new FindAdapter(this));
+  mouse_lock_adapter_.reset(new MouseLockAdapter(this));
+  printing_adapter_.reset(new PrintingAdapter(this));
+  selection_adapter_.reset(new SelectionAdapter(this));
+  widget_client_adapter_.reset(new WidgetClientAdapter(this));
+  zoom_adapter_.reset(new ZoomAdapter(this));
 
   // Replay missed events.
   if (!view_to_replay_.is_null()) {
@@ -1441,7 +1309,7 @@ void Plugin::ReportDeadNexe() {
 
     nacl::string message = nacl::string("NaCl module crashed");
     set_last_error_string(message);
-    browser_interface()->AddToConsole(this, message);
+    AddToConsole(message);
 
     EnqueueProgressEvent(kProgressEventCrash);
     set_nexe_error_reported(true);
@@ -1823,7 +1691,7 @@ void Plugin::ReportLoadError(const ErrorInfo& error_info) {
   nacl::string message = nacl::string("NaCl module load failed: ") +
       error_info.message();
   set_last_error_string(message);
-  browser_interface()->AddToConsole(this, message);
+  AddToConsole(message);
   ShutdownProxy();
   // Inform JavaScript that loading encountered an error and is complete.
   EnqueueProgressEvent(kProgressEventError);
@@ -1842,7 +1710,7 @@ void Plugin::ReportLoadAbort() {
   // Report an error in lastError and on the JavaScript console.
   nacl::string error_string("NaCl module load failed: user aborted");
   set_last_error_string(error_string);
-  browser_interface()->AddToConsole(this, error_string);
+  AddToConsole(error_string);
   ShutdownProxy();
   // Inform JavaScript that loading was aborted and is complete.
   EnqueueProgressEvent(kProgressEventAbort);
@@ -2042,6 +1910,25 @@ UrlSchemeType Plugin::GetUrlScheme(const std::string& url) {
   if (scheme == kDataUriScheme)
     return SCHEME_DATA;
   return SCHEME_OTHER;
+}
+
+void Plugin::AddToConsole(const nacl::string& text) {
+  pp::Module* module = pp::Module::Get();
+  const PPB_Var* var_interface =
+      static_cast<const PPB_Var*>(
+          module->GetBrowserInterface(PPB_VAR_INTERFACE));
+  nacl::string prefix_string("NativeClient");
+  PP_Var prefix =
+      var_interface->VarFromUtf8(prefix_string.c_str(),
+                                 static_cast<uint32_t>(prefix_string.size()));
+  PP_Var str = var_interface->VarFromUtf8(text.c_str(),
+                                          static_cast<uint32_t>(text.size()));
+  const PPB_Console_Dev* console_interface =
+      static_cast<const PPB_Console_Dev*>(
+          module->GetBrowserInterface(PPB_CONSOLE_DEV_INTERFACE));
+  console_interface->LogWithSource(pp_instance(), PP_LOGLEVEL_LOG, prefix, str);
+  var_interface->Release(prefix);
+  var_interface->Release(str);
 }
 
 }  // namespace plugin

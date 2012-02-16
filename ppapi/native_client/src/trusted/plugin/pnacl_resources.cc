@@ -4,24 +4,17 @@
 
 #include "native_client/src/trusted/plugin/pnacl_resources.h"
 
-#include <utility>
-#include <vector>
-
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
-#include "native_client/src/trusted/plugin/browser_interface.h"
 #include "native_client/src/trusted/plugin/manifest.h"
 #include "native_client/src/trusted/plugin/plugin.h"
-#include "native_client/src/trusted/plugin/plugin_error.h"
 #include "native_client/src/trusted/plugin/pnacl_coordinator.h"
 #include "native_client/src/trusted/plugin/utility.h"
 
 #include "ppapi/c/pp_errors.h"
 
 namespace plugin {
-
-class Plugin;
 
 PnaclResources::~PnaclResources() {
   for (std::map<nacl::string, nacl::DescWrapper*>::iterator
