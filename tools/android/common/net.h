@@ -6,6 +6,8 @@
 #define TOOLS_ANDROID_COMMON_NET_H_
 #pragma once
 
+#include <string>
+
 namespace tools {
 
 // DisableNagle can improve TCP transmission performance. Both Chrome net stack
@@ -14,6 +16,9 @@ int DisableNagle(int socket);
 
 // Wake up listener only when data arrive.
 int DeferAccept(int socket);
+
+// Dumps a binary buffer into a string in a human-readable format.
+std::string DumpBinary(const char* buffer, size_t length);
 
 }  // namespace tools
 

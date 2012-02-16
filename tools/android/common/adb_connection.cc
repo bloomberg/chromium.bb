@@ -83,17 +83,8 @@ int ConnectAdbHostSocket(const char* forward_to) {
                                           kBufferMaxLength, 0));
   if (response_length < kAdbStatusLength ||
       strncmp("OKAY", response, kAdbStatusLength) != 0) {
-    char fail_msg_buffer[kBufferMaxLength * 3 + 1];
-    char* p = fail_msg_buffer;
-    for (int i = 0; i < response_length; ++i) {
-      snprintf(p, 3, "%02x,", static_cast<unsigned char>(response[i]));
-      p += 3;
-    }
-
-    if (p > fail_msg_buffer)
-      *(--p) = 0;  // Eliminate the last comma.
     LOG(ERROR) << "Bad response from ADB: length: " << response_length
-               << " data: " << fail_msg_buffer;
+               << " data: " << DumpBinary(response, response_length);
     HANDLE_EINTR(close(host_socket));
     return -1;
   }

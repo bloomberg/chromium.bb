@@ -9,6 +9,8 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
+#include "base/stringprintf.h"
+
 namespace tools {
 
 int DisableNagle(int socket) {
@@ -19,6 +21,19 @@ int DisableNagle(int socket) {
 int DeferAccept(int socket) {
   int on = 1;
   return setsockopt(socket, IPPROTO_TCP, TCP_DEFER_ACCEPT, &on, sizeof(on));
+}
+
+std::string DumpBinary(const char* buffer, size_t length) {
+  std::string result = "[";
+  for (int i = 0; i < length; ++i) {
+    base::StringAppendF(&result, "%02x,",
+                        static_cast<unsigned char>(buffer[i]));
+  }
+
+  if (length)
+    result.erase(result.length() - 1);
+
+  return result + "]";
 }
 
 }  // namespace tools
