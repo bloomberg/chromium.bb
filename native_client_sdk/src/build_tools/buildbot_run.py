@@ -480,10 +480,14 @@ def main(args):
   platform = getos.GetPlatform()
   arch = 'x86'
 
-  if not options.pnacl:
-    toolchains = ['newlib', 'glibc']
-  else:
+  builder_name = os.getenv('BUILDBOT_BUILDERNAME','')
+  if builder_name.find('pnacl') >= 0 and builder_name.find('pnacl') >= 0:
+    options.pnacl = True
+
+  if options.pnacl:
     toolchains = ['pnacl']
+  else:
+    toolchains = ['newlib', 'glibc']
   print 'Building: ' + ' '.join(toolchains)
   skip = options.examples or options.update
 
