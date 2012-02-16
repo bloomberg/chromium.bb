@@ -83,6 +83,8 @@ class CGroup(cros_lib.MasterPidContextManager):
       # Mount using expected set of opts.
       cros_lib.SudoRunCommand(['mount', '-t', 'cgroup', '-o', opts,
           'cbuildbot', self.ROOT_PATH], print_cmd=False)
+    self.SudoSet(self.ROOT_PATH, 'cgroup.clone_children', '1')
+
 # TODO(zbehan): We should not accept pre-existing mount structure without
 # checking/fixing it. Not caring for example implies not being able to add
 # subsystems. Modifying this requires a remount of the root hierarchy, but
@@ -97,20 +99,35 @@ class CGroup(cros_lib.MasterPidContextManager):
     # Create a group for jobs. The root of hierarchy is generally read-only
     # and always contains all processes. With a sub-group, we can for
     # instance set default parameters for all newly started cbuildbot jobs.
-    if not os.path.exists(self.JOBS_PATH):
-      self.InitNamedCGroup(self.JOBS_PATH)
+    self.InitNamedCGroup(self.JOBS_PATH)
 
     # Create a dump group. Non-empty hierarchies cannot be removed, so this
     # is the group where the master process has to move itself first before
     # attempting the delete.
-    if not os.path.exists(self.DUMP_PATH):
-      self.InitNamedCGroup(self.DUMP_PATH)
+    self.InitNamedCGroup(self.DUMP_PATH)
 
-  def SudoInherit(self, path, name):
-    """Set given key to whatever the parent cgroup has."""
-    cros_lib.SudoRunCommand(['sh', '-c', 'cat %s > %s' %
-        (os.path.join(path, '..', name),
-        os.path.join(path, name))], print_cmd=False)
+    # Older code didn't set up inheritance for JOBS/DUMP correctly, just their
+    # descendant children.  We now inherit settings directly through, thus
+    # fix those namespaces if they need it.
+    self._CompatibilityCheck(self.DUMP_PATH)
+    self._CompatibilityCheck(self.JOBS_PATH)
+
+  def _CompatibilityCheck(self, path, recurse=True):
+    with open(os.path.join(path, 'cpuset.cpus')) as f:
+      if f.read().strip():
+        return
+    # If that content is empty, then it's easiest to wipe and recreate if we
+    # can.
+    if recurse:
+      self.RemoveNamedCGroup(path)
+      self.InitNamedCGroup(path)
+      return self._CompatibilityCheck(path, recurse=False)
+    # We couldn't just wipe it and recreate it; manually fix the inheritance.
+    # This pathway is only reachable if the target namespace still has
+    # errant processes hanging around (a bug on it's own).
+    for fname in ('cpuset.cpus', 'cpuset.mems'):
+      with open(os.path.join(self.ROOT_PATH, fname)) as source:
+        self.SudoSet(path, fname, source.read().strip())
 
   def SudoSet(self, path, name, value):
     """Set given key of a given cgroup to value."""
@@ -120,9 +137,8 @@ class CGroup(cros_lib.MasterPidContextManager):
   def InitNamedCGroup(self, path):
     """Creates a cgroup given by path."""
     cros_lib.SudoRunCommand(['mkdir', '-p', path], print_cmd=False)
-    # Inherit some basics (cpus/mems are needed before we can assign tasks).
-    self.SudoInherit(path, 'cpuset.cpus')
-    self.SudoInherit(path, 'cpuset.mems')
+    # Ensure the child inherits our initial settings.
+    self.SudoSet(path, 'cgroup.clone_children', '1')
 
   def RemoveNamedCGroup(self, path):
     """Removes a cgroup given by path."""
