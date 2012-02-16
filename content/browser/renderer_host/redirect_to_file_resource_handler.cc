@@ -211,9 +211,20 @@ bool RedirectToFileResourceHandler::WriteMore() {
     if (write_callback_pending_)
       return true;
     DCHECK(write_cursor_ < buf_->offset());
+
+    // Create a temporary drainable buffer that can be passed to
+    // Write(). Temporarily reset the buf_ offset to 0 so that the
+    // drainable buffer can point to the the beginning of the buf_.
+    int offset = buf_->offset();
+    buf_->set_offset(0);
+    scoped_refptr<net::DrainableIOBuffer>
+        drainable = new net::DrainableIOBuffer(buf_, offset);
+    drainable->DidConsume(write_cursor_);
+    buf_->set_offset(offset);
+
     int rv = file_stream_->Write(
-        buf_->StartOfBuffer() + write_cursor_,
-        buf_->offset() - write_cursor_,
+        drainable,
+        drainable->BytesRemaining(),
         base::Bind(&RedirectToFileResourceHandler::DidWriteToFile,
                    base::Unretained(this)));
     if (rv == net::ERR_IO_PENDING) {

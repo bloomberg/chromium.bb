@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,6 +76,7 @@ class FileWriterDelegate : public net::URLRequest::Delegate {
   int64 total_bytes_written_;
   int64 allowed_bytes_to_write_;
   scoped_refptr<net::IOBufferWithSize> io_buffer_;
+  scoped_refptr<net::DrainableIOBuffer> cursor_;
   scoped_ptr<net::FileStream> file_stream_;
   net::URLRequest* request_;
   base::WeakPtrFactory<FileWriterDelegate> weak_factory_;

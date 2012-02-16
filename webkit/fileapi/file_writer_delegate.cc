@@ -195,7 +195,8 @@ void FileWriterDelegate::OnReadCompleted(net::URLRequest* request,
 void FileWriterDelegate::Read() {
   bytes_written_ = 0;
   bytes_read_ = 0;
-  if (request_->Read(io_buffer_.get(), io_buffer_->size(), &bytes_read_)) {
+  if (request_->Read(io_buffer_.get(), io_buffer_->size(),
+                     &bytes_read_)) {
     MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&FileWriterDelegate::OnDataReceived,
@@ -213,6 +214,7 @@ void FileWriterDelegate::OnDataReceived(int bytes_read) {
     // This could easily be optimized to rotate between a pool of buffers, so
     // that we could read and write at the same time.  It's not yet clear that
     // it's necessary.
+    cursor_ = new net::DrainableIOBuffer(io_buffer_, bytes_read_);
     Write();
   }
 }
@@ -234,7 +236,7 @@ void FileWriterDelegate::Write() {
     bytes_to_write = allowed_bytes_to_write_ - total_bytes_written_;
 
   int write_response =
-      file_stream_->Write(io_buffer_->data() + bytes_written_,
+      file_stream_->Write(cursor_,
                           static_cast<int>(bytes_to_write),
                           base::Bind(&FileWriterDelegate::OnDataWritten,
                                      base::Unretained(this)));
@@ -250,6 +252,7 @@ void FileWriterDelegate::Write() {
 void FileWriterDelegate::OnDataWritten(int write_response) {
   if (write_response > 0) {
     OnProgress(write_response, false);
+    cursor_->DidConsume(write_response);
     bytes_written_ += write_response;
     total_bytes_written_ += write_response;
     if (bytes_written_ == bytes_read_)

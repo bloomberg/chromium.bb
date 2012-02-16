@@ -28,6 +28,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "net/base/file_stream_metrics.h"
 #include "net/base/file_stream_net_log_parameters.h"
+#include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 
 #if defined(OS_ANDROID)
@@ -167,11 +168,11 @@ class FileStream::AsyncContext {
 
   // These methods post synchronous read() and write() calls to a WorkerThread.
   void InitiateAsyncRead(
-      base::PlatformFile file, char* buf, int buf_len,
+      base::PlatformFile file, IOBuffer* buf, int buf_len,
       const net::BoundNetLog& bound_net_log,
       const CompletionCallback& callback);
   void InitiateAsyncWrite(
-      base::PlatformFile file, const char* buf, int buf_len,
+      base::PlatformFile file, IOBuffer* buf, int buf_len,
       const net::BoundNetLog& bound_net_log,
       const CompletionCallback& callback);
 
@@ -197,6 +198,7 @@ class FileStream::AsyncContext {
   // The MessageLoopForIO that this AsyncContext is running on.
   MessageLoopForIO* const message_loop_;
   CompletionCallback callback_;  // The user provided callback.
+  scoped_refptr<IOBuffer> in_flight_buf_;
 
   // This is used to synchronize between the AsyncContext destructor (which runs
   // on the IO thread and OnBackgroundIOCompleted() which runs on the WorkerPool
@@ -238,17 +240,19 @@ FileStream::AsyncContext::~AsyncContext() {
 }
 
 void FileStream::AsyncContext::InitiateAsyncRead(
-    base::PlatformFile file, char* buf, int buf_len,
+    base::PlatformFile file, IOBuffer* buf, int buf_len,
     const net::BoundNetLog& bound_net_log,
     const CompletionCallback& callback) {
   DCHECK(callback_.is_null());
+  DCHECK(!in_flight_buf_);
   callback_ = callback;
+  in_flight_buf_ = buf;  // Hold until the async operation ends.
 
   base::WorkerPool::PostTask(
       FROM_HERE,
       base::Bind(&ReadFileTask,
                  file,
-                 buf,
+                 buf->data(),
                  buf_len,
                  record_uma_,
                  bound_net_log,
@@ -258,17 +262,19 @@ void FileStream::AsyncContext::InitiateAsyncRead(
 }
 
 void FileStream::AsyncContext::InitiateAsyncWrite(
-    base::PlatformFile file, const char* buf, int buf_len,
+    base::PlatformFile file, IOBuffer* buf, int buf_len,
     const net::BoundNetLog& bound_net_log,
     const CompletionCallback& callback) {
   DCHECK(callback_.is_null());
+  DCHECK(!in_flight_buf_);
   callback_ = callback;
+  in_flight_buf_ = buf;  // Hold until the async operation ends.
 
   base::WorkerPool::PostTask(
       FROM_HERE,
       base::Bind(&WriteFileTask,
                  file,
-                 buf,
+                 buf->data(),
                  buf_len,
                  record_uma_,
                  bound_net_log,
@@ -301,14 +307,17 @@ void FileStream::AsyncContext::RunAsynchronousCallback() {
 
   if (is_closing_) {
     callback_.Reset();
+    in_flight_buf_ = NULL;
     return;
   }
 
   DCHECK(!callback_.is_null());
-  CompletionCallback temp;
-  std::swap(temp, callback_);
+  CompletionCallback temp_callback = callback_;
+  callback_.Reset();
+  scoped_refptr<IOBuffer> temp_buf = in_flight_buf_;
+  in_flight_buf_ = NULL;
   background_io_completed_.Reset();
-  temp.Run(result_);
+  temp_callback.Run(result_);
 }
 
 // FileStream ------------------------------------------------------------
@@ -440,18 +449,9 @@ int64 FileStream::Available() {
 }
 
 int FileStream::Read(
-    char* buf, int buf_len, const CompletionCallback& callback) {
+    IOBuffer* buf, int buf_len, const CompletionCallback& callback) {
   DCHECK(async_context_.get());
-  return ReadInternal(buf, buf_len, callback);
-}
 
-int FileStream::ReadSync(char* buf, int buf_len) {
-  DCHECK(!async_context_.get());
-  return ReadInternal(buf, buf_len, CompletionCallback());
-}
-
-int FileStream::ReadInternal(
-    char* buf, int buf_len, const CompletionCallback& callback) {
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
@@ -459,18 +459,27 @@ int FileStream::ReadInternal(
   DCHECK_GT(buf_len, 0);
   DCHECK(open_flags_ & base::PLATFORM_FILE_READ);
 
-  if (async_context_.get()) {
-    DCHECK(open_flags_ & base::PLATFORM_FILE_ASYNC);
-    // If we're in async, make sure we don't have a request in flight.
-    DCHECK(async_context_->callback().is_null());
-    if (record_uma_)
-      async_context_->EnableErrorStatistics();
-    async_context_->InitiateAsyncRead(file_, buf, buf_len, bound_net_log_,
-                                      callback);
-    return ERR_IO_PENDING;
-  } else {
-    return ReadFile(file_, buf, buf_len, record_uma_, bound_net_log_);
-  }
+  DCHECK(open_flags_ & base::PLATFORM_FILE_ASYNC);
+  // Make sure we don't have a request in flight.
+  DCHECK(async_context_->callback().is_null());
+  if (record_uma_)
+    async_context_->EnableErrorStatistics();
+  async_context_->InitiateAsyncRead(file_, buf, buf_len, bound_net_log_,
+                                    callback);
+  return ERR_IO_PENDING;
+}
+
+int FileStream::ReadSync(char* buf, int buf_len) {
+  DCHECK(!async_context_.get());
+
+  if (!IsOpen())
+    return ERR_UNEXPECTED;
+
+  // read(..., 0) will return 0, which indicates end-of-file.
+  DCHECK_GT(buf_len, 0);
+  DCHECK(open_flags_ & base::PLATFORM_FILE_READ);
+
+  return ReadFile(file_, buf, buf_len, record_uma_, bound_net_log_);
 }
 
 int FileStream::ReadUntilComplete(char *buf, int buf_len) {
@@ -495,37 +504,36 @@ int FileStream::ReadUntilComplete(char *buf, int buf_len) {
 }
 
 int FileStream::Write(
-    const char* buf, int buf_len, const CompletionCallback& callback) {
+    IOBuffer* buf, int buf_len, const CompletionCallback& callback) {
   DCHECK(async_context_.get());
-  return WriteInternal(buf, buf_len, callback);
-}
 
-int FileStream::WriteSync(
-    const char* buf, int buf_len) {
-  DCHECK(!async_context_.get());
-  return WriteInternal(buf, buf_len, CompletionCallback());
-}
-
-int FileStream::WriteInternal(
-    const char* buf, int buf_len, const CompletionCallback& callback) {
   // write(..., 0) will return 0, which indicates end-of-file.
   DCHECK_GT(buf_len, 0);
 
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
-  if (async_context_.get()) {
-    DCHECK(open_flags_ & base::PLATFORM_FILE_ASYNC);
-    // If we're in async, make sure we don't have a request in flight.
-    DCHECK(async_context_->callback().is_null());
-    if (record_uma_)
-      async_context_->EnableErrorStatistics();
-    async_context_->InitiateAsyncWrite(file_, buf, buf_len, bound_net_log_,
-                                       callback);
-    return ERR_IO_PENDING;
-  } else {
-    return WriteFile(file_, buf, buf_len, record_uma_, bound_net_log_);
-  }
+  DCHECK(open_flags_ & base::PLATFORM_FILE_ASYNC);
+  // Make sure we don't have a request in flight.
+  DCHECK(async_context_->callback().is_null());
+  if (record_uma_)
+    async_context_->EnableErrorStatistics();
+  async_context_->InitiateAsyncWrite(file_, buf, buf_len, bound_net_log_,
+                                     callback);
+  return ERR_IO_PENDING;
+}
+
+int FileStream::WriteSync(
+    const char* buf, int buf_len) {
+  DCHECK(!async_context_.get());
+
+  // write(..., 0) will return 0, which indicates end-of-file.
+  DCHECK_GT(buf_len, 0);
+
+  if (!IsOpen())
+    return ERR_UNEXPECTED;
+
+  return WriteFile(file_, buf, buf_len, record_uma_, bound_net_log_);
 }
 
 int64 FileStream::Truncate(int64 bytes) {

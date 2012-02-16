@@ -59,9 +59,6 @@ BlobURLRequestJob::BlobURLRequestJob(
       total_size_(0),
       current_item_offset_(0),
       remaining_bytes_(0),
-      read_buf_offset_(0),
-      read_buf_size_(0),
-      read_buf_remaining_bytes_(0),
       bytes_to_read_(0),
       error_(false),
       headers_set_(false),
@@ -233,17 +230,14 @@ bool BlobURLRequestJob::ReadRawData(net::IOBuffer* dest,
 
   // Keep track of the buffer.
   DCHECK(!read_buf_);
-  read_buf_ = dest;
-  read_buf_offset_ = 0;
-  read_buf_size_ = dest_size;
-  read_buf_remaining_bytes_ = dest_size;
+  read_buf_ = new net::DrainableIOBuffer(dest, dest_size);
 
   return ReadLoop(bytes_read);
 }
 
 bool BlobURLRequestJob::ReadLoop(int* bytes_read) {
   // Read until we encounter an error or could not get the data immediately.
-  while (remaining_bytes_ > 0 && read_buf_remaining_bytes_ > 0) {
+  while (remaining_bytes_ > 0 && read_buf_->BytesRemaining() > 0) {
     if (!ReadItem())
       return false;
   }
@@ -255,9 +249,10 @@ bool BlobURLRequestJob::ReadLoop(int* bytes_read) {
 int BlobURLRequestJob::ComputeBytesToRead() const {
   int64 current_item_remaining_bytes =
       item_length_list_[item_index_] - current_item_offset_;
-  int bytes_to_read = (read_buf_remaining_bytes_ > current_item_remaining_bytes)
+  int bytes_to_read = (read_buf_->BytesRemaining() >
+                       current_item_remaining_bytes)
       ? static_cast<int>(current_item_remaining_bytes)
-      : read_buf_remaining_bytes_;
+      : read_buf_->BytesRemaining();
   if (bytes_to_read > remaining_bytes_)
     bytes_to_read = static_cast<int>(remaining_bytes_);
   return bytes_to_read;
@@ -298,9 +293,9 @@ bool BlobURLRequestJob::ReadItem() {
 }
 
 bool BlobURLRequestJob::ReadBytes(const BlobData::Item& item) {
-  DCHECK(read_buf_remaining_bytes_ >= bytes_to_read_);
+  DCHECK_GE(read_buf_->BytesRemaining(), bytes_to_read_);
 
-  memcpy(read_buf_->data() + read_buf_offset_,
+  memcpy(read_buf_->data(),
          &item.data.at(0) + item.offset + current_item_offset_,
          bytes_to_read_);
 
@@ -348,10 +343,10 @@ void BlobURLRequestJob::DidOpen(base::PlatformFileError rv,
 bool BlobURLRequestJob::ReadFile(const BlobData::Item& item) {
   DCHECK(stream_.get());
   DCHECK(stream_->IsOpen());
-  DCHECK(read_buf_remaining_bytes_ >= bytes_to_read_);
+  DCHECK_GE(read_buf_->BytesRemaining(), bytes_to_read_);
 
   // Start the asynchronous reading.
-  int rv = stream_->Read(read_buf_->data() + read_buf_offset_,
+  int rv = stream_->Read(read_buf_,
                          bytes_to_read_,
                          base::Bind(&BlobURLRequestJob::DidRead,
                                     base::Unretained(this)));
@@ -387,7 +382,7 @@ void BlobURLRequestJob::DidRead(int result) {
   AdvanceBytesRead(result);
 
   // If the read buffer is completely filled, we're done.
-  if (!read_buf_remaining_bytes_) {
+  if (!read_buf_->BytesRemaining()) {
     int bytes_read = ReadCompleted();
     NotifyReadComplete(bytes_read);
     return;
@@ -421,17 +416,13 @@ void BlobURLRequestJob::AdvanceBytesRead(int result) {
   DCHECK_GE(remaining_bytes_, 0);
 
   // Adjust the read buffer.
-  read_buf_offset_ += result;
-  read_buf_remaining_bytes_ -= result;
-  DCHECK_GE(read_buf_remaining_bytes_, 0);
+  read_buf_->DidConsume(result);
+  DCHECK_GE(read_buf_->BytesRemaining(), 0);
 }
 
 int BlobURLRequestJob::ReadCompleted() {
-  int bytes_read = read_buf_size_ - read_buf_remaining_bytes_;
+  int bytes_read = read_buf_->BytesConsumed();
   read_buf_ = NULL;
-  read_buf_offset_ = 0;
-  read_buf_size_ = 0;
-  read_buf_remaining_bytes_ = 0;
   return bytes_read;
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,9 @@ struct PlatformFileInfo;
 }
 
 namespace net {
+class DrainableIOBuffer;
 class FileStream;
+class IOBuffer;
 }
 
 namespace webkit_blob {
@@ -79,10 +81,7 @@ class BLOB_EXPORT BlobURLRequestJob : public net::URLRequestJob {
   int64 total_size_;
   int64 current_item_offset_;
   int64 remaining_bytes_;
-  scoped_refptr<net::IOBuffer> read_buf_;
-  int read_buf_offset_;
-  int read_buf_size_;
-  int read_buf_remaining_bytes_;
+  scoped_refptr<net::DrainableIOBuffer> read_buf_;
   int bytes_to_read_;
   bool error_;
   bool headers_set_;
