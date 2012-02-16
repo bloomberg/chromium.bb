@@ -30,8 +30,6 @@ struct MediaStreamDispatcher::Stream {
   media_stream::StreamDeviceInfoArray video_array;
 };
 
-MediaStreamDispatcherEventHandler::~MediaStreamDispatcherEventHandler() {}
-
 MediaStreamDispatcher::MediaStreamDispatcher(RenderViewImpl* render_view)
     : content::RenderViewObserver(render_view),
       next_ipc_id_(0) {

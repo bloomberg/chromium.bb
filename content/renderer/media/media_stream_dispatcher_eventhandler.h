@@ -51,7 +51,7 @@ class CONTENT_EXPORT MediaStreamDispatcherEventHandler {
   virtual void OnDeviceOpenFailed(int request_id) = 0;
 
  protected:
-  virtual ~MediaStreamDispatcherEventHandler();
+  virtual ~MediaStreamDispatcherEventHandler() {}
 };
 
 #endif  // CONTENT_RENDERER_MEDIA_MEDIA_STREAM_DISPATCHER_EVENTHANDLER_H_
