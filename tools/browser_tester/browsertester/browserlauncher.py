@@ -189,8 +189,6 @@ class BrowserLauncher(object):
       env['NACL_SEL_LDR_BOOTSTRAP'] = self.options.sel_ldr_bootstrap
     if self.options.irt_library:
       env['NACL_IRT_LIBRARY'] = self.options.irt_library
-    if self.options.enable_experimental_js:
-      env['NACL_ENABLE_EXPERIMENTAL_JAVASCRIPT_APIS'] = '1'
     if self.options.prefer_portable_in_manifest:
       env['NACL_PREFER_PORTABLE_IN_MANIFEST'] = '1'
     self.SetStandardStream(env, 'NACL_EXE_STDIN',

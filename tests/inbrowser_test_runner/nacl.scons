@@ -5,8 +5,8 @@
 
 Import('env')
 
-
 env.ComponentLibrary('testrunner', ['test_runner.c'])
+env.ComponentLibrary('testrunner_browser', ['test_runner_ppapi.c'])
 
 if env.Bit('bitcode'):
   # The test is disabled for ARM/PNaCl because dynamic_load_test.nexe
@@ -19,9 +19,9 @@ env.Replicate('$STAGING_DIR',
 test_files = [
   env.File('$STAGING_DIR/nacltest.js'),
   env.File('$STAGING_DIR/dynamic_load_test.nmf'),
-  env.File('$STAGING_DIR/dynamic_load_test_${TARGET_FULLARCH}${PROGSUFFIX}'),
+  env.File('$STAGING_DIR/dynamic_load_browser_test_${TARGET_FULLARCH}${PROGSUFFIX}'),
   env.File('$STAGING_DIR/dynamic_modify_test.nmf'),
-  env.File('$STAGING_DIR/dynamic_modify_test_${TARGET_FULLARCH}${PROGSUFFIX}'),
+  env.File('$STAGING_DIR/dynamic_modify_browser_test_${TARGET_FULLARCH}${PROGSUFFIX}'),
   env.File('$STAGING_DIR/imc_shm_mmap_test.nmf'),
   env.File('$STAGING_DIR/imc_shm_mmap_test_${TARGET_FULLARCH}${PROGSUFFIX}'),
 ]
@@ -38,8 +38,7 @@ node = env.PPAPIBrowserTester(
         '${SCONSTRUCT_DIR}/tests/dynamic_code_loading/dynamic_load_test.nmf',
         '${SCONSTRUCT_DIR}/tests/dynamic_code_loading/dynamic_modify_test.nmf',
         '${SCONSTRUCT_DIR}/tests/imc_shm_mmap/imc_shm_mmap_test.nmf'],
-    files=[env.File('test_runner.html')] + test_files,
-    args=['--enable_experimental_js'])
+    files=[env.File('test_runner.html')] + test_files)
 
 # Disabled on Valgrind because of multiple nexes.
 # TODO(eugenis): enable when Valgrind learns to autodetect the nexe name
@@ -48,4 +47,5 @@ env.AddNodeToTestSuite(node, ['chrome_browser_tests'],
                        is_flaky=True, # Don't subject Chrome to our problems.
                        is_broken=env.PPAPIBrowserTesterIsBroken() or
                                  env.Bit('nacl_glibc') or
-                                 env.Bit('running_on_valgrind'))
+                                 env.Bit('running_on_valgrind') or
+                                 not env.Bit('irt'))

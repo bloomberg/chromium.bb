@@ -1,7 +1,7 @@
 {
   "program": {
-    "x86-32": {"url": "dynamic_modify_test_x86-32.nexe"},
-    "x86-64": {"url": "dynamic_modify_test_x86-64.nexe"},
-    "arm": {"url": "dynamic_modify_test_arm.nexe"}
+    "x86-32": {"url": "dynamic_modify_browser_test_x86-32.nexe"},
+    "x86-64": {"url": "dynamic_modify_browser_test_x86-64.nexe"},
+    "arm": {"url": "dynamic_modify_browser_test_arm.nexe"}
   }
 }

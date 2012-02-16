@@ -41,40 +41,54 @@ def GetTemplate(env):
     return 'templates_x86.S'
 
 
+nonbrowser_libs = ['testrunner',
+                   '${DYNCODE_LIBS}',
+                   'imc_syscalls',
+                   'platform',
+                   'gio',
+                   '${PTHREAD_LIBS}',
+                   '${NONIRT_LIBS}']
+browser_libs = ['testrunner_browser',
+                '${PPAPI_LIBS}',
+                'nacl_dyncode',
+                'nacl',
+                'pthread']
+
 template_obj = asm_env.ComponentObject(GetTemplate(env))
 
-dynamic_load_test_nexe_name = ('dynamic_load_test_%s' %
-                               env.get('TARGET_FULLARCH'))
+dynamic_load_test_object = env.ComponentObject('dynamic_load_test.c')
+
+dynamic_load_nonbrowser_test_nexe_name = ('dynamic_load_test_%s' %
+                                          env.get('TARGET_FULLARCH'))
 dynamic_load_test_nexe = env.ComponentProgram(
-    dynamic_load_test_nexe_name,
-    ['dynamic_load_test.c',
-    template_obj],
-    EXTRA_LIBS=[
-        'testrunner',
-        '${DYNCODE_LIBS}',
-        'srpc',
-        'imc_syscalls',
-        'platform',
-        'gio',
-        '${PTHREAD_LIBS}',
-        '${NONIRT_LIBS}'
-        ])
+    dynamic_load_nonbrowser_test_nexe_name,
+    [dynamic_load_test_object, template_obj],
+    EXTRA_LIBS=nonbrowser_libs)
+
+if env.Bit('irt'):
+  dynamic_load_browser_test_nexe_name = ('dynamic_load_browser_test_%s' %
+                                         env.get('TARGET_FULLARCH'))
+  dynamic_load_browser_test_nexe = env.ComponentProgram(
+      dynamic_load_browser_test_nexe_name,
+      [dynamic_load_test_object, template_obj],
+      EXTRA_LIBS=browser_libs)
+
+dynamic_modify_test_object = env.ComponentObject(['dynamic_modify_test.c'])
 
 dynamic_modify_test_nexe_name = ('dynamic_modify_test_%s' %
                                  env.get('TARGET_FULLARCH'))
 dynamic_modify_test_nexe = env.ComponentProgram(
     dynamic_modify_test_nexe_name,
-    ['dynamic_modify_test.c',
-    template_obj],
-    EXTRA_LIBS=[
-        'testrunner',
-        '${DYNCODE_LIBS}',
-        'srpc',
-        'imc_syscalls',
-        'platform',
-        'gio',
-        '${PTHREAD_LIBS}',
-        '${NONIRT_LIBS}'])
+    [dynamic_modify_test_object, template_obj],
+    EXTRA_LIBS=nonbrowser_libs)
+
+if env.Bit('irt'):
+  dynamic_modify_browser_test_nexe_name = ('dynamic_modify_browser_test_%s' %
+                                           env.get('TARGET_FULLARCH'))
+  dynamic_modify_browser_test_nexe = env.ComponentProgram(
+      dynamic_modify_browser_test_nexe_name,
+      [dynamic_modify_test_object, template_obj],
+      EXTRA_LIBS=browser_libs)
 
 write_to_dyncode_nexe = env.ComponentProgram(
     'write_to_dyncode',
@@ -99,14 +113,8 @@ dyncode_demand_alloc_test_nexe = env.ComponentProgram(
 
 test_suites = ['small_tests', 'sel_ldr_tests', 'dynamic_load_tests']
 
-node = env.CommandSelLdrTestNacl(
-    'dynamic_load_test.out',
-    dynamic_load_test_nexe,
-    # We need to set this because the test needs to behave
-    # differently in the plugin, but the plugin does not provide a
-    # way to distinguish itself.  TODO(mseaborn): Fix that.
-    # See http://code.google.com/p/nativeclient/issues/detail?id=889
-    sel_ldr_flags=['-E', 'NACL_SRPC_STANDALONE=1'])
+node = env.CommandSelLdrTestNacl('dynamic_load_test.out',
+                                 dynamic_load_test_nexe)
 env.AddNodeToTestSuite(node, test_suites, 'run_dynamic_load_test',
                        is_broken=(env.Bit('target_arm') and
                                   not env.UsingEmulator()))
@@ -142,10 +150,8 @@ if not env.Bit('tests_use_irt'):
   env.AddNodeToTestSuite(node, test_suites, 'run_dyncode_disabled_test')
 
 if not env.Bit('target_arm'):
-  node = env.CommandSelLdrTestNacl(
-       'dynamic_modify_test.out',
-       dynamic_modify_test_nexe,
-       sel_ldr_flags=['-E', 'NACL_SRPC_STANDALONE=1'])
+  node = env.CommandSelLdrTestNacl('dynamic_modify_test.out',
+                                   dynamic_modify_test_nexe)
   # This test fails under Valgrind presumably because Valgrind cannot
   # handle dynamic code modifications that occur via our doubly-mapped
   # shared memory segment.  It does not know to flush its code

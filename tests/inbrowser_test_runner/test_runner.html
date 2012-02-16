@@ -1,10 +1,17 @@
+<!DOCTYPE html>
 <!--
-  Copyright 2010 The Native Client Authors. All rights reserved.
-  Use of this source code is governed by a BSD-style license that can
-  be found in the LICENSE file.
+  Copyright (c) 2012 The Native Client Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can be
+  found in the LICENSE file.
 -->
-
+<html>
+<head>
+<title>
+  NativeClient browser test runner
+</title>
 <script type="text/javascript" src="nacltest.js"></script>
+</head>
+<body>
 
 <div id="scratch_space"></div>
 
@@ -32,14 +39,17 @@ function addTest(tester, url) {
     var div = document.createElement('div');
     div.appendChild(embed);
 
+    // Set up an event listener for success messages.
+    div.addEventListener('message', function(message_event) {
+      status.assertEqual(message_event.data, 'passed');
+      status.pass();
+    }, true);
+
     // Wait for the load event, which indicates successful loading.
     div.addEventListener('load', status.wrap(function(e) {
       status.log('Loaded ' + embed.src);
-      // Make sure the plugin is working OK.
-      var result = embed.run_tests();
-      status.log(result);
-      status.assertEqual(result, 'passed');
-      status.pass();
+      // Start tests in the module.
+      embed.postMessage('run_tests');
     }), true);
 
     div.addEventListener('error', status.wrap(function(e) {
@@ -61,3 +71,5 @@ addTest(tester, 'imc_shm_mmap_test.nmf');
 tester.runParallel();
 
 </script>
+</body>
+</html>
