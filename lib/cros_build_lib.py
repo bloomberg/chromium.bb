@@ -106,6 +106,8 @@ def SudoRunCommand(cmd, **kwds):
     cmd: The command to run.  See RunCommand for rules of this argument-
          SudoRunCommand purely prefixes it with sudo.
     kwds: See RunCommand options, it's a direct pass thru to it.
+          Note that this supports a 'strict' keyword that defaults to True.
+          If set to False, it'll suppress strict sudo behaviour.
   Returns:
     See RunCommand documentation.
   Raises:
@@ -116,7 +118,7 @@ def SudoRunCommand(cmd, **kwds):
   """
 
   mode_s, mode_l = '', []
-  if STRICT_SUDO:
+  if kwds.pop("strict", True) and STRICT_SUDO:
     if 'CROS_SUDO_KEEP_ALIVE' not in os.environ:
       raise RunCommandError(
           'We were invoked in a strict sudo non-interactive context, but no '
