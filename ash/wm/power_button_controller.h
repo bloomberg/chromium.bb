@@ -138,6 +138,9 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver {
   // Called when the user logs in.
   void OnLoginStateChange(bool logged_in, bool is_guest);
 
+  // Called when the application is exiting.
+  void OnExit();
+
   // Called when the screen is locked (after the lock window is visible) or
   // unlocked.
   void OnLockStateChange(bool locked);

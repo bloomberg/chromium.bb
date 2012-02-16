@@ -28,6 +28,10 @@ PowerButtonObserver::PowerButtonObserver() {
       content::NotificationService::AllSources());
   registrar_.Add(
       this,
+      content::NOTIFICATION_APP_TERMINATING,
+      content::NotificationService::AllSources());
+  registrar_.Add(
+      this,
       chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
       content::NotificationService::AllSources());
 
@@ -58,6 +62,9 @@ void PowerButtonObserver::Observe(int type,
           OnLoginStateChange(true /* logged_in */, user->is_guest());
       break;
     }
+    case content::NOTIFICATION_APP_TERMINATING:
+      ash::Shell::GetInstance()->power_button_controller()->OnExit();
+      break;
     case chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED: {
       bool locked = *content::Details<bool>(details).ptr();
       ash::Shell::GetInstance()->power_button_controller()->

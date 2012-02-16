@@ -321,6 +321,19 @@ void PowerButtonController::OnLoginStateChange(bool logged_in, bool is_guest) {
   logged_in_as_non_guest_ = logged_in && !is_guest;
 }
 
+void PowerButtonController::OnExit() {
+  // If we hear that Chrome is exiting but didn't request it ourselves, all we
+  // can really hope for is that we'll have time to clear the screen.
+  if (!shutting_down_) {
+    shutting_down_ = true;
+    ash::Shell::GetInstance()->root_filter()->
+        set_update_cursor_visibility(false);
+    aura::RootWindow::GetInstance()->ShowCursor(false);
+    ShowBackgroundLayer();
+    StartAnimation(ALL_CONTAINERS, ANIMATION_HIDE);
+  }
+}
+
 void PowerButtonController::OnLockStateChange(bool locked) {
   if (shutting_down_ || locked_ == locked)
     return;
