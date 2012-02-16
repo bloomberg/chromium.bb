@@ -77,11 +77,6 @@ ARCHES=['x86-32', 'x86-64', 'arm']
 def IsValidArch(arch):
   return arch in ARCHES
 
-LIBMODES=['newlib', 'glibc']
-
-def IsValidLibmode(libmode):
-  return libmode in LIBMODES
-
 ######################################################################
 
 def GetNaClRoot():
@@ -316,30 +311,15 @@ def BuildArchCRX(version_quad, arch, lib_overrides, options):
              'Packaging for arch %s in %s' % (arch, target_dir))
 
   # Copy llc and ld.
-  copytree_existing(PnaclDirs.SandboxedCompilerDir(arch),
-                    target_dir)
+  copytree_existing(PnaclDirs.SandboxedCompilerDir(arch), target_dir)
 
-  # Copy newlib deps, and glibc deps.
-  # Put newlib at the top level, and glibc on a separate subdir
-  # for now, until all the native link line looks the same, or
-  # at least there are no conflicting overlaps.
-  # E.g., libgcc_eh, libgcc are still not quite the same and overlap.
-  for lib_mode in LIBMODES:
-    if lib_mode == 'glibc' and options.skip_glibc:
-      print 'Skip copying glibc libs for arch %s' % arch
-      continue
-
-    if lib_mode == 'newlib':
-      lib_dir = target_dir
-    else:
-      lib_dir = J(target_dir, lib_mode)
-    copytree_existing(PnaclDirs.LibDir(arch), lib_dir)
-    if (arch, lib_mode) in lib_overrides:
-      # Also copy files from the list of overrides.
-      for override in lib_overrides[(arch, lib_mode)]:
-        print 'Copying override %s to %s' % (override, lib_dir)
-        shutil.copy2(override, lib_dir)
-
+  # Copy native newlib deps, and glibc deps.
+  copytree_existing(PnaclDirs.LibDir(arch), target_dir)
+  # Also copy files from the list of overrides.
+  if arch in lib_overrides:
+    for override in lib_overrides[arch]:
+      print 'Copying override %s to %s' % (override, target_dir)
+      shutil.copy2(override, target_dir)
 
   # Skip the CRX generation if we are only building the unpacked version
   # for commandline testing.
@@ -432,9 +412,6 @@ def Main():
   parser.add_option('-u', '--unpacked_only', action='store_true',
                     dest='unpacked_only', default=False,
                     help='Only generate the unpacked version')
-  parser.add_option('-s', '--skip_glibc', dest='skip_glibc',
-                    default=False, action='store_true',
-                    help='Skip copying the glibc libraries.')
   parser.add_option('-d', '--dest', dest='dest',
                     help='The destination root for laying out the extension')
   parser.add_option('-p', '--priv_key',
@@ -444,7 +421,7 @@ def Main():
                     dest='lib_overrides', action='append', default=[],
                     help='Specify path to a fresher native library ' +
                     'that overrides the tarball library with ' +
-                    '(arch:libmode:libdir) tuple.')
+                    '(arch:libfile) tuple.')
   parser.add_option('-g', '--generate_key',
                     action='store_true', dest='gen_key',
                     help='Generate a fresh private key, and exit.')
@@ -464,17 +441,15 @@ def Main():
 
   lib_overrides = {}
   for o in options.lib_overrides:
-    arch, libmode, override_lib = o.split(',')
+    arch, override_lib = o.split(',')
     if not IsValidArch(arch):
       raise Exception('Unknown arch for -L: %s (from %s)' % (arch, o))
-    if not IsValidLibmode(libmode):
-      raise Exception('Unknown libmode for -L: %s (from %s)' % (libmode, o))
     if not os.path.isfile(override_lib):
       raise Exception('Override native lib not a file for -L: %s (from %s)' %
                       (override_lib, o))
-    override_list = lib_overrides.get((arch, libmode), [])
+    override_list = lib_overrides.get(arch, [])
     override_list.append(override_lib)
-    lib_overrides[(arch, libmode)] = override_list
+    lib_overrides[arch] = override_list
 
   if len(args) != 1:
     parser.print_help()

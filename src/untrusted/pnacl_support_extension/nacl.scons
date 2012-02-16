@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -20,11 +20,8 @@ pnacl_crx_inputs = [
 
 # Depends on the static (newlib) llc and ld, along with the native libs.
 pnacl_crx_inputs += env.Glob('${PNACL_ROOT}/lib-%s/*' % arch)
-if not env.Bit('nacl_glibc'):
-  # It's too weird to ask for the newlib toolchain directory from here
-  # for glibc tests, so we leave that dependency out for now.
-  pnacl_crx_inputs += [ '${PNACL_ROOT}/tools-sb/%s/srpc/bin/llc' % df_arch,
-                        '${PNACL_ROOT}/tools-sb/%s/srpc/bin/ld' % df_arch]
+pnacl_crx_inputs += [ '${PNACL_ROOT}/tools-sb/%s/srpc/bin/llc' % df_arch,
+                      '${PNACL_ROOT}/tools-sb/%s/srpc/bin/ld' % df_arch]
 
 
 # Override the IRT shim with the latest one built in scons-out.
@@ -35,18 +32,9 @@ if not env.Bit('nacl_glibc'):
 # ${LIB_DIR} are bitcode and we don't want to pollute the CRX with those.
 lib_override = ''
 if arch == 'x86-64':
-  # Even for glibc, pretend that the irt_shim is in the 'newlib' part
-  # of the extension. It should be the same anyway.
-  lib_override = ('--lib_override=%s,newlib,${LIB_DIR}/libpnacl_irt_shim.a ' %
-                  arch)
+  lib_override = ('--lib_override=%s,${LIB_DIR}/libpnacl_irt_shim.a ' % arch)
   # Add dependency.
   pnacl_crx_inputs.append(env.File('${LIB_DIR}/libpnacl_irt_shim.a'))
-
-# For now, don't copy glibc files when not testing with --nacl_glibc.
-# The PNaCl glibc tarball may not be available.
-may_skip_glibc = ''
-if not env.Bit('nacl_glibc'):
-  may_skip_glibc = '--skip_glibc '
 
 generated_crx = env.Command(
     # Output (a directory with a bunch of files, like manifest.json)
@@ -61,6 +49,5 @@ generated_crx = env.Command(
      lib_override +
      # Build only the unpacked extension, not zipped up files, etc.
      '-u ' +
-     may_skip_glibc +
      # Dummy version number that's probably newer than anything.
      '9999.9.9.9'))
