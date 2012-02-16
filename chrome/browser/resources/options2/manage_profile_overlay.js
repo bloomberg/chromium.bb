@@ -15,9 +15,7 @@ cr.define('options', function() {
    * @class
    */
   function ManageProfileOverlay() {
-    OptionsPage.call(this,
-                     'manageProfile',
-                     templateData.manageProfileOverlayTabTitle,
+    OptionsPage.call(this, 'manageProfile', templateData.manageProfileTabTitle,
                      'manage-profile-overlay');
   };
 
@@ -219,9 +217,7 @@ cr.define('options', function() {
       $('manage-profile-overlay-delete').hidden = true;
       ManageProfileOverlay.getInstance().hideErrorBubble_();
 
-      // Intentionally don't show the URL in the location bar as we don't want
-      // people trying to navigate here by hand.
-      OptionsPage.showPageByName('manageProfile', false);
+      OptionsPage.navigateToPage('manageProfile');
     },
 
     /**
@@ -238,9 +234,7 @@ cr.define('options', function() {
       $('delete-profile-message').style.backgroundImage = 'url("' +
           profileInfo.iconURL + '")';
 
-      // Intentionally don't show the URL in the location bar as we don't want
-      // people trying to navigate here by hand.
-      OptionsPage.showPageByName('manageProfile', false);
+      OptionsPage.navigateToPage('manageProfile');
     },
   };
 
