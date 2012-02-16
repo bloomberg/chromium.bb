@@ -94,6 +94,26 @@ class FileSystemOperation : public FileSystemOperationInterface {
   void SyncGetPlatformPath(const GURL& path, FilePath* platform_path);
 
  private:
+  // Used only for internal assertions.
+  enum OperationType {
+    kOperationNone,
+    kOperationCreateFile,
+    kOperationCreateDirectory,
+    kOperationCopy,
+    kOperationMove,
+    kOperationDirectoryExists,
+    kOperationFileExists,
+    kOperationGetMetadata,
+    kOperationReadDirectory,
+    kOperationRemove,
+    kOperationWrite,
+    kOperationTruncate,
+    kOperationTouchFile,
+    kOperationOpenFile,
+    kOperationGetLocalPath,
+    kOperationCancel,
+  };
+
   class ScopedQuotaUtilHelper;
 
   // Only MountPointProviders or testing class can create a
@@ -256,29 +276,9 @@ class FileSystemOperation : public FileSystemOperationInterface {
   base::PlatformFileError SetupDestContextForWrite(const GURL& path,
                                                    bool create);
 
-#ifndef NDEBUG
-  enum OperationType {
-    kOperationNone,
-    kOperationCreateFile,
-    kOperationCreateDirectory,
-    kOperationCopy,
-    kOperationMove,
-    kOperationDirectoryExists,
-    kOperationFileExists,
-    kOperationGetMetadata,
-    kOperationReadDirectory,
-    kOperationRemove,
-    kOperationWrite,
-    kOperationTruncate,
-    kOperationTouchFile,
-    kOperationOpenFile,
-    kOperationGetLocalPath,
-    kOperationCancel,
-  };
-
-  // A flag to make sure we call operation only once per instance.
-  OperationType pending_operation_;
-#endif
+  // Used only for internal assertions.
+  // Returns false if there's another inflight pending operation.
+  bool SetPendingOperationType(OperationType type);
 
   // Proxy for calling file_util_proxy methods.
   scoped_refptr<base::MessageLoopProxy> proxy_;
@@ -311,6 +311,9 @@ class FileSystemOperation : public FileSystemOperationInterface {
   // write.
   FilePath src_virtual_path_;
   FilePath dest_virtual_path_;
+
+  // A flag to make sure we call operation only once per instance.
+  OperationType pending_operation_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperation);
 };

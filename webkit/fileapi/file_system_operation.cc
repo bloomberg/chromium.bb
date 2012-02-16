@@ -73,10 +73,8 @@ FileSystemOperation::~FileSystemOperation() {
 void FileSystemOperation::CreateFile(const GURL& path,
                                      bool exclusive,
                                      const StatusCallback& callback) {
-#ifndef NDEBUG
-  DCHECK(kOperationNone == pending_operation_);
-  pending_operation_ = kOperationCreateFile;
-#endif
+  DCHECK(SetPendingOperationType(kOperationCreateFile));
+
   base::PlatformFileError result = SetupSrcContextForWrite(path, true);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result);
@@ -115,10 +113,8 @@ void FileSystemOperation::CreateDirectory(const GURL& path,
                                           bool exclusive,
                                           bool recursive,
                                           const StatusCallback& callback) {
-#ifndef NDEBUG
-  DCHECK(kOperationNone == pending_operation_);
-  pending_operation_ = kOperationCreateDirectory;
-#endif
+  DCHECK(SetPendingOperationType(kOperationCreateDirectory));
+
   base::PlatformFileError result = SetupSrcContextForWrite(path, true);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result);
@@ -155,10 +151,8 @@ void FileSystemOperation::DelayedCreateDirectoryForQuota(
 void FileSystemOperation::Copy(const GURL& src_path,
                                const GURL& dest_path,
                                const StatusCallback& callback) {
-#ifndef NDEBUG
-  DCHECK(kOperationNone == pending_operation_);
-  pending_operation_ = kOperationCopy;
-#endif
+  DCHECK(SetPendingOperationType(kOperationCopy));
+
   base::PlatformFileError result = SetupSrcContextForRead(src_path);
   if (result == base::PLATFORM_FILE_OK)
     result = SetupDestContextForWrite(dest_path, true);
@@ -197,10 +191,8 @@ void FileSystemOperation::DelayedCopyForQuota(const StatusCallback& callback,
 void FileSystemOperation::Move(const GURL& src_path,
                                const GURL& dest_path,
                                const StatusCallback& callback) {
-#ifndef NDEBUG
-  DCHECK(kOperationNone == pending_operation_);
-  pending_operation_ = kOperationMove;
-#endif
+  DCHECK(SetPendingOperationType(kOperationMove));
+
   base::PlatformFileError result = SetupSrcContextForWrite(src_path, false);
   if (result == base::PLATFORM_FILE_OK)
     result = SetupDestContextForWrite(dest_path, true);
@@ -238,10 +230,8 @@ void FileSystemOperation::DelayedMoveForQuota(const StatusCallback& callback,
 
 void FileSystemOperation::DirectoryExists(const GURL& path,
                                           const StatusCallback& callback) {
-#ifndef NDEBUG
-  DCHECK(kOperationNone == pending_operation_);
-  pending_operation_ = kOperationDirectoryExists;
-#endif
+  DCHECK(SetPendingOperationType(kOperationDirectoryExists));
+
   base::PlatformFileError result = SetupSrcContextForRead(path);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result);
@@ -260,10 +250,8 @@ void FileSystemOperation::DirectoryExists(const GURL& path,
 
 void FileSystemOperation::FileExists(const GURL& path,
                                      const StatusCallback& callback) {
-#ifndef NDEBUG
-  DCHECK(kOperationNone == pending_operation_);
-  pending_operation_ = kOperationFileExists;
-#endif
+  DCHECK(SetPendingOperationType(kOperationFileExists));
+
   base::PlatformFileError result = SetupSrcContextForRead(path);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result);
@@ -282,10 +270,8 @@ void FileSystemOperation::FileExists(const GURL& path,
 
 void FileSystemOperation::GetMetadata(const GURL& path,
                                       const GetMetadataCallback& callback) {
-#ifndef NDEBUG
-  DCHECK(kOperationNone == pending_operation_);
-  pending_operation_ = kOperationGetMetadata;
-#endif
+  DCHECK(SetPendingOperationType(kOperationGetMetadata));
+
   base::PlatformFileError result = SetupSrcContextForRead(path);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result, base::PlatformFileInfo(), FilePath());
@@ -304,10 +290,8 @@ void FileSystemOperation::GetMetadata(const GURL& path,
 
 void FileSystemOperation::ReadDirectory(const GURL& path,
                                         const ReadDirectoryCallback& callback) {
-#ifndef NDEBUG
-  DCHECK(kOperationNone == pending_operation_);
-  pending_operation_ = kOperationReadDirectory;
-#endif
+  DCHECK(SetPendingOperationType(kOperationReadDirectory));
+
   base::PlatformFileError result = SetupSrcContextForRead(path);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result, std::vector<base::FileUtilProxy::Entry>(), false);
@@ -326,10 +310,8 @@ void FileSystemOperation::ReadDirectory(const GURL& path,
 
 void FileSystemOperation::Remove(const GURL& path, bool recursive,
                                  const StatusCallback& callback) {
-#ifndef NDEBUG
-  DCHECK(kOperationNone == pending_operation_);
-  pending_operation_ = kOperationRemove;
-#endif
+  DCHECK(SetPendingOperationType(kOperationRemove));
+
   base::PlatformFileError result = SetupSrcContextForWrite(path, false);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result);
@@ -352,10 +334,8 @@ void FileSystemOperation::Write(
     const GURL& blob_url,
     int64 offset,
     const WriteCallback& callback) {
-#ifndef NDEBUG
-  DCHECK(kOperationNone == pending_operation_);
-  pending_operation_ = kOperationWrite;
-#endif
+  DCHECK(SetPendingOperationType(kOperationWrite));
+
   base::PlatformFileError result = SetupSrcContextForWrite(path, true);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result, 0, false);
@@ -402,10 +382,8 @@ void FileSystemOperation::DelayedWriteForQuota(quota::QuotaStatusCode status,
 
 void FileSystemOperation::Truncate(const GURL& path, int64 length,
                                    const StatusCallback& callback) {
-#ifndef NDEBUG
-  DCHECK(kOperationNone == pending_operation_);
-  pending_operation_ = kOperationTruncate;
-#endif
+  DCHECK(SetPendingOperationType(kOperationTruncate));
+
   base::PlatformFileError result = SetupSrcContextForWrite(path, false);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result);
@@ -441,10 +419,8 @@ void FileSystemOperation::TouchFile(const GURL& path,
                                     const base::Time& last_access_time,
                                     const base::Time& last_modified_time,
                                     const StatusCallback& callback) {
-#ifndef NDEBUG
-  DCHECK(kOperationNone == pending_operation_);
-  pending_operation_ = kOperationTouchFile;
-#endif
+  DCHECK(SetPendingOperationType(kOperationTouchFile));
+
   base::PlatformFileError result = SetupSrcContextForWrite(path, true);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result);
@@ -466,10 +442,8 @@ void FileSystemOperation::OpenFile(const GURL& path,
                                    int file_flags,
                                    base::ProcessHandle peer_handle,
                                    const OpenFileCallback& callback) {
-#ifndef NDEBUG
-  DCHECK(kOperationNone == pending_operation_);
-  pending_operation_ = kOperationOpenFile;
-#endif
+  DCHECK(SetPendingOperationType(kOperationOpenFile));
+
   peer_handle_ = peer_handle;
 
   if (file_flags & (
@@ -533,9 +507,7 @@ void FileSystemOperation::DelayedOpenFileForQuota(
 // We don't support cancelling any other operation at this time.
 void FileSystemOperation::Cancel(const StatusCallback& cancel_callback) {
   if (file_writer_delegate_.get()) {
-#ifndef NDEBUG
-    DCHECK(kOperationWrite == pending_operation_);
-#endif
+    DCHECK_EQ(kOperationWrite, pending_operation_);
     // Writes are done without proxying through FileUtilProxy after the initial
     // opening of the PlatformFile.  All state changes are done on this thread,
     // so we're guaranteed to be able to shut down atomically.  We do need to
@@ -554,9 +526,7 @@ void FileSystemOperation::Cancel(const StatusCallback& cancel_callback) {
     cancel_callback.Run(base::PLATFORM_FILE_OK);
     write_callback_.Reset();
   } else {
-#ifndef NDEBUG
-    DCHECK(kOperationTruncate == pending_operation_);
-#endif
+    DCHECK_EQ(kOperationTruncate, pending_operation_);
     // We're cancelling a truncate operation, but we can't actually stop it
     // since it's been proxied to another thread.  We need to save the
     // cancel_callback so that when the truncate returns, it can see that it's
@@ -572,10 +542,8 @@ FileSystemOperation* FileSystemOperation::AsFileSystemOperation() {
 
 void FileSystemOperation::SyncGetPlatformPath(const GURL& path,
                                               FilePath* platform_path) {
-#ifndef NDEBUG
-  DCHECK(kOperationNone == pending_operation_);
-  pending_operation_ = kOperationGetLocalPath;
-#endif
+  DCHECK(SetPendingOperationType(kOperationGetLocalPath));
+
   base::PlatformFileError result = SetupSrcContextForRead(path);
   if (result != base::PLATFORM_FILE_OK) {
     delete this;
@@ -593,10 +561,8 @@ FileSystemOperation::FileSystemOperation(
     FileSystemContext* file_system_context)
     : proxy_(proxy),
       operation_context_(file_system_context, NULL),
-      peer_handle_(base::kNullProcessHandle) {
-#ifndef NDEBUG
-  pending_operation_ = kOperationNone;
-#endif
+      peer_handle_(base::kNullProcessHandle),
+      pending_operation_(kOperationNone) {
 }
 
 void FileSystemOperation::GetUsageAndQuotaThenCallback(
@@ -641,9 +607,8 @@ void FileSystemOperation::DidFinishFileOperation(
     const StatusCallback& callback,
     base::PlatformFileError rv) {
   if (!cancel_callback_.is_null()) {
-#ifndef NDEBUG
-    DCHECK(kOperationTruncate == pending_operation_);
-#endif
+    DCHECK_EQ(kOperationTruncate, pending_operation_);
+
     callback.Run(base::PLATFORM_FILE_ERROR_ABORT);
     cancel_callback_.Run(base::PLATFORM_FILE_OK);
     cancel_callback_.Reset();
@@ -836,6 +801,13 @@ base::PlatformFileError FileSystemOperation::SetupDestContextForWrite(
   if (!operation_context_.dest_file_util())
     operation_context_.set_dest_file_util(file_util);
   return result;
+}
+
+bool FileSystemOperation::SetPendingOperationType(OperationType type) {
+  if (pending_operation_ != kOperationNone)
+    return false;
+  pending_operation_ = type;
+  return true;
 }
 
 }  // namespace fileapi
