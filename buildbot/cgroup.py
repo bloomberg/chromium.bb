@@ -126,7 +126,16 @@ class CGroup(cros_lib.MasterPidContextManager):
 
   def RemoveNamedCGroup(self, path):
     """Removes a cgroup given by path."""
-    cros_lib.SudoRunCommand(['rmdir', path], print_cmd=False)
+    # Depth first recursively remove our children cgroups, then ourselves.
+    # Allow this to fail since currently it's possible for the cleanup code
+    # to not fully kill the hierarchy.  Note that we must do just rmdirs,
+    # rm -rf cannot be used- it tries to remove files which are unlinkable
+    # in cgroup (only namespaces can be removed via rmdir).
+    # See Documentation/cgroups/ for further details.
+    cros_lib.SudoRunCommand(['find', path, '-depth', '-type', 'd',
+                            '-exec', 'rmdir', '{}', ';'],
+                            redirect_stderr=True, error_ok=True,
+                            print_cmd=False)
 
   def AssignPidToGroup(self, path, pid):
     """Assigns a given process to the given cgroup."""
