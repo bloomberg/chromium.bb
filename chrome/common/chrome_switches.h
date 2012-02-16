@@ -124,6 +124,7 @@ extern const char kDnsServer[];
 extern const char kDownloadsNewUI[];
 extern const char kDumpHistogramsOnExit[];
 extern const char kEnableAeroPeekTabs[];
+extern const char kEnableAsynchronousSpellChecking[];
 extern const char kEnableAuthNegotiatePort[];
 extern const char kEnableAutofillFeedback[];
 extern const char kEnableAutologin[];

@@ -647,6 +647,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kCloudPrintServiceURL,
       switches::kDebugPrint,
       switches::kDumpHistogramsOnExit,
+      switches::kEnableAsynchronousSpellChecking,
       switches::kEnableBenchmarking,
       switches::kEnableCrxlessWebApps,
       switches::kEnableExperimentalExtensionApis,
@@ -1194,8 +1195,13 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     web_prefs->user_style_sheet_enabled = false;
   }
 
-  web_prefs->unified_textchecker_enabled = CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kExperimentalSpellcheckerFeatures);
+  web_prefs->asynchronous_spell_checking_enabled =
+      CommandLine::ForCurrentProcess()->
+          HasSwitch(switches::kEnableAsynchronousSpellChecking);
+  web_prefs->unified_textchecker_enabled =
+      web_prefs->asynchronous_spell_checking_enabled ||
+          CommandLine::ForCurrentProcess()->
+              HasSwitch(switches::kExperimentalSpellcheckerFeatures);
 
   web_prefs->uses_universal_detector =
       prefs->GetBoolean(prefs::kWebKitUsesUniversalDetector);

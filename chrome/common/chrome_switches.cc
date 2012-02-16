@@ -422,6 +422,11 @@ const char kDumpHistogramsOnExit[]          = "dump-histograms-on-exit";
 // Enables AeroPeek for each tab. (This switch only works on Windows 7).
 const char kEnableAeroPeekTabs[]            = "enable-aero-peek-tabs";
 
+// Enables asynchronous spellchecking features for all time.
+// Enabling this feature also enables unified spellchecking.
+const char kEnableAsynchronousSpellChecking[] =
+    "enable-asynchronous-spellchecking";
+
 // Enables the inclusion of non-standard ports when generating the Kerberos SPN
 // in response to a Negotiate challenge. See
 // HttpAuthHandlerNegotiate::CreateSPN for more background.
