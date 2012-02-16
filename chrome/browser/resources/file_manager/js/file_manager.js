@@ -1160,14 +1160,15 @@ FileManager.prototype = {
     }
 
     this.table_.columnModel = new cr.ui.table.TableColumnModel(columns);
-
-    this.table_.addEventListener(
+    // Don't pay attention to double clicks on the table header.
+    this.table_.querySelector('.list').addEventListener(
         'dblclick', this.onDetailDoubleClick_.bind(this));
 
     this.table_.columnModel = new cr.ui.table.TableColumnModel(columns);
 
-    cr.ui.contextMenuHandler.addContextMenuProperty(this.table_);
-    this.table_.contextMenu = this.fileContextMenu_;
+    cr.ui.contextMenuHandler.addContextMenuProperty(
+        this.table_.querySelector('.list'));
+    this.table_.querySelector('.list').contextMenu = this.fileContextMenu_;
 
     this.table_.addEventListener('mousedown',
                                  this.onGridOrTableMouseDown_.bind(this));
@@ -2898,10 +2899,8 @@ FileManager.prototype = {
    * @param {Event} event The click event.
    */
   FileManager.prototype.onDetailDoubleClick_ = function(event) {
-    if (this.isRenamingInProgress() ||
-        this.table_.firstChild.contains(event.target)) {
-      // Don't pay attention to double clicks during a rename or double clicks
-      // on the table header.
+    if (this.isRenamingInProgress()) {
+      // Don't pay attention to double clicks during a rename.
       return;
     }
 
