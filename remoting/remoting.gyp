@@ -308,11 +308,6 @@
         'host/plugin/host_plugin_utils.h',
         'host/plugin/host_script_object.cc',
         'host/plugin/host_script_object.h',
-        'host/plugin/policy_hack/nat_policy.h',
-        'host/plugin/policy_hack/nat_policy.cc',
-        'host/plugin/policy_hack/nat_policy_linux.cc',
-        'host/plugin/policy_hack/nat_policy_mac.mm',
-        'host/plugin/policy_hack/nat_policy_win.cc',
       ],
       'conditions': [
         ['OS=="mac"', {
@@ -574,6 +569,11 @@
         'host/local_input_monitor_win.cc',
         'host/log_to_server.cc',
         'host/log_to_server.h',
+        'host/policy_hack/nat_policy.h',
+        'host/policy_hack/nat_policy.cc',
+        'host/policy_hack/nat_policy_linux.cc',
+        'host/policy_hack/nat_policy_mac.mm',
+        'host/policy_hack/nat_policy_win.cc',
         'host/register_support_host_request.cc',
         'host/register_support_host_request.h',
         'host/screen_recorder.cc',

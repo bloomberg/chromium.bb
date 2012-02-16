@@ -30,6 +30,7 @@
 #include "remoting/host/host_event_logger.h"
 #include "remoting/host/json_host_config.h"
 #include "remoting/host/log_to_server.h"
+#include "remoting/host/policy_hack/nat_policy.h"
 #include "remoting/host/signaling_connector.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
@@ -67,9 +68,12 @@ class HostProcess {
   HostProcess()
       : message_loop_(MessageLoop::TYPE_UI),
         file_io_thread_("FileIO"),
-        context_(message_loop_.message_loop_proxy()) {
+        context_(message_loop_.message_loop_proxy()),
+        allow_nat_traversal_(true),
+        restarting_(false) {
     context_.Start();
-    file_io_thread_.Start();
+    file_io_thread_.StartWithOptions(
+        base::Thread::Options(MessageLoop::TYPE_IO, 0));
     network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
   }
 
@@ -99,8 +103,10 @@ class HostProcess {
       return 1;
     }
 
-    context_.network_message_loop()->PostTask(FROM_HERE, base::Bind(
-        &HostProcess::StartHost, base::Unretained(this)));
+    nat_policy_.reset(
+        policy_hack::NatPolicy::Create(file_io_thread_.message_loop_proxy()));
+    nat_policy_->StartWatching(
+        base::Bind(&HostProcess::OnNatPolicyUpdate, base::Unretained(this)));
 
     message_loop_.Run();
 
@@ -165,20 +171,49 @@ class HostProcess {
     return true;
   }
 
+  void OnNatPolicyUpdate(bool nat_traversal_enabled) {
+    if (!context_.network_message_loop()->BelongsToCurrentThread()) {
+      context_.network_message_loop()->PostTask(FROM_HERE, base::Bind(
+          &HostProcess::OnNatPolicyUpdate, base::Unretained(this),
+          nat_traversal_enabled));
+      return;
+    }
+
+    bool policy_changed = allow_nat_traversal_ != nat_traversal_enabled;
+    allow_nat_traversal_ = nat_traversal_enabled;
+
+    if (host_) {
+      // Restart the host if the policy has changed while the host was
+      // online.
+      if (policy_changed)
+        RestartHost();
+    } else {
+      // Just start the host otherwise.
+      StartHost();
+    }
+  }
+
   void StartHost() {
     DCHECK(context_.network_message_loop()->BelongsToCurrentThread());
+    DCHECK(!host_);
 
-    signal_strategy_.reset(
-        new XmppSignalStrategy(context_.jingle_thread(), xmpp_login_,
-                               xmpp_auth_token_, xmpp_auth_service_));
-    signaling_connector_.reset(new SignalingConnector(signal_strategy_.get()));
+    if (!signal_strategy_.get()) {
+      signal_strategy_.reset(
+          new XmppSignalStrategy(context_.jingle_thread(), xmpp_login_,
+                                 xmpp_auth_token_, xmpp_auth_service_));
+      signaling_connector_.reset(
+          new SignalingConnector(signal_strategy_.get()));
+    }
 
-    desktop_environment_.reset(DesktopEnvironment::Create(&context_));
+    if (!desktop_environment_.get())
+      desktop_environment_.reset(DesktopEnvironment::Create(&context_));
 
     protocol::NetworkSettings network_settings;
-    network_settings.allow_nat_traversal = false;
-    network_settings.min_port = kMinPortNumber;
-    network_settings.max_port = kMaxPortNumber;
+    network_settings.allow_nat_traversal = allow_nat_traversal_;
+    if (!allow_nat_traversal_) {
+      network_settings.min_port = kMinPortNumber;
+      network_settings.max_port = kMaxPortNumber;
+    }
 
     host_ = new ChromotingHost(
         &context_, signal_strategy_.get(), desktop_environment_.get(),
@@ -201,6 +236,30 @@ class HostProcess {
     host_->SetAuthenticatorFactory(factory.Pass());
   }
 
+  void RestartHost() {
+    DCHECK(context_.network_message_loop()->BelongsToCurrentThread());
+
+    if (restarting_)
+      return;
+
+    restarting_ = true;
+    host_->Shutdown(base::Bind(
+        &HostProcess::RestartOnHostShutdown, base::Unretained(this)));
+  }
+
+  void RestartOnHostShutdown() {
+    DCHECK(context_.network_message_loop()->BelongsToCurrentThread());
+
+    restarting_ = false;
+
+    host_ = NULL;
+    log_to_server_.reset();
+    host_event_logger_.reset();
+    heartbeat_sender_.reset();
+
+    StartHost();
+  }
+
   MessageLoop message_loop_;
   base::Thread file_io_thread_;
   ChromotingHostContext context_;
@@ -215,6 +274,11 @@ class HostProcess {
   std::string xmpp_login_;
   std::string xmpp_auth_token_;
   std::string xmpp_auth_service_;
+
+  scoped_ptr<policy_hack::NatPolicy> nat_policy_;
+  bool allow_nat_traversal_;
+
+  bool restarting_;
 
   scoped_ptr<SignalStrategy> signal_strategy_;
   scoped_ptr<SignalingConnector> signaling_connector_;

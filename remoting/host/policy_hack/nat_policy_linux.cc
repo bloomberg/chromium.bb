@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 
 #include <set>
 
-#include "remoting/host/plugin/policy_hack/nat_policy.h"
+#include "remoting/host/policy_hack/nat_policy.h"
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -219,6 +219,9 @@ class NatPolicyLinux : public NatPolicy {
     base::Time last_modification = GetLastModification();
     if (last_modification.is_null())
       return true;
+
+    if (last_modification_file_.is_null())
+      last_modification_file_ = last_modification;
 
     // If there was a change since the last recorded modification, wait some
     // more.

@@ -20,7 +20,7 @@
 #include "remoting/host/host_secret.h"
 #include "remoting/host/it2me_host_user_interface.h"
 #include "remoting/host/plugin/host_log_handler.h"
-#include "remoting/host/plugin/policy_hack/nat_policy.h"
+#include "remoting/host/policy_hack/nat_policy.h"
 #include "remoting/host/register_support_host_request.h"
 #include "remoting/protocol/it2me_host_authenticator_factory.h"
 

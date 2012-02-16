@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 //
 // This is a reduction of the functionality in those classes.
 
-#include "remoting/host/plugin/policy_hack/nat_policy.h"
+#include "remoting/host/policy_hack/nat_policy.h"
 
 #include <userenv.h>
 

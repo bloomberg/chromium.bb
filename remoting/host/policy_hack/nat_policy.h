@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_PLUGIN_POLICY_HACK_NAT_POLICY_H_
-#define REMOTING_HOST_PLUGIN_POLICY_HACK_NAT_POLICY_H_
+#ifndef REMOTING_HOST_POLICY_HACK_NAT_POLICY_H_
+#define REMOTING_HOST_POLICY_HACK_NAT_POLICY_H_
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
@@ -75,4 +75,4 @@ class NatPolicy {
 }  // namespace policy_hack
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_PLUGIN_POLICY_HACK_NAT_POLICY_H_
+#endif  // REMOTING_HOST_POLICY_HACK_NAT_POLICY_H_
