@@ -77,9 +77,8 @@ FilePath GetFileNameFromDragData(const WebDropData& drop_data) {
 void PromiseWriterHelper(const WebDropData& drop_data,
                          FileStream* file_stream) {
   DCHECK(file_stream);
-  file_stream->Write(drop_data.file_contents.data(),
-                     drop_data.file_contents.length(),
-                     net::CompletionCallback());
+  file_stream->WriteSync(drop_data.file_contents.data(),
+                         drop_data.file_contents.length());
 
   if (file_stream)
     file_stream->CloseSync();
