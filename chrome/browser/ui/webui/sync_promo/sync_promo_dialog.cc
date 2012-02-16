@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_dialog.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
@@ -87,7 +88,7 @@ bool SyncPromoDialog::HandleOpenURLFromTab(
   // If the open URL request is for the current tab then that means the sync
   // promo page will be closed.
   sync_promo_was_closed_ = params.disposition == CURRENT_TAB;
-  browser::CloseHtmlDialog(window_);
+  CloseDialog();
   return true;
 }
 
@@ -99,6 +100,13 @@ bool SyncPromoDialog::HandleAddNewContents(
     bool user_gesture) {
   spawned_browser_ = HtmlDialogTabContentsDelegate::StaticAddNewContents(
       profile_, source, new_contents, disposition, initial_pos, user_gesture);
-  browser::CloseHtmlDialog(window_);
+  CloseDialog();
   return true;
+}
+
+void SyncPromoDialog::CloseDialog() {
+  // Close the dialog asynchronously since closing it will cause this and other
+  // WebUI handlers to be deleted.
+  MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(browser::CloseHtmlDialog, window_));
 }

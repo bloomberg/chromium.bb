@@ -56,6 +56,9 @@ class SyncPromoDialog : public HtmlDialogUIDelegate {
                                     const gfx::Rect& initial_pos,
                                     bool user_gesture) OVERRIDE;
 
+  // Close this dialog.
+  void CloseDialog();
+
   // The profile that should own the HTML dialog.
   Profile* profile_;
   // The browser spawned from the sync promo dialog (if any).
