@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,8 @@
 #include <assert.h>
 
 #include <ostream>
+
+#include "gpu/command_buffer/common/gles2_utils_export.h"
 
 // Windows defines an ERROR macro.
 #ifdef ERROR
@@ -28,7 +30,7 @@ enum LogLevel {
 // This is a very simple logger for use in command buffer code. Common and
 // command buffer code cannot be dependent on base. It just outputs the message
 // to stderr.
-class Logger {
+class GLES2_UTILS_EXPORT Logger {
  public:
   Logger(bool condition, LogLevel level)
       : condition_(condition),

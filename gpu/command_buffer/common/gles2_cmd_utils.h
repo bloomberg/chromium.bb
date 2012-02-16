@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,9 @@
 #define GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_UTILS_H_
 
 #include <string>
+
 #include "../common/types.h"
+#include "gpu/command_buffer/common/gles2_utils_export.h"
 
 namespace gpu {
 namespace gles2 {
@@ -53,7 +55,7 @@ inline bool SafeAddUint32(uint32 a, uint32 b, uint32* dst) {
 }
 
 // Utilties for GLES2 support.
-class GLES2Util {
+class GLES2_UTILS_EXPORT GLES2Util {
  public:
   static const int kNumFaces = 6;
 
