@@ -67,7 +67,9 @@ class COMPOSITOR_EXPORT LayerAnimationObserver  {
   void AttachedToSequence(LayerAnimationSequence* sequence);
 
   // Called when |this| is removed to |sequence|'s observer list.
-  void DetachedFromSequence(LayerAnimationSequence* sequence);
+  // This will only result in notifications if |send_notification| is true.
+  void DetachedFromSequence(LayerAnimationSequence* sequence,
+                            bool send_notification);
 
   AttachedSequences attached_sequences_;
 };

@@ -45,10 +45,11 @@ void LayerAnimationObserver::AttachedToSequence(
 }
 
 void LayerAnimationObserver::DetachedFromSequence(
-    LayerAnimationSequence* sequence) {
+    LayerAnimationSequence* sequence, bool send_notification) {
   if (attached_sequences_.find(sequence) != attached_sequences_.end())
     attached_sequences_.erase(sequence);
-  OnDetachedFromSequence(sequence);
+  if (send_notification)
+    OnDetachedFromSequence(sequence);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

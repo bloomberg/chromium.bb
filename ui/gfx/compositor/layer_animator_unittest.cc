@@ -25,7 +25,10 @@ namespace {
 
 class TestImplicitAnimationObserver : public ImplicitAnimationObserver {
  public:
-  TestImplicitAnimationObserver() : animations_completed_(false) {}
+  explicit TestImplicitAnimationObserver(bool notify_when_animator_destructed)
+    : animations_completed_(false),
+      notify_when_animator_destructed_(notify_when_animator_destructed) {
+  }
 
   bool animations_completed() const { return animations_completed_; }
   void set_animations_completed(bool completed) {
@@ -38,7 +41,12 @@ class TestImplicitAnimationObserver : public ImplicitAnimationObserver {
     animations_completed_ = true;
   }
 
+  virtual bool RequiresNotificationWhenAnimatorDestroyed() const OVERRIDE {
+    return notify_when_animator_destructed_;
+  }
+
   bool animations_completed_;
+  bool notify_when_animator_destructed_;
 
   DISALLOW_COPY_AND_ASSIGN(TestImplicitAnimationObserver);
 };
@@ -731,7 +739,7 @@ TEST(LayerAnimatorTest, ImplicitAnimationObservers) {
   scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
   AnimationContainerElement* element = animator.get();
   animator->set_disable_timer_for_test(true);
-  TestImplicitAnimationObserver observer;
+  TestImplicitAnimationObserver observer(false);
   TestLayerAnimationDelegate delegate;
   animator->SetDelegate(&delegate);
 
@@ -756,7 +764,7 @@ TEST(LayerAnimatorTest, ImplicitAnimationObservers) {
 TEST(LayerAnimatorTest, InterruptedImplicitAnimationObservers) {
   scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
   animator->set_disable_timer_for_test(true);
-  TestImplicitAnimationObserver observer;
+  TestImplicitAnimationObserver observer(false);
   TestLayerAnimationDelegate delegate;
   animator->SetDelegate(&delegate);
 
@@ -776,6 +784,36 @@ TEST(LayerAnimatorTest, InterruptedImplicitAnimationObservers) {
   EXPECT_TRUE(observer.animations_completed());
   EXPECT_FLOAT_EQ(1.0f, delegate.GetOpacityForAnimation());
 }
+
+// Tests that an observer added to a scoped settings object is not notified
+// when the animator is destroyed unless explicitly requested.
+TEST(LayerAnimatorTest, ImplicitObserversAtAnimatorDestruction) {
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  animator->set_disable_timer_for_test(true);
+  TestImplicitAnimationObserver observer_notify(true);
+  TestImplicitAnimationObserver observer_do_not_notify(false);
+  TestLayerAnimationDelegate delegate;
+  animator->SetDelegate(&delegate);
+
+  EXPECT_FALSE(observer_notify.animations_completed());
+  EXPECT_FALSE(observer_do_not_notify.animations_completed());
+
+  animator->SetOpacity(1.0f);
+
+  {
+    ScopedLayerAnimationSettings settings(animator.get());
+    settings.AddObserver(&observer_notify);
+    settings.AddObserver(&observer_do_not_notify);
+    animator->SetOpacity(0.0f);
+  }
+
+  EXPECT_FALSE(observer_notify.animations_completed());
+  EXPECT_FALSE(observer_do_not_notify.animations_completed());
+  animator.reset(NULL);
+  EXPECT_TRUE(observer_notify.animations_completed());
+  EXPECT_FALSE(observer_do_not_notify.animations_completed());
+}
+
 
 TEST(LayerAnimatorTest, RemoveObserverShouldRemoveFromSequences) {
   scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
@@ -845,7 +883,7 @@ TEST(LayerAnimatorTest, ObserverAttachedAfterAnimationStarted) {
   AnimationContainerElement* element = animator.get();
   animator->set_disable_timer_for_test(true);
 
-  TestImplicitAnimationObserver observer;
+  TestImplicitAnimationObserver observer(false);
   TestLayerAnimationDelegate delegate;
   animator->SetDelegate(&delegate);
 
@@ -878,7 +916,7 @@ TEST(LayerAnimatorTest, ObserverDetachedBeforeAnimationFinished) {
   AnimationContainerElement* element = animator.get();
   animator->set_disable_timer_for_test(true);
 
-  TestImplicitAnimationObserver observer;
+  TestImplicitAnimationObserver observer(false);
   TestLayerAnimationDelegate delegate;
   animator->SetDelegate(&delegate);
 

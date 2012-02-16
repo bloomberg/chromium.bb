@@ -28,7 +28,7 @@ LayerAnimationSequence::LayerAnimationSequence(LayerAnimationElement* element)
 LayerAnimationSequence::~LayerAnimationSequence() {
   FOR_EACH_OBSERVER(LayerAnimationObserver,
                     observers_,
-                    DetachedFromSequence(this));
+                    DetachedFromSequence(this, true));
 }
 
 void LayerAnimationSequence::Progress(base::TimeDelta elapsed,
@@ -121,7 +121,7 @@ void LayerAnimationSequence::AddObserver(LayerAnimationObserver* observer) {
 
 void LayerAnimationSequence::RemoveObserver(LayerAnimationObserver* observer) {
   observers_.RemoveObserver(observer);
-  observer->DetachedFromSequence(this);
+  observer->DetachedFromSequence(this, true);
 }
 
 void LayerAnimationSequence::OnScheduled() {
@@ -132,9 +132,13 @@ void LayerAnimationSequence::OnAnimatorDestroyed() {
   if (observers_.might_have_observers()) {
     ObserverListBase<LayerAnimationObserver>::Iterator it(observers_);
     LayerAnimationObserver* obs;
-    while ((obs = it.GetNext()) != NULL)
-      if (!obs->RequiresNotificationWhenAnimatorDestroyed())
-        RemoveObserver(obs);
+    while ((obs = it.GetNext()) != NULL) {
+      if (!obs->RequiresNotificationWhenAnimatorDestroyed()) {
+        // Remove the observer, but do not allow notifications to be sent.
+        observers_.RemoveObserver(obs);
+        obs->DetachedFromSequence(this, false);
+      }
+    }
   }
 }
 
