@@ -44,10 +44,10 @@ def CheckPathLd():
     return None
 
 
-@Check("/usr/local/gold is cleaned up")
+@Check("/usr/bin/ld doesn't point to gold")
 def CheckLocalGold():
     # Check /usr/bin/ld* symlinks.
-    for path in ('ld.bfd', 'ld.gold', 'ld'):
+    for path in ('ld.bfd', 'ld'):
         path = '/usr/bin/' + path
         try:
             target = os.readlink(path)
@@ -63,11 +63,6 @@ def CheckLocalGold():
                     "probably set this up yourself.  But you should make\n"
                     "/usr/bin/ld be the standard linker, which you likely\n"
                     "renamed /usr/bin/ld.bfd or something like that.\n" % path)
-
-    if os.path.exists('/usr/local/gold'):
-        return ("You have a /usr/local/gold, which is no longer needed.\n"
-                "Check that you don't have any references to it in your\n"
-                "set up and then delete it.\n")
 
     return None
 
