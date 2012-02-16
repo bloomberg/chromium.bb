@@ -5,6 +5,7 @@
 #include <map>
 
 #include "ash/launcher/launcher.h"
+#include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_types.h"
 #include "ash/shell.h"
@@ -110,18 +111,46 @@ class WindowWatcher : public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(WindowWatcher);
 };
 
-class ShellDelegateImpl : public ash::ShellDelegate {
+class LauncherDelegateImpl : public ash::LauncherDelegate {
  public:
-  ShellDelegateImpl() {}
+  explicit LauncherDelegateImpl(WindowWatcher* watcher)
+      : watcher_(watcher) {
+  }
 
-  void set_watcher(WindowWatcher* watcher) { watcher_ = watcher; }
-
+  // LauncherDelegate overrides:
   virtual void CreateNewWindow() OVERRIDE {
     ash::shell::ToplevelWindow::CreateParams create_params;
     create_params.can_resize = true;
     create_params.can_maximize = true;
     ash::shell::ToplevelWindow::CreateToplevelWindow(create_params);
   }
+
+  virtual void ItemClicked(const ash::LauncherItem& item) OVERRIDE {
+    aura::Window* window = watcher_->GetWindowByID(item.id);
+    window->Show();
+    ash::ActivateWindow(window);
+  }
+
+  virtual int GetBrowserShortcutResourceId() OVERRIDE {
+    return IDR_AURA_LAUNCHER_BROWSER_SHORTCUT;
+  }
+
+  virtual string16 GetTitle(const ash::LauncherItem& item) OVERRIDE {
+    return watcher_->GetWindowByID(item.id)->title();
+  }
+
+ private:
+  // Used to update Launcher. Owned by main.
+  WindowWatcher* watcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(LauncherDelegateImpl);
+};
+
+class ShellDelegateImpl : public ash::ShellDelegate {
+ public:
+  ShellDelegateImpl() {}
+
+  void set_watcher(WindowWatcher* watcher) { watcher_ = watcher; }
 
   virtual views::Widget* CreateStatusArea() OVERRIDE {
     return ash::internal::CreateStatusArea();
@@ -156,20 +185,8 @@ class ShellDelegateImpl : public ash::ShellDelegate {
     return windows;
   }
 
-  virtual void LauncherItemClicked(
-      const ash::LauncherItem& item) OVERRIDE {
-    aura::Window* window = watcher_->GetWindowByID(item.id);
-    window->Show();
-    ash::ActivateWindow(window);
-  }
-
-  virtual int GetBrowserShortcutResourceId() OVERRIDE {
-    return IDR_AURA_LAUNCHER_BROWSER_SHORTCUT;
-  }
-
-  virtual string16 GetLauncherItemTitle(
-      const ash::LauncherItem& item) OVERRIDE {
-    return watcher_->GetWindowByID(item.id)->title();
+  virtual ash::LauncherDelegate* CreateLauncherDelegate() OVERRIDE {
+    return new LauncherDelegateImpl(watcher_);
   }
 
  private:

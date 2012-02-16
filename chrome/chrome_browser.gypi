@@ -3460,6 +3460,8 @@
         'browser/ui/views/aura/launcher_app_icon_loader.h',
         'browser/ui/views/aura/launcher_icon_updater.cc',
         'browser/ui/views/aura/launcher_icon_updater.h',
+        'browser/ui/views/aura/launcher/chrome_launcher_delegate.cc',
+        'browser/ui/views/aura/launcher/chrome_launcher_delegate.h',
         'browser/ui/views/aura/screen_orientation_listener.cc',
         'browser/ui/views/aura/screen_orientation_listener.h',
         'browser/ui/views/aura/screenshot_taker.cc',

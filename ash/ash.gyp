@@ -86,6 +86,7 @@
         'launcher/app_launcher_button.h',
         'launcher/launcher.cc',
         'launcher/launcher.h',
+        'launcher/launcher_delegate.h',
         'launcher/launcher_model.cc',
         'launcher/launcher_model.h',
         'launcher/launcher_model_observer.h',

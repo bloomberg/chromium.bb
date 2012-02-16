@@ -54,18 +54,8 @@ std::vector<aura::Window*> TestShellDelegate::GetCycleWindowList(
   return windows;
 }
 
-void TestShellDelegate::CreateNewWindow() {
-}
-
-void TestShellDelegate::LauncherItemClicked(const LauncherItem& item) {
-}
-
-int TestShellDelegate::GetBrowserShortcutResourceId() {
-  return IDR_AURA_LAUNCHER_BROWSER_SHORTCUT;
-}
-
-string16 TestShellDelegate::GetLauncherItemTitle(const LauncherItem& item) {
-  return string16();
+LauncherDelegate* TestShellDelegate::CreateLauncherDelegate() {
+  return NULL;
 }
 
 }  // namespace test

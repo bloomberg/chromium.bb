@@ -12,15 +12,16 @@
 
 namespace ash {
 
+class LauncherDelegate;
 class WindowCycleList;
 
 // LauncherWindowCycler is used when the user clicks the browser shortcut button
 // in the launcher. If there are no windows to cycle through a new one is
-// created (by way of ShellDelegate::CreateNewWindow), otherwise it cycles
+// created (by way of LauncherDelegate::CreateNewWindow), otherwise it cycles
 // through the existing windows until Reset() is invoked.
 class ASH_EXPORT LauncherWindowCycler {
  public:
-  LauncherWindowCycler();
+  explicit LauncherWindowCycler(LauncherDelegate* delegate);
   ~LauncherWindowCycler();
 
   // Invoked each time the button is pressed on the browser shortcut. If not
@@ -34,6 +35,9 @@ class ASH_EXPORT LauncherWindowCycler {
 
  private:
   scoped_ptr<WindowCycleList> windows_;
+
+  // Owned by Launcher.
+  LauncherDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherWindowCycler);
 };

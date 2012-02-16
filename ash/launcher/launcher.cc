@@ -4,6 +4,7 @@
 
 #include "ash/launcher/launcher.h"
 
+#include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_view.h"
 #include "ash/shell.h"
@@ -106,6 +107,7 @@ Launcher::Launcher(aura::Window* window_container)
       window_container_(window_container),
       delegate_view_(NULL) {
   model_.reset(new LauncherModel);
+  delegate_.reset(Shell::GetInstance()->delegate()->CreateLauncherDelegate());
 
   widget_.reset(new views::Widget);
   views::Widget::InitParams params(
@@ -116,7 +118,7 @@ Launcher::Launcher(aura::Window* window_container)
   params.parent = Shell::GetInstance()->GetContainer(
       ash::internal::kShellWindowId_LauncherContainer);
   internal::LauncherView* launcher_view =
-      new internal::LauncherView(model_.get());
+      new internal::LauncherView(model_.get(), delegate_.get());
   launcher_view->Init();
   delegate_view_ = new DelegateView;
   delegate_view_->AddChildView(launcher_view);

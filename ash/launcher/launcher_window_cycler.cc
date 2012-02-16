@@ -4,6 +4,7 @@
 
 #include "ash/launcher/launcher_window_cycler.h"
 
+#include "ash/launcher/launcher_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wm/window_cycle_controller.h"
@@ -11,7 +12,8 @@
 
 namespace ash {
 
-LauncherWindowCycler::LauncherWindowCycler() {
+LauncherWindowCycler::LauncherWindowCycler(LauncherDelegate* delegate)
+    : delegate_(delegate) {
 }
 
 LauncherWindowCycler::~LauncherWindowCycler() {
@@ -27,7 +29,7 @@ void LauncherWindowCycler::Cycle() {
             ShellDelegate::SOURCE_LAUNCHER, ShellDelegate::ORDER_MRU)));
   }
   if (windows_->empty())
-    ash::Shell::GetInstance()->delegate()->CreateNewWindow();
+    delegate_->CreateNewWindow();
   else
     windows_->Step(WindowCycleList::FORWARD);
 }

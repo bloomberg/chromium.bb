@@ -20,6 +20,7 @@ class Widget;
 
 namespace ash {
 
+class LauncherDelegate;
 class LauncherModel;
 
 class ASH_EXPORT Launcher {
@@ -30,6 +31,8 @@ class ASH_EXPORT Launcher {
   // Sets the width of the status area.
   void SetStatusWidth(int width);
   int GetStatusWidth();
+
+  LauncherDelegate* delegate() { return delegate_.get(); }
 
   LauncherModel* model() { return model_.get(); }
   views::Widget* widget() { return widget_.get(); }
@@ -53,6 +56,8 @@ class ASH_EXPORT Launcher {
 
   // Contents view of the widget. Houses the LauncherView.
   DelegateView* delegate_view_;
+
+  scoped_ptr<LauncherDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(Launcher);
 };

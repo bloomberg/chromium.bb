@@ -28,10 +28,7 @@ class TestShellDelegate : public ShellDelegate {
   virtual std::vector<aura::Window*> GetCycleWindowList(
       CycleSource source,
       CycleOrder order) const OVERRIDE;
-  virtual void CreateNewWindow() OVERRIDE;
-  virtual void LauncherItemClicked(const LauncherItem& item) OVERRIDE;
-  virtual int GetBrowserShortcutResourceId() OVERRIDE;
-  virtual string16 GetLauncherItemTitle(const LauncherItem& item) OVERRIDE;
+  virtual LauncherDelegate* CreateLauncherDelegate() OVERRIDE;
 };
 
 }  // namespace test

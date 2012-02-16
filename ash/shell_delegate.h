@@ -16,10 +16,6 @@ namespace aura {
 class Window;
 }
 
-namespace gfx {
-class Rect;
-}
-
 namespace views {
 class Widget;
 }
@@ -28,6 +24,7 @@ namespace ash {
 
 class AppListModel;
 class AppListViewDelegate;
+class LauncherDelegate;
 struct LauncherItem;
 
 // Delegate of the Shell.
@@ -77,21 +74,9 @@ class ASH_EXPORT ShellDelegate {
       CycleSource source,
       CycleOrder order) const = 0;
 
-  // Launcher related methods --------------------------------------------------
-
-  // Invoked when the user clicks on button in the launcher to create a new
-  // window.
-  virtual void CreateNewWindow() = 0;
-
-  // Invoked when the user clicks on a window entry in the launcher.
-  virtual void LauncherItemClicked(const LauncherItem& item) = 0;
-
-  // Returns the resource id of the image to show on the browser shortcut
-  // button.
-  virtual int GetBrowserShortcutResourceId() = 0;
-
-  // Returns the title to display for the specified launcher item.
-  virtual string16 GetLauncherItemTitle(const LauncherItem& item) = 0;
+  // Creates a new LauncherDelegate. Shell takes ownership of the returned
+  // value.
+  virtual LauncherDelegate* CreateLauncherDelegate() = 0;
 };
 
 }  // namespace ash

@@ -5,6 +5,7 @@
 #include "ash/launcher/launcher_view.h"
 
 #include "ash/launcher/app_launcher_button.h"
+#include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_window_cycler.h"
 #include "ash/launcher/tabbed_launcher_button.h"
@@ -183,8 +184,9 @@ class LauncherView::StartFadeAnimationDelegate :
   DISALLOW_COPY_AND_ASSIGN(StartFadeAnimationDelegate);
 };
 
-LauncherView::LauncherView(LauncherModel* model)
+LauncherView::LauncherView(LauncherModel* model, LauncherDelegate* delegate)
     : model_(model),
+      delegate_(delegate),
       view_model_(new ViewModel),
       overflow_button_(NULL),
       dragging_(NULL),
@@ -328,14 +330,13 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
     case TYPE_BROWSER_SHORTCUT: {
       ResourceBundle& rb = ResourceBundle::GetSharedInstance();
       views::ImageButton* button = new AppLauncherButton(this, this);
-      ShellDelegate* delegate = Shell::GetInstance()->delegate();
-      int image_id = delegate ?
-          delegate->GetBrowserShortcutResourceId() :
+      int image_id = delegate_ ?
+          delegate_->GetBrowserShortcutResourceId() :
           IDR_AURA_LAUNCHER_BROWSER_SHORTCUT;
       button->SetImage(views::CustomButton::BS_NORMAL,
                        rb.GetImageNamed(image_id).ToSkBitmap());
       view = button;
-      cycler_.reset(new LauncherWindowCycler);
+      cycler_.reset(new LauncherWindowCycler(delegate_));
       break;
     }
 
@@ -418,8 +419,7 @@ void LauncherView::GetOverflowItems(std::vector<LauncherItem>* items) {
 
 void LauncherView::ShowOverflowMenu() {
 #if !defined(OS_MACOSX)
-  ShellDelegate* delegate = Shell::GetInstance()->delegate();
-  if (!delegate)
+  if (!delegate_)
     return;
 
   std::vector<LauncherItem> items;
@@ -429,10 +429,8 @@ void LauncherView::ShowOverflowMenu() {
 
   MenuDelegateImpl menu_delegate;
   ui::SimpleMenuModel menu_model(&menu_delegate);
-  for (size_t i = 0; i < items.size(); ++i) {
-    menu_model.AddItem(static_cast<int>(i),
-                       delegate->GetLauncherItemTitle(items[i]));
-  }
+  for (size_t i = 0; i < items.size(); ++i)
+    menu_model.AddItem(static_cast<int>(i), delegate_->GetTitle(items[i]));
   views::MenuModelAdapter menu_adapter(&menu_model);
   overflow_menu_runner_.reset(new views::MenuRunner(menu_adapter.CreateMenu()));
   gfx::Rect bounds(overflow_button_->size());
@@ -448,9 +446,7 @@ void LauncherView::ShowOverflowMenu() {
   LauncherItems::const_iterator window_iter = model_->ItemByID(activated_id);
   if (window_iter == model_->items().end())
     return;  // Window was deleted while menu was up.
-  if (!delegate)
-    return;
-  delegate->LauncherItemClicked(*window_iter);
+  delegate_->ItemClicked(*window_iter);
 #endif  // !defined(OS_MACOSX)
 }
 
@@ -618,8 +614,7 @@ void LauncherView::ButtonPressed(views::Button* sender,
   if (sender == overflow_button_)
     ShowOverflowMenu();
 
-  ShellDelegate* delegate = Shell::GetInstance()->delegate();
-  if (!delegate)
+  if (!delegate_)
     return;
   int view_index = view_model_->GetIndexOfView(sender);
   // May be -1 while in the process of animating closed.
@@ -629,7 +624,7 @@ void LauncherView::ButtonPressed(views::Button* sender,
   switch (model_->items()[view_index].type) {
     case TYPE_TABBED:
     case TYPE_APP:
-      delegate->LauncherItemClicked(model_->items()[view_index]);
+      delegate_->ItemClicked(model_->items()[view_index]);
       break;
 
     case TYPE_APP_LIST:
@@ -646,8 +641,7 @@ void LauncherView::ButtonPressed(views::Button* sender,
 }
 
 string16 LauncherView::GetAccessibleName(views::View* view) {
-  ShellDelegate* delegate = Shell::GetInstance()->delegate();
-  if (!delegate)
+  if (!delegate_)
     return string16();
   int view_index = view_model_->GetIndexOfView(view);
   // May be -1 while in the process of animating closed.
@@ -657,7 +651,7 @@ string16 LauncherView::GetAccessibleName(views::View* view) {
   switch (model_->items()[view_index].type) {
     case TYPE_TABBED:
     case TYPE_APP:
-      return delegate->GetLauncherItemTitle(model_->items()[view_index]);
+      return delegate_->GetTitle(model_->items()[view_index]);
 
     case TYPE_APP_LIST:
       return l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_TITLE);

@@ -4,21 +4,17 @@
 
 #include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
 
-#include "ash/launcher/launcher_types.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
-#include "chrome/browser/defaults.h"
-#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/aura/app_list/app_list_model_builder.h"
 #include "chrome/browser/ui/views/aura/app_list/app_list_view_delegate.h"
-#include "chrome/browser/ui/views/aura/launcher_icon_updater.h"
+#include "chrome/browser/ui/views/aura/launcher/chrome_launcher_delegate.h"
 #include "chrome/browser/ui/views/aura/status_area_host_aura.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_switches.h"
-#include "grit/theme_resources.h"
 #include "ui/aura/window.h"
 
 #if defined(OS_CHROMEOS)
@@ -114,27 +110,6 @@ std::vector<aura::Window*> ChromeShellDelegate::GetCycleWindowList(
   return windows;
 }
 
-void ChromeShellDelegate::CreateNewWindow() {
-  Profile* profile = ProfileManager::GetDefaultProfile();
-  if (browser_defaults::kAlwaysOpenIncognitoWindow &&
-      IncognitoModePrefs::ShouldLaunchIncognito(
-          *CommandLine::ForCurrentProcess(),
-          profile->GetPrefs())) {
-    profile = profile->GetOffTheRecordProfile();
-  }
-  Browser::OpenEmptyWindow(profile);
-}
-
-void ChromeShellDelegate::LauncherItemClicked(
-    const ash::LauncherItem& item) {
-  LauncherIconUpdater::ActivateByID(item.id);
-}
-
-int ChromeShellDelegate::GetBrowserShortcutResourceId() {
-  return IDR_PRODUCT_LOGO_32;
-}
-
-string16 ChromeShellDelegate::GetLauncherItemTitle(
-    const ash::LauncherItem& item) {
-  return LauncherIconUpdater::GetTitleByID(item.id);
+ash::LauncherDelegate* ChromeShellDelegate::CreateLauncherDelegate() {
+  return new ChromeLauncherDelegate;
 }

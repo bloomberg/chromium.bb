@@ -21,6 +21,7 @@ class MenuRunner;
 
 namespace ash {
 
+class LauncherDelegate;
 struct LauncherItem;
 class LauncherModel;
 class LauncherWindowCycler;
@@ -33,7 +34,7 @@ class LauncherView : public views::WidgetDelegateView,
                      public views::ButtonListener,
                      public LauncherButtonHost {
  public:
-  explicit LauncherView(LauncherModel* model);
+  LauncherView(LauncherModel* model, LauncherDelegate* delegate);
   virtual ~LauncherView();
 
   void Init();
@@ -117,6 +118,9 @@ class LauncherView : public views::WidgetDelegateView,
 
   // The model; owned by Launcher.
   LauncherModel* model_;
+
+  // Delegate; owned by Launcher.
+  LauncherDelegate* delegate_;
 
   // Used to manage the set of active launcher buttons. There is a view per
   // item in |model_|.
