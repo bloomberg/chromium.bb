@@ -146,7 +146,13 @@ class CGroup(cros_lib.MasterPidContextManager):
     """Constructor.
 
     args:
-      parent - The parent CGroup. Root hierarchy if empty.
+      parent: A string of the cgroup namespace to inherit from.  If
+              unspecified, it defaults to inheriting from whichever
+              cbuildbot cgroup it's currently running in.  If you
+              wish to start a group without inheriting from the
+              parent, set parent='jobs'
+      disable: Self-explanatory, if True, disable cgroup machinery
+              and just function as a pass through context manager.
     """
     cros_lib.MasterPidContextManager.__init__(self)
     self._disabled = disable
@@ -159,13 +165,25 @@ class CGroup(cros_lib.MasterPidContextManager):
     self.DUMP_PATH = os.path.join(self.ROOT_PATH, 'dump')
 
     self.pid = os.getpid()
-    if parent:
-      parent_path = parent.path
-    else:
-      parent_path = self.JOBS_PATH
+    if parent is None:
+      parent = self._FindOurParent()
     # Name of the trybot job = pid of the root process.
-    self.path = os.path.join(parent_path, '%d' % self.pid)
+    self.path = os.path.join(self.ROOT_PATH, parent.lstrip('/'), str(self.pid))
     self._cgroup_supported = None
+
+  def _FindOurParent(self):
+    """If Find and return our parent cbuildbot jobs group.
+
+    If one isn't found return the default jobs namespace.
+    """
+    text = '1:cpuset:/jobs/'
+    with open('/proc/self/cgroup') as f:
+      for line in f:
+        if not line.startswith(text):
+          continue
+        target = line[len(text):].rstrip('\n')
+        return 'jobs/%s' % (target,)
+    return 'jobs'
 
   def _enter(self):
     if self._disabled or not self.cgroup_supported:
