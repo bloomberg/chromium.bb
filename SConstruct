@@ -2305,6 +2305,36 @@ pre_base_env.Append(
         ],
     )
 
+def MakeGTestEnv(env):
+  # Create an environment to run unit tests using Gtest.
+  gtest_env = env.Clone()
+
+  # Define compile-time flag that communicates that we are compiling in the test
+  # environment (rather than for the TCB).
+  if gtest_env['NACL_BUILD_FAMILY'] == 'TRUSTED':
+    gtest_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
+
+  # This is necessary for unittest_main.c which includes gtest/gtest.h
+  # The problem is that gtest.h includes other files expecting the
+  # include path to be set.
+  gtest_env.Prepend(CPPPATH=['${SOURCE_ROOT}/testing/gtest/include'])
+
+  # gtest does not compile with our stringent settings.
+  if gtest_env.Bit('linux') or gtest_env.Bit('mac'):
+    # because of: gtest-typed-test.h:236:46: error:
+    # anonymous variadic macros were introduced in C99
+    gtest_env.FilterOut(CCFLAGS=['-pedantic'])
+  gtest_env.FilterOut(CXXFLAGS=['-fno-rtti', '-Weffc++'])
+
+  # gtest is incompatible with static linking due to obscure libstdc++
+  # linking interactions.
+  # See http://code.google.com/p/nativeclient/issues/detail?id=1987
+  gtest_env.FilterOut(LINKFLAGS=['-static'])
+
+  gtest_env.Append(LIBS=['gtest'])
+  return gtest_env
+
+pre_base_env.AddMethod(MakeGTestEnv)
 
 def MakeBaseTrustedEnv():
   base_env = MakeArchSpecificEnv()

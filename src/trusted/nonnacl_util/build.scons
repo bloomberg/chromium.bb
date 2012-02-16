@@ -66,14 +66,10 @@ env.DualLibrary('nonnacl_util', nonnacl_util_inputs)
 #                             the scons-set environment
 
 # Set up the build environment: gtest does not compile with our strict settings.
-gtest_env = env.Clone()
-gtest_env.FilterOut(CCFLAGS=['-pedantic'],
-                    CXXFLAGS=['-fno-rtti', '-Weffc++'])
-gtest_env.Prepend(CPPPATH=['${SOURCE_ROOT}/testing/gtest/include'])
+gtest_env = env.MakeGTestEnv()
 
 # Set up dependencies and environment variables.
-test_deps = [ 'gtest',
-              'nonnacl_util',
+test_deps = [ 'nonnacl_util',
               'nrd_xfer',
               'nacl_base',
               'platform',

@@ -27,27 +27,14 @@ env.DualLibrary('gio',
 
 
 if not env.CrossToolsBuild():
-  gtest_env = env.Clone()
+  gtest_env = env.MakeGTestEnv()
 
-  # gtest is incompatible with static linking due to obscure libstdc++
-  # linking interactions.
-  # See http://code.google.com/p/nativeclient/issues/detail?id=1987
-  gtest_env.FilterOut(LINKFLAGS=['-static'])
-
-  if gtest_env.Bit('linux') or gtest_env.Bit('mac'):
-    # because of: gtest-typed-test.h:236:46: error:
-    # anonymous variadic macros were introduced in C99
-    gtest_env.FilterOut(CCFLAGS=['-pedantic'])
-
-
-  gtest_env.Prepend(CPPPATH=['${SOURCE_ROOT}/testing/gtest/include'])
   gtest_env.DualLibrary('gio_test', ['gio_test_base.cc'])
-
 
   gio_mem_test_exe = gtest_env.ComponentProgram(
       'gio_mem_test',
       ['gio_mem_test.cc'],
-      EXTRA_LIBS=['gtest', 'gio', 'gio_test'])
+      EXTRA_LIBS=['gio', 'gio_test'])
   gtest_env.Requires(gio_mem_test_exe, crt)
 
   node = gtest_env.CommandTest(
@@ -59,7 +46,7 @@ if not env.CrossToolsBuild():
   gio_test_exe = gtest_env.ComponentProgram(
       'gio_test',
       ['gio_test.cc'],
-      EXTRA_LIBS=['gtest', 'gio', 'platform', 'gio_test'])
+      EXTRA_LIBS=['gio', 'platform', 'gio_test'])
   gtest_env.Requires(gio_test_exe, crt)
 
   # temp file will be removed by gio_test (if it compiles and test completes).
@@ -80,7 +67,7 @@ if not env.CrossToolsBuild():
   gio_test_exe = gtest_env.ComponentProgram(
       'gio_pio_test',
       ['gio_pio_test.cc'],
-      EXTRA_LIBS=['gtest', 'gio', 'platform', 'gio_test'])
+      EXTRA_LIBS=['gio', 'platform', 'gio_test'])
   gtest_env.Requires(gio_test_exe, crt)
 
   # temp file will be removed by gio_pio_test (if it compiles and completes).

@@ -6,21 +6,14 @@
 
 Import('env')
 
-# Set up the build environment: gtest does not compile with our strict settings.
-env.FilterOut(CCFLAGS=['-pedantic'],
-              CXXFLAGS=['-fno-rtti', '-Weffc++'])
-env.Prepend(CPPPATH=['${SOURCE_ROOT}/testing/gtest/include'])
+gtest_env = env.MakeGTestEnv()
 
-kernel_version_test_exe = env.ComponentProgram(
+kernel_version_test_exe = gtest_env.ComponentProgram(
     'kernel_version_test',
     'kernel_version_test.cc',
-    EXTRA_LIBS = [
-        'gtest',
-        'platform',
-        'gio',
-    ])
+    EXTRA_LIBS = ['platform', 'gio'])
 
-node = env.CommandTest(
+node = gtest_env.CommandTest(
     'kernel_version_test.out',
     command=[kernel_version_test_exe])
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_kernel_version_test')

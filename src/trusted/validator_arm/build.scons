@@ -84,24 +84,14 @@ if env.Bit('linux'):
     env.AddNodeToTestSuite(node, ['small_tests', 'validator_tests'],
                            "run_arm_" + test)
 
-  gtest_env = env.Clone()
-  # gtest does not compile with our stringent settings.
-  gtest_env.FilterOut(
-      CCFLAGS=['-pedantic'],
-      CXXFLAGS=['-fno-rtti', '-Weffc++'])
-  gtest_env.Prepend(CPPPATH=['${SOURCE_ROOT}/testing/gtest/include'])
-
-  # gtest is incompatible with static linking due to obscure libstdc++
-  # linking interactions.
-  # See http://code.google.com/p/nativeclient/issues/detail?id=1987
-  gtest_env.FilterOut(LINKFLAGS=['-static'])
+  gtest_env = env.MakeGTestEnv()
 
   # Do NOT name this program 'validator_tests' because this is the same name as
   # a test suite, and scons will run that test suite if it ever builds
   # a program of the same name.
   validator_tests_exe = gtest_env.ComponentProgram('arm_validator_tests',
                                  ['validator_tests.cc'],
-                                 EXTRA_LIBS=['gtest', 'arm_validator_core'])
+                                 EXTRA_LIBS=['arm_validator_core'])
 
   test_node = gtest_env.CommandTest(
       'validator_tests.out',

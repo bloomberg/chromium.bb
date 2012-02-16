@@ -62,13 +62,7 @@ test_env.AddNodeToTestSuite(node, ['large_tests'])
 #---------- UNIT TESTS ---------------------------------
 
 # Create an environment to run unit tests using Gtest.
-gtest_env = test_env.Clone();
-
-# gtest does not compile with our stringent settings.
-gtest_env.FilterOut(
-    CCFLAGS=['-pedantic'],
-    CXXFLAGS=['-fno-rtti', '-Weffc++'])
-gtest_env.Prepend(CPPPATH=['${SOURCE_ROOT}/testing/gtest/include'])
+gtest_env = env.MakeGTestEnv()
 
 # List of (unit) test file prefixes to run unit tests on.
 gtest_sources = [
@@ -81,9 +75,7 @@ for source in gtest_sources:
   test_exe = gtest_env.ComponentProgram(
     'x86_validator_tests_' + source,
     [source+'_tests.cc'],
-    EXTRA_LIBS=['gtest',
-                gtest_env.NaClTargetArchSuffix('ncvalidate'),
-                ])
+    EXTRA_LIBS=[gtest_env.NaClTargetArchSuffix('ncvalidate')])
   test_node = gtest_env.CommandTest(
       source+'Tests.out',
       command=[test_exe])

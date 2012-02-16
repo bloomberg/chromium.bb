@@ -420,18 +420,7 @@ if env.Bit('linux') and not env.CrossToolsBuild():
 # NOTE: uses validator
 # TODO(robertm): break this test up in smaller pieces with more managable
 #                dependencies
-gtest_env = env.Clone()
-
-# This is necessary for unittest_main.c which includes gtest/gtest.h
-# The problem is that gtest.h includes other files expecting the
-# include path to be set.  We do *not*, however, strip out the
-# -pedantic compiler flag for building non-gtest-using source files.
-gtest_env.Prepend(CPPPATH=['${SOURCE_ROOT}/testing/gtest/include'])
-
-if gtest_env.Bit('linux') or gtest_env.Bit('mac'):
-  # because of: gtest-typed-test.h:236:46: error:
-  # anonymous variadic macros were introduced in C99
-  gtest_env.FilterOut(CCFLAGS=['-pedantic'])
+gtest_env = env.MakeGTestEnv()
 
 unittest_inputs = [
     'unittest_main.cc',
@@ -451,8 +440,7 @@ if (not env.CrossToolsBuild() and
   unit_tests_exe = gtest_env.ComponentProgram(
       'service_runtime_tests',
       unittest_inputs,
-      EXTRA_LIBS=['gtest',
-                  'sel',
+      EXTRA_LIBS=['sel',
                   'env_cleanser',
                   'manifest_proxy',
                   'simple_service',

@@ -144,13 +144,7 @@ env.ComponentLibrary(env.NaClTargetArchSuffix('ncdis_decode_tables'),
 #---------- UNIT TESTS ---------------------------------
 
 # Create an environment to run unit tests using Gtest.
-gtest_env = test_env.Clone();
-
-# gtest does not compile with our stringent settings.
-gtest_env.FilterOut(
-    CCFLAGS=['-pedantic'],
-    CXXFLAGS=['-fno-rtti', '-Weffc++'])
-gtest_env.Prepend(CPPPATH=['${SOURCE_ROOT}/testing/gtest/include'])
+gtest_env = env.MakeGTestEnv()
 
 # List of (unit) test file prefixes to run unit tests on.
 gtest_sources = ['nc_inst_state']
@@ -159,8 +153,7 @@ for source in gtest_sources:
   test_exe = gtest_env.ComponentProgram(
     'x86_decoder_tests_' + source,
     [source+'_tests.cc'],
-    EXTRA_LIBS=['gtest',
-                # Note: The following forces the inclusion
+    EXTRA_LIBS=[# Note: The following forces the inclusion
                 # of kNaClDecoderTables
                 gtest_env.NaClTargetArchSuffix('ncval_seg_sfi'),
                 gtest_env.NaClTargetArchSuffix('nc_decoder'),
