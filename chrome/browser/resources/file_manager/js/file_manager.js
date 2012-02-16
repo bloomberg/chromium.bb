@@ -3181,20 +3181,29 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.onRenameInputBlur_ = function(event) {
-    if (this.isRenamingInProgress())
+    if (this.isRenamingInProgress() && !this.renameInput_.validation_)
       this.cancelRename_();
   };
 
   FileManager.prototype.commitRename_ = function() {
-    var entry = this.renameInput_.currentEntry;
-    var newName = this.renameInput_.value;
+    var input = this.renameInput_;
+    var entry = input.currentEntry;
+    var newName = input.value;
 
     if (newName == entry.name) {
       this.cancelRename_();
       return;
     }
 
-    if (!this.validateFileName_(newName))
+    input.validation_ = true;
+    function validationDone() {
+      input.validation_ = false;
+      // Alert dialog restores focus unless the item removed from DOM.
+      if (this.document_.activeElement != input)
+        this.cancelRename_();
+    }
+
+    if (!this.validateFileName_(newName, validationDone.bind(this)))
       return;
 
     var nameNode = this.findListItemForNode_(this.renameInput_).
@@ -3640,11 +3649,12 @@ FileManager.prototype = {
    * be fixed. Shows message box if the name is invalid.
    *
    * @param {name} name New file or folder name.
-   * @param {function} onAccept Function to invoke when user accepts the
-   *    message box.
+   * @param {function} opt_onDone Function to invoke when user closes the
+   *    warning box or immediatelly if file name is correct.
    * @return {boolean} True if name is vaild.
    */
-  FileManager.prototype.validateFileName_ = function(name, onAccept) {
+  FileManager.prototype.validateFileName_ = function(name, opt_onDone) {
+    var onDone = opt_onDone || function() {};
     var msg;
     var testResult = /[\/\\\<\>\:\?\*\"\|]/.exec(name);
     if (testResult) {
@@ -3658,11 +3668,11 @@ FileManager.prototype = {
     }
 
     if (msg) {
-      console.log('no no no');
-      this.alert.show(msg, onAccept);
+      this.alert.show(msg, onDone);
       return false;
     }
 
+    onDone();
     return true;
   };
 
