@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/views/aura/screenshot_taker.h"
 #include "chrome/browser/ui/views/aura/status_area_host_aura.h"
 #include "ui/aura/env.h"
+#include "ui/aura/aura_switches.h"
 #include "ui/aura/root_window.h"
 #include "ui/gfx/compositor/compositor_setup.h"
 
@@ -34,7 +35,9 @@ void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
   }
 
 #if defined(OS_CHROMEOS)
-  if (chromeos::system::runtime_environment::IsRunningOnChromeOS()) {
+  if (chromeos::system::runtime_environment::IsRunningOnChromeOS() ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAuraHostWindowUseFullscreen)) {
     aura::RootWindow::set_use_fullscreen_host_window(true);
     aura::RootWindow::set_hide_host_cursor(true);
   }
