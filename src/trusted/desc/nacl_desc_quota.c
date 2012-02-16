@@ -50,9 +50,7 @@ int NaClDescQuotaCtor(struct NaClDescQuota           *self,
 void NaClDescQuotaDtor(struct NaClRefCount *vself) {
   struct NaClDescQuota *self = (struct NaClDescQuota *) vself;
 
-  if (NULL != self->quota_interface) {
-    NaClRefCountUnref((struct NaClRefCount *) self->quota_interface);
-  }
+  NaClRefCountSafeUnref((struct NaClRefCount *) self->quota_interface);
   NaClRefCountUnref((struct NaClRefCount *) self->desc);
   self->desc = NULL;
   NaClMutexDtor(&self->mu);
