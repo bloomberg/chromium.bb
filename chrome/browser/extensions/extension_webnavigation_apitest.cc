@@ -97,7 +97,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationForwardBack) {
           << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationIFrame) {
+// This test has been timing out: 114208.
+#if defined(OS_WIN)
+#define MAYBE_WebNavigationIFrame DISABLED_WebNavigationIFrame
+#else
+#define MAYBE_WebNavigationIFrame WebNavigationIFrame
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationIFrame) {
   FrameNavigationState::set_allow_extension_scheme(true);
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
