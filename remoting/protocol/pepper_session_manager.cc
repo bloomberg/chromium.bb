@@ -135,6 +135,8 @@ bool PepperSessionManager::OnSignalStrategyIncomingStanza(
     // Description must be present in session-initiate messages.
     DCHECK(message.description.get());
 
+    SendReply(stanza, JingleMessageReply());
+
     scoped_ptr<Authenticator> authenticator =
         authenticator_factory_->CreateAuthenticator(
             message.from, message.description->authenticator_message());
