@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,8 +18,8 @@
 namespace pp {
 
 /// An audio resource. Refer to the
-/// <a href="/chrome/nativeclient/docs/audio.html">Pepper
-/// Audio API Code Walkthrough</a> for information on using this interface.
+/// <a href="/native-client/devguide/coding/audio">Audio</a>
+/// chapter in the Developer's Guide for information on using this interface.
 class Audio : public Resource {
  public:
 

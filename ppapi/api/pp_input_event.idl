@@ -67,7 +67,7 @@ struct PP_InputEvent_Character {
    * This value represents the typed character as a single null-terminated UTF-8
    * character. Any unused bytes will be filled with null bytes. Since the
    * maximum UTF-8 character is 4 bytes, there will always be at least one null
-   * at the end so you can treat this as a null-termianted UTF-8 string.
+   * at the end so you can treat this as a null-terminated UTF-8 string.
    */
   char[5] text;
 };

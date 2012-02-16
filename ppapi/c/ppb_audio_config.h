@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_audio_config.idl modified Wed Oct  5 14:06:02 2011. */
+/* From ppb_audio_config.idl modified Fri Jan 20 13:12:44 2012. */
 
 #ifndef PPAPI_C_PPB_AUDIO_CONFIG_H_
 #define PPAPI_C_PPB_AUDIO_CONFIG_H_
@@ -62,7 +62,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_AudioSampleRate, 4);
 /**
  * The <code>PPB_AudioConfig</code> interface contains pointers to several
  * functions for establishing your audio configuration within the browser.
- * This interface only supports stereo * 16bit output.
+ * This interface only supports 16-bit stereo output.
  *
  * Refer to the
  * <a href="/chrome/nativeclient/docs/audio.html">Pepper
@@ -93,7 +93,7 @@ struct PPB_AudioConfig_1_0 {
    *
    * @param[in] instance A <code>PP_Instance</code> identifying one instance
    * of a module.
-   * @param[in] sample_rate A P<code>P_AudioSampleRate</code> which is either
+   * @param[in] sample_rate A <code>PP_AudioSampleRate</code> which is either
    * <code>PP_AUDIOSAMPLERATE_44100</code> or
    * <code>PP_AUDIOSAMPLERATE_48000</code>.
    * @param[in] sample_frame_count A <code>uint32_t</code> frame count returned

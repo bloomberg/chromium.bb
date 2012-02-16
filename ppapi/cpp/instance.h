@@ -457,7 +457,7 @@ class Instance {
   /// @}
 
   /// AddPerInstanceObject() associates an instance with an interface,
-  /// creating an object... {PENDING: clarify!}
+  /// creating an object.
   ///
   /// Many optional interfaces are associated with a plugin instance. For
   /// example, the find in PPP_Find interface receives updates on a per-instance
@@ -486,7 +486,7 @@ class Instance {
   /// @param[in] object
   void AddPerInstanceObject(const std::string& interface_name, void* object);
 
-  /// {PENDING: summarize Remove method here}
+  // {PENDING: summarize Remove method here}
   ///
   /// Refer to AddPerInstanceObject() for further information.
   ///

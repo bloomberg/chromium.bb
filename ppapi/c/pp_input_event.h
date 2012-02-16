@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From pp_input_event.idl modified Wed Oct  5 14:06:02 2011. */
+/* From pp_input_event.idl modified Fri Jan 20 13:08:22 2012. */
 
 #ifndef PPAPI_C_PP_INPUT_EVENT_H_
 #define PPAPI_C_PP_INPUT_EVENT_H_
@@ -79,7 +79,7 @@ struct PP_InputEvent_Character {
    * This value represents the typed character as a single null-terminated UTF-8
    * character. Any unused bytes will be filled with null bytes. Since the
    * maximum UTF-8 character is 4 bytes, there will always be at least one null
-   * at the end so you can treat this as a null-termianted UTF-8 string.
+   * at the end so you can treat this as a null-terminated UTF-8 string.
    */
   char text[5];
 };

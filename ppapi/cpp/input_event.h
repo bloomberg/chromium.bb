@@ -121,7 +121,7 @@ class MouseInputEvent : public InputEvent {
   /// position of the mouse when the eent occurred.
   ///
   /// @param[in] click_count
-  /// TODO(brettw) figure out exactly what this means.
+  // TODO(brettw) figure out exactly what this means.
   ///
   /// @param[in] mouse_movement The change in position of the mouse.
   MouseInputEvent(Instance* instance,

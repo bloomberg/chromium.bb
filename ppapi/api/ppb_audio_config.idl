@@ -41,7 +41,7 @@ enum PP_AudioSampleRate {
 /**
  * The <code>PPB_AudioConfig</code> interface contains pointers to several
  * functions for establishing your audio configuration within the browser.
- * This interface only supports stereo * 16bit output.
+ * This interface only supports 16-bit stereo output.
  *
  * Refer to the
  * <a href="/chrome/nativeclient/docs/audio.html">Pepper
@@ -73,7 +73,7 @@ interface PPB_AudioConfig {
    *
    * @param[in] instance A <code>PP_Instance</code> identifying one instance
    * of a module.
-   * @param[in] sample_rate A P<code>P_AudioSampleRate</code> which is either
+   * @param[in] sample_rate A <code>PP_AudioSampleRate</code> which is either
    * <code>PP_AUDIOSAMPLERATE_44100</code> or
    * <code>PP_AUDIOSAMPLERATE_48000</code>.
    * @param[in] sample_frame_count A <code>uint32_t</code> frame count returned
