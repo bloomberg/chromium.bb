@@ -29,7 +29,7 @@ uint32 SuperFastHash(const char * data, int len) {
   len >>= 2;
 
   /* Main loop */
-  for (;len > 0; len--) {
+  for (; len > 0; len--) {
     hash  += get16bits(data);
     tmp    = (get16bits(data + 2) << 11) ^ hash;
     hash   = (hash << 16) ^ tmp;
@@ -39,16 +39,22 @@ uint32 SuperFastHash(const char * data, int len) {
 
   /* Handle end cases */
   switch (rem) {
-    case 3: hash += get16bits(data);
+    case 3:
+      hash += get16bits(data);
       hash ^= hash << 16;
-      hash ^= data[sizeof(uint16_t)] << 18;
+
+      // Treat the final character as signed. This ensures all platforms behave
+      // consistently with the original x86 code.
+      hash ^= static_cast<signed char>(data[sizeof(uint16_t)]) << 18;
       hash += hash >> 11;
       break;
-    case 2: hash += get16bits(data);
+    case 2:
+      hash += get16bits(data);
       hash ^= hash << 11;
       hash += hash >> 17;
       break;
-    case 1: hash += *data;
+    case 1:
+      hash += static_cast<signed char>(*data);
       hash ^= hash << 10;
       hash += hash >> 1;
   }
