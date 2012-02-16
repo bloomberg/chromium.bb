@@ -104,6 +104,7 @@ bool MovedToCenter(const WebKit::WebMouseEvent& mouse_event,
 
 }  // namespace
 
+using content::RenderWidgetHostViewPort;
 using WebKit::WebInputEventFactory;
 using WebKit::WebMouseWheelEvent;
 
@@ -907,7 +908,7 @@ void RenderWidgetHostViewGtk::SetTooltipText(const string16& tooltip_text) {
 void RenderWidgetHostViewGtk::SelectionChanged(const string16& text,
                                                size_t offset,
                                                const ui::Range& range) {
-  RenderWidgetHostViewBase::SelectionChanged(text, offset, range);
+  content::RenderWidgetHostViewBase::SelectionChanged(text, offset, range);
 
   if (text.empty() || range.is_empty())
     return;
@@ -1027,7 +1028,7 @@ void RenderWidgetHostViewGtk::AcceleratedSurfaceSuspend() {
 
 
 void RenderWidgetHostViewGtk::SetBackground(const SkBitmap& background) {
-  RenderWidgetHostViewBase::SetBackground(background);
+  content::RenderWidgetHostViewBase::SetBackground(background);
   host_->Send(new ViewMsg_SetBackground(host_->routing_id(), background));
 }
 
@@ -1409,7 +1410,7 @@ RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
 }
 
 // static
-void RenderWidgetHostViewBase::GetDefaultScreenInfo(
+void content::RenderWidgetHostViewPort::GetDefaultScreenInfo(
     WebKit::WebScreenInfo* results) {
   GdkWindow* gdk_window =
       gdk_display_get_default_group(gdk_display_get_default());

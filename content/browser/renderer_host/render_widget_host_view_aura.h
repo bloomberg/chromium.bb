@@ -39,7 +39,7 @@ class ImageTransportClient;
 #endif
 
 class RenderWidgetHostViewAura
-    : public RenderWidgetHostViewBase,
+    : public content::RenderWidgetHostViewBase,
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
       public ui::CompositorObserver,
 #endif
@@ -66,7 +66,7 @@ class RenderWidgetHostViewAura
       const WebKit::WebMouseWheelEvent& event) OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
 
-  // Overridden from RenderWidgetHostViewBase:
+  // Overridden from RenderWidgetHostViewPort:
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& pos) OVERRIDE;
   virtual void InitAsFullscreen(

@@ -7,7 +7,7 @@
 #include "base/logging.h"
 
 // static
-void RenderWidgetHostViewBase::GetDefaultScreenInfo(
+void content::RenderWidgetHostViewPort::GetDefaultScreenInfo(
     WebKit::WebScreenInfo* results) {
   NOTIMPLEMENTED();
 }

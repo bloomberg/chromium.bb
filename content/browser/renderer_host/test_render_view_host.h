@@ -13,7 +13,7 @@
 #include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
-#include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/public/common/page_transition_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -49,6 +49,9 @@ void SimulateUpdateRect(RenderWidgetHost* widget,
 // renderer process.
 //
 // To use, derive your test base class from RenderViewHostTestHarness.
+
+
+namespace content {
 
 // TestRenderViewHostView ------------------------------------------------------
 
@@ -87,7 +90,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual void UnhandledWheelEvent(
       const WebKit::WebMouseWheelEvent& event) OVERRIDE {}
 
-  // RenderWidgetHostViewBase implementation.
+  // RenderWidgetHostViewPort implementation.
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& pos) OVERRIDE {}
   virtual void InitAsFullscreen(
@@ -176,6 +179,8 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   RenderWidgetHost* rwh_;
   bool is_showing_;
 };
+
+}  // namespace content
 
 // TestRenderViewHost ----------------------------------------------------------
 

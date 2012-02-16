@@ -1,0 +1,143 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_VIEW_H_
+#define CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_VIEW_H_
+#pragma once
+
+#if defined(TOOLKIT_USES_GTK)
+#include <gdk/gdk.h>
+#endif
+
+#include "content/common/content_export.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "ui/gfx/native_widget_types.h"
+
+class BrowserAccessibilityManager;
+class RenderWidgetHost;
+
+namespace gfx {
+class Rect;
+class Size;
+}
+
+// RenderWidgetHostView is an interface implemented by an object that acts as
+// the "View" portion of a RenderWidgetHost. The RenderWidgetHost and its
+// associated RenderProcessHost own the "Model" in this case which is the
+// child renderer process. The View is responsible for receiving events from
+// the surrounding environment and passing them to the RenderWidgetHost, and
+// for actually displaying the content of the RenderWidgetHost when it
+// changes.
+//
+// TODO(joi): Move to content namespace.
+class CONTENT_EXPORT RenderWidgetHostView {
+ public:
+  virtual ~RenderWidgetHostView() {}
+
+  // Platform-specific creator. Use this to construct new RenderWidgetHostViews
+  // rather than using RenderWidgetHostViewWin & friends.
+  //
+  // This function must NOT size it, because the RenderView in the renderer
+  // wouldn't have been created yet. The widget would set its "waiting for
+  // resize ack" flag, and the ack would never come becasue no RenderView
+  // received it.
+  //
+  // The RenderWidgetHost must already be created (because we can't know if it's
+  // going to be a regular RenderWidgetHost or a RenderViewHost (a subclass).
+  static RenderWidgetHostView* CreateViewForWidget(
+      RenderWidgetHost* widget);
+
+  // Initialize this object for use as a drawing area.  |parent_view| may be
+  // left as NULL on platforms where a parent view is not required to initialize
+  // a child window.
+  virtual void InitAsChild(gfx::NativeView parent_view) = 0;
+
+  // Returns the associated RenderWidgetHost.
+  virtual RenderWidgetHost* GetRenderWidgetHost() const = 0;
+
+  // Tells the View to size itself to the specified size.
+  virtual void SetSize(const gfx::Size& size) = 0;
+
+  // Tells the View to size and move itself to the specified size and point in
+  // screen space.
+  virtual void SetBounds(const gfx::Rect& rect) = 0;
+
+  // Retrieves the native view used to contain plugins and identify the
+  // renderer in IPC messages.
+  virtual gfx::NativeView GetNativeView() const = 0;
+  virtual gfx::NativeViewId GetNativeViewId() const = 0;
+  virtual gfx::NativeViewAccessible GetNativeViewAccessible() = 0;
+
+  // Set focus to the associated View component.
+  virtual void Focus() = 0;
+  // Returns true if the View currently has the focus.
+  virtual bool HasFocus() const = 0;
+
+  // Shows/hides the view.  These must always be called together in pairs.
+  // It is not legal to call Hide() multiple times in a row.
+  virtual void Show() = 0;
+  virtual void Hide() = 0;
+
+  // Whether the view is showing.
+  virtual bool IsShowing() = 0;
+
+  // Retrieve the bounds of the View, in screen coordinates.
+  virtual gfx::Rect GetViewBounds() const = 0;
+
+  // Returns true if the View's context menu is showing.
+  virtual bool IsShowingContextMenu() const = 0;
+
+  // Tells the View whether the context menu is showing.
+  virtual void SetShowingContextMenu(bool showing) = 0;
+
+#if defined(OS_MACOSX)
+  // Set the view's active state (i.e., tint state of controls).
+  virtual void SetActive(bool active) = 0;
+
+  // Tells the view whether or not to accept first responder status.  If |flag|
+  // is true, the view does not accept first responder status and instead
+  // manually becomes first responder when it receives a mouse down event.  If
+  // |flag| is false, the view participates in the key-view chain as normal.
+  virtual void SetTakesFocusOnlyOnMouseDown(bool flag) = 0;
+
+  // Notifies the view that its enclosing window has changed visibility
+  // (minimized/unminimized, app hidden/unhidden, etc).
+  // TODO(stuartmorgan): This is a temporary plugin-specific workaround for
+  // <http://crbug.com/34266>. Once that is fixed, this (and the corresponding
+  // message and renderer-side handling) can be removed in favor of using
+  // WasHidden/DidBecomeSelected.
+  virtual void SetWindowVisibility(bool visible) = 0;
+
+  // Informs the view that its containing window's frame changed.
+  virtual void WindowFrameChanged() = 0;
+#endif  // defined(OS_MACOSX)
+
+#if defined(TOOLKIT_USES_GTK)
+  // Gets the event for the last mouse down.
+  virtual GdkEventButton* GetLastMouseDown() = 0;
+#if !defined(TOOLKIT_VIEWS)
+  // Builds a submenu containing all the gtk input method commands.
+  virtual gfx::NativeView BuildInputMethodsGtkMenu() = 0;
+#endif  // !defined(TOOLKIT_VIEWS)
+#endif  // defined(TOOLKIT_USES_GTK)
+
+  // TODO(joi): May be able to move into impl if RWHVMacDelegate stops
+  // being exposed to Chrome.
+  virtual void UnhandledWheelEvent(const WebKit::WebMouseWheelEvent& event) = 0;
+
+  // Subclasses should override this method to do what is appropriate to set
+  // the custom background for their platform.
+  virtual void SetBackground(const SkBitmap& background) = 0;
+  virtual const SkBitmap& GetBackground() = 0;
+
+  // TODO(joi): Remove this when we remove the dependency by chrome/
+  // on browser_accessibility* files in content.
+  virtual BrowserAccessibilityManager*
+      GetBrowserAccessibilityManager() const = 0;
+};
+
+#endif  // CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_VIEW_H_
+
+

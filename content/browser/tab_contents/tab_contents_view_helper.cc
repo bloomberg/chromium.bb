@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view.h"
 
+using content::RenderWidgetHostViewPort;
 using content::WebContents;
 
 TabContentsViewHelper::TabContentsViewHelper() {
@@ -92,11 +93,11 @@ RenderWidgetHostView* TabContentsViewHelper::CreateNewWidget(
     WebKit::WebPopupType popup_type) {
   content::RenderProcessHost* process = web_contents->GetRenderProcessHost();
   RenderWidgetHost* widget_host = new RenderWidgetHost(process, route_id);
-  RenderWidgetHostViewBase* widget_view =
-      RenderWidgetHostViewBase::CreateViewForWidget(widget_host);
+  RenderWidgetHostViewPort* widget_view =
+      RenderWidgetHostViewPort::CreateViewForWidget(widget_host);
   if (!is_fullscreen) {
     // Popups should not get activated.
-    widget_view->set_popup_type(popup_type);
+    widget_view->SetPopupType(popup_type);
   }
   // Save the created widget associated with the route so we can show it later.
   pending_widget_views_[route_id] = widget_view;
@@ -167,8 +168,8 @@ RenderWidgetHostView* TabContentsViewHelper::ShowCreatedWidget(
   if (web_contents->GetDelegate())
     web_contents->GetDelegate()->RenderWidgetShowing();
 
-  RenderWidgetHostViewBase* widget_host_view =
-      RenderWidgetHostViewBase::FromRWHV(GetCreatedWidget(route_id));
+  RenderWidgetHostViewPort* widget_host_view =
+      RenderWidgetHostViewPort::FromRWHV(GetCreatedWidget(route_id));
   if (is_fullscreen) {
     widget_host_view->InitAsFullscreen(web_contents->GetRenderWidgetHostView());
   } else {

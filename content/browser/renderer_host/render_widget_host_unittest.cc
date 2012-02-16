@@ -116,9 +116,11 @@ bool RenderWidgetHostProcess::WaitForUpdateMsg(int render_widget_id,
 // TestView --------------------------------------------------------------------
 
 // This test view allows us to specify the size.
-class TestView : public TestRenderWidgetHostView {
+class TestView : public content::TestRenderWidgetHostView {
  public:
-  explicit TestView(RenderWidgetHost* rwh) : TestRenderWidgetHostView(rwh) {}
+  explicit TestView(RenderWidgetHost* rwh)
+      : content::TestRenderWidgetHostView(rwh) {
+  }
 
   // Sets the bounds returned by GetViewBounds.
   void set_bounds(const gfx::Rect& bounds) {

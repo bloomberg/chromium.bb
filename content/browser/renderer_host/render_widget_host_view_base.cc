@@ -15,10 +15,18 @@
 #include "content/browser/renderer_host/gtk_window_utils.h"
 #endif
 
-RenderWidgetHostView::RenderWidgetHostView() {
+namespace content {
+
+// static
+RenderWidgetHostViewPort* RenderWidgetHostViewPort::FromRWHV(
+    RenderWidgetHostView* rwhv) {
+  return static_cast<RenderWidgetHostViewPort*>(rwhv);
 }
 
-RenderWidgetHostView::~RenderWidgetHostView() {
+// static
+RenderWidgetHostViewPort* RenderWidgetHostViewPort::CreateViewForWidget(
+    RenderWidgetHost* widget) {
+  return FromRWHV(RenderWidgetHostView::CreateViewForWidget(widget));
 }
 
 RenderWidgetHostViewBase::RenderWidgetHostViewBase()
@@ -31,18 +39,6 @@ RenderWidgetHostViewBase::RenderWidgetHostViewBase()
 
 RenderWidgetHostViewBase::~RenderWidgetHostViewBase() {
   DCHECK(!mouse_locked_);
-}
-
-// static
-RenderWidgetHostViewBase* RenderWidgetHostViewBase::FromRWHV(
-    RenderWidgetHostView* rwhv) {
-  return static_cast<RenderWidgetHostViewBase*>(rwhv);
-}
-
-// static
-RenderWidgetHostViewBase* RenderWidgetHostViewBase::CreateViewForWidget(
-    RenderWidgetHost* widget) {
-  return FromRWHV(RenderWidgetHostView::CreateViewForWidget(widget));
 }
 
 void RenderWidgetHostViewBase::SetBackground(const SkBitmap& background) {
@@ -80,3 +76,17 @@ void RenderWidgetHostViewBase::SetShowingContextMenu(bool showing) {
   DCHECK_NE(showing_context_menu_, showing);
   showing_context_menu_ = showing;
 }
+
+bool RenderWidgetHostViewBase::IsMouseLocked() {
+  return mouse_locked_;
+}
+
+void RenderWidgetHostViewBase::SetPopupType(WebKit::WebPopupType popup_type) {
+  popup_type_ = popup_type;
+}
+
+WebKit::WebPopupType RenderWidgetHostViewBase::GetPopupType() {
+  return popup_type_;
+}
+
+}  // namespace content

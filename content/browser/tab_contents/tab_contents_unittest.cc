@@ -182,7 +182,7 @@ class TestInterstitialPage : public InterstitialPageImpl {
   }
 
   bool is_showing() const {
-    return static_cast<TestRenderWidgetHostView*>(
+    return static_cast<content::TestRenderWidgetHostView*>(
         GetRenderViewHostForTesting()->view())->is_showing();
   }
 

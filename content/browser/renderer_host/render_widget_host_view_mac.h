@@ -158,7 +158,7 @@ class RenderWidgetHostViewMacEditCommandHelper;
 //     If the render process dies, the RenderWidgetHost* goes away and all
 //     references to it must become NULL."
 //
-class RenderWidgetHostViewMac : public RenderWidgetHostViewBase {
+class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
  public:
   virtual ~RenderWidgetHostViewMac();
 
@@ -188,7 +188,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase {
       const WebKit::WebMouseWheelEvent& event) OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
 
-  // Implementation of RenderWidgetHostViewBase.
+  // Implementation of RenderWidgetHostViewPort.
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& pos) OVERRIDE;
   virtual void InitAsFullscreen(

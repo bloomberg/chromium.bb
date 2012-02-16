@@ -40,10 +40,10 @@ static const int kBitmapHeight = 100;
 // works. The skia implementation doesn't have any hardware or system
 // dependencies.
 class TestRenderWidgetHostViewWithBackingStoreSkia
-    : public TestRenderWidgetHostView {
+    : public content::TestRenderWidgetHostView {
  public:
   explicit TestRenderWidgetHostViewWithBackingStoreSkia(RenderWidgetHost* rwh)
-      : TestRenderWidgetHostView(rwh), rwh_(rwh) {}
+      : content::TestRenderWidgetHostView(rwh), rwh_(rwh) {}
 
   BackingStore* AllocBackingStore(const gfx::Size& size) {
     return new BackingStoreSkia(rwh_, size);

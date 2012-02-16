@@ -44,7 +44,7 @@ typedef struct _GtkSelectionData GtkSelectionData;
 // -----------------------------------------------------------------------------
 // See comments in render_widget_host_view.h about this class and its members.
 // -----------------------------------------------------------------------------
-class RenderWidgetHostViewGtk : public RenderWidgetHostViewBase {
+class RenderWidgetHostViewGtk : public content::RenderWidgetHostViewBase {
  public:
   virtual ~RenderWidgetHostViewGtk();
 
@@ -69,7 +69,7 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostViewBase {
       const WebKit::WebMouseWheelEvent& event) OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
 
-  // RenderWidgetHostViewBase implementation.
+  // RenderWidgetHostViewPort implementation.
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& pos) OVERRIDE;
   virtual void InitAsFullscreen(

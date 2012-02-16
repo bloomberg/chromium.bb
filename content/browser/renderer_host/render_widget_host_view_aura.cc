@@ -9,6 +9,7 @@
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/web_input_event_aura.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/port/browser/render_widget_host_view_port.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
@@ -477,7 +478,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceRelease(
 #endif
 
 void RenderWidgetHostViewAura::SetBackground(const SkBitmap& background) {
-  RenderWidgetHostViewBase::SetBackground(background);
+  content::RenderWidgetHostViewBase::SetBackground(background);
   host_->SetBackground(background);
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   window_->layer()->SetFillsBoundsOpaquely(background.isOpaque());
@@ -1086,7 +1087,7 @@ RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
 }
 
 // static
-void RenderWidgetHostViewBase::GetDefaultScreenInfo(
+void content::RenderWidgetHostViewPort::GetDefaultScreenInfo(
     WebKit::WebScreenInfo* results) {
   const gfx::Size size = gfx::Screen::GetPrimaryMonitorSize();
   results->rect = WebKit::WebRect(0, 0, size.width(), size.height());

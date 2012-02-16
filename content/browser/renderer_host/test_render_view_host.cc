@@ -79,7 +79,7 @@ TestRenderViewHost::TestRenderViewHost(SiteInstance* instance,
   // For normal RenderViewHosts, this is freed when |Shutdown()| is called.
   // For TestRenderViewHost, the view is explicitly deleted in the destructor
   // below, because TestRenderWidgetHostView::Destroy() doesn't |delete this|.
-  SetView(new TestRenderWidgetHostView(this));
+  SetView(new content::TestRenderWidgetHostView(this));
 }
 
 TestRenderViewHost::~TestRenderViewHost() {
@@ -153,6 +153,8 @@ void TestRenderViewHost::set_simulate_fetch_via_proxy(bool proxy) {
 void TestRenderViewHost::set_contents_mime_type(const std::string& mime_type) {
   contents_mime_type_ = mime_type;
 }
+
+namespace content {
 
 TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
     : rwh_(rwh),
@@ -305,6 +307,8 @@ bool TestRenderWidgetHostView::LockMouse() {
 
 void TestRenderWidgetHostView::UnlockMouse() {
 }
+
+}  // namespace content
 
 TestRenderViewHostFactory::TestRenderViewHostFactory(
     content::RenderProcessHostFactory* rph_factory)

@@ -220,7 +220,7 @@ RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
 }
 
 // static
-void RenderWidgetHostViewBase::GetDefaultScreenInfo(
+void content::RenderWidgetHostViewPort::GetDefaultScreenInfo(
     WebKit::WebScreenInfo* results) {
   *results = WebKit::WebScreenInfoFactory::screenInfo(NULL);
 }
@@ -689,7 +689,7 @@ void RenderWidgetHostViewMac::SelectionChanged(const string16& text,
 }
 
 void RenderWidgetHostViewMac::SetShowingContextMenu(bool showing) {
-  RenderWidgetHostViewBase::SetShowingContextMenu(showing);
+  content::RenderWidgetHostViewBase::SetShowingContextMenu(showing);
 
   // If the menu was closed, restore the cursor to the saved version initially,
   // as the renderer will not re-send it if there was no change.
@@ -1114,7 +1114,7 @@ void RenderWidgetHostViewMac::WindowFrameChanged() {
 }
 
 void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
-  RenderWidgetHostViewBase::SetBackground(background);
+  content::RenderWidgetHostViewBase::SetBackground(background);
   if (render_widget_host_)
     render_widget_host_->Send(new ViewMsg_SetBackground(
         render_widget_host_->routing_id(), background));

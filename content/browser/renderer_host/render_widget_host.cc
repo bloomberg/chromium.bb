@@ -40,6 +40,7 @@
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
+using content::RenderWidgetHostViewPort;
 using content::UserMetricsAction;
 using WebKit::WebGestureEvent;
 using WebKit::WebInputEvent;
@@ -153,7 +154,7 @@ RenderWidgetHost::~RenderWidgetHost() {
 }
 
 void RenderWidgetHost::SetView(RenderWidgetHostView* view) {
-  view_ = RenderWidgetHostViewBase::FromRWHV(view);
+  view_ = RenderWidgetHostViewPort::FromRWHV(view);
 
   if (!view_) {
     GpuSurfaceTracker::Get()->SetSurfaceHandle(
@@ -854,7 +855,7 @@ void RenderWidgetHost::RejectMouseLockOrUnlockIfNecessary() {
 }
 
 bool RenderWidgetHost::IsMouseLocked() const {
-  return view_ ? view_->mouse_locked() : false;
+  return view_ ? view_->IsMouseLocked() : false;
 }
 
 bool RenderWidgetHost::IsFullscreen() const {
@@ -1274,7 +1275,7 @@ void RenderWidgetHost::OnMsgGetScreenInfo(gfx::NativeViewId window_id,
   if (view_)
     view_->GetScreenInfo(results);
   else
-    RenderWidgetHostViewBase::GetDefaultScreenInfo(results);
+    RenderWidgetHostViewPort::GetDefaultScreenInfo(results);
 }
 
 void RenderWidgetHost::OnMsgGetWindowRect(gfx::NativeViewId window_id,

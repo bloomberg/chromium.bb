@@ -42,6 +42,7 @@ using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
 using content::RenderViewHostDelegate;
+using content::RenderWidgetHostViewPort;
 using content::SiteInstance;
 using content::WebContents;
 using content::WebContentsView;
@@ -273,7 +274,7 @@ void InterstitialPageImpl::Hide() {
   // (Note that in unit-tests the RVH may not have a view).
   if (render_view_host_->view() && render_view_host_->view()->HasFocus() &&
       tab_->GetRenderViewHost()->view()) {
-    RenderWidgetHostViewBase::FromRWHV(
+    RenderWidgetHostViewPort::FromRWHV(
         tab_->GetRenderViewHost()->view())->Focus();
   }
 
@@ -595,7 +596,7 @@ void InterstitialPageImpl::SetSize(const gfx::Size& size) {
 
 void InterstitialPageImpl::Focus() {
   // Focus the native window.
-  RenderWidgetHostViewBase::FromRWHV(render_view_host_->view())->Focus();
+  RenderWidgetHostViewPort::FromRWHV(render_view_host_->view())->Focus();
 }
 
 void InterstitialPageImpl::FocusThroughTabTraversal(bool reverse) {

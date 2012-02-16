@@ -908,7 +908,7 @@ BackingStore* RenderWidgetHostViewWin::AllocBackingStore(
 }
 
 void RenderWidgetHostViewWin::SetBackground(const SkBitmap& background) {
-  RenderWidgetHostViewBase::SetBackground(background);
+  content::RenderWidgetHostViewBase::SetBackground(background);
   render_widget_host_->SetBackground(background);
 }
 

@@ -85,7 +85,7 @@ class RenderWidgetHostViewWin
     : public CWindowImpl<RenderWidgetHostViewWin,
                          CWindow,
                          RenderWidgetHostHWNDTraits>,
-      public RenderWidgetHostViewBase,
+      public content::RenderWidgetHostViewBase,
       public content::NotificationObserver,
       public BrowserAccessibilityDelegate {
  public:
@@ -165,7 +165,7 @@ class RenderWidgetHostViewWin
       const WebKit::WebMouseWheelEvent& event) OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
 
-  // Implementation of RenderWidgetHostViewBase.
+  // Implementation of RenderWidgetHostViewPort.
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& pos) OVERRIDE;
   virtual void InitAsFullscreen(

@@ -43,6 +43,7 @@ class TimeTicks;
 
 namespace content {
 class RenderProcessHost;
+class RenderWidgetHostViewPort;
 }
 
 namespace gfx {
@@ -548,7 +549,7 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   // crashes, its View is destroyed and this pointer becomes NULL, even though
   // render_view_host_ lives on to load another URL (creating a new View while
   // doing so).
-  RenderWidgetHostViewBase* view_;
+  content::RenderWidgetHostViewPort* view_;
 
   // true if a renderer has once been valid. We use this flag to display a sad
   // tab only when we lose our renderer and not if a paint occurs during
