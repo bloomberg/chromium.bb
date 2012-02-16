@@ -173,6 +173,9 @@ html[touch-optimized] body {
 #overlay-container-2 {
   z-index: 12;
 }
+#overlay-container-3 {
+  z-index: 13;
+}
 
 .raw-button,
 .raw-button:hover,

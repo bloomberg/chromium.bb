@@ -95,12 +95,6 @@ function load() {
                                 [$('manage-intents-button')]);
   }
 
-  // InternetOptions sub-pages.
-  if (cr.isChromeOS) {
-    OptionsPage.registerSubPage(ProxyOptions.getInstance(),
-                                InternetOptions.getInstance());
-  }
-
   // Overlays.
   OptionsPage.registerOverlay(AddLanguageOverlay.getInstance(),
                               LanguageOptions.getInstance());
@@ -166,7 +160,7 @@ function load() {
                                 BrowserOptions.getInstance(),
                                 [$('pointer-settings-button')]);
     OptionsPage.registerOverlay(ProxyOptions.getInstance(),
-                                InternetOptions.getInstance());
+                                DetailsInternetPage.getInstance());
     OptionsPage.registerOverlay(
         new OptionsPage('languageChewing',
                         templateData.languageChewingPageTabTitle,

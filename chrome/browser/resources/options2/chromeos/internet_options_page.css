@@ -2,10 +2,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#inetTitle {
-  border: none;
-}
-
 #network-general-div {
   -webkit-margin-start: 15px;
 }
@@ -111,13 +107,6 @@ html[dir='rtl'] .network-item-text {
 .displaytable > section > .network-title {
   padding-top: 20px;
   vertical-align: top;
-}
-
-#detailsInternetPage {
-  min-height: 420px;
-  min-width: 440px;
-  padding-bottom: 40px;
-  position: relative;
 }
 
 #details-plan-table {

@@ -98,11 +98,9 @@
     <include src="chromeos/bluetooth_add_device_overlay.html">
     <include src="chromeos/bluetooth_pair_device_overlay.html">
     <include src="chromeos/change_picture_options.html">
-    <include src="chromeos/internet_detail.html">
     <include src="chromeos/internet_options.html">
     <include src="chromeos/keyboard_overlay.html">
     <include src="chromeos/pointer_overlay.html">
-    <include src="chromeos/proxy.html">
   </if>
   <if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
     <include src="certificate_manager.html">
@@ -114,6 +112,7 @@
   <include src="autofill_edit_creditcard_overlay.html">
   <include src="language_add_language_overlay.html">
   <if expr="pp_ifdef('chromeos')">
+    <include src="chromeos/internet_detail.html">
     <include src="chromeos/language_chewing_options.html">
     <include src="chromeos/language_hangul_options.html">
     <include src="chromeos/language_mozc_options.html">
@@ -129,6 +128,12 @@
     <include src="certificate_import_error_overlay.html">
   </if>
 </div>
+<div id="overlay-container-3" class="overlay transparent" hidden>
+  <if expr="pp_ifdef('chromeos')">
+    <include src="chromeos/proxy.html">
+  </if>
+</div>
+
 <div id="main-content">
   <div id="mainview">
      <div id="managed-prefs-banner" class="managed-prefs-banner" hidden>
