@@ -20,6 +20,7 @@ import errno
 
 import cros_build_lib
 
+_CACHE_NAME = '.cros_projects.list'
 
 # TODO(ferringb): either move _atomic_writefile, _safe_makedirs, and
 # _safe_unlink into a library, or refactor it to use snakeoil; do this
@@ -57,9 +58,9 @@ def _safe_unlink(path, suppress=False):
       raise
 
 
-def _FilterNonExistentProjects(real_reference, projects):
+def _FilterNonExistentProjects(project_dir, projects):
   for project in projects:
-    if os.path.exists(os.path.join(real_reference, project)):
+    if os.path.exists(os.path.join(project_dir, project)):
       yield project
 
 
@@ -67,6 +68,8 @@ def _CleanAlternates(projects, alt_root):
   alt_root = os.path.normpath(alt_root)
 
   projects = set(projects)
+  # Ignore our cache.
+  projects.add(_CACHE_NAME)
   required_directories = set(os.path.dirname(x) for x in projects)
 
   for abs_root, dirs, files in os.walk(alt_root):
@@ -117,6 +120,39 @@ def _UpdateGitAlternates(proj_root, projects):
     os.rename(tmp_path, alt_path)
 
 
+def _GetProjects(repo_root):
+  # Note that while the project.list repo creates might seem usable, it is only
+  # updated during local syncs.  This isn't fine grained enough for us- we may
+  # have changed the manifest w/out yet doing a sync.
+  # Truncate our mtime awareness to just integers; else we're screwed since
+  # os.utime isn't guranteed to set the precision exactly as we need.
+  manifest_time = os.path.getmtime(os.path.join(repo_root, 'manifest.xml'))
+  manifest_time = long(manifest_time)
+  cache_path = os.path.join(repo_root, _CACHE_NAME)
+
+  try:
+    if long(os.path.getmtime(cache_path)) == manifest_time:
+      with open(cache_path) as f:
+        return f.read().split()
+  except EnvironmentError, e:
+    if e.errno != errno.ENOENT:
+      raise
+
+  result = cros_build_lib.RunCommand(['repo', 'list'], cwd=repo_root,
+                                     print_cmd=False, redirect_stdout=True)
+  # Sample output for repo list:
+  # src/third_party/wayland : chromiumos/third_party/wayland
+  # src/third_party/wayland-demos : chromiumos/third_party/wayland-demos
+  # src/third_party/wpa_supplicant : chromiumos/third_party/hostap
+  data = [x for x in result.output.split('\n') if ':' in x]
+  data = [x.split(':', 1)[0].strip() for x in data]
+  with open(cache_path, 'w') as f:
+    f.write('\n'.join(sorted(data)))
+  # Finally, mark the cache with the time of the manifest.xml we examined.
+  os.utime(cache_path, (manifest_time, manifest_time))
+  return data
+
+
 class Failed(Exception):
   pass
 
@@ -126,19 +162,14 @@ def _RebuildRepoCheckout(target_root, reference_map,
   repo_root = os.path.join(target_root, '.repo')
   proj_root = os.path.join(repo_root, 'projects')
 
-  if not os.path.exists(repo_root):
+  manifest_path = os.path.join(repo_root, 'manifest.xml')
+  if not os.path.exists(manifest_path):
     raise Failed('%r does not exist, thus cannot be a repo checkout' %
-                 repo_root)
-  try:
-    with open(os.path.join(repo_root, 'project.list')) as f:
-      project_data = f.read()
-  except EnvironmentError, e:
-    if e.errno != errno.ENOENT:
-      raise
-    project_data = ''
+                 manifest_path)
 
-  projects = list(sorted('%s.git' % x for x in project_data.split()))
-  projects = list(_FilterNonExistentProjects(proj_root, projects))
+  projects = ['%s.git' % x for x in _GetProjects(repo_root)]
+  projects = _FilterNonExistentProjects(proj_root, projects)
+  projects = list(sorted(projects))
 
   _safe_makedirs(alternates_dir)
   try:

@@ -262,10 +262,10 @@ class RepoRepository(object):
       if not self._initialized:
         self.Initialize(force=True)
 
+      self._ReinitializeIfNecessary(local_manifest)
+
       # Fix existing broken mirroring configurations.
       self._EnsureMirroring()
-
-      self._ReinitializeIfNecessary(local_manifest)
 
       if force_repo_update:
         # selfupdate prior to sync'ing.  Repo's first sync is  the manifest.
