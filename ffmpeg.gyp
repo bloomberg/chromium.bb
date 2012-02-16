@@ -111,7 +111,7 @@
                   # ffmpeg doesn't care about pointer signedness.
                   '-Wno-pointer-sign',
                   # ffmpeg doesn't believe in exhaustive switch statements.
-                  '-Wno-switch-enum',
+                  '-Wno-switch',
                 ],
               },
               'cflags': [
@@ -120,7 +120,7 @@
                 '-Wno-logical-op-parentheses',
                 '-Wno-parentheses',
                 '-Wno-pointer-sign',
-                '-Wno-switch-enum',
+                '-Wno-switch',
                 # Don't emit warnings for gcc -f flags clang doesn't implement.
                 '-Qunused-arguments',
               ],
