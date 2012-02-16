@@ -1,10 +1,10 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
 # IMPORTANT NOTE: If you make local mods to this file, you must run:
-#   %  tools/llvm/utman.sh driver
+#   %  pnacl/build.sh driver
 # in order for them to take effect in the scons build.  This command
 # updates the copy in the toolchain/ tree.
 
@@ -13,18 +13,20 @@
 
 # This dictionary initializes a shell-like environment.
 # Shell escaping and ${} substitution are provided.
-# See "class env" defined later for the implementation.
+# See "class Environment" defined later for the implementation.
 
 from shelltools import shell
 from driver_log import Log, DriverExit
 
 INITIAL_ENV = {
+  # Set by DriverMain
+  'DRIVER_PATH'     : '', # Absolute path to this driver invocation
+  'DRIVER_BIN'      : '', # PNaCl driver bin/ directory
+
   'BASE_NACL'       : '${@FindBaseNaCl}',   # Absolute path of native_client/
   'BASE'            : '${@FindBasePNaCl}',  # Absolute path to PNaCl
-  'BASE_DRIVER'     : '${@FindBaseDriver}', # Location of PNaCl drivers
   'BUILD_OS'        : '${@GetBuildOS}',     # "linux", "darwin" or "windows"
   'BUILD_ARCH'      : '${@GetBuildArch}',   # "x86_64" or "i686" or "i386"
-  'DRIVER_EXT'      : '${@GetDriverExt}',   # '.py' or ''
 
   # Directories
   'BASE_PKG'        : '${BASE}/pkg',
@@ -52,7 +54,11 @@ INITIAL_ENV = {
 
   # Driver settings
   'ARCH'        : '',     # Target architecture
-
+  'BIAS'        : 'NONE', # This can be 'NONE', 'ARM', 'X8632', or 'X8664'.
+                          # When not set to none, this causes the front-end to
+                          # act like a target-specific compiler. This bias is
+                          # currently needed while compiling newlib,
+                          # and some scons tests.
   'DRY_RUN'     : '0',
   'DEBUG'       : '0',    # Print out internal actions
   'RECURSE'     : '0',    # In a recursive driver call
@@ -212,9 +218,7 @@ def FindFirst(s, pos, strset):
   pos = min(m)
   return (m[pos], pos)
 
-class env(object):
-  data = {}
-  stack = []
+class Environment(object):
   functions = {}
 
   @classmethod
@@ -223,97 +227,83 @@ class env(object):
     cls.functions[func.__name__] = func
     return func
 
-  @classmethod
-  def update(cls, extra):
-    INITIAL_ENV.update(extra)
-    assert(cls) # This makes the pychecker "unused variable" warning go away
+  def __init__(self):
+    self.stack = []
+    self.reset()
 
-  @classmethod
-  def reset(cls):
-    cls.data = dict(INITIAL_ENV)
+  def reset(self):
+    self.data = dict(INITIAL_ENV)
 
-  @classmethod
-  def dump(cls):
-    for (k,v) in cls.data.iteritems():
+  def update(self, extra):
+    self.data.update(extra)
+
+  def dump(self):
+    for (k,v) in self.data.iteritems():
       print '%s == %s' % (k,v)
 
-  @classmethod
-  def push(cls):
-    cls.stack.append(cls.data)
-    cls.data = dict(cls.data) # Make a copy
+  def push(self):
+    self.stack.append(self.data)
+    self.data = dict(self.data) # Make a copy
 
-  @classmethod
-  def pop(cls):
-    cls.data = cls.stack.pop()
+  def pop(self):
+    self.data = self.stack.pop()
 
-  @classmethod
-  def has(cls, varname):
-    return varname in cls.data
+  def has(self, varname):
+    return varname in self.data
 
-  @classmethod
-  def getraw(cls, varname):
-    return cls.eval(cls.data[varname])
+  def getraw(self, varname):
+    return self.eval(self.data[varname])
 
   # Evaluate a variable from the environment.
   # Returns a list of terms.
-  @classmethod
-  def get(cls, varname):
-    return shell.split(cls.getraw(varname))
+  def get(self, varname):
+    return shell.split(self.getraw(varname))
 
   # Retrieve a variable from the environment which
   # is a single term. Returns a string.
-  @classmethod
-  def getone(cls, varname):
-    return shell.unescape(cls.getraw(varname))
+  def getone(self, varname):
+    return shell.unescape(self.getraw(varname))
 
-  @classmethod
-  def getbool(cls, varname):
-    return bool(int(cls.getone(varname)))
+  def getbool(self, varname):
+    return bool(int(self.getone(varname)))
 
-  @classmethod
-  def setbool(cls, varname, val):
+  def setbool(self, varname, val):
     if val:
-      cls.set(varname, '1')
+      self.set(varname, '1')
     else:
-      cls.set(varname, '0')
+      self.set(varname, '0')
 
   # Set a variable in the environment without shell-escape
-  @classmethod
-  def setraw(cls, varname, val):
-    cls.data[varname] = val
+  def setraw(self, varname, val):
+    self.data[varname] = val
 
   # Set one or more variables using named arguments
-  @classmethod
-  def setmany(cls, **kwargs):
+  def setmany(self, **kwargs):
     for k,v in kwargs.iteritems():
       if isinstance(v, str):
-        cls.set(k, v)
+        self.set(k, v)
       else:
-        cls.set(k, *v)
+        self.set(k, *v)
 
-  @classmethod
-  def clear(cls, varname):
-    cls.data[varname] = ''
+  def clear(self, varname):
+    self.data[varname] = ''
 
   # Set a variable to one or more terms, applying shell-escape.
-  @classmethod
-  def set(cls, varname, *vals):
-    cls.clear(varname)
-    cls.append(varname, *vals)
+  def set(self, varname, *vals):
+    self.clear(varname)
+    self.append(varname, *vals)
 
   # Append one or more terms to a variable in the
   # environment, applying shell-escape.
-  @classmethod
-  def append(cls, varname, *vals):
+  def append(self, varname, *vals):
     escaped = [ shell.escape(v) for v in vals ]
-    if len(cls.data[varname]) > 0:
-      cls.data[varname] += ' '
-    cls.data[varname] += ' '.join(escaped)
+    if len(self.data[varname]) > 0:
+      self.data[varname] += ' '
+    self.data[varname] += ' '.join(escaped)
 
   # Evaluate an expression s
-  @classmethod
-  def eval(cls, s):
-    (result, i) = cls.eval_expr(s, 0, [])
+  def eval(self, s):
+    (result, i) = self.eval_expr(s, 0, [])
     assert(i == len(s))
     return result
 
@@ -331,47 +321,43 @@ class env(object):
   # func = str
   # arglist = empty | arg ':' arglist
   #
-  # Do not call these functions outside of class env.
+  # Do not call these functions outside of this class.
   # The env.eval method is the external interface to the evaluator.
   ######################################################################
 
   # Evaluate a string literal
-  @classmethod
-  def eval_str(cls, s, pos, terminators):
+  def eval_str(self, s, pos, terminators):
     (_,i) = FindFirst(s, pos, terminators)
     return (s[pos:i], i)
 
   # Evaluate %var% substitutions inside a variable name.
   # Returns (the_actual_variable_name, endpos)
   # Terminated by } character
-  @classmethod
-  def eval_varname(cls, s, pos, terminators):
+  def eval_varname(self, s, pos, terminators):
     (_,i) = FindFirst(s, pos, ['%'] + terminators)
     leftpart = s[pos:i].strip(' ')
     if i == len(s) or s[i] in terminators:
       return (leftpart, i)
 
-    (middlepart, j) = cls.eval_bracket_expr(s, i+1, ['%'])
+    (middlepart, j) = self.eval_bracket_expr(s, i+1, ['%'])
     if j == len(s) or s[j] != '%':
       ParseError(s, i, j, "Unterminated %")
 
-    (rightpart, k) = cls.eval_varname(s, j+1, terminators)
+    (rightpart, k) = self.eval_varname(s, j+1, terminators)
 
     fullname = leftpart + middlepart + rightpart
     fullname = fullname.strip()
     return (fullname, k)
 
   # Absorb whitespace
-  @classmethod
-  def eval_whitespace(cls, s, pos):
+  def eval_whitespace(self, s, pos):
     i = pos
     while i < len(s) and s[i] == ' ':
       i += 1
     return (None, i)
 
-  @classmethod
-  def eval_bool_val(cls, s, pos, terminators):
-    (_,i) = cls.eval_whitespace(s, pos)
+  def eval_bool_val(self, s, pos, terminators):
+    (_,i) = self.eval_whitespace(s, pos)
 
     if s[i] == '!':
       negated = True
@@ -379,7 +365,7 @@ class env(object):
     else:
       negated = False
 
-    (_,i) = cls.eval_whitespace(s, i)
+    (_,i) = self.eval_whitespace(s, i)
 
     if s[i] == '#':
       uselen = True
@@ -387,16 +373,16 @@ class env(object):
     else:
       uselen = False
 
-    (varname, j) = cls.eval_varname(s, i, ['=']+terminators)
+    (varname, j) = self.eval_varname(s, i, ['=']+terminators)
     if j == len(s):
       # This is an error condition one level up. Don't evaluate anything.
       return (False, j)
 
-    if varname not in cls.data:
+    if varname not in self.data:
       ParseError(s, i, j, "Undefined variable '%s'" % varname)
-    vardata = cls.data[varname]
+    vardata = self.data[varname]
 
-    contents = cls.eval(vardata)
+    contents = self.eval(vardata)
 
     if s[j] == '=':
       # String equality test
@@ -404,9 +390,9 @@ class env(object):
         ParseError(s, j, j, "Unexpected token")
       if uselen:
         ParseError(s, j, j, "Cannot combine == and #")
-      (_,j) = cls.eval_whitespace(s, j+2)
-      (literal_str,j) = cls.eval_str(s, j, [' ']+terminators)
-      (_,j) = cls.eval_whitespace(s, j)
+      (_,j) = self.eval_whitespace(s, j+2)
+      (literal_str,j) = self.eval_str(s, j, [' ']+terminators)
+      (_,j) = self.eval_whitespace(s, j)
       if j == len(s):
         return (False, j) # Error one level up
     else:
@@ -424,9 +410,8 @@ class env(object):
     return (negated ^ val, j)
 
   # Evaluate a boolexpr
-  @classmethod
-  def eval_bool_expr(cls, s, pos, terminators):
-    (boolval1, i) = cls.eval_bool_val(s, pos, ['&','|']+terminators)
+  def eval_bool_expr(self, s, pos, terminators):
+    (boolval1, i) = self.eval_bool_val(s, pos, ['&','|']+terminators)
     if i == len(s):
       # This is an error condition one level up. Don't evaluate anything.
       return (False, i)
@@ -437,7 +422,7 @@ class env(object):
         ParseError(s, i, i, "Unexpected token")
       is_and = (s[i] == '&')
 
-      (boolval2, j) = cls.eval_bool_expr(s, i+2, terminators)
+      (boolval2, j) = self.eval_bool_expr(s, i+2, terminators)
       if j == len(s):
         # This is an error condition one level up.
         return (False, j)
@@ -451,9 +436,8 @@ class env(object):
 
   # Evaluate the inside of a ${} or %%.
   # Returns the (the_evaluated_string, endpos)
-  @classmethod
-  def eval_bracket_expr(cls, s, pos, terminators):
-    (_,pos) = cls.eval_whitespace(s, pos)
+  def eval_bracket_expr(self, s, pos, terminators):
+    (_,pos) = self.eval_whitespace(s, pos)
 
     if s[pos] == '@':
       # Function call: ${@func}
@@ -472,32 +456,32 @@ class env(object):
           return ('', j) # Error one level up
         args = s[i+1:j].split(':')
 
-      val = cls.functions[funcname](*args)
-      contents = cls.eval(val)
+      val = self.functions[funcname](*args)
+      contents = self.eval(val)
       return (contents, j)
 
     (m,_) = FindFirst(s, pos, ['?']+terminators)
     if m != '?':
       # Regular variable substitution
-      (varname,i) = cls.eval_varname(s, pos, terminators)
+      (varname,i) = self.eval_varname(s, pos, terminators)
       if len(s) == i:
         return ('', i)  # Error one level up
-      if varname not in cls.data:
+      if varname not in self.data:
         ParseError(s, pos, i, "Undefined variable '%s'" % varname)
-      vardata = cls.data[varname]
-      contents = cls.eval(vardata)
+      vardata = self.data[varname]
+      contents = self.eval(vardata)
       return (contents, i)
     else:
       # Ternary Mode
-      (is_cond_true,i) = cls.eval_bool_expr(s, pos, ['?']+terminators)
+      (is_cond_true,i) = self.eval_bool_expr(s, pos, ['?']+terminators)
       assert(i < len(s) and s[i] == '?')
 
-      (if_true_expr, j) = cls.eval_expr(s, i+1, [' : ']+terminators)
+      (if_true_expr, j) = self.eval_expr(s, i+1, [' : ']+terminators)
       if j == len(s):
         return ('', j) # Error one level up
 
       if s[j:j+3] == ' : ':
-        (if_false_expr,j) = cls.eval_expr(s, j+3, terminators)
+        (if_false_expr,j) = self.eval_expr(s, j+3, terminators)
         if j == len(s):
           # This is an error condition one level up.
           return ('', j)
@@ -513,16 +497,17 @@ class env(object):
 
   # Evaluate an expression with ${} in string s, starting at pos.
   # Returns (the_evaluated_expression, endpos)
-  @classmethod
-  def eval_expr(cls, s, pos, terminators):
+  def eval_expr(self, s, pos, terminators):
     (m,i) = FindFirst(s, pos, ['${'] + terminators)
     leftpart = s[pos:i]
     if i == len(s) or m in terminators:
       return (leftpart, i)
 
-    (middlepart, j) = cls.eval_bracket_expr(s, i+2, ['}'])
+    (middlepart, j) = self.eval_bracket_expr(s, i+2, ['}'])
     if j == len(s) or s[j] != '}':
       ParseError(s, i, j, 'Unterminated ${')
 
-    (rightpart, k) = cls.eval_expr(s, j+1, terminators)
+    (rightpart, k) = self.eval_expr(s, j+1, terminators)
     return (leftpart + middlepart + rightpart, k)
+
+env = Environment()

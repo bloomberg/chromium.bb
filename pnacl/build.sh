@@ -1063,8 +1063,8 @@ prune() {
   rm -rf "${LLVM_INSTALL_DIR}"/include/llvm*
 
   echo "removing .pyc files"
-  rm -f "${INSTALL_NEWLIB_BIN}"/*.pyc
-  rm -f "${INSTALL_GLIBC_BIN}"/*.pyc
+  rm -f "${INSTALL_NEWLIB_BIN}"/pydir/*.pyc
+  rm -f "${INSTALL_GLIBC_BIN}"/pydir/*.pyc
 
   echo "remove driver log"
   rm -f "${INSTALL_ROOT}"/driver.log
@@ -3247,21 +3247,25 @@ driver-install() {
   local libmode=$1
   check-libmode ${libmode}
   local destdir="${INSTALL_ROOT}/${libmode}/bin"
+  local pydir="${destdir}/pydir"
   StepBanner "DRIVER" "Installing driver adaptors to ${destdir}"
   mkdir -p "${destdir}"
+  mkdir -p "${pydir}"
   rm -f "${destdir}"/pnacl-*
 
   spushd "${DRIVER_DIR}"
-  cp driver_*.py "${destdir}"
-  cp artools.py "${destdir}"
-  cp ldtools.py "${destdir}"
-  cp shelltools.py "${destdir}"
-  cp pathtools.py "${destdir}"
-  for t in pnacl-*; do
-    local name=$(basename "$t")
-    cp "${t}" "${destdir}/${name/.py}"
+
+  # Copy python scripts
+  cp *.py "${pydir}"
+
+  # Install redirector shell/batch scripts
+  cp findpython.sh "${destdir}"
+  for name in pnacl-*.py; do
+    local dest="${destdir}/${name/.py}"
+    cp redirect.sh "${dest}"
+    chmod +x "${dest}"
     if ${BUILD_PLATFORM_WIN}; then
-      cp redirect.bat "${destdir}/${name/.py}.bat"
+      cp redirect.bat "${dest}".bat
     fi
   done
   spopd

@@ -1,10 +1,10 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
 # IMPORTANT NOTE: If you make local mods to this file, you must run:
-#   %  tools/llvm/utman.sh driver
+#   %  pnacl/build.sh driver
 # in order for them to take effect in the scons build.  This command
 # updates the copy in the toolchain/ tree.
 #
@@ -27,7 +27,6 @@ EXTRA_ENV = {
   'RUN_LLVM_AS'    : '${LLVM_AS} ${input} -o ${output}',
   'RUN_LLVM_MC'    : '${LLVM_MC} ${MC_FLAGS} ${input} -o ${output}',
 }
-env.update(EXTRA_ENV)
 
 VERSION_STR = """Portable Native Client assembler
 Compatibility:
@@ -70,6 +69,7 @@ ASPatterns = [
 ]
 
 def main(argv):
+  env.update(EXTRA_ENV)
   driver_tools.ParseArgs(argv, ASPatterns)
   arch = driver_tools.GetArch()
 
@@ -107,6 +107,16 @@ def main(argv):
   env.pop()
   return 0
 
+def get_help(argv):
+  return """
+LLVM Assembler for PNaCl
+Transform LLVM assembly (.ll) to LLVM bitcode.
 
-if __name__ == "__main__":
-  driver_tools.DriverMain(main)
+Usage: pnacl-as [options] <input .ll file> -o <output.po>
+
+OPTIONS:
+  -o <file>        Output to file
+  --version        Display version information
+  -help | -h       Output this help.
+"""
+

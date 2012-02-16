@@ -4,7 +4,7 @@
 # found in the LICENSE file.
 #
 # IMPORTANT NOTE: If you make local mods to this file, you must run:
-#   %  tools/llvm/utman.sh driver
+#   %  pnacl/build.sh driver
 # in order for them to take effect in the scons build.  This command
 # updates the copy in the toolchain/ tree.
 #
@@ -30,14 +30,8 @@ EXTRA_ENV = {
                           # Useful for debugging.
                           # NOTE: potentially different code paths and bugs
                           #       might be triggered by this
-  'BIAS'        : 'NONE', # This can be 'NONE', 'ARM', 'X8632', or 'X8664'.
-                          # When not set to none, this causes the front-end to
-                          # act like a target-specific compiler. This bias is
-                          # currently needed while compiling newlib,
-                          # and some scons tests.
-                          # TODO(pdox): Can this be removed?
-  'LANGUAGE'    : 'C',    # C or CXX
-  'FRONTEND'    : '',     # CLANG, or DRAGONEGG
+  'LANGUAGE'    : '',     # C or CXX (set by SetTool)
+  'FRONTEND'    : '',     # CLANG, or DRAGONEGG (set by SetTool)
   'INCLUDE_CXX_HEADERS': '0', # This is set by RunCC.
 
   # Command-line options
@@ -157,7 +151,6 @@ EXTRA_ENV = {
             '${@AddPrefix:-isystem :ISYSTEM} ' +
             '-x${typespec} "${infile}" -o ${output}',
 }
-env.update(EXTRA_ENV)
 
 def AddLDFlag(*args):
   env.append('LD_FLAGS', *args)
@@ -203,17 +196,6 @@ def HandleDashX(arg):
 
 CustomPatterns = [
   ( '--driver=(.+)',             "env.set('CC', pathtools.normalize($0))\n"),
-
-  ( '--pnacl-clang',             "env.set('LANGUAGE', 'C')\n"
-                                 "env.set('FRONTEND', 'CLANG')"),
-  ( '--pnacl-clangxx',           "env.set('LANGUAGE', 'CXX')\n"
-                                 "env.set('FRONTEND', 'CLANG')"),
-
-  ( '--pnacl-dgcc',              "env.set('LANGUAGE', 'C')\n"
-                                 "env.set('FRONTEND', 'DRAGONEGG')"),
-  ( '--pnacl-dgxx',              "env.set('LANGUAGE', 'CXX')\n"
-                                 "env.set('FRONTEND', 'DRAGONEGG')"),
-
   ( '--pnacl-allow-native',      "env.set('ALLOW_NATIVE', '1')"),
   ( '--pnacl-allow-translate',   "env.set('ALLOW_TRANSLATE', '1')"),
 ]
@@ -351,21 +333,26 @@ GCCPatterns = [
              "ForceFileType(pathtools.normalize($0))"),
 ]
 
-# This is needed because our script name is
-# "pnacl-driver" unless explicitly set.
-def SetScriptName():
-  language = env.getone('LANGUAGE') # C or CXX
-  frontend = env.getone('FRONTEND') # CLANG or DRAGONEGG
-  namemap = { ('CLANG', 'C')      : 'pnacl-clang',
-              ('CLANG', 'CXX')    : 'pnacl-clang++',
-              ('DRAGONEGG', 'C')  : 'pnacl-dgcc',
-              ('DRAGONEGG', 'CXX'): 'pnacl-dg++' }
-  Log.SetScriptName(namemap[(frontend, language)])
+# Called by the frontend scripts (pnacl-clang.py, etc)
+def SetTool(tool):
+  env.update(EXTRA_ENV)
+  namemap = { 'pnacl-clang':   ('CLANG', 'C'),
+              'pnacl-clang++': ('CLANG', 'CXX'),
+              'pnacl-dgcc':    ('DRAGONEGG', 'C'),
+              'pnacl-dg++':    ('DRAGONEGG', 'CXX') }
+  (frontend, language) = namemap[tool]
+  env.set('FRONTEND', frontend)
+  env.set('LANGUAGE', language)
+
+def CheckSetup():
+  if not env.has('FRONTEND'):
+    Log.Fatal('"pnacl-driver" cannot be used directly. '
+              'Use pnacl-clang or pnacl-dgcc.')
 
 def main(argv):
+  CheckSetup()
   _, real_argv = ParseArgs(argv, CustomPatterns, must_match = False)
   ParseArgs(real_argv, GCCPatterns)
-  SetScriptName()
 
   # "configure", especially when run as part of a toolchain bootstrap
   # process, will invoke gcc with various diagnostic options and
@@ -513,7 +500,7 @@ def main(argv):
   ld_args = env.get('LD_ARGS')
   ld_flags = env.get('LD_FLAGS')
 
-  RunDriver('pnacl-ld', ld_flags + ld_args + ['-o', output])
+  RunDriver('ld', ld_flags + ld_args + ['-o', output])
   return 0
 
 def IsFlag(f):
@@ -542,12 +529,12 @@ def RunCC(infile, output, mode):
 def RunLLVMAS(infile, output):
   if IsStdinInput(infile):
     infile = '-'
-  RunDriver('pnacl-as', [infile, '-o', output], suppress_arch = True)
+  RunDriver('as', [infile, '-o', output], suppress_arch = True)
 
 def RunNativeAS(infile, output):
   if IsStdinInput(infile):
     infile = '-'
-  RunDriver('pnacl-as', [infile, '-o', output])
+  RunDriver('as', [infile, '-o', output])
 
 def RunTranslate(infile, output, mode):
   if not env.getbool('ALLOW_TRANSLATE'):
@@ -558,7 +545,7 @@ def RunTranslate(infile, output, mode):
   args = [mode, infile, '-o', output]
   if env.getbool('PIC'):
     args += ['-fPIC']
-  RunDriver('pnacl-translate', args)
+  RunDriver('translate', args)
 
 def SetupChain(chain, input_type, output_type):
   assert(output_type in ('pp','ll','po','s','o'))
@@ -626,6 +613,41 @@ def SetupChain(chain, input_type, output_type):
 
   Log.Fatal("Unable to compile .%s to .%s", input_type, output_type)
 
+def get_help(argv):
+  CheckSetup()
+  frontend = env.getone('FRONTEND').capitalize()
+  language = env.getone('LANGUAGE').replace('XX','++')
+  tool = env.getone('SCRIPT_NAME')
 
-if __name__ == "__main__":
-  DriverMain(main)
+  return """
+%s %s compiler for PNaCl.
+This is a "GCC-compatible" driver.
+
+Usage: %s [options] <inputs> ...
+
+BASIC OPTIONS:
+  -o <file>          Output to <file>.
+  -E                 Only run the preprocessor.
+  -S                 Generate bitcode assembly.
+  -c                 Generate bitcode object.
+  -I <dir>           Add header search path.
+  -L <dir>           Add library search path.
+  -D<key>[=<val>]    Add definition for the preprocessor.
+  -W<id>             Toggle warning <id>.
+  -f<feature>        Enable <feature>.
+  -Wl,<arg>          Pass <arg> to the linker.
+  -Wp,<arg>          Pass <arg> to the preprocessor.
+  -Xassembler <arg>  Pass <arg> to the assembler.
+  -Xlinker <arg>     Pass <arg> to the linker.
+  -x <language>      Treat subsequent input files as having type <language>.
+  -static            Produce a static executable.
+  -shared            Produce a shared object.
+  -Bstatic           Link subsequent libraries statically.
+  -Bdynamic          Link subsequent libraries dynamically.
+  -fPIC              Ignored (for compatibility).
+  -pipe              Ignored (for compatibility).
+  -O<n>              Optimation level <n>: 0, 1, 2, 3, 4 or s.
+  -save-temps        Keep intermediate compilation results.
+  -v                 Verbose output / show commands.
+  -h | --help        Show this help.
+""" % (frontend, language, tool)

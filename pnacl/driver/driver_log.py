@@ -1,10 +1,10 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
 # IMPORTANT NOTE: If you make local mods to this file, you must run:
-#   %  tools/llvm/utman.sh driver
+#   %  pnacl/build.sh driver
 # in order for them to take effect in the scons build.  This command
 # updates the copy in the toolchain/ tree.
 #
@@ -56,9 +56,18 @@ class TempFileHandler(object):
 
 TempFiles = TempFileHandler()
 
-def DriverExit(code):
+# Completely terminate the driver and all module layers.
+#
+# Inside a single driver module, this should only be used for
+# abnormal/unexpected exit. For normal exit-on-success, return 0
+# from main().
+#
+# The only place this may be used with retcode 0 is in the final
+# exit (in loader.py).
+def DriverExit(retcode, is_final_exit=False):
+  assert(is_final_exit or retcode != 0)
   TempFiles.wipe()
-  sys.exit(code)
+  sys.exit(retcode)
 
 ######################################################################
 #
@@ -66,20 +75,20 @@ def DriverExit(code):
 #
 ######################################################################
 
-class Log(object):
-  @classmethod
-  def reset(cls):
+class LogManager(object):
+  def __init__(self):
+    self.reset()
+
+  def reset(self):
     # Lists of streams
-    cls.LOG_OUT = []
-    cls.ERROR_OUT = [sys.stderr]
-    cls.script_name = ''
+    self.LOG_OUT = []
+    self.ERROR_OUT = [sys.stderr]
+    self.script_name = ''
 
-  @classmethod
-  def SetScriptName(cls, script_name):
-    cls.script_name = script_name
+  def SetScriptName(self, script_name):
+    self.script_name = script_name
 
-  @classmethod
-  def AddFile(cls, filename, sizelimit):
+  def AddFile(self, filename, sizelimit):
     file_too_big = pathtools.isfile(filename) and \
                    pathtools.getsize(filename) > sizelimit
     mode = 'a'
@@ -87,54 +96,46 @@ class Log(object):
       mode = 'w'
     fp = DriverOpen(filename, mode, fail_ok = True)
     if fp:
-      cls.LOG_OUT.append(fp)
+      self.LOG_OUT.append(fp)
 
-  @classmethod
-  def Banner(cls, argv):
-    cls.Info('-' * 60)
-    cls.Info('PNaCl Driver Invoked With:\n' + StringifyCommand(argv))
+  def Banner(self, argv):
+    self.Info('-' * 60)
+    self.Info('PNaCl Driver Invoked With:\n' + StringifyCommand(argv))
 
-  @classmethod
-  def Info(cls, m, *args):
-    cls.LogPrint(m, *args)
+  def Info(self, m, *args):
+    self.LogPrint(m, *args)
 
-  @classmethod
-  def Error(cls, m, *args):
-    cls.ErrorPrint(m, *args)
+  def Error(self, m, *args):
+    self.ErrorPrint(m, *args)
 
-  @classmethod
-  def FatalWithResult(cls, ret, msg, *args):
-    if cls.script_name:
-      msg = '%s: %s' % (cls.script_name, msg)
-    cls.LogPrint(msg, *args)
-    cls.ErrorPrint(msg, *args)
+  def FatalWithResult(self, ret, msg, *args):
+    if self.script_name:
+      msg = '%s: %s' % (self.script_name, msg)
+    self.LogPrint(msg, *args)
+    self.ErrorPrint(msg, *args)
     DriverExit(ret)
 
-  @classmethod
-  def Warning(cls, m, *args):
+  def Warning(self, m, *args):
     m = 'Warning: ' + m
-    cls.ErrorPrint(m, *args)
+    self.ErrorPrint(m, *args)
 
-  @classmethod
-  def Fatal(cls, m, *args):
+  def Fatal(self, m, *args):
     # Note, using keyword args and arg lists while trying to keep
     # the m and *args parameters next to each other does not work
-    cls.FatalWithResult(-1, m, *args)
+    self.FatalWithResult(-1, m, *args)
 
-  @classmethod
-  def LogPrint(cls, m, *args):
+  def LogPrint(self, m, *args):
     # NOTE: m may contain '%' if no args are given
     if args:
       m = m % args
-    for o in cls.LOG_OUT:
+    for o in self.LOG_OUT:
       print >> o, m
 
-  @classmethod
-  def ErrorPrint(cls, m, *args):
+  def ErrorPrint(self, m, *args):
     # NOTE: m may contain '%' if no args are given
     if args:
       m = m % args
-    for o in cls.ERROR_OUT:
+    for o in self.ERROR_OUT:
       print >> o, m
 
 def EscapeEcho(s):
@@ -165,3 +166,5 @@ def PrettyStringify(args):
     ret += a
     grouping -= 1
   return ret
+
+Log = LogManager()

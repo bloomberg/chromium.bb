@@ -1,24 +1,27 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
 # IMPORTANT NOTE: If you make local mods to this file, you must run:
-#   %  tools/llvm/utman.sh driver
+#   %  pnacl/build.sh driver
 # in order for them to take effect in the scons build.  This command
 # updates the copy in the toolchain/ tree.
 #
 
-from driver_tools import RunWithLog, DriverMain
+from driver_tools import RunWithLog
 from driver_env import env
 
 def main(argv):
-  env.set('ARGV', *argv)
+  return RunOpt(argv)
 
+def get_help(argv):
+  RunOpt(['--help'])
+  return ""
+
+def RunOpt(args):
   # Binary output may go to stdout
-  return RunWithLog('"${LLVM_OPT}" ${ARGV}',
-                    errexit = False,
-                    log_stdout = False)
-
-if __name__ == "__main__":
-  DriverMain(main)
+  env.set('ARGS', *args)
+  return RunWithLog('"${LLVM_OPT}" ${ARGS}',
+                    errexit=False,
+                    log_stdout=False)

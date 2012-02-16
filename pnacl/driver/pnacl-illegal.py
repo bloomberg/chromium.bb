@@ -1,21 +1,17 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
 # IMPORTANT NOTE: If you make local mods to this file, you must run:
-#   %  tools/llvm/utman.sh driver
+#   %  pnacl/build.sh driver
 # in order for them to take effect in the scons build.  This command
 # updates the copy in the toolchain/ tree.
 #
 
-import sys
-from driver_tools import DriverMain
 from driver_log import Log, StringifyCommand
+from driver_env import env
 
-def main(unused_argv):
-  # unused_argv does not contain argv[0], etc, so we refer to sys.argv here.
-  Log.Fatal('ILLEGAL COMMAND: ' + StringifyCommand(sys.argv))
-
-if __name__ == "__main__":
-  DriverMain(main)
+def main(argv):
+  argv = [env.getone('DRIVER_PATH')] + argv
+  Log.Fatal('ILLEGAL COMMAND: ' + StringifyCommand(argv))

@@ -1,10 +1,10 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
 # IMPORTANT NOTE: If you make local mods to this file, you must run:
-#   %  tools/llvm/utman.sh driver
+#   %  pnacl/build.sh driver
 # in order for them to take effect in the scons build.  This command
 # updates the copy in the toolchain/ tree.
 #
@@ -105,7 +105,6 @@ EXTRA_ENV = {
   'RUN_BCLD': ('${BCLD} ${BCLD_FLAGS} ${inputs} '
                '-o "${output}"'),
 }
-env.update(EXTRA_ENV)
 
 def AddToBCLinkFlags(*args):
   env.append('LD_FLAGS', *args)
@@ -221,6 +220,7 @@ LDPatterns = [
 ]
 
 def main(argv):
+  env.update(EXTRA_ENV)
   ParseArgs(argv, LDPatterns)
 
   # If the user passed -arch, then they want native output.
@@ -388,11 +388,11 @@ def CheckInputsArch(inputs):
 
 def DoOPT(infile, outfile):
   opt_flags = env.get('OPT_FLAGS')
-  RunDriver('pnacl-opt', opt_flags + [ infile, '-o', outfile ])
+  RunDriver('opt', opt_flags + [ infile, '-o', outfile ])
 
 def DoStrip(infile, outfile):
   strip_flags = env.get('STRIP_FLAGS')
-  RunDriver('pnacl-strip', strip_flags + [ infile, '-o', outfile ])
+  RunDriver('strip', strip_flags + [ infile, '-o', outfile ])
 
 def DoTranslate(infile, outfile):
   args = env.get('TRANSLATE_FLAGS')
@@ -401,7 +401,7 @@ def DoTranslate(infile, outfile):
     args += [infile]
   args += [s for s in env.get('NATIVE_OBJECTS')]
   args += ['-o', outfile]
-  RunDriver('pnacl-translate', args)
+  RunDriver('translate', args)
 
 def LinkBC(inputs, output):
   '''Input: a bunch of bc/o/lib input files
@@ -411,6 +411,3 @@ def LinkBC(inputs, output):
   RunWithEnv('${RUN_BCLD}',
              inputs=inputs,
              output=output)
-
-if __name__ == "__main__":
-  DriverMain(main)

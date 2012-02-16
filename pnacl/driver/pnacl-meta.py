@@ -21,7 +21,6 @@ EXTRA_ENV = {
   'RAW'      : '0',
   'INPUTS'   : '',
 }
-env.update(EXTRA_ENV)
 
 META_PATTERNS = [
   ( '--raw',     "env.set('RAW', '1')"),
@@ -33,6 +32,7 @@ def Usage():
   print "Show the PNaCl-specific metadata of a bitcode file"
 
 def main(argv):
+  env.update(EXTRA_ENV)
   driver_tools.ParseArgs(argv, META_PATTERNS)
 
   inputs = env.get('INPUTS')
@@ -65,6 +65,3 @@ def DumpRaw(metadata):
     else:
       for u in v:
         print "%s: %s" % (k, u)
-
-if __name__ == "__main__":
-  driver_tools.DriverMain(main)

@@ -9,7 +9,8 @@
 # updates the copy in the toolchain/ tree.
 #
 
-from driver_tools import *
+import driver_tools
+import pathtools
 from driver_env import env
 from driver_log import Log
 
@@ -130,8 +131,6 @@ EXTRA_ENV = {
   'RUN_LLC'       : '${LLC} ${LLC_FLAGS} ${input} -o ${output}',
   'STREAM_BITCODE' : '0',
 }
-env.update(EXTRA_ENV)
-
 
 TranslatorPatterns = [
   ( '-o(.+)',          "env.set('OUTPUT', pathtools.normalize($0))"),
@@ -166,18 +165,19 @@ TranslatorPatterns = [
   ( '-Wl,(.*)',        "env.append('LD_FLAGS', *($0).split(','))"),
   ( '-bitcode-stream-rate=([0-9]+)', "env.set('STREAM_BITCODE', $0)"),
 
-  ( '(-.*)',            UnrecognizedOption),
+  ( '(-.*)',            driver_tools.UnrecognizedOption),
 
   ( '(.*)',            "env.append('INPUTS', pathtools.normalize($0))"),
 ]
 
 def main(argv):
-  ParseArgs(argv, TranslatorPatterns)
+  env.update(EXTRA_ENV)
+  driver_tools.ParseArgs(argv, TranslatorPatterns)
 
   if env.getbool('SHARED') and env.getbool('STATIC'):
     Log.Fatal('Cannot mix -static and -shared')
 
-  GetArch(required = True)
+  driver_tools.GetArch(required = True)
 
   inputs = env.get('INPUTS')
   output = env.getone('OUTPUT')
@@ -186,13 +186,13 @@ def main(argv):
     Log.Fatal("No input files")
 
   # If there's a bitcode file, find it.
-  bcfiles = filter(IsBitcode, inputs)
+  bcfiles = filter(driver_tools.IsBitcode, inputs)
   if len(bcfiles) > 1:
     Log.Fatal('Expecting at most 1 bitcode file')
 
   if bcfiles:
     bcfile = bcfiles[0]
-    bctype = FileType(bcfile)
+    bctype = driver_tools.FileType(bcfile)
     has_bitcode = True
     # Placeholder for actual object file
     inputs = ListReplace(inputs, bcfile, '__BITCODE__')
@@ -234,12 +234,12 @@ def main(argv):
 
   if output == '':
     if bcfile:
-      output = DefaultOutputName(bcfile, output_type)
+      output = driver_tools.DefaultOutputName(bcfile, output_type)
     else:
       output = pathtools.normalize('a.out')
 
-  tng = TempNameGen(inputs + bcfiles, output)
-  chain = DriverChain(bcfile, output, tng)
+  tng = driver_tools.TempNameGen(inputs + bcfiles, output)
+  chain = driver_tools.DriverChain(bcfile, output, tng)
   SetupChain(chain, has_bitcode, output_type)
   chain.run()
   return 0
@@ -265,7 +265,7 @@ def ApplyBitcodeConfig(bcfile, bctype):
   # However, if the metadata becomes richer we will need another mechanism.
   # TODO(jvoung): at least grep out the SRPC output from LLC and transmit
   # that directly to LD to avoid issues with mismatching delimiters.
-  metadata = GetBitcodeMetadata(bcfile)
+  metadata = driver_tools.GetBitcodeMetadata(bcfile)
   for needed in metadata['NeedsLibrary']:
     env.append('LD_FLAGS', '--add-extra-dt-needed=' + needed)
   if bctype == 'pso':
@@ -311,7 +311,7 @@ def SetupChain(chain, has_bitcode, output_type):
     chain.add(RunLD, 'nexe')
 
 def RunAS(infile, outfile):
-  RunDriver('pnacl-as', [infile, '-o', outfile])
+  driver_tools.RunDriver('as', [infile, '-o', outfile])
 
 def ListReplace(items, old, new):
   ret = []
@@ -336,7 +336,7 @@ def RequiresNonStandardLDCommandline(inputs, infile):
     return ('No bitcode input: %s' % str(infile), True)
   if not env.getbool('STDLIB'):
     return ('NOSTDLIB', True)
-  if (GetArch(required=True) == 'X8664' and
+  if (driver_tools.GetArch(required=True) == 'X8664' and
       not env.getbool('SHARED') and
       not env.getbool('USE_IRT_SHIM')):
     return ('USE_IRT_SHIM false when normally true', True)
@@ -375,32 +375,32 @@ def RunLD(infile, outfile):
   env.set('ld_inputs', *inputs)
   args = env.get('LD_ARGS') + ['-o', outfile]
   args += env.get('LD_FLAGS')
-  RunDriver('pnacl-nativeld', args)
+  driver_tools.RunDriver('nativeld', args)
 
 def RunLLC(infile, outfile, filetype):
   UseSRPC = env.getbool('SANDBOXED') and env.getbool('SRPC')
   # For now, sel_universal doesn't properly support dynamic sb translator
   if env.getbool('SANDBOXED') and env.getbool('SB_DYNAMIC'):
-    CheckTranslatorPrerequisites()
+    driver_tools.CheckTranslatorPrerequisites()
     UseSRPC = False
   env.push()
   env.setmany(input=infile, output=outfile, filetype=filetype)
   if UseSRPC:
     RunLLCSRPC()
   else:
-    RunWithLog("${RUN_LLC}")
+    driver_tools.RunWithLog("${RUN_LLC}")
   env.pop()
   return 0
 
 def RunLLCSRPC():
-  CheckTranslatorPrerequisites()
+  driver_tools.CheckTranslatorPrerequisites()
   infile = env.getone('input')
   outfile = env.getone('output')
   flags = env.get('LLC_FLAGS')
   script = MakeSelUniversalScriptForLLC(infile, outfile, flags)
-  RunWithLog('${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ' +
-             '${SEL_UNIVERSAL_FLAGS} -- ${LLC_SRPC}',
-             stdin=script, echo_stdout = False, echo_stderr = False)
+  driver_tools.RunWithLog('${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ' +
+                          '${SEL_UNIVERSAL_FLAGS} -- ${LLC_SRPC}',
+                          stdin=script, echo_stdout=False, echo_stderr=False)
 
 def MakeSelUniversalScriptForLLC(infile, outfile, flags):
   script = []
@@ -427,5 +427,23 @@ def MakeSelUniversalScriptForLLC(infile, outfile, flags):
   script.append('')
   return '\n'.join(script)
 
-if __name__ == "__main__":
-  DriverMain(main)
+def get_help(argv):
+  return """
+PNaCl bitcode to native code translator.
+
+Usage: pnacl-translate [options] -arch <arch> <input> -o <output>
+
+  <input>            Input file (bitcode).
+  -arch <arch>       Translate to <arch> (i686, x86_64, armv7)
+  -o <output>        Output file.
+
+  The output file type depends on the input file type:
+     Portable object (.po)         -> NaCl ELF object (.o)
+     Portable shared object (.pso) -> NaCl ELF shared object (.so)
+     Portable executable (.pexe)   -> NaCl ELF executable (.nexe)
+
+ADVANCED OPTIONS:
+  -S                 Generate native assembly only.
+  -c                 Generate native object file only.
+  --pnacl-sb         Use the translator which runs inside the NaCl sandbox.
+"""

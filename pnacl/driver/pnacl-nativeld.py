@@ -86,7 +86,6 @@ EXTRA_ENV = {
 
   'RUN_LD' : '${LD} ${LD_FLAGS} ${inputs} -o "${output}"',
 }
-env.update(EXTRA_ENV)
 
 def PassThrough(*args):
   env.append('LD_FLAGS', *args)
@@ -151,6 +150,7 @@ LDPatterns = [
 ]
 
 def main(argv):
+  env.update(EXTRA_ENV)
   ParseArgs(argv, LDPatterns)
 
   GetArch(required=True)
@@ -322,6 +322,3 @@ def LocateLinkerScript():
     Log.Fatal("Unable to find linker script '%s'", ld_script)
 
   env.set('LD_SCRIPT', path)
-
-if __name__ == "__main__":
-  DriverMain(main)

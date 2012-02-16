@@ -1,15 +1,16 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
 # IMPORTANT NOTE: If you make local mods to this file, you must run:
-#   %  tools/llvm/utman.sh driver
+#   %  pnacl/build.sh driver
 # in order for them to take effect in the scons build.  This command
 # updates the copy in the toolchain/ tree.
 #
 
-from driver_tools import *
+import driver_tools
+import pathtools
 from driver_env import env
 from driver_log import Log
 
@@ -28,7 +29,6 @@ EXTRA_ENV = {
   'RUN_OPT'            : '${LLVM_OPT} ${OPT_FLAGS} ${input} -o ${output}',
   'RUN_STRIP'          : '${STRIP} ${STRIP_FLAGS} ${input} -o ${output}',
 }
-env.update(EXTRA_ENV)
 
 StripPatterns = [
     ( ('-o','(.*)'),     "env.set('OUTPUT', pathtools.normalize($0))"),
@@ -38,13 +38,14 @@ StripPatterns = [
 
     ( '--strip-debug',   "env.set('MODE', 'debug')"),
     ( '-S',              "env.set('MODE', 'debug')"),
-    ( '(-.*)',           UnrecognizedOption),
+    ( '(-.*)',           driver_tools.UnrecognizedOption),
 
     ( '(.*)',            "env.append('INPUTS', pathtools.normalize($0))"),
 ]
 
 def main(argv):
-  ParseArgs(argv, StripPatterns)
+  env.update(EXTRA_ENV)
+  driver_tools.ParseArgs(argv, StripPatterns)
   inputs = env.get('INPUTS')
   output = env.getone('OUTPUT')
 
@@ -56,13 +57,10 @@ def main(argv):
       f_output = output
     else:
       f_output = f
-    if IsBitcode(f):
-      RunWithEnv('${RUN_OPT}', input = f, output = f_output)
-    elif IsELF(f):
-      RunWithEnv('${RUN_STRIP}', input = f, output = f_output)
+    if driver_tools.IsBitcode(f):
+      driver_tools.RunWithEnv('${RUN_OPT}', input = f, output = f_output)
+    elif driver_tools.IsELF(f):
+      driver_tools.RunWithEnv('${RUN_STRIP}', input = f, output = f_output)
     else:
       Log.Fatal('%s: File is neither ELF nor bitcode', pathtools.touser(f))
   return 0
-
-if __name__ == "__main__":
-  DriverMain(main)

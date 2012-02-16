@@ -41,7 +41,6 @@ EXTRA_ENV = {
                          '  ${BASE_SDK}/lib/ ' +
                          '  ${BASE_LIB}/ ',
 }
-env.update(EXTRA_ENV)
 
 NMF_PATTERNS = [
   ( ('-L', '(.+)'),
@@ -144,6 +143,7 @@ def GenerateDynamicNMF(pexe_file, needed, output_file):
 
 
 def main(argv):
+  env.update(EXTRA_ENV)
   ParseArgs(argv, NMF_PATTERNS)
   inputs = env.get('INPUTS')
 
@@ -174,6 +174,3 @@ def main(argv):
     GenerateDynamicNMF(pexe_file, needed, output_file)
   DriverClose(output_file)
   return 0
-
-if __name__ == "__main__":
-  DriverMain(main)

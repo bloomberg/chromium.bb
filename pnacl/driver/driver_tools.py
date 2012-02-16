@@ -1,10 +1,10 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
 # IMPORTANT NOTE: If you make local mods to this file, you must run:
-#   %  tools/llvm/utman.sh driver
+#   %  pnacl/build.sh driver
 # in order for them to take effect in the scons build.  This command
 # updates the copy in the toolchain/ tree.
 #
@@ -58,7 +58,8 @@ def RunDriver(invocation, args, suppress_arch = False):
   if isinstance(args, str):
     args = shell.split(env.eval(args))
 
-  script = env.eval('${BASE_DRIVER}/%s${DRIVER_EXT}' % invocation)
+  module_name = 'pnacl-%s' % invocation
+  script = env.eval('${DRIVER_BIN}/%s' % module_name)
   script = shell.unescape(script)
 
   driver_args = env.get('DRIVER_FLAGS')
@@ -72,18 +73,24 @@ def RunDriver(invocation, args, suppress_arch = False):
       i = driver_args.index('-arch')
       driver_args = driver_args[:i] + driver_args[i+2:]
 
-  python_interpreter = pathtools.normalize(sys.executable)
   script = pathtools.tosys(script)
-  cmd = [python_interpreter, script] + driver_args + args
+  cmd = [script] + driver_args + args
 
   # The invoked driver will do it's own logging, so
   # don't use RunWithLog() for the recursive driver call.
   # Use Run() so that the subprocess's stdout/stderr
   # will go directly to the real stdout/stderr.
   if env.getbool('DEBUG'):
-    Log.LogPrint('-' * 60)
-    Log.LogPrint('\n' + StringifyCommand(cmd))
-  Run(cmd)
+    print '-' * 60
+    print '\n' + StringifyCommand(cmd)
+
+  module = __import__(module_name)
+  # Save the environment, reset the environment, run
+  # the driver module, and then restore the environment.
+  env.push()
+  env.reset()
+  DriverMain(module, cmd)
+  env.pop()
 
 def memoize(f):
   """ Memoize a function with no arguments """
@@ -123,16 +130,13 @@ def GetBuildArch():
 # until we find a directory satisfying a filter function.
 def FindBaseDir(function):
   Depth = 0
-  cur = DriverPath()
+  cur = env.getone('DRIVER_BIN')
   while not function(cur) and Depth < 16:
     cur = pathtools.dirname(cur)
     Depth += 1
   if function(cur):
     return cur
   return None
-
-def DriverPath():
-  return pathtools.abspath(pathtools.normalize(sys.argv[0]))
 
 @env.register
 @memoize
@@ -147,31 +151,17 @@ def FindBaseNaCl():
 @memoize
 def FindBasePNaCl():
   """ Find the base directory of the PNaCl toolchain """
-
-  # The driver is in <base>/newlib/bin or <base>/glibc/bin.
-  bindir = pathtools.dirname(DriverPath())
-  if pathtools.basename(bindir) == 'bin':
-    # ../..
-    basedir = pathtools.dirname(pathtools.dirname(bindir))
-    return shell.escape(basedir)
-  else:
-    Log.Fatal("Cannot find base of toolchain directory")
-
-
-@env.register
-@memoize
-def FindBaseDriver():
-  """Find the directory with the driver"""
-  return shell.escape(pathtools.dirname(DriverPath()))
-
-@env.register
-@memoize
-def GetDriverExt():
-  return pathtools.splitext(DriverPath())[1]
+  # The bin/ directory is one of:
+  # <base>/newlib/bin
+  # <base>/glibc/bin
+  # Use ../..
+  bindir = env.getone('DRIVER_BIN')
+  basedir = pathtools.dirname(pathtools.dirname(bindir))
+  return shell.escape(basedir)
 
 def ReadConfig():
-  driver_dir = pathtools.dirname(DriverPath())
-  driver_conf = pathtools.join(driver_dir, 'driver.conf')
+  driver_bin = env.getone('DRIVER_BIN')
+  driver_conf = pathtools.join(driver_bin, 'driver.conf')
   fp = DriverOpen(driver_conf, 'r')
   linecount = 0
   for line in fp:
@@ -280,7 +270,8 @@ def MatchOne(argv, i, patternlist):
   return (0, '', [])
 
 def UnrecognizedOption(*args):
-  Log.Fatal("Unrecognized option: " + ' '.join(args))
+  Log.Fatal("Unrecognized option: " + ' '.join(args) + "\n" +
+            "Use '--help' for more information.")
 
 ######################################################################
 # File Type Tools
@@ -650,6 +641,7 @@ class TempNameGen(object):
       TempFiles.add(temp)
     return temp
 
+# (Invoked from loader.py)
 # If the driver is waiting on a background process in RunWithLog()
 # and the user Ctrl-C's or kill's the driver, it may leave
 # the child process (such as llc) running. To prevent this,
@@ -909,7 +901,7 @@ def IsWindowsPython():
   return 'windows' in platform.system().lower()
 
 def SetupCygwinLibs():
-  bindir = os.path.dirname(os.path.abspath(sys.argv[0]))
+  bindir = env.getone('DRIVER_BIN')
   os.environ['PATH'] += os.pathsep + bindir
 
 # Map from GCC's -x file types and this driver's file types.
@@ -931,7 +923,7 @@ def GCCTypeToFileType(gcctype):
 
 def InitLog():
   Log.reset()
-  Log.SetScriptName(os.path.basename(sys.argv[0]))
+  Log.SetScriptName(env.getone('SCRIPT_NAME'))
   if env.getbool('LOG_VERBOSE'):
     Log.LOG_OUT.append(sys.stderr)
   if env.getbool('LOG_TO_FILE'):
@@ -939,9 +931,15 @@ def InitLog():
     log_size_limit = int(env.getone('LOG_FILE_SIZE_LIMIT'))
     Log.AddFile(log_filename, log_size_limit)
 
-def DriverMain(main):
-  SetupSignalHandlers()
-  env.reset()
+def DriverMain(module, argv):
+  # driver_path has the form: /foo/bar/pnacl_root/newlib/bin/pnacl-clang
+  driver_path = pathtools.abspath(pathtools.normalize(argv[0]))
+  driver_bin = pathtools.dirname(driver_path)
+  script_name = pathtools.basename(driver_path)
+  env.set('SCRIPT_NAME', script_name)
+  env.set('DRIVER_PATH', driver_path)
+  env.set('DRIVER_BIN', driver_bin)
+
   InitLog()
   ReadConfig()
 
@@ -949,7 +947,7 @@ def DriverMain(main):
     SetupCygwinLibs()
 
   # Parse driver arguments
-  (driver_flags, main_args) = ParseArgs(sys.argv[1:],
+  (driver_flags, main_args) = ParseArgs(argv[1:],
                                         DriverArgPatterns,
                                         must_match = False)
   env.append('DRIVER_FLAGS', *driver_flags)
@@ -958,17 +956,18 @@ def DriverMain(main):
   # command-line arguments.
   InitLog()
   if not env.getbool('RECURSE'):
-    Log.Banner(sys.argv)
+    Log.Banner(argv)
 
-  # Pull the arch from the filename
-  # Examples: pnacl-i686-as  (as incarnation, i686 arch)
-  tokens = pathtools.basename(DriverPath()).split('-')
-  if len(tokens) > 2:
-    arch = FixArch(tokens[-2])
-    SetArch(arch)
+  # Handle help info
+  help_func = getattr(module, 'get_help', None)
+  if '--help' in main_args or '-h' in main_args or '-help' in main_args:
+    if not help_func:
+      Log.Fatal('Help text not available')
+    helpstr = help_func(main_args)
+    print helpstr
+    return 0
 
-  ret = main(main_args)
-  DriverExit(ret)
+  return module.main(main_args)
 
 def SetArch(arch):
   env.set('ARCH', FixArch(arch))
