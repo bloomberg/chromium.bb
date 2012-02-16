@@ -790,7 +790,8 @@ window_set_type(struct window *window)
 
 	switch (window->type) {
 	case TYPE_FULLSCREEN:
-		wl_shell_surface_set_fullscreen(window->shell_surface);
+		wl_shell_surface_set_fullscreen(window->shell_surface,
+						WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT, 0, NULL);
 		break;
 	case TYPE_MAXIMIZED:
 		wl_shell_surface_set_maximized(window->shell_surface, NULL);

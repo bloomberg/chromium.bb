@@ -486,7 +486,10 @@ shell_surface_set_maximized(struct wl_client *client,
 
 static void
 shell_surface_set_fullscreen(struct wl_client *client,
-			     struct wl_resource *resource)
+			     struct wl_resource *resource,
+			     uint32_t method,
+			     uint32_t framerate,
+			     struct wl_resource *output_resource)
 {
 	struct shell_surface *shsurf = resource->data;
 	struct weston_surface *es = shsurf->surface;
