@@ -111,7 +111,7 @@ bool GetFirefoxVersionAndPathFromProfile(const FilePath& profile_path,
     if (equal != std::string::npos) {
       std::string key = line.substr(0, equal);
       if (key == "LastVersion") {
-        *version = line.substr(equal + 1)[0] - '0';
+        base::StringToInt(line.substr(equal + 1), version);
         ret = true;
       } else if (key == "LastAppDir") {
         // TODO(evanm): If the path in question isn't convertible to
