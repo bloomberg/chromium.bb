@@ -107,7 +107,8 @@ Launcher::Launcher(aura::Window* window_container)
       window_container_(window_container),
       delegate_view_(NULL) {
   model_.reset(new LauncherModel);
-  delegate_.reset(Shell::GetInstance()->delegate()->CreateLauncherDelegate());
+  if (Shell::GetInstance()->delegate())
+    delegate_.reset(Shell::GetInstance()->delegate()->CreateLauncherDelegate());
 
   widget_.reset(new views::Widget);
   views::Widget::InitParams params(
