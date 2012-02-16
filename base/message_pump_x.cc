@@ -117,10 +117,12 @@ void MessagePumpX::SetDefaultDispatcher(MessagePumpDispatcher* dispatcher) {
 }
 
 void MessagePumpX::InitXSource() {
-  DCHECK(!x_source_);
-  x_poll_.reset(new GPollFD());
+  // CHECKs are to help track down crbug.com/113106.
+  CHECK(!x_source_);
   Display* display = GetDefaultXDisplay();
-  DCHECK(display) << "Unable to get connection to X server";
+  CHECK(display) << "Unable to get connection to X server";
+  x_poll_.reset(new GPollFD());
+  CHECK(x_poll_.get());
   x_poll_->fd = ConnectionNumber(display);
   x_poll_->events = G_IO_IN;
 
