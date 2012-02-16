@@ -102,7 +102,6 @@ struct UploadFileInfo {
   int64 end_range;  // End of range of contents currently stored in |buf|.
 };
 
-
 // Different callback types for various functionalities in DocumentsService.
 typedef base::Callback<void(GDataErrorCode error,
                             const std::string& token)> AuthStatusCallback;
@@ -179,6 +178,9 @@ class DocumentsService : public GDataService {
  public:
   // Get Singleton instance of DocumentsService.
   static DocumentsService* GetInstance();
+
+  // GDataService override.
+  virtual void Initialize(Profile* profile) OVERRIDE;
 
   // Gets the document list. Upon completion, invokes |callback| with results.
   void GetDocuments(GetDataCallback callback);

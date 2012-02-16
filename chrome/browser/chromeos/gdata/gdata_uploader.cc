@@ -8,9 +8,11 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/path_service.h"
 #include "chrome/browser/chromeos/gdata/gdata.h"
+#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/file_stream.h"
@@ -18,6 +20,8 @@
 #include "net/base/net_util.h"
 
 using content::BrowserThread;
+using content::DownloadManager;
+using content::DownloadItem;
 
 namespace {
 
@@ -40,34 +44,30 @@ GDataUploader::GDataUploader(DocumentsService* docs_service)
 }
 
 GDataUploader::~GDataUploader() {
+  DCHECK(pending_downloads_.empty());
 }
 
-void GDataUploader::TestUpload() {
-  // DocumentsService is a singleton, and the lifetime of GDataUploader
-  // is tied to DocumentsService, so it's safe to use base::Unretained here.
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&GDataUploader::TestUploadOnFileThread,
-                 base::Unretained(this)));
+void GDataUploader::Initialize(Profile* profile) {
+  DVLOG(1) << "GDataUploader::Initialize";
+  DownloadServiceFactory::GetForProfile(profile)
+      ->GetDownloadManager()->AddObserver(this);
 }
 
-void GDataUploader::TestUploadOnFileThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  FilePath file_path;
-  PathService::Get(chrome::DIR_TEST_DATA, &file_path);
-  file_path = file_path.AppendASCII("pyauto_private/pdf/TechCrunch.pdf");
-
-  UploadFile("Tech Crunch", "application/pdf", file_path);
-}
-
-void GDataUploader::UploadFile(const std::string& title,
+void GDataUploader::UploadFile(const FilePath& file_path,
                                const std::string& content_type,
-                               const FilePath& file_path) {
+                               int64 file_size) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  // Do nothing if --test-gdata is not present in cmd line flags.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch("test-gdata"))
+    return;
 
   UploadFileInfo upload_file_info;
-  upload_file_info.title = title;
+  // Use the file name as the title.
+  upload_file_info.title = file_path.BaseName().value();
   upload_file_info.content_type = content_type;
   upload_file_info.file_url = net::FilePathToFileURL(file_path);
+  upload_file_info.content_length = file_size;
 
   // Create a FileStream to make sure the file can be opened successfully.
   scoped_ptr<net::FileStream> file(new net::FileStream(NULL));
@@ -84,15 +84,6 @@ void GDataUploader::UploadFile(const std::string& title,
   }
   // Cache the file stream to be used for actual reading of file later.
   upload_file_info.file_stream = file.release();
-
-  // Obtain the file size for content length.
-  int64 file_size;
-  if (!file_util::GetFileSize(file_path, &file_size)) {
-    NOTREACHED() << "Error getting file size for " << file_path.value();
-    return;
-  }
-
-  upload_file_info.content_length = file_size;
 
   DVLOG(1) << "Uploading file: title=[" << upload_file_info.title
            << "], file_url=[" << upload_file_info.file_url.spec()
@@ -138,14 +129,14 @@ void GDataUploader::UploadNextChunk(
   }
 
   // If end_range_received is 0, we're at start of uploading process.
-  bool first_upload = end_range_received == 0;
+  const bool first_upload = end_range_received == 0;
 
   // Determine number of bytes to read for this upload iteration, which cannot
   // exceed size of buf i.e. buf_len.
   int64 size_remaining = upload_file_info->content_length;
   if (!first_upload)
     size_remaining -= end_range_received + 1;
-  int64 bytes_to_read = std::min(size_remaining,
+  const int64 bytes_to_read = std::min(size_remaining,
       static_cast<int64>(upload_file_info->buf_len));
 
   upload_file_info->start_range = first_upload ? 0 : end_range_received + 1;
@@ -252,6 +243,70 @@ void GDataUploader::OnResumeUploadResponseReceived(
   // Continue uploading if necessary.
   UploadNextChunk(code, start_range_received, end_range_received,
                   &upload_file_info);
+}
+
+void GDataUploader::ModelChanged(DownloadManager* download_manager) {
+  DownloadManager::DownloadVector downloads;
+  download_manager->GetAllDownloads(FilePath(), &downloads);
+  for (size_t i = 0; i < downloads.size(); ++i) {
+    OnDownloadUpdated(downloads[i]);
+  }
+}
+
+void GDataUploader::OnDownloadUpdated(DownloadItem* download) {
+  const DownloadItem::DownloadState state = download->GetState();
+  switch (state) {
+    case DownloadItem::IN_PROGRESS:
+      AddPendingDownload(download);
+      break;
+
+    case DownloadItem::COMPLETE:
+      if (pending_downloads_.find(download) != pending_downloads_.end()) {
+        DVLOG(1) << "finished download received bytes="
+                 << download->GetReceivedBytes()
+                 << ", full path=" << download->GetFullPath().value()
+                 << ", mime type=" << download->GetMimeType();
+        DCHECK(download->GetReceivedBytes());
+        // DocumentsService is a singleton, and the lifetime of GDataUploader
+        // is tied to DocumentsService, so it's safe to use base::Unretained
+        // here.
+        BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+            base::Bind(&GDataUploader::UploadFile, base::Unretained(this),
+                       download->GetFullPath(), download->GetMimeType(),
+                       download->GetReceivedBytes()));
+        RemovePendingDownload(download);
+      }
+      break;
+
+    case DownloadItem::CANCELLED:
+    case DownloadItem::REMOVING:
+    case DownloadItem::INTERRUPTED:
+      RemovePendingDownload(download);
+      break;
+
+    default:
+      NOTREACHED();
+  }
+  DVLOG(1) << "Number of pending downloads=" << pending_downloads_.size();
+}
+
+void GDataUploader::AddPendingDownload(DownloadItem* download) {
+  // Add ourself as an observer of this download if we've never seen it before.
+  if (pending_downloads_.find(download) == pending_downloads_.end()) {
+    pending_downloads_.insert(download);
+    download->AddObserver(this);
+    DVLOG(1) << "new download total bytes=" << download->GetTotalBytes()
+             << ", full path=" << download->GetFullPath().value()
+             << ", mime type=" << download->GetMimeType();
+  }
+}
+
+void GDataUploader::RemovePendingDownload(DownloadItem* download) {
+  DownloadSet::iterator it = pending_downloads_.find(download);
+  if (it != pending_downloads_.end()) {
+    pending_downloads_.erase(it);
+    download->RemoveObserver(this);
+  }
 }
 
 }  // namespace gdata

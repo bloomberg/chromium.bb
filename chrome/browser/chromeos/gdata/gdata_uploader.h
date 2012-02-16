@@ -6,33 +6,36 @@
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_UPLOADER_H_
 #pragma once
 
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
 #include "chrome/browser/chromeos/gdata/gdata.h"
+#include "content/public/browser/download_item.h"
+#include "content/public/browser/download_manager.h"
 
 namespace gdata {
 
-class GDataUploader {
+class GDataUploader : public content::DownloadManager::Observer,
+                      public content::DownloadItem::Observer {
  public:
   explicit GDataUploader(DocumentsService* docs_service);
-  ~GDataUploader();
+  virtual ~GDataUploader();
 
-  // TODO(achuith): create a browser test to test uploads.
-  void TestUpload();
+  // Initializes GDataUploader. Become an observer of |profile|'s
+  // DownloadManager.
+  void Initialize(Profile* profile);
 
  private:
-  // Sets up a test upload and calls UploadFile.
-  void TestUploadOnFileThread();
-
-  // Uploads a file with given |title|, |content_type| from |file_path|.
-  void UploadFile(const std::string& title,
+  // Uploads a file with given |title|, |content_type|
+  // and |file_size| from |file_path|.
+  void UploadFile(const FilePath& file_path,
                   const std::string& content_type,
-                  const FilePath& file_path);
+                  int64 file_size);
 
   // DocumentsService callback for InitiateUpload.
   void OnUploadLocationReceived(GDataErrorCode code,
-      const UploadFileInfo& in_upload_file_info,
+      const UploadFileInfo& upload_file_info,
       const GURL& upload_location);
 
   // Uploads the next chunk of data from the file.
@@ -42,17 +45,32 @@ class GDataUploader {
       UploadFileInfo* upload_file_info);
 
   // net::FileStream::Read completion callback.
-  void ReadCompletionCallback(const UploadFileInfo& in_upload_file_info,
+  void ReadCompletionCallback(const UploadFileInfo& upload_file_info,
       int64 bytes_to_read,
       int bytes_read);
 
   // DocumentsService callback for ResumeUpload.
   void OnResumeUploadResponseReceived(GDataErrorCode code,
-      const UploadFileInfo& in_upload_file_info,
+      const UploadFileInfo& upload_file_info,
       int64 start_range_received,
       int64 end_range_received);
 
+  // DownloadManager overrides.
+  virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;
+
+  // DownloadItem overrides.
+  virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE {}
+
+  // Adds/Removes |download| to pending_downloads_. Also start/stop
+  // observing |download|.
+  void AddPendingDownload(content::DownloadItem* download);
+  void RemovePendingDownload(content::DownloadItem* download);
+
   DocumentsService* docs_service_;
+
+  typedef std::set<content::DownloadItem*> DownloadSet;
+  DownloadSet pending_downloads_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataUploader);
 };

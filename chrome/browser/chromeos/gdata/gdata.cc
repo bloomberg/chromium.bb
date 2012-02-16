@@ -783,6 +783,11 @@ DocumentsService::DocumentsService()
 DocumentsService::~DocumentsService() {
 }
 
+void DocumentsService::Initialize(Profile* profile) {
+  uploader_->Initialize(profile);
+  GDataService::Initialize(profile);
+}
+
 void DocumentsService::GetDocuments(GetDataCallback callback) {
   DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
   if (!IsFullyAuthenticated()) {
@@ -1133,8 +1138,6 @@ void DocumentsService::OnOAuth2RefreshTokenChanged() {
     if (!feed_value_.get() && !get_documents_started_) {
       GetDocuments(base::Bind(&DocumentsService::UpdateFilelist,
                               base::Unretained(this)));
-
-      uploader_->TestUpload();
     }
   }
 }
