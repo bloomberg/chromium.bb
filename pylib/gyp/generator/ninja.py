@@ -4,7 +4,6 @@
 
 import gyp
 import gyp.common
-import gyp.system_test
 import gyp.xcode_emulation
 import os.path
 import re
