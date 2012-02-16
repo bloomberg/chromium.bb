@@ -1417,8 +1417,9 @@ bool Segment::Finalize() {
       return false;
 
     // TODO(fgalligan): Add support for putting the Cues at the front.
-    if (!seek_head_.AddSeekEntry(kMkvCues, MaxOffset()))
-      return false;
+    if (output_cues_)
+      if (!seek_head_.AddSeekEntry(kMkvCues, MaxOffset()))
+        return false;
 
     if (chunking_) {
       if (!chunk_writer_cues_)
@@ -1434,8 +1435,9 @@ bool Segment::Finalize() {
         return false;
     }
 
-    if (!cues_.Write(writer_cues_))
-      return false;
+    if (output_cues_)
+      if (!cues_.Write(writer_cues_))
+        return false;
 
     if (!seek_head_.Finalize(writer_header_))
       return false;
