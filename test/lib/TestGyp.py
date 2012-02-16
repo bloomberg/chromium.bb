@@ -371,8 +371,9 @@ class TestGypMake(TestGypBase):
     """
     configuration = self.configuration_dirname()
     libdir = os.path.join('out', configuration, 'lib')
-    # TODO(piman): when everything is cross-compile safe, remove lib.target
-    os.environ['LD_LIBRARY_PATH'] = libdir + '.host:' + libdir + '.target'
+    # TODO(piman): when everything is cross-compile safe, remove
+    # the trailing 'libdir' that pulls in target-compiled libs as well.
+    os.environ['LD_LIBRARY_PATH'] = libdir + '.host:' + libdir
     # Enclosing the name in a list avoids prepending the original dir.
     program = [self.built_file_path(name, type=self.EXECUTABLE, **kw)]
     return self.run(program=program, *args, **kw)
@@ -391,7 +392,7 @@ class TestGypMake(TestGypBase):
     prefixes and suffixes to a platform-independent library base name.
 
     A subdir= keyword argument specifies a library subdirectory within
-    the default 'obj.target'.
+    the default 'obj'.
     """
     result = []
     chdir = kw.get('chdir')
@@ -400,9 +401,9 @@ class TestGypMake(TestGypBase):
     configuration = self.configuration_dirname()
     result.extend(['out', configuration])
     if type == self.STATIC_LIB and sys.platform != 'darwin':
-      result.append('obj.target')
+      result.append('obj')
     elif type == self.SHARED_LIB and sys.platform != 'darwin':
-      result.append('lib.target')
+      result.append('lib')
     subdir = kw.get('subdir')
     if subdir:
       result.append(subdir)

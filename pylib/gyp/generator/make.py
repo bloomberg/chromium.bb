@@ -34,7 +34,7 @@ generator_default_variables = {
   'STATIC_LIB_PREFIX': 'lib',
   'SHARED_LIB_PREFIX': 'lib',
   'STATIC_LIB_SUFFIX': '.a',
-  'INTERMEDIATE_DIR': '$(obj).$(TOOLSET)/$(TARGET)/geni',
+  'INTERMEDIATE_DIR': '$(obj)$(TOOLSET)/$(TARGET)/geni',
   'SHARED_INTERMEDIATE_DIR': '$(obj)/gen',
   'PRODUCT_DIR': '$(builddir)',
   'RULE_INPUT_ROOT': '%(INPUT_ROOT)s',  # This gets expanded by Python.
@@ -86,8 +86,8 @@ def CalculateVariables(default_variables, params):
       operating_system = 'linux'  # Keep this legacy behavior for now.
     default_variables.setdefault('OS', operating_system)
     default_variables.setdefault('SHARED_LIB_SUFFIX', '.so')
-    default_variables.setdefault('SHARED_LIB_DIR','$(builddir)/lib.$(TOOLSET)')
-    default_variables.setdefault('LIB_DIR', '$(obj).$(TOOLSET)')
+    default_variables.setdefault('SHARED_LIB_DIR','$(builddir)/lib$(TOOLSET)')
+    default_variables.setdefault('LIB_DIR', '$(obj)$(TOOLSET)')
 
 
 def CalculateGeneratorInputInfo(params):
@@ -121,14 +121,14 @@ SPACE_REPLACEMENT = '?'
 
 
 LINK_COMMANDS_LINUX = """\
-quiet_cmd_alink = AR($(TOOLSET)) $@
-cmd_alink = rm -f $@ && $(AR.$(TOOLSET)) crs $@ $(filter %.o,$^)
+quiet_cmd_alink = AR$(QUIET_TOOLSET) $@
+cmd_alink = rm -f $@ && $(AR$(TOOLSET)) crs $@ $(filter %.o,$^)
 
 # Due to circular dependencies between libraries :(, we wrap the
 # special "figure out circular dependencies" flags around the entire
 # input list during linking.
-quiet_cmd_link = LINK($(TOOLSET)) $@
-cmd_link = $(LINK.$(TOOLSET)) $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o $@ -Wl,--start-group $(LD_INPUTS) -Wl,--end-group $(LIBS)
+quiet_cmd_link = LINK$(QUIET_TOOLSET) $@
+cmd_link = $(LINK$(TOOLSET)) $(GYP_LDFLAGS) $(LDFLAGS$(TOOLSET)) -o $@ -Wl,--start-group $(LD_INPUTS) -Wl,--end-group $(LIBS)
 
 # We support two kinds of shared objects (.so):
 # 1) shared_library, which is just bundling together many dependent libraries
@@ -146,53 +146,53 @@ cmd_link = $(LINK.$(TOOLSET)) $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o $@ -Wl,--s
 # Other shared-object link notes:
 # - Set SONAME to the library filename so our binaries don't reference
 # the local, absolute paths used on the link command-line.
-quiet_cmd_solink = SOLINK($(TOOLSET)) $@
-cmd_solink = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -Wl,-soname=$(@F) -o $@ -Wl,--whole-archive $(LD_INPUTS) -Wl,--no-whole-archive $(LIBS)
+quiet_cmd_solink = SOLINK$(QUIET_TOOLSET) $@
+cmd_solink = $(LINK$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS$(TOOLSET)) -Wl,-soname=$(@F) -o $@ -Wl,--whole-archive $(LD_INPUTS) -Wl,--no-whole-archive $(LIBS)
 
-quiet_cmd_solink_module = SOLINK_MODULE($(TOOLSET)) $@
-cmd_solink_module = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -Wl,-soname=$(@F) -o $@ -Wl,--start-group $(filter-out FORCE_DO_CMD, $^) -Wl,--end-group $(LIBS)
+quiet_cmd_solink_module = SOLINK_MODULE$(QUIET_TOOLSET) $@
+cmd_solink_module = $(LINK$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS$(TOOLSET)) -Wl,-soname=$(@F) -o $@ -Wl,--start-group $(filter-out FORCE_DO_CMD, $^) -Wl,--end-group $(LIBS)
 """
 
 LINK_COMMANDS_MAC = """\
 quiet_cmd_alink = LIBTOOL-STATIC $@
 cmd_alink = rm -f $@ && ./gyp-mac-tool filter-libtool libtool -static -o $@ $(filter %.o,$^)
 
-quiet_cmd_link = LINK($(TOOLSET)) $@
-cmd_link = $(LINK.$(TOOLSET)) $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o "$@" $(LD_INPUTS) $(LIBS)
+quiet_cmd_link = LINK$(QUIET_TOOLSET) $@
+cmd_link = $(LINK$(TOOLSET)) $(GYP_LDFLAGS) $(LDFLAGS$(TOOLSET)) -o "$@" $(LD_INPUTS) $(LIBS)
 
 # TODO(thakis): Find out and document the difference between shared_library and
 # loadable_module on mac.
-quiet_cmd_solink = SOLINK($(TOOLSET)) $@
-cmd_solink = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o "$@" $(LD_INPUTS) $(LIBS)
+quiet_cmd_solink = SOLINK$(QUIET_TOOLSET) $@
+cmd_solink = $(LINK$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS$(TOOLSET)) -o "$@" $(LD_INPUTS) $(LIBS)
 
 # TODO(thakis): The solink_module rule is likely wrong. Xcode seems to pass
 # -bundle -single_module here (for osmesa.so).
-quiet_cmd_solink_module = SOLINK_MODULE($(TOOLSET)) $@
-cmd_solink_module = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o $@ $(filter-out FORCE_DO_CMD, $^) $(LIBS)
+quiet_cmd_solink_module = SOLINK_MODULE$(QUIET_TOOLSET) $@
+cmd_solink_module = $(LINK$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS$(TOOLSET)) -o $@ $(filter-out FORCE_DO_CMD, $^) $(LIBS)
 """
 
 LINK_COMMANDS_ANDROID = """\
-quiet_cmd_alink = AR($(TOOLSET)) $@
-cmd_alink = rm -f $@ && $(AR.$(TOOLSET)) crs $@ $(filter %.o,$^)
+quiet_cmd_alink = AR$(QUIET_TOOLSET) $@
+cmd_alink = rm -f $@ && $(AR$(TOOLSET)) crs $@ $(filter %.o,$^)
 
 # Due to circular dependencies between libraries :(, we wrap the
 # special "figure out circular dependencies" flags around the entire
 # input list during linking.
-quiet_cmd_link = LINK($(TOOLSET)) $@
-quiet_cmd_link_host = LINK($(TOOLSET)) $@
-cmd_link = $(LINK.$(TOOLSET)) $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o $@ -Wl,--start-group $(LD_INPUTS) -Wl,--end-group $(LIBS)
-cmd_link_host = $(LINK.$(TOOLSET)) $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o $@ $(LD_INPUTS) $(LIBS)
+quiet_cmd_link = LINK$(QUIET_TOOLSET) $@
+quiet_cmd_link_host = LINK$(QUIET_TOOLSET) $@
+cmd_link = $(LINK$(TOOLSET)) $(GYP_LDFLAGS) $(LDFLAGS$(TOOLSET)) -o $@ -Wl,--start-group $(LD_INPUTS) -Wl,--end-group $(LIBS)
+cmd_link_host = $(LINK$(TOOLSET)) $(GYP_LDFLAGS) $(LDFLAGS$(TOOLSET)) -o $@ $(LD_INPUTS) $(LIBS)
 
 # Other shared-object link notes:
 # - Set SONAME to the library filename so our binaries don't reference
 # the local, absolute paths used on the link command-line.
-quiet_cmd_solink = SOLINK($(TOOLSET)) $@
-cmd_solink = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -Wl,-soname=$(@F) -o $@ -Wl,--whole-archive $(LD_INPUTS) -Wl,--no-whole-archive $(LIBS)
+quiet_cmd_solink = SOLINK$(QUIET_TOOLSET) $@
+cmd_solink = $(LINK$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS$(TOOLSET)) -Wl,-soname=$(@F) -o $@ -Wl,--whole-archive $(LD_INPUTS) -Wl,--no-whole-archive $(LIBS)
 
-quiet_cmd_solink_module = SOLINK_MODULE($(TOOLSET)) $@
-cmd_solink_module = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -Wl,-soname=$(@F) -o $@ -Wl,--start-group $(filter-out FORCE_DO_CMD, $^) -Wl,--end-group $(LIBS)
-quiet_cmd_solink_module_host = SOLINK_MODULE($(TOOLSET)) $@
-cmd_solink_module_host = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -Wl,-soname=$(@F) -o $@ $(filter-out FORCE_DO_CMD, $^) $(LIBS)
+quiet_cmd_solink_module = SOLINK_MODULE$(QUIET_TOOLSET) $@
+cmd_solink_module = $(LINK$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS$(TOOLSET)) -Wl,-soname=$(@F) -o $@ -Wl,--start-group $(filter-out FORCE_DO_CMD, $^) -Wl,--end-group $(LIBS)
+quiet_cmd_solink_module_host = SOLINK_MODULE$(QUIET_TOOLSET) $@
+cmd_solink_module_host = $(LINK$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS$(TOOLSET)) -Wl,-soname=$(@F) -o $@ $(filter-out FORCE_DO_CMD, $^) $(LIBS)
 """
 
 
@@ -331,11 +331,11 @@ endef
 # - cmd_foo is the actual command to run;
 # - quiet_cmd_foo is the brief-output summary of the command.
 
-quiet_cmd_cc = CC($(TOOLSET)) $@
-cmd_cc = $(CC.$(TOOLSET)) $(GYP_CFLAGS) $(DEPFLAGS) $(CFLAGS.$(TOOLSET)) -c -o $@ $<
+quiet_cmd_cc = CC$(QUIET_TOOLSET) $@
+cmd_cc = $(CC$(TOOLSET)) $(GYP_CFLAGS) $(DEPFLAGS) $(CFLAGS$(TOOLSET)) -c -o $@ $<
 
-quiet_cmd_cxx = CXX($(TOOLSET)) $@
-cmd_cxx = $(CXX.$(TOOLSET)) $(GYP_CXXFLAGS) $(DEPFLAGS) $(CXXFLAGS.$(TOOLSET)) -c -o $@ $<
+quiet_cmd_cxx = CXX$(QUIET_TOOLSET) $@
+cmd_cxx = $(CXX$(TOOLSET)) $(GYP_CXXFLAGS) $(DEPFLAGS) $(CXXFLAGS$(TOOLSET)) -c -o $@ $<
 %(extra_commands)s
 quiet_cmd_touch = TOUCH $@
 cmd_touch = touch $@
@@ -441,21 +441,21 @@ FORCE_DO_CMD:
 """)
 
 SHARED_HEADER_MAC_COMMANDS = """
-quiet_cmd_objc = CXX($(TOOLSET)) $@
-cmd_objc = $(CC.$(TOOLSET)) $(GYP_OBJCFLAGS) $(DEPFLAGS) -c -o $@ $<
+quiet_cmd_objc = CXX$(QUIET_TOOLSET) $@
+cmd_objc = $(CC$(TOOLSET)) $(GYP_OBJCFLAGS) $(DEPFLAGS) -c -o $@ $<
 
-quiet_cmd_objcxx = CXX($(TOOLSET)) $@
-cmd_objcxx = $(CXX.$(TOOLSET)) $(GYP_OBJCXXFLAGS) $(DEPFLAGS) -c -o $@ $<
+quiet_cmd_objcxx = CXX$(QUIET_TOOLSET) $@
+cmd_objcxx = $(CXX$(TOOLSET)) $(GYP_OBJCXXFLAGS) $(DEPFLAGS) -c -o $@ $<
 
 # Commands for precompiled header files.
-quiet_cmd_pch_c = CXX($(TOOLSET)) $@
-cmd_pch_c = $(CC.$(TOOLSET)) $(GYP_PCH_CFLAGS) $(DEPFLAGS) $(CXXFLAGS.$(TOOLSET)) -c -o $@ $<
-quiet_cmd_pch_cc = CXX($(TOOLSET)) $@
-cmd_pch_cc = $(CC.$(TOOLSET)) $(GYP_PCH_CXXFLAGS) $(DEPFLAGS) $(CXXFLAGS.$(TOOLSET)) -c -o $@ $<
-quiet_cmd_pch_m = CXX($(TOOLSET)) $@
-cmd_pch_m = $(CC.$(TOOLSET)) $(GYP_PCH_OBJCFLAGS) $(DEPFLAGS) -c -o $@ $<
-quiet_cmd_pch_mm = CXX($(TOOLSET)) $@
-cmd_pch_mm = $(CC.$(TOOLSET)) $(GYP_PCH_OBJCXXFLAGS) $(DEPFLAGS) -c -o $@ $<
+quiet_cmd_pch_c = CXX$(QUIET_TOOLSET) $@
+cmd_pch_c = $(CC$(TOOLSET)) $(GYP_PCH_CFLAGS) $(DEPFLAGS) $(CXXFLAGS$(TOOLSET)) -c -o $@ $<
+quiet_cmd_pch_cc = CXX$(QUIET_TOOLSET) $@
+cmd_pch_cc = $(CC$(TOOLSET)) $(GYP_PCH_CXXFLAGS) $(DEPFLAGS) $(CXXFLAGS$(TOOLSET)) -c -o $@ $<
+quiet_cmd_pch_m = CXX$(QUIET_TOOLSET) $@
+cmd_pch_m = $(CC$(TOOLSET)) $(GYP_PCH_OBJCFLAGS) $(DEPFLAGS) -c -o $@ $<
+quiet_cmd_pch_mm = CXX$(QUIET_TOOLSET) $@
+cmd_pch_mm = $(CC$(TOOLSET)) $(GYP_PCH_OBJCXXFLAGS) $(DEPFLAGS) -c -o $@ $<
 
 # gyp-mac-tool is written next to the root Makefile by gyp.
 # Use $(4) for the command, since $(2) and $(3) are used as flag by do_cmd
@@ -467,7 +467,7 @@ quiet_cmd_mac_package_framework = PACKAGE FRAMEWORK $@
 cmd_mac_package_framework = ./gyp-mac-tool package-framework "$@" $(4)
 
 quiet_cmd_infoplist = INFOPLIST $@
-cmd_infoplist = $(CC.$(TOOLSET)) -E -P -Wno-trigraphs -x c $(INFOPLIST_DEFINES) "$<" -o "$@"
+cmd_infoplist = $(CC$(TOOLSET)) -E -P -Wno-trigraphs -x c $(INFOPLIST_DEFINES) "$<" -o "$@"
 """
 
 SHARED_HEADER_SUN_COMMANDS = """
@@ -484,17 +484,17 @@ def WriteRootHeaderSuffixRules(writer):
 
   writer.write('# Suffix rules, putting all outputs into $(obj).\n')
   for ext in extensions:
-    writer.write('$(obj).$(TOOLSET)/%%.o: $(srcdir)/%%%s FORCE_DO_CMD\n' % ext)
+    writer.write('$(obj)$(TOOLSET)/%%.o: $(srcdir)/%%%s FORCE_DO_CMD\n' % ext)
     writer.write('\t@$(call do_cmd,%s,1)\n' % COMPILABLE_EXTENSIONS[ext])
 
   writer.write('\n# Try building from generated source, too.\n')
   for ext in extensions:
     writer.write(
-        '$(obj).$(TOOLSET)/%%.o: $(obj).$(TOOLSET)/%%%s FORCE_DO_CMD\n' % ext)
+        '$(obj)$(TOOLSET)/%%.o: $(obj)$(TOOLSET)/%%%s FORCE_DO_CMD\n' % ext)
     writer.write('\t@$(call do_cmd,%s,1)\n' % COMPILABLE_EXTENSIONS[ext])
   writer.write('\n')
   for ext in extensions:
-    writer.write('$(obj).$(TOOLSET)/%%.o: $(obj)/%%%s FORCE_DO_CMD\n' % ext)
+    writer.write('$(obj)$(TOOLSET)/%%.o: $(obj)/%%%s FORCE_DO_CMD\n' % ext)
     writer.write('\t@$(call do_cmd,%s,1)\n' % COMPILABLE_EXTENSIONS[ext])
   writer.write('\n')
 
@@ -644,17 +644,17 @@ class MakefileWriter:
     for ext in COMPILABLE_EXTENSIONS.keys():
       # Suffix rules for source folder.
       self.suffix_rules_srcdir.update({ext: ("""\
-$(obj).$(TOOLSET)/$(TARGET)/%%.o: $(srcdir)/%%%s FORCE_DO_CMD
+$(obj)$(TOOLSET)/$(TARGET)/%%.o: $(srcdir)/%%%s FORCE_DO_CMD
 	@$(call do_cmd,%s,1)
 """ % (ext, COMPILABLE_EXTENSIONS[ext]))})
 
       # Suffix rules for generated source files.
       self.suffix_rules_objdir1.update({ext: ("""\
-$(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj).$(TOOLSET)/%%%s FORCE_DO_CMD
+$(obj)$(TOOLSET)/$(TARGET)/%%.o: $(obj)$(TOOLSET)/%%%s FORCE_DO_CMD
 	@$(call do_cmd,%s,1)
 """ % (ext, COMPILABLE_EXTENSIONS[ext]))})
       self.suffix_rules_objdir2.update({ext: ("""\
-$(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
+$(obj)$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
 	@$(call do_cmd,%s,1)
 """ % (ext, COMPILABLE_EXTENSIONS[ext]))})
 
@@ -718,7 +718,12 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       self.alias = self.output
       install_path = self.output
 
-    self.WriteLn("TOOLSET := " + self.toolset)
+    if self.toolset == 'target':
+      self.WriteLn("QUIET_TOOLSET :=")
+      self.WriteLn("TOOLSET :=")
+    else:
+      self.WriteLn("QUIET_TOOLSET := (%s)" % self.toolset)
+      self.WriteLn("TOOLSET := %s" % self._ToolsetSuffix())
     self.WriteLn("TARGET := " + self.target)
 
     # Actions must come first, since they can generate more OBJs for use below.
@@ -1086,7 +1091,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       return
     if defines:
       # Create an intermediate file to store preprocessed results.
-      intermediate_plist = ('$(obj).$(TOOLSET)/$(TARGET)/' +
+      intermediate_plist = ('$(obj)$(TOOLSET)/$(TARGET)/' +
           os.path.basename(info_plist))
       self.WriteList(defines, intermediate_plist + ': INFOPLIST_DEFINES', '-D',
           quoter=EscapeCppDefine)
@@ -1314,7 +1319,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     """
     assert not self.is_mac_bundle
 
-    path = os.path.join('$(obj).' + self.toolset, self.path)
+    path = os.path.join('$(obj)' + self._ToolsetSuffix(), self.path)
     if self.type == 'executable' or self._InstallImmediately():
       path = '$(builddir)'
     path = spec.get('product_dir', path)
@@ -1403,9 +1408,9 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
           if any(dep.endswith('.so') for dep in deps):
             # We want to get the literal string "$ORIGIN" into the link command,
             # so we need lots of escaping.
-            ldflags.append(r'-Wl,-rpath=\$$ORIGIN/lib.%s/' % self.toolset)
-            ldflags.append(r'-Wl,-rpath-link=\$(builddir)/lib.%s/' %
-                           self.toolset)
+            ldflags.append(r'-Wl,-rpath=\$$ORIGIN/lib%s/' % self._ToolsetSuffix())
+            ldflags.append(r'-Wl,-rpath-link=\$(builddir)/lib%s/' %
+                           self._ToolsetSuffix())
         self.WriteList(ldflags, 'LDFLAGS_%s' % configname)
       libraries = spec.get('libraries')
       if libraries:
@@ -1799,19 +1804,20 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
   def Objectify(self, path):
     """Convert a path to its output directory form."""
     if '$(' in path:
-      path = path.replace('$(obj)/', '$(obj).%s/$(TARGET)/' % self.toolset)
+      path = path.replace('$(obj)/',
+                          '$(obj)%s/$(TARGET)/' % self._ToolsetSuffix())
       return path
-    return '$(obj).%s/$(TARGET)/%s' % (self.toolset, path)
+    return '$(obj)%s/$(TARGET)/%s' % (self._ToolsetSuffix(), path)
 
 
   def Pchify(self, path, lang):
     """Convert a prefix header path to its output directory form."""
     path = self.Absolutify(path)
     if '$(' in path:
-      path = path.replace('$(obj)/', '$(obj).%s/$(TARGET)/pch-%s' %
-                          (self.toolset, lang))
+      path = path.replace('$(obj)/', '$(obj)%s/$(TARGET)/pch-%s' %
+                          (self._ToolsetSuffix(), lang))
       return path
-    return '$(obj).%s/$(TARGET)/pch-%s/%s' % (self.toolset, lang, path)
+    return '$(obj)%s/$(TARGET)/pch-%s/%s' % (self._ToolsetSuffix(), lang, path)
 
 
   def Absolutify(self, path):
@@ -1847,9 +1853,16 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     if self.type == 'shared_library' and self.flavor != 'mac':
       # Install all shared libs into a common directory (per toolset) for
       # convenient access with LD_LIBRARY_PATH.
-      return '$(builddir)/lib.%s/%s' % (self.toolset, self.alias)
+      return '$(builddir)/lib%s/%s' % (self._ToolsetSuffix(), self.alias)
     return '$(builddir)/' + self.alias
 
+  def _ToolsetSuffix(self):
+    """Return a suffix suitable for a path that is unique to the current
+    toolset."""
+    assert self.toolset, "'target' maps to '', so empty toolset not allowed"
+    if self.toolset == 'target':
+      return ''
+    return '.' + self.toolset
 
 def WriteAutoRegenerationRule(params, root_makefile, makefile_name,
                               build_files):
