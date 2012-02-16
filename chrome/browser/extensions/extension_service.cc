@@ -31,7 +31,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/download/download_extension_api.h"
-#include "chrome/browser/extensions/api/socket/socket_api_controller.h"
+#include "chrome/browser/extensions/api/api_resource_controller.h"
 #include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/extensions/apps_promo.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -387,7 +387,7 @@ ExtensionService::ExtensionService(Profile* profile,
       apps_promo_(profile->GetPrefs()),
       event_routers_initialized_(false),
       extension_warnings_(profile),
-      socket_controller_(NULL),
+      api_resource_controller_(NULL),
       app_shortcut_manager_(profile) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -484,15 +484,13 @@ ExtensionService::~ExtensionService() {
     provider->ServiceShutdown();
   }
 
-  // TODO(miket): if we find ourselves adding more and more per-API
-  // controllers, we should manage them all with an
-  // APIControllerController (still working on that name).
-  if (socket_controller_) {
-    // If this check failed, then a unit test was using sockets but didn't
-    // provide the IO thread message loop needed for those sockets to do their
-    // job (including destroying themselves at shutdown).
+  if (api_resource_controller_) {
+    // If this check failed, then a unit test was using an APIResource but
+    // didn't provide the IO thread message loop needed for those resources to
+    // do their job (including destroying themselves at shutdown).
     DCHECK(BrowserThread::IsMessageLoopValid(BrowserThread::IO));
-    BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, socket_controller_);
+    BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE,
+                              api_resource_controller_);
   }
 }
 
@@ -2645,18 +2643,20 @@ ExtensionService::NaClModuleInfoList::iterator
   return nacl_module_list_.end();
 }
 
-extensions::SocketController* ExtensionService::socket_controller() {
-  // TODO(miket): Find a better place for SocketController to live. It needs
-  // to be scoped such that it can be created and destroyed on the IO thread.
+extensions::APIResourceController*
+ExtensionService::api_resource_controller() {
+  // TODO(miket): Find a better place for this thing to live. It needs to be
+  // scoped such that it can be created and destroyed on the IO thread.
   //
   // To coexist with certain unit tests that don't have an IO thread message
   // loop available at ExtensionService shutdown, we lazy-initialize this
-  // object so that those cases neither create nor destroy a SocketController.
+  // object so that those cases neither create nor destroy an
+  // APIResourceController.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!socket_controller_) {
-    socket_controller_ = new extensions::SocketController();
+  if (!api_resource_controller_) {
+    api_resource_controller_ = new extensions::APIResourceController();
   }
-  return socket_controller_;
+  return api_resource_controller_;
 }
 
 extensions::RulesRegistryService* ExtensionService::GetRulesRegistryService() {

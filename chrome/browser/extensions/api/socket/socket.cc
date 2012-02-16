@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/api/socket/socket.h"
 
 #include "base/bind.h"
-#include "chrome/browser/extensions/api/socket/socket_event_notifier.h"
+#include "chrome/browser/extensions/api/api_resource_event_notifier.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -13,8 +13,11 @@
 
 namespace extensions {
 
-Socket::Socket(SocketEventNotifier* event_notifier)
-    : event_notifier_(event_notifier),
+Socket::Socket(const std::string& address, int port,
+               APIResourceEventNotifier* event_notifier)
+    : APIResource(APIResource::SocketResource, event_notifier),
+      address_(address),
+      port_(port),
       is_connected_(false),
       read_buffer_(new net::IOBufferWithSize(kMaxRead)) {
 }
@@ -28,15 +31,16 @@ void Socket::OnDataRead(int result) {
   std::string message;
   if (result >= 0)
     message = std::string(read_buffer_->data(), result);
-  event_notifier_->OnDataRead(result, message);
+  event_notifier()->OnDataRead(result, message);
 }
 
 void Socket::OnWriteComplete(int result) {
-  event_notifier_->OnWriteComplete(result);
+  event_notifier()->OnWriteComplete(result);
 }
 
 std::string Socket::Read() {
-  int result = socket()->Read(read_buffer_, kMaxRead,
+  int result = socket()->Read(
+      read_buffer_, kMaxRead,
       base::Bind(&Socket::OnDataRead, base::Unretained(this)));
   if (result == net::ERR_IO_PENDING)
     return "";
@@ -54,7 +58,8 @@ int Socket::Write(const std::string message) {
 
   int bytes_sent = 0;
   while (buffer->BytesRemaining()) {
-    int result = socket()->Write(buffer, buffer->BytesRemaining(),
+    int result = socket()->Write(
+        buffer, buffer->BytesRemaining(),
         base::Bind(&Socket::OnWriteComplete, base::Unretained(this)));
     if (result <= 0)
       // We pass all errors, including ERROR_IO_PENDING, back to the caller.

@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/socket/socket_event_notifier.h"
+#include "chrome/browser/extensions/api/api_resource_event_notifier.h"
 
 #include "base/json/json_writer.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/profiles/profile.h"
 
 namespace events {
-const char kOnSocketEvent[] = "experimental.socket.onEvent";
+// TODO(miket): This should be generic, but at the moment only socket sends
+// onEvent events. We'll fix this when serial becomes nonblocking.
+const char kOnAPIResourceEvent[] = "experimental.socket.onEvent";
 };
 
 namespace extensions {
@@ -25,66 +27,70 @@ const char kIsFinalEventKey[] = "isFinalEvent";
 const char kResultCodeKey[] = "resultCode";
 const char kDataKey[] = "data";
 
-SocketEventNotifier::SocketEventNotifier(ExtensionEventRouter* router,
-                                         Profile* profile,
-                                         const std::string& src_extension_id,
-                                         int src_id,
-                                         const GURL& src_url)
+APIResourceEventNotifier::APIResourceEventNotifier(
+    ExtensionEventRouter* router,
+    Profile* profile,
+    const std::string& src_extension_id,
+    int src_id,
+    const GURL& src_url)
     : router_(router),
       profile_(profile),
       src_extension_id_(src_extension_id),
       src_id_(src_id),
       src_url_(src_url) {}
 
-SocketEventNotifier::~SocketEventNotifier() {}
+APIResourceEventNotifier::~APIResourceEventNotifier() {}
 
-void SocketEventNotifier::OnConnectComplete(int result_code) {
-  SendEventWithResultCode(SOCKET_EVENT_CONNECT_COMPLETE, result_code);
+void APIResourceEventNotifier::OnConnectComplete(int result_code) {
+  SendEventWithResultCode(API_RESOURCE_EVENT_CONNECT_COMPLETE, result_code);
 }
 
-void SocketEventNotifier::OnDataRead(int result_code,
-                                     const std::string& data) {
+void APIResourceEventNotifier::OnDataRead(int result_code,
+                                          const std::string& data) {
   // Do we have a destination for this event? There will be one if a source id
-  // was injected by the request handler for socket.create in
+  // was injected by the request handler for the resource's create method in
   // schema_generated_bindings.js, which will in turn be the case if the caller
-  // of socket.create provided an onEvent closure.
+  // of the create method provided an onEvent closure.
   if (src_id_ < 0)
     return;
 
-  DictionaryValue* event = CreateSocketEvent(SOCKET_EVENT_DATA_READ);
+  DictionaryValue* event = CreateAPIResourceEvent(
+      API_RESOURCE_EVENT_DATA_READ);
   event->SetInteger(kResultCodeKey, result_code);
   event->SetString(kDataKey, data);
   DispatchEvent(event);
 }
 
-void SocketEventNotifier::OnWriteComplete(int result_code) {
-  SendEventWithResultCode(SOCKET_EVENT_WRITE_COMPLETE, result_code);
+void APIResourceEventNotifier::OnWriteComplete(int result_code) {
+  SendEventWithResultCode(API_RESOURCE_EVENT_WRITE_COMPLETE, result_code);
 }
 
-void SocketEventNotifier::SendEventWithResultCode(SocketEventType event_type,
-                                                  int result_code) {
+void APIResourceEventNotifier::SendEventWithResultCode(
+    APIResourceEventType event_type,
+    int result_code) {
   if (src_id_ < 0)
     return;
 
-  DictionaryValue* event = CreateSocketEvent(event_type);
+  DictionaryValue* event = CreateAPIResourceEvent(event_type);
   event->SetInteger(kResultCodeKey, result_code);
   DispatchEvent(event);
 }
 
-void SocketEventNotifier::DispatchEvent(DictionaryValue* event) {
+void APIResourceEventNotifier::DispatchEvent(DictionaryValue* event) {
   ListValue args;
 
   args.Set(0, event);
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
-  router_->DispatchEventToExtension(src_extension_id_, events::kOnSocketEvent,
+  router_->DispatchEventToExtension(src_extension_id_,
+                                    events::kOnAPIResourceEvent,
                                     json_args, profile_, src_url_);
 }
 
-DictionaryValue* SocketEventNotifier::CreateSocketEvent(
-    SocketEventType event_type) {
+DictionaryValue* APIResourceEventNotifier::CreateAPIResourceEvent(
+    APIResourceEventType event_type) {
   DictionaryValue* event = new DictionaryValue();
-  event->SetString(kEventTypeKey, SocketEventTypeToString(event_type));
+  event->SetString(kEventTypeKey, APIResourceEventTypeToString(event_type));
   event->SetInteger(kSrcIdKey, src_id_);
 
   // TODO(miket): Signal that it's OK to clean up onEvent listeners. This is
@@ -97,14 +103,14 @@ DictionaryValue* SocketEventNotifier::CreateSocketEvent(
 }
 
 // static
-std::string SocketEventNotifier::SocketEventTypeToString(
-    SocketEventType event_type) {
+std::string APIResourceEventNotifier::APIResourceEventTypeToString(
+    APIResourceEventType event_type) {
   switch (event_type) {
-    case SOCKET_EVENT_CONNECT_COMPLETE:
+    case API_RESOURCE_EVENT_CONNECT_COMPLETE:
       return kEventTypeConnectComplete;
-    case SOCKET_EVENT_DATA_READ:
+    case API_RESOURCE_EVENT_DATA_READ:
       return kEventTypeDataRead;
-    case SOCKET_EVENT_WRITE_COMPLETE:
+    case API_RESOURCE_EVENT_WRITE_COMPLETE:
       return kEventTypeWriteComplete;
   }
 

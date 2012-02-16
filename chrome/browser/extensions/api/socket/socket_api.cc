@@ -6,13 +6,11 @@
 
 #include "base/bind.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/socket/socket_api_controller.h"
-#include "chrome/browser/extensions/api/socket/socket_event_notifier.h"
+#include "chrome/browser/extensions/api/api_resource_controller.h"
+#include "chrome/browser/extensions/api/socket/socket.h"
+#include "chrome/browser/extensions/api/socket/tcp_socket.h"
+#include "chrome/browser/extensions/api/socket/udp_socket.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
 
 namespace extensions {
 
@@ -22,34 +20,7 @@ const char kSocketIdKey[] = "socketId";
 const char kTCPOption[] = "tcp";
 const char kUDPOption[] = "udp";
 
-SocketController* SocketApiFunction::controller() {
-  return profile()->GetExtensionService()->socket_controller();
-}
-
-bool SocketApiFunction::RunImpl() {
-  if (!Prepare()) {
-    return false;
-  }
-  bool rv = BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&SocketApiFunction::WorkOnIOThread, this));
-  DCHECK(rv);
-  return true;
-}
-
-void SocketApiFunction::WorkOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  Work();
-  bool rv = BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&SocketApiFunction::RespondOnUIThread, this));
-  DCHECK(rv);
-}
-
-void SocketApiFunction::RespondOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  SendResponse(Respond());
-}
+const char kSocketNotFoundError[] = "Socket not found";
 
 SocketCreateFunction::SocketCreateFunction()
     : src_id_(-1) {
@@ -57,22 +28,14 @@ SocketCreateFunction::SocketCreateFunction()
 
 bool SocketCreateFunction::Prepare() {
   std::string socket_type_string;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &socket_type_string));
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &address_));
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(2, &port_));
-
-  scoped_ptr<DictionaryValue> options(new DictionaryValue());
-  if (args_->GetSize() > 3) {
-    DictionaryValue* temp_options = NULL;
-    if (args_->GetDictionary(3, &temp_options))
-      options.reset(temp_options->DeepCopy());
-  }
-
-  // If we tacked on a srcId to the options object, pull it out here to provide
-  // to the Socket.
-  if (options->HasKey(kSrcIdKey)) {
-    EXTENSION_FUNCTION_VALIDATE(options->GetInteger(kSrcIdKey, &src_id_));
-  }
+  size_t argument_position = 0;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(argument_position++,
+                                               &socket_type_string));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(argument_position++,
+                                               &address_));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(argument_position++,
+                                                &port_));
+  src_id_ = ExtractSrcId(argument_position);
 
   if (socket_type_string == kTCPOption)
     socket_type_ = kSocketTypeTCP;
@@ -84,15 +47,19 @@ bool SocketCreateFunction::Prepare() {
 }
 
 void SocketCreateFunction::Work() {
-  SocketEventNotifier* event_notifier(new SocketEventNotifier(
-      profile()->GetExtensionEventRouter(), profile(), extension_id(),
-      src_id_, source_url()));
-  int socket_id = socket_type_ == kSocketTypeTCP ?
-      controller()->CreateTCPSocket(address_, port_, event_notifier) :
-      controller()->CreateUDPSocket(address_, port_, event_notifier);
+  APIResourceEventNotifier* event_notifier = CreateEventNotifier(src_id_);
+  Socket* socket = NULL;
+  if (socket_type_ == kSocketTypeTCP) {
+    socket = new TCPSocket(address_, port_, event_notifier);
+  } else {
+    socket = new UDPSocket(address_, port_, event_notifier);
+  }
+  DCHECK(socket);
+  DCHECK(socket->IsValid());
+
   DictionaryValue* result = new DictionaryValue();
 
-  result->SetInteger(kSocketIdKey, socket_id);
+  result->SetInteger(kSocketIdKey, controller()->AddAPIResource(socket));
   result_.reset(result);
 }
 
@@ -106,7 +73,7 @@ bool SocketDestroyFunction::Prepare() {
 }
 
 void SocketDestroyFunction::Work() {
-  controller()->DestroySocket(socket_id_);
+  controller()->RemoveAPIResource(socket_id_);
 }
 
 bool SocketDestroyFunction::Respond() {
@@ -119,7 +86,12 @@ bool SocketConnectFunction::Prepare() {
 }
 
 void SocketConnectFunction::Work() {
-  int result = controller()->ConnectSocket(socket_id_);
+  int result = -1;
+  Socket* socket = controller()->GetSocket(socket_id_);
+  if (socket)
+    result = socket->Connect();
+  else
+    error_ = kSocketNotFoundError;
   result_.reset(Value::CreateIntegerValue(result));
 }
 
@@ -133,7 +105,12 @@ bool SocketDisconnectFunction::Prepare() {
 }
 
 void SocketDisconnectFunction::Work() {
-  controller()->DisconnectSocket(socket_id_);
+  int result = -1;
+  Socket* socket = controller()->GetSocket(socket_id_);
+  if (socket)
+    result = socket->Connect();
+  else
+    error_ = kSocketNotFoundError;
   result_.reset(Value::CreateNullValue());
 }
 
@@ -147,7 +124,10 @@ bool SocketReadFunction::Prepare() {
 }
 
 void SocketReadFunction::Work() {
-  std::string message = controller()->ReadSocket(socket_id_);
+  std::string message;
+  Socket* socket = controller()->GetSocket(socket_id_);
+  if (socket)
+    message = socket->Read();
 
   DictionaryValue* result = new DictionaryValue();
   result->SetString(kMessageKey, message);
@@ -165,7 +145,12 @@ bool SocketWriteFunction::Prepare() {
 }
 
 void SocketWriteFunction::Work() {
-  int bytes_written = controller()->WriteSocket(socket_id_, message_);
+  int bytes_written = -1;
+  Socket* socket = controller()->GetSocket(socket_id_);
+  if (socket)
+    bytes_written = socket->Write(message_);
+  else
+    error_ = kSocketNotFoundError;
 
   DictionaryValue* result = new DictionaryValue();
   result->SetInteger(kBytesWrittenKey, bytes_written);

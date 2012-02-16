@@ -9,10 +9,6 @@
 #include <string>
 
 #include "chrome/browser/extensions/api/socket/socket.h"
-#include "chrome/browser/extensions/api/socket/socket_event_notifier.h"
-
-// This looks like it should be forward-declarable, but it does some tricky
-// moves that make it easier to just include it.
 #include "net/udp/datagram_client_socket.h"
 
 namespace net {
@@ -21,23 +17,34 @@ class Socket;
 
 namespace extensions {
 
+class APIResourceEventNotifier;
+
 class UDPSocket : public Socket {
  public:
-  UDPSocket(net::DatagramClientSocket* datagram_client_socket,
-            const std::string& address, int port,
-            SocketEventNotifier* event_notifier);
+  UDPSocket(const std::string& address, int port,
+            APIResourceEventNotifier* event_notifier);
   virtual ~UDPSocket();
+
+  virtual bool IsValid() OVERRIDE;
 
   virtual int Connect() OVERRIDE;
   virtual void Disconnect() OVERRIDE;
+
+  static UDPSocket* CreateSocketForTesting(
+      net::DatagramClientSocket* datagram_client_socket,
+      const std::string& address, int port,
+      APIResourceEventNotifier* event_notifier);
 
  protected:
   virtual net::Socket* socket() OVERRIDE;
 
  private:
+  // Special constructor for testing.
+  UDPSocket(net::DatagramClientSocket* datagram_client_socket,
+            const std::string& address, int port,
+            APIResourceEventNotifier* event_notifier);
+
   scoped_ptr<net::DatagramClientSocket> socket_;
-  const std::string address_;
-  int port_;
 };
 
 }  //  namespace extensions

@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/api/socket/socket_event_notifier.h"
+#include "chrome/browser/extensions/api/api_resource.h"
 #include "net/base/io_buffer.h"
 
 namespace net {
@@ -20,9 +20,12 @@ namespace extensions {
 
 // A Socket wraps a low-level socket and includes housekeeping information that
 // we need to manage it in the context of an extension.
-class Socket {
+class Socket : public APIResource {
  public:
   virtual ~Socket();
+
+  // Returns true iff the socket was able to properly initialize itself.
+  virtual bool IsValid() = 0;
 
   // Returns net::OK if successful, or an error code otherwise.
   virtual int Connect() = 0;
@@ -46,10 +49,12 @@ class Socket {
   virtual void OnWriteComplete(int result);
 
  protected:
-  explicit Socket(SocketEventNotifier* event_notifier);
+  Socket(const std::string& address, int port,
+         APIResourceEventNotifier* event_notifier);
   virtual net::Socket* socket() = 0;
 
-  scoped_ptr<SocketEventNotifier> event_notifier_;
+  const std::string address_;
+  int port_;
   bool is_connected_;
 
  private:

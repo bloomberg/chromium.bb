@@ -8,44 +8,63 @@
 
 #include <string>
 
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/api/api_function.h"
 
 namespace extensions {
 
 extern const char kConnectionIdKey[];
 
-class SerialOpenFunction : public AsyncExtensionFunction {
+class SerialOpenFunction : public AsyncIOAPIFunction {
  public:
   SerialOpenFunction();
-  virtual ~SerialOpenFunction();
-
-  virtual bool RunImpl() OVERRIDE;
 
  protected:
-  void WorkOnIOThread();
-  void RespondOnUIThread();
+  virtual bool Prepare() OVERRIDE;
+  virtual void Work() OVERRIDE;
+  virtual bool Respond() OVERRIDE;
 
  private:
+  int src_id_;
   std::string port_;
 
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.open")
 };
 
-class SerialCloseFunction : public AsyncExtensionFunction {
- public:
-  SerialCloseFunction();
-  virtual ~SerialCloseFunction();
-
-  virtual bool RunImpl() OVERRIDE;
-
+class SerialCloseFunction : public AsyncIOAPIFunction {
  protected:
-  void WorkOnIOThread();
-  void RespondOnUIThread();
+  virtual bool Prepare() OVERRIDE;
+  virtual void Work() OVERRIDE;
+  virtual bool Respond() OVERRIDE;
 
  private:
   int connection_id_;
 
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.close")
+};
+
+class SerialReadFunction : public AsyncIOAPIFunction {
+ protected:
+  virtual bool Prepare() OVERRIDE;
+  virtual void Work() OVERRIDE;
+  virtual bool Respond() OVERRIDE;
+
+ private:
+  int connection_id_;
+
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.read")
+};
+
+class SerialWriteFunction : public AsyncIOAPIFunction {
+ protected:
+  virtual bool Prepare() OVERRIDE;
+  virtual void Work() OVERRIDE;
+  virtual bool Respond() OVERRIDE;
+
+ private:
+  int connection_id_;
+  std::string data_;
+
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.write")
 };
 
 }  // namespace extensions

@@ -73,10 +73,10 @@ class ExtensionInputMethodEventRouter;
 }
 
 namespace extensions {
+class APIResourceController;
 class ComponentLoader;
 class RulesRegistryService;
 class SettingsFrontend;
-class SocketController;
 }
 
 // This is an interface class to encapsulate the dependencies that
@@ -576,7 +576,7 @@ class ExtensionService
   }
 
   // Call only from IO thread.
-  extensions::SocketController* socket_controller();
+  extensions::APIResourceController* api_resource_controller();
 
   extensions::RulesRegistryService* GetRulesRegistryService();
 
@@ -833,7 +833,7 @@ class ExtensionService
 
   // We need to control destruction of this object (it needs to happen on the
   // IO thread), so we don't get to use any RAII devices with it.
-  extensions::SocketController* socket_controller_;
+  extensions::APIResourceController* api_resource_controller_;
 
   extensions::ProcessMap process_map_;
 

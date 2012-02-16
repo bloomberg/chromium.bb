@@ -1,0 +1,50 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_EXTENSIONS_API_API_FUNCTION_H_
+#define CHROME_BROWSER_EXTENSIONS_API_API_FUNCTION_H_
+#pragma once
+
+#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/api/api_resource.h"
+
+namespace extensions {
+
+class APIResourceController;
+class APIResourceEventNotifier;
+
+// AsyncIOAPIFunction provides convenient thread management for APIs that
+// need to do essentially all their work on the IO thread.
+class AsyncIOAPIFunction : public AsyncExtensionFunction {
+ protected:
+  // Set up for work (e.g., validate arguments). Guaranteed to happen on UI
+  // thread.
+  virtual bool Prepare() = 0;
+
+  // Do actual work. Guaranteed to happen on IO thread.
+  virtual void Work() = 0;
+
+  // Respond. Guaranteed to happen on UI thread.
+  virtual bool Respond() = 0;
+
+  // Looks for a kSrcId key that might have been added to a create method's
+  // options object.
+  int ExtractSrcId(size_t argument_position);
+
+  // Utility.
+  APIResourceEventNotifier* CreateEventNotifier(int src_id);
+
+  // Access to the controller singleton.
+  APIResourceController* controller();
+
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  void WorkOnIOThread();
+  void RespondOnUIThread();
+};
+
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_API_API_FUNCTION_H_

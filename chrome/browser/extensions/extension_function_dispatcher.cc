@@ -489,6 +489,8 @@ void FactoryRegistry::ResetFunctions() {
   // Serial
   RegisterFunction<extensions::SerialOpenFunction>();
   RegisterFunction<extensions::SerialCloseFunction>();
+  RegisterFunction<extensions::SerialReadFunction>();
+  RegisterFunction<extensions::SerialWriteFunction>();
 
   // Sockets
   RegisterFunction<extensions::SocketCreateFunction>();

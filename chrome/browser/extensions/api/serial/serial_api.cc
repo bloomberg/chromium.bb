@@ -2,85 +2,124 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/api/serial/serial_api.h"
+
 #include <string>
 
-#include "base/bind.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/serial/serial_api.h"
-#include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
+#include "chrome/browser/extensions/api/api_resource_controller.h"
+#include "chrome/browser/extensions/api/serial/serial_connection.h"
 
 namespace extensions {
 
 const char kConnectionIdKey[] = "connectionId";
+const char kMessageKey[] = "message";
+const char kBytesReadKey[] = "bytesRead";
+const char kBytesWrittenKey[] = "bytesWritten";
 
-SerialOpenFunction::SerialOpenFunction() {
+SerialOpenFunction::SerialOpenFunction()
+    : src_id_(-1) {
 }
 
-SerialOpenFunction::~SerialOpenFunction() {
-}
-
-bool SerialOpenFunction::RunImpl() {
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &port_));
-
-  bool rv = BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&SerialOpenFunction::WorkOnIOThread, this));
-  DCHECK(rv);
-
+bool SerialOpenFunction::Prepare() {
+  size_t argument_position = 0;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(argument_position++, &port_));
+  src_id_ = ExtractSrcId(argument_position);
   return true;
 }
 
-void SerialOpenFunction::WorkOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+void SerialOpenFunction::Work() {
+  APIResourceEventNotifier* event_notifier = CreateEventNotifier(src_id_);
+  SerialConnection* serial_connection = new SerialConnection(port_,
+                                                             event_notifier);
+  CHECK(serial_connection);
+  int id = controller()->AddAPIResource(serial_connection);
+  CHECK(id);
+
+  bool open_result = serial_connection->Open();
+  if (!open_result) {
+    serial_connection->Close();
+    controller()->RemoveAPIResource(id);
+    id = -1;
+  }
 
   DictionaryValue* result = new DictionaryValue();
-  result->SetInteger(kConnectionIdKey, 42);
+  result->SetInteger(kConnectionIdKey, id);
   result_.reset(result);
-
-  bool rv = BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&SerialOpenFunction::RespondOnUIThread, this));
-  DCHECK(rv);
 }
 
-void SerialOpenFunction::RespondOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  SendResponse(true);
-}
-
-SerialCloseFunction::SerialCloseFunction() : connection_id_(0) {
-}
-
-SerialCloseFunction::~SerialCloseFunction() {
-}
-
-bool SerialCloseFunction::RunImpl() {
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &connection_id_));
-
-  bool rv = BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&SerialCloseFunction::WorkOnIOThread, this));
-  DCHECK(rv);
-
+bool SerialOpenFunction::Respond() {
   return true;
 }
 
-void SerialCloseFunction::WorkOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  result_.reset(Value::CreateBooleanValue(true));
-
-  bool rv = BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&SerialCloseFunction::RespondOnUIThread, this));
-  DCHECK(rv);
+bool SerialCloseFunction::Prepare() {
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &connection_id_));
+  return true;
 }
 
-void SerialCloseFunction::RespondOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  SendResponse(true);
+void SerialCloseFunction::Work() {
+  bool close_result = false;
+  SerialConnection* serial_connection =
+      controller()->GetSerialConnection(connection_id_);
+  if (serial_connection) {
+    serial_connection->Close();
+    controller()->RemoveAPIResource(connection_id_);
+    close_result = true;
+  }
+
+  result_.reset(Value::CreateBooleanValue(close_result));
+}
+
+bool SerialCloseFunction::Respond() {
+  return true;
+}
+
+bool SerialReadFunction::Prepare() {
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &connection_id_));
+  return true;
+}
+
+void SerialReadFunction::Work() {
+  int bytes_read = -1;
+  std::string message;
+  SerialConnection* serial_connection =
+      controller()->GetSerialConnection(connection_id_);
+  if (serial_connection) {
+    unsigned char byte = '\0';
+    bytes_read = serial_connection->Read(&byte);
+    if (bytes_read == 1)
+      message = byte;
+  }
+
+  DictionaryValue* result = new DictionaryValue();
+  result->SetInteger(kBytesReadKey, bytes_read);
+  result->SetString(kMessageKey, message);
+  result_.reset(result);
+}
+
+bool SerialReadFunction::Respond() {
+  return true;
+}
+
+bool SerialWriteFunction::Prepare() {
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &connection_id_));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &data_));
+  return true;
+}
+
+void SerialWriteFunction::Work() {
+  int bytes_written = -1;
+  SerialConnection* serial_connection =
+      controller()->GetSerialConnection(connection_id_);
+  if (serial_connection)
+    bytes_written = serial_connection->Write(data_);
+  DictionaryValue* result = new DictionaryValue();
+  result->SetInteger(kBytesWrittenKey, bytes_written);
+  result_.reset(result);
+}
+
+bool SerialWriteFunction::Respond() {
+  return true;
 }
 
 }  // namespace extensions

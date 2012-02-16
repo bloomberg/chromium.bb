@@ -6,37 +6,17 @@
 #define CHROME_BROWSER_EXTENSIONS_API_SOCKET_SOCKET_API_H_
 #pragma once
 
-#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/api/api_function.h"
 
 #include <string>
 
 namespace extensions {
 
-class SocketController;
+class APIResourceController;
 
 extern const char kBytesWrittenKey[];
 extern const char kSocketIdKey[];
 extern const char kUdpSocketType[];
-
-class SocketApiFunction : public AsyncExtensionFunction {
- protected:
-  // Set up for work. Guaranteed to happen on UI thread.
-  virtual bool Prepare() = 0;
-
-  // Do actual work. Guaranteed to happen on IO thread.
-  virtual void Work() = 0;
-
-  // Respond. Guaranteed to happen on UI thread.
-  virtual bool Respond() = 0;
-
-  virtual bool RunImpl() OVERRIDE;
-
-  SocketController* controller();
-
- private:
-  void WorkOnIOThread();
-  void RespondOnUIThread();
-};
 
 // Many of these socket functions are synchronous in the sense that
 // they don't involve blocking operations, but we've made them all
@@ -44,7 +24,7 @@ class SocketApiFunction : public AsyncExtensionFunction {
 // library wants all operations to happen on the same thread as the
 // one that created the socket. Too bad.
 
-class SocketCreateFunction : public SocketApiFunction {
+class SocketCreateFunction : public AsyncIOAPIFunction {
  public:
   SocketCreateFunction();
 
@@ -68,7 +48,7 @@ class SocketCreateFunction : public SocketApiFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.create")
 };
 
-class SocketDestroyFunction : public SocketApiFunction {
+class SocketDestroyFunction : public AsyncIOAPIFunction {
  protected:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
@@ -80,7 +60,7 @@ class SocketDestroyFunction : public SocketApiFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.destroy")
 };
 
-class SocketConnectFunction : public SocketApiFunction {
+class SocketConnectFunction : public AsyncIOAPIFunction {
  protected:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
@@ -92,7 +72,7 @@ class SocketConnectFunction : public SocketApiFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.connect")
 };
 
-class SocketDisconnectFunction : public SocketApiFunction {
+class SocketDisconnectFunction : public AsyncIOAPIFunction {
  protected:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
@@ -104,7 +84,7 @@ class SocketDisconnectFunction : public SocketApiFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.disconnect")
 };
 
-class SocketReadFunction : public SocketApiFunction {
+class SocketReadFunction : public AsyncIOAPIFunction {
  protected:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
@@ -116,7 +96,7 @@ class SocketReadFunction : public SocketApiFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.read")
 };
 
-class SocketWriteFunction : public SocketApiFunction {
+class SocketWriteFunction : public AsyncIOAPIFunction {
  protected:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
