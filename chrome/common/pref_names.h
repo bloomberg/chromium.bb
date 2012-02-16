@@ -617,6 +617,7 @@ extern const char kShouldAutoEnroll[];
 extern const char kAutoEnrollmentPowerLimit[];
 extern const char kReportDeviceVersionInfo[];
 extern const char kReportDeviceActivityTimes[];
+extern const char kDeviceActivityTimes[];
 #endif
 
 extern const char kClearPluginLSODataEnabled[];

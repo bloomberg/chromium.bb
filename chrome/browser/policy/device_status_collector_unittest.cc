@@ -26,14 +26,18 @@ namespace em = enterprise_management;
 
 namespace {
 
+const int64 kMillisecondsPerDay = Time::kMicrosecondsPerDay / 1000;
+
 class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
  public:
   TestingDeviceStatusCollector(
       PrefService* local_state,
       chromeos::system::StatisticsProvider* provider)
     :  policy::DeviceStatusCollector(local_state, provider),
-       local_state_(local_state),
-       baseline_time_(Time::Now()) {
+       local_state_(local_state) {
+    // Set the baseline time to a fixed value (1 AM) to prevent test flakiness
+    // due to a single activity period spanning two days.
+    SetBaselineTime(Time::Now().LocalMidnight() + TimeDelta::FromHours(1));
   }
 
   void Simulate(IdleState* states, int len) {
@@ -41,13 +45,18 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
       IdleStateCallback(states[i]);
   }
 
-  void SimulateWithSleep(IdleState* states, int len, int ) {
-    for (int i = 0; i < len; i++)
-      IdleStateCallback(states[i]);
+  void set_max_stored_past_activity_days(unsigned int value) {
+    max_stored_past_activity_days_ = value;
   }
 
-  void set_max_stored_active_periods(unsigned int value) {
-    max_stored_active_periods_ = value;
+  void set_max_stored_future_activity_days(unsigned int value) {
+    max_stored_future_activity_days_ = value;
+  }
+
+  // Reset the baseline time.
+  void SetBaselineTime(Time time) {
+    baseline_time_ = time;
+    baseline_offset_periods_ = 0;
   }
 
  protected:
@@ -59,27 +68,27 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
   // Each time this is called, returns a time that is a fixed increment
   // later than the previous time.
   virtual Time GetCurrentTime() OVERRIDE {
-    static int call_count = 0;
-    return baseline_time_ + TimeDelta::FromSeconds(
-        policy::DeviceStatusCollector::kPollIntervalSeconds * call_count++);
+    int poll_interval = policy::DeviceStatusCollector::kPollIntervalSeconds;
+    return baseline_time_ +
+        TimeDelta::FromSeconds(poll_interval * baseline_offset_periods_++);
   }
 
  private:
   PrefService* local_state_;
 
   // Baseline time for the fake times returned from GetCurrentTime().
-  // It doesn't really matter what this is, as long as it stays the same over
-  // the lifetime of the object.
   Time baseline_time_;
+
+  // The number of simulated periods since the baseline time.
+  int baseline_offset_periods_;
 };
 
 // Return the total number of active milliseconds contained in a device
 // status report.
 int64 GetActiveMilliseconds(em::DeviceStatusReportRequest& status) {
   int64 active_milliseconds = 0;
-  for (int i = 0; i < status.active_time_size(); i++) {
-    const em::TimePeriod& period = status.active_time(i);
-    active_milliseconds += period.end_timestamp() - period.start_timestamp();
+  for (int i = 0; i < status.active_period_size(); i++) {
+    active_milliseconds += status.active_period(i).active_duration();
   }
   return active_milliseconds;
 }
@@ -152,20 +161,20 @@ TEST_F(DeviceStatusCollectorTest, AllIdle) {
 
   // Test reporting with no data.
   status_collector_.GetStatus(&status_);
-  EXPECT_EQ(0, status_.active_time_size());
+  EXPECT_EQ(0, status_.active_period_size());
   EXPECT_EQ(0, GetActiveMilliseconds(status_));
 
   // Test reporting with a single idle sample.
   status_collector_.Simulate(test_states, 1);
   status_collector_.GetStatus(&status_);
-  EXPECT_EQ(0, status_.active_time_size());
+  EXPECT_EQ(0, status_.active_period_size());
   EXPECT_EQ(0, GetActiveMilliseconds(status_));
 
   // Test reporting with multiple consecutive idle samples.
   status_collector_.Simulate(test_states,
                              sizeof(test_states) / sizeof(IdleState));
   status_collector_.GetStatus(&status_);
-  EXPECT_EQ(0, status_.active_time_size());
+  EXPECT_EQ(0, status_.active_period_size());
   EXPECT_EQ(0, GetActiveMilliseconds(status_));
 }
 
@@ -180,16 +189,15 @@ TEST_F(DeviceStatusCollectorTest, AllActive) {
   // Test a single active sample.
   status_collector_.Simulate(test_states, 1);
   status_collector_.GetStatus(&status_);
-  EXPECT_EQ(1, status_.active_time_size());
+  EXPECT_EQ(1, status_.active_period_size());
   EXPECT_EQ(1 * ActivePeriodMilliseconds(), GetActiveMilliseconds(status_));
-  status_.clear_active_time(); // Clear the result protobuf.
+  status_.clear_active_period(); // Clear the result protobuf.
 
-  // Test multiple consecutive active samples -- they should be coalesced
-  // into a single active period.
+  // Test multiple consecutive active samples.
   status_collector_.Simulate(test_states,
                              sizeof(test_states) / sizeof(IdleState));
   status_collector_.GetStatus(&status_);
-  EXPECT_EQ(1, status_.active_time_size());
+  EXPECT_EQ(1, status_.active_period_size());
   EXPECT_EQ(3 * ActivePeriodMilliseconds(), GetActiveMilliseconds(status_));
 }
 
@@ -207,7 +215,6 @@ TEST_F(DeviceStatusCollectorTest, MixedStates) {
   status_collector_.Simulate(test_states,
                              sizeof(test_states) / sizeof(IdleState));
   status_collector_.GetStatus(&status_);
-  EXPECT_EQ(3, status_.active_time_size());
   EXPECT_EQ(4 * ActivePeriodMilliseconds(), GetActiveMilliseconds(status_));
 }
 
@@ -233,7 +240,6 @@ TEST_F(DeviceStatusCollectorTest, StateKeptInPref) {
                             sizeof(test_states) / sizeof(IdleState));
 
   second_collector.GetStatus(&status_);
-  EXPECT_EQ(4, status_.active_time_size());
   EXPECT_EQ(6 * ActivePeriodMilliseconds(), GetActiveMilliseconds(status_));
 }
 
@@ -250,8 +256,6 @@ TEST_F(DeviceStatusCollectorTest, Times) {
   status_collector_.Simulate(test_states,
                              sizeof(test_states) / sizeof(IdleState));
   status_collector_.GetStatus(&status_);
-  EXPECT_EQ(2, status_.active_time_size());
-
   EXPECT_EQ(3 * ActivePeriodMilliseconds(), GetActiveMilliseconds(status_));
 }
 
@@ -260,20 +264,45 @@ TEST_F(DeviceStatusCollectorTest, MaxStoredPeriods) {
     IDLE_STATE_ACTIVE,
     IDLE_STATE_IDLE
   };
-  unsigned int max_periods = 10;
+  unsigned int max_days = 10;
 
   cros_settings_->SetBoolean(chromeos::kReportDeviceActivityTimes, true);
-  status_collector_.set_max_stored_active_periods(max_periods);
+  status_collector_.set_max_stored_past_activity_days(max_days - 1);
+  status_collector_.set_max_stored_future_activity_days(1);
+  Time baseline = Time::Now().LocalMidnight();
 
   // Simulate 12 active periods.
-  for (int i = 0; i < 12; i++) {
+  for (int i = 0; i < static_cast<int>(max_days) + 2; i++) {
     status_collector_.Simulate(test_states,
                                sizeof(test_states) / sizeof(IdleState));
+    // Advance the simulated clock by a day.
+    baseline += TimeDelta::FromDays(1);
+    status_collector_.SetBaselineTime(baseline);
   }
 
   // Check that we don't exceed the max number of periods.
   status_collector_.GetStatus(&status_);
-  EXPECT_EQ(static_cast<int>(max_periods), status_.active_time_size());
+  EXPECT_EQ(static_cast<int>(max_days), status_.active_period_size());
+
+  // Simulate some future times.
+  for (int i = 0; i < static_cast<int>(max_days) + 2; i++) {
+    status_collector_.Simulate(test_states,
+                               sizeof(test_states) / sizeof(IdleState));
+    // Advance the simulated clock by a day.
+    baseline += TimeDelta::FromDays(1);
+    status_collector_.SetBaselineTime(baseline);
+  }
+  // Set the clock back so the previous simulated times are in the future.
+  baseline -= TimeDelta::FromDays(20);
+  status_collector_.SetBaselineTime(baseline);
+
+  // Collect one more data point to trigger pruning.
+  status_collector_.Simulate(test_states, 1);
+
+  // Check that we don't exceed the max number of periods.
+  status_.clear_active_period();
+  status_collector_.GetStatus(&status_);
+  EXPECT_LT(status_.active_period_size(), static_cast<int>(max_days));
 }
 
 TEST_F(DeviceStatusCollectorTest, ActivityTimesDisabledByDefault) {
@@ -288,8 +317,39 @@ TEST_F(DeviceStatusCollectorTest, ActivityTimesDisabledByDefault) {
   status_collector_.Simulate(test_states,
                              sizeof(test_states) / sizeof(IdleState));
   status_collector_.GetStatus(&status_);
-  EXPECT_EQ(0, status_.active_time_size());
+  EXPECT_EQ(0, status_.active_period_size());
   EXPECT_EQ(0, GetActiveMilliseconds(status_));
+}
+
+TEST_F(DeviceStatusCollectorTest, ActivityCrossingMidnight) {
+  IdleState test_states[] = {
+    IDLE_STATE_ACTIVE
+  };
+  cros_settings_->SetBoolean(chromeos::kReportDeviceActivityTimes, true);
+
+  // Set the baseline time to 10 seconds after midnight.
+  status_collector_.SetBaselineTime(
+      Time::Now().LocalMidnight() + TimeDelta::FromSeconds(10));
+
+  status_collector_.Simulate(test_states, 1);
+  status_collector_.GetStatus(&status_);
+  ASSERT_EQ(2, status_.active_period_size());
+
+  em::ActiveTimePeriod period0 = status_.active_period(0);
+  em::ActiveTimePeriod period1 = status_.active_period(1);
+  EXPECT_EQ(ActivePeriodMilliseconds() - 10000, period0.active_duration());
+  EXPECT_EQ(10000, period1.active_duration());
+
+  em::TimePeriod time_period0 = period0.time_period();
+  em::TimePeriod time_period1 = period1.time_period();
+
+  EXPECT_EQ(time_period0.end_timestamp(), time_period1.start_timestamp());
+
+  // Ensure that the start and end times for the period are a day apart.
+  EXPECT_EQ(time_period0.end_timestamp() - time_period0.start_timestamp(),
+            kMillisecondsPerDay);
+  EXPECT_EQ(time_period1.end_timestamp() - time_period1.start_timestamp(),
+            kMillisecondsPerDay);
 }
 
 TEST_F(DeviceStatusCollectorTest, DevSwitchBootMode) {

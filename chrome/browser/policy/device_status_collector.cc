@@ -15,6 +15,7 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/pref_names.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -26,17 +27,26 @@ namespace {
 // How many seconds of inactivity triggers the idle state.
 const unsigned int kIdleStateThresholdSeconds = 300;
 
-// The maximum number of time periods stored in the local state.
-const unsigned int kMaxStoredActivePeriods = 500;
+// How many days in the past to store active periods for.
+const unsigned int kMaxStoredPastActivityDays = 30;
 
-// Stores a list of timestamps representing device active periods.
-const char* const kPrefDeviceActivePeriods = "device_status.active_periods";
+// How many days in the future to store active periods for.
+const unsigned int kMaxStoredFutureActivityDays = 2;
 
-bool GetTimestamp(const ListValue* list, int index, int64* out_value) {
-  std::string string_value;
-  if (list->GetString(index, &string_value))
-    return base::StringToInt64(string_value, out_value);
-  return false;
+const int64 kMillisecondsPerDay = Time::kMicrosecondsPerDay / 1000;
+
+// Record device activity for the specified day into the given dictionary.
+void AddDeviceActivity(DictionaryValue* activity_times,
+                       Time day_midnight,
+                       TimeDelta activity) {
+  DCHECK(activity.InMilliseconds() < kMillisecondsPerDay);
+  int64 day_start_timestamp =
+      (day_midnight - Time::UnixEpoch()).InMilliseconds();
+  std::string day_key = base::Int64ToString(day_start_timestamp);
+  int previous_activity = 0;
+  activity_times->GetInteger(day_key, &previous_activity);
+  activity_times->SetInteger(day_key,
+                             previous_activity + activity.InMilliseconds());
 }
 
 }  // namespace
@@ -46,17 +56,16 @@ namespace policy {
 DeviceStatusCollector::DeviceStatusCollector(
     PrefService* local_state,
     chromeos::system::StatisticsProvider* provider)
-    : max_stored_active_periods_(kMaxStoredActivePeriods),
+    : max_stored_past_activity_days_(kMaxStoredPastActivityDays),
+      max_stored_future_activity_days_(kMaxStoredFutureActivityDays),
       local_state_(local_state),
       last_idle_check_(Time()),
-      last_idle_state_(IDLE_STATE_UNKNOWN),
       statistics_provider_(provider),
       report_version_info_(false),
       report_activity_times_(false),
       report_boot_mode_(false) {
   timer_.Start(FROM_HERE,
-               TimeDelta::FromSeconds(
-                   DeviceStatusCollector::kPollIntervalSeconds),
+               TimeDelta::FromSeconds(kPollIntervalSeconds),
                this, &DeviceStatusCollector::CheckIdleState);
 
   cros_settings_ = chromeos::CrosSettings::Get();
@@ -91,7 +100,8 @@ DeviceStatusCollector::~DeviceStatusCollector() {
 
 // static
 void DeviceStatusCollector::RegisterPrefs(PrefService* local_state) {
-  local_state->RegisterListPref(kPrefDeviceActivePeriods, new ListValue);
+  local_state->RegisterDictionaryPref(prefs::kDeviceActivityTimes,
+                                      new DictionaryValue);
 }
 
 void DeviceStatusCollector::CheckIdleState() {
@@ -122,36 +132,61 @@ Time DeviceStatusCollector::GetCurrentTime() {
   return Time::Now();
 }
 
-void DeviceStatusCollector::AddActivePeriod(Time start, Time end) {
-  // Maintain the list of active periods in a local_state pref.
-  ListPrefUpdate update(local_state_, kPrefDeviceActivePeriods);
-  ListValue* active_periods = update.Get();
-
-  // Cap the number of active periods that we store.
-  if (active_periods->GetSize() >= 2 * max_stored_active_periods_)
+// Remove all out-of-range activity times from the local store.
+void DeviceStatusCollector::PruneStoredActivityPeriods(Time base_time) {
+  const DictionaryValue* activity_times =
+      local_state_->GetDictionary(prefs::kDeviceActivityTimes);
+  if (activity_times->size() <=
+      max_stored_past_activity_days_ + max_stored_future_activity_days_)
     return;
 
-  Time epoch = Time::UnixEpoch();
-  int64 start_timestamp = (start - epoch).InMilliseconds();
-  Value* end_value = new StringValue(
-      base::Int64ToString((end - epoch).InMilliseconds()));
+  Time min_time =
+      base_time - TimeDelta::FromDays(max_stored_past_activity_days_);
+  Time max_time =
+      base_time + TimeDelta::FromDays(max_stored_future_activity_days_);
+  const Time epoch = Time::UnixEpoch();
 
-  int list_size = active_periods->GetSize();
-  DCHECK(list_size % 2 == 0);
+  DictionaryValue* copy = activity_times->DeepCopy();
+  for (DictionaryValue::key_iterator it = activity_times->begin_keys();
+       it != activity_times->end_keys(); ++it) {
+    int64 timestamp;
 
-  // Check if this period can be combined with the previous one.
-  if (list_size > 0 && last_idle_state_ == IDLE_STATE_ACTIVE) {
-    int64 last_period_end;
-    if (GetTimestamp(active_periods, list_size - 1, &last_period_end) &&
-        last_period_end == start_timestamp) {
-      active_periods->Set(list_size - 1, end_value);
-      return;
+    if (base::StringToInt64(*it, &timestamp)) {
+      // Remove data that is too old, or too far in the future.
+      Time day_midnight = epoch + TimeDelta::FromMilliseconds(timestamp);
+      if (day_midnight > min_time && day_midnight < max_time)
+        continue;
     }
+    // The entry is out of range or couldn't be parsed. Remove it.
+    copy->Remove(*it, NULL);
   }
-  // Add a new period to the list.
-  active_periods->Append(
-      new StringValue(base::Int64ToString(start_timestamp)));
-  active_periods->Append(end_value);
+  local_state_->Set(prefs::kDeviceActivityTimes, *copy);
+}
+
+void DeviceStatusCollector::AddActivePeriod(Time start, Time end) {
+  DCHECK(start < end);
+
+  // Maintain the list of active periods in a local_state pref.
+  DictionaryPrefUpdate update(local_state_, prefs::kDeviceActivityTimes);
+  DictionaryValue* activity_times = update.Get();
+
+  Time midnight = end.LocalMidnight();
+
+  // Figure out UTC midnight on the same day as the local day.
+  Time::Exploded exploded;
+  midnight.LocalExplode(&exploded);
+  Time utc_midnight = Time::FromUTCExploded(exploded);
+
+  // Record the device activity for today.
+  TimeDelta activity_today = end - MAX(midnight, start);
+  AddDeviceActivity(activity_times, utc_midnight, activity_today);
+
+  // If this interval spans two days, record activity for yesterday too.
+  if (start < midnight) {
+    AddDeviceActivity(activity_times,
+                      utc_midnight - TimeDelta::FromDays(1),
+                      midnight - start);
+  }
 }
 
 void DeviceStatusCollector::IdleStateCallback(IdleState state) {
@@ -162,44 +197,46 @@ void DeviceStatusCollector::IdleStateCallback(IdleState state) {
   Time now = GetCurrentTime();
 
   if (state == IDLE_STATE_ACTIVE) {
-    unsigned int poll_interval = DeviceStatusCollector::kPollIntervalSeconds;
-
-    // If it's been too long since the last report, assume that the system was
-    // in standby, and only count a single interval of activity.
-    if ((now - last_idle_check_).InSeconds() >= (2 * poll_interval))
-      AddActivePeriod(now - TimeDelta::FromSeconds(poll_interval), now);
+    // If it's been too long since the last report, or if the activity is
+    // negative (which can happen when the clock changes), assume a single
+    // interval of activity.
+    int active_seconds = (now - last_idle_check_).InSeconds();
+    if (active_seconds < 0 ||
+        active_seconds >= static_cast<int>((2 * kPollIntervalSeconds)))
+      AddActivePeriod(now - TimeDelta::FromSeconds(kPollIntervalSeconds), now);
     else
       AddActivePeriod(last_idle_check_, now);
+
+    PruneStoredActivityPeriods(now);
   }
   last_idle_check_ = now;
-  last_idle_state_ = state;
 }
 
 void DeviceStatusCollector::GetActivityTimes(
     em::DeviceStatusReportRequest* request) {
-  const ListValue* active_periods =
-      local_state_->GetList(kPrefDeviceActivePeriods);
-  em::TimePeriod* time_period;
+  DictionaryPrefUpdate update(local_state_, prefs::kDeviceActivityTimes);
+  DictionaryValue* activity_times = update.Get();
 
-  DCHECK(active_periods->GetSize() % 2 == 0);
+  for (DictionaryValue::key_iterator it = activity_times->begin_keys();
+       it != activity_times->end_keys(); ++it) {
+    int64 start_timestamp;
+    int activity_milliseconds;
+    if (base::StringToInt64(*it, &start_timestamp) &&
+        activity_times->GetInteger(*it, &activity_milliseconds)) {
+      // This is correct even when there are leap seconds, because when a leap
+      // second occurs, two consecutive seconds have the same timestamp.
+      int64 end_timestamp = start_timestamp + kMillisecondsPerDay;
 
-  int period_count = active_periods->GetSize() / 2;
-  for (int i = 0; i < period_count; i++) {
-    int64 start, end;
-
-    if (!GetTimestamp(active_periods, 2 * i, &start) ||
-        !GetTimestamp(active_periods, 2 * i + 1, &end) ||
-        end < start) {
-      // Something is amiss -- bail out.
+      em::ActiveTimePeriod* active_period = request->add_active_period();
+      em::TimePeriod* period = active_period->mutable_time_period();
+      period->set_start_timestamp(start_timestamp);
+      period->set_end_timestamp(end_timestamp);
+      active_period->set_active_duration(activity_milliseconds);
+    } else {
       NOTREACHED();
-      break;
     }
-    time_period = request->add_active_time();
-    time_period->set_start_timestamp(start);
-    time_period->set_end_timestamp(end);
   }
-  ListPrefUpdate update(local_state_, kPrefDeviceActivePeriods);
-  update.Get()->Clear();
+  activity_times->Clear();
 }
 
 void DeviceStatusCollector::GetVersionInfo(

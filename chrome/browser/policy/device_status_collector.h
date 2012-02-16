@@ -51,10 +51,20 @@ class DeviceStatusCollector : public content::NotificationObserver {
   // Callback which receives the results of the idle state check.
   void IdleStateCallback(IdleState state);
 
-  // The maximum number of active periods timestamps to be stored.
-  unsigned int max_stored_active_periods_;
+  // The number of days in the past to store device activity.
+  // This is kept in case device status uploads fail for a number of days.
+  unsigned int max_stored_past_activity_days_;
+
+  // The number of days in the future to store device activity.
+  // When changing the system time and/or timezones, it's possible to record
+  // activity time that is slightly in the future.
+  unsigned int max_stored_future_activity_days_;
 
  private:
+  // Prevents the local store of activity periods from growing too large by
+  // removing entries that are outside the reporting window.
+  void PruneStoredActivityPeriods(base::Time base_time);
+
   void AddActivePeriod(base::Time start, base::Time end);
 
   // Callbacks from chromeos::VersionLoader.
@@ -87,9 +97,6 @@ class DeviceStatusCollector : public content::NotificationObserver {
 
   // The last time an idle state check was performed.
   base::Time last_idle_check_;
-
-  // The idle state the last time it was checked.
-  IdleState last_idle_state_;
 
   base::RepeatingTimer<DeviceStatusCollector> timer_;
 

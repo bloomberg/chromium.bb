@@ -229,6 +229,11 @@ message TimePeriod {
   optional int64 end_timestamp = 2;
 }
 
+message ActiveTimePeriod {
+  optional TimePeriod time_period = 1;
+  optional int32 active_duration = 2;
+}
+
 // This captures launch events for one app/extension or other installments.
 message InstallableLaunch {
   optional string install_id = 1;
@@ -254,11 +259,14 @@ message DeviceStatusReportRequest {
   // If the mode is unknown, this field should not be set.
   optional string boot_mode = 3;
 
-  // Device active times collection since last report rpc call.
-  repeated TimePeriod active_time = 4;
+  // No longer used -- use active_period instead.
+  repeated TimePeriod active_time = 4 [deprecated=true];
 
   // The browser version string as shown in the About dialog.
   optional string browser_version = 5;
+
+  // A list of periods when the device was active, aggregated by day.
+  repeated ActiveTimePeriod active_period = 6;
 }
 
 // Report session (a user on one device) level status.

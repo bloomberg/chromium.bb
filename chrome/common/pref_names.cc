@@ -1607,6 +1607,10 @@ const char kReportDeviceVersionInfo[] = "device_status.report_version_info";
 // A boolean pref that indicates whether device activity times should be
 // recorded and reported along with device policy requests.
 const char kReportDeviceActivityTimes[] = "device_status.report_activity_times";
+
+// The local state pref that stores device activity times before reporting
+// them to the policy server.
+extern const char kDeviceActivityTimes[] = "device_status.activity_times";
 #endif
 
 // Whether there is a Flash version installed that supports clearing LSO data.
