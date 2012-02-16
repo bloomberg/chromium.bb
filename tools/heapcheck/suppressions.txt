@@ -101,6 +101,15 @@
    fun:crypto::OpenTestNSSDB
 }
 {
+   bug_51988_d
+   Heapcheck:Leak
+   ...
+   fun:base::DefaultLazyInstanceTraits::New
+   ...
+   fun:crypto::EnsureNSSInit
+   fun:URLFetcherTest::SetUp
+}
+{
    bug_66941_a
    Heapcheck:Leak
    fun:PR_NewLock
@@ -1229,7 +1238,7 @@
 {
    bug_82974a
    Heapcheck:Leak
-   fun:sqlite3MemMalloc
+   ...
    fun:net::X509Certificate::CreateOSCertHandleFromBytes*
 }
 {
@@ -1586,16 +1595,9 @@
    fun:ExtensionContentSettingsStoreTest_*
 }
 {
-   bug_98967_a
-   Heapcheck:Leak
-   fun:base::Value::Create*Value
-   fun:V8ValueConverterImplTest_WeirdTypes_Test::TestBody
-}
-{
-   bug_98967_b
+   bug_98967
    Heapcheck:Leak
    ...
-   fun:std::basic_string::basic_string
    fun:V8ValueConverterImplTest_WeirdTypes_Test::TestBody
 }
 {
@@ -1614,7 +1616,7 @@
    bug_99304
    Heapcheck:Leak
    fun:v8::internal::SkipList::Update
-   fun:v8::internal::PagedSpace::AllocateRaw
+   ...
    fun:v8::internal::Deserializer::Allocate
    fun:v8::internal::Deserializer::ReadObject
    fun:v8::internal::Deserializer::ReadChunk
@@ -1627,7 +1629,6 @@
    fun:v8::internal::V8::Initialize
    fun:v8::internal::Snapshot::Deserialize
    fun:v8::internal::Snapshot::Initialize
-   fun:v8::InitializeHelper
 }
 {
    bug_99436
