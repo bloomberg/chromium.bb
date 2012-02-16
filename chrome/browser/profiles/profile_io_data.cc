@@ -42,6 +42,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/chrome_blob_storage_context.h"
+#include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
@@ -234,6 +235,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   params->appcache_service = profile->GetAppCacheService();
   params->blob_storage_context = profile->GetBlobStorageContext();
   params->file_system_context = profile->GetFileSystemContext();
+  params->webkit_context = profile->GetWebKitContext();
   params->quota_manager = profile->GetQuotaManager();
   params->extension_info_map = profile->GetExtensionInfoMap();
   params->notification_service =
@@ -435,6 +437,12 @@ fileapi::FileSystemContext*
   return file_system_context_;
 }
 
+WebKitContext* ProfileIOData::ResourceContext::GetWebKitContext() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  EnsureInitialized();
+  return webkit_context_;
+}
+
 ChromeBlobStorageContext*
     ProfileIOData::ResourceContext::GetBlobStorageContext()  {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -573,6 +581,7 @@ void ProfileIOData::LazyInitialize() const {
   appcache_service_ = profile_params_->appcache_service;
   blob_storage_context_ = profile_params_->blob_storage_context;
   file_system_context_ = profile_params_->file_system_context;
+  webkit_context_ = profile_params_->webkit_context;
   quota_manager_ = profile_params_->quota_manager;
   host_zoom_map_ = profile_params_->host_zoom_map;
   host_content_settings_map_ = profile_params_->host_content_settings_map;
@@ -586,6 +595,7 @@ void ProfileIOData::LazyInitialize() const {
   resource_context_.appcache_service_ = appcache_service_;
   resource_context_.blob_storage_context_ = blob_storage_context_;
   resource_context_.file_system_context_ = file_system_context_;
+  resource_context_.webkit_context_ = webkit_context_;
   resource_context_.quota_manager_ = quota_manager_;
   resource_context_.host_zoom_map_ = host_zoom_map_;
   resource_context_.media_observer_ =

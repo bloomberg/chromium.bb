@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,6 +75,10 @@ media_stream::MediaStreamManager*
 
 AudioManager* MockResourceContext::GetAudioManager() {
   return audio_manager_;
+}
+
+WebKitContext* MockResourceContext::GetWebKitContext() {
+  return NULL;
 }
 
 }  // namespace content

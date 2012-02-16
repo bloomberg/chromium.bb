@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@ class AudioManager;
 class ChromeAppCacheService;
 class ChromeBlobStorageContext;
 class MediaObserver;
+class WebKitContext;
 namespace fileapi {
 class FileSystemContext;
 }  // namespace fileapi
@@ -50,6 +51,7 @@ class ResourceContext {
   virtual MediaObserver* GetMediaObserver() = 0;
   virtual media_stream::MediaStreamManager* GetMediaStreamManager() = 0;
   virtual AudioManager* GetAudioManager() = 0;
+  virtual WebKitContext* GetWebKitContext() = 0;
 };
 
 }  // namespace content

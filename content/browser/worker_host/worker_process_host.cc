@@ -21,6 +21,7 @@
 #include "content/browser/debugger/worker_devtools_manager.h"
 #include "content/browser/debugger/worker_devtools_message_filter.h"
 #include "content/browser/file_system/file_system_dispatcher_host.h"
+#include "content/browser/in_process_webkit/indexed_db_dispatcher_host.h"
 #include "content/browser/mime_registry_message_filter.h"
 #include "content/browser/renderer_host/blob_message_filter.h"
 #include "content/browser/renderer_host/database_message_filter.h"
@@ -271,6 +272,8 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
   process_->GetHost()->AddFilter(socket_stream_dispatcher_host);
   process_->GetHost()->AddFilter(
       new content::WorkerDevToolsMessageFilter(process_->GetData().id));
+  process_->GetHost()->AddFilter(new IndexedDBDispatcherHost(
+      process_->GetData().id, resource_context_->GetWebKitContext()));
 }
 
 void WorkerProcessHost::CreateWorker(const WorkerInstance& instance) {

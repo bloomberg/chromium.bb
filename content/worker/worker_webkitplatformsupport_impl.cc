@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "content/common/database_util.h"
 #include "content/common/file_system/webfilesystem_impl.h"
 #include "content/common/file_utilities_messages.h"
+#include "content/common/indexed_db/proxy_webidbfactory_impl.h"
 #include "content/common/mime_registry_messages.h"
 #include "content/common/webblobregistry_impl.h"
 #include "content/common/webmessageportchannel_impl.h"
@@ -206,6 +207,12 @@ long long WorkerWebKitPlatformSupportImpl::databaseGetFileSize(
 long long WorkerWebKitPlatformSupportImpl::databaseGetSpaceAvailableForOrigin(
     const WebString& origin_identifier) {
   return DatabaseUtil::DatabaseGetSpaceAvailable(origin_identifier);
+}
+
+WebKit::WebIDBFactory* WorkerWebKitPlatformSupportImpl::idbFactory() {
+  if (!web_idb_factory_.get())
+    web_idb_factory_.reset(new RendererWebIDBFactoryImpl());
+  return web_idb_factory_.get();
 }
 
 WebMimeRegistry::SupportsType

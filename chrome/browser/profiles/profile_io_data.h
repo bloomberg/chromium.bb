@@ -31,6 +31,7 @@ class IOThread;
 class Profile;
 class ProtocolHandlerRegistry;
 class TransportSecurityPersister;
+class WebKitContext;
 
 namespace fileapi {
 class FileSystemContext;
@@ -157,6 +158,7 @@ class ProfileIOData {
     scoped_refptr<ChromeAppCacheService> appcache_service;
     scoped_refptr<ChromeBlobStorageContext> blob_storage_context;
     scoped_refptr<fileapi::FileSystemContext> file_system_context;
+    scoped_refptr<WebKitContext> webkit_context;
     scoped_refptr<quota::QuotaManager> quota_manager;
     scoped_refptr<ExtensionInfoMap> extension_info_map;
     DesktopNotificationService* notification_service;
@@ -235,6 +237,7 @@ class ProfileIOData {
     virtual ChromeAppCacheService* GetAppCacheService() OVERRIDE;
     virtual webkit_database::DatabaseTracker* GetDatabaseTracker() OVERRIDE;
     virtual fileapi::FileSystemContext* GetFileSystemContext() OVERRIDE;
+    virtual WebKitContext* GetWebKitContext() OVERRIDE;
     virtual ChromeBlobStorageContext* GetBlobStorageContext() OVERRIDE;
     virtual quota::QuotaManager* GetQuotaManager() OVERRIDE;
     virtual content::HostZoomMap* GetHostZoomMap() OVERRIDE;
@@ -251,6 +254,7 @@ class ProfileIOData {
     ChromeAppCacheService* appcache_service_;
     webkit_database::DatabaseTracker* database_tracker_;
     fileapi::FileSystemContext* file_system_context_;
+    WebKitContext* webkit_context_;
     ChromeBlobStorageContext* blob_storage_context_;
     quota::QuotaManager* quota_manager_;
     content::HostZoomMap* host_zoom_map_;
@@ -316,6 +320,7 @@ class ProfileIOData {
   mutable scoped_refptr<ChromeAppCacheService> appcache_service_;
   mutable scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
   mutable scoped_refptr<fileapi::FileSystemContext> file_system_context_;
+  mutable scoped_refptr<WebKitContext> webkit_context_;
   mutable scoped_refptr<quota::QuotaManager> quota_manager_;
   mutable scoped_refptr<content::HostZoomMap> host_zoom_map_;
   mutable scoped_ptr<media_stream::MediaStreamManager> media_stream_manager_;

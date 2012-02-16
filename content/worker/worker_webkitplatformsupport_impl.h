@@ -63,6 +63,8 @@ class WorkerWebKitPlatformSupportImpl
 
   virtual WebKit::WebBlobRegistry* blobRegistry();
 
+  virtual WebKit::WebIDBFactory* idbFactory() OVERRIDE;
+
   // WebMimeRegistry methods:
   virtual WebKit::WebMimeRegistry::SupportsType supportsMIMEType(
       const WebKit::WebString&);
@@ -89,6 +91,7 @@ class WorkerWebKitPlatformSupportImpl
   scoped_ptr<WebKit::WebBlobRegistry> blob_registry_;
 
   scoped_ptr<WebFileSystemImpl> web_file_system_;
+  scoped_ptr<WebKit::WebIDBFactory> web_idb_factory_;
 };
 
 #endif  // CONTENT_WORKER_WORKER_WEBKITPLATFORMSUPPORT_IMPL_H_
