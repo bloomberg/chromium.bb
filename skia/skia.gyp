@@ -406,6 +406,10 @@
         '../third_party/skia/src/gpu/SkGr.cpp',
         '../third_party/skia/src/gpu/SkGrFontScaler.cpp',
         '../third_party/skia/src/gpu/SkGrTexturePixelRef.cpp',
+        '../third_party/skia/src/gpu/gl/GrGLCaps.cpp',
+        '../third_party/skia/src/gpu/gl/GrGLCaps.h',
+        '../third_party/skia/src/gpu/gl/GrGLColorConversionTest.cpp',
+        '../third_party/skia/src/gpu/gl/GrGLColorConversionTest.h',
         '../third_party/skia/src/gpu/gl/GrGLContextInfo.cpp',
         '../third_party/skia/src/gpu/gl/GrGLContextInfo.h',
         '../third_party/skia/src/gpu/gl/GrGLCreateNativeInterface_none.cpp',
@@ -626,9 +630,9 @@
         '../third_party/skia/include/gpu/GrConfig.h',
         '../third_party/skia/include/gpu/GrContext.h',
         '../third_party/skia/include/gpu/GrFontScaler.h',
-        '../third_party/skia/include/gpu/GrGLConfig.h',
-        '../third_party/skia/include/gpu/GrGLConfig_chrome.h',
-        '../third_party/skia/include/gpu/GrGLInterface.h',
+        '../third_party/skia/include/gpu/gl/GrGLConfig.h',
+        '../third_party/skia/include/gpu/gl/GrGLConfig_chrome.h',
+        '../third_party/skia/include/gpu/gl/GrGLInterface.h',
         '../third_party/skia/include/gpu/GrGlyph.h',
         '../third_party/skia/include/gpu/GrInstanceCounter.h',
         '../third_party/skia/include/gpu/GrKey.h',
@@ -723,6 +727,7 @@
         '../third_party/skia/include/core',
         '../third_party/skia/include/effects',
         '../third_party/skia/include/gpu',
+        '../third_party/skia/include/gpu/gl',
         '../third_party/skia/include/images',
         '../third_party/skia/include/pdf',
         '../third_party/skia/include/ports',
@@ -957,6 +962,7 @@
           '../third_party/skia/include/effects',
           '../third_party/skia/include/pdf',
           '../third_party/skia/include/gpu',
+          '../third_party/skia/include/gpu/gl',
           '../third_party/skia/include/ports',
           '../third_party/skia/include/utils',
           'ext',
@@ -1047,6 +1053,9 @@
             '../third_party/skia/src/opts/SkBlitRow_opts_SSE2.cpp',
             '../third_party/skia/src/opts/SkUtils_opts_SSE2.cpp',
           ],
+          'dependencies': [
+            'skia_opts_ssse3',
+          ],
         },
         {  # arm
           'conditions': [
@@ -1101,6 +1110,54 @@
           ],
           'sources!': [
             '../third_party/skia/src/opts/SkBlitRow_opts_arm.cpp',
+          ],
+        }],
+      ],
+    },
+    # For the same lame reasons as what is done for skia_opts, we have to
+    # create another target specifically for SSSE3 code as we would not want
+    # to compile the SSE2 code with -mssse3 which would potentially allow
+    # gcc to generate SSSE3 code.
+    {
+      'target_name': 'skia_opts_ssse3',
+      'type': 'static_library',
+      'variables': {
+        'optimize': 'max',
+      },
+      'include_dirs': [
+        '..',
+        'config',
+        '../third_party/skia/include/config',
+        '../third_party/skia/include/core',
+        '../third_party/skia/src/core',
+      ],
+      'conditions': [
+        [ 'OS in ["linux", "freebsd", "openbsd", "solaris"]', {
+          'cflags': [
+            '-mssse3',
+          ],
+        }],
+        # TODO: when ninja/make understand
+        # GCC_ENABLE_SUPPLEMENTAL_SSE3_INSTRUCTIONS, set that to YES here
+        # instead of stepping on OTHER_CFLAGS.
+        [ 'OS in ["mac"]', {
+          'xcode_settings': {
+            'OTHER_CFLAGS': ['-mssse3',],
+          },
+        }],
+        [ 'OS == "win"', {
+          'include_dirs': [
+            'config/win',
+          ],
+          'direct_dependent_settings': {
+            'include_dirs': [
+              'config/win',
+            ],
+          },
+        }],
+        [ 'target_arch != "arm"', {
+          'sources': [
+            '../third_party/skia/src/opts/SkBitmapProcState_opts_SSSE3.cpp',
           ],
         }],
       ],

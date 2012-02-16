@@ -10,7 +10,7 @@
 #endif
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
-#include "third_party/skia/include/gpu/GrGLInterface.h"
+#include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 
 namespace webkit_glue {
 
