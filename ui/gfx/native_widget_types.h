@@ -57,6 +57,7 @@ struct IAccessible;
 #elif defined(OS_MACOSX)
 struct CGContext;
 #ifdef __OBJC__
+@class NSCursor;
 @class NSEvent;
 @class NSFont;
 @class NSImage;
@@ -64,6 +65,7 @@ struct CGContext;
 @class NSWindow;
 @class NSTextField;
 #else
+class NSCursor;
 class NSEvent;
 class NSFont;
 class NSImage;
@@ -113,7 +115,7 @@ typedef HWND NativeWindow;
 typedef HRGN NativeRegion;
 typedef MSG NativeEvent;
 #elif defined(OS_MACOSX)
-typedef void* NativeCursor;
+typedef NSCursor* NativeCursor;
 typedef NSView* NativeView;
 typedef NSWindow* NativeWindow;
 typedef NSEvent* NativeEvent;

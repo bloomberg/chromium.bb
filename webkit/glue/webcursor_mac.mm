@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,14 +59,17 @@ NSCursor* LoadCursor(const char* name, int x, int y) {
                                   hotSpot:NSMakePoint(x, y)] autorelease];
 }
 
+// TODO(avi): When Skia becomes default, fold this function into the remaining
+// caller, InitFromCursor().
 CGImageRef CreateCGImageFromCustomData(const std::vector<char>& custom_data,
                                        const gfx::Size& custom_size) {
-  // This is safe since we're not going to draw into the context we're creating.
-  // The settings here match SetCustomData() below; keep in sync.
   // If the data is missing, leave the backing transparent.
   void* data = NULL;
-  if (!custom_data.empty())
+  if (!custom_data.empty()) {
+    // This is safe since we're not going to draw into the context we're
+    // creating.
     data = const_cast<char*>(&custom_data[0]);
+  }
 
   // If the size is empty, use a 1x1 transparent image.
   gfx::Size size = custom_size;
@@ -77,6 +80,7 @@ CGImageRef CreateCGImageFromCustomData(const std::vector<char>& custom_data,
 
   base::mac::ScopedCFTypeRef<CGColorSpaceRef> cg_color(
       CGColorSpaceCreateDeviceRGB());
+  // The settings here match SetCustomData() below; keep in sync.
   base::mac::ScopedCFTypeRef<CGContextRef> context(
       CGBitmapContextCreate(data,
                             size.width(),
@@ -92,19 +96,46 @@ CGImageRef CreateCGImageFromCustomData(const std::vector<char>& custom_data,
 NSCursor* CreateCustomCursor(const std::vector<char>& custom_data,
                              const gfx::Size& custom_size,
                              const gfx::Point& hotspot) {
+#if WEBKIT_USING_SKIA
+  // If the data is missing, leave the backing transparent.
+  void* data = NULL;
+  size_t data_size = 0;
+  if (!custom_data.empty()) {
+    // This is safe since we're not going to draw into the context we're
+    // creating.
+    data = const_cast<char*>(&custom_data[0]);
+    data_size = custom_data.size();
+  }
+
+  // If the size is empty, use a 1x1 transparent image.
+  gfx::Size size = custom_size;
+  if (size.IsEmpty()) {
+    size.SetSize(1, 1);
+    data = NULL;
+  }
+
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config, size.width(), size.height());
+  bitmap.allocPixels();
+  if (data)
+    memcpy(bitmap.getAddr32(0, 0), data, data_size);
+  else
+    bitmap.eraseARGB(0, 0, 0, 0);
+  NSImage* cursor_image = gfx::SkBitmapToNSImage(bitmap);
+#else
   base::mac::ScopedCFTypeRef<CGImageRef> cg_image(
       CreateCGImageFromCustomData(custom_data, custom_size));
 
   scoped_nsobject<NSBitmapImageRep> ns_bitmap(
       [[NSBitmapImageRep alloc] initWithCGImage:cg_image.get()]);
-  NSImage* cursor_image = [[NSImage alloc] init];
+  scoped_nsobject<NSImage> cursor_image([[NSImage alloc] init]);
   DCHECK(cursor_image);
   [cursor_image addRepresentation:ns_bitmap];
+#endif  // WEBKIT_USING_SKIA
 
   NSCursor* cursor = [[NSCursor alloc] initWithImage:cursor_image
                                              hotSpot:NSMakePoint(hotspot.x(),
                                                                  hotspot.y())];
-  [cursor_image release];
 
   return [cursor autorelease];
 }
@@ -118,7 +149,7 @@ NSCursor* CreateCustomCursor(const std::vector<char>& custom_data,
 // clear that accessing system cursors this way is enough of a gain to risk
 // using SPIs. Until the benefits more clearly outweigh the risks, API is all
 // that will be used.
-NSCursor* WebCursor::GetCursor() const {
+gfx::NativeCursor WebCursor::GetNativeCursor() {
   switch (type_) {
     case WebCursorInfo::TypePointer:
       return [NSCursor arrowCursor];
@@ -221,10 +252,6 @@ NSCursor* WebCursor::GetCursor() const {
   }
   NOTREACHED();
   return nil;
-}
-
-gfx::NativeCursor WebCursor::GetNativeCursor() {
-  return GetCursor();
 }
 
 void WebCursor::InitFromThemeCursor(ThemeCursor cursor) {
@@ -337,6 +364,8 @@ void WebCursor::InitFromCursor(const Cursor* cursor) {
   cursor_info.type = WebCursorInfo::TypeCustom;
   cursor_info.hotSpot = WebKit::WebPoint(cursor->hotSpot.h, cursor->hotSpot.v);
 #if WEBKIT_USING_SKIA
+  // TODO(avi): build the cursor image in Skia directly rather than going via
+  // this roundabout path.
   cursor_info.customImage = gfx::CGImageToSkBitmap(cg_image.get());
 #else
   cursor_info.customImage = cg_image.get();
@@ -454,7 +483,7 @@ void WebCursor::ImageFromCustomData(WebImage* image) const {
       CreateCGImageFromCustomData(custom_data_, custom_size_));
   *image = cg_image.get();
 }
-#endif
+#endif  // !WEBKIT_USING_SKIA
 
 void WebCursor::InitPlatformData() {
   return;

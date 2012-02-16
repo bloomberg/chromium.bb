@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,9 +92,6 @@ class WEBKIT_GLUE_EXPORT WebCursor {
   // returns GDK_CURSOR_IS_PIXMAP.
   GdkCursor* GetCustomCursor();
 #elif defined(OS_MACOSX)
-  // Gets an NSCursor* for this cursor.
-  NSCursor* GetCursor() const;
-
   // Initialize this from the given Carbon ThemeCursor.
   void InitFromThemeCursor(ThemeCursor cursor);
 

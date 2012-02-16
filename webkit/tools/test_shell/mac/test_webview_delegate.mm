@@ -103,7 +103,7 @@ void TestWebViewDelegate::closeWidgetSoon() {
 }
 
 void TestWebViewDelegate::didChangeCursor(const WebCursorInfo& cursor_info) {
-  NSCursor* ns_cursor = WebCursor(cursor_info).GetCursor();
+  NSCursor* ns_cursor = WebCursor(cursor_info).GetNativeCursor();
   [ns_cursor set];
 }
 

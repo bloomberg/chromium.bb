@@ -500,7 +500,7 @@ void RenderWidgetHostViewMac::UpdateCursorIfNecessary() {
   if ([event window] != [cocoa_view_ window])
     return;
 
-  NSCursor* ns_cursor = current_cursor_.GetCursor();
+  NSCursor* ns_cursor = current_cursor_.GetNativeCursor();
   [ns_cursor set];
 }
 
