@@ -35,14 +35,8 @@ scoped_refptr<DeletableFileReference> DeletableFileReference::GetOrCreate(
   DCHECK(file_thread);
   typedef std::pair<DeleteableFileMap::iterator, bool> InsertResult;
 
-  // Visual Studio 2010 has problems converting NULL to the null pointer for
-  // std::pair.  See http://connect.microsoft.com/VisualStudio/feedback/details/520043/error-converting-from-null-to-a-pointer-type-in-std-pair
-  // It will work if we pass nullptr.
-#if defined(_MSC_VER) && _MSC_VER >= 1600
-  webkit_blob::DeletableFileReference* null_reference = nullptr;
-#else
+  // Required for VS2010: http://connect.microsoft.com/VisualStudio/feedback/details/520043/error-converting-from-null-to-a-pointer-type-in-std-pair
   webkit_blob::DeletableFileReference* null_reference = NULL;
-#endif
   InsertResult result = g_deletable_file_map.Get().insert(
       DeleteableFileMap::value_type(path, null_reference));
   if (result.second == false)

@@ -84,14 +84,8 @@ TEST_F(FocusManagerTest, FocusStoreRestore) {
   RunPendingMessages();
   //  MessageLoopForUI::current()->RunWithDispatcher(new AcceleratorHandler());
 
-  // Visual Studio 2010 has problems converting NULL to the null pointer for
-  // std::pair.  See http://connect.microsoft.com/VisualStudio/feedback/details/520043/error-converting-from-null-to-a-pointer-type-in-std-pair
-  // It will work if we pass nullptr.
-#if defined(_MSC_VER) && _MSC_VER >= 1600
-  views::View* null_view = nullptr;
-#else
+  // Required for VS2010: http://connect.microsoft.com/VisualStudio/feedback/details/520043/error-converting-from-null-to-a-pointer-type-in-std-pair
   views::View* null_view = NULL;
-#endif
 
   // Deacivate the window, it should store its focus.
   SimulateDeactivateWindow();

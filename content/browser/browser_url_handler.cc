@@ -75,14 +75,8 @@ BrowserURLHandler* BrowserURLHandler::GetInstance() {
 
 // static
 BrowserURLHandler::URLHandler BrowserURLHandler::null_handler() {
-  // Visual Studio 2010 has problems converting NULL to the null pointer for
-  // std::pair.  See http://connect.microsoft.com/VisualStudio/feedback/details/520043/error-converting-from-null-to-a-pointer-type-in-std-pair
-  // It will work if we pass nullptr.
-#if defined(_MSC_VER) && _MSC_VER >= 1600
-  return nullptr;
-#else
+  // Required for VS2010: http://connect.microsoft.com/VisualStudio/feedback/details/520043/error-converting-from-null-to-a-pointer-type-in-std-pair
   return NULL;
-#endif
 }
 
 BrowserURLHandler::BrowserURLHandler() {
