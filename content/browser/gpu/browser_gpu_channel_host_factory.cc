@@ -5,7 +5,7 @@
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 
 #include "base/bind.h"
-#include "content/browser/gpu/gpu_data_manager.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -168,7 +168,7 @@ GpuChannelHost* BrowserGpuChannelHostFactory::EstablishGpuChannelSync(
       return gpu_channel_.get();
   }
   // Ensure initialization on the main thread.
-  GpuDataManager::GetInstance();
+  GpuDataManagerImpl::GetInstance();
 
   EstablishRequest request;
   GetIOLoopProxy()->PostTask(

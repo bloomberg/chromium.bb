@@ -16,9 +16,11 @@
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/browser/gpu/gpu_data_manager.h"
+#include "content/public/browser/gpu_data_manager.h"
+#include "content/public/browser/gpu_data_manager_observer.h"
 
 using content::BrowserThread;
+using content::GpuDataManager;
 
 namespace {
 
@@ -150,7 +152,7 @@ void FinishSwiftShaderUpdateRegistration(ComponentUpdateService* cus,
   }
 }
 
-class UpdateChecker : public GpuDataManager::Observer {
+class UpdateChecker : public content::GpuDataManagerObserver {
  public:
   explicit UpdateChecker(ComponentUpdateService* cus);
 
@@ -170,7 +172,7 @@ void UpdateChecker::OnGpuInfoUpdate() {
   if (!gpu_data_manager->GpuAccessAllowed() ||
       (gpu_data_manager->GetGpuFeatureType() &
        content::GPU_FEATURE_TYPE_WEBGL) ||
-      gpu_data_manager->software_rendering()) {
+      gpu_data_manager->ShouldUseSoftwareRendering()) {
     gpu_data_manager->RemoveObserver(this);
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
     FilePath path = GetSwiftShaderBaseDirectory();

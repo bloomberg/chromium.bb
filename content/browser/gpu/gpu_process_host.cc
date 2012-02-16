@@ -16,7 +16,7 @@
 #include "base/string_piece.h"
 #include "base/threading/thread.h"
 #include "content/browser/browser_child_process_host_impl.h"
-#include "content/browser/gpu/gpu_data_manager.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_widget_host.h"
@@ -178,7 +178,7 @@ bool GpuProcessHost::HostIsValid(GpuProcessHost* host) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) ||
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU) ||
       host->software_rendering() ||
-      !GpuDataManager::GetInstance()->software_rendering()) {
+      !GpuDataManagerImpl::GetInstance()->ShouldUseSoftwareRendering()) {
     return true;
   }
 
@@ -192,7 +192,7 @@ GpuProcessHost* GpuProcessHost::GetForClient(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // Don't grant further access to GPU if it is not allowed.
-  GpuDataManager* gpu_data_manager = GpuDataManager::GetInstance();
+  GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();
   if (gpu_data_manager != NULL && !gpu_data_manager->GpuAccessAllowed())
     return NULL;
 
@@ -303,7 +303,7 @@ GpuProcessHost::~GpuProcessHost() {
         // The gpu process is too unstable to use. Disable it for current
         // session.
         hardware_gpu_enabled_ = false;
-        GpuDataManager::GetInstance()->BlacklistCard();
+        GpuDataManagerImpl::GetInstance()->BlacklistCard();
       }
     }
   }
@@ -422,7 +422,7 @@ void GpuProcessHost::EstablishGpuChannel(
   TRACE_EVENT0("gpu", "GpuProcessHostUIShim::EstablishGpuChannel");
 
   // If GPU features are already blacklisted, no need to establish the channel.
-  if (!GpuDataManager::GetInstance()->GpuAccessAllowed()) {
+  if (!GpuDataManagerImpl::GetInstance()->GpuAccessAllowed()) {
     EstablishChannelError(
         callback, IPC::ChannelHandle(),
         base::kNullProcessHandle, content::GPUInfo());
@@ -483,7 +483,7 @@ void GpuProcessHost::OnChannelEstablished(
   // Currently if any of the GPU features are blacklisted, we don't establish a
   // GPU channel.
   if (!channel_handle.name.empty() &&
-      !GpuDataManager::GetInstance()->GpuAccessAllowed()) {
+      !GpuDataManagerImpl::GetInstance()->GpuAccessAllowed()) {
     Send(new GpuMsg_CloseChannel(channel_handle));
     EstablishChannelError(callback,
                           IPC::ChannelHandle(),
@@ -496,8 +496,8 @@ void GpuProcessHost::OnChannelEstablished(
     return;
   }
 
-  callback.Run(
-      channel_handle, gpu_process_, GpuDataManager::GetInstance()->gpu_info());
+  callback.Run(channel_handle, gpu_process_,
+               GpuDataManagerImpl::GetInstance()->GetGPUInfo());
 }
 
 void GpuProcessHost::OnCommandBufferCreated(const int32 route_id) {
@@ -587,7 +587,8 @@ void GpuProcessHost::ForceShutdown() {
 }
 
 bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
-  if (!(gpu_enabled_ && GpuDataManager::GetInstance()->software_rendering()) &&
+  if (!(gpu_enabled_ &&
+      GpuDataManagerImpl::GetInstance()->ShouldUseSoftwareRendering()) &&
       !hardware_gpu_enabled_) {
     SendOutstandingReplies();
     return false;
@@ -645,7 +646,7 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
   content::GetContentClient()->browser()->AppendExtraCommandLineSwitches(
       cmd_line, process_->GetData().id);
 
-  GpuDataManager::GetInstance()->AppendGpuCommandLine(cmd_line);
+  GpuDataManagerImpl::GetInstance()->AppendGpuCommandLine(cmd_line);
 
   if (cmd_line->HasSwitch(switches::kUseGL))
     software_rendering_ =

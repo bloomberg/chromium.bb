@@ -96,8 +96,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profiling.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "content/browser/gpu/gpu_data_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/main_function_params.h"
 #include "grit/app_locale_settings.h"
@@ -453,7 +453,7 @@ Profile* CreateProfile(const content::MainFunctionParams& parameters,
 // Load GPU Blacklist, collect preliminary gpu info, and compute preliminary
 // gpu feature flags.
 void InitializeGpuDataManager(const CommandLine& parsed_command_line) {
-  GpuDataManager::GetInstance();
+  content::GpuDataManager::GetInstance();
   if (parsed_command_line.HasSwitch(switches::kSkipGpuDataLoading) ||
       parsed_command_line.HasSwitch(switches::kIgnoreGpuBlacklist))
     return;

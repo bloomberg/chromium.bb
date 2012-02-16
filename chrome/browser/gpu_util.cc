@@ -15,9 +15,11 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/gpu_blacklist.h"
-#include "content/browser/gpu/gpu_data_manager.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/gpu_info.h"
 
+using content::GpuDataManager;
 using content::GpuFeatureType;
 
 namespace {
@@ -47,7 +49,7 @@ struct GpuFeatureInfo {
 // Determine if accelerated-2d-canvas is supported, which depends on whether
 // lose_context could happen and whether skia is the backend.
 bool SupportsAccelerated2dCanvas() {
-  if (GpuDataManager::GetInstance()->gpu_info().can_lose_context)
+  if (GpuDataManager::GetInstance()->GetGPUInfo().can_lose_context)
     return false;
 #if defined(USE_SKIA)
   return true;
@@ -243,7 +245,7 @@ Value* GetFeatureStatus() {
           status += "_software";
         else
           status += "_off";
-      } else if (GpuDataManager::GetInstance()->software_rendering()) {
+      } else if (GpuDataManager::GetInstance()->ShouldUseSoftwareRendering()) {
         status = "unavailable_software";
       } else if (kGpuFeatureInfo[i].blocked ||
                  gpu_access_blocked) {
@@ -299,7 +301,7 @@ Value* GetFeatureStatus() {
 }
 
 DictionaryValue* GpuInfoAsDictionaryValue() {
-  content::GPUInfo gpu_info = GpuDataManager::GetInstance()->gpu_info();
+  content::GPUInfo gpu_info = GpuDataManager::GetInstance()->GetGPUInfo();
   ListValue* basic_info = new ListValue();
   basic_info->Append(NewDescriptionValuePair(
       "Initialization time",

@@ -13,9 +13,11 @@
 #include "base/sys_info.h"
 #include "base/version.h"
 #include "chrome/browser/gpu_util.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/gpu_info.h"
 
+using content::GpuDataManager;
 using content::GpuFeatureType;
 
 namespace {
@@ -748,7 +750,7 @@ GpuFeatureType GpuBlacklist::DetermineGpuFeatureType(
 
 void GpuBlacklist::UpdateGpuDataManager() {
   content::GpuFeatureType feature_type = DetermineGpuFeatureType(
-      GpuBlacklist::kOsAny, NULL, GpuDataManager::GetInstance()->gpu_info());
+      GpuBlacklist::kOsAny, NULL, GpuDataManager::GetInstance()->GetGPUInfo());
   GpuDataManager::GetInstance()->SetGpuFeatureType(feature_type);
   gpu_util::UpdateStats();
 }

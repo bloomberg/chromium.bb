@@ -20,10 +20,11 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/gpu/gpu_data_manager.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/trace_controller.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/gpu_data_manager.h"
+#include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
@@ -33,6 +34,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
+using content::GpuDataManager;
 using content::WebContents;
 using content::WebUIMessageHandler;
 
@@ -57,7 +59,7 @@ class TracingMessageHandler
       public SelectFileDialog::Listener,
       public base::SupportsWeakPtr<TracingMessageHandler>,
       public TraceSubscriber,
-      public GpuDataManager::Observer {
+      public content::GpuDataManagerObserver {
  public:
   TracingMessageHandler();
   virtual ~TracingMessageHandler();
@@ -74,7 +76,7 @@ class TracingMessageHandler
   virtual void OnTraceDataCollected(const std::string& trace_fragment);
   virtual void OnTraceBufferPercentFullReply(float percent_full);
 
-  // GpuDataManager::Observer implementation.
+  // GpuDataManagerObserver implementation.
   virtual void OnGpuInfoUpdate() OVERRIDE;
 
   // Messages.
@@ -102,9 +104,6 @@ class TracingMessageHandler
 
   // True while tracing is active.
   bool trace_enabled_;
-
-  // Cache the Singleton for efficiency.
-  GpuDataManager* gpu_data_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TracingMessageHandler);
 };
@@ -144,12 +143,10 @@ class TaskProxy : public base::RefCountedThreadSafe<TaskProxy> {
 TracingMessageHandler::TracingMessageHandler()
   : select_trace_file_dialog_type_(SelectFileDialog::SELECT_NONE),
     trace_enabled_(false) {
-  gpu_data_manager_ = GpuDataManager::GetInstance();
-  DCHECK(gpu_data_manager_);
 }
 
 TracingMessageHandler::~TracingMessageHandler() {
-  gpu_data_manager_->RemoveObserver(this);
+  GpuDataManager::GetInstance()->RemoveObserver(this);
 
   if (select_trace_file_dialog_)
     select_trace_file_dialog_->ListenerDestroyed();
@@ -186,11 +183,11 @@ void TracingMessageHandler::OnTracingControllerInitialized(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Watch for changes in GPUInfo
-  gpu_data_manager_->AddObserver(this);
+  GpuDataManager::GetInstance()->AddObserver(this);
 
   // Tell GpuDataManager it should have full GpuInfo. If the
   // Gpu process has not run yet, this will trigger its launch.
-  gpu_data_manager_->RequestCompleteGpuInfoIfNeeded();
+  GpuDataManager::GetInstance()->RequestCompleteGpuInfoIfNeeded();
 
   // Run callback immediately in case the info is ready and no update in the
   // future.

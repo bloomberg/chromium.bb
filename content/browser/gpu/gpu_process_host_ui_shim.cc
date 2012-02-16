@@ -11,7 +11,7 @@
 #include "base/id_map.h"
 #include "base/lazy_instance.h"
 #include "base/process_util.h"
-#include "content/browser/gpu/gpu_data_manager.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -221,7 +221,7 @@ void GpuProcessHostUIShim::OnLogMessage(
   dict->SetInteger("level", level);
   dict->SetString("header", header);
   dict->SetString("message", message);
-  GpuDataManager::GetInstance()->AddLogMessage(dict);
+  GpuDataManagerImpl::GetInstance()->AddLogMessage(dict);
 }
 
 void GpuProcessHostUIShim::OnGraphicsInfoCollected(
@@ -230,7 +230,7 @@ void GpuProcessHostUIShim::OnGraphicsInfoCollected(
   // initializes GL.
   TRACE_EVENT0("test_gpu", "OnGraphicsInfoCollected");
 
-  GpuDataManager::GetInstance()->UpdateGpuInfo(gpu_info);
+  GpuDataManagerImpl::GetInstance()->UpdateGpuInfo(gpu_info);
 }
 
 #if defined(TOOLKIT_USES_GTK) || defined(OS_WIN)

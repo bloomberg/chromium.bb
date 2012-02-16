@@ -14,13 +14,15 @@
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/browser/gpu_blacklist.h"
+#include "chrome/browser/gpu_performance_stats.h"
 #include "chrome/browser/gpu_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/gpu/gpu_data_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/gpu_data_manager.h"
+#include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -30,6 +32,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
+using content::GpuDataManager;
 using content::WebContents;
 using content::WebUIMessageHandler;
 
@@ -51,7 +54,7 @@ ChromeWebUIDataSource* CreateGpuHTMLSource() {
 class GpuMessageHandler
     : public WebUIMessageHandler,
       public base::SupportsWeakPtr<GpuMessageHandler>,
-      public GpuDataManager::Observer {
+      public content::GpuDataManagerObserver {
  public:
   GpuMessageHandler();
   virtual ~GpuMessageHandler();
@@ -59,7 +62,7 @@ class GpuMessageHandler
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
-  // GpuDataManager::Observer implementation.
+  // GpuDataManagerObserver implementation.
   virtual void OnGpuInfoUpdate() OVERRIDE;
 
   // Messages
@@ -76,9 +79,6 @@ class GpuMessageHandler
                               const Value* value);
 
  private:
-  // Cache the Singleton for efficiency.
-  GpuDataManager* gpu_data_manager_;
-
   DISALLOW_COPY_AND_ASSIGN(GpuMessageHandler);
 };
 
@@ -89,12 +89,10 @@ class GpuMessageHandler
 ////////////////////////////////////////////////////////////////////////////////
 
 GpuMessageHandler::GpuMessageHandler() {
-  gpu_data_manager_ = GpuDataManager::GetInstance();
-  DCHECK(gpu_data_manager_);
 }
 
 GpuMessageHandler::~GpuMessageHandler() {
-  gpu_data_manager_->RemoveObserver(this);
+  GpuDataManager::GetInstance()->RemoveObserver(this);
 }
 
 /* BrowserBridge.callAsync prepends a requestID to these messages. */
@@ -160,11 +158,11 @@ void GpuMessageHandler::OnBrowserBridgeInitialized(const ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Watch for changes in GPUInfo
-  gpu_data_manager_->AddObserver(this);
+  GpuDataManager::GetInstance()->AddObserver(this);
 
   // Tell GpuDataManager it should have full GpuInfo. If the
   // Gpu process has not run yet, this will trigger its launch.
-  gpu_data_manager_->RequestCompleteGpuInfoIfNeeded();
+  GpuDataManager::GetInstance()->RequestCompleteGpuInfoIfNeeded();
 
   // Run callback immediately in case the info is ready and no update in the
   // future.
@@ -209,7 +207,7 @@ Value* GpuMessageHandler::OnRequestClientInfo(const ListValue* list) {
       GpuBlacklist::GetInstance()->GetVersion());
 
   GpuPerformanceStats stats =
-      GpuDataManager::GetInstance()->GetPerformanceStats();
+    GpuPerformanceStats::RetrieveGpuPerformanceStats();
   dict->Set("performance", stats.ToValue());
 
   return dict;
@@ -218,7 +216,7 @@ Value* GpuMessageHandler::OnRequestClientInfo(const ListValue* list) {
 Value* GpuMessageHandler::OnRequestLogMessages(const ListValue*) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  return gpu_data_manager_->log_messages().DeepCopy();
+  return GpuDataManager::GetInstance()->GetLogMessages().DeepCopy();
 }
 
 void GpuMessageHandler::OnGpuInfoUpdate() {

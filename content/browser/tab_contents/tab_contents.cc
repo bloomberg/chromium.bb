@@ -17,7 +17,7 @@
 #include "content/browser/debugger/devtools_manager_impl.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/save_package.h"
-#include "content/browser/gpu/gpu_data_manager.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
@@ -412,7 +412,7 @@ WebPreferences TabContents::GetWebkitPrefs(RenderViewHost* rvh,
       command_line.HasSwitch(switches::kEnablePerTilePainting);
 
   {  // Certain GPU features might have been blacklisted.
-    GpuDataManager* gpu_data_manager = GpuDataManager::GetInstance();
+    GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();
     DCHECK(gpu_data_manager);
     uint32 blacklist_type = gpu_data_manager->GetGpuFeatureType();
     if (blacklist_type & content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING)
@@ -426,7 +426,7 @@ WebPreferences TabContents::GetWebkitPrefs(RenderViewHost* rvh,
 
     // Accelerated video and animation are slower than regular when using a
     // software 3d rasterizer.
-    if (gpu_data_manager->software_rendering()) {
+    if (gpu_data_manager->ShouldUseSoftwareRendering()) {
       prefs.accelerated_video_enabled = false;
       prefs.accelerated_animation_enabled = false;
     }

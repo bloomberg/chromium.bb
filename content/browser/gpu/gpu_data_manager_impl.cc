@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/gpu/gpu_data_manager.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
 
 #if defined(OS_MACOSX)
 #include <CoreGraphics/CGDisplayConfiguration.h>
@@ -21,6 +21,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/gpu/gpu_info_collector.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "ui/gfx/gl/gl_implementation.h"
@@ -28,6 +29,7 @@
 #include "webkit/plugins/plugin_switches.h"
 
 using content::BrowserThread;
+using content::GpuDataManagerObserver;
 using content::GpuFeatureType;
 
 namespace {
@@ -40,8 +42,8 @@ void DisplayReconfigCallback(CGDirectDisplayID display,
   LOG(INFO) << "Display re-configuration: flags = 0x"
             << base::StringPrintf("%04x", flags);
   if (flags & kCGDisplayAddFlag) {
-    GpuDataManager* manager =
-        reinterpret_cast<GpuDataManager*>(gpu_data_manager);
+    GpuDataManagerImpl* manager =
+        reinterpret_cast<GpuDataManagerImpl*>(gpu_data_manager);
     DCHECK(manager);
     manager->HandleGpuSwitch();
   }
@@ -50,7 +52,17 @@ void DisplayReconfigCallback(CGDirectDisplayID display,
 
 }  // namespace anonymous
 
-GpuDataManager::GpuDataManager()
+// static
+content::GpuDataManager* content::GpuDataManager::GetInstance() {
+  return GpuDataManagerImpl::GetInstance();
+}
+
+// static
+GpuDataManagerImpl* GpuDataManagerImpl::GetInstance() {
+  return Singleton<GpuDataManagerImpl>::get();
+}
+
+GpuDataManagerImpl::GpuDataManagerImpl()
     : complete_gpu_info_already_requested_(false),
       complete_gpu_info_available_(false),
       gpu_feature_type_(content::GPU_FEATURE_TYPE_UNKNOWN),
@@ -61,7 +73,7 @@ GpuDataManager::GpuDataManager()
   Initialize();
 }
 
-void GpuDataManager::Initialize() {
+void GpuDataManagerImpl::Initialize() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableAcceleratedCompositing)) {
     command_line->AppendSwitch(switches::kDisableAccelerated2dCanvas);
@@ -82,18 +94,13 @@ void GpuDataManager::Initialize() {
 #endif
 }
 
-GpuDataManager::~GpuDataManager() {
+GpuDataManagerImpl::~GpuDataManagerImpl() {
 #if defined(OS_MACOSX)
   CGDisplayRemoveReconfigurationCallback(DisplayReconfigCallback, this);
 #endif
 }
 
-// static
-GpuDataManager* GpuDataManager::GetInstance() {
-  return Singleton<GpuDataManager>::get();
-}
-
-void GpuDataManager::RequestCompleteGpuInfoIfNeeded() {
+void GpuDataManagerImpl::RequestCompleteGpuInfoIfNeeded() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (complete_gpu_info_already_requested_ || complete_gpu_info_available_)
@@ -106,7 +113,11 @@ void GpuDataManager::RequestCompleteGpuInfoIfNeeded() {
       new GpuMsg_CollectGraphicsInfo());
 }
 
-void GpuDataManager::UpdateGpuInfo(const content::GPUInfo& gpu_info) {
+bool GpuDataManagerImpl::IsCompleteGPUInfoAvailable() const {
+  return complete_gpu_info_available_;
+}
+
+void GpuDataManagerImpl::UpdateGpuInfo(const content::GPUInfo& gpu_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   complete_gpu_info_available_ =
@@ -124,26 +135,16 @@ void GpuDataManager::UpdateGpuInfo(const content::GPUInfo& gpu_info) {
   NotifyGpuInfoUpdate();
 }
 
-const content::GPUInfo& GpuDataManager::gpu_info() const {
-  base::AutoLock auto_lock(gpu_info_lock_);
+content::GPUInfo GpuDataManagerImpl::GetGPUInfo() const {
   return gpu_info_;
 }
 
-GpuPerformanceStats GpuDataManager::GetPerformanceStats() const {
-  return GpuPerformanceStats::RetrieveGpuPerformanceStats();
-}
-
-void GpuDataManager::AddLogMessage(Value* msg) {
+void GpuDataManagerImpl::AddLogMessage(Value* msg) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   log_messages_.Append(msg);
 }
 
-const ListValue& GpuDataManager::log_messages() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return log_messages_;
-}
-
-GpuFeatureType GpuDataManager::GetGpuFeatureType() {
+GpuFeatureType GpuDataManagerImpl::GetGpuFeatureType() {
   if (software_rendering_) {
     GpuFeatureType flags;
 
@@ -156,8 +157,8 @@ GpuFeatureType GpuDataManager::GetGpuFeatureType() {
   return gpu_feature_type_;
 }
 
-bool GpuDataManager::GpuAccessAllowed() {
-  if (software_rendering())
+bool GpuDataManagerImpl::GpuAccessAllowed() {
+  if (software_rendering_)
     return true;
 
   // We only need to block GPU process if more features are disallowed other
@@ -167,15 +168,15 @@ bool GpuDataManager::GpuAccessAllowed() {
   return (gpu_feature_type_ & mask) == 0;
 }
 
-void GpuDataManager::AddObserver(Observer* observer) {
+void GpuDataManagerImpl::AddObserver(GpuDataManagerObserver* observer) {
   observer_list_->AddObserver(observer);
 }
 
-void GpuDataManager::RemoveObserver(Observer* observer) {
+void GpuDataManagerImpl::RemoveObserver(GpuDataManagerObserver* observer) {
   observer_list_->RemoveObserver(observer);
 }
 
-void GpuDataManager::AppendRendererCommandLine(
+void GpuDataManagerImpl::AppendRendererCommandLine(
     CommandLine* command_line) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(command_line);
@@ -198,7 +199,7 @@ void GpuDataManager::AppendRendererCommandLine(
     command_line->AppendSwitch(switches::kDisableAccelerated2dCanvas);
 }
 
-void GpuDataManager::AppendGpuCommandLine(
+void GpuDataManagerImpl::AppendGpuCommandLine(
     CommandLine* command_line) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(command_line);
@@ -224,17 +225,20 @@ void GpuDataManager::AppendGpuCommandLine(
     command_line->AppendSwitchASCII(switches::kUseGL, use_gl);
   }
 
-  if (gpu_info().optimus)
-    command_line->AppendSwitch(switches::kReduceGpuSandbox);
+  {
+    base::AutoLock auto_lock(gpu_info_lock_);
+    if (gpu_info_.optimus)
+      command_line->AppendSwitch(switches::kReduceGpuSandbox);
+  }
 }
 
-void GpuDataManager::SetGpuFeatureType(GpuFeatureType feature_type) {
+void GpuDataManagerImpl::SetGpuFeatureType(GpuFeatureType feature_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   UpdateGpuFeatureType(feature_type);
   preliminary_gpu_feature_type_ = gpu_feature_type_;
 }
 
-void GpuDataManager::HandleGpuSwitch() {
+void GpuDataManagerImpl::HandleGpuSwitch() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   content::GPUInfo gpu_info;
   gpu_info_collector::CollectVideoCardInfo(&gpu_info);
@@ -246,11 +250,11 @@ void GpuDataManager::HandleGpuSwitch() {
   // relaunch GPU process.
 }
 
-void GpuDataManager::NotifyGpuInfoUpdate() {
-  observer_list_->Notify(&GpuDataManager::Observer::OnGpuInfoUpdate);
+void GpuDataManagerImpl::NotifyGpuInfoUpdate() {
+  observer_list_->Notify(&GpuDataManagerObserver::OnGpuInfoUpdate);
 }
 
-void GpuDataManager::UpdateGpuFeatureType(
+void GpuDataManagerImpl::UpdateGpuFeatureType(
     GpuFeatureType embedder_feature_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -272,12 +276,17 @@ void GpuDataManager::UpdateGpuFeatureType(
   EnableSoftwareRenderingIfNecessary();
 }
 
-void GpuDataManager::RegisterSwiftShaderPath(FilePath path) {
+void GpuDataManagerImpl::RegisterSwiftShaderPath(FilePath path) {
   swiftshader_path_ = path;
   EnableSoftwareRenderingIfNecessary();
 }
 
-void GpuDataManager::EnableSoftwareRenderingIfNecessary() {
+const base::ListValue& GpuDataManagerImpl::GetLogMessages() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return log_messages_;
+}
+
+void GpuDataManagerImpl::EnableSoftwareRenderingIfNecessary() {
   if (!GpuAccessAllowed() ||
       (gpu_feature_type_ & content::GPU_FEATURE_TYPE_WEBGL)) {
 #if defined(ENABLE_SWIFTSHADER)
@@ -289,11 +298,11 @@ void GpuDataManager::EnableSoftwareRenderingIfNecessary() {
   }
 }
 
-bool GpuDataManager::software_rendering() {
+bool GpuDataManagerImpl::ShouldUseSoftwareRendering() {
   return software_rendering_;
 }
 
-void GpuDataManager::BlacklistCard() {
+void GpuDataManagerImpl::BlacklistCard() {
   card_blacklisted_ = true;
 
   {
@@ -308,8 +317,8 @@ void GpuDataManager::BlacklistCard() {
   NotifyGpuInfoUpdate();
 }
 
-bool GpuDataManager::Merge(content::GPUInfo* object,
-                           const content::GPUInfo& other) {
+bool GpuDataManagerImpl::Merge(content::GPUInfo* object,
+                               const content::GPUInfo& other) {
   if (object->device_id != other.device_id ||
       object->vendor_id != other.vendor_id) {
     *object = other;

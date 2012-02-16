@@ -26,7 +26,8 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/gpu/gpu_data_manager.h"
+#include "content/public/browser/gpu_data_manager.h"
+#include "content/public/common/gpu_info.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/screen.h"
 #include "webkit/plugins/webplugininfo.h"
@@ -37,6 +38,8 @@
 #if defined(OS_WIN)
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 #endif
+
+using content::GpuDataManager;
 
 namespace {
 
@@ -375,11 +378,9 @@ void MetricsLog::RecordEnvironment(
 
   {
     OPEN_ELEMENT_FOR_SCOPE("gpu");
-    GpuDataManager* gpu_data_manager = GpuDataManager::GetInstance();
-    if (gpu_data_manager) {
-      WriteIntAttribute("vendorid", gpu_data_manager->gpu_info().vendor_id);
-      WriteIntAttribute("deviceid", gpu_data_manager->gpu_info().device_id);
-    }
+    content::GPUInfo gpu_info = GpuDataManager::GetInstance()->GetGPUInfo();
+    WriteIntAttribute("vendorid", gpu_info.vendor_id);
+    WriteIntAttribute("deviceid", gpu_info.device_id);
   }
 
   {

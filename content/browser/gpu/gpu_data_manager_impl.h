@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_GPU_GPU_DATA_MANAGER_H_
-#define CONTENT_BROWSER_GPU_GPU_DATA_MANAGER_H_
+#ifndef CONTENT_BROWSER_GPU_GPU_DATA_MANAGER_IMPL_H_
+#define CONTENT_BROWSER_GPU_GPU_DATA_MANAGER_IMPL_H_
 #pragma once
 
 #include <set>
@@ -15,67 +15,35 @@
 #include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"
-#include "content/browser/gpu/gpu_performance_stats.h"
-#include "content/common/content_export.h"
-#include "content/public/common/gpu_feature_type.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/gpu_info.h"
 
 class CommandLine;
 
-class CONTENT_EXPORT GpuDataManager {
+class CONTENT_EXPORT GpuDataManagerImpl
+    : public NON_EXPORTED_BASE(content::GpuDataManager) {
  public:
-  // Observers can register themselves via GpuDataManager::AddObserver, and
-  // can un-register with GpuDataManager::RemoveObserver.
-  class Observer {
-   public:
-    // Called for any observers whenever there is a GPU info update.
-    virtual void OnGpuInfoUpdate() = 0;
-
-   protected:
-    virtual ~Observer() {}
-  };
-
   // Getter for the singleton. This will return NULL on failure.
-  static GpuDataManager* GetInstance();
+  static GpuDataManagerImpl* GetInstance();
 
-  // Requests complete GPUinfo if it has not already been requested
-  void RequestCompleteGpuInfoIfNeeded();
+  // GpuDataManager implementation:
+  virtual content::GpuFeatureType GetGpuFeatureType() OVERRIDE;
+  virtual void SetGpuFeatureType(content::GpuFeatureType feature_type) OVERRIDE;
+  virtual content::GPUInfo GetGPUInfo() const OVERRIDE;
+  virtual bool GpuAccessAllowed() OVERRIDE;
+  virtual void RequestCompleteGpuInfoIfNeeded() OVERRIDE;
+  virtual bool IsCompleteGPUInfoAvailable() const OVERRIDE;
+  virtual bool ShouldUseSoftwareRendering() OVERRIDE;
+  virtual void RegisterSwiftShaderPath(FilePath path) OVERRIDE;
+  virtual const base::ListValue& GetLogMessages() const OVERRIDE;
+  virtual void AddObserver(content::GpuDataManagerObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(
+      content::GpuDataManagerObserver* observer) OVERRIDE;
 
   // Only update if the current GPUInfo is not finalized.
   void UpdateGpuInfo(const content::GPUInfo& gpu_info);
 
-  const content::GPUInfo& gpu_info() const;
-
-  bool complete_gpu_info_available() const {
-    return complete_gpu_info_available_;
-  }
-
-  GpuPerformanceStats GetPerformanceStats() const;
-
   void AddLogMessage(Value* msg);
-
-  const ListValue& log_messages() const;
-
-  // Can be called on any thread.
-  content::GpuFeatureType GetGpuFeatureType();
-
-  // This indicator might change because we could collect more GPU info or
-  // because the GPU blacklist could be updated.
-  // If this returns false, any further GPU access, including launching GPU
-  // process, establish GPU channel, and GPU info collection, should be
-  // blocked.
-  // Can be called on any thread.
-  bool GpuAccessAllowed();
-
-  // Registers |observer|. The thread on which this is called is the thread
-  // on which |observer| will be called back with notifications. |observer|
-  // must not be NULL.
-  void AddObserver(Observer* observer);
-
-  // Unregisters |observer| from receiving notifications. This must be called
-  // on the same thread on which AddObserver() was called. |observer|
-  // must not be NULL.
-  void RemoveObserver(Observer* observer);
 
   // Inserting disable-feature switches into renderer process command-line
   // in correspondance to preliminary gpu feature flags.
@@ -85,30 +53,21 @@ class CONTENT_EXPORT GpuDataManager {
   // kDisableGLMultisampling.
   void AppendGpuCommandLine(CommandLine* command_line);
 
-  // Gives the new feature flags.  This is always called on the UI thread.
-  void SetGpuFeatureType(content::GpuFeatureType feature_type);
-
   // This gets called when switching GPU might have happened.
   void HandleGpuSwitch();
-
-  // Returns true if the software rendering should currently be used.
-  bool software_rendering();
-
-  // Register a path to the SwiftShader software renderer.
-  void RegisterSwiftShaderPath(FilePath path);
 
   // Force the current card to be blacklisted (usually due to GPU process
   // crashes).
   void BlacklistCard();
 
  private:
-  typedef ObserverListThreadSafe<GpuDataManager::Observer>
+  typedef ObserverListThreadSafe<content::GpuDataManagerObserver>
       GpuDataManagerObserverList;
 
-  friend struct DefaultSingletonTraits<GpuDataManager>;
+  friend struct DefaultSingletonTraits<GpuDataManagerImpl>;
 
-  GpuDataManager();
-  virtual ~GpuDataManager();
+  GpuDataManagerImpl();
+  virtual ~GpuDataManagerImpl();
 
   void Initialize();
 
@@ -154,7 +113,7 @@ class CONTENT_EXPORT GpuDataManager {
   // Current card force-blacklisted due to GPU crashes.
   bool card_blacklisted_;
 
-  DISALLOW_COPY_AND_ASSIGN(GpuDataManager);
+  DISALLOW_COPY_AND_ASSIGN(GpuDataManagerImpl);
 };
 
-#endif  // CONTENT_BROWSER_GPU_GPU_DATA_MANAGER_H_
+#endif  // CONTENT_BROWSER_GPU_GPU_DATA_MANAGER_IMPL_H_

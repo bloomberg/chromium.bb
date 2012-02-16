@@ -45,7 +45,7 @@
 #include "content/browser/download/mhtml_generation_manager.h"
 #include "content/browser/file_system/file_system_dispatcher_host.h"
 #include "content/browser/geolocation/geolocation_dispatcher_host.h"
-#include "content/browser/gpu/gpu_data_manager.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/in_process_webkit/dom_storage_message_filter.h"
 #include "content/browser/in_process_webkit/indexed_db_dispatcher_host.h"
@@ -608,7 +608,7 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
       command_line, GetID());
 
   // Appending disable-gpu-feature switches due to software rendering list.
-  GpuDataManager* gpu_data_manager = GpuDataManager::GetInstance();
+  GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();
   DCHECK(gpu_data_manager);
   gpu_data_manager->AppendRendererCommandLine(command_line);
 }

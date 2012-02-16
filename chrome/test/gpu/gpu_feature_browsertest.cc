@@ -15,11 +15,12 @@
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/tracing.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/gpu/gpu_data_manager.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/net_util.h"
 #include "ui/gfx/gl/gl_switches.h"
 
+using content::GpuDataManager;
 using content::GpuFeatureType;
 
 namespace {

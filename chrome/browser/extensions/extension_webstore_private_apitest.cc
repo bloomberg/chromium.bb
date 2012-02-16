@@ -21,6 +21,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "net/base/mock_host_resolver.h"
@@ -311,7 +312,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstoreGetWebGLStatusTest, Blocked) {
   ASSERT_TRUE(blacklist->LoadGpuBlacklist(
       "1.0", json_blacklist, GpuBlacklist::kAllOs));
   blacklist->UpdateGpuDataManager();
-  GpuFeatureType type = GpuDataManager::GetInstance()->GetGpuFeatureType();
+  GpuFeatureType type =
+      content::GpuDataManager::GetInstance()->GetGpuFeatureType();
   EXPECT_EQ(type, content::GPU_FEATURE_TYPE_WEBGL);
 
   bool webgl_allowed = false;

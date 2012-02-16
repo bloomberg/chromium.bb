@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_GPU_GPU_PERFORMANCE_STATS_H_
-#define CONTENT_BROWSER_GPU_GPU_PERFORMANCE_STATS_H_
+#ifndef CHROME_BROWSER_GPU_PERFORMANCE_STATS_H_
+#define CHROME_BROWSER_GPU_PERFORMANCE_STATS_H_
 
 #include "base/values.h"
-#include "content/common/content_export.h"
 
-class CONTENT_EXPORT GpuPerformanceStats {
+class GpuPerformanceStats {
  public:
   GpuPerformanceStats() : graphics(0.f), gaming(0.f), overall(0.f) {
   }
@@ -23,4 +22,4 @@ class CONTENT_EXPORT GpuPerformanceStats {
 };
 
 
-#endif  // CONTENT_BROWSER_GPU_GPU_PERFORMANCE_STATS_H_
+#endif  // CHROME_BROWSER_GPU_PERFORMANCE_STATS_H_

@@ -15,17 +15,16 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/values.h"
-#include "content/browser/gpu/gpu_data_manager.h"
+#include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/common/gpu_feature_type.h"
 
-class GpuDataManager;
 class Version;
 
 namespace content {
 struct GPUInfo;
 }
 
-class GpuBlacklist : public GpuDataManager::Observer {
+class GpuBlacklist : public content::GpuDataManagerObserver {
  public:
   enum OsType {
     kOsLinux,

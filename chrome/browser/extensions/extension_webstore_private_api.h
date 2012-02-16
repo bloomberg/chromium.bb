@@ -13,11 +13,15 @@
 #include "chrome/browser/extensions/webstore_install_helper.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
-#include "content/browser/gpu/gpu_data_manager.h"
+#include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
 class ProfileSyncService;
+
+namespace content {
+class GpuDataManager;
+}
 
 class WebstorePrivateApi {
  public:
@@ -161,11 +165,11 @@ class SetStoreLoginFunction : public SyncExtensionFunction {
 };
 
 class GetWebGLStatusFunction : public AsyncExtensionFunction,
-                               public GpuDataManager::Observer {
+                               public content::GpuDataManagerObserver {
  public:
   GetWebGLStatusFunction();
 
-  // Implementing GpuDataManager::Observer interface.
+  // Implementing GpuDataManagerObserver interface.
   virtual void OnGpuInfoUpdate() OVERRIDE;
 
  protected:
@@ -177,7 +181,7 @@ class GetWebGLStatusFunction : public AsyncExtensionFunction,
 
   // A false return value is always valid, but a true one is only valid if full
   // GPU info has been collected in a GPU process.
-  static bool IsWebGLAllowed(GpuDataManager* manager);
+  static bool IsWebGLAllowed(content::GpuDataManager* manager);
 
   DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.getWebGLStatus");
 };

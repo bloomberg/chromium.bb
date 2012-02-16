@@ -11,6 +11,7 @@
 #include "base/path_service.h"
 #include "base/version.h"
 #include "chrome/browser/gpu_blacklist.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/gpu_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

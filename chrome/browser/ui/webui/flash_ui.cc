@@ -26,12 +26,14 @@
 #include "chrome/browser/ui/webui/crashes_ui.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/gpu/gpu_data_manager.h"
+#include "content/public/browser/gpu_data_manager.h"
+#include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "content/public/common/gpu_info.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -44,6 +46,7 @@
 #include "base/win/windows_version.h"
 #endif
 
+using content::GpuDataManager;
 using content::PluginService;
 using content::UserMetricsAction;
 using content::WebContents;
@@ -74,7 +77,7 @@ const int kTimeout = 8 * 1000;  // 8 seconds.
 // The handler for JavaScript messages for the about:flags page.
 class FlashDOMHandler : public WebUIMessageHandler,
                         public CrashUploadList::Delegate,
-                        public GpuDataManager::Observer {
+                        public content::GpuDataManagerObserver {
  public:
   FlashDOMHandler();
   virtual ~FlashDOMHandler();
@@ -109,9 +112,6 @@ class FlashDOMHandler : public WebUIMessageHandler,
   // A timer to keep track of when the data fetching times out.
   base::OneShotTimer<FlashDOMHandler> timeout_;
 
-  // GPU variables.
-  GpuDataManager* gpu_data_manager_;
-
   // Crash list.
   scoped_refptr<CrashUploadList> upload_list_;
 
@@ -141,16 +141,15 @@ FlashDOMHandler::FlashDOMHandler()
   upload_list_->LoadCrashListAsynchronously();
 
   // Watch for changes in GPUInfo.
-  gpu_data_manager_ = GpuDataManager::GetInstance();
-  gpu_data_manager_->AddObserver(this);
+  GpuDataManager::GetInstance()->AddObserver(this);
 
   // Tell GpuDataManager it should have full GpuInfo. If the
   // GPU process has not run yet, this will trigger its launch.
-  gpu_data_manager_->RequestCompleteGpuInfoIfNeeded();
+  GpuDataManager::GetInstance()->RequestCompleteGpuInfoIfNeeded();
 
   // GPU access might not be allowed at all, which will cause us not to get a
   // call back.
-  if (!gpu_data_manager_->GpuAccessAllowed())
+  if (!GpuDataManager::GetInstance()->GpuAccessAllowed())
     OnGpuInfoUpdate();
 
   PluginService::GetInstance()->GetPlugins(base::Bind(
@@ -163,7 +162,7 @@ FlashDOMHandler::FlashDOMHandler()
 }
 
 FlashDOMHandler::~FlashDOMHandler() {
-  gpu_data_manager_->RemoveObserver(this);
+  GpuDataManager::GetInstance()->RemoveObserver(this);
 }
 
 void FlashDOMHandler::RegisterMessages() {
@@ -306,9 +305,9 @@ void FlashDOMHandler::MaybeRespondToPage() {
 
   // GPU information.
   AddPair(list, string16(), "--- GPU information ---");
-  const content::GPUInfo& gpu_info = gpu_data_manager_->gpu_info();
+  content::GPUInfo gpu_info = GpuDataManager::GetInstance()->GetGPUInfo();
 
-  if (!gpu_data_manager_->GpuAccessAllowed())
+  if (!GpuDataManager::GetInstance()->GpuAccessAllowed())
     AddPair(list, ASCIIToUTF16("WARNING:"), "GPU access is not allowed");
 #if defined(OS_WIN)
   const content::DxDiagNode& node = gpu_info.dx_diagnostics;
