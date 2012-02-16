@@ -38,6 +38,9 @@ class ASH_EXPORT PanelLayoutManager : public aura::LayoutManager {
   explicit PanelLayoutManager(aura::Window* panel_container);
   virtual ~PanelLayoutManager();
 
+  void StartDragging(aura::Window* panel);
+  void FinishDragging();
+
   // Overridden from aura::LayoutManager:
   virtual void OnWindowResized() OVERRIDE;
   virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE;
@@ -59,6 +62,8 @@ class ASH_EXPORT PanelLayoutManager : public aura::LayoutManager {
   bool in_layout_;
   // Ordered list of unowned pointers to panel windows.
   PanelList panel_windows_;
+
+  aura::Window* dragged_panel_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelLayoutManager);
 };

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELL_PANEL_FRAME_VIEW_H_
-#define ASH_SHELL_PANEL_FRAME_VIEW_H_
+#ifndef ASH_WM_PANEL_FRAME_VIEW_H_
+#define ASH_WM_PANEL_FRAME_VIEW_H_
 #pragma once
 
 #include "ash/ash_export.h"
@@ -47,4 +47,4 @@ class ASH_EXPORT PanelFrameView : public views::NonClientFrameView {
 
 }
 
-#endif // ASH_SHELL_PANEL_FRAME_VIEW_H_
+#endif // ASH_WM_PANEL_FRAME_VIEW_H_

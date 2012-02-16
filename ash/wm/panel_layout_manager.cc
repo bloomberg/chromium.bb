@@ -29,11 +29,24 @@ namespace internal {
 
 PanelLayoutManager::PanelLayoutManager(aura::Window* panel_container)
     : panel_container_(panel_container),
-      in_layout_(false) {
+      in_layout_(false),
+      dragged_panel_(NULL) {
   DCHECK(panel_container);
 }
 
 PanelLayoutManager::~PanelLayoutManager() {
+}
+
+void PanelLayoutManager::StartDragging(aura::Window* panel) {
+  DCHECK(dragged_panel_ == NULL);
+  DCHECK(panel->parent() == panel_container_);
+  dragged_panel_ = panel;
+}
+
+void PanelLayoutManager::FinishDragging() {
+  DCHECK(dragged_panel_ != NULL);
+  dragged_panel_ = NULL;
+  Relayout();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -53,6 +66,10 @@ void PanelLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
       std::find(panel_windows_.begin(), panel_windows_.end(), child);
   if (found != panel_windows_.end())
     panel_windows_.erase(found);
+
+  if (dragged_panel_ == child)
+    dragged_panel_ = NULL;
+
   Relayout();
 }
 
@@ -71,6 +88,25 @@ void PanelLayoutManager::SetChildBounds(aura::Window* child,
     bounds.set_width(max_width);
   if (bounds.height() > max_height)
     bounds.set_height(max_height);
+
+  // Reposition dragged panel in the panel order.
+  if (dragged_panel_ == child) {
+    PanelList::iterator dragged_panel_iter =
+      std::find(panel_windows_.begin(), panel_windows_.end(), dragged_panel_);
+    DCHECK(dragged_panel_iter != panel_windows_.end());
+    PanelList::iterator new_position;
+    for (new_position = panel_windows_.begin();
+         new_position != panel_windows_.end();
+         ++new_position) {
+      const gfx::Rect& bounds = (*new_position)->bounds();
+      if (bounds.x() + bounds.width()/2 <= requested_bounds.x()) break;
+    }
+    if (new_position != dragged_panel_iter) {
+      panel_windows_.erase(dragged_panel_iter);
+      panel_windows_.insert(new_position, dragged_panel_);
+    }
+  }
+
   SetChildBoundsDirect(child, bounds);
   Relayout();
 }
@@ -107,9 +143,14 @@ void PanelLayoutManager::Relayout() {
       continue;
     int x = right - panel_win->bounds().width();
     int y = bottom - panel_win->bounds().height();
-    gfx::Rect bounds(x, y,
-                     panel_win->bounds().width(), panel_win->bounds().height());
-    SetChildBoundsDirect(panel_win, bounds);
+
+    // Do not relayout dragged panel, but pretend it is in place
+    if (panel_win != dragged_panel_) {
+      gfx::Rect bounds(x, y,
+                       panel_win->bounds().width(),
+                       panel_win->bounds().height());
+      SetChildBoundsDirect(panel_win, bounds);
+    }
     right = x - kPanelMarginMiddle;
   }
 }

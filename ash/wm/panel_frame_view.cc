@@ -73,6 +73,20 @@ class PanelCaption : public views::View,
   }
   virtual ~PanelCaption() {}
 
+  // point is in parent's coordinates
+  int NonClientHitTest(const gfx::Point& point) {
+    if (!GetLocalBounds().Contains(point))
+      return HTNOWHERE;
+
+    gfx::Point translated_point(point);
+    View::ConvertPointToView(parent(), this, &translated_point);
+    if (close_button_->GetMirroredBounds().Contains(translated_point))
+      return HTCLOSE;
+    else if (minimize_button_->GetMirroredBounds().Contains(translated_point))
+      return HTMINBUTTON;
+    return HTCAPTION;
+  }
+
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE {
     return gfx::Size(0, close_button_->GetPreferredSize().height());
@@ -154,9 +168,17 @@ int PanelFrameView::NonClientHitTest(const gfx::Point& point) {
   if (!GetLocalBounds().Contains(point))
     return HTNOWHERE;
 
-  int client_view_result = GetWidget()->client_view()->NonClientHitTest(point);
+  gfx::Point translated_point(point);
+  View::ConvertPointToView(parent(), this, &translated_point);
+
+  int client_view_result =
+      GetWidget()->client_view()->NonClientHitTest(translated_point);
   if (client_view_result != HTNOWHERE)
     return client_view_result;
+
+  int caption_result = panel_caption_->NonClientHitTest(translated_point);
+  if (caption_result != HTNOWHERE)
+    return caption_result;
   return HTNOWHERE;
 }
 

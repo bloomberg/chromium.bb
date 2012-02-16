@@ -131,6 +131,8 @@
         'wm/panel_frame_view.h',
         'wm/panel_layout_manager.cc',
         'wm/panel_layout_manager.h',
+        'wm/panel_window_event_filter.cc',
+        'wm/panel_window_event_filter.h',
         'wm/partial_screenshot_event_filter.cc',
         'wm/partial_screenshot_event_filter.h',
         'wm/partial_screenshot_view.cc',
