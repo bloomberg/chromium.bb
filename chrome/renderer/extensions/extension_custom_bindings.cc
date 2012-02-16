@@ -152,6 +152,8 @@ v8::Handle<v8::Value> ExtensionCustomBindings::GetExtensionViews(
     view_type = chrome::VIEW_TYPE_EXTENSION_DIALOG;
   } else if (view_type_string == chrome::kViewTypeAppShell) {
     view_type = chrome::VIEW_TYPE_APP_SHELL;
+  } else if (view_type_string == chrome::kViewTypePanel) {
+    view_type = chrome::VIEW_TYPE_PANEL;
   } else if (view_type_string != chrome::kViewTypeAll) {
     return v8::Undefined();
   }

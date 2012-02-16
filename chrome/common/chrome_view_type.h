@@ -21,6 +21,7 @@ enum ViewType {
   VIEW_TYPE_NOTIFICATION,
   VIEW_TYPE_EXTENSION_DIALOG,
   VIEW_TYPE_APP_SHELL,
+  VIEW_TYPE_PANEL,
 };
 
 // Constant strings corresponding to the Type enumeration values.  Used
@@ -28,6 +29,7 @@ enum ViewType {
 extern const char kViewTypeTabContents[];
 extern const char kViewTypeBackgroundPage[];
 extern const char kViewTypePopup[];
+extern const char kViewTypePanel[];
 extern const char kViewTypeInfobar[];
 extern const char kViewTypeNotification[];
 extern const char kViewTypeExtensionDialog[];

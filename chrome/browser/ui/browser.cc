@@ -207,7 +207,9 @@
 #endif
 
 #if defined(USE_AURA)
+#include "ash/ash_switches.h"
 #include "ash/shell.h"
+#include "chrome/browser/ui/views/aura/panel_view_aura.h"
 #endif
 
 #if !defined(OS_CHROMEOS) || defined(USE_AURA)
@@ -698,8 +700,17 @@ WebContents* Browser::OpenApplication(
         tab = shell_window->web_contents();
       break;
     }
-    case extension_misc::LAUNCH_WINDOW:
     case extension_misc::LAUNCH_PANEL:
+#if defined(USE_AURA)
+      if (extension &&
+          CommandLine::ForCurrentProcess()->HasSwitch(
+              ash::switches::kAuraPanelManager)) {
+        tab = OpenApplicationPanel(profile, extension, override_url);
+        break;
+      }
+      // else fall through to LAUNCH_WINDOW
+#endif
+    case extension_misc::LAUNCH_WINDOW:
       tab = Browser::OpenApplicationWindow(profile, extension, container,
                                            override_url, NULL);
       break;
@@ -714,6 +725,24 @@ WebContents* Browser::OpenApplication(
   }
   return tab;
 }
+
+#if defined(USE_AURA)
+// static
+WebContents* Browser::OpenApplicationPanel(
+    Profile* profile,
+    const Extension* extension,
+    const GURL& url_input) {
+  GURL url = UrlForExtension(extension, url_input);
+  std::string app_name =
+      web_app::GenerateApplicationNameFromExtensionId(extension->id());
+  gfx::Rect panel_bounds;
+  panel_bounds.set_width(extension->launch_width());
+  panel_bounds.set_height(extension->launch_height());
+  PanelViewAura* panel_view = new PanelViewAura(app_name);
+  panel_view->Init(profile, url, panel_bounds);
+  return panel_view->WebContents();
+}
+#endif
 
 // static
 WebContents* Browser::OpenApplicationWindow(

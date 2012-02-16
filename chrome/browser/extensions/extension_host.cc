@@ -332,7 +332,8 @@ void ExtensionHost::DidStopLoading() {
   if (extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_POPUP ||
       extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_DIALOG ||
       extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_INFOBAR ||
-      extension_host_type_ == chrome::VIEW_TYPE_APP_SHELL) {
+      extension_host_type_ == chrome::VIEW_TYPE_APP_SHELL ||
+      extension_host_type_ == chrome::VIEW_TYPE_PANEL) {
 #if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
     if (view_.get())
       view_->DidStopLoading();
@@ -353,6 +354,8 @@ void ExtensionHost::DidStopLoading() {
         since_created_.Elapsed());
     } else if (extension_host_type_ == chrome::VIEW_TYPE_APP_SHELL) {
       UMA_HISTOGRAM_TIMES("Extensions.ShellLoadTime", since_created_.Elapsed());
+    } else if (extension_host_type_ == chrome::VIEW_TYPE_PANEL) {
+      UMA_HISTOGRAM_TIMES("Extensions.PanelLoadTime", since_created_.Elapsed());
     }
 
     // Send the notification last, because it might result in this being
@@ -396,7 +399,8 @@ void ExtensionHost::CloseContents(WebContents* contents) {
       extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_DIALOG ||
       extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE ||
       extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_INFOBAR ||
-      extension_host_type_ == chrome::VIEW_TYPE_APP_SHELL) {
+      extension_host_type_ == chrome::VIEW_TYPE_APP_SHELL ||
+      extension_host_type_ == chrome::VIEW_TYPE_PANEL) {
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
         content::Source<Profile>(profile_),

@@ -61,6 +61,12 @@
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
 
+#if defined(USE_AURA)
+#include "ash/ash_switches.h"
+#include "base/command_line.h"
+#include "chrome/browser/ui/views/aura/panel_view_aura.h"
+#endif
+
 namespace keys = extension_tabs_module_constants;
 namespace errors = extension_manifest_errors;
 
@@ -507,7 +513,13 @@ bool CreateWindowFunction::RunImpl() {
         extension_id = GetExtension()->id();
       } else if (type_str == keys::kWindowTypeValuePanel) {
         extension_id = GetExtension()->id();
-        if (PanelManager::ShouldUsePanels(extension_id))
+        bool use_panels = PanelManager::ShouldUsePanels(extension_id);
+#if defined(USE_AURA)
+        if (CommandLine::ForCurrentProcess()->HasSwitch(
+                ash::switches::kAuraPanelManager))
+          use_panels = true;
+#endif
+        if (use_panels)
           window_type = Browser::TYPE_PANEL;
         else
           window_type = Browser::TYPE_POPUP;
@@ -518,10 +530,24 @@ bool CreateWindowFunction::RunImpl() {
     }
   }
 
-  // Unlike other window types, Panels do not take focus by default.
-  if (!saw_focus_key && window_type == Browser::TYPE_PANEL)
-    focused = false;
+#if defined(USE_AURA)
+  // Aura Panels create a new PanelDOMView.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kAuraPanelManager) &&
+      window_type == Browser::TYPE_PANEL) {
+    // Note: Panels ignore all but the first url provided.
+    std::string title =
+        web_app::GenerateApplicationNameFromExtensionId(extension_id);
+    PanelViewAura* panel_view = new PanelViewAura(title);
+    panel_view->Init(window_profile, urls[0], panel_bounds);
+    // TODO(stevenjb): Provide an interface enable handles for any view, not
+    // just browsers. See crbug.com/113412.
+    result_.reset(Value::CreateNullValue());
+    return true;
+  }
+#endif
 
+  // Create a new BrowserWindow.
   Browser* new_window;
   if (extension_id.empty()) {
     new_window = Browser::CreateForType(window_type, window_profile);
@@ -543,6 +569,10 @@ bool CreateWindowFunction::RunImpl() {
     new_window->NewTab();
   }
   new_window->SelectNumberedTab(0);
+
+  // Unlike other window types, Panels do not take focus by default.
+  if (!saw_focus_key && window_type == Browser::TYPE_PANEL)
+    focused = false;
 
   if (focused)
     new_window->window()->Show();

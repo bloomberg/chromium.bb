@@ -3450,6 +3450,8 @@
         'browser/ui/views/aura/caps_lock_handler.h',
         'browser/ui/views/aura/chrome_shell_delegate.cc',
         'browser/ui/views/aura/chrome_shell_delegate.h',
+        'browser/ui/views/aura/panel_view_aura.cc',
+        'browser/ui/views/aura/panel_view_aura.h',
         'browser/ui/views/aura/launcher_app_icon_loader.cc',
         'browser/ui/views/aura/launcher_app_icon_loader.h',
         'browser/ui/views/aura/launcher_icon_updater.cc',

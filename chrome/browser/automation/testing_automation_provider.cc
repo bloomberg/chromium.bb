@@ -2987,6 +2987,9 @@ void TestingAutomationProvider::GetBrowserInfo(
         case chrome::VIEW_TYPE_APP_SHELL:
           type = "APP_SHELL";
           break;
+        case chrome::VIEW_TYPE_PANEL:
+          type = "PANEL";
+          break;
         default:
           type = "unknown";
           break;

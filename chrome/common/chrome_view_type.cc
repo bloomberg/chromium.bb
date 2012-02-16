@@ -8,6 +8,7 @@ namespace chrome {
 const char kViewTypeTabContents[] = "TAB";
 const char kViewTypeBackgroundPage[] = "BACKGROUND";
 const char kViewTypePopup[] = "POPUP";
+const char kViewTypePanel[] = "PANEL";
 const char kViewTypeInfobar[] = "INFOBAR";
 const char kViewTypeNotification[] = "NOTIFICATION";
 const char kViewTypeExtensionDialog[] = "EXTENSION_DIALOG";

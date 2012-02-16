@@ -277,6 +277,14 @@ class Browser : public TabHandlerDelegate,
       const GURL& override_url,
       WindowOpenDisposition disposition);
 
+#if defined(USE_AURA)
+  // Opens |url| in a new application panel window for the specified url.
+  static content::WebContents* OpenApplicationPanel(
+      Profile* profile,
+      const Extension* extension,
+      const GURL& url);
+#endif
+
   // Opens a new application window for the specified url. If |as_panel|
   // is true, the application will be opened as a Browser::Type::APP_PANEL in
   // app panel window, otherwise it will be opened as as either
