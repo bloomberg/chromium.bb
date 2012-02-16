@@ -143,7 +143,7 @@ void GDataUploader::UploadNextChunk(
   // DocumentsService is a singleton, and the lifetime of GDataUploader
   // is tied to DocumentsService, so it's safe to use base::Unretained here.
   upload_file_info->file_stream->Read(
-      upload_file_info->buf->data(),
+      upload_file_info->buf,
       bytes_to_read,
       base::Bind(&GDataUploader::ReadCompletionCallback,
                  base::Unretained(this),
