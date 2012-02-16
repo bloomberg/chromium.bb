@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import copy
 import gyp
 import gyp.common
 import gyp.system_test
@@ -830,41 +831,29 @@ class NinjaWriter:
     if not type:
       type = spec['type']
 
+    default_variables = copy.copy(generator_default_variables)
+    CalculateVariables(default_variables, {'flavor': self.flavor})
+
     # Compute filename prefix: the product prefix, or a default for
     # the product type.
-    if self.flavor == 'win':
-      DEFAULT_PREFIX = {
-        'loadable_module': '',
-        'shared_library': '',
-        'static_library': '',
-        }
-    else:
-      DEFAULT_PREFIX = {
-        'loadable_module': 'lib',
-        'shared_library': 'lib',
-        'static_library': 'lib',
-        }
+    DEFAULT_PREFIX = {
+      'loadable_module': default_variables['SHARED_LIB_PREFIX'],
+      'shared_library': default_variables['SHARED_LIB_PREFIX'],
+      'static_library': default_variables['STATIC_LIB_PREFIX'],
+      'executable': default_variables['EXECUTABLE_PREFIX'],
+      }
     prefix = spec.get('product_prefix', DEFAULT_PREFIX.get(type, ''))
 
     # Compute filename extension: the product extension, or a default
     # for the product type.
-    if self.flavor == 'win':
-      DEFAULT_EXTENSION = {
-        'static_library': 'lib',
-        'loadable_module': 'dll',
-        'shared_library': 'dll',
-        'executable': 'exe',
-        }
-    else:
-      DEFAULT_EXTENSION = {
-        'static_library': 'a',
-        'loadable_module': 'so',
-        'shared_library': 'so',
-        }
+    DEFAULT_EXTENSION = {
+        'loadable_module': default_variables['SHARED_LIB_SUFFIX'],
+        'shared_library': default_variables['SHARED_LIB_SUFFIX'],
+        'static_library': default_variables['STATIC_LIB_SUFFIX'],
+        'executable': default_variables['EXECUTABLE_SUFFIX'],
+      }
     extension = spec.get('product_extension',
                          DEFAULT_EXTENSION.get(type, ''))
-    if extension:
-      extension = '.' + extension
 
     if 'product_name' in spec:
       # If we were given an explicit name, use that.
@@ -994,12 +983,12 @@ def CalculateVariables(default_variables, params):
     generator_extra_sources_for_rules = getattr(xcode_generator,
         'generator_extra_sources_for_rules', [])
   elif flavor == 'win':
-    default_variables.setdefault('OS', 'win')
-    default_variables.setdefault('EXECUTABLE_SUFFIX', '.exe')
-    default_variables.setdefault('STATIC_LIB_PREFIX', '')
-    default_variables.setdefault('STATIC_LIB_SUFFIX', '.lib')
-    default_variables.setdefault('SHARED_LIB_PREFIX', '')
-    default_variables.setdefault('SHARED_LIB_SUFFIX', '.dll')
+    default_variables['OS'] = 'win'
+    default_variables['EXECUTABLE_SUFFIX'] = '.exe'
+    default_variables['STATIC_LIB_PREFIX'] = ''
+    default_variables['STATIC_LIB_SUFFIX'] = '.lib'
+    default_variables['SHARED_LIB_PREFIX'] = ''
+    default_variables['SHARED_LIB_SUFFIX'] = '.dll'
   else:
     operating_system = flavor
     if flavor == 'android':
