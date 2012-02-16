@@ -233,6 +233,8 @@ bool LaunchPrintDialog(const string16& xps_path,
 // rather than the generic chrome download page.  See
 // http://code.google.com/p/chromium/issues/detail?id=112019
 void LaunchChromeDownloadPage() {
+// Probably best to NOT launch IE from a unit test.
+#ifndef UNIT_TEST
   HANDLE token = NULL;
   if (!GetUserToken(&token)) {
     LOG(ERROR) << "Unable to get user token.";
@@ -249,17 +251,34 @@ void LaunchChromeDownloadPage() {
   base::LaunchOptions options;
   options.as_user = token_scoped;
   base::LaunchProcess(command_line, options, NULL);
+#endif
 }
 
 // Returns false if the print job is being run in a context
 // that shouldn't be launching Chrome.
 bool ValidateCurrentUser() {
-  wchar_t user_name[UNLEN + 1] = L"";
-  DWORD name_size = sizeof(user_name);
-  GetUserName(user_name, &name_size);
-  LOG(INFO) << "Username is " << user_name << ".";
-  // TODO(abodenha@chromium.org) Return false if running as session 0 or
-  // as local system.
+  HANDLE token = NULL;
+  if (!GetUserToken(&token)) {
+    // If we can't get the token we're probably not impersonating
+    // the user, so validation should fail.
+    return false;
+  }
+  base::win::ScopedHandle token_scoped(token);
+
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+    DWORD session_id = 0;
+    DWORD dummy;
+    if (!GetTokenInformation(token_scoped,
+                             TokenSessionId,
+                             reinterpret_cast<void *>(&session_id),
+                             sizeof(DWORD),
+                             &dummy)) {
+      return false;
+    }
+    if (session_id == 0) {
+      return false;
+    }
+  }
   return true;
 }
 }  // namespace

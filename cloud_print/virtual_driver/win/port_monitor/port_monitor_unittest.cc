@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "base/path_service.h"
 #include "base/string16.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_handle.h"
 #include "cloud_print/virtual_driver/win/port_monitor/spooler_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -194,24 +195,41 @@ TEST_F(PortMonitorTest, FlowTest) {
   EXPECT_TRUE(monitor2->pfnOpenPort(monitor_handle, NULL, &port_handle));
   EXPECT_TRUE(port_handle != NULL);
   EXPECT_TRUE(monitor2->pfnStartDocPort != NULL);
-  EXPECT_TRUE(monitor2->pfnStartDocPort(port_handle, L"", 0, 0, NULL));
   EXPECT_TRUE(monitor2->pfnWritePort != NULL);
-  EXPECT_TRUE(monitor2->pfnWritePort(port_handle,
+  EXPECT_TRUE(monitor2->pfnReadPort != NULL);
+  EXPECT_TRUE(monitor2->pfnEndDocPort != NULL);
+
+  // These functions should fail if we have not impersonated the user.
+  EXPECT_FALSE(monitor2->pfnStartDocPort(port_handle, L"", 0, 0, NULL));
+  EXPECT_FALSE(monitor2->pfnWritePort(port_handle,
                                      buffer,
                                      kBufferSize,
                                      &bytes_processed));
-  EXPECT_EQ(kBufferSize, bytes_processed);
-  EXPECT_TRUE(monitor2->pfnReadPort != NULL);
+  EXPECT_EQ(0, bytes_processed);
   EXPECT_FALSE(monitor2->pfnReadPort(port_handle,
                                      buffer,
                                      sizeof(buffer),
                                      &bytes_processed));
   EXPECT_EQ(0u, bytes_processed);
-  EXPECT_TRUE(monitor2->pfnEndDocPort != NULL);
+  EXPECT_FALSE(monitor2->pfnEndDocPort(port_handle));
+
+  // Now impersonate so we can test the success case.
+  ASSERT_TRUE(ImpersonateSelf(SecurityImpersonation));
+  EXPECT_TRUE(monitor2->pfnStartDocPort(port_handle, L"", 0, 0, NULL));
+  EXPECT_TRUE(monitor2->pfnWritePort(port_handle,
+                                     buffer,
+                                     kBufferSize,
+                                     &bytes_processed));
+  EXPECT_EQ(kBufferSize, bytes_processed);
+  EXPECT_FALSE(monitor2->pfnReadPort(port_handle,
+                                     buffer,
+                                     sizeof(buffer),
+                                     &bytes_processed));
+  EXPECT_EQ(0u, bytes_processed);
   EXPECT_TRUE(monitor2->pfnEndDocPort(port_handle));
+  RevertToSelf();
   EXPECT_TRUE(monitor2->pfnClosePort != NULL);
   EXPECT_TRUE(monitor2->pfnClosePort(port_handle));
-
   // Shutdown the port monitor.
   Monitor2Shutdown(monitor_handle);
 }
