@@ -60,7 +60,7 @@ class JumpList;
 #endif
 
 #if defined(USE_AURA)
-class LauncherIconUpdater;
+class LauncherUpdater;
 #endif
 
 namespace ui {
@@ -686,7 +686,7 @@ class BrowserView : public BrowserWindow,
 #endif
 
 #if defined(USE_AURA)
-  scoped_ptr<LauncherIconUpdater> icon_updater_;
+  scoped_ptr<LauncherUpdater> icon_updater_;
 #endif
 
   // The timer used to update frames for the Loading Animation.

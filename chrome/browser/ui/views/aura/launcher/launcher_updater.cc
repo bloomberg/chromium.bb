@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/aura/launcher_icon_updater.h"
+#include "chrome/browser/ui/views/aura/launcher/launcher_updater.h"
 
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
@@ -15,26 +15,25 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/views/aura/launcher_app_icon_loader.h"
+#include "chrome/browser/ui/views/aura/launcher/launcher_icon_loader.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/ui_resources.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 
 // static
-LauncherIconUpdater::Instances* LauncherIconUpdater::instances_ = NULL;
+LauncherUpdater::Instances* LauncherUpdater::instances_ = NULL;
 
-LauncherIconUpdater::AppTabDetails::AppTabDetails() : id(0) {
+LauncherUpdater::AppTabDetails::AppTabDetails() : id(0) {
 }
 
-LauncherIconUpdater::AppTabDetails::~AppTabDetails() {
+LauncherUpdater::AppTabDetails::~AppTabDetails() {
 }
 
-LauncherIconUpdater::LauncherIconUpdater(
-    aura::Window* window,
-    TabStripModel* tab_model,
-    ash::LauncherModel* launcher_model,
-    Type type)
+LauncherUpdater::LauncherUpdater(aura::Window* window,
+                                 TabStripModel* tab_model,
+                                 ash::LauncherModel* launcher_model,
+                                 Type type)
     : window_(window),
       tab_model_(tab_model),
       launcher_model_(launcher_model),
@@ -43,11 +42,10 @@ LauncherIconUpdater::LauncherIconUpdater(
   if (!instances_)
     instances_ = new Instances;
   instances_->push_back(this);
-  app_icon_loader_.reset(
-      new LauncherAppIconLoader(tab_model_->profile(), this));
+  app_icon_loader_.reset(new LauncherIconLoader(tab_model_->profile(), this));
 }
 
-LauncherIconUpdater::~LauncherIconUpdater() {
+LauncherUpdater::~LauncherUpdater() {
   Instances::iterator instance_iterator =
       std::find(instances_->begin(), instances_->end(), this);
   DCHECK(instance_iterator != instances_->end());
@@ -59,7 +57,7 @@ LauncherIconUpdater::~LauncherIconUpdater() {
     RemoveItemByID(i->second.id);
 }
 
-void LauncherIconUpdater::Init() {
+void LauncherUpdater::Init() {
   tab_model_->AddObserver(this);
   if (type_ == TYPE_APP) {
     // App type never changes, create the launcher item immediately.
@@ -86,7 +84,7 @@ void LauncherIconUpdater::Init() {
 }
 
 // static
-LauncherIconUpdater* LauncherIconUpdater::Create(Browser* browser) {
+LauncherUpdater* LauncherUpdater::Create(Browser* browser) {
   Type type;
   if (browser->type() == Browser::TYPE_TABBED)
     type = TYPE_TABBED;
@@ -97,17 +95,17 @@ LauncherIconUpdater* LauncherIconUpdater::Create(Browser* browser) {
   // TODO(jamescook): Make this tolerate not having a launcher and ensure
   // we rebuild the icon set properly if we subsequently create a launcher.
   ash::LauncherModel* model = ash::Shell::GetInstance()->launcher()->model();
-  LauncherIconUpdater* icon_updater =
-      new LauncherIconUpdater(browser->window()->GetNativeHandle(),
-                              browser->tabstrip_model(), model, type);
+  LauncherUpdater* icon_updater =
+      new LauncherUpdater(browser->window()->GetNativeHandle(),
+                          browser->tabstrip_model(), model, type);
   icon_updater->Init();
   return icon_updater;
 }
 
 // static
-void LauncherIconUpdater::ActivateByID(ash::LauncherID id) {
+void LauncherUpdater::ActivateByID(ash::LauncherID id) {
   TabContentsWrapper* tab = NULL;
-  const LauncherIconUpdater* updater = GetLauncherByID(id, &tab);
+  const LauncherUpdater* updater = GetLauncherByID(id, &tab);
   if (!updater) {
     NOTREACHED();
     return;
@@ -121,9 +119,9 @@ void LauncherIconUpdater::ActivateByID(ash::LauncherID id) {
 }
 
 // static
-string16 LauncherIconUpdater::GetTitleByID(ash::LauncherID id) {
+string16 LauncherUpdater::GetTitleByID(ash::LauncherID id) {
   TabContentsWrapper* tab = NULL;
-  const LauncherIconUpdater* updater = GetLauncherByID(id, &tab);
+  const LauncherUpdater* updater = GetLauncherByID(id, &tab);
   if (!updater) {
     NOTREACHED();
     return string16();
@@ -136,7 +134,7 @@ string16 LauncherIconUpdater::GetTitleByID(ash::LauncherID id) {
 }
 
 // static
-const LauncherIconUpdater* LauncherIconUpdater::GetLauncherByID(
+const LauncherUpdater* LauncherUpdater::GetLauncherByID(
     ash::LauncherID id,
     TabContentsWrapper** tab) {
   *tab = NULL;
@@ -148,8 +146,7 @@ const LauncherIconUpdater* LauncherIconUpdater::GetLauncherByID(
   return NULL;
 }
 
-void LauncherIconUpdater::SetAppImage(TabContentsWrapper* tab,
-                                      SkBitmap* image) {
+void LauncherUpdater::SetAppImage(TabContentsWrapper* tab, SkBitmap* image) {
   if (app_map_.find(tab) == app_map_.end())
     return;
 
@@ -159,19 +156,19 @@ void LauncherIconUpdater::SetAppImage(TabContentsWrapper* tab,
   launcher_model_->Set(model_index, item);
 }
 
-void LauncherIconUpdater::SetAppIconLoaderForTest(AppIconLoader* loader) {
+void LauncherUpdater::SetAppIconLoaderForTest(AppIconLoader* loader) {
   app_icon_loader_.reset(loader);
 }
 
-void LauncherIconUpdater::ActiveTabChanged(TabContentsWrapper* old_contents,
-                                           TabContentsWrapper* new_contents,
-                                           int index,
-                                           bool user_gesture) {
+void LauncherUpdater::ActiveTabChanged(TabContentsWrapper* old_contents,
+                                       TabContentsWrapper* new_contents,
+                                       int index,
+                                       bool user_gesture) {
   // Update immediately on a tab change.
   UpdateLauncher(new_contents);
 }
 
-void LauncherIconUpdater::TabChangedAt(
+void LauncherUpdater::TabChangedAt(
     TabContentsWrapper* tab,
     int index,
     TabStripModelObserver::TabChangeType change_type) {
@@ -200,19 +197,19 @@ void LauncherIconUpdater::TabChangedAt(
   }
 }
 
-void LauncherIconUpdater::TabInsertedAt(TabContentsWrapper* contents,
-                                        int index,
-                                        bool foreground) {
+void LauncherUpdater::TabInsertedAt(TabContentsWrapper* contents,
+                                    int index,
+                                    bool foreground) {
   if (type_ == TYPE_APP)
     return;
 
   UpdateAppTabState(contents, UPDATE_TAB_INSERTED);
 }
 
-void LauncherIconUpdater::TabReplacedAt(TabStripModel* tab_strip_model,
-                                        TabContentsWrapper* old_contents,
-                                        TabContentsWrapper* new_contents,
-                                        int index) {
+void LauncherUpdater::TabReplacedAt(TabStripModel* tab_strip_model,
+                                    TabContentsWrapper* old_contents,
+                                    TabContentsWrapper* new_contents,
+                                    int index) {
   app_icon_loader_->Remove(old_contents);
   AppTabMap::iterator i = app_map_.find(old_contents);
   if (i != app_map_.end()) {
@@ -227,8 +224,8 @@ void LauncherIconUpdater::TabReplacedAt(TabStripModel* tab_strip_model,
   }
 }
 
-void LauncherIconUpdater::TabDetachedAt(TabContentsWrapper* contents,
-                                        int index) {
+void LauncherUpdater::TabDetachedAt(TabContentsWrapper* contents,
+                                    int index) {
   if (type_ == TYPE_APP)
     return;
 
@@ -248,7 +245,7 @@ void LauncherIconUpdater::TabDetachedAt(TabContentsWrapper* contents,
   }
 }
 
-void LauncherIconUpdater::UpdateLauncher(TabContentsWrapper* tab) {
+void LauncherUpdater::UpdateLauncher(TabContentsWrapper* tab) {
   if (!tab)
     return;  // Assume the window is going to be closed if there are no tabs.
 
@@ -276,8 +273,8 @@ void LauncherIconUpdater::UpdateLauncher(TabContentsWrapper* tab) {
   launcher_model_->Set(item_index, item);
 }
 
-void LauncherIconUpdater::UpdateAppTabState(TabContentsWrapper* tab,
-                                            UpdateType update_type) {
+void LauncherUpdater::UpdateAppTabState(TabContentsWrapper* tab,
+                                        UpdateType update_type) {
   bool showing_app_item = app_map_.find(tab) != app_map_.end();
   std::string app_id = update_type == UPDATE_TAB_REMOVED ?
       std::string() : app_icon_loader_->GetAppID(tab);
@@ -338,7 +335,7 @@ void LauncherIconUpdater::UpdateAppTabState(TabContentsWrapper* tab,
   }
 }
 
-void LauncherIconUpdater::AddAppItem(TabContentsWrapper* tab) {
+void LauncherUpdater::AddAppItem(TabContentsWrapper* tab) {
   // Newly created apps go after all existing apps. If there are no apps put it
   // at after the tabbed item, and if there is no tabbed item put it at the end.
   int index = item_id_ == -1 ? launcher_model_->item_count() :
@@ -352,7 +349,7 @@ void LauncherIconUpdater::AddAppItem(TabContentsWrapper* tab) {
   app_icon_loader_->FetchImage(tab);
 }
 
-ash::LauncherItem LauncherIconUpdater::AppLauncherItem(
+ash::LauncherItem LauncherUpdater::AppLauncherItem(
     TabContentsWrapper* tab,
     ash::LauncherID id) {
   if (id == -1)
@@ -366,7 +363,7 @@ ash::LauncherItem LauncherIconUpdater::AppLauncherItem(
   return item;
 }
 
-void LauncherIconUpdater::CreateTabbedItem() {
+void LauncherUpdater::CreateTabbedItem() {
   DCHECK_EQ(-1, item_id_);
   item_id_ = launcher_model_->next_id();
   ash::LauncherItem item(ash::TYPE_TABBED);
@@ -381,14 +378,13 @@ void LauncherIconUpdater::CreateTabbedItem() {
   launcher_model_->Add(index, item);
 }
 
-void LauncherIconUpdater::RemoveItemByID(ash::LauncherID id) {
+void LauncherUpdater::RemoveItemByID(ash::LauncherID id) {
   int model_index = launcher_model_->ItemIndexByID(id);
   DCHECK_NE(-1, model_index);
   launcher_model_->RemoveItemAt(model_index);
 }
 
-bool LauncherIconUpdater::ContainsID(ash::LauncherID id,
-                                     TabContentsWrapper** tab) {
+bool LauncherUpdater::ContainsID(ash::LauncherID id, TabContentsWrapper** tab) {
   if (item_id_ == id)
     return true;
   for (AppTabMap::const_iterator i = app_map_.begin(); i != app_map_.end();

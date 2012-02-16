@@ -10,7 +10,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/views/aura/launcher_icon_updater.h"
+#include "chrome/browser/ui/views/aura/launcher/launcher_updater.h"
 #include "grit/theme_resources.h"
 
 ChromeLauncherDelegate::ChromeLauncherDelegate() {
@@ -31,7 +31,7 @@ void ChromeLauncherDelegate::CreateNewWindow() {
 }
 
 void ChromeLauncherDelegate::ItemClicked(const ash::LauncherItem& item) {
-  LauncherIconUpdater::ActivateByID(item.id);
+  LauncherUpdater::ActivateByID(item.id);
 }
 
 int ChromeLauncherDelegate::GetBrowserShortcutResourceId() {
@@ -39,5 +39,5 @@ int ChromeLauncherDelegate::GetBrowserShortcutResourceId() {
 }
 
 string16 ChromeLauncherDelegate::GetTitle(const ash::LauncherItem& item) {
-  return LauncherIconUpdater::GetTitleByID(item.id);
+  return LauncherUpdater::GetTitleByID(item.id);
 }

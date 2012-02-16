@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_AURA_LAUNCHER_APP_ICON_LOADER_H_
-#define CHROME_BROWSER_UI_VIEWS_AURA_LAUNCHER_APP_ICON_LOADER_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_AURA_LAUNCHER_LAUNCHER_ICON_LOADER_H_
+#define CHROME_BROWSER_UI_VIEWS_AURA_LAUNCHER_LAUNCHER_ICON_LOADER_H_
 #pragma once
 
 #include <map>
@@ -11,18 +11,18 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
-#include "chrome/browser/ui/views/aura/launcher_icon_updater.h"
+#include "chrome/browser/ui/views/aura/launcher/launcher_updater.h"
 
 class Extension;
 class Profile;
 
-// Default implementation of LauncherIconUpdater::AppIconLoader that interacts
+// Default implementation of LauncherUpdater::AppIconLoader that interacts
 // with the ExtensionService and ImageLoadingTracker to load images.
-class LauncherAppIconLoader : public LauncherIconUpdater::AppIconLoader,
-                              public ImageLoadingTracker::Observer {
+class LauncherIconLoader : public LauncherUpdater::AppIconLoader,
+                           public ImageLoadingTracker::Observer {
  public:
-  LauncherAppIconLoader(Profile* profile, LauncherIconUpdater* icon_updater);
-  virtual ~LauncherAppIconLoader();
+  LauncherIconLoader(Profile* profile, LauncherUpdater* icon_updater);
+  virtual ~LauncherIconLoader();
 
   // AppIconLoader:
   virtual std::string GetAppID(TabContentsWrapper* tab) OVERRIDE;
@@ -45,8 +45,8 @@ class LauncherAppIconLoader : public LauncherIconUpdater::AppIconLoader,
 
   Profile* profile_;
 
-  // LauncherIconUpdater we're associated with (and owned by).
-  LauncherIconUpdater* icon_updater_;
+  // LauncherUpdater we're associated with (and owned by).
+  LauncherUpdater* icon_updater_;
 
   // Used to load images.
   scoped_ptr<ImageLoadingTracker> image_loader_;
@@ -54,7 +54,7 @@ class LauncherAppIconLoader : public LauncherIconUpdater::AppIconLoader,
   // Maps from id from the ImageLoadingTracker to the TabContentsWrapper.
   ImageLoaderIDToTabMap image_loader_id_to_tab_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(LauncherAppIconLoader);
+  DISALLOW_COPY_AND_ASSIGN(LauncherIconLoader);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_AURA_LAUNCHER_APP_ICON_LOADER_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_AURA_LAUNCHER_LAUNCHER_ICON_LOADER_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_AURA_LAUNCHER_ICON_UPDATER_H_
-#define CHROME_BROWSER_UI_VIEWS_AURA_LAUNCHER_ICON_UPDATER_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_AURA_LAUNCHER_LAUNCHER_UPDATER_H_
+#define CHROME_BROWSER_UI_VIEWS_AURA_LAUNCHER_LAUNCHER_UPDATER_H_
 #pragma once
 
 #include <map>
@@ -27,9 +27,9 @@ namespace aura {
 class Window;
 }
 
-// LauncherIconUpdater is responsible for keeping the launcher representation
-// of a window up to date as the tab strip changes.
-class LauncherIconUpdater : public TabStripModelObserver {
+// LauncherUpdater is responsible for keeping the launcher representation of a
+// window up to date as the tab strip changes.
+class LauncherUpdater : public TabStripModelObserver {
  public:
   enum Type {
     TYPE_APP,
@@ -52,22 +52,22 @@ class LauncherIconUpdater : public TabStripModelObserver {
 
     // Fetches the image for the specified tab. When done (which may be
     // synchronous), this should invoke SetAppImage() on the
-    // LauncherIconUpdater.
+    // LauncherUpdater.
     virtual void FetchImage(TabContentsWrapper* tab) = 0;
   };
 
-  LauncherIconUpdater(aura::Window* window,
-                      TabStripModel* tab_model,
-                      ash::LauncherModel* launcher_model,
-                      Type type);
-  virtual ~LauncherIconUpdater();
+  LauncherUpdater(aura::Window* window,
+                  TabStripModel* tab_model,
+                  ash::LauncherModel* launcher_model,
+                  Type type);
+  virtual ~LauncherUpdater();
 
-  // Sets up this LauncherIconUpdater.
+  // Sets up this LauncherUpdater.
   void Init();
 
-  // Creates and returns a new LauncherIconUpdater for |browser|. This returns
-  // NULL if a LauncherIconUpdater is not needed for the specified browser.
-  static LauncherIconUpdater* Create(Browser* browser);
+  // Creates and returns a new LauncherUpdater for |browser|. This returns
+  // NULL if a LauncherUpdater is not needed for the specified browser.
+  static LauncherUpdater* Create(Browser* browser);
 
   // Activates the browser and if necessary tab identified by |id|.
   static void ActivateByID(ash::LauncherID id);
@@ -75,11 +75,10 @@ class LauncherIconUpdater : public TabStripModelObserver {
   // Returns the title of the browser and/or tab identified by |id|.
   static string16 GetTitleByID(ash::LauncherID id);
 
-  // Returns the LauncherIconUpdater managing the launcher with the specified
+  // Returns the LauncherUpdater managing the launcher with the specified
   // id. If |id| corresponds to an app tab, |tab| is set appropriately.
-  static const LauncherIconUpdater* GetLauncherByID(
-      ash::LauncherID id,
-      TabContentsWrapper** tab);
+  static const LauncherUpdater* GetLauncherByID(ash::LauncherID id,
+                                                TabContentsWrapper** tab);
 
   // Sets the image for an app tab. This is intended to be invoked from the
   // AppIconLoader.
@@ -129,7 +128,7 @@ class LauncherIconUpdater : public TabStripModelObserver {
   };
 
   typedef std::map<TabContentsWrapper*, AppTabDetails> AppTabMap;
-  typedef std::vector<LauncherIconUpdater*> Instances;
+  typedef std::vector<LauncherUpdater*> Instances;
 
   // Updates the launcher from |tab|.
   void UpdateLauncher(TabContentsWrapper* tab);
@@ -151,7 +150,7 @@ class LauncherIconUpdater : public TabStripModelObserver {
   // Removes the item from the LauncherModel identified by |id|.
   void RemoveItemByID(ash::LauncherID id);
 
-  // Returns true if this LauncherIconUpdater created the launcher item with the
+  // Returns true if this LauncherUpdater created the launcher item with the
   // specified id. Returns true if it did. If the id corresponds to an app tab,
   // |tab| is set to the TabContentsWrapper for the app tab.
   bool ContainsID(ash::LauncherID id, TabContentsWrapper** tab);
@@ -181,7 +180,7 @@ class LauncherIconUpdater : public TabStripModelObserver {
   // Existing instances.
   static Instances* instances_;
 
-  DISALLOW_COPY_AND_ASSIGN(LauncherIconUpdater);
+  DISALLOW_COPY_AND_ASSIGN(LauncherUpdater);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_AURA_LAUNCHER_ICON_UPDATER_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_AURA_LAUNCHER_LAUNCHER_UPDATER_H_

@@ -109,7 +109,7 @@
 #include "ash/shell.h"
 #include "chrome/browser/ui/views/accelerator_table.h"
 #include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
-#include "chrome/browser/ui/views/aura/launcher_icon_updater.h"
+#include "chrome/browser/ui/views/aura/launcher/launcher_updater.h"
 #include "ui/gfx/screen.h"
 #elif defined(OS_WIN)
 #include "chrome/browser/aeropeek_manager.h"
@@ -332,8 +332,8 @@ BrowserView::BrowserView(Browser* browser)
 
 BrowserView::~BrowserView() {
 #if defined(USE_AURA)
-  // Destroy LauncherIconUpdater early on as it listens to the TabstripModel,
-  // which is destroyed by the browser.
+  // Destroy LauncherUpdater early on as it listens to the TabstripModel, which
+  // is destroyed by the browser.
   icon_updater_.reset();
 #endif
 
@@ -593,7 +593,7 @@ void BrowserView::Show() {
 
 #if defined(USE_AURA)
   if (!icon_updater_.get())
-    icon_updater_.reset(LauncherIconUpdater::Create(browser_.get()));
+    icon_updater_.reset(LauncherUpdater::Create(browser_.get()));
 #endif  // defined(USE_AURA)
 
   // Showing the window doesn't make the browser window active right away.
