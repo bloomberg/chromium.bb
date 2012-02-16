@@ -53,7 +53,9 @@ class TestTarget : public ui::AcceleratorTarget {
 
 class DummyScreenshotDelegate : public ScreenshotDelegate {
  public:
-  DummyScreenshotDelegate() : handle_take_screenshot_count_(0) {
+  DummyScreenshotDelegate()
+      : handle_take_screenshot_count_(0),
+        handle_take_partial_screenshot_count_(0) {
   }
   virtual ~DummyScreenshotDelegate() {}
 
@@ -65,15 +67,20 @@ class DummyScreenshotDelegate : public ScreenshotDelegate {
 
   virtual void HandleTakePartialScreenshot(
       aura::Window* window, const gfx::Rect& rect) OVERRIDE {
-    // Do nothing because it's not tested yet.
+    ++handle_take_partial_screenshot_count_;
   }
 
   int handle_take_screenshot_count() const {
     return handle_take_screenshot_count_;
   }
 
+  int handle_take_partial_screenshot_count() const {
+    return handle_take_partial_screenshot_count_;
+  }
+
  private:
   int handle_take_screenshot_count_;
+  int handle_take_partial_screenshot_count_;
 
   DISALLOW_COPY_AND_ASSIGN(DummyScreenshotDelegate);
 };
@@ -346,29 +353,32 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
       ui::Accelerator(ui::VKEY_F5, false, false, false)));
   EXPECT_TRUE(GetController()->Process(
       ui::Accelerator(ui::VKEY_TAB, false, false, true)));
-  // TakeScreenshot
+  // Take screenshot / partial screenshot
   // True should always be returned regardless of the existence of the delegate.
   {
     EXPECT_TRUE(GetController()->Process(
         ui::Accelerator(ui::VKEY_F5, false, true, false)));
     EXPECT_TRUE(GetController()->Process(
         ui::Accelerator(ui::VKEY_PRINT, false, false, false)));
+    EXPECT_TRUE(GetController()->Process(
+        ui::Accelerator(ui::VKEY_F5, true, true, false)));
     DummyScreenshotDelegate* delegate = new DummyScreenshotDelegate;
     GetController()->SetScreenshotDelegate(
         scoped_ptr<ScreenshotDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_take_screenshot_count());
+    EXPECT_EQ(0, delegate->handle_take_partial_screenshot_count());
     EXPECT_TRUE(GetController()->Process(
         ui::Accelerator(ui::VKEY_F5, false, true, false)));
     EXPECT_EQ(1, delegate->handle_take_screenshot_count());
+    EXPECT_EQ(0, delegate->handle_take_partial_screenshot_count());
     EXPECT_TRUE(GetController()->Process(
         ui::Accelerator(ui::VKEY_PRINT, false, false, false)));
     EXPECT_EQ(2, delegate->handle_take_screenshot_count());
-  }
-  // TakePartialScreenshot
-  // So far, we just want to make sure the keybind is trapped here.
-  {
+    EXPECT_EQ(0, delegate->handle_take_partial_screenshot_count());
     EXPECT_TRUE(GetController()->Process(
         ui::Accelerator(ui::VKEY_F5, true, true, false)));
+    EXPECT_EQ(2, delegate->handle_take_screenshot_count());
+    EXPECT_EQ(1, delegate->handle_take_partial_screenshot_count());
   }
   // ToggleCapsLock
   {

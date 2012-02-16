@@ -26,6 +26,7 @@ class AppListModel;
 class AppListViewDelegate;
 class LauncherDelegate;
 struct LauncherItem;
+class ScreenshotDelegate;
 
 // Delegate of the Shell.
 class ASH_EXPORT ShellDelegate {
@@ -73,6 +74,10 @@ class ASH_EXPORT ShellDelegate {
   virtual std::vector<aura::Window*> GetCycleWindowList(
       CycleSource source,
       CycleOrder order) const = 0;
+
+  // Invoked to start taking partial screenshot.
+  virtual void StartPartialScreenshot(
+      ScreenshotDelegate* screenshot_delegate) = 0;
 
   // Creates a new LauncherDelegate. Shell takes ownership of the returned
   // value.

@@ -53,6 +53,10 @@ const int kShellWindowId_DragImageAndTooltipContainer = 11;
 // (volume, brightness, etc.).
 const int kShellWindowId_SettingBubbleContainer = 12;
 
+// The container for special components overlaid onscreen, such as the
+// region selector for partial screenshots.
+const int kShellWindowId_OverlayContainer = 13;
+
 }  // namespace internal
 
 }  // namespace ash

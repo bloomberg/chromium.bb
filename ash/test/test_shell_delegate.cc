@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "grit/ui_resources.h"
@@ -52,6 +53,12 @@ std::vector<aura::Window*> TestShellDelegate::GetCycleWindowList(
   if (order != ShellDelegate::ORDER_LINEAR)
     std::reverse(windows.begin(), windows.end());
   return windows;
+}
+
+void TestShellDelegate::StartPartialScreenshot(
+    ScreenshotDelegate* screenshot_delegate) {
+  if (screenshot_delegate)
+    screenshot_delegate->HandleTakePartialScreenshot(NULL, gfx::Rect());
 }
 
 LauncherDelegate* TestShellDelegate::CreateLauncherDelegate() {

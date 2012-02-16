@@ -68,6 +68,8 @@ void ExpectAllContainers() {
       internal::kShellWindowId_DragImageAndTooltipContainer));
   EXPECT_TRUE(
       shell->GetContainer(internal::kShellWindowId_SettingBubbleContainer));
+  EXPECT_TRUE(
+      shell->GetContainer(internal::kShellWindowId_OverlayContainer));
 }
 
 void TestCreateWindow(views::Widget::InitParams::Type type,

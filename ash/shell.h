@@ -50,6 +50,7 @@ class AppList;
 class DragDropController;
 class FocusCycler;
 class InputMethodEventFilter;
+class PartialScreenshotEventFilter;
 class RootWindowEventFilter;
 class RootWindowLayoutManager;
 class ShadowController;
@@ -155,6 +156,9 @@ class ASH_EXPORT Shell {
   internal::TooltipController* tooltip_controller() {
     return tooltip_controller_.get();
   }
+  internal::PartialScreenshotEventFilter* partial_screenshot_filter() {
+    return partial_screenshot_filter_.get();
+  }
   PowerButtonController* power_button_controller() {
     return power_button_controller_.get();
   }
@@ -236,6 +240,10 @@ class ASH_EXPORT Shell {
 
   // An event filter that pre-handles all key events to send them to an IME.
   scoped_ptr<internal::InputMethodEventFilter> input_method_filter_;
+
+  // An event filter that pre-handles key events while the partial
+  // screenshot UI is active.
+  scoped_ptr<internal::PartialScreenshotEventFilter> partial_screenshot_filter_;
 
 #if !defined(OS_MACOSX)
   // An event filter that pre-handles global accelerators.

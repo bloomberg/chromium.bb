@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
 
+#include "ash/launcher/launcher_types.h"
+#include "ash/wm/partial_screenshot_view.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -108,6 +110,11 @@ std::vector<aura::Window*> ChromeShellDelegate::GetCycleWindowList(
       break;
   }
   return windows;
+}
+
+void ChromeShellDelegate::StartPartialScreenshot(
+    ash::ScreenshotDelegate* screenshot_delegate) {
+  ash::PartialScreenshotView::StartPartialScreenshot(screenshot_delegate);
 }
 
 ash::LauncherDelegate* ChromeShellDelegate::CreateLauncherDelegate() {

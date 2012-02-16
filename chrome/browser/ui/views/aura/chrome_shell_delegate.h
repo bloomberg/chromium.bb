@@ -43,6 +43,8 @@ class ChromeShellDelegate : public ash::ShellDelegate {
   virtual std::vector<aura::Window*> GetCycleWindowList(
       CycleSource source,
       CycleOrder order) const OVERRIDE;
+  virtual void StartPartialScreenshot(
+      ash::ScreenshotDelegate* screenshot_delegate) OVERRIDE;
   virtual ash::LauncherDelegate* CreateLauncherDelegate() OVERRIDE;
 
  private:

@@ -286,8 +286,9 @@ bool AcceleratorController::AcceleratorPressed(
       // Return true to prevent propagation of the key event.
       return true;
     case TAKE_PARTIAL_SCREENSHOT:
-      // TODO(mukai): implement this.  http://crbug.com/108763
-      NOTIMPLEMENTED();
+      if (screenshot_delegate_.get())
+        ash::Shell::GetInstance()->delegate()->
+            StartPartialScreenshot(screenshot_delegate_.get());
       // Return true to prevent propagation of the key event because
       // this key combination is reserved for partial screenshot.
       return true;

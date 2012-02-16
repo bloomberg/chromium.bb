@@ -28,6 +28,8 @@ class TestShellDelegate : public ShellDelegate {
   virtual std::vector<aura::Window*> GetCycleWindowList(
       CycleSource source,
       CycleOrder order) const OVERRIDE;
+  virtual void StartPartialScreenshot(
+      ScreenshotDelegate* screenshot_delegate) OVERRIDE;
   virtual LauncherDelegate* CreateLauncherDelegate() OVERRIDE;
 };
 

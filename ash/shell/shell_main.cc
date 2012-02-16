@@ -15,6 +15,7 @@
 #include "ash/shell/example_factory.h"
 #include "ash/shell/shell_main_parts.h"
 #include "ash/shell/toplevel_window.h"
+#include "ash/wm/partial_screenshot_view.h"
 #include "ash/wm/window_util.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
@@ -183,6 +184,11 @@ class ShellDelegateImpl : public ash::ShellDelegate {
     // Window cycling expects the topmost window at the front of the list.
     std::reverse(windows.begin(), windows.end());
     return windows;
+  }
+
+  virtual void StartPartialScreenshot(
+      ash::ScreenshotDelegate* screenshot_delegate) OVERRIDE {
+    ash::PartialScreenshotView::StartPartialScreenshot(screenshot_delegate);
   }
 
   virtual ash::LauncherDelegate* CreateLauncherDelegate() OVERRIDE {

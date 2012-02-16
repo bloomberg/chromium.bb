@@ -22,6 +22,7 @@
 #include "ash/wm/compact_status_area_layout_manager.h"
 #include "ash/wm/dialog_frame_view.h"
 #include "ash/wm/panel_layout_manager.h"
+#include "ash/wm/partial_screenshot_event_filter.h"
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/root_window_event_filter.h"
 #include "ash/wm/root_window_layout_manager.h"
@@ -167,6 +168,10 @@ void CreateSpecialContainers(aura::Window::Windows* containers) {
   setting_bubble_container->set_id(
       internal::kShellWindowId_SettingBubbleContainer);
   containers->push_back(setting_bubble_container);
+
+  aura::Window* overlay_container = new aura::Window(NULL);
+  overlay_container->set_id(internal::kShellWindowId_OverlayContainer);
+  containers->push_back(overlay_container);
 }
 
 // Maximizes all the windows in a |container|.
@@ -215,6 +220,7 @@ Shell::Shell(ShellDelegate* delegate)
 }
 
 Shell::~Shell() {
+  RemoveRootWindowEventFilter(partial_screenshot_filter_.get());
   RemoveRootWindowEventFilter(input_method_filter_.get());
   RemoveRootWindowEventFilter(window_modality_controller_.get());
 #if !defined(OS_MACOSX)
@@ -278,9 +284,15 @@ void Shell::DeleteInstance() {
 }
 
 void Shell::Init() {
-  // InputMethodEventFilter must be added first since it has the highest
-  // priority.
   DCHECK(!GetRootWindowEventFilterCount());
+
+  // PartialScreenshotEventFilter must be the first one to capture key
+  // events when the taking partial screenshot UI is there.
+  partial_screenshot_filter_.reset(new internal::PartialScreenshotEventFilter);
+  AddRootWindowEventFilter(partial_screenshot_filter_.get());
+
+  // InputMethodEventFilter must be added next to PartialScreenshot
+  // since it has the higher priority.
   input_method_filter_.reset(new internal::InputMethodEventFilter);
   AddRootWindowEventFilter(input_method_filter_.get());
 
