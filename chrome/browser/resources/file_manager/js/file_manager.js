@@ -1028,10 +1028,14 @@ FileManager.prototype = {
     var path = this.directoryModel_.currentEntry.fullPath;
     switch (commandId) {
       case 'cut':
-        return !readonly;
+        return !readonly &&
+               this.selection &&
+               this.selection.totalCount > 0;
 
       case 'copy':
-        return path != '/';
+        return path != '/' &&
+               this.selection &&
+               this.selection.totalCount > 0;
 
       case 'paste':
         return (this.clipboard_ &&
