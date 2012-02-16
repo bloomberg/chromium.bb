@@ -202,10 +202,8 @@ void PPB_Graphics2D_Impl::LastPluginRefWasDeleted() {
   Resource::LastPluginRefWasDeleted();
 
   // Abort any pending callbacks.
-  if (!unpainted_flush_callback_.is_null())
-    unpainted_flush_callback_.Execute(PP_ERROR_ABORTED);
-  if (!painted_flush_callback_.is_null())
-    painted_flush_callback_.Execute(PP_ERROR_ABORTED);
+  unpainted_flush_callback_.PostAbort();
+  painted_flush_callback_.PostAbort();
 }
 
 PP_Bool PPB_Graphics2D_Impl::Describe(PP_Size* size,

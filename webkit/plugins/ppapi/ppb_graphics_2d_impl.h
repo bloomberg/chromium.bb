@@ -105,6 +105,13 @@ class PPB_Graphics2D_Impl : public ::ppapi::Resource,
       ::ppapi::TrackedCallback::ClearAndRun(&callback_, result);
     }
 
+    void PostAbort() {
+      if (!is_null()) {
+        callback_->PostAbort();
+        Clear();
+      }
+    }
+
    private:
     scoped_refptr< ::ppapi::TrackedCallback> callback_;
   };

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -177,9 +177,15 @@ void PaintManager::DoPaint() {
     instance_->BindGraphics(graphics_);
 }
 
-void PaintManager::OnFlushComplete(int32_t) {
+void PaintManager::OnFlushComplete(int32_t result) {
   PP_DCHECK(flush_pending_);
   flush_pending_ = false;
+
+  // Theoretically this shouldn't fail unless we've made an error, but don't
+  // want to call into the client code to do more painting if something bad
+  // did happen.
+  if (result != PP_OK)
+    return;
 
   // If more paints were enqueued while we were waiting for the flush to
   // complete, execute them now.
