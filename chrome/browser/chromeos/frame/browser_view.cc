@@ -324,8 +324,9 @@ BrowserView::~BrowserView() {
   BrowserList::RemoveObserver(this);
 }
 
-void BrowserView::AddTrayButton(StatusAreaButton* button, bool bordered) {
-  status_area_->AddButton(button, bordered);
+void BrowserView::AddTrayButton(StatusAreaButton* button,
+                                StatusAreaView::ButtonBorder border) {
+  status_area_->AddButton(button, border);
 }
 
 void BrowserView::RemoveTrayButton(StatusAreaButton* button) {

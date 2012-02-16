@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
+#include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/views/context_menu_controller.h"
@@ -48,7 +49,8 @@ class BrowserView : public ::BrowserView,
 
   // Adds a new tray icon/button to the Chrome OS Tray.
   // Takes ownership of the button object.
-  void AddTrayButton(StatusAreaButton* button, bool bordered);
+  void AddTrayButton(StatusAreaButton* button,
+                     StatusAreaView::ButtonBorder border);
 
   // Remove an existing tray button from the Chrome OS Tray.
   // Pointer will become invalid after this call.

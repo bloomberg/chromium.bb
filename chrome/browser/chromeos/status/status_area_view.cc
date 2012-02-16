@@ -28,9 +28,9 @@ StatusAreaView::StatusAreaView()
 StatusAreaView::~StatusAreaView() {
 }
 
-void StatusAreaView::AddButton(StatusAreaButton* button, bool bordered) {
+void StatusAreaView::AddButton(StatusAreaButton* button, ButtonBorder border) {
   buttons_.push_back(button);
-  if (bordered)
+  if (border == HAS_BORDER)
     button->set_border(views::Border::CreateEmptyBorder(0, 1, 0, 0));
   AddChildView(button);
   UpdateButtonVisibility();

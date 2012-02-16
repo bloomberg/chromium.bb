@@ -19,10 +19,15 @@
 class StatusAreaView : public views::AccessiblePaneView,
                        public base::SupportsWeakPtr<StatusAreaView> {
  public:
+  enum ButtonBorder {
+    NO_BORDER,
+    HAS_BORDER
+  };
+
   explicit StatusAreaView();
   virtual ~StatusAreaView();
 
-  void AddButton(StatusAreaButton* button, bool bordered);
+  void AddButton(StatusAreaButton* button, ButtonBorder border);
   void RemoveButton(StatusAreaButton* button);
 
   void MakeButtonsActive(bool active);

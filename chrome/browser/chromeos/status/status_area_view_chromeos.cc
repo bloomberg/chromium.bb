@@ -77,23 +77,27 @@ void StatusAreaViewChromeos::AddChromeosButtons(
     StatusAreaView* status_area,
     StatusAreaButton::Delegate* delegate,
     ClockMenuButton** clock_button) {
-  const bool border = true;
-  const bool no_border = false;
-
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kMemoryWidget))
-    status_area->AddButton(new MemoryMenuButton(delegate), no_border);
+    status_area->AddButton(new MemoryMenuButton(delegate),
+                           StatusAreaView::NO_BORDER);
 
-  status_area->AddButton(new AccessibilityMenuButton(delegate), border);
-  status_area->AddButton(new CapsLockMenuButton(delegate), border);
+  status_area->AddButton(new AccessibilityMenuButton(delegate),
+                         StatusAreaView::HAS_BORDER);
+  status_area->AddButton(new CapsLockMenuButton(delegate),
+                         StatusAreaView::HAS_BORDER);
   ClockMenuButton* clock = new ClockMenuButton(delegate);
-  status_area->AddButton(clock, border);
+  status_area->AddButton(clock, StatusAreaView::HAS_BORDER);
   if (clock_button)
     *clock_button = clock;
 
-  status_area->AddButton(new VolumeMenuButton(delegate), no_border);
-  status_area->AddButton(new InputMethodMenuButton(delegate), no_border);
-  status_area->AddButton(new NetworkMenuButton(delegate), no_border);
-  status_area->AddButton(new PowerMenuButton(delegate), no_border);
+  status_area->AddButton(new VolumeMenuButton(delegate),
+                         StatusAreaView::NO_BORDER);
+  status_area->AddButton(new InputMethodMenuButton(delegate),
+                         StatusAreaView::NO_BORDER);
+  status_area->AddButton(new NetworkMenuButton(delegate),
+                         StatusAreaView::NO_BORDER);
+  status_area->AddButton(new PowerMenuButton(delegate),
+                         StatusAreaView::NO_BORDER);
 }
 
 }  // namespace chromeos

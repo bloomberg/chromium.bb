@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -130,7 +130,7 @@ void StatusIconChromeOS::AddIconToBrowser(Browser* browser) {
   NotificationTrayButton* tray_button =
       new NotificationTrayButton(this, browser_view);
   tray_button_map_[browser_view] = tray_button;
-  browser_view->AddTrayButton(tray_button, false);
+  browser_view->AddTrayButton(tray_button, StatusAreaView::NO_BORDER);
   if (!last_image_->empty())
     tray_button->SetImage(*last_image_.get());
 }
