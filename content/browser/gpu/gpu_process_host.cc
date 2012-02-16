@@ -18,7 +18,6 @@
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
-#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/common/child_process_host_impl.h"
@@ -263,7 +262,6 @@ GpuProcessHost::GpuProcessHost(int host_id, bool sandboxed)
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU))
     in_process_ = true;
 
-
   // If the 'single GPU process' policy ever changes, we still want to maintain
   // it for 'gpu thread' mode and only create one instance of host and thread.
   DCHECK(!in_process_ || g_hosts_by_id.Pointer()->IsEmpty());
@@ -396,12 +394,6 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(GpuHostMsg_ChannelEstablished, OnChannelEstablished)
     IPC_MESSAGE_HANDLER(GpuHostMsg_CommandBufferCreated, OnCommandBufferCreated)
     IPC_MESSAGE_HANDLER(GpuHostMsg_DestroyCommandBuffer, OnDestroyCommandBuffer)
-#if defined(OS_WIN) && !defined(USE_AURA)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
-                        OnAcceleratedSurfaceBuffersSwapped)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfacePostSubBuffer,
-                        OnAcceleratedSurfacePostSubBuffer)
-#endif
     IPC_MESSAGE_UNHANDLED(RouteOnUIThread(message))
   IPC_END_MESSAGE_MAP()
 
@@ -520,34 +512,6 @@ void GpuProcessHost::OnDestroyCommandBuffer(int32 surface_id) {
     surface_refs_.erase(it);
 #endif  // defined(TOOLKIT_USES_GTK)
 }
-
-#if defined(OS_WIN) && !defined(USE_AURA)
-
-void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
-    const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params) {
-  TRACE_EVENT0("renderer",
-      "GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped");
-
-  GpuSurfaceTracker::Get()->AsyncPresentAndAcknowledge(
-      params.surface_id,
-      params.size,
-      params.surface_handle,
-      base::Bind(SendOnIO,
-                 host_id_,
-                 content::CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH,
-                 new AcceleratedSurfaceMsg_BuffersSwappedACK(
-                     params.route_id)));
-}
-
-void GpuProcessHost::OnAcceleratedSurfacePostSubBuffer(
-    const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params) {
-  TRACE_EVENT0("renderer",
-      "GpuProcessHost::OnAcceleratedSurfacePostSubBuffer");
-
-  NOTIMPLEMENTED();
-}
-
-#endif  // OS_WIN && !USE_AURA
 
 void GpuProcessHost::OnProcessLaunched() {
   // Send the GPU process handle to the UI thread before it has to
