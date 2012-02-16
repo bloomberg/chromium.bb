@@ -45,6 +45,14 @@ COMPILE_ASSERT(arraysize(kConfidenceCutoff) ==
                NetworkActionPredictor::LAST_PREDICT_ACTION,
                ConfidenceCutoff_count_mismatch);
 
+enum DatabaseAction {
+  DATABASE_ACTION_ADD,
+  DATABASE_ACTION_UPDATE,
+  DATABASE_ACTION_DELETE_SOME,
+  DATABASE_ACTION_DELETE_ALL,
+  DATABASE_ACTION_COUNT
+};
+
 }
 
 const int NetworkActionPredictor::kMaximumDaysToKeepEntry = 14;
@@ -413,6 +421,9 @@ void NetworkActionPredictor::AddRow(
   db_id_cache_[key] = row.id;
   content::BrowserThread::PostTask(content::BrowserThread::DB, FROM_HERE,
       base::Bind(&NetworkActionPredictorDatabase::AddRow, db_, row));
+
+  UMA_HISTOGRAM_ENUMERATION("NetworkActionPredictor.DatabaseAction",
+                            DATABASE_ACTION_ADD, DATABASE_ACTION_COUNT);
 }
 
 void NetworkActionPredictor::UpdateRow(
@@ -426,6 +437,8 @@ void NetworkActionPredictor::UpdateRow(
   it->second.number_of_misses = row.number_of_misses;
   content::BrowserThread::PostTask(content::BrowserThread::DB, FROM_HERE,
       base::Bind(&NetworkActionPredictorDatabase::UpdateRow, db_, row));
+  UMA_HISTOGRAM_ENUMERATION("NetworkActionPredictor.DatabaseAction",
+                            DATABASE_ACTION_UPDATE, DATABASE_ACTION_COUNT);
 }
 
 void NetworkActionPredictor::DeleteAllRows() {
@@ -436,6 +449,8 @@ void NetworkActionPredictor::DeleteAllRows() {
   db_id_cache_.clear();
   content::BrowserThread::PostTask(content::BrowserThread::DB, FROM_HERE,
       base::Bind(&NetworkActionPredictorDatabase::DeleteAllRows, db_));
+  UMA_HISTOGRAM_ENUMERATION("NetworkActionPredictor.DatabaseAction",
+                            DATABASE_ACTION_DELETE_ALL, DATABASE_ACTION_COUNT);
 }
 
 void NetworkActionPredictor::DeleteRowsWithURLs(const std::set<GURL>& urls) {
@@ -458,6 +473,8 @@ void NetworkActionPredictor::DeleteRowsWithURLs(const std::set<GURL>& urls) {
 
   content::BrowserThread::PostTask(content::BrowserThread::DB, FROM_HERE,
       base::Bind(&NetworkActionPredictorDatabase::DeleteRows, db_, id_list));
+  UMA_HISTOGRAM_ENUMERATION("NetworkActionPredictor.DatabaseAction",
+                            DATABASE_ACTION_DELETE_SOME, DATABASE_ACTION_COUNT);
 }
 
 void NetworkActionPredictor::BeginTransaction() {
