@@ -53,8 +53,11 @@ cr.define('options', function() {
 
     /** @inheritDoc */
     handleConfirm: function() {
+      // Strip whitespace.
+      var homePageValue = $('homepageURL').value.replace(/\s*/g, '');
+
       // Don't save an empty URL for the home page.
-      if ($('homepage-use-url').checked && $('homepageURL').value == '') {
+      if ($('homepage-use-url').checked && homePageValue == '') {
         $('homepage-use-url').checked = false;
         $('homepage-use-ntp').checked = true;
       }
