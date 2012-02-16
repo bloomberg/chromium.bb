@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,10 +65,6 @@ class RLZTracker : public content::NotificationObserver {
   RLZTracker();
   ~RLZTracker();
 
-  // Thread function entry point, see ScheduleFinancialPing(). Assumes argument
-  // is a pointer to an RLZTracker.
-  static void _cdecl PingNow(void* tracker);
-
   // Performs initialization of RLZ tracker that is purposefully delayed so
   // that it does not interfere with chrome startup time.
   virtual void DelayedInit();
@@ -83,6 +79,11 @@ class RLZTracker : public content::NotificationObserver {
   void set_tracker(RLZTracker* tracker) {
     tracker_ = tracker;
   }
+
+  // Sends the financial ping to the RLZ servers and invalidates the RLZ string
+  // cache since the response from the RLZ server may have changed then.
+  // Protected so that its accessible from tests.
+  void PingNowImpl();
 
  private:
   friend struct DefaultSingletonTraits<RLZTracker>;
@@ -108,10 +109,6 @@ class RLZTracker : public content::NotificationObserver {
   // true if the call was scheduled, and false otherwise. This method is
   // virtual to allow tests to override how the scheduling is done.
   virtual bool ScheduleGetAccessPointRlz(rlz_lib::AccessPoint point);
-
-  // Sends the financial ping to the RLZ servers and invalidates the RLZ string
-  // cache since the response from the RLZ server may have changed then.
-  void PingNowImpl();
 
   // Sends the financial ping to the RLZ servers. This method is virtual to
   // allow tests to override.

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -7,9 +7,6 @@
 // functions do nothing and just return false.
 
 #include "chrome/browser/rlz/rlz.h"
-
-#include <windows.h>
-#include <process.h>
 
 #include <algorithm>
 
@@ -231,21 +228,15 @@ void RLZTracker::DelayedInit() {
 }
 
 void RLZTracker::ScheduleFinancialPing() {
-  // Investigate why _beginthread() is used here, and not chrome's threading
-  // API.  Tracked in bug http://crbug.com/106213
-  _beginthread(PingNow, 0, this);
-}
-
-// static
-void _cdecl RLZTracker::PingNow(void* arg) {
-  RLZTracker* tracker = reinterpret_cast<RLZTracker*>(arg);
-  tracker->PingNowImpl();
+  // TODO(thakis): Once akalin's TaskRunner around PostTask() is done,
+  // use that instead of the file thread.
+  BrowserThread::PostTask(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&RLZTracker::PingNowImpl, base::Unretained(this)));
 }
 
 void RLZTracker::PingNowImpl() {
-  // This is the entry point of a background thread, so I/O is allowed.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-
   string16 lang;
   GoogleUpdateSettings::GetLanguage(&lang);
   if (lang.empty())
