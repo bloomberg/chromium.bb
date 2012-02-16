@@ -67,6 +67,17 @@ def CheckLocalGold():
     return None
 
 
+@Check("random ninja binaries are not in the $PATH")
+def CheckPathNinja():
+    proc = subprocess.Popen(['which', 'ninja'], stdout=subprocess.PIPE)
+    stdout = proc.communicate()[0]
+    if not 'depot_tools' in stdout:
+        return ("The ninja binary in your path isn't from depot_tools:\n"
+                + "    " + stdout +
+                "Remove custom ninjas from your path so that the one\n"
+                "in depot_tools is used.\n")
+    return None
+
 
 def RunChecks():
     for name, check in all_checks:
