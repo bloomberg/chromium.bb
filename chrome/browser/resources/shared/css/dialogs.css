@@ -46,11 +46,13 @@
 .cr-dialog-title {
   font-weight: bold;
   font-size: 120%;
-  padding-bottom: 10px;
 }
 
-.cr-dialog-text {
+.cr-dialog-text,
+.cr-dialog-title {
   padding-bottom: 10px;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .cr-dialog-frame input {
