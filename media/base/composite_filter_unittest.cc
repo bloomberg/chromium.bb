@@ -400,7 +400,7 @@ TEST_F(CompositeFilterDeathTest, TestRemoveUnknownFilter) {
   composite_->set_host(mock_filter_host_.get());
   // Remove unknown filter.
   scoped_refptr<StrictMock<MockFilter> > filter = new StrictMock<MockFilter>();
-  EXPECT_DEATH(composite_->RemoveFilter(filter), "");
+  EXPECT_DEATH_IF_SUPPORTED(composite_->RemoveFilter(filter), "");
 }
 
 TEST_F(CompositeFilterTest, TestPlay) {
