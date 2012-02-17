@@ -1097,6 +1097,14 @@ enum {
 // command key is down, ignore the command key, but process any other modifiers.
 - (void)commandDispatchUsingKeyModifiers:(id)sender {
   DCHECK(sender);
+
+  if (![sender isEnabled]) {
+    // This code is reachable e.g. if the user mashes the back button, queuing
+    // up a bunch of events before the button's enabled state is updated:
+    // http://crbug.com/63254
+    return;
+  }
+
   // See comment above for why we do this.
   BrowserWindowController* targetController = self;
   if ([sender respondsToSelector:@selector(window)])
