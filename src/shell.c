@@ -1470,7 +1470,6 @@ configure(struct weston_shell *base, struct weston_surface *surface,
 	  GLfloat x, GLfloat y, int32_t width, int32_t height)
 {
 	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
-	int do_configure = !shell->locked;
 	enum shell_surface_type surface_type = SHELL_SURFACE_NONE;
 	struct shell_surface *shsurf;
 
@@ -1478,31 +1477,29 @@ configure(struct weston_shell *base, struct weston_surface *surface,
 	if (shsurf)
 		surface_type = shsurf->type;
 
+	surface->geometry.x = x;
+	surface->geometry.y = y;
 	surface->geometry.width = width;
 	surface->geometry.height = height;
 	surface->geometry.dirty = 1;
 
 	switch (surface_type) {
 	case SHELL_SURFACE_SCREENSAVER:
-		do_configure = !do_configure;
-		/* fall through */
 	case SHELL_SURFACE_FULLSCREEN:
 		center_on_output(surface, surface->fullscreen_output);
-		x = surface->geometry.x;
-		y = surface->geometry.y;
 		break;
 	case SHELL_SURFACE_MAXIMIZED:
 		/*setting x, y and using configure to change that geometry*/
-		x = surface->output->x;
-		y = surface->output->y + get_output_panel_height(shell,surface->output);
+		surface->geometry.x = surface->output->x;
+		surface->geometry.y = surface->output->y +
+			get_output_panel_height(shell,surface->output);
 		break;
 	default:
 		break;
 	}
 
 	/*  XXX: would a fullscreen surface need the same handling? */
-	if (do_configure) {
-		weston_surface_configure(surface, x, y, width, height);
+	if (surface->output) {
 		weston_surface_assign_output(surface);
 
 		if (surface_type == SHELL_SURFACE_SCREENSAVER)
