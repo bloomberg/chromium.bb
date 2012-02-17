@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/events.h"
 #include "ui/base/ui_export.h"
 
 namespace ui {
@@ -52,10 +53,15 @@ class UI_EXPORT AcceleratorManager {
   AcceleratorTarget* GetCurrentTarget(const Accelerator& accelertor) const;
 
  private:
+  bool ShouldHandle(const Accelerator& accelerator) const;
+
   // The accelerators and associated targets.
   typedef std::list<AcceleratorTarget*> AcceleratorTargetList;
   typedef std::map<Accelerator, AcceleratorTargetList> AcceleratorMap;
   AcceleratorMap accelerators_;
+
+  // An event passed to Process() last time.
+  EventType last_event_type_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorManager);
 };

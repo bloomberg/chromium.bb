@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 
 namespace ui {
 
-AcceleratorManager::AcceleratorManager() {
+AcceleratorManager::AcceleratorManager() : last_event_type_(ET_KEY_PRESSED) {
 }
 
 AcceleratorManager::~AcceleratorManager() {
@@ -52,19 +52,23 @@ void AcceleratorManager::UnregisterAll(AcceleratorTarget* target) {
 }
 
 bool AcceleratorManager::Process(const Accelerator& accelerator) {
+  bool result = false;
   AcceleratorMap::iterator map_iter = accelerators_.find(accelerator);
-  if (map_iter != accelerators_.end()) {
+  if (map_iter != accelerators_.end() && ShouldHandle(accelerator)) {
     // We have to copy the target list here, because an AcceleratorPressed
     // event handler may modify the list.
     AcceleratorTargetList targets(map_iter->second);
     for (AcceleratorTargetList::iterator iter = targets.begin();
          iter != targets.end(); ++iter) {
       if ((*iter)->CanHandleAccelerators() &&
-          (*iter)->AcceleratorPressed(accelerator))
-        return true;
+          (*iter)->AcceleratorPressed(accelerator)) {
+        result = true;
+        break;
+      }
     }
   }
-  return false;
+  last_event_type_ = accelerator.type();
+  return result;
 }
 
 AcceleratorTarget* AcceleratorManager::GetCurrentTarget(
@@ -73,6 +77,21 @@ AcceleratorTarget* AcceleratorManager::GetCurrentTarget(
   if (map_iter == accelerators_.end() || map_iter->second.empty())
     return NULL;
   return map_iter->second.front();
+}
+
+bool AcceleratorManager::ShouldHandle(const Accelerator& accelerator) const {
+  if (accelerator.type() != ET_KEY_RELEASED &&
+      accelerator.type() != ET_TRANSLATED_KEY_RELEASE) {
+    return true;
+  }
+  // This check is necessary e.g. not to process the Shift+Alt+ET_KEY_RELEASED
+  // Accelerator for Chrome OS (see ash/accelerators/accelerator_controller.cc)
+  // when Shift+Alt+Tab is pressed and then Tab is released.
+  if (last_event_type_ == ET_KEY_PRESSED ||
+      last_event_type_ == ET_TRANSLATED_KEY_PRESS) {
+    return true;
+  }
+  return false;
 }
 
 }  // namespace ui

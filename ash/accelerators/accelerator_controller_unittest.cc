@@ -62,6 +62,27 @@ class PostImeAccelerator : public ui::Accelerator {
 };
 typedef ui::Accelerator PreImeAccelerator;
 
+class PostImeReleaseAccelerator : public ui::Accelerator {
+ public:
+  PostImeReleaseAccelerator(ui::KeyboardCode keycode,
+                           bool shift_pressed,
+                           bool ctrl_pressed,
+                           bool alt_pressed)
+      : ui::Accelerator(keycode, shift_pressed, ctrl_pressed, alt_pressed) {
+    set_type(ui::ET_TRANSLATED_KEY_RELEASE);
+  }
+};
+class PreImeReleaseAccelerator : public ui::Accelerator {
+ public:
+  PreImeReleaseAccelerator(ui::KeyboardCode keycode,
+                           bool shift_pressed,
+                           bool ctrl_pressed,
+                           bool alt_pressed)
+      : ui::Accelerator(keycode, shift_pressed, ctrl_pressed, alt_pressed) {
+    set_type(ui::ET_KEY_RELEASED);
+  }
+};
+
 class DummyScreenshotDelegate : public ScreenshotDelegate {
  public:
   DummyScreenshotDelegate()
@@ -650,7 +671,6 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsPreIme) {
 
   // Test IME shortcuts.
   {
-    // TODO(yusukes): Add a test for Alt+Shift+Release.
     const ui::Accelerator control_space(ui::VKEY_SPACE, false, true, false);
     const ui::Accelerator convert(ui::VKEY_CONVERT, false, false, false);
     const ui::Accelerator non_convert(ui::VKEY_NONCONVERT, false, false, false);
@@ -717,6 +737,50 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsPreIme) {
     EXPECT_EQ(6, delegate->handle_switch_ime_count());
     EXPECT_FALSE(GetController()->Process(shift_space_post));
     EXPECT_EQ(6, delegate->handle_switch_ime_count());
+  }
+
+  // Test IME shortcuts that are triggered on key release.
+  {
+    const PreImeAccelerator shift_alt_press(ui::VKEY_MENU, true, false, true);
+    const PostImeAccelerator shift_alt_press_post(
+        ui::VKEY_MENU, true, false, true);
+    const PreImeReleaseAccelerator shift_alt(ui::VKEY_MENU, true, false, true);
+
+    const PreImeAccelerator alt_shift_press(ui::VKEY_SHIFT, true, false, true);
+    const PostImeAccelerator alt_shift_press_post(
+        ui::VKEY_SHIFT, true, false, true);
+    const PreImeReleaseAccelerator alt_shift(ui::VKEY_SHIFT, true, false, true);
+
+    DummyImeControlDelegate* delegate = new DummyImeControlDelegate(true);
+    GetController()->SetImeControlDelegate(
+        scoped_ptr<ImeControlDelegate>(delegate).Pass());
+    EXPECT_EQ(0, delegate->handle_next_ime_count());
+    EXPECT_FALSE(GetController()->Process(shift_alt_press));
+    EXPECT_FALSE(GetController()->Process(shift_alt_press_post));
+    EXPECT_TRUE(GetController()->Process(shift_alt));
+    EXPECT_EQ(1, delegate->handle_next_ime_count());
+    EXPECT_FALSE(GetController()->Process(alt_shift_press));
+    EXPECT_FALSE(GetController()->Process(alt_shift_press_post));
+    EXPECT_TRUE(GetController()->Process(alt_shift));
+    EXPECT_EQ(2, delegate->handle_next_ime_count());
+
+    // We should NOT switch IME when e.g. Shift+Alt+X is pressed and X is
+    // released.
+    const PreImeAccelerator shift_alt_x_press(ui::VKEY_X, true, false, true);
+    const PostImeAccelerator shift_alt_x_press_post(
+        ui::VKEY_X, true, false, true);
+    const PreImeReleaseAccelerator shift_alt_x(ui::VKEY_X, true, false, true);
+    const PostImeReleaseAccelerator shift_alt_x_post(
+        ui::VKEY_X, true, false, true);
+
+    EXPECT_FALSE(GetController()->Process(shift_alt_press));
+    EXPECT_FALSE(GetController()->Process(shift_alt_press_post));
+    EXPECT_FALSE(GetController()->Process(shift_alt_x_press));
+    EXPECT_FALSE(GetController()->Process(shift_alt_x_press_post));
+    EXPECT_FALSE(GetController()->Process(shift_alt_x));
+    EXPECT_FALSE(GetController()->Process(shift_alt_x_post));
+    EXPECT_FALSE(GetController()->Process(shift_alt));
+    EXPECT_EQ(2, delegate->handle_next_ime_count());
   }
 }
 

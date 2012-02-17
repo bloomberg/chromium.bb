@@ -64,7 +64,8 @@ const struct AcceleratorData {
   AcceleratorAction action;
 } kAcceleratorData[] = {
   // Accelerators that should be processed before a key is sent to an IME.
-  // TODO(yusukes): Handle the NEXT_IME shortcut (Alt+Shift+Release) here.
+  { ui::ET_KEY_RELEASED, ui::VKEY_MENU, true, false, true, NEXT_IME },
+  { ui::ET_KEY_RELEASED, ui::VKEY_SHIFT, true, false, true, NEXT_IME },
   { ui::ET_KEY_PRESSED, ui::VKEY_SPACE, false, true, false, PREVIOUS_IME },
   // Shortcuts for Japanese IME.
   { ui::ET_KEY_PRESSED, ui::VKEY_CONVERT, false, false, false, SWITCH_IME },
