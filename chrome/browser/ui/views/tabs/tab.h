@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,6 +54,9 @@ class Tab : public BaseTab {
   // Returns the width for mini-tabs. Mini-tabs always have this width.
   static int GetMiniWidth();
 
+  // Returns the smallest tabs can get when in touch mode.
+  static gfx::Size GetTouchModeMinimumSize();
+
  protected:
   // BaseTab overrides:
   virtual const gfx::Rect& GetTitleBounds() const OVERRIDE;
@@ -95,6 +98,10 @@ class Tab : public BaseTab {
 
   // Performs a one-time initialization of static resources such as tab images.
   static void InitTabResources();
+
+  // Returns the minimum possible size of a single unselected Tab, not
+  // including considering touch mode.
+  static gfx::Size GetBasicMinimumUnselectedSize();
 
   // Loads the images to be used for the tab background.
   static void LoadTabImages();

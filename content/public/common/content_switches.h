@@ -161,7 +161,6 @@ extern const char kShowPaintRects[];
 CONTENT_EXPORT extern const char kSingleProcess[];
 CONTENT_EXPORT extern const char kSkipGpuDataLoading[];
 CONTENT_EXPORT extern const char kTestSandbox[];
-extern const char kTouchOptimizedUI[];
 extern const char kTraceStartup[];
 extern const char kTraceStartupFile[];
 extern const char kTraceStartupDuration[];

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/tabs/tab_resources.h"
+#include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -24,6 +25,7 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/touchui/touch_mode_support.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
@@ -40,6 +42,7 @@ static const int kStandardTitleWidth = 175;
 static const int kCloseButtonVertFuzz = 0;
 static const int kTabIconSize = gfx::kFaviconSize;
 static const int kCloseButtonHorzFuzz = 5;
+static const int kTouchModeMinimumWidth = 160;
 
 // Vertical adjustment to the favicon when the tab has a large icon.
 static const int kAppTapFaviconVerticalAdjustment = 2;
@@ -131,7 +134,7 @@ void Tab::StopMiniTabTitleAnimation() {
 }
 
 // static
-gfx::Size Tab::GetMinimumUnselectedSize() {
+gfx::Size Tab::GetBasicMinimumUnselectedSize() {
   InitTabResources();
 
   gfx::Size minimum_size;
@@ -142,16 +145,24 @@ gfx::Size Tab::GetMinimumUnselectedSize() {
   return minimum_size;
 }
 
+gfx::Size Tab::GetMinimumUnselectedSize() {
+  if (TouchModeSupport::IsTouchOptimized())
+    return GetTouchModeMinimumSize();
+  return GetBasicMinimumUnselectedSize();
+}
+
 // static
 gfx::Size Tab::GetMinimumSelectedSize() {
-  gfx::Size minimum_size = GetMinimumUnselectedSize();
+  if (TouchModeSupport::IsTouchOptimized())
+    return GetTouchModeMinimumSize();
+  gfx::Size minimum_size = GetBasicMinimumUnselectedSize();
   minimum_size.set_width(kLeftPadding + gfx::kFaviconSize + kRightPadding);
   return minimum_size;
 }
 
 // static
 gfx::Size Tab::GetStandardSize() {
-  gfx::Size standard_size = GetMinimumUnselectedSize();
+  gfx::Size standard_size = GetBasicMinimumUnselectedSize();
   standard_size.set_width(
       standard_size.width() + kFaviconTitleSpacing + kStandardTitleWidth);
   return standard_size;
@@ -160,6 +171,15 @@ gfx::Size Tab::GetStandardSize() {
 // static
 int Tab::GetMiniWidth() {
   return browser_defaults::kMiniTabWidth;
+}
+
+// static
+gfx::Size Tab::GetTouchModeMinimumSize() {
+  InitTabResources();
+  gfx::Size size;
+  size.set_width(kTouchModeMinimumWidth);
+  size.set_height(tab_active_.image_l->height());
+  return size;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

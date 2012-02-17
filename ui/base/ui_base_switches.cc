@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,9 @@ const char kLang[]                          = "lang";
 // Load the locale resources from the given path. When running on Mac/Unix the
 // path should point to a locale.pak file.
 const char kLocalePak[]                     = "locale_pak";
+
+// Enables UI changes that make it easier to use with a touchscreen.
+const char kTouchOptimizedUI[]              = "touch-optimized-ui";
 
 #if defined(OS_MACOSX)
 const char kDisableCompositedCoreAnimationPlugins[] =

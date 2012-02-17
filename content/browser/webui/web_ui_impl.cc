@@ -18,7 +18,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/bindings_policy.h"
-#include "content/public/common/content_switches.h"
+#include "ui/base/ui_base_switches.h"
 
 using content::WebContents;
 using content::WebUIController;

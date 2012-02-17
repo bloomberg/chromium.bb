@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -363,6 +363,9 @@ class DefaultTabDragController : public TabDragController,
 
   // The selection model of |attached_tabstrip_| before the tabs were attached.
   TabStripSelectionModel selection_model_before_attach_;
+
+  // Are we operating with tabs stacking/scrolling?
+  bool stacking_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultTabDragController);
 };

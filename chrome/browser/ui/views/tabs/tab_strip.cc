@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
-#include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -39,6 +38,7 @@
 #include "ui/gfx/size.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/mouse_watcher_view_host.h"
+#include "ui/views/touchui/touch_mode_support.h"
 #include "ui/views/widget/default_theme_provider.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
@@ -369,7 +369,8 @@ TabStrip::TabStrip(TabStripController* controller)
       in_tab_close_(false),
       animation_container_(new ui::AnimationContainer()),
       attaching_dragged_tab_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(bounds_animator_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(bounds_animator_(this)),
+      stacking_(TouchModeSupport::IsTouchOptimized()) {
   Init();
 }
 
@@ -572,6 +573,10 @@ bool TabStrip::IsActiveDropTarget() const {
       return true;
   }
   return false;
+}
+
+bool TabStrip::IsStacking() const {
+  return stacking_;
 }
 
 const TabStripSelectionModel& TabStrip::GetSelectionModel() {
@@ -806,14 +811,13 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
   std::vector<Tab*> selected_tabs;
   bool is_dragging = false;
   int active_tab_index = -1;
-  bool is_touch_optimized = IsTouchOptimized();
 
   for (int i = tab_count() - 1; i >= 0; --i) {
     // We must ask the _Tab's_ model, not ourselves, because in some situations
     // the model will be different to this object, e.g. when a Tab is being
     // removed after its TabContents has been destroyed.
     Tab* tab = GetTabAtTabDataIndex(i);
-    if (tab->dragging()) {
+    if (tab->dragging() && !stacking_) {
       is_dragging = true;
       if (tab->IsActive()) {
         active_tab = tab;
@@ -823,7 +827,7 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
       }
     } else if (!tab->IsActive()) {
       if (!tab->IsSelected()) {
-        if (!is_touch_optimized)
+        if (!stacking_)
           tab->Paint(canvas);
       } else {
         // TODO(scottmg): Multiple selection may be incorrect in touch mode.
@@ -836,18 +840,14 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
   }
 
   // Draw from the left and then the right if we're in touch mode.
-  if (is_touch_optimized && active_tab_index >= 0) {
+  if (stacking_ && active_tab_index >= 0) {
     for (int i = 0; i < active_tab_index; ++i) {
       Tab* tab = GetTabAtTabDataIndex(i);
-      if (tab->dragging())
-        continue;
       tab->Paint(canvas);
     }
 
     for (int i = tab_count() - 1; i > active_tab_index; --i) {
       Tab* tab = GetTabAtTabDataIndex(i);
-      if (tab->dragging())
-        continue;
       tab->Paint(canvas);
     }
   }
@@ -1183,6 +1183,10 @@ void TabStrip::LayoutDraggedTabsAt(const std::vector<BaseTab*>& tabs,
                                    BaseTab* active_tab,
                                    const gfx::Point& location,
                                    bool initial_drag) {
+  if (stacking_) {
+    LayoutDraggedTabsAtWithStacking(tabs, active_tab, location, initial_drag);
+    return;
+  }
   std::vector<gfx::Rect> bounds;
   CalculateBoundsForDraggedTabs(tabs, &bounds);
   DCHECK_EQ(tabs.size(), bounds.size());
@@ -1205,6 +1209,42 @@ void TabStrip::LayoutDraggedTabsAt(const std::vector<BaseTab*>& tabs,
     } else {
       tab->SetBoundsRect(new_bounds);
     }
+  }
+}
+
+void TabStrip::LayoutDraggedTabsAtWithStacking(
+    const std::vector<BaseTab*>& tabs,
+    BaseTab* active_tab,
+    const gfx::Point& location,
+    bool initial_drag) {
+  int active_tab_index = TabIndexOfTab(active_tab);
+  if (active_tab_index < 0)
+    return;
+
+  std::vector<int> ideal_x;
+  ideal_x.resize(tab_count());
+  // Figure out where each tab would like to be, if there were room.
+  // These are relative to the active_tab.
+  int ideal = 0;
+  for (int i = active_tab_index - 1; i >= 0; --i) {
+    ideal -= tab_data_[i].tab->bounds().width() + kTabHOffset;
+    ideal_x[i] = ideal;
+  }
+  ideal = 0;
+  for (int i = active_tab_index + 1; i < tab_count(); ++i) {
+    ideal += tab_data_[i].tab->bounds().width() + kTabHOffset;
+    ideal_x[i] = ideal;
+  }
+  static const int kOffsetForEdgeStack = 6;
+  static const int kNumberOfUnderlayedTabs = 4;
+  for (int i = 0; i < tab_count(); ++i) {
+    gfx::Rect new_bounds = tab_data_[i].tab->bounds();
+    int target = location.x() + ideal_x[i];
+    int smallest_valid_x = std::min(i, kNumberOfUnderlayedTabs) *
+        kOffsetForEdgeStack;
+    target = std::max(smallest_valid_x, target);
+    new_bounds.set_x(target);
+    tab_data_[i].tab->SetBoundsRect(new_bounds);
   }
 }
 
@@ -1736,19 +1776,4 @@ bool TabStrip::IsPointInTab(Tab* tab,
   gfx::Point point_in_tab_coords(point_in_tabstrip_coords);
   View::ConvertPointToView(this, tab, &point_in_tab_coords);
   return tab->HitTest(point_in_tab_coords);
-}
-
-// static
-bool TabStrip::IsTouchOptimized() {
-#if !defined(OS_WIN)
-  // TODO(port): there is code in src/ui/base/touch for linux but it is not
-  // suitable for consumption here.
-  return false;
-#else
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTouchOptimizedUI))
-    return true;
-  // Asking for SM_DIGITIZER always returns 0 in Windows Vista and Windows XP.
-  int sm = ::GetSystemMetrics(SM_DIGITIZER);
-  return (sm & NID_READY) && (sm & NID_INTEGRATED_TOUCH);
-#endif
 }

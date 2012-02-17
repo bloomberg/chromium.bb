@@ -138,6 +138,9 @@ class TabStrip : public AbstractTabStripView,
   // Returns true if a tab is being dragged into this tab strip.
   bool IsActiveDropTarget() const;
 
+  // Returns true if this tab strip is in stacking mode.
+  bool IsStacking() const;
+
   // TabController overrides:
   virtual const TabStripSelectionModel& GetSelectionModel() OVERRIDE;
   virtual void SelectTab(BaseTab* tab) OVERRIDE;
@@ -306,6 +309,15 @@ class TabStrip : public AbstractTabStripView,
                            BaseTab* active_tab,
                            const gfx::Point& location,
                            bool initial_drag);
+
+  // Invoked by LayoutDraggedTabsAt when in stacking mode. Stacks tabs at left
+  // and right edge of tab strip with |active_tab| centered at |location|. If
+  // |initial_drag| is true, this is the initial layout after the user moved
+  // mouse (or touch point) far enough to trigger a drag.
+  void LayoutDraggedTabsAtWithStacking(const std::vector<BaseTab*>& tabs,
+                                       BaseTab* active_tab,
+                                       const gfx::Point& location,
+                                       bool initial_drag);
 
   // Calculates the bounds needed for each of the tabs, placing the result in
   // |bounds|.
@@ -489,6 +501,9 @@ class TabStrip : public AbstractTabStripView,
 
   // Size we last layed out at.
   gfx::Size last_layout_size_;
+
+  // Are we in stacking/scrolling mode?
+  bool stacking_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStrip);
 };
