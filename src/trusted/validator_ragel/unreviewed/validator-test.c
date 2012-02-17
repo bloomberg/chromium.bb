@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -66,8 +66,8 @@ struct ValidateState {
 };
 
 void ProcessError (const uint8_t *ptr, void *userdata) {
-  printf("rejected at %zx (byte 0x%02x)\n",
-                      ptr - (((struct ValidateState *)userdata)->offset), *ptr);
+  printf("offset 0x%zx: DFA error in validator\n",
+         ptr - (((struct ValidateState *)userdata)->offset));
 }
 
 int ValidateFile(const char *filename, int repeat_count) {

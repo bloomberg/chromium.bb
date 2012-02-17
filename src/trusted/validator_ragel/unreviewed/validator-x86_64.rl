@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -35,6 +35,10 @@
     base = REG_RIP; \
     index = REG_NONE;
 
+static void PrintError(const char* msg, uintptr_t ptr) {
+  printf("offset 0x%zx: %s", ptr, msg);
+}
+
 %%{
   machine x86_64_decoder;
   alphtype unsigned char;
@@ -48,8 +52,9 @@
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((index != REG_NONE) && (index != REG_RIZ)) {
-        fprintf(stderr,"Improper sandboxing in instruction %zx", begin - data);
-        exit(1);
+        PrintError("Improper sandboxing in instruction\n", begin - data);
+        result = 1;
+        goto error_detected;
       }
     } else if ((index == REG_RIP) || (index == REG_R15) ||
                ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
@@ -59,11 +64,14 @@
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
       } else if ((base != REG_NONE) && (base != REG_RIZ)) {
-        fprintf(stderr,"Improper sandboxing in instruction @%zx", begin - data);
-        exit(1);
+        PrintError("Improper sandboxing in instruction\n", begin - data);
+        result = 1;
+        goto error_detected;
       }
     } else {
-      fprintf(stderr,"Improper sandboxing in instruction @%zx", begin - data);
+      PrintError("Improper sandboxing in instruction\n", begin - data);
+      result = 1;
+      goto error_detected;
     }
   }
 
@@ -88,11 +96,13 @@
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
        instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
-      printf("Incorrectly modified register %%rsp at the %zx\n", p - data);
-      exit(1);
+      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      result = 1;
+      goto error_detected;
     } else if (restricted_register == REG_RBP) {
-      printf("Incorrectly modified register %%rbp at the %zx\n", p - data);
-      exit(1);
+      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      result = 1;
+      goto error_detected;
     }
     /* If Sandboxed Rsi is destroyed then we must note that.  */
     if (restricted_register == kSandboxedRsi) {
@@ -122,31 +132,31 @@
         if (operands[i].write && operands[i].name <= REG_R15) {
           if (operands[i].type == OperandSandboxRestricted) {
             if (operands[i].name == REG_R15) {
-              printf("Incorrectly modified register %%r15 at the %zx\n",
-                                                                      p - data);
-              exit(1);
+              PrintError("Incorrectly modified register %%r15\n", begin - data);
+              result = 1;
+              goto error_detected;
             } else {
               restricted_register = operands[i].name;
             }
           } else if (operands[i].type == OperandSandboxUnrestricted) {
             if (operands[i].name == REG_RBP) {
-              printf("Incorrectly modified register %%rbp at the %zx\n",
-                                                                      p - data);
-              exit(1);
+              PrintError("Incorrectly modified register %%rbp\n", begin - data);
+              result = 1;
+              goto error_detected;
             } else if (operands[i].name == REG_RSP) {
-              printf("Incorrectly modified register %%rsp at the %zx\n",
-                                                                      p - data);
-              exit(1);
+              PrintError("Incorrectly modified register %%rsp\n", begin - data);
+              result = 1;
+              goto error_detected;
             } else if (operands[i].name == REG_R15) {
-              printf("Incorrectly modified register %%r15 at the %zx\n",
-                                                                      p - data);
-              exit(1);
+              PrintError("Incorrectly modified register %%r15\n", begin - data);
+              result = 1;
+              goto error_detected;
             }
           } else if (operands[i].type == OperandNoSandboxEffect) {
             if (operands[i].name == REG_R15) {
-              printf("Incorrectly modified register %%r15 at the %zx\n",
-                                                                      p - data);
-              exit(1);
+              PrintError("Incorrectly modified register %%r15\n", begin - data);
+              result = 1;
+              goto error_detected;
             }
           }
         }
@@ -176,8 +186,9 @@
     (0x48 0x81 0xe4 any{3} (0x80 .. 0xff)) | # and $XXX,%rsp
     (0x48 0x83 0xe4 (0x80 .. 0xff))          # and $XXX,%rsp
     @{ if (restricted_register == REG_RSP) {
-         printf("Incorrectly modified register %%rsp at the %zx\n", p - data);
-         exit(1);
+         PrintError("Incorrectly modified register %%rsp\n", begin - data);
+         result = 1;
+         goto error_detected;
        }
        restricted_register = kNoRestrictedReg;
     } |
@@ -185,8 +196,9 @@
     (0x48 0x81 0xe5 any{3} (0x80 .. 0xff)) | # and $XXX,%rsp
     (0x48 0x83 0xe5 (0x80 .. 0xff))          # and $XXX,%rsp
     @{ if (restricted_register == REG_RBP) {
-         printf("Incorrectly modified register %%rbp at the %zx\n", p - data);
-         exit(1);
+         PrintError("Incorrectly modified register %%rbp\n", begin - data);
+         result = 1;
+         goto error_detected;
        }
        restricted_register = kNoRestrictedReg;
     } |
@@ -194,8 +206,9 @@
      0x49 0x8d 0x2c 0x2f       | # lea (%r15,%rbp,1),%rbp
      0x4a 0x8d 0x6c 0x3d 0x00)   # lea 0x0(%rbp,%r15,1),%rbp
     @{ if (restricted_register != REG_RBP) {
-         printf("Incorrectly sandboxed %%rbp at the %zx\n", p - data);
-         exit(1);
+         PrintError("Incorrectly sandboxed %%rbp\n", begin - data);
+         result = 1;
+         goto error_detected;
        }
        restricted_register = kNoRestrictedReg;
        BitmapClearBit(valid_targets, (begin - data));
@@ -203,8 +216,9 @@
     (0x4c 0x01 0xfc       | # add %r15,%rsp
      0x4a 0x8d 0x24 0x3c)   # lea (%rsp,%r15,1),%rsp
     @{ if (restricted_register != REG_RSP) {
-         printf("Incorrectly sandboxed %%rsp at the %zx\n", p - data);
-         exit(1);
+         PrintError("Incorrectly sandboxed %%rsp\n", begin - data);
+         result = 1;
+         goto error_detected;
        }
        restricted_register = kNoRestrictedReg;
        BitmapClearBit(valid_targets, (begin - data));
@@ -218,11 +232,13 @@
      0x83 0xe6 0xe0 0x4c 0x01 0xfe 0xff (0xd6|0xe6) | # naclcall/jmp %esi, %r15
      0x83 0xe7 0xe0 0x4c 0x01 0xff 0xff (0xd7|0xe7))  # naclcall/jmp %edi, %r15
     @{ if (restricted_register == REG_RSP) {
-         printf("Incorrectly modified register %%rsp at the %zx\n", p - data);
-         exit(1);
+         PrintError("Incorrectly modified register %%rsp\n", begin - data);
+         result = 1;
+         goto error_detected;
        } else if (restricted_register == REG_RBP) {
-         printf("Incorrectly modified register %%rbp at the %zx\n", p - data);
-         exit(1);
+         PrintError("Incorrectly modified register %%rbp\n", begin - data);
+         result = 1;
+         goto error_detected;
        }
        BitmapClearBit(valid_targets, (p - data) - 4);
        BitmapClearBit(valid_targets, (p - data) - 1);
@@ -236,11 +252,13 @@
      0x41 0x83 0xe5 0xe0 0x4d 0x01 0xfd 0x41 0xff (0xd5|0xe5) | # naclcall/jmp
      0x41 0x83 0xe6 0xe0 0x4d 0x01 0xfe 0x41 0xff (0xd6|0xe6))  #   %r14d, %r15
     @{ if (restricted_register == REG_RSP) {
-         printf("Incorrectly modified register %%rsp at the %zx\n", p - data);
-         exit(1);
+         PrintError("Incorrectly modified register %%rsp\n", begin - data);
+         result = 1;
+         goto error_detected;
        } else if (restricted_register == REG_RBP) {
-         printf("Incorrectly modified register %%rbp at the %zx\n", p - data);
-         exit(1);
+         PrintError("Incorrectly modified register %%rbp\n", begin - data);
+         result = 1;
+         goto error_detected;
        }
        BitmapClearBit(valid_targets, (p - data) - 5);
        BitmapClearBit(valid_targets, (p - data) - 2);
@@ -268,8 +286,9 @@
     (0xac                      | # lods   %ds:(%rsi),%al
      (data16|REXW_NONE)? 0xad)   # lods   %ds:(%rsi),%ax/%eax/%rax
     @{ if (restricted_register != kSandboxedRsi) {
-         printf("Incorrectly sandboxed %%rdi at the %zx\n", p - data);
-         exit(1);
+         PrintError("Incorrectly sandboxed %%rdi\n", begin - data);
+         result = 1;
+         goto error_detected;
        }
        restricted_register = kNoRestrictedReg;
        BitmapClearBit(valid_targets, (begin - data));
@@ -284,8 +303,9 @@
       rep? REXW_NONE? 0xab)      # stos   %eax/%rax,%es:(%rdi)
     @{ if (restricted_register != kSandboxedRdi &&
            restricted_register != kSandboxedRsiSandboxedRdi) {
-         printf("Incorrectly sandboxed %%rdi at the %zx\n", p - data);
-         exit(1);
+         PrintError("Incorrectly sandboxed %%rdi\n", begin - data);
+         result = 1;
+         goto error_detected;
        }
        restricted_register = kNoRestrictedReg;
        BitmapClearBit(valid_targets, (begin - data));
@@ -302,8 +322,9 @@
       data16 rep) 0xa5        | # movsw    %es:(%rdi),%ds:(%rsi)
      rep? REXW_NONE? 0xa5)      # movs[lq] %es:(%rdi),%ds:(%rsi)
     @{ if (restricted_register != kSandboxedRsiSandboxedRdi) {
-         printf("Incorrectly sandboxed %%rsi or %%rdi at the %zx\n", p - data);
-         exit(1);
+         PrintError("Incorrectly sandboxed %%rsi or %%rdi\n", begin - data);
+         result = 1;
+         goto error_detected;
        }
        restricted_register = kNoRestrictedReg;
        BitmapClearBit(valid_targets, (begin - data));
@@ -319,7 +340,14 @@
         vex_prefix2 = 0xe0;
         vex_prefix3 = 0x00;
      })*
-    $!{ process_error(p, userdata);
+     @{
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       begin = p + 1;
+     }
+    $err{
+        process_error(begin, userdata);
         result = 1;
         goto error_detected;
     };
@@ -434,7 +462,7 @@ int ValidateChunkAMD64(const uint8_t *data, size_t size,
   uint8_t *jump_dests = BitmapAllocate(size);
 
   const uint8_t *p = data;
-  const uint8_t *begin;
+  const uint8_t *begin = p;  /* Start of the instruction being processed.  */
 
   uint8_t rex_prefix, vex_prefix2, vex_prefix3;
   struct Operand {
@@ -472,17 +500,18 @@ int ValidateChunkAMD64(const uint8_t *data, size_t size,
     %% write exec;
 
     if (restricted_register == REG_RBP) {
-      printf("Incorrectly sandboxed %%rbp at the %d%zx\n", *data, p - data);
-      exit(1);
+      PrintError("Incorrectly sandboxed %%rbp\n", begin - data);
+      result = 1;
+      goto error_detected;
     } else if (restricted_register == REG_RSP) {
-      printf("Incorrectly sandboxed %%rbp at the %zx\n", p - data);
-      exit(1);
+      PrintError("Incorrectly sandboxed %%rsp\n", begin - data);
+      result = 1;
+      goto error_detected;
     }
   }
 
   if (CheckJumpTargets(valid_targets, jump_dests, size)) {
-    result = 1;
-    goto error_detected;
+    return 1;
   }
 
 error_detected:
