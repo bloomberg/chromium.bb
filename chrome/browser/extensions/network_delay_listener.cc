@@ -32,7 +32,7 @@ NetworkDelayListener::NetworkDelayListener()
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DOM_CONTENT_LOADED,
                  content::NotificationService::AllSources());
-  AddRef();  // Will be balanced in Cleanup().
+  AddRef();  // Will be balanced in WillShutdownResourceQueue().
 }
 
 void NetworkDelayListener::Initialize(ResourceQueue* resource_queue) {
@@ -61,10 +61,7 @@ NetworkDelayListener::~NetworkDelayListener() {
 void NetworkDelayListener::WillShutdownResourceQueue() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   resource_queue_ = NULL;
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&NetworkDelayListener::Cleanup, this));
+  Release();
 }
 
 void NetworkDelayListener::OnExtensionPending(const std::string& id) {
@@ -104,14 +101,8 @@ void NetworkDelayListener::StartDelayedRequestsIfReady() {
       recorded_startup_delay_ = true;
     }
     if (resource_queue_)
-        resource_queue_->StartDelayedRequests(this);
+      resource_queue_->StartDelayedRequests(this);
   }
-}
-
-void NetworkDelayListener::Cleanup() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  registrar_.RemoveAll();
-  Release();
 }
 
 void NetworkDelayListener::Observe(

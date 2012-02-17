@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/renderer_host/resource_queue.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -34,7 +35,9 @@ class URLPattern;
 // updates to loaded extensions. It will delete itself on the UI thread after
 // WillShutdownResourceQueue is called (on the IO thread).
 class UserScriptListener
-    : public base::RefCountedThreadSafe<UserScriptListener>,
+    : public base::RefCountedThreadSafe<
+          UserScriptListener,
+          content::BrowserThread::DeleteOnUIThread>,
       public ResourceQueueDelegate,
       public content::NotificationObserver {
  public:
@@ -49,7 +52,9 @@ class UserScriptListener
       const content::GlobalRequestID& request_id) OVERRIDE;
   virtual void WillShutdownResourceQueue() OVERRIDE;
 
-  friend class base::RefCountedThreadSafe<UserScriptListener>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
+  friend class base::DeleteHelper<UserScriptListener>;
 
   typedef std::list<URLPattern> URLPatterns;
 
@@ -72,9 +77,6 @@ class UserScriptListener
   // Replaces our url pattern list. This is only used when patterns have been
   // deleted, so user_scripts_ready_ remains unchanged.
   void ReplaceURLPatterns(void* profile_id, const URLPatterns& patterns);
-
-  // Cleanup on UI thread.
-  void Cleanup();
 
   ResourceQueue* resource_queue_;
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "base/perftimer.h"
 #include "base/time.h"
 #include "content/browser/renderer_host/resource_queue.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -25,7 +26,9 @@
 // updates to loaded extensions.  It will delete itself on the UI thread after
 // WillShutdownResourceQueue is called (on the IO thread).
 class NetworkDelayListener
-    : public base::RefCountedThreadSafe<NetworkDelayListener>,
+    : public base::RefCountedThreadSafe<
+          NetworkDelayListener,
+          content::BrowserThread::DeleteOnUIThread>,
       public ResourceQueueDelegate,
       public content::NotificationObserver {
  public:
@@ -40,7 +43,9 @@ class NetworkDelayListener
       const content::GlobalRequestID& request_id) OVERRIDE;
   virtual void WillShutdownResourceQueue() OVERRIDE;
 
-  friend class base::RefCountedThreadSafe<NetworkDelayListener>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
+  friend class base::DeleteHelper<NetworkDelayListener>;
 
   virtual ~NetworkDelayListener();
 
@@ -53,9 +58,6 @@ class NetworkDelayListener
   // If there are no more extensions pending, tell the network queue to resume
   // processing requests.
   void StartDelayedRequestsIfReady();
-
-  // Cleanup on UI thread.
-  void Cleanup();
 
   ResourceQueue* resource_queue_;
 

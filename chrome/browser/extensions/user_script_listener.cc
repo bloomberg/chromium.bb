@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,7 @@ UserScriptListener::UserScriptListener()
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::NotificationService::AllSources());
-  AddRef();  // Will be balanced in Cleanup().
+  AddRef();  // Will be balanced in WillShutdownResourceQueue().
 }
 
 void UserScriptListener::Initialize(ResourceQueue* resource_queue) {
@@ -87,10 +87,7 @@ bool UserScriptListener::ShouldDelayRequest(
 void UserScriptListener::WillShutdownResourceQueue() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   resource_queue_ = NULL;
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&UserScriptListener::Cleanup, this));
+  Release();
 }
 
 UserScriptListener::~UserScriptListener() {
@@ -147,12 +144,6 @@ void UserScriptListener::ReplaceURLPatterns(void* profile_id,
 
   ProfileData& data = profile_data_[profile_id];
   data.url_patterns = patterns;
-}
-
-void UserScriptListener::Cleanup() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  registrar_.RemoveAll();
-  Release();
 }
 
 void UserScriptListener::CollectURLPatterns(const Extension* extension,
