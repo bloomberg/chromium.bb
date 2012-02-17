@@ -24,13 +24,6 @@ class OriginBoundCertServiceJob;
 class OriginBoundCertServiceWorker;
 class OriginBoundCertStore;
 
-struct NET_EXPORT DebugOBCertRequestId {
-  std::string origin;
-  OriginBoundCertServiceJob* job;
-  void* request;
-  int id;
-};
-
 // A class for creating and fetching origin bound certs.
 // Inherits from NonThreadSafe in order to use the function
 // |CalledOnValidThread|.
@@ -91,11 +84,6 @@ class NET_EXPORT OriginBoundCertService
   uint64 requests() const { return requests_; }
   uint64 cert_store_hits() const { return cert_store_hits_; }
   uint64 inflight_joins() const { return inflight_joins_; }
-
-  // TODO(eroman): Delete this when done.
-  // Temporary instrumentation for debugging issue 113233.
-  void DebugGetRequestId(RequestHandle req, DebugOBCertRequestId* id);
-  bool DebugIsRequestAlive(const DebugOBCertRequestId& id);
 
  private:
   friend class OriginBoundCertServiceWorker;  // Calls HandleResult.

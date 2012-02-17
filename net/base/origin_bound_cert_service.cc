@@ -86,30 +86,7 @@ class OriginBoundCertServiceRequest {
 
   bool canceled() const { return callback_.is_null(); }
 
-  void DebugGetId(DebugOBCertRequestId* id) {
-    *id = id_;
-  }
-
-  void DebugSetId(const std::string& origin,
-                  OriginBoundCertServiceJob* job) {
-    id_.origin = origin;
-    id_.job = job;
-    id_.request = this;
-
-
-    // Also give ourselves a unique ID, since pointer values are not unique and
-    // may be re-used (so we need this ID to be sure it really is the same
-    // thing).
-    static int count = 0;
-    id_.id = count++;
-  }
-
-  bool DebugMatchesId(const DebugOBCertRequestId& id) {
-    return id_.id == id.id;
-  }
-
  private:
-  DebugOBCertRequestId id_;
   CompletionCallback callback_;
   SSLClientCertType* type_;
   std::string* private_key_;
@@ -273,15 +250,6 @@ class OriginBoundCertServiceJob {
     PostAll(error, type, private_key, cert);
   }
 
-  OriginBoundCertServiceRequest* DebugGetRequest(
-      const DebugOBCertRequestId& id) {
-    std::vector<OriginBoundCertServiceRequest*>::const_iterator it =
-        std::find(requests_.begin(), requests_.end(), id.request);
-    if (it != requests_.end())
-      return *it;
-    return NULL;
-  }
-
  private:
   void PostAll(int error,
                SSLClientCertType type,
@@ -425,38 +393,11 @@ int OriginBoundCertService::GetOriginBoundCert(
       new OriginBoundCertServiceRequest(callback, type, private_key, cert);
   job->AddRequest(request);
   *out_req = request;
-
-  request->DebugSetId(origin, job);
   return ERR_IO_PENDING;
 }
 
 OriginBoundCertStore* OriginBoundCertService::GetCertStore() {
   return origin_bound_cert_store_.get();
-}
-
-void OriginBoundCertService::DebugGetRequestId(
-    RequestHandle req, DebugOBCertRequestId* id) {
-  OriginBoundCertServiceRequest* request =
-      reinterpret_cast<OriginBoundCertServiceRequest*>(req);
-  request->DebugGetId(id);
-}
-
-bool OriginBoundCertService::DebugIsRequestAlive(
-    const DebugOBCertRequestId& id) {
-  std::map<std::string, OriginBoundCertServiceJob*>::const_iterator it =
-      inflight_.find(id.origin);
-
-  if (it == inflight_.end())
-    return false;
-
-  if (it->second != id.job)
-    return false;
-
-  OriginBoundCertServiceRequest* req = id.job->DebugGetRequest(id);
-  if (!req)
-    return false;
-
-  return req->DebugMatchesId(id);
 }
 
 // static
