@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,20 +55,4 @@ TEST_F(SessionStartupPrefTest, URLListManagedOverridesUser) {
 
   result = SessionStartupPref::GetStartupPref(pref_service_.get());
   EXPECT_EQ(3u, result.urls.size());
-}
-
-TEST_F(SessionStartupPrefTest, HomePageMigration) {
-  pref_service_->RegisterStringPref(prefs::kHomePage, "http://google.com/");
-
-  // By design, it's impossible to set the 'restore on startup' pref to 0
-  // ("open the homepage") using SessionStartupPref::SetStartupPref(), so set it
-  // using the pref service directly.
-  pref_service_->SetInteger(prefs::kRestoreOnStartup, /*kPrefValueHomePage*/ 0);
-  pref_service_->SetString(prefs::kHomePage, "http://chromium.org/");
-
-  SessionStartupPref pref = SessionStartupPref::GetStartupPref(
-      pref_service_.get());
-  EXPECT_EQ(SessionStartupPref::URLS, pref.type);
-  EXPECT_EQ(1U, pref.urls.size());
-  EXPECT_EQ(GURL("http://chromium.org/"), pref.urls[0]);
 }

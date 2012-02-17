@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/string_piece.h"
-#include "base/values.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/net/url_fixer_upper.h"
@@ -25,37 +24,26 @@ namespace {
 
 // For historical reasons the enum and value registered in the prefs don't line
 // up. These are the values registered in prefs.
-const int kPrefValueHomePage = 0;  // Deprecated
+const int kPrefValueDefault = 0;
 const int kPrefValueLast = 1;
 const int kPrefValueURLs = 4;
-const int kPrefValueNewTab = 5;
 
 // Converts a SessionStartupPref::Type to an integer written to prefs.
 int TypeToPrefValue(SessionStartupPref::Type type) {
   switch (type) {
-    case SessionStartupPref::LAST:     return kPrefValueLast;
-    case SessionStartupPref::URLS:     return kPrefValueURLs;
-    default:                           return kPrefValueNewTab;
+    case SessionStartupPref::LAST:   return kPrefValueLast;
+    case SessionStartupPref::URLS:   return kPrefValueURLs;
+    default:                         return kPrefValueDefault;
   }
 }
 
 // Converts an integer pref value to a SessionStartupPref::Type.
 SessionStartupPref::Type PrefValueToType(int pref_value) {
   switch (pref_value) {
-    case kPrefValueLast:     return SessionStartupPref::LAST;
-    case kPrefValueURLs:     return SessionStartupPref::URLS;
-    case kPrefValueHomePage: return SessionStartupPref::HOMEPAGE;
-    default:                 return SessionStartupPref::DEFAULT;
+    case kPrefValueLast:  return SessionStartupPref::LAST;
+    case kPrefValueURLs:  return SessionStartupPref::URLS;
+    default:              return SessionStartupPref::DEFAULT;
   }
-}
-
-// Sets the list of URLs to display at startup to a list consisting of only the
-// user's home page.
-void SetNewUrlList(PrefService* prefs) {
-  ListValue new_url_pref_list;
-  StringValue* home_page = new StringValue(prefs->GetString(prefs::kHomePage));
-  new_url_pref_list.Append(home_page);
-  prefs->Set(prefs::kURLsToRestoreOnStartup, new_url_pref_list);
 }
 
 }  // namespace
@@ -127,16 +115,6 @@ SessionStartupPref SessionStartupPref::GetStartupPref(PrefService* prefs) {
   SessionStartupPref pref(
       PrefValueToType(prefs->GetInteger(prefs::kRestoreOnStartup)));
 
-  // Migrate from "Open the home page" to "Open the following URLs". If the user
-  // had the "Open the homepage" option selected, then we need switch them to
-  // "Open the following URLs" and set the list of URLs to a list containing
-  // just the user's homepage.
-  if (pref.type == SessionStartupPref::HOMEPAGE) {
-    prefs->SetInteger(prefs::kRestoreOnStartup, kPrefValueURLs);
-    pref.type = SessionStartupPref::URLS;
-    SetNewUrlList(prefs);
-  }
-
   // Always load the urls, even if the pref type isn't URLS. This way the
   // preferences panels can show the user their last choice.
   const ListValue* url_pref_list = prefs->GetList(
@@ -173,6 +151,8 @@ bool SessionStartupPref::URLsAreManaged(PrefService* prefs) {
   DCHECK(pref_urls);
   return pref_urls->IsManaged();
 }
+
+SessionStartupPref::SessionStartupPref() : type(DEFAULT) {}
 
 SessionStartupPref::SessionStartupPref(Type type) : type(type) {}
 
