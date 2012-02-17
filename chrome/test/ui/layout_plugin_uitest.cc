@@ -47,8 +47,7 @@ TEST_F(LayoutPluginTester, UnloadNoCrash) {
 
 // Tests if a plugin executing a self deleting script using NPN_GetURL
 // works without crashing or hanging
-// Flaky: http://crbug.com/59327
-TEST_F(LayoutPluginTester, DISABLED_SelfDeletePluginGetUrl) {
+TEST_F(LayoutPluginTester, SelfDeletePluginGetUrl) {
   const FilePath test_case(FILE_PATH_LITERAL("self_delete_plugin_geturl.html"));
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
