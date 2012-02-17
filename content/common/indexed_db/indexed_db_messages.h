@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "content/common/indexed_db/indexed_db_key.h"
+#include "content/common/indexed_db/indexed_db_key_range.h"
 #include "content/common/indexed_db/indexed_db_param_traits.h"
 #include "content/public/common/serialized_script_value.h"
 #include "ipc/ipc_message_macros.h"
@@ -474,12 +475,21 @@ IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_ObjectStorePut,
                             IndexedDBHostMsg_ObjectStorePut_Params,
                             WebKit::WebExceptionCode /* ec */)
 
-// WebIDBObjectStore::delete() message.
+// WebIDBObjectStore::delete(key) message.
 IPC_SYNC_MESSAGE_CONTROL5_1(IndexedDBHostMsg_ObjectStoreDelete,
                             int32, /* idb_object_store_id */
                             int32, /* thread_id */
                             int32, /* response_id */
                             IndexedDBKey, /* key */
+                            int32, /* transaction_id */
+                            WebKit::WebExceptionCode /* ec */)
+
+// WebIDBObjectStore::delete(keyRange) message.
+IPC_SYNC_MESSAGE_CONTROL5_1(IndexedDBHostMsg_ObjectStoreDeleteRange,
+                            int32, /* idb_object_store_id */
+                            int32, /* thread_id */
+                            int32, /* response_id */
+                            IndexedDBKeyRange, /* key_range */
                             int32, /* transaction_id */
                             WebKit::WebExceptionCode /* ec */)
 

@@ -20,6 +20,7 @@
 #include "webkit/glue/worker_task_runner.h"
 
 class IndexedDBKey;
+class IndexedDBKeyRange;
 struct IndexedDBMsg_CallbacksSuccessCursorContinue_Params;
 struct IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params;
 struct IndexedDBMsg_CallbacksSuccessIDBCursor_Params;
@@ -159,6 +160,13 @@ class IndexedDBDispatcher : public webkit_glue::WorkerTaskRunner::Observer {
 
   void RequestIDBObjectStoreDelete(
       const IndexedDBKey& key,
+      WebKit::WebIDBCallbacks* callbacks,
+      int32 idb_object_store_id,
+      const WebKit::WebIDBTransaction& transaction,
+      WebKit::WebExceptionCode* ec);
+
+  void RequestIDBObjectStoreDeleteRange(
+      const IndexedDBKeyRange& key_range,
       WebKit::WebIDBCallbacks* callbacks,
       int32 idb_object_store_id,
       const WebKit::WebIDBTransaction& transaction,

@@ -105,6 +105,18 @@ void RendererWebIDBObjectStoreImpl::deleteFunction(
       IndexedDBKey(key), callbacks, idb_object_store_id_, transaction, &ec);
 }
 
+void RendererWebIDBObjectStoreImpl::deleteFunction(
+    const WebIDBKeyRange& key_range,
+    WebIDBCallbacks* callbacks,
+    const WebIDBTransaction& transaction,
+    WebExceptionCode& ec) {
+  IndexedDBDispatcher* dispatcher =
+      IndexedDBDispatcher::ThreadSpecificInstance();
+  dispatcher->RequestIDBObjectStoreDeleteRange(
+      IndexedDBKeyRange(key_range), callbacks, idb_object_store_id_,
+      transaction, &ec);
+}
+
 void RendererWebIDBObjectStoreImpl::clear(
     WebIDBCallbacks* callbacks,
     const WebIDBTransaction& transaction,

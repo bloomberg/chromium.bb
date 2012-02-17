@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "ipc/ipc_param_traits.h"
 
 class IndexedDBKey;
+class IndexedDBKeyRange;
 
 namespace content {
 class SerializedScriptValue;
@@ -33,6 +34,14 @@ struct ParamTraits<content::SerializedScriptValue> {
 template <>
 struct ParamTraits<IndexedDBKey> {
   typedef IndexedDBKey param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<IndexedDBKeyRange> {
+  typedef IndexedDBKeyRange param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

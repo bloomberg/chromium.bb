@@ -5,6 +5,7 @@
 #include "content/common/indexed_db/indexed_db_param_traits.h"
 
 #include "content/common/indexed_db/indexed_db_key.h"
+#include "content/common/indexed_db/indexed_db_key_range.h"
 #include "content/public/common/serialized_script_value.h"
 #include "ipc/ipc_message_utils.h"
 
@@ -137,6 +138,49 @@ void ParamTraits<IndexedDBKey>::Log(const param_type& p, std::string* l) {
   LogParam(p.date(), l);
   l->append(", ");
   LogParam(p.number(), l);
+  l->append(")");
+}
+
+void ParamTraits<IndexedDBKeyRange>::Write(Message* m, const param_type& p) {
+  WriteParam(m, p.lower());
+  WriteParam(m, p.upper());
+  WriteParam(m, p.lowerOpen());
+  WriteParam(m, p.upperOpen());
+}
+
+bool ParamTraits<IndexedDBKeyRange>::Read(const Message* m,
+                                          void** iter,
+                                          param_type* r) {
+
+  IndexedDBKey lower;
+  if (!ReadParam(m, iter, &lower))
+    return false;
+
+  IndexedDBKey upper;
+  if (!ReadParam(m, iter, &upper))
+    return false;
+
+  bool lower_open;
+  if (!ReadParam(m, iter, &lower_open))
+    return false;
+
+  bool upper_open;
+  if (!ReadParam(m, iter, &upper_open))
+    return false;
+
+  r->Set(lower, upper, lower_open, upper_open);
+  return true;
+}
+
+void ParamTraits<IndexedDBKeyRange>::Log(const param_type& p, std::string* l) {
+  l->append("<IndexedDBKeyRange>(lower=");
+  LogParam(p.lower(), l);
+  l->append(", upper=");
+  LogParam(p.upper(), l);
+  l->append(", lower_open=");
+  LogParam(p.lowerOpen(), l);
+  l->append(", upper_open=");
+  LogParam(p.upperOpen(), l);
   l->append(")");
 }
 

@@ -13,6 +13,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebExceptionCode.h"
 
 class IndexedDBKey;
+class IndexedDBKeyRange;
 class NullableString16;
 struct IndexedDBHostMsg_DatabaseCreateObjectStore_Params;
 struct IndexedDBHostMsg_FactoryDeleteDatabase_Params;
@@ -207,6 +208,12 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
                   const IndexedDBKey& key,
                   int32 transaction_id,
                   WebKit::WebExceptionCode* ec);
+    void OnDeleteRange(int idb_object_store_id,
+                       int32 thread_id,
+                       int32 response_id,
+                       const IndexedDBKeyRange& key_range,
+                       int32 transaction_id,
+                       WebKit::WebExceptionCode* ec);
     void OnClear(int idb_object_store_id,
                  int32 thread_id,
                  int32 response_id,
