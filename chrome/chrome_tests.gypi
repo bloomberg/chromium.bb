@@ -2500,6 +2500,7 @@
         'app/chrome_dll_resource.h',
         'app/chrome_version.rc.version',
         'browser/accessibility/accessibility_extension_apitest.cc',
+        'browser/accessibility/dump_accessibility_tree_browsertest.cc',
         'browser/app_controller_mac_browsertest.mm',
         'browser/autocomplete/autocomplete_browsertest.cc',
         'browser/autofill/form_structure_browsertest.cc',
@@ -2826,9 +2827,6 @@
         # is safe to run there. See http://crbug.com/78722 for details.
         '../base/files/file_path_watcher_browsertest.cc',
         '../content/app/startup_helper_win.cc',
-        '../content/browser/accessibility/dump_accessibility_tree_browsertest.cc',
-        '../content/browser/accessibility/dump_accessibility_tree_helper_mac.mm',
-        '../content/browser/accessibility/dump_accessibility_tree_helper_win.cc',
         '../content/browser/accessibility/renderer_accessibility_browsertest.cc',
         '../content/browser/child_process_security_policy_browsertest.cc',
         '../content/browser/device_orientation/device_orientation_browsertest.cc',
@@ -2982,11 +2980,10 @@
             'browser/ui/gtk/view_id_util_browsertest.cc',
           ],
         }],
-        ['OS=="linux"', {
+        # TODO(dtseng): Change this to OS=="linux" once Windows support done.
+        ['OS!="mac"', {
           'sources!': [
-            '../content/browser/accessibility/dump_accessibility_tree_browsertest.cc',
-            '../content/browser/accessibility/dump_accessibility_tree_helper_mac.mm',
-            '../content/browser/accessibility/dump_accessibility_tree_helper_win.cc',
+            'browser/accessibility/dump_accessibility_tree_browsertest.cc',
           ],
         }],
         ['OS=="win"', {
@@ -3010,7 +3007,6 @@
           'dependencies': [
             'chrome_version_resources',
             'installer_util_strings',
-        '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../sandbox/sandbox.gyp:sandbox',
           ],
           'conditions': [

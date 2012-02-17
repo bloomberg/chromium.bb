@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,4 +56,14 @@ void BrowserAccessibilityMac::DetachTree(
 BrowserAccessibilityCocoa* BrowserAccessibility::toBrowserAccessibilityCocoa() {
   return static_cast<BrowserAccessibilityMac*>(this)->
       native_view();
+}
+
+std::string BrowserAccessibility::ToString() {
+  BrowserAccessibilityCocoa* cocoa_node = this->toBrowserAccessibilityCocoa();
+  NSString* dump = [NSString stringWithFormat:@"%@|%@|%@|%@",
+      [cocoa_node role],
+      [cocoa_node subrole],
+      [cocoa_node title],
+      [cocoa_node value]];
+  return [dump cStringUsingEncoding:NSUTF8StringEncoding];
 }
