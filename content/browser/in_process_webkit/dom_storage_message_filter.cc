@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,7 +86,8 @@ bool DOMStorageMessageFilter::OnMessageReceived(const IPC::Message& message,
                                                 bool* message_was_ok) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(DOMStorageMessageFilter, message, *message_was_ok)
-    IPC_MESSAGE_HANDLER(DOMStorageHostMsg_StorageAreaId, OnStorageAreaId)
+    IPC_MESSAGE_HANDLER(DOMStorageHostMsg_OpenStorageArea, OnOpenStorageArea)
+    IPC_MESSAGE_HANDLER(DOMStorageHostMsg_CloseStorageArea, OnCloseStorageArea)
     IPC_MESSAGE_HANDLER(DOMStorageHostMsg_Length, OnLength)
     IPC_MESSAGE_HANDLER(DOMStorageHostMsg_Key, OnKey)
     IPC_MESSAGE_HANDLER(DOMStorageHostMsg_GetItem, OnGetItem)
@@ -110,9 +111,9 @@ void DOMStorageMessageFilter::OverrideThreadForMessage(
     *thread = BrowserThread::WEBKIT_DEPRECATED;
 }
 
-void DOMStorageMessageFilter::OnStorageAreaId(int64 namespace_id,
-                                              const string16& origin,
-                                              int64* storage_area_id) {
+void DOMStorageMessageFilter::OnOpenStorageArea(int64 namespace_id,
+                                                const string16& origin,
+                                                int64* storage_area_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
 
   DOMStorageNamespace* storage_namespace =
@@ -123,6 +124,11 @@ void DOMStorageMessageFilter::OnStorageAreaId(int64 namespace_id,
   }
   DOMStorageArea* storage_area = storage_namespace->GetStorageArea(origin);
   *storage_area_id = storage_area->id();
+}
+
+void DOMStorageMessageFilter::OnCloseStorageArea(int64 storage_area_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
+  // TODO(michaeln): make use of this message in the new backend.
 }
 
 void DOMStorageMessageFilter::OnLength(int64 storage_area_id,

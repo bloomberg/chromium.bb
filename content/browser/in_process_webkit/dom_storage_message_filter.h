@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,8 +46,9 @@ class DOMStorageMessageFilter : public content::BrowserMessageFilter {
   virtual ~DOMStorageMessageFilter();
 
   // Message Handlers.
-  void OnStorageAreaId(int64 namespace_id, const string16& origin,
-                       int64* storage_area_id);
+  void OnOpenStorageArea(int64 namespace_id, const string16& origin,
+                         int64* storage_area_id);
+  void OnCloseStorageArea(int64 storage_area_id);
   void OnLength(int64 storage_area_id, unsigned* length);
   void OnKey(int64 storage_area_id, unsigned index, NullableString16* key);
   void OnGetItem(int64 storage_area_id, const string16& key,

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,11 +18,13 @@ using WebKit::WebURL;
 RendererWebStorageAreaImpl::RendererWebStorageAreaImpl(
     int64 namespace_id, const WebString& origin) {
   RenderThreadImpl::current()->Send(
-      new DOMStorageHostMsg_StorageAreaId(namespace_id, origin,
-                                          &storage_area_id_));
+      new DOMStorageHostMsg_OpenStorageArea(namespace_id, origin,
+                                            &storage_area_id_));
 }
 
 RendererWebStorageAreaImpl::~RendererWebStorageAreaImpl() {
+  RenderThreadImpl::current()->Send(
+      new DOMStorageHostMsg_CloseStorageArea(storage_area_id_));
 }
 
 // In November 2011 stats were recorded about performance of each of the
