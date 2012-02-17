@@ -57,6 +57,8 @@
         'event_mac.mm',
         'event_mac.h',
         'focus_manager.h',
+        'gestures/gesture_configuration.cc',
+        'gestures/gesture_configuration.h',
         'gestures/gesture_recognizer.h',
         'gestures/gesture_recognizer_aura.cc',
         'gestures/gesture_recognizer_aura.h',
