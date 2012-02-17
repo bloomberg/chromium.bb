@@ -399,7 +399,8 @@ def RunHWTestSuite(build, suite, board, debug):
          'RunSuite',
          '-i=%s' % build,
          '-s=%s' % suite,
-         '-b=%s' % board]
+         '-b=%s' % board,
+         '-p=%s' % constants.HWTEST_MACH_POOL]
   if debug:
     cros_lib.Info('RunHWTestSuite would run: %s' % ' '.join(cmd))
   else:

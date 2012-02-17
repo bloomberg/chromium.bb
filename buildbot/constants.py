@@ -109,6 +109,9 @@ VALID_BUILD_TYPES = [PFQ_TYPE, COMMIT_QUEUE_TYPE, CHROME_PFQ_TYPE,
                      REFRESH_PACKAGES_TYPE, CANARY_TYPE,
                      PALADIN_TYPE, INCREMENTAL_TYPE]
 
+# Define pool of machines for Hardware tests.
+HWTEST_MACH_POOL='bvt'
+
 # Defines VM Test types.
 SMOKE_SUITE_TEST_TYPE = 'smoke_suite'
 SIMPLE_AU_TEST_TYPE = 'pfq_suite'
