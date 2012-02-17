@@ -39,11 +39,15 @@ struct ProgramTableData {
   int first;
 };
 
-static void JsonEscape(const char *str, FILE *file) {
+static void WriteJsonString(const char *str, FILE *file) {
   char ch;
 
-  while ((ch = *str++)) {
-    if (ch == '"') {
+  fputc('"', file);
+  for (;;) {
+    ch = *str++;
+    if (ch == '\0') {
+      break;
+    } else if (ch == '"') {
       fprintf(file, "\\\"");
     } else if (ch == '\\') {
       fprintf(file, "\\\\");
@@ -53,6 +57,7 @@ static void JsonEscape(const char *str, FILE *file) {
       fputc(ch, file);
     }
   }
+  fputc('"', file);
 }
 
 static int PrintSegmentsOne(
@@ -66,9 +71,9 @@ static int PrintSegmentsOne(
     fprintf(ptd->core, ",\n");
   }
   fprintf(ptd->core, "{\n");
-  fprintf(ptd->core, "\"dlpi_name\": \"");
-  JsonEscape(info->dlpi_name, ptd->core);
-  fprintf(ptd->core, "\",\n");
+  fprintf(ptd->core, "\"dlpi_name\": ");
+  WriteJsonString(info->dlpi_name, ptd->core);
+  fprintf(ptd->core, ",\n");
   fprintf(ptd->core, "\"dlpi_addr\": %"PRIuPTR",\n", info->dlpi_addr);
   fprintf(ptd->core, "\"dlpi_phdr\": [\n");
   for (i = 0; i < info->dlpi_phnum; i++) {
