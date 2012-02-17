@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -245,10 +245,19 @@ class BookmarkModel : public content::NotificationObserver,
   void AddObserver(BookmarkModelObserver* observer);
   void RemoveObserver(BookmarkModelObserver* observer);
 
-  // Notifies the observers that an import is about to happen, so they can delay
-  // any expensive UI updates until it's finished.
-  void BeginImportMode();
-  void EndImportMode();
+  // Notifies the observers that that an extensive set of changes is about to
+  // happen, such as during import or sync, so they can delay any expensive
+  // UI updates until it's finished.
+  void BeginExtensiveChanges();
+  void EndExtensiveChanges();
+
+  // Returns true if this bookmark model is currently in a mode where extensive
+  // changes might happen, such as for import and sync. This is helpful for
+  // observers that are created after the mode has started, and
+  // want to check state during their own initializer, such as the NTP.
+  bool IsDoingExtensiveChanges() const {
+    return extensive_changes_ > 0;
+  }
 
   // Removes the node at the given |index| from |parent|. Removing a folder node
   // recursively removes all nodes. Observers are notified immediately.
@@ -483,6 +492,9 @@ class BookmarkModel : public content::NotificationObserver,
   scoped_ptr<BookmarkIndex> index_;
 
   base::WaitableEvent loaded_signal_;
+
+  // See description of IsDoingExtensiveChanges above.
+  int extensive_changes_;
 
   scoped_ptr<BookmarkExpandedStateTracker> expanded_state_tracker_;
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,11 +72,12 @@ void BookmarkBarBridge::BookmarkNodeChildrenReordered(
   [controller_ nodeChildrenReordered:model node:node];
 }
 
-void BookmarkBarBridge::BookmarkImportBeginning(BookmarkModel* model) {
+void BookmarkBarBridge::ExtensiveBookmarkChangesBeginning(
+    BookmarkModel* model) {
   batch_mode_ = true;
 }
 
-void BookmarkBarBridge::BookmarkImportEnding(BookmarkModel* model) {
+void BookmarkBarBridge::ExtensiveBookmarkChangesEnded(BookmarkModel* model) {
   batch_mode_ = false;
   [controller_ loaded:model];
 }

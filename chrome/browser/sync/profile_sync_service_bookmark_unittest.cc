@@ -20,6 +20,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
@@ -273,6 +274,46 @@ class FakeServerChange {
   // The change list we construct.
   sync_api::ChangeRecordList changes_;
 };
+
+class ExtensiveChangesBookmarkModelObserver : public BaseBookmarkModelObserver {
+ public:
+  explicit ExtensiveChangesBookmarkModelObserver()
+      : started_count_(0),
+        completed_count_at_started_(0),
+        completed_count_(0) {}
+
+  virtual void ExtensiveBookmarkChangesBeginning(
+      BookmarkModel* model) OVERRIDE {
+    ++started_count_;
+    completed_count_at_started_ = completed_count_;
+  }
+
+  virtual void ExtensiveBookmarkChangesEnded(BookmarkModel* model) OVERRIDE {
+    ++completed_count_;
+  }
+
+  void BookmarkModelChanged() {}
+
+  int get_started() const {
+    return started_count_;
+  }
+
+  int get_completed_count_at_started() const {
+    return completed_count_at_started_;
+  }
+
+  int get_completed() const {
+    return completed_count_;
+  }
+
+ private:
+  int started_count_;
+  int completed_count_at_started_;
+  int completed_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensiveChangesBookmarkModelObserver);
+};
+
 
 class ProfileSyncServiceBookmarkTest : public testing::Test {
  protected:
@@ -1432,6 +1473,23 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData,
   // is sidestepped.
   ExpectBookmarkModelMatchesTestData();
   ExpectModelMatch();
+}
+
+// Verify that the bookmark model is updated about whether the
+// associator is currently running.
+TEST_F(ProfileSyncServiceBookmarkTest, AssociationState) {
+  LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
+
+  ExtensiveChangesBookmarkModelObserver observer;
+  model_->AddObserver(&observer);
+
+  StartSync();
+
+  EXPECT_EQ(1, observer.get_started());
+  EXPECT_EQ(0, observer.get_completed_count_at_started());
+  EXPECT_EQ(1, observer.get_completed());
+
+  model_->RemoveObserver(&observer);
 }
 
 }  // namespace

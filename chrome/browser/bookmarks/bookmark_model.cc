@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -133,7 +133,8 @@ BookmarkModel::BookmarkModel(Profile* profile)
       mobile_node_(NULL),
       next_node_id_(1),
       observers_(ObserverList<BookmarkModelObserver>::NOTIFY_EXISTING_ONLY),
-      loaded_signal_(true, false) {
+      loaded_signal_(true, false),
+      extensive_changes_(0) {
   if (!profile_) {
     // Profile is null during testing.
     DoneLoading(CreateLoadDetails());
@@ -209,14 +210,20 @@ void BookmarkModel::RemoveObserver(BookmarkModelObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void BookmarkModel::BeginImportMode() {
-  FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
-                    BookmarkImportBeginning(this));
+void BookmarkModel::BeginExtensiveChanges() {
+  if (++extensive_changes_ == 1) {
+    FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
+                      ExtensiveBookmarkChangesBeginning(this));
+  }
 }
 
-void BookmarkModel::EndImportMode() {
-  FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
-                    BookmarkImportEnding(this));
+void BookmarkModel::EndExtensiveChanges() {
+  --extensive_changes_;
+  DCHECK_GE(extensive_changes_, 0);
+  if (extensive_changes_ == 0) {
+    FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
+                      ExtensiveBookmarkChangesEnded(this));
+  }
 }
 
 void BookmarkModel::Remove(const BookmarkNode* parent, int index) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,8 +46,8 @@ class BookmarkBarBridge : public BookmarkModelObserver {
                                           const BookmarkNode* node) OVERRIDE;
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
                                              const BookmarkNode* node) OVERRIDE;
-  virtual void BookmarkImportBeginning(BookmarkModel* model) OVERRIDE;
-  virtual void BookmarkImportEnding(BookmarkModel* model) OVERRIDE;
+  virtual void ExtensiveBookmarkChangesBeginning(BookmarkModel* model) OVERRIDE;
+  virtual void ExtensiveBookmarkChangesEnded(BookmarkModel* model) OVERRIDE;
 
  private:
   BookmarkBarController* controller_;  // weak; owns me

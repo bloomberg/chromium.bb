@@ -266,7 +266,7 @@ void BookmarkExtensionEventRouter::BookmarkNodeChildrenReordered(
 }
 
 void BookmarkExtensionEventRouter::
-    BookmarkImportBeginning(BookmarkModel* model) {
+    ExtensiveBookmarkChangesBeginning(BookmarkModel* model) {
   ListValue args;
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
@@ -275,7 +275,8 @@ void BookmarkExtensionEventRouter::
                 json_args);
 }
 
-void BookmarkExtensionEventRouter::BookmarkImportEnding(BookmarkModel* model) {
+void BookmarkExtensionEventRouter::ExtensiveBookmarkChangesEnded(
+    BookmarkModel* model) {
   ListValue args;
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);

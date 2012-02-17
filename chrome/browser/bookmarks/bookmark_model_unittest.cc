@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -169,9 +169,19 @@ class BookmarkModelTest : public testing::Test,
     // gets invoked.
   }
 
+  virtual void ExtensiveBookmarkChangesBeginning(
+      BookmarkModel* model) OVERRIDE {
+    ++extensive_changes_beginning_count_;
+  }
+
+  virtual void ExtensiveBookmarkChangesEnded(BookmarkModel* model) OVERRIDE {
+    ++extensive_changes_ended_count_;
+  }
+
   void ClearCounts() {
     added_count_ = moved_count_ = removed_count_ = changed_count_ =
-        reordered_count_ = 0;
+        reordered_count_ = extensive_changes_beginning_count_ =
+        extensive_changes_ended_count_ = 0;
   }
 
   void AssertObserverCount(int added_count,
@@ -186,6 +196,14 @@ class BookmarkModelTest : public testing::Test,
     EXPECT_EQ(reordered_count_, reordered_count);
   }
 
+  void AssertExtensiveChangesObserverCount(
+      int extensive_changes_beginning_count,
+      int extensive_changes_ended_count) {
+    EXPECT_EQ(extensive_changes_beginning_count_,
+              extensive_changes_beginning_count);
+    EXPECT_EQ(extensive_changes_ended_count_, extensive_changes_ended_count);
+  }
+
  protected:
   BookmarkModel model_;
   ObserverDetails observer_details_;
@@ -196,6 +214,8 @@ class BookmarkModelTest : public testing::Test,
   int removed_count_;
   int changed_count_;
   int reordered_count_;
+  int extensive_changes_beginning_count_;
+  int extensive_changes_ended_count_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkModelTest);
 };
@@ -1113,6 +1133,34 @@ TEST_F(BookmarkModelTest, MobileNodeVisibileWithChildren) {
 
   model_.AddURL(root, 0, title, url);
   EXPECT_TRUE(model_.mobile_node()->IsVisible());
+}
+
+TEST_F(BookmarkModelTest, ExtensiveChangesObserver) {
+  AssertExtensiveChangesObserverCount(0, 0);
+  EXPECT_FALSE(model_.IsDoingExtensiveChanges());
+  model_.BeginExtensiveChanges();
+  EXPECT_TRUE(model_.IsDoingExtensiveChanges());
+  AssertExtensiveChangesObserverCount(1, 0);
+  model_.EndExtensiveChanges();
+  EXPECT_FALSE(model_.IsDoingExtensiveChanges());
+  AssertExtensiveChangesObserverCount(1, 1);
+}
+
+TEST_F(BookmarkModelTest, MultipleExtensiveChangesObserver) {
+  AssertExtensiveChangesObserverCount(0, 0);
+  EXPECT_FALSE(model_.IsDoingExtensiveChanges());
+  model_.BeginExtensiveChanges();
+  EXPECT_TRUE(model_.IsDoingExtensiveChanges());
+  AssertExtensiveChangesObserverCount(1, 0);
+  model_.BeginExtensiveChanges();
+  EXPECT_TRUE(model_.IsDoingExtensiveChanges());
+  AssertExtensiveChangesObserverCount(1, 0);
+  model_.EndExtensiveChanges();
+  EXPECT_TRUE(model_.IsDoingExtensiveChanges());
+  AssertExtensiveChangesObserverCount(1, 0);
+  model_.EndExtensiveChanges();
+  EXPECT_FALSE(model_.IsDoingExtensiveChanges());
+  AssertExtensiveChangesObserverCount(1, 1);
 }
 
 }  // namespace

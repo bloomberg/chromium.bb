@@ -146,7 +146,7 @@ void ProfileWriter::AddBookmarks(const std::vector<BookmarkEntry>& bookmarks,
   // for unnecessary nesting.
   bool add_all_to_top_level = import_to_top_level && toolbar_bookmarks.empty();
 
-  model->BeginImportMode();
+  model->BeginExtensiveChanges();
 
   std::set<const BookmarkNode*> folders_added_to;
   const BookmarkNode* top_level_folder = NULL;
@@ -217,7 +217,7 @@ void ProfileWriter::AddBookmarks(const std::vector<BookmarkEntry>& bookmarks,
     model->ResetDateFolderModified(*i);
   }
 
-  model->EndImportMode();
+  model->EndExtensiveChanges();
 
   // If the user was previously using a toolbar, we should show the bar.
   if (import_to_top_level && !add_all_to_top_level)

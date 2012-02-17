@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,16 +54,18 @@ class BookmarkModelObserver {
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
                                              const BookmarkNode* node) = 0;
 
-  // Invoked before a batch import begins.  This tells UI intensive observers
-  // to wait until the updates finish to update themselves.
-  // These methods should only be used for imports. Observers should still
-  // respond to BookmarkNodeRemoved immediately, to avoid holding onto
-  // stale node pointers.
-  virtual void BookmarkImportBeginning(BookmarkModel* model) {}
+  // Invoked before an extensive set of model changes is about to begin.
+  // This tells UI intensive observers to wait until the updates finish to
+  // update themselves.
+  // These methods should only be used for imports and sync.
+  // Observers should still respond to BookmarkNodeRemoved immediately,
+  // to avoid holding onto stale node pointers.
+  virtual void ExtensiveBookmarkChangesBeginning(BookmarkModel* model) {}
 
-  // Invoked after a batch import finishes.  This tells observers to update
-  // themselves if they were waiting for the update to finish.
-  virtual void BookmarkImportEnding(BookmarkModel* model) {}
+  // Invoked after an extensive set of model changes has ended.
+  // This tells observers to update themselves if they were waiting for the
+  // update to finish.
+  virtual void ExtensiveBookmarkChangesEnded(BookmarkModel* model) {}
 
  protected:
   virtual ~BookmarkModelObserver() {}

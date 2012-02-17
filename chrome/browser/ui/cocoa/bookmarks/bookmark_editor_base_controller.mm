@@ -139,13 +139,14 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
     // I care nothing for these 'favicons': I only show folders.
   }
 
-  virtual void BookmarkImportBeginning(BookmarkModel* model) OVERRIDE {
+  virtual void ExtensiveBookmarkChangesBeginning(
+      BookmarkModel* model) OVERRIDE {
     importing_ = true;
   }
 
   // Invoked after a batch import finishes.  This tells observers to update
   // themselves if they were waiting for the update to finish.
-  virtual void BookmarkImportEnding(BookmarkModel* model) OVERRIDE {
+  virtual void ExtensiveBookmarkChangesEnded(BookmarkModel* model) OVERRIDE {
     importing_ = false;
     [controller_ modelChangedPreserveSelection:YES];
   }

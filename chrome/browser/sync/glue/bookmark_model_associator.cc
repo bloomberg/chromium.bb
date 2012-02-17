@@ -96,6 +96,23 @@ class BookmarkNodeFinder {
   DISALLOW_COPY_AND_ASSIGN(BookmarkNodeFinder);
 };
 
+class ScopedAssociationUpdater {
+ public:
+  explicit ScopedAssociationUpdater(BookmarkModel* model) {
+    model_ = model;
+    model->BeginExtensiveChanges();
+  }
+
+  ~ScopedAssociationUpdater() {
+    model_->EndExtensiveChanges();
+  }
+
+ private:
+  BookmarkModel* model_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedAssociationUpdater);
+};
+
 BookmarkNodeFinder::BookmarkNodeFinder(const BookmarkNode* parent_node)
     : parent_node_(parent_node) {
   for (int i = 0; i < parent_node_->child_count(); ++i) {
@@ -334,6 +351,8 @@ bool BookmarkModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
 }
 
 bool BookmarkModelAssociator::AssociateModels(SyncError* error) {
+  scoped_ptr<ScopedAssociationUpdater> association_updater(
+      new ScopedAssociationUpdater(bookmark_model_));
   // Try to load model associations from persisted associations first. If that
   // succeeds, we don't need to run the complex model matching algorithm.
   if (LoadAssociations())
