@@ -2,26 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <cert.h>
-#include <pk11pub.h>
 
 #include "base/at_exit.h"
-#include "base/file_util.h"
-#include "base/lazy_instance.h"
-#include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/cros/onc_network_parser.h"
-#include "chrome/common/chrome_paths.h"
-#include "crypto/nss_util.h"
-#include "net/base/cert_database.h"
-#include "net/base/crypto_module.h"
-#include "net/base/x509_certificate.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using ::testing::Return;
 
 namespace chromeos {
 
@@ -31,11 +16,6 @@ int32 GetPrefixLength(std::string netmask) {
   return NetworkIPConfig(std::string(), IPCONFIG_TYPE_UNKNOWN, std::string(),
       netmask, std::string(), std::string()).GetPrefixLength();
 }
-
-class MockEnrollmentHandler : public Network::EnrollmentHandler {
- public:
-  MOCK_METHOD1(Enroll, bool(const std::string& uri));
-};
 
 }  // namespace
 
@@ -151,76 +131,17 @@ class NetworkLibraryStubTest : public testing::Test {
  public:
   NetworkLibraryStubTest() : cros_(NULL) {}
 
-  static void SetUpTestCase() {
-    // Ideally, we'd open a test DB for each test case, and close it
-    // again, removing the temp dir, but unfortunately, there's a
-    // bug in NSS that prevents this from working, so we just open
-    // it once, and empty it for each test case.  Here's the bug:
-    // https://bugzilla.mozilla.org/show_bug.cgi?id=588269
-    ASSERT_TRUE(crypto::OpenTestNSSDB());
-    // There is no matching TearDownTestCase call to close the test NSS DB
-    // because that would leave NSS in a potentially broken state for further
-    // tests, due to https://bugzilla.mozilla.org/show_bug.cgi?id=588269
-  }
-
  protected:
   virtual void SetUp() {
-    slot_ = cert_db_.GetPublicModule();
     cros_ = CrosLibrary::Get()->GetNetworkLibrary();
     ASSERT_TRUE(cros_) << "GetNetworkLibrary() Failed!";
-
-    // Test db should be empty at start of test.
-    EXPECT_EQ(0U, ListCertsInSlot(slot_->os_module_handle()).size());
   }
   virtual void TearDown() {
     cros_ = NULL;
-    EXPECT_TRUE(CleanupSlotContents(slot_->os_module_handle()));
-    EXPECT_EQ(0U, ListCertsInSlot(slot_->os_module_handle()).size());
-  }
-
-  virtual void GetTestData(const std::string& filename, std::string* contents) {
-      FilePath path;
-      std::string error;
-      PathService::Get(chrome::DIR_TEST_DATA, &path);
-      path = path.AppendASCII("chromeos").AppendASCII("cros").Append(filename);
-      ASSERT_TRUE(contents != NULL);
-      ASSERT_TRUE(file_util::PathExists(path))
-        << "Couldn't find test data file " << path.value();
-      ASSERT_TRUE(file_util::ReadFileToString(path, contents))
-        << "Unable to read test data file " << path.value();
   }
 
   ScopedStubCrosEnabler cros_stub_;
   NetworkLibrary* cros_;
- private:
-  net::CertificateList ListCertsInSlot(PK11SlotInfo* slot) {
-    net::CertificateList result;
-    CERTCertList* cert_list = PK11_ListCertsInSlot(slot);
-    for (CERTCertListNode* node = CERT_LIST_HEAD(cert_list);
-         !CERT_LIST_END(node, cert_list);
-         node = CERT_LIST_NEXT(node)) {
-      result.push_back(net::X509Certificate::CreateFromHandle(
-          node->cert, net::X509Certificate::OSCertHandles()));
-    }
-    CERT_DestroyCertList(cert_list);
-
-    // Sort the result so that test comparisons can be deterministic.
-    std::sort(result.begin(), result.end(), net::X509Certificate::LessThan());
-    return result;
-  }
-
-  bool CleanupSlotContents(PK11SlotInfo* slot) {
-    bool ok = true;
-    net::CertificateList certs = ListCertsInSlot(slot);
-    for (size_t i = 0; i < certs.size(); ++i) {
-      if (!cert_db_.DeleteCertAndKey(certs[i]))
-        ok = false;
-    }
-    return ok;
-  }
-
-  net::CertDatabase cert_db_;
-  scoped_refptr<net::CryptoModule> slot_;
 };
 
 // Default stub state:
@@ -305,86 +226,6 @@ TEST_F(NetworkLibraryStubTest, NetworkConnectWifi) {
   EXPECT_TRUE(cros_->CanConnectToNetwork(wifi1));
   cros_->ConnectToWifiNetwork(wifi1);
   EXPECT_TRUE(wifi1->connected());
-}
-
-TEST_F(NetworkLibraryStubTest, NetworkConnectOncWifi) {
-  // Import a wireless network via loading an ONC file.
-  std::string test_blob;
-  GetTestData("cert-pattern.onc", &test_blob);
-  OncNetworkParser parser(test_blob, "", NetworkUIData::ONC_SOURCE_USER_IMPORT);
-  ASSERT_TRUE(parser.parse_error().empty());
-  EXPECT_EQ(1, parser.GetNetworkConfigsSize());
-  EXPECT_EQ(2, parser.GetCertificatesSize());
-  scoped_ptr<Network> network(parser.ParseNetwork(0));
-  ASSERT_TRUE(network.get());
-
-  MockEnrollmentHandler* enrollment_handler = new MockEnrollmentHandler;
-  EXPECT_CALL(*enrollment_handler,
-              Enroll("http://youtu.be/dQw4w9WgXcQ")).
-              WillOnce(Return(false));
-  EXPECT_CALL(*enrollment_handler,
-              Enroll("chrome-extension://abc/keygen-cert.html")).
-              WillOnce(Return(true));
-
-  network->SetEnrollmentHandler(enrollment_handler);
-  WifiNetwork* wifi1 = static_cast<WifiNetwork*>(network.get());
-
-  ASSERT_NE(static_cast<const WifiNetwork*>(NULL), wifi1);
-  EXPECT_FALSE(wifi1->connected());
-  EXPECT_TRUE(cros_->CanConnectToNetwork(wifi1));
-  EXPECT_FALSE(wifi1->connected());
-  cros_->ConnectToWifiNetwork(wifi1);
-  EXPECT_FALSE(wifi1->connected());
-
-  scoped_refptr<net::X509Certificate> certificate0(parser.ParseCertificate(0));
-  scoped_refptr<net::X509Certificate> certificate1(parser.ParseCertificate(1));
-
-  EXPECT_FALSE(wifi1->connected());
-  EXPECT_TRUE(cros_->CanConnectToNetwork(wifi1));
-  cros_->ConnectToWifiNetwork(wifi1);
-  EXPECT_TRUE(wifi1->connected());
-  cros_->ConnectToWifiNetwork(wifi1);
-  EXPECT_TRUE(wifi1->connected());
-}
-
-TEST_F(NetworkLibraryStubTest, NetworkConnectOncVPN) {
-  // Import a wireless network via loading an ONC file.
-  std::string test_blob;
-  GetTestData("cert-pattern-vpn.onc", &test_blob);
-  OncNetworkParser parser(test_blob, "", NetworkUIData::ONC_SOURCE_USER_IMPORT);
-  ASSERT_TRUE(parser.parse_error().empty());
-  EXPECT_EQ(1, parser.GetNetworkConfigsSize());
-  EXPECT_EQ(2, parser.GetCertificatesSize());
-  scoped_ptr<Network> network(parser.ParseNetwork(0));
-  ASSERT_TRUE(network.get());
-
-  MockEnrollmentHandler* enrollment_handler = new MockEnrollmentHandler;
-  EXPECT_CALL(*enrollment_handler,
-              Enroll("http://youtu.be/dQw4w9WgXcQ")).
-              WillOnce(Return(false));
-  EXPECT_CALL(*enrollment_handler,
-              Enroll("chrome-extension://abc/keygen-cert.html")).
-              WillOnce(Return(true));
-
-  network->SetEnrollmentHandler(enrollment_handler);
-  VirtualNetwork* vpn1 = static_cast<VirtualNetwork*>(network.get());
-
-  ASSERT_NE(static_cast<const VirtualNetwork*>(NULL), vpn1);
-  EXPECT_FALSE(vpn1->connected());
-  EXPECT_TRUE(cros_->CanConnectToNetwork(vpn1));
-  EXPECT_FALSE(vpn1->connected());
-  cros_->ConnectToVirtualNetwork(vpn1);
-  EXPECT_FALSE(vpn1->connected());
-
-  scoped_refptr<net::X509Certificate> certificate0(parser.ParseCertificate(0));
-  scoped_refptr<net::X509Certificate> certificate1(parser.ParseCertificate(1));
-
-  EXPECT_FALSE(vpn1->connected());
-  EXPECT_TRUE(cros_->CanConnectToNetwork(vpn1));
-  cros_->ConnectToVirtualNetwork(vpn1);
-  EXPECT_TRUE(vpn1->connected());
-  cros_->ConnectToVirtualNetwork(vpn1);
-  EXPECT_TRUE(vpn1->connected());
 }
 
 TEST_F(NetworkLibraryStubTest, NetworkConnectVPN) {

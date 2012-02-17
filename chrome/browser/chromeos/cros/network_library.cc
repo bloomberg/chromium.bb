@@ -31,7 +31,6 @@
 #include "base/utf_string_conversion_utils.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros/certificate_pattern.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/native_network_constants.h"
 #include "chrome/browser/chromeos/cros/native_network_parser.h"
@@ -41,7 +40,6 @@
 #include "chrome/browser/chromeos/network_login_observer.h"
 #include "chrome/browser/net/browser_url_util.h"
 #include "chrome/common/time_format.h"
-#include "chrome/common/net/x509_certificate_model.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/nss_util.h"  // crypto::GetTPMTokenInfo() for 802.1X and VPN.
 #include "grit/generated_resources.h"
@@ -188,19 +186,6 @@ NetworkProfileType GetProfileTypeForSource(NetworkUIData::ONCSource source) {
   }
   NOTREACHED() << "Unknown ONC source " << source;
   return PROFILE_NONE;
-}
-
-void DoEnrollmentIfNeeded(Network::EnrollmentHandler* enrollment_handler,
-                          const std::vector<std::string>& uri_list) {
-  if (enrollment_handler && !uri_list.empty()) {
-    // Launch the enrollment URI from the pattern, based on finding the first
-    // scheme in the list that we can handle.
-    for (std::vector<std::string>::const_iterator iter = uri_list.begin();
-        iter != uri_list.end(); ++iter) {
-      if (enrollment_handler->Enroll(*iter))
-        break;
-    }
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -577,11 +562,6 @@ void Network::SetIntegerProperty(const char* prop, int i, int* dest) {
   SetValueProperty(prop, value.get());
 }
 
-// Not inline so we can forward declare CertificatePattern.
-void Network::init_client_cert_pattern() {
-  client_cert_pattern_.reset(new CertificatePattern);
-}
-
 void Network::SetPreferred(bool preferred) {
   if (preferred) {
     SetIntegerProperty(
@@ -743,7 +723,6 @@ EthernetNetwork::EthernetNetwork(const std::string& service_path)
 VirtualNetwork::VirtualNetwork(const std::string& service_path)
     : Network(service_path, TYPE_VPN),
       provider_type_(PROVIDER_TYPE_L2TP_IPSEC_PSK) {
-  init_client_cert_pattern();
 }
 
 VirtualNetwork::~VirtualNetwork() {}
@@ -899,31 +878,6 @@ void VirtualNetwork::SetCertificateSlotAndPin(
     SetOrClearStringProperty(flimflam::kL2tpIpsecClientCertSlotProperty,
                              slot, NULL);
     SetOrClearStringProperty(flimflam::kL2tpIpsecPinProperty, pin, NULL);
-  }
-}
-
-bool VirtualNetwork::MatchCertificatePattern() {
-  DCHECK(client_cert_type_ == CLIENT_CERT_TYPE_PATTERN);
-  DCHECK(!client_cert_pattern()->Empty());
-  if (client_cert_pattern()->Empty())
-    return true;
-  scoped_refptr<net::X509Certificate> matching_cert =
-      client_cert_pattern()->GetMatch();
-  if (matching_cert.get()) {
-    std::string client_cert_id =
-        x509_certificate_model::GetPkcs11Id(matching_cert->os_cert_handle());
-    if (provider_type() == PROVIDER_TYPE_OPEN_VPN) {
-      SetStringProperty(flimflam::kOpenVPNClientCertIdProperty,
-                        client_cert_id, &client_cert_id_);
-    } else {
-      SetStringProperty(flimflam::kL2tpIpsecClientCertIdProperty,
-                        client_cert_id, &client_cert_id_);
-    }
-    return true;
-  } else {
-    DoEnrollmentIfNeeded(enrollment_handler(),
-                         client_cert_pattern()->enrollment_uri_list());
-    return false;
   }
 }
 
@@ -1346,7 +1300,6 @@ WifiNetwork::WifiNetwork(const std::string& service_path)
       eap_method_(EAP_METHOD_UNKNOWN),
       eap_phase_2_auth_(EAP_PHASE_2_AUTH_AUTO),
       eap_use_system_cas_(true) {
-  init_client_cert_pattern();
 }
 
 WifiNetwork::~WifiNetwork() {}
@@ -1575,41 +1528,15 @@ bool WifiNetwork::IsPassphraseRequired() const {
 
 bool WifiNetwork::RequiresUserProfile() const {
   // 8021X requires certificates which are only stored for individual users.
-  if (encryption_ != SECURITY_8021X)
-    return false;
-
-  if (eap_method_ != EAP_METHOD_TLS)
-    return false;
-
-  if (eap_client_cert_pkcs11_id().empty() &&
-      eap_client_cert_type_ != CLIENT_CERT_TYPE_PATTERN)
-        return false;
-
-  return true;
+  if (encryption_ == SECURITY_8021X &&
+      (eap_method_ == EAP_METHOD_TLS ||
+       !eap_client_cert_pkcs11_id().empty()))
+    return true;
+  return false;
 }
 
 void WifiNetwork::SetCertificatePin(const std::string& pin) {
   SetOrClearStringProperty(flimflam::kEapPinProperty, pin, NULL);
-}
-
-bool WifiNetwork::MatchCertificatePattern() {
-  DCHECK(eap_client_cert_type_ == CLIENT_CERT_TYPE_PATTERN);
-  DCHECK(!client_cert_pattern()->Empty());
-  if (client_cert_pattern()->Empty()) {
-    return false;
-  }
-
-  scoped_refptr<net::X509Certificate> matching_cert =
-      client_cert_pattern()->GetMatch();
-  if (matching_cert.get()) {
-    SetEAPClientCertPkcs11Id(
-        x509_certificate_model::GetPkcs11Id(matching_cert->os_cert_handle()));
-    return true;
-  } else {
-    DoEnrollmentIfNeeded(enrollment_handler(),
-                         client_cert_pattern()->enrollment_uri_list());
-    return false;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2698,11 +2625,6 @@ void NetworkLibraryImplBase::NetworkConnectStartWifi(
     std::string tpm_pin = GetTpmPin();
     if (!tpm_pin.empty())
       wifi->SetCertificatePin(tpm_pin);
-
-    if (wifi->eap_client_cert_type() == CLIENT_CERT_TYPE_PATTERN &&
-        !wifi->MatchCertificatePattern()) {
-        return;
-    }
   }
   NetworkConnectStart(wifi, profile_type);
 }
@@ -2715,11 +2637,6 @@ void NetworkLibraryImplBase::NetworkConnectStartVPN(VirtualNetwork* vpn) {
   if (!tpm_pin.empty()) {
     std::string tpm_slot = GetTpmSlot();
     vpn->SetCertificateSlotAndPin(tpm_slot, tpm_pin);
-  }
-  // Resolve any certificate pattern.
-  if (vpn->client_cert_type() == CLIENT_CERT_TYPE_PATTERN &&
-      !vpn->MatchCertificatePattern()) {
-      return;
   }
   NetworkConnectStart(vpn, PROFILE_NONE);
 }

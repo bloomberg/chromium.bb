@@ -38,9 +38,7 @@
           "ServerCARef": "{55ca78f6-0842-4e1b-96a3-09a9e1a26ef5}",
           "ClientCertType": "Pattern",
           "ClientCertPattern": {
-            "IssuerCARef": [
-              "{68a2ed90-13a1-4120-a1fe-282508320e18}"
-            ],
+            "IssuerRef": "{68a2ed90-13a1-4120-a1fe-282508320e18}",
             "EnrollmentURI": [
               "chrome-extension://abc/keygen-cert.html"
             ]
@@ -48,6 +46,5 @@
         }
       }
     }
-  ],
-  "Type": "UnencryptedConfiguration"
+  ]
 }

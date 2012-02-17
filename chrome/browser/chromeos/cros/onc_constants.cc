@@ -12,9 +12,7 @@ namespace onc {
 const char kEthernet[] = "Ethernet";
 const char kGUID[] = "GUID";
 const char kName[] = "Name";
-const char kNetworkConfiguration[] = "NetworkConfiguration";
 const char kProxySettings[] = "ProxySettings";
-const char kRecommended[] = "Recommended";
 const char kRemove[] = "Remove";
 const char kType[] = "Type";
 const char kVPN[] = "VPN";
@@ -34,21 +32,6 @@ const char kProxyURL[] = "ProxyURL";
 const char kSSID[] = "SSID";
 const char kSecurity[] = "Security";
 }  // namespace wifi
-
-namespace certificate {
-const char kCommonName[] = "CommonName";
-const char kEmailAddress[] = "EmailAddress";
-const char kEnrollmentURI[] = "EnrollmentURI";
-const char kIssuer[] = "Issuer";
-const char kIssuerCARef[] = "IssuerCARef";
-const char kLocality[] = "Locality";
-const char kNone[] = "None";
-const char kOrganization[] = "Organization";
-const char kOrganizationalUnit[] = "OrganizationalUnit";
-const char kPattern[] = "Pattern";
-const char kRef[] = "Ref";
-const char kSubject[] = "Subject";
-}  // namespace certificate
 
 namespace eap {
 const char kAnonymousIdentity[] = "AnonymousIdentity";

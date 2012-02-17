@@ -412,8 +412,6 @@
         'browser/chromeos/chrome_browser_main_chromeos.h',
         'browser/chromeos/cros/burn_library.cc',
         'browser/chromeos/cros/burn_library.h',
-        'browser/chromeos/cros/certificate_pattern.cc',
-        'browser/chromeos/cros/certificate_pattern.h',
         'browser/chromeos/cros/cert_library.cc',
         'browser/chromeos/cros/cert_library.h',
         'browser/chromeos/cros/cros_library.cc',
