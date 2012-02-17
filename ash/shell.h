@@ -28,6 +28,9 @@ namespace gfx {
 class Point;
 class Rect;
 }
+namespace ui {
+class Layer;
+}
 namespace views {
 class NonClientFrameView;
 class Widget;
@@ -78,6 +81,11 @@ class ASH_EXPORT Shell {
     MODE_OVERLAPPING,
   };
 
+  enum BackgroundMode {
+    BACKGROUND_IMAGE,
+    BACKGROUND_SOLID_COLOR
+  };
+
   enum Direction {
     FORWARD,
     BACKWARD
@@ -94,6 +102,10 @@ class ASH_EXPORT Shell {
 
   const gfx::Size& compact_status_area_offset() const {
     return compact_status_area_offset_;
+  }
+
+  BackgroundMode desktop_background_mode() const {
+    return desktop_background_mode_;
   }
 
   aura::Window* GetContainer(int container_id);
@@ -122,6 +134,9 @@ class ASH_EXPORT Shell {
 
   // Sets an appropriate window mode for the given screen resolution.
   void SetWindowModeForMonitorSize(const gfx::Size& monitor_size);
+
+  // Sets the desktop background mode.
+  void SetDesktopBackgroundMode(BackgroundMode mode);
 
   // Returns true if the screen is locked.
   bool IsScreenLocked() const;
@@ -260,6 +275,9 @@ class ASH_EXPORT Shell {
 
   // Can change at runtime.
   WindowMode window_mode_;
+
+  // Can change at runtime.
+  BackgroundMode desktop_background_mode_;
 
   // Owned by aura::RootWindow, cached here for type safety.
   internal::RootWindowLayoutManager* root_window_layout_;

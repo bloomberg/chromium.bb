@@ -109,17 +109,18 @@ class ASH_EXPORT ImageGrid {
   int left_image_width() const { return left_image_width_; }
   int right_image_width() const { return right_image_width_; }
 
-  // Initializes the grid to display the passed-in images (any of which can be
-  // NULL).  Ownership of the images remains with the caller.
-  void Init(const gfx::Image* top_left_image,
-            const gfx::Image* top_image,
-            const gfx::Image* top_right_image,
-            const gfx::Image* left_image,
-            const gfx::Image* center_image,
-            const gfx::Image* right_image,
-            const gfx::Image* bottom_left_image,
-            const gfx::Image* bottom_image,
-            const gfx::Image* bottom_right_image);
+  // Sets the grid to display the passed-in images (any of which can be NULL).
+  // Ownership of the images remains with the caller.  May be called more than
+  // once to switch images.
+  void SetImages(const gfx::Image* top_left_image,
+                 const gfx::Image* top_image,
+                 const gfx::Image* top_right_image,
+                 const gfx::Image* left_image,
+                 const gfx::Image* center_image,
+                 const gfx::Image* right_image,
+                 const gfx::Image* bottom_left_image,
+                 const gfx::Image* bottom_image,
+                 const gfx::Image* bottom_right_image);
 
   void SetSize(const gfx::Size& size);
 
@@ -153,11 +154,12 @@ class ASH_EXPORT ImageGrid {
   // Returns true if |layer|'s bounds don't fit within |size|.
   static bool LayerExceedsSize(const ui::Layer* layer, const gfx::Size& size);
 
-  // Initializes |layer_ptr| and |painter_ptr| to display |image|.
-  // Also adds the passed-in layer to |layer_|.
-  void InitImage(const gfx::Image* image,
-                 scoped_ptr<ui::Layer>* layer_ptr,
-                 scoped_ptr<ImagePainter>* painter_ptr);
+  // Sets |layer_ptr| and |painter_ptr| to display |image| and adds the
+  // passed-in layer to |layer_|.  If image is NULL resets |layer_ptr| and
+  // |painter_ptr| and removes any existing layer from |layer_|.
+  void SetImage(const gfx::Image* image,
+                scoped_ptr<ui::Layer>* layer_ptr,
+                scoped_ptr<ImagePainter>* painter_ptr);
 
   // Layer that contains all of the image layers.
   scoped_ptr<ui::Layer> layer_;

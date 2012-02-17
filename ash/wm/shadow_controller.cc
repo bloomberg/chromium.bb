@@ -12,6 +12,7 @@
 #include "ash/wm/window_properties.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "ui/aura/client/activation_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -31,9 +32,6 @@ ShadowType GetShadowTypeFromWindow(aura::Window* window) {
   switch (window->type()) {
     case aura::client::WINDOW_TYPE_NORMAL:
     case aura::client::WINDOW_TYPE_PANEL:
-      return CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAuraTranslucentFrames) ?
-              SHADOW_TYPE_NONE : SHADOW_TYPE_RECTANGULAR;
     case aura::client::WINDOW_TYPE_MENU:
     case aura::client::WINDOW_TYPE_TOOLTIP:
       return SHADOW_TYPE_RECTANGULAR;
@@ -47,6 +45,8 @@ ShadowType GetShadowTypeFromWindow(aura::Window* window) {
 
 ShadowController::ShadowController() {
   aura::Env::GetInstance()->AddObserver(this);
+  // Watch for window activation changes.
+  aura::RootWindow::GetInstance()->AddObserver(this);
 }
 
 ShadowController::~ShadowController() {
@@ -54,6 +54,7 @@ ShadowController::~ShadowController() {
        it != window_shadows_.end(); ++it) {
     it->first->RemoveObserver(this);
   }
+  aura::RootWindow::GetInstance()->RemoveObserver(this);
   aura::Env::GetInstance()->RemoveObserver(this);
 }
 
@@ -66,8 +67,20 @@ void ShadowController::OnWindowInitialized(aura::Window* window) {
 void ShadowController::OnWindowPropertyChanged(aura::Window* window,
                                                const void* key,
                                                intptr_t old) {
-  if (key == kShadowTypeKey)
+  if (key == kShadowTypeKey) {
     HandlePossibleShadowVisibilityChange(window);
+    return;
+  }
+  if (key == aura::client::kRootWindowActiveWindowKey) {
+    aura::Window* inactive = reinterpret_cast<aura::Window*>(old);
+    if (inactive)
+      HandleWindowActivationChange(inactive, false);
+    aura::Window* active =
+        window->GetProperty(aura::client::kRootWindowActiveWindowKey);
+    if (active)
+      HandleWindowActivationChange(active, true);
+    return;
+  }
 }
 
 void ShadowController::OnWindowBoundsChanged(aura::Window* window,
@@ -97,6 +110,13 @@ bool ShadowController::ShouldShowShadowForWindow(aura::Window* window) const {
 Shadow* ShadowController::GetShadowForWindow(aura::Window* window) {
   WindowShadowMap::const_iterator it = window_shadows_.find(window);
   return it != window_shadows_.end() ? it->second.get() : NULL;
+}
+
+void ShadowController::HandleWindowActivationChange(aura::Window* window,
+                                                    bool active) {
+  Shadow* shadow = GetShadowForWindow(window);
+  if (shadow)
+    shadow->SetStyle(active ? Shadow::STYLE_ACTIVE : Shadow::STYLE_INACTIVE);
 }
 
 void ShadowController::HandlePossibleShadowVisibilityChange(

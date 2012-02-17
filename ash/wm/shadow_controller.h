@@ -70,6 +70,9 @@ class ASH_EXPORT ShadowController : public aura::EnvObserver,
   // exists.
   Shadow* GetShadowForWindow(aura::Window* window);
 
+  // Updates the shadow style for |window| based on whether it is |active|.
+  void HandleWindowActivationChange(aura::Window* window, bool active);
+
   // Shows or hides |window|'s shadow as needed (creating the shadow if
   // necessary).
   void HandlePossibleShadowVisibilityChange(aura::Window* window);
