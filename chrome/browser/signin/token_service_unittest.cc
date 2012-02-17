@@ -144,6 +144,7 @@ TEST_F(TokenServiceTest, SanityCheck) {
   EXPECT_TRUE(service_->HasOAuthCredentials());
   EXPECT_EQ(service_->GetOAuthToken(), "oauth");
   EXPECT_EQ(service_->GetOAuthSecret(), "secret");
+  EXPECT_FALSE(service_->TokensLoadedFromDB());
 }
 
 TEST_F(TokenServiceTest, NoToken) {
@@ -387,6 +388,7 @@ TEST_F(TokenServiceTest, LoadTokensIntoMemoryBasic) {
   std::map<std::string, std::string> db_tokens;
   std::map<std::string, std::string> memory_tokens;
 
+  EXPECT_FALSE(service_->TokensLoadedFromDB());
   service_->LoadTokensIntoMemory(db_tokens, &memory_tokens);
   EXPECT_TRUE(db_tokens.empty());
   EXPECT_TRUE(memory_tokens.empty());
@@ -443,6 +445,7 @@ TEST_F(TokenServiceTest, LoadTokensIntoMemoryAdvanced) {
 TEST_F(TokenServiceTest, WebDBLoadIntegration) {
   service_->LoadTokensFromDB();
   WaitForDBLoadCompletion();
+  EXPECT_TRUE(service_->TokensLoadedFromDB());
   EXPECT_EQ(0U, success_tracker_.size());
 
   // Should result in DB write.
@@ -488,11 +491,14 @@ TEST_F(TokenServiceTest, MultipleLoadResetIntegration) {
   EXPECT_FALSE(service_->HasTokenForService(GaiaConstants::kSyncServiceOAuth));
   EXPECT_FALSE(service_->HasOAuthCredentials());
 
+  EXPECT_FALSE(service_->TokensLoadedFromDB());
   service_->LoadTokensFromDB();
   WaitForDBLoadCompletion();
+  EXPECT_TRUE(service_->TokensLoadedFromDB());
 
   service_->LoadTokensFromDB();  // Should do nothing.
   WaitForDBLoadCompletion();
+  EXPECT_TRUE(service_->TokensLoadedFromDB());
 
   EXPECT_EQ(2U, success_tracker_.size());
   EXPECT_TRUE(service_->HasTokenForService(GaiaConstants::kSyncService));
@@ -503,10 +509,12 @@ TEST_F(TokenServiceTest, MultipleLoadResetIntegration) {
 
   // Reset it one more time so there's no surprises.
   service_->ResetCredentialsInMemory();
+  EXPECT_FALSE(service_->TokensLoadedFromDB());
   success_tracker_.Reset();
 
   service_->LoadTokensFromDB();
   WaitForDBLoadCompletion();
+  EXPECT_TRUE(service_->TokensLoadedFromDB());
 
   EXPECT_EQ(2U, success_tracker_.size());
   EXPECT_TRUE(service_->HasTokenForService(GaiaConstants::kSyncService));

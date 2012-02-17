@@ -131,6 +131,11 @@ class TokenService : public GaiaAuthConsumer,
   // available in memory. If a DB load is pending it may still be serviced.
   void EraseTokensFromDB();
 
+  // Returns true if tokens have been loaded from the DB. Set when
+  // LoadTokensFromDB() completes, unset when ResetCredentialsInMemory() is
+  // called.
+  bool TokensLoadedFromDB() const;
+
   // For legacy services with their own auth routines, they can just read
   // the LSID out directly. Deprecated.
   bool HasLsid() const;
@@ -230,6 +235,8 @@ class TokenService : public GaiaAuthConsumer,
   scoped_refptr<net::URLRequestContextGetter> getter_;
   // Request handle to load Gaia tokens from DB.
   WebDataService::Handle token_loading_query_;
+  // True if token loading has completed (regardless of success).
+  bool tokens_loaded_;
 
   // Gaia request source for Gaia accounting.
   std::string source_;

@@ -215,6 +215,15 @@ void ProfileSyncService::TryStart() {
       // be done by the wizard.
       StartUp();
     }
+  } else if (HasSyncSetupCompleted()) {
+    TokenService* token_service = profile()->GetTokenService();
+    if (token_service && token_service->TokensLoadedFromDB() &&
+        !AreCredentialsAvailable()) {
+      // The token service has lost sync's tokens. We cannot recover from this
+      // without signing back in, which is not yet supported. For now, we
+      // trigger an unrecoverable error.
+      OnUnrecoverableError(FROM_HERE, "Sync credentials lost.");
+    }
   }
 }
 
@@ -1408,7 +1417,6 @@ void ProfileSyncService::Observe(int type,
           ": " + error.message();
         LOG(ERROR) << "ProfileSyncService error: "
                    << message;
-        // TODO: Don't
         OnUnrecoverableError(error.location(), message);
         return;
       }
@@ -1422,6 +1430,18 @@ void ProfileSyncService::Observe(int type,
       // enabled, and yet we still think we require a passphrase for decryption.
       DCHECK(!(IsPassphraseRequiredForDecryption() &&
                !IsEncryptedDatatypeEnabled()));
+
+      // Ensure we consume any cached gaia passphrase now that we've finished
+      // setting up. This will update the implicit passphrase if necessary,
+      // and do nothing if there's an explicit passphrase set.
+      if (!cached_passphrases_.gaia_passphrase.empty()) {
+        std::string gaia_passphrase = cached_passphrases_.gaia_passphrase;
+        cached_passphrases_.gaia_passphrase.clear();
+        DVLOG(1) << "Consuming cached gaia passphrase.";
+        SetPassphrase(gaia_passphrase, IMPLICIT,
+                      (cached_passphrases_.user_provided_gaia ?
+                           USER_PROVIDED : INTERNAL));
+      }
 
       // This must be done before we start syncing with the server to avoid
       // sending unencrypted data up on a first time sync.
@@ -1523,12 +1543,12 @@ void ProfileSyncService::Observe(int type,
         if (!sync_prefs_.IsStartSuppressed())
           StartUp();
       } else if (!auto_start_enabled_ &&
-                 !signin_->GetAuthenticatedUsername().empty()) {
+                 !signin_->GetAuthenticatedUsername().empty() &&
+                 HasSyncSetupCompleted()) {
         // If not in auto-start / Chrome OS mode, and we have a username
-        // without tokens, the user will need to signin again. NotifyObservers
-        // to trigger errors in the UI that will allow the user to re-login.
-        UpdateAuthErrorState(GoogleServiceAuthError(
-            GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+        // without tokens, the user will need to signin again. At the moment
+        // this is not supported, so we trigger an unrecoverable error.
+        OnUnrecoverableError(FROM_HERE, "Sync credentials lost.");
       }
       break;
     }

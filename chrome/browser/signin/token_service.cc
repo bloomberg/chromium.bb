@@ -39,7 +39,8 @@ const char* TokenService::kOAuthServices[] = {
 
 TokenService::TokenService()
     : profile_(NULL),
-      token_loading_query_(0) {
+      token_loading_query_(0),
+      tokens_loaded_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -101,6 +102,7 @@ void TokenService::ResetCredentialsInMemory() {
     token_loading_query_ = 0;
   }
 
+  tokens_loaded_ = false;
   token_map_.clear();
   credentials_ = GaiaAuthConsumer::ClientLoginResult();
   oauth_token_.clear();
@@ -154,6 +156,10 @@ void TokenService::EraseTokensFromDB() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (web_data_service_.get())
     web_data_service_->RemoveAllTokens();
+}
+
+bool TokenService::TokensLoadedFromDB() const {
+  return tokens_loaded_;
 }
 
 // static
@@ -370,6 +376,7 @@ void TokenService::OnWebDataServiceRequestDone(WebDataService::Handle h,
     LoadTokensIntoMemory(token_result->GetValue(), &token_map_);
   }
 
+  tokens_loaded_ = true;
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TOKEN_LOADING_FINISHED,
       content::Source<TokenService>(this),
