@@ -1616,6 +1616,9 @@ void CandidateWindowController::Impl::CreateView() {
   frame_.reset(new views::Widget);
   // The size is initially zero.
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
+  // |frame_| and |infolist_frame_| are owned by controller impl so
+  // they should use WIDGET_OWNS_NATIVE_WIDGET ownership.
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   // Show the candidate window always on top
   params.keep_on_top = true;
   frame_->Init(params);

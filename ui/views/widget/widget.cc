@@ -173,6 +173,7 @@ Widget::Widget()
       focus_on_creation_(true),
       is_top_level_(false),
       native_widget_initialized_(false),
+      native_widget_destroyed_(false),
       is_mouse_button_pressed_(false),
       last_mouse_event_was_move_(false) {
 }
@@ -184,8 +185,13 @@ Widget::~Widget() {
   }
 
   DestroyRootView();
-  if (ownership_ == InitParams::WIDGET_OWNS_NATIVE_WIDGET)
+  if (ownership_ == InitParams::WIDGET_OWNS_NATIVE_WIDGET) {
     delete native_widget_;
+  } else {
+    DCHECK(native_widget_destroyed_)
+        << "Destroying a widget with a live native widget. "
+        << "Widget probably should use WIDGET_OWNS_NATIVE_WIDGET ownership.";
+  }
 }
 
 // static
@@ -951,6 +957,7 @@ void Widget::OnNativeWidgetDestroying() {
 void Widget::OnNativeWidgetDestroyed() {
   widget_delegate_->DeleteDelegate();
   widget_delegate_ = NULL;
+  native_widget_destroyed_ = true;
 }
 
 gfx::Size Widget::GetMinimumSize() {
