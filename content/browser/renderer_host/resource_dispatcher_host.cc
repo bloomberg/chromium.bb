@@ -835,7 +835,7 @@ void ResourceDispatcherHost::OnTransferRequestToNewPage(int new_routing_id,
     // We probably want to remove this warning eventually, but I wanted to be
     // able to notice when this happens during initial development since it
     // should be rare and may indicate a bug.
-    DLOG(WARNING) << "Updating a request that wasn't found";
+    DVLOG(1) << "Updating a request that wasn't found";
     return;
   }
   net::URLRequest* request = i->second;
@@ -1025,7 +1025,7 @@ void ResourceDispatcherHost::FollowDeferredRedirect(
   PendingRequestList::iterator i = pending_requests_.find(
       GlobalRequestID(child_id, request_id));
   if (i == pending_requests_.end() || !i->second->status().is_success()) {
-    DLOG(WARNING) << "FollowDeferredRedirect for invalid request";
+    DVLOG(1) << "FollowDeferredRedirect for invalid request";
     return;
   }
 
@@ -1081,7 +1081,7 @@ void ResourceDispatcherHost::PauseRequest(int child_id,
   GlobalRequestID global_id(child_id, request_id);
   PendingRequestList::iterator i = pending_requests_.find(global_id);
   if (i == pending_requests_.end()) {
-    DLOG(WARNING) << "Pausing a request that wasn't found";
+    DVLOG(1) << "Pausing a request that wasn't found";
     return;
   }
 
@@ -1537,7 +1537,7 @@ void ResourceDispatcherHost::CancelRequest(int child_id,
     // We probably want to remove this warning eventually, but I wanted to be
     // able to notice when this happens during initial development since it
     // should be rare and may indicate a bug.
-    DLOG(WARNING) << "Canceling a request that wasn't found";
+    DVLOG(1) << "Canceling a request that wasn't found";
     return;
   }
   net::URLRequest* request = i->second;
