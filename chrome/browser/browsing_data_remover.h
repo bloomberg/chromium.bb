@@ -117,7 +117,7 @@ class BrowsingDataRemover : public content::NotificationObserver,
   BrowsingDataRemover(Profile* profile, TimePeriod time_period,
                       base::Time delete_end);
 
-  // Removes the specified items related to browsing.
+  // Removes the specified items related to browsing for all origins.
   void Remove(int remove_mask);
 
   void AddObserver(Observer* observer);
@@ -136,6 +136,14 @@ class BrowsingDataRemover : public content::NotificationObserver,
   // The clear API needs to be able to toggle removing_ in order to test that
   // only one BrowsingDataRemover instance can be called at a time.
   FRIEND_TEST_ALL_PREFIXES(ExtensionBrowsingDataTest, OneAtATime);
+
+  // The BrowsingDataRemover tests need to be able to access the implementation
+  // of Remove(), as it exposes details that aren't yet available in the public
+  // API. As soon as those details are exposed via new methods, this should be
+  // removed.
+  //
+  // TODO(mkwst): See http://crbug.com/113621
+  friend class BrowsingDataRemoverTest;
 
   enum CacheState {
     STATE_NONE,
@@ -164,6 +172,14 @@ class BrowsingDataRemover : public content::NotificationObserver,
   // Called when plug-in data has been cleared. Invokes NotifyAndDeleteIfDone.
   virtual void OnWaitableEventSignaled(
       base::WaitableEvent* waitable_event) OVERRIDE;
+
+  // Removes the specified items related to browsing for a specific host. If the
+  // provided |origin| is empty, data is removed for all origins. If
+  // |remove_protected_origins| is true, then data is removed even if the origin
+  // is otherwise protected (e.g. as an installed application).
+  void RemoveImpl(int remove_mask,
+                  const GURL& origin,
+                  bool remove_protected_origins);
 
   // If we're not waiting on anything, notifies observers and deletes this
   // object.
@@ -289,6 +305,12 @@ class BrowsingDataRemover : public content::NotificationObserver,
 
   // The removal mask for the current removal operation.
   int remove_mask_;
+
+  // The origin for the current removal operation.
+  GURL remove_origin_;
+
+  // Should data for protected origins be removed?
+  bool remove_protected_;
 
   ObserverList<Observer> observer_list_;
 

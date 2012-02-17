@@ -52,6 +52,8 @@ const quota::StorageType kPersistent = quota::kStorageTypePersistent;
 const quota::QuotaClient::ID kClientFile = quota::QuotaClient::kFileSystem;
 const quota::QuotaClient::ID kClientDB = quota::QuotaClient::kIndexedDatabase;
 
+}  // namespace
+
 class BrowsingDataRemoverTester : public BrowsingDataRemover::Observer {
  public:
   BrowsingDataRemoverTester()
@@ -321,6 +323,22 @@ class BrowsingDataRemoverTest : public testing::Test,
 
     // BrowsingDataRemover deletes itself when it completes.
     remover->Remove(remove_mask);
+    tester->BlockUntilNotified();
+  }
+
+  void BlockUntilOriginDataRemoved(BrowsingDataRemover::TimePeriod period,
+                                   int remove_mask,
+                                   const GURL& remove_origin,
+                                   BrowsingDataRemoverTester* tester) {
+    BrowsingDataRemover* remover = new BrowsingDataRemover(
+        profile_.get(), period,
+        base::Time::Now() + base::TimeDelta::FromMilliseconds(10));
+    remover->AddObserver(tester);
+
+    called_with_details_.reset(new BrowsingDataRemover::NotificationDetails());
+
+    // BrowsingDataRemover deletes itself when it completes.
+    remover->RemoveImpl(remove_mask, remove_origin, false);
     tester->BlockUntilNotified();
   }
 
@@ -669,4 +687,40 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedUnprotectedOrigins) {
       kClientFile));
 }
 
-}  // namespace
+TEST_F(BrowsingDataRemoverTest, OriginBasedHistoryRemoval) {
+  scoped_ptr<RemoveHistoryTester> tester(
+      new RemoveHistoryTester(GetProfile()));
+
+  base::Time two_hours_ago = base::Time::Now() - base::TimeDelta::FromHours(2);
+
+  tester->AddHistory(kOrigin1, base::Time::Now());
+  tester->AddHistory(kOrigin2, two_hours_ago);
+  ASSERT_TRUE(tester->HistoryContainsURL(kOrigin1));
+  ASSERT_TRUE(tester->HistoryContainsURL(kOrigin2));
+
+  BlockUntilOriginDataRemoved(BrowsingDataRemover::EVERYTHING,
+      BrowsingDataRemover::REMOVE_HISTORY, kOrigin2, tester.get());
+
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_HISTORY, GetRemovalMask());
+  EXPECT_TRUE(tester->HistoryContainsURL(kOrigin1));
+  EXPECT_FALSE(tester->HistoryContainsURL(kOrigin2));
+}
+
+TEST_F(BrowsingDataRemoverTest, OriginAndTimeBasedHistoryRemoval) {
+  scoped_ptr<RemoveHistoryTester> tester(
+      new RemoveHistoryTester(GetProfile()));
+
+  base::Time two_hours_ago = base::Time::Now() - base::TimeDelta::FromHours(2);
+
+  tester->AddHistory(kOrigin1, base::Time::Now());
+  tester->AddHistory(kOrigin2, two_hours_ago);
+  ASSERT_TRUE(tester->HistoryContainsURL(kOrigin1));
+  ASSERT_TRUE(tester->HistoryContainsURL(kOrigin2));
+
+  BlockUntilOriginDataRemoved(BrowsingDataRemover::LAST_HOUR,
+      BrowsingDataRemover::REMOVE_HISTORY, kOrigin2, tester.get());
+
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_HISTORY, GetRemovalMask());
+  EXPECT_TRUE(tester->HistoryContainsURL(kOrigin1));
+  EXPECT_TRUE(tester->HistoryContainsURL(kOrigin2));
+}
