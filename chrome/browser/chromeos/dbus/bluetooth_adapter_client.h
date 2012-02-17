@@ -7,10 +7,12 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/observer_list.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/dbus/bluetooth_property.h"
 #include "dbus/object_path.h"
 
 namespace dbus {
@@ -25,10 +27,34 @@ class BluetoothManagerClient;
 // interface.
 class BluetoothAdapterClient {
  public:
+  // Structure of properties associated with bluetooth adapters.
+  struct Properties : public BluetoothPropertySet {
+    BluetoothProperty<std::string> address;
+    BluetoothProperty<std::string> name;
+    BluetoothProperty<uint32> bluetooth_class;
+    BluetoothProperty<bool> powered;
+    BluetoothProperty<bool> discoverable;
+    BluetoothProperty<bool> pairable;
+    BluetoothProperty<uint32> pairable_timeout;
+    BluetoothProperty<uint32> discoverable_timeout;
+    BluetoothProperty<bool> discovering;
+    BluetoothProperty<std::vector<dbus::ObjectPath> > devices;
+    BluetoothProperty<std::vector<std::string> > uuids;
+
+    Properties(dbus::ObjectProxy* object_proxy,
+               PropertyChangedCallback callback);
+    virtual ~Properties();
+  };
+
   // Interface for observing changes from a local bluetooth adapter.
   class Observer {
    public:
     virtual ~Observer() {}
+
+    // Called when the adapter with object path |object_path| has a
+    // change in value of the property named |property_name|.
+    virtual void PropertyChanged(const dbus::ObjectPath& object_path,
+                                 const std::string& property_name) {}
 
     // Called when a new known device has been created.
     virtual void DeviceCreated(const dbus::ObjectPath& object_path,
@@ -37,10 +63,6 @@ class BluetoothAdapterClient {
     // Called when a previously known device is removed.
     virtual void DeviceRemoved(const dbus::ObjectPath& object_path,
                                const dbus::ObjectPath& device_path) {}
-
-    // Called when the adapter's Discovering property changes.
-    virtual void DiscoveringPropertyChanged(const dbus::ObjectPath& object_path,
-                                            bool discovering) {}
 
     // Called when a new remote device has been discovered.
     // |device_properties| should be copied if needed.
@@ -59,6 +81,10 @@ class BluetoothAdapterClient {
   // |object_path|.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
+
+  // Obtain the properties for the adapter with object path |object_path|,
+  // any values should be copied if needed.
+  virtual Properties* GetProperties(const dbus::ObjectPath& object_path) = 0;
 
   // Starts a device discovery on the adapter with object path |object_path|.
   virtual void StartDiscovery(const dbus::ObjectPath& object_path) = 0;

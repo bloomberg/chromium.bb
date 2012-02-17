@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_manager_client.h"
+#include "chrome/browser/chromeos/dbus/bluetooth_property.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -177,6 +178,30 @@ bool PopArrayOfDictEntries(dbus::MessageReader* reader,
 
 namespace chromeos {
 
+BluetoothAdapterClient::Properties::Properties(dbus::ObjectProxy *object_proxy,
+                                               PropertyChangedCallback callback)
+    : BluetoothPropertySet(object_proxy,
+                           bluetooth_adapter::kBluetoothAdapterInterface,
+                           callback) {
+  RegisterProperty(bluetooth_adapter::kAddressProperty, &address);
+  RegisterProperty(bluetooth_adapter::kNameProperty, &name);
+  RegisterProperty(bluetooth_adapter::kClassProperty, &bluetooth_class);
+  RegisterProperty(bluetooth_adapter::kPoweredProperty, &powered);
+  RegisterProperty(bluetooth_adapter::kDiscoverableProperty, &discoverable);
+  RegisterProperty(bluetooth_adapter::kPairableProperty, &pairable);
+  RegisterProperty(bluetooth_adapter::kPairableTimeoutProperty,
+                   &pairable_timeout);
+  RegisterProperty(bluetooth_adapter::kDiscoverableTimeoutProperty,
+                   &discoverable_timeout);
+  RegisterProperty(bluetooth_adapter::kDiscoveringProperty, &discovering);
+  RegisterProperty(bluetooth_adapter::kDevicesProperty, &devices);
+  RegisterProperty(bluetooth_adapter::kUUIDsProperty, &uuids);
+}
+
+BluetoothAdapterClient::Properties::~Properties() {
+}
+
+
 // The BluetoothAdapterClient implementation used in production.
 class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
                                   private BluetoothManagerClient::Observer {
@@ -192,6 +217,13 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
   }
 
   virtual ~BluetoothAdapterClientImpl() {
+    // Clean up Properties structures
+    for (ObjectMap::iterator iter = object_map_.begin();
+         iter != object_map_.end(); ++iter) {
+      Object object = iter->second;
+      Properties* properties = object.second;
+      delete properties;
+    }
   }
 
   // BluetoothAdapterClient override.
@@ -209,6 +241,11 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
   }
 
   // BluetoothAdapterClient override.
+  virtual Properties* GetProperties(const dbus::ObjectPath& object_path) {
+    return GetObject(object_path).second;
+  }
+
+  // BluetoothAdapterClient override.
   virtual void StartDiscovery(const dbus::ObjectPath& object_path) {
     VLOG(1) << "StartDiscovery: " << object_path.value();
 
@@ -216,7 +253,7 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
         bluetooth_adapter::kBluetoothAdapterInterface,
         bluetooth_adapter::kStartDiscovery);
 
-    dbus::ObjectProxy* adapter_proxy = GetObjectProxyForPath(object_path);
+    dbus::ObjectProxy* adapter_proxy = GetObjectProxy(object_path);
 
     adapter_proxy->CallMethod(
         &method_call,
@@ -233,7 +270,7 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
         bluetooth_adapter::kBluetoothAdapterInterface,
         bluetooth_adapter::kStopDiscovery);
 
-    dbus::ObjectProxy* adapter_proxy = GetObjectProxyForPath(object_path);
+    dbus::ObjectProxy* adapter_proxy = GetObjectProxy(object_path);
 
     adapter_proxy->CallMethod(
         &method_call,
@@ -243,6 +280,12 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
   }
 
  private:
+  // We maintain a collection of dbus object proxies and properties structures
+  // for each adapter.
+  typedef std::pair<dbus::ObjectProxy*, Properties*> Object;
+  typedef std::map<const dbus::ObjectPath, Object> ObjectMap;
+  ObjectMap object_map_;
+
   // BluetoothManagerClient::Observer override.
   virtual void AdapterAdded(const dbus::ObjectPath& object_path) OVERRIDE {
     VLOG(1) << "AdapterAdded: " << object_path.value();
@@ -251,27 +294,25 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
   // BluetoothManagerClient::Observer override.
   virtual void AdapterRemoved(const dbus::ObjectPath& object_path) OVERRIDE {
     VLOG(1) << "AdapterRemoved: " << object_path.value();
-    RemoveObjectProxyForPath(object_path);
+    RemoveObject(object_path);
   }
 
-  // Ensures that we have a dbus object proxy for an adapter with dbus
-  // object path |object_path|, and if not, creates it and stores it in
-  // our |proxy_map_| map.
-  dbus::ObjectProxy* GetObjectProxyForPath(
-      const dbus::ObjectPath& object_path) {
-    VLOG(1) << "GetObjectProxyForPath: " << object_path.value();
+  // Ensures that we have an object proxy and properties structure for
+  // an adapter with object path |object_path|, creating it if not and
+  // storing in our |object_map_| map.
+  Object GetObject(const dbus::ObjectPath& object_path) {
+    VLOG(1) << "GetObject: " << object_path.value();
 
-    ProxyMap::iterator it = proxy_map_.find(object_path);
-    if (it != proxy_map_.end())
-      return it->second;
+    ObjectMap::iterator iter = object_map_.find(object_path);
+    if (iter != object_map_.end())
+      return iter->second;
 
+    // Create the object proxy.
     DCHECK(bus_);
-    dbus::ObjectProxy* adapter_proxy = bus_->GetObjectProxy(
+    dbus::ObjectProxy* object_proxy = bus_->GetObjectProxy(
         bluetooth_adapter::kBluetoothAdapterServiceName, object_path);
 
-    proxy_map_[object_path] = adapter_proxy;
-
-    adapter_proxy->ConnectToSignal(
+    object_proxy->ConnectToSignal(
         bluetooth_adapter::kBluetoothAdapterInterface,
         bluetooth_adapter::kDeviceCreatedSignal,
         base::Bind(&BluetoothAdapterClientImpl::DeviceCreatedReceived,
@@ -279,7 +320,7 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
         base::Bind(&BluetoothAdapterClientImpl::DeviceCreatedConnected,
                    weak_ptr_factory_.GetWeakPtr(), object_path));
 
-    adapter_proxy->ConnectToSignal(
+    object_proxy->ConnectToSignal(
         bluetooth_adapter::kBluetoothAdapterInterface,
         bluetooth_adapter::kDeviceRemovedSignal,
         base::Bind(&BluetoothAdapterClientImpl::DeviceRemovedReceived,
@@ -287,15 +328,7 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
         base::Bind(&BluetoothAdapterClientImpl::DeviceRemovedConnected,
                    weak_ptr_factory_.GetWeakPtr(), object_path));
 
-    adapter_proxy->ConnectToSignal(
-        bluetooth_adapter::kBluetoothAdapterInterface,
-        bluetooth_adapter::kPropertyChangedSignal,
-        base::Bind(&BluetoothAdapterClientImpl::PropertyChangedReceived,
-                   weak_ptr_factory_.GetWeakPtr(), object_path),
-        base::Bind(&BluetoothAdapterClientImpl::PropertyChangedConnected,
-                   weak_ptr_factory_.GetWeakPtr(), object_path));
-
-    adapter_proxy->ConnectToSignal(
+    object_proxy->ConnectToSignal(
         bluetooth_adapter::kBluetoothAdapterInterface,
         bluetooth_adapter::kDeviceFoundSignal,
         base::Bind(&BluetoothAdapterClientImpl::DeviceFoundReceived,
@@ -303,7 +336,7 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
         base::Bind(&BluetoothAdapterClientImpl::DeviceFoundConnected,
                    weak_ptr_factory_.GetWeakPtr(), object_path));
 
-    adapter_proxy->ConnectToSignal(
+    object_proxy->ConnectToSignal(
         bluetooth_adapter::kBluetoothAdapterInterface,
         bluetooth_adapter::kDeviceDisappearedSignal,
         base::Bind(&BluetoothAdapterClientImpl::DeviceDisappearedReceived,
@@ -311,14 +344,50 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
         base::Bind(&BluetoothAdapterClientImpl::DeviceDisappearedConnected,
                    weak_ptr_factory_.GetWeakPtr(), object_path));
 
-    return adapter_proxy;
+    // Create the properties structure.
+    Properties* properties = new Properties(
+        object_proxy,
+        base::Bind(&BluetoothAdapterClientImpl::PropertyChanged,
+                   weak_ptr_factory_.GetWeakPtr(), object_path));
+
+    properties->ConnectSignals();
+    properties->GetAll();
+
+    Object object = std::make_pair(object_proxy, properties);
+    object_map_[object_path] = object;
+    return object;
   }
 
-  // Removes the dbus object proxy for the adapter with dbus object path
-  // |object_path| from our |proxy_map_| map.
-  void RemoveObjectProxyForPath(const dbus::ObjectPath& object_path) {
-    VLOG(1) << "RemoveObjectProxyForPath: " << object_path.value();
-    proxy_map_.erase(object_path);
+  // Removes the dbus object proxy and properties for the adapter with
+  // dbus object path |object_path| from our |object_map_| map.
+  void RemoveObject(const dbus::ObjectPath& object_path) {
+    VLOG(1) << "RemoveObject: " << object_path.value();
+
+    ObjectMap::iterator iter = object_map_.find(object_path);
+    if (iter != object_map_.end()) {
+      // Clean up the Properties structure.
+      Object object = iter->second;
+      Properties* properties = object.second;
+      delete properties;
+
+      object_map_.erase(iter);
+    }
+  }
+
+  // Returns a pointer to the object proxy for |object_path|, creating
+  // it if necessary.
+  virtual dbus::ObjectProxy* GetObjectProxy(
+      const dbus::ObjectPath& object_path) {
+    return GetObject(object_path).first;
+  }
+
+  // Called by BluetoothPropertySet when a property value is changed,
+  // either by result of a signal or response to a GetAll() or Get()
+  // call. Informs observers.
+  void PropertyChanged(const dbus::ObjectPath& object_path,
+                       const std::string& property_name) {
+    FOR_EACH_OBSERVER(BluetoothAdapterClient::Observer, observers_,
+                      PropertyChanged(object_path, property_name));
   }
 
   // Called by dbus:: when a DeviceCreated signal is received.
@@ -375,49 +444,6 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
                               bool success) {
     LOG_IF(WARNING, !success) << object_path.value()
                               << ": Failed to connect to DeviceRemoved signal.";
-  }
-
-  // Called by dbus:: when a PropertyChanged signal is received.
-  void PropertyChangedReceived(const dbus::ObjectPath& object_path,
-                               dbus::Signal* signal) {
-    DCHECK(signal);
-    dbus::MessageReader reader(signal);
-    std::string property_name;
-    if (!reader.PopString(&property_name)) {
-      LOG(ERROR) << object_path.value()
-                 << ": PropertyChanged signal has incorrect parameters: "
-                 << signal->ToString();
-      return;
-    }
-
-    if (property_name != bluetooth_adapter::kDiscoveringProperty) {
-      VLOG(1) << object_path.value() << ": PropertyChanged: " << property_name;
-      // We don't care.
-      return;
-    }
-
-    bool discovering = false;
-    if (!reader.PopVariantOfBool(&discovering)) {
-      LOG(ERROR) << object_path.value()
-                 << ": PropertyChanged signal has incorrect parameters: "
-                 << signal->ToString();
-      return;
-    }
-    VLOG(1) << object_path.value() << ": PropertyChanged: Discovering = "
-            << discovering;
-
-    FOR_EACH_OBSERVER(BluetoothAdapterClient::Observer, observers_,
-                      DiscoveringPropertyChanged(object_path, discovering));
-  }
-
-  // Called by dbus:: when the PropertyChanged signal is initially connected.
-  void PropertyChangedConnected(const dbus::ObjectPath& object_path,
-                                const std::string& interface_name,
-                                const std::string& signal_name,
-                                bool success) {
-    LOG_IF(WARNING, !success)
-        << object_path.value()
-        << ": Failed to connect to PropertyChanged signal.";
   }
 
   // Called by dbus:: when a DeviceFound signal is received.
@@ -504,10 +530,6 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
 
   dbus::Bus* bus_;
 
-  // We maintain a collection of dbus object proxies, one for each adapter.
-  typedef std::map<const dbus::ObjectPath, dbus::ObjectProxy*> ProxyMap;
-  ProxyMap proxy_map_;
-
   // List of observers interested in event notifications from us.
   ObserverList<BluetoothAdapterClient::Observer> observers_;
 
@@ -526,6 +548,12 @@ class BluetoothAdapterClientStubImpl : public BluetoothAdapterClient {
   // BluetoothAdapterClient override.
   virtual void RemoveObserver(Observer* observer) {
     VLOG(1) << "RemoveObserver";
+  }
+
+  // BluetoothAdapterClient override.
+  virtual Properties* GetProperties(const dbus::ObjectPath& object_path) {
+    VLOG(1) << "GetProperties: " << object_path.value();
+    return NULL;
   }
 
   // BluetoothAdapterClient override.

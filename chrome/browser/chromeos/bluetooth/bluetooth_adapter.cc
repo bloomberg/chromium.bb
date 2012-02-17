@@ -59,13 +59,23 @@ class BluetoothAdapterImpl : public BluetoothAdapter,
   }
 
   // BluetoothAdapterClient::Observer override.
-  virtual void DiscoveringPropertyChanged(const dbus::ObjectPath& object_path,
-                                          bool discovering) {
-    VLOG(1) << id_ << ": object_path = " << object_path.value()
-            << ", Discovering = " << discovering;
-    if (object_path.value() != id_) {
+  virtual void PropertyChanged(const dbus::ObjectPath& object_path,
+                               const std::string& property_name) {
+    if (object_path.value() != id_)
       return;
-    }
+
+    DCHECK(bluetooth_adapter_client_);
+    BluetoothAdapterClient::Properties* properties =
+        bluetooth_adapter_client_->GetProperties(object_path);
+
+    DCHECK(properties);
+    if (property_name != properties->discovering.name())
+      return;
+
+    bool discovering = properties->discovering.value();
+
+    DVLOG(1) << id_ << ": object_path = " << object_path.value()
+            << ", Discovering = " << discovering;
     if (discovering) {
       FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                         DiscoveryStarted(object_path.value()));
