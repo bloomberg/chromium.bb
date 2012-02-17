@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,12 +7,15 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/string16.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/accessibility/dump_accessibility_tree_helper.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
@@ -25,34 +28,10 @@
 using content::OpenURLParams;
 using content::Referrer;
 
-// Suffix of the expectation file corresponding to html file.
-// Example:
-// HTML test:      test-file.html
-// Expected:       test-file-expected-mac.txt.
-// Auto-generated: test-file-actual-mac.txt
-#if defined(OS_WIN)
-static const std::string kActualFileSuffix = "-actual-win.txt";
-static const std::string kExpectedFileSuffix  = "-expected-win.txt";
-#elif defined(OS_MACOSX)
-static const std::string kActualFileSuffix = "-actual-mac.txt";
-static const std::string kExpectedFileSuffix = "-expected-mac.txt";
-#else
-#error DumpAccessibilityTree does not support this platform.
-#endif
-
-// HTML id attribute prefix identifying a node to test.
-static const std::string kTestId = "test";
-
+namespace {
 // Required to enter html content into a url.
-static const std::string kUrlPreamble = "data:text/html,\n<!doctype html>";
-
-// Dumps a BrowserAccessibility tree into a string.
-void DumpAccessibilityTree(BrowserAccessibility* node,
-                           std::string* contents) {
-  *contents += node->ToString() + "\n";
-  for (size_t i = 0; i < node->children().size(); ++i)
-    DumpAccessibilityTree(node->children()[i], contents);
-}
+  static const std::string kUrlPreamble = "data:text/html,\n<!doctype html>";
+} // namespace
 
 // This test takes a snapshot of the platform BrowserAccessibility tree and
 // tests it against an expected baseline.
@@ -72,6 +51,8 @@ class DumpAccessibilityTreeTest : public InProcessBrowserTest {
                                  &resources_pack_path));
     ResourceBundle::AddDataPackToSharedInstance(resources_pack_path);
   }
+
+  DumpAccessibilityTreeHelper helper_;
 };
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
@@ -86,7 +67,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   // Setup test paths.
   FilePath dir_test_data;
   EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &dir_test_data));
-  FilePath test_path(dir_test_data.Append(FilePath("accessibility")));
+  FilePath test_path(dir_test_data.Append(FILE_PATH_LITERAL("accessibility")));
   EXPECT_TRUE(file_util::PathExists(test_path))
       << test_path.LossyDisplayName();
 
@@ -94,7 +75,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   file_util::FileEnumerator file_enumerator(test_path,
                                             false,
                                             file_util::FileEnumerator::FILES,
-                                            "*.html");
+                                            FILE_PATH_LITERAL("*.html"));
 
   // TODO(dtseng): Make each of these a gtest with script.
   FilePath html_file;
@@ -104,7 +85,8 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
 
     std::string expected_contents;
     FilePath expected_file =
-        FilePath(html_file.RemoveExtension().value() + kExpectedFileSuffix);
+        FilePath(html_file.RemoveExtension().value() +
+            helper_.GetExpectedFileSuffix());
     file_util::ReadFileToString(
         expected_file,
         &expected_contents);
@@ -113,7 +95,9 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
     ui_test_utils::WindowedNotificationObserver tree_updated_observer(
         content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
         content::NotificationService::AllSources());
-    GURL url(kUrlPreamble + html_contents);
+    string16 html_contents16;
+    html_contents16 = UTF8ToUTF16(html_contents);
+    GURL url(UTF8ToUTF16(kUrlPreamble) + html_contents16);
     browser()->OpenURL(OpenURLParams(
         url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
 
@@ -121,17 +105,20 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
     tree_updated_observer.Wait();
 
     // Perform a diff (or write the initial baseline).
-    std::string actual_contents;
-    DumpAccessibilityTree(
+    string16 actual_contents;
+    helper_.DumpAccessibilityTree(
         host_view->GetBrowserAccessibilityManager()->GetRoot(),
         &actual_contents);
-    EXPECT_EQ(expected_contents, actual_contents);
+    std::string actual_contents8 = UTF16ToUTF8(actual_contents);
+    EXPECT_EQ(expected_contents, actual_contents8);
 
     if (!file_util::PathExists(expected_file)) {
       FilePath actual_file =
-          FilePath(html_file.RemoveExtension().value() + kActualFileSuffix);
+          FilePath(html_file.RemoveExtension().value() +
+                   helper_.GetActualFileSuffix());
+
       EXPECT_TRUE(file_util::WriteFile(
-          actual_file, actual_contents.c_str(), actual_contents.size()));
+          actual_file, actual_contents8.c_str(), actual_contents8.size()));
 
       ADD_FAILURE() << "No expectation found. Create it by doing:\n"
           << "mv " << actual_file.LossyDisplayName() << " "
