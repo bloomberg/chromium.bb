@@ -31,6 +31,10 @@ class FocusCycler : public ui::AcceleratorTarget {
   FocusCycler();
   virtual ~FocusCycler();
 
+  // Returns the widget the FocusCycler is attempting to activate or NULL if
+  // FocusCycler is not activating any widgets.
+  const views::Widget* widget_activating() const { return widget_activating_; }
+
   // Add a widget to the focus cycle and set up accelerators.  The widget needs
   // to have an AccessiblePaneView as the content view.
   void AddWidget(views::Widget* widget);
@@ -44,6 +48,9 @@ class FocusCycler : public ui::AcceleratorTarget {
 
  private:
   std::vector<views::Widget*> widgets_;
+
+  // See description above getter.
+  views::Widget* widget_activating_;
 
   DISALLOW_COPY_AND_ASSIGN(FocusCycler);
 };

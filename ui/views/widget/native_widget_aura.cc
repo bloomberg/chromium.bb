@@ -765,7 +765,7 @@ void NativeWidgetAura::OnWindowVisibilityChanged(bool visible) {
 // NativeWidgetAura, aura::ActivationDelegate implementation:
 
 bool NativeWidgetAura::ShouldActivate(aura::Event* event) {
-  return can_activate_;
+  return can_activate_ && delegate_->CanActivate();
 }
 
 void NativeWidgetAura::OnActivated() {

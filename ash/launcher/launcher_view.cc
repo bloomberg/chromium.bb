@@ -214,7 +214,7 @@ void LauncherView::Init() {
   }
 
   overflow_button_ = new views::ImageButton(this);
-  overflow_button_->set_focusable(true);
+  overflow_button_->set_accessibility_focusable(true);
   overflow_button_->SetImage(
       views::CustomButton::BS_NORMAL,
       rb.GetImageNamed(IDR_AURA_LAUNCHER_OVERFLOW).ToSkBitmap());

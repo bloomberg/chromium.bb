@@ -4,6 +4,7 @@
 
 #include "ash/launcher/launcher.h"
 
+#include "ash/focus_cycler.h"
 #include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_view.h"
@@ -19,6 +20,7 @@
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace ash {
 
@@ -56,6 +58,10 @@ class Launcher::DelegateView : public views::WidgetDelegate,
   void SetStatusWidth(int width);
   int status_width() const { return status_width_; }
 
+  void set_focus_cycler(const internal::FocusCycler* focus_cycler) {
+    focus_cycler_ = focus_cycler;
+  }
+
   // views::View overrides
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
@@ -68,20 +74,32 @@ class Launcher::DelegateView : public views::WidgetDelegate,
     return View::GetWidget();
   }
 
+  // views::WidgetDelegateView overrides:
+  virtual bool CanActivate() const OVERRIDE {
+    // We don't want mouse clicks to activate us, but we need to allow
+    // activation when the user is using the keyboard (FocusCycler).
+    return focus_cycler_ && focus_cycler_->widget_activating() == GetWidget();
+  }
 
  private:
   int status_width_;
+  const internal::FocusCycler* focus_cycler_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegateView);
 };
 
 Launcher::DelegateView::DelegateView()
-    : status_width_(0) {
+    : status_width_(0),
+      focus_cycler_(NULL) {
   set_background(
       views::Background::CreateBackgroundPainter(true, new ShelfPainter()));
 }
 
 Launcher::DelegateView::~DelegateView() {
+}
+
+void Launcher::SetFocusCycler(const internal::FocusCycler* focus_cycler) {
+  delegate_view_->set_focus_cycler(focus_cycler);
 }
 
 void Launcher::DelegateView::SetStatusWidth(int width) {

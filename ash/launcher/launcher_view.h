@@ -11,7 +11,7 @@
 #include "ash/launcher/launcher_button_host.h"
 #include "ash/launcher/launcher_model_observer.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/widget/widget_delegate.h"
+#include "ui/views/view.h"
 
 namespace views {
 class BoundsAnimator;
@@ -29,7 +29,7 @@ class ViewModel;
 
 namespace internal {
 
-class LauncherView : public views::WidgetDelegateView,
+class LauncherView : public views::View,
                      public LauncherModelObserver,
                      public views::ButtonListener,
                      public LauncherButtonHost {

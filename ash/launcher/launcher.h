@@ -20,6 +20,10 @@ class Widget;
 
 namespace ash {
 
+namespace internal {
+class FocusCycler;
+}
+
 class LauncherDelegate;
 class LauncherModel;
 
@@ -27,6 +31,9 @@ class ASH_EXPORT Launcher {
  public:
   explicit Launcher(aura::Window* window_container);
   ~Launcher();
+
+  // Sets the focus cycler.
+  void SetFocusCycler(const internal::FocusCycler* focus_cycler);
 
   // Sets the width of the status area.
   void SetStatusWidth(int width);

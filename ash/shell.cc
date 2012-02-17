@@ -353,6 +353,7 @@ void Shell::Init() {
   focus_cycler_.reset(new internal::FocusCycler());
   focus_cycler_->AddWidget(status_widget_);
   focus_cycler_->AddWidget(launcher_->widget());
+  launcher_->SetFocusCycler(focus_cycler_.get());
 
   // Force a layout.
   root_window->layout_manager()->OnWindowResized();

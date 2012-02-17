@@ -17,7 +17,7 @@ namespace ash {
 
 namespace internal {
 
-FocusCycler::FocusCycler() {
+FocusCycler::FocusCycler() : widget_activating_(NULL) {
 }
 
 FocusCycler::~FocusCycler() {
@@ -71,7 +71,9 @@ void FocusCycler::RotateFocus(Direction direction) {
       views::AccessiblePaneView* view =
           static_cast<views::AccessiblePaneView*>(widget->GetContentsView());
       if (view->SetPaneFocusAndFocusDefault()) {
+        widget_activating_ = widget;
         widget->Activate();
+        widget_activating_ = NULL;
         if (widget->IsActive())
           break;
       }

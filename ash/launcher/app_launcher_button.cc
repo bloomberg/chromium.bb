@@ -22,7 +22,7 @@ AppLauncherButton::AppLauncherButton(views::ButtonListener* listener,
       host_(host) {
   SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                     views::ImageButton::ALIGN_MIDDLE);
-  set_focusable(true);
+  set_accessibility_focusable(true);
 }
 
 AppLauncherButton::~AppLauncherButton() {
