@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -52,9 +52,6 @@ def BuildArgParser():
                     metavar='DEST SRC',
                     help='Add a redirect to the HTTP server, '
                     'requests for SRC will result in a redirect (302) to DEST.')
-  parser.add_option('--enable_experimental_js', dest='enable_experimental_js',
-                    action='store_true', default=False,
-                    help='Allow use of experimental JavaScript APIs')
   parser.add_option('--prefer_portable_in_manifest',
                     dest='prefer_portable_in_manifest',
                     action='store_true', default=False,
