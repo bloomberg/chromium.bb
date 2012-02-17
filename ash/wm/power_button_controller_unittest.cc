@@ -113,6 +113,7 @@ TEST_F(PowerButtonControllerTest, LegacyLockAndShutDown) {
       test_api_->ContainerGroupIsAnimated(
           PowerButtonController::ALL_CONTAINERS,
           PowerButtonController::ANIMATION_FAST_CLOSE));
+  EXPECT_FALSE(aura::RootWindow::GetInstance()->cursor_shown());
   EXPECT_TRUE(test_api_->real_shutdown_timer_is_running());
   test_api_->trigger_real_shutdown_timeout();
   EXPECT_EQ(1, delegate_->num_shutdown_requests());
@@ -180,7 +181,11 @@ TEST_F(PowerButtonControllerTest, ShutdownWhenNotLoggedIn) {
   EXPECT_EQ(0, delegate_->num_shutdown_requests());
   EXPECT_TRUE(
       test_api_->ContainerGroupIsAnimated(
-          PowerButtonController::ALL_CONTAINERS,
+          PowerButtonController::ALL_BUT_SCREEN_LOCKER_AND_RELATED_CONTAINERS,
+          PowerButtonController::ANIMATION_HIDE));
+  EXPECT_TRUE(
+      test_api_->ContainerGroupIsAnimated(
+          PowerButtonController::SCREEN_LOCKER_AND_RELATED_CONTAINERS,
           PowerButtonController::ANIMATION_FAST_CLOSE));
 
   // When the timout fires, we should request a shutdown.
@@ -516,16 +521,69 @@ TEST_F(PowerButtonControllerTest, PowerButtonPreemptsLockButton) {
 // slow-close path (e.g. via the wrench menu), test that we still show the
 // fast-close animation and display the background layer.
 TEST_F(PowerButtonControllerTest, LockWithoutButton) {
-  controller_->set_has_legacy_power_button_for_test(false);
   controller_->OnLoginStateChange(true /*logged_in*/, false /*is_guest*/);
-  controller_->OnLockStateChange(false);
-
   controller_->OnStartingLock();
   EXPECT_TRUE(
       test_api_->ContainerGroupIsAnimated(
           PowerButtonController::ALL_BUT_SCREEN_LOCKER_AND_RELATED_CONTAINERS,
           PowerButtonController::ANIMATION_FAST_CLOSE));
   EXPECT_TRUE(test_api_->BackgroundLayerIsVisible());
+}
+
+// When we hear that the process is exiting but we haven't had a chance to
+// display an animation, we should just blank the screen.
+TEST_F(PowerButtonControllerTest, ShutdownWithoutButton) {
+  controller_->OnLoginStateChange(true /*logged_in*/, false /*is_guest*/);
+  controller_->OnExit();
+  EXPECT_TRUE(
+      test_api_->ContainerGroupIsAnimated(
+          PowerButtonController::ALL_CONTAINERS,
+          PowerButtonController::ANIMATION_HIDE));
+  EXPECT_TRUE(test_api_->BackgroundLayerIsVisible());
+  EXPECT_FALSE(aura::RootWindow::GetInstance()->cursor_shown());
+}
+
+// Test that we display the fast-close animation and shut down when we get an
+// outside request to shut down (e.g. from the login or lock screen).
+TEST_F(PowerButtonControllerTest, RequestShutdownFromLoginScreen) {
+  controller_->OnLoginStateChange(false /*logged_in*/, false /*is_guest*/);
+  controller_->RequestShutdown();
+  EXPECT_TRUE(
+      test_api_->ContainerGroupIsAnimated(
+          PowerButtonController::ALL_BUT_SCREEN_LOCKER_AND_RELATED_CONTAINERS,
+          PowerButtonController::ANIMATION_HIDE));
+  EXPECT_TRUE(
+      test_api_->ContainerGroupIsAnimated(
+          PowerButtonController::SCREEN_LOCKER_AND_RELATED_CONTAINERS,
+          PowerButtonController::ANIMATION_FAST_CLOSE));
+  EXPECT_TRUE(test_api_->BackgroundLayerIsVisible());
+  EXPECT_FALSE(aura::RootWindow::GetInstance()->cursor_shown());
+
+  EXPECT_EQ(0, delegate_->num_shutdown_requests());
+  EXPECT_TRUE(test_api_->real_shutdown_timer_is_running());
+  test_api_->trigger_real_shutdown_timeout();
+  EXPECT_EQ(1, delegate_->num_shutdown_requests());
+}
+
+TEST_F(PowerButtonControllerTest, RequestShutdownFromLockScreen) {
+  controller_->OnLoginStateChange(true /*logged_in*/, false /*is_guest*/);
+  controller_->OnLockStateChange(true);
+  controller_->RequestShutdown();
+  EXPECT_TRUE(
+      test_api_->ContainerGroupIsAnimated(
+          PowerButtonController::ALL_BUT_SCREEN_LOCKER_AND_RELATED_CONTAINERS,
+          PowerButtonController::ANIMATION_HIDE));
+  EXPECT_TRUE(
+      test_api_->ContainerGroupIsAnimated(
+          PowerButtonController::SCREEN_LOCKER_AND_RELATED_CONTAINERS,
+          PowerButtonController::ANIMATION_FAST_CLOSE));
+  EXPECT_TRUE(test_api_->BackgroundLayerIsVisible());
+  EXPECT_FALSE(aura::RootWindow::GetInstance()->cursor_shown());
+
+  EXPECT_EQ(0, delegate_->num_shutdown_requests());
+  EXPECT_TRUE(test_api_->real_shutdown_timer_is_running());
+  test_api_->trigger_real_shutdown_timeout();
+  EXPECT_EQ(1, delegate_->num_shutdown_requests());
 }
 
 }  // namespace test

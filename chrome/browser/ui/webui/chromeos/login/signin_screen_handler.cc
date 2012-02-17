@@ -37,6 +37,11 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(USE_AURA)
+#include "ash/shell.h"
+#include "ash/wm/power_button_controller.h"
+#endif
+
 using content::BrowserThread;
 
 namespace {
@@ -663,7 +668,12 @@ void SigninScreenHandler::HandleOfflineLogin(const base::ListValue* args) {
 }
 
 void SigninScreenHandler::HandleShutdownSystem(const base::ListValue* args) {
+#if defined(USE_AURA)
+  // Display the shutdown animation before actually requesting shutdown.
+  ash::Shell::GetInstance()->power_button_controller()->RequestShutdown();
+#else
   DBusThreadManager::Get()->GetPowerManagerClient()->RequestShutdown();
+#endif
 }
 
 void SigninScreenHandler::HandleRemoveUser(const base::ListValue* args) {

@@ -60,6 +60,11 @@ const int kFastCloseAnimMs = 150;
 // locked.
 const int kLockFadeInAnimMs = 500;
 
+// Additional time (beyond kFastCloseAnimMs) to wait after starting the
+// fast-close shutdown animation before actually requesting shutdown, to give
+// the animation time to finish.
+const int kShutdownRequestDelayMs = 50;
+
 // Slightly-smaller size that we scale the screen down to for the pre-lock and
 // pre-shutdown states.
 const float kSlowCloseSizeRatio = 0.95f;
@@ -243,7 +248,8 @@ bool PowerButtonController::TestApi::BackgroundLayerIsVisible() const {
 }
 
 PowerButtonController::PowerButtonController()
-    : logged_in_as_non_guest_(false),
+    : logged_in_(false),
+      is_guest_(false),
       locked_(false),
       power_button_down_(false),
       lock_button_down_(false),
@@ -257,7 +263,8 @@ PowerButtonController::~PowerButtonController() {
 }
 
 void PowerButtonController::OnLoginStateChange(bool logged_in, bool is_guest) {
-  logged_in_as_non_guest_ = logged_in && !is_guest;
+  logged_in_ = logged_in;
+  is_guest_ = is_guest;
 }
 
 void PowerButtonController::OnExit() {
@@ -326,7 +333,7 @@ void PowerButtonController::OnPowerButtonEvent(
     // immediately.
     if (down) {
       ShowBackgroundLayer();
-      if (logged_in_as_non_guest_ && !locked_) {
+      if (logged_in_as_non_guest() && !locked_) {
         StartAnimation(ALL_BUT_SCREEN_LOCKER_AND_RELATED_CONTAINERS,
                        ANIMATION_SLOW_CLOSE);
         OnLockTimeout();
@@ -340,7 +347,7 @@ void PowerButtonController::OnPowerButtonEvent(
       if (lock_fail_timer_.IsRunning())
         return;
 
-      if (logged_in_as_non_guest_ && !locked_)
+      if (logged_in_as_non_guest() && !locked_)
         StartLockTimer();
       else
         StartShutdownTimer();
@@ -352,7 +359,7 @@ void PowerButtonController::OnPowerButtonEvent(
 
       // Drop the background layer after the undo animation finishes.
       if (lock_timer_.IsRunning() ||
-          (shutdown_timer_.IsRunning() && !logged_in_as_non_guest_)) {
+          (shutdown_timer_.IsRunning() && !logged_in_as_non_guest())) {
         hide_background_layer_timer_.Stop();
         hide_background_layer_timer_.Start(
             FROM_HERE,
@@ -371,7 +378,7 @@ void PowerButtonController::OnLockButtonEvent(
     bool down, const base::TimeTicks& timestamp) {
   lock_button_down_ = down;
 
-  if (shutting_down_ || !logged_in_as_non_guest_)
+  if (shutting_down_ || !logged_in_as_non_guest())
     return;
 
   // Bail if we're already locked or are in the process of locking.  Also give
@@ -397,9 +404,9 @@ void PowerButtonController::OnLockButtonEvent(
   }
 }
 
-void PowerButtonController::OnRootWindowResized(const gfx::Size& new_size) {
-  if (background_layer_.get())
-    background_layer_->SetBounds(gfx::Rect(new_size));
+void PowerButtonController::RequestShutdown() {
+  if (!shutting_down_)
+    StartShutdownAnimationAndRequestShutdown();
 }
 
 // Fills |containers| with the containers described by |group|.
@@ -437,6 +444,11 @@ void PowerButtonController::GetContainers(ContainerGroup group,
   }
 }
 
+void PowerButtonController::OnRootWindowResized(const gfx::Size& new_size) {
+  if (background_layer_.get())
+    background_layer_->SetBounds(gfx::Rect(new_size));
+}
+
 void PowerButtonController::OnLockTimeout() {
   delegate_->RequestLockScreen();
   lock_fail_timer_.Start(
@@ -459,15 +471,8 @@ void PowerButtonController::OnLockToShutdownTimeout() {
 }
 
 void PowerButtonController::OnShutdownTimeout() {
-  DCHECK(!shutting_down_);
-  shutting_down_ = true;
-  ash::Shell::GetInstance()->root_filter()->set_update_cursor_visibility(false);
-  Shell::GetRootWindow()->ShowCursor(false);
-  StartAnimation(ALL_CONTAINERS, ANIMATION_FAST_CLOSE);
-  real_shutdown_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kFastCloseAnimMs),
-      this, &PowerButtonController::OnRealShutdownTimeout);
+  if (!shutting_down_)
+    StartShutdownAnimationAndRequestShutdown();
 }
 
 void PowerButtonController::OnRealShutdownTimeout() {
@@ -493,6 +498,32 @@ void PowerButtonController::StartShutdownTimer() {
       FROM_HERE,
       base::TimeDelta::FromMilliseconds(kShutdownTimeoutMs),
       this, &PowerButtonController::OnShutdownTimeout);
+}
+
+void PowerButtonController::StartShutdownAnimationAndRequestShutdown() {
+  DCHECK(!shutting_down_);
+  shutting_down_ = true;
+
+  ash::Shell::GetInstance()->root_filter()->set_update_cursor_visibility(false);
+  Shell::GetRootWindow()->ShowCursor(false);
+
+  ShowBackgroundLayer();
+  if (!logged_in_ || locked_) {
+    // Hide the other containers before starting the animation.
+    // ANIMATION_FAST_CLOSE will make the screen locker windows partially
+    // transparent, and we don't want the other windows to show through.
+    StartAnimation(ALL_BUT_SCREEN_LOCKER_AND_RELATED_CONTAINERS,
+                   ANIMATION_HIDE);
+    StartAnimation(SCREEN_LOCKER_AND_RELATED_CONTAINERS, ANIMATION_FAST_CLOSE);
+  } else {
+    StartAnimation(ALL_CONTAINERS, ANIMATION_FAST_CLOSE);
+  }
+
+  real_shutdown_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(
+          kFastCloseAnimMs + kShutdownRequestDelayMs),
+      this, &PowerButtonController::OnRealShutdownTimeout);
 }
 
 void PowerButtonController::ShowBackgroundLayer() {

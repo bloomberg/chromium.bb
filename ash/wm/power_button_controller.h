@@ -156,14 +156,19 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver {
   void OnPowerButtonEvent(bool down, const base::TimeTicks& timestamp);
   void OnLockButtonEvent(bool down, const base::TimeTicks& timestamp);
 
-  // aura::RootWindowObserver overrides:
-  virtual void OnRootWindowResized(const gfx::Size& new_size) OVERRIDE;
+  // Displays the shutdown animation and requests shutdown when it's done.
+  void RequestShutdown();
 
   // Fills |containers| with the containers described by |group|.
   void GetContainers(ContainerGroup group,
                      aura::Window::Windows* containers);
 
+  // aura::RootWindowObserver overrides:
+  virtual void OnRootWindowResized(const gfx::Size& new_size) OVERRIDE;
+
  private:
+  bool logged_in_as_non_guest() const { return logged_in_ && !is_guest_; }
+
   // Requests that the screen be locked and starts |lock_fail_timer_|.
   void OnLockTimeout();
 
@@ -173,7 +178,7 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver {
   // Displays the pre-shutdown animation and starts |shutdown_timer_|.
   void OnLockToShutdownTimeout();
 
-  // Displays the shutdown animation and starts |real_shutdown_timer_|.
+  // Calls StartShutdownAnimationAndRequestShutdown().
   void OnShutdownTimeout();
 
   // Requests that the machine be shut down.
@@ -182,6 +187,9 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver {
   // Puts us into the pre-lock or pre-shutdown state.
   void StartLockTimer();
   void StartShutdownTimer();
+
+  // Displays the shutdown animation and starts |real_shutdown_timer_|.
+  void StartShutdownAnimationAndRequestShutdown();
 
   // Shows or hides |background_layer_|.  The show method creates and
   // initializes the layer if it doesn't already exist.
@@ -196,8 +204,12 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver {
 
   scoped_ptr<PowerButtonControllerDelegate> delegate_;
 
-  // True if a non-guest user is currently logged in.
-  bool logged_in_as_non_guest_;
+  // True if the user is currently logged in.
+  bool logged_in_;
+
+  // True if a guest user is currently logged in.  Unused if |logged_in_| is
+  // false.
+  bool is_guest_;
 
   // True if the screen is currently locked.
   bool locked_;

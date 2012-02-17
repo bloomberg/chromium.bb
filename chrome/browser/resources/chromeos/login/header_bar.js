@@ -75,6 +75,7 @@ cr.define('login', function() {
      */
     handleShutdownClick_: function(e) {
       chrome.send('shutdownSystem');
+      e.stopPropagation();
     }
   };
 
