@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_GAMEPAD_DATA_FETCHER_MAC_H_
-#define CONTENT_BROWSER_GAMEPAD_DATA_FETCHER_MAC_H_
+#ifndef CONTENT_BROWSER_GAMEPAD_PLATFORM_DATA_FETCHER_MAC_H_
+#define CONTENT_BROWSER_GAMEPAD_PLATFORM_DATA_FETCHER_MAC_H_
 
-#include "build/build_config.h"
-
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "build/build_config.h"
 #include "content/browser/gamepad/data_fetcher.h"
 #include "content/browser/gamepad/gamepad_standard_mappings.h"
 #include "content/common/gamepad_hardware_buffer.h"
@@ -31,6 +31,7 @@ class GamepadPlatformDataFetcherMac : public GamepadDataFetcher {
   virtual void GetGamepadData(WebKit::WebGamepads* pads,
                               bool devices_changed_hint) OVERRIDE;
   virtual void PauseHint(bool paused) OVERRIDE;
+
  private:
   bool enabled_;
   base::mac::ScopedCFTypeRef<IOHIDManagerRef> hid_manager_ref_;
@@ -72,8 +73,10 @@ class GamepadPlatformDataFetcherMac : public GamepadDataFetcher {
     GamepadStandardMappingFunction mapper;
   };
   AssociatedData associated_[WebKit::WebGamepads::itemsLengthCap];
+
+  DISALLOW_COPY_AND_ASSIGN(GamepadPlatformDataFetcherMac);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_GAMEPAD_DATA_FETCHER_MAC_H_
+#endif  // CONTENT_BROWSER_GAMEPAD_PLATFORM_DATA_FETCHER_MAC_H_

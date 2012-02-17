@@ -33,6 +33,8 @@ static const BYTE kDeviceSubTypeDrumKit = 8;
 static const BYTE kDeviceSubTypeGuitarBass = 11;
 static const BYTE kDeviceSubTypeArcadePad = 19;
 
+const float kMaxWinAxisValue = 32767.0;
+
 const WebUChar* const GamepadSubTypeName(BYTE sub_type) {
   switch (sub_type) {
     case kDeviceSubTypeGamepad: return L"GAMEPAD";
@@ -52,17 +54,17 @@ const WebUChar* const GamepadSubTypeName(BYTE sub_type) {
 // Trap only the exceptions that DELAYLOAD can throw, otherwise rethrow.
 // See http://msdn.microsoft.com/en-us/library/1c9e046h(v=VS.90).aspx.
 LONG WINAPI DelayLoadDllExceptionFilter(PEXCEPTION_POINTERS pExcPointers) {
- LONG disposition = EXCEPTION_EXECUTE_HANDLER;
- switch (pExcPointers->ExceptionRecord->ExceptionCode) {
-   case VcppException(ERROR_SEVERITY_ERROR, ERROR_MOD_NOT_FOUND):
-   case VcppException(ERROR_SEVERITY_ERROR, ERROR_PROC_NOT_FOUND):
+  LONG disposition = EXCEPTION_EXECUTE_HANDLER;
+  switch (pExcPointers->ExceptionRecord->ExceptionCode) {
+    case VcppException(ERROR_SEVERITY_ERROR, ERROR_MOD_NOT_FOUND):
+    case VcppException(ERROR_SEVERITY_ERROR, ERROR_PROC_NOT_FOUND):
       break;
-   default:
+    default:
       // Exception is not related to delay loading.
       disposition = EXCEPTION_CONTINUE_SEARCH;
       break;
-   }
-   return disposition;
+  }
+  return disposition;
 }
 
 bool EnableXInput() {
@@ -76,7 +78,7 @@ bool EnableXInput() {
   return true;
 }
 
-}
+}  // namespace
 
 GamepadPlatformDataFetcherWin::GamepadPlatformDataFetcherWin()
     : xinput_available_(EnableXInput()) {
@@ -160,14 +162,14 @@ void GamepadPlatformDataFetcherWin::GetGamepadData(WebGamepads* pads,
 #undef ADD
       pad.axesLength = 0;
       // XInput are +up/+right, -down/-left, we want -up/-left.
-      pad.axes[pad.axesLength++] = state.Gamepad.sThumbLX / 32767.0;
-      pad.axes[pad.axesLength++] = -state.Gamepad.sThumbLY / 32767.0;
-      pad.axes[pad.axesLength++] = state.Gamepad.sThumbRX / 32767.0;
-      pad.axes[pad.axesLength++] = -state.Gamepad.sThumbRY / 32767.0;
+      pad.axes[pad.axesLength++] = state.Gamepad.sThumbLX / kMaxWinAxisValue;
+      pad.axes[pad.axesLength++] = -state.Gamepad.sThumbLY / kMaxWinAxisValue;
+      pad.axes[pad.axesLength++] = state.Gamepad.sThumbRX / kMaxWinAxisValue;
+      pad.axes[pad.axesLength++] = -state.Gamepad.sThumbRY / kMaxWinAxisValue;
     } else {
       pad.connected = false;
     }
   }
 }
 
-} // namespace content
+}  // namespace content

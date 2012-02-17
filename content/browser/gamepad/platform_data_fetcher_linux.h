@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_GAMEPAD_DATA_FETCHER_LINUX_H_
-#define CONTENT_BROWSER_GAMEPAD_DATA_FETCHER_LINUX_H_
+#ifndef CONTENT_BROWSER_GAMEPAD_PLATFORM_DATA_FETCHER_LINUX_H_
+#define CONTENT_BROWSER_GAMEPAD_PLATFORM_DATA_FETCHER_LINUX_H_
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/message_pump_libevent.h"
 #include "build/build_config.h"
 #include "content/browser/gamepad/data_fetcher.h"
 #include "content/browser/gamepad/gamepad_standard_mappings.h"
-#include "content/common/gamepad_hardware_buffer.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGamepads.h"
 
 extern "C" {
 struct udev;
@@ -38,7 +39,7 @@ class GamepadPlatformDataFetcherLinux :
   virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
 
  private:
-  bool IsGamepad(udev_device* dev, int& index, std::string& path);
+  bool IsGamepad(udev_device* dev, int* index, std::string* path);
   void RefreshDevice(udev_device* dev);
   void EnumerateDevices();
   void ReadDeviceData(size_t index);
@@ -59,8 +60,10 @@ class GamepadPlatformDataFetcherLinux :
 
   // Data that's returned to the consumer.
   WebKit::WebGamepads data_;
+
+  DISALLOW_COPY_AND_ASSIGN(GamepadPlatformDataFetcherLinux);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_GAMEPAD_DATA_FETCHER_LINUX_H_
+#endif  // CONTENT_BROWSER_GAMEPAD_PLATFORM_DATA_FETCHER_LINUX_H_

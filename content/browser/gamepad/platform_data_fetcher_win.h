@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_GAMEPAD_DATA_FETCHER_WIN_H_
-#define CONTENT_BROWSER_GAMEPAD_DATA_FETCHER_WIN_H_
+#ifndef CONTENT_BROWSER_GAMEPAD_PLATFORM_DATA_FETCHER_WIN_H_
+#define CONTENT_BROWSER_GAMEPAD_PLATFORM_DATA_FETCHER_WIN_H_
 
 #include "build/build_config.h"
 
@@ -13,6 +13,7 @@
 #include <windows.h>
 #include <XInput.h>
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "content/browser/gamepad/data_fetcher.h"
 
@@ -25,8 +26,10 @@ class GamepadPlatformDataFetcherWin : public GamepadDataFetcher {
                               bool devices_changed_hint) OVERRIDE;
  private:
   bool xinput_available_;
+
+  DISALLOW_COPY_AND_ASSIGN(GamepadPlatformDataFetcherWin);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_GAMEPAD_DATA_FETCHER_WIN_H_
+#endif  // CONTENT_BROWSER_GAMEPAD_PLATFORM_DATA_FETCHER_WIN_H_

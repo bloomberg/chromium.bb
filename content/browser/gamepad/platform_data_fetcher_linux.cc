@@ -4,21 +4,33 @@
 
 #include "content/browser/gamepad/platform_data_fetcher_linux.h"
 
-#include <dlfcn.h>
 #include <fcntl.h>
 #include <libudev.h>
 #include <linux/joystick.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 #include "base/debug/trace_event.h"
 #include "base/eintr_wrapper.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
-#include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
-#include "content/common/gamepad_hardware_buffer.h"
+
+namespace {
+
+const char kInputSubsystem[] = "input";
+const float kMaxLinuxAxisValue = 32767.0;
+
+void CloseFileDescriptorIfValid(int fd) {
+  if (fd >= 0)
+    close(fd);
+}
+
+}  // namespace
 
 namespace content {
 
@@ -31,24 +43,31 @@ GamepadPlatformDataFetcherLinux::GamepadPlatformDataFetcherLinux() {
   memset(mappers_, 0, sizeof(mappers_));
 
   udev_ = udev_new();
+  CHECK(udev_);
 
   monitor_ = udev_monitor_new_from_netlink(udev_, "udev");
-  udev_monitor_filter_add_match_subsystem_devtype(monitor_, "input", NULL);
-  udev_monitor_enable_receiving(monitor_);
+  CHECK(monitor_);
+  int ret = udev_monitor_filter_add_match_subsystem_devtype(monitor_,
+                                                            kInputSubsystem,
+                                                            NULL);
+  CHECK_EQ(0, ret);
+  ret = udev_monitor_enable_receiving(monitor_);
+  CHECK_EQ(0, ret);
   monitor_fd_ = udev_monitor_get_fd(monitor_);
-  MessageLoopForIO::current()->WatchFileDescriptor(monitor_fd_, true,
-      MessageLoopForIO::WATCH_READ, &monitor_watcher_, this);
+  CHECK_GE(monitor_fd_, 0);
+  bool success = MessageLoopForIO::current()->WatchFileDescriptor(monitor_fd_,
+      true, MessageLoopForIO::WATCH_READ, &monitor_watcher_, this);
+  CHECK(success);
 
   EnumerateDevices();
 }
 
 GamepadPlatformDataFetcherLinux::~GamepadPlatformDataFetcherLinux() {
   monitor_watcher_.StopWatchingFileDescriptor();
+  udev_monitor_unref(monitor_);
   udev_unref(udev_);
-  for (size_t i = 0; i < WebGamepads::itemsLengthCap; ++i) {
-    if (device_fds_[i] >= 0)
-      close(device_fds_[i]);
-  }
+  for (size_t i = 0; i < WebGamepads::itemsLengthCap; ++i)
+    CloseFileDescriptorIfValid(device_fds_[i]);
 }
 
 void GamepadPlatformDataFetcherLinux::GetGamepadData(WebGamepads* pads, bool) {
@@ -78,8 +97,10 @@ void GamepadPlatformDataFetcherLinux::OnFileCanReadWithoutBlocking(int fd) {
   // Events occur when devices attached to the system are added, removed, or
   // change state. udev_monitor_receive_device() will return a device object
   // representing the device which changed and what type of change occured.
-  DCHECK(monitor_fd_ == fd);
+  DCHECK_EQ(monitor_fd_, fd);
   udev_device* dev = udev_monitor_receive_device(monitor_);
+  if (!dev)
+    return;
   RefreshDevice(dev);
   udev_device_unref(dev);
 }
@@ -87,10 +108,9 @@ void GamepadPlatformDataFetcherLinux::OnFileCanReadWithoutBlocking(int fd) {
 void GamepadPlatformDataFetcherLinux::OnFileCanWriteWithoutBlocking(int fd) {
 }
 
-bool GamepadPlatformDataFetcherLinux::IsGamepad(
-    udev_device* dev,
-    int& index,
-    std::string& path) {
+bool GamepadPlatformDataFetcherLinux::IsGamepad(udev_device* dev,
+                                                int* index,
+                                                std::string* path) {
   if (!udev_device_get_property_value(dev, "ID_INPUT_JOYSTICK"))
     return false;
 
@@ -99,33 +119,32 @@ bool GamepadPlatformDataFetcherLinux::IsGamepad(
     return false;
 
   static const char kJoystickRoot[] = "/dev/input/js";
-  bool is_gamepad =
-      strncmp(kJoystickRoot, node_path, sizeof(kJoystickRoot) - 1) == 0;
-  if (is_gamepad) {
-    const int base_len = sizeof(kJoystickRoot) - 1;
-    if (!base::StringToInt(base::StringPiece(
-            &node_path[base_len],
-            strlen(node_path) - base_len),
-        &index))
-      return false;
-    if (index < 0 || index >= static_cast<int>(WebGamepads::itemsLengthCap))
-      return false;
-    path = std::string(node_path);
-  }
-  return is_gamepad;
+  bool is_gamepad = StartsWithASCII(node_path, kJoystickRoot, true);
+  if (!is_gamepad)
+    return false;
+
+  int tmp_idx = -1;
+  const int base_len = sizeof(kJoystickRoot) - 1;
+  base::StringPiece str(&node_path[base_len], strlen(node_path) - base_len);
+  if (!base::StringToInt(str, &tmp_idx))
+    return false;
+  if (tmp_idx < 0 || tmp_idx >= static_cast<int>(WebGamepads::itemsLengthCap))
+    return false;
+  *index = tmp_idx;
+  *path = node_path;
+  return true;
 }
 
 // Used during enumeration, and monitor notifications.
 void GamepadPlatformDataFetcherLinux::RefreshDevice(udev_device* dev) {
   int index;
   std::string node_path;
-  if (IsGamepad(dev, index, node_path)) {
+  if (IsGamepad(dev, &index, &node_path)) {
     int& device_fd = device_fds_[index];
     WebGamepad& pad = data_.items[index];
     GamepadStandardMappingFunction& mapper = mappers_[index];
 
-    if (device_fd >= 0)
-      close(device_fd);
+    CloseFileDescriptorIfValid(device_fd);
 
     // The device pointed to by dev contains information about the input
     // device. In order to get the information about the USB device, get the
@@ -176,8 +195,14 @@ void GamepadPlatformDataFetcherLinux::RefreshDevice(udev_device* dev) {
 
 void GamepadPlatformDataFetcherLinux::EnumerateDevices() {
   udev_enumerate* enumerate = udev_enumerate_new(udev_);
-  udev_enumerate_add_match_subsystem(enumerate, "input");
-  udev_enumerate_scan_devices(enumerate);
+  if (!enumerate)
+    return;
+  int ret = udev_enumerate_add_match_subsystem(enumerate, kInputSubsystem);
+  if (ret != 0)
+    return;
+  ret = udev_enumerate_scan_devices(enumerate);
+  if (ret != 0)
+    return;
 
   udev_list_entry* devices = udev_enumerate_get_list_entry(enumerate);
   for (udev_list_entry* dev_list_entry = devices;
@@ -187,6 +212,8 @@ void GamepadPlatformDataFetcherLinux::EnumerateDevices() {
     // udev_device object (dev) representing it
     const char* path = udev_list_entry_get_name(dev_list_entry);
     udev_device* dev = udev_device_new_from_syspath(udev_, path);
+    if (!dev)
+      continue;
     RefreshDevice(dev);
     udev_device_unref(dev);
   }
@@ -195,9 +222,15 @@ void GamepadPlatformDataFetcherLinux::EnumerateDevices() {
 }
 
 void GamepadPlatformDataFetcherLinux::ReadDeviceData(size_t index) {
+  // Linker does not like CHECK_LT(index, WebGamepads::itemsLengthCap). =/
+  if (index >= WebGamepads::itemsLengthCap) {
+    CHECK(false);
+    return;
+  }
+
   int& fd = device_fds_[index];
   WebGamepad& pad = data_.items[index];
-  DCHECK(fd >= 0);
+  DCHECK_GE(fd, 0);
 
   js_event event;
   while (HANDLE_EINTR(read(fd, &event, sizeof(struct js_event)) > 0)) {
@@ -205,7 +238,7 @@ void GamepadPlatformDataFetcherLinux::ReadDeviceData(size_t index) {
     if (event.type & JS_EVENT_AXIS) {
       if (item >= WebGamepad::axesLengthCap)
         continue;
-      pad.axes[item] = event.value / 32767.f;
+      pad.axes[item] = event.value / kMaxLinuxAxisValue;
       if (item >= pad.axesLength)
         pad.axesLength = item + 1;
     } else if (event.type & JS_EVENT_BUTTON) {
@@ -218,6 +251,5 @@ void GamepadPlatformDataFetcherLinux::ReadDeviceData(size_t index) {
     pad.timestamp = event.time;
   }
 }
-
 
 }  // namespace content
