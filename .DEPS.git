@@ -51,7 +51,7 @@ deps = {
     'src/third_party/hunspell_dictionaries':
         Var('git_url') + '/chromium/deps/hunspell_dictionaries.git@50fb79b30a2e3e512c88884152f26b255d0e4074',
     'src/third_party/icu':
-        Var('git_url') + '/chromium/deps/icu46.git@cb71ead526647bd4a18ea981ef35031dcb608bdd',
+        Var('git_url') + '/chromium/deps/icu46.git@1a3a3781ca9a269dc1fe1c217b9a816c4fcab40a',
     'src/third_party/jsoncpp/source/include':
         Var('git_url') + '/external/jsoncpp/jsoncpp/include.git@b0dd48e02b6e6248328db78a65b5c601f150c349',
     'src/third_party/jsoncpp/source/src/lib_json':
@@ -142,7 +142,7 @@ deps_os = {
         'src/third_party/lighttpd':
             Var('git_url') + '/chromium/deps/lighttpd.git@9dfa55d15937a688a92cbf2b7a8621b0927d06eb',
         'src/third_party/nss':
-            Var('git_url') + '/chromium/deps/nss.git@f0f9c43f9c2c7ffab9ebe457e99605c3d772bf2d',
+            Var('git_url') + '/chromium/deps/nss.git@5f1f0f308fb77c5475760ada19d4585aba2a09b6',
         'src/third_party/pdfsqueeze':
             Var('git_url') + '/external/pdfsqueeze.git@a2470ff9fcc9d399a1c0ac58e8b1df6f46143801',
         'src/third_party/swig/mac':
@@ -182,7 +182,7 @@ deps_os = {
         'src/third_party/nacl_sdk_binaries':
             Var('git_url') + '/chromium/deps/nacl_sdk_binaries.git@759dfca03bdc774da7ecbf974f6e2b84f43699a5',
         'src/third_party/nss':
-            Var('git_url') + '/chromium/deps/nss.git@f0f9c43f9c2c7ffab9ebe457e99605c3d772bf2d',
+            Var('git_url') + '/chromium/deps/nss.git@5f1f0f308fb77c5475760ada19d4585aba2a09b6',
         'src/third_party/pefile':
             Var('git_url') + '/external/pefile.git@d0ca75794f69f1d09fd6d31d40ba2f1e9b3b7fb4',
         'src/third_party/psyco_win32':
