@@ -13,6 +13,8 @@ namespace {
 // Field trial names.
 static const char kAggressiveHUPFieldTrialName[] =
     "OmniboxAggressiveHistoryURLProvider";
+static const char kDisallowInlineHQPFieldTrialName[] =
+    "OmniboxDisallowInlineHQP";
 
 // Field trial experiment probabilities.
 
@@ -22,12 +24,22 @@ const base::FieldTrial::Probability kAggressiveHUPFieldTrialDivisor = 100;
 const base::FieldTrial::Probability
     kAggressiveHUPFieldTrialExperimentFraction = 50;
 
+// For inline History Quick Provider field trial, put 10% ( = 10/100 )
+// of the users in the disallow-inline experiment group.
+const base::FieldTrial::Probability kDisallowInlineHQPFieldTrialDivisor = 100;
+const base::FieldTrial::Probability
+    kDisallowInlineHQPFieldTrialExperimentFraction = 10;
+
 // Field trial IDs.
 // Though they are not literally "const", they are set only once, in
 // Activate() below.
 
 // Field trial ID for the aggressive History URL Provider experiment group.
 int aggressive_hup_experiment_group = 0;
+
+// Field trial ID for the disallow-inline History Quick Provider
+// experiment group.
+int disallow_inline_hqp_experiment_group = 0;
 
 }
 
@@ -50,6 +62,15 @@ void AutocompleteFieldTrial::Activate() {
     trial->UseOneTimeRandomization();
     aggressive_hup_experiment_group = trial->AppendGroup("Aggressive",
         kAggressiveHUPFieldTrialExperimentFraction);
+
+    // Create inline History Quick Provider field trial.
+    // Make it expire on November 8, 2012.
+    trial = new base::FieldTrial(
+        kDisallowInlineHQPFieldTrialName, kDisallowInlineHQPFieldTrialDivisor,
+        "Standard", 2012, 11, 8);
+    trial->UseOneTimeRandomization();
+    disallow_inline_hqp_experiment_group = trial->AppendGroup("DisallowInline",
+        kDisallowInlineHQPFieldTrialExperimentFraction);
   }
 }
 
@@ -65,4 +86,18 @@ bool AutocompleteFieldTrial::InAggressiveHUPFieldTrialExperimentGroup() {
   const int group = base::FieldTrialList::FindValue(
       kAggressiveHUPFieldTrialName);
   return group == aggressive_hup_experiment_group;
+}
+
+bool AutocompleteFieldTrial::InDisallowInlineHQPFieldTrial() {
+  return base::FieldTrialList::TrialExists(kDisallowInlineHQPFieldTrialName);
+}
+
+bool AutocompleteFieldTrial::InDisallowInlineHQPFieldTrialExperimentGroup() {
+  if (!base::FieldTrialList::TrialExists(kDisallowInlineHQPFieldTrialName))
+    return false;
+
+  // Return true if we're in the experiment group.
+  const int group = base::FieldTrialList::FindValue(
+      kDisallowInlineHQPFieldTrialName);
+  return group == disallow_inline_hqp_experiment_group;
 }

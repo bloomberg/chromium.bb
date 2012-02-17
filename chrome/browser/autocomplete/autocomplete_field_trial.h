@@ -10,10 +10,10 @@
 
 #include "base/basictypes.h"
 
-// This class manages the Autocomplete field trial.
+// This class manages the Autocomplete field trials.
 class AutocompleteFieldTrial {
  public:
-  // Creates the field trial(s) groups.
+  // Creates the field trial groups.
   // *** MUST NOT BE CALLED MORE THAN ONCE. ***
   static void Activate();
 
@@ -28,6 +28,19 @@ class AutocompleteFieldTrial {
   // Returns whether the user should get the experiment setup or
   // the default setup for this field trial.
   static bool InAggressiveHUPFieldTrialExperimentGroup();
+
+  // ---------------------------------------------------------
+  // For the inline History Quick Provider field trial.
+
+  // Returns whether the user is in any field trial group for this
+  // field trial.  False indicates that the field trial wasn't
+  // successfully created for some reason.
+  static bool InDisallowInlineHQPFieldTrial();
+
+  // Returns whether the user should get the experiment setup or
+  // the default setup for this field trial.  The experiment
+  // group prohibits inlining suggestions.
+  static bool InDisallowInlineHQPFieldTrialExperimentGroup();
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(AutocompleteFieldTrial);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,8 @@
 HistoryProvider::HistoryProvider(ACProviderListener* listener,
                                  Profile* profile,
                                  const char* name)
-    : AutocompleteProvider(listener, profile, name) {
+    : AutocompleteProvider(listener, profile, name),
+      always_prevent_inline_autocomplete_(false) {
 }
 
 void HistoryProvider::DeleteMatch(const AutocompleteMatch& match) {
@@ -153,6 +154,7 @@ size_t HistoryProvider::TrimHttpPrefix(string16* url) {
 bool HistoryProvider::PreventInlineAutocomplete(
     const AutocompleteInput& input) {
   return input.prevent_inline_autocomplete() ||
-        (!input.text().empty() &&
-         IsWhitespace(input.text()[input.text().length() - 1]));
+      always_prevent_inline_autocomplete_ ||
+      (!input.text().empty() &&
+       IsWhitespace(input.text()[input.text().length() - 1]));
 }

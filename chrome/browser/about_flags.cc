@@ -85,6 +85,16 @@ const Experiment::Choice kOmniboxAggressiveHistoryURLChoices[] = {
     switches::kOmniboxAggressiveHistoryURLDisabled }
 };
 
+const Experiment::Choice kOmniboxInlineHistoryQuickProviderChoices[] = {
+  { IDS_FLAGS_OMNIBOX_INLINE_HISTORY_QUICK_PROVIDER_AUTOMATIC, "", "" },
+  { IDS_FLAGS_OMNIBOX_INLINE_HISTORY_QUICK_PROVIDER_ALLOWED,
+    switches::kOmniboxInlineHistoryQuickProvider,
+    switches::kOmniboxInlineHistoryQuickProviderAllowed },
+  { IDS_FLAGS_OMNIBOX_INLINE_HISTORY_QUICK_PROVIDER_PROHIBITED,
+    switches::kOmniboxInlineHistoryQuickProvider,
+    switches::kOmniboxInlineHistoryQuickProviderProhibited }
+};
+
 #if defined(USE_AURA)
 const Experiment::Choice kAuraWindowModeChoices[] = {
   { IDS_FLAGS_AURA_WINDOW_MODE_AUTOMATIC, "", "" },
@@ -383,6 +393,13 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_OMNIBOX_AGGRESSIVE_HISTORY_URL_SCORING_DESCRIPTION,
     kOsAll,
     MULTI_VALUE_TYPE(kOmniboxAggressiveHistoryURLChoices)
+  },
+  {
+    "omnibox-inline-history-quick-provider",
+    IDS_FLAGS_OMNIBOX_INLINE_HISTORY_QUICK_PROVIDER_NAME,
+    IDS_FLAGS_OMNIBOX_INLINE_HISTORY_QUICK_PROVIDER_DESCRIPTION,
+    kOsAll,
+    MULTI_VALUE_TYPE(kOmniboxInlineHistoryQuickProviderChoices)
   },
   {
     "enable-panels",
