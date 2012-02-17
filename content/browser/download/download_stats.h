@@ -137,6 +137,27 @@ void RecordClearAllSize(int size);
 // Record the number of completed unopened downloads when a download is opened.
 void RecordOpensOutstanding(int size);
 
+enum SavePackageEvent {
+  // The user has started to save a page as a package.
+  SAVE_PACKAGE_STARTED,
+
+  // The save package operation was cancelled.
+  SAVE_PACKAGE_CANCELLED,
+
+  // The save package operation finished without being cancelled.
+  SAVE_PACKAGE_FINISHED,
+
+  // The save package tried to write to an already completed file.
+  SAVE_PACKAGE_WRITE_TO_COMPLETED,
+
+  // The save package tried to write to an already failed file.
+  SAVE_PACKAGE_WRITE_TO_FAILED,
+
+  SAVE_PACKAGE_LAST_ENTRY
+};
+
+void RecordSavePackageEvent(SavePackageEvent event);
+
 }  // namespace download_stats
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_STATS_H_

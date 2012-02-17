@@ -303,4 +303,10 @@ void RecordOpensOutstanding(int size) {
                               64/*num_buckets*/);
 }
 
+void RecordSavePackageEvent(SavePackageEvent event) {
+  UMA_HISTOGRAM_ENUMERATION("Download.SavePackage",
+                            event,
+                            SAVE_PACKAGE_LAST_ENTRY);
+}
+
 }  // namespace download_stats

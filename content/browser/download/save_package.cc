@@ -20,6 +20,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_item_impl.h"
+#include "content/browser/download/download_stats.h"
 #include "content/browser/download/save_file.h"
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/download/save_item.h"
@@ -135,7 +136,9 @@ SavePackage::SavePackage(WebContents* web_contents,
       all_save_items_count_(0),
       wait_state_(INITIALIZE),
       tab_id_(web_contents->GetRenderProcessHost()->GetID()),
-      unique_id_(g_save_package_id++) {
+      unique_id_(g_save_package_id++),
+      wrote_to_completed_file_(false),
+      wrote_to_failed_file_(false) {
   DCHECK(page_url_.is_valid());
   DCHECK(save_type_ == content::SAVE_PAGE_TYPE_AS_ONLY_HTML ||
          save_type_ == content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML);
@@ -161,7 +164,9 @@ SavePackage::SavePackage(TabContents* tab_contents)
       all_save_items_count_(0),
       wait_state_(INITIALIZE),
       tab_id_(tab_contents->GetRenderProcessHost()->GetID()),
-      unique_id_(g_save_package_id++) {
+      unique_id_(g_save_package_id++),
+      wrote_to_completed_file_(false),
+      wrote_to_failed_file_(false) {
   DCHECK(page_url_.is_valid());
   InternalInit();
 }
@@ -186,7 +191,9 @@ SavePackage::SavePackage(TabContents* tab_contents,
       all_save_items_count_(0),
       wait_state_(INITIALIZE),
       tab_id_(0),
-      unique_id_(g_save_package_id++) {
+      unique_id_(g_save_package_id++),
+      wrote_to_completed_file_(false),
+      wrote_to_failed_file_(false) {
 }
 
 SavePackage::~SavePackage() {
@@ -236,6 +243,8 @@ void SavePackage::Cancel(bool user_action) {
       disk_error_occurred_ = true;
     Stop();
   }
+  download_stats::RecordSavePackageEvent(
+      download_stats::SAVE_PACKAGE_CANCELLED);
 }
 
 // Init() can be called directly, or indirectly via GetSaveInfo(). In both
@@ -252,6 +261,8 @@ void SavePackage::InternalInit() {
 
   download_manager_ = web_contents()->GetBrowserContext()->GetDownloadManager();
   DCHECK(download_manager_);
+
+  download_stats::RecordSavePackageEvent(download_stats::SAVE_PACKAGE_STARTED);
 }
 
 bool SavePackage::Init() {
@@ -666,6 +677,20 @@ void SavePackage::Finish() {
   wait_state_ = SUCCESSFUL;
   finished_ = true;
 
+  // Record finish.
+  download_stats::RecordSavePackageEvent(download_stats::SAVE_PACKAGE_FINISHED);
+
+  // Record any errors that occurred.
+  if (wrote_to_completed_file_) {
+    download_stats::RecordSavePackageEvent(
+        download_stats::SAVE_PACKAGE_WRITE_TO_COMPLETED);
+  }
+
+  if (wrote_to_failed_file_) {
+    download_stats::RecordSavePackageEvent(
+        download_stats::SAVE_PACKAGE_WRITE_TO_FAILED);
+  }
+
   // This vector contains the save ids of the save files which SaveFileManager
   // needs to remove from its save_file_map_.
   SaveIDList save_ids;
@@ -956,8 +981,22 @@ void SavePackage::OnReceivedSerializedHtmlData(const GURL& frame_url,
   }
 
   SaveUrlItemMap::iterator it = in_progress_items_.find(frame_url.spec());
-  if (it == in_progress_items_.end())
+  if (it == in_progress_items_.end()) {
+    for (SavedItemMap::iterator saved_it = saved_success_items_.begin();
+      saved_it != saved_success_items_.end(); ++saved_it) {
+      if (saved_it->second->url() == frame_url) {
+        wrote_to_completed_file_ = true;
+        break;
+      }
+    }
+
+    it = saved_failed_items_.find(frame_url.spec());
+    if (it != saved_failed_items_.end())
+      wrote_to_failed_file_ = true;
+
     return;
+  }
+
   SaveItem* save_item = it->second;
   DCHECK(save_item->save_source() == SaveFileCreateInfo::SAVE_FILE_FROM_DOM);
 
