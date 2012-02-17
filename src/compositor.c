@@ -251,7 +251,7 @@ surface_to_global_float(struct weston_surface *surface,
 }
 
 static void
-weston_surface_damage_below_noupdate(struct weston_surface *surface)
+weston_surface_damage_below(struct weston_surface *surface)
 {
 	struct weston_surface *below;
 
@@ -355,7 +355,7 @@ weston_surface_update_transform(struct weston_surface *surface)
 
 	surface->geometry.dirty = 0;
 
-	weston_surface_damage_below_noupdate(surface);
+	weston_surface_damage_below(surface);
 
 	pixman_region32_fini(&surface->transform.boundingbox);
 
@@ -463,14 +463,6 @@ weston_surface_damage(struct weston_surface *surface)
 	pixman_region32_union(&surface->damage, &surface->damage,
 			      &surface->transform.boundingbox);
 
-	weston_compositor_schedule_repaint(surface->compositor);
-}
-
-static void
-weston_surface_damage_below(struct weston_surface *surface)
-{
-	weston_surface_update_transform(surface);
-	weston_surface_damage_below_noupdate(surface);
 	weston_compositor_schedule_repaint(surface->compositor);
 }
 
