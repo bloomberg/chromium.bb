@@ -16,6 +16,7 @@
 #include "base/compiler_specific.h"
 
 #include "native_client/src/include/portability_io.h"
+#include "native_client/src/include/portability_string.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/nacl_string.h"
@@ -53,8 +54,10 @@
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/trusted/ppb_file_io_trusted.h"
 #include "ppapi/cpp/core.h"
 #include "ppapi/cpp/completion_callback.h"
+#include "ppapi/cpp/file_io.h"
 
 namespace plugin {
 
@@ -360,7 +363,7 @@ void PluginReverseInterface::BitcodeTranslate_MainThreadContinuation(
 
 
 bool PluginReverseInterface::CloseManifestEntry(int32_t desc) {
-  bool op_complete;
+  bool op_complete = false;
   bool op_result;
   CloseManifestEntryResource* to_close =
       new CloseManifestEntryResource(desc, &op_complete, &op_result);
@@ -419,6 +422,109 @@ void PluginReverseInterface::ReportCrash() {
 
 void PluginReverseInterface::ReportExitStatus(int exit_status) {
   service_runtime_->set_exit_status(exit_status);
+}
+
+void PluginReverseInterface::QuotaRequest_MainThreadContinuation(
+    QuotaRequest* request,
+    int32_t err) {
+  if (err != PP_OK) {
+    return;
+  }
+  const PPB_FileIOTrusted* file_io_trusted =
+      static_cast<const PPB_FileIOTrusted*>(
+          pp::Module::Get()->GetBrowserInterface(PPB_FILEIOTRUSTED_INTERFACE));
+  // Copy the request object because this one will be deleted on return.
+  QuotaRequest* cont_for_response = new QuotaRequest(*request);  // copy ctor!
+  pp::CompletionCallback quota_cc = WeakRefNewCallback(
+      anchor_,
+      this,
+      &PluginReverseInterface::QuotaRequest_MainThreadResponse,
+      cont_for_response);
+  file_io_trusted->WillWrite(request->resource,
+                             request->offset,
+                             request->bytes_requested,
+                             quota_cc.pp_completion_callback());
+  // request automatically deleted
+}
+
+void PluginReverseInterface::QuotaRequest_MainThreadResponse(
+    QuotaRequest* request,
+    int32_t err) {
+  NaClLog(4,
+          "PluginReverseInterface::QuotaRequest_MainThreadResponse:"
+          " (resource=%"NACL_PRIx64", offset=%"NACL_PRId64", requested=%"
+          NACL_PRId64", err=%"NACL_PRId32")\n",
+          request->resource, request->offset, request->bytes_requested, err);
+  nacl::MutexLocker take(&mu_);
+  if (err >= PP_OK) {
+    *request->bytes_granted = err;
+  } else {
+    *request->bytes_granted = 0;
+  }
+  *request->op_complete_ptr = true;
+  NaClXCondVarBroadcast(&cv_);
+  // request automatically deleted
+}
+
+int64_t PluginReverseInterface::RequestQuotaForWrite(nacl::string file_id,
+                                                     int64_t offset,
+                                                     int64_t bytes_to_write) {
+  NaClLog(4,
+          "PluginReverseInterface::RequestQuotaForWrite:"
+          " (file_id='%s', offset=%"NACL_PRId64", bytes_to_write=%"
+          NACL_PRId64")\n", file_id.c_str(), offset, bytes_to_write);
+  PP_Resource resource;
+  {
+    nacl::MutexLocker take(&mu_);
+    uint64_t file_key = STRTOULL(file_id.c_str(), NULL, 10);
+    if (quota_map_.find(file_key) == quota_map_.end()) {
+      // Look up failed to find the requested quota managed resource.
+      NaClLog(4, "PluginReverseInterface::RequestQuotaForWrite: failed...\n");
+      return 0;
+    }
+    resource = quota_map_[file_key];
+  }
+  // Variables set by requesting quota.
+  int64_t quota_granted = 0;
+  bool op_complete = false;
+  QuotaRequest* continuation =
+      new QuotaRequest(resource, offset, bytes_to_write, &quota_granted,
+                       &op_complete);
+  // The reverse service is running on a background thread and the PPAPI quota
+  // methods must be invoked only from the main thread.
+  plugin::WeakRefCallOnMainThread(
+      anchor_,
+      0,  /* delay in ms */
+      ALLOW_THIS_IN_INITIALIZER_LIST(this),
+      &plugin::PluginReverseInterface::QuotaRequest_MainThreadContinuation,
+      continuation);
+  // Wait for the main thread to request quota and signal completion.
+  // It is also possible that the main thread will signal shut down.
+  bool shutting_down;
+  do {
+    nacl::MutexLocker take(&mu_);
+    for (;;) {
+      shutting_down = shutting_down_;
+      if (op_complete || shutting_down) {
+        break;
+      }
+      NaClXCondVarWait(&cv_, &mu_);
+    }
+  } while (0);
+  if (shutting_down) return 0;
+  return quota_granted;
+}
+
+void PluginReverseInterface::AddQuotaManagedFile(const nacl::string& file_id,
+                                                 const pp::FileIO& file_io) {
+  PP_Resource resource = file_io.pp_resource();
+  NaClLog(4,
+          "PluginReverseInterface::AddQuotaManagedFile: "
+          "(file_id='%s', file_io_ref=%"NACL_PRIx64")\n",
+          file_id.c_str(), (int64_t) resource);
+  nacl::MutexLocker take(&mu_);
+  uint64_t file_key = STRTOULL(file_id.c_str(), NULL, 10);
+  quota_map_[file_key] = resource;
 }
 
 ServiceRuntime::ServiceRuntime(Plugin* plugin,

@@ -84,6 +84,11 @@ class LocalTempFile {
   nacl::DescWrapper* release_read_wrapper() {
     return read_wrapper_.release();
   }
+  // For quota management.
+  const nacl::string identifier() const {
+    return nacl::string(reinterpret_cast<const char*>(identifier_));
+  }
+  const pp::FileIO& write_file_io() const { return *write_io_; }
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(LocalTempFile);
@@ -116,6 +121,13 @@ class LocalTempFile {
   pp::CompletionCallback done_callback_;
   // Random number generator used to create filenames.
   struct NaClDescRng *rng_desc_;
+  // An identifier string used for quota request processing.  The quota
+  // interface needs a string that is unique per sel_ldr instance only, so
+  // the identifiers can be reused between runs of the translator, start-ups of
+  // the browser, etc.
+  uint8_t identifier_[16];
+  // A counter to dole out unique identifiers.
+  static uint32_t next_identifier;
 };
 
 // A thread safe reference counting class Needed for CompletionCallbackFactory

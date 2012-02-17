@@ -16,6 +16,7 @@
 #include "native_client/src/trusted/plugin/nexe_arch.h"
 #include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
+#include "native_client/src/trusted/plugin/service_runtime.h"
 #include "native_client/src/trusted/plugin/srpc_params.h"
 #include "native_client/src/trusted/plugin/utility.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
@@ -69,6 +70,9 @@ const bool kWriteable = true;
 //////////////////////////////////////////////////////////////////////
 //  Local temporary file access.
 //////////////////////////////////////////////////////////////////////
+
+uint32_t LocalTempFile::next_identifier = 0;
+
 LocalTempFile::LocalTempFile(Plugin* plugin,
                              pp::FileSystem* file_system,
                              PnaclCoordinator* coordinator)
@@ -85,6 +89,9 @@ LocalTempFile::LocalTempFile(Plugin* plugin,
   CHECK(NaClDescRngCtor(rng_desc_));
   file_io_trusted_ = static_cast<const PPB_FileIOTrusted*>(
       pp::Module::Get()->GetBrowserInterface(PPB_FILEIOTRUSTED_INTERFACE));
+  ++next_identifier;
+  SNPRINTF(reinterpret_cast<char *>(identifier_), sizeof identifier_,
+           "%"NACL_PRIu32, next_identifier);
 }
 
 LocalTempFile::~LocalTempFile() {
@@ -159,7 +166,9 @@ void LocalTempFile::WriteFileDidOpen(int32_t pp_error) {
     coordinator_->ReportNonPpapiError("could not open write temp file.");
     return;
   }
-  write_wrapper_.reset(plugin_->wrapper_factory()->MakeFileDesc(fd, O_RDWR));
+  // The descriptor for a writeable file needs to have quota management.
+  write_wrapper_.reset(
+      plugin_->wrapper_factory()->MakeFileDescQuota(fd, O_RDWR, identifier_));
   // Run the client's completion callback.
   pp::Core* core = pp::Module::Get()->core();
   core->CallOnMainThread(0, done_callback_, PP_OK);
@@ -496,11 +505,9 @@ void PnaclCoordinator::ObjectFileWasClosed(int32_t pp_error) {
     return;
   }
   // Delete the object temporary file.
-  // TODO(sehr): delete the temporary file once the quota updates work.
-  // pp::CompletionCallback cb =
-  //    callback_factory_.NewCallback(&PnaclCoordinator::ObjectFileWasDeleted);
-  // obj_file_->Delete(cb);
-  ObjectFileWasDeleted(PP_OK);
+  pp::CompletionCallback cb =
+      callback_factory_.NewCallback(&PnaclCoordinator::ObjectFileWasDeleted);
+  obj_file_->Delete(cb);
 }
 
 void PnaclCoordinator::ObjectFileWasDeleted(int32_t pp_error) {
@@ -710,6 +717,10 @@ void WINAPI PnaclCoordinator::DoTranslateThread(void* arg) {
   // Run LLC.
   SrpcParams params;
   nacl::DescWrapper* llc_out_file = coordinator->obj_file_->write_wrapper();
+  PluginReverseInterface* llc_reverse =
+      llc_subprocess->service_runtime()->rev_interface();
+  llc_reverse->AddQuotaManagedFile(coordinator->obj_file_->identifier(),
+                                   coordinator->obj_file_->write_file_io());
   if (!llc_subprocess->InvokeSrpcMethod("RunWithDefaultCommandLine",
                                         "hh",
                                         &params,
@@ -738,8 +749,13 @@ void WINAPI PnaclCoordinator::DoTranslateThread(void* arg) {
     coordinator->TranslateFailed("Link process could not be created.");
     return;
   }
+  // Run LD.
   nacl::DescWrapper* ld_in_file = coordinator->obj_file_->read_wrapper();
   nacl::DescWrapper* ld_out_file = coordinator->nexe_file_->write_wrapper();
+  PluginReverseInterface* ld_reverse =
+      ld_subprocess->service_runtime()->rev_interface();
+  ld_reverse->AddQuotaManagedFile(coordinator->nexe_file_->identifier(),
+                                  coordinator->nexe_file_->write_file_io());
   if (!ld_subprocess->InvokeSrpcMethod("RunWithDefaultCommandLine",
                                        "hhiCC",
                                        &params,

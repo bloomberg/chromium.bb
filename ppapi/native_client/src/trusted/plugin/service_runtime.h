@@ -21,11 +21,16 @@
 #include "native_client/src/trusted/reverse_service/reverse_service.h"
 #include "native_client/src/trusted/weak_ref/weak_ref.h"
 
+#include "ppapi/c/trusted/ppb_file_io_trusted.h"
 #include "ppapi/cpp/completion_callback.h"
 
 namespace nacl {
 class DescWrapper;
 struct SelLdrLauncher;
+}  // namespace
+
+namespace pp {
+class FileIO;
 }  // namespace
 
 namespace plugin {
@@ -85,6 +90,26 @@ struct CloseManifestEntryResource {
   bool* op_result_ptr;
 };
 
+struct QuotaRequest {
+ public:
+  QuotaRequest(PP_Resource file_resource,
+               int64_t start_offset,
+               int64_t quota_bytes_requested,
+               int64_t* quota_bytes_granted,
+               bool* op_complete)
+      : resource(file_resource),
+        offset(start_offset),
+        bytes_requested(quota_bytes_requested),
+        bytes_granted(quota_bytes_granted),
+        op_complete_ptr(op_complete) { }
+
+  PP_Resource resource;
+  int64_t offset;
+  int64_t bytes_requested;
+  int64_t* bytes_granted;
+  bool* op_complete_ptr;
+};
+
 // Do not invoke from the main thread, since the main methods will
 // invoke CallOnMainThread and then wait on a condvar for the task to
 // complete: if invoked from the main thread, the main method not
@@ -120,6 +145,13 @@ class PluginReverseInterface: public nacl::ReverseInterface {
 
   virtual void ReportExitStatus(int exit_status);
 
+  virtual int64_t RequestQuotaForWrite(nacl::string file_id,
+                                       int64_t offset,
+                                       int64_t bytes_to_write);
+
+  void AddQuotaManagedFile(const nacl::string& file_id,
+                           const pp::FileIO& file_io);
+
  protected:
   virtual void Log_MainThreadContinuation(LogToJavaScriptConsoleResource* p,
                                           int32_t err);
@@ -143,6 +175,14 @@ class PluginReverseInterface: public nacl::ReverseInterface {
       CloseManifestEntryResource* cls,
       int32_t err);
 
+  virtual void QuotaRequest_MainThreadContinuation(
+      QuotaRequest* request,
+      int32_t err);
+
+  virtual void QuotaRequest_MainThreadResponse(
+      QuotaRequest* request,
+      int32_t err);
+
  private:
   nacl::WeakRefAnchor* anchor_;  // holds a ref
   Plugin* plugin_;  // value may be copied, but should be used only in
@@ -151,6 +191,7 @@ class PluginReverseInterface: public nacl::ReverseInterface {
   ServiceRuntime* service_runtime_;
   NaClMutex mu_;
   NaClCondVar cv_;
+  std::map<int64_t, PP_Resource> quota_map_;
   bool shutting_down_;
 
   nacl::scoped_ptr<PnaclCoordinator> pnacl_coordinator_;
@@ -192,6 +233,10 @@ class ServiceRuntime {
   // exit syscall).
   int exit_status();  // const, but grabs mutex etc.
   void set_exit_status(int exit_status);
+
+  // To establish quota callbacks the pnacl coordinator needs to communicate
+  // with the reverse interface.
+  PluginReverseInterface* rev_interface() const { return rev_interface_; }
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ServiceRuntime);
