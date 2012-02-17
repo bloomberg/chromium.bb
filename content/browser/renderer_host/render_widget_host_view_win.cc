@@ -299,11 +299,6 @@ inline void SetTouchType(TOUCHINPUT* point, int type) {
   point->dwFlags = (point->dwFlags & kTouchMask) | type;
 }
 
-bool ShouldEnableIME(ui::TextInputType type) {
-  return type != ui::TEXT_INPUT_TYPE_NONE &&
-      type != ui::TEXT_INPUT_TYPE_PASSWORD;
-}
-
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -406,11 +401,6 @@ void RenderWidgetHostViewWin::DidBecomeSelected() {
     tab_switch_paint_time_ = TimeTicks::Now();
   is_hidden_ = false;
   EnsureTooltip();
-
-  if (ShouldEnableIME(text_input_type_))
-    ime_input_.EnableIME(m_hWnd);
-  else
-    ime_input_.DisableIME(m_hWnd);
 
   // |render_widget_host_| may be NULL if the TabContents is in the process of
   // closing.
@@ -753,7 +743,8 @@ void RenderWidgetHostViewWin::TextInputStateChanged(
   // as true. We need to support "can_compose_inline=false" for PPAPI plugins
   // that may want to avoid drawing composition-text by themselves and pass
   // the responsibility to the browser.
-  bool is_enabled = ShouldEnableIME(type);
+  bool is_enabled = (type != ui::TEXT_INPUT_TYPE_NONE &&
+      type != ui::TEXT_INPUT_TYPE_PASSWORD);
   if (text_input_type_ != type) {
     text_input_type_ = type;
     if (is_enabled)
