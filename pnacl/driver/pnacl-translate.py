@@ -11,6 +11,7 @@
 
 import driver_tools
 import pathtools
+import shutil
 from driver_env import env
 from driver_log import Log
 
@@ -90,11 +91,7 @@ EXTRA_ENV = {
   'TRIPLE_X8632': 'i686-none-nacl-gnu',
   'TRIPLE_X8664': 'x86_64-none-nacl-gnu',
 
-  'LLC_FLAGS_COMMON': '-asm-verbose=false ' +
-                      '-tail-merge-threshold=50 ' +
-                      '${PIC ? -relocation-model=pic} ' +
-                      '${PIC && ARCH==X8664 && LIBMODE_NEWLIB ? ' +
-                      '  -force-tls-non-pic }',
+  'LLC_FLAGS_COMMON': '-asm-verbose=false -tail-merge-threshold=50',
   'LLC_FLAGS_ARM'    :
     # The following options might come in handy and are left here as comments:
     # TODO(robertm): describe their purpose
@@ -185,41 +182,83 @@ def main(argv):
   if len(inputs) == 0:
     Log.Fatal("No input files")
 
-  # If there's a bitcode file, find it.
+  if output == '':
+    Log.Fatal("Please specify output file with -o")
+
+  # Find the bitcode file on the command line.
   bcfiles = filter(driver_tools.IsBitcode, inputs)
   if len(bcfiles) > 1:
     Log.Fatal('Expecting at most 1 bitcode file')
-
-  if bcfiles:
+  elif len(bcfiles) == 1:
     bcfile = bcfiles[0]
-    bctype = driver_tools.FileType(bcfile)
-    has_bitcode = True
-    # Placeholder for actual object file
-    inputs = ListReplace(inputs, bcfile, '__BITCODE__')
-    env.set('INPUTS', *inputs)
   else:
     bcfile = None
-    has_bitcode = False
+
+  # If there's a bitcode file, translate it now.
+  tng = driver_tools.TempNameGen(inputs + bcfiles, output)
+  output_type = env.getone('OUTPUT_TYPE')
+  if bcfile:
+    sfile = None
+    if output_type == 's':
+      sfile = output
+    elif env.getbool('FORCE_INTERMEDIATE_S'):
+      sfile = tng.TempNameForInput(bcfile, 's')
+
+    ofile = None
+    if output_type == 'o':
+      ofile = output
+    elif output_type != 's':
+      ofile = tng.TempNameForInput(bcfile, 'o')
+
+    if sfile:
+      RunLLC(bcfile, sfile, filetype='asm')
+      if ofile:
+        RunAS(sfile, ofile)
+    else:
+      RunLLC(bcfile, ofile, filetype='obj')
+  else:
+    ofile = None
+
+  # If we've been told to stop after translation, stop now.
+  if output_type in ('o','s'):
+    return 0
+
+  # Replace the bitcode file with __BITCODE__ in the input list
+  if bcfile:
+    inputs = ListReplace(inputs, bcfile, '__BITCODE__')
+    env.set('INPUTS', *inputs)
+
+  # Get bitcode type and metadata
+  bctype = driver_tools.FileType(bcfile)
+  metadata = driver_tools.GetBitcodeMetadata(bcfile)
 
   # Determine the output type, in this order of precedence:
   # 1) Output type can be specified on command-line (-S, -c, -shared, -static)
   # 2) If bitcode file given, use it's output type. (pso->so, pexe->nexe, po->o)
   # 3) Otherwise, assume nexe output.
-  output_type = env.getone('OUTPUT_TYPE')
-  if output_type == '':
-    if env.getbool('SHARED'):
-      output_type = 'so'
-    elif env.getbool('STATIC'):
-      output_type = 'nexe'
-    elif bcfile:
-      DefaultOutputTypes = {
-        'pso' : 'so',
-        'pexe': 'nexe',
-        'po'  : 'o',
-      }
-      output_type = DefaultOutputTypes[bctype]
-    else:
-      output_type = 'nexe'
+  if env.getbool('SHARED'):
+    output_type = 'so'
+  elif env.getbool('STATIC'):
+    output_type = 'nexe'
+  elif bcfile:
+    DefaultOutputTypes = {
+      'pso' : 'so',
+      'pexe': 'nexe',
+      'po'  : 'o',
+    }
+    output_type = DefaultOutputTypes[bctype]
+  else:
+    output_type = 'nexe'
+
+  # If the bitcode is of type "object", no linking is required.
+  if output_type == 'o':
+    # Copy ofile to output
+    Log.Info('Copying %s to %s' % (ofile, output))
+    shutil.copy(pathtools.tosys(ofile), pathtools.tosys(output))
+    return 0
+
+  if bcfile:
+    ApplyBitcodeConfig(metadata, bctype)
 
   # Default to -static for newlib.
   # TODO(pdox): This shouldn't be necessary.
@@ -229,22 +268,11 @@ def main(argv):
       Log.Fatal('Cannot handle -shared with newlib toolchain')
     env.set('STATIC', '1')
 
-  if bcfile:
-    ApplyBitcodeConfig(bcfile, bctype)
-
-  if output == '':
-    if bcfile:
-      output = driver_tools.DefaultOutputName(bcfile, output_type)
-    else:
-      output = pathtools.normalize('a.out')
-
-  tng = driver_tools.TempNameGen(inputs + bcfiles, output)
-  chain = driver_tools.DriverChain(bcfile, output, tng)
-  SetupChain(chain, has_bitcode, output_type)
-  chain.run()
+  assert output_type in ('so','nexe')
+  RunLD(ofile, output)
   return 0
 
-def ApplyBitcodeConfig(bcfile, bctype):
+def ApplyBitcodeConfig(metadata, bctype):
   if bctype == 'pso':
     env.set('SHARED', '1')
 
@@ -265,7 +293,6 @@ def ApplyBitcodeConfig(bcfile, bctype):
   # However, if the metadata becomes richer we will need another mechanism.
   # TODO(jvoung): at least grep out the SRPC output from LLC and transmit
   # that directly to LD to avoid issues with mismatching delimiters.
-  metadata = driver_tools.GetBitcodeMetadata(bcfile)
   for needed in metadata['NeedsLibrary']:
     env.append('LD_FLAGS', '--add-extra-dt-needed=' + needed)
   if bctype == 'pso':
@@ -288,27 +315,6 @@ def ApplyBitcodeConfig(bcfile, bctype):
         if name == 'libc' or name == 'libpthread':
           env.append('LINKER_HACK', '-l:%s_nonshared.a' % name)
         break
-
-# NOTE: this code resembles code from pnacl-driver.py
-# TODO(robertm): see whether this can be unified somehow
-def SetupChain(chain, has_bitcode, output_type):
-  assert output_type in ('o','s','so','nexe')
-
-  if has_bitcode:
-    if output_type == 's' or env.getbool('FORCE_INTERMEDIATE_S'):
-      chain.add(RunLLC, 's', filetype='asm')
-      if output_type == 's':
-        return
-      chain.add(RunAS, 'o')
-    else:
-      chain.add(RunLLC, 'o', filetype='obj')
-    if output_type == 'o':
-      return
-
-  if output_type == 'so':
-    chain.add(RunLD, 'so')
-  elif output_type == 'nexe':
-    chain.add(RunLD, 'nexe')
 
 def RunAS(infile, outfile):
   driver_tools.RunDriver('as', [infile, '-o', outfile])
