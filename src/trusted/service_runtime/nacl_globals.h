@@ -48,14 +48,7 @@ __declspec(dllexport) extern uint32_t nacl_thread_ids[];
  * acquisition code.
  */
 
-extern struct NaClMutex         nacl_thread_mu;
 extern struct NaClAppThread     *nacl_thread[];
-/*
- * nacl_thread_mu protects access to nacl_thread, which are
- * dynamically allocated (kernel stacks are too large to keep around
- * one for each potential thread).  once the pointer is accessed and
- * the object's lock held, nacl_thread_mu may be dropped.
- */
 
 /*
  * TLS base used by nacl_tls_get.  User addresss.

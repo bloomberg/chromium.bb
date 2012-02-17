@@ -18,8 +18,6 @@
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 
-struct NaClMutex            nacl_thread_mu;
-
 struct NaClThreadContext    *nacl_user[NACL_THREAD_MAX] = {NULL};
 struct NaClThreadContext    *nacl_sys[NACL_THREAD_MAX] = {NULL};
 struct NaClAppThread        *nacl_thread[NACL_THREAD_MAX] = {NULL};
@@ -35,11 +33,9 @@ uint32_t                    nacl_thread_ids[NACL_THREAD_MAX] = {0};
 uintptr_t                   nacl_global_xlate_base;
 
 void NaClGlobalModuleInit(void) {
-  NaClXMutexCtor(&nacl_thread_mu);
   NaClInitGlobals();
 }
 
 
 void  NaClGlobalModuleFini(void) {
-  NaClMutexDtor(&nacl_thread_mu);
 }
