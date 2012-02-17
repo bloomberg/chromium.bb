@@ -10,6 +10,7 @@
 #include "base/json/json_writer.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -688,6 +689,14 @@ void SyncSetupHandler::HandleShowErrorUI(const ListValue* args) {
 
   ProfileSyncService* service = GetSyncService();
   DCHECK(service);
+
+#if defined(OS_CHROMEOS)
+  if (service->GetAuthError().state() != GoogleServiceAuthError::NONE) {
+    DLOG(INFO) << "Signing out the user to fix a sync error.";
+    BrowserList::GetLastActive()->ExecuteCommand(IDC_EXIT);
+    return;
+  }
+#endif
 
   service->ShowErrorUI();
 }

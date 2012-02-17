@@ -6,10 +6,12 @@
 
 #include "base/basictypes.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
-#include "chrome/test/base/testing_profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock-actions.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -21,6 +23,33 @@ using ::testing::NiceMock;
 using content::BrowserThread;
 
 namespace {
+
+class BrowserMock: public Browser {
+ public:
+  explicit BrowserMock(Type type, Profile* profile) : Browser(type, profile) {}
+
+  MOCK_METHOD1(ExecuteCommand, void(int command_id));
+};
+
+// Same as BrowserWithTestWindowTest, but uses MockBrowser to test calls to
+// ExecuteCommand method.
+class SyncGlobalErrorTest : public BrowserWithTestWindowTest {
+ public:
+  SyncGlobalErrorTest() {}
+  virtual ~SyncGlobalErrorTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    testing::Test::SetUp();
+
+    set_profile(CreateProfile());
+    set_browser(new BrowserMock(Browser::TYPE_TABBED, profile()));
+    set_window(new TestBrowserWindow(browser()));
+    browser()->SetWindowForTesting(window());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SyncGlobalErrorTest);
+};
 
 // Utility function to test that SyncGlobalError behaves correct for the given
 // error condition.
@@ -55,6 +84,13 @@ void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
   // We always return a hardcoded title.
   EXPECT_FALSE(error->GetBubbleViewTitle().empty());
 
+#if defined(OS_CHROMEOS)
+  if (error_state != GoogleServiceAuthError::NONE) {
+    // In CrOS sign-in/sign-out is made to fix the error.
+    EXPECT_CALL(*static_cast<BrowserMock*>(browser), ExecuteCommand(IDC_EXIT));
+    error->ExecuteMenuItem(browser);
+  }
+#else
   // Test message handler.
   if (is_error) {
     EXPECT_CALL(*service, ShowErrorUI());
@@ -63,11 +99,10 @@ void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
     error->BubbleViewAcceptButtonPressed(browser);
     error->BubbleViewDidClose(browser);
   }
+#endif
 }
 
 } // namespace
-
-typedef BrowserWithTestWindowTest SyncGlobalErrorTest;
 
 // Test that SyncGlobalError shows an error if a passphrase is required.
 TEST_F(SyncGlobalErrorTest, PassphraseGlobalError) {

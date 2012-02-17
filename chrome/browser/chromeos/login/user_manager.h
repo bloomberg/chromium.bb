@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_image_loader.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
+#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -24,6 +25,7 @@
 class FilePath;
 class PrefService;
 class ProfileDownloader;
+class ProfileSyncService;
 
 namespace base {
 template<typename> struct DefaultLazyInstanceTraits;
@@ -36,6 +38,7 @@ class RemoveUserDelegate;
 // This class provides a mechanism for discovering users who have logged
 // into this chromium os device before and updating that list.
 class UserManager : public ProfileDownloaderDelegate,
+                    public ProfileSyncServiceObserver,
                     public content::NotificationObserver {
  public:
   // Returns a shared instance of a UserManager. Not thread-safe, should only be
@@ -123,6 +126,9 @@ class UserManager : public ProfileDownloaderDelegate,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // ProfileSyncServiceObserver implementation.
+  virtual void OnStateChanged() OVERRIDE;
 
   // Accessor for current_user_is_owner_
   virtual bool current_user_is_owner() const;
@@ -273,6 +279,11 @@ class UserManager : public ProfileDownloaderDelegate,
   bool user_is_logged_in_;
 
   content::NotificationRegistrar registrar_;
+
+  // Profile sync service which is observed to take actions after sync
+  // errors appear. NOTE: there is no guarantee that it is the current sync
+  // service, so do NOT use it outside |OnStateChanged| method.
+  ProfileSyncService* observed_sync_service_;
 
   friend struct base::DefaultLazyInstanceTraits<UserManager>;
 

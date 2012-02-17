@@ -418,6 +418,12 @@ bool ProfileManager::AddProfile(Profile* profile) {
   RegisterProfile(profile, true);
   DoFinalInit(profile, ShouldGoOffTheRecord());
   ProfileMetrics::LogNumberOfProfiles(this, ProfileMetrics::ADD_PROFILE_EVENT);
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PROFILE_ADDED,
+      content::Source<Profile>(profile),
+      content::NotificationService::NoDetails());
+
   return true;
 }
 

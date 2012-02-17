@@ -23,10 +23,10 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros/cert_library.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
+#include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -38,10 +38,13 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile_downloader.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
@@ -53,6 +56,8 @@
 #endif
 
 using content::BrowserThread;
+
+typedef GoogleServiceAuthError AuthError;
 
 namespace chromeos {
 
@@ -575,10 +580,40 @@ void UserManager::DownloadProfileImage(const std::string& reason) {
 void UserManager::Observe(int type,
                           const content::NotificationSource& source,
                           const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED) {
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                            base::Bind(&UserManager::CheckOwnership,
-                                       base::Unretained(this)));
+  switch (type) {
+    case chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED:
+      BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                              base::Bind(&UserManager::CheckOwnership,
+                                         base::Unretained(this)));
+      break;
+    case chrome::NOTIFICATION_PROFILE_ADDED:
+      if (user_is_logged_in() && !IsLoggedInAsGuest()) {
+        Profile* profile = content::Source<Profile>(source).ptr();
+        if (!profile->IsOffTheRecord() &&
+            profile == ProfileManager::GetDefaultProfile()) {
+          DCHECK(NULL == observed_sync_service_);
+          observed_sync_service_ =
+              ProfileSyncServiceFactory::GetForProfile(profile);
+          if (observed_sync_service_)
+            observed_sync_service_->AddObserver(this);
+        }
+      }
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
+void UserManager::OnStateChanged() {
+  DCHECK(user_is_logged_in() && !IsLoggedInAsGuest());
+  if (observed_sync_service_->GetAuthError().state() != AuthError::NONE) {
+      // Invalidate OAuth token to force Gaia sign-in flow. This is needed
+      // because sign-out/sign-in solution is suggested to the user.
+      // TODO(altimofeev): this code isn't needed after crosbug.com/25978 is
+      // implemented.
+      DVLOG(1) << "Invalidate OAuth token because of a sync error.";
+      SaveUserOAuthStatus(logged_in_user().email(),
+                          User::OAUTH_TOKEN_STATUS_INVALID);
   }
 }
 
@@ -620,12 +655,15 @@ UserManager::UserManager()
       current_user_is_owner_(false),
       current_user_is_new_(false),
       user_is_logged_in_(false),
+      observed_sync_service_(NULL),
       last_image_set_async_(false),
       downloaded_profile_image_data_url_(chrome::kAboutBlankURL) {
   // Use stub as the logged-in user for test paths without login.
   if (!system::runtime_environment::IsRunningOnChromeOS())
     StubUserLoggedIn();
   registrar_.Add(this, chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED,
+      content::NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,
       content::NotificationService::AllSources());
 }
 

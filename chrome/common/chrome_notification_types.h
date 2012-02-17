@@ -245,6 +245,10 @@ enum NotificationType {
   // The details are none and the source is the new profile.
   NOTIFICATION_PROFILE_CREATED,
 
+  // Sent after a Profile has been added to ProfileManager.
+  // The details are none and the source is the new profile.
+  NOTIFICATION_PROFILE_ADDED,
+
   // Sent before a Profile is destroyed. This notification is sent both for
   // normal and OTR profiles.
   // The details are none and the source is a Profile*.
