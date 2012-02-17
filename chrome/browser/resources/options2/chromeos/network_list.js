@@ -17,13 +17,13 @@ cr.define('options.network', function() {
   function Constants() {}
 
   // Network types:
-  Constants.TYPE_UNKNOWN   = 0;
-  Constants.TYPE_ETHERNET  = 1;
-  Constants.TYPE_WIFI      = 2;
-  Constants.TYPE_WIMAX     = 3;
+  Constants.TYPE_UNKNOWN = 0;
+  Constants.TYPE_ETHERNET = 1;
+  Constants.TYPE_WIFI = 2;
+  Constants.TYPE_WIMAX = 3;
   Constants.TYPE_BLUETOOTH = 4;
-  Constants.TYPE_CELLULAR  = 5;
-  Constants.TYPE_VPN       = 6;
+  Constants.TYPE_CELLULAR = 5;
+  Constants.TYPE_VPN = 6;
 
   /**
    * ID of the menu that is currently visible.
@@ -35,7 +35,7 @@ cr.define('options.network', function() {
   /**
    * Create an element in the network list for controlling network
    * connectivity.
-   * @param{Object} data Description of the network list or command.
+   * @param {Object} data Description of the network list or command.
    * @constructor
    */
   function NetworkListItem(data) {
@@ -49,7 +49,7 @@ cr.define('options.network', function() {
 
   /**
    * Decorate an element as a NetworkListItem.
-   * @param{!Element} el The element to decorate.
+   * @param {!Element} el The element to decorate.
    */
   NetworkListItem.decorate = function(el) {
     el.__proto__ = NetworkListItem.prototype;
@@ -61,35 +61,35 @@ cr.define('options.network', function() {
 
     /**
      * Description of the network group or control.
-     * @type{Object.<string,Object>}
+     * @type {Object.<string,Object>}
      * @private
      */
     data_: null,
 
     /**
      * Element for the control's subtitle.
-     * @type{Element|null}
+     * @type {?Element}
      * @private
      */
     subtitle_: null,
 
     /**
      * Icon for the network control.
-     * @type{Element|null}
+     * @type {?Element}
      * @private
      */
     icon_: null,
 
     /**
      * Indicates if in the process of connecting to a network.
-     * @type{boolean}
+     * @type {boolean}
      * @private
      */
     connecting_: false,
 
     /**
      * Description of the network control.
-     * @type{Object}
+     * @type {Object}
      */
     get data() {
       return this.data_;
@@ -97,7 +97,7 @@ cr.define('options.network', function() {
 
     /**
      * Text label for the subtitle.
-     * @type{string}
+     * @type {string}
      */
     set subtitle(text) {
       this.subtitle_.textContent = text;
@@ -105,7 +105,7 @@ cr.define('options.network', function() {
 
     /**
      * URL for the network icon.
-     * @type{string}
+     * @type {string}
      */
     set iconURL(iconURL) {
       this.icon_.style.backgroundImage = url(iconURL);
@@ -113,7 +113,7 @@ cr.define('options.network', function() {
 
     /**
      * Type of network icon.  Each type corresponds to a CSS rule.
-     * @type{string}
+     * @type {string}
      */
     set iconType(type) {
       this.icon_.classList.add('network-' + type);
@@ -121,7 +121,7 @@ cr.define('options.network', function() {
 
     /**
      * Indicates if the network is in the process of being connected.
-     * @type{boolean}
+     * @type {boolean}
      */
     set connecting(state) {
       this.connecting_ = state;
@@ -204,7 +204,7 @@ cr.define('options.network', function() {
         this.iconURL = candidateURL;
       else
         this.iconType = this.data.key;
-      if(!this.connecting) {
+      if (!this.connecting) {
         this.addEventListener('click', function() {
           this.showMenu();
         });
@@ -337,7 +337,6 @@ cr.define('options.network', function() {
 
     /**
      * Retrieves the ID for the menu.
-     * @param{string} The menu ID.
      * @private
      */
     getMenuName_: function() {
@@ -381,7 +380,7 @@ cr.define('options.network', function() {
   NetworkButtonItem.prototype = {
     __proto__: NetworkListItem.prototype,
 
-    /* @inheritDoc */
+    /** @inheritDoc */
     decorate: function() {
       if (this.data.subtitle)
         this.subtitle = this.data.subtitle;
@@ -409,7 +408,7 @@ cr.define('options.network', function() {
       this.update({key: 'cellular', networkList: []});
       this.update({key: 'vpn', networkList: []});
       this.update({key: 'airplaneMode',
-                   subtitle:  localStrings.getString('airplaneModeLabel'),
+                   subtitle: localStrings.getString('airplaneModeLabel'),
                    command: toggleAirplaneMode_});
     },
 
@@ -425,7 +424,8 @@ cr.define('options.network', function() {
      * Finds the index of a network item within the data model based on
      * category.
      * @param {string} key Unique key for the item in the list.
-     * @return {number|undefined}
+     * @return {number} The index of the network item, or |undefined| if it is
+     *     not found.
      */
     indexOf: function(key) {
       var size = this.dataModel.length;
@@ -438,7 +438,7 @@ cr.define('options.network', function() {
 
     /**
      * Updates a network control.
-     * @param{Object.<string,string>} data Description of the entry.
+     * @param {Object.<string,string>} data Description of the entry.
      */
     update: function(data) {
       var index = this.indexOf(data.key);
@@ -462,7 +462,7 @@ cr.define('options.network', function() {
 
   /**
    * Chrome callback for updating network controls.
-   * @param{Object} data Description of available network devices and their
+   * @param {Object} data Description of available network devices and their
    *     corresponding state.
    */
   NetworkList.refreshNetworkData = function(data) {
@@ -485,9 +485,9 @@ cr.define('options.network', function() {
   /**
    * Updates the list of available networks and their status, filtered by
    * network type.
-   * @param{string} category The type of network.
-   * @param{Array} list The list of networks and their status.
-   * @param{function(Object)=} opt_filter Optional filter for pruning the list
+   * @param {string} category The type of network.
+   * @param {Array} list The list of networks and their status.
+   * @param {function(Object)=} opt_filter Optional filter for pruning the list
    *     of networks.
    */
   function loadData_(category, list, opt_filter) {

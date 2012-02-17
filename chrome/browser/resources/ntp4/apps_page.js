@@ -107,10 +107,10 @@ cr.define('ntp4', function() {
      */
     forAllLaunchTypes_: function(f) {
       // Order matters: index matches launchType id.
-      var launchTypes = [ this.launchPinnedTab_,
-                          this.launchRegularTab_,
-                          this.launchFullscreen_,
-                          this.launchNewWindow_ ];
+      var launchTypes = [this.launchPinnedTab_,
+                         this.launchRegularTab_,
+                         this.launchFullscreen_,
+                         this.launchNewWindow_];
 
       for (var i = 0; i < launchTypes.length; ++i) {
         if (!launchTypes[i])
@@ -444,7 +444,7 @@ cr.define('ntp4', function() {
       if (this.useSmallIcon_) {
         // 3/4 is the ratio of 96px to 128px (the used height and full height
         // of icons in apps).
-        var iconSize = imgSize * 3/4;
+        var iconSize = imgSize * 3 / 4;
         // The -2 is for the div border to improve the visual alignment for the
         // icon div.
         this.imgDiv_.style.width = this.imgDiv_.style.height =
@@ -758,7 +758,7 @@ cr.define('ntp4', function() {
         }
     },
 
-    /** @inheritdoc */
+    /** @inheritDoc */
     doDragOver: function(e) {
       var tile = ntp4.getCurrentlyDraggingTile();
       if (tile && !tile.querySelector('.app')) {

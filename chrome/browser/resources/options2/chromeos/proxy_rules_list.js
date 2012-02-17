@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,7 +98,7 @@ cr.define('options.proxyexceptions', function() {
 
   /**
    * Creates a new exception list item.
-   * @param exception The exception account this represents.
+   * @param {Object} exception The exception account this represents.
    * @constructor
    * @extends {cr.ui.ListItem}
    */

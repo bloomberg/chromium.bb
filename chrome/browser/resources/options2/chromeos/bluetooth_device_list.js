@@ -103,7 +103,7 @@ cr.define('options.system.bluetooth', function() {
     __proto__: DeletableItemList.prototype,
 
     /** @inheritDoc */
-    decorate:  function() {
+    decorate: function() {
       DeletableItemList.prototype.decorate.call(this);
       this.addEventListener('blur', this.onBlur_);
       this.clear();

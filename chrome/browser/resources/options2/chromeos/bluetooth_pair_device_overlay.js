@@ -101,7 +101,7 @@ cr.define('options', function() {
      * Override to prevent showing the overlay if the Bluetooth device details
      * have not been specified.  Prevents showing an empty dialog if the user
      * quits and restarts Chrome while in the process of pairing with a device.
-     " @return {boolean} True if the overlay can be displayed.
+     * @return {boolean} True if the overlay can be displayed.
      */
     canShowPage: function() {
       return this.device_ && this.device_.address && this.device_.pairing;
@@ -204,7 +204,7 @@ cr.define('options', function() {
         var keyEl = document.createElement('span');
         keyEl.textContent = label;
         keyEl.className = keyClass;
-        keyEl.id = "bluetooth-enter-key";
+        keyEl.id = 'bluetooth-enter-key';
         passkeyEl.appendChild(keyEl);
       }
       passkeyEl.hidden = false;

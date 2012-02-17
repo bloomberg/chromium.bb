@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,23 +14,23 @@ cr.define('options.internet', function() {
   // Minimum length for SSID name.
   Constants.MIN_WIRELESS_SSID_LENGTH = 1;
   // Cellular activation states:
-  Constants.ACTIVATION_STATE_UNKNOWN             = 0;
-  Constants.ACTIVATION_STATE_ACTIVATED           = 1;
-  Constants.ACTIVATION_STATE_ACTIVATING          = 2;
-  Constants.ACTIVATION_STATE_NOT_ACTIVATED       = 3;
+  Constants.ACTIVATION_STATE_UNKNOWN = 0;
+  Constants.ACTIVATION_STATE_ACTIVATED = 1;
+  Constants.ACTIVATION_STATE_ACTIVATING = 2;
+  Constants.ACTIVATION_STATE_NOT_ACTIVATED = 3;
   Constants.ACTIVATION_STATE_PARTIALLY_ACTIVATED = 4;
   // Network types:
-  Constants.TYPE_UNKNOWN   = 0;
-  Constants.TYPE_ETHERNET  = 1;
-  Constants.TYPE_WIFI      = 2;
-  Constants.TYPE_WIMAX     = 3;
+  Constants.TYPE_UNKNOWN = 0;
+  Constants.TYPE_ETHERNET = 1;
+  Constants.TYPE_WIFI = 2;
+  Constants.TYPE_WIMAX = 3;
   Constants.TYPE_BLUETOOTH = 4;
-  Constants.TYPE_CELLULAR  = 5;
-  Constants.TYPE_VPN       = 6;
+  Constants.TYPE_CELLULAR = 5;
+  Constants.TYPE_VPN = 6;
   // ONC sources:
-  Constants.ONC_SOURCE_USER_IMPORT   = 1;
+  Constants.ONC_SOURCE_USER_IMPORT = 1;
   Constants.ONC_SOURCE_DEVICE_POLICY = 2;
-  Constants.ONC_SOURCE_USER_POLICY   = 3;
+  Constants.ONC_SOURCE_USER_POLICY = 3;
 
   /**
    * Creates a new network list div.

@@ -245,7 +245,7 @@ cr.define('options', function() {
 
     /**
      * Handler for messages sent from the main uber page.
-     * @param {Event} e
+     * @param {Event} e The 'message' event from the uber page.
      */
     handleWindowMessage_: function(e) {
       if (e.data.method == 'frameSelected')

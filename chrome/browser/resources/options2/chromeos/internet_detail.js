@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,7 +73,7 @@ cr.define('options.internet', function() {
           !this.cellular || this.nocellplan || this.hascellplan);
       updateHidden(
           cr.doc.querySelectorAll('#detailsInternetPage .plan-details-info'),
-          !this.cellular || this.nocellplan  || this.cellplanloading);
+          !this.cellular || this.nocellplan || this.cellplanloading);
       updateHidden(
           cr.doc.querySelectorAll('#detailsInternetPage .gsm-only'),
           !this.cellular || !this.gsm);

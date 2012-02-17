@@ -161,7 +161,7 @@ cr.define('options', function() {
         option.value = -1;
         option.selected = true;
         apnSelector.add(option, apnSelector[apnSelector.length - 1]);
-        data.userApnIndex = apnSelector.length - 2
+        data.userApnIndex = apnSelector.length - 2;
         data.selectedApn = data.userApnIndex;
 
         InternetOptions.prototype.updateHidden_(
@@ -236,7 +236,7 @@ cr.define('options', function() {
       if (networkName)
         options.ProxyOptions.getInstance().setNetworkName(networkName);
       chrome.send('buttonClickCallback',
-          [networkType, servicePath, "options"]);
+          [networkType, servicePath, 'options']);
     },
 
     updateHidden_: function(elements, hidden) {
@@ -289,7 +289,7 @@ cr.define('options', function() {
   cr.defineProperty(InternetOptions, 'accesslocked', cr.PropertyKind.JS,
       InternetOptions.prototype.updateControls_);
 
-  InternetOptions.loginFromDetails = function () {
+  InternetOptions.loginFromDetails = function() {
     var data = $('connectionState').data;
     var servicePath = data.servicePath;
     chrome.send('buttonClickCallback', [String(data.type),
@@ -298,7 +298,7 @@ cr.define('options', function() {
     OptionsPage.closeOverlay();
   };
 
-  InternetOptions.disconnectNetwork = function () {
+  InternetOptions.disconnectNetwork = function() {
     var data = $('connectionState').data;
     var servicePath = data.servicePath;
     chrome.send('buttonClickCallback', [String(data.type),
@@ -307,7 +307,7 @@ cr.define('options', function() {
     OptionsPage.closeOverlay();
   };
 
-  InternetOptions.activateFromDetails = function () {
+  InternetOptions.activateFromDetails = function() {
     var data = $('connectionState').data;
     var servicePath = data.servicePath;
     if (data.type == options.internet.Constants.TYPE_CELLULAR) {
@@ -318,29 +318,29 @@ cr.define('options', function() {
     OptionsPage.closeOverlay();
   };
 
-  InternetOptions.setDetails = function () {
+  InternetOptions.setDetails = function() {
     var data = $('connectionState').data;
     var servicePath = data.servicePath;
     if (data.type == options.internet.Constants.TYPE_WIFI) {
       chrome.send('setPreferNetwork',
                    [String(servicePath),
-                    $('preferNetworkWifi').checked ? "true" : "false"]);
+                    $('preferNetworkWifi').checked ? 'true' : 'false']);
       chrome.send('setAutoConnect',
                   [String(servicePath),
-                   $('autoConnectNetworkWifi').checked ? "true" : "false"]);
+                   $('autoConnectNetworkWifi').checked ? 'true' : 'false']);
     } else if (data.type == options.internet.Constants.TYPE_CELLULAR) {
       chrome.send('setAutoConnect',
                   [String(servicePath),
-                   $('autoConnectNetworkCellular').checked ? "true" : "false"]);
+                   $('autoConnectNetworkCellular').checked ? 'true' : 'false']);
     }
 
     var ipConfigList = $('ipConfigList');
-    chrome.send('setIPConfig',[String(servicePath),
-                               $('ipTypeDHCP').checked ? "true" : "false",
-                               ipConfigList.dataModel.item(0).value,
-                               ipConfigList.dataModel.item(1).value,
-                               ipConfigList.dataModel.item(2).value,
-                               ipConfigList.dataModel.item(3).value]);
+    chrome.send('setIPConfig', [String(servicePath),
+                                $('ipTypeDHCP').checked ? 'true' : 'false',
+                                ipConfigList.dataModel.item(0).value,
+                                ipConfigList.dataModel.item(1).value,
+                                ipConfigList.dataModel.item(2).value,
+                                ipConfigList.dataModel.item(3).value]);
     OptionsPage.closeOverlay();
   };
 
@@ -378,7 +378,7 @@ cr.define('options', function() {
   //
   //Chrome callbacks
   //
-  InternetOptions.refreshNetworkData = function (data) {
+  InternetOptions.refreshNetworkData = function(data) {
     var self = InternetOptions.getInstance();
     if (data.accessLocked) {
       self.accesslocked = true;
@@ -400,11 +400,11 @@ cr.define('options', function() {
   };
 
   // TODO(xiyuan): This function seems belonging to DetailsInternetPage.
-  InternetOptions.updateCellularPlans = function (data) {
+  InternetOptions.updateCellularPlans = function(data) {
     var detailsPage = DetailsInternetPage.getInstance();
     detailsPage.cellplanloading = false;
     if (data.plans && data.plans.length) {
-      detailsPage.nocellplan = false
+      detailsPage.nocellplan = false;
       detailsPage.hascellplan = true;
       $('planList').load(data.plans);
     } else {
@@ -427,7 +427,7 @@ cr.define('options', function() {
     $('change-pin').hidden = !requirePin;
   };
 
-  InternetOptions.showDetailedInfo = function (data) {
+  InternetOptions.showDetailedInfo = function(data) {
     var detailsPage = DetailsInternetPage.getInstance();
     // TODO(chocobo): Is this hack to cache the data here reasonable?
     $('connectionState').data = data;
@@ -552,7 +552,7 @@ cr.define('options', function() {
       $('autoConnectNetworkWifi').checked = data.autoConnect.value;
       $('autoConnectNetworkWifi').disabled = !data.remembered;
       detailsPage.password = data.encrypted;
-    } else if(data.type == options.internet.Constants.TYPE_CELLULAR) {
+    } else if (data.type == options.internet.Constants.TYPE_CELLULAR) {
       if (!data.gsm)
         OptionsPage.showTab($('cellularPlanNavTab'));
       else
@@ -567,7 +567,7 @@ cr.define('options', function() {
           a = document.createElement('a');
           $('serviceName').appendChild(a);
           a.id = 'carrierUrl';
-          a.target = "_blank";
+          a.target = '_blank';
         }
         a.href = data.carrierUrl;
         a.textContent = data.serviceName;
@@ -658,7 +658,7 @@ cr.define('options', function() {
       if (data.connected) {
         detailsPage.nocellplan = false;
         detailsPage.cellplanloading = true;
-        chrome.send('refreshCellularPlan', [data.servicePath])
+        chrome.send('refreshCellularPlan', [data.servicePath]);
       } else {
         detailsPage.nocellplan = true;
         detailsPage.cellplanloading = false;
@@ -708,7 +708,7 @@ cr.define('options', function() {
     OptionsPage.showPageByName('detailsInternetPage', false);
   };
 
-  InternetOptions.invalidNetworkSettings = function () {
+  InternetOptions.invalidNetworkSettings = function() {
     alert(localStrings.getString('invalidNetworkSettings'));
   };
 

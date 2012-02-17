@@ -512,7 +512,7 @@ cr.define('ntp4', function() {
     },
     /**
      * The notification content of this tile (if any, otherwise null).
-     * @param {!HTMLElement}
+     * @type {!HTMLElement}
      */
     set notification(node) {
       assert(node instanceof HTMLElement, '|node| isn\'t an HTMLElement!');
