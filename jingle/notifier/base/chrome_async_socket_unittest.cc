@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -342,7 +342,7 @@ class ChromeAsyncSocketTest
   void DoOpenClosed() {
     ExpectClosed();
     async_socket_data_provider_.set_connect_data(
-        net::MockConnect(false, net::OK));
+        net::MockConnect(net::SYNCHRONOUS, net::OK));
     EXPECT_TRUE(chrome_async_socket_->Connect(addr_));
     ExpectNonErrorState(ChromeAsyncSocket::STATE_CONNECTING);
 
@@ -519,7 +519,7 @@ TEST_F(ChromeAsyncSocketTest, HangingConnect) {
 
 TEST_F(ChromeAsyncSocketTest, PendingConnect) {
   async_socket_data_provider_.set_connect_data(
-      net::MockConnect(true, net::OK));
+      net::MockConnect(net::ASYNC, net::OK));
   EXPECT_TRUE(chrome_async_socket_->Connect(addr_));
   ExpectNonErrorState(ChromeAsyncSocket::STATE_CONNECTING);
   ExpectNoSignal();
@@ -541,7 +541,7 @@ TEST_F(ChromeAsyncSocketTest, PendingConnect) {
 
 TEST_F(ChromeAsyncSocketTest, PendingConnectCloseBeforeRead) {
   async_socket_data_provider_.set_connect_data(
-      net::MockConnect(true, net::OK));
+      net::MockConnect(net::ASYNC, net::OK));
   EXPECT_TRUE(chrome_async_socket_->Connect(addr_));
 
   message_loop_.RunAllPending();
@@ -556,7 +556,7 @@ TEST_F(ChromeAsyncSocketTest, PendingConnectCloseBeforeRead) {
 
 TEST_F(ChromeAsyncSocketTest, PendingConnectError) {
   async_socket_data_provider_.set_connect_data(
-      net::MockConnect(true, net::ERR_TIMED_OUT));
+      net::MockConnect(net::ASYNC, net::ERR_TIMED_OUT));
   EXPECT_TRUE(chrome_async_socket_->Connect(addr_));
 
   message_loop_.RunAllPending();
@@ -583,7 +583,7 @@ TEST_F(ChromeAsyncSocketTest, EmptyRead) {
 TEST_F(ChromeAsyncSocketTest, WrongRead) {
   EXPECT_DEBUG_DEATH({
     async_socket_data_provider_.set_connect_data(
-        net::MockConnect(true, net::OK));
+        net::MockConnect(net::ASYNC, net::OK));
     EXPECT_TRUE(chrome_async_socket_->Connect(addr_));
     ExpectNonErrorState(ChromeAsyncSocket::STATE_CONNECTING);
     ExpectNoSignal();
@@ -897,7 +897,7 @@ TEST_F(ChromeAsyncSocketTest, DoubleSSLConnect) {
 
 TEST_F(ChromeAsyncSocketTest, FailedSSLConnect) {
   ssl_socket_data_provider_.connect =
-      net::MockConnect(true, net::ERR_CERT_COMMON_NAME_INVALID),
+      net::MockConnect(net::ASYNC, net::ERR_CERT_COMMON_NAME_INVALID),
 
   async_socket_data_provider_.AddRead(net::MockRead(kReadData));
   DoOpenClosed();

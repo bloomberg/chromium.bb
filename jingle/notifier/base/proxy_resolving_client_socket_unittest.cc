@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,7 +90,7 @@ TEST_F(ProxyResolvingClientSocketTest, ReportsBadProxies) {
 
   net::StaticSocketDataProvider socket_data1;
   socket_data1.set_connect_data(
-      net::MockConnect(true, net::ERR_ADDRESS_UNREACHABLE));
+      net::MockConnect(net::ASYNC, net::ERR_ADDRESS_UNREACHABLE));
   socket_factory.AddSocketDataProvider(&socket_data1);
 
   net::MockRead reads[] = {
@@ -103,7 +103,7 @@ TEST_F(ProxyResolvingClientSocketTest, ReportsBadProxies) {
   };
   net::StaticSocketDataProvider socket_data2(reads, arraysize(reads),
                                              writes, arraysize(writes));
-  socket_data2.set_connect_data(net::MockConnect(true, net::OK));
+  socket_data2.set_connect_data(net::MockConnect(net::ASYNC, net::OK));
   socket_factory.AddSocketDataProvider(&socket_data2);
 
   ProxyResolvingClientSocket proxy_resolving_socket(

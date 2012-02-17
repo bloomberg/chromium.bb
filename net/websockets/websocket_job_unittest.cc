@@ -258,7 +258,7 @@ class MockHttpTransactionFactory : public net::HttpTransactionFactory {
  public:
   MockHttpTransactionFactory(net::OrderedSocketData* data) {
     data_ = data;
-    net::MockConnect connect_data(false, net::OK);
+    net::MockConnect connect_data(net::SYNCHRONOUS, net::OK);
     data_->set_connect_data(connect_data);
     session_deps_.reset(new net::SpdySessionDependencies);
     session_deps_->socket_factory->AddSocketDataProvider(data_);

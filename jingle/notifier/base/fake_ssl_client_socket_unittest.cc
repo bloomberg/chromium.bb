@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -131,7 +131,8 @@ class FakeSSLClientSocketTest : public testing::Test {
     base::StringPiece ssl_server_hello =
         FakeSSLClientSocket::GetSslServerHello();
 
-    net::MockConnect mock_connect(async, net::OK);
+    net::MockConnect mock_connect(async ? net::ASYNC : net::SYNCHRONOUS,
+                                  net::OK);
     std::vector<net::MockRead> reads;
     std::vector<net::MockWrite> writes;
     static const char kReadTestData[] = "read test data";
@@ -192,7 +193,8 @@ class FakeSSLClientSocketTest : public testing::Test {
     base::StringPiece ssl_server_hello =
         FakeSSLClientSocket::GetSslServerHello();
 
-    net::MockConnect mock_connect(async, net::OK);
+    net::MockConnect mock_connect(async ? net::ASYNC : net::SYNCHRONOUS,
+                                  net::OK);
     std::vector<net::MockRead> reads;
     std::vector<net::MockWrite> writes;
     const size_t kChunkSize = 1;
