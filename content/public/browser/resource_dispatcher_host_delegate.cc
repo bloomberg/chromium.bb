@@ -37,12 +37,6 @@ void ResourceDispatcherHostDelegate::DownloadStarting(
     ScopedVector<ResourceThrottle>* throttles) {
 }
 
-bool ResourceDispatcherHostDelegate::ShouldDeferStart(
-    net::URLRequest* request,
-    ResourceContext* resource_context) {
-  return false;
-}
-
 bool ResourceDispatcherHostDelegate::AcceptSSLClientCertificateRequest(
     net::URLRequest* request,
     net::SSLCertRequestInfo* cert_request_info) {

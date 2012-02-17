@@ -15,6 +15,7 @@
 #include "chrome/browser/net/load_timing_observer.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
+#include "chrome/browser/prerender/prerender_resource_throttle.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/renderer_host/chrome_url_request_user_data.h"
@@ -157,18 +158,20 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     throttles->push_back(new OfflineResourceThrottle(
         child_id, route_id, request, resource_context->GetAppCacheService()));
 #endif
+
+    throttles->push_back(
+        new prerender::PrerenderResourceThrottle(prerender_tracker_,
+                                                 request,
+                                                 child_id,
+                                                 route_id));
   }
 
-#if defined(ENABLE_SAFE_BROWSING)
-  // Insert safe browsing at the front of the chain, so it gets to decide
-  // on policies first.
-  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
-  if (io_data->safe_browsing_enabled()->GetValue()) {
-    throttles->push_back(CreateSafeBrowsingResourceThrottle(
-        request, child_id, route_id,
-        resource_type != ResourceType::MAIN_FRAME));
-  }
-#endif
+  AppendSafeBrowsingResourceThrottle(request,
+                                     resource_context,
+                                     child_id,
+                                     route_id,
+                                     resource_type != ResourceType::MAIN_FRAME,
+                                     throttles);
 }
 
 void ChromeResourceDispatcherHostDelegate::DownloadStarting(
@@ -188,27 +191,16 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
   // path is only hit for requests initiated through the browser, and not the
   // web, so no need to add the download throttle.
   if (is_new_request) {
-#if defined(ENABLE_SAFE_BROWSING)
-    ProfileIOData* io_data =
-        ProfileIOData::FromResourceContext(resource_context);
-    if (io_data->safe_browsing_enabled()->GetValue()) {
-      throttles->push_back(CreateSafeBrowsingResourceThrottle(
-          request, child_id, route_id, false));
-    }
-#endif
+    AppendSafeBrowsingResourceThrottle(request,
+                                       resource_context,
+                                       child_id,
+                                       route_id,
+                                       false,
+                                       throttles);
   } else {
     throttles->push_back(new DownloadResourceThrottle(
         download_request_limiter_, child_id, route_id, request_id));
   }
-}
-
-bool ChromeResourceDispatcherHostDelegate::ShouldDeferStart(
-    net::URLRequest* request,
-    content::ResourceContext* resource_context) {
-  ResourceDispatcherHostRequestInfo* info =
-      resource_dispatcher_host_->InfoForRequest(request);
-  return prerender_tracker_->PotentiallyDelayRequestOnIOThread(
-      request->url(), info->child_id(), info->route_id(), info->request_id());
 }
 
 bool ChromeResourceDispatcherHostDelegate::AcceptSSLClientCertificateRequest(
@@ -278,15 +270,23 @@ void ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
       base::Bind(&ExternalProtocolHandler::LaunchUrl, url, child_id, route_id));
 }
 
+void ChromeResourceDispatcherHostDelegate::AppendSafeBrowsingResourceThrottle(
+    const net::URLRequest* request,
+    content::ResourceContext* resource_context,
+    int child_id,
+    int route_id,
+    bool is_subresource_request,
+    ScopedVector<content::ResourceThrottle>* throttles) {
 #if defined(ENABLE_SAFE_BROWSING)
-content::ResourceThrottle*
-    ChromeResourceDispatcherHostDelegate::CreateSafeBrowsingResourceThrottle(
-        const net::URLRequest* request, int child_id, int route_id,
-        bool subresource) {
-  return SafeBrowsingResourceThrottle::Create(
-      request, child_id, route_id, subresource, safe_browsing_);
-}
+  // Insert safe browsing at the front of the list, so it gets to decide on
+  // policies first.
+  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
+  if (io_data->safe_browsing_enabled()->GetValue()) {
+    throttles->push_back(SafeBrowsingResourceThrottle::Create(
+        request, child_id, route_id, is_subresource_request, safe_browsing_));
+  }
 #endif
+}
 
 bool ChromeResourceDispatcherHostDelegate::ShouldForceDownloadResource(
     const GURL& url, const std::string& mime_type) {

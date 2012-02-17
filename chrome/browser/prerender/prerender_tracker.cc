@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,16 +19,6 @@ using content::BrowserThread;
 namespace prerender {
 
 namespace {
-
-void CancelDeferredRequestOnIOThread(int child_id, int request_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ResourceDispatcherHost::Get()->CancelRequest(child_id, request_id, false);
-}
-
-void StartDeferredRequestOnIOThread(int child_id, int request_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ResourceDispatcherHost::Get()->StartDeferredRequest(child_id, request_id);
-}
 
 bool ShouldCancelRequest(
     int child_id,
@@ -53,17 +43,11 @@ bool ShouldCancelRequest(
 void HandleDelayedRequestOnUIThread(
     int child_id,
     int route_id,
-    int request_id) {
+    const PrerenderTracker::CheckURLCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (ShouldCancelRequest(child_id, route_id)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&CancelDeferredRequestOnIOThread, child_id, request_id));
-  } else {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&StartDeferredRequestOnIOThread, child_id, request_id));
-  }
+  bool should_cancel = ShouldCancelRequest(child_id, route_id);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE, base::Bind(callback, !should_cancel));
 }
 
 void DestroyPrerenderForRenderViewOnUI(
@@ -189,7 +173,7 @@ bool PrerenderTracker::PotentiallyDelayRequestOnIOThread(
     const GURL& gurl,
     int process_id,
     int route_id,
-    int request_id) {
+    const CheckURLCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!url_counter_.MatchesURL(gurl))
     return false;
@@ -197,7 +181,7 @@ bool PrerenderTracker::PotentiallyDelayRequestOnIOThread(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(&HandleDelayedRequestOnUIThread, process_id, route_id,
-                 request_id));
+                 callback));
   return true;
 }
 

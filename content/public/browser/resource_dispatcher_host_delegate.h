@@ -75,14 +75,6 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
       bool is_new_request,
       ScopedVector<ResourceThrottle>* throttles);
 
-  // Called to determine whether a request's start should be deferred. This
-  // is only called if the ResourceHandler associated with the request does
-  // not ask for a deferral. A return value of true will defer the start of
-  // the request, false will continue the request.
-  virtual bool ShouldDeferStart(
-      net::URLRequest* request,
-      ResourceContext* resource_context);
-
   // Called when an SSL Client Certificate is requested. If false is returned,
   // the request is canceled. Otherwise, the certificate is chosen.
   virtual bool AcceptSSLClientCertificateRequest(

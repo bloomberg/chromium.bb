@@ -676,8 +676,11 @@ void ResourceDispatcherHost::BeginRequest(
         (deferred_request != NULL);
 
     ScopedVector<ResourceThrottle> throttles;
-    delegate_->RequestBeginning(request, resource_context,
-                                request_data.resource_type, child_id, route_id,
+    delegate_->RequestBeginning(request,
+                                resource_context,
+                                request_data.resource_type,
+                                child_id,
+                                route_id,
                                 is_continuation_of_transferred_request,
                                 &throttles);
     if (!throttles.empty()) {
@@ -1681,13 +1684,6 @@ void ResourceDispatcherHost::BeginRequestInternal(net::URLRequest* request) {
           &defer_start)) {
     CancelRequestInternal(request, false);
     return;
-  }
-
-  // TODO(cbentzel): Should we isolate this to resource handlers instead of
-  // adding an interface to the observer?
-  if (!defer_start && delegate_ && filter_) {
-    defer_start = delegate_->ShouldDeferStart(request,
-                                              filter_->resource_context());
   }
 
   if (!defer_start)

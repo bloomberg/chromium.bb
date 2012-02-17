@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,6 +47,8 @@ class URLCounter : public base::NonThreadSafe {
 // and can be modified on any thread.
 class PrerenderTracker {
  public:
+  typedef base::Callback<void(bool /* proceed */)> CheckURLCallback;
+
   PrerenderTracker();
   ~PrerenderTracker();
 
@@ -78,12 +80,13 @@ class PrerenderTracker {
                            FinalStatus final_status);
 
   // Potentially delay a resource request on the IO thread to prevent a double
-  // get.
+  // get.  When this method returns true, the callback will be run later to
+  // indicate if the request should be allowed or canceled.
   bool PotentiallyDelayRequestOnIOThread(
       const GURL& gurl,
       int child_id,
       int route_id,
-      int request_id);
+      const CheckURLCallback& callback);
 
   void AddPrerenderURLOnUIThread(const GURL& url);
   void RemovePrerenderURLsOnUIThread(const std::vector<GURL>& urls);

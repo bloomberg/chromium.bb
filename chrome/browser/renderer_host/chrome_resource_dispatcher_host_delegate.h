@@ -57,9 +57,6 @@ class ChromeResourceDispatcherHostDelegate
       int request_id,
       bool is_new_request,
       ScopedVector<content::ResourceThrottle>* throttles) OVERRIDE;
-  virtual bool ShouldDeferStart(
-      net::URLRequest* request,
-      content::ResourceContext* resource_context) OVERRIDE;
   virtual bool AcceptSSLClientCertificateRequest(
         net::URLRequest* request,
         net::SSLCertRequestInfo* cert_request_info) OVERRIDE;
@@ -81,9 +78,13 @@ class ChromeResourceDispatcherHostDelegate
       content::ResourceResponse* response) OVERRIDE;
 
  private:
-  content::ResourceThrottle* CreateSafeBrowsingResourceThrottle(
-      const net::URLRequest* request, int child_id, int route_id,
-      bool subresource);
+  void AppendSafeBrowsingResourceThrottle(
+      const net::URLRequest* request,
+      content::ResourceContext* resource_context,
+      int child_id,
+      int route_id,
+      bool is_subresource_request,
+      ScopedVector<content::ResourceThrottle>* throttles);
 
   ResourceDispatcherHost* resource_dispatcher_host_;
   scoped_refptr<DownloadRequestLimiter> download_request_limiter_;

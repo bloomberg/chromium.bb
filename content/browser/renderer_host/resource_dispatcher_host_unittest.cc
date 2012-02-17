@@ -24,6 +24,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
+#include "content/public/browser/resource_throttle.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_data.h"
@@ -284,6 +285,13 @@ class TestUserData : public base::SupportsUserData::Data {
   bool* was_deleted_;
 };
 
+class DefersStartResourceThrottle : public content::ResourceThrottle {
+ public:
+  virtual void WillStartRequest(bool* defer) {
+    *defer = true;
+  }
+};
+
 class TestResourceDispatcherHostDelegate
     : public content::ResourceDispatcherHostDelegate {
  public:
@@ -311,12 +319,9 @@ class TestResourceDispatcherHostDelegate
       ScopedVector<content::ResourceThrottle>* throttles) OVERRIDE {
     const void* key = user_data_.get();
     request->SetUserData(key, user_data_.release());
-  }
 
-  virtual bool ShouldDeferStart(
-      net::URLRequest* request,
-      content::ResourceContext* resource_context) OVERRIDE {
-    return defer_start_;
+    if (defer_start_)
+      throttles->push_back(new DefersStartResourceThrottle());
   }
 
  private:
