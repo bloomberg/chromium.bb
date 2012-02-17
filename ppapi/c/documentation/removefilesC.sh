@@ -1,25 +1,25 @@
 #!/bin/bash
 
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-rm annotated.ezt
+rm annotated.html
 rm bc_s.png
-rm classes.ezt
+rm classes.html
 rm closed.png
 rm doxygen.png
-rm functions.ezt
-rm functions_vars.ezt
-rm globals.ezt
-rm globals_enum.ezt
-rm globals_eval.ezt
-rm globals_func.ezt
-rm globals_type.ezt
-rm globals_vars.ezt
-rm graph_legend.ezt
+rm functions*.html
+rm globals_0x*.html
+rm globals.html
+rm globals_enum.html
+rm globals_eval.html
+rm globals_func.html
+rm globals_type.html
+rm globals_vars.html
+rm graph_legend.html
 rm graph_legend.png
-rm index_8dox.ezt
-rm modules.ezt
+rm index_8dox.html
+rm modules.html
 rm nav_f.png
 rm nav_h.png
 rm open.png
@@ -31,8 +31,7 @@ rm tab_s.png
 rm *.md5
 rm *.map
 rm *.css
-rm files.ezt
-rm index.ezt
+rm files.html
+rm index.html
 rm jquery.js
-rm *.html
 
