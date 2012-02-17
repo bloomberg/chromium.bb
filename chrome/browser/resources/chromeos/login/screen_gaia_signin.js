@@ -40,9 +40,6 @@ cr.define('login', function() {
     // Whether extension should be loaded silently.
     silentLoad_: false,
 
-    // Whether there is focused element.
-    hasFocused_: false,
-
     // Number of times that we reload extension frame.
     retryCount_: 0,
 
@@ -69,9 +66,6 @@ cr.define('login', function() {
       this.frame_ = $('signin-frame');
 
       this.updateLocalizedContent();
-
-      document.addEventListener(
-          'focusin', this.selfBind_(this.onFocusIn_.bind(this)));
     },
 
     /**
@@ -158,39 +152,6 @@ cr.define('login', function() {
     },
 
     /**
-     * Returns function which gets an event and passes it and self to listener.
-     * @param {!Object} listener Listener to be wrapped.
-     */
-    selfBind_: function(listener) {
-      var selfBound = function(e) {
-        listener(e, selfBound);
-      };
-      return selfBound;
-    },
-
-    /**
-     * Tracks first focus in event.
-     * @param {!Object} e Focus in event.
-     * @param {!Object} listener Listener which shold be removed from event
-     *   listeners list.
-     */
-    onFocusIn_: function(e, listener) {
-      this.hasFocused_ = true;
-      document.removeEventListener('focusin', listener);
-    },
-
-    /**
-     * Restore focus back to the focused element.
-     * @param {!Object} e Focus out event.
-     * @param {!Object} listener Listener which shold be removed from event
-     *   listeners list.
-     */
-    onFocusOut_: function(e, listener) {
-      window.setTimeout(e.target.focus.bind(e.target), 0);
-      document.removeEventListener('focusout', listener);
-    },
-
-    /**
      * Loads the authentication extension into the iframe.
      * @param {Object} data Extension parameters bag.
      * @private
@@ -248,11 +209,6 @@ cr.define('login', function() {
           console.log('Gaia is still loading.');
           // Nothing to do here. Just wait until the extension loads.
         }
-      } else {
-        // TODO(altimofeev): GAIA extension is reloaded to make focus be set
-        // correctly. When fix on the GAIA side is ready, this reloading should
-        // be deleted.
-        this.doReload();
       }
     },
 
@@ -298,13 +254,6 @@ cr.define('login', function() {
         // Now that we're in logged in state header should be hidden.
         Oobe.getInstance().headerHidden = true;
       } else if (msg.method == 'loginUILoaded' && this.isAuthExtMessage_(e)) {
-        // TODO(altimofeev): there is no guarantee that next 'focusout' event
-        // will be caused by the extension, so better approach is direct asking
-        // the extension (and gaia consequently) to not grab the focus.
-        if (this.silentLoad_ && this.hasFocused_) {
-          document.addEventListener(
-              'focusout', this.selfBind_(this.onFocusOut_.bind(this)));
-        }
         this.loading = false;
         $('error-message').update();
         this.clearLoadingTimer_();

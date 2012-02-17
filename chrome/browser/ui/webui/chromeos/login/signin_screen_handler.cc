@@ -9,12 +9,13 @@
 #include "base/command_line.h"
 #include "base/hash_tables.h"
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
@@ -28,6 +29,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -248,9 +250,7 @@ SigninScreenHandler::SigninScreenHandler()
       show_on_init_(false),
       oobe_ui_(false),
       is_first_webui_ready_(false),
-      // TODO(altimofeev): Mark as a first attempt (init to true) when
-      // http://crosbug.com/23743 is fixed.
-      is_first_attempt_(false),
+      is_first_attempt_(true),
       dns_cleared_(false),
       dns_clear_task_running_(false),
       cookies_cleared_(false),
@@ -798,6 +798,16 @@ void SigninScreenHandler::HandleAccountPickerReady(
 }
 
 void SigninScreenHandler::HandleLoginWebuiReady(const base::ListValue* args) {
+  if (is_first_webui_ready_) {
+    // Set focus to the Gaia page.
+    // TODO(altimofeev): temporary solution, until focus parameters are
+    // implemented on the Gaia side.
+    const char code[] = "gWindowOnLoad();";
+    RenderViewHost* rvh = web_ui()->GetWebContents()->GetRenderViewHost();
+    rvh->ExecuteJavascriptInWebFrame(
+        ASCIIToUTF16("//iframe[@id='signin-frame']\n//iframe"),
+        ASCIIToUTF16(code));
+  }
   if (!is_first_attempt_) {
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_LOGIN_WEBUI_READY,
@@ -805,6 +815,15 @@ void SigninScreenHandler::HandleLoginWebuiReady(const base::ListValue* args) {
         content::NotificationService::NoDetails());
   } else {
     is_first_webui_ready_ = true;
+    // Prevent focus stealing by the Gaia page.
+    // TODO(altimofeev): temporary solution, until focus parameters are
+    // implemented on the Gaia side.
+    const char code[] = "var gWindowOnLoad = window.onload; "
+                        "window.onload=function() {};";
+    RenderViewHost* rvh = web_ui()->GetWebContents()->GetRenderViewHost();
+    rvh->ExecuteJavascriptInWebFrame(
+        ASCIIToUTF16("//iframe[@id='signin-frame']\n//iframe"),
+        ASCIIToUTF16(code));
   }
 }
 
