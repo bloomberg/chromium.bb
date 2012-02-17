@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/threading/worker_pool.h"
 #include "net/base/file_stream_metrics.h"
 #include "net/base/file_stream_net_log_parameters.h"
 #include "net/base/io_buffer.h"
@@ -54,6 +55,47 @@ int RecordAndMapError(int error,
   RecordFileError(error, source, record_uma);
 
   return net_error;
+}
+
+// Opens a file with some network logging.
+// The opened file and the result code are written to |file| and |result|.
+void OpenFile(const FilePath& path,
+              int open_flags,
+              bool record_uma,
+              const net::BoundNetLog& bound_net_log,
+              base::PlatformFile* file,
+              int* result) {
+  bound_net_log.BeginEvent(
+      net::NetLog::TYPE_FILE_STREAM_OPEN,
+      make_scoped_refptr(
+          new net::NetLogStringParameter("file_name",
+                                         path.AsUTF8Unsafe())));
+
+  *file = base::CreatePlatformFile(path, open_flags, NULL, NULL);
+  if (*file == INVALID_HANDLE_VALUE) {
+    DWORD error = GetLastError();
+    LOG(WARNING) << "Failed to open file: " << error;
+    *result = RecordAndMapError(error,
+                                FILE_ERROR_SOURCE_OPEN,
+                                record_uma,
+                                bound_net_log);
+    bound_net_log.EndEvent(net::NetLog::TYPE_FILE_STREAM_OPEN, NULL);
+    return;
+  }
+}
+
+// Closes a file with some network logging.
+void CloseFile(base::PlatformFile file,
+               const net::BoundNetLog& bound_net_log) {
+  bound_net_log.AddEvent(net::NetLog::TYPE_FILE_STREAM_CLOSE, NULL);
+  if (file == INVALID_HANDLE_VALUE)
+    return;
+
+  CancelIo(file);
+
+  if (!base::ClosePlatformFile(file))
+    NOTREACHED();
+  bound_net_log.EndEvent(net::NetLog::TYPE_FILE_STREAM_OPEN, NULL);
 }
 
 }  // namespace
@@ -153,7 +195,8 @@ FileStream::FileStream(net::NetLog* net_log)
       auto_closed_(true),
       record_uma_(false),
       bound_net_log_(net::BoundNetLog::Make(net_log,
-                                            net::NetLog::SOURCE_FILESTREAM)) {
+                                            net::NetLog::SOURCE_FILESTREAM)),
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   bound_net_log_.BeginEvent(net::NetLog::TYPE_FILE_STREAM_ALIVE, NULL);
 }
 
@@ -163,7 +206,8 @@ FileStream::FileStream(base::PlatformFile file, int flags, net::NetLog* net_log)
       auto_closed_(false),
       record_uma_(false),
       bound_net_log_(net::BoundNetLog::Make(net_log,
-                                            net::NetLog::SOURCE_FILESTREAM)) {
+                                            net::NetLog::SOURCE_FILESTREAM)),
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   bound_net_log_.BeginEvent(net::NetLog::TYPE_FILE_STREAM_ALIVE, NULL);
 
   // If the file handle is opened with base::PLATFORM_FILE_ASYNC, we need to
@@ -176,18 +220,54 @@ FileStream::FileStream(base::PlatformFile file, int flags, net::NetLog* net_log)
 }
 
 FileStream::~FileStream() {
-  if (auto_closed_)
-    CloseSync();
+  if (auto_closed_) {
+    if (async_context_.get()) {
+      // Make sure we don't have a request in flight.
+      DCHECK(async_context_->callback().is_null());
+
+      // Close the file in the background.
+      const bool posted = base::WorkerPool::PostTask(
+          FROM_HERE,
+          base::Bind(&CloseFile, file_, bound_net_log_),
+          true /* task_is_slow */);
+      DCHECK(posted);
+    } else {
+      CloseSync();
+    }
+  }
 
   bound_net_log_.EndEvent(net::NetLog::TYPE_FILE_STREAM_ALIVE, NULL);
 }
 
+void FileStream::Close(const CompletionCallback& callback) {
+  DCHECK(callback_.is_null());
+  callback_ = callback;
+
+  // Make sure we don't have a request in flight. Unlike CloseSync(), don't
+  // abort existing asynchronous operations, as it'd block.
+  DCHECK(async_context_.get());
+  DCHECK(async_context_->callback().is_null());
+
+  const bool posted = base::WorkerPool::PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&CloseFile, file_, bound_net_log_),
+      base::Bind(&FileStream::OnClosed, weak_ptr_factory_.GetWeakPtr()),
+      true /* task_is_slow */);
+  DCHECK(posted);
+}
+
 void FileStream::CloseSync() {
+  // The logic here is similar to CloseFile() but async_context_.reset() is
+  // caled in this function.
+
   bound_net_log_.AddEvent(net::NetLog::TYPE_FILE_STREAM_CLOSE, NULL);
   if (file_ != INVALID_HANDLE_VALUE)
     CancelIo(file_);
 
+  // TODO(satorux): Remove this once all async clients are migrated to use
+  // Close(). crbug.com/114783
   async_context_.reset();
+
   if (file_ != INVALID_HANDLE_VALUE) {
     if (!base::ClosePlatformFile(file_))
       NOTREACHED();
@@ -197,31 +277,50 @@ void FileStream::CloseSync() {
   }
 }
 
+int FileStream::Open(const FilePath& path, int open_flags,
+                     const CompletionCallback& callback) {
+  if (IsOpen()) {
+    DLOG(FATAL) << "File is already open!";
+    return ERR_UNEXPECTED;
+  }
+
+  DCHECK(callback_.is_null());
+  callback_ = callback;
+
+  open_flags_ = open_flags;
+  DCHECK(open_flags_ & base::PLATFORM_FILE_ASYNC);
+
+  base::PlatformFile* file =
+      new base::PlatformFile(base::kInvalidPlatformFileValue);
+  int* result = new int(OK);
+  const bool posted = base::WorkerPool::PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&OpenFile, path, open_flags, record_uma_, bound_net_log_,
+                 file, result),
+      base::Bind(&FileStream::OnOpened,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Owned(file),
+                 base::Owned(result)),
+      true /* task_is_slow */);
+  DCHECK(posted);
+  return ERR_IO_PENDING;
+}
+
 int FileStream::OpenSync(const FilePath& path, int open_flags) {
   if (IsOpen()) {
     DLOG(FATAL) << "File is already open!";
     return ERR_UNEXPECTED;
   }
 
-  bound_net_log_.BeginEvent(
-      net::NetLog::TYPE_FILE_STREAM_OPEN,
-      make_scoped_refptr(
-          new net::NetLogStringParameter("file_name",
-                                         path.AsUTF8Unsafe())));
-
   open_flags_ = open_flags;
-  file_ = base::CreatePlatformFile(path, open_flags_, NULL, NULL);
-  if (file_ == INVALID_HANDLE_VALUE) {
-    DWORD error = GetLastError();
-    LOG(WARNING) << "Failed to open file: " << error;
-    int net_error = RecordAndMapError(error,
-                                      FILE_ERROR_SOURCE_OPEN,
-                                      record_uma_,
-                                      bound_net_log_);
-    bound_net_log_.EndEvent(net::NetLog::TYPE_FILE_STREAM_OPEN, NULL);
-    return net_error;
-  }
 
+  int result = OK;
+  OpenFile(path, open_flags_, record_uma_, bound_net_log_, &file_, &result);
+  if (result != OK)
+    return result;
+
+  // TODO(satorux): Remove this once all async clients are migrated to use
+  // Open(). crbug.com/114783
   if (open_flags_ & base::PLATFORM_FILE_ASYNC) {
     async_context_.reset(new AsyncContext(bound_net_log_));
     if (record_uma_)
@@ -513,6 +612,30 @@ void FileStream::SetBoundNetLogSource(
       make_scoped_refptr(
           new net::NetLogSourceParameter("source_dependency",
                                          bound_net_log_.source())));
+}
+
+void FileStream::OnClosed() {
+  file_ = INVALID_HANDLE_VALUE;
+
+  CompletionCallback temp = callback_;
+  callback_.Reset();
+  temp.Run(OK);
+}
+
+void FileStream::OnOpened(base::PlatformFile* file, int* result) {
+  file_ = *file;
+
+  if (*result == OK) {
+    async_context_.reset(new AsyncContext(bound_net_log_));
+    if (record_uma_)
+      async_context_->EnableErrorStatistics();
+    MessageLoopForIO::current()->RegisterIOHandler(file_,
+                                                   async_context_.get());
+  }
+
+  CompletionCallback temp = callback_;
+  callback_.Reset();
+  temp.Run(*result);
 }
 
 }  // namespace net
