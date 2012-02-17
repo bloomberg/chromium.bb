@@ -623,6 +623,7 @@ void ProfileIOData::ShutdownOnUIThread() {
   enable_referrers_.Destroy();
   clear_local_state_on_exit_.Destroy();
   safe_browsing_enabled_.Destroy();
+  session_startup_pref_.Destroy();
 #if defined(ENABLE_CONFIGURATION_POLICY)
   if (url_blacklist_manager_.get())
     url_blacklist_manager_->ShutdownOnUIThread();

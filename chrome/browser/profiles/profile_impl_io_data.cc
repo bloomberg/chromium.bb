@@ -232,6 +232,9 @@ void ProfileImplIOData::Handle::LazyInitialize() const {
     io_data_->clear_local_state_on_exit()->Init(
         prefs::kClearSiteDataOnExit, pref_service, NULL);
     io_data_->clear_local_state_on_exit()->MoveToThread(BrowserThread::IO);
+    io_data_->session_startup_pref()->Init(
+        prefs::kRestoreOnStartup, pref_service, NULL);
+    io_data_->session_startup_pref()->MoveToThread(BrowserThread::IO);
 #if defined(ENABLE_SAFE_BROWSING)
     io_data_->safe_browsing_enabled()->Init(prefs::kSafeBrowsingEnabled,
         pref_service, NULL);

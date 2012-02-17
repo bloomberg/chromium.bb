@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,6 +40,9 @@ struct SessionStartupPref {
   // Whether the startup type and URLs are managed via policy.
   static bool TypeIsManaged(PrefService* prefs);
   static bool URLsAreManaged(PrefService* prefs);
+
+  // Converts an integer pref value to a SessionStartupPref::Type.
+  static SessionStartupPref::Type PrefValueToType(int pref_value);
 
   SessionStartupPref();
 

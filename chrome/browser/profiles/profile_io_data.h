@@ -109,6 +109,10 @@ class ProfileIOData {
     return &clear_local_state_on_exit_;
   }
 
+  IntegerPrefMember* session_startup_pref() const {
+    return &session_startup_pref_;
+  }
+
   ChromeURLRequestContext* extensions_request_context() const {
     return extensions_request_context_.get();
   }
@@ -300,6 +304,7 @@ class ProfileIOData {
   mutable BooleanPrefMember enable_referrers_;
   mutable BooleanPrefMember clear_local_state_on_exit_;
   mutable BooleanPrefMember safe_browsing_enabled_;
+  mutable IntegerPrefMember session_startup_pref_;
 
   // Pointed to by NetworkDelegate.
   mutable scoped_ptr<policy::URLBlacklistManager> url_blacklist_manager_;

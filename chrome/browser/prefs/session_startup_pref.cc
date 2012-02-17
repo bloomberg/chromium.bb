@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,15 +34,6 @@ int TypeToPrefValue(SessionStartupPref::Type type) {
     case SessionStartupPref::LAST:   return kPrefValueLast;
     case SessionStartupPref::URLS:   return kPrefValueURLs;
     default:                         return kPrefValueDefault;
-  }
-}
-
-// Converts an integer pref value to a SessionStartupPref::Type.
-SessionStartupPref::Type PrefValueToType(int pref_value) {
-  switch (pref_value) {
-    case kPrefValueLast:  return SessionStartupPref::LAST;
-    case kPrefValueURLs:  return SessionStartupPref::URLS;
-    default:              return SessionStartupPref::DEFAULT;
   }
 }
 
@@ -150,6 +141,15 @@ bool SessionStartupPref::URLsAreManaged(PrefService* prefs) {
       prefs->FindPreference(prefs::kURLsToRestoreOnStartup);
   DCHECK(pref_urls);
   return pref_urls->IsManaged();
+}
+
+// static
+SessionStartupPref::Type SessionStartupPref::PrefValueToType(int pref_value) {
+  switch (pref_value) {
+    case kPrefValueLast:  return SessionStartupPref::LAST;
+    case kPrefValueURLs:  return SessionStartupPref::URLS;
+    default:              return SessionStartupPref::DEFAULT;
+  }
 }
 
 SessionStartupPref::SessionStartupPref() : type(DEFAULT) {}
