@@ -185,6 +185,13 @@ SkiaTextRenderer::SkiaTextRenderer(Canvas* canvas)
 SkiaTextRenderer::~SkiaTextRenderer() {
 }
 
+void SkiaTextRenderer::SetFontSmoothingSettings(bool enable_smoothing,
+                                                bool enable_lcd_text) {
+  paint_.setAntiAlias(enable_smoothing);
+  paint_.setSubpixelText(enable_smoothing);
+  paint_.setLCDRenderText(enable_lcd_text);
+}
+
 void SkiaTextRenderer::SetTypeface(SkTypeface* typeface) {
   paint_.setTypeface(typeface);
 }

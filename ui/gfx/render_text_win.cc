@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "ui/gfx/font_smoothing_win.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/platform_font.h"
@@ -440,6 +441,12 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
 
   internal::SkiaTextRenderer renderer(canvas);
   ApplyFadeEffects(&renderer);
+
+  bool smoothing_enabled;
+  bool cleartype_enabled;
+  GetCachedFontSmoothingSettings(&smoothing_enabled, &cleartype_enabled);
+  // Note that |cleartype_enabled| corresponds to Skia's |enable_lcd_text|.
+  renderer.SetFontSmoothingSettings(smoothing_enabled, cleartype_enabled);
 
   for (size_t i = 0; i < runs_.size(); ++i) {
     // Get the run specified by the visual-to-logical map.

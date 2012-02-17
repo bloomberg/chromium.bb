@@ -37,6 +37,7 @@ class SkiaTextRenderer {
   explicit SkiaTextRenderer(Canvas* canvas);
   ~SkiaTextRenderer();
 
+  void SetFontSmoothingSettings(bool enable_smoothing, bool enable_lcd_text);
   void SetTypeface(SkTypeface* typeface);
   void SetTextSize(int size);
   void SetFont(const gfx::Font& font);
