@@ -28,6 +28,7 @@ class IssuerSubjectPattern {
                        const std::string& locality,
                        const std::string& organization,
                        const std::string& organizational_unit);
+  ~IssuerSubjectPattern();
 
   // Returns true only if any fields set in this pattern match exactly with
   // similar fields in the principal.  If organization_ or organizational_unit_

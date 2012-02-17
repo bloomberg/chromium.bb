@@ -110,6 +110,8 @@ IssuerSubjectPattern::IssuerSubjectPattern(const std::string& common_name,
 
 IssuerSubjectPattern::IssuerSubjectPattern() {}
 
+IssuerSubjectPattern::~IssuerSubjectPattern() {}
+
 bool IssuerSubjectPattern::Matches(const net::CertPrincipal& principal) const {
   if (!common_name_.empty() && common_name_ != principal.common_name)
     return false;
