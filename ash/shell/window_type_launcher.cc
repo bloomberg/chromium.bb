@@ -171,7 +171,7 @@ void InitWindowTypeLauncher() {
                                             gfx::Rect(120, 150, 400, 400));
   widget->GetNativeView()->SetName("WindowTypeLauncher");
   ash::internal::SetShadowType(widget->GetNativeView(),
-                               ash::internal::SHADOW_TYPE_RECTANGULAR);
+                               ash::internal::SHADOW_TYPE_NONE);
   widget->Show();
 }
 

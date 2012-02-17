@@ -637,9 +637,6 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   // ToggleCompactWindowMode
   EXPECT_TRUE(GetController()->Process(
       PostImeAccelerator(ui::VKEY_A, false, true, true)));
-  // ToggleDesktopBackgroundMode
-  EXPECT_TRUE(GetController()->Process(
-      PostImeAccelerator(ui::VKEY_B, false, true, true)));
 #if !defined(OS_LINUX)
   // ToggleDesktopFullScreen (not implemented yet on Linux)
   EXPECT_TRUE(GetController()->Process(

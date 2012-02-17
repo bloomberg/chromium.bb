@@ -26,8 +26,7 @@ gfx::Rect ImageGrid::TestAPI::GetTransformedLayerBounds(
 }
 
 ImageGrid::ImageGrid()
-    : layer_(new ui::Layer(ui::Layer::LAYER_NOT_DRAWN)),
-      top_image_height_(0),
+    : top_image_height_(0),
       bottom_image_height_(0),
       left_image_width_(0),
       right_image_width_(0),
@@ -40,24 +39,26 @@ ImageGrid::ImageGrid()
 ImageGrid::~ImageGrid() {
 }
 
-void ImageGrid::SetImages(const gfx::Image* top_left_image,
-                          const gfx::Image* top_image,
-                          const gfx::Image* top_right_image,
-                          const gfx::Image* left_image,
-                          const gfx::Image* center_image,
-                          const gfx::Image* right_image,
-                          const gfx::Image* bottom_left_image,
-                          const gfx::Image* bottom_image,
-                          const gfx::Image* bottom_right_image) {
-  SetImage(top_left_image, &top_left_layer_, &top_left_painter_);
-  SetImage(top_image, &top_layer_, &top_painter_);
-  SetImage(top_right_image, &top_right_layer_, &top_right_painter_);
-  SetImage(left_image, &left_layer_, &left_painter_);
-  SetImage(center_image, &center_layer_, &center_painter_);
-  SetImage(right_image, &right_layer_, &right_painter_);
-  SetImage(bottom_left_image, &bottom_left_layer_, &bottom_left_painter_);
-  SetImage(bottom_image, &bottom_layer_, &bottom_painter_);
-  SetImage(bottom_right_image, &bottom_right_layer_, &bottom_right_painter_);
+void ImageGrid::Init(const gfx::Image* top_left_image,
+                     const gfx::Image* top_image,
+                     const gfx::Image* top_right_image,
+                     const gfx::Image* left_image,
+                     const gfx::Image* center_image,
+                     const gfx::Image* right_image,
+                     const gfx::Image* bottom_left_image,
+                     const gfx::Image* bottom_image,
+                     const gfx::Image* bottom_right_image) {
+  layer_.reset(new ui::Layer(ui::Layer::LAYER_NOT_DRAWN));
+
+  InitImage(top_left_image, &top_left_layer_, &top_left_painter_);
+  InitImage(top_image, &top_layer_, &top_painter_);
+  InitImage(top_right_image, &top_right_layer_, &top_right_painter_);
+  InitImage(left_image, &left_layer_, &left_painter_);
+  InitImage(center_image, &center_layer_, &center_painter_);
+  InitImage(right_image, &right_layer_, &right_painter_);
+  InitImage(bottom_left_image, &bottom_left_layer_, &bottom_left_painter_);
+  InitImage(bottom_image, &bottom_layer_, &bottom_painter_);
+  InitImage(bottom_right_image, &bottom_right_layer_, &bottom_right_painter_);
 
   top_image_height_ = GetImageSize(top_image).height();
   bottom_image_height_ = GetImageSize(bottom_image).height();
@@ -76,9 +77,6 @@ void ImageGrid::SetImages(const gfx::Image* top_left_image,
   right_column_width_ = max(GetImageSize(top_right_image).width(),
                             max(GetImageSize(right_image).width(),
                                 GetImageSize(bottom_right_image).width()));
-
-  // Invalidate previous |size_| so calls to SetSize() will recompute it.
-  size_.SetSize(0, 0);
 }
 
 void ImageGrid::SetSize(const gfx::Size& size) {
@@ -226,20 +224,12 @@ bool ImageGrid::LayerExceedsSize(const ui::Layer* layer,
       layer->bounds().height() > size.height();
 }
 
-void ImageGrid::SetImage(const gfx::Image* image,
-                         scoped_ptr<ui::Layer>* layer_ptr,
-                         scoped_ptr<ImagePainter>* painter_ptr) {
-  // Clean out old layers and painters.
-  if (layer_ptr->get())
-    layer_->Remove(layer_ptr->get());
-  layer_ptr->reset();
-  painter_ptr->reset();
-
-  // If we're not using an image, we're done.
+void ImageGrid::InitImage(const gfx::Image* image,
+                          scoped_ptr<ui::Layer>* layer_ptr,
+                          scoped_ptr<ImagePainter>* painter_ptr) {
   if (!image)
     return;
 
-  // Set up the new layer and painter.
   layer_ptr->reset(new ui::Layer(ui::Layer::LAYER_TEXTURED));
 
   const gfx::Size size = GetImageSize(image);

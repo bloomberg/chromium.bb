@@ -215,7 +215,6 @@ Shell::Shell(ShellDelegate* delegate)
       shelf_(NULL),
       dynamic_window_mode_(false),
       window_mode_(MODE_OVERLAPPING),
-      desktop_background_mode_(BACKGROUND_IMAGE),
       root_window_layout_(NULL),
       status_widget_(NULL) {
   // Pass ownership of the filter to the root window.
@@ -463,27 +462,6 @@ void Shell::SetWindowModeForMonitorSize(const gfx::Size& monitor_size) {
   ChangeWindowMode(new_mode);
 }
 
-void Shell::SetDesktopBackgroundMode(BackgroundMode mode) {
-  if (mode == BACKGROUND_SOLID_COLOR) {
-    // Set a solid black background.
-    // TODO(derat): Remove this in favor of having the compositor only clear the
-    // viewport when there are regions not covered by a layer:
-    // http://crbug.com/113445
-    ui::Layer* background_layer = new ui::Layer(ui::Layer::LAYER_SOLID_COLOR);
-    background_layer->SetColor(SK_ColorBLACK);
-    GetContainer(internal::kShellWindowId_DesktopBackgroundContainer)->
-        layer()->Add(background_layer);
-    root_window_layout_->SetBackgroundLayer(background_layer);
-    root_window_layout_->SetBackgroundWidget(NULL);
-  } else {
-    // Create the desktop background image.
-    root_window_layout_->SetBackgroundLayer(NULL);
-    root_window_layout_->SetBackgroundWidget(
-        internal::CreateDesktopBackground());
-  }
-  desktop_background_mode_ = mode;
-}
-
 bool Shell::IsScreenLocked() const {
   const aura::Window* lock_screen_container = GetContainer(
       internal::kShellWindowId_LockScreenContainer);
@@ -565,7 +543,15 @@ void Shell::SetupCompactWindowMode() {
   MaximizeWindows(default_container);
 
   // Set a solid black background.
-  SetDesktopBackgroundMode(BACKGROUND_SOLID_COLOR);
+  // TODO(derat): Remove this in favor of having the compositor only clear the
+  // viewport when there are regions not covered by a layer:
+  // http://crbug.com/113445
+  ui::Layer* background_layer = new ui::Layer(ui::Layer::LAYER_SOLID_COLOR);
+  background_layer->SetColor(SK_ColorBLACK);
+  GetContainer(internal::kShellWindowId_DesktopBackgroundContainer)->
+      layer()->Add(background_layer);
+  root_window_layout_->SetBackgroundLayer(background_layer);
+  root_window_layout_->SetBackgroundWidget(NULL);
 }
 
 void Shell::SetupNonCompactWindowMode() {
@@ -613,7 +599,8 @@ void Shell::SetupNonCompactWindowMode() {
   RestoreMaximizedWindows(default_container);
 
   // Create the desktop background image.
-  SetDesktopBackgroundMode(BACKGROUND_IMAGE);
+  root_window_layout_->SetBackgroundWidget(internal::CreateDesktopBackground());
+  root_window_layout_->SetBackgroundLayer(NULL);
 }
 
 void Shell::ResetLayoutManager(int container_id) {
