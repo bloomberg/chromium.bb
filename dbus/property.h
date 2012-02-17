@@ -197,7 +197,7 @@ class PropertySet {
 
   // Destructor; we don't hold on to any references or memory that needs
   // explicit clean-up, but clang thinks we might.
-  ~PropertySet();
+  virtual ~PropertySet();
 
   // Registers a property, generally called from the subclass constructor;
   // pass the |name| of the property as used in method calls and signals,
