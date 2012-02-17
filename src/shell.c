@@ -503,11 +503,14 @@ shell_surface_set_fullscreen(struct wl_client *client,
 
 	shsurf->saved_x = es->geometry.x;
 	shsurf->saved_y = es->geometry.y;
-	weston_surface_set_position(es,
-		(output->current->width - es->geometry.width) / 2,
-		(output->current->height - es->geometry.height) / 2);
 	es->fullscreen_output = output;
 	shsurf->type = SHELL_SURFACE_FULLSCREEN;
+
+	wl_resource_post_event(resource,
+			       WL_SHELL_SURFACE_CONFIGURE,
+			       weston_compositor_get_time(), 0,
+			       es->output->current->width,
+			       es->output->current->height);
 }
 
 static void
@@ -1485,6 +1488,8 @@ configure(struct weston_shell *base, struct weston_surface *surface,
 		/* fall through */
 	case SHELL_SURFACE_FULLSCREEN:
 		center_on_output(surface, surface->fullscreen_output);
+		x = surface->geometry.x;
+		y = surface->geometry.y;
 		break;
 	case SHELL_SURFACE_MAXIMIZED:
 		/*setting x, y and using configure to change that geometry*/
