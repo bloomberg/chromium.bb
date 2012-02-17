@@ -100,6 +100,8 @@ BOT_ASSIGNMENT = {
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-dbg',
     'jaunty_32-newlib-arm_hw-pnacl-opt':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-opt',
+    'oneiric_32-newlib-arm-hw-pnacl-panda-opt':
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-opt',
     'lucid_64-newlib-x86_32-pnacl':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-x8632',
     'lucid_64-newlib-x86_64-pnacl':
