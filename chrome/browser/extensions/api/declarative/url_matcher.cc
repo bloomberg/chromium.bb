@@ -334,10 +334,12 @@ void URLMatcherConditionFactory::ForgetUnusedPatterns(
       const std::set<SubstringPattern::ID>& used_patterns) {
   PatternSingletons::iterator i = pattern_singletons_.begin();
   while (i != pattern_singletons_.end()) {
-    if (used_patterns.find((*i)->id()) != used_patterns.end())
+    if (used_patterns.find((*i)->id()) != used_patterns.end()) {
       ++i;
-    else
+    } else {
+      delete *i;
       pattern_singletons_.erase(i++);
+    }
   }
 }
 
