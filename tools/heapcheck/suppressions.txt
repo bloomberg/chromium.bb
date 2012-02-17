@@ -1787,5 +1787,17 @@
    fun:v8::internal::HeapProfiler::TakeSnapshot
    fun:v8::HeapProfiler::TakeSnapshot
    fun:GetNumObjects
+}
+{
+   bug_114750
+   Heapcheck:Leak
+   fun:::FindBestMatchFontFamilyName
+   fun:gfx::PlatformFontPango::PlatformFontPango
+   fun:PlatformFontPangoTest_FamilyList_Test::TestBody
+}
+{
+   bug_114758
+   Heapcheck:Leak
    ...
+   fun:::FontTest_*_Test::TestBody
 }
