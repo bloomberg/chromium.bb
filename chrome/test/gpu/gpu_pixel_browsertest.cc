@@ -353,7 +353,7 @@ IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_WebGLGreenTriangle) {
   // following number. If no revision requirement, then 0.
   const int64 ref_img_revision_update = 118461;
 
-  gfx::Size container_size(250, 250);
+  gfx::Size container_size(400, 300);
   FilePath url =
       test_data_dir().AppendASCII("pixel_webgl.html");
   RunPixelTest(container_size, url, ref_img_revision_update);
@@ -369,7 +369,7 @@ IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_CSS3DBlueBox) {
   // following number. If no revision requirement, then 0.
   const int64 ref_img_revision_update = 118461;
 
-  gfx::Size container_size(250, 250);
+  gfx::Size container_size(400, 300);
   FilePath url =
       test_data_dir().AppendASCII("pixel_css3d.html");
   RunPixelTest(container_size, url, ref_img_revision_update);
@@ -393,7 +393,7 @@ IN_PROC_BROWSER_TEST_F(Canvas2DPixelTestHD, MAYBE_Canvas2DRedBoxHD) {
   // following number. If no revision requirement, then 0.
   const int64 ref_img_revision_update = 121581;
 
-  gfx::Size container_size(250, 250);
+  gfx::Size container_size(400, 300);
   FilePath url =
       test_data_dir().AppendASCII("pixel_canvas2d.html");
   RunPixelTest(container_size, url, ref_img_revision_update);
@@ -417,7 +417,7 @@ IN_PROC_BROWSER_TEST_F(Canvas2DPixelTestSD, MAYBE_Canvas2DRedBoxSD) {
   // following number. If no revision requirement, then 0.
   const int64 ref_img_revision_update = 121581;
 
-  gfx::Size container_size(250, 250);
+  gfx::Size container_size(400, 300);
   FilePath url =
       test_data_dir().AppendASCII("pixel_canvas2d.html");
   RunPixelTest(container_size, url, ref_img_revision_update);
