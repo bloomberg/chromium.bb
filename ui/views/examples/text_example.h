@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/examples/example_base.h"
@@ -86,7 +86,9 @@ class TextExample : public ExampleBase,
   // Check box to enable/disable underline style.
   Checkbox* underline_checkbox_;
 
-  scoped_ptr<ExampleComboboxModel> example_combobox_model_;
+  // We create a model for each of the combobox, so we need to keep them
+  // around until destruction time.
+  ScopedVector<ExampleComboboxModel> example_combobox_model_;
 
   DISALLOW_COPY_AND_ASSIGN(TextExample);
 };
