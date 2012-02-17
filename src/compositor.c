@@ -577,6 +577,17 @@ weston_compositor_repick(struct weston_compositor *compositor)
 }
 
 static void
+weston_surface_unmap(struct weston_surface *surface)
+{
+	weston_surface_damage_below(surface);
+	weston_surface_flush_damage(surface);
+	surface->output = NULL;
+	wl_list_remove(&surface->link);
+	weston_compositor_repick(surface->compositor);
+	weston_compositor_schedule_repaint(surface->compositor);
+}
+
+static void
 destroy_surface(struct wl_resource *resource)
 {
 	struct weston_surface *surface =
@@ -584,13 +595,8 @@ destroy_surface(struct wl_resource *resource)
 			     struct weston_surface, surface.resource);
 	struct weston_compositor *compositor = surface->compositor;
 
-	if (surface->output) {
-		weston_surface_damage_below(surface);
-		weston_surface_flush_damage(surface);
-
-		wl_list_remove(&surface->link);
-		weston_compositor_repick(compositor);
-	}
+	if (surface->output)
+		weston_surface_unmap(surface);
 
 	if (surface->texture)
 		glDeleteTextures(1, &surface->texture);
@@ -1130,8 +1136,7 @@ surface_attach(struct wl_client *client,
 	}
 
 	if (!buffer_resource && es->output) {
-		wl_list_remove(&es->link);
-		es->output = NULL;
+		weston_surface_unmap(es);
 		es->buffer = NULL;
 		return;
 	}
