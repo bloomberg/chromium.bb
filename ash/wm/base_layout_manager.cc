@@ -4,6 +4,7 @@
 
 #include "ash/wm/base_layout_manager.h"
 
+#include "ash/shell.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
@@ -19,13 +20,13 @@ namespace internal {
 // BaseLayoutManager, public:
 
 BaseLayoutManager::BaseLayoutManager() {
-  aura::RootWindow::GetInstance()->AddRootWindowObserver(this);
+  Shell::GetRootWindow()->AddRootWindowObserver(this);
 }
 
 BaseLayoutManager::~BaseLayoutManager() {
   for (WindowSet::const_iterator i = windows_.begin(); i != windows_.end(); ++i)
     (*i)->RemoveObserver(this);
-  aura::RootWindow::GetInstance()->RemoveRootWindowObserver(this);
+  Shell::GetRootWindow()->RemoveRootWindowObserver(this);
 }
 
 /////////////////////////////////////////////////////////////////////////////

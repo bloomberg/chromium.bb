@@ -4,6 +4,7 @@
 
 #include "ash/wm/base_layout_manager.h"
 
+#include "ash/shell.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/client/aura_constants.h"
@@ -25,9 +26,9 @@ class BaseLayoutManagerTest : public aura::test::AuraTestBase {
 
   virtual void SetUp() OVERRIDE {
     aura::test::AuraTestBase::SetUp();
-    aura::RootWindow::GetInstance()->screen()->set_work_area_insets(
+    Shell::GetRootWindow()->screen()->set_work_area_insets(
         gfx::Insets(1, 2, 3, 4));
-    aura::RootWindow::GetInstance()->SetHostSize(gfx::Size(800, 600));
+    Shell::GetRootWindow()->SetHostSize(gfx::Size(800, 600));
     container_.reset(new aura::Window(NULL));
     container_->Init(ui::Layer::LAYER_NOT_DRAWN);
     container_->SetBounds(gfx::Rect(0, 0, 500, 500));
@@ -64,7 +65,7 @@ TEST_F(BaseLayoutManagerTest, MaximizeRootWindowResize) {
   EXPECT_EQ(gfx::Screen::GetMonitorWorkAreaNearestWindow(window.get()),
             window->bounds());
   // Enlarge the root window.  We should still match the work area size.
-  aura::RootWindow::GetInstance()->SetHostSize(gfx::Size(800, 600));
+  Shell::GetRootWindow()->SetHostSize(gfx::Size(800, 600));
   EXPECT_EQ(gfx::Screen::GetMonitorWorkAreaNearestWindow(window.get()),
             window->bounds());
 }
@@ -90,7 +91,7 @@ TEST_F(BaseLayoutManagerTest, FullscreenRootWindowResize) {
   EXPECT_EQ(gfx::Screen::GetMonitorAreaNearestWindow(window.get()),
             window->bounds());
   // Enlarge the root window.  We should still match the monitor size.
-  aura::RootWindow::GetInstance()->SetHostSize(gfx::Size(800, 600));
+  Shell::GetRootWindow()->SetHostSize(gfx::Size(800, 600));
   EXPECT_EQ(gfx::Screen::GetMonitorAreaNearestWindow(window.get()),
             window->bounds());
 }
@@ -113,20 +114,20 @@ TEST_F(BaseLayoutManagerTest, MAYBE_RootWindowResizeShrinksWindows) {
   EXPECT_LE(window->bounds().height(), work_area.height());
 
   // Make the root window narrower than our window.
-  aura::RootWindow::GetInstance()->SetHostSize(gfx::Size(300, 400));
+  Shell::GetRootWindow()->SetHostSize(gfx::Size(300, 400));
   work_area = gfx::Screen::GetMonitorAreaNearestWindow(window.get());
   EXPECT_LE(window->bounds().width(), work_area.width());
   EXPECT_LE(window->bounds().height(), work_area.height());
 
   // Make the root window shorter than our window.
-  aura::RootWindow::GetInstance()->SetHostSize(gfx::Size(300, 200));
+  Shell::GetRootWindow()->SetHostSize(gfx::Size(300, 200));
   work_area = gfx::Screen::GetMonitorAreaNearestWindow(window.get());
   EXPECT_LE(window->bounds().width(), work_area.width());
   EXPECT_LE(window->bounds().height(), work_area.height());
 
   // Enlarging the root window does not change the window bounds.
   gfx::Rect old_bounds = window->bounds();
-  aura::RootWindow::GetInstance()->SetHostSize(gfx::Size(800, 600));
+  Shell::GetRootWindow()->SetHostSize(gfx::Size(800, 600));
   EXPECT_EQ(old_bounds.width(), window->bounds().width());
   EXPECT_EQ(old_bounds.height(), window->bounds().height());
 }

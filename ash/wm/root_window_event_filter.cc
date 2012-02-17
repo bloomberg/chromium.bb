@@ -67,7 +67,7 @@ void RootWindowEventFilter::UnlockCursor() {
   if (cursor_lock_count_ == 0) {
     if (did_cursor_change_) {
       did_cursor_change_ = false;
-      aura::RootWindow::GetInstance()->SetCursor(cursor_to_set_on_unlock_);
+      Shell::GetRootWindow()->SetCursor(cursor_to_set_on_unlock_);
     }
     did_cursor_change_ = false;
     cursor_to_set_on_unlock_ = 0;
@@ -149,7 +149,7 @@ void RootWindowEventFilter::UpdateCursor(aura::Window* target,
     cursor = CursorForWindowComponent(window_component);
   }
   if (cursor_lock_count_ == 0) {
-    aura::RootWindow::GetInstance()->SetCursor(cursor);
+    Shell::GetRootWindow()->SetCursor(cursor);
   } else {
     cursor_to_set_on_unlock_ = cursor;
     did_cursor_change_ = true;
@@ -159,7 +159,7 @@ void RootWindowEventFilter::UpdateCursor(aura::Window* target,
 void RootWindowEventFilter::SetCursorVisible(aura::Window* target,
                                              aura::LocatedEvent* event,
                                              bool show) {
-  aura::RootWindow::GetInstance()->ShowCursor(show);
+  Shell::GetRootWindow()->ShowCursor(show);
 }
 
 bool RootWindowEventFilter::FilterKeyEvent(aura::Window* target,

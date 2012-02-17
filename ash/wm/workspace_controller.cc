@@ -36,15 +36,15 @@ WorkspaceController::WorkspaceController(aura::Window* viewport)
   viewport->SetEventFilter(event_filter_);
   layout_manager_ = new WorkspaceLayoutManager(workspace_manager_.get());
   viewport->SetLayoutManager(layout_manager_);
-  aura::RootWindow::GetInstance()->AddRootWindowObserver(this);
-  aura::RootWindow::GetInstance()->AddObserver(this);
+  Shell::GetRootWindow()->AddRootWindowObserver(this);
+  Shell::GetRootWindow()->AddObserver(this);
   workspace_manager_->set_grid_size(kGridSize);
   event_filter_->set_grid_size(kGridSize);
 }
 
 WorkspaceController::~WorkspaceController() {
-  aura::RootWindow::GetInstance()->RemoveObserver(this);
-  aura::RootWindow::GetInstance()->RemoveRootWindowObserver(this);
+  Shell::GetRootWindow()->RemoveObserver(this);
+  Shell::GetRootWindow()->RemoveRootWindowObserver(this);
 }
 
 void WorkspaceController::ToggleOverview() {

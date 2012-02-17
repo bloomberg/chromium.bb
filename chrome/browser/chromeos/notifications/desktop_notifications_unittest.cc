@@ -11,6 +11,7 @@
 #include "content/public/common/show_desktop_notification_params.h"
 
 #if defined(USE_AURA)
+#include "ash/shell.h"
 #include "chrome/browser/chromeos/notifications/balloon_collection_impl_aura.h"
 #include "ui/aura/root_window.h"
 #else
@@ -113,7 +114,7 @@ DesktopNotificationsTest::~DesktopNotificationsTest() {
 void DesktopNotificationsTest::SetUp() {
 #if defined(USE_AURA)
   // Make sure a root window has been instantiated.
-  aura::RootWindow::GetInstance();
+  ash::Shell::GetRootWindow();
 #endif
   browser::RegisterLocalState(&local_state_);
   profile_.reset(new TestingProfile());

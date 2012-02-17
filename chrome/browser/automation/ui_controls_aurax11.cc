@@ -12,6 +12,7 @@
 #undef RootWindow
 #endif
 
+#include "ash/shell.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/message_pump_x.h"
@@ -99,7 +100,7 @@ void SetKeycodeAndSendThenMask(XEvent* xevent,
   xevent->xkey.keycode =
       XKeysymToKeycode(base::MessagePumpX::GetDefaultXDisplay(),
                        keysym);
-  aura::RootWindow::GetInstance()->PostNativeEvent(xevent);
+  ash::Shell::GetRootWindow()->PostNativeEvent(xevent);
   xevent->xkey.state |= mask;
 }
 
@@ -110,7 +111,7 @@ void UnmaskAndSetKeycodeThenSend(XEvent* xevent,
   xevent->xkey.keycode =
       XKeysymToKeycode(base::MessagePumpX::GetDefaultXDisplay(),
                        keysym);
-  aura::RootWindow::GetInstance()->PostNativeEvent(xevent);
+  ash::Shell::GetRootWindow()->PostNativeEvent(xevent);
 }
 
 bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
@@ -132,11 +133,11 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
   xevent.xkey.keycode =
       XKeysymToKeycode(base::MessagePumpX::GetDefaultXDisplay(),
                        ui::XKeysymForWindowsKeyCode(key, shift));
-  aura::RootWindow::GetInstance()->PostNativeEvent(&xevent);
+  ash::Shell::GetRootWindow()->PostNativeEvent(&xevent);
 
   // Send key release events.
   xevent.xkey.type = KeyRelease;
-  aura::RootWindow::GetInstance()->PostNativeEvent(&xevent);
+  ash::Shell::GetRootWindow()->PostNativeEvent(&xevent);
   if (alt)
     UnmaskAndSetKeycodeThenSend(&xevent, Mod1Mask, XK_Alt_L);
   if (shift)
@@ -161,7 +162,7 @@ bool SendMouseMoveNotifyWhenDone(long x, long y, const base::Closure& closure) {
   xmotion->state = button_down_mask;
   xmotion->same_screen = True;
   // RootWindow will take care of other necessary fields.
-  aura::RootWindow::GetInstance()->PostNativeEvent(&xevent);
+  ash::Shell::GetRootWindow()->PostNativeEvent(&xevent);
   RunClosureAfterAllPendingUIEvents(closure);
   return true;
 }
@@ -196,7 +197,7 @@ bool SendMouseEventsNotifyWhenDone(MouseButton type,
   }
   // RootWindow will take care of other necessary fields.
 
-  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  aura::RootWindow* root_window = ash::Shell::GetRootWindow();
   if (state & DOWN) {
     xevent.xbutton.type = ButtonPress;
     root_window->PostNativeEvent(&xevent);
@@ -237,7 +238,7 @@ void RunClosureAfterAllPendingUIEvents(const base::Closure& closure) {
     marker_event->xclient.format = 8;
   }
   marker_event->xclient.message_type = MarkerEventAtom();
-  aura::RootWindow::GetInstance()->PostNativeEvent(marker_event);
+  ash::Shell::GetRootWindow()->PostNativeEvent(marker_event);
   new EventWaiter(closure, &Matcher);
 }
 

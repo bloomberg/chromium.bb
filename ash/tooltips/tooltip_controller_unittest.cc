@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/shell.h"
 #include "ash/test/aura_shell_test_base.h"
 #include "ash/tooltips/tooltip_controller.h"
 #include "base/utf_string_conversions.h"
@@ -43,7 +44,7 @@ views::Widget* CreateNewWidget() {
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.accept_events = true;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.parent = aura::RootWindow::GetInstance();
+  params.parent = Shell::GetRootWindow();
   params.child = true;
   widget->Init(params);
   widget->Show();
@@ -115,7 +116,7 @@ TEST_F(TooltipControllerTest, ViewTooltip) {
   generator.MoveMouseToCenterOf(widget->GetNativeView());
 
   aura::Window* window = widget->GetNativeView();
-  EXPECT_EQ(window, aura::RootWindow::GetInstance()->GetEventHandlerForPoint(
+  EXPECT_EQ(window, Shell::GetRootWindow()->GetEventHandlerForPoint(
       generator.current_location()));
   string16 expected_tooltip = ASCIIToUTF16("Tooltip Text");
   EXPECT_EQ(expected_tooltip, aura::client::GetTooltipText(window));
@@ -157,7 +158,7 @@ TEST_F(TooltipControllerTest, TooltipsInMultipleViews) {
     generator.MoveMouseBy(1, 0);
     EXPECT_TRUE(IsTooltipVisible());
     EXPECT_EQ(window,
-        aura::RootWindow::GetInstance()->GetEventHandlerForPoint(
+        Shell::GetRootWindow()->GetEventHandlerForPoint(
             generator.current_location()));
     string16 expected_tooltip = ASCIIToUTF16("Tooltip Text");
     EXPECT_EQ(expected_tooltip, aura::client::GetTooltipText(window));
@@ -168,7 +169,7 @@ TEST_F(TooltipControllerTest, TooltipsInMultipleViews) {
     generator.MoveMouseBy(1, 0);
     EXPECT_FALSE(IsTooltipVisible());
     EXPECT_EQ(window,
-        aura::RootWindow::GetInstance()->GetEventHandlerForPoint(
+        Shell::GetRootWindow()->GetEventHandlerForPoint(
             generator.current_location()));
     string16 expected_tooltip;  // = ""
     EXPECT_EQ(expected_tooltip, aura::client::GetTooltipText(window));

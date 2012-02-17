@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_aura.h"
 
 // TODO(beng): USE_ASH
+#include "ash/shell.h"
 #include "ash/wm/visibility_controller.h"
 #include "base/event_types.h"
 #include "base/message_loop.h"
@@ -57,7 +58,7 @@ class WebDragSourceAura : public MessageLoopForUI::Observer {
           gfx::Point screen_loc = ui::EventLocationFromNative(event);
           gfx::Point client_loc = screen_loc;
           aura::Window* window = rvh->view()->GetNativeView();
-          aura::Window::ConvertPointToWindow(aura::RootWindow::GetInstance(),
+          aura::Window::ConvertPointToWindow(ash::Shell::GetRootWindow(),
               window, &client_loc);
           rvh->DragSourceMovedTo(client_loc.x(), client_loc.y(),
               screen_loc.x(), screen_loc.y());
@@ -275,7 +276,7 @@ void NativeTabContentsViewAura::OnDragEntered(
   PrepareWebDropData(&drop_data, event.data());
   WebKit::WebDragOperationsMask op = ConvertToWeb(event.source_operations());
 
-  gfx::Point screen_pt = aura::RootWindow::GetInstance()->last_mouse_location();
+  gfx::Point screen_pt = ash::Shell::GetRootWindow()->last_mouse_location();
   GetWebContents()->GetRenderViewHost()->DragTargetDragEnter(
       drop_data, event.location(), screen_pt, op);
 }
@@ -283,7 +284,7 @@ void NativeTabContentsViewAura::OnDragEntered(
 int NativeTabContentsViewAura::OnDragUpdated(
     const aura::DropTargetEvent& event) {
   WebKit::WebDragOperationsMask op = ConvertToWeb(event.source_operations());
-  gfx::Point screen_pt = aura::RootWindow::GetInstance()->last_mouse_location();
+  gfx::Point screen_pt = ash::Shell::GetRootWindow()->last_mouse_location();
   GetWebContents()->GetRenderViewHost()->DragTargetDragOver(
       event.location(), screen_pt, op);
   return ConvertFromWeb(current_drag_op_);
@@ -296,7 +297,7 @@ void NativeTabContentsViewAura::OnDragExited() {
 int NativeTabContentsViewAura::OnPerformDrop(
     const aura::DropTargetEvent& event) {
   GetWebContents()->GetRenderViewHost()->DragTargetDrop(
-      event.location(), aura::RootWindow::GetInstance()->last_mouse_location());
+      event.location(), ash::Shell::GetRootWindow()->last_mouse_location());
   return current_drag_op_;
 }
 
@@ -305,11 +306,11 @@ int NativeTabContentsViewAura::OnPerformDrop(
 
 void NativeTabContentsViewAura::EndDrag(WebKit::WebDragOperationsMask ops) {
   gfx::Point screen_loc =
-      aura::RootWindow::GetInstance()->last_mouse_location();
+      ash::Shell::GetRootWindow()->last_mouse_location();
   gfx::Point client_loc = screen_loc;
   RenderViewHost* rvh = GetWebContents()->GetRenderViewHost();
   aura::Window* window = rvh->view()->GetNativeView();
-  aura::Window::ConvertPointToWindow(aura::RootWindow::GetInstance(),
+  aura::Window::ConvertPointToWindow(ash::Shell::GetRootWindow(),
       window, &client_loc);
   rvh->DragSourceEndedAt(client_loc.x(), client_loc.y(), screen_loc.x(),
       screen_loc.y(), ops);

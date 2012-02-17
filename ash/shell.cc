@@ -218,7 +218,7 @@ Shell::Shell(ShellDelegate* delegate)
       root_window_layout_(NULL),
       status_widget_(NULL) {
   // Pass ownership of the filter to the root window.
-  aura::RootWindow::GetInstance()->SetEventFilter(root_filter_);
+  GetRootWindow()->SetEventFilter(root_filter_);
 }
 
 Shell::~Shell() {
@@ -243,7 +243,7 @@ Shell::~Shell() {
 
   // Delete containers now so that child windows does not access
   // observers when they are destructed.
-  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  aura::RootWindow* root_window = GetRootWindow();
   while (!root_window->children().empty()) {
     aura::Window* child = root_window->children()[0];
     delete child;
@@ -285,6 +285,11 @@ void Shell::DeleteInstance() {
   instance_ = NULL;
 }
 
+// static
+aura::RootWindow* Shell::GetRootWindow() {
+  return aura::RootWindow::GetInstance();
+}
+
 void Shell::Init() {
   DCHECK(!GetRootWindowEventFilterCount());
 
@@ -313,7 +318,7 @@ void Shell::Init() {
   gfx::Size monitor_size = gfx::Screen::GetPrimaryMonitorSize();
   window_mode_ = ComputeWindowMode(monitor_size, command_line);
 
-  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  aura::RootWindow* root_window = GetRootWindow();
   root_window->SetCursor(aura::kCursorPointer);
 
   activation_controller_.reset(new internal::ActivationController);
@@ -412,22 +417,22 @@ aura::Window* Shell::GetContainer(int container_id) {
 }
 
 const aura::Window* Shell::GetContainer(int container_id) const {
-  return aura::RootWindow::GetInstance()->GetChildById(container_id);
+  return GetRootWindow()->GetChildById(container_id);
 }
 
 void Shell::AddRootWindowEventFilter(aura::EventFilter* filter) {
   static_cast<internal::RootWindowEventFilter*>(
-      aura::RootWindow::GetInstance()->event_filter())->AddFilter(filter);
+      GetRootWindow()->event_filter())->AddFilter(filter);
 }
 
 void Shell::RemoveRootWindowEventFilter(aura::EventFilter* filter) {
   static_cast<internal::RootWindowEventFilter*>(
-      aura::RootWindow::GetInstance()->event_filter())->RemoveFilter(filter);
+      GetRootWindow()->event_filter())->RemoveFilter(filter);
 }
 
 size_t Shell::GetRootWindowEventFilterCount() const {
   return static_cast<internal::RootWindowEventFilter*>(
-      aura::RootWindow::GetInstance()->event_filter())->GetFilterCount();
+      GetRootWindow()->event_filter())->GetFilterCount();
 }
 
 void Shell::ShowBackgroundMenu(views::Widget* widget,
@@ -469,9 +474,8 @@ bool Shell::IsScreenLocked() const {
 }
 
 bool Shell::IsModalWindowOpen() const {
-  aura::Window* modal_container =
-      ash::Shell::GetInstance()->GetContainer(
-          internal::kShellWindowId_SystemModalContainer);
+  const aura::Window* modal_container = GetContainer(
+      internal::kShellWindowId_SystemModalContainer);
   return !modal_container->children().empty();
 }
 

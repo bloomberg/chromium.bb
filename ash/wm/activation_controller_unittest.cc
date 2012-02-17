@@ -4,6 +4,7 @@
 
 #include "ash/wm/activation_controller.h"
 
+#include "ash/shell.h"
 #include "ash/test/aura_shell_test_base.h"
 #include "ash/test/test_activation_delegate.h"
 #include "ash/wm/window_util.h"
@@ -246,7 +247,7 @@ TEST_F(ActivationControllerTest, PreventFocusToNonActivatableWindow) {
       &wd, -1, gfx::Rect(50, 50), NULL));
   // The RootWindow itself is a non-activatable parent.
   scoped_ptr<aura::Window> w2(aura::test::CreateTestWindowWithDelegate(
-      &wd, -2, gfx::Rect(50, 50), aura::RootWindow::GetInstance()));
+      &wd, -2, gfx::Rect(50, 50), Shell::GetRootWindow()));
   scoped_ptr<aura::Window> w21(aura::test::CreateTestWindowWithDelegate(
       &wd, -21, gfx::Rect(50, 50), w2.get()));
 

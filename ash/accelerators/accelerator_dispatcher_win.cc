@@ -23,7 +23,7 @@ bool AcceleratorDispatcher::Dispatch(const MSG& msg) {
   if (!associated_window_)
     return false;
   if (!associated_window_->CanReceiveEvents())
-    return aura::RootWindow::GetInstance()->GetDispatcher()->Dispatch(msg);
+    return Shell::GetRootWindow()->GetDispatcher()->Dispatch(msg);
 
   if(msg.message == WM_KEYDOWN || msg.message == WM_SYSKEYDOWN) {
     ash::AcceleratorController* accelerator_controller =

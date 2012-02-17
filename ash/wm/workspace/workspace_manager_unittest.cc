@@ -4,6 +4,7 @@
 
 #include "ash/wm/workspace/workspace_manager.h"
 
+#include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/property_util.h"
@@ -26,11 +27,11 @@ namespace internal {
 class WorkspaceManagerTest : public aura::test::AuraTestBase {
  public:
   WorkspaceManagerTest() : layout_manager_(NULL) {
-    aura::RootWindow::GetInstance()->set_id(
+    Shell::GetRootWindow()->set_id(
         internal::kShellWindowId_DefaultContainer);
     activation_controller_.reset(new internal::ActivationController);
     activation_controller_->set_default_container_for_test(
-        aura::RootWindow::GetInstance());
+        Shell::GetRootWindow());
   }
   virtual ~WorkspaceManagerTest() {}
 
@@ -64,7 +65,7 @@ class WorkspaceManagerTest : public aura::test::AuraTestBase {
   }
 
   aura::Window* viewport() {
-    return aura::RootWindow::GetInstance();
+    return Shell::GetRootWindow();
   }
 
   const std::vector<Workspace*>& workspaces() const {

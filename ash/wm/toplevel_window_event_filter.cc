@@ -4,6 +4,7 @@
 
 #include "ash/wm/toplevel_window_event_filter.h"
 
+#include "ash/shell.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_util.h"
@@ -121,12 +122,12 @@ void ToplevelWindowEventFilter::RunMoveLoop(aura::Window* source) {
   in_move_loop_ = true;
   gfx::Point source_mouse_location(gfx::Screen::GetCursorScreenPoint());
   aura::Window::ConvertPointToWindow(
-      aura::RootWindow::GetInstance(), source, &source_mouse_location);
+      Shell::GetRootWindow(), source, &source_mouse_location);
   window_resizer_.reset(
       new WindowResizer(source, source_mouse_location, HTCAPTION, grid_size_));
 #if !defined(OS_MACOSX)
   MessageLoopForUI::current()->RunWithDispatcher(
-      aura::RootWindow::GetInstance()->GetDispatcher());
+      Shell::GetRootWindow()->GetDispatcher());
 #endif  // !defined(OS_MACOSX)
   in_move_loop_ = false;
 }
@@ -138,7 +139,7 @@ void ToplevelWindowEventFilter::EndMoveLoop() {
   in_move_loop_ = false;
   window_resizer_.reset();
   MessageLoopForUI::current()->Quit();
-  aura::RootWindow::GetInstance()->PostNativeEvent(ui::CreateNoopEvent());
+  Shell::GetRootWindow()->PostNativeEvent(ui::CreateNoopEvent());
 }
 
 void ToplevelWindowEventFilter::CompleteDrag(aura::Window* window) {

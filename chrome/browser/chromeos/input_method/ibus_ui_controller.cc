@@ -15,6 +15,7 @@
 #include "third_party/mozc/session/candidates_lite.pb.h"
 
 #if defined(HAVE_IBUS) && defined(USE_AURA)
+#include "ash/shell.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "ui/aura/client/aura_constants.h"
@@ -334,7 +335,7 @@ class IBusUiControllerImpl : public IBusUiController {
   // window.
   static ui::InputMethodIBus* GetChromeInputMethod() {
     return static_cast<ui::InputMethodIBus*>(
-        aura::RootWindow::GetInstance()->GetProperty(
+        ash::Shell::GetRootWindow()->GetProperty(
             aura::client::kRootWindowInputMethodKey));
   }
 #endif  // USE_AURA

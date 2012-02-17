@@ -4,6 +4,7 @@
 
 #include "ash/wm/toplevel_window_event_filter.h"
 
+#include "ash/shell.h"
 #include "ash/test/aura_shell_test_base.h"
 #include "ash/wm/window_util.h"
 #include "base/basictypes.h"
@@ -71,8 +72,8 @@ class ToplevelWindowEventFilterTest : public AuraShellTestBase {
     parent_ = new aura::Window(NULL);
     parent_->Init(ui::Layer::LAYER_NOT_DRAWN);
     parent_->Show();
-    aura::RootWindow::GetInstance()->AddChild(parent_);
-    parent_->SetBounds(aura::RootWindow::GetInstance()->bounds());
+    Shell::GetRootWindow()->AddChild(parent_);
+    parent_->SetBounds(Shell::GetRootWindow()->bounds());
     filter_ = new ToplevelWindowEventFilter(parent_);
     parent_->SetEventFilter(filter_);
   }

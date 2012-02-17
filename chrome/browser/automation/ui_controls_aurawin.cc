@@ -4,6 +4,7 @@
 
 #include "chrome/browser/automation/ui_controls.h"
 
+#include "ash/shell.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/automation/ui_controls_internal.h"
@@ -35,13 +36,13 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
 
 bool SendMouseMove(long x, long y) {
   gfx::Point point(x, y);
-  aura::RootWindow::GetInstance()->ConvertPointToNativeScreen(&point);
+  ash::Shell::GetRootWindow()->ConvertPointToNativeScreen(&point);
   return internal::SendMouseMoveImpl(point.x(), point.y(), base::Closure());
 }
 
 bool SendMouseMoveNotifyWhenDone(long x, long y, const base::Closure& task) {
   gfx::Point point(x, y);
-  aura::RootWindow::GetInstance()->ConvertPointToNativeScreen(&point);
+  ash::Shell::GetRootWindow()->ConvertPointToNativeScreen(&point);
   return internal::SendMouseMoveImpl(point.x(), point.y(), task);
 }
 

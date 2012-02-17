@@ -4,6 +4,7 @@
 
 #include "chrome/browser/fullscreen.h"
 
+#include "ash/shell.h"
 #include "base/logging.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
@@ -32,5 +33,5 @@ bool IsFullScreenMode() {
   // This is used only by notification_ui_manager.cc. On aura, notification
   // will be managed in panel. This is temporary to get certain feature running
   // until we implement it for aura.
-  return CheckIfFullscreenWindowExists(aura::RootWindow::GetInstance());
+  return CheckIfFullscreenWindowExists(ash::Shell::GetRootWindow());
 }

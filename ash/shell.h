@@ -92,6 +92,9 @@ class ASH_EXPORT Shell {
 
   static void DeleteInstance();
 
+  // Get the singleton RootWindow used by the Shell.
+  static aura::RootWindow* GetRootWindow();
+
   const gfx::Size& compact_status_area_offset() const {
     return compact_status_area_offset_;
   }

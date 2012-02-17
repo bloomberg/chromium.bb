@@ -4,6 +4,7 @@
 
 #include "ash/wm/video_detector.h"
 
+#include "ash/shell.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -101,7 +102,7 @@ void VideoDetector::MaybeNotifyObservers(aura::Window* window,
   if (!window->IsVisible())
     return;
 
-  gfx::Rect root_bounds = aura::RootWindow::GetInstance()->bounds();
+  gfx::Rect root_bounds = Shell::GetRootWindow()->bounds();
   if (!window->GetScreenBounds().Intersects(root_bounds))
     return;
 

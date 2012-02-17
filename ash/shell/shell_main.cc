@@ -236,7 +236,7 @@ int main(int argc, char** argv) {
 
   ash::shell::InitWindowTypeLauncher();
 
-  aura::RootWindow::GetInstance()->Run();
+  ash::Shell::GetRootWindow()->Run();
 
   window_watcher.reset();
 

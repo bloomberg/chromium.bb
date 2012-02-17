@@ -225,7 +225,7 @@ KeyboardWidget::KeyboardWidget()
 #endif
 
 #if defined(USE_AURA)
-  aura::RootWindow::GetInstance()->AddRootWindowObserver(this);
+  ash::Shell::GetRootWindow()->AddRootWindowObserver(this);
 #endif
 }
 
@@ -240,7 +240,7 @@ KeyboardWidget::~KeyboardWidget() {
 #endif
 
 #if defined(USE_AURA)
-  aura::RootWindow::GetInstance()->RemoveRootWindowObserver(this);
+  ash::Shell::GetRootWindow()->RemoveRootWindowObserver(this);
 #endif
   // TODO(sad): Do anything else?
 }

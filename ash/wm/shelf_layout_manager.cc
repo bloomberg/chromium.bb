@@ -43,8 +43,7 @@ ShelfLayoutManager::ShelfLayoutManager(views::Widget* launcher,
 
 ShelfLayoutManager::~ShelfLayoutManager() {
   // Without a shelf we don't need special insets anymore.
-  aura::RootWindow::GetInstance()->
-      screen()->set_work_area_insets(gfx::Insets());
+  Shell::GetRootWindow()->screen()->set_work_area_insets(gfx::Insets());
 }
 
 void ShelfLayoutManager::LayoutShelf() {
@@ -59,7 +58,7 @@ void ShelfLayoutManager::LayoutShelf() {
   status_->SetBounds(target_bounds.status_bounds);
   Shell::GetInstance()->launcher()->SetStatusWidth(
       target_bounds.status_bounds.width());
-  aura::RootWindow::GetInstance()->screen()->set_work_area_insets(
+  Shell::GetRootWindow()->screen()->set_work_area_insets(
       target_bounds.work_area_insets);
 }
 
@@ -131,7 +130,7 @@ void ShelfLayoutManager::StopAnimating() {
 
 void ShelfLayoutManager::CalculateTargetBounds(bool visible,
                                                TargetBounds* target_bounds) {
-  const gfx::Rect& available_bounds(aura::RootWindow::GetInstance()->bounds());
+  const gfx::Rect& available_bounds(Shell::GetRootWindow()->bounds());
   int y = available_bounds.bottom() - (visible ? max_height_ : 0);
   gfx::Rect status_bounds(status_->GetWindowScreenBounds());
   target_bounds->status_bounds = gfx::Rect(
@@ -150,7 +149,7 @@ void ShelfLayoutManager::CalculateTargetBounds(bool visible,
 void ShelfLayoutManager::OnImplicitAnimationsCompleted() {
   TargetBounds target_bounds;
   CalculateTargetBounds(visible_, &target_bounds);
-  aura::RootWindow::GetInstance()->screen()->set_work_area_insets(
+  Shell::GetRootWindow()->screen()->set_work_area_insets(
       target_bounds.work_area_insets);
 }
 

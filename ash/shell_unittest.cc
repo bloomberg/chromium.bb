@@ -349,7 +349,7 @@ TEST_F(ShellTest, MAYBE_ChangeWindowMode) {
   EXPECT_TRUE(launcher_widget->IsVisible());
   // Launcher is at bottom-left of screen.
   EXPECT_EQ(0, launcher_widget->GetWindowScreenBounds().x());
-  EXPECT_EQ(RootWindow::GetInstance()->GetHostSize().height(),
+  EXPECT_EQ(Shell::GetRootWindow()->GetHostSize().height(),
             launcher_widget->GetWindowScreenBounds().bottom());
   // We have a desktop background but not a bare layer.
   EXPECT_TRUE(shell->root_window_layout_->background_widget());
@@ -391,7 +391,7 @@ TEST_F(ShellTest, MAYBE_ChangeWindowMode) {
   EXPECT_TRUE(launcher_widget->IsVisible());
   // Launcher is at bottom-left of screen.
   EXPECT_EQ(0, launcher_widget->GetWindowScreenBounds().x());
-  EXPECT_EQ(RootWindow::GetInstance()->GetHostSize().height(),
+  EXPECT_EQ(Shell::GetRootWindow()->GetHostSize().height(),
             launcher_widget->GetWindowScreenBounds().bottom());
   // Desktop background is back.
   EXPECT_TRUE(shell->root_window_layout_->background_widget());
@@ -409,7 +409,7 @@ TEST_F(ShellTest, ResizeRootWindow) {
   Shell::GetInstance()->set_dynamic_window_mode(true);
 
   // Switching to a small screen enables compact window mode.
-  RootWindow::GetInstance()->SetHostSize(gfx::Size(1024, 768));
+  Shell::GetRootWindow()->SetHostSize(gfx::Size(1024, 768));
   EXPECT_TRUE(Shell::GetInstance()->IsWindowModeCompact());
 
   // Launcher is hidden.
@@ -417,7 +417,7 @@ TEST_F(ShellTest, ResizeRootWindow) {
   EXPECT_FALSE(launcher_widget->IsVisible());
 
   // Switching to a large screen disables compact window mode.
-  RootWindow::GetInstance()->SetHostSize(gfx::Size(1920, 1080));
+  Shell::GetRootWindow()->SetHostSize(gfx::Size(1920, 1080));
   EXPECT_FALSE(Shell::GetInstance()->IsWindowModeCompact());
 
   // Launcher is in the bottom-left corner of window.

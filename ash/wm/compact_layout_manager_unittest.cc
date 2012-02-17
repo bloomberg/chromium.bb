@@ -38,9 +38,8 @@ class CompactLayoutManagerTest : public ash::test::AuraShellTestBase {
 
   virtual void SetUp() OVERRIDE {
     ash::test::AuraShellTestBase::SetUp();
-    aura::RootWindow::GetInstance()->Show();
-    aura::RootWindow::GetInstance()->SetHostSize(
-        gfx::Size(kMaxWidth, kMaxHeight));
+    Shell::GetRootWindow()->Show();
+    Shell::GetRootWindow()->SetHostSize(gfx::Size(kMaxWidth, kMaxHeight));
     default_container()->SetBounds(gfx::Rect(0, 0, kMaxWidth, kMaxHeight));
     layout_manager_ = new internal::CompactLayoutManager();
     default_container()->SetLayoutManager(layout_manager_);

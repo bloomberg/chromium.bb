@@ -87,7 +87,7 @@ void ViewEventTestBase::SetUp() {
 #endif
   ui::CompositorTestSupport::Initialize();
 #if defined(USE_AURA)
-  aura::RootWindow::GetInstance();
+  ash::Shell::GetRootWindow();
   ash::Shell::CreateInstance(NULL);
 #endif
   window_ = views::Widget::CreateWindow(this);

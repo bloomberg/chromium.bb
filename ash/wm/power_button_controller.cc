@@ -100,7 +100,7 @@ bool IsRelatedContainer(aura::Window* window) {
 // Returns the transform, based on |base_transform|, that should be applied
 // to containers for slow-close animation.
 ui::Transform GetSlowCloseTransform(const ui::Transform& base_transform) {
-  gfx::Size root_size = aura::RootWindow::GetInstance()->bounds().size();
+  gfx::Size root_size = Shell::GetRootWindow()->bounds().size();
   ui::Transform transform(base_transform);
   transform.ConcatScale(kSlowCloseSizeRatio, kSlowCloseSizeRatio);
   transform.ConcatTranslate(
@@ -112,7 +112,7 @@ ui::Transform GetSlowCloseTransform(const ui::Transform& base_transform) {
 // Returns the transform, based on |base_transform|, that should be applied
 // to containers for fast-close animation.
 ui::Transform GetFastCloseTransform(const ui::Transform& base_transform) {
-  gfx::Size root_size = aura::RootWindow::GetInstance()->bounds().size();
+  gfx::Size root_size = Shell::GetRootWindow()->bounds().size();
   ui::Transform transform(base_transform);
   transform.ConcatScale(0.0, 0.0);
   transform.ConcatTranslate(floor(0.5 * root_size.width() + 0.5),
@@ -267,7 +267,7 @@ void PowerButtonController::OnExit() {
     shutting_down_ = true;
     ash::Shell::GetInstance()->root_filter()->
         set_update_cursor_visibility(false);
-    aura::RootWindow::GetInstance()->ShowCursor(false);
+    Shell::GetRootWindow()->ShowCursor(false);
     ShowBackgroundLayer();
     StartAnimation(ALL_CONTAINERS, ANIMATION_HIDE);
   }
@@ -407,7 +407,7 @@ void PowerButtonController::GetContainers(ContainerGroup group,
                                           aura::Window::Windows* containers) {
   containers->clear();
 
-  aura::Window* root = aura::RootWindow::GetInstance();
+  aura::Window* root = Shell::GetRootWindow();
   for (aura::Window::Windows::const_iterator it = root->children().begin();
        it != root->children().end(); ++it) {
     aura::Window* window = *it;
@@ -462,7 +462,7 @@ void PowerButtonController::OnShutdownTimeout() {
   DCHECK(!shutting_down_);
   shutting_down_ = true;
   ash::Shell::GetInstance()->root_filter()->set_update_cursor_visibility(false);
-  aura::RootWindow::GetInstance()->ShowCursor(false);
+  Shell::GetRootWindow()->ShowCursor(false);
   StartAnimation(ALL_CONTAINERS, ANIMATION_FAST_CLOSE);
   real_shutdown_timer_.Start(
       FROM_HERE,
@@ -503,7 +503,7 @@ void PowerButtonController::ShowBackgroundLayer() {
     background_layer_.reset(new ui::Layer(ui::Layer::LAYER_SOLID_COLOR));
     background_layer_->SetColor(SK_ColorBLACK);
 
-    ui::Layer* root_layer = aura::RootWindow::GetInstance()->layer();
+    ui::Layer* root_layer = Shell::GetRootWindow()->layer();
     background_layer_->SetBounds(root_layer->bounds());
     root_layer->Add(background_layer_.get());
     root_layer->StackAtBottom(background_layer_.get());

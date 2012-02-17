@@ -4,6 +4,7 @@
 
 #include "ash/drag_drop/drag_drop_controller.h"
 
+#include "ash/shell.h"
 #include "ash/test/aura_shell_test_base.h"
 #include "ash/wm/root_window_event_filter.h"
 #include "base/location.h"
@@ -150,7 +151,7 @@ views::Widget* CreateNewWidget() {
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.accept_events = true;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.parent = aura::RootWindow::GetInstance();
+  params.parent = Shell::GetRootWindow();
   params.child = true;
   widget->Init(params);
   widget->Show();
@@ -498,7 +499,7 @@ TEST_F(DragDropControllerTest, SyntheticEventsDuringDragDrop) {
     gfx::Point mouse_move_location = drag_view->bounds().CenterPoint();
     aura::MouseEvent mouse_move(ui::ET_MOUSE_MOVED,
                                 mouse_move_location, mouse_move_location, 0);
-    aura::RootWindow::GetInstance()->DispatchMouseEvent(&mouse_move);
+    Shell::GetRootWindow()->DispatchMouseEvent(&mouse_move);
   }
 
   generator.ReleaseLeftButton();

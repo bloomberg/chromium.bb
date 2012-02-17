@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/aura/screen_orientation_listener.h"
 
+#include "ash/shell.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/sensors_provider.h"
 #include "ui/aura/root_window.h"
@@ -45,7 +46,7 @@ void ScreenOrientationListener::OnScreenOrientationChanged(
   ui::LayerAnimationObserver* observer = NULL;
   // RootWindow is initialized before the listener, so this will not return
   // NULL.
-  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  aura::RootWindow* root_window = ash::Shell::GetRootWindow();
   to_rotate = root_window->layer();
   observer = root_window;
 

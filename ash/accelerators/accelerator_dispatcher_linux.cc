@@ -31,7 +31,7 @@ base::MessagePumpDispatcher::DispatchStatus AcceleratorDispatcher::Dispatch(
   if (!associated_window_)
     return EVENT_QUIT;
   if (!associated_window_->CanReceiveEvents())
-    return aura::RootWindow::GetInstance()->GetDispatcher()->Dispatch(xev);
+    return Shell::GetRootWindow()->GetDispatcher()->Dispatch(xev);
 
   if (xev->type == KeyPress) {
     ash::AcceleratorController* accelerator_controller =

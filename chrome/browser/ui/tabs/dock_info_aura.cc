@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/tabs/dock_info.h"
 
+#include "ash/shell.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/compositor/layer.h"
@@ -24,7 +25,7 @@ aura::Window* GetLocalProcessWindowAtPointImpl(
 
   if (window->layer()->type() == ui::Layer::LAYER_TEXTURED) {
     gfx::Point window_point(screen_point);
-    aura::Window::ConvertPointToWindow(aura::RootWindow::GetInstance(), window,
+    aura::Window::ConvertPointToWindow(ash::Shell::GetRootWindow(), window,
                                        &window_point);
     return gfx::Rect(window->bounds().size()).Contains(window_point) ?
         window : NULL;
@@ -54,7 +55,7 @@ gfx::NativeView DockInfo::GetLocalProcessWindowAtPoint(
     const gfx::Point& screen_point,
     const std::set<gfx::NativeView>& ignore) {
   return GetLocalProcessWindowAtPointImpl(
-      screen_point, ignore, aura::RootWindow::GetInstance());
+      screen_point, ignore, ash::Shell::GetRootWindow());
 }
 
 bool DockInfo::GetWindowBounds(gfx::Rect* bounds) const {

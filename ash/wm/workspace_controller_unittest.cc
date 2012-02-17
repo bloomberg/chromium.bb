@@ -4,6 +4,7 @@
 
 #include "ash/wm/workspace_controller.h"
 
+#include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/window_util.h"
@@ -25,7 +26,7 @@ class WorkspaceControllerTest : public aura::test::AuraTestBase {
 
   virtual void SetUp() OVERRIDE {
     aura::test::AuraTestBase::SetUp();
-    contents_view_ = aura::RootWindow::GetInstance();
+    contents_view_ = Shell::GetRootWindow();
     // Activatable windows need to be in a container the ActivationController
     // recognizes.
     contents_view_->set_id(

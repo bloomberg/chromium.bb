@@ -66,6 +66,7 @@
 #endif
 
 #if defined(USE_AURA)
+#include "ash/shell.h"
 #include "ui/aura/root_window.h"
 #endif
 
@@ -269,7 +270,7 @@ void RunMessageLoop() {
   MessageLoop::ScopedNestableTaskAllower allow(loop);
   if (ui_loop) {
 #if defined(USE_AURA)
-    aura::RootWindow::GetInstance()->Run();
+    ash::Shell::GetRootWindow()->Run();
 #elif defined(TOOLKIT_VIEWS)
     views::AcceleratorHandler handler;
     ui_loop->RunWithDispatcher(&handler);

@@ -4,6 +4,7 @@
 
 #include "ash/wm/root_window_event_filter.h"
 
+#include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/test_activation_delegate.h"
 #include "ash/wm/activation_controller.h"
@@ -27,17 +28,16 @@ namespace test {
 class RootWindowEventFilterTest : public aura::test::AuraTestBase {
  public:
   RootWindowEventFilterTest() {
-    aura::RootWindow::GetInstance()->SetEventFilter(
-        new internal::RootWindowEventFilter);
+    Shell::GetRootWindow()->SetEventFilter(new internal::RootWindowEventFilter);
 
-    aura::RootWindow::GetInstance()->set_id(
+    Shell::GetRootWindow()->set_id(
         internal::kShellWindowId_DefaultContainer);
     activation_controller_.reset(new internal::ActivationController);
     activation_controller_->set_default_container_for_test(
-        aura::RootWindow::GetInstance());
+        Shell::GetRootWindow());
   }
   virtual ~RootWindowEventFilterTest() {
-    aura::RootWindow::GetInstance()->SetEventFilter(NULL);
+    Shell::GetRootWindow()->SetEventFilter(NULL);
   }
 
  private:
@@ -66,7 +66,7 @@ class HitTestWindowDelegate : public aura::test::TestWindowDelegate {
 };
 
 TEST_F(RootWindowEventFilterTest, Focus) {
-  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  aura::RootWindow* root_window = Shell::GetRootWindow();
   root_window->SetBounds(gfx::Rect(0, 0, 510, 510));
 
   // Supplied ids are negative so as not to collide with shell ids.
@@ -168,7 +168,7 @@ TEST_F(RootWindowEventFilterTest, Focus) {
 
 // Various assertion testing for activating windows.
 TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
-  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  aura::RootWindow* root_window = Shell::GetRootWindow();
 
   TestActivationDelegate d1;
   aura::test::TestWindowDelegate wd;
@@ -260,7 +260,7 @@ TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
 
 // Essentially the same as ActivateOnMouse, but for touch events.
 TEST_F(RootWindowEventFilterTest, ActivateOnTouch) {
-  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  aura::RootWindow* root_window = Shell::GetRootWindow();
 
   TestActivationDelegate d1;
   aura::test::TestWindowDelegate wd;
@@ -330,7 +330,7 @@ TEST_F(RootWindowEventFilterTest, ActivateOnTouch) {
 }
 
 TEST_F(RootWindowEventFilterTest, MouseEventCursors) {
-  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  aura::RootWindow* root_window = Shell::GetRootWindow();
 
   // Create a window.
   const int kWindowLeft = 123;
@@ -394,7 +394,7 @@ TEST_F(RootWindowEventFilterTest, MouseEventCursors) {
 }
 
 TEST_F(RootWindowEventFilterTest, TransformActivate) {
-  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  aura::RootWindow* root_window = Shell::GetRootWindow();
   gfx::Size size = root_window->GetHostSize();
   EXPECT_EQ(gfx::Rect(size),
             gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point()));
@@ -438,7 +438,7 @@ TEST_F(RootWindowEventFilterTest, TransformActivate) {
 }
 
 TEST_F(RootWindowEventFilterTest, AdditionalFilters) {
-  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  aura::RootWindow* root_window = Shell::GetRootWindow();
 
   // Creates a window and make it active
   scoped_ptr<aura::Window> w1(aura::test::CreateTestWindow(
@@ -510,7 +510,7 @@ TEST_F(RootWindowEventFilterTest, AdditionalFilters) {
 // We should show and hide the cursor in response to mouse and touch events as
 // requested.
 TEST_F(RootWindowEventFilterTest, UpdateCursorVisibility) {
-  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  aura::RootWindow* root_window = Shell::GetRootWindow();
   root_window->SetBounds(gfx::Rect(0, 0, 500, 500));
   scoped_ptr<aura::Window> window(aura::test::CreateTestWindow(
       SK_ColorWHITE, -1, gfx::Rect(0, 0, 500, 500), NULL));

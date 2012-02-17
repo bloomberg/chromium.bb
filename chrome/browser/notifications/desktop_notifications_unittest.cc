@@ -12,6 +12,7 @@
 #include "content/public/common/show_desktop_notification_params.h"
 
 #if defined(USE_AURA)
+#include "ash/shell.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -94,7 +95,7 @@ void DesktopNotificationsTest::SetUp() {
   WebKit::initialize(&webkit_platform_support_);
   // MockBalloonCollection retrieves information about the screen on creation.
   // So it is necessary to make sure the desktop gets created first.
-  aura::RootWindow::GetInstance();
+  ash::Shell::GetRootWindow();
 #endif
 
   browser::RegisterLocalState(&local_state_);

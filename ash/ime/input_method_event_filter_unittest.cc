@@ -33,7 +33,7 @@ typedef AuraShellTestBase InputMethodEventFilterTest;
 
 // Tests if InputMethodEventFilter adds a window property on its construction.
 TEST_F(InputMethodEventFilterTestWithoutShell, TestInputMethodProperty) {
-  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  aura::RootWindow* root_window = Shell::GetRootWindow();
   scoped_ptr<internal::RootWindowEventFilter> root_filter(
       new internal::RootWindowEventFilter);
   EXPECT_FALSE(
@@ -48,7 +48,7 @@ TEST_F(InputMethodEventFilterTestWithoutShell, TestInputMethodProperty) {
 // Tests if InputMethodEventFilter dispatches a ui::ET_TRANSLATED_KEY_* event to
 // the root window.
 TEST_F(InputMethodEventFilterTest, TestInputMethodKeyEventPropagation) {
-  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  aura::RootWindow* root_window = Shell::GetRootWindow();
 
   // Add TestEventFilter to the RootWindow.
   aura::test::TestEventFilter test_filter;
