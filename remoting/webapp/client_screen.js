@@ -271,6 +271,10 @@ function onClientStateChange_(oldState, newState) {
  * @return {void} Nothing.
  */
 function retryConnectOrReportOffline_() {
+  if (remoting.clientSession) {
+    remoting.clientSession.removePlugin();
+    remoting.clientSession = null;
+  }
   if (remoting.hostId && remoting.retryIfOffline) {
     console.log('Connection failed. Retrying.');
     /** @param {boolean} success True if the refresh was successful. */
