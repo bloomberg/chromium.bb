@@ -318,7 +318,7 @@ class Property : public PropertyBase {
   Property() : weak_ptr_factory_(this) {}
 
   // Retrieves the cached value.
-  const T& value() { return value_; }
+  const T& value() const { return value_; }
 
   // Requests an updated value from the remote object incurring a
   // round-trip. |callback| will be called when the new value is available.
