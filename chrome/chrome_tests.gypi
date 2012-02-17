@@ -1258,6 +1258,7 @@
         'browser/accessibility/browser_accessibility_mac_unittest.mm',
         'browser/app_controller_mac_unittest.mm',
         'browser/autocomplete/autocomplete_edit_unittest.cc',
+        'browser/autocomplete/autocomplete_popup_model_unittest.cc',
         'browser/autocomplete/autocomplete_result_unittest.cc',
         'browser/autocomplete/autocomplete_unittest.cc',
         'browser/autocomplete/builtin_provider_unittest.cc',

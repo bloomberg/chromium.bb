@@ -1017,15 +1017,22 @@ std::string LocationBarView::GetClassName() const {
 bool LocationBarView::SkipDefaultKeyEventProcessing(
     const views::KeyEvent& event) {
 #if defined(OS_WIN)
+  bool views_omnibox = views::Widget::IsPureViews();
   if (views::FocusManager::IsTabTraversalKeyEvent(event)) {
-    if (location_entry_->model()->popup_model()->IsOpen()) {
-      // Return true so that the edit sees the tab and moves the selection.
+    if (HasValidSuggestText()) {
+      // Return true so that the edit sees the tab and commits the suggestion.
       return true;
     }
     if (keyword_hint_view_->visible() && !event.IsShiftDown()) {
       // Return true so the edit gets the tab event and enters keyword mode.
       return true;
     }
+
+#if !defined(USE_AURA)
+    // If the caret is not at the end, then tab moves the caret to the end.
+    if (!views_omnibox && !GetOmniboxViewWin()->IsCaretAtEnd())
+      return true;
+#endif
 
     // Tab while showing instant commits instant immediately.
     // Return true so that focus traversal isn't attempted. The edit ends
@@ -1035,7 +1042,7 @@ bool LocationBarView::SkipDefaultKeyEventProcessing(
   }
 
 #if !defined(USE_AURA)
-  if (!views::Widget::IsPureViews())
+  if (!views_omnibox)
     return GetOmniboxViewWin()->SkipDefaultKeyEventProcessing(event);
 #endif
   NOTIMPLEMENTED();
