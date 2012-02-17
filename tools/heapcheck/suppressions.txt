@@ -426,26 +426,9 @@
    fun:AccessibilityController::BindToJavascript
    fun:TestShell::BindJSObjectsToWindow
 }
-{
-   bug_46571_e
-   Heapcheck:Leak
-   fun:WebCore::v8StringToWebCoreString
-   fun:WebCore::v8StringToWebCoreString
-   fun:WebCore::v8ValueToWebCoreString
-   fun:WebCore::toWebCoreString
-   fun:WebCore::ScriptValue::getString
-   fun:WebKit::WebFrameImpl::loadJavaScriptURL
-   fun:WebKit::WebFrameImpl::loadRequest
-   fun:TestShell::Navigate
-   fun:TestNavigationController::NavigateToPendingEntry
-   fun:TestNavigationController::LoadEntry
-   fun:TestShell::LoadURLForFrame
-   fun:TestShell::LoadURL
-   fun:::BookmarkletTest_NonEmptyResult_Test::TestBody
-}
 # "*~TestShell" means "~TestShell" and "TestShell::~TestShell".
 {
-   bug_46571_f
+   bug_46571_e
    Heapcheck:Leak
    fun:WebCore::makeExternalString
    fun:WebCore::v8ExternalString
@@ -456,28 +439,6 @@
    fun:*~TestShell
    fun:::MainWindowDestroyed
    fun:g_closure_invoke
-}
-# This is a variation from bug_46571_e.
-{
-   bug_46571_g
-   Heapcheck:Leak
-   fun:WTF::fastMalloc
-   fun:WTF::StringImpl::createUninitialized
-   fun:WTF::String::createUninitialized
-   fun:WebCore::StringTraits::fromV8String
-   fun:WebCore::v8StringToWebCoreString
-   fun:WebCore::v8StringToWebCoreString
-   fun:WebCore::v8ValueToWebCoreString
-   fun:WebCore::toWebCoreString
-   fun:WebCore::ScriptValue::getString
-   fun:WebKit::WebFrameImpl::loadJavaScriptURL
-   fun:WebKit::WebFrameImpl::loadRequest
-   fun:TestShell::Navigate
-   fun:TestNavigationController::NavigateToPendingEntry
-   fun:TestNavigationController::LoadEntry
-   fun:TestShell::LoadURLForFrame
-   fun:TestShell::LoadURL
-   fun:::BookmarkletTest_NonEmptyResult_Test::TestBody
 }
 {
    bug_32366
@@ -1800,4 +1761,91 @@
    Heapcheck:Leak
    ...
    fun:::FontTest_*_Test::TestBody
+}
+{
+   bug_114767_a
+   Heapcheck:Leak
+   ...
+   fun:::BookmarkletTest_*_Test::TestBody
+}
+{
+   bug_114767_b
+   Heapcheck:Leak
+   ...
+   fun:TestShell::Initialize
+   fun:TestShell::CreateNewWindow
+   fun:TestShellTest::CreateEmptyWindow
+   fun:TestShellTest::SetUp
+}
+{
+   bug_114767_c
+   Heapcheck:Leak
+   fun:WebCore::StringCache::v8ExternalStringSlow
+   fun:WebCore::StringCache::v8ExternalStringSlow
+   fun:WebCore::ScriptController::bindToWindowObject
+   fun:WebCore::ScriptController::bindToWindowObject
+   fun:WebCore::ScriptController::bindToWindowObject
+   fun:WebCore::ScriptController::bindToWindowObject
+   fun:WebKit::WebFrameImpl::bindToWindowObject
+   fun:CppBoundClass::BindToJavascript
+   fun:TestShell::BindJSObjectsToWindow
+   fun:TestWebViewDelegate::didClearWindowObject
+   fun:WebKit::FrameLoaderClientImpl::dispatchDidClearWindowObjectInWorld
+   fun:WebCore::FrameLoader::dispatchDidClearWindowObjectInWorld
+   fun:WebCore::V8DOMWindowShell::initContextIfNeeded
+   fun:WebCore::V8DOMWindowShell::updateDocument
+   fun:WebCore::ScriptController::updateDocument
+   fun:WebCore::Frame::setDocument
+   fun:WebCore::DocumentWriter::begin
+   fun:WebCore::FrameLoader::receivedFirstData
+   fun:WebCore::FrameLoader::willSetEncoding
+   fun:WebCore::DocumentWriter::setEncoding
+   fun:WebKit::FrameLoaderClientImpl::finishedLoading
+   fun:WebCore::FrameLoader::finishedLoadingDocument
+   fun:WebCore::DocumentLoader::finishedLoading
+   fun:WebCore::FrameLoader::finishedLoading
+   fun:WebCore::MainResourceLoader::didFinishLoading
+   fun:WebCore::MainResourceLoader::continueAfterContentPolicy
+   fun:WebCore::MainResourceLoader::continueAfterContentPolicy
+   fun:WebCore::MainResourceLoader::callContinueAfterContentPolicy
+}
+{
+   bug_114770
+   Heapcheck:Leak
+   ...
+   fun:TestShell::InitializeTestShell
+   fun:TestShellTestSuite::Initialize
+   fun:base::TestSuite::Run
+}
+{
+   bug_114771
+   Heapcheck:Leak
+   fun:WebCore::StringCache::v8ExternalStringSlow
+   fun:WebCore::StringCache::v8ExternalStringSlow
+   fun:WebCore::ScriptController::bindToWindowObject
+   fun:WebCore::ScriptController::bindToWindowObject
+   fun:WebCore::ScriptController::bindToWindowObject
+   fun:WebCore::ScriptController::bindToWindowObject
+   fun:WebKit::WebFrameImpl::bindToWindowObject
+   fun:CppBoundClass::BindToJavascript
+   fun:TestShell::BindJSObjectsToWindow
+   fun:TestWebViewDelegate::didClearWindowObject
+   fun:WebKit::FrameLoaderClientImpl::dispatchDidClearWindowObjectInWorld
+   fun:WebCore::FrameLoader::dispatchDidClearWindowObjectInWorld
+   fun:WebCore::V8DOMWindowShell::initContextIfNeeded
+   fun:WebCore::V8Proxy::mainWorldContext
+   fun:WebCore::V8Proxy::mainWorldContext
+   fun:WebCore::ScriptController::bindToWindowObject
+   fun:WebKit::WebFrameImpl::bindToWindowObject
+   fun:CppBoundClass::BindToJavascript
+   fun:TestShell::BindJSObjectsToWindow
+   fun:TestWebViewDelegate::didClearWindowObject
+   fun:WebKit::FrameLoaderClientImpl::dispatchDidClearWindowObjectInWorld
+   fun:WebCore::FrameLoader::dispatchDidClearWindowObjectInWorld
+   fun:WebCore::FrameLoader::dispatchDidClearWindowObjectsInAllWorlds
+   fun:WebCore::FrameLoader::receivedFirstData
+   fun:WebCore::FrameLoader::willSetEncoding
+   fun:WebCore::DocumentWriter::setEncoding
+   fun:WebKit::FrameLoaderClientImpl::finishedLoading
+   fun:WebCore::FrameLoader::finishedLoadingDocumen
 }
