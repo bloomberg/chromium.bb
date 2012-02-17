@@ -809,6 +809,7 @@
 		// Add some more stuff if running in automated mode.
 		window.automation = {}
 		window.automation.SetDone = function() {
+			console.log("Total: " + this.GetScore());
 			window.document.cookie = "__done=1; path=/";
 		}
 		window.automation.GetScore = function() {
