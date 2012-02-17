@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -106,7 +106,8 @@ void PpapiPluginProcessHost::OpenChannelToPlugin(Client* client) {
 }
 
 PpapiPluginProcessHost::PpapiPluginProcessHost(net::HostResolver* host_resolver)
-    : filter_(new PepperMessageFilter(host_resolver)),
+    : filter_(new PepperMessageFilter(PepperMessageFilter::PLUGIN,
+                                      host_resolver)),
       network_observer_(new PluginNetworkObserver(this)),
       is_broker_(false),
       process_id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()) {

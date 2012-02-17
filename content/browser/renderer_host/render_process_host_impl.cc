@@ -473,7 +473,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(new media_stream::MediaStreamDispatcherHost(
       resource_context, GetID()));
   channel_->AddFilter(new PepperFileMessageFilter(GetID(), browser_context));
-  channel_->AddFilter(new PepperMessageFilter(GetID(), resource_context));
+  channel_->AddFilter(new PepperMessageFilter(PepperMessageFilter::RENDERER,
+                                              GetID(), resource_context));
   channel_->AddFilter(new speech_input::SpeechInputDispatcherHost(
       GetID(), browser_context->GetRequestContext(),
       browser_context->GetSpeechInputPreferences(), resource_context));

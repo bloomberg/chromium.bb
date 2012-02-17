@@ -40,9 +40,19 @@ class HostResolver;
 // handle requests that out-of-process plugins send directly to the browser.
 class PepperMessageFilter : public content::BrowserMessageFilter {
  public:
-  PepperMessageFilter(int process_id,
+  enum ProcessType { PLUGIN, RENDERER };
+
+  // Constructor when used in the context of a render process (the argument is
+  // provided for sanity checking).
+  PepperMessageFilter(ProcessType type,
+                      int process_id,
                       content::ResourceContext* resource_context);
-  explicit PepperMessageFilter(net::HostResolver* host_resolver);
+
+  // Constructor when used in the context of a PPAPI process (the argument is
+  // provided for sanity checking).
+  explicit PepperMessageFilter(ProcessType type,
+                               net::HostResolver* host_resolver);
+
   virtual ~PepperMessageFilter();
 
   // content::BrowserMessageFilter methods.
@@ -147,6 +157,8 @@ class PepperMessageFilter : public content::BrowserMessageFilter {
 
   // Return true if render with given ID can use socket APIs.
   bool CanUseSocketAPIs(int32 render_id);
+
+  ProcessType process_type_;
 
   // Render process ID.
   int process_id_;
