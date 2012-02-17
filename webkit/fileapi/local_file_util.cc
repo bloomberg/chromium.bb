@@ -17,9 +17,9 @@ namespace fileapi {
 class LocalFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
  public:
   LocalFileEnumerator(const FilePath& platform_root_path,
-                                const FilePath& virtual_root_path,
-                                bool recursive,
-                                file_util::FileEnumerator::FileType file_type)
+                      const FilePath& virtual_root_path,
+                      bool recursive,
+                      file_util::FileEnumerator::FileType file_type)
       : file_enum_(platform_root_path, recursive, file_type),
         platform_root_path_(platform_root_path),
         virtual_root_path_(virtual_root_path) {

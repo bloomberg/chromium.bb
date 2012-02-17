@@ -26,14 +26,11 @@ class QuotaFileUtilTest : public testing::Test {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     quota_file_util_.reset(QuotaFileUtil::CreateDefault());
     quota_test_helper_.SetUp(data_dir_.path(), quota_file_util_.get());
-    obfuscated_test_helper_.SetUp(
-        quota_test_helper_.file_system_context(), NULL);
-    base_dir_ = obfuscated_test_helper_.GetOriginRootPath();
+    base_dir_ = quota_test_helper_.GetOriginRootPath();
   }
 
   void TearDown() {
     quota_test_helper_.TearDown();
-    obfuscated_test_helper_.TearDown();
   }
 
  protected:
@@ -73,7 +70,6 @@ class QuotaFileUtilTest : public testing::Test {
  private:
   ScopedTempDir data_dir_;
   FilePath base_dir_;
-  FileSystemTestOriginHelper obfuscated_test_helper_;
   FileSystemTestOriginHelper quota_test_helper_;
   scoped_ptr<QuotaFileUtil> quota_file_util_;
 

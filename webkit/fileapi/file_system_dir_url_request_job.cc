@@ -115,23 +115,16 @@ void FileSystemDirURLRequestJob::DidReadDirectory(
 
   if (data_.empty()) {
     FilePath relative_path = GetRelativePath(request_->url());
-#if defined(OS_WIN)
-    const string16& title = relative_path.value();
-#elif defined(OS_POSIX)
-    const string16& title = ASCIIToUTF16("/") +
-        WideToUTF16(base::SysNativeMBToWide(relative_path.value()));
+#if defined(OS_POSIX)
+    relative_path = FilePath(FILE_PATH_LITERAL("/") + relative_path.value());
 #endif
+    const string16& title = relative_path.LossyDisplayName();
     data_.append(net::GetDirectoryListingHeader(title));
   }
 
   typedef std::vector<base::FileUtilProxy::Entry>::const_iterator EntryIterator;
   for (EntryIterator it = entries.begin(); it != entries.end(); ++it) {
-#if defined(OS_WIN)
-    const string16& name = it->name;
-#elif defined(OS_POSIX)
-    const string16& name =
-        WideToUTF16(base::SysNativeMBToWide(it->name));
-#endif
+    const string16& name = FilePath(it->name).LossyDisplayName();
     data_.append(net::GetDirectoryListingEntry(
         name, std::string(), it->is_directory, it->size,
         it->last_modified_time));

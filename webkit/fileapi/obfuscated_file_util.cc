@@ -310,7 +310,7 @@ PlatformFileError ObfuscatedFileUtil::CreateOrOpen(
   if (file_info.is_directory())
     return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
   FilePath local_path = DataPathToLocalPath(context->src_origin_url(),
-    context->src_type(), file_info.data_path);
+      context->src_type(), file_info.data_path);
   base::PlatformFileError error = underlying_file_util()->CreateOrOpen(
       context, local_path, file_flags, file_handle, created);
   if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND) {
@@ -549,7 +549,7 @@ PlatformFileError ObfuscatedFileUtil::Touch(
     return base::PLATFORM_FILE_OK;
   }
   FilePath data_path = DataPathToLocalPath(context->src_origin_url(),
-    context->src_type(), file_info.data_path);
+      context->src_type(), file_info.data_path);
   return underlying_file_util()->Touch(
       context, data_path, last_access_time, last_modified_time);
 }
@@ -679,7 +679,7 @@ PlatformFileError ObfuscatedFileUtil::CopyOrMoveFile(
    */
   if (copy) {
     FilePath src_data_path = DataPathToLocalPath(context->src_origin_url(),
-      context->src_type(), src_file_info.data_path);
+        context->src_type(), src_file_info.data_path);
     if (!underlying_file_util()->PathExists(context, src_data_path)) {
       // TODO(tzik): Also invalidate on-memory usage cache in UsageTracker.
       context->file_system_context()->GetQuotaUtil(context->src_type())->
@@ -691,7 +691,7 @@ PlatformFileError ObfuscatedFileUtil::CopyOrMoveFile(
 
     if (overwrite) {
       FilePath dest_data_path = DataPathToLocalPath(context->src_origin_url(),
-        context->src_type(), dest_file_info.data_path);
+          context->src_type(), dest_file_info.data_path);
       PlatformFileError error = underlying_file_util()->CopyOrMoveFile(context,
           src_data_path, dest_data_path, copy);
       if (error == base::PLATFORM_FILE_OK)
@@ -718,7 +718,7 @@ PlatformFileError ObfuscatedFileUtil::CopyOrMoveFile(
       if (!db->OverwritingMoveFile(src_file_id, dest_file_id))
         return base::PLATFORM_FILE_ERROR_FAILED;
       FilePath dest_data_path = DataPathToLocalPath(context->src_origin_url(),
-        context->src_type(), dest_file_info.data_path);
+          context->src_type(), dest_file_info.data_path);
       if (base::PLATFORM_FILE_OK !=
           underlying_file_util()->DeleteFile(context, dest_data_path))
         LOG(WARNING) << "Leaked a backing file.";
@@ -775,7 +775,7 @@ PlatformFileError ObfuscatedFileUtil::CopyInForeignFile(
       return base::PLATFORM_FILE_ERROR_FAILED;
     }
     FilePath dest_data_path = DataPathToLocalPath(context->dest_origin_url(),
-      context->dest_type(), dest_file_info.data_path);
+        context->dest_type(), dest_file_info.data_path);
     return underlying_file_util()->CopyOrMoveFile(context,
         src_file_path, dest_data_path, true /* copy */);
   } else {
@@ -817,7 +817,7 @@ PlatformFileError ObfuscatedFileUtil::DeleteFile(
   UpdatePathQuotaUsage(context, context->src_origin_url(), context->src_type(),
       -1, -static_cast<int64>(file_info.name.size()));
   FilePath data_path = DataPathToLocalPath(context->src_origin_url(),
-    context->src_type(), file_info.data_path);
+      context->src_type(), file_info.data_path);
   if (base::PLATFORM_FILE_OK !=
       underlying_file_util()->DeleteFile(context, data_path))
     LOG(WARNING) << "Leaked a backing file.";
@@ -1047,7 +1047,7 @@ PlatformFileError ObfuscatedFileUtil::GetFileInfoInternal(
   if (local_info->data_path.empty())
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
   FilePath data_path = DataPathToLocalPath(context->src_origin_url(),
-    context->src_type(), local_info->data_path);
+      context->src_type(), local_info->data_path);
   return underlying_file_util()->GetFileInfo(
       context, data_path, file_info, platform_file_path);
 }
