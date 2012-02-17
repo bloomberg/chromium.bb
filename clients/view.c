@@ -175,7 +175,6 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 	case KEY_F11:
 		view->fullscreen ^= 1;
 		window_set_fullscreen(window, view->fullscreen);
-		window_schedule_redraw(view->window);
 		break;
 	case KEY_SPACE:
 	case KEY_PAGEDOWN:
