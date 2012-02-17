@@ -43,9 +43,26 @@ class WebIntentPickerModel {
 
     // The disposition to use when displaying this service.
     Disposition disposition;
+  };
 
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Item);
+  // A suggested extension to display in the picker.
+  struct SuggestedExtension {
+    SuggestedExtension(const string16& title,
+                       const string16& id,
+                       double average_rating);
+    ~SuggestedExtension();
+
+    // The title of the intent service.
+    string16 title;
+
+    // The id of the extension that provides the intent service.
+    string16 id;
+
+    // The average rating of the extension.
+    double average_rating;
+
+    // The extension's icon.
+    gfx::Image icon;
   };
 
   WebIntentPickerModel();
@@ -74,6 +91,21 @@ class WebIntentPickerModel {
   // Update the favicon for the intent service at |index| to |image|.
   void UpdateFaviconAt(size_t index, const gfx::Image& image);
 
+  // Add a new suggested extension with |id|, |title| and |average_rating| to
+  // the picker.
+  void AddSuggestedExtension(const string16& id,
+                             const string16& title,
+                             double average_rating);
+
+  // Remove a suggested extension from the picker at |index|.
+  void RemoveSuggestedExtensionAt(size_t index);
+
+  // Return the suggested extension at |index|.
+  const SuggestedExtension& GetSuggestedExtensionAt(size_t index) const;
+
+  // Return the number of suggested extensions.
+  size_t GetSuggestedExtensionCount() const;
+
   // Set the picker to display the intent service at |index| inline.
   void SetInlineDisposition(size_t index);
 
@@ -85,11 +117,16 @@ class WebIntentPickerModel {
   size_t inline_disposition_index() const { return inline_disposition_index_; }
 
  private:
-  // Delete all of |items_| and clear it.
-  void DestroyItems();
+  // Delete all elements in |items_| and |suggested_extensions_|.
+  // Note that this method does not reset the observer.
+  void DestroyAll();
 
   // A vector of all items in the picker. Each item is owned by this model.
   std::vector<Item*> items_;
+
+  // A vector of all suggested extensions in the picker. Each element is owned
+  // by this model.
+  std::vector<SuggestedExtension*> suggested_extensions_;
 
   // The observer to send notifications to, or NULL if none.
   WebIntentPickerModelObserver* observer_;

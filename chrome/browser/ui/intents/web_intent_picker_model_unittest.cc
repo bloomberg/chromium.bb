@@ -18,6 +18,9 @@ const string16 kTitle3(ASCIIToUTF16("Baz"));
 const GURL kUrl1("http://www.example.com/foo");
 const GURL kUrl2("http://www.example.com/bar");
 const GURL kUrl3("http://www.example.com/baz");
+const string16 kId1(ASCIIToUTF16("nhkckhebbbncbkefhcpcgepcgfaclehe"));
+const string16 kId2(ASCIIToUTF16("hcpcgepcgfaclehenhkckhebbbncbkef"));
+const string16 kId3(ASCIIToUTF16("aclehenhkckhebbbncbkefhcpcgepcgf"));
 
 }
 
@@ -95,6 +98,35 @@ TEST_F(WebIntentPickerModelTest, UpdateFaviconAt) {
 
   EXPECT_FALSE(gfx::test::IsEqual(image, model_.GetItemAt(0).favicon));
   EXPECT_TRUE(gfx::test::IsEqual(image, model_.GetItemAt(1).favicon));
+}
+
+TEST_F(WebIntentPickerModelTest, AddSuggestedExtension) {
+  EXPECT_CALL(observer_, OnModelChanged(&model_)).Times(2);
+
+  EXPECT_EQ(0U, model_.GetSuggestedExtensionCount());
+
+  model_.AddSuggestedExtension(kTitle1, kId1, 3.0);
+  model_.AddSuggestedExtension(kTitle2, kId2, 4.3);
+
+  EXPECT_EQ(2U, model_.GetSuggestedExtensionCount());
+  EXPECT_EQ(kId1, model_.GetSuggestedExtensionAt(0).id);
+  EXPECT_EQ(kId2, model_.GetSuggestedExtensionAt(1).id);
+}
+
+TEST_F(WebIntentPickerModelTest, RemoveSuggestedExtensionAt) {
+  EXPECT_CALL(observer_, OnModelChanged(&model_)).Times(4);
+
+  model_.AddSuggestedExtension(kTitle1, kId1, 3.0);
+  model_.AddSuggestedExtension(kTitle2, kId2, 4.3);
+  model_.AddSuggestedExtension(kTitle3, kId3, 1.6);
+
+  EXPECT_EQ(3U, model_.GetSuggestedExtensionCount());
+
+  model_.RemoveSuggestedExtensionAt(1);
+
+  EXPECT_EQ(2U, model_.GetSuggestedExtensionCount());
+  EXPECT_EQ(kId1, model_.GetSuggestedExtensionAt(0).id);
+  EXPECT_EQ(kId3, model_.GetSuggestedExtensionAt(1).id);
 }
 
 TEST_F(WebIntentPickerModelTest, SetInlineDisposition) {

@@ -23,12 +23,17 @@ class URLRequestContextGetter;
 class CWSIntentsRegistry : public ProfileKeyedService,
                            public content::URLFetcherDelegate {
  public:
-  // Data returned from CWS for a single intent.
+  // Data returned from CWS for a single service.
   struct IntentExtensionInfo {
+    IntentExtensionInfo();
+    ~IntentExtensionInfo();
+
+    string16 id;  // The id of the extension.
+    string16 name;  // The name of the extension.
     int num_ratings;  // Number of ratings in CWS store.
     double average_rating;  // The average CWS rating.
     string16 manifest;  // The containing extension's manifest info.
-    GURL icon_url;  // Where to retrieve an icon for this intent.
+    GURL icon_url;  // Where to retrieve an icon for this service.
   };
 
   // List of Intent extensions, as returned by GetIntentServices's |callback|
@@ -44,6 +49,9 @@ class CWSIntentsRegistry : public ProfileKeyedService,
   void GetIntentServices(const string16& action,
                          const string16& mimetype,
                          const ResultsCallback& callback);
+
+  // Build a REST query URL to retrieve intent info from CWS.
+  static GURL BuildQueryURL(const string16& action, const string16& type);
 
  private:
   // Make sure that only CWSIntentsRegistryFactory can create an instance of

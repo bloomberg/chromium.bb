@@ -10,8 +10,8 @@
 #include "base/bind_helpers.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/favicon/favicon_service.h"
-#include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
+#include "chrome/browser/intents/cws_intents_registry_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -42,6 +42,11 @@ WebIntentsRegistry* GetWebIntentsRegistry(TabContentsWrapper* wrapper) {
   return WebIntentsRegistryFactory::GetForProfile(wrapper->profile());
 }
 
+// Gets the Chrome web store intents registry for the profile in |tab_contents|.
+CWSIntentsRegistry* GetCWSIntentsRegistry(TabContentsWrapper* wrapper) {
+  return CWSIntentsRegistryFactory::GetForProfile(wrapper->profile());
+}
+
 WebIntentPickerModel::Disposition ConvertDisposition(
     webkit_glue::WebIntentServiceData::Disposition disposition) {
   switch (disposition) {
@@ -57,81 +62,16 @@ WebIntentPickerModel::Disposition ConvertDisposition(
 
 }  // namespace
 
-// A class that asynchronously fetches web intent data from the web intents
-// registry.
-class WebIntentPickerController::WebIntentDataFetcher
-    : public WebIntentsRegistry::Consumer {
- public:
-  WebIntentDataFetcher(WebIntentPickerController* controller,
-                       WebIntentsRegistry* web_intents_registry);
-  ~WebIntentDataFetcher();
-
-  // Asynchronously fetches WebIntentServiceData for the given
-  // |action|, |type| pair.
-  void Fetch(const string16& action, const string16& type);
-
-  // Cancels the WebDataService request.
-  void Cancel();
-
- private:
-  // WebIntentsRegistry::Consumer implementation.
-  virtual void OnIntentsQueryDone(
-      WebIntentsRegistry::QueryID,
-      const std::vector<webkit_glue::WebIntentServiceData>& services) OVERRIDE;
-
-  // A weak pointer to the picker controller.
-  WebIntentPickerController* controller_;
-
-  // A weak pointer to the web intents registry.
-  WebIntentsRegistry* web_intents_registry_;
-
-  // The ID of the current web intents request. The value will be -1 if
-  // there is no request in flight.
-  WebIntentsRegistry::QueryID query_id_;
-};
-
-// A class that asynchronously fetches favicons for a vector of URLs.
-class WebIntentPickerController::FaviconFetcher {
- public:
-  FaviconFetcher(WebIntentPickerController* controller,
-                 FaviconService *favicon_service);
-  ~FaviconFetcher();
-
-  // Asynchronously fetches favicons for the each URL in |urls|.
-  void Fetch(const std::vector<GURL>& urls);
-
-  // Cancels all favicon requests.
-  void Cancel();
-
- private:
-  // Callback called when a favicon is received.
-  void OnFaviconDataAvailable(FaviconService::Handle handle,
-                              history::FaviconData favicon_data);
-
-  // A weak pointer to the picker controller.
-  WebIntentPickerController* controller_;
-
-  // A weak pointer to the favicon service.
-  FaviconService* favicon_service_;
-
-  // The Consumer to handle asynchronous favicon requests.
-  CancelableRequestConsumerTSimple<size_t> load_consumer_;
-
-  DISALLOW_COPY_AND_ASSIGN(FaviconFetcher);
-};
-
 WebIntentPickerController::WebIntentPickerController(
     TabContentsWrapper* wrapper)
     : wrapper_(wrapper),
-      web_intent_data_fetcher_(
-          new WebIntentDataFetcher(this, GetWebIntentsRegistry(wrapper))),
-      favicon_fetcher_(new FaviconFetcher(this, GetFaviconService(wrapper))),
       picker_(NULL),
       picker_model_(new WebIntentPickerModel()),
       pending_async_count_(0),
       picker_shown_(false),
       intents_dispatcher_(NULL),
-      service_tab_(NULL) {
+      service_tab_(NULL),
+      weak_ptr_factory_(this) {
   content::NavigationController* controller =
       &wrapper->web_contents()->GetController();
   registrar_.Add(this, content::NOTIFICATION_LOAD_START,
@@ -148,7 +88,7 @@ void WebIntentPickerController::SetIntentsDispatcher(
   intents_dispatcher_ = intents_dispatcher;
   intents_dispatcher_->RegisterReplyNotification(
       base::Bind(&WebIntentPickerController::OnSendReturnMessage,
-                 base::Unretained(this)));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebIntentPickerController::ShowDialog(Browser* browser,
@@ -167,7 +107,11 @@ void WebIntentPickerController::ShowDialog(Browser* browser,
   }
 
   picker_shown_ = true;
-  web_intent_data_fetcher_->Fetch(action, type);
+  pending_async_count_+= 2;
+  GetWebIntentsRegistry(wrapper_)->GetIntentServices(action, type, this);
+  GetCWSIntentsRegistry(wrapper_)->GetIntentServices(action, type,
+      base::Bind(&WebIntentPickerController::OnCWSIntentServicesAvailable,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebIntentPickerController::Observe(
@@ -295,27 +239,58 @@ void WebIntentPickerController::OnSendReturnMessage(
   intents_dispatcher_ = NULL;
 }
 
-void WebIntentPickerController::OnWebIntentDataAvailable(
+void WebIntentPickerController::OnIntentsQueryDone(
+    WebIntentsRegistry::QueryID,
     const std::vector<webkit_glue::WebIntentServiceData>& services) {
-  std::vector<GURL> urls;
+  FaviconService* favicon_service = GetFaviconService(wrapper_);
   for (size_t i = 0; i < services.size(); ++i) {
     picker_model_->AddItem(services[i].title, services[i].service_url,
                            ConvertDisposition(services[i].disposition));
-    urls.push_back(services[i].service_url);
+
+    pending_async_count_++;
+    FaviconService::Handle handle = favicon_service->GetFaviconForURL(
+        services[i].service_url,
+        history::FAVICON,
+        &favicon_consumer_,
+        base::Bind(
+            &WebIntentPickerController::OnFaviconDataAvailable,
+            weak_ptr_factory_.GetWeakPtr()));
+    favicon_consumer_.SetClientData(favicon_service, handle, i);
   }
 
-  // Tell the picker to initialize N urls to the default favicon
-  favicon_fetcher_->Fetch(urls);
   AsyncOperationFinished();
 }
 
-void WebIntentPickerController::OnFaviconDataAvailable(size_t index,
-                                                       const gfx::Image& icon) {
-  picker_model_->UpdateFaviconAt(index, icon);
+void WebIntentPickerController::OnFaviconDataAvailable(
+    FaviconService::Handle handle, history::FaviconData favicon_data) {
+  size_t index = favicon_consumer_.GetClientDataForCurrentRequest();
+  if (favicon_data.is_valid()) {
+    SkBitmap icon_bitmap;
+
+    if (gfx::PNGCodec::Decode(favicon_data.image_data->front(),
+                              favicon_data.image_data->size(),
+                              &icon_bitmap)) {
+      gfx::Image icon_image(new SkBitmap(icon_bitmap));
+      picker_model_->UpdateFaviconAt(index, icon_image);
+      return;
+    }
+  }
+
   AsyncOperationFinished();
 }
 
-void WebIntentPickerController::OnFaviconDataUnavailable(size_t index) {
+void WebIntentPickerController::OnCWSIntentServicesAvailable(
+    const CWSIntentsRegistry::IntentExtensionList& extensions) {
+  for (size_t i = 0; i < extensions.size(); ++i) {
+    const CWSIntentsRegistry::IntentExtensionInfo& info = extensions[i];
+    picker_model_->AddSuggestedExtension(
+        info.name,
+        info.id,
+        info.average_rating);
+
+    // TODO(binji): Fetch extension icon.
+  }
+
   AsyncOperationFinished();
 }
 
@@ -329,81 +304,4 @@ void WebIntentPickerController::ClosePicker() {
   if (picker_) {
     picker_->Close();
   }
-}
-
-WebIntentPickerController::WebIntentDataFetcher::WebIntentDataFetcher(
-    WebIntentPickerController* controller,
-    WebIntentsRegistry* web_intents_registry)
-        : controller_(controller),
-          web_intents_registry_(web_intents_registry),
-          query_id_(-1) {
-}
-
-WebIntentPickerController::WebIntentDataFetcher::~WebIntentDataFetcher() {
-}
-
-void WebIntentPickerController::WebIntentDataFetcher::Fetch(
-    const string16& action,
-    const string16& type) {
-  DCHECK(query_id_ == -1) << "Fetch already in process.";
-  controller_->pending_async_count_++;
-  query_id_ = web_intents_registry_->GetIntentServices(action, type, this);
-}
-
-void WebIntentPickerController::WebIntentDataFetcher::OnIntentsQueryDone(
-    WebIntentsRegistry::QueryID,
-    const std::vector<webkit_glue::WebIntentServiceData>& services) {
-  controller_->OnWebIntentDataAvailable(services);
-  query_id_ = -1;
-}
-
-WebIntentPickerController::FaviconFetcher::FaviconFetcher(
-    WebIntentPickerController* controller,
-    FaviconService* favicon_service)
-        : controller_(controller),
-          favicon_service_(favicon_service) {
-}
-
-WebIntentPickerController::FaviconFetcher::~FaviconFetcher() {
-}
-
-void WebIntentPickerController::FaviconFetcher::Fetch(
-    const std::vector<GURL>& urls) {
-  if (!favicon_service_)
-    return;
-
-  for (size_t index = 0; index < urls.size(); ++index) {
-    controller_->pending_async_count_++;
-    FaviconService::Handle handle = favicon_service_->GetFaviconForURL(
-        urls[index],
-        history::FAVICON,
-        &load_consumer_,
-        base::Bind(
-            &WebIntentPickerController::FaviconFetcher::OnFaviconDataAvailable,
-            base::Unretained(this)));
-    load_consumer_.SetClientData(favicon_service_, handle, index);
-  }
-}
-
-void WebIntentPickerController::FaviconFetcher::Cancel() {
-  load_consumer_.CancelAllRequests();
-}
-
-void WebIntentPickerController::FaviconFetcher::OnFaviconDataAvailable(
-    FaviconService::Handle handle,
-    history::FaviconData favicon_data) {
-  size_t index = load_consumer_.GetClientDataForCurrentRequest();
-  if (favicon_data.is_valid()) {
-    SkBitmap icon_bitmap;
-
-    if (gfx::PNGCodec::Decode(favicon_data.image_data->front(),
-                              favicon_data.image_data->size(),
-                              &icon_bitmap)) {
-      gfx::Image icon_image(new SkBitmap(icon_bitmap));
-      controller_->OnFaviconDataAvailable(index, icon_image);
-      return;
-    }
-  }
-
-  controller_->OnFaviconDataUnavailable(index);
 }

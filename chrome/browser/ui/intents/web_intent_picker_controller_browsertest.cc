@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/intents/web_intents_registry.h"
@@ -22,6 +23,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_intents_dispatcher.h"
+#include "content/test/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/web_intent_service_data.h"
 
@@ -32,6 +34,49 @@ const string16 kAction2(ASCIIToUTF16("http://www.example.com/foobar"));
 const string16 kType(ASCIIToUTF16("image/png"));
 const GURL kServiceURL1("http://www.google.com");
 const GURL kServiceURL2("http://www.chromium.org");
+const char kCWSResponseEmpty[] =
+  "{\"kind\":\"chromewebstore#itemList\",\"total_items\":0,\"start_index\":0,"
+  "\"items\":[]}";
+
+const char kCWSResponseResultFormat[] =
+  "{\"kind\":\"chromewebstore#itemList\","
+    "\"total_items\":1,"
+    "\"start_index\":0,"
+    "\"items\":[{"
+      "\"kind\":\"chromewebstore#item\","
+      "\"id\":\"nhkckhebbbncbkefhcpcgepcgfaclehe\","
+      "\"type\":\"APPLICATION\","
+      "\"num_ratings\":0,"
+      "\"average_rating\":0.0,"
+      "\"manifest\": \"{\\n"
+        "\\\"update_url\\\":\\"
+            "\"http://0.tbhome_staging.dserver.download-qa.td.borg.google.com/"
+            "service/update2/crx\\\",\\n  "
+        "\\\"name\\\": \\\"Sidd's Intent App\\\",\\n  "
+        "\\\"description\\\": \\\"Do stuff\\\",\\n  "
+        "\\\"version\\\": \\\"1.2.19\\\",\\n  "
+        "\\\"app\\\": {\\n    "
+          "\\\"urls\\\": [     \\n    ],\\n    "
+          "\\\"launch\\\": {\\n      "
+            "\\\"web_url\\\": \\\"http://siddharthasaha.net/\\\"\\n    "
+          "}\\n  "
+        "},\\n  "
+        "\\\"icons\\\": {\\n    \\\"128\\\": \\\"icon128.png\\\"\\n  },\\n  "
+        "\\\"permissions\\\":" " [\\n    "
+          "\\\"unlimitedStorage\\\",\\n    \\\"notifications\\\"\\n  "
+        "],\\n"
+        "  \\\"intents\\\": {\\n    "
+          "\\\"%s\\\" : {\\n      "
+            "\\\"type\\\" : [\\\"%s\\\"],\\n      "
+            "\\\"path\\\" : \\\"//services/edit\\\",\\n      "
+            "\\\"title\\\" : \\\"Sample Editing Intent\\\",\\n      "
+            "\\\"disposition\\\" : \\\"inline\\\"\\n    "
+          "}\\n  "
+        "}\\n"
+      "}\\n\","
+      "\"family_safe\":true,"
+      "\"icon_url\":" "\"http://qa-lighthouse.sandbox.google.com/image/"
+          "QzPnRCYCBbBGI99ZkGxkp-NNJ488IkkiTyCgynFEeDTJHcw4tHl3csmjTQ\"}]}";
 
 }  // namespace
 
@@ -129,6 +174,21 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
     web_data_service_->AddWebIntentService(service);
   }
 
+  void AddCWSExtensionServiceEmpty(const string16& action) {
+    GURL cws_query_url = CWSIntentsRegistry::BuildQueryURL(action, kType);
+    fake_url_fetcher_factory_.SetFakeResponse(cws_query_url.spec(),
+        kCWSResponseEmpty, true);
+  }
+
+  void AddCWSExtensionServiceWithResult(const string16& action) {
+    GURL cws_query_url = CWSIntentsRegistry::BuildQueryURL(action, kType);
+    std::string response;
+    base::SStringPrintf(&response, kCWSResponseResultFormat,
+        UTF16ToUTF8(action).c_str(), UTF16ToUTF8(kType).c_str());
+    fake_url_fetcher_factory_.SetFakeResponse(cws_query_url.spec(), response,
+        true);
+  }
+
   void OnSendReturnMessage(
     webkit_glue::WebIntentReplyType reply_type) {
     controller_->OnSendReturnMessage(reply_type);
@@ -146,11 +206,13 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
   WebDataService* web_data_service_;
   FaviconService* favicon_service_;
   WebIntentPickerController* controller_;
+  FakeURLFetcherFactory fake_url_fetcher_factory_;
 };
 
 IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest, ChooseService) {
   AddWebIntentService(kAction1, kServiceURL1);
   AddWebIntentService(kAction1, kServiceURL2);
+  AddCWSExtensionServiceEmpty(kAction1);
 
   controller_->ShowDialog(browser(), kAction1, kType);
   picker_.WaitForPendingAsync();
@@ -177,6 +239,7 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest, ChooseService) {
 IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest, OpenCancelOpen) {
   AddWebIntentService(kAction1, kServiceURL1);
   AddWebIntentService(kAction1, kServiceURL2);
+  AddCWSExtensionServiceEmpty(kAction1);
 
   controller_->ShowDialog(browser(), kAction1, kType);
   picker_.WaitForPendingAsync();
@@ -189,6 +252,7 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest, OpenCancelOpen) {
 IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
                        CloseTargetTabReturnToSource) {
   AddWebIntentService(kAction1, kServiceURL1);
+  AddCWSExtensionServiceEmpty(kAction1);
 
   GURL original = browser()->GetSelectedWebContents()->GetURL();
 

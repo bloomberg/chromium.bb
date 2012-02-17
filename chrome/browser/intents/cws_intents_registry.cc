@@ -24,15 +24,6 @@ const char kCWSIntentServiceURL[] =
   "https://www-googleapis-staging.sandbox.google.com"
   "/chromewebstore/v1.1b/items/intent";
 
-// Build a REST query URL to retrieve intent info from CWS.
-GURL BuildQueryURL(const string16& action, const string16& type) {
-  GURL request(kCWSIntentServiceURL);
-  request = chrome_browser_net::AppendQueryParameter(request, "intent",
-                                                     UTF16ToUTF8(action));
-  return chrome_browser_net::AppendQueryParameter(request, "mime_types",
-                                                  UTF16ToUTF8(type));
-}
-
 }  // namespace
 
 // Internal object representing all data associated with a single query.
@@ -43,6 +34,12 @@ struct CWSIntentsRegistry::IntentsQuery {
   // The callback - invoked on completed retrieval.
   ResultsCallback callback_;
 };
+
+CWSIntentsRegistry::IntentExtensionInfo::IntentExtensionInfo() {
+}
+
+CWSIntentsRegistry::IntentExtensionInfo::~IntentExtensionInfo() {
+}
 
 CWSIntentsRegistry::CWSIntentsRegistry(net::URLRequestContextGetter* context)
     : request_context_(context) {
@@ -92,6 +89,9 @@ void CWSIntentsRegistry::OnURLFetchComplete(const content::URLFetcher* source) {
 
     // All fields are mandatory - skip this result if we can't find a field.
     IntentExtensionInfo info;
+    if (!item->GetString("id", &info.id))
+      continue;
+
     if (!item->GetInteger("num_ratings", &info.num_ratings))
       continue;
 
@@ -99,6 +99,18 @@ void CWSIntentsRegistry::OnURLFetchComplete(const content::URLFetcher* source) {
       continue;
 
     if (!item->GetString("manifest", &info.manifest))
+      continue;
+
+    std::string manifest_utf8 = UTF16ToUTF8(info.manifest);
+    JSONStringValueSerializer manifest_serializer(manifest_utf8);
+    scoped_ptr<Value> manifest_value;
+    manifest_value.reset(manifest_serializer.Deserialize(NULL, &error));
+    if (manifest_value == NULL)
+      continue;
+
+    DictionaryValue* manifest_dict;
+    manifest_value->GetAsDictionary(&manifest_dict);
+    if (!manifest_dict->GetString("name", &info.name))
       continue;
 
     string16 url_string;
@@ -132,4 +144,14 @@ void CWSIntentsRegistry::GetIntentServices(
       query->url_fetcher_.get());
   queries_[handle] = query.release();
   queries_[handle]->url_fetcher_->Start();
+}
+
+// static
+GURL CWSIntentsRegistry::BuildQueryURL(const string16& action,
+                                       const string16& type) {
+  GURL request(kCWSIntentServiceURL);
+  request = chrome_browser_net::AppendQueryParameter(request, "intent",
+                                                     UTF16ToUTF8(action));
+  return chrome_browser_net::AppendQueryParameter(request, "mime_types",
+                                                  UTF16ToUTF8(type));
 }

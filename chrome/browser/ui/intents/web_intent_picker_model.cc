@@ -17,7 +17,7 @@ WebIntentPickerModel::WebIntentPickerModel()
 }
 
 WebIntentPickerModel::~WebIntentPickerModel() {
-  DestroyItems();
+  DestroyAll();
 }
 
 void WebIntentPickerModel::AddItem(const string16& title,
@@ -38,7 +38,7 @@ void WebIntentPickerModel::RemoveItemAt(size_t index) {
 }
 
 void WebIntentPickerModel::Clear() {
-  DestroyItems();
+  DestroyAll();
   inline_disposition_index_ = std::string::npos;
   if (observer_)
     observer_->OnModelChanged(this);
@@ -62,6 +62,35 @@ void WebIntentPickerModel::UpdateFaviconAt(size_t index,
     observer_->OnFaviconChanged(this, index);
 }
 
+void WebIntentPickerModel::AddSuggestedExtension(const string16& title,
+                                                 const string16& id,
+                                                 double average_rating) {
+  suggested_extensions_.push_back(
+      new SuggestedExtension(title, id, average_rating));
+  if (observer_)
+    observer_->OnModelChanged(this);
+}
+
+void WebIntentPickerModel::RemoveSuggestedExtensionAt(size_t index) {
+  DCHECK(index < suggested_extensions_.size());
+  std::vector<SuggestedExtension*>::iterator iter =
+      suggested_extensions_.begin() + index;
+  delete *iter;
+  suggested_extensions_.erase(iter);
+  if (observer_)
+    observer_->OnModelChanged(this);
+}
+
+const WebIntentPickerModel::SuggestedExtension&
+    WebIntentPickerModel::GetSuggestedExtensionAt(size_t index) const {
+  DCHECK(index < suggested_extensions_.size());
+  return *suggested_extensions_[index];
+}
+
+size_t WebIntentPickerModel::GetSuggestedExtensionCount() const {
+  return suggested_extensions_.size();
+}
+
 void WebIntentPickerModel::SetInlineDisposition(size_t index) {
   DCHECK(index < items_.size());
   inline_disposition_index_ = index;
@@ -73,8 +102,9 @@ bool WebIntentPickerModel::IsInlineDisposition() const {
   return inline_disposition_index_ != std::string::npos;
 }
 
-void WebIntentPickerModel::DestroyItems() {
+void WebIntentPickerModel::DestroyAll() {
   STLDeleteElements(&items_);
+  STLDeleteElements(&suggested_extensions_);
 }
 
 WebIntentPickerModel::Item::Item(const string16& title,
@@ -88,4 +118,18 @@ WebIntentPickerModel::Item::Item(const string16& title,
 }
 
 WebIntentPickerModel::Item::~Item() {
+}
+
+WebIntentPickerModel::SuggestedExtension::SuggestedExtension(
+    const string16& title,
+    const string16& id,
+    double average_rating)
+    : title(title),
+      id(id),
+      average_rating(average_rating),
+      icon(ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+          IDR_DEFAULT_FAVICON)) {
+}
+
+WebIntentPickerModel::SuggestedExtension::~SuggestedExtension() {
 }
