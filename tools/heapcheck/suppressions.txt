@@ -76,7 +76,6 @@
   Heapcheck:Leak
   fun:IA__FcCharSetCreate
 }
-
 {
    bug_51988_a
    Heapcheck:Leak
@@ -216,13 +215,6 @@
    Heapcheck:Leak
    ...
    fun:tracked_objects::ThreadData::TallyA*
-}
-# http://crbug.com/86301
-{
-   Intentional leak in MessageLoopProxyTest.PostTaskAndReply_DeadReplyLoopDoesNotDelete
-   Heapcheck:Leak
-   ...
-   fun:*MessageLoopProxyTest_PostTaskAndReply_DeadReplyLoopDoesNotDelete_Test*
 }
 
 #-----------------------------------------------------------------------
