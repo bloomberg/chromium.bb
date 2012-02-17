@@ -193,6 +193,15 @@ TEST(GesturesTest, StimeFromTimevalTest) {
   EXPECT_DOUBLE_EQ(2000000000.999999, StimeFromTimeval(&tv));
 }
 
+TEST(GesturesTest, StimeFromTimespecTest) {
+  struct timespec tv;
+  tv.tv_sec = 3;
+  tv.tv_nsec = 88;
+  EXPECT_DOUBLE_EQ(3.000000088, StimeFromTimespec(&tv));
+  tv.tv_sec = 2000000000;
+  tv.tv_nsec = 999999999;
+  EXPECT_DOUBLE_EQ(2000000000.999999999, StimeFromTimespec(&tv));
+}
 
 TEST(GesturesTest, HardwareStateGetFingerStateTest) {
   FingerState fs[] = {

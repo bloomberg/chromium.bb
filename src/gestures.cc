@@ -33,6 +33,11 @@ stime_t StimeFromTimeval(const struct timeval* tv) {
       static_cast<stime_t>(tv->tv_usec) / 1000000.0;
 }
 
+stime_t StimeFromTimespec(const struct timespec* ts) {
+  return static_cast<stime_t>(ts->tv_sec) +
+      static_cast<stime_t>(ts->tv_nsec) / 1000000000.0;
+}
+
 FingerState* HardwareState::GetFingerState(short tracking_id) {
   return const_cast<FingerState*>(
       const_cast<const HardwareState*>(this)->GetFingerState(tracking_id));

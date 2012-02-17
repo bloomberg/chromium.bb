@@ -21,6 +21,7 @@ extern "C" {
 typedef double stime_t;  // seconds
 
 stime_t StimeFromTimeval(const struct timeval*);
+stime_t StimeFromTimespec(const struct timespec*);
 
 struct HardwareProperties {
   float left, top, right, bottom;
