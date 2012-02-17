@@ -9,6 +9,8 @@
 </style>
 <script>
 var g_swapsBeforeAck = 5;
+var width = window.innerWidth;
+var height = window.innerHeight;
 
 function main()
 {
@@ -26,6 +28,10 @@ function draw()
 
 function waitForFinish()
 {
+  if (window.innerWidth != width || window.innerHeight != height)
+    g_swapsBeforeAck += 5;
+  width = window.innerWidth;
+  height = window.innerHeight;
   if (g_swapsBeforeAck == 0) {
     domAutomationController.setAutomationId(1);
     domAutomationController.send("ok");
