@@ -37,9 +37,7 @@ void BaseScrollBarButton::OnMouseCaptureLost() {
 void BaseScrollBarButton::RepeaterNotifyClick() {
   // TODO(sky): See if we can convert to using |Screen| everywhere.
 #if defined(OS_WIN) && !defined(USE_AURA)
-  DWORD pos = GetMessagePos();
-  POINTS points = MAKEPOINTS(pos);
-  gfx::Point cursor_point(points.x, points.y);
+  gfx::Point cursor_point(GetMessagePos());
 #else
   gfx::Point cursor_point = gfx::Screen::GetCursorScreenPoint();
 #endif

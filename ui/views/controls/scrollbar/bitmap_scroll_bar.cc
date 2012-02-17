@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,11 +74,9 @@ class AutorepeatButton : public ImageButton {
  private:
   void NotifyClick() {
 #if defined(OS_WIN)
-    DWORD pos = GetMessagePos();
-    POINTS points = MAKEPOINTS(pos);
-    gfx::Point cursor_point(points.x, points.y);
+    gfx::Point cursor_point(GetMessagePos());
 #elif defined(OS_LINUX)
-    gfx::Point cursor_point = Screen::GetCursorScreenPoint();
+    gfx::Point cursor_point = gfx::Screen::GetCursorScreenPoint();
 #endif
     views::MouseEvent event(ui::ET_MOUSE_RELEASED,
                             cursor_point.x(), cursor_point.y(),
