@@ -18,11 +18,11 @@
 #include "chrome/browser/tab_contents/spelling_bubble_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/spellcheck_result.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/public/common/context_menu_params.h"
 #include "grit/generated_resources.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
@@ -240,7 +240,7 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
 
 void SpellingMenuObserver::OnTextCheckComplete(
     int tag,
-    const std::vector<WebKit::WebTextCheckingResult>& results) {
+    const std::vector<SpellCheckResult>& results) {
   animation_timer_.Stop();
 
   // Scan the text-check results and replace the misspelled regions with
@@ -251,10 +251,10 @@ void SpellingMenuObserver::OnTextCheckComplete(
   if (results.empty()) {
     succeeded_ = false;
   } else {
-    typedef std::vector<WebKit::WebTextCheckingResult> WebTextCheckingResults;
-    for (WebTextCheckingResults::const_iterator it = results.begin();
+    typedef std::vector<SpellCheckResult> SpellCheckResults;
+    for (SpellCheckResults::const_iterator it = results.begin();
          it != results.end(); ++it) {
-      result_.replace(it->position, it->length, it->replacement);
+      result_.replace(it->location, it->length, it->replacement);
     }
     for (std::vector<string16>::const_iterator it = suggestions_.begin();
          it != suggestions_.end(); ++it) {

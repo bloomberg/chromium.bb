@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/stl_util.h"
 #include "chrome/common/spellcheck_messages.h"
+#include "chrome/common/spellcheck_result.h"
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
@@ -89,7 +90,7 @@ MessageParameters ReadRequestTextCheck(IPC::Message* message) {
 
 void FakeMessageArrival(SpellCheckProvider* provider,
                         const MessageParameters& parameters) {
-  std::vector<WebKit::WebTextCheckingResult> fake_result;
+  std::vector<SpellCheckResult> fake_result;
   bool handled = provider->OnMessageReceived(
       SpellCheckMsg_RespondTextCheck(
           0,

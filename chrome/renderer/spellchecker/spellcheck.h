@@ -20,13 +20,10 @@
 #include "unicode/uscript.h"
 
 class Hunspell;
+struct SpellCheckResult;
 
 namespace file_util {
 class MemoryMappedFile;
-}
-
-namespace WebKit {
-struct WebTextCheckingResult;
 }
 
 // TODO(morrita): Needs reorg with SpellCheckProvider.
@@ -64,7 +61,7 @@ class SpellCheck : public content::RenderProcessObserver {
   // or 0.
   bool SpellCheckParagraph(const string16& text,
                            int tag,
-                           std::vector<WebKit::WebTextCheckingResult>* results);
+                           std::vector<SpellCheckResult>* results);
 
   // Find a possible correctly spelled word for a misspelled word. Computes an
   // empty string if input misspelled word is too long, there is ambiguity, or

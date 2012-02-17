@@ -18,9 +18,9 @@
 #include "base/time.h"
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_messages.h"
+#include "chrome/common/spellcheck_result.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 
 using base::TimeTicks;
 using content::BrowserMessageFilter;
@@ -58,7 +58,7 @@ void TextCheckingCallback(
     int document_tag) {
   // TODO(morrita): Use [NSSpellChecker requestCheckingOfString]
   // when the build target goes up to 10.6
-  std::vector<WebKit::WebTextCheckingResult> check_results;
+  std::vector<SpellCheckResult> check_results;
   NSString* text_to_check = base::SysUTF16ToNSString(text);
   size_t starting_at = 0;
   while (starting_at < text.size()) {
@@ -71,8 +71,8 @@ void TextCheckingCallback(
                                    wordCount:NULL];
     if (range.length == 0)
       break;
-    check_results.push_back(WebKit::WebTextCheckingResult(
-        WebKit::WebTextCheckingResult::ErrorSpelling,
+    check_results.push_back(SpellCheckResult(
+        SpellCheckResult::SPELLING,
         range.location,
         range.length));
     starting_at = range.location + range.length;

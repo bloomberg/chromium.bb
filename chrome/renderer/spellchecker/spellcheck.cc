@@ -11,9 +11,9 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_messages.h"
+#include "chrome/common/spellcheck_result.h"
 #include "content/public/renderer/render_thread.h"
 #include "third_party/hunspell/src/hunspell/hunspell.hxx"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 
 using base::TimeTicks;
 using content::RenderThread;
@@ -148,7 +148,7 @@ bool SpellCheck::SpellCheckWord(
 bool SpellCheck::SpellCheckParagraph(
     const string16& text,
     int tag,
-    std::vector<WebKit::WebTextCheckingResult>* results) {
+    std::vector<SpellCheckResult>* results) {
 #if !defined(OS_MACOSX)
   // Mac has its own spell checker, so this method will not be used.
 
@@ -175,8 +175,8 @@ bool SpellCheck::SpellCheckParagraph(
     }
 
     if (results) {
-      results->push_back(WebKit::WebTextCheckingResult(
-          WebKit::WebTextCheckingTypeSpelling,
+      results->push_back(SpellCheckResult(
+          SpellCheckResult::SPELLING,
           misspelling_start + offset,
           misspelling_length));
     }

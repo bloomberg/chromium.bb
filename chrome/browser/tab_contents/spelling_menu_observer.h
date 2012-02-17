@@ -15,11 +15,8 @@
 #include "chrome/browser/tab_contents/render_view_context_menu_observer.h"
 
 class RenderViewContextMenuProxy;
+struct SpellCheckResult;
 class SpellingServiceClient;
-
-namespace WebKit {
-struct WebTextCheckingResult;
-}
 
 // An observer that listens to events from the RenderViewContextMenu class and
 // shows suggestions from the Spelling ("do you mean") service to a context menu
@@ -55,7 +52,7 @@ class SpellingMenuObserver : public RenderViewContextMenuObserver {
   // misspelled word.
   void OnTextCheckComplete(
       int tag,
-      const std::vector<WebKit::WebTextCheckingResult>& results);
+      const std::vector<SpellCheckResult>& results);
 
  private:
   // The callback function for base::RepeatingTimer<SpellingMenuClient>. This

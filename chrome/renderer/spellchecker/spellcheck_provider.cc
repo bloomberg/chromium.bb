@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/spellcheck_messages.h"
+#include "chrome/common/spellcheck_result.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "content/public/renderer/render_view.h"
@@ -21,7 +22,49 @@ using WebKit::WebFrame;
 using WebKit::WebString;
 using WebKit::WebTextCheckingCompletion;
 using WebKit::WebTextCheckingResult;
+using WebKit::WebTextCheckingType;
 using WebKit::WebVector;
+
+COMPILE_ASSERT(int(WebKit::WebTextCheckingTypeSpelling) ==
+               int(SpellCheckResult::SPELLING), mismatching_enums);
+COMPILE_ASSERT(int(WebKit::WebTextCheckingTypeGrammar) ==
+               int(SpellCheckResult::GRAMMAR), mismatching_enums);
+COMPILE_ASSERT(int(WebKit::WebTextCheckingTypeLink) ==
+               int(SpellCheckResult::LINK), mismatching_enums);
+COMPILE_ASSERT(int(WebKit::WebTextCheckingTypeQuote) ==
+               int(SpellCheckResult::QUOTE), mismatching_enums);
+COMPILE_ASSERT(int(WebKit::WebTextCheckingTypeDash) ==
+               int(SpellCheckResult::DASH), mismatching_enums);
+COMPILE_ASSERT(int(WebKit::WebTextCheckingTypeReplacement) ==
+               int(SpellCheckResult::REPLACEMENT), mismatching_enums);
+COMPILE_ASSERT(int(WebKit::WebTextCheckingTypeCorrection) ==
+               int(SpellCheckResult::CORRECTION), mismatching_enums);
+COMPILE_ASSERT(int(WebKit::WebTextCheckingTypeShowCorrectionPanel) ==
+               int(SpellCheckResult::SHOWCORRECTIONPANEL), mismatching_enums);
+
+namespace {
+void ToWebResultList(
+    const std::vector<SpellCheckResult>& results,
+    WebVector<WebTextCheckingResult>* web_results) {
+  WebVector<WebTextCheckingResult> list(results.size());
+  for (size_t i = 0; i < results.size(); ++i) {
+    list[i] = WebTextCheckingResult(
+        static_cast<WebTextCheckingType>(results[i].type),
+        results[i].location,
+        results[i].length,
+        results[i].replacement);
+  }
+
+  list.swap(*web_results);
+}
+
+WebVector<WebTextCheckingResult> ToWebResultList(
+    const std::vector<SpellCheckResult>& results) {
+  WebVector<WebTextCheckingResult> web_results;
+  ToWebResultList(results, &web_results);
+  return web_results;
+}
+} // namespace
 
 SpellCheckProvider::SpellCheckProvider(
     content::RenderView* render_view,
@@ -157,12 +200,12 @@ void SpellCheckProvider::checkTextOfParagraph(
   if (!chrome_content_renderer_client_)
     return;
 
-  std::vector<WebKit::WebTextCheckingResult> tmp_results;
+  std::vector<SpellCheckResult> tmp_results;
   chrome_content_renderer_client_->spellcheck()->SpellCheckParagraph(
       string16(text),
       document_tag_,
       &tmp_results);
-  *results = tmp_results;
+  ToWebResultList(tmp_results, results);
 #endif
 }
 
@@ -214,13 +257,13 @@ void SpellCheckProvider::OnAdvanceToNextMisspelling() {
 void SpellCheckProvider::OnRespondSpellingService(
     int identifier,
     int tag,
-    const std::vector<WebTextCheckingResult>& results) {
+    const std::vector<SpellCheckResult>& results) {
   WebTextCheckingCompletion* completion =
       text_check_completions_.Lookup(identifier);
   if (!completion)
     return;
   text_check_completions_.Remove(identifier);
-  completion->didFinishCheckingText(results);
+  completion->didFinishCheckingText(ToWebResultList(results));
 }
 #endif
 
@@ -228,13 +271,13 @@ void SpellCheckProvider::OnRespondSpellingService(
 void SpellCheckProvider::OnRespondTextCheck(
     int identifier,
     int tag,
-    const std::vector<WebTextCheckingResult>& results) {
+    const std::vector<SpellCheckResult>& results) {
   WebTextCheckingCompletion* completion =
       text_check_completions_.Lookup(identifier);
   if (!completion)
     return;
   text_check_completions_.Remove(identifier);
-  completion->didFinishCheckingText(results);
+  completion->didFinishCheckingText(ToWebResultList(results));
 }
 #endif
 

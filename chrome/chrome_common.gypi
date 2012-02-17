@@ -227,6 +227,7 @@
         'common/spellcheck_common.cc',
         'common/spellcheck_common.h',
         'common/spellcheck_messages.h',
+        'common/spellcheck_result.h',
         'common/string_ordinal.cc',
         'common/string_ordinal.h',
         'common/switch_utils.cc',

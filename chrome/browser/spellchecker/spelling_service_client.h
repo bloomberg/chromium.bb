@@ -17,10 +17,7 @@
 
 class Profile;
 class TextCheckClientDelegate;
-
-namespace WebKit {
-struct WebTextCheckingResult;
-}
+struct SpellCheckResult;
 
 // A class that encapsulates a JSON-RPC call to the Spelling service to check
 // text there. This class creates a JSON-RPC request, sends the request to the
@@ -37,7 +34,7 @@ struct WebTextCheckingResult;
 //
 //     void OnTextCheckComplete(
 //         int tag,
-//         const std::vector<WebKit::WebTextCheckingResult>& results) {
+//         const std::vector<SpellCheckResult>& results) {
 //       ...
 //     }
 //
@@ -55,7 +52,7 @@ class SpellingServiceClient : public content::URLFetcherDelegate {
  public:
   typedef base::Callback<void(
       int /* tag */,
-      const std::vector<WebKit::WebTextCheckingResult>& /* results */)>
+      const std::vector<SpellCheckResult>& /* results */)>
           TextCheckCompleteCallback;
 
   SpellingServiceClient();
@@ -76,7 +73,7 @@ class SpellingServiceClient : public content::URLFetcherDelegate {
  private:
   // Parses a JSON-RPC response from the Spelling service.
   bool ParseResponse(const std::string& data,
-                     std::vector<WebKit::WebTextCheckingResult>* results);
+                     std::vector<SpellCheckResult>* results);
 
   // The URLFetcher object used for sending a JSON-RPC request.
   scoped_ptr<content::URLFetcher> fetcher_;

@@ -10,11 +10,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_message_filter.h"
 
+struct SpellCheckResult;
 class SpellingServiceClient;
-
-namespace WebKit {
-struct WebTextCheckingResult;
-}
 
 // A message filter implementation that receives spell checker requests from
 // SpellCheckProvider.
@@ -43,7 +40,7 @@ class SpellCheckMessageFilter : public content::BrowserMessageFilter {
   // text. We send the given results to a renderer.
   void OnTextCheckComplete(
       int tag,
-      const std::vector<WebKit::WebTextCheckingResult>& results);
+      const std::vector<SpellCheckResult>& results);
 
   // Checks the user profile and sends a JSON-RPC request to the Spelling
   // service if a user enables the "Ask Google for suggestions" option. When we

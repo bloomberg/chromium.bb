@@ -5,20 +5,21 @@
 // IPC messages for spellcheck.
 // Multiply-included message file, hence no include guard.
 
+#include "chrome/common/spellcheck_result.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
+
 
 #define IPC_MESSAGE_START SpellCheckMsgStart
 
-IPC_ENUM_TRAITS(WebKit::WebTextCheckingResult::Error)
+IPC_ENUM_TRAITS(SpellCheckResult::Type)
 
-IPC_STRUCT_TRAITS_BEGIN(WebKit::WebTextCheckingResult)
-  IPC_STRUCT_TRAITS_MEMBER(error)
-  IPC_STRUCT_TRAITS_MEMBER(position)
+IPC_STRUCT_TRAITS_BEGIN(SpellCheckResult)
+  IPC_STRUCT_TRAITS_MEMBER(type)
+  IPC_STRUCT_TRAITS_MEMBER(location)
   IPC_STRUCT_TRAITS_MEMBER(length)
+  IPC_STRUCT_TRAITS_MEMBER(replacement)
 IPC_STRUCT_TRAITS_END()
-
 
 // Messages sent from the browser to the renderer.
 
@@ -33,7 +34,7 @@ IPC_MESSAGE_ROUTED1(SpellCheckMsg_ToggleSpellPanel,
 IPC_MESSAGE_ROUTED3(SpellCheckMsg_RespondTextCheck,
                     int        /* request identifier given by WebKit */,
                     int        /* document tag */,
-                    std::vector<WebKit::WebTextCheckingResult>)
+                    std::vector<SpellCheckResult>)
 #endif
 
 // This message tells the renderer to advance to the next misspelling. It is
@@ -64,7 +65,7 @@ IPC_MESSAGE_CONTROL1(SpellCheckMsg_EnableAutoSpellCorrect,
 IPC_MESSAGE_ROUTED3(SpellCheckMsg_RespondSpellingService,
                     int        /* request identifier given by WebKit */,
                     int        /* document tag */,
-                    std::vector<WebKit::WebTextCheckingResult>)
+                    std::vector<SpellCheckResult>)
 #endif
 
 // Messages sent from the renderer to the browser.

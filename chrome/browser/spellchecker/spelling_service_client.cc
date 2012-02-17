@@ -13,9 +13,9 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/spellcheck_result.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_fetcher.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 #include "unicode/uloc.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -103,7 +103,7 @@ void SpellingServiceClient::OnURLFetchComplete(
     const content::URLFetcher* source) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   scoped_ptr<content::URLFetcher> clean_up_fetcher(fetcher_.release());
-  std::vector<WebKit::WebTextCheckingResult> results;
+  std::vector<SpellCheckResult> results;
   if (source->GetResponseCode() / 100 == 2) {
     std::string data;
     source->GetResponseAsString(&data);
@@ -114,7 +114,7 @@ void SpellingServiceClient::OnURLFetchComplete(
 
 bool SpellingServiceClient::ParseResponse(
     const std::string& data,
-    std::vector<WebKit::WebTextCheckingResult>* results) {
+    std::vector<SpellCheckResult>* results) {
   // When this JSON-RPC call finishes successfully, the Spelling service returns
   // an JSON object listed below.
   // * result - an envelope object representing the result from the APIARY
@@ -162,7 +162,7 @@ bool SpellingServiceClient::ParseResponse(
   for (size_t i = 0; i < misspellings->GetSize(); ++i) {
     // Retrieve the i-th misspelling region and put it to the given vector. When
     // the Spelling service sends two or more suggestions, we read only the
-    // first one because WebTextCheckingResult can store only one suggestion.
+    // first one because SpellCheckResult can store only one suggestion.
     DictionaryValue* misspelling = NULL;
     if (!misspellings->GetDictionary(i, &misspelling))
       return false;
@@ -182,8 +182,8 @@ bool SpellingServiceClient::ParseResponse(
         !suggestion->GetString("suggestion", &replacement)) {
       return false;
     }
-    WebKit::WebTextCheckingResult result(
-        WebKit::WebTextCheckingTypeSpelling, start, length, replacement);
+    SpellCheckResult result(
+        SpellCheckResult::SPELLING, start, length, replacement);
     results->push_back(result);
   }
   return true;
