@@ -5812,6 +5812,12 @@
    ...
    fun:_ZN7content28CreateQuotaManagerAndClientsEPNS_14BrowserContextE
 }
+{
+   bug_114787_c
+   Memcheck:Leak
+   ...
+   fun:_ZN21ChromeAppCacheService20InitializeOnIOThreadERK8FilePathPN7content15ResourceContextE13scoped_refptrIN5quota20SpecialStoragePolicyEE
+}
 
 
 #-----------------------------------------------------------------------
