@@ -378,10 +378,12 @@ std::string XKeyboardImpl::CreateFullXkbLayoutName(
                          use_left_alt_key_as_str.c_str(),
                          (KeepRightAlt(layout_name) ? "_keepralt" : ""));
 
+#if !defined(USE_AURA)
   if ((full_xkb_layout_name.substr(0, 3) != "us+") &&
       (full_xkb_layout_name.substr(0, 3) != "us(")) {
     full_xkb_layout_name += ",us";
   }
+#endif
 
   return full_xkb_layout_name;
 }
