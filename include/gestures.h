@@ -302,9 +302,7 @@ typedef struct GestureInterpreter GestureInterpreter;
 
 #define GESTURES_VERSION 1
 GestureInterpreter* NewGestureInterpreterImpl(int);
-inline GestureInterpreter* NewGestureInterpreter() {
-  return NewGestureInterpreterImpl(GESTURES_VERSION);  // pass current version
-}
+#define NewGestureInterpreter() NewGestureInterpreterImpl(GESTURES_VERSION)
 
 void DeleteGestureInterpreter(GestureInterpreter*);
 
