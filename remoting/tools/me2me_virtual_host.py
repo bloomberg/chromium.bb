@@ -292,6 +292,7 @@ class Desktop:
         "REMOTING_ME2ME_SESSION": "1" }
     for key in [
         "HOME",
+        "LANG",
         "LOGNAME",
         "PATH",
         "SHELL",
