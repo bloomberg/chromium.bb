@@ -6,6 +6,7 @@
 
 #include "ash/brightness_control_delegate.h"
 #include "ash/caps_lock_delegate.h"
+#include "ash/ime_control_delegate.h"
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/screenshot_delegate.h"
@@ -32,6 +33,9 @@ enum AcceleratorAction {
   CYCLE_BACKWARD,
   CYCLE_FORWARD,
   EXIT,
+  NEXT_IME,
+  PREVIOUS_IME,
+  SWITCH_IME,  // Switch to another IME depending on the accelerator.
   TAKE_SCREENSHOT,
   TAKE_PARTIAL_SCREENSHOT,
   TOGGLE_CAPS_LOCK,
@@ -51,45 +55,85 @@ enum AcceleratorAction {
 };
 
 // Accelerators handled by AcceleratorController.
-struct AcceleratorData {
+const struct AcceleratorData {
+  ui::EventType type;
   ui::KeyboardCode keycode;
   bool shift;
   bool ctrl;
   bool alt;
   AcceleratorAction action;
 } kAcceleratorData[] = {
-  { ui::VKEY_TAB, false, false, true, CYCLE_FORWARD },
-  { ui::VKEY_TAB, true, false, true, CYCLE_BACKWARD },
-  { ui::VKEY_F5, false, false, false, CYCLE_FORWARD },
+  // Accelerators that should be processed before a key is sent to an IME.
+  // TODO(yusukes): Handle the NEXT_IME shortcut (Alt+Shift+Release) here.
+  { ui::ET_KEY_PRESSED, ui::VKEY_SPACE, false, true, false, PREVIOUS_IME },
+  // Shortcuts for Japanese IME.
+  { ui::ET_KEY_PRESSED, ui::VKEY_CONVERT, false, false, false, SWITCH_IME },
+  { ui::ET_KEY_PRESSED, ui::VKEY_NONCONVERT, false, false, false, SWITCH_IME },
+  { ui::ET_KEY_PRESSED, ui::VKEY_DBE_SBCSCHAR, false, false, false,
+    SWITCH_IME },
+  { ui::ET_KEY_PRESSED, ui::VKEY_DBE_DBCSCHAR, false, false, false,
+    SWITCH_IME },
+  // Shortcuts for Koren IME.
+  { ui::ET_KEY_PRESSED, ui::VKEY_HANGUL, false, false, false, SWITCH_IME },
+  { ui::ET_KEY_PRESSED, ui::VKEY_SPACE, true, false, false, SWITCH_IME },
+
+  // Accelerators that should be processed after a key is sent to an IME.
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_TAB, false, false, true,
+    CYCLE_FORWARD },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_TAB, true, false, true,
+    CYCLE_BACKWARD },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F5, false, false, false,
+    CYCLE_FORWARD },
 #if defined(OS_CHROMEOS)
-  { ui::VKEY_BRIGHTNESS_DOWN, false, false, false, BRIGHTNESS_DOWN },
-  { ui::VKEY_BRIGHTNESS_UP, false, false, false, BRIGHTNESS_UP },
-  { ui::VKEY_L, true, true, false, LOCK_SCREEN },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_BRIGHTNESS_DOWN, false, false, false,
+    BRIGHTNESS_DOWN },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_BRIGHTNESS_UP, false, false, false,
+    BRIGHTNESS_UP },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_L, true, true, false, LOCK_SCREEN },
 #endif
-  { ui::VKEY_Q, true, true, false, EXIT },
-  { ui::VKEY_F5, true, false, false, CYCLE_BACKWARD },
-  { ui::VKEY_F5, false, true, false, TAKE_SCREENSHOT },
-  { ui::VKEY_F5, true, true, false, TAKE_PARTIAL_SCREENSHOT },
-  { ui::VKEY_PRINT, false, false, false, TAKE_SCREENSHOT },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_Q, true, true, false, EXIT },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F5, true, false, false,
+    CYCLE_BACKWARD },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F5, false, true, false,
+    TAKE_SCREENSHOT },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F5, true, true, false,
+    TAKE_PARTIAL_SCREENSHOT },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_PRINT, false, false, false,
+    TAKE_SCREENSHOT },
   // On Chrome OS, Search key is mapped to LWIN.
-  { ui::VKEY_LWIN, true, false, false, TOGGLE_CAPS_LOCK },
-  { ui::VKEY_F6, false, false, false, BRIGHTNESS_DOWN },
-  { ui::VKEY_F7, false, false, false, BRIGHTNESS_UP },
-  { ui::VKEY_F8, false, false, false, VOLUME_MUTE },
-  { ui::VKEY_VOLUME_MUTE, false, false, false, VOLUME_MUTE },
-  { ui::VKEY_F9, false, false, false, VOLUME_DOWN },
-  { ui::VKEY_VOLUME_DOWN, false, false, false, VOLUME_DOWN },
-  { ui::VKEY_F10, false, false, false, VOLUME_UP },
-  { ui::VKEY_VOLUME_UP, false, false, false, VOLUME_UP },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_LWIN, true, false, false,
+    TOGGLE_CAPS_LOCK },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F6, false, false, false,
+    BRIGHTNESS_DOWN },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F7, false, false, false,
+    BRIGHTNESS_UP },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F8, false, false, false,
+    VOLUME_MUTE },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_VOLUME_MUTE, false, false, false,
+    VOLUME_MUTE },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F9, false, false, false,
+    VOLUME_DOWN },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_VOLUME_DOWN, false, false, false,
+    VOLUME_DOWN },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F10, false, false, false, VOLUME_UP },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_VOLUME_UP, false, false, false,
+    VOLUME_UP },
 #if !defined(NDEBUG)
-  { ui::VKEY_HOME, false, true, false, ROTATE_SCREEN },
-  { ui::VKEY_A, false, true, true, TOGGLE_COMPACT_WINDOW_MODE },
-  { ui::VKEY_F11, false, true, false, TOGGLE_ROOT_WINDOW_FULL_SCREEN },
-  { ui::VKEY_L, false, false, true, PRINT_LAYER_HIERARCHY },
-  { ui::VKEY_L, true, false, true, PRINT_WINDOW_HIERARCHY },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_HOME, false, true, false,
+    ROTATE_SCREEN },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_A, false, true, true,
+    TOGGLE_COMPACT_WINDOW_MODE },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F11, false, true, false,
+    TOGGLE_ROOT_WINDOW_FULL_SCREEN },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_L, false, false, true,
+    PRINT_LAYER_HIERARCHY },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_L, true, false, true,
+    PRINT_WINDOW_HIERARCHY },
   // For testing on systems where Alt-Tab is already mapped.
-  { ui::VKEY_W, false, false, true, CYCLE_FORWARD },
-  { ui::VKEY_W, true, false, true, CYCLE_BACKWARD },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_W, false, false, true,
+    CYCLE_FORWARD },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_W, true, false, true,
+    CYCLE_BACKWARD },
 #endif
 };
 
@@ -210,26 +254,24 @@ void AcceleratorController::Init() {
                                 kAcceleratorData[i].shift,
                                 kAcceleratorData[i].ctrl,
                                 kAcceleratorData[i].alt);
+    accelerator.set_type(kAcceleratorData[i].type);
     Register(accelerator, this);
-    accelerators_.insert(std::make_pair(accelerator,
-                                        kAcceleratorData[i].action));
+    CHECK(accelerators_.insert(
+        std::make_pair(accelerator, kAcceleratorData[i].action)).second);
   }
 }
 
-void AcceleratorController::Register(
-    const ui::Accelerator& accelerator,
-    ui::AcceleratorTarget* target) {
+void AcceleratorController::Register(const ui::Accelerator& accelerator,
+                                     ui::AcceleratorTarget* target) {
   accelerator_manager_->Register(accelerator, target);
 }
 
-void AcceleratorController::Unregister(
-    const ui::Accelerator& accelerator,
-    ui::AcceleratorTarget* target) {
+void AcceleratorController::Unregister(const ui::Accelerator& accelerator,
+                                       ui::AcceleratorTarget* target) {
   accelerator_manager_->Unregister(accelerator, target);
 }
 
-void AcceleratorController::UnregisterAll(
-    ui::AcceleratorTarget* target) {
+void AcceleratorController::UnregisterAll(ui::AcceleratorTarget* target) {
   accelerator_manager_->UnregisterAll(target);
 }
 
@@ -245,6 +287,11 @@ void AcceleratorController::SetBrightnessControlDelegate(
 void AcceleratorController::SetCapsLockDelegate(
     scoped_ptr<CapsLockDelegate> caps_lock_delegate) {
   caps_lock_delegate_.swap(caps_lock_delegate);
+}
+
+void AcceleratorController::SetImeControlDelegate(
+    scoped_ptr<ImeControlDelegate> ime_control_delegate) {
+  ime_control_delegate_.swap(ime_control_delegate);
 }
 
 void AcceleratorController::SetScreenshotDelegate(
@@ -315,6 +362,18 @@ bool AcceleratorController::AcceleratorPressed(
     case VOLUME_UP:
       if (volume_control_delegate_.get())
         return volume_control_delegate_->HandleVolumeUp(accelerator);
+      break;
+    case NEXT_IME:
+      if (ime_control_delegate_.get())
+        return ime_control_delegate_->HandleNextIme();
+      break;
+    case PREVIOUS_IME:
+      if (ime_control_delegate_.get())
+        return ime_control_delegate_->HandlePreviousIme();
+      break;
+    case SWITCH_IME:
+      if (ime_control_delegate_.get())
+        return ime_control_delegate_->HandleSwitchIme(accelerator);
       break;
 #if !defined(NDEBUG)
     case ROTATE_SCREEN:

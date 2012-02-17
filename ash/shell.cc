@@ -293,8 +293,14 @@ void Shell::Init() {
   partial_screenshot_filter_.reset(new internal::PartialScreenshotEventFilter);
   AddRootWindowEventFilter(partial_screenshot_filter_.get());
 
-  // InputMethodEventFilter must be added next to PartialScreenshot
-  // since it has the higher priority.
+  // Then AcceleratorFilter and InputMethodEventFilter must be added (in this
+  // order) since they have the second highest priority.
+  DCHECK_EQ(1U, GetRootWindowEventFilterCount());
+#if !defined(OS_MACOSX)
+  accelerator_filter_.reset(new internal::AcceleratorFilter);
+  AddRootWindowEventFilter(accelerator_filter_.get());
+  DCHECK_EQ(2U, GetRootWindowEventFilterCount());
+#endif
   input_method_filter_.reset(new internal::InputMethodEventFilter);
   AddRootWindowEventFilter(input_method_filter_.get());
 
@@ -356,11 +362,6 @@ void Shell::Init() {
 
   visibility_controller_.reset(new internal::VisibilityController);
   aura::client::SetVisibilityClient(visibility_controller_.get());
-
-#if !defined(OS_MACOSX)
-  accelerator_filter_.reset(new internal::AcceleratorFilter);
-  AddRootWindowEventFilter(accelerator_filter_.get());
-#endif
 
   tooltip_controller_.reset(new internal::TooltipController);
   AddRootWindowEventFilter(tooltip_controller_.get());

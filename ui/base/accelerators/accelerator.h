@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,20 +23,24 @@ namespace ui {
 // meant to be subclassed for concrete toolkit implementations.
 class UI_EXPORT Accelerator {
  public:
-  Accelerator() : key_code_(ui::VKEY_UNKNOWN), modifiers_(0) {}
+  Accelerator()
+      : key_code_(ui::VKEY_UNKNOWN), type_(ui::ET_KEY_PRESSED), modifiers_(0) {}
 
   Accelerator(ui::KeyboardCode keycode, int modifiers)
       : key_code_(keycode),
+        type_(ui::ET_KEY_PRESSED),
         modifiers_(modifiers) {}
 
   Accelerator(const Accelerator& accelerator) {
     key_code_ = accelerator.key_code_;
+    type_ = accelerator.type_;
     modifiers_ = accelerator.modifiers_;
   }
 
   Accelerator(ui::KeyboardCode keycode,
               bool shift_pressed, bool ctrl_pressed, bool alt_pressed)
       : key_code_(keycode),
+        type_(ui::ET_KEY_PRESSED),
         modifiers_(0) {
     if (shift_pressed)
       modifiers_ |= ui::EF_SHIFT_DOWN;
@@ -51,6 +55,7 @@ class UI_EXPORT Accelerator {
   Accelerator& operator=(const Accelerator& accelerator) {
     if (this != &accelerator) {
       key_code_ = accelerator.key_code_;
+      type_ = accelerator.type_;
       modifiers_ = accelerator.modifiers_;
     }
     return *this;
@@ -61,11 +66,14 @@ class UI_EXPORT Accelerator {
   bool operator <(const Accelerator& rhs) const {
     if (key_code_ != rhs.key_code_)
       return key_code_ < rhs.key_code_;
+    if (type_ != rhs.type_)
+      return type_ < rhs.type_;
     return modifiers_ < rhs.modifiers_;
   }
 
   bool operator ==(const Accelerator& rhs) const {
-    return (key_code_ == rhs.key_code_) && (modifiers_ == rhs.modifiers_);
+    return (key_code_ == rhs.key_code_) &&
+        (type_ == rhs.type_) && (modifiers_ == rhs.modifiers_);
   }
 
   bool operator !=(const Accelerator& rhs) const {
@@ -73,6 +81,12 @@ class UI_EXPORT Accelerator {
   }
 
   ui::KeyboardCode key_code() const { return key_code_; }
+
+  ui::EventType type() const { return type_; }
+
+  // Sets the event type if the accelerator should be processed on an event
+  // other than ui::ET_KEY_PRESSED.
+  void set_type(ui::EventType type) { type_ = type; }
 
   int modifiers() const { return modifiers_; }
 
@@ -94,6 +108,9 @@ class UI_EXPORT Accelerator {
  protected:
   // The keycode (VK_...).
   ui::KeyboardCode key_code_;
+
+  // The event type (usually ui::ET_KEY_PRESSED).
+  ui::EventType type_;
 
   // The state of the Shift/Ctrl/Alt keys (platform-dependent).
   int modifiers_;

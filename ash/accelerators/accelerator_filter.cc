@@ -34,12 +34,16 @@ AcceleratorFilter::~AcceleratorFilter() {
 
 bool AcceleratorFilter::PreHandleKeyEvent(aura::Window* target,
                                           aura::KeyEvent* event) {
-  if (event->type() == ui::ET_KEY_PRESSED && !event->is_char()) {
-    return Shell::GetInstance()->accelerator_controller()->Process(
-        ui::Accelerator(event->key_code(),
-                        event->flags() & kModifierFlagMask));
-  }
-  return false;
+  const ui::EventType type = event->type();
+  if (type != ui::ET_KEY_PRESSED && type != ui::ET_TRANSLATED_KEY_PRESS)
+    return false;
+  if (event->is_char())
+    return false;
+
+  ui::Accelerator accelerator(event->key_code(),
+                              event->flags() & kModifierFlagMask);
+  accelerator.set_type(type);
+  return Shell::GetInstance()->accelerator_controller()->Process(accelerator);
 }
 
 bool AcceleratorFilter::PreHandleMouseEvent(aura::Window* target,
