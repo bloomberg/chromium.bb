@@ -75,6 +75,8 @@ class ExtensionPopup : public views::BubbleDelegateView,
   // Show the bubble, focus on its content, and register listeners.
   void ShowBubble();
 
+  void CloseBubble();
+
   // The contained host for the view.
   scoped_ptr<ExtensionHost> extension_host_;
 
@@ -83,6 +85,8 @@ class ExtensionPopup : public views::BubbleDelegateView,
   bool inspect_with_devtools_;
 
   content::NotificationRegistrar registrar_;
+
+  base::WeakPtrFactory<ExtensionPopup> close_bubble_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionPopup);
 };
