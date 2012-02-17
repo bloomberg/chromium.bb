@@ -46,8 +46,9 @@ class WebDevStyleGuideTest(SuperMoxTestBase):
 
   def VerifyContentsProducesOutput(self, contents, output):
     self.fake_file.NewContents().AndReturn(contents.splitlines())
+    auth_msg = '\n\nSend feedback or hate mail to dbeam@chromium.org'
     self.output_api.PresubmitNotifyResult(
-        self.fake_file_name + ':\n' + output.strip()).AndReturn(None)
+        self.fake_file_name + ':\n' + output.strip() + auth_msg).AndReturn(None)
     self.mox.ReplayAll()
     css_checker.CSSChecker(self.input_api, self.output_api).RunChecks()
 
