@@ -5017,7 +5017,7 @@ class NetworkLibraryImplStub : public NetworkLibraryImplBase {
   virtual void DisconnectFromNetwork(const Network* network) OVERRIDE;
 
   virtual void CallEnableNetworkDeviceType(
-      ConnectionType device, bool enable) OVERRIDE {}
+      ConnectionType device, bool enable) OVERRIDE;
 
   virtual void CallRemoveNetwork(const Network* network) OVERRIDE {}
 
@@ -5044,6 +5044,8 @@ class NetworkLibraryImplStub : public NetworkLibraryImplBase {
   bool pin_entered_;
   int64 connect_delay_ms_;
   int network_priority_order_;
+  WifiNetworkVector disabled_wifi_networks_;
+  CellularNetworkVector disabled_cellular_networks_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkLibraryImplStub);
 };
@@ -5061,6 +5063,8 @@ NetworkLibraryImplStub::NetworkLibraryImplStub()
 }
 
 NetworkLibraryImplStub::~NetworkLibraryImplStub() {
+  disabled_wifi_networks_.clear();
+  disabled_cellular_networks_.clear();
 }
 
 void NetworkLibraryImplStub::Init() {
@@ -5435,6 +5439,34 @@ void NetworkLibraryImplStub::ConnectToNetwork(Network* network) {
 
 //////////////////////////////////////////////////////////////////////////////
 // NetworkLibraryImplBase implementation.
+
+void NetworkLibraryImplStub::CallEnableNetworkDeviceType(
+    ConnectionType device, bool enable) {
+  if (enable) {
+    if (device == TYPE_WIFI && !wifi_enabled()) {
+      wifi_networks_.swap(disabled_wifi_networks_);
+      disabled_wifi_networks_.clear();
+    } else if (device == TYPE_CELLULAR && !cellular_enabled()) {
+      cellular_networks_.swap(disabled_cellular_networks_);
+      disabled_cellular_networks_.clear();
+    }
+    enabled_devices_ |= (1 << device);
+  } else {
+    if (device == TYPE_WIFI && wifi_enabled()) {
+      wifi_networks_.swap(disabled_wifi_networks_);
+      wifi_networks_.clear();
+      if (active_wifi_)
+        DisconnectFromNetwork(active_wifi_);
+    } else if (device == TYPE_CELLULAR && cellular_enabled()) {
+      cellular_networks_.swap(disabled_cellular_networks_);
+      cellular_networks_.clear();
+      if (active_cellular_)
+        DisconnectFromNetwork(active_cellular_);
+    }
+    enabled_devices_ &= ~(1 << device);
+  }
+  SignalNetworkManagerObservers();
+}
 
 void NetworkLibraryImplStub::CallConnectToNetwork(Network* network) {
   // Immediately set the network to active to mimic flimflam's behavior.
