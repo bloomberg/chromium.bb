@@ -408,8 +408,6 @@
         '../third_party/skia/src/gpu/SkGrTexturePixelRef.cpp',
         '../third_party/skia/src/gpu/gl/GrGLCaps.cpp',
         '../third_party/skia/src/gpu/gl/GrGLCaps.h',
-        '../third_party/skia/src/gpu/gl/GrGLColorConversionTest.cpp',
-        '../third_party/skia/src/gpu/gl/GrGLColorConversionTest.h',
         '../third_party/skia/src/gpu/gl/GrGLContextInfo.cpp',
         '../third_party/skia/src/gpu/gl/GrGLContextInfo.h',
         '../third_party/skia/src/gpu/gl/GrGLCreateNativeInterface_none.cpp',
