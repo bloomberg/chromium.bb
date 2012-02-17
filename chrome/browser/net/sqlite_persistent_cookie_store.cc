@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -566,7 +566,7 @@ void SQLitePersistentCookieStore::Backend::ChainLoadCookies(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&SQLitePersistentCookieStore::Backend::CompleteLoadOnIOThread,
                  this, loaded_callback, load_success));
-    if (!restore_old_session_cookies_)
+    if (load_success && !restore_old_session_cookies_)
       DeleteSessionCookies();
   }
 }
@@ -589,8 +589,9 @@ bool SQLitePersistentCookieStore::Backend::LoadCookiesForDomains(
       "secure, httponly, last_access_utc, has_expires, persistent "
       "FROM cookies WHERE host_key = ? AND persistent = 1"));
   }
-  if (!smt) {
+  if (!smt.is_valid()) {
     NOTREACHED() << "select statement prep failed";
+    smt.Clear();  // Disconnect smt_ref from db_.
     db_.reset();
     return false;
   }
