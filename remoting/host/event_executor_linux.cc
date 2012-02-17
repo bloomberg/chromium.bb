@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,7 +92,7 @@ int VerticalScrollWheelToX11ButtonNumber(int dy) {
 // host's keyboard layout (see http://crbug.com/74550 ).
 const int kUsVkeyToKeysym[256] = {
   // 0x00 - 0x07
-  -1, -1, -1, -1,
+  -1, -1, -1, XK_Cancel,
   // 0x04 - 0x07
   -1, -1, -1, -1,
   // 0x08 - 0x0B
@@ -103,9 +103,9 @@ const int kUsVkeyToKeysym[256] = {
   // 0x10 - 0x13
   XK_Shift_L, XK_Control_L, XK_Alt_L, XK_Pause,
   // 0x14 - 0x17
-  XK_Caps_Lock, XK_Kana_Shift, -1, /* VKEY_JUNJA */ -1,
+  XK_Caps_Lock, XK_Kana_Shift, -1, XK_Hangul_Jeonja,
   // 0x18 - 0x1B
-  /* VKEY_FINAL */ -1, XK_Kanji, -1, XK_Escape,
+  XK_Hangul_End, XK_Kanji, -1, XK_Escape,
   // 0x1C - 0x1F
   XK_Henkan, XK_Muhenkan, /* VKEY_ACCEPT */ -1, XK_Mode_switch,
 
@@ -182,7 +182,7 @@ const int kUsVkeyToKeysym[256] = {
   -1, -1, -1, -1,
 
   // 0xA0 - 0xA3
-  XK_Num_Lock, XK_Scroll_Lock, XK_Control_L, XK_Control_R,
+  XK_Shift_L, XK_Shift_R, XK_Control_L, XK_Control_R,
   // 0xA4 - 0xA7
   XK_Meta_L, XK_Meta_R, XF86XK_Back, XF86XK_Forward,
   // 0xA8 - 0xAB
