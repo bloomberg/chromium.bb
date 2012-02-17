@@ -67,6 +67,11 @@ views::Widget* WebUILoginDisplayHost::GetWidget() const {
   return login_window_;
 }
 
+void WebUILoginDisplayHost::OpenProxySettings() {
+  if (login_view_)
+    login_view_->OpenProxySettings();
+}
+
 void WebUILoginDisplayHost::SetOobeProgressBarVisible(bool visible) {
   GetOobeUI()->ShowOobeUI(visible);
 }

@@ -32,6 +32,7 @@ class WebUILoginDisplayHost : public BaseLoginDisplayHost {
       LoginDisplay::Delegate* delegate) OVERRIDE;
   virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
   virtual views::Widget* GetWidget() const OVERRIDE;
+  virtual void OpenProxySettings() OVERRIDE;
   virtual void SetOobeProgressBarVisible(bool visible) OVERRIDE;
   virtual void SetShutdownButtonEnabled(bool enable) OVERRIDE;
   virtual void SetStatusAreaEnabled(bool enable) OVERRIDE;

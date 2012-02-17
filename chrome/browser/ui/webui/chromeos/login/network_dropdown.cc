@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
-#include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
+#include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/models/menu_model.h"
@@ -126,11 +126,7 @@ gfx::NativeWindow NetworkDropdown::GetNativeWindow() const {
 }
 
 void NetworkDropdown::OpenButtonOptions() {
-  if (proxy_settings_dialog_.get() == NULL) {
-    proxy_settings_dialog_.reset(
-        new ProxySettingsDialog(this, GetNativeWindow()));
-  }
-  proxy_settings_dialog_->Show();
+  BaseLoginDisplayHost::default_host()->OpenProxySettings();
 }
 
 bool NetworkDropdown::ShouldOpenButtonOptions() const {
@@ -144,9 +140,6 @@ void NetworkDropdown::OnNetworkManagerChanged(NetworkLibrary* cros) {
 void NetworkDropdown::Refresh() {
   SetNetworkIconAndText();
   network_menu_->UpdateMenu();
-}
-
-void NetworkDropdown::OnDialogClosed() {
 }
 
 void NetworkDropdown::NetworkMenuIconChanged() {

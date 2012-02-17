@@ -44,6 +44,9 @@ class LoginDisplayHost {
   // Called when a login has completed successfully.
   virtual void OnCompleteLogin() = 0;
 
+  // Open proxy settings dialog.
+  virtual void OpenProxySettings() = 0;
+
   // Toggles OOBE progress bar visibility, the bar is hidden by default.
   virtual void SetOobeProgressBarVisible(bool visible) = 0;
 

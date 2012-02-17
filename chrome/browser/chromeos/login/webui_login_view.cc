@@ -219,6 +219,14 @@ content::WebUI* WebUILoginView::GetWebUI() {
   return webui_login_->dom_contents()->web_contents()->GetWebUI();
 }
 
+void WebUILoginView::OpenProxySettings() {
+  if (!proxy_settings_dialog_.get()) {
+    proxy_settings_dialog_.reset(
+        new ProxySettingsDialog(NULL, GetNativeWindow()));
+  }
+  proxy_settings_dialog_->Show();
+}
+
 void WebUILoginView::SetStatusAreaEnabled(bool enable) {
   if (status_area_)
     status_area_->MakeButtonsActive(enable);
@@ -260,13 +268,8 @@ bool WebUILoginView::ShouldExecuteStatusAreaCommand(
 
 void WebUILoginView::ExecuteStatusAreaCommand(
     const views::View* button_view, int command_id) {
-  if (command_id == StatusAreaButton::Delegate::SHOW_NETWORK_OPTIONS) {
-    if (proxy_settings_dialog_.get() == NULL) {
-      proxy_settings_dialog_.reset(new ProxySettingsDialog(NULL,
-                                                           GetNativeWindow()));
-    }
-    proxy_settings_dialog_->Show();
-  }
+  if (command_id == StatusAreaButton::Delegate::SHOW_NETWORK_OPTIONS)
+    OpenProxySettings();
 }
 
 StatusAreaButton::TextStyle WebUILoginView::GetStatusAreaTextStyle() const {
