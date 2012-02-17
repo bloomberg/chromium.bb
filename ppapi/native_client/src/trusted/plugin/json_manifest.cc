@@ -300,14 +300,15 @@ bool GetKeyUrl(const Json::Value& dictionary,
   }
   const Json::Value& isa_dict = dictionary[key];
   nacl::string error_string;
+  nacl::string relative_url;
   if (!GetURLFromISADictionary(isa_dict, key, sandbox_isa, prefer_portable,
-                               full_url, &error_string, pnacl_translate)) {
+                               &relative_url, &error_string, pnacl_translate)) {
     error_info->SetReport(ERROR_MANIFEST_RESOLVE_URL,
                           key + nacl::string(" manifest resolution error: ") +
                           error_string);
     return false;
   }
-  return true;
+  return manifest->ResolveURL(relative_url, full_url, error_info);
 }
 
 }  // namespace
