@@ -811,11 +811,6 @@
   fun:base::internal::RunnableAdapter::Run
 }
 {
-   bug_112586
-   ThreadSanitizer:Race
-   fun:WebCore::WebKitMutationObserver::deliverAllMutations
-}
-{
   bug_113717
   ThreadSanitizer:Race
   fun:std::swap
