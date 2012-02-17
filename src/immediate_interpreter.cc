@@ -44,9 +44,7 @@ void TapRecord::NoteTouch(short the_id, const FingerState& fs) {
 }
 
 void TapRecord::NoteRelease(short the_id) {
-  if (touched_.find(the_id) == touched_.end())
-    Err("Release of non-touched finger!");
-  else
+  if (touched_.find(the_id) != touched_.end())
     released_.insert(the_id);
 }
 
