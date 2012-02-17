@@ -783,35 +783,6 @@ window_get_resize_dx_dy(struct window *window, int *x, int *y)
 }
 
 static void
-window_set_type(struct window *window)
-{
-	if (!window->shell_surface)
-		return;
-
-	switch (window->type) {
-	case TYPE_FULLSCREEN:
-		wl_shell_surface_set_fullscreen(window->shell_surface,
-						WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT, 0, NULL);
-		break;
-	case TYPE_MAXIMIZED:
-		wl_shell_surface_set_maximized(window->shell_surface, NULL);
-		break;
-	case TYPE_TOPLEVEL:
-		wl_shell_surface_set_toplevel(window->shell_surface);
-		break;
-	case TYPE_TRANSIENT:
-		wl_shell_surface_set_transient(window->shell_surface,
-					       window->parent->shell_surface,
-					       window->x, window->y, 0);
-		break;
-	case TYPE_MENU:
-		break;
-	case TYPE_CUSTOM:
-		break;
-	}
-}
-
-static void
 window_attach_surface(struct window *window)
 {
 	struct display *display = window->display;
@@ -821,9 +792,6 @@ window_attach_surface(struct window *window)
 	struct egl_window_surface_data *data;
 #endif
 	int32_t x, y;
-
-	if (display->shell)
-		window_set_type(window);
 
 	switch (window->buffer_type) {
 #ifdef HAVE_CAIRO_EGL
@@ -2157,25 +2125,25 @@ window_set_custom(struct window *window)
 void
 window_set_fullscreen(struct window *window, int fullscreen)
 {
-	int32_t width, height;
-	struct output *output;
+	if (!window->display->shell)
+		return;
 
 	if ((window->type == TYPE_FULLSCREEN) == fullscreen)
 		return;
 
 	if (fullscreen) {
-		output = display_get_output(window->display);
 		window->type = TYPE_FULLSCREEN;
 		window->saved_allocation = window->allocation;
-		width = output->allocation.width;
-		height = output->allocation.height;
+		wl_shell_surface_set_fullscreen(window->shell_surface,
+						WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
+						0, NULL);
 	} else {
 		window->type = TYPE_TOPLEVEL;
-		width = window->saved_allocation.width;
-		height = window->saved_allocation.height;
+		wl_shell_surface_set_toplevel(window->shell_surface);
+		window_schedule_resize(window,
+				       window->saved_allocation.width,
+				       window->saved_allocation.height);
 	}
-
-	window_schedule_resize(window, width, height);
 }
 
 void
@@ -2339,6 +2307,10 @@ window_create(struct display *display)
 	if (!window)
 		return NULL;
 
+	window->type = TYPE_TOPLEVEL;
+	if (display->shell)
+		wl_shell_surface_set_toplevel(window->shell_surface);
+
 	return window;
 }
 
@@ -2355,6 +2327,11 @@ window_create_transient(struct display *display, struct window *parent,
 	window->type = TYPE_TRANSIENT;
 	window->x = x;
 	window->y = y;
+
+	if (display->shell)
+		wl_shell_surface_set_transient(window->shell_surface,
+					       window->parent->shell_surface,
+					       window->x, window->y, 0);
 
 	return window;
 }
