@@ -74,6 +74,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
   int rex_bits = 0;
   int maybe_rex_bits = 0;
   int show_name_suffix = FALSE;
+  int empty_rex_prefix_ok = FALSE;
 #define print_name(x) (printf((x)), shown_name += strlen((x)))
   int shown_name = 0;
   int i, operand_type;
@@ -451,6 +452,12 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
           }
         }
       } else {
+        /* "Empty" rex prefix (0x40) is used to select "sil"/"dil"/"spl"/"bpl".
+         */
+        if (instruction->operands[i].type == OperandSize8bit &&
+            instruction->operands[i].name <= REG_R15) {
+          empty_rex_prefix_ok = TRUE;
+        }
         /* First argument of "rcl"/"rcr"/"rol"/"ror"/"sar/""shl"/"shr"
            can not be used to determine size of command.  */
         if (((i != 1) || (strcmp(instruction_name, "rcl") &&
@@ -581,17 +588,16 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
     }
   }
   if (instruction->prefix.rex == 0x40) {
-    /* First argument of "crc32"/"rcl"/"rcr"/"rol"/"ror"/"sar"/"shl"/"shr"
+    /* First argument of "rcl"/"rcr"/"rol"/"ror"/"sar"/"shl"/"shr"
        confuses objdump: it does not show it in this case.  */
-    if ((show_name_suffix ||
+    if ((!empty_rex_prefix_ok ||
          !strcmp(instruction_name, "movsbl") ||
          !strcmp(instruction_name, "movsbw") ||
          !strcmp(instruction_name, "movzbl") ||
          !strcmp(instruction_name, "movzbw") ||
          !strcmp(instruction_name, "pextrb") ||
          !strcmp(instruction_name, "pinsrb")) &&
-        ((strcmp(instruction_name, "crc32") &&
-          strcmp(instruction_name, "movsbl") &&
+        ((strcmp(instruction_name, "movsbl") &&
           strcmp(instruction_name, "movsbw") &&
           strcmp(instruction_name, "movzbl") &&
           strcmp(instruction_name, "movzbw") &&
@@ -995,6 +1001,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
         case OperandSize256bit:
         case OperandYMM: printf("%%ymm8"); break;
         case OperandControlRegister: printf("%%cr8"); break;
+        case OperandDebugRegister: printf("%%db8"); break;
         default: assert(FALSE);
       }
       break;
@@ -1011,6 +1018,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
         case OperandSize256bit:
         case OperandYMM: printf("%%ymm9"); break;
         case OperandControlRegister: printf("%%cr9"); break;
+        case OperandDebugRegister: printf("%%db9"); break;
         default: assert(FALSE);
       }
       break;
@@ -1027,6 +1035,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
         case OperandSize256bit:
         case OperandYMM: printf("%%ymm10"); break;
         case OperandControlRegister: printf("%%cr10"); break;
+        case OperandDebugRegister: printf("%%db10"); break;
         default: assert(FALSE);
       }
       break;
@@ -1043,6 +1052,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
         case OperandSize256bit:
         case OperandYMM: printf("%%ymm11"); break;
         case OperandControlRegister: printf("%%cr11"); break;
+        case OperandDebugRegister: printf("%%db11"); break;
         default: assert(FALSE);
       }
       break;
@@ -1059,6 +1069,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
         case OperandSize256bit:
         case OperandYMM: printf("%%ymm12"); break;
         case OperandControlRegister: printf("%%cr12"); break;
+        case OperandDebugRegister: printf("%%db12"); break;
         default: assert(FALSE);
       }
       break;
@@ -1075,6 +1086,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
         case OperandSize256bit:
         case OperandYMM: printf("%%ymm13"); break;
         case OperandControlRegister: printf("%%cr13"); break;
+        case OperandDebugRegister: printf("%%db13"); break;
         default: assert(FALSE);
       }
       break;
@@ -1091,6 +1103,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
         case OperandSize256bit:
         case OperandYMM: printf("%%ymm14"); break;
         case OperandControlRegister: printf("%%cr14"); break;
+        case OperandDebugRegister: printf("%%db14"); break;
         default: assert(FALSE);
       }
       break;
@@ -1107,6 +1120,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
         case OperandSize256bit:
         case OperandYMM: printf("%%ymm15"); break;
         case OperandControlRegister: printf("%%cr15"); break;
+        case OperandDebugRegister: printf("%%db15"); break;
         default: assert(FALSE);
       }
       break;

@@ -1031,6 +1031,9 @@ namespace {
 "  action operand%1$d_from_modrm_reg {\n"
 "    operand%1$d = ((*p) & 0x38) >> 3;\n"
 "  }\n"
+"  action operand%1$d_from_modrm_reg_norex {\n"
+"    operand%1$d = ((*p) & 0x38) >> 3;\n"
+"  }\n"
 "  action operand%1$d_from_vex {\n"
 "    operand%1$d = ((~vex_prefix3) & 0x38) >> 3;\n"
 "  }\n"
@@ -1059,6 +1062,9 @@ namespace {
 "    operand%1$d = (((*p) & 0x38) >> 3) |\n"
 "              ((rex_prefix & 0x04) << 1) |\n"
 "              (((~vex_prefix2) & 0x80) >> 4);\n"
+"  }\n"
+"  action operand%1$d_from_modrm_reg_norex {\n"
+"    operand%1$d = ((*p) & 0x38) >> 3;\n"
 "  }\n"
 "  action operand%1$d_from_vex {\n"
 "    operand%1$d = ((~vex_prefix3) & 0x78) >> 3;\n"
@@ -1551,19 +1557,19 @@ namespace {
         for (auto operand_it = operands.begin(); operand_it != operands.end(); ++operand_it) {
           auto &operand = *operand_it;
           static const std::map<char, const char*> operand_type {
-            { 'C', "reg"        },
-            { 'D', "reg"        },
-            { 'E', "rm" },
-            { 'G', "reg"        },
-            { 'M', "rm" },
-            { 'N', "rm" },
-            { 'P', "reg"        },
-            { 'Q', "rm" },
-            { 'R', "rm" },
-            { 'S', "reg"        },
-            { 'U', "rm" },
-            { 'V', "reg"        },
-            { 'W', "rm" }
+            { 'C', "reg"       },
+            { 'D', "reg"       },
+            { 'E', "rm"        },
+            { 'G', "reg"       },
+            { 'M', "rm"        },
+            { 'N', "rm"        },
+            { 'P', "reg"       },
+            { 'Q', "rm"        },
+            { 'R', "rm"        },
+            { 'S', "reg_norex" },
+            { 'U', "rm"        },
+            { 'V', "reg"       },
+            { 'W', "rm"        }
           };
           auto it = operand_type.find(operand.source);
           if (it != operand_type.end()) {
@@ -1617,19 +1623,19 @@ namespace {
           for (auto operand_it = operands.begin(); operand_it != operands.end(); ++operand_it) {
             auto &operand = *operand_it;
             static const std::map<char, const char*> operand_type {
-              { 'C', "from_modrm_reg"   },
-              { 'D', "from_modrm_reg"   },
-              { 'E', "rm"               },
-              { 'G', "from_modrm_reg"   },
-              { 'M', "rm"               },
-              { 'N', "rm"               },
-              { 'P', "from_modrm_reg"   },
-              { 'Q', "rm"               },
-              { 'R', "rm"               },
-              { 'S', "from_modrm_reg"   },
-              { 'U', "rm"               },
-              { 'V', "from_modrm_reg"   },
-              { 'W', "rm"               }
+              { 'C', "from_modrm_reg"         },
+              { 'D', "from_modrm_reg"         },
+              { 'E', "rm"                     },
+              { 'G', "from_modrm_reg"         },
+              { 'M', "rm"                     },
+              { 'N', "rm"                     },
+              { 'P', "from_modrm_reg"         },
+              { 'Q', "rm"                     },
+              { 'R', "rm"                     },
+              { 'S', "from_modrm_reg_norex"   },
+              { 'U', "rm"                     },
+              { 'V', "from_modrm_reg"         },
+              { 'W', "rm"                     }
             };
             auto it = operand_type.find(operand.source);
             if (it != operand_type.end()) {
@@ -1759,29 +1765,16 @@ namespace {
            ((opcodes[0] == "0x8f") && (opcodes[1] != "/0")))) {
         return;
       }
+      /* Allow any bits in rex prefix for the compatibility. See
+         http://code.google.com/p/nativeclient/issues/detail?id=2517 */
       if (rex.w || rex.r || rex.x || rex.b) {
         if (!rex.r && !rex.x && ! rex.b) {
           fprintf(out_file, "REXW_NONE ");
         } else {
           if (rex.w) {
-            fprintf(out_file, "REXW_");
-            if (rex.r) fprintf(out_file, "R");
-            if (rex.x) fprintf(out_file, "X");
-            if (rex.b) fprintf(out_file, "B");
-            fprintf(out_file, " ");
-          } else if (instruction_class == InstructionClass::kSize8 ||
-                     instruction_class == InstructionClass::kSize8RexW) {
-            fprintf(out_file, "REX_");
-            if (rex.r) fprintf(out_file, "R");
-            if (rex.x) fprintf(out_file, "X");
-            if (rex.b) fprintf(out_file, "B");
-            fprintf(out_file, "? ");
+            fprintf(out_file, "REXW_RXB ");
           } else {
-            fprintf(out_file, "rex_");
-            if (rex.r) fprintf(out_file, "r");
-            if (rex.x) fprintf(out_file, "x");
-            if (rex.b) fprintf(out_file, "b");
-            fprintf(out_file, "? ");
+            fprintf(out_file, "REX_RXB? ");
           }
         }
       }
