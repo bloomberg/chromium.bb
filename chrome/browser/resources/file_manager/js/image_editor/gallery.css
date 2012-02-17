@@ -140,7 +140,7 @@ body {
   -webkit-transform: translate(0, 0);
 
   -webkit-transition-property: webkit-transform, opacity;
-  -webkit-transition-duration: 220ms;
+  -webkit-transition-duration: 300ms;
   -webkit-transition-timing-function: ease;
 }
 
