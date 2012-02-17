@@ -174,22 +174,18 @@ void RecordShelfClose(int size, int in_progress, bool autoclose);
 // Used for counting UMA stats. Similar to content's
 // download_stats::DownloadCountTypes but from the chrome layer.
 enum ChromeDownloadCountTypes {
+  // Stale enum values left around os that values passed to UMA don't
+  // change.
+  CHROME_DOWNLOAD_COUNT_UNUSED_0 = 0,
+  CHROME_DOWNLOAD_COUNT_UNUSED_1,
+  CHROME_DOWNLOAD_COUNT_UNUSED_2,
+  CHROME_DOWNLOAD_COUNT_UNUSED_3,
+
   // A download *would* have been initiated, but it was blocked
   // by the DownloadThrottlingResourceHandler.
-  BLOCKED_BY_THROTTLING = 0,
+  BLOCKED_BY_THROTTLING,
 
-  // The "= 2" is to get around a feature of the histogram system
-  // which puts a floor of 1 for the minimum value for enum histograms
-  // to allow there to be a bucket for values outside the expected range.
-  // This isn't ideal since many (possibly most) enum histograms start
-  // at zero, but there isn't any practical negative effect in UMA;
-  // the zero value just uses the underflow bucket.  However, if
-  // a histogram only has one entry, it does result in a DCHECK because
-  // the maximum value of the histogram is greater than the minimum value.
-  // We solve this by bumping up the maximum value.  This assignment
-  // can be removed if any entries are added to this enum in the
-  // future.
-  CHROME_DOWNLOAD_COUNT_TYPES_LAST_ENTRY = 2
+  CHROME_DOWNLOAD_COUNT_TYPES_LAST_ENTRY
 };
 
 // Used for counting UMA stats. Similar to content's
