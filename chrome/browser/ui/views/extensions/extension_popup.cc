@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -19,7 +20,32 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/views/layout/fill_layout.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/window.h"
+#endif
+
 using content::WebContents;
+
+namespace {
+
+// Returns true if |possible_parent| is a parent window of |child|.
+bool IsParent(gfx::NativeView child, gfx::NativeView possible_parent) {
+  if (!child)
+    return false;
+#if !defined(USE_AURA) && defined(OS_WIN)
+  if (::GetWindow(child, GW_OWNER) == possible_parent)
+    return true;
+#endif
+  gfx::NativeView parent = child;
+  while ((parent = platform_util::GetParent(parent))) {
+    if (possible_parent == parent)
+      return true;
+  }
+
+  return false;
+}
+
+}  // namespace
 
 // The minimum/maximum dimensions of the popup.
 // The minimum is just a little larger than the size of the button itself.
@@ -37,18 +63,15 @@ ExtensionPopup::ExtensionPopup(
     bool inspect_with_devtools)
     : BubbleDelegateView(anchor_view, arrow_location),
       extension_host_(host),
-      inspect_with_devtools_(inspect_with_devtools) {
+      inspect_with_devtools_(inspect_with_devtools),
+      close_bubble_factory_(this) {
   // Adjust the margin so that contents fit better.
   set_margin(views::BubbleBorder::GetCornerRadius() / 2);
   SetLayoutManager(new views::FillLayout());
   AddChildView(host->view());
   host->view()->SetContainer(this);
-#if defined(OS_WIN) && !defined(USE_AURA)
   // Use OnNativeFocusChange to check for child window activation on deactivate.
   set_close_on_deactivate(false);
-#else
-  set_close_on_deactivate(!inspect_with_devtools);
-#endif
 
   // Wait to show the popup until the contained host finishes loading.
   registrar_.Add(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
@@ -127,21 +150,20 @@ gfx::Size ExtensionPopup::GetPreferredSize() {
 
 void ExtensionPopup::OnNativeFocusChange(gfx::NativeView focused_before,
                                          gfx::NativeView focused_now) {
-  // TODO(msw): Implement something equivalent for Aura. See crbug.com/106958
-#if defined(OS_WIN) && !defined(USE_AURA)
   // Don't close if a child of this window is activated (only needed on Win).
   // ExtensionPopups can create Javascipt dialogs; see crbug.com/106723.
   gfx::NativeView this_window = GetWidget()->GetNativeView();
   if (inspect_with_devtools_ || focused_now == this_window ||
-      ::GetWindow(focused_now, GW_OWNER) == this_window)
+      IsParent(focused_now, this_window))
     return;
-  gfx::NativeView focused_parent = focused_now;
-  while (focused_parent = ::GetParent(focused_parent)) {
-    if (this_window == focused_parent)
-      return;
+  // Delay closing the widget because on Aura, closing right away makes the
+  // activation controller trigger another focus change before the current focus
+  // change is complete.
+  if (!close_bubble_factory_.HasWeakPtrs()) {
+    MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(&ExtensionPopup::CloseBubble,
+                   close_bubble_factory_.GetWeakPtr()));
   }
-  GetWidget()->Close();
-#endif
 }
 
 // static
@@ -179,4 +201,8 @@ void ExtensionPopup::ShowBubble() {
     DevToolsWindow::ToggleDevToolsWindow(host()->render_view_host(),
         DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE);
   }
+}
+
+void ExtensionPopup::CloseBubble() {
+  GetWidget()->Close();
 }
