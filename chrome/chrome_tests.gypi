@@ -1415,6 +1415,8 @@
         'browser/enumerate_modules_model_unittest_win.cc',
         'browser/event_disposition.cc',
         'browser/event_disposition.h',
+        'browser/extensions/api/declarative/substring_set_matcher_unittest.cc',
+        'browser/extensions/api/declarative/url_matcher_unittest.cc',
         'browser/extensions/api/permissions/permissions_api_helpers_unittest.cc',
         'browser/extensions/api/socket/tcp_socket_unittest.cc',
         'browser/extensions/api/socket/udp_socket_unittest.cc',
