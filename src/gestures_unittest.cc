@@ -187,10 +187,10 @@ TEST(GesturesTest, StimeFromTimevalTest) {
   struct timeval tv;
   tv.tv_sec = 3;
   tv.tv_usec = 88;
-  EXPECT_EQ(3.000088, StimeFromTimeval(&tv));
+  EXPECT_DOUBLE_EQ(3.000088, StimeFromTimeval(&tv));
   tv.tv_sec = 2000000000;
   tv.tv_usec = 999999;
-  EXPECT_EQ(2000000000.999999, StimeFromTimeval(&tv));
+  EXPECT_DOUBLE_EQ(2000000000.999999, StimeFromTimeval(&tv));
 }
 
 
