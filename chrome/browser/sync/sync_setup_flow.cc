@@ -489,7 +489,8 @@ void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
   if (!service_->IsPassphraseRequiredForDecryption() &&
       !service_->encryption_pending()) {
     Advance(SyncSetupWizard::DONE);
-  } else if (!set_new_decryption_passphrase) {
+  } else if (!set_new_decryption_passphrase &&
+             service_->IsPassphraseRequiredForDecryption()) {
     // We need a passphrase, but the user did not provide one, so transition
     // directly to ENTER_PASSPHRASE (otherwise we'll have to wait until
     // the sync engine generates another OnPassphraseRequired() at the end of
