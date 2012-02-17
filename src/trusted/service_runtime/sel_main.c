@@ -392,6 +392,9 @@ int main(int  argc,
     }
   }
 
+  if (getenv("NACL_UNTRUSTED_EXCEPTION_HANDLING") != NULL) {
+    exception_handling_requested = 1;
+  }
   if (exception_handling_requested) {
 #if NACL_WINDOWS
     int status;

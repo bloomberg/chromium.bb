@@ -167,6 +167,7 @@ def _SetEnvForX86Sdk(env, sdk_path):
               RANLIB=os.path.join(bin_path, '%s-ranlib' % arch),
               OBJDUMP=os.path.join(bin_path, '%s-objdump' % arch),
               STRIP=os.path.join(bin_path, '%s-strip' % arch),
+              ADDR2LINE=os.path.join(bin_path, '%s-addr2line' % arch),
               BASE_LINKFLAGS=[cc_mode_flag],
               BASE_CFLAGS=[cc_mode_flag],
               BASE_CXXFLAGS=[cc_mode_flag],

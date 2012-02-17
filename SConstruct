@@ -1596,6 +1596,7 @@ def PPAPIBrowserTester(env,
     command.extend(['--nacl_exe_stdin', env.subst(nacl_exe_stdin['file'])])
 
   post_actions = []
+  side_effects = []
   # Set a given file to be the nexe's stdout or stderr.  The tester also
   # compares this output against a golden file.
   for stream, params in (
@@ -1604,15 +1605,17 @@ def PPAPIBrowserTester(env,
     if params is None:
       continue
     stream_file = env.subst(params['file'])
+    side_effects.append(stream_file)
     command.extend(['--nacl_exe_' + stream, stream_file])
-    golden_file = env.subst(params['golden'])
-    filter_regex = params.get('filter_regex', None)
-    filter_inverse = params.get('filter_inverse', False)
-    filter_group_only = params.get('filter_group_only', False)
-    post_actions.append(
-        GoldenFileCheckAction(
-            env, stream_file, golden_file,
-            filter_regex, filter_inverse, filter_group_only))
+    if 'golden' in params:
+      golden_file = env.subst(params['golden'])
+      filter_regex = params.get('filter_regex', None)
+      filter_inverse = params.get('filter_inverse', False)
+      filter_group_only = params.get('filter_group_only', False)
+      post_actions.append(
+          GoldenFileCheckAction(
+              env, stream_file, golden_file,
+              filter_regex, filter_inverse, filter_group_only))
 
   if ShouldUseVerboseOptions(extra):
     env.MakeVerboseExtraOptions(target, log_verbosity, extra)
@@ -1626,6 +1629,8 @@ def PPAPIBrowserTester(env,
                          size='huge',
                          capture_output=capture_output,
                          **extra)
+  for side_effect in side_effects:
+    env.SideEffect(side_effect, node)
   # We can't check output if the test is not run.
   if not env.Bit('do_not_run_tests'):
     for action in post_actions:
@@ -3166,6 +3171,7 @@ nacl_env.Append(
     'src/trusted/service_runtime/nacl.scons',
     'src/trusted/validator_x86/nacl.scons',
     'src/trusted/weak_ref/nacl.scons',
+    'src/untrusted/crash_dump/nacl.scons',
     'src/untrusted/irt_stub/nacl.scons',
     'src/untrusted/nacl/nacl.scons',
     'src/untrusted/nacl_ppapi_util/nacl.scons',
@@ -3255,6 +3261,7 @@ irt_variant_tests = [
     'tests/toolchain/nacl.scons',
     'tests/unittests/shared/platform/nacl.scons',
     'tests/untrusted_check/nacl.scons',
+    'tests/untrusted_crash_dump/nacl.scons',
     #### ALPHABETICALLY SORTED ####
     ]
 
