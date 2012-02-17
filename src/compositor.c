@@ -592,7 +592,8 @@ destroy_surface(struct wl_resource *resource)
 		weston_compositor_repick(compositor);
 	}
 
-	glDeleteTextures(1, &surface->texture);
+	if (surface->texture)
+		glDeleteTextures(1, &surface->texture);
 
 	if (surface->buffer)
 		wl_list_remove(&surface->buffer_destroy_listener.link);
