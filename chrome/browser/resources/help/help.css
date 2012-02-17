@@ -17,6 +17,7 @@ h2 {
 #about-container {
   -webkit-box-align: center;
   display: -webkit-box;
+  margin-top: 10px;
 }
 
 #product-description {
@@ -24,7 +25,13 @@ h2 {
 }
 
 #version-container {
+  font-size: 90%;
+  line-height: 1.5em;
   margin-top: 20px;
+}
+
+#update-status-container {
+  margin-top: 5px;
 }
 
 #update-status {
@@ -62,11 +69,6 @@ h2 {
 #product-container {
   line-height: 1.8em;
   margin-top: 200px;
-}
-
-#browser-version {
-  font-size: 90%;
-  margin-bottom: 5px;
 }
 
 #update-status-icon {

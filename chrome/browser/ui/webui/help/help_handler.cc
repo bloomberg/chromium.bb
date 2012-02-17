@@ -78,6 +78,10 @@ void HelpHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
     { "getHelpWithChrome",  IDS_GET_HELP_USING_CHROME },
     { "reportAProblem",  IDS_REPORT_A_PROBLEM },
 #endif
+#if defined(OS_CHROMEOS)
+    { "platform", IDS_PLATFORM_LABEL },
+    { "firmware", IDS_ABOUT_PAGE_FIRMWARE },
+#endif
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(resources); ++i) {
@@ -105,13 +109,22 @@ void HelpHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
 }
 
 void HelpHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("checkForUpdate",
-      base::Bind(&HelpHandler::CheckForUpdate, base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("onPageLoaded",
+      base::Bind(&HelpHandler::OnPageLoaded, base::Unretained(this)));
   web_ui()->RegisterMessageCallback("relaunchNow",
       base::Bind(&HelpHandler::RelaunchNow, base::Unretained(this)));
 }
 
-void HelpHandler::CheckForUpdate(const ListValue* args) {
+void HelpHandler::OnPageLoaded(const ListValue* args) {
+  #if defined(OS_CHROMEOS)
+  // Version information is loaded from a callback
+  loader_.GetVersion(&consumer_, base::Bind(&HelpHandler::OnOSVersion,
+                                            base::Unretained(this)),
+                     chromeos::VersionLoader::VERSION_FULL);
+  loader_.GetFirmware(&consumer_, base::Bind(&HelpHandler::OnOSFirmware,
+                                             base::Unretained(this)));
+#endif  // defined(OS_CHROMEOS)
+
   version_updater_->CheckForUpdate(
       base::Bind(&HelpHandler::UpdateStatus, base::Unretained(this)));
 }
@@ -148,3 +161,24 @@ void HelpHandler::UpdateStatus(VersionUpdater::Status status, int progress) {
     web_ui()->CallJavascriptFunction("HelpPage.setProgress", *progress_value);
   }
 }
+
+#if defined(OS_CHROMEOS)
+
+void HelpHandler::OnOSVersion(chromeos::VersionLoader::Handle handle,
+                              std::string version) {
+  if (version.size()) {
+    scoped_ptr<Value> version_string(Value::CreateStringValue(version));
+    web_ui()->CallJavascriptFunction("HelpPage.setOSVersion", *version_string);
+  }
+}
+
+void HelpHandler::OnOSFirmware(chromeos::VersionLoader::Handle handle,
+                               std::string firmware) {
+  if (firmware.size()) {
+    scoped_ptr<Value> firmware_string(Value::CreateStringValue(firmware));
+    web_ui()->CallJavascriptFunction("HelpPage.setOSFirmware",
+                                     *firmware_string);
+  }
+}
+
+#endif // defined(OS_CHROMEOS)

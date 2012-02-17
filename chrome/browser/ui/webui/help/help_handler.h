@@ -11,6 +11,10 @@
 #include "chrome/browser/ui/webui/help/version_updater.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/version_loader.h"
+#endif  // defined(OS_CHROMEOS)
+
 // WebUI message handler for the help page.
 class HelpHandler : public content::WebUIMessageHandler {
  public:
@@ -24,8 +28,8 @@ class HelpHandler : public content::WebUIMessageHandler {
   void GetLocalizedValues(base::DictionaryValue* localized_strings);
 
  private:
-  // Initiates the update process.
-  void CheckForUpdate(const base::ListValue* args);
+  // Initializes querying values for the page.
+  void OnPageLoaded(const base::ListValue* args);
 
   // Relaunches the browser.
   void RelaunchNow(const base::ListValue* args);
@@ -33,8 +37,23 @@ class HelpHandler : public content::WebUIMessageHandler {
   // Callback method which forwards status updates to the page.
   void UpdateStatus(VersionUpdater::Status status, int progress);
 
+#if defined(OS_CHROMEOS)
+  // Callbacks from VersionLoader.
+  void OnOSVersion(chromeos::VersionLoader::Handle handle, std::string version);
+  void OnOSFirmware(chromeos::VersionLoader::Handle handle,
+                    std::string firmware);
+#endif
+
   // Specialized instance of the VersionUpdater used to update the browser.
   scoped_ptr<VersionUpdater> version_updater_;
+
+#if defined(OS_CHROMEOS)
+  // Handles asynchronously loading the CrOS version info.
+  chromeos::VersionLoader loader_;
+
+  // Used to request the version.
+  CancelableRequestConsumer consumer_;
+#endif  // defined(OS_CHROMEOS)
 
   DISALLOW_COPY_AND_ASSIGN(HelpHandler);
 };

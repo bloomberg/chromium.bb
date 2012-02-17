@@ -26,7 +26,15 @@
       </div>
     </div>
     <div id="version-container">
-      <div id="browser-version" i18n-content="browserVersion"></div>
+      <div i18n-content="browserVersion"></div>
+<if expr="pp_ifdef('chromeos')">
+      <div>
+        <span i18n-content="platform"></span>&nbsp;<span id="os-version"></span>
+      </div>
+      <div>
+        <span i18n-content="firmware"></span>&nbsp;<span id="firmware"></span>
+      </div>
+</if>
 <if expr="pp_ifdef('win32') or pp_ifdef('darwin') or pp_ifdef('chromeos')">
       <div id="update-status-container">
         <img id="update-status-icon" class="up-to-date"></img>

@@ -40,7 +40,7 @@ cr.define('help_page', function() {
       }
 
       // Attempt to update.
-      chrome.send('checkForUpdate');
+      chrome.send('onPageLoaded');
     },
 
     /**
@@ -79,7 +79,27 @@ cr.define('help_page', function() {
      */
     setProgress_: function(progress) {
       $('update-percentage').innerHTML = progress + "%";
-    }
+    },
+
+    /**
+     * @private
+     */
+    setOSVersion_: function(version) {
+      if (!cr.isChromeOS)
+        console.error('OS version unsupported on non-CrOS');
+
+      $('os-version').textContent = version;
+    },
+
+    /**
+     * @private
+     */
+    setOSFirmware_: function(firmware) {
+      if (!cr.isChromeOS)
+        console.error('OS firmware unsupported on non-CrOS');
+
+      $('firmware').textContent = firmware;
+    },
   };
 
   HelpPage.setUpdateStatus = function(status) {
@@ -88,6 +108,14 @@ cr.define('help_page', function() {
 
   HelpPage.setProgress = function(progress) {
     HelpPage.getInstance().setProgress_(progress);
+  };
+
+  HelpPage.setOSVersion = function(version) {
+    HelpPage.getInstance().setOSVersion_(version);
+  };
+
+  HelpPage.setOSFirmware = function(firmware) {
+    HelpPage.getInstance().setOSFirmware_(firmware);
   };
 
   // Export
