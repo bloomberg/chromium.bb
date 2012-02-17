@@ -462,7 +462,7 @@ void PepperMessageFilter::OnTCPDisconnect(uint32 socket_id) {
     return;
   }
 
-  // Destroy the TCPSocket instance will cancel any pending completion
+  // Destroying the TCPSocket instance will cancel any pending completion
   // callback. From this point on, there won't be any messages associated with
   // this socket sent to the plugin side.
   tcp_sockets_.erase(iter);

@@ -1798,7 +1798,8 @@ void PepperPluginDelegateImpl::TCPSocketDisconnect(uint32 socket_id) {
   // can be called before
   // TCPSocketConnect/TCPSocketConnectWithNetAddress is called.
   render_view_->Send(new PpapiHostMsg_PPBTCPSocket_Disconnect(socket_id));
-  tcp_sockets_.Remove(socket_id);
+  if (tcp_sockets_.Lookup(socket_id))
+    tcp_sockets_.Remove(socket_id);
 }
 
 uint32 PepperPluginDelegateImpl::UDPSocketCreate() {
@@ -1837,7 +1838,8 @@ void PepperPluginDelegateImpl::UDPSocketClose(uint32 socket_id) {
   // There are no DCHECK(udp_sockets_.Lookup(socket_id)) because it
   // can be called before UDPSocketBind is called.
   render_view_->Send(new PpapiHostMsg_PPBUDPSocket_Close(socket_id));
-  udp_sockets_.Remove(socket_id);
+  if (udp_sockets_.Lookup(socket_id))
+    udp_sockets_.Remove(socket_id);
 }
 
 int32_t PepperPluginDelegateImpl::ShowContextMenu(
