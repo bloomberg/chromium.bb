@@ -5801,10 +5801,16 @@
    fun:ChromeMain
 }
 {
-   bug_114787
+   bug_114787_a
    Memcheck:Leak
    ...
    fun:content::CreateQuotaManagerAndClients
+}
+{
+   bug_114787_b
+   Memcheck:Leak
+   ...
+   fun:_ZN7content28CreateQuotaManagerAndClientsEPNS_14BrowserContextE
 }
 
 
