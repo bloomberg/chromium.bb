@@ -309,6 +309,31 @@ string16 GetTitleFromType(SelectFileDialog::Type dialog_type) {
   return title;
 }
 
+void ViewRemovableDrive(const FilePath& dir) {
+  Browser* browser = BrowserList::GetLastActive();
+  if (!browser)
+    return;
+
+  FilePath virtual_path;
+  if (!ConvertFileToRelativeFileSystemPath(browser->profile(), dir,
+                                           &virtual_path)) {
+    return;
+  }
+
+  DictionaryValue arg_value;
+  arg_value.SetBoolean("mountTriggered", true);
+
+  std::string json_args;
+  base::JSONWriter::Write(&arg_value, false, &json_args);
+
+  std::string url = chrome::kChromeUIFileManagerURL;
+  url += "?" + json_args + "#/" +
+      net::EscapeUrlEncodedData(virtual_path.value(), false);
+
+  content::RecordAction(UserMetricsAction("ShowFileBrowserFullTab"));
+  browser->ShowSingletonTabRespectRef(GURL(url));
+}
+
 void ViewFolder(const FilePath& dir) {
   Browser* browser = BrowserList::GetLastActive();
   if (!browser)

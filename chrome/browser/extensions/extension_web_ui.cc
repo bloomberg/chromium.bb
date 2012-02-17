@@ -222,6 +222,9 @@ bool ExtensionWebUI::HandleChromeURLOverride(
       UnregisterChromeURLOverride(page, profile, val);
       continue;
     }
+
+    if (!url->query().empty())
+      override += "?" + url->query();
     if (!url->ref().empty())
       override += "#" + url->ref();
     GURL extension_url(override);

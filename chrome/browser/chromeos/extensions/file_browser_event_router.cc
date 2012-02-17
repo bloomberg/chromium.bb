@@ -325,7 +325,7 @@ void ExtensionFileBrowserEventRouter::DispatchMountCompletedEvent(
       mount_info.mount_type == chromeos::MOUNT_TYPE_DEVICE &&
       !mount_info.mount_condition &&
       event == DiskMountManager::MOUNTING) {
-    file_manager_util::ViewFolder(FilePath(mount_info.mount_path));
+    file_manager_util::ViewRemovableDrive(FilePath(mount_info.mount_path));
   }
 }
 

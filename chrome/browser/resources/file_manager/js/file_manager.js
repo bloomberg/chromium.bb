@@ -2269,6 +2269,13 @@ FileManager.prototype = {
 
       if (event.eventType == 'unmount' && event.status == 'success' &&
           event.mountPath == self.directoryModel_.rootPath) {
+        if (self.params_.mountTriggered) {
+          // window.close() sometimes doesn't work.
+          chrome.tabs.getCurrent(function(tab){
+            chrome.tabs.remove(tab.id);
+          });
+          return;
+        }
         // Current durectory just unmounted. Move to the 'Downloads'.
         changeDirectoryTo = '/' + DirectoryModel.DOWNLOADS_DIRECTORY;
       }

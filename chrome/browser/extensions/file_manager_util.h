@@ -48,6 +48,10 @@ GURL GetFileBrowserUrlWithParams(
 // Get file dialog title string from its type.
 string16 GetTitleFromType(SelectFileDialog::Type type);
 
+// Opens file browser UI on its own tab on drive location defined with
+// |dir|. Automatically closes this tab on |dir| unmount.
+void ViewRemovableDrive(const FilePath& dir);
+
 // Opens file browser UI in its own tab on file system location defined with
 // |dir|.
 void ViewFolder(const FilePath& dir);
