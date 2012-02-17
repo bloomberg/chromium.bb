@@ -173,12 +173,6 @@ class Upgrader(object):
     """Return True if running in upgrade mode."""
     return self._upgrade or self._upgrade_deep
 
-  # TODO(mtennant): Make this smart enough to recommend the
-  # targets/chromeos/package.keywords file when applicable.
-  def _GetPkgKeywordsFile(self):
-    """Return the path to the package.keywords file in chromiumos-overlay."""
-    return '%s/profiles/default/linux/package.keywords' % self._cros_overlay
-
   def _SaveStatusOnStableRepo(self):
     """Get the 'git status' for everything in |self._stable_repo|.
 
@@ -196,7 +190,13 @@ class Upgrader(object):
 
         linesplit = line.split()
         (status, path) = linesplit[0], linesplit[1]
-        statuses[path] = status
+        if status == 'R':
+          # Handle a rename as separate 'D' and 'A' statuses.  Example line:
+          # R path/to/foo-1.ebuild -> path/to/foo-2.ebuild
+          statuses[path] = 'D'
+          statuses[linesplit[3]] = 'A'
+        else:
+          statuses[path] = status
 
       self._stable_repo_status = statuses
     else:
@@ -320,6 +320,21 @@ class Upgrader(object):
 
     return None
 
+  @staticmethod
+  def _GetEbuildPathFromCpv(cpv):
+    """Returns the relative path to ebuild for |cpv|."""
+    if not cpv:
+      return None
+
+    # Result is None or (cat, pn, version, rev)
+    result = portage.versions.catpkgsplit(cpv)
+    if result:
+      (cat, pn, _version, _rev) = result
+      ebuild = cpv.replace(cat + '/', '') + '.ebuild'
+      return os.path.join(cat, pn, ebuild)
+
+    return None
+
   def _RunGit(self, cwd, command, redirect_stdout=False,
               combine_stdout_stderr=False):
     """Runs git |command| (a list of command tokens) in |cwd|.
@@ -415,20 +430,17 @@ class Upgrader(object):
 
     return cmd
 
-  def _AreEmergeable(self, cpvlist, unstable_ok):
+  def _AreEmergeable(self, cpvlist):
     """Indicate whether cpvs in |cpvlist| can be emerged on current board.
 
     This essentially runs emerge with the --pretend option to verify
     that all dependencies for these package versions are satisfied.
 
-    The |unstable_ok| argument determines whether an unstable version
-    is acceptable.
-
     Return tuple with two elements:
     [0] True if |cpvlist| can be emerged.
     [1] Output from the emerge command.
     """
-    envvars = self._GenPortageEnvvars(self._curr_arch, unstable_ok)
+    envvars = self._GenPortageEnvvars(self._curr_arch, unstable_ok=False)
     emerge = self._GetBoardCmd(self.EMERGE_CMD)
     cmd = [emerge, '-p'] + ['=' + cpv for cpv in cpvlist]
     result = cros_lib.RunCommand(cmd, error_ok=True,
@@ -441,7 +453,7 @@ class Upgrader(object):
 
   def _FindCurrentCPV(self, pkg):
     """Returns current cpv on |_curr_board| that matches |pkg|, or None."""
-    envvars = self._GenPortageEnvvars(self._curr_arch, False)
+    envvars = self._GenPortageEnvvars(self._curr_arch, unstable_ok=False)
 
     equery = self._GetBoardCmd(self.EQUERY_CMD)
     cmd = [equery, 'which', pkg]
@@ -458,10 +470,10 @@ class Upgrader(object):
     else:
       return None
 
-  def _GetMaskBits(self, cpv):
-    """Return two-Boolean tuple (unmasked, stable) for |cpv| on current arch."""
-
-    envvars = self._GenPortageEnvvars(self._curr_arch, False)
+  def _SetUpgradedMaskBits(self, pinfo):
+    """Set pinfo.upgraded_unmasked and pinfo.upgraded_stable."""
+    cpv = pinfo.upgraded_cpv
+    envvars = self._GenPortageEnvvars(self._curr_arch, unstable_ok=False)
 
     equery = self._GetBoardCmd('equery')
     cmd = [equery, '--no-pipe', 'list', '-op', cpv]
@@ -480,13 +492,14 @@ class Upgrader(object):
     for line in output.split('\n'):
       match = self._equery_regexp.search(line)
       if match:
-        return ('M' != match.group(1), '~' != match.group(2))
+        pinfo.upgraded_unmasked = 'M' != match.group(1)
+        pinfo.upgraded_stable = '~' != match.group(2)
+        return
 
     raise RuntimeError('Unable to determine whether %s is stable from equery:\n'
                        ' %s\noutput:\n %s' % (cpv, ' '.join(cmd), output))
 
-  def _VerifyEbuildOverlay(self, cpv, expected_overlay,
-                           stable_only, was_overwrite):
+  def _VerifyEbuildOverlay(self, cpv, expected_overlay, was_overwrite):
     """Raises exception if ebuild for |cpv| is not from |expected_overlay|.
 
     Essentially, this verifies that the upgraded ebuild in portage-stable
@@ -501,7 +514,7 @@ class Upgrader(object):
     # Further explanation: this check should always pass, but might not
     # if the copy/upgrade from upstream did not work.  This is just a
     # sanity check.
-    envvars = self._GenPortageEnvvars(self._curr_arch, not stable_only)
+    envvars = self._GenPortageEnvvars(self._curr_arch, unstable_ok=False)
 
     equery = self._GetBoardCmd(self.EQUERY_CMD)
     cmd = [equery, 'which', '--include-masked', cpv]
@@ -613,11 +626,8 @@ class Upgrader(object):
 
   def _PkgUpgradeStaged(self, upstream_cpv):
     """Return True if package upgrade is already staged."""
-    (cat, pkgname, _version, _rev) = portage.versions.catpkgsplit(upstream_cpv)
-    ebuild = upstream_cpv.replace(cat + '/', '') + '.ebuild'
-    ebuild_relative_path = os.path.join(cat, pkgname, ebuild)
-
-    status = self._stable_repo_status.get(ebuild_relative_path, None)
+    ebuild_path = Upgrader._GetEbuildPathFromCpv(upstream_cpv)
+    status = self._stable_repo_status.get(ebuild_path, None)
     if status and 'A' == status:
       return True
 
@@ -702,15 +712,35 @@ class Upgrader(object):
     # Create a new Manifest file for this package.
     self._CreateManifest(upstream_pkgdir, pkgdir, ebuild)
 
-    # Add all new files to git.
-    self._RunGit(self._stable_repo, ['add', catpkgsubdir])
-
     # Now copy any eclasses that this package requires.
     eclass = self._IdentifyNeededEclass(upstream_cpv)
     while eclass and self._CopyUpstreamEclass(eclass):
       eclass = self._IdentifyNeededEclass(upstream_cpv)
 
     return upstream_cpv
+
+  def _StabilizeEbuild(self, ebuild_path):
+    """Edit keywords to stablize ebuild at |ebuild_path| on current arch."""
+    oper.Notice('Editing %r to mark it stable for %r' %
+                (ebuild_path, self._curr_arch))
+
+    # Regexp to search for ~<arch> and replace with <arch> in KEYWORDS.
+    regexp = re.compile(r'^(\s*KEYWORDS=.*?)~(%s["\s\n])' % self._curr_arch,
+                        re.MULTILINE | re.DOTALL)
+
+    # Read in entire ebuild.
+    content = None
+    with open(ebuild_path, 'r') as f:
+      content = f.read()
+
+    # Replace ~<arch> with <arch> in KEYWORDS.
+    def repl(match):
+      return ('%s%s' % (match.group(1), match.group(2)))
+    content = re.sub(regexp, repl, content)
+
+    # Write ebuild file back out.
+    with open(ebuild_path, 'w') as f:
+      f.write(content)
 
   def _CreateManifest(self, upstream_pkgdir, pkgdir, ebuild):
     """Create a trusted Manifest from available Manifests.
@@ -869,10 +899,6 @@ class Upgrader(object):
     if upgraded_cpv:
       upgraded_ver = Upgrader._GetVerRevFromCpv(upgraded_cpv)
 
-      # "~" Prefix means the upgraded version is not stable on this arch.
-      if not pinfo.upgraded_stable:
-        upgraded_ver = '~' + upgraded_ver
-
     # Assemble 'depends on' and 'required by' strings.
     depsstr = NOT_APPLICABLE
     usedstr = NOT_APPLICABLE
@@ -918,7 +944,6 @@ class Upgrader(object):
 
     The |pinfo| must have the following entries:
     package, category, package_name
-    cpv must exist but can be None
 
     Regardless, the following attributes in |pinfo| are filled in:
     stable_upstream_cpv
@@ -967,17 +992,21 @@ class Upgrader(object):
                          'To force upgrade of this version specify --force.' %
                          pinfo.upstream_cpv)
 
+    if pinfo.upgraded_cpv:
+      # Deal with keywords now if new ebuild is not stable.
+      self._SetUpgradedMaskBits(pinfo)
+      if not pinfo.upgraded_stable:
+        ebuild_path = Upgrader._GetEbuildPathFromCpv(pinfo.upgraded_cpv)
+        self._StabilizeEbuild(os.path.join(self._stable_repo, ebuild_path))
+
+      # Add all new package files to git.
+      self._RunGit(self._stable_repo, ['add', pinfo.package])
+
     return bool(pinfo.upgraded_cpv)
 
   def _VerifyPackageUpgrade(self, pinfo):
     """Verify that the upgraded package in |pinfo| passes checks."""
-    # Verify that upgraded package can be emerged and save results.
-    (unmasked, stable) = self._GetMaskBits(pinfo.upgraded_cpv)
-    pinfo.upgraded_unmasked = unmasked
-    pinfo.upgraded_stable = stable
-
     self._VerifyEbuildOverlay(pinfo.upgraded_cpv, self.STABLE_OVERLAY_NAME,
-                              pinfo.upgraded_stable,
                               pinfo.cpv_cmp_upstream == 0)
 
   def _PackageReport(self, pinfo):
@@ -1080,7 +1109,7 @@ class Upgrader(object):
     masked_cpvs = set([pinfo.upgraded_cpv for pinfo in upgraded_pinfos
                        if not pinfo.upgraded_unmasked])
 
-    (ok, cmd, output) = self._AreEmergeable(upgraded_cpvs, self._unstable_ok)
+    (ok, cmd, output) = self._AreEmergeable(upgraded_cpvs)
 
     if masked_cpvs:
       # If any of the upgraded_cpvs are masked, then emerge should have
@@ -1163,14 +1192,17 @@ class Upgrader(object):
       # Go over files with pre-existing git statuses.
       filelist = self._stable_repo_status.keys()
       ebuilds = [e for e in filelist if e.endswith('.ebuild')]
-      for ebuild in ebuilds:
-        (_overlay, cat, _pn, pv) = self._SplitEBuildPath(ebuild)
-        cpv = '%s/%s' % (cat, pv)
 
-        # Look for pinfo with upgraded_cpv that matches
-        matching_pinfos = [pi for pi in pinfolist if pi.upgraded_cpv == cpv]
+      for ebuild in ebuilds:
+        status = self._stable_repo_status[ebuild]
+        (_overlay, cat, pn, _pv) = self._SplitEBuildPath(ebuild)
+        package = '%s/%s' % (cat, pn)
+
+        # As long as this package is involved in an upgrade this is fine.
+        matching_pinfos = [pi for pi in pinfolist if pi.package == package]
         if not matching_pinfos:
-          err_msgs.append('Staged %s is not one of upgrade targets.' % ebuild)
+          err_msgs.append('Staged %s (status=%s) is not an upgrade target.' %
+                          (ebuild, status))
 
       if err_msgs:
         raise RuntimeError('%s\n'
@@ -1483,7 +1515,6 @@ class Upgrader(object):
     # Upgraded foo/bar-1.2.3 to version 1.2.4 (arm) AND version 1.2.4-r1 (x86)
 
     commit_lines = [] # Lines for the body of the commit message
-    key_lines = []    # Lines needed in package.keywords
     pkg_overlays = {} # Overlays for upgraded packages in non-portage overlays.
 
     # Assemble hash of COL_UPGRADED column names by arch.
@@ -1497,7 +1528,6 @@ class Upgrader(object):
     for row in table:
       pkg = row[table.COL_PACKAGE]
       pkg_commit_line = None
-      pkg_keys = {} # key=cpv, value=set of arches that need keyword overwrite
 
       # First determine how many unique upgraded versions there are.
       upgraded_versset = set()
@@ -1505,24 +1535,9 @@ class Upgrader(object):
       for arch in self._master_archs:
         upgraded_ver = row[upgraded_cols[arch]]
         if upgraded_ver:
-          # Remove ~ prefix if found, and remember as unstable.
-          upgraded_stable = True
-          if upgraded_ver[0] == '~':
-            upgraded_stable = False
-            upgraded_ver = upgraded_ver[1:]
-
           # This package has been upgraded for this arch.
           upgraded_versset.add(upgraded_ver)
           upgraded_verslist.append(upgraded_ver)
-
-          # Is this upgraded version unstable for this arch?  If so, save
-          # arch under upgraded_cpv as one that will need a package.keywords
-          # entry.
-          if not upgraded_stable:
-            upgraded_cpv = pkg + '-' + upgraded_ver
-            cpv_key = pkg_keys.get(upgraded_cpv, set())
-            cpv_key.add(arch)
-            pkg_keys[upgraded_cpv] = cpv_key
 
           # Save the overlay this package is originally from, if the overlay
           # is not a Portage overlay (e.g. chromiumos-overlay).
@@ -1551,12 +1566,6 @@ class Upgrader(object):
 
       if pkg_commit_line:
         commit_lines.append(pkg_commit_line)
-      if len(pkg_keys):
-        for upgraded_cpv in pkg_keys:
-          cpv_key = pkg_keys[upgraded_cpv]
-          key_lines.append('=%s %s' %
-                           (upgraded_cpv,
-                            ' '.join(cpv_key)))
 
     if commit_lines:
       if self._amend:
@@ -1589,17 +1598,6 @@ class Upgrader(object):
                   ' cd %s; git reset HEAD~ <filepath>; rm <filepath>;'
                   ' git commit --amend -C HEAD; cd -' %
                   self._stable_repo)
-
-      if key_lines:
-        oper.Warning('\n'
-                     'Because one or more unstable versions are involved'
-                     ' you must add line(s) like the following to\n'
-                     ' %s:\n%s\n'
-                     'This is needed before testing, and should be pushed'
-                     ' in a separate changelist BEFORE the\n'
-                     'the changes in portage-stable.' %
-                     (self._GetPkgKeywordsFile(),
-                      '\n'.join(key_lines)))
 
       oper.Notice('\n'
                   'If you wish to undo all the changes to %s:\n'

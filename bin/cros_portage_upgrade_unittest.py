@@ -784,8 +784,6 @@ class CopyUpstreamTest(CpuTestBase):
 
       mocked_upgrader._CreateManifest(os.path.join(upstream_portdir, catpkg),
                                       pkgdir, ebuild)
-      mocked_upgrader._RunGit(mocked_upgrader._stable_repo,
-                              ['add', catpkg])
       mocked_upgrader._IdentifyNeededEclass(upstream_cpv).AndReturn(None)
     self.mox.ReplayAll()
 
@@ -1117,19 +1115,16 @@ class EmergeableTest(CpuTestBase):
   """Test Upgrader._AreEmergeable."""
 
   def _TestAreEmergeable(self, cpvlist, expect,
-                         unstable_ok=False, debug=False,
-                         world=WORLD):
+                         debug=False, world=WORLD):
     """Test the Upgrader._AreEmergeable method.
 
-    |cpvlist| and |unstable_ok| are passed to _AreEmergeable.
+    |cpvlist| is passed to _AreEmergeable.
     |expect| is boolean, expected return value of _AreEmergeable
     |debug| requests that emerge output in _AreEmergeable be shown.
     |world| is list of lines to override default world contents.
     """
 
     cmdargs = ['--upgrade'] + cpvlist
-    if unstable_ok:
-      cmdargs = ['--unstable-ok'] + cmdargs
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs)
     self._SetUpPlayground(world=world)
 
@@ -1138,14 +1133,14 @@ class EmergeableTest(CpuTestBase):
     # Replay script
     envvars = cpu.Upgrader._GenPortageEnvvars(mocked_upgrader,
                                               mocked_upgrader._curr_arch,
-                                              unstable_ok)
+                                              unstable_ok=False)
     mocked_upgrader._GenPortageEnvvars(mocked_upgrader._curr_arch,
-                                       unstable_ok).AndReturn(envvars)
+                                       unstable_ok=False).AndReturn(envvars)
     mocked_upgrader._GetBoardCmd('emerge').AndReturn('emerge')
     self.mox.ReplayAll()
 
     # Verify
-    result = cpu.Upgrader._AreEmergeable(mocked_upgrader, cpvlist, unstable_ok)
+    result = cpu.Upgrader._AreEmergeable(mocked_upgrader, cpvlist)
     self.mox.VerifyAll()
 
     (code, _cmd, output) = result
@@ -1179,11 +1174,6 @@ class EmergeableTest(CpuTestBase):
     """Should fail, target unstable version of pkg."""
     cpvlist = ['chromeos-base/flimflam-0.0.2-r123']
     return self._TestAreEmergeable(cpvlist, False)
-
-  def testAreEmergeableUnstableFlimFlamUnstableOk(self):
-    """Should pass, target unstable version of pkg with stable_only=False."""
-    cpvlist = ['chromeos-base/flimflam-0.0.2-r123']
-    return self._TestAreEmergeable(cpvlist, True, unstable_ok=True)
 
   def testAreEmergeableBlockedPackages(self):
     """Should fail, targets have blocking deps on each other."""
@@ -1309,6 +1299,31 @@ class CPVUtilTest(CpuTestBase):
       result = self._TestGetVerRevFromCpv(cpv)
       self.assertEquals(verrev, result)
 
+  def _TestGetEbuildPathFromCpv(self, cpv):
+    """Test Upgrader._GetEbuildPathFromCpv"""
+    # Add test-specific mocks/stubs
+
+    # Replay script
+    self.mox.ReplayAll()
+
+    # Verify
+    result = cpu.Upgrader._GetEbuildPathFromCpv(cpv)
+    self.mox.VerifyAll()
+
+    return result
+
+  def testGetEbuildPathFromCpv(self):
+    # (input, output) tuples
+    data = [('foo/bar-1', 'foo/bar/bar-1.ebuild'),
+            ('a-b-c/x-y-z-1', 'a-b-c/x-y-z/x-y-z-1.ebuild'),
+            ('a-b-c/x-y-z-1.2.3-r3', 'a-b-c/x-y-z/x-y-z-1.2.3-r3.ebuild'),
+            ('foo/bar-3.222-r0', 'foo/bar/bar-3.222-r0.ebuild'),
+            ]
+
+    for (cpv, verrev) in data:
+      result = self._TestGetEbuildPathFromCpv(cpv)
+      self.assertEquals(verrev, result)
+
 #########################
 ### PortageStableTest ###
 #########################
@@ -1319,7 +1334,6 @@ class PortageStableTest(CpuTestBase):
   STATUS_MIX = {'path1/file1': 'M',
                 'path1/path2/file2': 'A',
                 'a/b/.x/y~': 'D',
-                'x/y/z': 'R',
                 'foo/bar': 'C',
                 '/bar/foo': 'U',
                 'unknown/file': '??',
@@ -1419,6 +1433,17 @@ class PortageStableTest(CpuTestBase):
                                   output=status_output)
     status = self._TestSaveStatusOnStableRepo(run_result)
     self.assertEqual(status, self.STATUS_MIX)
+
+  def testSaveStatusOnStableRepoRename(self):
+    """Test where 'git status -s' shows a file rename"""
+    old = 'path/foo-1'
+    new = 'path/foo-2'
+    status_lines = [' R %s --> %s' % (old, new)]
+    status_output = '\n'.join(status_lines)
+    run_result = RunCommandResult(returncode=0,
+                                  output=status_output)
+    status = self._TestSaveStatusOnStableRepo(run_result)
+    self.assertEqual(status, {old: 'D', new: 'A'})
 
   def testSaveStatusOnStableRepoEmpty(self):
     """Test empty response from 'git status -s'"""
@@ -1554,31 +1579,6 @@ class UtilityTest(CpuTestBase):
   """Test several Upgrader methods.
 
   Test these Upgrader methods: _SplitEBuildPath, _GenPortageEnvvars"""
-
-  #
-  # _GetPkgKeywordsFile
-  #
-
-  def testGetPkgKeywordsFile(self):
-    """Test Upgrader._GetPkgKeywordsFile."""
-    root = '/foo/bar'
-    cmdargs = ['--srcroot=%s' % root]
-    mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs)
-
-    # Add test-specific mocks/stubs
-
-    # Replay script
-    self.mox.ReplayAll()
-
-    # Verify
-    result = cpu.Upgrader._GetPkgKeywordsFile(mocked_upgrader)
-    self.mox.VerifyAll()
-
-    overlay = 'chromiumos-overlay'
-    path = 'profiles/default/linux'
-    golden_result = ('%s/third_party/%s/%s/package.keywords' %
-                     (root, overlay, path))
-    self.assertEquals(result, golden_result)
 
   #
   # _IsInUpgradeMode
@@ -1839,9 +1839,9 @@ class TreeInspectTest(CpuTestBase):
     # Replay script
     envvars = cpu.Upgrader._GenPortageEnvvars(mocked_upgrader,
                                               mocked_upgrader._curr_arch,
-                                              False)
+                                              unstable_ok=False)
     mocked_upgrader._GenPortageEnvvars(mocked_upgrader._curr_arch,
-                                       False).AndReturn(envvars)
+                                       unstable_ok=False).AndReturn(envvars)
     mocked_upgrader._GetBoardCmd('equery').AndReturn('equery')
 
     if ebuild_expect:
@@ -2166,7 +2166,6 @@ class GiveEmergeResultsTest(CpuTestBase):
 
     # Replay script
     mocked_upgrader._AreEmergeable(mox.IgnoreArg(),
-                                   mocked_upgrader._unstable_ok,
                                    ).AndReturn((ok, None, None))
     self.mox.ReplayAll()
 
@@ -2204,7 +2203,6 @@ class GiveEmergeResultsTest(CpuTestBase):
     # Replay script
     emergeable_tuple = (ok, 'some-cmd', 'some-output')
     mocked_upgrader._AreEmergeable(mox.IgnoreArg(),
-                                   mocked_upgrader._unstable_ok,
                                    ).AndReturn(emergeable_tuple)
     if not ok:
       for cpv in masked_cpvs:
@@ -2257,8 +2255,8 @@ class CheckStagedUpgradesTest(CpuTestBase):
                    ebuild2: 'A',
                    }
 
-    pinfolist = [cpu.PInfo(upgraded_cpv='foo/bar-1'),
-                 cpu.PInfo(upgraded_cpv='bar/foo-3'),
+    pinfolist = [cpu.PInfo(package='foo/bar'),
+                 cpu.PInfo(package='bar/foo'),
                 ]
 
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs,
@@ -2277,11 +2275,42 @@ class CheckStagedUpgradesTest(CpuTestBase):
     cpu.Upgrader._CheckStagedUpgrades(mocked_upgrader, pinfolist)
     self.mox.VerifyAll()
 
+  def testCheckStagedUpgradesTwoStagedOneUnexpected(self):
+    cmdargs = []
+
+    ebuild1 = 'a/b/foo/bar/bar-1.ebuild'
+    ebuild2 = 'x/y/bar/foo/foo-3.ebuild'
+    repo_status = {ebuild1: 'A',
+                   'a/b/foo/garbage': 'A',
+                   ebuild2: 'A',
+                   }
+
+    # Without foo/bar in the pinfolist it should complain about that
+    # package having staged changes.
+    pinfolist = [cpu.PInfo(package='bar/foo')]
+
+    mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs,
+                                         _stable_repo_status=repo_status)
+
+    # Add test-specific mocks/stubs
+
+    # Replay script
+    for ebuild in [ebuild1, ebuild2]:
+      split = cpu.Upgrader._SplitEBuildPath(mocked_upgrader, ebuild)
+      mocked_upgrader._SplitEBuildPath(ebuild).InAnyOrder().AndReturn(split)
+
+    self.mox.ReplayAll()
+
+    # Verify
+    self.assertRaises(RuntimeError, cpu.Upgrader._CheckStagedUpgrades,
+                      mocked_upgrader, pinfolist)
+    self.mox.VerifyAll()
+
   def testCheckStagedUpgradesNoneStaged(self):
     cmdargs = []
 
-    pinfolist = [cpu.PInfo(upgraded_cpv='foo/bar-1'),
-                 cpu.PInfo(upgraded_cpv='bar/foo-3'),
+    pinfolist = [cpu.PInfo(package='foo/bar-1'),
+                 cpu.PInfo(package='bar/foo-3'),
                 ]
 
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs,
@@ -2377,6 +2406,7 @@ class UpgradePackageTest(CpuTestBase):
     if force:
       cmdargs.append('--force')
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs)
+    pinfo.upgraded_stable = not unstable_ok
 
     # Add test-specific mocks/stubs
 
@@ -2393,6 +2423,18 @@ class UpgradePackageTest(CpuTestBase):
             (upstream_cmp > 0 or (upstream_cmp == 0 and force))):
           mocked_upgrader._CopyUpstreamPackage(upstream_cpv
                                                ).AndReturn(upstream_cpv)
+          upgrade_staged = True
+
+
+        if upgrade_staged:
+          mocked_upgrader._SetUpgradedMaskBits(pinfo)
+          if not pinfo.upgraded_stable:
+            ebuild_path = cpu.Upgrader._GetEbuildPathFromCpv(upstream_cpv)
+            ebuild_path = os.path.join(mocked_upgrader._stable_repo,
+                                       ebuild_path)
+            mocked_upgrader._StabilizeEbuild(ebuild_path)
+          mocked_upgrader._RunGit(mocked_upgrader._stable_repo,
+                                  ['add', pinfo.package])
     self.mox.ReplayAll()
 
     # Verify
@@ -2544,7 +2586,7 @@ class UpgradePackageTest(CpuTestBase):
   def testUpgradePackageOutdatedRequestedUnstableStaged(self):
     pinfo = cpu.PInfo(cpv='foo/bar-2',
                       package='foo/bar',
-                      upstream_cpv=None,
+                      upstream_cpv='foo/bar-5',
                       )
     result = self._TestUpgradePackage(pinfo,
                                       upstream_cpv='foo/bar-5',
@@ -2564,7 +2606,7 @@ class UpgradePackageTest(CpuTestBase):
 
 class VerifyPackageTest(CpuTestBase):
 
-  def _TestVerifyPackageUpgrade(self, pinfo, unmasked, stable):
+  def _TestVerifyPackageUpgrade(self, pinfo):
     cmdargs = []
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs)
     was_overwrite = pinfo.cpv_cmp_upstream == 0
@@ -2572,34 +2614,24 @@ class VerifyPackageTest(CpuTestBase):
     # Add test-specific mocks/stubs
 
     # Replay script
-    mocked_upgrader._GetMaskBits(pinfo.upgraded_cpv
-                                 ).AndReturn((unmasked, stable))
     mocked_upgrader._VerifyEbuildOverlay(pinfo.upgraded_cpv,
                                          'portage-stable',
-                                         stable, was_overwrite)
+                                         was_overwrite)
     self.mox.ReplayAll()
 
     # Verify
     cpu.Upgrader._VerifyPackageUpgrade(mocked_upgrader, pinfo)
     self.mox.VerifyAll()
 
-    self.assertEquals(unmasked, pinfo.upgraded_unmasked)
-    self.assertEquals(stable, pinfo.upgraded_stable)
-
   def testVerifyPackageUpgrade(self):
     pinfo = cpu.PInfo(upgraded_cpv='foo/bar-3')
 
     for cpv_cmp_upstream in (0, 1):
       pinfo.cpv_cmp_upstream = cpv_cmp_upstream
-      self._TestVerifyPackageUpgrade(pinfo, True, True)
-      self._TestVerifyPackageUpgrade(pinfo, True, False)
-      self._TestVerifyPackageUpgrade(pinfo, False, True)
-      self._TestVerifyPackageUpgrade(pinfo, False, False)
+      self._TestVerifyPackageUpgrade(pinfo)
 
   def _TestVerifyEbuildOverlay(self, cpv, overlay, ebuild_path, was_overwrite):
     """Test Upgrader._VerifyEbuildOverlay"""
-    stable_only = True # not important
-
     cmdargs = []
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs,
                                          _curr_arch=DEFAULT_ARCH,
@@ -2611,9 +2643,9 @@ class VerifyPackageTest(CpuTestBase):
     # Replay script
     envvars = cpu.Upgrader._GenPortageEnvvars(mocked_upgrader,
                                               mocked_upgrader._curr_arch,
-                                              not stable_only)
+                                              unstable_ok=False)
     mocked_upgrader._GenPortageEnvvars(mocked_upgrader._curr_arch,
-                                       not stable_only).AndReturn(envvars)
+                                       unstable_ok=False).AndReturn(envvars)
     mocked_upgrader._GetBoardCmd('equery').AndReturn('equery')
     run_result = RunCommandResult(returncode=0,
                                   output=ebuild_path)
@@ -2628,8 +2660,7 @@ class VerifyPackageTest(CpuTestBase):
 
     # Verify
     cpu.Upgrader._VerifyEbuildOverlay(mocked_upgrader, cpv,
-                                      overlay, stable_only,
-                                      was_overwrite)
+                                      overlay, was_overwrite)
     self.mox.VerifyAll()
 
   def testVerifyEbuildOverlayGood(self):
@@ -2657,7 +2688,8 @@ class VerifyPackageTest(CpuTestBase):
                       self._TestVerifyEbuildOverlay,
                       cpv, overlay, evil_path, True)
 
-  def _TestGetMaskBits(self, cpv, output):
+  def _TestSetUpgradedMaskBits(self, pinfo, output):
+    cpv = pinfo.upgraded_cpv
     cmdargs = []
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs,
                                          _curr_arch=DEFAULT_ARCH,
@@ -2668,7 +2700,7 @@ class VerifyPackageTest(CpuTestBase):
 
     # Replay script
     mocked_upgrader._GenPortageEnvvars(mocked_upgrader._curr_arch,
-                                       False).AndReturn('envvars')
+                                       unstable_ok=False).AndReturn('envvars')
     mocked_upgrader._GetBoardCmd('equery').AndReturn('equery')
     run_result = RunCommandResult(returncode=0,
                                   output=output)
@@ -2680,30 +2712,36 @@ class VerifyPackageTest(CpuTestBase):
     self.mox.ReplayAll()
 
     # Verify
-    result = cpu.Upgrader._GetMaskBits(mocked_upgrader, cpv)
+    cpu.Upgrader._SetUpgradedMaskBits(mocked_upgrader, pinfo)
     self.mox.VerifyAll()
-
-    return result
 
   def testGetMaskBitsUnmaskedStable(self):
     output = '[-P-] [  ] foo/bar-2.7.0:0'
-    result = self._TestGetMaskBits('foo/bar-2.7.0', output)
-    self.assertEquals(result, (True, True))
+    pinfo = cpu.PInfo(upgraded_cpv='foo/bar-2.7.0')
+    self._TestSetUpgradedMaskBits(pinfo, output)
+    self.assertTrue(pinfo.upgraded_unmasked)
+    self.assertTrue(pinfo.upgraded_stable)
 
   def testGetMaskBitsUnmaskedUnstable(self):
     output = '[-P-] [ ~] foo/bar-2.7.3:0'
-    result = self._TestGetMaskBits('foo/bar-2.7.3', output)
-    self.assertEquals(result, (True, False))
+    pinfo = cpu.PInfo(upgraded_cpv='foo/bar-2.7.3')
+    self._TestSetUpgradedMaskBits(pinfo, output)
+    self.assertTrue(pinfo.upgraded_unmasked)
+    self.assertFalse(pinfo.upgraded_stable)
 
   def testGetMaskBitsMaskedStable(self):
     output = '[-P-] [M ] foo/bar-2.7.4:0'
-    result = self._TestGetMaskBits('foo/bar-2.7.4', output)
-    self.assertEquals(result, (False, True))
+    pinfo = cpu.PInfo(upgraded_cpv='foo/bar-2.7.4')
+    self._TestSetUpgradedMaskBits(pinfo, output)
+    self.assertFalse(pinfo.upgraded_unmasked)
+    self.assertTrue(pinfo.upgraded_stable)
 
   def testGetMaskBitsMaskedUnstable(self):
     output = '[-P-] [M~] foo/bar-2.7.4-r1:0'
-    result = self._TestGetMaskBits('foo/bar-2.7.4-r1', output)
-    self.assertEquals(result, (False, False))
+    pinfo = cpu.PInfo(upgraded_cpv='foo/bar-2.7.4-r1')
+    self._TestSetUpgradedMaskBits(pinfo, output)
+    self.assertFalse(pinfo.upgraded_unmasked)
+    self.assertFalse(pinfo.upgraded_stable)
 
 ##################
 ### CommitTest ###
@@ -3223,6 +3261,210 @@ class ResolveAndVerifyArgsTest(CpuTestBase):
                       ['dev-libs/B-2'], upgrade_mode)
     self.mox.VerifyAll()
 
+
+###########################
+### StabilizeEbuildTest ###
+###########################
+
+class StabilizeEbuildTest(CpuTestBase):
+
+  PREFIX_LINES = ['Garbletygook nonsense unimportant',
+                  'Some other nonsense with KEYWORDS mention',
+                  ]
+  POSTFIX_LINES = ['Some mention of KEYWORDS in a line',
+                   'And other nonsense',
+                   ]
+
+  def _TestStabilizeEbuild(self, ebuild_path, arch):
+
+    mocked_upgrader = self._MockUpgrader(cmdargs=[],
+                                         _curr_arch=arch)
+
+    # These are the steps of the replay script.
+    self.mox.ReplayAll()
+
+    # This is the verification phase.
+    with self.OutputCapturer():
+      cpu.Upgrader._StabilizeEbuild(mocked_upgrader, ebuild_path)
+    self.mox.VerifyAll()
+
+  def _AssertEqualsExcludingComments(self, lines1, lines2):
+    lines1 = [ln for ln in lines1 if not ln.startswith('#')]
+    lines2 = [ln for ln in lines2 if not ln.startswith('#')]
+
+    self.assertEquals(lines1, lines2)
+
+  def _TestStabilizeEbuildWrapper(self, ebuild_path, arch,
+                                  keyword_line, gold_keyword_line):
+    if not isinstance(keyword_line, list):
+      keyword_line = [keyword_line]
+    if not isinstance(gold_keyword_line, list):
+      gold_keyword_line = [gold_keyword_line]
+
+    input_content = self.PREFIX_LINES + keyword_line + self.POSTFIX_LINES
+    gold_content = self.PREFIX_LINES + gold_keyword_line + self.POSTFIX_LINES
+
+    # Write contents to ebuild_path before test.
+    with open(ebuild_path, 'w') as f:
+      f.write('\n'.join(input_content))
+
+    self._TestStabilizeEbuild(ebuild_path, arch)
+
+    # Read content back after test.
+    content = None
+    with open(ebuild_path, 'r') as f:
+      content = f.read()
+
+    content_lines = content.split('\n')
+    self._AssertEqualsExcludingComments(gold_content, content_lines)
+
+  @test_lib.tempfile_decorator
+  def testNothingToDo(self):
+    arch = 'arm'
+    keyword_line = 'KEYWORDS="amd64 arm ~mips x86"'
+    gold_keyword_line = keyword_line
+    self._TestStabilizeEbuildWrapper(self.tempfile, arch,
+                                     keyword_line, gold_keyword_line)
+
+  @test_lib.tempfile_decorator
+  def testNothingToDoFbsd(self):
+    arch = 'x86'
+    keyword_line = 'KEYWORDS="amd64 arm ~mips x86 ~x86-fbsd"'
+    gold_keyword_line = keyword_line
+    self._TestStabilizeEbuildWrapper(self.tempfile, arch,
+                                     keyword_line, gold_keyword_line)
+
+  @test_lib.tempfile_decorator
+  def testSimpleMiddleOfLine(self):
+    arch = 'arm'
+    keyword_line = 'KEYWORDS="amd64 ~arm ~mips x86"'
+    gold_keyword_line = 'KEYWORDS="amd64 arm ~mips x86"'
+    self._TestStabilizeEbuildWrapper(self.tempfile, arch,
+                                     keyword_line, gold_keyword_line)
+
+  @test_lib.tempfile_decorator
+  def testSimpleMiddleOfLineSpacePrefix(self):
+    arch = 'arm'
+    keyword_line = '    KEYWORDS="amd64 ~arm ~mips x86"'
+    gold_keyword_line = '    KEYWORDS="amd64 arm ~mips x86"'
+    self._TestStabilizeEbuildWrapper(self.tempfile, arch,
+                                     keyword_line, gold_keyword_line)
+
+  @test_lib.tempfile_decorator
+  def testSimpleStartOfLine(self):
+    arch = 'arm'
+    keyword_line = 'KEYWORDS="~arm amd64 ~mips x86"'
+    gold_keyword_line = 'KEYWORDS="arm amd64 ~mips x86"'
+    self._TestStabilizeEbuildWrapper(self.tempfile, arch,
+                                     keyword_line, gold_keyword_line)
+
+  @test_lib.tempfile_decorator
+  def testSimpleEndOfLine(self):
+    arch = 'arm'
+    keyword_line = 'KEYWORDS="amd64 ~mips x86 ~arm"'
+    gold_keyword_line = 'KEYWORDS="amd64 ~mips x86 arm"'
+    self._TestStabilizeEbuildWrapper(self.tempfile, arch,
+                                     keyword_line, gold_keyword_line)
+
+  @test_lib.tempfile_decorator
+  def testPreFbsd(self):
+    arch = 'x86'
+    keyword_line = 'KEYWORDS="amd64 ~arm ~mips ~x86 ~x86-fbsd"'
+    gold_keyword_line = 'KEYWORDS="amd64 ~arm ~mips x86 ~x86-fbsd"'
+    self._TestStabilizeEbuildWrapper(self.tempfile, arch,
+                                     keyword_line, gold_keyword_line)
+
+  @test_lib.tempfile_decorator
+  def testPostFbsd(self):
+    arch = 'x86'
+    keyword_line = 'KEYWORDS="amd64 ~arm ~mips ~x86-fbsd ~x86"'
+    gold_keyword_line = 'KEYWORDS="amd64 ~arm ~mips ~x86-fbsd x86"'
+    self._TestStabilizeEbuildWrapper(self.tempfile, arch,
+                                     keyword_line, gold_keyword_line)
+
+  @test_lib.tempfile_decorator
+  def testMultilineKeywordsMiddle(self):
+    arch = 'arm'
+    keyword_lines = ['KEYWORDS="amd64',
+                     '  ~arm',
+                     '  ~mips',
+                     '  x86"',
+                     ]
+    gold_keyword_lines = ['KEYWORDS="amd64',
+                          '  arm',
+                          '  ~mips',
+                          '  x86"',
+                          ]
+    self._TestStabilizeEbuildWrapper(self.tempfile, arch,
+                                     keyword_lines, gold_keyword_lines)
+
+  @test_lib.tempfile_decorator
+  def testMultilineKeywordsStart(self):
+    arch = 'amd64'
+    keyword_lines = ['KEYWORDS="~amd64',
+                     '  arm',
+                     '  ~mips',
+                     '  x86"',
+                     ]
+    gold_keyword_lines = ['KEYWORDS="amd64',
+                          '  arm',
+                          '  ~mips',
+                          '  x86"',
+                          ]
+    self._TestStabilizeEbuildWrapper(self.tempfile, arch,
+                                     keyword_lines, gold_keyword_lines)
+
+  @test_lib.tempfile_decorator
+  def testMultilineKeywordsEnd(self):
+    arch = 'x86'
+    keyword_lines = ['KEYWORDS="amd64',
+                     '  arm',
+                     '  ~mips',
+                     '  ~x86"',
+                     ]
+    gold_keyword_lines = ['KEYWORDS="amd64',
+                          '  arm',
+                          '  ~mips',
+                          '  x86"',
+                          ]
+    self._TestStabilizeEbuildWrapper(self.tempfile, arch,
+                                     keyword_lines, gold_keyword_lines)
+
+  @test_lib.tempfile_decorator
+  def testMultipleKeywordLinesOneChange(self):
+    arch = 'arm'
+    keyword_lines = ['KEYWORDS="amd64 arm mips x86',
+                     'KEYWORDS="~amd64 ~arm ~mips ~x86',
+                     ]
+    gold_keyword_lines = ['KEYWORDS="amd64 arm mips x86',
+                          'KEYWORDS="~amd64 arm ~mips ~x86',
+                          ]
+    self._TestStabilizeEbuildWrapper(self.tempfile, arch,
+                                     keyword_lines, gold_keyword_lines)
+
+  @test_lib.tempfile_decorator
+  def testMultipleKeywordLinesMultipleChanges(self):
+    arch = 'arm'
+    keyword_lines = ['KEYWORDS="amd64 ~arm mips x86',
+                     'KEYWORDS="~amd64 ~arm ~mips ~x86',
+                     ]
+    gold_keyword_lines = ['KEYWORDS="amd64 arm mips x86',
+                          'KEYWORDS="~amd64 arm ~mips ~x86',
+                          ]
+    self._TestStabilizeEbuildWrapper(self.tempfile, arch,
+                                     keyword_lines, gold_keyword_lines)
+
+  @test_lib.tempfile_decorator
+  def testMultipleKeywordLinesMultipleChangesSpacePrefix(self):
+    arch = 'arm'
+    keyword_lines = ['     KEYWORDS="amd64 ~arm mips x86',
+                     '     KEYWORDS="~amd64 ~arm ~mips ~x86',
+                     ]
+    gold_keyword_lines = ['     KEYWORDS="amd64 arm mips x86',
+                          '     KEYWORDS="~amd64 arm ~mips ~x86',
+                          ]
+    self._TestStabilizeEbuildWrapper(self.tempfile, arch,
+                                     keyword_lines, gold_keyword_lines)
 
 ###############################
 ### GetPreOrderDepGraphTest ###
