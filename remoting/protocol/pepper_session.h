@@ -69,6 +69,7 @@ class PepperSession : public Session,
   friend class PepperSessionManager;
 
   typedef std::map<std::string, Transport*> ChannelsMap;
+  typedef base::Callback<void(JingleMessageReply::ErrorType)> ReplyCallback;
 
   explicit PepperSession(PepperSessionManager* session_manager);
 
@@ -86,15 +87,19 @@ class PepperSession : public Session,
   // Handler for session-initiate response.
   void OnSessionInitiateResponse(const buzz::XmlElement* response);
 
-  // Called by PepperSessionManager on incoming |message|. Must fill
-  // in |reply|.
+  // Called by PepperSessionManager on incoming |message|. Must call
+  // |reply_callback| to send reply message before sending any other
+  // messages.
   void OnIncomingMessage(const JingleMessage& message,
-                         JingleMessageReply* reply);
+                         const ReplyCallback& reply_callback);
 
   // Message handlers for incoming messages.
-  void OnAccept(const JingleMessage& message, JingleMessageReply* reply);
-  void OnSessionInfo(const JingleMessage& message, JingleMessageReply* reply);
-  void OnTerminate(const JingleMessage& message, JingleMessageReply* reply);
+  void OnAccept(const JingleMessage& message,
+                const ReplyCallback& reply_callback);
+  void OnSessionInfo(const JingleMessage& message,
+                     const ReplyCallback& reply_callback);
+  void OnTerminate(const JingleMessage& message,
+                   const ReplyCallback& reply_callback);
   void ProcessTransportInfo(const JingleMessage& message);
 
   // Called from OnAccept() to initialize session config.

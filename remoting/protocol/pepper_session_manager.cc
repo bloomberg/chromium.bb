@@ -127,7 +127,7 @@ bool PepperSessionManager::OnSignalStrategyIncomingStanza(
   JingleMessage message;
   std::string error;
   if (!message.ParseXml(stanza, &error)) {
-    SendReply(stanza, JingleMessageReply(JingleMessageReply::BAD_REQUEST));
+    SendReply(stanza, JingleMessageReply::BAD_REQUEST);
     return true;
   }
 
@@ -135,7 +135,7 @@ bool PepperSessionManager::OnSignalStrategyIncomingStanza(
     // Description must be present in session-initiate messages.
     DCHECK(message.description.get());
 
-    SendReply(stanza, JingleMessageReply());
+    SendReply(stanza, JingleMessageReply::NONE);
 
     scoped_ptr<Authenticator> authenticator =
         authenticator_factory_->CreateAuthenticator(
@@ -161,19 +161,18 @@ bool PepperSessionManager::OnSignalStrategyIncomingStanza(
 
   SessionsMap::iterator it = sessions_.find(message.sid);
   if (it == sessions_.end()) {
-    SendReply(stanza, JingleMessageReply(JingleMessageReply::INVALID_SID));
+    SendReply(stanza, JingleMessageReply::INVALID_SID);
     return true;
   }
 
-  JingleMessageReply reply;
-  it->second->OnIncomingMessage(message, &reply);
-  SendReply(stanza, reply);
+  it->second->OnIncomingMessage(message, base::Bind(
+      &PepperSessionManager::SendReply, base::Unretained(this), stanza));
   return true;
 }
 
 void PepperSessionManager::SendReply(const buzz::XmlElement* original_stanza,
-                                     const JingleMessageReply& reply) {
-  buzz::XmlElement* stanza = reply.ToXml(original_stanza);
+                                     JingleMessageReply::ErrorType error) {
+  buzz::XmlElement* stanza = JingleMessageReply(error).ToXml(original_stanza);
   signal_strategy_->SendStanza(stanza);
 }
 

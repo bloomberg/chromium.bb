@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "net/base/x509_certificate.h"
 #include "remoting/jingle_glue/signal_strategy.h"
+#include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/session_manager.h"
 #include "remoting/protocol/transport.h"
 #include "remoting/protocol/transport_config.h"
@@ -35,8 +36,6 @@ class JingleInfoRequest;
 
 namespace protocol {
 
-struct JingleMessage;
-struct JingleMessageReply;
 class PepperSession;
 
 // This class implements SessionManager interface on top of the Pepper
@@ -79,7 +78,7 @@ class PepperSessionManager : public SessionManager,
 
   IqSender* iq_sender() { return iq_sender_.get(); }
   void SendReply(const buzz::XmlElement* original_stanza,
-                 const JingleMessageReply& reply);
+                 JingleMessageReply::ErrorType error);
 
   // Called by PepperSession when it is being destroyed.
   void SessionDestroyed(PepperSession* session);

@@ -275,43 +275,46 @@ void PepperSession::OnTransportDeleted(Transport* transport) {
 }
 
 void PepperSession::OnIncomingMessage(const JingleMessage& message,
-                                      JingleMessageReply* reply) {
+                                      const ReplyCallback& reply_callback) {
   DCHECK(CalledOnValidThread());
 
   if (message.from != peer_jid_) {
     // Ignore messages received from a different Jid.
-    *reply = JingleMessageReply(JingleMessageReply::INVALID_SID);
+    reply_callback.Run(JingleMessageReply::INVALID_SID);
     return;
   }
 
   switch (message.action) {
     case JingleMessage::SESSION_ACCEPT:
-      OnAccept(message, reply);
+      OnAccept(message, reply_callback);
       break;
 
     case JingleMessage::SESSION_INFO:
-      OnSessionInfo(message, reply);
+      OnSessionInfo(message, reply_callback);
       break;
 
     case JingleMessage::TRANSPORT_INFO:
+      reply_callback.Run(JingleMessageReply::NONE);
       ProcessTransportInfo(message);
       break;
 
     case JingleMessage::SESSION_TERMINATE:
-      OnTerminate(message, reply);
+      OnTerminate(message, reply_callback);
       break;
 
     default:
-      *reply = JingleMessageReply(JingleMessageReply::UNEXPECTED_REQUEST);
+      reply_callback.Run(JingleMessageReply::UNEXPECTED_REQUEST);
   }
 }
 
 void PepperSession::OnAccept(const JingleMessage& message,
-                             JingleMessageReply* reply) {
+                             const ReplyCallback& reply_callback) {
   if (state_ != CONNECTING) {
-    *reply = JingleMessageReply(JingleMessageReply::UNEXPECTED_REQUEST);
+    reply_callback.Run(JingleMessageReply::UNEXPECTED_REQUEST);
     return;
   }
+
+  reply_callback.Run(JingleMessageReply::NONE);
 
   const buzz::XmlElement* auth_message =
       message.description->authenticator_message();
@@ -344,23 +347,26 @@ void PepperSession::OnAccept(const JingleMessage& message,
 }
 
 void PepperSession::OnSessionInfo(const JingleMessage& message,
-                                  JingleMessageReply* reply) {
-  if (message.info.get() &&
-      Authenticator::IsAuthenticatorMessage(message.info.get())) {
-    if (state_ != CONNECTED ||
-        authenticator_->state() != Authenticator::WAITING_MESSAGE) {
-      LOG(WARNING) << "Received unexpected authenticator message "
-                   << message.info->Str();
-      *reply = JingleMessageReply(JingleMessageReply::UNEXPECTED_REQUEST);
-      CloseInternal(INCOMPATIBLE_PROTOCOL);
-      return;
-    }
-
-    authenticator_->ProcessMessage(message.info.get());
-    ProcessAuthenticationStep();
-  } else {
-    *reply = JingleMessageReply(JingleMessageReply::UNSUPPORTED_INFO);
+                                  const ReplyCallback& reply_callback) {
+  if (!message.info.get() ||
+      !Authenticator::IsAuthenticatorMessage(message.info.get())) {
+    reply_callback.Run(JingleMessageReply::UNSUPPORTED_INFO);
+    return;
   }
+
+  if (state_ != CONNECTED ||
+      authenticator_->state() != Authenticator::WAITING_MESSAGE) {
+    LOG(WARNING) << "Received unexpected authenticator message "
+                 << message.info->Str();
+    reply_callback.Run(JingleMessageReply::UNEXPECTED_REQUEST);
+    CloseInternal(INCOMPATIBLE_PROTOCOL);
+    return;
+  }
+
+  reply_callback.Run(JingleMessageReply::NONE);
+
+  authenticator_->ProcessMessage(message.info.get());
+  ProcessAuthenticationStep();
 }
 
 void PepperSession::ProcessTransportInfo(const JingleMessage& message) {
@@ -377,12 +383,14 @@ void PepperSession::ProcessTransportInfo(const JingleMessage& message) {
 }
 
 void PepperSession::OnTerminate(const JingleMessage& message,
-                                JingleMessageReply* reply) {
+                                const ReplyCallback& reply_callback) {
   if (state_ != CONNECTING && state_ != CONNECTED && state_ != AUTHENTICATED) {
     LOG(WARNING) << "Received unexpected session-terminate message.";
-    CloseInternal(INCOMPATIBLE_PROTOCOL);
+    reply_callback.Run(JingleMessageReply::UNEXPECTED_REQUEST);
     return;
   }
+
+  reply_callback.Run(JingleMessageReply::NONE);
 
   switch (message.reason) {
     case JingleMessage::SUCCESS:

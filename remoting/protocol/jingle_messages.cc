@@ -339,7 +339,7 @@ JingleMessageReply::JingleMessageReply()
 }
 
 JingleMessageReply::JingleMessageReply(ErrorType error)
-    : type(REPLY_ERROR),
+    : type(error != NONE ? REPLY_ERROR : REPLY_RESULT),
       error_type(error) {
 }
 
