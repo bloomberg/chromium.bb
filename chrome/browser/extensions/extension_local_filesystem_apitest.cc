@@ -8,6 +8,8 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 
+using content::BrowserContext;
+
 #if defined(OS_CHROMEOS)
 
 class FileSystemExtensionApiTest : public ExtensionApiTest {
@@ -21,7 +23,8 @@ class FileSystemExtensionApiTest : public ExtensionApiTest {
   void AddTmpMountPoint() {
     // Add tmp mount point.
     fileapi::ExternalFileSystemMountPointProvider* provider =
-        browser()->profile()->GetFileSystemContext()->external_provider();
+        BrowserContext::GetFileSystemContext(browser()->profile())->
+            external_provider();
     provider->AddMountPoint(test_mount_point_);
   }
 

@@ -15,6 +15,8 @@
 #include "content/public/browser/web_ui.h"
 #include "net/base/net_util.h"
 
+using content::BrowserContext;
+
 namespace quota_internals {
 
 QuotaInternalsHandler::QuotaInternalsHandler() {}
@@ -84,7 +86,8 @@ void QuotaInternalsHandler::SendMessage(const std::string& message,
 void QuotaInternalsHandler::OnRequestInfo(const base::ListValue*) {
   if (!proxy_)
     proxy_ = new QuotaInternalsProxy(this);
-  proxy_->RequestInfo(Profile::FromWebUI(web_ui())->GetQuotaManager());
+  proxy_->RequestInfo(
+      content::BrowserContext::GetQuotaManager(Profile::FromWebUI(web_ui())));
 }
 
 }  // namespace quota_internals

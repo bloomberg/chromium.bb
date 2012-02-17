@@ -14,6 +14,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/test/test_browser_thread.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
 
 namespace {
@@ -29,7 +30,7 @@ class BrowsingDataDatabaseHelperTest : public InProcessBrowserTest {
  public:
   virtual void CreateDatabases() {
     webkit_database::DatabaseTracker* db_tracker =
-        browser()->profile()->GetDatabaseTracker();
+        BrowserContext::GetDatabaseTracker(browser()->profile());
     string16 db_name = ASCIIToUTF16("db");
     string16 description = ASCIIToUTF16("db_description");
     int64 size;

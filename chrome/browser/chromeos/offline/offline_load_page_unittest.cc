@@ -50,6 +50,8 @@ class OfflineLoadPageTest : public ChromeRenderViewHostTestHarness {
 
   OfflineLoadPageTest()
       : ui_thread_(BrowserThread::UI, MessageLoop::current()),
+        file_user_blocking_thread_(
+            BrowserThread::FILE_USER_BLOCKING, MessageLoop::current()),
         io_thread_(BrowserThread::IO, MessageLoop::current()) {
   }
 
@@ -86,6 +88,7 @@ class OfflineLoadPageTest : public ChromeRenderViewHostTestHarness {
  private:
   UserResponse user_response_;
   content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_user_blocking_thread_;
   content::TestBrowserThread io_thread_;
 
   // Initializes / shuts down a stub CrosLibrary.

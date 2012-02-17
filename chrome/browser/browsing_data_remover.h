@@ -130,6 +130,9 @@ class BrowsingDataRemover : public content::NotificationObserver,
   // BrowsingDataRemover uses. This method generates that mask.
   static int GenerateQuotaClientMask(int remove_mask);
 
+  // Used for testing.
+  void OverrideQuotaManagerForTesting(quota::QuotaManager* quota_manager);
+
   static bool is_removing() { return removing_; }
 
  private:

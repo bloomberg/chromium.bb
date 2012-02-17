@@ -67,6 +67,7 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
+using content::BrowserContext;
 using content::BrowserMessageFilter;
 using content::BrowserThread;
 using content::ChildProcessHostImpl;
@@ -273,7 +274,7 @@ RenderMessageFilter::RenderMessageFilter(
       resource_context_(browser_context->GetResourceContext()),
       render_widget_helper_(render_widget_helper),
       incognito_(browser_context->IsOffTheRecord()),
-      webkit_context_(browser_context->GetWebKitContext()),
+      webkit_context_(BrowserContext::GetWebKitContext(browser_context)),
       render_process_id_(render_process_id),
       cpu_usage_(0) {
   DCHECK(request_context_);

@@ -61,12 +61,12 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
-#include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/browser/in_process_webkit/dom_storage_context.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/common/content_constants.h"
 #include "content/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
@@ -81,6 +81,7 @@
 #include "webkit/plugins/npapi/mock_plugin_list.h"
 #include "webkit/quota/quota_manager.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
 using content::PluginService;
 
@@ -375,38 +376,8 @@ class ExtensionTestingProfile : public TestingProfile {
   }
   virtual ExtensionService* GetExtensionService() { return service_; }
 
-  virtual ChromeAppCacheService* GetAppCacheService() {
-    if (!appcache_service_) {
-      appcache_service_ = new ChromeAppCacheService(NULL);
-      if (!BrowserThread::PostTask(
-              BrowserThread::IO, FROM_HERE,
-              base::Bind(
-                  &ChromeAppCacheService::InitializeOnIOThread,
-                  appcache_service_.get(),
-                  IsOffTheRecord()
-                  ? FilePath() : GetPath().Append(chrome::kAppCacheDirname),
-                  GetResourceContext(),
-                  make_scoped_refptr(GetExtensionSpecialStoragePolicy()))))
-        NOTREACHED();
-    }
-    return appcache_service_;
-  }
-
-  virtual fileapi::FileSystemContext* GetFileSystemContext() {
-    if (!file_system_context_) {
-      quota::QuotaManager* quota_manager = GetQuotaManager();
-      file_system_context_ = CreateFileSystemContext(
-          GetPath(), IsOffTheRecord(),
-          GetExtensionSpecialStoragePolicy(),
-          quota_manager ? quota_manager->proxy() : NULL);
-    }
-    return file_system_context_;
-  }
-
  private:
   ExtensionService* service_;
-  scoped_refptr<ChromeAppCacheService> appcache_service_;
-  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
 };
 
 // Our message loop may be used in tests which require it to be an IO loop.
@@ -3104,7 +3075,8 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   EXPECT_EQ(1U, callback.list_.size());
 
   // Open a database.
-  webkit_database::DatabaseTracker* db_tracker = profile_->GetDatabaseTracker();
+  webkit_database::DatabaseTracker* db_tracker =
+      BrowserContext::GetDatabaseTracker(profile_.get());
   string16 db_name = UTF8ToUTF16("db");
   string16 description = UTF8ToUTF16("db_description");
   int64 size;
@@ -3118,7 +3090,7 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   // Create local storage. We only simulate this by creating the backing file
   // since webkit is not initialized.
   DOMStorageContext* context =
-      profile_->GetWebKitContext()->dom_storage_context();
+      BrowserContext::GetWebKitContext(profile_.get())->dom_storage_context();
   FilePath lso_path = context->GetLocalStorageFilePath(origin_id);
   EXPECT_TRUE(file_util::CreateDirectory(lso_path.DirName()));
   EXPECT_EQ(0, file_util::WriteFile(lso_path, NULL, 0));
@@ -3127,7 +3099,7 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   // Create indexed db. Similarly, it is enough to only simulate this by
   // creating the directory on the disk.
   IndexedDBContext* idb_context =
-      profile_->GetWebKitContext()->indexed_db_context();
+      BrowserContext::GetWebKitContext(profile_.get())->indexed_db_context();
   FilePath idb_path = idb_context->GetIndexedDBFilePath(origin_id);
   EXPECT_TRUE(file_util::CreateDirectory(idb_path));
   EXPECT_TRUE(file_util::DirectoryExists(idb_path));
@@ -3213,7 +3185,8 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   EXPECT_EQ(1U, callback.list_.size());
 
   // Open a database.
-  webkit_database::DatabaseTracker* db_tracker = profile_->GetDatabaseTracker();
+  webkit_database::DatabaseTracker* db_tracker =
+      BrowserContext::GetDatabaseTracker(profile_.get());
   string16 db_name = UTF8ToUTF16("db");
   string16 description = UTF8ToUTF16("db_description");
   int64 size;
@@ -3227,7 +3200,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   // Create local storage. We only simulate this by creating the backing file
   // since webkit is not initialized.
   DOMStorageContext* context =
-      profile_->GetWebKitContext()->dom_storage_context();
+      BrowserContext::GetWebKitContext(profile_.get())->dom_storage_context();
   FilePath lso_path = context->GetLocalStorageFilePath(origin_id);
   EXPECT_TRUE(file_util::CreateDirectory(lso_path.DirName()));
   EXPECT_EQ(0, file_util::WriteFile(lso_path, NULL, 0));
@@ -3236,7 +3209,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   // Create indexed db. Similarly, it is enough to only simulate this by
   // creating the directory on the disk.
   IndexedDBContext* idb_context =
-      profile_->GetWebKitContext()->indexed_db_context();
+      BrowserContext::GetWebKitContext(profile_.get())->indexed_db_context();
   FilePath idb_path = idb_context->GetIndexedDBFilePath(origin_id);
   EXPECT_TRUE(file_util::CreateDirectory(idb_path));
   EXPECT_TRUE(file_util::DirectoryExists(idb_path));

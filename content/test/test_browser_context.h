@@ -20,6 +20,10 @@ class TestBrowserContext : public content::BrowserContext {
   TestBrowserContext();
   virtual ~TestBrowserContext();
 
+  // Takes ownership of the temporary directory so that it's not deleted when
+  // this object is destructed.
+  FilePath TakePath();
+
   virtual FilePath GetPath() OVERRIDE;
   virtual bool IsOffTheRecord() OVERRIDE;
   virtual content::DownloadManager* GetDownloadManager() OVERRIDE;
@@ -33,19 +37,11 @@ class TestBrowserContext : public content::BrowserContext {
       GetGeolocationPermissionContext() OVERRIDE;
   virtual content::SpeechInputPreferences* GetSpeechInputPreferences() OVERRIDE;
   virtual bool DidLastSessionExitCleanly() OVERRIDE;
-  virtual quota::QuotaManager* GetQuotaManager() OVERRIDE;
-  virtual WebKitContext* GetWebKitContext() OVERRIDE;
-  virtual webkit_database::DatabaseTracker* GetDatabaseTracker() OVERRIDE;
-  virtual ChromeBlobStorageContext* GetBlobStorageContext() OVERRIDE;
-  virtual ChromeAppCacheService* GetAppCacheService() OVERRIDE;
-  virtual fileapi::FileSystemContext* GetFileSystemContext() OVERRIDE;
+  virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DOMStorageTest, SessionOnly);
   FRIEND_TEST_ALL_PREFIXES(DOMStorageTest, SaveSessionState);
-
-  // WebKitContext, lazily initialized by GetWebKitContext().
-  scoped_refptr<WebKitContext> webkit_context_;
 
   ScopedTempDir browser_context_dir_;
 

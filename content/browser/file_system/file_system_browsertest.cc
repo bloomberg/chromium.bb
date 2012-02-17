@@ -58,7 +58,8 @@ class FileSystemBrowserTestWithLowQuota : public FileSystemBrowserTest {
     const int kTemporaryStorageQuotaMaxSize =
         kInitialQuotaKilobytes * 1024 * QuotaManager::kPerHostTemporaryPortion;
     SetTempQuota(
-        kTemporaryStorageQuotaMaxSize, browser()->profile()->GetQuotaManager());
+        kTemporaryStorageQuotaMaxSize,
+        content::BrowserContext::GetQuotaManager(browser()->profile()));
   }
 
   static void SetTempQuota(int64 bytes, scoped_refptr<QuotaManager> qm) {

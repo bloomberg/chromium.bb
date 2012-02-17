@@ -10,10 +10,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/threading/thread.h"
-#include "content/browser/appcache/chrome_appcache_service.h"
-#include "content/browser/chrome_blob_storage_context.h"
 #include "content/browser/download/download_manager_impl.h"
-#include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -23,8 +20,6 @@
 #include "content/shell/shell_download_manager_delegate.h"
 #include "content/shell/shell_resource_context.h"
 #include "content/shell/shell_url_request_context_getter.h"
-#include "webkit/database/database_tracker.h"
-#include "webkit/quota/quota_manager.h"
 
 #if defined(OS_WIN)
 #include "base/base_paths_win.h"
@@ -164,7 +159,7 @@ ResourceContext* ShellBrowserContext::GetResourceContext()  {
   if (!resource_context_.get()) {
     resource_context_.reset(new ShellResourceContext(
         static_cast<ShellURLRequestContextGetter*>(GetRequestContext()),
-        GetBlobStorageContext()));
+        BrowserContext::GetBlobStorageContext(this)));
   }
   return resource_context_.get();
 }
@@ -194,73 +189,8 @@ bool ShellBrowserContext::DidLastSessionExitCleanly()  {
   return true;
 }
 
-quota::QuotaManager* ShellBrowserContext::GetQuotaManager()  {
-  CreateQuotaManagerAndClients();
-  return quota_manager_.get();
-}
-
-WebKitContext* ShellBrowserContext::GetWebKitContext()  {
-  CreateQuotaManagerAndClients();
-  return webkit_context_.get();
-}
-
-webkit_database::DatabaseTracker* ShellBrowserContext::GetDatabaseTracker()  {
-  CreateQuotaManagerAndClients();
-  return db_tracker_;
-}
-
-ChromeBlobStorageContext* ShellBrowserContext::GetBlobStorageContext()  {
-  if (!blob_storage_context_) {
-    blob_storage_context_ = new ChromeBlobStorageContext();
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(
-            &ChromeBlobStorageContext::InitializeOnIOThread,
-            blob_storage_context_.get()));
-  }
-  return blob_storage_context_;
-}
-
-ChromeAppCacheService* ShellBrowserContext::GetAppCacheService()  {
-  CreateQuotaManagerAndClients();
-  return appcache_service_;
-}
-
-fileapi::FileSystemContext* ShellBrowserContext::GetFileSystemContext()  {
-  CreateQuotaManagerAndClients();
-  return file_system_context_.get();
-}
-
-void ShellBrowserContext::CreateQuotaManagerAndClients() {
-  if (quota_manager_.get())
-    return;
-  quota_manager_ = new quota::QuotaManager(
-      IsOffTheRecord(),
-      GetPath(),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
-      NULL);
-
-  file_system_context_ = CreateFileSystemContext(
-      GetPath(), IsOffTheRecord(), NULL, quota_manager_->proxy());
-  db_tracker_ = new webkit_database::DatabaseTracker(
-      GetPath(), IsOffTheRecord(), false, NULL, quota_manager_->proxy(),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
-  webkit_context_ = new WebKitContext(
-      IsOffTheRecord(), GetPath(), NULL, false, quota_manager_->proxy(),
-      BrowserThread::GetMessageLoopProxyForThread(
-          BrowserThread::WEBKIT_DEPRECATED));
-  appcache_service_ = new ChromeAppCacheService(quota_manager_->proxy());
-  scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy;
-  BrowserThread::PostTask(
-    BrowserThread::IO, FROM_HERE,
-    base::Bind(
-        &ChromeAppCacheService::InitializeOnIOThread,
-        appcache_service_.get(),
-        IsOffTheRecord()
-            ? FilePath() : GetPath().Append(FILE_PATH_LITERAL("AppCache")),
-        GetResourceContext(),
-        special_storage_policy));
+quota::SpecialStoragePolicy* ShellBrowserContext::GetSpecialStoragePolicy() {
+  return NULL;
 }
 
 }  // namespace content

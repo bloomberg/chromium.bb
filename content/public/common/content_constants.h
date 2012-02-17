@@ -10,9 +10,14 @@
 
 #include <stddef.h>         // For size_t
 
+#include "base/file_path.h"
 #include "content/common/content_export.h"
 
 namespace content {
+
+// The name of the directory under BrowserContext::GetPath where the AppCache is
+// put.
+CONTENT_EXPORT extern const FilePath::CharType kAppCacheDirname[];
 
 CONTENT_EXPORT extern const size_t kMaxRendererProcessCount;
 

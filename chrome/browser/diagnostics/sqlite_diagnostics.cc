@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "content/public/common/content_constants.h"
 #include "sql/connection.h"
 #include "sql/diagnostic_error_delegate.h"
 #include "sql/statement.h"
@@ -152,7 +153,7 @@ DiagnosticTest* MakeSqliteThumbnailsDbTest() {
 }
 
 DiagnosticTest* MakeSqliteAppCacheDbTest() {
-  FilePath appcache_dir(chrome::kAppCacheDirname);
+  FilePath appcache_dir(content::kAppCacheDirname);
   FilePath appcache_db = appcache_dir.Append(appcache::kAppCacheDatabaseName);
   return new SqliteIntegrityTest(false, ASCIIToUTF16("AppCache DB"),
                                  appcache_db);

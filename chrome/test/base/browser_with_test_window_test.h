@@ -116,6 +116,7 @@ class BrowserWithTestWindowTest : public testing::Test {
   MessageLoopForUI ui_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
+  content::TestBrowserThread file_user_blocking_thread_;
 
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<TestBrowserWindow> window_;

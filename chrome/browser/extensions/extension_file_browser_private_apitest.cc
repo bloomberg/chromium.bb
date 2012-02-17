@@ -17,6 +17,7 @@
 using ::testing::_;
 using ::testing::ReturnRef;
 using ::testing::StrEq;
+using content::BrowserContext;
 
 class ExtensionFileBrowserPrivateApiTest : public ExtensionApiTest {
  public:
@@ -51,7 +52,8 @@ class ExtensionFileBrowserPrivateApiTest : public ExtensionApiTest {
 
   void AddTmpMountPoint() {
     fileapi::ExternalFileSystemMountPointProvider* provider =
-        browser()->profile()->GetFileSystemContext()->external_provider();
+        BrowserContext::GetFileSystemContext(browser()->profile())->
+            external_provider();
     provider->AddMountPoint(test_mount_point_);
   }
 

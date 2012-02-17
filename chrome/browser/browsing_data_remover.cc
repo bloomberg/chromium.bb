@@ -58,6 +58,7 @@
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/quota_types.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadManager;
 using content::UserMetricsAction;
@@ -283,7 +284,8 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     // be removed if a WEBKIT thread exists, so check that first:
     if (BrowserThread::IsMessageLoopValid(BrowserThread::WEBKIT_DEPRECATED)) {
       // We assume the end time is now.
-      profile_->GetWebKitContext()->DeleteDataModifiedSince(delete_begin_);
+      BrowserContext::GetWebKitContext(profile_)->
+          DeleteDataModifiedSince(delete_begin_);
     }
   }
 
@@ -292,14 +294,13 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     // TODO(mkwst): At the moment, we don't have the ability to pass a mask into
     // QuotaManager. Until then, we'll clear all quota-managed data types if any
     // ought to be cleared.
-    quota_manager_ = profile_->GetQuotaManager();
-    if (quota_manager_) {
-      waiting_for_clear_quota_managed_data_ = true;
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::Bind(&BrowsingDataRemover::ClearQuotaManagedDataOnIOThread,
-                     base::Unretained(this)));
-    }
+    if (!quota_manager_)
+      quota_manager_ = content::BrowserContext::GetQuotaManager(profile_);
+    waiting_for_clear_quota_managed_data_ = true;
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&BrowsingDataRemover::ClearQuotaManagedDataOnIOThread,
+                   base::Unretained(this)));
   }
 
   if (remove_mask & REMOVE_PLUGIN_DATA) {
@@ -383,6 +384,11 @@ void BrowsingDataRemover::RemoveObserver(Observer* observer) {
 void BrowsingDataRemover::OnHistoryDeletionDone() {
   waiting_for_clear_history_ = false;
   NotifyAndDeleteIfDone();
+}
+
+void BrowsingDataRemover::OverrideQuotaManagerForTesting(
+    quota::QuotaManager* quota_manager) {
+  quota_manager_ = quota_manager;
 }
 
 base::Time BrowsingDataRemover::CalculateBeginDeleteTime(
@@ -569,7 +575,7 @@ void BrowsingDataRemover::ClearQuotaManagedDataOnIOThread() {
     // all origins with persistent quota modified within the user-specified
     // timeframe, and deal with the resulting set in
     // OnGotPersistentQuotaManagedOrigins.
-    profile_->GetQuotaManager()->GetOriginsModifiedSince(
+    quota_manager_->GetOriginsModifiedSince(
         quota::kStorageTypePersistent, delete_begin_,
         base::Bind(&BrowsingDataRemover::OnGotQuotaManagedOrigins,
                    base::Unretained(this)));
@@ -580,7 +586,7 @@ void BrowsingDataRemover::ClearQuotaManagedDataOnIOThread() {
 
   // Do the same for temporary quota, regardless, passing the resulting set into
   // OnGotTemporaryQuotaManagedOrigins.
-  profile_->GetQuotaManager()->GetOriginsModifiedSince(
+  quota_manager_->GetOriginsModifiedSince(
       quota::kStorageTypeTemporary, delete_begin_,
       base::Bind(&BrowsingDataRemover::OnGotQuotaManagedOrigins,
                  base::Unretained(this)));

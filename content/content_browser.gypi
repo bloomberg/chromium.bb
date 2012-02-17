@@ -150,6 +150,7 @@
     'browser/appcache/chrome_appcache_service.h',
     'browser/browser_child_process_host_impl.cc',
     'browser/browser_child_process_host_impl.h',
+    'browser/browser_context.cc',
     'browser/browser_main.cc',
     'browser/browser_main.h',
     'browser/browser_main_loop.cc',

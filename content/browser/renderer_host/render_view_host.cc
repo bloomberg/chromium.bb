@@ -59,6 +59,7 @@
 #include "webkit/glue/webdropdata.h"
 
 using base::TimeDelta;
+using content::BrowserContext;
 using content::BrowserMessageFilter;
 using content::BrowserThread;
 using content::DomOperationNotificationDetails;
@@ -136,7 +137,7 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
       render_view_termination_status_(base::TERMINATION_STATUS_STILL_RUNNING) {
   if (!session_storage_namespace_) {
     session_storage_namespace_ = new SessionStorageNamespace(
-        process()->GetBrowserContext()->GetWebKitContext());
+        BrowserContext::GetWebKitContext(process()->GetBrowserContext()));
   }
 
   DCHECK(instance_);

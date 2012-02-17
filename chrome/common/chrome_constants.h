@@ -57,7 +57,6 @@ extern const FilePath::CharType kCacheDirname[];
 extern const FilePath::CharType kCRLSetFilename[];
 extern const FilePath::CharType kMediaCacheDirname[];
 extern const FilePath::CharType kOffTheRecordMediaCacheDirname[];
-extern const FilePath::CharType kAppCacheDirname[];
 extern const FilePath::CharType kThemePackFilename[];
 extern const FilePath::CharType kCookieFilename[];
 extern const FilePath::CharType kOBCertFilename[];

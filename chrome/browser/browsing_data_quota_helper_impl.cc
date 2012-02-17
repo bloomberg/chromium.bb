@@ -19,7 +19,7 @@ BrowsingDataQuotaHelper* BrowsingDataQuotaHelper::Create(Profile* profile) {
   return new BrowsingDataQuotaHelperImpl(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-      profile->GetQuotaManager());
+      content::BrowserContext::GetQuotaManager(profile));
 }
 
 void BrowsingDataQuotaHelperImpl::StartFetching(

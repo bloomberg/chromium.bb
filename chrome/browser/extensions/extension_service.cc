@@ -120,6 +120,7 @@
 #endif
 
 using base::Time;
+using content::BrowserContext;
 using content::BrowserThread;
 using content::DevToolsAgentHost;
 using content::DevToolsAgentHostRegistry;
@@ -1136,9 +1137,9 @@ void ExtensionService::NotifyExtensionUnloaded(
 
 #if defined(OS_CHROMEOS)
     // Revoke external file access to
-  if (profile_->GetFileSystemContext() &&
-      profile_->GetFileSystemContext()->external_provider()) {
-    profile_->GetFileSystemContext()->external_provider()->
+  if (BrowserContext::GetFileSystemContext(profile_) &&
+      BrowserContext::GetFileSystemContext(profile_)->external_provider()) {
+    BrowserContext::GetFileSystemContext(profile_)->external_provider()->
         RevokeAccessForExtension(extension->id());
   }
 

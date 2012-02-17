@@ -25,6 +25,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
 
 // PurgeMemoryHelper -----------------------------------------------------------
@@ -118,7 +119,7 @@ void MemoryPurger::PurgeBrowser() {
     // Ask all WebKitContexts to purge memory (freeing memory used to cache
     // the LocalStorage sqlite DB).  WebKitContext creation is basically free so
     // we don't bother with a "...WithoutCreating()" function.
-    profiles[i]->GetWebKitContext()->PurgeMemory();
+    BrowserContext::GetWebKitContext(profiles[i])->PurgeMemory();
   }
 
   BrowserThread::PostTask(
