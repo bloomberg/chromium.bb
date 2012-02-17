@@ -437,7 +437,14 @@ IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasSingleImageGPU) {
   RunTest("canvas_single_image", kAllowExternalDNS);
 }
 
-IN_PROC_BROWSER_TEST_F(ThroughputTestSW, CompositingHugeDivSW) {
+// CompositingHugeDivSW timed out on Mac Intel Release GPU bot
+// See crbug.com/114781
+#if defined(OS_MACOSX)
+#define MAYBE_CompositingHugeDivSW DISABLED_CompositingHugeDivSW
+#else
+#define MAYBE_CompositingHugeDivSW CompositingHugeDivSW
+#endif
+IN_PROC_BROWSER_TEST_F(ThroughputTestSW, MAYBE_CompositingHugeDivSW) {
   RunTest("compositing_huge_div", kNone);
 }
 
