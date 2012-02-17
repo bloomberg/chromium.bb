@@ -39,8 +39,8 @@ CocoaProfileTest::~CocoaProfileTest() {
 
   // Drop any new tasks for the IO and FILE threads.
   io_thread_.reset();
-  file_thread_.reset();
   file_user_blocking_thread_.reset();
+  file_thread_.reset();
 
   message_loop_.RunAllPending();
 }
