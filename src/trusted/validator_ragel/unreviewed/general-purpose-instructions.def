@@ -443,7 +443,7 @@ ljmpq Mp, 0xff /5, amd64 nacl-forbidden
 ######## LAHF ##################################################################
 # LAHF is always awailable in 16bit/32bit mode, but not always in 64bit mode
 lahf, 0x9f, ia32
-lahf, 0x9f, amd64 Fn8000_0001_ECX_LahfSahf
+lahf, 0x9f, amd64 Fn8000_0001_ECX_LahfSahf nacl-forbidden
 ######## LDS/LES/LFS/LGS/LSS (AMD version) #####################################
 # AMD manual says “executing LFS, LGS, or LSS with a 64-bit operand size only
 # loads a 32-bit general purpose register and the specified segment register”.
@@ -646,7 +646,7 @@ ror cb E, 0xd2 /1
 ######## SAHF ##################################################################
 # SAHF is always awailable in 16bit/32bit mode, but not always in 64bit mode
 sahf, 0x9e, ia32
-sahf, 0x9e, amd64 Fn8000_0001_ECX_LahfSahf
+sahf, 0x9e, amd64 Fn8000_0001_ECX_LahfSahf nacl-forbidden
 ######## SAL ###################################################################
 # AMD manual claims this opcode works identically to shl.  Intel manual
 # says it's reserved.  Objdump does not like it.
@@ -731,7 +731,7 @@ xadd G E, 0x0f 0xc0, lock
 xchg av rv, 0x90
 xchg G E, 0x86, lock
 ######## XLAT ##################################################################
-xlat bb, 0xd7
+xlat bb, 0xd7, nacl-forbidden
 ######## XOR ###################################################################
 xor I a, 0x34
 xor I E, 0x80 /6, lock

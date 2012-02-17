@@ -16,10 +16,10 @@ clts, 0x0f 0x06, nacl-forbidden
 ######## HLT ###################################################################
 hlt, 0xf4
 ######## ICEBP #################################################################
-# Note: this instruction is ducmented in AMD64 Architecture Programmer’s Manual
+# Note: this instruction is documented in AMD64 Architecture Programmer’s Manual
 # Volume 2: System Programming.  It's called “int1” there but objdump uses name
 # “icebp”.
-icebp, 0xf1
+icebp, 0xf1, nacl-forbidden
 ######## INT 3 #################################################################
 int3, 0xcc, nacl-forbidden
 ######## INVD ##################################################################
