@@ -9,6 +9,10 @@
   display: inline;
 }
 
+#home-page-select-container {
+  margin-top: 5px;
+}
+
 #default-search-engine-group {
   -webkit-box-orient: vertical;
   display: -webkit-box;

@@ -98,6 +98,10 @@ input[type='text']:disabled {
   display: -webkit-box;
 }
 
+.box-align-center {
+  -webkit-box-align: center;
+}
+
 .stretch {
   -webkit-box-flex: 1;
 }
