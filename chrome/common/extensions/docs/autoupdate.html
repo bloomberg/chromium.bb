@@ -256,7 +256,19 @@ and <strong>&lt;updatecheck&gt;</strong> elements of the update manifest:
 </p>
 <p><b>appid</b><br>
 The extension ID, generated based on a hash of the extension's public key,
-as described in <a href="packaging.html">Packaging</a>. You can find the ID of your extension by going to the Extensions page (<b>chrome://extensions</b>).</p>
+as described in <a href="packaging.html">Packaging</a>. You can find the
+ID of an extension or packaged app by going to the Extensions page (<b>chrome://extensions</b>).
+Hosted apps, however, are not listed on the Extensions page.  You can find the ID of any
+app using the following steps:
+</p>
+<ul>
+  <li> Open the app. You can do this by clicking its icon on the New Tab page.</li>
+  <li> Open the JavaScript console.  You can do this by clicking the wrench icon
+       and choosing <b>Tools &gt; JavaScript Console</b>.</li>
+  <li> Enter the following expression into the JavaScript console: <code>chrome.app.getDetails().id</code>
+      <p>The console shows the app's ID as a quoted string.</p>
+  </li>
+</ul>
 <p><b>codebase</b><br>
 A URL to the extension's <code>.crx</code> file.</p>
 <p><b>version</b><br>
@@ -288,7 +300,7 @@ both of which point to the same update URL
     <li> ID: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" </li>
     <li> Version: "1.1"</li>
   </ul>
-</li><li> Extension 2 
+</li><li> Extension 2
   <ul>
     <li> ID: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" </li>
     <li> Version: "0.4"</li>
