@@ -104,10 +104,10 @@ def GetValueFromList(prop, src, index, dst):
   }[prop.type_] % (src, index, dst)
 
 def GetConstParameterDeclaration(param, type_generator):
-  if param.type_ == PropertyType.REF:
-    arg = 'const %(type)s& %(name)s'
-  else:
+  if param.type_.is_fundamental:
     arg = 'const %(type)s %(name)s'
+  else:
+    arg = 'const %(type)s& %(name)s'
   return arg % {
     'type': type_generator.GetType(param, wrap_optional=True),
     'name': param.unix_name,
