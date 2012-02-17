@@ -291,9 +291,6 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
 
   if (remove_mask & REMOVE_INDEXEDDB || remove_mask & REMOVE_WEBSQL ||
       remove_mask & REMOVE_APPCACHE || remove_mask & REMOVE_FILE_SYSTEMS) {
-    // TODO(mkwst): At the moment, we don't have the ability to pass a mask into
-    // QuotaManager. Until then, we'll clear all quota-managed data types if any
-    // ought to be cleared.
     if (!quota_manager_)
       quota_manager_ = content::BrowserContext::GetQuotaManager(profile_);
     waiting_for_clear_quota_managed_data_ = true;
@@ -600,6 +597,8 @@ void BrowsingDataRemover::OnGotQuotaManagedOrigins(
   std::set<GURL>::const_iterator origin;
   for (origin = origins.begin(); origin != origins.end(); ++origin) {
     if (special_storage_policy_->IsStorageProtected(origin->GetOrigin()))
+      continue;
+    if (!remove_origin_.is_empty() && remove_origin_ != origin->GetOrigin())
       continue;
     ++quota_managed_origins_to_delete_count_;
     quota_manager_->DeleteOriginData(

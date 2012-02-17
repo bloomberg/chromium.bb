@@ -336,6 +336,7 @@ class BrowsingDataRemoverTest : public testing::Test,
     BrowsingDataRemover* remover = new BrowsingDataRemover(
         profile_.get(), period,
         base::Time::Now() + base::TimeDelta::FromMilliseconds(10));
+    remover->OverrideQuotaManagerForTesting(GetMockManager());
     remover->AddObserver(tester);
 
     called_with_details_.reset(new BrowsingDataRemover::NotificationDetails());
@@ -611,6 +612,36 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverNeither) {
       kClientFile));
 }
 
+TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverSpecificOrigin) {
+  scoped_ptr<RemoveQuotaManagedDataTester> tester(
+      new RemoveQuotaManagedDataTester());
+  tester->PopulateTestQuotaManagedData(GetMockManager());
+
+  // Remove Origin 1.
+  BlockUntilOriginDataRemoved(BrowsingDataRemover::EVERYTHING,
+      BrowsingDataRemover::REMOVE_APPCACHE |
+      BrowsingDataRemover::REMOVE_FILE_SYSTEMS |
+      BrowsingDataRemover::REMOVE_INDEXEDDB |
+      BrowsingDataRemover::REMOVE_WEBSQL, kOrigin1, tester.get());
+
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_APPCACHE |
+      BrowsingDataRemover::REMOVE_FILE_SYSTEMS |
+      BrowsingDataRemover::REMOVE_INDEXEDDB |
+      BrowsingDataRemover::REMOVE_WEBSQL, GetRemovalMask());
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kTemporary,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2, kTemporary,
+      kClientFile));
+  EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin3, kTemporary,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kPersistent,
+      kClientFile));
+  EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin2, kPersistent,
+      kClientFile));
+  EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin3, kPersistent,
+      kClientFile));
+}
+
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForLastHour) {
   scoped_ptr<RemoveQuotaManagedDataTester> tester(
       new RemoveQuotaManagedDataTester());
@@ -689,6 +720,42 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedUnprotectedOrigins) {
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2, kPersistent,
       kClientFile));
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3, kPersistent,
+      kClientFile));
+}
+
+TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedProtectedSpecificOrigin) {
+  // Protect kOrigin1.
+  scoped_refptr<MockExtensionSpecialStoragePolicy> mock_policy =
+          new MockExtensionSpecialStoragePolicy;
+  mock_policy->AddProtected(kOrigin1.GetOrigin());
+  GetProfile()->SetExtensionSpecialStoragePolicy(mock_policy);
+
+  scoped_ptr<RemoveQuotaManagedDataTester> tester(
+      new RemoveQuotaManagedDataTester());
+  tester->PopulateTestQuotaManagedData(GetMockManager());
+
+  // Try to remove kOrigin1. Expect failure.
+  BlockUntilOriginDataRemoved(BrowsingDataRemover::EVERYTHING,
+      BrowsingDataRemover::REMOVE_APPCACHE |
+      BrowsingDataRemover::REMOVE_FILE_SYSTEMS |
+      BrowsingDataRemover::REMOVE_INDEXEDDB |
+      BrowsingDataRemover::REMOVE_WEBSQL, kOrigin1, tester.get());
+
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_APPCACHE |
+      BrowsingDataRemover::REMOVE_FILE_SYSTEMS |
+      BrowsingDataRemover::REMOVE_INDEXEDDB |
+      BrowsingDataRemover::REMOVE_WEBSQL, GetRemovalMask());
+  EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin1, kTemporary,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2, kTemporary,
+      kClientFile));
+  EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin3, kTemporary,
+      kClientFile));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kPersistent,
+      kClientFile));
+  EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin2, kPersistent,
+      kClientFile));
+  EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin3, kPersistent,
       kClientFile));
 }
 
