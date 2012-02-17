@@ -13,8 +13,7 @@
   color: #7F7F7F;
   cursor: pointer;
   display: block;
-  font-size: 9pt;
-  font-weight: bold;
+  font: inherit;
   height: 100%;
   margin: 0;
   /* The padding increases the clickable area. */
@@ -75,7 +74,7 @@
   background-size: 16px 16px;
   box-sizing: border-box;
   display: block;
-  font-size: 100%;
+  font-size: 1.2em;
   line-height: 20px;
   margin-bottom: 8px;
   margin-top: 8px;

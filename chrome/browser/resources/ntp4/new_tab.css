@@ -3,7 +3,6 @@
  * found in the LICENSE file. */
 
 html {
-  font-size: 14px;
   /* It's necessary to put this here instead of in body in order to get the
      background-size of 100% to work properly */
   height: 100%;
@@ -141,13 +140,14 @@ html[dir='rtl'] #attribution {
 
 #attribution > span {
   display: block;
-  font-size: 84%;
 }
 
 #footer {
   background-image: -webkit-linear-gradient(
       rgba(242, 242, 242, 0.9), rgba(222, 222, 222, 0.9));
   bottom: 0;
+  font-size: 0.9em;
+  font-weight: bold;
   position: fixed;
   width: 100%;
   z-index: 5;
@@ -185,7 +185,7 @@ html[dir='rtl'] #attribution {
   background: transparent none;
   border: none;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 1.1em;
   /* Leave room for the scrollbar. */
   margin-left: 13px;
   margin-right: 13px;
@@ -223,7 +223,7 @@ html[dir='rtl'] .login-status-icon {
 }
 
 #login-status-bubble-contents {
-  font-size: 13px;
+  font-size: 1.1em;
 }
 
 #login-status-message-container {
@@ -285,7 +285,6 @@ html[dir='rtl'] #trash {
   border: 1px dashed #7f7f7f;
   border-radius: 4px;
   display: inline-block;
-  font-size: 84%;
   padding-bottom: 9px;
   padding-top: 10px;
   position: relative;
@@ -307,8 +306,7 @@ html[dir='rtl'] #footer.showing-trash-mode #trash.drag-target .lid {
 
 #fontMeasuringDiv {
   /* The font attributes match the nav inputs. */
-  font: -webkit-small-control;
-  font-size: 8pt;
+  font-size: 0.9em;
   font-weight: bold;
   pointer-events: none;
   position: absolute;
@@ -349,8 +347,6 @@ html[dir='rtl'] #footer.showing-trash-mode #trash.drag-target .lid {
   -webkit-padding-start: 16px;
   background: url('chrome://theme/IDR_WEBSTORE_ICON_24') right 50% no-repeat;
   display: inline-block;
-  font-size: 9pt;
-  font-weight: bold;
   line-height: 49px;
 }
 

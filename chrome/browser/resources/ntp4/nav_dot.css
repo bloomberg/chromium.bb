@@ -54,9 +54,7 @@ html.starting-up #dot-list {
   -webkit-transition: color 200ms;
   background-color: transparent;
   cursor: inherit;
-  /* TODO(estade): the font needs tweaking. */
-  font-size: 8pt;
-  font-weight: bold;
+  font: inherit;
   padding-top: 0;
   width: 90%;
 }
