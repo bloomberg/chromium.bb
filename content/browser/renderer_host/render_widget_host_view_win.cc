@@ -942,7 +942,7 @@ LRESULT RenderWidgetHostViewWin::OnCreate(CREATESTRUCT* create_struct) {
     // Use gestures if touch event switch isn't present or registration fails.
     if (!CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableTouchEvents) ||
-        !RegisterTouchWindow(m_hWnd, 0)) {
+        !RegisterTouchWindow(m_hWnd, TWF_WANTPALM)) {
       // Single finger panning is consistent with other windows applications.
       const DWORD gesture_allow = GC_PAN_WITH_SINGLE_FINGER_VERTICALLY |
                                   GC_PAN_WITH_SINGLE_FINGER_HORIZONTALLY;
