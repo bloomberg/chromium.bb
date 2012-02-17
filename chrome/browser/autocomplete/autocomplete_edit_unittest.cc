@@ -35,7 +35,9 @@ class TestingOmniboxView : public OmniboxView {
                            const string16& display_text,
                            bool update_popup) OVERRIDE {}
   virtual void SetWindowTextAndCaretPos(const string16& text,
-                                        size_t caret_pos) OVERRIDE {}
+                                        size_t caret_pos,
+                                        bool update_popup,
+                                        bool notify_text_changed) OVERRIDE {}
   virtual void SetForcedQuery() OVERRIDE {}
   virtual bool IsSelectAll() OVERRIDE { return false; }
   virtual bool DeleteAtEndPressed() OVERRIDE { return false; }
@@ -155,9 +157,9 @@ TEST(AutocompleteEditTest, AdjustTextForCopy) {
   TestingOmniboxView view;
   TestingAutocompleteEditController controller;
   TestingProfile profile;
-  AutocompleteEditModel model(&view, &controller, &profile);
-  profile.CreateAutocompleteClassifier();
   profile.CreateTemplateURLService();
+  profile.CreateAutocompleteClassifier();
+  AutocompleteEditModel model(&view, &controller, &profile);
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input); ++i) {
     model.UpdatePermanentText(ASCIIToUTF16(input[i].perm_text));

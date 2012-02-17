@@ -874,7 +874,9 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
   if (is_keyword) {
     match.fill_into_edit.append(
         providers_.keyword_provider().keyword() + char16(' '));
-    search_start += providers_.keyword_provider().keyword().size() + 1;
+
+    match.keyword = providers_.keyword_provider().keyword();
+    search_start += match.keyword.size() + 1;
   }
   match.fill_into_edit.append(query_string);
   // Not all suggestions start with the original input.

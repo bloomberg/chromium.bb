@@ -106,7 +106,9 @@ class OmniboxViewGtk : public OmniboxView,
                            const string16& display_text,
                            bool update_popup) OVERRIDE;
   virtual void SetWindowTextAndCaretPos(const string16& text,
-                                        size_t caret_pos) OVERRIDE;
+                                        size_t caret_pos,
+                                        bool update_popup,
+                                        bool notify_text_changed) OVERRIDE;
   virtual void SetForcedQuery() OVERRIDE;
   virtual bool IsSelectAll() OVERRIDE;
   virtual bool DeleteAtEndPressed() OVERRIDE;
@@ -460,6 +462,11 @@ class OmniboxViewGtk : public OmniboxView,
   // It's only used in the key press handler to detect a Tab key press event
   // during sync dispatch of "move-focus" signal.
   bool tab_was_pressed_;
+
+  // Indicates if Shift key was pressed.
+  // Used in conjunction with the Tab key to determine if either traversal
+  // needs to move up the results or if the keyword needs to be cleared.
+  bool shift_was_pressed_;
 
   // Indicates that user requested to paste clipboard.
   // The actual paste clipboard action might be performed later if the

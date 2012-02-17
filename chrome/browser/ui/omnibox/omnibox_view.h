@@ -109,7 +109,9 @@ class OmniboxView {
 
   // Sets the window text and the caret position.
   virtual void SetWindowTextAndCaretPos(const string16& text,
-                                        size_t caret_pos) = 0;
+                                        size_t caret_pos,
+                                        bool update_popup,
+                                        bool notify_text_changed) = 0;
 
   // Sets the edit to forced query mode.  Practically speaking, this means that
   // if the edit is not in forced query mode, its text is set to "?" with the
