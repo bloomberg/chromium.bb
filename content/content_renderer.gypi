@@ -150,6 +150,7 @@
     'renderer/renderer_clipboard_client.h',
     'renderer/renderer_main.cc',
     'renderer/renderer_main_platform_delegate.h',
+    'renderer/renderer_main_platform_delegate_android.cc',
     'renderer/renderer_main_platform_delegate_linux.cc',
     'renderer/renderer_main_platform_delegate_mac.mm',
     'renderer/renderer_main_platform_delegate_win.cc',
