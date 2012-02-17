@@ -96,12 +96,6 @@ struct weston_input_device {
 	struct wl_listener touch_focus_resource_listener;
 };
 
-enum weston_visual {
-	WESTON_NONE_VISUAL,
-	WESTON_ARGB_VISUAL,
-	WESTON_RGB_VISUAL
-};
-
 struct weston_shader {
 	GLuint program;
 	GLuint vertex_shader, fragment_shader;
@@ -250,7 +244,6 @@ struct weston_surface {
 	struct weston_shader *shader;
 	GLfloat color[4];
 	uint32_t alpha;
-	uint32_t visual;
 	int overlapped;
 	int pickable;
 

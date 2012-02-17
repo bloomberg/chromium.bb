@@ -190,7 +190,6 @@ weston_surface_create(struct weston_compositor *compositor)
 	surface->surface.resource.client = NULL;
 
 	surface->compositor = compositor;
-	surface->visual = WESTON_NONE_VISUAL;
 	surface->image = EGL_NO_IMAGE_KHR;
 	surface->alpha = 255;
 
@@ -218,11 +217,6 @@ static void
 weston_surface_set_color(struct weston_surface *surface,
 		 GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha)
 {
-	if (alpha == 1)
-		surface->visual = WESTON_RGB_VISUAL;
-	else
-		surface->visual = WESTON_ARGB_VISUAL;
-
 	surface->color[0] = red;
 	surface->color[1] = green;
 	surface->color[2] = blue;
@@ -379,18 +373,6 @@ weston_surface_update_transform(struct weston_surface *surface)
 	/* weston_surface_damage() without update */
 	pixman_region32_union(&surface->damage, &surface->damage,
 			      &surface->transform.boundingbox);
-
-	pixman_region32_fini(&surface->transform.opaque);
-	if (surface->visual == WESTON_RGB_VISUAL &&
-	    surface->transform.enabled == 0)
-		pixman_region32_init_rect(&surface->transform.opaque,
-					  surface->geometry.x,
-					  surface->geometry.y,
-					  surface->geometry.width,
-					  surface->geometry.height);
-	else
-		pixman_region32_init(&surface->transform.opaque);
-
 
 	if (surface->output)
 		weston_surface_assign_output(surface);
@@ -654,15 +636,6 @@ weston_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
 			     GL_BGRA_EXT, GL_UNSIGNED_BYTE,
 			     wl_shm_buffer_get_data(buffer));
 
-		switch (wl_shm_buffer_get_format(buffer)) {
-		case WL_SHM_FORMAT_ARGB8888:
-			es->visual = WESTON_ARGB_VISUAL;
-			break;
-		case WL_SHM_FORMAT_XRGB8888:
-			es->visual = WESTON_RGB_VISUAL;
-			break;
-		}
-
 		surfaces_attached_to = buffer->user_data;
 
 		wl_list_remove(&es->buffer_link);
@@ -676,7 +649,6 @@ weston_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
 		
 		ec->image_target_texture_2d(GL_TEXTURE_2D, es->image);
 
-		es->visual = WESTON_ARGB_VISUAL;
 		es->pitch = es->geometry.width;
 	}
 }
@@ -757,18 +729,8 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output)
 	if (!pixman_region32_not_empty(&repaint))
 		goto out;
 
-	switch (es->visual) {
-	case WESTON_ARGB_VISUAL:
-		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-		glEnable(GL_BLEND);
-		break;
-	case WESTON_RGB_VISUAL:
-		glDisable(GL_BLEND);
-		break;
-	default:
-		fprintf(stderr, "bogus visual\n");
-		break;
-	}
+	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_BLEND);
 
 	if (ec->current_shader != es->shader) {
 		glUseProgram(es->shader->program);
@@ -1154,7 +1116,7 @@ surface_attach(struct wl_client *client,
 {
 	struct weston_surface *es = resource->data;
 	struct weston_shell *shell = es->compositor->shell;
-	struct wl_buffer *buffer;
+	struct wl_buffer *buffer, *prev;
 
 	if (!buffer_resource && !es->output)
 		return;
@@ -1168,7 +1130,6 @@ surface_attach(struct wl_client *client,
 
 	if (!buffer_resource && es->output) {
 		wl_list_remove(&es->link);
-		es->visual = WESTON_NONE_VISUAL;
 		es->output = NULL;
 		es->buffer = NULL;
 		return;
@@ -1176,11 +1137,12 @@ surface_attach(struct wl_client *client,
 
 	buffer = buffer_resource->data;
 	buffer->busy_count++;
+	prev = es->buffer;
 	es->buffer = buffer;
 	wl_list_insert(es->buffer->resource.destroy_listener_list.prev,
 		       &es->buffer_destroy_listener.link);
 
-	if (es->visual == WESTON_NONE_VISUAL) {
+	if (prev == NULL) {
 		shell->map(shell, es, buffer->width, buffer->height, sx, sy);
 	} else if (sx != 0 || sy != 0 ||
 		   es->geometry.width != buffer->width ||
@@ -1727,7 +1689,6 @@ input_device_attach(struct wl_client *client,
 
 	if (!buffer_resource && device->sprite->output) {
 		wl_list_remove(&device->sprite->link);
-		device->sprite->visual = WESTON_NONE_VISUAL;
 		device->sprite->output = NULL;
 		return;
 	}

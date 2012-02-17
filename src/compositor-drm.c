@@ -96,8 +96,11 @@ drm_output_prepare_scanout_surface(struct drm_output *output)
 	es = container_of(c->base.surface_list.next,
 			  struct weston_surface, link);
 
-	if (es->visual != WESTON_RGB_VISUAL ||
-	    es->geometry.x != output->base.x ||
+	/* Need to verify output->region contained in surface opaque
+	 * region.  Or maybe just that format doesn't have alpha. */
+	return -1;
+
+	if (es->geometry.x != output->base.x ||
 	    es->geometry.y != output->base.y ||
 	    es->geometry.width != output->base.current->width ||
 	    es->geometry.height != output->base.current->height ||
