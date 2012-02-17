@@ -255,15 +255,15 @@ li.root-item > .spacer {
   background-position: 0 3px;
 }
 
-.root-label[icon=chromebook] {
+.root-label[icon=downloads] {
   -webkit-padding-start: 29px;
-  background-image: url('../images/chromebook_24x24.png');
+  background-image: url('../images/downloads_24x24.png');
   background-position: 0 -2px;
 }
 
-.breadcrumbs .root-label[icon=chromebook] {
+.breadcrumbs .root-label[icon=downloads] {
   -webkit-padding-start: 33px;
-  background-image: url('../images/chromebook_28x28.png');
+  background-image: url('../images/downloads_28x28.png');
   background-position: 0 -3px;
 }
 

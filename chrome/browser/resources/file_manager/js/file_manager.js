@@ -1564,7 +1564,7 @@ FileManager.prototype = {
    */
   FileManager.prototype.getRootLabel_ = function(path) {
     if (path == '/' + DirectoryModel.DOWNLOADS_DIRECTORY)
-      return str('CHROMEBOOK_DIRECTORY_LABEL');
+      return str('DOWNLOADS_DIRECTORY_LABEL');
 
     if (path == '/' + DirectoryModel.ARCHIVE_DIRECTORY)
       return str('ARCHIVE_DIRECTORY_LABEL');

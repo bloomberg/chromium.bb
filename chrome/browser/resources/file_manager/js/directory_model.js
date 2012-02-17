@@ -59,7 +59,7 @@ DirectoryModel.ARCHIVE_DIRECTORY = 'archive';
  * @enum
  */
 DirectoryModel.RootType = {
-  CHROMEBOOK: 'chromebook',
+  DOWNLOADS: 'downloads',
   ARCHIVE: 'archive',
   REMOVABLE: 'removable'
 };
@@ -134,7 +134,7 @@ DirectoryModel.prototype = {
         return this.readonly_;
       case DirectoryModel.RootType.ARCHIVE:
         return true;
-      case DirectoryModel.RootType.CHROMEBOOK:
+      case DirectoryModel.RootType.DOWNLOADS:
         return false;
       default:
         return true;
@@ -775,7 +775,7 @@ DirectoryModel.prototype = {
 DirectoryModel.getRootPath = function(path) {
   var type = DirectoryModel.getRootType(path);
 
-  if (type == DirectoryModel.RootType.CHROMEBOOK)
+  if (type == DirectoryModel.RootType.DOWNLOADS)
     return '/' + DirectoryModel.DOWNLOADS_DIRECTORY;
 
   function subdir(dir) {
@@ -796,7 +796,7 @@ DirectoryModel.getRootType = function(path) {
   }
 
   if (isTop(DirectoryModel.DOWNLOADS_DIRECTORY))
-    return DirectoryModel.RootType.CHROMEBOOK;
+    return DirectoryModel.RootType.DOWNLOADS;
   else if (isTop(DirectoryModel.ARCHIVE_DIRECTORY))
     return DirectoryModel.RootType.ARCHIVE;
   else if(isTop(DirectoryModel.REMOVABLE_DIRECTORY))
