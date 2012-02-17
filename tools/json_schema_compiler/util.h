@@ -31,10 +31,10 @@ bool GetItemFromList(const ListValue& from, int index, linked_ptr<T>* out) {
   DictionaryValue* dict;
   if (!from.GetDictionary(index, &dict))
     return false;
-  T* obj(new T());
-  if (!T::Populate(*dict, obj))
+  scoped_ptr<T> obj(new T());
+  if (!T::Populate(*dict, obj.get()))
     return false;
-  *out = linked_ptr<T>(obj);
+  *out = linked_ptr<T>(obj.release());
   return true;
 }
 
