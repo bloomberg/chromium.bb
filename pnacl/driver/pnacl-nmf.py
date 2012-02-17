@@ -16,6 +16,7 @@ from driver_tools import *
 from driver_env import env
 from driver_log import Log, DriverOpen, TempFiles
 from collections import deque
+import hashlib
 
 try:
   import json
@@ -25,6 +26,8 @@ except Exception:
 EXTRA_ENV = {
   'INPUTS'   : '',
   'OUTPUT'   : '',
+
+  'BASELINE_NMF' : '',
 
   # FLAT_URL_SCHEME is '1' if we are just trying to test via scons and
   # do not want to put libraries under any kind of directory structure
@@ -49,6 +52,8 @@ NMF_PATTERNS = [
     "env.append('SEARCH_DIRS_USER', pathtools.normalize($0))\n"),
   ( '--library-path=(.+)',
     "env.append('SEARCH_DIRS_USER', pathtools.normalize($0))\n"),
+  ( ('--base-nmf', '(.+)'),
+    "env.set('BASELINE_NMF', pathtools.normalize($0))\n"),
 
   ( ('-o', '(.+)'), "env.set('OUTPUT', pathtools.normalize($0))\n"),
   ( '--flat-url-scheme', "env.set('FLAT_URL_SCHEME', '1')"),
@@ -56,9 +61,21 @@ NMF_PATTERNS = [
   ( '(.*)',      "env.append('INPUTS', pathtools.normalize($0))"),
 ]
 
-def Usage():
-  print "Usage: pnacl-nmf <pexe_file> [-L=...]"
-  print "Generate a draft NMF file based on the given pexe file."
+def get_help():
+  return """
+NaCl Manifest Generator for PNaCl.
+
+Usage: %s [options] <pexe_file>
+
+BASIC OPTIONS:
+  -o <file>               Output to <file>
+  --base-nmf <file>       Use a baseline NMF file as a starting point.
+  -L <dir>                Add library search path
+  --library-path=<dir>    Ditto.
+  --flat-url-scheme       For testing: Do not nest architecture-specific
+                          files in an architecture-specific directory
+                          when generating URLs.
+""" % env.getone('SCRIPT_NAME')
 
 def AddUrlForAllArches(json_dict, shortname):
   KNOWN_NMF_ARCHES = ['x86-32', 'x86-64', 'arm']
@@ -69,9 +86,15 @@ def AddUrlForAllArches(json_dict, shortname):
     else:
       json_dict[arch]['url'] = 'lib-%s/%s' % (arch, shortname)
 
-def SetPortableUrl(json_dict, shortname):
+def SetPortableUrl(json_dict, shortname, filepath):
   json_dict['portable'] = {}
-  json_dict['portable']['url'] = shortname
+  json_dict['portable']['pnacl-translate'] = {}
+  json_dict['portable']['pnacl-translate']['url'] = shortname
+  fd = open(filepath, 'r')
+  sha = hashlib.sha256()
+  sha.update(fd.read())
+  fd.close()
+  json_dict['portable']['pnacl-translate']['sha256'] = sha.hexdigest()
 
 def GetActualFilePathAndType(shortname):
   actual_lib_path = ldtools.FindFile([shortname], env.get('SEARCH_DIRS'))
@@ -107,23 +130,35 @@ def GetTransitiveClosureOfNeeded(base_needed):
       Log.Fatal('Lib: %s is neither bitcode nor native', lib)
   return all_needed
 
+def ReadBaselineNMF(baseline_file):
+  f = open(baseline_file, 'r')
+  json_dict = json.load(f)
+  f.close()
+  return json_dict
 
-def GenerateStaticNMF(pexe_file, output_file):
-  nmf_json = {}
+def EchoBaselineNMF(baseline_nmf, output_file):
+  json.dump(baseline_nmf, output_file, sort_keys=True, indent=2)
+
+def GenerateStaticNMF(pexe_file, baseline_nmf, output_file):
+  nmf_json = baseline_nmf
   nmf_json['program'] = {}
-  SetPortableUrl(nmf_json['program'], pathtools.basename(pexe_file))
+  SetPortableUrl(nmf_json['program'],
+                 pathtools.basename(pexe_file),
+                 pexe_file)
   json.dump(nmf_json, output_file, sort_keys=True, indent=2)
 
 
-def GenerateDynamicNMF(pexe_file, needed, output_file):
-  nmf_json = {}
+def GenerateDynamicNMF(pexe_file, baseline_nmf, needed, output_file):
+  nmf_json = baseline_nmf
   # Set runnable-ld.so as the program interpreter.
   nmf_json['program'] = {}
   AddUrlForAllArches(nmf_json['program'], 'runnable-ld.so')
   # Set the pexe as the main program.
-  nmf_json['files'] = {}
+  nmf_json['files'] = baseline_nmf.get('files', {})
   nmf_json['files']['main.nexe'] = {}
-  SetPortableUrl(nmf_json['files']['main.nexe'], pathtools.basename(pexe_file))
+  SetPortableUrl(nmf_json['files']['main.nexe'],
+                 pathtools.basename(pexe_file),
+                 pexe_file)
 
   # Get transitive closure of needed libraries.
   transitive_needed = GetTransitiveClosureOfNeeded(needed)
@@ -136,7 +171,9 @@ def GenerateDynamicNMF(pexe_file, needed, output_file):
       # Assume a native version exists for every known arch.
       AddUrlForAllArches(nmf_json['files'][lib], lib)
     elif file_type == 'pso':
-      SetPortableUrl(nmf_json['files'][lib], lib)
+      SetPortableUrl(nmf_json['files'][lib],
+                     lib,
+                     actual_lib_path)
     else:
       Log.Fatal('Needed library is not a .so nor a .pso')
   json.dump(nmf_json, output_file, sort_keys=True, indent=2)
@@ -145,24 +182,30 @@ def GenerateDynamicNMF(pexe_file, needed, output_file):
 def main(argv):
   env.update(EXTRA_ENV)
   ParseArgs(argv, NMF_PATTERNS)
-  inputs = env.get('INPUTS')
+  exe_file = env.getone('INPUTS')
 
-  if not inputs or len(inputs) != 1:
-    Usage()
+  if not exe_file:
+    Log.Fatal('Expecting input exe_file')
     DriverExit(1)
-  pexe_file = inputs[0]
+
+  baseline_file = env.getone('BASELINE_NMF')
+  if not baseline_file:
+    baseline_nmf = {}
+  else:
+    baseline_nmf = ReadBaselineNMF(baseline_file)
+
   output = env.getone('OUTPUT')
   if output == '':
     output_file = sys.stdout
   else:
     output_file = DriverOpen(output, 'w')
 
-  if not FileType(pexe_file) == 'pexe':
-    Log.Fatal("File %s is not an executable bitcode file",
-              pathtools.touser(pexe_file))
-  needed = GetBitcodeMetadata(pexe_file).get('NeedsLibrary', [])
+  if not FileType(exe_file) == 'pexe':
+    EchoBaselineNMF(baseline_nmf, output_file)
+    return 0
+  needed = GetBitcodeMetadata(exe_file).get('NeedsLibrary', [])
   if len(needed) == 0:
-    GenerateStaticNMF(pexe_file, output_file)
+    GenerateStaticNMF(exe_file, baseline_nmf, output_file)
   else:
     # runnable_ld.so is going to ask for libgcc_s.so.1 even though it does
     # not show up in the pexe's NEEDED metadata, so it won't show up
@@ -171,6 +214,6 @@ def main(argv):
     # For now, hack in libgcc_s.so.1.
     # http://code.google.com/p/nativeclient/issues/detail?id=2582
     needed.append('libgcc_s.so.1')
-    GenerateDynamicNMF(pexe_file, needed, output_file)
+    GenerateDynamicNMF(exe_file, baseline_nmf, needed, output_file)
   DriverClose(output_file)
   return 0
