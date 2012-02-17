@@ -114,7 +114,7 @@ class AutocompleteResultView : public views::View,
 
   // views::View:
   virtual void Layout() OVERRIDE;
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds);
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   // ui::AnimationDelegate:
