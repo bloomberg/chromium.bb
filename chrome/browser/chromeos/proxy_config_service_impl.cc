@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/onc_constants.h"
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -87,6 +88,23 @@ const char* ConfigStateToString(ProxyPrefs::ConfigState state) {
   }
   NOTREACHED() << "Unrecognized config state type";
   return "";
+}
+
+// Returns true if proxy settings from |network| is editable.
+bool IsNetworkProxySettingsEditable(const Network* network) {
+  if (!network)
+    return true;  // editable if no network given.
+
+  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  const base::DictionaryValue* onc =
+       network_library->FindOncForNetwork(network->unique_id());
+
+  NetworkPropertyUIData proxy_settings_ui_data;
+  proxy_settings_ui_data.ParseOncProperty(
+      network->ui_data(),
+      onc,
+      onc::kProxySettings);
+  return proxy_settings_ui_data.editable();
 }
 
 // Only unblock if needed for debugging.
@@ -762,10 +780,16 @@ void ProxyConfigServiceImpl::DetermineEffectiveConfig(const Network* network,
   } else {  // For UI, store effective proxy into |current_ui_config_|.
     current_ui_config_.FromNetProxyConfig(effective_config);
     current_ui_config_.state = effective_config_state;
-    if (PrefPrecedes(effective_config_state))
+    if (PrefPrecedes(effective_config_state)) {
       current_ui_config_.user_modifiable = false;
-    else
+    } else if (!IsNetworkProxySettingsEditable(network)) {
+      // TODO(xiyuan): Figure out the right way to set config state for managed
+      // network.
+      current_ui_config_.state = ProxyPrefs::CONFIG_POLICY;
+      current_ui_config_.user_modifiable = false;
+    } else {
       current_ui_config_.user_modifiable = !network || !IgnoreProxy(network);
+    }
   }
 }
 
