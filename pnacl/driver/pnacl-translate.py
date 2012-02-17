@@ -231,8 +231,9 @@ def main(argv):
     env.set('INPUTS', *inputs)
 
   # Get bitcode type and metadata
-  bctype = driver_tools.FileType(bcfile)
-  metadata = driver_tools.GetBitcodeMetadata(bcfile)
+  if bcfile:
+    bctype = driver_tools.FileType(bcfile)
+    metadata = driver_tools.GetBitcodeMetadata(bcfile)
 
   # Determine the output type, in this order of precedence:
   # 1) Output type can be specified on command-line (-S, -c, -shared, -static)
