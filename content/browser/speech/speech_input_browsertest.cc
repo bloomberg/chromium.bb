@@ -29,7 +29,7 @@ class FakeSpeechInputManager;
 
 namespace speech_input {
 
-const char* kTestResult = "Pictures of the moon";
+const char kTestResult[] = "Pictures of the moon";
 
 class FakeSpeechInputManager : public SpeechInputManager {
  public:
@@ -62,9 +62,14 @@ class FakeSpeechInputManager : public SpeechInputManager {
   }
 
   // SpeechInputManager methods.
-  virtual void StartRecognition(Delegate* delegate, int caller_id,
-      int render_process_id, int render_view_id, const gfx::Rect& element_rect,
-      const std::string& language, const std::string& grammar,
+  virtual void StartRecognition(
+      content::SpeechInputManagerDelegate* delegate,
+      int caller_id,
+      int render_process_id,
+      int render_view_id,
+      const gfx::Rect& element_rect,
+      const std::string& language,
+      const std::string& grammar,
       const std::string& origin_url,
       net::URLRequestContextGetter* context_getter,
       content::SpeechInputPreferences* speech_input_prefs,
@@ -99,7 +104,8 @@ class FakeSpeechInputManager : public SpeechInputManager {
     EXPECT_EQ(caller_id_, caller_id);
     // Nothing to do here since we aren't really recording.
   }
-  virtual void CancelAllRequestsWithDelegate(Delegate* delegate) OVERRIDE {
+  virtual void CancelAllRequestsWithDelegate(
+      content::SpeechInputManagerDelegate* delegate) OVERRIDE {
     VLOG(1) << "CancelAllRequestsWithDelegate invoked.";
     // delegate_ is set to NULL if a fake result was received (see below), so
     // check that delegate_ matches the incoming parameter only when there is
@@ -142,7 +148,7 @@ class FakeSpeechInputManager : public SpeechInputManager {
   }
 
   int caller_id_;
-  Delegate* delegate_;
+  content::SpeechInputManagerDelegate* delegate_;
   std::string grammar_;
   bool did_cancel_all_;
   bool should_send_fake_response_;

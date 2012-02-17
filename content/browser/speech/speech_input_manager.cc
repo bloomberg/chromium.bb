@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/speech/speech_input_manager_delegate.h"
 #include "content/browser/speech/speech_recognizer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host_delegate.h"
@@ -15,11 +16,12 @@
 #include "media/audio/audio_manager.h"
 
 using content::BrowserThread;
+using content::SpeechInputManagerDelegate;
 
 namespace speech_input {
 
 struct SpeechInputManager::SpeechInputParams {
-  SpeechInputParams(Delegate* delegate,
+  SpeechInputParams(SpeechInputManagerDelegate* delegate,
                     int caller_id,
                     int render_process_id,
                     int render_view_id,
@@ -43,7 +45,7 @@ struct SpeechInputManager::SpeechInputParams {
         audio_manager_(audio_manager) {
   }
 
-  Delegate* delegate;
+  SpeechInputManagerDelegate* delegate;
   int caller_id;
   int render_process_id;
   int render_view_id;

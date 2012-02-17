@@ -11,8 +11,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "content/public/browser/speech_recognizer_delegate.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/speech_recognizer_delegate.h"
 #include "ui/gfx/rect.h"
 
 class AudioManager;
@@ -20,6 +20,7 @@ class AudioManager;
 namespace content {
 class ResourceContext;
 class SpeechInputPreferences;
+class SpeechInputManagerDelegate;
 struct SpeechInputResult;
 }
 
@@ -38,19 +39,6 @@ class SpeechRecognizer;
 class CONTENT_EXPORT SpeechInputManager
     : public NON_EXPORTED_BASE(content::SpeechRecognizerDelegate) {
  public:
-  // Implemented by the dispatcher host to relay events to the render views.
-  class Delegate {
-   public:
-    virtual void SetRecognitionResult(
-        int caller_id,
-        const content::SpeechInputResult& result) = 0;
-    virtual void DidCompleteRecording(int caller_id) = 0;
-    virtual void DidCompleteRecognition(int caller_id) = 0;
-
-   protected:
-    virtual ~Delegate() {}
-  };
-
   // Describes the microphone errors that are reported via ShowMicError.
   enum MicError {
     kNoDeviceAvailable = 0,
@@ -80,7 +68,7 @@ class CONTENT_EXPORT SpeechInputManager
   // |element_rect| is the display bounds of the html element requesting speech
   // input (in page coordinates).
   virtual void StartRecognition(
-      Delegate* delegate,
+      content::SpeechInputManagerDelegate* delegate,
       int caller_id,
       int render_process_id,
       int render_view_id,
@@ -92,7 +80,8 @@ class CONTENT_EXPORT SpeechInputManager
       content::SpeechInputPreferences* speech_input_prefs,
       AudioManager* audio_manager);
   virtual void CancelRecognition(int caller_id);
-  virtual void CancelAllRequestsWithDelegate(Delegate* delegate);
+  virtual void CancelAllRequestsWithDelegate(
+      content::SpeechInputManagerDelegate* delegate);
   virtual void StopRecording(int caller_id);
 
   // Overridden from content::SpeechRecognizerDelegate:
@@ -166,14 +155,14 @@ class CONTENT_EXPORT SpeechInputManager
     SpeechInputRequest();
     ~SpeechInputRequest();
 
-    Delegate* delegate;
+    content::SpeechInputManagerDelegate* delegate;
     scoped_refptr<SpeechRecognizer> recognizer;
     bool is_active;  // Set to true when recording or recognition is going on.
   };
 
   struct SpeechInputParams;
 
-  Delegate* GetDelegate(int caller_id) const;
+  content::SpeechInputManagerDelegate* GetDelegate(int caller_id) const;
 
   void CheckRenderViewTypeAndStartRecognition(const SpeechInputParams& params);
   void ProceedStartingRecognition(const SpeechInputParams& params);
@@ -184,12 +173,6 @@ class CONTENT_EXPORT SpeechInputManager
   bool can_report_metrics_;
   int recording_caller_id_;
 };
-
-// This typedef is to workaround the issue with certain versions of
-// Visual Studio where it gets confused between multiple Delegate
-// classes and gives a C2500 error. (I saw this error on the try bots -
-// the workaround was not needed for my machine).
-typedef SpeechInputManager::Delegate SpeechInputManagerDelegate;
 
 }  // namespace speech_input
 
