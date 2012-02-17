@@ -26,11 +26,41 @@ cr.define('options.network', function() {
   Constants.TYPE_VPN = 6;
 
   /**
+   * Order in which controls are to appear in the network list sorted by key.
+   */
+  Constants.NETWORK_ORDER = ['ethernet',
+                             'wifi',
+                             'cellular',
+                             'vpn',
+                             'airplaneMode'];
+
+  /**
    * ID of the menu that is currently visible.
    * @type {?string}
    * @private
    */
   var activeMenu_ = null;
+
+  /**
+   * Indicates if cellular networks are available.
+   * @type{boolean}
+   * @private
+   */
+  var cellularAvailable_ = false;
+
+  /**
+   * Indicates if cellular networks are enabled.
+   * @type{boolean}
+   * @private
+   */
+  var cellularEnabled_ = false;
+
+  /**
+   * List of wireless networks.
+   * @type[Array.<Object>}
+   * @private
+   */
+  var wirelessNetworks_ = null;
 
   /**
    * Create an element in the network list for controlling network
@@ -384,11 +414,12 @@ cr.define('options.network', function() {
     decorate: function() {
       if (this.data.subtitle)
         this.subtitle = this.data.subtitle;
-      // TODO(kevers): Wire up the command.
-      // TODO(kevers): Add icon.
+        if (this.data.command)
+          this.addEventListener('click', this.data.command);
+        if (this.data.iconURL)
+          this.iconURL = this.data.iconURL;
     },
   };
-
 
   /**
    * A list of controls for manipulating network connectivity.
@@ -405,8 +436,6 @@ cr.define('options.network', function() {
       this.addEventListener('blur', this.onBlur_);
       this.dataModel = new ArrayDataModel([]);
       this.update({key: 'wifi', networkList: []});
-      this.update({key: 'cellular', networkList: []});
-      this.update({key: 'vpn', networkList: []});
       this.update({key: 'airplaneMode',
                    subtitle: localStrings.getString('airplaneModeLabel'),
                    command: toggleAirplaneMode_});
@@ -443,11 +472,37 @@ cr.define('options.network', function() {
     update: function(data) {
       var index = this.indexOf(data.key);
       if (index == undefined) {
-        this.dataModel.push(data);
-        this.redraw();
+        // Find reference position for adding the element.  We cannot hide
+        // individual list elements, thus we need to conditionally add or
+        // remove elements and cannot rely on any element having a fixed index.
+        for (var i = 0; i < Constants.NETWORK_ORDER.length; i++) {
+          if (data.key == Constants.NETWORK_ORDER[i]) {
+            data.sortIndex = i;
+            break;
+          }
+        }
+        var referenceIndex = -1;
+        for (var i = 0; i < this.dataModel.length; i++) {
+          var entry = this.dataModel.item(i);
+          if (entry.sortIndex < data.sortIndex)
+            referenceIndex = i;
+          else
+            break;
+        }
+        if (referenceIndex == -1) {
+          // Prepend to the start of the list.
+          this.dataModel.splice(0, 0, data);
+        } else if (referenceIndex == this.dataModel.length) {
+          // Append to the end of the list.
+          this.dataModel.push(data);
+        } else {
+          // Insert after the reference element.
+          this.dataModel.splice(referenceIndex + 1, 0, data);
+        }
       } else {
+        var entry = this.dataModel.item(index);
+        data.sortIndex = entry.sortIndex;
         this.dataModel.splice(index, 1, data);
-        this.redrawItem(index);
       }
     },
 
@@ -458,6 +513,18 @@ cr.define('options.network', function() {
       if (entry.command)
         return new NetworkButtonItem(entry);
     },
+
+    /**
+     * Deletes an element from the list.
+     * @param{string} key  Unique identifier for the element.
+     */
+    deleteItem: function(key) {
+      var index = this.indexOf(key);
+      if (index != undefined) {
+        var entry = this.dataModel.item(index);
+        this.dataModel.splice(index, 1);
+      }
+    }
   };
 
   /**
@@ -466,20 +533,55 @@ cr.define('options.network', function() {
    *     corresponding state.
    */
   NetworkList.refreshNetworkData = function(data) {
-    // TODO(kevers):  Add ethernet if connected.
+    cellularAvailable_ = data.cellularAvailable;
+    cellularEnabled_ = data.cellularEnabled;
+    wirelessNetworks_ = data.wirelessList;
+
+    // Only show Ethernet control if connected.
+    var ethernetConnection = getConnection_(data.wiredList);
+    if (ethernetConnection) {
+      var type = String(Constants.TYPE_ETHERNET);
+      var path = ethernetConnection.servicePath;
+      var ethernetOptions = function() {
+        chrome.send('buttonClickCallback',
+                    [type, path, 'options']);
+      };
+      $('network-list').update({key: 'ethernet',
+                        subtitle: localStrings.getString('networkConnected'),
+                        iconURL: ethernetConnection.iconURL,
+                        command: ethernetOptions});
+    } else {
+      $('network-list').deleteItem('ethernet');
+    }
+
     // TODO(kevers): Store off list of remembered networks for use in the
     // "preferred networks" tab of the "More options..." dialog.
+
     loadData_('wifi',
               data.wirelessList,
               function(data) {
       return data.networkType == Constants.TYPE_WIFI;
     });
-    loadData_('cellular',
-              data.wirelessList,
-              function(data) {
-      return data.networkType == Constants.TYPE_CELLULAR;
-    });
-    loadData_('vpn', data.vpnList);
+
+    // Only show cellular control if available and enabled.
+    if (data.cellularEnabled && data.cellularAvailable) {
+      loadData_('cellular',
+                data.wirelessList,
+                function(data) {
+        return data.networkType == Constants.TYPE_CELLULAR;
+      });
+    } else {
+      $('network-list').deleteItem('cellular');
+    }
+
+    // Only show VPN control if there is an internet connection.
+    if (ethernetConnection || isConnected_(wirelessNetworks_))
+      loadData_('vpn', data.vpnList);
+    else
+      $('network-list').deleteItem('vpn');
+
+    $('network-list').invalidate();
+    $('network-list').redraw();
   };
 
   /**
@@ -520,7 +622,45 @@ cr.define('options.network', function() {
    * @private
    */
   function toggleAirplaneMode_() {
-    // TODO(kevers): Implement me.
+    if (cellularEnabled_ || isConnected_(wirelessNetworks_)) {
+      chrome.send('disableWifi');
+      if (cellularAvailable_)
+        chrome.send('disableCellular');
+      // TODO(kevers): Disable bluetooth.
+    } else {
+      chrome.send('enableWifi');
+      if (cellularAvailable_)
+        chrome.send('enableCellular');
+      // TODO(kevers): Reenable bluetooth.
+    }
+  }
+
+  /**
+   * Determines if the user is connected to or in the process of connecting to
+   * a wireless network.
+   * @param{Array.<Object>} networkList List of networks.
+   * @return{boolean} True if connected or connecting to a network.
+   * @private
+   */
+  function isConnected_(networkList) {
+    return getConnection_(networkList) != null;
+  }
+
+  /**
+   * Fetches the active connection.
+   * @param{Array.<Object>} networkList List of networks.
+   * @return{boolean} True if connected or connecting to a network.
+   * @private
+   */
+  function getConnection_(networkList) {
+    if (!networkList)
+      return null;
+    for (var i = 0; i < networkList.length; i++) {
+      var entry = networkList[i];
+      if (entry.connected || entry.connecting)
+        return entry;
+    }
+    return null;
   }
 
   // Export
