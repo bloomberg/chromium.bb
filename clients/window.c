@@ -1142,13 +1142,23 @@ frame_resize_handler(struct widget *widget,
 	struct rectangle allocation;
 	int decoration_width, decoration_height;
 
-	decoration_width = 20 + frame->margin * 2;
-	decoration_height = 60 + frame->margin * 2;
+	if (widget->window->type == TYPE_TOPLEVEL) {
+		decoration_width = 20 + frame->margin * 2;
+		decoration_height = 60 + frame->margin * 2;
 
-	allocation.x = 10 + frame->margin;
-	allocation.y = 50 + frame->margin;
-	allocation.width = width - decoration_width;
-	allocation.height = height - decoration_height;
+		allocation.x = 10 + frame->margin;
+		allocation.y = 50 + frame->margin;
+		allocation.width = width - decoration_width;
+		allocation.height = height - decoration_height;
+	} else {
+		decoration_width = 0;
+		decoration_height = 0;
+
+		allocation.x = 0;
+		allocation.y = 0;
+		allocation.width = width;
+		allocation.height = height;
+	}
 
 	widget_set_allocation(child, allocation.x, allocation.y,
 			      allocation.width, allocation.height);
@@ -1173,6 +1183,9 @@ frame_redraw_handler(struct widget *widget, void *data)
 	cairo_surface_t *source;
 	int width, height, shadow_dx = 3, shadow_dy = 3;
 	struct window *window = widget->window;
+
+	if (window->type == TYPE_FULLSCREEN)
+		return;
 
 	width = widget->allocation.width;
 	height = widget->allocation.height;
