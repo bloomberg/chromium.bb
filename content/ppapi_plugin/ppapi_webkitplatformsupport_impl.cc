@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,6 @@
 #include "build/build_config.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/child_thread.h"
-#include "ipc/ipc_sync_message_filter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
@@ -67,7 +66,7 @@ bool PpapiWebKitPlatformSupportImpl::SandboxSupport::ensureFontLoaded(
   LOGFONT logfont;
   GetObject(font, sizeof(LOGFONT), &logfont);
 
-  return ChildThread::current()->sync_message_filter()->Send(
+  return ChildThread::current()->Send(
       new ChildProcessHostMsg_PreCacheFont(logfont));
 }
 
