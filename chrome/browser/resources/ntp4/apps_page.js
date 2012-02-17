@@ -688,6 +688,25 @@ cr.define('ntp4', function() {
     },
 
     /**
+     * Similar to appendApp, but it respects the app_launch_ordinal field of
+     * |appData|.
+     * @param {Object} appData The data that describes the app.
+     */
+    insertApp: function(appData) {
+      var index = 0;
+      for (var i = 0; i < this.tileElements_.length; i++) {
+        if (appData.app_launch_ordinal <
+            this.tileElements_[i].firstChild.appData.app_launch_ordinal) {
+          index = i;
+          break;
+        }
+      }
+      this.addTileAt(new App(appData), index, false);
+
+      this.repositionHint_();
+    },
+
+    /**
      * Handler for 'cardselected' event, fired when |this| is selected. The
      * first time this is called, we load all the app icons.
      * @private

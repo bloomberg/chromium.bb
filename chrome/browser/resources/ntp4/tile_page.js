@@ -578,7 +578,7 @@ cr.define('ntp4', function() {
       this.calculateLayoutValues_();
       this.heightChanged_();
 
-      this.positionTile_(index);
+      this.repositionTiles_();
       this.fireAddedEvent(wrapperDiv, index, !!opt_animate);
     },
 

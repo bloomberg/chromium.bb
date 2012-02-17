@@ -228,6 +228,19 @@ cr.define('ntp4', function() {
     },
 
     /**
+     * Called by chrome when an app has changed positions.
+     * @param {Object} appData The data for the app. This contains page and
+     *     position indices.
+     */
+    appMoved: function(appData) {
+      var app = $(appData.id);
+      assert(app, 'trying to move an app that doesn\'t exist');
+      app.remove(false);
+
+      this.appsPages[appData.page_index].insertApp(appData);
+    },
+
+    /**
      * Called by chrome when an existing app has been disabled or
      * removed/uninstalled from chrome.
      * @param {Object} appData A data structure full of relevant information for
@@ -326,7 +339,7 @@ cr.define('ntp4', function() {
         if (app.id == this.highlightAppId)
           highlightApp = app;
         else
-          this.appsPages[pageIndex].appendApp(app);
+          this.appsPages[pageIndex].appendApp(app, false);
       }
 
       ntp4.AppsPage.setPromo(data.showPromo ? data : null);

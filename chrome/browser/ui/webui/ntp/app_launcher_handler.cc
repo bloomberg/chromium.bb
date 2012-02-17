@@ -165,12 +165,8 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
         sorting->GetNaturalAppPageOrdinal();
     sorting->SetPageOrdinal(extension->id(), page_ordinal);
   }
-  // We convert the page_ordinal to an integer because the pages are referenced
-  // from within an array in the javascript code, which can't be easily
-  // changed to handle the StringOrdinal values, so we do the conversion here.
-  int page_index =
-      sorting->PageStringOrdinalAsInteger(page_ordinal);
-  value->SetInteger("page_index", page_index >= 0 ? page_index : 0);
+  value->SetInteger("page_index",
+      sorting->PageStringOrdinalAsInteger(page_ordinal));
 
   StringOrdinal app_launch_ordinal =
       sorting->GetAppLaunchOrdinal(extension->id());
@@ -300,7 +296,23 @@ void AppLauncherHandler::Observe(int type,
       }
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED:
+    case chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED: {
+      const std::string* id =
+          content::Details<const std::string>(details).ptr();
+      if (id) {
+        const Extension* extension =
+            extension_service_->GetExtensionById(*id, false);
+        DictionaryValue app_info;
+        CreateAppInfo(extension,
+                      NULL,
+                      extension_service_,
+                      &app_info);
+        web_ui()->CallJavascriptFunction("ntp4.appMoved", app_info);
+      } else {
+        HandleGetApps(NULL);
+      }
+      break;
+    }
     // The promo may not load until a couple seconds after the first NTP view,
     // so we listen for the load notification and notify the NTP when ready.
     case chrome::NOTIFICATION_WEB_STORE_PROMO_LOADED:

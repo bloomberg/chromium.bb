@@ -481,6 +481,10 @@ cr.define('ntp4', function() {
     return newTabView.appAdded.apply(newTabView, arguments);
   }
 
+  function appMoved() {
+    return newTabView.appMoved.apply(newTabView, arguments);
+  }
+
   function appRemoved() {
     return newTabView.appRemoved.apply(newTabView, arguments);
   }
@@ -524,6 +528,7 @@ cr.define('ntp4', function() {
   // Return an object with all the exports
   return {
     appAdded: appAdded,
+    appMoved: appMoved,
     appRemoved: appRemoved,
     appsPrefChangeCallback: appsPrefChangeCallback,
     enterRearrangeMode: enterRearrangeMode,

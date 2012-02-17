@@ -241,7 +241,7 @@ void ExtensionSorting::OnExtensionMoved(
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
       content::Source<ExtensionSorting>(this),
-      content::NotificationService::NoDetails());
+      content::Details<const std::string>(&moved_extension_id));
 }
 
 
@@ -372,11 +372,8 @@ int ExtensionSorting::PageStringOrdinalAsInteger(
     return -1;
 
   PageOrdinalMap::const_iterator it = ntp_ordinal_map_.find(page_ordinal);
-  if (it != ntp_ordinal_map_.end()) {
-    return std::distance(ntp_ordinal_map_.begin(), it);
-  } else {
-    return -1;
-  }
+  return it != ntp_ordinal_map_.end() ?
+      std::distance(ntp_ordinal_map_.begin(), it) : -1;
 }
 
 StringOrdinal ExtensionSorting::PageIntegerAsStringOrdinal(size_t page_index)
