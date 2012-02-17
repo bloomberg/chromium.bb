@@ -27,7 +27,9 @@ static const int kMaxTapFingers = 5;
 
 class TapRecord {
  public:
+  TapRecord() : t5r2_(false), t5r2_touched_size_(0), t5r2_released_size_(0) {}
   void Update(const HardwareState& hwstate,
+              const HardwareState& prev_hwstate,
               const set<short, kMaxTapFingers>& added,
               const set<short, kMaxTapFingers>& removed,
               const set<short, kMaxFingers>& dead);
@@ -35,6 +37,7 @@ class TapRecord {
 
   // if any gesturing fingers are moving
   bool Moving(const HardwareState& hwstate, const float dist_max) const;
+  bool TapBegan() const;  // if a tap has begun
   bool TapComplete() const;  // is a completed tap
   int TapType() const;  // return GESTURES_BUTTON_* value
  private:
@@ -44,6 +47,14 @@ class TapRecord {
 
   map<short, FingerState, kMaxTapFingers> touched_;
   set<short, kMaxTapFingers> released_;
+  // T5R2: For these pads, we try to track individual IDs, but if we get an
+  // input event with insufficient data, we switch into T5R2 mode, where we
+  // just track the number of contacts. We still maintain the non-T5R2 records
+  // which are useful for tracking if contacts move a lot.
+  // The following are for T5R2 mode:
+  bool t5r2_;  // if set, use T5R2 hacks
+  unsigned short t5r2_touched_size_;  // number of contacts that have arrived
+  unsigned short t5r2_released_size_;  // number of contacts that have left
 };
 
 class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
