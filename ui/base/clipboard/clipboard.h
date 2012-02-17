@@ -20,6 +20,13 @@
 #include <gdk/gdk.h>
 #endif
 
+#if defined(OS_ANDROID)
+#include <jni.h>
+
+#include "base/android/jni_android.h"
+#include "base/android/scoped_java_ref.h"
+#endif
+
 namespace gfx {
 class Size;
 }
@@ -82,6 +89,11 @@ class UI_EXPORT Clipboard {
     explicit FormatType(const GdkAtom& native_format);
     const GdkAtom& ToGdkAtom() const { return data_; }
     GdkAtom data_;
+#elif defined(OS_ANDROID)
+    explicit FormatType(const std::string& native_format);
+    const std::string& data() const { return data_; }
+    int compare(const std::string& str) const { return data_.compare(str); }
+    std::string data_;
 #else
 #error No FormatType definition.
 #endif
@@ -172,7 +184,8 @@ class UI_EXPORT Clipboard {
 
   // On Linux/BSD, we need to know when the clipboard is set to a URL.  Most
   // platforms don't care.
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(USE_AURA)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(USE_AURA) \
+    || defined(OS_ANDROID)
   void DidWriteURL(const std::string& utf8_text) {}
 #else  // !defined(OS_WIN) && !defined(OS_MACOSX)
   void DidWriteURL(const std::string& utf8_text);
@@ -328,6 +341,30 @@ class UI_EXPORT Clipboard {
   TargetMap* clipboard_data_;
   GtkClipboard* clipboard_;
   GtkClipboard* primary_selection_;
+#elif defined(OS_ANDROID)
+  // Returns whether some text is available from the Android Clipboard.
+  bool IsTextAvailableFromAndroid() const;
+
+  // Make sure that the Android Clipboard contents matches what we think it
+  // should contain. If it changed, a copy occured from another application and
+  // all internal data is dropped.
+  void ValidateInternalClipboard() const;
+
+  // Clear the Clipboard for all types. Both for Android and internal.
+  void Clear();
+
+  // Clear the internal clipboard.
+  void ClearInternalClipboard() const;
+
+  // This private method is used to set non text key/value.
+  void Set(const std::string& key, const std::string& value);
+
+  // Java class and methods for the Android ClipboardManager.
+  base::android::ScopedJavaGlobalRef<jobject> clipboard_manager_;
+  jmethodID set_text_;
+  jmethodID has_text_;
+  jmethodID get_text_;
+  jmethodID to_string_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(Clipboard);
