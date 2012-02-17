@@ -4,6 +4,11 @@
 # found in the LICENSE file.
 
 """Performance tests for Chrome Endure (long-running perf tests on Chrome).
+
+This module accepts the following environment variable inputs:
+  TEST_LENGTH: The number of seconds in which to run each test.
+  PERF_STATS_INTERVAL: The number of seconds to wait in-between each sampling
+                       of performance/memory statistics.
 """
 
 import logging
@@ -31,9 +36,14 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
   def setUp(self):
     perf.BasePerfTest.setUp(self)
 
-    self._test_length_sec = self._DEFAULT_TEST_LENGTH_SEC
-    if 'TEST_LENGTH_SEC' in os.environ:
-      self._test_length_sec = int(os.environ['TEST_LENGTH_SEC'])
+    self._test_length_sec = int(
+        os.environ.get('TEST_LENGTH', self._DEFAULT_TEST_LENGTH_SEC))
+    self._get_perf_stats_interval = int(
+        os.environ.get('PERF_STATS_INTERVAL', self._GET_PERF_STATS_INTERVAL))
+
+    logging.info('Running test for %d seconds.', self._test_length_sec)
+    logging.info('Gathering perf stats every %d seconds.',
+                 self._get_perf_stats_interval)
 
     # Set up a remote inspector client associated with tab 0.
     self._remote_inspector_client = (
@@ -270,7 +280,7 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
     while time.time() - self._test_start_time < self._test_length_sec:
       iteration_num += 1
 
-      if time.time() - last_perf_stats_time >= self._GET_PERF_STATS_INTERVAL:
+      if time.time() - last_perf_stats_time >= self._get_perf_stats_interval:
         last_perf_stats_time = time.time()
         self._GetPerformanceStats(self._webapp_name, test_description,
                                   self._tab_title_substring)
@@ -330,7 +340,7 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
     while time.time() - self._test_start_time < self._test_length_sec:
       iteration_num += 1
 
-      if time.time() - last_perf_stats_time >= self._GET_PERF_STATS_INTERVAL:
+      if time.time() - last_perf_stats_time >= self._get_perf_stats_interval:
         last_perf_stats_time = time.time()
         self._GetPerformanceStats(self._webapp_name, test_description,
                                   self._tab_title_substring)
@@ -394,7 +404,7 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
     while time.time() - self._test_start_time < self._test_length_sec:
       iteration_num += 1
 
-      if time.time() - last_perf_stats_time >= self._GET_PERF_STATS_INTERVAL:
+      if time.time() - last_perf_stats_time >= self._get_perf_stats_interval:
         last_perf_stats_time = time.time()
         self._GetPerformanceStats(self._webapp_name, test_description,
                                   self._tab_title_substring)
@@ -451,7 +461,7 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
     while time.time() - self._test_start_time < self._test_length_sec:
       iteration_num += 1
 
-      if time.time() - last_perf_stats_time >= self._GET_PERF_STATS_INTERVAL:
+      if time.time() - last_perf_stats_time >= self._get_perf_stats_interval:
         last_perf_stats_time = time.time()
         self._GetPerformanceStats(self._webapp_name, test_description,
                                   self._tab_title_substring)
@@ -521,7 +531,7 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
     while time.time() - self._test_start_time < self._test_length_sec:
       iteration_num += 1
 
-      if time.time() - last_perf_stats_time >= self._GET_PERF_STATS_INTERVAL:
+      if time.time() - last_perf_stats_time >= self._get_perf_stats_interval:
         last_perf_stats_time = time.time()
         self._GetPerformanceStats(self._webapp_name, test_description,
                                   self._tab_title_substring)
@@ -608,7 +618,7 @@ class ChromeEndureDocsTest(ChromeEndureBaseTest):
                       'early.' % self._ERROR_COUNT_THRESHOLD)
         break
 
-      if time.time() - last_perf_stats_time >= self._GET_PERF_STATS_INTERVAL:
+      if time.time() - last_perf_stats_time >= self._get_perf_stats_interval:
         last_perf_stats_time = time.time()
         self._GetPerformanceStats(self._webapp_name, test_description,
                                   self._tab_title_substring)
@@ -687,7 +697,7 @@ class ChromeEndurePlusTest(ChromeEndureBaseTest):
                       'early.' % self._ERROR_COUNT_THRESHOLD)
         break
 
-      if time.time() - last_perf_stats_time >= self._GET_PERF_STATS_INTERVAL:
+      if time.time() - last_perf_stats_time >= self._get_perf_stats_interval:
         last_perf_stats_time = time.time()
         self._GetPerformanceStats(self._webapp_name, test_description,
                                   self._tab_title_substring)
