@@ -51,7 +51,7 @@ deps = {
     'src/third_party/hunspell_dictionaries':
         Var('git_url') + '/chromium/deps/hunspell_dictionaries.git@50fb79b30a2e3e512c88884152f26b255d0e4074',
     'src/third_party/icu':
-        Var('git_url') + '/chromium/deps/icu46.git@15866059c8e14055290357fc7c39de58ba222d3f',
+        Var('git_url') + '/chromium/deps/icu46.git@cb71ead526647bd4a18ea981ef35031dcb608bdd',
     'src/third_party/jsoncpp/source/include':
         Var('git_url') + '/external/jsoncpp/jsoncpp/include.git@b0dd48e02b6e6248328db78a65b5c601f150c349',
     'src/third_party/jsoncpp/source/src/lib_json':
