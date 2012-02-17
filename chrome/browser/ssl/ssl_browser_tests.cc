@@ -98,12 +98,15 @@ class SSLUITest : public InProcessBrowserTest {
     // CERT_STATUS_UNABLE_TO_CHECK_REVOCATION doesn't lower the security style
     // to SECURITY_STYLE_AUTHENTICATION_BROKEN.
     ASSERT_NE(net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION, error);
-    EXPECT_EQ(error,
-              entry->GetSSL().cert_status & net::CERT_STATUS_ALL_ERRORS);
+    EXPECT_EQ(error, entry->GetSSL().cert_status & error);
     EXPECT_FALSE(!!(entry->GetSSL().content_status &
                     SSLStatus::DISPLAYED_INSECURE_CONTENT));
-    EXPECT_EQ(ran_insecure_content, 
+    EXPECT_EQ(ran_insecure_content,
         !!(entry->GetSSL().content_status & SSLStatus::RAN_INSECURE_CONTENT));
+    net::CertStatus extra_cert_errors = error ^ (entry->GetSSL().cert_status &
+                                                 net::CERT_STATUS_ALL_ERRORS);
+    if (extra_cert_errors)
+      LOG(WARNING) << "Got unexpected cert error: " << extra_cert_errors;
   }
 
   void CheckWorkerLoadResult(WebContents* tab, bool expectLoaded) {
@@ -314,9 +317,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndProceed) {
 
 // Visits a page with https error and don't proceed (and ensure we can still
 // navigate at that point):
-// Disabled, flakily exceeds test timeout, http://crbug.com/43575.
-// Marked as flaky, see bug 40932.
-IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestHTTPSExpiredCertAndDontProceed) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndDontProceed) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
   ASSERT_TRUE(https_server_expired_.Start());
@@ -361,10 +362,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestHTTPSExpiredCertAndDontProceed) {
 }
 
 // Visits a page with https error and then goes back using Browser::GoBack.
-// See bug 114185.
-// Marked as flaky, see bug 40932.
 IN_PROC_BROWSER_TEST_F(SSLUITest,
-                       DISABLED_TestHTTPSExpiredCertAndGoBackViaButton) {
+                       TestHTTPSExpiredCertAndGoBackViaButton) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(https_server_expired_.Start());
 
@@ -399,10 +398,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
 }
 
 // Visits a page with https error and then goes back using GoToOffset.
-// See bug 114185.
-// Marked as flaky, see bug 40932.
 IN_PROC_BROWSER_TEST_F(SSLUITest,
-                       DISABLED_TestHTTPSExpiredCertAndGoBackViaMenu) {
+                       TestHTTPSExpiredCertAndGoBackViaMenu) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(https_server_expired_.Start());
 
@@ -428,8 +425,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
 }
 
 // Visits a page with https error and then goes forward using GoToOffset.
-// Marked as flaky, see bug 40932.
-IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestHTTPSExpiredCertAndGoForward) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndGoForward) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(https_server_expired_.Start());
 
@@ -591,8 +587,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
 // Visits a page with unsafe content and make sure that:
 // - frames content is replaced with warning
 // - images and scripts are filtered out entirely
-// Marked as flaky, see bug 40932.
-IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestUnsafeContents) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContents) {
   ASSERT_TRUE(https_server_.Start());
   ASSERT_TRUE(https_server_expired_.Start());
 
@@ -936,8 +931,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectBadToGoodHTTPS) {
 }
 
 // Visit a page over good https that is a redirect to a page with bad https.
-// Marked as flaky, see bug 40932.
-IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestRedirectGoodToBadHTTPS) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectGoodToBadHTTPS) {
   ASSERT_TRUE(https_server_.Start());
   ASSERT_TRUE(https_server_expired_.Start());
 
@@ -973,7 +967,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectHTTPToGoodHTTPS) {
 }
 
 // Visit a page over http that is a redirect to a page with bad HTTPS.
-IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestRedirectHTTPToBadHTTPS) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectHTTPToBadHTTPS) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(https_server_expired_.Start());
 
@@ -995,8 +989,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestRedirectHTTPToBadHTTPS) {
 
 // Visit a page over https that is a redirect to a page with http (to make sure
 // we don't keep the secure state).
-// Marked as flaky, see bug 40932.
-IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestRedirectHTTPSToHTTP) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectHTTPSToHTTP) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
 
@@ -1127,8 +1120,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestGoodFrameNavigation) {
 
 // From a bad HTTPS top frame:
 // - navigate to an OK HTTPS frame (expected to be still authentication broken).
-// Marked as flaky, see bug 40932.
-IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestBadFrameNavigation) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestBadFrameNavigation) {
   ASSERT_TRUE(https_server_.Start());
   ASSERT_TRUE(https_server_expired_.Start());
 
@@ -1227,8 +1219,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestUnauthenticatedFrameNavigation) {
   EXPECT_FALSE(is_content_evil);
 }
 
-// Marked as flaky, see bug 40932.
-IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestUnsafeContentsInWorkerFiltered) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsInWorkerFiltered) {
   ASSERT_TRUE(https_server_.Start());
   ASSERT_TRUE(https_server_expired_.Start());
 
@@ -1246,8 +1237,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestUnsafeContentsInWorkerFiltered) {
   CheckAuthenticatedState(tab, false);
 }
 
-// Marked as flaky, see bug 40932.
-IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestUnsafeContentsInWorker) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsInWorker) {
   ASSERT_TRUE(https_server_.Start());
   ASSERT_TRUE(https_server_expired_.Start());
 
