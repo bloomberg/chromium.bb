@@ -158,8 +158,7 @@ void OpenAllImpl(const BookmarkNode* node,
       Browser* new_browser = BrowserList::GetLastActiveWithProfile(profile);
       if (new_browser) {
         WebContents* current_tab = new_browser->GetSelectedWebContents();
-        DCHECK(new_browser && current_tab);
-        if (new_browser && current_tab)
+        if (current_tab)
           *navigator = current_tab;
       }  // else, new_browser == NULL, which happens during testing.
     }
