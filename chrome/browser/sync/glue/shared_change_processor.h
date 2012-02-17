@@ -14,6 +14,7 @@
 #include "chrome/browser/sync/api/sync_change_processor.h"
 #include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
+#include "chrome/browser/sync/glue/data_type_error_handler.h"
 
 class ProfileSyncComponentsFactory;
 class ProfileSyncService;
@@ -25,7 +26,7 @@ typedef std::vector<SyncData> SyncDataList;
 namespace browser_sync {
 
 class GenericChangeProcessor;
-class UnrecoverableErrorHandler;
+class DataTypeErrorHandler;
 
 // A ref-counted wrapper around a GenericChangeProcessor for use with datatypes
 // that don't live on the UI thread.
@@ -58,7 +59,7 @@ class SharedChangeProcessor
   virtual base::WeakPtr<SyncableService> Connect(
     ProfileSyncComponentsFactory* sync_factory,
     ProfileSyncService* sync_service,
-    UnrecoverableErrorHandler* error_handler,
+    DataTypeErrorHandler* error_handler,
     syncable::ModelType type);
 
   // Disconnects from the generic change processor. May be called from any

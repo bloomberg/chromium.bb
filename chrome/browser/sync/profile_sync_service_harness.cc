@@ -539,6 +539,7 @@ bool ProfileSyncServiceHarness::AwaitDataSyncCompletion(
   CHECK_NE(wait_state_, SYNC_DISABLED);
   CHECK_NE(wait_state_, SERVER_UNREACHABLE);
 
+  const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
   if (IsDataSynced()) {
     // Client is already synced; don't wait.
     return true;
@@ -546,6 +547,7 @@ bool ProfileSyncServiceHarness::AwaitDataSyncCompletion(
 
   wait_state_ = WAITING_FOR_DATA_SYNC;
   AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs, reason);
+  snap = GetLastSessionSnapshot();
   if (wait_state_ == FULLY_SYNCED) {
     return true;
   } else {

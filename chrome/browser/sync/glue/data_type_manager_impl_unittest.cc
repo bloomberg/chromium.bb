@@ -163,6 +163,13 @@ class FakeDataTypeController : public DataTypeController {
     ADD_FAILURE() << message;
   }
 
+  virtual void OnSingleDatatypeUnrecoverableError(
+      const tracked_objects::Location& from_here,
+      const std::string& message) {
+    ADD_FAILURE() << message;
+ }
+
+
  private:
   State state_;
   ModelType type_;

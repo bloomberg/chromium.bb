@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,7 @@ namespace browser_sync {
 PasswordChangeProcessor::PasswordChangeProcessor(
     PasswordModelAssociator* model_associator,
     PasswordStore* password_store,
-    UnrecoverableErrorHandler* error_handler)
+    DataTypeErrorHandler* error_handler)
     : ChangeProcessor(error_handler),
       model_associator_(model_associator),
       password_store_(password_store),
@@ -99,12 +99,12 @@ void PasswordChangeProcessor::Observe(
           // TODO: Remove this.  See crbug.com/87855.
           int64 sync_id = model_associator_->GetSyncIdFromChromeId(tag);
           if (sync_api::kInvalidId == sync_id) {
-            error_handler()->OnUnrecoverableError(FROM_HERE,
+            error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                 "Unable to create or retrieve password node");
             return;
           }
           if (!sync_node.InitByIdLookup(sync_id)) {
-            error_handler()->OnUnrecoverableError(FROM_HERE,
+            error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                 "Unable to create or retrieve password node");
             return;
           }
@@ -116,12 +116,12 @@ void PasswordChangeProcessor::Observe(
         sync_api::WriteNode sync_node(&trans);
         int64 sync_id = model_associator_->GetSyncIdFromChromeId(tag);
         if (sync_api::kInvalidId == sync_id) {
-          error_handler()->OnUnrecoverableError(FROM_HERE,
+          error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
               "Unexpected notification for: ");
           return;
         } else {
           if (!sync_node.InitByIdLookup(sync_id)) {
-            error_handler()->OnUnrecoverableError(FROM_HERE,
+            error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                 "Password node lookup failed.");
             return;
           }
@@ -141,7 +141,7 @@ void PasswordChangeProcessor::Observe(
           return;
         } else {
           if (!sync_node.InitByIdLookup(sync_id)) {
-            error_handler()->OnUnrecoverableError(FROM_HERE,
+            error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                 "Password node lookup failed.");
             return;
           }
@@ -190,7 +190,7 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
 
     sync_api::ReadNode sync_node(trans);
     if (!sync_node.InitByIdLookup(it->id)) {
-      error_handler()->OnUnrecoverableError(FROM_HERE,
+      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
           "Password node lookup failed.");
       return;
     }
@@ -224,7 +224,8 @@ void PasswordChangeProcessor::CommitChangesFromSyncModel() {
   if (!model_associator_->WriteToPasswordStore(&new_passwords_,
                                                &updated_passwords_,
                                                &deleted_passwords_)) {
-    error_handler()->OnUnrecoverableError(FROM_HERE, "Error writing passwords");
+    error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+        "Error writing passwords");
     return;
   }
 

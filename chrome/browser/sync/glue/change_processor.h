@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_GLUE_CHANGE_PROCESSOR_H_
 #pragma once
 
+#include "chrome/browser/sync/glue/data_type_error_handler.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/internal_api/change_record.h"
 
@@ -20,7 +21,7 @@ class UnrecoverableErrorHandler;
 // native model.  This does not currently distinguish between model data types.
 class ChangeProcessor {
  public:
-  explicit ChangeProcessor(UnrecoverableErrorHandler* error_handler);
+  explicit ChangeProcessor(DataTypeErrorHandler* error_handler);
   virtual ~ChangeProcessor();
 
   // Call when the processor should accept changes from either provided model
@@ -76,12 +77,12 @@ class ChangeProcessor {
   virtual void StopImpl() = 0;
 
   bool running() const { return running_; }
-  UnrecoverableErrorHandler* error_handler() const;
+  DataTypeErrorHandler* error_handler() const;
   virtual sync_api::UserShare* share_handle() const;
 
  private:
   bool running_;  // True if we have been told it is safe to process changes.
-  UnrecoverableErrorHandler* error_handler_;  // Guaranteed to outlive us.
+  DataTypeErrorHandler* error_handler_;  // Guaranteed to outlive us.
 
   // The sync model we are processing changes from. Non-NULL when |running_| is
   // true.

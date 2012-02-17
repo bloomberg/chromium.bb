@@ -228,21 +228,23 @@ class ProfileSyncServiceSessionTest
         callback));
 
     // Register the session data type.
+    SessionDataTypeController *dtc = new SessionDataTypeController(factory,
+                                         profile(),
+                                         sync_service_.get());
+    sync_service_->RegisterDataTypeController(dtc);
+
     model_associator_ =
         new SessionModelAssociator(sync_service_.get(),
                                    true /* setup_for_test */);
     change_processor_ = new SessionChangeProcessor(
-        sync_service_.get(), model_associator_,
+        dtc, model_associator_,
         true /* setup_for_test */);
     EXPECT_CALL(*factory, CreateSessionSyncComponents(_, _)).
         WillOnce(Return(ProfileSyncComponentsFactory::SyncComponents(
             model_associator_, change_processor_)));
     EXPECT_CALL(*factory, CreateDataTypeManager(_, _)).
         WillOnce(ReturnNewDataTypeManager());
-    sync_service_->RegisterDataTypeController(
-        new SessionDataTypeController(factory,
-                                      profile(),
-                                      sync_service_.get()));
+
     profile()->GetTokenService()->IssueAuthTokenForTest(
         GaiaConstants::kSyncService, "token");
     sync_service_->Initialize();

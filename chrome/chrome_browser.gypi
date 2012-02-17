@@ -2335,6 +2335,7 @@
         'browser/sync/glue/chrome_extensions_activity_monitor.cc',
         'browser/sync/glue/chrome_extensions_activity_monitor.h',
         'browser/sync/glue/data_type_controller.h',
+        'browser/sync/glue/data_type_error_handler.h',
         'browser/sync/glue/data_type_manager.cc',
         'browser/sync/glue/data_type_manager.h',
         'browser/sync/glue/data_type_manager_impl.cc',

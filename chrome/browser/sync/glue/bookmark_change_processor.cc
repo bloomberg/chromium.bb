@@ -30,7 +30,7 @@ namespace browser_sync {
 
 BookmarkChangeProcessor::BookmarkChangeProcessor(
     BookmarkModelAssociator* model_associator,
-    UnrecoverableErrorHandler* error_handler)
+    DataTypeErrorHandler* error_handler)
     : ChangeProcessor(error_handler),
       bookmark_model_(NULL),
       model_associator_(model_associator) {
@@ -88,7 +88,8 @@ void BookmarkChangeProcessor::RemoveOneSyncNode(
     sync_api::WriteTransaction* trans, const BookmarkNode* node) {
   sync_api::WriteNode sync_node(trans);
   if (!model_associator_->InitSyncNodeFromChromeId(node->id(), &sync_node)) {
-    error_handler()->OnUnrecoverableError(FROM_HERE, std::string());
+    error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+                                                        std::string());
     return;
   }
   // This node should have no children.
@@ -164,7 +165,7 @@ void BookmarkChangeProcessor::BookmarkNodeAdded(BookmarkModel* model,
 int64 BookmarkChangeProcessor::CreateSyncNode(const BookmarkNode* parent,
     BookmarkModel* model, int index, sync_api::WriteTransaction* trans,
     BookmarkModelAssociator* associator,
-    UnrecoverableErrorHandler* error_handler) {
+    DataTypeErrorHandler* error_handler) {
   const BookmarkNode* child = parent->GetChild(index);
   DCHECK(child);
 
@@ -211,7 +212,8 @@ void BookmarkChangeProcessor::BookmarkNodeChanged(BookmarkModel* model,
   // Lookup the sync node that's associated with |node|.
   sync_api::WriteNode sync_node(&trans);
   if (!model_associator_->InitSyncNodeFromChromeId(node->id(), &sync_node)) {
-    error_handler()->OnUnrecoverableError(FROM_HERE, std::string());
+    error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+                                                        std::string());
     return;
   }
 
@@ -245,7 +247,8 @@ void BookmarkChangeProcessor::BookmarkNodeMoved(BookmarkModel* model,
   // Lookup the sync node that's associated with |child|.
   sync_api::WriteNode sync_node(&trans);
   if (!model_associator_->InitSyncNodeFromChromeId(child->id(), &sync_node)) {
-    error_handler()->OnUnrecoverableError(FROM_HERE, std::string());
+    error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+                                                        std::string());
     return;
   }
 
@@ -275,7 +278,8 @@ void BookmarkChangeProcessor::BookmarkNodeChildrenReordered(
     sync_api::WriteNode sync_child(&trans);
     if (!model_associator_->InitSyncNodeFromChromeId(node->GetChild(i)->id(),
                                                      &sync_child)) {
-      error_handler()->OnUnrecoverableError(FROM_HERE, std::string());
+      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+                                                          std::string());
       return;
     }
     DCHECK_EQ(sync_child.GetParentId(),
@@ -439,7 +443,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
 
       sync_api::ReadNode src(trans);
       if (!src.InitByIdLookup(it->id)) {
-        error_handler()->OnUnrecoverableError(FROM_HERE,
+        error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
             "ApplyModelChanges was passed a bad ID");
         return;
       }

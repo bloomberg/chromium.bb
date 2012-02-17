@@ -20,7 +20,7 @@ class SharedChangeProcessorMock : public SharedChangeProcessor {
   MOCK_METHOD4(Connect, base::WeakPtr<SyncableService>(
       ProfileSyncComponentsFactory*,
       ProfileSyncService*,
-      UnrecoverableErrorHandler*,
+      DataTypeErrorHandler*,
       syncable::ModelType));
   MOCK_METHOD0(Disconnect, bool());
   MOCK_METHOD2(ProcessSyncChanges,

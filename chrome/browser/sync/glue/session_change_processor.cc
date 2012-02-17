@@ -52,7 +52,7 @@ SyncedTabDelegate* ExtractSyncedTabDelegate(
 }  // namespace
 
 SessionChangeProcessor::SessionChangeProcessor(
-    UnrecoverableErrorHandler* error_handler,
+    DataTypeErrorHandler* error_handler,
     SessionModelAssociator* session_model_associator)
     : ChangeProcessor(error_handler),
       session_model_associator_(session_model_associator),
@@ -64,7 +64,7 @@ SessionChangeProcessor::SessionChangeProcessor(
 }
 
 SessionChangeProcessor::SessionChangeProcessor(
-    UnrecoverableErrorHandler* error_handler,
+    DataTypeErrorHandler* error_handler,
     SessionModelAssociator* session_model_associator,
     bool setup_for_test)
     : ChangeProcessor(error_handler),
@@ -231,7 +231,7 @@ void SessionChangeProcessor::Observe(
     session_model_associator_->DisassociateModels(&error);
     session_model_associator_->AssociateModels(&error);
     if (error.IsSet()) {
-      error_handler()->OnUnrecoverableError(FROM_HERE,
+      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
           "Sessions reassociation failed.");
     }
   }
@@ -274,7 +274,7 @@ void SessionChangeProcessor::ApplyChangesFromSyncModel(
     // Handle an update or add.
     sync_api::ReadNode sync_node(trans);
     if (!sync_node.InitByIdLookup(change.id)) {
-      error_handler()->OnUnrecoverableError(FROM_HERE,
+      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
           "Session node lookup failed.");
       return;
     }

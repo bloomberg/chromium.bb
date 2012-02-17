@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/sync/glue/change_processor.h"
+#include "chrome/browser/sync/glue/data_type_error_handler.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
@@ -17,7 +18,7 @@ class Profile;
 
 namespace browser_sync {
 
-class UnrecoverableErrorHandler;
+class DataTypeErrorHandler;
 
 // This class is responsible for taking changes from the
 // ThemeService and applying them to the sync_api 'syncable'
@@ -26,7 +27,7 @@ class UnrecoverableErrorHandler;
 class ThemeChangeProcessor : public ChangeProcessor,
                              public content::NotificationObserver {
  public:
-  explicit ThemeChangeProcessor(UnrecoverableErrorHandler* error_handler);
+  explicit ThemeChangeProcessor(DataTypeErrorHandler* error_handler);
   virtual ~ThemeChangeProcessor();
 
   // content::NotificationObserver implementation.
