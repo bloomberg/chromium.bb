@@ -2,23 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/test/aura_shell_test_base.h"
+#include "ash/test/ash_test_base.h"
 
 #include "ash/shell.h"
 #include "ash/test/test_shell_delegate.h"
+#include "ui/aura/root_window.h"
 #include "ui/gfx/compositor/layer_animator.h"
 
 namespace ash {
 namespace test {
 
-AuraShellTestBase::AuraShellTestBase() {
+AshTestBase::AshTestBase() {
+  helper_.InitRootWindow(Shell::GetRootWindow());
 }
 
-AuraShellTestBase::~AuraShellTestBase() {
+AshTestBase::~AshTestBase() {
+  // Ensure that we don't use the previously-allocated static RootWindow object
+  // later -- on Linux, it holds a reference to our message loop's X connection.
+  aura::RootWindow::DeleteInstance();
 }
 
-void AuraShellTestBase::SetUp() {
-  aura::test::AuraTestBase::SetUp();
+void AshTestBase::SetUp() {
+  helper_.SetUp();
 
   // Creates Shell and hook with Desktop.
   ash::Shell::CreateInstance(new TestShellDelegate);
@@ -27,14 +32,18 @@ void AuraShellTestBase::SetUp() {
   ui::LayerAnimator::set_disable_animations_for_test(true);
 }
 
-void AuraShellTestBase::TearDown() {
+void AshTestBase::TearDown() {
   // Flush the message loop to finish pending release tasks.
   RunAllPendingInMessageLoop();
 
   // Tear down the shell.
-  ash::Shell::DeleteInstance();
+  Shell::DeleteInstance();
 
-  aura::test::AuraTestBase::TearDown();
+  helper_.TearDown();
+}
+
+void AshTestBase::RunAllPendingInMessageLoop() {
+  helper_.RunAllPendingInMessageLoop(Shell::GetRootWindow());
 }
 
 }  // namespace test

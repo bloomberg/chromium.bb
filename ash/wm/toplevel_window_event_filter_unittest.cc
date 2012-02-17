@@ -5,7 +5,7 @@
 #include "ash/wm/toplevel_window_event_filter.h"
 
 #include "ash/shell.h"
-#include "ash/test/aura_shell_test_base.h"
+#include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -62,13 +62,13 @@ class TestWindowDelegate : public aura::test::TestWindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestWindowDelegate);
 };
 
-class ToplevelWindowEventFilterTest : public AuraShellTestBase {
+class ToplevelWindowEventFilterTest : public AshTestBase {
  public:
   ToplevelWindowEventFilterTest() : filter_(NULL), parent_(NULL) {}
   virtual ~ToplevelWindowEventFilterTest() {}
 
   virtual void SetUp() OVERRIDE {
-    AuraShellTestBase::SetUp();
+    AshTestBase::SetUp();
     parent_ = new aura::Window(NULL);
     parent_->Init(ui::Layer::LAYER_NOT_DRAWN);
     parent_->Show();
@@ -81,7 +81,7 @@ class ToplevelWindowEventFilterTest : public AuraShellTestBase {
   virtual void TearDown() OVERRIDE {
     filter_ = NULL;
     parent_ = NULL;
-    AuraShellTestBase::TearDown();
+    AshTestBase::TearDown();
   }
 
  protected:

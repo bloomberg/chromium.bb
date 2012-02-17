@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/shell.h"
-#include "ash/test/aura_shell_test_base.h"
+#include "ash/test/ash_test_base.h"
 #include "ash/tooltips/tooltip_controller.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/client/tooltip_client.h"
@@ -73,7 +73,7 @@ ash::internal::TooltipController* GetController() {
 
 }  // namespace
 
-class TooltipControllerTest : public AuraShellTestBase {
+class TooltipControllerTest : public AshTestBase {
  public:
   TooltipControllerTest() {}
   virtual ~TooltipControllerTest() {}

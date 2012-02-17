@@ -5,7 +5,7 @@
 #include "ash/wm/activation_controller.h"
 
 #include "ash/shell.h"
-#include "ash/test/aura_shell_test_base.h"
+#include "ash/test/ash_test_base.h"
 #include "ash/test/test_activation_delegate.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/focus_manager.h"
@@ -24,7 +24,7 @@
 namespace ash {
 namespace test {
 
-typedef test::AuraShellTestBase ActivationControllerTest;
+typedef test::AshTestBase ActivationControllerTest;
 
 // Utilities for a set of tests that test
 // ActivationController::GetTopmostWindowToActivate().

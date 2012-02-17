@@ -111,6 +111,8 @@
       'sources': [
         'test/aura_test_base.cc',
         'test/aura_test_base.h',
+        'test/aura_test_helper.cc',
+        'test/aura_test_helper.h',
         'test/event_generator.cc',
         'test/event_generator.h',
         'test/test_activation_client.cc',

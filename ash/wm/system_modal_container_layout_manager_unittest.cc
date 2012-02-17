@@ -6,7 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/test/aura_shell_test_base.h"
+#include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/root_window.h"
@@ -109,7 +109,7 @@ class TransientWindowObserver : public aura::WindowObserver {
 
 }  // namespace
 
-typedef AuraShellTestBase SystemModalContainerLayoutManagerTest;
+typedef AshTestBase SystemModalContainerLayoutManagerTest;
 
 TEST_F(SystemModalContainerLayoutManagerTest, NonModalTransient) {
   scoped_ptr<aura::Window> parent(TestWindow::OpenTestWindow(NULL, false));

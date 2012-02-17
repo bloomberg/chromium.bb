@@ -7,7 +7,7 @@
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/test/aura_shell_test_base.h"
+#include "ash/test/ash_test_base.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -28,7 +28,7 @@ views::Widget* CreatePanelWindow(const gfx::Rect& rect) {
   return widget;
 }
 
-class PanelLayoutManagerTest : public ash::test::AuraShellTestBase {
+class PanelLayoutManagerTest : public ash::test::AshTestBase {
  public:
   PanelLayoutManagerTest() {}
   virtual ~PanelLayoutManagerTest() {}

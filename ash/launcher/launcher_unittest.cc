@@ -5,11 +5,11 @@
 #include "ash/launcher/launcher.h"
 
 #include "ash/shell.h"
-#include "ash/test/aura_shell_test_base.h"
+#include "ash/test/ash_test_base.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-typedef ash::test::AuraShellTestBase LauncherTest;
+typedef ash::test::AshTestBase LauncherTest;
 
 namespace ash {
 

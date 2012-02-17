@@ -10,7 +10,7 @@
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/test/aura_shell_test_base.h"
+#include "ash/test/ash_test_base.h"
 #include "ash/volume_control_delegate.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/event.h"
@@ -288,7 +288,7 @@ bool TestTarget::CanHandleAccelerators() const {
 
 }  // namespace
 
-class AcceleratorControllerTest : public AuraShellTestBase {
+class AcceleratorControllerTest : public AshTestBase {
  public:
   AcceleratorControllerTest() {};
   virtual ~AcceleratorControllerTest() {};

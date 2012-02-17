@@ -4,7 +4,7 @@
 
 #include "ash/wm/visibility_controller.h"
 
-#include "ash/test/aura_shell_test_base.h"
+#include "ash/test/ash_test_base.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
@@ -13,7 +13,7 @@
 namespace ash {
 namespace internal {
 
-typedef test::AuraShellTestBase VisibilityControllerTest;
+typedef test::AshTestBase VisibilityControllerTest;
 
 // Hiding a window in an animatable container should not hide the window's layer
 // immediately.

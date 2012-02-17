@@ -13,11 +13,13 @@
 
 namespace aura {
 
+class RootWindow;
+
 // Aura implementation of gfx::Screen. Implemented here to avoid circular
 // dependencies.
 class AURA_EXPORT ScreenAura : public gfx::Screen {
  public:
-  ScreenAura();
+  explicit ScreenAura(RootWindow* root_window);
   virtual ~ScreenAura();
 
   void set_work_area_insets(const gfx::Insets& insets) {
@@ -47,6 +49,8 @@ class AURA_EXPORT ScreenAura : public gfx::Screen {
 
   // Insets for the work area.
   gfx::Insets work_area_insets_;
+
+  RootWindow* root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenAura);
 };

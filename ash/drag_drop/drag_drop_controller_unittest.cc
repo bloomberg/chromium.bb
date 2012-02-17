@@ -5,7 +5,7 @@
 #include "ash/drag_drop/drag_drop_controller.h"
 
 #include "ash/shell.h"
-#include "ash/test/aura_shell_test_base.h"
+#include "ash/test/ash_test_base.h"
 #include "ash/wm/root_window_event_filter.h"
 #include "base/location.h"
 #include "base/utf_string_conversions.h"
@@ -175,13 +175,13 @@ void AddViewToWidgetAndResize(views::Widget* widget, views::View* view) {
 
 }  // namespace
 
-class DragDropControllerTest : public AuraShellTestBase {
+class DragDropControllerTest : public AshTestBase {
  public:
-  DragDropControllerTest() : AuraShellTestBase() {}
+  DragDropControllerTest() : AshTestBase() {}
   virtual ~DragDropControllerTest() {}
 
   void SetUp() OVERRIDE {
-    AuraShellTestBase::SetUp();
+    AshTestBase::SetUp();
     drag_drop_controller_.reset(new TestDragDropController);
     drag_drop_controller_->set_should_block_during_drag_drop(false);
     aura::client::SetDragDropClient(drag_drop_controller_.get());
@@ -191,7 +191,7 @@ class DragDropControllerTest : public AuraShellTestBase {
   void TearDown() OVERRIDE {
     aura::client::SetDragDropClient(NULL);
     drag_drop_controller_.reset();
-    AuraShellTestBase::TearDown();
+    AshTestBase::TearDown();
   }
 
   void UpdateDragData(ui::OSExchangeData* data) {

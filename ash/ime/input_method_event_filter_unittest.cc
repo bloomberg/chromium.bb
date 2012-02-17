@@ -6,7 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/test/aura_shell_test_base.h"
+#include "ash/test/ash_test_base.h"
 #include "ash/wm/root_window_event_filter.h"
 #include "ash/wm/window_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,7 +29,7 @@ namespace ash {
 namespace test {
 
 typedef aura::test::AuraTestBase InputMethodEventFilterTestWithoutShell;
-typedef AuraShellTestBase InputMethodEventFilterTest;
+typedef AshTestBase InputMethodEventFilterTest;
 
 // Tests if InputMethodEventFilter adds a window property on its construction.
 TEST_F(InputMethodEventFilterTestWithoutShell, TestInputMethodProperty) {
@@ -71,7 +71,7 @@ TEST_F(InputMethodEventFilterTest, TestInputMethodKeyEventPropagation) {
   ActivateWindow(window.get());
 
   // Send a fake key event to the root window. InputMethodEventFilter, which is
-  // automatically set up by AuraShellTestBase, consumes it and sends a new
+  // automatically set up by AshTestBase, consumes it and sends a new
   // ui::ET_TRANSLATED_KEY_* event to the root window, which will be consumed by
   // the test event filter.
   aura::test::EventGenerator generator_;

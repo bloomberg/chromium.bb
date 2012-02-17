@@ -4,7 +4,7 @@
 
 #include "ash/wm/window_modality_controller.h"
 
-#include "ash/test/aura_shell_test_base.h"
+#include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/event_generator.h"
@@ -16,7 +16,7 @@
 namespace ash {
 namespace internal {
 
-typedef test::AuraShellTestBase WindowModalityControllerTest;
+typedef test::AshTestBase WindowModalityControllerTest;
 
 namespace {
 

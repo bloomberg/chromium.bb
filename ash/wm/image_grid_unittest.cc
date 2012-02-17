@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/test/aura_shell_test_base.h"
+#include "ash/test/ash_test_base.h"
 #include "ash/wm/image_grid.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -24,7 +24,7 @@ gfx::Image* CreateImage(const gfx::Size& size) {
 
 }  // namespace
 
-typedef ash::test::AuraShellTestBase ImageGridTest;
+typedef ash::test::AshTestBase ImageGridTest;
 
 // Test that an ImageGrid's layers are transformed correctly when SetSize() is
 // called.

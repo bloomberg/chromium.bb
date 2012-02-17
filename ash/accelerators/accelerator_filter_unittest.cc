@@ -8,7 +8,7 @@
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/test/aura_shell_test_base.h"
+#include "ash/test/ash_test_base.h"
 #include "ash/wm/root_window_event_filter.h"
 #include "ash/wm/window_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -57,7 +57,7 @@ AcceleratorController* GetController() {
 
 }  // namespace
 
-typedef AuraShellTestBase AcceleratorFilterTest;
+typedef AshTestBase AcceleratorFilterTest;
 
 // Tests if AcceleratorFilter works without a focused window.
 TEST_F(AcceleratorFilterTest, TestFilterWithoutFocus) {

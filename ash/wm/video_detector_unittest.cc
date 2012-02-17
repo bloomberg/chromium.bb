@@ -5,7 +5,7 @@
 #include "ash/wm/video_detector.h"
 
 #include "ash/shell.h"
-#include "ash/test/aura_shell_test_base.h"
+#include "ash/test/ash_test_base.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
@@ -38,13 +38,13 @@ class TestVideoDetectorObserver : public VideoDetectorObserver {
   DISALLOW_COPY_AND_ASSIGN(TestVideoDetectorObserver);
 };
 
-class VideoDetectorTest : public AuraShellTestBase {
+class VideoDetectorTest : public AshTestBase {
  public:
   VideoDetectorTest() {}
   virtual ~VideoDetectorTest() {}
 
   void SetUp() OVERRIDE {
-    AuraShellTestBase::SetUp();
+    AshTestBase::SetUp();
     observer_.reset(new TestVideoDetectorObserver);
     detector_ = Shell::GetInstance()->video_detector();
     detector_->AddObserver(observer_.get());

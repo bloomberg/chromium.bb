@@ -6,7 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/test/aura_shell_test_base.h"
+#include "ash/test/ash_test_base.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_util.h"
 #include "base/basictypes.h"
@@ -30,14 +30,14 @@ const int kMaxHeight = 600;
 
 namespace internal {
 
-class CompactLayoutManagerTest : public ash::test::AuraShellTestBase {
+class CompactLayoutManagerTest : public ash::test::AshTestBase {
  public:
   CompactLayoutManagerTest() : layout_manager_(NULL) {
   }
   virtual ~CompactLayoutManagerTest() {}
 
   virtual void SetUp() OVERRIDE {
-    ash::test::AuraShellTestBase::SetUp();
+    ash::test::AshTestBase::SetUp();
     Shell::GetRootWindow()->Show();
     Shell::GetRootWindow()->SetHostSize(gfx::Size(kMaxWidth, kMaxHeight));
     default_container()->SetBounds(gfx::Rect(0, 0, kMaxWidth, kMaxHeight));

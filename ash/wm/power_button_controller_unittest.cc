@@ -5,7 +5,7 @@
 #include "ash/wm/power_button_controller.h"
 
 #include "ash/shell.h"
-#include "ash/test/aura_shell_test_base.h"
+#include "ash/test/ash_test_base.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "ui/aura/root_window.h"
@@ -40,13 +40,13 @@ class TestPowerButtonControllerDelegate : public PowerButtonControllerDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestPowerButtonControllerDelegate);
 };
 
-class PowerButtonControllerTest : public AuraShellTestBase {
+class PowerButtonControllerTest : public AshTestBase {
  public:
   PowerButtonControllerTest() : controller_(NULL), delegate_(NULL) {}
   virtual ~PowerButtonControllerTest() {}
 
   void SetUp() OVERRIDE {
-    AuraShellTestBase::SetUp();
+    AshTestBase::SetUp();
     delegate_ = new TestPowerButtonControllerDelegate;
     controller_ = Shell::GetInstance()->power_button_controller();
     controller_->set_delegate(delegate_);  // transfers ownership

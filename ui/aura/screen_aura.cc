@@ -11,14 +11,14 @@
 
 namespace aura {
 
-ScreenAura::ScreenAura() {
+ScreenAura::ScreenAura(RootWindow* root_window) : root_window_(root_window) {
 }
 
 ScreenAura::~ScreenAura() {
 }
 
 gfx::Point ScreenAura::GetCursorScreenPointImpl() {
-  return RootWindow::GetInstance()->last_mouse_location();
+  return root_window_->last_mouse_location();
 }
 
 gfx::Rect ScreenAura::GetMonitorWorkAreaNearestWindowImpl(
@@ -42,11 +42,11 @@ gfx::Rect ScreenAura::GetMonitorAreaNearestPointImpl(const gfx::Point& point) {
 
 gfx::NativeWindow ScreenAura::GetWindowAtCursorScreenPointImpl() {
   const gfx::Point point = GetCursorScreenPoint();
-  return RootWindow::GetInstance()->GetTopWindowContainingPoint(point);
+  return root_window_->GetTopWindowContainingPoint(point);
 }
 
 gfx::Rect ScreenAura::GetBounds() {
-  return gfx::Rect(aura::RootWindow::GetInstance()->GetHostSize());
+  return gfx::Rect(root_window_->GetHostSize());
 }
 
 gfx::Rect ScreenAura::GetWorkAreaBounds() {

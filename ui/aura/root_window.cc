@@ -433,7 +433,7 @@ RootWindow::RootWindow()
       mouse_button_flags_(0),
       last_cursor_(kCursorNull),
       cursor_shown_(true),
-      screen_(new ScreenAura),
+      ALLOW_THIS_IN_INITIALIZER_LIST(screen_(new ScreenAura(this))),
       capture_window_(NULL),
       mouse_pressed_handler_(NULL),
       mouse_moved_handler_(NULL),

@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "ash/shell.h"
-#include "ash/test/aura_shell_test_base.h"
+#include "ash/test/ash_test_base.h"
 #include "ash/wm/shadow.h"
 #include "ash/wm/shadow_types.h"
 #include "ash/wm/window_properties.h"
@@ -20,7 +20,7 @@
 namespace ash {
 namespace test {
 
-typedef ash::test::AuraShellTestBase ShadowControllerTest;
+typedef ash::test::AshTestBase ShadowControllerTest;
 
 // Tests that various methods in Window update the Shadow object as expected.
 TEST_F(ShadowControllerTest, Shadow) {

@@ -7,7 +7,7 @@
 #include "ash/launcher/launcher.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/test/aura_shell_test_base.h"
+#include "ash/test/ash_test_base.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/screen_aura.h"
 #include "ui/aura/window.h"
@@ -36,7 +36,7 @@ ShelfLayoutManager* GetShelfLayoutManager() {
 
 }  // namespace
 
-typedef ash::test::AuraShellTestBase ShelfLayoutManagerTest;
+typedef ash::test::AshTestBase ShelfLayoutManagerTest;
 
 // Fails on Mac only.  Need to be implemented.  http://crbug.com/111279.
 #if defined(OS_MACOSX)
