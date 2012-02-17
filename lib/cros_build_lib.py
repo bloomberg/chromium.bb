@@ -861,14 +861,8 @@ def SafeMakedirs(path, mode=0775):
       raise
 
 
-# Support having this module test itself if run as __main__, by leveraging
-# the corresponding unittest module.
-# Also, the unittests serve as extra documentation.
-if __name__ == '__main__':
-  import cros_build_lib_unittest
-  cros_build_lib_unittest.unittest.main(cros_build_lib_unittest)
-
-
+# Suppress whacked complaints about abstract class being unused.
+#pylint: disable=R0921
 class MasterPidContextManager(object):
 
   """
@@ -886,3 +880,17 @@ class MasterPidContextManager(object):
   def __exit__(self, exc_type, exc, traceback):
     if self._invoking_pid == os.getpid():
       return self._exit(exc_type, exc, traceback)
+
+  def _enter(self):
+    raise NotImplementedError(self, '_enter')
+
+  def _exit(self, exc_type, exc, traceback):
+    raise NotImplementedError(self, '_exit')
+
+
+# Support having this module test itself if run as __main__, by leveraging
+# the corresponding unittest module.
+# Also, the unittests serve as extra documentation.
+if __name__ == '__main__':
+  import cros_build_lib_unittest
+  cros_build_lib_unittest.unittest.main(cros_build_lib_unittest)
