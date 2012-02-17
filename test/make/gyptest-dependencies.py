@@ -18,7 +18,7 @@ test.run_gyp('dependencies.gyp')
 
 test.build('dependencies.gyp', test.ALL)
 
-deps_file = test.built_file_path(".deps/out/Default/obj/main/main.o.d")
+deps_file = test.built_file_path(".deps/out/Default/obj.target/main/main.o.d")
 test.must_contain(deps_file, "main.h")
 
 # Build a second time to make sure we generate all.deps.
