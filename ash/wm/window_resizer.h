@@ -16,6 +16,10 @@ class Window;
 
 namespace ash {
 
+namespace internal {
+class RootWindowEventFilter;
+}
+
 // WindowResizer is used by ToplevelWindowEventFilter to handle dragging,
 // moving or resizing a window.
 class ASH_EXPORT WindowResizer {
@@ -108,6 +112,8 @@ class ASH_EXPORT WindowResizer {
 
   // Set to true once Drag() is invoked and the bounds of the window change.
   bool did_move_or_resize_;
+
+  internal::RootWindowEventFilter* root_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowResizer);
 };

@@ -4,7 +4,10 @@
 
 #include "ash/wm/window_resizer.h"
 
+#include "ash/shell.h"
+#include "ash/wm/root_window_event_filter.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
@@ -142,10 +145,18 @@ WindowResizer::WindowResizer(aura::Window* window,
       is_resizable_(bounds_change_ != kBoundsChangeDirection_None &&
                     IsNormalWindow(window)),
       grid_size_(grid_size),
-      did_move_or_resize_(false) {
+      did_move_or_resize_(false),
+      root_filter_(NULL) {
+  if (is_resizable_) {
+    root_filter_ = Shell::GetInstance()->root_filter();
+    if (root_filter_)
+      root_filter_->LockCursor();
+  }
 }
 
 WindowResizer::~WindowResizer() {
+  if (root_filter_)
+    root_filter_->UnlockCursor();
 }
 
 // static

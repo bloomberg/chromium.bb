@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "ash/wm/toplevel_window_event_filter.h"
+
+#include "ash/test/aura_shell_test_base.h"
 #include "ash/wm/window_util.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -59,20 +61,26 @@ class TestWindowDelegate : public aura::test::TestWindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestWindowDelegate);
 };
 
-class ToplevelWindowEventFilterTest : public aura::test::AuraTestBase {
+class ToplevelWindowEventFilterTest : public AuraShellTestBase {
  public:
-  ToplevelWindowEventFilterTest() : filter_(NULL) {}
+  ToplevelWindowEventFilterTest() : filter_(NULL), parent_(NULL) {}
   virtual ~ToplevelWindowEventFilterTest() {}
 
   virtual void SetUp() OVERRIDE {
-    aura::test::AuraTestBase::SetUp();
-    filter_ = new ToplevelWindowEventFilter(aura::RootWindow::GetInstance());
-    aura::RootWindow::GetInstance()->SetEventFilter(filter_);
+    AuraShellTestBase::SetUp();
+    parent_ = new aura::Window(NULL);
+    parent_->Init(ui::Layer::LAYER_NOT_DRAWN);
+    parent_->Show();
+    aura::RootWindow::GetInstance()->AddChild(parent_);
+    parent_->SetBounds(aura::RootWindow::GetInstance()->bounds());
+    filter_ = new ToplevelWindowEventFilter(parent_);
+    parent_->SetEventFilter(filter_);
   }
 
   virtual void TearDown() OVERRIDE {
     filter_ = NULL;
-    aura::test::AuraTestBase::TearDown();
+    parent_ = NULL;
+    AuraShellTestBase::TearDown();
   }
 
  protected:
@@ -81,7 +89,7 @@ class ToplevelWindowEventFilterTest : public aura::test::AuraTestBase {
     aura::Window* w1 = new aura::Window(d1);
     w1->set_id(1);
     w1->Init(ui::Layer::LAYER_TEXTURED);
-    w1->SetParent(NULL);
+    w1->SetParent(parent_);
     w1->SetBounds(gfx::Rect(0, 0, 100, 100));
     w1->Show();
     return w1;
@@ -100,6 +108,9 @@ class ToplevelWindowEventFilterTest : public aura::test::AuraTestBase {
   ToplevelWindowEventFilter* filter_;
 
  private:
+  // Window |filter_| is installed on. Owned by RootWindow.
+  aura::Window* parent_;
+
   DISALLOW_COPY_AND_ASSIGN(ToplevelWindowEventFilterTest);
 };
 

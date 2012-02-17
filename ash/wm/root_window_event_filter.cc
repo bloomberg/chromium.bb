@@ -45,13 +45,33 @@ gfx::NativeCursor CursorForWindowComponent(int window_component) {
 // RootWindowEventFilter, public:
 
 RootWindowEventFilter::RootWindowEventFilter()
-    : update_cursor_visibility_(true) {
+    : cursor_lock_count_(0),
+      did_cursor_change_(false),
+      cursor_to_set_on_unlock_(0),
+      update_cursor_visibility_(true) {
 }
 
 RootWindowEventFilter::~RootWindowEventFilter() {
   // Additional filters are not owned by RootWindowEventFilter and they
   // should all be removed when running here. |filters_| has
   // check_empty == true and will DCHECK failure if it is not empty.
+}
+
+void RootWindowEventFilter::LockCursor() {
+  cursor_lock_count_++;
+}
+
+void RootWindowEventFilter::UnlockCursor() {
+  cursor_lock_count_--;
+  DCHECK_GE(0, cursor_lock_count_);
+  if (cursor_lock_count_ == 0) {
+    if (did_cursor_change_) {
+      did_cursor_change_ = false;
+      aura::RootWindow::GetInstance()->SetCursor(cursor_to_set_on_unlock_);
+    }
+    did_cursor_change_ = false;
+    cursor_to_set_on_unlock_ = 0;
+  }
 }
 
 void RootWindowEventFilter::AddFilter(aura::EventFilter* filter) {
@@ -128,7 +148,12 @@ void RootWindowEventFilter::UpdateCursor(aura::Window* target,
         target->delegate()->GetNonClientComponent(event->location());
     cursor = CursorForWindowComponent(window_component);
   }
-  aura::RootWindow::GetInstance()->SetCursor(cursor);
+  if (cursor_lock_count_ == 0) {
+    aura::RootWindow::GetInstance()->SetCursor(cursor);
+  } else {
+    cursor_to_set_on_unlock_ = cursor;
+    did_cursor_change_ = true;
+  }
 }
 
 void RootWindowEventFilter::SetCursorVisible(aura::Window* target,

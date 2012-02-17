@@ -28,6 +28,12 @@ class ASH_EXPORT RootWindowEventFilter : public aura::EventFilter {
   RootWindowEventFilter();
   virtual ~RootWindowEventFilter();
 
+  // Freezes updates to the cursor until UnlockCursor() is invoked.
+  void LockCursor();
+
+  // Unlocks the cursor.
+  void UnlockCursor();
+
   void set_update_cursor_visibility(bool update) {
     update_cursor_visibility_ = update;
   }
@@ -67,6 +73,17 @@ class ASH_EXPORT RootWindowEventFilter : public aura::EventFilter {
 
   // Additional event filters that pre-handles events.
   ObserverList<aura::EventFilter, true> filters_;
+
+  // Number of times LockCursor() has been invoked without a corresponding
+  // UnlockCursor().
+  int cursor_lock_count_;
+
+  // Set to true if UpdateCursor() is invoked while |cursor_lock_count_| == 0.
+  bool did_cursor_change_;
+
+  // Cursor to set once |cursor_lock_count_| is set to 0. Only valid if
+  // |did_cursor_change_| is true.
+  gfx::NativeCursor cursor_to_set_on_unlock_;
 
   // Should we show the mouse cursor when we see mouse movement and hide it when
   // we see a touch event?
