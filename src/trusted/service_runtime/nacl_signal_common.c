@@ -251,6 +251,22 @@ enum NaClSignalResult NaClSignalHandlerFind(int signal, void *ctx) {
   return result;
 }
 
+/*
+ * This is a separate function to make it obvious from the crash
+ * reports that this crash is deliberate and for testing purposes.
+ */
+static void NaClTestCrashOnStartup() {
+  NaClSignalErrorMessage("[CRASH_TEST] Causing crash in NaCl "
+                         "trusted code...\n");
+  /*
+   * Clang transmutes a NULL pointer reference into a generic "undefined"
+   * case.  That code crashes with a different signal than an actual bad
+   * pointer reference, violating the tests' expectations.  A pointer that
+   * is known bad but is not literally NULL does not get this treatment.
+   */
+  *(volatile int *) 1 = 0;
+}
+
 void NaClSignalHandlerInit() {
   int a;
 
@@ -274,15 +290,7 @@ void NaClSignalHandlerInit() {
   NaClSignalHandlerAdd(NaClSignalHandleUntrusted);
 #endif
   if (getenv("NACL_CRASH_TEST") != NULL) {
-    NaClSignalErrorMessage("[CRASH_TEST] Causing crash in NaCl "
-                           "trusted code...\n");
-    /*
-     * Clang transmutes a NULL pointer reference into a generic "undefined"
-     * case.  That code crashes with a different signal than an actual bad
-     * pointer reference, violating the tests' expectations.  A pointer that
-     * is known bad but is not literally NULL does not get this treatment.
-     */
-    *(volatile int *) 1 = 0;
+    NaClTestCrashOnStartup();
   }
 }
 
