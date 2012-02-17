@@ -40,12 +40,13 @@
 //
 //       Properties(dbus::ObjectProxy* object_proxy,
 //                  PropertyChangedCallback callback)
-//           : dbus::PropertySet(object_proxy, kExampleInterface, callback) {
+//           : dbus::PropertySet(object_proxy, "com.example.DBus", callback) {
 //         RegisterProperty("Name", &name);
 //         RegisterProperty("Version", &version);
 //         RegisterProperty("Parent", &parent);
 //         RegisterProperty("Children", &children);
 //       }
+//       virtual ~Properties() {}
 //     };
 //
 // The Properties structure requires a pointer to the object proxy of the
@@ -56,8 +57,8 @@
 //
 // Example (continued):
 //
-//     typedef std::map<std::pair<dbus::ObjectProxy*,Properties*> > Object;
-//     typedef std::map<dbus::ObjectPath,Object> ObjectMap;
+//     typedef std::map<std::pair<dbus::ObjectProxy*, Properties*> > Object;
+//     typedef std::map<dbus::ObjectPath, Object> ObjectMap;
 //     ObjectMap object_map_;
 //
 //     dbus::ObjectProxy* GetObjectProxy(const dbus::ObjectPath& object_path) {
@@ -74,7 +75,7 @@
 //         return it->second;
 //
 //       dbus::ObjectProxy* object_proxy = bus->GetObjectProxy(...);
-//       // connect signals, ect.
+//       // connect signals, etc.
 //
 //       Properties* properties = new Properties(
 //           object_proxy,
@@ -84,8 +85,9 @@
 //       properties->ConnectSignals();
 //       properties->GetAll();
 //
-//       return object_map_.insert(std::make_pair(object_proxy,
-//                                                properties).first;
+//       Object object = std::make_pair(object_proxy, properties);
+//       object_map_[object_path] = object;
+//       return object;
 //     }
 //  };
 //
@@ -217,7 +219,7 @@ class PropertySet {
                                 const std::string& signal_name,
                                 bool success);
 
-  // Queries the remove object for values of all properties and updates
+  // Queries the remote object for values of all properties and updates
   // initial values. Sub-classes may override to use a different D-Bus
   // method, or if the remote object does not support retrieving all
   // properties, either ignore or obtain each property value individually.
@@ -325,14 +327,12 @@ class Property : public PropertyBase {
   // This may not be implemented by some interfaces, and may be overriden by
   // sub-classes if interfaces use different method calls.
   void Get(GetCallback callback) {
-    DVLOG(1) << "Get: " << name();
-
     MethodCall method_call(kPropertiesInterface, kPropertiesGet);
     MessageWriter writer(&method_call);
     writer.AppendString(property_set()->interface());
     writer.AppendString(name());
 
-    ObjectProxy *object_proxy = property_set()->object_proxy();
+    ObjectProxy* object_proxy = property_set()->object_proxy();
     DCHECK(object_proxy);
     object_proxy->CallMethod(&method_call,
                              ObjectProxy::TIMEOUT_USE_DEFAULT,
@@ -344,7 +344,6 @@ class Property : public PropertyBase {
   // Callback for Get(), may be overriden by sub-classes if interfaces
   // use different response arguments.
   virtual void OnGet(SetCallback callback, Response* response) {
-    DVLOG(1) << "OnGet: " << name();
     if (!response) {
       LOG(WARNING) << name() << ": Get: failed.";
       return;
@@ -364,15 +363,13 @@ class Property : public PropertyBase {
   // remote object. This method may be overriden by sub-classes if
   // interfaces use different method calls.
   void Set(const T& value, SetCallback callback) {
-    DVLOG(1) << "Set: " << name();
-
     MethodCall method_call(kPropertiesInterface, kPropertiesSet);
     MessageWriter writer(&method_call);
     writer.AppendString(property_set()->interface());
     writer.AppendString(name());
     AppendToWriter(&writer, value);
 
-    ObjectProxy *object_proxy = property_set()->object_proxy();
+    ObjectProxy* object_proxy = property_set()->object_proxy();
     DCHECK(object_proxy);
     object_proxy->CallMethod(&method_call,
                              ObjectProxy::TIMEOUT_USE_DEFAULT,
@@ -384,7 +381,6 @@ class Property : public PropertyBase {
   // Callback for Set(), may be overriden by sub-classes if interfaces
   // use different response arguments.
   virtual void OnSet(SetCallback callback, Response* response) {
-    DVLOG(1) << "OnSet: " << name();
     LOG_IF(WARNING, !response) << name() << ": Set: failed.";
     if (!callback.is_null())
       callback.Run(response);

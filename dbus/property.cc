@@ -59,9 +59,7 @@ void PropertySet::ConnectSignals() {
 
 
 void PropertySet::ChangedReceived(Signal* signal) {
-  VLOG(1) << "ChangedRecieved";
   DCHECK(signal);
-
   MessageReader reader(signal);
 
   std::string interface;
@@ -106,7 +104,6 @@ void PropertySet::GetAll() {
 }
 
 void PropertySet::OnGetAll(Response* response) {
-  VLOG(1) << "OnGetAll";
   if (!response) {
     LOG(WARNING) << "GetAll request failed.";
     return;
