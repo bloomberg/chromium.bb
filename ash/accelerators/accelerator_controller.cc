@@ -50,6 +50,7 @@ enum AcceleratorAction {
   PRINT_WINDOW_HIERARCHY,
   ROTATE_SCREEN,
   TOGGLE_COMPACT_WINDOW_MODE,
+  TOGGLE_DESKTOP_BACKGROUND_MODE,
   TOGGLE_ROOT_WINDOW_FULL_SCREEN,
 #endif
 };
@@ -124,6 +125,8 @@ const struct AcceleratorData {
     ROTATE_SCREEN },
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_A, false, true, true,
     TOGGLE_COMPACT_WINDOW_MODE },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_B, false, true, true,
+    TOGGLE_DESKTOP_BACKGROUND_MODE },
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F11, false, true, false,
     TOGGLE_ROOT_WINDOW_FULL_SCREEN },
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_L, false, false, true,
@@ -201,6 +204,15 @@ bool HandleToggleCompactWindowMode() {
     ash::Shell::GetInstance()->ChangeWindowMode(ash::Shell::MODE_OVERLAPPING);
   else
     ash::Shell::GetInstance()->ChangeWindowMode(ash::Shell::MODE_COMPACT);
+  return true;
+}
+
+bool HandleToggleDesktopBackgroundMode() {
+  ash::Shell* shell = ash::Shell::GetInstance();
+  if (shell->desktop_background_mode() == ash::Shell::BACKGROUND_IMAGE)
+    shell->SetDesktopBackgroundMode(ash::Shell::BACKGROUND_SOLID_COLOR);
+  else
+    shell->SetDesktopBackgroundMode(ash::Shell::BACKGROUND_IMAGE);
   return true;
 }
 
@@ -381,6 +393,8 @@ bool AcceleratorController::AcceleratorPressed(
       return HandleRotateScreen();
     case TOGGLE_COMPACT_WINDOW_MODE:
       return HandleToggleCompactWindowMode();
+    case TOGGLE_DESKTOP_BACKGROUND_MODE:
+      return HandleToggleDesktopBackgroundMode();
     case TOGGLE_ROOT_WINDOW_FULL_SCREEN:
       return HandleToggleRootWindowFullScreen();
     case PRINT_LAYER_HIERARCHY:

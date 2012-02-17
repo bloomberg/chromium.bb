@@ -12,13 +12,14 @@
 #include "ash/wm/shadow.h"
 #include "ash/wm/shadow_types.h"
 #include "ash/wm/window_properties.h"
+#include "ash/wm/window_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/compositor/layer.h"
 
 namespace ash {
-namespace test {
+namespace internal {
 
 typedef ash::test::AshTestBase ShadowControllerTest;
 
@@ -87,5 +88,39 @@ TEST_F(ShadowControllerTest, ShadowBounds) {
             shadow->content_bounds().ToString());
 }
 
-}  // namespace test
+// Tests that activating a window changes the shadow style.
+TEST_F(ShadowControllerTest, ShadowStyle) {
+  ShadowController::TestApi api(
+      ash::Shell::GetInstance()->shadow_controller());
+
+  scoped_ptr<aura::Window> window1(new aura::Window(NULL));
+  window1->SetType(aura::client::WINDOW_TYPE_NORMAL);
+  window1->Init(ui::Layer::LAYER_TEXTURED);
+  window1->SetParent(NULL);
+  window1->SetBounds(gfx::Rect(10, 20, 300, 400));
+  window1->Show();
+  ActivateWindow(window1.get());
+
+  // window1 is active, so style should have active appearance.
+  Shadow* shadow1 = api.GetShadowForWindow(window1.get());
+  ASSERT_TRUE(shadow1 != NULL);
+  EXPECT_EQ(Shadow::STYLE_ACTIVE, shadow1->style());
+
+  // Create another window and activate it.
+  scoped_ptr<aura::Window> window2(new aura::Window(NULL));
+  window2->SetType(aura::client::WINDOW_TYPE_NORMAL);
+  window2->Init(ui::Layer::LAYER_TEXTURED);
+  window2->SetParent(NULL);
+  window2->SetBounds(gfx::Rect(11, 21, 301, 401));
+  window2->Show();
+  ActivateWindow(window2.get());
+
+  // window1 is now inactive, so shadow should go inactive.
+  Shadow* shadow2 = api.GetShadowForWindow(window2.get());
+  ASSERT_TRUE(shadow2 != NULL);
+  EXPECT_EQ(Shadow::STYLE_INACTIVE, shadow1->style());
+  EXPECT_EQ(Shadow::STYLE_ACTIVE, shadow2->style());
+}
+
+}  // namespace internal
 }  // namespace ash

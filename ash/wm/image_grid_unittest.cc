@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,9 +38,9 @@ TEST_F(ImageGridTest, Basic) {
   scoped_ptr<gfx::Image> image_BxB(CreateImage(gfx::Size(kBorder, kBorder)));
 
   ImageGrid grid;
-  grid.Init(image_BxB.get(), image_1xB.get(), image_BxB.get(),
-            image_Bx1.get(), image_1x1.get(), image_Bx1.get(),
-            image_BxB.get(), image_1xB.get(), image_BxB.get());
+  grid.SetImages(image_BxB.get(), image_1xB.get(), image_BxB.get(),
+                 image_Bx1.get(), image_1x1.get(), image_Bx1.get(),
+                 image_BxB.get(), image_1xB.get(), image_BxB.get());
 
   ImageGrid::TestAPI test_api(&grid);
   ASSERT_TRUE(test_api.top_left_layer() != NULL);
@@ -124,9 +124,9 @@ TEST_F(ImageGridTest, SingleImage) {
   scoped_ptr<gfx::Image> image(CreateImage(gfx::Size(kBorder, kBorder)));
 
   ImageGrid grid;
-  grid.Init(NULL, image.get(), NULL,
-            NULL, NULL, NULL,
-            NULL, NULL, NULL);
+  grid.SetImages(NULL, image.get(), NULL,
+                 NULL, NULL, NULL,
+                 NULL, NULL, NULL);
 
   ImageGrid::TestAPI test_api(&grid);
   EXPECT_TRUE(test_api.top_left_layer() == NULL);
@@ -149,6 +149,45 @@ TEST_F(ImageGridTest, SingleImage) {
                 *test_api.top_layer()).ToString());
 }
 
+// Check that we don't crash when we reset existing images to NULL and
+// reset NULL images to new ones.
+TEST_F(ImageGridTest, ResetImages) {
+  const int kBorder = 1;
+  scoped_ptr<gfx::Image> image(CreateImage(gfx::Size(kBorder, kBorder)));
+
+  ImageGrid grid;
+  grid.SetImages(NULL, image.get(), NULL,
+                 NULL, NULL, NULL,
+                 NULL, NULL, NULL);
+
+  // Only the top edge has a layer.
+  ImageGrid::TestAPI test_api(&grid);
+  ASSERT_TRUE(test_api.top_left_layer() == NULL);
+  ASSERT_FALSE(test_api.top_layer() == NULL);
+  ASSERT_TRUE(test_api.top_right_layer() == NULL);
+  ASSERT_TRUE(test_api.left_layer() == NULL);
+  ASSERT_TRUE(test_api.center_layer() == NULL);
+  ASSERT_TRUE(test_api.right_layer() == NULL);
+  ASSERT_TRUE(test_api.bottom_left_layer() == NULL);
+  ASSERT_TRUE(test_api.bottom_layer() == NULL);
+  ASSERT_TRUE(test_api.bottom_right_layer() == NULL);
+
+  grid.SetImages(NULL, NULL, NULL,
+                 NULL, NULL, NULL,
+                 NULL, image.get(), NULL);
+
+  // Now only the bottom edge has a layer.
+  ASSERT_TRUE(test_api.top_left_layer() == NULL);
+  ASSERT_TRUE(test_api.top_layer() == NULL);
+  ASSERT_TRUE(test_api.top_right_layer() == NULL);
+  ASSERT_TRUE(test_api.left_layer() == NULL);
+  ASSERT_TRUE(test_api.center_layer() == NULL);
+  ASSERT_TRUE(test_api.right_layer() == NULL);
+  ASSERT_TRUE(test_api.bottom_left_layer() == NULL);
+  ASSERT_FALSE(test_api.bottom_layer() == NULL);
+  ASSERT_TRUE(test_api.bottom_right_layer() == NULL);
+}
+
 // Test that side (top, left, right, bottom) layers that are narrower than their
 // adjacent corner layers stay pinned to the outside edges instead of getting
 // moved inwards or scaled.  This exercises the scenario used for shadows.
@@ -165,9 +204,9 @@ TEST_F(ImageGridTest, SmallerSides) {
   scoped_ptr<gfx::Image> right_image(CreateImage(gfx::Size(kEdge, kEdge)));
 
   ImageGrid grid;
-  grid.Init(top_left_image.get(), top_image.get(), top_right_image.get(),
-            left_image.get(), NULL, right_image.get(),
-            NULL, NULL, NULL);
+  grid.SetImages(top_left_image.get(), top_image.get(), top_right_image.get(),
+                 left_image.get(), NULL, right_image.get(),
+                 NULL, NULL, NULL);
   ImageGrid::TestAPI test_api(&grid);
 
   const gfx::Size kSize(20, 30);
@@ -218,7 +257,7 @@ TEST_F(ImageGridTest, TooSmall) {
       CreateImage(gfx::Size(kCorner, kCorner)));
 
   ImageGrid grid;
-  grid.Init(
+  grid.SetImages(
       top_left_image.get(), top_image.get(), top_right_image.get(),
       left_image.get(), center_image.get(), right_image.get(),
       bottom_left_image.get(), bottom_image.get(), bottom_right_image.get());
