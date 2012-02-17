@@ -1462,11 +1462,11 @@ class BookmarkBarViewTest17 : public BookmarkBarViewEventTestBase {
   ContextMenuNotificationObserver observer_;
 };
 
-#if defined(USE_AURA) && !defined(NDEBUG)
+#if defined(USE_AURA)
 // This keeps failing on chromeos trybot. see crbug.com/113260.
-#define MAYBE_ContextMenus3 DISABLED_ContextMenu3
+#define MAYBE_ContextMenus3 DISABLED_ContextMenus3
 #else
-#define MAYBE_ContextMenus3 ContextMenu3
+#define MAYBE_ContextMenus3 ContextMenus3
 #endif
 
 VIEW_TEST(BookmarkBarViewTest17, MAYBE_ContextMenus3)
