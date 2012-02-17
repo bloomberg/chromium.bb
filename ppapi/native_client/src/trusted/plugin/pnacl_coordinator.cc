@@ -235,11 +235,11 @@ class ExtensionManifest : public Manifest {
 
   virtual bool GetProgramURL(nacl::string* full_url,
                              ErrorInfo* error_info,
-                             bool* is_portable) const {
+                             bool* pnacl_translate) const {
     // Does not contain program urls.
     UNREFERENCED_PARAMETER(full_url);
     UNREFERENCED_PARAMETER(error_info);
-    UNREFERENCED_PARAMETER(is_portable);
+    UNREFERENCED_PARAMETER(pnacl_translate);
     PLUGIN_PRINTF(("ExtensionManifest does not contain a program\n"));
     error_info->SetReport(ERROR_MANIFEST_GET_NEXE_URL,
                           "pnacl manifest does not contain a program.");
@@ -266,8 +266,9 @@ class ExtensionManifest : public Manifest {
   virtual bool ResolveKey(const nacl::string& key,
                           nacl::string* full_url,
                           ErrorInfo* error_info,
-                          bool* is_portable) const {
-    *is_portable = false;
+                          bool* pnacl_translate) const {
+    // All of the extension files are native (do not require pnacl translate).
+    *pnacl_translate = false;
     // We can only resolve keys in the files/ namespace.
     const nacl::string kFilesPrefix = "files/";
     size_t files_prefix_pos = key.find(kFilesPrefix);
@@ -306,12 +307,12 @@ class PnaclLDManifest : public Manifest {
 
   virtual bool GetProgramURL(nacl::string* full_url,
                              ErrorInfo* error_info,
-                             bool* is_portable) const {
-    if (nexe_manifest_->GetProgramURL(full_url, error_info, is_portable)) {
+                             bool* pnacl_translate) const {
+    if (nexe_manifest_->GetProgramURL(full_url, error_info, pnacl_translate)) {
       return true;
     }
     return extension_manifest_->GetProgramURL(full_url, error_info,
-                                              is_portable);
+                                              pnacl_translate);
   }
 
   virtual bool ResolveURL(const nacl::string& relative_url,
@@ -333,12 +334,13 @@ class PnaclLDManifest : public Manifest {
   virtual bool ResolveKey(const nacl::string& key,
                           nacl::string* full_url,
                           ErrorInfo* error_info,
-                          bool* is_portable) const {
-    if (nexe_manifest_->ResolveKey(key, full_url, error_info, is_portable)) {
+                          bool* pnacl_translate) const {
+    if (nexe_manifest_->ResolveKey(key, full_url,
+                                   error_info, pnacl_translate)) {
       return true;
     }
     return extension_manifest_->ResolveKey(key, full_url,
-                                           error_info, is_portable);
+                                           error_info, pnacl_translate);
   }
 
  private:

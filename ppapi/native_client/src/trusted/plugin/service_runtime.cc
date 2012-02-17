@@ -27,6 +27,8 @@
 #include "native_client/src/shared/platform/nacl_sync_raii.h"
 #include "native_client/src/shared/platform/scoped_ptr_refcount.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
+// remove when we no longer need to cast the DescWrapper below.
+#include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
 #include "native_client/src/trusted/desc/nrd_xfer_effector.h"
 #include "native_client/src/trusted/handle_pass/browser_handle.h"
@@ -41,6 +43,7 @@
 #endif
 #include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
+#include "native_client/src/trusted/plugin/pnacl_coordinator.h"
 #include "native_client/src/trusted/plugin/srpc_client.h"
 #include "native_client/src/trusted/plugin/utility.h"
 
@@ -161,11 +164,10 @@ bool PluginReverseInterface::EnumerateManifestKeys(
 bool PluginReverseInterface::OpenManifestEntry(nacl::string url_key,
                                                int32_t* out_desc) {
   ErrorInfo error_info;
-  bool is_portable = false;
   bool op_complete = false;  // NB: mu_ and cv_ also controls access to this!
   OpenManifestEntryResource* to_open =
       new OpenManifestEntryResource(url_key, out_desc,
-                                    &error_info, &is_portable, &op_complete);
+                                    &error_info, &op_complete);
   CHECK(to_open != NULL);
   NaClLog(4, "PluginReverseInterface::OpenManifestEntry: %s\n",
           url_key.c_str());
@@ -242,7 +244,7 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
 
   std::string mapped_url;
   if (!manifest_->ResolveKey(p->url, &mapped_url,
-                             p->error_info, p->is_portable)) {
+                             p->error_info, &p->pnacl_translate)) {
     NaClLog(4, "OpenManifestEntry_MainThreadContinuation: ResolveKey failed\n");
     // Failed, and error_info has the details on what happened.  Wake
     // up requesting thread -- we are done.
@@ -253,31 +255,50 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
     return;
   }
   NaClLog(4,
-          "OpenManifestEntry_MainThreadContinuation: ResolveKey: %s -> %s\n",
-          p->url.c_str(), mapped_url.c_str());
+          "OpenManifestEntry_MainThreadContinuation: "
+          "ResolveKey: %s -> %s (pnacl_translate(%d))\n",
+          p->url.c_str(), mapped_url.c_str(), p->pnacl_translate);
 
   open_cont = new OpenManifestEntryResource(*p);  // copy ctor!
   CHECK(open_cont != NULL);
   open_cont->url = mapped_url;
-  pp::CompletionCallback stream_cc = WeakRefNewCallback(
-      anchor_,
-      this,
-      &PluginReverseInterface::StreamAsFile_MainThreadContinuation,
-      open_cont);
-  if (!plugin_->StreamAsFile(mapped_url,
-                             stream_cc.pp_completion_callback())) {
+  if (!open_cont->pnacl_translate) {
+    pp::CompletionCallback stream_cc = WeakRefNewCallback(
+        anchor_,
+        this,
+        &PluginReverseInterface::StreamAsFile_MainThreadContinuation,
+        open_cont);
+    if (!plugin_->StreamAsFile(mapped_url,
+                               stream_cc.pp_completion_callback())) {
+      NaClLog(4,
+              "OpenManifestEntry_MainThreadContinuation: "
+              "StreamAsFile failed\n");
+      nacl::MutexLocker take(&mu_);
+      *p->op_complete_ptr = true;  // done...
+      *p->out_desc = -1;       // but failed.
+      p->error_info->SetReport(ERROR_MANIFEST_OPEN,
+                               "ServiceRuntime: StreamAsFile failed");
+      NaClXCondVarBroadcast(&cv_);
+      return;
+    }
     NaClLog(4,
-            "OpenManifestEntry_MainThreadContinuation: StreamAsFile failed\n");
-    nacl::MutexLocker take(&mu_);
-    *p->op_complete_ptr = true;  // done...
-    *p->out_desc = -1;       // but failed.
-    p->error_info->SetReport(ERROR_MANIFEST_OPEN,
-                             "ServiceRuntime: StreamAsFile failed");
-    NaClXCondVarBroadcast(&cv_);
-    return;
+            "OpenManifestEntry_MainThreadContinuation: StreamAsFile okay\n");
+  } else {
+    NaClLog(4,
+            "OpenManifestEntry_MainThreadContinuation: "
+            "pulling down and translating.\n");
+    pp::CompletionCallback translate_callback =
+        WeakRefNewCallback(
+            anchor_,
+            this,
+            &PluginReverseInterface::BitcodeTranslate_MainThreadContinuation,
+            open_cont);
+    // Will always call the callback on success or failure.
+    pnacl_coordinator_.reset(
+        PnaclCoordinator::BitcodeToNative(plugin_,
+                                          mapped_url,
+                                          translate_callback));
   }
-  NaClLog(4,
-          "OpenManifestEntry_MainThreadContinuation: StreamAsFile okay\n");
   // p is deleted automatically
 }
 
@@ -305,6 +326,38 @@ void PluginReverseInterface::StreamAsFile_MainThreadContinuation(
   *p->op_complete_ptr = true;
   NaClXCondVarBroadcast(&cv_);
 }
+
+
+void PluginReverseInterface::BitcodeTranslate_MainThreadContinuation(
+    OpenManifestEntryResource* p,
+    int32_t result) {
+  NaClLog(4,
+          "Entered BitcodeTranslate_MainThreadContinuation\n");
+
+  nacl::MutexLocker take(&mu_);
+  if (result == PP_OK) {
+    // TODO(jvoung): clean this up. We are assuming that the NaClDesc is
+    // a host IO desc and doing a downcast. Once the ReverseInterface
+    // accepts NaClDescs we can avoid this downcast.
+    NaClDesc* desc = pnacl_coordinator_->ReleaseTranslatedFD()->desc();
+    struct NaClDescIoDesc* ndiodp = (struct NaClDescIoDesc*)desc;
+    *p->out_desc = ndiodp->hd->d;
+    pnacl_coordinator_.reset(NULL);
+    NaClLog(4,
+            "BitcodeTranslate_MainThreadContinuation: PP_OK, desc %d\n",
+            *p->out_desc);
+  } else {
+    NaClLog(4,
+            "BitcodeTranslate_MainThreadContinuation: !PP_OK, "
+            "setting desc -1\n");
+    *p->out_desc = -1;
+    // Error should have been reported by pnacl coordinator.
+    PLUGIN_PRINTF(("PluginReverseInterface::BitcodeTranslate error.\n"));
+  }
+  *p->op_complete_ptr = true;
+  NaClXCondVarBroadcast(&cv_);
+}
+
 
 bool PluginReverseInterface::CloseManifestEntry(int32_t desc) {
   bool op_complete;

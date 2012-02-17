@@ -33,6 +33,7 @@ namespace plugin {
 class ErrorInfo;
 class Manifest;
 class Plugin;
+class PnaclCoordinator;
 class SrpcClient;
 class ServiceRuntime;
 
@@ -57,17 +58,16 @@ struct OpenManifestEntryResource {
   OpenManifestEntryResource(const std::string& target_url,
                             int32_t* descp,
                             ErrorInfo* infop,
-                            bool* portablep,
                             bool* op_complete)
       : url(target_url),
         out_desc(descp),
         error_info(infop),
-        is_portable(portablep),
+        pnacl_translate(false),
         op_complete_ptr(op_complete) {}
   std::string url;
   int32_t* out_desc;
   ErrorInfo* error_info;
-  bool* is_portable;
+  bool pnacl_translate;
   bool* op_complete_ptr;
 };
 
@@ -135,6 +135,10 @@ class PluginReverseInterface: public nacl::ReverseInterface {
       OpenManifestEntryResource* p,
       int32_t result);
 
+  virtual void BitcodeTranslate_MainThreadContinuation(
+      OpenManifestEntryResource* p,
+      int32_t result);
+
   virtual void CloseManifestEntry_MainThreadContinuation(
       CloseManifestEntryResource* cls,
       int32_t err);
@@ -148,6 +152,8 @@ class PluginReverseInterface: public nacl::ReverseInterface {
   NaClMutex mu_;
   NaClCondVar cv_;
   bool shutting_down_;
+
+  nacl::scoped_ptr<PnaclCoordinator> pnacl_coordinator_;
 
   pp::CompletionCallback init_done_cb_;
   pp::CompletionCallback crash_cb_;

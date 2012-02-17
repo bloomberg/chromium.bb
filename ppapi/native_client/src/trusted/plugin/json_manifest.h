@@ -44,11 +44,11 @@ class JsonManifest : public Manifest {
   bool Init(const nacl::string& json, ErrorInfo* error_info);
 
   // Gets the full program URL for the current sandbox ISA from the
-  // manifest file. Sets |is_portable| to |true| if the program is
-  // portable bitcode.
+  // manifest file. Sets |pnacl_translate| to |true| if the program is
+  // portable bitcode that must be translated.
   virtual bool GetProgramURL(nacl::string* full_url,
                              ErrorInfo* error_info,
-                             bool* is_portable) const;
+                             bool* pnacl_translate) const;
 
   // Resolves a URL relative to the manifest base URL
   virtual bool ResolveURL(const nacl::string& relative_url,
@@ -63,14 +63,13 @@ class JsonManifest : public Manifest {
 
   // Resolves a key from the "files" section to a fully resolved URL,
   // i.e., relative URL values are fully expanded relative to the
-  // manifest's URL (via ResolveURL).  If there was an error, details
-  // are reported via error_info, and is_portable, if non-NULL, tells
-  // the caller whether the resolution used the portable
-  // representation or an ISA-specific version of the file.
+  // manifest's URL (via ResolveURL).  |pnacl_translate| tells the caller
+  // whether the resolution requires a pnacl translation step.
+  // If there was an error, details are reported via error_info.
   virtual bool ResolveKey(const nacl::string& key,
                           nacl::string* full_url,
                           ErrorInfo* error_info,
-                          bool* is_portable) const;
+                          bool* pnacl_translate) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(JsonManifest);
