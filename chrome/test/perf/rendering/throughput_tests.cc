@@ -437,4 +437,12 @@ IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasSingleImageGPU) {
   RunTest("canvas_single_image", kAllowExternalDNS);
 }
 
+IN_PROC_BROWSER_TEST_F(ThroughputTestSW, CompositingHugeDivSW) {
+  RunTest("compositing_huge_div", kNone);
+}
+
+IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CompositingHugeDivGPU) {
+  RunTest("compositing_huge_div", kNone);
+}
+
 }  // namespace
