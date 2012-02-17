@@ -153,7 +153,6 @@ TEST(URLMatcherConditionFactoryTest, TestSingletonProperty) {
   SubstringPattern::ID old_id_1 = c1.substring_pattern()->id();
   factory.ForgetUnusedPatterns(std::set<SubstringPattern::ID>());
   URLMatcherCondition c4 = factory.CreateHostEqualsCondition("www.google.com");
-  EXPECT_NE(c1.substring_pattern(), c4.substring_pattern());
   EXPECT_NE(old_id_1, c4.substring_pattern()->id());
 }
 
