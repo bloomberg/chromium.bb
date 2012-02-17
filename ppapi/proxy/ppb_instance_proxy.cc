@@ -12,11 +12,13 @@
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
+#include "ppapi/proxy/plugin_proxy_delegate.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/ppb_url_util_shared.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
+#include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 
@@ -211,6 +213,21 @@ PP_Bool PPB_Instance_Proxy::FlashIsFullscreen(PP_Instance instance) {
   if (!data)
     return PP_FALSE;
   return data->flash_fullscreen;
+}
+
+PP_Var PPB_Instance_Proxy::GetFontFamilies(PP_Instance instance) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return PP_MakeUndefined();
+
+  // Assume the font families don't change, so we can cache the result globally.
+  CR_DEFINE_STATIC_LOCAL(std::string, families, ());
+  if (families.empty()) {
+    PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
+        new PpapiHostMsg_PPBInstance_GetFontFamilies(&families));
+  }
+
+  return StringVar::StringToPPVar(families);
 }
 
 PP_Bool PPB_Instance_Proxy::SetFullscreen(PP_Instance instance,

@@ -331,6 +331,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
                                PP_Var script,
                                PP_Var* exception) OVERRIDE;
   virtual PP_Var GetDefaultCharSet(PP_Instance instance) OVERRIDE;
+  virtual PP_Var GetFontFamilies(PP_Instance instance) OVERRIDE;
   virtual void NumberOfFindResultsChanged(PP_Instance instance,
                                           int32_t total,
                                           PP_Bool final_result) OVERRIDE;

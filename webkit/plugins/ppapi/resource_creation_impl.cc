@@ -6,7 +6,7 @@
 
 #include "ppapi/c/pp_size.h"
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
-#include "ppapi/shared_impl/private/ppb_font_shared.h"
+#include "ppapi/shared_impl/private/ppb_browser_font_trusted_shared.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
 #include "ppapi/shared_impl/ppb_resource_array_shared.h"
 #include "ppapi/shared_impl/var.h"
@@ -97,6 +97,18 @@ PP_Resource ResourceCreationImpl::CreateBroker(PP_Instance instance) {
   return (new PPB_Broker_Impl(instance))->GetReference();
 }
 
+PP_Resource ResourceCreationImpl::CreateBrowserFont(
+    PP_Instance instance,
+    const PP_BrowserFont_Trusted_Description* description) {
+  PluginInstance* plugin_instance =
+      ResourceHelper::PPInstanceToPluginInstance(instance);
+  if (!plugin_instance)
+    return 0;
+  return ::ppapi::PPB_BrowserFont_Trusted_Shared::Create(
+      ::ppapi::OBJECT_IS_IMPL, instance, *description,
+      plugin_instance->delegate()->GetPreferences());
+}
+
 PP_Resource ResourceCreationImpl::CreateBuffer(PP_Instance instance,
                                                uint32_t size) {
   return PPB_Buffer_Impl::Create(instance, size);
@@ -143,18 +155,6 @@ PP_Resource ResourceCreationImpl::CreateFlashMessageLoop(PP_Instance instance) {
 PP_Resource ResourceCreationImpl::CreateFlashNetConnector(
     PP_Instance instance) {
   return (new PPB_Flash_NetConnector_Impl(instance))->GetReference();
-}
-
-PP_Resource ResourceCreationImpl::CreateFontObject(
-    PP_Instance instance,
-    const PP_FontDescription_Dev* description) {
-  PluginInstance* plugin_instance =
-      ResourceHelper::PPInstanceToPluginInstance(instance);
-  if (!plugin_instance)
-    return 0;
-  return ::ppapi::PPB_Font_Shared::Create(
-      ::ppapi::OBJECT_IS_IMPL, instance, *description,
-      plugin_instance->delegate()->GetPreferences());
 }
 
 PP_Resource ResourceCreationImpl::CreateGraphics2D(

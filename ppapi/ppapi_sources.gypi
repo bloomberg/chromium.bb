@@ -113,6 +113,7 @@
       # Trusted interfaces.
       'c/trusted/ppb_audio_trusted.h',
       'c/trusted/ppb_broker_trusted.h',
+      'c/private/ppb_browser_font_trusted.h',
       'c/trusted/ppb_buffer_trusted.h',
       'c/trusted/ppb_file_chooser_trusted.h',
       'c/trusted/ppb_file_io_trusted.h',
@@ -258,6 +259,8 @@
       'cpp/private/var_private.h',
 
       # Trusted interfaces.
+      'cpp/trusted/browser_font_trusted.cc',
+      'cpp/trusted/browser_font_trusted.h',
       'cpp/trusted/file_chooser_trusted.cc',
       'cpp/trusted/file_chooser_trusted.h',
       'cpp/trusted/file_io_trusted.cc',
@@ -338,6 +341,8 @@
       'tests/test_audio_config.h',
       'tests/test_broker.cc',
       'tests/test_broker.h',
+      'tests/test_browser_font.cc',
+      'tests/test_browser_font.h',
       'tests/test_buffer.cc',
       'tests/test_buffer.h',
       'tests/test_c_includes.c',

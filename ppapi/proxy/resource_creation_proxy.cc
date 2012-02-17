@@ -21,7 +21,6 @@
 #include "ppapi/proxy/ppb_flash_menu_proxy.h"
 #include "ppapi/proxy/ppb_flash_message_loop_proxy.h"
 #include "ppapi/proxy/ppb_flash_net_connector_proxy.h"
-#include "ppapi/proxy/ppb_font_proxy.h"
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
 #include "ppapi/proxy/ppb_graphics_3d_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
@@ -37,7 +36,7 @@
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
 #include "ppapi/shared_impl/ppb_resource_array_shared.h"
 #include "ppapi/shared_impl/ppb_url_request_info_shared.h"
-#include "ppapi/shared_impl/private/ppb_font_shared.h"
+#include "ppapi/shared_impl/private/ppb_browser_font_trusted_shared.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
@@ -105,6 +104,16 @@ PP_Resource ResourceCreationProxy::CreateBroker(PP_Instance instance) {
   return PPB_Broker_Proxy::CreateProxyResource(instance);
 }
 
+PP_Resource ResourceCreationProxy::CreateBrowserFont(
+    PP_Instance instance,
+    const PP_BrowserFont_Trusted_Description* description) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return 0;
+  return PPB_BrowserFont_Trusted_Shared::Create(
+      OBJECT_IS_PROXY, instance, *description, dispatcher->preferences());
+}
+
 PP_Resource ResourceCreationProxy::CreateBuffer(PP_Instance instance,
                                                 uint32_t size) {
   return PPB_Buffer_Proxy::CreateProxyResource(instance, size);
@@ -153,17 +162,6 @@ PP_Resource ResourceCreationProxy::CreateFlashMessageLoop(
 PP_Resource ResourceCreationProxy::CreateFlashNetConnector(
     PP_Instance instance) {
   return PPB_Flash_NetConnector_Proxy::CreateProxyResource(instance);
-}
-
-PP_Resource ResourceCreationProxy::CreateFontObject(
-    PP_Instance instance,
-    const PP_FontDescription_Dev* description) {
-  PluginDispatcher* dispatcher =
-      PluginDispatcher::GetForInstance(instance);
-  if (!dispatcher)
-    return 0;
-  return PPB_Font_Shared::Create(OBJECT_IS_PROXY, instance, *description,
-                                 dispatcher->preferences());
 }
 
 PP_Resource ResourceCreationProxy::CreateGraphics2D(PP_Instance instance,

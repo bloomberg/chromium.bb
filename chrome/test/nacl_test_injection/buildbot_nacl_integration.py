@@ -49,6 +49,9 @@ def Main(args):
     tests_to_disable.append('run_pm_redir_stderr_bg_1000000_chrome_browser_test')
     # http://code.google.com/p/nativeclient/issues/detail?id=2511
     tests_to_disable.append('run_ppapi_ppb_image_data_browser_test')
+    # Font API is only exported to trusted plugins now, and this test should be
+    # removed.
+    tests_to_disable.append('run_ppapi_example_font_test')
 
     # TODO(ncbray) why did these tests flake?
     # http://code.google.com/p/nativeclient/issues/detail?id=2230

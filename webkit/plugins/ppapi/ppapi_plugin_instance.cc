@@ -1857,6 +1857,11 @@ PP_Var PluginInstance::GetDefaultCharSet(PP_Instance instance) {
   return StringVar::StringToPPVar(encoding);
 }
 
+PP_Var PluginInstance::GetFontFamilies(PP_Instance instance) {
+  // No in-process implementation.
+  return PP_MakeUndefined();
+}
+
 void PluginInstance::NumberOfFindResultsChanged(PP_Instance instance,
                                                 int32_t total,
                                                 PP_Bool final_result) {

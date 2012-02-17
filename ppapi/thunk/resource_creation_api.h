@@ -23,7 +23,7 @@
 #include "ppapi/shared_impl/api_id.h"
 
 struct PP_Flash_Menu;
-struct PP_FontDescription_Dev;
+struct PP_BrowserFont_Trusted_Description;
 struct PP_Size;
 
 namespace ppapi {
@@ -56,6 +56,9 @@ class ResourceCreationAPI {
       void* user_data) = 0;
   virtual PP_Resource CreateAudioInputTrusted(PP_Instance instance) = 0;
   virtual PP_Resource CreateBroker(PP_Instance instance) = 0;
+  virtual PP_Resource CreateBrowserFont(
+      PP_Instance instance,
+      const PP_BrowserFont_Trusted_Description* description) = 0;
   virtual PP_Resource CreateBuffer(PP_Instance instance, uint32_t size) = 0;
   virtual PP_Resource CreateDirectoryReader(PP_Resource directory_ref) = 0;
   virtual PP_Resource CreateFileChooser(
@@ -71,10 +74,6 @@ class ResourceCreationAPI {
                                       const PP_Flash_Menu* menu_data) = 0;
   virtual PP_Resource CreateFlashMessageLoop(PP_Instance instance) = 0;
   virtual PP_Resource CreateFlashNetConnector(PP_Instance instance) = 0;
-  // Note: can't be called CreateFont due to Windows #defines.
-  virtual PP_Resource CreateFontObject(
-      PP_Instance instance,
-      const PP_FontDescription_Dev* description) = 0;
   virtual PP_Resource CreateGraphics2D(PP_Instance instance,
                                        const PP_Size& size,
                                        PP_Bool is_always_opaque) = 0;

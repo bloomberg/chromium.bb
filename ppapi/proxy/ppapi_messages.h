@@ -843,10 +843,6 @@ IPC_MESSAGE_CONTROL3(PpapiHostMsg_PPBUDPSocket_SendTo,
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBUDPSocket_Close,
                      uint32 /* socket_id */)
 
-// PPB_Font.
-IPC_SYNC_MESSAGE_CONTROL0_1(PpapiHostMsg_PPBFont_GetFontFamilies,
-                            std::string /* result */)
-
 // PPB_Graphics2D.
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBGraphics2D_Create,
                            PP_Instance /* instance */,
@@ -938,6 +934,8 @@ IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBInstance_ExecuteScript,
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBInstance_GetDefaultCharSet,
                            PP_Instance /* instance */,
                            ppapi::proxy::SerializedVar /* result */)
+IPC_SYNC_MESSAGE_CONTROL0_1(PpapiHostMsg_PPBInstance_GetFontFamilies,
+                            std::string /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBInstance_SetFullscreen,
                            PP_Instance /* instance */,
                            PP_Bool /* fullscreen */,

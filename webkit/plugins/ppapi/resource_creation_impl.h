@@ -40,6 +40,9 @@ class ResourceCreationImpl : public ::ppapi::FunctionGroupBase,
       void* user_data) OVERRIDE;
   virtual PP_Resource CreateAudioInputTrusted(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateBroker(PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreateBrowserFont(
+      PP_Instance instance,
+      const PP_BrowserFont_Trusted_Description* description) OVERRIDE;
   virtual PP_Resource CreateBuffer(PP_Instance instance,
                                    uint32_t size) OVERRIDE;
   virtual PP_Resource CreateDirectoryReader(PP_Resource directory_ref) OVERRIDE;
@@ -56,9 +59,6 @@ class ResourceCreationImpl : public ::ppapi::FunctionGroupBase,
                                       const PP_Flash_Menu* menu_data) OVERRIDE;
   virtual PP_Resource CreateFlashMessageLoop(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateFlashNetConnector(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateFontObject(
-      PP_Instance instance,
-      const PP_FontDescription_Dev* description) OVERRIDE;
   virtual PP_Resource CreateGraphics2D(PP_Instance pp_instance,
                                        const PP_Size& size,
                                        PP_Bool is_always_opaque) OVERRIDE;

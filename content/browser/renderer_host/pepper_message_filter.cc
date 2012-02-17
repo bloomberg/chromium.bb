@@ -92,7 +92,7 @@ bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
 #endif  // ENABLE_FLAPPER_HACKS
     IPC_MESSAGE_HANDLER(PepperMsg_GetLocalTimeZoneOffset,
                         OnGetLocalTimeZoneOffset)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(PpapiHostMsg_PPBFont_GetFontFamilies,
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(PpapiHostMsg_PPBInstance_GetFontFamilies,
                                     OnGetFontFamilies)
     // TCP messages.
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPSocket_Create, OnTCPCreate)
@@ -564,7 +564,7 @@ void PepperMessageFilter::GetFontFamiliesComplete(
     output.push_back(0);
   }
 
-  PpapiHostMsg_PPBFont_GetFontFamilies::WriteReplyParams(reply_msg, output);
+  PpapiHostMsg_PPBInstance_GetFontFamilies::WriteReplyParams(reply_msg, output);
   Send(reply_msg);
 }
 

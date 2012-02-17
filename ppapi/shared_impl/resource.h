@@ -25,6 +25,7 @@
   F(PPB_AudioInputTrusted_API) \
   F(PPB_AudioTrusted_API) \
   F(PPB_Broker_API) \
+  F(PPB_BrowserFont_Trusted_API) \
   F(PPB_Buffer_API) \
   F(PPB_BufferTrusted_API) \
   F(PPB_DeviceRef_API) \
@@ -37,7 +38,6 @@
   F(PPB_Flash_Menu_API) \
   F(PPB_Flash_MessageLoop_API) \
   F(PPB_Flash_NetConnector_API) \
-  F(PPB_Font_API) \
   F(PPB_Graphics2D_API) \
   F(PPB_Graphics3D_API) \
   F(PPB_ImageData_API) \

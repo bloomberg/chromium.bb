@@ -31,7 +31,6 @@
 #include "ppapi/cpp/url_loader.h"
 #include "ppapi/cpp/url_request_info.h"
 #include "ppapi/cpp/var.h"
-#include "ppapi/cpp/view.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
 static const int kStepsPerCircle = 800;
@@ -99,10 +98,10 @@ class MyFetcher {
     callback_factory_.Initialize(this);
   }
 
-  void Start(pp::InstancePrivate& instance,
+  void Start(const pp::InstancePrivate& instance,
              const pp::Var& url,
              MyFetcherClient* client) {
-    pp::URLRequestInfo request(&instance);
+    pp::URLRequestInfo request;
     request.SetURL(url);
     request.SetMethod("GET");
 
@@ -168,11 +167,11 @@ class MyInstance : public pp::InstancePrivate, public MyFetcherClient {
       : pp::InstancePrivate(instance),
         time_at_last_check_(0.0),
         fetcher_(NULL),
+        width_(0),
+        height_(0),
         animation_counter_(0),
         print_settings_valid_(false),
-        showing_custom_cursor_(false),
-        cursor_dimension_(50),
-        expanding_cursor_(false) {
+        showing_custom_cursor_(false) {
     RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE);
   }
 
@@ -220,10 +219,11 @@ class MyInstance : public pp::InstancePrivate, public MyFetcherClient {
     return pp::VarPrivate(this, new MyScriptableObject(this));
   }
 
-  pp::ImageData PaintImage(const pp::Size& size) {
-    pp::ImageData image(this, PP_IMAGEDATAFORMAT_BGRA_PREMUL, size, false);
+  pp::ImageData PaintImage(int width, int height) {
+    pp::ImageData image(this, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+                        pp::Size(width, height), false);
     if (image.is_null()) {
-      printf("Couldn't allocate the image data.");
+      printf("Couldn't allocate the image data: %d, %d\n", width, height);
       return image;
     }
 
@@ -242,8 +242,7 @@ class MyInstance : public pp::InstancePrivate, public MyFetcherClient {
     float radians = static_cast<float>(animation_counter_) / kStepsPerCircle *
         2 * 3.14159265358979F;
 
-    float radius =
-        static_cast<float>(std::min(size.width(), size.height())) / 2.0f - 3.0f;
+    float radius = static_cast<float>(std::min(width, height)) / 2.0f - 3.0f;
     int x = static_cast<int>(cos(radians) * radius + radius + 2);
     int y = static_cast<int>(sin(radians) * radius + radius + 2);
 
@@ -253,25 +252,27 @@ class MyInstance : public pp::InstancePrivate, public MyFetcherClient {
   }
 
   void Paint() {
-    pp::ImageData image = PaintImage(device_context_.size());
+    pp::ImageData image = PaintImage(width_, height_);
     if (!image.is_null()) {
       device_context_.ReplaceContents(&image);
       device_context_.Flush(pp::CompletionCallback(&FlushCallback, this));
     } else {
-      printf("NullImage\n");
+      printf("NullImage: %d, %d\n", width_, height_);
     }
   }
 
-  virtual void DidChangeView(const pp::View& view) {
+  virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip) {
     Log(PP_LOGLEVEL_LOG, "DidChangeView");
-    if (view.GetRect().size() == current_view_.GetRect().size())
+    if (position.size().width() == width_ &&
+        position.size().height() == height_)
       return;  // We don't care about the position, only the size.
-    current_view_ = view;
 
+    width_ = position.size().width();
+    height_ = position.size().height();
     printf("DidChangeView relevant change: width=%d height:%d\n",
-           view.GetRect().width(), view.GetRect().height());
+           width_, height_);
 
-    device_context_ = pp::Graphics2D(this, view.GetRect().size(), false);
+    device_context_ = pp::Graphics2D(this, pp::Size(width_, height_), false);
     if (!BindGraphics(device_context_)) {
       printf("Couldn't bind the device context\n");
       return;
@@ -328,8 +329,16 @@ int gettimeofday(struct timeval *tv, struct timezone*) {
   }
 
   // Print interfaces.
-  virtual uint32_t QuerySupportedPrintOutputFormats() {
-    return PP_PRINTOUTPUTFORMAT_RASTER;
+  // TODO(mball,dmichael) Replace this with the PPP_PRINTING_DEV_USE_0_4 version
+  virtual PP_PrintOutputFormat_Dev* QuerySupportedPrintOutputFormats(
+      uint32_t* format_count) {
+    pp::Memory_Dev memory;
+    PP_PrintOutputFormat_Dev* format =
+        static_cast<PP_PrintOutputFormat_Dev*>(
+            memory.MemAlloc(sizeof(PP_PrintOutputFormat_Dev)));
+    *format = PP_PRINTOUTPUTFORMAT_RASTER;
+    *format_count = 1;
+    return format;
   }
 
   virtual int32_t PrintBegin(const PP_PrintSettings_Dev& print_settings) {
@@ -356,21 +365,18 @@ int gettimeofday(struct timeval *tv, struct timezone*) {
       return pp::Resource();
     }
 
-    pp::Size size(static_cast<int>(
-            (print_settings_.printable_area.size.width / 72.0) *
-             print_settings_.dpi),
-        static_cast<int>(
-            (print_settings_.printable_area.size.height / 72.0) *
-             print_settings_.dpi));
-    return PaintImage(size);
+    int width = static_cast<int>(
+        (print_settings_.printable_area.size.width / 72.0) *
+         print_settings_.dpi);
+    int height = static_cast<int>(
+        (print_settings_.printable_area.size.height / 72.0) *
+         print_settings_.dpi);
+
+    return PaintImage(width, height);
   }
 
   virtual void PrintEnd() {
     print_settings_valid_ = false;
-  }
-
-  virtual bool IsScalingDisabled() {
-    return false;
   }
 
   void OnFlush() {
@@ -378,8 +384,6 @@ int gettimeofday(struct timeval *tv, struct timezone*) {
       UpdateFps();
     animation_counter_++;
     Paint();
-    if (showing_custom_cursor_)
-      SetCursor();
   }
 
  private:
@@ -427,11 +431,6 @@ int gettimeofday(struct timeval *tv, struct timezone*) {
   }
 
   void ToggleCursor() {
-    showing_custom_cursor_ = !showing_custom_cursor_;
-    SetCursor();
-  }
-
-  void SetCursor() {
     const PPB_CursorControl_Dev* cursor_control =
         reinterpret_cast<const PPB_CursorControl_Dev*>(
             pp::Module::Get()->GetBrowserInterface(
@@ -439,26 +438,20 @@ int gettimeofday(struct timeval *tv, struct timezone*) {
     if (!cursor_control)
       return;
 
-    if (!showing_custom_cursor_) {
+    if (showing_custom_cursor_) {
       cursor_control->SetCursor(pp_instance(), PP_CURSORTYPE_POINTER, 0, NULL);
     } else {
       pp::ImageData image_data(this, pp::ImageData::GetNativeImageDataFormat(),
-                               pp::Size(cursor_dimension_, cursor_dimension_),
-                               false);
-      FillRect(&image_data, 0, 0, cursor_dimension_, cursor_dimension_,
+                               pp::Size(50, 50), false);
+      FillRect(&image_data, 0, 0, 50, 50,
                image_data.format() == PP_IMAGEDATAFORMAT_BGRA_PREMUL ?
                    0x80800000 : 0x80000080);
-      pp::Point hot_spot(cursor_dimension_ / 2, cursor_dimension_ / 2);
+      pp::Point hot_spot(0, 0);
       cursor_control->SetCursor(pp_instance(), PP_CURSORTYPE_CUSTOM,
                                 image_data.pp_resource(), &hot_spot.pp_point());
-      if (expanding_cursor_) {
-        if (++cursor_dimension_ >= 50)
-          expanding_cursor_ = false;
-      } else {
-        if (--cursor_dimension_ <= 5)
-          expanding_cursor_ = true;
-      }
     }
+
+    showing_custom_cursor_ = !showing_custom_cursor_;
   }
 
   pp::Var console_;
@@ -466,9 +459,10 @@ int gettimeofday(struct timeval *tv, struct timezone*) {
 
   double time_at_last_check_;
 
-  pp::View current_view_;
-
   MyFetcher* fetcher_;
+
+  int width_;
+  int height_;
 
   // Incremented for each flush we get.
   int animation_counter_;
@@ -476,8 +470,6 @@ int gettimeofday(struct timeval *tv, struct timezone*) {
   PP_PrintSettings_Dev print_settings_;
 
   bool showing_custom_cursor_;
-  int cursor_dimension_;
-  bool expanding_cursor_;
 };
 
 void FlushCallback(void* data, int32_t result) {
