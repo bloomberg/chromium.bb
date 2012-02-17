@@ -25,12 +25,13 @@
 namespace base {
 class DictionaryValue;
 class Value;
-}
+}  // namespace base
 
 namespace chromeos {
 
 class NetworkDeviceParser;
 class NetworkParser;
+class CertificatePattern;
 
 // This is the list of all implementation classes that are allowed
 // access to the internals of the network library classes.
@@ -95,15 +96,19 @@ enum PropertyIndex {
   PROPERTY_INDEX_IMSI,
   PROPERTY_INDEX_IPSEC_AUTHENTICATIONTYPE,
   PROPERTY_INDEX_IPSEC_IKEVERSION,
+  PROPERTY_INDEX_ISSUER_SUBJECT_PATTERN_COMMON_NAME,
+  PROPERTY_INDEX_ISSUER_SUBJECT_PATTERN_LOCALITY,
+  PROPERTY_INDEX_ISSUER_SUBJECT_PATTERN_ORGANIZATION,
+  PROPERTY_INDEX_ISSUER_SUBJECT_PATTERN_ORGANIZATIONAL_UNIT,
   PROPERTY_INDEX_IS_ACTIVE,
   PROPERTY_INDEX_L2TPIPSEC_CA_CERT_NSS,
   PROPERTY_INDEX_L2TPIPSEC_CLIENT_CERT_ID,
   PROPERTY_INDEX_L2TPIPSEC_CLIENT_CERT_SLOT,
+  PROPERTY_INDEX_L2TPIPSEC_GROUP_NAME,
   PROPERTY_INDEX_L2TPIPSEC_PASSWORD,
   PROPERTY_INDEX_L2TPIPSEC_PIN,
   PROPERTY_INDEX_L2TPIPSEC_PSK,
   PROPERTY_INDEX_L2TPIPSEC_USER,
-  PROPERTY_INDEX_L2TPIPSEC_GROUP_NAME,
   PROPERTY_INDEX_MANUFACTURER,
   PROPERTY_INDEX_MDN,
   PROPERTY_INDEX_MEID,
@@ -115,6 +120,10 @@ enum PropertyIndex {
   PROPERTY_INDEX_NETWORK_TECHNOLOGY,
   PROPERTY_INDEX_OFFLINE_MODE,
   PROPERTY_INDEX_OLP,
+  PROPERTY_INDEX_ONC_CERTIFICATE_PATTERN_ENROLLMENT_URI,  // For parsing ONC
+  PROPERTY_INDEX_ONC_CERTIFICATE_PATTERN_ISSUER,  // For parsing ONC
+  PROPERTY_INDEX_ONC_CERTIFICATE_PATTERN_ISSUER_CA_REF,  // For parsing ONC
+  PROPERTY_INDEX_ONC_CERTIFICATE_PATTERN_SUBJECT,  // For parsing ONC
   PROPERTY_INDEX_ONC_CLIENT_CERT_PATTERN,  // Used internally for ONC parsing
   PROPERTY_INDEX_ONC_CLIENT_CERT_REF,  // Used internally for ONC parsing
   PROPERTY_INDEX_ONC_CLIENT_CERT_TYPE,  // Used internally for ONC parsing
@@ -134,11 +143,11 @@ enum PropertyIndex {
   PROPERTY_INDEX_ONC_PROXY_SOCKS,  // Used internally for ONC parsing
   PROPERTY_INDEX_ONC_PROXY_TYPE,  // Used internally for ONC parsing
   PROPERTY_INDEX_ONC_REMOVE,  // Used internally for ONC parsing
-  PROPERTY_INDEX_ONC_WIFI,  // Used internally for ONC parsing
   PROPERTY_INDEX_ONC_VPN,  // Used internally for ONC parsing
+  PROPERTY_INDEX_ONC_WIFI,  // Used internally for ONC parsing
   PROPERTY_INDEX_OPEN_VPN_AUTH,
-  PROPERTY_INDEX_OPEN_VPN_AUTHRETRY,
   PROPERTY_INDEX_OPEN_VPN_AUTHNOCACHE,
+  PROPERTY_INDEX_OPEN_VPN_AUTHRETRY,
   PROPERTY_INDEX_OPEN_VPN_AUTHUSERPASS,
   PROPERTY_INDEX_OPEN_VPN_CACERT,
   PROPERTY_INDEX_OPEN_VPN_CERT,
@@ -153,9 +162,9 @@ enum PropertyIndex {
   PROPERTY_INDEX_OPEN_VPN_OTP,
   PROPERTY_INDEX_OPEN_VPN_PASSWORD,
   PROPERTY_INDEX_OPEN_VPN_PIN,
+  PROPERTY_INDEX_OPEN_VPN_PKCS11_PROVIDER,
   PROPERTY_INDEX_OPEN_VPN_PORT,
   PROPERTY_INDEX_OPEN_VPN_PROTO,
-  PROPERTY_INDEX_OPEN_VPN_PKCS11_PROVIDER,
   PROPERTY_INDEX_OPEN_VPN_PUSHPEERINFO,
   PROPERTY_INDEX_OPEN_VPN_REMOTECERTEKU,
   PROPERTY_INDEX_OPEN_VPN_REMOTECERTKU,
@@ -174,12 +183,12 @@ enum PropertyIndex {
   PROPERTY_INDEX_PORTAL_URL,
   PROPERTY_INDEX_POWERED,
   PROPERTY_INDEX_PRIORITY,
-  PROPERTY_INDEX_PROVIDER_HOST,
-  PROPERTY_INDEX_PROVIDER_TYPE,
   PROPERTY_INDEX_PRL_VERSION,
   PROPERTY_INDEX_PROFILE,
   PROPERTY_INDEX_PROFILES,
   PROPERTY_INDEX_PROVIDER,
+  PROPERTY_INDEX_PROVIDER_HOST,
+  PROPERTY_INDEX_PROVIDER_TYPE,
   PROPERTY_INDEX_PROXY_CONFIG,
   PROPERTY_INDEX_ROAMING_STATE,
   PROPERTY_INDEX_SAVE_CREDENTIALS,
@@ -362,6 +371,12 @@ enum EAPPhase2Auth {
   EAP_PHASE_2_AUTH_MSCHAP   = 3,
   EAP_PHASE_2_AUTH_PAP      = 4,
   EAP_PHASE_2_AUTH_CHAP     = 5
+};
+
+enum ClientCertType {
+  CLIENT_CERT_TYPE_NONE    = 0,
+  CLIENT_CERT_TYPE_REF     = 1,
+  CLIENT_CERT_TYPE_PATTERN = 2
 };
 
 // Misc enums
@@ -630,6 +645,22 @@ class Network {
  public:
   virtual ~Network();
 
+  // A virtual class that can be used to handle certificate enrollment URIs when
+  // encountered.  Also used by unit tests to avoid opening browser windows
+  // when testing.
+  class EnrollmentHandler {
+   public:
+    EnrollmentHandler() {}
+    virtual ~EnrollmentHandler() {}
+
+    // Implemented to handle a given certificate enrollment URI.  Returns false
+    // if the enrollment URI doesn't use a scheme that we can handle, and in
+    // that case, this will be called for any remaining enrollment URIs.
+    virtual bool Enroll(const std::string& uri) = 0;
+   private:
+    DISALLOW_COPY_AND_ASSIGN(EnrollmentHandler);
+  };
+
   // Test API for accessing setters in tests.
   class TestApi {
    public:
@@ -749,6 +780,12 @@ class Network {
             state == STATE_ACTIVATION_FAILURE);
   }
 
+  // Adopts the given enrollment handler to handle any certificate enrollment
+  // URIs encountered during network connection.
+  void SetEnrollmentHandler(EnrollmentHandler* handler) {
+    enrollment_handler_.reset(handler);
+  }
+
   virtual bool UpdateStatus(const std::string& key,
                             const base::Value& value,
                             PropertyIndex* index);
@@ -794,6 +831,19 @@ class Network {
 
   void set_unique_id(const std::string& unique_id) { unique_id_ = unique_id; }
 
+  // Will be NULL if init_client_cert_pattern hasn't been called.
+  CertificatePattern* client_cert_pattern() const {
+    return client_cert_pattern_.get();
+  }
+
+  // Only called from Wifi and VirtualNetwork constructors, since those
+  // are the only ones that use it.
+  void init_client_cert_pattern();
+
+  EnrollmentHandler* enrollment_handler() const {
+    return enrollment_handler_.get();
+  }
+
  private:
   typedef std::map<PropertyIndex, base::Value*> PropertyMap;
 
@@ -813,6 +863,10 @@ class Network {
   NETWORK_LIBRARY_IMPL_FRIENDS;
 
   FRIEND_TEST_ALL_PREFIXES(NetworkLibraryTest, GetUserExpandedValue);
+  FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest,
+                           TestLoadWifiCertificatePattern);
+  FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest,
+                           TestLoadVPNCertificatePattern);
 
   // Use these functions at your peril.  They are used by the various
   // parsers to set state, and really shouldn't be used by anything else
@@ -856,6 +910,8 @@ class Network {
   bool save_credentials_;  // save passphrase and EAP credentials to disk.
   std::string proxy_config_;  // ProxyConfig property in flimflam.
   ProxyOncConfig proxy_onc_config_;  // Only used for parsing ONC proxy value.
+  scoped_ptr<CertificatePattern> client_cert_pattern_;  // Used by VPN and WiFi.
+  scoped_ptr<EnrollmentHandler> enrollment_handler_;
 
   // Unique identifier, set the first time the network is parsed.
   std::string unique_id_;
@@ -925,6 +981,7 @@ class VirtualNetwork : public Network {
   const std::string& psk_passphrase() const { return psk_passphrase_; }
   const std::string& client_cert_id() const { return client_cert_id_; }
   const std::string& username() const { return username_; }
+  ClientCertType client_cert_type() const { return client_cert_type_; }
   const std::string& user_passphrase() const { return user_passphrase_; }
   const std::string& group_name() const { return group_name_; }
 
@@ -955,6 +1012,15 @@ class VirtualNetwork : public Network {
                              const std::string& user_passphrase,
                              const std::string& otp);
 
+  // Matches the client certificate pattern by checking to see if a
+  // certificate exists that meets the pattern criteria.  If it finds one,
+  // it sets the appropriate network property. If not, it signals the
+  // EnrollmentHandler to do something with the enrollment URI (e.g. launch a
+  // dialog) to install the certificate.
+  // Returns false if it can't find any certificate that matches, whether or
+  // not it notifies the EnrollmentHandler to fetch one.
+  bool MatchCertificatePattern();
+
  private:
   // This allows NetworkParser and its subclasses access to
   // device privates so that they can be reconstituted during parsing.
@@ -968,6 +1034,8 @@ class VirtualNetwork : public Network {
 
   // This allows the implementation classes access to privates.
   NETWORK_LIBRARY_IMPL_FRIENDS;
+
+  FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest, TestLoadVPNCertificatePattern);
 
   // Use these functions at your peril.  They are used by the various
   // parsers to set state, and really shouldn't be used by anything else
@@ -995,6 +1063,9 @@ class VirtualNetwork : public Network {
   void set_group_name(const std::string& group_name) {
     group_name_ = group_name;
   }
+  void set_client_cert_type(ClientCertType type) {
+    client_cert_type_ = type;
+  }
 
   // Network overrides.
   virtual void EraseCredentials() OVERRIDE;
@@ -1013,6 +1084,8 @@ class VirtualNetwork : public Network {
   std::string username_;
   std::string user_passphrase_;
   std::string group_name_;
+  ClientCertType client_cert_type_;
+
   DISALLOW_COPY_AND_ASSIGN(VirtualNetwork);
 };
 typedef std::vector<VirtualNetwork*> VirtualNetworkVector;
@@ -1245,6 +1318,9 @@ class WifiNetwork : public WirelessNetwork {
     return eap_anonymous_identity_;
   }
   const std::string& eap_passphrase() const { return eap_passphrase_; }
+  const ClientCertType eap_client_cert_type() const {
+    return eap_client_cert_type_;
+  }
 
   const std::string& GetPassphrase() const;
 
@@ -1275,6 +1351,15 @@ class WifiNetwork : public WirelessNetwork {
 
   // Return true if a passphrase or other input is required to connect.
   bool IsPassphraseRequired() const;
+
+  // Matches the client certificate pattern by checking to see if a
+  // certificate exists that meets the pattern criteria.  If it finds one,
+  // it sets the appropriate network property. If not, it signals the
+  // EnrollmentHandler to do something with the enrollment URI (e.g. launch a
+  // dialog) to install the certificate.
+  // Returns false if it can't find any certificate that matches, whether or
+  // not it notifies the EnrollmentHandler to fetch one.
+  bool MatchCertificatePattern();
 
  private:
   // This allows NativeWifiNetworkParser access to device privates so
@@ -1328,6 +1413,9 @@ class WifiNetwork : public WirelessNetwork {
   void set_eap_passphrase(const std::string& eap_passphrase) {
     eap_passphrase_ = eap_passphrase;
   }
+  void set_eap_client_cert_type(const ClientCertType type) {
+    eap_client_cert_type_ = type;
+  }
 
   // Network overrides.
   virtual void EraseCredentials() OVERRIDE;
@@ -1342,6 +1430,7 @@ class WifiNetwork : public WirelessNetwork {
   EAPPhase2Auth eap_phase_2_auth_;
   std::string eap_server_ca_cert_nss_nickname_;
   std::string eap_client_cert_pkcs11_id_;
+  ClientCertType eap_client_cert_type_;
   bool eap_use_system_cas_;
   std::string eap_identity_;
   std::string eap_anonymous_identity_;

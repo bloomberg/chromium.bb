@@ -13,7 +13,9 @@ namespace onc {
 extern const char kEthernet[];
 extern const char kGUID[];
 extern const char kName[];
+extern const char kNetworkConfiguration[];
 extern const char kProxySettings[];
+extern const char kRecommended[];
 extern const char kRemove[];
 extern const char kType[];
 extern const char kVPN[];
@@ -30,9 +32,24 @@ extern const char kEAP[];
 extern const char kHiddenSSID[];
 extern const char kPassphrase[];
 extern const char kProxyURL[];
-extern const char kSSID[];
 extern const char kSecurity[];
+extern const char kSSID[];
 }  // namespace wifi
+
+namespace certificate {
+extern const char kCommonName[];
+extern const char kEmailAddress[];
+extern const char kEnrollmentURI[];
+extern const char kIssuer[];
+extern const char kIssuerCARef[];
+extern const char kLocality[];
+extern const char kNone[];
+extern const char kOrganization[];
+extern const char kOrganizationalUnit[];
+extern const char kPattern[];
+extern const char kRef[];
+extern const char kSubject[];
+}  // namespace certificate
 
 namespace eap {
 extern const char kAnonymousIdentity[];
@@ -89,8 +106,8 @@ extern const char kUsername[];
 }  // namespace vpn
 
 namespace substitutes {
-extern const char kLoginIDField[];
 extern const char kEmailField[];
+extern const char kLoginIDField[];
 }  // namespace substitutes
 
 namespace proxy {

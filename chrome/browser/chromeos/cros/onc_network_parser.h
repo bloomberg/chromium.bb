@@ -29,6 +29,8 @@ typedef std::vector<scoped_refptr<X509Certificate> > CertificateList;
 
 namespace chromeos {
 
+class IssuerSubjectPattern;
+
 // This is a simple representation of the signature of an ONC typed
 // field, used in validation and translation.  It could be extended
 // to include more complex rules of when the field is required/optional,
@@ -143,6 +145,14 @@ class OncNetworkParser : public NetworkParser {
                                    const base::Value& value,
                                    Network* network);
 
+  static ClientCertType ParseClientCertType(const std::string& type);
+
+  // Parse ClientCertPattern dictionary that specifies certificate pattern for
+  // VPN and WiFi EAP certificates.
+  static bool ParseClientCertPattern(OncNetworkParser* parser,
+                                     PropertyIndex index,
+                                     const base::Value& value,
+                                     Network* network);
  private:
   FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest, TestAddClientCertificate);
   FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest, TestUpdateClientCertificate);
@@ -189,6 +199,21 @@ class OncNetworkParser : public NetworkParser {
   // Parse ProxyLocation dictionary that specifies the manual proxy server.
   static net::ProxyServer ParseProxyLocationValue(int property_index,
                                                   const base::Value& value);
+
+  // Parse IssuerSubjectPattern dictionary for certificate pattern fields.
+  static bool ParseIssuerPattern(OncNetworkParser* parser,
+                                 PropertyIndex index,
+                                 const base::Value& value,
+                                 Network* network);
+  static bool ParseSubjectPattern(OncNetworkParser* parser,
+                                  PropertyIndex index,
+                                  const base::Value& value,
+                                  Network* network);
+  static bool ParseIssuerSubjectPattern(IssuerSubjectPattern* pattern,
+                                        OncNetworkParser* parser,
+                                        PropertyIndex index,
+                                        const base::Value& value,
+                                        Network* network);
 
   // Error message from the JSON parser, if applicable.
   std::string parse_error_;
