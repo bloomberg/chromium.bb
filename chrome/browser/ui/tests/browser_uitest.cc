@@ -50,17 +50,7 @@ TEST_F(BrowserTest, SessionEnd) {
   TerminateBrowser();
 }
 
-// WindowOpenClose is flaky on ChromeOS and fails consistently on linux views.
-// See http://crbug.com/85763.
-#if defined (OS_CHROMEOS)
-#define MAYBE_WindowOpenClose DISABLED_WindowOpenClose
-#elif defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
-#define MAYBE_WindowOpenClose FAILS_WindowOpenClose
-#else
-#define MAYBE_WindowOpenClose WindowOpenClose
-#endif
-
-TEST_F(VisibleBrowserTest, MAYBE_WindowOpenClose) {
+TEST_F(VisibleBrowserTest, WindowOpenClose) {
   FilePath test_file(test_data_directory_);
   test_file = test_file.AppendASCII("window.close.html");
 
@@ -143,7 +133,7 @@ TEST_F(KioskModeTest, EnableKioskModeTest) {
 // This test verifies that Chrome can be launched with a user-data-dir path
 // which contains non ASCII characters.
 class LaunchBrowserWithNonAsciiUserDatadir : public UITest {
-public:
+ public:
   void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     FilePath tmp_profile = temp_dir_.path().AppendASCII("tmp_profile");
@@ -159,7 +149,7 @@ public:
     return true;
   }
 
-public:
+ private:
   ScopedTempDir temp_dir_;
 };
 
