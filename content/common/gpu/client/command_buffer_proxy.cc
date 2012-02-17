@@ -17,6 +17,7 @@
 #include "content/common/plugin_messages.h"
 #include "content/common/view_messages.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
+#include "gpu/command_buffer/common/command_buffer_shared.h"
 #include "ui/gfx/size.h"
 
 using gpu::Buffer;
@@ -43,7 +44,6 @@ CommandBufferProxy::~CommandBufferProxy() {
 bool CommandBufferProxy::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(CommandBufferProxy, message)
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_UpdateState, OnUpdateState);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_Destroyed, OnDestroyed);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_NotifyRepaint,
                         OnNotifyRepaint);
@@ -111,6 +111,28 @@ bool CommandBufferProxy::Initialize() {
     return false;
   }
 
+  int32 state_buffer = CreateTransferBuffer(sizeof *shared_state_, -1);
+
+  if (state_buffer == -1) {
+    LOG(ERROR) << "Failed to create shared state transfer buffer.";
+    return false;
+  }
+
+  gpu::Buffer buffer = GetTransferBuffer(state_buffer);
+  if (!buffer.ptr) {
+    LOG(ERROR) << "Failed to get shared state transfer buffer";
+    return false;
+  }
+
+  shared_state_ = reinterpret_cast<gpu::CommandBufferSharedState*>(buffer.ptr);
+  shared_state_->Initialize();
+
+  if (!Send(new GpuCommandBufferMsg_SetSharedStateBuffer(route_id_,
+                                                         state_buffer))) {
+    LOG(ERROR) << "Failed to initialize shared command buffer state.";
+    return false;
+  }
+
   return true;
 }
 
@@ -122,6 +144,7 @@ gpu::CommandBuffer::State CommandBufferProxy::GetState() {
       OnUpdateState(state);
   }
 
+  TryUpdateState();
   return last_state_;
 }
 
@@ -145,6 +168,7 @@ gpu::CommandBuffer::State CommandBufferProxy::FlushSync(int32 put_offset,
   TRACE_EVENT1("gpu", "CommandBufferProxy::FlushSync", "put_offset",
                put_offset);
   Flush(put_offset);
+  TryUpdateState();
   if (last_known_get == last_state_.get_offset) {
     // Send will flag state with lost context if IPC fails.
     if (last_state_.error == gpu::error::kNoError) {
@@ -153,6 +177,7 @@ gpu::CommandBuffer::State CommandBufferProxy::FlushSync(int32 put_offset,
                                                     &state)))
         OnUpdateState(state);
     }
+    TryUpdateState();
   }
 
   return last_state_;
@@ -413,3 +438,7 @@ void CommandBufferProxy::SetOnConsoleMessageCallback(
   console_message_callback_ = callback;
 }
 
+void CommandBufferProxy::TryUpdateState() {
+  if (last_state_.error == gpu::error::kNoError)
+    shared_state_->Read(&last_state_);
+}

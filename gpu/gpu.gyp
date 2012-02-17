@@ -190,6 +190,7 @@
         'command_buffer/common/bitfield_helpers_test.cc',
         'command_buffer/common/command_buffer_mock.cc',
         'command_buffer/common/command_buffer_mock.h',
+        'command_buffer/common/command_buffer_shared_test.cc',
         'command_buffer/common/gles2_cmd_format_test.cc',
         'command_buffer/common/gles2_cmd_format_test_autogen.h',
         'command_buffer/common/gles2_cmd_utils_unittest.cc',

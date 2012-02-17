@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "gpu/command_buffer/common/command_buffer.h"
+#include "gpu/command_buffer/common/command_buffer_shared.h"
 
 namespace gpu {
 
@@ -56,9 +57,16 @@ class CommandBufferService : public CommandBuffer {
       const GetBufferChangedCallback& callback);
   virtual void SetParseErrorCallback(const base::Closure& callback);
 
+  // Setup the transfer buffer that shared state should be copied into.
+  void SetSharedStateBuffer(int32 transfer_buffer_id);
+
+  // Copy the current state into the shared state transfer buffer.
+  void UpdateState();
+
  private:
   int32 ring_buffer_id_;
   Buffer ring_buffer_;
+  CommandBufferSharedState* shared_state_;
   int32 num_entries_;
   int32 get_offset_;
   int32 put_offset_;
