@@ -3165,6 +3165,14 @@ FileManager.prototype = {
     if (!this.isRenamingInProgress())
       return;
 
+    // Do not move selection or lead item in list during rename.
+    if (event.keyIdentifier == 'Up' || event.keyIdentifier == 'Down') {
+      event.stopPropagation();
+    }
+
+    if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey)
+      return;
+
     switch (event.keyCode) {
       case 27:  // Escape
         this.cancelRename_();
@@ -3175,11 +3183,6 @@ FileManager.prototype = {
         this.commitRename_();
         event.preventDefault();
         break;
-    }
-
-    // Do not move selection in list during rename.
-    if (event.keyIdentifier == 'Up' || event.keyIdentifier == 'Down') {
-      event.stopPropagation();
     }
   };
 
@@ -3248,6 +3251,8 @@ FileManager.prototype = {
 
   FileManager.prototype.onFilenameInputKeyUp_ = function(event) {
     var enabled = this.updateOkButton_();
+    if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey)
+      return;
     if (enabled && event.keyCode == 13 /* Enter */)
       this.onOk_();
   };
@@ -3355,35 +3360,40 @@ FileManager.prototype = {
       return;
     }
 
-    switch (event.keyCode) {
-      case 27:  // Escape => Cancel dialog.
-        if (this.copyManager_.getStatus().totalFiles != 0) {
-          // If there is a copy in progress, ESC will cancel it.
-          event.preventDefault();
-          this.copyManager_.requestCancel();
-          return;
-        }
-
-        if (this.butterTimer_) {
-          // Allow the user to manually dismiss timed butter messages.
-          event.preventDefault();
-          this.hideButter();
-          return;
-        }
-
-        if (this.dialogType_ != FileManager.DialogType.FULL_PAGE) {
-          // If there is nothing else for ESC to do, then cancel the dialog.
-          event.preventDefault();
-          this.onCancel_();
-        }
-        break;
-
-      case 190:  // Ctrl-. => Toggle filter files.
-        if (event.ctrlKey) {
+    if (event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey) {
+      switch (event.keyCode) {
+        case 190:  // Ctrl-. => Toggle filter files.
           var dm = this.directoryModel_;
           dm.filterHidden = !dm.filterHidden;
-        }
-        break;
+          event.preventDefault();
+          return;
+      }
+    }
+
+    if (!event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey) {
+      switch (event.keyCode) {
+        case 27:  // Escape => Cancel dialog.
+          if (this.copyManager_.getStatus().totalFiles != 0) {
+            // If there is a copy in progress, ESC will cancel it.
+            event.preventDefault();
+            this.copyManager_.requestCancel();
+            return;
+          }
+
+          if (this.butterTimer_) {
+            // Allow the user to manually dismiss timed butter messages.
+            event.preventDefault();
+            this.hideButter();
+            return;
+          }
+
+          if (this.dialogType_ != FileManager.DialogType.FULL_PAGE) {
+            // If there is nothing else for ESC to do, then cancel the dialog.
+            event.preventDefault();
+            this.onCancel_();
+          }
+          break;
+      }
     }
   };
 
@@ -3396,6 +3406,43 @@ FileManager.prototype = {
       return;
     }
 
+    var self = this;
+    function handleCommand(name) {
+      self.updateCommands_();
+      if (self.commands_[name].disabled)
+        return;
+      event.preventDefault();
+      event.stopPropagation();
+      self.commands_[name].execute();
+    }
+
+    if (event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey) {
+      switch (event.keyCode) {
+        case 32:  // Ctrl-Space => New Folder.
+          handleCommand('newfolder');
+          break;
+
+        case 88:  // Ctrl-X => Cut.
+          handleCommand('cut');
+          break;
+
+        case 67:  // Ctrl-C => Copy.
+          handleCommand('copy');
+          break;
+
+        case 86:  // Ctrl-V => Paste.
+          handleCommand('paste');
+          break;
+
+        case 69:  // Ctrl-E => Rename.
+          handleCommand('rename');
+          break;
+      }
+    }
+
+    if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey)
+      return;
+
     switch (event.keyCode) {
       case 8:  // Backspace => Up one directory.
         event.preventDefault();
@@ -3406,7 +3453,7 @@ FileManager.prototype = {
         }
         break;
 
-      case 13:  // Enter => Change directory or complete dialog.
+      case 13:  // Enter => Change directory or perform default action.
         if (this.selection.totalCount == 1 &&
             this.selection.entries[0].isDirectory &&
             this.dialogType_ != FileManager.SELECT_FOLDER) {
@@ -3417,52 +3464,8 @@ FileManager.prototype = {
         }
         break;
 
-      case 32:  // Ctrl-Space => New Folder.
-        if ((this.dialogType_ == 'saveas-file' ||
-             this.dialogType_ == 'full-page') && event.ctrlKey) {
-          event.preventDefault();
-          this.onNewFolderCommand_();
-        }
-        break;
-
-      case 88:  // Ctrl-X => Cut.
-        this.updateCommands_();
-        if (!this.commands_['cut'].disabled) {
-          event.preventDefault();
-          this.commands_['cut'].execute();
-        }
-        break;
-
-      case 67:  // Ctrl-C => Copy.
-        this.updateCommands_();
-        if (!this.commands_['copy'].disabled) {
-          event.preventDefault();
-          this.commands_['copy'].execute();
-        }
-        break;
-
-      case 86:  // Ctrl-V => Paste.
-        this.updateCommands_();
-        if (!this.commands_['paste'].disabled) {
-          event.preventDefault();
-          this.commands_['paste'].execute();
-        }
-        break;
-
-      case 69:  // Ctrl-E => Rename.
-        this.updateCommands_();
-        if (!this.commands_['rename'].disabled) {
-          event.preventDefault();
-          this.commands_['rename'].execute();
-        }
-        break;
-
       case 46:  // Delete.
-        this.updateCommands_();
-        if (!this.commands_['delete'].disabled) {
-          event.preventDefault();
-          this.commands_['delete'].execute();
-        }
+        handleCommand('delete');
         break;
     }
   };
