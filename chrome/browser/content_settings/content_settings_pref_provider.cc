@@ -70,7 +70,9 @@ void ClearSettings(ContentSettingsType type,
 // Otherwise, returns false.
 bool GetResourceTypeName(ContentSettingsType content_type,
                          std::string* pref_key) {
-  if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS) {
+  if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS &&
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableResourceContentSettings)) {
     *pref_key = kPerPluginPrefName;
     return true;
   }
@@ -164,8 +166,7 @@ bool PrefProvider::SetWebsiteSetting(
   // sites/origins defined by the |primary_pattern| and the |secondary_pattern|.
   // Default settings are handled by the |DefaultProvider|.
   if (primary_pattern == ContentSettingsPattern::Wildcard() &&
-      secondary_pattern == ContentSettingsPattern::Wildcard() &&
-      resource_identifier.empty()) {
+      secondary_pattern == ContentSettingsPattern::Wildcard()) {
     return false;
   }
 
@@ -470,8 +471,7 @@ void PrefProvider::UpdateObsoletePatternsPref(
 
   if (settings_dictionary) {
     std::string res_dictionary_path;
-    if (GetResourceTypeName(content_type, &res_dictionary_path) &&
-        !resource_identifier.empty()) {
+    if (GetResourceTypeName(content_type, &res_dictionary_path)) {
       DictionaryValue* resource_dictionary = NULL;
       found = settings_dictionary->GetDictionary(
           res_dictionary_path, &resource_dictionary);
@@ -534,8 +534,7 @@ void PrefProvider::UpdatePatternPairsSettings(
 
   if (settings_dictionary) {
     std::string res_dictionary_path;
-    if (GetResourceTypeName(content_type, &res_dictionary_path) &&
-        !resource_identifier.empty()) {
+    if (GetResourceTypeName(content_type, &res_dictionary_path)) {
       DictionaryValue* resource_dictionary = NULL;
       found = settings_dictionary->GetDictionary(
           res_dictionary_path, &resource_dictionary);
