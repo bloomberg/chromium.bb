@@ -1,0 +1,160 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/**
+ * This file defines the <code>PPB_NetworkList_Private</code> interface.
+ */
+
+label Chrome {
+  M19 = 0.1
+};
+
+/**
+ * <code>PPB_NetworkListChanged_Callback</code> is a callback function
+ * type that is used to receive notifications about changes in the
+ * NetworkList.
+ */
+typedef void PPB_NetworkListChanged_Callback([inout] mem_t user_data);
+
+/**
+ * Type of a network interface.
+ */
+[assert_size(4)]
+enum PP_NetworkListType {
+  /**
+   * Wired Ethernet network.
+   */
+  PP_NETWORKLIST_ETHERNET = 0,
+
+  /**
+   * Wireless Wi-Fi network.
+   */
+  PP_NETWORKLIST_WIFI = 1,
+
+  /**
+   * Cellular network (e.g. LTE).
+   */
+  PP_NETWORKLIST_CELLULAR = 2
+};
+
+/**
+ * State of a network interface.
+ */
+[assert_size(4)]
+enum PP_NetworkListState {
+  /**
+   * Network interface is down.
+   */
+  PP_NETWORKLIST_DOWN = 0,
+
+  /**
+   * Network interface is up.
+   */
+  PP_NETWORKLIST_UP = 1
+};
+
+/**
+ * The <code>PPB_NetworkList_Private</code> provides list of network
+ * interfaces and associated IP addressed.
+ */
+interface PPB_NetworkList_Private {
+  /**
+   * Create() creates a new <code>NetworkList</code> object.
+   *
+   * @param[in] instance A <code>PP_Instance</code> identifying one instance
+   * of a module.
+   *
+   * @return A <code>PP_Resource</code> corresponding to a NetworkList if
+   * successful, 0 if the instance is invalid.
+   */
+  PP_Resource Create([in] PP_Instance instance);
+
+  /**
+   * Determines if the specified <code>resource</code> is a
+   * <code>NetworkList</code> object.
+   *
+   * @param[in] resource A <code>PP_Resource</code> resource.
+   *
+   * @return Returns <code>PP_TRUE</code> if <code>resource</code> is
+   * a <code>PPB_NetworkList_Private</code>, <code>PP_FALSE</code>
+   * otherwise.
+   */
+  PP_Bool IsNetworkList([in] PP_Resource resource);
+
+  /**
+   * Updates the list with the current state of the network interfaces
+   * in the system.
+   */
+  int32_t Update([in] PP_CompletionCallback callback);
+
+  /**
+   * Starts change notifications. The specified <code>callback</code>
+   * will be called every time the network list changes. Every time
+   * the callback is called the plugin must call Update() method to
+   * actually receive updated list.
+   */
+  int32_t StartNotifications([in] PP_Resource resource,
+                             [in] PPB_NetworkListChanged_Callback callback,
+                             [inout] mem_t user_data);
+
+  /**
+   * Stops change notifications. After this method is called the
+   * callback specified in <code>StartNotifications()</code> will not
+   * be called anymore.
+   */
+  int32_t StopNotifications([in] PP_Resource resource);
+
+  /**
+   * @return Returns number of available network interfaces or 0 if
+   * the list has never been updated.
+   */
+  uint32_t GetCount([in] PP_Resource resource);
+
+  /**
+   * @return Returns name for the network interface with the specified
+   * <code>index</code>.
+   */
+  PP_Var GetName([in] PP_Resource resource,
+                 [in] uint32_t index);
+
+  /**
+   * @return Returns type of the network interface with the specified
+   * <code>index</code>.
+   */
+  PP_NetworkListType GetType([in] PP_Resource resource,
+                             [in] uint32_t index);
+
+  /**
+   * @return Returns current state of the network interface with the
+   * specified <code>index</code>.
+   */
+  PP_NetworkListState GetState([in] PP_Resource resource,
+                               [in] uint32_t index);
+
+  /**
+   * @return Returns <code>NetAddress</code> object that contains
+   * address of the specified <code>family</code> for the network
+   * interface with the specified <code>index</code>, or 0 if the
+   * address is not assigned.
+   */
+  PP_Resource GetIpAddress([in] PP_Resource resource,
+                           [in] uint32_t index,
+                           [in] PP_NetAddressFamily_Private family);
+
+  /**
+   * @return Returns display name for the network interface with the
+   * specified <code>index</code>.
+   */
+  PP_Var GetDisplayName([in] PP_Resource resource,
+                        [in] uint32_t index);
+
+  /**
+   * @return Returns MTU for the network interface with the specified
+   * <code>index</code>.
+   */
+  uint32_t GetMTU([in] PP_Resource resource,
+                  [in] uint32_t index);
+
+};
