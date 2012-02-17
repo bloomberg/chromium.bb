@@ -67,14 +67,15 @@ class PortAllocator(object):
     # an issue a per-port based lock system can be used instead.
     self._port_lock = threading.Lock()
 
-  def Get(self, key, **kwargs):
+  def Get(self, key, new_port=False, **kwargs):
     """Sets up a constrained port using the requested parameters.
 
     Requests for the same key and constraints will result in a cached port being
-    returned if possible.
+    returned if possible, subject to new_port.
 
     Args:
       key: Used to cache ports with the given constraints.
+      new_port: Whether to create a new port or use an existing one if possible.
       **kwargs: Constraints to pass into traffic control.
 
     Returns:
@@ -85,10 +86,11 @@ class PortAllocator(object):
       # cache time and return the port if so. Performance isn't a concern here,
       # so just iterate over ports dict for simplicity.
       full_key = (key,) + tuple(kwargs.values())
-      for port, status in self._ports.iteritems():
-        if full_key == status['key']:
-          self._ports[port]['last_update'] = time.time()
-          return port
+      if not new_port:
+        for port, status in self._ports.iteritems():
+          if full_key == status['key']:
+            self._ports[port]['last_update'] = time.time()
+            return port
 
       # Cleanup ports on new port requests. Do it after the cache check though
       # so we don't erase and then setup the same port.
@@ -182,12 +184,13 @@ class ConstrainedNetworkServer(object):
     self._port_allocator = port_allocator
 
   @cherrypy.expose
-  def ServeConstrained(self, f=None, bandwidth=None, latency=None, loss=None):
+  def ServeConstrained(self, f=None, bandwidth=None, latency=None, loss=None,
+                       new_port=False):
     """Serves the requested file with the requested constraints.
 
     Subsequent requests for the same constraints from the same IP will share the
-    previously created port. If no constraints are provided the file is served
-    as is.
+    previously created port unless new_port equals True. If no constraints
+    are provided the file is served as is.
 
     Args:
       f: path relative to http root of file to serve.
@@ -195,7 +198,10 @@ class ConstrainedNetworkServer(object):
           in kbit/s).
       latency: time to add to each packet (integer in ms).
       loss: percentage of packets to drop (integer, 0-100).
+      new_port: whether to use a new port for this request or not.
     """
+    cherrypy.log('Got request for %s, bandwidth=%s, latency=%s, loss=%s, '
+                 'new_port=%s' % (f, bandwidth, latency, loss, new_port))
     # CherryPy is a bit wonky at detecting parameters, so just make them all
     # optional and validate them ourselves.
     if not f:
@@ -227,13 +233,18 @@ class ConstrainedNetworkServer(object):
     #
     # TODO(dalecurtis): The key cherrypy.request.remote.ip might not be unique
     # if build slaves are sharing the same VM.
+    start_time = time.time()
     constrained_port = self._port_allocator.Get(
         cherrypy.request.remote.ip, server_port=self._options.port,
         interface=self._options.interface, bandwidth=bandwidth, latency=latency,
-        loss=loss)
+        loss=loss, new_port=new_port)
+    end_time = time.time()
 
     if not constrained_port:
       raise cherrypy.HTTPError(503, 'Service unavailable. Out of ports.')
+
+    cherrypy.log('Time to set up port %d = %ssec.' %
+                 (constrained_port, end_time - start_time))
 
     # Build constrained URL. Only pass on the file parameter.
     constrained_url = '%s?f=%s' % (

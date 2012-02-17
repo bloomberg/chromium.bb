@@ -29,12 +29,13 @@
     // String to keep track of video events fired.
     var eventsMsg = '';
 
-    // A flag to end the test is error or abort events get fired.
+    // A flag to end the test if error or abort events get fired.
     var endTest = false;
 
     video.addEventListener('playing', function(event) {
       startTime = new Date().getTime();
       ttp = Math.max(0, startTime - loadTime);
+      logEvent(event);
     }, false);
 
     video.addEventListener('ended', setEPP, false);
@@ -51,14 +52,15 @@
       video.addEventListener(events[i], logEvent, false);
     }
 
-    function end(evt){
-      endTest = true;
+    function end(evt) {
       logEvent(evt);
+      endTest = true;
     }
 
     function logEvent(evt) {
-      eventsMsg += new Date().toLocaleTimeString() + ' ' + evt.target + ' ' +
-                   evt.type + ' event fired.\n';
+      var d = new Date();
+      eventsMsg += d.toLocaleTimeString() + '.' + d.getMilliseconds() + ' ' + 
+                   evt.target + ' ' + evt.type + ' event fired.\n';
     }
 
     function setEPP(evt) {
