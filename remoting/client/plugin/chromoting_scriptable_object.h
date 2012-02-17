@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,6 +105,7 @@
 #include "base/memory/weak_ptr.h"
 #include "ppapi/cpp/dev/scriptable_object_deprecated.h"
 #include "ppapi/cpp/var.h"
+#include "remoting/client/plugin/chromoting_instance.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -112,36 +113,12 @@ class MessageLoopProxy;
 
 namespace remoting {
 
-class ChromotingInstance;
-class PepperXmppProxy;
-
+// TODO(sergeyu): Remove this class when migration to messaging
+// interface is finished (crbug.com/86353).
 class ChromotingScriptableObject
     : public pp::deprecated::ScriptableObject,
       public base::SupportsWeakPtr<ChromotingScriptableObject> {
  public:
-  // These state values are duplicated in the JS code. Remember to update both
-  // copies when making changes.
-  enum ConnectionStatus {
-    // TODO(jamiewalch): Remove STATUS_UNKNOWN once all web-apps that might try
-    // to access it have been upgraded.
-    STATUS_UNKNOWN = 0,
-    STATUS_CONNECTING,
-    STATUS_INITIALIZING,
-    STATUS_CONNECTED,
-    STATUS_CLOSED,
-    STATUS_FAILED,
-  };
-
-  // These state values are duplicated in the JS code. Remember to update both
-  // copies when making changes.
-  enum ConnectionError {
-    ERROR_NONE = 0,
-    ERROR_HOST_IS_OFFLINE,
-    ERROR_SESSION_REJECTED,
-    ERROR_INCOMPATIBLE_PROTOCOL,
-    ERROR_NETWORK_FAILURE,
-  };
-
   ChromotingScriptableObject(
       ChromotingInstance* instance,
       base::MessageLoopProxy* plugin_message_loop);
@@ -162,13 +139,10 @@ class ChromotingScriptableObject
                        const std::vector<pp::Var>& args,
                        pp::Var* exception) OVERRIDE;
 
-  void SetConnectionStatus(ConnectionStatus status, ConnectionError error);
+  void SetConnectionStatus(ChromotingInstance::ConnectionState state,
+                           ChromotingInstance::ConnectionError error);
   void LogDebugInfo(const std::string& info);
   void SetDesktopSize(int width, int height);
-
-  // Attaches the XmppProxy used for issuing and receivng IQ stanzas for
-  // initializing a jingle connection from within the sandbox.
-  void AttachXmppProxy(PepperXmppProxy* xmpp_proxy);
 
   // Sends an IQ stanza, serialized as an xml string, into Javascript for
   // handling.
@@ -202,13 +176,13 @@ class ChromotingScriptableObject
   void AddAttribute(const std::string& name, pp::Var attribute);
   void AddMethod(const std::string& name, MethodHandler handler);
 
-  void SignalConnectionInfoChange(int status, int error);
+  void SignalConnectionInfoChange(int state, int error);
   void SignalDesktopSizeChange();
 
   // Calls to these methods are posted to the plugin thread so that we
   // call JavaScript with clean stack. This is necessary because
   // JavaScript event handlers may destroy the plugin.
-  void DoSignalConnectionInfoChange(int status, int error);
+  void DoSignalConnectionInfoChange(int state, int error);
   void DoSignalDesktopSizeChange();
   void DoSendIq(const std::string& message_xml);
 
@@ -229,7 +203,6 @@ class ChromotingScriptableObject
 
   PropertyNameMap property_names_;
   std::vector<PropertyDescriptor> properties_;
-  scoped_refptr<PepperXmppProxy> xmpp_proxy_;
 
   ChromotingInstance* instance_;
 

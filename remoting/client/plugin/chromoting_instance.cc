@@ -8,10 +8,14 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
+#include "base/string_split.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -35,7 +39,52 @@
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/key_event_tracker.h"
 
+// Windows defines 'PostMessage', so we have to undef it.
+#if defined(PostMessage)
+#undef PostMessage
+#endif
+
 namespace remoting {
+
+namespace {
+
+const int kPerfStatsIntervalMs = 1000;
+
+std::string ConnectionStateToString(ChromotingInstance::ConnectionState state) {
+  switch (state) {
+    case ChromotingInstance::STATE_CONNECTING:
+      return "CONNECTING";
+    case ChromotingInstance::STATE_INITIALIZING:
+      return "INITIALIZING";
+    case ChromotingInstance::STATE_CONNECTED:
+      return "CONNECTED";
+    case ChromotingInstance::STATE_CLOSED:
+      return "CLOSED";
+    case ChromotingInstance::STATE_FAILED:
+      return "FAILED";
+  }
+  NOTREACHED();
+  return "";
+}
+
+std::string ConnectionErrorToString(ChromotingInstance::ConnectionError error) {
+  switch (error) {
+    case ChromotingInstance::ERROR_NONE:
+      return "NONE";
+    case ChromotingInstance::ERROR_HOST_IS_OFFLINE:
+      return "HOST_IS_OFFLINE";
+    case ChromotingInstance::ERROR_SESSION_REJECTED:
+      return "SESSION_REJECTED";
+    case ChromotingInstance::ERROR_INCOMPATIBLE_PROTOCOL:
+      return "INCOMPATIBLE_PROTOCOL";
+    case ChromotingInstance::ERROR_NETWORK_FAILURE:
+      return "NETWORK_FAILURE";
+  }
+  NOTREACHED();
+  return "";
+}
+
+}  // namespace
 
 // This flag blocks LOGs to the UI if we're already in the middle of logging
 // to the UI. This prevents a potential infinite loop if we encounter an error
@@ -48,19 +97,49 @@ static logging::LogMessageHandlerFunction g_logging_old_handler = NULL;
 static base::LazyInstance<base::Lock>::Leaky
     g_logging_lock = LAZY_INSTANCE_INITIALIZER;
 
+bool ChromotingInstance::ParseAuthMethods(const std::string& auth_methods_str,
+                                          ClientConfig* config) {
+  if (auth_methods_str == "v1_token") {
+    config->use_v1_authenticator = true;
+  } else {
+    config->use_v1_authenticator = false;
+
+    std::vector<std::string> auth_methods;
+    base::SplitString(auth_methods_str, ',', &auth_methods);
+    for (std::vector<std::string>::iterator it = auth_methods.begin();
+         it != auth_methods.end(); ++it) {
+      protocol::AuthenticationMethod authentication_method =
+          protocol::AuthenticationMethod::FromString(*it);
+      if (authentication_method.is_valid())
+        config->authentication_methods.push_back(authentication_method);
+    }
+    if (config->authentication_methods.empty()) {
+      LOG(ERROR) << "No valid authentication methods specified.";
+      return false;
+    }
+  }
+
+  return true;
+}
+
 ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
     : pp::InstancePrivate(pp_instance),
       initialized_(false),
       plugin_message_loop_(
           new PluginMessageLoopProxy(&plugin_thread_delegate_)),
       context_(plugin_message_loop_),
-      scale_to_fit_(false),
       thread_proxy_(new ScopedThreadProxy(plugin_message_loop_)) {
   RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE | PP_INPUTEVENT_CLASS_WHEEL);
   RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_KEYBOARD);
 
   // Resister this instance to handle debug log messsages.
   RegisterLoggingInstance();
+
+  // Send hello message.
+  scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
+  data->SetInteger("apiVersion", kApiVersion);
+  data->SetInteger("apiMinVersion", kApiMinMessagingVersion);
+  PostChromotingMessage("hello", data.Pass());
 }
 
 ChromotingInstance::~ChromotingInstance() {
@@ -129,65 +208,52 @@ bool ChromotingInstance::Init(uint32_t argc,
   return true;
 }
 
-void ChromotingInstance::Connect(const ClientConfig& config) {
-  DCHECK(plugin_message_loop_->BelongsToCurrentThread());
-
-  host_connection_.reset(new protocol::ConnectionToHost(
-      context_.network_message_loop(), this, true));
-  client_.reset(new ChromotingClient(config, &context_, host_connection_.get(),
-                                     view_.get(), rectangle_decoder_.get(),
-                                     base::Closure()));
-
-  // Construct the input pipeline
-  mouse_input_filter_.reset(
-      new MouseInputFilter(host_connection_->input_stub()));
-  mouse_input_filter_->set_input_size(view_->get_view_size());
-  key_event_tracker_.reset(
-      new protocol::KeyEventTracker(mouse_input_filter_.get()));
-  input_handler_.reset(
-      new PepperInputHandler(key_event_tracker_.get()));
-
-  LOG(INFO) << "Connecting to " << config.host_jid
-            << ". Local jid: " << config.local_jid << ".";
-
-  // Setup the XMPP Proxy.
-  ChromotingScriptableObject* scriptable_object = GetScriptableObject();
-  scoped_refptr<PepperXmppProxy> xmpp_proxy =
-      new PepperXmppProxy(scriptable_object->AsWeakPtr(),
-                          plugin_message_loop_,
-                          context_.network_message_loop());
-  scriptable_object->AttachXmppProxy(xmpp_proxy);
-
-  // Kick off the connection.
-  client_->Start(xmpp_proxy);
-
-  VLOG(1) << "Connection status: Initializing";
-  GetScriptableObject()->SetConnectionStatus(
-      ChromotingScriptableObject::STATUS_INITIALIZING,
-      ChromotingScriptableObject::ERROR_NONE);
-}
-
-void ChromotingInstance::Disconnect() {
-  DCHECK(plugin_message_loop_->BelongsToCurrentThread());
-
-  LOG(INFO) << "Disconnecting from host.";
-  if (client_.get()) {
-    // TODO(sergeyu): Should we disconnect asynchronously?
-    base::WaitableEvent done_event(true, false);
-    client_->Stop(base::Bind(&base::WaitableEvent::Signal,
-                             base::Unretained(&done_event)));
-    done_event.Wait();
-    client_.reset();
+void ChromotingInstance::HandleMessage(const pp::Var& message) {
+  if (!message.is_string()) {
+    LOG(ERROR) << "Received a message that is not a string.";
+    return;
   }
 
-  input_handler_.reset();
-  key_event_tracker_.reset();
-  mouse_input_filter_.reset();
-  host_connection_.reset();
+  scoped_ptr<base::Value> json(
+      base::JSONReader::Read(message.AsString(), true));
+  base::DictionaryValue* message_dict = NULL;
+  std::string method;
+  base::DictionaryValue* data = NULL;
+  if (!json.get() ||
+      !json->GetAsDictionary(&message_dict) ||
+      !message_dict->GetString("method", &method) ||
+      !message_dict->GetDictionary("data", &data)) {
+    LOG(ERROR) << "Received invalid message:" << message.AsString();
+    return;
+  }
 
-  GetScriptableObject()->SetConnectionStatus(
-      ChromotingScriptableObject::STATUS_CLOSED,
-      ChromotingScriptableObject::ERROR_NONE);
+  if (method == "connect") {
+    ClientConfig config;
+    std::string auth_methods;
+    if (!data->GetString("hostJid", &config.host_jid) ||
+        !data->GetString("hostPublicKey", &config.host_public_key) ||
+        !data->GetString("localJid", &config.local_jid) ||
+        !data->GetString("sharedSecret", &config.shared_secret) ||
+        !data->GetString("authenticationMethods", &auth_methods) ||
+        !ParseAuthMethods(auth_methods, &config) ||
+        !data->GetString("authenticationTag", &config.authentication_tag)) {
+      LOG(ERROR) << "Invalid connect() data.";
+      return;
+    }
+
+    Connect(config);
+  } else if (method == "disconnect") {
+    Disconnect();
+  } else if (method == "incomingIq") {
+    std::string iq;
+    if (!data->GetString("iq", &iq)) {
+      LOG(ERROR) << "Invalid onIq() data.";
+      return;
+    }
+    OnIncomingIq(iq);
+  } else if (method == "releaseAllKeys") {
+    ReleaseAllKeys();
+  }
 }
 
 void ChromotingInstance::DidChangeView(const pp::Rect& position,
@@ -221,6 +287,39 @@ bool ChromotingInstance::HandleInputEvent(const pp::InputEvent& event) {
   return input_handler_->HandleInputEvent(event);
 }
 
+pp::Var ChromotingInstance::GetInstanceObject() {
+  if (instance_object_.is_undefined()) {
+    ChromotingScriptableObject* object =
+        new ChromotingScriptableObject(this, plugin_message_loop_);
+    object->Init();
+
+    // The pp::Var takes ownership of object here.
+    instance_object_ = pp::VarPrivate(this, object);
+  }
+
+  return instance_object_;
+}
+
+void ChromotingInstance::SetDesktopSize(int width, int height) {
+  scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
+  data->SetInteger("width", width);
+  data->SetInteger("height", height);
+  PostChromotingMessage("onDesktopSize", data.Pass());
+
+  GetScriptableObject()->SetDesktopSize(width, height);
+}
+
+void ChromotingInstance::SetConnectionState(
+    ConnectionState state,
+    ConnectionError error) {
+  scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
+  data->SetString("state", ConnectionStateToString(state));
+  data->SetString("error", ConnectionErrorToString(error));
+  PostChromotingMessage("onConnectionStatus", data.Pass());
+
+  GetScriptableObject()->SetConnectionStatus(state, error);
+}
+
 ChromotingScriptableObject* ChromotingInstance::GetScriptableObject() {
   pp::VarPrivate object = GetInstanceObject();
   if (!object.is_undefined()) {
@@ -230,6 +329,123 @@ ChromotingScriptableObject* ChromotingInstance::GetScriptableObject() {
   }
   LOG(ERROR) << "Unable to get ScriptableObject for Chromoting plugin.";
   return NULL;
+}
+
+void ChromotingInstance::Connect(const ClientConfig& config) {
+  DCHECK(plugin_message_loop_->BelongsToCurrentThread());
+
+  host_connection_.reset(new protocol::ConnectionToHost(
+      context_.network_message_loop(), this, true));
+  client_.reset(new ChromotingClient(config, &context_, host_connection_.get(),
+                                     view_.get(), rectangle_decoder_.get(),
+                                     base::Closure()));
+
+  // Construct the input pipeline
+  mouse_input_filter_.reset(
+      new MouseInputFilter(host_connection_->input_stub()));
+  mouse_input_filter_->set_input_size(view_->get_view_size());
+  key_event_tracker_.reset(
+      new protocol::KeyEventTracker(mouse_input_filter_.get()));
+  input_handler_.reset(
+      new PepperInputHandler(key_event_tracker_.get()));
+
+  LOG(INFO) << "Connecting to " << config.host_jid
+            << ". Local jid: " << config.local_jid << ".";
+
+  // Setup the XMPP Proxy.
+  xmpp_proxy_ = new PepperXmppProxy(
+      base::Bind(&ChromotingInstance::SendOutgoingIq, AsWeakPtr()),
+      plugin_message_loop_,
+      context_.network_message_loop());
+
+  // Kick off the connection.
+  client_->Start(xmpp_proxy_);
+
+  // Start timer that periodically sends perf stats.
+  plugin_message_loop_->PostDelayedTask(
+      FROM_HERE, base::Bind(&ChromotingInstance::SendPerfStats, AsWeakPtr()),
+      kPerfStatsIntervalMs);
+
+  VLOG(1) << "Connection status: Initializing";
+  SetConnectionState(STATE_INITIALIZING, ERROR_NONE);
+}
+
+void ChromotingInstance::Disconnect() {
+  DCHECK(plugin_message_loop_->BelongsToCurrentThread());
+
+  LOG(INFO) << "Disconnecting from host.";
+  if (client_.get()) {
+    // TODO(sergeyu): Should we disconnect asynchronously?
+    base::WaitableEvent done_event(true, false);
+    client_->Stop(base::Bind(&base::WaitableEvent::Signal,
+                             base::Unretained(&done_event)));
+    done_event.Wait();
+    client_.reset();
+  }
+
+  input_handler_.reset();
+  key_event_tracker_.reset();
+  mouse_input_filter_.reset();
+  host_connection_.reset();
+
+  SetConnectionState(STATE_CLOSED, ERROR_NONE);
+}
+
+void ChromotingInstance::OnIncomingIq(const std::string& iq) {
+  xmpp_proxy_->OnIq(iq);
+}
+
+void ChromotingInstance::ReleaseAllKeys() {
+  if (key_event_tracker_.get()) {
+    key_event_tracker_->ReleaseAllKeys();
+  }
+}
+
+ChromotingStats* ChromotingInstance::GetStats() {
+  if (!client_.get())
+    return NULL;
+  return client_->GetStats();
+}
+
+void ChromotingInstance::PostChromotingMessage(
+    const std::string& method,
+    scoped_ptr<base::DictionaryValue> data) {
+  scoped_ptr<base::DictionaryValue> message(new base::DictionaryValue());
+  message->SetString("method", method);
+  message->Set("data", data.release());
+
+  std::string message_json;
+  base::JSONWriter::Write(message.get(), false, &message_json);
+  PostMessage(pp::Var(message_json));
+}
+
+void ChromotingInstance::SendOutgoingIq(const std::string& iq) {
+  scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
+  data->SetString("iq", iq);
+  PostChromotingMessage("sendOutgoingIq", data.Pass());
+
+  GetScriptableObject()->SendIq(iq);
+}
+
+void ChromotingInstance::SendPerfStats() {
+  if (!client_.get()) {
+    return;
+  }
+
+  plugin_message_loop_->PostDelayedTask(
+      FROM_HERE, base::Bind(&ChromotingInstance::SendPerfStats, AsWeakPtr()),
+      kPerfStatsIntervalMs);
+
+  scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
+  ChromotingStats* stats = client_->GetStats();
+  data->SetDouble("videoBandwidth", stats->video_bandwidth()->Rate());
+  data->SetDouble("videoFrameRate", stats->video_frame_rate()->Rate());
+  data->SetDouble("captureLatency", stats->video_capture_ms()->Average());
+  data->SetDouble("encodeLatency", stats->video_encode_ms()->Average());
+  data->SetDouble("decodeLatency", stats->video_decode_ms()->Average());
+  data->SetDouble("renderLatency", stats->video_paint_ms()->Average());
+  data->SetDouble("roundtripLatency", stats->round_trip_ms()->Average());
+  PostChromotingMessage("onPerfStats", data.Pass());
 }
 
 // static
@@ -321,35 +537,15 @@ void ChromotingInstance::ProcessLogToUI(const std::string& message) {
   // new tasks while we're in the middle of servicing a LOG call. This can
   // happen if the call to LogDebugInfo tries to LOG anything.
   g_logging_to_plugin = true;
-  ChromotingScriptableObject* cso = GetScriptableObject();
-  if (cso)
-    cso->LogDebugInfo(message);
+  ChromotingScriptableObject* scriptable_object = GetScriptableObject();
+  if (scriptable_object) {
+    scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
+    data->SetString("message", message);
+    PostChromotingMessage("logDebugMessage", data.Pass());
+
+    scriptable_object->LogDebugInfo(message);
+  }
   g_logging_to_plugin = false;
-}
-
-pp::Var ChromotingInstance::GetInstanceObject() {
-  if (instance_object_.is_undefined()) {
-    ChromotingScriptableObject* object =
-        new ChromotingScriptableObject(this, plugin_message_loop_);
-    object->Init();
-
-    // The pp::Var takes ownership of object here.
-    instance_object_ = pp::VarPrivate(this, object);
-  }
-
-  return instance_object_;
-}
-
-ChromotingStats* ChromotingInstance::GetStats() {
-  if (!client_.get())
-    return NULL;
-  return client_->GetStats();
-}
-
-void ChromotingInstance::ReleaseAllKeys() {
-  if (key_event_tracker_.get()) {
-    key_event_tracker_->ReleaseAllKeys();
-  }
 }
 
 }  // namespace remoting

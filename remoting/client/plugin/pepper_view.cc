@@ -22,22 +22,22 @@ namespace remoting {
 
 namespace {
 
-ChromotingScriptableObject::ConnectionError ConvertConnectionError(
+ChromotingInstance::ConnectionError ConvertConnectionError(
     protocol::ConnectionToHost::Error error) {
   switch (error) {
     case protocol::ConnectionToHost::OK:
-      return ChromotingScriptableObject::ERROR_NONE;
+      return ChromotingInstance::ERROR_NONE;
     case protocol::ConnectionToHost::HOST_IS_OFFLINE:
-      return ChromotingScriptableObject::ERROR_HOST_IS_OFFLINE;
+      return ChromotingInstance::ERROR_HOST_IS_OFFLINE;
     case protocol::ConnectionToHost::SESSION_REJECTED:
-      return ChromotingScriptableObject::ERROR_SESSION_REJECTED;
+      return ChromotingInstance::ERROR_SESSION_REJECTED;
     case protocol::ConnectionToHost::INCOMPATIBLE_PROTOCOL:
-      return ChromotingScriptableObject::ERROR_INCOMPATIBLE_PROTOCOL;
+      return ChromotingInstance::ERROR_INCOMPATIBLE_PROTOCOL;
     case protocol::ConnectionToHost::NETWORK_FAILURE:
-      return ChromotingScriptableObject::ERROR_NETWORK_FAILURE;
+      return ChromotingInstance::ERROR_NETWORK_FAILURE;
   }
   DLOG(FATAL) << "Unknown error code" << error;
-  return  ChromotingScriptableObject::ERROR_NONE;
+  return  ChromotingInstance::ERROR_NONE;
 }
 
 }  // namespace
@@ -106,8 +106,7 @@ void PepperView::SetHostSize(const SkISize& host_size) {
   host_size_ = host_size;
 
   // Submit an update of desktop size to Javascript.
-  instance_->GetScriptableObject()->SetDesktopSize(
-      host_size.width(), host_size.height());
+  instance_->SetDesktopSize(host_size.width(), host_size.height());
 }
 
 void PepperView::PaintFrame(media::VideoFrame* frame, const SkRegion& region) {
@@ -229,34 +228,32 @@ void PepperView::SetConnectionState(protocol::ConnectionToHost::State state,
                                     protocol::ConnectionToHost::Error error) {
   DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
-  // TODO(hclam): Re-consider the way we communicate with Javascript.
-  ChromotingScriptableObject* scriptable_obj = instance_->GetScriptableObject();
   switch (state) {
     case protocol::ConnectionToHost::CONNECTING:
       SetSolidFill(kCreatedColor);
-      scriptable_obj->SetConnectionStatus(
-          ChromotingScriptableObject::STATUS_CONNECTING,
+      instance_->SetConnectionState(
+          ChromotingInstance::STATE_CONNECTING,
           ConvertConnectionError(error));
       break;
 
     case protocol::ConnectionToHost::CONNECTED:
       UnsetSolidFill();
-      scriptable_obj->SetConnectionStatus(
-          ChromotingScriptableObject::STATUS_CONNECTED,
+      instance_->SetConnectionState(
+          ChromotingInstance::STATE_CONNECTED,
           ConvertConnectionError(error));
       break;
 
     case protocol::ConnectionToHost::CLOSED:
       SetSolidFill(kDisconnectedColor);
-      scriptable_obj->SetConnectionStatus(
-          ChromotingScriptableObject::STATUS_CLOSED,
+      instance_->SetConnectionState(
+          ChromotingInstance::STATE_CLOSED,
           ConvertConnectionError(error));
       break;
 
     case protocol::ConnectionToHost::FAILED:
       SetSolidFill(kFailedColor);
-      scriptable_obj->SetConnectionStatus(
-          ChromotingScriptableObject::STATUS_FAILED,
+      instance_->SetConnectionState(
+          ChromotingInstance::STATE_FAILED,
           ConvertConnectionError(error));
       break;
   }

@@ -12,16 +12,27 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/cpp/var.h"
+
+// Windows defines 'PostMessage', so we have to undef it before we
+// include instance_private.h
+#if defined(PostMessage)
+#undef PostMessage
+#endif
+
 #include "ppapi/cpp/private/instance_private.h"
 #include "remoting/base/scoped_thread_proxy.h"
 #include "remoting/client/client_context.h"
-#include "remoting/client/plugin/chromoting_scriptable_object.h"
 #include "remoting/client/plugin/pepper_plugin_thread_delegate.h"
 #include "remoting/protocol/connection_to_host.h"
+
+namespace base {
+class DictionaryBase;
+}  // namespace base
 
 namespace pp {
 class InputEvent;
@@ -36,18 +47,60 @@ class KeyEventTracker;
 }  // namespace protocol
 
 class ChromotingClient;
+class ChromotingScriptableObject;
 class ChromotingStats;
 class ClientContext;
 class FrameConsumerProxy;
 class MouseInputFilter;
 class PepperInputHandler;
 class PepperView;
+class PepperXmppProxy;
 class RectangleUpdateDecoder;
 
 struct ClientConfig;
 
-class ChromotingInstance : public pp::InstancePrivate {
+class ChromotingInstance :
+      public pp::InstancePrivate,
+      public base::SupportsWeakPtr<ChromotingInstance> {
  public:
+  // These state values are duplicated in the JS code. Remember to
+  // update both copies when making changes.
+  enum ConnectionState {
+    STATE_CONNECTING = 1,
+    STATE_INITIALIZING,
+    STATE_CONNECTED,
+    STATE_CLOSED,
+    STATE_FAILED,
+  };
+
+  // These values are duplicated in the JS code. Remember to update
+  // both copies when making changes.
+  enum ConnectionError {
+    ERROR_NONE = 0,
+    ERROR_HOST_IS_OFFLINE,
+    ERROR_SESSION_REJECTED,
+    ERROR_INCOMPATIBLE_PROTOCOL,
+    ERROR_NETWORK_FAILURE,
+  };
+
+  // Plugin API version. This should be incremented whenever the API
+  // interface changes.
+  static const int kApiVersion = 5;
+
+  // Backward-compatibility version used by for the messaging
+  // interface. Should be updated whenever we remove support for
+  // an older version of the API.
+  static const int kApiMinMessagingVersion = 5;
+
+  // Backward-compatibility version used by for the ScriptableObject
+  // interface. Should be updated whenever we remove support for
+  // an older version of the API.
+  static const int kApiMinScriptableVersion = 2;
+
+  // Helper method to parse authentication_methods parameter.
+  static bool ParseAuthMethods(const std::string& auth_methods,
+                               ClientConfig* config);
+
   explicit ChromotingInstance(PP_Instance instance);
   virtual ~ChromotingInstance();
 
@@ -56,28 +109,29 @@ class ChromotingInstance : public pp::InstancePrivate {
                              const pp::Rect& clip) OVERRIDE;
   virtual bool Init(uint32_t argc, const char* argn[],
                     const char* argv[]) OVERRIDE;
+  virtual void HandleMessage(const pp::Var& message) OVERRIDE;
   virtual bool HandleInputEvent(const pp::InputEvent& event) OVERRIDE;
 
   // pp::InstancePrivate interface.
   virtual pp::Var GetInstanceObject() OVERRIDE;
 
+  // Called by PepperView.
+  void SetDesktopSize(int width, int height);
+  void SetConnectionState(ConnectionState state, ConnectionError error);
+
   // Convenience wrapper to get the ChromotingScriptableObject.
   ChromotingScriptableObject* GetScriptableObject();
 
-  // Initiates and cancels connections.
+  // Message handlers for messages that come from JavaScript. Called
+  // from HandleMessage() and ChromotingScriptableObject.
   void Connect(const ClientConfig& config);
   void Disconnect();
-
-  // Called by ChromotingScriptableObject to set scale-to-fit.
-  void SetScaleToFit(bool scale_to_fit);
+  void OnIncomingIq(const std::string& iq);
+  void ReleaseAllKeys();
 
   // Return statistics record by ChromotingClient.
   // If no connection is currently active then NULL will be returned.
   ChromotingStats* GetStats();
-
-  void ReleaseAllKeys();
-
-  bool DoScaling() const { return scale_to_fit_; }
 
   // Registers a global log message handler that redirects the log output to
   // our plugin instance.
@@ -104,6 +158,15 @@ class ChromotingInstance : public pp::InstancePrivate {
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromotingInstanceTest, TestCaseSetup);
 
+  // Helper method to post messages to the webapp.
+  void PostChromotingMessage(const std::string& method,
+                             scoped_ptr<base::DictionaryValue> data);
+
+  // Callback for PepperXmppProxy.
+  void SendOutgoingIq(const std::string& iq);
+
+  void SendPerfStats();
+
   void ProcessLogToUI(const std::string& message);
 
   bool initialized_;
@@ -113,9 +176,6 @@ class ChromotingInstance : public pp::InstancePrivate {
   ClientContext context_;
   scoped_ptr<protocol::ConnectionToHost> host_connection_;
   scoped_ptr<PepperView> view_;
-
-  // True if scale to fit is enabled.
-  bool scale_to_fit_;
 
   scoped_refptr<FrameConsumerProxy> consumer_proxy_;
   scoped_refptr<RectangleUpdateDecoder> rectangle_decoder_;

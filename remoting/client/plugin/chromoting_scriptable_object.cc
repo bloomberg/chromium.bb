@@ -5,10 +5,10 @@
 #include "remoting/client/plugin/chromoting_scriptable_object.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "base/string_split.h"
-// TODO(wez): Remove this when crbug.com/86353 is complete.
 #include "ppapi/cpp/private/var_private.h"
 #include "remoting/base/auth_token_util.h"
 #include "remoting/client/client_config.h"
@@ -56,34 +56,38 @@ void ChromotingScriptableObject::Init() {
   // Property addition order should match the interface description at the
   // top of chromoting_scriptable_object.h.
 
-  // Plugin API version.
-  // This should be incremented whenever the API interface changes.
-  AddAttribute(kApiVersionAttribute, Var(4));
+  AddAttribute(kApiVersionAttribute, Var(ChromotingInstance::kApiVersion));
 
-  // This should be updated whenever we remove support for an older version
-  // of the API.
-  AddAttribute(kApiMinVersionAttribute, Var(2));
+  AddAttribute(kApiMinVersionAttribute,
+               Var(ChromotingInstance::kApiMinScriptableVersion));
 
   // Connection status.
-  AddAttribute(kStatusAttribute, Var(STATUS_UNKNOWN));
+  AddAttribute(kStatusAttribute, Var(0)); // STATUS_UNKNOWN
 
   // Connection status values.
-  AddAttribute("STATUS_UNKNOWN", Var(STATUS_UNKNOWN));
-  AddAttribute("STATUS_CONNECTING", Var(STATUS_CONNECTING));
-  AddAttribute("STATUS_INITIALIZING", Var(STATUS_INITIALIZING));
-  AddAttribute("STATUS_CONNECTED", Var(STATUS_CONNECTED));
-  AddAttribute("STATUS_CLOSED", Var(STATUS_CLOSED));
-  AddAttribute("STATUS_FAILED", Var(STATUS_FAILED));
+  // TODO(jamiewalch): Remove STATUS_UNKNOWN once all web-apps that might try
+  // to access it have been upgraded.
+  AddAttribute("STATUS_UNKNOWN", Var(0));
+  AddAttribute("STATUS_CONNECTING", Var(ChromotingInstance::STATE_CONNECTING));
+  AddAttribute("STATUS_INITIALIZING",
+               Var(ChromotingInstance::STATE_INITIALIZING));
+  AddAttribute("STATUS_CONNECTED", Var(ChromotingInstance::STATE_CONNECTED));
+  AddAttribute("STATUS_CLOSED", Var(ChromotingInstance::STATE_CLOSED));
+  AddAttribute("STATUS_FAILED", Var(ChromotingInstance::STATE_FAILED));
 
   // Connection error.
-  AddAttribute(kErrorAttribute, Var(ERROR_NONE));
+  AddAttribute(kErrorAttribute, Var(ChromotingInstance::ERROR_NONE));
 
-  // Connection status values.
-  AddAttribute("ERROR_NONE", Var(ERROR_NONE));
-  AddAttribute("ERROR_HOST_IS_OFFLINE", Var(ERROR_HOST_IS_OFFLINE));
-  AddAttribute("ERROR_SESSION_REJECTED", Var(ERROR_SESSION_REJECTED));
-  AddAttribute("ERROR_INCOMPATIBLE_PROTOCOL", Var(ERROR_INCOMPATIBLE_PROTOCOL));
-  AddAttribute("ERROR_FAILURE_NONE", Var(ERROR_NETWORK_FAILURE));
+  // Connection error values.
+  AddAttribute("ERROR_NONE", Var(ChromotingInstance::ERROR_NONE));
+  AddAttribute("ERROR_HOST_IS_OFFLINE",
+               Var(ChromotingInstance::ERROR_HOST_IS_OFFLINE));
+  AddAttribute("ERROR_SESSION_REJECTED",
+               Var(ChromotingInstance::ERROR_SESSION_REJECTED));
+  AddAttribute("ERROR_INCOMPATIBLE_PROTOCOL",
+               Var(ChromotingInstance::ERROR_INCOMPATIBLE_PROTOCOL));
+  AddAttribute("ERROR_FAILURE_NONE",
+               Var(ChromotingInstance::ERROR_NETWORK_FAILURE));
 
   // Debug info to display.
   AddAttribute(kConnectionInfoUpdate, Var());
@@ -231,14 +235,15 @@ Var ChromotingScriptableObject::Call(const Var& method_name,
 }
 
 void ChromotingScriptableObject::SetConnectionStatus(
-    ConnectionStatus status, ConnectionError error) {
-  VLOG(1) << "Connection status is updated: " << status;
+    ChromotingInstance::ConnectionState state,
+    ChromotingInstance::ConnectionError error) {
+  VLOG(1) << "Connection status is updated: " << state;
 
   bool signal = false;
 
   int status_index = property_names_[kStatusAttribute];
-  if (properties_[status_index].attribute.AsInt() != status) {
-    properties_[status_index].attribute = Var(status);
+  if (properties_[status_index].attribute.AsInt() != state) {
+    properties_[status_index].attribute = Var(state);
     signal = true;
   }
 
@@ -248,21 +253,27 @@ void ChromotingScriptableObject::SetConnectionStatus(
     signal = true;
   }
 
-  if (signal)
-    SignalConnectionInfoChange(status, error);
+  if (signal) {
+    plugin_message_loop_->PostTask(
+        FROM_HERE, base::Bind(
+            &ChromotingScriptableObject::DoSignalConnectionInfoChange,
+            AsWeakPtr(), state, error));
+  }
 }
 
 void ChromotingScriptableObject::LogDebugInfo(const std::string& info) {
   Var exception;
   VarPrivate cb = GetProperty(Var(kDebugInfo), &exception);
 
-  // Var() means call the object directly as a function rather than calling
-  // a method in the object.
-  cb.Call(Var(), Var(info), &exception);
+  if (!cb.is_undefined()) {
+    // Var() means call the object directly as a function rather than calling
+    // a method in the object.
+    cb.Call(Var(), Var(info), &exception);
 
-  if (!exception.is_undefined()) {
-    LOG(WARNING) << "Exception when invoking debugInfo JS callback: "
-                 << exception.DebugString();
+    if (!exception.is_undefined()) {
+      LOG(WARNING) << "Exception when invoking debugInfo JS callback: "
+                   << exception.DebugString();
+    }
   }
 }
 
@@ -274,14 +285,13 @@ void ChromotingScriptableObject::SetDesktopSize(int width, int height) {
       properties_[height_index].attribute.AsInt() != height) {
     properties_[width_index].attribute = Var(width);
     properties_[height_index].attribute = Var(height);
-    SignalDesktopSizeChange();
+    plugin_message_loop_->PostTask(
+        FROM_HERE, base::Bind(
+            &ChromotingScriptableObject::DoSignalDesktopSizeChange,
+            AsWeakPtr()));
   }
 
   VLOG(1) << "Update desktop size to: " << width << " x " << height;
-}
-
-void ChromotingScriptableObject::AttachXmppProxy(PepperXmppProxy* xmpp_proxy) {
-  xmpp_proxy_ = xmpp_proxy;
 }
 
 void ChromotingScriptableObject::SendIq(const std::string& message_xml) {
@@ -302,43 +312,32 @@ void ChromotingScriptableObject::AddMethod(const std::string& name,
   properties_.push_back(PropertyDescriptor(name, handler));
 }
 
-void ChromotingScriptableObject::SignalConnectionInfoChange(int status,
-                                                            int error) {
-  plugin_message_loop_->PostTask(
-      FROM_HERE, base::Bind(
-          &ChromotingScriptableObject::DoSignalConnectionInfoChange,
-          AsWeakPtr(), status, error));
-}
-
-void ChromotingScriptableObject::SignalDesktopSizeChange() {
-  plugin_message_loop_->PostTask(
-      FROM_HERE, base::Bind(
-          &ChromotingScriptableObject::DoSignalDesktopSizeChange,
-          AsWeakPtr()));
-}
-
-void ChromotingScriptableObject::DoSignalConnectionInfoChange(int status,
+void ChromotingScriptableObject::DoSignalConnectionInfoChange(int state,
                                                               int error) {
   Var exception;
   VarPrivate cb = GetProperty(Var(kConnectionInfoUpdate), &exception);
 
-  // |this| must not be touched after Call() returns.
-  cb.Call(Var(), Var(status), Var(error), &exception);
+  if (!cb.is_undefined()) {
+    // |this| must not be touched after Call() returns.
+    cb.Call(Var(), Var(state), Var(error), &exception);
 
-  if (!exception.is_undefined())
-    LOG(ERROR) << "Exception when invoking connectionInfoUpdate JS callback.";
+    if (!exception.is_undefined())
+      LOG(ERROR) << "Exception when invoking connectionInfoUpdate JS callback.";
+  }
 }
 
 void ChromotingScriptableObject::DoSignalDesktopSizeChange() {
   Var exception;
   VarPrivate cb = GetProperty(Var(kDesktopSizeUpdate), &exception);
 
-  // |this| must not be touched after Call() returns.
-  cb.Call(Var(), &exception);
+  if (!cb.is_undefined()) {
+    // |this| must not be touched after Call() returns.
+    cb.Call(Var(), &exception);
 
-  if (!exception.is_undefined()) {
-    LOG(ERROR) << "Exception when invoking JS callback"
-               << exception.DebugString();
+    if (!exception.is_undefined()) {
+      LOG(ERROR) << "Exception when invoking JS callback"
+                 << exception.DebugString();
+    }
   }
 }
 
@@ -346,11 +345,13 @@ void ChromotingScriptableObject::DoSendIq(const std::string& message_xml) {
   Var exception;
   VarPrivate cb = GetProperty(Var(kSendIq), &exception);
 
-  // |this| must not be touched after Call() returns.
-  cb.Call(Var(), Var(message_xml), &exception);
+  if (!cb.is_undefined()) {
+    // |this| must not be touched after Call() returns.
+    cb.Call(Var(), Var(message_xml), &exception);
 
-  if (!exception.is_undefined())
-    LOG(ERROR) << "Exception when invoking sendiq JS callback.";
+    if (!exception.is_undefined())
+      LOG(ERROR) << "Exception when invoking sendiq JS callback.";
+  }
 }
 
 Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
@@ -400,25 +401,10 @@ Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
       return Var();
     }
 
-    std::string as_string = args[arg++].AsString();
-    if (as_string == "v1_token") {
-      config.use_v1_authenticator = true;
-    } else {
-      config.use_v1_authenticator = false;
-
-      std::vector<std::string> auth_methods;
-      base::SplitString(as_string, ',', &auth_methods);
-      for (std::vector<std::string>::iterator it = auth_methods.begin();
-           it != auth_methods.end(); ++it) {
-        protocol::AuthenticationMethod authentication_method =
-            protocol::AuthenticationMethod::FromString(*it);
-        if (authentication_method.is_valid())
-          config.authentication_methods.push_back(authentication_method);
-      }
-      if (config.authentication_methods.empty()) {
-        *exception = Var("No valid authentication methods specified.");
-        return Var();
-      }
+    if (!ChromotingInstance::ParseAuthMethods(
+            args[arg++].AsString(), &config)) {
+      *exception = Var("No valid authentication methods specified.");
+      return Var();
     }
   }
 
@@ -467,7 +453,7 @@ Var ChromotingScriptableObject::DoOnIq(const std::vector<Var>& args,
     return Var();
   }
 
-  xmpp_proxy_->OnIq(args[0].AsString());
+  instance_->OnIncomingIq(args[0].AsString());
 
   return Var();
 }
