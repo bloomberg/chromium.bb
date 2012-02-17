@@ -207,6 +207,11 @@ void VideoCaptureManager::OnClose(int capture_session_id) {
   if (video_capture_device && !DeviceInUse(video_capture_device)) {
     // Deallocate (if not done already) and delete the device.
     video_capture_device->DeAllocate();
+    Controllers::iterator cit = controllers_.find(video_capture_device);
+    if (cit != controllers_.end()) {
+      delete cit->second;
+      controllers_.erase(cit);
+    }
     delete video_capture_device;
   }
 
