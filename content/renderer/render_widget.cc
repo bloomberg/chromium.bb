@@ -815,6 +815,12 @@ void RenderWidget::DoDeferredUpdate() {
   // GpuRenderingActivated message.
   webwidget_->layout();
 
+  // The following two can result in further layout and possibly
+  // enable GPU acceleration so they need to be called before any painting
+  // is done.
+  UpdateTextInputState();
+  UpdateSelectionBounds();
+
   // Suppress painting if nothing is dirty.  This has to be done after updating
   // animations running layout as these may generate further invalidations.
   if (!paint_aggregator_.HasPendingUpdate()) {
@@ -955,9 +961,6 @@ void RenderWidget::DoDeferredUpdate() {
     Send(new ViewHostMsg_UpdateRect(routing_id_, *pending_update_params_));
     pending_update_params_.reset();
   }
-
-  UpdateTextInputState();
-  UpdateSelectionBounds();
 
   // If we're software rendering then we're done initiating the paint.
   if (!is_accelerated_compositing_active_)
