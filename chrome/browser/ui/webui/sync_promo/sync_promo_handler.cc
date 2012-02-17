@@ -127,14 +127,8 @@ void SyncPromoHandler::RegisterMessages() {
   SyncSetupHandler::RegisterMessages();
 }
 
-void SyncPromoHandler::ShowGaiaSuccessAndClose() {
+void SyncPromoHandler::RecordSignin() {
   sync_promo_trial::RecordUserSignedIn(web_ui());
-  SyncSetupHandler::ShowGaiaSuccessAndClose();
-}
-
-void SyncPromoHandler::ShowGaiaSuccessAndSettingUp() {
-  sync_promo_trial::RecordUserSignedIn(web_ui());
-  SyncSetupHandler::ShowGaiaSuccessAndSettingUp();
 }
 
 void SyncPromoHandler::ShowConfigure(const base::DictionaryValue& args) {
@@ -181,19 +175,7 @@ void SyncPromoHandler::Observe(int type,
   }
 }
 
-void SyncPromoHandler::StepWizardForShowSetupUI() {
-}
-
 void SyncPromoHandler::ShowSetupUI() {
-  // SyncSetupWizard::Step should be called in StepWizardForShowSetupUI above,
-  // but it causes the sync promo page to not set focus properly to the login
-  // email address. This happens because focus is lost between the call to
-  // StepWizardForShowSetupUI and ShowSetupUI.
-  // TODO(binji): Move this function back and fix the focus the right way.
-  ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-          Profile::FromWebUI(web_ui()));
-  service->get_wizard().Step(SyncSetupWizard::GetLoginState());
 }
 
 void SyncPromoHandler::HandleCloseSyncPromo(const base::ListValue* args) {

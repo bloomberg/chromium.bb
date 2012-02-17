@@ -48,6 +48,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/global_error_service.h"
 #include "chrome/browser/ui/global_error_service_factory.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -156,6 +158,13 @@ bool ProfileSyncService::AreCredentialsAvailable(
   if (IsManaged()) {
     return false;
   }
+
+  // If we have start suppressed, then basically just act like we have no
+  // credentials (login is required to fix this, since we need the user's
+  // passphrase to encrypt/decrypt anyway).
+  // TODO(sync): Revisit this when we move to a server-based keystore.
+  if (sync_prefs_.IsStartSuppressed())
+    return false;
 
   // CrOS user is always logged in. Chrome uses signin_ to check logged in.
   if (signin_->GetAuthenticatedUsername().empty())
@@ -737,22 +746,8 @@ void ProfileSyncService::OnDataTypesChanged(
 
 void ProfileSyncService::UpdateAuthErrorState(
     const GoogleServiceAuthError& error) {
+  is_auth_in_progress_ = false;
   last_auth_error_ = error;
-  // Protect against the in-your-face dialogs that pop out of nowhere.
-  // Require the user to click somewhere to run the setup wizard in the case
-  // of a steady-state auth failure.
-  if (WizardIsVisible()) {
-    wizard_.Step(last_auth_error_.state() == AuthError::NONE ?
-        SyncSetupWizard::GAIA_SUCCESS : SyncSetupWizard::GetLoginState());
-  } else {
-    auth_error_time_ = base::TimeTicks::Now();
-  }
-
-  if (!auth_start_time_.is_null()) {
-    UMA_HISTOGRAM_TIMES("Sync.AuthorizationTimeInNetwork",
-                    base::TimeTicks::Now() - auth_start_time_);
-    auth_start_time_ = base::TimeTicks();
-  }
 
   // Fan the notification out to interested UI-thread components.
   NotifyObservers();
@@ -763,8 +758,12 @@ void ProfileSyncService::OnAuthError() {
 }
 
 void ProfileSyncService::OnStopSyncingPermanently() {
-  if (SetupInProgress()) {
-    wizard_.Step(SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR);
+  UpdateAuthErrorState(
+      GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
+
+  // If the wizard is visible, close it.
+  if (WizardIsVisible()) {
+    wizard_.Step(SyncSetupWizard::ABORT);
     expect_sync_configuration_aborted_ = true;
   }
   sync_prefs_.SetStartSuppressed(true);
@@ -964,23 +963,9 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
 }
 
 void ProfileSyncService::ShowLoginDialog() {
-  if (WizardIsVisible()) {
-    wizard_.Focus();
-    // Force the wizard to step to the login screen (which will only actually
-    // happen if the transition is valid).
-    wizard_.Step(SyncSetupWizard::GetLoginState());
-    return;
-  }
-
-  if (!auth_error_time_.is_null()) {
-    UMA_HISTOGRAM_LONG_TIMES("Sync.ReauthorizationTime",
-                             base::TimeTicks::Now() - auth_error_time_);
-    auth_error_time_ = base::TimeTicks();  // Reset auth_error_time_ to null.
-  }
-
-  ShowSyncSetupWithWizard(SyncSetupWizard::GetLoginState());
-
-  NotifyObservers();
+  // TODO(atwilson): Remove this API and have the callers directly call
+  // LoginUIService.
+  LoginUIServiceFactory::GetForProfile(profile_)->ShowLoginUI();
 }
 
 void ProfileSyncService::ShowErrorUI() {
@@ -989,12 +974,21 @@ void ProfileSyncService::ShowErrorUI() {
     return;
   }
 
-  if (last_auth_error_.state() != AuthError::NONE)
+  // Figure out what kind of error we've encountered. There are only 3 kinds:
+  // 1) auth error.
+  // 2) server-initiated error
+  // 3) passphrase error
+  // Any other errors (such as unrecoverable error) should be handled by the UI
+  // itself and should not result in a call to ShowErrorUI.
+  if (last_auth_error_.state() != AuthError::NONE) {
     ShowLoginDialog();
-  else if (ShouldShowActionOnUI(last_actionable_error_))
+  } else if (ShouldShowActionOnUI(last_actionable_error_)) {
     ShowSyncSetup(chrome::kPersonalOptionsSubPage);
-  else
-    ShowSyncSetupWithWizard(SyncSetupWizard::NONFATAL_ERROR);
+  } else {
+    // We should only get here for passphrase error.
+    DCHECK(IsPassphraseRequired());
+    ShowSyncSetupWithWizard(SyncSetupWizard::ENTER_PASSPHRASE);
+  }
 }
 
 void ProfileSyncService::ShowConfigure(bool sync_everything) {
@@ -1080,18 +1074,7 @@ bool ProfileSyncService::unrecoverable_error_detected() const {
 }
 
 bool ProfileSyncService::UIShouldDepictAuthInProgress() const {
-  return is_auth_in_progress_;
-}
-
-void ProfileSyncService::SetUIShouldDepictAuthInProgress(
-    bool auth_in_progress) {
-  is_auth_in_progress_ = auth_in_progress;
-  // TODO(atwilson): Figure out if we still need to track this or if we should
-  // move this up to the UI (or break it out into two stats that track GAIA
-  // auth and sync auth separately).
-  if (is_auth_in_progress_)
-    auth_start_time_ = base::TimeTicks::Now();
-  NotifyObservers();
+  return signin()->AuthInProgress();
 }
 
 bool ProfileSyncService::IsPassphraseRequired() const {
@@ -1468,6 +1451,8 @@ void ProfileSyncService::Observe(int type,
               details).ptr();
       // The user has submitted credentials, which indicates they don't
       // want to suppress start up anymore.
+      // TODO(sync): Remove this when sync is no longer tied to browser signin.
+      // http://crbug/com/95269.
       sync_prefs_.SetStartSuppressed(false);
 
       // Because we specify IMPLICIT to SetPassphrase, we know it won't override
@@ -1476,6 +1461,12 @@ void ProfileSyncService::Observe(int type,
       // an explicit passphrase set so this becomes a no-op.
       if (!successful->password.empty())
         SetPassphrase(successful->password, IMPLICIT, INTERNAL);
+
+      if (!sync_initialized() ||
+          GetAuthError().state() != GoogleServiceAuthError::NONE) {
+        // Track the fact that we're still waiting for auth to complete.
+        is_auth_in_progress_ = true;
+      }
       break;
     }
     case chrome::NOTIFICATION_TOKEN_REQUEST_FAILED: {
