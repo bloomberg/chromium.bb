@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -24,20 +25,20 @@ class MockCryptohomeLibrary : public CryptohomeLibrary {
 
   void SetUp(bool outcome, int code);
 
-  MOCK_METHOD0(Init, void(void));
-  MOCK_METHOD3(AsyncCheckKey, bool(const std::string& user_email,
+  MOCK_METHOD3(AsyncCheckKey, void(const std::string& user_email,
                                    const std::string& passhash,
                                    Delegate* callback));
-  MOCK_METHOD4(AsyncMigrateKey, bool(const std::string& user_email,
+  MOCK_METHOD4(AsyncMigrateKey, void(const std::string& user_email,
                                      const std::string& old_hash,
                                      const std::string& new_hash,
                                      Delegate* callback));
-  MOCK_METHOD4(AsyncMount, bool(const std::string& user_email,
+  MOCK_METHOD4(AsyncMount, void(const std::string& user_email,
                                 const std::string& passhash,
                                 const bool create_if_missing,
                                 Delegate* callback));
-  MOCK_METHOD1(AsyncMountForBwsi, bool(Delegate* callback));
-  MOCK_METHOD2(AsyncRemove, bool(const std::string& user_email, Delegate* d));
+  MOCK_METHOD1(AsyncMountGuest, void(Delegate* callback));
+  MOCK_METHOD2(AsyncRemove, void(const std::string& user_email,
+                                 Delegate* callback));
   MOCK_METHOD0(IsMounted, bool(void));
   MOCK_METHOD1(HashPassword, std::string(const std::string& password));
   MOCK_METHOD0(GetSystemSalt, std::string(void));
@@ -65,9 +66,8 @@ class MockCryptohomeLibrary : public CryptohomeLibrary {
     code_ = code;
   }
 
-  bool DoCallback(Delegate* d) {
+  void DoCallback(Delegate* d) {
     d->OnComplete(outcome_, code_);
-    return true;
   }
 
  private:

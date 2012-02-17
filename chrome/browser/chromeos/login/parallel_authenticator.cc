@@ -34,6 +34,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_status.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/libjingle/source/talk/base/urlencode.h"
 
 using base::Time;
@@ -503,14 +504,14 @@ ParallelAuthenticator::ResolveCryptohomeFailureState() {
   //    This is the case after user finishes Gaia login;
   if (current_online_.get() || current_state_->online_complete()) {
     if (current_state_->cryptohome_code() ==
-        chromeos::kCryptohomeMountErrorKeyFailure) {
+        cryptohome::MOUNT_ERROR_KEY_FAILURE) {
       // If we tried a mount but they used the wrong key, we may need to
       // ask the user for her old password.  We'll only know once we've
       // done the online check.
       return POSSIBLE_PW_CHANGE;
     }
     if (current_state_->cryptohome_code() ==
-        chromeos::kCryptohomeMountErrorUserDoesNotExist) {
+        cryptohome::MOUNT_ERROR_USER_DOES_NOT_EXIST) {
       // If we tried a mount but the user did not exist, then we should wait
       // for online login to succeed and try again with the "create" flag set.
       return NO_MOUNT;

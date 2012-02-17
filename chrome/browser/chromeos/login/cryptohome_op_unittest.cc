@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_library_loader.h"
 #include "chrome/browser/chromeos/login/auth_attempt_state.h"
@@ -16,6 +17,7 @@
 #include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 using content::BrowserThread;
 
@@ -92,7 +94,7 @@ class CryptohomeOpTest : public ::testing::Test {
   }
 
   void ExpectMountGuest() {
-    EXPECT_CALL(*(mock_library_.get()), AsyncMountForBwsi(_))
+    EXPECT_CALL(*(mock_library_.get()), AsyncMountGuest(_))
         .Times(1)
         .RetiresOnSaturation();
   }
@@ -146,91 +148,91 @@ TEST_F(CryptohomeOpTest, MountSuccess) {
   ExpectMount();
   scoped_refptr<CryptohomeOp> op(
       CryptohomeOp::CreateMountAttempt(&state_, resolver_.get(), true));
-  RunTest(op.get(), true, kCryptohomeMountErrorNone);
+  RunTest(op.get(), true, cryptohome::MOUNT_ERROR_NONE);
 }
 
 TEST_F(CryptohomeOpTest, MountFatal) {
   ExpectMount();
   scoped_refptr<CryptohomeOp> op(
       CryptohomeOp::CreateMountAttempt(&state_, resolver_.get(), true));
-  RunTest(op.get(), false, kCryptohomeMountErrorFatal);
+  RunTest(op.get(), false, cryptohome::MOUNT_ERROR_FATAL);
 }
 
 TEST_F(CryptohomeOpTest, MountKeyFailure) {
   ExpectMount();
   scoped_refptr<CryptohomeOp> op(
       CryptohomeOp::CreateMountAttempt(&state_, resolver_.get(), true));
-  RunTest(op.get(), false, kCryptohomeMountErrorKeyFailure);
+  RunTest(op.get(), false, cryptohome::MOUNT_ERROR_KEY_FAILURE);
 }
 
 TEST_F(CryptohomeOpTest, MountRecreated) {
   ExpectMount();
   scoped_refptr<CryptohomeOp> op(
       CryptohomeOp::CreateMountAttempt(&state_, resolver_.get(), true));
-  RunTest(op.get(), true, kCryptohomeMountErrorRecreated);
+  RunTest(op.get(), true, cryptohome::MOUNT_ERROR_RECREATED);
 }
 
 TEST_F(CryptohomeOpTest, MountGuestSuccess) {
   ExpectMountGuest();
   scoped_refptr<CryptohomeOp> op(
       CryptohomeOp::CreateMountGuestAttempt(&state_, resolver_.get()));
-  RunTest(op.get(), true, kCryptohomeMountErrorNone);
+  RunTest(op.get(), true, cryptohome::MOUNT_ERROR_NONE);
 }
 
 TEST_F(CryptohomeOpTest, MountGuestFatal) {
   ExpectMountGuest();
   scoped_refptr<CryptohomeOp> op(
       CryptohomeOp::CreateMountGuestAttempt(&state_, resolver_.get()));
-  RunTest(op.get(), false, kCryptohomeMountErrorFatal);
+  RunTest(op.get(), false, cryptohome::MOUNT_ERROR_FATAL);
 }
 
 TEST_F(CryptohomeOpTest, MigrateSuccessPassOld) {
   ExpectMigrate(true, "");
   scoped_refptr<CryptohomeOp> op(
       CryptohomeOp::CreateMigrateAttempt(&state_, resolver_.get(), true, ""));
-  RunTest(op.get(), true, kCryptohomeMountErrorNone);
+  RunTest(op.get(), true, cryptohome::MOUNT_ERROR_NONE);
 }
 
 TEST_F(CryptohomeOpTest, MigrateSuccessPassNew) {
   ExpectMigrate(false, "");
   scoped_refptr<CryptohomeOp> op(
       CryptohomeOp::CreateMigrateAttempt(&state_, resolver_.get(), false, ""));
-  RunTest(op.get(), true, kCryptohomeMountErrorNone);
+  RunTest(op.get(), true, cryptohome::MOUNT_ERROR_NONE);
 }
 
 TEST_F(CryptohomeOpTest, MigrateKeyFailure) {
   ExpectMigrate(true, "");
   scoped_refptr<CryptohomeOp> op(
       CryptohomeOp::CreateMigrateAttempt(&state_, resolver_.get(), true, ""));
-  RunTest(op.get(), false, kCryptohomeMountErrorKeyFailure);
+  RunTest(op.get(), false, cryptohome::MOUNT_ERROR_KEY_FAILURE);
 }
 
 TEST_F(CryptohomeOpTest, RemoveSuccess) {
   ExpectRemove();
   scoped_refptr<CryptohomeOp> op(
       CryptohomeOp::CreateRemoveAttempt(&state_, resolver_.get()));
-  RunTest(op.get(), true, kCryptohomeMountErrorNone);
+  RunTest(op.get(), true, cryptohome::MOUNT_ERROR_NONE);
 }
 
 TEST_F(CryptohomeOpTest, RemoveFailure) {
   ExpectRemove();
   scoped_refptr<CryptohomeOp> op(
       CryptohomeOp::CreateRemoveAttempt(&state_, resolver_.get()));
-  RunTest(op.get(), false, kCryptohomeMountErrorKeyFailure);
+  RunTest(op.get(), false, cryptohome::MOUNT_ERROR_KEY_FAILURE);
 }
 
 TEST_F(CryptohomeOpTest, CheckKeySuccess) {
   ExpectCheckKey();
   scoped_refptr<CryptohomeOp> op(
       CryptohomeOp::CreateCheckKeyAttempt(&state_, resolver_.get()));
-  RunTest(op.get(), true, kCryptohomeMountErrorNone);
+  RunTest(op.get(), true, cryptohome::MOUNT_ERROR_NONE);
 }
 
 TEST_F(CryptohomeOpTest, CheckKeyFailure) {
   ExpectCheckKey();
   scoped_refptr<CryptohomeOp> op(
       CryptohomeOp::CreateCheckKeyAttempt(&state_, resolver_.get()));
-  RunTest(op.get(), false, kCryptohomeMountErrorKeyFailure);
+  RunTest(op.get(), false, cryptohome::MOUNT_ERROR_KEY_FAILURE);
 }
 
 }  // namespace chromeos

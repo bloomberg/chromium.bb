@@ -8,10 +8,6 @@
 
 #include <string>
 
-#include "base/memory/singleton.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "third_party/cros/chromeos_cryptohome.h"
-
 namespace chromeos {
 
 // This interface defines the interaction with the ChromeOS cryptohome library
@@ -28,13 +24,11 @@ class CryptohomeLibrary {
   CryptohomeLibrary();
   virtual ~CryptohomeLibrary();
 
-  virtual void Init() = 0;
-
   // Asks cryptohomed to asynchronously try to find the cryptohome for
   // |user_email| and then use |passhash| to unlock the key.
   // Returns true if the attempt is successfully initiated.
-  // d->OnComplete() will be called with status info on completion.
-  virtual bool AsyncCheckKey(const std::string& user_email,
+  // callback->OnComplete() will be called with status info on completion.
+  virtual void AsyncCheckKey(const std::string& user_email,
                              const std::string& passhash,
                              Delegate* callback) = 0;
 
@@ -42,8 +36,8 @@ class CryptohomeLibrary {
   // |user_email| and then change from using |old_hash| to lock the
   // key to using |new_hash|.
   // Returns true if the attempt is successfully initiated.
-  // d->OnComplete() will be called with status info on completion.
-  virtual bool AsyncMigrateKey(const std::string& user_email,
+  // callback->OnComplete() will be called with status info on completion.
+  virtual void AsyncMigrateKey(const std::string& user_email,
                                const std::string& old_hash,
                                const std::string& new_hash,
                                Delegate* callback) = 0;
@@ -53,23 +47,24 @@ class CryptohomeLibrary {
   // |create_if_missing| controls whether or not we ask cryptohomed to
   // create a new home dir if one does not yet exist for |user_email|.
   // Returns true if the attempt is successfully initiated.
-  // d->OnComplete() will be called with status info on completion.
+  // callback->OnComplete() will be called with status info on completion.
   // If |create_if_missing| is false, and no cryptohome exists for |user_email|,
-  // we'll get d->OnComplete(false, kCryptohomeMountErrorUserDoesNotExist).
+  // we'll get
+  // callback->OnComplete(false, kCryptohomeMountErrorUserDoesNotExist).
   // Otherwise, we expect the normal range of return codes.
-  virtual bool AsyncMount(const std::string& user_email,
+  virtual void AsyncMount(const std::string& user_email,
                           const std::string& passhash,
                           const bool create_if_missing,
                           Delegate* callback) = 0;
 
-  // Asks cryptohomed to asynchronously to mount a tmpfs for BWSI mode.
+  // Asks cryptohomed to asynchronously to mount a tmpfs for guest mode.
   // Returns true if the attempt is successfully initiated.
-  // d->OnComplete() will be called with status info on completion.
-  virtual bool AsyncMountForBwsi(Delegate* callback) = 0;
+  // callback->OnComplete() will be called with status info on completion.
+  virtual void AsyncMountGuest(Delegate* callback) = 0;
 
   // Asks cryptohomed to asynchronously try to find the cryptohome for
   // |user_email| and then nuke it.
-  virtual bool AsyncRemove(const std::string& user_email,
+  virtual void AsyncRemove(const std::string& user_email,
                            Delegate* callback) = 0;
 
   // Asks cryptohomed if a drive is currently mounted.
