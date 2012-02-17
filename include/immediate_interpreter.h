@@ -62,6 +62,7 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   FRIEND_TEST(ImmediateInterpreterTest, PalmTest);
   FRIEND_TEST(ImmediateInterpreterTest, PalmAtEdgeTest);
   FRIEND_TEST(ImmediateInterpreterTest, GetGesturingFingersTest);
+  FRIEND_TEST(ImmediateInterpreterTest, ScrollThenFalseTapTest);
   FRIEND_TEST(ImmediateInterpreterTest, TapToClickStateMachineTest);
   FRIEND_TEST(ImmediateInterpreterTest, TapToClickEnableTest);
   FRIEND_TEST(ImmediateInterpreterTest, TapToClickKeyboardTest);
@@ -274,6 +275,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
 
   TapRecord tap_record_;
 
+  // Time when the last motion (scroll, movement) occurred
+  stime_t last_movement_timestamp_;
+
   // If we are currently pointing, scrolling, etc.
   GestureType current_gesture_type_;
 
@@ -352,6 +356,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // We wouldn't want a single bad future value to stop all tap-to-click, so
   // we sanity check.
   DoubleProperty keyboard_palm_prevent_timeout_;
+  // Motion (pointer movement, scroll) must halt for this length of time [s]
+  // before a tap can generate a click.
+  DoubleProperty motion_tap_prevent_timeout_;
 };
 
 }  // namespace gestures

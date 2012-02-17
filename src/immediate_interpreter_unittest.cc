@@ -213,6 +213,72 @@ TEST(ImmediateInterpreterTest, FatFingerScrollUpTest) {
   ScrollUpTest(125, 185);
 }
 
+// Tests that a tap immediately after a scroll doesn't generate a click.
+// Such a tap would be unrealistic to come from a human.
+TEST(ImmediateInterpreterTest, ScrollThenFalseTapTest) {
+  ImmediateInterpreter ii(NULL);
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    1000,  // right edge
+    1000,  // bottom edge
+    20,  // pixels/TP width
+    20,  // pixels/TP height
+    96,  // x screen DPI
+    96,  // y screen DPI
+    2,  // max fingers
+    5,  // max touch
+    0,  // tripletap
+    0,  // semi-mt
+    1  // is button pad
+  };
+
+  FingerState finger_states[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
+    {0, 0, 0, 0, 20, 0, 400, 900, 1},
+    {0, 0, 0, 0, 20, 0, 405, 900, 2},
+
+    {0, 0, 0, 0, 20, 0, 400, 800, 1},
+    {0, 0, 0, 0, 20, 0, 405, 800, 2},
+
+    {0, 0, 0, 0, 20, 0, 400, 700, 1},
+    {0, 0, 0, 0, 20, 0, 405, 700, 2},
+
+    {0, 0, 0, 0, 20, 0, 400, 600, 3},
+  };
+  HardwareState hardware_states[] = {
+    // time, buttons, finger count, touch count, finger states pointer
+    { 0.200000, 0, 2, 2, &finger_states[0] },
+    { 0.250000, 0, 2, 2, &finger_states[2] },
+    { 0.300000, 0, 2, 2, &finger_states[4] },
+    { 0.310000, 0, 0, 0, NULL },
+    { 0.320000, 0, 1, 1, &finger_states[6] },
+    { 0.330000, 0, 0, 0, NULL }
+  };
+
+  ii.tap_enable_.val_ = 1;
+  ii.SetHardwareProperties(hwprops);
+
+  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[0], NULL));
+
+  Gesture* gs = ii.SyncInterpret(&hardware_states[1], NULL);
+  ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
+  EXPECT_EQ(kGestureTypeScroll, gs->type);
+  gs = ii.SyncInterpret(&hardware_states[2], NULL);
+  ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
+  EXPECT_EQ(kGestureTypeScroll, gs->type);
+  gs = ii.SyncInterpret(&hardware_states[3], NULL);
+  ASSERT_EQ(reinterpret_cast<Gesture*>(NULL), gs);
+  gs = ii.SyncInterpret(&hardware_states[4], NULL);
+  ASSERT_EQ(reinterpret_cast<Gesture*>(NULL), gs);
+  stime_t timeout = -1.0;
+  gs = ii.SyncInterpret(&hardware_states[5], &timeout);
+  ASSERT_EQ(reinterpret_cast<Gesture*>(NULL), gs);
+  // If it were a tap, timeout would be > 0, but this shouldn't be a tap,
+  // so timeout should be negative still.
+  EXPECT_LT(timeout, 0.0);
+}
+
 TEST(ImmediateInterpreterTest, ThumbRetainTest) {
   ImmediateInterpreter ii(NULL);
   HardwareProperties hwprops = {
@@ -1027,6 +1093,7 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
       ii.reset(new ImmediateInterpreter(NULL));
       ii->SetHardwareProperties(hwprops);
       ii->drag_lock_enable_.val_ = 1;
+      ii->motion_tap_prevent_timeout_.val_ = 0;
       ii->tap_drag_timeout_.val_ = 0.05;
       ii->tap_enable_.val_ = 1;
       ii->tap_move_dist_.val_ = 1.0;
@@ -1094,6 +1161,7 @@ TEST(ImmediateInterpreterTest, TapToClickKeyboardTest) {
   for (size_t test = 0; test != kMaxTests; test++) {
     ii.reset(new ImmediateInterpreter(NULL));
     ii->SetHardwareProperties(hwprops);
+    ii->motion_tap_prevent_timeout_.val_ = 0;
     ii->tap_enable_.val_ = 1;
 
     if (test == kWithKeyboard)
@@ -1203,6 +1271,7 @@ TEST(ImmediateInterpreterTest, TapToClickEnableTest) {
         ii.reset(new ImmediateInterpreter(NULL));
         ii->SetHardwareProperties(hwprops);
         ii->drag_lock_enable_.val_ = 1;
+        ii->motion_tap_prevent_timeout_.val_ = 0;
         ii->tap_drag_timeout_.val_ = 0.05;
         ii->tap_enable_.val_ = 1;
         ii->tap_move_dist_.val_ = 1.0;

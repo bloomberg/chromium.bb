@@ -156,6 +156,9 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       button_down_timeout_(0.0),
       finger_leave_time_(0.0),
       tap_to_click_state_(kTtcIdle),
+      tap_to_click_state_entered_(0.0),
+      last_movement_timestamp_(0.0),
+      current_gesture_type_(kGestureTypeNull),
       tap_enable_(prop_reg, "Tap Enable", false),
       tap_timeout_(prop_reg, "Tap Timeout", 0.2),
       inter_tap_timeout_(prop_reg, "Inter-Tap Timeout", 0.1),
@@ -197,7 +200,9 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
                                     0, this),
       keyboard_touched_(0.0),
       keyboard_palm_prevent_timeout_(prop_reg, "Keyboard Palm Prevent Timeout",
-                                     0.5) {
+                                     0.5),
+      motion_tap_prevent_timeout_(prop_reg, "Motion Tap Prevent Timeout",
+                                  0.05) {
   memset(&prev_state_, 0, sizeof(prev_state_));
 }
 
@@ -224,9 +229,8 @@ Gesture* ImmediateInterpreter::SyncInterpret(HardwareState* hwstate,
     FillStartPositions(*hwstate);
   }
 
-  if (hwstate->finger_cnt < prev_state_.finger_cnt) {
+  if (hwstate->finger_cnt < prev_state_.finger_cnt)
     finger_leave_time_ = hwstate->timestamp;
-  }
 
   UpdatePalmState(*hwstate);
   UpdateClickWiggle(*hwstate);
@@ -464,9 +468,8 @@ void ImmediateInterpreter::UpdateThumbState(const HardwareState& hwstate) {
     }
   }
   for (map<short, stime_t, kMaxFingers>::const_iterator it = thumb_.begin();
-       it != thumb_.end(); ++it) {
+       it != thumb_.end(); ++it)
     pointing_.erase((*it).first);
-  }
 }
 
 bool ImmediateInterpreter::KeyboardRecentlyUsed(stime_t now) const {
@@ -475,9 +478,8 @@ bool ImmediateInterpreter::KeyboardRecentlyUsed(stime_t now) const {
     return false;
   // Sanity check. If keyboard_touched_ is more than 10 seconds away from now,
   // ignore it.
-  if (fabsf(now - keyboard_touched_) > 10) {
+  if (fabsf(now - keyboard_touched_) > 10)
     return false;
-  }
 
   return keyboard_touched_ + keyboard_palm_prevent_timeout_.val_ > now;
 }
@@ -806,7 +808,9 @@ void ImmediateInterpreter::UpdateTapState(
 
   switch (tap_to_click_state_) {
     case kTtcIdle:
-      if (hwstate) {
+      if (hwstate &&
+          hwstate->timestamp - last_movement_timestamp_ >=
+          motion_tap_prevent_timeout_.val_) {
         tap_record_.Update(
             *hwstate, prev_state_, added_fingers, removed_fingers,
             dead_fingers);
@@ -1053,6 +1057,9 @@ void ImmediateInterpreter::UpdateButtons(const HardwareState& hwstate) {
 void ImmediateInterpreter::FillResultGesture(
     const HardwareState& hwstate,
     const set<short, kMaxGesturingFingers>& fingers) {
+  if (current_gesture_type_ == kGestureTypeMove ||
+      current_gesture_type_ == kGestureTypeScroll)
+    last_movement_timestamp_ = hwstate.timestamp;
   switch (current_gesture_type_) {
     case kGestureTypeMove: {
       if (fingers.empty())
