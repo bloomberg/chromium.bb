@@ -1194,18 +1194,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ForwardDisabledOnForward) {
   forward_nav_load_observer.Wait();
 }
 
-#if defined(OS_WIN)
-// see http://crbug.com/105306
-#define MAYBE_DisableMenuItemsWhenIncognitoIsForced \
-    DISABLED_DisableMenuItemsWhenIncognitoIsForced
-#else
-#define MAYBE_DisableMenuItemsWhenIncognitoIsForced \
-    DisableMenuItemsWhenIncognitoIsForced
-#endif
-
 // Makes sure certain commands are disabled when Incognito mode is forced.
-IN_PROC_BROWSER_TEST_F(BrowserTest,
-                       MAYBE_DisableMenuItemsWhenIncognitoIsForced) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, DisableMenuItemsWhenIncognitoIsForced) {
   CommandUpdater* command_updater = browser()->command_updater();
   // At the beginning, all commands are enabled.
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_NEW_WINDOW));
