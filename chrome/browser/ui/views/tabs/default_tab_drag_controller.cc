@@ -450,6 +450,18 @@ WebContents* DefaultTabDragController::OpenURLFromTab(
 
 void DefaultTabDragController::NavigationStateChanged(const WebContents* source,
                                                       unsigned changed_flags) {
+  if (attached_tabstrip_) {
+    for (size_t i = 0; i < drag_data_.size(); ++i) {
+      if (drag_data_[i].contents->web_contents() == source) {
+        // Pass the NavigationStateChanged call to the original delegate so
+        // that the title is updated. Do this only when we are attached as
+        // otherwise the Tab isn't in the TabStrip.
+        drag_data_[i].original_delegate->NavigationStateChanged(source,
+                                                                changed_flags);
+        break;
+      }
+    }
+  }
   if (view_.get())
     view_->Update();
 }
