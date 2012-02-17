@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "chrome/browser/autofill/autofill_country.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
+#include "chrome/browser/intents/default_web_intent_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
@@ -308,6 +309,53 @@ WebDataService::Handle WebDataService::GetAllWebIntentServices(
   RegisterRequest(request);
   ScheduleTask(FROM_HERE, Bind(&WebDataService::GetAllWebIntentServicesImpl,
                                this, request));
+  return request->GetHandle();
+}
+
+void WebDataService::AddDefaultWebIntentService(
+    const DefaultWebIntentService& service) {
+  GenericRequest<DefaultWebIntentService>* request =
+      new GenericRequest<DefaultWebIntentService>(
+          this, GetNextRequestHandle(), NULL, service);
+  RegisterRequest(request);
+  ScheduleTask(FROM_HERE,
+               Bind(&WebDataService::AddDefaultWebIntentServiceImpl, this,
+                    request));
+}
+
+void WebDataService::RemoveDefaultWebIntentService(
+    const DefaultWebIntentService& service) {
+  GenericRequest<DefaultWebIntentService>* request =
+      new GenericRequest<DefaultWebIntentService>(
+          this, GetNextRequestHandle(), NULL, service);
+  RegisterRequest(request);
+  ScheduleTask(FROM_HERE,
+               Bind(&WebDataService::RemoveDefaultWebIntentServiceImpl, this,
+                    request));
+}
+
+WebDataService::Handle WebDataService::GetDefaultWebIntentServicesForAction(
+    const string16& action,
+    WebDataServiceConsumer* consumer) {
+  DCHECK(consumer);
+  GenericRequest<string16>* request = new GenericRequest<string16>(
+          this, GetNextRequestHandle(), consumer, action);
+  RegisterRequest(request);
+  ScheduleTask(FROM_HERE,
+               Bind(&WebDataService::GetDefaultWebIntentServicesForActionImpl,
+                    this, request));
+  return request->GetHandle();
+}
+
+WebDataService::Handle WebDataService::GetAllDefaultWebIntentServices(
+    WebDataServiceConsumer* consumer) {
+  DCHECK(consumer);
+  GenericRequest<std::string>* request = new GenericRequest<std::string>(
+      this, GetNextRequestHandle(), consumer, std::string());
+  RegisterRequest(request);
+  ScheduleTask(FROM_HERE,
+               Bind(&WebDataService::GetAllDefaultWebIntentServicesImpl,
+                    this, request));
   return request->GetHandle();
 }
 
@@ -960,6 +1008,55 @@ void WebDataService::GetAllWebIntentServicesImpl(
     request->SetResult(
         new WDResult<std::vector<WebIntentServiceData> >(
             WEB_INTENTS_RESULT, result));
+  }
+  request->RequestComplete();
+}
+
+void WebDataService::AddDefaultWebIntentServiceImpl(
+    GenericRequest<DefaultWebIntentService>* request) {
+  InitializeDatabaseIfNecessary();
+  if (db_ && !request->IsCancelled(NULL)) {
+    const DefaultWebIntentService& service = request->arg();
+    db_->GetWebIntentsTable()->SetDefaultService(service);
+    ScheduleCommit();
+  }
+  request->RequestComplete();
+}
+
+void WebDataService::RemoveDefaultWebIntentServiceImpl(
+    GenericRequest<DefaultWebIntentService>* request) {
+  InitializeDatabaseIfNecessary();
+  if (db_ && !request->IsCancelled(NULL)) {
+    const DefaultWebIntentService& service = request->arg();
+    db_->GetWebIntentsTable()->RemoveDefaultService(service);
+    ScheduleCommit();
+  }
+  request->RequestComplete();
+}
+
+void WebDataService::GetDefaultWebIntentServicesForActionImpl(
+    GenericRequest<string16>* request) {
+  InitializeDatabaseIfNecessary();
+  if (db_ && !request->IsCancelled(NULL)) {
+    std::vector<DefaultWebIntentService> result;
+    db_->GetWebIntentsTable()->GetDefaultServices(
+        request->arg(), &result);
+    request->SetResult(
+        new WDResult<std::vector<DefaultWebIntentService> >(
+            WEB_INTENTS_DEFAULTS_RESULT, result));
+  }
+  request->RequestComplete();
+}
+
+void WebDataService::GetAllDefaultWebIntentServicesImpl(
+    GenericRequest<std::string>* request) {
+  InitializeDatabaseIfNecessary();
+  if (db_ && !request->IsCancelled(NULL)) {
+    std::vector<DefaultWebIntentService> result;
+    db_->GetWebIntentsTable()->GetAllDefaultServices(&result);
+    request->SetResult(
+        new WDResult<std::vector<DefaultWebIntentService> >(
+            WEB_INTENTS_DEFAULTS_RESULT, result));
   }
   request->RequestComplete();
 }

@@ -189,7 +189,8 @@ TEST_F(WebIntentsTableTest, DefaultServices) {
   DefaultWebIntentService default_service;
   default_service.action = test_action;
   default_service.type = mime_image;
-  default_service.url_pattern.Parse(test_url.spec());
+  ASSERT_EQ(URLPattern::PARSE_SUCCESS,
+            default_service.url_pattern.Parse(test_url.spec()));
   default_service.user_date = 1;
   default_service.suppression = 4;
   default_service.service_url = "service_url";
@@ -209,7 +210,7 @@ TEST_F(WebIntentsTableTest, DefaultServices) {
   EXPECT_EQ(test_action, defaults[0].action);
   EXPECT_EQ(mime_image, defaults[0].type);
   URLPattern test_pattern(URLPattern::SCHEME_HTTP, test_url.spec());
-  EXPECT_EQ(test_pattern, defaults[0].url_pattern);
+  EXPECT_EQ(test_pattern.GetAsString(), defaults[0].url_pattern.GetAsString());
   EXPECT_EQ(1, defaults[0].user_date);
   EXPECT_EQ(4, defaults[0].suppression);
   EXPECT_EQ("service_url", defaults[0].service_url);

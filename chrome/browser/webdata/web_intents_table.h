@@ -94,7 +94,7 @@ class WebIntentsTable : public WebDatabaseTable {
   bool SetDefaultService(const DefaultWebIntentService& default_service);
 
   // Removes a default |service| from table - must match the action, type,
-  // and url_prefix parameters exactly.
+  // and url_pattern parameters exactly.
   bool RemoveDefaultService(const DefaultWebIntentService& default_service);
 
  private:

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,7 @@ class AutofillChange;
 class AutofillProfile;
 class AutofillProfileSyncableService;
 class CreditCard;
+struct DefaultWebIntentService;
 class GURL;
 #if defined(OS_WIN)
 struct IE7PasswordInfo;
@@ -85,7 +86,8 @@ typedef enum {
   AUTOFILL_PROFILES_RESULT,    // WDResult<std::vector<AutofillProfile*>>
   AUTOFILL_CREDITCARD_RESULT,  // WDResult<CreditCard>
   AUTOFILL_CREDITCARDS_RESULT, // WDResult<std::vector<CreditCard*>>
-  WEB_INTENTS_RESULT           // WDResult<std::vector<string16>>
+  WEB_INTENTS_RESULT,          // WDResult<std::vector<WebIntentServiceData>>
+  WEB_INTENTS_DEFAULTS_RESULT, // WDResult<std::vector<DefaultWebIntentService>>
 } WDResultType;
 
 typedef std::vector<AutofillChange> AutofillChangeList;
@@ -390,6 +392,22 @@ class WebDataService
   // Get all web intent services registered. |consumer| must not be NULL.
   Handle GetAllWebIntentServices(WebDataServiceConsumer* consumer);
 
+  // Adds a default web intent service entry.
+  void AddDefaultWebIntentService(const DefaultWebIntentService& service);
+
+  // Adds a default web intent service entry.
+  void RemoveDefaultWebIntentService(const DefaultWebIntentService& service);
+
+  // Get a list of all web intent service defaults for the given |action|.
+  // |consumer| must not be null.
+  Handle GetDefaultWebIntentServicesForAction(const string16& action,
+                                              WebDataServiceConsumer* consumer);
+
+  // Get a list of all registered web intent service defaults.
+  // |consumer| must not be null.
+  Handle GetAllDefaultWebIntentServices(WebDataServiceConsumer* consumer);
+
+
   //////////////////////////////////////////////////////////////////////////////
   //
   // Token Service
@@ -642,6 +660,13 @@ class WebDataService
   void GetWebIntentServicesImpl(GenericRequest<string16>* request);
   void GetWebIntentServicesForURLImpl(GenericRequest<string16>* request);
   void GetAllWebIntentServicesImpl(GenericRequest<std::string>* request);
+  void AddDefaultWebIntentServiceImpl(
+      GenericRequest<DefaultWebIntentService>* request);
+  void RemoveDefaultWebIntentServiceImpl(
+      GenericRequest<DefaultWebIntentService>* request);
+  void GetDefaultWebIntentServicesForActionImpl(
+      GenericRequest<string16>* request);
+  void GetAllDefaultWebIntentServicesImpl(GenericRequest<std::string>* request);
 
   //////////////////////////////////////////////////////////////////////////////
   //
