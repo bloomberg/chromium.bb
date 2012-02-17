@@ -27,6 +27,12 @@ struct NaClDesc;
 struct NaClImcMsgHdr;
 struct nacl_abi_stat;
 
+int32_t NaClSysNotImplementedDecoder(struct NaClAppThread *natp);
+
+void NaClAddSyscall(int num, int32_t (*fn)(struct NaClAppThread *));
+
+int32_t NaClSysNull(struct NaClAppThread *natp);
+
 int32_t NaClSetBreak(struct NaClAppThread *natp,
                      uintptr_t            new_break);
 

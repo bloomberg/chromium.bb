@@ -39,7 +39,7 @@ TABLE_INITIALIZER = """\
 void NaClSyscallTableInit() {
   int i;
   for (i = 0; i < NACL_MAX_SYSCALLS; ++i) {
-     nacl_syscall[i].handler = &NotImplementedDecoder;
+    nacl_syscall[i].handler = &NaClSysNotImplementedDecoder;
   }
 
 %s

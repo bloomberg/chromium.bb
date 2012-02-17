@@ -56,28 +56,6 @@
 
 #include "native_client/src/trusted/service_runtime/linux/nacl_syscall_inl.h"
 
-struct NaClSyscallTableEntry nacl_syscall[NACL_MAX_SYSCALLS] = {{0}};
-
-
-
-static int32_t NotImplementedDecoder(struct NaClAppThread *natp) {
-  UNREFERENCED_PARAMETER(natp);
-  return -NACL_ABI_ENOSYS;
-}
-
-static void NaClAddSyscall(int num, int32_t (*fn)(struct NaClAppThread *)) {
-  if (nacl_syscall[num].handler != &NotImplementedDecoder) {
-    NaClLog(LOG_FATAL, "Duplicate syscall number %d\n", num);
-  }
-  nacl_syscall[num].handler = fn;
-}
-
-/* ====================================================================== */
-
-int32_t NaClSysNull(struct NaClAppThread *natp) {
-  UNREFERENCED_PARAMETER(natp);
-  return 0;
-}
 
 int32_t NaClSysMunmap(struct NaClAppThread  *natp,
                       void                  *start,

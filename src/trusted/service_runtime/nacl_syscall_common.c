@@ -36,11 +36,13 @@
 #include "native_client/src/trusted/desc/nacl_desc_semaphore.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
 
+#include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
-#include "native_client/src/trusted/service_runtime/nacl_thread_nice.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
+#include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
+#include "native_client/src/trusted/service_runtime/nacl_thread_nice.h"
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
@@ -71,6 +73,9 @@ static INLINE size_t  size_min(size_t a, size_t b) {
 
 static int const kKnownInvalidDescNumber = -1;
 
+struct NaClSyscallTableEntry nacl_syscall[NACL_MAX_SYSCALLS] = {{0}};
+
+
 void NaClSysCommonThreadSyscallEnter(struct NaClAppThread *natp) {
   UNREFERENCED_PARAMETER(natp);
 }
@@ -91,6 +96,23 @@ void NaClSysCommonThreadSyscallLeave(struct NaClAppThread *natp) {
       break;
   }
   NaClXMutexUnlock(&natp->mu);
+}
+
+int32_t NaClSysNotImplementedDecoder(struct NaClAppThread *natp) {
+  UNREFERENCED_PARAMETER(natp);
+  return -NACL_ABI_ENOSYS;
+}
+
+void NaClAddSyscall(int num, int32_t (*fn)(struct NaClAppThread *)) {
+  if (nacl_syscall[num].handler != &NaClSysNotImplementedDecoder) {
+    NaClLog(LOG_FATAL, "Duplicate syscall number %d\n", num);
+  }
+  nacl_syscall[num].handler = fn;
+}
+
+int32_t NaClSysNull(struct NaClAppThread *natp) {
+  UNREFERENCED_PARAMETER(natp);
+  return 0;
 }
 
 int32_t NaClSetBreak(struct NaClAppThread *natp,
