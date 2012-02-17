@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_adapter_client.h"
+#include "chrome/browser/chromeos/dbus/bluetooth_property.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -18,6 +19,34 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
+
+BluetoothDeviceClient::Properties::Properties(dbus::ObjectProxy* object_proxy,
+                                              PropertyChangedCallback callback)
+    : BluetoothPropertySet(object_proxy,
+                           bluetooth_device::kBluetoothDeviceInterface,
+                           callback) {
+  RegisterProperty(bluetooth_device::kAddressProperty, &address);
+  RegisterProperty(bluetooth_device::kNameProperty, &name);
+  RegisterProperty(bluetooth_device::kVendorProperty, &vendor);
+  RegisterProperty(bluetooth_device::kProductProperty, &product);
+  RegisterProperty(bluetooth_device::kVersionProperty, &version);
+  RegisterProperty(bluetooth_device::kIconProperty, &icon);
+  RegisterProperty(bluetooth_device::kClassProperty, &bluetooth_class);
+  RegisterProperty(bluetooth_device::kUUIDsProperty, &uuids);
+  RegisterProperty(bluetooth_device::kServicesProperty, &services);
+  RegisterProperty(bluetooth_device::kPairedProperty, &paired);
+  RegisterProperty(bluetooth_device::kConnectedProperty, &connected);
+  RegisterProperty(bluetooth_device::kTrustedProperty, &trusted);
+  RegisterProperty(bluetooth_device::kBlockedProperty, &blocked);
+  RegisterProperty(bluetooth_device::kAliasProperty, &alias);
+  RegisterProperty(bluetooth_device::kNodesProperty, &nodes);
+  RegisterProperty(bluetooth_device::kAdapterProperty, &adapter);
+  RegisterProperty(bluetooth_device::kLegacyPairingProperty, &legacy_pairing);
+}
+
+BluetoothDeviceClient::Properties::~Properties() {
+}
+
 
 // The BluetoothDeviceClient implementation used in production.
 class BluetoothDeviceClientImpl: public BluetoothDeviceClient,
@@ -34,6 +63,13 @@ class BluetoothDeviceClientImpl: public BluetoothDeviceClient,
   }
 
   virtual ~BluetoothDeviceClientImpl() {
+    // Clean up Properties structures
+    for (ObjectMap::iterator iter = object_map_.begin();
+         iter != object_map_.end(); ++iter) {
+      Object object = iter->second;
+      Properties* properties = object.second;
+      delete properties;
+    }
   }
 
   // BluetoothDeviceClient override.
@@ -52,7 +88,18 @@ class BluetoothDeviceClientImpl: public BluetoothDeviceClient,
     observers_.RemoveObserver(observer);
   }
 
+  // BluetoothDeviceClient override.
+  virtual Properties* GetProperties(const dbus::ObjectPath& object_path) {
+    return GetObject(object_path).second;
+  }
+
  private:
+  // We maintain a collection of dbus object proxies and properties structures
+  // for each device.
+  typedef std::pair<dbus::ObjectProxy*, Properties*> Object;
+  typedef std::map<const dbus::ObjectPath, Object> ObjectMap;
+  ObjectMap object_map_;
+
   // BluetoothAdapterClient::Observer override.
   virtual void DeviceCreated(const dbus::ObjectPath& adapter_path,
                              const dbus::ObjectPath& object_path) OVERRIDE {
@@ -63,34 +110,68 @@ class BluetoothDeviceClientImpl: public BluetoothDeviceClient,
   virtual void DeviceRemoved(const dbus::ObjectPath& adapter_path,
                              const dbus::ObjectPath& object_path) OVERRIDE {
     VLOG(1) << "DeviceRemoved: " << object_path.value();
-    RemoveObjectProxyForPath(object_path);
+    RemoveObject(object_path);
   }
 
-  // Ensures that we have a dbus object proxy for a device with dbus
-  // object path |object_path|, and if not, creates it stores it in
-  // our |proxy_map_| map.
-  dbus::ObjectProxy* GetObjectProxyForPath(
-      const dbus::ObjectPath& object_path) {
-    VLOG(1) << "GetObjectProxyForPath: " << object_path.value();
+  // Ensures that we have an object proxy and properties structure for
+  // a device with object path |object_path|, creating it if not and
+  // storing it in our |object_map_| map.
+  Object GetObject(const dbus::ObjectPath& object_path) {
+    VLOG(1) << "GetObject: " << object_path.value();
 
-    ProxyMap::iterator it = proxy_map_.find(object_path);
-    if (it != proxy_map_.end())
-      return it->second;
+    ObjectMap::iterator iter = object_map_.find(object_path);
+    if (iter != object_map_.end())
+      return iter->second;
 
+    // Create the object proxy.
     DCHECK(bus_);
-    dbus::ObjectProxy* device_proxy = bus_->GetObjectProxy(
+    dbus::ObjectProxy* object_proxy = bus_->GetObjectProxy(
         bluetooth_device::kBluetoothDeviceServiceName, object_path);
 
-    proxy_map_[object_path] = device_proxy;
+    // Create the properties structure.
+    Properties* properties = new Properties(
+        object_proxy,
+        base::Bind(&BluetoothDeviceClientImpl::PropertyChanged,
+                   weak_ptr_factory_.GetWeakPtr(), object_path));
 
-    return device_proxy;
+    properties->ConnectSignals();
+    properties->GetAll();
+
+    Object object = std::make_pair(object_proxy, properties);
+    object_map_[object_path] = object;
+    return object;
   }
 
-  // Removes the dbus object proxy for the device with dbus object path
-  // |object_path| from our |proxy_map_| map.
-  void RemoveObjectProxyForPath(const dbus::ObjectPath& object_path) {
-    VLOG(1) << "RemoveObjectProxyForPath: " << object_path.value();
-    proxy_map_.erase(object_path);
+  // Removes the dbus object proxy and properties for the device with
+  // dbus object path |object_path| from our |object_map_| map.
+  void RemoveObject(const dbus::ObjectPath& object_path) {
+    VLOG(1) << "RemoveObject: " << object_path.value();
+
+    ObjectMap::iterator iter = object_map_.find(object_path);
+    if (iter != object_map_.end()) {
+      // Clean up the Properties structure.
+      Object object = iter->second;
+      Properties* properties = object.second;
+      delete properties;
+
+      object_map_.erase(iter);
+    }
+  }
+
+  // Returns a pointer to the object proxy for |object_path|, creating
+  // it if necessary.
+  virtual dbus::ObjectProxy* GetObjectProxy(
+      const dbus::ObjectPath& object_path) {
+    return GetObject(object_path).first;
+  }
+
+  // Called by BluetoothPropertySet when a property value is changed,
+  // either by result of a signal or response to a GetAll() or Get()
+  // call. Informs observers.
+  void PropertyChanged(const dbus::ObjectPath& object_path,
+                       const std::string& property_name) {
+    FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
+                      PropertyChanged(object_path, property_name));
   }
 
   // Weak pointer factory for generating 'this' pointers that might live longer
@@ -98,10 +179,6 @@ class BluetoothDeviceClientImpl: public BluetoothDeviceClient,
   base::WeakPtrFactory<BluetoothDeviceClientImpl> weak_ptr_factory_;
 
   dbus::Bus* bus_;
-
-  // We maintain a collection of dbus object proxies, one for each device.
-  typedef std::map<const dbus::ObjectPath, dbus::ObjectProxy*> ProxyMap;
-  ProxyMap proxy_map_;
 
   // List of observers interested in event notifications from us.
   ObserverList<BluetoothDeviceClient::Observer> observers_;
@@ -121,6 +198,12 @@ class BluetoothDeviceClientStubImpl : public BluetoothDeviceClient {
   // BluetoothDeviceClient override.
   virtual void RemoveObserver(Observer* observer) OVERRIDE {
     VLOG(1) << "RemoveObserver";
+  }
+
+  // BluetoothDeviceClient override.
+  virtual Properties* GetProperties(const dbus::ObjectPath& object_path) {
+    VLOG(1) << "GetProperties: " << object_path.value();
+    return NULL;
   }
 };
 

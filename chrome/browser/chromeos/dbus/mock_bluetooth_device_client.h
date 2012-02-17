@@ -19,6 +19,7 @@ class MockBluetoothDeviceClient : public BluetoothDeviceClient {
 
   MOCK_METHOD1(AddObserver, void(Observer*));
   MOCK_METHOD1(RemoveObserver, void(Observer*));
+  MOCK_METHOD1(GetProperties, Properties*(const dbus::ObjectPath&));
 };
 
 }  // namespace chromeos
