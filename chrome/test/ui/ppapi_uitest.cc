@@ -754,7 +754,14 @@ TEST_PPAPI_IN_PROCESS(AudioConfig_InvalidConfigs)
 TEST_PPAPI_OUT_OF_PROCESS(AudioConfig_ValidConfigs)
 TEST_PPAPI_OUT_OF_PROCESS(AudioConfig_InvalidConfigs)
 
-TEST_PPAPI_IN_PROCESS(Audio_Creation)
+// PPAPITest.Audio_Creation fails on Linux try servers. http://crbug.com/114712
+#if defined(OS_LINUX)
+#define MAYBE_Audio_Creation DISABLED_Audio_Creation
+#else
+#define MAYBE_Audio_Creation Audio_Creation
+#endif
+
+TEST_PPAPI_IN_PROCESS(MAYBE_Audio_Creation)
 TEST_PPAPI_IN_PROCESS(Audio_DestroyNoStop)
 TEST_PPAPI_IN_PROCESS(Audio_Failures)
 TEST_PPAPI_OUT_OF_PROCESS(Audio_Creation)
