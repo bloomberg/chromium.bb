@@ -121,8 +121,8 @@ ProfileSyncServiceHarness::~ProfileSyncServiceHarness() {}
 // static
 ProfileSyncServiceHarness* ProfileSyncServiceHarness::CreateAndAttach(
     Profile* profile) {
-  if (ProfileSyncServiceFactory::GetInstance()->HasProfileSyncService(
-          profile)) {
+  ProfileSyncServiceFactory* f = ProfileSyncServiceFactory::GetInstance();
+  if (!f->HasProfileSyncService(profile)) {
     NOTREACHED() << "Profile has never signed into sync.";
     return NULL;
   }
