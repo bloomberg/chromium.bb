@@ -105,10 +105,9 @@ bool SocketDisconnectFunction::Prepare() {
 }
 
 void SocketDisconnectFunction::Work() {
-  int result = -1;
   Socket* socket = controller()->GetSocket(socket_id_);
   if (socket)
-    result = socket->Connect();
+    socket->Disconnect();
   else
     error_ = kSocketNotFoundError;
   result_.reset(Value::CreateNullValue());
