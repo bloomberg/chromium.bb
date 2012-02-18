@@ -56,6 +56,18 @@ UNFILED XP NVIDIA : conformance_textures_texture_mips = FAIL
 113731 WIN7 INTEL : conformance_more_functions_uniformMatrix = FAIL
 113731 WIN7 INTEL : conformance_more_functions_uniformMatrixBadArgs = FAIL
 
+UNFILED MAC INTEL : conformance_glsl_functions_glsl_function_asin = FAIL
+UNFILED MAC INTEL : conformance_glsl_functions_glsl_function_dot = FAIL
+UNFILED MAC INTEL : conformance_glsl_functions_glsl_function_faceforward = FAIL
+UNFILED MAC INTEL : conformance_glsl_functions_glsl_function_length = FAIL
+UNFILED MAC INTEL : conformance_glsl_functions_glsl_function_normalize = FAIL
+UNFILED MAC INTEL : conformance_glsl_functions_glsl_function_reflect = FAIL
+UNFILED MAC INTEL : conformance_glsl_functions_glsl_function_smoothstep_gentype = FAIL
+UNFILED MAC INTEL : conformance_glsl_variables_gl_pointcoord = FAIL
+UNFILED MAC INTEL : conformance_limits_gl_max_texture_dimensions = FAIL
+UNFILED MAC INTEL : conformance_rendering_line_loop_tri_fan = FAIL
+UNFILED MAC INTEL : conformance_textures_texture_size = FAIL
+
 UNFILED LINUX NVIDIA : conformance_uniforms_uniform_location = FAIL
 UNFILED LINUX NVIDIA : conformance_textures_texture_mips = FAIL
 
