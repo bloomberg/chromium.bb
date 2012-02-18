@@ -42,6 +42,10 @@ UNFILED MAC WIN LINUX : conformance_textures_origin_clean_conformance = FAIL
 UNFILED LINUX NVIDIA : conformance_uniforms_uniform_location = FAIL
 UNFILED LINUX NVIDIA : conformance_textures_texture_mips = FAIL
 
+UNFILED WIN : conformance_glsl_functions_glsl_function_atan = FAIL
+UNFILED WIN : conformance_glsl_functions_glsl_function_atan_xy = FAIL
+UNFILED WIN : conformance_glsl_misc_struct_nesting_under_maximum = FAIL
+
 113731 WIN7 INTEL : conformance_more_conformance_webGLArrays = FAIL
 113731 WIN7 INTEL : conformance_more_functions_copyTexImage2D = FAIL
 113731 WIN7 INTEL : conformance_more_functions_copyTexSubImage2D = FAIL
