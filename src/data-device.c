@@ -179,7 +179,7 @@ destroy_drag_focus(struct wl_listener *listener,
 }
 
 static void
-drag_grab_focus(struct wl_grab *grab, uint32_t time,
+drag_grab_focus(struct wl_pointer_grab *grab, uint32_t time,
 		struct wl_surface *surface, int32_t x, int32_t y)
 {
 	struct wl_input_device *device =
@@ -215,7 +215,7 @@ drag_grab_focus(struct wl_grab *grab, uint32_t time,
 }
 
 static void
-drag_grab_motion(struct wl_grab *grab,
+drag_grab_motion(struct wl_pointer_grab *grab,
 		 uint32_t time, int32_t x, int32_t y)
 {
 	struct wl_input_device *device =
@@ -227,7 +227,7 @@ drag_grab_motion(struct wl_grab *grab,
 }
 
 static void
-drag_grab_button(struct wl_grab *grab,
+drag_grab_button(struct wl_pointer_grab *grab,
 		 uint32_t time, int32_t button, int32_t state)
 {
 	struct wl_input_device *device =
@@ -239,7 +239,7 @@ drag_grab_button(struct wl_grab *grab,
 				       WL_DATA_DEVICE_DROP);
 
 	if (device->button_count == 0 && state == 0) {
-		wl_input_device_end_grab(device, time);
+		wl_input_device_end_pointer_grab(device, time);
 
 		if (device->drag_surface) {
 			struct wl_resource *surface_resource =
@@ -257,7 +257,7 @@ drag_grab_button(struct wl_grab *grab,
 	}
 }
 
-static const struct wl_grab_interface drag_grab_interface = {
+static const struct wl_pointer_grab_interface drag_grab_interface = {
 	drag_grab_focus,
 	drag_grab_motion,
 	drag_grab_button,
@@ -282,7 +282,7 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 	if (icon_resource)
 		device->drag_surface = icon_resource->data;
 
-	wl_input_device_start_grab(device, &device->drag_grab, time);
+	wl_input_device_start_pointer_grab(device, &device->drag_grab, time);
 }
 
 static void

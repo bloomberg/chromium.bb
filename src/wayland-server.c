@@ -435,7 +435,7 @@ lose_keyboard_focus(struct wl_listener *listener,
 }
 
 static void
-default_grab_focus(struct wl_grab *grab, uint32_t time,
+default_grab_focus(struct wl_pointer_grab *grab, uint32_t time,
 		   struct wl_surface *surface, int32_t x, int32_t y)
 {
 	struct wl_input_device *device = grab->input_device;
@@ -447,7 +447,7 @@ default_grab_focus(struct wl_grab *grab, uint32_t time,
 }
 
 static void
-default_grab_motion(struct wl_grab *grab,
+default_grab_motion(struct wl_pointer_grab *grab,
 		    uint32_t time, int32_t x, int32_t y)
 {
 	struct wl_resource *resource;
@@ -459,7 +459,7 @@ default_grab_motion(struct wl_grab *grab,
 }
 
 static void
-default_grab_button(struct wl_grab *grab,
+default_grab_button(struct wl_pointer_grab *grab,
 		    uint32_t time, int32_t button, int32_t state)
 {
 	struct wl_input_device *device = grab->input_device;
@@ -477,7 +477,8 @@ default_grab_button(struct wl_grab *grab,
 						  device->current_y);
 }
 
-static const struct wl_grab_interface default_grab_interface = {
+static const struct wl_pointer_grab_interface
+				default_pointer_grab_interface = {
 	default_grab_focus,
 	default_grab_motion,
 	default_grab_button
@@ -492,9 +493,9 @@ wl_input_device_init(struct wl_input_device *device)
 	device->pointer_focus_listener.func = lose_pointer_focus;
 	device->keyboard_focus_listener.func = lose_keyboard_focus;
 
-	device->default_grab.interface = &default_grab_interface;
-	device->default_grab.input_device = device;
-	device->grab = &device->default_grab;
+	device->default_pointer_grab.interface = &default_pointer_grab_interface;
+	device->default_pointer_grab.input_device = device;
+	device->pointer_grab = &device->default_pointer_grab;
 
 	wl_list_init(&device->drag_resource_list);
 	device->selection_data_source = NULL;
@@ -566,7 +567,7 @@ wl_input_device_set_pointer_focus(struct wl_input_device *device,
 	device->pointer_focus_resource = resource;
 	device->pointer_focus = surface;
 	device->pointer_focus_time = time;
-	device->default_grab.focus = surface;
+	device->default_pointer_grab.focus = surface;
 }
 
 WL_EXPORT void
@@ -603,28 +604,28 @@ wl_input_device_set_keyboard_focus(struct wl_input_device *device,
 }
 
 WL_EXPORT void
-wl_input_device_start_grab(struct wl_input_device *device,
-			   struct wl_grab *grab, uint32_t time)
+wl_input_device_start_pointer_grab(struct wl_input_device *device,
+			   struct wl_pointer_grab *grab, uint32_t time)
 {
-	const struct wl_grab_interface *interface;
+	const struct wl_pointer_grab_interface *interface;
 
-	device->grab = grab;
-	interface = device->grab->interface;
+	device->pointer_grab = grab;
+	interface = device->pointer_grab->interface;
 	grab->input_device = device;
 
 	if (device->current)
-		interface->focus(device->grab, time, device->current,
+		interface->focus(device->pointer_grab, time, device->current,
 				 device->current_x, device->current_y);
 }
 
 WL_EXPORT void
-wl_input_device_end_grab(struct wl_input_device *device, uint32_t time)
+wl_input_device_end_pointer_grab(struct wl_input_device *device, uint32_t time)
 {
-	const struct wl_grab_interface *interface;
+	const struct wl_pointer_grab_interface *interface;
 
-	device->grab = &device->default_grab;
-	interface = device->grab->interface;
-	interface->focus(device->grab, time, device->current,
+	device->pointer_grab = &device->default_pointer_grab;
+	interface = device->pointer_grab->interface;
+	interface->focus(device->pointer_grab, time, device->current,
 			 device->current_x, device->current_y);
 }
 

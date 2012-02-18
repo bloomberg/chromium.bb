@@ -147,18 +147,18 @@ struct wl_surface {
 	struct wl_resource resource;
 };
 
-struct wl_grab;
-struct wl_grab_interface {
-	void (*focus)(struct wl_grab *grab, uint32_t time,
+struct wl_pointer_grab;
+struct wl_pointer_grab_interface {
+	void (*focus)(struct wl_pointer_grab *grab, uint32_t time,
 		      struct wl_surface *surface, int32_t x, int32_t y);
-	void (*motion)(struct wl_grab *grab,
+	void (*motion)(struct wl_pointer_grab *grab,
 		       uint32_t time, int32_t x, int32_t y);
-	void (*button)(struct wl_grab *grab,
+	void (*button)(struct wl_pointer_grab *grab,
 		       uint32_t time, int32_t button, int32_t state);
 };
 
-struct wl_grab {
-	const struct wl_grab_interface *interface;
+struct wl_pointer_grab {
+	const struct wl_pointer_grab_interface *interface;
 	struct wl_input_device *input_device;
 	struct wl_surface *focus;
 	int32_t x, y;
@@ -200,8 +200,8 @@ struct wl_input_device {
 	struct wl_surface *current;
 	int32_t current_x, current_y;
 
-	struct wl_grab *grab;
-	struct wl_grab default_grab;
+	struct wl_pointer_grab *pointer_grab;
+	struct wl_pointer_grab default_pointer_grab;
 	uint32_t button_count;
 	uint32_t grab_time;
 	int32_t grab_x, grab_y;
@@ -213,7 +213,7 @@ struct wl_input_device {
 	struct wl_surface *drag_focus;
 	struct wl_resource *drag_focus_resource;
 	struct wl_listener drag_focus_listener;
-	struct wl_grab drag_grab;
+	struct wl_pointer_grab drag_grab;
 	struct wl_surface *drag_surface;
 
 	struct wl_data_source *selection_data_source;
@@ -283,10 +283,10 @@ int
 wl_data_device_manager_init(struct wl_display *display);
 
 void
-wl_input_device_end_grab(struct wl_input_device *device, uint32_t time);
+wl_input_device_start_pointer_grab(struct wl_input_device *device,
+			   struct wl_pointer_grab *grab, uint32_t time);
 void
-wl_input_device_start_grab(struct wl_input_device *device,
-			   struct wl_grab *grab, uint32_t time);
+wl_input_device_end_pointer_grab(struct wl_input_device *device, uint32_t time);
 
 void
 wl_input_device_set_selection(struct wl_input_device *device,
