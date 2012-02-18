@@ -1258,7 +1258,7 @@ llvm-install-plugin() {
 
   ${CC} -r -nostdlib \
          "${TC_BUILD_LLVM}"/tools/gold/Release+Asserts/gold-plugin.o \
-        -L "${TC_BUILD_LLVM}"/Release+Asserts/lib \
+        -L"${TC_BUILD_LLVM}"/Release+Asserts/lib \
         -Wl,-Bstatic \
         -lLTO \
         $("${LLVM_INSTALL_DIR}"/bin/llvm-config --libs ${components}) \
