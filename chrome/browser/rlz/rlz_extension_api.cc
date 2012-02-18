@@ -8,7 +8,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
-#include "rlz/win/lib/lib_values.h"
+#include "rlz/lib/lib_values.h"
 
 namespace {
 
