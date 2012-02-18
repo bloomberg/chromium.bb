@@ -99,6 +99,8 @@ void wl_display_remove_global(struct wl_display *display,
 struct wl_client *wl_client_create(struct wl_display *display, int fd);
 void wl_client_destroy(struct wl_client *client);
 void wl_client_flush(struct wl_client *client);
+void wl_client_get_credentials(struct wl_client *client,
+			       pid_t *pid, uid_t *uid, gid_t *gid);
 
 struct wl_resource *
 wl_client_add_object(struct wl_client *client,

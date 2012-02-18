@@ -63,6 +63,7 @@ struct wl_client {
 	uint32_t mask;
 	struct wl_list link;
 	struct wl_map objects;
+	struct ucred ucred;
 	int error;
 };
 
@@ -286,6 +287,7 @@ WL_EXPORT struct wl_client *
 wl_client_create(struct wl_display *display, int fd)
 {
 	struct wl_client *client;
+	socklen_t len;
 
 	client = malloc(sizeof *client);
 	if (client == NULL)
@@ -296,6 +298,14 @@ wl_client_create(struct wl_display *display, int fd)
 	client->source = wl_event_loop_add_fd(display->loop, fd,
 					      WL_EVENT_READABLE,
 					      wl_client_connection_data, client);
+
+	len = sizeof client->ucred;
+	if (getsockopt(fd, SOL_SOCKET, SO_PEERCRED,
+		       &client->ucred, &len) < 0) {
+		free(client);
+		return NULL;
+	}
+
 	client->connection =
 		wl_connection_create(fd, wl_client_connection_update, client);
 	if (client->connection == NULL) {
@@ -316,6 +326,18 @@ wl_client_create(struct wl_display *display, int fd)
 	wl_list_insert(display->client_list.prev, &client->link);
 
 	return client;
+}
+
+WL_EXPORT void
+wl_client_get_credentials(struct wl_client *client,
+			  pid_t *pid, uid_t *uid, gid_t *gid)
+{
+	if (pid)
+		*pid = client->ucred.pid;
+	if (uid)
+		*uid = client->ucred.uid;
+	if (gid)
+		*gid = client->ucred.gid;
 }
 
 WL_EXPORT void
