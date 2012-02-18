@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 Import('env')
+import os
 
 # This library is part of the pnacl x86-64 toolchain only, and is used
 # to match the pnacl ABI to the IRT ABI.  It was necessitated by problems
@@ -15,18 +16,17 @@ if not env.Bit('bitcode') or not env.Bit('target_x86_64'):
 nacl_gcc_env = env.PNaClGetNNaClEnv()
 
 # Generate a 'pnacl_shim.c'
+api_glob = env.Glob('${SOURCE_ROOT}/ppapi/api/*.idl')
+api_dev_glob = env.Glob('${SOURCE_ROOT}/ppapi/api/dev/*.idl')
+generators_glob = env.Glob('${SOURCE_ROOT}/ppapi/generators/*.py')
 generated_file_c = nacl_gcc_env.Command(
     'pnacl_shim.c',
-    (env.Glob('${SOURCE_ROOT}/ppapi/api/*.idl') +
-     env.Glob('${SOURCE_ROOT}/ppapi/api/dev/*.idl') +
-     env.Glob('${SOURCE_ROOT}/ppapi/generators/*.py')
-     ),
+    (api_glob + api_dev_glob + generators_glob),
     ('${PYTHON} ' +
      '${SOURCE_ROOT}/ppapi/generators/generator.py ' +
-     '--srcroot=${SOURCE_ROOT}/ppapi/api ' +
+     '--srcroot=' + os.path.join('${SOURCE_ROOT}', 'ppapi', 'api') + ' ' +
      '--wnone --pnacl --pnaclshim=${TARGETS} ' +
-     '${SOURCE_ROOT}/ppapi/api/*.idl ' +
-     '${SOURCE_ROOT}/ppapi/api/dev/*.idl '))
+     ' '.join([idl_file.abspath for idl_file in api_glob + api_dev_glob])))
 
 pnacl_irt_shim = nacl_gcc_env.ComponentLibrary('pnacl_irt_shim', [
     generated_file_c,
