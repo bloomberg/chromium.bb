@@ -152,6 +152,12 @@ void XmppSignalStrategy::OnConnectionStateChanged(
   if (state == buzz::XmppEngine::STATE_OPEN) {
     SetState(CONNECTED);
   } else if (state == buzz::XmppEngine::STATE_CLOSED) {
+    // Make sure we dump errors to the log.
+    int subcode;
+    buzz::XmppEngine::Error error = xmpp_client_->GetError(&subcode);
+    LOG(INFO) << "XMPP connection was closed: error=" << error
+              << ", subcode=" << subcode;
+
     // Client is destroyed by the TaskRunner after the client is
     // closed. Reset the pointer so we don't try to use it later.
     xmpp_client_ = NULL;
