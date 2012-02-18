@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -11,6 +11,7 @@ For ChromeDriver documentation, refer to:
 import os
 import socket
 import subprocess
+import sys
 
 import chromedriver_server
 
@@ -54,6 +55,9 @@ class ChromeDriverLauncher(object):
       chromedriver_args += ['--http-threads=%d' % self._http_threads]
     if self._enable_keep_alive is False:
       chromedriver_args += ['--disable-keep-alive']
+    if self._IsChromeOS():
+      os.putenv('DISPLAY', ':0.0')
+      os.putenv('XAUTHORITY', '/home/chronos/.Xauthority')
     proc = subprocess.Popen(chromedriver_args)
     if proc is None:
       raise RuntimeError('ChromeDriver cannot be started')
@@ -67,3 +71,13 @@ class ChromeDriverLauncher(object):
       except socket.error:
         return port
     raise RuntimeError('Cannot find open port to launch ChromeDriver')
+
+  def _IsChromeOS(self):
+    """Returns true iff we are on ChromeOS or ChromiumOS."""
+    lsb_release = '/etc/lsb-release'
+    if not sys.platform.startswith('linux') or not os.path.isfile(lsb_release):
+      return False
+    for line in open(lsb_release).readlines():
+      if line.startswith('CHROMEOS_RELEASE_NAME='):
+        return True
+    return False
