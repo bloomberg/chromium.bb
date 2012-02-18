@@ -53,8 +53,8 @@ const char kKeywordColumnsConcatenated[] =
     "created_by_policy || instant_url || last_modified || sync_guid";
 
 void BindURLToStatement(const TemplateURL& url, sql::Statement* s) {
-  s->BindString(0, UTF16ToUTF8(url.short_name()));
-  s->BindString(1, UTF16ToUTF8(url.keyword()));
+  s->BindString16(0, url.short_name());
+  s->BindString16(1, url.keyword());
   GURL favicon_url = url.GetFaviconURL();
   if (!favicon_url.is_valid()) {
     s->BindString(2, std::string());
@@ -413,9 +413,9 @@ bool KeywordTable::MigrateToVersion42AddFullDefaultSearchProviderBackup() {
                              keywords;
   std::string signature = protector::SignSetting(data_to_sign);
   if (signature.empty())
-    NOTREACHED() << "Signature is empty";
+    return false;
   if (!meta_table_->SetValue(kBackupSignatureKey, signature))
-    NOTREACHED() << "Failed to write signature.";
+    return false;
 
   return transaction.Commit();
 }
@@ -531,7 +531,7 @@ void KeywordTable::GetURLFromStatement(
   DCHECK(!tmp.empty());
   url->set_short_name(UTF8ToUTF16(tmp));
 
-  url->set_keyword(UTF8ToUTF16(s.ColumnString(2)));
+  url->set_keyword(s.ColumnString16(2));
 
   tmp = s.ColumnString(3);
   if (!tmp.empty())

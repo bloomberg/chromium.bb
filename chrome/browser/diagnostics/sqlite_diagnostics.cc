@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,7 +54,7 @@ class SqliteIntegrityTest : public DiagnosticTest {
         return true;
       }
       sql::Statement s(db.GetUniqueStatement("PRAGMA integrity_check;"));
-      if (!s) {
+      if (!s.is_valid()) {
         int error = db.GetErrorCode();
         if (SQLITE_BUSY == error) {
           RecordFailure(ASCIIToUTF16("DB locked by another process"));

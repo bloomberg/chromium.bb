@@ -506,8 +506,7 @@ bool SQLitePersistentCookieStore::Backend::InitializeDatabase() {
   sql::Statement smt(db_->GetUniqueStatement(
     "SELECT DISTINCT host_key FROM cookies"));
 
-  if (!smt) {
-    NOTREACHED() << "select statement prep failed";
+  if (!smt.is_valid()) {
     db_.reset();
     return false;
   }
@@ -590,7 +589,6 @@ bool SQLitePersistentCookieStore::Backend::LoadCookiesForDomains(
       "FROM cookies WHERE host_key = ? AND persistent = 1"));
   }
   if (!smt.is_valid()) {
-    NOTREACHED() << "select statement prep failed";
     smt.Clear();  // Disconnect smt_ref from db_.
     db_.reset();
     return false;
@@ -793,30 +791,23 @@ void SQLitePersistentCookieStore::Backend::Commit() {
       "expires_utc, secure, httponly, last_access_utc, has_expires, "
       "persistent) "
       "VALUES (?,?,?,?,?,?,?,?,?,?,?)"));
-  if (!add_smt) {
-    NOTREACHED();
+  if (!add_smt.is_valid())
     return;
-  }
 
   sql::Statement update_access_smt(db_->GetCachedStatement(SQL_FROM_HERE,
       "UPDATE cookies SET last_access_utc=? WHERE creation_utc=?"));
-  if (!update_access_smt) {
-    NOTREACHED();
+  if (!update_access_smt.is_valid())
     return;
-  }
 
   sql::Statement del_smt(db_->GetCachedStatement(SQL_FROM_HERE,
                          "DELETE FROM cookies WHERE creation_utc=?"));
-  if (!del_smt) {
-    NOTREACHED();
+  if (!del_smt.is_valid())
     return;
-  }
 
   sql::Transaction transaction(db_.get());
-  if (!transaction.Begin()) {
-    NOTREACHED();
+  if (!transaction.Begin())
     return;
-  }
+
   for (PendingOperationsList::iterator it = ops.begin();
        it != ops.end(); ++it) {
     // Free the cookies as we commit them to the database.

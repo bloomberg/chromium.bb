@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -240,7 +240,7 @@ bool NSSDecryptor::ReadAndParseSignons(const FilePath& sqlite_file,
 
   const char* query = "SELECT hostname FROM moz_disabledHosts";
   sql::Statement s(db.GetUniqueStatement(query));
-  if (!s)
+  if (!s.is_valid())
     return false;
 
   GURL::Replacements rep;
@@ -262,7 +262,7 @@ bool NSSDecryptor::ReadAndParseSignons(const FilePath& sqlite_file,
                        "encryptedPassword FROM moz_logins";
 
   sql::Statement s2(db.GetUniqueStatement(query2));
-  if (!s2)
+  if (!s2.is_valid())
     return false;
 
   while (s2.Step()) {

@@ -142,8 +142,6 @@ void SafariImporter::ImportFaviconURLs(sql::Connection* db,
                                        FaviconMap* favicon_map) {
   const char* query = "SELECT iconID, url FROM PageURL;";
   sql::Statement s(db->GetUniqueStatement(query));
-  if (!s)
-    return;
 
   while (s.Step() && !cancelled()) {
     int64 icon_id = s.ColumnInt64(0);
@@ -161,8 +159,6 @@ void SafariImporter::LoadFaviconData(
                       "ON i.iconID = d.iconID "
                       "WHERE i.iconID = ?;";
   sql::Statement s(db->GetUniqueStatement(query));
-  if (!s)
-    return;
 
   for (FaviconMap::const_iterator i = favicon_map.begin();
        i != favicon_map.end(); ++i) {

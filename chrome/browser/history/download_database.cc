@@ -59,10 +59,10 @@ FilePath ColumnFilePath(sql::Statement& statement, int col) {
 
 // See above.
 void BindFilePath(sql::Statement& statement, const FilePath& path, int col) {
-  statement.BindString(col, UTF16ToUTF8(path.value()));
+  statement.BindString16(col, path.value());
 }
 FilePath ColumnFilePath(sql::Statement& statement, int col) {
-  return FilePath(UTF8ToUTF16(statement.ColumnString(col)));
+  return FilePath(statement.ColumnString16(col));
 }
 
 #endif
@@ -225,9 +225,11 @@ int64 DownloadDatabase::CreateDownload(
 
 void DownloadDatabase::RemoveDownload(DownloadID db_handle) {
   CheckThread();
+
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM downloads WHERE id=?"));
   statement.BindInt64(0, db_handle);
+
   statement.Run();
 }
 

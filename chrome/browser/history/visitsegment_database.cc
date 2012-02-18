@@ -296,7 +296,7 @@ void VisitSegmentDatabase::QuerySegmentUsage(
     statement2.BindInt64(0, pud->GetID());
     if (statement2.Step()) {
       pud->SetURL(GURL(statement2.ColumnString(0)));
-      pud->SetTitle(UTF8ToUTF16(statement2.ColumnString(1)));
+      pud->SetTitle(statement2.ColumnString16(1));
     }
     statement2.Reset();
   }

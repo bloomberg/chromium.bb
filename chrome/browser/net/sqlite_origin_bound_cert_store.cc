@@ -176,8 +176,7 @@ bool SQLiteOriginBoundCertStore::Backend::Load(
   sql::Statement smt(db_->GetUniqueStatement(
       "SELECT origin, private_key, cert, cert_type, expiration_time, "
       "creation_time FROM origin_bound_certs"));
-  if (!smt) {
-    NOTREACHED() << "select statement prep failed";
+  if (!smt.is_valid()) {
     db_.reset();
     return false;
   }
@@ -263,11 +262,14 @@ bool SQLiteOriginBoundCertStore::Backend::EnsureDatabaseVersion() {
         "UPDATE origin_bound_certs SET expiration_time = ? WHERE origin = ?"));
     sql::Statement update_creation_smt(db_->GetUniqueStatement(
         "UPDATE origin_bound_certs SET creation_time = ? WHERE origin = ?"));
-    if (!smt || !update_expires_smt || !update_creation_smt) {
+    if (!smt.is_valid() ||
+        !update_expires_smt.is_valid() ||
+        !update_creation_smt.is_valid()) {
       LOG(WARNING) << "Unable to update origin bound cert database to "
                    << "version 4.";
       return false;
     }
+
     while (smt.Step()) {
       std::string origin = smt.ColumnString(0);
       std::string cert_from_db;
@@ -382,23 +384,18 @@ void SQLiteOriginBoundCertStore::Backend::Commit() {
   sql::Statement add_smt(db_->GetCachedStatement(SQL_FROM_HERE,
       "INSERT INTO origin_bound_certs (origin, private_key, cert, cert_type, "
       "expiration_time, creation_time) VALUES (?,?,?,?,?,?)"));
-  if (!add_smt) {
-    NOTREACHED();
+  if (!add_smt.is_valid())
     return;
-  }
 
   sql::Statement del_smt(db_->GetCachedStatement(SQL_FROM_HERE,
                              "DELETE FROM origin_bound_certs WHERE origin=?"));
-  if (!del_smt) {
-    NOTREACHED();
+  if (!del_smt.is_valid())
     return;
-  }
 
   sql::Transaction transaction(db_.get());
-  if (!transaction.Begin()) {
-    NOTREACHED();
+  if (!transaction.Begin())
     return;
-  }
+
   for (PendingOperationsList::iterator it = ops.begin();
        it != ops.end(); ++it) {
     // Free the certs as we commit them to the database.

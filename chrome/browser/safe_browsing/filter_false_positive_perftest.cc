@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -133,9 +133,6 @@ bool ReadDatabase(const FilePath& path, std::vector<SBPrefix>* prefixes) {
   // Get the number of items in the add_prefix table.
   const char* query = "SELECT COUNT(*) FROM add_prefix";
   sql::Statement count_statement(db.GetCachedStatement(SQL_FROM_HERE, query));
-  if (!count_statement)
-    return false;
-
   if (!count_statement.Step())
     return false;
 
@@ -145,7 +142,7 @@ bool ReadDatabase(const FilePath& path, std::vector<SBPrefix>* prefixes) {
   prefixes->reserve(count);
   query = "SELECT prefix FROM add_prefix";
   sql::Statement prefix_statement(db.GetCachedStatement(SQL_FROM_HERE, query));
-  if (!prefix_statement)
+  if (!prefix_statement.is_valid())
     return false;
 
   while (prefix_statement.Step())

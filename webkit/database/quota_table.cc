@@ -25,7 +25,6 @@ int64 QuotaTable::GetOriginQuota(const string16& origin_identifier) {
   sql::Statement statement(db_->GetCachedStatement(
       SQL_FROM_HERE, "SELECT quota FROM Quota WHERE origin = ?"));
   statement.BindString16(0, origin_identifier);
-
   if (statement.Step()) {
     return statement.ColumnInt64(0);
   }
@@ -42,7 +41,6 @@ bool QuotaTable::SetOriginQuota(const string16& origin_identifier,
       SQL_FROM_HERE, "REPLACE INTO Quota VALUES (?, ?)"));
   replace_statement.BindString16(0, origin_identifier);
   replace_statement.BindInt64(1, quota);
-
   return replace_statement.Run();
 }
 

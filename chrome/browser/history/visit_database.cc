@@ -106,6 +106,9 @@ void VisitDatabase::FillVisitRow(sql::Statement& statement, VisitRow* visit) {
 // static
 bool VisitDatabase::FillVisitVector(sql::Statement& statement,
                                     VisitVector* visits) {
+  if (!statement.is_valid())
+    return false;
+
   while (statement.Step()) {
     history::VisitRow visit;
     FillVisitRow(statement, &visit);

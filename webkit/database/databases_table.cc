@@ -80,6 +80,7 @@ bool DatabasesTable::InsertDatabaseDetails(const DatabaseDetails& details) {
   insert_statement.BindString16(1, details.database_name);
   insert_statement.BindString16(2, details.description);
   insert_statement.BindInt64(3, details.estimated_size);
+
   return insert_statement.Run();
 }
 
@@ -91,6 +92,7 @@ bool DatabasesTable::UpdateDatabaseDetails(const DatabaseDetails& details) {
   update_statement.BindInt64(1, details.estimated_size);
   update_statement.BindString16(2, details.origin_identifier);
   update_statement.BindString16(3, details.database_name);
+
   return (update_statement.Run() && db_->GetLastChangeCount());
 }
 
@@ -100,6 +102,7 @@ bool DatabasesTable::DeleteDatabaseDetails(const string16& origin_identifier,
       SQL_FROM_HERE, "DELETE FROM Databases WHERE origin = ? AND name = ?"));
   delete_statement.BindString16(0, origin_identifier);
   delete_statement.BindString16(1, database_name);
+
   return (delete_statement.Run() && db_->GetLastChangeCount());
 }
 
@@ -137,6 +140,7 @@ bool DatabasesTable::DeleteOrigin(const string16& origin_identifier) {
   sql::Statement delete_statement(db_->GetCachedStatement(
       SQL_FROM_HERE, "DELETE FROM Databases WHERE origin = ?"));
   delete_statement.BindString16(0, origin_identifier);
+
   return (delete_statement.Run() && db_->GetLastChangeCount());
 }
 

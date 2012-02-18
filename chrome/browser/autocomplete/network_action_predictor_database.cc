@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,7 +57,7 @@ void LogDatabaseStats(const FilePath& db_path, sql::Connection* db) {
   sql::Statement count_statement(db->GetUniqueStatement(
       base::StringPrintf("SELECT count(id) FROM %s",
                          kNetworkActionPredictorTableName).c_str()));
-  if (!count_statement || !count_statement.Step())
+  if (!count_statement.Step())
     return;
   UMA_HISTOGRAM_COUNTS("NetworkActionPredictor.DatabaseRowCount",
                        count_statement.ColumnInt(0));
@@ -117,8 +117,6 @@ void NetworkActionPredictorDatabase::GetRow(const Row::Id& id, Row* row) {
       base::StringPrintf(
           "SELECT * FROM %s WHERE id=?",
           kNetworkActionPredictorTableName).c_str()));
-  DCHECK(statement);
-
   statement.BindString(0, id);
 
   bool success = StepAndInitializeRow(&statement, row);
@@ -138,7 +136,6 @@ void NetworkActionPredictorDatabase::GetAllRows(
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       base::StringPrintf(
           "SELECT * FROM %s", kNetworkActionPredictorTableName).c_str()));
-  DCHECK(statement);
 
   Row row;
   while (StepAndInitializeRow(&statement, &row))
@@ -157,8 +154,6 @@ void NetworkActionPredictorDatabase::AddRow(
           "INSERT INTO %s "
           "(id, user_text, url, number_of_hits, number_of_misses) "
           "VALUES (?,?,?,?,?)", kNetworkActionPredictorTableName).c_str()));
-  DCHECK(statement);
-
   BindRowToStatement(row, &statement);
 
   bool success = statement.Run();
@@ -178,8 +173,6 @@ void NetworkActionPredictorDatabase::UpdateRow(
           "UPDATE %s "
           "SET id=?, user_text=?, url=?, number_of_hits=?, number_of_misses=? "
           "WHERE id=?1", kNetworkActionPredictorTableName).c_str()));
-  DCHECK(statement);
-
   BindRowToStatement(row, &statement);
 
   statement.Run();
@@ -205,7 +198,6 @@ void NetworkActionPredictorDatabase::DeleteRows(
   sql::Statement statement(db_.GetUniqueStatement(base::StringPrintf(
           "DELETE FROM %s WHERE id=?",
           kNetworkActionPredictorTableName).c_str()));
-  DCHECK(statement);
 
   db_.BeginTransaction();
   for (std::vector<Row::Id>::const_iterator it = id_list.begin();
@@ -226,7 +218,6 @@ void NetworkActionPredictorDatabase::DeleteAllRows() {
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       base::StringPrintf("DELETE FROM %s",
                          kNetworkActionPredictorTableName).c_str()));
-  DCHECK(statement);
 
   statement.Run();
 }

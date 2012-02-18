@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -138,10 +138,9 @@ void LoginDatabase::ReportMetrics() {
   sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
       "SELECT signon_realm, COUNT(username_value) FROM logins "
       "GROUP BY signon_realm"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
+
+  if (!s.is_valid())
     return;
-  }
 
   int total_accounts = 0;
   while (s.Step()) {
@@ -152,8 +151,6 @@ void LoginDatabase::ReportMetrics() {
   }
   UMA_HISTOGRAM_CUSTOM_COUNTS("PasswordManager.TotalAccounts",
                               total_accounts, 0, 32, 6);
-
-  return;
 }
 
 bool LoginDatabase::AddLogin(const PasswordForm& form) {
@@ -166,11 +163,6 @@ bool LoginDatabase::AddLogin(const PasswordForm& form) {
       " blacklisted_by_user, scheme) "
       "VALUES "
       "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
   s.BindString(COLUMN_ORIGIN_URL, form.origin.spec());
   s.BindString(COLUMN_ACTION_URL, form.action.spec());
   s.BindString16(COLUMN_USERNAME_ELEMENT, form.username_element);
@@ -186,11 +178,8 @@ bool LoginDatabase::AddLogin(const PasswordForm& form) {
   s.BindInt64(COLUMN_DATE_CREATED, form.date_created.ToTimeT());
   s.BindInt(COLUMN_BLACKLISTED_BY_USER, form.blacklisted_by_user);
   s.BindInt(COLUMN_SCHEME, form.scheme);
-  if (!s.Run()) {
-    NOTREACHED();
-    return false;
-  }
-  return true;
+
+  return s.Run();
 }
 
 bool LoginDatabase::UpdateLogin(const PasswordForm& form, int* items_changed) {
@@ -205,11 +194,6 @@ bool LoginDatabase::UpdateLogin(const PasswordForm& form, int* items_changed) {
       "username_value = ? AND "
       "password_element = ? AND "
       "signon_realm = ?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
   s.BindString(0, form.action.spec());
   std::string encrypted_password = EncryptedString(form.password_value);
   s.BindBlob(1, encrypted_password.data(),
@@ -222,13 +206,12 @@ bool LoginDatabase::UpdateLogin(const PasswordForm& form, int* items_changed) {
   s.BindString16(7, form.password_element);
   s.BindString(8, form.signon_realm);
 
-  if (!s.Run()) {
-    NOTREACHED();
+  if (!s.Run())
     return false;
-  }
-  if (items_changed) {
+
+  if (items_changed)
     *items_changed = db_.GetLastChangeCount();
-  }
+
   return true;
 }
 
@@ -242,11 +225,6 @@ bool LoginDatabase::RemoveLogin(const PasswordForm& form) {
       "password_element = ? AND "
       "submit_element = ? AND "
       "signon_realm = ? "));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
   s.BindString(0, form.origin.spec());
   s.BindString16(1, form.username_element);
   s.BindString16(2, form.username_value);
@@ -254,11 +232,7 @@ bool LoginDatabase::RemoveLogin(const PasswordForm& form) {
   s.BindString16(4, form.submit_element);
   s.BindString(5, form.signon_realm);
 
-  if (!s.Run()) {
-    NOTREACHED();
-    return false;
-  }
-  return true;
+  return s.Run();
 }
 
 bool LoginDatabase::RemoveLoginsCreatedBetween(const base::Time delete_begin,
@@ -266,10 +240,6 @@ bool LoginDatabase::RemoveLoginsCreatedBetween(const base::Time delete_begin,
   sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM logins WHERE "
       "date_created >= ? AND date_created < ?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
   s.BindInt64(0, delete_begin.ToTimeT());
   s.BindInt64(1, delete_end.is_null() ? std::numeric_limits<int64>::max()
                                       : delete_end.ToTimeT());
@@ -313,11 +283,6 @@ bool LoginDatabase::GetLogins(const PasswordForm& form,
       "submit_element, signon_realm, ssl_valid, preferred, "
       "date_created, blacklisted_by_user, scheme FROM logins "
       "WHERE signon_realm == ? "));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
   s.BindString(0, form.signon_realm);
 
   while (s.Step()) {
@@ -342,11 +307,6 @@ bool LoginDatabase::GetLoginsCreatedBetween(
       "date_created, blacklisted_by_user, scheme FROM logins "
       "WHERE date_created >= ? AND date_created < ?"
       "ORDER BY origin_url"));
-
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
   s.BindInt64(0, begin.ToTimeT());
   s.BindInt64(1, end.is_null() ? std::numeric_limits<int64>::max()
                                : end.ToTimeT());
@@ -382,11 +342,6 @@ bool LoginDatabase::GetAllLoginsWithBlacklistSetting(
       "date_created, blacklisted_by_user, scheme FROM logins "
       "WHERE blacklisted_by_user == ? "
       "ORDER BY origin_url"));
-
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
   s.BindInt(0, blacklisted ? 1 : 0);
 
   while (s.Step()) {
