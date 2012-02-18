@@ -12,19 +12,20 @@ package metrics;
 
 import "histogram_event.proto";
 import "omnibox_event.proto";
+import "profiler_event.proto";
 import "system_profile.proto";
 import "user_action_event.proto";
 
-// Next tag: 7
+// Next tag: 8
 message ChromeUserMetricsExtension {
   // The id of the browser installation that generated these events.
   // Technically, this id is unique to a top-level (one level above the
   // "Default" directory) Chrome user data directory [1], and so is shared among
   // all Chrome user profiles contained in this user data directory.
-  // A UserID of 0 is reserved for test data (monitoring and internal testing)
-  // and should normally be ignored in analysis of the data.
+  // An id of 0 is reserved for test data (monitoring and internal testing) and
+  // should normally be ignored in analysis of the data.
   // [1] http://www.chromium.org/user-experience/user-data-directory
-  optional fixed64 user_id = 1;
+  optional fixed64 client_id = 1;
 
   // The session id for this user.
   // Values such as tab ids are only meaningful within a particular session.
@@ -40,4 +41,5 @@ message ChromeUserMetricsExtension {
   repeated UserActionEventProto user_action_event = 4;
   repeated OmniboxEventProto omnibox_event = 5;
   repeated HistogramEventProto histogram_event = 6;
+  repeated ProfilerEventProto profiler_event = 7;
 }

@@ -11,7 +11,7 @@ option optimize_for = LITE_RUNTIME;
 
 package metrics;
 
-// Next tag: 9
+// Next tag: 10
 message SystemProfileProto {
   // The time when the client was compiled/linked, in seconds since the epoch.
   optional int64 build_timestamp = 1;
@@ -226,4 +226,19 @@ message SystemProfileProto {
     repeated PluginStability plugin_stability = 22;
   }
   optional Stability stability = 8;
+
+  // Description of a field trial or experiment that the user is currently
+  // enrolled in.
+  // All metrics reported in this upload can potentially be influenced by the
+  // field trial.
+  message FieldTrial {
+    // The name of the field trial, as a 32-bit identifier.
+    // Currently, the identifier is a hash of the field trial's name.
+    optional fixed32 name_id = 1;
+
+    // The user's group within the field trial, as a 32-bit identifier.
+    // Currently, the identifier is a hash of the group's name.
+    optional fixed32 group_id = 2;
+  }
+  repeated FieldTrial field_trial = 9;
 }
