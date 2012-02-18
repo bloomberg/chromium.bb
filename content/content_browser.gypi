@@ -741,17 +741,18 @@
         '../build/linux/system.gyp:x11',
         '../dbus/dbus.gyp:dbus',
       ],
+    }],
+    ['OS=="linux"', {
+      'dependencies': [
+        '../build/linux/system.gyp:udev',
+      ],
+      # Set LINUX_SANDBOX_PATH for Linux, including Chrome OS
       'conditions': [
         ['linux_sandbox_path != ""', {
           'defines': [
             'LINUX_SANDBOX_PATH="<(linux_sandbox_path)"',
           ],
         }],
-      ],
-    }],
-    ['OS=="linux"', {
-      'dependencies': [
-        '../build/linux/system.gyp:udev',
       ],
     }],
     ['OS=="linux" and toolkit_uses_gtk==0', {
