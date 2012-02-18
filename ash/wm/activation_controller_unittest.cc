@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -194,19 +194,30 @@ TEST_F(ActivationControllerTest, NotActiveInLostActive) {
   // Activate w1.
   ActivateWindow(w1.get());
   EXPECT_TRUE(IsActiveWindow(w1.get()));
-
+  EXPECT_EQ(1, ad1.activated_count());
   // Should not have gotten a OnLostActive yet.
   EXPECT_EQ(0, ad1.lost_active_count());
 
-  // ActivateWindow(NULL) should not change the active window.
+  // ActivateWindow(NULL) should deactivate the active window.
   ActivateWindow(NULL);
-  EXPECT_TRUE(IsActiveWindow(w1.get()));
+  EXPECT_FALSE(IsActiveWindow(w1.get()));
+  EXPECT_EQ(1, ad1.lost_active_count());
+  EXPECT_FALSE(ad1.window_was_active());
+
+  // Activate w1 again. w1 should have gotten OnActivated.
+  ActivateWindow(w1.get());
+  EXPECT_EQ(2, ad1.activated_count());
+  EXPECT_EQ(1, ad1.lost_active_count());
+
+  // Reset the delegate.
+  ad1.Clear();
 
   // Now activate another window.
   ActivateWindow(w2.get());
 
-  // Should have gotten OnLostActive and w1 should not have been active at that
-  // time.
+  // Should have gotten OnLostActive and w1 shoouldn't have been
+  // active window in OnLostActive.
+  EXPECT_EQ(0, ad1.activated_count());
   EXPECT_EQ(1, ad1.lost_active_count());
   EXPECT_FALSE(ad1.window_was_active());
 }

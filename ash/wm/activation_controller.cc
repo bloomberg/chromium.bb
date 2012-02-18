@@ -114,15 +114,13 @@ void ActivationController::ActivateWindow(aura::Window* window) {
     return;
 
   AutoReset<bool> in_activate_window(&updating_activation_, true);
-  if (!window)
-    return;
   // Nothing may actually have changed.
   aura::Window* old_active = GetActiveWindow();
   if (old_active == window)
     return;
   // The stacking client may impose rules on what window configurations can be
   // activated or deactivated.
-  if (!CanActivateWindow(window))
+  if (window && !CanActivateWindow(window))
     return;
   // If the screen is locked, just bring the window to top so that
   // it will be activated when the lock window is destroyed.
@@ -131,9 +129,10 @@ void ActivationController::ActivateWindow(aura::Window* window) {
     window->parent()->StackChildAtTop(window);
     return;
   }
-
-  if (!window->Contains(window->GetFocusManager()->GetFocusedWindow()))
+  if (window &&
+      !window->Contains(window->GetFocusManager()->GetFocusedWindow())) {
     window->GetFocusManager()->SetFocusedWindow(window);
+  }
   Shell::GetRootWindow()->SetProperty(aura::client::kRootWindowActiveWindowKey,
                                       window);
   // Invoke OnLostActive after we've changed the active window. That way if the
