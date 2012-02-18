@@ -13,6 +13,27 @@ JOBS="${JOBS:-4}"
 # Clobber build?  Overridden by bots with BUILDBOT_CLOBBER.
 NEED_CLOBBER="${NEED_CLOBBER:-0}"
 
+# Setup environment for Android build.
+# Called from bb_baseline_setup.
+# Moved to top of file so it is easier to find.
+function bb_setup_environment {
+  export ANDROID_SDK_ROOT=/usr/local/google/android-sdk-linux
+  export ANDROID_NDK_ROOT=/usr/local/google/android-ndk-r7
+}
+
+# Install the build deps by running
+# build/install-build-deps-android.sh.  This may update local tools.
+# $1: source root.
+function bb_install_build_deps {
+  echo "@@@BUILD_STEP install build deps android@@@"
+  local script="$1/build/install-build-deps-android.sh"
+  if [[ -f "$script" ]]; then
+    "$script"
+  else
+    echo "Cannot find $script; why?"
+  fi
+}
+
 # Function to force-green a bot.
 function bb_force_bot_green_and_exit {
   echo "@@@BUILD_STEP Bot forced green.@@@"
@@ -38,8 +59,7 @@ function bb_baseline_setup {
   fi
 
   echo "@@@BUILD_STEP Basic setup@@@"
-  export ANDROID_SDK_ROOT=/usr/local/google/android-sdk-linux
-  export ANDROID_NDK_ROOT=/usr/local/google/android-ndk-r7
+  bb_setup_environment
   for mandatory_directory in "${ANDROID_SDK_ROOT}" "${ANDROID_NDK_ROOT}" ; do
     if [[ ! -d "${mandatory_directory}" ]]; then
       echo "Directory ${mandatory_directory} does not exist."

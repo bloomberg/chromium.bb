@@ -13,6 +13,7 @@ ROOT=$(cd "$(dirname $0)"; pwd)
 . "${ROOT}"/buildbot_functions.sh
 
 bb_baseline_setup "${ROOT}"/../..
+bb_install_build_deps "${ROOT}"/../..
 bb_compile
 bb_compile_experimental
 bb_run_tests
