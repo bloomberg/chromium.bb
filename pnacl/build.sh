@@ -1256,13 +1256,12 @@ llvm-install-plugin() {
 
   # This pulls every LLVM dependency needed for gold-plugin.o and libLTO.
   local components="x86 arm linker analysis ipo bitwriter"
+  local libpath="${TC_BUILD_LLVM}"/Release+Asserts/lib
 
   ${CC} -r -nostdlib \
          "${TC_BUILD_LLVM}"/tools/gold/Release+Asserts/gold-plugin.o \
-        -L"${TC_BUILD_LLVM}"/Release+Asserts/lib \
-        -Wl,-Bstatic \
-        -lLTO \
-        $("${LLVM_INSTALL_DIR}"/bin/llvm-config --libs ${components}) \
+        "${libpath}"/libLTO.a \
+        $("${LLVM_INSTALL_DIR}"/bin/llvm-config --libfiles ${components}) \
         -o "${LLVM_GOLD_PLUGIN}"
 
   # Force re-link of ld, gold, ar, ranlib, nm
