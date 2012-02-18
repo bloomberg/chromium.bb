@@ -7,14 +7,39 @@
 
 Import('env')
 
-clock_irt_test_nexe = env.ComponentProgram('clock_irt_test',
-                                           'clock_irt_test.c',
-                                           EXTRA_LIBS=['${NONIRT_LIBS}'],
-                                           )
+time_check = env.File('${SCONSTRUCT_DIR}/tools/time_check.py')
+
+if env.Bit('tests_use_irt'):
+  clock_irt_test_nexe = env.ComponentProgram('clock_irt_test',
+                                             'clock_irt_test.c',
+                                             EXTRA_LIBS=['${NONIRT_LIBS}'],
+                                             )
+
+  node = env.CommandSelLdrTestNacl(
+      'clock_irt_test.out',
+      clock_irt_test_nexe,
+      wrapper_program_prefix = [
+        '${PYTHON}', time_check, '-S',
+        '-r',
+        '"Realtime\sclock\svalue[^\d]*(\d+\.\d*|\d*\.\d+)"',
+        '--'])
+
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_clock_irt_test')
+
+if env.Bit('nacl_glibc'):
+  env.Append(LINKFLAGS=['-lrt'])
+
+clock_get_test_nexe = env.ComponentProgram('clock_get_test',
+                                           'clock_get_test.c',
+                                           EXTRA_LIBS=['${NONIRT_LIBS}'])
 
 node = env.CommandSelLdrTestNacl(
-    'clock_irt_test.out',
-    clock_irt_test_nexe,
-    )
+    'clock_get_test.out',
+    clock_get_test_nexe,
+    wrapper_program_prefix = [
+      '${PYTHON}', time_check, '-S',
+      '-r',
+      '"Realtime\sclock\svalue[^\d]*(\d+\.\d*|\d*\.\d+)"',
+      '--'])
 
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_clock_irt_test')
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_clock_get_test')

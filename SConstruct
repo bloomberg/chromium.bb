@@ -3185,7 +3185,6 @@ nacl_env.Append(
 # These are tests that are worthwhile to run in IRT variant only.
 irt_only_tests = [
     #### ALPHABETICALLY SORTED ####
-    'tests/clock/nacl.scons',
     'tests/irt/nacl.scons',
     'tests/random/nacl.scons',
     ]
@@ -3203,6 +3202,7 @@ irt_variant_tests = [
     'tests/bundle_size/nacl.scons',
     'tests/callingconv/nacl.scons',
     'tests/callingconv_case_by_case/nacl.scons',
+    'tests/clock/nacl.scons',
     'tests/computed_gotos/nacl.scons',
     'tests/data_not_executable/nacl.scons',
     'tests/debug_stub/nacl.scons',
