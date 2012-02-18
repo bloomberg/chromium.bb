@@ -198,7 +198,8 @@ void NTPLoginHandler::UpdateLogin() {
       // title bar and the full name can be ambiguous.
       if (cache.GetNumberOfProfiles() == 1) {
         string16 name = cache.GetGAIANameOfProfileAtIndex(profile_index);
-        header = CreateSpanWithClass(name, "profile-name");
+        if (!name.empty())
+          header = CreateSpanWithClass(name, "profile-name");
         const gfx::Image* image =
             cache.GetGAIAPictureOfProfileAtIndex(profile_index);
         if (image)
