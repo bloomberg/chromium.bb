@@ -6,7 +6,10 @@
 PYTHON="${PYTHON:-notset}"
 
 if test "${PYTHON}" = "notset" ; then
-  for pypath in `which python2.6 python2.7 python2.5 python` \
+  for pypath in python2.6 \
+                python2.7 \
+                python2.5 \
+                python \
                 /usr/bin/python2.6 \
                 /usr/bin/python2.7 \
                 /usr/bin/python2.5 \
