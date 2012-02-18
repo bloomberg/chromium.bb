@@ -484,6 +484,24 @@ static const struct wl_pointer_grab_interface
 	default_grab_button
 };
 
+static void
+default_grab_key(struct wl_keyboard_grab *grab,
+		    uint32_t time, uint32_t key, int32_t state)
+{
+	struct wl_input_device *device = grab->input_device;
+	struct wl_resource *resource;
+
+	resource = device->keyboard_focus_resource;
+	if (resource)
+		wl_resource_post_event(resource, WL_INPUT_DEVICE_KEY,
+				       time, key, state);
+}
+
+static const struct wl_keyboard_grab_interface
+				default_keyboard_grab_interface = {
+	default_grab_key
+};
+
 WL_EXPORT void
 wl_input_device_init(struct wl_input_device *device)
 {
@@ -496,6 +514,10 @@ wl_input_device_init(struct wl_input_device *device)
 	device->default_pointer_grab.interface = &default_pointer_grab_interface;
 	device->default_pointer_grab.input_device = device;
 	device->pointer_grab = &device->default_pointer_grab;
+
+	device->default_keyboard_grab.interface = &default_keyboard_grab_interface;
+	device->default_keyboard_grab.input_device = device;
+	device->keyboard_grab = &device->default_keyboard_grab;
 
 	wl_list_init(&device->drag_resource_list);
 	device->selection_data_source = NULL;
@@ -601,6 +623,21 @@ wl_input_device_set_keyboard_focus(struct wl_input_device *device,
 	device->keyboard_focus_resource = resource;
 	device->keyboard_focus = surface;
 	device->keyboard_focus_time = time;
+}
+
+WL_EXPORT void
+wl_input_device_start_keyboard_grab(struct wl_input_device *device,
+			   struct wl_keyboard_grab *grab, uint32_t time)
+{
+	device->keyboard_grab = grab;
+	grab->input_device = device;
+
+}
+
+WL_EXPORT void
+wl_input_device_end_keyboard_grab(struct wl_input_device *device, uint32_t time)
+{
+	device->keyboard_grab = &device->default_keyboard_grab;
 }
 
 WL_EXPORT void
