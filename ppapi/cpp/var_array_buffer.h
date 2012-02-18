@@ -8,28 +8,30 @@
 #include "ppapi/cpp/var.h"
 
 /// @file
-/// This file defines the API for interacting with an ArrayBuffer.
+/// This file defines the API for interacting with a JavaScript ArrayBuffer.
 
 namespace pp {
 
-/// VarArrayBuffer provides a way to interact with JavaScript ArrayBuffers,
-/// which represent a contiguous sequence of bytes. Note that
-/// VarArrayBuffers are not part of the embedding page's DOM, and can only
-/// be shared with JavaScript via pp::Instance's PostMessage and HandleMessage
-/// functions.
+/// <code>VarArrayBuffer</code> provides a way to interact with JavaScript
+/// ArrayBuffers, which represent a contiguous sequence of bytes. Note that
+/// these vars are not part of the embedding page's DOM, and can only be
+/// shared with JavaScript using the <code>PostMessage</code> and
+/// <code>HandleMessage</code> functions of <code>Instance</code>.
 class VarArrayBuffer : public Var {
  public:
-  /// Contruct a VarArrayBuffer given a var for which is_array_buffer() is
-  /// true. This will refer to the same ArrayBuffer as var, but allows you to
-  /// access methods specific to VarArrayBuffer.
+  /// Contruct a <code>VarArrayBuffer</code> given a var for which
+  /// is_array_buffer() is true. This will refer to the same
+  /// <code>ArrayBuffer</code> as var, but allows you to access methods
+  /// specific to <code>VarArrayBuffer</code>.
   ///
-  /// @param[in] var An ArrayBuffer Var.
+  /// @param[in] var An <code>ArrayBuffer</code> var.
   explicit VarArrayBuffer(const Var& var);
 
-  /// Construct a new VarArrayBuffer_Dev which is size_in_bytes bytes long and
-  /// initialized to zero.
+  /// Construct a new <code>VarArrayBuffer_Dev</code> which is
+  /// <code>size_in_bytes</code> bytes long and initialized to zero.
   ///
-  /// @param[in] size_in_bytes The size of the constructed ArrayBuffer in bytes.
+  /// @param[in] size_in_bytes The size of the constructed
+  /// <code>ArrayBuffer</code> in bytes.
   explicit VarArrayBuffer(uint32_t size_in_bytes);
 
   /// Copy constructor.
@@ -37,46 +39,54 @@ class VarArrayBuffer : public Var {
 
   virtual ~VarArrayBuffer() {}
 
-  /// This function assigns one VarArrayBuffer to another VarArrayBuffer.
+  /// This function assigns one <code>VarArrayBuffer</code> to another
+  /// <code>VarArrayBuffer</code>.
   ///
-  /// @param[in] other The VarArrayBuffer to be assigned.
+  /// @param[in] other The <code>VarArrayBuffer</code> to be assigned.
   ///
-  /// @return The resulting VarArrayBuffer.
+  /// @return The resulting <code>VarArrayBuffer</code>.
   VarArrayBuffer& operator=(const VarArrayBuffer& other);
 
-  /// This function assigns one VarArrayBuffer to another VarArrayBuffer. Var's
-  /// assignment operator is overloaded here so that we can check for assigning
-  /// a non-ArrayBuffer var to a VarArrayBuffer_Dev.
+  /// This function assigns one <code>VarArrayBuffer</code> to another
+  /// <code>VarArrayBuffer</code>. A Var's assignment operator is overloaded
+  /// here so that we can check for assigning a non-ArrayBuffer var to a
+  /// <code>VarArrayBuffer_Dev</code>.
   ///
-  /// @param[in] other The VarArrayBuffer to be assigned.
+  /// @param[in] other The <code>VarArrayBuffer</code> to be assigned.
   ///
-  /// @return The resulting VarArrayBuffer (as a Var&).
+  /// @return The resulting <code>VarArrayBuffer</code> (as a Var&).
   virtual Var& operator=(const Var& other);
 
-  /// Return the length of the VarArrayBuffer in bytes.
+  /// ByteLength() retrieves the length of the <code>VarArrayBuffer</code> in
+  /// bytes.
   ///
-  /// @return The length of the VarArrayBuffer in bytes.
+  /// @return The length of the <code>VarArrayBuffer</code> in bytes.
   uint32_t ByteLength() const;
 
-  /// Maps the ArrayBuffer in to the module's address space and returns a
-  /// pointer to the internal buffer for this ArrayBuffer.
+  /// Map() maps the <code>ArrayBuffer</code> in to the module's address space
+  /// and returns a pointer to the beginning of the internal buffer for
+  /// this <code>ArrayBuffer</code>.
   ///
   /// Note that calling Map() can be a relatively expensive operation. Use care
   /// when calling it in performance-critical code. For example, you should call
-  /// it only once when looping over an ArrayBuffer:
+  /// it only once when looping over an <code>ArrayBuffer</code>.
   ///
-  /// <code>
+  /// <strong>Example:</strong>
+  ///
+  /// @code
   ///   char* data = static_cast<char*>(array_buffer_var.Map());
   ///   uint32_t byte_length = array_buffer_var.ByteLength();
   ///   for (uint32_t i = 0; i < byte_length; ++i)
   ///     data[i] = 'A';
-  /// </code>
+  /// @endcode
   ///
-  /// @return A pointer to the internal buffer for this ArrayBuffer.
+  /// @return A pointer to the internal buffer for this
+  /// <code>ArrayBuffer</code>.
   void* Map();
 
-  /// Unmaps this ArrayBuffer var from the module address space. Use this if
-  /// you want to save memory but might want to Map the buffer again later.
+  /// Unmap() unmaps this <code>ArrayBuffer</code> var from the module address
+  /// space. Use this if you want to save memory but might want to call Map()
+  /// to map the buffer again later.
   void Unmap();
 };
 
