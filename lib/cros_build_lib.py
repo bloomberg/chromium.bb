@@ -1096,7 +1096,7 @@ class MasterPidContextManager(object):
 
 
 @contextlib.contextmanager
-def _NoOpContextManager():
+def NoOpContextManager():
   yield
 
 
@@ -1119,7 +1119,7 @@ def AllowDisabling(enabled, functor, *args, **kwds):
   """
   if enabled:
     return functor(*args, **kwds)
-  return _NoOpContextManager()
+  return NoOpContextManager()
 
 
 @contextlib.contextmanager

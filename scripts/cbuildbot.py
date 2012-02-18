@@ -22,7 +22,7 @@ from chromite.buildbot import cbuildbot_background as background
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_stages as stages
 from chromite.buildbot import cbuildbot_results as results_lib
-from chromite.buildbot import cgroup
+from chromite.buildbot import cgroup as cgroups
 from chromite.buildbot import constants
 from chromite.buildbot import gerrit_helper
 from chromite.buildbot import patch as cros_patch
@@ -931,7 +931,8 @@ def main(argv):
                  % options.buildroot)
 
   with sudo.SudoKeepAlive():
-    with cros_lib.AllowDisabling(options.cgroups, cgroup.CGroup):
+    with cros_lib.AllowDisabling(options.cgroups,
+                                 cgroups.ContainChildren, 'cbuildbot'):
       with cros_lib.AllowDisabling(options.timeout > 0,
                                    cros_lib.Timeout, options.timeout):
         if not options.buildbot:
