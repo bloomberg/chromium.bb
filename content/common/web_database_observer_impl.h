@@ -22,25 +22,27 @@ class WebDatabaseObserverImpl : public WebKit::WebDatabaseObserver {
 
   virtual void reportOpenDatabaseResult(
       const WebKit::WebDatabase& database, int callsite,
-      int webSqlErrorCode, int sqliteErrorCode) OVERRIDE;
+      int websql_error, int sqlite_error) OVERRIDE;
   virtual void reportChangeVersionResult(
       const WebKit::WebDatabase& database, int callsite,
-      int webSqlErrorCode, int sqliteErrorCode) OVERRIDE;
+      int websql_error, int sqlite_error) OVERRIDE;
   virtual void reportStartTransactionResult(
       const WebKit::WebDatabase& database, int callsite,
-      int webSqlErrorCode, int sqliteErrorCode) OVERRIDE;
+      int websql_error, int sqlite_error) OVERRIDE;
   virtual void reportCommitTransactionResult(
       const WebKit::WebDatabase& database, int callsite,
-      int webSqlErrorCode, int sqliteErrorCode) OVERRIDE;
+      int websql_error, int sqlite_error) OVERRIDE;
   virtual void reportExecuteStatementResult(
       const WebKit::WebDatabase& database, int callsite,
-      int webSqlErrorCode, int sqliteErrorCode) OVERRIDE;
+      int websql_error, int sqlite_error) OVERRIDE;
   virtual void reportVacuumDatabaseResult(
-      const WebKit::WebDatabase& database, int sqliteErrorCode) OVERRIDE;
+      const WebKit::WebDatabase& database, int sqlite_error) OVERRIDE;
 
   void WaitForAllDatabasesToClose();
 
  private:
+  void HandleSqliteError(const WebKit::WebDatabase& database, int error);
+
   IPC::Message::Sender* sender_;
   scoped_refptr<webkit_database::DatabaseConnectionsWrapper> open_connections_;
 };

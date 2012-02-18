@@ -105,6 +105,10 @@ class DatabaseTracker
                         const string16& database_name);
   void DatabaseClosed(const string16& origin_identifier,
                       const string16& database_name);
+  void HandleSqliteError(const string16& origin_identifier,
+                         const string16& database_name,
+                         int error);
+
   void CloseDatabases(const DatabaseConnections& connections);
 
   void AddObserver(Observer* observer);

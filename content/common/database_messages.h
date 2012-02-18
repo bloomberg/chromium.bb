@@ -78,3 +78,8 @@ IPC_MESSAGE_CONTROL2(DatabaseHostMsg_Closed,
                      string16 /* origin identifier */,
                      string16 /* database name */)
 
+// Sent when a sqlite error indicates the database is corrupt.
+IPC_MESSAGE_CONTROL3(DatabaseHostMsg_HandleSqliteError,
+                     string16 /* origin identifier */,
+                     string16 /* database name */,
+                     int  /* error */)

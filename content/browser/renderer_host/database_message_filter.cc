@@ -109,6 +109,7 @@ bool DatabaseMessageFilter::OnMessageReceived(
     IPC_MESSAGE_HANDLER(DatabaseHostMsg_Opened, OnDatabaseOpened)
     IPC_MESSAGE_HANDLER(DatabaseHostMsg_Modified, OnDatabaseModified)
     IPC_MESSAGE_HANDLER(DatabaseHostMsg_Closed, OnDatabaseClosed)
+    IPC_MESSAGE_HANDLER(DatabaseHostMsg_HandleSqliteError, OnHandleSqliteError)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
@@ -159,7 +160,6 @@ void DatabaseMessageFilter::OnDatabaseOpenFile(const string16& vfs_file_name,
   // process. The original handle is closed, unless we saved it in the
   // database tracker.
   bool auto_close = !db_tracker_->HasSavedIncognitoFileHandle(vfs_file_name);
-  DCHECK_NE(base::kInvalidPlatformFileValue, file_handle);
   IPC::PlatformFileForTransit target_handle =
       IPC::GetFileHandleForProcess(file_handle, peer_handle(), auto_close);
 
@@ -320,6 +320,14 @@ void DatabaseMessageFilter::OnDatabaseClosed(const string16& origin_identifier,
 
   database_connections_.RemoveConnection(origin_identifier, database_name);
   db_tracker_->DatabaseClosed(origin_identifier, database_name);
+}
+
+void DatabaseMessageFilter::OnHandleSqliteError(
+    const string16& origin_identifier,
+    const string16& database_name,
+    int error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  db_tracker_->HandleSqliteError(origin_identifier, database_name, error);
 }
 
 void DatabaseMessageFilter::OnDatabaseSizeChanged(

@@ -19,6 +19,7 @@
 #include "sql/diagnostic_error_delegate.h"
 #include "sql/meta_table.h"
 #include "sql/transaction.h"
+#include "third_party/sqlite/sqlite3.h"
 #include "webkit/database/database_quota_client.h"
 #include "webkit/database/database_util.h"
 #include "webkit/database/databases_table.h"
@@ -177,6 +178,24 @@ void DatabaseTracker::DatabaseClosed(const string16& origin_identifier,
   UpdateOpenDatabaseSizeAndNotify(origin_identifier, database_name);
   if (database_connections_.RemoveConnection(origin_identifier, database_name))
     DeleteDatabaseIfNeeded(origin_identifier, database_name);
+}
+
+void DatabaseTracker::HandleSqliteError(
+    const string16& origin_identifier,
+    const string16& database_name,
+    int error) {
+  // We only handle errors that indicate corruption and we
+  // do so with a heavy hand, we delete it. Any renderers/workers
+  // with this database open will receive a message to close it
+  // immediately, once all have closed, the files will be deleted.
+  // In the interim, all attempts to open a new connection to that
+  // database will fail.
+  // Note: the client-side filters out all but these two errors as
+  // a small optimization, see WebDatabaseObserverImpl::HandleSqliteError.
+  if (error == SQLITE_CORRUPT || error == SQLITE_NOTADB) {
+    DeleteDatabase(origin_identifier, database_name,
+                   net::CompletionCallback());
+  }
 }
 
 void DatabaseTracker::CloseDatabases(const DatabaseConnections& connections) {

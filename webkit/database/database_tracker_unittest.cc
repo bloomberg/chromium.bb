@@ -13,6 +13,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/sqlite/sqlite3.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/database/database_util.h"
 #include "webkit/quota/mock_special_storage_policy.h"
@@ -25,11 +26,23 @@ const char kOrigin2Url[] = "http://protected_origin2";
 
 class TestObserver : public webkit_database::DatabaseTracker::Observer {
  public:
-  TestObserver() : new_notification_received_(false) {}
+  TestObserver()
+      : new_notification_received_(false),
+        observe_size_changes_(true),
+        observe_scheduled_deletions_(true) {
+  }
+  TestObserver(bool observe_size_changes, bool observe_scheduled_deletions)
+      : new_notification_received_(false),
+        observe_size_changes_(observe_size_changes),
+        observe_scheduled_deletions_(observe_scheduled_deletions) {
+  }
+
   virtual ~TestObserver() {}
   virtual void OnDatabaseSizeChanged(const string16& origin_identifier,
                                      const string16& database_name,
                                      int64 database_size) {
+    if (!observe_size_changes_)
+      return;
     new_notification_received_ = true;
     origin_identifier_ = origin_identifier;
     database_name_ = database_name;
@@ -37,6 +50,8 @@ class TestObserver : public webkit_database::DatabaseTracker::Observer {
   }
   virtual void OnDatabaseScheduledForDeletion(const string16& origin_identifier,
                                               const string16& database_name) {
+    if (!observe_scheduled_deletions_)
+      return;
     new_notification_received_ = true;
     origin_identifier_ = origin_identifier;
     database_name_ = database_name;
@@ -52,6 +67,8 @@ class TestObserver : public webkit_database::DatabaseTracker::Observer {
 
  private:
   bool new_notification_received_;
+  bool observe_size_changes_;
+  bool observe_scheduled_deletions_;
   string16 origin_identifier_;
   string16 database_name_;
   int64 database_size_;
@@ -812,6 +829,80 @@ class DatabaseTracker_TestHelper_Test {
     EXPECT_TRUE(tracker->GetAllOriginsInfo(&infos));
     EXPECT_TRUE(infos.empty());
   }
+
+  static void HandleSqliteError() {
+    const GURL kOrigin(kOrigin1Url);
+    const string16 kOriginId = DatabaseUtil::GetOriginIdentifier(kOrigin);
+    const string16 kName(ASCIIToUTF16("name"));
+    const string16 kDescription(ASCIIToUTF16("description"));
+
+    // Initialize a tracker database, no need to put it on disk.
+    const bool kUseInMemoryTrackerDatabase = true;
+    ScopedTempDir temp_dir;
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+    scoped_refptr<DatabaseTracker> tracker(
+        new DatabaseTracker(temp_dir.path(), kUseInMemoryTrackerDatabase,
+                            false, NULL, NULL, NULL));
+
+    // Setup to observe OnScheduledForDelete notifications.
+    TestObserver observer(false, true);
+    tracker->AddObserver(&observer);
+
+    // Verify does no harm when there is no such database.
+    tracker->HandleSqliteError(kOriginId, kName, SQLITE_CORRUPT);
+    EXPECT_FALSE(tracker->IsDatabaseScheduledForDeletion(kOriginId, kName));
+    EXPECT_FALSE(observer.DidReceiveNewNotification());
+
+    // --------------------------------------------------------
+    // Create a record of a database in the tracker db and create
+    // a spoof_db_file on disk in the expected location.
+    int64 database_size = 0;
+    tracker->DatabaseOpened(kOriginId, kName, kDescription, 0,
+                            &database_size);
+    FilePath spoof_db_file = tracker->GetFullDBFilePath(kOriginId, kName);
+    EXPECT_FALSE(tracker->GetFullDBFilePath(kOriginId, kName).empty());
+    EXPECT_TRUE(file_util::CreateDirectory(spoof_db_file.DirName()));
+    EXPECT_TRUE(EnsureFileOfSize(spoof_db_file, 1));
+
+    // Verify does no harm with a non-error is reported.
+    tracker->HandleSqliteError(kOriginId, kName, SQLITE_OK);
+    EXPECT_FALSE(tracker->IsDatabaseScheduledForDeletion(kOriginId, kName));
+    EXPECT_FALSE(observer.DidReceiveNewNotification());
+
+    // Verify that with a connection open, the db is scheduled for deletion,
+    // but that the file still exists.
+    tracker->HandleSqliteError(kOriginId, kName, SQLITE_CORRUPT);
+    EXPECT_TRUE(tracker->IsDatabaseScheduledForDeletion(kOriginId, kName));
+    EXPECT_TRUE(observer.DidReceiveNewNotification());
+    EXPECT_TRUE(file_util::PathExists(spoof_db_file));
+
+    // Verify that once closed, the file is deleted and the record in the
+    // tracker db is removed.
+    tracker->DatabaseClosed(kOriginId, kName);
+    EXPECT_FALSE(file_util::PathExists(spoof_db_file));
+    EXPECT_TRUE(tracker->GetFullDBFilePath(kOriginId, kName).empty());
+
+    // --------------------------------------------------------
+    // Create another record of a database in the tracker db and create
+    // a spoof_db_file on disk in the expected location.
+    tracker->DatabaseOpened(kOriginId, kName, kDescription, 0,
+                            &database_size);
+    FilePath spoof_db_file2 = tracker->GetFullDBFilePath(kOriginId, kName);
+    EXPECT_FALSE(tracker->GetFullDBFilePath(kOriginId, kName).empty());
+    EXPECT_NE(spoof_db_file, spoof_db_file2);
+    EXPECT_TRUE(file_util::CreateDirectory(spoof_db_file2.DirName()));
+    EXPECT_TRUE(EnsureFileOfSize(spoof_db_file2, 1));
+
+    // Verify that with no connection open, the db is deleted immediately.
+    tracker->DatabaseClosed(kOriginId, kName);
+    tracker->HandleSqliteError(kOriginId, kName, SQLITE_CORRUPT);
+    EXPECT_FALSE(tracker->IsDatabaseScheduledForDeletion(kOriginId, kName));
+    EXPECT_FALSE(observer.DidReceiveNewNotification());
+    EXPECT_TRUE(tracker->GetFullDBFilePath(kOriginId, kName).empty());
+    EXPECT_FALSE(file_util::PathExists(spoof_db_file2));
+
+    tracker->RemoveObserver(&observer);
+  }
 };
 
 TEST(DatabaseTrackerTest, DeleteOpenDatabase) {
@@ -853,6 +944,10 @@ TEST(DatabaseTrackerTest, DatabaseTrackerSaveSessionState) {
 
 TEST(DatabaseTrackerTest, EmptyDatabaseNameIsValid) {
   DatabaseTracker_TestHelper_Test::EmptyDatabaseNameIsValid();
+}
+
+TEST(DatabaseTrackerTest, HandleSqliteError) {
+  DatabaseTracker_TestHelper_Test::HandleSqliteError();
 }
 
 }  // namespace webkit_database

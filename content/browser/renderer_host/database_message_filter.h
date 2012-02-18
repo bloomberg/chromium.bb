@@ -68,6 +68,9 @@ class DatabaseMessageFilter
                           const string16& database_name);
   void OnDatabaseClosed(const string16& origin_identifier,
                         const string16& database_name);
+  void OnHandleSqliteError(const string16& origin_identifier,
+                           const string16& database_name,
+                           int error);
 
   // DatabaseTracker::Observer callbacks (file thread)
   virtual void OnDatabaseSizeChanged(const string16& origin_identifier,
