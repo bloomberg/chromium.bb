@@ -20,8 +20,11 @@
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
+
+#if !defined(OS_NACL)
 #include "skia/ext/platform_canvas.h"
 #include "ui/gfx/surface/transport_dib.h"
+#endif
 
 namespace ppapi {
 namespace proxy {
@@ -31,7 +34,11 @@ ImageData::ImageData(const HostResource& resource,
                      ImageHandle handle)
     : Resource(OBJECT_IS_PROXY, resource),
       desc_(desc) {
-#if defined(OS_WIN)
+#if defined(OS_NACL)
+  // TODO(brettw) implement NaCl ImageData. This will involve just
+  // memory-mapping the handle as raw memory rather than as a transport DIB.
+  #error Implement this.
+#elif defined(OS_WIN)
   transport_dib_.reset(TransportDIB::CreateWithHandle(handle));
 #else
   transport_dib_.reset(TransportDIB::Map(handle));
@@ -51,6 +58,9 @@ PP_Bool ImageData::Describe(PP_ImageDataDesc* desc) {
 }
 
 void* ImageData::Map() {
+#if defined(OS_NACL)
+  #error Implement this.
+#else
   if (!mapped_canvas_.get()) {
     mapped_canvas_.reset(transport_dib_->GetPlatformCanvas(desc_.size.width,
                                                            desc_.size.height));
@@ -62,12 +72,17 @@ void* ImageData::Map() {
 
   bitmap.lockPixels();
   return bitmap.getAddr(0, 0);
+#endif
 }
 
 void ImageData::Unmap() {
+#if defined(OS_NACL)
+  #error Implement this.
+#else
   // TODO(brettw) have a way to unmap a TransportDIB. Currently this isn't
   // possible since deleting the TransportDIB also frees all the handles.
   // We need to add a method to TransportDIB to release the handles.
+#endif
 }
 
 int32_t ImageData::GetSharedMemory(int* /* handle */,
@@ -78,7 +93,11 @@ int32_t ImageData::GetSharedMemory(int* /* handle */,
 }
 
 skia::PlatformCanvas* ImageData::GetPlatformCanvas() {
+#if defined(OS_NACL)
+  return NULL;  // No canvas in NaCl.
+#else
   return mapped_canvas_.get();
+#endif
 }
 
 #if defined(OS_WIN)
