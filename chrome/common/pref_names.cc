@@ -34,6 +34,9 @@ const char kHomePage[] = "homepage";
 // Did the user change the home page after install?
 const char kHomePageChanged[] = "homepage_changed";
 
+// Does this user have a Google+ Profile?
+const char kIsGooglePlusUser[] = "is_google_plus_user";
+
 // Used to determine if the last session exited cleanly. Set to false when
 // first opened, and to true when closing. On startup if the value is false,
 // it means the profile didn't exit cleanly.

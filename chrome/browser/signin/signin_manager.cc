@@ -4,7 +4,11 @@
 
 #include "chrome/browser/signin/signin_manager.h"
 
+#include <string>
+#include <vector>
+
 #include "base/command_line.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,6 +22,8 @@
 #include "content/public/browser/notification_service.h"
 
 const char kGetInfoEmailKey[] = "email";
+const char kGetInfoServicesKey[] = "allServices";
+const char kGooglePlusServiceKey[] = "googleme";
 
 SigninManager::SigninManager()
     : profile_(NULL),
@@ -188,6 +194,7 @@ void SigninManager::SignOut() {
   authenticated_username_.clear();
   profile_->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
   profile_->GetPrefs()->ClearPref(prefs::kSyncUsingOAuth);
+  profile_->GetPrefs()->ClearPref(prefs::kIsGooglePlusUser);
   profile_->GetTokenService()->ResetCredentialsInMemory();
   profile_->GetTokenService()->EraseTokensFromDB();
 }
@@ -203,22 +210,40 @@ bool SigninManager::AuthInProgress() const {
 void SigninManager::OnClientLoginSuccess(const ClientLoginResult& result) {
   DCHECK(!browser_sync::IsUsingOAuth());
   last_result_ = result;
-  // Make a request for the canonical email address.
-  client_login_->StartGetUserInfo(result.lsid, kGetInfoEmailKey);
+  // Make a request for the canonical email address and services.
+  client_login_->StartGetUserInfo(result.lsid);
 }
 
 // NOTE: GetUserInfo is a ClientLogin request similar to OAuth's userinfo
-void SigninManager::OnGetUserInfoSuccess(const std::string& key,
-                                         const std::string& value) {
+void SigninManager::OnGetUserInfoSuccess(const UserInfoMap& data) {
   DCHECK(!browser_sync::IsUsingOAuth());
-  DCHECK(key == kGetInfoEmailKey);
-  last_login_auth_error_ = GoogleServiceAuthError::None();
-  SetAuthenticatedUsername(value);
-  possibly_invalid_username_.clear();
-  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
-                                  authenticated_username_);
-  profile_->GetPrefs()->SetBoolean(prefs::kSyncUsingOAuth, false);
+  UserInfoMap::const_iterator email_iter = data.find(kGetInfoEmailKey);
+  if (email_iter == data.end()) {
+    OnGetUserInfoKeyNotFound(kGetInfoEmailKey);
+    return;
+  } else {
+    DCHECK(email_iter->first == kGetInfoEmailKey);
+    last_login_auth_error_ = GoogleServiceAuthError::None();
+    SetAuthenticatedUsername(email_iter->second);
+    possibly_invalid_username_.clear();
+    profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
+                                    authenticated_username_);
+    profile_->GetPrefs()->SetBoolean(prefs::kSyncUsingOAuth, false);
 
+  }
+  UserInfoMap::const_iterator service_iter = data.find(kGetInfoServicesKey);
+  if (service_iter == data.end()) {
+    DLOG(WARNING) << "Could not retrieve services for account with email: "
+             << authenticated_username_ <<".";
+  } else {
+    DCHECK(service_iter->first == kGetInfoServicesKey);
+    std::vector<std::string> services;
+    base::SplitStringUsingSubstr(service_iter->second, ", ", &services);
+    std::vector<std::string>::const_iterator iter =
+        std::find(services.begin(), services.end(), kGooglePlusServiceKey);
+    bool isGPlusUser = (iter != services.end());
+    profile_->GetPrefs()->SetBoolean(prefs::kIsGooglePlusUser, isGPlusUser);
+  }
   GoogleServiceSigninSuccessDetails details(authenticated_username_,
                                             password_);
   content::NotificationService::current()->Notify(

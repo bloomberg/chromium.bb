@@ -7,8 +7,11 @@
 #pragma once
 
 #include <string>
+#include <map>
 
 class GoogleServiceAuthError;
+
+typedef std::map<std::string, std::string> UserInfoMap;
 
 // An interface that defines the callbacks for objects that
 // GaiaAuthFetcher can return data to.
@@ -47,9 +50,7 @@ class GaiaAuthConsumer {
                                         int expires_in_secs) {}
   virtual void OnOAuthLoginTokenFailure(const GoogleServiceAuthError& error) {}
 
-  virtual void OnGetUserInfoSuccess(const std::string& key,
-                                    const std::string& value) {}
-  virtual void OnGetUserInfoKeyNotFound(const std::string& key) {}
+  virtual void OnGetUserInfoSuccess(const UserInfoMap& data) {}
   virtual void OnGetUserInfoFailure(const GoogleServiceAuthError& error) {}
 
   virtual void OnTokenAuthSuccess(const std::string& data) {}

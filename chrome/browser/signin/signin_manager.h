@@ -100,13 +100,15 @@ class SigninManager : public GaiaAuthConsumer,
   // Returns true if there's a signin in progress.
   bool AuthInProgress() const;
 
+  // Handles errors if a required user info key is not returned from the
+  // GetUserInfo call.
+  void OnGetUserInfoKeyNotFound(const std::string& key);
+
   // GaiaAuthConsumer
   virtual void OnClientLoginSuccess(const ClientLoginResult& result) OVERRIDE;
   virtual void OnClientLoginFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
-  virtual void OnGetUserInfoSuccess(const std::string& key,
-                                    const std::string& value) OVERRIDE;
-  virtual void OnGetUserInfoKeyNotFound(const std::string& key) OVERRIDE;
+  virtual void OnGetUserInfoSuccess(const UserInfoMap& data) OVERRIDE;
   virtual void OnGetUserInfoFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
   virtual void OnTokenAuthFailure(const GoogleServiceAuthError& error) OVERRIDE;

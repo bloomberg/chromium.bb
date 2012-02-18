@@ -518,8 +518,7 @@ void GaiaAuthFetcher::StartOAuthLoginTokenFetch(
   fetcher_->Start();
 }
 
-void GaiaAuthFetcher::StartGetUserInfo(const std::string& lsid,
-                                       const std::string& info_key) {
+void GaiaAuthFetcher::StartGetUserInfo(const std::string& lsid) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
   DVLOG(1) << "Starting GetUserInfo for lsid=" << lsid;
@@ -531,7 +530,6 @@ void GaiaAuthFetcher::StartGetUserInfo(const std::string& lsid,
                                    false,
                                    this));
   fetch_pending_ = true;
-  requested_info_key_ = info_key;
   fetcher_->Start();
 }
 
@@ -785,21 +783,15 @@ void GaiaAuthFetcher::OnGetUserInfoFetched(
     const std::string& data,
     const net::URLRequestStatus& status,
     int response_code) {
-  using std::vector;
-  using std::string;
-  using std::pair;
-
   if (status.is_success() && response_code == RC_REQUEST_OK) {
-    vector<pair<string, string> > tokens;
+    std::vector<std::pair<std::string, std::string> > tokens;
+    UserInfoMap matches;
     base::SplitStringIntoKeyValuePairs(data, '=', '\n', &tokens);
-    for (vector<pair<string, string> >::iterator i = tokens.begin();
-         i != tokens.end(); ++i) {
-      if (i->first == requested_info_key_) {
-        consumer_->OnGetUserInfoSuccess(i->first, i->second);
-        return;
-      }
+    std::vector<std::pair<std::string, std::string> >::iterator i;
+    for (i = tokens.begin(); i != tokens.end(); ++i) {
+      matches[i->first] = i->second;
     }
-    consumer_->OnGetUserInfoKeyNotFound(requested_info_key_);
+    consumer_->OnGetUserInfoSuccess(matches);
   } else {
     consumer_->OnGetUserInfoFailure(GenerateAuthError(data, status));
   }

@@ -74,12 +74,11 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
   // called on the consumer with results.
   void StartOAuthLoginTokenFetch(const std::string& auth_token);
 
-  // Start a request to get a particular key from user info.
+  // Start a request to get user info.
   // GaiaAuthConsumer will be called back on the same thread when
   // results come back.
   // You can't make more than one request at a time.
-  void StartGetUserInfo(const std::string& lsid,
-                        const std::string& info_key);
+  void StartGetUserInfo(const std::string& lsid);
 
   // Start a TokenAuth request to pre-login the user with the given credentials.
   void StartTokenAuth(const std::string& auth_token);
@@ -292,8 +291,7 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
   // While a fetch is going on:
   scoped_ptr<content::URLFetcher> fetcher_;
   std::string request_body_;
-  std::string requested_service_;   // Currently tracked for IssueAuthToken only
-  std::string requested_info_key_;  // Currently tracked for GetUserInfo only
+  std::string requested_service_; // Currently tracked for IssueAuthToken only.
   bool fetch_pending_;
 
   friend class GaiaAuthFetcherTest;

@@ -39,6 +39,8 @@ void SigninManagerFactory::RegisterUserPrefs(PrefService* user_prefs) {
                                   PrefService::UNSYNCABLE_PREF);
   user_prefs->RegisterBooleanPref(prefs::kReverseAutologinEnabled, true,
                                   PrefService::UNSYNCABLE_PREF);
+  user_prefs->RegisterBooleanPref(prefs::kIsGooglePlusUser, false,
+                                 PrefService::UNSYNCABLE_PREF);
 }
 
 ProfileKeyedService* SigninManagerFactory::BuildServiceInstanceFor(

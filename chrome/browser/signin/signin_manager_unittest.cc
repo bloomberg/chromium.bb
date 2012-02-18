@@ -65,9 +65,12 @@ class SigninManagerTest : public TokenServiceTestHarness {
     browser_sync::SetIsUsingOAuthForTest(originally_using_oauth_);
   }
 
-  void SimulateValidResponseClientLogin() {
+  void SimulateValidResponseClientLogin(bool isGPlusUser) {
     DCHECK(!browser_sync::IsUsingOAuth());
     // Simulate the correct ClientLogin response.
+    std::string respons_string = isGPlusUser ?
+        "email=user@gmail.com\nallServices=googleme" :
+        "email=user@gmail.com\nallServices=";
     TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
     DCHECK(fetcher);
     DCHECK(fetcher->delegate());
@@ -86,7 +89,7 @@ class SigninManagerTest : public TokenServiceTestHarness {
     fetcher->set_url(GURL(GaiaUrls::GetInstance()->get_user_info_url()));
     fetcher->set_status(net::URLRequestStatus());
     fetcher->set_response_code(200);
-    fetcher->SetResponseString("email=user@gmail.com");
+    fetcher->SetResponseString(respons_string);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
   }
 
@@ -136,8 +139,9 @@ TEST_F(SigninManagerTest, SignInClientLogin) {
   manager_->StartSignIn("username", "password", "", "");
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
-  SimulateValidResponseClientLogin();
+  SimulateValidResponseClientLogin(true);
   EXPECT_FALSE(manager_->GetAuthenticatedUsername().empty());
+  EXPECT_TRUE(profile_->GetPrefs()->GetBoolean(prefs::kIsGooglePlusUser));
 
   // Should go into token service and stop.
   EXPECT_EQ(1U, google_login_success_.size());
@@ -149,6 +153,19 @@ TEST_F(SigninManagerTest, SignInClientLogin) {
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedUsername());
 }
 
+TEST_F(SigninManagerTest, SignInClientLoginNoGPlus) {
+  browser_sync::SetIsUsingOAuthForTest(false);
+  manager_->Initialize(profile_.get());
+  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+
+  manager_->StartSignIn("username", "password", "", "");
+  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+
+  SimulateValidResponseClientLogin(false);
+  EXPECT_FALSE(manager_->GetAuthenticatedUsername().empty());
+  EXPECT_FALSE(profile_->GetPrefs()->GetBoolean(prefs::kIsGooglePlusUser));
+}
+
 TEST_F(SigninManagerTest, ClearTransientSigninData) {
   browser_sync::SetIsUsingOAuthForTest(false);
   manager_->Initialize(profile_.get());
@@ -157,7 +174,7 @@ TEST_F(SigninManagerTest, ClearTransientSigninData) {
   manager_->StartSignIn("username", "password", "", "");
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
-  SimulateValidResponseClientLogin();
+  SimulateValidResponseClientLogin(false);
 
   // Should go into token service and stop.
   EXPECT_EQ(1U, google_login_success_.size());
@@ -206,12 +223,13 @@ TEST_F(SigninManagerTest, SignOutClientLogin) {
   browser_sync::SetIsUsingOAuthForTest(false);
   manager_->Initialize(profile_.get());
   manager_->StartSignIn("username", "password", "", "");
-  SimulateValidResponseClientLogin();
+  SimulateValidResponseClientLogin(false);
   manager_->OnClientLoginSuccess(credentials_);
 
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedUsername());
   manager_->SignOut();
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+  EXPECT_FALSE(profile_->GetPrefs()->GetBoolean(prefs::kIsGooglePlusUser));
   // Should not be persisted anymore
   manager_.reset(new SigninManager());
   manager_->Initialize(profile_.get());
@@ -267,7 +285,7 @@ TEST_F(SigninManagerTest, ProvideSecondFactorSuccess) {
   EXPECT_FALSE(manager_->possibly_invalid_username_.empty());
 
   manager_->ProvideSecondFactorAccessCode("access");
-  SimulateValidResponseClientLogin();
+  SimulateValidResponseClientLogin(false);
 
   EXPECT_EQ(1U, google_login_success_.size());
   EXPECT_EQ(1U, google_login_failure_.size());
