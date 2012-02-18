@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/time.h"
+#include "chrome/browser/sync/internal_api/includes/report_unrecoverable_error_function.h"
 #include "chrome/browser/sync/internal_api/includes/unrecoverable_error_handler.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/blob.h"
@@ -815,8 +816,11 @@ class Directory {
     MetahandleSet metahandles_to_purge;
   };
 
-  explicit Directory(
-      browser_sync::UnrecoverableErrorHandler* unrecoverable_error_handler);
+  // |report_unrecoverable_error_function| may be NULL.
+  Directory(
+      browser_sync::UnrecoverableErrorHandler* unrecoverable_error_handler,
+      browser_sync::ReportUnrecoverableErrorFunction
+          report_unrecoverable_error_function);
   virtual ~Directory();
 
   // Does not take ownership of |delegate|, which must not be NULL.
@@ -875,6 +879,14 @@ class Directory {
   // transaction need to check if the Directory already has an unrecoverable
   // error on it.
   bool unrecoverable_error_set(const BaseTransaction* trans) const;
+
+  // Called to immediately report an unrecoverable error (but don't
+  // propagate it up).
+  void ReportUnrecoverableError() {
+    if (report_unrecoverable_error_function_) {
+      report_unrecoverable_error_function_();
+    }
+  }
 
   // Called to set the unrecoverable error on the directory and to propagate
   // the error to upper layers.
@@ -1206,7 +1218,9 @@ class Directory {
 
   DirectoryBackingStore* store_;
 
-  browser_sync::UnrecoverableErrorHandler* unrecoverable_error_handler_;
+  browser_sync::UnrecoverableErrorHandler* const unrecoverable_error_handler_;
+  const browser_sync::ReportUnrecoverableErrorFunction
+      report_unrecoverable_error_function_;
   bool unrecoverable_error_set_;
 };
 

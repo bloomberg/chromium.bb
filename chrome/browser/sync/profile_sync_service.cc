@@ -31,6 +31,7 @@
 #include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/backend_migrator.h"
 #include "chrome/browser/sync/glue/change_processor.h"
+#include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/session_data_type_controller.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
@@ -345,7 +346,8 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
       initial_types,
       credentials,
       delete_stale_data,
-      backend_unrecoverable_error_handler_.get());
+      backend_unrecoverable_error_handler_.get(),
+      &browser_sync::ChromeReportUnrecoverableError);
 }
 
 void ProfileSyncService::CreateBackend() {

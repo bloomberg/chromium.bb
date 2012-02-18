@@ -41,7 +41,6 @@
 #include "chrome/browser/sync/syncable/syncable_enum_conversions.h"
 #include "chrome/browser/sync/syncable/transaction_observer.h"
 #include "chrome/browser/sync/util/logging.h"
-#include "chrome/common/chrome_constants.h"
 #include "net/base/escape.h"
 
 namespace {
@@ -95,6 +94,7 @@ bool VerifyReferenceIntegrityUnsafe(const syncable::MetahandlesIndex &index) {
 }  // namespace
 
 using std::string;
+using browser_sync::ReportUnrecoverableErrorFunction;
 using browser_sync::UnrecoverableErrorHandler;
 
 namespace syncable {
@@ -509,10 +509,14 @@ Directory::Kernel::~Kernel() {
   delete metahandles_index;
 }
 
-Directory::Directory(UnrecoverableErrorHandler* unrecoverable_error_handler)
+Directory::Directory(
+    UnrecoverableErrorHandler* unrecoverable_error_handler,
+    ReportUnrecoverableErrorFunction report_unrecoverable_error_function)
     : kernel_(NULL),
       store_(NULL),
       unrecoverable_error_handler_(unrecoverable_error_handler),
+      report_unrecoverable_error_function_(
+          report_unrecoverable_error_function),
       unrecoverable_error_set_(false) {
 }
 
@@ -1399,17 +1403,7 @@ void BaseTransaction::OnUnrecoverableError(
   // away. Instead we wait to unwind the stack and in the destructor of the
   // transaction we would call the OnUnrecoverableError method.
 
-  // TODO(lipalani): Add this for other platforms as well.
-#if defined(OS_WIN)
-  // Get the breakpad pointer from chrome.exe
-  typedef void (__cdecl *DumpProcessFunction)();
-  DumpProcessFunction DumpProcess = reinterpret_cast<DumpProcessFunction>(
-      ::GetProcAddress(::GetModuleHandle(
-                       chrome::kBrowserProcessExecutableName),
-                       "DumpProcessWithoutCrash"));
-  if (DumpProcess)
-    DumpProcess();
-#endif  // OS_WIN
+  directory()->ReportUnrecoverableError();
 }
 
 bool BaseTransaction::unrecoverable_error_set() const {

@@ -264,6 +264,7 @@
         'browser/sync/engine/syncapi_internal.h',
         'browser/sync/internal_api/includes/syncer_error.cc',
         'browser/sync/internal_api/includes/syncer_error.h',
+        'browser/sync/internal_api/includes/report_unrecoverable_error_function.h',
         'browser/sync/internal_api/includes/unrecoverable_error_handler.h',
         'browser/sync/internal_api/base_node.cc',
         'browser/sync/internal_api/base_node.h',

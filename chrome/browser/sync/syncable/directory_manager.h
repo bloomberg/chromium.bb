@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -19,6 +19,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/synchronization/lock.h"
+#include "chrome/browser/sync/internal_api/includes/report_unrecoverable_error_function.h"
 #include "chrome/browser/sync/internal_api/includes/unrecoverable_error_handler.h"
 #include "chrome/browser/sync/syncable/dir_open_result.h"
 #include "chrome/browser/sync/syncable/syncable.h"
@@ -47,10 +48,13 @@ class DirectoryManager {
   // common case.  Does not take ownership of |delegate|, which must
   // be non-NULL.  Starts sending events to |delegate| if the returned
   // result is true.  Note that events to |delegate| may be sent from
-  // *any* thread.  |transaction_observer| must be initialized.
+  // *any* thread.  |transaction_observer| must be
+  // initialized. |report_unrecoverable_error_function| may be NULL.
   bool Open(const std::string& name, DirectoryChangeDelegate* delegate,
             browser_sync::UnrecoverableErrorHandler*
                 unrecoverable_error_handler,
+            browser_sync::ReportUnrecoverableErrorFunction
+                report_unrecoverable_error_function,
             const browser_sync::WeakHandle<TransactionObserver>&
                 transaction_observer);
 
@@ -85,6 +89,8 @@ class DirectoryManager {
       DirectoryChangeDelegate* delegate,
       browser_sync::UnrecoverableErrorHandler*
           unrecoverable_error_handler,
+      browser_sync::ReportUnrecoverableErrorFunction
+          report_unrecoverable_error_function,
       const browser_sync::WeakHandle<TransactionObserver>&
           transaction_observer,
       bool* was_open);

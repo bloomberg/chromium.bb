@@ -106,7 +106,8 @@ TEST_F(SyncBackendHostTest, InitShutdown) {
                      syncable::ModelTypeSet(),
                      credentials,
                      true,
-                     &handler);
+                     &handler,
+                     NULL);
   backend.StopSyncingForShutdown();
   backend.Shutdown(false);
 }

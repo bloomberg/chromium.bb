@@ -7,7 +7,7 @@
 #include "base/location.h"
 #include "chrome/browser/sync/test/null_transaction_observer.h"
 
-MockDirectory::MockDirectory() :Directory(&handler_) {
+MockDirectory::MockDirectory() :Directory(&handler_, NULL) {
   InitKernelForTest("myk", &delegate_, syncable::NullTransactionObserver());
 }
 

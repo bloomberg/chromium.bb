@@ -17,6 +17,7 @@
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/glue/backend_data_type_configurer.h"
 #include "chrome/browser/sync/glue/chrome_extensions_activity_monitor.h"
+#include "chrome/browser/sync/internal_api/includes/report_unrecoverable_error_function.h"
 #include "chrome/browser/sync/internal_api/includes/unrecoverable_error_handler.h"
 #include "chrome/browser/sync/internal_api/configure_reason.h"
 #include "chrome/browser/sync/internal_api/sync_manager.h"
@@ -161,14 +162,17 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // As a fallback when no cached auth information is available, try to
   // bootstrap authentication using |lsid|, if it isn't empty.
   // Optionally delete the Sync Data folder (if it's corrupt).
-  // Note: |unrecoverable_error_handler| caould be invoked from any thread.
+  // |report_unrecoverable_error_function| can be NULL.
+  // Note: |unrecoverable_error_handler| may be invoked from any thread.
   void Initialize(SyncFrontend* frontend,
                   const WeakHandle<JsEventHandler>& event_handler,
                   const GURL& service_url,
                   syncable::ModelTypeSet initial_types,
                   const sync_api::SyncCredentials& credentials,
                   bool delete_sync_data_folder,
-                  UnrecoverableErrorHandler* unrecoverable_error_handler);
+                  UnrecoverableErrorHandler* unrecoverable_error_handler,
+                  ReportUnrecoverableErrorFunction
+                      report_unrecoverable_error_function);
 
   // Called from |frontend_loop| to update SyncCredentials.
   void UpdateCredentials(const sync_api::SyncCredentials& credentials);
@@ -289,7 +293,8 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
         bool delete_sync_data_folder,
         const std::string& restored_key_for_bootstrapping,
         bool setup_for_test_mode,
-        UnrecoverableErrorHandler* unrecoverable_error_handler);
+        UnrecoverableErrorHandler* unrecoverable_error_handler,
+        ReportUnrecoverableErrorFunction report_unrecoverable_error_function);
     ~DoInitializeOptions();
 
     MessageLoop* sync_loop;
@@ -306,6 +311,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
     std::string restored_key_for_bootstrapping;
     bool setup_for_test_mode;
     UnrecoverableErrorHandler* unrecoverable_error_handler;
+    ReportUnrecoverableErrorFunction report_unrecoverable_error_function;
   };
 
   // Allows tests to perform alternate core initialization work.

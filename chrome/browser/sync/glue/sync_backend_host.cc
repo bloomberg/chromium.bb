@@ -280,7 +280,8 @@ void SyncBackendHost::Initialize(
     syncable::ModelTypeSet initial_types,
     const SyncCredentials& credentials,
     bool delete_sync_data_folder,
-    UnrecoverableErrorHandler* unrecoverable_error_handler) {
+    UnrecoverableErrorHandler* unrecoverable_error_handler,
+    ReportUnrecoverableErrorFunction report_unrecoverable_error_function) {
   if (!sync_thread_.Start())
     return;
 
@@ -311,7 +312,8 @@ void SyncBackendHost::Initialize(
       delete_sync_data_folder,
       sync_prefs_->GetEncryptionBootstrapToken(),
       false,
-      unrecoverable_error_handler));
+      unrecoverable_error_handler,
+      report_unrecoverable_error_function));
 }
 
 void SyncBackendHost::UpdateCredentials(const SyncCredentials& credentials) {
@@ -722,7 +724,8 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
     bool delete_sync_data_folder,
     const std::string& restored_key_for_bootstrapping,
     bool setup_for_test_mode,
-    UnrecoverableErrorHandler* unrecoverable_error_handler)
+    UnrecoverableErrorHandler* unrecoverable_error_handler,
+    ReportUnrecoverableErrorFunction report_unrecoverable_error_function)
     : sync_loop(sync_loop),
       registrar(registrar),
       extensions_activity_monitor(extensions_activity_monitor),
@@ -734,7 +737,9 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
       delete_sync_data_folder(delete_sync_data_folder),
       restored_key_for_bootstrapping(restored_key_for_bootstrapping),
       setup_for_test_mode(setup_for_test_mode),
-      unrecoverable_error_handler(unrecoverable_error_handler){
+      unrecoverable_error_handler(unrecoverable_error_handler),
+      report_unrecoverable_error_function(
+          report_unrecoverable_error_function) {
 }
 
 SyncBackendHost::DoInitializeOptions::~DoInitializeOptions() {}
@@ -967,7 +972,8 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
       options.sync_notifier_factory->CreateSyncNotifier(),
       options.restored_key_for_bootstrapping,
       options.setup_for_test_mode,
-      options.unrecoverable_error_handler);
+      options.unrecoverable_error_handler,
+      options.report_unrecoverable_error_function);
   LOG_IF(ERROR, !success) << "Syncapi initialization failed!";
 }
 

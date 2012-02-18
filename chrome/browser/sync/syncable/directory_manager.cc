@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "chrome/browser/sync/syncable/syncable.h"
 
 using browser_sync::Cryptographer;
+using browser_sync::ReportUnrecoverableErrorFunction;
 using browser_sync::UnrecoverableErrorHandler;
 
 namespace syncable {
@@ -47,12 +48,14 @@ bool DirectoryManager::Open(
     const std::string& name,
     DirectoryChangeDelegate* delegate,
     UnrecoverableErrorHandler* unrecoverable_error_handler,
+    ReportUnrecoverableErrorFunction report_unrecoverable_error_function,
     const browser_sync::WeakHandle<TransactionObserver>&
         transaction_observer) {
   bool was_open = false;
   const DirOpenResult result =
       OpenImpl(name, GetSyncDataDatabasePath(), delegate,
                unrecoverable_error_handler,
+               report_unrecoverable_error_function,
                transaction_observer, &was_open);
   return syncable::OPENED == result;
 }
@@ -63,6 +66,7 @@ DirOpenResult DirectoryManager::OpenImpl(
     const FilePath& path,
     DirectoryChangeDelegate* delegate,
     UnrecoverableErrorHandler* unrecoverable_error_handler,
+    ReportUnrecoverableErrorFunction report_unrecoverable_error_function,
     const browser_sync::WeakHandle<TransactionObserver>&
         transaction_observer,
     bool* was_open) {
@@ -82,7 +86,9 @@ DirOpenResult DirectoryManager::OpenImpl(
     return syncable::OPENED;
   // Otherwise, open it.
 
-  scoped_ptr<Directory> dir(new Directory(unrecoverable_error_handler));
+  scoped_ptr<Directory> dir(
+      new Directory(unrecoverable_error_handler,
+                    report_unrecoverable_error_function));
   const DirOpenResult result =
       dir->Open(path, name, delegate, transaction_observer);
   if (syncable::OPENED == result) {

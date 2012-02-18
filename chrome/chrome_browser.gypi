@@ -2342,6 +2342,8 @@
         'browser/sync/glue/change_processor.h',
         'browser/sync/glue/chrome_extensions_activity_monitor.cc',
         'browser/sync/glue/chrome_extensions_activity_monitor.h',
+        'browser/sync/glue/chrome_report_unrecoverable_error.cc',
+        'browser/sync/glue/chrome_report_unrecoverable_error.h',
         'browser/sync/glue/data_type_controller.h',
         'browser/sync/glue/data_type_error_handler.h',
         'browser/sync/glue/data_type_manager.cc',

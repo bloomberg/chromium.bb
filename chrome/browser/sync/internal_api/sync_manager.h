@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/time.h"
 #include "base/threading/thread_checker.h"
+#include "chrome/browser/sync/internal_api/includes/report_unrecoverable_error_function.h"
 #include "chrome/browser/sync/internal_api/includes/unrecoverable_error_handler.h"
 #include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/internal_api/configure_reason.h"
@@ -445,6 +446,7 @@ class SyncManager {
   // |user_agent| is a 7-bit ASCII string suitable for use as the User-Agent
   // HTTP header. Used internally when collecting stats to classify clients.
   // |sync_notifier| is owned and used to listen for notifications.
+  // |report_unrecoverable_error_function| may be NULL.
   bool Init(const FilePath& database_location,
             const browser_sync::WeakHandle<browser_sync::JsEventHandler>&
                 event_handler,
@@ -462,7 +464,9 @@ class SyncManager {
             const std::string& restored_key_for_bootstrapping,
             bool setup_for_test_mode,
             browser_sync::UnrecoverableErrorHandler*
-                unrecoverbale_error_handler);
+                unrecoverable_error_handler,
+            browser_sync::ReportUnrecoverableErrorFunction
+                report_unrecoverable_error_function);
 
   // Checks if the sync server is reachable.
   void CheckServerReachable();

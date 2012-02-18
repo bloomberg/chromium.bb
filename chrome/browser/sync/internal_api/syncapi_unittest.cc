@@ -770,7 +770,8 @@ class SyncManagerTest : public testing::Test,
                        &extensions_activity_monitor_, this, "bogus",
                        credentials, sync_notifier_mock_, "",
                        true /* setup_for_test_mode */,
-                       &handler);
+                       &handler,
+                       NULL);
 
     EXPECT_TRUE(sync_notifier_observer_);
     EXPECT_TRUE(js_backend_.IsInitialized());
