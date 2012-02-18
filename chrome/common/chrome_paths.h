@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,6 +67,8 @@ enum {
 
   DIR_DEFAULT_APPS,             // Directory where installer places .crx files
                                 // to be installed when chrome is first run.
+  DIR_PEPPER_FLASH_PLUGIN,      // Directory to the Pepper Flash plugin,
+                                // containing the plugin and the manifest.
   FILE_RESOURCE_MODULE,         // Full path and filename of the module that
                                 // contains embedded resources (version,
                                 // strings, images, etc.).
@@ -76,7 +78,7 @@ enum {
                                 // contains recorded browser events for
                                 // playback.
   FILE_FLASH_PLUGIN,            // Full path to the internal Flash plugin file.
-  FILE_PEPPER_FLASH_PLUGIN,     // Full path to the pepper Flash plugin file.
+  FILE_PEPPER_FLASH_PLUGIN,     // Full path to the Pepper Flash plugin file.
   FILE_PDF_PLUGIN,              // Full path to the internal PDF plugin file.
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

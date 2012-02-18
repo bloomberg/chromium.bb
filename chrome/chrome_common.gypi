@@ -15,6 +15,7 @@
       },
       'include_dirs': [
           '..',
+          '<(SHARED_INTERMEDIATE_DIR)',  # Needed by chrome_content_client.cc.
         ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -42,6 +43,7 @@
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/printing/printing.gyp:printing',
         '<(DEPTH)/skia/skia.gyp:skia',
+        '<(DEPTH)/third_party/adobe/flash/flash_player.gyp:flapper_version_h',
         '<(DEPTH)/third_party/bzip2/bzip2.gyp:bzip2',
         '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
         '<(DEPTH)/third_party/icu/icu.gyp:icuuc',

@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -15,13 +15,7 @@
             'destination': '<(PRODUCT_DIR)',
             'files': [],
             'conditions': [
-              [ 'chromeos == 1', {
-                'files': [
-                  'binaries/chromeos/libgcflashplayer.so',
-                  'binaries/linux/plugin.vch',
-                ]
-              }],
-              [ 'OS == "linux" and target_arch == "ia32" and chromeos == 0', {
+              [ 'OS == "linux" and target_arch == "ia32"', {
                 'files': [
                   'binaries/linux/libgcflashplayer.so',
                   'binaries/linux/plugin.vch',
@@ -45,6 +39,22 @@
           }],
         }],
       ],
+    },
+    {
+      'target_name': 'flapper_version_h',
+      'type': 'none',
+      'copies': [{
+        'destination': '<(SHARED_INTERMEDIATE_DIR)',
+        'files': [],
+        'conditions': [
+          # TODO(viettrungluu): actually bring in the headers.
+          [ '1 == 1', {
+            'files': [
+              'flapper_version.h',  # The default, which indicates no Flapper.
+            ],
+          }],
+        ],
+      }],
     },
   ],
 }

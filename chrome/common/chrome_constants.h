@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,6 +82,9 @@ extern const FilePath::CharType kLoginDataFileName[];
 extern const FilePath::CharType kJumpListIconDirname[];
 extern const FilePath::CharType kWebAppDirname[];
 extern const FilePath::CharType kServiceStateFileName[];
+
+// File name of the Pepper Flash plugin on different platforms.
+extern const FilePath::CharType kPepperFlashPluginFilename[];
 
 extern const bool kRecordModeEnabled;
 

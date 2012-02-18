@@ -672,6 +672,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kDumpHistogramsOnExit,
       switches::kEnableAsynchronousSpellChecking,
       switches::kEnableBenchmarking,
+      switches::kEnableBundledPpapiFlash,
       switches::kEnableCrxlessWebApps,
       switches::kEnableExperimentalExtensionApis,
       switches::kEnableInBrowserThumbnailing,
@@ -720,6 +721,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     static const char* const kSwitchNames[] = {
       switches::kUserDataDir,  // Make logs go to the right file.
       // Load (in-process) Pepper plugins in-process in the zygote pre-sandbox.
+      switches::kEnableBundledPpapiFlash,
       switches::kPpapiFlashInProcess,
       switches::kPpapiFlashPath,
       switches::kPpapiFlashVersion,

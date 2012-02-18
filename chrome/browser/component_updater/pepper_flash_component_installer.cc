@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/browser/plugin_prefs.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "content/public/browser/browser_thread.h"
@@ -39,16 +40,6 @@ const uint8 sha2_hash[] = {0xc8, 0xce, 0x99, 0xba, 0xce, 0x89, 0xf8, 0x20,
                            0xac, 0xd3, 0x7e, 0x86, 0x8c, 0x86, 0x2c, 0x11,
                            0xb9, 0x40, 0xc5, 0x55, 0xaf, 0x08, 0x63, 0x70,
                            0x54, 0xf9, 0x56, 0xd3, 0xe7, 0x88, 0xba, 0x8c};
-
-// File name of the Pepper Flash plugin on different platforms.
-const FilePath::CharType kPepperFlashPluginFileName[] =
-#if defined(OS_MACOSX)
-    FILE_PATH_LITERAL("PepperFlashPlayer.plugin");
-#elif defined(OS_WIN)
-    FILE_PATH_LITERAL("pepflashplayer.dll");
-#else  // OS_LINUX, etc.
-    FILE_PATH_LITERAL("libpepflashplayer.so");
-#endif
 
 // File name of the Pepper Flash component manifest on different platforms.
 const char kPepperFlashManifestName[] = "Flapper";
@@ -214,7 +205,8 @@ bool PepperFlashComponentInstaller::Install(base::DictionaryValue* manifest,
     return false;
   if (current_version_.CompareTo(version) > 0)
     return false;
-  if (!file_util::PathExists(unpack_path.Append(kPepperFlashPluginFileName)))
+  if (!file_util::PathExists(unpack_path.Append(
+          chrome::kPepperFlashPluginFilename)))
     return false;
   // Passed the basic tests. Time to install it.
   FilePath path =
@@ -226,8 +218,8 @@ bool PepperFlashComponentInstaller::Install(base::DictionaryValue* manifest,
   // Installation is done. Now tell the rest of chrome. Both the path service
   // and to the plugin service.
   current_version_ = version;
-  path = path.Append(kPepperFlashPluginFileName);
-  PathService::Override(chrome::FILE_PEPPER_FLASH_PLUGIN, path);
+  PathService::Override(chrome::DIR_PEPPER_FLASH_PLUGIN, path);
+  path = path.Append(chrome::kPepperFlashPluginFilename);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&RegisterPepperFlashWithChrome, path, version, true));
@@ -315,7 +307,7 @@ void StartPepperFlashUpdateRegistration(ComponentUpdateService* cus) {
 
   Version version(kNullVersion);
   if (GetLatestPepperFlashDirectory(&path, &version)) {
-    path = path.Append(kPepperFlashPluginFileName);
+    path = path.Append(chrome::kPepperFlashPluginFilename);
     if (file_util::PathExists(path)) {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,

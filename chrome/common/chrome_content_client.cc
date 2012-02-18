@@ -28,6 +28,8 @@
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/plugin_constants.h"
 
+#include "flapper_version.h"  // In <(SHARED_INTERMEDIATE_DIR).
+
 #if defined(OS_WIN)
 #include "sandbox/src/sandbox.h"
 #elif defined(OS_MACOSX)
@@ -188,34 +190,49 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
 #endif
 }
 
-void AddOutOfProcessFlash(std::vector<content::PepperPluginInfo>* plugins) {
+void AddPepperFlash(std::vector<content::PepperPluginInfo>* plugins) {
+  content::PepperPluginInfo plugin;
+
   // Flash being out of process is handled separately than general plugins
   // for testing purposes.
-  bool flash_out_of_process = !CommandLine::ForCurrentProcess()->HasSwitch(
+  plugin.is_out_of_process = !CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kPpapiFlashInProcess);
+  plugin.name = kFlashPluginName;
 
-  // Handle any Pepper Flash first.
+  std::string flash_version;  // Should be something like 11.2 or 11.2.123.45.
+
+  // Prefer Pepper Flash specified from the command-line.
   const CommandLine::StringType flash_path =
       CommandLine::ForCurrentProcess()->GetSwitchValueNative(
           switches::kPpapiFlashPath);
-  if (flash_path.empty())
+  if (!flash_path.empty()) {
+    plugin.path = FilePath(flash_path);
+
+    // Also get the version from the command-line.
+    flash_version = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        switches::kPpapiFlashVersion);
+  } else {
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableBundledPpapiFlash))
+      return;
+
+#if defined(FLAPPER_AVAILABLE)
+    if (!PathService::Get(chrome::FILE_PEPPER_FLASH_PLUGIN, &plugin.path))
+      return;
+    flash_version = FLAPPER_VERSION_STRING;
+#else
+    LOG(ERROR) << "PPAPI Flash not included at build time.";
     return;
+#endif  // FLAPPER_AVAILABLE
+  }
 
-  content::PepperPluginInfo plugin;
-  plugin.is_out_of_process = flash_out_of_process;
-  plugin.path = FilePath(flash_path);
-  plugin.name = kFlashPluginName;
-
-  const std::string flash_version =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-              switches::kPpapiFlashVersion);
   std::vector<std::string> flash_version_numbers;
   base::SplitString(flash_version, '.', &flash_version_numbers);
   if (flash_version_numbers.size() < 1)
-    flash_version_numbers.push_back("10");
+    flash_version_numbers.push_back("11");
   // |SplitString()| puts in an empty string given an empty string. :(
   else if (flash_version_numbers[0].empty())
-    flash_version_numbers[0] = "10";
+    flash_version_numbers[0] = "11";
   if (flash_version_numbers.size() < 2)
     flash_version_numbers.push_back("2");
   if (flash_version_numbers.size() < 3)
@@ -311,7 +328,7 @@ void ChromeContentClient::SetGpuInfo(const content::GPUInfo& gpu_info) {
 void ChromeContentClient::AddPepperPlugins(
     std::vector<content::PepperPluginInfo>* plugins) {
   ComputeBuiltInPlugins(plugins);
-  AddOutOfProcessFlash(plugins);
+  AddPepperFlash(plugins);
 }
 
 void ChromeContentClient::AddNPAPIPlugins(
