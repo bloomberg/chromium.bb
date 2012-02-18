@@ -77,7 +77,7 @@ TEST_F(RootWindowTest, DispatchMouseEvent) {
   gfx::Point point(101, 201);
   MouseEvent event1(
       ui::ET_MOUSE_PRESSED, point, point, ui::EF_LEFT_MOUSE_BUTTON);
-  RootWindow::GetInstance()->DispatchMouseEvent(&event1);
+  root_window()->DispatchMouseEvent(&event1);
 
   // Event was tested for non-client area for the target window.
   EXPECT_EQ(1, delegate1->non_client_count());
@@ -96,8 +96,7 @@ TEST_F(RootWindowTest, DispatchMouseEvent) {
 // Check that we correctly track the state of the mouse buttons in response to
 // button press and release events.
 TEST_F(RootWindowTest, MouseButtonState) {
-  RootWindow* root_window = RootWindow::GetInstance();
-  EXPECT_FALSE(root_window->IsMouseButtonDown());
+  EXPECT_FALSE(root_window()->IsMouseButtonDown());
 
   gfx::Point location;
   scoped_ptr<MouseEvent> event;
@@ -108,8 +107,8 @@ TEST_F(RootWindowTest, MouseButtonState) {
       location,
       location,
       ui::EF_LEFT_MOUSE_BUTTON));
-  root_window->DispatchMouseEvent(event.get());
-  EXPECT_TRUE(root_window->IsMouseButtonDown());
+  root_window()->DispatchMouseEvent(event.get());
+  EXPECT_TRUE(root_window()->IsMouseButtonDown());
 
   // Additionally press the right.
   event.reset(new MouseEvent(
@@ -117,8 +116,8 @@ TEST_F(RootWindowTest, MouseButtonState) {
       location,
       location,
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON));
-  root_window->DispatchMouseEvent(event.get());
-  EXPECT_TRUE(root_window->IsMouseButtonDown());
+  root_window()->DispatchMouseEvent(event.get());
+  EXPECT_TRUE(root_window()->IsMouseButtonDown());
 
   // Release the left button.
   event.reset(new MouseEvent(
@@ -126,8 +125,8 @@ TEST_F(RootWindowTest, MouseButtonState) {
       location,
       location,
       ui::EF_RIGHT_MOUSE_BUTTON));
-  root_window->DispatchMouseEvent(event.get());
-  EXPECT_TRUE(root_window->IsMouseButtonDown());
+  root_window()->DispatchMouseEvent(event.get());
+  EXPECT_TRUE(root_window()->IsMouseButtonDown());
 
   // Release the right button.  We should ignore the Shift-is-down flag.
   event.reset(new MouseEvent(
@@ -135,8 +134,8 @@ TEST_F(RootWindowTest, MouseButtonState) {
       location,
       location,
       ui::EF_SHIFT_DOWN));
-  root_window->DispatchMouseEvent(event.get());
-  EXPECT_FALSE(root_window->IsMouseButtonDown());
+  root_window()->DispatchMouseEvent(event.get());
+  EXPECT_FALSE(root_window()->IsMouseButtonDown());
 
   // Press the middle button.
   event.reset(new MouseEvent(
@@ -144,12 +143,11 @@ TEST_F(RootWindowTest, MouseButtonState) {
       location,
       location,
       ui::EF_MIDDLE_MOUSE_BUTTON));
-  root_window->DispatchMouseEvent(event.get());
-  EXPECT_TRUE(root_window->IsMouseButtonDown());
+  root_window()->DispatchMouseEvent(event.get());
+  EXPECT_TRUE(root_window()->IsMouseButtonDown());
 }
 
 TEST_F(RootWindowTest, TranslatedEvent) {
-  RootWindow* root_window = RootWindow::GetInstance();
   scoped_ptr<Window> w1(CreateTestWindowWithDelegate(NULL, 1,
       gfx::Rect(50, 50, 100, 100), NULL));
 
@@ -160,7 +158,7 @@ TEST_F(RootWindowTest, TranslatedEvent) {
   EXPECT_EQ("100,100", root.root_location().ToString());
 
   MouseEvent translated_event(
-      root, root_window, w1.get(),
+      root, root_window(), w1.get(),
       ui::ET_MOUSE_ENTERED, root.flags());
   EXPECT_EQ("50,50", translated_event.location().ToString());
   EXPECT_EQ("100,100", translated_event.root_location().ToString());

@@ -12,6 +12,7 @@
 #include "ui/aura/test/aura_test_helper.h"
 
 namespace aura {
+class RootWindow;
 namespace test {
 
 // A base class for aura unit tests.
@@ -28,8 +29,11 @@ class AuraTestBase : public testing::Test {
  protected:
   void RunAllPendingInMessageLoop();
 
+  RootWindow* root_window() { return root_window_; }
+
  private:
   AuraTestHelper helper_;
+  RootWindow* root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(AuraTestBase);
 };

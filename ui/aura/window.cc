@@ -173,9 +173,7 @@ bool Window::IsVisible() const {
 
 gfx::Rect Window::GetScreenBounds() const {
   gfx::Point origin = bounds().origin();
-  Window::ConvertPointToWindow(parent_,
-                               aura::RootWindow::GetInstance(),
-                               &origin);
+  Window::ConvertPointToWindow(parent_, GetRootWindow(), &origin);
   return gfx::Rect(origin, bounds().size());
 }
 

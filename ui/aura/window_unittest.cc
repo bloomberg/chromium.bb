@@ -301,7 +301,7 @@ TEST_F(WindowTest, GetEventHandlerForPoint) {
   scoped_ptr<Window> w13(
       CreateTestWindow(SK_ColorGRAY, 13, gfx::Rect(5, 470, 50, 50), w1.get()));
 
-  Window* root = RootWindow::GetInstance();
+  Window* root = root_window();
   w1->parent()->SetBounds(gfx::Rect(500, 500));
   EXPECT_EQ(NULL, root->GetEventHandlerForPoint(gfx::Point(5, 5)));
   EXPECT_EQ(w1.get(), root->GetEventHandlerForPoint(gfx::Point(11, 11)));
@@ -314,7 +314,7 @@ TEST_F(WindowTest, GetEventHandlerForPoint) {
 }
 
 TEST_F(WindowTest, GetTopWindowContainingPoint) {
-  Window* root = RootWindow::GetInstance();
+  Window* root = root_window();
   root->SetBounds(gfx::Rect(0, 0, 300, 300));
 
   scoped_ptr<Window> w1(
@@ -353,15 +353,14 @@ TEST_F(WindowTest, GetToplevelWindow) {
   const gfx::Rect kBounds(0, 0, 10, 10);
   TestWindowDelegate delegate;
 
-  Window* root = aura::RootWindow::GetInstance();
-  scoped_ptr<Window> w1(CreateTestWindowWithId(1, root));
+  scoped_ptr<Window> w1(CreateTestWindowWithId(1, root_window()));
   scoped_ptr<Window> w11(
       CreateTestWindowWithDelegate(&delegate, 11, kBounds, w1.get()));
   scoped_ptr<Window> w111(CreateTestWindowWithId(111, w11.get()));
   scoped_ptr<Window> w1111(
       CreateTestWindowWithDelegate(&delegate, 1111, kBounds, w111.get()));
 
-  EXPECT_TRUE(root->GetToplevelWindow() == NULL);
+  EXPECT_TRUE(root_window()->GetToplevelWindow() == NULL);
   EXPECT_TRUE(w1->GetToplevelWindow() == NULL);
   EXPECT_EQ(w11.get(), w11->GetToplevelWindow());
   EXPECT_EQ(w11.get(), w111->GetToplevelWindow());
@@ -485,7 +484,6 @@ TEST_F(WindowTest, StackChildAbove) {
 
 // Various capture assertions.
 TEST_F(WindowTest, CaptureTests) {
-  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
   CaptureWindowDelegateImpl delegate;
   scoped_ptr<Window> window(CreateTestWindowWithDelegate(
       &delegate, 0, gfx::Rect(0, 0, 20, 20), NULL));
@@ -507,7 +505,7 @@ TEST_F(WindowTest, CaptureTests) {
   delegate.ResetCounts();
 
   TouchEvent touchev(ui::ET_TOUCH_PRESSED, gfx::Point(50, 50), 0);
-  root_window->DispatchTouchEvent(&touchev);
+  root_window()->DispatchTouchEvent(&touchev);
   EXPECT_EQ(1, delegate.touch_event_count());
   delegate.ResetCounts();
 
@@ -520,16 +518,16 @@ TEST_F(WindowTest, CaptureTests) {
   generator.PressLeftButton();
   EXPECT_EQ(1, delegate.mouse_event_count());
 
-  root_window->DispatchTouchEvent(&touchev);
+  root_window()->DispatchTouchEvent(&touchev);
   EXPECT_EQ(0, delegate.touch_event_count());
 
   // Removing the capture window from parent should reset the capture window
   // in the root window.
   window->SetCapture();
-  EXPECT_EQ(window.get(), root_window->capture_window());
+  EXPECT_EQ(window.get(), root_window()->capture_window());
   window->parent()->RemoveChild(window.get());
   EXPECT_FALSE(window->HasCapture());
-  EXPECT_EQ(NULL, root_window->capture_window());
+  EXPECT_EQ(NULL, root_window()->capture_window());
 }
 
 // Changes capture while capture is already ongoing.
@@ -568,7 +566,6 @@ TEST_F(WindowTest, ChangeCaptureWhileMouseDown) {
 
 // Verifies capture is reset when a window is destroyed.
 TEST_F(WindowTest, ReleaseCaptureOnDestroy) {
-  RootWindow* root_window = RootWindow::GetInstance();
   CaptureWindowDelegateImpl delegate;
   scoped_ptr<Window> window(CreateTestWindowWithDelegate(
       &delegate, 0, gfx::Rect(0, 0, 20, 20), NULL));
@@ -582,8 +579,8 @@ TEST_F(WindowTest, ReleaseCaptureOnDestroy) {
   window.reset();
 
   // Make sure the root window doesn't reference the window anymore.
-  EXPECT_EQ(NULL, root_window->mouse_pressed_handler());
-  EXPECT_EQ(NULL, root_window->capture_window());
+  EXPECT_EQ(NULL, root_window()->mouse_pressed_handler());
+  EXPECT_EQ(NULL, root_window()->capture_window());
 }
 
 TEST_F(WindowTest, GetScreenBounds) {
@@ -835,8 +832,7 @@ TEST_F(WindowTest, IgnoreEventsTest) {
 
 // Tests transformation on the root window.
 TEST_F(WindowTest, Transform) {
-  RootWindow* root_window = RootWindow::GetInstance();
-  gfx::Size size = root_window->GetHostSize();
+  gfx::Size size = root_window()->GetHostSize();
   EXPECT_EQ(gfx::Rect(size),
             gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point()));
 
@@ -844,20 +840,20 @@ TEST_F(WindowTest, Transform) {
   ui::Transform transform;
   transform.SetRotate(90.0f);
   transform.ConcatTranslate(size.height(), 0);
-  root_window->SetTransform(transform);
+  root_window()->SetTransform(transform);
 
   // The size should be the transformed size.
   gfx::Size transformed_size(size.height(), size.width());
-  EXPECT_EQ(transformed_size.ToString(), root_window->GetHostSize().ToString());
+  EXPECT_EQ(transformed_size.ToString(),
+            root_window()->GetHostSize().ToString());
   EXPECT_EQ(gfx::Rect(transformed_size).ToString(),
-            root_window->bounds().ToString());
+            root_window()->bounds().ToString());
   EXPECT_EQ(gfx::Rect(transformed_size).ToString(),
             gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point()).ToString());
 }
 
 TEST_F(WindowTest, TransformGesture) {
-  RootWindow* root_window = RootWindow::GetInstance();
-  gfx::Size size = root_window->GetHostSize();
+  gfx::Size size = root_window()->GetHostSize();
 
   scoped_ptr<GestureTrackPositionDelegate> delegate(
       new GestureTrackPositionDelegate);
@@ -868,11 +864,11 @@ TEST_F(WindowTest, TransformGesture) {
   ui::Transform transform;
   transform.SetRotate(90.0f);
   transform.ConcatTranslate(size.height(), 0);
-  root_window->SetTransform(transform);
+  root_window()->SetTransform(transform);
 
   TouchEvent press(ui::ET_TOUCH_PRESSED,
       gfx::Point(size.height() - 10, 10), 0);
-  root_window->DispatchTouchEvent(&press);
+  root_window()->DispatchTouchEvent(&press);
   EXPECT_EQ(gfx::Point(10, 10).ToString(), delegate->position().ToString());
 }
 
@@ -1238,24 +1234,20 @@ TEST_F(WindowTest, StackWindowsWhoseLayersHaveNoDelegate) {
   scoped_ptr<Window> window2(CreateTestWindowWithId(2, NULL));
 
   // This brings window1 (and its layer) to the front.
-  RootWindow::GetInstance()->StackChildAbove(window1.get(), window2.get());
-  EXPECT_EQ(RootWindow::GetInstance()->children().front(), window2.get());
-  EXPECT_EQ(RootWindow::GetInstance()->children().back(), window1.get());
-  EXPECT_EQ(RootWindow::GetInstance()->layer()->children().front(),
-            window2->layer());
-  EXPECT_EQ(RootWindow::GetInstance()->layer()->children().back(),
-            window1->layer());
+  root_window()->StackChildAbove(window1.get(), window2.get());
+  EXPECT_EQ(root_window()->children().front(), window2.get());
+  EXPECT_EQ(root_window()->children().back(), window1.get());
+  EXPECT_EQ(root_window()->layer()->children().front(), window2->layer());
+  EXPECT_EQ(root_window()->layer()->children().back(), window1->layer());
 
   // Since window1 does not have a delegate, window2 should not move in
   // front of it, nor should its layer.
   window1->layer()->set_delegate(NULL);
-  RootWindow::GetInstance()->StackChildAbove(window2.get(), window1.get());
-  EXPECT_EQ(RootWindow::GetInstance()->children().front(), window2.get());
-  EXPECT_EQ(RootWindow::GetInstance()->children().back(), window1.get());
-  EXPECT_EQ(RootWindow::GetInstance()->layer()->children().front(),
-            window2->layer());
-  EXPECT_EQ(RootWindow::GetInstance()->layer()->children().back(),
-            window1->layer());
+  root_window()->StackChildAbove(window2.get(), window1.get());
+  EXPECT_EQ(root_window()->children().front(), window2.get());
+  EXPECT_EQ(root_window()->children().back(), window1.get());
+  EXPECT_EQ(root_window()->layer()->children().front(), window2->layer());
+  EXPECT_EQ(root_window()->layer()->children().back(), window1->layer());
 }
 
 TEST_F(WindowTest, StackTransientsWhoseLayersHaveNoDelegate) {
@@ -1274,7 +1266,7 @@ TEST_F(WindowTest, StackTransientsWhoseLayersHaveNoDelegate) {
 
   // Move window1 to the front.  All transients should move with it, and their
   // order should be preserved.
-  RootWindow* root = RootWindow::GetInstance();
+  RootWindow* root = root_window();
   root->StackChildAtTop(window1.get());
 
   ASSERT_EQ(6u, root->children().size());
@@ -1334,15 +1326,14 @@ TEST_F(WindowTest, VisibilityClientIsVisible) {
 
 // Tests mouse events on window change.
 TEST_F(WindowTest, MouseEventsOnWindowChange) {
-  RootWindow* root_window = RootWindow::GetInstance();
-  gfx::Size size = root_window->GetHostSize();
+  gfx::Size size = root_window()->GetHostSize();
 
   EventGenerator generator;
   generator.MoveMouseTo(50, 50);
 
   MouseTrackingDelegate d1;
   scoped_ptr<Window> w1(CreateTestWindowWithDelegate(&d1, 1,
-      gfx::Rect(0, 0, 100, 100), root_window));
+      gfx::Rect(0, 0, 100, 100), root_window()));
   RunAllPendingInMessageLoop();
   // The format of result is "Enter/Mouse/Leave".
   EXPECT_EQ("1 1 0", d1.GetMouseCountsAndReset());
@@ -1412,8 +1403,9 @@ TEST_F(WindowTest, MouseEventsOnWindowChange) {
 
 class StackingMadrigalLayoutManager : public LayoutManager {
  public:
-  StackingMadrigalLayoutManager() {
-    RootWindow::GetInstance()->SetLayoutManager(this);
+  explicit StackingMadrigalLayoutManager(RootWindow* root_window)
+      : root_window_(root_window) {
+    root_window_->SetLayoutManager(this);
   }
   virtual ~StackingMadrigalLayoutManager() {
   }
@@ -1425,15 +1417,14 @@ class StackingMadrigalLayoutManager : public LayoutManager {
   virtual void OnWillRemoveWindowFromLayout(Window* child) OVERRIDE {}
   virtual void OnChildWindowVisibilityChanged(Window* child,
                                               bool visible) OVERRIDE {
-    Window::Windows::const_iterator it =
-        RootWindow::GetInstance()->children().begin();
+    Window::Windows::const_iterator it = root_window_->children().begin();
     Window* last_window = NULL;
-    for (; it != RootWindow::GetInstance()->children().end(); ++it) {
+    for (; it != root_window_->children().end(); ++it) {
       if (*it == child && last_window) {
         if (!visible)
-          RootWindow::GetInstance()->StackChildAbove(last_window, *it);
+          root_window_->StackChildAbove(last_window, *it);
         else
-          RootWindow::GetInstance()->StackChildAbove(*it, last_window);
+          root_window_->StackChildAbove(*it, last_window);
         break;
       }
       last_window = *it;
@@ -1443,6 +1434,8 @@ class StackingMadrigalLayoutManager : public LayoutManager {
                               const gfx::Rect& requested_bounds) OVERRIDE {
     SetChildBoundsDirect(child, requested_bounds);
   }
+
+  RootWindow* root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(StackingMadrigalLayoutManager);
 };
@@ -1495,7 +1488,7 @@ class StackingMadrigalVisibilityClient : public client::VisibilityClient {
 // child. A fix is made to Window::StackAbove to prevent this, and this test
 // verifies this fix.
 TEST_F(WindowTest, StackingMadrigal) {
-  new StackingMadrigalLayoutManager;
+  new StackingMadrigalLayoutManager(root_window());
   StackingMadrigalVisibilityClient visibility_client;
 
   scoped_ptr<Window> window1(CreateTestWindowWithId(1, NULL));
@@ -1525,7 +1518,7 @@ TEST_F(WindowTest, StackingMadrigal) {
   // resulting in window12's layer being below window1's layer (though the
   // windows themselves would still be correctly stacked, so events would pass
   // through.)
-  RootWindow::GetInstance()->StackChildAbove(window1.get(), window12.get());
+  root_window()->StackChildAbove(window1.get(), window12.get());
 
   // Both window12 and its layer should be stacked above window1.
   EXPECT_TRUE(WindowIsAbove(window12.get(), window1.get()));
@@ -1542,7 +1535,7 @@ TEST_F(WindowTest, StackOverClosingTransient) {
   scoped_ptr<Window> transient2(CreateTransientChild(21, window2.get()));
 
   // Both windows and layers are stacked in creation order.
-  RootWindow* root = RootWindow::GetInstance();
+  RootWindow* root = root_window();
   ASSERT_EQ(4u, root->children().size());
   EXPECT_EQ(root->children()[0], window1.get());
   EXPECT_EQ(root->children()[1], transient1.get());
@@ -1555,7 +1548,7 @@ TEST_F(WindowTest, StackOverClosingTransient) {
   EXPECT_EQ(root->layer()->children()[3], transient2->layer());
 
   // This brings window1 and its transient to the front.
-  //root_window->StackChildAbove(window1.get(), window2.get());
+  // root_window()->StackChildAbove(window1.get(), window2.get());
   root->StackChildAtTop(window1.get());
 
   EXPECT_EQ(root->children()[0], window2.get());

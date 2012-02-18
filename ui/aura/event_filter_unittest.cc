@@ -86,7 +86,7 @@ Window* CreateWindow(int id, Window* parent, WindowDelegate* delegate) {
 //      +- w111 (EF)
 //        +- w1111 <-- target window
 TEST_F(EventFilterTest, Basic) {
-  scoped_ptr<Window> w1(CreateWindow(1, RootWindow::GetInstance(), NULL));
+  scoped_ptr<Window> w1(CreateWindow(1, root_window(), NULL));
   scoped_ptr<Window> w11(CreateWindow(11, w1.get(), NULL));
   scoped_ptr<Window> w111(CreateWindow(111, w11.get(), NULL));
   TestEventFilterWindowDelegate* d1111 = new TestEventFilterWindowDelegate;
@@ -95,7 +95,7 @@ TEST_F(EventFilterTest, Basic) {
   TestEventFilter* root_window_filter = new TestEventFilter;
   TestEventFilter* w1_filter = new TestEventFilter;
   TestEventFilter* w111_filter = new TestEventFilter;
-  RootWindow::GetInstance()->SetEventFilter(root_window_filter);
+  root_window()->SetEventFilter(root_window_filter);
   w1->SetEventFilter(w1_filter);
   w111->SetEventFilter(w111_filter);
 
@@ -106,7 +106,7 @@ TEST_F(EventFilterTest, Basic) {
   EventGenerator generator(w1111.get());
   generator.PressLeftButton();
   KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
-  RootWindow::GetInstance()->DispatchKeyEvent(&key_event);
+  root_window()->DispatchKeyEvent(&key_event);
 
   // TODO(sadrul): TouchEvent!
   EXPECT_EQ(1, root_window_filter->key_event_count());
@@ -132,7 +132,7 @@ TEST_F(EventFilterTest, Basic) {
   w1_filter->set_consumes_mouse_events(true);
 
   generator.ReleaseLeftButton();
-  RootWindow::GetInstance()->DispatchKeyEvent(&key_event);
+  root_window()->DispatchKeyEvent(&key_event);
 
   // TODO(sadrul): TouchEvent!
   EXPECT_EQ(1, root_window_filter->key_event_count());
