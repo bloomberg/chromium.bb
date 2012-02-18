@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,8 @@ class GpuWatchdogThread;
 // commands to the GPU.
 class GpuChildThread : public ChildThread {
  public:
-  explicit GpuChildThread(bool dead_on_arrival);
+  explicit GpuChildThread(bool dead_on_arrival,
+                          const content::GPUInfo& gpu_info);
 
   // For single-process mode.
   explicit GpuChildThread(const std::string& channel_id);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,6 @@
 #include "build/build_config.h"
 #include "content/common/child_process.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/gpu/gpu_info_collector.h"
 #include "content/gpu/gpu_watchdog_thread.h"
@@ -37,8 +36,10 @@ bool GpuProcessLogMessageHandler(int severity,
 
 }  // namespace
 
-GpuChildThread::GpuChildThread(bool dead_on_arrival)
-    : dead_on_arrival_(dead_on_arrival) {
+GpuChildThread::GpuChildThread(bool dead_on_arrival,
+                               const content::GPUInfo& gpu_info)
+    : dead_on_arrival_(dead_on_arrival),
+      gpu_info_(gpu_info) {
 #if defined(OS_WIN)
   target_services_ = NULL;
   collecting_dx_diagnostics_ = false;
@@ -52,6 +53,9 @@ GpuChildThread::GpuChildThread(const std::string& channel_id)
   target_services_ = NULL;
   collecting_dx_diagnostics_ = false;
 #endif
+  if (!gpu_info_collector::CollectGraphicsInfo(&gpu_info_)) {
+    LOG(INFO) << "gpu_info_collector::CollectGraphicsInfo failed";
+  }
 }
 
 
@@ -102,13 +106,6 @@ void GpuChildThread::OnInitialize() {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) &&
       !CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU))
     logging::SetLogMessageHandler(GpuProcessLogMessageHandler);
-
-  // Always set gpu info and send it back, even if there's an error and it's
-  // impartially collected.
-  bool succeeded = gpu_info_collector::CollectGraphicsInfo(&gpu_info_);
-  content::GetContentClient()->SetGpuInfo(gpu_info_);
-  LOG(INFO) << "gpu_info_collector::CollectGraphicsInfo complete. success = " <<
-               succeeded;
 
   // Record initialization only after collecting the GPU info because that can
   // take a significant amount of time.
