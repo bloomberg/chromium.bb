@@ -383,12 +383,12 @@ var chrome = chrome || {};
         return;
 
       // See comment on internalAPIs at the top.
-      var module = apiDef.internal ? internalAPIs : chrome;
+      var mod = apiDef.internal ? internalAPIs : chrome;
 
       var namespaces = apiDef.namespace.split('.');
       for (var index = 0, name; name = namespaces[index]; index++) {
-        module[name] = module[name] || {};
-        module = module[name];
+        mod[name] = mod[name] || {};
+        mod = mod[name];
       }
 
       // Add types to global validationTypes
@@ -413,10 +413,10 @@ var chrome = chrome || {};
                itemSchema.unprivileged;
       }
 
-      // Adds a getter that throws an access denied error to object |module|
+      // Adds a getter that throws an access denied error to object |mod|
       // for property |name|.
-      function addUnprivilegedAccessGetter(module, name) {
-        module.__defineGetter__(name, function() {
+      function addUnprivilegedAccessGetter(mod, name) {
+        mod.__defineGetter__(name, function() {
           throw new Error(
               '"' + name + '" can only be used in extension processes. See ' +
               'the content scripts documentation for more details.');
@@ -426,12 +426,12 @@ var chrome = chrome || {};
       // Setup Functions.
       if (apiDef.functions) {
         apiDef.functions.forEach(function(functionDef) {
-          if (functionDef.name in module)
+          if (functionDef.name in mod)
             return;
           if (!isSchemaNodeSupported(functionDef, platform, manifestVersion))
             return;
           if (!isSchemaAccessAllowed(functionDef)) {
-            addUnprivilegedAccessGetter(module, functionDef.name);
+            addUnprivilegedAccessGetter(mod, functionDef.name);
             return;
           }
 
@@ -440,7 +440,7 @@ var chrome = chrome || {};
           apiFunction.name = apiDef.namespace + "." + functionDef.name;
           apiFunctions.register(apiFunction.name, apiFunction);
 
-          module[functionDef.name] = (function() {
+          mod[functionDef.name] = (function() {
             var args = arguments;
             if (this.updateArgumentsPreValidate)
               args = this.updateArgumentsPreValidate.apply(this, args);
@@ -471,23 +471,23 @@ var chrome = chrome || {};
       // Setup Events
       if (apiDef.events) {
         apiDef.events.forEach(function(eventDef) {
-          if (eventDef.name in module)
+          if (eventDef.name in mod)
             return;
           if (!isSchemaNodeSupported(eventDef, platform, manifestVersion))
             return;
           if (!isSchemaAccessAllowed(eventDef)) {
-            addUnprivilegedAccessGetter(module, eventDef.name);
+            addUnprivilegedAccessGetter(mod, eventDef.name);
             return;
           }
 
           var eventName = apiDef.namespace + "." + eventDef.name;
           var customEvent = customEvents[apiDef.namespace];
           if (customEvent) {
-            module[eventDef.name] = new customEvent(
+            mod[eventDef.name] = new customEvent(
                 eventName, eventDef.parameters, eventDef.extraParameters,
                 eventDef.options);
           } else {
-            module[eventDef.name] = new chrome.Event(
+            mod[eventDef.name] = new chrome.Event(
                 eventName, eventDef.parameters, eventDef.options);
           }
         });
@@ -541,7 +541,7 @@ var chrome = chrome || {};
         });
       }
 
-      addProperties(module, apiDef);
+      addProperties(mod, apiDef);
     });
 
     // Run the non-declarative custom hooks after all the schemas have been
