@@ -84,9 +84,9 @@ TEST(LookaheadFilterInterpreterTest, SimpleTest) {
     { 1.03, 0, 1, 1, &fs[2] },
 
     // Expect no movement
-    { 1.01, 0, 1, 1, &fs[0] },
-    { 1.03, 0, 1, 1, &fs[1] },
-    { 1.03, 0, 0, 0, NULL },
+    { 1.010, 0, 1, 1, &fs[0] },
+    { 1.030, 0, 1, 1, &fs[1] },
+    { 1.031, 0, 0, 0, NULL },
 
     // Expect movement b/c it's moving really fast
     { 1.010, 0, 1, 1, &fs[0] },
