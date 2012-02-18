@@ -223,7 +223,7 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
     ChromeEndureBaseTest.setUp(self)
 
     # Log into a test Google account and open up Gmail.
-    self._LoginToGoogleAccount()
+    self._LoginToGoogleAccount(account_key='test_google_account_gmail')
     self.NavigateToURL('http://www.gmail.com')
     loaded_tab_title = self.GetActiveTabTitle()
     self.assertTrue(self._tab_title_substring in loaded_tab_title,
@@ -321,7 +321,7 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
   # TODO(dennisjeffrey): Remove this test once the Gmail team is done analyzing
   # the results after the test runs for a period of time.
   def testGmailComposeDiscardSleep(self):
-    """Like testGmailComposeDiscard, but sleeps for 10s between iterations.
+    """Like testGmailComposeDiscard, but sleeps for 30s between iterations.
 
     This is a temporary test requested by the Gmail team to compare against the
     results from testGmailComposeDiscard above.
@@ -375,21 +375,18 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
       self._wait.until(lambda _: not self._GetElement(
                            self._driver.find_element_by_name, 'to'))
 
-      logging.debug('Sleeping 10 seconds.')
-      time.sleep(10)
+      logging.debug('Sleeping 30 seconds.')
+      time.sleep(30)
 
     self._GetPerformanceStats(self._webapp_name, test_description,
                               self._tab_title_substring)
 
-  def TestGmailAlternateThreadlistConversation(self):
+  def testGmailAlternateThreadlistConversation(self):
     """Alternates between threadlist view and conversation view.
 
     This test continually clicks between the threadlist (Inbox) and the
     conversation view (e-mail message view), and periodically gathers
     performance stats that may reveal memory bloat.
-
-    This test assumes the given Gmail account contains a message in the inbox
-    sent from the same account ("me").
     """
     test_description = 'ThreadConversation'
 
@@ -415,12 +412,13 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
         logging.info('Chrome interaction #%d. Time remaining in test: %d sec.' %
                      (iteration_num, remaining_time))
 
-      # Find a thread (e-mail) that was sent by this account ("me").  Then click
-      # it and wait for the conversation view to appear (assumed to be visible
-      # when a particular div exists on the page).
+      # Find the first thread (e-mail) identified by a "span" tag that contains
+      # an "email" attribute.  Then click it and wait for the conversation view
+      # to appear (assumed to be visible when a particular div exists on the
+      # page).
       thread = self._wait.until(
           lambda _: self._GetElement(self._driver.find_element_by_xpath,
-                                     '//span[text()="me"]'))
+                                     '//span[@email]'))
       thread.click()
       self._WaitForElementByXpath(
           self._driver, self._wait, '//div[text()="Click here to "]')
@@ -431,7 +429,7 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
       # no longer appears on the page).
       inbox = self._wait.until(
           lambda _: self._GetElement(self._driver.find_element_by_xpath,
-                                     '//a[text()="Inbox"]'))
+                                     '//a[starts-with(text(), "Inbox")]'))
       inbox.click()
       self._wait.until(
           lambda _: not self._GetElement(
@@ -442,7 +440,7 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
     self._GetPerformanceStats(self._webapp_name, test_description,
                               self._tab_title_substring)
 
-  def TestGmailAlternateTwoLabels(self):
+  def testGmailAlternateTwoLabels(self):
     """Continuously alternates between two labels.
 
     This test continually clicks between the "Inbox" and "Sent Mail" labels,
@@ -476,7 +474,7 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
       # with the substring "sent".
       sent = self._wait.until(
           lambda _: self._GetElement(self._driver.find_element_by_xpath,
-                                     '//a[text()="Sent Mail"]'))
+                                     '//a[starts-with(text(), "Sent Mail")]'))
       sent.click()
       self.assertTrue(
           self.WaitUntil(lambda: 'Sent Mail' in self.GetActiveTabTitle(),
@@ -488,7 +486,7 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
       # the substring "inbox".
       inbox = self._wait.until(
           lambda _: self._GetElement(self._driver.find_element_by_xpath,
-                                     '//a[text()="Inbox"]'))
+                                     '//a[starts-with(text(), "Inbox")]'))
       inbox.click()
       self.assertTrue(
           self.WaitUntil(lambda: 'Inbox' in self.GetActiveTabTitle(),
@@ -499,23 +497,20 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
     self._GetPerformanceStats(self._webapp_name, test_description,
                               self._tab_title_substring)
 
-  def TestGmailExpandCollapseConversation(self):
+  def testGmailExpandCollapseConversation(self):
     """Continuously expands/collapses all messages in a conversation.
 
     This test opens up a conversation (e-mail thread) with several messages,
     then continually alternates between the "Expand all" and "Collapse all"
     views, while periodically gathering performance stats that may reveal memory
     bloat.
-
-    This test assumes the given Gmail account contains a message in the inbox
-    sent from the same account ("me"), containing multiple replies.
     """
     test_description = 'ExpandCollapse'
 
     # Enter conversation view for a particular thread.
     thread = self._wait.until(
         lambda _: self._GetElement(self._driver.find_element_by_xpath,
-                                   '//span[text()="me"]'))
+                                   '//span[@email]'))
     thread.click()
     self._WaitForElementByXpath(
         self._driver, self._wait, '//div[text()="Click here to "]')

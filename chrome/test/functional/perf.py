@@ -398,9 +398,14 @@ class BasePerfTest(pyauto.PyUITest):
     self._PrintSummaryResults(description, timings, 'milliseconds',
                               description)
 
-  def _LoginToGoogleAccount(self):
-    """Logs in to a testing Google account."""
-    creds = self.GetPrivateInfo()['test_google_account']
+  def _LoginToGoogleAccount(self, account_key='test_google_account'):
+    """Logs in to a test Google account.
+
+    Args:
+      account_key: The string key associated with the test account login
+                   credentials to use.
+    """
+    creds = self.GetPrivateInfo()[account_key]
     test_utils.GoogleAccountsLogin(self, creds['username'], creds['password'])
     self.NavigateToURL('about:blank')  # Clear the existing tab.
 
