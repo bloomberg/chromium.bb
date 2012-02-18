@@ -234,7 +234,7 @@ BOT_ASSIGNMENT = {
     'linux-pnacl-x86_64-tests':
         'bash buildbot/buildbot_pnacl_toolchain_tests.sh',
     # TODO(pdox): Rename this bot to x86_64
-    'win-pnacl-x86_32-newlib':
+    'win-pnacl-x86_32':
         'buildbot\\buildbot_toolchain_arm_untrusted.bat win 64',
 
     # Toolchain trybots.
