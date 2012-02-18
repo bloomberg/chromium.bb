@@ -874,6 +874,7 @@ glibc-copy() {
                       libc-2.9.so libc.so libc.so.* \
                       libm-2.9.so libm.so libm.so.* \
                       libdl-2.9.so libdl.so.* libdl.so \
+                      librt-2.9.so librt.so.* librt.so \
                       libpthread-2.9.so libpthread.so \
                       libpthread.so.* libpthread_nonshared.a \
                       runnable-ld.so \
