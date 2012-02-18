@@ -107,7 +107,6 @@ INITIAL_ENV = {
   'SCONS_OS_windows'    : 'win',
 
   # Tool Pathnames
-  'GOLD_PLUGIN_SO'  : '${BASE_LLVM}/${SO_DIR}/${SO_PREFIX}LLVMgold${SO_EXT}',
   'DRAGONEGG_PLUGIN': '${BASE_GCC}/lib/dragonegg${SO_EXT}',
 
   'SCONS_STAGING'       : '${SCONS_STAGING_%ARCH%}',

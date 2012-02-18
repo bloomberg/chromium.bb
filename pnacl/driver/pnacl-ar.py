@@ -15,5 +15,8 @@ from driver_env import env
 from driver_log import Log
 
 def main(argv):
+  if len(argv) > 0:
+    # --plugin must come after the command flags, but before the filename.
+    argv = [argv[0], '--plugin=LLVMgold'] + argv[1:]
   env.set('ARGS', *argv)
   return driver_tools.RunWithLog('${AR} ${ARGS}', errexit = False)

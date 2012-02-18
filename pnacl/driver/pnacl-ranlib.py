@@ -15,4 +15,4 @@ from driver_log import Log
 
 def main(argv):
   env.set('ARGS', *argv)
-  return RunWithLog('"${RANLIB}" ${ARGS}', errexit=False)
+  return RunWithLog('"${RANLIB}" --plugin=LLVMgold ${ARGS}', errexit=False)

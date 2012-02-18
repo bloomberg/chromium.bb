@@ -57,7 +57,7 @@ EXTRA_ENV = {
   'OPT_STRIP_all': '-disable-opt --strip',
   'OPT_STRIP_debug': '-disable-opt --strip-debug',
 
-  'GOLD_PLUGIN_ARGS': '-plugin=${GOLD_PLUGIN_SO} ' +
+  'GOLD_PLUGIN_ARGS': '-plugin=LLVMgold ' +
                       '-plugin-opt=emit-llvm',
 
   'LD_FLAGS'       : '-nostdlib ${@AddPrefix:-L:SEARCH_DIRS} ' +

@@ -14,4 +14,4 @@ from driver_env import env
 
 def main(argv):
   env.set('ARGS', *argv)
-  return RunWithLog('${NM} ${ARGS}', errexit=False)
+  return RunWithLog('${NM} --plugin=LLVMgold ${ARGS}', errexit=False)
