@@ -101,7 +101,7 @@ struct shell_surface {
 	} rotation;
 
 	struct {
-		struct wl_grab grab;
+		struct wl_pointer_grab grab;
 		uint32_t time;
 		int32_t x, y;
 		struct weston_transform parent_transform;
@@ -114,13 +114,13 @@ struct shell_surface {
 };
 
 struct weston_move_grab {
-	struct wl_grab grab;
+	struct wl_pointer_grab grab;
 	struct weston_surface *surface;
 	int32_t dx, dy;
 };
 
 struct rotate_grab {
-	struct wl_grab grab;
+	struct wl_pointer_grab grab;
 	struct shell_surface *surface;
 	struct weston_matrix rotation;
 	struct {
@@ -154,14 +154,14 @@ shell_configuration(struct wl_shell *shell)
 }
 
 static void
-noop_grab_focus(struct wl_grab *grab, uint32_t time,
+noop_grab_focus(struct wl_pointer_grab *grab, uint32_t time,
 		struct wl_surface *surface, int32_t x, int32_t y)
 {
 	grab->focus = NULL;
 }
 
 static void
-move_grab_motion(struct wl_grab *grab,
+move_grab_motion(struct wl_pointer_grab *grab,
 		 uint32_t time, int32_t x, int32_t y)
 {
 	struct weston_move_grab *move = (struct weston_move_grab *) grab;
@@ -175,18 +175,18 @@ move_grab_motion(struct wl_grab *grab,
 }
 
 static void
-move_grab_button(struct wl_grab *grab,
+move_grab_button(struct wl_pointer_grab *grab,
 		 uint32_t time, int32_t button, int32_t state)
 {
 	struct wl_input_device *device = grab->input_device;
 
 	if (device->button_count == 0 && state == 0) {
-		wl_input_device_end_grab(device, time);
+		wl_input_device_end_pointer_grab(device, time);
 		free(grab);
 	}
 }
 
-static const struct wl_grab_interface move_grab_interface = {
+static const struct wl_pointer_grab_interface move_grab_interface = {
 	noop_grab_focus,
 	move_grab_motion,
 	move_grab_button,
@@ -207,7 +207,7 @@ weston_surface_move(struct weston_surface *es,
 	move->dy = es->geometry.y - wd->input_device.grab_y;
 	move->surface = es;
 
-	wl_input_device_start_grab(&wd->input_device, &move->grab, time);
+	wl_input_device_start_pointer_grab(&wd->input_device, &move->grab, time);
 
 	wl_input_device_set_pointer_focus(&wd->input_device, NULL, time, 0, 0);
 
@@ -231,14 +231,14 @@ shell_surface_move(struct wl_client *client, struct wl_resource *resource,
 }
 
 struct weston_resize_grab {
-	struct wl_grab grab;
+	struct wl_pointer_grab grab;
 	uint32_t edges;
 	int32_t width, height;
 	struct shell_surface *shsurf;
 };
 
 static void
-resize_grab_motion(struct wl_grab *grab,
+resize_grab_motion(struct wl_pointer_grab *grab,
 		   uint32_t time, int32_t x, int32_t y)
 {
 	struct weston_resize_grab *resize = (struct weston_resize_grab *) grab;
@@ -275,18 +275,18 @@ resize_grab_motion(struct wl_grab *grab,
 }
 
 static void
-resize_grab_button(struct wl_grab *grab,
+resize_grab_button(struct wl_pointer_grab *grab,
 		   uint32_t time, int32_t button, int32_t state)
 {
 	struct wl_input_device *device = grab->input_device;
 
 	if (device->button_count == 0 && state == 0) {
-		wl_input_device_end_grab(device, time);
+		wl_input_device_end_pointer_grab(device, time);
 		free(grab);
 	}
 }
 
-static const struct wl_grab_interface resize_grab_interface = {
+static const struct wl_pointer_grab_interface resize_grab_interface = {
 	noop_grab_focus,
 	resize_grab_motion,
 	resize_grab_button,
@@ -315,7 +315,7 @@ weston_surface_resize(struct shell_surface *shsurf,
 	resize->height = shsurf->surface->geometry.height;
 	resize->shsurf = shsurf;
 
-	wl_input_device_start_grab(&wd->input_device, &resize->grab, time);
+	wl_input_device_start_pointer_grab(&wd->input_device, &resize->grab, time);
 
 	wl_input_device_set_pointer_focus(&wd->input_device, NULL, time, 0, 0);
 
@@ -515,7 +515,7 @@ shell_surface_set_fullscreen(struct wl_client *client,
 }
 
 static void
-popup_grab_focus(struct wl_grab *grab, uint32_t time,
+popup_grab_focus(struct wl_pointer_grab *grab, uint32_t time,
 		 struct wl_surface *surface, int32_t x, int32_t y)
 {
 	struct wl_input_device *device = grab->input_device;
@@ -533,7 +533,7 @@ popup_grab_focus(struct wl_grab *grab, uint32_t time,
 }
 
 static void
-popup_grab_motion(struct wl_grab *grab,
+popup_grab_motion(struct wl_pointer_grab *grab,
 		  uint32_t time, int32_t sx, int32_t sy)
 {
 	struct wl_resource *resource;
@@ -545,7 +545,7 @@ popup_grab_motion(struct wl_grab *grab,
 }
 
 static void
-popup_grab_button(struct wl_grab *grab,
+popup_grab_button(struct wl_pointer_grab *grab,
 		  uint32_t time, int32_t button, int32_t state)
 {
 	struct wl_resource *resource;
@@ -561,7 +561,7 @@ popup_grab_button(struct wl_grab *grab,
 		    time - shsurf->popup.time > 500)) {
 		wl_resource_post_event(&shsurf->resource,
 				       WL_SHELL_SURFACE_POPUP_DONE);
-		wl_input_device_end_grab(grab->input_device, time);
+		wl_input_device_end_pointer_grab(grab->input_device, time);
 		shsurf->popup.grab.input_device = NULL;
 	}
 
@@ -569,7 +569,7 @@ popup_grab_button(struct wl_grab *grab,
 		shsurf->popup.initial_up = 1;
 }
 
-static const struct wl_grab_interface popup_grab_interface = {
+static const struct wl_pointer_grab_interface popup_grab_interface = {
 	popup_grab_focus,
 	popup_grab_motion,
 	popup_grab_button,
@@ -607,7 +607,7 @@ shell_map_popup(struct shell_surface *shsurf, uint32_t time)
 	shsurf->popup.time = device->grab_time;
 	shsurf->popup.initial_up = 0;
 
-	wl_input_device_start_grab(shsurf->popup.grab.input_device,
+	wl_input_device_start_pointer_grab(shsurf->popup.grab.input_device,
 				   &shsurf->popup.grab, shsurf->popup.time);
 }
 
@@ -643,7 +643,7 @@ destroy_shell_surface(struct wl_resource *resource)
 	struct shell_surface *shsurf = resource->data;
 
 	if (shsurf->popup.grab.input_device)
-		wl_input_device_end_grab(shsurf->popup.grab.input_device, 0);
+		wl_input_device_end_pointer_grab(shsurf->popup.grab.input_device, 0);
 
 	/* in case cleaning up a dead client destroys shell_surface first */
 	if (shsurf->surface)
@@ -1045,7 +1045,7 @@ terminate_binding(struct wl_input_device *device, uint32_t time,
 }
 
 static void
-rotate_grab_motion(struct wl_grab *grab,
+rotate_grab_motion(struct wl_pointer_grab *grab,
 		 uint32_t time, int32_t x, int32_t y)
 {
 	struct rotate_grab *rotate =
@@ -1096,7 +1096,7 @@ rotate_grab_motion(struct wl_grab *grab,
 }
 
 static void
-rotate_grab_button(struct wl_grab *grab,
+rotate_grab_button(struct wl_pointer_grab *grab,
 		 uint32_t time, int32_t button, int32_t state)
 {
 	struct rotate_grab *rotate =
@@ -1107,12 +1107,12 @@ rotate_grab_button(struct wl_grab *grab,
 	if (device->button_count == 0 && state == 0) {
 		weston_matrix_multiply(&surface->rotation.rotation,
 				       &rotate->rotation);
-		wl_input_device_end_grab(device, time);
+		wl_input_device_end_pointer_grab(device, time);
 		free(rotate);
 	}
 }
 
-static const struct wl_grab_interface rotate_grab_interface = {
+static const struct wl_pointer_grab_interface rotate_grab_interface = {
 	noop_grab_focus,
 	rotate_grab_motion,
 	rotate_grab_button,
@@ -1158,7 +1158,7 @@ rotate_binding(struct wl_input_device *device, uint32_t time,
 				 surface->surface->geometry.height / 2,
 				 &rotate->center.x, &rotate->center.y);
 
-	wl_input_device_start_grab(device, &rotate->grab, time);
+	wl_input_device_start_pointer_grab(device, &rotate->grab, time);
 
 	dx = device->x - rotate->center.x;
 	dy = device->y - rotate->center.y;
@@ -1234,7 +1234,7 @@ click_to_activate_binding(struct wl_input_device *device,
 	struct weston_surface *focus;
 
 	focus = (struct weston_surface *) device->pointer_focus;
-	if (state && focus && device->grab == &device->default_grab)
+	if (state && focus && device->pointer_grab == &device->default_pointer_grab)
 		activate(compositor->shell, focus, wd, time);
 }
 

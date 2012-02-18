@@ -532,7 +532,7 @@ static void
 weston_device_repick(struct wl_input_device *device, uint32_t time)
 {
 	struct weston_input_device *wd = (struct weston_input_device *) device;
-	const struct wl_grab_interface *interface;
+	const struct wl_pointer_grab_interface *interface;
 	struct weston_surface *surface, *focus;
 
 	surface = weston_compositor_pick_surface(wd->compositor,
@@ -541,16 +541,16 @@ weston_device_repick(struct wl_input_device *device, uint32_t time)
 						 &device->current_y);
 
 	if (&surface->surface != device->current) {
-		interface = device->grab->interface;
-		interface->focus(device->grab, time, &surface->surface,
+		interface = device->pointer_grab->interface;
+		interface->focus(device->pointer_grab, time, &surface->surface,
 				 device->current_x, device->current_y);
 		device->current = &surface->surface;
 	}
 
-	focus = (struct weston_surface *) device->grab->focus;
+	focus = (struct weston_surface *) device->pointer_grab->focus;
 	if (focus)
 		weston_surface_from_global(focus, device->x, device->y,
-					   &device->grab->x, &device->grab->y);
+					   &device->pointer_grab->x, &device->pointer_grab->y);
 }
 
 WL_EXPORT void
@@ -1298,7 +1298,7 @@ WL_EXPORT void
 notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 {
 	struct weston_output *output;
-	const struct wl_grab_interface *interface;
+	const struct wl_pointer_grab_interface *interface;
 	struct weston_input_device *wd = (struct weston_input_device *) device;
 	struct weston_compositor *ec = wd->compositor;
 	int x_valid = 0, y_valid = 0;
@@ -1345,9 +1345,9 @@ notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 	device->y = y;
 
 	weston_device_repick(device, time);
-	interface = device->grab->interface;
-	interface->motion(device->grab, time,
-			  device->grab->x, device->grab->y);
+	interface = device->pointer_grab->interface;
+	interface->motion(device->pointer_grab, time,
+			  device->pointer_grab->x, device->pointer_grab->y);
 
 	if (wd->sprite) {
 		weston_surface_set_position(wd->sprite,
@@ -1391,7 +1391,7 @@ notify_button(struct wl_input_device *device,
 
 	weston_compositor_run_binding(compositor, wd, time, 0, button, state);
 
-	device->grab->interface->button(device->grab, time, button, state);
+	device->pointer_grab->interface->button(device->pointer_grab, time, button, state);
 
 }
 
