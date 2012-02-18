@@ -647,16 +647,19 @@ STDMETHODIMP UrlmonUrlRequest::OnResponse(DWORD dwResponseCode,
     const wchar_t* response_headers, const wchar_t* request_headers,
     wchar_t** additional_headers) {
   DCHECK_EQ(thread_, base::PlatformThread::CurrentId());
-  DVLOG(1) << __FUNCTION__ << me() << "headers: \n" << response_headers;
+  DVLOG(1) << __FUNCTION__ << me() << "headers: \n"
+           << (response_headers == NULL ? L"EMPTY" : response_headers);
 
   if (!delegate_) {
     DLOG(WARNING) << "Invalid delegate";
     return S_OK;
   }
 
-  std::string raw_headers = WideToUTF8(response_headers);
-
   delegate_->AddPrivacyDataForUrl(url(), "", 0);
+
+  std::string raw_headers;
+  if (response_headers)
+    raw_headers = WideToUTF8(response_headers);
 
   // Security check for frame busting headers. We don't honor the headers
   // as-such, but instead simply kill requests which we've been asked to
