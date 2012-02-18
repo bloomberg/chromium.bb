@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -120,6 +120,24 @@ static const char* ParseOneEntry(const char* entry_fmt,
   return NULL;
 }
 
+static void FreeMethods(NaClSrpcMethodDesc* methods, uint32_t method_count) {
+  uint32_t i;
+
+  if (NULL == methods) {
+    return;
+  }
+  for (i = 0; i < method_count; ++i) {
+    if (NULL == methods[i].name) {
+      /* We have reached the end of the portion set by ParseOneEntry calls. */
+      break;
+    }
+    free((char*) methods[i].name);
+    free((char*) methods[i].input_types);
+    free((char*) methods[i].output_types);
+  }
+  free(methods);
+}
+
 /*
  * The method tables passed to construction do not contain "intrinsic" methods
  * such as service discovery and shutdown.  Build a complete table including
@@ -129,8 +147,9 @@ static NaClSrpcMethodDesc* BuildMethods(
     const struct NaClSrpcHandlerDesc* methods,
     uint32_t* method_count) {
   static const char* kSDDescString = "service_discovery::C";
-  NaClSrpcMethodDesc* complete_methods;
+  NaClSrpcMethodDesc* complete_methods = NULL;
   uint32_t i;
+  const char* nul_loc;
 
   /* Compute the number of methods to export. */
   *method_count = 0;
@@ -140,21 +159,27 @@ static NaClSrpcMethodDesc* BuildMethods(
   ++*method_count;
   /* Allocate the method descriptors. One extra for NULL termination. */
   complete_methods = (NaClSrpcMethodDesc*)
-      malloc((*method_count + 1) * sizeof(*complete_methods));
+      calloc((*method_count + 1) * sizeof(*complete_methods), 1);
   if (NULL == complete_methods) {
     return NULL;
   }
   /* Copy the methods passed in, adding service discovery as element zero. */
-  ParseOneEntry(kSDDescString,
-                (char**) &complete_methods[0].name,
-                (char**) &complete_methods[0].input_types,
-                (char**) &complete_methods[0].output_types);
+  nul_loc = ParseOneEntry(kSDDescString,
+                          (char**) &complete_methods[0].name,
+                          (char**) &complete_methods[0].input_types,
+                          (char**) &complete_methods[0].output_types);
+  if (nul_loc == NULL) {
+    goto cleanup;
+  }
   complete_methods[0].handler = ServiceDiscovery;
   for (i = 0; i < *method_count - 1; ++i) {
-    ParseOneEntry(methods[i].entry_fmt,
-                  (char**) &complete_methods[i + 1].name,
-                  (char**) &complete_methods[i + 1].input_types,
-                  (char**) &complete_methods[i + 1].output_types);
+    nul_loc = ParseOneEntry(methods[i].entry_fmt,
+                            (char**) &complete_methods[i + 1].name,
+                            (char**) &complete_methods[i + 1].input_types,
+                            (char**) &complete_methods[i + 1].output_types);
+    if (nul_loc == NULL) {
+      goto cleanup;
+    }
     complete_methods[i + 1].handler = methods[i].handler;
   }
   /* Add the NULL terminator */
@@ -164,6 +189,10 @@ static NaClSrpcMethodDesc* BuildMethods(
   complete_methods[*method_count].handler = NULL;
   /* Return the array */
   return complete_methods;
+
+ cleanup:
+  FreeMethods(complete_methods, *method_count);
+  return NULL;
 }
 
 /*
@@ -209,24 +238,6 @@ static char* BuildSDString(const NaClSrpcMethodDesc* methods,
   *p = '\0';
   /* Return the resulting string. */
   return str;
-}
-
-static void FreeMethods(NaClSrpcMethodDesc* methods, uint32_t method_count) {
-  uint32_t i;
-
-  if (NULL == methods) {
-    return;
-  }
-  for (i = 0; i < method_count; ++i) {
-    if (NULL == methods[i].name) {
-      /* We have reached the end of the portion set by ParseOneEntry calls. */
-      break;
-    }
-    free((char*) methods[i].name);
-    free((char*) methods[i].input_types);
-    free((char*) methods[i].output_types);
-  }
-  free(methods);
 }
 
 /*
