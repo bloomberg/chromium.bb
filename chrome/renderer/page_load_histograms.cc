@@ -30,16 +30,23 @@ using base::Time;
 using base::TimeDelta;
 using content::DocumentState;
 
-static const TimeDelta kPLTMin(TimeDelta::FromMilliseconds(10));
-static const TimeDelta kPLTMax(TimeDelta::FromMinutes(10));
-static const size_t kPLTCount(100);
+const size_t kPLTCount = 100;
+
+namespace {
+
+TimeDelta kPLTMin() {
+  return TimeDelta::FromMilliseconds(10);
+}
+TimeDelta kPLTMax() {
+  return TimeDelta::FromMinutes(10);
+}
 
 #define PLT_HISTOGRAM(name, sample) \
-    UMA_HISTOGRAM_CUSTOM_TIMES(name, sample, kPLTMin, kPLTMax, kPLTCount);
+    UMA_HISTOGRAM_CUSTOM_TIMES(name, sample, kPLTMin(), kPLTMax(), kPLTCount);
 
 // Returns the scheme type of the given URL if its type is one for which we
 // dump page load histograms. Otherwise returns NULL.
-static URLPattern::SchemeMasks GetSupportedSchemeType(const GURL& url) {
+URLPattern::SchemeMasks GetSupportedSchemeType(const GURL& url) {
   if (url.SchemeIs("http"))
     return URLPattern::SCHEME_HTTP;
   else if (url.SchemeIs("https"))
@@ -47,8 +54,8 @@ static URLPattern::SchemeMasks GetSupportedSchemeType(const GURL& url) {
   return static_cast<URLPattern::SchemeMasks>(0);
 }
 
-static void DumpPerformanceTiming(const WebPerformance& performance,
-                                  DocumentState* document_state) {
+void DumpPerformanceTiming(const WebPerformance& performance,
+                           DocumentState* document_state) {
   Time request = document_state->request_time();
 
   Time navigation_start = Time::FromDoubleT(performance.navigationStart());
@@ -108,6 +115,8 @@ enum AbandonType {
   LOAD_EVENT_END_MISSING = 0x8,
   ABANDON_TYPE_MAX = 0x10
 };
+
+}  // namespace
 
 PageLoadHistograms::PageLoadHistograms(
     content::RenderView* render_view,
