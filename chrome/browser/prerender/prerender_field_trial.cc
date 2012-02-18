@@ -169,16 +169,17 @@ void ConfigureOmniboxPrerender() {
   // Field trial to see if we're enabled.
   const base::FieldTrial::Probability kDivisor = 100;
 
-  base::FieldTrial::Probability kEnabledProbability = 90;
+  base::FieldTrial::Probability kDisabledProbability = 10;
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
   if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
       channel == chrome::VersionInfo::CHANNEL_BETA) {
-    kEnabledProbability = 99;
+    kDisabledProbability = 1;
   }
-  scoped_refptr<base::FieldTrial> enabled_trial(
+  scoped_refptr<base::FieldTrial> omnibox_prerender_trial(
       new base::FieldTrial(kOmniboxTrialName, kDivisor,
-                           "OmniboxPrerenderDisabled", 2012, 8, 30));
-  enabled_trial->AppendGroup("OmniboxPrerenderEnabled", kEnabledProbability);
+                           "OmniboxPrerenderEnabled", 2012, 8, 30));
+  omnibox_prerender_trial->AppendGroup("OmniboxPrerenderDisabled",
+                                       kDisabledProbability);
 
   // Field trial to set weighting of hits.
   const base::FieldTrial::Probability kTwoProbability = 33;
@@ -224,8 +225,8 @@ bool IsOmniboxEnabled(Profile* profile) {
   }
 
   const int group = base::FieldTrialList::FindValue(kOmniboxTrialName);
-  return group != base::FieldTrial::kNotFinalized &&
-         group != base::FieldTrial::kDefaultGroupNumber;
+  return group == base::FieldTrial::kNotFinalized ||
+         group == base::FieldTrial::kDefaultGroupNumber;
 }
 
 }  // namespace prerender
