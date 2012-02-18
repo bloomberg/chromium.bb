@@ -93,8 +93,14 @@ class PpbAudioConfigRpcClient {
       NaClSrpcChannel* channel,
       PP_Resource resource,
       int32_t* out_bool);
+  static NaClSrpcError PPB_AudioConfig_RecommendSampleFrameCount_1_0(
+      NaClSrpcChannel* channel,
+      int32_t request_sample_rate,
+      int32_t request_sample_frame_count,
+      int32_t* out_sample_frame_count);
   static NaClSrpcError PPB_AudioConfig_RecommendSampleFrameCount(
       NaClSrpcChannel* channel,
+      PP_Instance instance,
       int32_t request_sample_rate,
       int32_t request_sample_frame_count,
       int32_t* out_sample_frame_count);
@@ -106,6 +112,10 @@ class PpbAudioConfigRpcClient {
       NaClSrpcChannel* channel,
       PP_Resource resource,
       int32_t* sample_frame_count);
+  static NaClSrpcError PPB_AudioConfig_RecommendSampleRate(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      int32_t* sample_rate);
 
  private:
   PpbAudioConfigRpcClient();

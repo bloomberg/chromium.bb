@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,6 +75,11 @@ class AudioConfig : public Resource {
               PP_AudioSampleRate sample_rate,
               uint32_t sample_frame_count);
 
+  /// RecommendSampleRate() returns the native sample rate used by the
+  /// audio system.  Applications that use the recommended sample rate might
+  /// obtain lower latency and higher fidelity output.
+  static PP_AudioSampleRate RecommendSampleRate(Instance* instance);
+
   /// RecommendSampleFrameCount() returns a supported frame count closest to
   /// the requested count. The sample frame count determines the overall
   /// latency of audio. Smaller frame counts will yield lower latency, but
@@ -87,7 +92,9 @@ class AudioConfig : public Resource {
   /// will return a supported count closest to the requested value for use in
   /// the constructor.
   ///
- /// @param[in] sample_rate A <code>PP_AudioSampleRate</code> which is either
+  /// @param[in] instance A pointer to an <code>Instance</code> identifying
+  /// one instance of a module.
+  /// @param[in] sample_rate A <code>PP_AudioSampleRate</code> which is either
   /// <code>PP_AUDIOSAMPLERATE_44100</code> or
   /// <code>PP_AUDIOSAMPLERATE_48000</code>.
   /// @param[in] requested_sample_frame_count A uint_32t requested frame count.
@@ -96,6 +103,7 @@ class AudioConfig : public Resource {
   /// successful. If the sample frame count or bit rate is not supported,
   /// this function will fail and return 0.
   static uint32_t RecommendSampleFrameCount(
+      Instance* instance,
       PP_AudioSampleRate sample_rate,
       uint32_t requested_sample_frame_count);
 

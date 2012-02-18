@@ -9,6 +9,7 @@
 #include "ppapi/c/dev/ppb_gamepad_dev.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
+#include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_size.h"
@@ -42,6 +43,10 @@ class PPB_Instance_FunctionAPI {
   virtual PP_Var ExecuteScript(PP_Instance instance,
                                PP_Var script,
                                PP_Var* exception) = 0;
+
+  // Audio.
+  virtual uint32_t GetAudioHardwareOutputSampleRate(PP_Instance instance) = 0;
+  virtual uint32_t GetAudioHardwareOutputBufferSize(PP_Instance instance) = 0;
 
   // CharSet.
   virtual PP_Var GetDefaultCharSet(PP_Instance instance) = 0;

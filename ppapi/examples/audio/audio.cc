@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,7 +56,7 @@ class MyInstance : public pp::Instance {
 
     pp::AudioConfig config;
     sample_count_ = pp::AudioConfig::RecommendSampleFrameCount(
-        sample_rate_, kDefaultSampleCount);
+        this, sample_rate_, kDefaultSampleCount);
     config = pp::AudioConfig(this, sample_rate_, sample_count_);
     audio_ = pp::Audio(this, config, SineWaveCallbackTrampoline, this);
     return audio_.StartPlayback();

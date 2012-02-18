@@ -49,6 +49,7 @@ PROXIED_API(PPB_URLResponseInfo)
 PROXIED_IFACE(PPB_Audio, PPB_AUDIO_INTERFACE_1_0, PPB_Audio_1_0)
 // This has no corresponding _Proxy object since it does no IPC.
 PROXIED_IFACE(NoAPIName, PPB_AUDIO_CONFIG_INTERFACE_1_0, PPB_AudioConfig_1_0)
+PROXIED_IFACE(NoAPIName, PPB_AUDIO_CONFIG_INTERFACE_1_1, PPB_AudioConfig_1_1)
 // Note: Core is special and is registered manually.
 PROXIED_IFACE(PPB_FileIO, PPB_FILEIO_INTERFACE_1_0, PPB_FileIO_1_0)
 PROXIED_IFACE(PPB_FileRef, PPB_FILEREF_INTERFACE_1_0, PPB_FileRef_1_0)

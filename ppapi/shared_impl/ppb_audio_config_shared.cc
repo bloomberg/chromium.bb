@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
+#include "ppapi/thunk/enter.h"
 
 namespace ppapi {
 
@@ -26,6 +27,76 @@ PP_Resource PPB_AudioConfig_Shared::Create(
   if (!object->Init(sample_rate, sample_frame_count))
     return 0;
   return object->GetReference();
+}
+
+// static
+uint32_t PPB_AudioConfig_Shared::RecommendSampleFrameCount_1_0(
+    PP_AudioSampleRate sample_rate,
+    uint32_t requested_sample_frame_count) {
+  // Version 1.0: Don't actually query to get a value from the
+  // hardware; instead return the input for in-range values.
+  if (requested_sample_frame_count < PP_AUDIOMINSAMPLEFRAMECOUNT)
+    return PP_AUDIOMINSAMPLEFRAMECOUNT;
+  if (requested_sample_frame_count > PP_AUDIOMAXSAMPLEFRAMECOUNT)
+    return PP_AUDIOMAXSAMPLEFRAMECOUNT;
+  return requested_sample_frame_count;
+}
+
+// static
+uint32_t PPB_AudioConfig_Shared::RecommendSampleFrameCount_1_1(
+    PP_Instance instance,
+    PP_AudioSampleRate sample_rate,
+    uint32_t sample_frame_count) {
+  // Version 1.1: Query the back-end hardware for sample rate and buffer size,
+  // and recommend a best fit based on request.
+  thunk::EnterInstance enter(instance);
+  if (enter.failed())
+    return 0;
+
+  // Get the hardware config.
+  PP_AudioSampleRate hardware_sample_rate = static_cast<PP_AudioSampleRate>(
+      enter.functions()->GetAudioHardwareOutputSampleRate(instance));
+  uint32_t hardware_sample_frame_count =
+      enter.functions()->GetAudioHardwareOutputBufferSize(instance);
+  if (sample_frame_count < PP_AUDIOMINSAMPLEFRAMECOUNT)
+    sample_frame_count = PP_AUDIOMINSAMPLEFRAMECOUNT;
+
+  // If client is using same sample rate as audio hardware, then recommend a
+  // multiple of the audio hardware's sample frame count.
+  if (hardware_sample_rate == sample_rate && hardware_sample_frame_count > 0) {
+    // Round up input sample_frame_count to nearest multiple.
+    uint32_t multiple = (sample_frame_count + hardware_sample_frame_count - 1) /
+        hardware_sample_frame_count;
+    uint32_t recommendation = hardware_sample_frame_count * multiple;
+    if (recommendation > PP_AUDIOMAXSAMPLEFRAMECOUNT)
+      recommendation = PP_AUDIOMAXSAMPLEFRAMECOUNT;
+    return recommendation;
+  }
+
+  // Otherwise, recommend a conservative 30ms buffer based on sample rate.
+  const uint32_t kDefault30msAt44100kHz = 1323;
+  const uint32_t kDefault30msAt48000kHz = 1440;
+  switch (sample_rate) {
+    case PP_AUDIOSAMPLERATE_44100:
+      return kDefault30msAt44100kHz;
+    case PP_AUDIOSAMPLERATE_48000:
+      return kDefault30msAt48000kHz;
+    case PP_AUDIOSAMPLERATE_NONE:
+      return 0;
+  }
+  // Unable to make a recommendation.
+  return 0;
+}
+
+// static
+PP_AudioSampleRate PPB_AudioConfig_Shared::RecommendSampleRate(
+    PP_Instance instance) {
+  thunk::EnterInstance enter(instance);
+  if (enter.failed())
+    return PP_AUDIOSAMPLERATE_NONE;
+  PP_AudioSampleRate hardware_sample_rate = static_cast<PP_AudioSampleRate>(
+    enter.functions()->GetAudioHardwareOutputSampleRate(instance));
+  return hardware_sample_rate;
 }
 
 thunk::PPB_AudioConfig_API* PPB_AudioConfig_Shared::AsPPB_AudioConfig_API() {

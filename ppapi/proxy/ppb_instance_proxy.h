@@ -52,6 +52,10 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   virtual PP_Var ExecuteScript(PP_Instance instance,
                                PP_Var script,
                                PP_Var* exception) OVERRIDE;
+  virtual uint32_t GetAudioHardwareOutputSampleRate(PP_Instance instance)
+      OVERRIDE;
+  virtual uint32_t GetAudioHardwareOutputBufferSize(PP_Instance instance)
+      OVERRIDE;
   virtual PP_Var GetDefaultCharSet(PP_Instance instance) OVERRIDE;
   virtual void NumberOfFindResultsChanged(PP_Instance instance,
                                           int32_t total,
@@ -113,6 +117,10 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                               SerializedVarReceiveInput script,
                               SerializedVarOutParam out_exception,
                               SerializedVarReturnValue result);
+  void OnHostMsgGetAudioHardwareOutputSampleRate(PP_Instance instance,
+                                                 uint32_t *result);
+  void OnHostMsgGetAudioHardwareOutputBufferSize(PP_Instance instance,
+                                                 uint32_t *result);
   void OnHostMsgGetDefaultCharSet(PP_Instance instance,
                                   SerializedVarReturnValue result);
   void OnHostMsgSetFullscreen(PP_Instance instance,

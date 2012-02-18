@@ -201,7 +201,7 @@ NaClSrpcError PpbAudioConfigRpcClient::PPB_AudioConfig_IsAudioConfig(
   return retval;
 }
 
-NaClSrpcError PpbAudioConfigRpcClient::PPB_AudioConfig_RecommendSampleFrameCount(
+NaClSrpcError PpbAudioConfigRpcClient::PPB_AudioConfig_RecommendSampleFrameCount_1_0(
     NaClSrpcChannel* channel,
     int32_t request_sample_rate,
     int32_t request_sample_frame_count,
@@ -212,7 +212,28 @@ NaClSrpcError PpbAudioConfigRpcClient::PPB_AudioConfig_RecommendSampleFrameCount
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_AudioConfig_RecommendSampleFrameCount:ii:i",
+      "PPB_AudioConfig_RecommendSampleFrameCount_1_0:ii:i",
+      request_sample_rate,
+      request_sample_frame_count,
+      out_sample_frame_count
+  );
+  return retval;
+}
+
+NaClSrpcError PpbAudioConfigRpcClient::PPB_AudioConfig_RecommendSampleFrameCount(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    int32_t request_sample_rate,
+    int32_t request_sample_frame_count,
+    int32_t* out_sample_frame_count)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_AudioConfig_RecommendSampleFrameCount:iii:i",
+      instance,
       request_sample_rate,
       request_sample_frame_count,
       out_sample_frame_count
@@ -250,6 +271,23 @@ NaClSrpcError PpbAudioConfigRpcClient::PPB_AudioConfig_GetSampleFrameCount(
       "PPB_AudioConfig_GetSampleFrameCount:i:i",
       resource,
       sample_frame_count
+  );
+  return retval;
+}
+
+NaClSrpcError PpbAudioConfigRpcClient::PPB_AudioConfig_RecommendSampleRate(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    int32_t* sample_rate)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_AudioConfig_RecommendSampleRate:i:i",
+      instance,
+      sample_rate
   );
   return retval;
 }

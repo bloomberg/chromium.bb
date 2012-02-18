@@ -19,6 +19,7 @@
 #include "ppapi/c/dev/ppp_selection_dev.h"
 #include "ppapi/c/dev/ppp_zoom_dev.h"
 #include "ppapi/c/pp_rect.h"
+#include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppp_input_event.h"
 #include "ppapi/c/ppp_instance.h"
@@ -1850,6 +1851,16 @@ PP_Var PluginInstance::ExecuteScript(PP_Instance instance,
   PP_Var ret = NPVariantToPPVar(this, &result);
   WebBindings::releaseVariantValue(&result);
   return ret;
+}
+
+uint32_t PluginInstance::GetAudioHardwareOutputSampleRate(
+    PP_Instance instance) {
+  return delegate()->GetAudioHardwareOutputSampleRate();
+}
+
+uint32_t PluginInstance::GetAudioHardwareOutputBufferSize(
+    PP_Instance instance) {
+  return delegate()->GetAudioHardwareOutputBufferSize();
 }
 
 PP_Var PluginInstance::GetDefaultCharSet(PP_Instance instance) {

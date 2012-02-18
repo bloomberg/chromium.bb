@@ -25,6 +25,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/c/ppp_graphics_3d.h"
 #include "ppapi/c/ppp_input_event.h"
@@ -330,6 +331,10 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   virtual PP_Var ExecuteScript(PP_Instance instance,
                                PP_Var script,
                                PP_Var* exception) OVERRIDE;
+  virtual uint32_t GetAudioHardwareOutputSampleRate(PP_Instance instance)
+      OVERRIDE;
+  virtual uint32_t GetAudioHardwareOutputBufferSize(PP_Instance instance)
+      OVERRIDE;
   virtual PP_Var GetDefaultCharSet(PP_Instance instance) OVERRIDE;
   virtual PP_Var GetFontFamilies(PP_Instance instance) OVERRIDE;
   virtual void NumberOfFindResultsChanged(PP_Instance instance,

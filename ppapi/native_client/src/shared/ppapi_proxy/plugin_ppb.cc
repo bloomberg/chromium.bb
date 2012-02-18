@@ -58,6 +58,8 @@ struct InterfaceMapElement {
 InterfaceMapElement interface_map[] = {
   { PPB_AUDIO_INTERFACE, PluginAudio::GetInterface(), true },
   { PPB_AUDIO_CONFIG_INTERFACE, PluginAudioConfig::GetInterface(), true },
+  { PPB_AUDIO_CONFIG_INTERFACE_1_0, PluginAudioConfig::GetInterface1_0(),
+    true },
   { PPB_CORE_INTERFACE, PluginCore::GetInterface(), true },
   { PPB_CURSOR_CONTROL_DEV_INTERFACE, PluginCursorControl::GetInterface(),
     true },

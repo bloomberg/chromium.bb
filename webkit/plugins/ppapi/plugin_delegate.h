@@ -325,6 +325,12 @@ class PluginDelegate {
       media::VideoDecodeAccelerator::Client* client,
       int32 command_buffer_route_id) = 0;
 
+  // Get audio hardware output sample rate.
+  virtual uint32_t GetAudioHardwareOutputSampleRate() = 0;
+
+  // Get audio hardware output buffer size.
+  virtual uint32_t GetAudioHardwareOutputBufferSize() = 0;
+
   // The caller is responsible for calling Shutdown() on the returned pointer
   // to clean up the corresponding resources allocated during this call.
   virtual PlatformAudio* CreateAudio(uint32_t sample_rate,

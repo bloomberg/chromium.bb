@@ -71,6 +71,14 @@ MockPluginDelegate::CreateVideoCapture(
   return NULL;
 }
 
+uint32_t MockPluginDelegate::GetAudioHardwareOutputSampleRate() {
+  return 0;
+}
+
+uint32_t MockPluginDelegate::GetAudioHardwareOutputBufferSize() {
+  return 0;
+}
+
 MockPluginDelegate::PlatformAudio* MockPluginDelegate::CreateAudio(
     uint32_t sample_rate,
     uint32_t sample_count,

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ppapi/shared_impl/ppb_audio_config_shared.h"
 #include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_audio_config_api.h"
@@ -22,16 +23,22 @@ PP_Resource CreateStereo16bit(PP_Instance instance,
                                               sample_frame_count);
 }
 
-uint32_t RecommendSampleFrameCount(PP_AudioSampleRate sample_rate,
-                                   uint32_t requested_sample_frame_count) {
-  // TODO(brettw) Currently we don't actually query to get a value from the
-  // hardware, so we always return the input for in-range values.
-  if (requested_sample_frame_count < PP_AUDIOMINSAMPLEFRAMECOUNT)
-    return PP_AUDIOMINSAMPLEFRAMECOUNT;
-  if (requested_sample_frame_count > PP_AUDIOMAXSAMPLEFRAMECOUNT)
-    return PP_AUDIOMAXSAMPLEFRAMECOUNT;
-  return requested_sample_frame_count;
+uint32_t RecommendSampleFrameCount_1_0(PP_AudioSampleRate sample_rate,
+                                       uint32_t requested_sample_frame_count) {
+  return PPB_AudioConfig_Shared::RecommendSampleFrameCount_1_0(sample_rate,
+      requested_sample_frame_count);
 }
+
+uint32_t RecommendSampleFrameCount_1_1(PP_Instance instance,
+                                       PP_AudioSampleRate sample_rate,
+                                       uint32_t requested_sample_frame_count) {
+  EnterInstance enter(instance);
+  if (enter.failed())
+    return 0;
+  return PPB_AudioConfig_Shared::RecommendSampleFrameCount_1_1(instance,
+      sample_rate, requested_sample_frame_count);
+}
+
 
 PP_Bool IsAudioConfig(PP_Resource resource) {
   EnterResource<PPB_AudioConfig_API> enter(resource, false);
@@ -52,18 +59,39 @@ uint32_t GetSampleFrameCount(PP_Resource config_id) {
   return enter.object()->GetSampleFrameCount();
 }
 
-const PPB_AudioConfig g_ppb_audio_config_thunk = {
+PP_AudioSampleRate RecommendSampleRate(PP_Instance instance) {
+  EnterInstance enter(instance);
+  if (enter.failed())
+    return PP_AUDIOSAMPLERATE_NONE;
+  return PPB_AudioConfig_Shared::RecommendSampleRate(instance);
+}
+
+const PPB_AudioConfig_1_0 g_ppb_audio_config_thunk_1_0 = {
   &CreateStereo16bit,
-  &RecommendSampleFrameCount,
+  &RecommendSampleFrameCount_1_0,
   &IsAudioConfig,
   &GetSampleRate,
   &GetSampleFrameCount
 };
 
+const PPB_AudioConfig_1_1 g_ppb_audio_config_thunk_1_1 = {
+  &CreateStereo16bit,
+  &RecommendSampleFrameCount_1_1,
+  &IsAudioConfig,
+  &GetSampleRate,
+  &GetSampleFrameCount,
+  &RecommendSampleRate
+};
+
+
 }  // namespace
 
 const PPB_AudioConfig_1_0* GetPPB_AudioConfig_1_0_Thunk() {
-  return &g_ppb_audio_config_thunk;
+  return &g_ppb_audio_config_thunk_1_0;
+}
+
+const PPB_AudioConfig_1_1* GetPPB_AudioConfig_1_1_Thunk() {
+  return &g_ppb_audio_config_thunk_1_1;
 }
 
 }  // namespace thunk

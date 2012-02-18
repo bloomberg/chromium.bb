@@ -6,6 +6,7 @@
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_messaging.h"
 #include "ppapi/c/ppb_mouse_lock.h"
@@ -82,6 +83,12 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgBindGraphics)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_IsFullFrame,
                         OnHostMsgIsFullFrame)
+    IPC_MESSAGE_HANDLER(
+        PpapiHostMsg_PPBInstance_GetAudioHardwareOutputSampleRate,
+        OnHostMsgGetAudioHardwareOutputSampleRate)
+    IPC_MESSAGE_HANDLER(
+        PpapiHostMsg_PPBInstance_GetAudioHardwareOutputBufferSize,
+        OnHostMsgGetAudioHardwareOutputBufferSize)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_ExecuteScript,
                         OnHostMsgExecuteScript)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_GetDefaultCharSet,
@@ -183,6 +190,24 @@ PP_Var PPB_Instance_Proxy::ExecuteScript(PP_Instance instance,
       API_ID_PPB_INSTANCE, instance,
       SerializedVarSendInput(dispatcher(), script), &se, &result));
   return result.Return(dispatcher());
+}
+
+uint32_t PPB_Instance_Proxy::GetAudioHardwareOutputSampleRate(
+    PP_Instance instance) {
+  uint32_t result = PP_AUDIOSAMPLERATE_NONE;
+  dispatcher()->Send(
+      new PpapiHostMsg_PPBInstance_GetAudioHardwareOutputSampleRate(
+          API_ID_PPB_INSTANCE, instance, &result));
+  return result;
+}
+
+uint32_t PPB_Instance_Proxy::GetAudioHardwareOutputBufferSize(
+    PP_Instance instance) {
+  uint32_t result = 0;
+  dispatcher()->Send(
+      new PpapiHostMsg_PPBInstance_GetAudioHardwareOutputBufferSize(
+          API_ID_PPB_INSTANCE, instance, &result));
+  return result;
 }
 
 PP_Var PPB_Instance_Proxy::GetDefaultCharSet(PP_Instance instance) {
@@ -419,6 +444,20 @@ void PPB_Instance_Proxy::OnHostMsgBindGraphics(PP_Instance instance,
     *result = enter.functions()->BindGraphics(instance,
                                               device.host_resource());
   }
+}
+
+void PPB_Instance_Proxy::OnHostMsgGetAudioHardwareOutputSampleRate(
+    PP_Instance instance, uint32_t* result) {
+  EnterInstanceNoLock enter(instance, false);
+  if (enter.succeeded())
+    *result = enter.functions()->GetAudioHardwareOutputSampleRate(instance);
+}
+
+void PPB_Instance_Proxy::OnHostMsgGetAudioHardwareOutputBufferSize(
+    PP_Instance instance, uint32_t* result) {
+  EnterInstanceNoLock enter(instance, false);
+  if (enter.succeeded())
+    *result = enter.functions()->GetAudioHardwareOutputBufferSize(instance);
 }
 
 void PPB_Instance_Proxy::OnHostMsgIsFullFrame(PP_Instance instance,

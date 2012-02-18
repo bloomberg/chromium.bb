@@ -35,12 +35,6 @@ const double kDefaultFrequencyLeft = 400.0;
 const double kDefaultFrequencyRight = 1000.0;
 const uint32_t kDefaultDuration = 10000;
 
-// This sample frequency is guaranteed to work.
-const PP_AudioSampleRate kSampleFrequency = PP_AUDIOSAMPLERATE_44100;
-// Buffer size in units of sample frames.
-// 4096 is a conservative size that should avoid underruns on most systems.
-const uint32_t kSampleFrameCount = 4096;
-
 const double kPi = 3.141592653589;
 const double kTwoPi = 2.0 * kPi;
 
@@ -198,11 +192,13 @@ class MyInstance : public pp::Instance {
   }
 
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]) {
+    const int32_t kSampleFrameCount = 2048;
     ParseArgs(argc, argn, argv);
+    obtained_sample_rate_ = pp::AudioConfig::RecommendSampleRate(this);
     obtained_sample_frame_count_ = pp::AudioConfig::RecommendSampleFrameCount(
-        kSampleFrequency, kSampleFrameCount);
-    config_ = new
-       pp::AudioConfig(this, kSampleFrequency, obtained_sample_frame_count_);
+        this, obtained_sample_rate_, kSampleFrameCount);
+    config_ = new pp::AudioConfig(
+        this, obtained_sample_rate_, obtained_sample_frame_count_);
     CHECK(NULL != config_);
     audio_ = new pp::Audio(this, *config_, SineWaveCallback, this);
     CHECK(NULL != audio_);
@@ -214,8 +210,10 @@ class MyInstance : public pp::Instance {
  private:
   static void SineWaveCallback(void* samples, uint32_t num_bytes, void* thiz) {
     MyInstance* instance = reinterpret_cast<MyInstance*>(thiz);
-    const double delta_l = kTwoPi * instance->frequency_l_ / kSampleFrequency;
-    const double delta_r = kTwoPi * instance->frequency_r_ / kSampleFrequency;
+    const double delta_l = kTwoPi * instance->frequency_l_ /
+                           instance->obtained_sample_rate_;
+    const double delta_r = kTwoPi * instance->frequency_r_ /
+                           instance->obtained_sample_rate_;
 
     // Verify num_bytes and obtained_sample_frame_count match up.
     const int kNumChannelsForStereo = 2;
@@ -277,6 +275,7 @@ class MyInstance : public pp::Instance {
   bool stress_tests_;
 
   uint32_t duration_msec_;
+  PP_AudioSampleRate obtained_sample_rate_;
   uint32_t obtained_sample_frame_count_;
 
   int callback_count_;

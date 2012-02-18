@@ -169,6 +169,21 @@ static void PPB_AudioConfig_IsAudioConfigDispatcher(
   );
 }
 
+static void PPB_AudioConfig_RecommendSampleFrameCount_1_0Dispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbAudioConfigRpcServer::PPB_AudioConfig_RecommendSampleFrameCount_1_0(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
 static void PPB_AudioConfig_RecommendSampleFrameCountDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -180,6 +195,7 @@ static void PPB_AudioConfig_RecommendSampleFrameCountDispatcher(
       done,
       inputs[0]->u.ival,
       inputs[1]->u.ival,
+      inputs[2]->u.ival,
       &(outputs[0]->u.ival)
   );
 }
@@ -205,6 +221,20 @@ static void PPB_AudioConfig_GetSampleFrameCountDispatcher(
     NaClSrpcClosure* done
 ) {
   PpbAudioConfigRpcServer::PPB_AudioConfig_GetSampleFrameCount(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_AudioConfig_RecommendSampleRateDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbAudioConfigRpcServer::PPB_AudioConfig_RecommendSampleRate(
       rpc,
       done,
       inputs[0]->u.ival,
@@ -2922,9 +2952,11 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_Audio_StartPlayback:i:i", PPB_Audio_StartPlaybackDispatcher },
   { "PPB_AudioConfig_CreateStereo16Bit:iii:i", PPB_AudioConfig_CreateStereo16BitDispatcher },
   { "PPB_AudioConfig_IsAudioConfig:i:i", PPB_AudioConfig_IsAudioConfigDispatcher },
-  { "PPB_AudioConfig_RecommendSampleFrameCount:ii:i", PPB_AudioConfig_RecommendSampleFrameCountDispatcher },
+  { "PPB_AudioConfig_RecommendSampleFrameCount_1_0:ii:i", PPB_AudioConfig_RecommendSampleFrameCount_1_0Dispatcher },
+  { "PPB_AudioConfig_RecommendSampleFrameCount:iii:i", PPB_AudioConfig_RecommendSampleFrameCountDispatcher },
   { "PPB_AudioConfig_GetSampleRate:i:i", PPB_AudioConfig_GetSampleRateDispatcher },
   { "PPB_AudioConfig_GetSampleFrameCount:i:i", PPB_AudioConfig_GetSampleFrameCountDispatcher },
+  { "PPB_AudioConfig_RecommendSampleRate:i:i", PPB_AudioConfig_RecommendSampleRateDispatcher },
   { "PPB_Core_AddRefResource:i:", PPB_Core_AddRefResourceDispatcher },
   { "PPB_Core_ReleaseResource:i:", PPB_Core_ReleaseResourceDispatcher },
   { "ReleaseResourceMultipleTimes:ii:", ReleaseResourceMultipleTimesDispatcher },

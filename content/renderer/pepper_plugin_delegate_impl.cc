@@ -34,6 +34,7 @@
 #include "content/public/common/context_menu_params.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/gamepad_shared_memory_reader.h"
+#include "content/renderer/media/audio_hardware.h"
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
@@ -222,7 +223,6 @@ class PlatformAudioImpl
 bool PlatformAudioImpl::Initialize(
     uint32_t sample_rate, uint32_t sample_count,
     webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client) {
-
   DCHECK(client);
   // Make sure we don't call init more than once.
   DCHECK_EQ(0, stream_id_);
@@ -230,7 +230,15 @@ bool PlatformAudioImpl::Initialize(
   client_ = client;
 
   AudioParameters params;
-  params.format = AudioParameters::AUDIO_PCM_LINEAR;
+  const uint32_t kMaxSampleCountForLowLatency = 2048;
+  // Use the low latency back end if the client request is compatible, and
+  // the sample count is low enough to justify using AUDIO_PCM_LOW_LATENCY.
+  if (sample_rate == audio_hardware::GetOutputSampleRate() &&
+      sample_count <= kMaxSampleCountForLowLatency &&
+      sample_count % audio_hardware::GetOutputBufferSize() == 0)
+    params.format = AudioParameters::AUDIO_PCM_LOW_LATENCY;
+  else
+    params.format = AudioParameters::AUDIO_PCM_LINEAR;
   params.channels = 2;
   params.sample_rate = sample_rate;
   params.bits_per_sample = 16;
@@ -1356,6 +1364,14 @@ void PepperPluginDelegateImpl::SelectedFindResultChanged(int identifier,
                                                          int index) {
   render_view_->reportFindInPageSelection(
       identifier, index + 1, WebKit::WebRect());
+}
+
+uint32_t PepperPluginDelegateImpl::GetAudioHardwareOutputSampleRate() {
+  return static_cast<uint32_t>(audio_hardware::GetOutputSampleRate());
+}
+
+uint32_t PepperPluginDelegateImpl::GetAudioHardwareOutputBufferSize() {
+  return static_cast<uint32_t>(audio_hardware::GetOutputBufferSize());
 }
 
 webkit::ppapi::PluginDelegate::PlatformAudio*

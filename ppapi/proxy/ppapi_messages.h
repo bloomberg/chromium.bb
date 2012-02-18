@@ -923,6 +923,14 @@ IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBInstance_BindGraphics,
                            PP_Instance /* instance */,
                            ppapi::HostResource /* device */,
                            PP_Bool /* result */)
+IPC_SYNC_MESSAGE_ROUTED1_1(
+    PpapiHostMsg_PPBInstance_GetAudioHardwareOutputSampleRate,
+                           PP_Instance /* instance */,
+                           uint32_t /* result */)
+IPC_SYNC_MESSAGE_ROUTED1_1(
+    PpapiHostMsg_PPBInstance_GetAudioHardwareOutputBufferSize,
+                           PP_Instance /* instance */,
+                           uint32_t /* result */)
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBInstance_IsFullFrame,
                            PP_Instance /* instance */,
                            PP_Bool /* result */)

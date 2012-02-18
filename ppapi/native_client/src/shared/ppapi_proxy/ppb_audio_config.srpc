@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -24,9 +24,18 @@
            'outputs': [['out_bool', 'int32_t']
                       ]
           },
-          # Implements a call to get recommended sample frame count.
-          {'name': 'PPB_AudioConfig_RecommendSampleFrameCount',
+          # Implements a call to get recommended sample frame count (v1.0)
+          {'name': 'PPB_AudioConfig_RecommendSampleFrameCount_1_0',
            'inputs': [['request_sample_rate', 'int32_t'],
+                      ['request_sample_frame_count', 'int32_t'],
+                     ],
+           'outputs': [['out_sample_frame_count', 'int32_t']
+                      ]
+          },
+          # Implements a call to get recommended sample frame count
+          {'name': 'PPB_AudioConfig_RecommendSampleFrameCount',
+           'inputs': [['instance', 'PP_Instance'],
+                      ['request_sample_rate', 'int32_t'],
                       ['request_sample_frame_count', 'int32_t'],
                      ],
            'outputs': [['out_sample_frame_count', 'int32_t']
@@ -44,6 +53,13 @@
            'inputs': [['resource', 'PP_Resource'],
                      ],
            'outputs': [['sample_frame_count', 'int32_t'],
+                      ]
+          },
+          # Implements a call to get recommended sample rate
+          {'name': 'PPB_AudioConfig_RecommendSampleRate',
+           'inputs': [['instance', 'PP_Instance'],
+                     ],
+           'outputs': [['sample_rate', 'int32_t']
                       ]
           },
          ]

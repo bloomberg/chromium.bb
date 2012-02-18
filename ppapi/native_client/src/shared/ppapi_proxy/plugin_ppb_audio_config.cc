@@ -51,13 +51,33 @@ uint32_t GetSampleFrameCount(PP_Resource config) {
   return 0;
 }
 
-uint32_t RecommendSampleFrameCount(PP_AudioSampleRate sample_rate,
+uint32_t RecommendSampleFrameCount_1_0(PP_AudioSampleRate sample_rate,
+                                       uint32_t request_sample_frame_count) {
+  DebugPrintf("PPB_AudioConfig::RecommendSampleFrameCount_1_0");
+  int32_t out_sample_frame_count;
+  NaClSrpcError srpc_result =
+      PpbAudioConfigRpcClient::PPB_AudioConfig_RecommendSampleFrameCount_1_0(
+          GetMainSrpcChannel(),
+          static_cast<int32_t>(sample_rate),
+          static_cast<int32_t>(request_sample_frame_count),
+          &out_sample_frame_count);
+  DebugPrintf("PPB_AudioConfig::RecommendSampleFrameCount_1_0: %s\n",
+              NaClSrpcErrorString(srpc_result));
+  if (NACL_SRPC_RESULT_OK == srpc_result) {
+    return static_cast<uint32_t>(out_sample_frame_count);
+  }
+  return 0;
+}
+
+uint32_t RecommendSampleFrameCount(PP_Instance instance,
+                                   PP_AudioSampleRate sample_rate,
                                    uint32_t request_sample_frame_count) {
   DebugPrintf("PPB_AudioConfig::RecommendSampleFrameCount");
   int32_t out_sample_frame_count;
   NaClSrpcError srpc_result =
       PpbAudioConfigRpcClient::PPB_AudioConfig_RecommendSampleFrameCount(
           GetMainSrpcChannel(),
+          instance,
           static_cast<int32_t>(sample_rate),
           static_cast<int32_t>(request_sample_frame_count),
           &out_sample_frame_count);
@@ -106,6 +126,23 @@ PP_Resource CreateStereo16Bit(PP_Instance instance,
   }
   return kInvalidResourceId;
 }
+
+PP_AudioSampleRate RecommendSampleRate(PP_Instance instance) {
+  DebugPrintf("PPB_AudioConfig::RecommendSampleRate");
+  int32_t out_sample_rate;
+  NaClSrpcError srpc_result =
+      PpbAudioConfigRpcClient::PPB_AudioConfig_RecommendSampleRate(
+          GetMainSrpcChannel(),
+          instance,
+          &out_sample_rate);
+  DebugPrintf("PPB_AudioConfig::RecommendSampleRate: %s\n",
+              NaClSrpcErrorString(srpc_result));
+  if (NACL_SRPC_RESULT_OK == srpc_result) {
+    return static_cast<PP_AudioSampleRate>(out_sample_rate);
+  }
+  return PP_AUDIOSAMPLERATE_NONE;
+}
+
 }  // namespace
 
 const PPB_AudioConfig* PluginAudioConfig::GetInterface() {
@@ -115,7 +152,20 @@ const PPB_AudioConfig* PluginAudioConfig::GetInterface() {
     IsAudioConfig,
     GetSampleRate,
     GetSampleFrameCount,
+    RecommendSampleRate
   };
   return &audio_config_interface;
 }
+
+const PPB_AudioConfig_1_0* PluginAudioConfig::GetInterface1_0() {
+  static const PPB_AudioConfig_1_0 audio_config_interface = {
+    CreateStereo16Bit,
+    RecommendSampleFrameCount_1_0,
+    IsAudioConfig,
+    GetSampleRate,
+    GetSampleFrameCount
+  };
+  return &audio_config_interface;
+}
+
 }  // namespace ppapi_proxy

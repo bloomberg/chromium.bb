@@ -22,6 +22,12 @@ class PPAPI_SHARED_EXPORT PPB_AudioConfig_Shared
                             PP_Instance instance,
                             PP_AudioSampleRate sample_rate,
                             uint32_t sample_frame_count);
+  static uint32_t RecommendSampleFrameCount_1_0(PP_AudioSampleRate sample_rate,
+      uint32_t request_sample_frame_count);
+  static uint32_t RecommendSampleFrameCount_1_1(PP_Instance instance,
+      PP_AudioSampleRate sample_rate,
+      uint32_t request_sample_frame_count);
+  static PP_AudioSampleRate RecommendSampleRate(PP_Instance);
 
   // Resource overrides.
   virtual thunk::PPB_AudioConfig_API* AsPPB_AudioConfig_API() OVERRIDE;

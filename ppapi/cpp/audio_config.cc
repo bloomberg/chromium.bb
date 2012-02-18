@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,13 +36,24 @@ AudioConfig::AudioConfig(Instance* instance,
 }
 
 // static
+PP_AudioSampleRate AudioConfig::RecommendSampleRate(Instance* instance) {
+  if (!has_interface<PPB_AudioConfig>())
+    return PP_AUDIOSAMPLERATE_NONE;
+  return get_interface<PPB_AudioConfig>()->
+      RecommendSampleRate(instance->pp_instance());
+}
+
+// static
 uint32_t AudioConfig::RecommendSampleFrameCount(
+    Instance* instance,
     PP_AudioSampleRate sample_rate,
     uint32_t requested_sample_frame_count) {
   if (!has_interface<PPB_AudioConfig>())
     return 0;
   return get_interface<PPB_AudioConfig>()->
-      RecommendSampleFrameCount(sample_rate, requested_sample_frame_count);
+      RecommendSampleFrameCount(instance->pp_instance(),
+                                sample_rate,
+                                requested_sample_frame_count);
 }
 
 }  // namespace pp

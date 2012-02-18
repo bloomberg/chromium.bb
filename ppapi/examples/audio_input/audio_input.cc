@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,7 +41,8 @@ class MyInstance : public pp::Instance {
     const uint32_t kSampleCount = 1024;
     const uint32_t kChannelCount = 1;
 
-    sample_count_ = pp::AudioConfig::RecommendSampleFrameCount(kSampleFrequency,
+    sample_count_ = pp::AudioConfig::RecommendSampleFrameCount(this,
+                                                               kSampleFrequency,
                                                                kSampleCount);
     PP_DCHECK(sample_count_ > 0);
     channel_count_ = kChannelCount;

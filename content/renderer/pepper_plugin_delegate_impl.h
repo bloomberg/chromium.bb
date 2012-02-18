@@ -216,6 +216,8 @@ class PepperPluginDelegateImpl
   virtual void InstanceDeleted(
       webkit::ppapi::PluginInstance* instance) OVERRIDE;
   virtual SkBitmap* GetSadPluginBitmap() OVERRIDE;
+  virtual uint32_t GetAudioHardwareOutputSampleRate() OVERRIDE;
+  virtual uint32_t GetAudioHardwareOutputBufferSize() OVERRIDE;
   virtual PlatformAudio* CreateAudio(
       uint32_t sample_rate,
       uint32_t sample_count,
