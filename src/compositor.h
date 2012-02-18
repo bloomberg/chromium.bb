@@ -285,7 +285,6 @@ struct weston_surface {
 	 */
 	struct weston_output *output;
 
-	struct weston_output *fullscreen_output;
 	struct wl_list frame_callback_list;
 
 	EGLImageKHR image;

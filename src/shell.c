@@ -108,6 +108,7 @@ struct shell_surface {
 		int32_t initial_up;
 	} popup;
 
+	struct weston_output *fullscreen_output;
 	struct weston_output *output;
 	struct wl_list link;
 };
@@ -355,7 +356,7 @@ reset_shell_surface_type(struct shell_surface *surface)
 		weston_surface_set_position(surface->surface,
 					    surface->saved_x,
 					    surface->saved_y);
-		surface->surface->fullscreen_output = NULL;
+		surface->fullscreen_output = NULL;
 		break;
 	case SHELL_SURFACE_MAXIMIZED:
 		surface->output = get_default_output(surface->surface->compositor);
@@ -503,7 +504,7 @@ shell_surface_set_fullscreen(struct wl_client *client,
 
 	shsurf->saved_x = es->geometry.x;
 	shsurf->saved_y = es->geometry.y;
-	es->fullscreen_output = output;
+	shsurf->fullscreen_output = output;
 	shsurf->type = SHELL_SURFACE_FULLSCREEN;
 
 	wl_resource_post_event(resource,
@@ -1374,7 +1375,7 @@ map(struct weston_shell *base, struct weston_surface *surface,
 		break;
 	case SHELL_SURFACE_SCREENSAVER:
 	case SHELL_SURFACE_FULLSCREEN:
-		center_on_output(surface, surface->fullscreen_output);
+		center_on_output(surface, shsurf->fullscreen_output);
 		break;
 	case SHELL_SURFACE_MAXIMIZED:
 		/*use surface configure to set the geometry*/
@@ -1486,7 +1487,7 @@ configure(struct weston_shell *base, struct weston_surface *surface,
 	switch (surface_type) {
 	case SHELL_SURFACE_SCREENSAVER:
 	case SHELL_SURFACE_FULLSCREEN:
-		center_on_output(surface, surface->fullscreen_output);
+		center_on_output(surface, shsurf->fullscreen_output);
 		break;
 	case SHELL_SURFACE_MAXIMIZED:
 		/*setting x, y and using configure to change that geometry*/
@@ -1612,7 +1613,7 @@ screensaver_set_surface(struct wl_client *client,
 
 	surface->type = SHELL_SURFACE_SCREENSAVER;
 
-	surface->surface->fullscreen_output = output;
+	surface->fullscreen_output = output;
 	surface->output = output;
 	wl_list_insert(shell->screensaver.surfaces.prev, &surface->link);
 }
