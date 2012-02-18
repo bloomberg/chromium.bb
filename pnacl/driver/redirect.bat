@@ -18,11 +18,6 @@ setlocal
 :: Stop incessant CYGWIN complains about "MS-DOS style path"
 set CYGWIN=nodosfilewarning %CYGWIN%
 
-:: TODO(pdox): For the toolchain to be hermetic and relocatable,
-:: we may need to arrange to include Python in our distribution.
-:: For now, use the Python included in the repository checkout.
-set PATH=%~dp0..\..\..\..\third_party\python_26;%PATH%
-
 :: Run the driver
 :: For now, assume "python" is in the PATH.
 python -OO "%~dp0\pydir\loader.py" "%~n0" %*

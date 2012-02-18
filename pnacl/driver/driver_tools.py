@@ -902,7 +902,7 @@ def IsWindowsPython():
 
 def SetupCygwinLibs():
   bindir = env.getone('DRIVER_BIN')
-  os.environ['PATH'] += os.pathsep + bindir
+  os.environ['PATH'] += os.pathsep + pathtools.tosys(bindir)
 
 # Map from GCC's -x file types and this driver's file types.
 FILE_TYPE_MAP = {

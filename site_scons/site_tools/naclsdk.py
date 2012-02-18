@@ -205,6 +205,12 @@ def _SetEnvForX86Sdk(env, sdk_path):
                    )
 
 def _SetEnvForPnacl(env, root):
+  # All the PNaCl tools require Python to be in the PATH.
+  # On the Windows bots, however, Python is not installed system-wide.
+  # It must be pulled from ../third_party/python_26.
+  python_dir = os.path.join('..', 'third_party', 'python_26')
+  env.AppendENVPath('PATH', python_dir)
+
   arch = env['TARGET_FULLARCH']
   assert arch in ['arm', 'arm-thumb2', 'x86-32', 'x86-64']
 

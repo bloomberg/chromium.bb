@@ -158,7 +158,9 @@ INITIAL_ENV = {
 
   # Bitcode LLVM tools
   'CLANG'         : '${BASE_LLVM_BIN}/clang${EXEC_EXT}',
-  'CLANGXX'       : '${BASE_LLVM_BIN}/clang++${EXEC_EXT}',
+  # 'clang++' doesn't work on Windows (outside of Cygwin),
+  # because it is a symlink. '-ccc-cxx' enables C++ mode.
+  'CLANGXX'       : '${BASE_LLVM_BIN}/clang${EXEC_EXT} -ccc-cxx',
   'LLVM_OPT'      : '${BASE_LLVM_BIN}/opt${EXEC_EXT}',
   'LLVM_DIS'      : '${BASE_LLVM_BIN}/llvm-dis${EXEC_EXT}',
   # llvm-as compiles llvm assembly (.ll) to bitcode (.bc/.po)
