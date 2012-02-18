@@ -39,9 +39,6 @@ WONTFIX LINUX DEBUG : conformance_more_conformance_quickCheckAPI_G_I = TIMEOUT
 
 UNFILED MAC WIN LINUX : conformance_textures_origin_clean_conformance = FAIL
 
-UNFILED LINUX NVIDIA : conformance_uniforms_uniform_location = FAIL
-UNFILED LINUX NVIDIA : conformance_textures_texture_mips = FAIL
-
 UNFILED WIN : conformance_glsl_functions_glsl_function_atan = FAIL
 UNFILED WIN : conformance_glsl_functions_glsl_function_atan_xy = FAIL
 UNFILED WIN : conformance_glsl_misc_struct_nesting_under_maximum = FAIL
@@ -58,6 +55,14 @@ UNFILED XP NVIDIA : conformance_textures_texture_mips = FAIL
 113731 WIN7 INTEL : conformance_more_functions_uniformiBadArgs = FAIL
 113731 WIN7 INTEL : conformance_more_functions_uniformMatrix = FAIL
 113731 WIN7 INTEL : conformance_more_functions_uniformMatrixBadArgs = FAIL
+
+UNFILED LINUX NVIDIA : conformance_uniforms_uniform_location = FAIL
+UNFILED LINUX NVIDIA : conformance_textures_texture_mips = FAIL
+
+UNFILED LINUX INTEL : conformance_renderbuffers_framebuffer_object_attachment = FAIL
+UNFILED LINUX INTEL : conformance_state_gl_object_get_calls = FAIL
+UNFILED LINUX INTEL : conformance_textures_texture_npot = FAIL
+UNFILED LINUX INTEL : conformance_glsl_variables_gl_pointcoord = FAIL
 
 // -----------------------------------------------------------------------------
 // FLAKY TESTS
