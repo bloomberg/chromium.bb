@@ -132,6 +132,10 @@ void WebIntentPickerCocoa::OnInlineDisposition(WebIntentPickerModel* model) {
   inline_disposition_delegate_.reset(new WebIntentInlineDispositionDelegate);
   web_contents->SetDelegate(inline_disposition_delegate_.get());
 
+  // Must call this immediately after WebContents creation to avoid race
+  // with load.
+  delegate_->OnInlineDispositionWebContentsCreated(web_contents);
+
   inline_disposition_tab_contents_->web_contents()->GetController().LoadURL(
       item.url,
       content::Referrer(),
@@ -141,8 +145,6 @@ void WebIntentPickerCocoa::OnInlineDisposition(WebIntentPickerModel* model) {
   [controller_ setInlineDispositionTabContents:
       inline_disposition_tab_contents_.get()];
   PerformDelayedLayout();
-
-  delegate_->OnInlineDispositionWebContentsCreated(web_contents);
 }
 
 void WebIntentPickerCocoa::OnCancelled() {

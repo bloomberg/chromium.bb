@@ -255,6 +255,10 @@ void WebIntentPickerViews::OnInlineDisposition(
   inline_disposition_delegate_.reset(new WebIntentInlineDispositionDelegate);
   web_contents->SetDelegate(inline_disposition_delegate_.get());
 
+  // Must call this immediately after WebContents creation to avoid race
+  // with load.
+  delegate_->OnInlineDispositionWebContentsCreated(web_contents);
+
   TabContentsContainer* tab_contents_container = new TabContentsContainer;
 
   web_contents->GetController().LoadURL(
@@ -276,8 +280,6 @@ void WebIntentPickerViews::OnInlineDisposition(
 
   contents_->Layout();
   SizeToContents();
-
-  delegate_->OnInlineDispositionWebContentsCreated(web_contents);
 }
 
 void WebIntentPickerViews::InitContents() {
