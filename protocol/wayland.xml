@@ -624,8 +624,8 @@
       <arg name="state" type="uint"/>
     </event>
 
-    <event name="pointer_focus">
-      <description summary="pointer focus change event">
+    <event name="pointer_enter">
+      <description summary="pointer enter event">
 	Notification that this input device's pointer is focused on
 	certain surface. When an input_device enters a surface, the
 	pointer image is undefined and a client should respond to this
@@ -638,10 +638,22 @@
       <arg name="surface_y" type="int"/>
     </event>
 
-    <event name="keyboard_focus">
+    <event name="pointer_leave">
+      <description summary="pointer leave event">
+      </description>
+      <arg name="time" type="uint"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
+    </event>
+
+    <event name="keyboard_enter">
       <arg name="time" type="uint"/>
       <arg name="surface" type="object" interface="wl_surface"/>
       <arg name="keys" type="array"/>
+    </event>
+
+    <event name="keyboard_leave">
+      <arg name="time" type="uint"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
     </event>
 
     <event name="touch_down">
