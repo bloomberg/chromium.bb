@@ -3309,7 +3309,6 @@ nonvariant_tests = [
     'tests/ppapi_example_2d/nacl.scons',
     'tests/ppapi_example_audio/nacl.scons',
     'tests/ppapi_example_events/nacl.scons',
-    'tests/ppapi_example_font/nacl.scons',
     # TODO(dspringer): re-enable test once the 3D ABI has stabilized. See
     # http://code.google.com/p/nativeclient/issues/detail?id=2060
     # 'tests/ppapi_example_gles2/nacl.scons',

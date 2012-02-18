@@ -12,7 +12,6 @@ class NaClTest(pyauto.PyUITest):
   """Tests for NaCl."""
   # (test.html, number of nexes loaded concurrently on page)
   nexes = [('ppapi_example_audio.html#mute', 1),
-           ('ppapi_example_font.html', 1),
            # TODO(cstefansen): enable test when bug is fixed
            # http://code.google.com/p/nativeclient/issues/detail?id=1936
            # ('ppapi_example_gles2.html', 1),

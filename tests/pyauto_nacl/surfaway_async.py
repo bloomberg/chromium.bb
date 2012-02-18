@@ -58,9 +58,6 @@ class NaClTest(pyauto.PyUITest):
   def testSurfAwayAsyncExampleAudio(self):
     self.surfAwayAsync('ppapi_example_audio.html#mute', 'PPAPI')
 
-  def testSurfAwayAsyncExampleFont(self):
-    self.surfAwayAsync('ppapi_example_font.html', 'PPAPI')
-
   # TODO(cstefansen): enable test when bug is fixed
   # http://code.google.com/p/nativeclient/issues/detail?id=1936
   def disabledTestSurfAwayAsyncExampleGLES2(self):

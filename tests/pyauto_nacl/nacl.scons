@@ -22,7 +22,6 @@ ppapi_geturl_files = CreateDefaultDeps('ppapi_geturl') + [
     env.File('${STAGING_DIR}/ppapi_geturl_success.html')]
 ppapi_example_2d_files = CreateDefaultDeps('ppapi_example_2d')
 ppapi_example_audio_files = CreateDefaultDeps('ppapi_example_audio')
-ppapi_example_font_files = CreateDefaultDeps('ppapi_example_font')
 # TODO(dspringer): Re-enable this once the 3D ABI has stabilized.  See
 # http://code.google.com/p/nativeclient/issues/detail?id=2060
 # ppapi_example_gles2_files = CreateDefaultDeps('ppapi_example_gles2')
@@ -85,7 +84,6 @@ core_test_files = [env.File('${STAGING_DIR}/nacltest.js'),
                    ppapi_example_events_files +
                    ppapi_example_2d_files +
                    ppapi_example_audio_files +
-                   ppapi_example_font_files +
                    # TODO(dspringer): Re-enable this once the 3D ABI has
                    # stabilized.  See
                    # http://code.google.com/p/nativeclient/issues/detail?id=2060

@@ -66,9 +66,6 @@ class NaClTest(pyauto.PyUITest):
   def testReloadExampleAudio(self):
     self.reloader('ppapi_example_audio.html#mute', 'PPAPI')
 
-  def testReloadExampleFont(self):
-    self.reloader('ppapi_example_font.html', 'PPAPI')
-
   # TODO(cstefansen): enable test when bug is fixed
   # http://code.google.com/p/nativeclient/issues/detail?id=1936
   def disabledTestReloadExampleGLES2(self):
