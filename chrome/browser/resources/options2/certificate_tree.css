@@ -2,7 +2,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-span.certUntrusted {
+span.cert-untrusted {
   background-color: pink;
   border: 1px solid red;
   border-radius: 3px;
