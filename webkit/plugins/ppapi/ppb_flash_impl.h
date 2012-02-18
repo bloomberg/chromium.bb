@@ -20,6 +20,7 @@ class PPB_Flash_Impl {
   // exposed to the plugin.
   static const PPB_Flash_11* GetInterface11();
   static const PPB_Flash_12_0* GetInterface12_0();
+  static const PPB_Flash_12_1* GetInterface12_1();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PPB_Flash_Impl);

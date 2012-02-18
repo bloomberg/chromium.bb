@@ -292,6 +292,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   int32_t Navigate(PPB_URLRequestInfo_Impl* request,
                    const char* target,
                    bool from_user_action);
+  bool IsRectTopmost(const gfx::Rect& rect);
 
   // Implementation of PPB_Gamepad.
   void SampleGamepads(PP_Instance instance, PP_GamepadsData_Dev* data)

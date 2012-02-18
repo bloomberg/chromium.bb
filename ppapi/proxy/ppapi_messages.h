@@ -701,6 +701,10 @@ IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlash_GetLocalTimeZoneOffset,
                            PP_Instance /* instance */,
                            PP_Time /* t */,
                            double /* offset */)
+IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlash_IsRectTopmost,
+                           PP_Instance /* instance */,
+                           PP_Rect /* rect */,
+                           PP_Bool /* result */)
 
 // PPB_Flash_Clipboard.
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlashClipboard_IsFormatAvailable,

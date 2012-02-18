@@ -34,6 +34,7 @@ class PPB_Flash_Proxy : public InterfaceProxy {
   // Returns the corresponding version of the Flash interface pointer.
   static const PPB_Flash_11* GetInterface11();
   static const PPB_Flash_12_0* GetInterface12_0();
+  static const PPB_Flash_12_1* GetInterface12_1();
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
@@ -56,6 +57,9 @@ class PPB_Flash_Proxy : public InterfaceProxy {
   void OnMsgQuitMessageLoop(PP_Instance instance);
   void OnMsgGetLocalTimeZoneOffset(PP_Instance instance, PP_Time t,
                                    double* result);
+  void OnMsgIsRectTopmost(PP_Instance instance,
+                          PP_Rect rect,
+                          PP_Bool* result);
 
   // When this proxy is in the host side, this value caches the interface
   // pointer so we don't have to retrieve it from the dispatcher each time.

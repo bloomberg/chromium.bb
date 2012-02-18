@@ -8,7 +8,8 @@
  */
 
 label Chrome {
-  M17 = 12.0
+  M17 = 12.0,
+  M19 = 12.1
 };
 
 /**
@@ -104,6 +105,30 @@ interface PPB_Flash {
    */
   void PreloadFontWin(
       [in] mem_t logfontw);
+
+  /**
+   * Returns whether the given rectangle (in the plugin) is topmost, i.e., above
+   * all other web content.
+   */
+  [version=12.1]
+  PP_Bool IsRectTopmost(
+      [in] PP_Instance instance,
+      [in] PP_Rect rect);
+
+  /**
+   * Invokes printing for the given instance.
+   */
+  [version=12.1]
+  int32_t InvokePrinting(
+      [in] PP_Instance instance);
+
+  /**
+   * Indicates that there's activity and, e.g., the screensaver shouldn't kick
+   * in.
+   */
+  [version=12.1]
+  void UpdateActivity(
+      [in] PP_Instance instance);
 };
 
 #inline c

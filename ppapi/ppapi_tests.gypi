@@ -396,5 +396,15 @@
         'examples/video_capture/video_capture.cc',
       ],
     },
+    {
+      'target_name': 'ppapi_example_flash_topmost',
+      'dependencies': [
+        'ppapi_example_skeleton',
+        'ppapi.gyp:ppapi_cpp',
+      ],
+      'sources': [
+        'examples/flash_topmost/flash_topmost.cc',
+      ],
+    },
   ],
 }

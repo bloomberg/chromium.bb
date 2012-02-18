@@ -198,6 +198,30 @@ void PreLoadFontWin(const void* logfontw) {
   PluginGlobals::Get()->plugin_proxy_delegate()->PreCacheFont(logfontw);
 }
 
+PP_Bool IsRectTopmost(PP_Instance instance, const PP_Rect* rect) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return PP_FALSE;
+  PP_Bool result = PP_FALSE;
+  dispatcher->Send(new PpapiHostMsg_PPBFlash_IsRectTopmost(
+      API_ID_PPB_FLASH, instance, *rect, &result));
+  return result;
+}
+
+int32_t InvokePrinting(PP_Instance instance) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return PP_ERROR_BADARGUMENT;
+
+  // TODO(viettrungluu): Implement me.
+
+  return PP_ERROR_NOTSUPPORTED;
+}
+
+void UpdateActivity(PP_Instance instance) {
+  // TODO(viettrungluu): Implement me.
+}
+
 const PPB_Flash_11 flash_interface_11 = {
   &SetInstanceAlwaysOnTop,
   &DrawGlyphs11,
@@ -209,7 +233,7 @@ const PPB_Flash_11 flash_interface_11 = {
   &GetCommandLineArgs
 };
 
-const PPB_Flash flash_interface_12 = {
+const PPB_Flash_12_0 flash_interface_12_0 = {
   &SetInstanceAlwaysOnTop,
   &DrawGlyphs,
   &GetProxyForURL,
@@ -219,6 +243,21 @@ const PPB_Flash flash_interface_12 = {
   &GetLocalTimeZoneOffset,
   &GetCommandLineArgs,
   &PreLoadFontWin
+};
+
+const PPB_Flash_12_1 flash_interface_12_1 = {
+  &SetInstanceAlwaysOnTop,
+  &DrawGlyphs,
+  &GetProxyForURL,
+  &Navigate,
+  &RunMessageLoop,
+  &QuitMessageLoop,
+  &GetLocalTimeZoneOffset,
+  &GetCommandLineArgs,
+  &PreLoadFontWin,
+  &IsRectTopmost,
+  &InvokePrinting,
+  &UpdateActivity
 };
 
 }  // namespace
@@ -240,8 +279,13 @@ const PPB_Flash_11* PPB_Flash_Proxy::GetInterface11() {
 }
 
 // static
-const PPB_Flash* PPB_Flash_Proxy::GetInterface12_0() {
-  return &flash_interface_12;
+const PPB_Flash_12_0* PPB_Flash_Proxy::GetInterface12_0() {
+  return &flash_interface_12_0;
+}
+
+// static
+const PPB_Flash_12_1* PPB_Flash_Proxy::GetInterface12_1() {
+  return &flash_interface_12_1;
 }
 
 bool PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {
@@ -265,6 +309,8 @@ bool PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgQuitMessageLoop)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_GetLocalTimeZoneOffset,
                         OnMsgGetLocalTimeZoneOffset)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_IsRectTopmost,
+                        OnMsgIsRectTopmost)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   // TODO(brettw) handle bad messages!
@@ -356,6 +402,12 @@ void PPB_Flash_Proxy::OnMsgGetLocalTimeZoneOffset(PP_Instance instance,
                                                   PP_Time t,
                                                   double* result) {
   *result = ppb_flash_impl_->GetLocalTimeZoneOffset(instance, t);
+}
+
+void PPB_Flash_Proxy::OnMsgIsRectTopmost(PP_Instance instance,
+                                         PP_Rect rect,
+                                         PP_Bool* result) {
+  *result = ppb_flash_impl_->IsRectTopmost(instance, &rect);
 }
 
 }  // namespace proxy

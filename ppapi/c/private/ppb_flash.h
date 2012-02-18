@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_flash.idl modified Mon Dec 19 19:43:03 2011. */
+/* From private/ppb_flash.idl modified Fri Feb 17 15:52:14 2012. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_H_
@@ -22,7 +22,8 @@
 #include "ppapi/c/pp_var.h"
 
 #define PPB_FLASH_INTERFACE_12_0 "PPB_Flash;12.0"
-#define PPB_FLASH_INTERFACE PPB_FLASH_INTERFACE_12_0
+#define PPB_FLASH_INTERFACE_12_1 "PPB_Flash;12.1"
+#define PPB_FLASH_INTERFACE PPB_FLASH_INTERFACE_12_1
 
 /**
  * @file
@@ -38,7 +39,7 @@
  * The <code>PPB_Flash</code> interface contains pointers to various functions
  * that are only needed to support Pepper Flash.
  */
-struct PPB_Flash_12_0 {
+struct PPB_Flash_12_1 {
   /**
    * Sets or clears the rendering hint that the given plugin instance is always
    * on top of page content. Somewhat more optimized painting can be used in
@@ -107,9 +108,47 @@ struct PPB_Flash_12_0 {
    * On non-Windows platforms, this function does nothing.
    */
   void (*PreloadFontWin)(const void* logfontw);
+  /**
+   * Returns whether the given rectangle (in the plugin) is topmost, i.e., above
+   * all other web content.
+   */
+  PP_Bool (*IsRectTopmost)(PP_Instance instance, const struct PP_Rect* rect);
+  /**
+   * Invokes printing for the given instance.
+   */
+  int32_t (*InvokePrinting)(PP_Instance instance);
+  /**
+   * Indicates that there's activity and, e.g., the screensaver shouldn't kick
+   * in.
+   */
+  void (*UpdateActivity)(PP_Instance instance);
 };
 
-typedef struct PPB_Flash_12_0 PPB_Flash;
+typedef struct PPB_Flash_12_1 PPB_Flash;
+
+struct PPB_Flash_12_0 {
+  void (*SetInstanceAlwaysOnTop)(PP_Instance instance, PP_Bool on_top);
+  PP_Bool (*DrawGlyphs)(PP_Instance instance,
+                        PP_Resource pp_image_data,
+                        const struct PP_FontDescription_Dev* font_desc,
+                        uint32_t color,
+                        const struct PP_Point* position,
+                        const struct PP_Rect* clip,
+                        const float transformation[3][3],
+                        PP_Bool allow_subpixel_aa,
+                        uint32_t glyph_count,
+                        const uint16_t glyph_indices[],
+                        const struct PP_Point glyph_advances[]);
+  struct PP_Var (*GetProxyForURL)(PP_Instance instance, const char* url);
+  int32_t (*Navigate)(PP_Resource request_info,
+                      const char* target,
+                      PP_Bool from_user_action);
+  void (*RunMessageLoop)(PP_Instance instance);
+  void (*QuitMessageLoop)(PP_Instance instance);
+  double (*GetLocalTimeZoneOffset)(PP_Instance instance, PP_Time t);
+  struct PP_Var (*GetCommandLineArgs)(PP_Module module);
+  void (*PreloadFontWin)(const void* logfontw);
+};
 /**
  * @}
  */

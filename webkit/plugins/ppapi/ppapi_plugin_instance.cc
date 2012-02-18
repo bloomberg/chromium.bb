@@ -1337,6 +1337,22 @@ int32_t PluginInstance::Navigate(PPB_URLRequestInfo_Impl* request,
   return PP_OK;
 }
 
+bool PluginInstance::IsRectTopmost(const gfx::Rect& rect) {
+  if (flash_fullscreen_)
+    return true;
+
+#if 0
+  WebView* web_view = container()->element().document().frame()->view();
+  if (!web_view) {
+    NOTREACHED();
+    return false;
+  }
+#else
+//FIXME
+  return container_->isRectTopmost(rect);
+#endif
+}
+
 void PluginInstance::SampleGamepads(PP_Instance instance,
                                     PP_GamepadsData_Dev* data) {
 
