@@ -114,7 +114,8 @@ bool SineSynthInstance::Init(uint32_t argc,
                              const char* argv[]) {
   // Ask the device for an appropriate sample count size.
   sample_frame_count_ =
-      pp::AudioConfig::RecommendSampleFrameCount(PP_AUDIOSAMPLERATE_44100,
+      pp::AudioConfig::RecommendSampleFrameCount(this,
+                                                 PP_AUDIOSAMPLERATE_44100,
                                                  kSampleFrameCount);
   audio_ = pp::Audio(this,
                      pp::AudioConfig(this,
