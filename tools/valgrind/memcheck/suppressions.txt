@@ -5800,12 +5800,6 @@
    fun:_ZN7content11ContentMainEiPPKcPNS_19ContentMainDelegateE
    fun:ChromeMain
 }
-{
-   bug_114787
-   Memcheck:Leak
-   ...
-   fun:content::CreateQuotaManagerAndClients
-}
 
 
 #-----------------------------------------------------------------------
