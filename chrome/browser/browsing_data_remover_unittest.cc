@@ -333,7 +333,6 @@ class BrowsingDataRemoverTest : public testing::Test,
     BrowsingDataRemover* remover = new BrowsingDataRemover(
         profile_.get(), period,
         base::Time::Now() + base::TimeDelta::FromMilliseconds(10));
-    remover->OverrideQuotaManagerForTesting(GetMockManager());
     remover->AddObserver(tester);
 
     called_with_details_.reset(new BrowsingDataRemover::NotificationDetails());
