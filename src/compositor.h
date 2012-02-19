@@ -179,8 +179,6 @@ struct weston_compositor {
 	struct timespec previous_swap;
 	struct wl_array vertices, indices;
 
-	struct weston_surface *overlay;
-	struct weston_switcher *switcher;
 	uint32_t focus;
 
 	PFNGLEGLIMAGETARGETRENDERBUFFERSTORAGEOESPROC
@@ -429,9 +427,6 @@ weston_input_device_init(struct weston_input_device *device,
 
 void
 weston_input_device_release(struct weston_input_device *device);
-
-void
-weston_switcher_init(struct weston_compositor *compositor);
 
 enum {
 	TTY_ENTER_VT,

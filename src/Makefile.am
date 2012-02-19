@@ -88,7 +88,6 @@ desktop_shell_la_LIBADD = $(COMPOSITOR_LIBS)	\
 desktop_shell_la_CFLAGS = $(GCC_CFLAGS)
 desktop_shell_la_SOURCES =			\
 	shell.c					\
-	switcher.c				\
 	desktop-shell-protocol.c		\
 	desktop-shell-server-protocol.h
 endif

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2010 Intel Corporation
+ * Copyright © 2010-2012 Intel Corporation
  * Copyright © 2011-2012 Collabora, Ltd.
  *
  * Permission to use, copy, modify, distribute, and sell this software and
@@ -1653,6 +1653,120 @@ bind_screensaver(struct wl_client *client,
 	wl_resource_destroy(resource, 0);
 }
 
+struct switcher {
+	struct weston_compositor *compositor;
+	struct weston_surface *current;
+	struct wl_listener listener;
+	struct wl_keyboard_grab grab;
+};
+
+static void
+switcher_next(struct switcher *switcher)
+{
+	struct weston_compositor *compositor = switcher->compositor;
+	struct weston_surface *surface;
+	struct weston_surface *first = NULL, *prev = NULL, *next = NULL;
+
+	wl_list_for_each(surface, &compositor->surface_list, link) {
+		/* Workaround for cursor surfaces. */
+		if (surface->surface.resource.destroy_listener_list.next == NULL)
+			continue;
+
+		switch (get_shell_surface_type(surface)) {
+		case SHELL_SURFACE_TOPLEVEL:
+		case SHELL_SURFACE_FULLSCREEN:
+		case SHELL_SURFACE_MAXIMIZED:
+			if (first == NULL)
+				first = surface;
+			if (prev == switcher->current)
+				next = surface;
+			prev = surface;
+			surface->alpha = 64;
+			weston_surface_damage(surface);
+			break;
+		default:
+			break;
+		}
+	}
+
+	if (next == NULL)
+		next = first;
+
+	wl_list_remove(&switcher->listener.link);
+	wl_list_insert(next->surface.resource.destroy_listener_list.prev,
+		       &switcher->listener.link);
+
+	switcher->current = next;
+	next->alpha = 255;
+}
+
+static void
+switcher_handle_surface_destroy(struct wl_listener *listener,
+				struct wl_resource *resource, uint32_t time)
+{
+	struct switcher *switcher =
+		container_of(listener, struct switcher, listener);
+
+	switcher_next(switcher);
+}
+
+static void
+switcher_destroy(struct switcher *switcher, uint32_t time)
+{
+	struct weston_compositor *compositor = switcher->compositor;
+	struct weston_surface *surface;
+	struct weston_input_device *device =
+		(struct weston_input_device *) switcher->grab.input_device;
+
+	wl_list_for_each(surface, &compositor->surface_list, link) {
+		surface->alpha = 255;
+		weston_surface_damage(surface);
+	}
+
+	activate(compositor->shell, switcher->current, device, time);
+	wl_list_remove(&switcher->listener.link);
+	wl_input_device_end_keyboard_grab(&device->input_device, time);
+	free(switcher);
+}
+
+static void
+switcher_key(struct wl_keyboard_grab *grab,
+	     uint32_t time, uint32_t key, int32_t state)
+{
+	struct switcher *switcher = container_of(grab, struct switcher, grab);
+	struct weston_input_device *device =
+		(struct weston_input_device *) grab->input_device;
+
+	if ((device->modifier_state & MODIFIER_SUPER) == 0) {
+		switcher_destroy(switcher, time);
+	} else if (key == KEY_TAB && state) {
+		switcher_next(switcher);
+	}
+};
+
+static const struct wl_keyboard_grab_interface switcher_grab = {
+	switcher_key
+};
+
+static void
+switcher_binding(struct wl_input_device *device, uint32_t time,
+		 uint32_t key, uint32_t button,
+		 uint32_t state, void *data)
+{
+	struct weston_compositor *compositor = data;
+	struct switcher *switcher;
+
+	switcher = malloc(sizeof *switcher);
+	switcher->compositor = compositor;
+	switcher->current = NULL;
+	switcher->listener.func = switcher_handle_surface_destroy;
+	wl_list_init(&switcher->listener.link);
+
+	switcher->grab.interface = &switcher_grab;
+	wl_input_device_start_keyboard_grab(device, &switcher->grab, time);
+	switcher_next(switcher);
+}
+
 static void
 shell_destroy(struct weston_shell *base)
 {
@@ -1721,6 +1835,9 @@ shell_init(struct weston_compositor *ec)
 	weston_compositor_add_binding(ec, 0, BTN_LEFT,
 				      MODIFIER_SUPER | MODIFIER_ALT,
 				      rotate_binding, NULL);
+
+	weston_compositor_add_binding(ec, KEY_TAB, 0, MODIFIER_SUPER,
+				      switcher_binding, ec);
 
 	ec->shell = &shell->shell;
 
