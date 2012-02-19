@@ -103,6 +103,8 @@ using WebKit::WebVector;
 using autofill::AutofillAgent;
 using autofill::PasswordAutofillManager;
 using content::RenderThread;
+using webkit::WebPluginInfo;
+using webkit::WebPluginMimeType;
 
 namespace {
 
@@ -372,28 +374,36 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
           break;
         }
 
-        // Determine if NaCl is allowed for both the internal plugin and
-        // any external plugin that handles our MIME type. This is so NaCl
-        // tests will still pass.
         const char* kNaClMimeType = "application/x-nacl";
         bool is_nacl_mime_type = actual_mime_type == kNaClMimeType;
-        bool is_nacl_enabled;
+        bool is_nacl_unrestricted;
         if (is_nacl_plugin) {
-          is_nacl_enabled = CommandLine::ForCurrentProcess()->HasSwitch(
+          is_nacl_unrestricted = CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kEnableNaCl);
         } else {
-          // If this is an external plugin that handles NaCl mime type,
-          // we want to allow Native Client, because it's how
-          // NaCl tests for the plugin work.
-          is_nacl_enabled = true;
+          // If this is an external plugin that handles the NaCl mime type, we
+          // allow Native Client, so Native Client's integration tests work.
+          is_nacl_unrestricted = true;
         }
         if (is_nacl_plugin || is_nacl_mime_type) {
-          if (!IsNaClAllowed(plugin,
-                             url,
-                             actual_mime_type,
-                             is_nacl_mime_type,
-                             is_nacl_enabled,
-                             params)) {
+          GURL manifest_url = is_nacl_mime_type ?
+              url : GetNaClContentHandlerURL(actual_mime_type, plugin);
+          const Extension* extension =
+              extension_dispatcher_->extensions()->GetExtensionOrAppByURL(
+                  ExtensionURLInfo(manifest_url));
+          bool is_extension_from_webstore =
+              extension && extension->from_webstore();
+          // Allow built-in extensions and extensions under development.
+          bool is_extension_unrestricted = extension &&
+              (extension->location() == Extension::COMPONENT ||
+              extension->location() == Extension::LOAD);
+          GURL top_url = frame->top()->document().url();
+          if (!IsNaClAllowed(manifest_url,
+                             top_url,
+                             is_nacl_unrestricted,
+                             is_extension_unrestricted,
+                             is_extension_from_webstore,
+                             &params)) {
             frame->addMessageToConsole(
                 WebConsoleMessage(
                     WebConsoleMessage::LevelError,
@@ -467,86 +477,83 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
   return placeholder->plugin();
 }
 
-bool ChromeContentRendererClient::IsNaClAllowed(
-    const webkit::WebPluginInfo& plugin,
-    const GURL& url,
+// For NaCl content handling plugins, the NaCl manifest is stored in an
+// additonal 'nacl' param associated with the MIME type.
+//  static
+GURL ChromeContentRendererClient::GetNaClContentHandlerURL(
     const std::string& actual_mime_type,
-    bool is_nacl_mime_type,
-    bool enable_nacl,
-    WebKit::WebPluginParams& params) {
-  GURL manifest_url;
-  if (is_nacl_mime_type) {
-    manifest_url = url;  // Normal embedded NaCl plugin.
-  } else {
-    // This is a content type handling NaCl plugin; look for the .nexe URL
-    // among the MIME type's additonal parameters.
-    const char* kNaClPluginManifestAttribute = "nacl";
-    string16 nacl_attr = ASCIIToUTF16(kNaClPluginManifestAttribute);
-    for (size_t i = 0; i < plugin.mime_types.size(); ++i) {
-      if (plugin.mime_types[i].mime_type == actual_mime_type) {
-        const webkit::WebPluginMimeType& content_type =
-            plugin.mime_types[i];
-        for (size_t i = 0;
-            i < content_type.additional_param_names.size(); ++i) {
-          if (content_type.additional_param_names[i] == nacl_attr) {
-            manifest_url = GURL(content_type.additional_param_values[i]);
-            break;
-          }
-        }
-        break;
+    const webkit::WebPluginInfo& plugin) {
+  // Look for the manifest URL among the MIME type's additonal parameters.
+  const char* kNaClPluginManifestAttribute = "nacl";
+  string16 nacl_attr = ASCIIToUTF16(kNaClPluginManifestAttribute);
+  for (size_t i = 0; i < plugin.mime_types.size(); ++i) {
+    if (plugin.mime_types[i].mime_type == actual_mime_type) {
+      const WebPluginMimeType& content_type = plugin.mime_types[i];
+      for (size_t i = 0; i < content_type.additional_param_names.size(); ++i) {
+        if (content_type.additional_param_names[i] == nacl_attr)
+          return GURL(content_type.additional_param_values[i]);
+      }
+      break;
+    }
+  }
+  return GURL();
+}
+
+//  static
+bool ChromeContentRendererClient::IsNaClAllowed(
+    const GURL& manifest_url,
+    const GURL& top_url,
+    bool is_nacl_unrestricted,
+    bool is_extension_unrestricted,
+    bool is_extension_from_webstore,
+    WebPluginParams* params) {
+  // Temporarily allow these URLs to run NaCl apps. We should remove this
+  // code when PNaCl ships.
+  bool is_whitelisted_url =
+      ((top_url.SchemeIs("http") || top_url.SchemeIs("https")) &&
+      (top_url.host() == "plus.google.com" ||
+          top_url.host() == "plus.sandbox.google.com") &&
+      top_url.path().find("/games") == 0);
+
+  // Allow Chrome Web Store extensions, built-in extensions, extensions
+  // under development, invocations from whitelisted URLs, and all invocations
+  // if --enable-nacl is set.
+  bool is_nacl_allowed =
+      is_extension_from_webstore ||
+      is_extension_unrestricted ||
+      is_whitelisted_url ||
+      is_nacl_unrestricted;
+  if (is_nacl_allowed) {
+    bool app_can_use_dev_interfaces =
+        // NaCl PDF viewer extension
+        (is_extension_from_webstore &&
+        manifest_url.SchemeIs("chrome-extension") &&
+        manifest_url.host() == "acadkphlmlegjaadjagenfimbpphcgnh");
+    // Make sure that PPAPI 'dev' interfaces aren't available for production
+    // apps unless they're whitelisted.
+    WebString dev_attribute = WebString::fromUTF8("@dev");
+    if ((!is_whitelisted_url && !is_extension_from_webstore) ||
+        app_can_use_dev_interfaces) {
+      // Add the special '@dev' attribute.
+      std::vector<string16> param_names;
+      std::vector<string16> param_values;
+      param_names.push_back(dev_attribute);
+      param_values.push_back(WebString());
+      AppendParams(
+          param_names,
+          param_values,
+          &params->attributeNames,
+          &params->attributeValues);
+    } else {
+      // If the params somehow contain '@dev', remove it.
+      size_t attribute_count = params->attributeNames.size();
+      for (size_t i = 0; i < attribute_count; ++i) {
+        if (params->attributeNames[i].equals(dev_attribute))
+          params->attributeNames[i] = WebString();
       }
     }
   }
-
-  // Determine if the manifest URL is part of an extension.
-  const Extension* extension =
-      extension_dispatcher_->extensions()->GetExtensionOrAppByURL(
-          ExtensionURLInfo(manifest_url));
-  // Only component, unpacked, and Chrome Web Store extensions are allowed.
-  bool allowed_extension = extension &&
-      (extension->from_webstore() ||
-      extension->location() == Extension::COMPONENT ||
-      extension->location() == Extension::LOAD);
-
-  // Block any other use of NaCl plugin, unless --enable-nacl is set.
-  if (!allowed_extension && !enable_nacl)
-    return false;
-
-  // Allow dev interfaces for non-extension apps.
-  bool allow_dev_interfaces = true;
-  if (allowed_extension) {
-    // Allow dev interfaces for component and unpacked extensions.
-    if (extension->location() != Extension::COMPONENT &&
-        extension->location() != Extension::LOAD) {
-      // Whitelist all other allowed extensions.
-      allow_dev_interfaces =
-          // PDF Viewer plugin
-          (manifest_url.scheme() == "chrome-extension" &&
-          manifest_url.host() == "acadkphlmlegjaadjagenfimbpphcgnh");
-    }
-  }
-
-  WebString dev_attribute = WebString::fromUTF8("@dev");
-  if (allow_dev_interfaces) {
-    std::vector<string16> param_names;
-    std::vector<string16> param_values;
-    param_names.push_back(dev_attribute);
-    param_values.push_back(WebString());
-    AppendParams(
-        param_names,
-        param_values,
-        &params.attributeNames,
-        &params.attributeValues);
-  } else {
-    // If the params somehow contain this special attribute, remove it.
-    size_t attribute_count = params.attributeNames.size();
-    for (size_t i = 0; i < attribute_count; ++i) {
-      if (params.attributeNames[i].equals(dev_attribute))
-        params.attributeNames[i] = WebString();
-    }
-  }
-
-  return true;
+  return is_nacl_allowed;
 }
 
 bool ChromeContentRendererClient::HasErrorPage(int http_status_code,
