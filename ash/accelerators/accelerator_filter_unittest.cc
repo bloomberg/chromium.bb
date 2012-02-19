@@ -66,12 +66,12 @@ TEST_F(AcceleratorFilterTest, TestFilterWithoutFocus) {
       scoped_ptr<ScreenshotDelegate>(delegate).Pass());
   EXPECT_EQ(0, delegate->handle_take_screenshot_count());
 
-  aura::test::EventGenerator generator_;
+  aura::test::EventGenerator generator(Shell::GetRootWindow());
   // AcceleratorController calls ScreenshotDelegate::HandleTakeScreenshot() when
   // VKEY_PRINT is pressed. See kAcceleratorData[] in accelerator_controller.cc.
-  generator_.PressKey(ui::VKEY_PRINT, 0);
+  generator.PressKey(ui::VKEY_PRINT, 0);
   EXPECT_EQ(1, delegate->handle_take_screenshot_count());
-  generator_.ReleaseKey(ui::VKEY_PRINT, 0);
+  generator.ReleaseKey(ui::VKEY_PRINT, 0);
   EXPECT_EQ(1, delegate->handle_take_screenshot_count());
 }
 
@@ -92,10 +92,10 @@ TEST_F(AcceleratorFilterTest, TestFilterWithFocus) {
       scoped_ptr<ScreenshotDelegate>(delegate).Pass());
   EXPECT_EQ(0, delegate->handle_take_screenshot_count());
 
-  aura::test::EventGenerator generator_;
-  generator_.PressKey(ui::VKEY_PRINT, 0);
+  aura::test::EventGenerator generator(Shell::GetRootWindow());
+  generator.PressKey(ui::VKEY_PRINT, 0);
   EXPECT_EQ(1, delegate->handle_take_screenshot_count());
-  generator_.ReleaseKey(ui::VKEY_PRINT, 0);
+  generator.ReleaseKey(ui::VKEY_PRINT, 0);
   EXPECT_EQ(1, delegate->handle_take_screenshot_count());
 
   // Reset window before |test_delegate| gets deleted.
@@ -119,17 +119,17 @@ TEST_F(AcceleratorFilterTest, TestCapsLockMask) {
       scoped_ptr<ScreenshotDelegate>(delegate).Pass());
   EXPECT_EQ(0, delegate->handle_take_screenshot_count());
 
-  aura::test::EventGenerator generator_;
-  generator_.PressKey(ui::VKEY_PRINT, 0);
+  aura::test::EventGenerator generator(Shell::GetRootWindow());
+  generator.PressKey(ui::VKEY_PRINT, 0);
   EXPECT_EQ(1, delegate->handle_take_screenshot_count());
-  generator_.ReleaseKey(ui::VKEY_PRINT, 0);
+  generator.ReleaseKey(ui::VKEY_PRINT, 0);
   EXPECT_EQ(1, delegate->handle_take_screenshot_count());
 
   // Check if AcceleratorFilter ignores the mask for Caps Lock. Note that there
   // is no ui::EF_ mask for Num Lock.
-  generator_.PressKey(ui::VKEY_PRINT, ui::EF_CAPS_LOCK_DOWN);
+  generator.PressKey(ui::VKEY_PRINT, ui::EF_CAPS_LOCK_DOWN);
   EXPECT_EQ(2, delegate->handle_take_screenshot_count());
-  generator_.ReleaseKey(ui::VKEY_PRINT, ui::EF_CAPS_LOCK_DOWN);
+  generator.ReleaseKey(ui::VKEY_PRINT, ui::EF_CAPS_LOCK_DOWN);
   EXPECT_EQ(2, delegate->handle_take_screenshot_count());
 
   // Reset window before |test_delegate| gets deleted.

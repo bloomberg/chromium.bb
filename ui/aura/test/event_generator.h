@@ -12,6 +12,7 @@
 
 namespace aura {
 class Event;
+class RootWindow;
 class Window;
 
 namespace test {
@@ -20,15 +21,15 @@ namespace test {
 class EventGenerator {
  public:
   // Creates an EventGenerator with the mouse/touch location (0,0).
-  EventGenerator();
+  explicit EventGenerator(RootWindow* root_window);
 
   // Creates an EventGenerator with the mouse/touch location
   // at |initial_location|.
-  explicit EventGenerator(const gfx::Point& initial_location);
+  EventGenerator(RootWindow* root_window, const gfx::Point& initial_location);
 
   // Creates an EventGenerator with the mouse/touch location
   // centered over |window|.
-  explicit EventGenerator(Window* window);
+  EventGenerator(RootWindow* root_window, Window* window);
 
   virtual ~EventGenerator();
 
@@ -120,6 +121,7 @@ class EventGenerator {
   // Dispatch a key event to the RootWindow.
   void DispatchKeyEvent(bool is_press, ui::KeyboardCode key_code, int flags);
 
+  RootWindow* root_window_;
   int flags_;
   gfx::Point current_location_;
 
