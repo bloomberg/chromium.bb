@@ -69,8 +69,6 @@ class BluetoothProperty : public dbus::Property<T> {
   //
   // dbus::Property<> override.
   void Set(const T& value, SetCallback callback) {
-    DVLOG(1) << "Set: " << this->name();
-
     dbus::MethodCall method_call(this->GetInterface(),
                                  bluetooth_common::kSetProperty);
     dbus::MessageWriter writer(&method_call);

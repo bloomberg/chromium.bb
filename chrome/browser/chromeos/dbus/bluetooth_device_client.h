@@ -23,8 +23,8 @@ namespace chromeos {
 
 class BluetoothAdapterClient;
 
-// BluetoothDeviceClient is used to communicate with the bluez Device
-// and Input interfaces.
+// BluetoothDeviceClient is used to communicate with a bluetooth Device
+// interface.
 class BluetoothDeviceClient {
  public:
   // Structure of properties associated with bluetooth devices.
@@ -106,8 +106,9 @@ class BluetoothDeviceClient {
 
   virtual ~BluetoothDeviceClient();
 
-  // Adds and removes observers for events on the device with object path
-  // |device_path|.
+  // Adds and removes observers for events on all remote bluetooth
+  // devices. Check the |object_path| parameter of observer methods to
+  // determine which device is issuing the event.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 

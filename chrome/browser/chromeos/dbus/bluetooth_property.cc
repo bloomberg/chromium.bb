@@ -24,7 +24,6 @@ void BluetoothPropertySet::ConnectSignals() {
 
 // dbus::PropertySet override.
 void BluetoothPropertySet::ChangedReceived(dbus::Signal* signal) {
-  DVLOG(1) << "ChangedReceived";
   DCHECK(signal);
 
   dbus::MessageReader reader(signal);

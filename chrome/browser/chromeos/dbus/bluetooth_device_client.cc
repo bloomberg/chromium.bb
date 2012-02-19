@@ -56,7 +56,7 @@ class BluetoothDeviceClientImpl: public BluetoothDeviceClient,
                             BluetoothAdapterClient* adapter_client)
       : weak_ptr_factory_(this),
         bus_(bus) {
-    VLOG(1) << "Creating BluetoothDeviceClientImpl";
+    DVLOG(1) << "Creating BluetoothDeviceClientImpl";
 
     DCHECK(adapter_client);
     adapter_client->AddObserver(this);
@@ -75,7 +75,6 @@ class BluetoothDeviceClientImpl: public BluetoothDeviceClient,
   // BluetoothDeviceClient override.
   virtual void AddObserver(BluetoothDeviceClient::Observer* observer)
       OVERRIDE {
-    VLOG(1) << "AddObserver";
     DCHECK(observer);
     observers_.AddObserver(observer);
   }
@@ -83,13 +82,13 @@ class BluetoothDeviceClientImpl: public BluetoothDeviceClient,
   // BluetoothDeviceClient override.
   virtual void RemoveObserver(BluetoothDeviceClient::Observer* observer)
       OVERRIDE {
-    VLOG(1) << "RemoveObserver";
     DCHECK(observer);
     observers_.RemoveObserver(observer);
   }
 
   // BluetoothDeviceClient override.
-  virtual Properties* GetProperties(const dbus::ObjectPath& object_path) {
+  virtual Properties* GetProperties(const dbus::ObjectPath& object_path)
+      OVERRIDE {
     return GetObject(object_path).second;
   }
 
@@ -103,13 +102,11 @@ class BluetoothDeviceClientImpl: public BluetoothDeviceClient,
   // BluetoothAdapterClient::Observer override.
   virtual void DeviceCreated(const dbus::ObjectPath& adapter_path,
                              const dbus::ObjectPath& object_path) OVERRIDE {
-    VLOG(1) << "DeviceCreated: " << object_path.value();
   }
 
   // BluetoothAdapterClient::Observer override.
   virtual void DeviceRemoved(const dbus::ObjectPath& adapter_path,
                              const dbus::ObjectPath& object_path) OVERRIDE {
-    VLOG(1) << "DeviceRemoved: " << object_path.value();
     RemoveObject(object_path);
   }
 
@@ -117,8 +114,6 @@ class BluetoothDeviceClientImpl: public BluetoothDeviceClient,
   // a device with object path |object_path|, creating it if not and
   // storing it in our |object_map_| map.
   Object GetObject(const dbus::ObjectPath& object_path) {
-    VLOG(1) << "GetObject: " << object_path.value();
-
     ObjectMap::iterator iter = object_map_.find(object_path);
     if (iter != object_map_.end())
       return iter->second;
@@ -145,8 +140,6 @@ class BluetoothDeviceClientImpl: public BluetoothDeviceClient,
   // Removes the dbus object proxy and properties for the device with
   // dbus object path |object_path| from our |object_map_| map.
   void RemoveObject(const dbus::ObjectPath& object_path) {
-    VLOG(1) << "RemoveObject: " << object_path.value();
-
     ObjectMap::iterator iter = object_map_.find(object_path);
     if (iter != object_map_.end()) {
       // Clean up the Properties structure.
@@ -160,8 +153,7 @@ class BluetoothDeviceClientImpl: public BluetoothDeviceClient,
 
   // Returns a pointer to the object proxy for |object_path|, creating
   // it if necessary.
-  virtual dbus::ObjectProxy* GetObjectProxy(
-      const dbus::ObjectPath& object_path) {
+  dbus::ObjectProxy* GetObjectProxy(const dbus::ObjectPath& object_path) {
     return GetObject(object_path).first;
   }
 
@@ -192,16 +184,15 @@ class BluetoothDeviceClientStubImpl : public BluetoothDeviceClient {
  public:
   // BluetoothDeviceClient override.
   virtual void AddObserver(Observer* observer) OVERRIDE {
-    VLOG(1) << "AddObserver";
   }
 
   // BluetoothDeviceClient override.
   virtual void RemoveObserver(Observer* observer) OVERRIDE {
-    VLOG(1) << "RemoveObserver";
   }
 
   // BluetoothDeviceClient override.
-  virtual Properties* GetProperties(const dbus::ObjectPath& object_path) {
+  virtual Properties* GetProperties(const dbus::ObjectPath& object_path)
+      OVERRIDE {
     VLOG(1) << "GetProperties: " << object_path.value();
     return NULL;
   }

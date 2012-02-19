@@ -33,26 +33,25 @@ class BluetoothManagerImpl : public BluetoothManager,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  virtual void AddObserver(BluetoothManager::Observer* observer) {
-    VLOG(1) << "BluetoothManager::AddObserver";
+  // BluetoothManager override.
+  virtual void AddObserver(BluetoothManager::Observer* observer) OVERRIDE {
     DCHECK(observer);
     observers_.AddObserver(observer);
   }
 
-  virtual void RemoveObserver(BluetoothManager::Observer* observer) {
-    VLOG(1) << "BluetoothManager::RemoveObserver";
+  // BluetoothManager override.
+  virtual void RemoveObserver(BluetoothManager::Observer* observer) OVERRIDE {
     DCHECK(observer);
     observers_.RemoveObserver(observer);
   }
 
-  virtual BluetoothAdapter* DefaultAdapter() {
-    VLOG(1) << "BluetoothManager::DefaultAdapter";
+  // BluetoothManager override.
+  virtual BluetoothAdapter* DefaultAdapter() OVERRIDE {
     return default_adapter_.get();
   }
 
   // BluetoothManagerClient::Observer override.
-  virtual void AdapterRemoved(const dbus::ObjectPath& adapter) {
-    VLOG(1) << "AdapterRemoved: " << adapter.value();
+  virtual void AdapterRemoved(const dbus::ObjectPath& adapter) OVERRIDE {
     if (default_adapter_.get() == NULL
         || default_adapter_->Id() != adapter.value()) {
       return;
@@ -64,8 +63,7 @@ class BluetoothManagerImpl : public BluetoothManager,
   }
 
   // BluetoothManagerClient::Observer override.
-  virtual void DefaultAdapterChanged(const dbus::ObjectPath& adapter) {
-    VLOG(1) << "DefaultAdapterChanged: " << adapter.value();
+  virtual void DefaultAdapterChanged(const dbus::ObjectPath& adapter) OVERRIDE {
     OnNewDefaultAdapter(adapter);
   }
 
@@ -76,7 +74,6 @@ class BluetoothManagerImpl : public BluetoothManager,
 
   // We have updated info about the default adapter.
   void OnNewDefaultAdapter(const dbus::ObjectPath& adapter) {
-    VLOG(1) << "OnNewDefaultAdapter: " << adapter.value();
     if (default_adapter_.get() != NULL
         && default_adapter_->Id() == adapter.value()) {
       return;
@@ -94,7 +91,6 @@ class BluetoothManagerImpl : public BluetoothManager,
       LOG(ERROR) << "OnDefaultAdapter: failed.";
       return;
     }
-    VLOG(1) << "OnDefaultAdapter: " << adapter.value();
     OnNewDefaultAdapter(adapter);
   }
 

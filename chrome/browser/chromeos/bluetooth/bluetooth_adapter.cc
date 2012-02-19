@@ -30,37 +30,38 @@ class BluetoothAdapterImpl : public BluetoothAdapter,
     bluetooth_adapter_client_->RemoveObserver(this);
   }
 
-  virtual void AddObserver(BluetoothAdapter::Observer* observer) {
-    VLOG(1) << id_ << ": AddObserver";
+  // BluetoothAdapter override.
+  virtual void AddObserver(BluetoothAdapter::Observer* observer) OVERRIDE {
     DCHECK(observer);
     observers_.AddObserver(observer);
   }
 
-  virtual void RemoveObserver(BluetoothAdapter::Observer* observer) {
-    VLOG(1) << id_ << ": RemoveObserver";
+  // BluetoothAdapter override.
+  virtual void RemoveObserver(BluetoothAdapter::Observer* observer) OVERRIDE {
     DCHECK(observer);
     observers_.RemoveObserver(observer);
   }
 
-  virtual const std::string& Id() const {
+  // BluetoothAdapter override.
+  virtual const std::string& Id() const OVERRIDE {
     return id_;
   }
 
-  virtual void StartDiscovery() {
-    VLOG(1) << id_ << ": StartDiscovery";
+  // BluetoothAdapter override.
+  virtual void StartDiscovery() OVERRIDE {
     DCHECK(bluetooth_adapter_client_);
     bluetooth_adapter_client_->StartDiscovery(dbus::ObjectPath(id_));
   }
 
-  virtual void StopDiscovery() {
-    VLOG(1) << id_ << ": StopDiscovery";
+  // BluetoothAdapter override.
+  virtual void StopDiscovery() OVERRIDE {
     DCHECK(bluetooth_adapter_client_);
     bluetooth_adapter_client_->StopDiscovery(dbus::ObjectPath(id_));
   }
 
   // BluetoothAdapterClient::Observer override.
   virtual void PropertyChanged(const dbus::ObjectPath& object_path,
-                               const std::string& property_name) {
+                               const std::string& property_name) OVERRIDE {
     if (object_path.value() != id_)
       return;
 
@@ -90,8 +91,6 @@ class BluetoothAdapterImpl : public BluetoothAdapter,
                            const std::string& address,
                            const BluetoothDeviceClient::Properties& properties)
       OVERRIDE {
-    DVLOG(1) << id_ << ": object_path = " << object_path.value()
-             << ", Device found: " << address;
     if (object_path.value() != id_) {
       return;
     }
@@ -113,9 +112,7 @@ class BluetoothAdapterImpl : public BluetoothAdapter,
 
   // BluetoothAdapterClient::Observer override.
   virtual void DeviceDisappeared(const dbus::ObjectPath& object_path,
-                                 const std::string& address) {
-    VLOG(1) << id_ << ": object_path = " << object_path.value()
-            << ", Device disappeared: " << address;
+                                 const std::string& address) OVERRIDE {
     if (object_path.value() != id_) {
       return;
     }

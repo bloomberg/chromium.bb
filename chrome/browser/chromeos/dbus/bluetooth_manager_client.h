@@ -43,7 +43,7 @@ class BluetoothManagerClient {
 
   virtual ~BluetoothManagerClient();
 
-  // Adds and removes the observer.
+  // Adds and removes observers.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 

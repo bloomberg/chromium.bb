@@ -70,10 +70,11 @@ class BluetoothAdapterClient {
 
     // List of object paths of known Bluetooth devices, known devices are
     // those that have previously been connected or paired or are currently
-    // connected or paired.
+    // connected or paired. Read-only.
     BluetoothProperty<std::vector<dbus::ObjectPath> > devices;
 
     // List of 128-bit UUIDs that represent the available local services.
+    // Read-only.
     BluetoothProperty<std::vector<std::string> > uuids;
 
     Properties(dbus::ObjectProxy* object_proxy,
@@ -91,11 +92,13 @@ class BluetoothAdapterClient {
     virtual void PropertyChanged(const dbus::ObjectPath& object_path,
                                  const std::string& property_name) {}
 
-    // Called when a new known device has been created.
+    // Called when the adapter with object path |object_path| has a
+    // new known device with object path |object_path|.
     virtual void DeviceCreated(const dbus::ObjectPath& object_path,
                                const dbus::ObjectPath& device_path) {}
 
-    // Called when a previously known device is removed.
+    // Called when the adapter with object path |object_path| removes
+    // the known device with object path |object_path|.
     virtual void DeviceRemoved(const dbus::ObjectPath& object_path,
                                const dbus::ObjectPath& device_path) {}
 
@@ -118,8 +121,9 @@ class BluetoothAdapterClient {
 
   virtual ~BluetoothAdapterClient();
 
-  // Adds and removes observers for events on the adapter with object path
-  // |object_path|.
+  // Adds and removes observers for events on all local bluetooth
+  // adapters. Check the |object_path| parameter of observer methods to
+  // determine which adapter is issuing the event.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 

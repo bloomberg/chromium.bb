@@ -20,16 +20,16 @@ class BluetoothManagerClientImpl : public BluetoothManagerClient {
  public:
   explicit BluetoothManagerClientImpl(dbus::Bus* bus)
       : weak_ptr_factory_(this),
-        bluetooth_manager_proxy_(NULL) {
-    VLOG(1) << "Creating BluetoothManagerClientImpl";
+        object_proxy_(NULL) {
+    DVLOG(1) << "Creating BluetoothManagerClientImpl";
 
     DCHECK(bus);
 
-    bluetooth_manager_proxy_ = bus->GetObjectProxy(
+    object_proxy_ = bus->GetObjectProxy(
         bluetooth_manager::kBluetoothManagerServiceName,
         dbus::ObjectPath(bluetooth_manager::kBluetoothManagerServicePath));
 
-    bluetooth_manager_proxy_->ConnectToSignal(
+    object_proxy_->ConnectToSignal(
         bluetooth_manager::kBluetoothManagerInterface,
         bluetooth_manager::kAdapterAddedSignal,
         base::Bind(&BluetoothManagerClientImpl::AdapterAddedReceived,
@@ -37,7 +37,7 @@ class BluetoothManagerClientImpl : public BluetoothManagerClient {
         base::Bind(&BluetoothManagerClientImpl::AdapterAddedConnected,
                    weak_ptr_factory_.GetWeakPtr()));
 
-    bluetooth_manager_proxy_->ConnectToSignal(
+    object_proxy_->ConnectToSignal(
         bluetooth_manager::kBluetoothManagerInterface,
         bluetooth_manager::kAdapterRemovedSignal,
         base::Bind(&BluetoothManagerClientImpl::AdapterRemovedReceived,
@@ -45,7 +45,7 @@ class BluetoothManagerClientImpl : public BluetoothManagerClient {
         base::Bind(&BluetoothManagerClientImpl::AdapterRemovedConnected,
                    weak_ptr_factory_.GetWeakPtr()));
 
-    bluetooth_manager_proxy_->ConnectToSignal(
+    object_proxy_->ConnectToSignal(
         bluetooth_manager::kBluetoothManagerInterface,
         bluetooth_manager::kDefaultAdapterChangedSignal,
         base::Bind(&BluetoothManagerClientImpl::DefaultAdapterChangedReceived,
@@ -58,29 +58,25 @@ class BluetoothManagerClientImpl : public BluetoothManagerClient {
   }
 
   // BluetoothManagerClient override.
-  virtual void AddObserver(Observer* observer) {
-    VLOG(1) << "AddObserver";
+  virtual void AddObserver(Observer* observer) OVERRIDE {
     DCHECK(observer);
     observers_.AddObserver(observer);
   }
 
   // BluetoothManagerClient override.
-  virtual void RemoveObserver(Observer* observer) {
-    VLOG(1) << "RemoveObserver";
+  virtual void RemoveObserver(Observer* observer) OVERRIDE {
     DCHECK(observer);
     observers_.RemoveObserver(observer);
   }
 
   // BluetoothManagerClient override.
-  virtual void DefaultAdapter(const DefaultAdapterCallback& callback) {
-    LOG(INFO) << "DefaultAdapter";
-
+  virtual void DefaultAdapter(const DefaultAdapterCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(
       bluetooth_manager::kBluetoothManagerInterface,
       bluetooth_manager::kDefaultAdapter);
 
-    DCHECK(bluetooth_manager_proxy_);
-    bluetooth_manager_proxy_->CallMethod(
+    DCHECK(object_proxy_);
+    object_proxy_->CallMethod(
       &method_call,
       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
       base::Bind(&BluetoothManagerClientImpl::OnDefaultAdapter,
@@ -98,7 +94,8 @@ class BluetoothManagerClientImpl : public BluetoothManagerClient {
                  << signal->ToString();
       return;
     }
-    VLOG(1) << "Adapter added: " << object_path.value();
+
+    DVLOG(1) << "Adapter added: " << object_path.value();
     FOR_EACH_OBSERVER(Observer, observers_, AdapterAdded(object_path));
   }
 
@@ -119,7 +116,8 @@ class BluetoothManagerClientImpl : public BluetoothManagerClient {
                  << signal->ToString();
       return;
     }
-    VLOG(1) << "Adapter removed: " << object_path.value();
+
+    DVLOG(1) << "Adapter removed: " << object_path.value();
     FOR_EACH_OBSERVER(Observer, observers_, AdapterRemoved(object_path));
   }
 
@@ -140,7 +138,8 @@ class BluetoothManagerClientImpl : public BluetoothManagerClient {
                  << signal->ToString();
       return;
     }
-    VLOG(1) << "Default adapter changed: " << object_path.value();
+
+    DVLOG(1) << "Default adapter changed: " << object_path.value();
     FOR_EACH_OBSERVER(Observer, observers_, DefaultAdapterChanged(object_path));
   }
 
@@ -158,22 +157,21 @@ class BluetoothManagerClientImpl : public BluetoothManagerClient {
                         dbus::Response* response) {
     // Parse response.
     bool success = false;
-    dbus::ObjectPath adapter;
+    dbus::ObjectPath object_path;
     if (response != NULL) {
       dbus::MessageReader reader(response);
-      if (!reader.PopObjectPath(&adapter)) {
+      if (!reader.PopObjectPath(&object_path)) {
         LOG(ERROR) << "DefaultAdapter response has incorrect parameters: "
                    << response->ToString();
       } else {
         success = true;
-        LOG(INFO) << "OnDefaultAdapter: " << adapter.value();
       }
     } else {
       LOG(ERROR) << "Failed to get default adapter.";
     }
 
     // Notify client.
-    callback.Run(adapter, success);
+    callback.Run(object_path, success);
   }
 
   // Weak pointer factory for generating 'this' pointers that might live longer
@@ -181,7 +179,7 @@ class BluetoothManagerClientImpl : public BluetoothManagerClient {
   base::WeakPtrFactory<BluetoothManagerClientImpl> weak_ptr_factory_;
 
   // D-Bus proxy for BlueZ Manager interface.
-  dbus::ObjectProxy* bluetooth_manager_proxy_;
+  dbus::ObjectProxy* object_proxy_;
 
   // List of observers interested in event notifications from us.
   ObserverList<Observer> observers_;
@@ -194,16 +192,17 @@ class BluetoothManagerClientImpl : public BluetoothManagerClient {
 class BluetoothManagerClientStubImpl : public BluetoothManagerClient {
  public:
   // BluetoothManagerClient override.
-  virtual void AddObserver(Observer* observer) {
+  virtual void AddObserver(Observer* observer) OVERRIDE {
   }
 
   // BluetoothManagerClient override.
-  virtual void RemoveObserver(Observer* observer) {
+  virtual void RemoveObserver(Observer* observer) OVERRIDE {
   }
 
   // BluetoothManagerClient override.
-  virtual void DefaultAdapter(const DefaultAdapterCallback& callback) {
+  virtual void DefaultAdapter(const DefaultAdapterCallback& callback) OVERRIDE {
     VLOG(1) << "Requested default adapter.";
+    callback.Run(dbus::ObjectPath(), false);
   }
 };
 
