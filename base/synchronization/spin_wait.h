@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,8 +12,8 @@
 // We provide a simple one argument spin wait (for 1 second), and a generic
 // spin wait (for longer periods of time).
 
-#ifndef BASE_SPIN_WAIT_H_
-#define BASE_SPIN_WAIT_H_
+#ifndef BASE_SYNCHRONIZATION_SPIN_WAIT_H_
+#define BASE_SYNCHRONIZATION_SPIN_WAIT_H_
 #pragma once
 
 #include "base/threading/platform_thread.h"
@@ -48,4 +48,4 @@
     } \
   } while (0)
 
-#endif  // BASE_SPIN_WAIT_H_
+#endif  // BASE_SYNCHRONIZATION_SPIN_WAIT_H_
