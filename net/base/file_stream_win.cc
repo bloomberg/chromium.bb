@@ -72,7 +72,7 @@ void OpenFile(const FilePath& path,
                                          path.AsUTF8Unsafe())));
 
   *file = base::CreatePlatformFile(path, open_flags, NULL, NULL);
-  if (*file == INVALID_HANDLE_VALUE) {
+  if (*file == base::kInvalidPlatformFileValue) {
     DWORD error = GetLastError();
     LOG(WARNING) << "Failed to open file: " << error;
     *result = RecordAndMapError(error,
@@ -88,7 +88,7 @@ void OpenFile(const FilePath& path,
 void CloseFile(base::PlatformFile file,
                const net::BoundNetLog& bound_net_log) {
   bound_net_log.AddEvent(net::NetLog::TYPE_FILE_STREAM_CLOSE, NULL);
-  if (file == INVALID_HANDLE_VALUE)
+  if (file == base::kInvalidPlatformFileValue)
     return;
 
   CancelIo(file);
@@ -261,17 +261,17 @@ void FileStream::CloseSync() {
   // caled in this function.
 
   bound_net_log_.AddEvent(net::NetLog::TYPE_FILE_STREAM_CLOSE, NULL);
-  if (file_ != INVALID_HANDLE_VALUE)
+  if (file_ != base::kInvalidPlatformFileValue)
     CancelIo(file_);
 
   // TODO(satorux): Remove this once all async clients are migrated to use
   // Close(). crbug.com/114783
   async_context_.reset();
 
-  if (file_ != INVALID_HANDLE_VALUE) {
+  if (file_ != base::kInvalidPlatformFileValue) {
     if (!base::ClosePlatformFile(file_))
       NOTREACHED();
-    file_ = INVALID_HANDLE_VALUE;
+    file_ = base::kInvalidPlatformFileValue;
 
     bound_net_log_.EndEvent(net::NetLog::TYPE_FILE_STREAM_OPEN, NULL);
   }
@@ -333,7 +333,7 @@ int FileStream::OpenSync(const FilePath& path, int open_flags) {
 }
 
 bool FileStream::IsOpen() const {
-  return file_ != INVALID_HANDLE_VALUE;
+  return file_ != base::kInvalidPlatformFileValue;
 }
 
 int64 FileStream::Seek(Whence whence, int64 offset) {
@@ -615,7 +615,7 @@ void FileStream::SetBoundNetLogSource(
 }
 
 void FileStream::OnClosed() {
-  file_ = INVALID_HANDLE_VALUE;
+  file_ = base::kInvalidPlatformFileValue;
 
   CompletionCallback temp = callback_;
   callback_.Reset();
