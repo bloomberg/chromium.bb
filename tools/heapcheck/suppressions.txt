@@ -1849,9 +1849,3 @@
    fun:WebKit::FrameLoaderClientImpl::finishedLoading
    fun:WebCore::FrameLoader::finishedLoadingDocumen
 }
-{
-   bug_114787
-   Heapcheck:Leak
-   ...
-   fun:content::CreateQuotaManagerAndClients
-}
