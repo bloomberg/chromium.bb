@@ -398,7 +398,7 @@ std::string GetApplicationLocale(const std::string& pref_locale) {
     candidates.push_back(base::i18n::GetConfiguredLocale());
   }
 
-#elif defined(OS_CHROMEOS)
+#elif defined(OS_CHROMEOS) || defined(USE_AURA)
 
   // On ChromeOS, use the application locale preference.
   if (!pref_locale.empty())
