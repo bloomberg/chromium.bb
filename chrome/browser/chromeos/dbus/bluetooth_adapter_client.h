@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/observer_list.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/dbus/bluetooth_device_client.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_property.h"
 #include "dbus/object_path.h"
 
@@ -98,13 +99,19 @@ class BluetoothAdapterClient {
     virtual void DeviceRemoved(const dbus::ObjectPath& object_path,
                                const dbus::ObjectPath& device_path) {}
 
-    // Called when a new remote device has been discovered.
-    // |device_properties| should be copied if needed.
-    virtual void DeviceFound(const dbus::ObjectPath& object_path,
-                             const std::string& address,
-                             const DictionaryValue& device_properties) {}
+    // Called when the adapter with object path |object_path| discovers
+    // a new remote device with address |address| and properties
+    // |properties|, there is no device object path until connected.
+    //
+    // |properties| supports only value() calls, not Get() or Set(), and
+    // should be copied if needed.
+    virtual void DeviceFound(
+        const dbus::ObjectPath& object_path, const std::string& address,
+        const BluetoothDeviceClient::Properties& properties) {}
 
-    // Called when a previously discovered device is no longer visible.
+    // Called when the adapter with object path |object_path| can no
+    // longer communicate with the discovered removed device with
+    // address |address|.
     virtual void DeviceDisappeared(const dbus::ObjectPath& object_path,
                                    const std::string& address) {}
   };

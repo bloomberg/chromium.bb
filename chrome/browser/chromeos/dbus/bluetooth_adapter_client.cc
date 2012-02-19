@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "chrome/browser/chromeos/dbus/bluetooth_device_client.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_manager_client.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_property.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
@@ -17,164 +18,6 @@
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-
-namespace {
-
-// Utility function to convert an array of dbus dict_entry objects into a
-// DictionaryValue object.
-//
-// The dict_entry objects must have keys that are strings and values that are
-// simple variants.
-//
-// When converting integral types, we use Integer Value objects to represent
-// uint8, int16, uint16, int32, and uint32 values and Double Value objects to
-// represent int64 and uint64 values.
-//
-// We intend to move this to the chrome dbus library's MessageReader class when
-// it's more fully baked.
-//
-// TODO(vlaviano):
-// - Can we handle integral types better?
-// - Add support for nested complex types.
-// - Write an equivalent function to convert in the opposite direction.
-// - Write unit tests.
-bool PopArrayOfDictEntries(dbus::MessageReader* reader,
-                           dbus::Message* message,
-                           DictionaryValue* dictionary) {
-  DCHECK(reader);
-  DCHECK(message);
-  DCHECK(dictionary);
-  dbus::MessageReader array_reader(message);
-  if (!reader->PopArray(&array_reader)) {
-    return false;
-  }
-  while (array_reader.HasMoreData()) {
-    dbus::MessageReader dict_entry_reader(message);
-    if (!array_reader.PopDictEntry(&dict_entry_reader)) {
-      return false;
-    }
-    std::string key;
-    if (!dict_entry_reader.PopString(&key)) {
-      return false;
-    }
-    dbus::MessageReader variant_reader(message);
-    if (!dict_entry_reader.PopVariant(&variant_reader)) {
-      return false;
-    }
-    const dbus::Message::DataType type = variant_reader.GetDataType();
-    switch (type) {
-      case dbus::Message::BYTE: {
-        uint8 value = 0;
-        if (!variant_reader.PopByte(&value)) {
-          return false;
-        }
-        dictionary->SetInteger(key, value);
-        break;
-      }
-      case dbus::Message::BOOL: {
-        bool value = false;
-        if (!variant_reader.PopBool(&value)) {
-          return false;
-        }
-        dictionary->SetBoolean(key, value);
-        break;
-      }
-      case dbus::Message::INT16: {
-        int16 value = 0;
-        if (!variant_reader.PopInt16(&value)) {
-          return false;
-        }
-        dictionary->SetInteger(key, value);
-        break;
-      }
-      case dbus::Message::UINT16: {
-        uint16 value = 0;
-        if (!variant_reader.PopUint16(&value)) {
-          return false;
-        }
-        dictionary->SetInteger(key, value);
-        break;
-      }
-      case dbus::Message::INT32: {
-        int32 value = 0;
-        if (!variant_reader.PopInt32(&value)) {
-          return false;
-        }
-        dictionary->SetInteger(key, value);
-        break;
-      }
-      case dbus::Message::UINT32: {
-        uint32 value = 0;
-        if (!variant_reader.PopUint32(&value)) {
-          return false;
-        }
-        dictionary->SetInteger(key, value);
-        break;
-      }
-      case dbus::Message::INT64: {
-        int64 value = 0;
-        if (!variant_reader.PopInt64(&value)) {
-          return false;
-        }
-        dictionary->SetDouble(key, value);
-        break;
-      }
-      case dbus::Message::UINT64: {
-        uint64 value = 0;
-        if (!variant_reader.PopUint64(&value)) {
-          return false;
-        }
-        dictionary->SetDouble(key, value);
-        break;
-      }
-      case dbus::Message::DOUBLE: {
-        double value = 0;
-        if (!variant_reader.PopDouble(&value)) {
-          return false;
-        }
-        dictionary->SetDouble(key, value);
-        break;
-      }
-      case dbus::Message::STRING: {
-        std::string value;
-        if (!variant_reader.PopString(&value)) {
-          return false;
-        }
-        dictionary->SetString(key, value);
-        break;
-      }
-      case dbus::Message::OBJECT_PATH: {
-        dbus::ObjectPath value;
-        if (!variant_reader.PopObjectPath(&value)) {
-          return false;
-        }
-        dictionary->SetString(key, value.value());
-        break;
-      }
-      case dbus::Message::ARRAY: {
-        // Not yet supported.
-        return false;
-      }
-      case dbus::Message::STRUCT: {
-        // Not yet supported.
-        return false;
-      }
-      case dbus::Message::DICT_ENTRY: {
-        // Not yet supported.
-        return false;
-      }
-      case dbus::Message::VARIANT: {
-        // Not yet supported.
-        return false;
-      }
-      default:
-        LOG(FATAL) << "Unknown type: " << type;
-    }
-  }
-  return true;
-}
-
-}  // namespace
 
 namespace chromeos {
 
@@ -460,8 +303,12 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
     }
     VLOG(1) << object_path.value() << ": Device found: " << address;
 
-    DictionaryValue device_properties;
-    if (!PopArrayOfDictEntries(&reader, signal, &device_properties)) {
+    // Create device properties structure without an attached object_proxy
+    // and a NULL callback; value() functions will work on this, but not
+    // Get() or Set() calls.
+    BluetoothDeviceClient::Properties device_properties(
+        NULL, BluetoothDeviceClient::Properties::PropertyChangedCallback());
+    if (!device_properties.UpdatePropertiesFromReader(&reader)) {
       LOG(ERROR) << object_path.value()
                  << ": DeviceFound signal has incorrect parameters: "
                  << signal->ToString();

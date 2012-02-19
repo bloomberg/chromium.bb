@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,10 +9,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-
-namespace base {
-class DictionaryValue;
-}  // namespace base
 
 namespace chromeos {
 
@@ -40,11 +36,16 @@ class BluetoothDevice {
   // Returns whether or not this device is paired.
   virtual bool IsPaired() const = 0;
 
-  // Returns a dictionary representation of this device.
-  virtual const base::DictionaryValue& AsDictionary() const = 0;
+  // Returns whether or not this device is connected.
+  virtual bool IsConnected() const = 0;
 
   // Creates a device with property values based on |properties|.
-  static BluetoothDevice* Create(const base::DictionaryValue& properties);
+  static BluetoothDevice* Create(const std::string& address,
+                                 uint32 bluetooth_class,
+                                 const std::string& icon,
+                                 const std::string& name,
+                                 bool paired,
+                                 bool connected);
 
  protected:
   BluetoothDevice();

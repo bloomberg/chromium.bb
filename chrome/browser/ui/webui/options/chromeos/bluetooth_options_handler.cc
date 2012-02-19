@@ -225,21 +225,12 @@ void BluetoothOptionsHandler::UpdateDeviceCallback(
 void BluetoothOptionsHandler::SendDeviceNotification(
     chromeos::BluetoothDevice* device,
     base::DictionaryValue* params) {
-  // Retrieve properties of the bluetooth device.  The properties names are
-  // in title case.  Convert to camel case in accordance with our Javascript
-  // naming convention.
-  const DictionaryValue& properties = device->AsDictionary();
   base::DictionaryValue js_properties;
-  for (DictionaryValue::key_iterator it = properties.begin_keys();
-      it != properties.end_keys(); ++it) {
-    base::Value* child = NULL;
-    properties.GetWithoutPathExpansion(*it, &child);
-    if (child) {
-      std::string js_key = *it;
-      js_key[0] = tolower(js_key[0]);
-      js_properties.SetWithoutPathExpansion(js_key, child->DeepCopy());
-    }
-  }
+  js_properties.SetString("name", device->GetName());
+  js_properties.SetString("address", device->GetAddress());
+  js_properties.SetString("icon", device->GetIcon());
+  js_properties.SetBoolean("paired", device->IsPaired());
+  js_properties.SetBoolean("connected", device->IsConnected());
   if (params) {
     js_properties.MergeDictionary(params);
   }
@@ -402,15 +393,9 @@ void BluetoothOptionsHandler::GenerateFakeDevice(
     bool paired,
     bool connected,
     const std::string& pairing) {
-  DictionaryValue properties;
-  properties.SetString(bluetooth_device::kNameProperty, name);
-  properties.SetString(bluetooth_device::kAddressProperty, address);
-  properties.SetString(bluetooth_device::kIconProperty, icon);
-  properties.SetBoolean(bluetooth_device::kPairedProperty, paired);
-  properties.SetBoolean(bluetooth_device::kConnectedProperty, connected);
-  properties.SetInteger(bluetooth_device::kClassProperty, 0);
   chromeos::BluetoothDevice* device =
-      chromeos::BluetoothDevice::Create(properties);
+      chromeos::BluetoothDevice::Create(address, 0, icon, name,
+                                        paired, connected);
   DeviceFound("FakeAdapter", device);
   if (pairing.compare("bluetoothRemotePasskey") == 0) {
     DisplayPasskey(device, 730119, 2);
@@ -428,4 +413,3 @@ void BluetoothOptionsHandler::GenerateFakeDevice(
 }
 
 }  // namespace chromeos
-

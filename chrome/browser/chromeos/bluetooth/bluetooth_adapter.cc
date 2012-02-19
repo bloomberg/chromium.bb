@@ -88,16 +88,21 @@ class BluetoothAdapterImpl : public BluetoothAdapter,
   // BluetoothAdapterClient::Observer override.
   virtual void DeviceFound(const dbus::ObjectPath& object_path,
                            const std::string& address,
-                           const base::DictionaryValue& device_properties) {
-    VLOG(1) << id_ << ": object_path = " << object_path.value()
-            << ", Device found: " << address << " (with "
-            << device_properties.size() << " properties)";
+                           const BluetoothDeviceClient::Properties& properties)
+      OVERRIDE {
+    DVLOG(1) << id_ << ": object_path = " << object_path.value()
+             << ", Device found: " << address;
     if (object_path.value() != id_) {
       return;
     }
     // TODO(vlaviano): later, we will want to persist the device.
     scoped_ptr<BluetoothDevice> device(
-        BluetoothDevice::Create(device_properties));
+        BluetoothDevice::Create(properties.address.value(),
+                                properties.bluetooth_class.value(),
+                                properties.icon.value(),
+                                properties.name.value(),
+                                properties.paired.value(),
+                                properties.connected.value()));
     if (device.get() != NULL) {
       FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                         DeviceFound(object_path.value(), device.get()));
