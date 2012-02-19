@@ -149,34 +149,46 @@ void HistoryQuickProvider::DoAutocomplete() {
   if (matches.empty())
     return;
 
-  // If we're not allowing inline autocompletions, artificially reduce the
-  // score of high-scoring matches that might be autocompleted to something
-  // low enough that we know they won't be used as autocomplete suggestions.
-  // Each such result gets the next available |max_match_score|.  Upon use of
-  // |max_match_score| it is decremented.  All subsequent matches must be
-  // clamped to retain match results ordering.
-  int max_match_score = PreventInlineAutocomplete(autocomplete_input_) ?
-      (AutocompleteResult::kLowestDefaultScore - 1) : -1;
+  // Loop over every result and add it to matches_.  In the process,
+  // guarantee that scores are decreasing.  |max_match_score| keeps
+  // track of the highest score we can assign to any later results we
+  // see.  Also, if we're not allowing inline autocompletions in
+  // general, artificially reduce the starting |max_match_score|
+  // (which therefore applies to all results) to something low enough
+  // that guarantees no result will be offered as an autocomplete
+  // suggestion.  In addition, even if we allow inlining of
+  // suggestions in general, we also reduce the starting
+  // |max_match_score| if our top suggestion is not inlineable to make
+  // sure it never gets attempted to be offered as an inline
+  // suggestion.  Note that this strategy will allow a funky case:
+  // suppose we're allowing inlining in general.  If the second result
+  // is marked as cannot inline yet has a score that would make it
+  // inlineable, it will keep its score.  This is a bit odd--a
+  // non-inlineable result with a score high enough to make it
+  // eligible for inlining will keep its high score--but it's okay
+  // because there is a higher scoring result that is required to be
+  // shown before this result.  Hence, this result, the second in the
+  // set, will never be inlined.  (The autocomplete UI keeps results
+  // in relevance score order.)
+  int max_match_score = (PreventInlineAutocomplete(autocomplete_input_) ||
+      !matches.begin()->can_inline) ?
+      (AutocompleteResult::kLowestDefaultScore - 1) :
+      matches.begin()->raw_score;
   for (ScoredHistoryMatches::const_iterator match_iter = matches.begin();
        match_iter != matches.end(); ++match_iter) {
     const ScoredHistoryMatch& history_match(*match_iter);
-    if (history_match.raw_score > 0) {
-      AutocompleteMatch ac_match = QuickMatchToACMatch(
-          history_match,
-          PreventInlineAutocomplete(autocomplete_input_),
-          &max_match_score);
-      matches_.push_back(ac_match);
-    }
+    // Set max_match_score to the score we'll assign this result:
+    max_match_score = std::min(max_match_score, history_match.raw_score);
+    matches_.push_back(QuickMatchToACMatch(history_match, max_match_score));
+    // Mark this max_match_score as being used:
+    max_match_score--;
   }
 }
 
 AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
     const ScoredHistoryMatch& history_match,
-    bool prevent_inline_autocomplete,
-    int* max_match_score) {
-  DCHECK(max_match_score);
+    int score) {
   const history::URLRow& info = history_match.url_info;
-  int score = CalculateRelevance(history_match, max_match_score);
   AutocompleteMatch match(this, score, !!info.visit_count(),
       history_match.url_matches.empty() ?
           AutocompleteMatch::HISTORY_URL : AutocompleteMatch::HISTORY_TITLE);
@@ -199,7 +211,7 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
   match.contents_class =
       SpansFromTermMatch(new_matches, match.contents.length(), true);
 
-  if (prevent_inline_autocomplete || !history_match.can_inline) {
+  if (!history_match.can_inline) {
     match.inline_autocomplete_offset = string16::npos;
   } else {
     DCHECK(!new_matches.empty());
@@ -230,22 +242,6 @@ history::InMemoryURLIndex* HistoryQuickProvider::GetIndex() {
     return NULL;
 
   return history_service->InMemoryIndex();
-}
-
-// static
-int HistoryQuickProvider::CalculateRelevance(
-    const ScoredHistoryMatch& history_match,
-    int* max_match_score) {
-  DCHECK(max_match_score);
-  // Note that |can_inline| will only be true if what the user typed starts
-  // at the beginning of the result's URL and there is exactly one substring
-  // match in the URL.
-  int score = (history_match.can_inline) ? history_match.raw_score :
-      std::min(AutocompleteResult::kLowestDefaultScore - 1,
-               history_match.raw_score);
-  *max_match_score = ((*max_match_score < 0) ?
-      score : std::min(score, *max_match_score)) - 1;
-  return *max_match_score + 1;
 }
 
 // static

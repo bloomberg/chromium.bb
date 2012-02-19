@@ -48,21 +48,11 @@ class HistoryQuickProvider : public HistoryProvider {
   // Performs the autocomplete matching and scoring.
   void DoAutocomplete();
 
-  // Creates an AutocompleteMatch from |history_match|. |max_match_score| gives
-  // the maximum possible score for the match.
+  // Creates an AutocompleteMatch from |history_match|, assigning it
+  // the score |score|.
   AutocompleteMatch QuickMatchToACMatch(
       const history::ScoredHistoryMatch& history_match,
-      bool prevent_inline_autocomplete,
-      int* max_match_score);
-
-  // Determines the relevance score of |history_match|. The maximum allowed
-  // score for the match is passed in |max_match_score|. The |max_match_score|
-  // is always set to the resulting score minus 1 whenever the match's score
-  // has to be limited or is <= to |max_match_score|. This function should be
-  // called in a loop with each match in decreasing order of raw score.
-  static int CalculateRelevance(
-      const history::ScoredHistoryMatch& history_match,
-      int* max_match_score);
+      int score);
 
   // Returns the index that should be used for history lookups.
   history::InMemoryURLIndex* GetIndex();

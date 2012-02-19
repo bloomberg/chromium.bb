@@ -233,6 +233,7 @@ void HistoryQuickProviderTest::RunTest(const string16 text,
 
   // We always expect to get at least one result.
   ASSERT_FALSE(ac_matches_.empty());
+  int best_score = ac_matches_.begin()->relevance + 1;
   // Verify that we got the results in the order expected.
   int i = 0;
   std::vector<std::string>::const_iterator expected = expected_urls.begin();
@@ -242,6 +243,10 @@ void HistoryQuickProviderTest::RunTest(const string16 text,
     EXPECT_EQ(*expected, actual->destination_url.spec())
         << "For result #" << i << " we got '" << actual->destination_url.spec()
         << "' but expected '" << *expected << "'.";
+    EXPECT_LT(actual->relevance, best_score)
+      << "At result #" << i << " (url=" << actual->destination_url.spec()
+      << "), we noticed scores are not monotonically decreasing.";
+    best_score = actual->relevance;
   }
 
   if (can_inline_top_result) {
@@ -257,6 +262,9 @@ void HistoryQuickProviderTest::RunTest(const string16 text,
   } else {
     // When the top scorer is not inline-able autocomplete offset must be npos.
     EXPECT_EQ(string16::npos, ac_matches_[0].inline_autocomplete_offset);
+    // Also, the score must be too low to be inlineable.
+    EXPECT_LT(ac_matches_[0].relevance,
+              AutocompleteResult::kLowestDefaultScore);
   }
 }
 
@@ -416,73 +424,6 @@ TEST_F(HistoryQuickProviderTest, Spans) {
   EXPECT_EQ(3U, spans_b[2].offset);
   EXPECT_EQ(ACMatchClassification::MATCH | ACMatchClassification::URL,
             spans_b[2].style);
-}
-
-TEST_F(HistoryQuickProviderTest, Relevance) {
-  history::ScoredHistoryMatch match;
-  int next_score = 1500;
-
-  // Can inline, not clamped.
-  match.raw_score = 1425;
-  match.can_inline = true;
-  EXPECT_EQ(HistoryQuickProvider::CalculateRelevance(match, &next_score), 1425);
-  EXPECT_EQ(next_score, 1424);
-
-  // Can't inline, not clamped.
-  next_score = 1500;
-  match.raw_score = 1425;
-  match.can_inline = false;
-  const int kMaxNonInliningScore = AutocompleteResult::kLowestDefaultScore - 1;
-  EXPECT_EQ(HistoryQuickProvider::CalculateRelevance(match, &next_score),
-            kMaxNonInliningScore);
-  EXPECT_EQ(next_score, kMaxNonInliningScore - 1);
-
-  // Can inline, clamped.
-  next_score = kMaxNonInliningScore;
-  match.raw_score = 1425;
-  match.can_inline = true;
-  EXPECT_EQ(HistoryQuickProvider::CalculateRelevance(match, &next_score),
-            kMaxNonInliningScore);
-  EXPECT_EQ(next_score, kMaxNonInliningScore - 1);
-
-  // Can't inline, clamped.
-  next_score = kMaxNonInliningScore;
-  match.raw_score = 1425;
-  match.can_inline = false;
-  EXPECT_EQ(HistoryQuickProvider::CalculateRelevance(match, &next_score),
-            kMaxNonInliningScore);
-  EXPECT_EQ(next_score, kMaxNonInliningScore - 1);
-
-  // Score just above the clamped limit.
-  next_score = kMaxNonInliningScore;
-  match.raw_score = AutocompleteResult::kLowestDefaultScore;
-  match.can_inline = false;
-  EXPECT_EQ(HistoryQuickProvider::CalculateRelevance(match, &next_score),
-            kMaxNonInliningScore);
-  EXPECT_EQ(next_score, kMaxNonInliningScore - 1);
-
-  // Score right at the clamped limit.
-  next_score = kMaxNonInliningScore;
-  match.raw_score = kMaxNonInliningScore;
-  match.can_inline = true;
-  EXPECT_EQ(HistoryQuickProvider::CalculateRelevance(match, &next_score),
-            kMaxNonInliningScore);
-  EXPECT_EQ(next_score, kMaxNonInliningScore - 1);
-
-  // Score just below the clamped limit.
-  next_score = kMaxNonInliningScore;
-  match.raw_score = kMaxNonInliningScore - 1;
-  match.can_inline = true;
-  EXPECT_EQ(HistoryQuickProvider::CalculateRelevance(match, &next_score),
-            kMaxNonInliningScore - 1);
-  EXPECT_EQ(next_score, kMaxNonInliningScore - 2);
-
-  // Low score, can inline, not clamped.
-  next_score = 1500;
-  match.raw_score = 500;
-  match.can_inline = true;
-  EXPECT_EQ(HistoryQuickProvider::CalculateRelevance(match, &next_score), 500);
-  EXPECT_EQ(next_score, 499);
 }
 
 // HQPOrderingTest -------------------------------------------------------------
