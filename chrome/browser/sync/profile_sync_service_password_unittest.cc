@@ -181,6 +181,9 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
     profile_.CreateRequestContext();
     password_store_ = new MockPasswordStore();
 
+    notification_service_ = new ThreadNotificationService(
+        db_thread_.DeprecatedGetThreadObject());
+    notification_service_->Init();
     registrar_.Add(&observer_,
         chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
         content::NotificationService::AllSources());
@@ -192,6 +195,7 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
   virtual void TearDown() {
     password_store_->Shutdown();
     service_.reset();
+    notification_service_->TearDown();
     profile_.ResetRequestContext();
     AbstractProfileSyncServiceTest::TearDown();
   }
@@ -311,6 +315,7 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
     EXPECT_CALL(*password_store_, RemoveLoginImpl(_)).Times(0);
   }
 
+  scoped_refptr<ThreadNotificationService> notification_service_;
   content::NotificationObserverMock observer_;
   ProfileMock profile_;
   scoped_refptr<MockPasswordStore> password_store_;

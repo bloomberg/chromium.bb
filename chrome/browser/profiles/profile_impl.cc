@@ -92,6 +92,9 @@
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/appcache/chrome_appcache_service.h"
+#include "content/browser/chrome_blob_storage_context.h"
+#include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/speech/speech_input_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -102,6 +105,7 @@
 #include "net/base/transport_security_state.h"
 #include "net/http/http_server_properties.h"
 #include "webkit/database/database_tracker.h"
+#include "webkit/quota/quota_manager.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/instant/promo_counter.h"
@@ -545,15 +549,13 @@ ProfileImpl::~ProfileImpl() {
   // Save the session state if we're going to restore the session during the
   // next startup.
   SessionStartupPref pref = SessionStartupPref::GetStartupPref(this);
-  if (pref.type == SessionStartupPref::LAST) {
+  if (pref.type == SessionStartupPref::LAST)
     SaveSessionState();
-  } else if (clear_local_state_on_exit_) {
+  else if (appcache_service_ && clear_local_state_on_exit_) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&appcache::AppCacheService::set_clear_local_state_on_exit,
-            BrowserContext::GetAppCacheService(this), true));
-    BrowserContext::GetWebKitContext(this)->set_clear_local_state_on_exit(true);
-    BrowserContext::GetDatabaseTracker(this)->SetClearLocalStateOnExit(true);
+                   appcache_service_.get(), true));
   }
 
   StopCreateSessionServiceTimer();
@@ -573,6 +575,13 @@ ProfileImpl::~ProfileImpl() {
   DestroyOffTheRecordProfile();
 
   ProfileDependencyManager::GetInstance()->DestroyProfileServices(this);
+
+  if (db_tracker_) {
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&webkit_database::DatabaseTracker::Shutdown,
+                   db_tracker_.get()));
+  }
 
   // Password store uses WebDB, shut it down before the WebDB has been shutdown.
   if (password_store_.get())
@@ -669,6 +678,16 @@ bool ProfileImpl::HasOffTheRecordProfile() {
 
 Profile* ProfileImpl::GetOriginalProfile() {
   return this;
+}
+
+ChromeAppCacheService* ProfileImpl::GetAppCacheService() {
+  CreateQuotaManagerAndClients();
+  return appcache_service_;
+}
+
+webkit_database::DatabaseTracker* ProfileImpl::GetDatabaseTracker() {
+  CreateQuotaManagerAndClients();
+  return db_tracker_;
 }
 
 VisitedLinkMaster* ProfileImpl::GetVisitedLinkMaster() {
@@ -1117,15 +1136,21 @@ DownloadManager* ProfileImpl::GetDownloadManager() {
   return DownloadServiceFactory::GetForProfile(this)->GetDownloadManager();
 }
 
+fileapi::FileSystemContext* ProfileImpl::GetFileSystemContext() {
+  CreateQuotaManagerAndClients();
+  return file_system_context_.get();
+}
+
+quota::QuotaManager* ProfileImpl::GetQuotaManager() {
+  CreateQuotaManagerAndClients();
+  return quota_manager_.get();
+}
+
 bool ProfileImpl::DidLastSessionExitCleanly() {
   // last_session_exited_cleanly_ is set when the preferences are loaded. Force
   // it to be set by asking for the prefs.
   GetPrefs();
   return last_session_exited_cleanly_;
-}
-
-quota::SpecialStoragePolicy* ProfileImpl::GetSpecialStoragePolicy() {
-  return GetExtensionSpecialStoragePolicy();
 }
 
 BookmarkModel* ProfileImpl::GetBookmarkModel() {
@@ -1169,6 +1194,57 @@ ExtensionPrefValueMap* ProfileImpl::GetExtensionPrefValueMap() {
   return extension_pref_value_map_.get();
 }
 
+void ProfileImpl::CreateQuotaManagerAndClients() {
+  if (quota_manager_.get()) {
+    DCHECK(file_system_context_.get());
+    DCHECK(db_tracker_.get());
+    DCHECK(webkit_context_.get());
+    return;
+  }
+
+  // All of the clients have to be created and registered with the
+  // QuotaManager prior to the QuotaManger being used. So we do them
+  // all together here prior to handing out a reference to anything
+  // that utlizes the QuotaManager.
+  quota_manager_ = new quota::QuotaManager(
+      IsOffTheRecord(),
+      GetPath(),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+      GetExtensionSpecialStoragePolicy());
+
+  // Each consumer is responsible for registering its QuotaClient during
+  // its construction.
+  file_system_context_ = CreateFileSystemContext(
+      GetPath(), IsOffTheRecord(),
+      GetExtensionSpecialStoragePolicy(),
+      quota_manager_->proxy());
+  db_tracker_ = new webkit_database::DatabaseTracker(
+      GetPath(), IsOffTheRecord(), clear_local_state_on_exit_,
+      GetExtensionSpecialStoragePolicy(),
+      quota_manager_->proxy(),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+  webkit_context_ = new WebKitContext(
+        IsOffTheRecord(), GetPath(), GetExtensionSpecialStoragePolicy(),
+        clear_local_state_on_exit_, quota_manager_->proxy(),
+        BrowserThread::GetMessageLoopProxyForThread(
+            BrowserThread::WEBKIT_DEPRECATED));
+  appcache_service_ = new ChromeAppCacheService(quota_manager_->proxy());
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&ChromeAppCacheService::InitializeOnIOThread,
+                 appcache_service_.get(),
+                 IsOffTheRecord()
+                     ? FilePath() : GetPath().Append(chrome::kAppCacheDirname),
+                 io_data_.GetResourceContextNoInit(),
+                 make_scoped_refptr(GetExtensionSpecialStoragePolicy())));
+}
+
+WebKitContext* ProfileImpl::GetWebKitContext() {
+  CreateQuotaManagerAndClients();
+  return webkit_context_.get();
+}
+
 void ProfileImpl::MarkAsCleanShutdown() {
   if (prefs_.get()) {
     // The session cleanly exited, set kSessionExitedCleanly appropriately.
@@ -1204,6 +1280,14 @@ void ProfileImpl::Observe(int type,
       } else if (*pref_name_in == prefs::kClearSiteDataOnExit) {
         clear_local_state_on_exit_ =
             prefs->GetBoolean(prefs::kClearSiteDataOnExit);
+        if (webkit_context_) {
+          webkit_context_->set_clear_local_state_on_exit(
+              clear_local_state_on_exit_);
+        }
+        if (db_tracker_) {
+          db_tracker_->SetClearLocalStateOnExit(
+              clear_local_state_on_exit_);
+        }
       } else if (*pref_name_in == prefs::kGoogleServicesUsername) {
         UpdateProfileUserNameCache();
       } else if (*pref_name_in == prefs::kProfileAvatarIndex) {
@@ -1256,6 +1340,17 @@ TokenService* ProfileImpl::GetTokenService() {
     token_service_.reset(new TokenService());
   }
   return token_service_.get();
+}
+
+ChromeBlobStorageContext* ProfileImpl::GetBlobStorageContext() {
+  if (!blob_storage_context_) {
+    blob_storage_context_ = new ChromeBlobStorageContext();
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&ChromeBlobStorageContext::InitializeOnIOThread,
+                   blob_storage_context_.get()));
+  }
+  return blob_storage_context_;
 }
 
 ExtensionInfoMap* ProfileImpl::GetExtensionInfoMap() {
@@ -1431,14 +1526,16 @@ GURL ProfileImpl::GetHomePage() {
 void ProfileImpl::SaveSessionState() {
   if (!session_restore_enabled_)
     return;
-  BrowserContext::GetWebKitContext(this)->SaveSessionState();
-  BrowserContext::GetDatabaseTracker(this)->SaveSessionState();
+  if (webkit_context_.get())
+    webkit_context_->SaveSessionState();
+  if (db_tracker_.get())
+    db_tracker_->SaveSessionState();
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&SaveSessionStateOnIOThread,
                  make_scoped_refptr(GetRequestContext()),
-                 make_scoped_refptr(BrowserContext::GetAppCacheService(this))));
+                 make_scoped_refptr(appcache_service_.get())));
 }
 
 void ProfileImpl::UpdateProfileUserNameCache() {

@@ -380,6 +380,10 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
         WillRepeatedly(Return(web_data_service_.get()));
     personal_data_manager_->Init(&profile_);
 
+    notification_service_ = new ThreadNotificationService(
+        db_thread_.DeprecatedGetThreadObject());
+    notification_service_->Init();
+
     // Note: This must be called *after* the notification service is created.
     web_data_service_->StartSyncableService();
   }
@@ -388,6 +392,7 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
     // Note: The tear down order is important.
     service_.reset();
     web_data_service_->ShutdownSyncableService();
+    notification_service_->TearDown();
     profile_.ResetRequestContext();
     AbstractProfileSyncServiceTest::TearDown();
   }
@@ -566,6 +571,8 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
   friend class AddAutofillHelper<AutofillEntry>;
   friend class AddAutofillHelper<AutofillProfile>;
   friend class FakeServerUpdater;
+
+  scoped_refptr<ThreadNotificationService> notification_service_;
 
   ProfileMock profile_;
   AutofillTableMock autofill_table_;

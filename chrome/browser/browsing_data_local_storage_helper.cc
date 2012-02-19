@@ -17,7 +17,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "webkit/glue/webkit_glue.h"
 
-using content::BrowserContext;
 using content::BrowserThread;
 using WebKit::WebSecurityOrigin;
 
@@ -90,7 +89,7 @@ void BrowsingDataLocalStorageHelper::DeleteLocalStorageFile(
 void BrowsingDataLocalStorageHelper::FetchLocalStorageInfoInWebKitThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   file_util::FileEnumerator file_enumerator(
-      BrowserContext::GetWebKitContext(profile_)->data_path().Append(
+      profile_->GetWebKitContext()->data_path().Append(
           DOMStorageContext::kLocalStorageDirectory),
       false, file_util::FileEnumerator::FILES);
   for (FilePath file_path = file_enumerator.Next(); !file_path.empty();
@@ -140,8 +139,8 @@ void BrowsingDataLocalStorageHelper::NotifyInUIThread() {
 void BrowsingDataLocalStorageHelper::DeleteLocalStorageFileInWebKitThread(
     const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  BrowserContext::GetWebKitContext(profile_)->dom_storage_context()->
-      DeleteLocalStorageFile(file_path);
+  profile_->GetWebKitContext()->dom_storage_context()->DeleteLocalStorageFile(
+      file_path);
 }
 
 CannedBrowsingDataLocalStorageHelper::CannedBrowsingDataLocalStorageHelper(
@@ -222,7 +221,7 @@ void CannedBrowsingDataLocalStorageHelper::ConvertPendingInfoInWebKitThread() {
         web_security_origin.port(),
         web_security_origin.databaseIdentifier().utf8(),
         security_origin,
-        BrowserContext::GetWebKitContext(profile_)->dom_storage_context()->
+        profile_->GetWebKitContext()->dom_storage_context()->
             GetLocalStorageFilePath(web_security_origin.databaseIdentifier()),
         0,
         base::Time()));

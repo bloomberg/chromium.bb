@@ -52,6 +52,7 @@ include_rules = [
   "+content/browser/download/drag_download_util.h",
   "+content/browser/download/interrupt_reasons.h",
   "+content/browser/download/mhtml_generation_manager.h",
+  "+content/browser/file_system/browser_file_system_helper.h",
   "+content/browser/find_pasteboard.h",
   "+content/browser/font_list_async.h",
   "+content/browser/geolocation/wifi_data_provider_common.h",

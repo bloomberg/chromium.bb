@@ -183,7 +183,7 @@ NavigationControllerImpl::NavigationControllerImpl(
   DCHECK(browser_context_);
   if (!session_storage_namespace_) {
     session_storage_namespace_ = new SessionStorageNamespace(
-        BrowserContext::GetWebKitContext(browser_context_));
+        browser_context_->GetWebKitContext());
   }
 }
 

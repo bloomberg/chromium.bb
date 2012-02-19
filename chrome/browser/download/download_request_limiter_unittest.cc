@@ -16,8 +16,6 @@ class DownloadRequestLimiterTest : public TabContentsWrapperTestHarness {
  public:
   DownloadRequestLimiterTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
-        file_user_blocking_thread_(
-            BrowserThread::FILE_USER_BLOCKING, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_) {
   }
 
@@ -92,7 +90,6 @@ class DownloadRequestLimiterTest : public TabContentsWrapperTestHarness {
   int ask_allow_count_;
 
   content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_user_blocking_thread_;
   content::TestBrowserThread io_thread_;
 };
 

@@ -292,8 +292,6 @@ class BrowsingDataRemoverTest : public testing::Test,
         db_thread_(BrowserThread::DB, &message_loop_),
         webkit_thread_(BrowserThread::WEBKIT_DEPRECATED, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_),
-        file_user_blocking_thread_(
-            BrowserThread::FILE_USER_BLOCKING, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_),
         profile_(new TestingProfile()) {
     registrar_.Add(this, chrome::NOTIFICATION_BROWSING_DATA_REMOVED,
@@ -319,7 +317,6 @@ class BrowsingDataRemoverTest : public testing::Test,
     BrowsingDataRemover* remover = new BrowsingDataRemover(
         profile_.get(), period,
         base::Time::Now() + base::TimeDelta::FromMilliseconds(10));
-    remover->OverrideQuotaManagerForTesting(GetMockManager());
     remover->AddObserver(tester);
 
     called_with_details_.reset(new BrowsingDataRemover::NotificationDetails());
@@ -359,15 +356,15 @@ class BrowsingDataRemoverTest : public testing::Test,
   }
 
   quota::MockQuotaManager* GetMockManager() {
-    if (!quota_manager_) {
-      quota_manager_ = new quota::MockQuotaManager(
+    if (profile_->GetQuotaManager() == NULL) {
+      profile_->SetQuotaManager(new quota::MockQuotaManager(
         profile_->IsOffTheRecord(),
         profile_->GetPath(),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
-        profile_->GetExtensionSpecialStoragePolicy());
+        profile_->GetExtensionSpecialStoragePolicy()));
     }
-    return quota_manager_;
+    return (quota::MockQuotaManager*) profile_->GetQuotaManager();
   }
 
   // content::NotificationObserver implementation.
@@ -396,10 +393,8 @@ class BrowsingDataRemoverTest : public testing::Test,
   content::TestBrowserThread db_thread_;
   content::TestBrowserThread webkit_thread_;
   content::TestBrowserThread file_thread_;
-  content::TestBrowserThread file_user_blocking_thread_;
   content::TestBrowserThread io_thread_;
   scoped_ptr<TestingProfile> profile_;
-  scoped_refptr<quota::MockQuotaManager> quota_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemoverTest);
 };

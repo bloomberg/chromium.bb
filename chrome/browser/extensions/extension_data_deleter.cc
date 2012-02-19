@@ -23,7 +23,6 @@
 #include "webkit/database/database_util.h"
 #include "webkit/fileapi/file_system_context.h"
 
-using content::BrowserContext;
 using content::BrowserThread;
 
 // static
@@ -78,9 +77,9 @@ ExtensionDataDeleter::ExtensionDataDeleter(
     const GURL& storage_origin,
     bool is_storage_isolated)
     : extension_id_(extension_id) {
-  appcache_service_ = BrowserContext::GetAppCacheService(profile);
-  webkit_context_ = BrowserContext::GetWebKitContext(profile);
-  database_tracker_ = BrowserContext::GetDatabaseTracker(profile);
+  appcache_service_ = profile->GetAppCacheService();
+  webkit_context_ = profile->GetWebKitContext();
+  database_tracker_ = profile->GetDatabaseTracker();
   // Pick the right request context depending on whether it's an extension,
   // isolated app, or regular app.
   if (storage_origin.SchemeIs(chrome::kExtensionScheme)) {
@@ -93,7 +92,7 @@ ExtensionDataDeleter::ExtensionDataDeleter(
   } else {
     extension_request_context_ = profile->GetRequestContext();
   }
-  file_system_context_ = BrowserContext::GetFileSystemContext(profile);
+  file_system_context_ = profile->GetFileSystemContext();
   storage_origin_ = storage_origin;
   origin_id_ =
       webkit_database::DatabaseUtil::GetOriginIdentifier(storage_origin_);

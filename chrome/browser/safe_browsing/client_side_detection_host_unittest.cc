@@ -159,9 +159,6 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
 
     ui_thread_.reset(new content::TestBrowserThread(BrowserThread::UI,
                                                     &message_loop_));
-    file_user_blocking_thread_.reset(
-        new content::TestBrowserThread(BrowserThread::FILE_USER_BLOCKING,
-        &message_loop_));
     // Note: we're starting a real IO thread to make sure our DCHECKs that
     // verify which thread is running are actually tested.
     io_thread_.reset(new content::TestBrowserThread(BrowserThread::IO));
@@ -190,7 +187,6 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
     message_loop_.RunAllPending();
     TabContentsWrapperTestHarness::TearDown();
     io_thread_.reset();
-    file_user_blocking_thread_.reset();
     ui_thread_.reset();
   }
 
@@ -294,7 +290,6 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
 
  private:
   scoped_ptr<content::TestBrowserThread> ui_thread_;
-  scoped_ptr<content::TestBrowserThread> file_user_blocking_thread_;
   scoped_ptr<content::TestBrowserThread> io_thread_;
 };
 

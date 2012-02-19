@@ -82,8 +82,6 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
 
   SafeBrowsingBlockingPageTest()
       : ui_thread_(BrowserThread::UI, MessageLoop::current()),
-        file_user_blocking_thread_(
-            BrowserThread::FILE_USER_BLOCKING, MessageLoop::current()),
         io_thread_(BrowserThread::IO, MessageLoop::current()) {
     ResetUserResponse();
     service_ = new TestSafeBrowsingService();
@@ -191,7 +189,6 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
   UserResponse user_response_;
   TestSafeBrowsingBlockingPageFactory factory_;
   content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_user_blocking_thread_;
   content::TestBrowserThread io_thread_;
 };
 

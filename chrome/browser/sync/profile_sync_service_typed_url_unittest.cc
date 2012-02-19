@@ -164,12 +164,17 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
         .WillRepeatedly(RunTaskOnDBThread(&history_thread_,
                                           history_backend_.get()));
     history_thread_.Start();
+
+    notification_service_ =
+      new ThreadNotificationService(&history_thread_);
+    notification_service_->Init();
   }
 
   virtual void TearDown() {
     history_backend_ = NULL;
     history_service_ = NULL;
     service_.reset();
+    notification_service_->TearDown();
     history_thread_.Stop();
     profile_.ResetRequestContext();
     AbstractProfileSyncServiceTest::TearDown();
@@ -292,6 +297,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   }
 
   Thread history_thread_;
+  scoped_refptr<ThreadNotificationService> notification_service_;
 
   ProfileMock profile_;
   scoped_refptr<HistoryBackendMock> history_backend_;

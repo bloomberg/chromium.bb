@@ -70,7 +70,6 @@
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #endif  // defined(OS_CHROMEOS)
 
-using content::BrowserContext;
 using content::BrowserThread;
 
 namespace {
@@ -196,7 +195,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   params->clear_local_state_on_exit =
       pref_service->GetBoolean(prefs::kClearSiteDataOnExit);
 
-  params->appcache_service = BrowserContext::GetAppCacheService(profile);
+  params->appcache_service = profile->GetAppCacheService();
 
   // Set up Accept-Language and Accept-Charset header values
   params->accept_language = net::HttpUtil::GenerateAcceptLanguageHeader(
@@ -232,12 +231,12 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
                  profile);
   params->cookie_monster_delegate =
       new ChromeCookieMonsterDelegate(profile_getter);
-  params->database_tracker = BrowserContext::GetDatabaseTracker(profile);
-  params->appcache_service = BrowserContext::GetAppCacheService(profile);
-  params->blob_storage_context = BrowserContext::GetBlobStorageContext(profile);
-  params->file_system_context = BrowserContext::GetFileSystemContext(profile);
-  params->webkit_context = BrowserContext::GetWebKitContext(profile);
-  params->quota_manager = BrowserContext::GetQuotaManager(profile);
+  params->database_tracker = profile->GetDatabaseTracker();
+  params->appcache_service = profile->GetAppCacheService();
+  params->blob_storage_context = profile->GetBlobStorageContext();
+  params->file_system_context = profile->GetFileSystemContext();
+  params->webkit_context = profile->GetWebKitContext();
+  params->quota_manager = profile->GetQuotaManager();
   params->extension_info_map = profile->GetExtensionInfoMap();
   params->notification_service =
       DesktopNotificationServiceFactory::GetForProfile(profile);

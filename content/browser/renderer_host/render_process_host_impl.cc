@@ -114,7 +114,6 @@
 
 #include "third_party/skia/include/core/SkBitmap.h"
 
-using content::BrowserContext;
 using content::BrowserMessageFilter;
 using content::BrowserThread;
 using content::ChildProcessHost;
@@ -461,12 +460,12 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(new AudioRendererHost(resource_context));
   channel_->AddFilter(new VideoCaptureHost(resource_context));
   channel_->AddFilter(new AppCacheDispatcherHost(
-      BrowserContext::GetAppCacheService(browser_context), GetID()));
+      browser_context->GetAppCacheService(), GetID()));
   channel_->AddFilter(new ClipboardMessageFilter());
   channel_->AddFilter(new DOMStorageMessageFilter(GetID(),
-      BrowserContext::GetWebKitContext(browser_context)));
+      browser_context->GetWebKitContext()));
   channel_->AddFilter(new IndexedDBDispatcherHost(GetID(),
-      BrowserContext::GetWebKitContext(browser_context)));
+      browser_context->GetWebKitContext()));
   channel_->AddFilter(GeolocationDispatcherHost::New(
       GetID(), browser_context->GetGeolocationPermissionContext()));
   channel_->AddFilter(new GpuMessageFilter(GetID(), widget_helper_.get()));
@@ -480,14 +479,14 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       browser_context->GetSpeechInputPreferences(), resource_context));
   channel_->AddFilter(new FileSystemDispatcherHost(
       browser_context->GetRequestContext(),
-      BrowserContext::GetFileSystemContext(browser_context)));
+      browser_context->GetFileSystemContext()));
   channel_->AddFilter(new device_orientation::MessageFilter());
   channel_->AddFilter(new BlobMessageFilter(GetID(),
-        BrowserContext::GetBlobStorageContext(browser_context)));
+        browser_context->GetBlobStorageContext()));
   channel_->AddFilter(new FileUtilitiesMessageFilter(GetID()));
   channel_->AddFilter(new MimeRegistryMessageFilter());
   channel_->AddFilter(new DatabaseMessageFilter(
-      BrowserContext::GetDatabaseTracker(browser_context)));
+      browser_context->GetDatabaseTracker()));
 #if defined(OS_MACOSX)
   channel_->AddFilter(new TextInputClientMessageFilter(GetID()));
 #elif defined(OS_WIN)
@@ -511,9 +510,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(new TraceMessageFilter());
   channel_->AddFilter(new ResolveProxyMsgHelper(
       browser_context->GetRequestContextForRenderProcess(GetID())));
-  channel_->AddFilter(new QuotaDispatcherHost(
-      GetID(),
-      content::BrowserContext::GetQuotaManager(browser_context),
+  channel_->AddFilter(new QuotaDispatcherHost(GetID(),
+      browser_context->GetQuotaManager(),
       content::GetContentClient()->browser()->CreateQuotaPermissionContext()));
   channel_->AddFilter(new content::GamepadBrowserMessageFilter(this));
   channel_->AddFilter(new ProfilerMessageFilter());

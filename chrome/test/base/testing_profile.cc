@@ -127,6 +127,14 @@ ProfileKeyedBase* CreateTestDesktopNotificationService(Profile* profile) {
   return new DesktopNotificationService(profile, NULL);
 }
 
+fileapi::FileSystemOptions CreateTestingFileSystemOptions(bool is_incognito) {
+  return fileapi::FileSystemOptions(
+      is_incognito
+          ? fileapi::FileSystemOptions::PROFILE_MODE_INCOGNITO
+          : fileapi::FileSystemOptions::PROFILE_MODE_NORMAL,
+      std::vector<std::string>());
+}
+
 }  // namespace
 
 TestingProfile::TestingProfile()
@@ -236,6 +244,9 @@ TestingProfile::~TestingProfile() {
 
   if (pref_proxy_config_tracker_.get())
     pref_proxy_config_tracker_->DetachFromPrefService();
+
+  // Close the handles so that proper cleanup can be done.
+  db_tracker_ = NULL;
 }
 
 void TestingProfile::CreateFaviconService() {
@@ -463,6 +474,24 @@ Profile* TestingProfile::GetOriginalProfile() {
   return this;
 }
 
+void TestingProfile::SetAppCacheService(
+    ChromeAppCacheService* appcache_service) {
+  appcache_service_ = appcache_service;
+}
+
+ChromeAppCacheService* TestingProfile::GetAppCacheService() {
+  return appcache_service_.get();
+}
+
+webkit_database::DatabaseTracker* TestingProfile::GetDatabaseTracker() {
+  if (!db_tracker_) {
+    db_tracker_ = new webkit_database::DatabaseTracker(
+        GetPath(), false, false, GetExtensionSpecialStoragePolicy(),
+        NULL, NULL);
+  }
+  return db_tracker_;
+}
+
 VisitedLinkMaster* TestingProfile::GetVisitedLinkMaster() {
   return NULL;
 }
@@ -575,6 +604,27 @@ history::TopSites* TestingProfile::GetTopSitesWithoutCreating() {
 
 DownloadManager* TestingProfile::GetDownloadManager() {
   return NULL;
+}
+
+fileapi::FileSystemContext* TestingProfile::GetFileSystemContext() {
+  if (!file_system_context_) {
+    file_system_context_ = new fileapi::FileSystemContext(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+      GetExtensionSpecialStoragePolicy(),
+      NULL,
+      GetPath(),
+      CreateTestingFileSystemOptions(IsOffTheRecord()));
+  }
+  return file_system_context_.get();
+}
+
+void TestingProfile::SetQuotaManager(quota::QuotaManager* manager) {
+  quota_manager_ = manager;
+}
+
+quota::QuotaManager* TestingProfile::GetQuotaManager() {
+  return quota_manager_.get();
 }
 
 net::URLRequestContextGetter* TestingProfile::GetRequestContext() {
@@ -690,6 +740,16 @@ ProtocolHandlerRegistry* TestingProfile::GetProtocolHandlerRegistry() {
   return protocol_handler_registry_.get();
 }
 
+WebKitContext* TestingProfile::GetWebKitContext() {
+  if (webkit_context_ == NULL) {
+    webkit_context_ = new WebKitContext(
+          IsOffTheRecord(), GetPath(),
+          GetExtensionSpecialStoragePolicy(),
+          false, NULL, NULL);
+  }
+  return webkit_context_;
+}
+
 WebKitContext* TestingProfile::GetOffTheRecordWebKitContext() {
   return NULL;
 }
@@ -724,6 +784,10 @@ TokenService* TestingProfile::GetTokenService() {
     token_service_.reset(new TokenService());
   }
   return token_service_.get();
+}
+
+ChromeBlobStorageContext* TestingProfile::GetBlobStorageContext() {
+  return NULL;
 }
 
 ExtensionInfoMap* TestingProfile::GetExtensionInfoMap() {

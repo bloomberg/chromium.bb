@@ -25,8 +25,6 @@ using content::WebContents;
 BrowserWithTestWindowTest::BrowserWithTestWindowTest()
     : ui_thread_(BrowserThread::UI, message_loop()),
       file_thread_(BrowserThread::FILE, message_loop()),
-      file_user_blocking_thread_(
-          BrowserThread::FILE_USER_BLOCKING, message_loop()),
       rph_factory_(),
       rvh_factory_(&rph_factory_) {
 #if defined(OS_WIN)

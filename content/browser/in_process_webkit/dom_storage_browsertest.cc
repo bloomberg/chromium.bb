@@ -11,7 +11,6 @@
 #include "content/browser/in_process_webkit/dom_storage_context.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 
-using content::BrowserContext;
 using content::BrowserThread;
 
 typedef InProcessBrowserTest DOMStorageBrowserTest;
@@ -40,7 +39,7 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, ClearLocalState) {
   // context which should trigger the clean up.
   {
     TestingProfile profile;
-    WebKitContext* webkit_context = BrowserContext::GetWebKitContext(&profile);
+    WebKitContext *webkit_context = profile.GetWebKitContext();
     webkit_context->dom_storage_context()->
         set_data_path_for_testing(temp_dir.path());
     webkit_context->set_clear_local_state_on_exit(true);

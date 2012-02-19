@@ -27,8 +27,6 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 
-using content::BrowserContext;
-
 // Mock listener used by test below.
 class MockSelectFileDialogListener : public SelectFileDialog::Listener {
  public:
@@ -103,8 +101,7 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
   // Creates a file system mount point for a directory.
   void AddMountPoint(const FilePath& path) {
     fileapi::ExternalFileSystemMountPointProvider* provider =
-        BrowserContext::GetFileSystemContext(browser()->profile())->
-            external_provider();
+        browser()->profile()->GetFileSystemContext()->external_provider();
     provider->AddMountPoint(path);
   }
 

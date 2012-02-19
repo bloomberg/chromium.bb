@@ -18,7 +18,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/database/database_util.h"
 
-using content::BrowserContext;
 using content::BrowserThread;
 
 // Declared to shorten the line lengths.
@@ -43,11 +42,9 @@ class IndexedDBQuotaClientTest : public testing::Test {
         weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
         message_loop_(MessageLoop::TYPE_IO),
         webkit_thread_(BrowserThread::WEBKIT_DEPRECATED, &message_loop_),
-        file_thread_(BrowserThread::FILE_USER_BLOCKING, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_) {
     TestBrowserContext browser_context;
-    idb_context_ = BrowserContext::GetWebKitContext(&browser_context)->
-        indexed_db_context();
+    idb_context_ = browser_context.GetWebKitContext()->indexed_db_context();
     setup_temp_dir();
   }
   void setup_temp_dir() {
@@ -161,7 +158,6 @@ class IndexedDBQuotaClientTest : public testing::Test {
   base::WeakPtrFactory<IndexedDBQuotaClientTest> weak_factory_;
   MessageLoop message_loop_;
   BrowserThreadImpl webkit_thread_;
-  BrowserThreadImpl file_thread_;
   BrowserThreadImpl io_thread_;
   quota::QuotaStatusCode delete_status_;
 };

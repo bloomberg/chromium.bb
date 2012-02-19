@@ -61,8 +61,12 @@ class ProfileImpl : public Profile,
   virtual content::GeolocationPermissionContext*
       GetGeolocationPermissionContext() OVERRIDE;
   virtual content::SpeechInputPreferences* GetSpeechInputPreferences() OVERRIDE;
-  virtual bool DidLastSessionExitCleanly() OVERRIDE;
-  virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
+  virtual quota::QuotaManager* GetQuotaManager() OVERRIDE;
+  virtual webkit_database::DatabaseTracker* GetDatabaseTracker() OVERRIDE;
+  virtual WebKitContext* GetWebKitContext() OVERRIDE;
+  virtual ChromeAppCacheService* GetAppCacheService() OVERRIDE;
+  virtual ChromeBlobStorageContext* GetBlobStorageContext() OVERRIDE;
+  virtual fileapi::FileSystemContext* GetFileSystemContext() OVERRIDE;
 
   // Profile implementation:
   virtual std::string GetProfileName() OVERRIDE;
@@ -106,6 +110,7 @@ class ProfileImpl : public Profile,
   virtual net::SSLConfigService* GetSSLConfigService() OVERRIDE;
   virtual HostContentSettingsMap* GetHostContentSettingsMap() OVERRIDE;
   virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() OVERRIDE;
+  virtual bool DidLastSessionExitCleanly() OVERRIDE;
   virtual BookmarkModel* GetBookmarkModel() OVERRIDE;
   virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry() OVERRIDE;
   virtual bool IsSameProfile(Profile* profile) OVERRIDE;
@@ -170,6 +175,8 @@ class ProfileImpl : public Profile,
   void EnsureSessionServiceCreated();
 
   ExtensionPrefValueMap* GetExtensionPrefValueMap();
+
+  void CreateQuotaManagerAndClients();
 
   void UpdateProfileUserNameCache();
 
@@ -244,6 +251,9 @@ class ProfileImpl : public Profile,
   scoped_refptr<history::ShortcutsBackend> shortcuts_backend_;
   scoped_refptr<WebDataService> web_data_service_;
   scoped_refptr<PasswordStore> password_store_;
+  scoped_refptr<WebKitContext> webkit_context_;
+  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
+  scoped_refptr<quota::QuotaManager> quota_manager_;
   bool history_service_created_;
   bool favicon_service_created_;
   bool created_web_data_service_;
@@ -264,7 +274,17 @@ class ProfileImpl : public Profile,
   scoped_ptr<PromoCounter> instant_promo_counter_;
 #endif
 
+  // The AppCacheService for this profile, shared by all requests contexts
+  // associated with this profile. Should only be used on the IO thread.
+  scoped_refptr<ChromeAppCacheService> appcache_service_;
+
+  // The main database tracker for this profile.
+  // Should be used only on the file thread.
+  scoped_refptr<webkit_database::DatabaseTracker> db_tracker_;
+
   scoped_refptr<history::TopSites> top_sites_;  // For history and thumbnails.
+
+  scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<chromeos::Preferences> chromeos_preferences_;

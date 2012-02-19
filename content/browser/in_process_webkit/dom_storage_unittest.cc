@@ -10,7 +10,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/quota/mock_special_storage_policy.h"
 
-using content::BrowserContext;
 using content::BrowserThread;
 using content::BrowserThreadImpl;
 
@@ -34,10 +33,10 @@ TEST_F(DOMStorageTest, SessionOnly) {
       new quota::MockSpecialStoragePolicy;
   special_storage_policy->AddSessionOnly(session_only_origin);
 
-  scoped_ptr<TestBrowserContext> browser_context(new TestBrowserContext);
+  TestBrowserContext browser_context;
 
   // Create databases for permanent and session-only origins.
-  FilePath domstorage_dir = browser_context->GetPath().Append(
+  FilePath domstorage_dir = browser_context.GetPath().Append(
       DOMStorageContext::kLocalStorageDirectory);
   FilePath::StringType session_only_database(
       FILE_PATH_LITERAL("http_www.sessiononly.com_0"));
@@ -56,14 +55,12 @@ TEST_F(DOMStorageTest, SessionOnly) {
   ASSERT_EQ(1, file_util::WriteFile(permanent_database_path, ".", 1));
 
   // Inject MockSpecialStoragePolicy into DOMStorageContext.
-  BrowserContext::GetWebKitContext(browser_context.get())->
-      dom_storage_context()->special_storage_policy_ = special_storage_policy;
+  browser_context.GetWebKitContext()->dom_storage_context()->
+       special_storage_policy_ = special_storage_policy;
 
-  // Delete the TestBrowserContext but own the temp dir. This way the
+  // Delete the WebKitContext before destroying TestBrowserContext. This way the
   // temporary data directory stays alive long enough to conduct the test.
-  ScopedTempDir temp_dir;
-  ignore_result(temp_dir.Set(browser_context->TakePath()));
-  browser_context.reset();
+  browser_context.webkit_context_ = NULL;
   // Run the message loop to ensure that DOMStorageContext gets destroyed.
   message_loop_.RunAllPending();
 
@@ -79,10 +76,10 @@ TEST_F(DOMStorageTest, SaveSessionState) {
       new quota::MockSpecialStoragePolicy;
   special_storage_policy->AddSessionOnly(session_only_origin);
 
-  scoped_ptr<TestBrowserContext> browser_context(new TestBrowserContext);
+  TestBrowserContext browser_context;
 
   // Create databases for permanent and session-only origins.
-  FilePath domstorage_dir = browser_context->GetPath().Append(
+  FilePath domstorage_dir = browser_context.GetPath().Append(
       DOMStorageContext::kLocalStorageDirectory);
   FilePath::StringType session_only_database(
       FILE_PATH_LITERAL("http_www.sessiononly.com_0"));
@@ -102,8 +99,7 @@ TEST_F(DOMStorageTest, SaveSessionState) {
 
   // Inject MockSpecialStoragePolicy into DOMStorageContext.
   DOMStorageContext* dom_storage_context =
-      BrowserContext::GetWebKitContext(browser_context.get())->
-          dom_storage_context();
+    browser_context.GetWebKitContext()->dom_storage_context();
   dom_storage_context->special_storage_policy_ = special_storage_policy;
 
   dom_storage_context->set_clear_local_state_on_exit_(true);
@@ -111,11 +107,9 @@ TEST_F(DOMStorageTest, SaveSessionState) {
   // Save session state. This should bypass the destruction-time deletion.
   dom_storage_context->SaveSessionState();
 
-  // Delete the TestBrowserContext but own the temp dir. This way the
+  // Delete the WebKitContext before destroying TestBrowserContext. This way the
   // temporary data directory stays alive long enough to conduct the test.
-  ScopedTempDir temp_dir;
-  ignore_result(temp_dir.Set(browser_context->TakePath()));
-  browser_context.reset();
+  browser_context.webkit_context_ = NULL;
   // Run the message loop to ensure that DOMStorageContext gets destroyed.
   message_loop_.RunAllPending();
 
