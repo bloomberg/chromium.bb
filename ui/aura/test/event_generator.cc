@@ -23,9 +23,9 @@ class TestKeyEvent : public aura::KeyEvent {
   }
 };
 
-gfx::Point CenterOfWindowInRootWindowCoordinate(aura::RootWindow* root_window,
-                                                aura::Window* window) {
+gfx::Point CenterOfWindowInRootWindowCoordinate(aura::Window* window) {
   gfx::Point center = window->bounds().CenterPoint();
+  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
   aura::Window::ConvertPointToWindow(window->parent(), root_window, &center);
   return center;
 }
@@ -35,22 +35,17 @@ gfx::Point CenterOfWindowInRootWindowCoordinate(aura::RootWindow* root_window,
 namespace aura {
 namespace test {
 
-EventGenerator::EventGenerator(RootWindow* root_window)
-    : root_window_(root_window),
-      flags_(0) {
+EventGenerator::EventGenerator() : flags_(0) {
 }
 
-EventGenerator::EventGenerator(RootWindow* root_window, const gfx::Point& point)
-    : root_window_(root_window),
-      flags_(0),
+EventGenerator::EventGenerator(const gfx::Point& point)
+    : flags_(0),
       current_location_(point) {
 }
 
-EventGenerator::EventGenerator(RootWindow* root_window, Window* window)
-    : root_window_(root_window),
-      flags_(0),
-      current_location_(CenterOfWindowInRootWindowCoordinate(root_window,
-                                                             window)) {
+EventGenerator::EventGenerator(Window* window)
+    : flags_(0),
+      current_location_(CenterOfWindowInRootWindowCoordinate(window)) {
 }
 
 EventGenerator::~EventGenerator() {
@@ -103,7 +98,8 @@ void EventGenerator::MoveMouseTo(const gfx::Point& point, int count) {
 void EventGenerator::MoveMouseRelativeTo(const Window* window,
                                          const gfx::Point& point) {
   gfx::Point root_point(point);
-  aura::Window::ConvertPointToWindow(window, root_window_, &root_point);
+  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  aura::Window::ConvertPointToWindow(window, root_window, &root_point);
 
   MoveMouseTo(root_point);
 }
@@ -115,7 +111,7 @@ void EventGenerator::DragMouseTo(const gfx::Point& point) {
 }
 
 void EventGenerator::MoveMouseToCenterOf(Window* window) {
-  MoveMouseTo(CenterOfWindowInRootWindowCoordinate(root_window_, window));
+  MoveMouseTo(CenterOfWindowInRootWindowCoordinate(window));
 }
 
 void EventGenerator::PressTouch() {
@@ -140,8 +136,7 @@ void EventGenerator::PressMoveAndReleaseTouchTo(const gfx::Point& point) {
 }
 
 void EventGenerator::PressMoveAndReleaseTouchToCenterOf(Window* window) {
-  PressMoveAndReleaseTouchTo(CenterOfWindowInRootWindowCoordinate(root_window_,
-                                                                  window));
+  PressMoveAndReleaseTouchTo(CenterOfWindowInRootWindowCoordinate(window));
 }
 
 void EventGenerator::PressKey(ui::KeyboardCode key_code, int flags) {
@@ -156,7 +151,8 @@ void EventGenerator::Dispatch(Event& event) {
   switch (event.type()) {
     case ui::ET_KEY_PRESSED:
     case ui::ET_KEY_RELEASED:
-      root_window_->DispatchKeyEvent(static_cast<KeyEvent*>(&event));
+      aura::RootWindow::GetInstance()->DispatchKeyEvent(
+          static_cast<KeyEvent*>(&event));
       break;
     case ui::ET_MOUSE_PRESSED:
     case ui::ET_MOUSE_DRAGGED:
@@ -165,14 +161,16 @@ void EventGenerator::Dispatch(Event& event) {
     case ui::ET_MOUSE_ENTERED:
     case ui::ET_MOUSE_EXITED:
     case ui::ET_MOUSEWHEEL:
-      root_window_->DispatchMouseEvent(static_cast<MouseEvent*>(&event));
+      aura::RootWindow::GetInstance()->DispatchMouseEvent(
+          static_cast<MouseEvent*>(&event));
       break;
     case ui::ET_TOUCH_RELEASED:
     case ui::ET_TOUCH_PRESSED:
     case ui::ET_TOUCH_MOVED:
     case ui::ET_TOUCH_STATIONARY:
     case ui::ET_TOUCH_CANCELLED:
-      root_window_->DispatchTouchEvent(static_cast<TouchEvent*>(&event));
+      aura::RootWindow::GetInstance()->DispatchTouchEvent(
+          static_cast<TouchEvent*>(&event));
       break;
     default:
       NOTIMPLEMENTED();

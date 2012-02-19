@@ -4,7 +4,6 @@
 
 #include "ash/wm/window_modality_controller.h"
 
-#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
@@ -185,8 +184,7 @@ TEST_F(WindowModalityControllerTest, Events) {
 
   {
     // Clicking a point within w1 should activate that window.
-    aura::test::EventGenerator generator(Shell::GetRootWindow(),
-                                         gfx::Point(10, 10));
+    aura::test::EventGenerator generator(gfx::Point(10, 10));
     generator.ClickLeftButton();
     EXPECT_TRUE(IsActiveWindow(w1.get()));
   }
@@ -195,8 +193,7 @@ TEST_F(WindowModalityControllerTest, Events) {
 
   {
     // Clicking a point within w1 should activate w11.
-    aura::test::EventGenerator generator(Shell::GetRootWindow(),
-                                         gfx::Point(10, 10));
+    aura::test::EventGenerator generator(gfx::Point(10, 10));
     generator.ClickLeftButton();
     EXPECT_TRUE(IsActiveWindow(w11.get()));
   }

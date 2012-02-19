@@ -103,7 +103,7 @@ TEST_F(EventFilterTest, Basic) {
 
   // To start with, no one is going to consume any events. All three filters
   // and the w1111's delegate should receive the event.
-  EventGenerator generator(root_window(), w1111.get());
+  EventGenerator generator(w1111.get());
   generator.PressLeftButton();
   KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
   root_window()->DispatchKeyEvent(&key_event);

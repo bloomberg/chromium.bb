@@ -112,7 +112,7 @@ TEST_F(TooltipControllerTest, ViewTooltip) {
   view->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
   EXPECT_EQ(ASCIIToUTF16(""), GetTooltipText());
   EXPECT_EQ(NULL, GetTooltipWindow());
-  aura::test::EventGenerator generator(Shell::GetRootWindow());
+  aura::test::EventGenerator generator;
   generator.MoveMouseToCenterOf(widget->GetNativeView());
 
   aura::Window* window = widget->GetNativeView();
@@ -149,7 +149,7 @@ TEST_F(TooltipControllerTest, TooltipsInMultipleViews) {
   aura::Window* window = widget->GetNativeView();
 
   // Fire tooltip timer so tooltip becomes visible.
-  aura::test::EventGenerator generator(Shell::GetRootWindow());
+  aura::test::EventGenerator generator;
   generator.MoveMouseRelativeTo(window,
                                 view1->bounds().CenterPoint());
   FireTooltipTimer();
@@ -186,7 +186,7 @@ TEST_F(TooltipControllerTest, EnableOrDisableTooltips) {
   EXPECT_EQ(ASCIIToUTF16(""), GetTooltipText());
   EXPECT_EQ(NULL, GetTooltipWindow());
 
-  aura::test::EventGenerator generator(Shell::GetRootWindow());
+  aura::test::EventGenerator generator;
   generator.MoveMouseRelativeTo(widget->GetNativeView(),
                                 view->bounds().CenterPoint());
   string16 expected_tooltip = ASCIIToUTF16("Tooltip Text");

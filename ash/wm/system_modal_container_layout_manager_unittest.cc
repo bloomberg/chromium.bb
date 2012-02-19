@@ -141,7 +141,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, ModalTransient) {
   EXPECT_TRUE(IsActiveWindow(t1));
 
   // Attempting to click the parent should result in no activation change.
-  aura::test::EventGenerator e1(Shell::GetRootWindow(), parent.get());
+  aura::test::EventGenerator e1(parent.get());
   e1.ClickLeftButton();
   EXPECT_TRUE(IsActiveWindow(t1));
 
@@ -156,7 +156,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, ModalTransient) {
   EXPECT_EQ(GetModalContainer(), t2->parent());
 
   // t2 should still be active, even after clicking on t1.
-  aura::test::EventGenerator e2(Shell::GetRootWindow(), t1);
+  aura::test::EventGenerator e2(t1);
   e2.ClickLeftButton();
   EXPECT_TRUE(IsActiveWindow(t2));
 
@@ -189,7 +189,7 @@ TEST_F(SystemModalContainerLayoutManagerTest,
   EXPECT_TRUE(IsActiveWindow(transient.get()));
 
   // Attempting to click the parent should result in no activation change.
-  aura::test::EventGenerator e1(Shell::GetRootWindow(), parent.get());
+  aura::test::EventGenerator e1(parent.get());
   e1.ClickLeftButton();
   EXPECT_TRUE(IsActiveWindow(transient.get()));
 
@@ -202,7 +202,7 @@ TEST_F(SystemModalContainerLayoutManagerTest,
   EXPECT_TRUE(IsActiveWindow(parent.get()));
 
   // Attempting to click unrelated should activate it.
-  aura::test::EventGenerator e2(Shell::GetRootWindow(), unrelated.get());
+  aura::test::EventGenerator e2(unrelated.get());
   e2.ClickLeftButton();
   EXPECT_TRUE(IsActiveWindow(unrelated.get()));
 }
@@ -213,7 +213,7 @@ TEST_F(SystemModalContainerLayoutManagerTest,
   EventTestWindow* main_delegate = new EventTestWindow(false);
   scoped_ptr<aura::Window> main(main_delegate->OpenTestWindow(NULL));
   EXPECT_TRUE(IsActiveWindow(main.get()));
-  aura::test::EventGenerator e1(Shell::GetRootWindow(), main.get());
+  aura::test::EventGenerator e1(main.get());
   e1.ClickLeftButton();
   EXPECT_EQ(1, main_delegate->mouse_presses());
 

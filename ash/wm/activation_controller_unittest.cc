@@ -133,7 +133,7 @@ TEST_F(ActivationControllerTest, ClickOnMenu) {
   EXPECT_TRUE(IsActiveWindow(NULL));
 
   // Clicking on an activatable window activtes the window.
-  aura::test::EventGenerator generator(Shell::GetRootWindow(), w1.get());
+  aura::test::EventGenerator generator(w1.get());
   generator.ClickLeftButton();
   EXPECT_TRUE(IsActiveWindow(w1.get()));
 

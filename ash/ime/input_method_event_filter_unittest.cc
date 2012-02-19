@@ -74,11 +74,11 @@ TEST_F(InputMethodEventFilterTest, TestInputMethodKeyEventPropagation) {
   // automatically set up by AshTestBase, consumes it and sends a new
   // ui::ET_TRANSLATED_KEY_* event to the root window, which will be consumed by
   // the test event filter.
-  aura::test::EventGenerator generator(Shell::GetRootWindow());
+  aura::test::EventGenerator generator_;
   EXPECT_EQ(0, test_filter.key_event_count());
-  generator.PressKey(ui::VKEY_SPACE, 0);
+  generator_.PressKey(ui::VKEY_SPACE, 0);
   EXPECT_EQ(1, test_filter.key_event_count());
-  generator.ReleaseKey(ui::VKEY_SPACE, 0);
+  generator_.ReleaseKey(ui::VKEY_SPACE, 0);
   EXPECT_EQ(2, test_filter.key_event_count());
 
   root_filter->RemoveFilter(&test_filter);

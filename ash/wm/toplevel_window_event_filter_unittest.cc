@@ -97,12 +97,12 @@ class ToplevelWindowEventFilterTest : public AshTestBase {
   }
 
   void DragFromCenterBy(aura::Window* window, int dx, int dy) {
-    aura::test::EventGenerator generator(Shell::GetRootWindow(), window);
+    aura::test::EventGenerator generator(window);
     generator.DragMouseBy(dx, dy);
   }
 
   void TouchDragFromCenterBy(aura::Window* window, int dx, int dy) {
-    aura::test::EventGenerator generator(Shell::GetRootWindow(), window);
+    aura::test::EventGenerator generator(window);
     generator.PressMoveAndReleaseTouchBy(dx, dy);
   }
 
@@ -150,7 +150,7 @@ TEST_F(ToplevelWindowEventFilterTest, GrowBox) {
   window_delegate->set_min_size(gfx::Size(40, 40));
 
   gfx::Point position = w1->bounds().origin();
-  aura::test::EventGenerator generator(Shell::GetRootWindow());
+  aura::test::EventGenerator generator;
   generator.MoveMouseToCenterOf(w1.get());
   generator.DragMouseBy(100, 100);
   // Position should not have changed.
@@ -330,7 +330,7 @@ TEST_F(ToplevelWindowEventFilterTest, DoubleClickCaptionTogglesMaximize) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTCAPTION));
   EXPECT_FALSE(window_util::IsWindowMaximized(w1.get()));
 
-  aura::test::EventGenerator generator(Shell::GetRootWindow(), w1.get());
+  aura::test::EventGenerator generator(w1.get());
   generator.DoubleClickLeftButton();
 
   EXPECT_TRUE(window_util::IsWindowMaximized(w1.get()));
@@ -385,7 +385,7 @@ TEST_F(ToplevelWindowEventFilterTest, BottomWorkArea) {
 // Verifies we don't let windows drag to a -y location.
 TEST_F(ToplevelWindowEventFilterTest, DontDragToNegativeY) {
   scoped_ptr<aura::Window> target(CreateWindow(HTTOP));
-  aura::test::EventGenerator generator(Shell::GetRootWindow(), target.get());
+  aura::test::EventGenerator generator(target.get());
   generator.MoveMouseTo(0, 5);
   generator.DragMouseBy(0, -5);
   // The y location and height should not have changed.
@@ -425,7 +425,7 @@ TEST_F(ToplevelWindowEventFilterTest, ResizeSnaps) {
 TEST_F(ToplevelWindowEventFilterTest, DragSnaps) {
   filter_->set_grid_size(8);
   scoped_ptr<aura::Window> target(CreateWindow(HTCAPTION));
-  aura::test::EventGenerator generator(Shell::GetRootWindow(), target.get());
+  aura::test::EventGenerator generator(target.get());
   generator.PressLeftButton();
   generator.MoveMouseTo(generator.current_location().Add(gfx::Point(11, 21)));
   EXPECT_EQ(11, target->bounds().x());
