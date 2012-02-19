@@ -383,7 +383,6 @@ cr.define('options', function() {
       $('home-page-label').innerHTML = label;
     },
 
-
    /**
     * Shows the autoLaunch preference and initializes its checkbox value.
     * @param {bool} enabled Whether autolaunch is enabled or or not.

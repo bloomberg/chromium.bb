@@ -2,13 +2,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-/* This is necessary because the fix for correctly wrapping labels
- * (crbug.com/109334) requires labels to be display: block; however, this label
- * has a button inline after it. */
-#home-page-label {
-  display: inline;
-}
-
 #default-search-engine-group {
   -webkit-box-orient: vertical;
   display: -webkit-box;
@@ -191,7 +184,7 @@ html[dir=rtl] #pointer-sensitivity-more {
 
 .network-selector {
   background: right center no-repeat;
-  background-image: url("../shared/images/select.png");
+  background-image: url('../shared/images/select.png');
   padding-right: 20px;
 }
 

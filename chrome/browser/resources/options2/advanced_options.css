@@ -42,15 +42,6 @@ html[dir='rtl'] #advanced-section-back-button {
   margin-left: 10px;
 }
 
-/* This is necessary because the fix for correctly wrapping labels
-  * (crbug.com/109334) requires labels to be display: block; however, this label
-  * has a buttom inline after it.
-  */
-#autofill-label,
-#password-manager-label {
-  display: inline;
-}
-
 #timezone-value {
    display: inline-block;
    vertical-align: baseline;

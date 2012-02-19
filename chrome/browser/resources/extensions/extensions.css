@@ -112,6 +112,10 @@ html[dir="rtl"] .extension-list-item {
 }
 
 .enable-checkbox-text {
+  -webkit-margin-start: 0.4em;
+}
+
+.checkbox {
   display: inline-block;
 }
 

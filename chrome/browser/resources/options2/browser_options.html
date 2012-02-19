@@ -104,31 +104,27 @@
 </if>
     <div>
       <div class="checkbox">
-        <input id="toolbar-show-home-button" pref="browser.show_home_button"
-            metric="Options_Homepage_HomeButton" type="checkbox">
-        <label id="home-page-label" for="toolbar-show-home-button"
-            i18n-content="toolbarShowHomeButton">
+        <label>
+          <input id="toolbar-show-home-button" pref="browser.show_home_button"
+              metric="Options_Homepage_HomeButton" type="checkbox">
+          <span id="home-page-label"
+              i18n-content="toolbarShowHomeButton"></span>
         </label>
         <button id="change-home-page" i18n-content="changeHomePage"
-            class="link-button">
-        </button>
+            class="link-button"></button>
       </div>
-      <div class="checkbox">
-        <label>
+      <div class="checkbox"><label>
           <input type="checkbox" pref="bookmark_bar.show_on_all_tabs"
               metric="Options_ShowBookmarksBar">
           <span i18n-content="toolbarShowBookmarksBar"></span>
-        </label>
-      </div>
+      </label></div>
 <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
-      <div class="checkbox">
-        <label>
+      <div class="checkbox"><label>
           <input id="show-window-decorations" type="checkbox"
               pref="browser.custom_chrome_frame" metric="Options_CustomFrame"
               inverted_pref>
           <span i18n-content="showWindowDecorations"></span>
-        </label>
-      </div>
+      </label></div>
 </if>
     </div>
   </section>
@@ -188,6 +184,8 @@
                 checked="checked" hidden>
             <input id="instant-enabled-control" type="checkbox"
                 pref="instant.enabled">
+            <!-- TODO(estade) There's a link in here which should not be inside
+                 a <label>. -->
             <span i18n-values=".innerHTML:instantPrefAndWarning"></span>
           </label>
         </div>

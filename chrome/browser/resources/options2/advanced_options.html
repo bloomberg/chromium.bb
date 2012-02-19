@@ -124,20 +124,22 @@
   <section id="passwords-and-autofill-section">
     <h3 i18n-content="passwordsAndAutofillGroupName"></h3>
     <div class="checkbox">
-      <input id="autofill-enabled" pref="autofill.enabled"
-          metric="Options_FormAutofill" type="checkbox">
-      <label id="autofill-label" for="autofill-enabled"
-          i18n-content="autofillEnabled"></label>
+      <label>
+        <input id="autofill-enabled" pref="autofill.enabled"
+            metric="Options_FormAutofill" type="checkbox">
+        <span i18n-content="autofillEnabled"></span>
+      </label>
       <button id="autofill-settings" class="link-button"
           pref="autofill.enabled"
           i18n-content="manageAutofillSettings"></button>
     </div>
     <div class="checkbox">
-      <input id="password-manager-enabled"
-          pref="profile.password_manager_enabled"
-          metric="Options_PasswordManager" type="checkbox">
-      <label id="password-manager-label" for="password-manager-enabled"
-          i18n-content="passwordManagerEnabled"></label>
+      <label>
+        <input id="password-manager-enabled"
+            pref="profile.password_manager_enabled"
+            metric="Options_PasswordManager" type="checkbox">
+        <span i18n-content="passwordManagerEnabled"></span>
+      </label>
       <button id="manage-passwords" class="link-button"
           i18n-content="managePasswords"
           pref="profile.password_manager_enabled"></button>

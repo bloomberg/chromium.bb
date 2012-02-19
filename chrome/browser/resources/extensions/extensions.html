@@ -31,12 +31,10 @@
 
 <div class="page" id="extension-settings">
   <header id="page-header"><h1 i18n-content="extensionSettings"></h1></header>
-  <div id="dev-toggle">
-    <label>
-      <input id="toggle-dev-on" type="checkbox">
-      <span i18n-content="extensionSettingsDeveloperMode">
-    </label>
-  </div>
+  <div id="dev-toggle" class="checkbox"><label>
+    <input id="toggle-dev-on" type="checkbox">
+    <span i18n-content="extensionSettingsDeveloperMode">
+  </label></div>
   <div id="dev-controls" hidden>
     <button id="load-unpacked"
         i18n-content="extensionSettingsLoadUnpackedButton"></button>
@@ -88,10 +86,10 @@
         <div class="optional-controls">
           <button class="show-button"
               i18n-content="extensionSettingsShowButton" hidden ></button>
-          <label class="incognito-control">
+          <div class="checkbox"><label class="incognito-control">
             <input type="checkbox">
             <span i18n-content="extensionSettingsEnableIncognito"></span>
-          </label>
+          </label></div>
           <label class="file-access-control" hidden>
             <input type="checkbox">
             <span i18n-content="extensionSettingsAllowFileAccess"></span>
@@ -112,7 +110,7 @@
       <div class="enable-controls">
         <a class="terminated-reload-link" href="#"
             i18n-content="extensionSettingsReload" hidden></a>
-        <label class="enable-checkbox" hidden>
+        <div class="checkbox enable-checkbox" hidden><label>
           <input type="checkbox">
           <div class="enable-checkbox-text">
             <span class="enabled-text" i18n-content="extensionSettingsEnabled">
@@ -120,7 +118,7 @@
             <span class="enable-text" i18n-content="extensionSettingsEnable">
             </span>
           </div>
-        </label>
+        </label></div>
       </div>
     </div>
   </div>

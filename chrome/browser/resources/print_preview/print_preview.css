@@ -53,11 +53,6 @@ header {
   padding-top: 2px;
 }
 
-label input[disabled] + span,
-input[type=text][disabled] {
-  color: gray;
-}
-
 .two-column {
   display: table-row;
 }
@@ -68,7 +63,12 @@ input[type=text][disabled] {
   width: auto;
 }
 
-.right-column > *:not(:first-child):not(.hint) {
+.right-column .checkbox, .right-column .radio {
+  margin: 0;
+}
+
+.right-column > *:not(:first-child):not(.hint),
+.right-column > .collapsible > *:not(:first-child):not(.hint) {
   margin-top: 8px;
 }
 
@@ -225,11 +225,6 @@ label {
   visibility: visible;
 }
 
-/* TODO(estade): this shouldn't be necessary. */
-#print-preview input[type=radio] {
-  margin-top: 0;
-}
-
 /* Individual settings sections  */
 
 #print-pages-div {
@@ -245,16 +240,8 @@ label {
 }
 
 #collate-option {
- -webkit-transition: opacity 200ms, -webkit-transform 200ms;
  -webkit-padding-start: 16px;
- display: inline-block;
- opacity: 1;
-}
-
-#collate-option[hidden] {
- -webkit-transition: opacity 100ms, -webkit-transform 100ms;
- opacity: 0;
- pointer-events: none;
+  display: inline-block;
 }
 
 #copies {
@@ -398,10 +385,6 @@ html[dir='rtl'] #decrement {
 
 .message-with-dots span span:nth-child(3) {
   -webkit-animation-delay: 300ms;
-}
-
-#two-sided-option {
-  display: inline-block;
 }
 
 #error-action-area {

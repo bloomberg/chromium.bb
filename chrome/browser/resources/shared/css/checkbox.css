@@ -1,32 +1,35 @@
 /* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+ * found in the LICENSE file. */
 
-input[type='checkbox'] {
+input[type='checkbox'],
+input[type='radio'] {
   -webkit-box-shadow: inset 0 1px 2px white,
                       0 1px 2px rgba(0, 0, 0, .2);
   -webkit-appearance: none;
   -webkit-margin-start: 0;
   -webkit-margin-end: 3px;
   background: -webkit-linear-gradient(#fafafa, #dcdcdc);
-  border-radius: 3px;
   border: 1px solid #a0a0a0;
   display: inline-block;
-  height: 16px;
   margin-bottom: 0;
   margin-top: 0;
   position: relative;
-  top: 3px;
-  vertical-align: baseline;
-  width: 16px;
 }
 
-input[type='checkbox']:disabled {
+input[type='checkbox']:disabled,
+input[type='radio']:disabled {
   opacity: .75;
 }
 
-input[type='checkbox']:not(:disabled):not(:active):hover {
+input[type='checkbox'] {
+  border-radius: 3px;
+  height: 16px;
+  width: 16px;
+}
+
+input[type='checkbox']:not(:disabled):not(:active):hover,
+input[type='radio']:not(:disabled):not(:active):hover {
   background: -webkit-linear-gradient(#fff, #e6e6e6);
   text-shadow: 0 1px 0 rgba(255, 255, 255, 1);
 }
@@ -50,31 +53,9 @@ input[type='checkbox']:checked::before {
 }
 
 input[type='radio'] {
-  -webkit-box-shadow: inset 0 1px 2px white,
-                      0 1px 2px rgba(0, 0, 0, .2);
-  -webkit-appearance: none;
-  -webkit-margin-start: 0;
-  -webkit-margin-end: 3px;
-  -webkit-transition: border 500ms;
-  background: -webkit-linear-gradient(#fafafa, #dcdcdc);
   border-radius: 100%;
-  border: 1px solid #a0a0a0;
-  display: inline-block;
   height: 15px;
-  margin-bottom: 0;
-  position: relative;
-  top: 3px;
-  vertical-align: baseline;
   width: 15px;
-}
-
-input[type='radio']:disabled {
-  opacity: .75;
-}
-
-input[type='radio']:not(:disabled):not(:active):hover {
-  background: -webkit-linear-gradient(#fff, #e6e6e6);
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 1);
 }
 
 input[type='radio']:not(:disabled):active {
@@ -124,18 +105,11 @@ input[type='radio']:active:checked::before {
   display: -webkit-inline-box;
 }
 
-/* Make sure long spans wrap at the same horizontal position they start. */
 .checkbox label input ~ span,
 .radio label input ~ span {
   -webkit-margin-start: 0.4em;
+  /* Make sure long spans wrap at the same horizontal position they start. */
   display: block;
-}
-
-.checkbox label input[type=checkbox],
-.radio label input[type=radio] {
-  margin-top: 0;
-  top: 0;
-  vertical-align: top;
 }
 
 /* TODO(estade): remove this. It's duplicated in chrome_shared2.css */
