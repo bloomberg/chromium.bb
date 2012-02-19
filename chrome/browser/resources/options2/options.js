@@ -67,33 +67,10 @@ function load() {
   OptionsPage.register(SearchPage.getInstance());
   OptionsPage.register(BrowserOptions.getInstance());
 
-  // BrowserOptions sub-pages.
+  // BrowserOptions sub-page.
   OptionsPage.registerSubPage(AdvancedOptions.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('advanced-settings')]);
-
-  // AdvancedOptions sub-pages.
-  OptionsPage.registerSubPage(ContentSettings.getInstance(),
-                              AdvancedOptions.getInstance(),
-                              [$('privacyContentSettingsButton')]);
-
-  // ContentSettings sub-pages.
-  OptionsPage.registerSubPage(ContentSettingsExceptionsArea.getInstance(),
-                              ContentSettings.getInstance());
-  OptionsPage.registerSubPage(CookiesView.getInstance(),
-                              ContentSettings.getInstance(),
-                              [$('privacyContentSettingsButton'),
-                               $('show-cookies-button')]);
-  if (HandlerOptions && $('manage-handlers-button')) {
-    OptionsPage.registerSubPage(HandlerOptions.getInstance(),
-                                ContentSettings.getInstance(),
-                                [$('manage-handlers-button')]);
-  }
-  if (IntentsView && $('manage-intents-button')) {
-    OptionsPage.registerSubPage(IntentsView.getInstance(),
-                                ContentSettings.getInstance(),
-                                [$('manage-intents-button')]);
-  }
 
   // Overlays.
   OptionsPage.registerOverlay(AddLanguageOverlay.getInstance(),
@@ -109,14 +86,33 @@ function load() {
   OptionsPage.registerOverlay(ClearBrowserDataOverlay.getInstance(),
                               AdvancedOptions.getInstance(),
                               [$('privacyClearDataButton')]);
+  OptionsPage.registerOverlay(ContentSettings.getInstance(),
+                              AdvancedOptions.getInstance(),
+                              [$('privacyContentSettingsButton')]);
+  OptionsPage.registerOverlay(ContentSettingsExceptionsArea.getInstance(),
+                              ContentSettings.getInstance());
+  OptionsPage.registerOverlay(CookiesView.getInstance(),
+                              ContentSettings.getInstance(),
+                              [$('privacyContentSettingsButton'),
+                               $('show-cookies-button')]);
   OptionsPage.registerOverlay(FontSettings.getInstance(),
                               AdvancedOptions.getInstance(),
                               [$('fontSettingsCustomizeFontsButton')]);
+  if (HandlerOptions && $('manage-handlers-button')) {
+    OptionsPage.registerOverlay(HandlerOptions.getInstance(),
+                                ContentSettings.getInstance(),
+                                [$('manage-handlers-button')]);
+  }
   OptionsPage.registerOverlay(HomePageOverlay.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('change-home-page')]);
   OptionsPage.registerOverlay(ImportDataOverlay.getInstance(),
                               BrowserOptions.getInstance());
+  if (IntentsView && $('manage-intents-button')) {
+    OptionsPage.registerOverlay(IntentsView.getInstance(),
+                                ContentSettings.getInstance(),
+                                [$('manage-intents-button')]);
+  }
   OptionsPage.registerOverlay(InstantConfirmOverlay.getInstance(),
                               BrowserOptions.getInstance());
   OptionsPage.registerOverlay(LanguageOptions.getInstance(),

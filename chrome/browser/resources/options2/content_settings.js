@@ -87,6 +87,9 @@ cr.define('options', function() {
         this.sessionRestoreEnabled = true;
         this.updateSessionRestoreContentSettings();
       }
+
+      $('content-settings-overlay-confirm').onclick =
+          OptionsPage.closeOverlay.bind(OptionsPage);
     },
 
     onSessionRestoreSelectedChanged: function(event) {

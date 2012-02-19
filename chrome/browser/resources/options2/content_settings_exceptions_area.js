@@ -493,6 +493,9 @@ cr.define('options.contentSettings', function() {
 
       // If the user types in the URL without a hash, show just cookies.
       this.showList('cookies');
+
+      $('content-settings-exceptions-overlay-confirm').onclick =
+          OptionsPage.closeOverlay.bind(OptionsPage);
     },
 
     /**

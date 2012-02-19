@@ -1,79 +1,89 @@
 <div id="content-settings-exceptions-area" class="page" hidden>
-  <header><h1></h1></header>
-  <div id="exception-column-headers">
-    <div id="exception-pattern-column" i18n-content="exceptionPatternHeader">
+  <h1></h1>
+  <div class="content-area">
+    <div id="exception-column-headers">
+      <div id="exception-pattern-column" i18n-content="exceptionPatternHeader">
+      </div>
+      <div id="exception-behavior-column"
+          i18n-content="exceptionBehaviorHeader">
+      </div>
     </div>
-    <div id="exception-behavior-column" i18n-content="exceptionBehaviorHeader">
+    <div contentType="cookies">
+      <list mode="normal"></list>
+      <div>
+        <span class="otr-explanation" i18n-content="otr_exceptions_explanation">
+        </span>
+        <list mode="otr"></list>
+      </div>
+      <div class="flash-plugin-area">
+        <a i18n-values="href:flash_storage_url" target="_blank"
+            i18n-content="flash_storage_settings">
+        </a>
+      </div>
+    </div>
+    <div contentType="images">
+      <list mode="normal"></list>
+      <div>
+        <span class="otr-explanation" i18n-content="otr_exceptions_explanation">
+        </span>
+        <list mode="otr"></list>
+      </div>
+    </div>
+    <div contentType="javascript">
+      <list mode="normal"></list>
+      <div>
+        <span class="otr-explanation" i18n-content="otr_exceptions_explanation">
+        </span>
+        <list mode="otr"></list>
+      </div>
+    </div>
+    <div contentType="plugins">
+      <list mode="normal"></list>
+      <div>
+        <span class="otr-explanation" i18n-content="otr_exceptions_explanation">
+        </span>
+        <list mode="otr"></list>
+      </div>
+    </div>
+    <div contentType="popups">
+      <list mode="normal"></list>
+      <div>
+        <span class="otr-explanation" i18n-content="otr_exceptions_explanation">
+        </span>
+        <list mode="otr"></list>
+      </div>
+    </div>
+    <div contentType="location">
+      <list mode="normal"></list>
+    </div>
+    <div contentType="notifications">
+      <list mode="normal"></list>
+    </div>
+    <div contentType="intents">
+      <list mode="normal"></list>
+    </div>
+    <div contentType="fullscreen">
+      <list mode="normal"></list>
+      <div>
+        <span class="otr-explanation" i18n-content="otr_exceptions_explanation">
+        </span>
+        <list mode="otr"></list>
+      </div>
+    </div>
+    <div contentType="mouselock">
+      <list mode="normal"></list>
+      <div>
+        <span class="otr-explanation" i18n-content="otr_exceptions_explanation">
+        </span>
+        <list mode="otr"></list>
+      </div>
     </div>
   </div>
-  <div contentType="cookies">
-    <list mode="normal"></list>
-    <div>
-      <span class="otr-explanation" i18n-content="otr_exceptions_explanation">
-      </span>
-      <list mode="otr"></list>
-    </div>
-    <div class="flash-plugin-area">
-      <a i18n-values="href:flash_storage_url" target="_blank"
-          i18n-content="flash_storage_settings">
-      </a>
-    </div>
-  </div>
-  <div contentType="images">
-    <list mode="normal"></list>
-    <div>
-      <span class="otr-explanation" i18n-content="otr_exceptions_explanation">
-      </span>
-      <list mode="otr"></list>
-    </div>
-  </div>
-  <div contentType="javascript">
-    <list mode="normal"></list>
-    <div>
-      <span class="otr-explanation" i18n-content="otr_exceptions_explanation">
-      </span>
-      <list mode="otr"></list>
-    </div>
-  </div>
-  <div contentType="plugins">
-    <list mode="normal"></list>
-    <div>
-      <span class="otr-explanation" i18n-content="otr_exceptions_explanation">
-      </span>
-      <list mode="otr"></list>
-    </div>
-  </div>
-  <div contentType="popups">
-    <list mode="normal"></list>
-    <div>
-      <span class="otr-explanation" i18n-content="otr_exceptions_explanation">
-      </span>
-      <list mode="otr"></list>
-    </div>
-  </div>
-  <div contentType="location">
-    <list mode="normal"></list>
-  </div>
-  <div contentType="notifications">
-    <list mode="normal"></list>
-  </div>
-  <div contentType="intents">
-    <list mode="normal"></list>
-  </div>
-  <div contentType="fullscreen">
-    <list mode="normal"></list>
-    <div>
-      <span class="otr-explanation" i18n-content="otr_exceptions_explanation">
-      </span>
-      <list mode="otr"></list>
-    </div>
-  </div>
-  <div contentType="mouselock">
-    <list mode="normal"></list>
-    <div>
-      <span class="otr-explanation" i18n-content="otr_exceptions_explanation">
-      </span>
-      <list mode="otr"></list>
+  <div class="action-area">
+    <div class="button-strip">
+      <button id="content-settings-exceptions-overlay-confirm"
+          i18n-content="ok">
+      </button>
     </div>
   </div>
 </div>

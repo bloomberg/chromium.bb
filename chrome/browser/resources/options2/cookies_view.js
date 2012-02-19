@@ -53,6 +53,9 @@ cr.define('options', function() {
       window.addEventListener('resize', this.handleResize_.bind(this));
 
       this.addEventListener('visibleChange', this.handleVisibleChange_);
+
+      $('cookies-view-overlay-confirm').onclick =
+          OptionsPage.closeOverlay.bind(OptionsPage);
     },
 
     /**

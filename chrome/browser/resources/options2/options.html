@@ -82,6 +82,7 @@
 <div id="overlay-container-1" class="overlay transparent" hidden>
   <include src="autofill_options.html">
   <include src="clear_browser_data_overlay.html">
+  <include src="content_settings.html">
   <include src="font_settings.html">
   <include src="home_page_overlay.html">
   <include src="import_data_overlay.html">
@@ -110,6 +111,8 @@
   <include src="alert_overlay.html">
   <include src="autofill_edit_address_overlay.html">
   <include src="autofill_edit_creditcard_overlay.html">
+  <include src="content_settings_exceptions_area.html">
+  <include src="cookies_view.html">
   <include src="language_add_language_overlay.html">
   <if expr="pp_ifdef('chromeos')">
     <include src="chromeos/internet_detail.html">
@@ -120,6 +123,12 @@
   </if>
   <if expr="pp_ifdef('chromeos') and pp_ifdef('use_virtual_keyboard')">
     <include src="chromeos/virtual_keyboard.html">
+  </if>
+  <if expr="pp_ifdef('enable_register_protocol_handler')">
+    <include src="handler_options.html">
+  </if>
+  <if expr="pp_ifdef('enable_web_intents_tag')">
+    <include src="intents_view.html">
   </if>
   <if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
     <include src="certificate_restore_overlay.html">
@@ -153,31 +162,6 @@
          <div id="subpage-sheet-1" class="subpage-sheet">
            <div class="subpage-sheet-contents">
              <include src="advanced_options.html">
-           </div>
-         </div>
-       </div>
-       <div id="subpage-sheet-container-2"
-           class="subpage-sheet-container transparent" hidden>
-         <div id="subpage-sheet-2" class="subpage-sheet">
-           <button class="raw-button close-subpage custom-appearance"></button>
-           <div class="subpage-sheet-contents">
-             <include src="content_settings.html">
-           </div>
-         </div>
-       </div>
-       <div id="subpage-sheet-container-3"
-           class="subpage-sheet-container transparent" hidden>
-         <div id="subpage-sheet-3" class="subpage-sheet">
-           <button class="raw-button close-subpage custom-appearance"></button>
-           <div class="subpage-sheet-contents">
-             <include src="cookies_view.html">
-             <if expr="pp_ifdef('enable_register_protocol_handler')">
-               <include src="handler_options.html">
-             </if>
-             <if expr="pp_ifdef('enable_web_intents_tag')">
-               <include src="intents_view.html">
-             </if>
-             <include src="content_settings_exceptions_area.html">
            </div>
          </div>
        </div>

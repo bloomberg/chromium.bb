@@ -188,35 +188,6 @@ html[touch-optimized] body {
   padding: 1px 6px;
 }
 
-.close-subpage {
-  background-image: url('../../../../ui/resources/close_bar.png');
-  height: 16px;
-  min-width: 0;
-  position: fixed;
-  top: 16px;
-  width: 16px;
-}
-
-.close-subpage:hover {
-  background-image: url('../../../../ui/resources/close_bar_h.png');
-}
-
-.close-subpage:active {
-  background-image: url('../../../../ui/resources/close_bar_p.png');
-}
-
-html[dir='ltr'] .close-subpage {
-  right: 20px;
-}
-
-html[dir='rtl'] .close-subpage {
-  left: 20px;
-}
-
-html.hide-menu .close-subpage {
-  display: none
-}
-
 .bottom-strip {
   border-top: none;
   bottom: 0;
@@ -266,29 +237,9 @@ html.hide-menu .close-subpage {
   z-index: 5;
 }
 
-#subpage-sheet-container-2 {
-  -webkit-padding-start: 104px;
-  z-index: 7;
-}
-
-#subpage-sheet-container-3 {
-  -webkit-padding-start: 156px;
-  z-index: 9;
-}
-
 #subpage-sheet-container-1 header {
   left: 72px;
   right: 72px;
-}
-
-#subpage-sheet-container-2 header {
-  left: 124px;
-  right: 124px;
-}
-
-#subpage-sheet-container-3 header {
-  left: 176px;
-  right: 176px;
 }
 
 .subpage-sheet {

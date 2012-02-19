@@ -1,12 +1,19 @@
 <div id="intents-view-page" class="page" hidden>
-  <header><h1 i18n-content="intentsViewPage"></h1></header>
-  <div id="intents-column-headers">
-    <div id="intents-site-column">
-      <h3 i18n-content="intentsDomain"></h3>
+  <h1 i18n-content="intentsViewPage"></h1>
+  <div class="content-area">
+    <div id="intents-column-headers">
+      <div id="intents-site-column">
+        <h3 i18n-content="intentsDomain"></h3>
+      </div>
+      <div id="intents-data-column">
+        <h3 i18n-content="intentsServiceData"></h3>
+      </div>
     </div>
-    <div id="intents-data-column">
-      <h3 i18n-content="intentsServiceData"></h3>
+    <list id="intents-list"></list>
+  </div>
+  <div class="action-area">
+    <div class="button-strip">
+      <button id="intents-view-overlay-confirm" i18n-content="ok"></button>
     </div>
   </div>
-  <list id="intents-list"></list>
 </div>

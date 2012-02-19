@@ -37,6 +37,9 @@ cr.define('options', function() {
       OptionsPage.prototype.initializePage.call(this);
 
       this.createHandlersList_();
+
+      $('handler-options-overlay-confirm').onclick =
+          OptionsPage.closeOverlay.bind(OptionsPage);
     },
 
     /**

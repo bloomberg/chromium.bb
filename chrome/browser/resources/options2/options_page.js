@@ -21,7 +21,7 @@ cr.define('options', function() {
     this.tab = null;
   }
 
-  const SUBPAGE_SHEET_COUNT = 2;
+  const SUBPAGE_SHEET_COUNT = 1;
 
   const HORIZONTAL_OFFSET = 155;
 

@@ -1,15 +1,22 @@
 <div id="cookiesViewPage" class="page" hidden>
-  <header><h1 i18n-content="cookiesViewPage"></h1></header>
-  <div id="cookies-column-headers">
-    <div id="cookies-site-column"><h3 i18n-content="cookie_domain"></h3></div>
-    <div id="cookies-data-column"><h3 i18n-content="cookie_local_data"></h3></div>
-    <div id="remove-all-cookies-search-column">
-      <button id="remove-all-cookies-button"
-          i18n-content="remove_all_cookie"></button>
-      <input id="cookies-search-box" type="search"
-          i18n-values="placeholder:search_cookies" incremental
-          results="10" autosave="org.chromium.options.cookies.search">
+  <h1 i18n-content="cookiesViewPage"></h1>
+  <div class="content-area">
+    <div id="cookies-column-headers">
+      <div id="cookies-site-column"><h3 i18n-content="cookie_domain"></h3></div>
+      <div id="cookies-data-column"><h3 i18n-content="cookie_local_data"></h3></div>
+      <div id="remove-all-cookies-search-column">
+        <button id="remove-all-cookies-button"
+            i18n-content="remove_all_cookie"></button>
+        <input id="cookies-search-box" type="search"
+            i18n-values="placeholder:search_cookies" incremental
+            results="10" autosave="org.chromium.options.cookies.search">
+      </div>
+    </div>
+    <list id="cookies-list"></list>
+  </div>
+  <div class="action-area">
+    <div class="button-strip">
+      <button id="cookies-view-overlay-confirm" i18n-content="ok"></button>
     </div>
   </div>
-  <list id="cookies-list"></list>
 </div>
