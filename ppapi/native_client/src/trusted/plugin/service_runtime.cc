@@ -452,7 +452,7 @@ void PluginReverseInterface::QuotaRequest_MainThreadResponse(
     int32_t err) {
   NaClLog(4,
           "PluginReverseInterface::QuotaRequest_MainThreadResponse:"
-          " (resource=%"NACL_PRIx64", offset=%"NACL_PRId64", requested=%"
+          " (resource=%"NACL_PRIx32", offset=%"NACL_PRId64", requested=%"
           NACL_PRId64", err=%"NACL_PRId32")\n",
           request->resource, request->offset, request->bytes_requested, err);
   nacl::MutexLocker take(&mu_);
@@ -520,8 +520,8 @@ void PluginReverseInterface::AddQuotaManagedFile(const nacl::string& file_id,
   PP_Resource resource = file_io.pp_resource();
   NaClLog(4,
           "PluginReverseInterface::AddQuotaManagedFile: "
-          "(file_id='%s', file_io_ref=%"NACL_PRIx64")\n",
-          file_id.c_str(), (int64_t) resource);
+          "(file_id='%s', file_io_ref=%"NACL_PRIx32")\n",
+          file_id.c_str(), resource);
   nacl::MutexLocker take(&mu_);
   uint64_t file_key = STRTOULL(file_id.c_str(), NULL, 10);
   quota_map_[file_key] = resource;
