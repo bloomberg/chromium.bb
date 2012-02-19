@@ -496,7 +496,7 @@ TEST_F(WindowTest, CaptureTests) {
   EXPECT_TRUE(window->HasCapture());
   EXPECT_EQ(0, delegate.capture_lost_count());
   EXPECT_EQ(0, delegate.capture_changed_event_count());
-  EventGenerator generator(gfx::Point(50, 50));
+  EventGenerator generator(root_window(), gfx::Point(50, 50));
   generator.PressLeftButton();
   EXPECT_EQ(1, delegate.mouse_event_count());
   generator.ReleaseLeftButton();
@@ -546,7 +546,7 @@ TEST_F(WindowTest, ChangeCaptureWhileMouseDown) {
   EXPECT_TRUE(window->HasCapture());
   EXPECT_EQ(0, delegate.capture_lost_count());
   EXPECT_EQ(0, delegate.capture_changed_event_count());
-  EventGenerator generator(gfx::Point(50, 50));
+  EventGenerator generator(root_window(), gfx::Point(50, 50));
   generator.PressLeftButton();
   EXPECT_EQ(0, delegate.capture_lost_count());
   EXPECT_EQ(0, delegate.capture_changed_event_count());
@@ -640,7 +640,7 @@ TEST_F(WindowTest, MouseEnterExit) {
   scoped_ptr<Window> w2(
       CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(70, 70, 50, 50), NULL));
 
-  test::EventGenerator generator;
+  test::EventGenerator generator(root_window());
   generator.MoveMouseToCenterOf(w1.get());
   EXPECT_TRUE(d1.entered());
   EXPECT_FALSE(d1.exited());
@@ -1328,7 +1328,7 @@ TEST_F(WindowTest, VisibilityClientIsVisible) {
 TEST_F(WindowTest, MouseEventsOnWindowChange) {
   gfx::Size size = root_window()->GetHostSize();
 
-  EventGenerator generator;
+  EventGenerator generator(root_window());
   generator.MoveMouseTo(50, 50);
 
   MouseTrackingDelegate d1;
