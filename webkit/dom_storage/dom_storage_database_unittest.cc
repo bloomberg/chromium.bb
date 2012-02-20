@@ -251,9 +251,7 @@ TEST(DomStorageDatabaseTest, TestSimpleRemoveOneValue) {
   CheckValuesMatch(&db, expected);
 }
 
-// TODO(benm): Enable this test in follow up patch once the test data has
-// landed. (try-bots don't like adding binary files like test databases :) )
-TEST(DomStorageDatabaseTest, DISABLED_TestCanOpenAndReadWebCoreDatabase) {
+TEST(DomStorageDatabaseTest, TestCanOpenAndReadWebCoreDatabase) {
   FilePath webcore_database;
   PathService::Get(base::DIR_SOURCE_ROOT, &webcore_database);
   webcore_database = webcore_database.AppendASCII("webkit");
