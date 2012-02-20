@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/cros/chromeos_cryptohome.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 using content::BrowserThread;
 
@@ -33,7 +33,7 @@ AuthAttemptState::AuthAttemptState(const std::string& username,
       is_first_time_user_(user_is_new),
       cryptohome_complete_(false),
       cryptohome_outcome_(false),
-      cryptohome_code_(kCryptohomeMountErrorNone) {
+      cryptohome_code_(cryptohome::MOUNT_ERROR_NONE) {
 }
 
 AuthAttemptState::AuthAttemptState(const std::string& username,
@@ -48,7 +48,7 @@ AuthAttemptState::AuthAttemptState(const std::string& username,
       is_first_time_user_(false),
       cryptohome_complete_(false),
       cryptohome_outcome_(false),
-      cryptohome_code_(kCryptohomeMountErrorNone) {
+      cryptohome_code_(cryptohome::MOUNT_ERROR_NONE) {
 }
 
 AuthAttemptState::AuthAttemptState(const std::string& username,
@@ -66,7 +66,7 @@ AuthAttemptState::AuthAttemptState(const std::string& username,
       is_first_time_user_(user_is_new),
       cryptohome_complete_(false),
       cryptohome_outcome_(false),
-      cryptohome_code_(kCryptohomeMountErrorNone) {
+      cryptohome_code_(cryptohome::MOUNT_ERROR_NONE) {
 }
 
 AuthAttemptState::~AuthAttemptState() {}
@@ -100,7 +100,7 @@ void AuthAttemptState::ResetCryptohomeStatus() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   cryptohome_complete_ = false;
   cryptohome_outcome_ = false;
-  cryptohome_code_ = kCryptohomeMountErrorNone;
+  cryptohome_code_ = cryptohome::MOUNT_ERROR_NONE;
 }
 
 bool AuthAttemptState::online_complete() {
