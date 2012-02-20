@@ -542,15 +542,17 @@ def _RunBuildStagesWrapper(bot_id, options, build_config):
     return False
 
   # Start tee-ing output to file.
-  default_dir = os.path.join(options.buildroot, _DEFAULT_LOG_DIR)
-  dirname = options.log_dir or default_dir
-  log_file = os.path.join(dirname, _BUILDBOT_LOG_FILE)
+  log_file = None
+  if options.tee:
+    default_dir = os.path.join(options.buildroot, _DEFAULT_LOG_DIR)
+    dirname = options.log_dir or default_dir
+    log_file = os.path.join(dirname, _BUILDBOT_LOG_FILE)
 
-  cros_lib.SafeMakedirs(dirname)
-  _BackupPreviousLog(log_file)
+    cros_lib.SafeMakedirs(dirname)
+    _BackupPreviousLog(log_file)
 
   try:
-    with tee.Tee(log_file) as tee_proc:
+    with cros_lib.AllowDisabling(options.tee, tee.Tee, log_file):
       cros_lib.Info("cbuildbot executed with args %s"
                     % ' '.join(map(repr, sys.argv)))
       if IsDistributedBuilder():
@@ -561,7 +563,8 @@ def _RunBuildStagesWrapper(bot_id, options, build_config):
       if not buildbot.Run():
         sys.exit(1)
   finally:
-    cros_lib.Info('Output should be saved to %s' % log_file)
+    if options.tee:
+      cros_lib.Info('Output should be saved to %s' % log_file)
 
 
 # Parser related functions
@@ -783,6 +786,9 @@ def _CreateParser():
   group.add_option('--dump_config', action='store_true', dest='dump_config',
                     default=False,
                     help='Dump out build config options, and exit.')
+  group.add_option('--notee', action='store_false', dest='tee', default=True,
+                    help="Disable logging and internal tee process.  Primarily "
+                         "used for debugging cbuildbot itself.")
   parser.add_option_group(group)
   return parser
 
