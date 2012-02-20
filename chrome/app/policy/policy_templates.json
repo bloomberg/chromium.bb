@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 121
+#   For your editing convenience: highest ID currently used: 128
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -1724,7 +1724,7 @@
 
       Setting this policy overrides the default value of 3 hours. Valid values for this policy are in the range from 1800000 (30 minutes) to 86400000 (1 day). Any values not in this range will be clamped to the respective boundary.
 
-      Leaving this policy not set will make <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> use the default value of 3 hours.''',
+      Leaving this policy not set will make <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> use the default value of 3 hours.''',
     },
     {
       'name': 'ChromeFrameRendererSettings',
@@ -1959,10 +1959,10 @@
       'features': {'dynamic_refresh': False},
       'example_value': '${user_home}/Chrome Frame',
       'id': 87,
-      'caption': '''Set <ph name="PRODUCT_NAME">$3<ex>Google Chrome Frame</ex></ph> user data directory''',
-      'desc': '''Configures the directory that <ph name="PRODUCT_NAME">$3<ex>Google Chrome Frame</ex></ph> will use for storing user data.
+      'caption': '''Set <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> user data directory''',
+      'desc': '''Configures the directory that <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> will use for storing user data.
 
-      If you set this policy, <ph name="PRODUCT_NAME">$3<ex>Google Chrome Frame</ex></ph> will use the provided directory.
+      If you set this policy, <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> will use the provided directory.
 
       If this setting is left not set the default profile directory will be used.''',
       'label': '''Set user data directory''',
@@ -1980,7 +1980,7 @@
 
       Setting this policy overrides the default value of 3 hours. Valid values for this policy are in the range from 1800000 (30 minutes) to 86400000 (1 day). Any values not in this range will be clamped to the respective boundary.
 
-      Leaving this policy not set will make <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> use the default value of 3 hours.''',
+      Leaving this policy not set will make <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> use the default value of 3 hours.''',
     },
     {
       'name': 'ChromeOsReleaseChannel',
@@ -2180,7 +2180,7 @@
       'example_value': '{ "NetworkConfigurations": [ { "GUID": "{4b224dfd-6849-7a63-5e394343244ae9c9}", "Name": "my WiFi", "Type": "WiFi", "WiFi": { "SSID": "my WiFi", "HiddenSSID": false, "Security": "None", "AutoConnect": true } } ] }',
       'id': 107,
       'caption': '''User-level network configuration''',
-      'desc': '''Allows pushing network configuration to be applied per-user to a <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration''',
+      'desc': '''Allows pushing network configuration to be applied per-user to a <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL">https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</ph>''',
     },
     {
       'name': 'DeviceOpenNetworkConfiguration',
@@ -2192,7 +2192,7 @@
       'example_value': '{ "NetworkConfigurations": [ { "GUID": "{4b224dfd-6849-7a63-5e394343244ae9c9}", "Name": "my WiFi", "Type": "WiFi", "WiFi": { "SSID": "my WiFi", "HiddenSSID": false, "Security": "None", "AutoConnect": true } } ] }',
       'id': 108,
       'caption': '''Device-level network configuration''',
-      'desc': '''Allows pushing network configuration to be applied for all useers of a <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration''',
+      'desc': '''Allows pushing network configuration to be applied for all useers of a <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL">https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</ph>''',
     },
     {
       'name': 'CloudPrintSubmitEnabled',
@@ -2320,6 +2320,89 @@
       'desc': '''Report the state of the device's dev switch at boot.
 
       If the policy is not set, or set to false, the state of the dev switch will not be reported.''',
+    },
+    {
+      'name': 'DeviceUserWhitelist',
+      'type': 'list',
+      'supported_on': ['chrome_os:12-'],
+      'device_only': True,
+      'features': {'dynamic_refresh': True},
+      'example_value': [ 'madmax@managedchrome.com' ],
+      'id': 122,
+      'caption': '''Login user white list''',
+      'desc': '''Defines the list of users that are allowed to login to the device. Entries are of the form <ph name="USER_WHITELIST_ENTRY_FORMAT">user@domain</ph>, such as <ph name="USER_WHITELIST_ENTRY_EXAMPLE">madmax@managedchrome.com</ph>. To allow arbitrary users on a domain, use entries of the form <ph name="USER_WHITELIST_ENTRY_WILDCARD">*@domain</ph>.
+
+      If this policy is not configured, there are no restrictions on the what users are allowed to sign in. Note that creating new users still requires the <ph name="DEVICEALLOWNEWUSERS_POLICY_NAME">DeviceAllowNewUsers</ph> policy to be configured appropriately.''',
+    },
+    {
+      'name': 'DeviceAllowNewUsers',
+      'type': 'main',
+      'supported_on': ['chrome_os:12-'],
+      'device_only': True,
+      'features': {'dynamic_refresh': True},
+      'example_value': True,
+      'id': 123,
+      'caption': '''Allow creation of new user accounts''',
+      'desc': '''Controls whether <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> allows new user accounts to be created. If this policy is set to false, users that do not have an account already will not be able to login.
+
+      If this policy is set to true or not configured, new user accounts will be allowed to be created provided that <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME">DeviceUserWhitelist</ph> does not prevent the user from logging in.''',
+    },
+    {
+      'name': 'DeviceGuestModeEnabled',
+      'type': 'main',
+      'supported_on': ['chrome_os:12-'],
+      'device_only': True,
+      'features': {'dynamic_refresh': True},
+      'example_value': True,
+      'id': 124,
+      'caption': '''Enable guest mode''',
+      'desc': '''If this policy is set to true or not configured, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will enable guest logins. Guest logins are anonymous user sessions and do not require a password.
+
+      If this policy is set to false, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will not allow guest sessions to be started.''',
+    },
+    {
+      'name': 'DeviceShowUserNamesOnSignin',
+      'type': 'main',
+      'supported_on': ['chrome_os:12-'],
+      'device_only': True,
+      'features': {'dynamic_refresh': True},
+      'example_value': True,
+      'id': 125,
+      'caption': '''Show usernames on login screen''',
+      'desc': '''If this policy is set to true or not configured, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will show existing users on the login screen and allow to pick one. If this policy is set to false, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will use the username/password prompt for login.''',
+    },
+    {
+      'name': 'DeviceDataRoamingEnabled',
+      'type': 'main',
+      'supported_on': ['chrome_os:12-'],
+      'device_only': True,
+      'features': {'dynamic_refresh': True},
+      'example_value': True,
+      'id': 126,
+      'caption': '''Enable data roaming''',
+      'desc': '''Determines whether data roaming should be enabled for the device. If set to true, data roaming is allowed. If left unconfigured or set to false, data roaming will be not available.''',
+    },
+    {
+      'name': 'DeviceMetricsReportingEnabled',
+      'type': 'main',
+      'supported_on': ['chrome_os:14-'],
+      'device_only': True,
+      'features': {'dynamic_refresh': True},
+      'example_value': True,
+      'id': 127,
+      'caption': '''Enable metrics reporting''',
+      'desc': '''Controls whether usage metrics are reported back to Google. If set to true, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will report usage metrics. If not configured or set to false, metrics reporting will be disabled.''',
+    },
+    {
+      'name': 'DeviceEphemeralUsersEnabled',
+      'type': 'main',
+      'supported_on': ['chrome_os:19-'],
+      'device_only': True,
+      'features': {'dynamic_refresh': True},
+      'example_value': True,
+      'id': 128,
+      'caption': '''Wipe user data on sign-out''',
+      'desc': '''Determines whether Chrome OS keeps local account data after logout. If set to true, no persistent accounts are kept by <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> and all data from the user session will be discarded after logout. If this policy is set to false or not configured, the device may keep (encrypted) local user data.''',
     },
   ],
   'messages': {

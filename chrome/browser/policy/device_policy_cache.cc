@@ -28,6 +28,8 @@
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 #include "policy/policy_constants.h"
 
+using google::protobuf::RepeatedPtrField;
+
 namespace em = enterprise_management;
 
 namespace {
@@ -313,19 +315,42 @@ void DevicePolicyCache::DecodeDevicePolicy(
     const em::ChromeDeviceSettingsProto& policy,
     PolicyMap* policies) {
   if (policy.has_device_policy_refresh_rate()) {
-    const em::DevicePolicyRefreshRateProto container =
-        policy.device_policy_refresh_rate();
+    const em::DevicePolicyRefreshRateProto& container(
+        policy.device_policy_refresh_rate());
     if (container.has_device_policy_refresh_rate()) {
-      policies->Set(key::kDevicePolicyRefreshRate,
-                    POLICY_LEVEL_MANDATORY,
+      policies->Set(key::kDevicePolicyRefreshRate, POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
                     DecodeIntegerValue(container.device_policy_refresh_rate()));
     }
   }
 
+  if (policy.has_user_whitelist()) {
+    const em::UserWhitelistProto& container(policy.user_whitelist());
+    if (container.user_whitelist_size()) {
+      ListValue* whitelist = new ListValue();
+      RepeatedPtrField<std::string>::const_iterator entry;
+      for (entry = container.user_whitelist().begin();
+           entry != container.user_whitelist().end();
+           ++entry) {
+        whitelist->Append(Value::CreateStringValue(*entry));
+      }
+      policies->Set(key::kDeviceUserWhitelist, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE, whitelist);
+    }
+  }
+
+  if (policy.has_guest_mode_enabled()) {
+    const em::GuestModeEnabledProto& container(policy.guest_mode_enabled());
+    if (container.has_guest_mode_enabled()) {
+      policies->Set(key::kDeviceGuestModeEnabled, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateBooleanValue(container.guest_mode_enabled()));
+    }
+  }
+
   if (policy.has_device_proxy_settings()) {
-    const em::DeviceProxySettingsProto container =
-        policy.device_proxy_settings();
+    const em::DeviceProxySettingsProto& container(
+        policy.device_proxy_settings());
     scoped_ptr<DictionaryValue> proxy_settings(new DictionaryValue);
     if (container.has_proxy_mode())
       proxy_settings->SetString(key::kProxyMode, container.proxy_mode());
@@ -338,20 +363,53 @@ void DevicePolicyCache::DecodeDevicePolicy(
                                 container.proxy_bypass_list());
     }
     if (!proxy_settings->empty()) {
-      policies->Set(key::kProxySettings,
-                    POLICY_LEVEL_RECOMMENDED,
+      policies->Set(key::kProxySettings, POLICY_LEVEL_RECOMMENDED,
+                    POLICY_SCOPE_MACHINE, proxy_settings.release());
+    }
+  }
+
+  if (policy.has_show_user_names()) {
+    const em::ShowUserNamesOnSigninProto& container(policy.show_user_names());
+    if (container.has_show_user_names()) {
+      policies->Set(key::kDeviceShowUserNamesOnSignin, POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    proxy_settings.release());
+                    Value::CreateBooleanValue(container.show_user_names()));
+    }
+  }
+
+  if (policy.has_data_roaming_enabled()) {
+    const em::DataRoamingEnabledProto& container(policy.data_roaming_enabled());
+    if (container.has_data_roaming_enabled()) {
+      policies->Set(key::kDeviceDataRoamingEnabled, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateBooleanValue(
+                        container.data_roaming_enabled()));
+    }
+  }
+
+  if (policy.has_allow_new_users()) {
+    const em::AllowNewUsersProto& container(policy.allow_new_users());
+    if (container.has_allow_new_users()) {
+      policies->Set(key::kDeviceAllowNewUsers, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateBooleanValue(container.allow_new_users()));
+    }
+  }
+
+  if (policy.has_metrics_enabled()) {
+    const em::MetricsEnabledProto& container(policy.metrics_enabled());
+    if (container.has_metrics_enabled()) {
+      policies->Set(key::kDeviceMetricsReportingEnabled, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateBooleanValue(container.metrics_enabled()));
     }
   }
 
   if (policy.has_release_channel() &&
       policy.release_channel().has_release_channel()) {
     std::string channel(policy.release_channel().release_channel());
-    policies->Set(key::kChromeOsReleaseChannel,
-                  POLICY_LEVEL_MANDATORY,
-                  POLICY_SCOPE_MACHINE,
-                  Value::CreateStringValue(channel));
+    policies->Set(key::kChromeOsReleaseChannel, POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_MACHINE, Value::CreateStringValue(channel));
     // TODO(dubroy): Once http://crosbug.com/17015 is implemented, we won't
     // have to pass the channel in here, only ping the update engine to tell
     // it to fetch the channel from the policy.
@@ -363,10 +421,39 @@ void DevicePolicyCache::DecodeDevicePolicy(
       policy.open_network_configuration().has_open_network_configuration()) {
     std::string config(
         policy.open_network_configuration().open_network_configuration());
-    policies->Set(key::kDeviceOpenNetworkConfiguration,
-                  POLICY_LEVEL_MANDATORY,
-                  POLICY_SCOPE_MACHINE,
-                  Value::CreateStringValue(config));
+    policies->Set(key::kDeviceOpenNetworkConfiguration, POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_MACHINE, Value::CreateStringValue(config));
+  }
+
+  if (policy.has_device_reporting()) {
+    const em::DeviceReportingProto& container(policy.device_reporting());
+    if (container.has_report_version_info()) {
+      policies->Set(key::kReportDeviceVersionInfo, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateBooleanValue(container.report_version_info()));
+    }
+    if (container.has_report_activity_times()) {
+      policies->Set(key::kReportDeviceActivityTimes, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateBooleanValue(
+                        container.report_activity_times()));
+    }
+    if (container.has_report_boot_mode()) {
+      policies->Set(key::kReportDeviceBootMode, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateBooleanValue(container.report_boot_mode()));
+    }
+  }
+
+  if (policy.has_ephemeral_users_enabled()) {
+    const em::EphemeralUsersEnabledProto& container(
+        policy.ephemeral_users_enabled());
+    if (container.has_ephemeral_users_enabled()) {
+      policies->Set(key::kDeviceEphemeralUsersEnabled, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateBooleanValue(
+                        container.ephemeral_users_enabled()));
+    }
   }
 }
 
