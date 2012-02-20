@@ -90,9 +90,16 @@ cr.define('login', function() {
         // is reduced. See http://crosbug.com/11116 http://crosbug.com/18307
         // $('pod-row').startInitAnimation();
 
+        // Delay the accountPickerReady signal so that if there are any
+        // timeouts waiting to fire we can process these first. This was
+        // causing crbug.com/112218 as the account pod was sometimes focused
+        // using focusPod (which resets the password) after the test code set
+        // the password.
         // TODO(altimofeev): Call it after animation has stoped when animation
         // is enabled.
-        chrome.send('accountPickerReady', []);
+        window.setTimeout(function() {
+              chrome.send('accountPickerReady', []);
+            }, 0);
       }
     },
 
