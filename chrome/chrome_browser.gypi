@@ -1652,6 +1652,7 @@
         'browser/media/media_internals.h',
         'browser/memory_details.cc',
         'browser/memory_details.h',
+        'browser/memory_details_android.cc',
         'browser/memory_details_linux.cc',
         'browser/memory_details_mac.cc',
         'browser/memory_details_win.cc',
