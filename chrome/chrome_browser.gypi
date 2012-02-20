@@ -571,8 +571,6 @@
         'browser/chromeos/login/client_login_response_handler.h',
         'browser/chromeos/login/cookie_fetcher.cc',
         'browser/chromeos/login/cookie_fetcher.h',
-        'browser/chromeos/login/cryptohome_op.cc',
-        'browser/chromeos/login/cryptohome_op.h',
         'browser/chromeos/login/default_user_images.cc',
         'browser/chromeos/login/default_user_images.h',
         'browser/chromeos/login/enrollment/enterprise_enrollment_screen.cc',

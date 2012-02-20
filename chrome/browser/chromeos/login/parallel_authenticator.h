@@ -7,39 +7,24 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/gtest_prod_util.h"
-#include "base/memory/ref_counted.h"
+#include "base/synchronization/lock.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/auth_attempt_state.h"
 #include "chrome/browser/chromeos/login/auth_attempt_state_resolver.h"
 #include "chrome/browser/chromeos/login/test_attempt_state.h"
-#include "chrome/browser/chromeos/login/cryptohome_op.h"
 #include "chrome/browser/chromeos/login/online_attempt.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 
-class GaiaAuthFetcher;
 class LoginFailure;
 class Profile;
-
-namespace base {
-class Lock;
-}
-
-namespace crypto {
-class SymmetricKey;
-}
 
 namespace chromeos {
 
 class LoginStatusConsumer;
-class ParallelAuthenticator;
 class ResolveChecker;
 
 // Authenticates a Chromium OS user against the Google Accounts ClientLogin API.
@@ -47,15 +32,15 @@ class ResolveChecker;
 // Simultaneously attempts authentication both offline and online.
 //
 // At a high, level, here's what happens:
-// AuthenticateToLogin() creates an OnlineAttempt and a CryptohomeOp that
-// attempt to perform online and offline login simultaneously.  When one of
+// AuthenticateToLogin() creates an OnlineAttempt and calls a Cryptohome's
+// method to perform online and offline login simultaneously.  When one of
 // these completes, it will store results in a AuthAttemptState owned by
 // ParallelAuthenticator and then call Resolve().  Resolve() will attempt to
 // determine which AuthState we're in, based on the info at hand.
 // It then triggers further action based on the calculated AuthState; this
 // further action might include calling back the passed-in LoginStatusConsumer
 // to signal that login succeeded or failed, waiting for more outstanding
-// operations to complete, or triggering some more CryptohomeOps.
+// operations to complete, or triggering some more Cryptohome method calls.
 class ParallelAuthenticator : public Authenticator,
                               public AuthAttemptStateResolver {
  public:
@@ -206,11 +191,6 @@ class ParallelAuthenticator : public Authenticator,
     current_online_ = attempt;
   }
 
-  // Resets |current_state_| and then posts a task to the UI thread to
-  // Initiate() |to_initiate|.
-  // Call this method on the IO thread.
-  void ResyncRecoverHelper(CryptohomeOp* to_initiate);
-
   // If we don't have the system salt yet, loads it from the CryptohomeLibrary.
   void LoadSystemSalt();
   // If we don't have supplemental_user_key_ yet, loads it from the NSS DB.
@@ -224,23 +204,16 @@ class ParallelAuthenticator : public Authenticator,
   // an external authentication provider (i.e. GAIA extension).
   void ResolveLoginCompletionStatus();
 
-  // Milliseconds until we timeout our attempt to hit ClientLogin.
-  static const int kClientLoginTimeoutMs;
-
-  // Handles all net communications with Gaia.
-  scoped_ptr<GaiaAuthFetcher> gaia_authenticator_;
-
   // Used when we need to try online authentication again, after successful
   // mount, but failed online login.
   scoped_ptr<AuthAttemptState> reauth_state_;
 
   scoped_ptr<AuthAttemptState> current_state_;
   scoped_refptr<OnlineAttempt> current_online_;
-  scoped_refptr<CryptohomeOp> mounter_;
-  scoped_refptr<CryptohomeOp> key_migrator_;
-  scoped_refptr<CryptohomeOp> data_remover_;
-  scoped_refptr<CryptohomeOp> guest_mounter_;
-  scoped_refptr<CryptohomeOp> key_checker_;
+  bool migrate_attempted_;
+  bool remove_attempted_;
+  bool mount_guest_attempted_;
+  bool check_key_attempted_;
 
   // When the user has changed her password, but gives us the old one, we will
   // be able to mount her cryptohome, but online authentication will fail.

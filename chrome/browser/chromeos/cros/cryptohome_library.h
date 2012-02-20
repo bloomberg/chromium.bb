@@ -8,18 +8,18 @@
 
 #include <string>
 
+#include "base/callback.h"
+
 namespace chromeos {
 
 // This interface defines the interaction with the ChromeOS cryptohome library
 // APIs.
 class CryptohomeLibrary {
  public:
-  class Delegate {
-   public:
-    // This will be called back on the UI thread.  Consult |return_code| for
-    // further information beyond mere success or failure.
-    virtual void OnComplete(bool success, int return_code) = 0;
-  };
+  // A callback type which is called back on the UI thread when the results of
+  // AsyncXXX methods are ready.
+  typedef base::Callback<void(bool success, int return_code)
+                         > AsyncMethodCallback;
 
   CryptohomeLibrary();
   virtual ~CryptohomeLibrary();
@@ -30,7 +30,7 @@ class CryptohomeLibrary {
   // callback->OnComplete() will be called with status info on completion.
   virtual void AsyncCheckKey(const std::string& user_email,
                              const std::string& passhash,
-                             Delegate* callback) = 0;
+                             AsyncMethodCallback callback) = 0;
 
   // Asks cryptohomed to asynchronously try to find the cryptohome for
   // |user_email| and then change from using |old_hash| to lock the
@@ -40,7 +40,7 @@ class CryptohomeLibrary {
   virtual void AsyncMigrateKey(const std::string& user_email,
                                const std::string& old_hash,
                                const std::string& new_hash,
-                               Delegate* callback) = 0;
+                               AsyncMethodCallback callback) = 0;
 
   // Asks cryptohomed to asynchronously try to find the cryptohome for
   // |user_email| and then mount it using |passhash| to unlock the key.
@@ -55,17 +55,17 @@ class CryptohomeLibrary {
   virtual void AsyncMount(const std::string& user_email,
                           const std::string& passhash,
                           const bool create_if_missing,
-                          Delegate* callback) = 0;
+                          AsyncMethodCallback callback) = 0;
 
   // Asks cryptohomed to asynchronously to mount a tmpfs for guest mode.
   // Returns true if the attempt is successfully initiated.
   // callback->OnComplete() will be called with status info on completion.
-  virtual void AsyncMountGuest(Delegate* callback) = 0;
+  virtual void AsyncMountGuest(AsyncMethodCallback callback) = 0;
 
   // Asks cryptohomed to asynchronously try to find the cryptohome for
   // |user_email| and then nuke it.
   virtual void AsyncRemove(const std::string& user_email,
-                           Delegate* callback) = 0;
+                           AsyncMethodCallback callback) = 0;
 
   // Asks cryptohomed if a drive is currently mounted.
   virtual bool IsMounted() = 0;

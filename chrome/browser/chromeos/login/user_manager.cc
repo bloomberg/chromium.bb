@@ -150,74 +150,47 @@ void AddProfileImageTimeHistogram(ProfileDownloadResult result,
   DVLOG(1) << "Profile image download time: " << time_delta.InSecondsF();
 }
 
-// Used to handle the asynchronous response of deleting a cryptohome directory.
-class RemoveAttempt : public CryptohomeLibrary::Delegate {
- public:
-  // Creates new remove attempt for the given user. Note, |delegate| can
-  // be NULL.
-  RemoveAttempt(const std::string& user_email,
-                chromeos::RemoveUserDelegate* delegate)
-      : user_email_(user_email),
-        delegate_(delegate),
-        weak_factory_(this) {
-    RemoveUser();
+// Callback that is called after user removal is complete.
+void OnRemoveUserComplete(const std::string& user_email,
+                          bool success,
+                          int return_code) {
+  // Log the error, but there's not much we can do.
+  if (!success) {
+    LOG(ERROR) << "Removal of cryptohome for " << user_email
+               << " failed, return code: " << return_code;
   }
+}
 
-  virtual ~RemoveAttempt() {}
+// This method is used to implement UserManager::RemoveUser.
+void RemoveUserInternal(const std::string& user_email,
+                        chromeos::RemoveUserDelegate* delegate) {
+  CrosSettings* cros_settings = CrosSettings::Get();
 
-  void RemoveUser() {
+  // Ensure the value of owner email has been fetched.
+  if (!cros_settings->GetTrusted(
+          kDeviceOwner,
+          base::Bind(&RemoveUserInternal, user_email, delegate))) {
+    // Value of owner email is not fetched yet.  RemoveUserInternal will be
+    // called again after fetch completion.
+    return;
+  }
+  std::string owner;
+  cros_settings->GetString(kDeviceOwner, &owner);
+  if (user_email == owner) {
     // Owner is not allowed to be removed from the device.
-    // Must not proceed without signature verification.
-    CrosSettings* cros_settings = CrosSettings::Get();
-    bool trusted_owner_available = cros_settings->GetTrusted(
-        kDeviceOwner,
-        base::Bind(&RemoveAttempt::RemoveUser, weak_factory_.GetWeakPtr()));
-    if (!trusted_owner_available) {
-      // Value of owner email is still not verified.
-      // Another attempt will be invoked after verification completion.
-      return;
-    }
-    std::string owner;
-    cros_settings->GetString(kDeviceOwner, &owner);
-    if (user_email_ == owner) {
-      // Owner is not allowed to be removed from the device. Probably on
-      // the stack, so deffer the deletion.
-      MessageLoop::current()->DeleteSoon(FROM_HERE, this);
-      return;
-    }
-
-    if (delegate_)
-      delegate_->OnBeforeUserRemoved(user_email_);
-
-    chromeos::UserManager::Get()->RemoveUserFromList(user_email_);
-    RemoveUserCryptohome();
-
-    if (delegate_)
-      delegate_->OnUserRemoved(user_email_);
+    return;
   }
 
-  void RemoveUserCryptohome() {
-    CrosLibrary::Get()->GetCryptohomeLibrary()->AsyncRemove(user_email_, this);
-  }
+  if (delegate)
+    delegate->OnBeforeUserRemoved(user_email);
 
-  void OnComplete(bool success, int return_code) {
-    // Log the error, but there's not much we can do.
-    if (!success) {
-      VLOG(1) << "Removal of cryptohome for " << user_email_
-              << " failed, return code: " << return_code;
-    }
-    delete this;
-  }
+  chromeos::UserManager::Get()->RemoveUserFromList(user_email);
+  CrosLibrary::Get()->GetCryptohomeLibrary()->AsyncRemove(
+      user_email, base::Bind(&OnRemoveUserComplete, user_email));
 
- private:
-  std::string user_email_;
-  chromeos::RemoveUserDelegate* delegate_;
-
-  // Factory of callbacks.
-  base::WeakPtrFactory<RemoveAttempt> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(RemoveAttempt);
-};
+  if (delegate)
+    delegate->OnUserRemoved(user_email);
+}
 
 class RealTPMTokenInfoDelegate : public crypto::TPMTokenInfoDelegate {
  public:
@@ -392,8 +365,7 @@ void UserManager::RemoveUser(const std::string& email,
   if (logged_in_user_ && logged_in_user_->email() == email)
     return;
 
-  // |RemoveAttempt| deletes itself when done.
-  new RemoveAttempt(email, delegate);
+  RemoveUserInternal(email, delegate);
 }
 
 void UserManager::RemoveUserFromList(const std::string& email) {

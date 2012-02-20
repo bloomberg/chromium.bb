@@ -45,7 +45,7 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
 
   virtual void AsyncCheckKey(const std::string& user_email,
                              const std::string& passhash,
-                             Delegate* callback) OVERRIDE {
+                             AsyncMethodCallback callback) OVERRIDE {
     DBusThreadManager::Get()->GetCryptohomeClient()->
         AsyncCheckKey(user_email, passhash, base::Bind(
             &CryptohomeLibraryImpl::RegisterAsyncCallback,
@@ -57,7 +57,7 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
   virtual void AsyncMigrateKey(const std::string& user_email,
                        const std::string& old_hash,
                        const std::string& new_hash,
-                       Delegate* callback) OVERRIDE {
+                       AsyncMethodCallback callback) OVERRIDE {
     DBusThreadManager::Get()->GetCryptohomeClient()->
         AsyncMigrateKey(user_email, old_hash, new_hash, base::Bind(
             &CryptohomeLibraryImpl::RegisterAsyncCallback,
@@ -69,7 +69,7 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
   virtual void AsyncMount(const std::string& user_email,
                           const std::string& passhash,
                           const bool create_if_missing,
-                          Delegate* callback) OVERRIDE {
+                          AsyncMethodCallback callback) OVERRIDE {
     DBusThreadManager::Get()->GetCryptohomeClient()->
         AsyncMount(user_email, passhash, create_if_missing, base::Bind(
             &CryptohomeLibraryImpl::RegisterAsyncCallback,
@@ -78,7 +78,7 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
             "Couldn't initiate async mount of cryptohome."));
   }
 
-  virtual void AsyncMountGuest(Delegate* callback) OVERRIDE {
+  virtual void AsyncMountGuest(AsyncMethodCallback callback) OVERRIDE {
     DBusThreadManager::Get()->GetCryptohomeClient()->
         AsyncMountGuest(base::Bind(
             &CryptohomeLibraryImpl::RegisterAsyncCallback,
@@ -88,7 +88,7 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
   }
 
   virtual void AsyncRemove(
-      const std::string& user_email, Delegate* callback) OVERRIDE {
+      const std::string& user_email, AsyncMethodCallback callback) OVERRIDE {
     DBusThreadManager::Get()->GetCryptohomeClient()->
         AsyncRemove(user_email, base::Bind(
             &CryptohomeLibraryImpl::RegisterAsyncCallback,
@@ -228,7 +228,7 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
   }
 
  private:
-  typedef base::hash_map<int, Delegate*> CallbackMap;
+  typedef base::hash_map<int, AsyncMethodCallback> CallbackMap;
 
   // Hanldes the response for async calls.
   // Below is described how async calls work.
@@ -240,18 +240,17 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
   // 4. "HandleAsyncResponse" handles the result signal and call the registered
   //    callback associated with the "async ID".
   void HandleAsyncResponse(int async_id, bool return_status, int return_code) {
-    const CallbackMap::iterator callback = callback_map_.find(async_id);
-    if (callback == callback_map_.end()) {
+    const CallbackMap::iterator it = callback_map_.find(async_id);
+    if (it == callback_map_.end()) {
       LOG(ERROR) << "Received signal for unknown async_id " << async_id;
       return;
     }
-    if (callback->second)
-      callback->second->OnComplete(return_status, return_code);
-    callback_map_.erase(callback);
+    it->second.Run(return_status, return_code);
+    callback_map_.erase(it);
   }
 
   // Registers a callback which is called when the result for AsyncXXX is ready.
-  void RegisterAsyncCallback(Delegate* callback,
+  void RegisterAsyncCallback(AsyncMethodCallback callback,
                              const char* error,
                              int async_id) {
     if (async_id == 0) {
@@ -287,7 +286,7 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
 
   virtual void AsyncCheckKey(const std::string& user_email,
                              const std::string& passhash,
-                             Delegate* callback) OVERRIDE {
+                             AsyncMethodCallback callback) OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&DoStubCallback, callback));
@@ -296,7 +295,7 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
   virtual void AsyncMigrateKey(const std::string& user_email,
                                const std::string& old_hash,
                                const std::string& new_hash,
-                               Delegate* callback) OVERRIDE {
+                               AsyncMethodCallback callback) OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&DoStubCallback, callback));
@@ -305,19 +304,19 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
   virtual void AsyncMount(const std::string& user_email,
                           const std::string& passhash,
                           const bool create_if_missing,
-                          Delegate* callback) OVERRIDE {
+                          AsyncMethodCallback callback) OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&DoStubCallback, callback));
   }
 
-  virtual void AsyncMountGuest(Delegate* callback) OVERRIDE {
+  virtual void AsyncMountGuest(AsyncMethodCallback callback) OVERRIDE {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::Bind(&DoStubCallback, callback));
   }
 
   virtual void AsyncRemove(
-      const std::string& user_email, Delegate* callback) OVERRIDE {
+      const std::string& user_email, AsyncMethodCallback callback) OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&DoStubCallback, callback));
@@ -387,7 +386,7 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
   }
 
   virtual void Pkcs11GetTpmTokenInfo(std::string* label,
-                             std::string* user_pin) OVERRIDE {
+                                     std::string* user_pin) OVERRIDE {
     *label = "Stub TPM Token";
     *user_pin = "012345";
   }
@@ -405,9 +404,8 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
   }
 
  private:
-  static void DoStubCallback(Delegate* callback) {
-    if (callback)
-      callback->OnComplete(true, cryptohome::MOUNT_ERROR_NONE);
+  static void DoStubCallback(AsyncMethodCallback callback) {
+    callback.Run(true, cryptohome::MOUNT_ERROR_NONE);
   }
 
   std::map<std::string, std::string> install_attrs_;

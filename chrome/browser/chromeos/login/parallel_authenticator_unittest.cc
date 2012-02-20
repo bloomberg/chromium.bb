@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/login/parallel_authenticator.h"
 
 #include <string>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/file_path.h"
@@ -16,9 +15,9 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/test/thread_test_helper.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_library_loader.h"
-#include "chrome/browser/chromeos/login/mock_auth_response_handler.h"
 #include "chrome/browser/chromeos/login/mock_login_status_consumer.h"
 #include "chrome/browser/chromeos/login/mock_url_fetchers.h"
 #include "chrome/browser/chromeos/login/test_attempt_state.h"

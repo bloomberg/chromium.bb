@@ -27,18 +27,18 @@ class MockCryptohomeLibrary : public CryptohomeLibrary {
 
   MOCK_METHOD3(AsyncCheckKey, void(const std::string& user_email,
                                    const std::string& passhash,
-                                   Delegate* callback));
+                                   AsyncMethodCallback callback));
   MOCK_METHOD4(AsyncMigrateKey, void(const std::string& user_email,
                                      const std::string& old_hash,
                                      const std::string& new_hash,
-                                     Delegate* callback));
+                                     AsyncMethodCallback callback));
   MOCK_METHOD4(AsyncMount, void(const std::string& user_email,
                                 const std::string& passhash,
                                 const bool create_if_missing,
-                                Delegate* callback));
-  MOCK_METHOD1(AsyncMountGuest, void(Delegate* callback));
+                                AsyncMethodCallback callback));
+  MOCK_METHOD1(AsyncMountGuest, void(AsyncMethodCallback callback));
   MOCK_METHOD2(AsyncRemove, void(const std::string& user_email,
-                                 Delegate* callback));
+                                 AsyncMethodCallback callback));
   MOCK_METHOD0(IsMounted, bool(void));
   MOCK_METHOD1(HashPassword, std::string(const std::string& password));
   MOCK_METHOD0(GetSystemSalt, std::string(void));
@@ -66,8 +66,8 @@ class MockCryptohomeLibrary : public CryptohomeLibrary {
     code_ = code;
   }
 
-  void DoCallback(Delegate* d) {
-    d->OnComplete(outcome_, code_);
+  void DoCallback(AsyncMethodCallback callback) {
+    callback.Run(outcome_, code_);
   }
 
  private:
