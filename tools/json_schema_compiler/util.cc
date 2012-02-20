@@ -47,7 +47,7 @@ void AddItemToList(const double from, base::ListValue* out) {
 void AddItemToList(const std::string& from, base::ListValue* out) {
   out->Append(base::Value::CreateStringValue(from));
 }
-void AddItemToList(const linked_ptr<base::DictionaryValue> from,
+void AddItemToList(const linked_ptr<base::DictionaryValue>& from,
     base::ListValue* out) {
   out->Append(static_cast<Value*>(from->DeepCopy()));
 }
