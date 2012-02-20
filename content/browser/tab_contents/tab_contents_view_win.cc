@@ -11,7 +11,6 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 
-using content::RenderWidgetHostView;
 using content::WebContents;
 
 namespace {

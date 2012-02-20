@@ -31,11 +31,11 @@
 class Browser;
 class Extension;
 class PrefsTabHelper;
+class RenderWidgetHostView;
 struct WebPreferences;
 
 namespace content {
 class RenderProcessHost;
-class RenderWidgetHostView;
 class SiteInstance;
 }
 

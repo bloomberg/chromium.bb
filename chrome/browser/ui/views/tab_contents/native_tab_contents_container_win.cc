@@ -7,7 +7,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
-#include "content/public/browser/render_widget_host_view.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/views/focus/focus_manager.h"
@@ -148,8 +148,7 @@ gfx::NativeViewAccessible
     NativeTabContentsContainerWin::GetNativeViewAccessible() {
   WebContents* web_contents = container_->web_contents();
   if (web_contents) {
-    content::RenderWidgetHostView* host_view =
-        web_contents->GetRenderWidgetHostView();
+    RenderWidgetHostView* host_view = web_contents->GetRenderWidgetHostView();
     if (host_view)
       return host_view->GetNativeViewAccessible();
   }

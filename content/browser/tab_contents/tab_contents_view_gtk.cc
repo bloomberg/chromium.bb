@@ -30,7 +30,6 @@
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
-using content::RenderWidgetHostView;
 using content::WebContents;
 
 namespace {

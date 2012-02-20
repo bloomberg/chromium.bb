@@ -104,7 +104,7 @@ TEST_F(RenderWidgetHostViewMacEditCommandHelperTest,
   // RenderWidgetHostViewMac self destructs (RenderWidgetHostViewMacCocoa
   // takes ownership) so no need to delete it ourselves.
   RenderWidgetHostViewMac* rwhvm = static_cast<RenderWidgetHostViewMac*>(
-      content::RenderWidgetHostView::CreateViewForWidget(&render_widget));
+      RenderWidgetHostView::CreateViewForWidget(&render_widget));
 
   RenderWidgetHostViewMacOwner* rwhwvm_owner =
       [[[RenderWidgetHostViewMacOwner alloc]

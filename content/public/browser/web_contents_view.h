@@ -17,11 +17,10 @@
 
 class RenderViewHost;
 class RenderWidgetHost;
+class RenderWidgetHostView;
 class TabContents;
 
 namespace content {
-
-class RenderWidgetHostView;
 
 // The WebContentsView is an interface that is implemented by the platform-
 // dependent web contents views. The TabContents uses this interface to talk to

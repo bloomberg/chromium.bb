@@ -21,10 +21,10 @@
 #include "content/browser/renderer_host/backing_store_manager.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
-#include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -153,7 +153,7 @@ RenderWidgetHost::~RenderWidgetHost() {
   process_->Release(routing_id_);
 }
 
-void RenderWidgetHost::SetView(content::RenderWidgetHostView* view) {
+void RenderWidgetHost::SetView(RenderWidgetHostView* view) {
   view_ = RenderWidgetHostViewPort::FromRWHV(view);
 
   if (!view_) {
@@ -162,7 +162,7 @@ void RenderWidgetHost::SetView(content::RenderWidgetHostView* view) {
   }
 }
 
-content::RenderWidgetHostView* RenderWidgetHost::view() const {
+RenderWidgetHostView* RenderWidgetHost::view() const {
   return view_;
 }
 

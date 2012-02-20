@@ -10,7 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "content/public/browser/render_widget_host_view.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/context_menu_params.h"
 #include "grit/generated_resources.h"
@@ -76,7 +76,7 @@ GtkWidget* GetMenuItemByID(ui::MenuModel* model,
 RenderViewContextMenuGtk::RenderViewContextMenuGtk(
     WebContents* web_contents,
     const content::ContextMenuParams& params,
-    content::RenderWidgetHostView* view)
+    RenderWidgetHostView* view)
     : RenderViewContextMenu(web_contents, params) {
   GdkEventButton* event = view->GetLastMouseDown();
   triggering_event_time_ = event ? event->time : GDK_CURRENT_TIME;
@@ -89,7 +89,7 @@ void RenderViewContextMenuGtk::PlatformInit() {
   menu_gtk_.reset(new MenuGtk(this, &menu_model_));
 
   if (params_.is_editable) {
-    content::RenderWidgetHostView* rwhv =
+    RenderWidgetHostView* rwhv =
         source_web_contents_->GetRenderWidgetHostView();
 #if !defined(TOOLKIT_VIEWS)
     if (rwhv) {

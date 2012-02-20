@@ -8,7 +8,7 @@
 #include "chrome/browser/tab_contents/render_view_context_menu_mac.h"
 #include "chrome/browser/tab_contents/web_drag_bookmark_handler_mac.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
-#include "content/public/browser/render_widget_host_view.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 
 namespace chrome_web_contents_view_mac_delegate {
@@ -47,8 +47,7 @@ void ChromeWebContentsViewMacDelegate::ShowContextMenu(
   // the second mouse event arrives. In this case, |ShowContextMenu()| will
   // get called multiple times - if so, don't create another context menu.
   // TODO(asvitkine): Fix the renderer so that it doesn't do this.
-  content::RenderWidgetHostView* widget_view =
-      web_contents_->GetRenderWidgetHostView();
+  RenderWidgetHostView* widget_view = web_contents_->GetRenderWidgetHostView();
   if (widget_view && widget_view->IsShowingContextMenu())
     return;
 

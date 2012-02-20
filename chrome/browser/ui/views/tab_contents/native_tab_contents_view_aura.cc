@@ -11,7 +11,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_delegate.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/public/browser/render_widget_host_view.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "ui/aura/client/drag_drop_client.h"
@@ -26,7 +26,6 @@
 #include "ui/views/widget/widget.h"
 #include "webkit/glue/webdropdata.h"
 
-using content::RenderWidgetHostView;
 using content::WebContents;
 
 namespace {

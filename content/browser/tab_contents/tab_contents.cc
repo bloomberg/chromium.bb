@@ -26,6 +26,7 @@
 #include "content/browser/load_notification_details.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_request_details.h"
 #include "content/browser/site_instance_impl.h"
@@ -37,7 +38,6 @@
 #include "content/common/intents_messages.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
-#include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
@@ -122,7 +122,6 @@ using content::NavigationEntry;
 using content::NavigationEntryImpl;
 using content::OpenURLParams;
 using content::RenderViewHostDelegate;
-using content::RenderWidgetHostView;
 using content::RenderWidgetHostViewPort;
 using content::SiteInstance;
 using content::SSLStatus;

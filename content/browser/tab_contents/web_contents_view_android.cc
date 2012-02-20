@@ -20,7 +20,7 @@ void WebContentsViewAndroid::CreateView(const gfx::Size& initial_size) {
   NOTIMPLEMENTED();
 }
 
-content::RenderWidgetHostView* WebContentsViewAndroid::CreateViewForWidget(
+RenderWidgetHostView* WebContentsViewAndroid::CreateViewForWidget(
     RenderWidgetHost* render_widget_host) {
   NOTIMPLEMENTED();
   return NULL;

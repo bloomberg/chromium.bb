@@ -430,8 +430,8 @@ TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
 // Tests setting custom background
 TEST_F(RenderWidgetHostTest, Background) {
 #if !defined(OS_MACOSX)
-  scoped_ptr<content::RenderWidgetHostView> view(
-      content::RenderWidgetHostView::CreateViewForWidget(host_.get()));
+  scoped_ptr<RenderWidgetHostView> view(
+      RenderWidgetHostView::CreateViewForWidget(host_.get()));
 #if defined(USE_AURA)
   // TODO(derat): Call this on all platforms: http://crbug.com/102450.
   static_cast<RenderWidgetHostViewAura*>(view.get())->InitAsChild(NULL);

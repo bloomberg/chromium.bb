@@ -50,7 +50,6 @@
 #include "webkit/plugins/npapi/webplugin.h"
 
 using content::BrowserThread;
-using content::RenderWidgetHostView;
 using WebKit::WebInputEvent;
 using WebKit::WebInputEventFactory;
 using WebKit::WebMouseEvent;

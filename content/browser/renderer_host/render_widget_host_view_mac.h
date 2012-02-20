@@ -14,7 +14,7 @@
 #include "base/time.h"
 #include "content/browser/accessibility/browser_accessibility_delegate_mac.h"
 #include "content/browser/renderer_host/accelerated_surface_container_manager_mac.h"
-#include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/common/edit_command.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "ui/base/cocoa/base_view.h"
@@ -189,10 +189,10 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
 
   // Implementation of RenderWidgetHostViewPort.
-  virtual void InitAsPopup(content::RenderWidgetHostView* parent_host_view,
+  virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& pos) OVERRIDE;
   virtual void InitAsFullscreen(
-      content::RenderWidgetHostView* reference_host_view) OVERRIDE;
+      RenderWidgetHostView* reference_host_view) OVERRIDE;
   virtual void DidBecomeSelected() OVERRIDE;
   virtual void WasHidden() OVERRIDE;
   virtual void MovePluginWindows(
@@ -346,7 +346,7 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
   AcceleratedSurfaceContainerManagerMac plugin_container_manager_;
 
  private:
-  friend class content::RenderWidgetHostView;
+  friend class RenderWidgetHostView;
 
   // The view will associate itself with the given widget. The native view must
   // be hooked up immediately to the view hierarchy, or else when it is

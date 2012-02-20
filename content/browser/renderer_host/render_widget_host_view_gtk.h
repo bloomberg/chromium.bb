@@ -13,7 +13,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
-#include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/common/content_export.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
@@ -70,10 +70,10 @@ class RenderWidgetHostViewGtk : public content::RenderWidgetHostViewBase {
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
 
   // RenderWidgetHostViewPort implementation.
-  virtual void InitAsPopup(content::RenderWidgetHostView* parent_host_view,
+  virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& pos) OVERRIDE;
   virtual void InitAsFullscreen(
-      content::RenderWidgetHostView* reference_host_view) OVERRIDE;
+      RenderWidgetHostView* reference_host_view) OVERRIDE;
   virtual void DidBecomeSelected() OVERRIDE;
   virtual void WasHidden() OVERRIDE;
   virtual void MovePluginWindows(
@@ -144,7 +144,7 @@ class RenderWidgetHostViewGtk : public content::RenderWidgetHostViewBase {
   bool RetrieveSurrounding(std::string* text, size_t* cursor_index);
 
  protected:
-  friend class content::RenderWidgetHostView;
+  friend class RenderWidgetHostView;
 
   // Should construct only via RenderWidgetHostView::CreateViewForWidget.
   explicit RenderWidgetHostViewGtk(RenderWidgetHost* widget);

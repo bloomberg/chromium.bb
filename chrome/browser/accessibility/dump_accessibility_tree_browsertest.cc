@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,9 +15,9 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -76,7 +76,7 @@ class DumpAccessibilityTreeTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        PlatformTreeDifferenceTest) {
-  content::RenderWidgetHostView* host_view =
+  RenderWidgetHostView* host_view =
       browser()->GetSelectedWebContents()->GetRenderWidgetHostView();
   RenderWidgetHost* host = host_view->GetRenderWidgetHost();
   RenderViewHost* view_host = static_cast<RenderViewHost*>(host);

@@ -52,7 +52,7 @@ class CONTENT_EXPORT TabContentsViewGtk : public WebContentsView {
   // WebContentsView implementation --------------------------------------------
 
   virtual void CreateView(const gfx::Size& initial_size) OVERRIDE;
-  virtual content::RenderWidgetHostView* CreateViewForWidget(
+  virtual RenderWidgetHostView* CreateViewForWidget(
       RenderWidgetHost* render_widget_host) OVERRIDE;
 
   virtual gfx::NativeView GetNativeView() const OVERRIDE;

@@ -135,8 +135,7 @@ class CONTENT_EXPORT TabContents
   virtual content::ViewType GetViewType() const OVERRIDE;
   virtual content::RenderProcessHost* GetRenderProcessHost() const OVERRIDE;
   virtual RenderViewHost* GetRenderViewHost() const OVERRIDE;
-  virtual content::RenderWidgetHostView*
-      GetRenderWidgetHostView() const OVERRIDE;
+  virtual RenderWidgetHostView* GetRenderWidgetHostView() const OVERRIDE;
   virtual content::WebContentsView* GetView() const OVERRIDE;
   virtual content::WebUI* CreateWebUI(const GURL& url) OVERRIDE;
   virtual content::WebUI* GetWebUI() const OVERRIDE;

@@ -11,12 +11,12 @@
 #include "content/browser/debugger/devtools_manager_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/tab_contents/navigation_controller_impl.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/view_messages.h"
-#include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -30,7 +30,6 @@
 using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
-using content::RenderWidgetHostView;
 using content::RenderWidgetHostViewPort;
 using content::SiteInstance;
 using content::WebUIControllerFactory;

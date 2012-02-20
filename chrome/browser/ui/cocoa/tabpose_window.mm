@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/backing_store_mac.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/public/browser/render_widget_host_view.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
@@ -287,7 +287,7 @@ void ThumbnailLoader::LoadThumbnail() {
 - (void)drawInContext:(CGContextRef)context {
   RenderWidgetHost* rwh = contents_->web_contents()->GetRenderViewHost();
   // NULL if renderer crashed.
-  content::RenderWidgetHostView* rwhv = rwh ? rwh->view() : NULL;
+  RenderWidgetHostView* rwhv = rwh ? rwh->view() : NULL;
   if (!rwhv) {
     // TODO(thakis): Maybe draw a sad tab layer?
     [super drawInContext:context];

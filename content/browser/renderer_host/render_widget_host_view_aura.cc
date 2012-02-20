@@ -35,7 +35,6 @@
 #include "content/browser/renderer_host/image_transport_client.h"
 #endif
 
-using content::RenderWidgetHostView;
 using WebKit::WebTouchEvent;
 
 namespace {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/browser/render_widget_host_view.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
 
 #include "base/logging.h"
 
@@ -16,7 +16,7 @@ void content::RenderWidgetHostViewPort::GetDefaultScreenInfo(
 // RenderWidgetHostView, public:
 
 // static
-content::RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
+RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
     RenderWidgetHost* widget) {
   NOTIMPLEMENTED();
   return NULL;
