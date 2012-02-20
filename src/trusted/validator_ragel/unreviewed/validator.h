@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -15,44 +15,52 @@ extern "C" {
 #endif
 
 enum operand_type {
-  /* OperandSize8bit and OperandSize16bit don't affect sandboxing state of the
-     register: it may become different, but top half does not change it's value.
-     R15 can not be used even with these operands.  */
-  OperandNoSandboxEffect,
+  /*
+   * OperandSize8bit and OperandSize16bit don't affect sandboxing state of the
+   * register: it may become different, but top half does not change it's value.
+   * R15 can not be used even with these operands.
+   */
+  /* OperandNoSandboxEffect = 0 ,*/
+  /*
+   * Currently we do not distinguish 8bit and 16bit modifications from
+   * OperandSandboxUnrestricted to match the behavior of the old validator.
+   */
   OperandSize8bit = 0,
   OperandSize16bit = 0,
   /* If we store to 32bit register then it's restricted.  */
   OperandSandboxRestricted = 1,
   OperandSize32bit = 1,
   /* If we store to the 64bit register then it's unrestricted.  */
-  OperandSandboxUnrestricted = 2,
-  OperandSize64bit = 2,
-  /* All other combinations work with specialized registers, or can not actually
-     happen at all (for example they describe operand encoded in an instruction.  */
-  OperandSandboxIrrelevant = 3,
-  OperandSize2bit = 3,
-  OperandSize128bit = 3,
-  OperandSize256bit = 3,
-  OperandFloatSize16bit = 3,
-  OperandFloatSize32bit = 3,
-  OperandFloatSize64bit = 3,
-  OperandFloatSize80bit = 3,
-  OperandX87Size16bit = 3,
-  OperandX87Size32bit = 3,
-  OperandX87Size64bit = 3,
-  OperandX87BCD = 3,
-  OperandX87ENV = 3,
-  OperandX87STATE = 3,
-  OperandX87MMXXMMSTATE = 3,
-  OperandST = 3,
-  OperandSelector = 3,
-  OperandFarPtr = 3,
-  OperandSegmentRegister = 3,
-  OperandControlRegister = 3,
-  OperandDebugRegister = 3,
-  OperandMMX = 3,
-  OperandXMM = 3,
-  OperandYMM = 3
+  OperandSandboxUnrestricted = 0,
+  OperandSize64bit = 0,
+  /*
+   * All other combinations work with specialized registers, or can not actually
+   * happen at all (for example they describe operand encoded in an instruction.
+   */
+  OperandSandboxIrrelevant = 2,
+  OperandSize2bit = 2,
+  OperandSize128bit = 2,
+  OperandSize256bit = 2,
+  OperandFloatSize16bit = 2,
+  OperandFloatSize32bit = 2,
+  OperandFloatSize64bit = 2,
+  OperandFloatSize80bit = 2,
+  OperandX87Size16bit = 2,
+  OperandX87Size32bit = 2,
+  OperandX87Size64bit = 2,
+  OperandX87BCD = 2,
+  OperandX87ENV = 2,
+  OperandX87STATE = 2,
+  OperandX87MMXXMMSTATE = 2,
+  OperandST = 2,
+  OperandSelector = 2,
+  OperandFarPtr = 2,
+  OperandSegmentRegister = 2,
+  OperandControlRegister = 2,
+  OperandDebugRegister = 2,
+  OperandMMX = 2,
+  OperandXMM = 2,
+  OperandYMM = 2
 };
 
 enum register_name {

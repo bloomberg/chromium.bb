@@ -152,12 +152,6 @@ static void PrintError(const char* msg, uintptr_t ptr) {
               result = 1;
               goto error_detected;
             }
-          } else if (operands[i].type == OperandNoSandboxEffect) {
-            if (operands[i].name == REG_R15) {
-              PrintError("Incorrectly modified register %%r15\n", begin - data);
-              result = 1;
-              goto error_detected;
-            }
           }
         }
       }
