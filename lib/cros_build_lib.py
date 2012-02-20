@@ -116,10 +116,6 @@ def SudoRunCommand(cmd, **kwds):
     Barring that, see RunCommand's documentation- it can raise the same things
     RunCommand does.
   """
-  if kwds.pop('enter_chroot', False):
-    raise ValueError("SudoRunCommand should not be used with enter_chroot. "
-                     "You should be using RunCommand instead.")
-
   sudo_mode = []
   if kwds.pop("strict", True) and STRICT_SUDO:
     if 'CROS_SUDO_KEEP_ALIVE' not in os.environ:
