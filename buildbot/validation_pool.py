@@ -111,7 +111,8 @@ class ValidationPool(object):
     to 0.
     """
     state_field = 'general_state'
-    sleep_timeout = 30
+    # Limit sleep interval to the set of 1-30
+    sleep_timeout = min(max(max_timeout/5, 1), 30)
 
     def _SleepWithExponentialBackOff(current_sleep):
       """Helper function to sleep with exponential backoff."""
