@@ -1119,8 +1119,6 @@ surface_attach(struct wl_client *client,
 	if (!buffer_resource && !es->output)
 		return;
 
-	weston_surface_damage_below(es);
-
 	if (es->buffer) {
 		weston_buffer_post_release(es->buffer);
 		wl_list_remove(&es->buffer_destroy_listener.link);
@@ -1683,9 +1681,6 @@ input_device_attach(struct wl_client *client,
 		return;
 	if (device->input_device.pointer_focus->resource.client != client)
 		return;
-
-	if (device->sprite)
-		weston_surface_damage_below(device->sprite);
 
 	if (!buffer_resource && device->sprite->output) {
 		wl_list_remove(&device->sprite->link);
