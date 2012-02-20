@@ -1,3 +1,8 @@
+2012-02-20  Birkir Gunnarsson <birkir@midstod.is>
+
+	* tables/is.ctb: Updates and additions to Icelandic 8-dot braille
+	table.
+
 2012-02-06  Christian Egli  <christian.egli@sbs.ch>
 
 	* tables/Es-Es-G0.utb: Added Spanish grade0 table provided by José
