@@ -20,6 +20,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/aura/brightness_controller_chromeos.h"
+#include "chrome/browser/ui/views/aura/ime_controller_chromeos.h"
 #include "chrome/browser/ui/views/aura/volume_controller_chromeos.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
@@ -55,6 +56,8 @@ void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
       chromeos::input_method::InputMethodManager::GetInstance()->GetXKeyboard();
   shell->accelerator_controller()->SetCapsLockDelegate(
       scoped_ptr<ash::CapsLockDelegate>(new CapsLockHandler(xkeyboard)).Pass());
+  shell->accelerator_controller()->SetImeControlDelegate(
+      scoped_ptr<ash::ImeControlDelegate>(new ImeController).Pass());
   shell->accelerator_controller()->SetVolumeControlDelegate(
       scoped_ptr<ash::VolumeControlDelegate>(new VolumeController).Pass());
 #endif

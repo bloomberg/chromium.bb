@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,6 +29,9 @@
 
 #if defined(USE_AURA)
 // When Aura is in use, the shortcut is handled in Ash.
+#define TestInputMethod DISABLED_TestInputMethod
+#define TestInputMethodWithNumLock DISABLED_TestInputMethodWithNumLock
+#define TestKoreanInputMethod DISABLED_TestKoreanInputMethod
 #define TestCapsLock DISABLED_TestCapsLock
 #define TestCapsLockWithNumLock DISABLED_TestCapsLockWithNumLock
 #endif

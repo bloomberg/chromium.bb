@@ -82,7 +82,7 @@ bool KeyboardOverlayDialogView::AcceleratorPressed(
 void KeyboardOverlayDialogView::ShowDialog(
     gfx::NativeWindow owning_window, BrowserView* parent_view) {
   // Temporarily disable Shift+Alt. crosbug.com/17208.
-  chromeos::input_method::InputMethodManager::GetInstance()->RemoveHotkeys();
+  chromeos::input_method::InputMethodManager::GetInstance()->DisableHotkeys();
 
   KeyboardOverlayDelegate* delegate = new KeyboardOverlayDelegate(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_TITLE)));

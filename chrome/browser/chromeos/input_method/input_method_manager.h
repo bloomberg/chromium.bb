@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,10 @@
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 
 class GURL;
+
+namespace ui {
+class Accelerator;
+}  // namespace ui
 
 namespace chromeos {
 namespace input_method {
@@ -251,16 +255,23 @@ class InputMethodManager {
   // Returns a InputMethodUtil object.
   virtual InputMethodUtil* GetInputMethodUtil() = 0;
 
+#if !defined(USE_AURA)
   // Returns a hotkey manager object which could be used to detect Control+space
   // and Shift+Alt key presses.
   virtual HotkeyManager* GetHotkeyManager() = 0;
-  // Register all global input method hotkeys: Control+space and Shift+Alt.
-  virtual void AddHotkeys() = 0;
-  // Removes all global input method hotkeys.
-  virtual void RemoveHotkeys() = 0;
+#endif
+  // Enable all input method hotkeys.
+  virtual void EnableHotkeys() = 0;
+  // Disable all input method hotkeys.
+  virtual void DisableHotkeys() = 0;
 
   // Switches the current input method (or keyboard layout) to the next one.
-  virtual void SwitchToNextInputMethod() = 0;
+  virtual bool SwitchToNextInputMethod() = 0;
+  // Switches the current input method (or keyboard layout) to the previous one.
+  virtual bool SwitchToPreviousInputMethod() = 0;
+  // Switches to an input method (or keyboard layout) which is associated with
+  // the |accelerator|.
+  virtual bool SwitchInputMethod(const ui::Accelerator& accelerator) = 0;
 
   virtual InputMethodDescriptor previous_input_method() const = 0;
   virtual InputMethodDescriptor current_input_method() const = 0;

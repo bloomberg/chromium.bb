@@ -67,7 +67,7 @@ std::string KeyboardOverlayDelegate::GetDialogArgs() const {
 void KeyboardOverlayDelegate::OnDialogClosed(
     const std::string& json_retval) {
   // Re-enable Shift+Alt. crosbug.com/17208.
-  chromeos::input_method::InputMethodManager::GetInstance()->AddHotkeys();
+  chromeos::input_method::InputMethodManager::GetInstance()->EnableHotkeys();
   delete this;
   return;
 }

@@ -295,7 +295,6 @@ bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
         input_method_manager->GetHotkeyManager();
     hotkey_manager->OnFocus();
   }
-#endif
 
   if (xevent->type == KeyPress || xevent->type == KeyRelease) {
     // Change the current keyboard layout (or input method) if xevent is one of
@@ -305,6 +304,7 @@ bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
     if (hotkey_manager->FilterKeyEvent(*xevent))
       return true;
   }
+#endif
 
   if (xevent->type == xkb_event_base_) {
     // TODO(yusukes): Move this part to aura::RootWindowHost.

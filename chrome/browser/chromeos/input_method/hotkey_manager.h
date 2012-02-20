@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,8 @@ namespace chromeos {
 namespace input_method {
 
 // A class which holds all hotkeys for input method switching.
+// TODO(yusukes): Remove this class when R18 Chrome OS is released.
+// crosbug.com/26245
 class HotkeyManager {
  public:
   class Observer {

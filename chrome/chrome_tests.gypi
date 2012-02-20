@@ -2520,6 +2520,7 @@
         'browser/chromeos/disks/mock_disk_mount_manager.cc',
         'browser/chromeos/disks/mock_disk_mount_manager.h',
         'browser/chromeos/extensions/file_browser_notifications_browsertest.cc',
+        'browser/chromeos/input_method/input_method_manager_browsertest.cc',
         'browser/chromeos/login/enrollment/enterprise_enrollment_screen_browsertest.cc',
         'browser/chromeos/login/existing_user_controller_browsertest.cc',
         'browser/chromeos/login/login_browsertest.cc',
