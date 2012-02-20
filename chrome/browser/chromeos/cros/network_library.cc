@@ -742,7 +742,8 @@ EthernetNetwork::EthernetNetwork(const std::string& service_path)
 
 VirtualNetwork::VirtualNetwork(const std::string& service_path)
     : Network(service_path, TYPE_VPN),
-      provider_type_(PROVIDER_TYPE_L2TP_IPSEC_PSK) {
+      provider_type_(PROVIDER_TYPE_L2TP_IPSEC_PSK),
+      client_cert_type_(CLIENT_CERT_TYPE_NONE) {
   init_client_cert_pattern();
 }
 
