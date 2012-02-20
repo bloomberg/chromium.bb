@@ -1114,7 +1114,7 @@ surface_attach(struct wl_client *client,
 {
 	struct weston_surface *es = resource->data;
 	struct weston_shell *shell = es->compositor->shell;
-	struct wl_buffer *buffer, *prev;
+	struct wl_buffer *buffer;
 
 	if (!buffer_resource && !es->output)
 		return;
@@ -1134,12 +1134,11 @@ surface_attach(struct wl_client *client,
 
 	buffer = buffer_resource->data;
 	buffer->busy_count++;
-	prev = es->buffer;
 	es->buffer = buffer;
 	wl_list_insert(es->buffer->resource.destroy_listener_list.prev,
 		       &es->buffer_destroy_listener.link);
 
-	if (prev == NULL) {
+	if (es->output == NULL) {
 		shell->map(shell, es, buffer->width, buffer->height, sx, sy);
 	} else if (sx != 0 || sy != 0 ||
 		   es->geometry.width != buffer->width ||
