@@ -12,9 +12,8 @@
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "ui/gfx/point.h"
 
-class RenderWidgetHostView;
-
 namespace content {
+class RenderWidgetHostView;
 struct ContextMenuParams;
 }
 
@@ -23,7 +22,7 @@ class RenderViewContextMenuGtk : public RenderViewContextMenu,
  public:
   RenderViewContextMenuGtk(content::WebContents* web_contents,
                            const content::ContextMenuParams& params,
-                           RenderWidgetHostView* view);
+                           content::RenderWidgetHostView* view);
 
   virtual ~RenderViewContextMenuGtk();
 

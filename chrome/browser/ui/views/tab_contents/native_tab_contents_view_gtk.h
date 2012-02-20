@@ -14,6 +14,7 @@ class TabContents;
 class WebDragBookmarkHandlerGtk;
 
 namespace content {
+class RenderWidgetHostView;
 class WebDragDestGtk;
 class WebDragSourceGtk;
 }
@@ -35,7 +36,7 @@ class NativeTabContentsViewGtk : public views::NativeWidgetGtk,
   // Overridden from NativeTabContentsView:
   virtual void InitNativeTabContentsView() OVERRIDE;
   virtual void Unparent() OVERRIDE;
-  virtual RenderWidgetHostView* CreateRenderWidgetHostView(
+  virtual content::RenderWidgetHostView* CreateRenderWidgetHostView(
       RenderWidgetHost* render_widget_host) OVERRIDE;
   virtual gfx::NativeWindow GetTopLevelNativeWindow() const OVERRIDE;
   virtual void SetPageTitle(const string16& title) OVERRIDE;

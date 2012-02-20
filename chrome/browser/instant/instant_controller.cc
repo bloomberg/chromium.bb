@@ -26,8 +26,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 
 #if defined(TOOLKIT_VIEWS)
@@ -313,7 +313,7 @@ void InstantController::OnAutocompleteLostFocus(
     return;
   }
 
-  RenderWidgetHostView* rwhv =
+  content::RenderWidgetHostView* rwhv =
       GetPreviewContents()->web_contents()->GetRenderWidgetHostView();
   if (!view_gaining_focus || !rwhv) {
     DestroyPreviewContents();

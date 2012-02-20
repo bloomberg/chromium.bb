@@ -1385,7 +1385,7 @@
    Heapcheck:Leak
    ...
    fun:RenderWidgetHostViewAura
-   fun:RenderWidgetHostView::CreateViewForWidget
+   fun:content::RenderWidgetHostView::CreateViewForWidget
 }
 {
    bug_112798_c

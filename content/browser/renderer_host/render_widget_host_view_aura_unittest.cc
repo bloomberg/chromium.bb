@@ -12,6 +12,8 @@
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 
+using content::RenderWidgetHostView;
+
 // This approach (of using RenderViewHostTestHarness's RenderViewHost for a new
 // RenderWidgetHostView) is borrowed from RenderWidgetHostViewMacTest.
 class RenderWidgetHostViewAuraTest : public RenderViewHostTestHarness {

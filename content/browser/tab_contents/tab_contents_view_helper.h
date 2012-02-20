@@ -16,11 +16,11 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "webkit/glue/window_open_disposition.h"
 
-class RenderWidgetHostView;
 class TabContents;
 struct ViewHostMsg_CreateWindow_Params;
 
 namespace content {
+class RenderWidgetHostView;
 class WebContents;
 }
 
@@ -48,10 +48,11 @@ class CONTENT_EXPORT TabContentsViewHelper
   // Creates a new popup or fullscreen widget; call |ShowCreatedWidget| below to
   // show it. If |is_fullscreen| is true it is a fullscreen widget, if not then
   // a pop-up. |popup_type| is only meaningful for a pop-up.
-  RenderWidgetHostView* CreateNewWidget(content::WebContents* web_contents,
-                                        int route_id,
-                                        bool is_fullscreen,
-                                        WebKit::WebPopupType popup_type);
+  content::RenderWidgetHostView* CreateNewWidget(
+      content::WebContents* web_contents,
+      int route_id,
+      bool is_fullscreen,
+      WebKit::WebPopupType popup_type);
 
   // Shows a window created with |CreateNewWindow| above.
   TabContents* ShowCreatedWindow(content::WebContents* web_contents,
@@ -62,10 +63,11 @@ class CONTENT_EXPORT TabContentsViewHelper
 
   // Shows a widget created with |CreateNewWidget| above. |initial_pos| is only
   // meaningful for non-fullscreen widgets.
-  RenderWidgetHostView* ShowCreatedWidget(content::WebContents* web_contents,
-                                          int route_id,
-                                          bool is_fullscreen,
-                                          const gfx::Rect& initial_pos);
+  content::RenderWidgetHostView* ShowCreatedWidget(
+      content::WebContents* web_contents,
+      int route_id,
+      bool is_fullscreen,
+      const gfx::Rect& initial_pos);
 
  private:
   // content::NotificationObserver implementation
@@ -75,7 +77,7 @@ class CONTENT_EXPORT TabContentsViewHelper
 
   // Finds the new RenderWidgetHost and returns it. Note that this can only be
   // called once as this call also removes it from the internal map.
-  RenderWidgetHostView* GetCreatedWidget(int route_id);
+  content::RenderWidgetHostView* GetCreatedWidget(int route_id);
 
   // Finds the new TabContents by route_id, initializes it for
   // renderer-initiated creation, and returns it. Note that this can only be
@@ -89,7 +91,7 @@ class CONTENT_EXPORT TabContentsViewHelper
 
   // These maps hold on to the widgets that we created on behalf of the renderer
   // that haven't shown yet.
-  typedef std::map<int, RenderWidgetHostView*> PendingWidgetViews;
+  typedef std::map<int, content::RenderWidgetHostView*> PendingWidgetViews;
   PendingWidgetViews pending_widget_views_;
 
   // Registers and unregisters us for notifications.

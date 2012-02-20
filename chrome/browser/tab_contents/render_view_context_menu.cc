@@ -62,12 +62,12 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/download/download_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/speech_input_preferences.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -1878,7 +1878,8 @@ void RenderViewContextMenu::MenuWillShow(ui::SimpleMenuModel* source) {
   if (source != &menu_model_)
     return;
 
-  RenderWidgetHostView* view = source_web_contents_->GetRenderWidgetHostView();
+  content::RenderWidgetHostView* view =
+      source_web_contents_->GetRenderWidgetHostView();
   if (view)
     view->SetShowingContextMenu(true);
 }
@@ -1888,7 +1889,8 @@ void RenderViewContextMenu::MenuClosed(ui::SimpleMenuModel* source) {
   if (source != &menu_model_)
     return;
 
-  RenderWidgetHostView* view = source_web_contents_->GetRenderWidgetHostView();
+  content::RenderWidgetHostView* view =
+      source_web_contents_->GetRenderWidgetHostView();
   if (view)
     view->SetShowingContextMenu(false);
   RenderViewHost* rvh = source_web_contents_->GetRenderViewHost();

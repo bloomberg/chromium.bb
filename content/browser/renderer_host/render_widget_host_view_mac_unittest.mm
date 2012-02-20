@@ -30,7 +30,7 @@ class RenderWidgetHostViewMacTest : public RenderViewHostTestHarness {
 
     // Owned by its |cocoa_view()|, i.e. |rwhv_cocoa_|.
     rwhv_mac_ = static_cast<RenderWidgetHostViewMac*>(
-        RenderWidgetHostView::CreateViewForWidget(rvh()));
+        content::RenderWidgetHostView::CreateViewForWidget(rvh()));
     rwhv_cocoa_.reset([rwhv_mac_->cocoa_view() retain]);
   }
   virtual void TearDown() {
@@ -78,7 +78,7 @@ class RenderWidgetHostViewMacTest : public RenderViewHostTestHarness {
   // This class isn't derived from PlatformTest.
   base::mac::ScopedNSAutoreleasePool pool_;
 
-  RenderWidgetHostView* old_rwhv_;
+  content::RenderWidgetHostView* old_rwhv_;
 
  protected:
   RenderWidgetHostViewMac* rwhv_mac_;

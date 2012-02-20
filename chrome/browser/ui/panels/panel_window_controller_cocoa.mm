@@ -34,8 +34,8 @@
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -560,7 +560,8 @@ enum {
   // We need to activate the controls (in the "WebView"). To do this, get the
   // selected TabContents's RenderWidgetHostView and tell it to activate.
   if (WebContents* contents = [contentsController_ webContents]) {
-    if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
+    if (content::RenderWidgetHostView* rwhv =
+        contents->GetRenderWidgetHostView())
       rwhv->SetActive(true);
   }
 
@@ -588,7 +589,8 @@ enum {
   // We need to deactivate the controls (in the "WebView"). To do this, get the
   // selected TabContents's RenderWidgetHostView and tell it to deactivate.
   if (WebContents* contents = [contentsController_ webContents]) {
-    if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
+    if (content::RenderWidgetHostView* rwhv =
+        contents->GetRenderWidgetHostView())
       rwhv->SetActive(false);
   }
 

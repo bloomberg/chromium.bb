@@ -5744,7 +5744,7 @@
    fun:_ZN2ui5Layer3AddEPS0_
    fun:_ZN4aura6Window8AddChildEPS0_
    fun:_ZN4aura6Window9SetParentEPS0_
-   fun:_ZN24RenderWidgetHostViewAura16InitAsFullscreenEP20RenderWidgetHostView
+   fun:_ZN24RenderWidgetHostViewAura16InitAsFullscreenEPN7content20RenderWidgetHostViewE
    fun:_ZN44RenderWidgetHostViewAuraTest_Fullscreen_Test8TestBodyEv
 }
 {
@@ -5754,7 +5754,7 @@
    fun:_ZN4aura6Window11SetPropertyIPNS_6client18ActivationDelegateEEEvPKNS_14WindowPropertyIT_EES6_
    fun:_ZN4aura6client21SetActivationDelegateEPNS_6WindowEPNS0_18ActivationDelegateE
    fun:_ZN24RenderWidgetHostViewAuraC1EP16RenderWidgetHost
-   fun:_ZN20RenderWidgetHostView19CreateViewForWidgetEP16RenderWidgetHost
+   fun:_ZN7content20RenderWidgetHostView19CreateViewForWidgetEP16RenderWidgetHost
 }
 {
    bug_112835

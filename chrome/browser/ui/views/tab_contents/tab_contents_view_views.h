@@ -53,7 +53,7 @@ class TabContentsViewViews : public views::Widget,
 
   // Overridden from WebContentsView:
   virtual void CreateView(const gfx::Size& initial_size) OVERRIDE;
-  virtual RenderWidgetHostView* CreateViewForWidget(
+  virtual content::RenderWidgetHostView* CreateViewForWidget(
       RenderWidgetHost* render_widget_host) OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeView GetContentNativeView() const OVERRIDE;

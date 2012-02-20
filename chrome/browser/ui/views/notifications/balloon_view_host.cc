@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,8 @@
 
 #include "chrome/browser/notifications/balloon.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/views/widget/widget.h"
 
@@ -48,7 +48,7 @@ void BalloonViewHost::Init(gfx::NativeView parent_native_view) {
   parent_native_view_ = parent_native_view;
   BalloonHost::Init();
 
-  RenderWidgetHostView* render_widget_host_view =
+  content::RenderWidgetHostView* render_widget_host_view =
       web_contents_->GetRenderViewHost()->view();
 
   native_host_->Attach(render_widget_host_view->GetNativeView());

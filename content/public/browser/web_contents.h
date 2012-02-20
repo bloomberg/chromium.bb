@@ -18,7 +18,6 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class RenderViewHost;
-class RenderWidgetHostView;
 class SessionStorageNamespace;
 
 namespace base {
@@ -41,6 +40,7 @@ class BrowserContext;
 class InterstitialPage;
 class NavigationController;
 class RenderProcessHost;
+class RenderWidgetHostView;
 class WebContentsDelegate;
 struct RendererPreferences;
 class SiteInstance;
@@ -103,7 +103,7 @@ class WebContents : public PageNavigator {
 
   // Returns the currently active RenderWidgetHostView. This may change over
   // time and can be NULL (during setup and teardown).
-  virtual RenderWidgetHostView* GetRenderWidgetHostView() const = 0;
+  virtual content::RenderWidgetHostView* GetRenderWidgetHostView() const = 0;
 
   // The WebContentsView will never change and is guaranteed non-NULL.
   virtual WebContentsView* GetView() const = 0;

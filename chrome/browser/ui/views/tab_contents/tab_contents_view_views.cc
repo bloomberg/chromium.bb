@@ -14,9 +14,9 @@
 #include "chrome/browser/ui/views/tab_contents/render_view_context_menu_views.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
-#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "ui/gfx/screen.h"
@@ -33,6 +33,7 @@ using WebKit::WebDragOperation;
 using WebKit::WebDragOperationNone;
 using WebKit::WebDragOperationsMask;
 using WebKit::WebInputEvent;
+using content::RenderWidgetHostView;
 using content::WebContents;
 
 TabContentsViewViews::TabContentsViewViews(WebContents* web_contents)

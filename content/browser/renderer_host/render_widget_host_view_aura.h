@@ -8,19 +8,23 @@
 
 #include <map>
 
-#include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
 #include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/ime/text_input_client.h"
-#include "ui/gfx/rect.h"
 #include "ui/gfx/compositor/compositor_observer.h"
+#include "ui/gfx/rect.h"
 #include "webkit/glue/webcursor.h"
 
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #endif
+
+namespace content {
+class RenderWidgetHostView;
+}
 
 namespace gfx {
 class Canvas;
@@ -67,10 +71,10 @@ class RenderWidgetHostViewAura
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
 
   // Overridden from RenderWidgetHostViewPort:
-  virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
+  virtual void InitAsPopup(content::RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& pos) OVERRIDE;
   virtual void InitAsFullscreen(
-      RenderWidgetHostView* reference_host_view) OVERRIDE;
+      content::RenderWidgetHostView* reference_host_view) OVERRIDE;
   virtual void DidBecomeSelected() OVERRIDE;
   virtual void WasHidden() OVERRIDE;
   virtual void MovePluginWindows(
@@ -166,7 +170,7 @@ class RenderWidgetHostViewAura
   virtual void OnLostActive() OVERRIDE;
 
  protected:
-  friend class RenderWidgetHostView;
+  friend class content::RenderWidgetHostView;
 
   // Should construct only via RenderWidgetHostView::CreateViewForWidget.
   explicit RenderWidgetHostViewAura(RenderWidgetHost* host);
