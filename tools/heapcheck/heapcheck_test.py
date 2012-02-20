@@ -203,7 +203,6 @@ class HeapcheckWrapper(object):
       logging.error("Analyze failed.")
       return analyze_retcode
 
-    print 'exec_retcode', exec_retcode
     if exec_retcode:
       logging.error("Test execution failed.")
       return exec_retcode
