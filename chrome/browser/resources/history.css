@@ -3,18 +3,6 @@
  * found in the LICENSE file.
  */
 
-#results-summary {
-  border-top: 1px solid rgb(156, 194, 239);
-  background-color: rgb(235, 239, 249);
-  font-weight: bold;
-  padding: 3px;
-  margin-bottom: -8px;
-  margin-top: 12px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 #editing-controls button {
   margin: 18px 0 -8px 0;
 }
@@ -22,14 +10,6 @@
 #results-display {
   margin: 16px 0 0 0;
   max-width: 740px;
-}
-
-.day {
-  color: rgb(106, 106, 106);
-  font-size: 13px;
-  font-weight: bold;
-  margin: 0 0 4px 0;
-  text-transform: uppercase;
 }
 
 .edit-button {
@@ -51,10 +31,12 @@
   margin: 0;
   padding: 0;
 }
+
 .gap {
-  -webkit-border-end: 1px solid rgb(221, 221, 221);
+  -webkit-border-end: 1px solid rgb(192, 195, 198);
   height: 14px;
-  width: 35px;
+  margin: 1px 0;
+  width: 45px;
 }
 
 .entry {
@@ -66,17 +48,12 @@
   cursor: default;
   display: -webkit-box;
   float: left;  /* Box will shrink to fit its content. */
-  font-size: 13px;
-
   /* An odd line-height ensures a consistent baseline on all platforms. */
-  line-height: 21px;
-
+  line-height: 1.75em;
   /* The box should be no bigger than its parent. */
   max-width: 100%;
-
   overflow: hidden;
-
-  padding-top: 1px;
+  padding-bottom: 1px;
 }
 
 html[dir=rtl] .entry-box {
@@ -95,15 +72,14 @@ html[dir=rtl] .entry-box {
   clear: both;
   color: rgb(34, 34, 34);
   display: -webkit-box;
-  font-size: 12px;
   line-height: 1.6em;
-  margin-bottom: 12px;
+  margin-bottom: 1em;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .entry .domain {
-  color: rgb(154, 154, 154);
+  color: rgb(151, 156, 160);
   padding-left: 6px;
   padding-right: 6px;
 }
@@ -111,24 +87,24 @@ html[dir=rtl] .entry-box {
 .drop-down {
   -webkit-margin-end: 5px;
   background: white -webkit-canvas(drop-down-arrow) no-repeat center 4px;
-  border: 1px solid rgb(182, 212, 252);
+  border: 1px solid rgb(192, 195, 198);
   border-radius: 2px;
   height: 12px;
   padding: 0;
   position: relative;
-  top: 1px;
+  top: 2px;
   width: 12px;
 }
 
 .drop-down:hover {
   background-image: -webkit-canvas(drop-down-arrow-hover);
-  border-color: rgb(106, 134, 222);
+  border-color: rgb(48, 57, 66);
 }
 
 .drop-down[menu-shown], .drop-down:focus {
-  background-color: rgb(106, 134, 222);
+  background-color: rgb(48, 57, 66);
   background-image: -webkit-canvas(drop-down-arrow-active);
-  border-color: rgb(106, 134, 222);
+  border-color: rgb(48, 57, 66);
 }
 
 html[dir='rtl'] .entry .title {
@@ -137,7 +113,7 @@ html[dir='rtl'] .entry .title {
 }
 
 .entry .time {
-  color: #9a9a9a;
+  color: rgb(151, 156, 160);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -178,7 +154,7 @@ html[dir='rtl'] .entry .title {
 }
 
 .entry-box:hover, .entry-box.contains-focus {
-  background-color: rgb(228, 236, 247);
+  background-color: rgb(252, 252, 252);
   border-radius: 2px;
 }
 
@@ -194,7 +170,7 @@ html[dir='rtl'] .entry .title {
   -webkit-padding-start: 20px;
 
   /* Control the favicon appearance. */
-  background-position-y: 2px;
+  background-position-y: 3px;
   background-repeat: no-repeat;
 }
 
@@ -207,7 +183,7 @@ html[dir='rtl'] .entry .title {
 }
 
 .entry .title > a {
-  color: rgb(17, 17, 204);
+  color: rgb(48, 57, 66);
   text-decoration: none;
 }
 
@@ -217,11 +193,6 @@ html[dir='rtl'] .entry .title {
 
 .entry .title > a:hover {
   text-decoration: underline;
-}
-
-/* Since all history links are visited, we can make them blue. */
-.entry .title > a:visted {
-  color: rgb(17, 17, 204);
 }
 
 .fade-out {

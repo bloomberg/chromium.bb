@@ -7,13 +7,6 @@ body {
   -webkit-user-select: text;
 }
 
-h2 {
-  color: rgb(48, 57, 66);
-  font-size: 16px;
-  font-weight: normal;
-  margin-bottom: 3px;
-}
-
 #about-container {
   -webkit-box-align: center;
   display: -webkit-box;

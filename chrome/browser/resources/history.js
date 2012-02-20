@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,8 +60,9 @@ function createDropDownBgImage(canvasName, colorSpec) {
 }
 
 // Create the canvases to be used as the drop down button background images.
-var arrow = createDropDownBgImage('drop-down-arrow', 'hsl(214, 91%, 85%)');
-var hoverArrow = createDropDownBgImage('drop-down-arrow-hover', '#6A86DE');
+var arrow = createDropDownBgImage('drop-down-arrow', 'rgb(192, 195, 198)');
+var hoverArrow = createDropDownBgImage('drop-down-arrow-hover',
+                                       'rgb(48, 57, 66)');
 var activeArrow = createDropDownBgImage('drop-down-arrow-active', 'white');
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -519,8 +520,6 @@ HistoryModel.prototype.canFillPage_ = function(page) {
  * @param {HistoryModel} model The model backing this view.
  */
 function HistoryView(model) {
-  this.summaryTd_ = $('results-summary');
-  this.summaryTd_.textContent = localStrings.getString('loading');
   this.editButtonTd_ = $('edit-button');
   this.editingControlsDiv_ = $('editing-controls');
   this.resultDiv_ = $('results-display');
@@ -627,7 +626,16 @@ HistoryView.prototype.displayResults_ = function() {
       this.pageIndex_ * RESULTS_PER_PAGE,
       this.pageIndex_ * RESULTS_PER_PAGE + RESULTS_PER_PAGE);
 
-  if (this.model_.getSearchText()) {
+  var searchText = this.model_.getSearchText();
+  if (searchText) {
+    // Add a header for the search results, if there isn't already one.
+    if (!this.resultDiv_.querySelector('h3')) {
+      var header = document.createElement('h3');
+      header.textContent = localStrings.getStringF('searchresultsfor',
+                                                   searchText);
+      this.resultDiv_.appendChild(header);
+    }
+
     var searchResults = createElementWithClassName('ol', 'search-results');
     for (var i = 0, page; page = results[i]; i++) {
       if (!page.isRendered) {
@@ -649,7 +657,7 @@ HistoryView.prototype.displayResults_ = function() {
       var thisTime = page.time.getTime();
 
       if ((i == 0 && page.continued) || !page.continued) {
-        var day = createElementWithClassName('h2', 'day');
+        var day = createElementWithClassName('h3', 'day');
         day.appendChild(document.createTextNode(page.dateRelativeDay));
         if (i == 0 && page.continued) {
           day.appendChild(document.createTextNode(' ' +
@@ -680,23 +688,8 @@ HistoryView.prototype.displayResults_ = function() {
     }
     this.resultDiv_.appendChild(resultsFragment);
   }
-
-  this.displaySummaryBar_();
   this.displayNavBar_();
   this.updateEntryAnchorWidth_();
-};
-
-/**
- * Update the summary bar with descriptive text.
- */
-HistoryView.prototype.displaySummaryBar_ = function() {
-  var searchText = this.model_.getSearchText();
-  if (searchText != '') {
-    this.summaryTd_.textContent = localStrings.getStringF('searchresultsfor',
-        searchText);
-  } else {
-    this.summaryTd_.textContent = localStrings.getString('history');
-  }
 };
 
 /**
@@ -798,8 +791,7 @@ function PageState(model, view) {
   //     public model and view.
   this.checker_ = setInterval((function(state_obj) {
     var hashData = state_obj.getHashData();
-
-    if (hashData.q != state_obj.model.getSearchText(term)) {
+    if (hashData.q != state_obj.model.getSearchText()) {
       state_obj.view.setSearch(hashData.q, parseInt(hashData.p, 10));
     } else if (parseInt(hashData.p, 10) != state_obj.view.getPage()) {
       state_obj.view.setPage(hashData.p);
@@ -843,7 +835,7 @@ PageState.prototype.getHashData = function() {
  */
 PageState.prototype.setUIState = function(term, page) {
   // Make sure the form looks pretty.
-  document.forms[0].term.value = term;
+  $('search-field').value = term;
   var currentHash = this.getHashData();
   if (currentHash.q != term || currentHash.p != page) {
     window.location.hash = PageState.getHashString(term, page);
@@ -874,7 +866,8 @@ PageState.getHashString = function(term, page) {
  * Window onload handler, sets up the page.
  */
 function load() {
-  $('term').focus();
+  var searchField = $('search-field');
+  searchField.focus();
 
   localStrings = new LocalStrings();
   historyModel = new HistoryModel();
@@ -885,13 +878,8 @@ function load() {
   var hashData = pageState.getHashData();
   historyView.setSearch(hashData.q, hashData.p);
 
-  // Setup click handlers.
-  $('history-section').onclick = function () {
-    setSearch('');
-    return false;
-  };
-  $('search-form').onsubmit = function () {
-    setSearch(this.term.value);
+  $('search-form').onsubmit = function() {
+    setSearch(searchField.value);
     return false;
   };
 

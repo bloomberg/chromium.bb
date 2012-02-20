@@ -28,12 +28,32 @@ p {
   line-height: 1.8em;
 }
 
-h1 {
+h1,
+h2,
+h3 {
   -webkit-user-select: none;
-  color: rgb(48, 57, 66);
-  font-size: 1.5em;
   font-weight: normal;
+}
+
+h1,
+h2 {
+  color: rgb(48, 57, 66);
+}
+
+h1 {
+  font-size: 1.5em;
   margin-top: 1em;
+}
+
+h2 {
+  font-size: 1.3em;
+  margin-bottom: 0.25em;
+}
+
+h3 {
+  color: black;
+  font-size: 1.2em;
+  margin-bottom: 0.3em;
 }
 
 a {
@@ -76,14 +96,53 @@ input[type='search'],
 input[type='text'],
 input[type='url'],
 input:not([type]) {
-  border: 1px solid #aaa;
+  border: 1px solid #bfbfbf;
   border-radius: 2px;
+  font: inherit;
   font-size: inherit;
+  margin: 0;
   padding: 3px;
+}
+
+input[type='search'] {
+  /* NOTE: Keep a relatively high min-width for this so we don't obscure the end
+   * of the default text in relatively spacious languages (i.e. German). */
+  min-width: 160px;
 }
 
 input[type='text']:disabled {
   color: #888;
+}
+
+/*
+ * Add padding to increase the touchable area of search box. Use original font
+ * size to avoid the width of search box exceeding the width of navbar.
+ */
+html[touch-optimized] input[type='search'] {
+  font-size: 13px;
+  padding: 5px;
+}
+
+html[touch-optimized] input[type='search']::-webkit-search-cancel-button {
+  -webkit-transform: scale(1.5);
+}
+
+header > .search-field-container,
+header > button {
+  position: absolute;
+  right: 0;
+  top: 18px;
+}
+
+html[dir='rtl'] header > .search-field-container,
+html[dir='rtl'] header > button {
+  left: 0;
+  right: auto;
+}
+
+header input,
+header button {
+  margin: 0;
 }
 
 /* Elements that need to be LTR even in an RTL context, but should align

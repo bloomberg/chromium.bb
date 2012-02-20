@@ -107,41 +107,6 @@ input[type='text']:disabled {
   position: fixed;
 }
 
-.search-field-container {
-  position: absolute;
-  right: 18px;
-  top: 18px;
-}
-
-html[dir='rtl'] .search-field-container {
-  left: 18px;
-  right: auto;
-}
-
-/* TODO(csilv): M19 Move this styling to a shared location for all webui. */
-#search-field {
-  -webkit-margin-end: 18px;
-  border: 1px solid rgba(0, 0, 0, 0.25);
-  border-radius: 2px;
-  font: inherit;
-  margin: 0;
-  /* NOTE: Keep a relatively high min-width for this so we don't obscure the end
-   * of the default text in relatively spacious languages (i.e. German). */
-  min-width: 160px;
-}
-
-/*
- * Add padding to increase the touchable area of search box. Use original font
- * size to avoid the width of search box exceeding the width of navbar.
- */
-html[touch-optimized] #search-field {
-  font-size: 13px;
-  padding: 5px;
-}
-html[touch-optimized] #search-field::-webkit-search-cancel-button {
-  -webkit-transform: scale(1.5);
-}
-
 /*
  * For touch-optimized UI, make the radio/checkbox input boxes in
  * options/preference pages easier to touch.
@@ -335,10 +300,6 @@ section:last-of-type {
 
 section > h3 {
   -webkit-margin-start: -18px;
-  color: black;
-  font-size: 14px;
-  font-weight: normal;
-  margin-bottom: 4px;
 }
 
 section > div:only-of-type {

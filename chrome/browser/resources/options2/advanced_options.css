@@ -2,18 +2,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#advanced-section-back-button {
-  display: inline-block;
-  position: absolute;
-  right: 0;
-  top: 16px;
-}
-
-html[dir='rtl'] #advanced-section-back-button {
-  left: 0;
-  right: auto;
-}
-
 #advancedPage .section-group:not(:first-child) {
   margin-top: 10px;
 }
