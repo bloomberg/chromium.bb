@@ -23,6 +23,13 @@ from chromite.lib import cros_build_lib
 _BUILD_DASHBOARD = 'http://build.chromium.org/p/chromiumos'
 _BUILD_INT_DASHBOARD = 'http://chromegw/i/chromeos'
 
+def _RunCommand(cmd, dryrun):
+  """Runs the specified shell cmd if dryrun=False."""
+  if dryrun:
+    logging.info('Would have run: %s', ' '.join(cmd))
+  else:
+    cros_build_lib.RunCommand(cmd, error_ok=True)
+
 
 class TreeIsClosedException(Exception):
   """Raised when the tree is closed and we wanted to submit changes."""
@@ -48,6 +55,9 @@ class ValidationPool(object):
   Usage:  Use ValidationPoo.AcquirePool -- a static
   method that grabs the commits that are ready for validation.
   """
+
+  DEFAULT_ERROR_APPLY_MESSAGE = ('Please re-sync, rebase, and re-upload '
+                                 'your change.')
 
   GLOBAL_DRYRUN = False
 
@@ -362,8 +372,7 @@ class ValidationPool(object):
           changes_list.append(change)
           lkgm_manager.PrintLink(str(change), change.url)
           if self.is_master:
-            change.HandleApplied(self.gerrit_helper, self.build_log,
-                                 dryrun=self.dryrun)
+            self.HandleApplied(change)
 
     if changes_applied:
       logging.debug('Done investigating changes.  Applied %s',
@@ -396,7 +405,7 @@ class ValidationPool(object):
         was_change_submitted = False
         logging.info('Change %s will be submitted', change)
         try:
-          change.Submit(self.gerrit_helper, dryrun=self.dryrun)
+          self.SubmitChange(change)
           was_change_submitted = self.gerrit_helper.IsChangeCommitted(
                 change.id, self.dryrun)
         except cros_build_lib.RunCommandError:
@@ -404,8 +413,7 @@ class ValidationPool(object):
         finally:
           if not was_change_submitted:
             logging.error('Could not submit %s', str(change))
-            change.HandleCouldNotSubmit(self.gerrit_helper, self.build_log,
-                                        dryrun=self.dryrun)
+            self.HandleCouldNotSubmit(change)
             changes_that_failed_to_submit.append(change)
 
       if changes_that_failed_to_submit:
@@ -413,6 +421,17 @@ class ValidationPool(object):
 
     else:
       raise TreeIsClosedException()
+
+  def SubmitChange(self, change):
+    """Submits patch using Gerrit Review.
+
+    Args:
+      helper: Instance of gerrit_helper for the gerrit instance.
+      dryrun: If true, do not actually commit anything to Gerrit.
+    """
+    cmd = self.gerrit_helper.GetGerritReviewCommand(['--submit', '%s,%s' % (
+        change.gerrit_number, change.patch_number)])
+    _RunCommand(cmd, self.dryrun)
 
   def SubmitNonManifestChanges(self):
     """Commits changes to Gerrit from Pool that aren't part of the checkout.
@@ -439,14 +458,118 @@ class ValidationPool(object):
     for change in changes:
       logging.info('Change %s did not apply cleanly.', change.id)
       if self.is_master:
-        change.HandleCouldNotApply(self.gerrit_helper, self.build_log,
-                                   dryrun=self.dryrun)
+        self.HandleCouldNotApply(change)
 
   def HandleValidationFailure(self):
     """Handles failed changes by removing them from next Validation Pools."""
     logging.info('Validation failed for all changes.')
     for change in self.changes:
       logging.info('Validation failed for change %s.', change)
-      change.HandleCouldNotVerify(self.gerrit_helper, self.build_log,
-                                  dryrun=self.dryrun)
+      self.HandleCouldNotVerify(change)
 
+  def RemoveCommitReady(self, change):
+    """Remove any commit ready bits associated with CL."""
+    # TODO(ferringb): move this to gerrit_helper
+    query = ['-c',
+             '"DELETE FROM patch_set_approvals WHERE change_id=%s'
+             " AND patch_set_id=%s "
+             " AND category_id='COMR';\""
+             % (change.gerrit_number, change.patch_number)
+            ]
+    cmd = self.gerrit_helper.GetGerritSqlCommand(query)
+    _RunCommand(cmd, self.dryrun)
+
+  def _SendNotification(self, change, msg):
+    msg %= {'build_log':self.build_log}
+    PaladinMessage(msg, change, self.gerrit_helper).Send(self.dryrun)
+
+  def HandleCouldNotSubmit(self, change):
+    """Handler that is called when Paladin can't submit a change.
+
+    This should be rare, but if an admin overrides the commit queue and commits
+    a change that conflicts with this change, it'll apply, build/validate but
+    receive an error when submitting.
+
+    Args:
+      change: GerritPatch instance to operate upon.
+    """
+    self._SendNotification(change,
+        'The Commit Queue failed to submit your change in %(build_log)s . '
+        'This can happen if you submitted your change or someone else '
+        'submitted a conflicting change while your change was being tested.')
+    self.RemoveCommitReady(change)
+
+  def HandleCouldNotVerify(self, change):
+    """Handler for when Paladin fails to validate a change.
+
+    This handler notifies set Verified-1 to the review forcing the developer
+    to re-upload a change that works.  There are many reasons why this might be
+    called e.g. build or testing exception.
+
+    Args:
+      change: GerritPatch instance to operate upon.
+    """
+    self._SendNotification(change,
+        'The Commit Queue failed to verify your change in %(build_log)s . '
+        'If you believe this happened in error, just re-mark your commit as '
+        'ready. Your change will then get automatically retried.')
+    self.RemoveCommitReady(change)
+
+  def HandleCouldNotApply(self, change):
+    """Handler for when Paladin fails to apply a change.
+
+    This handler notifies set CodeReview-2 to the review forcing the developer
+    to re-upload a rebased change.
+
+    Args:
+      change: GerritPatch instance to operate upon.
+    """
+    msg = 'The Commit Queue failed to apply your change in %(build_log)s . '
+    # This is written this way so that mox doesn't complain if/when we try
+    # accessing an attr that doesn't exist.
+    extra_msg = getattr(change, 'apply_error_message', None)
+    if extra_msg is None:
+      extra_msg = self.DEFAULT_ERROR_APPLY_MESSAGE
+
+    msg += extra_msg
+    self._SendNotification(change, msg)
+    self.RemoveCommitReady(change)
+
+  def HandleApplied(self, change):
+    """Handler for when Paladin successfully applies a change.
+
+    This handler notifies a developer that their change is being tried as
+    part of a Paladin run defined by a build_log.
+
+    Args:
+      change: GerritPatch instance to operate upon.
+    """
+    self._SendNotification(change,
+        'The Commit Queue has picked up your change. '
+        'You can follow along at %(build_log)s .')
+
+
+class PaladinMessage():
+  """An object that is used to send messages to developers about their changes.
+  """
+  # URL where Paladin documentation is stored.
+  _PALADIN_DOCUMENTATION_URL = ('http://www.chromium.org/developers/'
+                                'tree-sheriffs/sheriff-details-chromium-os/'
+                                'commit-queue-overview')
+
+  def __init__(self, message, patch, helper):
+    self.message = message
+    self.patch = patch
+    self.helper = helper
+
+  def _ConstructPaladinMessage(self):
+    """Adds any standard Paladin messaging to an existing message."""
+    return self.message + (' Please see %s for more information.' %
+                           self._PALADIN_DOCUMENTATION_URL)
+
+  def Send(self, dryrun):
+    """Sends the message to the developer."""
+    cmd = self.helper.GetGerritReviewCommand(
+        ['-m', '"%s"' % self._ConstructPaladinMessage(),
+         '%s,%s' % (self.patch.gerrit_number, self.patch.patch_number)])
+    _RunCommand(cmd, dryrun)

@@ -10,6 +10,7 @@ import logging
 import mox
 import os
 import sys
+import copy
 import tempfile
 import unittest
 
@@ -18,6 +19,23 @@ sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.lib import cros_build_lib as cros_lib
 from chromite.buildbot import patch as cros_patch
 from chromite.buildbot import gerrit_helper
+
+FAKE_PATCH_JSON = {
+  "project":"tacos/chromite", "branch":"master",
+  "id":"Iee5c89d929f1850d7d4e1a4ff5f21adda800025f",
+  "currentPatchSet": {
+    "number":"2", "ref":"refs/changes/72/5172/1",
+    "revision":"ff10979dd360e75ff21f5cf53b7f8647578785ef",
+  },
+  "number":"1112",
+  "subject":"chromite commit",
+  "owner":{"name":"Chromite Master", "email":"chromite@chromium.org"},
+  "url":"http://gerrit.chromium.org/gerrit/1112",
+  "lastUpdated":1311024529,
+  "sortKey":"00166e8700001052",
+  "open": True,
+  "status":"NEW",
+}
 
 
 # pylint: disable=W0212,R0904
@@ -157,74 +175,10 @@ class GerritQueryTests(mox.MoxTestBase):
 
 
 class GerritPatchTest(mox.MoxTestBase):
-  FAKE_PATCH_JSON = {
-    "project":"tacos/chromite", "branch":"master",
-    "id":"Iee5c89d929f1850d7d4e1a4ff5f21adda800025f",
-    "currentPatchSet": {
-      "number":"2", "ref":"refs/changes/72/5172/1",
-      "revision":"ff10979dd360e75ff21f5cf53b7f8647578785ef",
-    },
-    "number":"1112",
-    "subject":"chromite commit",
-    "owner":{"name":"Chromite Master", "email":"chromite@chromium.org"},
-    "url":"http://gerrit.chromium.org/gerrit/1112",
-    "lastUpdated":1311024529,
-    "sortKey":"00166e8700001052",
-    "open": True,
-    "status":"NEW",
-  }
 
-  def setUp(self):
-    mox.MoxTestBase.setUp(self)
-    self.mox.StubOutWithMock(cros_patch.GerritPatch, 'RemoveCommitReady')
-
-  def testGerritSubmit(self):
-    """Tests submission review string looks correct."""
-    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
-    my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)
-    helper = gerrit_helper.GerritHelper(False)
-    cros_lib.RunCommand(
-        'ssh -p 29418 gerrit.chromium.org gerrit review '
-        '--submit 1112,2'.split(), error_ok=True)
-    self.mox.ReplayAll()
-    my_patch.Submit(helper, False)
-    self.mox.VerifyAll()
-
-  def testGerritHandleApplied(self):
-    """Tests review string looks correct."""
-    my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)
-    helper = gerrit_helper.GerritHelper(False)
-    self.mox.ReplayAll()
-    my_patch.HandleApplied(helper, 'http://fake%20url/1234', True)
-    self.mox.VerifyAll()
-
-
-  def testGerritHandleApplyError(self):
-    """Tests review string looks correct."""
-    my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)
-    helper = gerrit_helper.GerritHelper(False)
-    my_patch.RemoveCommitReady(helper, True)
-    self.mox.ReplayAll()
-    my_patch.HandleCouldNotApply(helper, 'http://fake%20url/1234', True)
-    self.mox.VerifyAll()
-
-  def testGerritHandleSubmitError(self):
-    """Tests review string looks correct."""
-    my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)
-    helper = gerrit_helper.GerritHelper(False)
-    my_patch.RemoveCommitReady(helper, True)
-    self.mox.ReplayAll()
-    my_patch.HandleCouldNotSubmit(helper, 'http://fake%20url/1234', True)
-    self.mox.VerifyAll()
-
-  def testGerritHandleVerifyError(self):
-    """Tests review string looks correct."""
-    my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)
-    helper = gerrit_helper.GerritHelper(False)
-    my_patch.RemoveCommitReady(helper, True)
-    self.mox.ReplayAll()
-    my_patch.HandleCouldNotVerify(helper, 'http://fake%20url/1234', True)
-    self.mox.VerifyAll()
+  @property
+  def test_json(self):
+    return copy.deepcopy(FAKE_PATCH_JSON)
 
   def GerritDepenedenciesHelper(self, git_log, expected_return_tuple):
     build_root = 'fake_build_root'
@@ -233,7 +187,7 @@ class GerritPatchTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(cros_patch, '_GetProjectManifestBranch')
     self.mox.StubOutWithMock(cros_lib, 'GetProjectDir')
 
-    my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)
+    my_patch = cros_patch.GerritPatch(self.test_json, False)
     cros_lib.GetProjectDir(build_root, 'tacos/chromite').AndReturn(project_dir)
     # Ignore git fetch.
     cros_lib.RunCommand(mox.IgnoreArg(), cwd=project_dir, print_cmd=False)
@@ -253,7 +207,7 @@ class GerritPatchTest(mox.MoxTestBase):
     build_root = 'fake_build_root'
     self.mox.StubOutWithMock(cros_patch.GerritPatch, 'CommitMessage')
 
-    my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)
+    my_patch = cros_patch.GerritPatch(self.test_json, False)
     my_patch.CommitMessage(build_root).AndReturn(commit_msg)
 
     self.mox.ReplayAll()
@@ -318,7 +272,7 @@ class GerritPatchTest(mox.MoxTestBase):
     result = self.mox.CreateMock(cros_lib.CommandResult)
     result.returncode = 0
     result.output = '   '.join([my_hash, my_branch])
-    my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)
+    my_patch = cros_patch.GerritPatch(self.test_json, False)
     cros_lib.RunCommandWithRetries(
         3, ['git', 'ls-remote',
             'ssh://gerrit.chromium.org:29418/tacos/chromite',
@@ -330,7 +284,7 @@ class GerritPatchTest(mox.MoxTestBase):
 
   def testGetLatestSHA1ForProject4Realz(self):
     """Verify we can check the latest hash from chromite."""
-    my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)
+    my_patch = cros_patch.GerritPatch(self.test_json, False)
     # Put some real info in there.
     my_patch.internal = False
     my_patch.project = 'chromiumos/chromite'
@@ -340,7 +294,7 @@ class GerritPatchTest(mox.MoxTestBase):
 
   def NotestMockRemoveCommitReady(self):
     """Tests against sosa's test patch to remove Commit Ready bit on failure."""
-    my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)
+    my_patch = cros_patch.GerritPatch(self.test_json, False)
     my_patch.gerrit_number = 8366 # Sosa's test change.
     my_patch.patch_number = 1 # Sosa's test patch.
     helper = gerrit_helper.GerritHelper(False)

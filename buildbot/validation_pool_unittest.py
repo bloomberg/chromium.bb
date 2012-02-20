@@ -29,6 +29,10 @@ _CountingSource = itertools.count()
 class TestValidationPool(mox.MoxTestBase):
   """Tests methods in validation_pool.ValidationPool."""
 
+  def setUp(self):
+    mox.MoxTestBase.setUp(self)
+    self.mox.StubOutWithMock(validation_pool, '_RunCommand')
+
   @property
   def test_json(self):
     return copy.deepcopy(patch_unittest.FAKE_PATCH_JSON)
@@ -41,7 +45,13 @@ class TestValidationPool(mox.MoxTestBase):
     patch.patch_number = (patch_number if patch_number is not None else
                           _CountingSource.next())
     patch.url = 'fake_url/%i' % (change_id,)
+    patch.apply_error_message = None
     return patch
+
+  def GetPool(self, *args):
+    pool = validation_pool.ValidationPool(*args)
+    self.mox.StubOutWithMock(pool, '_SendNotification')
+    return pool
 
   def _TreeStatusFile(self, message, general_state):
     """Returns a file-like object with the status message writtin in it."""
@@ -105,16 +115,16 @@ class TestValidationPool(mox.MoxTestBase):
 
     build_root = 'fakebuildroot'
 
-    pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
+    pool = self.GetPool(False, 1, 'build_name', True, False)
     pool.changes = [patch1, patch2]
 
     patch1.GerritDependencies(build_root).AndReturn(['ChangeId2'])
     patch1.PaladinDependencies(build_root).AndReturn([])
 
     patch2.Apply(build_root, trivial=True)
-    patch2.HandleApplied(pool.gerrit_helper, pool.build_log, dryrun=False)
+    pool.HandleApplied(patch2)
     patch1.Apply(build_root, trivial=True)
-    patch1.HandleApplied(pool.gerrit_helper, pool.build_log, dryrun=False)
+    pool.HandleApplied(patch1)
 
     self.mox.ReplayAll()
     self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
@@ -131,7 +141,7 @@ class TestValidationPool(mox.MoxTestBase):
     patch2.project = 'fake_project'
     build_root = 'fakebuildroot'
 
-    pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
+    pool = self.GetPool(False, 1, 'build_name', True, False)
     pool.changes = [patch2]
     helper = self.mox.CreateMock(gerrit_helper.GerritHelper)
     pool.gerrit_helper = helper
@@ -150,7 +160,7 @@ class TestValidationPool(mox.MoxTestBase):
     patch2.project = 'fake_project'
     build_root = 'fakebuildroot'
 
-    pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
+    pool = self.GetPool(False, 1, 'build_name', True, False)
     pool.changes = [patch2]
     helper = self.mox.CreateMock(gerrit_helper.GerritHelper)
     pool.gerrit_helper = helper
@@ -158,7 +168,7 @@ class TestValidationPool(mox.MoxTestBase):
     patch2.PaladinDependencies(build_root).AndReturn([])
     helper.IsChangeCommitted(patch1.id).AndReturn(True)
     patch2.Apply(build_root, trivial=True)
-    patch2.HandleApplied(helper, pool.build_log, dryrun=False)
+    pool.HandleApplied(patch2)
 
     self.mox.ReplayAll()
     self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
@@ -180,7 +190,7 @@ class TestValidationPool(mox.MoxTestBase):
     patch4 = self.MockPatch(4)
     build_root = 'fakebuildroot'
 
-    pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
+    pool = self.GetPool(False, 1, 'build_name', True, False)
     pool.changes = [patch1, patch2, patch3, patch4]
     pool.build_log = 'log'
 
@@ -194,7 +204,7 @@ class TestValidationPool(mox.MoxTestBase):
     patch3.GerritDependencies(build_root).AndReturn([])
     patch3.PaladinDependencies(build_root).AndReturn([])
     patch3.Apply(build_root, trivial=True)
-    patch3.HandleApplied(pool.gerrit_helper, pool.build_log, dryrun=False)
+    pool.HandleApplied(patch3)
 
     # This one should be handled later (not where patch1 is handled.
     patch4.GerritDependencies(build_root).AndReturn([])
@@ -205,7 +215,7 @@ class TestValidationPool(mox.MoxTestBase):
             patch_type=\
                 cros_patch.ApplyPatchException.TYPE_REBASE_TO_PATCH_INFLIGHT))
 
-    patch1.HandleCouldNotApply(pool.gerrit_helper, pool.build_log, dryrun=False)
+    pool.HandleCouldNotApply(patch1)
 
     self.mox.ReplayAll()
     self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
@@ -218,7 +228,9 @@ class TestValidationPool(mox.MoxTestBase):
     patch2 = self.MockPatch(2)
     build_root = 'fakebuildroot'
 
-    pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
+    pool = self.GetPool(False, 1, 'build_name', True, False)
+    self.mox.StubOutWithMock(pool, 'HandleCouldNotApply')
+
     pool.changes = [patch1, patch2]
     pool.build_log = 'log'
 
@@ -228,9 +240,9 @@ class TestValidationPool(mox.MoxTestBase):
     patch2.GerritDependencies(build_root).AndReturn([])
     patch2.PaladinDependencies(build_root).AndReturn([])
     patch2.Apply(build_root, trivial=True)
-    patch2.HandleApplied(pool.gerrit_helper, pool.build_log, dryrun=False)
 
-    patch1.HandleCouldNotApply(pool.gerrit_helper, pool.build_log, dryrun=False)
+    pool.HandleApplied(patch2)
+    pool.HandleCouldNotApply(patch1)
 
     self.mox.ReplayAll()
     self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
@@ -256,7 +268,7 @@ class TestValidationPool(mox.MoxTestBase):
 
     build_root = 'fakebuildroot'
 
-    pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
+    pool = self.GetPool(False, 1, 'build_name', True, False)
     pool.changes = [patch1, patch2, patch3, patch4, patch5]
 
     patch1.GerritDependencies(build_root).AndReturn(['ChangeId2'])
@@ -267,15 +279,15 @@ class TestValidationPool(mox.MoxTestBase):
     patch4.PaladinDependencies(build_root).AndReturn(['ChangeId5'])
 
     patch2.Apply(build_root, trivial=True)
-    patch2.HandleApplied(pool.gerrit_helper, pool.build_log, dryrun=False)
+    pool.HandleApplied(patch2)
     patch1.Apply(build_root, trivial=True)
-    patch1.HandleApplied(pool.gerrit_helper, pool.build_log, dryrun=False)
+    pool.HandleApplied(patch1)
     patch3.Apply(build_root, trivial=True)
-    patch3.HandleApplied(pool.gerrit_helper, pool.build_log, dryrun=False)
+    pool.HandleApplied(patch3)
     patch5.Apply(build_root, trivial=True)
-    patch5.HandleApplied(pool.gerrit_helper, pool.build_log, dryrun=False)
+    pool.HandleApplied(patch5)
     patch4.Apply(build_root, trivial=True)
-    patch4.HandleApplied(pool.gerrit_helper, pool.build_log, dryrun=False)
+    pool.HandleApplied(patch4)
 
     self.mox.ReplayAll()
     self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
@@ -290,7 +302,7 @@ class TestValidationPool(mox.MoxTestBase):
     patch2 = self.MockPatch(2)
     build_root = 'fakebuildroot'
 
-    pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
+    pool = self.GetPool(False, 1, 'build_name', True, False)
     pool.changes = [patch1, patch2]
 
     patch1.GerritDependencies(build_root).AndReturn([])
@@ -299,10 +311,10 @@ class TestValidationPool(mox.MoxTestBase):
     patch2.PaladinDependencies(build_root).AndReturn([])
 
     patch1.Apply(build_root, trivial=True)
-    patch1.HandleApplied(pool.gerrit_helper, pool.build_log, dryrun=False)
+    pool.HandleApplied(patch1)
 
     patch2.Apply(build_root, trivial=True)
-    patch2.HandleApplied(pool.gerrit_helper, pool.build_log, dryrun=False)
+    pool.HandleApplied(patch2)
 
     self.mox.ReplayAll()
     self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
@@ -325,18 +337,20 @@ class TestValidationPool(mox.MoxTestBase):
     build_root = 'fakebuildroot'
 
     validation_pool.ValidationPool._IsTreeOpen().AndReturn(True)
-    pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
+    pool = self.GetPool(False, 1, 'build_name', True, False)
     pool.changes = [patch1, patch2, patch3]
     pool.gerrit_helper = helper
     pool.dryrun = False
 
-    patch1.Submit(helper, dryrun=False)
+    self.mox.StubOutWithMock(pool, 'SubmitChange')
+    self.mox.StubOutWithMock(pool, 'RemoveCommitReady')
+    pool.SubmitChange(patch1)
     helper.IsChangeCommitted(patch1.id, False).AndReturn(False)
-    patch1.HandleCouldNotSubmit(helper, pool.build_log, dryrun=False)
-    patch2.Submit(helper, dryrun=False).AndRaise(
+    pool.HandleCouldNotSubmit(patch1)
+    pool.SubmitChange(patch2).AndRaise(
         cros_build_lib.RunCommandError('Failed to submit', 'cmd', 1))
-    patch2.HandleCouldNotSubmit(helper, pool.build_log, dryrun=False)
-    patch3.Submit(helper, dryrun=False)
+    pool.HandleCouldNotSubmit(patch2)
+    pool.SubmitChange(patch3)
     helper.IsChangeCommitted(patch3.id, False).AndReturn(True)
 
     self.mox.ReplayAll()
@@ -354,14 +368,15 @@ class TestValidationPool(mox.MoxTestBase):
     build_root = 'fakebuildroot'
 
     validation_pool.ValidationPool._IsTreeOpen().AndReturn(True)
-    pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
+    pool = self.GetPool(False, 1, 'build_name', True, False)
     pool.changes = [patch1, patch2]
     pool.gerrit_helper = helper
     pool.dryrun = False
 
-    patch1.Submit(helper, dryrun=False)
+    self.mox.StubOutWithMock(pool, 'SubmitChange')
+    pool.SubmitChange(patch1)
     helper.IsChangeCommitted(patch1.id, False).AndReturn(True)
-    patch2.Submit(helper, dryrun=False)
+    pool.SubmitChange(patch2)
     helper.IsChangeCommitted(patch2.id, False).AndReturn(True)
 
     self.mox.ReplayAll()
@@ -377,19 +392,80 @@ class TestValidationPool(mox.MoxTestBase):
     build_root = 'fakebuildroot'
 
     validation_pool.ValidationPool._IsTreeOpen().AndReturn(True)
-    pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
+    pool = self.GetPool(False, 1, 'build_name', True, False)
     pool.non_manifest_changes = [patch1, patch2]
     pool.gerrit_helper = helper
     pool.dryrun = False
 
-    patch1.Submit(helper, dryrun=False)
+    self.mox.StubOutWithMock(pool, 'SubmitChange')
+    pool.SubmitChange(patch1)
     helper.IsChangeCommitted(patch1.id, False).AndReturn(True)
-    patch2.Submit(helper, dryrun=False)
+    pool.SubmitChange(patch2)
     helper.IsChangeCommitted(patch2.id, False).AndReturn(True)
 
     self.mox.ReplayAll()
     pool.SubmitNonManifestChanges()
     self.mox.VerifyAll()
+
+  def testGerritSubmit(self):
+    """Tests submission review string looks correct."""
+    pool = self.GetPool(False, 1, 'build_name', True, False)
+
+    my_patch = cros_patch.GerritPatch(self.test_json, False)
+    validation_pool._RunCommand(
+        'ssh -p 29418 gerrit.chromium.org gerrit review '
+        '--submit 1112,2'.split(), False).AndReturn(None)
+    self.mox.ReplayAll()
+    pool.SubmitChange(my_patch)
+    self.mox.VerifyAll()
+
+  def testGerritHandleApplied(self):
+    """Tests review string looks correct."""
+    pool = self.GetPool(False, 1, 'build_name', True, False)
+
+    my_patch = cros_patch.GerritPatch(self.test_json, False)
+    pool._SendNotification(my_patch, mox.IgnoreArg())
+
+    self.mox.ReplayAll()
+    pool.HandleApplied(my_patch)
+    self.mox.VerifyAll()
+
+  def testGerritHandleApplyError(self):
+    """Tests review string looks correct."""
+    pool = self.GetPool(False, 1, 'build_name', True, False)
+
+    my_patch = cros_patch.GerritPatch(self.test_json, False)
+    pool._SendNotification(my_patch, mox.IgnoreArg())
+
+    pool.RemoveCommitReady(my_patch)
+    self.mox.ReplayAll()
+    pool.HandleCouldNotApply(my_patch)
+    self.mox.VerifyAll()
+
+  def testGerritHandleSubmitError(self):
+    """Tests review string looks correct."""
+    pool = self.GetPool(False, 1, 'build_name', True, False)
+
+    my_patch = cros_patch.GerritPatch(self.test_json, False)
+    pool._SendNotification(my_patch, mox.IgnoreArg())
+
+    pool.RemoveCommitReady(my_patch)
+    self.mox.ReplayAll()
+    pool.HandleCouldNotSubmit(my_patch)
+    self.mox.VerifyAll()
+
+  def testGerritHandleVerifyError(self):
+    """Tests review string looks correct."""
+    pool = self.GetPool(False, 1, 'build_name', True, False)
+
+    my_patch = cros_patch.GerritPatch(self.test_json, False)
+    pool._SendNotification(my_patch, mox.IgnoreArg())
+
+    pool.RemoveCommitReady(my_patch)
+    self.mox.ReplayAll()
+    pool.HandleCouldNotVerify(my_patch)
+    self.mox.VerifyAll()
+
 
 
 if __name__ == '__main__':

@@ -20,13 +20,6 @@ from chromite.lib import cros_build_lib as cros_lib
 # The prefix of the temporary directory created to store local patches.
 _TRYBOT_TEMP_PREFIX = 'trybot_patch-'
 
-def _RunCommand(cmd, dryrun):
-  """Runs the specified shell cmd if dryrun=False."""
-  if dryrun:
-    logging.info('Would have run: %s', ' '.join(cmd))
-  else:
-    cros_lib.RunCommand(cmd, error_ok=True)
-
 
 class GerritException(Exception):
   "Base exception, thrown for gerrit failures"""
@@ -58,32 +51,6 @@ class ApplyPatchException(Exception):
 class MissingChangeIDException(Exception):
   """Raised if a patch is missing a Change-ID."""
   pass
-
-
-class PaladinMessage():
-  """An object that is used to send messages to developers about their changes.
-  """
-  # URL where Paladin documentation is stored.
-  _PALADIN_DOCUMENTATION_URL = ('http://www.chromium.org/developers/'
-                                'tree-sheriffs/sheriff-details-chromium-os/'
-                                'commit-queue-overview')
-
-  def __init__(self, message, patch, helper):
-    self.message = message
-    self.patch = patch
-    self.helper = helper
-
-  def _ConstructPaladinMessage(self):
-    """Adds any standard Paladin messaging to an existing message."""
-    return self.message + (' Please see %s for more information.' %
-                           self._PALADIN_DOCUMENTATION_URL)
-
-  def Send(self, dryrun):
-    """Sends the message to the developer."""
-    cmd = self.helper.GetGerritReviewCommand(
-        ['-m', '"%s"' % self._ConstructPaladinMessage(),
-         '%s,%s' % (self.patch.gerrit_number, self.patch.patch_number)])
-    _RunCommand(cmd, dryrun)
 
 
 class Patch(object):
@@ -275,91 +242,6 @@ class GerritPatch(Patch):
                           print_cmd=False)
     self._RebasePatch(buildroot, project_dir, trivial)
 
-  # --------------------- Gerrit Operations --------------------------------- #
-
-  def RemoveCommitReady(self, helper, dryrun=False):
-    """Remove any commit ready bits associated with CL."""
-    query = ['-c',
-             '"DELETE FROM patch_set_approvals WHERE change_id=%s'
-             " AND patch_set_id=%s "
-             " AND category_id='COMR';\""
-             % (self.gerrit_number, self.patch_number)
-            ]
-    cmd = helper.GetGerritSqlCommand(query)
-    _RunCommand(cmd, dryrun)
-
-  def HandleCouldNotSubmit(self, helper, build_log, dryrun=False):
-    """Handler that is called when Paladin can't submit a change.
-
-    This should be rare, but if an admin overrides the commit queue and commits
-    a change that conflicts with this change, it'll apply, build/validate but
-    receive an error when submitting.
-
-    Args:
-      helper: Instance of gerrit_helper for the gerrit instance.
-      dryrun: If true, do not actually commit anything to Gerrit.
-
-    """
-    msg = ('The Commit Queue failed to submit your change in %s . '
-           'This can happen if you submitted your change or someone else '
-           'submitted a conflicting change while your change was being tested.'
-           % build_log)
-    PaladinMessage(msg, self, helper).Send(dryrun)
-    self.RemoveCommitReady(helper, dryrun)
-
-  def HandleCouldNotVerify(self, helper, build_log, dryrun=False):
-    """Handler for when Paladin fails to validate a change.
-
-    This handler notifies set Verified-1 to the review forcing the developer
-    to re-upload a change that works.  There are many reasons why this might be
-    called e.g. build or testing exception.
-
-    Args:
-      helper: Instance of gerrit_helper for the gerrit instance.
-      build_log:  URL to the build log where verification results could be
-        found.
-      dryrun: If true, do not actually commit anything to Gerrit.
-
-    """
-    msg = ('The Commit Queue failed to verify your change in %s . '
-           'If you believe this happened in error, just re-mark your commit as '
-           'ready. Your change will then get automatically retried.' %
-           build_log)
-    PaladinMessage(msg, self, helper).Send(dryrun)
-    self.RemoveCommitReady(helper, dryrun)
-
-  def HandleCouldNotApply(self, helper, build_log, dryrun=False):
-    """Handler for when Paladin fails to apply a change.
-
-    This handler notifies set CodeReview-2 to the review forcing the developer
-    to re-upload a rebased change.
-
-    Args:
-      helper: Instance of gerrit_helper for the gerrit instance.
-      build_log: URL of where to find the logs for this build.
-      dryrun: If true, do not actually commit anything to Gerrit.
-    """
-    msg = ('The Commit Queue failed to apply your change in %s . ' %
-           build_log)
-    msg += self.apply_error_message
-    PaladinMessage(msg, self, helper).Send(dryrun)
-    self.RemoveCommitReady(helper, dryrun)
-
-  def HandleApplied(self, helper, build_log, dryrun=False):
-    """Handler for when Paladin successfully applies a change.
-
-    This handler notifies a developer that their change is being tried as
-    part of a Paladin run defined by a build_log.
-
-    Args:
-      helper: Instance of gerrit_helper for the gerrit instance.
-      build_log: URL of where to find the logs for this build.
-      dryrun: If true, do not actually commit anything to Gerrit.
-    """
-    msg = ('The Commit Queue has picked up your change. '
-           'You can follow along at %s .' % build_log)
-    PaladinMessage(msg, self, helper).Send(dryrun)
-
   def CommitMessage(self, buildroot):
     """Returns the commit message for the patch as a string."""
     url = self._GetProjectUrl()
@@ -433,17 +315,6 @@ class GerritPatch(Patch):
       logging.info('Found %s Paladin dependencies for change %s', dependencies,
                    self)
     return dependencies
-
-  def Submit(self, helper, dryrun=False):
-    """Submits patch using Gerrit Review.
-
-    Args:
-      helper: Instance of gerrit_helper for the gerrit instance.
-      dryrun: If true, do not actually commit anything to Gerrit.
-    """
-    cmd = helper.GetGerritReviewCommand(['--submit', '%s,%s' % (
-        self.gerrit_number, self.patch_number)])
-    _RunCommand(cmd, dryrun)
 
   def __str__(self):
     """Returns custom string to identify this patch."""
