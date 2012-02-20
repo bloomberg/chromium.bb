@@ -555,7 +555,7 @@ const Experiment kExperiments[] = {
     "enable-media-stream",
     IDS_FLAGS_MEDIA_STREAM_NAME,
     IDS_FLAGS_MEDIA_STREAM_DESCRIPTION,
-    kOsWin | kOsLinux | kOsMac,
+    kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableMediaStream)
   },
   {
