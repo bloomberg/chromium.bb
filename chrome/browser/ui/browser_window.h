@@ -286,6 +286,16 @@ class BrowserWindow {
                             const content::SSLStatus& ssl,
                             bool show_history) = 0;
 
+  // Shows the website settings using the specified information. |url| is the
+  // url of the page/frame the info applies to, |ssl| is the SSL information for
+  // that page/frame.  If |show_history| is true, a section showing how many
+  // times that URL has been visited is added to the page info.
+  virtual void ShowWebsiteSettings(Profile* profile,
+                                   TabContentsWrapper* tab_contents_wrapper,
+                                   const GURL& url,
+                                   const content::SSLStatus& ssl,
+                                   bool show_history) = 0;
+
   // Shows the app menu (for accessibility).
   virtual void ShowAppMenu() = 0;
 

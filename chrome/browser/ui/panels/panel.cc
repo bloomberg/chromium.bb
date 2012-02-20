@@ -515,6 +515,13 @@ void Panel::ShowPageInfo(Profile* profile,
                          bool show_history) {
   NOTIMPLEMENTED();
 }
+void Panel::ShowWebsiteSettings(Profile* profile,
+                                TabContentsWrapper* tab_contents_wrapper,
+                                const GURL& url,
+                                const content::SSLStatus& ssl,
+                                bool show_history) {
+  NOTIMPLEMENTED();
+}
 
 void Panel::ShowAppMenu() {
   NOTIMPLEMENTED();

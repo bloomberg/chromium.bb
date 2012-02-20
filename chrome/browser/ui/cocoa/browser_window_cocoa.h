@@ -103,6 +103,11 @@ class BrowserWindowCocoa : public BrowserWindow,
                             const GURL& url,
                             const content::SSLStatus& ssl,
                             bool show_history) OVERRIDE;
+  virtual void ShowWebsiteSettings(Profile* profile,
+                                   TabContentsWrapper* tab_contents_wrapper,
+                                   const GURL& url,
+                                   const content::SSLStatus& ssl,
+                                   bool show_history) OVERRIDE;
   virtual void ShowAppMenu() OVERRIDE;
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                       bool* is_keyboard_shortcut) OVERRIDE;

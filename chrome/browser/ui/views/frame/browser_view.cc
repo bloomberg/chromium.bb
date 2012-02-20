@@ -1210,6 +1210,13 @@ void BrowserView::ShowPageInfo(Profile* profile,
                               profile, url, ssl, show_history);
 }
 
+void BrowserView::ShowWebsiteSettings(Profile* profile,
+                                      TabContentsWrapper* tab_contents_wrapper,
+                                      const GURL& url,
+                                      const content::SSLStatus& ssl,
+                                      bool show_history) {
+}
+
 void BrowserView::ShowAppMenu() {
   toolbar_->app_menu()->Activate();
 }

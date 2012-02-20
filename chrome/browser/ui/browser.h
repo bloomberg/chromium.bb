@@ -563,7 +563,8 @@ class Browser : public TabHandlerDelegate,
   void SavePage();
   void ViewSelectedSource();
   void ShowFindBar();
-  void ShowPageInfo(const GURL& url,
+  void ShowPageInfo(content::WebContents* web_contents,
+                    const GURL& url,
                     const content::SSLStatus& ssl,
                     bool show_history);
 

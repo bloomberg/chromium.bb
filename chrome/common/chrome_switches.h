@@ -164,6 +164,7 @@ extern const char kEnableSyncTabs[];
 extern const char kEnableSyncTabsForOtherClients[];
 extern const char kEnableTabGroupsContextMenu[];
 extern const char kEnableWatchdog[];
+extern const char kEnableWebsiteSettings[];
 extern const char kEnableWebSocketOverSpdy[];
 extern const char kEnableWebStoreLink[];
 extern const char kExperimentalSpellcheckerFeatures[];

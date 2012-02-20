@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,5 +40,5 @@ void ClickHandler::OnMouseReleased(const views::MouseEvent& event) {
   }
 
   Browser* browser = Browser::GetBrowserForController(&controller, NULL);
-  browser->ShowPageInfo(nav_entry->GetURL(), nav_entry->GetSSL(), true);
+  browser->ShowPageInfo(tab, nav_entry->GetURL(), nav_entry->GetSSL(), true);
 }

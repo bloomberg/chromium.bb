@@ -578,6 +578,10 @@ const char kEnableTabGroupsContextMenu[]    = "enable-tab-groups-context-menu";
 // Order of the listed sub-arguments does not matter.
 const char kEnableWatchdog[]                = "enable-watchdog";
 
+// Enable Website Settings. The Website Settings UI will replace the Page Info
+// Bubble.
+const char kEnableWebsiteSettings[]         = "enable-website-settings";
+
 // Uses WebSocket over SPDY.
 const char kEnableWebSocketOverSpdy[]       = "enable-websocket-over-spdy";
 

@@ -3940,10 +3940,21 @@ void Browser::OnStartDownload(WebContents* source,
     CloseContents(source);
 }
 
-void Browser::ShowPageInfo(const GURL& url,
+void Browser::ShowPageInfo(content::WebContents* web_contents,
+                           const GURL& url,
                            const SSLStatus& ssl,
                            bool show_history) {
-  window()->ShowPageInfo(profile_, url, ssl, show_history);
+  Profile* profile = Profile::FromBrowserContext(
+      web_contents->GetBrowserContext());
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableWebsiteSettings)) {
+    window()->ShowWebsiteSettings(profile, wrapper, url, ssl, show_history);
+  } else {
+    window()->ShowPageInfo(profile, url, ssl, show_history);
+  }
 }
 
 void Browser::ViewSourceForTab(WebContents* source, const GURL& page_url) {

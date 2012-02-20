@@ -1682,7 +1682,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       NavigationController* controller = &source_web_contents_->GetController();
       NavigationEntry* nav_entry = controller->GetActiveEntry();
       Browser* browser = Browser::GetBrowserForController(controller, NULL);
-      browser->ShowPageInfo(nav_entry->GetURL(), nav_entry->GetSSL(), true);
+      browser->ShowPageInfo(source_web_contents_, nav_entry->GetURL(),
+                            nav_entry->GetSSL(), true);
       break;
     }
 
@@ -1724,7 +1725,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_CONTENT_CONTEXT_VIEWFRAMEINFO: {
       Browser* browser = Browser::GetBrowserForController(
           &source_web_contents_->GetController(), NULL);
-      browser->ShowPageInfo(params_.frame_url, params_.security_info, false);
+      browser->ShowPageInfo(source_web_contents_, params_.frame_url,
+                            params_.security_info, false);
       break;
     }
 

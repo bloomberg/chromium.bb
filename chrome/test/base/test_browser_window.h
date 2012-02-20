@@ -103,6 +103,11 @@ class TestBrowserWindow : public BrowserWindow {
                             const GURL& url,
                             const content::SSLStatus& ssl,
                             bool show_history) OVERRIDE {}
+  virtual void ShowWebsiteSettings(Profile* profile,
+                                   TabContentsWrapper* wrapper,
+                                   const GURL& url,
+                                   const content::SSLStatus& ssl,
+                                   bool show_history) OVERRIDE {}
   virtual void Cut() OVERRIDE {}
   virtual void Copy() OVERRIDE {}
   virtual void Paste() OVERRIDE {}

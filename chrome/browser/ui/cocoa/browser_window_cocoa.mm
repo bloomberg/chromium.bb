@@ -476,6 +476,14 @@ void BrowserWindowCocoa::ShowPageInfo(Profile* profile,
   browser::ShowPageInfoBubble(window(), profile, url, ssl, show_history);
 }
 
+void BrowserWindowCocoa::ShowWebsiteSettings(
+    Profile* profile,
+    TabContentsWrapper* tab_contents_wrapper,
+    const GURL& url,
+    const content::SSLStatus& ssl,
+    bool show_history) {
+}
+
 void BrowserWindowCocoa::ShowAppMenu() {
   // No-op. Mac doesn't support showing the menus via alt keys.
 }

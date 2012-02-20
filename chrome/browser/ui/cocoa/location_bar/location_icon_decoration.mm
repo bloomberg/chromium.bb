@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -108,7 +108,7 @@ bool LocationIconDecoration::OnMousePressed(NSRect frame) {
     return true;
   }
   Browser* browser = Browser::GetBrowserForController(&controller, NULL);
-  browser->ShowPageInfo(nav_entry->GetURL(), nav_entry->GetSSL(), true);
+  browser->ShowPageInfo(tab, nav_entry->GetURL(), nav_entry->GetSSL(), true);
   return true;
 }
 
