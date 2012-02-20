@@ -99,6 +99,10 @@ cr.define('login', function() {
      * Initializes the pod after its properties set and added to a pod row.
      */
     initialize: function() {
+      // TODO(flackr): Get rid of multiple blur listeners. We should be able to
+      // use a single focusout listener on the pod or entire row but this is not
+      // being sent for some reason when you open the status area menus despite
+      // blur being sent.
       if (!this.isGuest) {
         this.passwordEmpty = true;
         this.passwordElement.addEventListener('keydown',
@@ -107,6 +111,11 @@ cr.define('login', function() {
             this.handlePasswordKeyPress_.bind(this));
         this.passwordElement.addEventListener('keyup',
             this.handlePasswordKeyUp_.bind(this));
+        this.passwordElement.addEventListener('blur',
+            this.parentNode.handleBlur.bind(this.parentNode));
+      } else {
+        this.enterButtonElement.addEventListener('blur',
+            this.parentNode.handleBlur.bind(this.parentNode));
       }
     },
 
@@ -735,6 +744,15 @@ cr.define('login', function() {
         // on a pod nor on a button/input for a pod.
         this.focusPod();
       }
+    },
+
+    /**
+     * Handles a blur event.
+     * @param {Event} e Blur Event object.
+     */
+    handleBlur: function(e) {
+      // Clear focus when the pod input is blurred.
+      this.focusPod();
     },
 
     /**
