@@ -359,9 +359,6 @@ class FullInterfaceTest(unittest.TestCase):
     self.mox.StubOutWithMock(parser, 'error')
     self.mox.StubOutWithMock(cbuildbot.os.path, 'exists')
     self.mox.StubOutWithMock(cros_lib, 'IsInsideChroot')
-    self.mox.StubOutWithMock(cbuildbot.cgroup.CGroup, '__init__')
-    self.mox.StubOutWithMock(cbuildbot.cgroup.CGroup, '__enter__')
-    self.mox.StubOutWithMock(cbuildbot.cgroup.CGroup, '__exit__')
     self.mox.StubOutWithMock(cbuildbot, '_CreateParser')
     self.mox.StubOutWithMock(sys, 'exit')
     self.mox.StubOutWithMock(cros_lib, 'GetInput')
@@ -370,18 +367,15 @@ class FullInterfaceTest(unittest.TestCase):
     self.mox.StubOutWithMock(cbuildbot.os.path, 'realpath')
 
     cbuildbot.os.path.realpath = fake_real_path
+    # Suppress cgroups code.  For cbuildbot invocation, it doesn't hugely
+    # care about cgroups- that's a blackbox to it.  As such these unittests
+    # should not be sensitive to it.
+    os.path.exists('/proc/cgroups').InAnyOrder().AndReturn(False)
     os.path.exists(constants.SOURCE_ROOT).InAnyOrder().AndReturn(True)
     os.path.exists(os.path.join(
         constants.SOURCE_ROOT, '.repo')).InAnyOrder().AndReturn(True)
     parser.error(mox.IgnoreArg()).InAnyOrder().AndRaise(TestExitedException())
     cros_lib.IsInsideChroot().InAnyOrder().AndReturn(False)
-    cbuildbot.cgroup.CGroup.__init__(disable=False).InAnyOrder().AndReturn(None)
-    cbuildbot.cgroup.CGroup.__init__(disable=True).InAnyOrder().AndReturn(None)
-    cbuildbot.cgroup.CGroup.__enter__().InAnyOrder().AndReturn(None)
-    cbuildbot.cgroup.CGroup.__exit__(
-        mox.IgnoreArg(),
-        mox.IgnoreArg(),
-        mox.IgnoreArg()).InAnyOrder().AndReturn(None)
     cbuildbot._CreateParser().InAnyOrder().AndReturn(parser)
     sys.exit(mox.IgnoreArg()).InAnyOrder().AndRaise(TestExitedException())
     cros_lib.FindRepoDir().InAnyOrder().AndReturn('/b/test_build1/.repo')

@@ -919,7 +919,7 @@ def main(argv=None):
                  % options.buildroot)
 
   with sudo.SudoKeepAlive():
-    with cgroup.CGroup(disable=not options.cgroups):
+    with cros_lib.AllowDisabling(options.cgroups, cgroup.CGroup):
       if not options.buildbot:
         build_config = cbuildbot_config.OverrideConfigForTrybot(build_config)
       _RunBuildStagesWrapper(bot_id, options, build_config)

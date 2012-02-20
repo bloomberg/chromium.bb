@@ -14,6 +14,7 @@ import time
 from terminal import Color
 import xml.sax
 import functools
+import contextlib
 
 
 STRICT_SUDO = False
@@ -1022,6 +1023,33 @@ class MasterPidContextManager(object):
 
   def _exit(self, exc_type, exc, traceback):
     raise NotImplementedError(self, '_exit')
+
+
+@contextlib.contextmanager
+def _NoOpContextManager():
+  yield
+
+
+def AllowDisabling(enabled, functor, *args, **kwds):
+  """Context Manager wrapper that can be used to enable/disable usage.
+
+  This is mainly useful to control whether or not a given Context Manager
+  is used.
+
+  For example:
+
+  with AllowDisabling(options.timeout <= 0, Timeout, options.timeout):
+    ... do code w/in a timeout context..
+
+  If options.timeout is a positive integer, then the_Timeout context manager is
+  created and ran.  If it's zero or negative, then the timeout code is disabled.
+
+  While Timeout *could* handle this itself, it's redundant having each
+  implementation do this, thus the generic wrapper.
+  """
+  if enabled:
+    return functor(*args, **kwds)
+  return _NoOpContextManager()
 
 
 # Support having this module test itself if run as __main__, by leveraging
