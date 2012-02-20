@@ -23,6 +23,8 @@ class Rect;
 class Size;
 }
 
+namespace content {
+
 // RenderWidgetHostView is an interface implemented by an object that acts as
 // the "View" portion of a RenderWidgetHost. The RenderWidgetHost and its
 // associated RenderProcessHost own the "Model" in this case which is the
@@ -30,8 +32,6 @@ class Size;
 // the surrounding environment and passing them to the RenderWidgetHost, and
 // for actually displaying the content of the RenderWidgetHost when it
 // changes.
-//
-// TODO(joi): Move to content namespace.
 class CONTENT_EXPORT RenderWidgetHostView {
  public:
   virtual ~RenderWidgetHostView() {}
@@ -137,6 +137,8 @@ class CONTENT_EXPORT RenderWidgetHostView {
   virtual BrowserAccessibilityManager*
       GetBrowserAccessibilityManager() const = 0;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_VIEW_H_
 

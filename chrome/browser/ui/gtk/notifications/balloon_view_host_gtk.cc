@@ -8,7 +8,7 @@
 
 #include "chrome/browser/notifications/balloon.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 
 BalloonViewHost::BalloonViewHost(Balloon* balloon)
@@ -22,7 +22,7 @@ BalloonViewHost::~BalloonViewHost() {
 void BalloonViewHost::UpdateActualSize(const gfx::Size& new_size) {
   RenderViewHost* host = web_contents_->GetRenderViewHost();
   if (host) {
-    RenderWidgetHostView* view = host->view();
+    content::RenderWidgetHostView* view = host->view();
     if (view)
       view->SetSize(new_size);
   }

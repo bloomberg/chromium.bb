@@ -9,9 +9,9 @@
 #include "chrome/browser/tab_contents/web_drag_bookmark_handler_gtk.h"
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents_view_gtk.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/gtk/gtk_floating_container.h"
 
@@ -102,7 +102,7 @@ void ChromeTabContentsViewWrapperGtk::ShowContextMenu(
   // which this context menu is showed, so that we can retrieve the last mouse
   // down event on the render widget and use it as the timestamp of the
   // activation event to show the context menu.
-  RenderWidgetHostView* view = NULL;
+  content::RenderWidgetHostView* view = NULL;
   if (params.custom_context.render_widget_id !=
       content::CustomContextMenuContext::kCurrentRenderWidget) {
     IPC::Channel::Listener* listener =

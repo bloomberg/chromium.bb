@@ -18,13 +18,13 @@
 class InterstitialPageImpl;
 class NavigationControllerImpl;
 class RenderViewHost;
-class RenderWidgetHostView;
 class WebUIImpl;
 
 namespace content {
 class BrowserContext;
 class NavigationEntry;
 class NavigationEntryImpl;
+class RenderWidgetHostView;
 }
 
 // Manages RenderViewHosts for a TabContents. Normally there is only one and
@@ -115,7 +115,7 @@ class CONTENT_EXPORT RenderViewHostManager
 
   // Returns the view associated with the current RenderViewHost, or NULL if
   // there is no current one.
-  RenderWidgetHostView* GetRenderWidgetHostView() const;
+  content::RenderWidgetHostView* GetRenderWidgetHostView() const;
 
   // Returns the pending render view host, or NULL if there is no pending one.
   RenderViewHost* pending_render_view_host() const {

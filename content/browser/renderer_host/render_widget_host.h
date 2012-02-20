@@ -31,7 +31,6 @@
 
 class BackingStore;
 struct EditCommand;
-class RenderWidgetHostView;
 class RenderWidgetHostViewBase;
 class TransportDIB;
 struct ViewHostMsg_UpdateRect_Params;
@@ -43,6 +42,7 @@ class TimeTicks;
 
 namespace content {
 class RenderProcessHost;
+class RenderWidgetHostView;
 class RenderWidgetHostViewPort;
 }
 
@@ -156,8 +156,8 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   // RenderWidget is being destroyed or the render process crashed. You should
   // never cache this pointer since it can become NULL if the renderer crashes,
   // instead you should always ask for it using the accessor.
-  void SetView(RenderWidgetHostView* view);
-  RenderWidgetHostView* view() const;
+  void SetView(content::RenderWidgetHostView* view);
+  content::RenderWidgetHostView* view() const;
 
   content::RenderProcessHost* process() const { return process_; }
   int routing_id() const { return routing_id_; }

@@ -104,6 +104,7 @@ bool MovedToCenter(const WebKit::WebMouseEvent& mouse_event,
 
 }  // namespace
 
+using content::RenderWidgetHostView;
 using content::RenderWidgetHostViewPort;
 using WebKit::WebInputEventFactory;
 using WebKit::WebMouseWheelEvent;

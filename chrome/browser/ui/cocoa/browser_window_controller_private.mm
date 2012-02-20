@@ -30,12 +30,13 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #import "ui/base/cocoa/focus_tracker.h"
 #include "ui/base/ui_base_types.h"
 
+using content::RenderWidgetHostView;
 using content::WebContents;
 
 // Forward-declare symbols that are part of the 10.6 SDK.

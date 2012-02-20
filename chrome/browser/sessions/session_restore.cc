@@ -38,12 +38,12 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_widget_host.h"
-#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "net/base/network_change_notifier.h"
@@ -367,7 +367,7 @@ void TabLoader::ForceLoadTimerFired() {
 RenderWidgetHost* TabLoader::GetRenderWidgetHost(NavigationController* tab) {
   WebContents* web_contents = tab->GetWebContents();
   if (web_contents) {
-    RenderWidgetHostView* render_widget_host_view =
+    content::RenderWidgetHostView* render_widget_host_view =
         web_contents->GetRenderWidgetHostView();
     if (render_widget_host_view)
       return render_widget_host_view->GetRenderWidgetHost();

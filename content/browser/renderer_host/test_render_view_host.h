@@ -91,10 +91,10 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
       const WebKit::WebMouseWheelEvent& event) OVERRIDE {}
 
   // RenderWidgetHostViewPort implementation.
-  virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
+  virtual void InitAsPopup(content::RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& pos) OVERRIDE {}
   virtual void InitAsFullscreen(
-      RenderWidgetHostView* reference_host_view) OVERRIDE {}
+      content::RenderWidgetHostView* reference_host_view) OVERRIDE {}
   virtual void DidBecomeSelected() OVERRIDE {}
   virtual void WasHidden() OVERRIDE {}
   virtual void MovePluginWindows(

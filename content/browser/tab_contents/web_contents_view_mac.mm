@@ -19,14 +19,15 @@
 #import "content/browser/tab_contents/web_drag_dest_mac.h"
 #import "content/browser/tab_contents/web_drag_source_mac.h"
 #include "content/common/view_messages.h"
-#include "content/public/browser/web_contents_view_mac_delegate.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_view_mac_delegate.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #import "ui/base/cocoa/focus_tracker.h"
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
+using content::RenderWidgetHostView;
 using content::WebContents;
 
 // Ensure that the WebKit::WebDragOperation enum values stay in sync with

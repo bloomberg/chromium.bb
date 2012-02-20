@@ -14,7 +14,6 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/tab_contents/navigation_controller_impl.h"
@@ -22,6 +21,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/dom_storage_common.h"
 #include "content/common/view_messages.h"
+#include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/interstitial_page_delegate.h"
@@ -42,6 +42,7 @@ using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
 using content::RenderViewHostDelegate;
+using content::RenderWidgetHostView;
 using content::RenderWidgetHostViewPort;
 using content::SiteInstance;
 using content::WebContents;

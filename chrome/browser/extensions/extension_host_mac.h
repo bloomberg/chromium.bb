@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,6 @@
 #pragma once
 
 #include "chrome/browser/extensions/extension_host.h"
-
-class RenderWidgetHostView;
 
 // TODO(mpcomplete): I don't know what this does or if it is needed anymore,
 // now that ExtensionHost is restructured to rely on TabContents.

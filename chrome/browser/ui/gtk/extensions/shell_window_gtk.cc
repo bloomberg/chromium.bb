@@ -6,7 +6,7 @@
 
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/public/browser/render_widget_host_view.h"
 
 ShellWindowGtk::ShellWindowGtk(ExtensionHost* host)
     : ShellWindow(host) {

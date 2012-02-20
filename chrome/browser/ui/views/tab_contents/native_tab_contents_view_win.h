@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@ class WebDropTarget;
 class TabContentsDragWin;
 
 namespace content {
+class RenderWidgetHostView;
 class WebContents;
 }
 
@@ -33,7 +34,7 @@ class NativeTabContentsViewWin : public views::NativeWidgetWin,
   // Overridden from NativeTabContentsView:
   virtual void InitNativeTabContentsView() OVERRIDE;
   virtual void Unparent() OVERRIDE;
-  virtual RenderWidgetHostView* CreateRenderWidgetHostView(
+  virtual content::RenderWidgetHostView* CreateRenderWidgetHostView(
       RenderWidgetHost* render_widget_host) OVERRIDE;
   virtual gfx::NativeWindow GetTopLevelNativeWindow() const OVERRIDE;
   virtual void SetPageTitle(const string16& title) OVERRIDE;

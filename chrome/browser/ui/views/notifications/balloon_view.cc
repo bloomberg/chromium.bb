@@ -17,10 +17,10 @@
 #include "chrome/browser/notifications/notification_options_menu_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -223,7 +223,7 @@ void BalloonViewImpl::RepositionToBalloon() {
     gfx::Rect contents_rect = GetContentsRectangle();
     html_container_->SetBounds(contents_rect);
     html_contents_->SetPreferredSize(contents_rect.size());
-    RenderWidgetHostView* view =
+    content::RenderWidgetHostView* view =
         html_contents_->web_contents()->GetRenderWidgetHostView();
     if (view)
       view->SetSize(contents_rect.size());
@@ -272,7 +272,7 @@ void BalloonViewImpl::AnimationProgressed(const ui::Animation* animation) {
   html_container_->SetShape(path.CreateNativeRegion());
 
   html_contents_->SetPreferredSize(contents_rect.size());
-  RenderWidgetHostView* view =
+  content::RenderWidgetHostView* view =
       html_contents_->web_contents()->GetRenderWidgetHostView();
   if (view)
     view->SetSize(contents_rect.size());

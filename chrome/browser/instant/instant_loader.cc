@@ -34,7 +34,6 @@
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
-#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_controller.h"
@@ -46,6 +45,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view.h"
@@ -446,7 +446,7 @@ void InstantLoader::TabContentsDelegateImpl::NavigationStateChanged(
     // committed before waiting on paint as there is always an initial paint
     // when a new renderer is created from the resize so that if we showed the
     // preview after the first paint we would end up with a white rect.
-    RenderWidgetHostView *rwhv = source->GetRenderWidgetHostView();
+    content::RenderWidgetHostView *rwhv = source->GetRenderWidgetHostView();
     if (rwhv)
       RegisterForPaintNotifications(rwhv->GetRenderWidgetHost());
   } else if (source->IsCrashed()) {
