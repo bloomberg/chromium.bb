@@ -95,8 +95,6 @@
    bug_51988_c
    Heapcheck:Leak
    ...
-   fun:crypto::::NSSInitSingleton::OpenUserDB
-   fun:crypto::::NSSInitSingleton::OpenTestNSSDB
    fun:crypto::OpenTestNSSDB
 }
 {
@@ -106,6 +104,19 @@
    fun:base::DefaultLazyInstanceTraits::New
    ...
    fun:crypto::EnsureNSSInit
+}
+{
+   bug_51988_e
+   Heapcheck:Leak
+   ...
+   fun:net::CertDatabaseNSSTest_*_Test::TestBody
+}
+{
+   bug_51988_f
+   Heapcheck:Leak
+   fun:net::CertDatabase::DeleteCertAndKey
+   fun:net::CertDatabaseNSSTest::TearDown
+   fun:net::CertDatabaseNSSTest::TearDown
 }
 {
    bug_66941_a
@@ -1848,4 +1859,10 @@
    fun:WebCore::DocumentWriter::setEncoding
    fun:WebKit::FrameLoaderClientImpl::finishedLoading
    fun:WebCore::FrameLoader::finishedLoadingDocumen
+}
+{
+   bug_114978
+   Heapcheck:Leak
+   fun:mozilla_security_manager::GenKeyAndSignChallenge
+   fun:net::KeygenHandler::GenKeyAndSignChallenge
 }
