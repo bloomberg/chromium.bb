@@ -213,7 +213,7 @@ class NinjaWriter:
       path = path.replace(INTERMEDIATE_DIR,
                           os.path.join(product_dir or '', int_dir))
 
-    return path
+    return os.path.normpath(path)
 
   def ExpandRuleVariables(self, path, root, dirname, source, ext, name):
     path = path.replace(generator_default_variables['RULE_INPUT_ROOT'], root)
@@ -1183,7 +1183,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.rule(
       'copy',
       description='COPY $in $out',
-      command='mklink /h $out $in >nul')
+      command='cmd /c mklink /h $out $in >nul || mklink /h /j $out $in >nul')
   else:
     master_ninja.rule(
       'copy',
