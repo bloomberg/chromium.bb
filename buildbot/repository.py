@@ -39,7 +39,7 @@ def InARepoRepository(directory, exists=True):
 
   output = cros_lib.RunCommand(
       ['repo'], error_ok=True, redirect_stdout=True, redirect_stderr=True,
-      cwd=directory, exit_code=True, print_cmd=False)
+      cwd=directory, print_cmd=False)
   return output.returncode == 0
 
 

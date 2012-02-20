@@ -82,8 +82,7 @@ class TestRunCommand(unittest.TestCase):
     expected_result.cmd = real_cmd
     expected_result.error = self.error
     expected_result.output = self.output
-    if 'exit_code' in rc_kv:
-      expected_result.returncode = self.proc_mock.returncode
+    expected_result.returncode = self.proc_mock.returncode
 
     arg_dict = dict()
     for attr in 'close_fds cwd env stdin stdout stderr shell'.split():
@@ -126,7 +125,7 @@ class TestRunCommand(unittest.TestCase):
     self.proc_mock.returncode = 0
     cmd_list = ['foo', 'bar', 'roger']
     self._TestCmd(cmd_list, cmd_list,
-                  rc_kv=dict(exit_code=True, ignore_sigint=ignore_sigint))
+                  rc_kv=dict(ignore_sigint=ignore_sigint))
 
   def testSignalRestoreNormalCase(self):
     """Test RunCommand() properly sets/restores sigint.  Normal case."""
@@ -138,8 +137,7 @@ class TestRunCommand(unittest.TestCase):
     self.proc_mock.returncode = 0
     cmd_list = ['foo', 'bar', 'roger']
     real_cmd = ['cros_sdk', '--'] + cmd_list
-    self._TestCmd(cmd_list, real_cmd, rc_kv=dict(exit_code=True,
-                                                 enter_chroot=True))
+    self._TestCmd(cmd_list, real_cmd, rc_kv=dict(enter_chroot=True))
 
 
 
@@ -240,7 +238,7 @@ class TestRunCommand(unittest.TestCase):
     # to rc (RunCommand).
     self._TestCmd(cmd_list, cmd_list,
                   sp_kv=dict(env=env),
-                  rc_kv=dict(env=env, exit_code=True))
+                  rc_kv=dict(env=env))
 
   def testExtraEnvOnlyWorks(self):
     """Test RunCommand(..., extra_env=xyz) works."""
@@ -260,7 +258,7 @@ class TestRunCommand(unittest.TestCase):
     # to rc (RunCommand).
     self._TestCmd(cmd_list, cmd_list,
                   sp_kv=dict(env=total_env),
-                  rc_kv=dict(extra_env=extra_env, exit_code=True))
+                  rc_kv=dict(extra_env=extra_env))
 
   def testExtraEnvTooWorks(self):
     """Test RunCommand(..., env=xy, extra_env=z) works."""
@@ -278,7 +276,7 @@ class TestRunCommand(unittest.TestCase):
     # to rc (RunCommand).
     self._TestCmd(cmd_list, cmd_list,
                   sp_kv=dict(env=total_env),
-                  rc_kv=dict(env=env, extra_env=extra_env, exit_code=True))
+                  rc_kv=dict(env=env, extra_env=extra_env))
 
 
 

@@ -335,7 +335,7 @@ def EnterChroot(chroot_config, func, *args, **kwargs):
     # Run it.  We allow "error" so we don't print a confusing error message
     # filled with out resume-state garbage on control-C.
     cmd_result = cros_lib.RunCommand(cmd, shell=True, cwd=cwd, print_cmd=False,
-                            exit_code=True, error_ok=True, ignore_sigint=True)
+                                     error_ok=True, ignore_sigint=True)
 
     if cmd_result.returncode:
       cros_lib.Die('Chroot exited with error code %d' % cmd_result.returncode)

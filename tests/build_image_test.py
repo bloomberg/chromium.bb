@@ -63,7 +63,7 @@ class BuildImageTest(unittest.TestCase):
     """
     Info ('About to run command: %s' % cmd)
     cmd_result = RunCommand(
-      cmd, error_ok=True, exit_code=True, redirect_stdout=True,
+      cmd, error_ok=True, redirect_stdout=True,
       redirect_stderr=True, shell=True)
     self.output = cmd_result.output
     self.error = cmd_result.error

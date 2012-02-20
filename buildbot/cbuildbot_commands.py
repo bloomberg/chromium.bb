@@ -339,7 +339,7 @@ def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
   if whitelist_chrome_crashes:
     cmd.append('--whitelist_chrome_crashes')
 
-  result = cros_lib.RunCommand(cmd, cwd=cwd, error_ok=True, exit_code=True)
+  result = cros_lib.RunCommand(cmd, cwd=cwd, error_ok=True)
   if result.returncode:
     failed = open(results_dir_in_chroot + '/failed_test_command', 'w')
     failed.write('%s exited with code %d' % (' '.join(cmd), result.returncode))
@@ -437,7 +437,6 @@ def GenerateMinidumpStackTraces(buildroot, board, gzipped_test_tarball,
                                  '--directory=%s' % temp_dir,
                                  '--wildcards', '*.dmp'],
                                 error_ok=True,
-                                exit_code=True,
                                 redirect_stderr=True)
   if not tar_cmd.returncode:
     symbol_dir = os.path.join('/build', board, 'usr', 'lib', 'debug',
@@ -734,8 +733,7 @@ def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols):
   else:
     cmd.append('debug/breakpad')
 
-  tar_cmd = cros_lib.SudoRunCommand(cmd, cwd=board_dir, error_ok=True,
-                                exit_code=True)
+  tar_cmd = cros_lib.SudoRunCommand(cmd, cwd=board_dir, error_ok=True)
 
   # Emerging the factory kernel while this is running installs different debug
   # symbols. When tar spots this, it flags this and returns status code 1.

@@ -240,8 +240,7 @@ class Upgrader(object):
 
     # Leverage Portage 'portageq' tool to do this.
     cmd = ['portageq-%s' % board, 'envvar', 'ARCH']
-    cmd_result = cros_lib.RunCommand(cmd, print_cmd=False,
-                                     redirect_stdout=True, exit_code=True)
+    cmd_result = cros_lib.RunCommand(cmd, print_cmd=False, redirect_stdout=True)
     if cmd_result.returncode == 0:
       return cmd_result.output.strip()
     else:
@@ -334,7 +333,7 @@ class Upgrader(object):
     """
     cmdline = ['/bin/sh', '-c', 'cd %s && git -c core.pager=" " %s' %
                (repo, command)]
-    result = cros_lib.RunCommand(cmdline, exit_code=True,
+    result = cros_lib.RunCommand(cmdline,
                                  print_cmd=self._verbose,
                                  redirect_stdout=redirect_stdout,
                                  combine_stdout_stderr=combine_stdout_stderr)
@@ -396,8 +395,7 @@ class Upgrader(object):
     equery = ['equery', 'which', pkg ]
     cmd_result = cros_lib.RunCommand(equery, extra_env=envvars,
                                      print_cmd=self._verbose,
-                                     exit_code=True, error_ok=True,
-                                     redirect_stdout=True,
+                                     error_ok=True, redirect_stdout=True,
                                      combine_stdout_stderr=True,
                                      )
     if cmd_result.returncode == 0:
@@ -432,7 +430,7 @@ class Upgrader(object):
     envvars = self._GenPortageEnvvars(self._curr_arch, unstable_ok)
     emerge = self._GetBoardCmd(self.EMERGE_CMD)
     cmd = [emerge, '-p'] + ['=' + cpv for cpv in cpvlist]
-    result = cros_lib.RunCommand(cmd, exit_code=True, error_ok=True,
+    result = cros_lib.RunCommand(cmd, error_ok=True,
                                  extra_env=envvars, print_cmd=False,
                                  redirect_stdout=True,
                                  combine_stdout_stderr=True,
@@ -446,7 +444,7 @@ class Upgrader(object):
 
     equery = self._GetBoardCmd(self.EQUERY_CMD)
     cmd = [equery, 'which', pkg]
-    cmd_result = cros_lib.RunCommand(cmd, exit_code=True, error_ok=True,
+    cmd_result = cros_lib.RunCommand(cmd, error_ok=True,
                                      extra_env=envvars, print_cmd=False,
                                      redirect_stdout=True,
                                      combine_stdout_stderr=True,
@@ -466,7 +464,7 @@ class Upgrader(object):
 
     equery = self._GetBoardCmd('equery')
     cmd = [equery, '--no-pipe', 'list', '-op', cpv]
-    result = cros_lib.RunCommand(cmd, exit_code=True, error_ok=True,
+    result = cros_lib.RunCommand(cmd, error_ok=True,
                                  extra_env=envvars, print_cmd=False,
                                  redirect_stdout=True,
                                  combine_stdout_stderr=True,
@@ -506,7 +504,7 @@ class Upgrader(object):
 
     equery = self._GetBoardCmd(self.EQUERY_CMD)
     cmd = [equery, 'which', '--include-masked', cpv]
-    result = cros_lib.RunCommand(cmd, exit_code=True, error_ok=True,
+    result = cros_lib.RunCommand(cmd, error_ok=True,
                                  extra_env=envvars, print_cmd=False,
                                  redirect_stdout=True,
                                  combine_stdout_stderr=True,
@@ -551,7 +549,7 @@ class Upgrader(object):
 
     equery = self._GetBoardCmd(self.EQUERY_CMD)
     cmd = [equery, '--no-pipe', 'which', cpv]
-    result = cros_lib.RunCommand(cmd, exit_code=True, error_ok=True,
+    result = cros_lib.RunCommand(cmd, error_ok=True,
                                  extra_env=envvars, print_cmd=False,
                                  redirect_stdout=True,
                                  combine_stdout_stderr=True,
@@ -759,7 +757,7 @@ class Upgrader(object):
       shutil.copyfile(upstream_manifest, current_manifest)
 
     manifest_cmd = ['ebuild', os.path.join(pkgdir, ebuild), 'manifest']
-    manifest_result = cros_lib.RunCommand(manifest_cmd, exit_code=True,
+    manifest_result = cros_lib.RunCommand(manifest_cmd,
                                           error_ok=True, print_cmd=False,
                                           redirect_stdout=True,
                                           combine_stdout_stderr=True)

@@ -870,7 +870,7 @@ class CopyUpstreamTest(CpuTestBase):
     # Prepare test replay script.
     run_result = RunCommandResult(returncode=0, output='')
     cros_lib.RunCommand(['ebuild', ebuild_path, 'manifest'],
-                        exit_code=True, error_ok=True, print_cmd=False,
+                        error_ok=True, print_cmd=False,
                         redirect_stdout=True, combine_stdout_stderr=True
                         ).AndReturn(run_result)
     self.mox.ReplayAll()
@@ -2600,7 +2600,7 @@ class VerifyPackageTest(CpuTestBase):
     run_result = RunCommandResult(returncode=0,
                                   output=ebuild_path)
     cros_lib.RunCommand(['equery', 'which', '--include-masked', cpv],
-                        exit_code=True, error_ok=True,
+                        error_ok=True,
                         extra_env=envvars, print_cmd=False,
                         redirect_stdout=True, combine_stdout_stderr=True,
                         ).AndReturn(run_result)
@@ -2655,7 +2655,7 @@ class VerifyPackageTest(CpuTestBase):
     run_result = RunCommandResult(returncode=0,
                                   output=output)
     cros_lib.RunCommand(['equery', '--no-pipe', 'list', '-op', cpv],
-                        exit_code=True, error_ok=True,
+                        error_ok=True,
                         extra_env='envvars', print_cmd=False,
                         redirect_stdout=True, combine_stdout_stderr=True,
                         ).AndReturn(run_result)
