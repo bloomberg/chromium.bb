@@ -1,4 +1,4 @@
-#!/usr/bin/python2.6
+#!/usr/bin/python
 # Copyright (c) 2010 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -6,20 +6,18 @@
 import optparse
 import os
 import multiprocessing
-import sys
 import tempfile
-sys.path.insert(0, os.path.abspath(__file__ + "/../../lib"))
-from cros_build_lib import Die
-from cros_build_lib import Info
-from cros_build_lib import RunCommand
-from cros_build_lib import Warning
+import sys
+
+sys.path.insert(0, os.path.abspath(__file__ + "/../../../"))
+from chromite.lib import cros_build_lib
 
 
 def BuildPackages():
   """Build packages according to options specified on command-line."""
 
   if os.getuid() != 0:
-    Die("superuser access required")
+    cros_build_lib.Die("superuser access required")
 
   scripts_dir = os.path.abspath(__file__ + "/../../..")
   builder = PackageBuilder(scripts_dir)
@@ -102,15 +100,11 @@ def _Run(cmd, retries=0):
     cmd: The command to run.
     retries: If exit code is non-zero, retry this many times.
   """
-  # TODO(davidjames): Move this to common library.
-  for _ in range(retries+1):
-    result = RunCommand(cmd, shell=True, exit_code=True, error_ok=True)
-    if result.returncode == 0:
-      Info("Command succeeded: %s" % cmd)
-      break
-    Warning("Command failed: %s" % cmd)
-  else:
-    Die("Command failed, exiting: %s" % cmd)
+  try:
+    result = cros_build_lib.RunCommandWithRetries(retries, cmd, shell=True)
+  except cros_build_lib.RunCommandException:
+    cros_build_lib.Die("Command failed, exiting: %s" % cmd)
+  cros_build_lib.Info("Command succeeded: %s" % cmd)
 
 
 def _RunManyParallel(cmds, retries=0):
