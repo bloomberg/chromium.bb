@@ -114,8 +114,7 @@
 {
    bug_51988_f
    Heapcheck:Leak
-   fun:net::CertDatabase::DeleteCertAndKey
-   fun:net::CertDatabaseNSSTest::TearDown
+   ...
    fun:net::CertDatabaseNSSTest::TearDown
 }
 {
@@ -1618,8 +1617,6 @@
    Heapcheck:Leak
    ...
    fun:SQLitePersistentCookieStore::Backend::LoadCookiesForDomains
-   ...
-   fun:base::internal::InvokeHelper::MakeItSo
 }
 {
    bug_102831_a
@@ -1865,4 +1862,38 @@
    Heapcheck:Leak
    fun:mozilla_security_manager::GenKeyAndSignChallenge
    fun:net::KeygenHandler::GenKeyAndSignChallenge
+}
+{
+   bug_114979_a
+   Heapcheck:Leak
+   ...
+   fun:BookmarkBarGtkUnittest::SetUp
+}
+{
+   bug_114979_b
+   Heapcheck:Leak
+   ...
+   fun:BookmarkBarGtkUnittest_HidesHelpMessageWithBookmark_Test::TestBody
+}
+{
+   bug_114980
+   Heapcheck:Leak
+   ...
+   fun:BackFwdMenuModelTest_*_Test::TestBody
+}
+{
+   bug_114986
+   Heapcheck:Leak
+   ...
+   fun:ThemeServiceFactory::BuildServiceInstanceFor
+   fun:ProfileKeyedBaseFactory::GetBaseForProfile
+   fun:ProfileKeyedServiceFactory::GetServiceForProfile
+   fun:ThemeServiceFactory::GetForProfile
+}
+{
+   bug_114988
+   Heapcheck:Leak
+   ...
+   fun:BookmarkEditorGtk::BookmarkEditorGtk
+   fun:BookmarkEditorGtkTest_*_Test::TestBody
 }
