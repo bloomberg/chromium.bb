@@ -116,22 +116,34 @@ def SudoRunCommand(cmd, **kwds):
     Barring that, see RunCommand's documentation- it can raise the same things
     RunCommand does.
   """
+  if kwds.pop('enter_chroot', False):
+    raise ValueError("SudoRunCommand should not be used with enter_chroot. "
+                     "You should be using RunCommand instead.")
 
-  mode_s, mode_l = '', []
+  sudo_mode = []
   if kwds.pop("strict", True) and STRICT_SUDO:
     if 'CROS_SUDO_KEEP_ALIVE' not in os.environ:
       raise RunCommandError(
           'We were invoked in a strict sudo non-interactive context, but no '
           'sudo keep alive daemon is running.  This is a bug in the code.',
           cmd, 126)
-    mode_s, mode_l = '-n ', ['-n']
+    sudo_mode = ['-n']
+
+  # Pass these values down into the sudo environment, since sudo will
+  # just strip them normally.
+  final_command = ['sudo'] + sudo_mode
+  final_command.extend('%s=%s' % (k, v)
+                       for k, v in kwds.pop('extra_env', {}).iteritems())
+
+  # Finally, block people from passing options to sudo.
+  final_command.append('--')
 
   if isinstance(cmd, basestring):
-    cmd = 'sudo %s%s' % (mode_s, cmd)
+    final_command = '%s %s' % (' '.join(final_command), cmd)
   else:
-    cmd = ['sudo'] + mode_l + list(cmd)
+    final_command.extend(cmd)
 
-  return RunCommand(cmd, **kwds)
+  return RunCommand(final_command, **kwds)
 
 
 def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
@@ -248,8 +260,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
       wrapper += chroot_args
 
     if extra_env:
-      for (key, value) in extra_env.items():
-        wrapper.append('%s=%s' % (key, value))
+      wrapper.extend('%s=%s' % (k, v) for k, v in extra_env.iteritems())
 
     cmd = wrapper + ['--'] + cmd
 
