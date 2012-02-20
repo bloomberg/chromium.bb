@@ -202,12 +202,10 @@ chrome.fileBrowserPrivate = {
       WEB_FONT_SIZE: '84%',
 
       FILE_IS_DIRECTORY: 'Folder',
-      PARENT_DIRECTORY: 'Parent Directory',
 
       ROOT_DIRECTORY_LABEL: 'Files',
       DOWNLOADS_DIRECTORY_LABEL: 'Downloads',
       DOWNLOADS_DIRECTORY_WARNING: "&lt;strong&gt;Caution:&lt;/strong&gt; These files are temporary and may be automatically deleted to free up disk space.  &lt;a href='javascript://'&gt;Learn More&lt;/a&gt;",
-      MEDIA_DIRECTORY_LABEL: 'External Storage',
       NAME_COLUMN_LABEL: 'Name',
       SIZE_COLUMN_LABEL: 'Size',
       SIZE_B: 'B',
@@ -262,7 +260,7 @@ chrome.fileBrowserPrivate = {
 
       CONFIRM_OVERWRITE_FILE: 'A file named "$1" already exists. Do you want to replace it?',
       FILE_ALREADY_EXISTS: 'The file named "$1" already exists. Please choose a different name.',
-      DIRECTORY_ALREADY_EXISTS: 'The directory named "$1" already exists. Please choose a different name.',
+      DIRECTORY_ALREADY_EXISTS: 'The folder named "$1" already exists. Please choose a different name.',
       ERROR_RENAMING: 'Unable to rename "$1": $2',
       RENAME_PROMPT: 'Enter a new name',
       RENAME_BUTTON_LABEL: 'Rename',
@@ -308,9 +306,9 @@ chrome.fileBrowserPrivate = {
 
       COMPUTING_SELECTION: 'Computing selection...',
       ONE_FILE_SELECTED: 'One file selected, $1',
-      ONE_DIRECTORY_SELECTED: 'One directory selected',
+      ONE_DIRECTORY_SELECTED: 'One folder selected',
       MANY_FILES_SELECTED: '$1 files selected, $2',
-      MANY_DIRECTORIES_SELECTED: '$1 directories selected',
+      MANY_DIRECTORIES_SELECTED: '$1 folders selected',
       MANY_ENTRIES_SELECTED: '$1 items selected, $2',
 
       CONFIRM_DELETE_ONE: 'Are you sure you want to delete "$1"?',
