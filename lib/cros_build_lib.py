@@ -242,7 +242,7 @@ class _Popen(subprocess.Popen):
 
 
 def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
-               exit_code=True, redirect_stdout=False, redirect_stderr=False,
+               redirect_stdout=False, redirect_stderr=False,
                cwd=None, input=None, enter_chroot=False, shell=False,
                env=None, extra_env=None, ignore_sigint=False,
                combine_stdout_stderr=False, log_stdout_to_file=None,
@@ -258,8 +258,6 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
     error_ok: ***DEPRECATED, use error_code_ok instead***
               Does not raise an exception on any errors.
     error_message: prints out this message when an error occurrs.
-    exit_code: ***DEPRECATED, RunCommand always returns the exit code, unless
-                  subprocess.Popen raises an exception.***
     redirect_stdout: returns the stdout.
     redirect_stderr: holds stderr output until input is communicated.
     cwd: the working directory to run this cmd.
