@@ -6,7 +6,8 @@
 #                               Volume 3: General-Purpose and System Instruction
 #                               Chapter 3: General-Purpose Instruction Reference
 ################################################################################
-# File format: three rows separated by commas.  Line describes one instruction.
+# File format:
+#     three columns separated by commas.  Each line describes one instruction.
 ################################################################################
 # First column: instruction description.
 #   Includes name of the instruction and arguments.
@@ -20,7 +21,7 @@
 #      Read/write attribute:
 #       ': Instruction does not use this argument (lea or nop).
 #       =: Instruction reads from this argument.
-#       !: Instruction writes in this argument.
+#       !: Instruction writes to this argument.
 #       &: Instruction reads this argument and writes the result to it.
 #        By default one- and two-operand instructions are assumed to read all
 #        operands and store result to the last one, while instructions with
@@ -158,8 +159,8 @@
 #   “movlps” or “movhlps”).
 ################################################################################
 # Third column: additional instruction notes.
-#   Different kind of notes for the instruction: untypical prefixes (for example
-#   “lock” prefix or “rep” prefix), CPUID checks, etc.
+#   Different kind of notes for the instruction: non-typical prefixes (for
+#   example “lock” prefix or “rep” prefix), CPUID checks, etc.
 #
 #     Possible prefixes:
 #       condrep: prefixes “repnz” and “repz” are allowed for the instruction
