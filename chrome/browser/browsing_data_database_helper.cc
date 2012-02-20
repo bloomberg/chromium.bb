@@ -17,6 +17,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
 using WebKit::WebSecurityOrigin;
 
@@ -51,7 +52,7 @@ bool BrowsingDataDatabaseHelper::DatabaseInfo::IsFileSchemeData() {
 
 BrowsingDataDatabaseHelper::BrowsingDataDatabaseHelper(Profile* profile)
     : is_fetching_(false),
-      tracker_(profile->GetDatabaseTracker()) {
+      tracker_(BrowserContext::GetDatabaseTracker(profile)) {
 }
 
 BrowsingDataDatabaseHelper::~BrowsingDataDatabaseHelper() {

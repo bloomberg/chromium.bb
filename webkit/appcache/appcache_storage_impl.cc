@@ -1221,13 +1221,14 @@ AppCacheStorageImpl::~AppCacheStorageImpl() {
                 scheduled_database_tasks_.end(),
                 std::mem_fun(&DatabaseTask::CancelCompletion));
 
-  if (database_) {
-    db_thread_->PostTask(
-        FROM_HERE,
-        base::Bind(&CleanUpOnDatabaseThread, database_,
-                   make_scoped_refptr(service_->special_storage_policy()),
-                   service()->clear_local_state_on_exit(),
-                   service()->save_session_state()));
+  if (database_ &&
+      !db_thread_->PostTask(
+          FROM_HERE,
+          base::Bind(&CleanUpOnDatabaseThread, database_,
+                     make_scoped_refptr(service_->special_storage_policy()),
+                     service()->clear_local_state_on_exit(),
+                     service()->save_session_state()))) {
+    delete database_;
   }
 }
 

@@ -35,14 +35,10 @@ class OffTheRecordProfileImpl : public Profile,
 
   // Profile implementation.
   virtual std::string GetProfileName() OVERRIDE;
-  virtual FilePath GetPath() OVERRIDE;
-  virtual bool IsOffTheRecord() OVERRIDE;
   virtual Profile* GetOffTheRecordProfile() OVERRIDE;
   virtual void DestroyOffTheRecordProfile() OVERRIDE;
   virtual bool HasOffTheRecordProfile() OVERRIDE;
   virtual Profile* GetOriginalProfile() OVERRIDE;
-  virtual ChromeAppCacheService* GetAppCacheService() OVERRIDE;
-  virtual webkit_database::DatabaseTracker* GetDatabaseTracker() OVERRIDE;
   virtual VisitedLinkMaster* GetVisitedLinkMaster() OVERRIDE;
   virtual ExtensionService* GetExtensionService() OVERRIDE;
   virtual UserScriptMaster* GetUserScriptMaster() OVERRIDE;
@@ -64,32 +60,18 @@ class OffTheRecordProfileImpl : public Profile,
   virtual PrefService* GetPrefs() OVERRIDE;
   virtual PrefService* GetOffTheRecordPrefs() OVERRIDE;
   virtual TemplateURLFetcher* GetTemplateURLFetcher() OVERRIDE;
-  virtual content::DownloadManager* GetDownloadManager() OVERRIDE;
-  virtual fileapi::FileSystemContext* GetFileSystemContext() OVERRIDE;
-  virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
-  virtual quota::QuotaManager* GetQuotaManager() OVERRIDE;
-  virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
-      int renderer_child_id) OVERRIDE;
-  virtual net::URLRequestContextGetter* GetRequestContextForMedia() OVERRIDE;
   virtual net::URLRequestContextGetter*
       GetRequestContextForExtensions() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForIsolatedApp(
       const std::string& app_id) OVERRIDE;
-  virtual content::ResourceContext* GetResourceContext() OVERRIDE;
   virtual net::SSLConfigService* GetSSLConfigService() OVERRIDE;
   virtual HostContentSettingsMap* GetHostContentSettingsMap() OVERRIDE;
-  virtual content::HostZoomMap* GetHostZoomMap() OVERRIDE;
-  virtual content::GeolocationPermissionContext*
-      GetGeolocationPermissionContext() OVERRIDE;
-  virtual content::SpeechInputPreferences* GetSpeechInputPreferences() OVERRIDE;
   virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() OVERRIDE;
-  virtual bool DidLastSessionExitCleanly() OVERRIDE;
   virtual BookmarkModel* GetBookmarkModel() OVERRIDE;
   virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry() OVERRIDE;
   virtual TokenService* GetTokenService() OVERRIDE;
   virtual bool IsSameProfile(Profile* profile) OVERRIDE;
   virtual Time GetStartTime() const OVERRIDE;
-  virtual WebKitContext* GetWebKitContext() OVERRIDE;
   virtual history::TopSites* GetTopSitesWithoutCreating() OVERRIDE;
   virtual history::TopSites* GetTopSites() OVERRIDE;
   virtual void MarkAsCleanShutdown() OVERRIDE;
@@ -106,7 +88,6 @@ class OffTheRecordProfileImpl : public Profile,
 
   virtual void OnBrowserAdded(const Browser* browser) OVERRIDE;
   virtual void OnBrowserRemoved(const Browser* browser) OVERRIDE;
-  virtual ChromeBlobStorageContext* GetBlobStorageContext() OVERRIDE;
   virtual ExtensionInfoMap* GetExtensionInfoMap() OVERRIDE;
   virtual ChromeURLDataManager* GetChromeURLDataManager() OVERRIDE;
   virtual PromoCounter* GetInstantPromoCounter() OVERRIDE;
@@ -123,14 +104,28 @@ class OffTheRecordProfileImpl : public Profile,
   virtual void ClearNetworkingHistorySince(base::Time time) OVERRIDE;
   virtual GURL GetHomePage() OVERRIDE;
 
+  // content::BrowserContext implementation:
+  virtual FilePath GetPath() OVERRIDE;
+  virtual bool IsOffTheRecord() OVERRIDE;
+  virtual content::DownloadManager* GetDownloadManager() OVERRIDE;
+  virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
+  virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
+      int renderer_child_id) OVERRIDE;
+  virtual net::URLRequestContextGetter* GetRequestContextForMedia() OVERRIDE;
+  virtual content::ResourceContext* GetResourceContext() OVERRIDE;
+  virtual content::HostZoomMap* GetHostZoomMap() OVERRIDE;
+  virtual content::GeolocationPermissionContext*
+      GetGeolocationPermissionContext() OVERRIDE;
+  virtual content::SpeechInputPreferences* GetSpeechInputPreferences() OVERRIDE;
+  virtual bool DidLastSessionExitCleanly() OVERRIDE;
+  virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
+
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
-  void CreateQuotaManagerAndClients();
-
   content::NotificationRegistrar registrar_;
 
   // The real underlying profile.
@@ -152,30 +147,14 @@ class OffTheRecordProfileImpl : public Profile,
   // Use a separate zoom map for OTR.
   scoped_refptr<content::HostZoomMap> host_zoom_map_;
 
-  // Use a special WebKit context for OTR browsing.
-  scoped_refptr<WebKitContext> webkit_context_;
-
   // Time we were started.
   Time start_time_;
 
-  scoped_refptr<ChromeAppCacheService> appcache_service_;
-
-  // The main database tracker for this profile.
-  // Should be used only on the file thread.
-  scoped_refptr<webkit_database::DatabaseTracker> db_tracker_;
-
   FilePath last_selected_directory_;
-
-  scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
-
-  // The file_system context for this profile.
-  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
 
   scoped_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
 
   scoped_ptr<ChromeURLDataManager> chrome_url_data_manager_;
-
-  scoped_refptr<quota::QuotaManager> quota_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileImpl);
 };

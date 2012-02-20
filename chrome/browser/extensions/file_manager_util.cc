@@ -38,6 +38,7 @@
 #include "chrome/browser/chromeos/media/media_player.h"
 #endif
 
+using content::BrowserContext;
 using content::BrowserThread;
 using content::PluginService;
 using content::UserMetricsAction;
@@ -216,7 +217,7 @@ bool ConvertFileToFileSystemUrl(
 bool ConvertFileToRelativeFileSystemPath(
     Profile* profile, const FilePath& full_file_path, FilePath* virtual_path) {
   fileapi::ExternalFileSystemMountPointProvider* provider =
-      profile->GetFileSystemContext()->external_provider();
+      BrowserContext::GetFileSystemContext(profile)->external_provider();
   if (!provider)
     return false;
 

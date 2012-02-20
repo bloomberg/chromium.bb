@@ -141,8 +141,8 @@ FileSystemContext::external_provider() const {
 }
 
 void FileSystemContext::DeleteOnCorrectThread() const {
-  if (!io_message_loop_->BelongsToCurrentThread()) {
-    io_message_loop_->DeleteSoon(FROM_HERE, this);
+  if (!io_message_loop_->BelongsToCurrentThread() && 
+      io_message_loop_->DeleteSoon(FROM_HERE, this)) {
     return;
   }
   delete this;

@@ -40,15 +40,9 @@ class ShellBrowserContext : public BrowserContext {
       GetGeolocationPermissionContext() OVERRIDE;
   virtual SpeechInputPreferences* GetSpeechInputPreferences() OVERRIDE;
   virtual bool DidLastSessionExitCleanly() OVERRIDE;
-  virtual quota::QuotaManager* GetQuotaManager() OVERRIDE;
-  virtual WebKitContext* GetWebKitContext() OVERRIDE;
-  virtual webkit_database::DatabaseTracker* GetDatabaseTracker() OVERRIDE;
-  virtual ChromeBlobStorageContext* GetBlobStorageContext() OVERRIDE;
-  virtual ChromeAppCacheService* GetAppCacheService() OVERRIDE;
-  virtual fileapi::FileSystemContext* GetFileSystemContext() OVERRIDE;
+  virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
 
  private:
-  void CreateQuotaManagerAndClients();
 
   FilePath path_;
   scoped_ptr<ResourceContext> resource_context_;
@@ -58,12 +52,6 @@ class ShellBrowserContext : public BrowserContext {
   scoped_refptr<HostZoomMap> host_zoom_map_;
   scoped_refptr<GeolocationPermissionContext> geolocation_permission_context_;
   scoped_refptr<SpeechInputPreferences> speech_input_preferences_;
-  scoped_refptr<WebKitContext> webkit_context_;
-  scoped_refptr<ChromeAppCacheService> appcache_service_;
-  scoped_refptr<webkit_database::DatabaseTracker> db_tracker_;
-  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
-  scoped_refptr<quota::QuotaManager> quota_manager_;
-  scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
 
   ShellBrowserMainParts* shell_main_parts_;
 

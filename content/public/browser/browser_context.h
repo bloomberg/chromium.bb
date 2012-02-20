@@ -20,6 +20,7 @@ class URLRequestContextGetter;
 
 namespace quota {
 class QuotaManager;
+class SpecialStoragePolicy;
 }
 
 namespace webkit_database {
@@ -43,7 +44,19 @@ class SpeechInputPreferences;
 // It lives on the UI thread.
 class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
  public:
-   virtual ~BrowserContext() {}
+  // Getter for the QuotaManager associated with the given BrowserContext.
+  static quota::QuotaManager* GetQuotaManager(BrowserContext* browser_context);
+  static WebKitContext* GetWebKitContext(BrowserContext* browser_context);
+  static webkit_database::DatabaseTracker* GetDatabaseTracker(
+      BrowserContext* browser_context);
+  static ChromeAppCacheService* GetAppCacheService(
+      BrowserContext* browser_context);
+  static fileapi::FileSystemContext* GetFileSystemContext(
+      BrowserContext* browser_context);
+  static ChromeBlobStorageContext* GetBlobStorageContext(
+      BrowserContext* browser_context);
+
+  virtual ~BrowserContext();
 
   // Returns the path of the directory where this context's data is stored.
   virtual FilePath GetPath() = 0;
@@ -90,14 +103,8 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // This doesn't belong here; http://crbug.com/90737
   virtual bool DidLastSessionExitCleanly() = 0;
 
-  // The following getters return references to various storage related
-  // contexts associated with this browser context.
-  virtual quota::QuotaManager* GetQuotaManager() = 0;
-  virtual WebKitContext* GetWebKitContext() = 0;
-  virtual webkit_database::DatabaseTracker* GetDatabaseTracker() = 0;
-  virtual ChromeBlobStorageContext* GetBlobStorageContext() = 0;
-  virtual ChromeAppCacheService* GetAppCacheService() = 0;
-  virtual fileapi::FileSystemContext* GetFileSystemContext() = 0;
+  // Returns a special storage policy implementation, or NULL.
+  virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() = 0;
 };
 
 }  // namespace content

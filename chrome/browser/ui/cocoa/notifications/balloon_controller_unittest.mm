@@ -52,6 +52,8 @@ class BalloonControllerTest : public ChromeRenderViewHostTestHarness {
  public:
   BalloonControllerTest() :
       ui_thread_(BrowserThread::UI, MessageLoop::current()),
+      file_user_blocking_thread_(
+            BrowserThread::FILE_USER_BLOCKING, MessageLoop::current()),
       io_thread_(BrowserThread::IO, MessageLoop::current()) {
   }
 
@@ -72,6 +74,7 @@ class BalloonControllerTest : public ChromeRenderViewHostTestHarness {
 
  protected:
   content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_user_blocking_thread_;
   content::TestBrowserThread io_thread_;
   scoped_ptr<Browser> browser_;
   scoped_ptr<BalloonCollection> collection_;

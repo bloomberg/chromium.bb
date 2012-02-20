@@ -130,6 +130,9 @@ OffTheRecordProfileIOData::Handle::GetIsolatedAppRequestContextGetter(
 
 void OffTheRecordProfileIOData::Handle::LazyInitialize() const {
   if (!initialized_) {
+    // Set initialized_ to true at the beginning in case any of the objects
+    // below try to get the ResourceContext pointer.
+    initialized_ = true;
     io_data_->InitializeOnUIThread(profile_);
     ChromeNetworkDelegate::InitializeReferrersEnabled(
         io_data_->enable_referrers(), profile_->GetPrefs());
@@ -138,7 +141,6 @@ void OffTheRecordProfileIOData::Handle::LazyInitialize() const {
         profile_->GetPrefs(), NULL);
     io_data_->safe_browsing_enabled()->MoveToThread(BrowserThread::IO);
 #endif
-    initialized_ = true;
   }
 }
 

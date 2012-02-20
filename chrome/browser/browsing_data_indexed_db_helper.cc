@@ -18,6 +18,7 @@
 #include "webkit/database/database_util.h"
 #include "webkit/glue/webkit_glue.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
 using webkit_database::DatabaseUtil;
 
@@ -62,7 +63,8 @@ class BrowsingDataIndexedDBHelperImpl : public BrowsingDataIndexedDBHelper {
 
 BrowsingDataIndexedDBHelperImpl::BrowsingDataIndexedDBHelperImpl(
     Profile* profile)
-    : indexed_db_context_(profile->GetWebKitContext()->indexed_db_context()),
+    : indexed_db_context_(
+          BrowserContext::GetWebKitContext(profile)->indexed_db_context()),
       is_fetching_(false) {
   DCHECK(indexed_db_context_.get());
 }

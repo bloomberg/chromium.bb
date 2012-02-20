@@ -7,6 +7,7 @@
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/notification_service_impl.h"
 
 namespace content {
 
@@ -14,12 +15,14 @@ namespace content {
 class TestBrowserThreadImpl : public BrowserThreadImpl {
  public:
   explicit TestBrowserThreadImpl(BrowserThread::ID identifier)
-      : BrowserThreadImpl(identifier) {
+      : BrowserThreadImpl(identifier),
+        notification_service_(NULL) {
   }
 
   TestBrowserThreadImpl(BrowserThread::ID identifier,
                         MessageLoop* message_loop)
-      : BrowserThreadImpl(identifier, message_loop) {
+      : BrowserThreadImpl(identifier, message_loop),
+        notification_service_(NULL) {
   }
 
   virtual ~TestBrowserThreadImpl() {
@@ -30,7 +33,19 @@ class TestBrowserThreadImpl : public BrowserThreadImpl {
     Thread::set_message_loop(loop);
   }
 
+  virtual void Init() OVERRIDE {
+    notification_service_ = new NotificationServiceImpl;
+    BrowserThreadImpl::Init();
+  }
+
+  virtual void CleanUp() OVERRIDE {
+    delete notification_service_;
+    notification_service_ = NULL;
+    BrowserThreadImpl::CleanUp();
+  }
+
  private:
+  NotificationService* notification_service_;
   DISALLOW_COPY_AND_ASSIGN(TestBrowserThreadImpl);
 };
 

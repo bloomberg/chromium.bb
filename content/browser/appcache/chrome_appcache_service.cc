@@ -45,6 +45,15 @@ void ChromeAppCacheService::InitializeOnIOThread(
 ChromeAppCacheService::~ChromeAppCacheService() {
 }
 
+void ChromeAppCacheService::DeleteOnCorrectThread() const {
+  if (BrowserThread::IsMessageLoopValid(BrowserThread::IO) &&
+      !BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, this);
+    return;
+  }
+  delete this;
+}
+
 bool ChromeAppCacheService::CanLoadAppCache(const GURL& manifest_url,
                                             const GURL& first_party) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

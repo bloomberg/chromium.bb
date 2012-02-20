@@ -147,11 +147,32 @@ class TestingProfile : public Profile {
 
   TestingPrefService* GetTestingPrefService();
 
+  // content::BrowserContext
+  virtual FilePath GetPath() OVERRIDE;
+  virtual bool IsOffTheRecord() OVERRIDE;
+  virtual content::DownloadManager* GetDownloadManager() OVERRIDE;
+  // Returns a testing ContextGetter (if one has been created via
+  // CreateRequestContext) or NULL. This is not done on-demand for two reasons:
+  // (1) Some tests depend on GetRequestContext() returning NULL. (2) Because
+  // of the special memory management considerations for the
+  // TestURLRequestContextGetter class, many tests would find themseleves
+  // leaking if they called this method without the necessary IO thread. This
+  // getter is currently only capable of returning a Context that helps test
+  // the CookieMonster. See implementation comments for more details.
+  virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
+  virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
+      int renderer_child_id) OVERRIDE;
+  virtual content::ResourceContext* GetResourceContext() OVERRIDE;
+  virtual content::HostZoomMap* GetHostZoomMap() OVERRIDE;
+  virtual content::GeolocationPermissionContext*
+      GetGeolocationPermissionContext() OVERRIDE;
+  virtual content::SpeechInputPreferences* GetSpeechInputPreferences() OVERRIDE;
+  virtual bool DidLastSessionExitCleanly() OVERRIDE;
+  virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
+
   virtual TestingProfile* AsTestingProfile() OVERRIDE;
   virtual std::string GetProfileName() OVERRIDE;
-  virtual FilePath GetPath() OVERRIDE;
   void set_incognito(bool incognito) { incognito_ = incognito; }
-  virtual bool IsOffTheRecord() OVERRIDE;
   // Assumes ownership.
   virtual void SetOffTheRecordProfile(Profile* profile);
   virtual Profile* GetOffTheRecordProfile() OVERRIDE;
@@ -159,9 +180,6 @@ class TestingProfile : public Profile {
   virtual GAIAInfoUpdateService* GetGAIAInfoUpdateService() OVERRIDE;
   virtual bool HasOffTheRecordProfile() OVERRIDE;
   virtual Profile* GetOriginalProfile() OVERRIDE;
-  void SetAppCacheService(ChromeAppCacheService* appcache_service);
-  virtual ChromeAppCacheService* GetAppCacheService() OVERRIDE;
-  virtual webkit_database::DatabaseTracker* GetDatabaseTracker() OVERRIDE;
   virtual VisitedLinkMaster* GetVisitedLinkMaster() OVERRIDE;
   virtual ExtensionService* GetExtensionService() OVERRIDE;
   virtual UserScriptMaster* GetUserScriptMaster() OVERRIDE;
@@ -194,22 +212,7 @@ class TestingProfile : public Profile {
   virtual TemplateURLFetcher* GetTemplateURLFetcher() OVERRIDE;
   virtual history::TopSites* GetTopSites() OVERRIDE;
   virtual history::TopSites* GetTopSitesWithoutCreating() OVERRIDE;
-  virtual content::DownloadManager* GetDownloadManager() OVERRIDE;
-  virtual fileapi::FileSystemContext* GetFileSystemContext() OVERRIDE;
-  virtual void SetQuotaManager(quota::QuotaManager* manager);
-  virtual quota::QuotaManager* GetQuotaManager() OVERRIDE;
 
-  // Returns a testing ContextGetter (if one has been created via
-  // CreateRequestContext) or NULL. This is not done on-demand for two reasons:
-  // (1) Some tests depend on GetRequestContext() returning NULL. (2) Because
-  // of the special memory management considerations for the
-  // TestURLRequestContextGetter class, many tests would find themseleves
-  // leaking if they called this method without the necessary IO thread. This
-  // getter is currently only capable of returning a Context that helps test
-  // the CookieMonster. See implementation comments for more details.
-  virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
-  virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
-      int renderer_child_id) OVERRIDE;
   void CreateRequestContext();
   // Clears out the created request context (which must be done before shutting
   // down the IO thread to avoid leaks).
@@ -220,16 +223,9 @@ class TestingProfile : public Profile {
       GetRequestContextForExtensions() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForIsolatedApp(
       const std::string& app_id) OVERRIDE;
-
-  virtual content::ResourceContext* GetResourceContext() OVERRIDE;
-
   virtual net::SSLConfigService* GetSSLConfigService() OVERRIDE;
   virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() OVERRIDE;
   virtual HostContentSettingsMap* GetHostContentSettingsMap() OVERRIDE;
-  virtual content::GeolocationPermissionContext*
-      GetGeolocationPermissionContext() OVERRIDE;
-  virtual content::SpeechInputPreferences* GetSpeechInputPreferences() OVERRIDE;
-  virtual content::HostZoomMap* GetHostZoomMap() OVERRIDE;
   virtual std::wstring GetName();
   virtual void SetName(const std::wstring& name) {}
   virtual std::wstring GetID();
@@ -237,7 +233,6 @@ class TestingProfile : public Profile {
   void set_last_session_exited_cleanly(bool value) {
     last_session_exited_cleanly_ = value;
   }
-  virtual bool DidLastSessionExitCleanly() OVERRIDE;
   virtual void MergeResourceString(int message_id,
                                    std::wstring* output_string) {}
   virtual void MergeResourceInteger(int message_id, int* output_value) {}
@@ -246,7 +241,6 @@ class TestingProfile : public Profile {
   virtual bool IsSameProfile(Profile *p) OVERRIDE;
   virtual base::Time GetStartTime() const OVERRIDE;
   virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry() OVERRIDE;
-  virtual WebKitContext* GetWebKitContext() OVERRIDE;
   virtual WebKitContext* GetOffTheRecordWebKitContext();
   virtual void MarkAsCleanShutdown() OVERRIDE {}
   virtual void InitExtensions(bool extensions_enabled) OVERRIDE {}
@@ -275,7 +269,6 @@ class TestingProfile : public Profile {
   void BlockUntilHistoryProcessesPendingRequests();
 
   virtual TokenService* GetTokenService() OVERRIDE;
-  virtual ChromeBlobStorageContext* GetBlobStorageContext() OVERRIDE;
   virtual ExtensionInfoMap* GetExtensionInfoMap() OVERRIDE;
   virtual PromoCounter* GetInstantPromoCounter() OVERRIDE;
   virtual ChromeURLDataManager* GetChromeURLDataManager() OVERRIDE;
@@ -284,11 +277,6 @@ class TestingProfile : public Profile {
   virtual GURL GetHomePage() OVERRIDE;
 
   virtual PrefService* GetOffTheRecordPrefs() OVERRIDE;
-
-  // TODO(jam): remove me once webkit_context_unittest.cc doesn't use Profile
-  // and gets the quota::SpecialStoragePolicy* from whatever ends up replacing
-  // it in the content module.
-  quota::SpecialStoragePolicy* GetSpecialStoragePolicy();
 
  protected:
   base::Time start_time_;
@@ -356,16 +344,6 @@ class TestingProfile : public Profile {
   // Did the last session exit cleanly? Default is true.
   bool last_session_exited_cleanly_;
 
-  // FileSystemContext.  Created lazily by GetFileSystemContext().
-  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
-
-  // WebKitContext, lazily initialized by GetWebKitContext().
-  scoped_refptr<WebKitContext> webkit_context_;
-
-  // The main database tracker for this profile.
-  // Should be used only on the file thread.
-  scoped_refptr<webkit_database::DatabaseTracker> db_tracker_;
-
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   scoped_refptr<content::GeolocationPermissionContext>
       geolocation_permission_context_;
@@ -405,11 +383,6 @@ class TestingProfile : public Profile {
   // death. Defaults to the Singleton implementation but overridable for
   // testing.
   ProfileDependencyManager* profile_dependency_manager_;
-
-  scoped_refptr<ChromeAppCacheService> appcache_service_;
-
-  // The QuotaManager, only available if set explicitly via SetQuotaManager.
-  scoped_refptr<quota::QuotaManager> quota_manager_;
 
   // Weak pointer to a delegate for indicating that a profile was created.
   Delegate* delegate_;

@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "content/public/common/content_constants.h"
-
 namespace content {
+
+const FilePath::CharType kAppCacheDirname[] =
+    FILE_PATH_LITERAL("Application Cache");
 
 // This number used to be limited to 32 in the past (see b/535234).
 const size_t kMaxRendererProcessCount = 82;

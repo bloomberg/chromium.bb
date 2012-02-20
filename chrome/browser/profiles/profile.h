@@ -182,26 +182,6 @@ class Profile : public content::BrowserContext {
 
   // content::BrowserContext implementation ------------------------------------
 
-  virtual FilePath GetPath() = 0;
-  virtual content::DownloadManager* GetDownloadManager() = 0;
-  virtual net::URLRequestContextGetter* GetRequestContext() = 0;
-  virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
-      int renderer_child_id) = 0;
-  virtual net::URLRequestContextGetter* GetRequestContextForMedia() = 0;
-  virtual content::ResourceContext* GetResourceContext() = 0;
-  virtual content::HostZoomMap* GetHostZoomMap() = 0;
-  virtual content::GeolocationPermissionContext*
-      GetGeolocationPermissionContext() = 0;
-  virtual content::SpeechInputPreferences* GetSpeechInputPreferences() = 0;
-  virtual quota::QuotaManager* GetQuotaManager() = 0;
-  virtual webkit_database::DatabaseTracker* GetDatabaseTracker() = 0;
-  virtual WebKitContext* GetWebKitContext() = 0;
-  virtual ChromeAppCacheService* GetAppCacheService() = 0;
-  virtual ChromeBlobStorageContext* GetBlobStorageContext() = 0;
-  virtual fileapi::FileSystemContext* GetFileSystemContext() = 0;
-
-  // content::BrowserContext implementation ------------------------------------
-
   // Typesafe upcast.
   virtual TestingProfile* AsTestingProfile();
 
@@ -377,9 +357,6 @@ class Profile : public content::BrowserContext {
 
   // Returns the user style sheet watcher.
   virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() = 0;
-
-  // Returns true if the last time this profile was open it was exited cleanly.
-  virtual bool DidLastSessionExitCleanly() = 0;
 
   // Returns the BookmarkModel, creating if not yet created.
   virtual BookmarkModel* GetBookmarkModel() = 0;

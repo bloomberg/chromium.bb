@@ -43,26 +43,6 @@ class ProfileSyncServiceObserverMock : public ProfileSyncServiceObserver {
   MOCK_METHOD0(OnStateChanged, void());
 };
 
-class ThreadNotificationService
-    : public base::RefCountedThreadSafe<ThreadNotificationService> {
- public:
-  explicit ThreadNotificationService(base::Thread* notification_thread);
-
-  void Init();
-  void TearDown();
-
- private:
-  friend class base::RefCountedThreadSafe<ThreadNotificationService>;
-  virtual ~ThreadNotificationService();
-
-  void InitTask();
-  void TearDownTask();
-
-  base::WaitableEvent done_event_;
-  base::Thread* notification_thread_;
-  scoped_ptr<content::NotificationService> service_;
-};
-
 class ThreadNotifier :  // NOLINT
     public base::RefCountedThreadSafe<ThreadNotifier> {
  public:

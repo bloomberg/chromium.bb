@@ -34,11 +34,16 @@ namespace {
 
 class CookiesTreeModelTest : public testing::Test {
  public:
-  CookiesTreeModelTest() : ui_thread_(BrowserThread::UI, &message_loop_),
-                           io_thread_(BrowserThread::IO, &message_loop_) {
+  CookiesTreeModelTest()
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        file_user_blocking_(BrowserThread::FILE_USER_BLOCKING, &message_loop_),
+        io_thread_(BrowserThread::IO, &message_loop_) {
   }
 
   virtual ~CookiesTreeModelTest() {
+    // Avoid memory leaks.
+    profile_.reset();
+    message_loop_.RunAllPending();
   }
 
   virtual void SetUp() OVERRIDE {
@@ -276,6 +281,7 @@ class CookiesTreeModelTest : public testing::Test {
  protected:
   MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_user_blocking_;
   content::TestBrowserThread io_thread_;
 
   scoped_ptr<TestingProfile> profile_;

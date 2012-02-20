@@ -13,11 +13,12 @@
 #include "webkit/appcache/appcache_storage.h"
 
 using appcache::AppCacheDatabase;
+using content::BrowserContext;
 using content::BrowserThread;
 
 BrowsingDataAppCacheHelper::BrowsingDataAppCacheHelper(Profile* profile)
     : is_fetching_(false),
-      appcache_service_(profile->GetAppCacheService()) {
+      appcache_service_(BrowserContext::GetAppCacheService(profile)) {
 }
 
 void BrowsingDataAppCacheHelper::StartFetching(const base::Closure& callback) {

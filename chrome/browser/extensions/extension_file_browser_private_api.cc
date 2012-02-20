@@ -54,6 +54,7 @@
 #endif
 
 using chromeos::disks::DiskMountManager;
+using content::BrowserContext;
 using content::BrowserThread;
 using content::ChildProcessSecurityPolicy;
 using content::SiteInstance;
@@ -389,7 +390,7 @@ class RequestLocalFileSystemFunction::LocalFileSystemCallbackDispatcher {
     }
 
     fileapi::ExternalFileSystemMountPointProvider* provider =
-        profile_->GetFileSystemContext()->external_provider();
+        BrowserContext::GetFileSystemContext(profile_)->external_provider();
     if (!provider)
       return false;
 
@@ -420,7 +421,7 @@ class RequestLocalFileSystemFunction::LocalFileSystemCallbackDispatcher {
 void RequestLocalFileSystemFunction::RequestOnFileThread(
     const GURL& source_url, int child_id) {
   GURL origin_url = source_url.GetOrigin();
-  profile()->GetFileSystemContext()->OpenFileSystem(
+  BrowserContext::GetFileSystemContext(profile())->OpenFileSystem(
       origin_url, fileapi::kFileSystemTypeExternal, false, // create
       LocalFileSystemCallbackDispatcher::CreateCallback(
           this,
@@ -473,8 +474,8 @@ bool FileWatchBrowserFunctionBase::GetLocalFilePath(
   if (type != fileapi::kFileSystemTypeExternal)
     return false;
 
-  FilePath root_path = profile_->GetFileSystemContext()->external_provider()->
-      GetFileSystemRootPathOnFileThread(
+  FilePath root_path = BrowserContext::GetFileSystemContext(profile_)->
+      external_provider()->GetFileSystemRootPathOnFileThread(
           file_origin_url,
           fileapi::kFileSystemTypeExternal,
           *virtual_path,
@@ -744,7 +745,7 @@ class
       return false;
 
     fileapi::ExternalFileSystemMountPointProvider* external_provider =
-        profile_->GetFileSystemContext()->external_provider();
+        BrowserContext::GetFileSystemContext(profile_)->external_provider();
     if (!external_provider)
       return false;
 
@@ -871,7 +872,7 @@ void ExecuteTasksFileBrowserFunction::RequestFileEntryOnFileThread(
     const std::vector<GURL>& file_urls) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   GURL origin_url = source_url.GetOrigin();
-  profile()->GetFileSystemContext()->OpenFileSystem(
+  BrowserContext::GetFileSystemContext(profile())->OpenFileSystem(
       origin_url, fileapi::kFileSystemTypeExternal, false, // create
       ExecuteTasksFileSystemCallbackDispatcher::CreateCallback(
           this,
@@ -1005,7 +1006,7 @@ void FileBrowserFunction::GetLocalPathsOnFileThread(
   // FilePath(virtual_path) doesn't work on win, so limit this to ChromeOS.
 #if defined(OS_CHROMEOS)
   fileapi::ExternalFileSystemMountPointProvider* provider =
-      profile_->GetFileSystemContext()->external_provider();
+      BrowserContext::GetFileSystemContext(profile_)->external_provider();
   if (!provider) {
     LOG(WARNING) << "External provider is not available";
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,

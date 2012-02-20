@@ -1137,7 +1137,6 @@ QuotaManager::QuotaManager(bool is_incognito,
 }
 
 QuotaManager::~QuotaManager() {
-  DCHECK(io_thread_->BelongsToCurrentThread());
   proxy_->manager_ = NULL;
   std::for_each(clients_.begin(), clients_.end(),
                 std::mem_fun(&QuotaClient::OnQuotaManagerDestroyed));
@@ -1297,7 +1296,6 @@ void QuotaManager::LazyInitialize() {
 }
 
 void QuotaManager::RegisterClient(QuotaClient* client) {
-  DCHECK(io_thread_->BelongsToCurrentThread());
   DCHECK(!database_.get());
   clients_.push_back(client);
 }
@@ -1674,8 +1672,8 @@ void QuotaManager::DidGetDatabaseLRUOrigin(const GURL& origin) {
 }
 
 void QuotaManager::DeleteOnCorrectThread() const {
-  if (!io_thread_->BelongsToCurrentThread()) {
-    io_thread_->DeleteSoon(FROM_HERE, this);
+  if (!io_thread_->BelongsToCurrentThread() && 
+      io_thread_->DeleteSoon(FROM_HERE, this)) {
     return;
   }
   delete this;
@@ -1684,10 +1682,10 @@ void QuotaManager::DeleteOnCorrectThread() const {
 // QuotaManagerProxy ----------------------------------------------------------
 
 void QuotaManagerProxy::RegisterClient(QuotaClient* client) {
-  if (!io_thread_->BelongsToCurrentThread()) {
-    io_thread_->PostTask(
-        FROM_HERE,
-        base::Bind(&QuotaManagerProxy::RegisterClient, this, client));
+  if (!io_thread_->BelongsToCurrentThread() &&
+      io_thread_->PostTask(
+          FROM_HERE,
+          base::Bind(&QuotaManagerProxy::RegisterClient, this, client))) {
     return;
   }
 

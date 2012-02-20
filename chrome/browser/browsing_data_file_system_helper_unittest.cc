@@ -18,6 +18,7 @@
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
 
 namespace {
@@ -54,16 +55,25 @@ typedef scoped_ptr<FileSystemInfoList> ScopedFileSystemInfoList;
 class BrowsingDataFileSystemHelperTest : public testing::Test {
  public:
   BrowsingDataFileSystemHelperTest()
-      : helper_(BrowsingDataFileSystemHelper::Create(&profile_)),
-        canned_helper_(new CannedBrowsingDataFileSystemHelper(&profile_)),
-        ui_thread_(BrowserThread::UI, &message_loop_),
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        db_thread_(BrowserThread::DB, &message_loop_),
+        webkit_thread_(BrowserThread::WEBKIT_DEPRECATED, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_),
+        file_user_blocking_thread_(
+            BrowserThread::FILE_USER_BLOCKING, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_) {
+    profile_.reset(new TestingProfile());
+    helper_ = BrowsingDataFileSystemHelper::Create(profile_.get());
+    canned_helper_ = new CannedBrowsingDataFileSystemHelper(profile_.get());
   }
-  virtual ~BrowsingDataFileSystemHelperTest() {}
+  virtual ~BrowsingDataFileSystemHelperTest() {
+    // Avoid memory leaks.
+    profile_.reset();
+    message_loop_.RunAllPending();
+  }
 
   TestingProfile* GetProfile() {
-    return &profile_;
+    return profile_.get();
   }
 
   // Blocks on the current MessageLoop until Notify() is called.
@@ -131,7 +141,8 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
   // Sets up kOrigin1 with a temporary file system, kOrigin2 with a persistent
   // file system, and kOrigin3 with both.
   virtual void PopulateTestFileSystemData() {
-    sandbox_ = profile_.GetFileSystemContext()->sandbox_provider();
+    sandbox_ = BrowserContext::GetFileSystemContext(profile_.get())->
+        sandbox_provider();
 
     CreateDirectoryForOriginAndType(kOrigin1, kTemporary);
     CreateDirectoryForOriginAndType(kOrigin2, kPersistent);
@@ -175,9 +186,12 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
   // defined in the order they're listed here. Oh how I love C++.
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread db_thread_;
+  content::TestBrowserThread webkit_thread_;
   content::TestBrowserThread file_thread_;
+  content::TestBrowserThread file_user_blocking_thread_;
   content::TestBrowserThread io_thread_;
-  TestingProfile profile_;
+  scoped_ptr<TestingProfile> profile_;
 
   // We don't own this pointer: don't delete it.
   fileapi::SandboxMountPointProvider* sandbox_;

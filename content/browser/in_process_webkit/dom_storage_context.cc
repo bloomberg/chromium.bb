@@ -141,7 +141,8 @@ DOMStorageArea* DOMStorageContext::GetStorageArea(int64 id) {
 }
 
 void DOMStorageContext::DeleteSessionStorageNamespace(int64 namespace_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED) ||
+         !BrowserThread::IsMessageLoopValid(BrowserThread::WEBKIT_DEPRECATED));
   StorageNamespaceMap::iterator iter =
       storage_namespace_map_.find(namespace_id);
   if (iter == storage_namespace_map_.end())

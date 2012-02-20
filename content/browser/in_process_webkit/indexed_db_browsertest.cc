@@ -23,6 +23,7 @@
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/special_storage_policy.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
 using quota::QuotaManager;
 using webkit_database::DatabaseUtil;
@@ -153,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ClearLocalState) {
 
     // Create some indexedDB paths.
     // With the levelDB backend, these are directories.
-    WebKitContext *webkit_context = profile.GetWebKitContext();
+    WebKitContext* webkit_context = BrowserContext::GetWebKitContext(&profile);
     IndexedDBContext* idb_context = webkit_context->indexed_db_context();
     idb_context->set_data_path_for_testing(temp_dir.path());
     protected_path = idb_context->GetIndexedDBFilePath(
@@ -168,11 +169,15 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ClearLocalState) {
   }
 
   // Make sure we wait until the destructor has run.
-  scoped_refptr<base::ThreadTestHelper> helper(
+  scoped_refptr<base::ThreadTestHelper> helper_io(
+      new base::ThreadTestHelper(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+  ASSERT_TRUE(helper_io->Run());
+  scoped_refptr<base::ThreadTestHelper> helper_webkit(
       new base::ThreadTestHelper(
           BrowserThread::GetMessageLoopProxyForThread(
               BrowserThread::WEBKIT_DEPRECATED)));
-  ASSERT_TRUE(helper->Run());
+  ASSERT_TRUE(helper_webkit->Run());
 
   ASSERT_TRUE(file_util::DirectoryExists(protected_path));
   ASSERT_FALSE(file_util::DirectoryExists(unprotected_path));
@@ -200,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ClearSessionOnlyDatabases) {
 
     // Create some indexedDB paths.
     // With the levelDB backend, these are directories.
-    WebKitContext *webkit_context = profile.GetWebKitContext();
+    WebKitContext* webkit_context = BrowserContext::GetWebKitContext(&profile);
     IndexedDBContext* idb_context = webkit_context->indexed_db_context();
 
     // Override the storage policy with our own.
@@ -215,12 +220,15 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ClearSessionOnlyDatabases) {
     ASSERT_TRUE(file_util::CreateDirectory(session_only_path));
   }
 
-  // Make sure we wait until the destructor has run.
-  scoped_refptr<base::ThreadTestHelper> helper(
+  scoped_refptr<base::ThreadTestHelper> helper_io(
+      new base::ThreadTestHelper(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+  ASSERT_TRUE(helper_io->Run());
+  scoped_refptr<base::ThreadTestHelper> helper_webkit(
       new base::ThreadTestHelper(
           BrowserThread::GetMessageLoopProxyForThread(
               BrowserThread::WEBKIT_DEPRECATED)));
-  ASSERT_TRUE(helper->Run());
+  ASSERT_TRUE(helper_webkit->Run());
 
   EXPECT_TRUE(file_util::DirectoryExists(normal_path));
   EXPECT_FALSE(file_util::DirectoryExists(session_only_path));
@@ -246,7 +254,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, SaveSessionState) {
 
     // Create some indexedDB paths.
     // With the levelDB backend, these are directories.
-    WebKitContext *webkit_context = profile.GetWebKitContext();
+    WebKitContext* webkit_context = BrowserContext::GetWebKitContext(&profile);
     IndexedDBContext* idb_context = webkit_context->indexed_db_context();
 
     // Override the storage policy with our own.
@@ -284,7 +292,8 @@ class IndexedDBBrowserTestWithLowQuota : public IndexedDBBrowserTest {
     const int kTemporaryStorageQuotaMaxSize = kInitialQuotaKilobytes
         * 1024 * QuotaManager::kPerHostTemporaryPortion;
     SetTempQuota(
-        kTemporaryStorageQuotaMaxSize, browser()->profile()->GetQuotaManager());
+        kTemporaryStorageQuotaMaxSize,
+        content::BrowserContext::GetQuotaManager(browser()->profile()));
   }
 
   static void SetTempQuota(int64 bytes, scoped_refptr<QuotaManager> qm) {

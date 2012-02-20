@@ -65,6 +65,7 @@ class CocoaProfileTest : public CocoaTest {
   TestingProfile* profile_;  // Weak; owned by profile_manager_.
   scoped_ptr<Browser> browser_;
 
+  scoped_ptr<content::TestBrowserThread> file_user_blocking_thread_;
   scoped_ptr<content::TestBrowserThread> file_thread_;
   scoped_ptr<content::TestBrowserThread> io_thread_;
 };

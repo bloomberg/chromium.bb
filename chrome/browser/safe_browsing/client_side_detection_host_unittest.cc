@@ -5,6 +5,7 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/safe_browsing/browser_feature_extractor.h"
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
@@ -159,6 +160,9 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
 
     ui_thread_.reset(new content::TestBrowserThread(BrowserThread::UI,
                                                     &message_loop_));
+    file_user_blocking_thread_.reset(
+        new content::TestBrowserThread(BrowserThread::FILE_USER_BLOCKING,
+        &message_loop_));
     // Note: we're starting a real IO thread to make sure our DCHECKs that
     // verify which thread is running are actually tested.
     io_thread_.reset(new content::TestBrowserThread(BrowserThread::IO));
@@ -178,6 +182,11 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
     csd_host_->browse_info_.reset(new BrowseInfo);
   }
 
+  static void RunAllPendingOnIO(base::WaitableEvent* event) {
+    MessageLoop::current()->RunAllPending();
+    event->Signal();
+  }
+
   virtual void TearDown() {
     // Delete the host object on the UI thread and release the
     // SafeBrowsingService.
@@ -186,7 +195,15 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
     sb_service_ = NULL;
     message_loop_.RunAllPending();
     TabContentsWrapperTestHarness::TearDown();
+
+    // Let the tasks on the IO thread run to avoid memory leaks.
+    base::WaitableEvent done(false, false);
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+        base::Bind(RunAllPendingOnIO, &done));
+    done.Wait();
     io_thread_.reset();
+    message_loop_.RunAllPending();
+    file_user_blocking_thread_.reset();
     ui_thread_.reset();
   }
 
@@ -290,6 +307,7 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
 
  private:
   scoped_ptr<content::TestBrowserThread> ui_thread_;
+  scoped_ptr<content::TestBrowserThread> file_user_blocking_thread_;
   scoped_ptr<content::TestBrowserThread> io_thread_;
 };
 

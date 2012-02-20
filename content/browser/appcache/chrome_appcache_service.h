@@ -23,6 +23,8 @@ namespace content {
 class ResourceContext;
 }
 
+struct ChromeAppCacheServiceDeleter;
+
 // An AppCacheService subclass used by the chrome. There is an instance
 // associated with each BrowserContext. This derivation adds refcounting
 // semantics since a browser context has multiple URLRequestContexts which refer
@@ -36,12 +38,13 @@ class ResourceContext;
 // to worry about clients calling AppCacheService methods.
 class CONTENT_EXPORT ChromeAppCacheService
     : public base::RefCountedThreadSafe<
-          ChromeAppCacheService, content::BrowserThread::DeleteOnIOThread>,
+          ChromeAppCacheService, ChromeAppCacheServiceDeleter>,
       NON_EXPORTED_BASE(public appcache::AppCacheService),
       NON_EXPORTED_BASE(public appcache::AppCachePolicy),
       public content::NotificationObserver {
  public:
   explicit ChromeAppCacheService(quota::QuotaManagerProxy* proxy);
+  virtual ~ChromeAppCacheService();
 
   void InitializeOnIOThread(
       const FilePath& cache_path,  // may be empty to use in-memory structures
@@ -49,13 +52,9 @@ class CONTENT_EXPORT ChromeAppCacheService
       scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy);
 
  private:
-  friend class base::RefCountedThreadSafe<
-      ChromeAppCacheService,
-      content::BrowserThread::DeleteOnIOThread>;
-  friend class content::BrowserThread;
-  friend class base::DeleteHelper<ChromeAppCacheService>;
+  friend struct ChromeAppCacheServiceDeleter;
 
-  virtual ~ChromeAppCacheService();
+  void DeleteOnCorrectThread() const;
 
   // AppCachePolicy overrides
   virtual bool CanLoadAppCache(const GURL& manifest_url,
@@ -73,6 +72,12 @@ class CONTENT_EXPORT ChromeAppCacheService
   FilePath cache_path_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAppCacheService);
+};
+
+struct ChromeAppCacheServiceDeleter {
+  static void Destruct(const ChromeAppCacheService* service) {
+    service->DeleteOnCorrectThread();
+  }
 };
 
 #endif  // CONTENT_BROWSER_APPCACHE_CHROME_APPCACHE_SERVICE_H_

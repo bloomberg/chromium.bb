@@ -14,6 +14,8 @@ CocoaProfileTest::CocoaProfileTest()
     : ui_thread_(BrowserThread::UI, &message_loop_),
       profile_manager_(static_cast<TestingBrowserProcess*>(g_browser_process)),
       profile_(NULL),
+      file_user_blocking_thread_(new content::TestBrowserThread(
+          BrowserThread::FILE_USER_BLOCKING, &message_loop_)),
       file_thread_(new content::TestBrowserThread(BrowserThread::FILE,
                                                   &message_loop_)),
       io_thread_(new content::TestBrowserThread(BrowserThread::IO,
@@ -38,6 +40,7 @@ CocoaProfileTest::~CocoaProfileTest() {
   // Drop any new tasks for the IO and FILE threads.
   io_thread_.reset();
   file_thread_.reset();
+  file_user_blocking_thread_.reset();
 
   message_loop_.RunAllPending();
 }

@@ -19,6 +19,10 @@ TestBrowserContext::TestBrowserContext() {
 TestBrowserContext::~TestBrowserContext() {
 }
 
+FilePath TestBrowserContext::TakePath() {
+  return browser_context_dir_.Take();
+}
+
 FilePath TestBrowserContext::GetPath() {
   return browser_context_dir_.path();
 }
@@ -67,31 +71,6 @@ bool TestBrowserContext::DidLastSessionExitCleanly() {
   return true;
 }
 
-quota::QuotaManager* TestBrowserContext::GetQuotaManager() {
-  return NULL;
-}
-
-WebKitContext* TestBrowserContext::GetWebKitContext() {
-  if (webkit_context_ == NULL) {
-    webkit_context_ = new WebKitContext(
-          IsOffTheRecord(), GetPath(),
-          NULL, false, NULL, NULL);
-  }
-  return webkit_context_;
-}
-
-webkit_database::DatabaseTracker* TestBrowserContext::GetDatabaseTracker() {
-  return NULL;
-}
-
-ChromeBlobStorageContext* TestBrowserContext::GetBlobStorageContext() {
-  return NULL;
-}
-
-ChromeAppCacheService* TestBrowserContext::GetAppCacheService() {
-  return NULL;
-}
-
-fileapi::FileSystemContext* TestBrowserContext::GetFileSystemContext() {
+quota::SpecialStoragePolicy* TestBrowserContext::GetSpecialStoragePolicy() {
   return NULL;
 }

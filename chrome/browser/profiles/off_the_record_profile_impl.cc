@@ -44,9 +44,6 @@
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
-#include "content/browser/appcache/chrome_appcache_service.h"
-#include "content/browser/chrome_blob_storage_context.h"
-#include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -55,7 +52,6 @@
 #include "net/base/transport_security_state.h"
 #include "net/http/http_server_properties.h"
 #include "webkit/database/database_tracker.h"
-#include "webkit/quota/quota_manager.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/preferences.h"
@@ -133,14 +129,6 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
       BrowserThread::IO, FROM_HERE,
       base::Bind(&NotifyOTRProfileDestroyedOnIOThread, profile_, this));
 
-  // Clean up all DB files/directories
-  if (db_tracker_) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&webkit_database::DatabaseTracker::Shutdown,
-                   db_tracker_.get()));
-  }
-
   BrowserList::RemoveObserver(this);
 
   if (host_content_settings_map_)
@@ -188,17 +176,6 @@ bool OffTheRecordProfileImpl::HasOffTheRecordProfile() {
 
 Profile* OffTheRecordProfileImpl::GetOriginalProfile() {
   return profile_;
-}
-
-ChromeAppCacheService* OffTheRecordProfileImpl::GetAppCacheService() {
-  CreateQuotaManagerAndClients();
-  return appcache_service_;
-}
-
-webkit_database::DatabaseTracker*
-    OffTheRecordProfileImpl::GetDatabaseTracker() {
-  CreateQuotaManagerAndClients();
-  return db_tracker_;
 }
 
 VisitedLinkMaster* OffTheRecordProfileImpl::GetVisitedLinkMaster() {
@@ -313,18 +290,8 @@ DownloadManager* OffTheRecordProfileImpl::GetDownloadManager() {
   return DownloadServiceFactory::GetForProfile(this)->GetDownloadManager();
 }
 
-fileapi::FileSystemContext* OffTheRecordProfileImpl::GetFileSystemContext() {
-  CreateQuotaManagerAndClients();
-  return file_system_context_.get();
-}
-
 net::URLRequestContextGetter* OffTheRecordProfileImpl::GetRequestContext() {
   return io_data_.GetMainRequestContextGetter();
-}
-
-quota::QuotaManager* OffTheRecordProfileImpl::GetQuotaManager() {
-  CreateQuotaManagerAndClients();
-  return quota_manager_.get();
 }
 
 net::URLRequestContextGetter*
@@ -409,6 +376,11 @@ bool OffTheRecordProfileImpl::DidLastSessionExitCleanly() {
   return profile_->DidLastSessionExitCleanly();
 }
 
+quota::SpecialStoragePolicy*
+    OffTheRecordProfileImpl::GetSpecialStoragePolicy() {
+  return GetExtensionSpecialStoragePolicy();
+}
+
 BookmarkModel* OffTheRecordProfileImpl::GetBookmarkModel() {
   return profile_->GetBookmarkModel();
 }
@@ -427,11 +399,6 @@ bool OffTheRecordProfileImpl::IsSameProfile(Profile* profile) {
 
 Time OffTheRecordProfileImpl::GetStartTime() const {
   return start_time_;
-}
-
-WebKitContext* OffTheRecordProfileImpl::GetWebKitContext() {
-  CreateQuotaManagerAndClients();
-  return webkit_context_.get();
 }
 
 history::TopSites* OffTheRecordProfileImpl::GetTopSitesWithoutCreating() {
@@ -485,17 +452,6 @@ void OffTheRecordProfileImpl::OnBrowserAdded(const Browser* browser) {
 }
 
 void OffTheRecordProfileImpl::OnBrowserRemoved(const Browser* browser) {
-}
-
-ChromeBlobStorageContext* OffTheRecordProfileImpl::GetBlobStorageContext() {
-  if (!blob_storage_context_) {
-    blob_storage_context_ = new ChromeBlobStorageContext();
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&ChromeBlobStorageContext::InitializeOnIOThread,
-                   blob_storage_context_.get()));
-  }
-  return blob_storage_context_;
 }
 
 ExtensionInfoMap* OffTheRecordProfileImpl::GetExtensionInfoMap() {
@@ -555,51 +511,6 @@ void OffTheRecordProfileImpl::Observe(int type,
       GetHostZoomMap()->SetZoomLevel(host, level);
     }
   }
-}
-
-void OffTheRecordProfileImpl::CreateQuotaManagerAndClients() {
-  if (quota_manager_.get()) {
-    DCHECK(file_system_context_.get());
-    DCHECK(db_tracker_.get());
-    DCHECK(webkit_context_.get());
-    return;
-  }
-
-  // All of the clients have to be created and registered with the
-  // QuotaManager prior to the QuotaManger being used. So we do them
-  // all together here prior to handing out a reference to anything
-  // that utlizes the QuotaManager.
-  quota_manager_ = new quota::QuotaManager(
-      IsOffTheRecord(),
-      GetPath(),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
-      GetExtensionSpecialStoragePolicy());
-
-  // Each consumer is responsible for registering its QuotaClient during
-  // its construction.
-  file_system_context_ = CreateFileSystemContext(
-      GetPath(), IsOffTheRecord(),
-      GetExtensionSpecialStoragePolicy(),
-      quota_manager_->proxy());
-  db_tracker_ = new webkit_database::DatabaseTracker(
-      GetPath(), IsOffTheRecord(), false, GetExtensionSpecialStoragePolicy(),
-      quota_manager_->proxy(),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
-  webkit_context_ = new WebKitContext(
-      IsOffTheRecord(), GetPath(), GetExtensionSpecialStoragePolicy(),
-      false, quota_manager_->proxy(),
-      BrowserThread::GetMessageLoopProxyForThread(
-          BrowserThread::WEBKIT_DEPRECATED));
-  appcache_service_ = new ChromeAppCacheService(quota_manager_->proxy());
-  BrowserThread::PostTask(
-    BrowserThread::IO, FROM_HERE,
-    base::Bind(&ChromeAppCacheService::InitializeOnIOThread,
-               appcache_service_.get(),
-               IsOffTheRecord()
-                   ? FilePath() : GetPath().Append(chrome::kAppCacheDirname),
-               io_data_.GetResourceContextNoInit(),
-               make_scoped_refptr(GetExtensionSpecialStoragePolicy())));
 }
 
 #if defined(OS_CHROMEOS)

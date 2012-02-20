@@ -316,8 +316,11 @@ SandboxMountPointProvider::SandboxMountPointProvider(
 }
 
 SandboxMountPointProvider::~SandboxMountPointProvider() {
-  if (!file_message_loop_->BelongsToCurrentThread())
-    file_message_loop_->ReleaseSoon(FROM_HERE, sandbox_file_util_.release());
+  if (!file_message_loop_->BelongsToCurrentThread()) {
+    ObfuscatedFileUtil* sandbox_file_util = sandbox_file_util_.release();
+    if (!file_message_loop_->ReleaseSoon(FROM_HERE, sandbox_file_util))
+      sandbox_file_util->Release();
+  }
 }
 
 void SandboxMountPointProvider::ValidateFileSystemRoot(
