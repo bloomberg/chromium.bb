@@ -11,6 +11,8 @@ import mox
 import sys
 import unittest
 import urllib
+import copy
+import itertools
 
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
@@ -18,12 +20,28 @@ sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.buildbot import gerrit_helper
 from chromite.buildbot import patch as cros_patch
 from chromite.buildbot import validation_pool
+from chromite.buildbot import patch_unittest
 from chromite.lib import cros_build_lib
 
+_CountingSource = itertools.count()
 
 # pylint: disable=W0212,R0904
 class TestValidationPool(mox.MoxTestBase):
   """Tests methods in validation_pool.ValidationPool."""
+
+  @property
+  def test_json(self):
+    return copy.deepcopy(patch_unittest.FAKE_PATCH_JSON)
+
+  def MockPatch(self, change_id, patch_number=None):
+    patch = self.mox.CreateMock(cros_patch.GerritPatch)
+
+    patch.id = 'ChangeId%i' % (change_id,)
+    patch.gerrit_number = change_id
+    patch.patch_number = (patch_number if patch_number is not None else
+                          _CountingSource.next())
+    patch.url = 'fake_url/%i' % (change_id,)
+    return patch
 
   def _TreeStatusFile(self, message, general_state):
     """Returns a file-like object with the status message writtin in it."""
@@ -82,13 +100,9 @@ class TestValidationPool(mox.MoxTestBase):
     but tries to get applied before change2.  What should happen is that
     we should notice change2 is a dep of change1 and apply it first.
     """
-    patch1 = self.mox.CreateMock(cros_patch.GerritPatch)
-    patch2 = self.mox.CreateMock(cros_patch.GerritPatch)
+    patch1 = self.MockPatch(1)
+    patch2 = self.MockPatch(2)
 
-    patch1.id = 'ChangeId1'
-    patch2.id = 'ChangeId2'
-    patch1.url = 'fake_url/1'
-    patch2.url = 'fake_url/2'
     build_root = 'fakebuildroot'
 
     pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
@@ -112,14 +126,9 @@ class TestValidationPool(mox.MoxTestBase):
     Patch2 is in the validation pool that depends on Patch1 (which is not)
     Nothing should get applied.
     """
-    patch1 = self.mox.CreateMock(cros_patch.GerritPatch)
-    patch2 = self.mox.CreateMock(cros_patch.GerritPatch)
-
-    patch1.id = 'ChangeId1'
-    patch2.id = 'ChangeId2'
+    patch1 = self.MockPatch(1)
+    patch2 = self.MockPatch(2)
     patch2.project = 'fake_project'
-    patch1.url = 'fake_url/1'
-    patch2.url = 'fake_url/2'
     build_root = 'fakebuildroot'
 
     pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
@@ -136,14 +145,9 @@ class TestValidationPool(mox.MoxTestBase):
 
   def testSimpleDepApplyWhenAlreadySubmitted(self):
     """Test that we apply a change with dependency already committed."""
-    patch1 = self.mox.CreateMock(cros_patch.GerritPatch)
-    patch2 = self.mox.CreateMock(cros_patch.GerritPatch)
-
-    patch1.id = 'ChangeId1'
-    patch2.id = 'ChangeId2'
+    patch1 = self.MockPatch(1)
+    patch2 = self.MockPatch(2)
     patch2.project = 'fake_project'
-    patch1.url = 'fake_url/1'
-    patch2.url = 'fake_url/2'
     build_root = 'fakebuildroot'
 
     pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
@@ -170,19 +174,10 @@ class TestValidationPool(mox.MoxTestBase):
     Since patch1 fails to apply, we should also get a call to handle the
     failure.
     """
-    patch1 = self.mox.CreateMock(cros_patch.GerritPatch)
-    patch2 = self.mox.CreateMock(cros_patch.GerritPatch)
-    patch3 = self.mox.CreateMock(cros_patch.GerritPatch)
-    patch4 = self.mox.CreateMock(cros_patch.GerritPatch)
-
-    patch1.id = 'ChangeId1'
-    patch2.id = 'ChangeId2'
-    patch3.id = 'ChangeId3'
-    patch4.id = 'ChangeId4'
-    patch1.url = 'fake_url/1'
-    patch2.url = 'fake_url/2'
-    patch3.url = 'fake_url/3'
-    patch4.url = 'fake_url/4'
+    patch1 = self.MockPatch(1)
+    patch2 = self.MockPatch(2)
+    patch3 = self.MockPatch(3)
+    patch4 = self.MockPatch(4)
     build_root = 'fakebuildroot'
 
     pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
@@ -219,13 +214,8 @@ class TestValidationPool(mox.MoxTestBase):
 
   def testSimpleApplyButMissingChangeIDIntoRepo(self):
     """Test that applies changes correctly with a dep with missing changeid."""
-    patch1 = self.mox.CreateMock(cros_patch.GerritPatch)
-    patch2 = self.mox.CreateMock(cros_patch.GerritPatch)
-
-    patch1.id = 'ChangeId1'
-    patch2.id = 'ChangeId2'
-    patch1.url = 'fake_url/1'
-    patch2.url = 'fake_url/2'
+    patch1 = self.MockPatch(1)
+    patch2 = self.MockPatch(2)
     build_root = 'fakebuildroot'
 
     pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
@@ -258,22 +248,11 @@ class TestValidationPool(mox.MoxTestBase):
     This test also checks the patch order to verify that Apply re-orders
     correctly based on the chain.
     """
-    patch1 = self.mox.CreateMock(cros_patch.GerritPatch)
-    patch2 = self.mox.CreateMock(cros_patch.GerritPatch)
-    patch3 = self.mox.CreateMock(cros_patch.GerritPatch)
-    patch4 = self.mox.CreateMock(cros_patch.GerritPatch)
-    patch5 = self.mox.CreateMock(cros_patch.GerritPatch)
-
-    patch1.id = 'ChangeId1'
-    patch2.id = 'ChangeId2'
-    patch3.id = 'ChangeId3'
-    patch4.id = 'ChangeId4'
-    patch5.id = 'ChangeId5'
-    patch1.url = 'fake_url/1'
-    patch2.url = 'fake_url/2'
-    patch3.url = 'fake_url/3'
-    patch4.url = 'fake_url/4'
-    patch5.url = 'fake_url/5'
+    patch1 = self.MockPatch(1)
+    patch2 = self.MockPatch(2)
+    patch3 = self.MockPatch(3)
+    patch4 = self.MockPatch(4)
+    patch5 = self.MockPatch(5)
 
     build_root = 'fakebuildroot'
 
@@ -307,13 +286,8 @@ class TestValidationPool(mox.MoxTestBase):
 
   def testNoDepsApplyPoolIntoRepo(self):
     """Simple apply of two changes with no dependent CL's."""
-    patch1 = self.mox.CreateMock(cros_patch.GerritPatch)
-    patch2 = self.mox.CreateMock(cros_patch.GerritPatch)
-
-    patch1.id = 'ChangeId1'
-    patch2.id = 'ChangeId2'
-    patch1.url = 'fake_url/1'
-    patch2.url = 'fake_url/2'
+    patch1 = self.MockPatch(1)
+    patch2 = self.MockPatch(2)
     build_root = 'fakebuildroot'
 
     pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
@@ -342,14 +316,12 @@ class TestValidationPool(mox.MoxTestBase):
     as submitted in Gerrit.
     """
     self.mox.StubOutWithMock(validation_pool.ValidationPool, '_IsTreeOpen')
-    patch1 = self.mox.CreateMock(cros_patch.GerritPatch)
-    patch2 = self.mox.CreateMock(cros_patch.GerritPatch)
-    patch3 = self.mox.CreateMock(cros_patch.GerritPatch)
+    patch1 = self.MockPatch(1)
+    patch2 = self.MockPatch(2)
+    patch3 = self.MockPatch(3)
+
     helper = self.mox.CreateMock(gerrit_helper.GerritHelper)
 
-    patch1.id = 'ChangeId1'
-    patch2.id = 'ChangeId2'
-    patch3.id = 'ChangeId3'
     build_root = 'fakebuildroot'
 
     validation_pool.ValidationPool._IsTreeOpen().AndReturn(True)
@@ -375,12 +347,10 @@ class TestValidationPool(mox.MoxTestBase):
   def testSimpleSubmitPool(self):
     """Tests the ability to submit a list of changes."""
     self.mox.StubOutWithMock(validation_pool.ValidationPool, '_IsTreeOpen')
-    patch1 = self.mox.CreateMock(cros_patch.GerritPatch)
-    patch2 = self.mox.CreateMock(cros_patch.GerritPatch)
     helper = self.mox.CreateMock(gerrit_helper.GerritHelper)
 
-    patch1.id = 'ChangeId1'
-    patch2.id = 'ChangeId2'
+    patch1 = self.MockPatch(1)
+    patch2 = self.MockPatch(2)
     build_root = 'fakebuildroot'
 
     validation_pool.ValidationPool._IsTreeOpen().AndReturn(True)
@@ -401,12 +371,9 @@ class TestValidationPool(mox.MoxTestBase):
   def testSubmitNonManifestChanges(self):
     """Simple test to make sure we can submit non-manifest changes."""
     self.mox.StubOutWithMock(validation_pool.ValidationPool, '_IsTreeOpen')
-    patch1 = self.mox.CreateMock(cros_patch.GerritPatch)
-    patch2 = self.mox.CreateMock(cros_patch.GerritPatch)
+    patch1 = self.MockPatch(1)
+    patch2 = self.MockPatch(2)
     helper = self.mox.CreateMock(gerrit_helper.GerritHelper)
-
-    patch1.id = 'ChangeId1'
-    patch2.id = 'ChangeId2'
     build_root = 'fakebuildroot'
 
     validation_pool.ValidationPool._IsTreeOpen().AndReturn(True)
