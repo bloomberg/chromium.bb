@@ -959,3 +959,7 @@ li.table-row {
   border: none;
   z-index: 100;
 }
+
+menu.file-context-menu {
+  z-index: 4;
+}
