@@ -125,6 +125,8 @@ void AdvancedOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_PRIVACY_CLEAR_DATA_BUTTON },
     { "linkDoctorPref",
       IDS_OPTIONS_LINKDOCTOR_PREF },
+    { "spellingPref",
+      IDS_OPTIONS_SPELLING_PREF },
     { "suggestPref",
       IDS_OPTIONS_SUGGEST_PREF },
     { "tabsToLinksPref",
