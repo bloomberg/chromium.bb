@@ -9,6 +9,8 @@
 #include "content/common/content_export.h"
 #include "content/public/common/gpu_feature_type.h"
 
+class FilePath;
+
 namespace base {
 class ListValue;
 }
