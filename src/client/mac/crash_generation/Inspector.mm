@@ -43,6 +43,7 @@
 
 #import "common/mac/SimpleStringDictionary.h"
 #import "common/mac/MachIPC.h"
+#include "common/mac/bootstrap_compat.h"
 
 #import "GTMDefines.h"
 
@@ -174,9 +175,9 @@ kern_return_t Inspector::ServiceCheckOut(const char *receive_port_name) {
   }
 
   // Unregister the service associated with the receive port.
-  kr = bootstrap_register(bootstrap_subset_port_,
-                          (char*)receive_port_name,
-                          MACH_PORT_NULL);
+  kr = breakpad::BootstrapRegister(bootstrap_subset_port_,
+                                   (char*)receive_port_name,
+                                   MACH_PORT_NULL);
 
   if (kr != KERN_SUCCESS) {
     PRINT_MACH_RESULT(kr, "Inspector: UNREGISTERING: bootstrap_register()");
