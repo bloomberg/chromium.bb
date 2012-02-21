@@ -397,10 +397,10 @@ def RunHWTestSuite(build, suite, board, debug):
   cmd = [_AUTOTEST_RPC_CLIENT,
          'master2', # TODO(frankf): Pass master_host param to cbuildbot.
          'RunSuite',
-         '-i=%s' % build,
-         '-s=%s' % suite,
-         '-b=%s' % board,
-         '-p=%s' % constants.HWTEST_MACH_POOL]
+         '-i', build,
+         '-s', suite,
+         '-b', board,
+         '-p', constants.HWTEST_MACH_POOL]
   if debug:
     cros_lib.Info('RunHWTestSuite would run: %s' % ' '.join(cmd))
   else:
