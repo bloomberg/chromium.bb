@@ -284,6 +284,8 @@ void FilterDisabledTests() {
     "HTTPSRequestTest.HTTPSPreloadedHSTSTest",
     "HTTPSRequestTest.ResumeTest",
     "HTTPSRequestTest.SSLSessionCacheShardTest",
+    "HTTPSRequestTest.SSLSessionCacheShardTest",
+    "HTTPSRequestTest.HTTPSErrorsNoClobberTSSTest",
   };
 
   const char* ie9_disabled_tests[] = {
