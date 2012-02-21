@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,11 +7,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "content/browser/accessibility/browser_accessibility_cocoa.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
+#import "ui/base/test/ui_cocoa_test_helper.h"
 
 @interface MockAccessibilityDelegate :
     NSView<BrowserAccessibilityDelegateCocoa>
@@ -45,7 +45,7 @@
 @end
 
 
-class BrowserAccessibilityTest : public CocoaTest {
+class BrowserAccessibilityTest : public ui::CocoaTest {
  public:
   virtual void SetUp() {
     CocoaTest::SetUp();

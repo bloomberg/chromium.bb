@@ -188,6 +188,7 @@
       ],
       'sources': [
         'app/startup_helper_win.cc',
+        'browser/accessibility/browser_accessibility_mac_unittest.mm',
         'browser/accessibility/browser_accessibility_manager_unittest.cc',
         'browser/accessibility/browser_accessibility_win_unittest.cc',
         'browser/appcache/chrome_appcache_service_unittest.cc',

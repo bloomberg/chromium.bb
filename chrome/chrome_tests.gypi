@@ -1256,7 +1256,6 @@
         'app/chrome_dll.rc',
         # All unittests in browser, common, renderer and service.
         'browser/about_flags_unittest.cc',
-        'browser/accessibility/browser_accessibility_mac_unittest.mm',
         'browser/app_controller_mac_unittest.mm',
         'browser/autocomplete/autocomplete_edit_unittest.cc',
         'browser/autocomplete/autocomplete_popup_model_unittest.cc',
