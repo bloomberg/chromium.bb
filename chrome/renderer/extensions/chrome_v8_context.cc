@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/string_split.h"
 #include "base/values.h"
@@ -115,6 +116,9 @@ bool ChromeV8Context::CallChromeHiddenMethod(
     VLOG(1) << "Could not execute chrome hidden method: " << function_name;
     return false;
   }
+
+  TRACE_EVENT1("v8", "v8.callChromeHiddenMethod",
+               "function_name", function_name);
 
   v8::Handle<v8::Value> result_temp =
       v8::Local<v8::Function>::Cast(value)->Call(v8::Object::New(), argc, argv);
