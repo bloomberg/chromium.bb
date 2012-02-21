@@ -22,9 +22,9 @@ if sys.platform != 'win32':
   test.build('assembly.gyp', test.ALL, chdir='relocate/src')
 
   expect = """\
-  Hello from program.c
-  Got 42.
-  """
+Hello from program.c
+Got 42.
+"""
   test.run_built_executable('program', chdir='relocate/src', stdout=expect)
 
 
