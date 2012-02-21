@@ -7,8 +7,6 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/resource_context.h"
 #include "net/base/net_errors.h"
 #include "webkit/quota/quota_manager.h"
@@ -30,9 +28,6 @@ void ChromeAppCacheService::InitializeOnIOThread(
   cache_path_ = cache_path;
   resource_context_ = resource_context;
   set_request_context(resource_context->GetRequestContext());
-  registrar_.Add(
-      this, content::NOTIFICATION_PURGE_MEMORY,
-      content::NotificationService::AllSources());
 
   // Init our base class.
   Initialize(
@@ -69,13 +64,4 @@ bool ChromeAppCacheService::CanCreateAppCache(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return content::GetContentClient()->browser()->AllowAppCache(
       manifest_url, first_party, resource_context_);
-}
-
-void ChromeAppCacheService::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(type == content::NOTIFICATION_PURGE_MEMORY);
-  PurgeMemory();
 }

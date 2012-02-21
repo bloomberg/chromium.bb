@@ -38,7 +38,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "net/base/cookie_monster.h"
@@ -607,6 +606,11 @@ void SafeBrowsingService::ResetDatabase() {
       &SafeBrowsingService::OnResetDatabase, this));
 }
 
+void SafeBrowsingService::PurgeMemory() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  CloseDatabase();
+}
+
 void SafeBrowsingService::LogPauseDelay(base::TimeDelta time) {
   UMA_HISTOGRAM_LONG_TIMES("SB2.Delay", time);
 }
@@ -655,8 +659,6 @@ void SafeBrowsingService::StartOnIOThread(
   enabled_ = true;
 
   registrar_.reset(new content::NotificationRegistrar);
-  registrar_->Add(this, content::NOTIFICATION_PURGE_MEMORY,
-                  content::NotificationService::AllSources());
 
   MakeDatabaseAvailable();
 
@@ -1384,10 +1386,6 @@ void SafeBrowsingService::Observe(int type,
       RefreshState();
       break;
     }
-    case content::NOTIFICATION_PURGE_MEMORY:
-      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-      CloseDatabase();
-      break;
     default:
       NOTREACHED();
   }

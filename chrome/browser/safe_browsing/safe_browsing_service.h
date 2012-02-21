@@ -292,6 +292,9 @@ class SafeBrowsingService
   // Called on the IO thread to reset the database.
   void ResetDatabase();
 
+  // Called on the IO thread to release memory.
+  void PurgeMemory();
+
   // Log the user perceived delay caused by SafeBrowsing. This delay is the time
   // delta starting from when we would have started reading data from the
   // network, and ending when the SafeBrowsing check completes indicating that

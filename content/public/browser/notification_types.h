@@ -399,12 +399,6 @@ enum NotificationType {
   // page.
   NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
 
-  // Purge Memory ------------------------------------------------------------
-
-  // Sent on the IO thread when the system should try to reduce the amount of
-  // memory in use, no source or details are passed. See memory_purger.h .cc.
-  NOTIFICATION_PURGE_MEMORY,
-
   // Sent before the repost form warning is brought up.
   // The source is a NavigationController.
   NOTIFICATION_REPOST_WARNING_SHOWN,
