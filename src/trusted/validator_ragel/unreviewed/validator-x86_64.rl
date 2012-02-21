@@ -138,7 +138,8 @@ static void PrintError(const char* msg, uintptr_t ptr) {
             } else {
               restricted_register = operands[i].name;
             }
-          } else if (operands[i].type == OperandSandboxUnrestricted) {
+          } else if (operands[i].type == OperandSandboxUnrestricted ||
+                     (operands[i].type == OperandSize8bit && rex_prefix)) {
             if (operands[i].name == REG_RBP) {
               PrintError("Incorrectly modified register %%rbp\n", begin - data);
               result = 1;

@@ -24,43 +24,46 @@ enum operand_type {
   /*
    * Currently we do not distinguish 8bit and 16bit modifications from
    * OperandSandboxUnrestricted to match the behavior of the old validator.
+   *
+   * 8bit operands must be distinguished from other types because the REX prefix
+   * regulates the choice between %ah and %spl, as well as %ch and %bpl.
    */
   OperandSize8bit = 0,
-  OperandSize16bit = 0,
+  OperandSize16bit = 2,
   /* If we store to 32bit register then it's restricted.  */
   OperandSandboxRestricted = 1,
   OperandSize32bit = 1,
   /* If we store to the 64bit register then it's unrestricted.  */
-  OperandSandboxUnrestricted = 0,
-  OperandSize64bit = 0,
+  OperandSandboxUnrestricted = 2,
+  OperandSize64bit = 2,
   /*
    * All other combinations work with specialized registers, or can not actually
    * happen at all (for example they describe operand encoded in an instruction.
    */
-  OperandSandboxIrrelevant = 2,
-  OperandSize2bit = 2,
-  OperandSize128bit = 2,
-  OperandSize256bit = 2,
-  OperandFloatSize16bit = 2,
-  OperandFloatSize32bit = 2,
-  OperandFloatSize64bit = 2,
-  OperandFloatSize80bit = 2,
-  OperandX87Size16bit = 2,
-  OperandX87Size32bit = 2,
-  OperandX87Size64bit = 2,
-  OperandX87BCD = 2,
-  OperandX87ENV = 2,
-  OperandX87STATE = 2,
-  OperandX87MMXXMMSTATE = 2,
-  OperandST = 2,
-  OperandSelector = 2,
-  OperandFarPtr = 2,
-  OperandSegmentRegister = 2,
-  OperandControlRegister = 2,
-  OperandDebugRegister = 2,
-  OperandMMX = 2,
-  OperandXMM = 2,
-  OperandYMM = 2
+  OperandSandboxIrrelevant = 3,
+  OperandSize2bit = 3,
+  OperandSize128bit = 3,
+  OperandSize256bit = 3,
+  OperandFloatSize16bit = 3,
+  OperandFloatSize32bit = 3,
+  OperandFloatSize64bit = 3,
+  OperandFloatSize80bit = 3,
+  OperandX87Size16bit = 3,
+  OperandX87Size32bit = 3,
+  OperandX87Size64bit = 3,
+  OperandX87BCD = 3,
+  OperandX87ENV = 3,
+  OperandX87STATE = 3,
+  OperandX87MMXXMMSTATE = 3,
+  OperandST = 3,
+  OperandSelector = 3,
+  OperandFarPtr = 3,
+  OperandSegmentRegister = 3,
+  OperandControlRegister = 3,
+  OperandDebugRegister = 3,
+  OperandMMX = 3,
+  OperandXMM = 3,
+  OperandYMM = 3
 };
 
 enum register_name {
