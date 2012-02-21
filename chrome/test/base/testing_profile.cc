@@ -651,9 +651,13 @@ TestingProfile::GetGeolocationPermissionContext() {
 }
 
 content::SpeechInputPreferences* TestingProfile::GetSpeechInputPreferences() {
+#if defined(ENABLE_INPUT_SPEECH)
   if (!speech_input_preferences_.get())
     speech_input_preferences_ = new ChromeSpeechInputPreferences(GetPrefs());
   return speech_input_preferences_.get();
+#else
+  return NULL;
+#endif
 }
 
 HostZoomMap* TestingProfile::GetHostZoomMap() {

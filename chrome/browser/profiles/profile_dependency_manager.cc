@@ -180,7 +180,9 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   ProfileSyncServiceFactory::GetInstance();
   SessionServiceFactory::GetInstance();
   SigninManagerFactory::GetInstance();
+#if defined(ENABLE_INPUT_SPEECH)
   SpeechInputExtensionManager::InitializeFactory();
+#endif
   SpellCheckFactory::GetInstance();
   TabRestoreServiceFactory::GetInstance();
   ThemeServiceFactory::GetInstance();

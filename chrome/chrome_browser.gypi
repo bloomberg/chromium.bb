@@ -4667,6 +4667,11 @@
             }],
           ],
         }],
+        ['input_speech==0', {
+          'sources/': [
+            ['exclude', '^browser/speech/'],
+          ],
+        }],
         ['OS=="android"', {
           'sources!': [
             'browser/bookmarks/bookmark_context_menu_controller.cc',

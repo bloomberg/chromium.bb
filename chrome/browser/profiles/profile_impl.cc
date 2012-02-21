@@ -910,10 +910,14 @@ content::GeolocationPermissionContext*
 }
 
 content::SpeechInputPreferences* ProfileImpl::GetSpeechInputPreferences() {
+#if defined(ENABLE_INPUT_SPEECH)
   if (!speech_input_preferences_.get()) {
     speech_input_preferences_ = new ChromeSpeechInputPreferences(GetPrefs());
   }
   return speech_input_preferences_.get();
+#else
+  return NULL;
+#endif
 }
 
 UserStyleSheetWatcher* ProfileImpl::GetUserStyleSheetWatcher() {
@@ -1199,8 +1203,12 @@ void ProfileImpl::Observe(int type,
       PrefService* prefs = content::Source<PrefService>(source).ptr();
       DCHECK(pref_name_in && prefs);
       if (*pref_name_in == prefs::kSpeechInputFilterProfanities) {
-        GetSpeechInputPreferences()->SetFilterProfanities(prefs->GetBoolean(
-            prefs::kSpeechInputFilterProfanities));
+        content::SpeechInputPreferences* speech_prefs =
+            GetSpeechInputPreferences();
+        if (speech_prefs) {
+          speech_prefs->SetFilterProfanities(prefs->GetBoolean(
+              prefs::kSpeechInputFilterProfanities));
+        }
       } else if (*pref_name_in == prefs::kClearSiteDataOnExit) {
         clear_local_state_on_exit_ =
             prefs->GetBoolean(prefs::kClearSiteDataOnExit);

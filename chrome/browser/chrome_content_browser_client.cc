@@ -1126,7 +1126,11 @@ net::NetLog* ChromeContentBrowserClient::GetNetLog() {
 
 speech_input::SpeechInputManager*
     ChromeContentBrowserClient::GetSpeechInputManager() {
+#if defined(ENABLE_INPUT_SPEECH)
   return speech_input::ChromeSpeechInputManager::GetInstance();
+#else
+  return NULL;
+#endif
 }
 
 AccessTokenStore* ChromeContentBrowserClient::CreateAccessTokenStore() {

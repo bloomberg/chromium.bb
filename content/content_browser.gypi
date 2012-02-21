@@ -857,6 +857,11 @@
         ['exclude', '^browser/renderer_host/java/'],
       ],
     }],
+    ['input_speech==0', {
+      'sources/': [
+        ['exclude', '^browser/speech/'],
+      ],
+    }],
   ],
 }
 
