@@ -175,6 +175,11 @@ main (int argc, char **argv)
 	int	j;
 	font_patterns = FcFontSort (0, pat, all ? FcFalse : FcTrue, 0, &result);
 
+	if (!font_patterns || font_patterns->nfont == 0)
+	{
+	    fputs("No fonts installed on the system\n", stderr);
+	    return 1;
+	}
 	for (j = 0; j < font_patterns->nfont; j++)
 	{
 	    FcPattern  *font_pattern;
