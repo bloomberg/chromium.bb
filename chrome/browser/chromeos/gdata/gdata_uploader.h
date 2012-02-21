@@ -33,6 +33,14 @@ class GDataUploader : public content::DownloadManager::Observer,
                   const std::string& content_type,
                   int64 file_size);
 
+  // net::FileStream::Open completion callback.
+  //
+  // Called when an file to be uploaded is opened. The result of the file
+  // open operation is passed as |result|.
+  void OpenCompletionCallback(const FilePath& file_path,
+                              const UploadFileInfo& upload_file_info,
+                              int result);
+
   // DocumentsService callback for InitiateUpload.
   void OnUploadLocationReceived(GDataErrorCode code,
       const UploadFileInfo& upload_file_info,

@@ -27,14 +27,6 @@ namespace {
 
 const BrowserThread::ID kGDataAPICallThread = BrowserThread::UI;
 
-// Deletes a file stream.
-// net::FileStream::CloseSync needs to be called on the FILE thread.
-void DeleteFileStream(net::FileStream* file_stream) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  file_stream->CloseSync();
-  delete file_stream;
-}
-
 }  // namespace
 
 namespace gdata {
@@ -56,7 +48,7 @@ void GDataUploader::Initialize(Profile* profile) {
 void GDataUploader::UploadFile(const FilePath& file_path,
                                const std::string& content_type,
                                int64 file_size) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
 
   // Do nothing if --test-gdata is not present in cmd line flags.
   if (!CommandLine::ForCurrentProcess()->HasSwitch("test-gdata"))
@@ -70,20 +62,37 @@ void GDataUploader::UploadFile(const FilePath& file_path,
   upload_file_info.content_length = file_size;
 
   // Create a FileStream to make sure the file can be opened successfully.
-  scoped_ptr<net::FileStream> file(new net::FileStream(NULL));
-  const int rv = file->OpenSync(
+  upload_file_info.file_stream = new net::FileStream(NULL);
+
+  // Open the file asynchronously.
+  //
+  // DocumentsService is a singleton, and the lifetime of GDataUploader
+  // is tied to DocumentsService, so it's safe to use base::Unretained here.
+  const int rv = upload_file_info.file_stream->Open(
       file_path,
       base::PLATFORM_FILE_OPEN |
       base::PLATFORM_FILE_READ |
-      base::PLATFORM_FILE_ASYNC);
-  if (rv != net::OK) {
-    // If the file can't be opened, we'll just upload an empty file.
+      base::PLATFORM_FILE_ASYNC,
+      base::Bind(&GDataUploader::OpenCompletionCallback,
+                 base::Unretained(this),
+                 file_path,
+                 upload_file_info));
+  DCHECK_EQ(net::ERR_IO_PENDING, rv);
+}
+
+void GDataUploader::OpenCompletionCallback(
+    const FilePath& file_path,
+    const UploadFileInfo& upload_file_info,
+    int result) {
+  DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
+
+  if (result != net::OK) {
+    // If the file can't be opened, we'll do nothing.
+    // TODO(achuith): Handle errors properly.
     NOTREACHED() << "Error opening \"" << file_path.value()
-                  << "\" for reading: " << strerror(rv);
+                  << "\" for reading: " << strerror(result);
     return;
   }
-  // Cache the file stream to be used for actual reading of file later.
-  upload_file_info.file_stream = file.release();
 
   DVLOG(1) << "Uploading file: title=[" << upload_file_info.title
            << "], file_url=[" << upload_file_info.file_url.spec()
@@ -92,12 +101,10 @@ void GDataUploader::UploadFile(const FilePath& file_path,
 
   // DocumentsService is a singleton, and the lifetime of GDataUploader
   // is tied to DocumentsService, so it's safe to use base::Unretained here.
-  BrowserThread::PostTask(kGDataAPICallThread, FROM_HERE,
-      base::Bind(&DocumentsService::InitiateUpload,
-                 base::Unretained(docs_service_),
-                 upload_file_info,
-                 base::Bind(&GDataUploader::OnUploadLocationReceived,
-                            base::Unretained(this))));
+  docs_service_->InitiateUpload(
+      upload_file_info,
+      base::Bind(&GDataUploader::OnUploadLocationReceived,
+                 base::Unretained(this)));
 }
 
 void GDataUploader::UploadNextChunk(
@@ -123,8 +130,10 @@ void GDataUploader::UploadNextChunk(
     //   successfully, but instead of returning 201 (CREATED) status code after
     //   receiving the last chunk, it returns 403 (FORBIDDEN); response content
     //   then will indicate quote exceeded exception.
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-        base::Bind(&DeleteFileStream, upload_file_info->file_stream));
+
+    // The file stream is closed by the destructor asynchronously.
+    delete upload_file_info->file_stream;
+    upload_file_info->file_stream = NULL;
     return;
   }
 
@@ -165,8 +174,9 @@ void GDataUploader::OnUploadLocationReceived(
 
   if (code != HTTP_SUCCESS) {
     // TODO(achuith): Handle error codes from Google Docs server.
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-        base::Bind(&DeleteFileStream, upload_file_info.file_stream));
+    // The file stream is closed by the destructor asynchronously.
+    delete upload_file_info.file_stream;
+    upload_file_info.file_stream = NULL;
     return;
   }
 
@@ -188,9 +198,9 @@ void GDataUploader::ReadCompletionCallback(
     const UploadFileInfo& in_upload_file_info,
     int64 bytes_to_read,
     int bytes_read) {
-  // The Read is asynchronously executed on the FILE thread, which is
-  // also where we receive our callback.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  // The Read is asynchronously executed on kGDataAPICallThread, where
+  // Read() was called.
+  DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
 
   UploadFileInfo upload_file_info = in_upload_file_info;
 
@@ -208,12 +218,10 @@ void GDataUploader::ReadCompletionCallback(
 
   // DocumentsService is a singleton, and the lifetime of GDataUploader
   // is tied to DocumentsService, so it's safe to use base::Unretained here.
-  BrowserThread::PostTask(kGDataAPICallThread, FROM_HERE,
-      base::Bind(&DocumentsService::ResumeUpload,
-                 base::Unretained(docs_service_),
-                 upload_file_info,
-                 base::Bind(&GDataUploader::OnResumeUploadResponseReceived,
-                            base::Unretained(this))));
+  docs_service_->ResumeUpload(
+      upload_file_info,
+      base::Bind(&GDataUploader::OnResumeUploadResponseReceived,
+                 base::Unretained(this)));
 }
 
 void GDataUploader::OnResumeUploadResponseReceived(
@@ -230,8 +238,9 @@ void GDataUploader::OnResumeUploadResponseReceived(
              << in_upload_file_info.title << "] ("
              << in_upload_file_info.file_url.spec() << ")";
     // We're done with uploading, so file stream is no longer needed.
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-        base::Bind(&DeleteFileStream, upload_file_info.file_stream));
+    // The file stream is closed by the destructor asynchronously.
+    delete upload_file_info.file_stream;
+    upload_file_info.file_stream = NULL;
     return;
   }
 
@@ -267,13 +276,9 @@ void GDataUploader::OnDownloadUpdated(DownloadItem* download) {
                  << ", full path=" << download->GetFullPath().value()
                  << ", mime type=" << download->GetMimeType();
         DCHECK(download->GetReceivedBytes());
-        // DocumentsService is a singleton, and the lifetime of GDataUploader
-        // is tied to DocumentsService, so it's safe to use base::Unretained
-        // here.
-        BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-            base::Bind(&GDataUploader::UploadFile, base::Unretained(this),
-                       download->GetFullPath(), download->GetMimeType(),
-                       download->GetReceivedBytes()));
+        UploadFile(download->GetFullPath(),
+                   download->GetMimeType(),
+                   download->GetReceivedBytes());
         RemovePendingDownload(download);
       }
       break;
