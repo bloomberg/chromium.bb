@@ -817,22 +817,25 @@ everything-post-hg() {
   #      complete, so that sdk sanity checks don't fail
   misc-tools
   verify
+
+  if ${PNACL_PRUNE}; then
+    prune
+  fi
 }
 
 #@ everything-translator   - Build and install untrusted SDK AND translator
 everything-translator() {
-
   everything
+
   # Building the sandboxed tools requires the SDK
-  if ${PNACL_PRUNE}; then
-    prune
-  fi
   # For now, only build the newlib-based translator in the combined build.
   sdk newlib
   install-translators srpc newlib
   if ${PNACL_PRUNE}; then
+    sdk-clean newlib
     prune-translator-install srpc
     track-translator-size ${SBTC_BUILD_WITH_PNACL}
+    prune
   fi
 }
 
@@ -1026,26 +1029,6 @@ libs-clean() {
 
 #@-------------------------------------------------------------------------
 
-#@ untrusted_sdk <file>  - Create untrusted SDK tarball from scratch
-#@                          (clean + all + prune + tarball)
-untrusted_sdk() {
-  if [ ! -n "${1:-}" ]; then
-    echo "Error: untrusted_sdk needs a tarball name." >&2
-    exit 1
-  fi
-  local tgzname="$(ArgumentToAbsolutePath "$1")"
-  clean
-  everything-translator
-
-  # Remove the SDK so it doesn't end up in the tarball
-  sdk-clean
-
-  if ${PNACL_PRUNE}; then
-    prune
-  fi
-  tarball "${tgzname}"
-}
-
 #+ prune                 - Prune toolchain
 prune() {
   StepBanner "PRUNE" "Pruning toolchain"
@@ -1091,11 +1074,9 @@ tarball() {
     echo "Error: tarball needs a tarball name." >&2
     exit 1
   fi
-
+  local tarball="$(ArgumentToAbsolutePath "$1")"
   RecordRevisionInfo
-  local tarball="$1"
   StepBanner "TARBALL" "Creating tar ball ${tarball}"
-
   tar zcf "${tarball}" -C "${INSTALL_ROOT}" .
 }
 
@@ -1871,9 +1852,12 @@ libstdcpp-install() {
 
   spushd "${objdir}/pnacl-target"
 
+  # Clean the existing installation
+  rm -rf "${LIBSTDCPP_INSTALL_DIR}"/include/c++
+  rm -rf "${LIBSTDCPP_INSTALL_DIR}"/lib/libstdc++*
+
   # install headers (=install-data)
   # for good measure make sure we do not keep any old headers
-  rm -rf "${LIBSTDCPP_INSTALL_DIR}/include/c++"
   setup-libstdcpp-env
   RunWithLog libstdcpp.install \
     make \
@@ -1884,6 +1868,15 @@ libstdcpp-install() {
   mkdir -p "${LIBSTDCPP_INSTALL_DIR}/lib"
   cp "${objdir}/pnacl-target/src/.libs/libstdc++.a" \
      "${LIBSTDCPP_INSTALL_DIR}/lib"
+  spopd
+
+  # libstdc++ installs a file with an abnormal name: "libstdc++*-gdb.py"
+  # The asterisk may be due to a bug in libstdc++ Makefile/configure.
+  # This causes problems on the Windows bot (during cleanup, toolchain
+  # directory delete fails due to the bad character).
+  # Rename it to get rid of the asterisk.
+  spushd "${LIBSTDCPP_INSTALL_DIR}/lib"
+  mv -f libstdc++'*'-gdb.py libstdc++-gdb.py
   spopd
 }
 

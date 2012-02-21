@@ -39,6 +39,17 @@ echo "*** ARGUMENTS           : $*"
 PNACL_BUILD="pnacl/build.sh"
 PNACL_TEST="pnacl/test.sh"
 
+# Control what is built on this bot.
+# TODO(pdox): Refactor the translator into a separate builder
+#             so this isn't necessary.
+BUILD_INVOCATION="everything-translator"
+
+# Tell build.sh and test.sh that we're a bot.
+export PNACL_BUILDBOT=true
+
+# Tells build.sh to prune the install directory (for release).
+export PNACL_PRUNE=true
+
 # On some systems (e.g., windows 64-bit), we must build a 32-bit plugin
 # because the browser is 32-bit. Only sel_ldr and the nexes are 64-bit.
 BUILD_32BIT_PLUGIN=false
@@ -67,13 +78,21 @@ case ${BUILD_OS}-${BUILD_ARCH} in
     RUN_TESTS="x86-32 x86-32-browser"
     ;;
   win-32)
+    # Only build the main toolchain
+    # (building the translator takes over 2 hours)
+    BUILD_INVOCATION="everything"
     TOOLCHAIN_LABEL=pnacl_windows_i686
-    RUN_TESTS="x86-32 x86-32-browser"
+    # TODO(pdox): Add browser tests when sand-boxed translator is available.
+    RUN_TESTS="x86-32"
     ;;
   win-64)
+    # Only build the main toolchain
+    # (building the translator takes over 2 hours)
+    BUILD_INVOCATION="everything"
     TOOLCHAIN_LABEL=pnacl_windows_i686
     BUILD_32BIT_PLUGIN=true
-    RUN_TESTS="x86-64 x86-64-browser"
+    # TODO(pdox): Add browser tests when sand-boxed translator is available.
+    RUN_TESTS="x86-64"
     ;;
   *)
     echo -n "*** UNRECOGNIZED CONFIGURATION: "
@@ -97,14 +116,15 @@ rm -rf /tmp/.org.chromium.Chromium.*
 rm -rf toolchain/${TOOLCHAIN_LABEL}*
 rm -rf toolchain/hg*
 rm -rf toolchain/test-log
+rm -rf pnacl*.tgz pnacl/pnacl*.tgz
 
 echo @@@BUILD_STEP show-config@@@
-PNACL_BUILDBOT=true PNACL_PRUNE=true ${PNACL_BUILD} show-config
+${PNACL_BUILD} show-config
 
 echo @@@BUILD_STEP compile_toolchain@@@
-rm -rf pnacl-toolchain.tgz pnacl/pnacl-toolchain.tgz
-PNACL_BUILDBOT=true PNACL_PRUNE=true \
-  ${PNACL_BUILD} untrusted_sdk pnacl-toolchain.tgz
+${PNACL_BUILD} clean
+${PNACL_BUILD} ${BUILD_INVOCATION}
+${PNACL_BUILD} tarball pnacl-toolchain.tgz
 chmod a+r pnacl-toolchain.tgz
 
 echo @@@BUILD_STEP untar_toolchain@@@
@@ -128,8 +148,7 @@ fi
 
 for arch in ${RUN_TESTS} ; do
   echo @@@BUILD_STEP test-${arch}@@@
-  PNACL_BUILDBOT=true ${PNACL_TEST} test-${arch} -k ||
-      { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
+  ${PNACL_TEST} test-${arch} -k || { RETCODE=$? && echo @@@STEP_FAILURE@@@; }
 done
 
 # TODO: Remove this when we have a proper sdk for pnacl
@@ -138,11 +157,11 @@ echo @@@BUILD_STEP adhoc_sdk@@@
 ${PNACL_BUILD} sdk newlib
 ${PNACL_BUILD} ppapi-headers
 ${PNACL_BUILD} tarball pnacl-toolchain-adhoc-sdk.tgz
-chmod a+r pnacl/pnacl-toolchain-adhoc-sdk.tgz
+chmod a+r pnacl-toolchain-adhoc-sdk.tgz
 if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
   echo @@@BUILD_STEP archive_build_adhoc_sdk@@@
   ${UP_DOWN_LOAD} UploadArmUntrustedToolchains ${BUILDBOT_GOT_REVISION} \
-    ${TOOLCHAIN_LABEL}_adhoc_sdk pnacl/pnacl-toolchain-adhoc-sdk.tgz
+    ${TOOLCHAIN_LABEL}_adhoc_sdk pnacl-toolchain-adhoc-sdk.tgz
 fi
 
 if [[ ${RETCODE} != 0 ]]; then

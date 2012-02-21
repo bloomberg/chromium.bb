@@ -83,9 +83,10 @@ merge-bot() {
   # Build the un-sandboxed toolchain
   echo "@@@BUILD_STEP compile_toolchain@@@"
   ${PNACL_BUILD} clean
-  ${PNACL_BUILD} untrusted_sdk pnaclsdk.tgz
+  ${PNACL_BUILD} everything-translator
 
   #echo "@@@BUILD_STEP archive_toolchain@@@"
+  #${PNACL_BUILD} tarball pnaclsdk.tgz
   #${GSUTIL} cp pnaclsdk.tgz \
   #  ${GSBASE}/${BUILDBOT_BUILDNUMBER}/pnaclsdk.tgz
 
