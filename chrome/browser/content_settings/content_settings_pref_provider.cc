@@ -70,9 +70,7 @@ void ClearSettings(ContentSettingsType type,
 // Otherwise, returns false.
 bool GetResourceTypeName(ContentSettingsType content_type,
                          std::string* pref_key) {
-  if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableResourceContentSettings)) {
+  if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS) {
     *pref_key = kPerPluginPrefName;
     return true;
   }
@@ -166,7 +164,8 @@ bool PrefProvider::SetWebsiteSetting(
   // sites/origins defined by the |primary_pattern| and the |secondary_pattern|.
   // Default settings are handled by the |DefaultProvider|.
   if (primary_pattern == ContentSettingsPattern::Wildcard() &&
-      secondary_pattern == ContentSettingsPattern::Wildcard()) {
+      secondary_pattern == ContentSettingsPattern::Wildcard() &&
+      resource_identifier.empty()) {
     return false;
   }
 
@@ -425,19 +424,18 @@ void PrefProvider::ReadContentSettingsFromPref(bool overwrite) {
                                 Value::CreateIntegerValue(setting));
           }
         }
-      } else {
-        int setting = CONTENT_SETTING_DEFAULT;
-        if (settings_dictionary->GetIntegerWithoutPathExpansion(
-                GetTypeName(ContentSettingsType(i)), &setting)) {
-          DCHECK_NE(CONTENT_SETTING_DEFAULT, setting);
-          setting = FixObsoleteCookiePromptMode(content_type,
-                                                ContentSetting(setting));
-          value_map_.SetValue(pattern_pair.first,
-                              pattern_pair.second,
-                              content_type,
-                              ResourceIdentifier(""),
-                              Value::CreateIntegerValue(setting));
-        }
+      }
+      int setting = CONTENT_SETTING_DEFAULT;
+      if (settings_dictionary->GetIntegerWithoutPathExpansion(
+              GetTypeName(ContentSettingsType(i)), &setting)) {
+        DCHECK_NE(CONTENT_SETTING_DEFAULT, setting);
+        setting = FixObsoleteCookiePromptMode(content_type,
+                                              ContentSetting(setting));
+        value_map_.SetValue(pattern_pair.first,
+                            pattern_pair.second,
+                            content_type,
+                            ResourceIdentifier(""),
+                            Value::CreateIntegerValue(setting));
       }
     }
   }
@@ -471,7 +469,8 @@ void PrefProvider::UpdateObsoletePatternsPref(
 
   if (settings_dictionary) {
     std::string res_dictionary_path;
-    if (GetResourceTypeName(content_type, &res_dictionary_path)) {
+    if (GetResourceTypeName(content_type, &res_dictionary_path) &&
+        !resource_identifier.empty()) {
       DictionaryValue* resource_dictionary = NULL;
       found = settings_dictionary->GetDictionary(
           res_dictionary_path, &resource_dictionary);
@@ -503,11 +502,11 @@ void PrefProvider::UpdateObsoletePatternsPref(
         settings_dictionary->SetWithoutPathExpansion(
             setting_path, Value::CreateIntegerValue(setting));
       }
-      // Remove the settings dictionary if it is empty.
-      if (settings_dictionary->empty()) {
-        all_settings_dictionary->RemoveWithoutPathExpansion(
-            pattern_str, NULL);
-      }
+    }
+    // Remove the settings dictionary if it is empty.
+    if (settings_dictionary->empty()) {
+      all_settings_dictionary->RemoveWithoutPathExpansion(
+          pattern_str, NULL);
     }
   }
 }
@@ -534,7 +533,8 @@ void PrefProvider::UpdatePatternPairsSettings(
 
   if (settings_dictionary) {
     std::string res_dictionary_path;
-    if (GetResourceTypeName(content_type, &res_dictionary_path)) {
+    if (GetResourceTypeName(content_type, &res_dictionary_path) &&
+        !resource_identifier.empty()) {
       DictionaryValue* resource_dictionary = NULL;
       found = settings_dictionary->GetDictionary(
           res_dictionary_path, &resource_dictionary);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -247,6 +247,10 @@ body.showTmiMode .showInTmiMode {
   -webkit-padding-start: 5px;
   margin-top: 0.2em;
   margin-bottom: 0.2em;
+}
+
+.always-allow {
+  -webkit-margin-start: 30px;
 }
 
 button {
