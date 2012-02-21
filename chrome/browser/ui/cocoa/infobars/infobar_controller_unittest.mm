@@ -192,7 +192,8 @@ class ConfirmInfoBarControllerTest : public CocoaProfileTest,
 ////////////////////////////////////////////////////////////////////////////
 // Tests
 
-TEST_VIEW(LinkInfoBarControllerTest, [controller_ view]);
+// TODO(jam): http://crbug.com/115058
+//TEST_VIEW(LinkInfoBarControllerTest, [controller_ view]);
 
 TEST_F(LinkInfoBarControllerTest, ShowAndDismiss) {
   // Make sure someone looked at the message, link, and icon.
