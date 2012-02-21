@@ -40,26 +40,6 @@ net::URLRequestContext* MockResourceContext::GetRequestContext()  {
   return test_request_context_;
 }
 
-ChromeAppCacheService* MockResourceContext::GetAppCacheService()  {
-  return NULL;
-}
-
-webkit_database::DatabaseTracker* MockResourceContext::GetDatabaseTracker()  {
-  return NULL;
-}
-
-fileapi::FileSystemContext* MockResourceContext::GetFileSystemContext()  {
-  return NULL;
-}
-
-ChromeBlobStorageContext* MockResourceContext::GetBlobStorageContext()  {
-  return NULL;
-}
-
-quota::QuotaManager* MockResourceContext::GetQuotaManager()  {
-  return NULL;
-}
-
 HostZoomMap* MockResourceContext::GetHostZoomMap()  {
   return NULL;
 }
@@ -75,10 +55,6 @@ media_stream::MediaStreamManager*
 
 AudioManager* MockResourceContext::GetAudioManager() {
   return audio_manager_;
-}
-
-WebKitContext* MockResourceContext::GetWebKitContext() {
-  return NULL;
 }
 
 }  // namespace content

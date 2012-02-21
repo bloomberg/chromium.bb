@@ -158,8 +158,7 @@ net::URLRequestContextGetter*
 ResourceContext* ShellBrowserContext::GetResourceContext()  {
   if (!resource_context_.get()) {
     resource_context_.reset(new ShellResourceContext(
-        static_cast<ShellURLRequestContextGetter*>(GetRequestContext()),
-        BrowserContext::GetBlobStorageContext(this)));
+        static_cast<ShellURLRequestContextGetter*>(GetRequestContext())));
   }
   return resource_context_.get();
 }

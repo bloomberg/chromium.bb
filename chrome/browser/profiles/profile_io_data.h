@@ -21,8 +21,6 @@
 #include "net/base/cookie_monster.h"
 
 class AudioManager;
-class ChromeAppCacheService;
-class ChromeBlobStorageContext;
 class CookieSettings;
 class DesktopNotificationService;
 class ExtensionInfoMap;
@@ -32,10 +30,6 @@ class Profile;
 class ProtocolHandlerRegistry;
 class TransportSecurityPersister;
 class WebKitContext;
-
-namespace fileapi {
-class FileSystemContext;
-}  // namespace fileapi
 
 namespace media_stream {
 class MediaStreamManager;
@@ -55,14 +49,6 @@ class TransportSecurityState;
 namespace policy {
 class URLBlacklistManager;
 }  // namespace policy
-
-namespace quota {
-class QuotaManager;
-};  // namespace quota
-
-namespace webkit_database {
-class DatabaseTracker;
-}  // webkit_database
 
 // Conceptually speaking, the ProfileIOData represents data that lives on the IO
 // thread that is owned by a Profile, such as, but not limited to, network
@@ -158,12 +144,7 @@ class ProfileIOData {
     scoped_refptr<content::HostZoomMap> host_zoom_map;
     scoped_refptr<net::SSLConfigService> ssl_config_service;
     scoped_refptr<net::CookieMonster::Delegate> cookie_monster_delegate;
-    scoped_refptr<webkit_database::DatabaseTracker> database_tracker;
-    scoped_refptr<ChromeAppCacheService> appcache_service;
-    scoped_refptr<ChromeBlobStorageContext> blob_storage_context;
-    scoped_refptr<fileapi::FileSystemContext> file_system_context;
     scoped_refptr<WebKitContext> webkit_context;
-    scoped_refptr<quota::QuotaManager> quota_manager;
     scoped_refptr<ExtensionInfoMap> extension_info_map;
     DesktopNotificationService* notification_service;
     scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry;
@@ -238,12 +219,6 @@ class ProfileIOData {
     // ResourceContext implementation:
     virtual net::HostResolver* GetHostResolver() OVERRIDE;
     virtual net::URLRequestContext* GetRequestContext() OVERRIDE;
-    virtual ChromeAppCacheService* GetAppCacheService() OVERRIDE;
-    virtual webkit_database::DatabaseTracker* GetDatabaseTracker() OVERRIDE;
-    virtual fileapi::FileSystemContext* GetFileSystemContext() OVERRIDE;
-    virtual WebKitContext* GetWebKitContext() OVERRIDE;
-    virtual ChromeBlobStorageContext* GetBlobStorageContext() OVERRIDE;
-    virtual quota::QuotaManager* GetQuotaManager() OVERRIDE;
     virtual content::HostZoomMap* GetHostZoomMap() OVERRIDE;
     virtual MediaObserver* GetMediaObserver() OVERRIDE;
     virtual media_stream::MediaStreamManager* GetMediaStreamManager() OVERRIDE;
@@ -255,12 +230,6 @@ class ProfileIOData {
 
     net::HostResolver* host_resolver_;
     net::URLRequestContext* request_context_;
-    ChromeAppCacheService* appcache_service_;
-    webkit_database::DatabaseTracker* database_tracker_;
-    fileapi::FileSystemContext* file_system_context_;
-    WebKitContext* webkit_context_;
-    ChromeBlobStorageContext* blob_storage_context_;
-    quota::QuotaManager* quota_manager_;
     content::HostZoomMap* host_zoom_map_;
     MediaObserver* media_observer_;
     media_stream::MediaStreamManager* media_stream_manager_;
@@ -321,12 +290,6 @@ class ProfileIOData {
   mutable scoped_ptr<net::URLRequestJobFactory> job_factory_;
 
   // Pointed to by ResourceContext.
-  mutable scoped_refptr<webkit_database::DatabaseTracker> database_tracker_;
-  mutable scoped_refptr<ChromeAppCacheService> appcache_service_;
-  mutable scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
-  mutable scoped_refptr<fileapi::FileSystemContext> file_system_context_;
-  mutable scoped_refptr<WebKitContext> webkit_context_;
-  mutable scoped_refptr<quota::QuotaManager> quota_manager_;
   mutable scoped_refptr<content::HostZoomMap> host_zoom_map_;
   mutable scoped_ptr<media_stream::MediaStreamManager> media_stream_manager_;
 

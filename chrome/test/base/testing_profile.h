@@ -16,6 +16,7 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 
 namespace content {
+class MockResourceContext;
 class SpeechInputPreferences;
 }
 
@@ -383,6 +384,8 @@ class TestingProfile : public Profile {
   // death. Defaults to the Singleton implementation but overridable for
   // testing.
   ProfileDependencyManager* profile_dependency_manager_;
+
+  scoped_ptr<content::MockResourceContext> resource_context_;
 
   // Weak pointer to a delegate for indicating that a profile was created.
   Delegate* delegate_;

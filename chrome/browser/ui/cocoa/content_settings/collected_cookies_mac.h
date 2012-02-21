@@ -10,6 +10,7 @@
 #include "chrome/browser/cookies_tree_model.h"
 #include "chrome/browser/ui/cocoa/constrained_window_mac.h"
 #import "chrome/browser/ui/cocoa/content_settings/cookie_tree_node.h"
+#include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
 @class CollectedCookiesWindowController;

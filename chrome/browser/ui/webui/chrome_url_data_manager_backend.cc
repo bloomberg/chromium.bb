@@ -24,7 +24,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/url_util.h"
 #include "grit/platform_locale_settings.h"
@@ -35,6 +34,7 @@
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory.h"
+#include "webkit/appcache/appcache_service.h"
 #include "webkit/appcache/view_appcache_internals_job.h"
 
 using content::BrowserThread;
@@ -329,7 +329,7 @@ class ChromeProtocolHandler
  public:
   ChromeProtocolHandler(
       ChromeURLDataManagerBackend* backend,
-      ChromeAppCacheService* appcache_service,
+      appcache::AppCacheService* appcache_service,
       webkit_blob::BlobStorageController* blob_storage_controller);
   ~ChromeProtocolHandler();
 
@@ -339,7 +339,7 @@ class ChromeProtocolHandler
  private:
   // These members are owned by ProfileIOData, which owns this ProtocolHandler.
   ChromeURLDataManagerBackend* const backend_;
-  ChromeAppCacheService* const appcache_service_;
+  appcache::AppCacheService* const appcache_service_;
   webkit_blob::BlobStorageController* const blob_storage_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeProtocolHandler);
@@ -347,7 +347,7 @@ class ChromeProtocolHandler
 
 ChromeProtocolHandler::ChromeProtocolHandler(
     ChromeURLDataManagerBackend* backend,
-    ChromeAppCacheService* appcache_service,
+    appcache::AppCacheService* appcache_service,
     webkit_blob::BlobStorageController* blob_storage_controller)
     : backend_(backend),
       appcache_service_(appcache_service),
@@ -396,7 +396,7 @@ ChromeURLDataManagerBackend::~ChromeURLDataManagerBackend() {
 net::URLRequestJobFactory::ProtocolHandler*
 ChromeURLDataManagerBackend::CreateProtocolHandler(
     ChromeURLDataManagerBackend* backend,
-    ChromeAppCacheService* appcache_service,
+    appcache::AppCacheService* appcache_service,
     webkit_blob::BlobStorageController* blob_storage_controller) {
   DCHECK(appcache_service);
   DCHECK(blob_storage_controller);

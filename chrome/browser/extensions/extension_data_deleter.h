@@ -13,8 +13,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 
-namespace webkit_database {
-class DatabaseTracker;
+namespace content {
+class ResourceContext;
 }
 
 namespace fileapi {
@@ -25,7 +25,10 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-class ChromeAppCacheService;
+namespace webkit_database {
+class DatabaseTracker;
+}
+
 class Profile;
 class WebKitContext;
 
@@ -80,7 +83,7 @@ class ExtensionDataDeleter
 
   // Deletes appcache files for the extension. May only be called on the IO
   // thread.
-  void DeleteAppcachesOnIOThread();
+  void DeleteAppcachesOnIOThread(content::ResourceContext* resource_context);
 
   // The ID of the extension being deleted.
   const std::string extension_id_;
@@ -101,8 +104,6 @@ class ExtensionDataDeleter
   scoped_refptr<WebKitContext> webkit_context_;
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
-
-  scoped_refptr<ChromeAppCacheService> appcache_service_;
 
   // If non-empty, the extension we're deleting is an isolated app, and this
   // is its directory which we should delete.

@@ -15,11 +15,14 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "net/url_request/url_request_job_factory.h"
 
-class ChromeAppCacheService;
 class ChromeURLDataManagerBackend;
 class GURL;
 class RefCountedMemory;
 class URLRequestChromeJob;
+
+namespace appcache {
+class AppCacheService;
+}
 
 namespace net {
 class URLRequest;
@@ -43,7 +46,7 @@ class ChromeURLDataManagerBackend {
   // Invoked to create the protocol handler for chrome://.
   static net::URLRequestJobFactory::ProtocolHandler* CreateProtocolHandler(
       ChromeURLDataManagerBackend* backend,
-      ChromeAppCacheService* appcache_service,
+      appcache::AppCacheService* appcache_service,
       webkit_blob::BlobStorageController* blob_storage_controller);
 
   // Adds a DataSource to the collection of data sources.

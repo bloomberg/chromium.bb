@@ -9,16 +9,18 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/resource_context.h"
 #include "webkit/appcache/appcache_database.h"
 #include "webkit/appcache/appcache_storage.h"
 
 using appcache::AppCacheDatabase;
 using content::BrowserContext;
 using content::BrowserThread;
+using content::ResourceContext;
 
 BrowsingDataAppCacheHelper::BrowsingDataAppCacheHelper(Profile* profile)
     : is_fetching_(false),
-      appcache_service_(BrowserContext::GetAppCacheService(profile)) {
+      resource_context_(profile->GetResourceContext()) {
 }
 
 void BrowsingDataAppCacheHelper::StartFetching(const base::Closure& callback) {
@@ -38,8 +40,8 @@ void BrowsingDataAppCacheHelper::StartFetching(const base::Closure& callback) {
   appcache_info_callback_.Reset(
       base::Bind(&BrowsingDataAppCacheHelper::OnFetchComplete,
                  base::Unretained(this)));
-  appcache_service_->GetAllAppCacheInfo(info_collection_,
-                                        appcache_info_callback_.callback());
+  ResourceContext::GetAppCacheService(resource_context_)->
+      GetAllAppCacheInfo(info_collection_, appcache_info_callback_.callback());
 }
 
 void BrowsingDataAppCacheHelper::CancelNotification() {
@@ -64,7 +66,7 @@ void BrowsingDataAppCacheHelper::DeleteAppCacheGroup(
     return;
   }
 
-  appcache_service_->DeleteAppCacheGroup(
+  ResourceContext::GetAppCacheService(resource_context_)->DeleteAppCacheGroup(
       manifest_url, net::CompletionCallback());
 }
 

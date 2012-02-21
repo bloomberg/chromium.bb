@@ -42,12 +42,16 @@ class IndexedDBQuotaClientTest : public testing::Test {
         usage_(0),
         weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
         message_loop_(MessageLoop::TYPE_IO),
+        db_thread_(BrowserThread::DB, &message_loop_),
         webkit_thread_(BrowserThread::WEBKIT_DEPRECATED, &message_loop_),
-        file_thread_(BrowserThread::FILE_USER_BLOCKING, &message_loop_),
+        file_thread_(BrowserThread::FILE, &message_loop_),
+        file_user_blocking_thread_(
+            BrowserThread::FILE_USER_BLOCKING, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_) {
-    TestBrowserContext browser_context;
-    idb_context_ = BrowserContext::GetWebKitContext(&browser_context)->
+    browser_context_.reset(new TestBrowserContext());
+    idb_context_ = BrowserContext::GetWebKitContext(browser_context_.get())->
         indexed_db_context();
+    message_loop_.RunAllPending();
     setup_temp_dir();
   }
   void setup_temp_dir() {
@@ -64,6 +68,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
     // class.  Cause IndexedDBContext's destruction now to ensure that it
     // doesn't outlive BrowserThread::WEBKIT_DEPRECATED.
     idb_context_ = NULL;
+    browser_context_.reset();
     MessageLoop::current()->RunAllPending();
   }
 
@@ -160,9 +165,12 @@ class IndexedDBQuotaClientTest : public testing::Test {
   scoped_refptr<IndexedDBContext> idb_context_;
   base::WeakPtrFactory<IndexedDBQuotaClientTest> weak_factory_;
   MessageLoop message_loop_;
+  BrowserThreadImpl db_thread_;
   BrowserThreadImpl webkit_thread_;
   BrowserThreadImpl file_thread_;
+  BrowserThreadImpl file_user_blocking_thread_;
   BrowserThreadImpl io_thread_;
+  scoped_ptr<TestBrowserContext> browser_context_;
   quota::QuotaStatusCode delete_status_;
 };
 

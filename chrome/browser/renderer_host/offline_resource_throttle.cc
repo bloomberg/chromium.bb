@@ -14,19 +14,21 @@
 #include "chrome/browser/chromeos/offline/offline_load_page.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host_delegate.h"
+#include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_throttle_controller.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
+#include "webkit/appcache/appcache_service.h"
 
 using content::BrowserThread;
+using content::ResourceContext;
 using content::WebContents;
 
 namespace {
@@ -61,12 +63,12 @@ OfflineResourceThrottle::OfflineResourceThrottle(
     int render_process_id,
     int render_view_id,
     net::URLRequest* request,
-    ChromeAppCacheService* appcache_service)
+    content::ResourceContext* resource_context)
     : render_process_id_(render_process_id),
       render_view_id_(render_view_id),
       request_(request),
-      appcache_service_(appcache_service) {
-  DCHECK(appcache_service_);
+      resource_context_(resource_context) {
+  DCHECK(resource_context);
 }
 
 OfflineResourceThrottle::~OfflineResourceThrottle() {
@@ -87,10 +89,11 @@ void OfflineResourceThrottle::WillStartRequest(bool* defer) {
   appcache_completion_callback_.Reset(
       base::Bind(&OfflineResourceThrottle::OnCanHandleOfflineComplete,
                  AsWeakPtr()));
-  appcache_service_->CanHandleMainResourceOffline(
-      request_->url(),
-      request_->first_party_for_cookies(),
-      appcache_completion_callback_.callback());
+  ResourceContext::GetAppCacheService(resource_context_)->
+      CanHandleMainResourceOffline(
+          request_->url(),
+          request_->first_party_for_cookies(),
+          appcache_completion_callback_.callback());
 
   *defer = true;
 }

@@ -60,7 +60,6 @@
 #include "chrome/common/string_ordinal.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/in_process_webkit/dom_storage_context.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/public/browser/notification_registrar.h"
@@ -404,6 +403,7 @@ ExtensionServiceTestBase::~ExtensionServiceTestBase() {
   // can be destroyed while BrowserThreads and MessageLoop are still around
   // (they are used in the destruction process).
   service_ = NULL;
+  MessageLoop::current()->RunAllPending();
   profile_.reset(NULL);
   MessageLoop::current()->RunAllPending();
 }
@@ -4323,6 +4323,7 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataTerminatedExtension) {
 
 TEST_F(ExtensionServiceTest, ProcessSyncDataVersionCheck) {
   InitializeExtensionServiceWithUpdater();
+  InitializeRequestContext();
   TestSyncProcessorStub processor;
   service_->MergeDataAndStartSyncing(syncable::EXTENSIONS, SyncDataList(),
       &processor);
@@ -4380,6 +4381,7 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataVersionCheck) {
 
 TEST_F(ExtensionServiceTest, ProcessSyncDataNotInstalled) {
   InitializeExtensionServiceWithUpdater();
+  InitializeRequestContext();
   TestSyncProcessorStub processor;
   service_->MergeDataAndStartSyncing(syncable::EXTENSIONS, SyncDataList(),
       &processor);

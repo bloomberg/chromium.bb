@@ -49,8 +49,9 @@ net::URLRequestContextGetter* TestBrowserContext::GetRequestContextForMedia() {
 }
 
 content::ResourceContext* TestBrowserContext::GetResourceContext() {
-  // TODO(phajdan.jr): Get rid of this nasty global.
-  return content::MockResourceContext::GetInstance();
+  if (!resource_context_.get())
+    resource_context_.reset(new content::MockResourceContext());
+  return resource_context_.get();
 }
 
 HostZoomMap* TestBrowserContext::GetHostZoomMap() {

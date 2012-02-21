@@ -101,6 +101,7 @@
 #include "grit/locale_settings.h"
 #include "net/base/transport_security_state.h"
 #include "net/http/http_server_properties.h"
+#include "webkit/appcache/appcache_service.h"
 #include "webkit/database/database_tracker.h"
 
 #if defined(OS_WIN)
@@ -174,12 +175,11 @@ FilePath GetMediaCachePath(const FilePath& base) {
 
 void SaveSessionStateOnIOThread(
     net::URLRequestContextGetter* url_request_context_getter,
-    ChromeAppCacheService* appcache_service) {
+    appcache::AppCacheService* appcache_service) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   url_request_context_getter->GetURLRequestContext()->cookie_store()->
       GetCookieMonster()->SaveSessionCookies();
-  if (appcache_service)
-    appcache_service->set_save_session_state(true);
+  appcache_service->set_save_session_state(true);
 }
 
 }  // namespace
@@ -551,7 +551,7 @@ ProfileImpl::~ProfileImpl() {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&appcache::AppCacheService::set_clear_local_state_on_exit,
-            BrowserContext::GetAppCacheService(this), true));
+            base::Unretained(BrowserContext::GetAppCacheService(this)), true));
     BrowserContext::GetWebKitContext(this)->set_clear_local_state_on_exit(true);
     BrowserContext::GetDatabaseTracker(this)->SetClearLocalStateOnExit(true);
   }
@@ -1438,7 +1438,7 @@ void ProfileImpl::SaveSessionState() {
       BrowserThread::IO, FROM_HERE,
       base::Bind(&SaveSessionStateOnIOThread,
                  make_scoped_refptr(GetRequestContext()),
-                 make_scoped_refptr(BrowserContext::GetAppCacheService(this))));
+                 BrowserContext::GetAppCacheService(this)));
 }
 
 void ProfileImpl::UpdateProfileUserNameCache() {

@@ -39,8 +39,10 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/tracked_objects.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
+#include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/browser_main.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/chrome_blob_storage_context.h"
 #include "content/browser/device_orientation/message_filter.h"
 #include "content/browser/download/mhtml_generation_manager.h"
 #include "content/browser/file_system/file_system_dispatcher_host.h"
@@ -461,7 +463,9 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(new AudioRendererHost(resource_context));
   channel_->AddFilter(new VideoCaptureHost(resource_context));
   channel_->AddFilter(new AppCacheDispatcherHost(
-      BrowserContext::GetAppCacheService(browser_context), GetID()));
+      static_cast<ChromeAppCacheService*>(
+          BrowserContext::GetAppCacheService(browser_context)),
+      GetID()));
   channel_->AddFilter(new ClipboardMessageFilter());
   channel_->AddFilter(new DOMStorageMessageFilter(GetID(),
       BrowserContext::GetWebKitContext(browser_context)));
@@ -483,7 +487,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       BrowserContext::GetFileSystemContext(browser_context)));
   channel_->AddFilter(new device_orientation::MessageFilter());
   channel_->AddFilter(new BlobMessageFilter(GetID(),
-        BrowserContext::GetBlobStorageContext(browser_context)));
+      ChromeBlobStorageContext::GetFor(browser_context)));
   channel_->AddFilter(new FileUtilitiesMessageFilter(GetID()));
   channel_->AddFilter(new MimeRegistryMessageFilter());
   channel_->AddFilter(new DatabaseMessageFilter(

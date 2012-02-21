@@ -18,28 +18,19 @@ class ShellURLRequestContextGetter;
 
 class ShellResourceContext : public content::ResourceContext {
  public:
-  ShellResourceContext(
-      ShellURLRequestContextGetter* getter,
-      ChromeBlobStorageContext* blob_storage_context);
+  explicit ShellResourceContext(ShellURLRequestContextGetter* getter);
   virtual ~ShellResourceContext();
 
  private:
   // ResourceContext implementation:
   virtual net::HostResolver* GetHostResolver() OVERRIDE;
   virtual net::URLRequestContext* GetRequestContext() OVERRIDE;
-  virtual ChromeAppCacheService* GetAppCacheService() OVERRIDE;
-  virtual webkit_database::DatabaseTracker* GetDatabaseTracker() OVERRIDE;
-  virtual fileapi::FileSystemContext* GetFileSystemContext() OVERRIDE;
-  virtual ChromeBlobStorageContext* GetBlobStorageContext() OVERRIDE;
-  virtual quota::QuotaManager* GetQuotaManager() OVERRIDE;
   virtual HostZoomMap* GetHostZoomMap() OVERRIDE;
   virtual MediaObserver* GetMediaObserver() OVERRIDE;
   virtual media_stream::MediaStreamManager* GetMediaStreamManager() OVERRIDE;
   virtual AudioManager* GetAudioManager() OVERRIDE;
-  virtual WebKitContext* GetWebKitContext() OVERRIDE;
 
   scoped_refptr<ShellURLRequestContextGetter> getter_;
-  scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellResourceContext);
 };

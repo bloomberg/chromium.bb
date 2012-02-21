@@ -4,10 +4,35 @@
 
 #include "content/browser/chrome_blob_storage_context.h"
 
+#include "base/bind.h"
+#include "content/public/browser/browser_context.h"
 #include "webkit/blob/blob_storage_controller.h"
 
+using base::UserDataAdapter;
+using content::BrowserContext;
 using content::BrowserThread;
 using webkit_blob::BlobStorageController;
+
+static const char* kBlobStorageContextKeyName = "content_blob_storage_context";
+
+ChromeBlobStorageContext* ChromeBlobStorageContext::GetFor(
+    BrowserContext* context) {
+  if (!context->GetUserData(kBlobStorageContextKeyName)) {
+    scoped_refptr<ChromeBlobStorageContext> blob =
+        new ChromeBlobStorageContext();
+    context->SetUserData(kBlobStorageContextKeyName,
+                         new UserDataAdapter<ChromeBlobStorageContext>(blob));
+    // Check first to avoid memory leak in unittests.
+    if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::Bind(&ChromeBlobStorageContext::InitializeOnIOThread, blob));
+    }
+  }
+
+  return UserDataAdapter<ChromeBlobStorageContext>::Get(
+      context, kBlobStorageContextKeyName);
+}
 
 ChromeBlobStorageContext::ChromeBlobStorageContext() {
 }
@@ -19,4 +44,13 @@ void ChromeBlobStorageContext::InitializeOnIOThread() {
 
 ChromeBlobStorageContext::~ChromeBlobStorageContext() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+}
+
+void ChromeBlobStorageContext::DeleteOnCorrectThread() const {
+  if (BrowserThread::IsMessageLoopValid(BrowserThread::IO) &&
+      !BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, this);
+    return;
+  }
+  delete this;
 }

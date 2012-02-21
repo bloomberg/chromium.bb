@@ -10,10 +10,15 @@
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
 #include "content/public/browser/browser_context.h"
 
 class WebKitContext;
+
+namespace content {
+class MockResourceContext;
+}
 
 class TestBrowserContext : public content::BrowserContext {
  public:
@@ -43,6 +48,7 @@ class TestBrowserContext : public content::BrowserContext {
   FRIEND_TEST_ALL_PREFIXES(DOMStorageTest, SessionOnly);
   FRIEND_TEST_ALL_PREFIXES(DOMStorageTest, SaveSessionState);
 
+  scoped_ptr<content::MockResourceContext> resource_context_;
   ScopedTempDir browser_context_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserContext);

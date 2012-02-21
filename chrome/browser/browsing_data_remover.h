@@ -15,9 +15,9 @@
 #include "base/time.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "googleurl/src/gurl.h"
 #include "webkit/quota/quota_types.h"
 
 class ExtensionSpecialStoragePolicy;

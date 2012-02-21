@@ -17,6 +17,10 @@
 class ChromeAppCacheService;
 class ResourceDispatcherHost;
 
+namespace content {
+class ResourceContext;
+}
+
 namespace net {
 class URLRequest;
 }  // namespace net
@@ -29,7 +33,7 @@ class OfflineResourceThrottle
   OfflineResourceThrottle(int render_process_id,
                           int render_view_id,
                           net::URLRequest* request,
-                          ChromeAppCacheService* appcache_service);
+                          content::ResourceContext* resource_context);
   virtual ~OfflineResourceThrottle();
 
   // content::ResourceThrottle implementation:
@@ -52,7 +56,8 @@ class OfflineResourceThrottle
   int render_process_id_;
   int render_view_id_;
   net::URLRequest* request_;
-  ChromeAppCacheService* const appcache_service_;
+  // Safe to keep a pointer around since ResourceContext outlives all requests.
+  content::ResourceContext* resource_context_;
   net::CancelableCompletionCallback appcache_completion_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflineResourceThrottle);

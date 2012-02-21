@@ -43,16 +43,10 @@ class MockResourceContext : public ResourceContext {
   // ResourceContext implementation:
   virtual net::HostResolver* GetHostResolver() OVERRIDE;
   virtual net::URLRequestContext* GetRequestContext() OVERRIDE;
-  virtual ChromeAppCacheService* GetAppCacheService() OVERRIDE;
-  virtual webkit_database::DatabaseTracker* GetDatabaseTracker() OVERRIDE;
-  virtual fileapi::FileSystemContext* GetFileSystemContext() OVERRIDE;
-  virtual ChromeBlobStorageContext* GetBlobStorageContext() OVERRIDE;
-  virtual quota::QuotaManager* GetQuotaManager() OVERRIDE;
   virtual HostZoomMap* GetHostZoomMap() OVERRIDE;
   virtual MediaObserver* GetMediaObserver() OVERRIDE;
   virtual media_stream::MediaStreamManager* GetMediaStreamManager() OVERRIDE;
   virtual AudioManager* GetAudioManager() OVERRIDE;
-  virtual WebKitContext* GetWebKitContext() OVERRIDE;
 
  private:
   friend struct base::DefaultLazyInstanceTraits<MockResourceContext>;

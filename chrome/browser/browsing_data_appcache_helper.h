@@ -8,11 +8,15 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/appcache/chrome_appcache_service.h"
 #include "net/base/completion_callback.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/appcache/appcache_service.h"
 
 class Profile;
+
+namespace content {
+class ResourceContext;
+}
 
 // This class fetches appcache information on behalf of a caller
 // on the UI thread.
@@ -41,7 +45,7 @@ class BrowsingDataAppCacheHelper
   void OnFetchComplete(int rv);
 
   bool is_fetching_;
-  scoped_refptr<ChromeAppCacheService> appcache_service_;
+  content::ResourceContext* resource_context_;
   net::CancelableCompletionCallback appcache_info_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataAppCacheHelper);

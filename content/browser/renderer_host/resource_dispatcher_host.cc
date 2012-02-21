@@ -90,6 +90,7 @@ using base::TimeDelta;
 using base::TimeTicks;
 using content::BrowserThread;
 using content::GlobalRequestID;
+using content::ResourceContext;
 using content::ResourceResponse;
 using content::ResourceThrottle;
 using content::ThrottlingResourceHandler;
@@ -541,7 +542,7 @@ void ResourceDispatcherHost::BeginRequest(
 
   // Might need to resolve the blob references in the upload data.
   if (request_data.upload_data) {
-    resource_context->GetBlobStorageContext()->controller()->
+    ResourceContext::GetBlobStorageController(resource_context)->
         ResolveBlobReferencesInUploadData(request_data.upload_data.get());
   }
 
@@ -716,14 +717,14 @@ void ResourceDispatcherHost::BeginRequest(
     // Hang on to a reference to ensure the blob is not released prior
     // to the job being started.
     webkit_blob::BlobStorageController* controller =
-        resource_context->GetBlobStorageContext()->controller();
+        ResourceContext::GetBlobStorageController(resource_context);
     extra_info->set_requested_blob_data(
         controller->GetBlobDataFromUrl(request->url()));
   }
 
   // Have the appcache associate its extra info with the request.
   appcache::AppCacheInterceptor::SetExtraRequestInfo(
-      request, resource_context->GetAppCacheService(), child_id,
+      request, ResourceContext::GetAppCacheService(resource_context), child_id,
       request_data.appcache_host_id, request_data.resource_type);
 
   if (deferred_request) {

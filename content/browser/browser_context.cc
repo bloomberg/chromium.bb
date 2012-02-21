@@ -5,46 +5,29 @@
 #include "content/public/browser/browser_context.h"
 
 #include "content/browser/appcache/chrome_appcache_service.h"
-#include "content/browser/chrome_blob_storage_context.h"
 #include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
+#include "content/browser/resource_context_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_constants.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/quota/quota_manager.h"
 
+using appcache::AppCacheService;
+using base::UserDataAdapter;
 using content::BrowserThread;
 using fileapi::FileSystemContext;
 using quota::QuotaManager;
 using webkit_database::DatabaseTracker;
 
+// Key names on BrowserContext.
 static const char* kAppCacheServicKeyName = "content_appcache_service_tracker";
-static const char* kBlobStorageContextKeyName = "content_blob_storage_context";
 static const char* kDatabaseTrackerKeyName = "content_database_tracker";
 static const char* kFileSystemContextKeyName = "content_file_system_context";
 static const char* kQuotaManagerKeyName = "content_quota_manager";
 static const char* kWebKitContextKeyName = "content_webkit_context";
 
 namespace content {
-
-// Adapter class that releases a refcounted object when the
-// SupportsUserData::Data object is deleted.
-template <typename T>
-class UserDataAdapter : public base::SupportsUserData::Data {
- public:
-  static T* Get(BrowserContext* context, const char* key) {
-   UserDataAdapter* data =
-      static_cast<UserDataAdapter*>(context->GetUserData(key));
-    return static_cast<T*>(data->object_.get());
-  }
-
-  UserDataAdapter(T* object) : object_(object) {}
-
- private:
-  scoped_refptr<T> object_;
-
-  DISALLOW_COPY_AND_ASSIGN(UserDataAdapter);
-};
 
 void CreateQuotaManagerAndClients(BrowserContext* context) {
   if (context->GetUserData(kQuotaManagerKeyName)) {
@@ -96,16 +79,18 @@ void CreateQuotaManagerAndClients(BrowserContext* context) {
       kAppCacheServicKeyName,
       new UserDataAdapter<ChromeAppCacheService>(appcache_service));
 
+  InitializeResourceContext(context);
+
   // Check first to avoid memory leak in unittests.
   if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
     BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&ChromeAppCacheService::InitializeOnIOThread,
-                 appcache_service,
-                 context->IsOffTheRecord() ? FilePath() :
-                     context->GetPath().Append(content::kAppCacheDirname),
-                 context->GetResourceContext(),
-                 make_scoped_refptr(context->GetSpecialStoragePolicy())));
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&ChromeAppCacheService::InitializeOnIOThread,
+                   appcache_service,
+                   context->IsOffTheRecord() ? FilePath() :
+                       context->GetPath().Append(content::kAppCacheDirname),
+                   context->GetResourceContext(),
+                   make_scoped_refptr(context->GetSpecialStoragePolicy())));
   }
 }
 
@@ -125,7 +110,7 @@ DatabaseTracker* BrowserContext::GetDatabaseTracker(BrowserContext* context) {
       context, kDatabaseTrackerKeyName);
 }
 
-ChromeAppCacheService* BrowserContext::GetAppCacheService(
+AppCacheService* BrowserContext::GetAppCacheService(
     BrowserContext* browser_context) {
   CreateQuotaManagerAndClients(browser_context);
   return UserDataAdapter<ChromeAppCacheService>::Get(
@@ -139,20 +124,10 @@ FileSystemContext* BrowserContext::GetFileSystemContext(
       browser_context, kFileSystemContextKeyName);
 }
 
-ChromeBlobStorageContext* BrowserContext::GetBlobStorageContext(
-    BrowserContext* context) {
-  if (!context->GetUserData(kBlobStorageContextKeyName)) {
-    scoped_refptr<ChromeBlobStorageContext> blob =
-        new ChromeBlobStorageContext();
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&ChromeBlobStorageContext::InitializeOnIOThread, blob));
-    context->SetUserData(kBlobStorageContextKeyName,
-                         new UserDataAdapter<ChromeBlobStorageContext>(blob));
-  }
-
-  return UserDataAdapter<ChromeBlobStorageContext>::Get(
-      context, kBlobStorageContextKeyName);
+void BrowserContext::EnsureResourceContextInitialized(BrowserContext* context) {
+  if (context->GetResourceContext()->GetUserData(kWebKitContextKeyName))
+    return;
+  InitializeResourceContext(context);
 }
 
 BrowserContext::~BrowserContext() {

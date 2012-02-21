@@ -9,6 +9,7 @@
 #include "base/scoped_temp_dir.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
+#include "content/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/appcache/appcache_database.h"
 #include "webkit/appcache/appcache_storage_impl.h"
@@ -65,6 +66,7 @@ class ChromeAppCacheServiceTest : public testing::Test {
   BrowserThreadImpl file_user_blocking_thread_;
   BrowserThreadImpl cache_thread_;
   BrowserThreadImpl io_thread_;
+  TestBrowserContext browser_context_;
 };
 
 scoped_refptr<ChromeAppCacheService>
@@ -73,7 +75,6 @@ ChromeAppCacheServiceTest::CreateAppCacheService(
     bool init_storage) {
   scoped_refptr<ChromeAppCacheService> appcache_service =
       new ChromeAppCacheService(NULL);
-  content::ResourceContext* resource_context = NULL;
   scoped_refptr<quota::MockSpecialStoragePolicy> mock_policy =
       new quota::MockSpecialStoragePolicy;
   mock_policy->AddProtected(kProtectedManifestURL.GetOrigin());
@@ -81,8 +82,8 @@ ChromeAppCacheServiceTest::CreateAppCacheService(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ChromeAppCacheService::InitializeOnIOThread,
-                 appcache_service.get(), appcache_path, resource_context,
-                 mock_policy));
+                 appcache_service.get(), appcache_path,
+                 browser_context_.GetResourceContext(), mock_policy));
   // Steps needed to initialize the storage of AppCache data.
   message_loop_.RunAllPending();
   if (init_storage) {

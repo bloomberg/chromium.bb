@@ -12,19 +12,21 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
+#include "content/public/browser/resource_context.h"
 #include "net/base/completion_callback.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "webkit/appcache/appcache_service.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/database/database_util.h"
 #include "webkit/fileapi/file_system_context.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
+using content::ResourceContext;
 
 // static
 void ExtensionDataDeleter::StartDeleting(
@@ -66,7 +68,8 @@ void ExtensionDataDeleter::StartDeleting(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
-          &ExtensionDataDeleter::DeleteAppcachesOnIOThread, deleter));
+          &ExtensionDataDeleter::DeleteAppcachesOnIOThread, deleter,
+          profile->GetResourceContext()));
 
   profile->GetExtensionService()->settings_frontend()->
       DeleteStorageSoon(extension_id);
@@ -78,7 +81,6 @@ ExtensionDataDeleter::ExtensionDataDeleter(
     const GURL& storage_origin,
     bool is_storage_isolated)
     : extension_id_(extension_id) {
-  appcache_service_ = BrowserContext::GetAppCacheService(profile);
   webkit_context_ = BrowserContext::GetWebKitContext(profile);
   database_tracker_ = BrowserContext::GetDatabaseTracker(profile);
   // Pick the right request context depending on whether it's an extension,
@@ -142,8 +144,8 @@ void ExtensionDataDeleter::DeleteFileSystemOnFileThread() {
     file_util::Delete(isolated_app_path_, true);
 }
 
-void ExtensionDataDeleter::DeleteAppcachesOnIOThread() {
+void ExtensionDataDeleter::DeleteAppcachesOnIOThread(ResourceContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  appcache_service_->DeleteAppCachesForOrigin(
+  ResourceContext::GetAppCacheService(context)->DeleteAppCachesForOrigin(
       storage_origin_, net::CompletionCallback());
 }

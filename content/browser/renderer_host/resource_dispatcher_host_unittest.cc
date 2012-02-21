@@ -26,6 +26,7 @@
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/resource_response.h"
+#include "content/test/test_browser_context.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_data.h"
 #include "net/http/http_util.h"
@@ -35,14 +36,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/appcache/appcache_interfaces.h"
 
-namespace content {
-class DownloadManager;
-}  // namespace content
-
+using content::BrowserContext;
 using content::BrowserThread;
 using content::BrowserThreadImpl;
 using content::ChildProcessHostImpl;
-using content::DownloadManager;
 using content::GlobalRequestID;
 
 // TODO(eroman): Write unit tests for SafeBrowsing that exercise
@@ -169,11 +166,12 @@ class MockURLRequestContextSelector
 // messages to go to the same place, which is why this forwards.
 class ForwardingFilter : public ResourceMessageFilter {
  public:
-  explicit ForwardingFilter(IPC::Message::Sender* dest)
+  explicit ForwardingFilter(IPC::Message::Sender* dest,
+                            content::ResourceContext* resource_context)
     : ResourceMessageFilter(
         ChildProcessHostImpl::GenerateChildProcessUniqueId(),
         content::PROCESS_TYPE_RENDERER,
-        content::MockResourceContext::GetInstance(),
+        resource_context,
         new MockURLRequestContextSelector(
             content::MockResourceContext::GetInstance()->GetRequestContext())),
       dest_(dest) {
@@ -334,10 +332,16 @@ class ResourceDispatcherHostTest : public testing::Test,
  public:
   ResourceDispatcherHostTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
+        file_thread_(BrowserThread::FILE_USER_BLOCKING, &message_loop_),
+        cache_thread_(BrowserThread::CACHE, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_),
-        ALLOW_THIS_IN_INITIALIZER_LIST(filter_(new ForwardingFilter(this))),
         old_factory_(NULL),
         resource_type_(ResourceType::SUB_RESOURCE) {
+    browser_context_.reset(new TestBrowserContext());
+    BrowserContext::EnsureResourceContextInitialized(browser_context_.get());
+    message_loop_.RunAllPending();
+    filter_ = new ForwardingFilter(
+        this, browser_context_->GetResourceContext());
   }
   // IPC::Message::Sender implementation
   virtual bool Send(IPC::Message* msg) {
@@ -376,6 +380,7 @@ class ResourceDispatcherHostTest : public testing::Test,
     ChildProcessSecurityPolicyImpl::GetInstance()->Remove(0);
 
     // Flush the message loop to make application verifiers happy.
+    browser_context_.reset();
     message_loop_.RunAllPending();
   }
 
@@ -457,7 +462,10 @@ class ResourceDispatcherHostTest : public testing::Test,
 
   MessageLoopForIO message_loop_;
   BrowserThreadImpl ui_thread_;
+  BrowserThreadImpl file_thread_;
+  BrowserThreadImpl cache_thread_;
   BrowserThreadImpl io_thread_;
+  scoped_ptr<TestBrowserContext> browser_context_;
   scoped_refptr<ForwardingFilter> filter_;
   ResourceDispatcherHost host_;
   ResourceIPCAccumulator accum_;
@@ -698,8 +706,8 @@ TEST_F(ResourceDispatcherHostTest, PausedCancel) {
 // pending and some canceled.
 class TestFilter : public ForwardingFilter {
  public:
-  TestFilter()
-      : ForwardingFilter(NULL),
+  explicit TestFilter(content::ResourceContext* resource_context)
+      : ForwardingFilter(NULL, resource_context),
         has_canceled_(false),
         received_after_canceled_(0) {
   }
@@ -718,7 +726,8 @@ class TestFilter : public ForwardingFilter {
 
 // Tests CancelRequestsForProcess
 TEST_F(ResourceDispatcherHostTest, TestProcessCancel) {
-  scoped_refptr<TestFilter> test_filter = new TestFilter();
+  scoped_refptr<TestFilter> test_filter = new TestFilter(
+      browser_context_->GetResourceContext());
 
   // request 1 goes to the test delegate
   ResourceHostMsg_Request request = CreateResourceRequest(
@@ -871,7 +880,8 @@ TEST_F(ResourceDispatcherHostTest, TestBlockingCancelingRequests) {
 // Tests that blocked requests are canceled if their associated process dies.
 TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsProcessDies) {
   // This second filter is used to emulate a second process.
-  scoped_refptr<ForwardingFilter> second_filter = new ForwardingFilter(this);
+  scoped_refptr<ForwardingFilter> second_filter = new ForwardingFilter(
+      this, browser_context_->GetResourceContext());
 
   EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(filter_->child_id()));
   EXPECT_EQ(0,
@@ -915,7 +925,8 @@ TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsProcessDies) {
 // destructor to make sure the blocked requests are deleted.
 TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsDontLeak) {
   // This second filter is used to emulate a second process.
-  scoped_refptr<ForwardingFilter> second_filter = new ForwardingFilter(this);
+  scoped_refptr<ForwardingFilter> second_filter = new ForwardingFilter(
+      this, browser_context_->GetResourceContext());
 
   host_.BlockRequestsForRoute(filter_->child_id(), 1);
   host_.BlockRequestsForRoute(filter_->child_id(), 2);
@@ -1006,7 +1017,8 @@ TEST_F(ResourceDispatcherHostTest, TooManyOutstandingRequests) {
   size_t kMaxRequests = kMaxCostPerProcess / kMemoryCostOfTest2Req;
 
   // This second filter is used to emulate a second process.
-  scoped_refptr<ForwardingFilter> second_filter = new ForwardingFilter(this);
+  scoped_refptr<ForwardingFilter> second_filter = new ForwardingFilter(
+      this, browser_context_->GetResourceContext());
 
   // Saturate the number of outstanding requests for our process.
   for (size_t i = 0; i < kMaxRequests; ++i) {

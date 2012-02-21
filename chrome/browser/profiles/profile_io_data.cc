@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
@@ -40,8 +41,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/appcache/chrome_appcache_service.h"
-#include "content/browser/chrome_blob_storage_context.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
@@ -60,10 +59,7 @@
 #include "net/url_request/url_request.h"
 #include "webkit/blob/blob_data.h"
 #include "webkit/blob/blob_url_request_job_factory.h"
-#include "webkit/database/database_tracker.h"
-#include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_url_request_job_factory.h"
-#include "webkit/quota/quota_manager.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/gview_request_interceptor.h"
@@ -72,6 +68,7 @@
 
 using content::BrowserContext;
 using content::BrowserThread;
+using content::ResourceContext;
 
 namespace {
 
@@ -196,8 +193,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   params->clear_local_state_on_exit =
       pref_service->GetBoolean(prefs::kClearSiteDataOnExit);
 
-  params->appcache_service = BrowserContext::GetAppCacheService(profile);
-
   // Set up Accept-Language and Accept-Charset header values
   params->accept_language = net::HttpUtil::GenerateAcceptLanguageHeader(
       pref_service->GetString(prefs::kAcceptLanguages));
@@ -232,12 +227,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
                  profile);
   params->cookie_monster_delegate =
       new ChromeCookieMonsterDelegate(profile_getter);
-  params->database_tracker = BrowserContext::GetDatabaseTracker(profile);
-  params->appcache_service = BrowserContext::GetAppCacheService(profile);
-  params->blob_storage_context = BrowserContext::GetBlobStorageContext(profile);
-  params->file_system_context = BrowserContext::GetFileSystemContext(profile);
-  params->webkit_context = BrowserContext::GetWebKitContext(profile);
-  params->quota_manager = BrowserContext::GetQuotaManager(profile);
   params->extension_info_map = profile->GetExtensionInfoMap();
   params->notification_service =
       DesktopNotificationServiceFactory::GetForProfile(profile);
@@ -261,6 +250,11 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 #endif
 
   initialized_on_UI_thread_ = true;
+
+  // We need to make sure that content initializes its own data structures that
+  // are associated with each ResourceContext because we might post this
+  // object to the IO thread after this function.
+  BrowserContext::EnsureResourceContextInitialized(profile);
 }
 
 ProfileIOData::AppRequestContext::AppRequestContext() {}
@@ -419,44 +413,6 @@ net::URLRequestContext* ProfileIOData::ResourceContext::GetRequestContext()  {
   return request_context_;
 }
 
-ChromeAppCacheService* ProfileIOData::ResourceContext::GetAppCacheService()  {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  EnsureInitialized();
-  return appcache_service_;
-}
-
-webkit_database::DatabaseTracker*
-    ProfileIOData::ResourceContext::GetDatabaseTracker()  {
-  EnsureInitialized();
-  return database_tracker_;
-}
-
-fileapi::FileSystemContext*
-    ProfileIOData::ResourceContext::GetFileSystemContext()  {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  EnsureInitialized();
-  return file_system_context_;
-}
-
-WebKitContext* ProfileIOData::ResourceContext::GetWebKitContext() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  EnsureInitialized();
-  return webkit_context_;
-}
-
-ChromeBlobStorageContext*
-    ProfileIOData::ResourceContext::GetBlobStorageContext()  {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  EnsureInitialized();
-  return blob_storage_context_;
-}
-
-quota::QuotaManager* ProfileIOData::ResourceContext::GetQuotaManager()  {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  EnsureInitialized();
-  return quota_manager_;
-}
-
 content::HostZoomMap* ProfileIOData::ResourceContext::GetHostZoomMap()  {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   EnsureInitialized();
@@ -500,8 +456,6 @@ void ProfileIOData::LazyInitialize() const {
   // Create the common request contexts.
   main_request_context_ = new ChromeURLRequestContext;
   extensions_request_context_ = new ChromeURLRequestContext;
-
-  profile_params_->appcache_service->set_request_context(main_request_context_);
 
   chrome_url_data_manager_backend_.reset(new ChromeURLDataManagerBackend);
 
@@ -547,8 +501,8 @@ void ProfileIOData::LazyInitialize() const {
       chrome::kChromeUIScheme,
       ChromeURLDataManagerBackend::CreateProtocolHandler(
           chrome_url_data_manager_backend_.get(),
-          profile_params_->appcache_service,
-          profile_params_->blob_storage_context->controller()));
+          ResourceContext::GetAppCacheService(&resource_context_),
+          ResourceContext::GetBlobStorageController(&resource_context_)));
   DCHECK(set_protocol);
   set_protocol = job_factory_->SetProtocolHandler(
       chrome::kChromeDevToolsScheme,
@@ -557,13 +511,13 @@ void ProfileIOData::LazyInitialize() const {
   set_protocol = job_factory_->SetProtocolHandler(
       chrome::kBlobScheme,
       new ChromeBlobProtocolHandler(
-          profile_params_->blob_storage_context->controller(),
+          ResourceContext::GetBlobStorageController(&resource_context_),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
   DCHECK(set_protocol);
   set_protocol = job_factory_->SetProtocolHandler(
       chrome::kFileSystemScheme,
       CreateFileSystemProtocolHandler(
-          profile_params_->file_system_context,
+          ResourceContext::GetFileSystemContext(&resource_context_),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
   DCHECK(set_protocol);
 #if defined(OS_CHROMEOS) && !defined(GOOGLE_CHROME_BUILD)
@@ -578,12 +532,6 @@ void ProfileIOData::LazyInitialize() const {
       new media_stream::MediaStreamManager(profile_params_->audio_manager));
 
   // Take ownership over these parameters.
-  database_tracker_ = profile_params_->database_tracker;
-  appcache_service_ = profile_params_->appcache_service;
-  blob_storage_context_ = profile_params_->blob_storage_context;
-  file_system_context_ = profile_params_->file_system_context;
-  webkit_context_ = profile_params_->webkit_context;
-  quota_manager_ = profile_params_->quota_manager;
   host_zoom_map_ = profile_params_->host_zoom_map;
   host_content_settings_map_ = profile_params_->host_content_settings_map;
   cookie_settings_ = profile_params_->cookie_settings;
@@ -592,12 +540,6 @@ void ProfileIOData::LazyInitialize() const {
 
   resource_context_.host_resolver_ = io_thread_globals->host_resolver.get();
   resource_context_.request_context_ = main_request_context_;
-  resource_context_.database_tracker_ = database_tracker_;
-  resource_context_.appcache_service_ = appcache_service_;
-  resource_context_.blob_storage_context_ = blob_storage_context_;
-  resource_context_.file_system_context_ = file_system_context_;
-  resource_context_.webkit_context_ = webkit_context_;
-  resource_context_.quota_manager_ = quota_manager_;
   resource_context_.host_zoom_map_ = host_zoom_map_;
   resource_context_.media_observer_ =
       io_thread_globals->media.media_internals.get();

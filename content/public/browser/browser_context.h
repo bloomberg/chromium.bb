@@ -10,6 +10,10 @@
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
 
+namespace appcache {
+class AppCacheService;
+}
+
 namespace fileapi {
 class FileSystemContext;
 }
@@ -27,8 +31,6 @@ namespace webkit_database {
 class DatabaseTracker;
 }
 
-class ChromeAppCacheService;
-class ChromeBlobStorageContext;
 class FilePath;
 class WebKitContext;
 
@@ -49,12 +51,17 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   static WebKitContext* GetWebKitContext(BrowserContext* browser_context);
   static webkit_database::DatabaseTracker* GetDatabaseTracker(
       BrowserContext* browser_context);
-  static ChromeAppCacheService* GetAppCacheService(
+  static appcache::AppCacheService* GetAppCacheService(
       BrowserContext* browser_context);
   static fileapi::FileSystemContext* GetFileSystemContext(
       BrowserContext* browser_context);
-  static ChromeBlobStorageContext* GetBlobStorageContext(
-      BrowserContext* browser_context);
+
+  // Ensures that the corresponding ResourceContext is initialized. Normally the
+  // BrowserContext initializs the corresponding getters when its objects are
+  // created, but if the embedder wants to pass the ResourceContext to another
+  // thread before they use BrowserContext, they should call this to make sure
+  // that the ResourceContext is ready.
+  static void EnsureResourceContextInitialized(BrowserContext* browser_context);
 
   virtual ~BrowserContext();
 

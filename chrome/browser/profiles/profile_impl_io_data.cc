@@ -222,28 +222,29 @@ void ProfileImplIOData::Handle::ClearNetworkingHistorySince(
 }
 
 void ProfileImplIOData::Handle::LazyInitialize() const {
-  if (!initialized_) {
-    // Set initialized_ to true at the beginning in case any of the objects
-    // below try to get the ResourceContext pointer.
-    initialized_ = true;
-    io_data_->InitializeOnUIThread(profile_);
-    PrefService* pref_service = profile_->GetPrefs();
-    io_data_->http_server_properties_manager_.reset(
-        new chrome_browser_net::HttpServerPropertiesManager(pref_service));
-    ChromeNetworkDelegate::InitializeReferrersEnabled(
-        io_data_->enable_referrers(), pref_service);
-    io_data_->clear_local_state_on_exit()->Init(
-        prefs::kClearSiteDataOnExit, pref_service, NULL);
-    io_data_->clear_local_state_on_exit()->MoveToThread(BrowserThread::IO);
-    io_data_->session_startup_pref()->Init(
-        prefs::kRestoreOnStartup, pref_service, NULL);
-    io_data_->session_startup_pref()->MoveToThread(BrowserThread::IO);
+  if (initialized_)
+    return;
+
+  // Set initialized_ to true at the beginning in case any of the objects
+  // below try to get the ResourceContext pointer.
+  initialized_ = true;
+  PrefService* pref_service = profile_->GetPrefs();
+  io_data_->http_server_properties_manager_.reset(
+      new chrome_browser_net::HttpServerPropertiesManager(pref_service));
+  ChromeNetworkDelegate::InitializeReferrersEnabled(
+      io_data_->enable_referrers(), pref_service);
+  io_data_->clear_local_state_on_exit()->Init(
+      prefs::kClearSiteDataOnExit, pref_service, NULL);
+  io_data_->clear_local_state_on_exit()->MoveToThread(BrowserThread::IO);
+  io_data_->session_startup_pref()->Init(
+      prefs::kRestoreOnStartup, pref_service, NULL);
+  io_data_->session_startup_pref()->MoveToThread(BrowserThread::IO);
 #if defined(ENABLE_SAFE_BROWSING)
-    io_data_->safe_browsing_enabled()->Init(prefs::kSafeBrowsingEnabled,
-        pref_service, NULL);
-    io_data_->safe_browsing_enabled()->MoveToThread(BrowserThread::IO);
+  io_data_->safe_browsing_enabled()->Init(prefs::kSafeBrowsingEnabled,
+      pref_service, NULL);
+  io_data_->safe_browsing_enabled()->MoveToThread(BrowserThread::IO);
 #endif
-  }
+  io_data_->InitializeOnUIThread(profile_);
 }
 
 ProfileImplIOData::LazyParams::LazyParams()

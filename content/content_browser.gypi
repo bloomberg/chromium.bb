@@ -580,6 +580,8 @@
     'browser/renderer_host/x509_user_cert_resource_handler.h',
     'browser/resolve_proxy_msg_helper.cc',
     'browser/resolve_proxy_msg_helper.h',
+    'browser/resource_context_impl.cc',
+    'browser/resource_context_impl.h',
     'browser/safe_util_win.cc',
     'browser/safe_util_win.h',
     'browser/sensors/sensors_provider_impl.cc',
