@@ -5,6 +5,7 @@
 import copy
 import gyp
 import gyp.common
+import gyp.msvs_emulation
 import gyp.system_test
 import gyp.xcode_emulation
 import os.path
@@ -55,16 +56,16 @@ def StripPrefix(arg, prefix):
     return arg[len(prefix):]
   return arg
 
-
-def QuoteShellArgument(arg):
+def QuoteShellArgument(arg, flavor):
   """Quote a string such that it will be interpreted as a single argument
   by the shell."""
   # Rather than attempting to enumerate the bad shell characters, just
   # whitelist common OK ones and quote anything else.
   if re.match(r'^[a-zA-Z0-9_=-]+$', arg):
     return arg  # No quoting necessary.
+  if flavor == 'win':
+    return gyp.msvs_emulation.QuoteCmdExeArgument(arg)
   return "'" + arg.replace("'", "'" + '"\'"' + "'")  + "'"
-
 
 def InvertRelativePath(path):
   """Given a relative path like foo/bar, return the inverse relative path:
@@ -556,7 +557,8 @@ class NinjaWriter:
       intermediate_plist = self.GypPathToUniqueOutput(
           os.path.basename(info_plist))
       defines = ' '.join(
-          [QuoteShellArgument(ninja_syntax.escape('-D' + d)) for d in defines])
+          [QuoteShellArgument(ninja_syntax.escape('-D' + d), self.flavor)
+           for d in defines])
       info_plist = self.ninja.build(intermediate_plist, 'infoplist', info_plist,
                                     variables=[('defines',defines)])
 
@@ -589,7 +591,7 @@ class NinjaWriter:
       cflags_cc = config.get('cflags_cc', [])
 
     self.WriteVariableList('defines',
-        [QuoteShellArgument(ninja_syntax.escape('-D' + d))
+        [QuoteShellArgument(ninja_syntax.escape('-D' + d), self.flavor)
          for d in config.get('defines', [])])
     self.WriteVariableList('includes',
                            ['-I' + self.GypPathToNinja(i)
@@ -785,9 +787,12 @@ class NinjaWriter:
     returned string will start with ' && '."""
     if not self.xcode_settings or spec['type'] == 'none' or not output:
       return ''
-    output = QuoteShellArgument(output)
+    output = QuoteShellArgument(output, self.flavor)
     target_postbuilds = self.xcode_settings.GetTargetPostbuilds(
-        self.config_name, output, QuoteShellArgument(output_binary), quiet=True)
+        self.config_name,
+        output,
+        QuoteShellArgument(output_binary, self.flavor),
+        quiet=True)
     postbuilds = gyp.xcode_emulation.GetSpecPostbuildCommands(
         spec, self.GypPathToNinja, quiet=True)
     postbuilds = target_postbuilds + postbuilds
