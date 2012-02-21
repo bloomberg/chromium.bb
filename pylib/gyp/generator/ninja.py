@@ -214,7 +214,7 @@ class NinjaWriter:
       path = path.replace(INTERMEDIATE_DIR,
                           os.path.join(product_dir or '', int_dir))
 
-    return os.path.normpath(path)
+    return path
 
   def ExpandRuleVariables(self, path, root, dirname, source, ext, name):
     path = path.replace(generator_default_variables['RULE_INPUT_ROOT'], root)
