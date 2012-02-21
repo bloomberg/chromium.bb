@@ -28,7 +28,8 @@ LookaheadFilterInterpreter::LookaheadFilterInterpreter(
       drumroll_speed_thresh_(prop_reg, "Drumroll Speed Thresh", 400.0),
       drumroll_max_speed_ratio_(prop_reg,
                                 "Drumroll Max Speed Change Factor",
-                                15.0) {
+                                15.0),
+      quick_move_thresh_(prop_reg, "Quick Move Distance Thresh", 3.0) {
   next_.reset(next);
 }
 
@@ -97,8 +98,21 @@ void LookaheadFilterInterpreter::Interpolate(const HardwareState& first,
 }
 
 void LookaheadFilterInterpreter::AssignTrackingIds() {
-  if (queue_.size() < 2)
+  if (queue_.size() < 2) {
+    // Always reassign trackingID on the very first hwstate so that
+    // the next hwstate can inherit the trackingID mapping.
+    if (queue_.size() == 1) {
+      QState* tail = queue_.Tail();
+      HardwareState* hs = &tail->state_;
+      for (size_t i = 0; i < hs->finger_cnt; i++) {
+        FingerState* fs = &hs->fingers[i];
+        tail->output_ids_[fs->tracking_id] = NextTrackingId();
+        fs->tracking_id = tail->output_ids_[fs->tracking_id];
+      }
+    }
     return;
+  }
+
   QState* tail = queue_.Tail();
   HardwareState* hs = &tail->state_;
   QState* prev_qs = queue_.size() < 2 ? NULL : tail->prev_;
@@ -150,12 +164,39 @@ void LookaheadFilterInterpreter::AssignTrackingIds() {
     float dx = fs->position_x - prev_fs->position_x;
     float dy = fs->position_y - prev_fs->position_y;
     float dist_sq = dx * dx + dy * dy;
+
+    FingerState* prev2_fs = NULL;
+
+    if (prev2_hs && MapContainsKey(prev2_qs->output_ids_, old_id))
+      prev2_fs = prev2_hs->GetFingerState(prev2_qs->output_ids_[old_id]);
+
+    // Quick movement detection.
+    if (prev2_fs) {
+      float prev_dx = prev_fs->position_x - prev2_fs->position_x;
+      float prev_dy = prev_fs->position_y - prev2_fs->position_y;
+
+      // Along either x or y axis, the movement between (prev2, prev) and
+      // (prev, current) should be on the same direction, and the distance
+      // travelled should be larger than quick_move_thresh_.
+      if ((prev_dx * dx >= 0.0 && fabs(prev_dx) >= quick_move_thresh_.val_ &&
+           fabs(dx) >= quick_move_thresh_.val_) ||
+          (prev_dy * dy >= 0.0 && fabs(prev_dy) >= quick_move_thresh_.val_ &&
+           fabs(dy) >= quick_move_thresh_.val_)) {
+        // Quick movement detected. Correct the tracking ID if the previous
+        // finger state has a reassigned trackingID due to drumroll detection.
+        if (prev_qs->output_ids_[old_id] != prev2_qs->output_ids_[old_id]) {
+          prev_qs->output_ids_[old_id] = prev2_qs->output_ids_[old_id];
+          prev_fs->tracking_id = prev_qs->output_ids_[old_id];
+          tail->output_ids_[old_id] = prev2_qs->output_ids_[old_id];
+          fs->tracking_id = tail->output_ids_[old_id];
+          continue;
+        }
+      }
+    }
+
+    // Drumroll detection.
     if (dist_sq > dist_sq_thresh) {
-      FingerState* prev2_fs = NULL;
-      if (prev2_hs &&
-          MapContainsKey(prev2_qs->output_ids_, old_id) &&
-          (prev2_fs =
-           prev2_hs->GetFingerState(prev2_qs->output_ids_[old_id]))) {
+      if (prev2_fs) {
         float prev_dx = prev_fs->position_x - prev2_fs->position_x;
         float prev_dy = prev_fs->position_y - prev2_fs->position_y;
         // If the finger is switching direction rapidly, it's drumroll.

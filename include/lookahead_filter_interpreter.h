@@ -25,6 +25,7 @@ class LookaheadFilterInterpreter : public Interpreter {
   FRIEND_TEST(LookaheadFilterInterpreterTest, InterpolateHwStateTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, InterpolateTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, InterpolationOverdueTest);
+  FRIEND_TEST(LookaheadFilterInterpreterTest, QuickMoveTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, SimpleTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, SpuriousCallbackTest);
  public:
@@ -119,6 +120,12 @@ class LookaheadFilterInterpreter : public Interpreter {
   // If one contact's speed is more than drumroll_max_speed_ratio_ times the
   // previous speed, the drumroll detector may consider it a new contact.
   DoubleProperty drumroll_max_speed_ratio_;
+  // If during 3 consecutive HardwareState, one contact moves more than
+  // quick_move_thresh_ distance along the same direction on either x or y
+  // axis, both between the 1st and 2nd HardwareState, and the 2nd and 3rd
+  // HardwareState, it is considered to be a quick move and the tracking ID
+  // reassignment due to drumroll detection may get corrected.
+  DoubleProperty quick_move_thresh_;
 };
 
 }  // namespace gestures

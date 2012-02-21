@@ -585,4 +585,83 @@ TEST(LookaheadFilterInterpreterTest, DrumrollTest) {
   EXPECT_EQ(interpreter->last_id_, 5);
 }
 
+TEST(LookaheadFilterInterpreterTest, QuickMoveTest) {
+  LookaheadFilterInterpreterTestInterpreter* base_interpreter = NULL;
+  scoped_ptr<LookaheadFilterInterpreter> interpreter;
+
+  HardwareProperties initial_hwprops = {
+    0, 0, 100, 100,  // left, top, right, bottom
+    1,  // x res (pixels/mm)
+    1,  // y res (pixels/mm)
+    25, 25, 2, 5,  // scrn DPI X, Y, max fingers, max_touch,
+    1, 0, 0  // t5r2, semi, button pad
+  };
+
+  FingerState fs[] = {
+    // TM, Tm, WM, Wm, pr, orient, x, y, id
+    { 0, 0, 0, 0, 1, 0, 40, 40, 1 },
+    { 0, 0, 0, 0, 1, 0, 41, 80, 1 },
+    { 0, 0, 0, 0, 1, 0, 40, 40, 1 },
+
+    { 0, 0, 0, 0, 1, 0, 40, 40, 2 },
+    { 0, 0, 0, 0, 1, 0, 41, 80, 2 },
+    { 0, 0, 0, 0, 1, 0, 40, 120, 2 },
+  };
+
+  HardwareState hs[] = {
+    // Drumroll
+    { 1.000, 0, 1, 1, &fs[0] },
+    { 1.001, 0, 1, 1, &fs[1] },
+    { 1.002, 0, 1, 1, &fs[2] },
+    // No touch
+    { 1.003, 0, 0, 0, &fs[0] },
+    // Quick movement
+    { 1.034, 0, 1, 1, &fs[3] },
+    { 1.035, 0, 1, 1, &fs[4] },
+    { 1.036, 0, 1, 1, &fs[5] },
+  };
+
+  base_interpreter = new LookaheadFilterInterpreterTestInterpreter;
+  interpreter.reset(new LookaheadFilterInterpreter(NULL, base_interpreter));
+  interpreter->SetHardwareProperties(initial_hwprops);
+
+  stime_t timeout = -1.0;
+  List<LookaheadFilterInterpreter::QState>* queue = &interpreter->queue_;
+
+  // Pushing the first event
+  interpreter->SyncInterpret(&hs[0], &timeout);
+  EXPECT_EQ(queue->size(), 1);
+  EXPECT_EQ(queue->Tail()->fs_[0].tracking_id, 1);
+
+  // Expecting Drumroll detected and ID reassigned 1 -> 2.
+  interpreter->SyncInterpret(&hs[1], &timeout);
+  EXPECT_EQ(queue->size(), 2);
+  EXPECT_EQ(queue->Tail()->fs_[0].tracking_id, 2);
+
+  // Expecting Drumroll detected and ID reassigned 1 -> 3.
+  interpreter->SyncInterpret(&hs[2], &timeout);
+  EXPECT_EQ(queue->size(), 3);
+  EXPECT_EQ(queue->Tail()->fs_[0].tracking_id, 3);
+
+  // Removing the touch.
+  interpreter->SyncInterpret(&hs[3], &timeout);
+  EXPECT_EQ(queue->size(), 4);
+
+  // New event comes, old events removed from the queue.
+  // New finger tracking ID assigned 2 - > 4.
+  interpreter->SyncInterpret(&hs[4], &timeout);
+  EXPECT_EQ(queue->size(), 2);
+  EXPECT_EQ(queue->Tail()->fs_[0].tracking_id, 4);
+
+  // Expecting Drumroll detected and ID reassigned 2 -> 5.
+  interpreter->SyncInterpret(&hs[5], &timeout);
+  EXPECT_EQ(queue->Tail()->fs_[0].tracking_id, 5);
+
+  // Expecting Quick movement detected and ID correction 5 -> 4.
+  interpreter->SyncInterpret(&hs[6], &timeout);
+  EXPECT_EQ(queue->Tail()->fs_[0].tracking_id, 4);
+  EXPECT_EQ(queue->Tail()->prev_->fs_[0].tracking_id, 4);
+  EXPECT_EQ(queue->Tail()->prev_->prev_->fs_[0].tracking_id, 4);
+}
+
 }  // namespace gestures
