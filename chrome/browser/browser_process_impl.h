@@ -24,7 +24,6 @@
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "ipc/ipc_message.h"
 
 class BrowserOnlineStateObserver;
@@ -240,8 +239,6 @@ class BrowserProcessImpl : public BrowserProcess,
 
   scoped_ptr<ChromeResourceDispatcherHostDelegate>
       resource_dispatcher_host_delegate_;
-
-  content::NotificationRegistrar notification_registrar_;
 
   scoped_refptr<MHTMLGenerationManager> mhtml_generation_manager_;
 
