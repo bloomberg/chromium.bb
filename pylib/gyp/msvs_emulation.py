@@ -40,3 +40,7 @@ def QuoteCmdExeArgument(arg):
   # Finally, wrap the whole thing in quotes so that the above quote rule
   # applies and whitespace isn't a word break.
   return '"' + tmp + '"'
+
+def EncodeCmdExeList(args):
+  """Process a list of arguments using QuoteCmdExeArgument."""
+  return ' '.join(QuoteCmdExeArgument(arg) for arg in args)

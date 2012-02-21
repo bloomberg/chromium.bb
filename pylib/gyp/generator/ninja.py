@@ -945,10 +945,8 @@ class NinjaWriter:
     args = [self.ExpandSpecial(arg, self.base_to_build) for arg in args]
     env = self.ComputeExportEnvString(env)
     if self.flavor == 'win':
-      # TODO(scottmg): Really don't want encourage cygwin, but I'm not sure
-      # how much sh is depended upon. For now, double quote args to make most
-      # things work.
-      command = args[0] + ' "' + '" "'.join(args[1:]) + '""'
+      # TODO(scottmg): Respect msvs_cygwin setting here.
+      command = gyp.msvs_emulation.EncodeCmdExeList(args)
     else:
       command = gyp.common.EncodePOSIXShellList(args)
     if env:
