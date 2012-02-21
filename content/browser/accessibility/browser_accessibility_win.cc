@@ -3068,12 +3068,8 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_role_ = ROLE_SYSTEM_TABLE;
       ia_state_|= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_GROUP: {
-      string16 aria_role;
-      GetStringAttribute(WebAccessibility::ATTR_ROLE, &aria_role);
-      if (aria_role == L"group" || html_tag == L"fieldset") {
-        ia_role_ = ROLE_SYSTEM_GROUPING;
-      } else if (html_tag == L"li") {
+    case WebAccessibility::ROLE_GROUP:
+      if (html_tag == L"li") {
         ia_role_ = ROLE_SYSTEM_LISTITEM;
       } else if (html_tag == L"form") {
         role_name_ = html_tag;
@@ -3090,7 +3086,6 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       }
       ia_state_|= STATE_SYSTEM_READONLY;
       break;
-    }
     case WebAccessibility::ROLE_GROW_AREA:
       ia_role_ = ROLE_SYSTEM_GRIP;
       ia_state_|= STATE_SYSTEM_READONLY;
