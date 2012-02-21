@@ -989,7 +989,7 @@ def CalculateVariables(default_variables, params):
     generator_extra_sources_for_rules = getattr(xcode_generator,
         'generator_extra_sources_for_rules', [])
   elif flavor == 'win':
-    default_variables['OS'] = 'win'
+    default_variables.setdefault('OS', 'win')
     default_variables['EXECUTABLE_SUFFIX'] = '.exe'
     default_variables['STATIC_LIB_PREFIX'] = ''
     default_variables['STATIC_LIB_SUFFIX'] = '.lib'
