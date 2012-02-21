@@ -50,10 +50,12 @@
 #endif  // defined(OS_WIN)
 
 #include "third_party/angle/include/EGL/egl.h"
-#include "third_party/angle/include/GLES2/gl2.h"
 
 #if defined(OS_WIN)
+#include "ui/gfx/gl/gl_bindings.h"
+#include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_implementation.h"
+#include "ui/gfx/gl/gl_surface.h"
 #endif  // OS_WIN
 
 using media::VideoDecodeAccelerator;
@@ -1155,6 +1157,16 @@ int main(int argc, char **argv) {
 #if defined(OS_WIN)
   base::ShadowingAtExitManager at_exit_manager;
   gfx::InitializeGLBindings(gfx::kGLImplementationEGLGLES2);
+  gfx::GLSurface::InitializeOneOff();
+  {
+    // Hack to ensure that EGL extension function pointers are initialized.
+    scoped_refptr<gfx::GLSurface> surface(
+        gfx::GLSurface::CreateOffscreenGLSurface(false, gfx::Size(1, 1)));
+    scoped_refptr<gfx::GLContext> context(
+        gfx::GLContext::CreateGLContext(NULL, surface.get(),
+                                        gfx::PreferIntegratedGpu));
+    context->MakeCurrent(surface.get());
+  }
   DXVAVideoDecodeAccelerator::PreSandboxInitialization();
 #endif  // OS_WIN
   return RUN_ALL_TESTS();
