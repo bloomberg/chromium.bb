@@ -26,6 +26,9 @@ class CppTypeGenerator(object):
     beneath the root namespace.
     """
     for type_ in namespace.types:
+      if self._type_namespaces.get(type_, namespace) != namespace:
+        raise ValueError('Type %s is declared in both %s and %s' %
+            (type_, namespace.name, self._type_namespaces[type_].name))
       self._type_namespaces[type_] = namespace
     self._cpp_namespaces[namespace] = cpp_namespace
 

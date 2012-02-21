@@ -4,6 +4,7 @@
 
 import os.path
 import re
+import copy
 
 class Model(object):
   """Model of all namespaces that comprise an API.
@@ -30,23 +31,24 @@ class Namespace(object):
 
   Properties:
   - |name| the name of the namespace
-  - |source_file_dir| the directory component of the file that contained the
-    namespace definition
-  - |source_file_filename| the filename component of the file that contained
-    the namespace definition
+  - |unix_name| the unix_name of the namespace
+  - |source_file| the file that contained the namespace definition
+  - |source_file_dir| the directory component of |source_file|
+  - |source_file_filename| the filename component of |source_file|
   - |types| a map of type names to their model.Type
   - |functions| a map of function names to their model.Function
   """
   def __init__(self, json, source_file):
     self.name = json['namespace']
+    self.unix_name = _UnixName(self.name)
     self.source_file = source_file
     self.source_file_dir, self.source_file_filename = os.path.split(source_file)
     self.types = {}
     self.functions = {}
-    for type_json in json['types']:
+    for type_json in json.get('types', []):
       type_ = Type(type_json)
       self.types[type_.name] = type_
-    for function_json in json['functions']:
+    for function_json in json.get('functions', []):
       if not function_json.get('nocompile', False):
         function = Function(function_json)
         self.functions[function.name] = function
@@ -193,6 +195,14 @@ class Property(object):
           (self.name, self._unix_name))
     self._unix_name = unix_name
 
+  def Copy(self):
+    """Makes a copy of this model.Property object and allow the unix_name to be
+    set again.
+    """
+    property_copy = copy.copy(self)
+    property_copy._unix_name_used = False
+    return property_copy
+
   unix_name = property(GetUnixName, SetUnixName)
 
 class PropertyType(object):
@@ -217,7 +227,7 @@ class PropertyType(object):
   ANY = _Info(False, "ANY")
 
 def _UnixName(name):
-  """Returns the unix_style name for a given string in lowerCamelCase format.
+  """Returns the unix_style name for a given lowerCamelCase string.
   """
   return '_'.join([x.lower()
       for x in re.findall('[A-Z][a-z_]*', name[0].upper() + name[1:])])

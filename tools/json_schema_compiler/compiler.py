@@ -12,11 +12,10 @@ are in chrome/common/extensions/api.
 Usage example:
   compiler.py --root /home/Work/src --namespace extensions windows.json
     tabs.json
-  compiler.py --destdir gen --suffix _api --root /home/Work/src
+  compiler.py --destdir gen --root /home/Work/src
     --namespace extensions windows.json tabs.json
 """
 
-import cpp_util
 import cc_generator
 import cpp_type_generator
 import h_generator
@@ -37,15 +36,12 @@ if __name__ == '__main__':
       help='root directory to output generated files.')
   parser.add_option('-n', '--namespace', default='generated_api_schemas',
       help='C++ namespace for generated files. e.g extensions::api.')
-  parser.add_option('-s', '--suffix', default='',
-      help='Filename and C++ namespace suffix for generated files.')
 
   (opts, args) = parser.parse_args()
   if not args:
     sys.exit(parser.get_usage())
   dest_dir = opts.destdir
   root_namespace = opts.namespace
-  filename_suffix = opts.suffix
 
   schema = os.path.normpath(args[0])
   referenced_schemas = args[1:]
@@ -73,14 +69,15 @@ if __name__ == '__main__':
     if not namespace:
       continue
 
-    out_file = namespace.name + filename_suffix
+    # The output filename must match the input filename for gyp to deal with it
+    # properly.
+    out_file = namespace.name
     type_generator = cpp_type_generator.CppTypeGenerator(root_namespace,
                                                          namespace, out_file)
     for referenced_namespace in api_model.namespaces.values():
       type_generator.AddNamespace(
           referenced_namespace,
-          cpp_util.Classname(referenced_namespace.name).lower() +
-              filename_suffix)
+          referenced_namespace.unix_name)
     cc_generator = cc_generator.CCGenerator(namespace, type_generator)
     cc_code = cc_generator.Generate().Render()
     h_generator = h_generator.HGenerator(namespace, type_generator)

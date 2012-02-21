@@ -11,7 +11,7 @@ class UtilCCHelper(object):
   def __init__(self, type_manager):
     self._type_manager = type_manager
 
-  def GetArray(self, array_prop, src, name, dst):
+  def PopulateArrayFromDictionary(self, array_prop, src, name, dst):
     """Generates code to get an array from a src.name into dst.
 
     src: DictionaryValue*
@@ -35,7 +35,7 @@ class UtilCCHelper(object):
 
     return val % sub
 
-  def GetArrayFromList(self, array_prop, src, dst):
+  def PopulateArrayFromList(self, array_prop, src, dst):
     """Generates code to get an array from src into dst.
 
     src: ListValue*
@@ -56,7 +56,7 @@ class UtilCCHelper(object):
 
     return val % sub
 
-  def SetArray(self, array_prop, src, name, dst):
+  def PopulateDictionaryFromArray(self, array_prop, src, name, dst):
     """Generates code to set dst.name to the array at src
 
     src: std::vector or scoped_ptr<std::vector>
@@ -75,12 +75,12 @@ class UtilCCHelper(object):
       val = ('%(namespace)s::PopulateDictionaryFromOptionalArray'
           '(%(src)s, "%(name)s", %(dst)s.get())')
     else:
-      val = ('%(namespace)s::PopulateDictionaryFromArray(%(src)s, '
-          '"%(name)s", %(dst)s.get())')
+      val = ('%(namespace)s::PopulateDictionaryFromArray'
+          '(%(src)s, "%(name)s", %(dst)s.get())')
 
     return val % sub
 
-  def SetArrayToList(self, array_prop, src, dst):
+  def PopulateListFromArray(self, array_prop, src, dst):
     """Generates code to set dst to the array at src
 
     src: std::vector or scoped_ptr<std::vector>

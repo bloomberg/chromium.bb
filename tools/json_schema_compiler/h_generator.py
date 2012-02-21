@@ -97,7 +97,7 @@ class HGenerator(object):
         c.Append(self._cpp_type_generator.GetChoiceEnumNoneValue(prop) + ',')
         for choice in prop.choices.values():
           c.Append(
-              self._cpp_type_generator.GetChoiceEnumValue( prop, choice.type_)
+              self._cpp_type_generator.GetChoiceEnumValue(prop, choice.type_)
               + ',')
         (c.Eblock('};')
           .Append()
@@ -196,9 +196,10 @@ class HGenerator(object):
       for param in self._cpp_type_generator.GetExpandedChoicesInParams(params):
         if param.description:
           c.Comment(param.description)
-        c.Append('Value* Create(%s);' %
-            cpp_util.GetConstParameterDeclaration(
-              param, self._cpp_type_generator))
+        if param.type_ == PropertyType.OBJECT:
+          raise NotImplementedError('OBJECT return type not supported')
+        c.Append('Value* Create(const %s);' % cpp_util.GetParameterDeclaration(
+            param, self._cpp_type_generator.GetType(param)))
     c.Eblock('};')
 
     return c

@@ -1,0 +1,43 @@
+[
+  {
+    "namespace": "crossref",
+    "types": [],
+    "functions": [
+      {
+        "name": "TestTypeOptionalParam",
+        "type": "function",
+        "description": "Takes TestType as a param.",
+        "parameters": [
+          {
+            "name": "testType",
+            "$ref": "TestType",
+            "optional": true
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "getTestType",
+        "type": "function",
+        "description": "Return a TestType.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "result",
+                "$ref": "TestType",
+                "description": "A TestType."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

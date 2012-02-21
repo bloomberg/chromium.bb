@@ -44,20 +44,23 @@ class CCGenerator(object):
       .Concat(self._cpp_type_generator.GetRootNamespaceStart())
       .Concat(self._cpp_type_generator.GetNamespaceStart())
       .Append()
-      .Append('//')
-      .Append('// Types')
-      .Append('//')
-      .Append()
     )
+    if self._namespace.types:
+      (c.Append('//')
+        .Append('// Types')
+        .Append('//')
+        .Append()
+      )
     for type_ in self._namespace.types.values():
       (c.Concat(self._GenerateType(type_.name, type_))
         .Append()
       )
-    (c.Append('//')
-      .Append('// Functions')
-      .Append('//')
-      .Append()
-    )
+    if self._namespace.functions:
+      (c.Append('//')
+        .Append('// Functions')
+        .Append('//')
+        .Append()
+      )
     for function in self._namespace.functions.values():
       (c.Concat(self._GenerateFunction(function))
         .Append()
@@ -111,70 +114,32 @@ class CCGenerator(object):
     return c
 
   def _GenerateTypePopulateProperty(self, prop, src, dst):
-    """Generate the code to populate a single property.
+    """Generate the code to populate a single property in a type.
 
     src: DictionaryValue*
     dst: Type*
     """
     c = code.Code()
-    dst_member = dst + '->' + prop.unix_name
-    if prop.type_ == PropertyType.ARRAY:
-      # util_cc_helper deals with optional and required arrays
-      (c.Append('if (!%s)' %
-          self._util_cc_helper.GetArray(prop, src, prop.name, dst_member))
-        .Append('  return false;')
-      )
-    elif prop.type_ == PropertyType.CHOICES:
-      value_var = prop.unix_name + '_value'
-      c.Append('Value* %(value_var)s = NULL;')
-      c.Append(
-          'if (!%(src)s->GetWithoutPathExpansion("%(key)s", &%(value_var)s))')
-      if prop.optional:
-        c.Append('  return true;')
-      else:
-        c.Append('  return false;')
-      c.Append()
-      c.Concat(self._GeneratePopulateChoices(prop, value_var, dst, 'false'))
-      c.Substitute({'value_var': value_var, 'key': prop.name, 'src': src})
-    else:
-      if prop.optional:
-        if prop.type_.is_fundamental:
-          (c.Sblock('{')
-              .Append('%(type)s %(name)s_temp;')
-              .Append('if (%s)' % self._GeneratePopulatePropertyFunctionCall(
-                  prop, src, '&%s_temp' % prop.unix_name))
-              .Append('  out->%(name)s.reset(new %(type)s(%(name)s_temp));')
-            .Eblock('}')
-          )
-        else:
-          raise NotImplementedError('Optional %s not implemented' % prop.type_)
-      else:
-        (c.Append('if (!%s)' %
-            self._GeneratePopulatePropertyFunctionCall(
-                prop, src, '&' + dst_member))
-          .Append('  return false;')
+    value_var = prop.unix_name + '_value'
+    c.Append('Value* %(value_var)s = NULL;')
+    if prop.optional:
+      (c.Sblock(
+          'if (%(src)s->GetWithoutPathExpansion("%(key)s", &%(value_var)s)) {'
         )
-      c.Substitute({
-          'name': prop.unix_name,
-          'type': self._cpp_type_generator.GetType(prop)
-      })
-    return c
-
-  def _GeneratePopulatePropertyFunctionCall(self, prop, src, dst):
-    """Generates the function call that populates the given property.
-
-    src: DictionaryValue*
-    dst: Property* or scoped_ptr<Property>
-    """
-    if prop.type_.is_fundamental:
-      populate_line = cpp_util.GetFundamentalValue(
-          prop, src, prop.name, dst)
-    elif prop.type_ in (PropertyType.REF, PropertyType.OBJECT):
-      populate_line = '%(type)s::Populate(*%(src)s, %(dst)s)'
+        .Concat(self._GeneratePopulatePropertyFromValue(
+            prop, value_var, 'out', 'false'))
+        .Eblock('}')
+      )
     else:
-      raise NotImplementedError('%s populate is not implemented' %
-          prop.type_)
-    return populate_line
+      (c.Append(
+          'if (!%(src)s->GetWithoutPathExpansion("%(key)s", &%(value_var)s))')
+        .Append('  return false;')
+        .Concat(self._GeneratePopulatePropertyFromValue(
+            prop, value_var, 'out', 'false'))
+      )
+    c.Append()
+    c.Substitute({'value_var': value_var, 'key': prop.name, 'src': src})
+    return c
 
   def _GenerateTypeToValue(self, cpp_namespace, type_):
     """Generates a function that serializes the type into a |DictionaryValue|.
@@ -203,7 +168,8 @@ class CCGenerator(object):
     if prop.optional:
       c.Sblock('if (%s.get())' % var)
     if prop.type_ == PropertyType.ARRAY:
-      c.Append('%s;' % self._util_cc_helper.SetArray(prop, var, prop.name, dst))
+      c.Append('%s;' % self._util_cc_helper.PopulateDictionaryFromArray(
+          prop, var, prop.name, dst))
     else:
       c.Append('%s->SetWithoutPathExpansion("%s", %s);' %
           (dst, prop.name, cpp_util.CreateValueFromSingleProperty(prop, var)))
@@ -250,7 +216,7 @@ class CCGenerator(object):
     if num_required == len(function.params):
       c.Append('if (%(var)s.GetSize() != %(total)d)')
     elif not num_required:
-      c.Append('if (%(var)s.GetSize() > %(total)s)')
+      c.Append('if (%(var)s.GetSize() > %(total)d)')
     else:
       c.Append('if (%(var)s.GetSize() < %(required)d'
           ' || %(var)s.GetSize() > %(total)d)')
@@ -263,7 +229,8 @@ class CCGenerator(object):
     return c
 
   def _GenerateFunctionParamsCreate(self, function):
-    """Generate function to create an instance of Params given a pointer.
+    """Generate function to create an instance of Params. The generated
+    function takes a ListValue of arguments.
     """
     classname = cpp_util.Classname(function.name)
     c = code.Code()
@@ -276,96 +243,120 @@ class CCGenerator(object):
     c.Substitute({'classname': classname})
 
     for i, param in enumerate(function.params):
-      dst = 'params->' + param.unix_name
       # Any failure will cause this function to return. If any argument is
       # incorrect or missing, those following it are not processed. Note that
       # this is still correct in the case of multiple optional arguments as an
       # optional argument at position 4 cannot exist without an argument at
       # position 3.
+      failure_value = 'scoped_ptr<Params>()'
       if param.optional:
-        failure_value = 'params.Pass()'
+        arg_missing_value = 'params.Pass()'
       else:
-        failure_value = 'scoped_ptr<Params>()'
+        arg_missing_value = failure_value
       c.Append()
-      param_var = param.unix_name + '_param'
-      # TODO(calamity): Return error on incorrect argument type
-      if param.type_ == PropertyType.ARRAY:
-        # util_cc_helper deals with optional and required arrays
-        (c.Append('ListValue* %(param_var)s = NULL;')
-          .Append('if (!args.GetList(%(i)d, &%(param_var)s))')
-          .Append('  return %s;' % failure_value)
-          .Append('if (!%s)' % self._util_cc_helper.GetArrayFromList(
-              param, param_var, dst))
-          .Append('  return %s;' % failure_value)
-        )
-        c.Substitute({'param_var': param_var, 'i': i})
-      elif param.type_ == PropertyType.CHOICES:
-        value_var = param.unix_name + '_value'
-        (c.Append('Value* %(value_var)s = NULL;')
-          .Append('if (!args.Get(%(i)s, &%(value_var)s))')
-          .Append('  return %s;' % failure_value)
-          .Append()
-          .Concat(self._GeneratePopulateChoices(param, value_var, 'params',
-              'scoped_ptr<Params>()'))
-        )
-        c.Substitute({'value_var': value_var, 'i': i})
-      else:
-        if param.optional:
-          dst = dst + '.get()'
-        else:
-          dst = '&' + dst
-        if param.type_ in (PropertyType.REF, PropertyType.OBJECT):
-          (c.Append('DictionaryValue* %s = NULL;' % param_var)
-            .Append('if (!args.GetDictionary(%d, &%s))' % (i, param_var))
-            .Append('  return %s;' % failure_value)
-          )
-          if param.optional:
-            c.Append('params->%s.reset(new %s());' %
-                (param.unix_name, cpp_util.Classname(param.name)))
-          (c.Append('if (!%(ctype)s::Populate(*%(var)s, %(dst)s))' % {
-              'var': param_var, 'dst': dst,
-              'ctype': self._cpp_type_generator.GetType(param)
-            })
-            .Append('  return %s;' % failure_value)
-          )
-        elif param.type_.is_fundamental:
-          if param.optional:
-            (c.Sblock('{')
-                .Append('%(type)s %(name)s_temp;')
-                .Append('if (%s)' % cpp_util.GetValueFromList(
-                    param, 'args', i, '&%s_temp' % param.unix_name))
-                .Append(
-                    '  params->%(name)s.reset(new %(type)s(%(name)s_temp));')
-              .Eblock('}')
-            )
-            c.Substitute({
-                'name': param.unix_name,
-                'type': self._cpp_type_generator.GetType(param),
-            })
-          else:
-            (c.Append(
-                'if (!%s)' % cpp_util.GetValueFromList(param, 'args', i, dst))
-              .Append('  return %s;' % failure_value)
-            )
-        else:
-          raise NotImplementedError('%s parameter is not supported' %
-              param.type_)
+      value_var = param.unix_name + '_value'
+      (c.Append('Value* %(value_var)s = NULL;')
+        .Append('if (!args.Get(%(i)s, &%(value_var)s) || '
+            '%(value_var)s->IsType(Value::TYPE_NULL))')
+        .Append('  return %s;' % arg_missing_value)
+        .Concat(self._GeneratePopulatePropertyFromValue(
+            param, value_var, 'params', failure_value))
+      )
+      c.Substitute({'value_var': value_var, 'i': i})
     (c.Append()
       .Append('return params.Pass();')
       .Eblock('}')
+      .Append()
     )
 
     return c
 
+  def _GeneratePopulatePropertyFromValue(
+      self, prop, value_var, dst, failure_value, check_type=True):
+    """Generates code to populate a model.Property given a Value*. The
+    existence of data inside the Value* is assumed so checks for existence
+    should be performed before the code this generates.
+
+    prop: the property the code is populating.
+    value_var: a Value* that should represent |prop|.
+    dst: the object with |prop| as a member.
+    failure_value: the value to return if |prop| cannot be extracted from
+    |value_var|
+    check_type: if true, will check if |value_var| is the correct Value::Type
+    """
+    c = code.Code()
+    c.Sblock('{')
+
+    if check_type:
+      (c.Append('if (!%(value_var)s->IsType(%(value_type)s))')
+        .Append('  return %(failure_value)s;')
+      )
+
+    if prop.type_.is_fundamental:
+      if prop.optional:
+        (c.Append('%(ctype)s temp;')
+          .Append('if (%s)' %
+              cpp_util.GetAsFundamentalValue(prop, value_var, '&temp'))
+          .Append('  %(dst)s->%(name)s.reset(new %(ctype)s(temp));')
+        )
+      else:
+        (c.Append('if (!%s)' %
+            cpp_util.GetAsFundamentalValue(
+                prop, value_var, '&%s->%s' % (dst, prop.unix_name)))
+          .Append('return %(failure_value)s;')
+        )
+    elif prop.type_ in (PropertyType.OBJECT, PropertyType.REF):
+      if prop.optional:
+        (c.Append('DictionaryValue* dictionary = NULL;')
+          .Append('if (!%(value_var)s->GetAsDictionary(&dictionary))')
+          .Append('  return %(failure_value)s;')
+          .Append('scoped_ptr<%(ctype)s> temp(new %(ctype)s());')
+          .Append('if (!%(ctype)s::Populate(*dictionary, temp.get()))')
+          .Append('  return %(failure_value)s;')
+          .Append('%(dst)s->%(name)s = temp.Pass();')
+        )
+      else:
+        (c.Append('DictionaryValue* dictionary = NULL;')
+          .Append('if (!%(value_var)s->GetAsDictionary(&dictionary))')
+          .Append('  return %(failure_value)s;')
+          .Append(
+              'if (!%(ctype)s::Populate(*dictionary, &%(dst)s->%(name)s))')
+          .Append('  return %(failure_value)s;')
+        )
+    elif prop.type_ == PropertyType.ARRAY:
+      # util_cc_helper deals with optional and required arrays
+      (c.Append('ListValue* list = NULL;')
+        .Append('if (!%(value_var)s->GetAsList(&list))')
+        .Append('  return %s;' % failure_value)
+        .Append('if (!%s)' % self._util_cc_helper.PopulateArrayFromList(
+            prop, 'list', dst + '->' + prop.unix_name))
+        .Append('  return %s;' % failure_value)
+      )
+    elif prop.type_ == PropertyType.CHOICES:
+      return self._GeneratePopulateChoices(prop, value_var, dst, failure_value)
+    else:
+      raise NotImplementedError(prop.type_)
+    c.Eblock('}')
+    c.Substitute({
+        'value_var': value_var,
+        'name': prop.unix_name,
+        'dst': dst,
+        'ctype': self._cpp_type_generator.GetType(prop),
+        'failure_value': failure_value,
+        'value_type': cpp_util.GetValueType(prop),
+    })
+    return c
+
   def _GeneratePopulateChoices(self, prop, value_var, dst, failure_value):
     """Generates the code to populate a PropertyType.CHOICES parameter or
-    property.
+    property. The existence of data inside the Value* is assumed so checks for
+    existence should be performed before the code this generates.
 
-    value_var: Value*
-    dst: Type* or scoped_ptr<Params>
-    failure_value: the value to return on failure. Check if the property is
-    optional BEFORE the code generated by this method as failure_value will be
-    used to indicate a parsing error.
+    prop: the property the code is populating..
+    value_var: a Value* that should represent |prop|.
+    dst: the object with |prop| as a member.
+    failure_value: the value to return if |prop| cannot be extracted from
+    |value_var|
     """
     type_var = '%s->%s_type' % (dst, prop.unix_name)
 
@@ -374,48 +365,19 @@ class CCGenerator(object):
         (type_var, self._cpp_type_generator.GetChoiceEnumNoneValue(prop)))
     c.Sblock('switch (%s->GetType()) {' % value_var)
     for choice in self._cpp_type_generator.GetExpandedChoicesInParams([prop]):
-      current_choice = '%s->%s' % (dst, choice.unix_name)
-      if choice.type_.is_fundamental:
-        c.Sblock('case %s: {' % {
-            PropertyType.STRING: 'Value::TYPE_STRING',
-            PropertyType.INTEGER: 'Value::TYPE_INTEGER',
-            PropertyType.BOOLEAN: 'Value::TYPE_BOOLEAN',
-            PropertyType.DOUBLE: 'Value::TYPE_DOUBLE'
-        }[choice.type_])
-
-        (c.Append('%(type_var)s = %(enum_value)s;')
-          .Append('%s.reset(new %s());' %
-              (current_choice, self._cpp_type_generator.GetType(choice)))
-          .Append('if (!%s)' %
-              cpp_util.GetAsFundamentalValue(
-                  choice, value_var, current_choice + '.get()'))
-          .Append('  return %s;' % failure_value)
+      (c.Sblock('case %s: {' % cpp_util.GetValueType(choice))
+          .Concat(self._GeneratePopulatePropertyFromValue(
+              choice, value_var, dst, failure_value, check_type=False))
+          .Append('%s = %s;' %
+              (type_var,
+               self._cpp_type_generator.GetChoiceEnumValue(
+                   prop, choice.type_)))
           .Append('break;')
         .Eblock('}')
-        )
-      elif choice.type_ == PropertyType.ARRAY:
-        # util_cc_helper deals with optional and required arrays
-        (c.Sblock('case Value::TYPE_LIST: {')
-            .Append('%(type_var)s = %(enum_value)s;')
-            .Append('if (!%s)' % self._util_cc_helper.GetArrayFromList(
-                choice,
-                'static_cast<ListValue*>(%s)' % value_var,
-                current_choice))
-            .Append('  return %s;' % failure_value)
-            .Append('break;')
-          .Eblock('}')
-        )
-      else:
-        raise NotImplementedError(choice.type_)
-      c.Substitute({
-          'type_var': type_var,
-          'enum_value': self._cpp_type_generator.GetChoiceEnumValue(
-              prop, choice.type_),
-      })
-    if not prop.optional:
-      (c.Append('default:')
-        .Append('  return %s;' % failure_value)
       )
+    (c.Append('default:')
+      .Append('  return %s;' % failure_value)
+    )
     c.Eblock('}')
     return c
 
@@ -425,6 +387,7 @@ class CCGenerator(object):
     classname = cpp_util.Classname(function.name)
     c = code.Code()
     params = function.callback.params
+
     if not params:
       (c.Append('Value* %s::Result::Create() {' % classname)
         .Append('  return Value::CreateNullValue();')
@@ -436,19 +399,25 @@ class CCGenerator(object):
       # for each choice. This works because only 1 choice can be returned at a
       # time.
       for param in self._cpp_type_generator.GetExpandedChoicesInParams(params):
-        arg = cpp_util.GetConstParameterDeclaration(
-            param, self._cpp_type_generator)
-        c.Sblock('Value* %(classname)s::Result::Create(%(arg)s) {')
-        if param.type_ == PropertyType.ARRAY:
+        # We treat this argument as 'required' to avoid wrapping it in a
+        # scoped_ptr if it's optional.
+        param_copy = param.Copy()
+        param_copy.optional = False
+        c.Sblock('Value* %(classname)s::Result::Create(const %(arg)s) {')
+        if param_copy.type_ == PropertyType.ARRAY:
           (c.Append('ListValue* value = new ListValue();')
-            .Append('%s;' % self._util_cc_helper.SetArrayToList(
-                param, param.unix_name, 'value'))
+            .Append('%s;' % self._util_cc_helper.PopulateListFromArray(
+                param_copy, param_copy.unix_name, 'value'))
             .Append('return value;')
           )
         else:
-          c.Append('return %s;' % cpp_util.CreateValueFromSingleProperty(param,
-              param.unix_name))
-        c.Substitute({'classname': classname, 'arg': arg})
+          c.Append('return %s;' %
+              cpp_util.CreateValueFromSingleProperty(param_copy,
+                  param_copy.unix_name))
+        c.Substitute({'classname': classname,
+            'arg': cpp_util.GetParameterDeclaration(
+                param_copy, self._cpp_type_generator.GetType(param_copy))
+        })
         c.Eblock('}')
 
     return c
