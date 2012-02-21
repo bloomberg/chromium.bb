@@ -8,11 +8,14 @@
 #include "base/basictypes.h"
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
+#include "content/common/content_export.h"
 #include "content/common/media/audio_stream_state.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/audio/audio_buffers_state.h"
 #include "media/audio/audio_parameters.h"
 
+#undef IPC_MESSAGE_EXPORT
+#define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START AudioMsgStart
 
 IPC_ENUM_TRAITS(AudioStreamState)

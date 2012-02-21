@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -173,6 +173,14 @@
 //     ViewHostMsg_SyncMessageName::WriteReplyParams(reply_msg, out1, out2);
 //     Send(reply_msg);
 
+// Files that want to export their ipc messages should do
+//   #undef IPC_MESSAGE_EXPORT
+//   #define IPC_MESSAGE_EXPORT VISIBILITY_MACRO
+// after including this header, but before using any of the macros below.
+// (This needs to be before the include guard.)
+#undef IPC_MESSAGE_EXPORT
+#define IPC_MESSAGE_EXPORT
+
 #ifndef IPC_IPC_MESSAGE_MACROS_H_
 #define IPC_IPC_MESSAGE_MACROS_H_
 
@@ -182,11 +190,6 @@
 
 #if defined(IPC_MESSAGE_IMPL)
 #include "ipc/ipc_message_utils_impl.h"
-#endif
-
-// Override this to force message classes to be exported.
-#ifndef IPC_MESSAGE_EXPORT
-#define IPC_MESSAGE_EXPORT
 #endif
 
 // Macros for defining structs.  May be subsequently redefined.

@@ -7,9 +7,12 @@
 
 #include <string>
 
+#include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
 #include "ipc/ipc_message_macros.h"
 
+#undef IPC_MESSAGE_EXPORT
+#define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START MediaStreamMsgStart
 
 IPC_ENUM_TRAITS(media_stream::MediaStreamType)
