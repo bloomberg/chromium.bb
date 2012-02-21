@@ -69,6 +69,7 @@ namespace protocol {
 class Authenticator;
 class AuthenticatorFactory;
 
+// TODO(sergeyu): Remove this struct and use TransportConfig instead.
 struct NetworkSettings {
   NetworkSettings()
       : allow_nat_traversal(false),

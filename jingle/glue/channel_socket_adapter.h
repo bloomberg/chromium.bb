@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef JINGLE_GLUE_CHANNEL_SOCKET_ADAPTER_H_
 #define JINGLE_GLUE_CHANNEL_SOCKET_ADAPTER_H_
 
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "net/socket/socket.h"
 #include "third_party/libjingle/source/talk/base/socketaddress.h"
@@ -27,6 +28,9 @@ class TransportChannelSocketAdapter : public net::Socket,
   // TransportChannel object is always owned by the corresponding session.
   explicit TransportChannelSocketAdapter(cricket::TransportChannel* channel);
   virtual ~TransportChannelSocketAdapter();
+
+  // Sets callback that should be called when the adapter is being destroyed.
+  void SetOnDestroyedCallback(const base::Closure& callback);
 
   // Closes the stream. |error_code| specifies error code that will
   // be returned by Read() and Write() after the stream is closed.
@@ -51,6 +55,8 @@ class TransportChannelSocketAdapter : public net::Socket,
   MessageLoop* message_loop_;
 
   cricket::TransportChannel* channel_;
+
+  base::Closure destruction_callback_;
 
   net::CompletionCallback read_callback_;
   scoped_refptr<net::IOBuffer> read_buffer_;

@@ -8,12 +8,15 @@
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "base/test/test_timeouts.h"
+#include "net/socket/socket.h"
+#include "net/socket/stream_socket.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/connection_tester.h"
 #include "remoting/protocol/fake_authenticator.h"
 #include "remoting/protocol/pepper_session_manager.h"
+#include "remoting/protocol/libjingle_transport_factory.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/jingle_glue/fake_signal_strategy.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -39,6 +42,23 @@ namespace {
 const char kHostJid[] = "host1@gmail.com/123";
 const char kClientJid[] = "host2@gmail.com/321";
 
+// Send 100 messages 1024 bytes each. UDP messages are sent with 10ms delay
+// between messages (about 1 second for 100 messages).
+const int kMessageSize = 1024;
+const int kMessages = 100;
+const char kChannelName[] = "test_channel";
+
+void QuitCurrentThread() {
+  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+}
+
+ACTION_P(QuitThreadOnCounter, counter) {
+  --(*counter);
+  EXPECT_GE(*counter, 0);
+  if (*counter == 0)
+    QuitCurrentThread();
+}
+
 class MockSessionManagerListener : public SessionManager::Listener {
  public:
   MOCK_METHOD0(OnSessionManagerReady, void());
@@ -52,11 +72,17 @@ class MockSessionCallback {
   MOCK_METHOD1(OnStateChange, void(Session::State));
 };
 
+class MockStreamChannelCallback {
+ public:
+  MOCK_METHOD1(OnDone, void(net::StreamSocket* socket));
+};
+
 }  // namespace
 
 class PepperSessionTest : public testing::Test {
  public:
-  PepperSessionTest() {
+  PepperSessionTest()
+      : message_loop_(talk_base::Thread::Current()) {
   }
 
   // Helper method that handles OnIncomingSession().
@@ -70,6 +96,16 @@ class PepperSessionTest : public testing::Test {
     session->set_config(SessionConfig::GetDefault());
   }
 
+  void OnClientChannelCreated(scoped_ptr<net::StreamSocket> socket) {
+    client_channel_callback_.OnDone(socket.get());
+    client_socket_ = socket.Pass();
+  }
+
+  void OnHostChannelCreated(scoped_ptr<net::StreamSocket> socket) {
+    host_channel_callback_.OnDone(socket.get());
+    host_socket_ = socket.Pass();
+  }
+
  protected:
   virtual void SetUp() {
   }
@@ -80,7 +116,9 @@ class PepperSessionTest : public testing::Test {
   }
 
   void CloseSessions() {
+    host_socket_.reset();
     host_session_.reset();
+    client_socket_.reset();
     client_session_.reset();
   }
 
@@ -94,7 +132,7 @@ class PepperSessionTest : public testing::Test {
     EXPECT_CALL(host_server_listener_, OnSessionManagerReady())
         .Times(1);
     host_server_.reset(new PepperSessionManager(
-        scoped_ptr<TransportFactory>(NULL)));
+        scoped_ptr<TransportFactory>(new LibjingleTransportFactory())));
     host_server_->Init(host_signal_strategy_.get(), &host_server_listener_,
                        NetworkSettings(false));
 
@@ -105,7 +143,7 @@ class PepperSessionTest : public testing::Test {
     EXPECT_CALL(client_server_listener_, OnSessionManagerReady())
         .Times(1);
     client_server_.reset(new PepperSessionManager(
-        scoped_ptr<TransportFactory>(NULL)));
+        scoped_ptr<TransportFactory>(new LibjingleTransportFactory())));
     client_server_->Init(client_signal_strategy_.get(),
                          &client_server_listener_, NetworkSettings());
   }
@@ -188,7 +226,21 @@ class PepperSessionTest : public testing::Test {
     message_loop_.RunAllPending();
   }
 
-  MessageLoop message_loop_;
+  void CreateChannel() {
+    client_session_->CreateStreamChannel(kChannelName, base::Bind(
+        &PepperSessionTest::OnClientChannelCreated, base::Unretained(this)));
+    host_session_->CreateStreamChannel(kChannelName, base::Bind(
+        &PepperSessionTest::OnHostChannelCreated, base::Unretained(this)));
+
+    int counter = 2;
+    EXPECT_CALL(client_channel_callback_, OnDone(_))
+        .WillOnce(QuitThreadOnCounter(&counter));
+    EXPECT_CALL(host_channel_callback_, OnDone(_))
+        .WillOnce(QuitThreadOnCounter(&counter));
+    message_loop_.Run();
+  }
+
+  JingleThreadMessageLoop message_loop_;
 
   scoped_ptr<FakeSignalStrategy> host_signal_strategy_;
   scoped_ptr<FakeSignalStrategy> client_signal_strategy_;
@@ -202,6 +254,12 @@ class PepperSessionTest : public testing::Test {
   MockSessionCallback host_connection_callback_;
   scoped_ptr<Session> client_session_;
   MockSessionCallback client_connection_callback_;
+
+  MockStreamChannelCallback client_channel_callback_;
+  MockStreamChannelCallback host_channel_callback_;
+
+  scoped_ptr<net::StreamSocket> client_socket_;
+  scoped_ptr<net::StreamSocket> host_socket_;
 };
 
 
@@ -263,6 +321,36 @@ TEST_F(PepperSessionTest, ConnectWithBadAuth) {
 TEST_F(PepperSessionTest, ConnectWithBadMultistepAuth) {
   CreateSessionManagers(3, FakeAuthenticator::REJECT);
   InitiateConnection(3, FakeAuthenticator::ACCEPT, true);
+}
+
+// Verify that data can sent over stream channel.
+TEST_F(PepperSessionTest, TestStreamChannel) {
+  CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
+  ASSERT_NO_FATAL_FAILURE(
+      InitiateConnection(1, FakeAuthenticator::ACCEPT, false));
+
+  ASSERT_NO_FATAL_FAILURE(CreateChannel());
+
+  StreamConnectionTester tester(host_socket_.get(), client_socket_.get(),
+                                kMessageSize, kMessages);
+  tester.Start();
+  message_loop_.Run();
+  tester.CheckResults();
+}
+
+// Verify that we can connect channels with multistep auth.
+TEST_F(PepperSessionTest, TestMultistepAuthStreamChannel) {
+  CreateSessionManagers(3, FakeAuthenticator::ACCEPT);
+  ASSERT_NO_FATAL_FAILURE(
+      InitiateConnection(3, FakeAuthenticator::ACCEPT, false));
+
+  ASSERT_NO_FATAL_FAILURE(CreateChannel());
+
+  StreamConnectionTester tester(host_socket_.get(), client_socket_.get(),
+                                kMessageSize, kMessages);
+  tester.Start();
+  message_loop_.Run();
+  tester.CheckResults();
 }
 
 }  // namespace protocol

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,11 @@ struct TransportConfig {
   std::string stun_server;
   std::string relay_server;
   std::string relay_token;
+
+  // |min_port| and |max_port| specify range (inclusive) of ports used by
+  // P2P sessions. Any port can be used when both values are set to 0.
+  int min_port;
+  int max_port;
 };
 
 }  // namespace protocol

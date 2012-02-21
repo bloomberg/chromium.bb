@@ -802,6 +802,8 @@
         'protocol/jingle_stream_connector.h',
         'protocol/key_event_tracker.cc',
         'protocol/key_event_tracker.h',
+        'protocol/libjingle_transport_factory.cc',
+        'protocol/libjingle_transport_factory.h',
         'protocol/me2me_host_authenticator_factory.cc',
         'protocol/me2me_host_authenticator_factory.h',
         'protocol/message_decoder.cc',

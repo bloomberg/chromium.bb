@@ -39,11 +39,10 @@ void PepperSessionManager::Init(
   listener_ = listener;
   signal_strategy_ = signal_strategy;
   iq_sender_.reset(new IqSender(signal_strategy_));
-  transport_config_.nat_traversal = network_settings.allow_nat_traversal;
 
-  // Limiting the port range is not supported yet.
-  DCHECK(network_settings.max_port == 0 &&
-         network_settings.min_port == 0);
+  transport_config_.nat_traversal = network_settings.allow_nat_traversal;
+  transport_config_.min_port = network_settings.min_port;
+  transport_config_.max_port = network_settings.max_port;
 
   signal_strategy_->AddListener(this);
 

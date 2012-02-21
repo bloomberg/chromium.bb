@@ -240,7 +240,6 @@ void PepperStreamTransport::OnP2PConnect(int result) {
                  base::Unretained(this)));
 }
 
-
 void PepperStreamTransport::OnAuthenticationDone(
     net::Error error, scoped_ptr<net::StreamSocket> socket) {
   DCHECK(CalledOnValidThread());
