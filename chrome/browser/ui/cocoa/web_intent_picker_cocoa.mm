@@ -123,8 +123,8 @@ void WebIntentPickerCocoa::OnFaviconChanged(WebIntentPickerModel* model,
 }
 
 void WebIntentPickerCocoa::OnInlineDisposition(WebIntentPickerModel* model) {
-  const WebIntentPickerModel::Item& item = model->GetItemAt(
-      model->inline_disposition_index());
+  const WebIntentPickerModel::InstalledService& installed_service =
+      model->GetInstalledServiceAt(model->inline_disposition_index());
 
   content::WebContents* web_contents = content::WebContents::Create(
       browser_->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
@@ -137,7 +137,7 @@ void WebIntentPickerCocoa::OnInlineDisposition(WebIntentPickerModel* model) {
   delegate_->OnInlineDispositionWebContentsCreated(web_contents);
 
   inline_disposition_tab_contents_->web_contents()->GetController().LoadURL(
-      item.url,
+      installed_service.url,
       content::Referrer(),
       content::PAGE_TRANSITION_START_PAGE,
       std::string());
@@ -157,9 +157,10 @@ void WebIntentPickerCocoa::OnCancelled() {
 
 void WebIntentPickerCocoa::OnServiceChosen(size_t index) {
   DCHECK(delegate_);
-  const WebIntentPickerModel::Item& item = model_->GetItemAt(index);
+  const WebIntentPickerModel::InstalledService& installed_service =
+      model_->GetInstalledServiceAt(index);
   service_invoked = true;
-  delegate_->OnServiceChosen(index, item.disposition);
+  delegate_->OnServiceChosen(index, installed_service.disposition);
 }
 
 void WebIntentPickerCocoa::set_controller(

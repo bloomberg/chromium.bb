@@ -139,7 +139,8 @@ void WebIntentPickerController::OnServiceChosen(size_t index,
       // during the lifetime of the service url context, and that may mean we
       // need to pass more information into the injector to find the picker
       // again and close it.
-      const WebIntentPickerModel::Item& item = picker_model_->GetItemAt(index);
+      const WebIntentPickerModel::InstalledService& installed_service =
+          picker_model_->GetInstalledServiceAt(index);
 
       int index = TabStripModel::kNoTab;
       Browser* browser = Browser::GetBrowserForController(
@@ -147,7 +148,7 @@ void WebIntentPickerController::OnServiceChosen(size_t index,
       TabContentsWrapper* contents = Browser::TabContentsFactory(
           browser->profile(),
           tab_util::GetSiteInstanceForNewTab(
-              NULL, browser->profile(), item.url),
+              NULL, browser->profile(), installed_service.url),
           MSG_ROUTING_NONE, NULL, NULL);
 
       intents_dispatcher_->DispatchIntent(contents->web_contents());
@@ -156,15 +157,16 @@ void WebIntentPickerController::OnServiceChosen(size_t index,
       // This call performs all the tab strip manipulation, notifications, etc.
       // Since we're passing in a target_contents, it assumes that we will
       // navigate the page ourselves, though.
-      browser::NavigateParams params(
-          browser, item.url, content::PAGE_TRANSITION_AUTO_BOOKMARK);
+      browser::NavigateParams params(browser,
+                                     installed_service.url,
+                                     content::PAGE_TRANSITION_AUTO_BOOKMARK);
       params.target_contents = contents;
       params.disposition = NEW_FOREGROUND_TAB;
       params.profile = wrapper_->profile();
       browser::Navigate(&params);
 
       service_tab_->GetController().LoadURL(
-          item.url, content::Referrer(),
+          installed_service.url, content::Referrer(),
           content::PAGE_TRANSITION_AUTO_BOOKMARK, std::string());
 
       ClosePicker();
@@ -244,8 +246,10 @@ void WebIntentPickerController::OnIntentsQueryDone(
     const std::vector<webkit_glue::WebIntentServiceData>& services) {
   FaviconService* favicon_service = GetFaviconService(wrapper_);
   for (size_t i = 0; i < services.size(); ++i) {
-    picker_model_->AddItem(services[i].title, services[i].service_url,
-                           ConvertDisposition(services[i].disposition));
+    picker_model_->AddInstalledService(
+        services[i].title,
+        services[i].service_url,
+        ConvertDisposition(services[i].disposition));
 
     pending_async_count_++;
     FaviconService::Handle handle = favicon_service->GetFaviconForURL(

@@ -28,9 +28,11 @@ class WebIntentPickerModel {
   };
 
   // An intent service to display in the picker.
-  struct Item {
-    Item(const string16& title, const GURL& url, Disposition disposition);
-    ~Item();
+  struct InstalledService {
+    InstalledService(const string16& title,
+                     const GURL& url,
+                     Disposition disposition);
+    ~InstalledService();
 
     // The title of this service.
     string16 title;
@@ -72,21 +74,25 @@ class WebIntentPickerModel {
     observer_ = observer;
   }
 
-  // Add a new item with |title|, |url| and |disposition| to the picker.
-  void AddItem(const string16& title, const GURL& url, Disposition disposition);
+  // Add a new installed service with |title|, |url| and |disposition| to the
+  // picker.
+  void AddInstalledService(const string16& title,
+                           const GURL& url,
+                           Disposition disposition);
 
-  // Remove an item from the picker at |index|.
-  void RemoveItemAt(size_t index);
+  // Remove an installed service from the picker at |index|.
+  void RemoveInstalledServiceAt(size_t index);
 
-  // Remove all items from the picker, and resets to not displaying inline
-  // disposition.  Note that this does not clear the observer.
+  // Remove all installed services from the picker, and resets to not
+  // displaying inline disposition.  Note that this does not clear the
+  // observer.
   void Clear();
 
-  // Return the intent service item at |index|.
-  const Item& GetItemAt(size_t index) const;
+  // Return the intent service installed service at |index|.
+  const InstalledService& GetInstalledServiceAt(size_t index) const;
 
   // Return the number of intent services in the picker.
-  size_t GetItemCount() const;
+  size_t GetInstalledServiceCount() const;
 
   // Update the favicon for the intent service at |index| to |image|.
   void UpdateFaviconAt(size_t index, const gfx::Image& image);
@@ -117,12 +123,13 @@ class WebIntentPickerModel {
   size_t inline_disposition_index() const { return inline_disposition_index_; }
 
  private:
-  // Delete all elements in |items_| and |suggested_extensions_|.
+  // Delete all elements in |installed_services_| and |suggested_extensions_|.
   // Note that this method does not reset the observer.
   void DestroyAll();
 
-  // A vector of all items in the picker. Each item is owned by this model.
-  std::vector<Item*> items_;
+  // A vector of all installed services in the picker. Each installed service
+  // is owned by this model.
+  std::vector<InstalledService*> installed_services_;
 
   // A vector of all suggested extensions in the picker. Each element is owned
   // by this model.

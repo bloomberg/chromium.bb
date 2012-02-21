@@ -84,14 +84,15 @@ class WebIntentPickerMock : public WebIntentPicker,
                             public WebIntentPickerModelObserver {
  public:
   WebIntentPickerMock()
-      : num_items_(0),
+      : num_installed_services_(0),
         num_icons_changed_(0),
         message_loop_started_(false),
         pending_async_completed_(false) {
   }
 
   virtual void OnModelChanged(WebIntentPickerModel* model) OVERRIDE {
-    num_items_ = static_cast<int>(model->GetItemCount());
+    num_installed_services_ =
+        static_cast<int>(model->GetInstalledServiceCount());
   }
 
   virtual void OnFaviconChanged(
@@ -116,7 +117,7 @@ class WebIntentPickerMock : public WebIntentPicker,
     }
   }
 
-  int num_items_;
+  int num_installed_services_;
   int num_icons_changed_;
   bool message_loop_started_;
   bool pending_async_completed_;
@@ -216,7 +217,7 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest, ChooseService) {
 
   controller_->ShowDialog(browser(), kAction1, kType);
   picker_.WaitForPendingAsync();
-  EXPECT_EQ(2, picker_.num_items_);
+  EXPECT_EQ(2, picker_.num_installed_services_);
   EXPECT_EQ(0, picker_.num_icons_changed_);
 
   webkit_glue::WebIntentData intent;
@@ -265,7 +266,7 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
 
   controller_->ShowDialog(browser(), kAction1, kType);
   picker_.WaitForPendingAsync();
-  EXPECT_EQ(1, picker_.num_items_);
+  EXPECT_EQ(1, picker_.num_installed_services_);
 
   webkit_glue::WebIntentData intent;
   intent.action = ASCIIToUTF16("a");

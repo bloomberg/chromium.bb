@@ -21,6 +21,10 @@ const GURL kUrl3("http://www.example.com/baz");
 const string16 kId1(ASCIIToUTF16("nhkckhebbbncbkefhcpcgepcgfaclehe"));
 const string16 kId2(ASCIIToUTF16("hcpcgepcgfaclehenhkckhebbbncbkef"));
 const string16 kId3(ASCIIToUTF16("aclehenhkckhebbbncbkefhcpcgepcgf"));
+const WebIntentPickerModel::Disposition kWindowDisposition(
+    WebIntentPickerModel::DISPOSITION_WINDOW);
+const WebIntentPickerModel::Disposition kInlineDisposition(
+    WebIntentPickerModel::DISPOSITION_INLINE);
 
 }
 
@@ -45,59 +49,61 @@ class WebIntentPickerModelTest : public testing::Test {
   WebIntentPickerModelObserverMock observer_;
 };
 
-TEST_F(WebIntentPickerModelTest, AddItem) {
+TEST_F(WebIntentPickerModelTest, AddInstalledService) {
   EXPECT_CALL(observer_, OnModelChanged(&model_)).Times(2);
 
-  EXPECT_EQ(0U, model_.GetItemCount());
+  EXPECT_EQ(0U, model_.GetInstalledServiceCount());
 
-  model_.AddItem(kTitle1, kUrl1, WebIntentPickerModel::DISPOSITION_WINDOW);
-  model_.AddItem(kTitle2, kUrl2, WebIntentPickerModel::DISPOSITION_WINDOW);
+  model_.AddInstalledService(kTitle1, kUrl1, kWindowDisposition);
+  model_.AddInstalledService(kTitle2, kUrl2, kWindowDisposition);
 
-  EXPECT_EQ(2U, model_.GetItemCount());
-  EXPECT_EQ(kUrl1, model_.GetItemAt(0).url);
-  EXPECT_EQ(kUrl2, model_.GetItemAt(1).url);
+  EXPECT_EQ(2U, model_.GetInstalledServiceCount());
+  EXPECT_EQ(kUrl1, model_.GetInstalledServiceAt(0).url);
+  EXPECT_EQ(kUrl2, model_.GetInstalledServiceAt(1).url);
 }
 
-TEST_F(WebIntentPickerModelTest, RemoveItemAt) {
+TEST_F(WebIntentPickerModelTest, RemoveInstalledServiceAt) {
   EXPECT_CALL(observer_, OnModelChanged(&model_)).Times(4);
 
-  model_.AddItem(kTitle1, kUrl1, WebIntentPickerModel::DISPOSITION_WINDOW);
-  model_.AddItem(kTitle2, kUrl2, WebIntentPickerModel::DISPOSITION_WINDOW);
-  model_.AddItem(kTitle3, kUrl3, WebIntentPickerModel::DISPOSITION_WINDOW);
+  model_.AddInstalledService(kTitle1, kUrl1, kWindowDisposition);
+  model_.AddInstalledService(kTitle2, kUrl2, kWindowDisposition);
+  model_.AddInstalledService(kTitle3, kUrl3, kWindowDisposition);
 
-  EXPECT_EQ(3U, model_.GetItemCount());
+  EXPECT_EQ(3U, model_.GetInstalledServiceCount());
 
-  model_.RemoveItemAt(1);
+  model_.RemoveInstalledServiceAt(1);
 
-  EXPECT_EQ(2U, model_.GetItemCount());
-  EXPECT_EQ(kUrl1, model_.GetItemAt(0).url);
-  EXPECT_EQ(kUrl3, model_.GetItemAt(1).url);
+  EXPECT_EQ(2U, model_.GetInstalledServiceCount());
+  EXPECT_EQ(kUrl1, model_.GetInstalledServiceAt(0).url);
+  EXPECT_EQ(kUrl3, model_.GetInstalledServiceAt(1).url);
 }
 
 TEST_F(WebIntentPickerModelTest, Clear) {
   EXPECT_CALL(observer_, OnModelChanged(&model_)).Times(3);
 
-  model_.AddItem(kTitle1, kUrl1, WebIntentPickerModel::DISPOSITION_WINDOW);
-  model_.AddItem(kTitle2, kUrl2, WebIntentPickerModel::DISPOSITION_WINDOW);
+  model_.AddInstalledService(kTitle1, kUrl1, kWindowDisposition);
+  model_.AddInstalledService(kTitle2, kUrl2, kWindowDisposition);
 
-  EXPECT_EQ(2U, model_.GetItemCount());
+  EXPECT_EQ(2U, model_.GetInstalledServiceCount());
 
   model_.Clear();
 
-  EXPECT_EQ(0U, model_.GetItemCount());
+  EXPECT_EQ(0U, model_.GetInstalledServiceCount());
 }
 
 TEST_F(WebIntentPickerModelTest, UpdateFaviconAt) {
   EXPECT_CALL(observer_, OnModelChanged(&model_)).Times(2);
   EXPECT_CALL(observer_, OnFaviconChanged(&model_, 1U)).Times(1);
 
-  model_.AddItem(kTitle1, kUrl1, WebIntentPickerModel::DISPOSITION_WINDOW);
-  model_.AddItem(kTitle2, kUrl2, WebIntentPickerModel::DISPOSITION_WINDOW);
+  model_.AddInstalledService(kTitle1, kUrl1, kWindowDisposition);
+  model_.AddInstalledService(kTitle2, kUrl2, kWindowDisposition);
   gfx::Image image(gfx::test::CreateImage());
   model_.UpdateFaviconAt(1U, image);
 
-  EXPECT_FALSE(gfx::test::IsEqual(image, model_.GetItemAt(0).favicon));
-  EXPECT_TRUE(gfx::test::IsEqual(image, model_.GetItemAt(1).favicon));
+  EXPECT_FALSE(gfx::test::IsEqual(
+      image, model_.GetInstalledServiceAt(0).favicon));
+  EXPECT_TRUE(gfx::test::IsEqual(
+      image, model_.GetInstalledServiceAt(1).favicon));
 }
 
 TEST_F(WebIntentPickerModelTest, AddSuggestedExtension) {
@@ -136,8 +142,8 @@ TEST_F(WebIntentPickerModelTest, SetInlineDisposition) {
   EXPECT_FALSE(model_.IsInlineDisposition());
   EXPECT_EQ(std::string::npos, model_.inline_disposition_index());
 
-  model_.AddItem(kTitle1, kUrl1, WebIntentPickerModel::DISPOSITION_WINDOW);
-  model_.AddItem(kTitle2, kUrl2, WebIntentPickerModel::DISPOSITION_INLINE);
+  model_.AddInstalledService(kTitle1, kUrl1, kWindowDisposition);
+  model_.AddInstalledService(kTitle2, kUrl2, kInlineDisposition);
   model_.SetInlineDisposition(1);
 
   EXPECT_TRUE(model_.IsInlineDisposition());

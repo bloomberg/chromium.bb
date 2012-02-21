@@ -263,10 +263,11 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   } else {
     offset += [self addHeaderToSubviews:subviews atOffset:offset];
     if (model) {
-      for (NSUInteger i = 0; i < model->GetItemCount(); ++i) {
-        const WebIntentPickerModel::Item& item = model->GetItemAt(i);
-        offset += [self addServiceButton:base::SysUTF16ToNSString(item.title)
-                               withImage:item.favicon.ToNSImage()
+      for (NSUInteger i = 0; i < model->GetInstalledServiceCount(); ++i) {
+        const WebIntentPickerModel::InstalledService& service =
+            model->GetInstalledServiceAt(i);
+        offset += [self addServiceButton:base::SysUTF16ToNSString(service.title)
+                               withImage:service.favicon.ToNSImage()
                                    index:i
                               toSubviews:subviews
                                 atOffset:offset];

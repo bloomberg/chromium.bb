@@ -20,19 +20,20 @@ WebIntentPickerModel::~WebIntentPickerModel() {
   DestroyAll();
 }
 
-void WebIntentPickerModel::AddItem(const string16& title,
-                                   const GURL& url,
-                                   Disposition disposition) {
-  items_.push_back(new Item(title, url, disposition));
+void WebIntentPickerModel::AddInstalledService(const string16& title,
+                                               const GURL& url,
+                                               Disposition disposition) {
+  installed_services_.push_back(new InstalledService(title, url, disposition));
   if (observer_)
     observer_->OnModelChanged(this);
 }
 
-void WebIntentPickerModel::RemoveItemAt(size_t index) {
-  DCHECK(index < items_.size());
-  std::vector<Item*>::iterator iter = items_.begin() + index;
+void WebIntentPickerModel::RemoveInstalledServiceAt(size_t index) {
+  DCHECK(index < installed_services_.size());
+  std::vector<InstalledService*>::iterator iter =
+      installed_services_.begin() + index;
   delete *iter;
-  items_.erase(iter);
+  installed_services_.erase(iter);
   if (observer_)
     observer_->OnModelChanged(this);
 }
@@ -44,20 +45,20 @@ void WebIntentPickerModel::Clear() {
     observer_->OnModelChanged(this);
 }
 
-const WebIntentPickerModel::Item& WebIntentPickerModel::GetItemAt(
-    size_t index) const {
-  DCHECK(index < items_.size());
-  return *items_[index];
+const WebIntentPickerModel::InstalledService&
+    WebIntentPickerModel::GetInstalledServiceAt(size_t index) const {
+  DCHECK(index < installed_services_.size());
+  return *installed_services_[index];
 }
 
-size_t WebIntentPickerModel::GetItemCount() const {
-  return items_.size();
+size_t WebIntentPickerModel::GetInstalledServiceCount() const {
+  return installed_services_.size();
 }
 
 void WebIntentPickerModel::UpdateFaviconAt(size_t index,
                                            const gfx::Image& image) {
-  DCHECK(index < items_.size());
-  items_[index]->favicon = image;
+  DCHECK(index < installed_services_.size());
+  installed_services_[index]->favicon = image;
   if (observer_)
     observer_->OnFaviconChanged(this, index);
 }
@@ -92,7 +93,7 @@ size_t WebIntentPickerModel::GetSuggestedExtensionCount() const {
 }
 
 void WebIntentPickerModel::SetInlineDisposition(size_t index) {
-  DCHECK(index < items_.size());
+  DCHECK(index < installed_services_.size());
   inline_disposition_index_ = index;
   if (observer_)
     observer_->OnInlineDisposition(this);
@@ -103,13 +104,14 @@ bool WebIntentPickerModel::IsInlineDisposition() const {
 }
 
 void WebIntentPickerModel::DestroyAll() {
-  STLDeleteElements(&items_);
+  STLDeleteElements(&installed_services_);
   STLDeleteElements(&suggested_extensions_);
 }
 
-WebIntentPickerModel::Item::Item(const string16& title,
-                                 const GURL& url,
-                                 Disposition disposition)
+WebIntentPickerModel::InstalledService::InstalledService(
+    const string16& title,
+    const GURL& url,
+    Disposition disposition)
     : title(title),
       url(url),
       favicon(ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
@@ -117,7 +119,7 @@ WebIntentPickerModel::Item::Item(const string16& title,
       disposition(disposition) {
 }
 
-WebIntentPickerModel::Item::~Item() {
+WebIntentPickerModel::InstalledService::~InstalledService() {
 }
 
 WebIntentPickerModel::SuggestedExtension::SuggestedExtension(

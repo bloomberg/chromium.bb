@@ -184,9 +184,10 @@ void WebIntentPickerViews::ButtonPressed(views::Button* sender,
   DCHECK(iter != buttons_.end());
 
   size_t index = iter - buttons_.begin();
-  const WebIntentPickerModel::Item& item = model_->GetItemAt(index);
+  const WebIntentPickerModel::InstalledService& installed_service =
+      model_->GetInstalledServiceAt(index);
 
-  delegate_->OnServiceChosen(index, item.disposition);
+  delegate_->OnServiceChosen(index, installed_service.disposition);
 }
 
 void WebIntentPickerViews::WindowClosing() {
@@ -221,12 +222,14 @@ void WebIntentPickerViews::OnModelChanged(WebIntentPickerModel* model) {
   button_vbox_->RemoveAllChildViews(true);
   buttons_.clear();
 
-  for (size_t i = 0; i < model->GetItemCount(); ++i) {
-    const WebIntentPickerModel::Item& item = model_->GetItemAt(i);
+  for (size_t i = 0; i < model->GetInstalledServiceCount(); ++i) {
+    const WebIntentPickerModel::InstalledService& installed_service =
+        model_->GetInstalledServiceAt(i);
 
-    views::TextButton* button = new views::TextButton(this, item.title);
-    button->SetTooltipText(UTF8ToUTF16(item.url.spec().c_str()));
-    button->SetIcon(*item.favicon.ToSkBitmap());
+    views::TextButton* button =
+        new views::TextButton(this, installed_service.title);
+    button->SetTooltipText(UTF8ToUTF16(installed_service.url.spec().c_str()));
+    button->SetIcon(*installed_service.favicon.ToSkBitmap());
     button_vbox_->AddChildView(button);
 
     buttons_.push_back(button);
@@ -238,17 +241,18 @@ void WebIntentPickerViews::OnModelChanged(WebIntentPickerModel* model) {
 
 void WebIntentPickerViews::OnFaviconChanged(WebIntentPickerModel* model,
                                             size_t index) {
-  const WebIntentPickerModel::Item& item = model_->GetItemAt(index);
+  const WebIntentPickerModel::InstalledService& installed_service =
+      model_->GetInstalledServiceAt(index);
   views::TextButton* button = buttons_[index];
-  button->SetIcon(*item.favicon.ToSkBitmap());
+  button->SetIcon(*installed_service.favicon.ToSkBitmap());
   contents_->Layout();
   SizeToContents();
 }
 
 void WebIntentPickerViews::OnInlineDisposition(
     WebIntentPickerModel* model) {
-  const WebIntentPickerModel::Item& item =
-      model->GetItemAt(model->inline_disposition_index());
+  const WebIntentPickerModel::InstalledService& installed_service =
+      model->GetInstalledServiceAt(model->inline_disposition_index());
 
   WebContents* web_contents = WebContents::Create(
       browser_->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
@@ -262,7 +266,7 @@ void WebIntentPickerViews::OnInlineDisposition(
   TabContentsContainer* tab_contents_container = new TabContentsContainer;
 
   web_contents->GetController().LoadURL(
-      item.url,
+      installed_service.url,
       content::Referrer(),
       content::PAGE_TRANSITION_START_PAGE,
       std::string());

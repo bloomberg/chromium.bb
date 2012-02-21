@@ -105,13 +105,15 @@ void WebIntentPickerGtk::Close() {
 void WebIntentPickerGtk::OnModelChanged(WebIntentPickerModel* model) {
   gtk_util::RemoveAllChildren(button_vbox_);
 
-  for (size_t i = 0; i < model->GetItemCount(); ++i) {
-    const WebIntentPickerModel::Item& item = model->GetItemAt(i);
+  for (size_t i = 0; i < model->GetInstalledServiceCount(); ++i) {
+    const WebIntentPickerModel::InstalledService& installed_service =
+        model->GetInstalledServiceAt(i);
 
     GtkWidget* button = gtk_button_new();
 
-    gtk_widget_set_tooltip_text(button, item.url.spec().c_str());
-    gtk_button_set_label(GTK_BUTTON(button), UTF16ToUTF8(item.title).c_str());
+    gtk_widget_set_tooltip_text(button, installed_service.url.spec().c_str());
+    gtk_button_set_label(GTK_BUTTON(button),
+                         UTF16ToUTF8(installed_service.title).c_str());
 
     gtk_box_pack_start(GTK_BOX(button_vbox_), button, FALSE, FALSE, 0);
     g_signal_connect(button,
@@ -119,7 +121,7 @@ void WebIntentPickerGtk::OnModelChanged(WebIntentPickerModel* model) {
                      G_CALLBACK(OnServiceButtonClickThunk),
                      this);
 
-    SetServiceButtonImage(button, item.favicon.ToGdkPixbuf());
+    SetServiceButtonImage(button, installed_service.favicon.ToGdkPixbuf());
   }
 
   gtk_widget_show_all(button_vbox_);
@@ -127,15 +129,16 @@ void WebIntentPickerGtk::OnModelChanged(WebIntentPickerModel* model) {
 
 void WebIntentPickerGtk::OnFaviconChanged(WebIntentPickerModel* model,
                                           size_t index) {
-  const WebIntentPickerModel::Item& item = model->GetItemAt(index);
+  const WebIntentPickerModel::InstalledService& installed_service =
+      model->GetInstalledServiceAt(index);
   GtkWidget* button = GetServiceButton(index);
-  SetServiceButtonImage(button, item.favicon.ToGdkPixbuf());
+  SetServiceButtonImage(button, installed_service.favicon.ToGdkPixbuf());
 }
 
 void WebIntentPickerGtk::OnInlineDisposition(WebIntentPickerModel* model) {
-  const WebIntentPickerModel::Item& item = model->GetItemAt(
-      model->inline_disposition_index());
-  const GURL& url = item.url;
+  const WebIntentPickerModel::InstalledService& installed_service =
+      model->GetInstalledServiceAt(model->inline_disposition_index());
+  const GURL& url = installed_service.url;
 
   content::WebContents* web_contents = content::WebContents::Create(
       browser_->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
@@ -221,9 +224,11 @@ void WebIntentPickerGtk::OnServiceButtonClick(GtkWidget* button) {
   gint index = g_list_index(button_list, button);
   DCHECK(index != -1);
 
-  const WebIntentPickerModel::Item& item = model_->GetItemAt(index);
+  const WebIntentPickerModel::InstalledService& installed_service =
+      model_->GetInstalledServiceAt(index);
 
-  delegate_->OnServiceChosen(static_cast<size_t>(index), item.disposition);
+  delegate_->OnServiceChosen(static_cast<size_t>(index),
+                             installed_service.disposition);
 }
 
 void WebIntentPickerGtk::InitContents() {

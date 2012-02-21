@@ -134,8 +134,10 @@ TEST_F(WebIntentBubbleControllerTest, PopulatedBubble) {
   CreateBubble();
 
   WebIntentPickerModel model;
-  model.AddItem(string16(), GURL(), WebIntentPickerModel::DISPOSITION_WINDOW);
-  model.AddItem(string16(), GURL(), WebIntentPickerModel::DISPOSITION_WINDOW);
+  model.AddInstalledService(string16(), GURL(),
+      WebIntentPickerModel::DISPOSITION_WINDOW);
+  model.AddInstalledService(string16(), GURL(),
+      WebIntentPickerModel::DISPOSITION_WINDOW);
 
   [controller_ performLayoutWithModel:&model];
 
@@ -164,7 +166,8 @@ TEST_F(WebIntentBubbleControllerTest, CloseWillClose) {
 
 TEST_F(WebIntentBubbleControllerTest, DontCancelAfterServiceInvokation) {
   CreateBubble();
-  model_.AddItem(string16(), GURL(), WebIntentPickerModel::DISPOSITION_WINDOW);
+  model_.AddInstalledService(string16(), GURL(),
+      WebIntentPickerModel::DISPOSITION_WINDOW);
 
   EXPECT_CALL(delegate_, OnServiceChosen(
       0, WebIntentPickerModel::DISPOSITION_WINDOW));
