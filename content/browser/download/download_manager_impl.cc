@@ -543,7 +543,7 @@ void DownloadManagerImpl::AssertStateConsistent(DownloadItem* download) const {
   CHECK(ContainsKey(downloads_, download));
 
   // Check history_downloads_ consistency.
-  if (download->GetDbHandle() != DownloadItem::kUninitializedHandle) {
+  if (download->IsPersisted()) {
     CHECK(ContainsKey(history_downloads_, download->GetDbHandle()));
   } else {
     for (DownloadMap::const_iterator it = history_downloads_.begin();
@@ -555,7 +555,7 @@ void DownloadManagerImpl::AssertStateConsistent(DownloadItem* download) const {
   int64 state = download->GetState();
   base::debug::Alias(&state);
   if (ContainsKey(active_downloads_, download->GetId())) {
-    if (download->GetDbHandle() != DownloadItem::kUninitializedHandle)
+    if (download->IsPersisted())
       CHECK_EQ(DownloadItem::IN_PROGRESS, download->GetState());
     if (DownloadItem::IN_PROGRESS != download->GetState())
       CHECK_EQ(DownloadItem::kUninitializedHandle, download->GetDbHandle());
@@ -583,7 +583,7 @@ bool DownloadManagerImpl::IsDownloadReadyForCompletion(DownloadItem* download) {
   // If the download hasn't been inserted into the history system
   // (which occurs strictly after file name determination, intermediate
   // file rename, and UI display) then it's not ready for completion.
-  if (download->GetDbHandle() == DownloadItem::kUninitializedHandle)
+  if (!download->IsPersisted())
     return false;
 
   return true;
@@ -606,7 +606,7 @@ void DownloadManagerImpl::MaybeCompleteDownload(DownloadItem* download) {
   DCHECK_NE(DownloadItem::DANGEROUS, download->GetSafetyState());
   DCHECK_EQ(1u, in_progress_.count(download->GetId()));
   DCHECK(download->AllDataSaved());
-  DCHECK(download->GetDbHandle() != DownloadItem::kUninitializedHandle);
+  DCHECK(download->IsPersisted());
   DCHECK_EQ(1u, history_downloads_.count(download->GetDbHandle()));
 
   // Give the delegate a chance to override.
@@ -731,7 +731,7 @@ void DownloadManagerImpl::RemoveFromActiveList(DownloadItem* download) {
 
   // Clean up will happen when the history system create callback runs if we
   // don't have a valid db_handle yet.
-  if (download->GetDbHandle() != DownloadItem::kUninitializedHandle) {
+  if (download->IsPersisted()) {
     in_progress_.erase(download->GetId());
     active_downloads_.erase(download->GetId());
     delegate_->UpdateItemInPersistentStore(download);
@@ -942,8 +942,9 @@ void DownloadManagerImpl::AddDownloadItemToHistory(DownloadItem* download,
 
   download_stats::RecordHistorySize(history_downloads_.size());
 
-  DCHECK(download->GetDbHandle() == DownloadItem::kUninitializedHandle);
+  DCHECK(!download->IsPersisted());
   download->SetDbHandle(db_handle);
+  download->SetIsPersisted();
 
   // TODO(rdsmith): Convert to DCHECK() when http://crbug.com/96627
   // is fixed.
@@ -1149,7 +1150,7 @@ void DownloadManagerImpl::OnSavePageItemAddedToPersistentStore(
 }
 
 void DownloadManagerImpl::SavePageDownloadFinished(DownloadItem* download) {
-  if (download->GetDbHandle() != DownloadItem::kUninitializedHandle) {
+  if (download->IsPersisted()) {
     delegate_->UpdateItemInPersistentStore(download);
     DCHECK(ContainsKey(save_page_downloads_, download->GetId()));
     save_page_downloads_.erase(download->GetId());

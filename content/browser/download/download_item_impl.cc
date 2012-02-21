@@ -181,6 +181,7 @@ DownloadItemImpl::DownloadItemImpl(Delegate* delegate,
       file_externally_removed_(false),
       safety_state_(SAFE),
       auto_opened_(false),
+      is_persisted_(true),
       is_otr_(false),
       is_temporary_(false),
       all_data_saved_(false),
@@ -231,6 +232,7 @@ DownloadItemImpl::DownloadItemImpl(
       file_externally_removed_(false),
       safety_state_(SAFE),
       auto_opened_(false),
+      is_persisted_(false),
       is_otr_(is_otr),
       is_temporary_(!info.save_info.file_path.empty()),
       all_data_saved_(false),
@@ -282,6 +284,7 @@ DownloadItemImpl::DownloadItemImpl(Delegate* delegate,
       file_externally_removed_(false),
       safety_state_(SAFE),
       auto_opened_(false),
+      is_persisted_(false),
       is_otr_(is_otr),
       is_temporary_(false),
       all_data_saved_(false),
@@ -1067,6 +1070,14 @@ int32 DownloadItemImpl::GetId() const { return download_id_.local(); }
 DownloadId DownloadItemImpl::GetGlobalId() const { return download_id_; }
 base::Time DownloadItemImpl::GetStartTime() const { return start_time_; }
 base::Time DownloadItemImpl::GetEndTime() const { return end_time_; }
+
+void DownloadItemImpl::SetIsPersisted() {
+  is_persisted_ = true;
+}
+
+bool DownloadItemImpl::IsPersisted() const {
+  return is_persisted_;
+}
 
 void DownloadItemImpl::SetDbHandle(int64 handle) {
   db_handle_ = handle;

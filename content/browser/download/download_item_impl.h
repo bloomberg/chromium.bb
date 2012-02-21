@@ -172,6 +172,8 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   virtual content::DownloadId GetGlobalId() const OVERRIDE;
   virtual base::Time GetStartTime() const OVERRIDE;
   virtual base::Time GetEndTime() const OVERRIDE;
+  virtual void SetIsPersisted() OVERRIDE;
+  virtual bool IsPersisted() const OVERRIDE;
   virtual void SetDbHandle(int64 handle) OVERRIDE;
   virtual int64 GetDbHandle() const OVERRIDE;
   virtual bool IsPaused() const OVERRIDE;
@@ -351,6 +353,8 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   // an observer as it's frequently possible for the download to be auto opened
   // before the observer is added.
   bool auto_opened_;
+
+  bool is_persisted_;
 
   // True if the download was initiated in an incognito window.
   bool is_otr_;

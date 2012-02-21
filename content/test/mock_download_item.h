@@ -78,6 +78,8 @@ class MockDownloadItem : public content::DownloadItem {
   MOCK_CONST_METHOD0(GetGlobalId, content::DownloadId());
   MOCK_CONST_METHOD0(GetStartTime, base::Time());
   MOCK_CONST_METHOD0(GetEndTime, base::Time());
+  MOCK_METHOD0(SetIsPersisted, void());
+  MOCK_CONST_METHOD0(IsPersisted, bool());
   MOCK_METHOD1(SetDbHandle, void(int64));
   MOCK_CONST_METHOD0(GetDbHandle, int64());
   MOCK_METHOD0(GetDownloadManager, content::DownloadManager*());

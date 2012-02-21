@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -250,6 +250,9 @@ class CONTENT_EXPORT DownloadItem {
 
   // Returns true if we have all the data and know the final file name.
   virtual bool IsComplete() const = 0;
+
+  virtual void SetIsPersisted() = 0;
+  virtual bool IsPersisted() const = 0;
 
   // Accessors
   virtual const std::string& GetHash() const = 0;
