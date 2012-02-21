@@ -452,4 +452,20 @@ IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CompositingHugeDivGPU) {
   RunTest("compositing_huge_div", kNone);
 }
 
+IN_PROC_BROWSER_TEST_F(ThroughputTestSW, DrawImageShadowSW) {
+  RunTest("canvas2d_balls_with_shadow", kNone);
+}
+
+IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, DrawImageShadowGPU) {
+  RunTest("canvas2d_balls_with_shadow", kNone);
+}
+
+IN_PROC_BROWSER_TEST_F(ThroughputTestSW, CanvasToCanvasDrawSW) {
+  RunTest("canvas2d_balls_draw_from_canvas", kNone);
+}
+
+IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasToCanvasDrawGPU) {
+  RunTest("canvas2d_balls_draw_from_canvas", kNone);
+}
+
 }  // namespace
