@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -396,7 +396,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
   TaskManagerBrowserTestUtil::WaitForResourceChange(3);
 }
 
-#if defined(OS_LINUX) || defined(OS_WIN)
+#if defined(OS_WIN)
 // http://crbug.com/93158.
 #define MAYBE_ReloadExtension DISABLED_ReloadExtension
 #else
