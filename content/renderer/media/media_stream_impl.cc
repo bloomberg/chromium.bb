@@ -115,7 +115,8 @@ WebKit::WebPeerConnectionHandler* MediaStreamImpl::CreatePeerConnectionHandler(
     DVLOG(1) << "A PeerConnection already exists";
     return NULL;
   }
-  EnsurePeerConnectionFactory();
+  if (!EnsurePeerConnectionFactory())
+    return NULL;
 
   peer_connection_handler_ = new PeerConnectionHandler(
       client,
@@ -276,6 +277,15 @@ void MediaStreamImpl::OnStreamGenerated(
     const media_stream::StreamDeviceInfoArray& audio_array,
     const media_stream::StreamDeviceInfoArray& video_array) {
   DCHECK(CalledOnValidThread());
+
+  // Creating the peer connection factory can fail if for example the audio
+  // (input or output) or video device cannot be opened. Handling such cases
+  // better is a higher level design discussion which involves the media
+  // manager, webrtc and libjingle. We should still continue and fire a
+  // succeeded callback here, to maintain the same states in WebKit as in the
+  // media manager in terms of streams and tracks. We cannot create any native
+  // track objects however, so we'll just have to skip that. Furthermore,
+  // creating a peer connection later on will fail if we don't have a factory.
   EnsurePeerConnectionFactory();
 
   WebKit::WebVector<WebKit::WebMediaStreamSource> source_vector(
@@ -285,10 +295,14 @@ void MediaStreamImpl::OnStreamGenerated(
   std::string track_label;
   for (size_t i = 0; i < audio_array.size(); ++i) {
     track_label = CreateTrackLabel(label, audio_array[i].session_id, false);
-    MediaStreamTrackPtr audio_track(
-        dependency_factory_->CreateLocalAudioTrack(audio_array[i].name, NULL));
-    local_tracks_.insert(
-        std::pair<std::string, MediaStreamTrackPtr>(track_label, audio_track));
+    if (dependency_factory_->PeerConnectionFactoryCreated()) {
+      MediaStreamTrackPtr audio_track(
+          dependency_factory_->CreateLocalAudioTrack(audio_array[i].name,
+                                                     NULL));
+      local_tracks_.insert(
+          std::pair<std::string, MediaStreamTrackPtr>(track_label,
+                                                      audio_track));
+    }
     source_vector[i].initialize(
           UTF8ToUTF16(track_label),
           WebKit::WebMediaStreamSource::TypeAudio,
@@ -298,15 +312,19 @@ void MediaStreamImpl::OnStreamGenerated(
   // Add video tracks.
   for (size_t i = 0; i < video_array.size(); ++i) {
     track_label = CreateTrackLabel(label, video_array[i].session_id, true);
-    webrtc::VideoCaptureModule* vcm =
-        new VideoCaptureModuleImpl(video_array[i].session_id,
-                                   vc_manager_.get());
-    MediaStreamTrackPtr video_track(dependency_factory_->CreateLocalVideoTrack(
-            video_array[i].name,
-            // The video capturer takes ownership of |vcm|.
-            webrtc::CreateVideoCapturer(vcm)));
-    local_tracks_.insert(
-        std::pair<std::string, MediaStreamTrackPtr>(track_label, video_track));
+    if (dependency_factory_->PeerConnectionFactoryCreated()) {
+      webrtc::VideoCaptureModule* vcm = new VideoCaptureModuleImpl(
+          video_array[i].session_id,
+          vc_manager_.get());
+      MediaStreamTrackPtr video_track(
+          dependency_factory_->CreateLocalVideoTrack(
+              video_array[i].name,
+              // The video capturer takes ownership of |vcm|.
+              webrtc::CreateVideoCapturer(vcm)));
+      local_tracks_.insert(
+          std::pair<std::string, MediaStreamTrackPtr>(track_label,
+                                                      video_track));
+    }
     source_vector[audio_array.size() + i].initialize(
           UTF8ToUTF16(track_label),
           WebKit::WebMediaStreamSource::TypeVideo,
@@ -444,7 +462,7 @@ bool MediaStreamImpl::EnsurePeerConnectionFactory() {
             p2p_socket_dispatcher_,
             network_manager_,
             socket_factory_.get())) {
-      LOG(ERROR) << "Could not initialize PeerConnection factory";
+      LOG(ERROR) << "Could not create PeerConnection factory";
       return false;
     }
   }
