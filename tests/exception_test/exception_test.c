@@ -6,6 +6,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <pthread.h>
 #include <setjmp.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -206,6 +207,24 @@ void test_exception_stack_with_size(char *stack, size_t stack_size) {
   memset(g_jmp_buf, 0, sizeof(g_jmp_buf));
 }
 
+void test_exceptions_minimally() {
+  /* Test exceptions without having an exception stack set up. */
+  test_exception_stack_with_size(NULL, 0);
+
+  test_exception_stack_with_size(stack, sizeof(stack));
+}
+
+void test_exception_stack_alignments() {
+  /*
+   * Test the stack realignment logic by trying stacks which end at
+   * different addresses modulo the stack alignment size.
+   */
+  int diff;
+  for (diff = 0; diff <= STACK_ALIGNMENT * 2; diff++) {
+    test_exception_stack_with_size(stack, sizeof(stack) - diff);
+  }
+}
+
 void test_getting_previous_handler() {
   int rc;
   handler_func_t prev_handler;
@@ -236,6 +255,31 @@ void test_invalid_handlers() {
   rc = NACL_SYSCALL(exception_handler)(
       (handler_func_t) (uintptr_t) ptr_in_rodata_segment, NULL);
   assert(rc == -EFAULT);
+}
+
+
+void *thread_func(void *unused_arg) {
+  /*
+   * This tests that the exception handler gets the correct
+   * NaClAppThread for this thread.  If it gets the wrong thread, the
+   * handler will detect that the stack it is running on does not
+   * match the stack that was registered.
+   *
+   * On x86-64 Windows, it is non-trivial for an out-of-process
+   * exception handler to determine the NaClAppThread for a faulting
+   * thread, which is why we need a test for this.
+   */
+  test_exception_stack_with_size(NULL, 0);
+  test_exception_stack_with_size(stack, sizeof(stack));
+  return NULL;
+}
+
+void test_exceptions_on_non_main_thread() {
+  pthread_t tid;
+  int rc = pthread_create(&tid, NULL, thread_func, NULL);
+  assert(rc == 0);
+  rc = pthread_join(tid, NULL);
+  assert(rc == 0);
 }
 
 
@@ -273,7 +317,6 @@ void direction_flag_exception_handler(int prog_ctr, int stack_ptr) {
  * checks that this happens.
  */
 void test_unsetting_x86_direction_flag() {
-  printf("test_unsetting_x86_direction_flag...\n");
   int rc = NACL_SYSCALL(exception_handler)(direction_flag_exception_handler,
                                            NULL);
   assert(rc == 0);
@@ -317,7 +360,6 @@ void ebp_exception_handler() {
 }
 
 void test_preserving_ebp() {
-  printf("test_preserving_ebp...\n");
   int rc = NACL_SYSCALL(exception_handler)(ebp_exception_handler_wrapper, NULL);
   assert(rc == 0);
   if (!setjmp(g_jmp_buf)) {
@@ -334,31 +376,29 @@ void test_preserving_ebp() {
 #endif
 
 
+void run_test(const char *test_name, void (*test_func)(void)) {
+  printf("Running %s...\n", test_name);
+  test_func();
+}
+
+#define RUN_TEST(test_func) (run_test(#test_func, test_func))
+
 int main() {
-  /* Test exceptions without having an exception stack set up. */
-  test_exception_stack_with_size(NULL, 0);
-
-  test_exception_stack_with_size(stack, sizeof(stack));
-
-  /*
-   * Test the stack realignment logic by trying stacks which end at
-   * different addresses modulo the stack alignment size.
-   */
-  int diff;
-  for (diff = 0; diff <= STACK_ALIGNMENT * 2; diff++) {
-    test_exception_stack_with_size(stack, sizeof(stack) - diff);
-  }
-
-  test_getting_previous_handler();
-  test_invalid_handlers();
+  RUN_TEST(test_exceptions_minimally);
+  RUN_TEST(test_exception_stack_alignments);
+  RUN_TEST(test_getting_previous_handler);
+  RUN_TEST(test_invalid_handlers);
+  /* pthread_join() is broken under qemu-arm. */
+  if (getenv("UNDER_QEMU_ARM") == NULL)
+    RUN_TEST(test_exceptions_on_non_main_thread);
 
 #if defined(__i386__) || defined(__x86_64__)
-  test_get_x86_direction_flag();
-  test_unsetting_x86_direction_flag();
+  RUN_TEST(test_get_x86_direction_flag);
+  RUN_TEST(test_unsetting_x86_direction_flag);
 #endif
 
 #if defined(__i386__)
-  test_preserving_ebp();
+  RUN_TEST(test_preserving_ebp);
 #endif
 
   fprintf(stderr, "** intended_exit_status=0\n");

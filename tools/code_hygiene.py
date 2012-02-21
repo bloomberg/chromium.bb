@@ -292,24 +292,6 @@ class FixmeChecker(GenericRegexChecker):
     return '.patch' not in props
 
 
-class ExternChecker(GenericRegexChecker):
-  """Only c/c++ headers may have externs."""
-  def __init__(self):
-    GenericRegexChecker.__init__(self, r'^ *extern\s+(.*)$', analyze_match=True)
-    return
-
-  def IsProblemMatch(self, match):
-    extra = match.group(1).strip()
-    # Allow 'extern "C" {'
-    # but do not allow plain 'extern "C"'
-    if extra == '"C" {':
-      return False
-    return True
-
-  def FileFilter(self, props):
-    return '.cc' in props or '.c' in props
-
-
 class RewriteChecker(GenericRegexChecker):
   """No rewrite markers allowed (probaly not an issue anymore)."""
   def __init__(self):
@@ -498,7 +480,6 @@ CHECKS = [# fatal checks
           (True, 'cpp_comment', CppCommentChecker()),
           (True, 'fixme', FixmeChecker()),
           (True, 'include', IncludeChecker()),
-          (True, 'extern', ExternChecker()),
           (True, 'untrusted_ifdef', UntrustedIfDefChecker()),
           (True, 'untrusted_asm', UntrustedAsmChecker()),
           # Non fatal checks

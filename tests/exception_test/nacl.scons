@@ -13,6 +13,8 @@ is_broken = not (env.Bit('host_linux') or
 test_args = {'sel_ldr_flags': ['-e'],
              'declares_exit_status': True,
              'using_nacl_signal_handler': env.Bit('host_linux')}
+if env.Bit('target_arm') and env.UsingEmulator():
+  test_args['sel_ldr_flags'].extend(['-E', 'UNDER_QEMU_ARM=1'])
 
 # To keep PNaCl enthusiasts happy, we support a pure-bitcode version
 # of the test, but it is less strict.  The non-PNaCl version uses
@@ -24,9 +26,9 @@ else:
   helper_files = ['crash_at_known_address_x86.S',
                   'direction_flag_x86.S',
                   'handler_wrapper_x86.S']
-exception_test = env.ComponentProgram('exception_test',
-                                      ['exception_test.c'] + helper_files,
-                                      EXTRA_LIBS=['${NONIRT_LIBS}'])
+exception_test = env.ComponentProgram(
+    'exception_test', ['exception_test.c'] + helper_files,
+    EXTRA_LIBS=['${NONIRT_LIBS}', '${PTHREAD_LIBS}'])
 
 node = env.CommandSelLdrTestNacl(
     'exception_test.out', exception_test, **test_args)
