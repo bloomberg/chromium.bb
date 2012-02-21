@@ -10,6 +10,8 @@
 
 #include "base/debug/alias.h"
 #include "base/file_path.h"
+#include "base/metrics/histogram.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/browser/download/download_persistent_store_info.h"
@@ -239,20 +241,56 @@ bool DownloadDatabase::RemoveDownloadsBetween(base::Time delete_begin,
   time_t start_time = delete_begin.ToTimeT();
   time_t end_time = delete_end.ToTimeT();
 
-  // This does not use an index. We currently aren't likely to have enough
-  // downloads where an index by time will give us a lot of benefit.
-  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
-      "DELETE FROM downloads WHERE start_time >= ? AND start_time < ? "
-      "AND (State = ? OR State = ? OR State = ?)"));
-  statement.BindInt64(0, start_time);
-  statement.BindInt64(
-      1,
-      end_time ? end_time : std::numeric_limits<int64>::max());
-  statement.BindInt(2, DownloadItem::COMPLETE);
-  statement.BindInt(3, DownloadItem::CANCELLED);
-  statement.BindInt(4, DownloadItem::INTERRUPTED);
+  int num_downloads_deleted = -1;
+  {
+    sql::Statement count(GetDB().GetCachedStatement(SQL_FROM_HERE,
+        "SELECT count(*) FROM downloads WHERE start_time >= ? "
+        "AND start_time < ? AND (State = ? OR State = ? OR State = ?)"));
+    count.BindInt64(0, start_time);
+    count.BindInt64(
+        1,
+        end_time ? end_time : std::numeric_limits<int64>::max());
+    count.BindInt(2, DownloadItem::COMPLETE);
+    count.BindInt(3, DownloadItem::CANCELLED);
+    count.BindInt(4, DownloadItem::INTERRUPTED);
+    if (count.Step())
+      num_downloads_deleted = count.ColumnInt(0);
+  }
 
-  return statement.Run();
+
+  bool success = false;
+  base::TimeTicks started_removing = base::TimeTicks::Now();
+  {
+    // This does not use an index. We currently aren't likely to have enough
+    // downloads where an index by time will give us a lot of benefit.
+    sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
+        "DELETE FROM downloads WHERE start_time >= ? AND start_time < ? "
+        "AND (State = ? OR State = ? OR State = ?)"));
+    statement.BindInt64(0, start_time);
+    statement.BindInt64(
+        1,
+        end_time ? end_time : std::numeric_limits<int64>::max());
+    statement.BindInt(2, DownloadItem::COMPLETE);
+    statement.BindInt(3, DownloadItem::CANCELLED);
+    statement.BindInt(4, DownloadItem::INTERRUPTED);
+
+    success = statement.Run();
+  }
+
+  base::TimeTicks finished_removing = base::TimeTicks::Now();
+
+  if (num_downloads_deleted >= 0) {
+    UMA_HISTOGRAM_COUNTS("Download.DatabaseRemoveDownloadsCount",
+                         num_downloads_deleted);
+    base::TimeDelta micros = (1000 * (finished_removing - started_removing));
+    UMA_HISTOGRAM_TIMES("Download.DatabaseRemoveDownloadsTime", micros);
+    if (num_downloads_deleted > 0) {
+      UMA_HISTOGRAM_TIMES("Download.DatabaseRemoveDownloadsTimePerRecord",
+                          (1000 * micros) / num_downloads_deleted);
+    }
+  }
+
+  return success;
 }
 
 }  // namespace history
