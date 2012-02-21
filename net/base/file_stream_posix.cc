@@ -388,8 +388,10 @@ FileStream::FileStream(base::PlatformFile file, int flags, net::NetLog* net_log)
 FileStream::~FileStream() {
   if (auto_closed_) {
     if (async_context_.get()) {
-      // Make sure we don't have a request in flight.
-      DCHECK(async_context_->callback().is_null());
+      // Block until the last read/write operation is complete, if needed.
+      // This is needed to close the file safely.
+      // TODO(satorux): Remove the blocking logic. crrev.com/115067
+      async_context_.reset();
 
       // Close the file in the background.
       const bool posted = base::WorkerPool::PostTask(
