@@ -2386,7 +2386,12 @@ void Browser::OpenAboutChromeDialog() {
     window_->ShowAboutChromeDialog();
 #endif
   } else {
+#if !defined(OS_WIN)
     ShowSingletonTab(GURL(chrome::kChromeUIUberURL));
+#else
+    // crbug.com/115123.
+    window_->ShowAboutChromeDialog();
+#endif
   }
 }
 
