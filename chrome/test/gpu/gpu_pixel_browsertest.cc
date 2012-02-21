@@ -391,7 +391,7 @@ class Canvas2DPixelTestHD : public GpuPixelBrowserTest {
 IN_PROC_BROWSER_TEST_F(Canvas2DPixelTestHD, MAYBE_Canvas2DRedBoxHD) {
   // If test baseline needs to be updated after a given revision, update the
   // following number. If no revision requirement, then 0.
-  const int64 ref_img_revision_update = 122628;
+  const int64 ref_img_revision_update = 122857;
 
   gfx::Size container_size(400, 300);
   FilePath url =
@@ -415,7 +415,7 @@ class Canvas2DPixelTestSD : public GpuPixelBrowserTest {
 IN_PROC_BROWSER_TEST_F(Canvas2DPixelTestSD, MAYBE_Canvas2DRedBoxSD) {
   // If test baseline needs to be updated after a given revision, update the
   // following number. If no revision requirement, then 0.
-  const int64 ref_img_revision_update = 122628;
+  const int64 ref_img_revision_update = 122857;
 
   gfx::Size container_size(400, 300);
   FilePath url =
