@@ -2289,7 +2289,7 @@ pre_base_env.Append(PRINT_CMD_LINE_FUNC=CustomCommandPrinter)
 
 # ----------------------------------------------------------
 def GetAbsDirArg(env, argument, target):
-  """"Fetch the named command-line argument and turn it into an absolute
+  """Fetch the named command-line argument and turn it into an absolute
 directory name.  If the argument is missing, raise a UserError saying
 that the given target requires that argument be given."""
   dir = ARGUMENTS.get(argument)
