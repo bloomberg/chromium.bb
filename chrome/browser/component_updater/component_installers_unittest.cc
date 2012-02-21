@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,10 +58,6 @@ TEST(ComponentInstallerTest, PepperFlashCheck) {
   scoped_ptr<base::Value> root(serializer.Deserialize(NULL, &error));
   ASSERT_TRUE(root.get() != NULL);
   ASSERT_TRUE(root->IsType(base::Value::TYPE_DICTIONARY));
-
-  // This just tests the API (i.e., Pepper interfaces).
-  EXPECT_TRUE(VetoPepperFlashIntefaces(
-      static_cast<base::DictionaryValue*>(root.get())));
 
   // This checks that the whole manifest is compatible.
   Version version;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,10 +20,6 @@ void RegisterNPAPIFlashComponent(ComponentUpdateService* cus);
 // with the component updater to download the latest version when available.
 // The first part is IO intensive so we do it asynchronously in the file thread.
 void RegisterPepperFlashComponent(ComponentUpdateService* cus);
-
-// Returns true if this browser implements all the interfaces that Flash
-// specifies in its component installer manifest.
-bool VetoPepperFlashIntefaces(base::DictionaryValue* manifest);
 
 // Returns true if this browser is compatible with the given Pepper Flash
 // manifest, with the version specified in the manifest in |version_out|.

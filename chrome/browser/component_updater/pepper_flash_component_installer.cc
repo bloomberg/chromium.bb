@@ -13,6 +13,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
@@ -172,6 +173,38 @@ void RegisterPepperFlashWithChrome(const FilePath& path,
   PluginService::GetInstance()->RefreshPlugins();
 }
 
+// Returns true if this browser implements one of the interfaces given in
+// |interface_string|, which is a '|'-separated string of interface names.
+bool CheckPepperFlashInterfaceString(const std::string& interface_string) {
+  std::vector<std::string> interface_names;
+  base::SplitString(interface_string, '|', &interface_names);
+  for (size_t i = 0; i < interface_names.size(); i++) {
+    if (SupportsPepperInterface(interface_names[i].c_str()))
+      return true;
+  }
+  return false;
+}
+
+// Returns true if this browser implements all the interfaces that Flash
+// specifies in its component installer manifest.
+bool CheckPepperFlashInterfaces(base::DictionaryValue* manifest) {
+  base::ListValue* interface_list = NULL;
+
+  // We don't *require* an interface list, apparently.
+  if (!manifest->GetList("x-ppapi-required-interfaces", &interface_list))
+    return true;
+
+  for (size_t i = 0; i < interface_list->GetSize(); i++) {
+    std::string interface_string;
+    if (!interface_list->GetString(i, &interface_string))
+      return false;
+    if (!CheckPepperFlashInterfaceString(interface_string))
+      return false;
+  }
+
+  return true;
+}
+
 }  // namespace
 
 class PepperFlashComponentInstaller : public ComponentInstaller {
@@ -226,21 +259,6 @@ bool PepperFlashComponentInstaller::Install(base::DictionaryValue* manifest,
   return true;
 }
 
-bool VetoPepperFlashIntefaces(base::DictionaryValue* manifest) {
-  // Check that we implement the required interfaces.
-  base::ListValue* interfaces = NULL;
-  if (manifest->GetList("x-ppapi-required-interfaces", &interfaces)) {
-    for (size_t ix = 0; ix != interfaces->GetSize(); ++ix) {
-      std::string interface_name;
-      if (!interfaces->GetString(ix, &interface_name))
-        return false;
-      if (!SupportsPepperInterface(interface_name.c_str()))
-        return false;
-    }
-  }
-  return true;
-}
-
 bool CheckPepperFlashManifest(base::DictionaryValue* manifest,
                               Version* version_out) {
   std::string name;
@@ -257,7 +275,7 @@ bool CheckPepperFlashManifest(base::DictionaryValue* manifest,
   if (!version.IsValid())
     return false;
 
-  if (!VetoPepperFlashIntefaces(manifest))
+  if (!CheckPepperFlashInterfaces(manifest))
     return false;
 
   // TODO(viettrungluu): See above TODO.
