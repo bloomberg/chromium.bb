@@ -20,13 +20,7 @@ static const double kTimeSecondsSlop =
     static_cast<double>(kTimeInternalValueSlop) /
     base::Time::kMicrosecondsPerSecond;
 
-// Fails on linux. http://crbug.com/88971
-#if defined(OS_LINUX)
-#define MAYBE_Time FAILS_Time
-#else
-#define MAYBE_Time Time
-#endif
-TEST(TimeConversion, MAYBE_Time) {
+TEST(TimeConversion, Time) {
   // Should be able to round-trip.
   base::Time now = base::Time::Now();
   base::Time converted = ppapi::PPTimeToTime(TimeToPPTime(now));
