@@ -398,8 +398,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
 }
 
 // Visits a page with https error and then goes back using GoToOffset.
+// Disabled because its flaky: http://crbug.com/40932, http://crbug.com/43575.
 IN_PROC_BROWSER_TEST_F(SSLUITest,
-                       TestHTTPSExpiredCertAndGoBackViaMenu) {
+                       DISABLED_TestHTTPSExpiredCertAndGoBackViaMenu) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(https_server_expired_.Start());
 
