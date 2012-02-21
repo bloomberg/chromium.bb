@@ -98,7 +98,7 @@ TEST_F(RootWindowEventFilterTest, Focus) {
       SK_ColorGRAY, -13, gfx::Rect(5, 470, 50, 50), w1.get()));
 
   // Click on a sub-window (w121) to focus it.
-  aura::test::EventGenerator generator(w121.get());
+  aura::test::EventGenerator generator(Shell::GetRootWindow(), w121.get());
   generator.ClickLeftButton();
 
   aura::internal::FocusManager* focus_manager = w121->GetFocusManager();
@@ -195,7 +195,7 @@ TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
 
   {
     // Click on window2.
-    aura::test::EventGenerator generator(w2.get());
+    aura::test::EventGenerator generator(Shell::GetRootWindow(), w2.get());
     generator.ClickLeftButton();
 
     // Window2 should have become active.
@@ -211,7 +211,7 @@ TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
 
   {
     // Click back on window1, but set it up so w1 doesn't activate on click.
-    aura::test::EventGenerator generator(w1.get());
+    aura::test::EventGenerator generator(Shell::GetRootWindow(), w1.get());
     d1.set_activate(false);
     generator.ClickLeftButton();
 
@@ -241,7 +241,7 @@ TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
   scoped_ptr<aura::Window> w11(CreateTestWindowWithDelegate(
       &wd, -1, gfx::Rect(10, 10, 10, 10), w1.get()));
   {
-    aura::test::EventGenerator generator(w11.get());
+    aura::test::EventGenerator generator(Shell::GetRootWindow(), w11.get());
     // First set the focus to the child |w11|.
     generator.ClickLeftButton();
     EXPECT_EQ(w11.get(), focus_manager->GetFocusedWindow());
