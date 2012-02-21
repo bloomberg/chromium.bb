@@ -6,8 +6,11 @@
 
 """Unittests for config.  Needs to be run inside of chroot for mox."""
 
+import json
 import mox
+import os
 import re
+import subprocess
 import sys
 import unittest
 import urllib
@@ -178,6 +181,15 @@ class CBuildBotTest(mox.MoxTestBase):
         self.assertTrue(boards.issubset(watched_boards),
                         'Config %s: boards %r are not watched on Chromium' %
                         (build_name, list(boards - watched_boards)))
+
+  #TODO: Add test for compare functionality
+  def testJSONDumpLoadable(self):
+    """Make sure config export functionality works."""
+    cwd = os.path.dirname(os.path.abspath(__file__))
+    output = subprocess.Popen(['./cbuildbot_config.py', '--dump'],
+                              stdout=subprocess.PIPE, cwd=cwd).communicate()[0]
+    configs = json.loads(output)
+    self.assertFalse(not configs)
 
 
 if __name__ == '__main__':
