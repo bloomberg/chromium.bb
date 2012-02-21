@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/shared_memory.h"
+#include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/gpu_info.h"
@@ -108,6 +109,12 @@ IPC_STRUCT_TRAITS_BEGIN(content::GPUInfo)
 #if defined(OS_WIN)
   IPC_STRUCT_TRAITS_MEMBER(dx_diagnostics)
 #endif
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(GpuMemoryAllocation)
+  IPC_STRUCT_TRAITS_MEMBER(gpu_resource_size_in_bytes)
+  IPC_STRUCT_TRAITS_MEMBER(has_frontbuffer)
+  IPC_STRUCT_TRAITS_MEMBER(has_backbuffer)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(gfx::GLSurfaceHandle)
@@ -420,7 +427,12 @@ IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_Destroyed,
 // Response to a GpuChannelMsg_Echo message.
 IPC_MESSAGE_ROUTED0(GpuCommandBufferMsg_EchoAck)
 
+// Send to stub on surface visibility change.
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SetSurfaceVisible, bool /* visible */)
+
+// Sent to proxy when the gpu memory manager changes its memory allocation.
+IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SetMemoryAllocation,
+                    GpuMemoryAllocation /* allocation */)
 
 //------------------------------------------------------------------------------
 // Accelerated Video Decoder Messages

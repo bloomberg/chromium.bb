@@ -6,7 +6,6 @@
 
 #if defined(ENABLE_GPU)
 
-#include <set>
 #include <algorithm>
 
 #include "base/bind.h"
@@ -24,6 +23,17 @@ enum {
   kResourceSizeNonHibernatedTab = 1,
   kResourceSizeHibernatedTab = 0
 };
+
+bool IsInSameContextShareGroupAsAnyOf(
+    const GpuCommandBufferStubBase* stub,
+    const std::vector<GpuCommandBufferStubBase*>& stubs) {
+  for (std::vector<GpuCommandBufferStubBase*>::const_iterator it =
+      stubs.begin(); it != stubs.end(); ++it) {
+    if (stub->IsInSameContextShareGroup(**it))
+      return true;
+  }
+  return false;
+}
 
 }
 
@@ -78,6 +88,17 @@ void GpuMemoryManager::ScheduleManage() {
 //  3. Hibernated: Non visible surfaces, which have surpassed the
 //                 max_surfaces_with_frontbuffer_soft_limit_ limit.
 //                 * Will not have either buffer.
+//
+// The considerations for categorizing contexts without a surface are:
+//  1. These contexts do not track {visibility,last_used_time}, so cannot
+//     sort them directly.
+//  2. These contexts may be used by, and thus affect, other contexts, and so
+//     cannot be less visible than any affected context.
+//  3. Contexts belong to share groups within which resources can be shared.
+//
+// As such, the rule for categorizing contexts without a surface is:
+//  1. Find the most visible context-with-a-surface within each
+//     context-without-a-surface's share group, and inherit its visibilty.
 void GpuMemoryManager::Manage() {
   // Set up three allocation values for the three possible stub states
   const GpuMemoryAllocation all_buffers_allocation(
@@ -91,6 +112,7 @@ void GpuMemoryManager::Manage() {
 
   // Create stub lists by separating out the two types received from client
   std::vector<GpuCommandBufferStubBase*> stubs_with_surface;
+  std::vector<GpuCommandBufferStubBase*> stubs_without_surface;
   {
     std::vector<GpuCommandBufferStubBase*> stubs;
     client_->AppendAllCommandBufferStubs(stubs);
@@ -100,32 +122,50 @@ void GpuMemoryManager::Manage() {
       GpuCommandBufferStubBase* stub = *it;
       if (stub->has_surface_state())
         stubs_with_surface.push_back(stub);
+      else
+        stubs_without_surface.push_back(stub);
     }
   }
 
   // Sort stubs with surface into {visibility,last_used_time} order using
   // custom comparator
-  std::sort(stubs_with_surface.begin(), stubs_with_surface.end(),
-      StubWithSurfaceComparator());
+  std::sort(stubs_with_surface.begin(),
+            stubs_with_surface.end(),
+            StubWithSurfaceComparator());
+  DCHECK(std::unique(stubs_with_surface.begin(), stubs_with_surface.end()) ==
+         stubs_with_surface.end());
 
-  // Separate stubs with surfaces into three sets and send memory allocation
-  std::set<int32> all_buffers, front_buffers, no_buffers;
+  // Separate stubs into memory allocation sets.
+  std::vector<GpuCommandBufferStubBase*> all_buffers, front_buffers, no_buffers;
 
   for (size_t i = 0; i < stubs_with_surface.size(); ++i) {
     GpuCommandBufferStubBase* stub = stubs_with_surface[i];
     DCHECK(stub->has_surface_state());
-    const GpuMemoryAllocation* allocation = NULL;
     if (stub->surface_state().visible) {
-      all_buffers.insert(stub->surface_state().surface_id);
-      allocation = &all_buffers_allocation;
+      all_buffers.push_back(stub);
+      stub->SetMemoryAllocation(all_buffers_allocation);
     } else if (i < max_surfaces_with_frontbuffer_soft_limit_) {
-      front_buffers.insert(stub->surface_state().surface_id);
-      allocation = &front_buffers_allocation;
+      front_buffers.push_back(stub);
+      stub->SetMemoryAllocation(front_buffers_allocation);
     } else {
-      no_buffers.insert(stub->surface_state().surface_id);
-      allocation = &no_buffers_allocation;
+      no_buffers.push_back(stub);
+      stub->SetMemoryAllocation(no_buffers_allocation);
     }
-    stub->SetMemoryAllocation(*allocation);
+  }
+
+  // Now, go through the stubs without surfaces and deduce visibility using the
+  // visibility of stubs which are in the same context share group.
+  for (std::vector<GpuCommandBufferStubBase*>::const_iterator it =
+      stubs_without_surface.begin(); it != stubs_without_surface.end(); ++it) {
+    GpuCommandBufferStubBase* stub = *it;
+    DCHECK(!stub->has_surface_state());
+    if (IsInSameContextShareGroupAsAnyOf(stub, all_buffers)) {
+      stub->SetMemoryAllocation(all_buffers_allocation);
+    } else if (IsInSameContextShareGroupAsAnyOf(stub, front_buffers)) {
+      stub->SetMemoryAllocation(front_buffers_allocation);
+    } else {
+      stub->SetMemoryAllocation(no_buffers_allocation);
+    }
   }
 }
 

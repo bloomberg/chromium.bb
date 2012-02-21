@@ -10,6 +10,8 @@
 #define CONTENT_COMMON_GPU_CLIENT_RENDERER_GL_CONTEXT_H_
 #pragma once
 
+#include <vector>
+
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -23,6 +25,7 @@
 class GpuChannelHost;
 class CommandBufferProxy;
 class GURL;
+class GpuMemoryAllocation;
 
 namespace gpu {
 class TransferBuffer;
@@ -160,6 +163,10 @@ class ContentGLContext : public base::SupportsWeakPtr<ContentGLContext>,
 
   // Sends an IPC message with the new state of surface visibility
   bool SetSurfaceVisible(bool visibility);
+
+  // Register a callback to invoke whenever we recieve a new memory allocation.
+  void SetMemoryAllocationChangedCallback(
+      const base::Callback<void(const GpuMemoryAllocation&)>& callback);
 
   // TODO(gman): Remove this
   void DisableShaderTranslation();

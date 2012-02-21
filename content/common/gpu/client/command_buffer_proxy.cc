@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/child_thread.h"
+#include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/plugin_messages.h"
@@ -49,6 +50,8 @@ bool CommandBufferProxy::OnMessageReceived(const IPC::Message& message) {
                         OnNotifyRepaint);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_EchoAck, OnEchoAck);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_ConsoleMsg, OnConsoleMessage);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SetMemoryAllocation,
+                        OnSetMemoryAllocation);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -92,6 +95,17 @@ void CommandBufferProxy::OnConsoleMessage(
   if (!console_message_callback_.is_null()) {
     console_message_callback_.Run(message.message, message.id);
   }
+}
+
+void CommandBufferProxy::SetMemoryAllocationChangedCallback(
+    const base::Callback<void(const GpuMemoryAllocation&)>& callback) {
+  memory_allocation_changed_callback_ = callback;
+}
+
+void CommandBufferProxy::OnSetMemoryAllocation(
+    const GpuMemoryAllocation& allocation) {
+  if (!memory_allocation_changed_callback_.is_null())
+    memory_allocation_changed_callback_.Run(allocation);
 }
 
 void CommandBufferProxy::SetChannelErrorCallback(
@@ -339,13 +353,11 @@ bool CommandBufferProxy::Echo(const base::Closure& callback) {
 }
 
 bool CommandBufferProxy::SetSurfaceVisible(bool visible) {
-  if (last_state_.error != gpu::error::kNoError) {
+  if (last_state_.error != gpu::error::kNoError)
     return false;
-  }
 
   return Send(new GpuCommandBufferMsg_SetSurfaceVisible(route_id_, visible));
 }
-
 
 bool CommandBufferProxy::SetParent(CommandBufferProxy* parent_command_buffer,
                                    uint32 parent_texture_id) {

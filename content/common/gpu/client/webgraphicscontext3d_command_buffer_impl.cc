@@ -22,6 +22,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/synchronization/lock.h"
+#include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/common/gpu/client/command_buffer_proxy.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/public/common/content_switches.h"
@@ -55,6 +56,7 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
       surface_id_(surface_id),
       active_url_(active_url),
       swap_client_(swap_client),
+      memory_allocation_changed_callback_(0),
       context_lost_callback_(0),
       context_lost_reason_(GL_NO_ERROR),
       error_message_callback_(0),
@@ -239,6 +241,10 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
     base::AutoLock lock(g_all_shared_contexts_lock.Get());
     g_all_shared_contexts.Pointer()->insert(this);
   }
+
+  context_->SetMemoryAllocationChangedCallback(base::Bind(
+      &WebGraphicsContext3DCommandBufferImpl::OnMemoryAllocationChanged,
+      weak_ptr_factory_.GetWeakPtr()));
 
   return true;
 }
@@ -432,6 +438,13 @@ void WebGraphicsContext3DCommandBufferImpl::setVisibilityCHROMIUM(
   if (!visible)
     gl_->FreeEverything();
 }
+
+void WebGraphicsContext3DCommandBufferImpl::
+    setMemoryAllocationChangedCallbackCHROMIUM(
+        WebGraphicsMemoryAllocationChangedCallbackCHROMIUM* callback) {
+  memory_allocation_changed_callback_ = callback;
+}
+
 
 void WebGraphicsContext3DCommandBufferImpl::copyTextureToParentTextureCHROMIUM(
     WebGLId texture, WebGLId parentTexture) {
@@ -1120,6 +1133,13 @@ void WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete() {
 
   if (swapbuffers_complete_callback_)
     swapbuffers_complete_callback_->onSwapBuffersComplete();
+}
+
+void WebGraphicsContext3DCommandBufferImpl::OnMemoryAllocationChanged(
+    const GpuMemoryAllocation& allocation) {
+  if (memory_allocation_changed_callback_)
+    memory_allocation_changed_callback_->onMemoryAllocationChanged(
+        allocation.gpu_resource_size_in_bytes);
 }
 
 void WebGraphicsContext3DCommandBufferImpl::setErrorMessageCallback(

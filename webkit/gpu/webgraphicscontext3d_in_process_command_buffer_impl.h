@@ -425,6 +425,9 @@ class WebGraphicsContext3DInProcessCommandBufferImpl
 
   virtual void setVisibilityCHROMIUM(bool visible);
 
+  virtual void setMemoryAllocationChangedCallbackCHROMIUM(
+      WebGraphicsMemoryAllocationChangedCallbackCHROMIUM* callback) { }
+
   virtual void copyTextureToParentTextureCHROMIUM(
       WebGLId texture, WebGLId parentTexture);
 

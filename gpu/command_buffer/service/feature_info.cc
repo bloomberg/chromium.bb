@@ -117,6 +117,7 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   AddExtensionString("GL_CHROMIUM_swapbuffers_complete_callback");
   AddExtensionString("GL_CHROMIUM_rate_limit_offscreen_context");
   AddExtensionString("GL_CHROMIUM_set_visibility");
+  AddExtensionString("GL_CHROMIUM_gpu_memory_manager");
   AddExtensionString("GL_ANGLE_translated_shader_source");
 
   if (ext.Have("GL_ANGLE_translated_shader_source")) {

@@ -53,6 +53,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       route_id_(route_id),
       software_(software),
       last_flush_count_(0),
+      allocation_(GpuMemoryAllocation::INVALID_RESOURCE_SIZE, true, true),
       parent_stub_for_initialization_(),
       parent_texture_for_initialization_(0),
       watchdog_(watchdog) {
@@ -543,19 +544,25 @@ void GpuCommandBufferStub::RemoveDestructionObserver(
   destruction_observers_.RemoveObserver(observer);
 }
 
-bool GpuCommandBufferStub::has_surface_state() {
+bool GpuCommandBufferStub::IsInSameContextShareGroup(
+    const GpuCommandBufferStubBase& other) const {
+  return context_group_ ==
+      static_cast<const GpuCommandBufferStub&>(other).context_group_;
+}
+
+bool GpuCommandBufferStub::has_surface_state() const {
   return surface_state_ != NULL;
 }
 
 const GpuCommandBufferStubBase::SurfaceState&
-    GpuCommandBufferStub::surface_state() {
+    GpuCommandBufferStub::surface_state() const {
   DCHECK(has_surface_state());
   return *surface_state_.get();
 }
 
 void GpuCommandBufferStub::SendMemoryAllocationToProxy(
     const GpuMemoryAllocation& allocation) {
-  // TODO(mmocny): Send callback once gl extensions are added.
+  Send(new GpuCommandBufferMsg_SetMemoryAllocation(route_id_, allocation));
 }
 
 void GpuCommandBufferStub::SetMemoryAllocation(

@@ -267,6 +267,11 @@ bool ContentGLContext::SetSurfaceVisible(bool visible) {
   return GetCommandBufferProxy()->SetSurfaceVisible(visible);
 }
 
+void ContentGLContext::SetMemoryAllocationChangedCallback(
+    const base::Callback<void(const GpuMemoryAllocation&)>& callback) {
+  GetCommandBufferProxy()->SetMemoryAllocationChangedCallback(callback);
+}
+
 // TODO(gman): Remove This
 void ContentGLContext::DisableShaderTranslation() {
   NOTREACHED();

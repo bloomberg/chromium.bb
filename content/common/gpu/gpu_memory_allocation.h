@@ -14,20 +14,24 @@
 // to be lost.
 class GpuMemoryAllocation {
  public:
-  uint64 gpuResourceSizeInBytes;
+  enum {
+    INVALID_RESOURCE_SIZE = -1
+  };
+
+  size_t gpu_resource_size_in_bytes;
   bool has_frontbuffer;
   bool has_backbuffer;
 
   GpuMemoryAllocation()
-      : gpuResourceSizeInBytes(0),
+      : gpu_resource_size_in_bytes(0),
         has_frontbuffer(false),
         has_backbuffer(false) {
   }
 
-  GpuMemoryAllocation(uint64 gpuResourceSizeInBytes,
+  GpuMemoryAllocation(size_t gpu_resource_size_in_bytes,
                       bool has_frontbuffer,
                       bool has_backbuffer)
-      : gpuResourceSizeInBytes(gpuResourceSizeInBytes),
+      : gpu_resource_size_in_bytes(gpu_resource_size_in_bytes),
         has_frontbuffer(has_frontbuffer),
         has_backbuffer(has_backbuffer) {
   }
@@ -35,7 +39,7 @@ class GpuMemoryAllocation {
 
 inline bool operator==(const GpuMemoryAllocation& lhs,
                        const GpuMemoryAllocation& rhs) {
-  return lhs.gpuResourceSizeInBytes == rhs.gpuResourceSizeInBytes &&
+  return lhs.gpu_resource_size_in_bytes == rhs.gpu_resource_size_in_bytes &&
       lhs.has_frontbuffer == rhs.has_frontbuffer &&
       lhs.has_backbuffer == rhs.has_backbuffer;
 }

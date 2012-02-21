@@ -24,6 +24,7 @@
 
 class GpuChannelHost;
 struct GPUCommandBufferConsoleMessage;
+class GpuMemoryAllocation;
 
 namespace base {
 class SharedMemory;
@@ -70,8 +71,12 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   // the task whether the echo succeeds or not.
   bool Echo(const base::Closure& callback);
 
-  // Sends an IPC message with the new state of surface visibility
+  // Sends an IPC message with the new state of surface visibility.
   bool SetSurfaceVisible(bool visible);
+
+  // Register a callback to invoke whenever we recieve a new memory allocation.
+  void SetMemoryAllocationChangedCallback(
+      const base::Callback<void(const GpuMemoryAllocation&)>& callback);
 
   // Reparent a command buffer. TODO(apatrick): going forward, the notion of
   // the parent / child relationship between command buffers is going away in
@@ -116,6 +121,7 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   void OnDestroyed(gpu::error::ContextLostReason reason);
   void OnEchoAck();
   void OnConsoleMessage(const GPUCommandBufferConsoleMessage& message);
+  void OnSetMemoryAllocation(const GpuMemoryAllocation& allocation);
 
   // Try to read an updated copy of the state from shared memory.
   void TryUpdateState();
@@ -147,6 +153,9 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   base::Closure notify_repaint_task_;
 
   base::Closure channel_error_callback_;
+
+  base::Callback<void(const GpuMemoryAllocation&)>
+      memory_allocation_changed_callback_;
 
   GpuConsoleMessageCallback console_message_callback_;
 

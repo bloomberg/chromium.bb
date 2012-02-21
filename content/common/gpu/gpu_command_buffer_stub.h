@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "content/common/content_export.h"
+#include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
 #include "gpu/command_buffer/common/constants.h"
@@ -56,8 +57,11 @@ class CONTENT_EXPORT GpuCommandBufferStubBase {
   virtual ~GpuCommandBufferStubBase() {}
 
   // Will not have surface state if this is an offscreen commandbuffer.
-  virtual bool has_surface_state() = 0;
-  virtual const SurfaceState& surface_state() = 0;
+  virtual bool has_surface_state() const = 0;
+  virtual const SurfaceState& surface_state() const = 0;
+
+  virtual bool IsInSameContextShareGroup(
+      const GpuCommandBufferStubBase& other) const = 0;
 
   virtual void SendMemoryAllocationToProxy(
       const GpuMemoryAllocation& allocation) = 0;
@@ -103,9 +107,13 @@ class GpuCommandBufferStub
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   // GpuCommandBufferStubBase implementation:
-  virtual bool has_surface_state() OVERRIDE;
-  virtual const GpuCommandBufferStubBase::SurfaceState& surface_state()
+  virtual bool has_surface_state() const OVERRIDE;
+  virtual const GpuCommandBufferStubBase::SurfaceState& surface_state() const
       OVERRIDE;
+
+  // Returns true iff |other| is in the same context share group as this stub.
+  virtual bool IsInSameContextShareGroup(
+      const GpuCommandBufferStubBase& other) const OVERRIDE;
 
   // Sends memory allocation limits to render process.
   virtual void SendMemoryAllocationToProxy(

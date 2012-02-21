@@ -439,6 +439,9 @@ class WebGraphicsContext3DCommandBufferImpl
 
   virtual void setVisibilityCHROMIUM(bool visible);
 
+  virtual void setMemoryAllocationChangedCallbackCHROMIUM(
+      WebGraphicsMemoryAllocationChangedCallbackCHROMIUM* callback);
+
   virtual void copyTextureToParentTextureCHROMIUM(
       WebGLId texture, WebGLId parentTexture);
 
@@ -499,6 +502,9 @@ class WebGraphicsContext3DCommandBufferImpl
   // main thread.
   bool ShouldUseSwapClient();
 
+  // MemoryAllocationChanged callback.
+  void OnMemoryAllocationChanged(const GpuMemoryAllocation& allocation);
+
   bool initialize_failed_;
 
   // The context we use for OpenGL rendering.
@@ -511,6 +517,9 @@ class WebGraphicsContext3DCommandBufferImpl
   int32 surface_id_;
   GURL active_url_;
   base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> swap_client_;
+
+  WebGraphicsMemoryAllocationChangedCallbackCHROMIUM*
+      memory_allocation_changed_callback_;
 
   WebGraphicsContext3D::WebGraphicsContextLostCallback* context_lost_callback_;
   WGC3Denum context_lost_reason_;
