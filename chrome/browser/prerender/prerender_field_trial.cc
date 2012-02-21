@@ -182,23 +182,23 @@ void ConfigureOmniboxPrerender() {
                                        kDisabledProbability);
 
   // Field trial to set weighting of hits.
-  const base::FieldTrial::Probability kTwoProbability = 33;
-  const base::FieldTrial::Probability kThreeProbability = 33;
+  const base::FieldTrial::Probability kFourProbability = 33;
+  const base::FieldTrial::Probability kEightProbability = 33;
 
   scoped_refptr<base::FieldTrial> weighting_trial(
       new base::FieldTrial("OmniboxPrerenderHitWeightingTrial", kDivisor,
                            "OmniboxPrerenderWeight1.0", 2012, 8, 30));
-  const int kOmniboxWeightTwoGroup =
-      weighting_trial->AppendGroup("OmniboxPrerenderWeight2.0",
-                                   kTwoProbability);
-  const int kOmniboxWeightThreeGroup =
-      weighting_trial->AppendGroup("OmniboxPrerenderWeight3.0",
-                                   kThreeProbability);
+  const int kOmniboxWeightFourGroup =
+      weighting_trial->AppendGroup("OmniboxPrerenderWeight4.0",
+                                   kFourProbability);
+  const int kOmniboxWeightEightGroup =
+      weighting_trial->AppendGroup("OmniboxPrerenderWeight8.0",
+                                   kEightProbability);
   const int group = weighting_trial->group();
-  if (group == kOmniboxWeightTwoGroup)
-    NetworkActionPredictor::set_hit_weight(2.0);
-  else if (group == kOmniboxWeightThreeGroup)
-    NetworkActionPredictor::set_hit_weight(3.0);
+  if (group == kOmniboxWeightFourGroup)
+    NetworkActionPredictor::set_hit_weight(4.0);
+  else if (group == kOmniboxWeightEightGroup)
+    NetworkActionPredictor::set_hit_weight(8.0);
 }
 
 bool IsOmniboxEnabled(Profile* profile) {
