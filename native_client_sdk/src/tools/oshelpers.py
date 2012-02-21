@@ -249,45 +249,46 @@ def Remove(args):
     parser.error('ERROR: expecting FILE...')
 
   try:
-    for dst in files:
-      if options.verbose:
-        print 'rm ' + dst
-
+    for pattern in files:
+      dst_files = glob.glob(pattern)
       # Ignore non existing files when using force
-      if not os.path.exists(dst) and options.force:
-        print "rm: Skipping " + dst
+      if len(files) == 0 and options.force:
+        print "rm: Skipping " + pattern
         continue
+      elif len(files) == 0:
+        raise OSError('rm: no such file or directory: ' + pattern)
 
-      if os.path.isfile(dst) or os.path.islink(dst):
-        for i in range(5):
-          try:
-            # Check every time, since it may have been deleted after the
-            # previsou failed attempt.
-            if os.path.isfile(dst) or os.path.islink(dst):
-              os.remove(dst)
-            break
-          except OSError as error:
-            if i == 5:
-              print 'Gave up.'
+      for dst in dst_files:
+        if options.verbose:
+          print 'rm ' + dst
+
+        if os.path.isfile(dst) or os.path.islink(dst):
+          for i in range(5):
+            try:
+              # Check every time, since it may have been deleted after the
+              # previous failed attempt.
+              if os.path.isfile(dst) or os.path.islink(dst):
+                os.remove(dst)
+              break
+            except OSError as error:
+              if i == 5:
+                print 'Gave up.'
+                raise OSError('rm: ' + str(error))
+              print 'Failed remove with %s, retrying' % error
+              time.sleep(5)
+
+        if options.recursive:
+          for i in range(5):
+            try:
+              if os.path.isdir(dst):
+                shutil.rmtree(dst)
+              break
+            except OSError as error:
+              if i == 5:
+                print 'Gave up.'
               raise OSError('rm: ' + str(error))
-            print 'Failed remove with %s, retrying' % error
-            time.sleep(5)
-
-      if options.recursive:
-        for i in range(5):
-          try:
-            if os.path.isdir(dst):
-              shutil.rmtree(dst)
-            break
-          except OSError as error:
-            if i == 5:
-              print 'Gave up.'
-              raise OSError('rm: ' + str(error))
-            print 'Failed rmtree with %s, retrying' % error
-            time.sleep(5)
-
-      print 'rm: %s is a directory.' % dst
-      return 1
+              print 'Failed rmtree with %s, retrying' % error
+              time.sleep(5)
 
   except OSError as error:
     print error
