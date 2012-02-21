@@ -29,7 +29,9 @@ class TransportChannelSocketAdapter : public net::Socket,
   explicit TransportChannelSocketAdapter(cricket::TransportChannel* channel);
   virtual ~TransportChannelSocketAdapter();
 
-  // Sets callback that should be called when the adapter is being destroyed.
+  // Sets callback that should be called when the adapter is being
+  // destroyed. The callback is not allowed to touch the adapter, but
+  // can do anything else, e.g. destroy the TransportChannel.
   void SetOnDestroyedCallback(const base::Closure& callback);
 
   // Closes the stream. |error_code| specifies error code that will

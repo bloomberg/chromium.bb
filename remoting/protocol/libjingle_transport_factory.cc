@@ -6,6 +6,7 @@
 
 #include "jingle/glue/channel_socket_adapter.h"
 #include "jingle/glue/pseudotcp_adapter.h"
+#include "jingle/glue/utils.h"
 #include "net/base/net_errors.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/transport_config.h"
@@ -51,6 +52,8 @@ class LibjingleStreamTransport : public StreamTransport,
   void OnRequestSignaling();
   void OnCandidateReady(cricket::TransportChannelImpl* channel,
                         const cricket::Candidate& candidate);
+  void OnRouteChange(cricket::TransportChannel* channel,
+                     const cricket::Candidate& candidate);
 
   void OnTcpConnected(int result);
   void OnAuthenticationDone(net::Error error,
@@ -149,6 +152,8 @@ void LibjingleStreamTransport::Connect(
       this, &LibjingleStreamTransport::OnRequestSignaling);
   channel_->SignalCandidateReady.connect(
       this, &LibjingleStreamTransport::OnCandidateReady);
+  channel_->SignalRouteChange.connect(
+      this, &LibjingleStreamTransport::OnRouteChange);
 
   channel_->Connect();
 
@@ -199,6 +204,38 @@ void LibjingleStreamTransport::OnCandidateReady(
     const cricket::Candidate& candidate) {
   DCHECK(CalledOnValidThread());
   event_handler_->OnTransportCandidate(this, candidate);
+}
+
+void LibjingleStreamTransport::OnRouteChange(
+    cricket::TransportChannel* channel,
+    const cricket::Candidate& candidate) {
+  TransportRoute route;
+
+  if (candidate.type() == "local") {
+    route.type = TransportRoute::DIRECT;
+  } else if (candidate.type() == "stun") {
+    route.type = TransportRoute::STUN;
+  } else if (candidate.type() == "relay") {
+    route.type = TransportRoute::RELAY;
+  } else {
+    LOG(FATAL) << "Unknown candidate type: " << candidate.type();
+  }
+
+  if (!jingle_glue::SocketAddressToIPEndPoint(
+          candidate.address(), &route.remote_address)) {
+    LOG(FATAL) << "Failed to convert peer IP address.";
+  }
+
+  DCHECK(channel->GetP2PChannel());
+  DCHECK(channel->GetP2PChannel()->best_connection());
+  const cricket::Candidate& local_candidate =
+      channel->GetP2PChannel()->best_connection()->local_candidate();
+  if (!jingle_glue::SocketAddressToIPEndPoint(
+          local_candidate.address(), &route.local_address)) {
+    LOG(FATAL) << "Failed to convert local IP address.";
+  }
+
+  event_handler_->OnTransportRouteChange(this, route);
 }
 
 void LibjingleStreamTransport::OnTcpConnected(int result) {

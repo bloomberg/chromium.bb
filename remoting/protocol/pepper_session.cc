@@ -268,6 +268,14 @@ void PepperSession::OnTransportCandidate(Transport* transport,
   }
 }
 
+void PepperSession::OnTransportRouteChange(Transport* transport,
+                                           const TransportRoute& route) {
+  if (!route_change_callback_.is_null()) {
+    route_change_callback_.Run(transport->name(), route.remote_address,
+                               route.local_address);
+  }
+}
+
 void PepperSession::OnTransportDeleted(Transport* transport) {
   ChannelsMap::iterator it = channels_.find(transport->name());
   DCHECK_EQ(it->second, transport);

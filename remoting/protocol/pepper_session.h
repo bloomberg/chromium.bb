@@ -63,6 +63,8 @@ class PepperSession : public Session,
   virtual void OnTransportCandidate(
       Transport* transport,
       const cricket::Candidate& candidate) OVERRIDE;
+  virtual void OnTransportRouteChange(Transport* transport,
+                                      const TransportRoute& route) OVERRIDE;
   virtual void OnTransportDeleted(Transport* transport) OVERRIDE;
 
  private:

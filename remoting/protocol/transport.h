@@ -28,6 +28,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
+#include "net/base/ip_endpoint.h"
 
 namespace cricket {
 class Candidate;
@@ -44,6 +45,18 @@ namespace protocol {
 class ChannelAuthenticator;
 struct TransportConfig;
 
+struct TransportRoute {
+  enum RouteType {
+    DIRECT,
+    STUN,
+    RELAY,
+  };
+
+  RouteType type;
+  net::IPEndPoint remote_address;
+  net::IPEndPoint local_address;
+};
+
 class Transport : public base::NonThreadSafe {
  public:
   class EventHandler {
@@ -56,6 +69,11 @@ class Transport : public base::NonThreadSafe {
     // end of the connection.
     virtual void OnTransportCandidate(Transport* transport,
                                       const cricket::Candidate& candidate) = 0;
+
+    // Called when transport route changes. Can be called even before
+    // the transport is connected.
+    virtual void OnTransportRouteChange(Transport* transport,
+                                        const TransportRoute& route) = 0;
 
     // Called when the transport is about to be deleted.
     virtual void OnTransportDeleted(Transport* transport) = 0;

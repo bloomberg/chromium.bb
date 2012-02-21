@@ -525,9 +525,10 @@ void JingleSession::OnRouteChange(cricket::TransportChannel* channel,
     return;
   }
 
-  if (!route_change_callback_.is_null())
+  if (!route_change_callback_.is_null()) {
     route_change_callback_.Run(channel->name(), remote_end_point,
                                local_end_point);
+  }
 }
 
 const cricket::ContentInfo* JingleSession::GetContentInfo() const {
