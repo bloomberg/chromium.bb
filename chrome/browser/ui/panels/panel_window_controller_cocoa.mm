@@ -412,8 +412,9 @@ enum {
   windowShim_->panel()->manager()->EndDragging(cancelled);
 }
 
-- (void)dragWithDeltaX:(int)deltaX {
-  windowShim_->panel()->manager()->Drag(deltaX);
+- (void)dragWithDeltaX:(int)deltaX
+                deltaY:(int)deltaY {
+  windowShim_->panel()->manager()->Drag(deltaX, deltaY);
 }
 
 - (void)setPanelFrame:(NSRect)frame

@@ -514,7 +514,7 @@ void PanelBrowserWindowGtk::DidProcessEvent(GdkEvent* event) {
   }
 
   if (drag_widget_) {
-    panel_->manager()->Drag(new_x - old_x);
+    panel_->manager()->Drag(new_x - old_x, new_y - old_y);
     gdk_event_free(last_mouse_down_);
     last_mouse_down_ = gdk_event_copy(event);
   }

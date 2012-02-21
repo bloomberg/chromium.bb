@@ -62,6 +62,16 @@ class PanelStrip {
   virtual void MinimizePanel(Panel* panel) = 0;
   virtual void RestorePanel(Panel* panel) = 0;
 
+  // Returns true if |panel| is draggable.
+  virtual bool CanDragPanel(const Panel* panel) const = 0;
+
+  // Drags |panel| in the bounds of this strip.
+  virtual void StartDraggingPanel(Panel* panel) = 0;
+  // |delta_x| and |delta_y| denotes how much the mouse has been moved since
+  // last time when DragPanel or StartDraggingPanel is called.
+  virtual void DragPanel(Panel* panel, int delta_x, int delta_y) = 0;
+  virtual void EndDraggingPanel(Panel* panel, bool cancelled) = 0;
+
  protected:
   explicit PanelStrip(Type type);
   virtual ~PanelStrip();

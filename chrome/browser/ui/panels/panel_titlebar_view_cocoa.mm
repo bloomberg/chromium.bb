@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -436,7 +436,8 @@ static NSEvent* MakeMouseEvent(NSEventType type,
             return;  // Don't start real drag yet.
           [self startDrag];
         }
-        [self dragWithDeltaX:[event deltaX]];
+        [self dragWithDeltaX:[event deltaX]
+                      deltaY:[event deltaY]];
         break;
 
       case NSKeyUp:
@@ -479,10 +480,12 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   dragState_ = PANEL_DRAG_SUPPRESSED;
 }
 
-- (void)dragWithDeltaX:(int)deltaX {
+- (void)dragWithDeltaX:(int)deltaX
+                deltaY:(int)deltaY {
   if (dragState_ != PANEL_DRAG_IN_PROGRESS)
     return;
-  [controller_ dragWithDeltaX:deltaX];
+  [controller_ dragWithDeltaX:deltaX
+                       deltaY:deltaY];
 }
 
 - (void)drawAttention {
@@ -580,7 +583,8 @@ static NSEvent* MakeMouseEvent(NSEventType type,
                     deltaY:(double)delta_y {
   if (dragState_ == PANEL_DRAG_CAN_START)
     [self startDrag];
-  [self dragWithDeltaX:delta_x];
+  [self dragWithDeltaX:delta_x
+                deltaY:delta_y];
 }
 
 - (void)cancelDragTitlebar {

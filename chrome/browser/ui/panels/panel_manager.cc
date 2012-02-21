@@ -10,8 +10,10 @@
 #include "chrome/browser/fullscreen.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/panels/detached_panel_strip.h"
 #include "chrome/browser/ui/panels/docked_panel_strip.h"
 #include "chrome/browser/ui/panels/overflow_panel_strip.h"
+#include "chrome/browser/ui/panels/panel_drag_controller.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -63,8 +65,10 @@ PanelManager::PanelManager()
     : panel_mouse_watcher_(PanelMouseWatcher::Create()),
       auto_sizing_enabled_(true),
       is_full_screen_(false) {
+  detached_strip_.reset(new DetachedPanelStrip(this));
   docked_strip_.reset(new DockedPanelStrip(this));
   overflow_strip_.reset(new OverflowPanelStrip(this));
+  drag_controller_.reset(new PanelDragController());
   auto_hiding_desktop_bar_ = AutoHidingDesktopBar::Create(this);
   OnDisplayChanged();
 }
@@ -160,15 +164,15 @@ void PanelManager::OnPanelRemoved(Panel* panel) {
 }
 
 void PanelManager::StartDragging(Panel* panel) {
-  docked_strip_->StartDragging(panel);
+  drag_controller_->StartDragging(panel);
 }
 
-void PanelManager::Drag(int delta_x) {
-  docked_strip_->Drag(delta_x);
+void PanelManager::Drag(int delta_x, int delta_y) {
+  drag_controller_->Drag(delta_x, delta_y);
 }
 
 void PanelManager::EndDragging(bool cancelled) {
-  docked_strip_->EndDragging(cancelled);
+  drag_controller_->EndDragging(cancelled);
 }
 
 void PanelManager::OnPanelExpansionStateChanged(Panel* panel) {
@@ -244,16 +248,25 @@ void PanelManager::OnAutoHidingDesktopBarVisibilityChanged(
 }
 
 void PanelManager::CloseAll() {
+  DCHECK(!drag_controller_->IsDragging());
+
+  detached_strip_->CloseAll();
   docked_strip_->CloseAll();
   overflow_strip_->CloseAll();
 }
 
 int PanelManager::num_panels() const {
-  return docked_strip_->num_panels() + overflow_strip_->num_panels();
+  return detached_strip_->num_panels() +
+         docked_strip_->num_panels() +
+         overflow_strip_->num_panels();
 }
 
 std::vector<Panel*> PanelManager::panels() const {
   std::vector<Panel*> panels;
+  for (DetachedPanelStrip::Panels::const_iterator iter =
+           detached_strip_->panels().begin();
+       iter != detached_strip_->panels().end(); ++iter)
+    panels.push_back(*iter);
   for (DockedPanelStrip::Panels::const_iterator iter =
            docked_strip_->panels().begin();
        iter != docked_strip_->panels().end(); ++iter)

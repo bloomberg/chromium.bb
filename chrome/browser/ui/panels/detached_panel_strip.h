@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
+#include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 
 class Browser;
@@ -36,6 +37,10 @@ class DetachedPanelStrip : public PanelStrip {
   virtual void ActivatePanel(Panel* panel) OVERRIDE;
   virtual void MinimizePanel(Panel* panel) OVERRIDE;
   virtual void RestorePanel(Panel* panel) OVERRIDE;
+  virtual bool CanDragPanel(const Panel* panel) const OVERRIDE;
+  virtual void StartDraggingPanel(Panel* panel) OVERRIDE;
+  virtual void DragPanel(Panel* panel, int delta_x, int delta_y) OVERRIDE;
+  virtual void EndDraggingPanel(Panel* panel, bool cancelled) OVERRIDE;
 
   int num_panels() const { return panels_.size(); }
   const Panels& panels() const { return panels_; }

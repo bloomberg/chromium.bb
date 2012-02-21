@@ -471,7 +471,7 @@ bool PanelBrowserView::OnTitlebarMouseDragged(const gfx::Point& location) {
     mouse_dragging_state_ = DRAGGING_STARTED;
   }
   if (mouse_dragging_state_ == DRAGGING_STARTED)
-    panel_->manager()->Drag(delta_x);
+    panel_->manager()->Drag(delta_x, delta_y);
   return true;
 }
 

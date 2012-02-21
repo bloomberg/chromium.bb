@@ -101,7 +101,8 @@ class PanelBrowserWindowCocoa;
 - (BOOL)isDraggable;
 - (void)startDrag;
 - (void)endDrag:(BOOL)cancelled;
-- (void)dragWithDeltaX:(int)deltaX;
+- (void)dragWithDeltaX:(int)deltaX
+                deltaY:(int)deltaY;
 
 // Accessor for titlebar view.
 - (PanelTitlebarViewCocoa*)titlebarView;

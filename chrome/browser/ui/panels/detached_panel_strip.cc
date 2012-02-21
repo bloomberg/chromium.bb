@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include "base/logging.h"
+#include "chrome/browser/ui/panels/panel_drag_controller.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 
 DetachedPanelStrip::DetachedPanelStrip(PanelManager* panel_manager)
@@ -79,3 +80,25 @@ void DetachedPanelStrip::RestorePanel(Panel* panel) {
   NOTIMPLEMENTED();
 }
 
+bool DetachedPanelStrip::CanDragPanel(const Panel* panel) const {
+  // All detached panels are draggable.
+  return true;
+}
+
+void DetachedPanelStrip::StartDraggingPanel(Panel* panel) {
+}
+
+void DetachedPanelStrip::DragPanel(Panel* panel, int delta_x, int delta_y) {
+  gfx::Rect new_bounds(panel->GetBounds());
+  new_bounds.Offset(delta_x, delta_y);
+  panel->SetPanelBounds(new_bounds);
+}
+
+void DetachedPanelStrip::EndDraggingPanel(Panel* panel, bool cancelled) {
+  if (cancelled) {
+    gfx::Rect new_bounds(panel->GetBounds());
+    new_bounds.set_origin(
+        panel_manager_->drag_controller()->dragging_panel_original_position());
+    panel->SetPanelBounds(new_bounds);
+  }
+}

@@ -53,11 +53,10 @@ class DockedPanelStrip : public PanelStrip,
   virtual void ActivatePanel(Panel* panel) OVERRIDE;
   virtual void MinimizePanel(Panel* panel) OVERRIDE;
   virtual void RestorePanel(Panel* panel) OVERRIDE;
-
-  // Drags the given panel.
-  void StartDragging(Panel* panel);
-  void Drag(int delta_x);
-  void EndDragging(bool cancelled);
+  virtual bool CanDragPanel(const Panel* panel) const OVERRIDE;
+  virtual void StartDraggingPanel(Panel* panel) OVERRIDE;
+  virtual void DragPanel(Panel* panel, int delta_x, int delta_y) OVERRIDE;
+  virtual void EndDraggingPanel(Panel* panel, bool cancelled) OVERRIDE;
 
   // Invoked when a panel's expansion state changes.
   void OnPanelExpansionStateChanged(Panel* panel);
@@ -80,7 +79,6 @@ class DockedPanelStrip : public PanelStrip,
   int num_panels() const { return panels_.size(); }
   const Panels& panels() const { return panels_; }
 
-  bool is_dragging_panel() const;
   gfx::Rect display_area() const { return display_area_; }
 
   int GetMaxPanelWidth() const;
@@ -122,8 +120,8 @@ class DockedPanelStrip : public PanelStrip,
   bool DoRemove(Panel* panel);
 
   // Help functions to drag the given panel.
-  void DragLeft();
-  void DragRight();
+  void DragLeft(Panel* dragging_panel);
+  void DragRight(Panel* dragging_panel);
 
   // Does the real job of bringing up or down the titlebars.
   void DoBringUpOrDownTitlebars(bool bring_up);
@@ -162,8 +160,7 @@ class DockedPanelStrip : public PanelStrip,
   // moving panels to overflow area to make room for a panel in this strip.
   bool disable_layout_refresh_;
 
-  // Panel to drag.
-  Panel* dragging_panel_;
+  // Iterator of panel being dragged.
   Panels::iterator dragging_panel_iterator_;
 
   // Original x coordinate of the panel to drag. This is used to get back to

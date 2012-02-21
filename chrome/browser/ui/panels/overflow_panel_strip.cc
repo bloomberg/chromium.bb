@@ -98,7 +98,6 @@ void OverflowPanelStrip::AddPanel(Panel* panel) {
 
   // Set panel properties for this strip.
   panel->SetAppIconVisibility(false);
-  panel->set_draggable(false);
   panel->ApplyVisualStyleForStrip();
 
   if (num_panels() == 1) {
@@ -180,6 +179,23 @@ void OverflowPanelStrip::RestorePanel(Panel* panel) {
   PanelStrip* docked_strip = panel_manager_->docked_strip();
   panel->MoveToStrip(docked_strip);
   docked_strip->RestorePanel(panel);
+}
+
+bool OverflowPanelStrip::CanDragPanel(const Panel* panel) const {
+  // All overflow panels are not draggable.
+  return false;
+}
+
+void OverflowPanelStrip::StartDraggingPanel(Panel* panel) {
+  NOTREACHED();
+}
+
+void OverflowPanelStrip::DragPanel(Panel* panel, int delta_x, int delta_y) {
+  NOTREACHED();
+}
+
+void OverflowPanelStrip::EndDraggingPanel(Panel* panel, bool cancelled) {
+  NOTREACHED();
 }
 
 void OverflowPanelStrip::RefreshLayout() {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -91,7 +91,8 @@ enum PanelDragState {
 // Helpers to control title drag operation, called from more then one place.
 - (void)startDrag;
 - (void)endDrag:(BOOL)cancelled;
-- (void)dragWithDeltaX:(int)deltaX;
+- (void)dragWithDeltaX:(int)deltaX
+                deltaY:(int)deltaY;
 
   // Update the visibility of settings button.
 - (void)updateSettingsButtonVisibility:(BOOL)mouseOverWindow;

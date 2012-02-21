@@ -770,7 +770,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DragThreePanels) {
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, NotDraggable) {
   Panel* panel = CreatePanel("panel");
-  panel->set_draggable(false);
+  // This is used to simulate making a docked panel not draggable.
+  panel->set_has_temporary_layout(true);
   Panel* panel2 = CreatePanel("panel2");
 
   scoped_ptr<NativePanelTesting> panel_testing(
@@ -783,6 +784,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, NotDraggable) {
   panel_testing->FinishDragTitlebar();
   EXPECT_EQ(bounds.x(), panel->GetBounds().x());
 
+  // Reset the simulation hack so that the panel can be closed correctly.
+  panel->set_has_temporary_layout(false);
   panel->Close();
   panel2->Close();
 }

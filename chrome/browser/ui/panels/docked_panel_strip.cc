@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/panels/overflow_panel_strip.h"
+#include "chrome/browser/ui/panels/panel_drag_controller.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -59,7 +60,6 @@ DockedPanelStrip::DockedPanelStrip(PanelManager* panel_manager)
       minimized_panel_count_(0),
       are_titlebars_up_(false),
       disable_layout_refresh_(false),
-      dragging_panel_(NULL),
       dragging_panel_original_x_(0),
       delayed_titlebar_action_(NO_ACTION),
       titlebar_action_factory_(this) {
@@ -183,7 +183,6 @@ void DockedPanelStrip::AddPanel(Panel* panel) {
 
   // Set panel properties for this strip.
   panel->SetAppIconVisibility(true);
-  panel->set_draggable(!panel->has_temporary_layout());
   panel->ApplyVisualStyleForStrip();
 
   if (panel->has_temporary_layout())
@@ -219,11 +218,10 @@ bool DockedPanelStrip::RemovePanel(Panel* panel) {
     return false;
 
   // If we're in the process of dragging, delay the removal.
-  if (dragging_panel_) {
+  if (panel_manager_->drag_controller()->IsDragging()) {
     panels_pending_to_remove_.push_back(panel);
     return true;
   }
-
   DoRemove(panel);
 
   if (!disable_layout_refresh_)
@@ -252,37 +250,39 @@ bool DockedPanelStrip::DoRemove(Panel* panel) {
   return true;
 }
 
-void DockedPanelStrip::StartDragging(Panel* panel) {
+bool DockedPanelStrip::CanDragPanel(const Panel* panel) const {
+  // Only the panels having temporary layout can't be dragged.
+  return !panel->has_temporary_layout();
+}
+
+void DockedPanelStrip::StartDraggingPanel(Panel* panel) {
   dragging_panel_iterator_ = find(panels_.begin(), panels_.end(), panel);
   DCHECK(dragging_panel_iterator_ != panels_.end());
 
-  dragging_panel_ = panel;
   dragging_panel_bounds_ = panel->GetBounds();
   dragging_panel_original_x_ = dragging_panel_bounds_.x();
 }
 
-void DockedPanelStrip::Drag(int delta_x) {
-  DCHECK(dragging_panel_);
-
+void DockedPanelStrip::DragPanel(Panel* panel, int delta_x, int delta_y) {
   if (!delta_x)
     return;
 
   // Moves this panel to the dragging position.
-  gfx::Rect new_bounds(dragging_panel_->GetBounds());
+  gfx::Rect new_bounds(panel->GetBounds());
   new_bounds.set_x(new_bounds.x() + delta_x);
-  dragging_panel_->SetPanelBounds(new_bounds);
+  panel->SetPanelBounds(new_bounds);
 
   // Checks and processes other affected panels.
   if (delta_x > 0)
-    DragRight();
+    DragRight(panel);
   else
-    DragLeft();
+    DragLeft(panel);
 }
 
-void DockedPanelStrip::DragLeft() {
+void DockedPanelStrip::DragLeft(Panel* dragging_panel) {
   // This is the left corner of the dragging panel. We use it to check against
   // all the panels on its left.
-  int dragging_panel_left_boundary = dragging_panel_->GetBounds().x();
+  int dragging_panel_left_boundary = dragging_panel->GetBounds().x();
 
   // This is the right corner which a panel will be moved to.
   int current_panel_right_boundary =
@@ -308,7 +308,7 @@ void DockedPanelStrip::DragLeft() {
 
     // Swaps current panel and dragging panel.
     *dragging_panel_iterator_ = current_panel;
-    *current_panel_iterator = dragging_panel_;
+    *current_panel_iterator = dragging_panel;
     dragging_panel_iterator_ = current_panel_iterator;
   }
 
@@ -318,11 +318,11 @@ void DockedPanelStrip::DragLeft() {
                                dragging_panel_bounds_.width());
 }
 
-void DockedPanelStrip::DragRight() {
+void DockedPanelStrip::DragRight(Panel* dragging_panel) {
   // This is the right corner of the dragging panel. We use it to check against
   // all the panels on its right.
-  int dragging_panel_right_boundary = dragging_panel_->GetBounds().x() +
-      dragging_panel_->GetBounds().width() - 1;
+  int dragging_panel_right_boundary = dragging_panel->GetBounds().x() +
+      dragging_panel->GetBounds().width() - 1;
 
   // This is the left corner which a panel will be moved to.
   int current_panel_left_boundary = dragging_panel_bounds_.x();
@@ -347,7 +347,7 @@ void DockedPanelStrip::DragRight() {
 
     // Swaps current panel and dragging panel.
     *dragging_panel_iterator_ = current_panel;
-    *current_panel_iterator = dragging_panel_;
+    *current_panel_iterator = dragging_panel;
     dragging_panel_iterator_ = current_panel_iterator;
   }
 
@@ -356,15 +356,11 @@ void DockedPanelStrip::DragRight() {
   dragging_panel_bounds_.set_x(current_panel_left_boundary);
 }
 
-void DockedPanelStrip::EndDragging(bool cancelled) {
-  DCHECK(dragging_panel_);
-
+void DockedPanelStrip::EndDraggingPanel(Panel* panel, bool cancelled) {
   if (cancelled)
-    Drag(dragging_panel_original_x_ - dragging_panel_->GetBounds().x());
+    DragPanel(panel, dragging_panel_original_x_ - panel->GetBounds().x(), 0);
   else
-    dragging_panel_->SetPanelBounds(dragging_panel_bounds_);
-
-  dragging_panel_ = NULL;
+    panel->SetPanelBounds(dragging_panel_bounds_);
 
   DelayedRemove();
 }
@@ -524,7 +520,8 @@ bool DockedPanelStrip::ShouldBringUpTitlebars(int mouse_x, int mouse_y) const {
 
     // If the panel is showing titlebar only, we want to keep it up when it is
     // being dragged.
-    if (state == Panel::TITLE_ONLY && is_dragging_panel())
+    if (state == Panel::TITLE_ONLY &&
+        panel == panel_manager_->drag_controller()->dragging_panel())
       return true;
 
     // We do not want to bring up other minimized panels if the mouse is over
@@ -744,7 +741,6 @@ void DockedPanelStrip::DelayedMovePanelToOverflow(Panel* panel) {
 
 void DockedPanelStrip::CloseAll() {
   // This should only be called at the end of tests to clean up.
-  DCHECK(!dragging_panel_);
   DCHECK(panels_in_temporary_layout_.empty());
 
   // Make a copy of the iterator as closing panels can modify the vector.
@@ -754,8 +750,4 @@ void DockedPanelStrip::CloseAll() {
   for (Panels::reverse_iterator iter = panels_copy.rbegin();
        iter != panels_copy.rend(); ++iter)
     (*iter)->Close();
-}
-
-bool DockedPanelStrip::is_dragging_panel() const {
-  return dragging_panel_ != NULL;
 }

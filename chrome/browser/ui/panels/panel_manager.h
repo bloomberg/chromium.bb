@@ -16,9 +16,11 @@
 #include "ui/gfx/rect.h"
 
 class Browser;
-class PanelMouseWatcher;
-class OverflowPanelStrip;
+class DetachedPanelStrip;
 class DockedPanelStrip;
+class OverflowPanelStrip;
+class PanelDragController;
+class PanelMouseWatcher;
 
 // This class manages a set of panels.
 class PanelManager : public AutoHidingDesktopBar::Observer {
@@ -46,7 +48,7 @@ class PanelManager : public AutoHidingDesktopBar::Observer {
 
   // Drags the given panel.
   void StartDragging(Panel* panel);
-  void Drag(int delta_x);
+  void Drag(int delta_x, int delta_y);
   void EndDragging(bool cancelled);
 
   // Invoked when a panel's expansion state changes.
@@ -77,12 +79,20 @@ class PanelManager : public AutoHidingDesktopBar::Observer {
   int StartingRightPosition() const;
   std::vector<Panel*> panels() const;
 
+  PanelDragController* drag_controller() const {
+    return drag_controller_.get();
+  }
+
   AutoHidingDesktopBar* auto_hiding_desktop_bar() const {
     return auto_hiding_desktop_bar_;
   }
 
   PanelMouseWatcher* mouse_watcher() const {
     return panel_mouse_watcher_.get();
+  }
+
+  DetachedPanelStrip* detached_strip() const {
+    return detached_strip_.get();
   }
 
   DockedPanelStrip* docked_strip() const {
@@ -161,8 +171,11 @@ class PanelManager : public AutoHidingDesktopBar::Observer {
   // Tests may want to shorten time intervals to reduce running time.
   static bool shorten_time_intervals_;
 
+  scoped_ptr<DetachedPanelStrip> detached_strip_;
   scoped_ptr<DockedPanelStrip> docked_strip_;
   scoped_ptr<OverflowPanelStrip> overflow_strip_;
+
+  scoped_ptr<PanelDragController> drag_controller_;
 
   // Use a mouse watcher to know when to bring up titlebars to "peek" at
   // minimized panels. Mouse movement is only tracked when there is a minimized

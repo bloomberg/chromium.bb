@@ -49,7 +49,6 @@ Panel::Panel(Browser* browser, const gfx::Size& requested_size)
       has_temporary_layout_(false),
       restored_size_(requested_size),
       auto_resizable_(false),
-      draggable_(true),
       expansion_state_(EXPANDED),
       old_expansion_state_(EXPANDED),
       app_icon_visible_(true) {
@@ -74,6 +73,10 @@ void Panel::OnNativePanelClosed() {
 
 PanelManager* Panel::manager() const {
   return PanelManager::GetInstance();
+}
+
+bool Panel::draggable() const {
+  return panel_strip()->CanDragPanel(this);
 }
 
 const Extension* Panel::GetExtension() const {
