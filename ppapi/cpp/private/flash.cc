@@ -40,7 +40,7 @@ namespace flash {
 // static
 bool Flash::IsAvailable() {
   return has_interface<PPB_Flash>() ||
-         has_interface<PPB_Flash_12_0>();
+         has_interface<PPB_Flash_12_0>() ||
          has_interface<PPB_Flash_11>();
 }
 
