@@ -10,14 +10,3 @@ option optimize_for = LITE_RUNTIME;
 
 package remoting.protocol;
 
-// BeginSessionDeprecated is sent from host to client when the session
-// starts. Legacy clients expect to receive this message at the
-// beginning of each session. Current clients ignore it.
-//
-// TODO(sergeyu): Remove this message. See http://crbug.com/104670 .
-message LocalLoginStatusDeprecated {
-  optional bool success = 1;
-}
-message BeginSessionDeprecated {
-  optional LocalLoginStatusDeprecated login_status = 1;
-}

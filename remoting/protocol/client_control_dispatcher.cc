@@ -37,15 +37,8 @@ void ClientControlDispatcher::OnInitialized() {
 void ClientControlDispatcher::OnMessageReceived(
     ControlMessage* message, const base::Closure& done_task) {
   DCHECK(client_stub_);
-
   base::ScopedClosureRunner done_runner(done_task);
-
-  if (message->has_begin_session_deprecated()) {
-    // Host sends legacy BeginSession message for compatibility with
-    // older clients. Ignore it without warning.
-  } else {
-    LOG(WARNING) << "Unknown control message received.";
-  }
+  LOG(WARNING) << "Unknown control message received.";
 }
 
 }  // namespace protocol

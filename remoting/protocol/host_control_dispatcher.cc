@@ -30,13 +30,6 @@ void HostControlDispatcher::OnInitialized() {
   reader_.Init(channel(), base::Bind(
       &HostControlDispatcher::OnMessageReceived, base::Unretained(this)));
   writer_->Init(channel(), BufferedSocketWriter::WriteFailedCallback());
-
-  // Write legacy BeginSession message.
-  // TODO(sergeyu): Remove it. See http://crbug.com/104670 .
-  protocol::ControlMessage message;
-  message.mutable_begin_session_deprecated()->mutable_login_status()->
-      set_success(true);
-  writer_->Write(SerializeAndFrameMessage(message), base::Closure());
 }
 
 void HostControlDispatcher::OnMessageReceived(
