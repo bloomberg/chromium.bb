@@ -78,8 +78,9 @@ TEST(JsonSchemaCompilerSimpleTest, OptionalStringParamsWrongType) {
 }
 
 TEST(JsonSchemaCompilerSimpleTest, NoParamsResultCreate) {
-  EXPECT_TRUE(Value::Equals(OptionalString::Result::Create(),
-                            Value::CreateNullValue()));
+  scoped_ptr<Value> result(OptionalString::Result::Create());
+  scoped_ptr<Value> expected(Value::CreateNullValue());
+  EXPECT_TRUE(Value::Equals(result.get(), expected.get()));
 }
 
 TEST(JsonSchemaCompilerSimpleTest, TestTypePopulate) {
