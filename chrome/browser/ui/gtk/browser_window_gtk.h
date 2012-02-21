@@ -291,6 +291,10 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual void DrawCustomFrame(cairo_t* cr, GtkWidget* widget,
                                GdkEventExpose* event);
 
+  // Draws the tab image as the frame so we can write legible text.
+  virtual void DrawPopupFrame(cairo_t* cr, GtkWidget* widget,
+                              GdkEventExpose* event);
+
   // 'focus-in-event' handler.
   virtual void HandleFocusIn(GtkWidget* widget, GdkEventFocus* event);
 
@@ -366,9 +370,6 @@ class BrowserWindowGtk : public BrowserWindow,
   // A helper method that draws the shadow above the toolbar and in the frame
   // border during an expose.
   void DrawContentShadow(cairo_t* cr);
-
-  // Draws the tab image as the frame so we can write legible text.
-  void DrawPopupFrame(cairo_t* cr, GtkWidget* widget, GdkEventExpose* event);
 
   // The background frame image needs to be offset by the size of the top of
   // the window to the top of the tabs when the full skyline isn't displayed

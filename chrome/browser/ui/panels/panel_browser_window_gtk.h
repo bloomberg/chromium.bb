@@ -59,6 +59,8 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   virtual void OnSizeChanged(int width, int height) OVERRIDE;
   virtual void DrawCustomFrame(cairo_t* cr, GtkWidget* widget,
                                GdkEventExpose* event) OVERRIDE;
+  virtual void DrawPopupFrame(cairo_t* cr, GtkWidget* widget,
+                              GdkEventExpose* event) OVERRIDE;
   virtual void ActiveWindowChanged(GdkWindow* active_window) OVERRIDE;
   // 'focus-in-event' handler.
   virtual void HandleFocusIn(GtkWidget* widget,
@@ -126,7 +128,8 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
 
   void SetBoundsInternal(const gfx::Rect& bounds, bool animate);
 
-  void UpdateAttention(bool draw_attention);
+  void DrawAttentionFrame(cairo_t* cr, GtkWidget* widget,
+                          GdkEventExpose* event);
   GdkRectangle GetTitlebarRectForDrawAttention() const;
 
   CHROMEGTK_CALLBACK_1(PanelBrowserWindowGtk, gboolean,

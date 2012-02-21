@@ -172,26 +172,40 @@ void PanelBrowserWindowGtk::ShowSettingsMenu(GtkWidget* widget,
   settings_menu_->PopupForWidget(widget, event->button, event->time);
 }
 
+void PanelBrowserWindowGtk::DrawPopupFrame(cairo_t* cr,
+                                           GtkWidget* widget,
+                                           GdkEventExpose* event) {
+  BrowserWindowGtk::DrawPopupFrame(cr, widget, event);
+
+  if (is_drawing_attention_)
+    DrawAttentionFrame(cr, widget, event);
+}
+
 void PanelBrowserWindowGtk::DrawCustomFrame(cairo_t* cr,
                                             GtkWidget* widget,
                                             GdkEventExpose* event) {
   BrowserWindowGtk::DrawCustomFrame(cr, widget, event);
 
-  if (is_drawing_attention_) {
-    cairo_set_source_rgb(cr, kDrawAttentionRFraction,
-                         kDrawAttentionGFraction,
-                         kDrawAttentionBFraction);
+  if (is_drawing_attention_)
+    DrawAttentionFrame(cr, widget, event);
+}
 
-    GdkRectangle dest_rectangle = GetTitlebarRectForDrawAttention();
-    GdkRegion* dest_region = gdk_region_rectangle(&dest_rectangle);
+void PanelBrowserWindowGtk::DrawAttentionFrame(cairo_t* cr,
+                                               GtkWidget* widget,
+                                               GdkEventExpose* event) {
+  cairo_set_source_rgb(cr, kDrawAttentionRFraction,
+                       kDrawAttentionGFraction,
+                       kDrawAttentionBFraction);
 
-    gdk_region_intersect(dest_region, event->region);
-    gdk_cairo_region(cr, dest_region);
+  GdkRectangle dest_rectangle = GetTitlebarRectForDrawAttention();
+  GdkRegion* dest_region = gdk_region_rectangle(&dest_rectangle);
 
-    cairo_clip(cr);
-    cairo_paint(cr);
-    gdk_region_destroy(dest_region);
-  }
+  gdk_region_intersect(dest_region, event->region);
+  gdk_cairo_region(cr, dest_region);
+
+  cairo_clip(cr);
+  cairo_paint(cr);
+  gdk_region_destroy(dest_region);
 }
 
 void PanelBrowserWindowGtk::ActiveWindowChanged(GdkWindow* active_window) {
