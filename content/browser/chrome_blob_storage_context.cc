@@ -43,7 +43,6 @@ void ChromeBlobStorageContext::InitializeOnIOThread() {
 }
 
 ChromeBlobStorageContext::~ChromeBlobStorageContext() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
 void ChromeBlobStorageContext::DeleteOnCorrectThread() const {
