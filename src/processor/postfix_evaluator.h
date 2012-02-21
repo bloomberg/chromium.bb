@@ -44,10 +44,12 @@
 // either literal values suitable for ValueType, or constants or variables,
 // which reference the dictionary.  The supported binary operators are +
 // (addition), - (subtraction), * (multiplication), / (quotient of division),
-// and % (modulus of division).  The unary ^ (dereference) operator is also
-// provided.  These operators allow any operand to be either a literal
-// value, constant, or variable.  Assignment (=) of any type of operand into
-// a variable is also supported.
+// % (modulus of division), and @ (data alignment). The alignment operator (@)
+// accepts a value and an alignment size, and produces a result that is a
+// multiple of the alignment size by truncating the input value.
+// The unary ^ (dereference) operator is also provided.  These operators
+// allow any operand to be either a literal value, constant, or variable.
+// Assignment (=) of any type of operand into a variable is also supported.
 //
 // The dictionary is provided as a map with string keys.  Keys beginning
 // with the '$' character are treated as variables.  All other keys are

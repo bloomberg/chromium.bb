@@ -83,7 +83,8 @@ bool PostfixEvaluator<ValueType>::EvaluateInternal(
       BINARY_OP_SUBTRACT,
       BINARY_OP_MULTIPLY,
       BINARY_OP_DIVIDE_QUOTIENT,
-      BINARY_OP_DIVIDE_MODULUS
+      BINARY_OP_DIVIDE_MODULUS,
+      BINARY_OP_ALIGN
     };
 
     BinaryOperation operation = BINARY_OP_NONE;
@@ -97,6 +98,8 @@ bool PostfixEvaluator<ValueType>::EvaluateInternal(
       operation = BINARY_OP_DIVIDE_QUOTIENT;
     else if (token == "%")
       operation = BINARY_OP_DIVIDE_MODULUS;
+    else if (token == "@")
+      operation = BINARY_OP_ALIGN;
 
     if (operation != BINARY_OP_NONE) {
       // Get the operands.
@@ -125,6 +128,10 @@ bool PostfixEvaluator<ValueType>::EvaluateInternal(
           break;
         case BINARY_OP_DIVIDE_MODULUS:
           result = operand1 % operand2;
+          break;
+        case BINARY_OP_ALIGN:
+          result =
+            operand1 & (reinterpret_cast<ValueType>(-1) ^ (operand2 - 1));
           break;
         case BINARY_OP_NONE:
           // This will not happen, but compilers will want a default or
