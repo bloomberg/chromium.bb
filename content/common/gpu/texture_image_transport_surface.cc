@@ -53,7 +53,7 @@ class ScopedTextureBinder {
 TextureImageTransportSurface::TextureImageTransportSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
-    gfx::GLSurfaceHandle handle)
+    const gfx::GLSurfaceHandle& handle)
       : fbo_id_(0),
         front_(0),
         stub_destroyed_(false) {

@@ -73,7 +73,7 @@ bool GpuSurfaceTracker::GetRenderWidgetIDForSurface(int surface_id,
 }
 
 void GpuSurfaceTracker::SetSurfaceHandle(int surface_id,
-                                         gfx::GLSurfaceHandle handle) {
+                                         const gfx::GLSurfaceHandle& handle) {
   base::AutoLock lock(lock_);
   DCHECK(surface_map_.find(surface_id) != surface_map_.end());
   SurfaceInfo& info = surface_map_[surface_id];

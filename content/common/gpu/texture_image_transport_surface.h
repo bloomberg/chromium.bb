@@ -22,9 +22,9 @@ class TextureImageTransportSurface :
  public:
   TextureImageTransportSurface(GpuChannelManager* manager,
                                GpuCommandBufferStub* stub,
-                               gfx::GLSurfaceHandle handle);
+                               const gfx::GLSurfaceHandle& handle);
 
-  // gfx::GLSurface implementation
+  // gfx::GLSurface implementation.
   virtual bool Initialize() OVERRIDE;
   virtual void Destroy() OVERRIDE;
   virtual bool Resize(const gfx::Size& size) OVERRIDE;
@@ -42,7 +42,7 @@ class TextureImageTransportSurface :
   virtual void* GetConfig() OVERRIDE;
 
  protected:
-  // ImageTransportSurface implementation
+  // ImageTransportSurface implementation.
   virtual void OnNewSurfaceACK(
       uint64 surface_handle, TransportDIB::Handle shm_handle) OVERRIDE;
   virtual void OnBuffersSwappedACK() OVERRIDE;
@@ -50,7 +50,7 @@ class TextureImageTransportSurface :
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
 
-  // GpuCommandBufferStub::DestructionObserver implmentation
+  // GpuCommandBufferStub::DestructionObserver implementation.
   virtual void OnWillDestroyStub(GpuCommandBufferStub* stub) OVERRIDE;
 
  private:

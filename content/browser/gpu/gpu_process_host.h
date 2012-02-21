@@ -29,6 +29,13 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
                        public IPC::Message::Sender,
                        public base::NonThreadSafe {
  public:
+  typedef base::Callback<void(const IPC::ChannelHandle&,
+                              base::ProcessHandle,
+                              const content::GPUInfo&)>
+      EstablishChannelCallback;
+
+  typedef base::Callback<void(int32)> CreateCommandBufferCallback;
+
   static bool gpu_enabled() { return gpu_enabled_; }
 
   // Creates a new GpuProcessHost or gets one for a particular client, resulting
@@ -51,13 +58,8 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
   static GpuProcessHost* FromID(int host_id);
   int host_id() const { return host_id_; }
 
-  // IPC::Message::Sender implementation:
+  // IPC::Message::Sender implementation.
   virtual bool Send(IPC::Message* msg) OVERRIDE;
-
-  typedef base::Callback<void(const IPC::ChannelHandle&,
-                              base::ProcessHandle,
-                              const content::GPUInfo&)>
-      EstablishChannelCallback;
 
   // Tells the GPU process to create a new channel for communication with a
   // client. Once the GPU process responds asynchronously with the IPC handle
@@ -65,12 +67,10 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
   void EstablishGpuChannel(
       int client_id, const EstablishChannelCallback& callback);
 
-  typedef base::Callback<void(int32)> CreateCommandBufferCallback;
-
   // Tells the GPU process to create a new command buffer that draws into the
   // given surface.
   void CreateViewCommandBuffer(
-      gfx::GLSurfaceHandle compositing_surface,
+      const gfx::GLSurfaceHandle& compositing_surface,
       int surface_id,
       int client_id,
       const GPUCreateCommandBufferConfig& init_params,

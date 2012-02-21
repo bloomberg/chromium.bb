@@ -184,7 +184,7 @@ void GpuChannel::OnDestroy() {
 }
 
 void GpuChannel::CreateViewCommandBuffer(
-    gfx::GLSurfaceHandle window,
+    const gfx::GLSurfaceHandle& window,
     int32 surface_id,
     const GPUCreateCommandBufferConfig& init_params,
     int32* route_id) {

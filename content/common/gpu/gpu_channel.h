@@ -87,7 +87,7 @@ class GpuChannel : public IPC::Channel::Listener,
   void OnScheduled();
 
   void CreateViewCommandBuffer(
-      gfx::GLSurfaceHandle window,
+      const gfx::GLSurfaceHandle& window,
       int32 surface_id,
       const GPUCreateCommandBufferConfig& init_params,
       int32* route_id);

@@ -564,7 +564,7 @@ void TransportDIBImageTransportSurface::OnResize(gfx::Size size) {
 scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
-    gfx::GLSurfaceHandle surface_handle) {
+    const gfx::GLSurfaceHandle& surface_handle) {
   scoped_refptr<gfx::GLSurface> surface;
   IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
 

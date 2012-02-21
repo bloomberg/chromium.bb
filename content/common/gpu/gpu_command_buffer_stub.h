@@ -87,7 +87,7 @@ class GpuCommandBufferStub
   GpuCommandBufferStub(
       GpuChannel* channel,
       GpuCommandBufferStub* share_group,
-      gfx::GLSurfaceHandle handle,
+      const gfx::GLSurfaceHandle& handle,
       const gfx::Size& size,
       const gpu::gles2::DisallowedFeatures& disallowed_features,
       const std::string& allowed_extensions,

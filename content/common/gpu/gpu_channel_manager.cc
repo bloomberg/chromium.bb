@@ -125,7 +125,7 @@ void GpuChannelManager::OnCloseChannel(
 }
 
 void GpuChannelManager::OnCreateViewCommandBuffer(
-    gfx::GLSurfaceHandle window,
+    const gfx::GLSurfaceHandle& window,
     int32 surface_id,
     int32 client_id,
     const GPUCreateCommandBufferConfig& init_params) {

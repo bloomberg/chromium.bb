@@ -69,7 +69,7 @@ class ImageTransportSurface {
   static scoped_refptr<gfx::GLSurface>
       CreateSurface(GpuChannelManager* manager,
                     GpuCommandBufferStub* stub,
-                    gfx::GLSurfaceHandle handle);
+                    const gfx::GLSurfaceHandle& handle);
  private:
   DISALLOW_COPY_AND_ASSIGN(ImageTransportSurface);
 };

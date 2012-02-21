@@ -51,7 +51,7 @@ class GpuSurfaceTracker {
 
   // Sets the native handle for the given surface.
   // Note: This is an O(log N) lookup.
-  void SetSurfaceHandle(int surface_id, gfx::GLSurfaceHandle handle);
+  void SetSurfaceHandle(int surface_id, const gfx::GLSurfaceHandle& handle);
 
   // Gets the native handle for the given surface.
   // Note: This is an O(log N) lookup.

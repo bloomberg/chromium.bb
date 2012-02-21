@@ -431,7 +431,7 @@ void GpuProcessHost::EstablishGpuChannel(
 }
 
 void GpuProcessHost::CreateViewCommandBuffer(
-    gfx::GLSurfaceHandle compositing_surface,
+    const gfx::GLSurfaceHandle& compositing_surface,
     int surface_id,
     int client_id,
     const GPUCreateCommandBufferConfig& init_params,

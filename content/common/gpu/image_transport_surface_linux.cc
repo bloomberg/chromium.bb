@@ -941,7 +941,7 @@ gfx::Size OSMesaImageTransportSurface::GetSize() {
 scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
-    gfx::GLSurfaceHandle handle) {
+    const gfx::GLSurfaceHandle& handle) {
   scoped_refptr<gfx::GLSurface> surface;
   if (!handle.handle) {
     DCHECK(handle.transport);

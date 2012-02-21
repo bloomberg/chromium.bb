@@ -193,7 +193,7 @@ void PbufferImageTransportSurface::OnResize(gfx::Size size) {
 scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
-    gfx::GLSurfaceHandle handle) {
+    const gfx::GLSurfaceHandle& handle) {
   scoped_refptr<gfx::GLSurface> surface;
 
   if (handle.transport &&

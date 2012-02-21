@@ -81,7 +81,7 @@ class GpuChannelManager : public IPC::Channel::Listener,
   void OnVisibilityChanged(
       int32 render_view_id, int32 client_id, bool visible);
   void OnCreateViewCommandBuffer(
-      gfx::GLSurfaceHandle window,
+      const gfx::GLSurfaceHandle& window,
       int32 render_view_id,
       int32 client_id,
       const GPUCreateCommandBufferConfig& init_params);
