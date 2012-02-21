@@ -10,6 +10,7 @@
   NativeClient browser test runner
 </title>
 <script type="text/javascript" src="nacltest.js"></script>
+<script type="text/javascript" src="nmf_test_list.js"></script>
 </head>
 <body>
 
@@ -65,9 +66,9 @@ function addTest(tester, url) {
 document.getElementById('load_warning').innerHTML = '';
 
 var tester = new Tester();
-addTest(tester, 'dynamic_load_test.nmf');
-addTest(tester, 'dynamic_modify_test.nmf');
-addTest(tester, 'imc_shm_mmap_test.nmf');
+for (var i = 0; i < G_NMF_TEST_LIST.length; i++) {
+  addTest(tester, G_NMF_TEST_LIST[i]);
+}
 tester.runParallel();
 
 </script>
