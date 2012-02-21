@@ -2386,7 +2386,7 @@ void Browser::OpenAboutChromeDialog() {
     window_->ShowAboutChromeDialog();
 #endif
   } else {
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
     ShowSingletonTab(GURL(chrome::kChromeUIUberURL));
 #else
     // crbug.com/115123.
