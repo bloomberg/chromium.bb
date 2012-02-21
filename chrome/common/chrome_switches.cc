@@ -408,9 +408,6 @@ const char kDnsLogDetails[]                 = "dns-log-details";
 // Disables prefetching of DNS information.
 const char kDnsPrefetchDisable[]            = "dns-prefetch-disable";
 
-// Use the specified DNS server for raw DNS resolution.
-const char kDnsServer[]                     = "dns-server";
-
 // Replaces the download shelf with a new experimental UI.
 const char kDownloadsNewUI[]                = "downloads-new-ui";
 
@@ -421,6 +418,9 @@ const char kDumpHistogramsOnExit[]          = "dump-histograms-on-exit";
 
 // Enables AeroPeek for each tab. (This switch only works on Windows 7).
 const char kEnableAeroPeekTabs[]            = "enable-aero-peek-tabs";
+
+// Enables the experimental asynchronous DNS client.
+const char kEnableAsyncDns[]                = "enable-async-dns";
 
 // Enables asynchronous spellchecking features for all time.
 // Enabling this feature also enables unified spellchecking.

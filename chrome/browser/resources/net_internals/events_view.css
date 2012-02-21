@@ -73,10 +73,7 @@
 }
 
 #events-view-source-list-tbody .source_HOST_RESOLVER_IMPL_JOB,
-#events-view-source-list-tbody .source_HOST_RESOLVER_IMPL_REQUEST,
-#events-view-source-list-tbody .source_HOST_RESOLVER_IMPL_PROC_TASK,
-#events-view-source-list-tbody .source_ASYNC_HOST_RESOLVER_REQUEST,
-#events-view-source-list-tbody .source_DNS_TRANSACTION {
+#events-view-source-list-tbody .source_HOST_RESOLVER_IMPL_REQUEST {
   color: #206060;
 }
 

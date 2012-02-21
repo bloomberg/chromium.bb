@@ -114,14 +114,15 @@ var SourceEntry = (function() {
         case LogSourceType.UDP_SOCKET:
           if (e.params.address != undefined) {
             this.description_ = e.params.address;
-            // If the parent of |this| is a DNS_TRANSACTION, use
-            // '<DNS Server IP> [<DNS we're resolving>]'.
+            // If the parent of |this| is a HOST_RESOLVER_IMPL_JOB, use
+            // '<DNS Server IP> [<host we're resolving>]'.
             if (this.entries_[0].type == LogEventType.SOCKET_ALIVE &&
                 this.entries_[0].params.source_dependency != undefined) {
               var parentId = this.entries_[0].params.source_dependency.id;
               var parent = g_browser.sourceTracker.getSourceEntry(parentId);
               if (parent &&
-                  parent.getSourceType() == LogSourceType.DNS_TRANSACTION &&
+                  parent.getSourceType() ==
+                      LogSourceType.HOST_RESOLVER_IMPL_JOB &&
                   parent.getDescription().length > 0) {
                 this.description_ += ' [' + parent.getDescription() + ']';
               }

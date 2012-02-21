@@ -39,12 +39,10 @@
 #include "net/base/default_origin_bound_cert_store.h"
 #include "net/base/host_cache.h"
 #include "net/base/host_resolver.h"
-#include "net/base/host_resolver_impl.h"
 #include "net/base/mapped_host_resolver.h"
 #include "net/base/net_util.h"
 #include "net/base/origin_bound_cert_service.h"
 #include "net/base/sdch_manager.h"
-#include "net/dns/async_host_resolver.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -137,17 +135,9 @@ net::HostResolver* CreateGlobalHostResolver(net::NetLog* net_log) {
   }
 
   net::HostResolver* global_host_resolver = NULL;
-  if (command_line.HasSwitch(switches::kDnsServer)) {
-    std::string dns_ip_string =
-      command_line.GetSwitchValueASCII(switches::kDnsServer);
-    net::IPAddressNumber dns_ip_number;
-    if (net::ParseIPLiteralToNumber(dns_ip_string, &dns_ip_number)) {
-      global_host_resolver =
-        net::CreateAsyncHostResolver(parallelism, dns_ip_number, net_log);
-    } else {
-      LOG(ERROR) << "Invalid IP address specified for --dns-server: "
-                 << dns_ip_string;
-    }
+  if (command_line.HasSwitch(switches::kEnableAsyncDns)) {
+    global_host_resolver =
+        net::CreateAsyncHostResolver(parallelism, retry_attempts, net_log);
   }
 
   if (!global_host_resolver) {
