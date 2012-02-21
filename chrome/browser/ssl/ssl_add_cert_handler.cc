@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,6 +47,10 @@ void SSLAddCertHandler::Run() {
     cert_error = db.CheckUserCert(cert_);
   }
   if (cert_error != net::OK) {
+    LOG_IF(ERROR, cert_error == net::ERR_NO_PRIVATE_KEY_FOR_CERT)
+        << "No corresponding private key in store for cert: "
+        << (cert_.get() ? cert_->subject().GetDisplayName() : "NULL");
+
     BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(
