@@ -925,8 +925,19 @@
           'target_name': 'plugin_carbon_interpose',
           'type': 'shared_library',
           'variables': { 'enable_wexit_time_destructors': 1, },
+          # This target must not depend on static libraries, else the code in
+          # those libraries would appear twice in plugin processes: Once from
+          # Chromium Framework, and once from this dylib.
           'dependencies': [
             'chrome_dll',
+          ],
+          'conditions': [
+            ['component=="shared_library"', {
+              'dependencies': [
+                '../webkit/support/webkit_support.gyp:glue',
+                '../content/content.gyp:content_plugin',
+              ],
+            }],
           ],
           'sources': [
             '../content/plugin/plugin_carbon_interpose_mac.cc',
@@ -1144,7 +1155,7 @@
                 'template_input_path': 'app/chrome_version.rc.version',
               },
               'conditions': [
-                [ 'branding == "Chrome"', {
+                ['branding == "Chrome"', {
                   'variables': {
                      'branding_path': 'app/theme/google_chrome/BRANDING',
                   },
@@ -1192,7 +1203,7 @@
                   '<(DEPTH)/build/util/LASTCHANGE',
               },
               'conditions': [
-                [ 'branding == "Chrome"', {
+                ['branding == "Chrome"', {
                   'variables': {
                      'branding_path': 'app/theme/google_chrome/BRANDING',
                   },
