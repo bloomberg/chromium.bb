@@ -75,12 +75,14 @@ DEPS entry controls which revision the builders are currently using.
 
 The steps for doing this are:
 
-  svn co <ffmpeg svn>
-  rsync -av --exclude=.git <ffmpeg git> <ffmpeg svn>
-  svn commit
-  <roll deps>.
+  cd <some path outside of ffmpeg Git>
+  svn co svn://svn.chromium.org/chrome/trunk/deps/third_party/ffmpeg
+  <path to ffmpeg Git>/chromium/scripts/sync_svn.py <Git path> <SVN path>
+  cd <svn repo>
+  svn commit -m "<Some happy message about updating FFmpeg SVN.>"
 
-TODO(dalecurtis): Revisit these steps after actually performing the process.
+You'll also need to update the internal ffmpeg SVN with the Chrome DLLs for
+Windows and roll the internal and external DEPS files.
 
 -- Performing an upstream merge.
 
@@ -95,13 +97,11 @@ The upstream merge process follows the normal Git merge process:
 
   <Follow rest of "Submitting changes to the Chromium Git.">
 
-  # Use git push for submission so commit history is kept.  Will require merge
+  # Use git push for submission so commit history is kept.  Might require merge
   # approval on your Gerrit account.  Do not commit any other way.
-  git push
+  git push origin master
 
   <Follow the steps under "Exporting the Git repository to Subversion."
-
-TODO(dalecurtis): Revisit these steps after actually performing the process.
 
 -- Upstreaming a patch.
 
@@ -112,7 +112,7 @@ TODO(dalecurtis): Revisit these steps after actually performing the process.
   < Follow FFmpeg guide: http://ffmpeg.org/developer.html#Submitting-patches-1 >
 
 Once your change has been upstreamed, please update the chromium/patches/README
-file with the status.  The next time an upstream merge is done, the commiter
+file with the status.  The next time an upstream merge is done, the committer
 will clear out all the patches which have been upstreamed.
 
 -- Cherry-picking a patch from upstream.
@@ -128,8 +128,6 @@ will clear out all the patches which have been upstreamed.
   git cherry-pick <hash of commit in upstream>
 
   <Follow the steps in "Submitting changes to the Chromium Git." above>
-
-TODO(dalecurtis): Revisit these steps after actually performing the process.
 
 Building:
 =========
@@ -197,7 +195,7 @@ Here is a list of gotchas that have shown up.
 
   4) yasm needs to be installed on mac and windows if not already there.
 
-  5) Similar to issue #4, ./configure may detect the presence of SDL and
+  5) Similar to issue #3, ./configure may detect the presence of SDL and
      adjust config.h accordingly. This is harmless because all the SDL
      related code has been disabled in our configuration.
 
