@@ -164,23 +164,14 @@ class PowerManagerClientImpl : public PowerManagerClient {
         power_manager::kDecreaseScreenBrightness);
     dbus::MessageWriter writer(&method_call);
     writer.AppendBool(allow_off);
-
     power_manager_proxy_->CallMethod(
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&PowerManagerClientImpl::OnDecreaseScreenBrightness,
-                   weak_ptr_factory_.GetWeakPtr()));
+        dbus::ObjectProxy::EmptyResponseCallback());
   }
 
   virtual void IncreaseScreenBrightness() OVERRIDE {
-    dbus::MethodCall method_call(
-        power_manager::kPowerManagerInterface,
-        power_manager::kIncreaseScreenBrightness);
-    power_manager_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&PowerManagerClientImpl::OnIncreaseScreenBrightness,
-                   weak_ptr_factory_.GetWeakPtr()));
+    SimpleMethodCallToPowerManager(power_manager::kIncreaseScreenBrightness);
   }
 
   virtual void RequestStatusUpdate() OVERRIDE {
@@ -193,24 +184,12 @@ class PowerManagerClientImpl : public PowerManagerClient {
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  // Requests restart of the system.
   virtual void RequestRestart() OVERRIDE {
-    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
-                                 power_manager::kRequestRestartMethod);
-    power_manager_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+    SimpleMethodCallToPowerManager(power_manager::kRequestRestartMethod);
   };
 
-  // Requests shutdown of the system.
   virtual void RequestShutdown() OVERRIDE {
-    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
-                                 power_manager::kRequestShutdownMethod);
-    power_manager_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+    SimpleMethodCallToPowerManager(power_manager::kRequestShutdownMethod);
   }
 
   virtual void CalculateIdleTime(const CalculateIdleTimeCallback& callback)
@@ -290,22 +269,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
             << ": user initiated " << user_initiated;
     FOR_EACH_OBSERVER(Observer, observers_,
                       BrightnessChanged(brightness_level, user_initiated));
-  }
-
-  void OnDecreaseScreenBrightness(dbus::Response* response) {
-    if (!response) {
-      LOG(ERROR) << "Failed to decrease screen brightness";
-      return;
-    }
-    VLOG(1) << "screen brightness increased: " << response->ToString();
-  }
-
-  void OnIncreaseScreenBrightness(dbus::Response* response) {
-    if (!response) {
-      LOG(ERROR) << "Failed to increase screen brightness";
-      return;
-    }
-    VLOG(1) << "screen brightness increased: " << response->ToString();
   }
 
   void PowerStateChangedSignalReceived(dbus::Signal* signal) {
