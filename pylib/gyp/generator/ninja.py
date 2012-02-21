@@ -663,7 +663,7 @@ class NinjaWriter:
 
 
   def WriteLink(self, spec, config_name, config, link_deps):
-    """Write out a link step.  Returns the path to the output."""
+    """Write out a link step. Fills out target.binary. """
 
     command = {
       'executable':      'link',
@@ -717,13 +717,20 @@ class NinjaWriter:
       libraries = self.xcode_settings.AdjustLibraries(libraries)
     self.WriteVariableList('libs', libraries)
 
+    self.target.binary = output
+
     if command in ('solink', 'solink_module'):
       extra_bindings.append(('soname', os.path.split(output)[1]))
+      if self.flavor == 'win':
+        import_lib = output + '.lib'
+        extra_bindings.append(('dll', output))
+        extra_bindings.append(('implib', import_lib))
+        self.target.binary = import_lib
+        output = [output, import_lib]
 
     self.ninja.build(output, command, link_deps,
                      implicit=list(implicit_deps),
                      variables=extra_bindings)
-    return output
 
   def WriteTarget(self, spec, config_name, config, link_deps, compile_deps):
     if spec['type'] == 'none':
@@ -737,7 +744,7 @@ class NinjaWriter:
                        variables=[('postbuilds', self.GetPostbuildCommand(
                            spec, self.target.binary, self.target.binary))])
     else:
-      self.target.binary = self.WriteLink(spec, config_name, config, link_deps)
+      self.WriteLink(spec, config_name, config, link_deps)
     return self.target.binary
 
   def WriteMacBundle(self, spec, mac_bundle_depends):
@@ -903,6 +910,8 @@ class NinjaWriter:
     type_in_output_root = ['executable', 'loadable_module']
     if self.flavor == 'mac' and self.toolset == 'target':
       type_in_output_root += ['shared_library', 'static_library']
+    elif self.flavor == 'win' and self.toolset == 'target':
+      type_in_output_root += ['shared_library']
 
     if type in type_in_output_root:
       return filename
@@ -1116,16 +1125,16 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   elif flavor == 'win':
     master_ninja.rule(
       'alink',
-      description='AR $out',
+      description='LIB $out',
       command='lib /nologo /OUT:$out $in')
     master_ninja.rule(
       'solink',
-      description='SOLINK $out',
-      command=('$ld /nologo /DLL $ldflags /OUT:$out $in $libs'))
+      description='LINK(DLL) $dll',
+      command=('$ld /nologo /IMPLIB:$implib /DLL $ldflags /OUT:$dll $in $libs'))
     master_ninja.rule(
       'solink_module',
-      description='SOLINK(module) $out',
-      command=('$ld /nologo /DLL $ldflags /OUT:$out $in $libs'))
+      description='LINK(DLL) $dll',
+      command=('$ld /nologo /IMPLIB:$implib /DLL $ldflags /OUT:$dll $in $libs'))
     master_ninja.rule(
       'link',
       description='LINK $out',

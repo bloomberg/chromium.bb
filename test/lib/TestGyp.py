@@ -457,7 +457,7 @@ class TestGypNinja(TestGypBase):
       if sys.platform != 'darwin':
         result.append('obj')
     elif type == self.SHARED_LIB:
-      if sys.platform != 'darwin':
+      if sys.platform != 'darwin' and sys.platform != 'win32':
         result.append('lib')
     subdir = kw.get('subdir')
     if subdir:
