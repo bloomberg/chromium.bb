@@ -214,7 +214,8 @@ IN_PROC_BROWSER_TEST_F(ProcessProxyTest, RegistryNotifiedOnProcessExit) {
 }
 
 // Test verifies that \003 message send to process is processed as SigInt.
-IN_PROC_BROWSER_TEST_F(ProcessProxyTest, SigInt) {
+// Timing out on the waterfall: http://crbug.com/115064
+IN_PROC_BROWSER_TEST_F(ProcessProxyTest, DISABLED_SigInt) {
   test_runner_.reset(new SigIntTestRunner());
   RunTest();
 }
