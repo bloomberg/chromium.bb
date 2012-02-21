@@ -388,13 +388,9 @@ hg-migrate() {
     # Nothing to do
     return 0
   fi
-  if [ -d "${TC_SRC}" ] ; then
-    Fatal "Error: Trying to move hg/ to pnacl/src, but destination" \
-          "directory already exists. Please move manually."
-  fi
   if ! ${PNACL_BUILDBOT} ; then
     Banner "Migration needed: Repository paths have changed. This step will:" \
-           "   1) Move hg/ to pnacl/src/" \
+           "   1) Move hg/* to pnacl/src" \
            "   2) Wipe the old build directories (toolchain/hg-build-*)" \
            "   3) Wipe the old log directories (toolchain/log)" \
            "These have moved to pnacl/build and pnacl/build/log respectively." \
@@ -405,9 +401,11 @@ hg-migrate() {
     fi
   fi
 
-  mv "${NACL_ROOT}"/hg "${TC_SRC}"
+  mkdir -p "${TC_SRC}"
+  mv "${NACL_ROOT}"/hg/* "${TC_SRC}"
   rm -rf "${TOOLCHAIN_ROOT}"/hg-build-*
   rm -rf "${TOOLCHAIN_ROOT}"/hg-log
+  rmdir "${NACL_ROOT}"/hg
 }
 
 # Convert a path given on the command-line to an absolute path.
