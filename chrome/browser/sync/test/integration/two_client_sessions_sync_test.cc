@@ -168,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
   ASSERT_EQ(0, GetClient(1)->GetLastSessionSnapshot()->
-      num_blocking_conflicting_updates);
+      num_simple_conflicting_updates);
   // We have two meta nodes (one for each client), the one tab node, plus the
   // basic preference/themes/search engines items.
   ASSERT_EQ(NumberOfDefaultSyncItems() + 3,
@@ -218,9 +218,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
   ASSERT_EQ(0, GetClient(1)->GetLastSessionSnapshot()->
-      num_blocking_conflicting_updates);
-  // We have nine non-blocking conflicts due to the two meta nodes (one for
-  // each client), plus the basic preference/themes/search engines nodes.
+      num_simple_conflicting_updates);
+  // We have nine encryption conflicts due to the two meta nodes (one for each
+  // client), plus the basic preference/themes/search engines nodes.
   ASSERT_EQ(NumberOfDefaultSyncItems() + 2,
       GetClient(1)->GetLastSessionSnapshot()->
       num_conflicting_updates);  // The encrypted nodes.
@@ -230,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
       client0_windows.GetMutable()));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_EQ(0, GetClient(1)->GetLastSessionSnapshot()->
-      num_blocking_conflicting_updates);
+      num_simple_conflicting_updates);
   ASSERT_EQ(NumberOfDefaultSyncItems() + 3,
       GetClient(1)->GetLastSessionSnapshot()->
       num_conflicting_updates);  // The encrypted nodes.
@@ -270,8 +270,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
   ASSERT_EQ(0, GetClient(1)->GetLastSessionSnapshot()->
-      num_blocking_conflicting_updates);
-  // We have two non-blocking conflicts due to the two meta nodes (one for each
+      num_simple_conflicting_updates);
+  // We have two encryption conflicts due to the two meta nodes (one for each
   // client), plus the basic preference/themes/search engines nodes.
   ASSERT_EQ(NumberOfDefaultSyncItems() + 2,
       GetClient(1)->GetLastSessionSnapshot()->
@@ -335,8 +335,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
   ASSERT_EQ(0, GetClient(1)->GetLastSessionSnapshot()->
-      num_blocking_conflicting_updates);
-  // We have three non-blocking conflicts due to the two meta nodes (one for
+      num_simple_conflicting_updates);
+  // We have three encryption conflicts due to the two meta nodes (one for
   // each client), the one tab node, plus the basic preference/themes/search
   // engines nodes.
   ASSERT_GE(NumberOfDefaultSyncItems() + 3,
@@ -394,8 +394,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   ASSERT_TRUE(EnableEncryption(0, syncable::SESSIONS));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_EQ(0, GetClient(1)->GetLastSessionSnapshot()->
-      num_blocking_conflicting_updates);
-  // We have three non-blocking conflicts due to the two meta nodes (one for
+      num_simple_conflicting_updates);
+  // We have three encryption conflicts due to the two meta nodes (one for
   // each client), the one tab node, plus the basic preference/themes/search
   // engines nodes.
   ASSERT_EQ(NumberOfDefaultSyncItems() + 3,

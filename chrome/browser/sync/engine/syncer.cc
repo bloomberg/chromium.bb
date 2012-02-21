@@ -10,7 +10,6 @@
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "chrome/browser/sync/engine/apply_updates_command.h"
-#include "chrome/browser/sync/engine/build_and_process_conflict_sets_command.h"
 #include "chrome/browser/sync/engine/build_commit_command.h"
 #include "chrome/browser/sync/engine/cleanup_disabled_types_command.h"
 #include "chrome/browser/sync/engine/clear_data_command.h"
@@ -70,7 +69,6 @@ const char* SyncerStepToString(const SyncerStep step)
     ENUM_CASE(BUILD_COMMIT_REQUEST);
     ENUM_CASE(POST_COMMIT_MESSAGE);
     ENUM_CASE(PROCESS_COMMIT_RESPONSE);
-    ENUM_CASE(BUILD_AND_PROCESS_CONFLICT_SETS);
     ENUM_CASE(RESOLVE_CONFLICTS);
     ENUM_CASE(APPLY_UPDATES_TO_RESOLVE_CONFLICTS);
     ENUM_CASE(CLEAR_PRIVATE_DATA);
@@ -216,7 +214,7 @@ void Syncer::SyncShare(sessions::SyncSession* session,
 
           next_step = POST_COMMIT_MESSAGE;
         } else {
-          next_step = BUILD_AND_PROCESS_CONFLICT_SETS;
+          next_step = RESOLVE_CONFLICTS;
         }
 
         break;
@@ -234,12 +232,6 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         session->mutable_status_controller()->
             set_last_process_commit_response_result(
                 process_response_command.Execute(session));
-        next_step = BUILD_AND_PROCESS_CONFLICT_SETS;
-        break;
-      }
-      case BUILD_AND_PROCESS_CONFLICT_SETS: {
-        BuildAndProcessConflictSetsCommand build_process_conflict_sets;
-        build_process_conflict_sets.Execute(session);
         next_step = RESOLVE_CONFLICTS;
         break;
       }
@@ -249,7 +241,7 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         ResolveConflictsCommand resolve_conflicts_command;
         resolve_conflicts_command.Execute(session);
 
-        // Has ConflictingUpdates includes both blocking and non-blocking
+        // Has ConflictingUpdates includes both resolvable and unresolvable
         // conflicts. If we have either, we want to attempt to reapply.
         if (status->HasConflictingUpdates())
           next_step = APPLY_UPDATES_TO_RESOLVE_CONFLICTS;
@@ -263,13 +255,12 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         ApplyUpdatesCommand apply_updates;
 
         // We only care to resolve conflicts again if we made progress on the
-        // blocking conflicts. Whether or not we made progress on the
-        // non-blocking doesn't matter.
+        // simple conflicts.
         int before_blocking_conflicting_updates =
-            status->TotalNumBlockingConflictingItems();
+            status->TotalNumSimpleConflictingItems();
         apply_updates.Execute(session);
         int after_blocking_conflicting_updates =
-            status->TotalNumBlockingConflictingItems();
+            status->TotalNumSimpleConflictingItems();
         // If the following call sets the conflicts_resolved value to true,
         // SyncSession::HasMoreToSync() will send us into another sync cycle
         // after this one completes.

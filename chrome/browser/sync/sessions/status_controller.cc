@@ -233,14 +233,14 @@ bool StatusController::HasConflictingUpdates() const {
   return false;
 }
 
-int StatusController::TotalNumBlockingConflictingItems() const {
+int StatusController::TotalNumSimpleConflictingItems() const {
   DCHECK(!group_restriction_in_effect_)
-      << "TotalNumBlockingConflictingItems applies to all ModelSafeGroups";
+      << "TotalNumSimpleConflictingItems applies to all ModelSafeGroups";
   std::map<ModelSafeGroup, PerModelSafeGroupState*>::const_iterator it =
       per_model_group_.begin();
   int sum = 0;
   for (; it != per_model_group_.end(); ++it) {
-    sum += it->second->conflict_progress.ConflictingItemsSize();
+    sum += it->second->conflict_progress.SimpleConflictingItemsSize();
   }
   return sum;
 }
@@ -252,8 +252,10 @@ int StatusController::TotalNumConflictingItems() const {
     per_model_group_.begin();
   int sum = 0;
   for (; it != per_model_group_.end(); ++it) {
-    sum += it->second->conflict_progress.ConflictingItemsSize();
-    sum += it->second->conflict_progress.NonblockingConflictingItemsSize();
+    sum += it->second->conflict_progress.SimpleConflictingItemsSize();
+    sum += it->second->conflict_progress.EncryptionConflictingItemsSize();
+    sum += it->second->conflict_progress.HierarchyConflictingItemsSize();
+    sum += it->second->conflict_progress.ServerConflictingItemsSize();
   }
   return sum;
 }

@@ -23,10 +23,11 @@ void DebugInfoEventListener::OnSyncCycleCompleted(
   sync_pb::SyncCycleCompletedEventInfo* sync_completed_event_info =
       event_info.mutable_sync_cycle_completed_event_info();
 
+  // TODO(rlarocque): These counters are reversed.  We should fix this bug.
   sync_completed_event_info->set_num_blocking_conflicts(
       snapshot->num_conflicting_updates);
   sync_completed_event_info->set_num_non_blocking_conflicts(
-      snapshot->num_blocking_conflicting_updates);
+      snapshot->num_simple_conflicting_updates);
 
   AddEventToQueue(event_info);
 }

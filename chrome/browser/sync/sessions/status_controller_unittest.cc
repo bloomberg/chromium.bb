@@ -43,7 +43,8 @@ TEST_F(StatusControllerTest, GetsDirty) {
 
   {
     ScopedModelSafeGroupRestriction r(&status, GROUP_UI);
-    status.mutable_conflict_progress()->AddConflictingItemById(syncable::Id());
+    status.mutable_conflict_progress()->
+        AddSimpleConflictingItemById(syncable::Id());
   }
   EXPECT_TRUE(status.TestAndClearIsDirty());
 
@@ -118,7 +119,7 @@ TEST_F(StatusControllerTest, HasConflictingUpdates) {
     EXPECT_FALSE(status.update_progress());
     status.mutable_update_progress()->AddAppliedUpdate(SUCCESS,
         syncable::Id());
-    status.mutable_update_progress()->AddAppliedUpdate(CONFLICT,
+    status.mutable_update_progress()->AddAppliedUpdate(CONFLICT_SIMPLE,
         syncable::Id());
     EXPECT_TRUE(status.update_progress()->HasConflictingUpdates());
   }
@@ -129,6 +130,22 @@ TEST_F(StatusControllerTest, HasConflictingUpdates) {
     ScopedModelSafeGroupRestriction r(&status, GROUP_PASSIVE);
     EXPECT_FALSE(status.update_progress());
   }
+}
+
+TEST_F(StatusControllerTest, HasConflictingUpdates_NonBlockingUpdates) {
+  StatusController status(routes_);
+  EXPECT_FALSE(status.HasConflictingUpdates());
+  {
+    ScopedModelSafeGroupRestriction r(&status, GROUP_UI);
+    EXPECT_FALSE(status.update_progress());
+    status.mutable_update_progress()->AddAppliedUpdate(SUCCESS,
+        syncable::Id());
+    status.mutable_update_progress()->AddAppliedUpdate(CONFLICT_HIERARCHY,
+        syncable::Id());
+    EXPECT_TRUE(status.update_progress()->HasConflictingUpdates());
+  }
+
+  EXPECT_TRUE(status.HasConflictingUpdates());
 }
 
 TEST_F(StatusControllerTest, CountUpdates) {
@@ -148,17 +165,21 @@ TEST_F(StatusControllerTest, TotalNumConflictingItems) {
   {
     ScopedModelSafeGroupRestriction r(&status, GROUP_UI);
     EXPECT_FALSE(status.conflict_progress());
-    status.mutable_conflict_progress()->AddConflictingItemById(f.NewLocalId());
-    status.mutable_conflict_progress()->AddConflictingItemById(f.NewLocalId());
-    EXPECT_EQ(2, status.conflict_progress()->ConflictingItemsSize());
+    status.mutable_conflict_progress()->
+        AddSimpleConflictingItemById(f.NewLocalId());
+    status.mutable_conflict_progress()->
+        AddSimpleConflictingItemById(f.NewLocalId());
+    EXPECT_EQ(2, status.conflict_progress()->SimpleConflictingItemsSize());
   }
   EXPECT_EQ(2, status.TotalNumConflictingItems());
   {
     ScopedModelSafeGroupRestriction r(&status, GROUP_DB);
     EXPECT_FALSE(status.conflict_progress());
-    status.mutable_conflict_progress()->AddConflictingItemById(f.NewLocalId());
-    status.mutable_conflict_progress()->AddConflictingItemById(f.NewLocalId());
-    EXPECT_EQ(2, status.conflict_progress()->ConflictingItemsSize());
+    status.mutable_conflict_progress()->
+        AddSimpleConflictingItemById(f.NewLocalId());
+    status.mutable_conflict_progress()->
+        AddSimpleConflictingItemById(f.NewLocalId());
+    EXPECT_EQ(2, status.conflict_progress()->SimpleConflictingItemsSize());
   }
   EXPECT_EQ(4, status.TotalNumConflictingItems());
 }

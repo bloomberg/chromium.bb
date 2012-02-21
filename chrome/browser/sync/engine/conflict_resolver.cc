@@ -77,21 +77,13 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
   MutableEntry entry(trans, syncable::GET_BY_ID, id);
   // Must be good as the entry won't have been cleaned up.
   CHECK(entry.good());
-  // If an update fails, locally we have to be in a set or unsynced. We're not
-  // in a set here, so we must be unsynced.
-  if (!entry.Get(syncable::IS_UNSYNCED)) {
-    return NO_SYNC_PROGRESS;
-  }
 
-  if (!entry.Get(syncable::IS_UNAPPLIED_UPDATE)) {
-    if (!entry.Get(syncable::PARENT_ID).ServerKnows()) {
-      DVLOG(1) << "Item conflicting because its parent not yet committed. Id: "
-               << id;
-    } else {
-      DVLOG(1) << "No set for conflicting entry id " << id << ". There should "
-               << "be an update/commit that will fix this soon. This message "
-               << "should not repeat.";
-    }
+  // This function can only resolve simple conflicts.  Simple conflicts have
+  // both IS_UNSYNCED and IS_UNAPPLIED_UDPATE set.
+  if (!entry.Get(syncable::IS_UNAPPLIED_UPDATE) ||
+      !entry.Get(syncable::IS_UNSYNCED)) {
+    // This is very unusual, but it can happen in tests.  We may be able to
+    // assert NOTREACHED() here when those tests are updated.
     return NO_SYNC_PROGRESS;
   }
 
@@ -313,7 +305,10 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
     entry.Put(syncable::BASE_SERVER_SPECIFICS, sync_pb::EntitySpecifics());
     return SYNC_PROGRESS;
   } else {  // SERVER_IS_DEL is true
-    // If a server deleted folder has local contents we should be in a set.
+    // If a server deleted folder has local contents it should be a hierarchy
+    // conflict.  Hierarchy conflicts should not be processed by this function.
+    // We could end up here if a change was made since we last tried to detect
+    // conflicts, which was during update application.
     if (entry.Get(syncable::IS_DIR)) {
       Directory::ChildHandles children;
       trans->directory()->GetChildHandlesById(trans,
@@ -321,7 +316,7 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
                                               &children);
       if (0 != children.size()) {
         DVLOG(1) << "Entry is a server deleted directory with local contents, "
-                 << "should be in a set. (race condition).";
+                 << "should be a hierarchy conflict. (race condition).";
         return NO_SYNC_PROGRESS;
       }
     }
@@ -361,79 +356,53 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
   }
 }
 
-bool ConflictResolver::ResolveSimpleConflicts(
-    syncable::WriteTransaction* trans,
-    const Cryptographer* cryptographer,
-    const ConflictProgress& progress,
-    sessions::StatusController* status) {
-  bool forward_progress = false;
-  // First iterate over simple conflict items (those that belong to no set).
-  set<Id>::const_iterator conflicting_item_it;
-  set<Id> processed_items;
-  for (conflicting_item_it = progress.ConflictingItemsBegin();
-       conflicting_item_it != progress.ConflictingItemsEnd();
-       ++conflicting_item_it) {
-    Id id = *conflicting_item_it;
-    if (processed_items.count(id) > 0)
-      continue;
-    map<Id, ConflictSet*>::const_iterator item_set_it =
-        progress.IdToConflictSetFind(id);
-    if (item_set_it == progress.IdToConflictSetEnd() ||
-        0 == item_set_it->second) {
-      // We have a simple conflict. In order check if positions have changed,
-      // we need to process conflicting predecessors before successors. Traverse
-      // backwards through all continuous conflicting predecessors, building a
-      // stack of items to resolve in predecessor->successor order, then process
-      // each item individually.
-      list<Id> predecessors;
-      Id prev_id = id;
-      do {
-        predecessors.push_back(prev_id);
-        Entry entry(trans, syncable::GET_BY_ID, prev_id);
-        // Any entry in conflict must be valid.
-        CHECK(entry.good());
-        Id new_prev_id = entry.Get(syncable::PREV_ID);
-        if (new_prev_id == prev_id)
-          break;
-        prev_id = new_prev_id;
-      } while (processed_items.count(prev_id) == 0 &&
-               progress.HasSimpleConflictItem(prev_id));  // Excludes root.
-      while (!predecessors.empty()) {
-        id = predecessors.back();
-        predecessors.pop_back();
-        switch (ProcessSimpleConflict(trans, id, cryptographer, status)) {
-          case NO_SYNC_PROGRESS:
-            break;
-          case SYNC_PROGRESS:
-            forward_progress = true;
-            break;
-        }
-        processed_items.insert(id);
-      }
-    }
-  }
-  return forward_progress;
-}
-
 bool ConflictResolver::ResolveConflicts(syncable::WriteTransaction* trans,
                                         const Cryptographer* cryptographer,
                                         const ConflictProgress& progress,
                                         sessions::StatusController* status) {
-  // TODO(rlarocque): A good amount of code related to the resolution of
-  // conflict sets has been deleted here.  This was done because the code had
-  // not been used in years.  An unrelated bug fix accidentally re-enabled the
-  // code, forcing us to make a decision about what we should do with the code.
-  // We decided to do the safe thing and delete it for now.  This restores the
-  // behaviour we've relied on for quite some time.  We should think about what
-  // that code was trying to do and consider re-enabling parts of it.
+  bool forward_progress = false;
+  // Iterate over simple conflict items.
+  set<Id>::const_iterator conflicting_item_it;
+  set<Id> processed_items;
+  for (conflicting_item_it = progress.SimpleConflictingItemsBegin();
+       conflicting_item_it != progress.SimpleConflictingItemsEnd();
+       ++conflicting_item_it) {
+    Id id = *conflicting_item_it;
+    if (processed_items.count(id) > 0)
+      continue;
 
-  if (progress.ConflictSetsSize() > 0) {
-    DVLOG(1) << "Detected " << progress.IdToConflictSetSize()
-        << " non-simple conflicting entries in " << progress.ConflictSetsSize()
-        << " unprocessed conflict sets.";
+    // We have a simple conflict. In order check if positions have changed,
+    // we need to process conflicting predecessors before successors. Traverse
+    // backwards through all continuous conflicting predecessors, building a
+    // stack of items to resolve in predecessor->successor order, then process
+    // each item individually.
+    list<Id> predecessors;
+    Id prev_id = id;
+    do {
+      predecessors.push_back(prev_id);
+      Entry entry(trans, syncable::GET_BY_ID, prev_id);
+      // Any entry in conflict must be valid.
+      CHECK(entry.good());
+      Id new_prev_id = entry.Get(syncable::PREV_ID);
+      if (new_prev_id == prev_id)
+        break;
+      prev_id = new_prev_id;
+    } while (processed_items.count(prev_id) == 0 &&
+             progress.HasSimpleConflictItem(prev_id));  // Excludes root.
+    while (!predecessors.empty()) {
+      id = predecessors.back();
+      predecessors.pop_back();
+      switch (ProcessSimpleConflict(trans, id, cryptographer, status)) {
+        case NO_SYNC_PROGRESS:
+          break;
+        case SYNC_PROGRESS:
+          forward_progress = true;
+          break;
+      }
+      processed_items.insert(id);
+    }
   }
-
-  return ResolveSimpleConflicts(trans, cryptographer, progress, status);
+  return forward_progress;
 }
 
 }  // namespace browser_sync

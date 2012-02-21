@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,7 @@ TEST_F(ResolveConflictsCommandTest, GetGroupsToChange) {
   // Put GROUP_PASSWORD in conflict.
   session()->mutable_status_controller()->
       GetUnrestrictedMutableConflictProgressForTest(GROUP_PASSWORD)->
-      AddConflictingItemById(syncable::Id());
+      AddSimpleConflictingItemById(syncable::Id());
   ExpectGroupToChange(command_, GROUP_PASSWORD);
 }
 

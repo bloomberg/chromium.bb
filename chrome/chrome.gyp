@@ -367,8 +367,6 @@
         'browser/sync/engine/all_status.h',
         'browser/sync/engine/apply_updates_command.cc',
         'browser/sync/engine/apply_updates_command.h',
-        'browser/sync/engine/build_and_process_conflict_sets_command.cc',
-        'browser/sync/engine/build_and_process_conflict_sets_command.h',
         'browser/sync/engine/build_commit_command.cc',
         'browser/sync/engine/build_commit_command.h',
         'browser/sync/engine/cleanup_disabled_types_command.cc',

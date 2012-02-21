@@ -130,7 +130,7 @@ TEST_F(SessionStateTest, SyncSessionSnapshotToValue) {
   const bool kHasMoreToSync = false;
   const bool kIsSilenced = true;
   const int kUnsyncedCount = 1053;
-  const int kNumBlockingConflictingUpdates = 1054;
+  const int kNumSimpleConflictingUpdates = 1054;
   const int kNumConflictingUpdates = 1055;
   const bool kDidCommitItems = true;
 
@@ -146,7 +146,7 @@ TEST_F(SessionStateTest, SyncSessionSnapshotToValue) {
                                kHasMoreToSync,
                                kIsSilenced,
                                kUnsyncedCount,
-                               kNumBlockingConflictingUpdates,
+                               kNumSimpleConflictingUpdates,
                                kNumConflictingUpdates,
                                kDidCommitItems,
                                source,
@@ -168,8 +168,8 @@ TEST_F(SessionStateTest, SyncSessionSnapshotToValue) {
   ExpectDictBooleanValue(kHasMoreToSync, *value, "hasMoreToSync");
   ExpectDictBooleanValue(kIsSilenced, *value, "isSilenced");
   ExpectDictIntegerValue(kUnsyncedCount, *value, "unsyncedCount");
-  ExpectDictIntegerValue(kNumBlockingConflictingUpdates, *value,
-                         "numBlockingConflictingUpdates");
+  ExpectDictIntegerValue(kNumSimpleConflictingUpdates, *value,
+                         "numSimpleConflictingUpdates");
   ExpectDictIntegerValue(kNumConflictingUpdates, *value,
                          "numConflictingUpdates");
   ExpectDictBooleanValue(kDidCommitItems, *value,

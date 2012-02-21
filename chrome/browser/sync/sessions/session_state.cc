@@ -114,7 +114,7 @@ SyncSessionSnapshot::SyncSessionSnapshot(
     bool more_to_sync,
     bool is_silenced,
     int64 unsynced_count,
-    int num_blocking_conflicting_updates,
+    int num_simple_conflicting_updates,
     int num_conflicting_updates,
     bool did_commit_items,
     const SyncSourceInfo& source,
@@ -130,7 +130,7 @@ SyncSessionSnapshot::SyncSessionSnapshot(
       has_more_to_sync(more_to_sync),
       is_silenced(is_silenced),
       unsynced_count(unsynced_count),
-      num_blocking_conflicting_updates(num_blocking_conflicting_updates),
+      num_simple_conflicting_updates(num_simple_conflicting_updates),
       num_conflicting_updates(num_conflicting_updates),
       did_commit_items(did_commit_items),
       source(source),
@@ -163,8 +163,8 @@ DictionaryValue* SyncSessionSnapshot::ToValue() const {
   // We don't care too much if we lose precision here, also.
   value->SetInteger("unsyncedCount",
                     static_cast<int>(unsynced_count));
-  value->SetInteger("numBlockingConflictingUpdates",
-                    num_blocking_conflicting_updates);
+  value->SetInteger("numSimpleConflictingUpdates",
+                    num_simple_conflicting_updates);
   value->SetInteger("numConflictingUpdates", num_conflicting_updates);
   value->SetBoolean("didCommitItems", did_commit_items);
   value->SetInteger("numEntries", num_entries);
@@ -179,144 +179,70 @@ std::string SyncSessionSnapshot::ToString() const {
   return json;
 }
 
-ConflictProgress::ConflictProgress(bool* dirty_flag) : dirty_(dirty_flag) {}
+ConflictProgress::ConflictProgress(bool* dirty_flag)
+  : num_server_conflicting_items(0), num_hierarchy_conflicting_items(0),
+    num_encryption_conflicting_items(0), dirty_(dirty_flag) {
+}
 
 ConflictProgress::~ConflictProgress() {
-  CleanupSets();
 }
 
 bool ConflictProgress::HasSimpleConflictItem(const syncable::Id& id) const {
-  return conflicting_item_ids_.count(id) > 0 &&
-         (IdToConflictSetFind(id) == IdToConflictSetEnd());
+  return simple_conflicting_item_ids_.count(id) > 0;
 }
 
-IdToConflictSetMap::const_iterator ConflictProgress::IdToConflictSetFind(
-    const syncable::Id& the_id) const {
-  return id_to_conflict_set_.find(the_id);
+std::set<syncable::Id>::const_iterator
+ConflictProgress::SimpleConflictingItemsBegin() const {
+  return simple_conflicting_item_ids_.begin();
+}
+std::set<syncable::Id>::const_iterator
+ConflictProgress::SimpleConflictingItemsEnd() const {
+  return simple_conflicting_item_ids_.end();
 }
 
-IdToConflictSetMap::const_iterator
-ConflictProgress::IdToConflictSetBegin() const {
-  return id_to_conflict_set_.begin();
-}
-
-IdToConflictSetMap::const_iterator
-ConflictProgress::IdToConflictSetEnd() const {
-  return id_to_conflict_set_.end();
-}
-
-IdToConflictSetMap::size_type ConflictProgress::IdToConflictSetSize() const {
-  return id_to_conflict_set_.size();
-}
-
-const ConflictSet* ConflictProgress::IdToConflictSetGet(
+void ConflictProgress::AddSimpleConflictingItemById(
     const syncable::Id& the_id) {
-  return id_to_conflict_set_[the_id];
-}
-
-std::set<ConflictSet*>::const_iterator
-ConflictProgress::ConflictSetsBegin() const {
-  return conflict_sets_.begin();
-}
-
-std::set<ConflictSet*>::const_iterator
-ConflictProgress::ConflictSetsEnd() const {
-  return conflict_sets_.end();
-}
-
-std::set<ConflictSet*>::size_type
-ConflictProgress::ConflictSetsSize() const {
-  return conflict_sets_.size();
-}
-
-std::set<syncable::Id>::const_iterator
-ConflictProgress::ConflictingItemsBegin() const {
-  return conflicting_item_ids_.begin();
-}
-std::set<syncable::Id>::const_iterator
-ConflictProgress::ConflictingItemsEnd() const {
-  return conflicting_item_ids_.end();
-}
-
-void ConflictProgress::AddConflictingItemById(const syncable::Id& the_id) {
   std::pair<std::set<syncable::Id>::iterator, bool> ret =
-    conflicting_item_ids_.insert(the_id);
+      simple_conflicting_item_ids_.insert(the_id);
   if (ret.second)
     *dirty_ = true;
 }
 
-void ConflictProgress::EraseConflictingItemById(const syncable::Id& the_id) {
-  int items_erased = conflicting_item_ids_.erase(the_id);
+void ConflictProgress::EraseSimpleConflictingItemById(
+    const syncable::Id& the_id) {
+  int items_erased = simple_conflicting_item_ids_.erase(the_id);
   if (items_erased != 0)
     *dirty_ = true;
 }
 
-void ConflictProgress::AddNonblockingConflictingItemById(
+void ConflictProgress::AddEncryptionConflictingItemById(
     const syncable::Id& the_id) {
   std::pair<std::set<syncable::Id>::iterator, bool> ret =
-      nonblocking_conflicting_item_ids_.insert(the_id);
-  if (ret.second)
+      unresolvable_conflicting_item_ids_.insert(the_id);
+  if (ret.second) {
+    num_encryption_conflicting_items++;
     *dirty_ = true;
+  }
 }
 
-void ConflictProgress::EraseNonblockingConflictingItemById(
+void ConflictProgress::AddHierarchyConflictingItemById(
     const syncable::Id& the_id) {
-  int items_erased = nonblocking_conflicting_item_ids_.erase(the_id);
-  if (items_erased != 0)
+  std::pair<std::set<syncable::Id>::iterator, bool> ret =
+      unresolvable_conflicting_item_ids_.insert(the_id);
+  if (ret.second) {
+    num_hierarchy_conflicting_items++;
     *dirty_ = true;
+  }
 }
 
-void ConflictProgress::MergeSets(const syncable::Id& id1,
-                                 const syncable::Id& id2) {
-  // There are no single item sets, we just leave those entries == 0
-  vector<syncable::Id>* set1 = id_to_conflict_set_[id1];
-  vector<syncable::Id>* set2 = id_to_conflict_set_[id2];
-  vector<syncable::Id>* rv = 0;
-  if (0 == set1 && 0 == set2) {
-    // Neither item currently has a set so we build one.
-    rv = new vector<syncable::Id>();
-    rv->push_back(id1);
-    if (id1 != id2) {
-      rv->push_back(id2);
-    } else {
-      LOG(WARNING) << "[BUG] Attempting to merge two identical conflict ids.";
-    }
-    conflict_sets_.insert(rv);
-  } else if (0 == set1) {
-    // Add the item to the existing set.
-    rv = set2;
-    rv->push_back(id1);
-  } else if (0 == set2) {
-    // Add the item to the existing set.
-    rv = set1;
-    rv->push_back(id2);
-  } else if (set1 == set2) {
-    // It's the same set already.
-    return;
-  } else {
-    // Merge the two sets.
-    rv = set1;
-    // Point all the second sets id's back to the first.
-    vector<syncable::Id>::iterator i;
-    for (i = set2->begin() ; i != set2->end() ; ++i) {
-      id_to_conflict_set_[*i] = rv;
-    }
-    // Copy the second set to the first.
-    rv->insert(rv->end(), set2->begin(), set2->end());
-    conflict_sets_.erase(set2);
-    delete set2;
+void ConflictProgress::AddServerConflictingItemById(
+    const syncable::Id& the_id) {
+  std::pair<std::set<syncable::Id>::iterator, bool> ret =
+      unresolvable_conflicting_item_ids_.insert(the_id);
+  if (ret.second) {
+    num_server_conflicting_items++;
+    *dirty_ = true;
   }
-  id_to_conflict_set_[id1] = id_to_conflict_set_[id2] = rv;
-}
-
-void ConflictProgress::CleanupSets() {
-  // Clean up all the sets.
-  set<ConflictSet*>::iterator i;
-  for (i = conflict_sets_.begin(); i != conflict_sets_.end(); i++) {
-    delete *i;
-  }
-  conflict_sets_.clear();
-  id_to_conflict_set_.clear();
 }
 
 UpdateProgress::UpdateProgress() {}
@@ -369,7 +295,7 @@ int UpdateProgress::SuccessfullyAppliedUpdateCount() const {
 bool UpdateProgress::HasConflictingUpdates() const {
   std::vector<AppliedUpdate>::const_iterator it;
   for (it = applied_updates_.begin(); it != applied_updates_.end(); ++it) {
-    if (it->first == CONFLICT) {
+    if (it->first != SUCCESS) {
       return true;
     }
   }

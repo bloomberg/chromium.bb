@@ -1728,7 +1728,7 @@ TEST_F(SyncerTest, IllegalAndLegalUpdates) {
   {
     sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
     ASSERT_TRUE(status->conflict_progress());
-    EXPECT_EQ(1, status->conflict_progress()->ConflictingItemsSize());
+    EXPECT_EQ(1, status->conflict_progress()->HierarchyConflictingItemsSize());
   }
 
   // These entries will be used in the second set of updates.
@@ -1746,7 +1746,7 @@ TEST_F(SyncerTest, IllegalAndLegalUpdates) {
   {
     sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
     ASSERT_TRUE(status->conflict_progress());
-    EXPECT_EQ(3, status->conflict_progress()->ConflictingItemsSize());
+    EXPECT_EQ(3, status->conflict_progress()->HierarchyConflictingItemsSize());
   }
 
   {
@@ -1840,7 +1840,7 @@ TEST_F(SyncerTest, IllegalAndLegalUpdates) {
   {
     sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
     ASSERT_TRUE(status->conflict_progress());
-    EXPECT_EQ(4, status->conflict_progress()->ConflictingItemsSize());
+    EXPECT_EQ(4, status->conflict_progress()->HierarchyConflictingItemsSize());
   }
 }
 
@@ -2526,7 +2526,7 @@ TEST_F(SyncerTest, UnappliedUpdateDuringCommit) {
   }
   syncer_->SyncShare(session_.get(), SYNCER_BEGIN, SYNCER_END);
   syncer_->SyncShare(session_.get(), SYNCER_BEGIN, SYNCER_END);
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(1, session_->status_controller().TotalNumConflictingItems());
   saw_syncer_event_ = false;
 }
 
@@ -2939,31 +2939,6 @@ TEST_F(SyncerTest, SiblingDirectoriesBecomeCircular) {
   }
 }
 
-TEST_F(SyncerTest, ConflictSetClassificationError) {
-  // This code used to cause a CHECK failure because we incorrectly thought
-  // a set was only unapplied updates.
-  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
-  CHECK(dir.good());
-  mock_server_->AddUpdateDirectory(1, 0, "A", 10, 10);
-  mock_server_->AddUpdateDirectory(2, 0, "B", 10, 10);
-  mock_server_->set_conflict_all_commits(true);
-  SyncShareAsDelegate();
-  {
-    WriteTransaction wtrans(FROM_HERE, UNITTEST, dir);
-    MutableEntry A(&wtrans, GET_BY_ID, ids_.FromNumber(1));
-    ASSERT_TRUE(A.good());
-    A.Put(IS_UNSYNCED, true);
-    A.Put(IS_UNAPPLIED_UPDATE, true);
-    A.Put(SERVER_NON_UNIQUE_NAME, "B");
-    MutableEntry B(&wtrans, GET_BY_ID, ids_.FromNumber(2));
-    ASSERT_TRUE(B.good());
-    B.Put(IS_UNAPPLIED_UPDATE, true);
-    B.Put(SERVER_NON_UNIQUE_NAME, "A");
-  }
-  SyncShareAsDelegate();
-  saw_syncer_event_ = false;
-}
-
 TEST_F(SyncerTest, SwapEntryNames) {
   // Simple transaction test.
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
@@ -3166,39 +3141,6 @@ TEST_F(SyncerTest, UpdateFlipsTheFolderBit) {
     EXPECT_TRUE(local_deleted.Get(IS_DEL) == true);
     EXPECT_TRUE(local_deleted.Get(IS_DIR) == true);
   }
-}
-
-TEST(SyncerSyncProcessState, MergeSetsTest) {
-  TestIdFactory id_factory;
-  syncable::Id id[7];
-  for (int i = 1; i < 7; i++) {
-    id[i] = id_factory.NewServerId();
-  }
-  bool is_dirty = false;
-  ConflictProgress c(&is_dirty);
-  c.MergeSets(id[1], id[2]);
-  c.MergeSets(id[2], id[3]);
-  c.MergeSets(id[4], id[5]);
-  c.MergeSets(id[5], id[6]);
-  EXPECT_EQ(6u, c.IdToConflictSetSize());
-  EXPECT_FALSE(is_dirty);
-  for (int i = 1; i < 7; i++) {
-    EXPECT_TRUE(NULL != c.IdToConflictSetGet(id[i]));
-    EXPECT_TRUE(c.IdToConflictSetGet(id[(i & ~3) + 1]) ==
-                c.IdToConflictSetGet(id[i]));
-  }
-  c.MergeSets(id[1], id[6]);
-  for (int i = 1; i < 7; i++) {
-    EXPECT_TRUE(NULL != c.IdToConflictSetGet(id[i]));
-    EXPECT_TRUE(c.IdToConflictSetGet(id[1]) == c.IdToConflictSetGet(id[i]));
-  }
-
-  // Check dupes don't cause double sets.
-  ConflictProgress identical_set(&is_dirty);
-  identical_set.MergeSets(id[1], id[1]);
-  EXPECT_TRUE(identical_set.IdToConflictSetSize() == 1);
-  EXPECT_TRUE(identical_set.IdToConflictSetGet(id[1])->size() == 1);
-  EXPECT_FALSE(is_dirty);
 }
 
 // Bug Synopsis:
@@ -3451,31 +3393,6 @@ TEST_F(SyncerTest, DirectoryCommitTest) {
     EXPECT_NE(bar_entry.Get(syncable::ID), in_dir_id);
     EXPECT_EQ(foo_entry.Get(syncable::ID), bar_entry.Get(PARENT_ID));
   }
-}
-
-TEST_F(SyncerTest, ConflictSetSizeReducedToOne) {
-  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
-  CHECK(dir.good());
-
-  syncable::Id in_root_id = ids_.NewServerId();
-
-  mock_server_->AddUpdateBookmark(in_root_id, TestIdFactory::root(),
-      "in_root", 1, 1);
-  SyncShareAsDelegate();
-  {
-    WriteTransaction trans(FROM_HERE, UNITTEST, dir);
-    MutableEntry oentry(&trans, GET_BY_ID, in_root_id);
-    ASSERT_TRUE(oentry.good());
-    oentry.Put(NON_UNIQUE_NAME, "old_in_root");
-    WriteTestDataToEntry(&trans, &oentry);
-    MutableEntry entry(&trans, CREATE, trans.root_id(), "in_root");
-    ASSERT_TRUE(entry.good());
-    WriteTestDataToEntry(&trans, &entry);
-  }
-  mock_server_->set_conflict_all_commits(true);
-  // This SyncShare call used to result in a CHECK failure.
-  SyncShareAsDelegate();
-  saw_syncer_event_ = false;
 }
 
 TEST_F(SyncerTest, TestClientCommand) {

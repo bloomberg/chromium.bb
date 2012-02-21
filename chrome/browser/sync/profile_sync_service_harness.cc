@@ -776,7 +776,7 @@ ProfileSyncService::Status ProfileSyncServiceHarness::GetStatus() {
 bool ProfileSyncServiceHarness::IsDataSyncedImpl(
     const browser_sync::sessions::SyncSessionSnapshot *snap) {
   return snap &&
-      snap->num_blocking_conflicting_updates == 0 &&
+      snap->num_simple_conflicting_updates == 0 &&
       ServiceIsPushingChanges() &&
       GetStatus().notifications_enabled &&
       !service()->HasUnsyncedItems() &&
@@ -1017,8 +1017,8 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
          << snap->unsynced_count
          << ", num_conflicting_updates: "
          << snap->num_conflicting_updates
-         << ", num_blocking_conflicting_updates: "
-         << snap->num_blocking_conflicting_updates
+         << ", num_simple_conflicting_updates: "
+         << snap->num_simple_conflicting_updates
          << ", num_updates_downloaded : "
          << snap->syncer_status.num_updates_downloaded_total
          << ", passphrase_required_reason: "

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,7 +40,6 @@ enum SyncerStep {
   BUILD_COMMIT_REQUEST,
   POST_COMMIT_MESSAGE,
   PROCESS_COMMIT_RESPONSE,
-  BUILD_AND_PROCESS_CONFLICT_SETS,
   RESOLVE_CONFLICTS,
   APPLY_UPDATES_TO_RESOLVE_CONFLICTS,
   CLEAR_PRIVATE_DATA,  // TODO(tim): Rename 'private' to 'user'.

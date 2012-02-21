@@ -120,7 +120,7 @@ struct SyncSessionSnapshot {
       bool more_to_sync,
       bool is_silenced,
       int64 unsynced_count,
-      int num_blocking_conflicting_updates,
+      int num_simple_conflicting_updates,
       int num_conflicting_updates,
       bool did_commit_items,
       const SyncSourceInfo& source,
@@ -143,7 +143,7 @@ struct SyncSessionSnapshot {
   const bool has_more_to_sync;
   const bool is_silenced;
   const int64 unsynced_count;
-  const int num_blocking_conflicting_updates;
+  const int num_simple_conflicting_updates;
   const int num_conflicting_updates;
   const bool did_commit_items;
   const SyncSourceInfo source;
@@ -152,49 +152,52 @@ struct SyncSessionSnapshot {
   const bool retry_scheduled;
 };
 
-// Tracks progress of conflicts and their resolution using conflict sets.
+// Tracks progress of conflicts and their resolutions.
 class ConflictProgress {
  public:
   explicit ConflictProgress(bool* dirty_flag);
   ~ConflictProgress();
-  // Various iterators, size, and retrieval functions for conflict sets.
-  IdToConflictSetMap::const_iterator IdToConflictSetBegin() const;
-  IdToConflictSetMap::const_iterator IdToConflictSetEnd() const;
-  IdToConflictSetMap::size_type IdToConflictSetSize() const;
-  IdToConflictSetMap::const_iterator IdToConflictSetFind(
-      const syncable::Id& the_id) const;
-  const ConflictSet* IdToConflictSetGet(const syncable::Id& the_id);
-  std::set<ConflictSet*>::const_iterator ConflictSetsBegin() const;
-  std::set<ConflictSet*>::const_iterator ConflictSetsEnd() const;
-  std::set<ConflictSet*>::size_type ConflictSetsSize() const;
-  bool HasSimpleConflictItem(const syncable::Id& id) const;
+
+  bool HasSimpleConflictItem(const syncable::Id &id) const;
 
   // Various mutators for tracking commit conflicts.
-  void AddConflictingItemById(const syncable::Id& the_id);
-  void EraseConflictingItemById(const syncable::Id& the_id);
-  int ConflictingItemsSize() const { return conflicting_item_ids_.size(); }
-  std::set<syncable::Id>::const_iterator ConflictingItemsBegin() const;
-  std::set<syncable::Id>::const_iterator ConflictingItemsEnd() const;
-
-  // Mutators for nonblocking conflicting items (see description below).
-  void AddNonblockingConflictingItemById(const syncable::Id& the_id);
-  void EraseNonblockingConflictingItemById(const syncable::Id& the_id);
-  int NonblockingConflictingItemsSize() const {
-    return nonblocking_conflicting_item_ids_.size();
+  void AddSimpleConflictingItemById(const syncable::Id& the_id);
+  void EraseSimpleConflictingItemById(const syncable::Id& the_id);
+  std::set<syncable::Id>::const_iterator SimpleConflictingItemsBegin() const;
+  std::set<syncable::Id>::const_iterator SimpleConflictingItemsEnd() const;
+  int SimpleConflictingItemsSize() const {
+    return simple_conflicting_item_ids_.size();
   }
 
-  void MergeSets(const syncable::Id& set1, const syncable::Id& set2);
-  void CleanupSets();
+  // Mutators for unresolvable conflicting items (see description below).
+  void AddEncryptionConflictingItemById(const syncable::Id& the_id);
+  int EncryptionConflictingItemsSize() const {
+    return num_encryption_conflicting_items;
+  }
+
+  void AddHierarchyConflictingItemById(const syncable::Id& id);
+  int HierarchyConflictingItemsSize() const {
+    return num_hierarchy_conflicting_items;
+  }
+
+  void AddServerConflictingItemById(const syncable::Id& id);
+  int ServerConflictingItemsSize() const {
+    return num_server_conflicting_items;
+  }
 
  private:
-  // TODO(sync): move away from sets if it makes more sense.
-  std::set<syncable::Id> conflicting_item_ids_;
-  std::map<syncable::Id, ConflictSet*> id_to_conflict_set_;
-  std::set<ConflictSet*> conflict_sets_;
+  // Conflicts that occur when local and server changes collide and can be
+  // resolved locally.
+  std::set<syncable::Id> simple_conflicting_item_ids_;
 
-  // Nonblocking conflicts are not processed by the conflict resolver, but
-  // they will be processed in the APPLY_UDPATES_TO_RESOLVE_CONFLICTS step.
-  std::set<syncable::Id> nonblocking_conflicting_item_ids_;
+  // Unresolvable conflicts are not processed by the conflict resolver.  We wait
+  // and hope the server will provide us with an update that resolves these
+  // conflicts.
+  std::set<syncable::Id> unresolvable_conflicting_item_ids_;
+
+  size_t num_server_conflicting_items;
+  size_t num_hierarchy_conflicting_items;
+  size_t num_encryption_conflicting_items;
 
   // Whether a conflicting item was added or removed since
   // the last call to reset_progress_changed(), if any. In practice this

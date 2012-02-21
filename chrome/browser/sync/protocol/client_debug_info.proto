@@ -15,6 +15,8 @@ package sync_pb;
 // SYNC_CYCLE_COMPLETED  is sent.
 message SyncCycleCompletedEventInfo {
   // optional bool syncer_stuck = 1; // Was always false, now obsolete.
+
+  // TODO(rlarocque): rename these counters.
   optional int32 num_blocking_conflicts = 2;
   optional int32 num_non_blocking_conflicts = 3;
 }

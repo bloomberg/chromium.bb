@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -143,6 +143,88 @@ class ApplyUpdatesCommandTest : public SyncerCommandTest {
       *metahandle_out = entry.Get(syncable::META_HANDLE);
   }
 
+  // Creates an item that is both unsynced an an unapplied update.  Returns the
+  // metahandle of the created item.
+  int64 CreateUnappliedAndUnsyncedItem(const string& name,
+                                       syncable::ModelType model_type) {
+    int64 metahandle = 0;
+    CreateUnsyncedItem(id_factory_.MakeServer(name), id_factory_.root(), name,
+                       false, model_type, &metahandle);
+
+    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
+    if (!dir.good()) {
+      ADD_FAILURE();
+      return syncable::kInvalidMetaHandle;
+    }
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir);
+    MutableEntry entry(&trans, syncable::GET_BY_HANDLE, metahandle);
+    if (!entry.good()) {
+      ADD_FAILURE();
+      return syncable::kInvalidMetaHandle;
+    }
+
+    entry.Put(syncable::IS_UNAPPLIED_UPDATE, true);
+    entry.Put(syncable::SERVER_VERSION, GetNextRevision());
+
+    return metahandle;
+  }
+
+
+  // Creates an item that has neither IS_UNSYNED or IS_UNAPPLIED_UPDATE.  The
+  // item is known to both the server and client.  Returns the metahandle of
+  // the created item.
+  int64 CreateSyncedItem(const std::string& name, syncable::ModelType
+                         model_type, bool is_folder) {
+    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
+    if (!dir.good()) {
+      ADD_FAILURE();
+      return syncable::kInvalidMetaHandle;
+    }
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir);
+
+    syncable::Id parent_id(id_factory_.root());
+    syncable::Id item_id(id_factory_.MakeServer(name));
+    int64 version = GetNextRevision();
+
+    sync_pb::EntitySpecifics default_specifics;
+    syncable::AddDefaultExtensionValue(model_type, &default_specifics);
+
+    MutableEntry entry(&trans, syncable::CREATE, parent_id, name);
+    if (!entry.good()) {
+      ADD_FAILURE();
+      return syncable::kInvalidMetaHandle;
+    }
+
+    entry.Put(syncable::ID, item_id);
+    entry.Put(syncable::BASE_VERSION, version);
+    entry.Put(syncable::IS_UNSYNCED, false);
+    entry.Put(syncable::NON_UNIQUE_NAME, name);
+    entry.Put(syncable::IS_DIR, is_folder);
+    entry.Put(syncable::IS_DEL, false);
+    entry.Put(syncable::PARENT_ID, parent_id);
+
+    if (!entry.PutPredecessor(id_factory_.root())) {
+      ADD_FAILURE();
+      return syncable::kInvalidMetaHandle;
+    }
+    entry.Put(syncable::SPECIFICS, default_specifics);
+
+    entry.Put(syncable::SERVER_VERSION, GetNextRevision());
+    entry.Put(syncable::IS_UNAPPLIED_UPDATE, true);
+    entry.Put(syncable::SERVER_NON_UNIQUE_NAME, "X");
+    entry.Put(syncable::SERVER_PARENT_ID, id_factory_.MakeServer("Y"));
+    entry.Put(syncable::SERVER_IS_DIR, is_folder);
+    entry.Put(syncable::SERVER_IS_DEL, false);
+    entry.Put(syncable::SERVER_SPECIFICS, default_specifics);
+    entry.Put(syncable::SERVER_PARENT_ID, parent_id);
+
+    return entry.Get(syncable::META_HANDLE);
+  }
+
+  int64 GetNextRevision() {
+    return next_revision_++;
+  }
+
   ApplyUpdatesCommand apply_updates_command_;
   TestIdFactory id_factory_;
  private:
@@ -169,7 +251,11 @@ TEST_F(ApplyUpdatesCommandTest, Simple) {
   EXPECT_EQ(2, status->update_progress()->AppliedUpdatesSize())
       << "All updates should have been attempted";
   ASSERT_TRUE(status->conflict_progress());
-  EXPECT_EQ(0, status->conflict_progress()->ConflictingItemsSize())
+  EXPECT_EQ(0, status->conflict_progress()->SimpleConflictingItemsSize())
+      << "Simple update shouldn't result in conflicts";
+  EXPECT_EQ(0, status->conflict_progress()->EncryptionConflictingItemsSize())
+      << "Simple update shouldn't result in conflicts";
+  EXPECT_EQ(0, status->conflict_progress()->HierarchyConflictingItemsSize())
       << "Simple update shouldn't result in conflicts";
   EXPECT_EQ(2, status->update_progress()->SuccessfullyAppliedUpdateCount())
       << "All items should have been successfully applied";
@@ -204,13 +290,197 @@ TEST_F(ApplyUpdatesCommandTest, UpdateWithChildrenBeforeParents) {
   EXPECT_EQ(5, status->update_progress()->AppliedUpdatesSize())
       << "All updates should have been attempted";
   ASSERT_TRUE(status->conflict_progress());
-  EXPECT_EQ(0, status->conflict_progress()->ConflictingItemsSize())
+  EXPECT_EQ(0, status->conflict_progress()->SimpleConflictingItemsSize())
       << "Simple update shouldn't result in conflicts, even if out-of-order";
   EXPECT_EQ(5, status->update_progress()->SuccessfullyAppliedUpdateCount())
       << "All updates should have been successfully applied";
 }
 
-TEST_F(ApplyUpdatesCommandTest, NestedItemsWithUnknownParent) {
+// Runs the ApplyUpdatesCommand on an item that has both local and remote
+// modifications (IS_UNSYNCED and IS_UNAPPLIED_UPDATE).  We expect the command
+// to detect that this update can't be applied because it is in a CONFLICT
+// state.
+TEST_F(ApplyUpdatesCommandTest, SimpleConflict) {
+  CreateUnappliedAndUnsyncedItem("item", syncable::BOOKMARKS);
+
+  ExpectGroupToChange(apply_updates_command_, GROUP_UI);
+  apply_updates_command_.ExecuteImpl(session());
+
+  sessions::StatusController* status = session()->mutable_status_controller();
+  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_UI);
+  ASSERT_TRUE(status->conflict_progress());
+  EXPECT_EQ(1, status->conflict_progress()->SimpleConflictingItemsSize())
+      << "Unsynced and unapplied item should be a simple conflict";
+}
+
+// Runs the ApplyUpdatesCommand on an item that has both local and remote
+// modifications *and* the remote modification cannot be applied without
+// violating the tree constraints.  We expect the command to detect that this
+// update can't be applied and that this situation can't be resolved with the
+// simple conflict processing logic; it is in a CONFLICT_HIERARCHY state.
+TEST_F(ApplyUpdatesCommandTest, HierarchyAndSimpleConflict) {
+  // Create a simply-conflicting item.  It will start with valid parent ids.
+  int64 handle = CreateUnappliedAndUnsyncedItem("orphaned_by_server",
+                                                syncable::BOOKMARKS);
+  {
+    // Manually set the SERVER_PARENT_ID to bad value.
+    // A bad parent indicates a hierarchy conflict.
+    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
+    ASSERT_TRUE(dir.good());
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir);
+    MutableEntry entry(&trans, syncable::GET_BY_HANDLE, handle);
+    ASSERT_TRUE(entry.good());
+
+    entry.Put(syncable::SERVER_PARENT_ID,
+              id_factory_.MakeServer("bogus_parent"));
+  }
+
+  ExpectGroupToChange(apply_updates_command_, GROUP_UI);
+  apply_updates_command_.ExecuteImpl(session());
+
+  sessions::StatusController* status = session()->mutable_status_controller();
+  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_UI);
+
+  EXPECT_EQ(1, status->update_progress()->AppliedUpdatesSize());
+
+  // An update that is both a simple conflict and a hierarchy conflict should be
+  // treated as a hierarchy conflict.
+  ASSERT_TRUE(status->conflict_progress());
+  EXPECT_EQ(1, status->conflict_progress()->HierarchyConflictingItemsSize());
+  EXPECT_EQ(0, status->conflict_progress()->SimpleConflictingItemsSize());
+}
+
+
+// Runs the ApplyUpdatesCommand on an item with remote modifications that would
+// create a directory loop if the update were applied.  We expect the command to
+// detect that this update can't be applied because it is in a
+// CONFLICT_HIERARCHY state.
+TEST_F(ApplyUpdatesCommandTest, HierarchyConflictDirectoryLoop) {
+  // Item 'X' locally has parent of 'root'.  Server is updating it to have
+  // parent of 'Y'.
+  {
+    // Create it as a child of root node.
+    int64 handle = CreateSyncedItem("X", syncable::BOOKMARKS, true);
+
+    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
+    ASSERT_TRUE(dir.good());
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir);
+    MutableEntry entry(&trans, syncable::GET_BY_HANDLE, handle);
+    ASSERT_TRUE(entry.good());
+
+    // Re-parent from root to "Y"
+    entry.Put(syncable::SERVER_VERSION, GetNextRevision());
+    entry.Put(syncable::IS_UNAPPLIED_UPDATE, true);
+    entry.Put(syncable::SERVER_PARENT_ID, id_factory_.MakeServer("Y"));
+  }
+
+  // Item 'Y' is child of 'X'.
+  CreateUnsyncedItem(id_factory_.MakeServer("Y"), id_factory_.MakeServer("X"),
+                     "Y", true, syncable::BOOKMARKS, NULL);
+
+  // If the server's update were applied, we would have X be a child of Y, and Y
+  // as a child of X.  That's a directory loop.  The UpdateApplicator should
+  // prevent the update from being applied and note that this is a hierarchy
+  // conflict.
+
+  ExpectGroupToChange(apply_updates_command_, GROUP_UI);
+  apply_updates_command_.ExecuteImpl(session());
+
+  sessions::StatusController* status = session()->mutable_status_controller();
+  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_UI);
+
+  EXPECT_EQ(1, status->update_progress()->AppliedUpdatesSize());
+
+  // This should count as a hierarchy conflict.
+  ASSERT_TRUE(status->conflict_progress());
+  EXPECT_EQ(1, status->conflict_progress()->HierarchyConflictingItemsSize());
+  EXPECT_EQ(0, status->conflict_progress()->SimpleConflictingItemsSize());
+}
+
+// Runs the ApplyUpdatesCommand on a directory where the server sent us an
+// update to add a child to a locally deleted (and unsynced) parent.  We expect
+// the command to not apply the update and to indicate the update is in a
+// CONFLICT_HIERARCHY state.
+TEST_F(ApplyUpdatesCommandTest, HierarchyConflictDeletedParent) {
+  // Create a locally deleted parent item.
+  int64 parent_handle;
+  CreateUnsyncedItem(Id::CreateFromServerId("parent"), id_factory_.root(),
+                     "parent", true, syncable::BOOKMARKS, &parent_handle);
+  {
+    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
+    ASSERT_TRUE(dir.good());
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir);
+    MutableEntry entry(&trans, syncable::GET_BY_HANDLE, parent_handle);
+    entry.Put(syncable::IS_DEL, true);
+  }
+
+  // Create an incoming child from the server.
+  CreateUnappliedNewItemWithParent("child", DefaultBookmarkSpecifics(),
+                                   "parent");
+
+  // The server's update may seem valid to some other client, but on this client
+  // that new item's parent no longer exists.  The update should not be applied
+  // and the update applicator should indicate this is a hierarchy conflict.
+
+  ExpectGroupToChange(apply_updates_command_, GROUP_UI);
+  apply_updates_command_.ExecuteImpl(session());
+
+  sessions::StatusController* status = session()->mutable_status_controller();
+  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_UI);
+
+  // This should count as a hierarchy conflict.
+  ASSERT_TRUE(status->conflict_progress());
+  EXPECT_EQ(1, status->conflict_progress()->HierarchyConflictingItemsSize());
+  EXPECT_EQ(0, status->conflict_progress()->SimpleConflictingItemsSize());
+}
+
+// Runs the ApplyUpdatesCommand on a directory where the server is trying to
+// delete a folder that has a recently added (and unsynced) child.  We expect
+// the command to not apply the update because it is in a CONFLICT_HIERARCHY
+// state.
+TEST_F(ApplyUpdatesCommandTest, HierarchyConflictDeleteNonEmptyDirectory) {
+  // Create a server-deleted directory.
+  {
+    // Create it as a child of root node.
+    int64 handle = CreateSyncedItem("parent", syncable::BOOKMARKS, true);
+
+    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
+    ASSERT_TRUE(dir.good());
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir);
+    MutableEntry entry(&trans, syncable::GET_BY_HANDLE, handle);
+    ASSERT_TRUE(entry.good());
+
+    // Delete it on the server.
+    entry.Put(syncable::SERVER_VERSION, GetNextRevision());
+    entry.Put(syncable::IS_UNAPPLIED_UPDATE, true);
+    entry.Put(syncable::SERVER_PARENT_ID, id_factory_.root());
+    entry.Put(syncable::SERVER_IS_DEL, true);
+  }
+
+  // Create a local child of the server-deleted directory.
+  CreateUnsyncedItem(id_factory_.MakeServer("child"),
+                     id_factory_.MakeServer("parent"), "child", false,
+                     syncable::BOOKMARKS, NULL);
+
+  // The server's request to delete the directory must be ignored, otherwise our
+  // unsynced new child would be orphaned.  This is a hierarchy conflict.
+
+  ExpectGroupToChange(apply_updates_command_, GROUP_UI);
+  apply_updates_command_.ExecuteImpl(session());
+
+  sessions::StatusController* status = session()->mutable_status_controller();
+  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_UI);
+
+  // This should count as a hierarchy conflict.
+  ASSERT_TRUE(status->conflict_progress());
+  EXPECT_EQ(1, status->conflict_progress()->HierarchyConflictingItemsSize());
+  EXPECT_EQ(0, status->conflict_progress()->SimpleConflictingItemsSize());
+}
+
+// Runs the ApplyUpdatesCommand on a server-created item that has a locally
+// unknown parent.  We expect the command to not apply the update because the
+// item is in a CONFLICT_HIERARCHY state.
+TEST_F(ApplyUpdatesCommandTest, HierarchyConflictUnknownParent) {
   // We shouldn't be able to do anything with either of these items.
   CreateUnappliedNewItemWithParent("some_item",
                                    DefaultBookmarkSpecifics(),
@@ -228,7 +498,10 @@ TEST_F(ApplyUpdatesCommandTest, NestedItemsWithUnknownParent) {
   EXPECT_EQ(2, status->update_progress()->AppliedUpdatesSize())
       << "All updates should have been attempted";
   ASSERT_TRUE(status->conflict_progress());
-  EXPECT_EQ(2, status->conflict_progress()->ConflictingItemsSize())
+  EXPECT_EQ(0, status->conflict_progress()->SimpleConflictingItemsSize())
+      << "Updates with unknown parent should not be treated as 'simple'"
+      << " conflicts";
+  EXPECT_EQ(2, status->conflict_progress()->HierarchyConflictingItemsSize())
       << "All updates with an unknown ancestors should be in conflict";
   EXPECT_EQ(0, status->update_progress()->SuccessfullyAppliedUpdateCount())
       << "No item with an unknown ancestor should be applied";
@@ -265,7 +538,7 @@ TEST_F(ApplyUpdatesCommandTest, ItemsBothKnownAndUnknown) {
   EXPECT_EQ(6, status->update_progress()->AppliedUpdatesSize())
       << "All updates should have been attempted";
   ASSERT_TRUE(status->conflict_progress());
-  EXPECT_EQ(2, status->conflict_progress()->ConflictingItemsSize())
+  EXPECT_EQ(2, status->conflict_progress()->HierarchyConflictingItemsSize())
       << "The updates with unknown ancestors should be in conflict";
   EXPECT_EQ(4, status->update_progress()->SuccessfullyAppliedUpdateCount())
       << "The updates with known ancestors should be successfully applied";
@@ -304,7 +577,7 @@ TEST_F(ApplyUpdatesCommandTest, DecryptablePassword) {
   EXPECT_EQ(1, status->update_progress()->AppliedUpdatesSize())
       << "All updates should have been attempted";
   ASSERT_TRUE(status->conflict_progress());
-  EXPECT_EQ(0, status->conflict_progress()->ConflictingItemsSize())
+  EXPECT_EQ(0, status->conflict_progress()->SimpleConflictingItemsSize())
       << "No update should be in conflict because they're all decryptable";
   EXPECT_EQ(1, status->update_progress()->SuccessfullyAppliedUpdateCount())
       << "The updates that can be decrypted should be applied";
@@ -337,11 +610,11 @@ TEST_F(ApplyUpdatesCommandTest, UndecryptableData) {
     EXPECT_EQ(2, status->update_progress()->AppliedUpdatesSize())
         << "All updates should have been attempted";
     ASSERT_TRUE(status->conflict_progress());
-    EXPECT_EQ(0, status->conflict_progress()->ConflictingItemsSize())
+    EXPECT_EQ(0, status->conflict_progress()->SimpleConflictingItemsSize())
         << "The updates that can't be decrypted should not be in regular "
         << "conflict";
-    EXPECT_EQ(2, status->conflict_progress()->NonblockingConflictingItemsSize())
-        << "The updates that can't be decrypted should be in nonblocking "
+    EXPECT_EQ(2, status->conflict_progress()->EncryptionConflictingItemsSize())
+        << "The updates that can't be decrypted should be in encryption "
         << "conflict";
     EXPECT_EQ(0, status->update_progress()->SuccessfullyAppliedUpdateCount())
         << "No update that can't be decrypted should be applied";
@@ -352,11 +625,11 @@ TEST_F(ApplyUpdatesCommandTest, UndecryptableData) {
     EXPECT_EQ(1, status->update_progress()->AppliedUpdatesSize())
         << "All updates should have been attempted";
   ASSERT_TRUE(status->conflict_progress());
-    EXPECT_EQ(0, status->conflict_progress()->ConflictingItemsSize())
+    EXPECT_EQ(0, status->conflict_progress()->SimpleConflictingItemsSize())
         << "The updates that can't be decrypted should not be in regular "
         << "conflict";
-    EXPECT_EQ(1, status->conflict_progress()->NonblockingConflictingItemsSize())
-        << "The updates that can't be decrypted should be in nonblocking "
+    EXPECT_EQ(1, status->conflict_progress()->EncryptionConflictingItemsSize())
+        << "The updates that can't be decrypted should be in encryption "
         << "conflict";
     EXPECT_EQ(0, status->update_progress()->SuccessfullyAppliedUpdateCount())
         << "No update that can't be decrypted should be applied";
@@ -412,11 +685,11 @@ TEST_F(ApplyUpdatesCommandTest, SomeUndecryptablePassword) {
     EXPECT_EQ(2, status->update_progress()->AppliedUpdatesSize())
         << "All updates should have been attempted";
     ASSERT_TRUE(status->conflict_progress());
-    EXPECT_EQ(0, status->conflict_progress()->ConflictingItemsSize())
+    EXPECT_EQ(0, status->conflict_progress()->SimpleConflictingItemsSize())
         << "The updates that can't be decrypted should not be in regular "
         << "conflict";
-    EXPECT_EQ(1, status->conflict_progress()->NonblockingConflictingItemsSize())
-        << "The updates that can't be decrypted should be in nonblocking "
+    EXPECT_EQ(1, status->conflict_progress()->EncryptionConflictingItemsSize())
+        << "The updates that can't be decrypted should be in encryption "
         << "conflict";
     EXPECT_EQ(1, status->update_progress()->SuccessfullyAppliedUpdateCount())
         << "The undecryptable password update shouldn't be applied";
@@ -463,7 +736,7 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdate) {
   EXPECT_EQ(1, status->update_progress()->AppliedUpdatesSize())
       << "All updates should have been attempted";
   ASSERT_TRUE(status->conflict_progress());
-  EXPECT_EQ(0, status->conflict_progress()->ConflictingItemsSize())
+  EXPECT_EQ(0, status->conflict_progress()->SimpleConflictingItemsSize())
       << "The nigori update shouldn't be in conflict";
   EXPECT_EQ(1, status->update_progress()->SuccessfullyAppliedUpdateCount())
       << "The nigori update should be applied";
@@ -517,7 +790,7 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdateForDisabledTypes) {
   EXPECT_EQ(1, status->update_progress()->AppliedUpdatesSize())
       << "All updates should have been attempted";
   ASSERT_TRUE(status->conflict_progress());
-  EXPECT_EQ(0, status->conflict_progress()->ConflictingItemsSize())
+  EXPECT_EQ(0, status->conflict_progress()->SimpleConflictingItemsSize())
       << "The nigori update shouldn't be in conflict";
   EXPECT_EQ(1, status->update_progress()->SuccessfullyAppliedUpdateCount())
       << "The nigori update should be applied";
@@ -607,9 +880,9 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
   EXPECT_EQ(1, status->update_progress()->AppliedUpdatesSize())
       << "All updates should have been attempted";
   ASSERT_TRUE(status->conflict_progress());
-  EXPECT_EQ(0, status->conflict_progress()->ConflictingItemsSize())
+  EXPECT_EQ(0, status->conflict_progress()->SimpleConflictingItemsSize())
       << "No updates should be in conflict";
-  EXPECT_EQ(0, status->conflict_progress()->NonblockingConflictingItemsSize())
+  EXPECT_EQ(0, status->conflict_progress()->EncryptionConflictingItemsSize())
       << "No updates should be in conflict";
   EXPECT_EQ(1, status->update_progress()->SuccessfullyAppliedUpdateCount())
       << "The nigori update should be applied";
@@ -710,11 +983,11 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
   EXPECT_EQ(1, status->update_progress()->AppliedUpdatesSize())
       << "All updates should have been attempted";
   ASSERT_TRUE(status->conflict_progress());
-  EXPECT_EQ(0, status->conflict_progress()->ConflictingItemsSize())
+  EXPECT_EQ(0, status->conflict_progress()->SimpleConflictingItemsSize())
       << "The unsynced changes don't trigger a blocking conflict with the "
       << "nigori update.";
-  EXPECT_EQ(0, status->conflict_progress()->NonblockingConflictingItemsSize())
-      << "The unsynced changes don't trigger a non-blocking conflict with the "
+  EXPECT_EQ(0, status->conflict_progress()->EncryptionConflictingItemsSize())
+      << "The unsynced changes don't trigger an encryption conflict with the "
       << "nigori update.";
   EXPECT_EQ(1, status->update_progress()->SuccessfullyAppliedUpdateCount())
       << "The nigori update should be applied";

@@ -147,17 +147,17 @@ class StatusController {
 
   // If a GetUpdates for any data type resulted in downloading an update that
   // is in conflict, this method returns true.
-  // Note: this includes non-blocking conflicts.
+  // Note: this includes unresolvable conflicts.
   bool HasConflictingUpdates() const;
 
-  // Aggregate sum of ConflictingItemSize() over all ConflictProgress objects
-  // (one for each ModelSafeGroup currently in-use).
-  // Note: this does not include non-blocking conflicts.
-  int TotalNumBlockingConflictingItems() const;
+  // Aggregate sum of SimpleConflictingItemSize() over all ConflictProgress
+  // objects (one for each ModelSafeGroup currently in-use).
+  // Note: this does not include unresolvable conflicts.
+  int TotalNumSimpleConflictingItems() const;
 
-  // Aggregate sum of ConflictingItemSize() and NonblockingConflictingItemsSize
-  // over all ConflictProgress objects (one for each ModelSafeGroup currently
-  // in-use).
+  // Aggregate sum of SimpleConflictingItemSize() and other
+  // ${Type}ConflictingItemSize() methods over all ConflictProgress objects (one
+  // for each ModelSafeGroup currently in-use).
   int TotalNumConflictingItems() const;
 
   // Returns the number of updates received from the sync server.

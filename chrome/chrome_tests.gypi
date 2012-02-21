@@ -3567,7 +3567,6 @@
         'browser/sync/api/sync_error_unittest.cc',
         'browser/sync/engine/apply_updates_command_unittest.cc',
         'browser/sync/engine/build_commit_command_unittest.cc',
-        'browser/sync/engine/build_and_process_conflict_sets_command_unittest.cc',
         'browser/sync/engine/clear_data_command_unittest.cc',
         'browser/sync/engine/cleanup_disabled_types_command_unittest.cc',
         'browser/sync/engine/download_updates_command_unittest.cc',

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,13 +71,17 @@ bool UpdateApplicator::AttemptOneApplication(
       progress_ = true;
       application_results_.AddSuccess(entry.Get(syncable::ID));
       break;
-    case CONFLICT:
+    case CONFLICT_SIMPLE:
       pointer_++;
-      application_results_.AddConflict(entry.Get(syncable::ID));
+      application_results_.AddSimpleConflict(entry.Get(syncable::ID));
       break;
     case CONFLICT_ENCRYPTION:
       pointer_++;
       application_results_.AddEncryptionConflict(entry.Get(syncable::ID));
+      break;
+    case CONFLICT_HIERARCHY:
+      pointer_++;
+      application_results_.AddHierarchyConflict(entry.Get(syncable::ID));
       break;
     default:
       NOTREACHED();
@@ -133,12 +137,16 @@ UpdateApplicator::ResultTracker::ResultTracker(size_t num_results) {
 UpdateApplicator::ResultTracker::~ResultTracker() {
 }
 
-void UpdateApplicator::ResultTracker::AddConflict(syncable::Id id) {
+void UpdateApplicator::ResultTracker::AddSimpleConflict(syncable::Id id) {
   conflicting_ids_.push_back(id);
 }
 
 void UpdateApplicator::ResultTracker::AddEncryptionConflict(syncable::Id id) {
   encryption_conflict_ids_.push_back(id);
+}
+
+void UpdateApplicator::ResultTracker::AddHierarchyConflict(syncable::Id id) {
+  hierarchy_conflict_ids_.push_back(id);
 }
 
 void UpdateApplicator::ResultTracker::AddSuccess(syncable::Id id) {
@@ -150,19 +158,21 @@ void UpdateApplicator::ResultTracker::SaveProgress(
     sessions::UpdateProgress* update_progress) {
   vector<syncable::Id>::const_iterator i;
   for (i = conflicting_ids_.begin(); i != conflicting_ids_.end(); ++i) {
-    conflict_progress->AddConflictingItemById(*i);
-    update_progress->AddAppliedUpdate(CONFLICT, *i);
+    conflict_progress->AddSimpleConflictingItemById(*i);
+    update_progress->AddAppliedUpdate(CONFLICT_SIMPLE, *i);
   }
   for (i = encryption_conflict_ids_.begin();
        i != encryption_conflict_ids_.end(); ++i) {
-    // Encryption conflicts should not put the syncer into a stuck state. We
-    // mark as conflict, so that we reattempt to apply updates, but add it to
-    // the list of nonblocking conflicts instead of normal conflicts.
-    conflict_progress->AddNonblockingConflictingItemById(*i);
-    update_progress->AddAppliedUpdate(CONFLICT, *i);
+    conflict_progress->AddEncryptionConflictingItemById(*i);
+    update_progress->AddAppliedUpdate(CONFLICT_ENCRYPTION, *i);
+  }
+  for (i = hierarchy_conflict_ids_.begin();
+       i != hierarchy_conflict_ids_.end(); ++i) {
+    conflict_progress->AddHierarchyConflictingItemById(*i);
+    update_progress->AddAppliedUpdate(CONFLICT_HIERARCHY, *i);
   }
   for (i = successful_ids_.begin(); i != successful_ids_.end(); ++i) {
-    conflict_progress->EraseConflictingItemById(*i);
+    conflict_progress->EraseSimpleConflictingItemById(*i);
     update_progress->AddAppliedUpdate(SUCCESS, *i);
   }
 }
@@ -170,6 +180,7 @@ void UpdateApplicator::ResultTracker::SaveProgress(
 void UpdateApplicator::ResultTracker::ClearConflicts() {
   conflicting_ids_.clear();
   encryption_conflict_ids_.clear();
+  hierarchy_conflict_ids_.clear();
 }
 
 bool UpdateApplicator::ResultTracker::no_conflicts() const {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -57,14 +57,13 @@ class UpdateApplicator {
 
  private:
   // Track the status of all applications.
-  // We treat encryption conflicts as nonblocking conflict items when we save
-  // progress.
   class ResultTracker {
    public:
      explicit ResultTracker(size_t num_results);
      virtual ~ResultTracker();
-     void AddConflict(syncable::Id);
+     void AddSimpleConflict(syncable::Id);
      void AddEncryptionConflict(syncable::Id);
+     void AddHierarchyConflict(syncable::Id);
      void AddSuccess(syncable::Id);
      void SaveProgress(sessions::ConflictProgress* conflict_progress,
                        sessions::UpdateProgress* update_progress);
@@ -77,6 +76,7 @@ class UpdateApplicator {
     std::vector<syncable::Id> conflicting_ids_;
     std::vector<syncable::Id> successful_ids_;
     std::vector<syncable::Id> encryption_conflict_ids_;
+    std::vector<syncable::Id> hierarchy_conflict_ids_;
   };
 
   // If true, AttemptOneApplication will skip over |entry| and return true.

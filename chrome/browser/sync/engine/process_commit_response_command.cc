@@ -165,7 +165,7 @@ SyncerError ProcessCommitResponseCommand::ProcessCommitResponse(
         case CommitResponse::CONFLICT:
           ++conflicting_commits;
           // Only server CONFLICT responses will activate conflict resolution.
-          conflict_progress->AddConflictingItemById(
+          conflict_progress->AddServerConflictingItemById(
               status->GetCommitIdAt(proj[i]));
           break;
         case CommitResponse::SUCCESS:

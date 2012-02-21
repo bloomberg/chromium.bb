@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -311,7 +311,7 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
   // passphrase may not arrive within this GetUpdates, we can't just return
   // conflict, else we try to perform normal conflict resolution prematurely or
   // the syncer may get stuck. As such, we return CONFLICT_ENCRYPTION, which is
-  // treated as a non-blocking conflict. See the description in syncer_types.h.
+  // treated as an unresolvable conflict. See the description in syncer_types.h.
   // This prevents any unsynced changes from commiting and postpones conflict
   // resolution until all data can be decrypted.
   if (specifics.has_encrypted() &&
@@ -333,11 +333,6 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
     }
   }
 
-  if (entry->Get(IS_UNSYNCED)) {
-    DVLOG(1) << "Skipping update, returning conflict for: " << id
-             << " ; it's unsynced.";
-    return CONFLICT;
-  }
   if (!entry->Get(SERVER_IS_DEL)) {
     syncable::Id new_parent = entry->Get(SERVER_PARENT_ID);
     Entry parent(trans, GET_BY_ID,  new_parent);
@@ -348,13 +343,13 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
     // different ways we deal with it once here to reduce the amount of code and
     // potential errors.
     if (!parent.good() || parent.Get(IS_DEL) || !parent.Get(IS_DIR)) {
-      return CONFLICT;
+      return CONFLICT_HIERARCHY;
     }
     if (entry->Get(PARENT_ID) != new_parent) {
       if (!entry->Get(IS_DEL) && !IsLegalNewParent(trans, id, new_parent)) {
         DVLOG(1) << "Not updating item " << id
                  << ", illegal new parent (would cause loop).";
-        return CONFLICT;
+        return CONFLICT_HIERARCHY;
       }
     }
   } else if (entry->Get(IS_DIR)) {
@@ -364,8 +359,14 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
       // If we have still-existing children, then we need to deal with
       // them before we can process this change.
       DVLOG(1) << "Not deleting directory; it's not empty " << *entry;
-      return CONFLICT;
+      return CONFLICT_HIERARCHY;
     }
+  }
+
+  if (entry->Get(IS_UNSYNCED)) {
+    DVLOG(1) << "Skipping update, returning conflict for: " << id
+             << " ; it's unsynced.";
+    return CONFLICT_SIMPLE;
   }
 
   if (specifics.has_encrypted()) {

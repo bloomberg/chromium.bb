@@ -160,7 +160,7 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
       HasMoreToSync(),
       delegate_->IsSyncingCurrentlySilenced(),
       status_controller_->unsynced_handles().size(),
-      status_controller_->TotalNumBlockingConflictingItems(),
+      status_controller_->TotalNumSimpleConflictingItems(),
       status_controller_->TotalNumConflictingItems(),
       status_controller_->did_commit_items(),
       source_,
@@ -207,8 +207,8 @@ std::set<ModelSafeGroup> SyncSession::GetEnabledGroupsWithConflicts() const {
     const sessions::ConflictProgress* conflict_progress =
         status_controller_->GetUnrestrictedConflictProgress(*it);
     if (conflict_progress &&
-        (conflict_progress->ConflictingItemsBegin() !=
-         conflict_progress->ConflictingItemsEnd())) {
+        (conflict_progress->SimpleConflictingItemsBegin() !=
+         conflict_progress->SimpleConflictingItemsEnd())) {
       enabled_groups_with_conflicts.insert(*it);
     }
   }
