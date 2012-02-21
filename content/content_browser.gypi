@@ -28,6 +28,7 @@
   'sources': [
     'port/browser/render_widget_host_view_port.h',
     'public/browser/access_token_store.h',
+    'public/browser/browser_accessibility_state.h',
     'public/browser/browser_child_process_host.h',
     'public/browser/browser_child_process_host_delegate.cc',
     'public/browser/browser_child_process_host_delegate.h',
@@ -138,8 +139,8 @@
     'browser/accessibility/browser_accessibility_manager_mac.mm',
     'browser/accessibility/browser_accessibility_manager_win.cc',
     'browser/accessibility/browser_accessibility_manager_win.h',
-    'browser/accessibility/browser_accessibility_state.cc',
-    'browser/accessibility/browser_accessibility_state.h',
+    'browser/accessibility/browser_accessibility_state_impl.cc',
+    'browser/accessibility/browser_accessibility_state_impl.h',
     'browser/accessibility/browser_accessibility_win.cc',
     'browser/accessibility/browser_accessibility_win.h',
     'browser/appcache/appcache_dispatcher_host.cc',

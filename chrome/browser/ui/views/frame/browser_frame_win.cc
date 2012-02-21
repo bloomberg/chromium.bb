@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "content/browser/accessibility/browser_accessibility_state.h"
+#include "content/public/browser/browser_accessibility_state.h"
 #include "grit/theme_resources.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/font.h"

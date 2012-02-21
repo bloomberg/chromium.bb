@@ -1,14 +1,14 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_STATE_H_
-#define CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_STATE_H_
+#ifndef CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_STATE_IMPL_H_
+#define CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_STATE_IMPL_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/timer.h"
-#include "content/common/content_export.h"
+#include "content/public/browser/browser_accessibility_state.h"
 
 template <typename T> struct DefaultSingletonTraits;
 
@@ -29,37 +29,33 @@ template <typename T> struct DefaultSingletonTraits;
 // when VoiceOver is launched and unset when VoiceOver is closed.  This is an
 // improvement over reading defaults preference values (which has no callback
 // mechanism).
-class CONTENT_EXPORT BrowserAccessibilityState {
+class CONTENT_EXPORT BrowserAccessibilityStateImpl
+    : public BrowserAccessibilityState {
  public:
-  // Returns the singleton instance.
-  static BrowserAccessibilityState* GetInstance();
+  virtual ~BrowserAccessibilityStateImpl();
 
-  ~BrowserAccessibilityState();
+  static BrowserAccessibilityStateImpl* GetInstance();
 
-  // Called when accessibility is enabled manually (via command-line flag).
-  void OnAccessibilityEnabledManually();
-
-  // Called when screen reader client is detected.
-  void OnScreenReaderDetected();
-
-  // Returns true if the browser should be customized for accessibility.
-  bool IsAccessibleBrowser();
+  virtual void OnAccessibilityEnabledManually() OVERRIDE;
+  virtual void OnScreenReaderDetected() OVERRIDE;
+  virtual bool IsAccessibleBrowser() OVERRIDE;
 
   // Called a short while after startup to allow time for the accessibility
   // state to be determined. Updates a histogram with the current state.
   void UpdateHistogram();
 
- private:
-  BrowserAccessibilityState();
-  friend struct DefaultSingletonTraits<BrowserAccessibilityState>;
+ protected:
+  BrowserAccessibilityStateImpl();
+
+  friend struct DefaultSingletonTraits<BrowserAccessibilityStateImpl>;
 
   // Set to true when full accessibility features should be enabled.
   bool accessibility_enabled_;
 
   // Timer to update the histogram a short while after startup.
-  base::OneShotTimer<BrowserAccessibilityState> update_histogram_timer_;
+  base::OneShotTimer<BrowserAccessibilityStateImpl> update_histogram_timer_;
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityState);
+  DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityStateImpl);
 };
 
-#endif  // CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_STATE_H_
+#endif  // CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_STATE_IMPL_H_

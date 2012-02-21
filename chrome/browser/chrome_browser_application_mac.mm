@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,8 +15,8 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #import "chrome/common/mac/objc_method_swizzle.h"
 #import "chrome/common/mac/objc_zombie.h"
-#include "content/browser/accessibility/browser_accessibility_state.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/web_contents.h"
 
 // The implementation of NSExceptions break various assumptions in the

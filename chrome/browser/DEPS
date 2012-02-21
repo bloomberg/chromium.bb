@@ -33,7 +33,6 @@ include_rules = [
   # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
   "+content/browser/accessibility/browser_accessibility.h",
   "+content/browser/accessibility/browser_accessibility_manager.h",
-  "+content/browser/accessibility/browser_accessibility_state.h",
   "+content/browser/browser_url_handler.h",
   "+content/browser/cert_store.h",
   "+content/browser/disposition_utils.h",

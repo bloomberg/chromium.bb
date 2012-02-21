@@ -22,7 +22,7 @@
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/accessibility/browser_accessibility_state.h"
+#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
