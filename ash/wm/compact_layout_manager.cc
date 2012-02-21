@@ -44,9 +44,8 @@ void AdjustContainerLayerWidth(int delta_width) {
   gfx::Rect bounds(GetDefaultContainerLayer()->bounds());
   bounds.set_width(bounds.width() + delta_width);
   GetDefaultContainerLayer()->SetBounds(bounds);
-  GetDefaultContainerLayer()->GetCompositor()->WidgetSizeChanged(
-      GetDefaultContainerLayer()->bounds().size());
 }
+
 }  // namespace
 
 /////////////////////////////////////////////////////////////////////////////

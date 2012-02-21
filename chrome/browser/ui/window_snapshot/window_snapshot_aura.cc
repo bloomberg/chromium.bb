@@ -19,20 +19,21 @@ bool GrabWindowSnapshot(gfx::NativeWindow window,
                         const gfx::Rect& snapshot_bounds) {
   ui::Compositor* compositor = window->layer()->GetCompositor();
 
-  gfx::Rect desktop_snapshot_bounds = gfx::Rect(
-      snapshot_bounds.origin().Add(window->bounds().origin()),
-      snapshot_bounds.size());
+  gfx::Rect read_pixels_bounds = snapshot_bounds;
 
-  DCHECK_LE(desktop_snapshot_bounds.right() , compositor->size().width());
-  DCHECK_LE(desktop_snapshot_bounds.bottom(), compositor->size().height());
+  // When not in compact mode we must take into account the window's position on
+  // the desktop.
+  if (!ash::Shell::GetInstance()->IsWindowModeCompact())
+    read_pixels_bounds.set_origin(
+        snapshot_bounds.origin().Add(window->bounds().origin()));
 
-  // When in compact mode, only take the snapshot for one window.
-  bool is_compact = ash::Shell::GetInstance()->IsWindowModeCompact();
+  DCHECK_GE(compositor->size().width(), read_pixels_bounds.right());
+  DCHECK_GE(compositor->size().height(), read_pixels_bounds.bottom());
+  DCHECK_LE(0, read_pixels_bounds.x());
+  DCHECK_LE(0, read_pixels_bounds.y());
 
   SkBitmap bitmap;
-  if (!compositor->ReadPixels(
-          &bitmap,
-          is_compact ?  snapshot_bounds : desktop_snapshot_bounds))
+  if (!compositor->ReadPixels(&bitmap, read_pixels_bounds))
     return false;
 
   unsigned char* pixels = reinterpret_cast<unsigned char*>(bitmap.getPixels());
