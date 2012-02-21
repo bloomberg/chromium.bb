@@ -330,6 +330,10 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
     case ui::ET_GESTURE_PINCH_END:
       gesture_event.type = WebKit::WebInputEvent::GesturePinchEnd;
       break;
+    case ui::ET_GESTURE_LONG_PRESS:
+      // TODO(tdresser): Integrate long press with WebKit
+      return NULL;
+      break;
     default:
       NOTREACHED() << "Unknown gesture type: " << event->type();
   }

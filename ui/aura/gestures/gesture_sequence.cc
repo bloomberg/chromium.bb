@@ -6,7 +6,9 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "ui/aura/event.h"
+#include "ui/aura/root_window.h"
 #include "ui/base/events.h"
 
 // TODO(sad): Pinch gestures currently always assume that the first two
@@ -20,6 +22,7 @@ namespace {
 //               http://crbug.com/100773
 const float kMinimumPinchUpdateDistance = 5;  // in pixels
 const float kMinimumDistanceForPinchScroll = 20;
+const float kLongPressTimeInMilliseconds = 500;
 
 }  // namespace
 
@@ -157,7 +160,11 @@ GestureSequence::GestureSequence()
       flags_(0),
       pinch_distance_start_(0.f),
       pinch_distance_current_(0.f),
+      long_press_timer_(CreateTimer()),
       point_count_(0) {
+  for (int i = 0; i < kMaxGesturePoints; ++i) {
+    points_[i].set_touch_id(i);
+  }
 }
 
 GestureSequence::~GestureSequence() {
@@ -253,6 +260,9 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
             << " State: " << state_
             << " touch id: " << event.touch_id();
 
+  if (last_state == GS_PENDING_SYNTHETIC_CLICK && state_ != last_state)
+    long_press_timer_->Stop();
+
   if (event.type() == ui::ET_TOUCH_RELEASED)
     --point_count_;
 
@@ -263,6 +273,13 @@ void GestureSequence::Reset() {
   set_state(GS_NO_GESTURE);
   for (int i = 0; i < point_count_; ++i)
     points_[i].Reset();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// GestureSequence Protected:
+
+base::OneShotTimer<GestureSequence>* GestureSequence::CreateTimer() {
+  return new base::OneShotTimer<GestureSequence>();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -454,7 +471,26 @@ bool GestureSequence::TouchDown(const TouchEvent& event,
     const GesturePoint& point, Gestures* gestures) {
   DCHECK(state_ == GS_NO_GESTURE);
   AppendTapDownGestureEvent(point, gestures);
+  long_press_timer_->Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kLongPressTimeInMilliseconds),
+      this,
+      &GestureSequence::AppendLongPressGestureEvent);
   return true;
+}
+
+void GestureSequence::AppendLongPressGestureEvent() {
+  // TODO(tdresser) - this may not always be the first point
+  const GesturePoint& point = points_[0];
+  GestureEvent* gesture = new GestureEvent(
+      ui::ET_GESTURE_LONG_PRESS,
+      point.first_touch_position().x(),
+      point.first_touch_position().y(),
+      flags_,
+      base::Time::FromDoubleT(point.last_touch_time()),
+      point.touch_id(), 0.f);
+
+  RootWindow::GetInstance()->DispatchGestureEvent(gesture);
 }
 
 bool GestureSequence::ScrollEnd(const TouchEvent& event,

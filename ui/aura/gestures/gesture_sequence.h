@@ -6,6 +6,7 @@
 #define UI_AURA_GESTURES_GESTURE_SEQUENCE_H_
 #pragma once
 
+#include "base/timer.h"
 #include "ui/aura/gestures/gesture_point.h"
 #include "ui/aura/gestures/gesture_recognizer.h"
 #include "ui/base/events.h"
@@ -29,7 +30,7 @@ enum ScrollType {
 };
 
 // A GestureSequence recognizes gestures from touch sequences.
-class GestureSequence {
+class AURA_EXPORT GestureSequence {
  public:
   GestureSequence();
   virtual ~GestureSequence();
@@ -43,6 +44,12 @@ class GestureSequence {
   virtual Gestures* ProcessTouchEventForGesture(const TouchEvent& event,
                                                 ui::TouchStatus status);
 
+ protected:
+  virtual base::OneShotTimer<GestureSequence>* CreateTimer();
+  base::OneShotTimer<GestureSequence>* long_press_timer() {
+    return long_press_timer_.get();
+  }
+
  private:
   void Reset();
 
@@ -55,6 +62,8 @@ class GestureSequence {
   void AppendClickGestureEvent(const GesturePoint& point, Gestures* gestures);
   void AppendDoubleClickGestureEvent(const GesturePoint& point,
                                      Gestures* gestures);
+  void AppendLongPressGestureEvent();
+
   // Scroll gestures.
   void AppendScrollGestureBegin(const GesturePoint& point,
                                 const gfx::Point& location,
@@ -130,6 +139,7 @@ class GestureSequence {
   float pinch_distance_current_;
 
   ScrollType scroll_type_;
+  scoped_ptr<base::OneShotTimer<GestureSequence> > long_press_timer_;
 
   // Maximum points in a single gesture.
   static const int kMaxGesturePoints = 12;

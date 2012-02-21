@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/event.h"
+#include "ui/aura/gestures/gesture_recognizer_aura.h"
+#include "ui/aura/gestures/gesture_sequence.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -30,6 +33,8 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         pinch_begin_(false),
         pinch_update_(false),
         pinch_end_(false),
+        long_press_(false),
+
         scroll_x_(0),
         scroll_y_(0) {
   }
@@ -46,6 +51,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
     pinch_begin_ = false;
     pinch_update_ = false;
     pinch_end_ = false;
+    long_press_ = false;
 
     scroll_x_ = 0;
     scroll_y_ = 0;
@@ -60,9 +66,11 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   bool pinch_begin() const { return pinch_begin_; }
   bool pinch_update() const { return pinch_update_; }
   bool pinch_end() const { return pinch_end_; }
+  bool long_press() const { return long_press_; }
 
   float scroll_x() const { return scroll_x_; }
   float scroll_y() const { return scroll_y_; }
+  unsigned int touch_id() const { return touch_id_; }
 
   virtual ui::GestureStatus OnGestureEvent(GestureEvent* gesture) OVERRIDE {
     switch (gesture->type()) {
@@ -95,6 +103,10 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
       case ui::ET_GESTURE_PINCH_END:
         pinch_end_ = true;
         break;
+      case ui::ET_GESTURE_LONG_PRESS:
+        long_press_ = true;
+        touch_id_ = gesture->delta_x();
+        break;
       default:
         NOTREACHED();
     }
@@ -111,9 +123,11 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   bool pinch_begin_;
   bool pinch_update_;
   bool pinch_end_;
+  bool long_press_;
 
   float scroll_x_;
   float scroll_y_;
+  unsigned int touch_id_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureEventConsumeDelegate);
 };
@@ -203,6 +217,46 @@ class GestureEventSynthDelegate : public TestWindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(GestureEventSynthDelegate);
 };
 
+class TestOneShotGestureSequenceTimer
+    : public base::OneShotTimer<GestureSequence> {
+ public:
+  void ForceTimeout() {
+    if (delayed_task_)
+      delayed_task_->Run();
+  }
+};
+
+class TimerTestGestureSequence : public GestureSequence {
+ public:
+  TimerTestGestureSequence()
+      : GestureSequence() {
+  }
+
+  void ForceTimeout() {
+    static_cast<TestOneShotGestureSequenceTimer*>(
+        long_press_timer())->ForceTimeout();
+  }
+
+  base::OneShotTimer<GestureSequence>* CreateTimer() {
+    return new TestOneShotGestureSequenceTimer();
+  }
+};
+
+class TestGestureRecognizer : public GestureRecognizerAura {
+  public:
+  TestGestureRecognizer()
+      : GestureRecognizerAura() {
+  }
+
+  GestureSequence* GetGestureSequenceForTesting() {
+    return gesture_sequence();
+  }
+
+  virtual GestureSequence* CreateSequence() {
+    return new TimerTestGestureSequence();
+  }
+};
+
 void SendScrollEvents(RootWindow* root_window,
                       int x_start,
                       int y_start,
@@ -262,6 +316,7 @@ TEST_F(GestureRecognizerTest, GestureEventTap) {
   EXPECT_FALSE(delegate->scroll_begin());
   EXPECT_FALSE(delegate->scroll_update());
   EXPECT_FALSE(delegate->scroll_end());
+  EXPECT_FALSE(delegate->long_press());
 
   // Make sure there is enough delay before the touch is released so that it is
   // recognized as a tap.
@@ -347,6 +402,128 @@ TEST_F(GestureRecognizerTest, GestureEventScroll) {
   EXPECT_FALSE(delegate->scroll_begin());
   EXPECT_FALSE(delegate->scroll_update());
   EXPECT_TRUE(delegate->scroll_end());
+}
+
+// Check that appropriate touch events generate long press events
+TEST_F(GestureRecognizerTest, GestureEventLongPress) {
+  scoped_ptr<GestureEventConsumeDelegate> delegate(
+      new GestureEventConsumeDelegate());
+  const int kWindowWidth = 123;
+  const int kWindowHeight = 45;
+  gfx::Rect bounds(100, 200, kWindowWidth, kWindowHeight);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, NULL));
+
+  delegate->Reset();
+
+  TestGestureRecognizer* gesture_recognizer =
+      new TestGestureRecognizer();
+  TimerTestGestureSequence* gesture_sequence =
+      static_cast<TimerTestGestureSequence*>(
+          gesture_recognizer->GetGestureSequenceForTesting());
+
+  RootWindow::GetInstance()->SetGestureRecognizerForTesting(gesture_recognizer);
+
+  TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201), 0);
+  RootWindow::GetInstance()->DispatchTouchEvent(&press1);
+  EXPECT_TRUE(delegate->tap_down());
+
+  // We haven't pressed long enough for a long press to occur
+  EXPECT_FALSE(delegate->long_press());
+
+  // Wait until the timer runs out
+  gesture_sequence->ForceTimeout();
+  EXPECT_TRUE(delegate->long_press());
+  EXPECT_EQ(0u, delegate->touch_id());
+
+  delegate->Reset();
+  TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201), 0);
+  RootWindow::GetInstance()->DispatchTouchEvent(&release1);
+  EXPECT_FALSE(delegate->long_press());
+}
+
+// Check that scrolling cancels a long press
+TEST_F(GestureRecognizerTest, GestureEventLongPressCancelledByScroll) {
+  scoped_ptr<GestureEventConsumeDelegate> delegate(
+      new GestureEventConsumeDelegate());
+  const int kWindowWidth = 123;
+  const int kWindowHeight = 45;
+  gfx::Rect bounds(100, 200, kWindowWidth, kWindowHeight);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, NULL));
+
+  delegate->Reset();
+
+  TestGestureRecognizer* gesture_recognizer =
+      new TestGestureRecognizer();
+  TimerTestGestureSequence* gesture_sequence =
+      static_cast<TimerTestGestureSequence*>(
+          gesture_recognizer->GetGestureSequenceForTesting());
+
+  RootWindow::GetInstance()->SetGestureRecognizerForTesting(gesture_recognizer);
+
+  TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201), 0);
+  RootWindow::GetInstance()->DispatchTouchEvent(&press1);
+  EXPECT_TRUE(delegate->tap_down());
+
+  // We haven't pressed long enough for a long press to occur
+  EXPECT_FALSE(delegate->long_press());
+
+  // Scroll around, to cancel the long press
+  SendScrollEvent(root_window(), 130, 230, delegate.get());
+  // Wait until the timer runs out
+  gesture_sequence->ForceTimeout();
+  EXPECT_FALSE(delegate->long_press());
+
+  delegate->Reset();
+  TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201), 0);
+  RootWindow::GetInstance()->DispatchTouchEvent(&release1);
+  EXPECT_FALSE(delegate->long_press());
+}
+
+// Check that pinching cancels a long press
+TEST_F(GestureRecognizerTest, GestureEventLongPressCancelledByPinch) {
+  scoped_ptr<GestureEventConsumeDelegate> delegate(
+      new GestureEventConsumeDelegate());
+  const int kWindowWidth = 300;
+  const int kWindowHeight = 400;
+  gfx::Rect bounds(5, 5, kWindowWidth, kWindowHeight);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, NULL));
+
+  TestGestureRecognizer* gesture_recognizer =
+      new TestGestureRecognizer();
+  TimerTestGestureSequence* gesture_sequence =
+      static_cast<TimerTestGestureSequence*>(
+          gesture_recognizer->GetGestureSequenceForTesting());
+
+  RootWindow::GetInstance()->SetGestureRecognizerForTesting(gesture_recognizer);
+
+  delegate->Reset();
+  TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201), 0);
+  RootWindow::GetInstance()->DispatchTouchEvent(&press);
+  EXPECT_TRUE(delegate->tap_down());
+
+  // We haven't pressed long enough for a long press to occur
+  EXPECT_FALSE(delegate->long_press());
+
+  // Pinch, to cancel the long press
+  delegate->Reset();
+  TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), 1);
+  RootWindow::GetInstance()->DispatchTouchEvent(&press2);
+  EXPECT_TRUE(delegate->tap_down());
+  EXPECT_TRUE(delegate->pinch_begin());
+
+  // Wait until the timer runs out
+  gesture_sequence->ForceTimeout();
+
+  // No long press occurred
+  EXPECT_FALSE(delegate->long_press());
+
+  delegate->Reset();
+  TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201), 0);
+  RootWindow::GetInstance()->DispatchTouchEvent(&release1);
+  EXPECT_FALSE(delegate->long_press());
 }
 
 // Check that horizontal scroll gestures cause scrolls on horizontal rails.

@@ -27,6 +27,10 @@ class AURA_EXPORT GestureRecognizerAura : public GestureRecognizer {
   GestureRecognizerAura();
   virtual ~GestureRecognizerAura();
 
+ protected:
+  virtual GestureSequence* CreateSequence();
+  GestureSequence* gesture_sequence() { return default_sequence_.get(); }
+
  private:
   // Overridden from GestureRecognizer
   virtual Gestures* ProcessTouchEventForGesture(

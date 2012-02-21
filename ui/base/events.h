@@ -54,6 +54,7 @@ enum EventType {
   ET_GESTURE_PINCH_BEGIN,
   ET_GESTURE_PINCH_END,
   ET_GESTURE_PINCH_UPDATE,
+  ET_GESTURE_LONG_PRESS,
 };
 
 // Event flags currently supported

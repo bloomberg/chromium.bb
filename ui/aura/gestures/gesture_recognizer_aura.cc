@@ -15,7 +15,7 @@ namespace {
 // This is used to pop a std::queue when returning from a function.
 class ScopedPop {
  public:
-  ScopedPop(std::queue<aura::TouchEvent*>* queue) : queue_(queue) {
+  explicit ScopedPop(std::queue<aura::TouchEvent*>* queue) : queue_(queue) {
   }
 
   ~ScopedPop() {
@@ -36,10 +36,17 @@ namespace aura {
 // GestureRecognizerAura, public:
 
 GestureRecognizerAura::GestureRecognizerAura()
-    : default_sequence_(new GestureSequence()) {
+    : default_sequence_(CreateSequence()) {
 }
 
 GestureRecognizerAura::~GestureRecognizerAura() {
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// GestureRecognizerAura, protected:
+
+GestureSequence* GestureRecognizerAura::CreateSequence() {
+  return new GestureSequence();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
