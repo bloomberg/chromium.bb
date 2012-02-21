@@ -51,7 +51,7 @@ class MacTool(object):
         shutil.rmtree(dest)
       shutil.copytree(source, dest)
     elif extension == '.xib':
-      self._CopyXIBFile(source, dest)
+      return self._CopyXIBFile(source, dest)
     elif extension == '.strings':
       self._CopyStringsFile(source, dest)
     # TODO: Given that files with arbitrary extensions can be copied to the
@@ -70,7 +70,19 @@ class MacTool(object):
     args = ['/Developer/usr/bin/ibtool', '--errors', '--warnings',
         '--notices', '--output-format', 'human-readable-text', '--compile',
         dest, source]
-    subprocess.call(args)
+    ibtool_section_re = re.compile(r'/\*.*\*/')
+    ibtool_re = re.compile(r'.*note:.*is clipping its content')
+    ibtoolout = subprocess.Popen(args, stdout=subprocess.PIPE)
+    current_section_header = None
+    for line in ibtoolout.stdout:
+      if ibtool_section_re.match(line):
+        current_section_header = line
+      elif not ibtool_re.match(line):
+        if current_section_header:
+          sys.stdout.write(current_section_header)
+          current_section_header = None
+        sys.stdout.write(line)
+    return ibtoolout.returncode
 
   def _CopyStringsFile(self, source, dest):
     """Copies a .strings file using iconv to reconvert the input into UTF-16."""
