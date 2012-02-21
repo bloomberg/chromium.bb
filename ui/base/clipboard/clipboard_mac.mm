@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,12 +79,15 @@ Clipboard::FormatType Clipboard::FormatType::Deserialize(
 }
 
 Clipboard::Clipboard() {
+  DCHECK(CalledOnValidThread());
 }
 
 Clipboard::~Clipboard() {
+  DCHECK(CalledOnValidThread());
 }
 
 void Clipboard::WriteObjects(const ObjectMap& objects) {
+  DCHECK(CalledOnValidThread());
   NSPasteboard* pb = GetPasteboard();
   [pb declareTypes:[NSArray array] owner:nil];
 
@@ -209,6 +212,7 @@ void Clipboard::WriteWebSmartPaste() {
 }
 
 uint64 Clipboard::GetSequenceNumber(Buffer buffer) {
+  DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, BUFFER_STANDARD);
 
   NSPasteboard* pb = GetPasteboard();
@@ -217,6 +221,7 @@ uint64 Clipboard::GetSequenceNumber(Buffer buffer) {
 
 bool Clipboard::IsFormatAvailable(const FormatType& format,
                                   Buffer buffer) const {
+  DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, BUFFER_STANDARD);
 
   NSPasteboard* pb = GetPasteboard();
@@ -234,6 +239,7 @@ bool Clipboard::IsFormatAvailable(const FormatType& format,
 void Clipboard::ReadAvailableTypes(Clipboard::Buffer buffer,
                                    std::vector<string16>* types,
                                    bool* contains_filenames) const {
+  DCHECK(CalledOnValidThread());
   types->clear();
   if (IsFormatAvailable(Clipboard::GetPlainTextFormatType(), buffer))
     types->push_back(UTF8ToUTF16(kMimeTypeText));
@@ -252,6 +258,7 @@ void Clipboard::ReadAvailableTypes(Clipboard::Buffer buffer,
 }
 
 void Clipboard::ReadText(Clipboard::Buffer buffer, string16* result) const {
+  DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, BUFFER_STANDARD);
   NSPasteboard* pb = GetPasteboard();
   NSString* contents = [pb stringForType:NSStringPboardType];
@@ -263,6 +270,7 @@ void Clipboard::ReadText(Clipboard::Buffer buffer, string16* result) const {
 
 void Clipboard::ReadAsciiText(Clipboard::Buffer buffer,
                               std::string* result) const {
+  DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, BUFFER_STANDARD);
   NSPasteboard* pb = GetPasteboard();
   NSString* contents = [pb stringForType:NSStringPboardType];
@@ -276,6 +284,7 @@ void Clipboard::ReadAsciiText(Clipboard::Buffer buffer,
 void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
                          std::string* src_url, uint32* fragment_start,
                          uint32* fragment_end) const {
+  DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, BUFFER_STANDARD);
 
   // TODO(avi): src_url?
@@ -304,6 +313,7 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
 }
 
 SkBitmap Clipboard::ReadImage(Buffer buffer) const {
+  DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, BUFFER_STANDARD);
 
   scoped_nsobject<NSImage> image(
@@ -334,6 +344,7 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
 void Clipboard::ReadCustomData(Buffer buffer,
                                const string16& type,
                                string16* result) const {
+  DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, BUFFER_STANDARD);
 
   NSPasteboard* pb = GetPasteboard();
@@ -345,6 +356,7 @@ void Clipboard::ReadCustomData(Buffer buffer,
 }
 
 void Clipboard::ReadBookmark(string16* title, std::string* url) const {
+  DCHECK(CalledOnValidThread());
   NSPasteboard* pb = GetPasteboard();
 
   if (title) {
@@ -364,6 +376,7 @@ void Clipboard::ReadBookmark(string16* title, std::string* url) const {
 }
 
 void Clipboard::ReadFile(FilePath* file) const {
+  DCHECK(CalledOnValidThread());
   if (!file) {
     NOTREACHED();
     return;
@@ -396,6 +409,7 @@ void Clipboard::ReadFiles(std::vector<FilePath>* files) const {
 }
 
 void Clipboard::ReadData(const FormatType& format, std::string* result) const {
+  DCHECK(CalledOnValidThread());
   NSPasteboard* pb = GetPasteboard();
   NSData* data = [pb dataForType:format.ToNSString()];
   if ([data length])

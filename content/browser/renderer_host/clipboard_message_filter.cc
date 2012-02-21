@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,12 +39,23 @@ ClipboardMessageFilter::ClipboardMessageFilter() {
 
 void ClipboardMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
+  // Clipboard writes should always occur on the UI thread due the restrictions
+  // of various platform APIs. In general, the clipboard is not thread-safe, so
+  // all clipboard calls should be serviced from the UI thread.
+  //
+  // Windows needs clipboard reads to be serviced from the IO thread because
+  // these are sync IPCs which can result in deadlocks with NPAPI plugins if
+  // serviced from the UI thread. Note that Windows clipboard calls ARE
+  // thread-safe so it is ok for reads and writes to be serviced from different
+  // threads.
+#if !defined(OS_WIN)
+  if (IPC_MESSAGE_CLASS(message) == ClipboardMsgStart)
+    *thread = BrowserThread::UI;
+#endif
+
 #if defined(OS_WIN)
   if (message.type() == ClipboardHostMsg_ReadImage::ID)
     *thread = BrowserThread::FILE;
-#elif defined(USE_X11)
-  if (IPC_MESSAGE_CLASS(message) == ClipboardMsgStart)
-    *thread = BrowserThread::UI;
 #endif
 }
 
@@ -76,10 +87,11 @@ ClipboardMessageFilter::~ClipboardMessageFilter() {
 }
 
 void ClipboardMessageFilter::OnWriteObjectsSync(
-    const ui::Clipboard::ObjectMap& objects,
+    ui::Clipboard::ObjectMap objects,
     base::SharedMemoryHandle bitmap_handle) {
   DCHECK(base::SharedMemory::IsHandleValid(bitmap_handle))
       << "Bad bitmap handle";
+#if defined(OS_WIN)
   // We cannot write directly from the IO thread, and cannot service the IPC
   // on the UI thread. We'll copy the relevant data and get a handle to any
   // shared memory so it doesn't go away when we resume the renderer, and post
@@ -95,10 +107,16 @@ void ClipboardMessageFilter::OnWriteObjectsSync(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(&WriteObjectsHelper, base::Owned(long_living_objects)));
+#else
+  // Splice the shared memory handle into the clipboard data.
+  ui::Clipboard::ReplaceSharedMemHandle(&objects, bitmap_handle, peer_handle());
+  GetClipboard()->WriteObjects(objects);
+#endif
 }
 
 void ClipboardMessageFilter::OnWriteObjectsAsync(
     const ui::Clipboard::ObjectMap& objects) {
+#if defined(OS_WIN)
   // We cannot write directly from the IO thread, and cannot service the IPC
   // on the UI thread. We'll copy the relevant data and post a task to preform
   // the write on the UI thread.
@@ -113,6 +131,9 @@ void ClipboardMessageFilter::OnWriteObjectsAsync(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(&WriteObjectsHelper, base::Owned(long_living_objects)));
+#else
+  GetClipboard()->WriteObjects(objects);
+#endif
 }
 
 void ClipboardMessageFilter::OnGetSequenceNumber(
