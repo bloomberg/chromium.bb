@@ -797,15 +797,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppIdSwitch) {
 }
 #endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-// http://crbug.com/46198: On XP/Vista, the failure rate is 5 ~ 6%.
-// On OS 10.5 it's 1%, 10.6 currently 4%.
-#define MAYBE_PageLanguageDetection DISABLED_PageLanguageDetection
-#else
-#define MAYBE_PageLanguageDetection PageLanguageDetection
-#endif
 // Tests that the CLD (Compact Language Detection) works properly.
-IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageLanguageDetection) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
   ASSERT_TRUE(test_server()->Start());
 
   std::string lang;
