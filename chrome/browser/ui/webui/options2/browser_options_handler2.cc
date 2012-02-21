@@ -163,7 +163,7 @@ void BrowserOptionsHandler::GetLocalizedValues(
 #if defined(OS_CHROMEOS)
     { "brightnessDecrease", IDS_OPTIONS_SETTINGS_BRIGHTNESS_DECREASE },
     { "brightnessIncrease", IDS_OPTIONS_SETTINGS_BRIGHTNESS_INCREASE },
-    { "changePicture", IDS_OPTIONS_CHANGE_PICTURE },
+    { "changePicture", IDS_OPTIONS_CHANGE_PICTURE_CAPTION },
     { "deviceGroupBrightness", IDS_OPTIONS_SETTINGS_BRIGHTNESS_DESCRIPTION },
     { "deviceGroupKeyboard", IDS_OPTIONS_DEVICE_GROUP_KEYBOARD_SECTION },
     { "deviceGroupPointer", IDS_OPTIONS_DEVICE_GROUP_POINTER_SECTION },

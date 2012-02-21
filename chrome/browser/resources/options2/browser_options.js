@@ -176,7 +176,7 @@ cr.define('options', function() {
         // |kGuestUser| if a guest session is active.
         this.username_ = localStrings.getString('username');
 
-        $('change-picture-button').onclick = function(event) {
+        $('account-picture-wrapper').onclick = function(event) {
           OptionsPage.navigateToPage('changePicture');
         };
         this.updateAccountPicture_();

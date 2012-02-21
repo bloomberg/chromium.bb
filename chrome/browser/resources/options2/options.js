@@ -143,7 +143,7 @@ function load() {
                                 AdvancedOptions.getInstance());
     OptionsPage.registerOverlay(ChangePictureOptions.getInstance(),
                                 BrowserOptions.getInstance(),
-                                [$('change-picture-button')]);
+                                [$('account-picture')]);
     OptionsPage.registerOverlay(DetailsInternetPage.getInstance(),
                                 InternetOptions.getInstance());
     OptionsPage.registerOverlay(InternetOptions.getInstance(),

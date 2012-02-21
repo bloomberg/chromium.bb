@@ -36,22 +36,54 @@
   margin-top: 10px
 }
 
+#sync-overview p {
+  display: inline;
+}
+
 #account-picture-wrapper {
   border: 1px solid rgba(0, 0, 0, 0.3);
   border-radius: 4px;
+  cursor: pointer;
   display: inline-block;
-  margin: 5px 10px 5px 2px;
+  float: left;
+  margin: 0 2px 10px 0;
   padding: 3px;
+  position: relative;
+}
+
+html[dir=rtl] #account-picture-wrapper {
+  float: right;
 }
 
 #account-picture {
-  height: 70px;
+  height: 72px;
   vertical-align: middle;
-  width: 70px;
+  width: 72px;
 }
 
-#sync-overview p {
-  display: inline;
+#change-picture-caption {
+  background: rgba(0, 0, 0, 0.5);
+  bottom: 0;
+  color: white;
+  font-size: small;
+  margin: 3px 0;
+  position: absolute;
+  text-align: center;
+  /* Width of #account-picture. */
+  width: 72px;
+}
+
+#account-picture-wrapper:not(:hover) #change-picture-caption {
+  visibility: hidden;
+}
+
+#sync-general {
+  -webkit-margin-start: 100px;
+  margin-bottom: 10px;
+}
+
+#sync-buttons {
+  clear: both;
 }
 
 #profiles-list {
