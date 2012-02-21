@@ -32,6 +32,7 @@
 #include "chrome/browser/extensions/extension_context_menu_api.h"
 #include "chrome/browser/extensions/extension_cookies_api.h"
 #include "chrome/browser/extensions/extension_debugger_api.h"
+#include "chrome/browser/extensions/extension_font_settings_api.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_i18n_api.h"
 #include "chrome/browser/extensions/extension_idle_api.h"
@@ -453,6 +454,9 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<ClearContentSettingsFunction>();
   RegisterFunction<GetContentSettingFunction>();
   RegisterFunction<SetContentSettingFunction>();
+
+  // Font settings.
+  RegisterFunction<GetFontNameFunction>();
 
   // ChromeAuth settings.
   RegisterFunction<SetCloudPrintCredentialsFunction>();

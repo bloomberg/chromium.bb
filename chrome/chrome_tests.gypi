@@ -2624,6 +2624,7 @@
         'browser/extensions/extension_dom_clipboard_apitest.cc',
         'browser/extensions/extension_file_browser_private_apitest.cc',
         'browser/extensions/extension_fileapi_apitest.cc',
+        'browser/extensions/extension_font_settings_apitest.cc',
         'browser/extensions/extension_function_test_utils.cc',
         'browser/extensions/extension_function_test_utils.h',
         'browser/extensions/extension_geolocation_apitest.cc',
