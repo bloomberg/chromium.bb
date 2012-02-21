@@ -13,15 +13,6 @@ import urllib
 GS_PATH_DEFAULT = 'default' # Means gs://chromeos-archive/ + bot_id
 
 
-def IsInternalBuild(build_config):
-  """Returns whether a build config is an internal config.
-
-  Args:
-    build_config: The build configuration dictionary to test.
-  """
-  return build_config['git_url'] == constants.MANIFEST_INT_URL
-
-
 def OverrideConfigForTrybot(build_config):
   """Apply trybot-specific configuration settings.
 
@@ -34,7 +25,7 @@ def OverrideConfigForTrybot(build_config):
   """
   copy_config = copy.deepcopy(build_config)
   copy_config['uprev'] = True
-  if IsInternalBuild(build_config):
+  if build_config['internal']:
     copy_config['overlays'] = 'both'
 
   # Most users don't have access to the pdf repository so disable pdf.
@@ -102,6 +93,9 @@ _settings = dict(
 #              then the master will uprev packages.  This should align
 #              with info vs. closer except for the master and options.tests.
   important=False,
+
+# internal -- Whether this is an internal build config.
+  internal=False,
 
 # useflags -- emerge use flags to use while setting up the board, building
 #             packages, making images, etc.
@@ -382,6 +376,7 @@ incremental = _config(
 )
 
 internal = _config(
+  internal=True,
   overlays='both',
   git_url=constants.MANIFEST_INT_URL,
 )

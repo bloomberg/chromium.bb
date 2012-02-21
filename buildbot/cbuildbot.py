@@ -920,8 +920,7 @@ def main(argv=None):
     if options.buildbot:
       parser.error('Please specify a buildroot with the --buildroot option.')
     else:
-      internal = cbuildbot_config.IsInternalBuild(build_config)
-      options.buildroot = _DetermineDefaultBuildRoot(internal)
+      options.buildroot = _DetermineDefaultBuildRoot(build_config['internal'])
       # We use a marker file in the buildroot to indicate the user has
       # consented to using this directory.
       if not os.path.exists(repository.GetTrybotMarkerPath(options.buildroot)):

@@ -156,7 +156,7 @@ class SyncStage(bs.BuilderStage):
     super(SyncStage, self).__init__(bot_id, options, build_config)
     self.repo = None
     self.skip_sync = False
-    self.internal = cbuildbot_config.IsInternalBuild(self._build_config)
+    self.internal = self._build_config['internal']
 
   def _GetManifestVersionsRepoUrl(self, read_only=False):
     return cbuildbot_config.GetManifestVersionsRepoUrl(
