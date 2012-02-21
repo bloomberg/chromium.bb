@@ -1166,11 +1166,7 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
   }
 
   // Set the URL to be displayed in the browser UI to the user.
-  if (ds->hasUnreachableURL()) {
-    params.url = ds->unreachableURL();
-  } else {
-    params.url = request.url();
-  }
+  params.url = GetLoadingUrl(frame);
 
   if (frame->document().baseURL() != params.url)
     params.base_url = frame->document().baseURL();
@@ -2736,14 +2732,22 @@ void RenderViewImpl::didCommitProvisionalLoad(WebFrame* frame,
     // We bump our Page ID to correspond with the new session history entry.
     page_id_ = next_page_id_++;
 
-    // Advance our offset in session history, applying the length limit.  There
-    // is now no forward history.
-    history_list_offset_++;
-    if (history_list_offset_ >= content::kMaxSessionHistoryEntries)
-      history_list_offset_ = content::kMaxSessionHistoryEntries - 1;
-    history_list_length_ = history_list_offset_ + 1;
-    history_page_ids_.resize(history_list_length_, -1);
-    history_page_ids_[history_list_offset_] = page_id_;
+    // Don't update history_page_ids_ (etc) for about:swappedout, since we
+    // don't want to forget the entry that was there, and since we will
+    // never come back to about:swappedout.  Note that we have to call
+    // UpdateSessionHistory and update page_id_ even in this case, so that
+    // the current entry gets a state update and so that we don't send a
+    // state update to the wrong entry when we swap back in.
+    if (GetLoadingUrl(frame) != GURL("about:swappedout")) {
+      // Advance our offset in session history, applying the length limit.
+      // There is now no forward history.
+      history_list_offset_++;
+      if (history_list_offset_ >= content::kMaxSessionHistoryEntries)
+        history_list_offset_ = content::kMaxSessionHistoryEntries - 1;
+      history_list_length_ = history_list_offset_ + 1;
+      history_page_ids_.resize(history_list_length_, -1);
+      history_page_ids_[history_list_offset_] = page_id_;
+    }
   } else {
     // Inspect the navigation_state on this frame to see if the navigation
     // corresponds to a session history navigation...  Note: |frame| may or
@@ -3696,6 +3700,15 @@ GURL RenderViewImpl::GetOpenerUrl() const {
     return creator_url_;
 }
 
+GURL RenderViewImpl::GetLoadingUrl(WebKit::WebFrame* frame) const {
+  WebDataSource* ds = frame->dataSource();
+  if (ds->hasUnreachableURL())
+    return ds->unreachableURL();
+
+  const WebURLRequest& request = ds->request();
+  return request.url();
+}
+
 WebUIBindings* RenderViewImpl::GetWebUIBindings() {
   if (!web_ui_bindings_.get()) {
     web_ui_bindings_.reset(new WebUIBindings(
@@ -4236,6 +4249,9 @@ void RenderViewImpl::OnShouldClose() {
 }
 
 void RenderViewImpl::OnSwapOut(const ViewMsg_SwapOut_Params& params) {
+  // Ensure that no other in-progress navigation continues.
+  OnStop();
+
   // Only run unload if we're not swapped out yet, but send the ack either way.
   if (!is_swapped_out_) {
     // Swap this RenderView out so the tab can navigate to a page rendered by a
@@ -4254,12 +4270,14 @@ void RenderViewImpl::OnSwapOut(const ViewMsg_SwapOut_Params& params) {
 
     // Replace the page with a blank dummy URL.  The unload handler will not be
     // run a second time, thanks to a check in FrameLoader::stopLoading.
+    // We use loadRequest instead of loadHTMLString because the former commits
+    // synchronously.  Otherwise a new navigation can interrupt the navigation
+    // to about:swappedout.  If that happens to be to the page we had been
+    // showing, then WebKit will never send a commit and we'll be left spinning.
     // TODO(creis): Need to add a better way to do this that avoids running the
     // beforeunload handler.  For now, we just run it a second time silently.
-    webview()->mainFrame()->loadHTMLString(std::string(),
-                                          GURL("about:swappedout"),
-                                          GURL("about:swappedout"),
-                                          false);
+    WebURLRequest request(GURL("about:swappedout"));
+    webview()->mainFrame()->loadRequest(request);
   }
 
   // Just echo back the params in the ACK.

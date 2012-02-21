@@ -927,6 +927,9 @@ class RenderViewImpl : public RenderWidget,
   // Returns the opener url if present, else an empty url.
   GURL GetOpenerUrl() const;
 
+  // Returns the URL being loaded by the given frame's request.
+  GURL GetLoadingUrl(WebKit::WebFrame* frame) const;
+
   WebUIBindings* GetWebUIBindings();
 
   // Should only be called if this object wraps a PluginDocument.

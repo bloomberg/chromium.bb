@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -252,6 +253,131 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, ClickLinkAfter204Error) {
   scoped_refptr<SiteInstance> noref_site_instance(
       browser()->GetSelectedWebContents()->GetSiteInstance());
   EXPECT_EQ(orig_site_instance, noref_site_instance);
+}
+
+// Test for http://crbug.com/93427.  Ensure that cross-site navigations
+// do not cause back/forward navigations to be considered stale by the
+// renderer.
+IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, BackForwardNotStale) {
+  // Start two servers with different sites.
+  ASSERT_TRUE(test_server()->Start());
+  net::TestServer https_server(
+      net::TestServer::TYPE_HTTPS,
+      FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  // Visit a page on first site.
+  std::string replacement_path_a1;
+  ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
+      "files/title1.html",
+      test_server()->host_port_pair(),
+      &replacement_path_a1));
+  ui_test_utils::NavigateToURL(browser(),
+                               test_server()->GetURL(replacement_path_a1));
+
+  // Visit three pages on second site.
+  std::string replacement_path_b1;
+  ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
+      "files/title1.html",
+      https_server.host_port_pair(),
+      &replacement_path_b1));
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server.GetURL(replacement_path_b1));
+  std::string replacement_path_b2;
+  ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
+      "files/title2.html",
+      https_server.host_port_pair(),
+      &replacement_path_b2));
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server.GetURL(replacement_path_b2));
+  std::string replacement_path_b3;
+  ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
+      "files/title3.html",
+      https_server.host_port_pair(),
+      &replacement_path_b3));
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server.GetURL(replacement_path_b3));
+
+  // History is now [blank, A1, B1, B2, *B3].
+  content::WebContents* contents = browser()->GetSelectedWebContents();
+  EXPECT_EQ(5, contents->GetController().GetEntryCount());
+
+  // Open another tab in same process to keep this process alive.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), https_server.GetURL(replacement_path_b1),
+      NEW_BACKGROUND_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // Go back three times to first site.
+  {
+    ui_test_utils::WindowedNotificationObserver back_nav_load_observer(
+        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        content::Source<content::NavigationController>(
+            &contents->GetController()));
+    browser()->GoBack(CURRENT_TAB);
+    back_nav_load_observer.Wait();
+  }
+  {
+    ui_test_utils::WindowedNotificationObserver back_nav_load_observer(
+        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        content::Source<content::NavigationController>(
+            &contents->GetController()));
+    browser()->GoBack(CURRENT_TAB);
+    back_nav_load_observer.Wait();
+  }
+  {
+    ui_test_utils::WindowedNotificationObserver back_nav_load_observer(
+        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        content::Source<content::NavigationController>(
+            &contents->GetController()));
+    browser()->GoBack(CURRENT_TAB);
+    back_nav_load_observer.Wait();
+  }
+
+  // Now go forward twice to B2.  Shouldn't be left spinning.
+  {
+    ui_test_utils::WindowedNotificationObserver forward_nav_load_observer(
+        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        content::Source<content::NavigationController>(
+            &contents->GetController()));
+    browser()->GoForward(CURRENT_TAB);
+    forward_nav_load_observer.Wait();
+  }
+  {
+    ui_test_utils::WindowedNotificationObserver forward_nav_load_observer(
+        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        content::Source<content::NavigationController>(
+            &contents->GetController()));
+    browser()->GoForward(CURRENT_TAB);
+    forward_nav_load_observer.Wait();
+  }
+
+  // Go back twice to first site.
+  {
+    ui_test_utils::WindowedNotificationObserver back_nav_load_observer(
+        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        content::Source<content::NavigationController>(
+            &contents->GetController()));
+    browser()->GoBack(CURRENT_TAB);
+    back_nav_load_observer.Wait();
+  }
+  {
+    ui_test_utils::WindowedNotificationObserver back_nav_load_observer(
+        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        content::Source<content::NavigationController>(
+            &contents->GetController()));
+    browser()->GoBack(CURRENT_TAB);
+    back_nav_load_observer.Wait();
+  }
+
+  // Now go forward directly to B3.  Shouldn't be left spinning.
+  {
+    ui_test_utils::WindowedNotificationObserver forward_nav_load_observer(
+        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        content::Source<content::NavigationController>(
+            &contents->GetController()));
+    contents->GetController().GoToIndex(4);
+    forward_nav_load_observer.Wait();
+  }
 }
 
 // This class holds onto RenderViewHostObservers for as long as their observed

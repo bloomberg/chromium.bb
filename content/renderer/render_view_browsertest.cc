@@ -62,6 +62,8 @@ TEST_F(RenderViewImplTest, OnNavStateChanged) {
 // Ensure the RenderViewImpl sends an ACK to a SwapOut request, even if it is
 // already swapped out.  http://crbug.com/93427.
 TEST_F(RenderViewImplTest, SendSwapOutACK) {
+  int initial_page_id = view()->GetPageId();
+
   // Respond to a swap out request.
   ViewMsg_SwapOut_Params params;
   params.closing_process_id = 10;
@@ -69,6 +71,9 @@ TEST_F(RenderViewImplTest, SendSwapOutACK) {
   params.new_render_process_host_id = 12;
   params.new_request_id = 13;
   view()->OnSwapOut(params);
+
+  // Ensure the swap out commits synchronously.
+  EXPECT_NE(initial_page_id, view()->GetPageId());
 
   // Check for a valid OnSwapOutACK with echoed params.
   const IPC::Message* msg = render_thread_->sink().GetUniqueMessageMatching(
