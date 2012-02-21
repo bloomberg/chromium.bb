@@ -776,6 +776,8 @@ void RenderWidgetHost::RendererExited(base::TerminationStatus status,
   in_flight_event_count_ = 0;
 
   if (view_) {
+    GpuSurfaceTracker::Get()->SetSurfaceHandle(surface_id_,
+                                               gfx::GLSurfaceHandle());
     view_->RenderViewGone(status, exit_code);
     view_ = NULL;  // The View should be deleted by RenderViewGone.
   }

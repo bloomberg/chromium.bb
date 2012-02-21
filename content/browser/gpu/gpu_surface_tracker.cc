@@ -6,6 +6,10 @@
 
 #include "base/logging.h"
 
+#if defined(OS_WIN)
+#include "ui/gfx/surface/accelerated_surface_win.h"
+#endif
+
 GpuSurfaceTracker::GpuSurfaceTracker()
     : next_surface_id_(1) {
 }
@@ -85,4 +89,28 @@ gfx::GLSurfaceHandle GpuSurfaceTracker::GetSurfaceHandle(int surface_id) {
   DCHECK(surface_map_.find(surface_id) != surface_map_.end());
   return surface_map_[surface_id].handle;
 }
+
+#if defined(OS_WIN) && !defined(USE_AURA)
+
+void GpuSurfaceTracker::AsyncPresentAndAcknowledge(
+    int surface_id,
+    const gfx::Size& size,
+    int64 surface_handle,
+    const base::Closure& completion_task) {
+  base::AutoLock lock(lock_);
+
+  SurfaceMap::iterator it = surface_map_.find(surface_id);
+  if (it == surface_map_.end() || !it->second.handle.accelerated_surface) {
+    completion_task.Run();
+    return;
+  }
+
+  it->second.handle.accelerated_surface->AsyncPresentAndAcknowledge(
+      it->second.handle.handle,
+      size,
+      surface_handle,
+      completion_task);
+}
+
+#endif  // OS_WIN
 
