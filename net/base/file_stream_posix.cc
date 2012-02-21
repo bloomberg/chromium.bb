@@ -74,9 +74,9 @@ int RecordAndMapError(int error,
 void OpenFile(const FilePath& path,
               int open_flags,
               bool record_uma,
-              const net::BoundNetLog& bound_net_log,
               base::PlatformFile* file,
-              int* result) {
+              int* result,
+              const net::BoundNetLog& bound_net_log) {
   bound_net_log.BeginEvent(
       net::NetLog::TYPE_FILE_STREAM_OPEN,
       make_scoped_refptr(
@@ -106,54 +106,41 @@ void CloseFile(base::PlatformFile file,
 
 // ReadFile() is a simple wrapper around read() that handles EINTR signals and
 // calls MapSystemError() to map errno to net error codes.
-int ReadFile(base::PlatformFile file,
-             char* buf,
-             int buf_len,
-             bool record_uma,
-             const net::BoundNetLog& bound_net_log) {
+void ReadFile(base::PlatformFile file,
+              char* buf,
+              int buf_len,
+              bool record_uma,
+              int* result,
+              const net::BoundNetLog& bound_net_log) {
   base::ThreadRestrictions::AssertIOAllowed();
   // read(..., 0) returns 0 to indicate end-of-file.
 
   // Loop in the case of getting interrupted by a signal.
   ssize_t res = HANDLE_EINTR(read(file, buf, static_cast<size_t>(buf_len)));
-  if (res == static_cast<ssize_t>(-1))
-    RecordAndMapError(errno, FILE_ERROR_SOURCE_READ, record_uma, bound_net_log);
-  return static_cast<int>(res);
-}
-
-void ReadFileTask(base::PlatformFile file,
-                  char* buf,
-                  int buf_len,
-                  bool record_uma,
-                  const net::BoundNetLog& bound_net_log,
-                  const CompletionCallback& callback) {
-  callback.Run(ReadFile(file, buf, buf_len, record_uma, bound_net_log));
+  if (res == -1) {
+    res = RecordAndMapError(errno, FILE_ERROR_SOURCE_READ,
+                            record_uma, bound_net_log);
+  }
+  *result = res;
 }
 
 // WriteFile() is a simple wrapper around write() that handles EINTR signals and
 // calls MapSystemError() to map errno to net error codes.  It tries to write to
 // completion.
-int WriteFile(base::PlatformFile file,
-              const char* buf,
-              int buf_len,
-              bool record_uma,
-              const net::BoundNetLog& bound_net_log) {
+void WriteFile(base::PlatformFile file,
+               const char* buf,
+               int buf_len,
+               bool record_uma,
+               int* result,
+               const net::BoundNetLog& bound_net_log) {
   base::ThreadRestrictions::AssertIOAllowed();
+
   ssize_t res = HANDLE_EINTR(write(file, buf, buf_len));
   if (res == -1) {
-    RecordAndMapError(errno, FILE_ERROR_SOURCE_WRITE, record_uma,
-                      bound_net_log);
+    res = RecordAndMapError(errno, FILE_ERROR_SOURCE_WRITE, record_uma,
+                            bound_net_log);
   }
-  return res;
-}
-
-void WriteFileTask(base::PlatformFile file,
-                   const char* buf,
-                   int buf_len,
-                   bool record_uma,
-                   const net::BoundNetLog& bound_net_log,
-                   const CompletionCallback& callback) {
-  callback.Run(WriteFile(file, buf, buf_len, record_uma, bound_net_log));
+  *result = res;
 }
 
 // FlushFile() is a simple wrapper around fsync() that handles EINTR signals and
@@ -165,195 +152,13 @@ int FlushFile(base::PlatformFile file,
   base::ThreadRestrictions::AssertIOAllowed();
   ssize_t res = HANDLE_EINTR(fsync(file));
   if (res == -1) {
-    RecordAndMapError(errno, FILE_ERROR_SOURCE_FLUSH, record_uma,
-                      bound_net_log);
+    res = RecordAndMapError(errno, FILE_ERROR_SOURCE_FLUSH, record_uma,
+                            bound_net_log);
   }
   return res;
 }
 
 }  // namespace
-
-// Cancelable wrapper around a Closure.
-class CancelableCallback {
- public:
-  explicit CancelableCallback(const base::Closure& callback)
-      : canceled_(false),
-        callback_(callback) {}
-
-  void Run() {
-    if (!canceled_)
-      callback_.Run();
-  }
-
-  void Cancel() {
-    canceled_ = true;
-  }
-
- private:
-  bool canceled_;
-  const base::Closure callback_;
-};
-
-// FileStream::AsyncContext ----------------------------------------------
-
-class FileStream::AsyncContext {
- public:
-  AsyncContext();
-  ~AsyncContext();
-
-  // These methods post synchronous read() and write() calls to a WorkerThread.
-  void InitiateAsyncRead(
-      base::PlatformFile file, IOBuffer* buf, int buf_len,
-      const net::BoundNetLog& bound_net_log,
-      const CompletionCallback& callback);
-  void InitiateAsyncWrite(
-      base::PlatformFile file, IOBuffer* buf, int buf_len,
-      const net::BoundNetLog& bound_net_log,
-      const CompletionCallback& callback);
-
-  const CompletionCallback& callback() const { return callback_; }
-
-  // Called by the WorkerPool thread executing the IO after the IO completes.
-  // This method queues RunAsynchronousCallback() on the MessageLoop and signals
-  // |background_io_completed_callback_|, in case the destructor is waiting.  In
-  // that case, the destructor will call RunAsynchronousCallback() instead, and
-  // cancel |message_loop_task_|.
-  // |result| is the result of the Read/Write task.
-  void OnBackgroundIOCompleted(int result);
-
-  void EnableErrorStatistics() {
-    record_uma_ = true;
-  }
-
- private:
-  // Always called on the IO thread, either directly by a task on the
-  // MessageLoop or by ~AsyncContext().
-  void RunAsynchronousCallback();
-
-  // The MessageLoopForIO that this AsyncContext is running on.
-  MessageLoopForIO* const message_loop_;
-  CompletionCallback callback_;  // The user provided callback.
-  scoped_refptr<IOBuffer> in_flight_buf_;
-
-  // This is used to synchronize between the AsyncContext destructor (which runs
-  // on the IO thread and OnBackgroundIOCompleted() which runs on the WorkerPool
-  // thread.
-  base::WaitableEvent background_io_completed_;
-
-  // These variables are only valid when background_io_completed is signaled.
-  int result_;
-  CancelableCallback* message_loop_task_;
-
-  bool is_closing_;
-  bool record_uma_;
-
-  DISALLOW_COPY_AND_ASSIGN(AsyncContext);
-};
-
-FileStream::AsyncContext::AsyncContext()
-    : message_loop_(MessageLoopForIO::current()),
-      background_io_completed_(true, false),
-      message_loop_task_(NULL),
-      is_closing_(false),
-      record_uma_(false) {}
-
-FileStream::AsyncContext::~AsyncContext() {
-  is_closing_ = true;
-  if (!callback_.is_null()) {
-    // If |callback_| is non-NULL, that implies either the worker thread is
-    // still running the IO task, or the completion callback is queued up on the
-    // MessageLoopForIO, but AsyncContext() got deleted before then.
-    const bool need_to_wait = !background_io_completed_.IsSignaled();
-    base::TimeTicks start = base::TimeTicks::Now();
-    RunAsynchronousCallback();
-    if (need_to_wait) {
-      // We want to see if we block the message loop for too long.
-      UMA_HISTOGRAM_TIMES("AsyncIO.FileStreamClose",
-                          base::TimeTicks::Now() - start);
-    }
-  }
-}
-
-void FileStream::AsyncContext::InitiateAsyncRead(
-    base::PlatformFile file, IOBuffer* buf, int buf_len,
-    const net::BoundNetLog& bound_net_log,
-    const CompletionCallback& callback) {
-  DCHECK(callback_.is_null());
-  DCHECK(!in_flight_buf_);
-  callback_ = callback;
-  in_flight_buf_ = buf;  // Hold until the async operation ends.
-
-  base::WorkerPool::PostTask(
-      FROM_HERE,
-      base::Bind(&ReadFileTask,
-                 file,
-                 buf->data(),
-                 buf_len,
-                 record_uma_,
-                 bound_net_log,
-                 base::Bind(&AsyncContext::OnBackgroundIOCompleted,
-                            base::Unretained(this))),
-      true /* task_is_slow */);
-}
-
-void FileStream::AsyncContext::InitiateAsyncWrite(
-    base::PlatformFile file, IOBuffer* buf, int buf_len,
-    const net::BoundNetLog& bound_net_log,
-    const CompletionCallback& callback) {
-  DCHECK(callback_.is_null());
-  DCHECK(!in_flight_buf_);
-  callback_ = callback;
-  in_flight_buf_ = buf;  // Hold until the async operation ends.
-
-  base::WorkerPool::PostTask(
-      FROM_HERE,
-      base::Bind(&WriteFileTask,
-                 file,
-                 buf->data(),
-                 buf_len,
-                 record_uma_,
-                 bound_net_log,
-                 base::Bind(&AsyncContext::OnBackgroundIOCompleted,
-                            base::Unretained(this))),
-      true /* task_is_slow */);
-}
-
-void FileStream::AsyncContext::OnBackgroundIOCompleted(int result) {
-  result_ = result;
-  message_loop_task_ = new CancelableCallback(
-      base::Bind(&AsyncContext::RunAsynchronousCallback,
-                 base::Unretained(this)));
-  message_loop_->PostTask(FROM_HERE,
-                          base::Bind(&CancelableCallback::Run,
-                                     base::Owned(message_loop_task_)));
-  background_io_completed_.Signal();
-}
-
-void FileStream::AsyncContext::RunAsynchronousCallback() {
-  // Wait() here ensures that all modifications from the WorkerPool thread are
-  // now visible.
-  background_io_completed_.Wait();
-
-  // Either we're in the MessageLoop's task, in which case Cancel() doesn't do
-  // anything, or we're in ~AsyncContext(), in which case this prevents the call
-  // from happening again.  Must do it here after calling Wait().
-  message_loop_task_->Cancel();
-  message_loop_task_ = NULL;  // lifetime handled by base::Owned
-
-  if (is_closing_) {
-    callback_.Reset();
-    in_flight_buf_ = NULL;
-    return;
-  }
-
-  DCHECK(!callback_.is_null());
-  CompletionCallback temp_callback = callback_;
-  callback_.Reset();
-  scoped_refptr<IOBuffer> temp_buf = in_flight_buf_;
-  in_flight_buf_ = NULL;
-  background_io_completed_.Reset();
-  temp_callback.Run(result_);
-}
 
 // FileStream ------------------------------------------------------------
 
@@ -377,20 +182,11 @@ FileStream::FileStream(base::PlatformFile file, int flags, net::NetLog* net_log)
                                             net::NetLog::SOURCE_FILESTREAM)),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   bound_net_log_.BeginEvent(net::NetLog::TYPE_FILE_STREAM_ALIVE, NULL);
-
-  // If the file handle is opened with base::PLATFORM_FILE_ASYNC, we need to
-  // make sure we will perform asynchronous File IO to it.
-  if (flags & base::PLATFORM_FILE_ASYNC) {
-    async_context_.reset(new AsyncContext());
-  }
 }
 
 FileStream::~FileStream() {
   if (auto_closed_) {
-    if (async_context_.get()) {
-      // Make sure we don't have a request in flight.
-      DCHECK(async_context_->callback().is_null());
-
+    if (open_flags_ & base::PLATFORM_FILE_ASYNC) {
       // Close the file in the background.
       const bool posted = base::WorkerPool::PostTask(
           FROM_HERE,
@@ -406,14 +202,10 @@ FileStream::~FileStream() {
 }
 
 void FileStream::Close(const CompletionCallback& callback) {
+  DCHECK(open_flags_ & base::PLATFORM_FILE_ASYNC);
   DCHECK(callback_.is_null());
+
   callback_ = callback;
-
-  // Make sure we don't have a request in flight. Unlike CloseSync(), don't
-  // abort existing asynchronous operations, as it'd block.
-  DCHECK(async_context_.get());
-  DCHECK(async_context_->callback().is_null());
-
   const bool posted = base::WorkerPool::PostTaskAndReply(
       FROM_HERE,
       base::Bind(&CloseFile, file_, bound_net_log_),
@@ -425,9 +217,11 @@ void FileStream::Close(const CompletionCallback& callback) {
 void FileStream::CloseSync() {
   // Abort any existing asynchronous operations.
 
-  // TODO(satorux): Remove this once all async clients are migrated to use
-  // Close(). crbug.com/114783
-  async_context_.reset();
+  // TODO(satorux): Replace this with a DCHECK once once all async clients
+  // are migrated to use Close(). crbug.com/114783
+  //
+  // DCHECK(!(open_flags_ & base::PLATFORM_FILE_ASYNC));
+  weak_ptr_factory_.InvalidateWeakPtrs();
 
   CloseFile(file_, bound_net_log_);
   file_ = base::kInvalidPlatformFileValue;
@@ -451,8 +245,8 @@ int FileStream::Open(const FilePath& path, int open_flags,
   int* result = new int(OK);
   const bool posted = base::WorkerPool::PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&OpenFile, path, open_flags, record_uma_, bound_net_log_,
-                 file, result),
+      base::Bind(&OpenFile, path, open_flags, record_uma_, file, result,
+                 bound_net_log_),
       base::Bind(&FileStream::OnOpened,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Owned(file),
@@ -469,17 +263,13 @@ int FileStream::OpenSync(const FilePath& path, int open_flags) {
   }
 
   open_flags_ = open_flags;
+  // TODO(satorux): Put a DCHECK once once all async clients are migrated
+  // to use Open(). crbug.com/114783
+  //
+  // DCHECK(!(open_flags_ & base::PLATFORM_FILE_ASYNC));
 
   int result = OK;
-  OpenFile(path, open_flags_, record_uma_, bound_net_log_, &file_, &result);
-  if (result != OK)
-    return result;
-
-  // TODO(satorux): Remove this once all async clients are migrated to use
-  // Open(). crbug.com/114783
-  if (open_flags_ & base::PLATFORM_FILE_ASYNC)
-    async_context_.reset(new AsyncContext());
-
+  OpenFile(path, open_flags_, record_uma_, &file_, &result, bound_net_log_);
   return result;
 }
 
@@ -494,7 +284,8 @@ int64 FileStream::Seek(Whence whence, int64 offset) {
     return ERR_UNEXPECTED;
 
   // If we're in async, make sure we don't have a request in flight.
-  DCHECK(!async_context_.get() || async_context_->callback().is_null());
+  DCHECK(!(open_flags_ & base::PLATFORM_FILE_ASYNC) ||
+         callback_.is_null());
 
   off_t res = lseek(file_, static_cast<off_t>(offset),
                     static_cast<int>(whence));
@@ -534,36 +325,42 @@ int64 FileStream::Available() {
 
 int FileStream::Read(
     IOBuffer* buf, int buf_len, const CompletionCallback& callback) {
-  DCHECK(async_context_.get());
-
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
   // read(..., 0) will return 0, which indicates end-of-file.
   DCHECK_GT(buf_len, 0);
   DCHECK(open_flags_ & base::PLATFORM_FILE_READ);
-
   DCHECK(open_flags_ & base::PLATFORM_FILE_ASYNC);
   // Make sure we don't have a request in flight.
-  DCHECK(async_context_->callback().is_null());
-  if (record_uma_)
-    async_context_->EnableErrorStatistics();
-  async_context_->InitiateAsyncRead(file_, buf, buf_len, bound_net_log_,
-                                    callback);
+  DCHECK(callback_.is_null());
+
+  callback_ = callback;
+  int* result = new int(OK);
+  const bool posted = base::WorkerPool::PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&ReadFile, file_, buf->data(), buf_len,
+                 record_uma_, result, bound_net_log_),
+      base::Bind(&FileStream::OnIOComplete,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Owned(result)),
+      true /* task is slow */);
+  DCHECK(posted);
   return ERR_IO_PENDING;
 }
 
 int FileStream::ReadSync(char* buf, int buf_len) {
-  DCHECK(!async_context_.get());
-
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
+  DCHECK(!(open_flags_ & base::PLATFORM_FILE_ASYNC));
   // read(..., 0) will return 0, which indicates end-of-file.
   DCHECK_GT(buf_len, 0);
   DCHECK(open_flags_ & base::PLATFORM_FILE_READ);
 
-  return ReadFile(file_, buf, buf_len, record_uma_, bound_net_log_);
+  int result = OK;
+  ReadFile(file_, buf, buf_len, record_uma_, &result, bound_net_log_);
+  return result;
 }
 
 int FileStream::ReadUntilComplete(char *buf, int buf_len) {
@@ -589,35 +386,41 @@ int FileStream::ReadUntilComplete(char *buf, int buf_len) {
 
 int FileStream::Write(
     IOBuffer* buf, int buf_len, const CompletionCallback& callback) {
-  DCHECK(async_context_.get());
-
-  // write(..., 0) will return 0, which indicates end-of-file.
-  DCHECK_GT(buf_len, 0);
-
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
   DCHECK(open_flags_ & base::PLATFORM_FILE_ASYNC);
+  // write(..., 0) will return 0, which indicates end-of-file.
+  DCHECK_GT(buf_len, 0);
   // Make sure we don't have a request in flight.
-  DCHECK(async_context_->callback().is_null());
-  if (record_uma_)
-    async_context_->EnableErrorStatistics();
-  async_context_->InitiateAsyncWrite(file_, buf, buf_len, bound_net_log_,
-                                     callback);
+  DCHECK(callback_.is_null());
+
+  callback_ = callback;
+  int* result = new int(OK);
+  const bool posted = base::WorkerPool::PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&WriteFile, file_, buf->data(), buf_len,
+                 record_uma_, result, bound_net_log_),
+      base::Bind(&FileStream::OnIOComplete,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Owned(result)),
+      true /* task is slow */);
+  DCHECK(posted);
   return ERR_IO_PENDING;
 }
 
 int FileStream::WriteSync(
     const char* buf, int buf_len) {
-  DCHECK(!async_context_.get());
-
-  // write(..., 0) will return 0, which indicates end-of-file.
-  DCHECK_GT(buf_len, 0);
-
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
-  return WriteFile(file_, buf, buf_len, record_uma_, bound_net_log_);
+  DCHECK(!(open_flags_ & base::PLATFORM_FILE_ASYNC));
+  // write(..., 0) will return 0, which indicates end-of-file.
+  DCHECK_GT(buf_len, 0);
+
+  int result = OK;
+  WriteFile(file_, buf, buf_len, record_uma_, &result, bound_net_log_);
+  return result;
 }
 
 int64 FileStream::Truncate(int64 bytes) {
@@ -691,9 +494,12 @@ void FileStream::OnClosed() {
 void FileStream::OnOpened(base::PlatformFile* file, int* result) {
   file_ = *file;
 
-  if (*result == OK)
-    async_context_.reset(new AsyncContext());
+  CompletionCallback temp = callback_;
+  callback_.Reset();
+  temp.Run(*result);
+}
 
+void FileStream::OnIOComplete(int* result) {
   CompletionCallback temp = callback_;
   callback_.Reset();
   temp.Run(*result);
