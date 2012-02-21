@@ -224,7 +224,7 @@ static const NaClMnemonic NaClGroup2OpcodeName[8] = {
   InstRcr,
   InstShl,  /* same as Sal */
   InstShr,
-  InstShl,  /* same as Sal */
+  InstShl,  /* same as Sal; disallowed as an alias encoding */
   InstSar
 };
 
@@ -232,16 +232,21 @@ static void NaClDefGroup2OpcodesInModRm(struct NaClSymbolTable* context_st) {
   int i;
   struct NaClSymbolTable* st = NaClSymbolTableCreate(NACL_SMALL_ST, context_st);
   for (i = 0; i < NACL_ARRAY_SIZE(NaClGroup2OpcodeName); i++) {
+    /* The "/6" encodings of "Shl" are aliases of the "/4" encodings.
+     * "/4" is used by assemblers.  We disallow "/6" on the grounds of
+     * minimalism.
+     */
+    NaClInstType insttype = i == 6 ? NACLi_ILLEGAL : NACLi_386;
     NaClMnemonic name;
     NaClSymbolTablePutInt("i", i, st);
     name = NaClGroup2OpcodeName[i];
     NaClSymbolTablePutText("name", NaClMnemonicName(name), st);
-    NaClDefine("c0/@i: @name $Eb, $Ib", NACLi_386, st, Binary);
-    NaClDefine("c1/@i: @name $Ev, $Ib", NACLi_386, st, Binary);
-    NaClDefine("d0/@i: @name $Eb, 1", NACLi_386, st, Binary);
-    NaClDefine("d1/@i: @name $Ev, 1", NACLi_386, st, Binary);
-    NaClDefine("d2/@i: @name $Eb, %cl", NACLi_386, st, Binary);
-    NaClDefine("d3/@i: @name $Ev, %cl", NACLi_386, st, Binary);
+    NaClDefine("c0/@i: @name $Eb, $Ib", insttype, st, Binary);
+    NaClDefine("c1/@i: @name $Ev, $Ib", insttype, st, Binary);
+    NaClDefine("d0/@i: @name $Eb, 1", insttype, st, Binary);
+    NaClDefine("d1/@i: @name $Ev, 1", insttype, st, Binary);
+    NaClDefine("d2/@i: @name $Eb, %cl", insttype, st, Binary);
+    NaClDefine("d3/@i: @name $Ev, %cl", insttype, st, Binary);
   }
   NaClSymbolTableDestroy(st);
 }

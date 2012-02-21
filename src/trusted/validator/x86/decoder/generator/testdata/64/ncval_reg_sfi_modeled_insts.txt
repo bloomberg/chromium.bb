@@ -1040,10 +1040,8 @@ Target: x86-64 bit mode
     [P] DontCare $Eb (su), $Ib (u)
       E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
-  c0 / 6                      386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed OperandSize_b PartialInstruction
-    [P] DontCare $Eb (su), $Ib (u)
-      E_Operand               OpUse OpSet OpDest
-      I_Operand               OpUse
+  c0 / 6                      ILLEGAL OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed OperandSize_b NaClIllegal PartialInstruction
+    [P] DontCare(illegal)
   c0 / 7                      386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed OperandSize_b PartialInstruction
     [P] DontCare $Eb (su), $Ib (u)
       E_Operand               OpUse OpSet OpDest
@@ -1073,10 +1071,8 @@ Target: x86-64 bit mode
     [P] DontCare $Ev (su), $Ib (u)
       E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
-  c1 / 6                      386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed_b OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
-    [P] DontCare $Ev (su), $Ib (u)
-      E_Operand               OpUse OpSet OpDest
-      I_Operand               OpUse
+  c1 / 6                      ILLEGAL OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed_b OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o NaClIllegal PartialInstruction
+    [P] DontCare(illegal)
   c1 / 7                      386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed_b OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     [P] DontCare $Ev (su), $Ib (u)
       E_Operand               OpUse OpSet OpDest
@@ -1156,10 +1152,8 @@ Target: x86-64 bit mode
     [P] DontCare $Eb (su), 1 (u)
       E_Operand               OpUse OpSet OpDest
       Const_1                 OpUse
-  d0 / 6                      386 OpcodeInModRm OpcodeUsesModRm OperandSize_b PartialInstruction
-    [P] DontCare $Eb (su), 1 (u)
-      E_Operand               OpUse OpSet OpDest
-      Const_1                 OpUse
+  d0 / 6                      ILLEGAL OpcodeInModRm OpcodeUsesModRm OperandSize_b NaClIllegal PartialInstruction
+    [P] DontCare(illegal)
   d0 / 7                      386 OpcodeInModRm OpcodeUsesModRm OperandSize_b PartialInstruction
     [P] DontCare $Eb (su), 1 (u)
       E_Operand               OpUse OpSet OpDest
@@ -1189,10 +1183,8 @@ Target: x86-64 bit mode
     [P] DontCare $Ev (su), 1 (u)
       E_Operand               OpUse OpSet OpDest
       Const_1                 OpUse
-  d1 / 6                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
-    [P] DontCare $Ev (su), 1 (u)
-      E_Operand               OpUse OpSet OpDest
-      Const_1                 OpUse
+  d1 / 6                      ILLEGAL OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o NaClIllegal PartialInstruction
+    [P] DontCare(illegal)
   d1 / 7                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     [P] DontCare $Ev (su), 1 (u)
       E_Operand               OpUse OpSet OpDest
@@ -1222,10 +1214,8 @@ Target: x86-64 bit mode
     [P] DontCare $Eb (su), %cl (u)
       E_Operand               OpUse OpSet OpDest
       RegCL                   OpUse
-  d2 / 6                      386 OpcodeInModRm OpcodeUsesModRm OperandSize_b PartialInstruction
-    [P] DontCare $Eb (su), %cl (u)
-      E_Operand               OpUse OpSet OpDest
-      RegCL                   OpUse
+  d2 / 6                      ILLEGAL OpcodeInModRm OpcodeUsesModRm OperandSize_b NaClIllegal PartialInstruction
+    [P] DontCare(illegal)
   d2 / 7                      386 OpcodeInModRm OpcodeUsesModRm OperandSize_b PartialInstruction
     [P] DontCare $Eb (su), %cl (u)
       E_Operand               OpUse OpSet OpDest
@@ -1255,10 +1245,8 @@ Target: x86-64 bit mode
     [P] DontCare $Ev (su), %cl (u)
       E_Operand               OpUse OpSet OpDest
       RegCL                   OpUse
-  d3 / 6                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
-    [P] DontCare $Ev (su), %cl (u)
-      E_Operand               OpUse OpSet OpDest
-      RegCL                   OpUse
+  d3 / 6                      ILLEGAL OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o NaClIllegal PartialInstruction
+    [P] DontCare(illegal)
   d3 / 7                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     [P] DontCare $Ev (su), %cl (u)
       E_Operand               OpUse OpSet OpDest

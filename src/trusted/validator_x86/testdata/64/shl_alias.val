@@ -1,0 +1,9 @@
+VALIDATOR: 0000000000000007: d3 f7                                        shl %edi, %cl
+VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+VALIDATOR: 0000000000000009: d1 f7                                        shl %edi, 0x1
+VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+VALIDATOR: 000000000000000b: c1 f7 02                                     shl %edi, 0x2
+VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+VALIDATOR: Checking jump targets: 0 to e
+VALIDATOR: Checking that basic blocks are aligned
+*** <input> IS UNSAFE ***

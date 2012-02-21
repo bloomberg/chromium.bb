@@ -1179,7 +1179,7 @@ Target: x86-32 bit mode
     Shr $Eb, $Ib
       E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
-  c0 / 6                      386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed OperandSize_b
+  c0 / 6                      ILLEGAL OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed OperandSize_b NaClIllegal
     Shl $Eb, $Ib
       E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
@@ -1212,7 +1212,7 @@ Target: x86-32 bit mode
     Shr $Ev, $Ib
       E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
-  c1 / 6                      386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed_b OpcodeAllowsData16 OperandSize_w OperandSize_v
+  c1 / 6                      ILLEGAL OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed_b OpcodeAllowsData16 OperandSize_w OperandSize_v NaClIllegal
     Shl $Ev, $Ib
       E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
@@ -1320,7 +1320,7 @@ Target: x86-32 bit mode
     Shr $Eb, 1
       E_Operand               OpUse OpSet OpDest
       Const_1                 OpUse
-  d0 / 6                      386 OpcodeInModRm OpcodeUsesModRm OperandSize_b
+  d0 / 6                      ILLEGAL OpcodeInModRm OpcodeUsesModRm OperandSize_b NaClIllegal
     Shl $Eb, 1
       E_Operand               OpUse OpSet OpDest
       Const_1                 OpUse
@@ -1353,7 +1353,7 @@ Target: x86-32 bit mode
     Shr $Ev, 1
       E_Operand               OpUse OpSet OpDest
       Const_1                 OpUse
-  d1 / 6                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v
+  d1 / 6                      ILLEGAL OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v NaClIllegal
     Shl $Ev, 1
       E_Operand               OpUse OpSet OpDest
       Const_1                 OpUse
@@ -1386,7 +1386,7 @@ Target: x86-32 bit mode
     Shr $Eb, %cl
       E_Operand               OpUse OpSet OpDest
       RegCL                   OpUse
-  d2 / 6                      386 OpcodeInModRm OpcodeUsesModRm OperandSize_b
+  d2 / 6                      ILLEGAL OpcodeInModRm OpcodeUsesModRm OperandSize_b NaClIllegal
     Shl $Eb, %cl
       E_Operand               OpUse OpSet OpDest
       RegCL                   OpUse
@@ -1419,7 +1419,7 @@ Target: x86-32 bit mode
     Shr $Ev, %cl
       E_Operand               OpUse OpSet OpDest
       RegCL                   OpUse
-  d3 / 6                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v
+  d3 / 6                      ILLEGAL OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v NaClIllegal
     Shl $Ev, %cl
       E_Operand               OpUse OpSet OpDest
       RegCL                   OpUse
