@@ -56,6 +56,8 @@
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_surface.h"
+#else  // OS_WIN
+#include "third_party/angle/include/GLES2/gl2.h"
 #endif  // OS_WIN
 
 using media::VideoDecodeAccelerator;
