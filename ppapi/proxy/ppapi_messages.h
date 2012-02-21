@@ -315,10 +315,11 @@ IPC_MESSAGE_ROUTED4(PpapiMsg_PPBTCPSocket_WriteACK,
                     int32_t /* bytes_written */)
 
 // PPB_UDPSocket_Private
-IPC_MESSAGE_ROUTED3(PpapiMsg_PPBUDPSocket_BindACK,
+IPC_MESSAGE_ROUTED4(PpapiMsg_PPBUDPSocket_BindACK,
                     uint32 /* plugin_dispatcher_id */,
                     uint32 /* socket_id */,
-                    bool /* succeeded */)
+                    bool /* succeeded */,
+                    PP_NetAddress_Private /* bound_addr */)
 IPC_MESSAGE_ROUTED5(PpapiMsg_PPBUDPSocket_RecvFromACK,
                     uint32 /* plugin_dispatcher_id */,
                     uint32 /* socket_id */,

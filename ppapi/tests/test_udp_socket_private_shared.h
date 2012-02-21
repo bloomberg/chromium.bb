@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,11 +26,14 @@ class TestUDPSocketPrivateShared : public TestCase {
   // structure filled with local IP and some free port.
   std::string GenerateNetAddress(PP_Resource* socket,
                                  PP_NetAddress_Private* address);
-  std::string CreateAndBindUDPSocket(const PP_NetAddress_Private *address,
+  std::string CreateAndBindUDPSocket(PP_NetAddress_Private *address,
                                      PP_Resource *socket);
+  std::string BindUDPSocketFailure(PP_NetAddress_Private *address,
+                                   PP_Resource *socket);
 
   std::string TestCreate();
   std::string TestConnect();
+  std::string TestConnectFailure();
 
   const PPB_TCPSocket_Private* tcp_socket_private_interface_;
   const PPB_UDPSocket_Private* udp_socket_private_interface_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@ class PPAPI_THUNK_EXPORT PPB_UDPSocket_Private_API {
 
   virtual int32_t Bind(const PP_NetAddress_Private* addr,
                        PP_CompletionCallback callback) = 0;
+  virtual PP_Bool GetBoundAddress(PP_NetAddress_Private* addr) = 0;
   virtual int32_t RecvFrom(char* buffer,
                            int32_t num_bytes,
                            PP_CompletionCallback callback) = 0;

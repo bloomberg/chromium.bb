@@ -508,7 +508,7 @@ void PepperMessageFilter::DoUDPBind(bool allowed,
   if (routing_id == iter->second->routing_id() && allowed)
     iter->second->Bind(addr);
   else
-    iter->second->SendBindACK(false);
+    iter->second->SendBindACKError();
 }
 
 void PepperMessageFilter::OnUDPRecvFrom(uint32 socket_id, int32_t num_bytes) {

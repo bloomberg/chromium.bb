@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,8 @@ namespace ppapi_proxy {
 // Implements the untrusted side of the PPB_UDPSocket_Private interface.
 class PluginUDPSocketPrivate {
  public:
-  static const PPB_UDPSocket_Private* GetInterface();
+  static const PPB_UDPSocket_Private_0_2* GetInterface0_2();
+  static const PPB_UDPSocket_Private_0_3* GetInterface0_3();
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginUDPSocketPrivate);

@@ -86,6 +86,30 @@ int32_t Bind(PP_Resource udp_socket, const struct PP_NetAddress_Private* addr,
   return MayForceCallback(callback, pp_error);
 }
 
+PP_Bool GetBoundAddress(PP_Resource udp_socket,
+                        struct PP_NetAddress_Private* addr) {
+  DebugPrintf("PPB_UDPSocket_Private::GetBoundAddress: "
+              "udp_socket="NACL_PRId32"\n", udp_socket);
+
+  nacl_abi_size_t addr_bytes =
+      static_cast<nacl_abi_size_t>(sizeof(PP_NetAddress_Private));
+  int32_t success;
+  NaClSrpcError srpc_result =
+      PpbUDPSocketPrivateRpcClient::PPB_UDPSocket_Private_GetBoundAddress(
+          GetMainSrpcChannel(),
+          udp_socket,
+          &addr_bytes,
+          reinterpret_cast<char*>(addr),
+          &success);
+
+  DebugPrintf("PPB_UDPSocket_Private::GetBoundAddress: %s\n",
+              NaClSrpcErrorString(srpc_result));
+
+  if (srpc_result == NACL_SRPC_RESULT_OK && success)
+    return PP_TRUE;
+  return PP_FALSE;
+}
+
 int32_t RecvFrom(PP_Resource udp_socket, char* buffer, int32_t num_bytes,
                  struct PP_CompletionCallback callback) {
   DebugPrintf("PPB_UDPSocket_Private::RecvFrom: udp_socket=%"NACL_PRId32", "
@@ -196,15 +220,29 @@ void Close(PP_Resource udp_socket) {
 
 }  // namespace
 
-const PPB_UDPSocket_Private* PluginUDPSocketPrivate::GetInterface() {
-  static const PPB_UDPSocket_Private udpsocket_private_interface = {
+const PPB_UDPSocket_Private_0_2* PluginUDPSocketPrivate::GetInterface0_2() {
+  static const PPB_UDPSocket_Private_0_2 udpsocket_private_interface = {
     Create,
     IsUDPSocket,
     Bind,
     RecvFrom,
     GetRecvFromAddress,
     SendTo,
-    Close,
+    Close
+  };
+  return &udpsocket_private_interface;
+}
+
+const PPB_UDPSocket_Private_0_3* PluginUDPSocketPrivate::GetInterface0_3() {
+  static const PPB_UDPSocket_Private_0_3 udpsocket_private_interface = {
+    Create,
+    IsUDPSocket,
+    Bind,
+    GetBoundAddress,
+    RecvFrom,
+    GetRecvFromAddress,
+    SendTo,
+    Close
   };
   return &udpsocket_private_interface;
 }

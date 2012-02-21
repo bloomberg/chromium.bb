@@ -32,6 +32,8 @@ PROXIED_IFACE(PPB_TCPSocket_Private, PPB_TCPSOCKET_PRIVATE_INTERFACE_0_3,
               PPB_TCPSocket_Private_0_3)
 PROXIED_IFACE(PPB_UDPSocket_Private, PPB_UDPSOCKET_PRIVATE_INTERFACE_0_2,
               PPB_UDPSocket_Private_0_2)
+PROXIED_IFACE(PPB_UDPSocket_Private, PPB_UDPSOCKET_PRIVATE_INTERFACE_0_3,
+              PPB_UDPSocket_Private_0_3)
 
 // Hack to keep font working. The Font 0.6 API is binary compatible with
 // BrowserFont 1.0, so just map the string to the same thing.

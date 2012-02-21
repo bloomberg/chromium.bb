@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,7 @@ class UDPSocketPrivate : public Resource {
 
   int32_t Bind(const PP_NetAddress_Private* addr,
                const CompletionCallback& callback);
+  bool GetBoundAddress(PP_NetAddress_Private* addr);
   int32_t RecvFrom(char* buffer,
                    int32_t num_bytes,
                    const CompletionCallback& callback);

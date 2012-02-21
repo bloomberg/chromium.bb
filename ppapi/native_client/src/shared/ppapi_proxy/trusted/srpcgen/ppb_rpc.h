@@ -1140,6 +1140,12 @@ class PpbUDPSocketPrivateRpcServer {
       nacl_abi_size_t addr_bytes, char* addr,
       int32_t callback_id,
       int32_t* pp_error);
+  static void PPB_UDPSocket_Private_GetBoundAddress(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource udp_socket,
+      nacl_abi_size_t* addr_bytes, char* addr,
+      int32_t* success);
   static void PPB_UDPSocket_Private_RecvFrom(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,

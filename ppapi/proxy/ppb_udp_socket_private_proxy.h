@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,8 @@ class PPB_UDPSocket_Private_Proxy : public InterfaceProxy {
   // Browser->plugin message handlers.
   void OnMsgBindACK(uint32 plugin_dispatcher_id,
                     uint32 socket_id,
-                    bool succeeded);
+                    bool succeeded,
+                    const PP_NetAddress_Private& bound_addr);
   void OnMsgRecvFromACK(uint32 plugin_dispatcher_id,
                         uint32 socket_id,
                         bool succeeded,

@@ -87,6 +87,31 @@ void PpbUDPSocketPrivateRpcServer::PPB_UDPSocket_Private_Bind(
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
+void PpbUDPSocketPrivateRpcServer::PPB_UDPSocket_Private_GetBoundAddress(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
+    // input
+    PP_Resource udp_socket,
+    // output
+    nacl_abi_size_t* addr_bytes, char* addr,
+    int32_t* success) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+
+  if (*addr_bytes !=
+      static_cast<nacl_abi_size_t>(sizeof(PP_NetAddress_Private)))
+    return;
+
+  PP_Bool pp_success =
+      PPBUDPSocketPrivateInterface()->GetBoundAddress(
+          udp_socket,
+          reinterpret_cast<PP_NetAddress_Private*>(addr));
+  *success = PP_ToBool(pp_success);
+  DebugPrintf("PPB_UDPSocket_Private::GetBoundAddress: "
+              "success=%"NACL_PRId32"\n", *success);
+  rpc->result = NACL_SRPC_RESULT_OK;
+}
+
 void PpbUDPSocketPrivateRpcServer::PPB_UDPSocket_Private_RecvFrom(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,

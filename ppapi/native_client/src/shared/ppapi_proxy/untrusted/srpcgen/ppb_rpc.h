@@ -991,6 +991,11 @@ class PpbUDPSocketPrivateRpcClient {
       nacl_abi_size_t addr_bytes, char* addr,
       int32_t callback_id,
       int32_t* pp_error);
+  static NaClSrpcError PPB_UDPSocket_Private_GetBoundAddress(
+      NaClSrpcChannel* channel,
+      PP_Resource udp_socket,
+      nacl_abi_size_t* addr_bytes, char* addr,
+      int32_t* success);
   static NaClSrpcError PPB_UDPSocket_Private_RecvFrom(
       NaClSrpcChannel* channel,
       PP_Resource udp_socket,

@@ -38,13 +38,13 @@ class PepperUDPSocket {
   void Bind(const PP_NetAddress_Private& addr);
   void RecvFrom(int32_t num_bytes);
   void SendTo(const std::string& data, const PP_NetAddress_Private& addr);
-
-  void SendBindACK(bool result);
+  void SendBindACKError();
 
  private:
   void SendRecvFromACKError();
   void SendSendToACKError();
 
+  void OnBindCompleted(int result);
   void OnRecvFromCompleted(int result);
   void OnSendToCompleted(int result);
 
@@ -59,6 +59,7 @@ class PepperUDPSocket {
   scoped_refptr<net::IOBuffer> sendto_buffer_;
 
   net::IPEndPoint recvfrom_address_;
+  net::IPEndPoint bound_address_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperUDPSocket);
 };

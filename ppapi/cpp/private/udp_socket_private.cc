@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,6 +36,15 @@ int32_t UDPSocketPrivate::Bind(const PP_NetAddress_Private* addr,
       pp_resource(), addr, callback.pp_completion_callback());
 }
 
+bool UDPSocketPrivate::GetBoundAddress(PP_NetAddress_Private* addr) {
+  if (!has_interface<PPB_UDPSocket_Private>())
+    return false;
+
+  PP_Bool result = get_interface<PPB_UDPSocket_Private>()->GetBoundAddress(
+      pp_resource(), addr);
+  return PP_ToBool(result);
+}
+
 int32_t UDPSocketPrivate::RecvFrom(char* buffer,
                                    int32_t num_bytes,
                                    const CompletionCallback& callback) {
@@ -65,5 +74,10 @@ int32_t UDPSocketPrivate::SendTo(const char* buffer,
       callback.pp_completion_callback());
 }
 
+void UDPSocketPrivate::Close() {
+  if (!has_interface<PPB_UDPSocket_Private>())
+    return;
+  return get_interface<PPB_UDPSocket_Private>()->Close(pp_resource());
+}
 }  // namespace pp
 

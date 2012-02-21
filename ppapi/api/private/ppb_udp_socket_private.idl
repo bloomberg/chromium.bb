@@ -8,7 +8,8 @@
  */
 
 label Chrome {
-  M17 = 0.2
+  M17 = 0.2,
+  M19 = 0.3
 };
 
 interface PPB_UDPSocket_Private {
@@ -26,6 +27,14 @@ interface PPB_UDPSocket_Private {
   int32_t Bind([in] PP_Resource udp_socket,
                [in] PP_NetAddress_Private addr,
                [in] PP_CompletionCallback callback);
+
+  /* Returns the address that the socket has bound to.  A successful
+   * call to Bind must be called first. Returns PP_FALSE if Bind
+   * fails, or if Close has been called.
+   */
+  [version=0.3]
+  PP_Bool GetBoundAddress([in] PP_Resource udp_socket,
+                          [out] PP_NetAddress_Private addr);
 
   /* Performs a non-blocking recvfrom call on socket.
    * Bind must be called first. |callback| is invoked when recvfrom

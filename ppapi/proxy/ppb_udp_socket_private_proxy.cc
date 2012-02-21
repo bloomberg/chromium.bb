@@ -126,7 +126,8 @@ bool PPB_UDPSocket_Private_Proxy::OnMessageReceived(const IPC::Message& msg) {
 void PPB_UDPSocket_Private_Proxy::OnMsgBindACK(
     uint32 /* plugin_dispatcher_id */,
     uint32 socket_id,
-    bool succeeded) {
+    bool succeeded,
+    const PP_NetAddress_Private& bound_addr) {
   if (!g_id_to_socket) {
     NOTREACHED();
     return;
@@ -134,7 +135,7 @@ void PPB_UDPSocket_Private_Proxy::OnMsgBindACK(
   IDToSocketMap::iterator iter = g_id_to_socket->find(socket_id);
   if (iter == g_id_to_socket->end())
     return;
-  iter->second->OnBindCompleted(succeeded);
+  iter->second->OnBindCompleted(succeeded, bound_addr);
 }
 
 void PPB_UDPSocket_Private_Proxy::OnMsgRecvFromACK(

@@ -416,7 +416,8 @@ class PepperPluginDelegateImpl
                            int32_t bytes_written);
   void OnUDPSocketBindACK(uint32 plugin_dispatcher_id,
                           uint32 socket_id,
-                          bool succeeded);
+                          bool succeeded,
+                          const PP_NetAddress_Private& addr);
   void OnUDPSocketSendToACK(uint32 plugin_dispatcher_id,
                             uint32 socket_id,
                             bool succeeded,

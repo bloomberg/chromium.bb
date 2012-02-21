@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,6 +42,7 @@ class PPAPI_SHARED_EXPORT UDPSocketPrivateImpl
   // PPB_UDPSocket_Private_API implementation.
   virtual int32_t Bind(const PP_NetAddress_Private* addr,
                        PP_CompletionCallback callback) OVERRIDE;
+  virtual PP_Bool GetBoundAddress(PP_NetAddress_Private* addr) OVERRIDE;
   virtual int32_t RecvFrom(char* buffer,
                            int32_t num_bytes,
                            PP_CompletionCallback callback) OVERRIDE;
@@ -53,7 +54,8 @@ class PPAPI_SHARED_EXPORT UDPSocketPrivateImpl
   virtual void Close() OVERRIDE;
 
   // Notifications from the proxy.
-  void OnBindCompleted(bool succeeded);
+  void OnBindCompleted(bool succeeded,
+                       const PP_NetAddress_Private& bound_addr);
   void OnRecvFromCompleted(bool succeeded,
                            const std::string& data,
                            const PP_NetAddress_Private& addr);
@@ -84,6 +86,7 @@ class PPAPI_SHARED_EXPORT UDPSocketPrivateImpl
   int32_t bytes_to_read_;
 
   PP_NetAddress_Private recvfrom_addr_;
+  PP_NetAddress_Private bound_addr_;
 
   DISALLOW_COPY_AND_ASSIGN(UDPSocketPrivateImpl);
 };

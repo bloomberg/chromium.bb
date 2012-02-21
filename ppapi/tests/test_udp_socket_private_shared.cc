@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,6 +44,7 @@ bool TestUDPSocketPrivateShared::Init() {
 void TestUDPSocketPrivateShared::RunTests(const std::string& filter) {
   RUN_TEST(Create, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(Connect, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(ConnectFailure, filter);
 }
 
 void TestUDPSocketPrivateShared::QuitMessageLoop() {
@@ -75,7 +76,7 @@ std::string TestUDPSocketPrivateShared::GenerateNetAddress(
 }
 
 std::string TestUDPSocketPrivateShared::CreateAndBindUDPSocket(
-    const PP_NetAddress_Private *address,
+    PP_NetAddress_Private *address,
     PP_Resource *socket) {
   *socket = udp_socket_private_interface_->Create(instance_->pp_instance());
   if (0 == *socket)
@@ -94,6 +95,36 @@ std::string TestUDPSocketPrivateShared::CreateAndBindUDPSocket(
     rv = callback.WaitForResult();
   if (rv != PP_OK)
     return ReportError("PPB_UDPSocket_Private::Bind", rv);
+
+  if (!udp_socket_private_interface_->GetBoundAddress(*socket, address))
+      return "PPB_UDPSocket_Private::GetBoundAddress: Failed";
+
+  PASS();
+}
+
+std::string TestUDPSocketPrivateShared::BindUDPSocketFailure(
+    PP_NetAddress_Private *address,
+    PP_Resource *socket) {
+  *socket = udp_socket_private_interface_->Create(instance_->pp_instance());
+  if (0 == *socket)
+    return "PPB_UDPSocket_Private::Create failed";
+  if (!udp_socket_private_interface_->IsUDPSocket(*socket))
+    return "PPB_UDPSocket_Private::IsUDPSocket failed";
+
+  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
+  int32_t rv = udp_socket_private_interface_->Bind(
+      *socket, address,
+      static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
+
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("PPB_UDPSocket_Private::Bind force_async", rv);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = callback.WaitForResult();
+  if (rv == PP_OK)
+    return ReportError("PPB_UDPSocket_Private::Bind", rv);
+
+  if (udp_socket_private_interface_->GetBoundAddress(*socket, address))
+      return "PPB_UDPSocket_Private::GetBoundAddress: Failed";
 
   PASS();
 }
@@ -125,15 +156,15 @@ std::string TestUDPSocketPrivateShared::TestConnect() {
   if (!error_message.empty())
     return error_message;
   error_message = GenerateNetAddress(&tcp_socket_client, &client_address);
-  if (error_message.empty())
+  if (!error_message.empty())
     return error_message;
 
   PP_Resource socket_server, socket_client;
   error_message = CreateAndBindUDPSocket(&server_address, &socket_server);
-  if (error_message.empty())
+  if (!error_message.empty())
     return error_message;
   error_message = CreateAndBindUDPSocket(&client_address, &socket_client);
-  if (error_message.empty())
+  if (!error_message.empty())
     return error_message;
 
   static const char* const kMessage =
@@ -177,6 +208,22 @@ std::string TestUDPSocketPrivateShared::TestConnect() {
 
   tcp_socket_private_interface_->Disconnect(tcp_socket_server);
   tcp_socket_private_interface_->Disconnect(tcp_socket_client);
+
+  if (udp_socket_private_interface_->GetBoundAddress(
+      socket_server, &server_address))
+    return "PPB_UDPSocket_Private::GetBoundAddress: expected Failure";
+
+  PASS();
+}
+
+std::string TestUDPSocketPrivateShared::TestConnectFailure() {
+  std::string error_message;
+  PP_NetAddress_Private invalid_address = { 0 };
+  PP_Resource socket;
+
+  error_message = BindUDPSocketFailure(&invalid_address, &socket);
+  if (!error_message.empty())
+    return error_message;
 
   PASS();
 }

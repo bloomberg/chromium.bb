@@ -2153,13 +2153,15 @@ void PepperPluginDelegateImpl::OnTCPSocketWriteACK(uint32 plugin_dispatcher_id,
     socket->OnWriteCompleted(succeeded, bytes_written);
 }
 
-void PepperPluginDelegateImpl::OnUDPSocketBindACK(uint32 plugin_dispatcher_id,
-                                                  uint32 socket_id,
-                                                  bool succeeded) {
+void PepperPluginDelegateImpl::OnUDPSocketBindACK(
+    uint32 plugin_dispatcher_id,
+    uint32 socket_id,
+    bool succeeded,
+    const PP_NetAddress_Private& addr) {
   webkit::ppapi::PPB_UDPSocket_Private_Impl* socket =
       udp_sockets_.Lookup(socket_id);
   if (socket)
-    socket->OnBindCompleted(succeeded);
+    socket->OnBindCompleted(succeeded, addr);
 }
 
 void PepperPluginDelegateImpl::OnUDPSocketRecvFromACK(

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,13 +43,19 @@ void PepperUDPSocket::Bind(const PP_NetAddress_Private& addr) {
   net::IPEndPoint address;
   if (!socket_.get() ||
       !NetAddressPrivateImpl::NetAddressToIPEndPoint(addr, &address)) {
-    SendBindACK(false);
+    SendBindACKError();
     return;
   }
 
   int result = socket_->Listen(address);
 
-  SendBindACK(result == net::OK);
+  if (result == net::OK &&
+      socket_->GetLocalAddress(&bound_address_) != net::OK) {
+    SendBindACKError();
+    return;
+  }
+
+  OnBindCompleted(result);
 }
 
 void PepperUDPSocket::RecvFrom(int32_t num_bytes) {
@@ -105,9 +111,22 @@ void PepperUDPSocket::SendSendToACKError() {
       routing_id_, plugin_dispatcher_id_, socket_id_, false, 0));
 }
 
-void PepperUDPSocket::SendBindACK(bool result) {
+void PepperUDPSocket::SendBindACKError() {
+  PP_NetAddress_Private addr = NetAddressPrivateImpl::kInvalidNetAddress;
   manager_->Send(new PpapiMsg_PPBUDPSocket_BindACK(
-      routing_id_, plugin_dispatcher_id_, socket_id_, result));
+      routing_id_, plugin_dispatcher_id_, socket_id_, false, addr));
+}
+
+void PepperUDPSocket::OnBindCompleted(int result) {
+  PP_NetAddress_Private addr = NetAddressPrivateImpl::kInvalidNetAddress;
+  if (result < 0 ||
+      !NetAddressPrivateImpl::IPEndPointToNetAddress(bound_address_,
+                                                     &addr)) {
+    SendBindACKError();
+  } else {
+    manager_->Send(new PpapiMsg_PPBUDPSocket_BindACK(
+        routing_id_, plugin_dispatcher_id_, socket_id_, true, addr));
+  }
 }
 
 void PepperUDPSocket::OnRecvFromCompleted(int result) {
