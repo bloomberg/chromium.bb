@@ -785,6 +785,13 @@ _release.add_config('autotest-experimental',
   boards=['x86-alex'],
   prebuilts=False,
   push_image=False,
+
+  # Make this experimental bot build/test incrementally.
+  usepkg_setup_board=True,
+  usepkg_build_packages=True,
+  chroot_replace=False,
+  vm_tests=constants.SIMPLE_AU_TEST_TYPE,
+
   platform='netbook_ALEX',
   hw_tests=['bvt', 'regression', 'performance', 'platform', 'pyauto']
 )
