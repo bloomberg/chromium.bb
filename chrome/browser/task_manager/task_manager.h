@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -253,6 +253,11 @@ class TaskManagerModelObserver {
 
   // Invoked when a range of items has been removed.
   virtual void OnItemsRemoved(int start, int length) = 0;
+
+  // Invoked when the initialization of the model has been finished and
+  // periodical updates is started. The first periodical update will be done
+  // in a few seconds. (depending on platform)
+  virtual void OnReadyPeriodicalUpdate() {}
 };
 
 // The model that the TaskManager is using.

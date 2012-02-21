@@ -508,3 +508,8 @@ void TaskManagerHandler::OnGroupRemoved(const int group_start,
   if (is_enabled_ && is_alive())
     web_ui()->CallJavascriptFunction("taskRemoved", start_value, length_value);
 }
+
+void TaskManagerHandler::OnReadyPeriodicalUpdate() {
+  if (is_enabled_ && is_alive())
+    web_ui()->CallJavascriptFunction("onReadyPeriodicalUpdate");
+}

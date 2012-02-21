@@ -638,6 +638,11 @@ void TaskManagerModel::StartUpdating() {
        iter != providers_.end(); ++iter) {
     (*iter)->StartUpdating();
   }
+
+  if (!resources_.empty()) {
+    FOR_EACH_OBSERVER(TaskManagerModelObserver, observer_list_,
+                      OnReadyPeriodicalUpdate());
+  }
 }
 
 void TaskManagerModel::StopUpdating() {

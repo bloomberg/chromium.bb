@@ -33,6 +33,10 @@ class TaskManagerHandler : public content::WebUIMessageHandler,
   // Invoked when a range of items has been removed.
   virtual void OnItemsRemoved(int start, int length) OVERRIDE;
 
+  // Invoked when the initialization of the model has been finished and
+  // periodic updates is started.
+  virtual void OnReadyPeriodicalUpdate() OVERRIDE;
+
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 

@@ -64,7 +64,10 @@ ChromeWebUIDataSource* CreateTaskManagerUIHTMLSource() {
   source->AddLocalizedString("activate", IDS_TASK_MANAGER_ACTIVATE);
   source->set_json_path("strings.js");
   source->add_resource_path("main.js", IDR_TASK_MANAGER_JS);
+  source->add_resource_path("commands.js", IDR_TASK_MANAGER_COMMANDS_JS);
+  source->add_resource_path("defines.js", IDR_TASK_MANAGER_DEFINES_JS);
   source->add_resource_path("includes.js", IDR_TASK_MANAGER_INCLUDES_JS);
+  source->add_resource_path("preload.js", IDR_TASK_MANAGER_PRELOAD_JS);
   source->add_resource_path("measure_time.js",
                             IDR_TASK_MANAGER_MEASURE_TIME_JS);
   source->add_resource_path("measure_time_end.js",
