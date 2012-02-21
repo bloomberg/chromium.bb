@@ -25,6 +25,7 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
+#include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/file_browser_handler.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,16 +51,28 @@ class ExtensionManifestTest : public testing::Test {
  protected:
   static DictionaryValue* LoadManifestFile(const std::string& filename,
                                            std::string* error) {
-    FilePath path;
-    PathService::Get(chrome::DIR_TEST_DATA, &path);
-    path = path.AppendASCII("extensions")
-        .AppendASCII("manifest_tests")
-        .AppendASCII(filename.c_str());
-    EXPECT_TRUE(file_util::PathExists(path)) <<
-        "Couldn't find " << path.value();
+    FilePath extension_path;
+    PathService::Get(chrome::DIR_TEST_DATA, &extension_path);
+    extension_path = extension_path.AppendASCII("extensions")
+        .AppendASCII("manifest_tests");
 
-    JSONFileValueSerializer serializer(path);
-    return static_cast<DictionaryValue*>(serializer.Deserialize(NULL, error));
+    FilePath manifest_path = extension_path.AppendASCII(filename.c_str());
+    EXPECT_TRUE(file_util::PathExists(manifest_path)) <<
+        "Couldn't find " << manifest_path.value();
+
+    JSONFileValueSerializer serializer(manifest_path);
+    DictionaryValue* manifest =
+        static_cast<DictionaryValue*>(serializer.Deserialize(NULL, error));
+
+    // Most unit tests don't need localization, and they'll fail if we try to
+    // localize them, since their manifests don't have a default_locale key.
+    // Only localize manifests that indicate they want to be localized.
+    // Calling LocalizeExtension at this point mirrors
+    // extension_file_util::LoadExtension.
+    if (manifest && filename.find("localized") != std::string::npos)
+      extension_l10n_util::LocalizeExtension(extension_path, manifest, error);
+
+    return manifest;
   }
 
   // Helper class that simplifies creating methods that take either a filename
@@ -433,11 +446,15 @@ TEST_F(ExtensionManifestTest, AppLaunchURL) {
                      errors::kInvalidLaunchLocalPath);
   LoadAndExpectError("launch_path_invalid_value.json",
                      errors::kInvalidLaunchLocalPath);
+  LoadAndExpectError("launch_path_invalid_localized.json",
+                     errors::kInvalidLaunchLocalPath);
   LoadAndExpectError("launch_url_invalid_type_1.json",
                      errors::kInvalidLaunchWebURL);
   LoadAndExpectError("launch_url_invalid_type_2.json",
                      errors::kInvalidLaunchWebURL);
   LoadAndExpectError("launch_url_invalid_type_3.json",
+                     errors::kInvalidLaunchWebURL);
+  LoadAndExpectError("launch_url_invalid_localized.json",
                      errors::kInvalidLaunchWebURL);
 
   scoped_refptr<Extension> extension;
@@ -445,10 +462,17 @@ TEST_F(ExtensionManifestTest, AppLaunchURL) {
   EXPECT_EQ(extension->url().spec() + "launch.html",
             extension->GetFullLaunchURL().spec());
 
+  extension = LoadAndExpectSuccess("launch_local_path_localized.json");
+  EXPECT_EQ(extension->url().spec() + "launch.html",
+            extension->GetFullLaunchURL().spec());
+
   LoadAndExpectError("launch_web_url_relative.json",
                      errors::kInvalidLaunchWebURL);
 
   extension = LoadAndExpectSuccess("launch_web_url_absolute.json");
+  EXPECT_EQ(GURL("http://www.google.com/launch.html"),
+            extension->GetFullLaunchURL());
+  extension = LoadAndExpectSuccess("launch_web_url_localized.json");
   EXPECT_EQ(GURL("http://www.google.com/launch.html"),
             extension->GetFullLaunchURL());
 }

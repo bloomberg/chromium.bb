@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -126,6 +126,15 @@ bool LocalizeManifest(const ExtensionMessageBundle& messages,
         return false;
     }
   }
+
+  // Initialize app.launch.local_path.
+  if (!LocalizeManifestValue(keys::kLaunchLocalPath, messages, manifest, error))
+    return false;
+
+  // Initialize app.launch.web_url.
+  if (!LocalizeManifestValue(keys::kLaunchWebURL, messages, manifest, error))
+    return false;
+
   // Add current locale key to the manifest, so we can overwrite prefs
   // with new manifest when chrome locale changes.
   manifest->SetString(keys::kCurrentLocale, CurrentLocaleOrDefault());

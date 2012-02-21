@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -281,6 +281,14 @@ ExtensionMessageBundle* CreateManifestBundle() {
   file_handler_title_tree->SetString("message", "file handler title");
   catalog->Set("file_handler_title", file_handler_title_tree);
 
+  DictionaryValue* launch_local_path_tree = new DictionaryValue();
+  launch_local_path_tree->SetString("message", "main.html");
+  catalog->Set("launch_local_path", launch_local_path_tree);
+
+  DictionaryValue* launch_web_url_tree = new DictionaryValue();
+  launch_web_url_tree->SetString("message", "http://www.google.com/");
+  catalog->Set("launch_web_url", launch_web_url_tree);
+
   std::vector<linked_ptr<DictionaryValue> > catalogs;
   catalogs.push_back(catalog);
 
@@ -335,6 +343,40 @@ TEST(ExtensionL10nUtil, LocalizeManifestWithNameMsgAndEmptyDescription) {
   EXPECT_EQ("name", result);
 
   EXPECT_FALSE(manifest.HasKey(keys::kDescription));
+
+  EXPECT_TRUE(error.empty());
+}
+
+TEST(ExtensionL10nUtil, LocalizeManifestWithLocalLaunchURL) {
+  DictionaryValue manifest;
+  manifest.SetString(keys::kName, "name");
+  manifest.SetString(keys::kLaunchLocalPath, "__MSG_launch_local_path__");
+  std::string error;
+  scoped_ptr<ExtensionMessageBundle> messages(CreateManifestBundle());
+
+  EXPECT_TRUE(
+      extension_l10n_util::LocalizeManifest(*messages, &manifest, &error));
+
+  std::string result;
+  ASSERT_TRUE(manifest.GetString(keys::kLaunchLocalPath, &result));
+  EXPECT_EQ("main.html", result);
+
+  EXPECT_TRUE(error.empty());
+}
+
+TEST(ExtensionL10nUtil, LocalizeManifestWithHostedLaunchURL) {
+  DictionaryValue manifest;
+  manifest.SetString(keys::kName, "name");
+  manifest.SetString(keys::kLaunchWebURL, "__MSG_launch_web_url__");
+  std::string error;
+  scoped_ptr<ExtensionMessageBundle> messages(CreateManifestBundle());
+
+  EXPECT_TRUE(
+      extension_l10n_util::LocalizeManifest(*messages, &manifest, &error));
+
+  std::string result;
+  ASSERT_TRUE(manifest.GetString(keys::kLaunchWebURL, &result));
+  EXPECT_EQ("http://www.google.com/", result);
 
   EXPECT_TRUE(error.empty());
 }

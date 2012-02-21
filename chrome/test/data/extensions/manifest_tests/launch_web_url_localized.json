@@ -1,0 +1,10 @@
+{
+  "name": "test",
+  "version": "1",
+  "default_locale": "en",
+  "app": {
+    "launch": {
+      "web_url": "__MSG_launch_url__"
+    }
+  }
+}
