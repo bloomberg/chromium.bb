@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/low_memory_observer.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -34,14 +35,24 @@
 #error This file only meant to be compiled on ChromeOS
 #endif
 
-using base::TimeDelta;
-using base::TimeTicks;
 using base::ProcessHandle;
 using base::ProcessMetrics;
+using base::TimeDelta;
+using base::TimeTicks;
 using content::BrowserThread;
 using content::WebContents;
 
+namespace browser {
+
 namespace {
+
+// The default interval in seconds after which to adjust the oom_score_adj
+// value.
+const int kAdjustmentIntervalSeconds = 10;
+
+// The default interval in milliseconds to wait before setting the score of
+// currently focused tab.
+const int kFocusedTabScoreAdjustIntervalMs = 500;
 
 // Returns a unique ID for a TabContents.  Do not cast back to a pointer, as
 // the TabContents could be deleted if the user closed the tab.
@@ -63,6 +74,7 @@ bool DiscardTabById(int64 target_web_contents_id) {
       int64 web_contents_id = IdFromTabContents(web_contents);
       if (web_contents_id == target_web_contents_id) {
         model->DiscardTabContentsAt(idx);
+        LOG(WARNING) << "Discarded tab with id: " << target_web_contents_id;
         return true;
       }
     }
@@ -72,15 +84,8 @@ bool DiscardTabById(int64 target_web_contents_id) {
 
 }  // namespace
 
-namespace browser {
-
-// The default interval in seconds after which to adjust the oom_score_adj
-// value.
-#define ADJUSTMENT_INTERVAL_SECONDS 10
-
-// The default interval in milliseconds to wait before setting the score of
-// currently focused tab.
-#define FOCUSED_TAB_SCORE_ADJUST_INTERVAL_MS 500
+////////////////////////////////////////////////////////////////////////////////
+// OomPriorityManager
 
 OomPriorityManager::TabStats::TabStats()
   : is_pinned(false),
@@ -93,7 +98,7 @@ OomPriorityManager::TabStats::~TabStats() {
 }
 
 OomPriorityManager::OomPriorityManager()
-  : focused_tab_pid_(0) {
+  : focused_tab_pid_(0), low_memory_observer_(new LowMemoryObserver) {
   registrar_.Add(this,
       content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
       content::NotificationService::AllBrowserContextsAndSources());
@@ -112,14 +117,16 @@ OomPriorityManager::~OomPriorityManager() {
 void OomPriorityManager::Start() {
   if (!timer_.IsRunning()) {
     timer_.Start(FROM_HERE,
-                 TimeDelta::FromSeconds(ADJUSTMENT_INTERVAL_SECONDS),
+                 TimeDelta::FromSeconds(kAdjustmentIntervalSeconds),
                  this,
                  &OomPriorityManager::AdjustOomPriorities);
   }
+  low_memory_observer_->Start();
 }
 
 void OomPriorityManager::Stop() {
   timer_.Stop();
+  low_memory_observer_->Stop();
 }
 
 std::vector<string16> OomPriorityManager::GetTabTitles() {
@@ -227,7 +234,7 @@ void OomPriorityManager::Observe(int type,
             focus_tab_score_adjust_timer_.Reset();
           else
             focus_tab_score_adjust_timer_.Start(FROM_HERE,
-              TimeDelta::FromMilliseconds(FOCUSED_TAB_SCORE_ADJUST_INTERVAL_MS),
+              TimeDelta::FromMilliseconds(kFocusedTabScoreAdjustIntervalMs),
               this, &OomPriorityManager::OnFocusTabScoreAdjustmentTimeout);
         }
       }

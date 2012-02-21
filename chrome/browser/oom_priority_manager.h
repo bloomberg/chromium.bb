@@ -1,5 +1,5 @@
 
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/hash_tables.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/process.h"
 #include "base/string16.h"
 #include "base/synchronization/lock.h"
@@ -22,6 +23,8 @@
 class TabContents;
 
 namespace browser {
+
+class LowMemoryObserver;
 
 // The OomPriorityManager periodically checks (see
 // ADJUSTMENT_INTERVAL_SECONDS in the source) the status of renderers
@@ -94,6 +97,8 @@ class OomPriorityManager : public content::NotificationObserver {
   typedef base::hash_map<base::ProcessHandle, int> ProcessScoreMap;
   ProcessScoreMap pid_to_oom_score_;
   base::ProcessHandle focused_tab_pid_;
+
+  scoped_ptr<LowMemoryObserver> low_memory_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(OomPriorityManager);
 };
