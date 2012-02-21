@@ -99,8 +99,7 @@ function bb_compile {
 # Experimental compile step; does not turn the tree red if it fails.
 function bb_compile_experimental {
   # Linking DumpRenderTree appears to hang forever?
-  # EXPERIMENTAL_TARGETS="DumpRenderTree webkit_unit_tests"
-  EXPERIMENTAL_TARGETS="webkit_unit_tests"
+  EXPERIMENTAL_TARGETS="android_experimental"
   for target in ${EXPERIMENTAL_TARGETS} ; do
     echo "@@@BUILD_STEP Experimental Compile $target @@@"
     set +e
