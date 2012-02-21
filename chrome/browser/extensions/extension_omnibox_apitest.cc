@@ -78,9 +78,9 @@ class OmniboxApiTest : public ExtensionApiTest {
   }
 };
 
-#if defined(OS_CHROMEOS)
-// The test fails on chromeos gtk bot, and linux chromeos aura although it
-// passes locally. crbug.com/113455 and crbug.com/114721
+#if defined(OS_CHROMEOS) && !defined(USE_AURA)
+// The test fails on chromeos gtk bot, although it passes locally.
+// crbug.com/113455.
 #define MAYBE_Basic DISABLED_Basic
 #else
 #define MAYBE_Basic Basic
