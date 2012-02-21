@@ -23,15 +23,6 @@ namespace {
 
 const char kTestUrl[] = "data:text/plain,Hello World!";
 
-ResourceDispatcherHostRequestInfo* GetRequestInfo(int request_id) {
-  return new ResourceDispatcherHostRequestInfo(
-      new DummyResourceHandler(), content::PROCESS_TYPE_RENDERER, 0, 0, 0,
-      request_id, false, -1, false, -1, ResourceType::MAIN_FRAME,
-      content::PAGE_TRANSITION_LINK, 0, false, false, false,
-      WebKit::WebReferrerPolicyDefault,
-      content::MockResourceContext::GetInstance());
-}
-
 void InitializeQueue(ResourceQueue* queue, ResourceQueueDelegate* delegate) {
   ResourceQueue::DelegateSet delegate_set;
   delegate_set.insert(delegate);
@@ -119,6 +110,14 @@ class ResourceQueueTest : public testing::Test,
     request->Cancel();
   }
 
+  ResourceDispatcherHostRequestInfo* GetRequestInfo(int request_id) {
+    return new ResourceDispatcherHostRequestInfo(
+        new DummyResourceHandler(), content::PROCESS_TYPE_RENDERER, 0, 0, 0,
+        request_id, false, -1, false, -1, ResourceType::MAIN_FRAME,
+        content::PAGE_TRANSITION_LINK, 0, false, false, false,
+        WebKit::WebReferrerPolicyDefault, &resource_context_);
+  }
+
   virtual void OnReadCompleted(net::URLRequest* request, int bytes_read) {
   }
 
@@ -129,6 +128,7 @@ class ResourceQueueTest : public testing::Test,
   MessageLoop message_loop_;
   BrowserThreadImpl ui_thread_;
   BrowserThreadImpl io_thread_;
+  content::MockResourceContext resource_context_;
 };
 
 TEST_F(ResourceQueueTest, Basic) {

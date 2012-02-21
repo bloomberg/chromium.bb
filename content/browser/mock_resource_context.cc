@@ -4,17 +4,9 @@
 
 #include "content/browser/mock_resource_context.h"
 
-#include "base/lazy_instance.h"
 #include "net/url_request/url_request_test_util.h"
 
 namespace content {
-
-static base::LazyInstance<MockResourceContext>
-    g_mock_resource_context = LAZY_INSTANCE_INITIALIZER;
-
-MockResourceContext* MockResourceContext::GetInstance() {
-  return &g_mock_resource_context.Get();
-}
 
 MockResourceContext::MockResourceContext()
     : test_request_context_(new TestURLRequestContext),

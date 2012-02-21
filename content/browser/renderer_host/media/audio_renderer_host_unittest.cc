@@ -160,11 +160,9 @@ class AudioRendererHostTest : public testing::Test {
                                            message_loop_.get()));
     audio_manager_.reset(AudioManager::Create());
     observer_.reset(new MockMediaObserver());
-    content::MockResourceContext* context =
-        content::MockResourceContext::GetInstance();
-    context->set_media_observer(observer_.get());
-    context->set_audio_manager(audio_manager_.get());
-    host_ = new MockAudioRendererHost(context);
+    resource_context_.set_media_observer(observer_.get());
+    resource_context_.set_audio_manager(audio_manager_.get());
+    host_ = new MockAudioRendererHost(&resource_context_);
 
     // Simulate IPC channel connected.
     host_->OnChannelConnected(base::GetCurrentProcId());
@@ -181,12 +179,6 @@ class AudioRendererHostTest : public testing::Test {
     // We need to continue running message_loop_ to complete all destructions.
     SyncWithAudioThread();
 
-    // Since the MockResourceContext object is a singleton that lives across
-    // multiple tests, we must clear pointers to objects that are about to die.
-    content::MockResourceContext* context =
-        content::MockResourceContext::GetInstance();
-    context->set_audio_manager(NULL);
-    context->set_media_observer(NULL);
     audio_manager_.reset();
 
     io_thread_.reset();
@@ -316,6 +308,7 @@ class AudioRendererHostTest : public testing::Test {
   scoped_ptr<BrowserThreadImpl> io_thread_;
   scoped_ptr<BrowserThreadImpl> ui_thread_;
   scoped_ptr<AudioManager> audio_manager_;
+  content::MockResourceContext resource_context_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererHostTest);
 };

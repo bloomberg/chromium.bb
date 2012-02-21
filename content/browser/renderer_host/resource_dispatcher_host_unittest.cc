@@ -173,7 +173,7 @@ class ForwardingFilter : public ResourceMessageFilter {
         content::PROCESS_TYPE_RENDERER,
         resource_context,
         new MockURLRequestContextSelector(
-            content::MockResourceContext::GetInstance()->GetRequestContext())),
+            resource_context->GetRequestContext())),
       dest_(dest) {
     OnChannelConnected(base::GetCurrentProcId());
   }

@@ -11,19 +11,10 @@
 #include "content/public/browser/resource_context.h"
 #include "net/url_request/url_request_context.h"
 
-namespace base {
-template <typename T>
-struct DefaultLazyInstanceTraits;
-}  // namespace base
-
 namespace content {
 
 class MockResourceContext : public ResourceContext {
  public:
-  // Note that this is a shared instance between all tests. Make no assumptions
-  // regarding its members. Or you can construct a local version below.
-  static MockResourceContext* GetInstance();
-
   MockResourceContext();
   explicit MockResourceContext(net::URLRequestContext* context);
   virtual ~MockResourceContext();
@@ -49,8 +40,6 @@ class MockResourceContext : public ResourceContext {
   virtual AudioManager* GetAudioManager() OVERRIDE;
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<MockResourceContext>;
-
   scoped_refptr<net::URLRequestContext> test_request_context_;
   MediaObserver* media_observer_;
   media_stream::MediaStreamManager* media_stream_manager_;

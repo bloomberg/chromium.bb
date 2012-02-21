@@ -95,10 +95,8 @@ class GViewRequestInterceptorTest : public testing::Test {
         plugin_list_(NULL, 0) {}
 
   virtual void SetUp() {
-    content::ResourceContext* resource_context =
-        content::MockResourceContext::GetInstance();
     net::URLRequestContext* request_context =
-        resource_context->GetRequestContext();
+        resource_context_.GetRequestContext();
     old_factory_ = request_context->job_factory();
     job_factory_.SetProtocolHandler("http", new GViewRequestProtocolFactory);
     job_factory_.AddInterceptor(new GViewRequestInterceptor);
@@ -108,7 +106,7 @@ class GViewRequestInterceptorTest : public testing::Test {
     plugin_prefs_->SetPrefs(&prefs_);
     ChromePluginServiceFilter* filter =
         ChromePluginServiceFilter::GetInstance();
-    filter->RegisterResourceContext(plugin_prefs_, resource_context);
+    filter->RegisterResourceContext(plugin_prefs_, &resource_context_);
     PluginService::GetInstance()->SetFilter(filter);
 
     ASSERT_TRUE(PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path_));
@@ -121,14 +119,12 @@ class GViewRequestInterceptorTest : public testing::Test {
 
   virtual void TearDown() {
     plugin_prefs_->ShutdownOnUIThread();
-    content::ResourceContext* resource_context =
-        content::MockResourceContext::GetInstance();
     net::URLRequestContext* request_context =
-        resource_context->GetRequestContext();
+        resource_context_.GetRequestContext();
     request_context->set_job_factory(old_factory_);
     ChromePluginServiceFilter* filter =
         ChromePluginServiceFilter::GetInstance();
-    filter->UnregisterResourceContext(resource_context);
+    filter->UnregisterResourceContext(&resource_context_);
     PluginService::GetInstance()->SetFilter(NULL);
   }
 
@@ -162,8 +158,6 @@ class GViewRequestInterceptorTest : public testing::Test {
   }
 
   void SetupRequest(net::URLRequest* request) {
-    content::ResourceContext* context =
-        content::MockResourceContext::GetInstance();
     ResourceDispatcherHostRequestInfo* info =
         new ResourceDispatcherHostRequestInfo(
             handler_,
@@ -183,9 +177,9 @@ class GViewRequestInterceptorTest : public testing::Test {
             true,        // allow_download
             false,       // has_user_gesture
             WebKit::WebReferrerPolicyDefault,
-            context);
+            &resource_context_);
     request->SetUserData(NULL, info);
-    request->set_context(context->GetRequestContext());
+    request->set_context(resource_context_.GetRequestContext());
   }
 
  protected:
@@ -202,6 +196,7 @@ class GViewRequestInterceptorTest : public testing::Test {
   scoped_refptr<ResourceHandler> handler_;
   TestDelegate test_delegate_;
   FilePath pdf_path_;
+  content::MockResourceContext resource_context_;
 };
 
 TEST_F(GViewRequestInterceptorTest, DoNotInterceptHtml) {
