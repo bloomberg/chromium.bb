@@ -22,6 +22,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 
+#if defined(OS_ANDROID)
+#include <asm/page.h>  // for PAGE_SIZE needed by PTHREAD_STACK_MIN
+#endif
+
 #if defined(TOOLKIT_USES_GTK) && !defined(OS_CHROMEOS)
 #include "chrome/browser/printing/print_dialog_gtk.h"
 #endif
