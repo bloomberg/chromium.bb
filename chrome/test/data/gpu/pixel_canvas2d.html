@@ -9,8 +9,6 @@
 </style>
 <script>
 var g_swapsBeforeAck = 5;
-var width = window.innerWidth;
-var height = window.innerHeight;
 
 function main()
 {
@@ -29,10 +27,6 @@ function draw()
 
 function waitForFinish()
 {
-  if (window.innerWidth != width || window.innerHeight != height)
-    g_swapsBeforeAck += 5;
-  width = window.innerWidth;
-  height = window.innerHeight;
   if (g_swapsBeforeAck == 0) {
     domAutomationController.setAutomationId(1);
     domAutomationController.send("ok");
@@ -42,9 +36,17 @@ function waitForFinish()
     window.webkitRequestAnimationFrame(waitForFinish);
   }
 }
+
+function preCallResizeInChromium()
+{
+  window.onresize = main;
+  // Call main() on a timeout in case the window did not resize for whatever
+  // reason.
+  setTimeout(main, 10000);
+}
 </script>
 </head>
-<body onload="main()">
+<body>
 <div style="position:relative; width:200px; height:200px; background-color:black">
 </div>
 <div style="position:absolute; top:0px; left:0px">

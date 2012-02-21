@@ -42,9 +42,17 @@ function waitForFinish()
     window.webkitRequestAnimationFrame(waitForFinish);
   }
 }
+
+function preCallResizeInChromium()
+{
+  window.onresize = main;
+  // Call main() on a timeout in case the window did not resize for whatever
+  // reason.
+  setTimeout(main, 10000);
+}
 </script>
 </head>
-<body onload="main()">
+<body>
 <div style="position:relative; width:200px; height:200px; background-color:black">
 </div>
 <div id="container" style="position:absolute; top:0px; left:0px">

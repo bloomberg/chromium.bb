@@ -37,6 +37,14 @@ function main()
     drawSomeFrames();
 }
 
+function preCallResizeInChromium()
+{
+  window.onresize = main;
+  // Call main() on a timeout in case the window did not resize for whatever
+  // reason.
+  setTimeout(main, 10000);
+}
+
 function drawSomeFrames()
 {
   if (g_swapsBeforeAck == 0) {
@@ -125,7 +133,7 @@ function draw(gl) {
 }
 </script>
 </head>
-<body onload="main()">
+<body>
 <div style="position:relative; width:200px; height:200px; background-color:black"></div>
 <div style="position:absolute; top:0px; left:0px">
 <canvas id="c" width="200" height="200" class="nomargin"></canvas>

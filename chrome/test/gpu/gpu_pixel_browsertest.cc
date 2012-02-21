@@ -113,11 +113,16 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
     ref_img_revision_no_older_than_ = ref_img_update_revision;
     ObtainLocalRefImageFilePath();
 
-    ResizeTabContainer(tab_container_size);
     ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
-    ui_test_utils::DOMMessageQueue message_queue;
     ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(url));
+
+    ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+        browser()->GetSelectedWebContents()->GetRenderViewHost(),
+        L"", L"preCallResizeInChromium();"));
+
+    ui_test_utils::DOMMessageQueue message_queue;
+    ResizeTabContainer(tab_container_size);
 
     // Wait for message from test page indicating the rendering is done.
     ASSERT_TRUE(message_queue.WaitForMessage(NULL));
@@ -422,4 +427,3 @@ IN_PROC_BROWSER_TEST_F(Canvas2DPixelTestSD, MAYBE_Canvas2DRedBoxSD) {
       test_data_dir().AppendASCII("pixel_canvas2d.html");
   RunPixelTest(container_size, url, ref_img_revision_update);
 }
-
