@@ -1,3 +1,8 @@
+2012-02-21  Juan Carlos Buño Suárez <quetzatl@eresmas.net>
+
+	* tables/Es-Es-G0.utb: add support for the letter Ñ to the Spanish
+	table.
+
 2012-02-20  Birkir Gunnarsson <birkir@midstod.is>
 
 	* tables/is.ctb: Updates and additions to Icelandic 8-dot braille

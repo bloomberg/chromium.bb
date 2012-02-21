@@ -96,6 +96,7 @@ uplow \x00B4\x00B8 135678,13568     z avec caron
 uplow \x008C\x009C 1468,1238     oe
 uplow \x00C3\x00E3 3567,168     a con tilde
 uplow \x00D5\x00F5 12458,4567     o con tilde
+uplow \x00D1\x00F1 124567,124568 letra eñe
 
 punctuation , 2			coma
 punctuation ; 23		punto y coma
@@ -140,6 +141,7 @@ sign \X00B6 14567   # párrafo
 sign \X00B7 14678   # punto centrado
 sign \X00B9 237   # Super uno
 sign \X00BA 5678   # ordinal masculino
+sign \x00AA 23568  # ordinal femenino 
 sign \X00BF 267   #*abrir interrogación
 sign \X00C5 12368   #*a mayúscula con círculo superescrito
 
