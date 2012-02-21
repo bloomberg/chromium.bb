@@ -77,6 +77,8 @@ InterfaceMapElement interface_map[] = {
   { PPB_INSTANCE_INTERFACE, PluginInstance::GetInterface(), true },
   { PPB_KEYBOARD_INPUT_EVENT_INTERFACE,
     PluginInputEvent::GetKeyboardInterface(), true },
+  { PPB_KEYBOARD_INPUT_EVENT_DEV_INTERFACE,
+    PluginInputEvent::GetKeyboardInterface_Dev(), true },
   { PPB_MEMORY_DEV_INTERFACE, PluginMemory::GetInterface(), true },
   { PPB_MESSAGING_INTERFACE, PluginMessaging::GetInterface(), true },
   { PPB_MOUSE_INPUT_EVENT_INTERFACE_1_0,

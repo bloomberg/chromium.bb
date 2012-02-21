@@ -1,6 +1,6 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_INPUT_EVENT_DATA_H_
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_INPUT_EVENT_DATA_H_
@@ -32,6 +32,14 @@ struct InputEventData {
   PP_Bool wheel_scroll_by_page;
 
   uint32_t key_code;
+
+  // A code for identifying the key by a USB Usage Page (upper 16-bits) and
+  // Usage Id (lower 16-bits). See the "Keyboard/Keypad Page (0x07)" of
+  // the "USB HID Usage Tables" document for encoding details.
+  uint32_t usb_key_code;
+
+  // Required for consistent 64-bit alignment on all platforms.
+  uint32_t unused_padding;
 };
 // Make sure that the size is consistent across platforms, so the alignment is
 // consistent. Note the fields above are carefully ordered to make sure it is
@@ -39,7 +47,7 @@ struct InputEventData {
 // and alignment. TODO(dmichael): This is only required because we don't pickle
 // the type. As a short-cut, we memcpy it instead. It would be cleaner to
 // pickle this struct.
-PP_COMPILE_ASSERT_SIZE_IN_BYTES(InputEventData, 64);
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(InputEventData, 72);
 
 }  // namespace ppapi_proxy
 

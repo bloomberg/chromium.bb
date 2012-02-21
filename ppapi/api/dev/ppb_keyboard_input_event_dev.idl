@@ -1,0 +1,50 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/**
+ * This file defines the <code>PPB_KeyboardInputEvent_Dev</code> interface,
+ * which provides access to USB key codes that identify the physical key being
+ * pressed.
+ */
+
+label Chrome {
+  M19 = 0.1
+};
+
+/**
+ * The <code>PPB_KeyboardInputEvent_Dev</code> interface is an extension to the
+ * PPB_KeyboardInputEvent</code> interface that provides
+ */
+[version=0.1, macro="PPB_KEYBOARD_INPUT_EVENT_DEV_INTERFACE"]
+interface PPB_KeyboardInputEvent_Dev {
+  /**
+   * This sets a USB key code in the given <code>PP_Resource</code>. It is
+   * intended that this method be called immediately after any call to
+   * <code>Create</code>.
+   *
+   * @param[in] key_event A <code>PP_Resource</code> created by
+   * <code>PPB_KeyboardInputEvent</code>'s <code>Create</code> method.
+   *
+   * @param[in] usb_key_code The USB key code to associate with this
+   * <code>key_event</code>.
+   *
+   * @return <code>PP_TRUE</code> if the USB key code was set successfully.
+   */
+  PP_Bool SetUsbKeyCode([in] PP_Resource key_event,
+                         [in] uint32_t usb_key_code);
+
+  /**
+   * GetUsbKeyCode() returns the USB key code associated with this keyboard
+   * event.
+   *
+   * @param[in] key_event The key event for which to return the key code.
+   *
+   * @return The USB key code field for the keyboard event. If there is no
+   * USB scancode associated with this event, or if the PP_Resource does not
+   * support the PPB_InputEvent_API (i.e., it is not an input event), then
+   * a 0 is returned.
+   */
+  uint32_t GetUsbKeyCode([in] PP_Resource key_event);
+};

@@ -95,6 +95,15 @@ PP_Var PPB_InputEvent_Shared::GetCharacterText() {
   return StringVar::StringToPPVar(data_.character_text);
 }
 
+PP_Bool PPB_InputEvent_Shared::SetUsbKeyCode(uint32_t usb_key_code) {
+  data_.usb_key_code = usb_key_code;
+  return PP_TRUE;
+}
+
+uint32_t PPB_InputEvent_Shared::GetUsbKeyCode() {
+  return data_.usb_key_code;
+}
+
 uint32_t PPB_InputEvent_Shared::GetIMESegmentNumber() {
   if (data_.composition_segment_offsets.empty())
     return 0;

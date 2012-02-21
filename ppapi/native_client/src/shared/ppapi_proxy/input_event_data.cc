@@ -1,6 +1,6 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "native_client/src/shared/ppapi_proxy/input_event_data.h"
 
@@ -17,7 +17,9 @@ InputEventData::InputEventData()
       wheel_delta(PP_MakeFloatPoint(0.0f, 0.0f)),
       wheel_ticks(PP_MakeFloatPoint(0.0f, 0.0f)),
       wheel_scroll_by_page(PP_FALSE),
-      key_code(0) {
+      key_code(0),
+      usb_key_code(0),
+      unused_padding(0) {
 }
 
 InputEventData::~InputEventData() {

@@ -115,6 +115,10 @@ PP_Bool IsInputEvent(PP_Resource resource) {
   BEGIN_RESOURCE_THUNK(#function, resource_arg, error_return); \
   return input_event.get()->function()
 
+#define IMPLEMENT_RESOURCE_THUNK1(function, resource_arg, arg, error_return) \
+  BEGIN_RESOURCE_THUNK(#function, resource_arg, error_return); \
+  return input_event.get()->function(arg)
+
 PP_InputEvent_Type GetType(PP_Resource event) {
   IMPLEMENT_RESOURCE_THUNK(GetType, event, PP_INPUTEVENT_TYPE_UNDEFINED);
 }
@@ -260,6 +264,8 @@ PP_Bool GetWheelScrollByPage(PP_Resource wheel_event) {
   IMPLEMENT_RESOURCE_THUNK(GetWheelScrollByPage, wheel_event, PP_FALSE);
 }
 
+// Keyboard --------------------------------------------------------------------
+
 PP_Resource CreateKeyboardInputEvent(PP_Instance instance,
                                      PP_InputEvent_Type type,
                                      PP_TimeTicks time_stamp,
@@ -307,6 +313,17 @@ uint32_t GetKeyCode(PP_Resource key_event) {
 PP_Var GetCharacterText(PP_Resource character_event) {
   IMPLEMENT_RESOURCE_THUNK(GetCharacterText, character_event,
                            PP_MakeUndefined());
+}
+
+// Keyboard_Dev ----------------------------------------------------------------
+
+PP_Bool SetUsbKeyCode(PP_Resource key_event, uint32_t usb_key_code) {
+  IMPLEMENT_RESOURCE_THUNK1(SetUsbKeyCode, key_event, usb_key_code,
+                            PP_FALSE);
+}
+
+uint32_t GetUsbKeyCode(PP_Resource key_event) {
+  IMPLEMENT_RESOURCE_THUNK(GetUsbKeyCode, key_event, 0);
 }
 
 }  // namespace
@@ -375,6 +392,15 @@ const PPB_KeyboardInputEvent* PluginInputEvent::GetKeyboardInterface() {
   return &keyboard_input_event_interface;
 }
 
+// static
+const PPB_KeyboardInputEvent_Dev* PluginInputEvent::GetKeyboardInterface_Dev() {
+  static const PPB_KeyboardInputEvent_Dev keyboard_input_event_dev_interface = {
+    ::SetUsbKeyCode,
+    ::GetUsbKeyCode,
+  };
+  return &keyboard_input_event_dev_interface;
+}
+
 PluginInputEvent::PluginInputEvent()
     : character_text_(PP_MakeUndefined()) {
 }
@@ -437,6 +463,15 @@ uint32_t PluginInputEvent::GetKeyCode() const {
 PP_Var PluginInputEvent::GetCharacterText() const {
   PPBVarInterface()->AddRef(character_text_);
   return character_text_;
+}
+
+PP_Bool PluginInputEvent::SetUsbKeyCode(uint32_t usb_key_code) {
+  input_event_data_.usb_key_code = usb_key_code;
+  return PP_TRUE;
+}
+
+uint32_t PluginInputEvent::GetUsbKeyCode() const {
+  return input_event_data_.usb_key_code;
 }
 
 }  // namespace ppapi_proxy

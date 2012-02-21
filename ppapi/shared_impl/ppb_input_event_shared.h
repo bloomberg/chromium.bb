@@ -40,6 +40,7 @@ struct PPAPI_SHARED_EXPORT InputEventData {
   bool wheel_scroll_by_page;
 
   uint32_t key_code;
+  uint32_t usb_key_code;
 
   std::string character_text;
 
@@ -76,6 +77,8 @@ class PPAPI_SHARED_EXPORT PPB_InputEvent_Shared
   virtual PP_Bool GetWheelScrollByPage() OVERRIDE;
   virtual uint32_t GetKeyCode() OVERRIDE;
   virtual PP_Var GetCharacterText() OVERRIDE;
+  virtual PP_Bool SetUsbKeyCode(uint32_t usb_key_code) OVERRIDE;
+  virtual uint32_t GetUsbKeyCode() OVERRIDE;
   virtual uint32_t GetIMESegmentNumber() OVERRIDE;
   virtual uint32_t GetIMESegmentOffset(uint32_t index) OVERRIDE;
   virtual int32_t GetIMETargetSegment() OVERRIDE;
