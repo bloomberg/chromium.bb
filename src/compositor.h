@@ -54,6 +54,14 @@ struct weston_border {
 	int32_t left, right, top, bottom;
 };
 
+struct weston_output_zoom {
+	int active;
+	float increment;
+	float level;
+	float magnification;
+	float trans_x, trans_y;
+};
+
 struct weston_output {
 	struct wl_list link;
 	struct weston_compositor *compositor;
@@ -66,6 +74,8 @@ struct weston_output {
 	uint32_t flags;
 	int repaint_needed;
 	int repaint_scheduled;
+	struct weston_output_zoom zoom;
+	int dirty;
 
 	char *make, *model;
 	uint32_t subpixel;
@@ -419,6 +429,10 @@ int
 weston_compositor_init(struct weston_compositor *ec, struct wl_display *display);
 void
 weston_compositor_shutdown(struct weston_compositor *ec);
+void
+weston_output_update_zoom(struct weston_output *output, int x, int y);
+void
+weston_output_update_matrix(struct weston_output *output);
 void
 weston_output_move(struct weston_output *output, int x, int y);
 void

@@ -774,7 +774,7 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output)
 	glUniform1f(es->shader->texwidth_uniform,
 		    (GLfloat)es->geometry.width / es->pitch);
 
-	if (es->transform.enabled)
+	if (es->transform.enabled || output->zoom.active)
 		filter = GL_LINEAR;
 	else
 		filter = GL_NEAREST;
@@ -1009,6 +1009,9 @@ weston_output_repaint(struct weston_output *output, int msecs)
 		pixman_region32_subtract(&total_damage,
 					 &total_damage, &es->transform.opaque);
 	}
+
+	if (output->dirty)
+		weston_output_update_matrix(output);
 
 	output->repaint(output);
 
@@ -1496,6 +1499,11 @@ notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 
 	device->x = x;
 	device->y = y;
+
+	wl_list_for_each(output, &ec->output_list, link)
+		if (output->zoom.active &&
+		    pixman_region32_contains_point(&output->region, x, y, NULL))
+			weston_output_update_zoom(output, x, y);
 
 	weston_device_repick(device, time);
 	interface = device->pointer_grab->interface;
@@ -2096,17 +2104,29 @@ weston_output_destroy(struct weston_output *output)
 }
 
 WL_EXPORT void
-weston_output_move(struct weston_output *output, int x, int y)
+weston_output_update_zoom(struct weston_output *output, int x, int y)
+{
+	float ratio;
+
+	if (output->zoom.level <= 0)
+		return;
+
+	output->zoom.magnification = 1 / output->zoom.level;
+	ratio = 1 - (1 / output->zoom.magnification);
+
+	output->zoom.trans_x = (((float)(x - output->x) / output->current->width) * (ratio * 2)) - ratio;
+	output->zoom.trans_y = (((float)(y - output->y) / output->current->height) * (ratio * 2)) - ratio;
+
+	output->dirty = 1;
+	weston_output_damage(output);
+}
+
+WL_EXPORT void
+weston_output_update_matrix(struct weston_output *output)
 {
 	int flip;
-
-	output->x = x;
-	output->y = y;
-
-	pixman_region32_init(&output->previous_damage);
-	pixman_region32_init_rect(&output->region, x, y, 
-				  output->current->width,
-				  output->current->height);
+	struct weston_matrix camera;
+	struct weston_matrix modelview;
 
 	weston_matrix_init(&output->matrix);
 	weston_matrix_translate(&output->matrix,
@@ -2117,8 +2137,28 @@ weston_output_move(struct weston_output *output, int x, int y)
 	weston_matrix_scale(&output->matrix,
 			    2.0 / (output->current->width + output->border.left + output->border.right),
 			    flip * 2.0 / (output->current->height + output->border.top + output->border.bottom), 1);
+	if (output->zoom.active) {
+		weston_matrix_init(&camera);
+		weston_matrix_init(&modelview);
+		weston_matrix_translate(&camera, output->zoom.trans_x, flip * output->zoom.trans_y, 0);
+		weston_matrix_invert(&modelview, &camera);
+		weston_matrix_scale(&modelview, output->zoom.magnification, output->zoom.magnification, 1.0);
+		weston_matrix_multiply(&output->matrix, &modelview);
+	}
 
-	weston_output_damage(output);
+	output->dirty = 0;
+}
+
+WL_EXPORT void
+weston_output_move(struct weston_output *output, int x, int y)
+{
+	output->x = x;
+	output->y = y;
+
+	pixman_region32_init(&output->previous_damage);
+	pixman_region32_init_rect(&output->region, x, y,
+				  output->current->width,
+				  output->current->height);
 }
 
 WL_EXPORT void
@@ -2134,6 +2174,14 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 	output->border.right = 0;
 	output->mm_width = width;
 	output->mm_height = height;
+	output->dirty = 1;
+
+	output->zoom.active = 0;
+	output->zoom.increment = 0.05;
+	output->zoom.level = 1.0;
+	output->zoom.magnification = 1.0;
+	output->zoom.trans_x = 0.0;
+	output->zoom.trans_y = 0.0;
 
 	output->flags = flags;
 	weston_output_move(output, x, y);
