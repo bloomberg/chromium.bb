@@ -1099,9 +1099,9 @@ TEST_F(GLES2DecoderWithShaderTest, GetUniformivSucceeds) {
   result->size = 0;
   GetUniformiv cmd;
   cmd.Init(client_program_id_,
-           program_manager()->SwizzleLocation(kUniform2Location),
+           program_manager()->SwizzleLocation(kUniform2FakeLocation),
            kSharedMemoryId, kSharedMemoryOffset);
-  EXPECT_CALL(*gl_, GetUniformiv(kServiceProgramId, kUniform2Location, _))
+  EXPECT_CALL(*gl_, GetUniformiv(kServiceProgramId, kUniform2RealLocation, _))
       .Times(1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GLES2Util::GetGLDataTypeSizeForUniforms(kUniform2Type),
@@ -1114,10 +1114,10 @@ TEST_F(GLES2DecoderWithShaderTest, GetUniformivArrayElementSucceeds) {
   result->size = 0;
   GetUniformiv cmd;
   cmd.Init(client_program_id_,
-           program_manager()->SwizzleLocation(kUniform2ElementLocation),
+           program_manager()->SwizzleLocation(kUniform2ElementFakeLocation),
            kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_CALL(*gl_,
-              GetUniformiv(kServiceProgramId, kUniform2ElementLocation, _))
+              GetUniformiv(kServiceProgramId, kUniform2ElementRealLocation, _))
       .Times(1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GLES2Util::GetGLDataTypeSizeForUniforms(kUniform2Type),
@@ -1131,7 +1131,7 @@ TEST_F(GLES2DecoderWithShaderTest, GetUniformivBadProgramFails) {
   GetUniformiv cmd;
   // non-existant program
   cmd.Init(kInvalidClientId,
-           program_manager()->SwizzleLocation(kUniform2Location),
+           program_manager()->SwizzleLocation(kUniform2FakeLocation),
            kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_CALL(*gl_, GetUniformiv(_, _, _))
       .Times(0);
@@ -1143,7 +1143,7 @@ TEST_F(GLES2DecoderWithShaderTest, GetUniformivBadProgramFails) {
 #if GLES2_TEST_SHADER_VS_PROGRAM_IDS
   result->size = kInitialResult;
   cmd.Init(client_shader_id_,
-           program_manager()->SwizzleLocation(kUniform2Location),
+           program_manager()->SwizzleLocation(kUniform2FakeLocation),
            kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(0U, result->size);
@@ -1159,7 +1159,7 @@ TEST_F(GLES2DecoderWithShaderTest, GetUniformivBadProgramFails) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd2));
   result->size = kInitialResult;
   cmd.Init(kNewClientId,
-           program_manager()->SwizzleLocation(kUniform2Location),
+           program_manager()->SwizzleLocation(kUniform2FakeLocation),
            kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(0U, result->size);
@@ -1184,12 +1184,12 @@ TEST_F(GLES2DecoderWithShaderTest, GetUniformivBadLocationFails) {
 TEST_F(GLES2DecoderWithShaderTest, GetUniformivBadSharedMemoryFails) {
   GetUniformiv cmd;
   cmd.Init(client_program_id_,
-           program_manager()->SwizzleLocation(kUniform2Location),
+           program_manager()->SwizzleLocation(kUniform2FakeLocation),
            kInvalidSharedMemoryId, kSharedMemoryOffset);
   EXPECT_CALL(*gl_, GetUniformiv(_, _, _))
       .Times(0);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
-  cmd.Init(client_program_id_, kUniform2Location,
+  cmd.Init(client_program_id_, kUniform2FakeLocation,
            kSharedMemoryId, kInvalidSharedMemoryOffset);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 };
@@ -1200,9 +1200,9 @@ TEST_F(GLES2DecoderWithShaderTest, GetUniformfvSucceeds) {
   result->size = 0;
   GetUniformfv cmd;
   cmd.Init(client_program_id_,
-           program_manager()->SwizzleLocation(kUniform2Location),
+           program_manager()->SwizzleLocation(kUniform2FakeLocation),
            kSharedMemoryId, kSharedMemoryOffset);
-  EXPECT_CALL(*gl_, GetUniformfv(kServiceProgramId, kUniform2Location, _))
+  EXPECT_CALL(*gl_, GetUniformfv(kServiceProgramId, kUniform2RealLocation, _))
       .Times(1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GLES2Util::GetGLDataTypeSizeForUniforms(kUniform2Type),
@@ -1215,10 +1215,10 @@ TEST_F(GLES2DecoderWithShaderTest, GetUniformfvArrayElementSucceeds) {
   result->size = 0;
   GetUniformfv cmd;
   cmd.Init(client_program_id_,
-           program_manager()->SwizzleLocation(kUniform2ElementLocation),
+           program_manager()->SwizzleLocation(kUniform2ElementFakeLocation),
            kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_CALL(*gl_,
-              GetUniformfv(kServiceProgramId, kUniform2ElementLocation, _))
+              GetUniformfv(kServiceProgramId, kUniform2ElementRealLocation, _))
       .Times(1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GLES2Util::GetGLDataTypeSizeForUniforms(kUniform2Type),
@@ -1232,7 +1232,7 @@ TEST_F(GLES2DecoderWithShaderTest, GetUniformfvBadProgramFails) {
   GetUniformfv cmd;
   // non-existant program
   cmd.Init(kInvalidClientId,
-           program_manager()->SwizzleLocation(kUniform2Location),
+           program_manager()->SwizzleLocation(kUniform2FakeLocation),
            kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_CALL(*gl_, GetUniformfv(_, _, _))
       .Times(0);
@@ -1244,7 +1244,7 @@ TEST_F(GLES2DecoderWithShaderTest, GetUniformfvBadProgramFails) {
 #if GLES2_TEST_SHADER_VS_PROGRAM_IDS
   result->size = kInitialResult;
   cmd.Init(client_shader_id_,
-           program_manager()->SwizzleLocation(kUniform2Location),
+           program_manager()->SwizzleLocation(kUniform2FakeLocation),
            kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(0U, result->size);
@@ -1259,7 +1259,8 @@ TEST_F(GLES2DecoderWithShaderTest, GetUniformfvBadProgramFails) {
   cmd2.Init(kNewClientId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd2));
   result->size = kInitialResult;
-  cmd.Init(kNewClientId, program_manager()->SwizzleLocation(kUniform2Location),
+  cmd.Init(kNewClientId,
+           program_manager()->SwizzleLocation(kUniform2FakeLocation),
            kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(0U, result->size);
@@ -1284,12 +1285,12 @@ TEST_F(GLES2DecoderWithShaderTest, GetUniformfvBadLocationFails) {
 TEST_F(GLES2DecoderWithShaderTest, GetUniformfvBadSharedMemoryFails) {
   GetUniformfv cmd;
   cmd.Init(client_program_id_,
-           program_manager()->SwizzleLocation(kUniform2Location),
+           program_manager()->SwizzleLocation(kUniform2FakeLocation),
            kInvalidSharedMemoryId, kSharedMemoryOffset);
   EXPECT_CALL(*gl_, GetUniformfv(_, _, _))
       .Times(0);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
-  cmd.Init(client_program_id_, kUniform2Location,
+  cmd.Init(client_program_id_, kUniform2FakeLocation,
            kSharedMemoryId, kInvalidSharedMemoryOffset);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 };
@@ -1798,18 +1799,18 @@ TEST_F(GLES2DecoderTest, GenerateMipmapWrongFormatsFails) {
 }
 
 TEST_F(GLES2DecoderWithShaderTest, Uniform1iValidArgs) {
-  EXPECT_CALL(*gl_, Uniform1i(kUniform1Location, 2));
+  EXPECT_CALL(*gl_, Uniform1i(kUniform1RealLocation, 2));
   Uniform1i cmd;
-  cmd.Init(program_manager()->SwizzleLocation(kUniform1Location), 2);
+  cmd.Init(program_manager()->SwizzleLocation(kUniform1FakeLocation), 2);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderWithShaderTest, Uniform1ivValidArgs) {
   EXPECT_CALL(
-      *gl_, Uniform1iv(kUniform1Location, 1,
+      *gl_, Uniform1iv(kUniform1RealLocation, 1,
           reinterpret_cast<const GLint*>(shared_memory_address_)));
   Uniform1iv cmd;
-  cmd.Init(program_manager()->SwizzleLocation(kUniform1Location),
+  cmd.Init(program_manager()->SwizzleLocation(kUniform1FakeLocation),
            1, shared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
@@ -1817,7 +1818,7 @@ TEST_F(GLES2DecoderWithShaderTest, Uniform1ivValidArgs) {
 TEST_F(GLES2DecoderWithShaderTest, Uniform1ivInvalidArgs2_0) {
   EXPECT_CALL(*gl_, Uniform1iv(_, _, _)).Times(0);
   Uniform1iv cmd;
-  cmd.Init(program_manager()->SwizzleLocation(kUniform1Location),
+  cmd.Init(program_manager()->SwizzleLocation(kUniform1FakeLocation),
            1, kInvalidSharedMemoryId, 0);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
@@ -1825,7 +1826,7 @@ TEST_F(GLES2DecoderWithShaderTest, Uniform1ivInvalidArgs2_0) {
 TEST_F(GLES2DecoderWithShaderTest, Uniform1ivInvalidArgs2_1) {
   EXPECT_CALL(*gl_, Uniform1iv(_, _, _)).Times(0);
   Uniform1iv cmd;
-  cmd.Init(program_manager()->SwizzleLocation(kUniform1Location),
+  cmd.Init(program_manager()->SwizzleLocation(kUniform1FakeLocation),
            1, shared_memory_id_, kInvalidSharedMemoryOffset);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
@@ -1834,10 +1835,11 @@ TEST_F(GLES2DecoderWithShaderTest, Uniform1ivImmediateValidArgs) {
   Uniform1ivImmediate& cmd = *GetImmediateAs<Uniform1ivImmediate>();
   EXPECT_CALL(
       *gl_,
-      Uniform1iv(kUniform1Location, 1,
+      Uniform1iv(kUniform1RealLocation, 1,
           reinterpret_cast<GLint*>(ImmediateDataAddress(&cmd))));
   GLint temp[1 * 2] = { 0, };
-  cmd.Init(program_manager()->SwizzleLocation(kUniform1Location), 1, &temp[0]);
+  cmd.Init(program_manager()->SwizzleLocation(kUniform1FakeLocation), 1,
+           &temp[0]);
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
@@ -1845,7 +1847,7 @@ TEST_F(GLES2DecoderWithShaderTest, Uniform1ivImmediateValidArgs) {
 TEST_F(GLES2DecoderWithShaderTest, Uniform1ivInvalidValidArgs) {
   EXPECT_CALL(*gl_, Uniform1iv(_, _, _)).Times(0);
   Uniform1iv cmd;
-  cmd.Init(program_manager()->SwizzleLocation(kUniform1Location),
+  cmd.Init(program_manager()->SwizzleLocation(kUniform1FakeLocation),
            2, shared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
@@ -1854,7 +1856,7 @@ TEST_F(GLES2DecoderWithShaderTest, Uniform1ivInvalidValidArgs) {
 TEST_F(GLES2DecoderWithShaderTest, Uniform1ivZeroCount) {
   EXPECT_CALL(*gl_, Uniform1iv(_, _, _)).Times(0);
   Uniform1iv cmd;
-  cmd.Init(program_manager()->SwizzleLocation(kUniform1Location),
+  cmd.Init(program_manager()->SwizzleLocation(kUniform1FakeLocation),
            0, shared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -2719,7 +2721,7 @@ TEST_F(GLES2DecoderWithShaderTest, GetUniformLocation) {
            kSharedMemoryId, kSharedMemoryOffset,
            kNameSize);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(program_manager()->SwizzleLocation(kUniform2Location), *result);
+  EXPECT_EQ(program_manager()->SwizzleLocation(kUniform2FakeLocation), *result);
   memcpy(name, kNonExistentName, kNonExistentNameSize);
   *result = -1;
   cmd.Init(client_program_id_,
@@ -2800,7 +2802,7 @@ TEST_F(GLES2DecoderWithShaderTest, GetUniformLocationImmediate) {
   cmd.Init(client_program_id_, kUniform2Name,
            kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, kNameSize));
-  EXPECT_EQ(program_manager()->SwizzleLocation(kUniform2Location), *result);
+  EXPECT_EQ(program_manager()->SwizzleLocation(kUniform2FakeLocation), *result);
   *result = -1;
   cmd.Init(client_program_id_, kNonExistentName,
            kSharedMemoryId, kSharedMemoryOffset);
@@ -2842,7 +2844,7 @@ TEST_F(GLES2DecoderWithShaderTest, GetUniformLocationBucket) {
   cmd.Init(client_program_id_, kBucketId,
            kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(program_manager()->SwizzleLocation(kUniform2Location), *result);
+  EXPECT_EQ(program_manager()->SwizzleLocation(kUniform2FakeLocation), *result);
   SetBucketAsCString(kBucketId, kNonExistentName);
   *result = -1;
   cmd.Init(client_program_id_, kBucketId,

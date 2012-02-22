@@ -3601,12 +3601,15 @@ TEST_F(%(test_name)s, %(name)sValidArgsCountTooLarge) {
     for arg in func.GetOriginalArgs():
       # hardcoded to match unit tests.
       if count == 0:
-        # the location of the second element of the first uniform.
-        gl_arg_strings.append(arg.GetValidGLArg(func, 2, 2))
-        arg_strings.append(arg.GetValidArg(func, 2, 2))
+        # the location of the second element of the 2nd uniform.
+        # defined in GLES2DecoderBase::SetupShaderForUniform
+        gl_arg_strings.append("3")
+        arg_strings.append(
+            "program_manager()->SwizzleLocation(ProgramManager::"
+            "ProgramInfo::GetFakeLocation(1, 1))")
       elif count == 1:
         # the number of elements that gl will be called with.
-        gl_arg_strings.append("2")
+        gl_arg_strings.append("3")
         # the number of elements requested in the command.
         arg_strings.append("5")
       else:

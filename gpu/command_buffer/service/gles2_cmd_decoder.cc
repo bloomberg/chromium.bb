@@ -982,7 +982,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // program is valid and the location exists. Adjusts count so it
   // does not overflow the uniform.
   bool PrepForSetUniformByLocation(
-      GLint location, const char* function_name, GLenum* type, GLsizei* count);
+      GLint fake_location, const char* function_name,
+      GLint* real_location, GLenum* type, GLsizei* count);
 
   // Gets the service id for any simulated backbuffer fbo.
   GLuint GetBackbufferServiceId();
@@ -1151,25 +1152,28 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   // Wrappers for glUniform1i and glUniform1iv as according to the GLES2
   // spec only these 2 functions can be used to set sampler uniforms.
-  void DoUniform1i(GLint location, GLint v0);
-  void DoUniform1iv(GLint location, GLsizei count, const GLint* value);
-  void DoUniform2iv(GLint location, GLsizei count, const GLint* value);
-  void DoUniform3iv(GLint location, GLsizei count, const GLint* value);
-  void DoUniform4iv(GLint location, GLsizei count, const GLint* value);
+  void DoUniform1i(GLint fake_location, GLint v0);
+  void DoUniform1iv(GLint fake_location, GLsizei count, const GLint* value);
+  void DoUniform2iv(GLint fake_location, GLsizei count, const GLint* value);
+  void DoUniform3iv(GLint fake_location, GLsizei count, const GLint* value);
+  void DoUniform4iv(GLint fake_location, GLsizei count, const GLint* value);
 
   // Wrappers for glUniformfv because some drivers don't correctly accept
   // bool uniforms.
-  void DoUniform1fv(GLint location, GLsizei count, const GLfloat* value);
-  void DoUniform2fv(GLint location, GLsizei count, const GLfloat* value);
-  void DoUniform3fv(GLint location, GLsizei count, const GLfloat* value);
-  void DoUniform4fv(GLint location, GLsizei count, const GLfloat* value);
+  void DoUniform1fv(GLint fake_location, GLsizei count, const GLfloat* value);
+  void DoUniform2fv(GLint fake_location, GLsizei count, const GLfloat* value);
+  void DoUniform3fv(GLint fake_location, GLsizei count, const GLfloat* value);
+  void DoUniform4fv(GLint fake_location, GLsizei count, const GLfloat* value);
 
   void DoUniformMatrix2fv(
-      GLint location, GLsizei count, GLboolean transpose, const GLfloat* value);
+      GLint fake_location, GLsizei count, GLboolean transpose,
+      const GLfloat* value);
   void DoUniformMatrix3fv(
-      GLint location, GLsizei count, GLboolean transpose, const GLfloat* value);
+      GLint fake_location, GLsizei count, GLboolean transpose,
+      const GLfloat* value);
   void DoUniformMatrix4fv(
-      GLint location, GLsizei count, GLboolean transpose, const GLfloat* value);
+      GLint fake_location, GLsizei count, GLboolean transpose,
+      const GLfloat* value);
 
   // Wrappers for glVertexAttrib??
   void DoVertexAttrib1f(GLuint index, GLfloat v0);
@@ -1329,10 +1333,10 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // a SizeResult setup to receive the result. Returns true if glGetUniform
   // should be called.
   bool GetUniformSetup(
-      GLuint program, GLint location,
+      GLuint program, GLint fake_location,
       uint32 shm_id, uint32 shm_offset,
-      error::Error* error, GLuint* service_id, void** result,
-      GLenum* result_type);
+      error::Error* error, GLint* real_location, GLuint* service_id,
+      void** result, GLenum* result_type);
 
   // Computes the estimated memory used for the backbuffer and passes it to
   // the tracing system.
@@ -4506,15 +4510,18 @@ bool GLES2DecoderImpl::CheckCurrentProgramForUniform(
 }
 
 bool GLES2DecoderImpl::PrepForSetUniformByLocation(
-    GLint location, const char* function_name, GLenum* type, GLsizei* count) {
+    GLint fake_location, const char* function_name,
+    GLint* real_location, GLenum* type, GLsizei* count) {
   DCHECK(type);
   DCHECK(count);
-  if (!CheckCurrentProgramForUniform(location, function_name)) {
+  DCHECK(real_location);
+  if (!CheckCurrentProgramForUniform(fake_location, function_name)) {
     return false;
   }
   GLint array_index = -1;
   const ProgramManager::ProgramInfo::UniformInfo* info =
-      current_program_->GetUniformInfoByLocation(location, &array_index);
+      current_program_->GetUniformInfoByFakeLocation(
+          fake_location, real_location, &array_index);
   if (!info) {
     SetGLError(GL_INVALID_OPERATION,
                (std::string(function_name) + ": unknown location").c_str());
@@ -4534,34 +4541,39 @@ bool GLES2DecoderImpl::PrepForSetUniformByLocation(
   return true;
 }
 
-void GLES2DecoderImpl::DoUniform1i(GLint location, GLint v0) {
-  if (!CheckCurrentProgramForUniform(location, "glUniform1i")) {
+void GLES2DecoderImpl::DoUniform1i(GLint fake_location, GLint v0) {
+  GLenum type = 0;
+  GLsizei count = 1;
+  GLint real_location = -1;
+  if (!PrepForSetUniformByLocation(
+      fake_location, "glUniform1iv", &real_location, &type, &count)) {
     return;
   }
-  current_program_->SetSamplers(location, 1, &v0);
-  glUniform1i(location, v0);
+  current_program_->SetSamplers(fake_location, 1, &v0);
+  glUniform1i(real_location, v0);
 }
 
 void GLES2DecoderImpl::DoUniform1iv(
-    GLint location, GLsizei count, const GLint *value) {
-  if (!CheckCurrentProgramForUniform(location, "glUniform1iv")) {
-    return;
-  }
+    GLint fake_location, GLsizei count, const GLint *value) {
   GLenum type = 0;
-  if (!PrepForSetUniformByLocation(location, "glUniform1iv", &type, &count)) {
+  GLint real_location = -1;
+  if (!PrepForSetUniformByLocation(
+      fake_location, "glUniform1iv", &real_location, &type, &count)) {
     return;
   }
   if (type == GL_SAMPLER_2D || type == GL_SAMPLER_CUBE ||
       type == GL_SAMPLER_EXTERNAL_OES) {
-    current_program_->SetSamplers(location, count, value);
+    current_program_->SetSamplers(fake_location, count, value);
   }
-  glUniform1iv(location, count, value);
+  glUniform1iv(real_location, count, value);
 }
 
 void GLES2DecoderImpl::DoUniform1fv(
-    GLint location, GLsizei count, const GLfloat* value) {
+    GLint fake_location, GLsizei count, const GLfloat* value) {
   GLenum type = 0;
-  if (!PrepForSetUniformByLocation(location, "glUniform1fv", &type, &count)) {
+  GLint real_location = -1;
+  if (!PrepForSetUniformByLocation(
+      fake_location, "glUniform1fv", &real_location, &type, &count)) {
     return;
   }
   if (type == GL_BOOL) {
@@ -4569,16 +4581,18 @@ void GLES2DecoderImpl::DoUniform1fv(
     for (GLsizei ii = 0; ii < count; ++ii) {
       temp[ii] = static_cast<GLint>(value[ii] != 0.0f);
     }
-    DoUniform1iv(location, count, temp.get());
+    DoUniform1iv(real_location, count, temp.get());
   } else {
-    glUniform1fv(location, count, value);
+    glUniform1fv(real_location, count, value);
   }
 }
 
 void GLES2DecoderImpl::DoUniform2fv(
-    GLint location, GLsizei count, const GLfloat* value) {
+    GLint fake_location, GLsizei count, const GLfloat* value) {
   GLenum type = 0;
-  if (!PrepForSetUniformByLocation(location, "glUniform2fv", &type, &count)) {
+  GLint real_location = -1;
+  if (!PrepForSetUniformByLocation(
+      fake_location, "glUniform2fv", &real_location, &type, &count)) {
     return;
   }
   if (type == GL_BOOL_VEC2) {
@@ -4587,16 +4601,18 @@ void GLES2DecoderImpl::DoUniform2fv(
     for (GLsizei ii = 0; ii < num_values; ++ii) {
       temp[ii] = static_cast<GLint>(value[ii] != 0.0f);
     }
-    glUniform2iv(location, count, temp.get());
+    glUniform2iv(real_location, count, temp.get());
   } else {
-    glUniform2fv(location, count, value);
+    glUniform2fv(real_location, count, value);
   }
 }
 
 void GLES2DecoderImpl::DoUniform3fv(
-    GLint location, GLsizei count, const GLfloat* value) {
+    GLint fake_location, GLsizei count, const GLfloat* value) {
   GLenum type = 0;
-  if (!PrepForSetUniformByLocation(location, "glUniform3fv", &type, &count)) {
+  GLint real_location = -1;
+  if (!PrepForSetUniformByLocation(
+      fake_location, "glUniform3fv", &real_location, &type, &count)) {
     return;
   }
   if (type == GL_BOOL_VEC3) {
@@ -4605,16 +4621,18 @@ void GLES2DecoderImpl::DoUniform3fv(
     for (GLsizei ii = 0; ii < num_values; ++ii) {
       temp[ii] = static_cast<GLint>(value[ii] != 0.0f);
     }
-    glUniform3iv(location, count, temp.get());
+    glUniform3iv(real_location, count, temp.get());
   } else {
-    glUniform3fv(location, count, value);
+    glUniform3fv(real_location, count, value);
   }
 }
 
 void GLES2DecoderImpl::DoUniform4fv(
-    GLint location, GLsizei count, const GLfloat* value) {
+    GLint fake_location, GLsizei count, const GLfloat* value) {
   GLenum type = 0;
-  if (!PrepForSetUniformByLocation(location, "glUniform4fv", &type, &count)) {
+  GLint real_location = -1;
+  if (!PrepForSetUniformByLocation(
+      fake_location, "glUniform4fv", &real_location, &type, &count)) {
     return;
   }
   if (type == GL_BOOL_VEC4) {
@@ -4623,67 +4641,79 @@ void GLES2DecoderImpl::DoUniform4fv(
     for (GLsizei ii = 0; ii < num_values; ++ii) {
       temp[ii] = static_cast<GLint>(value[ii] != 0.0f);
     }
-    glUniform4iv(location, count, temp.get());
+    glUniform4iv(real_location, count, temp.get());
   } else {
-    glUniform4fv(location, count, value);
+    glUniform4fv(real_location, count, value);
   }
 }
 
 void GLES2DecoderImpl::DoUniform2iv(
-    GLint location, GLsizei count, const GLint* value) {
+    GLint fake_location, GLsizei count, const GLint* value) {
   GLenum type = 0;
-  if (!PrepForSetUniformByLocation(location, "glUniform2iv", &type, &count)) {
+  GLint real_location = -1;
+  if (!PrepForSetUniformByLocation(
+      fake_location, "glUniform2iv", &real_location, &type, &count)) {
     return;
   }
-  glUniform2iv(location, count, value);
+  glUniform2iv(real_location, count, value);
 }
 
 void GLES2DecoderImpl::DoUniform3iv(
-    GLint location, GLsizei count, const GLint* value) {
+    GLint fake_location, GLsizei count, const GLint* value) {
   GLenum type = 0;
-  if (!PrepForSetUniformByLocation(location, "glUniform3iv", &type, &count)) {
+  GLint real_location = -1;
+  if (!PrepForSetUniformByLocation(
+      fake_location, "glUniform3iv", &real_location, &type, &count)) {
     return;
   }
-  glUniform3iv(location, count, value);
+  glUniform3iv(real_location, count, value);
 }
 
 void GLES2DecoderImpl::DoUniform4iv(
-    GLint location, GLsizei count, const GLint* value) {
+    GLint fake_location, GLsizei count, const GLint* value) {
   GLenum type = 0;
-  if (!PrepForSetUniformByLocation(location, "glUniform4iv", &type, &count)) {
+  GLint real_location = -1;
+  if (!PrepForSetUniformByLocation(
+      fake_location, "glUniform4iv", &real_location, &type, &count)) {
     return;
   }
-  glUniform4iv(location, count, value);
+  glUniform4iv(real_location, count, value);
 }
 
 void GLES2DecoderImpl::DoUniformMatrix2fv(
-  GLint location, GLsizei count, GLboolean transpose, const GLfloat* value) {
+    GLint fake_location, GLsizei count, GLboolean transpose,
+    const GLfloat* value) {
   GLenum type = 0;
+  GLint real_location = -1;
   if (!PrepForSetUniformByLocation(
-      location, "glUniformMatrix2fv", &type, &count)) {
+      fake_location, "glUniformMatrix2fv", &real_location, &type, &count)) {
     return;
   }
-  glUniformMatrix2fv(location, count, transpose, value);
+  glUniformMatrix2fv(real_location, count, transpose, value);
 }
 
 void GLES2DecoderImpl::DoUniformMatrix3fv(
-  GLint location, GLsizei count, GLboolean transpose, const GLfloat* value) {
+    GLint fake_location, GLsizei count, GLboolean transpose,
+    const GLfloat* value) {
   GLenum type = 0;
+  GLint real_location = -1;
   if (!PrepForSetUniformByLocation(
-      location, "glUniformMatrix3fv", &type, &count)) {
+      fake_location, "glUniformMatrix3fv", &real_location, &type, &count)) {
     return;
   }
-  glUniformMatrix3fv(location, count, transpose, value);
+  glUniformMatrix3fv(real_location, count, transpose, value);
 }
 
 void GLES2DecoderImpl::DoUniformMatrix4fv(
-  GLint location, GLsizei count, GLboolean transpose, const GLfloat* value) {
+    GLint fake_location, GLsizei count, GLboolean transpose,
+    const GLfloat* value) {
   GLenum type = 0;
+  GLint real_location = -1;
   if (!PrepForSetUniformByLocation(
-      location, "glUniformMatrix4fv", &type, &count)) {
+      fake_location, "glUniformMatrix4fv", &real_location, &type, &count)) {
     return;
   }
-  glUniformMatrix4fv(location, count, transpose, value);
+  glUniformMatrix4fv(real_location, count, transpose, value);
 }
 
 void GLES2DecoderImpl::DoUseProgram(GLuint program) {
@@ -6256,7 +6286,7 @@ error::Error GLES2DecoderImpl::GetUniformLocationHelper(
     return error::kGenericError;
   }
   *location = program_manager()->SwizzleLocation(
-      info->GetUniformLocation(name_str));
+      info->GetUniformFakeLocation(name_str));
   return error::kNoError;
 }
 
@@ -7236,14 +7266,15 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribPointerv(
 }
 
 bool GLES2DecoderImpl::GetUniformSetup(
-    GLuint program, GLint location,
+    GLuint program, GLint fake_location,
     uint32 shm_id, uint32 shm_offset,
-    error::Error* error, GLuint* service_id, void** result_pointer,
-    GLenum* result_type) {
+    error::Error* error, GLint* real_location,
+    GLuint* service_id, void** result_pointer, GLenum* result_type) {
   DCHECK(error);
   DCHECK(service_id);
   DCHECK(result_pointer);
   DCHECK(result_type);
+  DCHECK(real_location);
   *error = error::kNoError;
   // Make sure we have enough room for the result on failure.
   SizedResult<GLint>* result;
@@ -7269,7 +7300,8 @@ bool GLES2DecoderImpl::GetUniformSetup(
   *service_id = info->service_id();
   GLint array_index = -1;
   const ProgramManager::ProgramInfo::UniformInfo* uniform_info =
-      info->GetUniformInfoByLocation(location, &array_index);
+      info->GetUniformInfoByFakeLocation(
+          fake_location, real_location, &array_index);
   if (!uniform_info) {
     // No such location.
     SetGLError(GL_INVALID_OPERATION, "glGetUniform: unknown location");
@@ -7295,16 +7327,17 @@ bool GLES2DecoderImpl::GetUniformSetup(
 error::Error GLES2DecoderImpl::HandleGetUniformiv(
     uint32 immediate_data_size, const gles2::GetUniformiv& c) {
   GLuint program = c.program;
-  GLint location = program_manager()->UnswizzleLocation(c.location);
+  GLint fake_location = program_manager()->UnswizzleLocation(c.location);
   GLuint service_id;
   GLenum result_type;
+  GLint real_location = -1;
   Error error;
   void* result;
   if (GetUniformSetup(
-      program, location, c.params_shm_id, c.params_shm_offset,
-      &error, &service_id, &result, &result_type)) {
+      program, fake_location, c.params_shm_id, c.params_shm_offset,
+      &error, &real_location, &service_id, &result, &result_type)) {
     glGetUniformiv(
-        service_id, location,
+        service_id, real_location,
         static_cast<gles2::GetUniformiv::Result*>(result)->GetData());
   }
   return error;
@@ -7313,26 +7346,28 @@ error::Error GLES2DecoderImpl::HandleGetUniformiv(
 error::Error GLES2DecoderImpl::HandleGetUniformfv(
     uint32 immediate_data_size, const gles2::GetUniformfv& c) {
   GLuint program = c.program;
-  GLint location = program_manager()->UnswizzleLocation(c.location);
+  GLint fake_location = program_manager()->UnswizzleLocation(c.location);
   GLuint service_id;
+  GLint real_location = -1;
   Error error;
   typedef gles2::GetUniformfv::Result Result;
   Result* result;
   GLenum result_type;
   if (GetUniformSetup(
-      program, location, c.params_shm_id, c.params_shm_offset,
-      &error, &service_id, reinterpret_cast<void**>(&result), &result_type)) {
+      program, fake_location, c.params_shm_id, c.params_shm_offset,
+      &error, &real_location, &service_id,
+      reinterpret_cast<void**>(&result), &result_type)) {
     if (result_type == GL_BOOL || result_type == GL_BOOL_VEC2 ||
         result_type == GL_BOOL_VEC3 || result_type == GL_BOOL_VEC4) {
       GLsizei num_values = result->GetNumResults();
       scoped_array<GLint> temp(new GLint[num_values]);
-      glGetUniformiv(service_id, location, temp.get());
+      glGetUniformiv(service_id, real_location, temp.get());
       GLfloat* dst = result->GetData();
       for (GLsizei ii = 0; ii < num_values; ++ii) {
         dst[ii] = (temp[ii] != 0);
       }
     } else {
-      glGetUniformfv(service_id, location, result->GetData());
+      glGetUniformfv(service_id, real_location, result->GetData());
     }
   }
   return error;

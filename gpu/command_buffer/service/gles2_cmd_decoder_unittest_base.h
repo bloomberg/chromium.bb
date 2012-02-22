@@ -101,10 +101,14 @@ class GLES2DecoderTestBase : public testing::Test {
   static const GLint kUniform1Size = 1;
   static const GLint kUniform2Size = 3;
   static const GLint kUniform3Size = 2;
-  static const GLint kUniform1Location = 3;
-  static const GLint kUniform2Location = 10;
-  static const GLint kUniform2ElementLocation = 12;
-  static const GLint kUniform3Location = 20;
+  static const GLint kUniform1RealLocation = 3;
+  static const GLint kUniform2RealLocation = 10;
+  static const GLint kUniform2ElementRealLocation = 12;
+  static const GLint kUniform3RealLocation = 20;
+  static const GLint kUniform1FakeLocation = 0;               // These are
+  static const GLint kUniform2FakeLocation = 1;               // hardcoded
+  static const GLint kUniform2ElementFakeLocation = 0x10001;  // to match
+  static const GLint kUniform3FakeLocation = 2;               // ProgramManager.
   static const GLenum kUniform1Type = GL_SAMPLER_2D;
   static const GLenum kUniform2Type = GL_INT_VEC2;
   static const GLenum kUniform3Type = GL_FLOAT_VEC3;
@@ -235,7 +239,8 @@ class GLES2DecoderTestBase : public testing::Test {
     const char* name;
     GLint size;
     GLenum type;
-    GLint location;
+    GLint fake_location;
+    GLint real_location;
   };
 
   void SetupShader(

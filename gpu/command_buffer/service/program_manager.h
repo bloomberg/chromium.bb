@@ -35,7 +35,9 @@ class ProgramManager {
     static const int kMaxAttachedShaders = 2;
 
     struct UniformInfo {
-      UniformInfo(GLsizei _size, GLenum _type, const std::string& _name);
+      UniformInfo(
+          GLsizei _size, GLenum _type, GLint _fake_location_base,
+          const std::string& _name);
       ~UniformInfo();
 
       bool IsSampler() const {
@@ -45,6 +47,7 @@ class ProgramManager {
 
       GLsizei size;
       GLenum type;
+      GLint fake_location_base;
       bool is_array;
       std::string name;
       std::vector<GLint> element_locations;
@@ -104,12 +107,12 @@ class ProgramManager {
          &uniform_infos_[index] : NULL;
     }
 
-    // Gets the location of a uniform by name.
-    GLint GetUniformLocation(const std::string& name) const;
+    // Gets the fake location of a uniform by name.
+    GLint GetUniformFakeLocation(const std::string& name) const;
 
     // Gets the UniformInfo of a uniform by location.
-    const UniformInfo* GetUniformInfoByLocation(
-        GLint location, GLint* array_index) const;
+    const UniformInfo* GetUniformInfoByFakeLocation(
+        GLint fake_location, GLint* real_location, GLint* array_index) const;
 
     // Gets all the program info.
     void GetProgramInfo(
@@ -118,7 +121,7 @@ class ProgramManager {
     // Sets the sampler values for a uniform.
     // This is safe to call for any location. If the location is not
     // a sampler uniform nothing will happen.
-    bool SetSamplers(GLint location, GLsizei count, const GLint* value);
+    bool SetSamplers(GLint fake_location, GLsizei count, const GLint* value);
 
     bool IsDeleted() const {
       return service_id_ == 0;
@@ -150,23 +153,14 @@ class ProgramManager {
       return use_count_ != 0;
     }
 
+    static inline GLint GetFakeLocation(
+        GLint fake_base_location, GLint element_index) {
+      return fake_base_location | element_index << 16;
+    }
+
    private:
     friend class base::RefCounted<ProgramInfo>;
     friend class ProgramManager;
-
-    // Info for each location
-    struct LocationInfo {
-      LocationInfo()
-          : uniform_index(-1),
-            array_index(-1) {
-      }
-      LocationInfo(GLint _uniform_index, GLint _array_index)
-          : uniform_index(_uniform_index),
-            array_index(_array_index) {
-      }
-      GLint uniform_index;  // index of UniformInfo in uniform_infos_.
-      GLint array_index;  // index of location when used in array.
-    };
 
     ~ProgramInfo();
 
@@ -202,14 +196,24 @@ class ProgramManager {
     void UpdateLogInfo();
 
     const UniformInfo* AddUniformInfo(
-        GLsizei size, GLenum type, GLint location, const std::string& name,
-        const std::string& original_name);
+        GLsizei size, GLenum type, GLint location,
+        const std::string& name, const std::string& original_name);
 
     void GetCorrectedVariableInfo(
         bool use_uniforms, const std::string& name, std::string* corrected_name,
         std::string* original_name, GLsizei* size, GLenum* type) const;
 
     void DetachShaders(ShaderManager* manager);
+
+    static inline GLint GetUniformInfoIndexFromFakeLocation(
+        GLint fake_location) {
+      return fake_location & 0xFFFF;
+    }
+
+    static inline GLint GetArrayElementIndexFromFakeLocation(
+        GLint fake_location) {
+      return (fake_location >> 16) & 0xFFFF;
+    }
 
     int use_count_;
 
@@ -225,9 +229,6 @@ class ProgramManager {
 
     // Uniform info by index.
     UniformInfoVector uniform_infos_;
-
-    // Info for each location.
-    std::vector<LocationInfo> location_infos_;
 
     // The indices of the uniforms that are samplers.
     SamplerIndices sampler_indices_;

@@ -450,9 +450,11 @@ void GLES2DecoderTestBase::SetupExpectationsForFramebufferClearingMulti(
 void GLES2DecoderTestBase::SetupShaderForUniform() {
   static AttribInfo attribs[] = {
     { "foo", 1, GL_FLOAT, 1, },
+    { "goo", 1, GL_FLOAT, 2, },
   };
   static UniformInfo uniforms[] = {
-    { "bar", 3, GL_INT, 1, },
+    { "bar", 1, GL_INT, 0, 2, },
+    { "car", 4, GL_INT, 1, 1, },
   };
   const GLuint kClientVertexShaderId = 5001;
   const GLuint kServiceVertexShaderId = 6001;
@@ -841,10 +843,14 @@ const GLint GLES2DecoderTestBase::kMaxUniformLength;
 const GLint GLES2DecoderTestBase::kUniform1Size;
 const GLint GLES2DecoderTestBase::kUniform2Size;
 const GLint GLES2DecoderTestBase::kUniform3Size;
-const GLint GLES2DecoderTestBase::kUniform1Location;
-const GLint GLES2DecoderTestBase::kUniform2Location;
-const GLint GLES2DecoderTestBase::kUniform2ElementLocation;
-const GLint GLES2DecoderTestBase::kUniform3Location;
+const GLint GLES2DecoderTestBase::kUniform1RealLocation;
+const GLint GLES2DecoderTestBase::kUniform2RealLocation;
+const GLint GLES2DecoderTestBase::kUniform2ElementRealLocation;
+const GLint GLES2DecoderTestBase::kUniform3RealLocation;
+const GLint GLES2DecoderTestBase::kUniform1FakeLocation;
+const GLint GLES2DecoderTestBase::kUniform2FakeLocation;
+const GLint GLES2DecoderTestBase::kUniform2ElementFakeLocation;
+const GLint GLES2DecoderTestBase::kUniform3FakeLocation;
 const GLenum GLES2DecoderTestBase::kUniform1Type;
 const GLenum GLES2DecoderTestBase::kUniform2Type;
 const GLenum GLES2DecoderTestBase::kUniform3Type;
@@ -869,9 +875,12 @@ void GLES2DecoderTestBase::SetupDefaultProgram() {
       { kAttrib3Name, kAttrib3Size, kAttrib3Type, kAttrib3Location, },
     };
     static UniformInfo uniforms[] = {
-      { kUniform1Name, kUniform1Size, kUniform1Type, kUniform1Location, },
-      { kUniform2Name, kUniform2Size, kUniform2Type, kUniform2Location, },
-      { kUniform3Name, kUniform3Size, kUniform3Type, kUniform3Location, },
+      { kUniform1Name, kUniform1Size, kUniform1Type,
+        kUniform1FakeLocation, kUniform1RealLocation },
+      { kUniform2Name, kUniform2Size, kUniform2Type,
+        kUniform2FakeLocation, kUniform2RealLocation },
+      { kUniform3Name, kUniform3Size, kUniform3Type,
+        kUniform3FakeLocation, kUniform3RealLocation },
     };
     SetupShader(attribs, arraysize(attribs), uniforms, arraysize(uniforms),
                 client_program_id_, kServiceProgramId,
@@ -897,9 +906,12 @@ void GLES2DecoderTestBase::SetupCubemapProgram() {
       { kAttrib3Name, kAttrib3Size, kAttrib3Type, kAttrib3Location, },
     };
     static UniformInfo uniforms[] = {
-      { kUniform1Name, kUniform1Size, kUniformCubemapType, kUniform1Location, },
-      { kUniform2Name, kUniform2Size, kUniform2Type, kUniform2Location, },
-      { kUniform3Name, kUniform3Size, kUniform3Type, kUniform3Location, },
+      { kUniform1Name, kUniform1Size, kUniformCubemapType,
+        kUniform1FakeLocation, kUniform1RealLocation, },
+      { kUniform2Name, kUniform2Size, kUniform2Type,
+        kUniform2FakeLocation, kUniform2RealLocation, },
+      { kUniform3Name, kUniform3Size, kUniform3Type,
+        kUniform3FakeLocation, kUniform3RealLocation, },
     };
     SetupShader(attribs, arraysize(attribs), uniforms, arraysize(uniforms),
                 client_program_id_, kServiceProgramId,
@@ -1006,7 +1018,7 @@ void GLES2DecoderTestBase::SetupShader(
       if (!ProgramManager::IsInvalidPrefix(info.name, strlen(info.name))) {
         EXPECT_CALL(*gl_, GetUniformLocation(program_service_id,
                                              StrEq(info.name)))
-            .WillOnce(Return(info.location))
+            .WillOnce(Return(info.real_location))
             .RetiresOnSaturation();
         if (info.size > 1) {
           std::string base_name = info.name;
@@ -1019,7 +1031,7 @@ void GLES2DecoderTestBase::SetupShader(
                 std::string(base_name) + "[" + base::IntToString(jj) + "]");
             EXPECT_CALL(*gl_, GetUniformLocation(program_service_id,
                                                  StrEq(element_name)))
-                .WillOnce(Return(info.location + jj * 2))
+                .WillOnce(Return(info.real_location + jj * 2))
                 .RetiresOnSaturation();
           }
         }

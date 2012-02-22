@@ -751,12 +751,13 @@ TEST_F(GLES2DecoderTest2, Uniform1fvInvalidArgs2_1) {
 TEST_F(GLES2DecoderTest2, Uniform1fvValidArgsCountTooLarge) {
   EXPECT_CALL(
       *gl_, Uniform1fv(
-          3, 2, reinterpret_cast<const GLfloat*>(shared_memory_address_)));
+          3, 3, reinterpret_cast<const GLfloat*>(shared_memory_address_)));
   SpecializedSetup<Uniform1fv, 0>(true);
   Uniform1fv cmd;
   cmd.Init(
       program_manager()->SwizzleLocation(
-          3), 5, shared_memory_id_, shared_memory_offset_);
+          ProgramManager::ProgramInfo::GetFakeLocation(
+              1, 1)), 5, shared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -833,12 +834,13 @@ TEST_F(GLES2DecoderTest2, Uniform2fvInvalidArgs2_1) {
 TEST_F(GLES2DecoderTest2, Uniform2fvValidArgsCountTooLarge) {
   EXPECT_CALL(
       *gl_, Uniform2fv(
-          3, 2, reinterpret_cast<const GLfloat*>(shared_memory_address_)));
+          3, 3, reinterpret_cast<const GLfloat*>(shared_memory_address_)));
   SpecializedSetup<Uniform2fv, 0>(true);
   Uniform2fv cmd;
   cmd.Init(
       program_manager()->SwizzleLocation(
-          3), 5, shared_memory_id_, shared_memory_offset_);
+          ProgramManager::ProgramInfo::GetFakeLocation(
+              1, 1)), 5, shared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -912,12 +914,13 @@ TEST_F(GLES2DecoderTest2, Uniform2ivInvalidArgs2_1) {
 TEST_F(GLES2DecoderTest2, Uniform2ivValidArgsCountTooLarge) {
   EXPECT_CALL(
       *gl_, Uniform2iv(
-          3, 2, reinterpret_cast<const GLint*>(shared_memory_address_)));
+          3, 3, reinterpret_cast<const GLint*>(shared_memory_address_)));
   SpecializedSetup<Uniform2iv, 0>(true);
   Uniform2iv cmd;
   cmd.Init(
       program_manager()->SwizzleLocation(
-          3), 5, shared_memory_id_, shared_memory_offset_);
+          ProgramManager::ProgramInfo::GetFakeLocation(
+              1, 1)), 5, shared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -991,12 +994,13 @@ TEST_F(GLES2DecoderTest2, Uniform3fvInvalidArgs2_1) {
 TEST_F(GLES2DecoderTest2, Uniform3fvValidArgsCountTooLarge) {
   EXPECT_CALL(
       *gl_, Uniform3fv(
-          3, 2, reinterpret_cast<const GLfloat*>(shared_memory_address_)));
+          3, 3, reinterpret_cast<const GLfloat*>(shared_memory_address_)));
   SpecializedSetup<Uniform3fv, 0>(true);
   Uniform3fv cmd;
   cmd.Init(
       program_manager()->SwizzleLocation(
-          3), 5, shared_memory_id_, shared_memory_offset_);
+          ProgramManager::ProgramInfo::GetFakeLocation(
+              1, 1)), 5, shared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -1070,12 +1074,13 @@ TEST_F(GLES2DecoderTest2, Uniform3ivInvalidArgs2_1) {
 TEST_F(GLES2DecoderTest2, Uniform3ivValidArgsCountTooLarge) {
   EXPECT_CALL(
       *gl_, Uniform3iv(
-          3, 2, reinterpret_cast<const GLint*>(shared_memory_address_)));
+          3, 3, reinterpret_cast<const GLint*>(shared_memory_address_)));
   SpecializedSetup<Uniform3iv, 0>(true);
   Uniform3iv cmd;
   cmd.Init(
       program_manager()->SwizzleLocation(
-          3), 5, shared_memory_id_, shared_memory_offset_);
+          ProgramManager::ProgramInfo::GetFakeLocation(
+              1, 1)), 5, shared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -1149,12 +1154,13 @@ TEST_F(GLES2DecoderTest2, Uniform4fvInvalidArgs2_1) {
 TEST_F(GLES2DecoderTest2, Uniform4fvValidArgsCountTooLarge) {
   EXPECT_CALL(
       *gl_, Uniform4fv(
-          3, 2, reinterpret_cast<const GLfloat*>(shared_memory_address_)));
+          3, 3, reinterpret_cast<const GLfloat*>(shared_memory_address_)));
   SpecializedSetup<Uniform4fv, 0>(true);
   Uniform4fv cmd;
   cmd.Init(
       program_manager()->SwizzleLocation(
-          3), 5, shared_memory_id_, shared_memory_offset_);
+          ProgramManager::ProgramInfo::GetFakeLocation(
+              1, 1)), 5, shared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -1228,12 +1234,13 @@ TEST_F(GLES2DecoderTest2, Uniform4ivInvalidArgs2_1) {
 TEST_F(GLES2DecoderTest2, Uniform4ivValidArgsCountTooLarge) {
   EXPECT_CALL(
       *gl_, Uniform4iv(
-          3, 2, reinterpret_cast<const GLint*>(shared_memory_address_)));
+          3, 3, reinterpret_cast<const GLint*>(shared_memory_address_)));
   SpecializedSetup<Uniform4iv, 0>(true);
   Uniform4iv cmd;
   cmd.Init(
       program_manager()->SwizzleLocation(
-          3), 5, shared_memory_id_, shared_memory_offset_);
+          ProgramManager::ProgramInfo::GetFakeLocation(
+              1, 1)), 5, shared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -1311,13 +1318,14 @@ TEST_F(GLES2DecoderTest2, UniformMatrix2fvInvalidArgs3_1) {
 TEST_F(GLES2DecoderTest2, UniformMatrix2fvValidArgsCountTooLarge) {
   EXPECT_CALL(
       *gl_, UniformMatrix2fv(
-          3, 2, false, reinterpret_cast<const GLfloat*>(
+          3, 3, false, reinterpret_cast<const GLfloat*>(
               shared_memory_address_)));
   SpecializedSetup<UniformMatrix2fv, 0>(true);
   UniformMatrix2fv cmd;
   cmd.Init(
       program_manager()->SwizzleLocation(
-          3), 5, false, shared_memory_id_, shared_memory_offset_);
+          ProgramManager::ProgramInfo::GetFakeLocation(
+              1, 1)), 5, false, shared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -1408,13 +1416,14 @@ TEST_F(GLES2DecoderTest2, UniformMatrix3fvInvalidArgs3_1) {
 TEST_F(GLES2DecoderTest2, UniformMatrix3fvValidArgsCountTooLarge) {
   EXPECT_CALL(
       *gl_, UniformMatrix3fv(
-          3, 2, false, reinterpret_cast<const GLfloat*>(
+          3, 3, false, reinterpret_cast<const GLfloat*>(
               shared_memory_address_)));
   SpecializedSetup<UniformMatrix3fv, 0>(true);
   UniformMatrix3fv cmd;
   cmd.Init(
       program_manager()->SwizzleLocation(
-          3), 5, false, shared_memory_id_, shared_memory_offset_);
+          ProgramManager::ProgramInfo::GetFakeLocation(
+              1, 1)), 5, false, shared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -1505,13 +1514,14 @@ TEST_F(GLES2DecoderTest2, UniformMatrix4fvInvalidArgs3_1) {
 TEST_F(GLES2DecoderTest2, UniformMatrix4fvValidArgsCountTooLarge) {
   EXPECT_CALL(
       *gl_, UniformMatrix4fv(
-          3, 2, false, reinterpret_cast<const GLfloat*>(
+          3, 3, false, reinterpret_cast<const GLfloat*>(
               shared_memory_address_)));
   SpecializedSetup<UniformMatrix4fv, 0>(true);
   UniformMatrix4fv cmd;
   cmd.Init(
       program_manager()->SwizzleLocation(
-          3), 5, false, shared_memory_id_, shared_memory_offset_);
+          ProgramManager::ProgramInfo::GetFakeLocation(
+              1, 1)), 5, false, shared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
