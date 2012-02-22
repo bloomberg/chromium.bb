@@ -6,9 +6,7 @@
 Import('env')
 
 # Exception handling support is not implemented everywhere yet.
-is_broken = not (env.Bit('host_linux') or
-                 (env.Bit('host_windows') and env.Bit('build_x86_32')) or
-                 (env.Bit('host_mac') and env.Bit('build_x86_32')))
+is_broken = env.Bit('host_windows') and env.Bit('build_x86_64')
 
 test_args = {'sel_ldr_flags': ['-e'],
              'declares_exit_status': True,
@@ -26,15 +24,22 @@ else:
   helper_files = ['crash_at_known_address_x86.S',
                   'direction_flag_x86.S',
                   'handler_wrapper_x86.S']
+exception_test_objs = env.ComponentObject(['exception_test.c'] + helper_files)
 exception_test = env.ComponentProgram(
-    'exception_test', ['exception_test.c'] + helper_files,
-    EXTRA_LIBS=['${NONIRT_LIBS}', '${PTHREAD_LIBS}'])
+    'exception_test', exception_test_objs,
+    EXTRA_LIBS=['${NONIRT_LIBS}', '${PTHREAD_LIBS}', 'testrunner'])
 
 node = env.CommandSelLdrTestNacl(
     'exception_test.out', exception_test, **test_args)
 env.AddNodeToTestSuite(
     node, ['small_tests', 'exception_tests'],
     'run_exception_test', is_broken=is_broken)
+
+if env.Bit('irt'):
+  exception_browser_test = env.ComponentProgram(
+      'exception_browser_test_%s' % env.get('TARGET_FULLARCH'),
+      exception_test_objs,
+      EXTRA_LIBS=['testrunner_browser', '${PPAPI_LIBS}'])
 
 
 exception_crash_test = env.ComponentProgram(

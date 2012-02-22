@@ -15,6 +15,7 @@
 #include <sys/nacl_syscalls.h>
 
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
+#include "native_client/tests/inbrowser_test_runner/test_runner.h"
 
 
 typedef void (*handler_func_t)(int prog_ctr, int stack_ptr);
@@ -383,7 +384,7 @@ void run_test(const char *test_name, void (*test_func)(void)) {
 
 #define RUN_TEST(test_func) (run_test(#test_func, test_func))
 
-int main() {
+int TestMain() {
   RUN_TEST(test_exceptions_minimally);
   RUN_TEST(test_exception_stack_alignments);
   RUN_TEST(test_getting_previous_handler);
@@ -403,4 +404,8 @@ int main() {
 
   fprintf(stderr, "** intended_exit_status=0\n");
   return 0;
+}
+
+int main() {
+  return RunTests(TestMain);
 }

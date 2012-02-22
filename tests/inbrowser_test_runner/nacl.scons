@@ -36,6 +36,14 @@ if (env.Bit('nacl_static_link') and
         '${SCONSTRUCT_DIR}/tests/dynamic_code_loading/dynamic_modify_test.nmf')
     exe_list.append('dynamic_modify_browser_test')
 
+# Exception handling support is not implemented everywhere yet.
+if (not env.Bit('disable_dynamic_plugin_loading') and
+    not (env.Bit('host_windows') and env.Bit('build_x86_64'))):
+  nmf_list.append(
+      '${SCONSTRUCT_DIR}/tests/exception_test/exception_browser_test.nmf')
+  exe_list.append('exception_browser_test')
+  env['ENV']['NACL_UNTRUSTED_EXCEPTION_HANDLING'] = '1'
+
 
 test_files = ([env.File('${STAGING_DIR}/nacltest.js')] +
               [env.File('${STAGING_DIR}/%s_${TARGET_FULLARCH}${PROGSUFFIX}'
