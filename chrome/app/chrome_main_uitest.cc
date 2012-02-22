@@ -21,7 +21,7 @@ typedef UITest ChromeMainTest;
 TEST_F(ChromeMainTest, SecondLaunch) {
   include_testing_id_ = false;
 
-  ASSERT_TRUE(LaunchAnotherBrowserBlockUntilClosed(
+  ASSERT_TRUE(LaunchAnotherBrowserNoUrlArg(
                   CommandLine(CommandLine::NO_PROGRAM)));
 
   ASSERT_TRUE(automation()->WaitForWindowCountToBecome(2));

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,9 +41,23 @@ class SessionRestoreUITest : public UITest {
 
     clear_profile_ = false;
 
+    launch_arguments_ = CommandLine(launch_arguments_.GetProgram());
+
     launch_arguments_.AppendSwitchASCII(switches::kRestoreLastSession,
                                         base::IntToString(expected_tab_count));
+
+    // When restoring, we don't want the URL argument which would otherwise be
+    // added during SetUp. So temporarily clear the homepage, then restore it
+    // after SetUp is done.
+    std::string homepage_original;
+    std::swap(homepage_original, homepage_);
+
     UITest::SetUp();
+
+    std::swap(homepage_original, homepage_);
+
+    // However, we *do* want the --homepage switch, so add it manually here
+    launch_arguments_.AppendSwitchASCII(switches::kHomePage, homepage_);
   }
 
   void CloseWindow(int window_index, int initial_count) {
