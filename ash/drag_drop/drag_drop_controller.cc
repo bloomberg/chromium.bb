@@ -52,7 +52,8 @@ DragDropController::~DragDropController() {
 }
 
 int DragDropController::StartDragAndDrop(const ui::OSExchangeData& data,
-                                          int operation) {
+                                         const gfx::Point& root_location,
+                                         int operation) {
   DCHECK(!drag_drop_in_progress_);
   aura::Window* capture_window = Shell::GetRootWindow()->capture_window();
   if (capture_window)
@@ -61,7 +62,6 @@ int DragDropController::StartDragAndDrop(const ui::OSExchangeData& data,
 
   drag_data_ = &data;
   drag_operation_ = operation;
-  gfx::Point location = Shell::GetRootWindow()->last_mouse_location();
   const ui::OSExchangeDataProviderAura& provider =
       static_cast<const ui::OSExchangeDataProviderAura&>(data.provider());
   provider.WriteDataToClipboard(
@@ -69,17 +69,19 @@ int DragDropController::StartDragAndDrop(const ui::OSExchangeData& data,
 
   drag_image_.reset(new DragImageView);
   drag_image_->SetImage(provider.drag_image());
-  drag_image_->SetScreenBounds(gfx::Rect(location.Add(kDragDropWidgetOffset),
-      drag_image_->GetPreferredSize()));
+  drag_image_->SetScreenBounds(gfx::Rect(
+        root_location.Add(kDragDropWidgetOffset),
+        drag_image_->GetPreferredSize()));
   drag_image_->SetWidgetVisible(true);
 
   dragged_window_ = NULL;
-  drag_start_location_ = Shell::GetRootWindow()->last_mouse_location();
+  drag_start_location_ = root_location;
 
 #if !defined(OS_MACOSX)
   if (should_block_during_drag_drop_) {
-    MessageLoopForUI::current()->RunWithDispatcher(
-        Shell::GetRootWindow()->GetDispatcher());
+    MessageLoopForUI* loop = MessageLoopForUI::current();
+    MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
+    loop->RunWithDispatcher(Shell::GetRootWindow()->GetDispatcher());
   }
 #endif  // !defined(OS_MACOSX)
 
@@ -87,7 +89,7 @@ int DragDropController::StartDragAndDrop(const ui::OSExchangeData& data,
 }
 
 void DragDropController::DragUpdate(aura::Window* target,
-                                    const aura::MouseEvent& event) {
+                                    const aura::LocatedEvent& event) {
   aura::client::DragDropDelegate* delegate = NULL;
   if (target != dragged_window_) {
     if (dragged_window_) {
@@ -119,13 +121,13 @@ void DragDropController::DragUpdate(aura::Window* target,
 
   DCHECK(drag_image_.get());
   if (drag_image_->visible()) {
-    drag_image_->SetScreenPosition(Shell::GetRootWindow()->
-        last_mouse_location().Add(kDragDropWidgetOffset));
+    drag_image_->SetScreenPosition(
+        event.root_location().Add(kDragDropWidgetOffset));
   }
 }
 
 void DragDropController::Drop(aura::Window* target,
-                              const aura::MouseEvent& event) {
+                              const aura::LocatedEvent& event) {
   Shell::GetRootWindow()->SetCursor(aura::kCursorPointer);
   aura::client::DragDropDelegate* delegate = NULL;
   DCHECK(target == dragged_window_);
@@ -195,7 +197,23 @@ bool DragDropController::PreHandleMouseEvent(aura::Window* target,
 ui::TouchStatus DragDropController::PreHandleTouchEvent(
     aura::Window* target,
     aura::TouchEvent* event) {
-  return ui::TOUCH_STATUS_UNKNOWN;
+  // TODO(sad): Also check for the touch-id.
+  if (!drag_drop_in_progress_)
+    return ui::TOUCH_STATUS_UNKNOWN;
+  switch (event->type()) {
+    case ui::ET_TOUCH_MOVED:
+      DragUpdate(target, *event);
+      break;
+    case ui::ET_TOUCH_RELEASED:
+      Drop(target, *event);
+      break;
+    case ui::ET_TOUCH_CANCELLED:
+      DragCancel();
+      break;
+    default:
+      return ui::TOUCH_STATUS_UNKNOWN;
+  }
+  return ui::TOUCH_STATUS_CONTINUE;
 }
 
 ui::GestureStatus DragDropController::PreHandleGestureEvent(

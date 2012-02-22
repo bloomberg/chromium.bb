@@ -234,6 +234,10 @@ class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher {
   // to show/hide submenus and update state_.
   void SetSelection(MenuItemView* menu_item, int types);
 
+  void SetSelectionOnPointerDown(SubmenuView* source,
+                                 const LocatedEvent& event);
+  void StartDrag(SubmenuView* source, const gfx::Point& location);
+
 #if defined(OS_WIN)
   // Dispatcher method. This returns true if the menu was canceled, or
   // if the message is such that the menu should be closed.
@@ -397,10 +401,10 @@ class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher {
   // the title. Returns true if a match was selected and the menu should exit.
   bool SelectByChar(char16 key);
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // If there is a window at the location of the event, a new mouse event is
-  // generated and posted to it.
-  void RepostEvent(SubmenuView* source, const MouseEvent& event);
+  // generated and posted to it at the given location.
+  void RepostEvent(SubmenuView* source, const LocatedEvent& event);
 #endif
 
   // Sets the drop target to new_item.

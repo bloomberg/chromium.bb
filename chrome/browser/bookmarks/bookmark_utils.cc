@@ -356,7 +356,7 @@ void DragBookmarks(Profile* profile,
 
   views::Widget* widget = views::Widget::GetWidgetForNativeView(view);
   if (widget) {
-    widget->RunShellDrag(NULL, data,
+    widget->RunShellDrag(NULL, data, gfx::Point(),
         ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_MOVE |
         ui::DragDropTypes::DRAG_LINK);
   }

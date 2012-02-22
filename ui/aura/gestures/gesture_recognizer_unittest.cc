@@ -34,7 +34,6 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         pinch_update_(false),
         pinch_end_(false),
         long_press_(false),
-
         scroll_x_(0),
         scroll_y_(0) {
   }

@@ -125,19 +125,20 @@ class TestDragDropController : public internal::DragDropController {
 
  private:
   int StartDragAndDrop(const ui::OSExchangeData& data,
+                       const gfx::Point& location,
                        int operation) OVERRIDE {
     drag_start_received_ = true;
     data.GetString(&drag_string_);
-    return DragDropController::StartDragAndDrop(data, operation);
+    return DragDropController::StartDragAndDrop(data, location, operation);
   }
 
   void DragUpdate(aura::Window* target,
-                  const aura::MouseEvent& event) OVERRIDE {
+                  const aura::LocatedEvent& event) OVERRIDE {
     DragDropController::DragUpdate(target, event);
     num_drag_updates_++;
   }
 
-  void Drop(aura::Window* target, const aura::MouseEvent& event) OVERRIDE {
+  void Drop(aura::Window* target, const aura::LocatedEvent& event) OVERRIDE {
     DragDropController::Drop(target, event);
     drop_received_ = true;
   }

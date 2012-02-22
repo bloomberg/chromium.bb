@@ -1303,8 +1303,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Starts a drag and drop operation originating from this view. This invokes
   // WriteDragData to write the data and GetDragOperations to determine the
-  // supported drag operations. When done, OnDragDone is invoked.
-  void DoDrag(const MouseEvent& event, const gfx::Point& press_pt);
+  // supported drag operations. When done, OnDragDone is invoked. |press_pt| is
+  // in the view's coordinate system.
+  void DoDrag(const LocatedEvent& event, const gfx::Point& press_pt);
 
   //////////////////////////////////////////////////////////////////////////////
 

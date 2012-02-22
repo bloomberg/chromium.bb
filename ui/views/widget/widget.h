@@ -435,8 +435,12 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // operation completes. |view| can be NULL.
   // If the view is non-NULL it can be accessed during the drag by calling
   // dragged_view(). If the view has not been deleted during the drag,
-  // OnDragDone() is called on it.
-  void RunShellDrag(View* view, const ui::OSExchangeData& data, int operation);
+  // OnDragDone() is called on it. |location| is in the widget's coordinate
+  // system.
+  void RunShellDrag(View* view,
+                    const ui::OSExchangeData& data,
+                    const gfx::Point& location,
+                    int operation);
 
   // Returns the view that requested the current drag operation via
   // RunShellDrag(), or NULL if there is no such view or drag operation.

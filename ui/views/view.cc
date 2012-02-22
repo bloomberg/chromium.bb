@@ -812,11 +812,15 @@ void View::OnMouseExited(const MouseEvent& event) {
 }
 
 ui::TouchStatus View::OnTouchEvent(const TouchEvent& event) {
-  DVLOG(1) << "visited the OnTouchEvent";
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
 ui::GestureStatus View::OnGestureEvent(const GestureEvent& event) {
+  if (event.type() == ui::ET_GESTURE_LONG_PRESS) {
+    // TODO(XXX): Call CanStartDragForView first?
+    DoDrag(event, event.location());
+    return ui::GESTURE_STATUS_CONSUMED;
+  }
   return ui::GESTURE_STATUS_UNKNOWN;
 }
 
@@ -2050,7 +2054,7 @@ void View::UpdateTooltip() {
 
 // Drag and drop ---------------------------------------------------------------
 
-void View::DoDrag(const MouseEvent& event, const gfx::Point& press_pt) {
+void View::DoDrag(const LocatedEvent& event, const gfx::Point& press_pt) {
 #if !defined(OS_MACOSX)
   int drag_operations = GetDragOperations(press_pt);
   if (drag_operations == ui::DragDropTypes::DRAG_NONE)
@@ -2061,7 +2065,9 @@ void View::DoDrag(const MouseEvent& event, const gfx::Point& press_pt) {
 
   // Message the RootView to do the drag and drop. That way if we're removed
   // the RootView can detect it and avoid calling us back.
-  GetWidget()->RunShellDrag(this, data, drag_operations);
+  gfx::Point widget_location(event.location());
+  ConvertPointToWidget(this, &widget_location);
+  GetWidget()->RunShellDrag(this, data, widget_location, drag_operations);
 #endif  // !defined(OS_MACOSX)
 }
 

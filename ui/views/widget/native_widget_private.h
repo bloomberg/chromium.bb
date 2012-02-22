@@ -197,6 +197,7 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget,
   virtual bool IsAccessibleWidget() const = 0;
   virtual void RunShellDrag(View* view,
                             const ui::OSExchangeData& data,
+                            const gfx::Point& location,
                             int operation) = 0;
   virtual void SchedulePaintInRect(const gfx::Rect& rect) = 0;
   virtual void SetCursor(gfx::NativeCursor cursor) = 0;

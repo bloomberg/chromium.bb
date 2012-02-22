@@ -241,6 +241,7 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   virtual bool IsAccessibleWidget() const OVERRIDE;
   virtual void RunShellDrag(View* view,
                             const ui::OSExchangeData& data,
+                            const gfx::Point& location,
                             int operation) OVERRIDE;
   virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE;
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;

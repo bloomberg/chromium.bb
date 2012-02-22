@@ -417,60 +417,7 @@ void MenuController::Cancel(ExitType type) {
 
 void MenuController::OnMousePressed(SubmenuView* source,
                                     const MouseEvent& event) {
-  if (!blocking_run_)
-    return;
-  drop_first_release_event_ = false;
-
-  DCHECK(!active_mouse_view_);
-
-  MenuPart part = GetMenuPart(source, event.location());
-  if (part.is_scroll())
-    return;  // Ignore presses on scroll buttons.
-
-  if (part.type == MenuPart::NONE ||
-      (part.type == MenuPart::MENU_ITEM && part.menu &&
-       part.menu->GetRootMenuItem() != state_.item->GetRootMenuItem())) {
-    // Mouse wasn't pressed over any menu, or the active menu, cancel.
-
-    // We're going to close and we own the mouse capture. We need to repost the
-    // mouse down, otherwise the window the user clicked on won't get the
-    // event.
-#if defined(OS_WIN) && !defined(USE_AURA)
-    RepostEvent(source, event);
-    // NOTE: not reposting on linux seems fine.
-#endif
-
-    // And close.
-    ExitType exit_type = EXIT_ALL;
-    if (!menu_stack_.empty()) {
-      // We're running nested menus. Only exit all if the mouse wasn't over one
-      // of the menus from the last run.
-      gfx::Point screen_loc(event.location());
-      View::ConvertPointToScreen(source->GetScrollViewContainer(), &screen_loc);
-      MenuPart last_part = GetMenuPartByScreenCoordinateUsingMenu(
-          menu_stack_.back().item, screen_loc);
-      if (last_part.type != MenuPart::NONE)
-        exit_type = EXIT_OUTERMOST;
-    }
-    Cancel(exit_type);
-    return;
-  }
-
-  // On a press we immediately commit the selection, that way a submenu
-  // pops up immediately rather than after a delay.
-  int selection_types = SELECTION_UPDATE_IMMEDIATELY;
-  if (!part.menu) {
-    part.menu = part.parent;
-    selection_types |= SELECTION_OPEN_SUBMENU;
-  } else {
-    if (part.menu->GetDelegate()->CanDrag(part.menu)) {
-      possible_drag_ = true;
-      press_pt_ = event.location();
-    }
-    if (part.menu->HasSubmenu())
-      selection_types |= SELECTION_OPEN_SUBMENU;
-  }
-  SetSelection(part.menu, selection_types);
+  SetSelectionOnPointerDown(source, event);
 }
 
 void MenuController::OnMouseDragged(SubmenuView* source,
@@ -484,34 +431,7 @@ void MenuController::OnMouseDragged(SubmenuView* source,
   if (possible_drag_) {
     if (View::ExceededDragThreshold(event.x() - press_pt_.x(),
                                     event.y() - press_pt_.y())) {
-      MenuItemView* item = state_.item;
-      DCHECK(item);
-      // Points are in the coordinates of the submenu, need to map to that of
-      // the selected item. Additionally source may not be the parent of
-      // the selected item, so need to map to screen first then to item.
-      gfx::Point press_loc(press_pt_);
-      View::ConvertPointToScreen(source->GetScrollViewContainer(), &press_loc);
-      View::ConvertPointToView(NULL, item, &press_loc);
-      gfx::CanvasSkia canvas(gfx::Size(item->width(), item->height()), false);
-      item->PaintButton(&canvas, MenuItemView::PB_FOR_DRAG);
-
-      OSExchangeData data;
-      item->GetDelegate()->WriteDragData(item, &data);
-      drag_utils::SetDragImageOnDataObject(canvas, item->size(), press_loc,
-                                           &data);
-      StopScrolling();
-      int drag_ops = item->GetDelegate()->GetDragOperations(item);
-      drag_in_progress_ = true;
-      item->GetWidget()->RunShellDrag(NULL, data, drag_ops);
-      drag_in_progress_ = false;
-
-      if (GetActiveInstance() == this) {
-        if (showing_) {
-          // We're still showing, close all menus.
-          CloseAllNestedMenus();
-          Cancel(EXIT_ALL);
-        }  // else case, drop was on us.
-      }  // else case, someone canceled us, don't do anything
+      StartDrag(source, press_pt_);
     }
     return;
   }
@@ -610,7 +530,14 @@ bool MenuController::OnMouseWheel(SubmenuView* source,
 #endif
 
 ui::GestureStatus MenuController::OnGestureEvent(SubmenuView* source,
-                                    const GestureEvent& event) {
+                                                 const GestureEvent& event) {
+  if (event.type() == ui::ET_GESTURE_TAP_DOWN) {
+    SetSelectionOnPointerDown(source, event);
+    return ui::GESTURE_STATUS_CONSUMED;
+  } else if (event.type() == ui::ET_GESTURE_LONG_PRESS && possible_drag_) {
+    StartDrag(source, event.location());
+    return ui::GESTURE_STATUS_CONSUMED;
+  }
   MenuPart part = GetMenuPart(source, event.location());
   if (!part.submenu)
     return ui::GESTURE_STATUS_UNKNOWN;
@@ -835,6 +762,98 @@ void MenuController::SetSelection(MenuItemView* menu_item,
     menu_item->GetWidget()->NotifyAccessibilityEvent(
         menu_item, ui::AccessibilityTypes::EVENT_FOCUS, true);
   }
+}
+
+void MenuController::SetSelectionOnPointerDown(SubmenuView* source,
+                                               const LocatedEvent& event) {
+  if (!blocking_run_)
+    return;
+  drop_first_release_event_ = false;
+
+  DCHECK(!active_mouse_view_);
+
+  MenuPart part = GetMenuPart(source, event.location());
+  if (part.is_scroll())
+    return;  // Ignore presses on scroll buttons.
+
+  if (part.type == MenuPart::NONE ||
+      (part.type == MenuPart::MENU_ITEM && part.menu &&
+       part.menu->GetRootMenuItem() != state_.item->GetRootMenuItem())) {
+    // Mouse wasn't pressed over any menu, or the active menu, cancel.
+
+    // We're going to close and we own the mouse capture. We need to repost the
+    // mouse down, otherwise the window the user clicked on won't get the
+    // event.
+#if defined(OS_WIN) && !defined(USE_AURA)
+    RepostEvent(source, event);
+    // NOTE: not reposting on linux seems fine.
+#endif
+
+    // And close.
+    ExitType exit_type = EXIT_ALL;
+    if (!menu_stack_.empty()) {
+      // We're running nested menus. Only exit all if the mouse wasn't over one
+      // of the menus from the last run.
+      gfx::Point screen_loc(event.location());
+      View::ConvertPointToScreen(source->GetScrollViewContainer(), &screen_loc);
+      MenuPart last_part = GetMenuPartByScreenCoordinateUsingMenu(
+          menu_stack_.back().item, screen_loc);
+      if (last_part.type != MenuPart::NONE)
+        exit_type = EXIT_OUTERMOST;
+    }
+    Cancel(exit_type);
+    return;
+  }
+
+  // On a press we immediately commit the selection, that way a submenu
+  // pops up immediately rather than after a delay.
+  int selection_types = SELECTION_UPDATE_IMMEDIATELY;
+  if (!part.menu) {
+    part.menu = part.parent;
+    selection_types |= SELECTION_OPEN_SUBMENU;
+  } else {
+    if (part.menu->GetDelegate()->CanDrag(part.menu)) {
+      possible_drag_ = true;
+      press_pt_ = event.location();
+    }
+    if (part.menu->HasSubmenu())
+      selection_types |= SELECTION_OPEN_SUBMENU;
+  }
+  SetSelection(part.menu, selection_types);
+}
+
+void MenuController::StartDrag(SubmenuView* source,
+                               const gfx::Point& location) {
+  MenuItemView* item = state_.item;
+  DCHECK(item);
+  // Points are in the coordinates of the submenu, need to map to that of
+  // the selected item. Additionally source may not be the parent of
+  // the selected item, so need to map to screen first then to item.
+  gfx::Point press_loc(location);
+  View::ConvertPointToScreen(source->GetScrollViewContainer(), &press_loc);
+  View::ConvertPointToView(NULL, item, &press_loc);
+  gfx::Point widget_loc(press_loc);
+  View::ConvertPointToWidget(item, &widget_loc);
+  gfx::CanvasSkia canvas(gfx::Size(item->width(), item->height()), false);
+  item->PaintButton(&canvas, MenuItemView::PB_FOR_DRAG);
+
+  OSExchangeData data;
+  item->GetDelegate()->WriteDragData(item, &data);
+  drag_utils::SetDragImageOnDataObject(canvas, item->size(), press_loc,
+                                       &data);
+  StopScrolling();
+  int drag_ops = item->GetDelegate()->GetDragOperations(item);
+  drag_in_progress_ = true;
+  item->GetWidget()->RunShellDrag(NULL, data, widget_loc, drag_ops);
+  drag_in_progress_ = false;
+
+  if (GetActiveInstance() == this) {
+    if (showing_) {
+      // We're still showing, close all menus.
+      CloseAllNestedMenus();
+      Cancel(EXIT_ALL);
+    }  // else case, drop was on us.
+  }  // else case, someone canceled us, don't do anything
 }
 
 #if defined(OS_WIN)
@@ -1818,7 +1837,7 @@ bool MenuController::SelectByChar(char16 character) {
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 void MenuController::RepostEvent(SubmenuView* source,
-                                 const MouseEvent& event) {
+                                 const LocatedEvent& event) {
   if (!state_.item) {
     // We some times get an event after closing all the menus. Ignore it.
     // Make sure the menu is in fact not visible. If the menu is visible, then
@@ -1863,11 +1882,12 @@ void MenuController::RepostEvent(SubmenuView* source,
     // which may differ. Need to add ability to get changed button from
     // MouseEvent.
     int event_type;
-    if (event.IsLeftMouseButton())
+    int flags = event.flags();
+    if (flags & ui::EF_LEFT_MOUSE_BUTTON)
       event_type = in_client_area ? WM_LBUTTONDOWN : WM_NCLBUTTONDOWN;
-    else if (event.IsMiddleMouseButton())
+    else if (flags & ui::EF_MIDDLE_MOUSE_BUTTON)
       event_type = in_client_area ? WM_MBUTTONDOWN : WM_NCMBUTTONDOWN;
-    else if (event.IsRightMouseButton())
+    else if (flags & ui::EF_RIGHT_MOUSE_BUTTON)
       event_type = in_client_area ? WM_RBUTTONDOWN : WM_NCRBUTTONDOWN;
     else
       event_type = 0;  // Unknown mouse press.

@@ -1046,6 +1046,7 @@ bool NativeWidgetWin::IsAccessibleWidget() const {
 
 void NativeWidgetWin::RunShellDrag(View* view,
                                    const ui::OSExchangeData& data,
+                                   const gfx::Point& location,
                                    int operation) {
   scoped_refptr<ui::DragSource> drag_source(new ui::DragSource);
   DWORD effects;

@@ -49,11 +49,12 @@ public:
 
   // Overridden from aura::client::DragDropClient:
   virtual int StartDragAndDrop(const ui::OSExchangeData& data,
-                                int operation) OVERRIDE;
+                               const gfx::Point& root_location,
+                               int operation) OVERRIDE;
   virtual void DragUpdate(aura::Window* target,
-                          const aura::MouseEvent& event) OVERRIDE;
+                          const aura::LocatedEvent& event) OVERRIDE;
   virtual void Drop(aura::Window* target,
-                    const aura::MouseEvent& event) OVERRIDE;
+                    const aura::LocatedEvent& event) OVERRIDE;
   virtual void DragCancel() OVERRIDE;
   virtual bool IsDragDropInProgress() OVERRIDE;
 

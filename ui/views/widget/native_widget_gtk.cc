@@ -1203,6 +1203,7 @@ bool NativeWidgetGtk::IsAccessibleWidget() const {
 
 void NativeWidgetGtk::RunShellDrag(View* view,
                                    const ui::OSExchangeData& data,
+                                   const gfx::Point& location,
                                    int operation) {
   DoDrag(data, operation);
 }

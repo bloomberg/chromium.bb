@@ -215,9 +215,15 @@ void NativeTabContentsViewAura::StartDragging(const WebDropData& drop_data,
   // updates while in the system DoDragDrop loop.
   int result_op = 0;
   {
+    // TODO(sad): Avoid using last_mouse_location here, since the drag may not
+    // always start from a mouse-event (e.g. a touch or gesture event could
+    // initiate the drag). The location information should be carried over from
+    // webkit. http://crbug.com/114754
+    gfx::Point location(ash::Shell::GetRootWindow()->last_mouse_location());
+    location.Offset(-image_offset.x(), -image_offset.y());
     MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
     result_op = aura::client::GetDragDropClient()->StartDragAndDrop(
-        data, ConvertFromWeb(ops));
+        data, location, ConvertFromWeb(ops));
   }
 
   EndDrag(ConvertToWeb(result_op));

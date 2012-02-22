@@ -23,15 +23,17 @@ class AURA_EXPORT DragDropClient {
   virtual ~DragDropClient() {}
 
   // Initiates a drag and drop session. Returns the drag operation that was
-  // applied at the end of the drag drop session.
+  // applied at the end of the drag drop session. |root_location| is in the
+  // RootWindow's coordinate system.
   virtual int StartDragAndDrop(const ui::OSExchangeData& data,
-                                int operation) = 0;
+                               const gfx::Point& root_location,
+                               int operation) = 0;
 
   // Called when mouse is dragged during a drag and drop.
-  virtual void DragUpdate(aura::Window* target, const MouseEvent& event) = 0;
+  virtual void DragUpdate(aura::Window* target, const LocatedEvent& event) = 0;
 
   // Called when mouse is released during a drag and drop.
-  virtual void Drop(aura::Window* target, const MouseEvent& event) = 0;
+  virtual void Drop(aura::Window* target, const LocatedEvent& event) = 0;
 
   // Called when a drag and drop session is cancelled.
   virtual void DragCancel() = 0;

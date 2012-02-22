@@ -672,10 +672,12 @@ InputMethod* Widget::GetInputMethod() {
   }
 }
 
-void Widget::RunShellDrag(View* view, const ui::OSExchangeData& data,
+void Widget::RunShellDrag(View* view,
+                          const ui::OSExchangeData& data,
+                          const gfx::Point& location,
                           int operation) {
   dragged_view_ = view;
-  native_widget_->RunShellDrag(view, data, operation);
+  native_widget_->RunShellDrag(view, data, location, operation);
   // If the view is removed during the drag operation, dragged_view_ is set to
   // NULL.
   if (view && dragged_view_ == view) {
