@@ -1,4 +1,4 @@
-# Copyright (c) 2011 Google Inc. All rights reserved.
+# Copyright (c) 2012 Google Inc. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -139,10 +139,11 @@ class MSVSProject(object):
     else:
       self.config_platform_overrides = {}
     self.fixpath_prefix = fixpath_prefix
+    self.msbuild_toolset = None
 
   def set_dependencies(self, dependencies):
     self.dependencies = list(dependencies or [])
-  
+
   def get_guid(self):
     if self.guid is None:
       # Set GUID from path
@@ -159,6 +160,9 @@ class MSVSProject(object):
       #    GUID from the files.
       self.guid = MakeGuid(self.name)
     return self.guid
+
+  def set_msbuild_toolset(self, msbuild_toolset):
+    self.msbuild_toolset = msbuild_toolset
 
 #------------------------------------------------------------------------------
 
