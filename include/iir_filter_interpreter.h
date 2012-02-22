@@ -22,6 +22,7 @@ namespace gestures {
 // different coefficients for the Butterworth filter.
 
 class IirFilterInterpreter : public Interpreter, public PropertyDelegate {
+  FRIEND_TEST(IirFilterInterpreterTest, DisableIIRTest);
  public:
   // We'll maintain one IOHistory record per active finger
   class IoHistory {
@@ -82,6 +83,12 @@ class IirFilterInterpreter : public Interpreter, public PropertyDelegate {
   //        - (a[1]*y[1] + a[2]*y[2])
   DoubleProperty b0_, b1_, b2_, b3_, a1_, a2_;
 
+  // If position change between 2 frames is less than iir_dist_thresh_,
+  // IIR filter is applied, otherwise rolling average is applied.
+  DoubleProperty iir_dist_thresh_;
+  // Whether IIR filter should be used. Put as a member varible for
+  // unittest purpose.
+  bool using_iir_;
   map<short, IoHistory, kMaxFingers> histories_;
 };
 

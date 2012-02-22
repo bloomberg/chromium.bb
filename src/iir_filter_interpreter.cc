@@ -35,7 +35,9 @@ IirFilterInterpreter::IirFilterInterpreter(PropRegistry* prop_reg,
       b2_(prop_reg, "IIR b2", 0.0674552738890719, this),
       b3_(prop_reg, "IIR b3", 0.0, this),
       a1_(prop_reg, "IIR a1", -1.1429805025399, this),
-      a2_(prop_reg, "IIR a2", 0.412801598096189, this) {
+      a2_(prop_reg, "IIR a2", 0.412801598096189, this),
+      iir_dist_thresh_(prop_reg, "IIR Distance Threshold", 10, this),
+      using_iir_(true) {
   next_.reset(next);
 }
 
@@ -64,20 +66,35 @@ Gesture* IirFilterInterpreter::SyncInterpret(HardwareState* hwstate,
     }
     // existing finger, apply filter
     IoHistory* hist = &(*history).second;
+
+    float dx = fs->position_x - hist->PrevOut(0)->position_x;
+    float dy = fs->position_y - hist->PrevOut(0)->position_y;
+
+    // IIR filter is too smooth for a quick finger movement. We do a simple
+    // rolling average if the position change between current and previous
+    // frames is larger than iir_dist_thresh_.
+    if (dx * dx + dy * dy > iir_dist_thresh_.val_ * iir_dist_thresh_.val_)
+      using_iir_ = false;
+    else
+      using_iir_ = true;
+
     // TODO(adlr): consider applying filter to other fields
     float FingerState::*fields[] = { &FingerState::position_x,
                                      &FingerState::position_y,
                                      &FingerState::pressure };
     for (size_t f_idx = 0; f_idx < arraysize(fields); f_idx++) {
       float FingerState::*field = fields[f_idx];
-
-      hist->NextOut()->*field =
-          b3_.val_ * hist->PrevIn(2)->*field +
-          b2_.val_ * hist->PrevIn(1)->*field +
-          b1_.val_ * hist->PrevIn(0)->*field +
-          b0_.val_ * fs->*field -
-          a2_.val_ * hist->PrevOut(1)->*field -
-          a1_.val_ * hist->PrevOut(0)->*field;
+      if (using_iir_) {
+        hist->NextOut()->*field =
+            b3_.val_ * hist->PrevIn(2)->*field +
+            b2_.val_ * hist->PrevIn(1)->*field +
+            b1_.val_ * hist->PrevIn(0)->*field +
+            b0_.val_ * fs->*field -
+            a2_.val_ * hist->PrevOut(1)->*field -
+            a1_.val_ * hist->PrevOut(0)->*field;
+      } else {
+        hist->NextOut()->*field = 0.5 * (fs->*field + hist->PrevOut(0)->*field);
+      }
     }
     *hist->NextIn() = *fs;
     *fs = *hist->NextOut();
