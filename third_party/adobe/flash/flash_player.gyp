@@ -3,6 +3,23 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'flapper_version_h_file%': 'flapper_version.h',
+    'flapper_binary_files%': [],
+    'conditions': [
+      [ 'branding == "Chrome"', {
+        'conditions': [
+          [ 'OS == "linux" and target_arch == "x64"', {
+            'flapper_version_h_file%': 'symbols/ppapi/linux_x64/flapper_version.h',
+            'flapper_binary_files%': [
+              'binaries/ppapi/linux_x64/libpepflashplayer.so',
+              'binaries/ppapi/linux_x64/manifest.json',
+            ],
+          }],
+        ],
+      }],
+    ],
+  },
   # Always provide a target, so we can put the logic about whether there's
   # anything to be done in this file (instead of a higher-level .gyp file).
   'targets': [
@@ -45,15 +62,15 @@
       'type': 'none',
       'copies': [{
         'destination': '<(SHARED_INTERMEDIATE_DIR)',
-        'files': [],
-        'conditions': [
-          # TODO(viettrungluu): actually bring in the headers.
-          [ '1 == 1', {
-            'files': [
-              'flapper_version.h',  # The default, which indicates no Flapper.
-            ],
-          }],
-        ],
+        'files': [ '<(flapper_version_h_file)' ],
+      }],
+    },
+    {
+      'target_name': 'flapper_binaries',
+      'type': 'none',
+      'copies': [{
+        'destination': '<(PRODUCT_DIR)/PepperFlash',
+        'files': [ '<@(flapper_binary_files)' ],
       }],
     },
   ],
