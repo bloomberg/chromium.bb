@@ -1930,13 +1930,30 @@ FileManager.prototype = {
     var scale = Math.min(1,
         IMAGE_HOVER_PREVIEW_SIZE / Math.max(width, height));
 
-    var largeImage = this.document_.createElement('img');
-    largeImage.src = img.src;
-    var largeImageBox = this.document_.createElement('div');
-    largeImageBox.className = 'popup';
-
     var imageWidth = Math.round(width * scale);
     var imageHeight = Math.round(height * scale);
+
+    var largeImage = this.document_.createElement('img');
+    if (scale < 0.3) {
+      // Scaling large images kills animation. Downscale it in advance.
+
+      // Canvas scales images with liner interpolation. Make a larger
+      // image (but small enough to not kill animation) and let IMG
+      // scale it smoothly.
+      var INTERMEDIATE_SCALE = 3;
+      var canvas = this.document_.createElement('canvas');
+      canvas.width = imageWidth * INTERMEDIATE_SCALE;
+      canvas.height = imageHeight * INTERMEDIATE_SCALE;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      // Using bigger than default compression reduces image size by
+      // several times. Quality degradation compensated by greater resolution.
+      largeImage.src = canvas.toDataURL('image/jpeg', 0.6);
+    } else {
+      largeImage.src = img.src;
+    }
+    var largeImageBox = this.document_.createElement('div');
+    largeImageBox.className = 'popup';
 
     var boxWidth = Math.max(THUMBNAIL_SIZE, imageWidth);
     var boxHeight = Math.max(THUMBNAIL_SIZE, imageHeight);
