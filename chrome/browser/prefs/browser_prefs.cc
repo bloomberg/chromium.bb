@@ -22,6 +22,7 @@
 #include "chrome/browser/geolocation/geolocation_prefs.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/instant/instant_controller.h"
+#include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_service.h"
@@ -198,6 +199,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   default_apps::RegisterUserPrefs(user_prefs);
 #endif
   extensions::ComponentLoader::RegisterUserPrefs(user_prefs);
+  web_intents::RegisterUserPrefs(user_prefs);
 }
 
 void MigrateBrowserPrefs(PrefService* user_prefs, PrefService* local_state) {

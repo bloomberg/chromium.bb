@@ -64,6 +64,7 @@
 #include "chrome/browser/instant/instant_unload_handler.h"
 #include "chrome/browser/intents/register_intent_handler_infobar_delegate.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
+#include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/net/browser_url_util.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -2801,7 +2802,7 @@ void Browser::RegisterIntentHandlerHelper(WebContents* tab,
                                           const string16& href,
                                           const string16& title,
                                           const string16& disposition) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableWebIntents))
+  if (!web_intents::IsWebIntentsEnabled())
     return;
 
   TabContentsWrapper* tcw = TabContentsWrapper::GetCurrentWrapperForContents(
@@ -4152,7 +4153,7 @@ void Browser::RegisterIntentHandler(WebContents* tab,
 
 void Browser::WebIntentDispatch(
     WebContents* tab, content::WebIntentsDispatcher* intents_dispatcher) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableWebIntents))
+  if (!web_intents::IsWebIntentsEnabled())
     return;
 
   TabContentsWrapper* tcw =

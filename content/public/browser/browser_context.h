@@ -89,7 +89,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
       int renderer_child_id) = 0;
 
-  // Returns the request context for media resources asociated with this
+  // Returns the request context for media resources associated with this
   // context.
   virtual net::URLRequestContextGetter* GetRequestContextForMedia() = 0;
 

@@ -18,6 +18,7 @@
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -263,11 +264,8 @@ void ContentSettingsHandler::GetLocalizedValues(
     { "notifications_ask", IDS_NOTIFICATIONS_ASK_RADIO },
     { "notifications_block", IDS_NOTIFICATIONS_BLOCK_RADIO },
     // Intents filter.
-    { "intentsTabLabel", IDS_INTENTS_TAB_LABEL },
-    { "intentsAllow", IDS_INTENTS_ALLOW_RADIO },
-    { "intentsAsk", IDS_INTENTS_ASK_RADIO },
-    { "intentsBlock", IDS_INTENTS_BLOCK_RADIO },
-    { "intents_header", IDS_INTENTS_HEADER },
+    { "webIntentsTabLabel", IDS_WEB_INTENTS_TAB_LABEL },
+    { "allowWebIntents", IDS_ALLOW_WEB_INTENTS },
     // Fullscreen filter.
     { "fullscreen_tab_label", IDS_FULLSCREEN_TAB_LABEL },
     { "fullscreen_header", IDS_FULLSCREEN_HEADER },
@@ -283,9 +281,9 @@ void ContentSettingsHandler::GetLocalizedValues(
   RegisterTitle(localized_strings, "contentSettingsPage",
                 IDS_CONTENT_SETTINGS_TITLE);
   localized_strings->SetBoolean("enable_web_intents",
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableWebIntents));
-  localized_strings->SetBoolean("enable_restore_session_state",
+                                web_intents::IsWebIntentsEnabled());
+  localized_strings->SetBoolean(
+      "enable_restore_session_state",
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableRestoreSessionState));
 }

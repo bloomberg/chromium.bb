@@ -1754,4 +1754,7 @@ const char kComponentUpdaterState[] = "component_updater.state";
 const char kRestoreSessionStateDialogShown[] =
     "restore_session_state.dialog_shown";
 
+// Boolean that is true if Web Intents is enabled.
+const char kWebIntentsEnabled[] = "webintents.enabled";
+
 }  // namespace prefs

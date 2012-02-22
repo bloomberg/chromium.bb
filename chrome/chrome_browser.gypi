@@ -1616,6 +1616,8 @@
         'browser/intents/web_intents_registry.h',
         'browser/intents/web_intents_registry_factory.cc',
         'browser/intents/web_intents_registry_factory.h',
+        'browser/intents/web_intents_util.cc',
+        'browser/intents/web_intents_util.h',
         'browser/internal_auth.cc',
         'browser/internal_auth.h',
         'browser/intranet_redirect_detector.cc',

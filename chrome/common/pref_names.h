@@ -655,6 +655,8 @@ extern const char kComponentUpdaterState[];
 
 extern const char kRestoreSessionStateDialogShown[];
 
+extern const char kWebIntentsEnabled[];
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

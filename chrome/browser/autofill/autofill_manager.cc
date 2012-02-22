@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -651,7 +651,6 @@ void AutofillManager::OnDidPreviewAutofillFormData() {
       content::Source<RenderViewHost>(web_contents()->GetRenderViewHost()),
       content::NotificationService::NoDetails());
 }
-
 
 void AutofillManager::OnDidFillAutofillFormData(const TimeTicks& timestamp) {
   content::NotificationService::current()->Notify(

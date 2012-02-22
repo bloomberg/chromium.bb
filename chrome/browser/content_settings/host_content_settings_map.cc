@@ -22,6 +22,7 @@
 #include "chrome/browser/content_settings/content_settings_rule.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -321,7 +322,7 @@ bool HostContentSettingsMap::IsSettingAllowedForType(
     ContentSetting setting, ContentSettingsType content_type) {
   // Intents content settings are hidden behind a switch for now.
   if (content_type == CONTENT_SETTINGS_TYPE_INTENTS &&
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableWebIntents))
+      !web_intents::IsWebIntentsEnabled())
     return false;
 
   // BLOCK semantics are not implemented for fullscreen.
