@@ -31,7 +31,7 @@ function TestProcess(pid, type) {
 
 TestProcess.prototype.testExpectation = function(text) {
   var textPosition = this.expectation_.indexOf(text);
-  chrome.test.assertEq(0, textPosition);
+  chrome.test.assertEq(0, textPosition, "Received: " + text);
   if (this.expectation_.lenght == text.length)
     this.expectation_.clear();
   else
@@ -41,8 +41,8 @@ TestProcess.prototype.testExpectation = function(text) {
 TestProcess.prototype.testOutputType = function(receivedType) {
   if (receivedType == 'exit')
     chrome.test.assertEq(this.expectation.length, 0);
-
-  chrome.test.assertEq('stdout', receivedType);
+  else
+    chrome.test.assertEq('stdout', receivedType);
 };
 
 TestProcess.prototype.pid = function() {
