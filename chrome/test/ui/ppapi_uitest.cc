@@ -493,13 +493,14 @@ TEST_PPAPI_IN_PROCESS(PaintAggregator)
 TEST_PPAPI_OUT_OF_PROCESS(PaintAggregator)
 TEST_PPAPI_NACL_VIA_HTTP(PaintAggregator)
 
-// http://crbug.com/115286
+// TODO(danakj): http://crbug.com/115286
 TEST_PPAPI_IN_PROCESS(DISABLED_Scrollbar)
 // http://crbug.com/89961
 TEST_F(OutOfProcessPPAPITest, FAILS_Scrollbar) {
   RunTest("Scrollbar");
 }
-TEST_PPAPI_NACL_VIA_HTTP(Scrollbar)
+// TODO(danakj): http://crbug.com/115286
+TEST_PPAPI_NACL_VIA_HTTP(DISABLED_Scrollbar)
 
 TEST_PPAPI_IN_PROCESS(URLUtil)
 TEST_PPAPI_OUT_OF_PROCESS(URLUtil)
@@ -523,7 +524,8 @@ TEST_PPAPI_OUT_OF_PROCESS(VarDeprecated)
 #endif
 TEST_PPAPI_IN_PROCESS(PostMessage_SendInInit)
 TEST_PPAPI_IN_PROCESS(PostMessage_SendingData)
-TEST_PPAPI_IN_PROCESS(PostMessage_SendingArrayBuffer)
+// TODO(danakj): http://crbug.com/115286
+TEST_PPAPI_IN_PROCESS(DISABLED_PostMessage_SendingArrayBuffer)
 TEST_PPAPI_IN_PROCESS(PostMessage_MessageEvent)
 TEST_PPAPI_IN_PROCESS(PostMessage_NoHandler)
 TEST_PPAPI_IN_PROCESS(PostMessage_ExtraParam)
