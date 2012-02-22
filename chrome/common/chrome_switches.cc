@@ -526,6 +526,10 @@ const char kEnableNaClExceptionHandling[]   = "enable-nacl-exception-handling";
 // Enables panels (always on-top docked pop-up windows).
 const char kEnablePanels[]                 = "enable-panels";
 
+// Enables password generation when we detect that the user is going through
+// account creation.
+const char kEnablePasswordGeneration[]      = "enable-password-generation";
+
 // Enables advanced app capabilities.
 const char kEnablePlatformApps[]            = "enable-platform-apps";
 

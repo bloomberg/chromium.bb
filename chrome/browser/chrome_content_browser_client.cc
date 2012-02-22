@@ -678,6 +678,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableInBrowserThumbnailing,
       switches::kEnableIPCFuzzing,
       switches::kEnableNaCl,
+      switches::kEnablePasswordGeneration,
       switches::kEnablePlatformApps,
       switches::kEnableWatchdog,
       switches::kExperimentalSpellcheckerFeatures,

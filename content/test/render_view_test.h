@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,6 +96,9 @@ class RenderViewTest : public testing::Test {
   // Returns true if the event was sent, false otherwise (typically because
   // the element was not found).
   bool SimulateElementClick(const std::string& element_id);
+
+  // Simulates |node| being focused.
+  void SetFocused(const WebKit::WebNode& node);
 
   // Clears anything associated with the browsing history.
   void ClearHistory();

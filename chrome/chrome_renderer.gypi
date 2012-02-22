@@ -54,6 +54,8 @@
         'renderer/autofill/form_cache.h',
         'renderer/autofill/password_autofill_manager.cc',
         'renderer/autofill/password_autofill_manager.h',
+        'renderer/autofill/password_generation_manager.cc',
+        'renderer/autofill/password_generation_manager.h',
         'renderer/automation/automation_renderer_helper.cc',
         'renderer/automation/automation_renderer_helper.h',
         'renderer/benchmarking_extension.cc',

@@ -28,6 +28,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/autofill/autofill_agent.h"
 #include "chrome/renderer/autofill/password_autofill_manager.h"
+#include "chrome/renderer/autofill/password_generation_manager.h"
 #include "chrome/renderer/automation/automation_renderer_helper.h"
 #include "chrome/renderer/benchmarking_extension.h"
 #include "chrome/renderer/chrome_ppapi_interfaces.h"
@@ -102,6 +103,7 @@ using WebKit::WebURLResponse;
 using WebKit::WebVector;
 using autofill::AutofillAgent;
 using autofill::PasswordAutofillManager;
+using autofill::PasswordGenerationManager;
 using content::RenderThread;
 using webkit::WebPluginInfo;
 using webkit::WebPluginMimeType;
@@ -249,6 +251,10 @@ void ChromeContentRendererClient::RenderViewCreated(
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDomAutomationController)) {
     new AutomationRendererHelper(render_view);
+  }
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePasswordGeneration)) {
+    new PasswordGenerationManager(render_view);
   }
 }
 

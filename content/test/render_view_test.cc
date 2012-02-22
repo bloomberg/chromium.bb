@@ -404,6 +404,11 @@ bool RenderViewTest::SimulateElementClick(const std::string& element_id) {
   return true;
 }
 
+void RenderViewTest::SetFocused(const WebKit::WebNode& node) {
+  RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
+  impl->focusedNodeChanged(node);
+}
+
 void RenderViewTest::ClearHistory() {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   impl->page_id_ = -1;
