@@ -18,13 +18,9 @@ bool TouchModeSupport::IsTouchOptimized() {
   // suitable for consumption here.
   return false;
 #else
-  // TODO: This may need to be cached and updated only occasionally. There is
-  // no direct WM_ message that indicates that a touch panel has been added or
-  // removed, however.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTouchOptimizedUI))
-    return true;
-  // Asking for SM_DIGITIZER always returns 0 in Windows Vista and Windows XP.
-  int sm = ::GetSystemMetrics(SM_DIGITIZER);
-  return (sm & NID_READY) && (sm & NID_INTEGRATED_TOUCH);
+  // TODO: Enable based on GetSystemMetrics(SM_DIGITIZER) returning NID_READY
+  // and NID_INTEGRATED_TOUCH once code is ready.
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kTouchOptimizedUI);
 #endif
 }
