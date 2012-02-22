@@ -79,10 +79,36 @@ class HGenerator(object):
     )
     return c
 
+  def _GenerateEnumDeclaration(self, enum_name, prop, values):
+    c = code.Code()
+    c.Sblock('enum %s {' % enum_name)
+    if prop.optional:
+      c.Append(self._cpp_type_generator.GetEnumNoneValue(prop) + ',')
+    for value in values:
+      c.Append(self._cpp_type_generator.GetEnumValue(prop, value) + ',')
+    (c.Eblock('};')
+      .Append()
+    )
+    return c
+
   def _GenerateFields(self, props):
     """Generates the field declarations when declaring a type.
     """
     c = code.Code()
+    # Generate the enums needed for any fields with "choices"
+    for prop in props:
+      if prop.type_ == PropertyType.CHOICES:
+        enum_name = self._cpp_type_generator.GetChoicesEnumType(prop)
+        c.Concat(self._GenerateEnumDeclaration(
+            enum_name,
+            prop,
+            [choice.type_.name for choice in prop.choices.values()]))
+        c.Append('%s %s_type;' % (enum_name, prop.unix_name))
+      elif prop.type_ == PropertyType.ENUM:
+        c.Concat(self._GenerateEnumDeclaration(
+            self._cpp_type_generator.GetType(prop),
+            prop,
+            prop.enum_values))
     for prop in self._cpp_type_generator.GetExpandedChoicesInParams(props):
       if prop.description:
         c.Comment(prop.description)
@@ -90,23 +116,6 @@ class HGenerator(object):
           self._cpp_type_generator.GetType(prop, wrap_optional=True),
           prop.unix_name))
       c.Append()
-    # Generate the enums needed for any fields with "choices"
-    for prop in props:
-      if prop.type_ == PropertyType.CHOICES:
-        c.Sblock('enum %(enum_type)s {')
-        c.Append(self._cpp_type_generator.GetChoiceEnumNoneValue(prop) + ',')
-        for choice in prop.choices.values():
-          c.Append(
-              self._cpp_type_generator.GetChoiceEnumValue(prop, choice.type_)
-              + ',')
-        (c.Eblock('};')
-          .Append()
-          .Append('%(enum_type)s %(name)s_type;')
-        )
-        c.Substitute({
-            'enum_type': self._cpp_type_generator.GetChoicesEnumType(prop),
-            'name': prop.unix_name
-        })
     return c
 
   def _GenerateType(self, type_, serializable=True):

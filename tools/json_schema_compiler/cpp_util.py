@@ -48,6 +48,7 @@ def GetValueType(prop):
       PropertyType.INTEGER: 'Value::TYPE_INTEGER',
       PropertyType.BOOLEAN: 'Value::TYPE_BOOLEAN',
       PropertyType.DOUBLE: 'Value::TYPE_DOUBLE',
+      PropertyType.ENUM: 'Value::TYPE_STRING',
       PropertyType.REF: 'Value::TYPE_DICTIONARY',
       PropertyType.OBJECT: 'Value::TYPE_DICTIONARY',
       PropertyType.ARRAY: 'Value::TYPE_LIST'

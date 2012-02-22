@@ -82,20 +82,19 @@ class CppTypeGenerator(object):
     return Code().Append('}  // %s' %
         self.GetCppNamespaceName(self._namespace))
 
-  def GetChoiceEnumNoneValue(self, prop):
-    """Gets the enum value of the choices in the given model.Property
-    indicating no choice has been set.
+  def GetEnumNoneValue(self, prop):
+    """Gets the enum value in the given model.Property indicating no value has
+    been set.
     """
     return '%s_NONE' % prop.unix_name.upper()
 
-  def GetChoiceEnumValue(self, prop, type_):
-    """Gets the enum value of the choices in the given model.Property of the
-    given type.
+  def GetEnumValue(self, prop, enum_value):
+    """Gets the enum value of the given model.Property of the given type.
 
     e.g VAR_STRING
     """
-    assert prop.choices[type_]
-    return '%s_%s' % (prop.unix_name.upper(), type_.name)
+    return '%s_%s' % (
+        prop.unix_name.upper(), cpp_util.Classname(enum_value.upper()))
 
   def GetChoicesEnumType(self, prop):
     """Gets the type of the enum for the given model.Property.
@@ -133,6 +132,8 @@ class CppTypeGenerator(object):
       cpp_type = 'double'
     elif prop.type_ == PropertyType.STRING:
       cpp_type = 'std::string'
+    elif prop.type_ == PropertyType.ENUM:
+      cpp_type = cpp_util.Classname(prop.name)
     elif prop.type_ == PropertyType.ANY:
       cpp_type = 'DictionaryValue'
     elif prop.type_ == PropertyType.ARRAY:
@@ -148,7 +149,9 @@ class CppTypeGenerator(object):
     else:
       raise NotImplementedError(prop.type_)
 
-    if wrap_optional and prop.optional:
+    # Enums aren't wrapped because C++ won't allow it. Optional enums have a
+    # NONE value generated instead.
+    if wrap_optional and prop.optional and prop.type_ != PropertyType.ENUM:
       cpp_type = 'scoped_ptr<%s> ' % cpp_type
     if pad_for_generics:
       return cpp_type

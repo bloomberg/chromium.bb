@@ -13,6 +13,7 @@
           'array.json',
           'choices.json',
           'crossref.json',
+          'enums.json',
           'simple_api.json',
         ],
         'cc_dir': 'tools/json_schema_compiler/test',

@@ -78,10 +78,11 @@ if __name__ == '__main__':
       type_generator.AddNamespace(
           referenced_namespace,
           referenced_namespace.unix_name)
-    cc_generator = cc_generator.CCGenerator(namespace, type_generator)
-    cc_code = cc_generator.Generate().Render()
-    h_generator = h_generator.HGenerator(namespace, type_generator)
-    h_code = h_generator.Generate().Render()
+
+    h_code = (h_generator.HGenerator(namespace, type_generator)
+        .Generate().Render())
+    cc_code = (cc_generator.CCGenerator(namespace, type_generator)
+        .Generate().Render())
 
     if dest_dir:
       with open(

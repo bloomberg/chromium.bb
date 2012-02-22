@@ -1,0 +1,89 @@
+[
+  {
+    "namespace": "enums",
+    "types": [
+      {
+        "id": "EnumType",
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["one", "two", "three"]
+          }
+        }
+      },
+      {
+        "id": "OptionalEnumType",
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["one", "two", "three"],
+            "optional": true
+          }
+        }
+      }
+    ],
+    "functions": [
+      {
+        "name": "takesEnum",
+        "type": "function",
+        "description": "Takes an enum as its parameter.",
+        "parameters": [
+          {
+            "name": "state",
+            "type": "string",
+            "enum": ["foo", "bar", "baz"]
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "takesOptionalEnum",
+        "type": "function",
+        "description": "Takes an enum as its parameter.",
+        "parameters": [
+          {
+            "name": "state",
+            "type": "string",
+            "enum": ["foo", "bar", "baz"],
+            "optional": true
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "takesMultipleOptionalEnums",
+        "type": "function",
+        "description": "Takes two enums as parameters.",
+        "parameters": [
+          {
+            "name": "state",
+            "type": "string",
+            "enum": ["foo", "bar", "baz"],
+            "optional": true
+          },
+          {
+            "name": "type",
+            "type": "string",
+            "enum": ["foo", "ding", "dong"],
+            "optional": true
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": []
+          }
+        ]
+      }
+    ]
+  }
+]

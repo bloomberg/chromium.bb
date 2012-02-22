@@ -2116,6 +2116,7 @@
         '../tools/json_schema_compiler/test/array_unittest.cc',
         '../tools/json_schema_compiler/test/choices_unittest.cc',
         '../tools/json_schema_compiler/test/crossref_unittest.cc',
+        '../tools/json_schema_compiler/test/enums_unittest.cc',
         '../tools/json_schema_compiler/test/simple_api_unittest.cc',
         '../ui/views/test/test_views_delegate.cc',
         '../ui/views/test/test_views_delegate.h',

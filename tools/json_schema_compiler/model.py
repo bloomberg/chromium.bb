@@ -109,7 +109,6 @@ class Function(object):
         self.params.append(Property(param['name'], param))
     assert (self.callback), self.name + " does not support callback"
 
-# TODO(calamity): handle Enum
 class Property(object):
   """A property of a type OR a parameter to a function.
 
@@ -137,6 +136,11 @@ class Property(object):
     if '$ref' in json:
       self.ref_type = json['$ref']
       self.type_ = PropertyType.REF
+    elif 'enum' in json:
+      self.enum_values = []
+      for value in json['enum']:
+        self.enum_values.append(value)
+      self.type_ = PropertyType.ENUM
     elif 'type' in json:
       json_type = json['type']
       if json_type == 'string':
@@ -220,6 +224,7 @@ class PropertyType(object):
   DOUBLE = _Info(True, "DOUBLE")
   BOOLEAN = _Info(True, "BOOLEAN")
   STRING = _Info(True, "STRING")
+  ENUM = _Info(False, "ENUM")
   ARRAY = _Info(False, "ARRAY")
   REF = _Info(False, "REF")
   CHOICES = _Info(False, "CHOICES")
