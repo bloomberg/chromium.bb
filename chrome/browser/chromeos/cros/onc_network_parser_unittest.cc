@@ -13,8 +13,8 @@
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/stringprintf.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/certificate_pattern.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -524,6 +524,7 @@ TEST_F(OncNetworkParserTest, TestUpdateClientCertificate) {
   GetTestData("certificate-client-update.onc", &certificate_update_json);
 
   std::string test_guid("{f998f760-272b-6939-4c2beffe428697ac}");
+  std::string updated_guid("{f998f760-272b-6939-4c2beffe428697ad}");
   {
     // First we import a certificate.
     OncNetworkParser parser(certificate_json, "",
@@ -543,13 +544,37 @@ TEST_F(OncNetworkParserTest, TestUpdateClientCertificate) {
   }
 
   {
-    // Now we import a new certificate with the same GUID as the
-    // first.  It should replace the old one.
+    // Now we import the same certificate with a different GUID. The cert should
+    // be retrievable via the new GUID.
     OncNetworkParser parser(certificate_update_json, "",
                             NetworkUIData::ONC_SOURCE_USER_IMPORT);
     ASSERT_EQ(1, parser.GetCertificatesSize());
     scoped_refptr<net::X509Certificate> cert = parser.ParseCertificate(0).get();
     ASSERT_TRUE(cert.get() != NULL);
+
+    EXPECT_STREQ(updated_guid.c_str(),
+                 cert->GetDefaultNickname(net::USER_CERT).c_str());
+    net::CertificateList result_list;
+    OncNetworkParser::ListCertsWithNickname(updated_guid, &result_list);
+    ASSERT_EQ(1ul, result_list.size());
+    EXPECT_EQ(net::USER_CERT, GetCertType(result_list[0].get()));
+  }
+}
+
+TEST_F(OncNetworkParserTest, TestReimportClientCertificate) {
+  std::string certificate_json;
+  GetTestData("certificate-client.onc", &certificate_json);
+  std::string test_guid("{f998f760-272b-6939-4c2beffe428697ac}");
+
+  // Verify that reimporting a client certificate works.
+  for (int i = 0; i < 2; ++i) {
+    OncNetworkParser parser(certificate_json, "",
+                            NetworkUIData::ONC_SOURCE_USER_IMPORT);
+    ASSERT_EQ(1, parser.GetCertificatesSize());
+
+    scoped_refptr<net::X509Certificate> cert = parser.ParseCertificate(0).get();
+    ASSERT_TRUE(cert.get() != NULL);
+    EXPECT_EQ(net::USER_CERT, GetCertType(cert.get()));
 
     EXPECT_STREQ(test_guid.c_str(),
                  cert->GetDefaultNickname(net::USER_CERT).c_str());
@@ -557,7 +582,8 @@ TEST_F(OncNetworkParserTest, TestUpdateClientCertificate) {
     OncNetworkParser::ListCertsWithNickname(test_guid, &result_list);
     ASSERT_EQ(1ul, result_list.size());
     EXPECT_EQ(net::USER_CERT, GetCertType(result_list[0].get()));
-  }}
+  }
+}
 
 TEST_F(OncNetworkParserTest, TestAddServerCertificate) {
   std::string test_blob;
@@ -595,6 +621,7 @@ TEST_F(OncNetworkParserTest, TestUpdateServerCertificate) {
   GetTestData("certificate-server-update.onc", &certificate_update_json);
 
   std::string test_guid("{f998f760-272b-6939-4c2beffe428697aa}");
+  std::string updated_guid("{f998f760-272b-6939-4c2beffe428697ab}");
   {
     // First we import a certificate.
     OncNetworkParser parser(certificate_json, "",
@@ -614,13 +641,37 @@ TEST_F(OncNetworkParserTest, TestUpdateServerCertificate) {
   }
 
   {
-    // Now we import a new certificate with the same GUID as the
-    // first.  It should replace the old one.
+    // Reimport the same certificate with a different GUID. The cert should
+    // be returned if we ask for the updated GUID.
     OncNetworkParser parser(certificate_update_json, "",
                             NetworkUIData::ONC_SOURCE_USER_IMPORT);
     ASSERT_EQ(1, parser.GetCertificatesSize());
     scoped_refptr<net::X509Certificate> cert = parser.ParseCertificate(0).get();
     ASSERT_TRUE(cert.get() != NULL);
+
+    EXPECT_STREQ(updated_guid.c_str(),
+                 cert->GetDefaultNickname(net::SERVER_CERT).c_str());
+    net::CertificateList result_list;
+    OncNetworkParser::ListCertsWithNickname(updated_guid, &result_list);
+    ASSERT_EQ(1ul, result_list.size());
+    EXPECT_EQ(net::SERVER_CERT, GetCertType(result_list[0].get()));
+  }
+}
+
+TEST_F(OncNetworkParserTest, TestReimportServerCertificate) {
+  std::string certificate_json;
+  GetTestData("certificate-server.onc", &certificate_json);
+  std::string test_guid("{f998f760-272b-6939-4c2beffe428697aa}");
+
+  // Verify that importing the certificate twice works.
+  for (int i = 0; i < 2; i++) {
+    OncNetworkParser parser(certificate_json, "",
+                            NetworkUIData::ONC_SOURCE_USER_IMPORT);
+    ASSERT_EQ(1, parser.GetCertificatesSize());
+
+    scoped_refptr<net::X509Certificate> cert = parser.ParseCertificate(0).get();
+    ASSERT_TRUE(cert.get() != NULL);
+    EXPECT_EQ(net::SERVER_CERT, GetCertType(cert.get()));
 
     EXPECT_STREQ(test_guid.c_str(),
                  cert->GetDefaultNickname(net::SERVER_CERT).c_str());
@@ -630,7 +681,6 @@ TEST_F(OncNetworkParserTest, TestUpdateServerCertificate) {
     EXPECT_EQ(net::SERVER_CERT, GetCertType(result_list[0].get()));
   }
 }
-
 
 TEST_F(OncNetworkParserTest, TestAddWebAuthorityCertificate) {
   std::string test_blob;
@@ -660,7 +710,6 @@ TEST_F(OncNetworkParserTest, TestAddWebAuthorityCertificate) {
   EXPECT_FALSE(pubkey_list);
 }
 
-
 TEST_F(OncNetworkParserTest, TestUpdateWebAuthorityCertificate) {
   std::string authority_json;
   GetTestData("certificate-web-authority.onc", &authority_json);
@@ -669,7 +718,7 @@ TEST_F(OncNetworkParserTest, TestUpdateWebAuthorityCertificate) {
               &authority_update_json);
 
   std::string test_guid("{f998f760-272b-6939-4c2beffe428697ab}");
-
+  std::string updated_guid("{f998f760-272b-6939-4c2beffe428697ac}");
   {
     // First we import an authority certificate.
     OncNetworkParser parser(authority_json, "",
@@ -689,13 +738,37 @@ TEST_F(OncNetworkParserTest, TestUpdateWebAuthorityCertificate) {
   }
 
   {
-    // Now we import a new authority certificate with the same GUID as the
-    // first.  It should replace the old one.
+    // Reimport the same cert with a different GUID and check that the cert
+    // shows up under the new GUID.
     OncNetworkParser parser(authority_update_json, "",
                             NetworkUIData::ONC_SOURCE_USER_IMPORT);
     ASSERT_EQ(1, parser.GetCertificatesSize());
     scoped_refptr<net::X509Certificate> cert = parser.ParseCertificate(0).get();
     ASSERT_TRUE(cert.get() != NULL);
+
+    EXPECT_STREQ(updated_guid.c_str(),
+                 cert->GetDefaultNickname(net::CA_CERT).c_str());
+    net::CertificateList result_list;
+    OncNetworkParser::ListCertsWithNickname(updated_guid, &result_list);
+    ASSERT_EQ(1ul, result_list.size());
+    EXPECT_EQ(net::CA_CERT, GetCertType(result_list[0].get()));
+  }
+}
+
+TEST_F(OncNetworkParserTest, TestReimportWebAuthorityCertificate) {
+  std::string authority_json;
+  GetTestData("certificate-web-authority.onc", &authority_json);
+  std::string test_guid("{f998f760-272b-6939-4c2beffe428697ab}");
+
+  // Verify that importing the certificate twice works.
+  for (int i = 0; i < 2; i++) {
+    OncNetworkParser parser(authority_json, "",
+                            NetworkUIData::ONC_SOURCE_USER_IMPORT);
+    ASSERT_EQ(1, parser.GetCertificatesSize());
+
+    scoped_refptr<net::X509Certificate> cert = parser.ParseCertificate(0).get();
+    ASSERT_TRUE(cert.get() != NULL);
+    EXPECT_EQ(net::CA_CERT, GetCertType(cert.get()));
 
     EXPECT_STREQ(test_guid.c_str(),
                  cert->GetDefaultNickname(net::CA_CERT).c_str());

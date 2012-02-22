@@ -156,12 +156,16 @@ class OncNetworkParser : public NetworkParser {
  private:
   FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest, TestAddClientCertificate);
   FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest, TestUpdateClientCertificate);
+  FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest, TestReimportClientCertificate);
   FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest, TestAddServerCertificate);
   FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest, TestUpdateServerCertificate);
+  FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest, TestReimportServerCertificate);
   FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest,
                            TestAddWebAuthorityCertificate);
   FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest,
                            TestUpdateWebAuthorityCertificate);
+  FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest,
+                           TestReimportWebAuthorityCertificate);
   scoped_refptr<net::X509Certificate> ParseServerOrCaCertificate(
     int cert_index,
     const std::string& cert_type,

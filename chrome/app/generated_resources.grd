@@ -11857,6 +11857,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_NETWORK_CONFIG_ERROR_CERT_GUID_MISSING" desc="Error for network configuration: Certificateg GUID missing.">
         Certificate GUID missing
       </message>
+      <message name="IDS_NETWORK_CONFIG_ERROR_CERT_GUID_COLLISION" desc="Error for network configuration: GUID is taken by a different certificate.">
+        Certificate GUID collision
+      </message>
       <message name="IDS_NETWORK_CONFIG_ERROR_CERT_TYPE_MISSING" desc="Error for network configuration: Certificate type missing.">
         Certificate type missing
       </message>

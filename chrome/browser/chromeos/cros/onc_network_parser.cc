@@ -841,7 +841,7 @@ OncNetworkParser::ParseServerOrCaCertificate(
 
   scoped_refptr<net::X509Certificate> x509_cert =
       net::X509Certificate::CreateFromBytesWithNickname(
-          decoded_x509.c_str(),
+          decoded_x509.data(),
           decoded_x509.size(),
           guid.c_str());
   if (!x509_cert.get()) {
@@ -851,12 +851,56 @@ OncNetworkParser::ParseServerOrCaCertificate(
     return NULL;
   }
 
-  // Before we add this cert, let's see if there's one with the same GUID.
-  // If there is, then we remove the one we found, now that we know that
-  // we at least were able to create the certificate we're going to import.
-  if (!DeleteCertAndKeyByNickname(guid)) {
+  // Due to a mismatch regarding cert identity between NSS (cert identity is
+  // determined by the raw bytes) and ONC (cert identity is determined by
+  // GUIDs), we have to special-case a number of situations here:
+  //
+  // a) The cert bits we're trying to insert are already present in the NSS cert
+  //    store. This is indicated by the isperm bit in CERTCertificateStr. Since
+  //    we might have to update the nick name, we just delete the existing cert
+  //    and reimport the cert bits.
+  // b) NSS gives us an actual temporary certificate. In this case, there is no
+  //    identical certificate known to NSS, so we can safely import the
+  //    certificate. The GUID being imported may still be on a different
+  //    certificate, and we could jump through hoops to reimport the existing
+  //    certificate with a different nickname. However, that would mean lots of
+  //    effort for a case that's pretty much illegal (reusing GUIDs contradicts
+  //    the intention of GUIDs), so we just report an error.
+  //
+  // TODO(mnissler, gspencer): We should probably switch to a mode where we
+  // keep our own database for mapping GUIDs to certs in order to enable several
+  // GUIDs to map to the same cert. See http://crosbug.com/26073.
+  if (x509_cert->os_cert_handle()->isperm) {
+    if (!cert_database.DeleteCertAndKey(x509_cert.get())) {
+      parse_error_ = l10n_util::GetStringUTF8(
+          IDS_NETWORK_CONFIG_ERROR_CERT_DELETE);
+      return NULL;
+    }
+
+    // Reload the cert here to get an actual temporary cert instance.
+    x509_cert =
+        net::X509Certificate::CreateFromBytesWithNickname(
+            decoded_x509.data(),
+            decoded_x509.size(),
+            guid.c_str());
+    if (!x509_cert.get()) {
+      LOG(WARNING) << "Unable to create X509 certificate from bytes.";
+      parse_error_ = l10n_util::GetStringUTF8(
+          IDS_NETWORK_CONFIG_ERROR_CERT_DATA_MALFORMED);
+      return NULL;
+    }
+    DCHECK(!x509_cert->os_cert_handle()->isperm);
+    DCHECK(x509_cert->os_cert_handle()->istemp);
+  }
+
+  // Make sure the GUID is not already taken. Note that for the reimport case we
+  // have removed the existing cert above.
+  net::CertificateList certs;
+  ListCertsWithNickname(guid, &certs);
+  if (!certs.empty()) {
+    LOG(WARNING) << "Cert GUID is already in use: " << guid;
     parse_error_ = l10n_util::GetStringUTF8(
-        IDS_NETWORK_CONFIG_ERROR_CERT_DELETE);
+        IDS_NETWORK_CONFIG_ERROR_CERT_GUID_COLLISION);
     return NULL;
   }
 
@@ -915,15 +959,6 @@ scoped_refptr<net::X509Certificate> OncNetworkParser::ParseClientCertificate(
                  << pkcs12_data << "\".";
     parse_error_ = l10n_util::GetStringUTF8(
         IDS_NETWORK_CONFIG_ERROR_CERT_DATA_MALFORMED);
-    return NULL;
-  }
-
-  // Before we add this cert, let's see if there's one with the same GUID.
-  // If there is, then we remove the one we found, now that we know that
-  // we at least were able to decode the certificate we're going to import.
-  if (!DeleteCertAndKeyByNickname(guid)) {
-    parse_error_ = l10n_util::GetStringUTF8(
-        IDS_NETWORK_CONFIG_ERROR_CERT_DELETE);
     return NULL;
   }
 
