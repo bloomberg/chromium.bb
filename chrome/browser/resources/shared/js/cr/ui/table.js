@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,11 +40,19 @@ cr.define('cr.ui', function() {
         if (this.list_.dataModel) {
           this.list_.dataModel.removeEventListener('sorted',
                                                    this.boundHandleSorted_);
+          this.list_.dataModel.removeEventListener('change',
+                                                   this.boundHandleChangeList_);
+          this.list_.dataModel.removeEventListener('splice',
+                                                   this.boundHandleChangeList_);
         }
         this.list_.dataModel = dataModel;
         if (this.list_.dataModel) {
           this.list_.dataModel.addEventListener('sorted',
                                                 this.boundHandleSorted_);
+          this.list_.dataModel.addEventListener('change',
+                                                this.boundHandleChangeList_);
+          this.list_.dataModel.addEventListener('splice',
+                                                this.boundHandleChangeList_);
         }
         this.header_.redraw();
       }
@@ -176,6 +184,7 @@ cr.define('cr.ui', function() {
 
       this.boundResize_ = this.resize.bind(this);
       this.boundHandleSorted_ = this.handleSorted_.bind(this);
+      this.boundHandleChangeList_ = this.handleChangeList_.bind(this);
 
       // The contained list should be focusable, not the table itself.
       if (this.hasAttribute('tabindex')) {
@@ -229,6 +238,16 @@ cr.define('cr.ui', function() {
      */
     handleSorted_: function(e) {
       this.header_.redraw();
+    },
+
+    /**
+     * This handles data model 'change' and 'splice' events.
+     * Since they may change the visibility of scrollbar, table may need to
+     * re-calculation the width of column headers.
+     * @param {Event} e The 'change' or 'splice' event.
+     */
+    handleChangeList_: function(e) {
+      webkitRequestAnimationFrame(this.header_.updateWidth.bind(this.header_));
     },
 
     /**
