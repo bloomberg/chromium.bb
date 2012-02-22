@@ -177,6 +177,13 @@ function addRowsForExtraParams(tablePrinter, entry, enableSecurityStripping) {
                   null);
       return;
 
+    case LogEventType.CERT_VERIFIER_JOB:
+    case LogEventType.SSL_CERTIFICATES_RECEIVED:
+      addTextRows(tablePrinter,
+                  getTextForCertificatesExtraParam(entry),
+                  null);
+      return;
+
     default:
       for (var k in entry.params) {
         if (k == 'headers' && entry.params[k] instanceof Array) {
@@ -349,6 +356,25 @@ function getTextForRequestHeadersExtraParam(entry) {
 
 function getTextForResponseHeadersExtraParam(entry) {
   return indentLines(' --> ', entry.params.headers);
+}
+
+/*
+ * Pretty-prints the contents of an X509CertificateNetLogParam value.
+ * @param {LogGroupEntry} A LogGroupEntry for an X509CertificateNetLogParam.
+ * @return {string} A formatted string containing all the certificates, in
+ *     PEM-encoded form.
+ */
+function getTextForCertificatesExtraParam(entry) {
+  if (!entry.params || !entry.params.certificates) {
+    // Some events, such as LogEventType.CERT_VERIFIER_JOB, only log
+    // certificates on the begin event.
+    return '';
+  }
+
+  var certs = entry.params.certificates.reduce(function(previous, current) {
+    return previous.concat(current.split('\n'));
+  }, new Array());
+  return ' --> certificates =\n' + indentLines('        ', certs);
 }
 
 function getTextForProxyConfigChangedExtraParam(entry) {
