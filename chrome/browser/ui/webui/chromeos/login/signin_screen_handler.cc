@@ -457,6 +457,9 @@ void SigninScreenHandler::OnUserRemoved(const std::string& username) {
 }
 
 void SigninScreenHandler::OnUserImageChanged(const User& user) {
+  if (!page_is_ready())
+    return;
+
   base::StringValue user_email(user.email());
   web_ui()->CallJavascriptFunction(
       "login.AccountPickerScreen.updateUserImage", user_email);

@@ -247,13 +247,21 @@ cr.define('login', function() {
      * @param e {object} Payload of the received HTML5 message.
      */
     onMessage_: function(e) {
+      if (!this.isAuthExtMessage_(e)) {
+        console.log('GaiaSigninScreen.onMessage_: Unknown message origin, ' +
+            'e.origin=' + e.origin);
+        return;
+      }
+
       var msg = e.data;
-      if (msg.method == 'completeLogin' && this.isAuthExtMessage_(e)) {
+      console.log('GaiaSigninScreen.onMessage_: method=' + msg.method);
+
+      if (msg.method == 'completeLogin') {
         chrome.send('completeLogin', [msg.email, msg.password] );
         this.loading = true;
         // Now that we're in logged in state header should be hidden.
         Oobe.getInstance().headerHidden = true;
-      } else if (msg.method == 'loginUILoaded' && this.isAuthExtMessage_(e)) {
+      } else if (msg.method == 'loginUILoaded') {
         this.loading = false;
         $('error-message').update();
         this.clearLoadingTimer_();
@@ -264,7 +272,7 @@ cr.define('login', function() {
         }
         this.clearRetry_();
         chrome.send('loginWebuiReady');
-      } else if (msg.method =='offlineLogin' && this.isAuthExtMessage_(e)) {
+      } else if (msg.method =='offlineLogin') {
         this.email = msg.email;
         chrome.send('authenticateUser', [msg.email, msg.password]);
         this.loading = true;

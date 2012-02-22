@@ -212,8 +212,8 @@ cr.define('login', function() {
           currentScreen.classList.remove('hidden');
           currentScreen.classList.remove('faded');
 
-          // Ensures 'loading' state really means loading for Gaia screen.
-          if (currentScreen.id == 'gaia-signin' && currentScreen.loading)
+          // Forces a reload for Gaia screen on hiding error message.
+          if (currentScreen.id == 'gaia-signin')
             currentScreen.doReload();
         }
       }
