@@ -414,7 +414,7 @@ shell_surface_set_transient(struct wl_client *client,
 		return;
 
 	/* assign to parents output  */
-	es->output = pes->output;
+	shsurf->output = pes->output;
  	weston_surface_set_position(es, pes->geometry.x + x,
 					pes->geometry.y + y);
 
@@ -500,18 +500,18 @@ shell_surface_set_fullscreen(struct wl_client *client,
 	/* FIXME: Fullscreen on first output */
 	/* FIXME: Handle output going away */
 	output = get_default_output(es->compositor);
-	es->output = output;
 
 	shsurf->saved_x = es->geometry.x;
 	shsurf->saved_y = es->geometry.y;
+	shsurf->output = output;
 	shsurf->fullscreen_output = output;
 	shsurf->type = SHELL_SURFACE_FULLSCREEN;
 
 	wl_resource_post_event(resource,
 			       WL_SHELL_SURFACE_CONFIGURE,
 			       weston_compositor_get_time(), 0,
-			       es->output->current->width,
-			       es->output->current->height);
+			       shsurf->output->current->width,
+			       shsurf->output->current->height);
 }
 
 static void
