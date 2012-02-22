@@ -736,13 +736,15 @@ set<short, kMaxGesturingFingers> MkSet(short id1, short id2) {
 }
 }  // namespace{}
 
-TEST(ImmediateInterpreter, TapRecordTest) {
-  TapRecord tr;
+TEST(ImmediateInterpreterTest, TapRecordTest) {
+  ImmediateInterpreter ii(NULL);
+  TapRecord tr(&ii);
   EXPECT_FALSE(tr.TapComplete());
   // two finger IDs:
   const short kF1 = 91;
   const short kF2 = 92;
   const float kTapMoveDist = 1.0;  // mm
+  ii.tap_min_pressure_.val_ = 25;
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
@@ -863,6 +865,8 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
 
     {0, 0, 0, 0, 50, 0, 8.0, 4, 95},  // very close together fingers:
     {0, 0, 0, 0, 50, 0, 8.1, 4, 96},
+    {0, 0, 0, 0, 10, 0, 9.5, 4, 95},  // very light pressure
+    {0, 0, 0, 0, 10, 0, 11,  4, 96},
   };
   HWStateGs hwsgs[] = {
     // Simple 1-finger tap
@@ -1008,42 +1012,51 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     // right tap, very close fingers - shouldn't tap
     {{ 0.00, 0, 2, 2, &fs[19] }, -1, MkSet(95, 96), 0, 0, kIdl, false },  // 119
     {{ 0.01, 0, 0, 0, NULL    }, -1, MkSet(),       0, 0, kIdl, false },
+    // very light left tap - shouldn't tap
+    {{ 0.00, 0, 1, 1, &fs[21] }, -1, MkSet(95), 0, 0, kFTB, false },  // 121
+    {{ 0.01, 0, 0, 0, NULL    }, -1, MkSet(),   0, 0, kIdl, false },
+    // very light right tap - shouldn't tap
+    {{ 0.00, 0, 2, 2, &fs[21] }, -1, MkSet(95, 96), 0, 0, kFTB, false },  // 123
+    {{ 0.01, 0, 0, 0, NULL    }, -1, MkSet(),       0, 0, kIdl, false },
+    // half very light right tap - should tap
+    {{ 0.00, 0, 2, 2, &fs[20] }, -1, MkSet(95, 96), 0, 0, kFTB, false },  // 125
+    {{ 0.01, 0, 0, 0, NULL    }, -1, MkSet(),   kBR, kBR, kIdl, false },
     // T5R2 tap tests:
     // (1f and 2f tap w/o resting thumb and 1f w/ resting thumb are the same as
     // above)
     // 2f tap w/ resting thumb
-    {{ 0.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },  // 121
+    {{ 0.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },  // 127
     {{ 1.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kIdl, false },
     {{ 1.01, 0, 1, 3, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },
     {{ 1.02, 0, 2, 3, &fs[16] }, -1, MkSet(70, 91), 0, 0, kFTB, false },
     {{ 1.03, 0, 0, 2, NULL    }, -1, MkSet(),     0,   0, kFTB, false },
     {{ 1.04, 0, 1, 1, &fs[18] }, -1, MkSet(71), kBR, kBR, kIdl, false },
     // 3f tap w/o resting thumb
-    {{ 0.00, 0, 2, 3, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },  // 127
+    {{ 0.00, 0, 2, 3, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },  // 133
     {{ 0.01, 0, 0, 1, NULL   }, -1,  MkSet(),       0, 0, kFTB, false },
     {{ 0.02, 0, 0, 0, NULL   }, -1,  MkSet(),   kBR, kBR, kIdl, false },
     // 3f tap w/o resting thumb (slightly different)
-    {{ 0.00, 0, 2, 3, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },  // 130
+    {{ 0.00, 0, 2, 3, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },  // 136
     {{ 0.01, 0, 2, 3, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },
     {{ 0.02, 0, 0, 0, NULL   }, -1,  MkSet(),   kBR, kBR, kIdl, false },
     // 3f tap w/ resting thumb
-    {{ 0.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },  // 133
+    {{ 0.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },  // 139
     {{ 1.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kIdl, false },
     {{ 1.01, 0, 1, 4, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },
     {{ 1.02, 0, 2, 4, &fs[16] }, -1, MkSet(70, 91), 0, 0, kFTB, false },
     {{ 1.03, 0, 1, 1, &fs[16] }, -1, MkSet(70), kBR, kBR, kIdl, false },
     // 4f tap w/o resting thumb
-    {{ 0.00, 0, 2, 3, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },  // 138
+    {{ 0.00, 0, 2, 3, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },  // 144
     {{ 0.01, 0, 1, 4, &fs[0] }, -1,  MkSet(91),     0, 0, kFTB, false },
     {{ 0.02, 0, 2, 4, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },
     {{ 0.03, 0, 0, 0, NULL   }, -1,  MkSet(),   kBR, kBR, kIdl, false },
     // 4f tap w/ resting thumb
-    {{ 0.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },  // 142
+    {{ 0.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },  // 148
     {{ 1.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kIdl, false },
     {{ 1.01, 0, 1, 5, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },
     {{ 1.02, 0, 1, 1, &fs[16] }, -1, MkSet(70), kBR, kBR, kIdl, false },
     // 4f tap w/ resting thumb (slightly different)
-    {{ 0.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },  // 146
+    {{ 0.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },  // 152
     {{ 1.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kIdl, false },
     {{ 1.01, 0, 1, 5, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },
     {{ 1.02, 0, 2, 5, &fs[16] }, -1, MkSet(70, 91), 0, 0, kFTB, false },

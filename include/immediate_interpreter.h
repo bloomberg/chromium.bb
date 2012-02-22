@@ -25,9 +25,16 @@ static const int kMaxFingers = 5;
 static const int kMaxGesturingFingers = 2;
 static const int kMaxTapFingers = 5;
 
+class ImmediateInterpreter;
+
 class TapRecord {
  public:
-  TapRecord() : t5r2_(false), t5r2_touched_size_(0), t5r2_released_size_(0) {}
+  explicit TapRecord(const ImmediateInterpreter* immediate_interpreter)
+      : min_pressure_met_(false),
+        immediate_interpreter_(immediate_interpreter),
+        t5r2_(false),
+        t5r2_touched_size_(0),
+        t5r2_released_size_(0) {}
   void Update(const HardwareState& hwstate,
               const HardwareState& prev_hwstate,
               const set<short, kMaxTapFingers>& added,
@@ -39,7 +46,10 @@ class TapRecord {
   bool Moving(const HardwareState& hwstate, const float dist_max) const;
   bool TapBegan() const;  // if a tap has begun
   bool TapComplete() const;  // is a completed tap
-  int TapType() const;  // return GESTURES_BUTTON_* value
+  // return GESTURES_BUTTON_* value or 0, if tap was too light
+  int TapType() const;
+  // If we're in T5R2 mode, always let the taps through
+  bool MinTapPressureMet() const { return t5r2_ || min_pressure_met_; }
  private:
   void NoteTouch(short the_id, const FingerState& fs);  // Adds to touched_
   void NoteRelease(short the_id);  // Adds to released_
@@ -47,6 +57,11 @@ class TapRecord {
 
   map<short, FingerState, kMaxTapFingers> touched_;
   set<short, kMaxTapFingers> released_;
+  // At least one finger must meet the minimum pressure requirement during a
+  // tap.
+  bool min_pressure_met_;
+  // Used to fetch properties
+  const ImmediateInterpreter* immediate_interpreter_;
   // T5R2: For these pads, we try to track individual IDs, but if we get an
   // input event with insufficient data, we switch into T5R2 mode, where we
   // just track the number of contacts. We still maintain the non-T5R2 records
@@ -66,6 +81,7 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   FRIEND_TEST(ImmediateInterpreterTest, TapToClickStateMachineTest);
   FRIEND_TEST(ImmediateInterpreterTest, TapToClickEnableTest);
   FRIEND_TEST(ImmediateInterpreterTest, TapToClickKeyboardTest);
+  FRIEND_TEST(ImmediateInterpreterTest, TapRecordTest);
   FRIEND_TEST(ImmediateInterpreterTest, ThumbRetainReevaluateTest);
   FRIEND_TEST(ImmediateInterpreterTest, ThumbRetainTest);
  public:
@@ -116,6 +132,8 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   void SetHardwareProperties(const HardwareProperties& hw_props);
 
   TapToClickState tap_to_click_state() const { return tap_to_click_state_; }
+
+  float tap_min_pressure() const { return tap_min_pressure_.val_; }
 
  private:
   // Reset the member variables corresponding to same-finger state and
@@ -299,6 +317,8 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   BoolProperty drag_lock_enable_;
   // Distance [mm] a finger can move and still register a tap
   DoubleProperty tap_move_dist_;
+  // Minimum pressure a finger must have for it to click when tap to click is on
+  DoubleProperty tap_min_pressure_;
   // Maximum pressure above which a finger is considered a palm
   DoubleProperty palm_pressure_;
   // The smaller of two widths around the edge for palm detection. Any contact

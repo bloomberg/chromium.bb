@@ -90,10 +90,20 @@ void TapRecord::Update(const HardwareState& hwstate,
     NoteTouch(*it, *hwstate.GetFingerState(*it));
   for_each(removed.begin(), removed.end(),
            bind1st(mem_fun(&TapRecord::NoteRelease), this));
+  // Check if min pressure met yet
+  for (map<short, FingerState, kMaxTapFingers>::iterator it =
+           touched_.begin(), e = touched_.end();
+       !min_pressure_met_ && it != e; ++it) {
+    const FingerState* fs = hwstate.GetFingerState((*it).first);
+    if (fs)
+      min_pressure_met_ =
+          fs->pressure >= immediate_interpreter_->tap_min_pressure();
+  }
   Log("Done Updating TapRecord.");
 }
 
 void TapRecord::Clear() {
+  min_pressure_met_ = false;
   t5r2_ = false;
   t5r2_touched_size_ = 0;
   t5r2_released_size_ = 0;
@@ -156,6 +166,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       finger_leave_time_(0.0),
       tap_to_click_state_(kTtcIdle),
       tap_to_click_state_entered_(0.0),
+      tap_record_(this),
       last_movement_timestamp_(0.0),
       current_gesture_type_(kGestureTypeNull),
       tap_enable_(prop_reg, "Tap Enable", false),
@@ -164,6 +175,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       tap_drag_timeout_(prop_reg, "Tap Drag Timeout", 0.7),
       drag_lock_enable_(prop_reg, "Tap Drag Lock Enable", 0),
       tap_move_dist_(prop_reg, "Tap Move Distance", 2.0),
+      tap_min_pressure_(prop_reg, "Tap Minimum Pressure", 25.0),
       palm_pressure_(prop_reg, "Palm Pressure", 200.0),
       palm_edge_min_width_(prop_reg, "Tap Exclusion Border Width", 8.0),
       palm_edge_width_(prop_reg, "Palm Edge Zone Width", 14.0),
@@ -835,7 +847,9 @@ void ImmediateInterpreter::UpdateTapState(
           tap_record_.TapComplete(),
           tap_record_.Moving(*hwstate, tap_move_dist_.val_));
       if (tap_record_.TapComplete()) {
-        if (tap_record_.TapType() == GESTURES_BUTTON_LEFT) {
+        if (!tap_record_.MinTapPressureMet()) {
+          SetTapToClickState(kTtcIdle, now);
+        } else if (tap_record_.TapType() == GESTURES_BUTTON_LEFT) {
           SetTapToClickState(kTtcTapComplete, now);
         } else {
           *buttons_down = *buttons_up = tap_record_.TapType();
@@ -857,7 +871,8 @@ void ImmediateInterpreter::UpdateTapState(
             dead_fingers);
         SetTapToClickState(kTtcSubsequentTapBegan, now);
       } else if (is_timeout) {
-        *buttons_down = *buttons_up = tap_record_.TapType();
+        *buttons_down = *buttons_up =
+            tap_record_.MinTapPressureMet() ? tap_record_.TapType() : 0;
         SetTapToClickState(kTtcIdle, now);
       }
       break;
