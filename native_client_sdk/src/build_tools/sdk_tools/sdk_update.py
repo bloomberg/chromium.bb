@@ -27,7 +27,7 @@ import urlparse
 
 # Bump the MINOR_REV every time you check this file in.
 MAJOR_REV = 1
-MINOR_REV = 13
+MINOR_REV = 14
 
 GLOBAL_HELP = '''Usage: naclsdk [options] command [command_options]
 
@@ -213,8 +213,7 @@ def ExtractInstaller(installer, outdir):
 
   Raises:
     CalledProcessError - if the extract operation fails'''
-  if os.path.exists(outdir):
-    RemoveDir(outdir)
+  RemoveDir(outdir)
 
   if os.path.splitext(installer)[1] == '.exe':
     # If the installer has extension 'exe', assume it's a Windows NSIS-style
@@ -238,7 +237,8 @@ def RemoveDir(outdir):
   On Unix systems, this just runs shutil.rmtree, but on Windows, this doesn't
   work when the directory contains junctions (as does our SDK installer).
   Therefore, on Windows, it runs rmdir /S /Q as a shell command.  This always
-  does the right thing on Windows.
+  does the right thing on Windows. If the directory already didn't exist,
+  RemoveDir will return successfully without taking any action.
 
   Args:
     outdir: The directory to delete
@@ -249,10 +249,18 @@ def RemoveDir(outdir):
   '''
 
   DebugPrint('Removing %s' % outdir)
-  if sys.platform == 'win32':
-    subprocess.check_call(['rmdir /S /Q', outdir], shell=True)
-  else:
-    shutil.rmtree(outdir)
+  try:
+    if sys.platform == 'win32':
+      subprocess.check_call(['rmdir /S /Q', outdir], shell=True)
+    else:
+      shutil.rmtree(outdir)
+  except:
+    # If the directory is gone anyway, we probably failed because it was
+    # already gone. Treat that as success.
+    if not os.path.exists(outdir):
+      return
+    # Otherwise, re-raise.
+    raise
 
 
 def RenameDir(srcdir, destdir):
@@ -263,8 +271,7 @@ def RenameDir(srcdir, destdir):
 
   for num_tries in xrange(max_tries):
     try:
-      if os.path.exists(destdir):
-        RemoveDir(destdir)
+      RemoveDir(destdir)
       os.rename(srcdir, destdir)
       return
     except OSError as err:
