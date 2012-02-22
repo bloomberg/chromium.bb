@@ -898,6 +898,13 @@ bool CreateTabFunction::RunImpl() {
   if (!GetBrowserFromWindowID(this, window_id, &browser))
     return false;
 
+  // Ensure the selected browser is tabbed.
+  if (!browser->is_type_tabbed() && browser->IsAttemptingToCloseBrowser())
+    browser = Browser::GetTabbedBrowser(profile(), include_incognito());
+
+  if (!browser || !browser->window())
+    return false;
+
   // TODO(jstritar): Add a constant, chrome.tabs.TAB_ID_ACTIVE, that
   // represents the active tab.
   content::NavigationController* opener = NULL;

@@ -123,5 +123,18 @@ chrome.test.runTests([
         assertTrue(window.id != tab.windowId);
       }));
     }));
+  },
+
+  // Creation of a tab in an empty non-tabbed window should be allowed.
+  function testOpenWindowInEmptyPopup() {
+    chrome.windows.create(
+        {type: 'popup'},
+        pass(function(window) {
+      chrome.tabs.create(
+          {url: 'about:blank', windowId: window.id},
+          pass(function(tab) {
+        assertEq(window.id, tab.windowId);
+      }));
+    }));
   }
 ]);

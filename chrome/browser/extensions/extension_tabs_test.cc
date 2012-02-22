@@ -383,6 +383,31 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
       keys::kIncognitoModeIsDisabled));
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DontCreateTabInClosingPopupWindow) {
+  // Test creates new popup window, closes it right away and then tries to open
+  // a new tab in it. Tab should not be opened in the popup window, but in a
+  // tabbed browser window.
+  Browser* popup_browser =
+      Browser::CreateForType(Browser::TYPE_POPUP, browser()->profile());
+  int window_id = ExtensionTabUtil::GetWindowId(popup_browser);
+  popup_browser->CloseWindow();
+
+  scoped_refptr<CreateTabFunction> create_tab_function(new CreateTabFunction());
+  // Without a callback the function will not generate a result.
+  create_tab_function->set_has_callback(true);
+
+  static const char kNewBlankTabArgs[] =
+      "[{\"url\": \"about:blank\", \"windowId\": %u}]";
+
+  scoped_ptr<base::DictionaryValue> result(ToDictionary(
+      RunFunctionAndReturnResult(
+          create_tab_function.get(),
+          base::StringPrintf(kNewBlankTabArgs, window_id),
+          browser())));
+
+  EXPECT_NE(window_id, GetInteger(result.get(), "windowId"));
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, InvalidUpdateWindowState) {
   int window_id = ExtensionTabUtil::GetWindowId(browser());
 
