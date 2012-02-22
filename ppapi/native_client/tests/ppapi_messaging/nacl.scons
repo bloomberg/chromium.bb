@@ -45,7 +45,8 @@ node = env.PPAPIBrowserTester('ppapi_messaging_browser_test.out',
                                      env.File('ppapi_messaging.nmf'),
                                      env.File('ppapi_messaging.html')])
 
-env.AddNodeToTestSuite(node,
-                      ['chrome_browser_tests'],
-                       'run_ppapi_messaging_browser_test',
-                       is_broken=env.PPAPIBrowserTesterIsBroken())
+# http://crbug/115325 flaky test
+#env.AddNodeToTestSuite(node,
+#                      ['chrome_browser_tests'],
+#                       'run_ppapi_messaging_browser_test',
+#                       is_broken=env.PPAPIBrowserTesterIsBroken())
