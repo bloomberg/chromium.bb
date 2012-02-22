@@ -1043,6 +1043,8 @@
         'browser/extensions/browser_action_test_util_gtk.cc',
         'browser/extensions/browser_action_test_util_mac.mm',
         'browser/extensions/browser_action_test_util_views.cc',
+        'browser/extensions/bundle_installer.cc',
+        'browser/extensions/bundle_installer.h',
         'browser/extensions/component_loader.cc',
         'browser/extensions/component_loader.h',
         'browser/extensions/convert_user_script.cc',
