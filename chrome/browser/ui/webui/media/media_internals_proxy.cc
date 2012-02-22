@@ -106,15 +106,6 @@ void MediaInternalsProxy::OnAddEntry(net::NetLog::EventType type,
 MediaInternalsProxy::~MediaInternalsProxy() {}
 
 Value* MediaInternalsProxy::GetConstants() {
-  DictionaryValue* event_types = new DictionaryValue();
-  std::vector<net::NetLog::EventType> types_vec =
-      net::NetLog::GetAllEventTypes();
-
-  for (size_t i = 0; i < types_vec.size(); ++i) {
-    const char* name = net::NetLog::EventTypeToString(types_vec[i]);
-    event_types->SetInteger(name, static_cast<int>(types_vec[i]));
-  }
-
   DictionaryValue* event_phases = new DictionaryValue();
   event_phases->SetInteger(
       net::NetLog::EventPhaseToString(net::NetLog::PHASE_NONE),
@@ -127,7 +118,7 @@ Value* MediaInternalsProxy::GetConstants() {
       net::NetLog::PHASE_END);
 
   DictionaryValue* constants = new DictionaryValue();
-  constants->Set("eventTypes", event_types);
+  constants->Set("eventTypes", net::NetLog::GetEventTypesAsValue());
   constants->Set("eventPhases", event_phases);
 
   return constants;

@@ -1464,18 +1464,7 @@ Value* NetInternalsUI::GetConstants() {
 
   // Add a dictionary with information on the relationship between event type
   // enums and their symbolic names.
-  {
-    std::vector<net::NetLog::EventType> event_types =
-        net::NetLog::GetAllEventTypes();
-
-    DictionaryValue* dict = new DictionaryValue();
-
-    for (size_t i = 0; i < event_types.size(); ++i) {
-      const char* name = net::NetLog::EventTypeToString(event_types[i]);
-      dict->SetInteger(name, static_cast<int>(event_types[i]));
-    }
-    constants_dict->Set("logEventTypes", dict);
-  }
+  constants_dict->Set("logEventTypes", net::NetLog::GetEventTypesAsValue());
 
   // Add a dictionary with the version of the client and its command line
   // arguments.
@@ -1544,15 +1533,7 @@ Value* NetInternalsUI::GetConstants() {
 
   // Information about the relationship between source type enums and
   // their symbolic names.
-  {
-    DictionaryValue* dict = new DictionaryValue();
-
-#define SOURCE_TYPE(label, value) dict->SetInteger(# label, value);
-#include "net/base/net_log_source_type_list.h"
-#undef SOURCE_TYPE
-
-    constants_dict->Set("logSourceType", dict);
-  }
+  constants_dict->Set("logSourceType", net::NetLog::GetSourceTypesAsValue());
 
   // Information about the relationship between LogLevel enums and their
   // symbolic names.
