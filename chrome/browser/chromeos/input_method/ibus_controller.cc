@@ -690,6 +690,9 @@ class IBusControllerImpl : public IBusController {
         (section == kGeneralSectionName) &&
         (config_name == kPreloadEnginesConfigName)) {
       FilterInputMethods(value.string_list_value, &string_list);
+      if (string_list.empty()) {
+        return true;
+      }
       is_preload_engines = true;
     } else {
       string_list = value.string_list_value;

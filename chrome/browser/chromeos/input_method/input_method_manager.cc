@@ -857,10 +857,13 @@ class InputMethodManagerImpl
         config_name == language_prefs::kPreloadEnginesConfigName) {
       if (value.string_list_value.size() == 1 ||
           (value.string_list_value.size() != 0 &&
-           current_input_method_.id().empty())) {
+           std::find(value.string_list_value.begin(),
+                     value.string_list_value.end(),
+                     current_input_method_.id()) ==
+           value.string_list_value.end())) {
         // This is necessary to initialize current_input_method_. This is also
-        // necessary when the current layout (e.g. INTL) out of two (e.g. US and
-        // INTL) is disabled.
+        // necessary when the current layout (e.g. INTL) out of two or more
+        // active ones (e.g. US, DV, and INTL) is disabled.
         ChangeCurrentInputMethodFromId(value.string_list_value[0]);
       }
       DCHECK(!current_input_method_.id().empty());
