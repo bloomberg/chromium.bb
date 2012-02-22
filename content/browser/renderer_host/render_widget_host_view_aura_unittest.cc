@@ -23,22 +23,23 @@ class RenderWidgetHostViewAuraTest : public RenderViewHostTestHarness {
   virtual void SetUp() {
     RenderViewHostTestHarness::SetUp();
     old_rwhv_ = rvh()->view();
-    rwhv_aura_.reset(static_cast<RenderWidgetHostViewAura*>(
-        RenderWidgetHostView::CreateViewForWidget(rvh())));
+    rwhv_aura_ = static_cast<RenderWidgetHostViewAura*>(
+        RenderWidgetHostView::CreateViewForWidget(rvh()));
   }
 
   virtual void TearDown() {
     aura::Window* window = rwhv_aura_->GetNativeView();
     if (window->parent())
       window->parent()->RemoveChild(window);
-
+    rwhv_aura_->Destroy();
+    // Destroying RWHV sets the host's view to NULL, so destroying view first,
+    // then set the view.
     rvh()->SetView(old_rwhv_);
-    rwhv_aura_.reset();
     RenderViewHostTestHarness::TearDown();
   }
 
  protected:
-  scoped_ptr<RenderWidgetHostViewAura> rwhv_aura_;
+  RenderWidgetHostViewAura* rwhv_aura_;
 
  private:
   RenderWidgetHostView* old_rwhv_;

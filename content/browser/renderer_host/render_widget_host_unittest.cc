@@ -15,6 +15,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/port/browser/render_widget_host_view_port.h"
 #include "content/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -432,9 +433,13 @@ TEST_F(RenderWidgetHostTest, Background) {
 #if !defined(OS_MACOSX)
   scoped_ptr<content::RenderWidgetHostView> view(
       content::RenderWidgetHostView::CreateViewForWidget(host_.get()));
-#if defined(USE_AURA)
+#if defined(OS_LINUX) || defined(USE_AURA)
   // TODO(derat): Call this on all platforms: http://crbug.com/102450.
-  static_cast<RenderWidgetHostViewAura*>(view.get())->InitAsChild(NULL);
+  // InitAsChild doesn't seem to work if NULL parent is passed on Windows,
+  // which leads to DCHECK failure in RenderWidgetHostView::Destroy.
+  // When you enable this for OS_WIN, enable |view.release()->Destroy()|
+  // below.
+  view->InitAsChild(NULL);
 #endif
   host_->SetView(view.get());
 
@@ -456,9 +461,6 @@ TEST_F(RenderWidgetHostTest, Background) {
                           view->GetBackground().getPixels(),
                           background.getSize()));
 
-#if defined(OS_WIN)
-  // A message should have been dispatched telling the renderer about the new
-  // background.
   const IPC::Message* set_background =
       process_->sink().GetUniqueMessageMatching(ViewMsg_SetBackground::ID);
   ASSERT_TRUE(set_background);
@@ -468,10 +470,11 @@ TEST_F(RenderWidgetHostTest, Background) {
   EXPECT_TRUE(0 == memcmp(background.getPixels(),
                           sent_background.a.getPixels(),
                           background.getSize()));
-#else
-  // TODO(port): When custom backgrounds are implemented for other ports, this
-  // test should work (assuming the background must still be copied into the
-  // renderer -- if not, then maybe the test doesn't apply?).
+
+#if defined(OS_LINUX) || defined(USE_AURA)
+  // See the comment above |InitAsChild(NULL)|.
+  host_->SetView(NULL);
+  static_cast<content::RenderWidgetHostViewPort*>(view.release())->Destroy();
 #endif
 
 #else
