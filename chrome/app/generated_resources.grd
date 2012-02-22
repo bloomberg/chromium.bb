@@ -8109,9 +8109,6 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_OPTIONS_STARTUP_SHOW_DEFAULT_AND_NEWTAB" desc="The label of the 'Show home page' startup option radio button">
         Open the home page
       </message>
-      <message name="IDS_OPTIONS2_STARTUP_SHOW_DEFAULT_AND_NEWTAB" desc="The label of the 'Show New Tab page' startup option radio button">
-        Open the New Tab page
-      </message>
       <message name="IDS_OPTIONS_STARTUP_SHOW_LAST_SESSION" desc="The label of the 'Restore previously open pages' startup option radio button">
         Reopen the pages that were open last
       </message>
@@ -8164,15 +8161,6 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       </if>
 
       <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS2_HOMEPAGE_NONE" desc="The option in the homepage selector indicating no home page">
-          None
-        </message>
-        <message name="IDS_OPTIONS2_HOMEPAGE_NTP" desc="The option in the homepage selector indicating the NTP is the home page">
-          New Tab page
-        </message>
-        <message name="IDS_OPTIONS2_HOMEPAGE_CHOOSE" desc="The option in the homepage selector for choosing a different home page">
-          Choose another...
-        </message>
         <message name="IDS_OPTIONS_HOMEPAGE_GROUP_NAME" desc="The title of the home page group">
           Home page
         </message>
@@ -8187,15 +8175,6 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS2_HOMEPAGE_NONE" desc="In Title Case: The option in the homepage selector indicating no home page">
-          None
-        </message>
-        <message name="IDS_OPTIONS2_HOMEPAGE_NTP" desc="In Title Case: The option in the homepage selector indicating the NTP is the home page">
-          New Tab Page
-        </message>
-        <message name="IDS_OPTIONS2_HOMEPAGE_CHOOSE" desc="In Title Case: The option in the homepage selector for choosing a different home page">
-          Choose Another...
-        </message>
         <message name="IDS_OPTIONS_HOMEPAGE_GROUP_NAME" desc="In Title Case: The title of the home page group">
           Home Page
         </message>
@@ -8209,12 +8188,6 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
           Toolbar Appearance
         </message>
       </if>
-      <message name="IDS_OPTIONS2_HOMEPAGE_DIALOG_LABEL" desc="The label for the homepage textbox in the dialog">
-        Home page:
-      </message>
-      <message name="IDS_OPTIONS2_HOMEPAGE" desc="The label for the homepage selector">
-        Home page:
-      </message>
       <message name="IDS_OPTIONS_HOMEPAGE_USE_NEWTAB" desc="The title of the 'Use the New Tab page' for the home page radio">
         Use the New Tab page
       </message>
@@ -8226,6 +8199,12 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       </message>
       <message name="IDS_OPTIONS_CHANGE_HOME_PAGE" desc="The text of the button that allows the user to change her home page">
         Change page
+      </message>
+      <message name="IDS_OPTIONS_SHOW_HOME_BUTTON_FOR_URL" desc="The label of the 'Show Home button' checkbox">
+        Show Home button for &lt;b&gt;<ph name="HOME_PAGE_URL">$1<ex>google.com/search</ex></ph>&lt;/b&gt;.
+      </message>
+      <message name="IDS_OPTIONS_SHOW_HOME_BUTTON_FOR_NTP" desc="The label of the 'Show Home button' checkbox">
+        Show Home button for the &lt;b&gt;New Tab page&lt;/b&gt;.
       </message>
       <message name="IDS_OPTIONS_TOOLBAR_SHOW_BOOKMARKS_BAR" desc="The label of the 'Show bookmarks bar' checkbox">
         Always show the bookmarks bar

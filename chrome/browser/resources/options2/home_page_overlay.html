@@ -1,12 +1,26 @@
 <div id="home-page-overlay" class="page" hidden>
   <h1 i18n-content="homePageOverlay"></h1>
   <div class="content-area">
-    <div class="hbox stretch box-align-center">
-      <label for="homepageURL" i18n-content="homePageDialogLabel"></label>
+    <div class="radio">
+      <label>
+        <input id="homepage-use-ntp" type="radio" name="homepage" value="true"
+            metric="Options_Homepage_IsNewTabPage" pref="homepage_is_newtabpage"
+            dialog-pref>
+        <span i18n-content="homepageUseNewTab">Use the New Tab page</span>
+      </label>
+    </div>
+    <div id="customHomePageGroup">
+      <div class="radio">
+        <label>
+          <input id="homepage-use-url" type="radio" name="homepage"
+              value="false" metric="Options_Homepage_IsNewTabPage"
+              pref="homepage_is_newtabpage" dialog-pref>
+          <span i18n-content="homepageUseURL">Open this page:</span>
+        </label>
+      </div>
       <input id="homepageURL" type="url"
           class="weakrtl favicon-cell hbox stretch"
-          data-type="url" pref="homepage" controlled-by="recommended"
-          dialog-pref>
+          data-type="url" pref="homepage" dialog-pref>
     </div>
   </div>
   <div class="action-area">

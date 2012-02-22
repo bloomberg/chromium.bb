@@ -31,6 +31,9 @@ cr.define('options', function() {
       SettingsDialog.prototype.initializePage.call(this);
 
       var self = this;
+      $('homepage-use-ntp').onchange = this.updateHomePageInput_.bind(this);
+      $('homepage-use-url').onchange = this.updateHomePageInput_.bind(this);
+
       $('homepageURL').addEventListener('keydown', function(event) {
         // Focus the 'OK' button when the user hits enter since people expect
         // feedback indicating that they are done editing.
@@ -42,35 +45,35 @@ cr.define('options', function() {
       // here.
     },
 
-    /**
-     * Sets the 'show home button' and 'home page is new tab page' preferences.
-     * (The home page url preference is set automatically by the SettingsDialog
-     * code.)
-     */
+    /** @inheritDoc */
+    didShowPage: function() {
+      // Set initial state.
+      this.updateHomePageInput_();
+    },
+
+    /** @inheritDoc */
     handleConfirm: function() {
       // Strip whitespace.
       var homePageValue = $('homepageURL').value.replace(/\s*/g, '');
-      $('homepageURL').value = homePageValue;
 
-      // Don't save an empty URL for the home page. If the user left the field
-      // empty, act as if they clicked Cancel.
-      if (!homePageValue) {
-        this.handleCancel();
-      } else {
-        SettingsDialog.prototype.handleConfirm.call(this);
-        Preferences.setBooleanPref('browser.show_home_button', true);
-        Preferences.setBooleanPref('homepage_is_newtabpage', false);
-        BrowserOptions.getInstance().updateHomePageSelector();
+      // Don't save an empty URL for the home page.
+      if ($('homepage-use-url').checked && homePageValue == '') {
+        $('homepage-use-url').checked = false;
+        $('homepage-use-ntp').checked = true;
       }
+
+      SettingsDialog.prototype.handleConfirm.call(this);
     },
 
     /**
-     * Resets the <select> on the browser options page to the appropriate value,
-     * based on the current preferences.
+     * Updates the state of the homepage text input. The input is enabled only
+     * if the |homepageUseURLBUtton| radio is checked.
+     * @private
      */
-    handleCancel: function() {
-      SettingsDialog.prototype.handleCancel.call(this);
-      BrowserOptions.getInstance().updateHomePageSelector();
+    updateHomePageInput_: function() {
+      var homepageInput = $('homepageURL');
+      var homepageUseURL = $('homepage-use-url');
+      homepageInput.setDisabled('radio-choice', !homepageUseURL.checked);
     },
   };
 

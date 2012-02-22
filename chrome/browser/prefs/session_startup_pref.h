@@ -17,11 +17,8 @@ class Profile;
 // StartupPref is stored in the preferences for a particular profile.
 struct SessionStartupPref {
   enum Type {
-    // Indicates the user wants to open the New Tab page.
+    // Indicates the user doesn't want to restore a previous session.
     DEFAULT,
-
-    // Deprecated. See comment in session_startup_pref.cc.
-    HOMEPAGE,
 
     // Indicates the user wants to restore the last session.
     LAST,
@@ -46,6 +43,8 @@ struct SessionStartupPref {
 
   // Converts an integer pref value to a SessionStartupPref::Type.
   static SessionStartupPref::Type PrefValueToType(int pref_value);
+
+  SessionStartupPref();
 
   explicit SessionStartupPref(Type type);
 

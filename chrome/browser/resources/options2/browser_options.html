@@ -52,9 +52,9 @@
     <div>
       <div class="radio">
         <label>
-          <input type="radio" name="startup" value="5"
+          <input type="radio" name="startup" value="0"
               pref="session.restore_on_startup"
-              metric="Options_Startup_NewTab">
+              metric="Options_Startup_Homepage">
           <span i18n-content="startupShowDefaultAndNewTab"></span>
         </label>
       </div>
@@ -103,15 +103,15 @@
     </div>
 </if>
     <div>
-      <div id="home-page-select-container">
-        <label id="home-page-label" for="home-page-select"
-            i18n-content="homePage"></label>
-        <select id="home-page-select">
-          <option value="none" i18n-content="homePageNone"></option>
-          <option value="ntp" i18n-content="homePageNtp"></option>
-          <option value="url"></option>
-          <option value="choose" i18n-content="homePageChoose"></option>
-        </select>
+      <div class="checkbox">
+        <label>
+          <input id="toolbar-show-home-button" pref="browser.show_home_button"
+              metric="Options_Homepage_HomeButton" type="checkbox">
+          <span id="home-page-label"
+              i18n-content="toolbarShowHomeButton"></span>
+        </label>
+        <button id="change-home-page" i18n-content="changeHomePage"
+            class="link-button"></button>
       </div>
       <div class="checkbox"><label>
           <input type="checkbox" pref="bookmark_bar.show_on_all_tabs"
@@ -282,9 +282,9 @@
     <div>
       <div class="radio">
         <label>
-          <input type="radio" name="startup" value="5"
+          <input type="radio" name="startup" value="0"
               pref="session.restore_on_startup"
-              metric="Options_Startup_NewTab">
+              metric="Options_Startup_Homepage">
           <span i18n-content="startupShowDefaultAndNewTab"></span>
         </label>
       </div>
