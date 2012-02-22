@@ -11,10 +11,9 @@
 
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/compiler_specific.h"
-#include "base/memory/weak_ptr.h"
 #include "ui/gfx/size.h"
 
 class CommandLine;
@@ -228,8 +227,6 @@ class ASH_EXPORT Shell {
   internal::RootWindowEventFilter* root_filter_;  // not owned
 
   std::vector<WindowAndBoundsPair> to_restore_;
-
-  base::WeakPtrFactory<Shell> method_factory_;
 
 #if !defined(OS_MACOSX)
   scoped_ptr<NestedDispatcherController> nested_dispatcher_controller_;

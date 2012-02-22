@@ -206,7 +206,6 @@ Shell* Shell::instance_ = NULL;
 
 Shell::Shell(ShellDelegate* delegate)
     : root_filter_(new internal::RootWindowEventFilter),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
 #if !defined(OS_MACOSX)
       nested_dispatcher_controller_(new NestedDispatcherController),
       accelerator_controller_(new AcceleratorController),
