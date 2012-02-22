@@ -16,33 +16,21 @@ class AudioMixer {
   virtual ~AudioMixer() {}
 
   // Initializes the connection to the device.  This must be called on the UI
-  // thread; blocking tasks may take place in the background.  IsInitialized()
-  // may be called to check if initialization is done.
+  // thread; blocking tasks may take place in the background.  Note that the
+  // other methods in this interface can be called before Init().
   virtual void Init() = 0;
 
-  // Returns true if device initialization is complete.
-  virtual bool IsInitialized() = 0;
+  // Returns the most-recently-set volume, in the range [0.0, 100.0].
+  virtual double GetVolumePercent() = 0;
 
-  // Returns the actual volume range available, according to the mixer.
-  // Values will be incorrect if called before initialization is complete.
-  virtual void GetVolumeLimits(double* min_volume_db,
-                               double* max_volume_db) = 0;
+  // Sets the volume, possibly asynchronously.
+  // |percent| should be in the range [0.0, 100.0].
+  virtual void SetVolumePercent(double percent) = 0;
 
-  // Gets the most-recently-set volume, in decibels.
-  virtual double GetVolumeDb() = 0;
-
-  // Sets the volume, in decibels.
-  // If initialization is still in progress, the value will be applied once
-  // initialization is complete.
-  virtual void SetVolumeDb(double volume_db) = 0;
-
-  // Gets the most-recently set mute state of the default device (true means
-  // muted).
+  // Is the device currently muted?
   virtual bool IsMuted() = 0;
 
-  // Sets the mute state of the default device.
-  // If initialization is still in progress, the value will be applied once
-  // initialization is complete.
+  // Mutes or unmutes the device, possibly asynchronously.
   virtual void SetMuted(bool mute) = 0;
 
  private:

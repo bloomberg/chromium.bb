@@ -30,11 +30,8 @@ class AudioMixerAlsa : public AudioMixer {
 
   // AudioMixer implementation.
   virtual void Init() OVERRIDE;
-  virtual bool IsInitialized() OVERRIDE;
-  virtual void GetVolumeLimits(double* min_volume_db,
-                               double* max_volume_db) OVERRIDE;
-  virtual double GetVolumeDb() OVERRIDE;
-  virtual void SetVolumeDb(double volume_db) OVERRIDE;
+  virtual double GetVolumePercent() OVERRIDE;
+  virtual void SetVolumePercent(double percent) OVERRIDE;
   virtual bool IsMuted() OVERRIDE;
   virtual void SetMuted(bool muted) OVERRIDE;
 
@@ -74,24 +71,35 @@ class AudioMixerAlsa : public AudioMixer {
   // Mutes or unmutes |element|.
   void SetElementMuted(_snd_mixer_elem* element, bool mute);
 
-  // Guards |min_volume_db_|, |max_volume_db_|, |volume_db_|, |is_muted_|, and
-  // |apply_is_pending_|.
+  // Converts between percentages (in the range [0.0, 100.0]) and decibels.
+  // |lock_| must be held.
+  double DbToPercent(double db) const;
+  double PercentToDb(double percent) const;
+
+  // Guards |min_volume_db_|, |max_volume_db_|, |volume_db_|, |is_muted_|,
+  // |apply_is_pending_|, and |initial_volume_percent_|.
   base::Lock lock_;
 
   // Volume range limits are computed once in ConnectInternal().
   double min_volume_db_;
   double max_volume_db_;
 
-  // Most recently requested volume, in decibels.  This variable is updated
-  // immediately by GetVolumeDb(); the actual mixer volume is updated later on
-  // |thread_| by ApplyState().
+  // Most recently-requested volume, in decibels.  This variable is updated
+  // immediately by SetVolumePercent() (post-initialization); the actual mixer
+  // volume is updated later on |thread_| by ApplyState().
   double volume_db_;
 
-  // Most recently requested muting state.
+  // Most recently-requested muting state.
   bool is_muted_;
 
   // Is there already a pending call to ApplyState() scheduled on |thread_|?
   bool apply_is_pending_;
+
+  // Before |min_volume_db_| and |max_volume_db_| are fetched from ALSA, we
+  // can't convert percentages to decibels.  The default initial volume and any
+  // subsequent requests we get early on are stored here and then applied during
+  // initialization.  This variable is unused after initialization.
+  double initial_volume_percent_;
 
   // Connection to ALSA.  NULL if not connected.
   _snd_mixer* alsa_mixer_;

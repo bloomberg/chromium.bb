@@ -32,18 +32,12 @@ class AudioHandler {
 
   static void Initialize();
   static void Shutdown();
+
   // GetInstance returns NULL if not initialized or if already shutdown.
-  // The mixer may be uninitialized, so use GetInstanceIfInitialized
-  // for volume control until the TODO below is resolved.
   static AudioHandler* GetInstance();
 
-  // GetInstanceIfInitialized returns NULL if GetInstance returns NULL or if
-  // the mixer has not finished initializing.
-  // TODO(derat): All of the volume-percent methods will produce "interesting"
-  // results before the mixer is initialized, since the driver's volume range
-  // isn't known at that point.  This could be avoided if AudioMixer objects
-  // instead took percentages and did their own conversions to decibels.
-  static AudioHandler* GetInstanceIfInitialized();
+  // TODO(derat): Delete this now that |mixer_| can be used immediately.
+  static AudioHandler* GetInstanceIfInitialized() { return GetInstance(); }
 
   // Registers volume and mute preferences.
   static void RegisterPrefs(PrefService* local_state);
@@ -73,12 +67,6 @@ class AudioHandler {
 
   AudioHandler();
   virtual ~AudioHandler();
-
-  bool IsMixerInitialized();
-
-  // Conversion between our internal scaling (0-100%) and decibels.
-  double VolumeDbToPercent(double volume_db) const;
-  double PercentToVolumeDb(double volume_percent) const;
 
   scoped_ptr<AudioMixer> mixer_;
 
