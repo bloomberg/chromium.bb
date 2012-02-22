@@ -100,6 +100,7 @@ class ImageRepSkia : public ImageRep {
   explicit ImageRepSkia(const SkBitmap* bitmap)
       : ImageRep(Image::kImageRepSkia) {
     CHECK(bitmap);
+    // TODO(rohitrao): Add a CHECK to ensure that !bitmap->isNull().
     bitmaps_.push_back(bitmap);
   }
 
@@ -107,6 +108,8 @@ class ImageRepSkia : public ImageRep {
       : ImageRep(Image::kImageRepSkia),
         bitmaps_(bitmaps) {
     CHECK(!bitmaps_.empty());
+    // TODO(rohitrao): Add a CHECK to ensure that !bitmap->isNull() for each
+    // vector element.
   }
 
   virtual ~ImageRepSkia() {
@@ -230,6 +233,10 @@ class ImageStorage : public base::RefCounted<ImageStorage> {
 
 }  // namespace internal
 
+Image::Image() {
+  // |storage_| is NULL for empty Images.
+}
+
 Image::Image(const SkBitmap* bitmap)
     : storage_(new internal::ImageStorage(Image::kImageRepSkia)) {
   internal::ImageRepSkia* rep = new internal::ImageRepSkia(bitmap);
@@ -334,11 +341,18 @@ Image::operator NSImage*() const {
 #endif
 
 bool Image::HasRepresentation(RepresentationType type) const {
-  return storage_->representations().count(type) != 0;
+  return storage_.get() && storage_->representations().count(type) != 0;
 }
 
 size_t Image::RepresentationCount() const {
+  if (!storage_.get())
+    return 0;
+
   return storage_->representations().size();
+}
+
+bool Image::IsEmpty() const {
+  return RepresentationCount() == 0;
 }
 
 void Image::SwapRepresentations(gfx::Image* other) {
@@ -346,6 +360,7 @@ void Image::SwapRepresentations(gfx::Image* other) {
 }
 
 internal::ImageRep* Image::DefaultRepresentation() const {
+  CHECK(storage_.get());
   RepresentationMap& representations = storage_->representations();
   RepresentationMap::iterator it =
       representations.find(storage_->default_representation_type());
@@ -355,6 +370,7 @@ internal::ImageRep* Image::DefaultRepresentation() const {
 
 internal::ImageRep* Image::GetRepresentation(
     RepresentationType rep_type) const {
+  CHECK(storage_.get());
   // If the requested rep is the default, return it.
   internal::ImageRep* default_rep = DefaultRepresentation();
   if (rep_type == storage_->default_representation_type())
@@ -435,6 +451,7 @@ internal::ImageRep* Image::GetRepresentation(
 }
 
 void Image::AddRepresentation(internal::ImageRep* rep) const {
+  CHECK(storage_.get());
   storage_->representations().insert(std::make_pair(rep->type(), rep));
 }
 

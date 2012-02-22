@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,6 +28,25 @@ class ImageTest : public testing::Test {
 };
 
 namespace gt = gfx::test;
+
+TEST_F(ImageTest, EmptyImage) {
+  // Test the default constructor.
+  gfx::Image image;
+  EXPECT_EQ(0U, image.RepresentationCount());
+  EXPECT_TRUE(image.IsEmpty());
+
+  // Test the copy constructor.
+  gfx::Image imageCopy(image);
+  EXPECT_TRUE(imageCopy.IsEmpty());
+
+  // Test calling SwapRepresentations() with an empty image.
+  gfx::Image image2(gt::CreateBitmap(25, 25));
+  EXPECT_FALSE(image2.IsEmpty());
+
+  image.SwapRepresentations(&image2);
+  EXPECT_FALSE(image.IsEmpty());
+  EXPECT_TRUE(image2.IsEmpty());
+}
 
 TEST_F(ImageTest, SkiaToSkia) {
   gfx::Image image(gt::CreateBitmap(25, 25));

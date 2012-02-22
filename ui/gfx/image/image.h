@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,9 @@
 // cheaply passed around by value, the actual image data is stored in a ref-
 // counted member. When all Images referencing this storage are deleted, the
 // actual representations are deleted, too.
+//
+// Images can be empty, in which case they have no backing representation.
+// Attempting to use an empty Image will result in a crash.
 
 #ifndef UI_GFX_IMAGE_IMAGE_H_
 #define UI_GFX_IMAGE_IMAGE_H_
@@ -54,6 +57,9 @@ class UI_EXPORT Image {
   };
 
   typedef std::map<RepresentationType, internal::ImageRep*> RepresentationMap;
+
+  // Creates an empty image with no representations.
+  Image();
 
   // Creates a new image with the default representation. The object will take
   // ownership of the image.
@@ -133,6 +139,9 @@ class UI_EXPORT Image {
 
   // Returns the number of representations.
   size_t RepresentationCount() const;
+
+  // Returns true if this Image has no representations.
+  bool IsEmpty() const;
 
   // Swaps this image's internal representations with |other|.
   void SwapRepresentations(gfx::Image* other);
