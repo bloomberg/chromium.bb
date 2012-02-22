@@ -16,5 +16,8 @@ ConditionVariableTest.LargeFastTaskTest
 # Fails under TSan: http://crbug.com/93843
 MessageLoopTest.RecursiveDenial3
 
+# Crashes under TSan: http://crbug.com/115107
+WorkerPoolTest.PostTask
+
 # Times out on Win7, slow on Vista: http://crbug.com/106531
 TraceEventTestFixture.DataCapturedManyThreads
