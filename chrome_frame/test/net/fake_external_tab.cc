@@ -7,7 +7,6 @@
 #include <atlbase.h>
 #include <atlcom.h>
 #include <exdisp.h>
-#include <Winsock2.h>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -57,7 +56,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
-#include "net/base/net_util.h"
 #include "sandbox/src/sandbox_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -522,7 +520,7 @@ void CFUrlRequestUnittestRunner::ShutDownHostBrowser() {
   }
 }
 
-// Override virtual void Initialize to not call icu initialize.
+// Override virtual void Initialize to not call icu initialize
 void CFUrlRequestUnittestRunner::Initialize() {
   DCHECK(::GetCurrentThreadId() == test_thread_id_);
 
@@ -538,10 +536,6 @@ void CFUrlRequestUnittestRunner::Initialize() {
 
   // Next, do some initialization for NetTestSuite.
   NetTestSuite::InitializeTestThreadNoNetworkChangeNotifier();
-
-  // Finally, override the host used by the HTTP tests. See
-  // http://crbug.com/114369 .
-  OverrideHttpHost();
 }
 
 void CFUrlRequestUnittestRunner::Shutdown() {
@@ -614,35 +608,6 @@ void CFUrlRequestUnittestRunner::InitializeLogging() {
   // We want process and thread IDs because we may have multiple processes.
   // Note: temporarily enabled timestamps in an effort to catch bug 6361.
   logging::SetLogItems(true, true, true, true);
-}
-
-void CFUrlRequestUnittestRunner::OverrideHttpHost() {
-  net::NetworkInterfaceList nic_list;
-  if (!net::GetNetworkList(&nic_list)) {
-    LOG(ERROR) << "GetNetworkList failed to look up non-loopback adapters. "
-               << "Tests will be run over the loopback adapter, which may "
-               << "result in hangs.";
-    return;
-  }
-
-  // GetNetworkList only returns 'Up' non-loopback adapters. Select the first
-  // IPV4 address found - we should be able to bind/connect over it.
-  for (size_t i = 0; i < nic_list.size(); ++i) {
-    if (nic_list[i].address.size() != net::kIPv4AddressSize)
-      continue;
-    char* address_string =
-        inet_ntoa(*reinterpret_cast<in_addr*>(&nic_list[i].address[0]));
-    DCHECK(address_string != NULL);
-    if (address_string == NULL)
-      continue;
-    LOG(INFO) << "HTTP tests will run over " << address_string << ".";
-    override_http_host_.reset(
-        new ScopedCustomUrlRequestTestHttpHost(address_string));
-    return;
-  }
-
-  LOG(ERROR) << "Failed to find a non-loopback IP_V4 address. Tests will be "
-             << "run over the loopback adapter, which may result in hangs.";
 }
 
 void CFUrlRequestUnittestRunner::PreEarlyInitialization() {

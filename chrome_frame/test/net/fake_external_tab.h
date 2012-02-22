@@ -21,7 +21,6 @@
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_test_suite.h"
-#include "net/url_request/url_request_test_util.h"
 
 class FakeBrowserProcessImpl;
 class ProcessSingleton;
@@ -125,8 +124,6 @@ class CFUrlRequestUnittestRunner
   base::ProcessHandle crash_service_;
   DWORD test_thread_id_;
 
-  scoped_ptr<ScopedCustomUrlRequestTestHttpHost> override_http_host_;
-
   scoped_ptr<test_server::SimpleWebServer> test_http_server_;
   test_server::SimpleResponse chrome_frame_html_;
 
@@ -135,11 +132,6 @@ class CFUrlRequestUnittestRunner
   scoped_ptr<ProcessSingletonSubclass> pss_subclass_;
   ScopedChromeFrameRegistrar registrar_;
   int test_result_;
-
- private:
-  // Causes HTTP tests to run over an external address rather than 127.0.0.1.
-  // See http://crbug.com/114369 .
-  void OverrideHttpHost();
 
   DISALLOW_COPY_AND_ASSIGN(CFUrlRequestUnittestRunner);
 };
