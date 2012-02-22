@@ -203,6 +203,8 @@ void NormalizeDisposition(browser::NavigateParams* params) {
       params->disposition == OFF_THE_RECORD) {
     params->disposition = NEW_FOREGROUND_TAB;
   }
+  if (!params->source_contents && params->disposition == CURRENT_TAB)
+    params->disposition = NEW_FOREGROUND_TAB;
 
   switch (params->disposition) {
     case NEW_BACKGROUND_TAB:

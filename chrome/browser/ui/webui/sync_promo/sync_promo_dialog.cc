@@ -105,8 +105,13 @@ bool SyncPromoDialog::HandleAddNewContents(
 }
 
 void SyncPromoDialog::CloseDialog() {
+  // Only close the window once.
+  if (!window_)
+    return;
+
   // Close the dialog asynchronously since closing it will cause this and other
   // WebUI handlers to be deleted.
   MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(browser::CloseHtmlDialog, window_));
+  window_ = NULL;
 }
