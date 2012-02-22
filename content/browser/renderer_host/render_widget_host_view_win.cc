@@ -55,6 +55,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/scoped_sk_region.h"
 #include "ui/gfx/screen.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webcursor.h"
@@ -328,7 +329,8 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       touch_state_(this),
       pointer_down_context_(false),
       focus_on_editable_field_(false),
-      received_focus_change_after_pointer_down_(false) {
+      received_focus_change_after_pointer_down_(false),
+      transparent_region_(0) {
   render_widget_host_->SetView(this);
   registrar_.Add(this,
                  content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
@@ -1153,6 +1155,25 @@ void RenderWidgetHostViewWin::DrawBackground(const RECT& dirty_rect,
 void RenderWidgetHostViewWin::OnNCPaint(HRGN update_region) {
   // Do nothing.  This suppresses the resize corner that Windows would
   // otherwise draw for us.
+}
+
+void RenderWidgetHostViewWin::SetClickthroughRegion(SkRegion* region) {
+  if (transparent_region_.Get())
+    transparent_region_.release();
+  transparent_region_.Set(region);
+}
+
+LRESULT RenderWidgetHostViewWin::OnNCHitTest(const CPoint& point) {
+  RECT rc;
+  GetWindowRect(&rc);
+  if (transparent_region_.Get() &&
+      transparent_region_.Get()->contains(point.x - rc.left,
+                                          point.y - rc.top)) {
+    SetMsgHandled(TRUE);
+    return HTTRANSPARENT;
+  }
+  SetMsgHandled(FALSE);
+  return 0;
 }
 
 LRESULT RenderWidgetHostViewWin::OnEraseBkgnd(HDC dc) {

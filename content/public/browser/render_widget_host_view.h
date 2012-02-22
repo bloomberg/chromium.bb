@@ -12,6 +12,7 @@
 
 #include "content/common/content_export.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -136,6 +137,11 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // on browser_accessibility* files in content.
   virtual BrowserAccessibilityManager*
       GetBrowserAccessibilityManager() const = 0;
+
+#if defined(OS_WIN) && !defined(USE_AURA)
+  // The region specified will be transparent to mouse clicks.
+  virtual void SetClickthroughRegion(SkRegion* region) {}
+#endif
 };
 
 }  // namespace content

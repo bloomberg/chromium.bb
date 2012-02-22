@@ -149,8 +149,12 @@ bool ExtensionView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
 void ExtensionView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   // Propagate the new size to RenderWidgetHostView.
   // We can't send size zero because RenderWidget DCHECKs that.
-  if (render_view_host()->view() && !bounds().IsEmpty())
+  if (render_view_host()->view() && !bounds().IsEmpty()) {
     render_view_host()->view()->SetSize(size());
+
+    if (container_)
+      container_->OnViewWasResized();
+  }
 }
 
 void ExtensionView::RenderViewCreated() {
@@ -164,4 +168,7 @@ void ExtensionView::RenderViewCreated() {
   gfx::Size largest_popup_size(ExtensionPopup::kMaxWidth,
                                ExtensionPopup::kMaxHeight);
   host_->DisableScrollbarsForSmallWindows(largest_popup_size);
+
+  if (container_)
+    container_->OnViewWasResized();
 }

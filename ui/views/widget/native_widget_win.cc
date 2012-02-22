@@ -1285,6 +1285,9 @@ LRESULT NativeWidgetWin::OnCreate(CREATESTRUCT* create_struct) {
   // We should attach IMEs only when we need to input CJK strings.
   ImmAssociateContextEx(hwnd(), NULL, 0);
 
+  if (remove_standard_frame_)
+    SendFrameChanged(GetNativeView());
+
   // We need to allow the delegate to size its contents since the window may not
   // receive a size notification when its initial bounds are specified at window
   // creation time.
@@ -1634,9 +1637,11 @@ LRESULT NativeWidgetWin::OnNCActivate(BOOL active) {
 LRESULT NativeWidgetWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
   // We only override the default handling if we need to specify a custom
   // non-client edge width. Note that in most cases "no insets" means no
-  // custom width, but in fullscreen mode we want a custom width of 0.
+  // custom width, but in fullscreen mode or when the NonClientFrameView
+  // requests it, we want a custom width of 0.
   gfx::Insets insets = GetClientAreaInsets();
-  if (insets.empty() && !IsFullscreen()) {
+  if (insets.empty() && !IsFullscreen() &&
+      !(mode && remove_standard_frame_)) {
     SetMsgHandled(FALSE);
     return 0;
   }
@@ -1721,7 +1726,7 @@ LRESULT NativeWidgetWin::OnNCHitTest(const CPoint& point) {
 
   // If the DWM is rendering the window controls, we need to give the DWM's
   // default window procedure first chance to handle hit testing.
-  if (GetWidget()->ShouldUseNativeFrame()) {
+  if (!remove_standard_frame_ && GetWidget()->ShouldUseNativeFrame()) {
     LRESULT result;
     if (DwmDefWindowProc(GetNativeView(), WM_NCHITTEST, 0,
                          MAKELPARAM(point.x, point.y), &result)) {
@@ -2087,6 +2092,9 @@ void NativeWidgetWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
 void NativeWidgetWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
   if (DidClientAreaSizeChange(window_pos))
     ClientAreaSizeChanged();
+  if (remove_standard_frame_ && window_pos->flags & SWP_FRAMECHANGED &&
+      IsAeroGlassEnabled())
+    UpdateDWMFrame();
   if (window_pos->flags & SWP_SHOWWINDOW)
     delegate_->OnNativeWidgetVisibilityChanged(true);
   else if (window_pos->flags & SWP_HIDEWINDOW)
@@ -2296,6 +2304,7 @@ void NativeWidgetWin::SetInitParams(const Widget::InitParams& params) {
   set_window_ex_style(window_ex_style() | ex_style);
 
   has_non_client_view_ = Widget::RequiresNonClientView(params.type);
+  remove_standard_frame_ = params.remove_standard_frame;
 }
 
 void NativeWidgetWin::RedrawInvalidRect() {
@@ -2365,6 +2374,11 @@ void NativeWidgetWin::ClientAreaSizeChanged() {
   delegate_->OnNativeWidgetSizeChanged(s);
   if (use_layered_buffer_)
     layered_window_contents_.reset(new gfx::CanvasSkia(s, false));
+}
+
+void NativeWidgetWin::UpdateDWMFrame() {
+  MARGINS m = {10, 10, 10, 10};
+  DwmExtendFrameIntoClientArea(GetNativeView(), &m);
 }
 
 void NativeWidgetWin::ResetWindowRegion(bool force) {

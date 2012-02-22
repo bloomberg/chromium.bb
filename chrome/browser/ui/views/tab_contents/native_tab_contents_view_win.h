@@ -65,6 +65,7 @@ class NativeTabContentsViewWin : public views::NativeWidgetWin,
   virtual void OnSize(UINT param, const WTL::CSize& size) OVERRIDE;
   virtual LRESULT OnNCCalcSize(BOOL w_param, LPARAM l_param) OVERRIDE;
   virtual void OnNCPaint(HRGN rgn) OVERRIDE;
+  virtual LRESULT OnNCHitTest(const CPoint& point) OVERRIDE;
 
   // Backend for all scroll messages, the |message| parameter indicates which
   // one it is.
