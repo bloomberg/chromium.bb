@@ -17,7 +17,6 @@ class InputMethodManagerTest : public InProcessBrowserTest {
 
  protected:
   virtual void SetUpOnMainThread() OVERRIDE {
-    manager_->SetDeferImeStartup(true);
     manager_->SetEnableAutoImeShutdown(true);
   }
   virtual void CleanUpOnMainThread() OVERRIDE {

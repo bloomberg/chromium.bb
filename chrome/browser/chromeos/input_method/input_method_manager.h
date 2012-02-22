@@ -204,10 +204,6 @@ class InputMethodManager {
   // already stopped, returns false.
   virtual bool StopInputMethodDaemon() = 0;
 
-  // Controls whether the IME process is started when preload engines are
-  // specificed, or defered until a non-default method is activated.
-  virtual void SetDeferImeStartup(bool defer) = 0;
-
   // Controls whether the IME process is stopped when all non-default preload
   // engines are removed.
   virtual void SetEnableAutoImeShutdown(bool enable) = 0;

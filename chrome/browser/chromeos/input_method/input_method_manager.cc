@@ -152,7 +152,6 @@ class InputMethodManagerImpl
         should_hide_properties_(true),
         should_launch_ime_(false),
         ime_connected_(false),
-        defer_ime_startup_(false),
         enable_auto_ime_shutdown_(true),
         shutting_down_(false),
         ibus_daemon_process_handle_(base::kNullProcessHandle),
@@ -779,11 +778,11 @@ class InputMethodManagerImpl
     return true;
   }
 
-  // Starts input method daemon based on the |defer_ime_startup_| flag and
-  // input method configuration being updated. |section| is a section name of
-  // the input method configuration (e.g. "general", "general/hotkey").
-  // |config_name| is a name of the configuration (e.g. "preload_engines",
-  // "previous_engine"). |value| is the configuration value to be set.
+  // Starts input method daemon based on the input method configuration being
+  // updated. |section| is a section name of the input method configuration
+  // (e.g. "general", "general/hotkey"). |config_name| is a name of the
+  // configuration (e.g. "preload_engines", "previous_engine"). |value| is the
+  // configuration value to be set.
   void MaybeStartInputMethodDaemon(const std::string& section,
                                    const std::string& config_name,
                                    const ImeConfigValue& value) {
@@ -792,10 +791,8 @@ class InputMethodManagerImpl
         value.type == ImeConfigValue::kValueTypeStringList &&
         !value.string_list_value.empty()) {
       // If there is only one input method which is a keyboard layout,
-      // we don't start the input method processes.  When
-      // |defer_ime_startup_| is true, we don't start it either.
-      if (ContainOnlyKeyboardLayout(value.string_list_value) ||
-          defer_ime_startup_) {
+      // we don't start the input method processes.
+      if (ContainOnlyKeyboardLayout(value.string_list_value)) {
         // Do not start the input method daemon.
         return;
       }
@@ -1341,11 +1338,6 @@ class InputMethodManagerImpl
     return false;
   }
 
-  void SetDeferImeStartup(bool defer) {
-    VLOG(1) << "Setting DeferImeStartup to " << defer;
-    defer_ime_startup_ = defer;
-  }
-
   void SetEnableAutoImeShutdown(bool enable) {
     enable_auto_ime_shutdown_ = enable;
   }
@@ -1492,9 +1484,6 @@ class InputMethodManagerImpl
   bool should_launch_ime_;
   // True if the connection to the IBus daemon is alive.
   bool ime_connected_;
-  // If true, we'll defer the startup until a non-default method is
-  // activated.
-  bool defer_ime_startup_;
   // True if we should stop input method daemon when there are no input
   // methods other than one for the hardware keyboard.
   bool enable_auto_ime_shutdown_;

@@ -428,11 +428,8 @@ void ShowLoginWizard(const std::string& first_screen_name,
 
   VLOG(1) << "Showing OOBE screen: " << first_screen_name;
 
-  // The login screen will enable alternate keyboard layouts, but we don't want
-  // to start the IME process unless one is selected.
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::GetInstance();
-  manager->SetDeferImeStartup(true);
 
 #if defined(TOOLKIT_USES_GTK)
   // Tell the window manager that the user isn't logged in.

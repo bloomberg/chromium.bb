@@ -745,8 +745,6 @@ void UserManager::NotifyOnLogin() {
       content::Source<UserManager>(this),
       content::Details<const User>(logged_in_user_));
 
-  chromeos::input_method::InputMethodManager::GetInstance()->
-      SetDeferImeStartup(false);
   // Shut down the IME so that it will reload the user's settings.
   chromeos::input_method::InputMethodManager::GetInstance()->
       StopInputMethodDaemon();
