@@ -462,6 +462,8 @@
             'deb_arch': 'amd64',
             'rpm_arch': 'x86_64',
             'packaging_files_binaries': [
+              '<(PRODUCT_DIR)/PepperFlash/libpepflashplayer.so',
+              '<(PRODUCT_DIR)/PepperFlash/manifest.json',
               '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
             ],
           }],
