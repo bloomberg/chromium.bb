@@ -416,15 +416,18 @@ bool Clipboard::FormatType::Equals(const FormatType& other) const {
 }
 
 Clipboard::Clipboard() {
+  DCHECK(CalledOnValidThread());
   // Make sure clipboard is created.
   GetClipboard();
 }
 
 Clipboard::~Clipboard() {
+  DCHECK(CalledOnValidThread());
   DeleteClipboard();
 }
 
 void Clipboard::WriteObjects(Buffer buffer, const ObjectMap& objects) {
+  DCHECK(CalledOnValidThread());
   DCHECK(IsValidBuffer(buffer));
   for (ObjectMap::const_iterator iter = objects.begin();
        iter != objects.end(); ++iter) {
@@ -435,6 +438,7 @@ void Clipboard::WriteObjects(Buffer buffer, const ObjectMap& objects) {
 
 bool Clipboard::IsFormatAvailable(const FormatType& format,
                                   Buffer buffer) const {
+  DCHECK(CalledOnValidThread());
   DCHECK(IsValidBuffer(buffer));
   AuraClipboard* clipboard = GetClipboard();
   if (GetPlainTextFormatType().Equals(format))
@@ -455,6 +459,7 @@ bool Clipboard::IsFormatAvailable(const FormatType& format,
 
 void Clipboard::ReadAvailableTypes(Buffer buffer, std::vector<string16>* types,
     bool* contains_filenames) const {
+  DCHECK(CalledOnValidThread());
   if (!types || !contains_filenames) {
     NOTREACHED();
     return;
@@ -477,10 +482,12 @@ void Clipboard::ReadAvailableTypes(Buffer buffer, std::vector<string16>* types,
 }
 
 void Clipboard::ReadText(Buffer buffer, string16* result) const {
+  DCHECK(CalledOnValidThread());
   GetClipboard()->ReadText(result);
 }
 
 void Clipboard::ReadAsciiText(Buffer buffer, std::string* result) const {
+  DCHECK(CalledOnValidThread());
   GetClipboard()->ReadAsciiText(result);
 }
 
@@ -489,28 +496,34 @@ void Clipboard::ReadHTML(Buffer buffer,
                          std::string* src_url,
                          uint32* fragment_start,
                          uint32* fragment_end) const {
+  DCHECK(CalledOnValidThread());
   GetClipboard()->ReadHTML(markup, src_url, fragment_start, fragment_end);
 }
 
 SkBitmap Clipboard::ReadImage(Buffer buffer) const {
+  DCHECK(CalledOnValidThread());
   return GetClipboard()->ReadImage();
 }
 
 void Clipboard::ReadCustomData(Buffer buffer,
                                const string16& type,
                                string16* result) const {
+  DCHECK(CalledOnValidThread());
   GetClipboard()->ReadCustomData(type, result);
 }
 
 void Clipboard::ReadBookmark(string16* title, std::string* url) const {
+  DCHECK(CalledOnValidThread());
   GetClipboard()->ReadBookmark(title, url);
 }
 
 void Clipboard::ReadData(const FormatType& format, std::string* result) const {
+  DCHECK(CalledOnValidThread());
   GetClipboard()->ReadData(format.ToString(), result);
 }
 
 uint64 Clipboard::GetSequenceNumber(Buffer buffer) {
+  DCHECK(CalledOnValidThread());
   return GetClipboard()->GetNumClipboardEntries();
 }
 
