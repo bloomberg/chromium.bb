@@ -302,6 +302,9 @@ int32_t WebRtcAudioDeviceImpl::Init() {
   size_t input_buffer_size = 0;
   size_t output_buffer_size = 0;
 
+  // TODO(henrika): factor out all platform specific parts in separate
+  // functions. Code is a bit messy right now.
+
 // Windows
 #if defined(OS_WIN)
   if (input_sample_rate != 48000 && input_sample_rate != 44100 &&
@@ -309,8 +312,9 @@ int32_t WebRtcAudioDeviceImpl::Init() {
     DLOG(ERROR) << "Only 48, 44.1, 32 and 16kHz input rates are supported.";
     return -1;
   }
-  if (output_sample_rate != 48000 && output_sample_rate != 44100) {
-    DLOG(ERROR) << "Only 48 and 44.1kHz output rates are supported.";
+  if (output_sample_rate != 96000 && output_sample_rate != 48000 &&
+      output_sample_rate != 44100) {
+    DLOG(ERROR) << "Only 96, 48 and 44.1kHz output rates are supported.";
     return -1;
   }
 
@@ -337,8 +341,8 @@ int32_t WebRtcAudioDeviceImpl::Init() {
   // size of 10ms works well for WASAPI but 30ms is needed for Wave.
 
   // Use different buffer sizes depending on the current hardware sample rate.
-  if (output_sample_rate == 48000) {
-    output_buffer_size = 480;
+  if (output_sample_rate == 96000 || output_sample_rate == 48000) {
+    output_buffer_size = (output_sample_rate / 100);
   } else {
     // We do run at 44.1kHz at the actual audio layer, but ask for frames
     // at 44.0kHz to ensure that we can feed them to the webrtc::VoiceEngine.

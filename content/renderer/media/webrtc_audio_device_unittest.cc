@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,7 +78,6 @@ bool IsRunningHeadless() {
   return false;
 }
 
-// The WebRTC audio client only supports 44.1 and 48.0 kHz.
 // This method returns false if a non-supported rate is detected on the
 // input or output side.
 // TODO(henrika): add support for automatic fallback to Windows Wave audio
@@ -91,9 +90,10 @@ bool HardwareSampleRatesAreValid() {
   int input_sample_rate =
       static_cast<int>(audio_hardware::GetInputSampleRate());
   bool rates_are_valid =
-      ((output_sample_rate == 44100 || output_sample_rate == 48000) &&
-       (input_sample_rate == 44100 || input_sample_rate == 48000 ||
-        input_sample_rate == 16000 || input_sample_rate == 32000));
+      ((output_sample_rate == 96000 || output_sample_rate == 48000 ||
+        output_sample_rate == 44100) &&
+       (input_sample_rate == 48000 || input_sample_rate == 44100 ||
+        input_sample_rate == 32000 || input_sample_rate == 16000));
   DLOG_IF(WARNING, !rates_are_valid) << "Non-supported sample rate detected.";
   return rates_are_valid;
 }
