@@ -280,3 +280,9 @@ IndexedDBUILayoutTest.WorkerLayoutTests
 
 # crbug.com/113675
 WorkerFileSystemTest.SyncPersistent
+
+# Blanket exlusion of AudioUILayoutTest.  At this point we are running almost
+# zero ui_tests on Mac Valgrind.  They always fail with the above symptoms,
+# possibly related to crbug.om/51716 (valgrind impossible happened), although
+# the logs don't contain that particular message.
+AudioUILayoutTest.*
