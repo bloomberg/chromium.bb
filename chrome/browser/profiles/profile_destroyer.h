@@ -23,7 +23,7 @@ class ProfileDestroyer
     : public content::NotificationObserver,
       public base::RefCounted<ProfileDestroyer> {
  public:
-  static void DestroyOffTheRecordProfile(Profile* const profile);
+  static void DestroyProfileWhenAppropriate(Profile* const profile);
 
  private:
   friend class base::RefCounted<ProfileDestroyer>;
