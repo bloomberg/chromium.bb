@@ -13,6 +13,7 @@ import shutil
 import sys
 
 from chromite.lib import cros_build_lib
+from chromite.buildbot import gerrit_helper
 
 _PUBLIC_OVERLAY = '%(build_root)s/src/third_party/chromiumos-overlay'
 _OVERLAY_LIST_CMD = '%(build_root)s/src/platform/dev/host/cros_overlay_list'
@@ -391,7 +392,9 @@ class EBuild(object):
       if len(ebuilds_for_change) == 0:
         continue
 
-      latest_sha1 = change.GetLatestSHA1ForProject()
+      helper = gerrit_helper.GetGerritHelperForChange(change)
+      latest_sha1 = helper.GetLatestSHA1ForBranch(change.project,
+                                                  change.tracking_branch)
       for ebuild in ebuilds_for_change:
         logging.info('Updating ebuild for project %s with commit hash %s',
                      ebuild.package, latest_sha1)

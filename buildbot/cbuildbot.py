@@ -27,6 +27,7 @@ from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_stages as stages
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import cgroup
+from chromite.buildbot import gerrit_helper
 from chromite.buildbot import patch as cros_patch
 from chromite.buildbot import remote_try
 from chromite.buildbot import repository
@@ -121,11 +122,14 @@ def _PreProcessPatches(gerrit_patches, local_patches):
 
   try:
     if gerrit_patches:
-      gerrit_patch_info = cros_patch.GetGerritPatchInfo(gerrit_patches)
+      gerrit_patch_info = gerrit_helper.GetGerritPatchInfo(gerrit_patches)
       for patch in gerrit_patch_info:
         if patch.IsAlreadyMerged():
           cros_lib.Warning('Patch %s has already been merged.' % str(patch))
+  except gerrit_helper.GerritException as e:
+    cros_lib.Die(str(e))
 
+  try:
     if local_patches:
       local_patch_info = cros_patch.PrepareLocalPatches(
           local_patches,

@@ -21,6 +21,7 @@ if __name__ == '__main__':
 
 from chromite.lib import cros_build_lib
 from chromite.buildbot import patch as cros_patch
+from chromite.buildbot import gerrit_helper
 from chromite.buildbot import portage_utilities
 
 
@@ -314,7 +315,13 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
     ebuild1.GetSourcePath(os.path.join(build_root, 'src')).AndReturn(
         ('fake_project1', 'p1_path'))
 
-    patch1.GetLatestSHA1ForProject().AndReturn('sha1')
+    self.mox.StubOutWithMock(gerrit_helper, 'GetGerritHelperForChange')
+    helper = self.mox.CreateMock(gerrit_helper.GerritHelper)
+    self.mox.StubOutWithMock(helper, 'GetLatestSHA1ForBranch')
+    gerrit_helper.GetGerritHelperForChange(patch1).AndReturn(helper)
+    helper.GetLatestSHA1ForBranch(patch1.project,
+                                  patch1.tracking_branch).AndReturn('sha1')
+
     portage_utilities.EBuild.UpdateEBuild(ebuild1.ebuild_path,
                                           'CROS_WORKON_COMMIT', 'sha1')
     portage_utilities.EBuild.GitRepoHasChanges('public_overlay').AndReturn(True)
