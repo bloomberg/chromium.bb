@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/glue/generic_change_processor.h"
 
 #include "base/location.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/sync/api/sync_change.h"
 #include "chrome/browser/sync/api/sync_error.h"
@@ -55,8 +56,10 @@ void GenericChangeProcessor::ApplyChangesFromSyncModel(
       // Need to load specifics from node.
       sync_api::ReadNode read_node(trans);
       if (!read_node.InitByIdLookup(it->id)) {
-        error_handler()->OnUnrecoverableError(FROM_HERE, "Failed to look up "
-            " data for received change with id " + it->id);
+        error_handler()->OnUnrecoverableError(
+            FROM_HERE,
+            "Failed to look up data for received change with id " +
+                base::Int64ToString(it->id));
         return;
       }
       syncer_changes_.push_back(
