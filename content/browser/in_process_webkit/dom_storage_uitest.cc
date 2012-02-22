@@ -190,8 +190,13 @@ TEST_F(DomStorageEmptyDatabaseTest, EmptyDirAfterGet) {
   EXPECT_TRUE(StorageDirIsEmpty());
 }
 
+#if defined(OS_WIN)
 // Flaky, see http://crbug.com/73776
-TEST_F(DomStorageEmptyDatabaseTest, DISABLED_NonEmptyDirAfterSet) {
+#define MAYBE_NonEmptyDirAfterSet DISABLED_NonEmptyDirAfterSet
+#else
+#define MAYBE_NonEmptyDirAfterSet NonEmptyDirAfterSet
+#endif
+TEST_F(DomStorageEmptyDatabaseTest, MAYBE_NonEmptyDirAfterSet) {
   NavigateToURL(TestUrl());
   ASSERT_TRUE(StorageDirIsEmpty());
 
