@@ -5,17 +5,21 @@
 # Flag completion rule for bash.
 # To load in your shell, "source path/to/this/file".
 
-chrome_source=$(readlink -f $(dirname $BASH_SOURCE)/..)
+chrome_source=$(cd $(dirname $BASH_SOURCE)/.. && pwd)
 
 _chrome_flag() {
     local cur targets
     cur="${COMP_WORDS[COMP_CWORD]}"
     targets=$(cd $chrome_source; \
         git ls-files '*switches*' | \
-        xargs sed -ne 's/^[^/]*"\([^" /]\+\)".*/--\1/p')
+        xargs sed -ne 's/^[^/]*"\([^" /]\{1,\}\)".*/--\1/p')
     COMPREPLY=($(compgen -W "$targets" -- "$cur"))
     return 0
 }
 
 complete -F _chrome_flag google-chrome
 complete -F _chrome_flag chrome
+if [ $(uname) = "Darwin" ]
+then
+  complete -F _chrome_flag Chromium
+fi
