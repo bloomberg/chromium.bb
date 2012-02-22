@@ -1463,10 +1463,10 @@ notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 	weston_compositor_activity(ec);
 
 	wl_list_for_each(output, &ec->output_list, link) {
-		if (output->x <= x && x <= output->x + output->current->width)
+		if (output->x <= x && x < output->x + output->current->width)
 			x_valid = 1;
 
-		if (output->y <= y && y <= output->y + output->current->height)
+		if (output->y <= y && y < output->y + output->current->height)
 			y_valid = 1;
 
 		/* FIXME: calculate this only on output addition/deletion */
@@ -1476,9 +1476,9 @@ notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 			min_y = output->y;
 
 		if (output->x + output->current->width > max_x)
-			max_x = output->x + output->current->width;
+			max_x = output->x + output->current->width - 1;
 		if (output->y + output->current->height > max_y)
-			max_y = output->y + output->current->height;
+			max_y = output->y + output->current->height - 1;
 	}
 	
 	if (!x_valid) {
