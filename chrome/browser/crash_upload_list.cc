@@ -1,10 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/crash_upload_list.h"
 
-#include <iterator>
+#include <algorithm>
 
 #include "base/bind.h"
 #include "base/file_path.h"
@@ -33,6 +33,9 @@ CrashUploadList* CrashUploadList::Create(Delegate* delegate) {
   return new CrashUploadList(delegate);
 #endif
 }
+
+// static
+const char* CrashUploadList::kReporterLogFilename = "uploads.log";
 
 CrashUploadList::CrashUploadList(Delegate* delegate) : delegate_(delegate) {}
 

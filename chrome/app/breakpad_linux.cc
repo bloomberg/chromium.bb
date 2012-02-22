@@ -31,6 +31,7 @@
 #include "breakpad/src/client/linux/minidump_writer/directory_reader.h"
 #include "breakpad/src/common/linux/linux_libc_support.h"
 #include "breakpad/src/common/memory.h"
+#include "chrome/browser/crash_upload_list.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -781,7 +782,8 @@ void EnableCrashDumping(const bool unattended) {
 
   FilePath dumps_path(tmp_path);
   if (PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path)) {
-    FilePath logfile = dumps_path.AppendASCII("uploads.log");
+    FilePath logfile =
+        dumps_path.AppendASCII(CrashUploadList::kReporterLogFilename);
     std::string logfile_str = logfile.value();
     const size_t crash_log_path_len = logfile_str.size() + 1;
     g_crash_log_path = new char[crash_log_path_len];

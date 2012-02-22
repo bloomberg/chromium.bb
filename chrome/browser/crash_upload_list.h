@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_CRASH_UPLOAD_LIST_H_
 #pragma once
 
-#include "base/memory/ref_counted.h"
-#include "base/time.h"
-
 #include <string>
 #include <vector>
+
+#include "base/memory/ref_counted.h"
+#include "base/time.h"
 
 class CrashUploadList : public base::RefCountedThreadSafe<CrashUploadList> {
  public:
@@ -35,6 +35,10 @@ class CrashUploadList : public base::RefCountedThreadSafe<CrashUploadList> {
   // Static factory method that creates the platform-specific implementation
   // of the crash upload list with the given callback delegate.
   static CrashUploadList* Create(Delegate* delegate);
+
+  // Should match kReporterLogFilename in
+  // breakpad/src/client/apple/Framework/BreakpadDefines.h.
+  static const char* kReporterLogFilename;
 
   // Creates a new crash upload list with the given callback delegate.
   explicit CrashUploadList(Delegate* delegate);
