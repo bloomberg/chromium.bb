@@ -15,7 +15,7 @@
 namespace dom_storage {
 
 // The quota for each storage area. Suggested by the spec.
-const int kPerAreaQuota = 5 * 1024 * 1024;
+const size_t kPerAreaQuota = 5 * 1024 * 1024;
 
 // Value to indicate the localstorage namespace vs non-zero
 // values for sessionstorage namespaces.

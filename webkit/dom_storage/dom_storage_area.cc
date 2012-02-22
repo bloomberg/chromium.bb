@@ -5,15 +5,18 @@
 #include "webkit/dom_storage/dom_storage_area.h"
 #include "webkit/dom_storage/dom_storage_map.h"
 #include "webkit/dom_storage/dom_storage_namespace.h"
+#include "webkit/dom_storage/dom_storage_types.h"
 
 namespace dom_storage {
 
 DomStorageArea::DomStorageArea(
     int64 namespace_id, const GURL& origin,
     const FilePath& directory, DomStorageTaskRunner* task_runner)
-    : namespace_id_(namespace_id), origin_(origin),
-      directory_(directory), task_runner_(task_runner),
-      map_(new DomStorageMap()) {
+    : namespace_id_(namespace_id),
+      origin_(origin),
+      directory_(directory),
+      task_runner_(task_runner),
+      map_(new DomStorageMap(kPerAreaQuota)) {
 }
 
 DomStorageArea::~DomStorageArea() {
@@ -50,7 +53,7 @@ bool DomStorageArea::RemoveItem(
 bool DomStorageArea::Clear() {
   if (map_->Length() == 0)
     return false;
-  map_ = new DomStorageMap();
+  map_ = new DomStorageMap(kPerAreaQuota);
   return true;
 }
 

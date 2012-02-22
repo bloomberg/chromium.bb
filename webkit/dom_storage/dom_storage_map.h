@@ -13,18 +13,15 @@
 #include "base/string16.h"
 #include "webkit/dom_storage/dom_storage_types.h"
 
-class FilePath;
-class GURL;
-
 namespace dom_storage {
 
 // A wrapper around a std::map that adds refcounting and
-// imposes a limit on the total byte size of the keys/values.
+// tracks the size in bytes of the keys/values, enforcing a quota.
 // See class comments for DomStorageContext for a larger overview.
 class DomStorageMap
     : public base::RefCountedThreadSafe<DomStorageMap> {
  public:
-  DomStorageMap();
+  DomStorageMap(size_t quota);
 
   unsigned Length() const;
   NullableString16 Key(unsigned index);
@@ -33,8 +30,13 @@ class DomStorageMap
                NullableString16* old_value);
   bool RemoveItem(const string16& key, string16* old_value);
 
-  void SwapValues(ValuesMap* map);
+  // Replaces values_ with |map|. Returns true on success, false
+  // if the swap was prevented because |map| would exceed this
+  // DomStorageMap's quota_.
+  bool SwapValues(ValuesMap* map);
   DomStorageMap* DeepCopy() const;
+
+  size_t bytes_used() const { return bytes_used_; }
 
  private:
   friend class base::RefCountedThreadSafe<DomStorageMap>;
@@ -45,9 +47,10 @@ class DomStorageMap
   ValuesMap values_;
   ValuesMap::const_iterator key_iterator_;
   unsigned last_key_index_;
-  // TODO(benm): track usage and enforce a quota limit.
+  size_t bytes_used_;
+  size_t quota_;
 };
 
 }  // namespace dom_storage
 
-#endif  // WEBKIT_DOM_STORAGE_DOM_STORAGE_AREA_H_
+#endif  // WEBKIT_DOM_STORAGE_DOM_STORAGE_MAP_H_
