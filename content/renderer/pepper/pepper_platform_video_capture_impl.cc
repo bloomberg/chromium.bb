@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/pepper_platform_video_capture_impl.h"
+#include "content/renderer/pepper/pepper_platform_video_capture_impl.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
-#include "content/renderer/pepper_plugin_delegate_impl.h"
+#include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/video/capture/video_capture_proxy.h"
 

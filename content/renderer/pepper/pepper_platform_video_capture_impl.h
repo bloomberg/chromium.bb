@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_PEPPER_PLATFORM_VIDEO_CAPTURE_IMPL_H_
-#define CONTENT_RENDERER_PEPPER_PLATFORM_VIDEO_CAPTURE_IMPL_H_
+#ifndef CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_VIDEO_CAPTURE_IMPL_H_
+#define CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_VIDEO_CAPTURE_IMPL_H_
 #pragma once
 
 #include <string>
@@ -80,4 +80,4 @@ class PepperPlatformVideoCaptureImpl
   DISALLOW_COPY_AND_ASSIGN(PepperPlatformVideoCaptureImpl);
 };
 
-#endif  // CONTENT_RENDERER_PEPPER_PLATFORM_VIDEO_CAPTURE_IMPL_H_
+#endif  // CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_VIDEO_CAPTURE_IMPL_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_PEPPER_PARENT_CONTEXT_PROVIDER_H_
-#define CONTENT_RENDERER_PEPPER_PARENT_CONTEXT_PROVIDER_H_
+#ifndef CONTENT_RENDERER_PEPPER_PEPPER_PARENT_CONTEXT_PROVIDER_H_
+#define CONTENT_RENDERER_PEPPER_PEPPER_PARENT_CONTEXT_PROVIDER_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -24,4 +24,4 @@ class PepperParentContextProvider {
   DISALLOW_COPY_AND_ASSIGN(PepperParentContextProvider);
 };
 
-#endif  // CONTENT_RENDERER_PEPPER_PARENT_CONTEXT_PROVIDER_H_
+#endif  // CONTENT_RENDERER_PEPPER_PEPPER_PARENT_CONTEXT_PROVIDER_H_

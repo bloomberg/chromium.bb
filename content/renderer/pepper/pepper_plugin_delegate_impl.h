@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_PEPPER_PLUGIN_DELEGATE_IMPL_H_
-#define CONTENT_RENDERER_PEPPER_PLUGIN_DELEGATE_IMPL_H_
+#ifndef CONTENT_RENDERER_PEPPER_PEPPER_PLUGIN_DELEGATE_IMPL_H_
+#define CONTENT_RENDERER_PEPPER_PEPPER_PLUGIN_DELEGATE_IMPL_H_
 #pragma once
 
 #include <map>
@@ -18,7 +18,7 @@
 #include "content/common/content_export.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
-#include "content/renderer/pepper_parent_context_provider.h"
+#include "content/renderer/pepper/pepper_parent_context_provider.h"
 #include "ppapi/proxy/broker_dispatcher.h"
 #include "ppapi/proxy/proxy_channel.h"
 #include "ppapi/shared_impl/private/tcp_socket_private_impl.h"
@@ -507,4 +507,4 @@ class PepperPluginDelegateImpl
   DISALLOW_COPY_AND_ASSIGN(PepperPluginDelegateImpl);
 };
 
-#endif  // CONTENT_RENDERER_PEPPER_PLUGIN_DELEGATE_IMPL_H_
+#endif  // CONTENT_RENDERER_PEPPER_PEPPER_PLUGIN_DELEGATE_IMPL_H_

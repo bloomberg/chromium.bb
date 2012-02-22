@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/pepper_platform_context_3d_impl.h"
+#include "content/renderer/pepper/pepper_platform_context_3d_impl.h"
 
 #include "base/bind.h"
 #include "content/common/gpu/client/content_gl_context.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/command_buffer_proxy.h"
-#include "content/renderer/pepper_parent_context_provider.h"
+#include "content/renderer/pepper/pepper_parent_context_provider.h"
 #include "content/renderer/render_thread_impl.h"
 #include "googleurl/src/gurl.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"

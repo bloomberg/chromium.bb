@@ -7,7 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "content/common/gpu/client/content_gl_context.h"
-#include "content/renderer/pepper_parent_context_provider.h"
+#include "content/renderer/pepper/pepper_parent_context_provider.h"
 #include "content/renderer/render_widget_fullscreen.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
 #include "webkit/plugins/ppapi/fullscreen_container.h"

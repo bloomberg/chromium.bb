@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/pepper_plugin_delegate_impl.h"
+#include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
 
 #include <cmath>
 #include <map>
@@ -41,8 +41,8 @@
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
 #include "content/renderer/media/pepper_platform_video_decoder_impl.h"
 #include "content/renderer/p2p/p2p_transport_impl.h"
-#include "content/renderer/pepper_platform_context_3d_impl.h"
-#include "content/renderer/pepper_platform_video_capture_impl.h"
+#include "content/renderer/pepper/pepper_platform_context_3d_impl.h"
+#include "content/renderer/pepper/pepper_platform_video_capture_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
