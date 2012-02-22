@@ -38,46 +38,6 @@ const int kMagicConst_POPCNT = 13;
 const int kMagicConst_CRC32  = 0xb906c3ea;
 
 #if !(NACL_WINDOWS && (NACL_BUILD_SUBARCH == 64))
-static int asm_HasCPUID() {
-#if NACL_BUILD_SUBARCH == 64
-  /* ASSERTION: All 64-bit x86 implementations have CPUID */
-  return 1;
-#elif NACL_BUILD_SUBARCH == 32
-  volatile int before, after, result;
-
-#if defined(__GNUC__)
-  __asm__ volatile("pushfl                \n\t" /* save EFLAGS to eax */
-                   "pop %%eax             \n\t"
-                   "movl %%eax, %0        \n\t" /* remember EFLAGS in %0 */
-                   "xor $0x00200000, %%eax\n\t" /* toggle bit 21 */
-                   "push %%eax            \n\t" /* write eax to EFLAGS */
-                   "popfl                 \n\t"
-                   "pushfl                \n\t" /* save EFLAGS to %1 */
-                   "pop %1                \n\t"
-                   : "=g" (before), "=g" (after)
-                   :
-                   : "%eax" );
-#elif NACL_WINDOWS
-  __asm {
-    pushfd
-    pop eax
-    mov before, eax
-    xor eax, 0x00200000
-    push eax
-    popfd
-    pushfd
-    pop after
-  }
-#else
-# error Unsupported platform
-#endif
-  result = (before ^ after) & 0x0200000;
-  return result;
-#else
-# error Unsupported platform: x86 must be either 32- or 64-bit
-#endif
-}
-
 static int asm_HasMMX() {
   volatile int before, after;
   before = kMagicConst;
@@ -544,7 +504,7 @@ static void PrintFail(const char *why) {
 
 #define TEST_NEGATIVE_CASE 0
 int CPUIDImplIsValid() {
-  int rcode;
+  int rcode = 0;
   NaClCPUFeaturesX86 cpuf;
   NaClGetCurrentCPUFeatures(&cpuf);
 
@@ -561,13 +521,6 @@ int CPUIDImplIsValid() {
   /* Unfortunately the asm_ tests will not work on 64-bit Windows */
   return 1;
 #else
-  rcode = DoTest(asm_HasCPUID, "CPUID");  /* This test is redundant. */
-  /* CPUID feature is required/mandatory */
-  if (rcode) {
-    PrintFail("CPUID not implemented");
-    return 0;
-  }
-
   rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_x87, asm_HasX87);
   rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_MMX, asm_HasMMX);
   rcode |= DoCPUFeatureTest(&cpuf, NaClCPUFeature_SSE, asm_HasSSE);
