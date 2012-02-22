@@ -478,7 +478,8 @@ void SessionService::Init() {
 }
 
 bool SessionService::ShouldNewWindowStartSession() {
-  if (!has_open_trackable_browsers_ && !BrowserInit::InProcessStartup() &&
+  if (!has_open_trackable_browsers_ &&
+      !BrowserInit::InSynchronousProfileLaunch() &&
       !SessionRestore::IsRestoring(profile())
 #if defined(OS_MACOSX)
       // OSX has a fairly different idea of application lifetime than the

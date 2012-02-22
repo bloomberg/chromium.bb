@@ -66,10 +66,11 @@ class BrowserInit {
                                        Profile* profile,
                                        size_t expected_tabs);
 
-  // Returns true if the browser is coming up.
-  static bool InProcessStartup();
-
   static void RegisterUserPrefs(PrefService* prefs);
+
+  // Returns true if we're launching a profile synchronously. In that case, the
+  // opened window should not cause a session restore.
+  static bool InSynchronousProfileLaunch();
 
   // Launches a browser window associated with |profile|. |command_line| should
   // be the command line passed to this process. |cur_dir| can be empty, which
@@ -209,7 +210,8 @@ class BrowserInit {
                        std::vector<Tab>* tabs);
 
     // Adds any startup infobars to the selected tab of the given browser.
-    void AddInfoBarsIfNecessary(Browser* browser);
+    void AddInfoBarsIfNecessary(Browser* browser,
+                                IsProcessStartup is_process_startup);
 
     // If the last session didn't exit cleanly and tab is a web contents tab,
     // an infobar is added allowing the user to restore the last session.

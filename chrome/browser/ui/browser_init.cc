@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/browser_init.h"
 
 #include <algorithm>   // For max().
+#include <set>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -12,6 +13,7 @@
 #include "base/environment.h"
 #include "base/event_recorder.h"
 #include "base/file_path.h"
+#include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram.h"
@@ -137,6 +139,8 @@ using content::WebContents;
 namespace {
 
 static const int kMaxInfobarShown = 5;
+
+bool in_synchronous_profile_launch = false;
 
 #if defined(OS_WIN)
 // The delegate for the infobar shown when Chrome was auto-launched.
@@ -530,8 +534,6 @@ void RecordLaunchModeHistogram(LaunchMode mode) {
   UMA_HISTOGRAM_COUNTS_100("Launch.Modes", bucket);
 }
 
-static bool in_startup = false;
-
 GURL GetWelcomePageURL() {
   std::string welcome_url = l10n_util::GetStringUTF8(IDS_WELCOME_PAGE_URL);
   return GURL(welcome_url);
@@ -628,6 +630,54 @@ void RegisterComponentsForUpdate(const CommandLine& command_line) {
   cus->Start();
 }
 
+// Keeps track on which profiles have been launched.
+class ProfileLaunchObserver : public content::NotificationObserver {
+ public:
+  ProfileLaunchObserver() {
+    registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
+                   content::NotificationService::AllSources());
+  }
+  virtual ~ProfileLaunchObserver() {}
+
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {
+    switch (type) {
+      case chrome::NOTIFICATION_PROFILE_DESTROYED: {
+        Profile* profile = content::Source<Profile>(source).ptr();
+        launched_profiles.erase(profile);
+        break;
+      }
+      default:
+        NOTREACHED();
+    }
+  }
+
+  bool HasBeenLaunched(const Profile* profile) {
+    return launched_profiles.find(profile) != launched_profiles.end();
+  }
+
+  void AddLaunched(const Profile* profile) {
+    launched_profiles.insert(profile);
+  }
+
+ private:
+  std::set<const Profile*> launched_profiles;
+  content::NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProfileLaunchObserver);
+};
+
+base::LazyInstance<ProfileLaunchObserver> profile_launch_observer =
+    LAZY_INSTANCE_INITIALIZER;
+
+// Returns true if |profile| has exited uncleanly and has not been launched
+// after the unclean exit.
+bool HasPendingUncleanExit(Profile* profile) {
+  return !profile->DidLastSessionExitCleanly() &&
+      !profile_launch_observer.Get().HasBeenLaunched(profile);
+}
+
 }  // namespace
 
 
@@ -645,8 +695,8 @@ void BrowserInit::AddFirstRunTab(const GURL& url) {
 }
 
 // static
-bool BrowserInit::InProcessStartup() {
-  return in_startup;
+bool BrowserInit::InSynchronousProfileLaunch() {
+  return in_synchronous_profile_launch;
 }
 
 // static
@@ -661,7 +711,7 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
                                 IsProcessStartup process_startup,
                                 IsFirstRun is_first_run,
                                 int* return_code) {
-  in_startup = process_startup == IS_PROCESS_STARTUP;
+  in_synchronous_profile_launch = process_startup == IS_PROCESS_STARTUP;
   DCHECK(profile);
 
   // Continue with the incognito profile from here on if Incognito mode
@@ -677,8 +727,9 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
   BrowserInit::LaunchWithProfile lwp(cur_dir, command_line, this, is_first_run);
   std::vector<GURL> urls_to_launch = BrowserInit::GetURLsFromCommandLine(
       command_line, cur_dir, profile);
-  bool launched = lwp.Launch(profile, urls_to_launch, in_startup);
-  in_startup = false;
+  bool launched = lwp.Launch(profile, urls_to_launch,
+                             in_synchronous_profile_launch);
+  in_synchronous_profile_launch = false;
 
   if (!launched) {
     LOG(ERROR) << "launch error";
@@ -686,6 +737,7 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
       *return_code = chrome::RESULT_CODE_INVALID_CMDLINE_URL;
     return false;
   }
+  profile_launch_observer.Get().AddLaunched(profile);
 
 #if defined(OS_CHROMEOS)
   // Initialize Chrome OS preferences like touch pad sensitivity. For the
@@ -1014,6 +1066,8 @@ void BrowserInit::LaunchWithProfile::ProcessLaunchURLs(
     return;
   }
 
+  IsProcessStartup is_process_startup = process_startup ?
+      IS_PROCESS_STARTUP : IS_NOT_PROCESS_STARTUP;
   if (!process_startup) {
     // Even if we're not starting a new process, this may conceptually be
     // "startup" for the user and so should be handled in a similar way.  Eg.,
@@ -1023,11 +1077,16 @@ void BrowserInit::LaunchWithProfile::ProcessLaunchURLs(
     SessionService* service = SessionServiceFactory::GetForProfile(profile_);
     if (service && service->ShouldNewWindowStartSession()) {
       // Restore the last session if any.
-      if (service->RestoreIfNecessary(urls_to_open))
+      if (!HasPendingUncleanExit(profile_) &&
+          service->RestoreIfNecessary(urls_to_open)) {
         return;
+      }
       // Open user-specified URLs like pinned tabs and startup tabs.
-      if (ProcessSpecifiedURLs(urls_to_open))
+      Browser* browser = ProcessSpecifiedURLs(urls_to_open);
+      if (browser) {
+        AddInfoBarsIfNecessary(browser, is_process_startup);
         return;
+      }
     }
   }
 
@@ -1040,9 +1099,11 @@ void BrowserInit::LaunchWithProfile::ProcessLaunchURLs(
   else if (!command_line_.HasSwitch(switches::kOpenInNewWindow))
     browser = BrowserList::GetLastActiveWithProfile(profile_);
 
+  // This will launch a browser; prevent session restore.
+  in_synchronous_profile_launch = true;
   browser = OpenURLsInBrowser(browser, process_startup, adjust_urls);
-  if (process_startup)
-    AddInfoBarsIfNecessary(browser);
+  in_synchronous_profile_launch = false;
+  AddInfoBarsIfNecessary(browser, is_process_startup);
 }
 
 bool BrowserInit::LaunchWithProfile::ProcessStartupURLs(
@@ -1084,7 +1145,7 @@ bool BrowserInit::LaunchWithProfile::ProcessStartupURLs(
                                                       NULL,
                                                       restore_behavior,
                                                       urls_to_open);
-    AddInfoBarsIfNecessary(browser);
+    AddInfoBarsIfNecessary(browser, IS_PROCESS_STARTUP);
     return true;
   }
 
@@ -1092,7 +1153,7 @@ bool BrowserInit::LaunchWithProfile::ProcessStartupURLs(
   if (!browser)
     return false;
 
-  AddInfoBarsIfNecessary(browser);
+  AddInfoBarsIfNecessary(browser, IS_PROCESS_STARTUP);
   return true;
 }
 
@@ -1250,14 +1311,23 @@ Browser* BrowserInit::LaunchWithProfile::OpenTabsInBrowser(
   return browser;
 }
 
-void BrowserInit::LaunchWithProfile::AddInfoBarsIfNecessary(Browser* browser) {
+void BrowserInit::LaunchWithProfile::AddInfoBarsIfNecessary(
+    Browser* browser,
+    IsProcessStartup is_process_startup) {
   if (!browser || !profile_ || browser->tab_count() == 0)
     return;
 
   TabContentsWrapper* tab_contents = browser->GetSelectedTabContentsWrapper();
   AddCrashedInfoBarIfNecessary(browser, tab_contents);
-  AddBadFlagsInfoBarIfNecessary(tab_contents);
-  AddObsoleteSystemInfoBarIfNecessary(tab_contents);
+
+  // The bad flags info bar and the obsolete system info bar are only added to
+  // the first profile which is launched. Other profiles might be restoring the
+  // browsing sessions asynchronously, so we cannot add the info bars to the
+  // focused tabs here.
+  if (is_process_startup == IS_PROCESS_STARTUP) {
+    AddBadFlagsInfoBarIfNecessary(tab_contents);
+    AddObsoleteSystemInfoBarIfNecessary(tab_contents);
+  }
 }
 
 void BrowserInit::LaunchWithProfile::AddCrashedInfoBarIfNecessary(
@@ -1265,7 +1335,7 @@ void BrowserInit::LaunchWithProfile::AddCrashedInfoBarIfNecessary(
     TabContentsWrapper* tab) {
   // Assume that if the user is launching incognito they were previously
   // running incognito so that we have nothing to restore from.
-  if (!profile_->DidLastSessionExitCleanly() && !profile_->IsOffTheRecord()) {
+  if (HasPendingUncleanExit(profile_) && !profile_->IsOffTheRecord()) {
     // The last session didn't exit cleanly. Show an infobar to the user
     // so that they can restore if they want. The delegate deletes itself when
     // it is closed.
@@ -1789,8 +1859,8 @@ bool BrowserInit::ProcessCmdLineImpl(
         SessionStartupPref startup_pref =
             GetSessionStartupPref(command_line, *it);
         if (*it != last_used_profile &&
-            startup_pref.type != SessionStartupPref::LAST &&
-            startup_pref.type != SessionStartupPref::URLS)
+            startup_pref.type == SessionStartupPref::DEFAULT &&
+            !HasPendingUncleanExit(*it))
           continue;
         if (!browser_init->LaunchBrowser((*it == last_used_profile) ?
             command_line : command_line_without_urls, *it, cur_dir,
