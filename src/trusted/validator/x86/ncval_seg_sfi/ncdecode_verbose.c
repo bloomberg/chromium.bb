@@ -609,7 +609,7 @@ char* NCInstToString(const NCDecoderInst* dinst) {
   return InstToStringConvert(dinst, NCPrintInst);
 }
 
-char* NCInstWitoutHexToString(const NCDecoderInst* dinst) {
+char* NCInstWithoutHexToString(const NCDecoderInst* dinst) {
   return InstToStringConvert(dinst, NCPrintInstWithoutHex);
 }
 
