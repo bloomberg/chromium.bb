@@ -131,9 +131,16 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, Bug109187Test) {
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 1);
 }
 
+#if defined(OS_MACOSX)
+// http://crbug.com/115188. On Mac, failure rate is about 18% currently.
+#define MAYBE_ClearLocalState DISABLED_ClearLocalState
+#else
+#define MAYBE_ClearLocalState ClearLocalState
+#endif
+
 // In proc browser test is needed here because ClearLocalState indirectly calls
 // WebKit's isMainThread through WebSecurityOrigin->SecurityOrigin.
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ClearLocalState) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, MAYBE_ClearLocalState) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
@@ -234,7 +241,14 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ClearSessionOnlyDatabases) {
   EXPECT_FALSE(file_util::DirectoryExists(session_only_path));
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, SaveSessionState) {
+#if defined(OS_MACOSX)
+// http://crbug.com/115188. On Mac, failure rate is about 18% currently.
+#define MAYBE_SaveSessionState DISABLED_SaveSessionState
+#else
+#define MAYBE_SaveSessionState SaveSessionState
+#endif
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, MAYBE_SaveSessionState) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
