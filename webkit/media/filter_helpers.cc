@@ -33,6 +33,15 @@ bool BuildMediaStreamCollection(const WebKit::WebURL& url,
   if (!client)
     return false;
 
+  // Remove any "traditional" decoders (e.g. GpuVideoDecoder) from the
+  // collection.
+  // NOTE: http://crbug.com/110800 is about replacing this ad-hockery with
+  // something more designed.
+  scoped_refptr<media::VideoDecoder> old_videodecoder;
+  do {
+    filter_collection->SelectVideoDecoder(&old_videodecoder);
+  } while (old_videodecoder);
+
   scoped_refptr<media::VideoDecoder> video_decoder = client->GetVideoDecoder(
       url, message_loop_factory);
   if (!video_decoder)
