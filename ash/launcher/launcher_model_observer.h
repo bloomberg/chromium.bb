@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ash/ash_export.h"
+#include "ash/launcher/launcher_types.h"
 
 namespace ash {
 
@@ -19,7 +20,7 @@ class ASH_EXPORT LauncherModelObserver {
 
   // Invoked after an item has been removed. |index| is the index the item was
   // at.
-  virtual void LauncherItemRemoved(int index) = 0;
+  virtual void LauncherItemRemoved(int index, LauncherID id) = 0;
 
   // Invoked after an item has been moved. See LauncherModel::Move() for details
   // of the arguments.

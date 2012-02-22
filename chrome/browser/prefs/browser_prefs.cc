@@ -94,6 +94,10 @@
 #include "chrome/browser/extensions/default_apps.h"
 #endif
 
+#if defined(USE_AURA)
+#include "chrome/browser/ui/views/aura/launcher/chrome_launcher_delegate.h"
+#endif
+
 namespace browser {
 
 void RegisterLocalState(PrefService* local_state) {
@@ -200,6 +204,9 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 #endif
   extensions::ComponentLoader::RegisterUserPrefs(user_prefs);
   web_intents::RegisterUserPrefs(user_prefs);
+#if defined(USE_AURA)
+  ChromeLauncherDelegate::RegisterUserPrefs(user_prefs);
+#endif
 }
 
 void MigrateBrowserPrefs(PrefService* user_prefs, PrefService* local_state) {

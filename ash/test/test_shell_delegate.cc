@@ -61,7 +61,8 @@ void TestShellDelegate::StartPartialScreenshot(
     screenshot_delegate->HandleTakePartialScreenshot(NULL, gfx::Rect());
 }
 
-LauncherDelegate* TestShellDelegate::CreateLauncherDelegate() {
+LauncherDelegate* TestShellDelegate::CreateLauncherDelegate(
+    ash::LauncherModel* model) {
   return NULL;
 }
 

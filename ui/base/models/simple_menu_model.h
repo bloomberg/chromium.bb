@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -140,6 +140,7 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
   // returns what it's passed.
   virtual int FlipIndex(int index) const;
 
+  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
   Delegate* delegate() { return delegate_; }
 
   MenuModelDelegate* menu_model_delegate() { return menu_model_delegate_; }

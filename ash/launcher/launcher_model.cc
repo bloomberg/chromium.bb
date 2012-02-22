@@ -30,9 +30,10 @@ void LauncherModel::RemoveItemAt(int index) {
   // The app list and browser shortcut can't be removed.
   DCHECK(items_[index].type != TYPE_APP_LIST &&
          items_[index].type != TYPE_BROWSER_SHORTCUT);
+  LauncherID id = items_[index].id;
   items_.erase(items_.begin() + index);
   FOR_EACH_OBSERVER(LauncherModelObserver, observers_,
-                    LauncherItemRemoved(index));
+                    LauncherItemRemoved(index, id));
 }
 
 void LauncherModel::Move(int index, int target_index) {

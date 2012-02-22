@@ -1761,4 +1761,8 @@ const char kRestoreSessionStateDialogShown[] =
 // Boolean that is true if Web Intents is enabled.
 const char kWebIntentsEnabled[] = "webintents.enabled";
 
+#if defined(USE_AURA)
+const char kPinnedLauncherApps[] = "pinned_launcher_apps";
+#endif
+
 }  // namespace prefs

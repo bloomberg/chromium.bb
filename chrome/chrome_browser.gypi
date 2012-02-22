@@ -3481,6 +3481,8 @@
         'browser/ui/views/aura/ime_controller_chromeos.h',
         'browser/ui/views/aura/launcher/chrome_launcher_delegate.cc',
         'browser/ui/views/aura/launcher/chrome_launcher_delegate.h',
+        'browser/ui/views/aura/launcher/launcher_context_menu.cc',
+        'browser/ui/views/aura/launcher/launcher_context_menu.h',
         'browser/ui/views/aura/launcher/launcher_icon_loader.cc',
         'browser/ui/views/aura/launcher/launcher_icon_loader.h',
         'browser/ui/views/aura/launcher/launcher_updater.cc',

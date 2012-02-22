@@ -12,9 +12,9 @@
 #include "content/public/browser/web_contents.h"
 
 LauncherIconLoader::LauncherIconLoader(Profile* profile,
-                                       LauncherUpdater* icon_updater)
+                                       ChromeLauncherDelegate* delegate)
     : profile_(profile),
-      icon_updater_(icon_updater) {
+      host_(delegate) {
 }
 
 LauncherIconLoader::~LauncherIconLoader() {
@@ -25,19 +25,23 @@ std::string LauncherIconLoader::GetAppID(TabContentsWrapper* tab) {
   return extension ? extension->id() : std::string();
 }
 
-void LauncherIconLoader::Remove(TabContentsWrapper* tab) {
-  RemoveFromImageLoaderMap(tab);
+bool LauncherIconLoader::IsValidID(const std::string& id) {
+  return GetExtensionByID(id) != NULL;
 }
 
-void LauncherIconLoader::FetchImage(TabContentsWrapper* tab) {
-  // We may already be loading an image for this tab. Remove the entry from the
-  // map so that we ignore the result when the image finishes loading.
-  RemoveFromImageLoaderMap(tab);
+void LauncherIconLoader::FetchImage(const std::string& id) {
+  for (ImageLoaderIDToExtensionIDMap::const_iterator i = map_.begin();
+       i != map_.end(); ++i) {
+    if (i->second == id)
+      return;  // Already loading the image.
+  }
 
+  const Extension* extension = GetExtensionByID(id);
+  if (!extension)
+    return;
   if (!image_loader_.get())
     image_loader_.reset(new ImageLoadingTracker(this));
-  image_loader_id_to_tab_map_[image_loader_->next_id()] = tab;
-  const Extension* extension = GetExtensionForTab(tab);
+  map_[image_loader_->next_id()] = id;
   image_loader_->LoadImage(
       extension,
       extension->GetIconResource(Extension::EXTENSION_ICON_SMALL,
@@ -50,23 +54,13 @@ void LauncherIconLoader::FetchImage(TabContentsWrapper* tab) {
 void LauncherIconLoader::OnImageLoaded(SkBitmap* image,
                                        const ExtensionResource& resource,
                                        int index) {
-  ImageLoaderIDToTabMap::iterator i = image_loader_id_to_tab_map_.find(index);
-  if (i == image_loader_id_to_tab_map_.end())
+  ImageLoaderIDToExtensionIDMap::iterator i = map_.find(index);
+  if (i == map_.end())
     return;  // The tab has since been removed, do nothing.
 
-  TabContentsWrapper* tab = i->second;
-  image_loader_id_to_tab_map_.erase(i);
-  icon_updater_->SetAppImage(tab, image);
-}
-
-void LauncherIconLoader::RemoveFromImageLoaderMap(TabContentsWrapper* tab) {
-  for (ImageLoaderIDToTabMap::iterator i = image_loader_id_to_tab_map_.begin();
-       i != image_loader_id_to_tab_map_.end(); ++i) {
-    if (i->second == tab) {
-      image_loader_id_to_tab_map_.erase(i);
-      break;
-    }
-  }
+  std::string id = i->second;
+  map_.erase(i);
+  host_->SetAppImage(id, image);
 }
 
 const Extension* LauncherIconLoader::GetExtensionForTab(
@@ -75,4 +69,11 @@ const Extension* LauncherIconLoader::GetExtensionForTab(
   if (!extension_service)
     return NULL;
   return extension_service->GetInstalledApp(tab->web_contents()->GetURL());
+}
+
+const Extension* LauncherIconLoader::GetExtensionByID(const std::string& id) {
+  ExtensionService* service = profile_->GetExtensionService();
+  if (!service)
+    return NULL;
+  return service->GetInstalledExtension(id);
 }

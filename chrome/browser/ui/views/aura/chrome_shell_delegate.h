@@ -45,7 +45,8 @@ class ChromeShellDelegate : public ash::ShellDelegate {
       CycleOrder order) const OVERRIDE;
   virtual void StartPartialScreenshot(
       ash::ScreenshotDelegate* screenshot_delegate) OVERRIDE;
-  virtual ash::LauncherDelegate* CreateLauncherDelegate() OVERRIDE;
+  virtual ash::LauncherDelegate* CreateLauncherDelegate(
+      ash::LauncherModel* model) OVERRIDE;
 
  private:
   static ChromeShellDelegate* instance_;

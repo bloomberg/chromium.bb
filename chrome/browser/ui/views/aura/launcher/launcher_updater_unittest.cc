@@ -10,6 +10,7 @@
 #include "ash/launcher/launcher_model.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/views/aura/launcher/chrome_launcher_delegate.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/tabs/test_tab_strip_model_delegate.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -23,7 +24,7 @@
 namespace {
 
 // Test implementation of AppIconLoader.
-class AppIconLoaderImpl : public LauncherUpdater::AppIconLoader {
+class AppIconLoaderImpl : public ChromeLauncherDelegate::AppIconLoader {
  public:
   AppIconLoaderImpl() : fetch_count_(0) {}
   virtual ~AppIconLoaderImpl() {}
@@ -53,11 +54,16 @@ class AppIconLoaderImpl : public LauncherUpdater::AppIconLoader {
         std::string();
   }
 
-  virtual void Remove(TabContentsWrapper* tab) OVERRIDE {
-    tab_id_map_.erase(tab);
+  virtual bool IsValidID(const std::string& id) OVERRIDE {
+    for (TabToStringMap::const_iterator i = tab_id_map_.begin();
+         i != tab_id_map_.end(); ++i) {
+      if (i->second == id)
+        return true;
+    }
+    return false;
   }
 
-  virtual void FetchImage(TabContentsWrapper* tab) OVERRIDE {
+  virtual void FetchImage(const std::string& id) OVERRIDE {
     fetch_count_++;
   }
 
@@ -74,23 +80,20 @@ class AppIconLoaderImpl : public LauncherUpdater::AppIconLoader {
 // Contains all the objects needed to create a LauncherUpdater.
 struct State {
   State(Profile* profile,
-        ash::LauncherModel* launcher_model,
+        ChromeLauncherDelegate* launcher_delegate,
+        const std::string& app_id,
         LauncherUpdater::Type launcher_type)
       : window(NULL),
         tab_strip(&tab_strip_delegate, profile),
-        icon_updater(&window, &tab_strip, launcher_model, launcher_type),
-        app_icon_loader(new AppIconLoaderImpl) {
-    icon_updater.SetAppIconLoaderForTest(app_icon_loader);
-    icon_updater.Init();
+        updater(&window, &tab_strip, launcher_delegate, launcher_type,
+                app_id) {
+    updater.Init();
   }
 
   aura::Window window;
   TestTabStripModelDelegate tab_strip_delegate;
   TabStripModel tab_strip;
-  LauncherUpdater icon_updater;
-
-  // Owned by LauncherUpdater.
-  AppIconLoaderImpl* app_icon_loader;
+  LauncherUpdater updater;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(State);
@@ -107,10 +110,35 @@ class LauncherUpdaterTest : public ChromeRenderViewHostTestHarness {
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
     launcher_model_.reset(new ash::LauncherModel);
+    launcher_delegate_.reset(
+        new ChromeLauncherDelegate(profile(), launcher_model_.get()));
+    app_icon_loader_ = new AppIconLoaderImpl;
+    launcher_delegate_->SetAppIconLoaderForTest(app_icon_loader_);
+    launcher_delegate_->Init();
   }
 
  protected:
+  LauncherUpdater* GetUpdaterByID(ash::LauncherID id) const {
+    return launcher_delegate_->id_to_item_map_[id].updater;
+  }
+
+  const std::string& GetAppID(ash::LauncherID id) const {
+    return launcher_delegate_->id_to_item_map_[id].app_id;
+  }
+
+  void ResetAppIconLoader() {
+    launcher_delegate_->SetAppIconLoaderForTest(app_icon_loader_);
+  }
+
+  void UnpinAppsWithID(const std::string& app_id) {
+    launcher_delegate_->UnpinAppsWithID(app_id);
+  }
+
   scoped_ptr<ash::LauncherModel> launcher_model_;
+  scoped_ptr<ChromeLauncherDelegate> launcher_delegate_;
+
+  // Owned by LauncherUpdater.
+  AppIconLoaderImpl* app_icon_loader_;
 
  private:
   content::TestBrowserThread browser_thread_;
@@ -123,7 +151,7 @@ TEST_F(LauncherUpdaterTest, TabbedSetup) {
   size_t initial_size = launcher_model_->items().size();
   {
     TabContentsWrapper wrapper(CreateTestTabContents());
-    State state(profile(), launcher_model_.get(),
+    State state(profile(), launcher_delegate_.get(), std::string(),
                 LauncherUpdater::TYPE_TABBED);
     // Since the type is tabbed and there is nothing in the tabstrip an item
     // should not have been added.
@@ -147,10 +175,9 @@ TEST_F(LauncherUpdaterTest, TabbedSetup) {
     TestTabStripModelDelegate tab_strip_delegate;
     TabStripModel tab_strip(&tab_strip_delegate, profile());
     tab_strip.InsertTabContentsAt(0, &wrapper, TabStripModel::ADD_NONE);
-    LauncherUpdater icon_updater(NULL, &tab_strip, launcher_model_.get(),
-                                     LauncherUpdater::TYPE_TABBED);
-    icon_updater.SetAppIconLoaderForTest(new AppIconLoaderImpl);
-    icon_updater.Init();
+    LauncherUpdater updater(NULL, &tab_strip, launcher_delegate_.get(),
+                            LauncherUpdater::TYPE_TABBED, std::string());
+    updater.Init();
 
     // There should be one more item.
     ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
@@ -163,7 +190,7 @@ TEST_F(LauncherUpdaterTest, TabbedSetup) {
 TEST_F(LauncherUpdaterTest, AppSetup) {
   size_t initial_size = launcher_model_->items().size();
   {
-    State state(profile(), launcher_model_.get(),
+    State state(profile(), launcher_delegate_.get(), std::string(),
                 LauncherUpdater::TYPE_APP);
     // There should be one more item.
     ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
@@ -180,7 +207,7 @@ TEST_F(LauncherUpdaterTest, TabbedWithApp) {
   size_t initial_size = launcher_model_->items().size();
   {
     TabContentsWrapper initial_tab(CreateTestTabContents());
-    State state(profile(), launcher_model_.get(),
+    State state(profile(), launcher_delegate_.get(), std::string(),
                 LauncherUpdater::TYPE_TABBED);
     // Add a tab.
     state.tab_strip.InsertTabContentsAt(0, &initial_tab,
@@ -194,7 +221,7 @@ TEST_F(LauncherUpdaterTest, TabbedWithApp) {
 
     // Add another tab, configure it so that the launcher thinks it's an app.
     TabContentsWrapper app_tab(CreateTestTabContents());
-    state.app_icon_loader->SetAppID(&app_tab, "1");
+    app_icon_loader_->SetAppID(&app_tab, "1");
     state.tab_strip.InsertTabContentsAt(1, &app_tab, TabStripModel::ADD_NONE);
 
     // There should be one more item.
@@ -220,12 +247,27 @@ TEST_F(LauncherUpdaterTest, TabbedWithApp) {
   ASSERT_EQ(initial_size, launcher_model_->items().size());
 }
 
+TEST_F(LauncherUpdaterTest, TabbedWithAppOnCreate) {
+  size_t initial_size = launcher_model_->items().size();
+  aura::Window window(NULL);
+  TestTabStripModelDelegate tab_strip_delegate;
+  TabStripModel tab_strip(&tab_strip_delegate, profile());
+  TabContentsWrapper app_tab(CreateTestTabContents());
+  app_icon_loader_->SetAppID(&app_tab, "1");
+  tab_strip.InsertTabContentsAt(0, &app_tab, TabStripModel::ADD_NONE);
+  LauncherUpdater updater(&window, &tab_strip, launcher_delegate_.get(),
+                          LauncherUpdater::TYPE_TABBED, std::string());
+  updater.Init();
+  ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
+  EXPECT_EQ(ash::TYPE_APP, launcher_model_->items()[initial_size].type);
+}
+
 // Verifies transitioning from a normal tab to app tab and back works.
 TEST_F(LauncherUpdaterTest, ChangeToApp) {
   size_t initial_size = launcher_model_->items().size();
   {
     TabContentsWrapper initial_tab(CreateTestTabContents());
-    State state(profile(), launcher_model_.get(),
+    State state(profile(), launcher_delegate_.get(), std::string(),
                 LauncherUpdater::TYPE_TABBED);
     // Add a tab.
     state.tab_strip.InsertTabContentsAt(0, &initial_tab,
@@ -237,18 +279,16 @@ TEST_F(LauncherUpdaterTest, ChangeToApp) {
     EXPECT_EQ(ash::TYPE_TABBED, launcher_model_->items()[initial_size].type);
     ash::LauncherID tabbed_id = launcher_model_->items()[initial_size].id;
 
-    state.app_icon_loader->SetAppID(&initial_tab, "1");
+    app_icon_loader_->SetAppID(&initial_tab, "1");
     // Triggers LauncherUpdater seeing the tab changed to an app.
-    state.icon_updater.TabChangedAt(
-        &initial_tab, 0, TabStripModelObserver::ALL);
+    state.updater.TabChangedAt(&initial_tab, 0, TabStripModelObserver::ALL);
     ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
     EXPECT_EQ(ash::TYPE_APP, launcher_model_->items()[initial_size].type);
     EXPECT_EQ(tabbed_id, launcher_model_->items()[initial_size].id);
 
     // Change back to a non-app and make sure the tabbed item is added back.
-    state.app_icon_loader->SetAppID(&initial_tab, std::string());
-    state.icon_updater.TabChangedAt(
-        &initial_tab, 0, TabStripModelObserver::ALL);
+    app_icon_loader_->SetAppID(&initial_tab, std::string());
+    state.updater.TabChangedAt(&initial_tab, 0, TabStripModelObserver::ALL);
     ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
     EXPECT_EQ(ash::TYPE_TABBED, launcher_model_->items()[initial_size].type);
     EXPECT_EQ(tabbed_id, launcher_model_->items()[initial_size].id);
@@ -262,19 +302,17 @@ TEST_F(LauncherUpdaterTest, QueryAppIconLoader) {
   size_t initial_size = launcher_model_->items().size();
   {
     TabContentsWrapper initial_tab(CreateTestTabContents());
-    State state(profile(), launcher_model_.get(),
+    State state(profile(), launcher_delegate_.get(), std::string(),
                 LauncherUpdater::TYPE_TABBED);
     // Configure the tab as an app.
-    state.app_icon_loader->SetAppID(&initial_tab, "1");
+    app_icon_loader_->SetAppID(&initial_tab, "1");
     // Add a tab.
     state.tab_strip.InsertTabContentsAt(0, &initial_tab,
                                         TabStripModel::ADD_NONE);
     // AppIconLoader should have been queried.
-    EXPECT_GT(state.app_icon_loader->GetAndClearFetchCount(), 0);
+    EXPECT_GT(app_icon_loader_->GetAndClearFetchCount(), 0);
     // Remove the tab.
     state.tab_strip.DetachTabContentsAt(0);
-    // Removing the tab should have invoked Remove, which unregisters.
-    EXPECT_FALSE(state.app_icon_loader->HasAppID(&initial_tab));
   }
   // Deleting the LauncherUpdater should have removed the item.
   ASSERT_EQ(initial_size, launcher_model_->items().size());
@@ -284,17 +322,17 @@ TEST_F(LauncherUpdaterTest, QueryAppIconLoader) {
 TEST_F(LauncherUpdaterTest, SetAppImage) {
   size_t initial_size = launcher_model_->items().size();
   TabContentsWrapper initial_tab(CreateTestTabContents());
-  State state(profile(), launcher_model_.get(),
+  State state(profile(), launcher_delegate_.get(), std::string(),
               LauncherUpdater::TYPE_TABBED);
   // Configure the tab as an app.
-  state.app_icon_loader->SetAppID(&initial_tab, "1");
+  app_icon_loader_->SetAppID(&initial_tab, "1");
   // Add a tab.
   state.tab_strip.InsertTabContentsAt(0, &initial_tab,
                                       TabStripModel::ADD_NONE);
   SkBitmap image;
   image.setConfig(SkBitmap::kARGB_8888_Config, 2, 3);
   image.allocPixels();
-  state.icon_updater.SetAppImage(&initial_tab, &image);
+  launcher_delegate_->SetAppImage("1", &image);
   ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
   EXPECT_EQ(2, launcher_model_->items()[initial_size].image.width());
   EXPECT_EQ(3, launcher_model_->items()[initial_size].image.height());
@@ -304,7 +342,7 @@ TEST_F(LauncherUpdaterTest, SetAppImage) {
 TEST_F(LauncherUpdaterTest, AddAppAfterTabbed) {
   size_t initial_size = launcher_model_->items().size();
   TabContentsWrapper tab1(CreateTestTabContents());
-  State state1(profile(), launcher_model_.get(),
+  State state1(profile(), launcher_delegate_.get(), std::string(),
                LauncherUpdater::TYPE_TABBED);
   // Add a tab.
   state1.tab_strip.InsertTabContentsAt(0, &tab1, TabStripModel::ADD_NONE);
@@ -312,7 +350,7 @@ TEST_F(LauncherUpdaterTest, AddAppAfterTabbed) {
   ash::LauncherID tabbed_id = launcher_model_->items()[initial_size].id;
 
   // Create another LauncherUpdater.
-  State state2(profile(), launcher_model_.get(),
+  State state2(profile(), launcher_delegate_.get(), std::string(),
                LauncherUpdater::TYPE_APP);
 
   // Should be two extra items.
@@ -322,7 +360,7 @@ TEST_F(LauncherUpdaterTest, AddAppAfterTabbed) {
   // before the item for state2.
   int next_id = launcher_model_->next_id();
   TabContentsWrapper app_tab(CreateTestTabContents());
-  state1.app_icon_loader->SetAppID(&app_tab, "1");
+  app_icon_loader_->SetAppID(&app_tab, "1");
   state1.tab_strip.InsertTabContentsAt(1, &app_tab, TabStripModel::ADD_NONE);
 
   ASSERT_EQ(initial_size + 3, launcher_model_->items().size());
@@ -343,7 +381,7 @@ TEST_F(LauncherUpdaterTest, AddAppAfterTabbed) {
 }
 
 // Verifies GetWindowAndTabByID works.
-TEST_F(LauncherUpdaterTest, GetLauncherByID) {
+TEST_F(LauncherUpdaterTest, GetUpdaterByID) {
   size_t initial_size = launcher_model_->items().size();
   TabContentsWrapper tab1(CreateTestTabContents());
   TabContentsWrapper tab2(CreateTestTabContents());
@@ -353,41 +391,194 @@ TEST_F(LauncherUpdaterTest, GetLauncherByID) {
   // . tabbed with an app tab and normal tab.
   // . tabbed with a normal tab.
   // . app.
-  State state1(profile(), launcher_model_.get(),
+  State state1(profile(), launcher_delegate_.get(), std::string(),
                LauncherUpdater::TYPE_TABBED);
   state1.tab_strip.InsertTabContentsAt(0, &tab1, TabStripModel::ADD_NONE);
-  state1.app_icon_loader->SetAppID(&tab2, "1");
+  app_icon_loader_->SetAppID(&tab2, "1");
   state1.tab_strip.InsertTabContentsAt(0, &tab2, TabStripModel::ADD_NONE);
-  State state2(profile(), launcher_model_.get(),
+  State state2(profile(), launcher_delegate_.get(), std::string(),
                LauncherUpdater::TYPE_TABBED);
   state2.tab_strip.InsertTabContentsAt(0, &tab3, TabStripModel::ADD_NONE);
-  State state3(profile(), launcher_model_.get(),
+  State state3(profile(), launcher_delegate_.get(), std::string(),
                LauncherUpdater::TYPE_APP);
   ASSERT_EQ(initial_size + 4, launcher_model_->items().size());
 
   // Tabbed item from first state.
-  TabContentsWrapper* tab = NULL;
-  const LauncherUpdater* updater =
-      LauncherUpdater::GetLauncherByID(
-          launcher_model_->items()[initial_size].id, &tab);
-  EXPECT_EQ(&(state1.icon_updater), updater);
-  EXPECT_TRUE(tab == NULL);
+  ash::LauncherID id = launcher_model_->items()[initial_size].id;
+  LauncherUpdater* updater = GetUpdaterByID(id);
+  EXPECT_EQ(&(state1.updater), updater);
+  ASSERT_TRUE(updater);
+  EXPECT_TRUE(updater->GetTab(id) == NULL);
 
   // App item from first state.
-  updater = LauncherUpdater::GetLauncherByID(
-      launcher_model_->items()[initial_size + 1].id, &tab);
-  EXPECT_EQ(&(state1.icon_updater), updater);
-  EXPECT_TRUE(tab == &tab2);
+  id = launcher_model_->items()[initial_size + 1].id;
+  updater = GetUpdaterByID(id);
+  EXPECT_EQ(&(state1.updater), updater);
+  ASSERT_TRUE(updater);
+  EXPECT_TRUE(updater->GetTab(id) == &tab2);
 
   // Tabbed item from second state.
-  updater = LauncherUpdater::GetLauncherByID(
-      launcher_model_->items()[initial_size + 2].id, &tab);
-  EXPECT_EQ(&(state2.icon_updater), updater);
-  EXPECT_TRUE(tab == NULL);
+  id = launcher_model_->items()[initial_size + 2].id;
+  updater = GetUpdaterByID(id);
+  EXPECT_EQ(&(state2.updater), updater);
+  ASSERT_TRUE(updater);
+  EXPECT_TRUE(updater->GetTab(id) == NULL);
 
   // App item.
-  updater = LauncherUpdater::GetLauncherByID(
-      launcher_model_->items()[initial_size + 3].id, &tab);
-  EXPECT_EQ(&(state3.icon_updater), updater);
-  EXPECT_TRUE(tab == NULL);
+  id = launcher_model_->items()[initial_size + 3].id;
+  updater = GetUpdaterByID(id);
+  EXPECT_EQ(&(state3.updater), updater);
+  ASSERT_TRUE(updater);
+  EXPECT_TRUE(updater->GetTab(id) == NULL);
+}
+
+// Various assertions around pinning. In particular verifies destroying a
+// LauncherUpdater doesn't remove the entry for a pinned app.
+TEST_F(LauncherUpdaterTest, Pin) {
+  size_t initial_size = launcher_model_->items().size();
+  TabContentsWrapper tab1(CreateTestTabContents());
+  TabContentsWrapper tab2(CreateTestTabContents());
+  TabContentsWrapper tab3(CreateTestTabContents());
+
+  ash::LauncherID id;
+  {
+    State state1(profile(), launcher_delegate_.get(), std::string(),
+                 LauncherUpdater::TYPE_TABBED);
+    app_icon_loader_->SetAppID(&tab1, "1");
+    state1.tab_strip.InsertTabContentsAt(0, &tab1, TabStripModel::ADD_NONE);
+    ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
+    id = launcher_model_->items()[initial_size].id;
+    EXPECT_EQ(ash::TYPE_APP, launcher_model_->items()[initial_size].type);
+    // Shouldn't be pinned.
+    EXPECT_FALSE(launcher_delegate_->IsPinned(id));
+    launcher_delegate_->Pin(id);
+    EXPECT_TRUE(launcher_delegate_->IsPinned(id));
+  }
+
+  // Should still have the item.
+  ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
+  EXPECT_TRUE(launcher_delegate_->IsPinned(id));
+  EXPECT_TRUE(GetUpdaterByID(id) == NULL);
+
+  // Create another app tab, it shouldn't get the same id.
+  {
+    State state1(profile(), launcher_delegate_.get(), std::string(),
+                 LauncherUpdater::TYPE_TABBED);
+    app_icon_loader_->SetAppID(&tab2, "2");
+    state1.tab_strip.InsertTabContentsAt(0, &tab2, TabStripModel::ADD_NONE);
+    ASSERT_EQ(initial_size + 2, launcher_model_->items().size());
+    ash::LauncherID new_id = launcher_model_->items()[initial_size + 1].id;
+    EXPECT_NE(id, new_id);
+    EXPECT_EQ(ash::TYPE_APP, launcher_model_->items()[initial_size + 1].type);
+    // Shouldn't be pinned.
+    EXPECT_FALSE(launcher_delegate_->IsPinned(new_id));
+    // But existing one should still be pinned.
+    EXPECT_TRUE(launcher_delegate_->IsPinned(id));
+  }
+
+  // Add it back and make sure we don't get another entry.
+  ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
+  {
+    State state1(profile(), launcher_delegate_.get(), std::string(),
+                 LauncherUpdater::TYPE_TABBED);
+    app_icon_loader_->SetAppID(&tab1, "1");
+    state1.tab_strip.InsertTabContentsAt(0, &tab1, TabStripModel::ADD_NONE);
+    ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
+    ash::LauncherID new_id = launcher_model_->items()[initial_size].id;
+    EXPECT_EQ(id, new_id);
+    EXPECT_EQ(ash::TYPE_APP, launcher_model_->items()[initial_size].type);
+    EXPECT_TRUE(launcher_delegate_->IsPinned(id));
+    EXPECT_EQ(&(state1.updater), GetUpdaterByID(id));
+
+    // Add another tab.
+    state1.tab_strip.InsertTabContentsAt(0, &tab3, TabStripModel::ADD_NONE);
+    ASSERT_EQ(initial_size + 2, launcher_model_->items().size());
+    new_id = launcher_model_->items()[initial_size].id;
+    EXPECT_NE(id, new_id);
+    EXPECT_EQ(ash::TYPE_TABBED, launcher_model_->items()[initial_size].type);
+    EXPECT_EQ(&(state1.updater), GetUpdaterByID(new_id));
+  }
+
+  // Add it back and make sure we don't get another entry.
+  ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
+  {
+    State state1(profile(), launcher_delegate_.get(), std::string(),
+                 LauncherUpdater::TYPE_TABBED);
+    state1.tab_strip.InsertTabContentsAt(0, &tab3, TabStripModel::ADD_NONE);
+    ASSERT_EQ(initial_size + 2, launcher_model_->items().size());
+    ash::LauncherID new_id = launcher_model_->items()[initial_size + 1].id;
+    EXPECT_NE(id, new_id);
+    EXPECT_EQ(ash::TYPE_TABBED,
+              launcher_model_->items()[initial_size + 1].type);
+    EXPECT_TRUE(GetUpdaterByID(id) == NULL);
+    EXPECT_EQ(&(state1.updater), GetUpdaterByID(new_id));
+
+    // Add the app tab.
+    state1.tab_strip.InsertTabContentsAt(0, &tab1, TabStripModel::ADD_NONE);
+    ASSERT_EQ(initial_size + 2, launcher_model_->items().size());
+    new_id = launcher_model_->items()[initial_size].id;
+    EXPECT_EQ(id, new_id);
+    EXPECT_EQ(ash::TYPE_APP, launcher_model_->items()[initial_size].type);
+    EXPECT_EQ(&(state1.updater), GetUpdaterByID(new_id));
+  }
+}
+
+// Verifies pinned apps are persisted and restored.
+TEST_F(LauncherUpdaterTest, PersistPinned) {
+  size_t initial_size = launcher_model_->items().size();
+  TabContentsWrapper tab1(CreateTestTabContents());
+
+  app_icon_loader_->SetAppID(&tab1, "1");
+  app_icon_loader_->SetAppID(NULL, "2");
+  {
+    State state1(profile(), launcher_delegate_.get(), std::string(),
+                 LauncherUpdater::TYPE_TABBED);
+    state1.tab_strip.InsertTabContentsAt(0, &tab1, TabStripModel::ADD_NONE);
+    ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
+    ash::LauncherID id = launcher_model_->items()[initial_size].id;
+    EXPECT_EQ(ash::TYPE_APP, launcher_model_->items()[initial_size].type);
+    // Shouldn't be pinned.
+    EXPECT_FALSE(launcher_delegate_->IsPinned(id));
+    launcher_delegate_->Pin(id);
+    EXPECT_TRUE(launcher_delegate_->IsPinned(id));
+
+    // Create an app window.
+    State state2(profile(), launcher_delegate_.get(), "2",
+                 LauncherUpdater::TYPE_APP);
+    ASSERT_EQ(initial_size + 2, launcher_model_->items().size());
+    ash::LauncherID id2 = launcher_model_->items()[initial_size + 1].id;
+    EXPECT_NE(id, id2);
+    EXPECT_EQ(ash::TYPE_APP, launcher_model_->items()[initial_size + 1].type);
+    launcher_delegate_->Pin(id2);
+    EXPECT_TRUE(launcher_delegate_->IsPinned(id2));
+  }
+
+  launcher_delegate_.reset(NULL);
+  ASSERT_EQ(initial_size, launcher_model_->items().size());
+
+  launcher_delegate_.reset(
+      new ChromeLauncherDelegate(profile(), launcher_model_.get()));
+  app_icon_loader_ = new AppIconLoaderImpl;
+  app_icon_loader_->SetAppID(&tab1, "1");
+  app_icon_loader_->SetAppID(NULL, "2");
+  ResetAppIconLoader();
+  launcher_delegate_->Init();
+  ASSERT_EQ(initial_size + 2, launcher_model_->items().size());
+  EXPECT_EQ(ash::TYPE_APP, launcher_model_->items()[initial_size].type);
+  ash::LauncherID id = launcher_model_->items()[initial_size].id;
+  EXPECT_EQ("1", GetAppID(id));
+  EXPECT_EQ(ChromeLauncherDelegate::APP_TYPE_TAB,
+            launcher_delegate_->GetAppType(id));
+  EXPECT_TRUE(launcher_delegate_->IsPinned(id));
+  EXPECT_EQ(ash::TYPE_APP, launcher_model_->items()[initial_size + 1].type);
+  ash::LauncherID id2 = launcher_model_->items()[initial_size + 1].id;
+  EXPECT_EQ("2", GetAppID(id2));
+  EXPECT_EQ(ChromeLauncherDelegate::APP_TYPE_WINDOW,
+            launcher_delegate_->GetAppType(id2));
+  EXPECT_TRUE(launcher_delegate_->IsPinned(id2));
+
+  UnpinAppsWithID("1");
+  ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
+  ash::LauncherID id3 = launcher_model_->items()[initial_size].id;
+  EXPECT_EQ(id2, id3);
 }

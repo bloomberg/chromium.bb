@@ -11,23 +11,23 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
-#include "chrome/browser/ui/views/aura/launcher/launcher_updater.h"
+#include "chrome/browser/ui/views/aura/launcher/chrome_launcher_delegate.h"
 
 class Extension;
 class Profile;
 
 // Default implementation of LauncherUpdater::AppIconLoader that interacts
 // with the ExtensionService and ImageLoadingTracker to load images.
-class LauncherIconLoader : public LauncherUpdater::AppIconLoader,
+class LauncherIconLoader : public ChromeLauncherDelegate::AppIconLoader,
                            public ImageLoadingTracker::Observer {
  public:
-  LauncherIconLoader(Profile* profile, LauncherUpdater* icon_updater);
+  LauncherIconLoader(Profile* profile, ChromeLauncherDelegate* host);
   virtual ~LauncherIconLoader();
 
   // AppIconLoader:
   virtual std::string GetAppID(TabContentsWrapper* tab) OVERRIDE;
-  virtual void Remove(TabContentsWrapper* tab) OVERRIDE;
-  virtual void FetchImage(TabContentsWrapper* tab) OVERRIDE;
+  virtual bool IsValidID(const std::string& id) OVERRIDE;
+  virtual void FetchImage(const std::string& id) OVERRIDE;
 
   // ImageLoadingTracker::Observer:
   virtual void OnImageLoaded(SkBitmap* image,
@@ -35,24 +35,24 @@ class LauncherIconLoader : public LauncherUpdater::AppIconLoader,
                              int index) OVERRIDE;
 
  private:
-  typedef std::map<int, TabContentsWrapper*> ImageLoaderIDToTabMap;
-
-  // Removes |tab| from the |image_loader_id_to_tab_map_| map.
-  void RemoveFromImageLoaderMap(TabContentsWrapper* tab);
+  typedef std::map<int, std::string> ImageLoaderIDToExtensionIDMap;
 
   // Returns the extension for the specified tab.
   const Extension* GetExtensionForTab(TabContentsWrapper* tab);
 
+  // Returns the extension by ID.
+  const Extension* GetExtensionByID(const std::string& id);
+
   Profile* profile_;
 
-  // LauncherUpdater we're associated with (and owned by).
-  LauncherUpdater* icon_updater_;
+  // ChromeLauncherDelegate we're associated with (and owned by).
+  ChromeLauncherDelegate* host_;
 
   // Used to load images.
   scoped_ptr<ImageLoadingTracker> image_loader_;
 
-  // Maps from id from the ImageLoadingTracker to the TabContentsWrapper.
-  ImageLoaderIDToTabMap image_loader_id_to_tab_map_;
+  // Maps from id from the ImageLoadingTracker to the extension id.
+  ImageLoaderIDToExtensionIDMap map_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherIconLoader);
 };

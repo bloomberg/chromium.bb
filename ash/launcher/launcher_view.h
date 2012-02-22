@@ -10,6 +10,7 @@
 
 #include "ash/launcher/launcher_button_host.h"
 #include "ash/launcher/launcher_model_observer.h"
+#include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -32,7 +33,8 @@ namespace internal {
 class LauncherView : public views::View,
                      public LauncherModelObserver,
                      public views::ButtonListener,
-                     public LauncherButtonHost {
+                     public LauncherButtonHost,
+                     public views::ContextMenuController {
  public:
   LauncherView(LauncherModel* model, LauncherDelegate* delegate);
   virtual ~LauncherView();
@@ -96,7 +98,7 @@ class LauncherView : public views::View,
 
   // Overridden from LauncherModelObserver:
   virtual void LauncherItemAdded(int model_index) OVERRIDE;
-  virtual void LauncherItemRemoved(int model_index) OVERRIDE;
+  virtual void LauncherItemRemoved(int model_index, LauncherID id) OVERRIDE;
   virtual void LauncherItemChanged(int model_index,
                                    const ash::LauncherItem& old_item) OVERRIDE;
   virtual void LauncherItemMoved(int start_index, int target_index) OVERRIDE;
@@ -115,6 +117,11 @@ class LauncherView : public views::View,
   // Overriden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE;
+
+  // Overriden from views::ContextMenuController:
+  virtual void ShowContextMenuForView(views::View* source,
+                                      const gfx::Point& p,
+                                      bool is_mouse_gesture) OVERRIDE;
 
   // The model; owned by Launcher.
   LauncherModel* model_;
@@ -144,8 +151,13 @@ class LauncherView : public views::View,
   // Index |drag_view_| was initially at.
   int start_drag_index_;
 
+  // Used for the context menu of a particular item.
+  LauncherID context_menu_id_;
+
 #if !defined(OS_MACOSX)
   scoped_ptr<views::MenuRunner> overflow_menu_runner_;
+
+  scoped_ptr<views::MenuRunner> launcher_menu_runner_;
 #endif
 
   // Used to handle cycling among windows.

@@ -140,6 +140,11 @@ class LauncherDelegateImpl : public ash::LauncherDelegate {
     return watcher_->GetWindowByID(item.id)->title();
   }
 
+  virtual ui::MenuModel* CreateContextMenu(
+      const ash::LauncherItem& item) OVERRIDE {
+    return NULL;
+  }
+
  private:
   // Used to update Launcher. Owned by main.
   WindowWatcher* watcher_;
@@ -191,7 +196,8 @@ class ShellDelegateImpl : public ash::ShellDelegate {
     ash::PartialScreenshotView::StartPartialScreenshot(screenshot_delegate);
   }
 
-  virtual ash::LauncherDelegate* CreateLauncherDelegate() OVERRIDE {
+  virtual ash::LauncherDelegate* CreateLauncherDelegate(
+      ash::LauncherModel* model) OVERRIDE {
     return new LauncherDelegateImpl(watcher_);
   }
 

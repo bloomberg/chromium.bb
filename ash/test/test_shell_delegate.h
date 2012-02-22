@@ -30,7 +30,8 @@ class TestShellDelegate : public ShellDelegate {
       CycleOrder order) const OVERRIDE;
   virtual void StartPartialScreenshot(
       ScreenshotDelegate* screenshot_delegate) OVERRIDE;
-  virtual LauncherDelegate* CreateLauncherDelegate() OVERRIDE;
+  virtual LauncherDelegate* CreateLauncherDelegate(
+      ash::LauncherModel* model) OVERRIDE;
 };
 
 }  // namespace test

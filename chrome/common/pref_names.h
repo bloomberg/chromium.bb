@@ -658,6 +658,10 @@ extern const char kRestoreSessionStateDialogShown[];
 
 extern const char kWebIntentsEnabled[];
 
+#if defined(USE_AURA)
+extern const char kPinnedLauncherApps[];
+#endif
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

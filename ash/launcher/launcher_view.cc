@@ -13,6 +13,7 @@
 #include "ash/launcher/view_model_utils.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "base/auto_reset.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
@@ -192,7 +193,8 @@ LauncherView::LauncherView(LauncherModel* model, LauncherDelegate* delegate)
       dragging_(NULL),
       drag_view_(NULL),
       drag_offset_(0),
-      start_drag_index_(-1) {
+      start_drag_index_(-1),
+      context_menu_id_(0) {
   DCHECK(model_);
   bounds_animator_.reset(new views::BoundsAnimator(this));
 }
@@ -300,6 +302,7 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
     case TYPE_TABBED: {
       TabbedLauncherButton* button = new TabbedLauncherButton(this, this);
       button->SetTabImage(item.image, item.num_tabs);
+      button->set_context_menu_controller(this);
       view = button;
       break;
     }
@@ -308,6 +311,7 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
       AppLauncherButton* button = new AppLauncherButton(this, this);
       button->SetAppImage(item.image);
       view = button;
+      button->set_context_menu_controller(this);
       break;
     }
 
@@ -510,7 +514,11 @@ void LauncherView::LauncherItemAdded(int model_index) {
   }
 }
 
-void LauncherView::LauncherItemRemoved(int model_index) {
+void LauncherView::LauncherItemRemoved(int model_index, LauncherID id) {
+#if !defined(OS_MACOSX)
+  if (id == context_menu_id_)
+    launcher_menu_runner_.reset();
+#endif
   views::View* view = view_model_->view_at(model_index);
   CancelDrag(view);
   view_model_->Remove(model_index);
@@ -609,6 +617,28 @@ void LauncherView::MouseExitedButton(views::View* view) {
   MaybeResetWindowCycler(view);
 }
 
+string16 LauncherView::GetAccessibleName(views::View* view) {
+  if (!delegate_)
+    return string16();
+  int view_index = view_model_->GetIndexOfView(view);
+  // May be -1 while in the process of animating closed.
+  if (view_index == -1)
+    return string16();
+
+  switch (model_->items()[view_index].type) {
+    case TYPE_TABBED:
+    case TYPE_APP:
+      return delegate_->GetTitle(model_->items()[view_index]);
+
+    case TYPE_APP_LIST:
+      return l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_TITLE);
+
+    case TYPE_BROWSER_SHORTCUT:
+      return l10n_util::GetStringUTF16(IDS_AURA_CYCLER_TITLE);
+  }
+  return string16();
+}
+
 void LauncherView::ButtonPressed(views::Button* sender,
                                  const views::Event& event) {
   if (sender == overflow_button_)
@@ -640,26 +670,31 @@ void LauncherView::ButtonPressed(views::Button* sender,
   }
 }
 
-string16 LauncherView::GetAccessibleName(views::View* view) {
-  if (!delegate_)
-    return string16();
-  int view_index = view_model_->GetIndexOfView(view);
+void LauncherView::ShowContextMenuForView(views::View* source,
+                                          const gfx::Point& p,
+                                          bool is_mouse_gesture) {
+  int view_index = view_model_->GetIndexOfView(source);
   // May be -1 while in the process of animating closed.
-  if (view_index == -1)
-    return string16();
+  if (view_index == -1 || !delegate_)
+    return;
 
-  switch (model_->items()[view_index].type) {
-    case TYPE_TABBED:
-    case TYPE_APP:
-      return delegate_->GetTitle(model_->items()[view_index]);
-
-    case TYPE_APP_LIST:
-      return l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_TITLE);
-
-    case TYPE_BROWSER_SHORTCUT:
-      return l10n_util::GetStringUTF16(IDS_AURA_CYCLER_TITLE);
-  }
-  return string16();
+#if !defined(OS_MACOSX)
+  scoped_ptr<ui::MenuModel> menu_model(
+      delegate_->CreateContextMenu(model_->items()[view_index]));
+  if (!menu_model.get())
+    return;
+  AutoReset<LauncherID> reseter(&context_menu_id_,
+                                model_->items()[view_index].id);
+  views::MenuModelAdapter menu_model_adapter(menu_model.get());
+  launcher_menu_runner_.reset(
+      new views::MenuRunner(menu_model_adapter.CreateMenu()));
+  // NOTE: if you convert to HAS_MNEMONICS be sure and update menu building
+  // code.
+  if (launcher_menu_runner_->RunMenuAt(
+          source->GetWidget(), NULL, gfx::Rect(p, gfx::Size()),
+          views::MenuItemView::TOPLEFT, 0) == views::MenuRunner::MENU_DELETED)
+    return;
+#endif
 }
 
 }  // namespace internal

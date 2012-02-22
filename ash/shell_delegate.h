@@ -25,6 +25,7 @@ namespace ash {
 class AppListModel;
 class AppListViewDelegate;
 class LauncherDelegate;
+class LauncherModel;
 struct LauncherItem;
 class ScreenshotDelegate;
 
@@ -81,7 +82,8 @@ class ASH_EXPORT ShellDelegate {
 
   // Creates a new LauncherDelegate. Shell takes ownership of the returned
   // value.
-  virtual LauncherDelegate* CreateLauncherDelegate() = 0;
+  virtual LauncherDelegate* CreateLauncherDelegate(
+      ash::LauncherModel* model) = 0;
 };
 
 }  // namespace ash

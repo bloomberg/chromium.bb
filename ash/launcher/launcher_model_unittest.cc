@@ -38,7 +38,7 @@ class TestLauncherModelObserver : public LauncherModelObserver {
   virtual void LauncherItemAdded(int index) OVERRIDE {
     added_count_++;
   }
-  virtual void LauncherItemRemoved(int index) OVERRIDE {
+  virtual void LauncherItemRemoved(int index, LauncherID id) OVERRIDE {
     removed_count_++;
   }
   virtual void LauncherItemChanged(int index,
