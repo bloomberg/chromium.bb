@@ -51,7 +51,7 @@ Clipboard::Clipboard() : set_text_(NULL), has_text_(NULL), get_text_(NULL) {
 Clipboard::~Clipboard() {
 }
 
-void Clipboard::WriteObjects(const ObjectMap& objects) {
+void Clipboard::WriteObjects(Buffer buffer, const ObjectMap& objects) {
 }
 
 uint64 Clipboard::GetSequenceNumber(Clipboard::Buffer /* buffer */) {
