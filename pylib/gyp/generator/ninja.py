@@ -44,11 +44,11 @@ generator_default_variables = {
   'RULE_INPUT_NAME': '${name}',
 }
 
-# TODO: enable cross compiling once we figure out:
-# - how to not build extra host objects in the non-cross-compile case.
-# - how to decide what the host compiler is (should not just be $cc).
-# - need ld_host as well.
-generator_supports_multiple_toolsets = False
+# TODO: figure out how to not build extra host objects in the non-cross-compile
+# case when this is enabled, and enable unconditionally.
+generator_supports_multiple_toolsets = (
+  os.environ.get('AR_target') or os.environ.get('CC_target') or
+  os.environ.get('CXX_target'))
 
 
 def StripPrefix(arg, prefix):
@@ -577,9 +577,11 @@ class NinjaWriter:
   def WriteSources(self, config_name, config, sources, predepends,
                    precompiled_header):
     """Write build rules to compile all of |sources|."""
-    if self.toolset == 'host':
-      self.ninja.variable('cc', '$cc_host')
-      self.ninja.variable('cxx', '$cxx_host')
+    if self.toolset == 'target':
+      self.ninja.variable('ar', '$ar_target')
+      self.ninja.variable('cc', '$cc_target')
+      self.ninja.variable('cxx', '$cxx_target')
+      self.ninja.variable('ld', '$ld_target')
 
     if self.flavor == 'mac':
       cflags = self.xcode_settings.GetCflags(config_name)
@@ -1062,14 +1064,22 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   flock = 'flock'
   if flavor == 'mac':
     flock = './gyp-mac-tool flock'
+  master_ninja.variable('ar', os.environ.get('AR', 'ar'))
   master_ninja.variable('cc', os.environ.get('CC', cc))
   master_ninja.variable('cxx', os.environ.get('CXX', cxx))
   if flavor == 'win':
     master_ninja.variable('ld', 'link')
   else:
     master_ninja.variable('ld', flock + ' linker.lock $cxx')
-  master_ninja.variable('cc_host', '$cc')
-  master_ninja.variable('cxx_host', '$cxx')
+
+  master_ninja.variable('ar_target', os.environ.get('AR_target', '$ar'))
+  master_ninja.variable('cc_target', os.environ.get('CC_target', '$cc'))
+  master_ninja.variable('cxx_target', os.environ.get('CXX_target', '$cxx'))
+  if flavor == 'win':
+    master_ninja.variable('ld_target', 'link')
+  else:
+    master_ninja.variable('ld_target', flock + ' linker.lock $cxx_target')
+
   if flavor == 'mac':
     master_ninja.variable('mac_tool', os.path.join('.', 'gyp-mac-tool'))
   master_ninja.newline()
@@ -1111,7 +1121,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.rule(
       'alink',
       description='AR $out',
-      command='rm -f $out && ar rcsT $out $in')
+      command='rm -f $out && $ar rcsT $out $in')
     master_ninja.rule(
       'solink',
       description='SOLINK $out',
