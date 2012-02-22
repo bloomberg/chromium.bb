@@ -276,7 +276,7 @@ class InputMethodManager {
   virtual InputMethodDescriptor previous_input_method() const = 0;
   virtual InputMethodDescriptor current_input_method() const = 0;
 
-  virtual const ImePropertyList& current_ime_properties() const = 0;
+  virtual ImePropertyList current_ime_properties() const = 0;
 };
 
 }  // namespace input_method

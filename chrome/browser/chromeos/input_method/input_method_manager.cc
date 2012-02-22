@@ -149,6 +149,7 @@ class InputMethodManagerImpl
  public:
   InputMethodManagerImpl()
       : ibus_controller_(IBusController::Create()),
+        should_hide_properties_(true),
         should_launch_ime_(false),
         ime_connected_(false),
         defer_ime_startup_(false),
@@ -314,6 +315,7 @@ class InputMethodManagerImpl
       // We shouldn't use SetCurrentKeyboardLayoutByName() here. See
       // comments at ChangeCurrentInputMethod() for details.
       ChangeCurrentInputMethodFromId(input_method_id);
+      OnRegisterImeProperties(ImePropertyList());  // notify the button.
     } else {
       // Otherwise, start the input method daemon, and change the input
       // method via the daemon.
@@ -489,7 +491,11 @@ class InputMethodManagerImpl
     return current_input_method_;
   }
 
-  virtual const ImePropertyList& current_ime_properties() const {
+  virtual ImePropertyList current_ime_properties() const {
+    if (should_hide_properties_ ||
+        InputMethodUtil::IsKeyboardLayout(current_input_method().id())) {
+      return ImePropertyList();
+    }
     return current_ime_properties_;
   }
 
@@ -1198,12 +1204,16 @@ class InputMethodManagerImpl
 
   // Registers the properties used by the current input method.
   void RegisterProperties(const ImePropertyList& prop_list) {
-    // |prop_list| might be empty. This means "clear all properties."
-    current_ime_properties_ = prop_list;
-
+    // |prop_list| might be empty. This means "hide properties."
+    if (prop_list.empty()) {
+      should_hide_properties_ = true;
+    } else {
+      should_hide_properties_ = false;
+      current_ime_properties_ = prop_list;
+    }
     // Update input method menu
     FOR_EACH_OBSERVER(InputMethodManager::Observer, observers_,
-                      PropertyListChanged(this, current_ime_properties_));
+                      PropertyListChanged(this, current_ime_properties()));
   }
 
   // Starts the input method daemon. Unlike MaybeStopInputMethodDaemon(),
@@ -1222,7 +1232,7 @@ class InputMethodManagerImpl
 
     // Update input method menu
     FOR_EACH_OBSERVER(InputMethodManager::Observer, observers_,
-                      PropertyListChanged(this, current_ime_properties_));
+                      PropertyListChanged(this, current_ime_properties()));
   }
 
   // Launches an input method procsess specified by the given command
@@ -1460,6 +1470,7 @@ class InputMethodManagerImpl
   // The input method properties which the current input method uses. The list
   // might be empty when no input method is used.
   ImePropertyList current_ime_properties_;
+  bool should_hide_properties_;
 
   typedef std::pair<std::string, std::string> ConfigKeyType;
   typedef std::map<ConfigKeyType, ImeConfigValue> InputMethodConfigRequests;
