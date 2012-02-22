@@ -73,6 +73,7 @@ cr.define('oobe', function() {
       continueButton.textContent = localStrings.getString('continueButton');
       continueButton.addEventListener('click', function(e) {
         chrome.send('networkOnExit', []);
+        e.stopPropagation();
       });
       buttons.push(continueButton);
 

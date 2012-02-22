@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,6 +53,7 @@ cr.define('oobe', function() {
       backButton.textContent = localStrings.getString('back');
       backButton.addEventListener('click', function(e) {
         chrome.send('eulaOnExit', [false, $('usage-stats').checked]);
+        e.stopPropagation();
       });
       buttons.push(backButton);
 
@@ -61,6 +62,7 @@ cr.define('oobe', function() {
       acceptButton.textContent = localStrings.getString('acceptAgreement');
       acceptButton.addEventListener('click', function(e) {
         chrome.send('eulaOnExit', [true, $('usage-stats').checked]);
+        e.stopPropagation();
       });
       buttons.push(acceptButton);
 
