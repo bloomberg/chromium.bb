@@ -343,26 +343,6 @@
    fun:NetTestSuite::Initialize
 }
 {
-   bug_44385
-   Heapcheck:Leak
-   ...
-   fun:net::HostCache::Set
-   fun:net::HostResolverImpl::OnJobComplete
-   fun:net::HostResolverImpl::Job::OnLookupComplete
-   fun:void DispatchToMethod
-   fun:RunnableMethod::Run
-   fun:*::TaskClosureAdapter::Run
-   fun:base::internal::Invoker1::DoInvoke
-   fun:base::Callback::Run
-   fun:MessageLoop::RunTask
-}
-{
-   bug_44667
-   Heapcheck:Leak
-   fun:Callback1::Type* NewCallback
-   fun:media::VideoDecoderImpl::DoInitialize
-}
-{
    bug_46571_a
    Heapcheck:Leak
    fun:WTF::fastMalloc
@@ -449,15 +429,6 @@
    fun:*~TestShell
    fun:::MainWindowDestroyed
    fun:g_closure_invoke
-}
-{
-   bug_32366
-   Heapcheck:Leak
-   fun:CallbackRunner* NewCallback
-   fun:media::PipelineImpl::FilterStateTransitionTask
-   fun:*DispatchToMethod
-   fun:RunnableMethod::Run
-   fun:MessageLoop::RunTask
 }
 {
    bug_46649_a
@@ -571,14 +542,6 @@
    fun:CreatePlugin
 }
 {
-   bug_46678_e
-   Heapcheck:Leak
-   fun:Callback*::Type* NewCallback
-   fun:remoting::SessionManager::DoEncode
-   fun:*DispatchToMethod
-   fun:RunnableMethod::Run
-}
-{
    bug_46715
    Heapcheck:Leak
    fun:WebCore::makeExternalString
@@ -602,13 +565,6 @@
    Heapcheck:Leak
    ...
    fun:history::HistoryBackend::InitImpl
-   fun:history::HistoryBackend::Init
-}
-{
-   bug_19775_c
-   Heapcheck:Leak
-   fun:CancelableTask* NewRunnableMethod
-   fun:HistoryService::BackendDelegate::DBLoaded
    fun:history::HistoryBackend::Init
 }
 {
@@ -680,17 +636,6 @@
    fun:disk_cache::BackendImpl::NewEntry
    fun:disk_cache::BackendImpl::MatchEntry
 }
-# "Schedule*" stands for {ScheduleImmediately,ScheduleWithDelay}.
-{
-   bug_50345
-   Heapcheck:Leak
-   ...
-   fun:ScopedRunnableMethodFactory::NewRunnableMethod
-   fun:sync_notifier::ChromeSystemResources::MakeTaskToPost
-   fun:sync_notifier::ChromeSystemResources::Schedule*
-   ...
-   fun:sync_notifier::::ChromeSystemResourcesTest::ScheduleShouldNotRun
-}
 {
    bug_50598_a
    Heapcheck:Leak
@@ -712,24 +657,6 @@
    Heapcheck:Leak
    ...
    fun:safe_browsing::PhishingDOMFeatureExtractorTest::GetNextThreadName
-}
-{
-   bug_51176_a
-   Heapcheck:Leak
-   fun:Callback1::Type* NewCallback
-   fun:PrefValueStoreTest_TestPolicyRefresh_Test::TestBody
-}
-{
-   bug_51176_b
-   Heapcheck:Leak
-   fun:Callback1::Type* NewCallback
-   fun:PrefValueStoreTest_TestRefreshPolicyPrefsCompletion_Test::TestBody
-}
-{
-   bug_51176_c
-   Heapcheck:Leak
-   fun:Callback1::Type* NewCallback
-   fun:PrefValueStoreTest_TestConcurrentPolicyRefresh_Test::TestBody
 }
 {
    bug_52826
@@ -1096,15 +1023,6 @@
    fun:browser_sync::SyncerThread::DoSyncSessionJob
 }
 {
-   bug_80196
-   Heapcheck:Leak
-   fun:CallbackRunner* NewCallback
-   fun:browser_sync::SyncBackendHost::ConfigureDataTypes
-   fun:browser_sync::SyncBackendHostForProfileSyncTest::ConfigureDataTypes
-   fun:browser_sync::DataTypeManagerImpl::Restart
-   fun:browser_sync::DataTypeManagerImpl::Configure
-}
-{
    bug_80467
    Heapcheck:Leak
    ...
@@ -1258,16 +1176,6 @@
    fun:base::MessagePumpForUI::Run
    fun:MessageLoop::RunInternal
    fun:MessageLoop::RunHandler
-}
-{
-   bug_83561a
-   Heapcheck:Leak
-   fun:CancelableTask* NewRunnableMethod
-   fun:net::HostResolverImpl::Job::DoLookup
-   fun:void DispatchToMethod
-   fun:RunnableMethod::Run
-   ...
-   fun:base::::WorkerThread::ThreadMain
 }
 {
    bug_83561b
