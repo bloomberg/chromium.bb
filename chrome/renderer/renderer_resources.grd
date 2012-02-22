@@ -11,20 +11,21 @@ without changes to the corresponding grd file. fb9 -->
   </outputs>
   <release seq="1">
     <includes>
+      <include name="IDR_APP_BINDINGS_JS" file="resources\extensions\app.js" type="BINDATA" />
       <include name="IDR_BLOCKED_PLUGIN_HTML" file="resources\blocked_plugin.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_CLICK_TO_PLAY_PLUGIN_HTML" file="resources\click_to_play_plugin.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_DISABLED_PLUGIN_HTML" file="resources\disabled_plugin.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_EXTENSION_APITEST_JS" file="resources\extensions\apitest.js" type="BINDATA" />
-      <include name="IDR_APP_BINDINGS_JS" file="resources\extensions\app.js" type="BINDATA" />
+      <include name="IDR_ERROR_APP_HTML" file="resources\error_app.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_EVENT_BINDINGS_JS" file="resources\extensions\event.js" type="BINDATA" />
+      <include name="IDR_EXTENSION_APITEST_JS" file="resources\extensions\apitest.js" type="BINDATA" />
       <include name="IDR_GREASEMONKEY_API_JS" file="resources\extensions\greasemonkey_api.js" type="BINDATA" />
       <include name="IDR_JSON_SCHEMA_JS" file="resources\extensions\json_schema.js" type="BINDATA" />
       <include name="IDR_MISCELLANEOUS_BINDINGS_JS" file="resources\extensions\miscellaneous_bindings.js" type="BINDATA" />
-      <include name="IDR_SCHEMA_GENERATED_BINDINGS_JS" file="resources\extensions\schema_generated_bindings.js" type="BINDATA" />
       <include name="IDR_NET_ERROR_HTML" file="resources\neterror.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_SAD_PLUGIN" file="resources\sadplugin.png" type="BINDATA" />
-      <include name="IDR_ERROR_APP_HTML" file="resources\error_app.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_PLATFORM_APP_CSS" file="resources\extensions\platform_app.css" type="BINDATA" />
+      <include name="IDR_REQUIRE_JS" file="resources\require.js" type="BINDATA" />
+      <include name="IDR_SAD_PLUGIN" file="resources\sadplugin.png" type="BINDATA" />
+      <include name="IDR_SCHEMA_GENERATED_BINDINGS_JS" file="resources\extensions\schema_generated_bindings.js" type="BINDATA" />
       <include name="IDR_WEBSTORE_BINDINGS_JS" file="resources\extensions\webstore.js" type="BINDATA" />
 
       <!-- Custom bindings for extension APIs. -->
