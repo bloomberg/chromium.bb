@@ -330,7 +330,7 @@ class GetSizeStatsFunction
 
 // Retrieves devices meta-data. Expects volume's device path as an argument.
 class GetVolumeMetadataFunction
-    : public SyncExtensionFunction {
+    : public FileBrowserFunction {
  public:
   GetVolumeMetadataFunction();
 
@@ -340,6 +340,10 @@ class GetVolumeMetadataFunction
   virtual bool RunImpl() OVERRIDE;
 
  private:
+  // A callback method to handle the result of
+  // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
+  void GetLocalPathsResponseOnUIThread(const FilePathList& files);
+
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getVolumeMetadata");
 };
 

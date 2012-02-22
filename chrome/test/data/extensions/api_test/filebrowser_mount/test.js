@@ -50,29 +50,88 @@ var expectedVolume3 = {
   isOnBootDevice: true
 };
 
-function validateVolume(volume, expected) {
+// List of expected mount points.
+// We have to treat archives specially because their sourceUrl is set to
+// filesystem url. To make it easier to define expectation for archives,
+// instead of sourceUrl, we set sourcePath that will be converted to filesystem
+// url when received mountPoint is verified.
+// NOTE: this has to be synced with values in file_browser_private_apitest.cc
+//       and values sorted by mountPath.
+var expectedMountPoints = [
+  {
+    sourcePath: 'Downloads/archive_path',
+    mountPath: 'archive/archive_mount_path',
+    mountType: 'file',
+    mountCondition: ''
+  },
+  {
+    sourceUrl: 'device_path1',
+    mountPath: 'removable/mount_path1',
+    mountType: 'device',
+    mountCondition: ''
+  },
+  {
+    sourceUrl: 'device_path2',
+    mountPath: 'removable/mount_path2',
+    mountType: 'device',
+    mountCondition: ''
+  },
+  {
+    sourceUrl: 'device_path3',
+    mountPath: 'removable/mount_path3',
+    mountType: 'device',
+    mountCondition: ''
+  }
+];
+
+function treatMountPointException(received, expected, key) {
+  if (key != 'sourcePath')
+    return { wasValidated: false, success: false };
+  var expectedSourceUrl = createFileUrl(expected[key]);
+  var success = (expectedSourceUrl == received['sourceUrl']);
+  if (!success)
+    console.warn("Expected mount point's sourceUrl to be '" +
+                 expectedSourceUrl + "' but got '" + received['sourceUrl'] +
+                 "' instead.");
+  return { wasValidated: true, success: success };
+};
+
+function validateObject(received, expected, name, treatException) {
   for (var key in expected) {
-    if (volume[key] != expected[key]) {
-      console.log('Expected "' + key + '" volume property to be: "' +
-                  expected[key] + '"' + ', but got: "' + volume[key] +
+    var validated = treatException &&
+                    treatException(received, expected, key);
+    if (validated && validated.wasValidated) {
+      if (validated.success) {
+        continue;
+      } else {
+        return false;
+      }
+    }
+    if (received[key] != expected[key]) {
+      console.warn('Expected "' + key + '" ' + name + ' property to be: "' +
+                  expected[key] + '"' + ', but got: "' + received[key] +
                   '" instead.');
       return false;
     }
   }
-  if (Object.keys(expected).length != Object.keys(volume).length) {
-    console.log("Unexpected property found in returned volume");
+  if (Object.keys(expected).length != Object.keys(received).length) {
+    console.warn("Unexpected property found in returned volume");
     return false;
   }
   return true;
 };
 
+function createFileUrl(fileName) {
+  var testExtensionId = "ddammdhioacbehjngdmkjcjbnfginlla";
+  var fileUrl = "filesystem:chrome-extension://" + testExtensionId +
+                "/external/" + fileName;
+  return fileUrl;
+};
+
 chrome.test.runTests([
   function removeMount() {
     // The ID of this extension.
-    var fileBrowserExtensionId = "ddammdhioacbehjngdmkjcjbnfginlla";
-    var testFileName = "tmp/test_file.zip";
-    var fileUrl = "filesystem:chrome-extension://" + fileBrowserExtensionId +
-                  "/external/" + testFileName;
+    var fileUrl = createFileUrl("tmp/test_file.zip");
 
     chrome.fileBrowserPrivate.removeMount(fileUrl);
 
@@ -83,40 +142,68 @@ chrome.test.runTests([
 
   function getVolumeMetadataValid1() {
     chrome.fileBrowserPrivate.getVolumeMetadata(
-        "device_path1",
+        createFileUrl(expectedVolume1.mountPath),
         chrome.test.callbackPass(function(result) {
-          chrome.test.assertTrue(validateVolume(result, expectedVolume1),
+          chrome.test.assertTrue(
+              validateObject(result, expectedVolume1, 'volume'),
               "getVolumeMetadata result for first volume not as expected");
     }));
   },
 
   function getVolumeMetadataValid2() {
     chrome.fileBrowserPrivate.getVolumeMetadata(
-        "device_path2",
+        createFileUrl(expectedVolume2.mountPath),
         chrome.test.callbackPass(function(result) {
-          chrome.test.assertTrue(validateVolume(result, expectedVolume2),
+          chrome.test.assertTrue(
+              validateObject(result, expectedVolume2, 'volume'),
               "getVolumeMetadata result for second volume not as expected");
     }));
   },
 
   function getVolumeMetadataValid3() {
     chrome.fileBrowserPrivate.getVolumeMetadata(
-        "device_path3",
+        createFileUrl(expectedVolume3.mountPath),
         chrome.test.callbackPass(function(result) {
-          chrome.test.assertTrue(validateVolume(result, expectedVolume3),
+          chrome.test.assertTrue(
+              validateObject(result, expectedVolume3, 'volume'),
               "getVolumeMetadata result for third volume not as expected");
     }));
   },
 
   function getVolumeMetadataNonExistentPath() {
     chrome.fileBrowserPrivate.getVolumeMetadata(
-        "non_existent_device_path",
-        chrome.test.callbackFail("Device path not found"));
+        createFileUrl("removable/non_existent_device_path"),
+        chrome.test.callbackPass(function(result) {
+          chrome.test.assertEq(undefined, result);
+    }));
   },
 
-  function getVolumeMetadataBlankPath() {
+
+  function getVolumeMetadataArchive() {
     chrome.fileBrowserPrivate.getVolumeMetadata(
-        "",
-        chrome.test.callbackFail("Device path not found"));
+        createFileUrl("archive/archive_mount_path"),
+        chrome.test.callbackPass(function(result) {
+          chrome.test.assertEq(undefined, result);
+   }));
+  },
+
+  function getVolumeMetadataInvalidPath() {
+    chrome.fileBrowserPrivate.getVolumeMetadata(
+        "some path",
+        chrome.test.callbackFail("Invalid mount path."));
+  },
+
+  function getMountPointsTest() {
+    chrome.fileBrowserPrivate.getMountPoints(
+        chrome.test.callbackPass(function(result) {
+          chrome.test.assertEq(result.length, expectedMountPoints.length,
+              'getMountPoints returned wrong number of mount points.');
+          for (var i = 0; i < expectedMountPoints.length; i++) {
+            chrome.test.assertTrue(
+                validateObject(result[i], expectedMountPoints[i], 'mountPoint',
+                               treatMountPointException),
+                'getMountPoints result[' + i +'] not as expected');
+          }
+    }));
   }
 ]);

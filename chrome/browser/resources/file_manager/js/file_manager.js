@@ -2179,21 +2179,25 @@ FileManager.prototype = {
    * @param {Object} selection Selected files object.
    */
   FileManager.prototype.maybeRenderFormattingTask_ = function(selection) {
-    // Not to make unnecessary getMountPoints() call we doublecheck if there is
-    // only one selected entry.
+    // Format task is not supported for multiple selection.
     if (selection.entries.length != 1)
       return;
     var self = this;
-    function onMountPointsFound(mountPoints) {
-      self.mountPoints_ = mountPoints;
-      function onVolumeMetadataFound(volumeMetadata) {
-        if (volumeMetadata.deviceType == "usb" ||
-            volumeMetadata.deviceType == "sd") {
-          if (self.selection.entries.length != 1 ||
-              normalizeAbsolutePath(self.selection.entries[0].fullPath) !=
-              normalizeAbsolutePath(volumeMetadata.mountPath)) {
+    var initialSelection = this.selection;
+
+    chrome.fileBrowserPrivate.getVolumeMetadata(selection.entries[0].toURL(),
+        function (volumeMetadata) {
+          // We can format only USB and SD devices.
+          if (!volumeMetadata ||
+              (volumeMetadata.deviceType != "usb" &&
+               volumeMetadata.deviceType != "sd")) {
             return;
           }
+
+          // We don't want to render button if selection has changed.
+          if (initialSelection != self.selection)
+            return;
+
           var task = {
             taskId: self.getExtensionId_() + '|format-device',
             iconUrl: chrome.extension.getURL('images/filetype_generic.png'),
@@ -2202,23 +2206,7 @@ FileManager.prototype = {
           };
           self.renderTaskItem_(task);
         }
-      }
-
-      if (selection.entries.length != 1)
-        return;
-      var selectedPath = selection.entries[0].fullPath;
-      for (var i = 0; i < mountPoints.length; i++) {
-        if (mountPoints[i].mountType == "device" &&
-            normalizeAbsolutePath(mountPoints[i].mountPath) ==
-            normalizeAbsolutePath(selectedPath)) {
-          chrome.fileBrowserPrivate.getVolumeMetadata(mountPoints[i].sourceUrl,
-              onVolumeMetadataFound);
-          return;
-        }
-      }
-    }
-
-    chrome.fileBrowserPrivate.getMountPoints(onMountPointsFound);
+    );
   };
 
   FileManager.prototype.getExtensionId_ = function() {
@@ -3112,21 +3100,13 @@ FileManager.prototype = {
 
   FileManager.prototype.updateVolumeMetadata_ = function() {
     var dm = this.directoryModel_;
-    var mp = this.mountPoints_;
-    if (!dm || !mp)
-      return;
-
-    var rootPath = normalizeAbsolutePath(dm.rootPath);
-    var mountPoint = mp.filter(function(p) {
-      return normalizeAbsolutePath(p.mountPath) == rootPath;
-    })[0];
-
-    if (!mountPoint)
+    // Nothing to be done for Downloads directory.
+    if (!dm || dm.rootPath == '/' + DirectoryModel.DOWNLOADS_DIRECTORY)
       return;
 
     dm.readonly = true;
     var current = dm.currentEntry;
-    chrome.fileBrowserPrivate.getVolumeMetadata(mountPoint.sourceUrl,
+    chrome.fileBrowserPrivate.getVolumeMetadata(current.toURL(),
                                                 function(metadata) {
       if (metadata && dm.currentEntry == current)
         dm.readonly = metadata.isReadOnly;

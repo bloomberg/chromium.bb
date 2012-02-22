@@ -49,7 +49,7 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/disks/disk_mount_manager.h"
 #endif
 
@@ -67,15 +67,8 @@ const char kFileError[] = "File error %d";
 const char kInvalidFileUrl[] = "Invalid file URL";
 const char kVolumeDevicePathNotFound[] = "Device path not found";
 
-#ifdef OS_CHROMEOS
-// Volume type strings.
-const char kVolumeTypeFlash[] = "flash";
-const char kVolumeTypeOptical[] = "optical";
-const char kVolumeTypeHardDrive[] = "hdd";
-const char kVolumeTypeUnknown[] = "undefined";
-
+#if defined(OS_CHROMEOS)
 const char kGDataMountPoint[] = "/special/gdata";
-
 #endif
 
 // Internal task ids.
@@ -277,44 +270,94 @@ void UpdateFileHandlerUsageStats(Profile* profile, const std::string& task_id) {
                            base::Time::kMicrosecondsPerSecond)));
 }
 
-#ifdef OS_CHROMEOS
-base::DictionaryValue* MountPointToValue(Profile* profile,
-    const DiskMountManager::MountPointInfo& mount_point_info) {
+#if defined(OS_CHROMEOS)
+const DiskMountManager::Disk* GetVolumeAsDisk(const std::string& mount_path) {
+  DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
 
-    base::DictionaryValue *mount_info = new base::DictionaryValue();
+  DiskMountManager::MountPointMap::const_iterator mount_point_it =
+      disk_mount_manager->mount_points().find(mount_path);
+  if (mount_point_it == disk_mount_manager->mount_points().end())
+    return NULL;
 
-    mount_info->SetString("mountType",
-                          DiskMountManager::MountTypeToString(
-                              mount_point_info.mount_type));
+  DiskMountManager::DiskMap::const_iterator disk_it =
+      disk_mount_manager->disks().find(mount_point_it->second.source_path);
 
-    if (mount_point_info.mount_type == chromeos::MOUNT_TYPE_ARCHIVE) {
-      GURL source_url;
-      if (file_manager_util::ConvertFileToFileSystemUrl(profile,
-              FilePath(mount_point_info.source_path),
-              file_manager_util::GetFileBrowserExtensionUrl().GetOrigin(),
-              &source_url)) {
-        mount_info->SetString("sourceUrl", source_url.spec());
-      }
-    } else {
-      mount_info->SetString("sourceUrl", mount_point_info.source_path);
-    }
+  if (disk_it == disk_mount_manager->disks().end() ||
+      disk_it->second->is_hidden()) {
+    return NULL;
+  }
 
-    FilePath relative_mount_path;
-    // Convert mount point path to relative path with the external file system
-    // exposed within File API.
-    if (file_manager_util::ConvertFileToRelativeFileSystemPath(profile,
-            FilePath(mount_point_info.mount_path),
-            &relative_mount_path)) {
-      mount_info->SetString("mountPath", relative_mount_path.value());
-    }
-
-    mount_info->SetString("mountCondition",
-        DiskMountManager::MountConditionToString(
-            mount_point_info.mount_condition));
-
-    return mount_info;
+  return disk_it->second;
 }
-#endif
+
+base::DictionaryValue* CreateValueFromDisk(
+    Profile* profile,
+    const DiskMountManager::Disk* volume) {
+  base::DictionaryValue* volume_info = new base::DictionaryValue();
+
+  std::string mount_path;
+  if (!volume->mount_path().empty()) {
+    FilePath relative_mount_path;
+    file_manager_util::ConvertFileToRelativeFileSystemPath(profile,
+        FilePath(volume->mount_path()), &relative_mount_path);
+    mount_path = relative_mount_path.value();
+  }
+
+  volume_info->SetString("devicePath", volume->device_path());
+  volume_info->SetString("mountPath", mount_path);
+  volume_info->SetString("systemPath", volume->system_path());
+  volume_info->SetString("filePath", volume->file_path());
+  volume_info->SetString("deviceLabel", volume->device_label());
+  volume_info->SetString("driveLabel", volume->drive_label());
+  volume_info->SetString("deviceType",
+      DiskMountManager::DeviceTypeToString(volume->device_type()));
+  volume_info->SetInteger("totalSize", volume->total_size_in_bytes());
+  volume_info->SetBoolean("isParent", volume->is_parent());
+  volume_info->SetBoolean("isReadOnly", volume->is_read_only());
+  volume_info->SetBoolean("hasMedia", volume->has_media());
+  volume_info->SetBoolean("isOnBootDevice", volume->on_boot_device());
+
+  return volume_info;
+}
+
+base::DictionaryValue* CreateValueFromMountPoint(Profile* profile,
+    const DiskMountManager::MountPointInfo& mount_point_info,
+    const GURL& extension_source_url) {
+
+  base::DictionaryValue *mount_info = new base::DictionaryValue();
+
+  mount_info->SetString("mountType",
+                        DiskMountManager::MountTypeToString(
+                            mount_point_info.mount_type));
+
+  if (mount_point_info.mount_type == chromeos::MOUNT_TYPE_ARCHIVE) {
+    GURL source_url;
+    if (file_manager_util::ConvertFileToFileSystemUrl(profile,
+            FilePath(mount_point_info.source_path),
+            extension_source_url.GetOrigin(),
+            &source_url)) {
+      mount_info->SetString("sourceUrl", source_url.spec());
+     }
+  } else {
+    mount_info->SetString("sourceUrl", mount_point_info.source_path);
+  }
+
+  FilePath relative_mount_path;
+  // Convert mount point path to relative path with the external file system
+  // exposed within File API.
+  if (file_manager_util::ConvertFileToRelativeFileSystemPath(profile,
+          FilePath(mount_point_info.mount_path),
+          &relative_mount_path)) {
+    mount_info->SetString("mountPath", relative_mount_path.value());
+  }
+
+  mount_info->SetString("mountCondition",
+      DiskMountManager::MountConditionToString(
+          mount_point_info.mount_condition));
+
+  return mount_info;
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace
 
@@ -550,7 +593,7 @@ bool AddFileWatchBrowserFunction::PerformFileWatchOperation(
       AddFileWatch(local_path, virtual_path, extension_id);
 #else
   return true;
-#endif  // OS_CHROMEOS
+#endif  // defined(OS_CHROMEOS)
 }
 
 bool RemoveFileWatchBrowserFunction::PerformFileWatchOperation(
@@ -1238,7 +1281,7 @@ bool AddMountFunction::RunImpl() {
       break;
     }
   }
-#endif  // OS_CHROMEOS
+#endif  // defined(OS_CHROMEOS)
 
   return true;
 }
@@ -1276,12 +1319,12 @@ void AddMountFunction::GetLocalPathsResponseOnUIThread(
     return;
   }
 
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS)
   FilePath::StringType source_file = files[0].value();
   DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
   disk_mount_manager->MountPath(source_file.data(),
       DiskMountManager::MountTypeFromString(mount_type_str));
-#endif
+#endif  // defined(OS_CHROMEOS)
 
   SendResponse(true);
 }
@@ -1318,7 +1361,7 @@ void RemoveMountFunction::GetLocalPathsResponseOnUIThread(
     SendResponse(false);
     return;
   }
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS)
   DiskMountManager::GetInstance()->UnmountPath(files[0].value());
 #endif
 
@@ -1338,7 +1381,7 @@ bool GetMountPointsFunction::RunImpl() {
   base::ListValue *mounts = new base::ListValue();
   result_.reset(mounts);
 
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS)
   DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
   DiskMountManager::MountPointMap mount_points =
       disk_mount_manager->mount_points();
@@ -1347,9 +1390,10 @@ bool GetMountPointsFunction::RunImpl() {
            mount_points.begin();
        it != mount_points.end();
        ++it) {
-    mounts->Append(MountPointToValue(profile_, it->second));
+    mounts->Append(CreateValueFromMountPoint(profile_, it->second,
+                   source_url_));
   }
-#endif
+#endif  // defined(OS_CHROMEOS)
 
   SendResponse(true);
   return true;
@@ -1402,7 +1446,7 @@ void GetSizeStatsFunction::CallGetSizeStatsOnFileThread(
 
   size_t total_size_kb = 0;
   size_t remaining_size_kb = 0;
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS)
   DiskMountManager::GetInstance()->
       GetSizeStatsOnFileThread(mount_path, &total_size_kb, &remaining_size_kb);
 #endif
@@ -1465,7 +1509,7 @@ void FormatDeviceFunction::GetLocalPathsResponseOnUIThread(
     return;
   }
 
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS)
   DiskMountManager::GetInstance()->FormatMountedDevice(files[0].value());
 #endif
 
@@ -1484,48 +1528,45 @@ bool GetVolumeMetadataFunction::RunImpl() {
     return false;
   }
 
-  std::string volume_device_path;
-  if (!args_->GetString(0, &volume_device_path)) {
+  std::string volume_mount_url;
+  if (!args_->GetString(0, &volume_mount_url)) {
     NOTREACHED();
   }
 
-#ifdef OS_CHROMEOS
-  DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
-  DiskMountManager::DiskMap::const_iterator volume_it =
-      disk_mount_manager->disks().find(volume_device_path);
+  UrlList file_paths;
+  file_paths.push_back(GURL(volume_mount_url));
 
-  if (volume_it != disk_mount_manager->disks().end() &&
-      !volume_it->second->is_hidden()) {
-    DiskMountManager::Disk* volume = volume_it->second;
-    DictionaryValue* volume_info = new DictionaryValue();
+  GetLocalPathsOnFileThreadAndRunCallbackOnUIThread(
+      file_paths,
+      base::Bind(&GetVolumeMetadataFunction::GetLocalPathsResponseOnUIThread,
+                 this));
+
+  return true;
+}
+
+void GetVolumeMetadataFunction::GetLocalPathsResponseOnUIThread(
+    const FilePathList& files) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Should contain volume's mount path.
+  if (files.size() != 1) {
+    error_ = "Invalid mount path.";
+    SendResponse(false);
+    return;
+  }
+
+  result_.reset();
+
+#if defined(OS_CHROMEOS)
+  const DiskMountManager::Disk* volume = GetVolumeAsDisk(files[0].value());
+  if (volume) {
+    DictionaryValue* volume_info =
+        CreateValueFromDisk(profile_, volume);
     result_.reset(volume_info);
-    // Localising mount path.
-    std::string mount_path;
-    if (!volume->mount_path().empty()) {
-      FilePath relative_mount_path;
-      file_manager_util::ConvertFileToRelativeFileSystemPath(profile_,
-          FilePath(volume->mount_path()), &relative_mount_path);
-      mount_path = relative_mount_path.value();
-    }
-    volume_info->SetString("devicePath", volume->device_path());
-    volume_info->SetString("mountPath", mount_path);
-    volume_info->SetString("systemPath", volume->system_path());
-    volume_info->SetString("filePath", volume->file_path());
-    volume_info->SetString("deviceLabel", volume->device_label());
-    volume_info->SetString("driveLabel", volume->drive_label());
-    volume_info->SetString("deviceType",
-        DiskMountManager::DeviceTypeToString(volume->device_type()));
-    volume_info->SetInteger("totalSize", volume->total_size_in_bytes());
-    volume_info->SetBoolean("isParent", volume->is_parent());
-    volume_info->SetBoolean("isReadOnly", volume->is_read_only());
-    volume_info->SetBoolean("hasMedia", volume->has_media());
-    volume_info->SetBoolean("isOnBootDevice", volume->on_boot_device());
-
-    return true;
   }
 #endif
-  error_ = kVolumeDevicePathNotFound;
-  return false;
+
+  SendResponse(true);
 }
 
 bool FileDialogStringsFunction::RunImpl() {

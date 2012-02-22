@@ -431,9 +431,9 @@
         "description": "Requests volume's metadata",
         "parameters": [
           {
-            "name": "devicePath",
+            "name": "mountUrl",
             "type": "string",
-            "description": "Device path of the volume."
+            "description": "Mount url of the volume."
           },
           {
             "name": "callback",
@@ -444,7 +444,7 @@
                 "name" : "volumeMetadata",
                 "$ref": "VolumeMetadata",
                 "optional": "true",
-                "description": "A requested metadata dictionary object. null if there is no volume with selected devicePath"
+                "description": "A requested metadata dictionary object. undefined if there is no volume with selected devicePath"
               }
             ]
           }
