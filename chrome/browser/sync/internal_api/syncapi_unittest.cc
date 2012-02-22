@@ -2406,4 +2406,61 @@ TEST_F(SyncManagerTest, SetNonBookmarkTitleWithEncryption) {
   }
 }
 
+// Create an encrypted entry when the cryptographer doesn't think the type is
+// marked for encryption. Ensure reads/writes don't break and don't unencrypt
+// the data.
+TEST_F(SyncManagerTest, SetPreviouslyEncryptedSpecifics) {
+  std::string client_tag = "tag";
+  std::string url = "url";
+  std::string url2 = "new_url";
+  std::string title = "title";
+  sync_pb::EntitySpecifics entity_specifics;
+  EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
+  {
+    ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    browser_sync::Cryptographer* crypto = trans.GetCryptographer();
+    sync_pb::EntitySpecifics bm_specifics;
+    bm_specifics.MutableExtension(sync_pb::bookmark)->set_title("title");
+    bm_specifics.MutableExtension(sync_pb::bookmark)->set_url("url");
+    sync_pb::EncryptedData encrypted;
+    crypto->Encrypt(bm_specifics, &encrypted);
+    entity_specifics.mutable_encrypted()->CopyFrom(encrypted);
+    syncable::AddDefaultExtensionValue(syncable::BOOKMARKS, &entity_specifics);
+  }
+  MakeServerNode(sync_manager_.GetUserShare(), syncable::BOOKMARKS, client_tag,
+                 BaseNode::GenerateSyncableHash(syncable::BOOKMARKS,
+                                                client_tag),
+                 entity_specifics);
+
+  {
+    // Verify the data.
+    ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    ReadNode node(&trans);
+    EXPECT_TRUE(node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
+    EXPECT_EQ(title, node.GetTitle());
+    EXPECT_EQ(GURL(url), node.GetURL());
+  }
+
+  {
+    // Overwrite the url (which overwrites the specifics).
+    WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    WriteNode node(&trans);
+    EXPECT_TRUE(node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
+    node.SetURL(GURL(url2));
+  }
+
+  {
+    // Verify it's still encrypted and it has the most recent url.
+    ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    ReadNode node(&trans);
+    EXPECT_TRUE(node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
+    EXPECT_EQ(title, node.GetTitle());
+    EXPECT_EQ(GURL(url2), node.GetURL());
+    const syncable::Entry* node_entry = node.GetEntry();
+    EXPECT_EQ(kEncryptedString, node_entry->Get(NON_UNIQUE_NAME));
+    const sync_pb::EntitySpecifics& specifics = node_entry->Get(SPECIFICS);
+    EXPECT_TRUE(specifics.has_encrypted());
+  }
+}
+
 }  // namespace browser_sync

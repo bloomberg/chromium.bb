@@ -41,8 +41,12 @@ bool WriteNode::UpdateEntryWithEncryption(
   const sync_pb::EntitySpecifics& old_specifics = entry->Get(SPECIFICS);
   const syncable::ModelTypeSet encrypted_types =
       cryptographer->GetEncryptedTypes();
+  // It's possible the nigori lost the set of encrypted types. If the current
+  // specifics are already encrypted, we want to ensure we continue encrypting.
+  bool was_encrypted = old_specifics.has_encrypted();
   sync_pb::EntitySpecifics generated_specifics;
-  if (!SpecificsNeedsEncryption(encrypted_types, new_specifics) ||
+  if ((!SpecificsNeedsEncryption(encrypted_types, new_specifics) &&
+       !was_encrypted) ||
       !cryptographer->is_initialized()) {
     // No encryption required or we are unable to encrypt.
     generated_specifics.CopyFrom(new_specifics);
@@ -62,7 +66,7 @@ bool WriteNode::UpdateEntryWithEncryption(
     // removing all the unencrypted data, but from then on we only want to
     // update the node if the data changes or the encryption key changes.
     if (syncable::GetModelTypeFromSpecifics(old_specifics) == type &&
-        old_specifics.has_encrypted()) {
+        was_encrypted) {
       generated_specifics.CopyFrom(old_specifics);
     } else {
       syncable::AddDefaultExtensionValue(type, &generated_specifics);
@@ -79,7 +83,7 @@ bool WriteNode::UpdateEntryWithEncryption(
 
   // It's possible this entry was encrypted but didn't properly overwrite the
   // non_unique_name (see crbug.com/96314).
-  bool encrypted_without_overwriting_name = (old_specifics.has_encrypted() &&
+  bool encrypted_without_overwriting_name = (was_encrypted &&
       entry->Get(syncable::NON_UNIQUE_NAME) != kEncryptedString);
 
   // If we're encrypted but the name wasn't overwritten properly we still want
@@ -125,7 +129,10 @@ void WriteNode::SetTitle(const std::wstring& title) {
   DCHECK_NE(GetModelType(), syncable::UNSPECIFIED);
   syncable::ModelType type = GetModelType();
   Cryptographer* cryptographer = GetTransaction()->GetCryptographer();
-  bool needs_encryption = cryptographer->GetEncryptedTypes().Has(type);
+  // It's possible the nigori lost the set of encrypted types. If the current
+  // specifics are already encrypted, we want to ensure we continue encrypting.
+  bool needs_encryption = cryptographer->GetEncryptedTypes().Has(type) ||
+                          entry_->Get(SPECIFICS).has_encrypted();
 
   // If this datatype is encrypted and is not a bookmark, we disregard the
   // specified title in favor of kEncryptedString. For encrypted bookmarks the

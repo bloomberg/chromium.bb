@@ -222,6 +222,7 @@ class BaseNode {
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, SetBookmarkTitleWithEncryption);
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, SetNonBookmarkTitle);
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, SetNonBookmarkTitleWithEncryption);
+  FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, SetPreviouslyEncryptedSpecifics);
 
   void* operator new(size_t size);  // Node is meant for stack use only.
 
