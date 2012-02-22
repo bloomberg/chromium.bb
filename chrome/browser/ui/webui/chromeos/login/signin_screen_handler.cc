@@ -812,6 +812,8 @@ void SigninScreenHandler::HandleLoginWebuiReady(const base::ListValue* args) {
     // Set focus to the Gaia page.
     // TODO(altimofeev): temporary solution, until focus parameters are
     // implemented on the Gaia side.
+    // Do this only once. Any subsequent call would relod GAIA frame.
+    is_first_webui_ready_ = false;
     const char code[] = "gWindowOnLoad();";
     RenderViewHost* rvh = web_ui()->GetWebContents()->GetRenderViewHost();
     rvh->ExecuteJavascriptInWebFrame(
