@@ -1,6 +1,7 @@
 [
   {
     "namespace": "crossref",
+    "dependencies": ["simple_api"],
     "types": [],
     "functions": [
       {
