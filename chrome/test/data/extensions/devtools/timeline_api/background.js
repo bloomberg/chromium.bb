@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,13 +35,15 @@ function testReceivePageEvent() {
 }
 
 function testReceiveTabCloseEvent() {
-  if (receivedEvents.length == 1) {
-    var eventName = receivedEvents.pop();
-    window.domAutomationController.send(eventName === "onTabClose");
-  } else {
-    receivedEvents = [];
-    window.domAutomationController.send(false);
+  var sawTabClose = false;
+  for(var i = 0; i < receivedEvents.length; i++) {
+    if (receivedEvents[i] === 'onTabClose') {
+      sawTabClose = true;
+      break;
+    }
   }
+  receivedEvents = [];
+  window.domAutomationController.send(sawTabClose);
 }
 
 function unregisterListeners() {

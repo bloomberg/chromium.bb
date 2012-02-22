@@ -50,8 +50,7 @@ static ExtensionHost* FindHostWithPath(ExtensionProcessManager* manager,
 }
 
 // Tests for the experimental timeline extensions API.
-// TODO(johnnyg): crbug.com/52544 Test was broken by webkit r65510.
-IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, DISABLED_TimelineApi) {
+IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, TimelineApi) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("devtools").AppendASCII("timeline_api")));
 
