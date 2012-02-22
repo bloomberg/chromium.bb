@@ -1498,13 +1498,16 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.assertEquals(len(results2), 1)
     self.assertEquals(results2[0].__class__, error_type)
 
-  def ContentTest(self, check, content1, content2, error_type):
+  def ContentTest(self, check, content1, content1_path, content2,
+                  content2_path, error_type):
     """Runs a test of a content-checking rule.
 
       Args:
         check: the check to run.
         content1: content which is expected to pass the check.
+        content1_path: file path for content1.
         content2: content which is expected to fail the check.
+        content2_path: file path for content2.
         error_type: the type of the error expected for content2.
     """
     change1 = presubmit.Change(
@@ -1514,12 +1517,13 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api1.AffectedFiles(
         include_deletes=False,
         file_filter=mox.IgnoreArg()).AndReturn([affected_file])
+    affected_file.LocalPath().AndReturn(content1_path)
     affected_file.NewContents().AndReturn([
-        'ahoy',
+        'afoo',
         content1,
-        'hay',
-        'yer',
-        'ya'])
+        'bfoo',
+        'cfoo',
+        'dfoo'])
 
     change2 = presubmit.Change(
         'foo2', 'foo2\n', self.fake_root_dir, None, 0, 0, None)
@@ -1528,19 +1532,20 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api2.AffectedFiles(
         include_deletes=False,
         file_filter=mox.IgnoreArg()).AndReturn([affected_file])
+    affected_file.LocalPath().AndReturn(content2_path)
     affected_file.NewContents().AndReturn([
-        'ahoy',
+        'dfoo',
         content2,
-        'hay',
-        'yer',
-        'ya'])
+        'efoo',
+        'ffoo',
+        'gfoo'])
     # It falls back to ChangedContents when there is a failure. This is an
     # optimization since NewContents() is much faster to execute than
     # ChangedContents().
     affected_file.ChangedContents().AndReturn([
         (42, content2),
-        (43, 'yer'),
-        (23, 'ya')])
+        (43, 'hfoo'),
+        (23, 'ifoo')])
     affected_file.LocalPath().AndReturn('foo.cc')
 
     self.mox.ReplayAll()
@@ -1663,14 +1668,14 @@ class CannedChecksUnittest(PresubmitTestsBase):
   def testCannedCheckDoNotSubmitInFiles(self):
     self.ContentTest(
         lambda x,y,z: presubmit_canned_checks.CheckDoNotSubmitInFiles(x, y),
-        'DO NOTSUBMIT', 'DO NOT ' + 'SUBMIT',
+        'DO NOTSUBMIT', None, 'DO NOT ' + 'SUBMIT', None,
         presubmit.OutputApi.PresubmitError)
 
   def testCheckChangeHasNoStrayWhitespace(self):
     self.ContentTest(
         lambda x,y,z:
             presubmit_canned_checks.CheckChangeHasNoStrayWhitespace(x, y),
-        'Foo', 'Foo ',
+        'Foo', None, 'Foo ', None,
         presubmit.OutputApi.PresubmitPromptWarning)
 
   def testCheckChangeHasOnlyOneEol(self):
@@ -1696,12 +1701,12 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
   def testCheckChangeTodoHasOwner(self):
     self.ContentTest(presubmit_canned_checks.CheckChangeTodoHasOwner,
-                     "TODO(foo): bar", "TODO: bar",
+                     "TODO(foo): bar", None, "TODO: bar", None,
                      presubmit.OutputApi.PresubmitPromptWarning)
 
   def testCannedCheckChangeHasNoTabs(self):
     self.ContentTest(presubmit_canned_checks.CheckChangeHasNoTabs,
-                     'blah blah', 'blah\tblah',
+                     'blah blah', None, 'blah\tblah', None,
                      presubmit.OutputApi.PresubmitPromptWarning)
 
     # Make sure makefiles are ignored.
@@ -1716,8 +1721,10 @@ class CannedChecksUnittest(PresubmitTestsBase):
     affected_file3.LocalPath().AndReturn('makefile')
     # Only this one will trigger.
     affected_file4 = self.mox.CreateMock(presubmit.SvnAffectedFile)
-    affected_file4.LocalPath().AndReturn('makefile.foo')
+    affected_file1.LocalPath().AndReturn('foo.cc')
     affected_file1.NewContents().AndReturn(['yo, '])
+    affected_file4.LocalPath().AndReturn('makefile.foo')
+    affected_file4.LocalPath().AndReturn('makefile.foo')
     affected_file4.NewContents().AndReturn(['ye\t'])
     affected_file4.ChangedContents().AndReturn([(46, 'ye\t')])
     affected_file4.LocalPath().AndReturn('makefile.foo')
@@ -1744,12 +1751,17 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
   def testCannedCheckLongLines(self):
     check = lambda x, y, z: presubmit_canned_checks.CheckLongLines(x, y, 10, z)
-    self.ContentTest(check, '0123456789', '01234567890',
+    self.ContentTest(check, '0123456789', None, '01234567890', None,
+                     presubmit.OutputApi.PresubmitPromptWarning)
+
+  def testCannedCheckJavaLongLines(self):
+    check = lambda x, y, _: presubmit_canned_checks.CheckLongLines(x, y)
+    self.ContentTest(check, 'A ' * 50, 'foo.java', 'A ' * 50 + 'B', 'foo.java',
                      presubmit.OutputApi.PresubmitPromptWarning)
 
   def testCannedCheckLongLinesLF(self):
     check = lambda x, y, z: presubmit_canned_checks.CheckLongLines(x, y, 10, z)
-    self.ContentTest(check, '012345678\n', '0123456789\n',
+    self.ContentTest(check, '012345678\n', None, '0123456789\n', None,
                      presubmit.OutputApi.PresubmitPromptWarning)
 
   def testCannedCheckLongLinesMacro(self):
@@ -1758,7 +1770,9 @@ class CannedChecksUnittest(PresubmitTestsBase):
         check,
         # Put a space in so it doesn't trigger long symbols. Allow 1/3 more.
         '#if 56 89 12 45',
+        None,
         '#if 56 89 12 456',
+        None,
         presubmit.OutputApi.PresubmitPromptWarning)
 
   def testCannedCheckLongLinesHttp(self):
@@ -1766,7 +1780,9 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.ContentTest(
         check,
         ' http:// 0 23 5',
+        None,
         ' http:// 0 23 56',
+        None,
         presubmit.OutputApi.PresubmitPromptWarning)
 
   def testCannedCheckLongLinesLongSymbol(self):
@@ -1774,7 +1790,9 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.ContentTest(
         check,
         ' TUP5D_LoNG_SY ',
+        None,
         ' TUP5D_LoNG_SY5 ',
+        None,
         presubmit.OutputApi.PresubmitPromptWarning)
 
   def testCheckChangeSvnEolStyleCommit(self):
@@ -2257,6 +2275,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     for _ in range(3):
       input_api.AffectedFiles(file_filter=mox.IgnoreArg(), include_deletes=False
           ).AndReturn([affected_file])
+      affected_file.LocalPath()
       affected_file.NewContents().AndReturn('Hey!\nHo!\nHey!\nHo!\n\n')
     affected_file.ChangedContents().AndReturn([
         (0, 'Hey!\n'),

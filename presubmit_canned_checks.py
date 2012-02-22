@@ -79,7 +79,7 @@ def CheckDoNotSubmitInFiles(input_api, output_api):
   # We want to check every text file, not just source files.
   file_filter = lambda x : x
   keyword = 'DO NOT ' + 'SUBMIT'
-  errors = _FindNewViolationsOfRule(lambda line : keyword not in line,
+  errors = _FindNewViolationsOfRule(lambda _, line : keyword not in line,
                                     input_api, file_filter)
   text = '\n'.join('Found %s in %s' % (keyword, loc) for loc in errors)
   if text:
@@ -234,8 +234,8 @@ def _FindNewViolationsOfRule(callable_rule, input_api, source_file_filter=None,
   """Find all newly introduced violations of a per-line rule (a callable).
 
   Arguments:
-    callable_rule: a callable taking a line of input and returning True
-      if the rule is satisfied and False if there was a problem.
+    callable_rule: a callable taking a file extension and line of input and
+      returning True if the rule is satisfied and False if there was a problem.
     input_api: object to enumerate the affected files.
     source_file_filter: a filter to be passed to the input api.
     error_formatter: a callable taking (filename, line_number, line) and
@@ -251,11 +251,12 @@ def _FindNewViolationsOfRule(callable_rule, input_api, source_file_filter=None,
     # to the SCM to determine the changed region can be quite expensive on
     # Win32.  Assuming that most files will be kept problem-free, we can
     # skip the SCM operations most of the time.
-    if all(callable_rule(line) for line in f.NewContents()):
+    extension = str(f.LocalPath()).rsplit('.', 1)[-1]
+    if all(callable_rule(extension, line) for line in f.NewContents()):
       continue  # No violation found in full text: can skip considering diff.
 
     for line_num, line in f.ChangedContents():
-      if not callable_rule(line):
+      if not callable_rule(extension, line):
         errors.append(error_formatter(f.LocalPath(), line_num, line))
 
   return errors
@@ -274,7 +275,7 @@ def CheckChangeHasNoTabs(input_api, output_api, source_file_filter=None):
                 ('Makefile', 'makefile') and
             source_file_filter(affected_file))
 
-  tabs = _FindNewViolationsOfRule(lambda line : '\t' not in line,
+  tabs = _FindNewViolationsOfRule(lambda _, line : '\t' not in line,
                                   input_api, filter_more)
 
   if tabs:
@@ -287,7 +288,7 @@ def CheckChangeTodoHasOwner(input_api, output_api, source_file_filter=None):
   """Checks that the user didn't add TODO(name) without an owner."""
 
   unowned_todo = input_api.re.compile('TO' + 'DO[^(]')
-  errors = _FindNewViolationsOfRule(lambda x : not unowned_todo.search(x),
+  errors = _FindNewViolationsOfRule(lambda _, x : not unowned_todo.search(x),
                                     input_api, source_file_filter)
   errors = ['Found TO' + 'DO with no owner in ' + x for x in errors]
   if errors:
@@ -298,7 +299,7 @@ def CheckChangeTodoHasOwner(input_api, output_api, source_file_filter=None):
 def CheckChangeHasNoStrayWhitespace(input_api, output_api,
                                     source_file_filter=None):
   """Checks that there is no stray whitespace at source lines end."""
-  errors = _FindNewViolationsOfRule(lambda line : line.rstrip() == line,
+  errors = _FindNewViolationsOfRule(lambda _, line : line.rstrip() == line,
                                     input_api, source_file_filter)
   if errors:
     return [output_api.PresubmitPromptWarning(
@@ -311,18 +312,25 @@ def CheckLongLines(input_api, output_api, maxlen=80, source_file_filter=None):
   """Checks that there aren't any lines longer than maxlen characters in any of
   the text files to be submitted.
   """
-  # Stupidly long symbols that needs to be worked around if takes 66% of line.
-  long_symbol = maxlen * 2 / 3
-  # Hard line length limit at 50% more.
-  extra_maxlen = maxlen * 3 / 2
+  maxlens = { 
+      'java': 100, 
+      '': maxlen,
+  }
   # Note: these are C++ specific but processed on all languages. :(
   MACROS = ('#define', '#include', '#import', '#pragma', '#if', '#endif')
 
-  def no_long_lines(line):
-    if len(line) <= maxlen:
+  def no_long_lines(file_extension, line):
+    file_maxlen = maxlens.get(file_extension, maxlens[''])
+    # Stupidly long symbols that needs to be worked around if takes 66% of line.
+    long_symbol = file_maxlen * 2 / 3
+    # Hard line length limit at 50% more.
+    extra_maxlen = file_maxlen * 3 / 2
+
+    line_len = len(line)
+    if line_len <= file_maxlen:
       return True
 
-    if len(line) > extra_maxlen:
+    if line_len > extra_maxlen:
       return False
 
     return (
