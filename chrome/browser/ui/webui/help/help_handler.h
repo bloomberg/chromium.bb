@@ -34,6 +34,11 @@ class HelpHandler : public content::WebUIMessageHandler {
   // Relaunches the browser.
   void RelaunchNow(const base::ListValue* args);
 
+#if defined(OS_CHROMEOS)
+  // Sets the release track version.
+  void SetReleaseTrack(const base::ListValue* args);
+#endif
+
   // Callback method which forwards status updates to the page.
   void UpdateStatus(VersionUpdater::Status status, int progress);
 
@@ -42,6 +47,7 @@ class HelpHandler : public content::WebUIMessageHandler {
   void OnOSVersion(chromeos::VersionLoader::Handle handle, std::string version);
   void OnOSFirmware(chromeos::VersionLoader::Handle handle,
                     std::string firmware);
+  void OnReleaseChannel(const std::string& channel);
 #endif
 
   // Specialized instance of the VersionUpdater used to update the browser.

@@ -6,12 +6,17 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "chrome/browser/chromeos/cros_settings.h"
+#include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 
+using chromeos::CrosSettings;
 using chromeos::DBusThreadManager;
 using chromeos::UpdateEngineClient;
+using chromeos::UserManager;
 using chromeos::WizardController;
 
 VersionUpdater* VersionUpdater::Create() {
@@ -35,6 +40,27 @@ void VersionUpdaterCros::CheckForUpdate(const StatusCallback& callback) {
 
 void VersionUpdaterCros::RelaunchBrowser() const {
   DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
+}
+
+void VersionUpdaterCros::SetReleaseChannel(const std::string& channel) {
+  DBusThreadManager::Get()->GetUpdateEngineClient()->SetReleaseTrack(channel);
+  // For local owner set the field in the policy blob too.
+  if (UserManager::Get()->current_user_is_owner())
+    CrosSettings::Get()->SetString(chromeos::kReleaseChannel, channel);
+}
+
+void VersionUpdaterCros::GetReleaseChannel(const ChannelCallback& cb) {
+  channel_callback_ = cb;
+
+  // TODO(jhawkins): Store on this object.
+  UpdateEngineClient* update_engine_client =
+      DBusThreadManager::Get()->GetUpdateEngineClient();
+
+  // Request the channel information. Use the observer to track the help page
+  // handler and ensure it does not get deleted before the callback.
+  update_engine_client->GetReleaseTrack(
+      base::Bind(&VersionUpdaterCros::UpdateSelectedChannel,
+                 base::Unretained(this)));
 }
 
 VersionUpdaterCros::VersionUpdaterCros() {}
@@ -70,4 +96,9 @@ void VersionUpdaterCros::UpdateStatusChanged(
   }
 
   callback_.Run(my_status, progress);
+}
+
+// Callback from UpdateEngine with channel information.
+void VersionUpdaterCros::UpdateSelectedChannel(const std::string& channel) {
+  channel_callback_.Run(channel);
 }

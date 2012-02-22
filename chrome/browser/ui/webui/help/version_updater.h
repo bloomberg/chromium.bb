@@ -6,11 +6,17 @@
 #define CHROME_BROWSER_UI_WEBUI_HELP_VERSION_UPDATER_H_
 #pragma once
 
+#include <string>
+
 #include "base/callback.h"
 
 // Interface implemented to expose per-platform updating functionality.
 class VersionUpdater {
  public:
+#if defined(OS_CHROMEOS)
+  typedef base::Callback<void(const std::string&)> ChannelCallback;
+#endif
+
   // Update process state machine.
   enum Status {
     CHECKING,
@@ -34,6 +40,11 @@ class VersionUpdater {
 
   // Relaunches the browser, generally after being updated.
   virtual void RelaunchBrowser() const = 0;
+
+#if defined(OS_CHROMEOS)
+  virtual void SetReleaseChannel(const std::string& channel) = 0;
+  virtual void GetReleaseChannel(const ChannelCallback& callback) = 0;
+#endif
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_HELP_VERSION_UPDATER_H_

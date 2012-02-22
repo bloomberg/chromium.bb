@@ -80,3 +80,12 @@ body {
 #update-status-icon.up-to-date {
   background-image: url('chrome://theme/IDR_UPDATE_UPTODATE');
 }
+
+/* TODO(jhawkins): Copied from extensions.css; refactor. */
+#overlay {
+  z-index: 5;
+}
+
+#overlay .page:not(.showing) {
+  display: none;
+}

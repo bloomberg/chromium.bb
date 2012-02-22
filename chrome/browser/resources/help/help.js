@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 <include src="../uber/uber_utils.js">
+<include src="more_info_overlay.js">
 
-cr.define('help_page', function() {
+cr.define('help', function() {
   var localStrings = new LocalStrings();
 
   /**
@@ -32,6 +33,14 @@ cr.define('help_page', function() {
       var productTOS = $('product-tos');
       if (productTOS)
         productTOS.innerHTML = localStrings.getString('productTOS');
+
+      var moreInfoOverlay = help.MoreInfoOverlay.getInstance();
+      moreInfoOverlay.initializePage();
+
+      var self = this;
+      $('more-info').onclick = function() {
+        self.showOverlay_($('more-info-overlay'));
+      };
 
       if (!cr.isLinux) {
         $('relaunch').onclick = function() {
@@ -100,6 +109,50 @@ cr.define('help_page', function() {
 
       $('firmware').textContent = firmware;
     },
+
+    /**
+     * Sets the given overlay to show. This hides whatever overlay is currently
+     * showing, if any.
+     * @param {HTMLElement} node The overlay page to show. If null, all
+     *     overlays are hidden.
+     */
+    showOverlay_: function(node) {
+      var currentlyShowingOverlay =
+        document.querySelector('#overlay .page.showing');
+      if (currentlyShowingOverlay)
+        currentlyShowingOverlay.classList.remove('showing');
+
+      if (node)
+        node.classList.add('showing');
+      $('overlay').hidden = !node;
+    },
+
+    /**
+     * |enabled| is true if the release channel can be enabled.
+     * @private
+     */
+    updateEnableReleaseChannel_: function(enabled) {
+      $('more-info').hidden = !enabled;
+    },
+
+    /**
+     * @private
+     */
+    updateSelectedChannel_: function(value) {
+      var options = $('channel-changer').querySelectorAll('option');
+      for (var i = 0; i < options.length; i++) {
+        var option = options[i];
+        if (option.value == value)
+          option.selected = true;
+      }
+    },
+
+    /**
+     * @private
+     */
+    setReleaseChannel_: function(channel) {
+      chrome.send('setReleaseTrack', [channel]);
+    },
   };
 
   HelpPage.setUpdateStatus = function(status) {
@@ -118,14 +171,28 @@ cr.define('help_page', function() {
     HelpPage.getInstance().setOSFirmware_(firmware);
   };
 
+  HelpPage.showOverlay = function(node) {
+    HelpPage.getInstance().showOverlay_(node);
+  };
+
+  HelpPage.updateSelectedChannel = function(channel) {
+    HelpPage.getInstance().updateSelectedChannel_(channel);
+  };
+
+  HelpPage.updateEnableReleaseChannel = function(enabled) {
+    HelpPage.getInstance().updateEnableReleaseChannel_(enabled);
+  };
+
+  HelpPage.setReleaseChannel = function(channel) {
+    HelpPage.getInstance().setReleaseChannel_(channel);
+  };
+
   // Export
   return {
     HelpPage: HelpPage
   };
 });
 
-var HelpPage = help_page.HelpPage;
-
 window.onload = function() {
-  HelpPage.getInstance().initialize();
+  help.HelpPage.getInstance().initialize();
 };

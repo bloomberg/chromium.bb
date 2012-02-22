@@ -23,7 +23,11 @@ bool IsWebIntentsEnabled() {
   bool disabled_flag = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableWebIntents);
 
-  Profile* profile = BrowserList::GetLastActive()->GetProfile();
+  Browser* browser = BrowserList::GetLastActive();
+  if (!browser)
+    browser = *BrowserList::begin();
+
+  Profile* profile = browser->GetProfile();
   bool enabled_pref = profile->GetPrefs()->GetBoolean(
       prefs::kWebIntentsEnabled);
 

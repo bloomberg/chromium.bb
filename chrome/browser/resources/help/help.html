@@ -5,15 +5,21 @@
   <title i18n-content="helpTitle"></title>
   <link rel="stylesheet" href="../shared/css/button.css">
   <link rel="stylesheet" href="../shared/css/chrome_shared2.css">
+  <link rel="stylesheet" href="../shared/css/overlay.css">
   <link rel="stylesheet" href="../uber/uber_shared.css">
   <link rel="stylesheet" href="help.css">
+  <link rel="stylesheet" href="more_info_overlay.css">
   <script src="chrome://resources/js/cr.js"></script>
+  <script src="chrome://resources/js/cr/ui/overlay.js"></script>
   <script src="chrome://resources/js/local_strings.js"></script>
   <script src="chrome://resources/js/util.js"></script>
   <script src="chrome://help-frame/help.js"></script>
 </head>
 <body class="uber-frame"
     i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+  <div id="overlay" class="overlay" hidden>
+    <include src="more_info_overlay.html">
+  </div>
   <div class="page">
     <header>
       <h1 i18n-content="helpTitle"></h1>
@@ -35,6 +41,8 @@
         <span i18n-content="firmware"></span>&nbsp;<span id="firmware"></span>
       </div>
 </if>
+      <button id="more-info" class="link-button"i18n-content="moreInfoLink">
+      </button>
 <if expr="pp_ifdef('win32') or pp_ifdef('darwin') or pp_ifdef('chromeos')">
       <div id="update-status-container">
         <img id="update-status-icon" class="up-to-date"></img>
