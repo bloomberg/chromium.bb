@@ -7,6 +7,7 @@
 """Unittests for commands.  Needs to be run inside of chroot for mox."""
 
 import glob
+import json
 import mox
 import os
 import re
@@ -34,17 +35,17 @@ class RemoteTryTests(mox.MoxTestBase):
     # Get the file that was just created.
     created_file = sorted(glob.glob(os.path.join(self.tempdir,
                           job.user + '*')), reverse=True)[0]
-    with open(created_file, 'r') as job_desc_file:
-      contents = job_desc_file.read()
+    with open(created_file, 'rb') as job_desc_file:
+      values = json.load(job_desc_file)
 
-    self.assertFalse(re.search('\@google\.com', contents) is None and
-                     re.search('\@chromium\.org', contents) is None)
+    self.assertFalse(re.search('\@google\.com', values['email'][0]) is None and
+                     re.search('\@chromium\.org', values['email'][0]) is None)
 
-    self.assertFalse(re.search(PATCHES[0], contents) is None or
-                     re.search(PATCHES[1], contents) is None)
+    self.assertTrue(PATCHES[0] in values['gerrit_patches'] and
+                     PATCHES[1] in values['gerrit_patches'])
 
-    self.assertFalse(re.search(BOTS[0], contents) is None or
-                     re.search(BOTS[1], contents) is None)
+    self.assertTrue(BOTS[0] in values['bot'] and
+                    BOTS[1] in values['bot'])
 
 if __name__ == '__main__':
   unittest.main()

@@ -7,6 +7,7 @@
 import constants
 import datetime
 import getpass
+import json
 import os
 import shutil
 import sys
@@ -31,16 +32,17 @@ class RemoteTryJob(object):
       options: The parsed options passed into cbuildbot.
       bots: A list of configs to run tryjobs for.
     """
-    values = {}
-    self.user = values['user'] = getpass.getuser()
+    self.values = {}
+    self.user = self.values['user'] = getpass.getuser()
     cwd = os.path.dirname(os.path.realpath(__file__))
-    values['email'] = cros_lib.GetProjectUserEmail(cwd)
+    self.values['email'] = [cros_lib.GetProjectUserEmail(cwd)]
     # Name of the job that appears on the waterfall.
-    values['name'] = ','.join(options.gerrit_patches)
-    values['gerrit_patches'] = ' '.join(options.gerrit_patches)
-    values['bot'] = ','.join(bots)
-    self.description = '\n'.join(
-        '%s=%s' % (k, v) for (k, v) in sorted(values.iteritems()))
+    self.values['name'] = ','.join(options.gerrit_patches)
+    self.values['gerrit_patches'] = options.gerrit_patches[:]
+    self.values['bot'] = bots[:]
+    self.description = ('name: %s\n patches: %s\nbots: %s' %
+                        (self.values['name'], self.values['gerrit_patches'],
+                         self.values['bot']))
     self.buildroot = options.buildroot
     self.tryjob_repo = None
 
@@ -56,7 +58,7 @@ class RemoteTryJob(object):
     fullpath = os.path.join(self.tryjob_repo, file_name)
     # Both commit description and contents of file contain tryjob specs.
     with open(fullpath, 'w+') as job_desc_file:
-      job_desc_file.write(self.description)
+      json.dump(self.values, job_desc_file)
 
     cros_lib.RunCommand(['git', 'add', file_name], cwd=self.tryjob_repo)
     cros_lib.RunCommand(['git', 'commit', '-m', self.description],
