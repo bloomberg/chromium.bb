@@ -139,6 +139,7 @@ class DeviceManagementServiceIntegrationTest
     test_server_.reset(
         new net::TestServer(
             net::TestServer::TYPE_HTTP,
+            net::TestServer::kLocalhost,
             FilePath(FILE_PATH_LITERAL("chrome/test/data/policy"))));
     ASSERT_TRUE(test_server_->Start());
   }
