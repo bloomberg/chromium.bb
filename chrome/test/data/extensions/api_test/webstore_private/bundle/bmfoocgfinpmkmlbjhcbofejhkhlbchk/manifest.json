@@ -1,5 +1,5 @@
 {
-  "name": "extension.1",
+  "name": "Extension Bundle 1",
   "version": "1",
   "manifest_version": 2,
   "permissions": [ "tabs" ]

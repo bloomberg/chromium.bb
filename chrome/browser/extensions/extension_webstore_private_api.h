@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
@@ -37,29 +36,6 @@ class WebstorePrivateApi {
   // If |allow| is true, then the extension IDs used by the SilentlyInstall
   // apitest will be trusted.
   static void SetTrustTestIDsForTesting(bool allow);
-};
-
-class InstallBundleFunction : public AsyncExtensionFunction,
-                              public extensions::BundleInstaller::Delegate {
- public:
-  InstallBundleFunction();
-
-  // BundleInstaller::Delegate implementation.
-  virtual void OnBundleInstallApproved() OVERRIDE;
-  virtual void OnBundleInstallCanceled(bool user_initiated) OVERRIDE;
-  virtual void OnBundleInstallCompleted() OVERRIDE;
-
- protected:
-  virtual ~InstallBundleFunction();
-  virtual bool RunImpl() OVERRIDE;
-
-  // Reads the extension |details| into |items|.
-  bool ReadBundleInfo(base::ListValue* details,
-                      extensions::BundleInstaller::ItemList* items);
-
- private:
-  scoped_refptr<extensions::BundleInstaller> bundle_;
-  DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.installBundle");
 };
 
 class BeginInstallWithManifestFunction

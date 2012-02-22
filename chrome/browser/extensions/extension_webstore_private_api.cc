@@ -36,7 +36,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using content::GpuDataManager;
-using extensions::BundleInstaller;
 
 namespace {
 
@@ -136,69 +135,6 @@ void WebstorePrivateApi::SetWebstoreInstallerDelegateForTesting(
 // static
 void WebstorePrivateApi::SetTrustTestIDsForTesting(bool allow) {
   trust_test_ids = allow;
-}
-
-InstallBundleFunction::InstallBundleFunction() {}
-InstallBundleFunction::~InstallBundleFunction() {}
-
-bool InstallBundleFunction::RunImpl() {
-  ListValue* extensions = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetList(0, &extensions));
-
-  BundleInstaller::ItemList items;
-  if (!ReadBundleInfo(extensions, &items))
-    return false;
-
-  bundle_ = new BundleInstaller(profile(), items);
-
-  AddRef();  // Balanced in OnBundleInstallCompleted / OnBundleInstallCanceled.
-
-  bundle_->PromptForApproval(this);
-  return true;
-}
-
-bool InstallBundleFunction::ReadBundleInfo(ListValue* extensions,
-                                           BundleInstaller::ItemList* items) {
-  for (size_t i = 0; i < extensions->GetSize(); ++i) {
-    DictionaryValue* details = NULL;
-    EXTENSION_FUNCTION_VALIDATE(extensions->GetDictionary(i, &details));
-
-    BundleInstaller::Item item;
-    EXTENSION_FUNCTION_VALIDATE(details->GetString(
-        kIdKey, &item.id));
-    EXTENSION_FUNCTION_VALIDATE(details->GetString(
-        kManifestKey, &item.manifest));
-    EXTENSION_FUNCTION_VALIDATE(details->GetString(
-        kLocalizedNameKey, &item.localized_name));
-
-    items->push_back(item);
-  }
-
-  return true;
-}
-
-void InstallBundleFunction::OnBundleInstallApproved() {
-  bundle_->CompleteInstall(
-      &(dispatcher()->delegate()->GetAssociatedWebContents()->GetController()),
-      GetCurrentBrowser(),
-      this);
-}
-
-void InstallBundleFunction::OnBundleInstallCanceled(bool user_initiated) {
-  if (user_initiated)
-    error_ = "user_canceled";
-  else
-    error_ = "unknown_error";
-
-  SendResponse(false);
-
-  Release();  // Balanced in RunImpl().
-}
-
-void InstallBundleFunction::OnBundleInstallCompleted() {
-  SendResponse(true);
-
-  Release();  // Balanced in RunImpl().
 }
 
 BeginInstallWithManifestFunction::BeginInstallWithManifestFunction()

@@ -7,7 +7,6 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_install_dialog.h"
@@ -39,35 +38,10 @@ class WebstoreInstallListener : public WebstoreInstaller::Delegate {
   WebstoreInstallListener()
       : received_failure_(false), received_success_(false), waiting_(false) {}
 
-  void OnExtensionInstallSuccess(const std::string& id) OVERRIDE {
-    received_success_ = true;
-    id_ = id;
-
-    if (waiting_) {
-      waiting_ = false;
-      MessageLoopForUI::current()->Quit();
-    }
-  }
-
+  void OnExtensionInstallSuccess(const std::string& id) OVERRIDE;
   void OnExtensionInstallFailure(const std::string& id,
-                                 const std::string& error) OVERRIDE {
-    received_failure_ = true;
-    id_ = id;
-    error_ = error;
-
-    if (waiting_) {
-      waiting_ = false;
-      MessageLoopForUI::current()->Quit();
-    }
-  }
-
-  void Wait() {
-    if (received_success_ || received_failure_)
-      return;
-
-    waiting_ = true;
-    ui_test_utils::RunMessageLoop();
-  }
+                                 const std::string& error) OVERRIDE;
+  void Wait();
 
   bool received_failure() const { return received_failure_; }
   bool received_success() const { return received_success_; }
@@ -81,6 +55,36 @@ class WebstoreInstallListener : public WebstoreInstaller::Delegate {
   std::string id_;
   std::string error_;
 };
+
+void WebstoreInstallListener::OnExtensionInstallSuccess(const std::string& id) {
+  received_success_ = true;
+  id_ = id;
+
+  if (waiting_) {
+    waiting_ = false;
+    MessageLoopForUI::current()->Quit();
+  }
+}
+
+void WebstoreInstallListener::OnExtensionInstallFailure(
+    const std::string& id, const std::string& error) {
+  received_failure_ = true;
+  id_ = id;
+  error_ = error;
+
+  if (waiting_) {
+    waiting_ = false;
+    MessageLoopForUI::current()->Quit();
+  }
+}
+
+void WebstoreInstallListener::Wait() {
+  if (received_success_ || received_failure_)
+    return;
+
+  waiting_ = true;
+  ui_test_utils::RunMessageLoop();
+}
 
 }  // namespace
 
@@ -146,6 +150,10 @@ class ExtensionWebstorePrivateBundleTest
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kAppsGalleryDownloadURL,
         GetTestServerURL("bundle/%s.crx").spec());
+
+    PackCRX("begfmnajjkbjdgmffnjaojchoncnmngg");
+    PackCRX("bmfoocgfinpmkmlbjhcbofejhkhlbchk");
+    PackCRX("mpneghmdnmaolkljkipbhaienajcflfe");
   }
 
   void TearDownInProcessBrowserTestFixture() OVERRIDE {
@@ -154,39 +162,14 @@ class ExtensionWebstorePrivateBundleTest
       ASSERT_TRUE(file_util::Delete(test_crx_[i], false));
   }
 
- protected:
+ private:
   void PackCRX(const std::string& id) {
-    FilePath dir_path = test_data_dir_
-        .AppendASCII("webstore_private/bundle")
-        .AppendASCII(id);
-
-    PackCRX(id, dir_path);
-  }
-
-  // Packs the |manifest| file into a CRX using |id|'s PEM key.
-  void PackCRX(const std::string& id, const std::string& manifest) {
-    // Move the extension to a temporary directory.
-    ScopedTempDir tmp;
-    ASSERT_TRUE(tmp.CreateUniqueTempDir());
-    ASSERT_TRUE(file_util::CreateDirectory(tmp.path()));
-
-    FilePath tmp_manifest = tmp.path().AppendASCII("manifest.json");
     FilePath data_path = test_data_dir_.AppendASCII("webstore_private/bundle");
-    FilePath manifest_path = data_path.AppendASCII(manifest);
-
-    ASSERT_TRUE(file_util::PathExists(manifest_path));
-    ASSERT_TRUE(file_util::CopyFile(manifest_path, tmp_manifest));
-
-    PackCRX(id, tmp.path());
-  }
-
-  // Packs the extension at |ext_path| using |id|'s PEM key.
-  void PackCRX(const std::string& id, const FilePath& ext_path) {
-    FilePath data_path = test_data_dir_.AppendASCII("webstore_private/bundle");
+    FilePath dir_path = data_path.AppendASCII(id);
     FilePath pem_path = data_path.AppendASCII(id + ".pem");
     FilePath crx_path = data_path.AppendASCII(id + ".crx");
     FilePath destination = PackExtensionWithOptions(
-        ext_path, crx_path, pem_path, FilePath());
+        dir_path, crx_path, pem_path, FilePath());
 
     ASSERT_FALSE(destination.empty());
     ASSERT_EQ(destination, crx_path);
@@ -194,21 +177,6 @@ class ExtensionWebstorePrivateBundleTest
     test_crx_.push_back(destination);
   }
 
-  // Creates an invalid CRX.
-  void PackInvalidCRX(const std::string& id) {
-    FilePath contents = test_data_dir_
-        .AppendASCII("webstore_private")
-        .AppendASCII("install_bundle_invalid.html");
-    FilePath crx_path = test_data_dir_
-        .AppendASCII("webstore_private/bundle")
-        .AppendASCII(id + ".crx");
-
-    ASSERT_TRUE(file_util::CopyFile(contents, crx_path));
-
-    test_crx_.push_back(crx_path);
-  }
-
- private:
   std::vector<FilePath> test_crx_;
 };
 
@@ -314,57 +282,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
 // Tests using silentlyInstall to install extensions.
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateBundleTest, SilentlyInstall) {
   WebstorePrivateApi::SetTrustTestIDsForTesting(true);
-
-  PackCRX("bmfoocgfinpmkmlbjhcbofejhkhlbchk", "extension1.json");
-  PackCRX("mpneghmdnmaolkljkipbhaienajcflfe", "extension2.json");
-  PackCRX("begfmnajjkbjdgmffnjaojchoncnmngg", "app2.json");
-
   ASSERT_TRUE(RunPageTest(GetTestServerURL("silently_install.html").spec()));
-}
-
-// Tests successfully installing a bundle of 2 apps and 2 extensions.
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateBundleTest, InstallBundle) {
-  extensions::BundleInstaller::SetAutoApproveForTesting(true);
-
-  PackCRX("bmfoocgfinpmkmlbjhcbofejhkhlbchk", "extension1.json");
-  PackCRX("pkapffpjmiilhlhbibjhamlmdhfneidj", "extension2.json");
-  PackCRX("begfmnajjkbjdgmffnjaojchoncnmngg", "app1.json");
-  PackCRX("mpneghmdnmaolkljkipbhaienajcflfe", "app2.json");
-
-  ASSERT_TRUE(RunPageTest(GetTestServerURL("install_bundle.html").spec()));
-}
-
-// Tests the user canceling the bundle install prompt.
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateBundleTest,
-                       InstallBundleCancel) {
-  // We don't need to create the CRX files since we are aborting the install.
-  extensions::BundleInstaller::SetAutoApproveForTesting(false);
-  ASSERT_TRUE(RunPageTest(GetTestServerURL(
-      "install_bundle_cancel.html").spec()));
-}
-
-// Tests partially installing a bundle (2 succeed, 1 fails due to an invalid
-// CRX, and 1 fails due to the manifests not matching).
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateBundleTest,
-                       InstallBundleInvalid) {
-  extensions::BundleInstaller::SetAutoApproveForTesting(true);
-
-  PackInvalidCRX("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-  PackCRX("bmfoocgfinpmkmlbjhcbofejhkhlbchk", "extension1.json");
-  PackCRX("pkapffpjmiilhlhbibjhamlmdhfneidj", "extension2.json");
-  PackCRX("begfmnajjkbjdgmffnjaojchoncnmngg", "app1.json");
-
-  ASSERT_TRUE(RunPageTest(GetTestServerURL(
-      "install_bundle_invalid.html").spec()));
-
-  ASSERT_TRUE(service()->GetExtensionById(
-      "begfmnajjkbjdgmffnjaojchoncnmngg", false));
-  ASSERT_TRUE(service()->GetExtensionById(
-      "pkapffpjmiilhlhbibjhamlmdhfneidj", false));
-  ASSERT_FALSE(service()->GetExtensionById(
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", true));
-  ASSERT_FALSE(service()->GetExtensionById(
-      "bmfoocgfinpmkmlbjhcbofejhkhlbchk", true));
 }
 
 // Tests getWebGLStatus function when WebGL is allowed.

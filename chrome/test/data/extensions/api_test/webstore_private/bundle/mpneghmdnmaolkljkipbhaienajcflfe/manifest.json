@@ -1,5 +1,5 @@
 {
-  "name": "extension.2",
+  "name": "Extension Bundle 2",
   "version": "1",
   "manifest_version": 2,
   "permissions": ["management", "http://google.com" ],

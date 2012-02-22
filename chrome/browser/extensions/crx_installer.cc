@@ -50,7 +50,6 @@ using extensions::PermissionsUpdater;
 
 namespace {
 
-// TODO(jstritar): this whitelist is not profile aware.
 struct Whitelist {
   Whitelist() {}
   std::set<std::string> ids;

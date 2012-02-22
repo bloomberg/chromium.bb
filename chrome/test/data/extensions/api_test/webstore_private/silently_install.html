@@ -1,24 +1,45 @@
-<!--
- * Copyright (c) 2012 The Chromium Authors. All rights reserved.  Use of this
- * source code is governed by a BSD-style license that can be found in the
- * LICENSE file.
--->
 <script src="common.js"></script>
 <script>
 
 var extension1 = {
   'id': 'bmfoocgfinpmkmlbjhcbofejhkhlbchk',
-  'manifest': getManifest('bundle/extension1.json')
+  'manifest':
+    '{\
+      "name": "Extension Bundle 1",\
+      "version": "1",\
+      "manifest_version": 2,\
+      "permissions": [ "tabs" ]\
+     }'
 };
 
 var extension2 = {
   'id': 'mpneghmdnmaolkljkipbhaienajcflfe',
-  'manifest': getManifest('bundle/extension2.json')
+  'manifest':
+    '{\
+      "name": "Extension Bundle 2",\
+      "version": "1",\
+      "manifest_version": 2,\
+      "permissions": ["management", "http://google.com" ],\
+      "content_script": [{\
+        "matches": [ "http://www.example.com/*" ],\
+        "js": [ "content_script.js" ],\
+        "run_at": "document_start"\
+       }]\
+    }'
 };
 
 var extension3 = {
   'id': 'begfmnajjkbjdgmffnjaojchoncnmngg',
-  'manifest': getManifest('bundle/app2.json')
+  'manifest':
+    '{\
+      "name": "Bundle App 2",\
+      "version": "1",\
+      "manifest_version": 2,\
+      "app": {\
+        "urls": [ "http://www.testapp2.com" ],\
+        "launch": { "web_url": "http://www.testapp2.com" }\
+      }\
+    }'
 };
 
 runTests([
