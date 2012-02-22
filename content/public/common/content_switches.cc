@@ -36,6 +36,10 @@ const char kBrowserSubprocessPath[]         = "browser-subprocess-path";
 // as a dependent process of the Chrome Frame plugin.
 const char kChromeFrame[]                   = "chrome-frame";
 
+// The default device scale factor to apply to contents in the absence of
+// a viewport meta tag.
+const char kDefaultDeviceScaleFactor[]      = "default-device-scale-factor";
+
 // Disables client-visible 3D APIs, in particular WebGL and Pepper 3D.
 // This is controlled by policy and is kept separate from the other
 // enable/disable switches to avoid accidentally regressing the policy
@@ -234,6 +238,10 @@ const char kEnableDeviceMotion[]            = "enable-device-motion";
 
 // Enables the fastback page cache.
 const char kEnableFastback[]                = "enable-fastback";
+
+// By default, a page is laid out to fill the entire width of the window.
+// This flag fixes the layout of the page to a default of 980 CSS pixels.
+const char kEnableFixedLayout[]             = "enable-fixed-layout";
 
 // Enable the JavaScript Full Screen API.
 const char kDisableFullScreen[]             = "disable-fullscreen";

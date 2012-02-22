@@ -23,6 +23,7 @@ CONTENT_EXPORT extern const char kBrowserCrashTest[];
 CONTENT_EXPORT extern const char kBrowserSubprocessPath[];
 // TODO(jam): this doesn't belong in content.
 CONTENT_EXPORT extern const char kChromeFrame[];
+CONTENT_EXPORT extern const char kDefaultDeviceScaleFactor[];
 CONTENT_EXPORT extern const char kDisable3DAPIs[];
 CONTENT_EXPORT extern const char kDisableAccelerated2dCanvas[];
 CONTENT_EXPORT extern const char kDisableAcceleratedCompositing[];
@@ -82,6 +83,7 @@ CONTENT_EXPORT extern const char kEnableDeferred2dCanvas[];
 extern const char kEnableCompositeToTexture[];
 CONTENT_EXPORT extern const char kEnableDeviceMotion[];
 extern const char kEnableFastback[];
+CONTENT_EXPORT extern const char kEnableFixedLayout[];
 CONTENT_EXPORT extern const char kDisableFullScreen[];
 extern const char kEnablePointerLock[];
 extern const char kEnableGamepad[];

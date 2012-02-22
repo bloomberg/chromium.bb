@@ -1096,4 +1096,6 @@ void content::RenderWidgetHostViewPort::GetDefaultScreenInfo(
   // TODO(derat): Don't hardcode this?
   results->depth = 24;
   results->depthPerComponent = 8;
+  results->verticalDPI = 96;
+  results->horizontalDPI = 96;
 }

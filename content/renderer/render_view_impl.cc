@@ -20,6 +20,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_piece.h"
+#include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -526,6 +527,15 @@ RenderViewImpl::RenderViewImpl(
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kDomAutomationController))
     enabled_bindings_ |= content::BINDINGS_POLICY_DOM_AUTOMATION;
+
+  bool enable_fixed_layout =
+      command_line.HasSwitch(switches::kEnableFixedLayout);
+  webview()->enableFixedLayoutMode(enable_fixed_layout);
+  if (enable_fixed_layout)
+      webview()->settings()->setFixedElementsLayoutRelativeToFrame(true);
+  base::StringToInt(command_line.GetSwitchValueASCII(
+                        switches::kDefaultDeviceScaleFactor),
+                    &default_device_scale_factor_);
 
   content::GetContentClient()->renderer()->RenderViewCreated(this);
 }
@@ -4382,6 +4392,10 @@ void RenderViewImpl::OnResize(const gfx::Size& new_size,
                               const gfx::Rect& resizer_rect,
                               bool is_fullscreen) {
   if (webview()) {
+    // This setting has no effect if fixed layout is not enabled.
+    if (default_device_scale_factor_)
+      webview()->settings()->setLayoutFallbackWidth(
+          new_size.width() / default_device_scale_factor_);
     webview()->hidePopups();
     if (send_preferred_size_changes_) {
       webview()->mainFrame()->setCanHaveScrollbars(
