@@ -192,7 +192,9 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, MAYBE_ClearLocalState) {
 
 // In proc browser test is needed here because ClearLocalState indirectly calls
 // WebKit's isMainThread through WebSecurityOrigin->SecurityOrigin.
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ClearSessionOnlyDatabases) {
+// http://crbug.com/115307
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest,
+    DISABLED_ClearSessionOnlyDatabases) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
