@@ -81,11 +81,22 @@ FilePath TestServer::HTTPSOptions::GetCertificateFile() const {
   return FilePath();
 }
 
+const char* TestServer::kLocalhost = "127.0.0.1";
+
 TestServer::TestServer(Type type, const FilePath& document_root)
     : type_(type),
       started_(false),
       log_to_console_(false) {
-  Init(document_root);
+  Init("127.0.0.1", document_root);
+}
+
+TestServer::TestServer(Type type,
+                       const std::string& host,
+                       const FilePath& document_root)
+    : type_(type),
+      started_(false),
+      log_to_console_(false) {
+  Init(host, document_root);
 }
 
 TestServer::TestServer(const HTTPSOptions& https_options,
@@ -94,7 +105,7 @@ TestServer::TestServer(const HTTPSOptions& https_options,
       type_(TYPE_HTTPS),
       started_(false),
       log_to_console_(false) {
-  Init(document_root);
+  Init(GetHostname(TYPE_HTTPS, https_options), document_root);
 }
 
 TestServer::~TestServer() {
@@ -265,12 +276,12 @@ bool TestServer::GetFilePathWithReplacements(
   return true;
 }
 
-void TestServer::Init(const FilePath& document_root) {
+void TestServer::Init(const std::string& host, const FilePath& document_root) {
   // At this point, the port that the testserver will listen on is unknown.
   // The testserver will listen on an ephemeral port, and write the port
   // number out over a pipe that this TestServer object will read from. Once
   // that is complete, the host_port_pair_ will contain the actual port.
-  host_port_pair_ = HostPortPair(GetHostname(type_, https_options_), 0);
+  host_port_pair_ = HostPortPair(host, 0);
   process_handle_ = base::kNullProcessHandle;
 
   FilePath src_dir;
@@ -360,6 +371,7 @@ bool TestServer::LoadTestRootCert() {
 }
 
 bool TestServer::AddCommandLineArguments(CommandLine* command_line) const {
+  command_line->AppendArg("--host=" + host_port_pair_.host());
   command_line->AppendArg("--port=" +
                           base::IntToString(host_port_pair_.port()));
   command_line->AppendArgNative(FILE_PATH_LITERAL("--data-dir=") +
