@@ -214,6 +214,10 @@ class NinjaWriter:
       path = path.replace(INTERMEDIATE_DIR,
                           os.path.join(product_dir or '', int_dir))
 
+    if self.flavor == 'win':
+      # Don't use os.path.normpath here. Callers pass in './foo' and expect
+      # the result to be runnable, but normpath removes the prefix.
+      return path.replace('/', '\\')
     return path
 
   def ExpandRuleVariables(self, path, root, dirname, source, ext, name):
