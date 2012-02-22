@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,8 +59,7 @@ class BookmarksUITest : public UITest {
   }
 };
 
-// http://code.google.com/p/chromium/issues/detail?id=39532
-TEST_F(BookmarksUITest, DISABLED_ShouldRedirectToExtension) {
+TEST_F(BookmarksUITest, ShouldRedirectToExtension) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
 
@@ -102,14 +101,7 @@ TEST_F(BookmarksUITest, CommandOpensBookmarksTab) {
   AssertIsBookmarksPage(tab);
 }
 
-// http://crbug.com/91843
-#if defined(OS_LINUX)
-#define MAYBE_CommandAgainGoesBackToBookmarksTab DISABLED_CommandAgainGoesBackToBookmarksTab
-#else
-#define MAYBE_CommandAgainGoesBackToBookmarksTab CommandAgainGoesBackToBookmarksTab
-#endif
-
-TEST_F(BookmarksUITest, MAYBE_CommandAgainGoesBackToBookmarksTab) {
+TEST_F(BookmarksUITest, CommandAgainGoesBackToBookmarksTab) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
 
@@ -157,10 +149,6 @@ TEST_F(BookmarksUITest, TwoCommandsOneTab) {
   ASSERT_EQ(1, tab_count);
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-// http://crbug.com/104309
-#define BookmarksLoaded DISABLED_BookmarksLoaded
-#endif
 TEST_F(BookmarksUITest, BookmarksLoaded) {
   scoped_refptr<TabProxy> tab = GetBookmarksUITab();
   ASSERT_TRUE(tab.get());
