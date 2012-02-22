@@ -1592,7 +1592,7 @@ size_t BrowserInit::LaunchWithProfile::ShowSyncPromoDialog(
 
   // The dialog is only shown on process startup if no browser window is already
   // being displayed.
-  if (!profile_ || *browser || !process_startup ||
+  if (!profile_ || profile_->IsOffTheRecord() || *browser || !process_startup ||
       SyncPromoUI::GetSyncPromoVersion() != SyncPromoUI::VERSION_DIALOG) {
     return std::string::npos;
   }
