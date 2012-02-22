@@ -14,5 +14,19 @@ from driver_env import env
 from driver_log import Log
 
 def main(argv):
+  if len(argv) == 0:
+    print get_help(argv)
+    return 1
   env.set('ARGS', *argv)
   return RunWithLog('"${RANLIB}" --plugin=LLVMgold ${ARGS}', errexit=False)
+
+def get_help(argv):
+  return """
+Usage: %s [options] archive
+ Generate an index to speed access to archives
+ The options are:
+  @<file>                      Read options from <file>
+  -t                           Update the archive's symbol map timestamp
+  -h --help                    Print this help message
+  -v --version                 Print version information
+""" % env.getone('SCRIPT_NAME')

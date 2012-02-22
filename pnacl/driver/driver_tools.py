@@ -42,8 +42,9 @@ def RunWithEnv(cmd, **kwargs):
 
   env.push()
   env.setmany(**kwargs)
-  RunWithLog(cmd, **RunWithLogArgs)
+  ret = RunWithLog(cmd, **RunWithLogArgs)
   env.pop()
+  return ret
 
 def SetExecutableMode(path):
   if os.name == "posix":
@@ -705,7 +706,7 @@ def RunWithLog(args, **kwargs):
   kwargs.setdefault('log_command', True)
   kwargs.setdefault('log_stdout', True)
   kwargs.setdefault('log_stderr', True)
-  Run(args, **kwargs)
+  return Run(args, **kwargs)
 
 #
 # RunDirect: Run a command.
