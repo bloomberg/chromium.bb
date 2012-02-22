@@ -61,6 +61,7 @@ extern const char kMimeTypePng[];
 extern const char kShowStateValueNormal[];
 extern const char kShowStateValueMinimized[];
 extern const char kShowStateValueMaximized[];
+extern const char kShowStateValueFullscreen[];
 extern const char kStatusValueComplete[];
 extern const char kStatusValueLoading[];
 extern const char kWindowTypeValueNormal[];

@@ -10,11 +10,32 @@ var height = 0;
 var deltaWidth = 20;
 var deltaHeight = 30;
 
-function checkRestoreWithBounds(theWindow) {
+function checkRestoreAfterFullscreen(theWindow) {
   chrome.test.assertEq('normal', theWindow.state);
   chrome.test.assertEq(width, theWindow.width);
   chrome.test.assertEq(height, theWindow.height);
   chrome.windows.remove(theWindow.id, pass());
+}
+
+function checkFullscreen(theWindow) {
+  if (theWindow.type == 'panel') {
+    // Panels do not support fullscreen.
+    chrome.test.assertEq('normal', theWindow.state);
+  } else {
+    chrome.test.assertEq('fullscreen', theWindow.state);
+  }
+
+  chrome.windows.update(theWindow.id, {'state': 'normal'},
+      pass(checkRestoreAfterFullscreen));
+}
+
+function checkRestoreWithBounds(theWindow) {
+  chrome.test.assertEq('normal', theWindow.state);
+  chrome.test.assertEq(width, theWindow.width);
+  chrome.test.assertEq(height, theWindow.height);
+
+  chrome.windows.update(theWindow.id, {'state': 'fullscreen'},
+    pass(checkFullscreen));
 }
 
 function checkMaximized(theWindow) {

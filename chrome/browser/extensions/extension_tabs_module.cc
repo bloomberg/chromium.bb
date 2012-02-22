@@ -610,11 +610,18 @@ bool UpdateWindowFunction::RunImpl() {
       show_state = ui::SHOW_STATE_MINIMIZED;
     } else if (state_str == keys::kShowStateValueMaximized) {
       show_state = ui::SHOW_STATE_MAXIMIZED;
+    } else if (state_str == keys::kShowStateValueFullscreen) {
+      show_state = ui::SHOW_STATE_FULLSCREEN;
     } else {
       error_ = keys::kInvalidWindowStateError;
       return false;
     }
   }
+
+  if (browser->window()->IsFullscreen() &&
+      show_state != ui::SHOW_STATE_FULLSCREEN &&
+      show_state != ui::SHOW_STATE_DEFAULT)
+    browser->ToggleFullscreenModeWithExtension(*GetExtension());
 
   switch (show_state) {
     case ui::SHOW_STATE_MINIMIZED:
@@ -622,6 +629,12 @@ bool UpdateWindowFunction::RunImpl() {
       break;
     case ui::SHOW_STATE_MAXIMIZED:
       browser->window()->Maximize();
+      break;
+    case ui::SHOW_STATE_FULLSCREEN:
+      if (browser->window()->IsMinimized() || browser->window()->IsMaximized())
+        browser->window()->Restore();
+      if (!browser->window()->IsFullscreen())
+        browser->ToggleFullscreenModeWithExtension(*GetExtension());
       break;
     case ui::SHOW_STATE_NORMAL:
       browser->window()->Restore();
@@ -669,7 +682,8 @@ bool UpdateWindowFunction::RunImpl() {
 
   if (set_bounds) {
     if (show_state == ui::SHOW_STATE_MINIMIZED ||
-        show_state == ui::SHOW_STATE_MAXIMIZED) {
+        show_state == ui::SHOW_STATE_MAXIMIZED ||
+        show_state == ui::SHOW_STATE_FULLSCREEN) {
       error_ = keys::kInvalidWindowStateError;
       return false;
     }
@@ -687,7 +701,8 @@ bool UpdateWindowFunction::RunImpl() {
       }
       browser->window()->Activate();
     } else {
-      if (show_state == ui::SHOW_STATE_MAXIMIZED) {
+      if (show_state == ui::SHOW_STATE_MAXIMIZED ||
+          show_state == ui::SHOW_STATE_FULLSCREEN) {
         error_ = keys::kInvalidWindowStateError;
         return false;
       }

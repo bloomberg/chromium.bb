@@ -23,7 +23,7 @@
           "state": {
             "type": "string",
             "description": "The state of this browser window.",
-            "enum": ["normal", "minimized", "maximized"]
+            "enum": ["normal", "minimized", "maximized", "fullscreen"]
             }
         }
       }
@@ -208,8 +208,8 @@
               "state": {
                 "type": "string",
                 "optional": true,
-                "description": "The new state of the window. The 'minimized' and 'maximized' states cannot be combined with 'left', 'top', 'width' or 'height'.",
-                "enum": ["normal", "minimized", "maximized"]
+                "description": "The new state of the window. The 'minimized', 'maximized' and 'fullscreen' states cannot be combined with 'left', 'top', 'width' or 'height'.",
+                "enum": ["normal", "minimized", "maximized", "fullscreen"]
               }
             }
           },

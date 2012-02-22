@@ -69,7 +69,9 @@ std::string ExtensionTabUtil::GetWindowShowStateText(const Browser* browser) {
   BrowserWindow* window = browser->window();
   if (window->IsMinimized())
     return keys::kShowStateValueMinimized;
-  if (window->IsMaximized() || window->IsFullscreen())
+  if (window->IsFullscreen())
+    return keys::kShowStateValueFullscreen;
+  if (window->IsMaximized())
     return keys::kShowStateValueMaximized;
   return keys::kShowStateValueNormal;
 }

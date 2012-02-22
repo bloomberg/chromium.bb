@@ -53,6 +53,7 @@ const char kMimeTypePng[] = "image/png";
 const char kShowStateValueNormal[] = "normal";
 const char kShowStateValueMinimized[] = "minimized";
 const char kShowStateValueMaximized[] = "maximized";
+const char kShowStateValueFullscreen[] = "fullscreen";
 const char kStatusValueComplete[] = "complete";
 const char kStatusValueLoading[] = "loading";
 
