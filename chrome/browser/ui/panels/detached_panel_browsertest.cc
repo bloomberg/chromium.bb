@@ -11,7 +11,8 @@
 class DetachedPanelBrowserTest : public BasePanelBrowserTest {
 };
 
-IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, CheckDetachedPanelProperties) {
+IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest,
+                       DISABLED_CheckDetachedPanelProperties) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
 
