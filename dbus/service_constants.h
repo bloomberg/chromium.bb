@@ -782,6 +782,22 @@ const char kAdapterProperty[] = "Adapter";
 const char kLegacyPairingProperty[] = "LegacyPairing";
 }  // namespace bluetooth_device
 
+namespace bluetooth_node {
+// Bluetooth Node service identifiers.
+const char kBluetoothNodeServiceName[] = "org.bluez";
+const char kBluetoothNodeInterface[] = "org.bluez.Node";
+
+// Bluetooth Node methods.
+const char kGetProperties[] = "GetProperties";
+
+// Bluetooth Node signals.
+const char kPropertyChangedSignal[] = "PropertyChanged";
+
+// Bluetoooth Node properties.
+const char kNameProperty[] = "Name";
+const char kDeviceProperty[] = "Device";
+}  // namespace bluetooth_node
+
 namespace bluetooth_input {
 // Bluetooth Input service identifiers.
 const char kBluetoothInputServiceName[] = "org.bluez";
