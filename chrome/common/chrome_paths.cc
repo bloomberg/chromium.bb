@@ -224,7 +224,7 @@ bool PathProvider(int key, FilePath* result) {
       return PathService::Get(chrome::DIR_APP, result);
 #endif
     case chrome::DIR_PEPPER_FLASH_PLUGIN:
-      if (!PathService::Get(base::DIR_MODULE, &cur))
+      if (!GetInternalPluginsDirectory(&cur))
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("PepperFlash"));
       break;
