@@ -18,7 +18,6 @@ var FontSettings = options.FontSettings;
 var HandlerOptions = options.HandlerOptions;
 var HomePageOverlay = options.HomePageOverlay;
 var ImportDataOverlay = options.ImportDataOverlay;
-var IntentsView = options.IntentsView;
 var InstantConfirmOverlay = options.InstantConfirmOverlay;
 var LanguageOptions = options.LanguageOptions;
 var OptionsPage = options.OptionsPage;
@@ -108,11 +107,6 @@ function load() {
                               [$('change-home-page')]);
   OptionsPage.registerOverlay(ImportDataOverlay.getInstance(),
                               BrowserOptions.getInstance());
-  if (IntentsView && $('manage-intents-button')) {
-    OptionsPage.registerOverlay(IntentsView.getInstance(),
-                                ContentSettings.getInstance(),
-                                [$('manage-intents-button')]);
-  }
   OptionsPage.registerOverlay(InstantConfirmOverlay.getInstance(),
                               BrowserOptions.getInstance());
   OptionsPage.registerOverlay(LanguageOptions.getInstance(),

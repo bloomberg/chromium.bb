@@ -186,6 +186,9 @@ const char kDisableSiteSpecificQuirks[]     = "disable-site-specific-quirks";
 // Disables speech input.
 const char kDisableSpeechInput[]            = "disable-speech-input";
 
+// Disable uber page command and URL redirection.
+const char kDisableUberPage[]               = "disable-uber-page";
+
 // Disable web audio API.
 const char kDisableWebAudio[]               = "disable-webaudio";
 
@@ -325,7 +328,7 @@ const char kEnableTouchEvents[]             = "enable-touch-events";
 // incomplete and this flag is used for development and testing.
 const char kEnableVideoTrack[]              = "enable-video-track";
 
-// Enable Web Intents.
+// Disable Web Intents.
 const char kDisableWebIntents[]             = "disable-web-intents";
 
 // Enables experimental features for the geolocation API.

@@ -52,21 +52,17 @@ cr.define('options', function() {
         };
       }
 
-      var manageIntentsButton = $('manage-intents-button');
-      if (manageIntentsButton) {
-        manageIntentsButton.onclick = function(event) {
-          OptionsPage.navigateToPage('intents');
-        };
-      }
-
       // Cookies filter page ---------------------------------------------------
       $('show-cookies-button').onclick = function(event) {
         chrome.send('coreOptionsUserMetricsAction', ['Options_ShowCookies']);
         OptionsPage.navigateToPage('cookies');
       };
 
-      if (!templateData.enable_web_intents && $('intent-section'))
-        $('intent-section').hidden = true;
+      // Remove from DOM instead of hiding so :last-of-type applies the style
+      // correctly.
+      var intentsSection = $('intents-section');
+      if (!templateData.enable_web_intents && intentsSection)
+        intentsSection.parentNode.removeChild(intentsSection);
     },
   };
 
