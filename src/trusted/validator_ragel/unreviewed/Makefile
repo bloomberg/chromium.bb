@@ -52,7 +52,7 @@ $(OBJD)/validator-test: \
     $(OBJD)/validator-x86_32.o $(OBJD)/validator-x86_64.o $(OBJD)/validator-test.o
 
 GEN_DECODER=$(OBJD)/gen-decoder
-$(GEN_DECODER): gen-decoder.C
+$(GEN_DECODER): gen-decoder.C | $(OUT_DIRS)
 	$(CXX) $(CXXFLAGS) $< -o $(GEN_DECODER)
 
 $(OBJD)/decoder-x86_32.c: $(OBJD)/decoder-x86_32-instruction-consts.c
@@ -89,7 +89,7 @@ $(OBJD)/validator-x86_64-instruction-consts.c \
 # Facilities for testing:
 #   one-instruction.dot: the description of the DFA that accepts all instruction
 #     the decoder is able to decode.
-#   decoder-test-x86-64: the decoder that follows the objdump format
+#   decoder-test: the decoder that follows the objdump format
 $(OBJD)/one-instruction-x86_32.dot: one-instruction-x86_32.rl \
   $(OBJD)/one-valid-instruction-x86_32-consts.c \
   $(OBJD)/one-valid-instruction-x86_32.rl
@@ -190,7 +190,7 @@ clean-tests:
 
 # The target for all short-running tests.
 .PHONY: check
-check: check-irt check-as-alt-validator
+check: check-irt check-as-alt-validator check-ncval
 
 # Checks that the IRT is not rejected by the validator.
 .PHONY: check-irt
@@ -237,3 +237,43 @@ check-decoder: outdirs $(BINUTILS_STAMP) $(OBJD)/one-instruction-x86_32.dot \
 	  --tester=./decoder_test_one_file.sh \
 	  --nthreads=`cat /proc/cpuinfo | grep processor | wc -l` -- \
 	  "$(OUT)/test/test_dfa-x86_64" "$(FAST_TMP_FOR_TEST)"
+
+# The list of tests having both .hex and .rval files, acquired by
+# scanning native_client/src/trusted/validator_x86/testdata/64/.
+# TODO(pasko): automate the process of scanning
+HEX_TESTS=3DNow add_cs_gs_prefix add_mult_prefix addrex addrex2 add_rsp_r15 \
+    AhNotSubRsp ambig-segment bad66 bsf-mask bsr-mask bt call_aligned call-ex \
+    call_not_aligned call_not_aligned_16 change-subregs cmpxchg cpuid \
+    data66prefix direct-call-16 direct-call-32 direct-cond-jump-16 \
+    direct-cond-jump-32 direct-jump-16 direct-jump-32 dup-prefix extensions \
+    fpu fs_use hlt inc67 incno67 indirect_jmp_masked indirect_jmp_not_masked \
+    invalid_base invalid_base_store invalid_width_index jmp-16 jump_atomic \
+    jump_outside lea lea-add-rsp lea-rsp legacy maskmov_test mmx \
+    mov-esi-nop-use mov_esp_add_rsp_r15 mov-lea-rbp mov-lea-rbp-bad-1 \
+    mov-lea-rbp-bad-2 mov-lea-rbp-bad-3 mov-lea-rbp-bad-4 mov-lea-rbp-bad-5 \
+    mov-lea-rsp movlps-ex mov_rbp_2_rsp movsbw movs_test mv_ebp_add_rbp_r15 \
+    mv_ebp_alone nacl_illegal nops pop-rbp prefix-2 prefix-3 prefix-single \
+    push-memoff rbp67 rdmsr read_const_ptr rep_tests rex_invalid rex_not_last \
+    rip67 rip-relative segment_assign segment_store sse stack_regs stosd \
+    stosd67 stosd-bad stosdno67 strings stubseq sub-add-rsp sub-rsp test_alias \
+    test_insts ud2 valid_and_store valid_base_only valid_lea_store wrmsr x87
+
+# Converts existing validator tests in testdata/64 and produces golden files
+# that can be used to compare with the DFA-based validator.
+.PHONY: convert-testdata
+convert-testdata:
+	ln -sfn ../../validator_x86/testdata
+	(for tst in $(HEX_TESTS); do \
+	  python parse_hex.py testdata/64/$$tst.rval ; \
+	done) || /bin/true
+	mv testdata/64/*.val.ref golden/
+
+.PHONY: check-ncval
+check-ncval: outdirs $(BINUTILS_STAMP) $(OBJD)/validator-test \
+    $(OBJD)/decoder-test
+	ln -sfn ../../validator_x86/testdata
+	$(PYTHON2X) run_ncval_tests.py \
+	  --decoder="$(OBJD)/decoder-test" \
+	  --validator="$(OBJD)/validator-test" \
+	  --gas="$(GAS)" \
+	  --tmp="$(OUT)/test/"
