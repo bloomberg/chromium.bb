@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -610,53 +610,6 @@ void Clipboard::ReadBookmark(string16* title, std::string* url) const {
   ::GlobalUnlock(data);
 
   ParseBookmarkClipboardFormat(bookmark, title, url);
-}
-
-// Read a file in HDROP format from the clipboard.
-void Clipboard::ReadFile(FilePath* file) const {
-  if (!file) {
-    NOTREACHED();
-    return;
-  }
-
-  *file = FilePath();
-  std::vector<FilePath> files;
-  ReadFiles(&files);
-
-  // Take the first file, if available.
-  if (!files.empty())
-    *file = files[0];
-}
-
-// Read a set of files in HDROP format from the clipboard.
-void Clipboard::ReadFiles(std::vector<FilePath>* files) const {
-  if (!files) {
-    NOTREACHED();
-    return;
-  }
-
-  files->clear();
-
-  ScopedClipboard clipboard;
-  if (!clipboard.Acquire(GetClipboardWindow()))
-    return;
-
-  HDROP drop = static_cast<HDROP>(::GetClipboardData(CF_HDROP));
-  if (!drop)
-    return;
-
-  // Count of files in the HDROP.
-  int count = ::DragQueryFile(drop, 0xffffffff, NULL, 0);
-
-  if (count) {
-    for (int i = 0; i < count; ++i) {
-      UINT size = ::DragQueryFile(drop, i, NULL, 0) + 1;
-      DCHECK_GT(size, 1u);
-      std::wstring file;
-      ::DragQueryFile(drop, i, WriteInto(&file, size), size);
-      files->push_back(FilePath(file));
-    }
-  }
 }
 
 void Clipboard::ReadData(const FormatType& format, std::string* result) const {

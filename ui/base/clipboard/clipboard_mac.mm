@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -360,38 +360,6 @@ void Clipboard::ReadBookmark(string16* title, std::string* url) const {
       url->clear();
     else
       url->assign([url_string UTF8String]);
-  }
-}
-
-void Clipboard::ReadFile(FilePath* file) const {
-  if (!file) {
-    NOTREACHED();
-    return;
-  }
-
-  *file = FilePath();
-  std::vector<FilePath> files;
-  ReadFiles(&files);
-
-  // Take the first file, if available.
-  if (!files.empty())
-    *file = files[0];
-}
-
-void Clipboard::ReadFiles(std::vector<FilePath>* files) const {
-  if (!files) {
-    NOTREACHED();
-    return;
-  }
-
-  files->clear();
-
-  NSPasteboard* pb = GetPasteboard();
-  NSArray* fileList = [pb propertyListForType:NSFilenamesPboardType];
-
-  for (unsigned int i = 0; i < [fileList count]; ++i) {
-    std::string file = [[fileList objectAtIndex:i] UTF8String];
-    files->push_back(FilePath(file));
   }
 }
 

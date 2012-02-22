@@ -457,10 +457,6 @@ void Clipboard::ReadAsciiText(Clipboard::Buffer buffer,
   g_free(text);
 }
 
-void Clipboard::ReadFile(FilePath* file) const {
-  *file = FilePath();
-}
-
 // TODO(estade): handle different charsets.
 // TODO(port): set *src_url.
 void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,

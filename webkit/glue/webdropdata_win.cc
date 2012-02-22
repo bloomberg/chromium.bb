@@ -28,8 +28,6 @@ void WebDropData::PopulateWebDropData(IDataObject* data_object,
   if (!base_url.empty()) {
     drop_data->html_base_url = GURL(base_url);
   }
-  ui::ClipboardUtil::GetFileContents(data_object,
-      &drop_data->file_description_filename, &drop_data->file_contents);
   ui::ClipboardUtil::GetWebCustomData(data_object,
       &drop_data->custom_data);
 }

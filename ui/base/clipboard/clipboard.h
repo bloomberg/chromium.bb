@@ -225,11 +225,6 @@ class UI_EXPORT Clipboard {
   // Reads a bookmark from the clipboard, if available.
   void ReadBookmark(string16* title, std::string* url) const;
 
-  // Reads a file or group of files from the clipboard, if available, into the
-  // out parameter.
-  void ReadFile(FilePath* file) const;
-  void ReadFiles(std::vector<FilePath>* files) const;
-
   // Reads raw data from the clipboard with the given format type. Stores result
   // as a byte vector.
   void ReadData(const FormatType& format, std::string* result) const;
