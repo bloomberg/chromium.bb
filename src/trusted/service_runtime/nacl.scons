@@ -43,7 +43,7 @@ def NewAsmEnv(env, defines, rodata_address, rwdata_address):
   # special handling can be eliminated
   if asm_env.Bit('bitcode'):
     asm_env.PNaClForceNative()
-    asm_env.Append(ASFLAGS='-DPNACL_AS=1')
+    asm_env.Append(ASPPFLAGS=['-DPNACL_AS=1'])
   link_cmd = ('${LD} -e _start ${TEXT_START} ${RO_START} ${RW_START}' +
                 ' -o ${TARGET} ${SOURCES}')
 
