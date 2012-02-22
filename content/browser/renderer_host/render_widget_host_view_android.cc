@@ -5,6 +5,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 
 #include "base/logging.h"
+#include "content/port/browser/render_widget_host_view_port.h"
 
 // static
 void content::RenderWidgetHostViewPort::GetDefaultScreenInfo(
@@ -16,9 +17,9 @@ void content::RenderWidgetHostViewPort::GetDefaultScreenInfo(
 // RenderWidgetHostView, public:
 
 // static
-content::RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
+content::RenderWidgetHostView*
+content::RenderWidgetHostView::CreateViewForWidget(
     RenderWidgetHost* widget) {
   NOTIMPLEMENTED();
   return NULL;
 }
-
