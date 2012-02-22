@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -303,7 +303,9 @@ void CloudPrintURLFetcherRetryBackoffTest::OnRequestGiveUp() {
 
 // http://code.google.com/p/chromium/issues/detail?id=60426
 TEST_F(CloudPrintURLFetcherBasicTest, DISABLED_HandleRawResponse) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
   SetHandleRawResponse(true);
 
@@ -313,7 +315,9 @@ TEST_F(CloudPrintURLFetcherBasicTest, DISABLED_HandleRawResponse) {
 
 // http://code.google.com/p/chromium/issues/detail?id=60426
 TEST_F(CloudPrintURLFetcherBasicTest, DISABLED_HandleRawData) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   SetHandleRawData(true);
@@ -322,7 +326,9 @@ TEST_F(CloudPrintURLFetcherBasicTest, DISABLED_HandleRawData) {
 }
 
 TEST_F(CloudPrintURLFetcherOverloadTest, Protect) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   GURL url(test_server.GetURL("defaultresponse"));
@@ -344,7 +350,9 @@ TEST_F(CloudPrintURLFetcherOverloadTest, Protect) {
 
 // http://code.google.com/p/chromium/issues/detail?id=60426
 TEST_F(CloudPrintURLFetcherRetryBackoffTest, DISABLED_GiveUp) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   GURL url(test_server.GetURL("defaultresponse"));

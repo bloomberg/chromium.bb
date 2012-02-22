@@ -287,7 +287,9 @@ TEST_F(PrintingLayoutTextTest, DISABLED_Complex) {
                                                    "close_printdlg_thread");
 
   // Print a document, check its output.
-  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   NavigateToURL(test_server.GetURL("files/printing/test1.html"));
@@ -316,7 +318,9 @@ TEST_F(PrintingLayoutTestHidden, DISABLED_ManyTimes) {
   if (IsTestCaseDisabled())
     return;
 
-  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   DismissTheWindow dismisser(base::GetProcId(process()));
@@ -366,7 +370,9 @@ TEST_F(PrintingLayoutTest, DISABLED_Delayed) {
   if (IsTestCaseDisabled())
     return;
 
-  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   {
@@ -399,7 +405,9 @@ TEST_F(PrintingLayoutTest, DISABLED_IFrame) {
   if (IsTestCaseDisabled())
     return;
 
-  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   {
