@@ -37,6 +37,10 @@
     "message": "Connect",
     "description": "Label for the connect button. Clicking this button will start the Chromoting session if the access code is correct."
   },
+  "CONNECTION_HISTORY_BUTTON": {
+    "message": "Connection history",
+    "description": "Label for the connection history button. Clicking this button opens a dialog showing recent connections."
+  },
   "CONTINUE_BUTTON": {
     "message": "Continue",
     "description": "Label for the continue button on the pre-authorization page. Clicking this button takes the user to the standard Google Accounts authorization page."
@@ -132,7 +136,7 @@
     "description": "Help link, displayed in the top-left (assuming ltr layout) corner of the main screen. Clicking this takes the user to our FAQ."
   },
   "HOME_ACCESS_BUTTON": {
-    "message": "Access Now",
+    "message": "Access",
     "description": "Clicking this button starts the desktop access process."
   },
   "HOME_ACCESS_DESCRIPTION": {
@@ -159,12 +163,8 @@
     "message": "To securely access this computer from anywhere you sign in to Chromoting, you must first enable remote connections.",
     "description": "Message displayed when the current computer is not accepting remote connections, instructing the user how to enable them."
   },
-  "HOME_MY_COMPUTERS_TITLE": {
-    "message": "My Computers",
-    "description": "Title for the portion of the home page showing the list of hosts the user has previously registered for remote access at any time."
-  },
   "HOME_SHARE_BUTTON": {
-    "message": "Share Now",
+    "message": "Share",
     "description": "Clicking this button starts the desktop sharing process."
   },
   "HOME_SHARE_DESCRIPTION": {
@@ -213,13 +213,13 @@
     "message": "Authorize",
     "description": "Sub-title for the one-time authorization step. Displayed after the product name and separated by a chevron."
   },
-  "MODE_CONNECT": {
-    "message": "Connect",
-    "description": "Sub-title for the client app. Displayed after the product name and separated by a chevron."
+  "MODE_IT2ME": {
+    "message": "Remote Assistance",
+    "description": "Sub-title for the remote assistance section of the UI, which contains buttons to share this computer or to connect to another computer, both on a one-off basis."
   },
-  "MODE_SHARE": {
-    "message": "Share",
-    "description": "Sub-title for the host app. Displayed after the product name and separated by a chevron."
+  "MODE_ME2ME": {
+    "message": "My Computers",
+    "description": "Sub-title for the remote access section of the UI, which contains a list of currently-shared hosts and a button to enable this computer for long-term sharing."
   },
   "OK": {
     "message": "OK",

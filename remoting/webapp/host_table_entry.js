@@ -68,19 +68,15 @@ remoting.HostTableEntry.prototype.init = function(host, onRename, onDelete) {
 
   // Create the host icon cell.
   var hostIcon = document.createElement('td');
-  addClass(hostIcon, 'host-list-row-start');
   var hostIconImage = document.createElement('img');
   hostIconImage.src = 'icon_host.png';
-  addClass(hostIconImage, 'host-list-main-icon');
+  addClass(hostIcon, 'host-list-main-icon');
   hostIcon.appendChild(hostIconImage);
   this.tableRow.appendChild(hostIcon);
 
   // Create the host name cell.
   this.hostNameCell_ = document.createElement('td');
-  addClass(this.hostNameCell_, 'mode-select-label');
-  this.hostNameCell_.appendChild(
-      document.createTextNode(host.hostName));
-  this.hostNameCell_.ondblclick = function() { that.beginRename_(); };
+  this.setHostName_();
   this.tableRow.appendChild(this.hostNameCell_);
 
   // Create the host status cell.
@@ -88,24 +84,22 @@ remoting.HostTableEntry.prototype.init = function(host, onRename, onDelete) {
   if (host.status == 'ONLINE') {
     var hostUrl = chrome.extension.getURL('main.html') +
         '?mode=me2me&hostId=' + encodeURIComponent(host.hostId);
-    var connectButton = document.createElement('button');
-    connectButton.setAttribute('class', 'mode-select-button');
-    connectButton.setAttribute('type', 'button');
     var startMe2Me = function() { window.location.replace(hostUrl); };
-    connectButton.addEventListener('click', startMe2Me, false);
-    connectButton.innerHTML =
-        chrome.i18n.getMessage(/*i18n-content*/'CONNECT_BUTTON');
-    hostStatus.appendChild(connectButton);
+    this.hostNameCell_.addEventListener('click', startMe2Me, false);
+    hostIcon.addEventListener('click', startMe2Me, false);
+    hostStatus.addEventListener('click', startMe2Me, false);
+    addClass(this.tableRow, 'clickable');
   } else {
     addClass(this.tableRow, 'host-offline');
     hostStatus.innerHTML = chrome.i18n.getMessage(/*i18n-content*/'OFFLINE');
   }
-  hostStatus.className = 'host-list-row-end';
+  hostStatus.className = 'host-list-label';
   this.tableRow.appendChild(hostStatus);
 
   // Create the host rename cell.
   var editButton = document.createElement('td');
-  editButton.onclick = function() { that.beginRename_(); };
+  var beginRename = function() { that.beginRename_(); };
+  editButton.addEventListener('click', beginRename, true);
   addClass(editButton, 'clickable');
   addClass(editButton, 'host-list-edit');
   var penImage = document.createElement('img');
@@ -116,7 +110,7 @@ remoting.HostTableEntry.prototype.init = function(host, onRename, onDelete) {
 
   // Create the host delete cell.
   var deleteButton = document.createElement('td');
-  deleteButton.onclick = function() { onDelete(that); }
+  deleteButton.addEventListener('click', function() { onDelete(that); }, false);
   addClass(deleteButton, 'clickable');
   addClass(deleteButton, 'host-list-edit');
   var crossImage = document.createElement('img');
@@ -178,7 +172,14 @@ remoting.HostTableEntry.prototype.removeEditBox_ = function() {
     editBox.removeEventListener('blur', this.onBlurReference_, false);
   }
   this.hostNameCell_.innerHTML = '';  // Remove the edit box.
-  this.hostNameCell_.appendChild(document.createTextNode(this.host.hostName));
+  this.setHostName_();
+};
+
+remoting.HostTableEntry.prototype.setHostName_ = function() {
+  var hostNameNode = document.createElement('span');
+  hostNameNode.innerText = this.host.hostName;
+  addClass(hostNameNode, 'host-list-label');
+  this.hostNameCell_.appendChild(hostNameNode);
 };
 
 /**

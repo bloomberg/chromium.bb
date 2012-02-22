@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -197,7 +197,6 @@ remoting.HostList.prototype.showOrHide_ = function(show) {
   var parent = /** @type {Element} */ (this.table_.parentNode);
   parent.hidden = !show;
   if (show) {
-    parent.style.height = parent.scrollHeight + 'px';
     removeClass(parent, remoting.HostList.COLLAPSED_);
   } else {
     addClass(parent, remoting.HostList.COLLAPSED_);

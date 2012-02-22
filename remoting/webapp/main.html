@@ -7,13 +7,13 @@ found in the LICENSE file.
 
 <html>
   <head>
-    <meta charset="utf-8" />
+    <meta charset="utf-8">
     <link href="http://fonts.googleapis.com/css?family=Open+Sans&amp;v1"
           rel="stylesheet" type="text/css">
-    <link rel="icon" type="image/png" href="chromoting16.png" />
-    <link rel="stylesheet" href="debug_log.css" />
-    <link rel="stylesheet" href="main.css" />
-    <link rel="stylesheet" href="toolbar.css" />
+    <link rel="icon" type="image/png" href="chromoting16.png">
+    <link rel="stylesheet" href="debug_log.css">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="toolbar.css">
     <script src="ask_pin_dialog.js"></script>
     <script src="client_plugin_async.js"></script>
     <script src="client_plugin_v1.js"></script>
@@ -53,87 +53,57 @@ found in the LICENSE file.
 
     <div id="daemon-plugin-container"></div>
 
-    <div class="top-primary"
-         data-ui-mode="home client host"
-         hidden>
-      <span id="email-status">
+    <header data-ui-mode="auth home client host" hidden>
+      <div>
+        <img src="chromoting48.png">
+        <h1 class="icon-label" i18n-content="PRODUCT_NAME"></h1>
+      </div>
+      <div class="box-spacer"></div>
+      <div id="top-secondary">
         <span id="current-email"></span>
         <span data-ui-mode="home client.unconnected client.connect-failed">
-        (<a id="clear-oauth" href="#" i18n-content="SIGN_OUT_BUTTON"></a>)
+          <a id="clear-oauth" href="#" i18n-content="SIGN_OUT_BUTTON"></a> |
+          <a id="connection-history" href="#"
+             i18n-content="CONNECTION_HISTORY_BUTTON"></a> |
         </span>
-      </span>
-    </div>
+        <a href="https://www.google.com/support/chrome/bin/answer.py?answer=1649523"
+           target="_blank" i18n-content="HELP"></a>
+      </div>
+    </header>
 
-    <div class="top-secondary" data-ui-mode="auth home client host">
-      <a href="https://www.google.com/support/chrome/bin/answer.py?answer=1649523"
-         target="_blank" i18n-content="HELP"></a>
-    </div>
-
-    <div id="session-toolbar"
-         data-ui-mode="in-session"
-         class="toolbar-container"
-         hidden>
-      <div class="toolbar-border">
-        <span id="session-status-message" i18n-content="LABEL_CONNECTED"></span>
-        <strong id="connected-to"></strong>
-        <button id="toolbar-disconnect"
+    <section id="auth-panel" data-ui-mode="auth">
+      <h2 i18n-content="MODE_AUTHORIZE"></h2>
+      <p i18n-content="DESCRIPTION_AUTHORIZE"></p>
+      <div class="centered-button">
+        <button id="auth-button"
+                class="kd-button"
                 type="button"
-                i18n-content="DISCONNECT_MYSELF_BUTTON">
+                i18n-content="CONTINUE_BUTTON">
         </button>
-        <span class="end-align">
-          <button id="toggle-scaling">
-            <img src="scale-to-fit.png">
-          </button>
-        </span>
       </div>
-      <div class="toolbar-stub" id="toolbar-stub">
-        <div class="arrow-down"></div>
-      </div>
-    </div> <!-- session-toolbar -->
+    </section> <!-- auth-panel -->
 
-    <div id="main" data-ui-mode="auth home host client" hidden>
-
-      <header class="choice-header">
-        <img id="icon" src="chromoting128.png">
-        <h1 class="icon-label">
-          <span i18n-content="PRODUCT_NAME"></span>
-          <span data-ui-mode="auth client host">&nbsp;&rsaquo;&nbsp;</span>
-          <span i18n-content="MODE_AUTHORIZE" data-ui-mode="auth"></span>
-          <span i18n-content="MODE_CONNECT" data-ui-mode="client"></span>
-          <span i18n-content="MODE_SHARE" data-ui-mode="host"></span>
-        </h1>
-      </header>
-
-      <img id="divider-top" src="dividertop.png">
-
-      <div id="auth-panel" data-ui-mode="auth">
-        <div class="description" i18n-content="DESCRIPTION_AUTHORIZE"></div>
-        <div class="centered-button">
-          <button id="auth-button"
-                  class="big-button"
-                  type="button"
-                  i18n-content="CONTINUE_BUTTON">
-          </button>
-        </div>
-      </div> <!-- auth-panel -->
-
-      <div data-ui-mode="home">
-        <div class="description"
-             i18n-content="DESCRIPTION_HOME"
+    <div data-ui-mode="home">
+      <section>
+        <div i18n-content="DESCRIPTION_HOME"
              i18n-value-1="<a href='https://chrome.google.com/remotedesktop'>chrome.google.com/remotedesktop</a>"></div>
+      </section>
+
+      <section>
+        <h2 i18n-content="MODE_IT2ME"></h2>
+        <!-- TODO(jamiewalch): Rewrite this using flex boxes -->
         <table class="mode-select-table">
           <tr>
             <td>
-              <div i18n-content="HOME_SHARE_DESCRIPTION"
-                  class="mode-select-label"></div>
+              <div i18n-content="HOME_SHARE_DESCRIPTION"></div>
               <div id="chrome-os-no-share"
                    i18n-content="HOME_SHARE_DESCRIPTION_CHROME_OS"
                    class="small-print"></div>
             </td>
-            <td>
+            <td class="mode-select-button-column">
               <button id="share-button"
                       i18n-content="HOME_SHARE_BUTTON"
-                      class="mode-select-button"
+                      class="kd-button kd-button-share"
                       type="button">
               </button>
             </td>
@@ -144,34 +114,33 @@ found in the LICENSE file.
           <tr class="mode-select-table-spacer">
           </tr>
           <tr>
-            <td i18n-content="HOME_ACCESS_DESCRIPTION"
-                class="mode-select-label"></td>
-            <td>
+            <td i18n-content="HOME_ACCESS_DESCRIPTION"></td>
+            <td class="mode-select-button-column">
               <button id="access-mode-button"
                       i18n-content="HOME_ACCESS_BUTTON"
-                      class="mode-select-button"
+                      class="kd-button"
                       type="button">
               </button>
             </td>
           </tr>
         </table>
+      </section>
 
-        <div id="host-list-div"
-             class="host-list-container collapsed"
-             hidden>
-          <img src="dividerbottom.png">
-          <h1 i18n-content="HOME_MY_COMPUTERS_TITLE"></h1>
-          <table id="host-list" class="host-list-table"></table>
-          <div id="host-list-error" class="error-state"></div>
-        </div> <!-- host-list-div -->
-
+      <section id="host-list-div"
+               class="host-list-container collapsed"
+               hidden>
+        <h2 i18n-content="MODE_ME2ME"></h2>
+        <table id="host-list" class="host-list-table"></table>
+        <div id="host-list-error" class="error-state"></div>
         <div id="daemon-control" data-ui-mode="home.daemon">
-          <table>
+          <table class="host-list-table">
+            <!-- TODO(jamiewalch): Rewrite this using flex boxes and apply the
+                 host-offline style if the daemon is not running -->
             <tr>
-              <td>
+              <td class="host-list-main-icon">
                 <img src="icon_host.png">
               </td>
-              <td>
+              <td class="host-list-label">
                 <span id="this-computer-name"
                       data-ui-mode="home.daemon.enabled">
                   Spongebob Squaretrousers
@@ -180,16 +149,18 @@ found in the LICENSE file.
                       data-ui-mode="home.daemon.disabled">
                 </span>
               </td>
-              <td>
+              <td class="mode-select-button-column">
                 <button type="button"
                         id="stop-daemon"
                         i18n-content="HOME_DAEMON_STOP_BUTTON"
-                        data-ui-mode="home.daemon.enabled">
+                        data-ui-mode="home.daemon.enabled"
+                        class="kd-button">
                 </button>
                 <button type="button"
                         id="start-daemon"
                         i18n-content="HOME_DAEMON_START_BUTTON"
-                        data-ui-mode="home.daemon.disabled">
+                        data-ui-mode="home.daemon.disabled"
+                        class="kd-button">
                 </button>
               </td>
             </tr>
@@ -201,6 +172,7 @@ found in the LICENSE file.
                i18n-content="HOME_DAEMON_CHANGE_PIN_LINK"></a>
           </div>
         </div> <!-- daemon-control -->
+      </section> <!-- host-list-div -->
 
         <div id="dialog-screen" hidden></div>
 
@@ -229,8 +201,7 @@ found in the LICENSE file.
         </div> <!-- host.waiting-for-code -->
 
         <div data-ui-mode="host.waiting-for-connection">
-          <div class="description"
-               i18n-content="INSTRUCTIONS_SHARE_ABOVE"></div>
+          <div i18n-content="INSTRUCTIONS_SHARE_ABOVE"></div>
           <div id="access-code-display" dir="ltr"></div>
           <div id="access-code-countdown-container">
             <div id="access-code-countdown" class="expiring" hidden>
@@ -238,8 +209,7 @@ found in the LICENSE file.
                     i18n-content="ACCESS_CODE_TIMER"></span>
             </div>
           </div>
-          <div class="description"
-               i18n-content="INSTRUCTIONS_SHARE_BELOW"></div>
+          <div i18n-content="INSTRUCTIONS_SHARE_BELOW"></div>
         </div> <!-- host.waiting-for-connection -->
 
         <div data-ui-mode="host.shared">
@@ -248,7 +218,7 @@ found in the LICENSE file.
           <div class="centered-button">
             <button id="cancel-share-button"
                     type="button"
-                    class="big-button"
+                    class="kd-button"
                     i18n-content="STOP_SHARING_BUTTON">
             </button>
           </div>
@@ -266,7 +236,7 @@ found in the LICENSE file.
              data-ui-mode="host.share-failed host.share-finished">
           <button id="host-finished-button"
                   type="button"
-                  class="big-button"
+                  class="kd-button"
                   autofocus="autofocus"
                   i18n-content="OK">
           </button>
@@ -278,7 +248,7 @@ found in the LICENSE file.
 
       <div id="client-panel" data-ui-mode="client">
         <div data-ui-mode="client.unconnected">
-          <div class="description" i18n-content="DESCRIPTION_CONNECT"></div>
+          <div i18n-content="DESCRIPTION_CONNECT"></div>
           <div id="access-code-entry-row">
             <form id="access-code-form" action="">
               <label for="access-code-entry" i18n-content="ACCESS_CODE"></label>
@@ -287,12 +257,12 @@ found in the LICENSE file.
                      autofocus="autofocus"
                      autocomplete="off"/>
               <button id="connect-button"
-                      class="big-button"
+                      class="kd-button"
                       type="submit"
                       i18n-content="CONNECT_BUTTON">
               </button>
               <button id="client-cancel-button"
-                      class="big-button"
+                      class="kd-button"
                       type="button"
                       i18n-content="CANCEL">
               </button>
@@ -313,7 +283,7 @@ found in the LICENSE file.
                      autofocus="autofocus"
                      autocomplete="off"/>
               <button id="connect-button"
-                      class="big-button"
+                      class="kd-button"
                       type="submit"
                       i18n-content="CONNECT_BUTTON">
               </button>
@@ -334,7 +304,7 @@ found in the LICENSE file.
              class="centered-button">
           <button id="client-finished-it2me-button"
                   type="button"
-                  class="big-button"
+                  class="kd-button"
                   i18n-content="OK"
                   autofocus="autofocus">
           </button>
@@ -344,22 +314,18 @@ found in the LICENSE file.
              class="centered-button">
           <button id="client-finished-me2me-button"
                   type="button"
-                  class="big-button"
+                  class="kd-button"
                   i18n-content="OK"
                   autofocus="autofocus">
           </button>
           <button id="client-reconnect-button"
                   type="button"
-                  class="big-button"
+                  class="kd-button"
                   i18n-content="RECONNECT">
           </button>
         </div> <!-- client.connect-failed.me2me client.session-finished.me2me -->
 
       </div> <!-- client-panel -->
-
-      <img id="divider-bottom"
-           src="dividerbottom.png"
-           data-ui-mode="auth host client">
 
       <footer class="choice-footer">
         <div id="waiting-footer"
@@ -367,13 +333,11 @@ found in the LICENSE file.
           <img src="spinner.gif">
           <span class="waiting icon-label" i18n-content="FOOTER_WAITING"></span>
           <button id="cancel-button"
-                  class="big-button"
+                  class="kd-button"
                   i18n-content="CANCEL">
           </button>
         </div> <!-- waiting-footer -->
       </footer>
-
-    </div> <!-- main -->
 
     <div id="nat-box-container" class="information-box-centerer" hidden>
       <div class="information-box-padding"></div>
@@ -384,7 +348,30 @@ found in the LICENSE file.
       <div class="information-box-padding"></div>
     </div> <!-- nat-box-container -->
 
+
     <div id="session-mode" data-ui-mode="in-session client" hidden>
+      <div id="session-toolbar"
+           data-ui-mode="in-session"
+           class="toolbar-container"
+           hidden>
+        <div class="toolbar-border">
+          <span id="session-status-message"
+                i18n-content="LABEL_CONNECTED"></span>
+          <strong id="connected-to"></strong>
+          <button id="toolbar-disconnect"
+                  type="button"
+                  i18n-content="DISCONNECT_MYSELF_BUTTON">
+          </button>
+          <span class="end-align">
+            <button id="toggle-scaling">
+              <img src="scale-to-fit.png">
+            </button>
+          </span>
+        </div>
+        <div class="toolbar-stub" id="toolbar-stub">
+          <div class="arrow-down"></div>
+        </div>
+      </div> <!-- session-toolbar -->
     </div> <!-- session-mode -->
 
     <section id="debug-log" dir="ltr" hidden>
