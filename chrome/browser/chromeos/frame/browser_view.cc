@@ -520,8 +520,8 @@ void BrowserView::ExecuteStatusAreaCommand(
     case StatusAreaButton::Delegate::SHOW_LANGUAGE_OPTIONS:
       browser()->OpenLanguageOptionsDialog();
       break;
-    case StatusAreaButton::Delegate::SHOW_SYSTEM_OPTIONS:
-      browser()->OpenSystemOptionsDialog();
+    case StatusAreaButton::Delegate::SHOW_ADVANCED_OPTIONS:
+      browser()->OpenAdvancedOptionsDialog();
       break;
     default:
       NOTREACHED();

@@ -2443,9 +2443,12 @@ void Browser::Shutdown() {
       RequestShutdown();
 }
 
-void Browser::OpenSystemOptionsDialog() {
+void Browser::OpenAdvancedOptionsDialog() {
   content::RecordAction(UserMetricsAction("OpenSystemOptionsDialog"));
-  ShowOptionsTab(chrome::kSystemOptionsSubPage);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableUberPage))
+    ShowOptionsTab(chrome::kSystemOptionsSubPage);
+  else
+    ShowOptionsTab(chrome::kAdvancedOptionsSubPage);
 }
 
 void Browser::OpenInternetOptionsDialog() {
@@ -3076,7 +3079,6 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_LOCK_SCREEN:           LockScreen();                     break;
     case IDC_SHUTDOWN:              Shutdown();                       break;
     case IDC_FILE_MANAGER:          OpenFileManager();                break;
-    case IDC_SYSTEM_OPTIONS:        OpenSystemOptionsDialog();        break;
     case IDC_INTERNET_OPTIONS:      OpenInternetOptionsDialog();      break;
     case IDC_LANGUAGE_OPTIONS:      OpenLanguageOptionsDialog();      break;
 #endif
@@ -4650,7 +4652,6 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_FILE_MANAGER, true);
   command_updater_.UpdateCommandEnabled(IDC_SEARCH, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_KEYBOARD_OVERLAY, true);
-  command_updater_.UpdateCommandEnabled(IDC_SYSTEM_OPTIONS, true);
   command_updater_.UpdateCommandEnabled(IDC_INTERNET_OPTIONS, true);
 #endif
   command_updater_.UpdateCommandEnabled(

@@ -214,7 +214,6 @@
 // Identifiers for platform-specific items.
 // Placed in a common file to help insure they never collide.
 #define IDC_VIEW_MENU                   44000     // OSX only
-#define IDC_SYSTEM_OPTIONS              45000     // ChromeOS only
 #define IDC_INTERNET_OPTIONS            45100     // ChromeOS only
 #define IDC_LANGUAGE_OPTIONS            45200     // ChromeOS only
 #define IDC_LOCK_SCREEN                 45300     // ChromeOS only
