@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -153,10 +153,6 @@ ModelTypeSet ModelTypeSetFromValue(const base::ListValue& value);
 
 // Returns a string corresponding to the syncable tag for this datatype.
 std::string ModelTypeToRootTag(ModelType type);
-
-// Posts timedeltas to histogram of datatypes. Allows tracking of the frequency
-// at which datatypes cause syncs.
-void PostTimeToTypeHistogram(ModelType model_type, base::TimeDelta time);
 
 // Convert a real model type to a notification type (used for
 // subscribing to server-issued notifications).  Returns true iff

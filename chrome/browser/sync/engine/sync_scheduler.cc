@@ -16,6 +16,7 @@
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/protocol/proto_enum_conversions.h"
+#include "chrome/browser/sync/util/data_type_histogram.h"
 #include "chrome/browser/sync/util/logging.h"
 
 using base::TimeDelta;
@@ -846,8 +847,11 @@ void SyncScheduler::FinishSyncSessionJob(const SyncSessionJob& job) {
     for (iter = job.session->source().types.begin();
          iter != job.session->source().types.end();
          ++iter) {
-      syncable::PostTimeToTypeHistogram(iter->first,
-                                        now - last_sync_session_end_time_);
+#define PER_DATA_TYPE_MACRO(type_str) \
+    SYNC_FREQ_HISTOGRAM("Sync.Freq" type_str, \
+                        now - last_sync_session_end_time_);
+      SYNC_DATA_TYPE_HISTOGRAM(iter->first);
+#undef PER_DATA_TYPE_MACRO
     }
   }
   last_sync_session_end_time_ = now;

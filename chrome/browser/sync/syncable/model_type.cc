@@ -1,10 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/syncable/model_type.h"
 
-#include "base/metrics/histogram.h"
 #include "base/string_split.h"
 #include "base/values.h"
 #include "chrome/browser/sync/engine/syncproto.h"
@@ -407,81 +406,6 @@ std::string ModelTypeToRootTag(ModelType type) {
   NOTREACHED() << "No known extension for model type.";
   return "INVALID";
 }
-
-// For now, this just implements UMA_HISTOGRAM_LONG_TIMES. This can be adjusted
-// if we feel the min, max, or bucket count amount are not appropriate.
-#define SYNC_FREQ_HISTOGRAM(name, time) UMA_HISTOGRAM_CUSTOM_TIMES( \
-    name, time, base::TimeDelta::FromMilliseconds(1), \
-    base::TimeDelta::FromHours(1), 50)
-
-void PostTimeToTypeHistogram(ModelType model_type, base::TimeDelta time) {
-  switch (model_type) {
-    case BOOKMARKS: {
-        SYNC_FREQ_HISTOGRAM("Sync.FreqBookmarks", time);
-        return;
-    }
-    case PREFERENCES: {
-        SYNC_FREQ_HISTOGRAM("Sync.FreqPreferences", time);
-        return;
-    }
-    case PASSWORDS: {
-        SYNC_FREQ_HISTOGRAM("Sync.FreqPasswords", time);
-        return;
-    }
-    case AUTOFILL: {
-        SYNC_FREQ_HISTOGRAM("Sync.FreqAutofill", time);
-        return;
-    }
-    case AUTOFILL_PROFILE: {
-        SYNC_FREQ_HISTOGRAM("Sync.FreqAutofillProfiles", time);
-        return;
-    }
-    case THEMES: {
-        SYNC_FREQ_HISTOGRAM("Sync.FreqThemes", time);
-        return;
-    }
-    case TYPED_URLS: {
-        SYNC_FREQ_HISTOGRAM("Sync.FreqTypedUrls", time);
-        return;
-    }
-    case EXTENSIONS: {
-        SYNC_FREQ_HISTOGRAM("Sync.FreqExtensions", time);
-        return;
-    }
-    case NIGORI: {
-        SYNC_FREQ_HISTOGRAM("Sync.FreqNigori", time);
-        return;
-    }
-    case SEARCH_ENGINES: {
-        SYNC_FREQ_HISTOGRAM("Sync.FreqSearchEngines", time);
-        return;
-    }
-    case SESSIONS: {
-        SYNC_FREQ_HISTOGRAM("Sync.FreqSessions", time);
-        return;
-    }
-    case APPS: {
-        SYNC_FREQ_HISTOGRAM("Sync.FreqApps", time);
-        return;
-    }
-    case APP_SETTINGS: {
-        SYNC_FREQ_HISTOGRAM("Sync.FreqAppSettings", time);
-        return;
-    }
-    case EXTENSION_SETTINGS: {
-        SYNC_FREQ_HISTOGRAM("Sync.FreqExtensionSettings", time);
-        return;
-    }
-    case APP_NOTIFICATIONS: {
-        SYNC_FREQ_HISTOGRAM("Sync.FreqAppNotifications", time);
-        return;
-    }
-    default:
-      LOG(ERROR) << "No known extension for model type.";
-  }
-}
-
-#undef SYNC_FREQ_HISTOGRAM
 
 // TODO(akalin): Figure out a better way to do these mappings.
 
