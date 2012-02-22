@@ -57,7 +57,9 @@ void FullscreenExitBubbleGtk::UpdateContent(
   } else {
     bool link_visible = true;
     string16 accelerator;
-    if (bubble_type == FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION) {
+    if (bubble_type == FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION ||
+        bubble_type ==
+            FEB_TYPE_BROWSER_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION) {
       accelerator = l10n_util::GetStringUTF16(IDS_APP_F11_KEY);
     } else if (bubble_type == FEB_TYPE_FULLSCREEN_EXIT_INSTRUCTION) {
       accelerator = l10n_util::GetStringUTF16(IDS_APP_ESC_KEY);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -248,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
   scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
   {
     Waiter waiter(browser());
-    browser()->ToggleFullscreenMode(false);
+    browser()->ToggleFullscreenMode();
     waiter.Wait(false /* not locked */, true /* full screen */);
     EXPECT_TRUE(browser()->window()->IsFullscreen());
     EXPECT_FALSE(tester->IsLocked());

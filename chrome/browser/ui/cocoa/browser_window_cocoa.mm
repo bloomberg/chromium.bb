@@ -118,7 +118,7 @@ void BrowserWindowCocoa::Show() {
     [window() orderOut:controller_];
     [window() miniaturize:controller_];
   } else if (initial_show_state_ == ui::SHOW_STATE_FULLSCREEN) {
-    browser_->ToggleFullscreenMode(false);
+    browser_->ToggleFullscreenMode();
   }
   initial_show_state_ = ui::SHOW_STATE_DEFAULT;
 

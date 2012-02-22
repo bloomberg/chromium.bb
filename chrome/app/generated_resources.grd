@@ -14780,6 +14780,12 @@ Battery full
     <message name="IDS_FULLSCREEN_USER_ENTERED_FULLSCREEN" desc="Message for the user telling them that they have entered fullscreen mode.">
       You have gone full screen.
     </message>
+    <message name="IDS_FULLSCREEN_EXTENSION_TRIGGERED_FULLSCREEN" desc="Message for the user telling them that an extension triggered fullscreen mode.">
+      <ph name="EXTENSION_NAME">$1<ex>MyExtension</ex></ph> triggered full screen.
+    </message>
+    <message name="IDS_FULLSCREEN_UNKNOWN_EXTENSION_TRIGGERED_FULLSCREEN" desc="Message for the user telling them that an extension whose name is unknown triggered fullscreen mode.">
+      An extension triggered full screen.
+    </message>
     <message name="IDS_FULLSCREEN_SITE_ENTERED_FULLSCREEN" desc="Text displayed in the bubble when a page has gone fullscreen. (With a domain URL to display)">
       <ph name="FULLSCREEN_ORIGIN">$1<ex>google.com</ex></ph> is now full screen.
     </message>

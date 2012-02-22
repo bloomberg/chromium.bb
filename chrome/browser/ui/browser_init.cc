@@ -1192,7 +1192,7 @@ Browser* BrowserInit::LaunchWithProfile::OpenTabsInBrowser(
 #if !defined(OS_MACOSX)
   // In kiosk mode, we want to always be fullscreen, so switch to that now.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
-    browser->ToggleFullscreenMode(false);
+    browser->ToggleFullscreenMode();
 #endif
 
   for (size_t i = 0; i < tabs.size(); ++i) {

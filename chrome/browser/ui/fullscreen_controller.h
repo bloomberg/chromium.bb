@@ -13,6 +13,7 @@
 
 class Browser;
 class BrowserWindow;
+class Extension;
 class GURL;
 class Profile;
 class TabContents;
@@ -50,10 +51,13 @@ class FullscreenController : public base::RefCounted<FullscreenController> {
   void ToggleFullscreenModeForTab(content::WebContents* tab,
                                   bool enter_fullscreen);
 #if defined(OS_MACOSX)
-  void TogglePresentationMode(bool for_tab);
+  void TogglePresentationMode();
 #endif
-  // TODO(koz): Change |for_tab| to an enum.
-  void ToggleFullscreenMode(bool for_tab);
+  void ToggleFullscreenMode();
+  // Extension API implementation uses this method to toggle fullscreen mode.
+  // The extension's name is displayed in the full screen bubble UI to attribute
+  // the cause of the full screen state change.
+  void ToggleFullscreenModeWithExtension(const Extension& extension);
 
   // Notifications.
   void LostMouseLock();
@@ -87,6 +91,12 @@ class FullscreenController : public base::RefCounted<FullscreenController> {
   ContentSetting GetFullscreenSetting(const GURL& url) const;
   ContentSetting GetMouseLockSetting(const GURL& url) const;
 
+#if defined(OS_MACOSX)
+  void TogglePresentationModeInternal(bool for_tab);
+#endif
+  // TODO(koz): Change |for_tab| to an enum.
+  void ToggleFullscreenModeInternal(bool for_tab);
+
   BrowserWindow* window_;
   Profile* profile_;
   Browser* browser_;
@@ -94,6 +104,9 @@ class FullscreenController : public base::RefCounted<FullscreenController> {
   // If there is currently a tab in fullscreen mode (entered via
   // webkitRequestFullScreen), this is its wrapper.
   TabContentsWrapper* fullscreened_tab_;
+
+  // The URL of the extension which trigerred "browser fullscreen" mode.
+  GURL extension_caused_fullscreen_;
 
   // True if the current tab entered fullscreen mode via webkitRequestFullScreen
   bool tab_caused_fullscreen_;

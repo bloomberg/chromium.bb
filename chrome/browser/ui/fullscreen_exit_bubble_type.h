@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,7 @@ enum FullscreenExitBubbleType {
   FEB_TYPE_NONE = 0,
 
   // For tab fullscreen mode. (More comments about tab and browser fullscreen
-  // mode can be found in chrome/browser/ui/browser.h.)
+  // mode can be found in chrome/browser/ui/fullscreen_controller.h.)
   FEB_TYPE_FULLSCREEN_BUTTONS,
   FEB_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS,
   FEB_TYPE_MOUSELOCK_BUTTONS,
@@ -28,7 +28,8 @@ enum FullscreenExitBubbleType {
   FEB_TYPE_MOUSELOCK_EXIT_INSTRUCTION,
 
   // For browser fullscreen mode.
-  FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION
+  FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION,
+  FEB_TYPE_BROWSER_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION
 };
 
 namespace fullscreen_bubble {

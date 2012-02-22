@@ -85,9 +85,8 @@ MediaPlayer* MediaPlayer::GetInstance() {
 void MediaPlayer::EnqueueMediaFile(Profile* profile,
                                    const FilePath& file_path) {
   GURL url;
-  if (!file_manager_util::ConvertFileToFileSystemUrl(profile, file_path,
-                                                     GetOriginUrl(), &url)) {
-  }
+  file_manager_util::ConvertFileToFileSystemUrl(profile, file_path,
+                                                GetOriginUrl(), &url);
   EnqueueMediaFileUrl(url);
 }
 
@@ -100,9 +99,8 @@ void MediaPlayer::ForcePlayMediaFile(Profile* profile,
                                      const FilePath& file_path) {
   GURL url;
   if (!file_manager_util::ConvertFileToFileSystemUrl(profile, file_path,
-                                                     GetOriginUrl(), &url)) {
+                                                     GetOriginUrl(), &url))
     return;
-  }
   ForcePlayMediaURL(url);
 }
 
@@ -115,17 +113,15 @@ void MediaPlayer::ForcePlayMediaURL(const GURL& url) {
 }
 
 void MediaPlayer::TogglePlaylistWindowVisible() {
-  if (playlist_browser_) {
+  if (playlist_browser_)
     ClosePlaylistWindow();
-  } else {
+  else
     PopupPlaylist(NULL);
-  }
 }
 
 void MediaPlayer::ClosePlaylistWindow() {
-  if (playlist_browser_ != NULL) {
+  if (playlist_browser_ != NULL)
     playlist_browser_->window()->Close();
-  }
 }
 
 void MediaPlayer::SetPlaylistPosition(int position) {
@@ -140,9 +136,8 @@ void MediaPlayer::SetPlaylistPosition(int position) {
 
 void MediaPlayer::SetPlaybackError(GURL const& url) {
   for (size_t x = 0; x < current_playlist_.size(); x++) {
-    if (current_playlist_[x].url == url) {
+    if (current_playlist_[x].url == url)
       current_playlist_[x].haderror = true;
-    }
   }
   NotifyPlaylistChanged();
 }
@@ -151,14 +146,12 @@ void MediaPlayer::Observe(int type,
                           const content::NotificationSource& source,
                           const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_BROWSER_CLOSED);
-  registrar_.Remove(this,
-                    chrome::NOTIFICATION_BROWSER_CLOSED,
-                    source);
-  if (content::Source<Browser>(source).ptr() == mediaplayer_browser_) {
+  registrar_.Remove(this, chrome::NOTIFICATION_BROWSER_CLOSED, source);
+
+  if (content::Source<Browser>(source).ptr() == mediaplayer_browser_)
     mediaplayer_browser_ = NULL;
-  } else if (content::Source<Browser>(source).ptr() == playlist_browser_) {
+  else if (content::Source<Browser>(source).ptr() == playlist_browser_)
     playlist_browser_ = NULL;
-  }
 }
 
 void MediaPlayer::NotifyPlaylistChanged() {
@@ -176,9 +169,8 @@ void MediaPlayer::SetPlaybackRequest() {
 }
 
 void MediaPlayer::ToggleFullscreen() {
-  if (mediaplayer_browser_) {
-    mediaplayer_browser_->ToggleFullscreenMode(false);
-  }
+  if (mediaplayer_browser_)
+    mediaplayer_browser_->ToggleFullscreenMode();
 }
 
 void MediaPlayer::PopupPlaylist(Browser* creator) {
@@ -261,9 +253,8 @@ static const char* const supported_mime_type_list[] = {
 net::URLRequestJob* MediaPlayer::MaybeInterceptResponse(
     net::URLRequest* request) {
   // Do not intercept this request if it is a download.
-  if (request->load_flags() & net::LOAD_IS_DOWNLOAD) {
+  if (request->load_flags() & net::LOAD_IS_DOWNLOAD)
     return NULL;
-  }
 
   std::string mime_type;
   request->GetMimeType(&mime_type);

@@ -888,7 +888,7 @@ WebContents* Browser::OpenApplicationTab(Profile* profile,
   // full screen mode in this case?
   if (launch_type == ExtensionPrefs::LAUNCH_FULLSCREEN &&
       !browser->window()->IsFullscreen()) {
-    browser->ToggleFullscreenMode(false);
+    browser->ToggleFullscreenMode();
   }
 
   return contents;
@@ -1838,14 +1838,17 @@ void Browser::ConvertPopupToTabbedBrowser() {
   browser->window()->Show();
 }
 
-// TODO(koz): Change |for_tab| to an enum.
-void Browser::ToggleFullscreenMode(bool for_tab) {
-  fullscreen_controller_->ToggleFullscreenMode(for_tab);
+void Browser::ToggleFullscreenMode() {
+  fullscreen_controller_->ToggleFullscreenMode();
+}
+
+void Browser::ToggleFullscreenModeWithExtension(const Extension& extension) {
+  fullscreen_controller_->ToggleFullscreenModeWithExtension(extension);
 }
 
 #if defined(OS_MACOSX)
-void Browser::TogglePresentationMode(bool for_tab) {
-  fullscreen_controller_->TogglePresentationMode(for_tab);
+void Browser::TogglePresentationMode() {
+  fullscreen_controller_->TogglePresentationMode();
 }
 #endif
 
@@ -1853,7 +1856,7 @@ void Browser::TogglePresentationMode(bool for_tab) {
 void Browser::Search() {
   // Exit fullscreen to show omnibox.
   if (window_->IsFullscreen()) {
-    ToggleFullscreenMode(false);
+    ToggleFullscreenMode();
     // ToggleFullscreenMode is asynchronous, so we don't have omnibox
     // visible at this point. Wait for next event cycle which toggles
     // the visibility of omnibox before creating new tab.
@@ -2959,9 +2962,9 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_RESTORE_TAB:           RestoreTab();                     break;
     case IDC_COPY_URL:              WriteCurrentURLToClipboard();     break;
     case IDC_SHOW_AS_TAB:           ConvertPopupToTabbedBrowser();    break;
-    case IDC_FULLSCREEN:            ToggleFullscreenMode(false);      break;
+    case IDC_FULLSCREEN:            ToggleFullscreenMode();      break;
 #if defined(OS_MACOSX)
-    case IDC_PRESENTATION_MODE:     TogglePresentationMode(false);    break;
+    case IDC_PRESENTATION_MODE:     TogglePresentationMode();    break;
 #endif
     case IDC_EXIT:                  Exit();                           break;
 #if defined(OS_CHROMEOS)

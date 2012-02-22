@@ -964,7 +964,7 @@ IN_PROC_BROWSER_TEST_F(
     ui_test_utils::WindowedNotificationObserver fullscreen_observer(
         chrome::NOTIFICATION_FULLSCREEN_CHANGED,
         content::NotificationService::AllSources());
-    browser()->TogglePresentationMode(false);
+    browser()->TogglePresentationMode();
     fullscreen_observer.Wait();
     ASSERT_FALSE(browser()->window()->IsFullscreen());
     ASSERT_FALSE(browser()->window()->InPresentationMode());
@@ -976,7 +976,7 @@ IN_PROC_BROWSER_TEST_F(
     ui_test_utils::WindowedNotificationObserver fullscreen_observer(
         chrome::NOTIFICATION_FULLSCREEN_CHANGED,
         content::NotificationService::AllSources());
-    browser()->ToggleFullscreenMode(false);
+    browser()->ToggleFullscreenMode();
     fullscreen_observer.Wait();
     ASSERT_TRUE(browser()->window()->IsFullscreen());
     ASSERT_FALSE(browser()->window()->InPresentationMode());

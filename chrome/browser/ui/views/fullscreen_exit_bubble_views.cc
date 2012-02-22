@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -218,7 +218,8 @@ void FullscreenExitBubbleViews::FullscreenExitView::UpdateContent(
   } else {
     bool link_visible = true;
     string16 accelerator;
-    if (bubble_type == FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION) {
+    if (bubble_type == FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION ||
+        bubble_type == FEB_TYPE_BROWSER_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION) {
       accelerator = browser_fullscreen_exit_accelerator_;
     } else if (bubble_type == FEB_TYPE_FULLSCREEN_EXIT_INSTRUCTION) {
       accelerator = l10n_util::GetStringUTF16(IDS_APP_ESC_KEY);

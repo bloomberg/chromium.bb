@@ -548,9 +548,12 @@ class Browser : public TabHandlerDelegate,
   void WriteCurrentURLToClipboard();
   void ConvertPopupToTabbedBrowser();
   // In kiosk mode, the first toggle is valid, the rest is discarded.
-  void ToggleFullscreenMode(bool from_tab);
+  void ToggleFullscreenMode();
+  // See the description of
+  // FullscreenController::ToggleFullscreenModeWithExtension.
+  void ToggleFullscreenModeWithExtension(const Extension& extension);
 #if defined(OS_MACOSX)
-  void TogglePresentationMode(bool from_tab);
+  void TogglePresentationMode();
 #endif
   void Exit();
 #if defined(OS_CHROMEOS)

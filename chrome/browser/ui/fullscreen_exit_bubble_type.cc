@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -22,8 +23,13 @@ string16 GetLabelTextForType(FullscreenExitBubbleType type,
     DCHECK(extensions);
     const Extension* extension =
         extensions->GetExtensionOrAppByURL(ExtensionURLInfo(url));
-    if (extension)
+    if (extension) {
       host = UTF8ToUTF16(extension->name());
+    } else if (url.SchemeIs(chrome::kExtensionScheme)) {
+      // In this case, |host| is set to an extension ID.
+      // We are not going to show it because it's human-unreadable.
+      host.clear();
+    }
   }
   if (host.empty()) {
     switch (type) {
@@ -44,6 +50,9 @@ string16 GetLabelTextForType(FullscreenExitBubbleType type,
       case FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION:
         return l10n_util::GetStringUTF16(
             IDS_FULLSCREEN_USER_ENTERED_FULLSCREEN);
+      case FEB_TYPE_BROWSER_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION:
+        return l10n_util::GetStringUTF16(
+            IDS_FULLSCREEN_UNKNOWN_EXTENSION_TRIGGERED_FULLSCREEN);
       default:
         NOTREACHED();
         return string16();
@@ -55,22 +64,25 @@ string16 GetLabelTextForType(FullscreenExitBubbleType type,
           IDS_FULLSCREEN_SITE_ENTERED_FULLSCREEN, host);
     case FEB_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS:
       return l10n_util::GetStringFUTF16(
-            IDS_FULLSCREEN_SITE_REQUEST_FULLSCREEN_MOUSELOCK, host);
+          IDS_FULLSCREEN_SITE_REQUEST_FULLSCREEN_MOUSELOCK, host);
     case FEB_TYPE_MOUSELOCK_BUTTONS:
       return l10n_util::GetStringFUTF16(
-            IDS_FULLSCREEN_SITE_REQUEST_MOUSELOCK, host);
+          IDS_FULLSCREEN_SITE_REQUEST_MOUSELOCK, host);
     case FEB_TYPE_FULLSCREEN_EXIT_INSTRUCTION:
       return l10n_util::GetStringFUTF16(
-            IDS_FULLSCREEN_SITE_ENTERED_FULLSCREEN, host);
+          IDS_FULLSCREEN_SITE_ENTERED_FULLSCREEN, host);
     case FEB_TYPE_FULLSCREEN_MOUSELOCK_EXIT_INSTRUCTION:
       return l10n_util::GetStringFUTF16(
           IDS_FULLSCREEN_SITE_ENTERED_FULLSCREEN_MOUSELOCK, host);
     case FEB_TYPE_MOUSELOCK_EXIT_INSTRUCTION:
       return l10n_util::GetStringFUTF16(
-            IDS_FULLSCREEN_SITE_ENTERED_MOUSELOCK, host);
+          IDS_FULLSCREEN_SITE_ENTERED_MOUSELOCK, host);
     case FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION:
       return l10n_util::GetStringUTF16(
           IDS_FULLSCREEN_USER_ENTERED_FULLSCREEN);
+    case FEB_TYPE_BROWSER_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION:
+      return l10n_util::GetStringFUTF16(
+          IDS_FULLSCREEN_EXTENSION_TRIGGERED_FULLSCREEN, host);
     default:
       NOTREACHED();
       return string16();
@@ -89,6 +101,7 @@ string16 GetDenyButtonTextForType(FullscreenExitBubbleType type) {
     case FEB_TYPE_FULLSCREEN_MOUSELOCK_EXIT_INSTRUCTION:
     case FEB_TYPE_MOUSELOCK_EXIT_INSTRUCTION:
     case FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION:
+    case FEB_TYPE_BROWSER_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION:
       NOTREACHED();  // No button in this case.
       return string16();
     default:
@@ -99,8 +112,8 @@ string16 GetDenyButtonTextForType(FullscreenExitBubbleType type) {
 
 bool ShowButtonsForType(FullscreenExitBubbleType type) {
   return type == FEB_TYPE_FULLSCREEN_BUTTONS ||
-         type == FEB_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS ||
-         type == FEB_TYPE_MOUSELOCK_BUTTONS;
+      type == FEB_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS ||
+      type == FEB_TYPE_MOUSELOCK_BUTTONS;
 }
 
 void PermissionRequestedByType(FullscreenExitBubbleType type,
@@ -108,11 +121,11 @@ void PermissionRequestedByType(FullscreenExitBubbleType type,
                                bool* mouse_lock) {
   if (tab_fullscreen) {
     *tab_fullscreen = type == FEB_TYPE_FULLSCREEN_BUTTONS ||
-                      type == FEB_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS;
+        type == FEB_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS;
   }
   if (mouse_lock) {
     *mouse_lock = type == FEB_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS ||
-                  type == FEB_TYPE_MOUSELOCK_BUTTONS;
+        type == FEB_TYPE_MOUSELOCK_BUTTONS;
   }
 }
 
