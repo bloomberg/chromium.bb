@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,8 @@ TEST(OmniboxViewMacTest, GetClipboardText) {
   string16 text;
 
   // Does an empty clipboard get empty text?
-  clipboard.WriteObjects(ui::Clipboard::ObjectMap());
+  clipboard.WriteObjects(ui::Clipboard::BUFFER_STANDARD,
+                         ui::Clipboard::ObjectMap());
   text = OmniboxViewMac::GetClipboardText(&clipboard);
   EXPECT_EQ(string16(), text);
 
@@ -30,7 +31,8 @@ TEST(OmniboxViewMacTest, GetClipboardText) {
 
   // Can we pull straight text off the clipboard?
   {
-    ui::ScopedClipboardWriter clipboard_writer(&clipboard);
+    ui::ScopedClipboardWriter clipboard_writer(&clipboard,
+                                               ui::Clipboard::BUFFER_STANDARD);
     clipboard_writer.WriteText(plainText);
   }
 
@@ -39,7 +41,8 @@ TEST(OmniboxViewMacTest, GetClipboardText) {
 
   // Can we pull a bookmark off the clipboard?
   {
-    ui::ScopedClipboardWriter clipboard_writer(&clipboard);
+    ui::ScopedClipboardWriter clipboard_writer(&clipboard,
+                                               ui::Clipboard::BUFFER_STANDARD);
     clipboard_writer.WriteBookmark(title, url);
   }
 
@@ -48,7 +51,8 @@ TEST(OmniboxViewMacTest, GetClipboardText) {
 
   // Do we pull text in preference to a bookmark?
   {
-    ui::ScopedClipboardWriter clipboard_writer(&clipboard);
+    ui::ScopedClipboardWriter clipboard_writer(&clipboard,
+                                               ui::Clipboard::BUFFER_STANDARD);
     clipboard_writer.WriteText(plainText);
     clipboard_writer.WriteBookmark(title, url);
   }
@@ -59,7 +63,8 @@ TEST(OmniboxViewMacTest, GetClipboardText) {
   // Do we get nothing if there is neither text nor a bookmark?
   {
     const string16 markup(ASCIIToUTF16("<strong>Hi!</string>"));
-    ui::ScopedClipboardWriter clipboard_writer(&clipboard);
+    ui::ScopedClipboardWriter clipboard_writer(&clipboard,
+                                               ui::Clipboard::BUFFER_STANDARD);
     clipboard_writer.WriteHTML(markup, url);
   }
 

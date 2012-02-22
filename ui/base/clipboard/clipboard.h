@@ -149,9 +149,7 @@ class UI_EXPORT Clipboard {
 
   // Buffer designates which clipboard the action should be applied to.
   // Only platforms that use the X Window System support the selection
-  // buffer. Furthermore we currently only use a buffer other than the
-  // standard buffer when reading from the clipboard so only those
-  // functions accept a buffer parameter.
+  // buffer.
   enum Buffer {
     BUFFER_STANDARD,
     BUFFER_SELECTION,
@@ -180,7 +178,7 @@ class UI_EXPORT Clipboard {
   // contents of |objects|. On Windows they are copied to the system clipboard.
   // On linux they are copied into a structure owned by the Clipboard object and
   // kept until the system clipboard is set again.
-  void WriteObjects(const ObjectMap& objects);
+  void WriteObjects(Buffer buffer, const ObjectMap& objects);
 
   // On Linux/BSD, we need to know when the clipboard is set to a URL.  Most
   // platforms don't care.
@@ -326,7 +324,7 @@ class UI_EXPORT Clipboard {
 
  private:
   // Write changes to gtk clipboard.
-  void SetGtkClipboard();
+  void SetGtkClipboard(Buffer buffer);
   // Insert a mapping into clipboard_data_.
   void InsertMapping(const char* key, char* data, size_t data_len);
 

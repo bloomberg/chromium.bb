@@ -206,7 +206,9 @@ Clipboard::~Clipboard() {
   clipboard_owner_ = NULL;
 }
 
-void Clipboard::WriteObjects(const ObjectMap& objects) {
+void Clipboard::WriteObjects(Buffer buffer, const ObjectMap& objects) {
+  DCHECK_EQ(buffer, BUFFER_STANDARD);
+
   ScopedClipboard clipboard;
   if (!clipboard.Acquire(GetClipboardWindow()))
     return;

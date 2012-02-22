@@ -499,7 +499,8 @@ std::wstring GetClipboardText() {
 void SetClipboardText(const std::wstring& text) {
   ui::Clipboard clipboard;
   {
-    ui::ScopedClipboardWriter clipboard_writer(&clipboard);
+    ui::ScopedClipboardWriter clipboard_writer(&clipboard,
+                                               ui::Clipboard::BUFFER_STANDARD);
     clipboard_writer.WriteText(WideToUTF16(text));
   }
 }

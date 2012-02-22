@@ -706,7 +706,7 @@ void OmniboxViewViews::OnAfterCutOrCopy() {
   bool write_url;
   model_->AdjustTextForCopy(selection_range.start(), selected_text == text,
       &selected_text, &url, &write_url);
-  ui::ScopedClipboardWriter scw(cb);
+  ui::ScopedClipboardWriter scw(cb, ui::Clipboard::BUFFER_STANDARD);
   scw.WriteText(selected_text);
   if (write_url) {
     BookmarkNodeData data;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,7 @@ namespace ui {
 class UI_EXPORT ScopedClipboardWriter {
  public:
   // Create an instance that is a simple wrapper around clipboard.
-  explicit ScopedClipboardWriter(Clipboard* clipboard);
+  ScopedClipboardWriter(Clipboard* clipboard, Clipboard::Buffer buffer);
 
   ~ScopedClipboardWriter();
 
@@ -72,6 +72,7 @@ class UI_EXPORT ScopedClipboardWriter {
   // vector, and pass it to Clipboard::WriteObjects() during object destruction.
   Clipboard::ObjectMap objects_;
   Clipboard* clipboard_;
+  Clipboard::Buffer buffer_;
 
   // We keep around the UTF-8 text of the URL in order to pass it to
   // Clipboard::DidWriteURL().

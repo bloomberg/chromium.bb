@@ -17,7 +17,7 @@ OSExchangeDataProviderAura::~OSExchangeDataProviderAura() {}
 
 void OSExchangeDataProviderAura::WriteDataToClipboard(
     Clipboard* clipboard) const {
-  ScopedClipboardWriter scw(clipboard);
+  ScopedClipboardWriter scw(clipboard, Clipboard::BUFFER_STANDARD);
   if (HasString())
     scw.WriteText(string_);
   if (HasURL())

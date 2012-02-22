@@ -408,7 +408,7 @@ TEST_F(DragDropControllerTest, DragCopiesDataToClipboardTest) {
   ui::Clipboard* cb = views::ViewsDelegate::views_delegate->GetClipboard();
   {
     // We first clear the clipboard.
-    ui::ScopedClipboardWriter scw(cb);
+    ui::ScopedClipboardWriter scw(cb, ui::Clipboard::BUFFER_STANDARD);
     scw.WriteWebSmartPaste();
   }
   EXPECT_FALSE(cb->IsFormatAvailable(ui::Clipboard::GetPlainTextFormatType(),

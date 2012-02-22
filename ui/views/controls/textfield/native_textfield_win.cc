@@ -532,7 +532,8 @@ void NativeTextfieldWin::OnCopy() {
   const string16 text(GetSelectedText());
   if (!text.empty() && ViewsDelegate::views_delegate) {
     ui::ScopedClipboardWriter scw(
-        ViewsDelegate::views_delegate->GetClipboard());
+        ViewsDelegate::views_delegate->GetClipboard(),
+        ui::Clipboard::BUFFER_STANDARD);
     scw.WriteText(text);
   }
 }

@@ -499,8 +499,9 @@ bool TextfieldViewsModel::Redo() {
 
 bool TextfieldViewsModel::Cut() {
   if (!HasCompositionText() && HasSelection()) {
-    ui::ScopedClipboardWriter(views::ViewsDelegate::views_delegate
-        ->GetClipboard()).WriteText(GetSelectedText());
+    ui::ScopedClipboardWriter(
+        views::ViewsDelegate::views_delegate->GetClipboard(),
+        ui::Clipboard::BUFFER_STANDARD).WriteText(GetSelectedText());
     // A trick to let undo/redo handle cursor correctly.
     // Undoing CUT moves the cursor to the end of the change rather
     // than beginning, unlike Delete/Backspace.
@@ -516,8 +517,9 @@ bool TextfieldViewsModel::Cut() {
 
 bool TextfieldViewsModel::Copy() {
   if (!HasCompositionText() && HasSelection()) {
-    ui::ScopedClipboardWriter(views::ViewsDelegate::views_delegate
-        ->GetClipboard()).WriteText(GetSelectedText());
+    ui::ScopedClipboardWriter(
+        views::ViewsDelegate::views_delegate->GetClipboard(),
+        ui::Clipboard::BUFFER_STANDARD).WriteText(GetSelectedText());
     return true;
   }
   return false;

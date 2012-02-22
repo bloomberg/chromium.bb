@@ -84,7 +84,9 @@ Clipboard::Clipboard() {
 Clipboard::~Clipboard() {
 }
 
-void Clipboard::WriteObjects(const ObjectMap& objects) {
+void Clipboard::WriteObjects(Buffer buffer, const ObjectMap& objects) {
+  DCHECK_EQ(buffer, BUFFER_STANDARD);
+
   NSPasteboard* pb = GetPasteboard();
   [pb declareTypes:[NSArray array] owner:nil];
 

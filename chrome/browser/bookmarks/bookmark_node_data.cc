@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -140,7 +140,8 @@ bool BookmarkNodeData::ReadFromTuple(const GURL& url, const string16& title) {
 
 #if !defined(OS_MACOSX)
 void BookmarkNodeData::WriteToClipboard(Profile* profile) const {
-  ui::ScopedClipboardWriter scw(g_browser_process->clipboard());
+  ui::ScopedClipboardWriter scw(g_browser_process->clipboard(),
+                                ui::Clipboard::BUFFER_STANDARD);
 
   // If there is only one element and it is a URL, write the URL to the
   // clipboard.

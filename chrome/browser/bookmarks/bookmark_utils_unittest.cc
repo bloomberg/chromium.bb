@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -142,7 +142,8 @@ TEST(BookmarkUtilsTest, CopyPaste) {
 
   // Write some text to the clipboard.
   {
-    ui::ScopedClipboardWriter clipboard_writer(g_browser_process->clipboard());
+    ui::ScopedClipboardWriter clipboard_writer(g_browser_process->clipboard(),
+                                               ui::Clipboard::BUFFER_STANDARD);
     clipboard_writer.WriteText(ASCIIToUTF16("foo"));
   }
 

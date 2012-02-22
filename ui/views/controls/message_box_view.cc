@@ -153,7 +153,7 @@ bool MessageBoxView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   if (!clipboard)
     return false;
 
-  ui::ScopedClipboardWriter scw(clipboard);
+  ui::ScopedClipboardWriter scw(clipboard, ui::Clipboard::BUFFER_STANDARD);
   string16 text = message_labels_[0]->GetText();
   for (size_t i = 1; i < message_labels_.size(); ++i)
     text += message_labels_[i]->GetText();

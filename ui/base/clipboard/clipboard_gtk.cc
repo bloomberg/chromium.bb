@@ -218,7 +218,7 @@ Clipboard::~Clipboard() {
   gtk_clipboard_store(clipboard_);
 }
 
-void Clipboard::WriteObjects(const ObjectMap& objects) {
+void Clipboard::WriteObjects(Buffer buffer, const ObjectMap& objects) {
   clipboard_data_ = new TargetMap();
 
   for (ObjectMap::const_iterator iter = objects.begin();
@@ -226,7 +226,7 @@ void Clipboard::WriteObjects(const ObjectMap& objects) {
     DispatchObject(static_cast<ObjectType>(iter->first), iter->second);
   }
 
-  SetGtkClipboard();
+  SetGtkClipboard(buffer);
 }
 
 // When a URL is copied from a render view context menu (via "copy link
@@ -238,7 +238,7 @@ void Clipboard::DidWriteURL(const std::string& utf8_text) {
 }
 
 // Take ownership of the GTK clipboard and inform it of the targets we support.
-void Clipboard::SetGtkClipboard() {
+void Clipboard::SetGtkClipboard(Buffer buffer) {
   scoped_array<GtkTargetEntry> targets(
       new GtkTargetEntry[clipboard_data_->size()]);
 
@@ -250,11 +250,13 @@ void Clipboard::SetGtkClipboard() {
     targets[i].info = 0;
   }
 
-  if (gtk_clipboard_set_with_data(clipboard_, targets.get(),
+  GtkClipboard *clipboard = LookupBackingClipboard(buffer);
+
+  if (gtk_clipboard_set_with_data(clipboard, targets.get(),
                                   clipboard_data_->size(),
                                   GetData, ClearData,
                                   clipboard_data_)) {
-    gtk_clipboard_set_can_store(clipboard_,
+    gtk_clipboard_set_can_store(clipboard,
                                 targets.get(),
                                 clipboard_data_->size());
   }

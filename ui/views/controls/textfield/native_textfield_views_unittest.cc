@@ -244,7 +244,8 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
 
   void SetClipboardText(const std::string& text) {
     ui::ScopedClipboardWriter clipboard_writer(
-        views::ViewsDelegate::views_delegate->GetClipboard());
+        views::ViewsDelegate::views_delegate->GetClipboard(),
+        ui::Clipboard::BUFFER_STANDARD);
     clipboard_writer.WriteText(ASCIIToUTF16(text));
   }
 

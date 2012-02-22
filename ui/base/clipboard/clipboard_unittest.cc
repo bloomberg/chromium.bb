@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,12 +54,14 @@ TEST_F(ClipboardTest, ClearTest) {
   Clipboard clipboard;
 
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard);
+    ScopedClipboardWriter clipboard_writer(&clipboard,
+                                           Clipboard::BUFFER_STANDARD);
     clipboard_writer.WriteText(ASCIIToUTF16("clear me"));
   }
 
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard);
+    ScopedClipboardWriter clipboard_writer(&clipboard,
+                                           Clipboard::BUFFER_STANDARD);
     clipboard_writer.WriteHTML(ASCIIToUTF16("<b>broom</b>"), "");
   }
 
@@ -76,7 +78,8 @@ TEST_F(ClipboardTest, TextTest) {
   std::string ascii_text;
 
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard);
+    ScopedClipboardWriter clipboard_writer(&clipboard,
+                                           Clipboard::BUFFER_STANDARD);
     clipboard_writer.WriteText(text);
   }
 
@@ -98,7 +101,8 @@ TEST_F(ClipboardTest, HTMLTest) {
   std::string url("http://www.example.com/"), url_result;
 
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard);
+    ScopedClipboardWriter clipboard_writer(&clipboard,
+                                           Clipboard::BUFFER_STANDARD);
     clipboard_writer.WriteHTML(markup, url);
   }
 
@@ -115,6 +119,46 @@ TEST_F(ClipboardTest, HTMLTest) {
 #endif  // defined(OS_WIN)
 }
 
+#if defined(TOOLKIT_USES_GTK)
+TEST_F(ClipboardTest, MultipleBufferTest) {
+  Clipboard clipboard;
+
+  string16 text(ASCIIToUTF16("Standard")), text_result;
+  string16 markup(ASCIIToUTF16("<string>Selection</string>")), markup_result;
+  std::string url("http://www.example.com/"), url_result;
+
+  {
+    ScopedClipboardWriter clipboard_writer(&clipboard,
+                                           Clipboard::BUFFER_STANDARD);
+    clipboard_writer.WriteText(text);
+  }
+
+  {
+    ScopedClipboardWriter clipboard_writer(&clipboard,
+                                           Clipboard::BUFFER_SELECTION);
+    clipboard_writer.WriteHTML(markup, url);
+  }
+
+  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetPlainTextFormatType(),
+                                          Clipboard::BUFFER_STANDARD));
+  EXPECT_FALSE(clipboard.IsFormatAvailable(Clipboard::GetPlainTextFormatType(),
+                                           Clipboard::BUFFER_SELECTION));
+
+  EXPECT_FALSE(clipboard.IsFormatAvailable(Clipboard::GetHtmlFormatType(),
+                                           Clipboard::BUFFER_STANDARD));
+  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetHtmlFormatType(),
+                                          Clipboard::BUFFER_SELECTION));
+
+  clipboard.ReadText(Clipboard::BUFFER_STANDARD, &text_result);
+  EXPECT_EQ(text, text_result);
+
+  uint32 ignored;
+  clipboard.ReadHTML(Clipboard::BUFFER_SELECTION, &markup_result, &url_result,
+                     &ignored, &ignored);
+  EXPECT_PRED2(MarkupMatches, markup, markup_result);
+}
+#endif
+
 TEST_F(ClipboardTest, TrickyHTMLTest) {
   Clipboard clipboard;
 
@@ -123,7 +167,8 @@ TEST_F(ClipboardTest, TrickyHTMLTest) {
   std::string url, url_result;
 
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard);
+    ScopedClipboardWriter clipboard_writer(&clipboard,
+                                           Clipboard::BUFFER_STANDARD);
     clipboard_writer.WriteHTML(markup, url);
   }
 
@@ -149,7 +194,8 @@ TEST_F(ClipboardTest, UniodeHTMLTest) {
   std::string url, url_result;
 
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard);
+    ScopedClipboardWriter clipboard_writer(&clipboard,
+                                           Clipboard::BUFFER_STANDARD);
     clipboard_writer.WriteHTML(markup, url);
   }
 
@@ -176,7 +222,7 @@ TEST_F(ClipboardTest, EmptyHTMLTest) {
   // The 1 is so the compiler doesn't warn about allocating an empty array.
   char* empty = new char[1];
   clipboard.InsertMapping("text/html", empty, 0U);
-  clipboard.SetGtkClipboard();
+  clipboard.SetGtkClipboard(Clipboard::BUFFER_STANDARD);
 
   EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetHtmlFormatType(),
                                           Clipboard::BUFFER_STANDARD));
@@ -198,7 +244,8 @@ TEST_F(ClipboardTest, BookmarkTest) {
   std::string url("http://www.example.com/"), url_result;
 
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard);
+    ScopedClipboardWriter clipboard_writer(&clipboard,
+                                           Clipboard::BUFFER_STANDARD);
     clipboard_writer.WriteBookmark(title, url);
   }
 
@@ -219,7 +266,8 @@ TEST_F(ClipboardTest, MultiFormatTest) {
   std::string ascii_text;
 
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard);
+    ScopedClipboardWriter clipboard_writer(&clipboard,
+                                           Clipboard::BUFFER_STANDARD);
     clipboard_writer.WriteHTML(markup, url);
     clipboard_writer.WriteText(text);
   }
@@ -251,7 +299,8 @@ TEST_F(ClipboardTest, URLTest) {
   string16 url(ASCIIToUTF16("http://www.google.com/"));
 
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard);
+    ScopedClipboardWriter clipboard_writer(&clipboard,
+                                           Clipboard::BUFFER_STANDARD);
     clipboard_writer.WriteURL(url);
   }
 
@@ -312,7 +361,7 @@ TEST_F(ClipboardTest, SharedBitmapTest) {
   Clipboard::ReplaceSharedMemHandle(&objects, handle_to_share, current_process);
 
   Clipboard clipboard;
-  clipboard.WriteObjects(objects);
+  clipboard.WriteObjects(Clipboard::BUFFER_STANDARD, objects);
 
   EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetBitmapFormatType(),
                                           Clipboard::BUFFER_STANDARD));
@@ -333,7 +382,8 @@ TEST_F(ClipboardTest, MultipleBitmapReadWriteTest) {
   };
   gfx::Size fake_bitmap_1_size(3, 4);
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard);
+    ScopedClipboardWriter clipboard_writer(&clipboard,
+                                           Clipboard::BUFFER_STANDARD);
     clipboard_writer.WriteBitmapFromPixels(fake_bitmap_1, fake_bitmap_1_size);
   }
   EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetBitmapFormatType(),
@@ -360,7 +410,8 @@ TEST_F(ClipboardTest, MultipleBitmapReadWriteTest) {
   };
   gfx::Size fake_bitmap_2_size(7, 2);
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard);
+    ScopedClipboardWriter clipboard_writer(&clipboard,
+                                           Clipboard::BUFFER_STANDARD);
     clipboard_writer.WriteBitmapFromPixels(fake_bitmap_2, fake_bitmap_2_size);
   }
   EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetBitmapFormatType(),
@@ -386,7 +437,8 @@ TEST_F(ClipboardTest, DataTest) {
   write_pickle.WriteString(payload);
 
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard);
+    ScopedClipboardWriter clipboard_writer(&clipboard,
+                                           Clipboard::BUFFER_STANDARD);
     clipboard_writer.WritePickledData(write_pickle, kFormat);
   }
 
@@ -418,7 +470,8 @@ TEST_F(ClipboardTest, MultipleDataTest) {
   write_pickle2.WriteString(payload2);
 
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard);
+    ScopedClipboardWriter clipboard_writer(&clipboard,
+                                           Clipboard::BUFFER_STANDARD);
     clipboard_writer.WritePickledData(write_pickle1, kFormat1);
     // overwrite the previous pickle for fun
     clipboard_writer.WritePickledData(write_pickle2, kFormat2);
@@ -439,7 +492,8 @@ TEST_F(ClipboardTest, MultipleDataTest) {
   EXPECT_EQ(payload2, unpickled_string2);
 
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard);
+    ScopedClipboardWriter clipboard_writer(&clipboard,
+                                           Clipboard::BUFFER_STANDARD);
     clipboard_writer.WritePickledData(write_pickle2, kFormat2);
     // overwrite the previous pickle for fun
     clipboard_writer.WritePickledData(write_pickle1, kFormat1);
@@ -472,7 +526,8 @@ TEST_F(ClipboardTest, HyperlinkTest) {
   string16 html_result;
 
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard);
+    ScopedClipboardWriter clipboard_writer(&clipboard,
+                                           Clipboard::BUFFER_STANDARD);
     clipboard_writer.WriteHyperlink(ASCIIToUTF16(kTitle), kUrl);
   }
 
@@ -488,7 +543,8 @@ TEST_F(ClipboardTest, WebSmartPasteTest) {
   Clipboard clipboard;
 
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard);
+    ScopedClipboardWriter clipboard_writer(&clipboard,
+                                           Clipboard::BUFFER_STANDARD);
     clipboard_writer.WriteWebSmartPaste();
   }
 
@@ -506,7 +562,8 @@ TEST_F(ClipboardTest, BitmapTest) {
   Clipboard clipboard;
 
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard);
+    ScopedClipboardWriter clipboard_writer(&clipboard,
+                                           Clipboard::BUFFER_STANDARD);
     clipboard_writer.WriteBitmapFromPixels(fake_bitmap, gfx::Size(3, 4));
   }
 
@@ -562,7 +619,7 @@ TEST_F(ClipboardTest, WriteEverything) {
   Clipboard clipboard;
 
   {
-    ScopedClipboardWriter writer(&clipboard);
+    ScopedClipboardWriter writer(&clipboard, Clipboard::BUFFER_STANDARD);
     writer.WriteText(UTF8ToUTF16("foo"));
     writer.WriteURL(UTF8ToUTF16("foo"));
     writer.WriteHTML(UTF8ToUTF16("foo"), "bar");

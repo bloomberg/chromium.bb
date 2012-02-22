@@ -1362,7 +1362,8 @@ void OmniboxViewWin::OnCopy() {
   // GetSel() doesn't preserve selection direction, so sel.cpMin will always be
   // the smaller value.
   model_->AdjustTextForCopy(sel.cpMin, IsSelectAll(), &text, &url, &write_url);
-  ui::ScopedClipboardWriter scw(g_browser_process->clipboard());
+  ui::ScopedClipboardWriter scw(g_browser_process->clipboard(),
+                                ui::Clipboard::BUFFER_STANDARD);
   scw.WriteText(text);
   if (write_url) {
     scw.WriteBookmark(text, url.spec());

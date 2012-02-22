@@ -424,7 +424,8 @@ Clipboard::~Clipboard() {
   DeleteClipboard();
 }
 
-void Clipboard::WriteObjects(const ObjectMap& objects) {
+void Clipboard::WriteObjects(Buffer buffer, const ObjectMap& objects) {
+  DCHECK(IsValidBuffer(buffer));
   for (ObjectMap::const_iterator iter = objects.begin();
        iter != objects.end(); ++iter) {
     DispatchObject(static_cast<ObjectType>(iter->first), iter->second);

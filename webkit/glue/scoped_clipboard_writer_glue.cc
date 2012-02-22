@@ -7,7 +7,8 @@
 
 ScopedClipboardWriterGlue::ScopedClipboardWriterGlue(
     webkit_glue::ClipboardClient* client)
-    : ui::ScopedClipboardWriter(client->GetClipboard()),
+    : ui::ScopedClipboardWriter(client->GetClipboard(),
+                                ui::Clipboard::BUFFER_STANDARD),
       context_(client->CreateWriteContext()) {
   // We should never have an instance where both are set.
   DCHECK((clipboard_ && !context_) ||
