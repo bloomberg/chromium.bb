@@ -14,7 +14,6 @@
 #include "base/process.h"
 #include "base/shared_memory.h"
 #include "base/string16.h"
-#include "base/threading/thread_checker.h"
 #include "ui/base/ui_export.h"
 
 #if defined(TOOLKIT_USES_GTK)
@@ -47,7 +46,7 @@ class NSString;
 
 namespace ui {
 
-class UI_EXPORT Clipboard : public base::ThreadChecker {
+class UI_EXPORT Clipboard {
  public:
   // MIME type constants.
   static const char kMimeTypeText[];

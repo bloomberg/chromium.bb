@@ -210,18 +210,15 @@ bool Clipboard::FormatType::Equals(const FormatType& other) const {
 }
 
 Clipboard::Clipboard() : clipboard_data_(NULL) {
-  DCHECK(CalledOnValidThread());
   clipboard_ = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
   primary_selection_ = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
 }
 
 Clipboard::~Clipboard() {
-  DCHECK(CalledOnValidThread());
   gtk_clipboard_store(clipboard_);
 }
 
 void Clipboard::WriteObjects(const ObjectMap& objects) {
-  DCHECK(CalledOnValidThread());
   clipboard_data_ = new TargetMap();
 
   for (ObjectMap::const_iterator iter = objects.begin();
@@ -236,7 +233,6 @@ void Clipboard::WriteObjects(const ObjectMap& objects) {
 // location", for example), we additionally stick it in the X clipboard. This
 // matches other linux browsers.
 void Clipboard::DidWriteURL(const std::string& utf8_text) {
-  DCHECK(CalledOnValidThread());
   gtk_clipboard_set_text(primary_selection_, utf8_text.c_str(),
                          utf8_text.length());
 }
@@ -351,7 +347,6 @@ void Clipboard::WriteData(const FormatType& format,
 // and does not always refresh the cache when it is appropriate.
 bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format,
                                   Clipboard::Buffer buffer) const {
-  DCHECK(CalledOnValidThread());
   GtkClipboard* clipboard = LookupBackingClipboard(buffer);
   if (clipboard == NULL)
     return false;
@@ -401,7 +396,6 @@ bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format,
 void Clipboard::ReadAvailableTypes(Clipboard::Buffer buffer,
                                    std::vector<string16>* types,
                                    bool* contains_filenames) const {
-  DCHECK(CalledOnValidThread());
   if (!types || !contains_filenames) {
     NOTREACHED();
     return;
@@ -432,7 +426,6 @@ void Clipboard::ReadAvailableTypes(Clipboard::Buffer buffer,
 
 
 void Clipboard::ReadText(Clipboard::Buffer buffer, string16* result) const {
-  DCHECK(CalledOnValidThread());
   GtkClipboard* clipboard = LookupBackingClipboard(buffer);
   if (clipboard == NULL)
     return;
@@ -450,7 +443,6 @@ void Clipboard::ReadText(Clipboard::Buffer buffer, string16* result) const {
 
 void Clipboard::ReadAsciiText(Clipboard::Buffer buffer,
                               std::string* result) const {
-  DCHECK(CalledOnValidThread());
   GtkClipboard* clipboard = LookupBackingClipboard(buffer);
   if (clipboard == NULL)
     return;
@@ -466,7 +458,6 @@ void Clipboard::ReadAsciiText(Clipboard::Buffer buffer,
 }
 
 void Clipboard::ReadFile(FilePath* file) const {
-  DCHECK(CalledOnValidThread());
   *file = FilePath();
 }
 
@@ -475,7 +466,6 @@ void Clipboard::ReadFile(FilePath* file) const {
 void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
                          std::string* src_url, uint32* fragment_start,
                          uint32* fragment_end) const {
-  DCHECK(CalledOnValidThread());
   markup->clear();
   if (src_url)
     src_url->clear();
@@ -516,7 +506,6 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
 }
 
 SkBitmap Clipboard::ReadImage(Buffer buffer) const {
-  DCHECK(CalledOnValidThread());
   ScopedGObject<GdkPixbuf>::Type pixbuf(
       gtk_clipboard_wait_for_image(clipboard_));
   if (!pixbuf.get())
@@ -537,7 +526,6 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
 void Clipboard::ReadCustomData(Buffer buffer,
                                const string16& type,
                                string16* result) const {
-  DCHECK(CalledOnValidThread());
   GtkClipboard* clipboard = LookupBackingClipboard(buffer);
   if (!clipboard)
     return;
@@ -558,7 +546,6 @@ void Clipboard::ReadBookmark(string16* title, std::string* url) const {
 }
 
 void Clipboard::ReadData(const FormatType& format, std::string* result) const {
-  DCHECK(CalledOnValidThread());
   GtkSelectionData* data =
       gtk_clipboard_wait_for_contents(clipboard_, format.ToGdkAtom());
   if (!data)
@@ -570,7 +557,6 @@ void Clipboard::ReadData(const FormatType& format, std::string* result) const {
 }
 
 uint64 Clipboard::GetSequenceNumber(Buffer buffer) {
-  DCHECK(CalledOnValidThread());
   if (buffer == BUFFER_STANDARD)
     return SelectionChangeObserver::GetInstance()->clipboard_sequence_number();
   else
