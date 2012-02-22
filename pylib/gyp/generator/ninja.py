@@ -1194,17 +1194,21 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       description='PACKAGE FRAMEWORK $out, POSTBUILDS',
       command='$mac_tool package-framework $out $version$postbuilds '
               '&& touch $out')
-  master_ninja.rule(
-    'stamp',
-    description='STAMP $out',
-    command='${postbuilds}touch $out')
   if flavor == 'win':
+    master_ninja.rule(
+      'stamp',
+      description='STAMP $out',
+      command='cmd /c copy /y nul $out>nul')
     # TODO(scottmg): Copy fallback?
     master_ninja.rule(
       'copy',
       description='COPY $in $out',
       command='cmd /c mklink /h $out $in >nul || mklink /h /j $out $in >nul')
   else:
+    master_ninja.rule(
+      'stamp',
+      description='STAMP $out',
+      command='${postbuilds}touch $out')
     master_ninja.rule(
       'copy',
       description='COPY $in $out',
