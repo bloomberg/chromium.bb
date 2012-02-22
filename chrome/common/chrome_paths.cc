@@ -158,12 +158,17 @@ bool PathProvider(int key, FilePath* result) {
       // and annoyed a lot of users.
       break;
     case chrome::DIR_CRASH_DUMPS:
+#if defined(OS_CHROMEOS)
+      // ChromeOS uses a separate directory. See http://crosbug.com/25089
+      cur = FilePath("/var/log/chrome");
+#else
       // The crash reports are always stored relative to the default user data
       // directory.  This avoids the problem of having to re-initialize the
       // exception handler after parsing command line options, which may
       // override the location of the app's profile directory.
       if (!GetDefaultUserDataDirectory(&cur))
         return false;
+#endif
       cur = cur.Append(FILE_PATH_LITERAL("Crash Reports"));
       create_dir = true;
       break;
