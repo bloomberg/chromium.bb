@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/profiles/off_the_record_profile_io_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -113,7 +114,6 @@ class OffTheRecordProfileImpl : public Profile,
       int renderer_child_id) OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForMedia() OVERRIDE;
   virtual content::ResourceContext* GetResourceContext() OVERRIDE;
-  virtual content::HostZoomMap* GetHostZoomMap() OVERRIDE;
   virtual content::GeolocationPermissionContext*
       GetGeolocationPermissionContext() OVERRIDE;
   virtual content::SpeechInputPreferences* GetSpeechInputPreferences() OVERRIDE;
@@ -126,6 +126,9 @@ class OffTheRecordProfileImpl : public Profile,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(OffTheRecordProfileImplTest, GetHostZoomMap);
+  void InitHostZoomMap();
+
   content::NotificationRegistrar registrar_;
 
   // The real underlying profile.
@@ -143,9 +146,6 @@ class OffTheRecordProfileImpl : public Profile,
 
   // We use a non-persistent content settings map for OTR.
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
-
-  // Use a separate zoom map for OTR.
-  scoped_refptr<content::HostZoomMap> host_zoom_map_;
 
   // Time we were started.
   Time start_time_;

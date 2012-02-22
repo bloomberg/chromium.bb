@@ -38,7 +38,6 @@ namespace content {
 
 class DownloadManager;
 class GeolocationPermissionContext;
-class HostZoomMap;
 class ResourceContext;
 class SpeechInputPreferences;
 
@@ -95,9 +94,6 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
 
   // Returns the resource context.
   virtual ResourceContext* GetResourceContext() = 0;
-
-  // Returns the Hostname <-> Zoom Level map for this context.
-  virtual HostZoomMap* GetHostZoomMap() = 0;
 
   // Returns the geolocation permission context for this context.
   virtual GeolocationPermissionContext* GetGeolocationPermissionContext() = 0;

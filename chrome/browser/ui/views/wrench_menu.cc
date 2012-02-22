@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_delegate.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
@@ -447,7 +448,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
     registrar_.Add(
         this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
         content::Source<HostZoomMap>(
-            menu->browser_->profile()->GetHostZoomMap()));
+            HostZoomMap::GetForBrowserContext(menu->browser_->profile())));
   }
 
   gfx::Size GetPreferredSize() {

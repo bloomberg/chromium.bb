@@ -103,6 +103,8 @@ void OffTheRecordProfileImpl::Init() {
   GetRequestContext();
 #endif  // defined(OS_CHROMEOS)
 
+  InitHostZoomMap();
+
   // Make the chrome//extension-icon/ resource available.
   ExtensionIconSource* icon_source = new ExtensionIconSource(profile_);
   GetChromeURLDataManager()->AddDataSource(icon_source);
@@ -146,6 +148,17 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
   // Clears any data the network stack contains that may be related to the
   // OTR session.
   g_browser_process->io_thread()->ChangedToOnTheRecord();
+}
+
+void OffTheRecordProfileImpl::InitHostZoomMap() {
+  HostZoomMap* host_zoom_map = HostZoomMap::GetForBrowserContext(this);
+  HostZoomMap* parent_host_zoom_map =
+      HostZoomMap::GetForBrowserContext(profile_);
+  host_zoom_map->CopyFrom(parent_host_zoom_map);
+  // Observe parent's HZM change for propagating change of parent's
+  // change to this HZM.
+  registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
+                 content::Source<HostZoomMap>(parent_host_zoom_map));
 }
 
 std::string OffTheRecordProfileImpl::GetProfileName() {
@@ -345,19 +358,6 @@ HostContentSettingsMap* OffTheRecordProfileImpl::GetHostContentSettingsMap() {
   return host_content_settings_map_.get();
 }
 
-HostZoomMap* OffTheRecordProfileImpl::GetHostZoomMap() {
-  // Create new host zoom map and copy zoom levels from parent.
-  if (!host_zoom_map_) {
-    host_zoom_map_ = HostZoomMap::Create();
-    host_zoom_map_->CopyFrom(profile_->GetHostZoomMap());
-    // Observe parent's HZM change for propagating change of parent's
-    // change to this HZM.
-    registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
-                   content::Source<HostZoomMap>(profile_->GetHostZoomMap()));
-  }
-  return host_zoom_map_.get();
-}
-
 content::GeolocationPermissionContext*
     OffTheRecordProfileImpl::GetGeolocationPermissionContext() {
   return profile_->GetGeolocationPermissionContext();
@@ -500,15 +500,19 @@ GURL OffTheRecordProfileImpl::GetHomePage() {
   return profile_->GetHomePage();
 }
 
-void OffTheRecordProfileImpl::Observe(int type,
-                     const content::NotificationSource& source,
-                     const content::NotificationDetails& details) {
+void OffTheRecordProfileImpl::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_ZOOM_LEVEL_CHANGED) {
     const std::string& host =
         *(content::Details<const std::string>(details).ptr());
     if (!host.empty()) {
-      double level = profile_->GetHostZoomMap()->GetZoomLevel(host);
-      GetHostZoomMap()->SetZoomLevel(host, level);
+      HostZoomMap* host_zoom_map = HostZoomMap::GetForBrowserContext(this);
+      HostZoomMap* parent_host_zoom_map =
+          HostZoomMap::GetForBrowserContext(profile_);
+      double level = parent_host_zoom_map->GetZoomLevel(host);
+      host_zoom_map->SetZoomLevel(host, level);
     }
   }
 }

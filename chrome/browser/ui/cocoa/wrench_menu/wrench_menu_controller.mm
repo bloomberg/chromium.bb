@@ -20,6 +20,7 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/wrench_menu/menu_tracked_root_view.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -78,7 +79,8 @@ class ZoomLevelObserver : public content::NotificationObserver {
                const content::NotificationDetails& details) {
     DCHECK_EQ(type, content::NOTIFICATION_ZOOM_LEVEL_CHANGED);
     WrenchMenuModel* wrenchMenuModel = [controller_ wrenchMenuModel];
-    if (wrenchMenuModel->browser()->profile()->GetHostZoomMap() !=
+    if (HostZoomMap::GetForBrowserContext(
+            wrenchMenuModel->browser()->profile()) !=
         content::Source<HostZoomMap>(source).ptr()) {
       return;
     }

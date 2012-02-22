@@ -35,8 +35,6 @@ class BlobStorageController;
 
 namespace content {
 
-class HostZoomMap;
-
 // ResourceContext contains the relevant context information required for
 // resource loading. It lives on the IO thread, although it is constructed on
 // the UI thread.
@@ -52,7 +50,6 @@ class CONTENT_EXPORT ResourceContext : public base::SupportsUserData {
   virtual ~ResourceContext() {}
   virtual net::HostResolver* GetHostResolver() = 0;
   virtual net::URLRequestContext* GetRequestContext() = 0;
-  virtual HostZoomMap* GetHostZoomMap() = 0;
   virtual MediaObserver* GetMediaObserver() = 0;
   virtual media_stream::MediaStreamManager* GetMediaStreamManager() = 0;
   virtual AudioManager* GetAudioManager() = 0;

@@ -16,6 +16,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/resource_context.h"
 #include "content/public/common/page_zoom.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
@@ -25,10 +26,18 @@ using WebKit::WebView;
 using content::BrowserThread;
 using content::RenderProcessHost;
 
+static const char* kHostZoomMapKeyName = "content_host_zoom_map";
+
 namespace content {
 
-HostZoomMap* HostZoomMap::Create() {
-  return new HostZoomMapImpl();
+HostZoomMap* HostZoomMap::GetForBrowserContext(BrowserContext* context) {
+  HostZoomMapImpl* rv = static_cast<HostZoomMapImpl*>(
+      context->GetUserData(kHostZoomMapKeyName));
+  if (!rv) {
+    rv = new HostZoomMapImpl();
+    context->SetUserData(kHostZoomMapKeyName, rv);
+  }
+  return rv;
 }
 
 }  // namespace content
@@ -77,7 +86,8 @@ void HostZoomMapImpl::SetZoomLevel(std::string host, double level) {
   for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
     RenderProcessHost* render_process_host = i.GetCurrentValue();
-    if (render_process_host->GetBrowserContext()->GetHostZoomMap() == this) {
+    if (HostZoomMap::GetForBrowserContext(
+            render_process_host->GetBrowserContext()) == this) {
       render_process_host->Send(
           new ViewMsg_SetZoomLevelForCurrentURL(host, level));
     }
@@ -149,8 +159,6 @@ void HostZoomMapImpl::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   switch (type) {
     case content::NOTIFICATION_RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW: {
       base::AutoLock auto_lock(lock_);

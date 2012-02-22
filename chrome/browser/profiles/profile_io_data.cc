@@ -220,7 +220,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 
   params->host_content_settings_map = profile->GetHostContentSettingsMap();
   params->cookie_settings = CookieSettings::Factory::GetForProfile(profile);
-  params->host_zoom_map = profile->GetHostZoomMap();
   params->ssl_config_service = profile->GetSSLConfigService();
   base::Callback<Profile*(void)> profile_getter =
       base::Bind(&GetProfileOnUI, g_browser_process->profile_manager(),
@@ -413,12 +412,6 @@ net::URLRequestContext* ProfileIOData::ResourceContext::GetRequestContext()  {
   return request_context_;
 }
 
-content::HostZoomMap* ProfileIOData::ResourceContext::GetHostZoomMap()  {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  EnsureInitialized();
-  return host_zoom_map_;
-}
-
 MediaObserver* ProfileIOData::ResourceContext::GetMediaObserver()  {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   EnsureInitialized();
@@ -532,7 +525,6 @@ void ProfileIOData::LazyInitialize() const {
       new media_stream::MediaStreamManager(profile_params_->audio_manager));
 
   // Take ownership over these parameters.
-  host_zoom_map_ = profile_params_->host_zoom_map;
   host_content_settings_map_ = profile_params_->host_content_settings_map;
   cookie_settings_ = profile_params_->cookie_settings;
   notification_service_ = profile_params_->notification_service;
@@ -540,7 +532,6 @@ void ProfileIOData::LazyInitialize() const {
 
   resource_context_.host_resolver_ = io_thread_globals->host_resolver.get();
   resource_context_.request_context_ = main_request_context_;
-  resource_context_.host_zoom_map_ = host_zoom_map_;
   resource_context_.media_observer_ =
       io_thread_globals->media.media_internals.get();
   resource_context_.media_stream_manager_ = media_stream_manager_.get();

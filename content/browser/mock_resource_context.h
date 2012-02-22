@@ -34,7 +34,6 @@ class MockResourceContext : public ResourceContext {
   // ResourceContext implementation:
   virtual net::HostResolver* GetHostResolver() OVERRIDE;
   virtual net::URLRequestContext* GetRequestContext() OVERRIDE;
-  virtual HostZoomMap* GetHostZoomMap() OVERRIDE;
   virtual MediaObserver* GetMediaObserver() OVERRIDE;
   virtual media_stream::MediaStreamManager* GetMediaStreamManager() OVERRIDE;
   virtual AudioManager* GetAudioManager() OVERRIDE;

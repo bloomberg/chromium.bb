@@ -23,10 +23,6 @@ net::URLRequestContext* ShellResourceContext::GetRequestContext() {
   return getter_->GetURLRequestContext();
 }
 
-HostZoomMap* ShellResourceContext::GetHostZoomMap() {
-  return NULL;
-}
-
 MediaObserver* ShellResourceContext::GetMediaObserver() {
   return NULL;
 }

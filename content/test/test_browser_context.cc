@@ -10,7 +10,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::DownloadManager;
-using content::HostZoomMap;
 
 TestBrowserContext::TestBrowserContext() {
   EXPECT_TRUE(browser_context_dir_.CreateUniqueTempDir());
@@ -52,10 +51,6 @@ content::ResourceContext* TestBrowserContext::GetResourceContext() {
   if (!resource_context_.get())
     resource_context_.reset(new content::MockResourceContext());
   return resource_context_.get();
-}
-
-HostZoomMap* TestBrowserContext::GetHostZoomMap() {
-  return NULL;
 }
 
 content::GeolocationPermissionContext*

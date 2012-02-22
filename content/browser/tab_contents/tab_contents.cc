@@ -116,6 +116,7 @@ using content::DevToolsManagerImpl;
 using content::DownloadItem;
 using content::DownloadManager;
 using content::GlobalRequestID;
+using content::HostZoomMap;
 using content::InterstitialPage;
 using content::NavigationController;
 using content::NavigationEntry;
@@ -1198,7 +1199,7 @@ bool TabContents::GetClosedByUserGesture() const {
 
 double TabContents::GetZoomLevel() const {
   HostZoomMapImpl* zoom_map = static_cast<HostZoomMapImpl*>(
-      GetBrowserContext()->GetHostZoomMap());
+      HostZoomMap::GetForBrowserContext(GetBrowserContext()));
   if (!zoom_map)
     return 0;
 

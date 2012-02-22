@@ -17,6 +17,7 @@ class DatabaseTracker;
 namespace content {
 
 class BrowserContext;
+class HostZoomMap;
 
 // Getters for objects that are part of BrowserContext which are also used on
 // the IO thread. These are only accessed by content so they're not on the
@@ -27,6 +28,7 @@ WebKitContext* GetWebKitContextForResourceContext(
     ResourceContext* resource_context);
 ChromeBlobStorageContext* GetChromeBlobStorageContextForResourceContext(
     ResourceContext* resource_context);
+HostZoomMap* GetHostZoomMapForResourceContext(ResourceContext* context);
 
 // Initialize the above data on the ResourceContext from a given BrowserContext.
 void InitializeResourceContext(BrowserContext* browser_context);

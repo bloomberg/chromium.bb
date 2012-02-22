@@ -12,6 +12,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/message_loop_helpers.h"
+#include "base/supports_user_data.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_observer.h"
@@ -21,9 +22,11 @@
 // to notifications on there (and holds a NotificationRegistrar).
 class CONTENT_EXPORT HostZoomMapImpl
     : public NON_EXPORTED_BASE(content::HostZoomMap),
-      public content::NotificationObserver {
+      public content::NotificationObserver,
+      public base::SupportsUserData::Data {
  public:
   HostZoomMapImpl();
+  virtual ~HostZoomMapImpl();
 
   // HostZoomMap implementation:
   virtual void CopyFrom(HostZoomMap* copy) OVERRIDE;
@@ -55,8 +58,6 @@ class CONTENT_EXPORT HostZoomMapImpl
 
  private:
   typedef std::map<std::string, double> HostZoomLevels;
-
-  virtual ~HostZoomMapImpl();
 
   // Copy of the pref data, so that we can read it on the IO thread.
   HostZoomLevels host_zoom_levels_;

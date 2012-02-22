@@ -69,7 +69,6 @@
 using base::Time;
 using content::BrowserThread;
 using content::DownloadManager;
-using content::HostZoomMap;
 using testing::NiceMock;
 using testing::Return;
 
@@ -658,10 +657,6 @@ content::SpeechInputPreferences* TestingProfile::GetSpeechInputPreferences() {
 #else
   return NULL;
 #endif
-}
-
-HostZoomMap* TestingProfile::GetHostZoomMap() {
-  return NULL;
 }
 
 std::wstring TestingProfile::GetName() {

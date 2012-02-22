@@ -32,10 +32,6 @@ net::URLRequestContext* MockResourceContext::GetRequestContext()  {
   return test_request_context_;
 }
 
-HostZoomMap* MockResourceContext::GetHostZoomMap()  {
-  return NULL;
-}
-
 MediaObserver* MockResourceContext::GetMediaObserver()  {
   return media_observer_;
 }

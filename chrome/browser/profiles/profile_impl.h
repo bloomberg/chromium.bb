@@ -57,7 +57,6 @@ class ProfileImpl : public Profile,
       int renderer_child_id) OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForMedia() OVERRIDE;
   virtual content::ResourceContext* GetResourceContext() OVERRIDE;
-  virtual content::HostZoomMap* GetHostZoomMap() OVERRIDE;
   virtual content::GeolocationPermissionContext*
       GetGeolocationPermissionContext() OVERRIDE;
   virtual content::SpeechInputPreferences* GetSpeechInputPreferences() OVERRIDE;
@@ -149,6 +148,8 @@ class ProfileImpl : public Profile,
   // Does final initialization. Should be called after prefs were loaded.
   void DoFinalInit();
 
+  void InitHostZoomMap();
+
   // Does final prefs initialization and calls Init().
   void OnPrefsLoaded(bool success);
 
@@ -232,7 +233,6 @@ class ProfileImpl : public Profile,
   scoped_ptr<SSLConfigServiceManager> ssl_config_service_manager_;
 
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
-  scoped_refptr<content::HostZoomMap> host_zoom_map_;
   scoped_refptr<content::GeolocationPermissionContext>
       geolocation_permission_context_;
   scoped_refptr<content::SpeechInputPreferences> speech_input_preferences_;

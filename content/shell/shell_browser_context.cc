@@ -11,7 +11,6 @@
 #include "base/path_service.h"
 #include "base/threading/thread.h"
 #include "content/browser/download/download_manager_impl.h"
-#include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/geolocation_permission_context.h"
@@ -161,12 +160,6 @@ ResourceContext* ShellBrowserContext::GetResourceContext()  {
         static_cast<ShellURLRequestContextGetter*>(GetRequestContext())));
   }
   return resource_context_.get();
-}
-
-HostZoomMap* ShellBrowserContext::GetHostZoomMap()  {
-  if (!host_zoom_map_)
-    host_zoom_map_ = HostZoomMap::Create();
-  return host_zoom_map_.get();
 }
 
 GeolocationPermissionContext*

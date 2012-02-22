@@ -141,7 +141,6 @@ class ProfileIOData {
     AudioManager* audio_manager;
     scoped_refptr<HostContentSettingsMap> host_content_settings_map;
     scoped_refptr<CookieSettings> cookie_settings;
-    scoped_refptr<content::HostZoomMap> host_zoom_map;
     scoped_refptr<net::SSLConfigService> ssl_config_service;
     scoped_refptr<net::CookieMonster::Delegate> cookie_monster_delegate;
     scoped_refptr<WebKitContext> webkit_context;
@@ -219,7 +218,6 @@ class ProfileIOData {
     // ResourceContext implementation:
     virtual net::HostResolver* GetHostResolver() OVERRIDE;
     virtual net::URLRequestContext* GetRequestContext() OVERRIDE;
-    virtual content::HostZoomMap* GetHostZoomMap() OVERRIDE;
     virtual MediaObserver* GetMediaObserver() OVERRIDE;
     virtual media_stream::MediaStreamManager* GetMediaStreamManager() OVERRIDE;
     virtual AudioManager* GetAudioManager() OVERRIDE;
@@ -230,7 +228,6 @@ class ProfileIOData {
 
     net::HostResolver* host_resolver_;
     net::URLRequestContext* request_context_;
-    content::HostZoomMap* host_zoom_map_;
     MediaObserver* media_observer_;
     media_stream::MediaStreamManager* media_stream_manager_;
     AudioManager* audio_manager_;
@@ -290,7 +287,6 @@ class ProfileIOData {
   mutable scoped_ptr<net::URLRequestJobFactory> job_factory_;
 
   // Pointed to by ResourceContext.
-  mutable scoped_refptr<content::HostZoomMap> host_zoom_map_;
   mutable scoped_ptr<media_stream::MediaStreamManager> media_stream_manager_;
 
   // TODO(willchan): Remove from ResourceContext.

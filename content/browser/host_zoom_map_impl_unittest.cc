@@ -21,11 +21,11 @@ class HostZoomMapTest : public testing::Test {
 };
 
 TEST_F(HostZoomMapTest, GetSetZoomLevel) {
-  scoped_refptr<HostZoomMapImpl> host_zoom_map = new HostZoomMapImpl;
+  HostZoomMapImpl host_zoom_map;
 
   double zoomed = 2.5;
-  host_zoom_map->SetZoomLevel("zoomed.com", zoomed);
+  host_zoom_map.SetZoomLevel("zoomed.com", zoomed);
 
-  EXPECT_DOUBLE_EQ(host_zoom_map->GetZoomLevel("normal.com"), 0);
-  EXPECT_DOUBLE_EQ(host_zoom_map->GetZoomLevel("zoomed.com"), zoomed);
+  EXPECT_DOUBLE_EQ(host_zoom_map.GetZoomLevel("normal.com"), 0);
+  EXPECT_DOUBLE_EQ(host_zoom_map.GetZoomLevel("zoomed.com"), zoomed);
 }

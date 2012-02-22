@@ -42,6 +42,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
@@ -234,7 +235,8 @@ void BrowserToolbarGtk::Init(GtkWindow* top_level_window) {
   wrench_menu_model_->bookmark_sub_menu_model()->SetMenuGtk(wrench_menu_.get());
 
   registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
-      content::Source<HostZoomMap>(profile->GetHostZoomMap()));
+      content::Source<HostZoomMap>(
+          HostZoomMap::GetForBrowserContext(profile)));
 
   if (ShouldOnlyShowLocation()) {
     gtk_widget_show(event_box_);

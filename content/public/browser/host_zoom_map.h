@@ -11,20 +11,20 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace content {
+
+class BrowserContext;
+class ResourceContext;
 
 // Maps hostnames to custom zoom levels.  Written on the UI thread and read on
 // any thread.  One instance per browser context. Must be created on the UI
 // thread, and it'll delete itself on the UI thread as well.
-class HostZoomMap
-    : public base::RefCountedThreadSafe<
-          HostZoomMap, content::BrowserThread::DeleteOnUIThread> {
+class HostZoomMap {
  public:
-  CONTENT_EXPORT static HostZoomMap* Create();
+  CONTENT_EXPORT static HostZoomMap* GetForBrowserContext(
+      BrowserContext* browser_context);
 
   // Copy the zoom levels from the given map. Can only be called on the UI
   // thread.
@@ -53,13 +53,6 @@ class HostZoomMap
 
  protected:
   virtual ~HostZoomMap() {}
-
- private:
-  friend class base::RefCountedThreadSafe<
-      HostZoomMap, content::BrowserThread::DeleteOnUIThread>;
-  friend struct content::BrowserThread::DeleteOnThread<
-      content::BrowserThread::UI>;
-  friend class base::DeleteHelper<HostZoomMap>;
 };
 
 }  // namespace content

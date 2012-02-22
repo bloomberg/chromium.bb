@@ -35,7 +35,6 @@ class ShellBrowserContext : public BrowserContext {
       int renderer_child_id) OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForMedia() OVERRIDE;
   virtual ResourceContext* GetResourceContext() OVERRIDE;
-  virtual HostZoomMap* GetHostZoomMap() OVERRIDE;
   virtual GeolocationPermissionContext*
       GetGeolocationPermissionContext() OVERRIDE;
   virtual SpeechInputPreferences* GetSpeechInputPreferences() OVERRIDE;
@@ -49,7 +48,6 @@ class ShellBrowserContext : public BrowserContext {
   scoped_refptr<ShellDownloadManagerDelegate> download_manager_delegate_;
   scoped_refptr<DownloadManager> download_manager_;
   scoped_refptr<net::URLRequestContextGetter> url_request_getter_;
-  scoped_refptr<HostZoomMap> host_zoom_map_;
   scoped_refptr<GeolocationPermissionContext> geolocation_permission_context_;
   scoped_refptr<SpeechInputPreferences> speech_input_preferences_;
 

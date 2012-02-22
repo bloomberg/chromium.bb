@@ -63,6 +63,7 @@ using content::BrowserContext;
 using content::BrowserMessageFilter;
 using content::BrowserThread;
 using content::DomOperationNotificationDetails;
+using content::HostZoomMap;
 using content::RenderViewHostDelegate;
 using content::SiteInstance;
 using content::UserMetricsAction;
@@ -1493,7 +1494,7 @@ void RenderViewHost::OnDidZoomURL(double zoom_level,
                                   bool remember,
                                   const GURL& url) {
   HostZoomMapImpl* host_zoom_map = static_cast<HostZoomMapImpl*>(
-      process()->GetBrowserContext()->GetHostZoomMap());
+      HostZoomMap::GetForBrowserContext(process()->GetBrowserContext()));
   if (remember) {
     host_zoom_map->SetZoomLevel(net::GetHostOrSpecFromURL(url), zoom_level);
   } else {
