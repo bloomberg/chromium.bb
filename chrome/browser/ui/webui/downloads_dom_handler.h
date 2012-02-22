@@ -39,6 +39,9 @@ class DownloadsDOMHandler : public content::WebUIMessageHandler,
   virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;
   virtual void ManagerGoingDown(content::DownloadManager* manager) OVERRIDE;
 
+  // Callback for the "onPageLoaded" message.
+  void OnPageLoaded(const base::ListValue* args);
+
   // Callback for the "getDownloads" message.
   void HandleGetDownloads(const base::ListValue* args);
 

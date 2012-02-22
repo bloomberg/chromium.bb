@@ -852,6 +852,9 @@ void DownloadManagerImpl::DownloadUrl(
 
 void DownloadManagerImpl::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
+  // TODO: It is the responsibility of the observers to query the
+  // DownloadManager. Remove the following call from here and update all
+  // observers.
   observer->ModelChanged(this);
 }
 

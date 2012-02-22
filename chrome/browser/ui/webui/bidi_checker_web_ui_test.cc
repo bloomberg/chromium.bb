@@ -173,25 +173,13 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL, TestCrashesPage) {
 // chrome://downloads
 //==============================
 
-#if defined(OS_WIN) || defined(OS_LINUX)
-// http://crbug.com/104129
-#define MAYBE_TestDownloadsPageLTR DISABLED_TestDownloadsPageLTR
-#else
-#define MAYBE_TestDownloadsPageLTR TestDownloadsPageLTR
-#endif
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
-                       MAYBE_TestDownloadsPageLTR) {
+                       TestDownloadsPageLTR) {
   RunBidiCheckerOnPage(chrome::kChromeUIDownloadsURL);
 }
 
-#if defined(OS_LINUX)
-// http://crbug.com/109262
-#define MAYBE_TestDownloadsPageRTL DISABLED_TestDownloadsPageRTL
-#else
-#define MAYBE_TestDownloadsPageRTL TestDownloadsPageRTL
-#endif
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
-                       MAYBE_TestDownloadsPageRTL) {
+                       TestDownloadsPageRTL) {
   RunBidiCheckerOnPage(chrome::kChromeUIDownloadsURL);
 }
 

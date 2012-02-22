@@ -600,6 +600,7 @@ var downloads, localStrings, resultsTimeout;
 var fifo_results;
 
 function load() {
+  chrome.send('onPageLoaded');
   fifo_results = new Array();
   localStrings = new LocalStrings();
   downloads = new Downloads();
@@ -674,7 +675,7 @@ function tryDownloadUpdatedPeriodically() {
 }
 
 // Add handlers to HTML elements.
-document.body.onload = load;
+window.addEventListener('DOMContentLoaded', load);
 
 var clearAllLink = $('clear-all');
 clearAllLink.onclick = function () { clearAll(''); };

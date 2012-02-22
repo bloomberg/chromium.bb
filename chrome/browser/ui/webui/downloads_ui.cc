@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,7 +92,6 @@ DownloadsUI::DownloadsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   DownloadsDOMHandler* handler = new DownloadsDOMHandler(dlm);
   web_ui->AddMessageHandler(handler);
-  handler->Init();
 
   // Set up the chrome://downloads/ source.
   profile->GetChromeURLDataManager()->AddDataSource(

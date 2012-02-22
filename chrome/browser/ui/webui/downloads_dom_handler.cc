@@ -113,13 +113,16 @@ DownloadsDOMHandler::~DownloadsDOMHandler() {
 
 // DownloadsDOMHandler, public: -----------------------------------------------
 
-void DownloadsDOMHandler::Init() {
+void DownloadsDOMHandler::OnPageLoaded(const base::ListValue* args) {
   download_manager_->AddObserver(this);
   if (original_profile_download_manager_)
     original_profile_download_manager_->AddObserver(this);
 }
 
 void DownloadsDOMHandler::RegisterMessages() {
+  web_ui()->RegisterMessageCallback("onPageLoaded",
+      base::Bind(&DownloadsDOMHandler::OnPageLoaded,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("getDownloads",
       base::Bind(&DownloadsDOMHandler::HandleGetDownloads,
                  base::Unretained(this)));
