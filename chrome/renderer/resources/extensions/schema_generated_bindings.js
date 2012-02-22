@@ -426,8 +426,10 @@ var chrome = chrome || {};
       // Setup Functions.
       if (apiDef.functions) {
         apiDef.functions.forEach(function(functionDef) {
-          if (functionDef.name in mod)
-            return;
+          if (functionDef.name in mod) {
+            throw new Error('Function ' + functionDef.name +
+                            ' already defined in ' + apiDef.namespace);
+          }
           if (!isSchemaNodeSupported(functionDef, platform, manifestVersion))
             return;
           if (!isSchemaAccessAllowed(functionDef)) {
@@ -471,8 +473,10 @@ var chrome = chrome || {};
       // Setup Events
       if (apiDef.events) {
         apiDef.events.forEach(function(eventDef) {
-          if (eventDef.name in mod)
-            return;
+          if (eventDef.name in mod) {
+            throw new Error('Event ' + eventDef.name +
+                            ' already defined in ' + apiDef.namespace);
+          }
           if (!isSchemaNodeSupported(eventDef, platform, manifestVersion))
             return;
           if (!isSchemaAccessAllowed(eventDef)) {
@@ -486,6 +490,8 @@ var chrome = chrome || {};
             mod[eventDef.name] = new customEvent(
                 eventName, eventDef.parameters, eventDef.extraParameters,
                 eventDef.options);
+          } else if (eventDef.anonymous) {
+            mod[eventDef.name] = new chrome.Event();
           } else {
             mod[eventDef.name] = new chrome.Event(
                 eventName, eventDef.parameters, eventDef.options);
@@ -500,7 +506,7 @@ var chrome = chrome || {};
 
         forEach(properties, function(propertyName, propertyDef) {
           if (propertyName in m)
-            return;
+            return;  // TODO(kalman): be strict like functions/events somehow.
           if (!isSchemaNodeSupported(propertyDef, platform, manifestVersion))
             return;
           if (!isSchemaAccessAllowed(propertyDef)) {
@@ -520,9 +526,9 @@ var chrome = chrome || {};
                 throw new Error("No custom binding for " + propertyDef["$ref"]);
               var args = value;
               // For an object propertyDef, |value| is an array of constructor
-              // arguments, but we want to pass the arguments directly
-              // (i.e. not as an array), so we have to fake calling |new| on
-              // the constructor.
+              // arguments, but we want to pass the arguments directly (i.e.
+              // not as an array), so we have to fake calling |new| on the
+              // constructor.
               value = { __proto__: constructor.prototype };
               constructor.apply(value, args);
               // Recursively add properties.

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "chrome/renderer/extensions/chrome_v8_context_set.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/event_bindings.h"
+#include "chrome/renderer/extensions/extension_custom_bindings.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/miscellaneous_bindings.h"
 #include "chrome/renderer/extensions/schema_generated_bindings.h"
@@ -36,6 +37,7 @@
 #include "ui/base/gtk/event_synthesis_gtk.h"
 #endif
 
+using extensions::ExtensionCustomBindings;
 using extensions::MiscellaneousBindings;
 using extensions::SchemaGeneratedBindings;
 using WebKit::WebFrame;
@@ -73,6 +75,10 @@ void ChromeRenderViewTest::SetUp() {
       extension_dispatcher_));
   WebScriptController::registerExtension(new ChromeV8Extension(
       "extensions/apitest.js", IDR_EXTENSION_APITEST_JS, NULL));
+
+  // HACK: register only the custom bindings that we need for the test.
+  WebScriptController::registerExtension(new ExtensionCustomBindings(
+      0, NULL, extension_dispatcher_));
 
   // RenderView doesn't expose it's PasswordAutofillManager or
   // AutofillAgent objects, because it has no need to store them directly

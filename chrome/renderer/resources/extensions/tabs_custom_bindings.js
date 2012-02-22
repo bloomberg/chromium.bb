@@ -11,7 +11,7 @@ native function OpenChannelToTab();
 
 var chromeHidden = GetChromeHidden();
 
-chromeHidden.registerCustomHook('tabs', function(bindingsAPI) {
+chromeHidden.registerCustomHook('tabs', function(bindingsAPI, extensionId) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   apiFunctions.setHandleRequest('tabs.connect', function(tabId, connectInfo) {
@@ -19,7 +19,7 @@ chromeHidden.registerCustomHook('tabs', function(bindingsAPI) {
     if (connectInfo) {
       name = connectInfo.name || name;
     }
-    var portId = OpenChannelToTab(tabId, chromeHidden.extensionId, name);
+    var portId = OpenChannelToTab(tabId, extensionId, name);
     return chromeHidden.Port.createPort(portId, name);
   });
 

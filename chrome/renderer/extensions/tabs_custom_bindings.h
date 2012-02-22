@@ -8,8 +8,6 @@
 
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 
-class ExtensionDispatcher;
-
 namespace extensions {
 
 // Implements custom bindings for the tabs API.

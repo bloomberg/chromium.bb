@@ -226,6 +226,7 @@
         "name": "onConnect",
         "type": "function",
         "unprivileged": true,
+        "anonymous": true,
         "description": "Fired when a connection is made from either an extension process or a content script.",
         "parameters": [
           {"$ref": "Port", "name": "port"}
@@ -234,6 +235,7 @@
       {
         "name": "onConnectExternal",
         "type": "function",
+        "anonymous": true,
         "description": "Fired when a connection is made from another extension.",
         "parameters": [
           {"$ref": "Port", "name": "port"}
@@ -242,6 +244,7 @@
       {
         "name": "onRequest",
         "type": "function",
+        "anonymous": true,
         "unprivileged": true,
         "description": "Fired when a request is sent from either an extension process or a content script.",
         "parameters": [
@@ -253,6 +256,7 @@
       {
         "name": "onRequestExternal",
         "type": "function",
+        "anonymous": true,
         "description": "Fired when a request is sent from another extension.",
         "parameters": [
           {"name": "request", "type": "any", "description": "The request sent by the calling script."},

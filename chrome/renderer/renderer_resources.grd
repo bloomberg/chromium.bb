@@ -28,6 +28,7 @@ without changes to the corresponding grd file. fb9 -->
       <include name="IDR_WEBSTORE_BINDINGS_JS" file="resources\extensions\webstore.js" type="BINDATA" />
 
       <!-- Custom bindings for extension APIs. -->
+      <include name="IDR_I18N_CUSTOM_BINDINGS_JS" file="resources\extensions\i18n_custom_bindings.js" type="BINDATA" />
       <include name="IDR_BROWSER_ACTION_CUSTOM_BINDINGS_JS" file="resources\extensions\browser_action_custom_bindings.js" type="BINDATA" />
       <include name="IDR_CHROME_PRIVATE_CUSTOM_BINDINGS_JS" file="resources\extensions\chrome_private_custom_bindings.js" type="BINDATA" />
       <include name="IDR_CONTENT_SETTINGS_CUSTOM_BINDINGS_JS" file="resources\extensions\content_settings_custom_bindings.js" type="BINDATA" />

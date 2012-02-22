@@ -18,6 +18,7 @@
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/file_browser_handler_custom_bindings.h"
 #include "chrome/renderer/extensions/file_browser_private_custom_bindings.h"
+#include "chrome/renderer/extensions/i18n_custom_bindings.h"
 #include "chrome/renderer/extensions/page_actions_custom_bindings.h"
 #include "chrome/renderer/extensions/page_capture_custom_bindings.h"
 #include "chrome/renderer/extensions/tabs_custom_bindings.h"
@@ -82,6 +83,8 @@ std::vector<v8::Extension*> GetAll(ExtensionDispatcher* extension_dispatcher) {
   result.push_back(new FileBrowserHandlerCustomBindings(
       kDependencyCount, kDependencies));
   result.push_back(new FileBrowserPrivateCustomBindings(
+      kDependencyCount, kDependencies));
+  result.push_back(new I18NCustomBindings(
       kDependencyCount, kDependencies));
   result.push_back(new PageActionsCustomBindings(
       kDependencyCount, kDependencies, extension_dispatcher));
