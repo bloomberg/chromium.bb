@@ -26,3 +26,5 @@ DOMStorageTest.RootLayoutTests
 KioskModeTest.EnableKioskModeTest
 # Flakey on Chromium OS UI (valgrind)(9). http://crbug.com/114093
 BookmarksUITest.BookmarksLoaded
+# Flaky on Linux UI. http://crbug.com/91843
+BookmarksUITest.CommandAgainGoesBackToBookmarksTab
