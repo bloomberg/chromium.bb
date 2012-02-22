@@ -955,7 +955,8 @@ class NinjaWriter:
     env = self.ComputeExportEnvString(env)
     if self.flavor == 'win':
       # TODO(scottmg): Respect msvs_cygwin setting here.
-      command = gyp.msvs_emulation.EncodeCmdExeList(args)
+      # If there's no command, fake one to match the dangling |&&| above.
+      command = gyp.msvs_emulation.EncodeCmdExeList(args) or 'cmd /c'
     else:
       command = gyp.common.EncodePOSIXShellList(args)
     if env:
