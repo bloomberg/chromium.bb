@@ -401,10 +401,10 @@ TEST_F('NetInternalsTest', 'netInternalsTimelineViewDegenerate', function() {
  * Tests case of having no events.  Runs synchronously.
  */
 TEST_F('NetInternalsTest', 'netInternalsTimelineViewNoEvents', function() {
-  // Click the events view's delete all button, and then switch to timeline
+  // Click the capture view's delete all button, and then switch to timeline
   // view.
-  NetInternalsTest.switchToView('events');
-  $(EventsView.DELETE_ALL_ID).click();
+  NetInternalsTest.switchToView('capture');
+  $(CaptureView.DELETE_ALL_ID).click();
   NetInternalsTest.switchToView('timeline');
 
   // Set startTime/endTime for sanity checks.

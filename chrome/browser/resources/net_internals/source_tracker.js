@@ -37,7 +37,7 @@ var SourceTracker = (function() {
       this.maxReceivedSourceId_ = 0;
 
       // Next unique id to be assigned to a log entry without a source.
-      // Needed to simplify deletion, identify associated GUI elements, etc.
+      // Needed to identify associated GUI elements, etc.
       this.nextSourcelessEventId_ = -1;
 
       // Ordered list of log entries.  Needed to maintain original order when
@@ -135,29 +135,6 @@ var SourceTracker = (function() {
     },
 
     /**
-     * Deletes captured events with source IDs in |sourceEntryIds|.
-     */
-    deleteSourceEntries: function(sourceEntryIds) {
-      var sourceIdDict = {};
-      for (var i = 0; i < sourceEntryIds.length; i++) {
-        sourceIdDict[sourceEntryIds[i]] = true;
-        delete this.sourceEntries_[sourceEntryIds[i]];
-      }
-
-      var newEventList = [];
-      for (var i = 0; i < this.capturedEvents_.length; ++i) {
-        var id = this.capturedEvents_[i].source.id;
-        if (id in sourceIdDict)
-          continue;
-        newEventList.push(this.capturedEvents_[i]);
-      }
-      this.capturedEvents_ = newEventList;
-
-      for (var i = 0; i < this.sourceEntryObservers_.length; ++i)
-        this.sourceEntryObservers_[i].onSourceEntriesDeleted(sourceEntryIds);
-    },
-
-    /**
      * Deletes all captured events.
      */
     deleteAllSourceEntries: function() {
@@ -194,7 +171,6 @@ var SourceTracker = (function() {
      * security stripping changes:
      *
      *   observer.onSourceEntriesUpdated(sourceEntries)
-     *   observer.onSourceEntriesDeleted(sourceEntryIds)
      *   ovserver.onAllSourceEntriesDeleted()
      *   observer.onSecurityStrippingChanged()
      */

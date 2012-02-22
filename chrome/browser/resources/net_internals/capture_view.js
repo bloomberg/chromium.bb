@@ -72,14 +72,6 @@ var CaptureView = (function() {
     },
 
     /**
-     * Called whenever some log events are deleted.  |sourceIds| lists
-     * the source IDs of all deleted log entries.
-     */
-    onSourceEntriesDeleted: function(sourceIds) {
-      this.updateEventCounts_();
-    },
-
-    /**
      * Called whenever all log events are deleted.
      */
     onAllSourceEntriesDeleted: function() {

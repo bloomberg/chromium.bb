@@ -19,8 +19,8 @@
  *  |                      ||                |
  *  |                      ||                |
  *  |                      ||                |
- *  +----------------------++                |
- *  |      action bar      ||                |
+ *  |                      ||                |
+ *  |                      ||                |
  *  +----------------------++----------------+
  */
 var EventsView = (function() {
@@ -42,9 +42,8 @@ var EventsView = (function() {
     superClass.call(this);
 
     // Initialize the sub-views.
-    var leftPane = new TopMidBottomView(new DivView(EventsView.TOPBAR_ID),
-                                        new DivView(EventsView.MIDDLE_BOX_ID),
-                                        new DivView(EventsView.BOTTOM_BAR_ID));
+    var leftPane = new VerticalSplitView(new DivView(EventsView.TOPBAR_ID),
+                                         new DivView(EventsView.LIST_BOX_ID));
 
     this.detailsView_ = new DetailsView(EventsView.DETAILS_LOG_BOX_ID);
 
@@ -60,12 +59,6 @@ var EventsView = (function() {
 
     this.filterInput_.addEventListener('search',
         this.onFilterTextChanged_.bind(this), true);
-
-    $(EventsView.DELETE_SELECTED_ID).onclick = this.deleteSelected_.bind(this);
-
-    $(EventsView.DELETE_ALL_ID).onclick =
-        g_browser.sourceTracker.deleteAllSourceEntries.bind(
-            g_browser.sourceTracker);
 
     $(EventsView.SELECT_ALL_ID).addEventListener(
         'click', this.selectAll_.bind(this), true);
@@ -92,16 +85,13 @@ var EventsView = (function() {
   EventsView.TBODY_ID = 'events-view-source-list-tbody';
   EventsView.FILTER_INPUT_ID = 'events-view-filter-input';
   EventsView.FILTER_COUNT_ID = 'events-view-filter-count';
-  EventsView.DELETE_SELECTED_ID = 'events-view-delete-selected';
-  EventsView.DELETE_ALL_ID = 'events-view-delete-all';
   EventsView.SELECT_ALL_ID = 'events-view-select-all';
   EventsView.SORT_BY_ID_ID = 'events-view-sort-by-id';
   EventsView.SORT_BY_SOURCE_TYPE_ID = 'events-view-sort-by-source';
   EventsView.SORT_BY_DESCRIPTION_ID = 'events-view-sort-by-description';
   EventsView.DETAILS_LOG_BOX_ID = 'events-view-details-log-box';
   EventsView.TOPBAR_ID = 'events-view-filter-box';
-  EventsView.MIDDLE_BOX_ID = 'events-view-source-list';
-  EventsView.BOTTOM_BAR_ID = 'events-view-action-box';
+  EventsView.LIST_BOX_ID = 'events-view-source-list';
   EventsView.SIZER_ID = 'events-view-splitter-box';
 
   cr.addSingletonGetter(EventsView);
@@ -426,22 +416,6 @@ var EventsView = (function() {
     },
 
     /**
-     * Called whenever some log events are deleted.  |sourceIds| lists
-     * the source IDs of all deleted log entries.
-     */
-    onSourceEntriesDeleted: function(sourceIds) {
-      for (var i = 0; i < sourceIds.length; ++i) {
-        var id = sourceIds[i];
-        var sourceRow = this.sourceIdToRowMap_[id];
-        if (sourceRow) {
-          sourceRow.remove();
-          delete this.sourceIdToRowMap_[id];
-          this.incrementPrefilterCount(-1);
-        }
-      }
-    },
-
-    /**
      * Called whenever all log events are deleted.
      */
     onAllSourceEntriesDeleted: function() {
@@ -485,15 +459,6 @@ var EventsView = (function() {
       }
 
       this.onSelectionChanged();
-    },
-
-    deleteSelected_: function() {
-      var sourceIds = [];
-      for (var i = 0; i < this.currentSelectedRows_.length; ++i) {
-        var sourceRow = this.currentSelectedRows_[i];
-        sourceIds.push(sourceRow.getSourceEntry().getSourceId());
-      }
-      g_browser.sourceTracker.deleteSourceEntries(sourceIds);
     },
 
     selectAll_: function(event) {

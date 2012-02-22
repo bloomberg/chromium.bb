@@ -294,12 +294,6 @@ var SourceRow = (function() {
      */
     moveAfter: function(entry) {
       this.row_.parentNode.insertBefore(this.row_, entry.row_.nextSibling);
-    },
-
-    remove: function() {
-      this.setSelected(false);
-      this.setIsMatchedByFilter(false);
-      this.row_.parentNode.removeChild(this.row_);
     }
   };
 
