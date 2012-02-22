@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -641,6 +641,7 @@ class ThreadSanitizerBase(object):
       fullname =  os.path.join(self._source_dir,
           "tools", "valgrind", "tsan", ignore_file)
       if os.path.exists(fullname):
+        fullname = common.NormalizeWindowsPath(fullname)
         ret += ["--ignore=%s" % fullname]
 
     # This should shorten filepaths for local builds.
@@ -719,13 +720,14 @@ class ThreadSanitizerWindows(ThreadSanitizerBase, PinTool):
     for suppression_file in self._options.suppressions:
       if os.path.exists(suppression_file):
         suppression_count += 1
+        suppression_file = common.NormalizeWindowsPath(suppression_file)
         proc += ["--suppressions=%s" % suppression_file]
 
     if not suppression_count:
       logging.warning("WARNING: NOT USING SUPPRESSIONS!")
 
     logfilename = self.log_dir + "/tsan.%p"
-    proc += ["--log-file=" + logfilename]
+    proc += ["--log-file=" + common.NormalizeWindowsPath(logfilename)]
 
     # TODO(timurrrr): Add flags for Valgrind trace children analog when we
     # start running complex tests (e.g. UI) under TSan/Win.
