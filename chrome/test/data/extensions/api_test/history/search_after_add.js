@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // History api test for Chrome.
-// browser_tests.exe --gtest_filter=ExtensionHistoryApiTest.SearchAfterAdd
+// browser_tests.exe --gtest_filter=HistoryExtensionApiTest.SearchAfterAdd
 
 // runHistoryTestFns is defined in ./common.js .
 runHistoryTestFns([
