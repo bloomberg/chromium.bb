@@ -52,7 +52,7 @@ LIBLOUIS_CURRENT=4
 
 # increment any time the source changes; set to
 #  0 if you increment CURRENT
-LIBLOUIS_REVISION=4
+LIBLOUIS_REVISION=5
 
 # increment if any interfaces have been added; set to 0
 #  if any interfaces have been changed or removed. removal has

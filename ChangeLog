@@ -1,5 +1,7 @@
 2012-02-22  Christian Egli  <christian.egli@sbs.ch>
 
+	* configure.ac: Update version number
+
 	* tables/ta-ta-g1.ctb: Added a new tamil table by Mesar Hameed
 	<mesar.hameed@gmail.com>
 
