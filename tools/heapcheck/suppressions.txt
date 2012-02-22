@@ -1805,3 +1805,10 @@
    fun:BookmarkEditorGtk::BookmarkEditorGtk
    fun:BookmarkEditorGtkTest_*_Test::TestBody
 }
+{
+   bug_115296
+   Heapcheck:Leak
+   fun:::GetResource
+   fun:ModuleSystem::EnsureRequireLoaded
+   fun:ModuleSystem::Require
+}
