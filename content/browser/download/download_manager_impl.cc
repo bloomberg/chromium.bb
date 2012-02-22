@@ -896,12 +896,7 @@ void DownloadManagerImpl::FileSelectionCanceled(void* params) {
   VLOG(20) << __FUNCTION__ << "()"
            << " download = " << download->DebugString(true);
 
-  // TODO(ahendrickson) -- This currently has no effect, as the download is
-  // not put on the active list until the file selection is complete.  Need
-  // to put it on the active list earlier in the process.
-  RemoveFromActiveList(download);
-
-  download->OffThreadCancel(file_manager_);
+  download->Cancel(true);
 }
 
 // Operations posted to us from the history service ----------------------------
