@@ -833,20 +833,6 @@ def _GetGuidOfProject(proj_path, spec):
   return guid
 
 
-def _GetMsbuildToolsetOfProject(proj_path, spec):
-  """Get the platform toolset for the project.
-
-  Arguments:
-    proj_path: Path of the vcproj or vcxproj file to generate.
-    spec: The target dictionary containing the properties of the target.
-  Returns:
-    the platform toolset string or None.
-  """
-  # Pluck out the default configuration.
-  default_config = _GetDefaultConfiguration(spec)
-  return default_config.get('msbuild_toolset')
-
-
 def _GenerateProject(project, options, version, generator_flags):
   """Generates a vcproj file.
 
@@ -1652,9 +1638,6 @@ def _CreateProjectObjects(target_list, target_dicts, options, msvs_version):
         build_file=build_file,
         config_platform_overrides=overrides,
         fixpath_prefix=fixpath_prefix)
-    # Set project toolset if any (MS build only)
-    if msvs_version.UsesVcxproj():
-      obj.set_msbuild_toolset(_GetMsbuildToolsetOfProject(proj_path, spec))
     projects[qualified_target] = obj
   # Set all the dependencies
   for project in projects.values():
@@ -2418,18 +2401,6 @@ def _GetMSBuildConfigurationDetails(spec, build_file):
   return _GetMSBuildPropertyGroup(spec, 'Configuration', properties)
 
 
-def _GetMSBuildLocalProperties(msbuild_toolset):
-  # Currently the only local property we support is PlatformToolset
-  properties = {}
-  if msbuild_toolset:
-    properties = [
-        ['PropertyGroup', {'Label': 'Locals'},
-          ['PlatformToolset', msbuild_toolset],
-        ]
-      ]
-  return properties
-
-
 def _GetMSBuildPropertySheets(configurations):
   user_props = r'$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props'
   return [
@@ -2863,7 +2834,6 @@ def _GenerateMSBuildProject(project, options, version, generator_flags):
   content += _GetMSBuildGlobalProperties(spec, project.guid, project_file_name)
   content += import_default_section
   content += _GetMSBuildConfigurationDetails(spec, project.build_file)
-  content += _GetMSBuildLocalProperties(project.msbuild_toolset)
   content += import_cpp_props_section
   content += _GetMSBuildExtensions(props_files_of_rules)
   content += _GetMSBuildPropertySheets(configurations)
