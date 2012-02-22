@@ -17,7 +17,9 @@
     "unlimitedStorage",
     "chrome://extension-icon/",
     "chrome://resources/",
-    "tabs"
+    "tabs",
+    "clipboardWrite",
+    "clipboardRead"
   ],
   "app": {
     "launch": {

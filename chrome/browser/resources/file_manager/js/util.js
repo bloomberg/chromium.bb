@@ -208,7 +208,7 @@ var util = {
    * @param {function(!DirEntry)} successCallback The function to invoke for
    *     each DirEntry found.  Also invoked once with null at the end of the
    *     process.
-   * @param {function(string, FileError)} errorCallback The function to invoke
+   * @param {function(FileError)} errorCallback The function to invoke
    *     for each path that cannot be resolved.
    */
   getDirectories: function(dirEntry, params, paths, successCallback,
@@ -233,12 +233,62 @@ var util = {
           getNextDirectory();
         },
         function(err) {
-          errorCallback(path, err);
+          errorCallback(err);
           getNextDirectory();
         });
     }
 
     getNextDirectory();
+  },
+
+  /**
+   * Utility function to resolve multiple files with a single call.
+   *
+   * The successCallback will be invoked once for each directory object
+   * found.  The errorCallback will be invoked once for each
+   * path that could not be resolved.
+   *
+   * The successCallback is invoked with a null entry when all paths have
+   * been processed.
+   *
+   * @param {DirEntry} dirEntry The base directory.
+   * @param {Object} params The parameters to pass to the underlying
+   *     getFile calls.
+   * @param {Array<string>} paths The list of files to resolve.
+   * @param {function(!FileEntry)} successCallback The function to invoke for
+   *     each FileEntry found.  Also invoked once with null at the end of the
+   *     process.
+   * @param {function(FileError)} errorCallback The function to invoke
+   *     for each path that cannot be resolved.
+   */
+  getFiles: function(dirEntry, params, paths, successCallback,
+                     errorCallback) {
+
+    // Copy the params array, since we're going to destroy it.
+    params = [].slice.call(params);
+
+    function onComplete() {
+      successCallback(null);
+    }
+
+    function getNextFile() {
+      var path = paths.shift();
+      if (!path)
+        return onComplete();
+
+      dirEntry.getFile(
+        path, params,
+        function(entry) {
+          successCallback(entry);
+          getNextFile();
+        },
+        function(err) {
+          errorCallback(err);
+          getNextFile();
+        });
+    }
+
+    getNextFile();
   },
 
   /**

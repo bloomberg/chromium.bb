@@ -191,6 +191,72 @@ FileCopyManager.prototype.maybeCancel_ = function() {
 }
 
 /**
+ * Convert string in clipboard to entries and kick off pasting.
+ */
+FileCopyManager.prototype.paste = function(clipboard, targetEntry, root) {
+  var self = this;
+  var results = {
+    sourceDirEntry: null,
+    entries: [],
+    isCut: false
+  };
+
+  function onPathError(err) {
+    var event = new cr.Event('copy-progress');
+    event.reason = 'ERROR';
+    event.error = new FileCopyManager.Error('FILESYSTEM_ERROR', err);
+    self.dispatchEvent(event);
+  }
+
+  function onSourceEntryFound(dirEntry) {
+    function onComplete() {
+      self.queueCopy(results.sourceDirEntry,
+            targetEntry,
+            results.entries,
+            results.isCut);
+    }
+
+    function onEntryFound(entry) {
+      // When getDirectories/getFiles finish, they call addEntry with null.
+      // We dont want to add null to our entries.
+      if (entry != null) {
+        results.entries.push(entry);
+        added++;
+        if (added == total && results.sourceDirEntry != null)
+          onComplete();
+      }
+    }
+
+    results.sourceDirEntry = dirEntry;
+    var directories = [];
+    var files = [];
+
+    if (clipboard.directories) {
+      directories = clipboard.directories.split('\n');
+      directories = directories.filter(function(d) { return d != '' });
+    }
+    if (clipboard.files) {
+      files = clipboard.files.split('\n');
+      files = files.filter(function(f) { return f != '' });
+    }
+
+    var total = directories.length + files.length;
+    var added = 0;
+
+    results.isCut = (clipboard.isCut == 'true');
+
+    util.getDirectories(root, {create: false}, directories, onEntryFound,
+                        onPathError);
+    util.getFiles(root, {create: false}, files, onEntryFound, onPathError);
+  }
+
+  root.getDirectory(clipboard.sourceDir,
+                    {create: false},
+                    onSourceEntryFound,
+                    onPathError);
+}
+
+/**
  * Initiate a file copy.
  */
 FileCopyManager.prototype.queueCopy = function(sourceDirEntry,

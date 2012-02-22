@@ -30,8 +30,6 @@ function FileManager(dialogDom) {
 
   this.selection = null;
 
-  this.clipboard_ = null;  // Current clipboard, or null if empty.
-
   this.butterTimer_ = null;
   this.currentButter_ = null;
 
@@ -616,6 +614,22 @@ FileManager.prototype = {
     link.addEventListener('click', this.onDownloadsWarningClick_.bind(this));
 
     this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
+    this.document_.addEventListener('copy',
+                                    this.copySelectionToClipboard_.bind(this));
+
+    // We need to store a reference to the function returned by bind. Later, in
+    // canPaste function, we need to temporarily remove this event handler and
+    // use another 'paste' event handler to check the state of system clipboard.
+    this.pasteFromClipboardBind_ = this.pasteFromClipboard_.bind(this);
+    this.document_.addEventListener('paste', this.pasteFromClipboardBind_);
+
+    // In pasteFromClipboard function, we need to reset system clipboard after
+    // 'cut' and 'paste' command sequence. The clipboardData.clearData doesn't
+    // seem to work. We reset the system clipboard in another 'cut' event
+    // handler as a workaround. This reference is used to temporarily remove
+    // 'cut' event handler as well.
+    this.cutFromClipboardBind_ = this.cutSelectionToClipboard_.bind(this);
+    this.document_.addEventListener('cut', this.cutFromClipboardBind_);
 
     this.renameInput_ = this.document_.createElement('input');
     this.renameInput_.className = 'rename';
@@ -1018,6 +1032,35 @@ FileManager.prototype = {
     event.canExecute = this.canExecute_(event.command.id);
   };
 
+  FileManager.prototype.canPaste_ = function(readonly) {
+    /**
+     * Fire a paste event and check the "paste" command can be executed.
+     *
+     * We need to peek the content in system clipboard. Only cut/copy/paste
+     * events contain clipboard data. So we need to fire a paste event and then
+     * peek the system clipboard immediately.
+     *
+     * @return {boolean} True if "paste" command can be executed for current
+     *                   directory.
+     */
+
+    var canPaste = false;
+    var clipboardCanPaste = function(event) {
+      event.preventDefault();
+      // Here we need to use lower case as clipboardData.types return lower
+      // case DomStringList.
+      if (event.clipboardData.types.contains('fs/iscut'))
+         canPaste = true;
+    };
+
+    this.document_.removeEventListener('paste', this.pasteFromClipboardBind_);
+    this.document_.addEventListener('paste', clipboardCanPaste);
+    this.document_.execCommand('paste');
+    this.document_.removeEventListener('paste', clipboardCanPaste);
+    this.document_.addEventListener('paste', this.pasteFromClipboardBind_);
+    return canPaste && !readonly;
+  };
+
   /**
    * @param {string} commandId Command identifier.
    * @return {boolean} True if the command can be executed for current
@@ -1038,8 +1081,7 @@ FileManager.prototype = {
                this.selection.totalCount > 0;
 
       case 'paste':
-        return (this.clipboard_ &&
-               !readonly);
+        return this.canPaste_(readonly);
 
       case 'rename':
         return (// Initialized to the point where we have a current directory
@@ -1219,8 +1261,6 @@ FileManager.prototype = {
       if (this.currentButter_)
         this.hideButter();
 
-      if (this.clipboard_.isCut)
-        this.clipboard_ = null;
       this.updateCommands_();
       self = this;
       var callback;
@@ -1264,15 +1304,15 @@ FileManager.prototype = {
   FileManager.prototype.onCommand_ = function(event) {
     switch (event.command.id) {
       case 'cut':
-        this.cutSelectionToClipboard();
+        document.execCommand('cut');
         return;
 
       case 'copy':
-        this.copySelectionToClipboard();
+        document.execCommand('copy');
         return;
 
       case 'paste':
-        this.pasteFromClipboard();
+        document.execCommand('paste');
         return;
 
       case 'rename':
@@ -2684,56 +2724,88 @@ FileManager.prototype = {
   };
 
   /**
-   * Create the clipboard object from the current selection.
+   * Write the current selection to system clipboard.
    *
-   * We're not going through the system clipboard yet.
+   * @param {Event} event Cut or Copy event.
+   * @param {boolean} isCut True if the current command is cut.
    */
-  FileManager.prototype.copySelectionToClipboard = function(successCallback) {
-    if (!this.selection || this.selection.totalCount == 0)
+  FileManager.prototype.cutOrCopyToClipboard_ = function(event, isCut) {
+      event.preventDefault();
+
+      var directories  = '';
+      var files = '';
+      for(var i = 0, entry; i < this.selection.entries.length; i++) {
+        entry = this.selection.entries[i];
+        if (entry.isDirectory)
+          directories += entry.fullPath + '\n';
+        else
+          files += entry.fullPath + '\n';
+      }
+
+      event.clipboardData.setData('fs/isCut', isCut.toString());
+      event.clipboardData.setData('fs/sourceDir',
+                                  this.directoryModel_.currentEntry.fullPath);
+      event.clipboardData.setData('fs/directories', directories);
+      event.clipboardData.setData('fs/files', files);
+  }
+
+  FileManager.prototype.copySelectionToClipboard_ = function(event) {
+      if (!this.selection || this.selection.totalCount == 0)
+        return;
+
+      this.cutOrCopyToClipboard_(event, false);
+
+      this.updateCommands_();
+      this.blinkSelection();
+  };
+
+  FileManager.prototype.cutSelectionToClipboard_ = function(event) {
+    if (!this.selection || this.selection.totalCount == 0 ||
+        this.commands_['cut'].disabled)
       return;
 
-    this.clipboard_ = {
-      isCut: false,
-      sourceDirEntry: this.directoryModel_.currentEntry,
-      entries: [].concat(this.selection.entries)
-    };
+    this.cutOrCopyToClipboard_(event, true);
 
     this.updateCommands_();
     this.blinkSelection();
   };
 
   /**
-   * Create the clipboard object from the current selection, marking it as a
-   * cut operation.
-   *
-   * We're not going through the system clipboard yet.
+   * Queue up a file copy operation based on the current system clipboard.
    */
-  FileManager.prototype.cutSelectionToClipboard = function(successCallback) {
-    if (!this.selection || this.selection.totalCount == 0)
+  FileManager.prototype.pasteFromClipboard_ = function(event) {
+    event.preventDefault();
+
+    if (!event.clipboardData.getData('fs/isCut'))
       return;
 
-    this.clipboard_ = {
-      isCut: true,
-      sourceDirEntry: this.directoryModel_.currentEntry,
-      entries: [].concat(this.selection.entries)
+    this.showButter(str('PASTE_STARTED'), {timeout: 0});
+
+    var clipboard = {
+      isCut: event.clipboardData.getData('fs/isCut'),
+      sourceDir: event.clipboardData.getData('fs/sourcedir'),
+      directories: event.clipboardData.getData('fs/directories'),
+      files: event.clipboardData.getData('fs/files')
     };
 
-    this.updateCommands_();
-    this.blinkSelection();
-  };
+    this.copyManager_.paste(clipboard,
+                            this.directoryModel_.currentEntry,
+                            this.filesystem_.root);
 
-  /**
-   * Queue up a file copy operation based on the current clipboard.
-   */
-  FileManager.prototype.pasteFromClipboard = function(successCallback) {
-    if (!this.clipboard_)
-      return null;
+    var clearClipboard = function (event) {
+      event.preventDefault();
+      event.clipboardData.setData('fs/clear', '');
+    }
 
-    this.pasteSuccessCallbacks_.push(successCallback);
-    this.copyManager_.queueCopy(this.clipboard_.sourceDirEntry,
-                                this.directoryModel_.currentEntry,
-                                this.clipboard_.entries,
-                                this.clipboard_.isCut);
+    // On cut, we clear the clipboard after the file is pasted/moved so we don't
+    // try to move/delete the original file again.
+    if (clipboard.isCut == 'true') {
+      this.document_.removeEventListener('cut', this.cutFromClipboardBind_);
+      this.document_.addEventListener('cut', clearClipboard);
+      this.document_.execCommand('cut');
+      this.document_.removeEventListener('cut', clearClipboard);
+      this.document_.addEventListener('cut', this.cutFromClipboardBind_);
+    }
   };
 
   /**
