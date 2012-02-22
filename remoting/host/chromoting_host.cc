@@ -22,7 +22,8 @@
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/input_stub.h"
-#include "remoting/protocol/jingle_session_manager.h"
+#include "remoting/protocol/libjingle_transport_factory.h"
+#include "remoting/protocol/pepper_session_manager.h"
 #include "remoting/protocol/session_config.h"
 
 using remoting::protocol::ConnectionToClient;
@@ -67,8 +68,10 @@ void ChromotingHost::Start() {
   state_ = kStarted;
 
   // Create and start session manager.
+  scoped_ptr<protocol::TransportFactory> transport_factory(
+      new protocol::LibjingleTransportFactory());
   session_manager_.reset(
-      new protocol::JingleSessionManager(context_->network_message_loop()));
+      new protocol::PepperSessionManager(transport_factory.Pass()));
   session_manager_->Init(signal_strategy_, this, network_settings_);
 }
 
