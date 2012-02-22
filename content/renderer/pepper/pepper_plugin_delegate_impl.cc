@@ -843,7 +843,8 @@ void PpapiBrokerImpl::ConnectPluginToBroker(
 }
 
 class PepperPluginDelegateImpl::DeviceEnumerationEventHandler
-    : public MediaStreamDispatcherEventHandler {
+    : public MediaStreamDispatcherEventHandler,
+      public base::SupportsWeakPtr<DeviceEnumerationEventHandler> {
  public:
   DeviceEnumerationEventHandler() : next_id_(1) {
   }
@@ -2081,9 +2082,18 @@ int PepperPluginDelegateImpl::EnumerateDevices(
   int request_id =
       device_enumeration_event_handler_->RegisterEnumerateDevicesCallback(
           callback);
+
+#if defined(ENABLE_WEBRTC)
   render_view_->media_stream_dispatcher()->EnumerateDevices(
       request_id, device_enumeration_event_handler_.get(),
       FromPepperDeviceType(type), "");
+#else
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&DeviceEnumerationEventHandler::OnDevicesEnumerationFailed,
+                 device_enumeration_event_handler_->AsWeakPtr(), request_id));
+#endif
+
   return request_id;
 }
 
@@ -2195,18 +2205,30 @@ int PepperPluginDelegateImpl::OpenDevice(PP_DeviceType_Dev type,
                                          const OpenDeviceCallback& callback) {
   int request_id =
       device_enumeration_event_handler_->RegisterOpenDeviceCallback(callback);
+
+#if defined(ENABLE_WEBRTC)
   render_view_->media_stream_dispatcher()->OpenDevice(
       request_id, device_enumeration_event_handler_.get(), device_id,
       FromPepperDeviceType(type), "");
+#else
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&DeviceEnumerationEventHandler::OnDeviceOpenFailed,
+                 device_enumeration_event_handler_->AsWeakPtr(), request_id));
+#endif
+
   return request_id;
 }
 
 void PepperPluginDelegateImpl::CloseDevice(const std::string& label) {
+#if defined(ENABLE_WEBRTC)
   render_view_->media_stream_dispatcher()->CloseDevice(label);
+#endif
 }
 
 int PepperPluginDelegateImpl::GetSessionID(PP_DeviceType_Dev type,
                                            const std::string& label) {
+#if defined(ENABLE_WEBRTC)
   switch (type) {
     case PP_DEVICETYPE_DEV_AUDIOCAPTURE:
       return render_view_->media_stream_dispatcher()->audio_session_id(label,
@@ -2218,6 +2240,9 @@ int PepperPluginDelegateImpl::GetSessionID(PP_DeviceType_Dev type,
       NOTREACHED();
       return 0;
   }
+#else
+  return 0;
+#endif
 }
 
 ContentGLContext*
