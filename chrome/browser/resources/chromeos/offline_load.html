@@ -101,7 +101,7 @@ body {
   height: 1px;
 }
 </style>
-<script src="chrome://resources/js/local_strings.js"></script>
+<script src="../shared/js/local_strings.js"></script>
 
 <script>
 var localStrings = new LocalStrings();
@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
       <div class="message" i18n-values=".innerHTML:msg"></div>
       <div class="link"><a href="chrome://settings/internet"
            onclick="sendCommand('proceed')"
-           i18n-content="try_loading"></a> 
+           i18n-content="try_loading"></a>
       </div>
       <div class="link"><a href="chrome://settings/internet"
            onclick="sendCommand('open_network_settings')"
