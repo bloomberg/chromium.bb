@@ -31,8 +31,11 @@ class SyncPromoUI : public content::WebUIController {
   static bool ShouldShowSyncPromo(Profile* profile);
 
   // Returns true if we should show the sync promo at startup.
+  // On return |promo_suppressed| is true if a sync promo would normally
+  // have been shown but was suppressed due to a experiment.
   static bool ShouldShowSyncPromoAtStartup(Profile* profile,
-                                           bool is_new_profile);
+                                           bool is_new_profile,
+                                           bool* promo_suppressed);
 
   // Called when the sync promo has been shown so that we can keep track
   // of the number of times we've displayed it.

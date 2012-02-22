@@ -1495,7 +1495,9 @@ void BrowserInit::LaunchWithProfile::AddStartupURLs(
 
   // If the sync promo page is going to be displayed then insert it at the front
   // of the list.
-  if (SyncPromoUI::ShouldShowSyncPromoAtStartup(profile_, is_first_run_)) {
+  bool promo_suppressed = false;
+  if (SyncPromoUI::ShouldShowSyncPromoAtStartup(profile_, is_first_run_,
+                                                &promo_suppressed)) {
     SyncPromoUI::DidShowSyncPromoAtStartup(profile_);
     GURL old_url = (*startup_urls)[0];
     (*startup_urls)[0] =
@@ -1519,8 +1521,7 @@ void BrowserInit::LaunchWithProfile::AddStartupURLs(
       if (it != startup_urls->end())
         startup_urls->erase(it);
     }
-  } else if (sync_promo_trial::GetStartupOverrideForCurrentTrial() ==
-             sync_promo_trial::STARTUP_OVERRIDE_HIDE) {
+  } else if (promo_suppressed) {
     sync_promo_trial::RecordSyncPromoSuppressedForCurrentTrial();
   }
 }

@@ -173,8 +173,12 @@ void SyncPromoUI::RegisterUserPrefs(PrefService* prefs) {
 
 // static
 bool SyncPromoUI::ShouldShowSyncPromoAtStartup(Profile* profile,
-                                               bool is_new_profile) {
+                                               bool is_new_profile,
+                                               bool* promo_suppressed) {
   DCHECK(profile);
+  DCHECK(promo_suppressed);
+  *promo_suppressed = false;
+
   if (!ShouldShowSyncPromo(profile))
     return false;
 
@@ -208,6 +212,7 @@ bool SyncPromoUI::ShouldShowSyncPromoAtStartup(Profile* profile,
     case sync_promo_trial::STARTUP_OVERRIDE_SHOW:
       return true;
     case sync_promo_trial::STARTUP_OVERRIDE_HIDE:
+      *promo_suppressed = true;
       return false;
   }
 
