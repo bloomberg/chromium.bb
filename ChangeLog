@@ -1,3 +1,8 @@
+2012-02-22  Christian Egli  <christian.egli@sbs.ch>
+
+	* tables/no-no.ctb: Additions to the Norwegian braille tables
+	thanks to David Hole.
+
 2012-02-21  Juan Carlos Buño Suárez <quetzatl@eresmas.net>
 
 	* tables/Es-Es-G0.utb: add support for the letter Ñ to the Spanish

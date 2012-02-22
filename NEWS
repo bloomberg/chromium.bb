@@ -15,6 +15,7 @@ liblouis NEWS -- history of user-visible changes.
    - Improvements to the Portuguese grade1 braille tables
    - Updates and additions to Icelandic 8-dot braille table.
    - Improvements to the uncontracted Spanish computer braille table.
+   - Improvements to the Norwegian braille table thanks to David Hole.
 
 
 * Noteworthy changes in release 2.4.0 (2012-01-31)
