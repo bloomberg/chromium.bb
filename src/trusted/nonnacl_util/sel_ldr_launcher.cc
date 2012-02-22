@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -320,7 +320,10 @@ DescWrapper* SelLdrLauncher::WrapCleanup(NaClDesc* raw_desc) {
 }
 
 #if defined(NACL_STANDALONE)
-bool SelLdrLauncher::Start(int socket_count, Handle* result_sockets) {
+bool SelLdrLauncher::Start(int socket_count,
+                           Handle* result_sockets,
+                           const char* url) {
+  UNREFERENCED_PARAMETER(url);
   // Temporary: this interface is highly tailored to use by the browser
   // plugin, which currently wants to have exactly three sockets.
   // 0 -- the "bootstrap" socket.

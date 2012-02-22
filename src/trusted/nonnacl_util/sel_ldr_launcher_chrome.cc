@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,12 +11,14 @@ LaunchNaClProcessFunc launch_nacl_process = NULL;
 
 #if !defined(NACL_STANDALONE)
 namespace nacl {
-  bool SelLdrLauncher::Start(int socket_count, Handle* result_sockets) {
+  bool SelLdrLauncher::Start(int socket_count,
+                             Handle* result_sockets,
+                             const char* url) {
     // send a synchronous message to the browser process
     Handle nacl_proc_handle;
     int nacl_proc_id;
     if (!launch_nacl_process ||
-        !launch_nacl_process("",
+        !launch_nacl_process(url,
                              socket_count,
                              result_sockets,
                              &nacl_proc_handle,

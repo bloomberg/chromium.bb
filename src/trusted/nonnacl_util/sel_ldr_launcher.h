@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -139,7 +139,9 @@ struct SelLdrLauncher {
   // It will be supplied over RPC after start-up.
   /////////////////////////////////////////////////////////////////////////////
 
-  bool Start(int socket_count, Handle* result_sockets);
+  // TODO(halyavin): Default url parameter must be made required once chrome
+  // code is adapted to new API or sehr will finish refactoring of this code.
+  bool Start(int socket_count, Handle* result_sockets, const char* url = "");
 
  private:
   // OpenSrpcChannels is essentially the following sequence of
