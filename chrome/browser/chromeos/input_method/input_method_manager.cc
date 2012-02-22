@@ -1053,9 +1053,6 @@ class InputMethodManagerImpl
       pending_config_requests_.insert(current_config_values_.begin(),
                                       current_config_values_.end());
       FlushImeConfig();
-
-      ChangeInputMethod(previous_input_method().id());
-      ChangeInputMethod(current_input_method().id());
     }
   }
 
