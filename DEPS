@@ -164,6 +164,9 @@ deps = {
   "src/tools/page_cycler/acid3":
     "/trunk/deps/page_cycler/acid3@102714",
 
+  "src/chrome/test/data/perf/canvas_bench":
+    "/trunk/deps/canvas_bench@122605",
+
   "src/chrome/test/data/perf/frame_rate/content":
     "/trunk/deps/frame_rate/content@93671",
 
