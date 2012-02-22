@@ -65,7 +65,8 @@ class BoardSpecificBuilderStage(bs.BuilderStage):
 
     # Add a board name suffix to differentiate between various boards (in case
     # more than one board is built on a single builder.)
-    self.name += ' [%s]' % (board,)
+    if len(self._boards) > 1:
+      self.name = '%s [%s]' % (self.name, board)
 
   def GetImageDirSymlink(self, pointer='latest-cbuildbot'):
     """Get the location of the current image."""
