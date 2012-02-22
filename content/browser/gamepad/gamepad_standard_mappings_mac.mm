@@ -62,7 +62,7 @@ void MapperPlaystationSixAxis(
   mapped->axesLength = kNumAxes;
 }
 
-void MapperMacallyIshock(
+void MapperDirectInputStyle(
     const WebKit::WebGamepad& input,
     WebKit::WebGamepad* mapped) {
   *mapped = input;
@@ -93,7 +93,6 @@ void MapperMacallyIshock(
   mapped->axesLength = kNumAxes;
 }
 
-
 struct MappingData {
   const char* const vendor_id;
   const char* const product_id;
@@ -102,8 +101,11 @@ struct MappingData {
   // http://www.linux-usb.org/usb.ids
   { "045e", "028e", MapperXbox360Gamepad },     // Xbox 360 Controller
   { "045e", "028f", MapperXbox360Gamepad },     // Xbox 360 Wireless Controller
+  { "046d", "c216", MapperDirectInputStyle },   // Logitech F310, D mode
+  { "046d", "c218", MapperDirectInputStyle },   // Logitech F510, D mode
+  { "046d", "c219", MapperDirectInputStyle },   // Logitech F710, D mode
   { "054c", "0268", MapperPlaystationSixAxis }, // Playstation SIXAXIS
-  { "2222", "0060", MapperMacallyIshock },      // Macally iShockX, analog mode
+  { "2222", "0060", MapperDirectInputStyle },   // Macally iShockX, analog mode
 };
 
 }  // namespace
