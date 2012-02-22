@@ -1,5 +1,8 @@
 2012-02-22  Christian Egli  <christian.egli@sbs.ch>
 
+	* tables/ta-ta-g1.ctb: Added a new tamil table by Mesar Hameed
+	<mesar.hameed@gmail.com>
+
 	* tables/no-no.ctb: Additions to the Norwegian braille tables
 	thanks to David Hole.
 

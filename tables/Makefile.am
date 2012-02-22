@@ -192,6 +192,7 @@ table_files = \
 	sv-1996.ctb \
 	ta.ctb \
 	tamil.cti \
+	ta-ta-g1.ctb \
 	te.ctb \
 	telugu.cti \
 	text_nabcc.dis \
