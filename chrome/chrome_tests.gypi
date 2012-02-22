@@ -1650,7 +1650,6 @@
         'browser/profiles/gaia_info_update_service_unittest.cc',
         'browser/profiles/off_the_record_profile_impl_unittest.cc',
         'browser/profiles/profile_dependency_manager_unittest.cc',
-        'browser/profiles/profile_destroyer_unittest.cc',
         'browser/profiles/profile_downloader_unittest.cc',
         'browser/profiles/profile_info_cache_unittest.cc',
         'browser/profiles/profile_info_cache_unittest.h',

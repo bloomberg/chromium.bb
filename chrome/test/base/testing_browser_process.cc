@@ -15,8 +15,6 @@
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/test/test_browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,14 +29,6 @@ TestingBrowserProcess::TestingBrowserProcess()
 
 TestingBrowserProcess::~TestingBrowserProcess() {
   EXPECT_FALSE(local_state_);
-  // The profile manager must be destroyed in the UI thread.
-  if (profile_manager_.get() != NULL &&
-      !content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-    content::TestBrowserThread ui_thread_(content::BrowserThread::UI);
-    // There shouldn't be any render process host still alive at that point.
-    DCHECK(content::RenderProcessHost::AllHostsIterator().IsAtEnd());
-    profile_manager_.reset(NULL);
-  }
 }
 
 void TestingBrowserProcess::ResourceDispatcherHostCreated() {

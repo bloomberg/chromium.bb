@@ -462,7 +462,7 @@ Browser::~Browser() {
       !BrowserList::IsOffTheRecordSessionActiveForProfile(profile_)) {
     // An incognito profile is no longer needed, this indirectly frees
     // its cache and cookies once it gets destroyed at the appropriate time.
-    ProfileDestroyer::DestroyProfileWhenAppropriate(profile_);
+    ProfileDestroyer::DestroyOffTheRecordProfile(profile_);
   }
 
   // There may be pending file dialogs, we need to tell them that we've gone

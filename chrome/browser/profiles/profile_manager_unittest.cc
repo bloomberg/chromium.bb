@@ -501,16 +501,13 @@ TEST_F(ProfileManagerTest, LastOpenedProfilesDoesNotContainIncognito) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 
   // Successfully create the profiles.
-  TestingProfile* profile1 =
-      static_cast<TestingProfile*>(profile_manager->GetProfile(dest_path1));
+  Profile* profile1 = profile_manager->GetProfile(dest_path1);
   ASSERT_TRUE(profile1);
 
-  // incognito profiles should not be managed by the profile manager but by the
-  // original profile.
-  TestingProfile* profile2 = new TestingProfile();
+  TestingProfile* profile2 =
+      static_cast<TestingProfile*>(profile_manager->GetProfile(dest_path2));
   ASSERT_TRUE(profile2);
   profile2->set_incognito(true);
-  profile1->SetOffTheRecordProfile(profile2);
 
   std::vector<Profile*> last_opened_profiles =
       profile_manager->GetLastOpenedProfiles();

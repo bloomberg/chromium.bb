@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,7 +79,9 @@ class BrowserWithTestWindowTest : public testing::Test {
   }
 
   TestingProfile* profile() const { return profile_.get(); }
-  void set_profile(TestingProfile* profile);
+  void set_profile(TestingProfile* profile) {
+    profile_.reset(profile);
+  }
 
   MessageLoop* message_loop() { return &ui_loop_; }
 

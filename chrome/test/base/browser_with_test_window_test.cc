@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 #include <ole2.h>
 #endif  // defined(OS_WIN)
 
-#include "chrome//browser/profiles/profile_destroyer.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -41,7 +40,7 @@ BrowserWithTestWindowTest::BrowserWithTestWindowTest()
 void BrowserWithTestWindowTest::SetUp() {
   testing::Test::SetUp();
 
-  set_profile(CreateProfile());
+  profile_.reset(CreateProfile());
   browser_.reset(new Browser(Browser::TYPE_TABBED, profile()));
   window_.reset(new TestBrowserWindow(browser()));
   browser_->SetWindowForTesting(window_.get());
@@ -59,13 +58,6 @@ BrowserWithTestWindowTest::~BrowserWithTestWindowTest() {
 #if defined(OS_WIN)
   OleUninitialize();
 #endif
-}
-
-void BrowserWithTestWindowTest::set_profile(TestingProfile* profile) {
-  if (profile_.get() != NULL)
-    ProfileDestroyer::DestroyProfileWhenAppropriate(profile_.release());
-
-  profile_.reset(profile);
 }
 
 TestRenderViewHost* BrowserWithTestWindowTest::TestRenderViewHostForTab(
