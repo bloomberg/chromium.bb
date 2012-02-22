@@ -132,7 +132,7 @@ static void PrintUsage() {
           " -B additional ELF file to load as a blob library\n"
           " -v increases verbosity\n"
           " -X create a bound socket and export the address via an\n"
-          "    IMC message to a corresponding NaCl app descriptor\n"
+          "    IMC message to host OS descriptor\n"
           "    (use -1 to create the bound socket / address descriptor\n"
           "    pair, but that no export via IMC should occur)\n");
   fprintf(stderr,
