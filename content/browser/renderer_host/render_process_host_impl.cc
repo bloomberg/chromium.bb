@@ -1138,17 +1138,22 @@ content::RenderProcessHost* content::RenderProcessHost::FromID(
 }
 
 // static
-bool content::RenderProcessHost::ShouldTryToUseExistingProcessHost() {
-  size_t renderer_process_count = g_all_hosts.Get().size();
+bool content::RenderProcessHost::ShouldTryToUseExistingProcessHost(
+    BrowserContext* browser_context, const GURL& url) {
+
+  if (run_renderer_in_process())
+    return true;
 
   // NOTE: Sometimes it's necessary to create more render processes than
   //       GetMaxRendererProcessCount(), for instance when we want to create
   //       a renderer process for a browser context that has no existing
   //       renderers. This is OK in moderation, since the
   //       GetMaxRendererProcessCount() is conservative.
+  if (g_all_hosts.Get().size() >= GetMaxRendererProcessCount())
+    return true;
 
-  return run_renderer_in_process() ||
-         (renderer_process_count >= GetMaxRendererProcessCount());
+  return content::GetContentClient()->browser()->
+      ShouldTryToUseExistingProcessHost(browser_context, url);
 }
 
 // static

@@ -41,6 +41,8 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   virtual bool IsHandledURL(const GURL& url) OVERRIDE;
   virtual bool IsSuitableHost(RenderProcessHost* process_host,
                               const GURL& site_url) OVERRIDE;
+  virtual bool ShouldTryToUseExistingProcessHost(
+      BrowserContext* browser_context, const GURL& url) OVERRIDE;
   virtual void SiteInstanceGotProcess(SiteInstance* site_instance) OVERRIDE;
   virtual void SiteInstanceDeleting(SiteInstance* site_instance) OVERRIDE;
   virtual bool ShouldSwapProcessesForNavigation(const GURL& current_url,

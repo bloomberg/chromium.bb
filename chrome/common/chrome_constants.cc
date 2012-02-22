@@ -185,6 +185,8 @@ const int kJavascriptMessageExpectedDelay = 1000;
 
 const bool kEnableTouchIcon = false;
 
+const float kMaxShareOfExtensionProcesses = 0.30f;
+
 #if defined(OS_LINUX)
 extern const int kLowestRendererOomScore = 300;
 extern const int kHighestRendererOomScore = 1000;

@@ -208,7 +208,8 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Message::Sender,
 
   // Returns true if the caller should attempt to use an existing
   // RenderProcessHost rather than creating a new one.
-  static bool ShouldTryToUseExistingProcessHost();
+  static bool ShouldTryToUseExistingProcessHost(
+      content::BrowserContext* browser_context, const GURL& site_url);
 
   // Get an existing RenderProcessHost associated with the given browser
   // context, if possible.  The renderer process is chosen randomly from

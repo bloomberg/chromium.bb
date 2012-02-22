@@ -120,6 +120,12 @@ class ContentBrowserClient {
   virtual bool IsSuitableHost(content::RenderProcessHost* process_host,
                               const GURL& site_url) = 0;
 
+  // Returns whether a new process should be created or an existing one should
+  // be reused based on the URL we want to load. This should return false,
+  // unless there is a good reason otherwise.
+  virtual bool ShouldTryToUseExistingProcessHost(
+      BrowserContext* browser_context, const GURL& url) = 0;
+
   // Called when a site instance is first associated with a process.
   virtual void SiteInstanceGotProcess(
       content::SiteInstance* site_instance) = 0;

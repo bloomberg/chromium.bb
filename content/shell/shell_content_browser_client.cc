@@ -85,6 +85,11 @@ bool ShellContentBrowserClient::IsSuitableHost(
   return true;
 }
 
+bool ShellContentBrowserClient::ShouldTryToUseExistingProcessHost(
+      BrowserContext* browser_context, const GURL& url) {
+  return false;
+}
+
 void ShellContentBrowserClient::SiteInstanceGotProcess(
     SiteInstance* site_instance) {
 }

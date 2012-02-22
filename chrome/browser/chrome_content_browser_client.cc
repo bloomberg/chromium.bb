@@ -25,7 +25,9 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/api/webrequest/webrequest_api.h"
+#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_info_map.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_message_handler.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
@@ -44,6 +46,7 @@
 #include "chrome/browser/printing/printing_message_filter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/renderer_host/chrome_render_view_host_observer.h"
 #include "chrome/browser/renderer_host/plugin_info_message_filter.h"
@@ -506,6 +509,58 @@ bool ChromeContentBrowserClient::IsSuitableHost(
   // required by the site.
   return GetProcessPrivilege(process_host, process_map, service) ==
       privilege_required;
+}
+
+// This function is trying to limit the amount of processes used by extensions
+// with background pages. It uses a globally set percentage of processes to
+// run such extensions and if the limit is exceeded, it returns true, to
+// indicate to the content module to group extensions together.
+bool ChromeContentBrowserClient::ShouldTryToUseExistingProcessHost(
+    content::BrowserContext* browser_context, const GURL& url) {
+  // It has to be a valid URL for us to check for an extension.
+  if (!url.is_valid())
+    return false;
+
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  ExtensionService* service = profile->GetExtensionService();
+  if (!service)
+    return false;
+
+  // We have to have a valid extension with background page to proceed.
+  const Extension* extension =
+      service->extensions()->GetExtensionOrAppByURL(ExtensionURLInfo(url));
+  if (!extension)
+    return false;
+  if (!extension->has_background_page())
+    return false;
+
+  std::set<int> process_ids;
+  size_t max_process_count =
+      content::RenderProcessHost::GetMaxRendererProcessCount();
+
+  // Go through all profiles to ensure we have total count of extension
+  // processes containing background pages, otherwise one profile can
+  // starve the other.
+  std::vector<Profile*> profiles = g_browser_process->profile_manager()->
+      GetLoadedProfiles();
+  for (size_t i = 0; i < profiles.size(); ++i) {
+    ExtensionProcessManager* epm = profiles[i]->GetExtensionProcessManager();
+    for (ExtensionProcessManager::const_iterator iter = epm->begin();
+       iter != epm->end();
+       ++iter) {
+      ExtensionHost* host = *iter;
+      if (host->extension()->has_background_page()) {
+        process_ids.insert(host->render_process_host()->GetID());
+      }
+    }
+  }
+
+  if (process_ids.size() >
+      (max_process_count * chrome::kMaxShareOfExtensionProcesses)) {
+    return true;
+  }
+
+  return false;
 }
 
 void ChromeContentBrowserClient::SiteInstanceGotProcess(

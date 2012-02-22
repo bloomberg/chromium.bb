@@ -77,7 +77,8 @@ content::RenderProcessHost* SiteInstanceImpl::GetProcess() {
   // Create a new process if ours went away or was reused.
   if (!process_) {
     // See if we should reuse an old process
-    if (content::RenderProcessHost::ShouldTryToUseExistingProcessHost())
+    if (content::RenderProcessHost::ShouldTryToUseExistingProcessHost(
+            browsing_instance_->browser_context(), site_))
       process_ = content::RenderProcessHost::GetExistingProcessHost(
           browsing_instance_->browser_context(), site_);
 

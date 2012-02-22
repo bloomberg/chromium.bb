@@ -2677,6 +2677,7 @@
         'browser/extensions/notifications_apitest.cc',
         'browser/extensions/page_action_apitest.cc',
         'browser/extensions/platform_app_browsertest.cc',
+        'browser/extensions/process_management_browsertest.cc',
         'browser/extensions/settings/settings_apitest.cc',
         'browser/extensions/stubs_apitest.cc',
         'browser/extensions/system/system_apitest.cc',

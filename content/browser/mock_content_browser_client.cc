@@ -63,6 +63,11 @@ bool MockContentBrowserClient::IsSuitableHost(
   return true;
 }
 
+bool MockContentBrowserClient::ShouldTryToUseExistingProcessHost(
+    BrowserContext* browser_context, const GURL& url) {
+  return false;
+}
+
 void MockContentBrowserClient::SiteInstanceGotProcess(
     SiteInstance* site_instance) {
 }

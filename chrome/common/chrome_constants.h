@@ -108,6 +108,13 @@ extern const int kJavascriptMessageExpectedDelay;
 // Are touch icons enabled? False by default.
 extern const bool kEnableTouchIcon;
 
+// Fraction of the total number of processes to be used for hosting
+// extensions. If we have more extensions than this percentage, we will start
+// combining extensions in existing processes. This allows web pages to have
+// enough render processes and not be starved when a lot of extensions are
+// installed.
+extern const float kMaxShareOfExtensionProcesses;
+
 #if defined(OS_LINUX)
 // The highest and lowest assigned OOM score adjustment
 // (oom_score_adj) used by the OomPriority Manager.

@@ -843,7 +843,8 @@ bool PrerenderManager::AddPrerender(
   // On Android we do reuse processes as we have a limited number of them and we
   // still want the benefits of prerendering even when several tabs are open.
 #if !defined(OS_ANDROID)
-  if (content::RenderProcessHost::ShouldTryToUseExistingProcessHost() &&
+  if (content::RenderProcessHost::ShouldTryToUseExistingProcessHost(
+          profile_, url) &&
       !content::RenderProcessHost::run_renderer_in_process()) {
     RecordFinalStatus(origin, experiment, FINAL_STATUS_TOO_MANY_PROCESSES);
     return false;
