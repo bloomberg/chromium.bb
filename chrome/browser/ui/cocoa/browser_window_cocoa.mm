@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/mac/mac_util.h"
 #include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -574,6 +575,9 @@ gfx::Rect BrowserWindowCocoa::GetInstantBounds() {
 
 WindowOpenDisposition BrowserWindowCocoa::GetDispositionForPopupBounds(
     const gfx::Rect& bounds) {
+  // In Lion fullscreen mode, convert popups into tabs.
+  if (base::mac::IsOSLionOrLater() && IsFullscreen())
+    return NEW_FOREGROUND_TAB;
   return NEW_POPUP;
 }
 
