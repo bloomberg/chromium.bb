@@ -493,7 +493,8 @@ TEST_PPAPI_IN_PROCESS(PaintAggregator)
 TEST_PPAPI_OUT_OF_PROCESS(PaintAggregator)
 TEST_PPAPI_NACL_VIA_HTTP(PaintAggregator)
 
-TEST_PPAPI_IN_PROCESS(Scrollbar)
+// http://crbug.com/115286
+TEST_PPAPI_IN_PROCESS(DISABLED_Scrollbar)
 // http://crbug.com/89961
 TEST_F(OutOfProcessPPAPITest, FAILS_Scrollbar) {
   RunTest("Scrollbar");
