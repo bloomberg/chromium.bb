@@ -119,7 +119,6 @@ void LoginPerformer::OnLoginFailure(const LoginFailure& failure) {
 void LoginPerformer::OnLoginSuccess(
     const std::string& username,
     const std::string& password,
-    const GaiaAuthConsumer::ClientLoginResult& credentials,
     bool pending_requests,
     bool using_oauth) {
   content::RecordAction(UserMetricsAction("Login_Success"));
@@ -142,7 +141,6 @@ void LoginPerformer::OnLoginSuccess(
 
     delegate_->OnLoginSuccess(username,
                               password,
-                              credentials,
                               pending_requests,
                               using_oauth);
     return;
@@ -152,7 +150,6 @@ void LoginPerformer::OnLoginSuccess(
         << "Pending request w/o delegate_ should not happen!";
     // It is not guaranted, that profile creation has been finished yet. So use
     // async version here.
-    credentials_ = credentials;
     ProfileManager::CreateDefaultProfileAsync(
         base::Bind(&LoginPerformer::OnProfileCreated,
                    weak_factory_.GetWeakPtr()));
@@ -176,9 +173,6 @@ void LoginPerformer::OnProfileCreated(
 
   if (using_oauth_)
     LoginUtils::Get()->StartTokenServices(profile);
-
-  LoginUtils::Get()->StartSignedInServices(profile, credentials_);
-  credentials_ = GaiaAuthConsumer::ClientLoginResult();
 
   // Don't unlock screen if it was locked while we're waiting
   // for initial online auth.
@@ -206,11 +200,9 @@ void LoginPerformer::OnOffTheRecordLoginSuccess() {
     NOTREACHED();
 }
 
-void LoginPerformer::OnPasswordChangeDetected(
-    const GaiaAuthConsumer::ClientLoginResult& credentials) {
-  cached_credentials_ = credentials;
+void LoginPerformer::OnPasswordChangeDetected() {
   if (delegate_) {
-    delegate_->OnPasswordChangeDetected(credentials);
+    delegate_->OnPasswordChangeDetected();
   } else {
     last_login_failure_ =
         LoginFailure::FromNetworkAuthFailure(GoogleServiceAuthError(
@@ -338,17 +330,13 @@ void LoginPerformer::RecoverEncryptedData(const std::string& old_password) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&Authenticator::RecoverEncryptedData, authenticator_.get(),
-                 old_password,
-                 cached_credentials_));
-  cached_credentials_ = GaiaAuthConsumer::ClientLoginResult();
+                 old_password));
 }
 
 void LoginPerformer::ResyncEncryptedData() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&Authenticator::ResyncEncryptedData, authenticator_.get(),
-                 cached_credentials_));
-  cached_credentials_ = GaiaAuthConsumer::ClientLoginResult();
+      base::Bind(&Authenticator::ResyncEncryptedData, authenticator_.get()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

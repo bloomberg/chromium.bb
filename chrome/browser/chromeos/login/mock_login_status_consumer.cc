@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,6 @@ void MockConsumer::OnGuestSuccessQuitAndFail() {
 void MockConsumer::OnSuccessQuit(
     const std::string& username,
     const std::string& password,
-    const GaiaAuthConsumer::ClientLoginResult& credentials,
     bool pending_requests,
     bool using_oauth) {
   MessageLoop::current()->Quit();
@@ -39,7 +38,6 @@ void MockConsumer::OnSuccessQuit(
 void MockConsumer::OnSuccessQuitAndFail(
     const std::string& username,
     const std::string& password,
-    const GaiaAuthConsumer::ClientLoginResult& credentials,
     bool pending_requests,
     bool using_oauth) {
   ADD_FAILURE() << "Login should NOT have succeeded!";
@@ -58,14 +56,12 @@ void MockConsumer::OnFailQuitAndFail(const LoginFailure& error) {
 }
 
 // static
-void MockConsumer::OnMigrateQuit(
-    const GaiaAuthConsumer::ClientLoginResult& credentials) {
+void MockConsumer::OnMigrateQuit() {
   MessageLoop::current()->Quit();
 }
 
 // static
-void MockConsumer::OnMigrateQuitAndFail(
-    const GaiaAuthConsumer::ClientLoginResult& credentials) {
+void MockConsumer::OnMigrateQuitAndFail() {
   ADD_FAILURE() << "Should not have detected a PW change!";
   MessageLoop::current()->Quit();
 }

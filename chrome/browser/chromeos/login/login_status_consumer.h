@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -101,20 +101,17 @@ class LoginStatusConsumer {
   // The current login attempt has ended in failure, with error |error|.
   virtual void OnLoginFailure(const LoginFailure& error) = 0;
   // The current login attempt has succeeded for
-  // |username|/|password|, returning |credentials|.  If
-  // |pending_requests| is false, we're totally done.  If it's true,
-  // we will still have some more results to report later.
+  // |username|/|password|.  If |pending_requests| is false, we're totally done.
+  // If it's true, we will still have some more results to report later.
   virtual void OnLoginSuccess(
       const std::string& username,
       const std::string& password,
-      const GaiaAuthConsumer::ClientLoginResult& credentials,
       bool pending_requests,
       bool using_oauth) = 0;
   // The current guest login attempt has succeeded.
   virtual void OnOffTheRecordLoginSuccess() {}
   // The same password didn't work both online and offline.
-  virtual void OnPasswordChangeDetected(
-      const GaiaAuthConsumer::ClientLoginResult& credentials);
+  virtual void OnPasswordChangeDetected();
 };
 
 }  // namespace chromeos

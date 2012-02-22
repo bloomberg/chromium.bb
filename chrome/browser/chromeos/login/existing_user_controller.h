@@ -113,12 +113,10 @@ class ExistingUserController : public LoginDisplay::Delegate,
   virtual void OnLoginSuccess(
       const std::string& username,
       const std::string& password,
-      const GaiaAuthConsumer::ClientLoginResult& credentials,
       bool pending_requests,
       bool using_oauth) OVERRIDE;
   virtual void OnOffTheRecordLoginSuccess() OVERRIDE;
-  virtual void OnPasswordChangeDetected(
-      const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE;
+  virtual void OnPasswordChangeDetected() OVERRIDE;
   virtual void WhiteListCheckFailed(const std::string& email) OVERRIDE;
   virtual void OnOnlineChecked(
       const std::string& username, bool success) OVERRIDE;
@@ -215,9 +213,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // Whether everything is ready to launch the browser.
   bool ready_for_browser_launch_;
-
-  // Whether two factor credentials were used.
-  bool two_factor_credentials_;
 
   // Used to verify ownership before starting enterprise enrollment.
   scoped_ptr<OwnershipStatusChecker> ownership_checker_;

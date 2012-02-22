@@ -32,11 +32,9 @@ TestAttemptState::TestAttemptState(const std::string& username,
 TestAttemptState::~TestAttemptState() {}
 
 void TestAttemptState::PresetOnlineLoginStatus(
-    const GaiaAuthConsumer::ClientLoginResult& credentials,
     const LoginFailure& outcome) {
   online_complete_ = true;
   online_outcome_ = outcome;
-  credentials_ = credentials;
 }
 
 void TestAttemptState::DisableHosted() {
@@ -56,10 +54,6 @@ bool TestAttemptState::online_complete() {
 
 const LoginFailure& TestAttemptState::online_outcome() {
   return online_outcome_;
-}
-
-const GaiaAuthConsumer::ClientLoginResult& TestAttemptState::credentials() {
-  return credentials_;
 }
 
 bool TestAttemptState::is_first_time_user() {

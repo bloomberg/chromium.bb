@@ -773,7 +773,6 @@ class LoginObserver : public chromeos::LoginStatusConsumer {
   virtual void OnLoginSuccess(
       const std::string& username,
       const std::string& password,
-      const GaiaAuthConsumer::ClientLoginResult& credentials,
       bool pending_requests,
       bool using_oauth);
 
@@ -826,7 +825,6 @@ class ScreenUnlockObserver : public ScreenLockUnlockObserver,
   virtual void OnLoginSuccess(
       const std::string& username,
       const std::string& password,
-      const GaiaAuthConsumer::ClientLoginResult& credentials,
       bool pending_requests,
       bool using_oauth) {}
 

@@ -258,7 +258,6 @@ void ScreenLocker::OnLoginFailure(const LoginFailure& error) {
 void ScreenLocker::OnLoginSuccess(
     const std::string& username,
     const std::string& password,
-    const GaiaAuthConsumer::ClientLoginResult& unused,
     bool pending_requests,
     bool using_oauth) {
   VLOG(1) << "OnLoginSuccess: Sending Unlock request.";
@@ -286,8 +285,7 @@ void ScreenLocker::OnLoginSuccess(
       NotifyScreenUnlockRequested();
 
   if (login_status_consumer_)
-    login_status_consumer_->OnLoginSuccess(username, password,
-                                           unused, pending_requests,
+    login_status_consumer_->OnLoginSuccess(username, password, pending_requests,
                                            using_oauth);
 }
 

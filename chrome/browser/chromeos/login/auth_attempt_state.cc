@@ -43,7 +43,6 @@ AuthAttemptState::AuthAttemptState(const std::string& username,
       unlock(true),
       online_complete_(true),
       online_outcome_(LoginFailure::UNLOCK_FAILED),
-      credentials_(GaiaAuthConsumer::ClientLoginResult()),
       hosted_policy_(GaiaAuthFetcher::HostedAccountsAllowed),
       is_first_time_user_(false),
       cryptohome_complete_(false),
@@ -61,7 +60,6 @@ AuthAttemptState::AuthAttemptState(const std::string& username,
       unlock(true),
       online_complete_(false),
       online_outcome_(LoginFailure::NONE),
-      credentials_(GaiaAuthConsumer::ClientLoginResult()),
       hosted_policy_(GaiaAuthFetcher::HostedAccountsAllowed),
       is_first_time_user_(user_is_new),
       cryptohome_complete_(false),
@@ -72,12 +70,10 @@ AuthAttemptState::AuthAttemptState(const std::string& username,
 AuthAttemptState::~AuthAttemptState() {}
 
 void AuthAttemptState::RecordOnlineLoginStatus(
-    const GaiaAuthConsumer::ClientLoginResult& credentials,
     const LoginFailure& outcome) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   online_complete_ = true;
   online_outcome_ = outcome;
-  credentials_ = credentials;
   // We're either going to not try again, or try again with HOSTED
   // accounts not allowed, so just set this here.
   DisableHosted();
@@ -111,11 +107,6 @@ bool AuthAttemptState::online_complete() {
 const LoginFailure& AuthAttemptState::online_outcome() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return online_outcome_;
-}
-
-const GaiaAuthConsumer::ClientLoginResult& AuthAttemptState::credentials() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return credentials_;
 }
 
 bool AuthAttemptState::is_first_time_user() {

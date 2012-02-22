@@ -62,7 +62,6 @@ class LoginUtils {
       const std::string& username,
       const std::string& display_email,
       const std::string& password,
-      const GaiaAuthConsumer::ClientLoginResult& credentials,
       bool pending_requests,
       bool using_oauth,
       bool has_cookies,

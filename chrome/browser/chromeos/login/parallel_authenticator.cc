@@ -175,10 +175,8 @@ ParallelAuthenticator::ParallelAuthenticator(LoginStatusConsumer* consumer)
       check_key_attempted_(false),
       already_reported_success_(false),
       using_oauth_(
-          CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kWebUILogin) &&
           !CommandLine::ForCurrentProcess()->HasSwitch(
-                  switches::kSkipOAuthLogin)) {
+              switches::kSkipOAuthLogin)) {
   // If not already owned, this is a no-op.  If it is, this loads the owner's
   // public key off of disk.
   OwnershipService::GetSharedInstance()->StartLoadOwnerKeyAttempt();
@@ -282,7 +280,6 @@ void ParallelAuthenticator::LoginOffTheRecord() {
 }
 
 void ParallelAuthenticator::OnLoginSuccess(
-    const GaiaAuthConsumer::ClientLoginResult& credentials,
     bool request_pending) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   VLOG(1) << "Login success";
@@ -298,7 +295,6 @@ void ParallelAuthenticator::OnLoginSuccess(
   }
   consumer_->OnLoginSuccess(current_state_->username,
                             current_state_->password,
-                            credentials,
                             request_pending,
                             using_oauth_);
 }
@@ -314,10 +310,9 @@ void ParallelAuthenticator::OnOffTheRecordLoginSuccess() {
   consumer_->OnOffTheRecordLoginSuccess();
 }
 
-void ParallelAuthenticator::OnPasswordChangeDetected(
-    const GaiaAuthConsumer::ClientLoginResult& credentials) {
+void ParallelAuthenticator::OnPasswordChangeDetected() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  consumer_->OnPasswordChangeDetected(credentials);
+  consumer_->OnPasswordChangeDetected();
 }
 
 void ParallelAuthenticator::OnLoginFailure(const LoginFailure& error) {
@@ -342,8 +337,7 @@ void ParallelAuthenticator::RecordOAuthCheckFailure(
 }
 
 void ParallelAuthenticator::RecoverEncryptedData(
-    const std::string& old_password,
-    const GaiaAuthConsumer::ClientLoginResult& credentials) {
+    const std::string& old_password) {
   std::string old_hash =
       CrosLibrary::Get()->GetCryptohomeLibrary()->HashPassword(old_password);
   migrate_attempted_ = true;
@@ -358,8 +352,7 @@ void ParallelAuthenticator::RecoverEncryptedData(
                             old_hash)));
 }
 
-void ParallelAuthenticator::ResyncEncryptedData(
-    const GaiaAuthConsumer::ClientLoginResult& credentials) {
+void ParallelAuthenticator::ResyncEncryptedData() {
   remove_attempted_ = true;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -445,8 +438,7 @@ void ParallelAuthenticator::Resolve() {
     case NEED_OLD_PW:
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          base::Bind(&ParallelAuthenticator::OnPasswordChangeDetected, this,
-                     current_state_->credentials()));
+          base::Bind(&ParallelAuthenticator::OnPasswordChangeDetected, this));
       break;
     case ONLINE_FAILED:
       // In this case, we know online login was rejected because the account
@@ -467,8 +459,7 @@ void ParallelAuthenticator::Resolve() {
             // OnLoginSuccess(..., ..., true) -> OnLoginFailure().
             BrowserThread::PostTask(
                 BrowserThread::UI, FROM_HERE,
-                base::Bind(&ParallelAuthenticator::OnLoginSuccess, this,
-                           current_state_->credentials(), true));
+                base::Bind(&ParallelAuthenticator::OnLoginSuccess, this, true));
           }
         }
         const LoginFailure& login_failure =
@@ -518,7 +509,7 @@ void ParallelAuthenticator::Resolve() {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           base::Bind(&ParallelAuthenticator::OnLoginSuccess, this,
-                     current_state_->credentials(), request_pending));
+                     request_pending));
       break;
     case GUEST_LOGIN:
       BrowserThread::PostTask(
@@ -690,8 +681,7 @@ ParallelAuthenticator::ResolveOnlineSuccessState(
 
 void ParallelAuthenticator::ResolveLoginCompletionStatus() {
   // Shortcut online state resolution process.
-  current_state_->RecordOnlineLoginStatus(GaiaAuthConsumer::ClientLoginResult(),
-                                          LoginFailure::None());
+  current_state_->RecordOnlineLoginStatus(LoginFailure::None());
   Resolve();
 }
 

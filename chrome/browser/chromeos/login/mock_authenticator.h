@@ -48,17 +48,14 @@ class MockAuthenticator : public Authenticator {
   virtual void LoginOffTheRecord() OVERRIDE;
 
   virtual void OnLoginSuccess(
-      const GaiaAuthConsumer::ClientLoginResult& credentials,
       bool request_pending) OVERRIDE;
 
   virtual void OnLoginFailure(const LoginFailure& failure) OVERRIDE;
 
   virtual void RecoverEncryptedData(
-      const std::string& old_password,
-      const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE {}
+      const std::string& old_password) OVERRIDE {}
 
-  virtual void ResyncEncryptedData(
-      const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE {}
+  virtual void ResyncEncryptedData() OVERRIDE {}
 
   virtual void RetryAuth(Profile* profile,
                          const std::string& username,
@@ -82,7 +79,6 @@ class MockLoginUtils : public LoginUtils {
   virtual void PrepareProfile(const std::string& username,
                               const std::string& display_email,
                               const std::string& password,
-                              const GaiaAuthConsumer::ClientLoginResult& res,
                               bool pending_requests,
                               bool using_oauth,
                               bool has_cookies,

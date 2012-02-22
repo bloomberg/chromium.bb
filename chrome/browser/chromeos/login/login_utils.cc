@@ -32,6 +32,7 @@
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/session_manager_client.h"
+#include "chrome/browser/chromeos/gdata/gdata.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/cookie_fetcher.h"
@@ -557,7 +558,6 @@ class LoginUtilsImpl : public LoginUtils,
       const std::string& username,
       const std::string& display_email,
       const std::string& password,
-      const GaiaAuthConsumer::ClientLoginResult& credentials,
       bool pending_requests,
       bool using_oauth,
       bool has_cookies,
@@ -651,7 +651,6 @@ class LoginUtilsImpl : public LoginUtils,
                         Profile::CreateStatus status);
 
   std::string password_;
-  GaiaAuthConsumer::ClientLoginResult credentials_;
   bool pending_requests_;
   bool using_oauth_;
   bool has_cookies_;
@@ -702,7 +701,6 @@ void LoginUtilsImpl::PrepareProfile(
     const std::string& username,
     const std::string& display_email,
     const std::string& password,
-    const GaiaAuthConsumer::ClientLoginResult& credentials,
     bool pending_requests,
     bool using_oauth,
     bool has_cookies,
@@ -730,7 +728,6 @@ void LoginUtilsImpl::PrepareProfile(
 
   password_ = password;
 
-  credentials_ = credentials;
   pending_requests_ = pending_requests;
   using_oauth_ = using_oauth;
   has_cookies_ = has_cookies;
@@ -878,9 +875,6 @@ void LoginUtilsImpl::OnProfileCreated(
   // resolved.
   if (delegate_)
     delegate_->OnProfilePrepared(user_profile);
-
-  // TODO(altimofeev): Need to sanitize memory used to store password.
-  credentials_ = GaiaAuthConsumer::ClientLoginResult();
 }
 
 void LoginUtilsImpl::FetchOAuth1AccessToken(Profile* auth_profile) {
@@ -921,6 +915,7 @@ void LoginUtilsImpl::StartSignedInServices(
   static bool initialized = false;
   if (!initialized) {
     initialized = true;
+    gdata::DocumentsService::GetInstance()->Initialize(user_profile);
     // Pass the updated passphrase to the sync service for use in decrypting
     // data encrypted with the user's GAIA password.
     ProfileSyncService* sync_service =
@@ -1107,12 +1102,6 @@ scoped_refptr<Authenticator> LoginUtilsImpl::CreateAuthenticator(
     LoginStatusConsumer* consumer) {
   // Screen locker needs new Authenticator instance each time.
   if (ScreenLocker::default_screen_locker())
-    authenticator_ = NULL;
-
-  // In case of non-WebUI login new instance of Authenticator is supposed
-  // to be created on each call.
-  // TODO(nkostylev): Clean up after WebUI login migration is complete.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kWebUILogin))
     authenticator_ = NULL;
 
   if (authenticator_ == NULL)

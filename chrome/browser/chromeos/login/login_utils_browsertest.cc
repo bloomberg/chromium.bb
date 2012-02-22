@@ -220,7 +220,6 @@ class LoginUtilsTestBase : public TESTBASE,
 
   virtual void OnLoginSuccess(const std::string& username,
                               const std::string& password,
-                              const GaiaAuthConsumer::ClientLoginResult& creds,
                               bool pending_requests,
                               bool using_oauth) OVERRIDE {
     FAIL() << "OnLoginSuccess not expected";
@@ -250,9 +249,8 @@ class LoginUtilsTestBase : public TESTBASE,
                                  username,
                                  "password");
 
-    GaiaAuthConsumer::ClientLoginResult credentials;
     LoginUtils::Get()->PrepareProfile(username, std::string(), "password",
-                                      credentials, false, true, false, this);
+                                      false, true, false, this);
     loop_.RunAllPending();
   }
 

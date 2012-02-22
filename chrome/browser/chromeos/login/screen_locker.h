@@ -50,7 +50,6 @@ class ScreenLocker : public LoginStatusConsumer {
   virtual void OnLoginFailure(const chromeos::LoginFailure& error) OVERRIDE;
   virtual void OnLoginSuccess(const std::string& username,
                               const std::string& password,
-                              const GaiaAuthConsumer::ClientLoginResult& result,
                               bool pending_requests,
                               bool using_oauth) OVERRIDE;
 

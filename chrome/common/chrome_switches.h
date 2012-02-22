@@ -316,7 +316,6 @@ extern const char kWinHttpProxyResolver[];
 extern const char kMemoryWidget[];
 
 #if defined(OS_CHROMEOS)
-extern const char kWebUILogin[];
 extern const char kSkipOAuthLogin[];
 extern const char kEnableBluetooth[];
 extern const char kEnableDevicePolicy[];

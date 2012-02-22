@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,11 +38,10 @@ class AuthAttemptState {
 
   virtual ~AuthAttemptState();
 
-  // Copy |credentials| and |outcome| into this object, so we can have
+  // Copy |credentials| and copy |outcome| into this object, so we can have
   // a copy we're sure to own, and can make available on the IO thread.
   // Must be called from the IO thread.
   void RecordOnlineLoginStatus(
-      const GaiaAuthConsumer::ClientLoginResult& credentials,
       const LoginFailure& outcome);
 
   // The next attempt will not allow HOSTED accounts to log in.
@@ -59,7 +58,6 @@ class AuthAttemptState {
 
   virtual bool online_complete();
   virtual const LoginFailure& online_outcome();
-  virtual const GaiaAuthConsumer::ClientLoginResult& credentials();
   virtual bool is_first_time_user();
   virtual GaiaAuthFetcher::HostedAccountsSetting hosted_policy();
 
@@ -91,7 +89,6 @@ class AuthAttemptState {
   // Status of our online login attempt.
   bool online_complete_;
   LoginFailure online_outcome_;
-  GaiaAuthConsumer::ClientLoginResult credentials_;
 
   // Whether or not we're accepting HOSTED accounts during the current
   // online auth attempt.

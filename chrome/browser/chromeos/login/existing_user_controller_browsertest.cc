@@ -89,7 +89,6 @@ class MockLoginPerformerDelegate : public LoginPerformer::Delegate {
 
   virtual void OnLoginSuccess(const std::string& username,
                               const std::string& password,
-                              const GaiaAuthConsumer::ClientLoginResult& result,
                               bool pending_requests,
                               bool using_oauth) OVERRIDE {
     ignore_result(controller_->login_performer_.release());

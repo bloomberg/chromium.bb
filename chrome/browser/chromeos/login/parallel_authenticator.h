@@ -117,15 +117,12 @@ class ParallelAuthenticator : public Authenticator,
   // These methods must be called on the UI thread, as they make DBus calls
   // and also call back to the login UI.
   virtual void OnLoginSuccess(
-      const GaiaAuthConsumer::ClientLoginResult& credentials,
       bool request_pending)  OVERRIDE;
 
   virtual void OnLoginFailure(const LoginFailure& error) OVERRIDE;
   virtual void RecoverEncryptedData(
-      const std::string& old_password,
-      const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE;
-  virtual void ResyncEncryptedData(
-      const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE;
+      const std::string& old_password) OVERRIDE;
+  virtual void ResyncEncryptedData() OVERRIDE;
   virtual void RetryAuth(Profile* profile,
                          const std::string& username,
                          const std::string& password,
@@ -141,8 +138,7 @@ class ParallelAuthenticator : public Authenticator,
   virtual void Resolve() OVERRIDE;
 
   void OnOffTheRecordLoginSuccess();
-  void OnPasswordChangeDetected(
-      const GaiaAuthConsumer::ClientLoginResult& credentials);
+  void OnPasswordChangeDetected();
 
  private:
   // Returns the AuthState we're in, given the status info we have at
@@ -180,6 +176,11 @@ class ParallelAuthenticator : public Authenticator,
   // the possible success states we're in.
   // Must be called on the IO thread.
   AuthState ResolveOnlineSuccessState(AuthState offline_state);
+
+  // Used to disable oauth, used for testing.
+  void set_using_oauth(bool value) {
+    using_oauth_ = value;
+  }
 
   // Used for testing.
   void set_attempt_state(TestAttemptState* new_state) {  // takes ownership.

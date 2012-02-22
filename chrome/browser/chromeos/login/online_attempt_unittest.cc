@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -107,17 +107,16 @@ class OnlineAttemptTest : public testing::Test {
 };
 
 TEST_F(OnlineAttemptTest, LoginSuccess) {
-  GaiaAuthConsumer::ClientLoginResult result;
   EXPECT_CALL(*(resolver_.get()), Resolve())
       .Times(1)
       .RetiresOnSaturation();
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&OnlineAttempt::OnClientLoginSuccess, attempt_.get(), result));
+      base::Bind(&OnlineAttempt::OnClientLoginSuccess, attempt_.get(),
+                 GaiaAuthConsumer::ClientLoginResult()));
   // Force IO thread to finish tasks so I can verify |state_|.
   io_thread_.Stop();
-  EXPECT_TRUE(result == state_.credentials());
 }
 
 TEST_F(OnlineAttemptTest, LoginCancelRetry) {
@@ -268,7 +267,6 @@ TEST_F(OnlineAttemptTest, TwoFactorSuccess) {
   io_thread_.Stop();
   EXPECT_TRUE(GoogleServiceAuthError::None() ==
               state_.online_outcome().error());
-  EXPECT_TRUE(GaiaAuthConsumer::ClientLoginResult() == state_.credentials());
 }
 
 }  // namespace chromeos

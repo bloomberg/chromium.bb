@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,7 +76,7 @@ void OnlineAttempt::Initiate(Profile* auth_profile) {
 }
 
 void OnlineAttempt::OnClientLoginSuccess(
-    const GaiaAuthConsumer::ClientLoginResult& credentials) {
+    const GaiaAuthConsumer::ClientLoginResult& unused) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   VLOG(1) << "Online login successful!";
 
@@ -95,7 +95,7 @@ void OnlineAttempt::OnClientLoginSuccess(
     TryClientLogin();
     return;
   }
-  TriggerResolve(credentials, LoginFailure::None());
+  TriggerResolve(LoginFailure::None());
 }
 
 void OnlineAttempt::OnClientLoginFailure(
@@ -122,8 +122,7 @@ void OnlineAttempt::OnClientLoginFailure(
     // and succeeded.  That we've failed with INVALID_GAIA_CREDENTIALS now
     // indicates that the account is HOSTED.
     LOG(WARNING) << "Rejecting valid HOSTED account.";
-    TriggerResolve(GaiaAuthConsumer::ClientLoginResult(),
-                   LoginFailure::FromNetworkAuthFailure(
+    TriggerResolve(LoginFailure::FromNetworkAuthFailure(
                        GoogleServiceAuthError(
                            GoogleServiceAuthError::HOSTED_NOT_ALLOWED)));
     return;
@@ -131,14 +130,12 @@ void OnlineAttempt::OnClientLoginFailure(
 
   if (error.state() == GoogleServiceAuthError::TWO_FACTOR) {
     LOG(WARNING) << "Two factor authenticated. Sync will not work.";
-    TriggerResolve(GaiaAuthConsumer::ClientLoginResult(),
-                   LoginFailure::None());
+    TriggerResolve(LoginFailure::None());
 
     return;
   }
   VLOG(2) << "ClientLogin attempt failed with " << error.state();
-  TriggerResolve(GaiaAuthConsumer::ClientLoginResult(),
-                 LoginFailure::FromNetworkAuthFailure(error));
+  TriggerResolve(LoginFailure::FromNetworkAuthFailure(error));
 }
 
 void OnlineAttempt::OnOAuthLoginSuccess(const std::string& sid,
@@ -201,15 +198,13 @@ void OnlineAttempt::CancelClientLogin() {
     LOG(WARNING) << "Canceling ClientLogin attempt.";
     CancelRequest();
 
-    TriggerResolve(GaiaAuthConsumer::ClientLoginResult(),
-                   LoginFailure(LoginFailure::LOGIN_TIMED_OUT));
+    TriggerResolve(LoginFailure(LoginFailure::LOGIN_TIMED_OUT));
   }
 }
 
 void OnlineAttempt::TriggerResolve(
-    const GaiaAuthConsumer::ClientLoginResult& credentials,
     const LoginFailure& outcome) {
-  attempt_->RecordOnlineLoginStatus(credentials, outcome);
+  attempt_->RecordOnlineLoginStatus(outcome);
   client_fetcher_.reset(NULL);
   oauth_fetcher_.reset(NULL);
   resolver_->Resolve();

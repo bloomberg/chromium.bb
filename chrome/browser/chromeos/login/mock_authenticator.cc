@@ -18,8 +18,7 @@ void MockAuthenticator::AuthenticateToLogin(Profile* profile,
                                  const std::string& login_captcha) {
   if (expected_username_ == username && expected_password_ == password) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&MockAuthenticator::OnLoginSuccess, this,
-                   GaiaAuthConsumer::ClientLoginResult(), false));
+        base::Bind(&MockAuthenticator::OnLoginSuccess, this, false));
   }
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
@@ -33,7 +32,7 @@ void MockAuthenticator::CompleteLogin(Profile* profile,
                                       const std::string& password) {
   CHECK_EQ(expected_username_, username);
   CHECK_EQ(expected_password_, password);
-  OnLoginSuccess(GaiaAuthConsumer::ClientLoginResult(), false);
+  OnLoginSuccess(false);
 }
 
 void MockAuthenticator::AuthenticateToUnlock(const std::string& username,
@@ -47,13 +46,11 @@ void MockAuthenticator::LoginOffTheRecord() {
 }
 
 void MockAuthenticator::OnLoginSuccess(
-    const GaiaAuthConsumer::ClientLoginResult& credentials,
     bool request_pending) {
   // If we want to be more like the real thing, we could save username
   // in AuthenticateToLogin, but there's not much of a point.
   consumer_->OnLoginSuccess(expected_username_,
                             expected_password_,
-                            credentials,
                             request_pending,
                             false);
 }
@@ -77,7 +74,6 @@ void MockLoginUtils::PrepareProfile(
     const std::string& username,
     const std::string& display_email,
     const std::string& password,
-    const GaiaAuthConsumer::ClientLoginResult& res,
     bool pending_requests,
     bool using_oauth,
     bool has_cookies,

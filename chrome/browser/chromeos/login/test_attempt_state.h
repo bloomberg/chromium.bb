@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,6 @@ class TestAttemptState : public AuthAttemptState {
 
   // Act as though an online login attempt completed already.
   void PresetOnlineLoginStatus(
-      const GaiaAuthConsumer::ClientLoginResult& credentials,
       const LoginFailure& outcome);
 
   // The next attempt will not allow HOSTED accounts to log in.
@@ -42,7 +41,6 @@ class TestAttemptState : public AuthAttemptState {
   // To allow state to be queried on the main thread during tests.
   virtual bool online_complete() OVERRIDE;
   virtual const LoginFailure& online_outcome() OVERRIDE;
-  virtual const GaiaAuthConsumer::ClientLoginResult& credentials() OVERRIDE;
   virtual bool is_first_time_user() OVERRIDE;
   virtual GaiaAuthFetcher::HostedAccountsSetting hosted_policy() OVERRIDE;
   virtual bool cryptohome_complete() OVERRIDE;

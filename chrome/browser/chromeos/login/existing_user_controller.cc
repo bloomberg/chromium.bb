@@ -317,7 +317,6 @@ void ExistingUserController::CompleteLoginInternal(std::string username,
                                                    std::string password) {
   resume_login_callback_.Reset();
 
-  GaiaAuthConsumer::ClientLoginResult credentials;
   if (!login_performer_.get()) {
     LoginPerformer::Delegate* delegate = this;
     if (login_performer_delegate_.get())
@@ -518,7 +517,6 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
 void ExistingUserController::OnLoginSuccess(
     const std::string& username,
     const std::string& password,
-    const GaiaAuthConsumer::ClientLoginResult& credentials,
     bool pending_requests,
     bool using_oauth) {
   is_login_in_progress_ = false;
@@ -528,8 +526,6 @@ void ExistingUserController::OnLoginSuccess(
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kLoginScreen) == WizardController::kLoginScreenName;
   ready_for_browser_launch_ = known_user || login_only;
-
-  two_factor_credentials_ = credentials.two_factor;
 
   bool has_cookies =
       login_performer_->auth_mode() == LoginPerformer::AUTH_MODE_EXTENSION;
@@ -546,7 +542,6 @@ void ExistingUserController::OnLoginSuccess(
   LoginUtils::Get()->PrepareProfile(username,
                                     display_email_,
                                     password,
-                                    credentials,
                                     pending_requests,
                                     using_oauth,
                                     has_cookies,
@@ -583,8 +578,7 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
     // Inform |login_status_consumer_| about successful login after
     // browser launch.  Set most params to empty since they're not needed.
     if (login_status_consumer_)
-      login_status_consumer_->OnLoginSuccess(
-          "", "", GaiaAuthConsumer::ClientLoginResult(), false, false);
+      login_status_consumer_->OnLoginSuccess("", "", false, false);
     host_ = NULL;
   }
   login_display_->OnFadeOut();
@@ -609,13 +603,12 @@ void ExistingUserController::OnOffTheRecordLoginSuccess() {
     login_status_consumer_->OnOffTheRecordLoginSuccess();
 }
 
-void ExistingUserController::OnPasswordChangeDetected(
-    const GaiaAuthConsumer::ClientLoginResult& credentials) {
+void ExistingUserController::OnPasswordChangeDetected() {
   // Must not proceed without signature verification.
   bool trusted_setting_available = cros_settings_->GetTrusted(
       kDeviceOwner,
       base::Bind(&ExistingUserController::OnPasswordChangeDetected,
-                 weak_factory_.GetWeakPtr(), credentials));
+                 weak_factory_.GetWeakPtr()));
 
   if (!trusted_setting_available) {
     // Value of owner email is still not verified.
@@ -636,7 +629,7 @@ void ExistingUserController::OnPasswordChangeDetected(
   window->Show();
 
   if (login_status_consumer_)
-    login_status_consumer_->OnPasswordChangeDetected(credentials);
+    login_status_consumer_->OnPasswordChangeDetected();
 
   display_email_.clear();
 }
@@ -738,13 +731,6 @@ void ExistingUserController::InitializeStartUrls() const {
     if (!initial_start_page.empty())
       start_urls.push_back(initial_start_page);
     customization->ApplyCustomization();
-  }
-
-  if (two_factor_credentials_) {
-    // If we have a two factor error and and this is a new user,
-    // load the personal settings page.
-    // TODO(stevenjb): direct the user to a lightweight sync login page.
-    start_urls.push_back(kSettingsSyncLoginURL);
   }
 
   for (size_t i = 0; i < start_urls.size(); ++i)
