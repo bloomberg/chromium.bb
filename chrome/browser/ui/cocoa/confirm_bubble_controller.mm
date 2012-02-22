@@ -19,7 +19,7 @@
   if ((self = [super initWithNibName:nil bundle:nil])) {
     parent_ = parent;
     origin_ = origin;
-    model_ = model;
+    model_.reset(model);
   }
   return self;
 }

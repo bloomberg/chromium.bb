@@ -9,6 +9,7 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/mac/cocoa_protocols.h"
+#include "base/memory/scoped_ptr.h"
 
 class ConfirmBubbleModel;
 
@@ -21,10 +22,11 @@ class ConfirmBubbleModel;
  @private
   NSView* parent_;  // weak
   CGPoint origin_;
-  ConfirmBubbleModel* model_;  // weak
+  scoped_ptr<ConfirmBubbleModel> model_;
 }
 
-// Creates a ConfirmBubbleController object.
+// Creates a ConfirmBubbleController object. The ConfirmBubbleController
+// controller takes the ownership of the passed-in ConfirmBubbleModel.
 - (id)initWithParent:(NSView*)parent
               origin:(CGPoint)origin
                model:(ConfirmBubbleModel*)model;
