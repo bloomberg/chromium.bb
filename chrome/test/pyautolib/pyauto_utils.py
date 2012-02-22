@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -158,3 +158,4 @@ def PrintPerfResult(graph_name, series_name, data_point, units,
   print '%sRESULT %s: %s= %s %s' % (
       waterfall_indicator, graph_name, series_name,
       str(data_point).replace(' ', ''), units)
+  sys.stdout.flush()
