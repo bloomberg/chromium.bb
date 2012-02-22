@@ -878,6 +878,8 @@ void RenderViewHost::OnMsgRunModal(IPC::Message* reply_msg) {
   DCHECK(!run_modal_reply_msg_);
   run_modal_reply_msg_ = reply_msg;
 
+  content::RecordAction(UserMetricsAction("ShowModalDialog"));
+
   // TODO(darin): Bug 1107929: Need to inform our delegate to show this view in
   // an app-modal fashion.
 }

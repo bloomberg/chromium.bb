@@ -12,6 +12,7 @@
 0xdddbf34cee2c636c	AboutFlags_dns-server
 0x3add7fc42803849e	AboutFlags_downloads-new-ui
 0x4eae5ccc2900dffa	AboutFlags_enable-nacl
+0x6d932203ed5c6ae8	AboutFlags_enable-nacl-exception-handling
 0x1a3d598e2cd416a0	AboutFlags_enable-smooth-scrolling
 0x79571e31c2dc4d3c	AboutFlags_experimental-location-features
 0x307b8a127f85947e	AboutFlags_expose-for-tabs
@@ -1004,6 +1005,8 @@
 0x61a29472d343cf72	Options_TouchpadTapToClick_Enable
 0xa35806253d8d8b30	Options_Translate_Disable
 0x280bb55487be6eb4	Options_Translate_Enable
+0x5ebf6f9ecb47b4ad	Options_UseSpellingServiceCheckbox_Disable
+0x78f845e65f47f3f6	Options_UseSpellingServiceCheckbox_Enable
 0x6f40a6712a19568a	Options_UseSuggestCheckbox_Disable
 0x9abd34cb9a857b9e	Options_UseSuggestCheckbox_Enable
 0x24604cce8816243c	Options_VertEdgeScrollCheckbox_Disable
@@ -1146,6 +1149,7 @@
 0xb2a3954e828f87c9	ShowHelpTabViaWrenchMenu
 0xb04b2eea6e26ebef	ShowHistory
 0x404c3c24f3091fd7	ShowJSConsole
+0xa231b4c4e5ada262	ShowModalDialog
 0x658963e1a47a5018	ShowOptions
 0x564171f658dcb78e	ShowPageMenu
 0xecf70e5f5be34681	ShowRecentlyViewed
