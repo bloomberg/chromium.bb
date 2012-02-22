@@ -39,7 +39,7 @@ vars = {
 
   "libjingle_revision": "115",
   "libphonenumber_revision": "425",
-  "libvpx_revision": "122984",
+  "libvpx_revision": "122996",
   "lss_revision": "9",
   "ffmpeg_revision": "122092",
   "sfntly_revision": "118",
