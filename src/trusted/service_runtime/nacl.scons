@@ -44,6 +44,10 @@ def NewAsmEnv(env, defines, rodata_address, rwdata_address):
   if asm_env.Bit('bitcode'):
     asm_env.PNaClForceNative()
     asm_env.Append(ASPPFLAGS=['-DPNACL_AS=1'])
+    # On Windows, assembly pre-preprocessing uses $CCCOM instead of $ASPPCOM,
+    # so we need to set PNACL_AS=1 in CCFLAGS as well.
+    asm_env.Append(CCFLAGS=['-DPNACL_AS=1'])
+
   link_cmd = ('${LD} -e _start ${TEXT_START} ${RO_START} ${RW_START}' +
                 ' -o ${TARGET} ${SOURCES}')
 
