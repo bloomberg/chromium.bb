@@ -30,6 +30,7 @@
  */
 
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncdecode.h"
+#include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncdecode_aux.h"
 
 #include <stdio.h>
 #include <assert.h>
@@ -102,7 +103,7 @@ static void NullDecoderMethod(struct NCDecoderState* dstate) {
 }
 
 /* API to virtual methods of a decoder state. */
-static void NCDecoderStateNewSegment(NCDecoderState* tthis) {
+void NCDecoderStateNewSegment(NCDecoderState* tthis) {
   (tthis->new_segment_fn)(tthis);
 }
 
@@ -608,7 +609,7 @@ static void MaybeConsumePredefinedNop(NCDecoderInst* dinst) {
 
 /* All of the actions needed to read one additional instruction into mstate.
  */
-static void ConsumeNextInstruction(struct NCDecoderInst* inst) {
+void NCConsumeNextInstruction(struct NCDecoderInst* inst) {
   DEBUG( printf("Decoding instruction at %"NACL_PRIxNaClPcAddress":\n",
                 inst->inst_addr) );
   InitDecoder(inst);
@@ -655,7 +656,7 @@ Bool NCDecoderStateDecode(NCDecoderState* this) {
                 (void*) this->memory.mpc, (NaClPcAddress) this->size) );
   NCDecoderStateNewSegment(this);
   while (dinst->inst_addr < this->size) {
-    ConsumeNextInstruction(dinst);
+    NCConsumeNextInstruction(dinst);
     if (this->memory.overflow_count) {
       NaClPcAddress newpc = (NCPrintableInstructionAddress(dinst)
                              + dinst->inst.bytes.length);
@@ -727,8 +728,8 @@ Bool NCDecoderStatePairDecode(NCDecoderStatePair* tthis) {
    */
   while (new_dinst->inst_addr < tthis->new_dstate->size) {
 
-    ConsumeNextInstruction(old_dinst);
-    ConsumeNextInstruction(new_dinst);
+    NCConsumeNextInstruction(old_dinst);
+    NCConsumeNextInstruction(new_dinst);
 
 
     /* Verify that the instruction lengths match. */

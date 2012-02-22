@@ -544,8 +544,19 @@ static void InstFormat(const char* format,
   }
 }
 
+static void NCPrintInstTextUsingFormat(const char* format,
+                                       const NCDecoderInst *dinst,
+                                       struct Gio* fp) {
+  InstFormat(format, dinst, fp);
+  gprintf(fp, "\n");
+}
 
-static void PrintInst(const NCDecoderInst *dinst, struct Gio* fp) {
+void NCPrintInstWithoutHex(const NCDecoderInst *dinst, struct Gio* fp) {
+  DEBUG( printf("use format: %s\n", DisFmt(dinst)) );
+  NCPrintInstTextUsingFormat(DisFmt(dinst), dinst, fp);
+}
+
+void NCPrintInst(const NCDecoderInst *dinst, struct Gio *fp) {
   int i;
   DEBUG( printf("use format: %s\n", DisFmt(dinst)) );
   gprintf(fp, " %"NACL_PRIxNaClPcAddress":\t%02x",
@@ -556,14 +567,50 @@ static void PrintInst(const NCDecoderInst *dinst, struct Gio* fp) {
   }
   for (i = dinst->inst.bytes.length; i < 7; i++) gprintf(fp, "   ");
   gprintf(fp, "\t");
-  InstFormat(DisFmt(dinst), dinst, fp);
-  gprintf(fp, "\n");
+  NCPrintInstWithoutHex(dinst, fp);
 }
 
-
 static Bool PrintInstLogGio(const NCDecoderInst *dinst) {
-  PrintInst(dinst, NaClLogGetGio());
+  NCPrintInst(dinst, NaClLogGetGio());
   return TRUE;
+}
+
+/* Defines a buffer size big enough to hold an instruction. */
+#define MAX_INST_TEXT_SIZE 256
+
+/* Defines an instruction print function. */
+typedef void (*inst_print_fn)(const struct NCDecoderInst* inst,
+                              struct Gio *file);
+
+/* Print out the given instruction, using the given instruction print function,
+ * and return the printed text as a (malloc allocated) string.
+ */
+static char* InstToStringConvert(const NCDecoderInst* dinst,
+                                 inst_print_fn print_fn) {
+  /* Print to a memory buffer, and then duplicate. */
+  struct GioMemoryFile filemem;
+  struct Gio *file = (struct Gio*) &filemem;
+  char buffer[MAX_INST_TEXT_SIZE];
+  char* result;
+
+  /* Note: Be sure to leave an extra byte to add the null character to
+   * the end of the string.
+   */
+  GioMemoryFileCtor(&filemem, buffer, MAX_INST_TEXT_SIZE - 1);
+  print_fn(dinst, file);
+  buffer[filemem.curpos < MAX_INST_TEXT_SIZE
+         ? filemem.curpos : MAX_INST_TEXT_SIZE] ='\0';
+  result = strdup(buffer);
+  GioMemoryFileDtor(file);
+  return result;
+}
+
+char* NCInstToString(const NCDecoderInst* dinst) {
+  return InstToStringConvert(dinst, NCPrintInst);
+}
+
+char* NCInstWitoutHexToString(const NCDecoderInst* dinst) {
+  return InstToStringConvert(dinst, NCPrintInstWithoutHex);
 }
 
 void NCDecodeSegment(uint8_t* mbase, NaClPcAddress vbase,

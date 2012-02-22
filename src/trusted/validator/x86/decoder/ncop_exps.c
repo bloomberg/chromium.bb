@@ -465,61 +465,26 @@ void NaClInstStateInstPrint(struct Gio* file, NaClInstState* state) {
   gprintf(file, "\n");
 }
 
+/* Defines a buffer size big enough to hold an instruction. */
+#define MAX_INST_TEXT_SIZE 256
+
 char* NaClInstStateInstructionToString(struct NaClInstState* state) {
-  struct GioFile gfile;
-  char* out_string;
-  struct stat st;
-  size_t file_size;
-  size_t fread_items;
-  FILE* file = NULL;
-  struct Gio* g = NULL;
+  /* Print to a memory buffer, and then duplicate. */
+  struct GioMemoryFile filemem;
+  struct Gio *file = (struct Gio*) &filemem;
+  char buffer[MAX_INST_TEXT_SIZE];
+  char* result;
 
-  do {
-    file = fopen("out_file", "w");
-    if (file == NULL) break;
-
-    g = (struct Gio*) &gfile;
-    if (0 == GioFileRefCtor(&gfile, file)) {
-      GioFileDtor(g);
-      g = NULL;
-      break;
-    }
-
-#if NACL_LINUX || NACL_OSX
-    chmod("out_file", S_IRUSR | S_IWUSR);
-#endif
-
-    NaClInstStateInstPrint(g, state);
-    GioFileClose(g);
-
-    if (stat("out_file", &st)) break;
-
-    file_size = (size_t) st.st_size;
-    if (file_size == 0) break;
-
-    out_string = (char*) malloc(file_size + 1);
-    if (out_string == NULL) break;
-
-    file = fopen("out_file", "r");
-    if (file == NULL) break;
-
-    fread_items = fread(out_string, file_size, 1, file);
-    if (fread_items != 1) break;
-
-    fclose(file);
-    unlink("out_file");
-    out_string[file_size] = 0;
-    return out_string;
-  } while (0);
-
-  /* failure */
-  if (g != NULL) {
-    GioFileClose(g);
-    file = NULL;
-  }
-  if (file != NULL) fclose(file);
-  unlink("out_file");
-  return NULL;
+  /* Note: Be sure to leave an extra byte to add the null character to
+   * the end of the string.
+   */
+  GioMemoryFileCtor(&filemem, buffer, MAX_INST_TEXT_SIZE - 1);
+  NaClInstStateInstPrint(file, state);
+  buffer[filemem.curpos < MAX_INST_TEXT_SIZE
+         ? filemem.curpos : MAX_INST_TEXT_SIZE] ='\0';
+  result = strdup(buffer);
+  GioMemoryFileDtor(file);
+  return result;
 }
 
 int NaClExpWidth(NaClExpVector* vector, int node) {

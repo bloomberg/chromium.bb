@@ -11,6 +11,7 @@
 #include "native_client/src/trusted/validator_x86/ncenuminsts.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/validator/ncvalidate.h"
 #include "native_client/src/trusted/validator/x86/decoder/ncop_exps.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_state.h"
@@ -26,6 +27,42 @@
 #define DEBUGGING 0
 
 #include "native_client/src/shared/utils/debugging.h"
+
+NaClInstStruct *NaClParseInst(uint8_t* ibytes, size_t isize,
+                             const NaClPcAddress vbase) {
+
+  /* WARNING: This version of the code uses a global to return the
+   * decoded instruction, forcing the use to be in a single thread.
+   * The following two (static) locals are used to hold the decoded
+   * instruction until the next call to the function.
+   */
+  static NaClInstIter* ND_iterator = NULL;
+  static NaClSegment ND_segment;
+
+  NaClSegmentInitialize(ibytes, vbase, isize, &ND_segment);
+  if (ND_iterator != NULL) {
+    NaClInstIterDestroy(ND_iterator);
+  }
+  ND_iterator = NaClInstIterCreate(kNaClDecoderTables, &ND_segment);
+  return NaClInstIterGetState(ND_iterator);
+}
+
+uint8_t NaClInstLength(NaClInstStruct *inst) {
+  return NaClInstStateLength(inst);
+}
+
+char *NaClInstToStr(NaClInstStruct *inst) {
+  return NaClInstStateInstructionToString(inst);
+}
+
+const char *NaClOpcodeName(NaClInstStruct *inst) {
+  const struct NaClInst *nacl_opcode = NaClInstStateInst(inst);
+  return NaClMnemonicName(nacl_opcode->name);
+}
+
+Bool NaClInstDecodesCorrectly(NaClInstStruct *inst) {
+  return NaClInstStateIsValid(inst);
+}
 
 /* Checks that if a memory reference is a segment address, the segment is
  * one of the ignored segment registers.
@@ -87,13 +124,14 @@ static void NaClSafeSegmentReference(NaClValidatorState* state,
   }
 }
 
-Bool NaClInstructionIsLegal(uint8_t* mbase,
-                            uint8_t size,
-                            NaClPcAddress vbase) {
+Bool NaClInstValidates(uint8_t* mbase,
+                       uint8_t size,
+                       NaClPcAddress vbase,
+                       NaClInstStruct* inst) {
   NaClSegment segment;
   NaClInstIter* iter;
   NaClValidatorState* state;
-  Bool is_legal = FALSE;
+  Bool validates = FALSE;
   NaClCPUFeaturesX86 cpu_features;
 
   NaClGetCurrentCPUFeatures(&cpu_features);
@@ -108,28 +146,31 @@ Bool NaClInstructionIsLegal(uint8_t* mbase,
     state->cur_inst_vector = NaClInstStateExpVector(state->cur_inst_state);
     NaClValidateInstructionLegal(state);
     NaClSafeSegmentReference(state, iter, NULL);
-    is_legal = NaClValidatesOk(state);
+    validates = NaClValidatesOk(state);
     state->cur_inst_state = NULL;
     state->cur_inst = NULL;
     state->cur_inst_vector = NULL;
     NaClInstIterDestroy(iter);
   } while(0);
   NaClValidatorStateDestroy(state);
-  return is_legal;
+  return validates;
 }
 
-void NaClChangeOpcodesToXedsModel() {
-  /* TODO(karl): Fix private tests enuminst to work around this.
-   * We can't change (read) constants in the table.
-   *
-   * Changes opcodes to match xed. That is change:
-   * 0f0f..1c: Pf2iw $Pq, $Qq => 0f0f..2c: Pf2iw $Pq, $Qq
-   * 0f0f..1d: Pf2id $Pq, $Qq => 0f0f..2d: Pf2id $Pq, $Qq
-   */
-  /*
-  g_OpcodeTable[Prefix0F0F][0x2c] = g_OpcodeTable[Prefix0F0F][0x1c];
-  g_OpcodeTable[Prefix0F0F][0x1c] = NULL;
-  g_OpcodeTable[Prefix0F0F][0x2d] = g_OpcodeTable[Prefix0F0F][0x1d];
-  g_OpcodeTable[Prefix0F0F][0x1d] = NULL;
-  */
+Bool NaClSegmentValidates(uint8_t* mbase,
+                          uint8_t size,
+                          NaClPcAddress vbase) {
+  NaClCPUFeaturesX86 cpu_features;
+  NaClValidationStatus status;
+
+  /* check if NaCl thinks the given code segment is valid. */
+  NaClSetAllCPUFeatures(&cpu_features);
+  status = NaCl_ApplyValidator_x86_64(
+      NACL_SB_DEFAULT, NaClApplyCodeValidation, vbase, mbase, size, 32,
+      &cpu_features);
+  switch (status) {
+    case NaClValidationSucceeded:
+      return TRUE;
+    default:
+      return FALSE;
+  }
 }

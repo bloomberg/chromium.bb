@@ -95,7 +95,7 @@ def __AddTest(test, test_env, base, ext, command, groups):
 test_env.ComponentLibrary(test_env.NaClTargetArchSuffix('ncdis_util'),
                           ['ncdis_segments.c',
                            'nc_read_segment.c',
-                           'ncenuminsts.c'])
+                           test_env.NaClTargetArchSuffix('ncenuminsts') + '.c'])
 
 # The following are copycode routines for x86-32 and x86-64.
 # TODO(karl): Break this up so that we don't need to load
