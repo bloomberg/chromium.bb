@@ -125,8 +125,8 @@ static const VersionRangeDefinition kQuicktimeVersionRange[] = {
     { "", "", "7.6.9", true }
 };
 static const VersionRangeDefinition kJavaVersionRange[] = {
-    { "0", "7", "6.0.290", true },  // "290" is not a typo.
-    { "7", "", "10.1", true }  // JDK7u1 identifies itself as 10.1
+    { "0", "7", "6.0.310", true },  // "310" is not a typo.
+    { "7", "", "10.3", true }  // JDK7u3 identifies itself as 10.3
 };
 // This is up to date with
 // http://www.adobe.com/support/security/bulletins/apsb11-24.html
