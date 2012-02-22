@@ -2223,4 +2223,14 @@ TEST_F(DirectoryBackingStoreTest, DeleteEntries) {
   EXPECT_EQ(0U, index.size());
 }
 
+TEST_F(DirectoryBackingStoreTest, GenerateCacheGUID) {
+  const std::string& guid1 = DirectoryBackingStore::GenerateCacheGUID();
+  const std::string& guid2 = DirectoryBackingStore::GenerateCacheGUID();
+  EXPECT_EQ(24U, guid1.size());
+  EXPECT_EQ(24U, guid2.size());
+  // In theory this test can fail, but it won't before the universe
+  // dies of heat death.
+  EXPECT_NE(guid1, guid2);
+}
+
 }  // namespace syncable

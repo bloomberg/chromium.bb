@@ -73,6 +73,7 @@ class DirectoryBackingStore : public base::NonThreadSafe {
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, ModelTypeIds);
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, Corruption);
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, DeleteEntries);
+  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, GenerateCacheGUID);
   FRIEND_TEST_ALL_PREFIXES(MigrationTest, ToCurrentVersion);
   friend class MigrationTest;
 
@@ -128,6 +129,8 @@ class DirectoryBackingStore : public base::NonThreadSafe {
   // ID, rather than the enum value.
   static ModelType ModelIdToModelTypeEnum(const void* data, int length);
   static std::string ModelTypeEnumToModelId(ModelType model_type);
+
+  static std::string GenerateCacheGUID();
 
   // Runs an integrity check on the current database.  If the
   // integrity check fails, false is returned and error is populated

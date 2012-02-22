@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@ TEST(EncryptorPasswordTest, FindPasswordNotFound) {
   MockKeychain keychain;
   keychain.set_find_generic_result(errSecItemNotFound);
   EncryptorPassword password(keychain);
-  EXPECT_FALSE(password.GetEncryptorPassword().empty());
+  EXPECT_EQ(24U, password.GetEncryptorPassword().length());
   EXPECT_TRUE(keychain.called_add_generic());
   EXPECT_EQ(0, keychain.password_data_count());
 }

@@ -8,10 +8,12 @@
 
 #include <limits>
 
+#include "base/base64.h"
 #include "base/file_util.h"
 #include "base/hash_tables.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
@@ -22,7 +24,6 @@
 #include "chrome/browser/sync/syncable/syncable-inl.h"
 #include "chrome/browser/sync/syncable/syncable_columns.h"
 #include "chrome/browser/sync/util/time.h"
-#include "chrome/common/random.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
@@ -38,15 +39,6 @@ static const string::size_type kUpdateStatementBufferSize = 2048;
 // Increment this version whenever updating DB tables.
 extern const int32 kCurrentDBVersion;  // Global visibility for our unittest.
 const int32 kCurrentDBVersion = 78;
-
-namespace {
-
-string GenerateCacheGUID() {
-  return Generate128BitRandomBase64String();
-}
-
-}  // namespace
-
 
 // Iterate over the fields of |entry| and bind each to |statement| for
 // updating.  Returns the number of args bound.
@@ -595,6 +587,15 @@ string DirectoryBackingStore::ModelTypeEnumToModelId(ModelType model_type) {
   sync_pb::EntitySpecifics specifics;
   syncable::AddDefaultExtensionValue(model_type, &specifics);
   return specifics.SerializeAsString();
+}
+
+// static
+std::string DirectoryBackingStore::GenerateCacheGUID() {
+  // Generate a GUID with 128 bits of randomness.
+  const int kGuidBytes = 128 / 8;
+  std::string guid;
+  base::Base64Encode(base::RandBytesAsString(kGuidBytes), &guid);
+  return guid;
 }
 
 bool DirectoryBackingStore::MigrateToSpecifics(

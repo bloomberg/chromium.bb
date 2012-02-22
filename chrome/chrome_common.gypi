@@ -211,8 +211,6 @@
         'common/print_messages.h',
         'common/profiling.cc',
         'common/profiling.h',
-        'common/random.cc',
-        'common/random.h',
         'common/ref_counted_util.h',
         'common/render_messages.cc',
         'common/render_messages.h',
