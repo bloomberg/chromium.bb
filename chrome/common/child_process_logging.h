@@ -86,7 +86,7 @@ void SetGpuInfo(const content::GPUInfo& gpu_info);
 // values in |command_line|.
 void SetCommandLine(const CommandLine* command_line);
 
-#if defined(OS_LINUX) || defined(OS_OPENBSD)
+#if defined(OS_LINUX) || defined(OS_OPENBSD) || defined(OS_MACOSX)
 // Sets the product channel data to send along with crash reports to |channel|.
 void SetChannel(const std::string& channel);
 #endif

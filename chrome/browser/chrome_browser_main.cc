@@ -1292,7 +1292,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // just changed it to include experiments.
   child_process_logging::SetCommandLine(CommandLine::ForCurrentProcess());
 
-#if defined(OS_LINUX) || defined(OS_OPENBSD)
+#if defined(OS_LINUX) || defined(OS_OPENBSD) || defined(OS_MACOSX)
   // Set the product channel for crash reports.
   child_process_logging::SetChannel(
       chrome::VersionInfo::GetVersionStringModifier());

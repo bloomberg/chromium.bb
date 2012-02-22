@@ -205,4 +205,11 @@ void SetCommandLine(const CommandLine* command_line) {
   }
 }
 
+void SetChannel(const std::string& channel) {
+  // This should match the corresponding string in breakpad_win.cc.
+  NSString* const kChannelKey = @"channel";
+
+  SetCrashKeyValue(kChannelKey, base::SysUTF8ToNSString(channel));
+}
+
 }  // namespace child_process_logging
