@@ -186,7 +186,8 @@ class Upgrader(object):
     is a file path rooted at |self._stable_repo|, and the value is the status
     for that file as returned by 'git status -s'.  (e.g. 'A' for 'Added').
     """
-    result = self._RunGit(self._stable_repo, 'status -s', redirect_stdout=True)
+    result = self._RunGit(self._stable_repo, ['status', '-s'],
+                          redirect_stdout=True)
     if result.returncode == 0:
       statuses = {}
       for line in result.output.strip().split('\n'):
@@ -206,7 +207,7 @@ class Upgrader(object):
 
   def _CheckStableRepoOnBranch(self):
     """Raise exception if |self._stable_repo| is not on a branch now."""
-    result = self._RunGit(self._stable_repo, 'branch', redirect_stdout=True)
+    result = self._RunGit(self._stable_repo, ['branch'], redirect_stdout=True)
     if result.returncode == 0:
       for line in result.output.split('\n'):
         match = re.search(r'^\*\s+(.+)$', line)
@@ -319,9 +320,9 @@ class Upgrader(object):
 
     return None
 
-  def _RunGit(self, repo, command, redirect_stdout=False,
+  def _RunGit(self, cwd, command, redirect_stdout=False,
               combine_stdout_stderr=False):
-    """Runs |command| in the git |repo|.
+    """Runs git |command| (a list of command tokens) in |cwd|.
 
     This leverages the cros_build_lib.RunCommand function.  The
     |redirect_stdout| and |combine_stdout_stderr| arguments are
@@ -331,13 +332,13 @@ class Upgrader(object):
     Most usefully, the result object has a .output attribute containing
     the output from the command (if |redirect_stdout| was True).
     """
-    cmdline = ['/bin/sh', '-c', 'cd %s && git -c core.pager=" " %s' %
-               (repo, command)]
-    result = cros_lib.RunCommand(cmdline,
-                                 print_cmd=self._verbose,
-                                 redirect_stdout=redirect_stdout,
-                                 combine_stdout_stderr=combine_stdout_stderr)
-    return result
+    # This disables the vi-like output viewer for commands like 'git show'.
+    extra_env = {'GIT_PAGER': 'cat'}
+    cmdline = ['git'] + command
+    return cros_lib.RunCommand(cmdline, cwd=cwd, extra_env=extra_env,
+                               print_cmd=self._verbose,
+                               redirect_stdout=redirect_stdout,
+                               combine_stdout_stderr=combine_stdout_stderr)
 
   def _SplitEBuildPath(self, ebuild_path):
     """Split a full ebuild path into (overlay, cat, pn, pv)."""
@@ -631,7 +632,7 @@ class Upgrader(object):
   def _StashChanges(self):
     """Run 'git stash save' on stable repo."""
     # Only one level of stashing expected/supported.
-    self._RunGit(self._stable_repo, 'stash save',
+    self._RunGit(self._stable_repo, ['stash', 'save'],
                  redirect_stdout=True, combine_stdout_stderr=True)
     self._stable_repo_stashed = True
 
@@ -639,7 +640,7 @@ class Upgrader(object):
     """Unstash any changes in stable repo."""
     # Only one level of stashing expected/supported.
     if self._stable_repo_stashed:
-      self._RunGit(self._stable_repo, 'stash pop',
+      self._RunGit(self._stable_repo, ['stash', 'pop'],
                    redirect_stdout=True, combine_stdout_stderr=True)
       self._stable_repo_stashed = False
 
@@ -647,7 +648,7 @@ class Upgrader(object):
     """Drop any stashed changes in stable repo."""
     # Only one level of stashing expected/supported.
     if self._stable_repo_stashed:
-      self._RunGit(self._stable_repo, 'stash drop',
+      self._RunGit(self._stable_repo, ['stash', 'drop'],
                    redirect_stdout=True, combine_stdout_stderr=True)
       self._stable_repo_stashed = False
 
@@ -677,10 +678,10 @@ class Upgrader(object):
     # the last item in the directory.
     if os.path.exists(pkgdir):
       items = os.listdir(pkgdir)
-      for item in items:
-        if item != 'Manifest':
-          src = os.path.join(upstream_pkgdir, item)
-          self._RunGit(pkgdir, 'rm -rf ' + item, redirect_stdout=True)
+      items = [os.path.join(catpkgsubdir, i) for i in items if i != 'Manifest']
+      if items:
+        self._RunGit(self._stable_repo, ['rm', '-rf'] + items,
+                     redirect_stdout=True)
 
     if not os.path.exists(pkgdir):
       os.makedirs(pkgdir)
@@ -702,7 +703,7 @@ class Upgrader(object):
     self._CreateManifest(upstream_pkgdir, pkgdir, ebuild)
 
     # Add all new files to git.
-    self._RunGit(self._stable_repo, 'add ' + catpkgsubdir)
+    self._RunGit(self._stable_repo, ['add', catpkgsubdir])
 
     # Now copy any eclasses that this package requires.
     eclass = self._IdentifyNeededEclass(upstream_cpv)
@@ -787,7 +788,7 @@ class Upgrader(object):
         if not os.path.exists(os.path.dirname(local_path)):
           os.makedirs(os.path.dirname(local_path))
         shutil.copy2(upstream_path, local_path)
-        self._RunGit(self._stable_repo, 'add %s' % eclass_subpath)
+        self._RunGit(self._stable_repo, ['add', eclass_subpath])
         return True
 
     raise RuntimeError('Cannot find upstream "%s".  Looked at "%s"' %
@@ -1036,42 +1037,38 @@ class Upgrader(object):
   def _AmendCommitMessage(self, upgrade_lines):
     """Create git commit message combining |upgrade_lines| with last commit."""
     # First get the body of the last commit message.
-    git_cmd = 'show --pretty=format:"__BEGIN BODY__%n%b%n__END BODY__"'
+    git_cmd = ['show', '-s', '--format=%b']
     result = self._RunGit(self._stable_repo, git_cmd, redirect_stdout=True)
-    match = re.search(r'__BEGIN BODY__\n(.+)__END BODY__',
-                      result.output, re.DOTALL)
+    body = result.output
 
     remaining_lines = []
-    if match:
-      # Extract the upgrade_lines of last commit.  Everything after the
-      # empty line is preserved verbatim.
-      # Expecting message body like this:
-      # Upgraded sys-libs/ncurses to version 5.7-r7 on amd64, arm, x86
-      # Upgraded sys-apps/less to version 441 on amd64, arm, x86
-      #
-      # BUG=chromium-os:20923
-      # TEST=trybot run of chromiumos-sdk
-      body = match.group(1)
-
-      before_break = True
-      for line in body.split('\n'):
-        if not before_break:
-          remaining_lines.append(line)
-        elif line:
-          if re.search(r'^%s\s+' % UPGRADED, line):
-            upgrade_lines.append(line)
-          else:
-            # If the lines in the message body are not in the expected
-            # format simply push them to the end of the new commit
-            # message body, but left intact.
-            oper.Warning('It looks like the existing commit message '
-                         'that you are amending was not generated by\n'
-                         'this utility.  Appending previous commit '
-                         'message to newly generated message.')
-            before_break = False
-            remaining_lines.append(line)
+    # Extract the upgrade_lines of last commit.  Everything after the
+    # empty line is preserved verbatim.
+    # Expecting message body like this:
+    # Upgraded sys-libs/ncurses to version 5.7-r7 on amd64, arm, x86
+    # Upgraded sys-apps/less to version 441 on amd64, arm, x86
+    #
+    # BUG=chromium-os:20923
+    # TEST=trybot run of chromiumos-sdk
+    before_break = True
+    for line in body.split('\n'):
+      if not before_break:
+        remaining_lines.append(line)
+      elif line:
+        if re.search(r'^%s\s+' % UPGRADED, line):
+          upgrade_lines.append(line)
         else:
+          # If the lines in the message body are not in the expected
+          # format simply push them to the end of the new commit
+          # message body, but left intact.
+          oper.Warning('It looks like the existing commit message '
+                       'that you are amending was not generated by\n'
+                       'this utility.  Appending previous commit '
+                       'message to newly generated message.')
           before_break = False
+          remaining_lines.append(line)
+      else:
+        before_break = False
 
     return self._CreateCommitMessage(upgrade_lines, remaining_lines)
 
@@ -1434,25 +1431,25 @@ class Upgrader(object):
         # Previously created upstream cache can be re-used.  Just update it.
         oper.Notice('Updating previously created upstream cache at %s.' %
                     self._upstream_repo)
-        self._RunGit(self._upstream_repo, 'remote update')
+        self._RunGit(self._upstream_repo, ['remote', 'update'])
+        self._RunGit(self._upstream_repo, ['checkout', self.ORIGIN_GENTOO],
+                     redirect_stdout=True, combine_stdout_stderr=True)
       else:
         # Create local copy of upstream gentoo.
         oper.Notice('Cloning origin/gentoo at %s as upstream reference.' %
                     self._upstream_repo)
         root = os.path.dirname(self._upstream_repo)
         name = os.path.basename(self._upstream_repo)
-        self._RunGit(root, 'clone %s %s' % (self.PORTAGE_GIT_URL, name))
+        self._RunGit(root, ['clone',
+                            '--branch', os.path.basename(self.ORIGIN_GENTOO),
+                            self.PORTAGE_GIT_URL, name])
 
         # Create a README file to explain its presence.
-        fh = open(self._upstream_repo + '-README', 'w')
-        fh.write('Directory at %s is local copy of upstream '
-                 'Gentoo/Portage packages. Used by cros_portage_upgrade.\n'
-                 'Feel free to delete if you want the space back.\n' %
-                 self._upstream_repo)
-        fh.close()
-
-      self._RunGit(self._upstream_repo, 'checkout %s' % self.ORIGIN_GENTOO,
-                   redirect_stdout=True, combine_stdout_stderr=True)
+        with open(self._upstream_repo + '-README', 'w') as f:
+          f.write('Directory at %s is local copy of upstream '
+                  'Gentoo/Portage packages. Used by cros_portage_upgrade.\n'
+                  'Feel free to delete if you want the space back.\n' %
+                  self._upstream_repo)
 
     # An empty directory is needed to trick equery later.
     self._emptydir = tempfile.mkdtemp()
@@ -1472,7 +1469,8 @@ class Upgrader(object):
       else:
         oper.Notice('Keeping upstream cache at %s.' % self._upstream_repo)
 
-    os.rmdir(self._emptydir)
+    if self._emptydir and os.path.exists(self._emptydir):
+      os.rmdir(self._emptydir)
 
   def CommitIsStaged(self):
     """Return True if upgrades are staged and ready for a commit."""
@@ -1563,10 +1561,10 @@ class Upgrader(object):
     if commit_lines:
       if self._amend:
         message = self._AmendCommitMessage(commit_lines)
-        self._RunGit(self._stable_repo, "commit --amend -am '%s'" % message)
+        self._RunGit(self._stable_repo, ['commit', '--amend', '-am', message])
       else:
         message = self._CreateCommitMessage(commit_lines)
-        self._RunGit(self._stable_repo, "commit -am '%s'" % message)
+        self._RunGit(self._stable_repo, ['commit', '-am', message])
 
       oper.Warning('\n'
                    'Upgrade changes committed (see above),'
