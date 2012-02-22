@@ -122,6 +122,8 @@ class MockPluginDelegate : public PluginDelegate {
   virtual void TCPSocketRead(uint32 socket_id, int32_t bytes_to_read);
   virtual void TCPSocketWrite(uint32 socket_id, const std::string& buffer);
   virtual void TCPSocketDisconnect(uint32 socket_id);
+  virtual void RegisterTCPSocket(PPB_TCPSocket_Private_Impl* socket,
+                                 uint32 socket_id);
   virtual uint32 UDPSocketCreate();
   virtual void UDPSocketBind(PPB_UDPSocket_Private_Impl* socket,
                              uint32 socket_id,
@@ -131,6 +133,13 @@ class MockPluginDelegate : public PluginDelegate {
                                const std::string& buffer,
                                const PP_NetAddress_Private& addr);
   virtual void UDPSocketClose(uint32 socket_id);
+  virtual void TCPServerSocketListen(PPB_TCPServerSocket_Private_Impl* socket,
+                                     uint32 temp_socket_id,
+                                     const PP_NetAddress_Private& addr,
+                                     int32_t backlog);
+  virtual void TCPServerSocketAccept(uint32 real_socket_id);
+  virtual void TCPServerSocketStopListening(uint32 real_socket_id,
+                                            uint32 temp_socket_id);
   virtual int32_t ShowContextMenu(
       PluginInstance* instance,
       webkit::ppapi::PPB_Flash_Menu_Impl* menu,

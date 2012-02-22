@@ -512,6 +512,8 @@
     'browser/renderer_host/pepper_file_message_filter.h',
     'browser/renderer_host/pepper_message_filter.cc',
     'browser/renderer_host/pepper_message_filter.h',
+    'browser/renderer_host/pepper_tcp_server_socket.cc',
+    'browser/renderer_host/pepper_tcp_server_socket.h',
     'browser/renderer_host/pepper_tcp_socket.cc',
     'browser/renderer_host/pepper_tcp_socket.h',
     'browser/renderer_host/pepper_udp_socket.cc',

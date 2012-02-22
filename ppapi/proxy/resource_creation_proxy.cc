@@ -268,6 +268,12 @@ PP_Resource ResourceCreationProxy::CreateScrollbar(PP_Instance instance,
   return 0;
 }
 
+PP_Resource ResourceCreationProxy::CreateTCPServerSocketPrivate(
+    PP_Instance instance) {
+  // TODO (ygorshenin): implement this
+  return 0;
+}
+
 PP_Resource ResourceCreationProxy::CreateTCPSocketPrivate(
     PP_Instance instance) {
   return PPB_TCPSocket_Private_Proxy::CreateProxyResource(instance);

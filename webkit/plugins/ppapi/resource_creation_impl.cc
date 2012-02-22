@@ -27,6 +27,7 @@
 #include "webkit/plugins/ppapi/ppb_graphics_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/ppb_scrollbar_impl.h"
+#include "webkit/plugins/ppapi/ppb_tcp_server_socket_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_tcp_socket_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_transport_impl.h"
 #include "webkit/plugins/ppapi/ppb_udp_socket_private_impl.h"
@@ -255,6 +256,11 @@ PP_Resource ResourceCreationImpl::CreateResourceArray(
   PPB_ResourceArray_Shared* object = new PPB_ResourceArray_Shared(
       ::ppapi::OBJECT_IS_IMPL, instance, elements, size);
   return object->GetReference();
+}
+
+PP_Resource ResourceCreationImpl::CreateTCPServerSocketPrivate(
+    PP_Instance instance) {
+  return PPB_TCPServerSocket_Private_Impl::CreateResource(instance);
 }
 
 PP_Resource ResourceCreationImpl::CreateTCPSocketPrivate(PP_Instance instance) {

@@ -82,6 +82,7 @@ class PluginModule;
 class PPB_Broker_Impl;
 class PPB_Flash_Menu_Impl;
 class PPB_Flash_NetConnector_Impl;
+class PPB_TCPServerSocket_Private_Impl;
 class PPB_TCPSocket_Private_Impl;
 class PPB_UDPSocket_Private_Impl;
 
@@ -452,6 +453,8 @@ class PluginDelegate {
   virtual void TCPSocketRead(uint32 socket_id, int32_t bytes_to_read) = 0;
   virtual void TCPSocketWrite(uint32 socket_id, const std::string& buffer) = 0;
   virtual void TCPSocketDisconnect(uint32 socket_id) = 0;
+  virtual void RegisterTCPSocket(PPB_TCPSocket_Private_Impl* socket,
+                                 uint32 socket_id) = 0;
 
   // For PPB_UDPSocket_Private.
   virtual uint32 UDPSocketCreate() = 0;
@@ -463,6 +466,15 @@ class PluginDelegate {
                                const std::string& buffer,
                                const PP_NetAddress_Private& addr) = 0;
   virtual void UDPSocketClose(uint32 socket_id) = 0;
+
+  // For PPB_TCPServerSocket_Private.
+  virtual void TCPServerSocketListen(PPB_TCPServerSocket_Private_Impl* socket,
+                                     uint32 temp_socket_id,
+                                     const PP_NetAddress_Private& addr,
+                                     int32_t backlog) = 0;
+  virtual void TCPServerSocketAccept(uint32 real_socket_id) = 0;
+  virtual void TCPServerSocketStopListening(uint32 real_socket_id,
+                                            uint32 temp_socket_id) = 0;
 
   // Show the given context menu at the given position (in the plugin's
   // coordinates).

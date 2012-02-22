@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,6 +41,22 @@ PepperTCPSocket::PepperTCPSocket(
       socket_id_(socket_id),
       connection_state_(BEFORE_CONNECT),
       end_of_file_reached_(false) {
+  DCHECK(manager);
+}
+
+PepperTCPSocket::PepperTCPSocket(
+    PepperMessageFilter* manager,
+    int32 routing_id,
+    uint32 plugin_dispatcher_id,
+    uint32 socket_id,
+    net::StreamSocket* socket)
+    : manager_(manager),
+      routing_id_(routing_id),
+      plugin_dispatcher_id_(plugin_dispatcher_id),
+      socket_id_(socket_id),
+      connection_state_(CONNECTED),
+      end_of_file_reached_(false),
+      socket_(socket) {
   DCHECK(manager);
 }
 

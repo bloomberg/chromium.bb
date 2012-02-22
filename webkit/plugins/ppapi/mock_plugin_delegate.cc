@@ -275,6 +275,10 @@ void MockPluginDelegate::TCPSocketWrite(uint32 socket_id,
 void MockPluginDelegate::TCPSocketDisconnect(uint32 socket_id) {
 }
 
+void MockPluginDelegate::RegisterTCPSocket(PPB_TCPSocket_Private_Impl* socket,
+                                           uint32 socket_id) {
+}
+
 uint32 MockPluginDelegate::UDPSocketCreate() {
   return 0;
 }
@@ -294,6 +298,20 @@ void MockPluginDelegate::UDPSocketSendTo(uint32 socket_id,
 }
 
 void MockPluginDelegate::UDPSocketClose(uint32 socket_id) {
+}
+
+void MockPluginDelegate::TCPServerSocketListen(
+    PPB_TCPServerSocket_Private_Impl* socket,
+    uint32 temp_socket_id,
+    const PP_NetAddress_Private& addr,
+    int32_t backlog) {
+}
+
+void MockPluginDelegate::TCPServerSocketAccept(uint32 real_socket_id) {
+}
+
+void MockPluginDelegate::TCPServerSocketStopListening(uint32 real_socket_id,
+                                                      uint32 temp_socket_id) {
 }
 
 int32_t MockPluginDelegate::ShowContextMenu(

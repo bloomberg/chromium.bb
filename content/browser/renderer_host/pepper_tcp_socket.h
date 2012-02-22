@@ -32,6 +32,14 @@ class PepperTCPSocket {
                   int32 routing_id,
                   uint32 plugin_dispatcher_id,
                   uint32 socket_id);
+
+  // Used for creation already connected sockets.  Takes ownership of
+  // |socket|.
+  PepperTCPSocket(PepperMessageFilter* manager,
+                  int32 routing_id,
+                  uint32 plugin_dispatcher_id,
+                  uint32 socket_id,
+                  net::StreamSocket* socket);
   ~PepperTCPSocket();
 
   int routing_id() { return routing_id_; }

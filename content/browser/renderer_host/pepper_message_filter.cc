@@ -9,10 +9,12 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/process_util.h"
 #include "base/threading/worker_pool.h"
 #include "base/values.h"
 #include "content/browser/font_list_async.h"
+#include "content/browser/renderer_host/pepper_tcp_server_socket.h"
 #include "content/browser/renderer_host/pepper_tcp_socket.h"
 #include "content/browser/renderer_host/pepper_udp_socket.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -29,6 +31,7 @@
 #include "net/base/host_resolver.h"
 #include "net/base/net_errors.h"
 #include "net/base/single_request_host_resolver.h"
+#include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash_net_connector.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
@@ -83,7 +86,8 @@ void PepperMessageFilter::OverrideThreadForMessage(
     BrowserThread::ID* thread) {
   if (message.type() == PpapiHostMsg_PPBTCPSocket_Connect::ID ||
       message.type() == PpapiHostMsg_PPBTCPSocket_ConnectWithNetAddress::ID ||
-      message.type() == PpapiHostMsg_PPBUDPSocket_Bind::ID) {
+      message.type() == PpapiHostMsg_PPBUDPSocket_Bind::ID ||
+      message.type() == PpapiHostMsg_PPBTCPServerSocket_Listen::ID) {
     *thread = BrowserThread::UI;
   }
 }
@@ -118,6 +122,14 @@ bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBUDPSocket_SendTo, OnUDPSendTo)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBUDPSocket_Close, OnUDPClose)
 
+    // TCP Server messages.
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPServerSocket_Listen,
+                        OnTCPServerListen)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPServerSocket_Accept,
+                        OnTCPServerAccept)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPServerSocket_Destroy,
+                        RemoveTCPServerSocket)
+
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
@@ -133,6 +145,37 @@ net::CertVerifier* PepperMessageFilter::GetCertVerifier() {
     cert_verifier_.reset(new net::CertVerifier());
 
   return cert_verifier_.get();
+}
+
+uint32 PepperMessageFilter::AddAcceptedTCPSocket(
+    int32 routing_id,
+    uint32 plugin_dispatcher_id,
+    net::StreamSocket* socket) {
+  scoped_ptr<net::StreamSocket>  s(socket);
+
+  uint32 tcp_socket_id = GenerateSocketID();
+  if (tcp_socket_id != kInvalidSocketID) {
+    tcp_sockets_[tcp_socket_id] = linked_ptr<PepperTCPSocket>(
+        new PepperTCPSocket(this,
+                            routing_id,
+                            plugin_dispatcher_id,
+                            tcp_socket_id,
+                            s.release()));
+  }
+  return tcp_socket_id;
+}
+
+void PepperMessageFilter::RemoveTCPServerSocket(uint32 real_socket_id) {
+  TCPServerSocketMap::iterator iter = tcp_server_sockets_.find(real_socket_id);
+  if (iter == tcp_server_sockets_.end()) {
+    NOTREACHED();
+    return;
+  }
+
+  // Destroy the TCPServerSocket instance will cancel any pending completion
+  // callback. From this point on, there won't be any messages associated with
+  // this socket sent to the plugin side.
+  tcp_server_sockets_.erase(iter);
 }
 
 #if defined(ENABLE_FLAPPER_HACKS)
@@ -546,6 +589,63 @@ void PepperMessageFilter::OnUDPClose(uint32 socket_id) {
   udp_sockets_.erase(iter);
 }
 
+void PepperMessageFilter::OnTCPServerListen(int32 routing_id,
+                                            uint32 plugin_dispatcher_id,
+                                            uint32 temp_socket_id,
+                                            const PP_NetAddress_Private& addr,
+                                            int32_t backlog) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&PepperMessageFilter::DoTCPServerListen,
+                                     this,
+                                     CanUseSocketAPIs(routing_id),
+                                     routing_id,
+                                     plugin_dispatcher_id,
+                                     temp_socket_id,
+                                     addr,
+                                     backlog));
+}
+
+void PepperMessageFilter::DoTCPServerListen(bool allowed,
+                                            int32 routing_id,
+                                            uint32 plugin_dispatcher_id,
+                                            uint32 temp_socket_id,
+                                            const PP_NetAddress_Private& addr,
+                                            int32_t backlog) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!allowed) {
+    Send(new PpapiMsg_PPBTCPServerSocket_ListenACK(routing_id,
+                                                   plugin_dispatcher_id,
+                                                   0,
+                                                   temp_socket_id,
+                                                   PP_ERROR_FAILED));
+    return;
+  }
+  uint32 real_socket_id = GenerateSocketID();
+  if (real_socket_id == kInvalidSocketID) {
+    Send(new PpapiMsg_PPBTCPServerSocket_ListenACK(routing_id,
+                                                   plugin_dispatcher_id,
+                                                   real_socket_id,
+                                                   temp_socket_id,
+                                                   PP_ERROR_NOSPACE));
+    return;
+  }
+  PepperTCPServerSocket* socket = new PepperTCPServerSocket(
+      this, routing_id, plugin_dispatcher_id, real_socket_id, temp_socket_id);
+  tcp_server_sockets_[real_socket_id] =
+      linked_ptr<PepperTCPServerSocket>(socket);
+  socket->Listen(addr, backlog);
+}
+
+void PepperMessageFilter::OnTCPServerAccept(uint32 real_socket_id) {
+  TCPServerSocketMap::iterator iter = tcp_server_sockets_.find(real_socket_id);
+  if (iter == tcp_server_sockets_.end()) {
+    NOTREACHED();
+    return;
+  }
+  iter->second->Accept();
+}
+
 void PepperMessageFilter::GetFontFamiliesComplete(
     IPC::Message* reply_msg,
     scoped_refptr<content::FontListResult> result) {
@@ -584,8 +684,10 @@ uint32 PepperMessageFilter::GenerateSocketID() {
   // PepperSocketMessageHandler object, because for each plugin or renderer
   // process, there is at most one PepperMessageFilter (in other words, at most
   // one PepperSocketMessageHandler) talking to it.
-  if (tcp_sockets_.size() + udp_sockets_.size() >= kMaxSocketsAllowed)
+  if (tcp_sockets_.size() + udp_sockets_.size() + tcp_server_sockets_.size() >=
+      kMaxSocketsAllowed) {
     return kInvalidSocketID;
+  }
 
   uint32 socket_id = kInvalidSocketID;
   do {
@@ -594,7 +696,8 @@ uint32 PepperMessageFilter::GenerateSocketID() {
     socket_id = next_socket_id_++;
   } while (socket_id == kInvalidSocketID ||
            tcp_sockets_.find(socket_id) != tcp_sockets_.end() ||
-           udp_sockets_.find(socket_id) != udp_sockets_.end());
+           udp_sockets_.find(socket_id) != udp_sockets_.end() ||
+           tcp_server_sockets_.find(socket_id) != tcp_server_sockets_.end());
 
   return socket_id;
 }

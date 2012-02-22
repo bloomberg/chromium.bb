@@ -17,8 +17,10 @@
 #include "content/browser/font_list_async.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "net/base/ssl_config_service.h"
+#include "net/socket/stream_socket.h"
 #include "ppapi/c/pp_stdint.h"
 
+class PepperTCPServerSocket;
 class PepperTCPSocket;
 class PepperUDPSocket;
 struct PP_NetAddress_Private;
@@ -67,6 +69,15 @@ class PepperMessageFilter : public content::BrowserMessageFilter {
   net::HostResolver* GetHostResolver();
 
   net::CertVerifier* GetCertVerifier();
+
+  // Adds already accepted socket to the internal TCP sockets table. Takes
+  // ownership over |socket|. In the case of failure (full socket table)
+  // returns 0 and deletes |socket|. Otherwise, returns generated ID for
+  // |socket|.
+  uint32 AddAcceptedTCPSocket(int32 routing_id,
+                              uint32 plugin_dispatcher_id,
+                              net::StreamSocket* socket);
+  void RemoveTCPServerSocket(uint32 real_socket_id);
 
   const net::SSLConfig& ssl_config() { return ssl_config_; }
 
@@ -135,6 +146,13 @@ class PepperMessageFilter : public content::BrowserMessageFilter {
                    const PP_NetAddress_Private& addr);
   void OnUDPClose(uint32 socket_id);
 
+  void OnTCPServerListen(int32 routing_id,
+                         uint32 plugin_dispatcher_id,
+                         uint32 temp_socket_id,
+                         const PP_NetAddress_Private& addr,
+                         int32_t backlog);
+  void OnTCPServerAccept(uint32 real_socket_id);
+
   void DoTCPConnect(bool allowed,
                     int32 routing_id,
                     uint32 socket_id,
@@ -148,6 +166,12 @@ class PepperMessageFilter : public content::BrowserMessageFilter {
                  int32 routing_id,
                  uint32 socket_id,
                  const PP_NetAddress_Private& addr);
+  void DoTCPServerListen(bool allowed,
+                         int32 routing_id,
+                         uint32 plugin_dispatcher_id,
+                         uint32 temp_socket_id,
+                         const PP_NetAddress_Private& addr,
+                         int32_t backlog);
 
   // Callback when the font list has been retrieved on a background thread.
   void GetFontFamiliesComplete(IPC::Message* reply_msg,
@@ -183,6 +207,10 @@ class PepperMessageFilter : public content::BrowserMessageFilter {
 
   typedef std::map<uint32, linked_ptr<PepperUDPSocket> > UDPSocketMap;
   UDPSocketMap udp_sockets_;
+
+  typedef std::map<uint32,
+                   linked_ptr<PepperTCPServerSocket> > TCPServerSocketMap;
+  TCPServerSocketMap tcp_server_sockets_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperMessageFilter);
 };

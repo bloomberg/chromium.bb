@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,9 +11,16 @@
 namespace webkit {
 namespace ppapi {
 
+class PluginDelegate;
+
 class PPB_TCPSocket_Private_Impl : public ::ppapi::TCPSocketPrivateImpl {
  public:
   static PP_Resource CreateResource(PP_Instance instance);
+  static PP_Resource CreateConnectedSocket(
+      PP_Instance instance,
+      uint32 socket_id,
+      const PP_NetAddress_Private& local_addr,
+      const PP_NetAddress_Private& remote_addr);
 
   virtual void SendConnect(const std::string& host, uint16_t port) OVERRIDE;
   virtual void SendConnectWithNetAddress(
@@ -27,6 +34,8 @@ class PPB_TCPSocket_Private_Impl : public ::ppapi::TCPSocketPrivateImpl {
  private:
   PPB_TCPSocket_Private_Impl(PP_Instance instance, uint32 socket_id);
   virtual ~PPB_TCPSocket_Private_Impl();
+
+  static PluginDelegate* GetPluginDelegate(PP_Instance instance);
 
   DISALLOW_COPY_AND_ASSIGN(PPB_TCPSocket_Private_Impl);
 };

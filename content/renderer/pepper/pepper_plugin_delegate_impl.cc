@@ -79,6 +79,7 @@
 #include "webkit/plugins/ppapi/ppb_broker_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_net_connector_impl.h"
+#include "webkit/plugins/ppapi/ppb_tcp_server_socket_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_tcp_socket_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_udp_socket_private_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
@@ -1774,18 +1775,20 @@ void PepperPluginDelegateImpl::TCPSocketConnect(
     uint32 socket_id,
     const std::string& host,
     uint16_t port) {
-  tcp_sockets_.AddWithID(socket, socket_id);
-  render_view_->Send(new PpapiHostMsg_PPBTCPSocket_Connect(
-      render_view_->routing_id(), socket_id, host, port));
+  RegisterTCPSocket(socket, socket_id);
+  render_view_->Send(
+      new PpapiHostMsg_PPBTCPSocket_Connect(
+          render_view_->routing_id(), socket_id, host, port));
 }
 
 void PepperPluginDelegateImpl::TCPSocketConnectWithNetAddress(
       webkit::ppapi::PPB_TCPSocket_Private_Impl* socket,
       uint32 socket_id,
       const PP_NetAddress_Private& addr) {
-  tcp_sockets_.AddWithID(socket, socket_id);
-  render_view_->Send(new PpapiHostMsg_PPBTCPSocket_ConnectWithNetAddress(
-      render_view_->routing_id(), socket_id, addr));
+  RegisterTCPSocket(socket, socket_id);
+  render_view_->Send(
+      new PpapiHostMsg_PPBTCPSocket_ConnectWithNetAddress(
+          render_view_->routing_id(), socket_id, addr));
 }
 
 void PepperPluginDelegateImpl::TCPSocketSSLHandshake(
@@ -1817,6 +1820,12 @@ void PepperPluginDelegateImpl::TCPSocketDisconnect(uint32 socket_id) {
   render_view_->Send(new PpapiHostMsg_PPBTCPSocket_Disconnect(socket_id));
   if (tcp_sockets_.Lookup(socket_id))
     tcp_sockets_.Remove(socket_id);
+}
+
+void PepperPluginDelegateImpl::RegisterTCPSocket(
+    webkit::ppapi::PPB_TCPSocket_Private_Impl* socket,
+    uint32 socket_id) {
+  tcp_sockets_.AddWithID(socket, socket_id);
 }
 
 uint32 PepperPluginDelegateImpl::UDPSocketCreate() {
@@ -1857,6 +1866,38 @@ void PepperPluginDelegateImpl::UDPSocketClose(uint32 socket_id) {
   render_view_->Send(new PpapiHostMsg_PPBUDPSocket_Close(socket_id));
   if (udp_sockets_.Lookup(socket_id))
     udp_sockets_.Remove(socket_id);
+}
+
+void PepperPluginDelegateImpl::TCPServerSocketListen(
+    webkit::ppapi::PPB_TCPServerSocket_Private_Impl* socket,
+    uint32 temp_socket_id,
+    const PP_NetAddress_Private& addr,
+    int32_t backlog) {
+  uninitialized_tcp_server_sockets_.AddWithID(socket, temp_socket_id);
+  render_view_->Send(
+      new PpapiHostMsg_PPBTCPServerSocket_Listen(
+          render_view_->routing_id(), 0, temp_socket_id, addr, backlog));
+}
+
+void PepperPluginDelegateImpl::TCPServerSocketAccept(uint32 real_socket_id) {
+  DCHECK(tcp_server_sockets_.Lookup(real_socket_id));
+  render_view_->Send(new PpapiHostMsg_PPBTCPServerSocket_Accept(
+      real_socket_id));
+}
+
+void PepperPluginDelegateImpl::TCPServerSocketStopListening(
+    uint32 real_socket_id,
+    uint32 temp_socket_id) {
+  if (real_socket_id == 0) {
+    if (uninitialized_tcp_server_sockets_.Lookup(temp_socket_id)) {
+      // Pending Listen request.
+      uninitialized_tcp_server_sockets_.Remove(temp_socket_id);
+    }
+  } else {
+    render_view_->Send(
+        new PpapiHostMsg_PPBTCPServerSocket_Destroy(real_socket_id));
+    tcp_server_sockets_.Remove(real_socket_id);
+  }
 }
 
 int32_t PepperPluginDelegateImpl::ShowContextMenu(
@@ -2110,6 +2151,10 @@ bool PepperPluginDelegateImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBUDPSocket_RecvFromACK,
                         OnUDPSocketRecvFromACK)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBUDPSocket_SendToACK, OnUDPSocketSendToACK)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPServerSocket_ListenACK,
+                        OnTCPServerSocketListenACK)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPServerSocket_AcceptACK,
+                        OnTCPServerSocketAcceptACK)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -2131,6 +2176,8 @@ void PepperPluginDelegateImpl::OnTCPSocketConnectACK(
       tcp_sockets_.Lookup(socket_id);
   if (socket)
     socket->OnConnectCompleted(succeeded, local_addr, remote_addr);
+  if (!succeeded)
+    tcp_sockets_.Remove(socket_id);
 }
 
 void PepperPluginDelegateImpl::OnTCPSocketSSLHandshakeACK(
@@ -2172,6 +2219,8 @@ void PepperPluginDelegateImpl::OnUDPSocketBindACK(
       udp_sockets_.Lookup(socket_id);
   if (socket)
     socket->OnBindCompleted(succeeded, addr);
+  if (!succeeded)
+    udp_sockets_.Remove(socket_id);
 }
 
 void PepperPluginDelegateImpl::OnUDPSocketRecvFromACK(
@@ -2194,6 +2243,43 @@ void PepperPluginDelegateImpl::OnUDPSocketSendToACK(uint32 plugin_dispatcher_id,
       udp_sockets_.Lookup(socket_id);
   if (socket)
     socket->OnSendToCompleted(succeeded, bytes_written);
+}
+
+void PepperPluginDelegateImpl::OnTCPServerSocketListenACK(
+    uint32 plugin_dispatcher_id,
+    uint32 real_socket_id,
+    uint32 temp_socket_id,
+    int32_t status) {
+  webkit::ppapi::PPB_TCPServerSocket_Private_Impl* socket =
+      uninitialized_tcp_server_sockets_.Lookup(temp_socket_id);
+  if (socket == NULL) {
+    // StopListening was called before completion of Listen.
+    render_view_->Send(
+        new PpapiHostMsg_PPBTCPServerSocket_Destroy(real_socket_id));
+  } else {
+    uninitialized_tcp_server_sockets_.Remove(temp_socket_id);
+
+    if (status == PP_OK)
+      tcp_server_sockets_.AddWithID(socket, real_socket_id);
+    socket->OnListenCompleted(real_socket_id, status);
+  }
+}
+
+void PepperPluginDelegateImpl::OnTCPServerSocketAcceptACK(
+    uint32 plugin_dispatcher_id,
+    uint32 real_server_socket_id,
+    uint32 accepted_socket_id,
+    const PP_NetAddress_Private& local_addr,
+    const PP_NetAddress_Private& remote_addr) {
+  webkit::ppapi::PPB_TCPServerSocket_Private_Impl* socket =
+      tcp_server_sockets_.Lookup(real_server_socket_id);
+  if (socket) {
+    bool succeeded = accepted_socket_id != 0;
+    socket->OnAcceptCompleted(succeeded,
+                              accepted_socket_id,
+                              local_addr,
+                              remote_addr);
+  }
 }
 
 int PepperPluginDelegateImpl::GetRoutingId() const {

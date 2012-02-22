@@ -337,6 +337,9 @@ class PepperPluginDelegateImpl
   virtual void TCPSocketWrite(uint32 socket_id,
                               const std::string& buffer) OVERRIDE;
   virtual void TCPSocketDisconnect(uint32 socket_id) OVERRIDE;
+  virtual void RegisterTCPSocket(
+      webkit::ppapi::PPB_TCPSocket_Private_Impl* socket,
+      uint32 socket_id) OVERRIDE;
 
   virtual uint32 UDPSocketCreate() OVERRIDE;
   virtual void UDPSocketBind(
@@ -349,6 +352,14 @@ class PepperPluginDelegateImpl
                                const std::string& buffer,
                                const PP_NetAddress_Private& addr) OVERRIDE;
   virtual void UDPSocketClose(uint32 socket_id) OVERRIDE;
+  virtual void TCPServerSocketListen(
+      webkit::ppapi::PPB_TCPServerSocket_Private_Impl* socket,
+      uint32 temp_socket_id,
+      const PP_NetAddress_Private& addr,
+      int32_t backlog) OVERRIDE;
+  virtual void TCPServerSocketAccept(uint32 real_socket_id) OVERRIDE;
+  virtual void TCPServerSocketStopListening(uint32 real_socket_id,
+                                            uint32 temp_socket_id) OVERRIDE;
 
   virtual int32_t ShowContextMenu(
       webkit::ppapi::PluginInstance* instance,
@@ -427,6 +438,15 @@ class PepperPluginDelegateImpl
                               bool succeeded,
                               const std::string& data,
                               const PP_NetAddress_Private& addr);
+  void OnTCPServerSocketListenACK(uint32 plugin_dispatcher_id,
+                                  uint32 real_socket_id,
+                                  uint32 temp_socket_id,
+                                  int32_t status);
+  void OnTCPServerSocketAcceptACK(uint32 plugin_dispatcher_id,
+                                  uint32 real_server_socket_id,
+                                  uint32 accepted_socket_id,
+                                  const PP_NetAddress_Private& local_addr,
+                                  const PP_NetAddress_Private& remote_addr);
 
   CONTENT_EXPORT int GetRoutingId() const;
 
@@ -480,6 +500,11 @@ class PepperPluginDelegateImpl
   IDMap<webkit::ppapi::PPB_TCPSocket_Private_Impl> tcp_sockets_;
 
   IDMap<webkit::ppapi::PPB_UDPSocket_Private_Impl> udp_sockets_;
+
+  IDMap<webkit::ppapi::PPB_TCPServerSocket_Private_Impl> tcp_server_sockets_;
+
+  IDMap<webkit::ppapi::PPB_TCPServerSocket_Private_Impl>
+      uninitialized_tcp_server_sockets_;
 
   IDMap<scoped_refptr<webkit::ppapi::PPB_Flash_Menu_Impl>,
         IDMapOwnPointer> pending_context_menus_;

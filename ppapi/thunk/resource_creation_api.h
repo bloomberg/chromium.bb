@@ -108,6 +108,7 @@ class ResourceCreationAPI {
                                           uint32_t size) = 0;
   virtual PP_Resource CreateScrollbar(PP_Instance instance,
                                       PP_Bool vertical) = 0;
+  virtual PP_Resource CreateTCPServerSocketPrivate(PP_Instance instance) = 0;
   virtual PP_Resource CreateTCPSocketPrivate(PP_Instance instace) = 0;
   virtual PP_Resource CreateTransport(PP_Instance instance,
                                       const char* name,

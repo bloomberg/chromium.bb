@@ -332,6 +332,26 @@ IPC_MESSAGE_ROUTED4(PpapiMsg_PPBUDPSocket_SendToACK,
                     bool /* succeeded */,
                     int32_t /* bytes_written */)
 
+// PPB_TCPServerSocket_Private.
+
+// |status| == PP_ERROR_NOSPACE means that the socket table is full
+// and new socket can't be initialized.
+// |status| == PP_ERROR_FAILED means that socket is correctly
+// initialized (if needed) but Listen call is failed.
+// |status| == PP_OK means that socket is correctly initialized (if
+// needed) and Listen call succeeds.
+IPC_MESSAGE_ROUTED4(PpapiMsg_PPBTCPServerSocket_ListenACK,
+                    uint32 /* plugin_dispatcher_id */,
+                    uint32 /* real_socket_id */,
+                    uint32 /* temp_socket_id */,
+                    int32_t /* status */)
+IPC_MESSAGE_ROUTED5(PpapiMsg_PPBTCPServerSocket_AcceptACK,
+                    uint32 /* plugin_dispatcher_id */,
+                    uint32 /* real_server_socket_id */,
+                    uint32 /* accepted_socket_id */,
+                    PP_NetAddress_Private /* local_addr */,
+                    PP_NetAddress_Private /* remote_addr */)
+
 // PPB_Graphics2D.
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPBGraphics2D_FlushACK,
                     ppapi::HostResource /* graphics_2d */,
@@ -848,6 +868,22 @@ IPC_MESSAGE_CONTROL3(PpapiHostMsg_PPBUDPSocket_SendTo,
                      PP_NetAddress_Private /* net_addr */)
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBUDPSocket_Close,
                      uint32 /* socket_id */)
+
+// PPB_TCPServerSocket_Private.
+IPC_MESSAGE_CONTROL5(PpapiHostMsg_PPBTCPServerSocket_Listen,
+                     int32 /* routing_id */,
+                     uint32 /* plugin_dispatcher_id */,
+                     uint32 /* temp_socket_id */,
+                     PP_NetAddress_Private /* addr */,
+                     int32_t /* backlog */)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBTCPServerSocket_Accept,
+                     uint32 /* real_socket_id */)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBTCPServerSocket_Destroy,
+                     uint32 /* real_socket_id */)
+
+// PPB_Font.
+IPC_SYNC_MESSAGE_CONTROL0_1(PpapiHostMsg_PPBFont_GetFontFamilies,
+                            std::string /* result */)
 
 // PPB_Graphics2D.
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBGraphics2D_Create,
