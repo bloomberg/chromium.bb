@@ -15,6 +15,7 @@
 
 #include "base/compiler_specific.h"
 
+#include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/include/nacl_macros.h"
@@ -442,7 +443,10 @@ void PluginReverseInterface::QuotaRequest_MainThreadContinuation(
       cont_for_response);
   file_io_trusted->WillWrite(request->resource,
                              request->offset,
-                             request->bytes_requested,
+                             // TODO(sehr): remove need for cast.
+                             // Unify WillWrite interface vs Quota request.
+                             nacl::assert_cast<int32_t>(
+                                 request->bytes_requested),
                              quota_cc.pp_completion_callback());
   // request automatically deleted
 }
