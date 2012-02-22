@@ -125,7 +125,9 @@ void SyncSession::RebaseRoutingInfoWithLatest(const SyncSession& session) {
   enabled_groups_ = ComputeEnabledGroups(routing_info_, workers_);
 }
 
-void SyncSession::ResetTransientState() {
+void SyncSession::PrepareForAnotherSyncCycle() {
+  source_.updates_source =
+      sync_pb::GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION;
   status_controller_.reset(new StatusController(routing_info_));
 }
 
@@ -176,14 +178,6 @@ void SyncSession::SendEventNotification(SyncEngineEvent::EventCause cause) {
 
   DVLOG(1) << "Sending event with snapshot: " << snapshot.ToString();
   context()->NotifyListeners(event);
-}
-
-SyncSourceInfo SyncSession::TestAndSetSource() {
-  SyncSourceInfo old_source = source_;
-  source_ = SyncSourceInfo(
-      sync_pb::GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION,
-      source_.types);
-  return old_source;
 }
 
 bool SyncSession::HasMoreToSync() const {

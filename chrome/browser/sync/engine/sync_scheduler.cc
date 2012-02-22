@@ -809,7 +809,7 @@ void SyncScheduler::DoSyncSessionJob(const SyncSessionJob& job) {
     syncer_->SyncShare(job.session.get(), begin, end);
     has_more_to_sync = job.session->HasMoreToSync();
     if (has_more_to_sync)
-      job.session->ResetTransientState();
+      job.session->PrepareForAnotherSyncCycle();
   }
   SDVLOG(2) << "Done SyncShare looping.";
 

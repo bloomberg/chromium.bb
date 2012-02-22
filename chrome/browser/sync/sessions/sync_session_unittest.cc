@@ -323,7 +323,9 @@ TEST_F(SyncSessionTest, ResetTransientState) {
   status()->update_conflicts_resolved(true);
   status()->increment_num_successful_commits();
   EXPECT_TRUE(session_->HasMoreToSync());
-  session_->ResetTransientState();
+  session_->PrepareForAnotherSyncCycle();
+  EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION,
+            session_->source().updates_source);
   EXPECT_FALSE(status()->conflicts_resolved());
   EXPECT_FALSE(session_->HasMoreToSync());
   EXPECT_FALSE(status()->TestAndClearIsDirty());

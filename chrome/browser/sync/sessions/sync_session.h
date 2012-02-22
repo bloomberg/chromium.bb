@@ -143,7 +143,7 @@ class SyncSession {
 
   // Should be called any time |this| is being re-used in a new call to
   // SyncShare (e.g., HasMoreToSync returned true).
-  void ResetTransientState();
+  void PrepareForAnotherSyncCycle();
 
   // TODO(akalin): Split this into context() and mutable_context().
   SyncSessionContext* context() const { return context_; }
@@ -162,11 +162,6 @@ class SyncSession {
   ExtensionsActivityMonitor::Records* mutable_extensions_activity() {
     return &extensions_activity_;
   }
-
-  // Volatile reader for the source member of the sync session object.  The
-  // value is set to the SYNC_CYCLE_CONTINUATION value to signal that it has
-  // been read.
-  SyncSourceInfo TestAndSetSource();
 
   const std::vector<ModelSafeWorker*>& workers() const { return workers_; }
   const ModelSafeRoutingInfo& routing_info() const { return routing_info_; }
