@@ -239,6 +239,20 @@ class ThroughputTest : public BrowserPerfTest {
     RunTestWithURL(test_name, flags);
   }
 
+  void RunCanvasBenchTest(const std::string& test_name, RunTestFlags flags) {
+    // Set path to test html.
+    FilePath test_path;
+    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_path));
+    test_path = test_path.Append(FILE_PATH_LITERAL("perf"));
+    test_path = test_path.Append(FILE_PATH_LITERAL("canvas_bench"));
+    test_path = test_path.AppendASCII(test_name + ".html");
+    ASSERT_TRUE(file_util::PathExists(test_path))
+        << "Missing test file: " << test_path.value();
+
+    gurl_ = net::FilePathToFileURL(test_path);
+    RunTestWithURL(test_name, flags);
+  }
+
   void RunTestWithURL(RunTestFlags flags) {
     RunTestWithURL(gurl_.possibly_invalid_spec(), flags);
   }
@@ -429,14 +443,6 @@ IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasDemoGPU) {
   RunTest("canvas-demo", kInternal);
 }
 
-IN_PROC_BROWSER_TEST_F(ThroughputTestSW, CanvasSingleImageSW) {
-  RunTest("canvas_single_image", kAllowExternalDNS);
-}
-
-IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasSingleImageGPU) {
-  RunTest("canvas_single_image", kAllowExternalDNS);
-}
-
 // CompositingHugeDivSW timed out on Mac Intel Release GPU bot
 // See crbug.com/114781
 #if defined(OS_MACOSX)
@@ -466,6 +472,22 @@ IN_PROC_BROWSER_TEST_F(ThroughputTestSW, CanvasToCanvasDrawSW) {
 
 IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasToCanvasDrawGPU) {
   RunTest("canvas2d_balls_draw_from_canvas", kNone);
+}
+
+IN_PROC_BROWSER_TEST_F(ThroughputTestSW, CanvasSingleImageSW) {
+  RunCanvasBenchTest("single_image", kNone);
+}
+
+IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasSingleImageGPU) {
+  RunCanvasBenchTest("single_image", kNone);
+}
+
+IN_PROC_BROWSER_TEST_F(ThroughputTestSW, CanvasManyImagesSW) {
+  RunCanvasBenchTest("many_images", kNone);
+}
+
+IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasManyImagesGPU) {
+  RunCanvasBenchTest("many_images", kNone);
 }
 
 }  // namespace
