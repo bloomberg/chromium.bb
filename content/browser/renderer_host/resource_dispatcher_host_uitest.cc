@@ -84,6 +84,7 @@ TEST_F(ResourceDispatcherTest, ContentDispositionInline) {
 // Test for bug #1091358.
 TEST_F(ResourceDispatcherTest, SyncXMLHttpRequest) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(test_server.Start());
 
@@ -106,6 +107,7 @@ TEST_F(ResourceDispatcherTest, SyncXMLHttpRequest) {
 // http://code.google.com/p/chromium/issues/detail?id=62776
 TEST_F(ResourceDispatcherTest, DISABLED_SyncXMLHttpRequest_Disallowed) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(test_server.Start());
 
@@ -131,6 +133,7 @@ TEST_F(ResourceDispatcherTest, DISABLED_SyncXMLHttpRequest_Disallowed) {
 // Disabled -- http://code.google.com/p/chromium/issues/detail?id=56264
 TEST_F(ResourceDispatcherTest, DISABLED_SyncXMLHttpRequest_DuringUnload) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(test_server.Start());
 
@@ -167,6 +170,7 @@ TEST_F(ResourceDispatcherTest, DISABLED_SyncXMLHttpRequest_DuringUnload) {
 // Tests that onunload is run for cross-site requests.  (Bug 1114994)
 TEST_F(ResourceDispatcherTest, CrossSiteOnunloadCookie) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(test_server.Start());
 
@@ -199,6 +203,7 @@ TEST_F(ResourceDispatcherTest, CrossSiteOnunloadCookie) {
 // without network loads (e.g., about:blank, data URLs).
 TEST_F(ResourceDispatcherTest, CrossSiteImmediateLoadOnunloadCookie) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(test_server.Start());
 
@@ -237,6 +242,7 @@ TEST_F(ResourceDispatcherTest, CrossSiteImmediateLoadOnunloadCookie) {
 // Tests that the unload handler is not run for 204 responses.
 TEST_F(ResourceDispatcherTest, MAYBE_CrossSiteNoUnloadOn204) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(test_server.Start());
 
@@ -322,6 +328,7 @@ TEST_F(ResourceDispatcherTest, CrossSiteNavigationNonBuffered) {
 // Flaky: http://crbug.com/100823
 TEST_F(ResourceDispatcherTest, DISABLED_CrossSiteNavigationErrorPage) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(test_server.Start());
 

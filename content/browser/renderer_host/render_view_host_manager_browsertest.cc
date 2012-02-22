@@ -49,6 +49,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   ASSERT_TRUE(test_server()->Start());
   net::TestServer https_server(
       net::TestServer::TYPE_HTTPS,
+      net::TestServer::kLocalhost,
       FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
 
@@ -105,6 +106,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   ASSERT_TRUE(test_server()->Start());
   net::TestServer https_server(
       net::TestServer::TYPE_HTTPS,
+      net::TestServer::kLocalhost,
       FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
 
@@ -157,6 +159,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   ASSERT_TRUE(test_server()->Start());
   net::TestServer https_server(
       net::TestServer::TYPE_HTTPS,
+      net::TestServer::kLocalhost,
       FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
 
@@ -204,6 +207,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, ClickLinkAfter204Error) {
   ASSERT_TRUE(test_server()->Start());
   net::TestServer https_server(
       net::TestServer::TYPE_HTTPS,
+      net::TestServer::kLocalhost,
       FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
 
@@ -432,6 +436,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, LeakingRenderViewHosts) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
   net::TestServer https_server(net::TestServer::TYPE_HTTPS,
+                               net::TestServer::kLocalhost,
                                FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
 

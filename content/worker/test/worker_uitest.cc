@@ -224,7 +224,9 @@ const FilePath::CharType kDocRoot[] =
 #endif
 // Make sure that auth dialog is displayed from worker context.
 TEST_F(WorkerTest, WorkerHttpAuth) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   scoped_refptr<TabProxy> tab(GetActiveTab());
@@ -241,7 +243,9 @@ TEST_F(WorkerTest, WorkerHttpAuth) {
 #endif
 // Make sure that auth dialog is displayed from shared worker context.
 TEST_F(WorkerTest, DISABLED_SharedWorkerHttpAuth) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   scoped_refptr<TabProxy> tab(GetActiveTab());
