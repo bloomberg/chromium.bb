@@ -593,6 +593,11 @@ void SafeBrowsingService::OnNewMacKeys(const std::string& client_key,
   }
 }
 
+net::URLRequestContextGetter* SafeBrowsingService::url_request_context() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return url_request_context_getter_.get();
+}
+
 // static
 void SafeBrowsingService::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kSafeBrowsingClientKey, "");

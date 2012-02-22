@@ -247,7 +247,7 @@ class BrowsingDataRemover : public content::NotificationObserver,
   // Returns true if we're all done.
   bool all_done() {
     return registrar_.IsEmpty() && !waiting_for_clear_cache_ &&
-           !waiting_for_clear_cookies_&&
+           !waiting_for_clear_cookies_count_&&
            !waiting_for_clear_history_ &&
            !waiting_for_clear_networking_history_ &&
            !waiting_for_clear_origin_bound_certs_ &&
@@ -294,7 +294,8 @@ class BrowsingDataRemover : public content::NotificationObserver,
   // True if we're waiting for various data to be deleted.
   // These may only be accessed from UI thread in order to avoid races!
   bool waiting_for_clear_cache_;
-  bool waiting_for_clear_cookies_;
+  // Non-zero if waiting for cookies to be cleared.
+  int waiting_for_clear_cookies_count_;
   bool waiting_for_clear_history_;
   bool waiting_for_clear_networking_history_;
   bool waiting_for_clear_origin_bound_certs_;

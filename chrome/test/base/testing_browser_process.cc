@@ -14,6 +14,7 @@
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "content/public/browser/notification_service.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -101,7 +102,7 @@ StatusTray* TestingBrowserProcess::status_tray() {
 }
 
 SafeBrowsingService* TestingBrowserProcess::safe_browsing_service() {
-  return NULL;
+  return sb_service_.get();
 }
 
 safe_browsing::ClientSideDetectionService*
@@ -256,4 +257,9 @@ void TestingBrowserProcess::SetIOThread(IOThread* io_thread) {
 void TestingBrowserProcess::SetBrowserPolicyConnector(
     policy::BrowserPolicyConnector* connector) {
   browser_policy_connector_.reset(connector);
+}
+
+void TestingBrowserProcess::SetSafeBrowsingService(
+    SafeBrowsingService* sb_service) {
+  sb_service_ = sb_service;
 }

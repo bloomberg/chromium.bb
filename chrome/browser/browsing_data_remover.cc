@@ -30,6 +30,7 @@
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/session_service.h"
@@ -98,7 +99,7 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       main_context_getter_(profile->GetRequestContext()),
       media_context_getter_(profile->GetRequestContextForMedia()),
       waiting_for_clear_cache_(false),
-      waiting_for_clear_cookies_(false),
+      waiting_for_clear_cookies_count_(0),
       waiting_for_clear_history_(false),
       waiting_for_clear_networking_history_(false),
       waiting_for_clear_origin_bound_certs_(false),
@@ -123,7 +124,7 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       main_context_getter_(profile->GetRequestContext()),
       media_context_getter_(profile->GetRequestContextForMedia()),
       waiting_for_clear_cache_(false),
-      waiting_for_clear_cookies_(false),
+      waiting_for_clear_cookies_count_(0),
       waiting_for_clear_history_(false),
       waiting_for_clear_networking_history_(false),
       waiting_for_clear_origin_bound_certs_(false),
@@ -257,11 +258,29 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     // Since we are running on the UI thread don't call GetURLRequestContext().
     net::URLRequestContextGetter* rq_context = profile_->GetRequestContext();
     if (rq_context) {
-      waiting_for_clear_cookies_ = true;
+      ++waiting_for_clear_cookies_count_;
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::Bind(&BrowsingDataRemover::ClearCookiesOnIOThread,
                      base::Unretained(this), base::Unretained(rq_context)));
+    }
+
+    // Clear the safebrowsing cookies only if time period is for "all time".  It
+    // doesn't make sense to apply the time period of deleting in the last X
+    // hours/days to the safebrowsing cookies since they aren't the result of
+    // any user action.
+    if (delete_begin_ == base::Time()) {
+      SafeBrowsingService* sb_service =
+          g_browser_process->safe_browsing_service();
+      if (sb_service) {
+        net::URLRequestContextGetter* sb_context =
+            sb_service->url_request_context();
+        ++waiting_for_clear_cookies_count_;
+        BrowserThread::PostTask(
+            BrowserThread::IO, FROM_HERE,
+            base::Bind(&BrowsingDataRemover::ClearCookiesOnIOThread,
+                       base::Unretained(this), base::Unretained(sb_context)));
+      }
     }
   }
 
@@ -658,7 +677,8 @@ void BrowsingDataRemover::OnClearedCookies(int num_deleted) {
     return;
   }
 
-  waiting_for_clear_cookies_ = false;
+  DCHECK(waiting_for_clear_cookies_count_ > 0);
+  --waiting_for_clear_cookies_count_;
   NotifyAndDeleteIfDone();
 }
 

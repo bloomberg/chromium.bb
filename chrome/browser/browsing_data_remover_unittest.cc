@@ -13,8 +13,10 @@
 #include "base/platform_file.h"
 #include "chrome/browser/extensions/mock_extension_special_storage_policy.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
@@ -102,11 +104,7 @@ class BrowsingDataRemoverTester : public BrowsingDataRemover::Observer {
 
 class RemoveCookieTester : public BrowsingDataRemoverTester {
  public:
-  explicit RemoveCookieTester(TestingProfile* profile)
-      : get_cookie_success_(false) {
-    profile->CreateRequestContext();
-    monster_ = profile->GetRequestContext()->GetURLRequestContext()->
-        cookie_store()->GetCookieMonster();
+  RemoveCookieTester() : get_cookie_success_(false) {
   }
 
   // Returns true, if the given cookie exists in the cookie store.
@@ -126,6 +124,11 @@ class RemoveCookieTester : public BrowsingDataRemoverTester {
         base::Bind(&RemoveCookieTester::SetCookieCallback,
                    base::Unretained(this)));
     BlockUntilNotified();
+  }
+
+ protected:
+  void SetMonster(net::CookieStore* monster) {
+    monster_ = monster;
   }
 
  private:
@@ -149,6 +152,46 @@ class RemoveCookieTester : public BrowsingDataRemoverTester {
   net::CookieStore* monster_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveCookieTester);
+};
+
+class RemoveProfileCookieTester : public RemoveCookieTester {
+ public:
+  explicit RemoveProfileCookieTester(TestingProfile* profile) {
+    profile->CreateRequestContext();
+    SetMonster(profile->GetRequestContext()->GetURLRequestContext()->
+        cookie_store()->GetCookieMonster());
+  }
+};
+
+class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
+ public:
+  RemoveSafeBrowsingCookieTester()
+      : browser_process_(
+          static_cast<TestingBrowserProcess*>(g_browser_process)) {
+    scoped_refptr<SafeBrowsingService> sb_service =
+        SafeBrowsingService::CreateSafeBrowsingService();
+    browser_process_->SetSafeBrowsingService(sb_service);
+    sb_service->Initialize();
+    MessageLoop::current()->RunAllPending();
+
+    // Create a cookiemonster that does not have persistant storage, and replace
+    // the SafeBrowsingService created one with it.
+    net::CookieStore* monster = new net::CookieMonster(NULL, NULL);
+    sb_service->url_request_context()->GetURLRequestContext()->
+        set_cookie_store(monster);
+    SetMonster(monster);
+  }
+
+  virtual ~RemoveSafeBrowsingCookieTester() {
+    browser_process_->safe_browsing_service()->ShutDown();
+    MessageLoop::current()->RunAllPending();
+    browser_process_->SetSafeBrowsingService(NULL);
+  }
+
+ private:
+  TestingBrowserProcess* browser_process_;
+
+  DISALLOW_COPY_AND_ASSIGN(RemoveSafeBrowsingCookieTester);
 };
 
 class RemoveOriginBoundCertTester : public BrowsingDataRemoverTester {
@@ -407,8 +450,8 @@ class BrowsingDataRemoverTest : public testing::Test,
 // Tests ---------------------------------------------------------------------
 
 TEST_F(BrowsingDataRemoverTest, RemoveCookieForever) {
-  scoped_ptr<RemoveCookieTester> tester(
-      new RemoveCookieTester(GetProfile()));
+  scoped_ptr<RemoveProfileCookieTester> tester(
+      new RemoveProfileCookieTester(GetProfile()));
 
   tester->AddCookie();
   ASSERT_TRUE(tester->ContainsCookie());
@@ -418,6 +461,50 @@ TEST_F(BrowsingDataRemoverTest, RemoveCookieForever) {
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_COOKIES, GetRemovalMask());
   EXPECT_FALSE(tester->ContainsCookie());
+}
+
+TEST_F(BrowsingDataRemoverTest, RemoveCookieLastHour) {
+  scoped_ptr<RemoveProfileCookieTester> tester(
+      new RemoveProfileCookieTester(GetProfile()));
+
+  tester->AddCookie();
+  ASSERT_TRUE(tester->ContainsCookie());
+
+  BlockUntilBrowsingDataRemoved(BrowsingDataRemover::LAST_HOUR,
+      BrowsingDataRemover::REMOVE_COOKIES, tester.get());
+
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_COOKIES, GetRemovalMask());
+  EXPECT_FALSE(tester->ContainsCookie());
+}
+
+TEST_F(BrowsingDataRemoverTest, RemoveSafeBrowsingCookieForever) {
+  scoped_ptr<RemoveSafeBrowsingCookieTester> tester(
+      new RemoveSafeBrowsingCookieTester());
+
+  tester->AddCookie();
+  ASSERT_TRUE(tester->ContainsCookie());
+
+  BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
+      BrowsingDataRemover::REMOVE_COOKIES, tester.get());
+
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_COOKIES, GetRemovalMask());
+  EXPECT_FALSE(tester->ContainsCookie());
+}
+
+TEST_F(BrowsingDataRemoverTest, RemoveSafeBrowsingCookieLastHour) {
+  scoped_ptr<RemoveSafeBrowsingCookieTester> tester(
+      new RemoveSafeBrowsingCookieTester());
+
+  tester->AddCookie();
+  ASSERT_TRUE(tester->ContainsCookie());
+
+  BlockUntilBrowsingDataRemoved(BrowsingDataRemover::LAST_HOUR,
+      BrowsingDataRemover::REMOVE_COOKIES, tester.get());
+
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_COOKIES, GetRemovalMask());
+  // Removing with time period other than EVERYTHING should not clear safe
+  // browsing cookies.
+  EXPECT_TRUE(tester->ContainsCookie());
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveOriginBoundCertForever) {

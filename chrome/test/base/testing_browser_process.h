@@ -115,6 +115,7 @@ class TestingBrowserProcess : public BrowserProcess {
   void SetProfileManager(ProfileManager* profile_manager);
   void SetIOThread(IOThread* io_thread);
   void SetBrowserPolicyConnector(policy::BrowserPolicyConnector* connector);
+  void SetSafeBrowsingService(SafeBrowsingService* sb_service);
 
  private:
   scoped_ptr<content::NotificationService> notification_service_;
@@ -134,6 +135,7 @@ class TestingBrowserProcess : public BrowserProcess {
       print_preview_tab_controller_;
   scoped_ptr<prerender::PrerenderTracker> prerender_tracker_;
   IOThread* io_thread_;
+  scoped_refptr<SafeBrowsingService> sb_service_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingBrowserProcess);
 };

@@ -286,6 +286,8 @@ class SafeBrowsingService
     return download_service_.get();
   }
 
+  net::URLRequestContextGetter* url_request_context();
+
   // Preference handling.
   static void RegisterPrefs(PrefService* prefs);
 
