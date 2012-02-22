@@ -539,11 +539,13 @@ class IBusControllerImpl : public IBusController {
           ibus_,
           reinterpret_cast<gpointer>(G_CALLBACK(IBusBusDisconnectedThunk)),
           this);
+#if !defined(USE_AURA)
       g_signal_handlers_disconnect_by_func(
           ibus_,
           reinterpret_cast<gpointer>(
               G_CALLBACK(IBusBusGlobalEngineChangedThunk)),
           this);
+#endif
       g_signal_handlers_disconnect_by_func(
           ibus_,
           reinterpret_cast<gpointer>(G_CALLBACK(IBusBusNameOwnerChangedThunk)),
@@ -665,11 +667,7 @@ class IBusControllerImpl : public IBusController {
                                      NULL);  // user_data
 
 #if defined(USE_AURA)
-    // Since we don't have an IME for XKB layouts, when a global engine is
-    // switched from A (IME) to B (XKB) then back to A, "global-engine-changed"
-    // signal will not be emitted (note that on ibus-daemon side, A is always
-    // in use). To update the UI correctly, call the function manually.
-    IBusBusGlobalEngineChanged(ibus_, name.c_str());
+    UpdateUI(name.c_str());
 #endif
     return true;
   }
@@ -828,12 +826,16 @@ class IBusControllerImpl : public IBusController {
     return reinterpret_cast<IBusControllerImpl*>(userdata)
         ->IBusBusDisconnected(sender);
   }
+
+#if !defined(USE_AURA)
   static void IBusBusGlobalEngineChangedThunk(IBusBus* sender,
                                               const gchar* engine_name,
                                               gpointer userdata) {
     return reinterpret_cast<IBusControllerImpl*>(userdata)
         ->IBusBusGlobalEngineChanged(sender, engine_name);
   }
+#endif
+
   static void IBusBusNameOwnerChangedThunk(IBusBus* sender,
                                            const gchar* name,
                                            const gchar* old_name,
@@ -904,8 +906,11 @@ class IBusControllerImpl : public IBusController {
 
     // Ask libibus to watch the NameOwnerChanged signal *asynchronously*.
     ibus_bus_set_watch_dbus_signal(ibus_, TRUE);
+
+#if !defined(USE_AURA)
     // Ask libibus to watch the GlobalEngineChanged signal *asynchronously*.
     ibus_bus_set_watch_ibus_signal(ibus_, TRUE);
+#endif
 
     if (ibus_bus_is_connected(ibus_)) {
       VLOG(1) << "IBus connection is ready.";
@@ -1056,10 +1061,14 @@ class IBusControllerImpl : public IBusController {
                      "disconnected",
                      G_CALLBACK(IBusBusDisconnectedThunk),
                      this);
+
+#if !defined(USE_AURA)
     g_signal_connect(ibus_,
                      "global-engine-changed",
                      G_CALLBACK(IBusBusGlobalEngineChangedThunk),
                      this);
+#endif
+
     g_signal_connect(ibus_,
                      "name-owner-changed",
                      G_CALLBACK(IBusBusNameOwnerChangedThunk),
@@ -1112,12 +1121,14 @@ class IBusControllerImpl : public IBusController {
     FOR_EACH_OBSERVER(Observer, observers_, OnConnectionChange(false));
   }
 
+#if !defined(USE_AURA)
   // Handles "global-engine-changed" signal from ibus-daemon.
   void IBusBusGlobalEngineChanged(IBusBus* bus, const gchar* engine_name) {
     DCHECK(engine_name);
     VLOG(1) << "Global engine is changed to " << engine_name;
     UpdateUI(engine_name);
   }
+#endif
 
   // Handles "name-owner-changed" signal from ibus-daemon. The signal is sent
   // to libcros when an IBus component such as ibus-memconf, ibus-engine-*, ..
