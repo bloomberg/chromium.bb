@@ -5805,6 +5805,25 @@
    fun:_ZN7content11ContentMainEiPPKcPNS_19ContentMainDelegateE
    fun:ChromeMain
 }
+{
+   bug_115251_1
+   Memcheck:Uninitialized
+   ...
+   fun:vp8cx_encode_intra_macro_block
+}
+{
+   bug_115251_2
+   Memcheck:Uninitialized
+   ...
+   fun:write_kfmodes
+   fun:vp8_pack_bitstream
+   fun:encode_frame_to_data_rate
+   fun:vp8_get_compressed_data
+   fun:vp8e_encode
+   fun:vpx_codec_encode
+   fun:_ZN8remoting10EncoderVp86EncodeE13scoped_refptrINS_11CaptureDataEEbRKN4base8CallbackIFvPNS_11VideoPacketEEEE
+   fun:_ZN8remoting40EncoderVp8Test_TestSizeChangeNoLeak_Test8TestBodyEv
+}
 
 
 #-----------------------------------------------------------------------
