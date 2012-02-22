@@ -8,19 +8,11 @@
 
 #include "base/basictypes.h"
 #include "ui/aura/event.h"
+#include "ui/aura/gestures/gesture_configuration.h"
 #include "ui/base/events.h"
 
 namespace {
 
-// TODO(girard): Make these configurable in sync with
-// http://crbug.com/113227
-// It will be necessary to update gesture_recognizer_unittest when
-// these constants are made configurable.
-const double kMaximumTouchDownDurationInSecondsForClick = 0.8;
-const double kMinimumTouchDownDurationInSecondsForClick = 0.01;
-const double kMaximumSecondsBetweenDoubleClick = 0.7;
-const int kMaximumTouchMoveInPixelsForClick = 20;
-const float kMinFlickSpeedSquared = 550.f * 550.f;
 const int kMinRailBreakVelocity = 200;
 const int kMinScrollDeltaSquared = 5 * 5;
 const int kRailBreakProportion = 15;
@@ -145,30 +137,35 @@ bool GesturePoint::BreaksVerticalRail() {
 
 bool GesturePoint::IsInClickTimeWindow() const {
   double duration = last_touch_time_ - first_touch_time_;
-  return duration >= kMinimumTouchDownDurationInSecondsForClick &&
-         duration < kMaximumTouchDownDurationInSecondsForClick;
+  return duration >=
+      GestureConfiguration::min_touch_down_duration_in_seconds_for_click() &&
+      duration <
+      GestureConfiguration::max_touch_down_duration_in_seconds_for_click();
 }
 
 bool GesturePoint::IsInSecondClickTimeWindow() const {
   double duration =  last_touch_time_ - last_tap_time_;
-  return duration < kMaximumSecondsBetweenDoubleClick;
+  return duration < GestureConfiguration::max_seconds_between_double_click();
 }
 
 bool GesturePoint::IsInsideManhattanSquare(const TouchEvent& event) const {
   int manhattanDistance = abs(event.x() - first_touch_position_.x()) +
                           abs(event.y() - first_touch_position_.y());
-  return manhattanDistance < kMaximumTouchMoveInPixelsForClick;
+  return manhattanDistance <
+      GestureConfiguration::max_touch_move_in_pixels_for_click();
 }
 
 bool GesturePoint::IsSecondClickInsideManhattanSquare(
     const TouchEvent& event) const {
   int manhattanDistance = abs(event.x() - last_tap_position_.x()) +
                           abs(event.y() - last_tap_position_.y());
-  return manhattanDistance < kMaximumTouchMoveInPixelsForClick;
+  return manhattanDistance <
+      GestureConfiguration::max_touch_move_in_pixels_for_click();
 }
 
 bool GesturePoint::IsOverMinFlickSpeed() {
-  return velocity_calculator_.VelocitySquared() > kMinFlickSpeedSquared;
+  return velocity_calculator_.VelocitySquared() >
+      GestureConfiguration::min_flick_speed_squared();
 }
 
 }  // namespace aura

@@ -9,6 +9,7 @@
 #include "base/time.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/gestures/gesture_configuration.h"
 #include "ui/base/events.h"
 
 // TODO(sad): Pinch gestures currently always assume that the first two
@@ -529,12 +530,15 @@ bool GestureSequence::PinchUpdate(const TouchEvent& event,
     const GesturePoint& point, Gestures* gestures) {
   DCHECK(state_ == GS_PINCH);
   float distance = points_[0].Distance(points_[1]);
-  if (abs(distance - pinch_distance_current_) < kMinimumPinchUpdateDistance) {
+  if (abs(distance - pinch_distance_current_) <
+      GestureConfiguration::minimum_pinch_update_distance_in_pixels()) {
     // The fingers didn't move towards each other, or away from each other,
     // enough to constitute a pinch. But perhaps they moved enough in the same
     // direction to do a two-finger scroll.
-    if (!points_[0].DidScroll(event, kMinimumDistanceForPinchScroll) ||
-        !points_[1].DidScroll(event, kMinimumDistanceForPinchScroll))
+    if (!points_[0].DidScroll(event,
+        GestureConfiguration::minimum_distance_for_pinch_scroll_in_pixels()) ||
+        !points_[1].DidScroll(event,
+        GestureConfiguration::minimum_distance_for_pinch_scroll_in_pixels()))
       return false;
 
     gfx::Point center = points_[0].last_touch_position().Middle(
