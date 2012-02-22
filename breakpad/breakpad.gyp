@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -30,6 +30,7 @@
             'src/common/convert_UTF.c',
             'src/client/mac/handler/breakpad_nlist_64.cc',
             'src/client/mac/handler/dynamic_images.cc',
+            'src/common/mac/bootstrap_compat.cc',
             'src/common/mac/file_id.cc',
             'src/common/mac/MachIPC.mm',
             'src/common/mac/macho_id.cc',
