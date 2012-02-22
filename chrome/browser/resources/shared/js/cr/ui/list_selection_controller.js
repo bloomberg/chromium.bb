@@ -164,10 +164,7 @@ cr.define('cr.ui', function() {
           var indexSelected = sm.getIndexSelected(index);
           if ((indexSelected && !isDown || !indexSelected && isDown) &&
               !(indexSelected && isRightClick)) {
-            sm.unselectAll();
-            sm.setIndexSelected(index, true);
-            sm.leadIndex = index;
-            sm.anchorIndex = index;
+            sm.selectedIndex = index;
           }
         }
       }

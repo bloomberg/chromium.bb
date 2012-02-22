@@ -40,10 +40,26 @@ cr.define('cr.ui', function() {
     },
     set selectedIndexes(selectedIndexes) {
       this.beginChange();
-      this.unselectAll();
-      for (var i = 0; i < selectedIndexes.length; i++) {
-        this.setIndexSelected(selectedIndexes[i], true);
+      var unselected = {};
+      for (var index in this.selectedIndexes_) {
+        unselected[index] = true;
       }
+
+      for (var i = 0; i < selectedIndexes.length; i++) {
+        var index = selectedIndexes[i];
+        if (index in this.selectedIndexes_) {
+          delete unselected[index];
+        } else {
+          this.selectedIndexes_[index] = true;
+          this.changedIndexes_[index] = true;
+        }
+      }
+
+      for (var index in unselected) {
+        delete this.selectedIndexes_[index];
+        this.changedIndexes_[index] = false;
+      }
+
       if (selectedIndexes.length) {
         this.leadIndex = this.anchorIndex = selectedIndexes[0];
       } else {
@@ -63,14 +79,7 @@ cr.define('cr.ui', function() {
       return -1;
     },
     set selectedIndex(selectedIndex) {
-      this.beginChange();
-      this.unselectAll();
-      if (selectedIndex != -1) {
-        this.selectedIndexes = [selectedIndex];
-      } else {
-        this.leadIndex = this.anchorIndex = -1;
-      }
-      this.endChange();
+      this.selectedIndexes = selectedIndex != -1 ? [selectedIndex] : [];
     },
 
     /**
