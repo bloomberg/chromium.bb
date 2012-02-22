@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,13 +29,7 @@ IN_PROC_BROWSER_TEST_F(HistoryExtensionApiTest, TimedSearch) {
   ASSERT_TRUE(RunExtensionSubtest("history", "timed_search.html")) << message_;
 }
 
-#if defined(OS_WIN)
-// Flakily times out on Win - See http://crbug.com/88318
-#define MAYBE_Delete DISABLED_Delete
-#else
-#define MAYBE_Delete Delete
-#endif
-IN_PROC_BROWSER_TEST_F(HistoryExtensionApiTest, MAYBE_Delete) {
+IN_PROC_BROWSER_TEST_F(HistoryExtensionApiTest, Delete) {
   ASSERT_TRUE(RunExtensionSubtest("history", "delete.html")) << message_;
 }
 
