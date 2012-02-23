@@ -226,7 +226,7 @@ class ValidationPool(object):
       project = pending_commit.getAttribute(lkgm_manager.PALADIN_PROJECT_ATTR)
       change = pending_commit.getAttribute(lkgm_manager.PALADIN_CHANGE_ID_ATTR)
       commit = pending_commit.getAttribute(lkgm_manager.PALADIN_COMMIT_ATTR)
-      pool.changes.append(pool.gerrit_helper.GrabPatchFromGerrit(
+      pool.append(pool.gerrit_helper.GrabPatchFromGerrit(
           project, change, commit))
 
     return pool
@@ -328,7 +328,7 @@ class ValidationPool(object):
         dep_change = change_map.get(dep)
         if not dep_change:
           # The dep may have been committed already.
-          if not self.gerrit_helper.IsChangeCommitted(dep):
+          if not self.gerrit_helper.IsChangeCommitted(dep, must_match=False):
             message = ('Could not apply change %s because dependent '
                        'change %s is not ready to be committed.' % (
                         change.id, dep))

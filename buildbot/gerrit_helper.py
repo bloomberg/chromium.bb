@@ -23,6 +23,11 @@ class FailedToReachGerrit(GerritException):
 
 class GerritHelper():
   """Helper class to manage interaction with Gerrit server."""
+
+  _CQ_READY_QUERY = ('status:open AND CodeReview=+2 AND Verified=+1 '
+                    'AND CommitReady=+1 '
+                    'AND NOT CodeReview=-2 AND NOT Verified=-1')
+
   def __init__(self, internal):
     """Initializes variables for interaction with a gerrit server."""
     if internal:
@@ -39,16 +44,6 @@ class GerritHelper():
   @property
   def ssh_prefix(self):
     return ['ssh', '-p', self.ssh_port, self.ssh_host]
-
-  def GetGerritQueryCommand(self, query_list):
-    """Returns array corresponding to Gerrit Query command.
-
-    Query is useful for getting information about changelists.  Returns results
-    in json format for easy dictionary parsing.  Pass in |query| as the query
-    args.
-    """
-    assert isinstance(query_list, list), 'Query command must be list.'
-    return self.ssh_prefix + ['gerrit', 'query', '--format=json'] + query_list
 
   def GetGerritSqlCommand(self, command_list):
     """Returns array corresponding to Gerrit Review command.
@@ -68,72 +63,54 @@ class GerritHelper():
     assert isinstance(command_list, list), 'Review command must be list.'
     return self.ssh_prefix + ['gerrit', 'review'] + command_list
 
-
   def GrabChangesReadyForCommit(self):
     """Returns the list of changes to try.
 
     This methods returns a a list of GerritPatch's to try.
     """
-    query_string = ('status:open AND CodeReview=+2 AND Verified=+1 '
-                    'AND CommitReady=+1 '
-                    'AND NOT CodeReview=-2 AND NOT Verified=-1')
 
-    ready_for_commit = ['--current-patch-set', '"%s"' % query_string]
-
-    query_cmd = self.GetGerritQueryCommand(ready_for_commit)
-    raw_results = cros_build_lib.RunCommand(query_cmd,
-                                            redirect_stdout=True)
-
-    # Each line returned is a json dict.
-    changes_to_commit = []
-    for raw_result in raw_results.output.splitlines():
-      result_dict = json.loads(raw_result)
-      if not 'id' in result_dict:
-        logging.debug('No change number found in %s', result_dict)
-        continue
-
-      changes_to_commit.append(cros_patch.GerritPatch(result_dict,
-                                                      self.internal))
+    results = self.Query(self._CQ_READY_QUERY, sort='lastUpdated')
 
     # Change to commit are ordered in descending order by last update.
     # To be fair it makes sense to do apply changes eldest to newest.
-    changes_to_commit.reverse()
-    return changes_to_commit
+    results.reverse()
+    return results
 
-  def GrabPatchFromGerrit(self, project, change, commit):
+  def GrabPatchFromGerrit(self, project, change, commit, must_match=True):
     """Returns the GerritChange described by the arguments.
 
     Args:
       project: Name of the Gerrit project for the change.
       change:  The change ID for the change.
       commit:  The specific commit hash for the patch from the review.
+      must_match: Defaults to True; if True, the given changeid *must*
+        be found on the target gerrit server.  If False, a change not found
+        is considered uncommited.
     """
-    grab_change = (
-        ['--current-patch-set',
-         '"project:%(project)s AND change:%(change)s AND commit:%(commit)s"' %
-             {'project': project, 'change': change, 'commit': commit}
-        ])
+    query = ('project:%(project)s AND change:%(change)s AND commit:%(commit)s'
+             % {'project': project, 'change': change, 'commit': commit})
+    return self.QuerySingleRecord(query, must_match=must_match)
 
-    query_cmd = self.GetGerritQueryCommand(grab_change)
-    raw_results = cros_build_lib.RunCommand(query_cmd,
-                                            redirect_stdout=True)
+  def IsChangeCommitted(self, changeid, dryrun=False, must_match=True):
+    """Checks to see whether a change is already committed.
 
-    # First line returned is the json.
-    raw_result = raw_results.output.splitlines()[0]
-    result_dict = json.loads(raw_result)
-    assert result_dict.get('id'), 'Code Review json missing change-id!'
-    return cros_patch.GerritPatch(result_dict, self.internal)
-
-  def IsChangeCommitted(self, changeid, dryrun=False):
-    """Checks to see whether a change is already committed."""
-    rev_cmd = self.GetGerritQueryCommand(['change:%s' % changeid])
-    if not dryrun:
-      raw_results = cros_build_lib.RunCommand(rev_cmd, redirect_stdout=True)
-      result_dict = json.loads(raw_results.output.splitlines()[0])
-      return result_dict.get('status') not in ['NEW', 'ABANDONED', None]
-    else:
-      logging.info('Would have run %s', ' '.join(rev_cmd))
+    Args:
+      changeid: Change id to query for.
+      dryrun: Whether to perform the operations or not.  If set, returns True.
+      must_match: Defaults to True; if True, the given changeid *must*
+        be found on the target gerrit server.  If False, a change not found
+        is considered uncommited.
+    """
+    result = self.QuerySingleRecord('change:%s' % (changeid,),
+                                    must_match=must_match, dryrun=dryrun)
+    if dryrun:
       return True
+
+    if result is None:
+      # This can only occur if must_match=False
+      return False
+
+    return result.status == 'MERGED'
 
   def GetLatestSHA1ForBranch(self, project, branch):
     """Finds the latest commit hash for a repository/branch.
@@ -157,12 +134,48 @@ class GerritHelper():
 
     raise FailedToReachGerrit('Could not contact gerrit to get latest sha1')
 
-  def _Query(self, or_parameters, sort=None, options=()):
+  def QuerySingleRecord(self, query, **kwds):
+    """Freeform querying of a gerrit server, expecting exactly one row returned
+
+    Args:
+      query: See Query for details.  This is just a wrapping function.
+      kwds: See Query for details.  This is just a wrapping function.  This
+        method accepts one additional keyword that Query doesn't: must_match,
+        which defaults to True.  If this is True and the query didn't match
+        anything, it'll raise a GerritException.  If False, it returns None
+    Returns:
+      If raw=True, a single dictionary or a cros_patch.GerritPatch instance
+        if a single record was found.  If must_match=False and no record was
+        found in gerrit, None.
+    Raises:
+      GerritException derivatives.
+    """
+    dryrun = kwds.get('dryrun')
+    must_match = kwds.pop('must_match', True)
+    results = self.Query(query, **kwds)
+
+    if dryrun:
+      return None
+    elif not results:
+      if must_match:
+        raise GerritException('Query %s had no results' % (query,))
+      return None
+    elif len(results) != 1:
+      raise GerritException('Query %s returned too many results: %s'
+                            % (query, results))
+    return results[0]
+
+  def Query(self, query, sort=None, current_patch=True, options=(),
+            dryrun=False, raw=False):
     """Freeform querying of a gerrit server
 
     Args:
-     or_parameters: sequence of gerrit query chunks that are OR'd together
+     query: gerrit query to run: see the official docs for valid parameters:
+       http://gerrit.googlecode.com/svn/documentation/2.1.7/cmd-query.html
      sort: if given, the key in the resultant json to sort on
+     current_patch: If True, append --current-patch-set to options.  If this
+       is set to False, return the raw dictionary.  If False, raw is forced
+       to True.
      options: any additional commandline options to pass to gerrit query
 
     Returns:
@@ -174,13 +187,23 @@ class GerritHelper():
 
     cmd = self.ssh_prefix + ['gerrit', 'query', '--format=JSON']
     cmd.extend(options)
-    cmd.extend(['--', ' OR '.join(or_parameters)])
+    if current_patch:
+      cmd.append('--current-patch-set')
+      raw = True
 
+
+    cmd.extend(['--', query])
+
+    if dryrun:
+      logging.info('Would have run %s', ' '.join(cmd))
+      return []
     result = cros_build_lib.RunCommand(cmd, redirect_stdout=True)
-    result = self.InterpretJSONResults(or_parameters, result.output)
+    result = self.InterpretJSONResults(query, result.output)
 
     if sort:
-      return sorted(result, key=operator.itemgetter(sort))
+      result = sorted(result, key=operator.itemgetter(sort))
+    if not raw:
+      return [cros_patch.GerritPatch(x, self.internal) for x in result]
     return result
 
   def InterpretJSONResults(self, queries, result_string, query_type='stats'):
@@ -227,33 +250,33 @@ class GerritHelper():
     numeric_queries = [x for x in queries if x.isdigit()]
 
     if numeric_queries:
-      results = self._Query(['change:%s' % x for x in numeric_queries],
-                            sort='number', options=('--current-patch-set',))
+      query = ' OR '.join('change:%s' % x for x in numeric_queries)
+      results = self.Query(query, sort='number')
 
       # Sort via alpha comparison, rather than integer; Query sorts via the
       # raw textual field, thus we need to match that.
       numeric_queries = sorted(numeric_queries, key=str)
 
       for query, result in itertools.izip_longest(numeric_queries, results):
-        if result is None or result['number'] != query:
+        if result is None or result.gerrit_number != query:
           raise GerritException('Change number %s not found on server %s.'
                                  % (query, self.ssh_host))
 
-        yield query, cros_patch.GerritPatch(result, self.internal)
+        yield query, result
 
     id_queries = sorted(x.lower() for x in queries if not x.isdigit())
 
     if not id_queries:
       return
 
-    results = self._Query(['change:%s' % x for x in id_queries],
-                          sort='id', options=('--current-patch-set',))
+    results = self.Query(' OR '.join('change:%s' % x for x in id_queries),
+                         sort='id')
 
     last_patch_id = None
     for query, result in itertools.izip_longest(id_queries, results):
       # case insensitivity to ensure that if someone queries for IABC
       # and gerrit returns Iabc, we still properly match.
-      result_id = result.get('id', '') if result is not None else ''
+      result_id = result.id if result is not None else ''
       result_id = result_id.lower()
 
       if result is None or (query and not result_id.startswith(query)):
@@ -272,7 +295,7 @@ class GerritHelper():
             'back multiple results.  Please be more specific.  Server=%s'
             % (last_patch_id, self.ssh_host))
 
-      yield query, cros_patch.GerritPatch(result, self.internal)
+      yield query, result
       last_patch_id = query
 
 

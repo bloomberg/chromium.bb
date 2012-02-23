@@ -193,7 +193,7 @@ class GerritHelperTest(mox.MoxTestBase):
     self.mox.ReplayAll()
     helper = gerrit_helper.GerritHelper(False)
     self.assertTrue(helper.IsChangeCommitted(changeid))
-    self.assertFalse(helper.IsChangeCommitted(changeid_bad))
+    self.assertFalse(helper.IsChangeCommitted(changeid_bad, must_match=False))
     self.mox.VerifyAll()
 
   def testCanRunIsChangeCommand(self):

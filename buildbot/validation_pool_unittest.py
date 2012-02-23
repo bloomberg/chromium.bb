@@ -147,7 +147,7 @@ class TestValidationPool(mox.MoxTestBase):
     pool.gerrit_helper = helper
     patch2.GerritDependencies(build_root).AndReturn(['ChangeId1'])
     patch2.PaladinDependencies(build_root).AndReturn([])
-    helper.IsChangeCommitted(patch1.id).AndReturn(False)
+    helper.IsChangeCommitted(patch1.id, must_match=False).AndReturn(False)
 
     self.mox.ReplayAll()
     self.assertFalse(pool.ApplyPoolIntoRepo(build_root))
@@ -166,7 +166,7 @@ class TestValidationPool(mox.MoxTestBase):
     pool.gerrit_helper = helper
     patch2.GerritDependencies(build_root).AndReturn(['ChangeId1'])
     patch2.PaladinDependencies(build_root).AndReturn([])
-    helper.IsChangeCommitted(patch1.id).AndReturn(True)
+    helper.IsChangeCommitted(patch1.id, must_match=False).AndReturn(True)
     patch2.Apply(build_root, trivial=True)
     pool.HandleApplied(patch2)
 
