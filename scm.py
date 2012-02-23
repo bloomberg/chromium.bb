@@ -343,7 +343,7 @@ class GIT(object):
     files, usually in the prospect to apply the patch for a try job."""
     if not branch:
       branch = GIT.GetUpstreamBranch(cwd)
-    command = ['diff', '-p', '--no-prefix', '--no-ext-diff',
+    command = ['diff', '-p', '--no-color', '--no-prefix', '--no-ext-diff',
                branch + "..." + branch_head]
     if not full_move:
       command.append('-C')
