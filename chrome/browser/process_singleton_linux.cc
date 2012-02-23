@@ -623,6 +623,8 @@ void ProcessSingleton::LinuxWatcher::HandleMessage(
   // we are probably in a first run critical phase.
   if (parent_->locked()) {
     DLOG(WARNING) << "Browser is locked";
+    parent_->saved_startup_messages_.push_back(
+        std::make_pair(argv, FilePath(current_dir)));
     // Send back "ACK" message to prevent the client process from starting up.
     reader->FinishWithACK(kACKToken, arraysize(kACKToken) - 1);
     return;
@@ -639,23 +641,7 @@ void ProcessSingleton::LinuxWatcher::HandleMessage(
   }
 
   CommandLine parsed_command_line(argv);
-  PrefService* prefs = g_browser_process->local_state();
-  DCHECK(prefs);
-
-  // Ignore the request if the process was passed the --product-version flag.
-  // Normally we wouldn't get here if that flag had been passed, but it can
-  // happen if it is passed to an older version of chrome. Since newer versions
-  // of chrome do this in the background, we want to avoid spawning extra
-  // windows.
-  if (parsed_command_line.HasSwitch(switches::kProductVersion)) {
-    DLOG(WARNING) << "Remote process was passed product version flag, "
-                  << "but ignored it. Doing nothing.";
-  } else {
-    // Run the browser startup sequence again, with the command line of the
-    // signalling process.
-    BrowserInit::ProcessCommandLineAlreadyRunning(
-        parsed_command_line, FilePath(current_dir));
-  }
+  parent_->ProcessCommandLine(parsed_command_line, FilePath(current_dir));
 
   // Send back "ACK" message to prevent the client process from starting up.
   reader->FinishWithACK(kACKToken, arraysize(kACKToken) - 1);
@@ -1000,4 +986,25 @@ void ProcessSingleton::Cleanup() {
   UnlinkPath(socket_path_);
   UnlinkPath(cookie_path_);
   UnlinkPath(lock_path_);
+}
+
+void ProcessSingleton::ProcessCommandLine(const CommandLine& command_line,
+                                          const FilePath& current_directory) {
+  PrefService* prefs = g_browser_process->local_state();
+  DCHECK(prefs);
+
+  // Ignore the request if the process was passed the --product-version flag.
+  // Normally we wouldn't get here if that flag had been passed, but it can
+  // happen if it is passed to an older version of chrome. Since newer versions
+  // of chrome do this in the background, we want to avoid spawning extra
+  // windows.
+  if (command_line.HasSwitch(switches::kProductVersion)) {
+    DLOG(WARNING) << "Remote process was passed product version flag, "
+                  << "but ignored it. Doing nothing.";
+  } else {
+    // Run the browser startup sequence again, with the command line of the
+    // signalling process.
+    BrowserInit::ProcessCommandLineAlreadyRunning(command_line,
+                                                  current_directory);
+  }
 }

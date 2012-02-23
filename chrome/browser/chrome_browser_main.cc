@@ -1144,6 +1144,9 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 #endif
 
   process_singleton_.reset(new ProcessSingleton(user_data_dir_));
+  // Ensure ProcessSingleton won't process messages too early. It will be
+  // unlocked in PostBrowserStart().
+  process_singleton_->Lock(NULL);
 
   is_first_run_ = first_run::IsChromeFirstRun() ||
       parsed_command_line().HasSwitch(switches::kFirstRun);
@@ -1375,6 +1378,8 @@ void ChromeBrowserMainParts::PreBrowserStart() {
 void ChromeBrowserMainParts::PostBrowserStart() {
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PostBrowserStart();
+  // Allow ProcessSingleton to process messages.
+  process_singleton_->Unlock();
 }
 
 int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {

@@ -12,7 +12,12 @@
 #include <windows.h>
 #endif  // defined(OS_WIN)
 
+#include <set>
+#include <vector>
+
 #include "base/basictypes.h"
+#include "base/command_line.h"
+#include "base/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
@@ -106,12 +111,15 @@ class ProcessSingleton : public base::NonThreadSafe {
     foreground_window_ = foreground_window;
   }
 
-  // Allows the dispatch of CopyData messages.
-  void Unlock() {
+  // Changes the foreground window without changing the locked state.
+  void SetForegroundWindow(gfx::NativeWindow foreground_window) {
     DCHECK(CalledOnValidThread());
-    locked_ = false;
-    foreground_window_ = NULL;
+    foreground_window_ = foreground_window;
   }
+
+  // Allows the dispatch of CopyData messages and replays the messages which
+  // were received when the ProcessSingleton was locked.
+  void Unlock();
 
   bool locked() {
     DCHECK(CalledOnValidThread());
@@ -123,6 +131,10 @@ class ProcessSingleton : public base::NonThreadSafe {
 #endif
 
  private:
+  typedef std::pair<CommandLine::StringVector, FilePath> DelayedStartupMessage;
+  void ProcessCommandLine(const CommandLine& command_line,
+                          const FilePath& current_directory);
+
 #if !defined(OS_MACOSX)
   // Timeout for the current browser process to respond. 20 seconds should be
   // enough. It's only used in Windows and Linux implementations.
@@ -167,6 +179,10 @@ class ProcessSingleton : public base::NonThreadSafe {
   // the same file at the same time.
   int lock_fd_;
 #endif
+
+  // If messages are received in the locked state, the corresponding command
+  // lines are saved here to be replayed later.
+  std::vector<DelayedStartupMessage> saved_startup_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessSingleton);
 };

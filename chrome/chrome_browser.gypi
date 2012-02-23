@@ -2065,6 +2065,7 @@
         'browser/printing/printing_message_filter.h',
         'browser/process_info_snapshot.h',
         'browser/process_info_snapshot_mac.cc',
+        'browser/process_singleton.cc',
         'browser/process_singleton.h',
         'browser/process_singleton_linux.cc',
         'browser/process_singleton_mac.cc',
