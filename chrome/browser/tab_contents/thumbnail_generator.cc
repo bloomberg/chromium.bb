@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -466,6 +466,19 @@ void ThumbnailGenerator::UpdateThumbnailIfNecessary(
   if (thumbnail.isNull())
     return;
 
+  UpdateThumbnail(web_contents, thumbnail, clip_result);
+}
+
+void ThumbnailGenerator::UpdateThumbnail(
+    WebContents* web_contents, SkBitmap thumbnail,
+    const ThumbnailGenerator::ClipResult& clip_result) {
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  history::TopSites* top_sites = profile->GetTopSites();
+  if (!top_sites)
+    return;
+
   // Compute the thumbnail score.
   ThumbnailScore score;
   score.at_top =
@@ -477,6 +490,7 @@ void ThumbnailGenerator::UpdateThumbnailIfNecessary(
   score.load_completed = (!load_interrupted_ && !web_contents->IsLoading());
 
   gfx::Image image(new SkBitmap(thumbnail));
+  const GURL& url = web_contents->GetURL();
   top_sites->SetPageThumbnail(url, &image, score);
   VLOG(1) << "Thumbnail taken for " << url << ": " << score.ToString();
 }
