@@ -23,7 +23,9 @@ const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
 class SyncHttpBridgeTest : public testing::Test {
  public:
   SyncHttpBridgeTest()
-      : test_server_(net::TestServer::TYPE_HTTP, FilePath(kDocRoot)),
+      : test_server_(net::TestServer::TYPE_HTTP,
+                     net::TestServer::kLocalhost,
+                     FilePath(kDocRoot)),
         fake_default_request_context_getter_(NULL),
         io_thread_(BrowserThread::IO) {
   }
