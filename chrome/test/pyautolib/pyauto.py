@@ -33,7 +33,6 @@ import optparse
 import os
 import pickle
 import pprint
-import re
 import shutil
 import signal
 import socket
@@ -4775,10 +4774,6 @@ class Main(object):
         '-L', '--list-tests', action='store_true', default=False,
         help='List all tests, and exit.')
     parser.add_option(
-        '--shard',
-        help='Specify sharding params. Example: 0/3 implies split the list of '
-             'tests into 3 groups of which this is the 1st.')
-    parser.add_option(
         '', '--log-file', type='string', default=None,
         help='Provide a path to a file to which the logger will log')
     parser.add_option(
@@ -5010,17 +5005,8 @@ class Main(object):
     # Set CHROME_HEADLESS. It enables crash reporter on posix.
     os.environ['CHROME_HEADLESS'] = '1'
     os.environ['EXTRA_CHROME_FLAGS'] = chrome_flags
+    pyauto_suite = PyUITestSuite(suite_args)
     test_names = self._ExpandTestNames(self._args)
-
-    # Shard, if requested (--shard).
-    if self._options.shard:
-      matched = re.match('(\d+)/(\d+)', self._options.shard)
-      if not matched:
-        print >>sys.stderr, 'Invalid sharding params: %s' % self._options.shard
-        sys.exit(1)
-      shard_index, num_shards = map(int, (matched.group(1), matched.group(2)))
-      test_names = pyauto_utils.Shard(test_names, shard_index, num_shards)
-
     test_names *= self._options.repeat
     logging.debug("Loading %d tests from %s", len(test_names), test_names)
     if self._options.list_tests:  # List tests and exit
@@ -5028,7 +5014,6 @@ class Main(object):
         print name
       sys.exit(0)
     loaded_tests = unittest.defaultTestLoader.loadTestsFromNames(test_names)
-    pyauto_suite = PyUITestSuite(suite_args)
     pyauto_suite.addTests(loaded_tests)
     verbosity = 1
     if self._options.verbose:

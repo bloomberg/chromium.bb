@@ -159,14 +159,3 @@ def PrintPerfResult(graph_name, series_name, data_point, units,
       waterfall_indicator, graph_name, series_name,
       str(data_point).replace(' ', ''), units)
   sys.stdout.flush()
-
-
-def Shard(ilist, shard_index, num_shards):
-  """Shard a given list and return the group at index |shard_index|."""
-  chunk_size = len(ilist) / num_shards
-  chunk_start = shard_index * chunk_size
-  if shard_index == num_shards - 1:  # Exhaust the remainder in the last shard
-    chunk_end = len(ilist)
-  else:
-    chunk_end = chunk_start + chunk_size
-  return ilist[chunk_start:chunk_end]

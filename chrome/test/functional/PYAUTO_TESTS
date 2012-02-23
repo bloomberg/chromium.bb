@@ -51,7 +51,6 @@
       'flash',
       'history',
       'https',
-      'gtalk.test_basic',
       'imports',
       'indexeddb',
       'infobars',
