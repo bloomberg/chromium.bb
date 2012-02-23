@@ -577,7 +577,7 @@ void SetClient(const std::wstring& experiment_group, bool last_write) {
 bool GoogleChromeDistribution::GetExperimentDetails(
     UserExperiment* experiment, int flavor) {
   // Maximum number of experiment flavors we support.
-  const int kMax = 4;
+  static const int kMax = 4;
   // This struct determines which experiment flavors we show for each locale and
   // brand.
   //
