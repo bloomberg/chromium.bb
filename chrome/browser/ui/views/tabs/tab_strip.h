@@ -310,14 +310,10 @@ class TabStrip : public AbstractTabStripView,
                            const gfx::Point& location,
                            bool initial_drag);
 
-  // Invoked by LayoutDraggedTabsAt when in stacking mode. Stacks tabs at left
-  // and right edge of tab strip with |active_tab| centered at |location|. If
-  // |initial_drag| is true, this is the initial layout after the user moved
-  // mouse (or touch point) far enough to trigger a drag.
-  void LayoutDraggedTabsAtWithStacking(const std::vector<BaseTab*>& tabs,
-                                       BaseTab* active_tab,
-                                       const gfx::Point& location,
-                                       bool initial_drag);
+  // Invoked during drag to layout all tabs when in stacking mode, with
+  // |active_tab| positioned at |location|.
+  void LayoutDraggedTabsAtWithStacking(BaseTab* active_tab,
+                                       const gfx::Point& location);
 
   // Calculates the bounds needed for each of the tabs, placing the result in
   // |bounds|.
@@ -419,6 +415,11 @@ class TabStrip : public AbstractTabStripView,
   // Layout method and other callers like the TabDragController that need
   // stable representations of Tab positions.
   void GenerateIdealBounds();
+
+  // Same as GenerateIdealBounds, except used with in stacking mode. Only
+  // intended to be called by GenerateIdealBounds. Returns location for
+  // new tab button.
+  double GenerateIdealBoundsWithStacking();
 
   // Starts various types of TabStrip animations.
   void StartResizeLayoutAnimation();

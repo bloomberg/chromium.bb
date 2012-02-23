@@ -1184,7 +1184,7 @@ void TabStrip::LayoutDraggedTabsAt(const std::vector<BaseTab*>& tabs,
                                    const gfx::Point& location,
                                    bool initial_drag) {
   if (stacking_) {
-    LayoutDraggedTabsAtWithStacking(tabs, active_tab, location, initial_drag);
+    LayoutDraggedTabsAtWithStacking(active_tab, location);
     return;
   }
   std::vector<gfx::Rect> bounds;
@@ -1213,39 +1213,14 @@ void TabStrip::LayoutDraggedTabsAt(const std::vector<BaseTab*>& tabs,
 }
 
 void TabStrip::LayoutDraggedTabsAtWithStacking(
-    const std::vector<BaseTab*>& tabs,
     BaseTab* active_tab,
-    const gfx::Point& location,
-    bool initial_drag) {
-  int active_tab_index = TabIndexOfTab(active_tab);
-  if (active_tab_index < 0)
-    return;
-
-  std::vector<int> ideal_x;
-  ideal_x.resize(tab_count());
-  // Figure out where each tab would like to be, if there were room.
-  // These are relative to the active_tab.
-  int ideal = 0;
-  for (int i = active_tab_index - 1; i >= 0; --i) {
-    ideal -= tab_data_[i].tab->bounds().width() + kTabHOffset;
-    ideal_x[i] = ideal;
-  }
-  ideal = 0;
-  for (int i = active_tab_index + 1; i < tab_count(); ++i) {
-    ideal += tab_data_[i].tab->bounds().width() + kTabHOffset;
-    ideal_x[i] = ideal;
-  }
-  static const int kOffsetForEdgeStack = 6;
-  static const int kNumberOfUnderlayedTabs = 4;
+    const gfx::Point& location) {
+  active_tab->SetX(location.x());
+  GenerateIdealBounds();
   for (int i = 0; i < tab_count(); ++i) {
-    gfx::Rect new_bounds = tab_data_[i].tab->bounds();
-    int target = location.x() + ideal_x[i];
-    int smallest_valid_x = std::min(i, kNumberOfUnderlayedTabs) *
-        kOffsetForEdgeStack;
-    target = std::max(smallest_valid_x, target);
-    new_bounds.set_x(target);
-    tab_data_[i].tab->SetBoundsRect(new_bounds);
+    tab_data_[i].tab->SetBoundsRect(tab_data_[i].ideal_bounds);
   }
+  newtab_button_->SetBoundsRect(newtab_button_bounds_);
 }
 
 void TabStrip::CalculateBoundsForDraggedTabs(const std::vector<BaseTab*>& tabs,
@@ -1691,6 +1666,11 @@ void TabStrip::GenerateIdealBounds() {
     }
   }
 
+  // If we're in stacking mode, update the positions now that we have
+  // appropriate widths.
+  if (stacking_)
+    tab_x = GenerateIdealBoundsWithStacking();
+
   // Update bounds of new tab button.
   int new_tab_x;
   int new_tab_y = SizeTabButtonToTopOfTabStrip() ? 0 : kNewTabButtonVOffset;
@@ -1704,6 +1684,55 @@ void TabStrip::GenerateIdealBounds() {
     new_tab_x = Round(tab_x - kTabHOffset) + kNewTabButtonHOffset;
   }
   newtab_button_bounds_.set_origin(gfx::Point(new_tab_x, new_tab_y));
+}
+
+double TabStrip::GenerateIdealBoundsWithStacking() {
+  int active_tab_index = -1;
+  for (int i = 0; i < tab_count(); ++i) {
+    if (IsActiveTab(tab_data_[i].tab)) {
+      active_tab_index = i;
+      break;
+    }
+  }
+  if (active_tab_index < 0)
+    return 0.0;
+
+  std::vector<int> ideal;
+  ideal.resize(tab_count());
+  // Figure out where each tab would like to be, if there were room.
+  // These are relative to the active_tab.
+  int ideal_x = 0;
+  for (int i = active_tab_index - 1; i >= 0; --i) {
+    ideal_x -= ideal_bounds(i).width() + kTabHOffset;
+    ideal[i] = ideal_x;
+  }
+  ideal_x = 0;
+  for (int i = active_tab_index + 1; i < tab_count(); ++i) {
+    ideal_x += ideal_bounds(i - 1).width() + kTabHOffset;
+    ideal[i] = ideal_x;
+  }
+
+  static const int kOffsetForEdgeStack = 6;
+  // We want tabs to draw underlayed at the left edge, the right edge, and
+  // to the left and the right of the active tab. As we walk through the
+  // tabs from left to right, clamp locations. TODO(scottmg): Limit to only
+  // N tabs in each of these spots, depending on design.
+  int active_x = tab_data_[active_tab_index].tab->bounds().x();
+  int new_tab_x = 0;
+  for (int i = 0; i < tab_count(); ++i) {
+    gfx::Rect new_bounds = ideal_bounds(i);
+    int target = active_x + ideal[i];
+    int left_edge = i * kOffsetForEdgeStack;
+    int right_edge = width() - new_bounds.width() - newtab_button_->width() -
+        (tab_count() - 1 - i) * kOffsetForEdgeStack;
+    int smallest_valid_x = left_edge, largest_valid_x = right_edge;
+    target = std::max(smallest_valid_x, target);
+    target = std::min(largest_valid_x, target);
+    new_bounds.set_x(target);
+    new_tab_x = std::max(new_tab_x, new_bounds.x() + new_bounds.width());
+    set_ideal_bounds(i, new_bounds);
+  }
+  return new_tab_x + kTabHOffset;
 }
 
 void TabStrip::StartResizeLayoutAnimation() {
