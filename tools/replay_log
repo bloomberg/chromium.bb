@@ -1,0 +1,63 @@
+#!/bin/sh
+
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+. /usr/lib/shflags
+
+DEFINE_string out "testlog.txt" "Output log from replay"
+DEFINE_string only_honor "Tap Enable,Sensitivity" \
+    "Which properties from the log should be honored"
+
+FLAGS_HELP="usage: replay_log [--out testlog.txt] [--only_honor Props] infile"
+
+FLAGS "$@" || exit 1
+eval set -- "${FLAGS_ARGV}"
+
+# Only now can we die on error.  shflags functions leak non-zero error codes,
+# so will die prematurely if 'set -e' is specified before now.
+set -e
+
+infile="${1}"
+if [ $# -ne 1 ]; then
+  echo $FLAGS_HELP
+  exit 1
+fi
+
+# Go to the Gestures source root
+cd $(dirname "$0")/..
+
+make -j $(fgrep processor /proc/cpuinfo | wc -l) test
+
+# Get input filetype
+intype="$(file -b "${infile}" | cut -d ' ' -f 1)"
+# Extra check in case file gets ASCII wrong
+if [ "$(head -n 1 "${infile}")" = "{" ]; then
+  intype="ASCII"
+fi
+
+if [ "$intype" = "bzip2" ]; then
+  # Expand to the bzip2ed file within
+  zlogs="$(bzcat "$infile" | uudecode -o - | tar xvf -)"
+  # take newest log and reduce to next case
+  mv "$(ls -t $zlogs | head -n 1)" log.gz
+  rm -f $zlogs
+  infile="log.gz"
+  intype="gzip"
+fi
+
+if [ "$intype" = "gzip" ]; then
+  zcat "$infile" > log.txt
+  infile="log.txt"
+  intype="ASCII"
+fi
+
+if [ "$intype" != "ASCII" ]; then
+  echo "Unable to read input file"
+  exit 1
+fi
+
+./test --gtest_also_run_disabled_tests \
+    --gtest_filter="ActivityReplayTest.DISABLED_SimpleTest" \
+    --outfile="$FLAGS_out" --only_honor="$FLAGS_only_honor" --in="$infile"
