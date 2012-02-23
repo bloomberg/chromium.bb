@@ -2566,6 +2566,7 @@
         'browser/transport_security_persister.h',
         'browser/ui/alternate_error_tab_observer.cc',
         'browser/ui/alternate_error_tab_observer.h',
+        'browser/ui/android/certificate_viewer.cc',
         'browser/ui/app_modal_dialogs/app_modal_dialog.cc',
         'browser/ui/app_modal_dialogs/app_modal_dialog.h',
         'browser/ui/app_modal_dialogs/app_modal_dialog_queue.cc',
@@ -4690,6 +4691,7 @@
             'browser/bookmarks/bookmark_context_menu_controller.cc',
             'browser/jankometer.cc',
             'browser/ui/sad_tab_observer.cc',
+            'browser/ui/webui/certificate_viewer_webui.cc',
           ],
           'sources/': [
             ['exclude', '^browser/background/'],
