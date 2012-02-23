@@ -270,25 +270,46 @@ void Layer::SetColor(SkColor color) {
   SetFillsBoundsOpaquely(SkColorGetA(color) == 0xFF);
 }
 
-void Layer::SchedulePaint(const gfx::Rect& invalid_rect) {
-  if (type_ == LAYER_SOLID_COLOR)
-    return;
-
-  WebKit::WebFloatRect web_rect(
-      invalid_rect.x(),
-      invalid_rect.y(),
-      invalid_rect.width(),
-      invalid_rect.height());
-  if (!web_layer_is_accelerated_)
-    web_layer_.to<WebKit::WebContentLayer>().invalidateRect(web_rect);
+bool Layer::SchedulePaint(const gfx::Rect& invalid_rect) {
+  if (type_ == LAYER_SOLID_COLOR || !delegate_)
+    return false;
+  if (damaged_rect_.IsEmpty())
+    damaged_rect_ = invalid_rect;
   else
-    web_layer_.to<WebKit::WebExternalTextureLayer>().invalidateRect(web_rect);
+    damaged_rect_ = damaged_rect_.Union(invalid_rect);
+  ScheduleDraw();
+  return true;
 }
 
 void Layer::ScheduleDraw() {
   Compositor* compositor = GetCompositor();
   if (compositor)
     compositor->ScheduleDraw();
+}
+
+void Layer::SendDamagedRect() {
+  if (delegate_ && !damaged_rect_.IsEmpty()) {
+    WebKit::WebFloatRect web_rect(
+        damaged_rect_.x(),
+        damaged_rect_.y(),
+        damaged_rect_.width(),
+        damaged_rect_.height());
+    if (!web_layer_is_accelerated_)
+      web_layer_.to<WebKit::WebContentLayer>().invalidateRect(web_rect);
+    else
+      web_layer_.to<WebKit::WebExternalTextureLayer>().invalidateRect(web_rect);
+    damaged_rect_.SetRect(0, 0, 0, 0);
+  }
+  for (size_t i = 0; i < children_.size(); ++i)
+    children_[i]->SendDamagedRect();
+}
+
+void Layer::SuppressPaint() {
+  if (!delegate_)
+    return;
+  delegate_ = NULL;
+  for (size_t i = 0; i < children_.size(); ++i)
+    children_[i]->SuppressPaint();
 }
 
 void Layer::paintContents(WebKit::WebCanvas* web_canvas,

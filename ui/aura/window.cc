@@ -58,6 +58,11 @@ Window::Window(WindowDelegate* delegate)
 }
 
 Window::~Window() {
+  // layer_ can be NULL if Init() wasn't invoked, which can happen
+  // only in tests.
+  if (layer_)
+    layer_->SuppressPaint();
+
   // Let the delegate know we're in the processing of destroying.
   if (delegate_)
     delegate_->OnWindowDestroying();
@@ -216,9 +221,10 @@ const gfx::Rect& Window::bounds() const {
 }
 
 void Window::SchedulePaintInRect(const gfx::Rect& rect) {
-  layer_->SchedulePaint(rect);
-  FOR_EACH_OBSERVER(
-      WindowObserver, observers_, OnWindowPaintScheduled(this, rect));
+  if (layer_->SchedulePaint(rect)) {
+    FOR_EACH_OBSERVER(
+        WindowObserver, observers_, OnWindowPaintScheduled(this, rect));
+  }
 }
 
 void Window::SetExternalTexture(ui::Texture* texture) {
@@ -487,6 +493,10 @@ bool Window::StopsEventPropagation() const {
       std::find_if(children_.begin(), children_.end(),
                    std::mem_fun(&aura::Window::IsVisible));
   return it != children_.end();
+}
+
+void Window::SuppressPaint() {
+  layer_->SuppressPaint();
 }
 
 // {Set,Get,Clear}Property are implemented in window_property.h.

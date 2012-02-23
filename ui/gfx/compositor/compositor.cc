@@ -170,10 +170,14 @@ void Compositor::Terminate() {
 }
 
 void Compositor::ScheduleDraw() {
-  if (g_compositor_thread)
+  if (g_compositor_thread) {
+    // TODO(nduca): Temporary while compositor calls
+    // compositeImmediately() directly.
+    layout();
     host_.composite();
-  else
+  } else {
     delegate_->ScheduleDraw();
+  }
 }
 
 void Compositor::SetRootLayer(Layer* root_layer) {
@@ -193,6 +197,9 @@ void Compositor::Draw(bool force_clear) {
   if (!root_layer_)
     return;
 
+  // TODO(nduca): Temporary while compositor calls
+  // compositeImmediately() directly.
+  layout();
   host_.composite();
   if (!g_compositor_thread)
     NotifyEnd();
@@ -247,6 +254,8 @@ void Compositor::updateAnimations(double frameBeginTime) {
 }
 
 void Compositor::layout() {
+  if (root_layer_)
+    root_layer_->SendDamagedRect();
 }
 
 void Compositor::applyScrollAndScale(const WebKit::WebSize& scrollDelta,

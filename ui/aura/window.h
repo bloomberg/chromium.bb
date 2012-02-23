@@ -280,6 +280,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // propagation for any windows behind it in the z-order.
   bool StopsEventPropagation() const;
 
+  // Suppresses painting window content by disgarding damaged rect and ignoring
+  // new paint requests.
+  void SuppressPaint();
+
   // Sets the |value| of the given window |property|. Setting to the default
   // value (e.g., NULL) removes the property. The caller is responsible for the
   // lifetime of any object set as a property on the Window.

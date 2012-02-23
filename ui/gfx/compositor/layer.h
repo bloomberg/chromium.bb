@@ -179,11 +179,18 @@ class COMPOSITOR_EXPORT Layer :
   void SetColor(SkColor color);
 
   // Adds |invalid_rect| to the Layer's pending invalid rect and calls
-  // ScheduleDraw().
-  void SchedulePaint(const gfx::Rect& invalid_rect);
+  // ScheduleDraw(). Returns false if the paint request is ignored.
+  bool SchedulePaint(const gfx::Rect& invalid_rect);
 
   // Schedules a redraw of the layer tree at the compositor.
   void ScheduleDraw();
+
+  // Sends damaged rect to |compostior_| to repaint the content.
+  void SendDamagedRect();
+
+  // Suppresses painting the content by disgarding damaged region and ignoring
+  // new paint requests.
+  void SuppressPaint();
 
   // Sometimes the Layer is being updated by something other than SetCanvas
   // (e.g. the GPU process on UI_COMPOSITOR_IMAGE_TRANSPORT).
@@ -267,6 +274,10 @@ class COMPOSITOR_EXPORT Layer :
 
   // If true the layer is always up to date.
   bool layer_updated_externally_;
+
+  // Union of damaged rects to be used when compositor is ready to
+  // paint the content.
+  gfx::Rect damaged_rect_;
 
   float opacity_;
 

@@ -5,9 +5,11 @@
 #include "ui/gfx/compositor/test/test_compositor_host.h"
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/compositor/compositor.h"
@@ -43,17 +45,22 @@ class TestCompositorHostLinux : public TestCompositorHost,
   virtual bool Dispatch(GdkEvent* event) OVERRIDE;
 #endif
 
+  void Draw();
+
   gfx::Rect bounds_;
 
   scoped_ptr<ui::Compositor> compositor_;
 
   XID window_;
 
+  base::WeakPtrFactory<TestCompositorHostLinux> method_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(TestCompositorHostLinux);
 };
 
 TestCompositorHostLinux::TestCompositorHostLinux(const gfx::Rect& bounds)
-    : bounds_(bounds) {
+    : bounds_(bounds),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
 }
 
 TestCompositorHostLinux::~TestCompositorHostLinux() {
@@ -89,8 +96,12 @@ ui::Compositor* TestCompositorHostLinux::GetCompositor() {
 }
 
 void TestCompositorHostLinux::ScheduleDraw() {
-  if (compositor_.get())
-    compositor_->Draw(false);
+  if (!method_factory_.HasWeakPtrs()) {
+    MessageLoopForUI::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&TestCompositorHostLinux::Draw,
+                   method_factory_.GetWeakPtr()));
+  }
 }
 
 #if defined(USE_AURA)
@@ -103,6 +114,11 @@ bool TestCompositorHostLinux::Dispatch(GdkEvent*) {
   return false;
 }
 #endif
+
+void TestCompositorHostLinux::Draw() {
+  if (compositor_.get())
+    compositor_->Draw(false);
+}
 
 // static
 TestCompositorHost* TestCompositorHost::Create(const gfx::Rect& bounds) {
