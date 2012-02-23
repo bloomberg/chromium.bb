@@ -22,7 +22,6 @@ set -o nounset
 set -o errexit
 
 PWD_ON_ENTRY="$(pwd)"
-
 # The script is located in "native_client/pnacl/".
 # Set pwd to pnacl/
 cd "$(dirname "$0")"
