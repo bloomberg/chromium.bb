@@ -326,7 +326,7 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
   return &custom_client_info;
 }
 
-// Contains the information needed by the worker thread.
+// Contains the information needed by InitCrashReporterMain().
 struct CrashReporterInfo {
   google_breakpad::CustomClientInfo* custom_info;
   std::wstring exe_path;
@@ -605,9 +605,9 @@ static bool MetricsReportingControlledByPolicy(bool* result) {
   return false;
 }
 
-static DWORD __stdcall InitCrashReporterThread(void* param) {
-  scoped_ptr<CrashReporterInfo> info(
-      reinterpret_cast<CrashReporterInfo*>(param));
+// TODO(mseaborn): This function could be merged with InitCrashReporter().
+static void InitCrashReporterMain(CrashReporterInfo* param) {
+  scoped_ptr<CrashReporterInfo> info(param);
 
   bool is_per_user_install =
       InstallUtil::IsPerUserInstall(info->exe_path.c_str());
@@ -616,8 +616,6 @@ static DWORD __stdcall InitCrashReporterThread(void* param) {
   GoogleUpdateSettings::GetChromeChannelAndModifiers(!is_per_user_install,
                                                      &channel_string);
 
-  // GetCustomInfo can take a few milliseconds to get the file information, so
-  // we do it here so it can run in a separate thread.
   info->custom_info = GetCustomInfo(info->exe_path, info->process_type,
                                     channel_string);
 
@@ -669,7 +667,7 @@ static DWORD __stdcall InitCrashReporterThread(void* param) {
       // for the browser/service processes.
       if (default_filter)
         InitDefaultCrashCallback(default_filter);
-      return 0;
+      return;
     }
 
     // Build the pipe name. It can be either:
@@ -680,7 +678,7 @@ static DWORD __stdcall InitCrashReporterThread(void* param) {
       if (!base::win::GetUserSidString(&user_sid)) {
         if (default_filter)
           InitDefaultCrashCallback(default_filter);
-        return -1;
+        return;
       }
     } else {
       user_sid = kSystemPrincipalSid;
@@ -738,8 +736,6 @@ static DWORD __stdcall InitCrashReporterThread(void* param) {
     // generate a crashdump for these exceptions.
     g_breakpad->set_handle_debug_exceptions(true);
   }
-
-  return 0;
 }
 
 void InitDefaultCrashCallback(LPTOP_LEVEL_EXCEPTION_FILTER filter) {
@@ -752,8 +748,6 @@ void InitCrashReporter() {
     // Disable the message box for assertions.
     _CrtSetReportMode(_CRT_ASSERT, 0);
 
-    // Query the custom_info now because if we do it in the thread it's going to
-    // fail in the sandbox. The thread will delete this object.
     CrashReporterInfo* info(new CrashReporterInfo);
     info->process_type = command.GetSwitchValueNative(switches::kProcessType);
     if (info->process_type.empty())
@@ -764,21 +758,6 @@ void InitCrashReporter() {
     GetModuleFileNameW(NULL, exe_path, MAX_PATH);
     info->exe_path = exe_path;
 
-    // If this is not the browser, we can't be sure that we will be able to
-    // initialize the crash_handler in another thread, so we run it right away.
-    // This is important to keep the thread for the browser process because
-    // it may take some times to initialize the crash_service process.  We use
-    // the Windows worker pool to make better reuse of the thread.
-    if (info->process_type != L"browser") {
-      InitCrashReporterThread(info);
-    } else {
-      if (QueueUserWorkItem(
-              &InitCrashReporterThread,
-              info,
-              WT_EXECUTELONGFUNCTION) == 0) {
-        // We failed to queue to the worker pool, initialize in this thread.
-        InitCrashReporterThread(info);
-      }
-    }
+    InitCrashReporterMain(info);
   }
 }
