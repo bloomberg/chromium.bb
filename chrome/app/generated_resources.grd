@@ -14231,6 +14231,9 @@ Battery full
       <message name="IDS_KEYBOARD_OVERLAY_REOPEN_LAST_CLOSED_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
         Reopen last-closed tab
       </message>
+      <message name="IDS_KEYBOARD_OVERLAY_REPORT_ISSUE" desc="The text in the keyboard overlay to explain the shortcut (report an issue).">
+        Report issue
+      </message>
       <message name="IDS_KEYBOARD_OVERLAY_RESET_ZOOM" desc="The text in the keyboard overlay to explain the shortcut.">
         Reset zoom
       </message>

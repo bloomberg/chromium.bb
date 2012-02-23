@@ -152,6 +152,7 @@ struct I18nContentToMessage {
     IDS_KEYBOARD_OVERLAY_RELOAD_IGNORING_CACHE },
   { "keyboardOverlayReopenLastClosedTab",
     IDS_KEYBOARD_OVERLAY_REOPEN_LAST_CLOSED_TAB },
+  { "keyboardOverlayReportIssue", IDS_KEYBOARD_OVERLAY_REPORT_ISSUE },
   { "keyboardOverlayResetZoom", IDS_KEYBOARD_OVERLAY_RESET_ZOOM },
   { "keyboardOverlayResizeLeft", IDS_KEYBOARD_OVERLAY_RESIZE_LEFT },
   { "keyboardOverlayResizeRight", IDS_KEYBOARD_OVERLAY_RESIZE_RIGHT },

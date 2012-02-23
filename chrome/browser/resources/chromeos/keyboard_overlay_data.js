@@ -15818,6 +15818,7 @@ var keyboardOverlayData = {
     "g<>CTRL": "keyboardOverlayFindTextAgain",
     "g<>CTRL<>SHIFT": "keyboardOverlayFindPreviousText",
     "h<>CTRL": "keyboardOverlayHistory",
+    "i<>ALT<>SHIFT": "keyboardOverlayReportIssue",
     "i<>CTRL<>SHIFT": "keyboardOverlayDeveloperTools",
     "j<>CTRL": "keyboardOverlayDownloads",
     "j<>CTRL<>SHIFT": "keyboardOverlayJavascriptConsole",
