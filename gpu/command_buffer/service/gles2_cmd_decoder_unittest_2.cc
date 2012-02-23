@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -135,6 +135,11 @@ void GLES2DecoderTestBase::SpecializedSetup<Uniform2f, 0>(bool /* valid */) {
 };
 
 template <>
+void GLES2DecoderTestBase::SpecializedSetup<Uniform2i, 0>(bool /* valid */) {
+  SetupShaderForUniform();
+};
+
+template <>
 void GLES2DecoderTestBase::SpecializedSetup<Uniform2fv, 0>(bool /* valid */) {
   SetupShaderForUniform();
 };
@@ -162,6 +167,11 @@ void GLES2DecoderTestBase::SpecializedSetup<Uniform3f, 0>(bool /* valid */) {
 };
 
 template <>
+void GLES2DecoderTestBase::SpecializedSetup<Uniform3i, 0>(bool /* valid */) {
+  SetupShaderForUniform();
+};
+
+template <>
 void GLES2DecoderTestBase::SpecializedSetup<Uniform3fv, 0>(bool /* valid */) {
   SetupShaderForUniform();
 };
@@ -185,6 +195,11 @@ void GLES2DecoderTestBase::SpecializedSetup<Uniform3ivImmediate, 0>(
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<Uniform4f, 0>(bool /* valid */) {
+  SetupShaderForUniform();
+};
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<Uniform4i, 0>(bool /* valid */) {
   SetupShaderForUniform();
 };
 

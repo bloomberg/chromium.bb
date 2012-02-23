@@ -1325,6 +1325,7 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoUniform1iv',
     'unit_test': False,
   },
+  'Uniform2i': {'type': 'PUTXn', 'data_type': 'GLint', 'count': 2},
   'Uniform2f': {'type': 'PUTXn', 'data_type': 'GLfloat', 'count': 2},
   'Uniform2fv': {
     'type': 'PUTn',
@@ -1338,6 +1339,7 @@ _FUNCTION_INFO = {
     'count': 2,
     'decoder_func': 'DoUniform2iv',
   },
+  'Uniform3i': {'type': 'PUTXn', 'data_type': 'GLint', 'count': 3},
   'Uniform3f': {'type': 'PUTXn', 'data_type': 'GLfloat', 'count': 3},
   'Uniform3fv': {
     'type': 'PUTn',
@@ -1351,9 +1353,8 @@ _FUNCTION_INFO = {
     'count': 3,
     'decoder_func': 'DoUniform3iv',
   },
-  'Uniform4f': {
-    'type': 'PUTXn', 'data_type': 'GLfloat', 'count': 4
-  },
+  'Uniform4i': {'type': 'PUTXn', 'data_type': 'GLint', 'count': 4},
+  'Uniform4f': {'type': 'PUTXn', 'data_type': 'GLfloat', 'count': 4},
   'Uniform4fv': {
     'type': 'PUTn',
     'data_type': 'GLfloat',
@@ -3863,8 +3864,8 @@ class PUTXnHandler(TypeHandler):
 
   def WriteHandlerImplementation(self, func, file):
     """Overrriden from TypeHandler."""
-    code = """  GLfloat temp[%(count)s] = { %(values)s};
-  DoUniform%(count)sfv(%(location)s, 1, &temp[0]);
+    code = """  %(type)s temp[%(count)s] = { %(values)s};
+  Do%(name)sv(%(location)s, 1, &temp[0]);
 """
     values = ""
     args = func.GetOriginalArgs()
@@ -3874,7 +3875,9 @@ class PUTXnHandler(TypeHandler):
       values += "%s, " % args[len(args) - count + ii].name
 
     file.Write(code % {
+        'name': func.name,
         'count': func.GetInfo('count'),
+        'type': func.GetInfo('data_type'),
         'location': args[0].name,
         'args': func.MakeOriginalArgString(""),
         'values': values,
@@ -3884,7 +3887,7 @@ class PUTXnHandler(TypeHandler):
     """Overrriden from TypeHandler."""
     valid_test = """
 TEST_F(%(test_name)s, %(name)sValidArgs) {
-  EXPECT_CALL(*gl_, Uniform%(count)sfv(%(local_args)s));
+  EXPECT_CALL(*gl_, %(name)sv(%(local_args)s));
   SpecializedSetup<%(name)s, 0>(true);
   %(name)s cmd;
   cmd.Init(%(args)s);
@@ -3895,13 +3898,14 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
     args = func.GetOriginalArgs()
     local_args = "%s, 1, _" % args[0].GetValidGLArg(func, 0, 0)
     self.WriteValidUnitTest(func, file, valid_test, {
+        'name': func.name,
         'count': func.GetInfo('count'),
         'local_args': local_args,
       })
 
     invalid_test = """
 TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
-  EXPECT_CALL(*gl_, Uniform%(count)s(_, _, _).Times(0);
+  EXPECT_CALL(*gl_, %(name)sv(_, _, _).Times(0);
   SpecializedSetup<%(name)s, 0>(false);
   %(name)s cmd;
   cmd.Init(%(args)s);
@@ -3909,6 +3913,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 }
 """
     self.WriteInvalidUnitTest(func, file, invalid_test, {
+        'name': func.GetInfo('name'),
         'count': func.GetInfo('count'),
       })
 

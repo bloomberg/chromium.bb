@@ -860,7 +860,7 @@ TEST_F(GLES2DecoderTest2, Uniform2fvImmediateValidArgs) {
 }
 
 TEST_F(GLES2DecoderTest2, Uniform2iValidArgs) {
-  EXPECT_CALL(*gl_, Uniform2i(1, 2, 3));
+  EXPECT_CALL(*gl_, Uniform2iv(1, 1, _));
   SpecializedSetup<Uniform2i, 0>(true);
   Uniform2i cmd;
   cmd.Init(program_manager()->SwizzleLocation(1), 2, 3);
@@ -1020,7 +1020,7 @@ TEST_F(GLES2DecoderTest2, Uniform3fvImmediateValidArgs) {
 }
 
 TEST_F(GLES2DecoderTest2, Uniform3iValidArgs) {
-  EXPECT_CALL(*gl_, Uniform3i(1, 2, 3, 4));
+  EXPECT_CALL(*gl_, Uniform3iv(1, 1, _));
   SpecializedSetup<Uniform3i, 0>(true);
   Uniform3i cmd;
   cmd.Init(program_manager()->SwizzleLocation(1), 2, 3, 4);
@@ -1180,7 +1180,7 @@ TEST_F(GLES2DecoderTest2, Uniform4fvImmediateValidArgs) {
 }
 
 TEST_F(GLES2DecoderTest2, Uniform4iValidArgs) {
-  EXPECT_CALL(*gl_, Uniform4i(1, 2, 3, 4, 5));
+  EXPECT_CALL(*gl_, Uniform4iv(1, 1, _));
   SpecializedSetup<Uniform4i, 0>(true);
   Uniform4i cmd;
   cmd.Init(program_manager()->SwizzleLocation(1), 2, 3, 4, 5);

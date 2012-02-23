@@ -1900,7 +1900,8 @@ error::Error GLES2DecoderImpl::HandleUniform2i(
       static_cast<GLint>(c.location));
   GLint x = static_cast<GLint>(c.x);
   GLint y = static_cast<GLint>(c.y);
-  glUniform2i(location, x, y);
+  GLint temp[2] = { x, y, };
+  DoUniform2iv(location, 1, &temp[0]);
   return error::kNoError;
 }
 
@@ -2001,7 +2002,8 @@ error::Error GLES2DecoderImpl::HandleUniform3i(
   GLint x = static_cast<GLint>(c.x);
   GLint y = static_cast<GLint>(c.y);
   GLint z = static_cast<GLint>(c.z);
-  glUniform3i(location, x, y, z);
+  GLint temp[3] = { x, y, z, };
+  DoUniform3iv(location, 1, &temp[0]);
   return error::kNoError;
 }
 
@@ -2104,7 +2106,8 @@ error::Error GLES2DecoderImpl::HandleUniform4i(
   GLint y = static_cast<GLint>(c.y);
   GLint z = static_cast<GLint>(c.z);
   GLint w = static_cast<GLint>(c.w);
-  glUniform4i(location, x, y, z, w);
+  GLint temp[4] = { x, y, z, w, };
+  DoUniform4iv(location, 1, &temp[0]);
   return error::kNoError;
 }
 
