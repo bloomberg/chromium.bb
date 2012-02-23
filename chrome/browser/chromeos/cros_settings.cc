@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/cros_settings_provider.h"
 #include "chrome/browser/chromeos/device_settings_provider.h"
 #include "chrome/browser/chromeos/stub_cros_settings_provider.h"
 #include "chrome/browser/ui/webui/options/chromeos/system_settings_provider.h"

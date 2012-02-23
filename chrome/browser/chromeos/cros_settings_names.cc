@@ -45,4 +45,11 @@ const char kReportDeviceActivityTimes[] =
 // at boot mode should be reported along with device policy requests.
 const char kReportDeviceBootMode[] = "cros.device_status.report_boot_mode";
 
+// A list of dictionaries, each detailing one extension to install as part of
+// the AppPack and including the following fields:
+// "extension-id": ID of the extension to install
+// "update-url": URL to check the extension's version and download location
+// "key-checksum": checksum of the extension's CRX public key, encoded in hex.
+const char kAppPack[] = "cros.app_pack";
+
 }  // namespace chromeos

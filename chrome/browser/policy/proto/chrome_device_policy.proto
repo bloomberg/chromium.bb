@@ -97,6 +97,18 @@ message EphemeralUsersEnabledProto {
   optional bool ephemeral_users_enabled = 1;
 }
 
+// Details of an extension to install as part of the AppPack.
+message AppPackEntryProto {
+  optional string extension_id = 1;
+  optional string update_url = 2;
+  optional bytes key_checksum = 3;
+}
+
+message AppPackProto {
+  // List of extensions to install as part of the AppPack.
+  repeated AppPackEntryProto app_pack = 1;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -111,4 +123,5 @@ message ChromeDeviceSettingsProto {
   optional DeviceOpenNetworkConfigurationProto open_network_configuration = 11;
   optional DeviceReportingProto device_reporting = 12;
   optional EphemeralUsersEnabledProto ephemeral_users_enabled = 13;
+  optional AppPackProto app_pack = 14;
 }

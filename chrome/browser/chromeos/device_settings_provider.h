@@ -7,14 +7,16 @@
 #pragma once
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "chrome/browser/chromeos/cros_settings_provider.h"
-#include "chrome/browser/chromeos/login/signed_settings_helper.h"
+#include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/signed_settings_migration_helper.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
+#include "chrome/browser/prefs/pref_value_map.h"
 #include "content/public/browser/notification_registrar.h"
 
 namespace base {
@@ -22,8 +24,6 @@ class Value;
 }
 
 namespace chromeos {
-
-class OwnershipService;
 
 // CrosSettingsProvider implementation that works with SignedSettings.
 class DeviceSettingsProvider : public CrosSettingsProvider,
@@ -76,7 +76,7 @@ class DeviceSettingsProvider : public CrosSettingsProvider,
   void ApplyRoamingSetting(bool new_value) const;
 
   // Applies any changes of the policies that are not handled by the respective
-  // subsystms.
+  // subsystems.
   void ApplySideEffects() const;
 
   // In case of missing policy blob we should verify if this is upgrade of
@@ -125,8 +125,6 @@ class DeviceSettingsProvider : public CrosSettingsProvider,
   // This is a queue for set requests, because those need to be sequential.
   typedef std::pair<std::string, base::Value*> PendingQueueElement;
   std::vector<PendingQueueElement> pending_changes_;
-
-  friend class SignedSettingsHelper;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceSettingsProvider);
 };

@@ -32,6 +32,8 @@ extern const char kReportDeviceVersionInfo[];
 extern const char kReportDeviceActivityTimes[];
 extern const char kReportDeviceBootMode[];
 
+extern const char kAppPack[];
+
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_CROS_SETTINGS_NAMES_H_

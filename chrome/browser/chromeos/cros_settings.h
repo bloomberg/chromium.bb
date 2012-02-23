@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,12 +9,11 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/hash_tables.h"
-#include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
-#include "chrome/browser/chromeos/cros_settings_provider.h"
 #include "content/public/browser/notification_observer.h"
 
 namespace base {
@@ -25,19 +24,21 @@ class Value;
 
 namespace chromeos {
 
-// A class manages per-device/global settings.
+class CrosSettingsProvider;
+
+// This class manages per-device/global settings.
 class CrosSettings : public base::NonThreadSafe {
  public:
   // Class factory.
   static CrosSettings* Get();
 
-  // Helper function to test if given path is a value cros settings name.
+  // Helper function to test if the given |path| is a valid cros setting.
   static bool IsCrosSettings(const std::string& path);
 
   // Sets |in_value| to given |path| in cros settings.
   void Set(const std::string& path, const base::Value& in_value);
 
-  // Gets settings value of given |path| to |out_value|.
+  // Returns setting value for the given |path|.
   const base::Value* GetPref(const std::string& path) const;
 
   // Starts a fetch from the trusted store for the value of |path| if not loaded
@@ -48,7 +49,7 @@ class CrosSettings : public base::NonThreadSafe {
                   const base::Closure& callback) const;
 
   // Convenience forms of Set().  These methods will replace any existing
-  // value at that path, even if it has a different type.
+  // value at that |path|, even if it has a different type.
   void SetBoolean(const std::string& path, bool in_value);
   void SetInteger(const std::string& path, int in_value);
   void SetDouble(const std::string& path, double in_value);
@@ -59,7 +60,7 @@ class CrosSettings : public base::NonThreadSafe {
   void RemoveFromList(const std::string& path, const base::Value* value);
 
   // These are convenience forms of Get().  The value will be retrieved
-  // and the return value will be true if the path is valid and the value at
+  // and the return value will be true if the |path| is valid and the value at
   // the end of the path can be returned in the form specified.
   bool GetBoolean(const std::string& path, bool* out_value) const;
   bool GetInteger(const std::string& path, int* out_value) const;
@@ -73,18 +74,18 @@ class CrosSettings : public base::NonThreadSafe {
   // It respects whitelists so foo@bar.baz will match *@bar.baz too.
   bool FindEmailInList(const std::string& path, const std::string& email) const;
 
-  // adding/removing of providers
+  // Adding/removing of providers.
   bool AddSettingsProvider(CrosSettingsProvider* provider);
   bool RemoveSettingsProvider(CrosSettingsProvider* provider);
 
-  // If the pref at the given path changes, we call the observer's Observe
-  // method with PREF_CHANGED.
+  // If the pref at the given |path| changes, we call the observer's Observe
+  // method with NOTIFICATION_SYSTEM_SETTING_CHANGED.
   void AddSettingsObserver(const char* path,
                            content::NotificationObserver* obs);
   void RemoveSettingsObserver(const char* path,
                               content::NotificationObserver* obs);
 
-  // Returns the provider that handles settings with the path or prefix.
+  // Returns the provider that handles settings with the |path| or prefix.
   CrosSettingsProvider* GetProvider(const std::string& path) const;
 
   // Forces all providers to reload their caches from the respective backing

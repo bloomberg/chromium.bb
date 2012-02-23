@@ -19,13 +19,13 @@
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/signed_settings_cache.h"
+#include "chrome/browser/chromeos/login/signed_settings_helper.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/policy/app_pack_updater.h"
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
-#include "chrome/browser/prefs/pref_value_map.h"
 #include "chrome/browser/ui/options/options_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
 using google::protobuf::RepeatedPtrField;
@@ -36,53 +36,33 @@ namespace chromeos {
 
 namespace {
 
-const char* kBooleanSettings[] = {
-  kAccountsPrefAllowNewUser,
+// List of settings handled by the DeviceSettingsProvider.
+const char* kKnownSettings[] = {
   kAccountsPrefAllowGuest,
-  kAccountsPrefShowUserNamesOnSignIn,
+  kAccountsPrefAllowNewUser,
   kAccountsPrefEphemeralUsersEnabled,
-  kSignedDataRoamingEnabled,
-  kStatsReportingPref,
-  kReportDeviceVersionInfo,
-  kReportDeviceActivityTimes,
-  kReportDeviceBootMode
-};
-
-const char* kStringSettings[] = {
+  kAccountsPrefShowUserNamesOnSignIn,
+  kAccountsPrefUsers,
+  kAppPack,
   kDeviceOwner,
   kReleaseChannel,
-  kSettingProxyEverywhere
-};
-
-const char* kListSettings[] = {
-  kAccountsPrefUsers
+  kReportDeviceActivityTimes,
+  kReportDeviceBootMode,
+  kReportDeviceVersionInfo,
+  kSettingProxyEverywhere,
+  kSignedDataRoamingEnabled,
+  kStatsReportingPref,
 };
 
 // Upper bound for number of retries to fetch a signed setting.
 static const int kNumRetriesLimit = 9;
 
-// Legacy policy file location. Used to detect migration from pre v12 ChormeOS.
+// Legacy policy file location. Used to detect migration from pre v12 ChromeOS.
 const char kLegacyPolicyFile[] = "/var/lib/whitelist/preferences";
 
-bool IsControlledBooleanSetting(const std::string& pref_path) {
-  const char** end = kBooleanSettings + arraysize(kBooleanSettings);
-  return std::find(kBooleanSettings, end, pref_path) != end;
-}
-
-bool IsControlledStringSetting(const std::string& pref_path) {
-  const char** end = kStringSettings + arraysize(kStringSettings);
-  return std::find(kStringSettings, end, pref_path) != end;
-}
-
-bool IsControlledListSetting(const std::string& pref_path) {
-  const char** end = kListSettings + arraysize(kListSettings);
-  return std::find(kListSettings, end, pref_path) != end;
-}
-
 bool IsControlledSetting(const std::string& pref_path) {
-  return (IsControlledBooleanSetting(pref_path) ||
-          IsControlledStringSetting(pref_path) ||
-          IsControlledListSetting(pref_path));
+  const char** end = kKnownSettings + arraysize(kKnownSettings);
+  return std::find(kKnownSettings, end, pref_path) != end;
 }
 
 bool HasOldMetricsFile() {
@@ -294,9 +274,12 @@ void DeviceSettingsProvider::SetInPolicy() {
     else
       NOTREACHED();
   } else {
-    // kReportDeviceVersionInfo, kReportDeviceActivityTimes, and
-    // kReportDeviceBootMode do not support being set in the policy, since
-    // they are not intended to be user-controlled.
+    // The remaining settings don't support Set(), since they are not
+    // intended to be customizable by the user:
+    //   kAppPack
+    //   kReportDeviceVersionInfo
+    //   kReportDeviceActivityTimes
+    //   kReportDeviceBootMode
     NOTREACHED();
   }
   data.set_policy_value(pol.SerializeAsString());
@@ -439,6 +422,28 @@ void DeviceSettingsProvider::UpdateValuesCache() {
       new_values_cache.SetBoolean(kReportDeviceBootMode,
           pol.device_reporting().report_boot_mode());
     }
+  }
+
+  if (pol.has_app_pack()) {
+    typedef RepeatedPtrField<em::AppPackEntryProto> proto_type;
+    base::ListValue* list = new base::ListValue;
+    const proto_type& app_pack = pol.app_pack().app_pack();
+    for (proto_type::const_iterator it = app_pack.begin();
+         it != app_pack.end(); ++it) {
+      base::DictionaryValue* entry = new base::DictionaryValue;
+      if (it->has_extension_id()) {
+        entry->SetString(policy::AppPackUpdater::kExtensionId,
+                         it->extension_id());
+      }
+      if (it->has_update_url())
+        entry->SetString(policy::AppPackUpdater::kUpdateUrl, it->update_url());
+      if (it->has_key_checksum()) {
+        entry->SetString(policy::AppPackUpdater::kKeyChecksum,
+                         it->key_checksum());
+      }
+      list->Append(entry);
+    }
+    new_values_cache.SetValue(kAppPack, list);
   }
 
   // Collect all notifications but send them only after we have swapped the
