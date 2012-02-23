@@ -230,6 +230,10 @@ class GerritHelper():
       results = self._Query(['change:%s' % x for x in numeric_queries],
                             sort='number', options=('--current-patch-set',))
 
+      # Sort via alpha comparison, rather than integer; Query sorts via the
+      # raw textual field, thus we need to match that.
+      numeric_queries = sorted(numeric_queries, key=str)
+
       for query, result in itertools.izip_longest(numeric_queries, results):
         if result is None or result['number'] != query:
           raise GerritException('Change number %s not found on server %s.'
