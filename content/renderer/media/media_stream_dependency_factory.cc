@@ -15,17 +15,6 @@
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnection.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 
-static std::string ParseHostName(const std::string& hostname) {
-  std::string address;
-  size_t pos = hostname.find(':');
-  if (pos == std::string::npos) {
-    DVLOG(1) << "No port specified.";
-  } else {
-    address = hostname.substr(0, pos);
-  }
-  return address;
-}
-
 class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
  public:
   P2PPortAllocatorFactory(
@@ -47,12 +36,11 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
     }
     webkit_glue::P2PTransport::Config config;
     if (stun_servers.size() > 0) {
-      config.stun_server = ParseHostName(stun_servers[0].server.hostname());
+      config.stun_server = stun_servers[0].server.hostname();
       config.stun_server_port = stun_servers[0].server.port();
     }
     if (turn_configurations.size() > 0) {
-      config.relay_server = ParseHostName(
-          turn_configurations[0].server.hostname());
+      config.relay_server = turn_configurations[0].server.hostname();
       config.relay_server_port = turn_configurations[0].server.port();
       config.relay_username = turn_configurations[0].username;
       config.relay_password = turn_configurations[0].password;

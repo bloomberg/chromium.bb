@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,37 +12,38 @@ namespace content {
 
 IpcNetworkManager::IpcNetworkManager(P2PSocketDispatcher* socket_dispatcher)
     : socket_dispatcher_(socket_dispatcher),
-      started_(false),
-      first_update_sent_(false),
+      start_count_(0),
+      network_list_received_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+  socket_dispatcher_->AddNetworkListObserver(this);
 }
 
 IpcNetworkManager::~IpcNetworkManager() {
+  DCHECK(!start_count_);
   socket_dispatcher_->RemoveNetworkListObserver(this);
 }
 
 void IpcNetworkManager::StartUpdating() {
-  if (!started_) {
-    first_update_sent_ = false;
-    started_ = true;
-    socket_dispatcher_->AddNetworkListObserver(this);
-  } else {
+  if (network_list_received_) {
     // Post a task to avoid reentrancy.
     MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&IpcNetworkManager::SendNetworksChangedSignal,
                               weak_factory_.GetWeakPtr()));
   }
+  ++start_count_;
 }
 
 void IpcNetworkManager::StopUpdating() {
-  started_ = false;
-  socket_dispatcher_->RemoveNetworkListObserver(this);
+  DCHECK_GT(start_count_, 0);
+  --start_count_;
 }
 
 void IpcNetworkManager::OnNetworkListChanged(
     const net::NetworkInterfaceList& list) {
-  if (!started_)
-    return;
+
+  // Update flag if network list received for the first time.
+  if (!network_list_received_)
+    network_list_received_ = true;
 
   std::vector<talk_base::Network*> networks;
   for (net::NetworkInterfaceList::const_iterator it = list.begin();
@@ -57,8 +58,7 @@ void IpcNetworkManager::OnNetworkListChanged(
             it->name, it->name, talk_base::IPAddress(address)));
   }
 
-  MergeNetworkList(networks, !first_update_sent_);
-  first_update_sent_ = false;
+  MergeNetworkList(networks);
 }
 
 void IpcNetworkManager::SendNetworksChangedSignal() {

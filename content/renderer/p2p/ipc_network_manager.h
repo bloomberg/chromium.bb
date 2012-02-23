@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,8 +37,8 @@ class IpcNetworkManager : public talk_base::NetworkManagerBase,
 
   MessageLoop* message_loop_;
   P2PSocketDispatcher* socket_dispatcher_;
-  bool started_;
-  bool first_update_sent_;
+  int start_count_;
+  bool network_list_received_;
 
   base::WeakPtrFactory<IpcNetworkManager> weak_factory_;
 };
