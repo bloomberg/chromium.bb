@@ -487,25 +487,12 @@ CRYPT32.dll!CertOpenSystemStore?
 
 LEAK
 name=http://code.google.com/p/drmemory/issues/detail?id=476 e
-RSAENH.dll!*
 ...
 CRYPT32.dll!CertGetCertificateChain
 
 LEAK
 name=http://code.google.com/p/drmemory/issues/detail?id=476 f
 RPCRT4.dll!*
-...
-CRYPT32.dll!CertGetCertificateChain
-
-LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=476 g
-...
-SETUPAPI.dll!*
-...
-CRYPT32.dll!CertGetCertificateChain
-
-LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=476 h
 ...
 CRYPT32.dll!CertCompareIntegerBlob
 
@@ -741,6 +728,14 @@ name=http://code.google.com/p/drmemory/issues/detail?id=747 d
 UNINITIALIZED READ
 name=http://code.google.com/p/drmemory/issues/detail?id=747 e
 *!ff_put_vp8_epel8_h4_ssse3
+
+UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=747 f
+*!ff_fft_permute_sse
+
+UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=747 g
+*!ff_simple_idct_add_mmx
 
 # ffmpeg seems to leak a pthread condition variable.
 LEAK
