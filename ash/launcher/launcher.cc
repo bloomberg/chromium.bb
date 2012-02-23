@@ -11,9 +11,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
-#include "grit/ui_resources.h"
 #include "ui/aura/window.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/image/image.h"
@@ -23,29 +21,6 @@
 #include "ui/views/widget/widget_delegate.h"
 
 namespace ash {
-
-namespace {
-
-// Used to draw the background of the shelf.
-class ShelfPainter : public views::Painter {
- public:
-  ShelfPainter() {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    image_ = *rb.GetImageNamed(IDR_AURA_LAUNCHER_BACKGROUND).ToSkBitmap();
-  }
-
-  // Overridden from views::Painter:
-  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE {
-    canvas->TileImageInt(image_, 0, 0, size.width(), size.height());
-  }
-
- private:
-  SkBitmap image_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShelfPainter);
-};
-
-}  // namespace
 
 // The contents view of the Widget. This view contains LauncherView and
 // sizes it to the width of the widget minus the size of the status area.
@@ -91,8 +66,6 @@ class Launcher::DelegateView : public views::WidgetDelegate,
 Launcher::DelegateView::DelegateView()
     : status_width_(0),
       focus_cycler_(NULL) {
-  set_background(
-      views::Background::CreateBackgroundPainter(true, new ShelfPainter()));
 }
 
 Launcher::DelegateView::~DelegateView() {
