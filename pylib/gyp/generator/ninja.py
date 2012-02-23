@@ -1209,11 +1209,11 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       'stamp',
       description='STAMP $out',
       command='cmd /c copy /y nul $out>nul')
-    # TODO(scottmg): Copy fallback?
     master_ninja.rule(
       'copy',
       description='COPY $in $out',
-      command='cmd /c mklink /h $out $in >nul || mklink /h /j $out $in >nul')
+      command='cmd /c mklink /h $out $in >nul || mklink /h /j $out $in >nul || '
+              'python gyp-win-tool recursive-mirror $in $out')
   else:
     master_ninja.rule(
       'stamp',
