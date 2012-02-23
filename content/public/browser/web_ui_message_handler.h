@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,14 +59,13 @@ class CONTENT_EXPORT WebUIMessageHandler {
   // Returns the attached WebUI for this handler.
   WebUI* web_ui() const { return web_ui_; }
 
+  // Sets the attached WebUI - exposed to subclasses for testing purposes.
+  void set_web_ui(WebUI* web_ui) { web_ui_ = web_ui; }
+
  private:
+  // Provide external classes access to web_ui() and set_web_ui().
   friend class ::WebUIImpl;
   friend class ::WebUIBrowserTest;
-  FRIEND_TEST(WebUIMessageHandlerTest, ExtractIntegerValue);
-  FRIEND_TEST(WebUIMessageHandlerTest, ExtractDoubleValue);
-  FRIEND_TEST(WebUIMessageHandlerTest, ExtractStringValue);
-
-  void set_web_ui(WebUI* web_ui) { web_ui_ = web_ui; }
 
   WebUI* web_ui_;
 };

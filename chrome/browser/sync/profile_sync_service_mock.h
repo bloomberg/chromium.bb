@@ -29,6 +29,10 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   // Services username stored in a (Testing)PrefService.
   static Profile* MakeSignedInTestingProfile();
 
+  // Helper routine to be used in conjunction with
+  // ProfileKeyedServiceFactory::SetTestingFactory().
+  static ProfileKeyedBase* BuildMockProfileSyncService(Profile* profile);
+
   MOCK_METHOD0(DisableForUser, void());
   MOCK_METHOD2(OnBackendInitialized,
                void(const browser_sync::WeakHandle<browser_sync::JsBackend>&,
@@ -71,8 +75,12 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_CONST_METHOD0(SetupInProgress, bool());
   MOCK_CONST_METHOD0(GetLastSyncedTimeString, string16());
   MOCK_CONST_METHOD0(unrecoverable_error_detected, bool());
+  MOCK_CONST_METHOD0(sync_initialized, bool());
+  MOCK_CONST_METHOD0(waiting_for_auth, bool());
   MOCK_METHOD1(OnActionableError, void(
       const browser_sync::SyncProtocolError&));
+
+  MOCK_METHOD0(AreCredentialsAvailable, bool());
 
   MOCK_CONST_METHOD0(IsPassphraseRequired, bool());
   MOCK_CONST_METHOD0(IsPassphraseRequiredForDecryption, bool());

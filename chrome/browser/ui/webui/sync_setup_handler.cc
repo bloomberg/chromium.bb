@@ -380,7 +380,7 @@ bool SyncSetupHandler::IsActiveLogin() const {
 }
 
 void SyncSetupHandler::OnGetOAuthTokenSuccess(const std::string& oauth_token) {
-  Profile* profile = Profile::FromWebUI(web_ui());
+  Profile* profile = GetProfile();
   SigninManager* signin = GetSignin();
   GaiaOAuthFetcher* fetcher = new GaiaOAuthFetcher(
       signin,
@@ -423,8 +423,7 @@ void SyncSetupHandler::RegisterMessages() {
 }
 
 SigninManager* SyncSetupHandler::GetSignin() const {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  return SigninManagerFactory::GetForProfile(profile);
+  return SigninManagerFactory::GetForProfile(GetProfile());
 }
 
 void SyncSetupHandler::DisplayGaiaLogin(bool fatal_error) {
@@ -442,8 +441,9 @@ void SyncSetupHandler::DisplayGaiaLoginWithErrorMessage(
   }
 
   // Setup args for the GAIA login screen:
-  // error_message: custom error message to display
-  // error: GoogleServiceAuthError from previous login attempt (0 if none)
+  // error_message: custom error message to display.
+  // fatalError: fatal error message to display.
+  // error: GoogleServiceAuthError from previous login attempt (0 if none).
   // user: The email the user most recently entered.
   // editable_user: Whether the username field should be editable.
   // captchaUrl: The captcha image to display to the user (empty if none).
@@ -454,9 +454,14 @@ void SyncSetupHandler::DisplayGaiaLoginWithErrorMessage(
   if (!last_attempted_user_email_.empty()) {
     // This is a repeat of a login attempt.
     user = last_attempted_user_email_;
-    error = signin->GetLoginAuthError().state();
+    GoogleServiceAuthError gaia_error = signin->GetLoginAuthError();
+    // It's possible for GAIA signin to succeed, but sync signin to fail, so
+    // if that happens, use the sync GAIA error.
+    if (gaia_error.state() == GoogleServiceAuthError::NONE)
+      gaia_error = GetSyncService()->GetAuthError();
+    error = gaia_error.state();
+    captcha = gaia_error.captcha().image_url.spec();
     editable_user = true;
-    captcha = signin->GetLoginAuthError().captcha().image_url.spec();
   } else {
     // Fresh login attempt - lock in the authenticated username if there is
     // one (don't let the user change it).
@@ -524,9 +529,9 @@ void SyncSetupHandler::ShowSetupDone(const string16& user) {
 
   // Suppress the sync promo once the user signs into sync. This way the user
   // doesn't see the sync promo even if they sign out of sync later on.
-  SyncPromoUI::SetUserSkippedSyncPromo(Profile::FromWebUI(web_ui()));
+  SyncPromoUI::SetUserSkippedSyncPromo(GetProfile());
 
-  Profile* profile = Profile::FromWebUI(web_ui());
+  Profile* profile = GetProfile();
   ProfileSyncService* service = GetSyncService();
   if (!service->HasSyncSetupCompleted()) {
     FilePath profile_file_path = profile->GetPath();
@@ -580,8 +585,7 @@ void SyncSetupHandler::TryLogin(const std::string& username,
   DCHECK(IsActiveLogin());
   // Make sure we are listening for signin traffic.
   if (!signin_tracker_.get())
-    signin_tracker_.reset(new SigninTracker(Profile::FromWebUI(web_ui()),
-                                            this));
+    signin_tracker_.reset(new SigninTracker(GetProfile(), this));
 
   last_attempted_user_email_ = username;
   // If we're just being called to provide an ASP, then pass it to the
@@ -611,8 +615,12 @@ void SyncSetupHandler::SigninFailed() {
   DisplayGaiaLogin(GetSyncService()->unrecoverable_error_detected());
 }
 
+Profile* SyncSetupHandler::GetProfile() const {
+  return Profile::FromWebUI(web_ui());
+}
+
 ProfileSyncService* SyncSetupHandler::GetSyncService() const {
-  return ProfileSyncServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
+  return ProfileSyncServiceFactory::GetForProfile(GetProfile());
 }
 
 void SyncSetupHandler::SigninSuccess() {
@@ -748,7 +756,7 @@ void SyncSetupHandler::OpenSyncSetup() {
 
   GetLoginUIService()->SetLoginUI(web_ui());
 
-  if (!SigninTracker::AreServicesSignedIn(Profile::FromWebUI(web_ui()))) {
+  if (!SigninTracker::AreServicesSignedIn(GetProfile())) {
     // User is not logged in - need to display login UI.
     DisplayGaiaLogin(false);
   } else {
@@ -771,7 +779,7 @@ bool SyncSetupHandler::FocusExistingWizardIfPresent() {
 }
 
 LoginUIService* SyncSetupHandler::GetLoginUIService() const {
-  return LoginUIServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
+  return LoginUIServiceFactory::GetForProfile(GetProfile());
 }
 
 void SyncSetupHandler::CloseOverlay() {
@@ -790,8 +798,8 @@ bool SyncSetupHandler::IsLoginAuthDataValid(const std::string& username,
 
   // Check if the username is already in use by another profile.
   const ProfileInfoCache& cache = profile_manager_->GetProfileInfoCache();
-  size_t current_profile_index = cache.GetIndexOfProfileWithPath(
-      Profile::FromWebUI(web_ui())->GetPath());
+  size_t current_profile_index =
+      cache.GetIndexOfProfileWithPath(GetProfile()->GetPath());
   string16 username_utf16 = UTF8ToUTF16(username);
 
   for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {

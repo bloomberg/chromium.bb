@@ -183,8 +183,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   void RegisterAuthNotifications();
 
-  // Same as AreCredentialsAvailable(false).
-  bool AreCredentialsAvailable();
+  // Same as AreCredentialsAvailable(false). Virtual to enable mocking in tests.
+  virtual bool AreCredentialsAvailable();
 
   // Return whether all sync tokens are loaded and available for the backend to
   // start up. Also checks for OAuth login token if |check_oauth_login_token| is
@@ -522,8 +522,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // succeeded, and is waiting for initialization to complete. This is used by
   // the UI to differentiate between a new auth error (encountered as part of
   // the initialization process) and a pre-existing auth error that just hasn't
-  // been cleared yet.
-  bool waiting_for_auth() const { return is_auth_in_progress_; }
+  // been cleared yet. Virtual for testing purposes.
+  virtual bool waiting_for_auth() const;
 
   // ProfileKeyedService implementation.
   virtual void Shutdown() OVERRIDE;

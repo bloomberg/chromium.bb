@@ -88,6 +88,10 @@ class SigninTracker : public ProfileSyncServiceObserver,
     SIGNIN_COMPLETE
   };
 
+  // Invoked when one of the services potentially changed its signin status so
+  // we can check to see whether we need to notify our observer.
+  void HandleServiceStateChange();
+
   // The current state of the login process.
   LoginState state_;
 

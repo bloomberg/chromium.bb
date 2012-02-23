@@ -13,9 +13,10 @@
 #include "chrome/browser/ui/webui/signin/signin_tracker.h"
 
 class LoginUIService;
+class ProfileManager;
+class ProfileSyncService;
 class SigninManager;
 class SyncSetupFlow;
-class ProfileManager;
 
 class SyncSetupHandler : public GaiaOAuthConsumer,
                          public OptionsPageUIHandler,
@@ -72,6 +73,11 @@ class SyncSetupHandler : public GaiaOAuthConsumer,
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest,
                            DiscreteRunChooseDataTypesAbortedByPendingClear);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, EnterPassphraseRequired);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, GaiaErrorInitializingSync);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, HandleCaptcha);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, HandleGaiaAuthFailure);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest,
+                           UnrecoverableErrorInitializingSync);
 
   // Callbacks from the page. Protected in order to be called by the
   // SyncSetupWizardTest.
@@ -95,9 +101,9 @@ class SyncSetupHandler : public GaiaOAuthConsumer,
   virtual void RecordSignin();
 
  private:
-  // Helper routine that gets the ProfileSyncService associated with the parent
-  // profile.
-  class ProfileSyncService* GetSyncService() const;
+  // Helper routine that gets the Profile associated with this object (virtual
+  // so tests can override).
+  virtual Profile* GetProfile() const;
 
   // Start up the sync setup configuration wizard.
   void StartConfigureSync();
@@ -140,11 +146,15 @@ class SyncSetupHandler : public GaiaOAuthConsumer,
   bool IsLoginAuthDataValid(const std::string& username,
                             string16* error_message);
 
-  // Returns the SigninManager for the parent profile. Overridden by tests.
-  virtual SigninManager* GetSignin() const;
+  // Helper routine that gets the ProfileSyncService associated with the parent
+  // profile.
+  ProfileSyncService* GetSyncService() const;
 
-  // Returns the LoginUIService for the parent profile. Overridden by tests.
-  virtual LoginUIService* GetLoginUIService() const;
+  // Returns the SigninManager for the parent profile.
+  SigninManager* GetSignin() const;
+
+  // Returns the LoginUIService for the parent profile.
+  LoginUIService* GetLoginUIService() const;
 
   // The SigninTracker object used to determine when the user has fully signed
   // in (this requires waiting for various services to initialize and tracking

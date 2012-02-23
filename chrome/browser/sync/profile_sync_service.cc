@@ -1080,6 +1080,10 @@ bool ProfileSyncService::sync_initialized() const {
   return backend_initialized_;
 }
 
+bool ProfileSyncService::waiting_for_auth() const {
+  return is_auth_in_progress_;
+}
+
 bool ProfileSyncService::unrecoverable_error_detected() const {
   return unrecoverable_error_detected_;
 }

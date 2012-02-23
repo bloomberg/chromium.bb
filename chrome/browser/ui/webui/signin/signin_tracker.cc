@@ -46,6 +46,10 @@ void SigninTracker::Observe(int type,
     case chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL:
       state_ = SERVICES_INITIALIZING;
       observer_->GaiaCredentialsValid();
+      // If our services are already signed in, see if it's possible to
+      // transition to the SIGNIN_COMPLETE state.
+      if (AreServicesSignedIn(profile_))
+        HandleServiceStateChange();
       break;
     case chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED:
       state_ = WAITING_FOR_GAIA_VALIDATION;
@@ -58,6 +62,10 @@ void SigninTracker::Observe(int type,
 
 // Called when the ProfileSyncService state changes.
 void SigninTracker::OnStateChanged() {
+  HandleServiceStateChange();
+}
+
+void SigninTracker::HandleServiceStateChange() {
   if (state_ != SERVICES_INITIALIZING) {
     // Ignore service updates until after our GAIA credentials are validated.
     return;
@@ -77,7 +85,6 @@ void SigninTracker::OnStateChanged() {
     // been cleared yet).
     return;
   }
-
   if (!AreServicesSignedIn(profile_)) {
     state_ = WAITING_FOR_GAIA_VALIDATION;
     observer_->SigninFailed();

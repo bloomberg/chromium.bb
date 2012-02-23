@@ -82,6 +82,8 @@
         'test/mock_render_process.h',
         'test/mock_render_thread.cc',
         'test/mock_render_thread.h',
+        'test/mock_web_ui.cc',
+        'test/mock_web_ui.h',
         'test/render_view_fake_resources_test.cc',
         'test/render_view_fake_resources_test.h',
         'test/render_view_test.cc',

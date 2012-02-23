@@ -18,7 +18,6 @@
 #include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/options/options_sync_setup_handler.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
@@ -28,17 +27,14 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 static const char kTestUser[] = "chrome.p13n.test@gmail.com";
-static const char kTestPassword[] = "passwd";
-static const char kTestCaptcha[] = "pizzamyheart";
-static const char kTestCaptchaUrl[] = "http://pizzamyheart/";
 
 typedef GoogleServiceAuthError AuthError;
 
 class MockSyncSetupHandler : public OptionsSyncSetupHandler {
  public:
-  MockSyncSetupHandler()
+  explicit MockSyncSetupHandler(Profile* profile)
       : OptionsSyncSetupHandler(NULL),
-        login_ui_(new LoginUIService(NULL)) {}
+        profile_(profile) {}
 
   // SyncSetupFlowHandler implementation.
   virtual void ShowFatalError() OVERRIDE {
@@ -60,12 +56,13 @@ class MockSyncSetupHandler : public OptionsSyncSetupHandler {
     ShowSetupDone(string16());
   }
 
-  virtual LoginUIService* GetLoginUIService() const OVERRIDE {
-    return login_ui_.get();
+  virtual Profile* GetProfile() const OVERRIDE {
+    return profile_;
   }
 
  private:
-  scoped_ptr<LoginUIService> login_ui_;
+  // Weak ptr to injected parent profile.
+  Profile* profile_;
   DISALLOW_COPY_AND_ASSIGN(MockSyncSetupHandler);
 };
 
@@ -226,6 +223,7 @@ class SyncSetupWizardTest : public BrowserWithTestWindowTest {
     PrefService* prefs = profile()->GetPrefs();
     prefs->SetString(prefs::kGoogleServicesUsername, kTestUser);
 
+    handler_.reset(new MockSyncSetupHandler(profile()));
     set_browser(new Browser(Browser::TYPE_TABBED, profile()));
     browser()->SetWindowForTesting(window());
     BrowserList::SetLastActive(browser());
@@ -237,11 +235,12 @@ class SyncSetupWizardTest : public BrowserWithTestWindowTest {
   virtual void TearDown() {
     wizard_ = NULL;
     service_ = NULL;
+    handler_.reset();
   }
 
  protected:
   void AttachSyncSetupHandler() {
-    wizard_->AttachSyncSetupHandler(&handler_);
+    wizard_->AttachSyncSetupHandler(handler_.get());
   }
 
   void CompleteSetup() {
@@ -252,13 +251,13 @@ class SyncSetupWizardTest : public BrowserWithTestWindowTest {
   }
 
   void CloseSetupUI() {
-    handler_.CloseSetupUI();
+    handler_->CloseSetupUI();
   }
 
   // This pointer is owned by the |Service_|.
   SyncSetupWizard* wizard_;
   ProfileSyncServiceForWizardTest* service_;
-  MockSyncSetupHandler handler_;
+  scoped_ptr<MockSyncSetupHandler> handler_;
 };
 
 TEST_F(SyncSetupWizardTest, ChooseDataTypesSetsPrefs) {
@@ -276,7 +275,7 @@ TEST_F(SyncSetupWizardTest, ChooseDataTypesSetsPrefs) {
 
   // Simulate the user choosing data types; bookmarks, prefs, typed URLS, and
   // apps are on, the rest are off.
-  handler_.HandleConfigure(&data_type_choices_value);
+  handler_->HandleConfigure(&data_type_choices_value);
   // Since we don't need a passphrase, wizard should have transitioned to
   // DONE state and closed the UI.
   EXPECT_FALSE(wizard_->IsVisible());
@@ -304,8 +303,8 @@ TEST_F(SyncSetupWizardTest, ShowErrorUIForPassphraseTest) {
   service_->ShowErrorUI();
   AttachSyncSetupHandler();
   EXPECT_EQ(SyncSetupWizard::ENTER_PASSPHRASE,
-            handler_.GetFlow()->current_state_);
-  EXPECT_EQ(SyncSetupWizard::DONE, handler_.GetFlow()->end_state_);
+            handler_->GetFlow()->current_state_);
+  EXPECT_EQ(SyncSetupWizard::DONE, handler_->GetFlow()->end_state_);
   ASSERT_TRUE(wizard_->IsVisible());
 
   // Make sure the wizard is dismissed.
@@ -320,12 +319,12 @@ TEST_F(SyncSetupWizardTest, EnterPassphraseRequired) {
   service_->set_passphrase_required_reason(sync_api::REASON_ENCRYPTION);
   wizard_->Step(SyncSetupWizard::ENTER_PASSPHRASE);
   EXPECT_EQ(SyncSetupWizard::ENTER_PASSPHRASE,
-            handler_.GetFlow()->current_state_);
+            handler_->GetFlow()->current_state_);
 
   ListValue value;
   value.Append(new StringValue("{\"passphrase\":\"myPassphrase\","
                                 "\"mode\":\"gaia\"}"));
-  handler_.HandlePassphraseEntry(&value);
+  handler_->HandlePassphraseEntry(&value);
   EXPECT_EQ("myPassphrase", service_->passphrase_);
   CloseSetupUI();
 }
@@ -337,14 +336,14 @@ TEST_F(SyncSetupWizardTest, InvalidTransitions) {
   wizard_->Step(SyncSetupWizard::SYNC_EVERYTHING);
   AttachSyncSetupHandler();
   EXPECT_EQ(SyncSetupWizard::SYNC_EVERYTHING,
-            handler_.GetFlow()->current_state_);
+            handler_->GetFlow()->current_state_);
   EXPECT_TRUE(wizard_->IsVisible());
 
   wizard_->Step(SyncSetupWizard::FATAL_ERROR);
   // Stepping to FATAL_ERROR leaves us in a FATAL_ERROR state and blows away
   // the SyncSetupFlow.
   EXPECT_FALSE(wizard_->IsVisible());
-  EXPECT_TRUE(handler_.GetFlow() == NULL);
+  EXPECT_TRUE(handler_->GetFlow() == NULL);
 }
 
 TEST_F(SyncSetupWizardTest, FullSuccessfulRunSetsPref) {
@@ -369,7 +368,7 @@ TEST_F(SyncSetupWizardTest, DiscreteRunChooseDataTypes) {
 
   wizard_->Step(SyncSetupWizard::CONFIGURE);
   AttachSyncSetupHandler();
-  EXPECT_EQ(SyncSetupWizard::DONE, handler_.GetFlow()->end_state_);
+  EXPECT_EQ(SyncSetupWizard::DONE, handler_->GetFlow()->end_state_);
 
   wizard_->Step(SyncSetupWizard::SETTING_UP);
   wizard_->Step(SyncSetupWizard::DONE);
@@ -382,7 +381,7 @@ TEST_F(SyncSetupWizardTest, DiscreteRunChooseDataTypesAbortedByPendingClear) {
   wizard_->Step(SyncSetupWizard::CONFIGURE);
   AttachSyncSetupHandler();
   EXPECT_TRUE(wizard_->IsVisible());
-  EXPECT_EQ(SyncSetupWizard::DONE, handler_.GetFlow()->end_state_);
+  EXPECT_EQ(SyncSetupWizard::DONE, handler_->GetFlow()->end_state_);
   wizard_->Step(SyncSetupWizard::ABORT);
   // Stepping to ABORT should leave us in the ABORT state and close the dialog.
   EXPECT_FALSE(wizard_->IsVisible());
@@ -397,8 +396,8 @@ TEST_F(SyncSetupWizardTest, EnterPassphrase) {
   wizard_->Step(SyncSetupWizard::ENTER_PASSPHRASE);
   AttachSyncSetupHandler();
   EXPECT_EQ(SyncSetupWizard::ENTER_PASSPHRASE,
-            handler_.GetFlow()->current_state_);
-  EXPECT_EQ(SyncSetupWizard::DONE, handler_.GetFlow()->end_state_);
+            handler_->GetFlow()->current_state_);
+  EXPECT_EQ(SyncSetupWizard::DONE, handler_->GetFlow()->end_state_);
   CloseSetupUI();
   EXPECT_FALSE(wizard_->IsVisible());
 }
@@ -408,9 +407,9 @@ TEST_F(SyncSetupWizardTest, FatalErrorDuringConfigure) {
 
   wizard_->Step(SyncSetupWizard::CONFIGURE);
   AttachSyncSetupHandler();
-  EXPECT_EQ(SyncSetupWizard::DONE, handler_.GetFlow()->end_state_);
+  EXPECT_EQ(SyncSetupWizard::DONE, handler_->GetFlow()->end_state_);
   wizard_->Step(SyncSetupWizard::FATAL_ERROR);
-  EXPECT_TRUE(handler_.GetFlow() == NULL);
+  EXPECT_TRUE(handler_->GetFlow() == NULL);
   EXPECT_FALSE(wizard_->IsVisible());
 }
 
