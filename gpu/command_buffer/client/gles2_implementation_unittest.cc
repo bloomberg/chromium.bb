@@ -2038,7 +2038,7 @@ TEST_F(GLES2ImplementationTest, TexSubImage2DFlipY) {
   expected.pixel_store_i1.Init(GL_UNPACK_ALIGNMENT, kPixelStoreUnpackAlignment);
   expected.tex_image_2d.Init(
       kTarget, kLevel, kFormat, kTextureWidth, kTextureHeight, kBorder, kFormat,
-      kType, 0, NULL);
+      kType, 0, 0);
   expected.tex_sub_image_2d1.Init(kTarget, kLevel, kSubImageXOffset,
       kSubImageYOffset + 2, kSubImageWidth, 2, kFormat, kType,
       mem1.id, mem1.offset, false);
