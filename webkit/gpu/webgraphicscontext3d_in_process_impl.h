@@ -39,7 +39,6 @@ using WebKit::WGC3Dsizeiptr;
 using WebKit::WebGLId;
 
 using WebKit::WebString;
-using WebKit::WebView;
 
 using WebKit::WebGraphicsContext3D;
 
@@ -63,7 +62,6 @@ class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
   virtual ~WebGraphicsContext3DInProcessImpl();
   static WebGraphicsContext3DInProcessImpl* CreateForWebView(
       WebGraphicsContext3D::Attributes attributes,
-      WebView* web_view,
       bool render_directly_to_webview);
   static WebGraphicsContext3DInProcessImpl* CreateForWindow(
       WebGraphicsContext3D::Attributes attributes,

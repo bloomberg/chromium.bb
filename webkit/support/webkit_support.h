@@ -29,6 +29,7 @@ class WebThemeEngine;
 class WebURL;
 class WebURLRequest;
 class WebURLResponse;
+class WebView;
 struct WebPluginParams;
 struct WebURLError;
 }

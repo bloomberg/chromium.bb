@@ -341,10 +341,8 @@ WebStorageNamespace* TestWebViewDelegate::createSessionStorageNamespace(
 WebGraphicsContext3D* TestWebViewDelegate::createGraphicsContext3D(
     const WebGraphicsContext3D::Attributes& attributes,
     bool direct) {
-  if (!shell_->webView())
-    return NULL;
   return webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWebView(
-      attributes, shell_->webView(), direct);
+      attributes, direct);
 }
 
 void TestWebViewDelegate::didAddMessageToConsole(

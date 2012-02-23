@@ -38,6 +38,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystemCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLError.h"
 #if defined(TOOLKIT_USES_GTK)
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
@@ -384,11 +385,14 @@ WebKit::WebGraphicsContext3D* CreateGraphicsContext3D(
   switch (webkit_support::GetGraphicsContext3DImplementation()) {
     case webkit_support::IN_PROCESS:
       return WebGraphicsContext3DInProcessImpl::CreateForWebView(
-          attributes, web_view, direct);
+          attributes, direct);
     case webkit_support::IN_PROCESS_COMMAND_BUFFER: {
+      WebKit::WebGraphicsContext3D* view_context = 0;
+      if (!direct)
+          view_context = web_view->graphicsContext3D();
       scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context(
           new WebGraphicsContext3DInProcessCommandBufferImpl());
-      if (!context->initialize(attributes, web_view, direct))
+      if (!context->Initialize(attributes, view_context))
         return NULL;
       return context.release();
     }

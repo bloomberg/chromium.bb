@@ -304,7 +304,7 @@ WebKit::WebGraphicsContext3D*
 TestShellWebKitInit::createOffscreenGraphicsContext3D(
     const WebKit::WebGraphicsContext3D::Attributes& attributes) {
   return webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWebView(
-          attributes, NULL, false);
+          attributes, false);
 }
 
 void TestShellWebKitInit::GetPlugins(

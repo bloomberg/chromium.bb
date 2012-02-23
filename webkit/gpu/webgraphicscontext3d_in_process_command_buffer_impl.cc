@@ -102,7 +102,6 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
       GLInProcessContext* context_group,
       const char* allowed_extensions,
       const int32* attrib_list,
-      const GURL& active_url,
       gfx::GpuPreference gpu_preference);
 
   // For an offscreen frame buffer GLInProcessContext, return the texture ID
@@ -151,7 +150,6 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
                   GLInProcessContext* context_group,
                   const char* allowed_extensions,
                   const int32* attrib_list,
-                  const GURL& active_url,
                   gfx::GpuPreference gpu_preference);
   void Destroy();
 
@@ -220,7 +218,6 @@ GLInProcessContext* GLInProcessContext::CreateOffscreenContext(
     GLInProcessContext* context_group,
     const char* allowed_extensions,
     const int32* attrib_list,
-    const GURL& active_url,
     gfx::GpuPreference gpu_preference) {
   scoped_ptr<GLInProcessContext> context(new GLInProcessContext(parent));
   if (!context->Initialize(
@@ -228,7 +225,6 @@ GLInProcessContext* GLInProcessContext::CreateOffscreenContext(
       context_group,
       allowed_extensions,
       attrib_list,
-      active_url,
       gpu_preference))
     return NULL;
 
@@ -345,7 +341,6 @@ bool GLInProcessContext::Initialize(const gfx::Size& size,
                                     GLInProcessContext* context_group,
                                     const char* allowed_extensions,
                                     const int32* attrib_list,
-                                    const GURL& active_url,
                                     gfx::GpuPreference gpu_preference) {
   // Use one share group for all contexts.
   CR_DEFINE_STATIC_LOCAL(scoped_refptr<gfx::GLShareGroup>, share_group,
@@ -512,7 +507,6 @@ WebGraphicsContext3DInProcessCommandBufferImpl::
     WebGraphicsContext3DInProcessCommandBufferImpl()
     : context_(NULL),
       gl_(NULL),
-      web_view_(NULL),
       context_lost_callback_(NULL),
       context_lost_reason_(GL_NO_ERROR),
       cached_width_(0),
@@ -526,10 +520,9 @@ WebGraphicsContext3DInProcessCommandBufferImpl::
   g_all_shared_contexts.Pointer()->erase(this);
 }
 
-bool WebGraphicsContext3DInProcessCommandBufferImpl::initialize(
+bool WebGraphicsContext3DInProcessCommandBufferImpl::Initialize(
     WebGraphicsContext3D::Attributes attributes,
-    WebKit::WebView* web_view,
-    bool render_directly_to_web_view) {
+    WebKit::WebGraphicsContext3D* view_context) {
   // Convert WebGL context creation attributes into GLInProcessContext / EGL
   // size requests.
   const int alpha_size = attributes.alpha ? 8 : 0;
@@ -555,20 +548,12 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::initialize(
   // discrete GPU is created, or the last one is destroyed.
   gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
 
-  GURL active_url;
-  if (web_view && web_view->mainFrame())
-    active_url = GURL(web_view->mainFrame()->document().url());
-
   GLInProcessContext* parent_context = NULL;
-  if (!render_directly_to_web_view) {
-    WebKit::WebGraphicsContext3D* view_context =
-        web_view ? web_view->graphicsContext3D() : NULL;
-    if (view_context) {
-      WebGraphicsContext3DInProcessCommandBufferImpl* context_impl =
-          static_cast<WebGraphicsContext3DInProcessCommandBufferImpl*>(
-              view_context);
-      parent_context = context_impl->context_;
-    }
+  if (view_context) {
+    WebGraphicsContext3DInProcessCommandBufferImpl* context_impl =
+        static_cast<WebGraphicsContext3DInProcessCommandBufferImpl*>(
+            view_context);
+    parent_context = context_impl->context_;
   }
 
   WebGraphicsContext3DInProcessCommandBufferImpl* context_group = NULL;
@@ -583,9 +568,7 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::initialize(
       context_group ? context_group->context_ : NULL,
       preferred_extensions,
       attribs,
-      active_url,
       gpu_preference);
-  web_view_ = NULL;
 
   if (!context_)
     return false;

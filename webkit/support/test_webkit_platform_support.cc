@@ -379,11 +379,12 @@ TestWebKitPlatformSupport::createOffscreenGraphicsContext3D(
   switch (webkit_support::GetGraphicsContext3DImplementation()) {
     case webkit_support::IN_PROCESS:
       return webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWebView(
-          attributes, NULL, false);
+          attributes, false);
     case webkit_support::IN_PROCESS_COMMAND_BUFFER: {
-      scoped_ptr<WebKit::WebGraphicsContext3D> context(
-          new webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl());
-      if (!context->initialize(attributes, NULL, false))
+      scoped_ptr<webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl>
+          context(new
+              webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl());
+      if (!context->Initialize(attributes, NULL))
         return NULL;
       return context.release();
     }

@@ -9,9 +9,11 @@
 #include <algorithm>
 #include <string>
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/string_split.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -72,7 +74,17 @@ WebGraphicsContext3DInProcessImpl::WebGraphicsContext3DInProcessImpl(
       vertex_compiler_(0) {
 }
 
+// All instances in a process that share resources are in the same share group.
+static base::LazyInstance<
+    std::set<WebGraphicsContext3DInProcessImpl*> >
+        g_all_shared_contexts = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<base::Lock>::Leaky
+    g_all_shared_contexts_lock = LAZY_INSTANCE_INITIALIZER;
+
 WebGraphicsContext3DInProcessImpl::~WebGraphicsContext3DInProcessImpl() {
+  base::AutoLock a(g_all_shared_contexts_lock.Get());
+  g_all_shared_contexts.Pointer()->erase(this);
+
   if (!initialized_)
     return;
 
@@ -109,27 +121,17 @@ WebGraphicsContext3DInProcessImpl::~WebGraphicsContext3DInProcessImpl() {
 WebGraphicsContext3DInProcessImpl*
 WebGraphicsContext3DInProcessImpl::CreateForWebView(
     WebGraphicsContext3D::Attributes attributes,
-    WebView* web_view,
     bool render_directly_to_web_view) {
   if (!gfx::GLSurface::InitializeOneOff())
     return NULL;
 
-  bool is_gles2 = gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2;
   gfx::GLShareGroup* share_group = 0;
-  if (!render_directly_to_web_view) {
-    // Pick up the compositor's context to share resources with.
-    WebGraphicsContext3D* view_context = web_view ?
-                                         web_view->graphicsContext3D() : NULL;
-    if (view_context) {
-      WebGraphicsContext3DInProcessImpl* contextImpl =
-          static_cast<WebGraphicsContext3DInProcessImpl*>(view_context);
-      share_group = contextImpl->gl_context_->share_group();
-    } else {
-      // The compositor's context didn't get created
-      // successfully, so conceptually there is no way we can
-      // render successfully to the WebView.
-      render_directly_to_web_view = false;
-    }
+
+  if (attributes.shareResources) {
+    WebGraphicsContext3DInProcessImpl* context_impl =
+      g_all_shared_contexts.Pointer()->empty() ?
+        NULL : *g_all_shared_contexts.Pointer()->begin();
+    share_group = context_impl->gl_context_->share_group();
   }
 
   // This implementation always renders offscreen regardless of whether
@@ -140,24 +142,8 @@ WebGraphicsContext3DInProcessImpl::CreateForWebView(
   scoped_refptr<gfx::GLSurface> gl_surface =
       gfx::GLSurface::CreateOffscreenGLSurface(false, gfx::Size(1, 1));
 
-  if (!gl_surface.get()) {
-    if (!is_gles2)
-      return NULL;
-
-    // Embedded systems have smaller limit on number of GL contexts. Sometimes
-    // failure of GL context creation is because of existing GL contexts
-    // referenced by JavaScript garbages. Collect garbage and try again.
-    // TODO: Besides this solution, kbr@chromium.org suggested: upon receiving
-    // a page unload event, iterate down any live WebGraphicsContext3D instances
-    // and force them to drop their contexts, sending a context lost event if
-    // necessary.
-    if (web_view) web_view->mainFrame()->collectGarbage();
-
-    gl_surface = gfx::GLSurface::CreateOffscreenGLSurface(false,
-                                                          gfx::Size(1, 1));
-    if (!gl_surface.get())
-      return NULL;
-  }
+  if (!gl_surface.get())
+    return NULL;
 
   // TODO(kbr): This implementation doesn't yet support lost contexts
   // and therefore can't yet properly support GPU switching.
@@ -168,26 +154,9 @@ WebGraphicsContext3DInProcessImpl::CreateForWebView(
       gl_surface.get(),
       gpu_preference);
 
-  if (!gl_context.get()) {
-    if (!is_gles2)
-      return NULL;
+  if (!gl_context.get())
+    return NULL;
 
-    // Embedded systems have smaller limit on number of GL contexts. Sometimes
-    // failure of GL context creation is because of existing GL contexts
-    // referenced by JavaScript garbages. Collect garbage and try again.
-    // TODO: Besides this solution, kbr@chromium.org suggested: upon receiving
-    // a page unload event, iterate down any live WebGraphicsContext3D instances
-    // and force them to drop their contexts, sending a context lost event if
-    // necessary.
-    if (web_view)
-      web_view->mainFrame()->collectGarbage();
-
-    gl_context = gfx::GLContext::CreateGLContext(share_group,
-                                                 gl_surface.get(),
-                                                 gpu_preference);
-    if (!gl_context.get())
-      return NULL;
-  }
   scoped_ptr<WebGraphicsContext3DInProcessImpl> context(
       new WebGraphicsContext3DInProcessImpl(
         gl_surface.get(), gl_context.get(), render_directly_to_web_view));
@@ -272,6 +241,10 @@ bool WebGraphicsContext3DInProcessImpl::Initialize(
 
   initialized_ = true;
   gl_context_->ReleaseCurrent(gl_surface_.get());
+
+  if (attributes_.shareResources)
+    g_all_shared_contexts.Pointer()->insert(this);
+
   return true;
 }
 

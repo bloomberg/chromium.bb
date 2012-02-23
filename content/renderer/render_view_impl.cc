@@ -1535,7 +1535,7 @@ WebGraphicsContext3D* RenderViewImpl::createGraphicsContext3D(
   // debugging and bringing up new ports.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessWebGL)) {
     return webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWebView(
-          attributes, webview(), direct);
+        attributes, direct);
   } else {
     int surface = direct ? surface_id() : 0;
 

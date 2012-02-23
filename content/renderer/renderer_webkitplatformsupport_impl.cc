@@ -589,7 +589,7 @@ RendererWebKitPlatformSupportImpl::createOffscreenGraphicsContext3D(
   // debugging and bringing up new ports.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessWebGL)) {
     return webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWebView(
-            attributes, NULL, false);
+            attributes, false);
   } else {
     base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> null_client;
     scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(

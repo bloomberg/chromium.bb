@@ -13,7 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(USE_SKIA)
@@ -52,12 +51,11 @@ class WebGraphicsContext3DInProcessCommandBufferImpl
   WebGraphicsContext3DInProcessCommandBufferImpl();
   virtual ~WebGraphicsContext3DInProcessCommandBufferImpl();
 
+  bool Initialize(WebKit::WebGraphicsContext3D::Attributes attributes,
+                  WebKit::WebGraphicsContext3D* view_context);
+
   //----------------------------------------------------------------------
   // WebGraphicsContext3D methods
-  virtual bool initialize(WebGraphicsContext3D::Attributes attributes,
-                          WebKit::WebView*,
-                          bool renderDirectlyToWebView);
-
   virtual bool makeContextCurrent();
 
   virtual int width();
@@ -482,8 +480,6 @@ class WebGraphicsContext3DInProcessCommandBufferImpl
   // The GLES2Implementation we use for OpenGL rendering.
   ::gpu::gles2::GLES2Implementation* gl_;
 
-  // If rendering directly to WebView, weak pointer to it.
-  WebKit::WebView* web_view_;
   WebGraphicsContext3D::WebGraphicsContextLostCallback* context_lost_callback_;
   WGC3Denum context_lost_reason_;
 
