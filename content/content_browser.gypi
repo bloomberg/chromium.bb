@@ -475,8 +475,6 @@
     'browser/renderer_host/java/java_type.h',
     'browser/renderer_host/layered_resource_handler.cc',
     'browser/renderer_host/layered_resource_handler.h',
-    'browser/renderer_host/media/audio_common.cc',
-    'browser/renderer_host/media/audio_common.h',
     'browser/renderer_host/media/audio_input_device_manager.cc',
     'browser/renderer_host/media/audio_input_device_manager.h',
     'browser/renderer_host/media/audio_input_device_manager_event_handler.h',

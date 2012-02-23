@@ -16,26 +16,6 @@
 #include "media/audio/audio_util.h"
 #include "media/base/filter_host.h"
 
-// We define GetBufferSizeForSampleRate() instead of using
-// GetAudioHardwareBufferSize() in audio_util because we're using
-// the AUDIO_PCM_LINEAR flag, instead of AUDIO_PCM_LOW_LATENCY,
-// which the audio_util functions assume.
-//
-// See: http://code.google.com/p/chromium/issues/detail?id=103627
-// for a more detailed description of the subtleties.
-static size_t GetBufferSizeForSampleRate(int sample_rate) {
-  // kNominalBufferSize has been tested on Windows, Mac OS X, and Linux
-  // using the low-latency audio codepath (SyncSocket implementation)
-  // with the AUDIO_PCM_LINEAR flag.
-  const size_t kNominalBufferSize = 2048;
-
-  if (sample_rate <= 48000)
-    return kNominalBufferSize;
-  else if (sample_rate <= 96000)
-    return kNominalBufferSize * 2;
-  return kNominalBufferSize * 4;
-}
-
 AudioRendererImpl::AudioRendererImpl(media::AudioRendererSink* sink)
     : AudioRendererBase(),
       bytes_per_second_(0),
@@ -91,7 +71,7 @@ bool AudioRendererImpl::OnInitialize(int bits_per_channel,
 
   if (!is_initialized_) {
     sink_->Initialize(
-        GetBufferSizeForSampleRate(sample_rate),
+        media::SelectSamplesPerPacket(sample_rate),
         audio_parameters_.channels,
         audio_parameters_.sample_rate,
         audio_parameters_.format,
