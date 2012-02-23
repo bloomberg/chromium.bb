@@ -46,6 +46,18 @@ class RootWindowEventFilterTest : public aura::test::AuraTestBase {
   DISALLOW_COPY_AND_ASSIGN(RootWindowEventFilterTest);
 };
 
+class NonFocusableDelegate : public aura::test::TestWindowDelegate {
+ public:
+  NonFocusableDelegate() {}
+
+ private:
+  virtual bool CanFocus() OVERRIDE {
+    return false;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(NonFocusableDelegate);
+};
+
 class HitTestWindowDelegate : public aura::test::TestWindowDelegate {
  public:
   HitTestWindowDelegate()
@@ -238,9 +250,9 @@ TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
 
   // Clicking an active window with a child shouldn't steal the
   // focus from the child.
-  scoped_ptr<aura::Window> w11(CreateTestWindowWithDelegate(
-      &wd, -1, gfx::Rect(10, 10, 10, 10), w1.get()));
   {
+    scoped_ptr<aura::Window> w11(CreateTestWindowWithDelegate(
+          &wd, -1, gfx::Rect(10, 10, 10, 10), w1.get()));
     aura::test::EventGenerator generator(Shell::GetRootWindow(), w11.get());
     // First set the focus to the child |w11|.
     generator.ClickLeftButton();
@@ -255,6 +267,26 @@ TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
     generator.ClickLeftButton();
     EXPECT_EQ(w11.get(), focus_manager->GetFocusedWindow());
     EXPECT_EQ(w1.get(), GetActiveWindow());
+  }
+
+  // Clicking on a non-focusable window inside a background window should still
+  // give focus to the background window.
+  {
+    NonFocusableDelegate nfd;
+    scoped_ptr<aura::Window> w11(CreateTestWindowWithDelegate(
+          &nfd, -1, gfx::Rect(10, 10, 10, 10), w1.get()));
+    // Move focus to |w2| first.
+    scoped_ptr<aura::Window> w2(aura::test::CreateTestWindowWithDelegate(
+          &wd, -1, gfx::Rect(70, 70, 50, 50), NULL));
+    aura::test::EventGenerator generator(Shell::GetRootWindow(), w2.get());
+    generator.ClickLeftButton();
+    EXPECT_EQ(w2.get(), focus_manager->GetFocusedWindow());
+    EXPECT_FALSE(w11->CanFocus());
+
+    // Click on |w11|. This should focus w1.
+    generator.MoveMouseToCenterOf(w11.get());
+    generator.ClickLeftButton();
+    EXPECT_EQ(w1.get(), focus_manager->GetFocusedWindow());
   }
 }
 

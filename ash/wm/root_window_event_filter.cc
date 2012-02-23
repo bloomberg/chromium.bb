@@ -17,6 +17,8 @@
 namespace ash {
 namespace internal {
 
+namespace {
+
 // Returns the default cursor for a window component.
 gfx::NativeCursor CursorForWindowComponent(int window_component) {
   switch (window_component) {
@@ -40,6 +42,14 @@ gfx::NativeCursor CursorForWindowComponent(int window_component) {
       return aura::kCursorNull;
   }
 }
+
+aura::Window* FindFocusableWindowFor(aura::Window* window) {
+  while (window && !window->CanFocus())
+    window = window->parent();
+  return window;
+}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindowEventFilter, public:
@@ -109,7 +119,7 @@ bool RootWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
     return true;
 
   if (event->type() == ui::ET_MOUSE_PRESSED && GetActiveWindow() != target)
-    target->GetFocusManager()->SetFocusedWindow(target);
+    target->GetFocusManager()->SetFocusedWindow(FindFocusableWindowFor(target));
 
   return false;
 }
@@ -125,7 +135,7 @@ ui::TouchStatus RootWindowEventFilter::PreHandleTouchEvent(
     if (update_cursor_visibility_)
       SetCursorVisible(target, event, false);
 
-    target->GetFocusManager()->SetFocusedWindow(target);
+    target->GetFocusManager()->SetFocusedWindow(FindFocusableWindowFor(target));
   }
   return ui::TOUCH_STATUS_UNKNOWN;
 }
