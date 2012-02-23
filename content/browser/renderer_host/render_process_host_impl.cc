@@ -41,6 +41,7 @@
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/browser_main.h"
+#include "content/browser/browser_main_loop.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/chrome_blob_storage_context.h"
 #include "content/browser/device_orientation/message_filter.h"
@@ -456,15 +457,17 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   content::BrowserContext* browser_context = GetBrowserContext();
   content::ResourceContext* resource_context =
       browser_context->GetResourceContext();
+  AudioManager* audio_manager = content::BrowserMainLoop::GetAudioManager();
 
   ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
       GetID(), content::PROCESS_TYPE_RENDERER, resource_context,
       new RendererURLRequestContextSelector(browser_context, GetID()));
 
   channel_->AddFilter(resource_message_filter);
-  channel_->AddFilter(new AudioInputRendererHost(resource_context));
-  channel_->AddFilter(new AudioRendererHost(resource_context));
-  channel_->AddFilter(new VideoCaptureHost(resource_context));
+  channel_->AddFilter(new AudioInputRendererHost(
+      resource_context, audio_manager));
+  channel_->AddFilter(new AudioRendererHost(resource_context, audio_manager));
+  channel_->AddFilter(new VideoCaptureHost(resource_context, audio_manager));
   channel_->AddFilter(new AppCacheDispatcherHost(
       static_cast<ChromeAppCacheService*>(
           BrowserContext::GetAppCacheService(browser_context)),
@@ -478,14 +481,14 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       GetID(), browser_context->GetGeolocationPermissionContext()));
   channel_->AddFilter(new GpuMessageFilter(GetID(), widget_helper_.get()));
   channel_->AddFilter(new media_stream::MediaStreamDispatcherHost(
-      resource_context, GetID()));
+      resource_context, GetID(), audio_manager));
   channel_->AddFilter(new PepperFileMessageFilter(GetID(), browser_context));
   channel_->AddFilter(new PepperMessageFilter(PepperMessageFilter::RENDERER,
                                               GetID(), resource_context));
 #if defined(ENABLE_INPUT_SPEECH)
   channel_->AddFilter(new speech_input::SpeechInputDispatcherHost(
       GetID(), browser_context->GetRequestContext(),
-      browser_context->GetSpeechInputPreferences(), resource_context));
+      browser_context->GetSpeechInputPreferences(), audio_manager));
 #endif
   channel_->AddFilter(new FileSystemDispatcherHost(
       browser_context->GetRequestContext(),

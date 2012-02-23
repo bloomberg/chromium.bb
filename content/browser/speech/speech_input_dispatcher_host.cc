@@ -9,7 +9,6 @@
 #include "content/browser/speech/speech_recognizer.h"
 #include "content/common/speech_input_messages.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/resource_context.h"
 #include "content/public/browser/speech_input_preferences.h"
 
 using content::BrowserThread;
@@ -118,12 +117,12 @@ SpeechInputDispatcherHost::SpeechInputDispatcherHost(
     int render_process_id,
     net::URLRequestContextGetter* context_getter,
     content::SpeechInputPreferences* speech_input_preferences,
-    content::ResourceContext* resource_context)
+    AudioManager* audio_manager)
     : render_process_id_(render_process_id),
       may_have_pending_requests_(false),
       context_getter_(context_getter),
       speech_input_preferences_(speech_input_preferences),
-      resource_context_(resource_context) {
+      audio_manager_(audio_manager) {
   // This is initialized by Browser. Do not add any non-trivial
   // initialization here, instead do it lazily when required (e.g. see the
   // method |manager()|) or add an Init() method.
@@ -175,8 +174,7 @@ void SpeechInputDispatcherHost::OnStartRecognition(
                               params.language, params.grammar,
                               params.origin_url,
                               context_getter_.get(),
-                              speech_input_preferences_.get(),
-                              resource_context_->GetAudioManager());
+                              speech_input_preferences_.get());
 }
 
 void SpeechInputDispatcherHost::OnCancelRecognition(int render_view_id,

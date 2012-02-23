@@ -26,23 +26,15 @@ class MockResourceContext : public ResourceContext {
   void set_media_observer(MediaObserver* observer) {
     media_observer_ = observer;
   }
-  void set_media_stream_manager(media_stream::MediaStreamManager* manager) {
-    media_stream_manager_ = manager;
-  }
-  void set_audio_manager(AudioManager* manager) { audio_manager_ = manager; }
 
   // ResourceContext implementation:
   virtual net::HostResolver* GetHostResolver() OVERRIDE;
   virtual net::URLRequestContext* GetRequestContext() OVERRIDE;
   virtual MediaObserver* GetMediaObserver() OVERRIDE;
-  virtual media_stream::MediaStreamManager* GetMediaStreamManager() OVERRIDE;
-  virtual AudioManager* GetAudioManager() OVERRIDE;
 
  private:
   scoped_refptr<net::URLRequestContext> test_request_context_;
   MediaObserver* media_observer_;
-  media_stream::MediaStreamManager* media_stream_manager_;
-  AudioManager* audio_manager_;
 };
 
 }  // namespace content

@@ -169,10 +169,6 @@ void WebRTCAudioDeviceTest::InitializeIOThread(const char* thread_name) {
   resource_context_->set_request_context(test_request_context_.get());
   media_observer_.reset(new MockMediaObserver());
   resource_context_->set_media_observer(media_observer_.get());
-  media_stream_manager_.reset(new media_stream::MediaStreamManager(
-      audio_manager_.get()));
-  resource_context_->set_media_stream_manager(media_stream_manager_.get());
-  resource_context_->set_audio_manager(audio_manager_.get());
 
   // Create an IPC channel that handles incoming messages on the IO thread.
   CreateChannel(thread_name);
@@ -180,7 +176,6 @@ void WebRTCAudioDeviceTest::InitializeIOThread(const char* thread_name) {
 
 void WebRTCAudioDeviceTest::UninitializeIOThread() {
   resource_context_.reset();
-  media_stream_manager_.reset();
 
   audio_manager_.reset();
   test_request_context_ = NULL;
@@ -189,11 +184,12 @@ void WebRTCAudioDeviceTest::UninitializeIOThread() {
 
 void WebRTCAudioDeviceTest::CreateChannel(const char* name) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  audio_render_host_ = new AudioRendererHost(resource_context_.get());
+  audio_render_host_ = new AudioRendererHost(
+      resource_context_.get(), audio_manager_.get());
   audio_render_host_->OnChannelConnected(base::GetCurrentProcId());
 
   audio_input_renderer_host_ = new AudioInputRendererHost(
-      resource_context_.get());
+      resource_context_.get(), audio_manager_.get());
   audio_input_renderer_host_->OnChannelConnected(base::GetCurrentProcId());
 
   channel_.reset(new IPC::Channel(name, IPC::Channel::MODE_SERVER, this));

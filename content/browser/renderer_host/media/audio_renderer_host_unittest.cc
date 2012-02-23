@@ -43,8 +43,9 @@ static bool IsRunningHeadless() {
 class MockAudioRendererHost : public AudioRendererHost {
  public:
   explicit MockAudioRendererHost(
-      content::ResourceContext* resource_context)
-      : AudioRendererHost(resource_context),
+      content::ResourceContext* resource_context,
+      AudioManager* audio_manager)
+      : AudioRendererHost(resource_context, audio_manager),
         shared_memory_length_(0) {
   }
 
@@ -161,8 +162,7 @@ class AudioRendererHostTest : public testing::Test {
     audio_manager_.reset(AudioManager::Create());
     observer_.reset(new MockMediaObserver());
     resource_context_.set_media_observer(observer_.get());
-    resource_context_.set_audio_manager(audio_manager_.get());
-    host_ = new MockAudioRendererHost(&resource_context_);
+    host_ = new MockAudioRendererHost(&resource_context_, audio_manager_.get());
 
     // Simulate IPC channel connected.
     host_->OnChannelConnected(base::GetCurrentProcId());

@@ -6,11 +6,13 @@
 
 #include "base/bind.h"
 #include "base/time.h"
+#include "content/browser/browser_main_loop.h"
 #include "content/public/browser/speech_recognizer_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/speech_input_result.h"
 #include "net/url_request/url_request_context_getter.h"
 
+using content::BrowserMainLoop;
 using content::BrowserThread;
 using media::AudioInputController;
 using std::string;
@@ -62,7 +64,6 @@ SpeechRecognizer::SpeechRecognizer(content::SpeechRecognizerDelegate* delegate,
                                    const std::string& language,
                                    const std::string& grammar,
                                    net::URLRequestContextGetter* context_getter,
-                                   AudioManager* audio_manager,
                                    bool filter_profanities,
                                    const std::string& hardware_info,
                                    const std::string& origin_url)
@@ -74,12 +75,12 @@ SpeechRecognizer::SpeechRecognizer(content::SpeechRecognizerDelegate* delegate,
       hardware_info_(hardware_info),
       origin_url_(origin_url),
       context_getter_(context_getter),
-      audio_manager_(audio_manager),
       codec_(AudioEncoder::CODEC_FLAC),
       encoder_(NULL),
       endpointer_(kAudioSampleRate),
       num_samples_recorded_(0),
-      audio_level_(0.0f) {
+      audio_level_(0.0f),
+      audio_manager_(NULL) {
   endpointer_.set_speech_input_complete_silence_length(
       base::Time::kMicrosecondsPerSecond / 2);
   endpointer_.set_long_speech_input_complete_silence_length(
@@ -114,8 +115,9 @@ bool SpeechRecognizer::StartRecording() {
   AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout,
                          kAudioSampleRate, kNumBitsPerAudioSample,
                          samples_per_packet);
-  audio_controller_ = AudioInputController::Create(audio_manager_, this,
-                                                   params);
+  audio_controller_ = AudioInputController::Create(
+      audio_manager_ ? audio_manager_ : BrowserMainLoop::GetAudioManager(),
+      this, params);
   DCHECK(audio_controller_.get());
   VLOG(1) << "SpeechRecognizer starting record.";
   num_samples_recorded_ = 0;
@@ -317,6 +319,10 @@ void SpeechRecognizer::CloseAudioControllerSynchronously() {
                            base::Unretained(&closed_event)));
   closed_event.Wait();
   audio_controller_ = NULL;  // Releases the ref ptr.
+}
+
+void SpeechRecognizer::SetAudioManagerForTesting(AudioManager* audio_manager) {
+  audio_manager_ = audio_manager;
 }
 
 }  // namespace speech_input

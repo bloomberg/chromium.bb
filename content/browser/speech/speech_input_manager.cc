@@ -5,6 +5,7 @@
 #include "content/browser/speech/speech_input_manager.h"
 
 #include "base/bind.h"
+#include "content/browser/browser_main_loop.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/speech/speech_input_manager_delegate.h"
 #include "content/browser/speech/speech_recognizer.h"
@@ -13,8 +14,8 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/speech_input_preferences.h"
 #include "content/public/common/view_type.h"
-#include "media/audio/audio_manager.h"
 
+using content::BrowserMainLoop;
 using content::BrowserThread;
 using content::SpeechInputManagerDelegate;
 
@@ -30,8 +31,7 @@ struct SpeechInputManager::SpeechInputParams {
                     const std::string& grammar,
                     const std::string& origin_url,
                     net::URLRequestContextGetter* context_getter,
-                    content::SpeechInputPreferences* speech_input_prefs,
-                    AudioManager* audio_manager)
+                    content::SpeechInputPreferences* speech_input_prefs)
       : delegate(delegate),
         caller_id(caller_id),
         render_process_id(render_process_id),
@@ -41,8 +41,7 @@ struct SpeechInputManager::SpeechInputParams {
         grammar(grammar),
         origin_url(origin_url),
         context_getter(context_getter),
-        speech_input_prefs(speech_input_prefs),
-        audio_manager_(audio_manager) {
+        speech_input_prefs(speech_input_prefs) {
   }
 
   SpeechInputManagerDelegate* delegate;
@@ -55,7 +54,6 @@ struct SpeechInputManager::SpeechInputParams {
   std::string origin_url;
   net::URLRequestContextGetter* context_getter;
   content::SpeechInputPreferences* speech_input_prefs;
-  AudioManager* audio_manager_;
 };
 
 SpeechInputManager::SpeechInputManager()
@@ -68,6 +66,18 @@ SpeechInputManager::~SpeechInputManager() {
     CancelRecognition(requests_.begin()->first);
 }
 
+bool SpeechInputManager::HasAudioInputDevices() {
+  return BrowserMainLoop::GetAudioManager()->HasAudioInputDevices();
+}
+
+bool SpeechInputManager::IsRecordingInProcess() {
+  return BrowserMainLoop::GetAudioManager()->IsRecordingInProcess();
+}
+
+string16 SpeechInputManager::GetAudioInputDeviceModel() {
+  return BrowserMainLoop::GetAudioManager()->GetAudioInputDeviceModel();
+}
+
 bool SpeechInputManager::HasPendingRequest(int caller_id) const {
   return requests_.find(caller_id) != requests_.end();
 }
@@ -78,33 +88,20 @@ SpeechInputManagerDelegate* SpeechInputManager::GetDelegate(
 }
 
 // static
-void SpeechInputManager::ShowAudioInputSettings(AudioManager* audio_manager) {
+void SpeechInputManager::ShowAudioInputSettings() {
   // Since AudioManager::ShowAudioInputSettings can potentially launch external
   // processes, do that in the FILE thread to not block the calling threads.
   if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        base::Bind(&SpeechInputManager::ShowAudioInputSettings,
-                   base::Unretained(audio_manager)));
+        base::Bind(&SpeechInputManager::ShowAudioInputSettings));
     return;
   }
 
+  AudioManager* audio_manager = BrowserMainLoop::GetAudioManager();
   DCHECK(audio_manager->CanShowAudioInputSettings());
   if (audio_manager->CanShowAudioInputSettings())
     audio_manager->ShowAudioInputSettings();
-}
-
-// static
-void SpeechInputManager::ShowAudioInputSettingsFromUI(
-    content::ResourceContext* resource_context) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&SpeechInputManager::ShowAudioInputSettingsFromUI,
-                   base::Unretained(resource_context)));
-    return;
-  }
-  ShowAudioInputSettings(resource_context->GetAudioManager());
 }
 
 void SpeechInputManager::StartRecognition(
@@ -117,15 +114,17 @@ void SpeechInputManager::StartRecognition(
     const std::string& grammar,
     const std::string& origin_url,
     net::URLRequestContextGetter* context_getter,
-    content::SpeechInputPreferences* speech_input_prefs,
-    AudioManager* audio_manager) {
+    content::SpeechInputPreferences* speech_input_prefs) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&SpeechInputManager::CheckRenderViewTypeAndStartRecognition,
-      base::Unretained(this), SpeechInputParams(delegate, caller_id,
-      render_process_id, render_view_id, element_rect, language, grammar,
-      origin_url, context_getter, speech_input_prefs, audio_manager)));
+      base::Bind(
+          &SpeechInputManager::CheckRenderViewTypeAndStartRecognition,
+          base::Unretained(this),
+          SpeechInputParams(
+              delegate, caller_id, render_process_id, render_view_id,
+              element_rect, language, grammar, origin_url, context_getter,
+              speech_input_prefs)));
 }
 
 void SpeechInputManager::CheckRenderViewTypeAndStartRecognition(
@@ -160,15 +159,13 @@ void SpeechInputManager::ProceedStartingRecognition(
   ShowRecognitionRequested(
       params.caller_id, params.render_process_id, params.render_view_id,
       params.element_rect);
-  GetRequestInfo(params.audio_manager_, &can_report_metrics_,
-                 &request_info_);
+  GetRequestInfo(&can_report_metrics_, &request_info_);
 
   SpeechInputRequest* request = &requests_[params.caller_id];
   request->delegate = params.delegate;
   request->recognizer = new SpeechRecognizer(
       this, params.caller_id, params.language, params.grammar,
-      params.context_getter, params.audio_manager_,
-      params.speech_input_prefs->FilterProfanities(),
+      params.context_getter, params.speech_input_prefs->FilterProfanities(),
       request_info_, can_report_metrics_ ? params.origin_url : "");
   request->is_active = false;
 
@@ -186,10 +183,9 @@ void SpeechInputManager::StartRecognitionForRequest(int caller_id) {
   if (recording_caller_id_)
     CancelRecognitionAndInformDelegate(recording_caller_id_);
 
-  AudioManager* audio_man = request->second.recognizer->audio_manager();
-  if (!audio_man->HasAudioInputDevices()) {
+  if (!HasAudioInputDevices()) {
     ShowMicError(caller_id, kNoDeviceAvailable);
-  } else if (audio_man->IsRecordingInProcess()) {
+  } else if (IsRecordingInProcess()) {
     ShowMicError(caller_id, kDeviceInUse);
   } else {
     recording_caller_id_ = caller_id;

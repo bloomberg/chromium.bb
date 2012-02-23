@@ -20,7 +20,6 @@
 #include "content/public/browser/resource_context.h"
 #include "net/base/cookie_monster.h"
 
-class AudioManager;
 class CookieSettings;
 class DesktopNotificationService;
 class ExtensionInfoMap;
@@ -30,10 +29,6 @@ class Profile;
 class ProtocolHandlerRegistry;
 class TransportSecurityPersister;
 class WebKitContext;
-
-namespace media_stream {
-class MediaStreamManager;
-}  // namespace media_stream
 
 namespace net {
 class CookieStore;
@@ -138,7 +133,6 @@ class ProfileIOData {
     std::string accept_charset;
     std::string referrer_charset;
     IOThread* io_thread;
-    AudioManager* audio_manager;
     scoped_refptr<HostContentSettingsMap> host_content_settings_map;
     scoped_refptr<CookieSettings> cookie_settings;
     scoped_refptr<net::SSLConfigService> ssl_config_service;
@@ -219,8 +213,6 @@ class ProfileIOData {
     virtual net::HostResolver* GetHostResolver() OVERRIDE;
     virtual net::URLRequestContext* GetRequestContext() OVERRIDE;
     virtual MediaObserver* GetMediaObserver() OVERRIDE;
-    virtual media_stream::MediaStreamManager* GetMediaStreamManager() OVERRIDE;
-    virtual AudioManager* GetAudioManager() OVERRIDE;
 
     void EnsureInitialized();
 
@@ -229,8 +221,6 @@ class ProfileIOData {
     net::HostResolver* host_resolver_;
     net::URLRequestContext* request_context_;
     MediaObserver* media_observer_;
-    media_stream::MediaStreamManager* media_stream_manager_;
-    AudioManager* audio_manager_;
   };
 
   typedef base::hash_map<std::string, scoped_refptr<ChromeURLRequestContext> >
@@ -287,7 +277,6 @@ class ProfileIOData {
   mutable scoped_ptr<net::URLRequestJobFactory> job_factory_;
 
   // Pointed to by ResourceContext.
-  mutable scoped_ptr<media_stream::MediaStreamManager> media_stream_manager_;
 
   // TODO(willchan): Remove from ResourceContext.
   mutable scoped_refptr<ExtensionInfoMap> extension_info_map_;

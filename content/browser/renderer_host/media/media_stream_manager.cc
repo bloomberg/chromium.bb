@@ -14,11 +14,14 @@
 #include "content/browser/renderer_host/media/media_stream_device_settings.h"
 #include "content/browser/renderer_host/media/media_stream_requester.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
+#include "content/browser/resource_context_impl.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/audio/audio_manager.h"
 
 using content::BrowserThread;
+
+static const char* kMediaStreamManagerKeyName = "content_media_stream_manager";
 
 namespace media_stream {
 
@@ -92,6 +95,19 @@ struct MediaStreamManager::DeviceRequest {
   StreamDeviceInfoArray audio_devices;
   StreamDeviceInfoArray video_devices;
 };
+
+// static
+MediaStreamManager* MediaStreamManager::GetForResourceContext(
+    content::ResourceContext* resource_context,
+    AudioManager* audio_manager) {
+  MediaStreamManager* rv = static_cast<MediaStreamManager*>(
+      resource_context->GetUserData(kMediaStreamManagerKeyName));
+  if (!rv) {
+    rv = new MediaStreamManager(audio_manager);
+    resource_context->SetUserData(kMediaStreamManagerKeyName, rv);
+  }
+  return rv;
+}
 
 MediaStreamManager::MediaStreamManager(AudioManager* audio_manager)
     : ALLOW_THIS_IN_INITIALIZER_LIST(

@@ -9,7 +9,6 @@
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
 
-class AudioManager;
 class MediaObserver;
 
 namespace appcache {
@@ -18,10 +17,6 @@ class AppCacheService;
 
 namespace fileapi {
 class FileSystemContext;
-}
-
-namespace media_stream {
-class MediaStreamManager;
 }
 
 namespace net {
@@ -51,8 +46,6 @@ class CONTENT_EXPORT ResourceContext : public base::SupportsUserData {
   virtual net::HostResolver* GetHostResolver() = 0;
   virtual net::URLRequestContext* GetRequestContext() = 0;
   virtual MediaObserver* GetMediaObserver() = 0;
-  virtual media_stream::MediaStreamManager* GetMediaStreamManager() = 0;
-  virtual AudioManager* GetAudioManager() = 0;
 };
 
 }  // namespace content

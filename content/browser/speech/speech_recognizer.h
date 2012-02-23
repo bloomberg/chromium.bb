@@ -18,6 +18,8 @@
 #include "content/public/common/speech_input_result.h"
 #include "media/audio/audio_input_controller.h"
 
+class AudioManager;
+
 namespace content {
 class SpeechRecognizerDelegate;
 }
@@ -40,7 +42,6 @@ class CONTENT_EXPORT SpeechRecognizer
                    const std::string& language,
                    const std::string& grammar,
                    net::URLRequestContextGetter* context_getter,
-                   AudioManager* audio_manager,
                    bool filter_profanities,
                    const std::string& hardware_info,
                    const std::string& origin_url);
@@ -74,8 +75,6 @@ class CONTENT_EXPORT SpeechRecognizer
   virtual void SetRecognitionResult(
       const content::SpeechInputResult& result) OVERRIDE;
 
-  AudioManager* audio_manager() const { return audio_manager_; }
-
   static const int kAudioSampleRate;
   static const int kAudioPacketIntervalMs;  // Duration of each audio packet.
   static const ChannelLayout kChannelLayout;
@@ -84,6 +83,8 @@ class CONTENT_EXPORT SpeechRecognizer
   static const int kEndpointerEstimationTimeMs;
 
  private:
+  friend class SpeechRecognizerTest;
+
   void InformErrorAndCancelRecognition(content::SpeechInputError error);
   void SendRecordedAudioToServer();
 
@@ -94,6 +95,8 @@ class CONTENT_EXPORT SpeechRecognizer
 
   // Helper method which closes the audio controller and blocks until done.
   void CloseAudioControllerSynchronously();
+
+  void SetAudioManagerForTesting(AudioManager* audio_manager);
 
   content::SpeechRecognizerDelegate* delegate_;
   int caller_id_;
@@ -106,12 +109,12 @@ class CONTENT_EXPORT SpeechRecognizer
   scoped_ptr<SpeechRecognitionRequest> request_;
   scoped_refptr<media::AudioInputController> audio_controller_;
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
-  AudioManager* audio_manager_;
   AudioEncoder::Codec codec_;
   scoped_ptr<AudioEncoder> encoder_;
   Endpointer endpointer_;
   int num_samples_recorded_;
   float audio_level_;
+  AudioManager* audio_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SpeechRecognizer);
 };

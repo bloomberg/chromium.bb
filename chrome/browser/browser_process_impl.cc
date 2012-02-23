@@ -76,7 +76,6 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
-#include "media/audio/audio_manager.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -632,14 +631,6 @@ CRLSetFetcher* BrowserProcessImpl::crl_set_fetcher() {
   }
   return crl_set_fetcher_.get();
 #endif
-}
-
-AudioManager* BrowserProcessImpl::audio_manager() {
-  DCHECK(CalledOnValidThread());
-  if (!audio_manager_.get())
-    audio_manager_.reset(AudioManager::Create());
-
-  return audio_manager_.get();
 }
 
 void BrowserProcessImpl::ResourceDispatcherHostCreated() {

@@ -10,16 +10,12 @@ namespace content {
 
 MockResourceContext::MockResourceContext()
     : test_request_context_(new TestURLRequestContext),
-      media_observer_(NULL),
-      media_stream_manager_(NULL),
-      audio_manager_(NULL) {
+      media_observer_(NULL) {
 }
 
 MockResourceContext::MockResourceContext(net::URLRequestContext* context)
     : test_request_context_(context),
-      media_observer_(NULL),
-      media_stream_manager_(NULL),
-      audio_manager_(NULL) {
+      media_observer_(NULL) {
 }
 
 MockResourceContext::~MockResourceContext() {}
@@ -34,15 +30,6 @@ net::URLRequestContext* MockResourceContext::GetRequestContext()  {
 
 MediaObserver* MockResourceContext::GetMediaObserver()  {
   return media_observer_;
-}
-
-media_stream::MediaStreamManager*
-    MockResourceContext::GetMediaStreamManager() {
-  return media_stream_manager_;
-}
-
-AudioManager* MockResourceContext::GetAudioManager() {
-  return audio_manager_;
 }
 
 }  // namespace content

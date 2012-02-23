@@ -10,8 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/resource_context.h"
 
-class ChromeBlobStorageContext;
-
 namespace content {
 
 class ShellURLRequestContextGetter;
@@ -26,8 +24,6 @@ class ShellResourceContext : public content::ResourceContext {
   virtual net::HostResolver* GetHostResolver() OVERRIDE;
   virtual net::URLRequestContext* GetRequestContext() OVERRIDE;
   virtual MediaObserver* GetMediaObserver() OVERRIDE;
-  virtual media_stream::MediaStreamManager* GetMediaStreamManager() OVERRIDE;
-  virtual AudioManager* GetAudioManager() OVERRIDE;
 
   scoped_refptr<ShellURLRequestContextGetter> getter_;
 

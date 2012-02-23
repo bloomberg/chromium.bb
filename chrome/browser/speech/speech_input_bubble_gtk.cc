@@ -19,7 +19,6 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "media/audio/audio_manager.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -111,8 +110,7 @@ void SpeechInputBubbleGtk::OnTryAgainClicked(GtkWidget* widget) {
 }
 
 void SpeechInputBubbleGtk::OnMicSettingsClicked(GtkWidget* widget) {
-  speech_input::SpeechInputManager::ShowAudioInputSettingsFromUI(
-      web_contents()->GetBrowserContext()->GetResourceContext());
+  speech_input::SpeechInputManager::ShowAudioInputSettings();
   Hide();
 }
 

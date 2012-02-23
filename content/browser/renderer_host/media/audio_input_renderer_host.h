@@ -98,8 +98,8 @@ class CONTENT_EXPORT AudioInputRendererHost
   };
 
   // Called from UI thread from the owner of this object.
-  explicit AudioInputRendererHost(
-      content::ResourceContext* resource_context);
+  AudioInputRendererHost(content::ResourceContext* resource_context,
+                         AudioManager* audio_manager);
 
   // content::BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
@@ -202,6 +202,7 @@ class CONTENT_EXPORT AudioInputRendererHost
 
   // Used to get an instance of AudioInputDeviceManager.
   content::ResourceContext* resource_context_;
+  AudioManager* audio_manager_;
 
   // A map of stream IDs to audio sources.
   typedef std::map<int, AudioEntry*> AudioEntryMap;

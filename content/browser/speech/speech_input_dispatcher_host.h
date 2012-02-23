@@ -11,10 +11,10 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "net/url_request/url_request_context_getter.h"
 
+class AudioManager;
 struct SpeechInputHostMsg_StartRecognition_Params;
 
 namespace content {
-class ResourceContext;
 class SpeechInputPreferences;
 }
 
@@ -34,7 +34,7 @@ class SpeechInputDispatcherHost : public content::BrowserMessageFilter,
       int render_process_id,
       net::URLRequestContextGetter* context_getter,
       content::SpeechInputPreferences* speech_input_preferences,
-      content::ResourceContext* resource_context);
+      AudioManager* audio_manager);
 
   // SpeechInputManager::Delegate methods.
   virtual void SetRecognitionResult(
@@ -67,7 +67,7 @@ class SpeechInputDispatcherHost : public content::BrowserMessageFilter,
 
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
   scoped_refptr<content::SpeechInputPreferences> speech_input_preferences_;
-  content::ResourceContext* resource_context_;
+  AudioManager* audio_manager_;
 
   static SpeechInputManager* manager_;
 

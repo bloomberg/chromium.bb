@@ -220,8 +220,7 @@ void SpeechInputBubbleView::ButtonPressed(views::Button* source,
 
 void SpeechInputBubbleView::LinkClicked(views::Link* source, int event_flags) {
   DCHECK_EQ(source, mic_settings_);
-  speech_input::SpeechInputManager::ShowAudioInputSettingsFromUI(
-      web_contents_->GetBrowserContext()->GetResourceContext());
+  speech_input::SpeechInputManager::ShowAudioInputSettings();
 }
 
 gfx::Size SpeechInputBubbleView::GetPreferredSize() {

@@ -27,8 +27,7 @@ class ChromeSpeechInputManager : public SpeechInputManager,
 
  protected:
   // SpeechInputManager methods.
-  virtual void GetRequestInfo(AudioManager* audio_manager,
-                              bool* can_report_metrics,
+  virtual void GetRequestInfo(bool* can_report_metrics,
                               std::string* request_info) OVERRIDE;
   virtual void ShowRecognitionRequested(int caller_id,
                                         int render_process_id,

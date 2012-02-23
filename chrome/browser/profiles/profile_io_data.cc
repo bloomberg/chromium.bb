@@ -42,14 +42,12 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
-#include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_context.h"
-#include "media/audio/audio_manager.h"
 #include "net/base/origin_bound_cert_service.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_util.h"
@@ -216,7 +214,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   params->referrer_charset = default_charset;
 
   params->io_thread = g_browser_process->io_thread();
-  params->audio_manager = g_browser_process->audio_manager();
 
   params->host_content_settings_map = profile->GetHostContentSettingsMap();
   params->cookie_settings = CookieSettings::Factory::GetForProfile(profile);
@@ -418,19 +415,6 @@ MediaObserver* ProfileIOData::ResourceContext::GetMediaObserver()  {
   return media_observer_;
 }
 
-media_stream::MediaStreamManager*
-    ProfileIOData::ResourceContext::GetMediaStreamManager() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  EnsureInitialized();
-  return media_stream_manager_;
-}
-
-AudioManager* ProfileIOData::ResourceContext::GetAudioManager() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  EnsureInitialized();
-  return audio_manager_;
-}
-
 void ProfileIOData::LazyInitialize() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (initialized_)
@@ -521,9 +505,6 @@ void ProfileIOData::LazyInitialize() const {
     job_factory_->AddInterceptor(new chromeos::GViewRequestInterceptor);
 #endif  // defined(OS_CHROMEOS) && !defined(GOOGLE_CHROME_BUILD)
 
-  media_stream_manager_.reset(
-      new media_stream::MediaStreamManager(profile_params_->audio_manager));
-
   // Take ownership over these parameters.
   host_content_settings_map_ = profile_params_->host_content_settings_map;
   cookie_settings_ = profile_params_->cookie_settings;
@@ -534,8 +515,6 @@ void ProfileIOData::LazyInitialize() const {
   resource_context_.request_context_ = main_request_context_;
   resource_context_.media_observer_ =
       io_thread_globals->media.media_internals.get();
-  resource_context_.media_stream_manager_ = media_stream_manager_.get();
-  resource_context_.audio_manager_ = profile_params_->audio_manager;
 
   LazyInitializeInternal(profile_params_.get());
 

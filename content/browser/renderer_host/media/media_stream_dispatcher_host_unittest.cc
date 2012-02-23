@@ -35,8 +35,9 @@ namespace media_stream {
 class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost {
  public:
   MockMediaStreamDispatcherHost(content::ResourceContext* resource_context,
-                                MessageLoop* message_loop)
-      : MediaStreamDispatcherHost(resource_context, kProcessId),
+                                MessageLoop* message_loop,
+                                AudioManager* audio_manager)
+      : MediaStreamDispatcherHost(resource_context, kProcessId, audio_manager),
         message_loop_(message_loop) {}
   virtual ~MockMediaStreamDispatcherHost() {}
 
@@ -153,15 +154,12 @@ class MediaStreamDispatcherHostTest : public testing::Test {
 
     audio_manager_.reset(AudioManager::Create());
 
-    // Create a MediaStreamManager instance and hand over pointer to
-    // ResourceContext.
-    media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
     // Make sure we use fake devices to avoid long delays.
-    media_stream_manager_->UseFakeDevice();
-    resource_context_.set_media_stream_manager(media_stream_manager_.get());
+    MediaStreamManager::GetForResourceContext(
+        &resource_context_, audio_manager_.get())->UseFakeDevice();
 
     host_ = new MockMediaStreamDispatcherHost(
-        &resource_context_, message_loop_.get());
+        &resource_context_, message_loop_.get(), audio_manager_.get());
   }
 
   virtual void TearDown() {
@@ -192,7 +190,9 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     message_loop_->PostTask(
         FROM_HERE,
         base::Bind(&PostQuitOnVideoCaptureManagerThread,
-                   message_loop_.get(), media_stream_manager_.get()));
+                   message_loop_.get(),
+                   MediaStreamManager::GetForResourceContext(
+                       &resource_context_, audio_manager_.get())));
     message_loop_->Run();
   }
 
@@ -200,7 +200,6 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   scoped_ptr<MessageLoop> message_loop_;
   scoped_ptr<BrowserThreadImpl> ui_thread_;
   scoped_ptr<BrowserThreadImpl> io_thread_;
-  scoped_ptr<MediaStreamManager> media_stream_manager_;
   scoped_ptr<AudioManager> audio_manager_;
   content::MockResourceContext resource_context_;
 };
@@ -300,8 +299,9 @@ TEST_F(MediaStreamDispatcherHostTest, FailDevice) {
 
   EXPECT_CALL(*host_, OnVideoDeviceFailed(kRenderId, 0));
   int session_id = host_->video_devices_[0].session_id;
-  resource_context_.GetMediaStreamManager()->video_capture_manager()->Error(
-      session_id);
+  MediaStreamManager::GetForResourceContext(
+      &resource_context_, audio_manager_.get())->
+          video_capture_manager()->Error(session_id);
   WaitForResult();
   EXPECT_EQ(host_->video_devices_.size(), 0u);
   EXPECT_EQ(host_->NumberOfStreams(), 1u);

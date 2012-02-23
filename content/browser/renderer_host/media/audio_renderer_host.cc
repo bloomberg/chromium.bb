@@ -8,6 +8,7 @@
 #include "base/metrics/histogram.h"
 #include "base/process.h"
 #include "base/shared_memory.h"
+#include "content/browser/browser_main_loop.h"
 #include "content/browser/renderer_host/media/audio_common.h"
 #include "content/browser/renderer_host/media/audio_sync_reader.h"
 #include "content/browser/renderer_host/media/media_observer.h"
@@ -28,8 +29,10 @@ AudioRendererHost::AudioEntry::~AudioEntry() {}
 ///////////////////////////////////////////////////////////////////////////////
 // AudioRendererHost implementations.
 AudioRendererHost::AudioRendererHost(
-    content::ResourceContext* resource_context)
+    content::ResourceContext* resource_context,
+    AudioManager* audio_manager)
     : resource_context_(resource_context),
+      audio_manager_(audio_manager),
       media_observer_(NULL) {
 }
 
@@ -228,8 +231,7 @@ void AudioRendererHost::OnCreateStream(
   // entry and construct an AudioOutputController.
   entry->reader.reset(reader.release());
   entry->controller = media::AudioOutputController::Create(
-      resource_context_->GetAudioManager(), this, audio_params,
-      entry->reader.get());
+      audio_manager_, this, audio_params, entry->reader.get());
 
   if (!entry->controller) {
     SendErrorMessage(stream_id);

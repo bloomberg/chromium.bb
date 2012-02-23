@@ -32,6 +32,7 @@
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/result_codes.h"
 #include "crypto/nss_util.h"
+#include "media/audio/audio_manager.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/ssl_config_service.h"
 #include "net/socket/client_socket_factory.h"
@@ -169,16 +170,15 @@ static void SetUpGLibLogHandler() {
 namespace content {
 
 // The currently-running BrowserMainLoop.  There can be one or zero.
-// This is stored to enable immediate shutdown when needed.
-BrowserMainLoop* current_browser_main_loop = NULL;
+BrowserMainLoop* g_current_browser_main_loop = NULL;
 
 // This is just to be able to keep ShutdownThreadsAndCleanUp out of
 // the public interface of BrowserMainLoop.
 class BrowserShutdownImpl {
  public:
   static void ImmediateShutdownAndExitProcess() {
-    DCHECK(current_browser_main_loop);
-    current_browser_main_loop->ShutdownThreadsAndCleanUp();
+    DCHECK(g_current_browser_main_loop);
+    g_current_browser_main_loop->ShutdownThreadsAndCleanUp();
 
 #if defined(OS_WIN)
     // At this point the message loop is still running yet we've shut everything
@@ -196,22 +196,27 @@ void ImmediateShutdownAndExitProcess() {
   BrowserShutdownImpl::ImmediateShutdownAndExitProcess();
 }
 
+// static
+AudioManager* BrowserMainLoop::GetAudioManager() {
+  return g_current_browser_main_loop->audio_manager_.get();
+}
+
 // BrowserMainLoop construction / destructione =============================
 
 BrowserMainLoop::BrowserMainLoop(const content::MainFunctionParams& parameters)
     : parameters_(parameters),
       parsed_command_line_(parameters.command_line),
       result_code_(content::RESULT_CODE_NORMAL_EXIT) {
-  DCHECK(!current_browser_main_loop);
-  current_browser_main_loop = this;
+  DCHECK(!g_current_browser_main_loop);
+  g_current_browser_main_loop = this;
 #if defined(OS_WIN)
   OleInitialize(NULL);
 #endif
 }
 
 BrowserMainLoop::~BrowserMainLoop() {
-  DCHECK_EQ(this, current_browser_main_loop);
-  current_browser_main_loop = NULL;
+  DCHECK_EQ(this, g_current_browser_main_loop);
+  g_current_browser_main_loop = NULL;
 #if defined(OS_WIN)
   OleUninitialize();
 #endif
@@ -316,6 +321,7 @@ void BrowserMainLoop::MainMessageLoopStart() {
   hi_res_timer_manager_.reset(new HighResolutionTimerManager);
 
   network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
+  audio_manager_.reset(AudioManager::Create());
 
 #if defined(OS_WIN)
   system_message_window_.reset(new SystemMessageWindowWin);

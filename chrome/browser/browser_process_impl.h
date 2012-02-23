@@ -123,7 +123,6 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual MHTMLGenerationManager* mhtml_generation_manager() OVERRIDE;
   virtual ComponentUpdateService* component_updater() OVERRIDE;
   virtual CRLSetFetcher* crl_set_fetcher() OVERRIDE;
-  virtual AudioManager* audio_manager() OVERRIDE;
 
  private:
   void CreateMetricsService();
@@ -267,8 +266,6 @@ class BrowserProcessImpl : public BrowserProcess,
 
   scoped_refptr<CRLSetFetcher> crl_set_fetcher_;
 #endif
-
-  scoped_ptr<AudioManager> audio_manager_;
 
   // TODO(eroman): Remove this when done debugging 113031. This tracks
   // the callstack which released the final module reference count.

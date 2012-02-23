@@ -2,6 +2,7 @@ include_rules = [
   "+content/gpu",  # For gpu_info_collector.h and in-process GPU
   "+content/port/browser",
   "+content/public/browser",
+  "+media/audio",  # For audio input for speech input feature.
 
   # Other libraries.
   "+third_party/iaccessible2",

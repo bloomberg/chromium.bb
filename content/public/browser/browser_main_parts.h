@@ -95,9 +95,6 @@ class CONTENT_EXPORT BrowserMainParts {
   // Called as the very last part of shutdown, after threads have been
   // stopped and destroyed.
   virtual void PostDestroyThreads() = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserMainParts);
 };
 
 }  // namespace content

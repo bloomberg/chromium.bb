@@ -35,8 +35,9 @@ class SpeechRecognizerTest : public content::SpeechRecognizerDelegate,
         error_(content::SPEECH_INPUT_ERROR_NONE),
         volume_(-1.0f) {
     recognizer_ = new SpeechRecognizer(this, 1, std::string(), std::string(),
-                                       NULL, audio_manager_.get(), false,
-                                       std::string(), std::string());
+                                       NULL, false, std::string(),
+                                       std::string());
+    recognizer_->SetAudioManagerForTesting(audio_manager_.get());
     int audio_packet_length_bytes =
         (SpeechRecognizer::kAudioSampleRate *
          SpeechRecognizer::kAudioPacketIntervalMs *

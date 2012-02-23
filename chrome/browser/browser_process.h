@@ -18,7 +18,6 @@
 #include "base/memory/ref_counted.h"
 #include "ipc/ipc_message.h"
 
-class AudioManager;
 class AutomationProviderList;
 class BackgroundModeManager;
 class ChromeNetLog;
@@ -207,8 +206,6 @@ class BrowserProcess {
   virtual ComponentUpdateService* component_updater() = 0;
 
   virtual CRLSetFetcher* crl_set_fetcher() = 0;
-
-  virtual AudioManager* audio_manager() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserProcess);

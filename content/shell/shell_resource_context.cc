@@ -27,13 +27,4 @@ MediaObserver* ShellResourceContext::GetMediaObserver() {
   return NULL;
 }
 
-media_stream::MediaStreamManager*
-    ShellResourceContext::GetMediaStreamManager() {
-  return NULL;
-}
-
-AudioManager* ShellResourceContext::GetAudioManager() {
-  return NULL;
-}
-
 }  // namespace content

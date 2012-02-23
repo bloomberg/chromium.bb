@@ -4,7 +4,6 @@
 
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 
-#include "content/public/browser/resource_context.h"
 #include "content/common/media/media_stream_messages.h"
 #include "content/common/media/media_stream_options.h"
 
@@ -25,16 +24,20 @@ struct MediaStreamDispatcherHost::StreamRequest {
 };
 
 MediaStreamDispatcherHost::MediaStreamDispatcherHost(
-    content::ResourceContext* resource_context, int render_process_id)
+    content::ResourceContext* resource_context,
+    int render_process_id,
+    AudioManager* audio_manager)
     : resource_context_(resource_context),
-      render_process_id_(render_process_id) {
+      render_process_id_(render_process_id),
+      audio_manager_(audio_manager) {
 }
 
 MediaStreamDispatcherHost::~MediaStreamDispatcherHost() {
 }
 
 MediaStreamManager* MediaStreamDispatcherHost::manager() {
-  return resource_context_->GetMediaStreamManager();
+  return MediaStreamManager::GetForResourceContext(
+      resource_context_, audio_manager_);
 }
 
 bool MediaStreamDispatcherHost::OnMessageReceived(

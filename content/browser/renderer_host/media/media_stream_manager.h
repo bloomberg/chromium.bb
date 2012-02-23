@@ -29,12 +29,17 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/supports_user_data.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/browser/renderer_host/media/media_stream_settings_requester.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/common/content_export.h"
 
 class AudioManager;
+
+namespace content {
+class ResourceContext;
+}
 
 namespace media_stream {
 
@@ -49,8 +54,15 @@ class VideoCaptureManager;
 // MediaStreamManager::Listener.
 class CONTENT_EXPORT MediaStreamManager
     : public MediaStreamProviderListener,
-      public SettingsRequester {
+      public SettingsRequester,
+      public base::SupportsUserData::Data {
  public:
+  // Returns the MediaStreamManager for the given ResourceContext. If it hasn't
+  // been created yet, it will be constructed with the given AudioManager.
+  static MediaStreamManager* GetForResourceContext(
+      content::ResourceContext* resource_context,
+      AudioManager* audio_manager);
+
   explicit MediaStreamManager(AudioManager* audio_manager);
   virtual ~MediaStreamManager();
 

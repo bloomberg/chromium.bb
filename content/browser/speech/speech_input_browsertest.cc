@@ -72,8 +72,7 @@ class FakeSpeechInputManager : public SpeechInputManager {
       const std::string& grammar,
       const std::string& origin_url,
       net::URLRequestContextGetter* context_getter,
-      content::SpeechInputPreferences* speech_input_prefs,
-      AudioManager* audio_manager) OVERRIDE {
+      content::SpeechInputPreferences* speech_input_prefs) OVERRIDE {
     VLOG(1) << "StartRecognition invoked.";
     EXPECT_EQ(0, caller_id_);
     EXPECT_EQ(NULL, delegate_);
@@ -115,20 +114,20 @@ class FakeSpeechInputManager : public SpeechInputManager {
   }
 
  protected:
-  virtual void GetRequestInfo(AudioManager* audio_manager,
-      bool* can_report_metrics,
-      std::string* request_info) OVERRIDE {}
-  virtual void ShowRecognitionRequested(int caller_id, int render_process_id,
-      int render_view_id, const gfx::Rect& element_rect) OVERRIDE {}
+  virtual void GetRequestInfo(bool* can_report_metrics,
+                              std::string* request_info) OVERRIDE {}
+  virtual void ShowRecognitionRequested(
+      int caller_id, int render_process_id, int render_view_id,
+      const gfx::Rect& element_rect) OVERRIDE {}
   virtual void ShowWarmUp(int caller_id) OVERRIDE {}
   virtual void ShowRecognizing(int caller_id) OVERRIDE {}
   virtual void ShowRecording(int caller_id) OVERRIDE {}
-  virtual void ShowInputVolume(int caller_id, float volume,
-      float noise_volume) OVERRIDE {}
-  virtual void ShowMicError(int caller_id,
-      SpeechInputManager::MicError error) OVERRIDE {}
-  virtual void ShowRecognizerError(int caller_id,
-      content::SpeechInputError error) OVERRIDE {}
+  virtual void ShowInputVolume(
+      int caller_id, float volume, float noise_volume) OVERRIDE {}
+  virtual void ShowMicError(
+      int caller_id, SpeechInputManager::MicError error) OVERRIDE {}
+  virtual void ShowRecognizerError(
+      int caller_id, content::SpeechInputError error) OVERRIDE {}
   virtual void DoClose(int caller_id) OVERRIDE {}
 
  private:

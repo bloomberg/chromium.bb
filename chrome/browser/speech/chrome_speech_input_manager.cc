@@ -19,7 +19,6 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/speech_input_result.h"
 #include "grit/generated_resources.h"
-#include "media/audio/audio_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
@@ -37,9 +36,7 @@ namespace speech_input {
 class ChromeSpeechInputManager::OptionalRequestInfo
     : public base::RefCountedThreadSafe<OptionalRequestInfo> {
  public:
-  explicit OptionalRequestInfo(AudioManager* audio_manager)
-      : can_report_metrics_(false), audio_manager_(audio_manager) {
-    DCHECK(audio_manager_);  // Fail early.
+  OptionalRequestInfo() : can_report_metrics_(false) {
   }
 
   void Refresh() {
@@ -63,13 +60,13 @@ class ChromeSpeechInputManager::OptionalRequestInfo
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
     base::AutoLock lock(lock_);
     can_report_metrics_ = true;
+    string16 device_model =
+        ChromeSpeechInputManager::GetInstance()->GetAudioInputDeviceModel();
 #if defined(OS_WIN)
     value_ = UTF16ToUTF8(
-        installer::WMIComputerSystem::GetModel() + L"|" +
-        audio_manager_->GetAudioInputDeviceModel());
+        installer::WMIComputerSystem::GetModel() + L"|" + device_model);
 #else  // defined(OS_WIN)
-    value_ = UTF16ToUTF8(
-        audio_manager_->GetAudioInputDeviceModel());
+    value_ = UTF16ToUTF8(device_model);
 #endif  // defined(OS_WIN)
   }
 
@@ -91,7 +88,6 @@ class ChromeSpeechInputManager::OptionalRequestInfo
   base::Lock lock_;
   std::string value_;
   bool can_report_metrics_;
-  AudioManager* audio_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(OptionalRequestInfo);
 };
@@ -118,12 +114,11 @@ void ChromeSpeechInputManager::ShowRecognitionRequested(
 }
 
 void ChromeSpeechInputManager::GetRequestInfo(
-    AudioManager* audio_manager,
     bool* can_report_metrics,
     std::string* request_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!optional_request_info_.get()) {
-    optional_request_info_ = new OptionalRequestInfo(audio_manager);
+    optional_request_info_ = new OptionalRequestInfo();
     // Since hardware info is optional with speech input requests, we start an
     // asynchronous fetch here and move on with recording audio. This first
     // speech input request would send an empty string for hardware info and

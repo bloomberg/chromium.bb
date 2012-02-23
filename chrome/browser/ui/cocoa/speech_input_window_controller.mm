@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/cocoa/info_bubble_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "media/audio/audio_manager.h"
 #import "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/l10n/l10n_util_mac.h"

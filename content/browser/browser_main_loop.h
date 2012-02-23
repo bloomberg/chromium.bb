@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/browser_process_sub_thread.h"
 
+class AudioManager;
 class CommandLine;
 class HighResolutionTimerManager;
 class MessageLoop;
@@ -34,6 +35,7 @@ class WebKitThread;
 
 // Implements the main browser loop stages called from |BrowserMain()|.
 // See comments in browser_main_parts.h for additional info.
+// All functions are to be called only on the UI thread unless otherwise noted.
 class BrowserMainLoop {
  public:
   explicit BrowserMainLoop(const content::MainFunctionParams& parameters);
@@ -57,6 +59,9 @@ class BrowserMainLoop {
 
   int GetResultCode() const { return result_code_; }
 
+  // Can be called on any thread.
+  static AudioManager* GetAudioManager();
+
  private:
   // For ShutdownThreadsAndCleanUp.
   friend class BrowserShutdownImpl;
@@ -78,6 +83,7 @@ class BrowserMainLoop {
   scoped_ptr<base::SystemMonitor> system_monitor_;
   scoped_ptr<HighResolutionTimerManager> hi_res_timer_manager_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
+  scoped_ptr<AudioManager> audio_manager_;
 #if defined(OS_WIN)
   scoped_ptr<SystemMessageWindowWin> system_message_window_;
 #endif
