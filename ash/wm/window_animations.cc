@@ -87,7 +87,8 @@ WindowVisibilityAnimationType GetWindowVisibilityAnimationType(
   WindowVisibilityAnimationType type =
       window->GetProperty(kWindowVisibilityAnimationTypeKey);
   if (type == WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT) {
-    return window->type() == aura::client::WINDOW_TYPE_MENU ?
+    return (window->type() == aura::client::WINDOW_TYPE_MENU ||
+            window->type() == aura::client::WINDOW_TYPE_TOOLTIP) ?
         WINDOW_VISIBILITY_ANIMATION_TYPE_FADE :
         WINDOW_VISIBILITY_ANIMATION_TYPE_DROP;
   }
