@@ -902,6 +902,13 @@ name=Firefox 3 NSS dll leak
 nspr4.dll!...
 *!NSSDecryptor::Free
 
+# We get uninit reports inside GMock when it prints the bytes of references to
+# partially initialized objects passed to unexpected method calls.
+UNINITIALIZED READ
+name=GMock printing uninit data
+...
+*!testing::internal2::PrintBytesInObjectTo
+
 ###############################################################
 # Real issues in Chromium
 
