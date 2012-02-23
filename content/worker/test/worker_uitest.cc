@@ -489,7 +489,13 @@ TEST_F(WorkerTest, LimitPerPage) {
   ASSERT_TRUE(WaitForProcessCountToBe(1, max_workers_per_tab));
 }
 
-TEST_F(WorkerTest, LimitTotal) {
+// http://crbug.com/36800
+#if defined(OS_WIN)
+#define MAYBE_LimitTotal DISABLE_LimitTotal
+#else
+#define MAYBE_LimitTotal LimitTotal
+#endif // defined(OS_WIN)
+TEST_F(WorkerTest, MAYBE_LimitTotal) {
   int max_workers_per_tab = WorkerServiceImpl::kMaxWorkersPerTabWhenSeparate;
   int total_workers = WorkerServiceImpl::kMaxWorkersWhenSeparate;
 
