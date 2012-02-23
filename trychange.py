@@ -535,10 +535,14 @@ def TryChange(argv,
   parser.add_option_group(group)
 
   group = optparse.OptionGroup(parser, "Try job options")
-  group.add_option("-b", "--bot", action="append",
-                    help="Only use specifics build slaves, ex: "
-                         "'--bot win,layout_mac'; see the try "
-                         "server waterfall for the slave's name")
+  group.add_option(
+      "-b", "--bot", action="append",
+      help=("IMPORTANT: specify ONE builder per --bot flag. Use it multiple "
+            "times to specify multiple builders. ex: "
+            "'-bwin_rel:ui_tests,webkit_unit_tests -bwin_layout'. See "
+            "the try server waterfall for the builders name and the tests "
+            "available. Can also be used to specify gtest_filter, e.g. "
+            "-bwin_rel:base_unittests:ValuesTest.*Value"))
   group.add_option("-B", "--print_bots", action="store_true",
                     help="Print bots we would use (e.g. from PRESUBMIT.py)"
                          " and exit.  Do not send patch.  Like --dry_run"
@@ -558,13 +562,11 @@ def TryChange(argv,
                    help="Override which project to use. Projects are defined "
                         "server-side to define what default bot set to use")
 
-  group.add_option("-t", "--testfilter", action="append", default=[],
-                   help="Add a gtest_filter to a test. Use multiple times to "
-                        "specify filters for different tests. (i.e. "
-                        "--testfilter base_unittests:ThreadTest.* "
-                        "--testfilter ui_tests) If you specify any testfilters "
-                        "the test results will not be reported in rietveld and "
-                        "only tests with filters will run.")
+  group.add_option(
+      "-t", "--testfilter", action="append", default=[],
+      help=("Apply a testfilter to all the selected builders. Unless the "
+            "builders configurations are similar, use multiple "
+            "--bot <builder>:<test> arguments."))
 
   parser.add_option_group(group)
 
