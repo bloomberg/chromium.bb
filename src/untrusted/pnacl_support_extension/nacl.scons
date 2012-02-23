@@ -10,7 +10,11 @@ if not env.Bit('bitcode'):
   Return()
 
 arch = env['TARGET_FULLARCH']
-df_arch = arch.replace('-', '')
+
+def StandardArch(arch):
+  return {'x86-32': 'i686',
+          'x86-64': 'x86_64',
+          'arm': 'armv7'}[arch]
 
 nacl_dir = '${SOURCE_ROOT}/native_client/'
 # Figure out the input dependencies
@@ -19,9 +23,11 @@ pnacl_crx_inputs = [
     nacl_dir + 'pnacl/pnacl_packaging/pnacl_manifest_template.json']
 
 # Depends on the static (newlib) llc and ld, along with the native libs.
+translator_bin = ('${MAIN_DIR}/toolchain/pnacl_translator/%s/bin' %
+                  StandardArch(arch))
 pnacl_crx_inputs += env.Glob('${PNACL_ROOT}/lib-%s/*' % arch)
-pnacl_crx_inputs += [ '${PNACL_ROOT}/tools-sb/%s/srpc/bin/llc' % df_arch,
-                      '${PNACL_ROOT}/tools-sb/%s/srpc/bin/ld' % df_arch]
+pnacl_crx_inputs += ['%s/llc.nexe' % translator_bin,
+                     '%s/ld.nexe' % translator_bin]
 
 
 # Override the IRT shim with the latest one built in scons-out.

@@ -69,8 +69,10 @@ def PnaclBuildArch():
 
 PNACL_BUILD_ARCH = PnaclBuildArch()
 
-def DashFreeArch(arch):
-  return arch.replace('-', '')
+def StandardArch(arch):
+  return {'x86-32': 'i686',
+          'x86-64': 'x86_64',
+          'arm'   : 'armv7'}[arch]
 
 ARCHES=['x86-32', 'x86-64', 'arm']
 
@@ -193,14 +195,14 @@ class PnaclPackaging(object):
 ######################################################################
 
 class PnaclDirs(object):
-
-  output_dir = J(NACL_ROOT, 'toolchain', 'pnacl-package')
+  toolchain_dir = J(NACL_ROOT, 'toolchain')
+  output_dir = J(toolchain_dir, 'pnacl-package')
 
   @staticmethod
   def BaseDir():
     pnacl_dir = 'pnacl_%s_%s' % (PNACL_BUILD_PLATFORM,
                                  PNACL_BUILD_ARCH)
-    return J(NACL_ROOT, 'toolchain', pnacl_dir)
+    return J(PnaclDirs.toolchain_dir, pnacl_dir)
 
   @staticmethod
   def LibDir(target_arch):
@@ -209,11 +211,8 @@ class PnaclDirs(object):
   @staticmethod
   def SandboxedCompilerDir(target_arch):
     # Choose newlib's LLC and LD to simplify startup of those nexes.
-    return J(PnaclDirs.BaseDir(),
-             'tools-sb',
-             DashFreeArch(target_arch),
-             'srpc',
-             'bin')
+    return J(PnaclDirs.toolchain_dir,
+             'pnacl_translator', StandardArch(target_arch), 'bin')
 
   @staticmethod
   def SetOutputDir(d):
@@ -312,6 +311,10 @@ def BuildArchCRX(version_quad, arch, lib_overrides, options):
 
   # Copy llc and ld.
   copytree_existing(PnaclDirs.SandboxedCompilerDir(arch), target_dir)
+
+  # Rename llc.nexe to llc, ld.nexe to ld
+  for tool in ('llc', 'ld'):
+    shutil.move(J(target_dir, '%s.nexe' % tool), J(target_dir, tool))
 
   # Copy native newlib deps, and glibc deps.
   copytree_existing(PnaclDirs.LibDir(arch), target_dir)

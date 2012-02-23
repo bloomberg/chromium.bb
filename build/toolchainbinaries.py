@@ -14,28 +14,32 @@ BASE_DOWNLOAD_URL = \
 
 PLATFORM_MAPPING = {
     'windows': {
-        'x86-32': ['win_x86', 'win_x86_newlib'],
-        'x86-64': ['win_x86', 'win_x86_newlib'],
+        'x86-32': ['win_x86', 'win_x86_newlib', 'pnacl_translator'],
+        'x86-64': ['win_x86', 'win_x86_newlib', 'pnacl_translator'],
     },
     'linux': {
         'x86-32': ['linux_x86',
                    'linux_x86_newlib',
                    'pnacl_linux_i686',
-                   'linux_arm-trusted'],
+                   'linux_arm-trusted',
+                   'pnacl_translator'],
         'x86-64': ['linux_x86',
                    'linux_x86_newlib',
                    'pnacl_linux_x86_64',
-                   'linux_arm-trusted'],
+                   'linux_arm-trusted',
+                   'pnacl_translator'],
         'arm'   : ['linux_x86_newlib',
                    'pnacl_linux_x86_64',
-                   'linux_arm-trusted'],
+                   'linux_arm-trusted',
+                   'pnacl_translator'],
     },
     'mac': {
-        'x86-32': ['mac_x86', 'mac_x86_newlib', 'pnacl_darwin_i386'],
-        'x86-64': ['mac_x86', 'mac_x86_newlib', 'pnacl_darwin_i386'],
+        'x86-32': ['mac_x86', 'mac_x86_newlib',
+                   'pnacl_darwin_i386', 'pnacl_translator'],
+        'x86-64': ['mac_x86', 'mac_x86_newlib',
+                   'pnacl_darwin_i386', 'pnacl_translator'],
     },
 }
-
 
 def EncodeToolchainUrl(base_url, version, flavor):
   if 'pnacl' in flavor:
