@@ -94,11 +94,6 @@ FileManager.prototype = {
   var localStrings;
 
   /**
-   * Regexp for archive files. Used to show mount-archive task.
-   */
-  const ARCHIVES_REGEXP = /.zip$/;
-
-  /**
    * Item for the Grid View.
    * @constructor
    */

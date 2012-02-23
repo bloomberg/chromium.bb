@@ -48,6 +48,13 @@ FileType.types = {
 
   // Others
   'zip': {type: 'archive', name: 'ZIP_ARCHIVE_FILE_TYPE'},
+  'rar': {type: 'archive', name: 'RAR_ARCHIVE_FILE_TYPE'},
+  'tar': {type: 'archive', name: 'TAR_ARCHIVE_FILE_TYPE'},
+  'tar.bz2': {type: 'archive', name: 'TAR_BZIP2_ARCHIVE_FILE_TYPE'},
+  'tbz': {type: 'archive', name: 'TAR_BZIP2_ARCHIVE_FILE_TYPE'},
+  'tbz2': {type: 'archive', name: 'TAR_BZIP2_ARCHIVE_FILE_TYPE'},
+  'tar.gz': {type: 'archive', name: 'TAR_GZIP_ARCHIVE_FILE_TYPE'},
+  'tgz': {type: 'archive', name: 'TAR_GZIP_ARCHIVE_FILE_TYPE'},
 
   'pdf': {type: 'text', icon: 'pdf', name: 'PDF_DOCUMENT_FILE_TYPE',
           subtype: 'PDF'},

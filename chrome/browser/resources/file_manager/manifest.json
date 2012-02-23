@@ -58,6 +58,13 @@
       "default_title": "__MSG_MOUNT_ARCHIVE__",
       "default_icon": "images/icon_mount_archive_16x16.png",
       "file_filters": [
+        "filesystem:*.rar",
+        "filesystem:*.tar",
+        "filesystem:*.tar.bz2",
+        "filesystem:*.tar.gz",
+        "filesystem:*.tbz",
+        "filesystem:*.tbz2",
+        "filesystem:*.tgz",
         "filesystem:*.zip"
       ]
     },

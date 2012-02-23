@@ -9953,10 +9953,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Unable to open open "$1": $2
       </message>
       <message name="IDS_FILE_BROWSER_MOUNT_ARCHIVE" desc="Title of the action for mounting an archive file to work with its contents.">
-        Open zip file
-      </message>
-      <message name="IDS_FILE_BROWSER_UNMOUNT_ARCHIVE" desc="Title of the action for unmounting the archive file.">
-        Close archive
+        Open
       </message>
       <message name="IDS_FILE_BROWSER_FORMAT_DEVICE" desc="Title of the action for formatting removable device.">
         Format device
@@ -10245,6 +10242,18 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <message name="IDS_FILE_BROWSER_ZIP_ARCHIVE_FILE_TYPE" desc="Zip archive file type">
         Zip archive
+      </message>
+      <message name="IDS_FILE_BROWSER_RAR_ARCHIVE_FILE_TYPE" desc="RAR archive file type">
+        RAR archive
+      </message>
+      <message name="IDS_FILE_BROWSER_TAR_ARCHIVE_FILE_TYPE" desc="Tar archive file type">
+        Tar archive
+      </message>
+      <message name="IDS_FILE_BROWSER_TAR_BZIP2_ARCHIVE_FILE_TYPE" desc="Bzip2 compressed tar archive file type">
+        Bzip2 compressed tar archive
+      </message>
+      <message name="IDS_FILE_BROWSER_TAR_GZIP_ARCHIVE_FILE_TYPE" desc="Gzip compressed tar archive file type">
+        Gzip compressed tar archive
       </message>
       <message name="IDS_FILE_BROWSER_PLAIN_TEXT_FILE_TYPE" desc="Plain text file type">
         Plain text
