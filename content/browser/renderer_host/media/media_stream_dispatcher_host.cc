@@ -57,17 +57,15 @@ void MediaStreamDispatcherHost::OnChannelClosing() {
   BrowserMessageFilter::OnChannelClosing();
   DVLOG(1) << "MediaStreamDispatcherHost::OnChannelClosing";
 
-  // TODO(mflodman) Remove this temporary solution when shut-down issue is
-  // resolved, i.e. uncomment the code below.
-  // Since the IPC channel is gone, close all requested VideCaptureDevices and
-  // cancel pending requests.
-//  manager()->CancelRequests(this);
-//  for (StreamMap::iterator it = streams_.begin();
-//       it != streams_.end();
-//       it++) {
-//    std::string label = it->first;
-//    manager()->StopGeneratedStream(label);
-//  }
+  // Since the IPC channel is gone, cancel pending requests and close all
+  // requested VideCaptureDevices.
+  manager()->CancelRequests(this);
+  for (StreamMap::iterator it = streams_.begin();
+       it != streams_.end();
+       it++) {
+    std::string label = it->first;
+    manager()->StopGeneratedStream(label);
+  }
 }
 
 void MediaStreamDispatcherHost::OnGenerateStream(

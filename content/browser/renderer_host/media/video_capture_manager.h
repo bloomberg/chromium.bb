@@ -123,7 +123,6 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
       const StreamDeviceInfo& device_info);
   bool IsOnCaptureDeviceThread() const;
   media::VideoCaptureDevice* GetDeviceInternal(int capture_session_id);
-  void TerminateOnDeviceThread();
 
   // Thread for all calls to VideoCaptureDevice.
   base::Thread vc_device_thread_;
