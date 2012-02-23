@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -83,14 +83,12 @@ case ${BUILD_OS}-${BUILD_ARCH} in
     ;;
   win-32)
     TOOLCHAIN_LABEL=pnacl_windows_i686
-    # TODO(pdox): Add browser tests when sand-boxed translator is available.
-    RUN_TESTS="x86-32"
+    RUN_TESTS="x86-32 x86-32-browser"
     ;;
   win-64)
     TOOLCHAIN_LABEL=pnacl_windows_i686
     BUILD_32BIT_PLUGIN=true
-    # TODO(pdox): Add browser tests when sand-boxed translator is available.
-    RUN_TESTS="x86-64"
+    RUN_TESTS="x86-64 x86-64-browser"
     ;;
   *)
     echo -n "*** UNRECOGNIZED CONFIGURATION: "
