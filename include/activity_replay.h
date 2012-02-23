@@ -7,6 +7,7 @@
 
 #include <string>
 #include <tr1/memory>
+#include <set>
 
 #include <base/values.h>
 
@@ -26,6 +27,8 @@ class ActivityReplay {
   explicit ActivityReplay(PropRegistry* prop_reg);
   // Returns true on success.
   bool Parse(const std::string& data);
+  // An empty set means honor all properties
+  bool Parse(const std::string& data, const std::set<std::string>& honor_props);
 
   // If there is any unexpected behavior, replay continues, but false is
   // returned, otherwise true is returned.
@@ -33,7 +36,8 @@ class ActivityReplay {
 
  private:
   // These return true on success
-  bool ParseProperties(DictionaryValue* dict);
+  bool ParseProperties(DictionaryValue* dict,
+                       const std::set<std::string>& honor_props);
   bool ParseHardwareProperties(DictionaryValue* obj,
                                HardwareProperties* out_props);
   bool ParseEntry(DictionaryValue* entry);

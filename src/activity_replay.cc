@@ -11,6 +11,7 @@
 
 #include "gestures/include/logging.h"
 #include "gestures/include/prop_registry.h"
+#include "gestures/include/set.h"
 #include "gestures/include/util.h"
 
 using std::set;
@@ -22,6 +23,12 @@ ActivityReplay::ActivityReplay(PropRegistry* prop_reg)
     : log_(NULL), prop_reg_(prop_reg) {}
 
 bool ActivityReplay::Parse(const string& data) {
+  std::set<string> emptyset;
+  return Parse(data, emptyset);
+}
+
+bool ActivityReplay::Parse(const string& data,
+                           const std::set<string>& honor_props) {
   log_.Clear();
   names_.clear();
 
@@ -42,7 +49,7 @@ bool ActivityReplay::Parse(const string& data) {
   // Get and apply user-configurable properties
   DictionaryValue* props_dict = NULL;
   if (dict->GetDictionary(ActivityLog::kKeyProperties, &props_dict) &&
-      !ParseProperties(props_dict)) {
+      !ParseProperties(props_dict, honor_props)) {
     Err("Unable to parse properties.");
     return false;
   }
@@ -72,13 +79,16 @@ bool ActivityReplay::Parse(const string& data) {
   return true;
 }
 
-bool ActivityReplay::ParseProperties(DictionaryValue* dict) {
+bool ActivityReplay::ParseProperties(DictionaryValue* dict,
+                                     const std::set<string>& honor_props) {
   if (!prop_reg_)
     return true;
-  set<Property*> props = prop_reg_->props();
-  for (set<Property*>::const_iterator it = props.begin(), e = props.end();
+  ::set<Property*> props = prop_reg_->props();
+  for (::set<Property*>::const_iterator it = props.begin(), e = props.end();
        it != e; ++it) {
     const char* key = (*it)->name();
+    if (!honor_props.empty() && !SetContainsValue(honor_props, string(key)))
+      continue;
     Value* value = NULL;
     if (!dict->Get(key, &value)) {
       Err("Log doesn't have value for property %s", key);
@@ -475,9 +485,9 @@ bool ActivityReplay::ReplayPropChange(
     Err("Missing prop registry.");
     return false;
   }
-  set<Property*> props = prop_reg_->props();
+  ::set<Property*> props = prop_reg_->props();
   Property* prop = NULL;
-  for (set<Property*>::iterator it = props.begin(), e = props.end(); it != e;
+  for (::set<Property*>::iterator it = props.begin(), e = props.end(); it != e;
        ++it) {
     prop = *it;
     if (strcmp(prop->name(), entry.name) == 0)
