@@ -23,6 +23,7 @@
 
 #define _GNU_SOURCE
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,6 +32,7 @@
 
 #include <xf86drm.h>
 #include <xf86drmMode.h>
+#include <drm_fourcc.h>
 
 #include <gbm.h>
 
@@ -50,9 +52,13 @@ struct drm_compositor {
 		int fd;
 	} drm;
 	struct gbm_device *gbm;
+	uint32_t *crtcs;
+	int num_crtcs;
 	uint32_t crtc_allocator;
 	uint32_t connector_allocator;
 	struct tty *tty;
+
+	struct wl_list sprite_list;
 
 	uint32_t prev_state;
 };
@@ -81,6 +87,66 @@ struct drm_output {
 	struct wl_buffer *pending_scanout_buffer;
 	struct wl_listener pending_scanout_buffer_destroy_listener;
 };
+
+/*
+ * An output has a primary display plane plus zero or more sprites for
+ * blending display contents.
+ */
+struct drm_sprite {
+	struct wl_list link;
+
+	uint32_t fb_id;
+	uint32_t pending_fb_id;
+	struct weston_surface *surface;
+	struct weston_surface *pending_surface;
+
+	struct drm_compositor *compositor;
+
+	struct wl_listener destroy_listener;
+	struct wl_listener pending_destroy_listener;
+
+	uint32_t possible_crtcs;
+	uint32_t plane_id;
+	uint32_t count_formats;
+
+	int32_t src_x, src_y;
+	uint32_t src_w, src_h;
+	uint32_t dest_x, dest_y;
+	uint32_t dest_w, dest_h;
+
+	uint32_t formats[];
+};
+
+static int
+surface_is_primary(struct weston_compositor *ec, struct weston_surface *es)
+{
+	struct weston_surface *primary;
+
+	primary = container_of(ec->surface_list.next, struct weston_surface,
+			       link);
+	if (es == primary)
+		return -1;
+	return 0;
+}
+
+static int
+drm_sprite_crtc_supported(struct weston_output *output_base, uint32_t supported)
+{
+	struct weston_compositor *ec = output_base->compositor;
+	struct drm_compositor *c =(struct drm_compositor *) ec;
+	struct drm_output *output = (struct drm_output *) output_base;
+	int crtc;
+
+	for (crtc = 0; crtc < c->num_crtcs; crtc++) {
+		if (c->crtcs[crtc] != output->crtc_id)
+			continue;
+
+		if (supported & (1 << crtc))
+			return -1;
+	}
+
+	return 0;
+}
 
 static int
 drm_output_prepare_scanout_surface(struct drm_output *output)
@@ -152,7 +218,9 @@ drm_output_repaint(struct weston_output *output_base)
 	struct drm_compositor *compositor =
 		(struct drm_compositor *) output->base.compositor;
 	struct weston_surface *surface;
+	struct drm_sprite *s;
 	uint32_t fb_id = 0;
+	int ret = 0;
 
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER,
 				  GL_COLOR_ATTACHMENT0,
@@ -184,7 +252,68 @@ drm_output_repaint(struct weston_output *output_base)
 		return;
 	}
 
+	/*
+	 * Now, update all the sprite surfaces
+	 */
+	wl_list_for_each(s, &compositor->sprite_list, link) {
+		uint32_t flags = 0;
+		drmVBlank vbl = {
+			.request.type = DRM_VBLANK_RELATIVE | DRM_VBLANK_EVENT,
+			.request.sequence = 1,
+		};
+
+		if (!drm_sprite_crtc_supported(output_base, s->possible_crtcs))
+			continue;
+
+		ret = drmModeSetPlane(compositor->drm.fd, s->plane_id,
+				      output->crtc_id, s->pending_fb_id, flags,
+				      s->dest_x, s->dest_y,
+				      s->dest_w, s->dest_h,
+				      s->src_x, s->src_y,
+				      s->src_w, s->src_h);
+		if (ret)
+			fprintf(stderr, "setplane failed: %d: %s\n",
+				ret, strerror(errno));
+
+		/*
+		 * Queue a vblank signal so we know when the surface
+		 * becomes active on the display or has been replaced.
+		 */
+		vbl.request.signal = (unsigned long)s;
+		ret = drmWaitVBlank(compositor->drm.fd, &vbl);
+		if (ret) {
+			fprintf(stderr, "vblank event request failed: %d: %s\n",
+				ret, strerror(errno));
+		}
+	}
+
 	return;
+}
+
+static void
+vblank_handler(int fd, unsigned int frame, unsigned int sec, unsigned int usec,
+	       void *data)
+{
+	struct drm_sprite *s = (struct drm_sprite *)data;
+	struct drm_compositor *c = s->compositor;
+
+	if (s->surface) {
+		weston_buffer_post_release(s->surface->buffer);
+		wl_list_remove(&s->destroy_listener.link);
+		s->surface = NULL;
+		drmModeRmFB(c->drm.fd, s->fb_id);
+		s->fb_id = 0;
+	}
+
+	if (s->pending_surface) {
+		wl_list_remove(&s->pending_destroy_listener.link);
+		wl_list_insert(s->pending_surface->buffer->resource.destroy_listener_list.prev,
+			       &s->destroy_listener.link);
+		s->surface = s->pending_surface;
+		s->pending_surface = NULL;
+		s->fb_id = s->pending_fb_id;
+		s->pending_fb_id = 0;
+	}
 }
 
 static void
@@ -216,6 +345,235 @@ page_flip_handler(int fd, unsigned int frame,
 
 	msecs = sec * 1000 + usec / 1000;
 	weston_output_finish_frame(&output->base, msecs);
+}
+
+static int
+drm_surface_format_supported(struct drm_sprite *s, uint32_t format)
+{
+	int i;
+
+	for (i = 0; i < s->count_formats; i++)
+		if (s->formats[i] == format)
+			return 1;
+
+	return 0;
+}
+
+static int
+drm_surface_transform_supported(struct weston_surface *es)
+{
+	if (es->transform.enabled)
+		return 0;
+
+	return 1;
+}
+
+static int
+drm_surface_overlap_supported(struct weston_output *output_base,
+			      pixman_region32_t *overlap)
+{
+	/* We could potentially use a color key here if the surface left
+	 * to display has rectangular regions
+	 */
+	if (pixman_region32_not_empty(overlap))
+		return 0;
+	return 1;
+}
+
+static void
+drm_disable_unused_sprites(struct weston_output *output_base)
+{
+	struct weston_compositor *ec = output_base->compositor;
+	struct drm_compositor *c =(struct drm_compositor *) ec;
+	struct drm_output *output = (struct drm_output *) output_base;
+	struct drm_sprite *s;
+	int ret;
+
+	wl_list_for_each(s, &c->sprite_list, link) {
+		if (s->pending_fb_id)
+			continue;
+
+		ret = drmModeSetPlane(c->drm.fd, s->plane_id,
+				      output->crtc_id, 0, 0,
+				      0, 0, 0, 0, 0, 0, 0, 0);
+		if (ret)
+			fprintf(stderr,
+				"failed to disable plane: %d: %s\n",
+				ret, strerror(errno));
+		drmModeRmFB(c->drm.fd, s->fb_id);
+		s->surface = NULL;
+		s->pending_surface = NULL;
+		s->fb_id = 0;
+		s->pending_fb_id = 0;
+	}
+}
+
+/*
+ * This function must take care to damage any previously assigned surface
+ * if the sprite ends up binding to a different surface than in the
+ * previous frame.
+ */
+static int
+drm_output_prepare_overlay_surface(struct weston_output *output_base,
+				   struct weston_surface *es,
+				   pixman_region32_t *overlap)
+{
+	struct weston_compositor *ec = output_base->compositor;
+	struct drm_compositor *c =(struct drm_compositor *) ec;
+	struct drm_sprite *s;
+	int found = 0;
+	EGLint handle, stride;
+	struct gbm_bo *bo;
+	uint32_t fb_id = 0;
+	uint32_t handles[4], pitches[4], offsets[4];
+	int ret = 0;
+	pixman_region32_t dest_rect, src_rect;
+	pixman_box32_t *box;
+	uint32_t format;
+
+	if (surface_is_primary(ec, es))
+		return -1;
+
+	if (!es->buffer)
+		return -1;
+
+	if (!drm_surface_transform_supported(es))
+		return -1;
+
+	if (!drm_surface_overlap_supported(output_base, overlap))
+		return -1;
+
+	wl_list_for_each(s, &c->sprite_list, link) {
+		if (!drm_sprite_crtc_supported(output_base, s->possible_crtcs))
+			continue;
+
+		if (!s->pending_fb_id) {
+			found = 1;
+			break;
+		}
+	}
+
+	/* No sprites available */
+	if (!found)
+		return -1;
+
+	bo = gbm_bo_create_from_egl_image(c->gbm, c->base.display, es->image,
+					  es->geometry.width, es->geometry.height,
+					  GBM_BO_USE_SCANOUT);
+	format = gbm_bo_get_format(bo);
+	handle = gbm_bo_get_handle(bo).s32;
+	stride = gbm_bo_get_pitch(bo);
+
+	gbm_bo_destroy(bo);
+
+	if (!drm_surface_format_supported(s, format))
+		return -1;
+
+	if (!handle)
+		return -1;
+
+	handles[0] = handle;
+	pitches[0] = stride;
+	offsets[0] = 0;
+
+	ret = drmModeAddFB2(c->drm.fd, es->geometry.width, es->geometry.height,
+			    format, handles, pitches, offsets,
+			    &fb_id, 0);
+	if (ret) {
+		fprintf(stderr, "addfb2 failed: %d\n", ret);
+		return -1;
+	}
+
+	if (s->surface && s->surface != es) {
+		struct weston_surface *old_surf = s->surface;
+		pixman_region32_fini(&old_surf->damage);
+		pixman_region32_init_rect(&old_surf->damage,
+					  old_surf->geometry.x, old_surf->geometry.y,
+					  old_surf->geometry.width, old_surf->geometry.height);
+	}
+
+	s->pending_fb_id = fb_id;
+	s->pending_surface = es;
+	es->buffer->busy_count++;
+
+	/*
+	 * Calculate the source & dest rects properly based on actual
+	 * postion (note the caller has called weston_surface_update_transform()
+	 * for us already).
+	 */
+	pixman_region32_init(&dest_rect);
+	pixman_region32_intersect(&dest_rect, &es->transform.boundingbox,
+				  &output_base->region);
+	pixman_region32_translate(&dest_rect, -output_base->x, -output_base->y);
+	box = pixman_region32_extents(&dest_rect);
+	s->dest_x = box->x1;
+	s->dest_y = box->y1;
+	s->dest_w = box->x2 - box->x1;
+	s->dest_h = box->y2 - box->y1;
+	pixman_region32_fini(&dest_rect);
+
+	pixman_region32_init(&src_rect);
+	pixman_region32_intersect(&src_rect, &es->transform.boundingbox,
+				  &output_base->region);
+	pixman_region32_translate(&src_rect, -es->geometry.x, -es->geometry.y);
+	box = pixman_region32_extents(&src_rect);
+	s->src_x = box->x1;
+	s->src_y = box->y1;
+	s->src_w = box->x2 - box->x1;
+	s->src_h = box->y2 - box->y1;
+	pixman_region32_fini(&src_rect);
+
+
+	wl_list_insert(es->buffer->resource.destroy_listener_list.prev,
+		       &s->pending_destroy_listener.link);
+	return 0;
+}
+
+static void
+drm_assign_planes(struct weston_output *output)
+{
+	struct weston_compositor *ec = output->compositor;
+	struct weston_surface *es;
+	pixman_region32_t overlap, surface_overlap;
+
+	/*
+	 * Find a surface for each sprite in the output using some heuristics:
+	 * 1) size
+	 * 2) frequency of update
+	 * 3) opacity (though some hw might support alpha blending)
+	 * 4) clipping (this can be fixed with color keys)
+	 *
+	 * The idea is to save on blitting since this should save power.
+	 * If we can get a large video surface on the sprite for example,
+	 * the main display surface may not need to update at all, and
+	 * the client buffer can be used directly for the sprite surface
+	 * as we do for flipping full screen surfaces.
+	 */
+	pixman_region32_init(&overlap);
+	wl_list_for_each(es, &ec->surface_list, link) {
+		weston_surface_update_transform(es);
+
+		/*
+		 * FIXME: try to assign hw cursors here too, they're just
+		 * special overlays
+		 */
+		pixman_region32_init(&surface_overlap);
+		pixman_region32_intersect(&surface_overlap, &overlap,
+					  &es->transform.boundingbox);
+
+		if (!drm_output_prepare_overlay_surface(output, es,
+							&surface_overlap)) {
+			pixman_region32_fini(&es->damage);
+			pixman_region32_init(&es->damage);
+		} else {
+			pixman_region32_union(&overlap, &overlap,
+					      &es->transform.boundingbox);
+		}
+		pixman_region32_fini(&surface_overlap);
+	}
+	pixman_region32_fini(&overlap);
+
+	drm_disable_unused_sprites(output);
 }
 
 static int
@@ -344,6 +702,7 @@ on_drm_input(int fd, uint32_t mask, void *data)
 	memset(&evctx, 0, sizeof evctx);
 	evctx.version = DRM_EVENT_CONTEXT_VERSION;
 	evctx.page_flip_handler = page_flip_handler;
+	evctx.vblank_handler = vblank_handler;
 	drmHandleEvent(fd, &evctx);
 
 	return 1;
@@ -488,6 +847,30 @@ output_handle_pending_scanout_buffer_destroy(struct wl_listener *listener,
 	weston_compositor_schedule_repaint(output->base.compositor);
 }
 
+static void
+sprite_handle_buffer_destroy(struct wl_listener *listener,
+			     struct wl_resource *resource,
+			     uint32_t time)
+{
+	struct drm_sprite *sprite =
+		container_of(listener, struct drm_sprite,
+			     destroy_listener);
+
+	sprite->surface = NULL;
+}
+
+static void
+sprite_handle_pending_buffer_destroy(struct wl_listener *listener,
+				     struct wl_resource *resource,
+				     uint32_t time)
+{
+	struct drm_sprite *sprite =
+		container_of(listener, struct drm_sprite,
+			     pending_destroy_listener);
+
+	sprite->pending_surface = NULL;
+}
+
 static int
 create_output_for_connector(struct drm_compositor *ec,
 			    drmModeRes *resources,
@@ -621,7 +1004,7 @@ create_output_for_connector(struct drm_compositor *ec,
 	output->base.repaint = drm_output_repaint;
 	output->base.set_hardware_cursor = drm_output_set_cursor;
 	output->base.destroy = drm_output_destroy;
-	output->base.assign_planes = NULL;
+	output->base.assign_planes = drm_assign_planes;
 
 	return 0;
 
@@ -657,6 +1040,60 @@ err_free:
 	return -1;
 }
 
+static void
+create_sprites(struct drm_compositor *ec)
+{
+	struct drm_sprite *sprite;
+	drmModePlaneRes *plane_res;
+	drmModePlane *plane;
+	int i;
+
+	plane_res = drmModeGetPlaneResources(ec->drm.fd);
+	if (!plane_res) {
+		fprintf(stderr, "failed to get plane resources: %s\n",
+			strerror(errno));
+		return;
+	}
+
+	for (i = 0; i < plane_res->count_planes; i++) {
+		plane = drmModeGetPlane(ec->drm.fd, plane_res->planes[i]);
+		if (!plane)
+			continue;
+
+		sprite = malloc(sizeof(*sprite) + ((sizeof(uint32_t)) *
+						   plane->count_formats));
+		if (!sprite) {
+			fprintf(stderr, "%s: out of memory\n",
+				__func__);
+			free(plane);
+			continue;
+		}
+
+		memset(sprite, 0, sizeof *sprite);
+
+		sprite->possible_crtcs = plane->possible_crtcs;
+		sprite->plane_id = plane->plane_id;
+		sprite->surface = NULL;
+		sprite->pending_surface = NULL;
+		sprite->fb_id = 0;
+		sprite->pending_fb_id = 0;
+		sprite->destroy_listener.func = sprite_handle_buffer_destroy;
+		sprite->pending_destroy_listener.func =
+			sprite_handle_pending_buffer_destroy;
+		sprite->compositor = ec;
+		sprite->count_formats = plane->count_formats;
+		memcpy(sprite->formats, plane->formats,
+		       plane->count_formats);
+		drmModeFreePlane(plane);
+
+		wl_list_insert(&ec->sprite_list, &sprite->link);
+	}
+
+	free(plane_res->planes);
+	free(plane_res);
+}
+
+
 static int
 create_outputs(struct drm_compositor *ec, int option_connector)
 {
@@ -670,6 +1107,13 @@ create_outputs(struct drm_compositor *ec, int option_connector)
 		fprintf(stderr, "drmModeGetResources failed\n");
 		return -1;
 	}
+
+	ec->crtcs = calloc(resources->count_crtcs, sizeof(uint32_t));
+	if (!ec->crtcs)
+		return -1;
+
+	ec->num_crtcs = resources->count_crtcs;
+	memcpy(ec->crtcs, resources->crtcs, sizeof(uint32_t) * ec->num_crtcs);
 
 	for (i = 0; i < resources->count_connectors; i++) {
 		connector = drmModeGetConnector(ec->drm.fd,
@@ -1001,6 +1445,9 @@ drm_compositor_create(struct wl_display *display,
 	/* Can't init base class until we have a current egl context */
 	if (weston_compositor_init(&ec->base, display) < 0)
 		return NULL;
+
+	wl_list_init(&ec->sprite_list);
+	create_sprites(ec);
 
 	if (create_outputs(ec, connector) < 0) {
 		fprintf(stderr, "failed to create output for %s\n", path);
