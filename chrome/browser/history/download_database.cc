@@ -125,6 +125,7 @@ void DownloadDatabase::QueryDownloads(
   results->clear();
   if (next_db_handle_ < 1)
     next_db_handle_ = 1;
+  std::set<DownloadID> db_handles;
 
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "SELECT id, full_path, url, start_time, received_bytes, "
@@ -146,6 +147,11 @@ void DownloadDatabase::QueryDownloads(
     results->push_back(info);
     if (info.db_handle >= next_db_handle_)
       next_db_handle_ = info.db_handle + 1;
+    if (!db_handles.insert(info.db_handle).second) {
+      // info.db_handle was already in db_handles. The database is corrupt.
+      base::debug::Alias(&info.db_handle);
+      CHECK_96627(false);
+    }
   }
 }
 

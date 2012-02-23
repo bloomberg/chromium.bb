@@ -912,12 +912,23 @@ void DownloadManagerImpl::OnPersistentStoreQueryComplete(
   // http://crbug.com/96627 is fixed.
   largest_db_handle_in_history_ = 0;
 
+  // This method should be called exactly once, except for tests that call it
+  // directly. Such tests have empty histories, so (history_downloads_.size() ==
+  // 0 && entries->size() != 0) the first time that this method is called, and
+  // (history_downloads_.size() != 0 && entries->size() == 0) the second time
+  // that this method is called in those tests.
+  CHECK_96627((entries->size() == 0) ||
+              (0 == history_downloads_.size()));
+
   for (size_t i = 0; i < entries->size(); ++i) {
+    int64 db_handle = entries->at(i).db_handle;
+    base::debug::Alias(&db_handle);
+    CHECK_96627(!ContainsKey(history_downloads_, db_handle));
+
     net::BoundNetLog bound_net_log =
         net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD);
     DownloadItem* download = new DownloadItemImpl(
         this, GetNextId(), entries->at(i), bound_net_log);
-    CHECK_96627(!ContainsKey(history_downloads_, download->GetDbHandle()));
     downloads_.insert(download);
     history_downloads_[download->GetDbHandle()] = download;
     VLOG(20) << __FUNCTION__ << "()" << i << ">"
