@@ -577,10 +577,12 @@ ui::GestureStatus RootWindow::ProcessGestureEvent(Window* target,
     // The gesture was unprocessed. Generate corresponding mouse events here
     // (e.g. tap to click).
     switch (event->type()) {
-      case ui::ET_GESTURE_TAP: {
+      case ui::ET_GESTURE_TAP:
+      case ui::ET_GESTURE_DOUBLE_TAP: {
         // Tap should be processed as a click. So generate the following
         // sequence of mouse events: MOUSE_ENTERED, MOUSE_PRESSED,
         // MOUSE_RELEASED and MOUSE_EXITED.
+        // Double-tap generates a double click.
         ui::EventType types[] = { ui::ET_MOUSE_ENTERED,
                                   ui::ET_MOUSE_PRESSED,
                                   ui::ET_MOUSE_RELEASED,
@@ -589,8 +591,13 @@ ui::GestureStatus RootWindow::ProcessGestureEvent(Window* target,
                                 };
         gesture_handler_ = target;
         for (ui::EventType* type = types; *type != ui::ET_UNKNOWN; ++type) {
+          int flags = event->flags();
+          if (event->type() == ui::ET_GESTURE_DOUBLE_TAP &&
+              *type == ui::ET_MOUSE_PRESSED)
+            flags |= ui::EF_IS_DOUBLE_CLICK;
+
           MouseEvent synth(
-              *type, event->location(), event->root_location(), event->flags());
+              *type, event->location(), event->root_location(), flags);
           if (gesture_handler_->delegate()->OnMouseEvent(&synth))
             status = ui::GESTURE_STATUS_SYNTH_MOUSE;
           // The window that was receiving the gestures may have closed/hidden

@@ -175,7 +175,8 @@ class GestureEventSynthDelegate : public TestWindowDelegate {
         mouse_exit_(false),
         mouse_press_(false),
         mouse_release_(false),
-        mouse_move_(false) {
+        mouse_move_(false),
+        double_click_(false) {
   }
 
   void Reset() {
@@ -184,6 +185,7 @@ class GestureEventSynthDelegate : public TestWindowDelegate {
     mouse_press_ = false;
     mouse_release_ = false;
     mouse_move_ = false;
+    double_click_ = false;
   }
 
   bool mouse_enter() const { return mouse_enter_; }
@@ -191,10 +193,12 @@ class GestureEventSynthDelegate : public TestWindowDelegate {
   bool mouse_press() const { return mouse_press_; }
   bool mouse_move() const { return mouse_move_; }
   bool mouse_release() const { return mouse_release_; }
+  bool double_click() const { return double_click_; }
 
   virtual bool OnMouseEvent(MouseEvent* event) OVERRIDE {
     switch (event->type()) {
       case ui::ET_MOUSE_PRESSED:
+        double_click_ = event->flags() & ui::EF_IS_DOUBLE_CLICK;
         mouse_press_ = true;
         break;
       case ui::ET_MOUSE_RELEASED:
@@ -221,6 +225,7 @@ class GestureEventSynthDelegate : public TestWindowDelegate {
   bool mouse_press_;
   bool mouse_release_;
   bool mouse_move_;
+  bool double_click_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureEventSynthDelegate);
 };
@@ -730,6 +735,17 @@ TEST_F(GestureRecognizerTest, GestureTapSyntheticMouse) {
   EXPECT_TRUE(delegate->mouse_press());
   EXPECT_TRUE(delegate->mouse_release());
   EXPECT_TRUE(delegate->mouse_exit());
+  EXPECT_FALSE(delegate->double_click());
+
+  delegate->Reset();
+  GestureEvent tap2(ui::ET_GESTURE_DOUBLE_TAP, 20, 20, 0,
+      base::Time::Now(), 0, 0);
+  root_window()->DispatchGestureEvent(&tap2);
+  EXPECT_TRUE(delegate->mouse_enter());
+  EXPECT_TRUE(delegate->mouse_press());
+  EXPECT_TRUE(delegate->mouse_release());
+  EXPECT_TRUE(delegate->mouse_exit());
+  EXPECT_TRUE(delegate->double_click());
 }
 
 TEST_F(GestureRecognizerTest, AsynchronousGestureRecognition) {
