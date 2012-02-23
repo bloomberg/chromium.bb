@@ -61,8 +61,9 @@ class SpdySM : public spdy::BufferedSpdyFramerVisitorInterface,
                           bool* is_https_scheme);
 
   // BufferedSpdyFramerVisitorInterface:
-  virtual void OnError() OVERRIDE {}
-  virtual void OnStreamError(spdy::SpdyStreamId stream_id) OVERRIDE {}
+  virtual void OnError(int error_code) OVERRIDE {}
+  virtual void OnStreamError(spdy::SpdyStreamId stream_id,
+                             const std::string& description) OVERRIDE {}
   virtual void OnRstStream(
       const spdy::SpdyRstStreamControlFrame& frame) OVERRIDE;
   virtual void OnGoAway(const spdy::SpdyGoAwayControlFrame& frame) OVERRIDE {}
