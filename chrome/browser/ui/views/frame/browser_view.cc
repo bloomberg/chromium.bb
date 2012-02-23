@@ -2288,7 +2288,8 @@ void BrowserView::LoadAccelerators() {
     accelerator_table_[accelerator] = browser::kAcceleratorMap[i].command_id;
 
     // Also register with the focus manager.
-    focus_manager->RegisterAccelerator(accelerator, false, this);
+    focus_manager->RegisterAccelerator(
+        accelerator, ui::AcceleratorManager::kNormalPriority, this);
   }
 #endif
 }
