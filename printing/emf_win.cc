@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,14 +7,11 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/metrics/histogram.h"
-#include "base/time.h"
 #include "skia/ext/vector_platform_device_emf_win.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/gdi_util.h"
-#include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
@@ -280,20 +277,14 @@ bool Emf::Record::SafePlayback(const XFORM* base_matrix) const {
         if (!DIBFormatNativelySupported(hdc, CHECKJPEGFORMAT, bits,
                                         bmih->biSizeImage)) {
           play_normally = false;
-          base::TimeTicks start_time = base::TimeTicks::Now();
           bitmap.reset(gfx::JPEGCodec::Decode(bits, bmih->biSizeImage));
-          UMA_HISTOGRAM_TIMES("Printing.JPEGDecompressTime",
-                              base::TimeTicks::Now() - start_time);
         }
       } else if (bmih->biCompression == BI_PNG) {
         if (!DIBFormatNativelySupported(hdc, CHECKPNGFORMAT, bits,
                                         bmih->biSizeImage)) {
           play_normally = false;
           bitmap.reset(new SkBitmap());
-          base::TimeTicks start_time = base::TimeTicks::Now();
           gfx::PNGCodec::Decode(bits, bmih->biSizeImage, bitmap.get());
-          UMA_HISTOGRAM_TIMES("Printing.PNGDecompressTime",
-                              base::TimeTicks::Now() - start_time);
         }
       }
       if (!play_normally) {
