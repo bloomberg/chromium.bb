@@ -175,6 +175,21 @@ surface_handle_buffer_destroy(struct wl_listener *listener,
 	es->buffer = NULL;
 }
 
+static const pixman_region32_data_t undef_region_data;
+
+static void
+undef_region(pixman_region32_t *region)
+{
+	pixman_region32_fini(region);
+	region->data = (pixman_region32_data_t *) &undef_region_data;
+}
+
+static int
+region_is_undefined(pixman_region32_t *region)
+{
+	return region->data == &undef_region_data;
+}
+
 WL_EXPORT struct weston_surface *
 weston_surface_create(struct weston_compositor *compositor)
 {
@@ -197,6 +212,8 @@ weston_surface_create(struct weston_compositor *compositor)
 	surface->output = NULL;
 
 	pixman_region32_init(&surface->damage);
+	pixman_region32_init(&surface->opaque);
+	undef_region(&surface->input);
 	pixman_region32_init(&surface->transform.opaque);
 	wl_list_init(&surface->frame_callback_list);
 
@@ -314,6 +331,10 @@ weston_surface_update_transform_disable(struct weston_surface *surface)
 				  surface->geometry.y,
 				  surface->geometry.width,
 				  surface->geometry.height);
+
+	pixman_region32_copy(&surface->transform.opaque, &surface->opaque);
+	pixman_region32_translate(&surface->transform.opaque,
+				  surface->geometry.x, surface->geometry.y);
 }
 
 static int
@@ -343,6 +364,7 @@ weston_surface_update_transform_enable(struct weston_surface *surface)
 	surface_compute_bbox(surface, 0, 0, surface->geometry.width,
 			     surface->geometry.height,
 			     &surface->transform.boundingbox);
+
 	return 0;
 }
 
@@ -357,6 +379,13 @@ weston_surface_update_transform(struct weston_surface *surface)
 	weston_surface_damage_below(surface);
 
 	pixman_region32_fini(&surface->transform.boundingbox);
+	pixman_region32_fini(&surface->transform.opaque);
+	pixman_region32_init(&surface->transform.opaque);
+
+	if (region_is_undefined(&surface->input))
+		pixman_region32_init_rect(&surface->input, 0, 0, 
+					  surface->geometry.width,
+					  surface->geometry.height);
 
 	/* transform.position is always in transformation_list */
 	if (surface->geometry.transformation_list.next ==
@@ -517,11 +546,9 @@ weston_compositor_pick_surface(struct weston_compositor *compositor,
 	struct weston_surface *surface;
 
 	wl_list_for_each(surface, &compositor->surface_list, link) {
-		if (!surface->pickable)
-			continue;
 		weston_surface_from_global(surface, x, y, sx, sy);
-		if (0 <= *sx && *sx < surface->geometry.width &&
-		    0 <= *sy && *sy < surface->geometry.height)
+		if (pixman_region32_contains_point(&surface->input,
+						   *sx, *sy, NULL))
 			return surface;
 	}
 
@@ -603,7 +630,9 @@ destroy_surface(struct wl_resource *resource)
 
 	pixman_region32_fini(&surface->transform.boundingbox);
 	pixman_region32_fini(&surface->damage);
-	pixman_region32_fini(&surface->transform.opaque);
+	pixman_region32_fini(&surface->opaque);
+	if (!region_is_undefined(&surface->input)
+		pixman_region32_fini(&surface->input);
 
 	free(surface);
 }
@@ -1136,6 +1165,12 @@ surface_attach(struct wl_client *client,
 	wl_list_insert(es->buffer->resource.destroy_listener_list.prev,
 		       &es->buffer_destroy_listener.link);
 
+	if (es->geometry.width != buffer->width ||
+	    es->geometry.height != buffer->height) {
+		undef_region(&es->input);
+		undef_region(&es->opaque);
+	}
+
 	if (es->output == NULL) {
 		shell->map(shell, es, buffer->width, buffer->height, sx, sy);
 	} else if (sx != 0 || sy != 0 ||
@@ -1203,11 +1238,61 @@ surface_frame(struct wl_client *client,
 	}
 }
 
+static void
+surface_set_opaque_region(struct wl_client *client,
+			  struct wl_resource *resource,
+			  struct wl_resource *region_resource)
+{
+	struct weston_surface *surface = resource->data;
+	struct weston_region *region;
+
+	pixman_region32_fini(&surface->opaque);
+
+	if (region_resource) {
+		region = region_resource->data;
+		pixman_region32_init_rect(&surface->opaque, 0, 0,
+					  surface->geometry.width,
+					  surface->geometry.height);
+		pixman_region32_intersect(&surface->opaque,
+					  &surface->opaque, &region->region);
+	} else {
+		pixman_region32_init(&surface->opaque);
+	}
+
+	surface->geometry.dirty = 1;
+}
+
+static void
+surface_set_input_region(struct wl_client *client,
+			 struct wl_resource *resource,
+			 struct wl_resource *region_resource)
+{
+	struct weston_surface *surface = resource->data;
+	struct weston_region *region = region_resource->data;
+
+	if (region_resource) {
+		region = region_resource->data;
+		pixman_region32_init_rect(&surface->input, 0, 0,
+					  surface->geometry.width,
+					  surface->geometry.height);
+		pixman_region32_intersect(&surface->input,
+					  &surface->input, &region->region);
+	} else {
+		pixman_region32_init_rect(&surface->input, 0, 0,
+					  surface->geometry.width,
+					  surface->geometry.height);
+	}
+
+	weston_compositor_repick(surface->compositor);
+}
+
 const static struct wl_surface_interface surface_interface = {
 	surface_destroy,
 	surface_attach,
 	surface_damage,
-	surface_frame
+	surface_frame,
+	surface_set_opaque_region,
+	surface_set_input_region
 };
 
 static void
@@ -1231,13 +1316,81 @@ compositor_create_surface(struct wl_client *client,
 		(void (**)(void)) &surface_interface;
 	surface->surface.resource.data = surface;
 
-	surface->pickable = 1;
-
 	wl_client_add_resource(client, &surface->surface.resource);
+}
+
+static void
+destroy_region(struct wl_resource *resource)
+{
+	struct weston_region *region =
+		container_of(resource, struct weston_region, resource);
+
+	pixman_region32_fini(&region->region);
+	free(region);
+}
+
+static void
+region_destroy(struct wl_client *client, struct wl_resource *resource)
+{
+	wl_resource_destroy(resource, weston_compositor_get_time());
+}
+
+static void
+region_add(struct wl_client *client, struct wl_resource *resource,
+	   int32_t x, int32_t y, int32_t width, int32_t height)
+{
+	struct weston_region *region = resource->data;
+
+	pixman_region32_union_rect(&region->region, &region->region,
+				   x, y, width, height);
+}
+
+static void
+region_subtract(struct wl_client *client, struct wl_resource *resource,
+		int32_t x, int32_t y, int32_t width, int32_t height)
+{
+	struct weston_region *region = resource->data;
+	pixman_region32_t rect;
+
+	pixman_region32_init_rect(&rect, x, y, width, height);
+	pixman_region32_subtract(&region->region, &region->region, &rect);
+	pixman_region32_fini(&rect);
+}
+
+static const struct wl_region_interface region_interface = {
+	region_destroy,
+	region_add,
+	region_subtract
+};
+
+static void
+compositor_create_region(struct wl_client *client,
+			 struct wl_resource *resource, uint32_t id)
+{
+	struct weston_region *region;
+
+	region = malloc(sizeof *region);
+	if (region == NULL) {
+		wl_resource_post_no_memory(resource);
+		return;
+	}
+
+	region->resource.destroy = destroy_region;
+
+	region->resource.object.id = id;
+	region->resource.object.interface = &wl_region_interface;
+	region->resource.object.implementation =
+		(void (**)(void)) &region_interface;
+	region->resource.data = region;
+
+	pixman_region32_init(&region->region);
+
+	wl_client_add_resource(client, &region->resource);
 }
 
 const static struct wl_compositor_interface compositor_interface = {
 	compositor_create_surface,
+	compositor_create_region
 };
 
 WL_EXPORT void
@@ -1778,7 +1931,6 @@ weston_input_update_drag_surface(struct wl_input_device *input_device,
 		surface_changed = 1;
 
 	if (!input_device->drag_surface || surface_changed) {
-		device->drag_surface->pickable = 1;
 		device->drag_surface = NULL;
 		if (!surface_changed)
 			return;
@@ -1787,7 +1939,6 @@ weston_input_update_drag_surface(struct wl_input_device *input_device,
 	if (!device->drag_surface || surface_changed) {
 		device->drag_surface = (struct weston_surface *)
 			input_device->drag_surface;
-		device->drag_surface->pickable = 0;
 
 		weston_surface_set_position(device->drag_surface,
 					    input_device->x, input_device->y);

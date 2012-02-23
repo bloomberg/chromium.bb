@@ -206,6 +206,11 @@ enum weston_output_flags {
 	WL_OUTPUT_FLIPPED = 0x01
 };
 
+struct weston_region {
+	struct wl_resource resource;
+	pixman_region32_t region;
+};
+
 /* Using weston_surface transformations
  *
  * To add a transformation to a surface, create a struct weston_transform, and
@@ -236,6 +241,8 @@ struct weston_surface {
 	struct weston_compositor *compositor;
 	GLuint texture;
 	pixman_region32_t damage;
+	pixman_region32_t opaque;
+	pixman_region32_t input;
 	int32_t pitch;
 	struct wl_list link;
 	struct wl_list buffer_link;
@@ -243,7 +250,6 @@ struct weston_surface {
 	GLfloat color[4];
 	uint32_t alpha;
 	int overlapped;
-	int pickable;
 
 	/* Surface geometry state, mutable.
 	 * If you change anything, set dirty = 1.
