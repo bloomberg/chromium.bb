@@ -1,5 +1,11 @@
 Current Status as of Feb 15, 2012
 
+Changelog (please update here if you make a change):
+
+https://chromiumcodereview.appspot.com/9462002/
+  dalecurtis: Fixes premature clipped of the decode buffer for mp3s when the
+  checked bitsream reader is used. Patch is now upstreamed:
+  http://lists.libav.org/pipermail/libav-devel/2012-February/022428.html
 
 Patches added with the new GIT workflow:
 
