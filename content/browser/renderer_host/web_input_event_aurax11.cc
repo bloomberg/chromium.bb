@@ -339,6 +339,7 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
 
   gesture_event.deltaX = event->delta_x();
   gesture_event.deltaY = event->delta_y();
+  gesture_event.modifiers = EventFlagsToWebEventModifiers(event->flags());
 
   return gesture_event;
 }
