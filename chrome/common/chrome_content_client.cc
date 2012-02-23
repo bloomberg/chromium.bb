@@ -13,7 +13,6 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "base/win/windows_version.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -31,6 +30,8 @@
 #include "flapper_version.h"  // In <(SHARED_INTERMEDIATE_DIR).
 
 #if defined(OS_WIN)
+#include "base/win/registry.h"
+#include "base/win/windows_version.h"
 #include "sandbox/src/sandbox.h"
 #elif defined(OS_MACOSX)
 #include "chrome/common/chrome_sandbox_type_mac.h"
@@ -392,13 +393,31 @@ bool ChromeContentClient::SandboxPlugin(CommandLine* command_line,
   }
 
   // Add the policy for the pipes.
-  sandbox::ResultCode result = sandbox::SBOX_ALL_OK;
-  result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,
-                           sandbox::TargetPolicy::NAMEDPIPES_ALLOW_ANY,
-                           L"\\\\.\\pipe\\chrome.*");
-  if (result != sandbox::SBOX_ALL_OK) {
+  if (policy->AddRule(sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,
+                      sandbox::TargetPolicy::NAMEDPIPES_ALLOW_ANY,
+                      L"\\\\.\\pipe\\chrome.*") != sandbox::SBOX_ALL_OK) {
     NOTREACHED();
     return false;
+  }
+
+  // Allow Talk's camera control.
+  base::win::RegKey talk_key(HKEY_CURRENT_USER,
+                             L"Software\\Google\\Google Talk Plugin",
+                             KEY_READ);
+  if (talk_key.Valid()) {
+    string16 install_dir;
+    if (talk_key.ReadValue(L"install_dir", &install_dir) == ERROR_SUCCESS) {
+      if (install_dir[install_dir.size() - 1] != '\\')
+        install_dir.append(L"\\*");
+      else
+        install_dir.append(L"*");
+      // This is not a hard failure because a reparse point in the path can
+      // cause the rule to fail, but we should not abort sandboxing.
+      DCHECK_EQ(policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
+                                sandbox::TargetPolicy::FILES_ALLOW_READONLY,
+                                install_dir.c_str()), sandbox::SBOX_ALL_OK);
+    }
+    talk_key.Close();
   }
 
   // Spawn the flash broker and apply sandbox policy.
