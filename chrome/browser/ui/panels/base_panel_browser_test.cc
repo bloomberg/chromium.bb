@@ -176,6 +176,22 @@ BasePanelBrowserTest::BasePanelBrowserTest()
 BasePanelBrowserTest::~BasePanelBrowserTest() {
 }
 
+bool BasePanelBrowserTest::SkipTestIfIceWM() {
+#if defined(OS_LINUX)
+  return ui::GuessWindowManager() == ui::WM_ICE_WM;
+#else
+  return false;
+#endif
+}
+
+bool BasePanelBrowserTest::SkipTestIfCompizWM() {
+#if defined(OS_LINUX)
+  return ui::GuessWindowManager() == ui::WM_COMPIZ;
+#else
+  return false;
+#endif
+}
+
 void BasePanelBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   EnableDOMAutomation();
   command_line->AppendSwitch(switches::kEnablePanels);
@@ -324,7 +340,10 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
     // On bots, we might have a simple window manager which always activates new
     // windows, and can't always deactivate them. Activate previously active
     // window back to ensure the new window is inactive.
-    if (ui::GuessWindowManager() == ui::WM_ICE_WM) {
+    // Skip this icewm logic if not waiting for full creation of panel
+    // as those tests aren't affected by which panel is activated.
+    if (params.wait_for_fully_created &&
+        ui::GuessWindowManager() == ui::WM_ICE_WM) {
       Browser* last_active_browser = BrowserList::GetLastActive();
       EXPECT_TRUE(last_active_browser);
       EXPECT_NE(last_active_browser, panel->browser());

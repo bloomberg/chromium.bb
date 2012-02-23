@@ -1376,16 +1376,11 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, FocusLostOnMinimize) {
   panel->Close();
 }
 
-// TODO(prasadt): Enable on Linux. This actually passes just fine on the bots.
-// But disabling it on Linux because it fails on Gnome running compiz which is
-// the typical linux dev machine configuration.
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_CreateInactiveSwitchToActive CreateInactiveSwitchToActive
-#else
-#define MAYBE_CreateInactiveSwitchToActive DISABLED_CreateInactiveSwitchToActive
-#endif
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateInactiveSwitchToActive) {
+  // Compiz will not activate initially inactive window.
+  if (SkipTestIfCompizWM())
+    return;
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_CreateInactiveSwitchToActive) {
   CreatePanelParams params("Initially Inactive", gfx::Rect(), SHOW_AS_INACTIVE);
   Panel* panel = CreatePanelWithParams(params);
 

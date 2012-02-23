@@ -115,7 +115,7 @@ void DockedPanelStrip::AddPanel(Panel* panel) {
     if (panel->expansion_state() == Panel::EXPANDED) {
       expansion_state_to_restore = Panel::EXPANDED;
     } else {
-      if (are_titlebars_up_) {
+      if (are_titlebars_up_ || panel->IsDrawingAttention()) {
         expansion_state_to_restore = Panel::TITLE_ONLY;
         height = panel->TitleOnlyHeight();
       } else {
@@ -163,9 +163,6 @@ void DockedPanelStrip::AddPanel(Panel* panel) {
 
     // Keep panel visible in the strip even if overlap would occur.
     // Panel is moved to overflow from the strip after a delay.
-    // TODO(jianli): remove the guard when overflow support is enabled on other
-    // platforms. http://crbug.com/105073
-#if defined(OS_WIN) || defined(OS_MACOSX)
     if (x < display_area_.x()) {
       x = display_area_.x();
       panel->set_has_temporary_layout(true);
@@ -177,7 +174,6 @@ void DockedPanelStrip::AddPanel(Panel* panel) {
           base::TimeDelta::FromMilliseconds(PanelManager::AdjustTimeInterval(
               kMoveNewPanelToOverflowDelayMs)));
     }
-#endif
     panel->Initialize(gfx::Rect(x, y, width, height));
   }
 
@@ -680,12 +676,8 @@ void DockedPanelStrip::RefreshLayout() {
     gfx::Rect new_bounds(panel->GetBounds());
     int x = rightmost_position - new_bounds.width();
 
-  // TODO(jianli): remove the guard when overflow support is enabled on other
-  // platforms. http://crbug.com/105073
-#if defined(OS_WIN) || defined(OS_MACOSX)
     if (x < display_area_.x())
       break;
-#endif
 
     new_bounds.set_x(x);
     new_bounds.set_y(
@@ -696,9 +688,6 @@ void DockedPanelStrip::RefreshLayout() {
     rightmost_position = new_bounds.x() - kPanelsHorizontalSpacing;
   }
 
-  // TODO(jianli): remove the guard when overflow support is enabled on other
-  // platforms. http://crbug.com/105073
-#if defined(OS_WIN) || defined(OS_MACOSX)
   // Add/remove panels from/to overflow. A change in work area or the
   // resize/removal of a panel may affect how many panels fit in the strip.
   OverflowPanelStrip* overflow_strip = panel_manager_->overflow_strip();
@@ -729,7 +718,6 @@ void DockedPanelStrip::RefreshLayout() {
       overflow_panel->MoveToStrip(this);
     }
   }
-#endif
 }
 
 void DockedPanelStrip::DelayedMovePanelToOverflow(Panel* panel) {

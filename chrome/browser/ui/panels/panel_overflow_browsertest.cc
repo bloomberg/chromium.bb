@@ -202,47 +202,6 @@ class PanelOverflowBrowserTest : public BasePanelBrowserTest {
   }
 };
 
-// TODO(jianli): remove the guard when overflow support is enabled on other
-// platforms. http://crbug.com/105073
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_CheckPanelProperties CheckPanelProperties
-#define MAYBE_UpdateDraggableStatus UpdateDraggableStatus
-#define MAYBE_CreateOverflowPanels CreateOverflowPanels
-// http://crbug.com/107230
-#define MAYBE_CreatePanelOnDelayedOverflow CreatePanelOnDelayedOverflow
-#define MAYBE_CloseOverflowPanels CloseOverflowPanels
-#define MAYBE_CloseDockedPanels CloseDockedPanels
-#define MAYBE_CloseWithDelayedOverflow CloseWithDelayedOverflow
-#define MAYBE_ActivateOverflowPanels ActivateOverflowPanels
-#define MAYBE_MoveMinimizedPanelToOverflowAndBringBackByActivate \
-    MoveMinimizedPanelToOverflowAndBringBackByActivate
-#define MAYBE_MoveMinimizedPanelToOverflowAndBringBackByCloseOrResize \
-    MoveMinimizedPanelToOverflowAndBringBackByCloseOrResize
-#define MAYBE_HoverOverOverflowAreaWithoutOverflowOfOverflow \
-    HoverOverOverflowAreaWithoutOverflowOfOverflow
-#define MAYBE_HoverOverOverflowAreaWithOverflowOfOverflow \
-    HoverOverOverflowAreaWithOverflowOfOverflow
-#define MAYBE_ResizePanel ResizePanel
-#else
-#define MAYBE_CheckPanelProperties DISABLED_CheckPanelProperties
-#define MAYBE_UpdateDraggableStatus DISABLED_UpdateDraggableStatus
-#define MAYBE_CreateOverflowPanels DISABLED_CreateOverflowPanels
-#define MAYBE_CreatePanelOnDelayedOverflow DISABLED_CreatePanelOnDelayedOverflow
-#define MAYBE_CloseOverflowPanels DISABLED_CloseOverflowPanels
-#define MAYBE_CloseDockedPanels DISABLED_CloseDockedPanels
-#define MAYBE_CloseWithDelayedOverflow DISABLED_CloseWithDelayedOverflow
-#define MAYBE_ActivateOverflowPanels DISABLED_ActivateOverflowPanels
-#define MAYBE_MoveMinimizedPanelToOverflowAndBringBackByActivate \
-    DISABLED_MoveMinimizedPanelToOverflowAndBringBackByActivate
-#define MAYBE_MoveMinimizedPanelToOverflowAndBringBackByCloseOrResize \
-    DISABLED_MoveMinimizedPanelToOverflowAndBringBackByCloseOrResize
-#define MAYBE_HoverOverOverflowAreaWithoutOverflowOfOverflow \
-    DISABLED_HoverOverOverflowAreaWithoutOverflowOfOverflow
-#define MAYBE_HoverOverOverflowAreaWithOverflowOfOverflow \
-    DISABLED_HoverOverOverflowAreaWithOverflowOfOverflow
-#define MAYBE_ResizePanel DISABLED_ResizePanel
-#endif
-
 // TODO(dimich): remove the guard when overflow indicator is implemented on
 // other platforms.
 #if defined(OS_WIN)
@@ -255,7 +214,7 @@ class PanelOverflowBrowserTest : public BasePanelBrowserTest {
 #define MAYBE_DrawOverflowAttention DISABLED_DrawOverflowAttention
 #endif
 
-IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_CheckPanelProperties) {
+IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, CheckPanelProperties) {
   // Create 3 panels that fit.
   Panel* panel1 = CreatePanelWithBounds("1", gfx::Rect(0, 0, 250, 200));
   Panel* panel2 = CreatePanelWithBounds("2", gfx::Rect(0, 0, 300, 200));
@@ -291,7 +250,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_CheckPanelProperties) {
   PanelManager::GetInstance()->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_UpdateDraggableStatus) {
+IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, UpdateDraggableStatus) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   Panel* panel = CreatePanel("panel");
   EXPECT_TRUE(panel->draggable());
@@ -302,7 +261,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_UpdateDraggableStatus) {
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_CreateOverflowPanels) {
+IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, CreateOverflowPanels) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
   OverflowPanelStrip* overflow_strip =
@@ -388,7 +347,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
-                       MAYBE_CreatePanelOnDelayedOverflow) {
+                       CreatePanelOnDelayedOverflow) {
   // Create 2 big panels.
   CreatePanelWithBounds("Panel0", gfx::Rect(0, 0, 260, 200));
   CreatePanelWithBounds("Panel1", gfx::Rect(0, 0, 260, 200));
@@ -414,7 +373,12 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
   PanelManager::GetInstance()->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_CloseOverflowPanels) {
+IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, CloseOverflowPanels) {
+  // Panels are unhidden when moving out of overflow-on-overflow.
+  // IceWM always activates the window when shown.
+  if (SkipTestIfIceWM())
+    return;
+
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
   OverflowPanelStrip* overflow_strip =
@@ -507,7 +471,12 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_CloseOverflowPanels) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_CloseDockedPanels) {
+IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, CloseDockedPanels) {
+  // Panels are unhidden when moving out of overflow-on-overflow.
+  // IceWM always activates the window when shown.
+  if (SkipTestIfIceWM())
+    return;
+
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
   OverflowPanelStrip* overflow_strip =
@@ -635,8 +604,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_CloseDockedPanels) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
-                       MAYBE_CloseWithDelayedOverflow) {
+IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, CloseWithDelayedOverflow) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
 
@@ -688,7 +656,11 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
   overflow_panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_ActivateOverflowPanels) {
+IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, ActivateOverflowPanels) {
+  // Compiz refuses to activate initially inactive windows.
+  if (SkipTestIfCompizWM())
+    return;
+
   // Create docked and overflow panels.
   //   docked:               P0, P1, P2
   //   overflow:             P3, P4, P5
@@ -814,7 +786,11 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_ActivateOverflowPanels) {
 
 IN_PROC_BROWSER_TEST_F(
     PanelOverflowBrowserTest,
-    MAYBE_MoveMinimizedPanelToOverflowAndBringBackByActivate) {
+    MoveMinimizedPanelToOverflowAndBringBackByActivate) {
+  // Compiz refuses to activate initially inactive windows.
+  if (SkipTestIfCompizWM())
+    return;
+
   // Create docked and overflow panels.
   //   docked:               P0, P1, P2
   //   overflow:             P3, P4
@@ -916,7 +892,13 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     PanelOverflowBrowserTest,
-    MAYBE_MoveMinimizedPanelToOverflowAndBringBackByCloseOrResize) {
+    MoveMinimizedPanelToOverflowAndBringBackByCloseOrResize) {
+  // IceWM activates windows whenever they're shown, causing panels
+  // to activate as they move out of overflow-on-overflow.
+  // Compiz refuses to activate an initially inactive window.
+  if (SkipTestIfIceWM() || SkipTestIfCompizWM())
+    return;
+
   PanelManager* panel_manager = PanelManager::GetInstance();
 
   // Create docked and overflow panels.
@@ -1111,7 +1093,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
-                       MAYBE_HoverOverOverflowAreaWithoutOverflowOfOverflow) {
+                       HoverOverOverflowAreaWithoutOverflowOfOverflow) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   OverflowPanelStrip* overflow_strip =
       panel_manager->overflow_strip();
@@ -1182,7 +1164,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
-                       MAYBE_HoverOverOverflowAreaWithOverflowOfOverflow) {
+                       HoverOverOverflowAreaWithOverflowOfOverflow) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   OverflowPanelStrip* overflow_strip =
       panel_manager->overflow_strip();
@@ -1287,7 +1269,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_ResizePanel) {
+IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, ResizePanel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   panel_manager->enable_auto_sizing(true);
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();

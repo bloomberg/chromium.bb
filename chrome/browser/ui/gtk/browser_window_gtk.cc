@@ -2525,6 +2525,9 @@ BrowserWindowGtk::TitleDecoration BrowserWindowGtk::GetWindowTitle(
   return PLAIN_TEXT;
 }
 
+bool BrowserWindowGtk::ShouldShowCloseButton() const {
+  return true;
+}
 
 // static
 bool BrowserWindowGtk::GetCustomFramePrefDefault() {
