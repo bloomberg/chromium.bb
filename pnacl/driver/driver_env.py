@@ -23,10 +23,11 @@ INITIAL_ENV = {
   'DRIVER_PATH'     : '', # Absolute path to this driver invocation
   'DRIVER_BIN'      : '', # PNaCl driver bin/ directory
 
-  'BASE_NACL'       : '${@FindBaseNaCl}',   # Absolute path of native_client/
-  'BASE'            : '${@FindBasePNaCl}',  # Absolute path to PNaCl
-  'BUILD_OS'        : '${@GetBuildOS}',     # "linux", "darwin" or "windows"
-  'BUILD_ARCH'      : '${@GetBuildArch}',   # "x86_64" or "i686" or "i386"
+  'BASE_NACL'       : '${@FindBaseNaCl}',      # Absolute path of native_client/
+  'BASE_TOOLCHAIN'  : '${@FindBaseToolchain}', # Absolute path to toolchain/
+  'BASE'            : '${@FindBasePNaCl}',     # Absolute path to PNaCl
+  'BUILD_OS'        : '${@GetBuildOS}',        # "linux", "darwin" or "windows"
+  'BUILD_ARCH'      : '${@GetBuildArch}',      # "x86_64" or "i686" or "i386"
 
   # Directories
   'BASE_PKG'        : '${BASE}/pkg',
@@ -46,10 +47,17 @@ INITIAL_ENV = {
 
 
   'BASE_LLVM_BIN'   : '${BASE_LLVM}/bin',
-  'BASE_SB'         : '${BASE_SB_%ARCH%}',
-  'BASE_SB_X8632'   : '${BASE}/tools-sb/x8632',
-  'BASE_SB_X8664'   : '${BASE}/tools-sb/x8664',
-  'BASE_SB_ARM'     : '${BASE}/tools-sb/arm',
+  'TRANSLATOR_BIN'  :
+    '${BASE_TOOLCHAIN}/pnacl_translator/${STANDARD_ARCH}/bin',
+  'TRANSLATOR_BIN_NONSRPC':
+    '${BASE_TOOLCHAIN}/pnacl_translator_nonsrpc/${STANDARD_ARCH}/bin',
+
+  # TODO(pdox): Unify this with ARCH.
+  'STANDARD_ARCH'      : '${STANDARD_ARCH_%ARCH%}',
+  'STANDARD_ARCH_X8632': 'i686',
+  'STANDARD_ARCH_X8664': 'x86_64',
+  'STANDARD_ARCH_ARM'  : 'armv7',
+
   'SCONS_OUT'       : '${BASE_NACL}/scons-out',
 
   # Driver settings
@@ -145,16 +153,17 @@ INITIAL_ENV = {
                     '${USE_BOOTSTRAP ? --r_debug=0xXXXXXXXXXXXXXXXXX} ' +
                     '-a -B ${IRT_BLOB} --',
 
-  'LD_SB'         : '${SB_PREFIX} ${BASE_SB}/nonsrpc/bin/ld',
-  'LLC_SB'        : '${SB_PREFIX} ${RUNNABLE_LD} ${BASE_SB}/nonsrpc/bin/llc',
+  'LD_SB'         : '${SB_PREFIX} ${TRANSLATOR_BIN_NONSRPC}/ld.nexe',
+  'LLC_SB'        : '${SB_PREFIX} ${RUNNABLE_LD} ' +
+                    '${TRANSLATOR_BIN_NONSRPC}/llc.nexe',
   'SB_DYNAMIC'    : '0',
   'NNACL_LIBDIR'  : '${BASE_NACL}/toolchain/${SCONS_OS}_x86/' +
                     'x86_64-nacl/${ARCH  == X8632 ? lib32 : lib}',
   'RUNNABLE_LD'   : '${SB_DYNAMIC ? ${NNACL_LIBDIR}/runnable-ld.so ' +
                     '--library-path ${NNACL_LIBDIR}}',
 
-  'LLC_SRPC'      : '${BASE_SB}/srpc/bin/llc',
-  'LD_SRPC'       : '${BASE_SB}/srpc/bin/ld',
+  'LLC_SRPC'      : '${TRANSLATOR_BIN}/llc.nexe',
+  'LD_SRPC'       : '${TRANSLATOR_BIN}/ld.nexe',
 
   # Bitcode LLVM tools
   'CLANG'         : '${BASE_LLVM_BIN}/clang${EXEC_EXT}',

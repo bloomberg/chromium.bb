@@ -150,6 +150,15 @@ def FindBaseNaCl():
 
 @env.register
 @memoize
+def FindBaseToolchain():
+  """ Find toolchain/ directory """
+  dir = FindBaseDir(lambda cur: pathtools.basename(cur) == 'toolchain')
+  if dir is None:
+    Log.Fatal("Unable to find 'toolchain' directory")
+  return shell.escape(dir)
+
+@env.register
+@memoize
 def FindBasePNaCl():
   """ Find the base directory of the PNaCl toolchain """
   # The bin/ directory is one of:

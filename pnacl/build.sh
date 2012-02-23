@@ -160,7 +160,7 @@ readonly INSTALL_LIB_X8632="${INSTALL_LIB_NATIVE}x86-32"
 readonly INSTALL_LIB_X8664="${INSTALL_LIB_NATIVE}x86-64"
 
 # PNaCl client-translators (sandboxed) binary locations
-readonly INSTALL_SB_TOOLS="${INSTALL_ROOT}/tools-sb"
+readonly INSTALL_TRANSLATOR="${TOOLCHAIN_ROOT}/pnacl_translator"
 
 # Component installation directories
 readonly INSTALL_PKG="${INSTALL_ROOT}/pkg"
@@ -251,9 +251,9 @@ GetInstallDir() {
 SBTC_PRODUCTION=${SBTC_PRODUCTION:-false}
 
 # Which toolchain to use for each arch.
-SBTC_BUILD_WITH_PNACL="arm x8632 x8664"
+SBTC_BUILD_WITH_PNACL="armv7 i686 x86_64"
 if ${PNACL_IN_CROS_CHROOT}; then
-  SBTC_BUILD_WITH_PNACL="arm"
+  SBTC_BUILD_WITH_PNACL="armv7"
 fi
 
 # Current milestones in each repo
@@ -824,16 +824,72 @@ everything-post-hg() {
 #@ everything-translator   - Build and install untrusted SDK AND translator
 everything-translator() {
   everything
+  translator-all
+}
+
+#+ translator-clean-all  - Clean all translator install/build directories
+translator-clean-all() {
+  StepBanner "TRANSLATOR" "Clean all"
+  rm -rf "${TC_BUILD}"/translator*
+  rm -rf "${INSTALL_TRANSLATOR}"*
+}
+
+translator-all() {
+  local srpc_kind=srpc
+  local libmode=newlib
+
+  # Build the SDK if it not already present.
+  if ! [ -d "$(GetInstallDir ${libmode})/sdk/lib" ]; then
+    sdk newlib
+  fi
+
+  StepBanner "SANDBOXED TRANSLATORS"
+  binutils-liberty
+  if ${SBTC_PRODUCTION}; then
+    # Build each architecture separately.
+    local arch
+    for arch in ${SBTC_BUILD_WITH_PNACL} ; do
+      translator ${arch} srpc newlib
+    done
+  else
+    # Using arch `universal` builds the sandboxed tools from a single
+    # .pexe which support all targets.
+    translator universal srpc newlib
+  fi
+  if ${PNACL_PRUNE}; then
+    sdk-clean newlib
+  fi
+}
+
+#+ translator-clean <arch> <srpcmode> <libmode> -
+#+     Clean one translator install/build
+translator-clean() {
+  sb-setup "$@"
+  StepBanner "TRANSLATOR" "Clean ${SB_LABEL}"
+  rm -rf "${SB_INSTALL_DIR}"
+  rm -rf "${SB_OBJDIR}"
+}
+
+#+ translator            - Build a sandboxed translator.
+translator() {
+  sb-setup "$@"
 
   # Building the sandboxed tools requires the SDK
   # For now, only build the newlib-based translator in the combined build.
-  sdk newlib
-  install-translators srpc newlib
+  if ! [ -d "$(GetInstallDir ${SB_LIBMODE})/sdk/lib" ]; then
+    echo "ERROR: SDK must be installed to build translators."
+    echo "You can install the SDK by running: $0 sdk ${libmode}"
+    exit -1
+  fi
+  llvm-sb
+  binutils-sb
+
   if ${PNACL_PRUNE}; then
-    sdk-clean newlib
-    prune-translator-install srpc
-    track-translator-size ${SBTC_BUILD_WITH_PNACL}
-    prune
+    if [ "${SB_ARCH}" == universal ]; then
+      # The universal pexes have already been translated.
+      # They don't need to stick around.
+      rm -rf "${SB_INSTALL_DIR}"
+    fi
   fi
 }
 
@@ -1078,6 +1134,15 @@ tarball() {
   tar zcf "${tarball}" -C "${INSTALL_ROOT}" .
 }
 
+translator-tarball() {
+  if [ ! -n "${1:-}" ]; then
+    echo "Error: tarball needs a tarball name." >&2
+    exit 1
+  fi
+  local tarball="$(ArgumentToAbsolutePath "$1")"
+  StepBanner "TARBALL" "Creating translator tar ball ${tarball}"
+  tar zcf "${tarball}" -C "${INSTALL_TRANSLATOR}" .
+}
 
 #########################################################################
 #                              < LLVM >
@@ -2142,7 +2207,7 @@ binutils-liberty-make() {
 #     CLIENT BINARIES (SANDBOXED)
 #########################################################################
 
-check-sb-mode() {
+check-srpcmode() {
   local mode=$1
   if [ ${mode} != "srpc" ] && [ ${mode} != "nonsrpc" ]; then
     echo "ERROR: Unsupported mode. Choose one of: srpc, nonsrpc"
@@ -2150,51 +2215,56 @@ check-sb-mode() {
   fi
 }
 
-check-sb-arch() {
+check-arch() {
   local arch=$1
-  for valid_arch in x8632 x8664 arm universal ; do
+  for valid_arch in i686 x86_64 armv7 universal ; do
     if [ "${arch}" == "${valid_arch}" ] ; then
       return
     fi
   done
 
-  Fatal "ERROR: Unsupported arch [$1]. Must be: x8632, x8664, arm, or universal"
+  Fatal "ERROR: Unsupported arch [$1]. Must be: i686, x86_64, armv7, universal"
+}
+
+SB_SETUP=false
+sb-setup() {
+  if ${SB_SETUP} && [ $# -eq 0 ]; then
+    return 0
+  fi
+  if [ $# -ne 3 ] ; then
+    Fatal "Please specify arch, mode(srpc/nonsrpc) and libmode(newlib/glibc)"
+  fi
+
+  SB_SETUP=true
+  SB_ARCH=$1
+  SB_SRPCMODE=$2
+  SB_LIBMODE=$3
+  check-arch ${SB_ARCH}
+  check-srpcmode ${SB_SRPCMODE}
+  check-libmode ${SB_LIBMODE}
+
+  SB_LOG_PREFIX="${SB_ARCH}.${SB_SRPCMODE}.${SB_LIBMODE}"
+  SB_LABEL="${SB_ARCH}_${SB_SRPCMODE}_${SB_LIBMODE}"
+  SB_OBJDIR="${TC_BUILD}/translator-${SB_LABEL//_/-}"
+  SB_INSTALL_DIR="$(GetTranslatorInstallDir ${SB_ARCH})"
 }
 
 LLVM_SB_SETUP=false
 llvm-sb-setup() {
-  local flags=""
+  sb-setup "$@"
   if ${SB_JIT}; then
     llvm-sb-setup-jit "$@"
     return
   fi
+  local flags=""
+  LLVM_SB_LOG_PREFIX="llvm.sb.${SB_LOG_PREFIX}"
+  LLVM_SB_OBJDIR="${SB_OBJDIR}/llvm-sb"
 
-  if ${LLVM_SB_SETUP} && [ $# -eq 0 ]; then
-    return 0
-  fi
-
-  if [ $# -ne 3 ] ; then
-    Fatal "Please specify arch and mode(srpc) and libmode"
-  fi
-
-  LLVM_SB_SETUP=true
-
-  LLVM_SB_ARCH=$1
-  LLVM_SB_MODE=$2
-  LLVM_SB_LIBMODE=$3
-  check-sb-arch ${LLVM_SB_ARCH}
-  check-sb-mode ${LLVM_SB_MODE}
-  check-libmode ${LLVM_SB_LIBMODE}
-
-  LLVM_SB_LOG_PREFIX=\
-"llvm.sb.${LLVM_SB_ARCH}.${LLVM_SB_MODE}.${LLVM_SB_LIBMODE}"
-  LLVM_SB_OBJDIR=\
-"${TC_BUILD}/llvm-sb-${LLVM_SB_ARCH}-${LLVM_SB_MODE}-${LLVM_SB_LIBMODE}"
-  if [ ${LLVM_SB_LIBMODE} == newlib ]; then
+  if [ ${SB_LIBMODE} == newlib ]; then
     flags+=" -static"
   fi
 
-  case ${LLVM_SB_MODE} in
+  case ${SB_SRPCMODE} in
     srpc)    flags+=" -DNACL_SRPC" ;;
     nonsrpc) ;;
   esac
@@ -2205,9 +2275,9 @@ llvm-sb-setup() {
   LLVM_SB_CONFIGURE_ENV=(
     AR="${PNACL_AR}" \
     AS="${PNACL_AS}" \
-    CC="$(GetTool cc ${LLVM_SB_LIBMODE}) ${flags}" \
-    CXX="$(GetTool cxx ${LLVM_SB_LIBMODE}) ${flags}" \
-    LD="$(GetTool ld ${LLVM_SB_LIBMODE}) ${flags}" \
+    CC="$(GetTool cc ${SB_LIBMODE}) ${flags}" \
+    CXX="$(GetTool cxx ${SB_LIBMODE}) ${flags}" \
+    LD="$(GetTool ld ${SB_LIBMODE}) ${flags}" \
     NM="${PNACL_NM}" \
     RANLIB="${PNACL_RANLIB}" \
     LDFLAGS="") # TODO(pdox): Support -s
@@ -2215,41 +2285,29 @@ llvm-sb-setup() {
 
 # TODO(pdox): Unify with llvm-sb-setup above.
 llvm-sb-setup-jit() {
-  local flags=""
-
-  if ${LLVM_SB_SETUP} && [ $# -eq 0 ]; then
+  sb-setup "$@"
+  if ${LLVM_SB_SETUP}; then
     return 0
   fi
-
-  if [ $# -ne 3 ] ; then
-    Fatal "Please specify arch, mode, libmode"
-  fi
-
   LLVM_SB_SETUP=true
+  LLVM_SB_LOG_PREFIX="llvm.sb.${SB_LOG_PREFIX}"
+  LLVM_SB_OBJDIR="${SB_OBJDIR}/llvm-sb"
 
-  LLVM_SB_ARCH=$1
-  LLVM_SB_MODE=$2
-  LLVM_SB_LIBMODE=$3
-  check-sb-arch ${LLVM_SB_ARCH}
-  check-sb-mode ${LLVM_SB_MODE}
-  check-libmode ${LLVM_SB_LIBMODE}
-
-  LLVM_SB_LOG_PREFIX="llvm.sb.${LLVM_SB_ARCH}.${LLVM_SB_MODE}.jit"
-  LLVM_SB_OBJDIR="${TC_BUILD}/llvm-sb-${LLVM_SB_ARCH}-${LLVM_SB_MODE}.jit"
-  case ${LLVM_SB_MODE} in
+  local flags=""
+  case ${SB_SRPCMODE} in
     srpc)    flags+=" -DNACL_SRPC" ;;
     nonsrpc) ;;
   esac
 
   local naclgcc_root="";
-  case ${LLVM_SB_LIBMODE} in
+  case ${SB_LIBMODE} in
     newlib)   naclgcc_root="${NNACL_NEWLIB_ROOT}";;
     glibc)    naclgcc_root="${NNACL_GLIBC_ROOT}";;
   esac
   local gcc_arch=""
-  case ${LLVM_SB_ARCH} in
-    x8632)  gcc_arch="i686";;
-    x8664)  gcc_arch="x86_64";;
+  case ${SB_ARCH} in
+    i686)  gcc_arch="i686";;
+    x86_64)  gcc_arch="x86_64";;
     default) Fatal "Can't build universal/arm translator with nacl-gcc";;
   esac
 
@@ -2271,7 +2329,7 @@ llvm-sb-setup-jit() {
 #+ llvm-sb <arch> <mode> - Build and install llvm tools (sandboxed)
 llvm-sb() {
   llvm-sb-setup "$@"
-  StepBanner "LLVM-SB" "Sandboxed llc + lli [$*]"
+  StepBanner "LLVM-SB" "Sandboxed llc + lli [${SB_LABEL}]"
   local srcdir="${TC_SRC_LLVM}"
   assert-dir "${srcdir}" "You need to checkout llvm."
 
@@ -2279,7 +2337,7 @@ llvm-sb() {
     llvm-sb-clean
     llvm-sb-configure
   else
-    SkipBanner "LLVM-SB" "configure ${LLVM_SB_ARCH} ${LLVM_SB_MODE}"
+    SkipBanner "LLVM-SB" "configure ${SB_ARCH} ${SB_SRPCMODE}"
   fi
 
   if llvm-sb-needs-make; then
@@ -2300,7 +2358,7 @@ llvm-sb-needs-configure() {
 # llvm-sb-clean          - Clean llvm tools (sandboxed)
 llvm-sb-clean() {
   llvm-sb-setup "$@"
-  StepBanner "LLVM-SB" "Clean ${LLVM_SB_ARCH} ${LLVM_SB_MODE}"
+  StepBanner "LLVM-SB" "Clean ${SB_ARCH} ${SB_SRPCMODE}"
   local objdir="${LLVM_SB_OBJDIR}"
 
   rm -rf "${objdir}"
@@ -2311,15 +2369,15 @@ llvm-sb-clean() {
 llvm-sb-configure() {
   llvm-sb-setup "$@"
 
-  StepBanner "LLVM-SB" "Configure ${LLVM_SB_ARCH} ${LLVM_SB_MODE}"
+  StepBanner "LLVM-SB" "Configure ${SB_ARCH} ${SB_SRPCMODE}"
   local srcdir="${TC_SRC_LLVM}"
   local objdir="${LLVM_SB_OBJDIR}"
-  local installdir="${INSTALL_SB_TOOLS}/${LLVM_SB_ARCH}/${LLVM_SB_MODE}"
+  local installdir="${SB_INSTALL_DIR}"
   local targets=""
-  case ${LLVM_SB_ARCH} in
-    x8632) targets=x86 ;;
-    x8664) targets=x86_64 ;;
-    arm) targets=arm ;;
+  case ${SB_ARCH} in
+    i686) targets=x86 ;;
+    x86_64) targets=x86_64 ;;
+    armv7) targets=arm ;;
     universal) targets=x86,x86_64,arm ;;
   esac
 
@@ -2350,14 +2408,14 @@ llvm-sb-needs-make() {
 llvm-sb-make() {
   llvm-sb-setup "$@"
 
-  StepBanner "LLVM-SB" "Make ${LLVM_SB_ARCH} ${LLVM_SB_MODE}"
+  StepBanner "LLVM-SB" "Make ${SB_ARCH} ${SB_SRPCMODE}"
   local objdir="${LLVM_SB_OBJDIR}"
 
   spushd "${objdir}"
   ts-touch-open "${objdir}"
 
   local build_with_srpc=0
-  if [ "${LLVM_SB_MODE}" == "srpc" ]; then
+  if [ "${SB_SRPCMODE}" == "srpc" ]; then
     build_with_srpc=1
   fi
 
@@ -2379,126 +2437,113 @@ llvm-sb-make() {
 llvm-sb-install() {
   llvm-sb-setup "$@"
 
-  StepBanner "LLVM-SB" "Install ${LLVM_SB_ARCH} ${LLVM_SB_MODE}"
+  StepBanner "LLVM-SB" "Install ${SB_ARCH} ${SB_SRPCMODE}"
   local objdir="${LLVM_SB_OBJDIR}"
-  spushd "${objdir}"
 
-  RunWithLog ${LLVM_SB_LOG_PREFIX}.install \
-      env -i PATH="/usr/bin:/bin" \
-      ONLY_TOOLS="llc lli"\
-      NACL_SANDBOX=1 \
-      KEEP_SYMBOLS=1 \
-      make ${MAKE_OPTS} install
-
-  spopd
-
-  if ! ${SB_JIT} ; then
-    translate-and-install-sb-tool ${LLVM_SB_ARCH} ${LLVM_SB_MODE} llc
-  else
-    install-naclgcc-tool ${LLVM_SB_ARCH} ${LLVM_SB_MODE} llc
-    install-naclgcc-tool ${LLVM_SB_ARCH} ${LLVM_SB_MODE} lli
+  # Install only llc or lli
+  local toolname="llc"
+  if ${SB_JIT}; then
+    toolname="lli"
   fi
+  mkdir -p "${SB_INSTALL_DIR}"/bin
+  spushd "${SB_INSTALL_DIR}"/bin
+  cp -f "${objdir}"/Release*/bin/${toolname} .
+  if ${SB_JIT} ; then
+    # JIT is always built as .nexe
+    mv -f ${toolname} ${toolname}.nexe
+  else
+    mv -f ${toolname} ${toolname}.pexe
+    translate-sb-tool ${toolname}
+    install-sb-tool ${toolname}
+  fi
+  spopd
 }
 
-install-naclgcc-tool() {
-  local arch=$1
-  local mode=$2
-  local name=$3
-
-  local bindir="${INSTALL_SB_TOOLS}/${arch}/${mode}/bin"
-  mv "${bindir}/${name}" "${bindir}/${name}.${arch}.nexe"
-
-  local bindir_tarch="${INSTALL_SB_TOOLS}/${arch}/${mode}/bin"
-  local nexe="${bindir}/${name}.${arch}.nexe"
-  mkdir -p "${bindir_tarch}"
-  cp -f "${nexe}" "${bindir_tarch}/${name}"
-}
-
-translate-and-install-sb-tool() {
-  local arch=$1
-  local mode=$2
-  local name=$3
-
-  # Translate bitcode program into an actual native executable.
-  # If arch = universal, we need to translate and install multiple times.
-  local bindir="${INSTALL_SB_TOOLS}/${arch}/${mode}/bin"
-  local pexe="${bindir}/${name}.pexe"
-
-  # Rename to .pexe
-  mv "${bindir}/${name}" "${pexe}"
-
+# translate-tool <toolname>
+#
+# Translate <toolname>.pexe to <toolname>.<arch>.nexe in the current directory.
+# If SB_ARCH is universal, translates to every arch in SBTC_BUILD_WITH_PNACL.
+translate-sb-tool() {
+  local toolname=$1
   local arches
-  if [ "${arch}" == "universal" ]; then
+  if [ "${SB_ARCH}" == "universal" ]; then
     arches="${SBTC_BUILD_WITH_PNACL}"
   else
-    arches="${arch}"
+    arches="${SB_ARCH}"
   fi
+  local pexe="${toolname}.pexe"
+  ${PNACL_STRIP} "${pexe}"
 
-  local installer
-  if [ "${arch}" == "universal" ]; then
-    installer="cp -f"
-  else
-    installer="mv -f"
-  fi
-
-  # In universal/mode/bin directory, we'll end up with every translation:
-  # e.g. ${name}.arm.nexe, ${name}.x8632.nexe, ${name}.x8664.nexe
-  # In arch/mode/bin directories, we'll end up with just one copy
-  local num_arches=$(wc -w <<< "${arches}")
-  local extra=""
-  if [ ${num_arches} -gt 1 ] && QueueConcurrent; then
-    extra=" (background)"
-  fi
-
+  local tarch
   for tarch in ${arches}; do
-    local nexe="${bindir}/${name}.${tarch}.nexe"
-    StepBanner "TRANSLATE" "Translating ${name}.pexe to ${tarch}${extra}"
+    local nexe="${toolname}.${tarch}.nexe"
+    StepBanner "TRANSLATE" \
+               "Translating ${toolname}.pexe to ${tarch} (background)"
     # TODO(pdox): Get the SDK location based on libmode.
-    "${PNACL_TRANSLATE}" -arch ${tarch} -Wl,-L"$(GetInstallDir newlib)/sdk" \
-                         "${pexe}" -o "${nexe}" &
+    "${PNACL_TRANSLATE}" -arch ${tarch} "${pexe}" -o "${nexe}" &
     QueueLastProcess
   done
-
-  if [ ${num_arches} -gt 1 ] && ! QueueEmpty ; then
-    StepBanner "TRANSLATE" "Waiting for processes to finish"
-  fi
+  StepBanner "TRANSLATE" "Waiting for translation processes to finish"
   QueueWait
 
+  # Strip the nexes
   for tarch in ${arches}; do
-    local nexe="${bindir}/${name}.${tarch}.nexe"
-    local bindir_tarch="${INSTALL_SB_TOOLS}/${tarch}/${mode}/bin"
-    mkdir -p "${bindir_tarch}"
-    ${installer} "${nexe}" "${bindir_tarch}/${name}"
+    local nexe="${toolname}.${tarch}.nexe"
+    ${PNACL_STRIP} "${nexe}"
   done
+  StepBanner "TRANSLATE" "Done."
+}
+
+# Install <toolname>.<arch>.nexe from the current directory
+# into the right location (as <toolname>.nexe)
+install-sb-tool() {
+  local toolname="$1"
+  local arches
+  if [ "${SB_ARCH}" == "universal" ]; then
+    arches="${SBTC_BUILD_WITH_PNACL}"
+  else
+    arches="${SB_ARCH}"
+  fi
+  local tarch
+  for tarch in ${arches}; do
+    local installbin="$(GetTranslatorInstallDir ${tarch})"/bin
+    mkdir -p "${installbin}"
+    mv -f ${toolname}.${tarch}.nexe "${installbin}"/${toolname}.nexe
+    if ${PNACL_BUILDBOT}; then
+      spushd "${installbin}"
+      print-size-of-sb-tool ${tarch} ${toolname}
+      spopd
+    fi
+  done
+}
+
+GetTranslatorInstallDir() {
+  local arch="$1"
+  local extra=""
+  if ${SB_JIT}; then
+    extra+="_jit"
+  elif [ ${SB_SRPCMODE} == "nonsrpc" ]; then
+    extra+="_nonsrpc"
+  fi
+  echo "${INSTALL_TRANSLATOR}"${extra}/${arch}
 }
 
 #---------------------------------------------------------------------
 
 BINUTILS_SB_SETUP=false
 binutils-sb-setup() {
+  sb-setup "$@"
+
   # TODO(jvoung): investigate if these are only needed by AS or not.
   local flags="-DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5 -DNACL_TOOLCHAIN_PATCH"
-
-  if ${BINUTILS_SB_SETUP} && [ $# -eq 0 ]; then
+  if ${BINUTILS_SB_SETUP}; then
     return 0
   fi
-
-  if [ $# -ne 2 ] ; then
-    Fatal "Please specify arch and libmode"
-  fi
-
   BINUTILS_SB_SETUP=true
+  BINUTILS_SB_LOG_PREFIX="binutils.sb.${SB_LOG_PREFIX}"
+  BINUTILS_SB_OBJDIR="${SB_OBJDIR}/binutils-sb"
 
-  BINUTILS_SB_ARCH=$1
-  BINUTILS_SB_LIBMODE=$2
-  check-sb-arch ${BINUTILS_SB_ARCH}
-  check-libmode ${BINUTILS_SB_LIBMODE}
-  BINUTILS_SB_LOG_PREFIX="binutils.sb.${BINUTILS_SB_ARCH}"
-  BINUTILS_SB_OBJDIR=\
-"${TC_BUILD}/binutils-sb-${BINUTILS_SB_ARCH}-${BINUTILS_SB_LIBMODE}"
-  BINUTILS_SB_INSTALL_DIR="${INSTALL_SB_TOOLS}/${BINUTILS_SB_ARCH}/srpc"
-
-  if [ ${BINUTILS_SB_LIBMODE} == newlib ]; then
+  if [ ${SB_LIBMODE} == newlib ]; then
     flags+=" -static"
   fi
 
@@ -2513,32 +2558,30 @@ binutils-sb-setup() {
   BINUTILS_SB_CONFIGURE_ENV=(
     AR="${PNACL_AR}" \
     AS="${PNACL_AS}" \
-    CC="$(GetTool cc ${BINUTILS_SB_LIBMODE}) ${flags}" \
-    CXX="$(GetTool cxx ${BINUTILS_SB_LIBMODE}) ${flags}" \
+    CC="$(GetTool cc ${SB_LIBMODE}) ${flags}" \
+    CXX="$(GetTool cxx ${SB_LIBMODE}) ${flags}" \
     CC_FOR_BUILD="${CC}" \
     CXX_FOR_BUILD="${CXX}" \
-    LD="$(GetTool ld ${BINUTILS_SB_LIBMODE}) ${flags}" \
+    LD="$(GetTool ld ${SB_LIBMODE}) ${flags}" \
     NM="${PNACL_NM}" \
     RANLIB="${PNACL_RANLIB}" \
     LDFLAGS_FOR_BUILD="-L${TC_BUILD_BINUTILS_LIBERTY}/libiberty/" \
     LDFLAGS="")
 
 
-  case ${BINUTILS_SB_ARCH} in
-    x8632)     BINUTILS_SB_ELF_TARGETS=i686-pc-nacl ;;
-    x8664)     BINUTILS_SB_ELF_TARGETS=x86_64-pc-nacl ;;
-    arm)       BINUTILS_SB_ELF_TARGETS=arm-pc-nacl ;;
+  case ${SB_ARCH} in
+    i686)      BINUTILS_SB_ELF_TARGETS=i686-pc-nacl ;;
+    x86_64)    BINUTILS_SB_ELF_TARGETS=x86_64-pc-nacl ;;
+    armv7)     BINUTILS_SB_ELF_TARGETS=arm-pc-nacl ;;
     universal) BINUTILS_SB_ELF_TARGETS=arm-pc-nacl,i686-pc-nacl,x86_64-pc-nacl ;;
   esac
-
-
 }
 
 #+-------------------------------------------------------------------------
 #+ binutils-sb <arch> <mode> - Build and install binutils (sandboxed)
 binutils-sb() {
   binutils-sb-setup "$@"
-  StepBanner "BINUTILS-SB" "Sandboxed ld [$*]"
+  StepBanner "BINUTILS-SB" "Sandboxed ld [${SB_LABEL}]"
 
   local srcdir="${TC_SRC_BINUTILS}"
   assert-dir "${srcdir}" "You need to checkout binutils."
@@ -2547,7 +2590,7 @@ binutils-sb() {
     binutils-sb-clean
     binutils-sb-configure
   else
-    SkipBanner "BINUTILS-SB" "configure ${BINUTILS_SB_ARCH}"
+    SkipBanner "BINUTILS-SB" "configure ${SB_ARCH}"
   fi
 
   if binutils-sb-needs-make; then
@@ -2582,7 +2625,7 @@ binutils-sb-configure() {
   StepBanner "BINUTILS-SB" "Configure"
   local srcdir="${TC_SRC_BINUTILS}"
   local objdir="${BINUTILS_SB_OBJDIR}"
-  local installdir="${BINUTILS_SB_INSTALL_DIR}"
+  local installdir="${SB_INSTALL_DIR}"
 
   spushd "${objdir}"
   RunWithLog \
@@ -2635,115 +2678,21 @@ binutils-sb-install() {
 
   StepBanner "BINUTILS-SB" "Install"
   local objdir="${BINUTILS_SB_OBJDIR}"
-  spushd "${objdir}"
+  local installbin="${SB_INSTALL_DIR}/bin"
 
-  RunWithLog ${BINUTILS_SB_LOG_PREFIX}.install \
-      env -i PATH="/usr/bin:/bin" \
-      make install-ld
+  mkdir -p "${installbin}"
+  spushd "${installbin}"
 
+  # Install just "ld"
+  cp "${objdir}"/ld/ld-new ld.pexe
+
+  # Translate and install
+  translate-sb-tool ld
+  install-sb-tool ld
   spopd
-
-  # First rename and *strip* the installed file. (Beware for debugging).
-  local installdir="${BINUTILS_SB_INSTALL_DIR}"
-  ${PNACL_STRIP} "${installdir}/bin/${BINUTILS_TARGET}-ld" \
-    -o "${installdir}/bin/ld"
-  # Remove old file plus a redundant file.
-  rm "${installdir}/bin/${BINUTILS_TARGET}-ld"
-  rm "${installdir}/bin/${BINUTILS_TARGET}-ld.bfd"
-
-  # Then translate.
-  translate-and-install-sb-tool ${BINUTILS_SB_ARCH} srpc ld
-}
-
-#+ tools-sb {arch} {mode} - Build all sandboxed tools for arch, mode
-tools-sb() {
-  local arch=$1
-  local mode=$2
-  local libmode=$3
-
-  llvm-sb ${arch} ${mode} ${libmode}
-  binutils-sb ${arch} ${libmode}
-}
-
-
-#+--------------------------------------------------------------------------
-#@ install-translators {srpc/nonsrpc} - Builds and installs sandboxed
-#@                                      translator components
-install-translators() {
-  if [ $# -ne 2 ]; then
-    echo "ERROR: Usage install-translators <srpc/nonsrpc> <libmode>"
-    exit -1
-  fi
-
-  local srpc_kind=$1
-  local libmode=$2
-  check-sb-mode ${srpc_kind}
-  check-libmode ${libmode}
-
-  if ! [ -d "$(GetInstallDir ${libmode})/sdk" ]; then
-    echo "ERROR: SDK must be installed to build translators."
-    echo "You can install the SDK by running: $0 sdk ${libmode}"
-    exit -1
-  fi
-
-  StepBanner "INSTALL SANDBOXED TRANSLATORS (${srpc_kind} ${libmode})"
-
-  binutils-liberty
-
-  if ${SBTC_PRODUCTION}; then
-    # Build each architecture separately.
-    for arch in ${SBTC_BUILD_WITH_PNACL} ; do
-      tools-sb ${arch} ${srpc_kind} ${libmode}
-    done
-  else
-    # Using arch `universal` builds the sandboxed tools to a .pexe
-    # which support all targets. This .pexe is then translated to
-    # each architecture specified in ${SBTC_BUILD_WITH_PNACL}.
-    tools-sb universal ${srpc_kind} ${libmode}
-  fi
-
-  echo "Done"
 }
 
 #+-------------------------------------------------------------------------
-#@ prune-translator-install - Prunes translator install directories
-prune-translator-install() {
-  if [ $# -ne 1 ]; then
-    echo "ERROR: Usage prune-translator-install <srpc/nonsrpc>"
-    exit -1
-  fi
-
-  local srpc_kind=$1
-  check-sb-mode ${srpc_kind}
-
-  StepBanner "PRUNE" "Pruning translator installs [${srpc_kind}]"
-  for arch in ${SBTC_BUILD_WITH_PNACL} ; do
-    StepBanner "PRUNE" "llvm cruft [${arch}]"
-    if [ -d "${INSTALL_SB_TOOLS}/${arch}/${srpc_kind}" ]; then
-      spushd "${INSTALL_SB_TOOLS}/${arch}/${srpc_kind}"
-      rm -rf include lib nacl share
-      rm -rf bin/llvm-config bin/tblgen
-      spopd
-    fi
-  done
-
-  if ! ${SBTC_PRODUCTION}; then
-    rm -rf "${INSTALL_SB_TOOLS}/universal"
-  fi
-
-  StepBanner "PRUNE" "Stripping tools-sb nexes"
-  for arch in ${SBTC_BUILD_WITH_PNACL} ; do
-    if [ -d "${INSTALL_SB_TOOLS}/${arch}/${srpc_kind}" ]; then
-      ${PNACL_STRIP} "${INSTALL_SB_TOOLS}/${arch}/${srpc_kind}"/bin/*
-    fi
-  done
-
-  StepBanner "PRUNE" "remove driver log"
-  rm -f "${INSTALL_ROOT}"/driver.log
-
-  echo "Done"
-}
-
 #########################################################################
 #     < NEWLIB-BITCODE >
 #########################################################################
@@ -3579,40 +3528,23 @@ verify-native() {
   done
 }
 
-#@ verify-triple-build <arch> - Verify that the sandboxed translator produces
-#@                              an identical translation of itself (llc.pexe)
-#@                              as the unsandboxed translator.
+#+ verify-triple-build <arch> <srpcmode> <libmode>
+#+     Verify that the sandboxed translator produces an identical
+#+     translation of itself (llc.pexe) as the unsandboxed translator.
+#+     (NOTE: This function is experimental/untested)
 verify-triple-build() {
-  if [ $# -eq 0 ]; then
-    local arch
-    for arch in ${SBTC_BUILD_WITH_PNACL} ; do
-      verify-triple-build ${arch}
-    done
-    return
-  fi
+  sb-setup "$@"
+  StepBanner "VERIFY" "Verifying triple build for ${SB_LABEL}"
 
-  local arch=${1/-/}  # Get rid of dashes
-  local mode=srpc
-
-  check-sb-arch ${arch}
-  check-sb-mode ${mode}
-
-  StepBanner "VERIFY" "Verifying triple build for ${arch}"
-
-  local archdir="${INSTALL_SB_TOOLS}/${arch}/${mode}"
-  local archllc="${archdir}/bin/llc"
-  local pexe
-
-  if ${SBTC_PRODUCTION} ; then
-    pexe="${archdir}/bin/llc.pexe"
-  else
-    pexe="${INSTALL_SB_TOOLS}/universal/${mode}/bin/llc.pexe"
-  fi
-  assert-file "${archllc}" "sandboxed llc for ${arch} does not exist"
-  assert-file "${pexe}"    "llc.pexe does not exist"
+  local arch="${SB_ARCH}"
+  local bindir="${SB_INSTALL_DIR}/bin"
+  local llc_nexe="${bindir}/llc.nexe"
+  local llc_pexe="${bindir}/llc.pexe"
+  assert-file "${llc_nexe}" "sandboxed llc for ${arch} does not exist"
+  assert-file "${llc_pexe}" "llc.pexe does not exist"
 
   local flags="--pnacl-sb --pnacl-driver-verbose"
-  if [ ${mode} == "srpc" ] ; then
+  if [ ${SB_SRPCMODE} == "srpc" ] ; then
     flags+=" --pnacl-driver-set-SRPC=1"
   else
     flags+=" --pnacl-driver-set-SRPC=0"
@@ -3621,20 +3553,20 @@ verify-triple-build() {
   if [ ${arch} == "arm" ] ; then
     # Use emulator if we are not on ARM
     local hostarch=$(uname -m)
-    if ! [[ "${hostarch}" =~ arm ]]; then
+    if ! [[ "${BUILD_ARCH}" =~ arm ]]; then
       flags+=" --pnacl-use-emulator"
     fi
   fi
 
-  local objdir="${TC_BUILD}/triple-build"
-  local newllc="${objdir}/llc.${arch}.rebuild.nexe"
+  local objdir="${SB_INSTALL_DIR}/triple-build"
+  local new_llc_nexe="${objdir}/llc.rebuild.nexe"
   mkdir -p "${objdir}"
-
-  StepBanner "VERIFY" "Translating llc.pexe to ${arch} using sandboxed tools"
+  StepBanner "VERIFY" "Translating ${llc_pexe} using sandboxed tools (${arch})"
   RunWithLog "verify.triple.build" \
-    "${PNACL_TRANSLATE}" ${flags} -arch ${arch} "${pexe}" -o "${newllc}"
+    "${PNACL_TRANSLATE}" ${flags} -arch ${arch} "${llc_pexe}" \
+                         -o "${new_llc_nexe}"
 
-  if ! cmp --silent "${archllc}" "${newllc}" ; then
+  if ! cmp --silent "${llc_nexe}" "${new_llc_nexe}" ; then
     Banner "TRIPLE BUILD VERIFY FAILED"
     echo "Expected these files to be identical, but they are not:"
     echo "  ${archllc}"
@@ -3742,26 +3674,19 @@ DebugRun() {
 ######################################################################
 # Generate chromium perf bot logs for tracking the size of
 # translator binaries.
-
-track-translator-size() {
-  local platforms="$@"
-  for platform in ${platforms}; do
-    print-size-of-sb-tool ${platform} llc
-    print-size-of-sb-tool ${platform} ld
-  done
-}
-
+#
+# This is called from install-sb-tool on the final nexes.
 print-size-of-sb-tool() {
-  local platform=$1
-  local tool=$2
-  local bin_dir="${INSTALL_SB_TOOLS}/${platform}/srpc/bin"
-  local tool_size_string=$(${PNACL_SIZE} -B "${bin_dir}/${tool}" | \
-    grep '[0-9]\+')
+  local arch=$1
+  local toolname=$2
+  local tool_size_string=\
+$(${PNACL_SIZE} -B "${toolname}.nexe" | grep '[0-9]\+')
+
   set -- ${tool_size_string}
-  echo "RESULT ${tool}_${platform}_size: text= $1 bytes"
-  echo "RESULT ${tool}_${platform}_size: data= $2 bytes"
-  echo "RESULT ${tool}_${platform}_size: bss= $3 bytes"
-  echo "RESULT ${tool}_${platform}_size: total= $4 bytes"
+  echo "RESULT ${toolname}_${arch}_size: text= $1 bytes"
+  echo "RESULT ${toolname}_${arch}_size: data= $2 bytes"
+  echo "RESULT ${toolname}_${arch}_size: bss= $3 bytes"
+  echo "RESULT ${toolname}_${arch}_size: total= $4 bytes"
 }
 
 ######################################################################

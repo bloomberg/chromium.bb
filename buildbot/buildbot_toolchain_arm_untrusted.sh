@@ -30,6 +30,11 @@ fi
 readonly BUILD_OS=$1
 readonly BUILD_ARCH=$2
 
+IS_TRYBOT=false
+if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" == "Trybot" ]]; then
+  IS_TRYBOT=true
+fi
+
 echo "***            STARTING PNACL BUILD           ***"
 if [ "${BUILDBOT_BUILDERNAME:+isset}" == "isset" ]; then
   echo "*** BUILDBOT_BUILDERNAME: ${BUILDBOT_BUILDERNAME}"
@@ -39,10 +44,8 @@ echo "*** ARGUMENTS           : $*"
 PNACL_BUILD="pnacl/build.sh"
 PNACL_TEST="pnacl/test.sh"
 
-# Control what is built on this bot.
-# TODO(pdox): Refactor the translator into a separate builder
-#             so this isn't necessary.
-BUILD_INVOCATION="everything-translator"
+# Build and upload the translator tarball. Only one builder should do this.
+TRANSLATOR_BOT=false
 
 # Tell build.sh and test.sh that we're a bot.
 export PNACL_BUILDBOT=true
@@ -63,6 +66,7 @@ case ${BUILD_OS}-${BUILD_ARCH} in
     RUN_TESTS="x86-32 x86-32-browser"
     ;;
   linux-64)
+    TRANSLATOR_BOT=true
     TOOLCHAIN_LABEL=pnacl_linux_x86_64
     RUN_TESTS="x86-32 x86-32-browser"
     RUN_TESTS+=" x86-64 x86-64-browser"
@@ -78,17 +82,11 @@ case ${BUILD_OS}-${BUILD_ARCH} in
     RUN_TESTS="x86-32 x86-32-browser"
     ;;
   win-32)
-    # Only build the main toolchain
-    # (building the translator takes over 2 hours)
-    BUILD_INVOCATION="everything"
     TOOLCHAIN_LABEL=pnacl_windows_i686
     # TODO(pdox): Add browser tests when sand-boxed translator is available.
     RUN_TESTS="x86-32"
     ;;
   win-64)
-    # Only build the main toolchain
-    # (building the translator takes over 2 hours)
-    BUILD_INVOCATION="everything"
     TOOLCHAIN_LABEL=pnacl_windows_i686
     BUILD_32BIT_PLUGIN=true
     # TODO(pdox): Add browser tests when sand-boxed translator is available.
@@ -109,36 +107,49 @@ rm -rf scons-out compiler ../xcodebuild ../sconsbuild ../out \
     src/third_party/nacl_sdk/arm-newlib
 # Try to clobber /tmp/ contents to clear temporary chrome files.
 rm -rf /tmp/.org.chromium.Chromium.*
-
-# Only clobber the directory of the toolchain being built.
-# TODO(pdox): The * removes the old toolchain directories. It
-# can be removed once all the buildbots have been cleaned.
-rm -rf toolchain/${TOOLCHAIN_LABEL}*
+rm -rf toolchain/${TOOLCHAIN_LABEL}
 rm -rf toolchain/hg*
 rm -rf toolchain/test-log
 rm -rf pnacl*.tgz pnacl/pnacl*.tgz
+if ${TRANSLATOR_BOT}; then
+  rm -rf toolchain/pnacl_translator*
+fi
 
 echo @@@BUILD_STEP show-config@@@
 ${PNACL_BUILD} show-config
 
 echo @@@BUILD_STEP compile_toolchain@@@
 ${PNACL_BUILD} clean
-${PNACL_BUILD} ${BUILD_INVOCATION}
+${PNACL_BUILD} everything
 ${PNACL_BUILD} tarball pnacl-toolchain.tgz
 chmod a+r pnacl-toolchain.tgz
 
 echo @@@BUILD_STEP untar_toolchain@@@
 # Untar to ensure we can and to place the toolchain where the main build
 # expects it to be.
+rm -rf toolchain/${TOOLCHAIN_LABEL}
 mkdir -p toolchain/${TOOLCHAIN_LABEL}
 cd toolchain/${TOOLCHAIN_LABEL}
 tar xfz ../../pnacl-toolchain.tgz
 cd ../..
 
-if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
-  echo @@@BUILD_STEP archive_build@@@
+if ${TRANSLATOR_BOT}; then
+  echo @@@BUILD_STEP compile_translator@@@
+  ${PNACL_BUILD} translator-clean-all
+  ${PNACL_BUILD} translator-all
+fi
+
+if ! ${IS_TRYBOT}; then
+  echo @@@BUILD_STEP archive_toolchain@@@
   ${UP_DOWN_LOAD} UploadArmUntrustedToolchains ${BUILDBOT_GOT_REVISION} \
     ${TOOLCHAIN_LABEL} pnacl-toolchain.tgz
+
+  if ${TRANSLATOR_BOT}; then
+    echo @@@BUILD_STEP archive_translator@@@
+    ${PNACL_BUILD} translator-tarball pnacl-translator.tgz
+    ${UP_DOWN_LOAD} UploadArmUntrustedToolchains ${BUILDBOT_GOT_REVISION} \
+      pnacl_translator pnacl-translator.tgz
+  fi
 fi
 
 if ${BUILD_32BIT_PLUGIN}; then
@@ -158,7 +169,7 @@ ${PNACL_BUILD} sdk newlib
 ${PNACL_BUILD} ppapi-headers
 ${PNACL_BUILD} tarball pnacl-toolchain-adhoc-sdk.tgz
 chmod a+r pnacl-toolchain-adhoc-sdk.tgz
-if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
+if ! ${IS_TRYBOT}; then
   echo @@@BUILD_STEP archive_build_adhoc_sdk@@@
   ${UP_DOWN_LOAD} UploadArmUntrustedToolchains ${BUILDBOT_GOT_REVISION} \
     ${TOOLCHAIN_LABEL}_adhoc_sdk pnacl-toolchain-adhoc-sdk.tgz
