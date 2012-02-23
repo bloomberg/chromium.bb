@@ -1427,6 +1427,7 @@ map(struct weston_shell *base, struct weston_surface *surface,
 		do_configure = 0;
 		break;
 	case SHELL_SURFACE_NONE:
+		do_configure = 0;
 		break;
 	default:
 		/* everything else just below the panel */
