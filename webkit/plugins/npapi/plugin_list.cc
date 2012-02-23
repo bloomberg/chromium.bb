@@ -56,23 +56,18 @@ namespace npapi {
 // Some version ranges can be shared across operating systems. This should be
 // done where possible to avoid duplication.
 // This is up to date with
-// http://www.adobe.com/support/security/bulletins/apsb12-03.html
-// NOTE: We would like to go to the 4th component value but we cannot because
-// on some platforms, such as Linux, it is not available.
+// http://www.adobe.com/support/security/bulletins/apsb11-26.html
 static const VersionRangeDefinition kFlashVersionRange[] = {
-    { "", "", "11.1.102", false }
+    { "", "", "10.3.183", false }
 };
 // This is up to date with
-// http://www.adobe.com/support/security/bulletins/apsb12-02.html
+// http://www.adobe.com/support/security/bulletins/apsb11-19.html
 static const VersionRangeDefinition kShockwaveVersionRange[] = {
-    { "",  "", "11.6.4.634", true }
+    { "",  "", "11.6.1.629", true }
 };
-// This is up to date with
-// http://support.microsoft.com/kb/2668562
-// http://technet.microsoft.com/en-us/security/Bulletin/MS12-016
 static const VersionRangeDefinition kSilverlightVersionRange[] = {
-    { "0", "5", "4.1.10111.0", false },
-    { "5", "6", "", false },
+    { "0", "4", "3.0.50611.0", false },
+    { "4", "5", "", false }
 };
 
 // Similarly, try and share the group definition for plug-ins that are
@@ -140,18 +135,17 @@ static const VersionRangeDefinition kJavaVersionRange[] = {
     { "7", "", "10.3", true }  // JDK7u3 identifies itself as 10.3
 };
 // This is up to date with
-// http://www.adobe.com/support/security/bulletins/apsb12-01.html
+// http://www.adobe.com/support/security/bulletins/apsb11-24.html
 static const VersionRangeDefinition kAdobeReaderVersionRange[] = {
-    { "10", "11", "10.1.2", false },
-    { "0", "10", "9.5", false }
+    { "10", "11", "10.1.1", false },
+    { "9", "10", "9.4.6", false },
+    { "0", "9", "8.3.1", false }
 };
 static const VersionRangeDefinition kDivXVersionRange[] = {
-    { "", "", "1.4.3.4", true }
+    { "", "", "1.4.3.4", false }
 };
-// This is up to date with
-// http://service.real.com/realplayer/security/02062012_player/en/
 static const VersionRangeDefinition kRealPlayerVersionRange[] = {
-    { "", "", "15.0.2.71", true }
+    { "", "", "12.0.1.666", true }
 };
 static const VersionRangeDefinition kWindowsMediaPlayerVersionRange[] = {
     { "", "", "", true }
@@ -196,18 +190,14 @@ static const PluginGroupDefinition kGroupDefinitions[] = { };
 
 #else  // Most importantly, covers desktop Linux.
 static const VersionRangeDefinition kJavaVersionRange[] = {
-    { "0", "1.7", "1.6.0.31", true },
-    { "1.7", "", "1.7.0.3", true }
+    { "0", "1.7", "1.6.0.29", true },
+    { "1.7", "", "1.7.0.1", true }
 };
 
-// Up to date with:
-// http://blog.fuseyism.com/index.php/2012/02/15/
-// security-icedtea6-1-8-13-1-9-13-1-10-6-and-icedtea-2-0-1-released/
 static const VersionRangeDefinition kRedhatIcedTeaVersionRange[] = {
-    { "0", "1.9", "1.8.13", true },
-    { "1.9", "1.10", "1.9.13", true },
-    { "1.10", "2", "1.10.6", true },
-    { "2", "", "2.0.1", true }
+    { "0", "1.9", "1.8.10", true },
+    { "1.9", "1.10", "1.9.10", true },
+    { "1.10", "", "1.10.4", true }
 };
 
 static const PluginGroupDefinition kGroupDefinitions[] = {
