@@ -49,7 +49,7 @@ Hooks
     ]
 """
 
-__version__ = "0.6.3"
+__version__ = "0.6.4"
 
 import copy
 import logging
@@ -1504,9 +1504,11 @@ def Parser():
 def Main(argv):
   """Doesn't parse the arguments here, just find the right subcommand to
   execute."""
-  if sys.hexversion < 0x02050000:
+  if sys.hexversion < 0x02060000:
     print >> sys.stderr, (
-        '\nYour python version is unsupported, please upgrade.\n')
+        '\nYour python version %s is unsupported, please upgrade.\n' %
+        sys.version.split(' ', 1)[0])
+    return 2
   colorama.init()
   try:
     # Make stdout auto-flush so buildbot doesn't kill us during lengthy

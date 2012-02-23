@@ -1449,6 +1449,11 @@ def GenUsage(parser, command):
 def main(argv):
   """Doesn't parse the arguments here, just find the right subcommand to
   execute."""
+  if sys.hexversion < 0x02060000:
+    print >> sys.stderr, (
+        '\nYour python version %s is unsupported, please upgrade.\n' %
+        sys.version.split(' ', 1)[0])
+    return 2
   # Reload settings.
   global settings
   settings = Settings()

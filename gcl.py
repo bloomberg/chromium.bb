@@ -1400,9 +1400,11 @@ def CMDhelp(args):
 
 
 def main(argv):
-  if sys.hexversion < 0x02050000:
+  if sys.hexversion < 0x02060000:
     print >> sys.stderr, (
-        '\nYour python version is unsupported, please upgrade.\n')
+        '\nYour python version %s is unsupported, please upgrade.\n' %
+        sys.version.split(' ', 1)[0])
+    return 2
   if not argv:
     argv = ['help']
   command = Command(argv[0])
