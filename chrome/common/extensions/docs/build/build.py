@@ -103,6 +103,9 @@ def RenderPages(names, dump_render_tree):
     # Remove CRs that are appearing from captured DumpRenderTree output.
     result = result.replace('\r', '')
 
+    # Remove empty style attributes.
+    result = result.replace(' style=""', '')
+
     # Remove page_shell
     input_file = _base_dir + "/" + name + ".html"
     os.remove(input_file)
