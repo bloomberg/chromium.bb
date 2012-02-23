@@ -48,6 +48,7 @@
         'client/window_move_client.h',
         'client/window_types.h',
         'cursor.h',
+        'dispatcher_win.cc',
         'env.cc',
         'env.h',
         'env_observer.h',

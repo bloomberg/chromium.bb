@@ -4,7 +4,12 @@
 
 #include "ui/aura/env.h"
 #include "ui/aura/env_observer.h"
+#include "ui/aura/root_window_host.h"
 #include "ui/aura/window.h"
+
+#if !defined(OS_MACOSX) && !defined(OS_WIN)
+#include "ui/aura/root_window.h"
+#endif
 
 namespace aura {
 
@@ -14,7 +19,11 @@ Env* Env::instance_ = NULL;
 ////////////////////////////////////////////////////////////////////////////////
 // Env, public:
 
-Env::Env() {}
+Env::Env() {
+#if defined(OS_WIN)
+  dispatcher_.reset(CreateDispatcher());
+#endif
+}
 
 Env::~Env() {}
 
@@ -38,6 +47,18 @@ void Env::AddObserver(EnvObserver* observer) {
 void Env::RemoveObserver(EnvObserver* observer) {
   observers_.RemoveObserver(observer);
 }
+
+#if !defined(OS_MACOSX)
+MessageLoop::Dispatcher* Env::GetDispatcher() {
+#if defined(OS_WIN)
+  return dispatcher_.get();
+#else
+  // TODO(beng): Consolidate in the previous branch of this macro once the linux
+  //             dispatcher is complete.
+  return RootWindow::GetInstance()->host_->GetDispatcher();
+#endif
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // Env, private:

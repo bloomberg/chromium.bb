@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 #include "base/message_loop.h"
 #include "ui/aura/client/drag_drop_delegate.h"
+#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -81,7 +82,7 @@ int DragDropController::StartDragAndDrop(const ui::OSExchangeData& data,
   if (should_block_during_drag_drop_) {
     MessageLoopForUI* loop = MessageLoopForUI::current();
     MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
-    loop->RunWithDispatcher(Shell::GetRootWindow()->GetDispatcher());
+    loop->RunWithDispatcher(aura::Env::GetInstance()->GetDispatcher());
   }
 #endif  // !defined(OS_MACOSX)
 

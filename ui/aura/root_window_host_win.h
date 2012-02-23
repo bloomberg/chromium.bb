@@ -17,9 +17,6 @@ class RootWindowHostWin : public RootWindowHost, public ui::WindowImpl {
   explicit RootWindowHostWin(const gfx::Rect& bounds);
   virtual ~RootWindowHostWin();
 
-  // MessageLoop::Dispatcher:
-  virtual bool Dispatch(const MSG& msg);
-
   // RootWindowHost:
   virtual void SetRootWindow(RootWindow* root_window) OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;

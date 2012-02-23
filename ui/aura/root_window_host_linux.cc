@@ -300,6 +300,7 @@ class RootWindowHostLinux : public RootWindowHost,
   virtual void UnConfineCursor() OVERRIDE;
   virtual void MoveCursorTo(const gfx::Point& location) OVERRIDE;
   virtual void PostNativeEvent(const base::NativeEvent& event) OVERRIDE;
+  virtual MessageLoop::Dispatcher* GetDispatcher() OVERRIDE;
 
   // MessageLoop::DestructionObserver Overrides.
   virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
@@ -694,6 +695,10 @@ void RootWindowHostLinux::PostNativeEvent(
       break;
   }
   XSendEvent(xdisplay_, xwindow_, False, 0, &xevent);
+}
+
+MessageLoop::Dispatcher* RootWindowHostLinux::GetDispatcher() {
+  return this;
 }
 
 void RootWindowHostLinux::WillDestroyCurrentMessageLoop() {

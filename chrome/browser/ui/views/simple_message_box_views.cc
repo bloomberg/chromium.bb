@@ -17,6 +17,7 @@
 #if defined(USE_AURA)
 #include "ash/shell.h"
 #include "ui/aura/client/dispatcher_client.h"
+#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #endif
 
@@ -157,7 +158,7 @@ bool SimpleMessageBoxViews::Dispatch(const MSG& msg) {
 #elif defined(USE_AURA)
 base::MessagePumpDispatcher::DispatchStatus
     SimpleMessageBoxViews::Dispatch(XEvent* xev) {
-  if (!ash::Shell::GetRootWindow()->GetDispatcher()->Dispatch(xev))
+  if (!aura::Env::GetInstance()->GetDispatcher()->Dispatch(xev))
     return EVENT_IGNORED;
 
   if (disposition_ == DISPOSITION_UNKNOWN)

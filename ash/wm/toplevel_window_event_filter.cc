@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/cursor.h"
+#include "ui/aura/env.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -127,7 +128,7 @@ void ToplevelWindowEventFilter::RunMoveLoop(aura::Window* source) {
       new WindowResizer(source, source_mouse_location, HTCAPTION, grid_size_));
 #if !defined(OS_MACOSX)
   MessageLoopForUI::current()->RunWithDispatcher(
-      Shell::GetRootWindow()->GetDispatcher());
+      aura::Env::GetInstance()->GetDispatcher());
 #endif  // !defined(OS_MACOSX)
   in_move_loop_ = false;
 }

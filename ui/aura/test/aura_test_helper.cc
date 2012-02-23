@@ -53,7 +53,8 @@ void AuraTestHelper::TearDown() {
 
 void AuraTestHelper::RunAllPendingInMessageLoop(RootWindow* root_window) {
 #if !defined(OS_MACOSX)
-  message_loop_.RunAllPendingWithDispatcher(root_window->GetDispatcher());
+  message_loop_.RunAllPendingWithDispatcher(
+      Env::GetInstance()->GetDispatcher());
 #endif
 }
 

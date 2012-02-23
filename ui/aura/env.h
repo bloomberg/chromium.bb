@@ -6,6 +6,8 @@
 #define UI_AURA_ENV_H_
 #pragma once
 
+#include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/observer_list.h"
 #include "ui/aura/aura_export.h"
 
@@ -13,6 +15,9 @@ namespace aura {
 
 class EnvObserver;
 class Window;
+
+// Creates a platform-specific native event dispatcher.
+MessageLoop::Dispatcher* CreateDispatcher();
 
 // A singleton object that tracks general state within Aura.
 // TODO(beng): manage RootWindows.
@@ -27,6 +32,14 @@ class AURA_EXPORT Env {
   void AddObserver(EnvObserver* observer);
   void RemoveObserver(EnvObserver* observer);
 
+  // Returns the native event dispatcher. The result should only be passed to
+  // MessageLoopForUI::RunWithDispatcher() or
+  // MessageLoopForUI::RunAllPendingWithDispatcher(), or used to dispatch
+  // an event by |Dispatch(const NativeEvent&)| on it. It must never be stored.
+#if !defined(OS_MACOSX)
+  MessageLoop::Dispatcher* GetDispatcher();
+#endif
+
  private:
   friend class Window;
 
@@ -34,6 +47,10 @@ class AURA_EXPORT Env {
   void NotifyWindowInitialized(Window* window);
 
   ObserverList<EnvObserver> observers_;
+#if defined(OS_WIN)
+  // TODO(beng): remove the ifdef once the linux dispatcher is complete.
+  scoped_ptr<MessageLoop::Dispatcher> dispatcher_;
+#endif
 
   static Env* instance_;
 

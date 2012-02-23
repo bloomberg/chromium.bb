@@ -10,6 +10,7 @@
 
 #include "base/message_loop.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/env.h"
 #include "ui/aura/event.h"
 
 using std::max;
@@ -124,12 +125,6 @@ RootWindowHostWin::RootWindowHostWin(const gfx::Rect& bounds)
 
 RootWindowHostWin::~RootWindowHostWin() {
   DestroyWindow(hwnd());
-}
-
-bool RootWindowHostWin::Dispatch(const MSG& msg) {
-  TranslateMessage(&msg);
-  DispatchMessage(&msg);
-  return true;
 }
 
 void RootWindowHostWin::SetRootWindow(RootWindow* root_window) {

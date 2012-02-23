@@ -11,6 +11,7 @@
 #if defined(USE_AURA)
 #include "base/compiler_specific.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_activation_client.h"
 #include "ui/base/ime/input_method.h"
@@ -102,7 +103,7 @@ void ViewsTestBase::TearDown() {
 void ViewsTestBase::RunPendingMessages() {
 #if defined(USE_AURA)
   message_loop_.RunAllPendingWithDispatcher(
-      aura::RootWindow::GetInstance()->GetDispatcher());
+      aura::Env::GetInstance()->GetDispatcher());
 #else
   message_loop_.RunAllPending();
 #endif

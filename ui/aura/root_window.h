@@ -144,14 +144,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // |last_moust_location()|.
   void OnWindowTransformed(Window* window, bool contained_mouse);
 
-  // Returns the root window's dispatcher. The result should only be passed to
-  // MessageLoopForUI::RunWithDispatcher() or
-  // MessageLoopForUI::RunAllPendingWithDispatcher(), or used to dispatch
-  // an event by |Dispatch(const NativeEvent&)| on it. It must never be stored.
-#if !defined(OS_MACOSX)
-  MessageLoop::Dispatcher* GetDispatcher();
-#endif
-
   // Add/remove observer.
   void AddRootWindowObserver(RootWindowObserver* observer);
   void RemoveRootWindowObserver(RootWindowObserver* observer);
@@ -204,6 +196,8 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   virtual void ScheduleDraw() OVERRIDE;
 
  private:
+  // TODO(beng): remove this friendship once the linux dispatcher is moved.
+  friend class Env;
   friend class Window;
 
   RootWindow();

@@ -311,12 +311,6 @@ void RootWindow::OnWindowTransformed(Window* window, bool contained_mouse) {
   }
 }
 
-#if !defined(OS_MACOSX)
-MessageLoop::Dispatcher* RootWindow::GetDispatcher() {
-  return host_.get();
-}
-#endif  // !defined(OS_MACOSX)
-
 void RootWindow::AddRootWindowObserver(RootWindowObserver* observer) {
   observers_.AddObserver(observer);
 }

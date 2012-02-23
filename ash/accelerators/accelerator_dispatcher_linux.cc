@@ -13,6 +13,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/shell.h"
+#include "ui/aura/env.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -31,7 +32,7 @@ base::MessagePumpDispatcher::DispatchStatus AcceleratorDispatcher::Dispatch(
   if (!associated_window_)
     return EVENT_QUIT;
   if (!associated_window_->CanReceiveEvents())
-    return Shell::GetRootWindow()->GetDispatcher()->Dispatch(xev);
+    return aura::Env::GetInstance()->GetDispatcher()->Dispatch(xev);
 
   if (xev->type == KeyPress) {
     ash::AcceleratorController* accelerator_controller =
