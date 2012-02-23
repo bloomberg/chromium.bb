@@ -208,7 +208,7 @@ def RunLDSRPC():
 
   RunWithLog('${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ' +
              '${SEL_UNIVERSAL_FLAGS} -- ${LD_SRPC}',
-             stdin=script, echo_stdout = False, echo_stderr = False)
+             stdin=script, echo_stdout=False, echo_stderr=False)
 
 def MakeSelUniversalScriptForLD(ld_flags,
                                 main_input,

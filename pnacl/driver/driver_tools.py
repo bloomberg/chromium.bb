@@ -408,9 +408,16 @@ def DecodeLE(bytes):
     value += ord(b)
   return value
 
+# Sandboxed LLC returns the metadata after translation. Use FORCED_METADATA
+# if available instead of llvm-dis to avoid building llvm-dis on arm, and
+# to make sure this interface gets tested
+FORCED_METADATA = {}
 @SimpleCache
 def GetBitcodeMetadata(filename):
   assert(IsBitcode(filename))
+  global FORCED_METADATA
+  if filename in FORCED_METADATA:
+    return FORCED_METADATA[filename]
 
   llvm_dis = env.getone('LLVM_DIS')
   args = [ llvm_dis, '-dump-metadata', filename ]
@@ -432,6 +439,14 @@ def GetBitcodeMetadata(filename):
       metadata[k] = v
 
   return metadata
+
+def SetBitcodeMetadata(filename, is_shared, soname, needed_libs):
+  metadata = {}
+  metadata['OutputFormat'] = 'shared' if is_shared else 'executable'
+  metadata['NeedsLibrary'] = list(needed_libs)
+  metadata['SOName'] = soname
+  global FORCED_METADATA
+  FORCED_METADATA[filename] = metadata
 
 # If FORCED_FILE_TYPE is set, FileType() will return FORCED_FILE_TYPE for all
 # future input files. This is useful for the "as" incarnation, which

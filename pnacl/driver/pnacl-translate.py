@@ -14,6 +14,7 @@ import pathtools
 import shutil
 from driver_env import env
 from driver_log import Log
+import re
 
 EXTRA_ENV = {
   'PIC'           : '0',
@@ -395,10 +396,13 @@ def RunLLC(infile, outfile, filetype):
   env.push()
   env.setmany(input=infile, output=outfile, filetype=filetype)
   if UseSRPC:
-    RunLLCSRPC()
+    is_shared, soname, needed = RunLLCSRPC()
+    env.pop()
+    # soname and dt_needed libs are returned from LLC and passed to LD
+    driver_tools.SetBitcodeMetadata(infile, is_shared, soname, needed)
   else:
     driver_tools.RunWithLog("${RUN_LLC}")
-  env.pop()
+    env.pop()
   return 0
 
 def RunLLCSRPC():
@@ -407,9 +411,20 @@ def RunLLCSRPC():
   outfile = env.getone('output')
   flags = env.get('LLC_FLAGS')
   script = MakeSelUniversalScriptForLLC(infile, outfile, flags)
-  driver_tools.RunWithLog('${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ' +
-                          '${SEL_UNIVERSAL_FLAGS} -- ${LLC_SRPC}',
-                          stdin=script, echo_stdout=False, echo_stderr=False)
+  retcode, stdout, stderr = driver_tools.RunWithLog('${SEL_UNIVERSAL_PREFIX} ' +
+                 '${SEL_UNIVERSAL} ${SEL_UNIVERSAL_FLAGS} -- ${LLC_SRPC}',
+                  stdin=script, echo_stdout=False, echo_stderr=False,
+                  return_stdout=True)
+  # Get the values returned from the llc RPC to use in input to ld
+  is_shared = re.search(r'output\s+0:\s+i\(([0|1])\)', stdout).group(1)
+  is_shared = (is_shared == '1')
+  if is_shared:
+    assert env.getbool('SHARED')
+  soname = re.search(r'output\s+1:\s+s\("(.*)"\)', stdout).group(1)
+  needed_str = re.search(r'output\s+2:\s+s\("(.*)"\)', stdout).group(1)
+  # If the delimiter changes, this line needs to change
+  needed_libs = [ lib for lib in needed_str.split(r'\n') if lib]
+  return is_shared, soname, needed_libs
 
 def MakeSelUniversalScriptForLLC(infile, outfile, flags):
   script = []
