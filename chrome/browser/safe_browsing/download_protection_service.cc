@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -375,8 +375,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
     RecordFileExtensionType(info_.target_file);
 
     if (final_url.SchemeIs("https") || !IsBinaryFile(info_.target_file)) {
-      RecordImprovedProtectionStats(final_url.SchemeIs("https") ?
-                  REASON_HTTPS_URL : REASON_NOT_BINARY_FILE);
+      RecordImprovedProtectionStats(!IsBinaryFile(info_.target_file) ?
+                  REASON_NOT_BINARY_FILE : REASON_HTTPS_URL);
       BrowserThread::PostTask(
           BrowserThread::IO,
           FROM_HERE,
