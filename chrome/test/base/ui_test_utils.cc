@@ -228,8 +228,10 @@ bool ExecuteJavaScriptHelper(RenderViewHost* render_view_host,
                                                 WideToUTF16Hack(script));
   DOMOperationObserver dom_op_observer(render_view_host);
   std::string json;
-  if (!dom_op_observer.GetResponse(&json))
+  if (!dom_op_observer.GetResponse(&json)) {
+    DLOG(ERROR) << "Cannot communicate with DOMOperationObserver.";
     return false;
+  }
 
   // Nothing more to do for callers that ignore the returned JS value.
   if (!result)
@@ -241,14 +243,19 @@ bool ExecuteJavaScriptHelper(RenderViewHost* render_view_host,
   json.append("]");
 
   scoped_ptr<Value> root_val(base::JSONReader::Read(json, true));
-  if (!root_val->IsType(Value::TYPE_LIST))
+  if (!root_val->IsType(Value::TYPE_LIST)) {
+    DLOG(ERROR) << "JSON result is not a list.";
     return false;
+  }
 
   ListValue* list = static_cast<ListValue*>(root_val.get());
   Value* result_val;
   if (!list || !list->GetSize() ||
-      !list->Remove(0, &result_val))  // Remove gives us ownership of the value.
+      // Remove gives us ownership of the value.
+      !list->Remove(0, &result_val)) {
+    DLOG(ERROR) << "JSON result list is empty.";
     return false;
+  }
 
   result->reset(result_val);
   return true;
