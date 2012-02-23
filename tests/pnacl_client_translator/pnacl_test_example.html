@@ -18,18 +18,25 @@
       // Set up a ticker so that we know that the UI thread is not blocked.
       var quantum = 50;
       var startTime = (new Date).getTime();
+      var done = false;
       var updateUI = function() {
-         var counter_div = $('counter_area');
+         var start_end_div = $('start_end');
          var now = (new Date).getTime();
-         counter_div.innerText = String(now - startTime);
+         start_end_div.innerText = String(now - startTime);
          updateCanvas();
-         setTimeout(updateUI, quantum);
+         if (!done) {
+           setTimeout(updateUI, quantum);
+         }
       }
       setTimeout(updateUI, quantum);
 
       var updateProgress = function() {
          var progress_div = $('progress_area');
          progress_div.innerText += '.';
+      }
+
+      var handleLoadEnd = function() {
+         done = true;
       }
 
       // For canvas drawing.
@@ -64,7 +71,7 @@
       nexe_div.addEventListener('loadstart', updateProgress, true);
       nexe_div.addEventListener('progress', updateProgress, true);
       nexe_div.addEventListener('load', updateProgress, true);
-      nexe_div.addEventListener('loadend', updateProgress, true);
+      nexe_div.addEventListener('loadend', handleLoadEnd, true);
     }
 //]]>
   </script>
@@ -88,8 +95,9 @@
     //]]>
   </script>
 
-  <p> This should tick when the UI thread is not blocked:</p>
-  <div id="counter_area"> 0.0 </div>
+  <p>Page start to loadend (millisecs):</p>
+  <div id="start_end"> 0.0 </div>
+  <p> This will animate when the UI thread is not blocked (until loadend):</p>
   <canvas id="canvas" width="200" height="10">
   </canvas>
 
