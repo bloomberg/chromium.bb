@@ -449,6 +449,8 @@
         'browser/chromeos/dbus/bluetooth_adapter_client.h',
         'browser/chromeos/dbus/bluetooth_device_client.cc',
         'browser/chromeos/dbus/bluetooth_device_client.h',
+        'browser/chromeos/dbus/bluetooth_input_client.cc',
+        'browser/chromeos/dbus/bluetooth_input_client.h',
         'browser/chromeos/dbus/bluetooth_manager_client.cc',
         'browser/chromeos/dbus/bluetooth_manager_client.h',
         'browser/chromeos/dbus/bluetooth_node_client.cc',

@@ -22,6 +22,7 @@ namespace chromeos {
 // Style Note: Clients are sorted by names.
 class BluetoothAdapterClient;
 class BluetoothDeviceClient;
+class BluetoothInputClient;
 class BluetoothManagerClient;
 class BluetoothNodeClient;
 class CrosDisksClient;
@@ -79,6 +80,11 @@ class DBusThreadManager {
   // Do not cache this pointer and use it after DBusThreadManager is shut
   // down.
   virtual BluetoothDeviceClient* GetBluetoothDeviceClient() = 0;
+
+  // Returns the bluetooth input client, owned by DBusThreadManager.
+  // Do not cache this pointer and use it after DBusThreadManager is shut
+  // down.
+  virtual BluetoothInputClient* GetBluetoothInputClient() = 0;
 
   // Returns the bluetooth manager client, owned by DBusThreadManager.
   // Do not cache this pointer and use it after DBusThreadManager is shut

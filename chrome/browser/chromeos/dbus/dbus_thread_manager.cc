@@ -8,6 +8,7 @@
 #include "base/threading/thread.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_adapter_client.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_device_client.h"
+#include "chrome/browser/chromeos/dbus/bluetooth_input_client.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_manager_client.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_node_client.h"
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
@@ -60,6 +61,8 @@ class DBusThreadManagerImpl : public DBusThreadManager {
         system_bus_.get(), bluetooth_manager_client_.get()));
     bluetooth_device_client_.reset(BluetoothDeviceClient::Create(
         system_bus_.get(), bluetooth_adapter_client_.get()));
+    bluetooth_input_client_.reset(BluetoothInputClient::Create(
+        system_bus_.get(), bluetooth_adapter_client_.get()));
     bluetooth_node_client_.reset(BluetoothNodeClient::Create(
         system_bus_.get(), bluetooth_device_client_.get()));
     // Create the cros-disks client.
@@ -100,6 +103,11 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   // DBusThreadManager override.
   virtual BluetoothDeviceClient* GetBluetoothDeviceClient() OVERRIDE {
     return bluetooth_device_client_.get();
+  }
+
+  // DBusThreadManager override.
+  virtual BluetoothInputClient* GetBluetoothInputClient() OVERRIDE {
+    return bluetooth_input_client_.get();
   }
 
   // DBusThreadManager override.
@@ -157,6 +165,7 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<CrosDBusService> cros_dbus_service_;
   scoped_ptr<BluetoothAdapterClient> bluetooth_adapter_client_;
   scoped_ptr<BluetoothDeviceClient> bluetooth_device_client_;
+  scoped_ptr<BluetoothInputClient> bluetooth_input_client_;
   scoped_ptr<BluetoothManagerClient> bluetooth_manager_client_;
   scoped_ptr<BluetoothNodeClient> bluetooth_node_client_;
   scoped_ptr<CrosDisksClient> cros_disks_client_;

@@ -14,6 +14,7 @@ namespace chromeos {
 
 class  MockBluetoothAdapterClient;
 class  MockBluetoothDeviceClient;
+class  MockBluetoothInputClient;
 class  MockBluetoothManagerClient;
 class  MockBluetoothNodeClient;
 class  MockCrosDisksClient;
@@ -35,6 +36,7 @@ class MockDBusThreadManager : public DBusThreadManager {
 
   MOCK_METHOD0(GetBluetoothAdapterClient, BluetoothAdapterClient*(void));
   MOCK_METHOD0(GetBluetoothDeviceClient, BluetoothDeviceClient*(void));
+  MOCK_METHOD0(GetBluetoothInputClient, BluetoothInputClient*(void));
   MOCK_METHOD0(GetBluetoothManagerClient, BluetoothManagerClient*(void));
   MOCK_METHOD0(GetBluetoothNodeClient, BluetoothNodeClient*(void));
   MOCK_METHOD0(GetCrosDisksClient, CrosDisksClient*(void));
@@ -51,6 +53,9 @@ class MockDBusThreadManager : public DBusThreadManager {
   }
   MockBluetoothDeviceClient* mock_bluetooth_device_client() {
     return mock_bluetooth_device_client_.get();
+  }
+  MockBluetoothInputClient* mock_bluetooth_input_client() {
+    return mock_bluetooth_input_client_.get();
   }
   MockBluetoothManagerClient* mock_bluetooth_manager_client() {
     return mock_bluetooth_manager_client_.get();
@@ -86,6 +91,7 @@ class MockDBusThreadManager : public DBusThreadManager {
  private:
   scoped_ptr<MockBluetoothAdapterClient> mock_bluetooth_adapter_client_;
   scoped_ptr<MockBluetoothDeviceClient> mock_bluetooth_device_client_;
+  scoped_ptr<MockBluetoothInputClient> mock_bluetooth_input_client_;
   scoped_ptr<MockBluetoothManagerClient> mock_bluetooth_manager_client_;
   scoped_ptr<MockBluetoothNodeClient> mock_bluetooth_node_client_;
   scoped_ptr<MockCrosDisksClient> mock_cros_disks_client_;

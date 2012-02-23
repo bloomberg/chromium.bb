@@ -97,6 +97,8 @@
         'browser/chromeos/dbus/mock_bluetooth_adapter_client.h',
         'browser/chromeos/dbus/mock_bluetooth_device_client.cc',
         'browser/chromeos/dbus/mock_bluetooth_device_client.h',
+        'browser/chromeos/dbus/mock_bluetooth_input_client.cc',
+        'browser/chromeos/dbus/mock_bluetooth_input_client.h',
         'browser/chromeos/dbus/mock_bluetooth_manager_client.cc',
         'browser/chromeos/dbus/mock_bluetooth_manager_client.h',
         'browser/chromeos/dbus/mock_bluetooth_node_client.cc',
