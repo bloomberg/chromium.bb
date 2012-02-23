@@ -641,9 +641,11 @@ TEST_F(SyncerTest, GetCommitIdsFiltersThrottledEntries) {
   do { \
     Entry entryA(rtrans, syncable::GET_BY_ID, id_fac.FromNumber(id)); \
     ASSERT_TRUE(entryA.good()); \
-    EXPECT_EQ(is_unsynced, entryA.Get(IS_UNSYNCED)); \
-    EXPECT_EQ(is_unapplied, entryA.Get(IS_UNAPPLIED_UPDATE)); \
-    EXPECT_EQ(prev_initialized, \
+    /* We don't use EXPECT_EQ here because when the left side param is false,
+    gcc 4.6 warns about converting 'false' to pointer type for argument 1. */ \
+    EXPECT_TRUE(is_unsynced == entryA.Get(IS_UNSYNCED)); \
+    EXPECT_TRUE(is_unapplied == entryA.Get(IS_UNAPPLIED_UPDATE)); \
+    EXPECT_TRUE(prev_initialized == \
               syncable::IsRealDataType(syncable::GetModelTypeFromSpecifics( \
                   entryA.Get(BASE_SERVER_SPECIFICS)))); \
     EXPECT_TRUE(parent_id == -1 || \

@@ -205,14 +205,6 @@ TEST_F(SyncableGeneralTest, ChildrenOps) {
   ASSERT_EQ(OPENED, dir.Open(db_path_, "SimpleTest", &delegate_,
                              NullTransactionObserver()));
 
-  int64 root_metahandle;
-  {
-    ReadTransaction rtrans(FROM_HERE, &dir);
-    Entry e(&rtrans, GET_BY_ID, rtrans.root_id());
-    ASSERT_TRUE(e.good());
-    root_metahandle = e.Get(META_HANDLE);
-  }
-
   int64 written_metahandle;
   const Id id = TestIdFactory::FromNumber(99);
   std::string name = "Jeff";
