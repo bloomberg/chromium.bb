@@ -7,6 +7,7 @@
 #include "chrome/browser/chromeos/dbus/mock_bluetooth_adapter_client.h"
 #include "chrome/browser/chromeos/dbus/mock_bluetooth_device_client.h"
 #include "chrome/browser/chromeos/dbus/mock_bluetooth_manager_client.h"
+#include "chrome/browser/chromeos/dbus/mock_bluetooth_node_client.h"
 #include "chrome/browser/chromeos/dbus/mock_cros_disks_client.h"
 #include "chrome/browser/chromeos/dbus/mock_cryptohome_client.h"
 #include "chrome/browser/chromeos/dbus/mock_image_burner_client.h"
@@ -26,6 +27,7 @@ MockDBusThreadManager::MockDBusThreadManager()
     : mock_bluetooth_adapter_client_(new MockBluetoothAdapterClient),
       mock_bluetooth_device_client_(new MockBluetoothDeviceClient),
       mock_bluetooth_manager_client_(new MockBluetoothManagerClient),
+      mock_bluetooth_node_client_(new MockBluetoothNodeClient),
       mock_cros_disks_client_(new MockCrosDisksClient),
       mock_cryptohome_client_(new MockCryptohomeClient),
       mock_image_burner_client_(new MockImageBurnerClient),
@@ -40,6 +42,8 @@ MockDBusThreadManager::MockDBusThreadManager()
       .WillRepeatedly(Return(mock_bluetooth_device_client_.get()));
   EXPECT_CALL(*this, GetBluetoothManagerClient())
       .WillRepeatedly(Return(mock_bluetooth_manager_client()));
+  EXPECT_CALL(*this, GetBluetoothNodeClient())
+      .WillRepeatedly(Return(mock_bluetooth_node_client_.get()));
   EXPECT_CALL(*this, GetCrosDisksClient())
       .WillRepeatedly(Return(mock_cros_disks_client()));
   EXPECT_CALL(*this, GetCryptohomeClient())

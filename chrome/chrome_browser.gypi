@@ -451,6 +451,8 @@
         'browser/chromeos/dbus/bluetooth_device_client.h',
         'browser/chromeos/dbus/bluetooth_manager_client.cc',
         'browser/chromeos/dbus/bluetooth_manager_client.h',
+        'browser/chromeos/dbus/bluetooth_node_client.cc',
+        'browser/chromeos/dbus/bluetooth_node_client.h',
         'browser/chromeos/dbus/bluetooth_property.cc',
         'browser/chromeos/dbus/bluetooth_property.h',
         'browser/chromeos/dbus/cros_disks_client.cc',
