@@ -125,9 +125,9 @@ the type of event.  Events are generated both in response to requests
 spontaneously when the server state changes.
 
 \begin{itemize}
-\item state is broadcast on connect, events are sent out when state
-  changes.  clients must listen for these changes and cache the state.
-  there is no need (or mechanism) to query server state.
+\item State is broadcast on connect, events are sent out when state
+  changes. Clients must listen for these changes and cache the state.
+  There is no need (or mechanism) to query server state.
 
 \item the server will broadcast the presence of a number of global objects,
   which in turn will broadcast their current state.
