@@ -1227,7 +1227,9 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
 
   all_targets = set()
   for build_file in params['build_files']:
-    for target in gyp.common.AllTargets(target_list, target_dicts, build_file):
+    for target in gyp.common.AllTargets(target_list,
+                                        target_dicts,
+                                        os.path.normpath(build_file)):
       all_targets.add(target)
   all_outputs = set()
 
