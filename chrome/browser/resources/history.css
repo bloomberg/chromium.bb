@@ -3,8 +3,13 @@
  * found in the LICENSE file.
  */
 
-#editing-controls button {
-  margin: 18px 0 -8px 0;
+#editing-controls {
+  margin-top: 16px;
+  white-space: nowrap;
+}
+
+#editing-controls button:first-of-type {
+  -webkit-margin-start: 0;
 }
 
 #results-display {
@@ -58,6 +63,10 @@
 
 html[dir=rtl] .entry-box {
   float: right; /* To make the box shrink to fit its content. */
+}
+
+.day {
+  white-space: nowrap;
 }
 
 .search-results, .day-results {
