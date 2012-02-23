@@ -11,6 +11,16 @@
 #include "chrome/browser/chromeos/dbus/bluetooth_adapter_client.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 
+namespace {
+
+// Used to ignore whether or not our method calls work, since we were
+// ignoring them before I added callbacks to the methods.
+void EmptyAdapterCallback(const dbus::ObjectPath& object_path,
+                          bool success) {
+}
+
+};
+
 namespace chromeos {
 
 class BluetoothAdapterImpl : public BluetoothAdapter,
@@ -50,13 +60,16 @@ class BluetoothAdapterImpl : public BluetoothAdapter,
   // BluetoothAdapter override.
   virtual void StartDiscovery() OVERRIDE {
     DCHECK(bluetooth_adapter_client_);
-    bluetooth_adapter_client_->StartDiscovery(dbus::ObjectPath(id_));
+    bluetooth_adapter_client_->StartDiscovery(
+        dbus::ObjectPath(id_),
+        base::Bind(&EmptyAdapterCallback));
   }
 
   // BluetoothAdapter override.
   virtual void StopDiscovery() OVERRIDE {
     DCHECK(bluetooth_adapter_client_);
-    bluetooth_adapter_client_->StopDiscovery(dbus::ObjectPath(id_));
+    bluetooth_adapter_client_->StopDiscovery(dbus::ObjectPath(id_),
+                                             base::Bind(&EmptyAdapterCallback));
   }
 
   // BluetoothAdapterClient::Observer override.

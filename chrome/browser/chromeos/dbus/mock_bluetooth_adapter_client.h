@@ -20,8 +20,38 @@ class MockBluetoothAdapterClient : public BluetoothAdapterClient {
   MOCK_METHOD1(AddObserver, void(Observer*));
   MOCK_METHOD1(RemoveObserver, void(Observer*));
   MOCK_METHOD1(GetProperties, Properties*(const dbus::ObjectPath&));
-  MOCK_METHOD1(StartDiscovery, void(const dbus::ObjectPath&));
-  MOCK_METHOD1(StopDiscovery, void(const dbus::ObjectPath&));
+  MOCK_METHOD2(RequestSession, void(const dbus::ObjectPath&,
+                                    const AdapterCallback&));
+  MOCK_METHOD2(ReleaseSession, void(const dbus::ObjectPath&,
+                                    const AdapterCallback&));
+  MOCK_METHOD2(StartDiscovery, void(const dbus::ObjectPath&,
+                                    const AdapterCallback&));
+  MOCK_METHOD2(StopDiscovery, void(const dbus::ObjectPath&,
+                                    const AdapterCallback&));
+  MOCK_METHOD3(FindDevice, void(const dbus::ObjectPath&,
+                                const std::string&,
+                                const DeviceCallback&));
+  MOCK_METHOD3(CreateDevice, void(const dbus::ObjectPath&,
+                                  const std::string&,
+                                  const DeviceCallback&));
+  MOCK_METHOD5(CreatePairedDevice, void(const dbus::ObjectPath&,
+                                        const std::string&,
+                                        const dbus::ObjectPath&,
+                                        const std::string&,
+                                        const DeviceCallback&));
+  MOCK_METHOD3(CancelDeviceCreation, void(const dbus::ObjectPath&,
+                                          const std::string&,
+                                          const AdapterCallback&));
+  MOCK_METHOD3(RemoveDevice, void(const dbus::ObjectPath&,
+                                  const dbus::ObjectPath&,
+                                  const AdapterCallback&));
+  MOCK_METHOD4(RegisterAgent, void(const dbus::ObjectPath&,
+                                   const dbus::ObjectPath&,
+                                   const std::string&,
+                                   const AdapterCallback&));
+  MOCK_METHOD3(UnregisterAgent, void(const dbus::ObjectPath&,
+                                     const dbus::ObjectPath&,
+                                     const AdapterCallback&));
 };
 
 }  // namespace chromeos

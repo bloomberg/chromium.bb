@@ -131,12 +131,99 @@ class BluetoothAdapterClient {
   // any values should be copied if needed.
   virtual Properties* GetProperties(const dbus::ObjectPath& object_path) = 0;
 
+  // The AdapterCallback is used for adapter methods that only return to
+  // indicate success. It receives two arguments, the |object_path| of the
+  // adapter the call was made on and |success| which indicates whether
+  // or not the request succeeded.
+  typedef base::Callback<void(const dbus::ObjectPath&, bool)> AdapterCallback;
+
+  // Request a client session for the adapter with object path |object_path|,
+  // possible mode changes must be confirmed by the user via a registered
+  // agent.
+  virtual void RequestSession(const dbus::ObjectPath& object_path,
+                              const AdapterCallback& callback) = 0;
+
+  // Release a previously requested session, restoring the adapter mode to
+  // that prior to the original request.
+  virtual void ReleaseSession(const dbus::ObjectPath& object_path,
+                              const AdapterCallback& callback) = 0;
+
   // Starts a device discovery on the adapter with object path |object_path|.
-  virtual void StartDiscovery(const dbus::ObjectPath& object_path) = 0;
+  virtual void StartDiscovery(const dbus::ObjectPath& object_path,
+                              const AdapterCallback& callback) = 0;
 
   // Cancels any previous device discovery on the adapter with object path
   // |object_path|.
-  virtual void StopDiscovery(const dbus::ObjectPath& object_path) = 0;
+  virtual void StopDiscovery(const dbus::ObjectPath& object_path,
+                             const AdapterCallback& callback) = 0;
+
+  // The DeviceCallback is used for adapter methods that return a dbus
+  // object path for a remote device, as well as success. It receives two
+  // arguments, the |object_path| of the device returned by the method and
+  // |success| which indicates whether or not the request succeeded.
+  typedef base::Callback<void(const dbus::ObjectPath&, bool)> DeviceCallback;
+
+  // Retrieves the dbus object path from the adapter with object path
+  // |object_path| for the known device with the address |address|.
+  virtual void FindDevice(const dbus::ObjectPath& object_path,
+                          const std::string& address,
+                          const DeviceCallback& callback) = 0;
+
+  // Creates a new dbus object from the adapter with object path |object_path|
+  // to the remote device with address |address|, connecting to it and
+  // retrieving all SDP records. After a successful call, the device is known
+  // and appear's in the adapter's |devices| interface. This is a low-security
+  // connection which may not be accepted by the device.
+  virtual void CreateDevice(const dbus::ObjectPath& object_path,
+                            const std::string& address,
+                            const DeviceCallback& callback) = 0;
+
+  // Creates a new dbus object from the adapter with object path |object_path|
+  // to the remote device with address |address|, connecting to it, retrieving
+  // all SDP records and then initiating a pairing. If CreateDevice() has been
+  // previously called for this device, this only initiates the pairing.
+  //
+  // The dbus object path |agent_path| of an agent within the local process
+  // must be specified to negotiate the pairing, |capability| specifies the
+  // input and display capabilities of that agent and should be one of the
+  // constants declared in the bluetooth_agent:: namespace.
+  virtual void CreatePairedDevice(const dbus::ObjectPath& object_path,
+                                  const std::string& address,
+                                  const dbus::ObjectPath& agent_path,
+                                  const std::string& capability,
+                                  const DeviceCallback& callback) = 0;
+
+  // Cancels the currently in progress call to CreateDevice() or
+  // CreatePairedDevice() on the adapter with object path |object_path|
+  // for the remote device with address |address|.
+  virtual void CancelDeviceCreation(const dbus::ObjectPath& object_path,
+                                    const std::string& address,
+                                    const AdapterCallback& callback) = 0;
+
+  // Removes from the adapter with object path |object_path| the remote
+  // device with object path |object_path| from the list of known devices
+  // and discards any pairing information.
+  virtual void RemoveDevice(const dbus::ObjectPath& object_path,
+                            const dbus::ObjectPath& device_path,
+                            const AdapterCallback& callback) = 0;
+
+  // Registers an adapter-wide agent for the adapter with object path
+  // |object_path|. This agent is used for incoming pairing connections
+  // and confirmation of adapter mode changes. The dbus object path
+  // |agent_path| of an agent within the local process must be specified,
+  // |capability| specifies the input and display capabilities of that
+  // agent and should be one of the constants declared in the
+  // bluetooth_agent:: namespace.
+  virtual void RegisterAgent(const dbus::ObjectPath& object_path,
+                             const dbus::ObjectPath& agent_path,
+                             const std::string& capability,
+                             const AdapterCallback& callback) = 0;
+
+  // Unregisters an adapter-wide agent with object path |agent_path| from
+  // the adapter with object path |object_path|.
+  virtual void UnregisterAgent(const dbus::ObjectPath& object_path,
+                               const dbus::ObjectPath& agent_path,
+                               const AdapterCallback& callback) = 0;
 
   // Creates the instance.
   static BluetoothAdapterClient* Create(dbus::Bus* bus,

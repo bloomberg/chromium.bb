@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,8 +19,10 @@ class MockBluetoothManagerClient : public BluetoothManagerClient {
 
   MOCK_METHOD1(AddObserver, void(Observer*));
   MOCK_METHOD1(RemoveObserver, void(Observer*));
-  MOCK_METHOD1(DefaultAdapter,
-               void(const DefaultAdapterCallback& callback));
+  MOCK_METHOD0(GetProperties, Properties*());
+  MOCK_METHOD1(DefaultAdapter, void(const AdapterCallback& callback));
+  MOCK_METHOD2(FindAdapter, void(const std::string&,
+                                 const AdapterCallback& callback));
 };
 
 }  // namespace chromeos

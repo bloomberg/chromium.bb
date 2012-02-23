@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/observer_list.h"
+#include "chrome/browser/chromeos/dbus/bluetooth_property.h"
 #include "dbus/object_path.h"
 
 namespace dbus {
@@ -22,10 +23,24 @@ namespace chromeos {
 // daemon's Manager interface.
 class BluetoothManagerClient {
  public:
+  // Structure of properties associated with the bluetooth manager.
+  struct Properties : public BluetoothPropertySet {
+    // List of object paths of local Bluetooth adapters. Read-only.
+    BluetoothProperty<std::vector<dbus::ObjectPath> > adapters;
+
+    Properties(dbus::ObjectProxy* object_proxy,
+               PropertyChangedCallback callback);
+    virtual ~Properties();
+  };
+
   // Interface for observing changes from the bluetooth manager.
   class Observer {
    public:
     virtual ~Observer() {}
+
+    // Called when the manager has a change in value of the property
+    // named |property_name|.
+    virtual void PropertyChanged(const std::string& property_name) {}
 
     // Called when a local bluetooth adapter is added.
     // |object_path| is the dbus object path of the adapter.
@@ -47,16 +62,25 @@ class BluetoothManagerClient {
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 
-  // The DefaultAdapterCallback receives two arguments:
-  // dbus::ObjectPath object_path - the path of the new default adapter
-  // bool success - whether or not the request succeeded
-  typedef base::Callback<void(const dbus::ObjectPath&, bool)>
-      DefaultAdapterCallback;
+  // Obtain the properties for the manager, any values should be copied
+  // if needed.
+  virtual Properties* GetProperties() = 0;
+
+  // The AdapterCallback is used for both the DefaultAdapter() and
+  // FindAdapter() methods. It receives two arguments, the |object_path|
+  // of the adapter and |success| which indicates whether or not the request
+  // succeeded.
+  typedef base::Callback<void(const dbus::ObjectPath&, bool)> AdapterCallback;
 
   // Retrieves the dbus object path for the default adapter.
   // The default adapter is the preferred local bluetooth interface when a
   // client does not specify a particular interface.
-  virtual void DefaultAdapter(const DefaultAdapterCallback& callback) = 0;
+  virtual void DefaultAdapter(const AdapterCallback& callback) = 0;
+
+  // Retrieves the dbus object path for the adapter with the address |address|,
+  // which may also be an interface name.
+  virtual void FindAdapter(const std::string& address,
+                           const AdapterCallback& callback) = 0;
 
   // Creates the instance.
   static BluetoothManagerClient* Create(dbus::Bus* bus);

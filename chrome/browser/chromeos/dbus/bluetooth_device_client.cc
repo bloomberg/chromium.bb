@@ -92,6 +92,98 @@ class BluetoothDeviceClientImpl: public BluetoothDeviceClient,
     return GetObject(object_path).second;
   }
 
+  // BluetoothDeviceClient override.
+  virtual void DiscoverServices(const dbus::ObjectPath& object_path,
+                                const std::string& pattern,
+                                const ServicesCallback& callback) OVERRIDE {
+    dbus::MethodCall method_call(
+        bluetooth_device::kBluetoothDeviceInterface,
+        bluetooth_device::kDiscoverServices);
+
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(pattern);
+
+    dbus::ObjectProxy* object_proxy = GetObjectProxy(object_path);
+
+    object_proxy->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&BluetoothDeviceClientImpl::OnDiscoverServices,
+                   weak_ptr_factory_.GetWeakPtr(), object_path, callback));
+  }
+
+  // BluetoothDeviceClient override.
+  virtual void CancelDiscovery(const dbus::ObjectPath& object_path,
+                               const DeviceCallback& callback) OVERRIDE {
+    dbus::MethodCall method_call(
+        bluetooth_device::kBluetoothDeviceInterface,
+        bluetooth_device::kCancelDiscovery);
+
+    dbus::ObjectProxy* object_proxy = GetObjectProxy(object_path);
+
+    object_proxy->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&BluetoothDeviceClientImpl::OnCancelDiscovery,
+                   weak_ptr_factory_.GetWeakPtr(), object_path, callback));
+  }
+
+  // BluetoothDeviceClient override.
+  virtual void Disconnect(const dbus::ObjectPath& object_path,
+                          const DeviceCallback& callback) OVERRIDE {
+    dbus::MethodCall method_call(
+        bluetooth_device::kBluetoothDeviceInterface,
+        bluetooth_device::kDisconnect);
+
+    dbus::ObjectProxy* object_proxy = GetObjectProxy(object_path);
+
+    object_proxy->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&BluetoothDeviceClientImpl::OnDisconnect,
+                   weak_ptr_factory_.GetWeakPtr(), object_path, callback));
+  }
+
+  // BluetoothDeviceClient override.
+  virtual void CreateNode(const dbus::ObjectPath& object_path,
+                          const std::string& uuid,
+                          const NodeCallback& callback) OVERRIDE {
+    dbus::MethodCall method_call(
+        bluetooth_device::kBluetoothDeviceInterface,
+        bluetooth_device::kCreateNode);
+
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(uuid);
+
+    dbus::ObjectProxy* object_proxy = GetObjectProxy(object_path);
+
+    object_proxy->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&BluetoothDeviceClientImpl::OnCreateNode,
+                   weak_ptr_factory_.GetWeakPtr(), object_path, callback));
+  }
+
+  // BluetoothDeviceClient override.
+  virtual void RemoveNode(const dbus::ObjectPath& object_path,
+                          const dbus::ObjectPath& node_path,
+                          const DeviceCallback& callback) OVERRIDE {
+    dbus::MethodCall method_call(
+        bluetooth_device::kBluetoothDeviceInterface,
+        bluetooth_device::kRemoveNode);
+
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendObjectPath(node_path);
+
+    dbus::ObjectProxy* object_proxy = GetObjectProxy(object_path);
+
+    object_proxy->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&BluetoothDeviceClientImpl::OnRemoveNode,
+                   weak_ptr_factory_.GetWeakPtr(), object_path, callback));
+  }
+
  private:
   // We maintain a collection of dbus object proxies and properties structures
   // for each device.
@@ -123,10 +215,34 @@ class BluetoothDeviceClientImpl: public BluetoothDeviceClient,
     dbus::ObjectProxy* object_proxy = bus_->GetObjectProxy(
         bluetooth_device::kBluetoothDeviceServiceName, object_path);
 
+    object_proxy->ConnectToSignal(
+        bluetooth_device::kBluetoothDeviceInterface,
+        bluetooth_device::kDisconnectRequestedSignal,
+        base::Bind(&BluetoothDeviceClientImpl::DisconnectRequestedReceived,
+                   weak_ptr_factory_.GetWeakPtr(), object_path),
+        base::Bind(&BluetoothDeviceClientImpl::DisconnectRequestedConnected,
+                   weak_ptr_factory_.GetWeakPtr(), object_path));
+
+    object_proxy->ConnectToSignal(
+        bluetooth_device::kBluetoothDeviceInterface,
+        bluetooth_device::kNodeCreatedSignal,
+        base::Bind(&BluetoothDeviceClientImpl::NodeCreatedReceived,
+                   weak_ptr_factory_.GetWeakPtr(), object_path),
+        base::Bind(&BluetoothDeviceClientImpl::NodeCreatedConnected,
+                   weak_ptr_factory_.GetWeakPtr(), object_path));
+
+    object_proxy->ConnectToSignal(
+        bluetooth_device::kBluetoothDeviceInterface,
+        bluetooth_device::kNodeRemovedSignal,
+        base::Bind(&BluetoothDeviceClientImpl::NodeRemovedReceived,
+                   weak_ptr_factory_.GetWeakPtr(), object_path),
+        base::Bind(&BluetoothDeviceClientImpl::NodeRemovedConnected,
+                   weak_ptr_factory_.GetWeakPtr(), object_path));
+
     // Create the properties structure.
     Properties* properties = new Properties(
         object_proxy,
-        base::Bind(&BluetoothDeviceClientImpl::PropertyChanged,
+        base::Bind(&BluetoothDeviceClientImpl::OnPropertyChanged,
                    weak_ptr_factory_.GetWeakPtr(), object_path));
 
     properties->ConnectSignals();
@@ -160,10 +276,176 @@ class BluetoothDeviceClientImpl: public BluetoothDeviceClient,
   // Called by BluetoothPropertySet when a property value is changed,
   // either by result of a signal or response to a GetAll() or Get()
   // call. Informs observers.
-  void PropertyChanged(const dbus::ObjectPath& object_path,
-                       const std::string& property_name) {
+  void OnPropertyChanged(const dbus::ObjectPath& object_path,
+                         const std::string& property_name) {
     FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
                       PropertyChanged(object_path, property_name));
+  }
+
+  // Called by dbus:: when a DisconnectRequested signal is received.
+  void DisconnectRequestedReceived(const dbus::ObjectPath& object_path,
+                                   dbus::Signal* signal) {
+    DCHECK(signal);
+
+    DVLOG(1) << object_path.value() << ": Disconnect requested.";
+    FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
+                      DisconnectRequested(object_path));
+  }
+
+  // Called by dbus:: when the DisconnectRequested signal is initially
+  // connected.
+  void DisconnectRequestedConnected(const dbus::ObjectPath& object_path,
+                                    const std::string& interface_name,
+                                    const std::string& signal_name,
+                                    bool success) {
+    LOG_IF(WARNING, !success) << object_path.value()
+                              << ": Failed to connect to "
+                                 "DisconnectRequested signal.";
+  }
+
+  // Called by dbus:: when a NodeCreated signal is received.
+  void NodeCreatedReceived(const dbus::ObjectPath& object_path,
+                           dbus::Signal* signal) {
+    DCHECK(signal);
+    dbus::MessageReader reader(signal);
+    dbus::ObjectPath node_path;
+    if (!reader.PopObjectPath(&node_path)) {
+      LOG(WARNING) << object_path.value()
+                   << ": NodeCreated signal has incorrect parameters: "
+                   << signal->ToString();
+      return;
+    }
+
+    DVLOG(1) << object_path.value() << ": Node created: "
+             << node_path.value();
+    FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
+                      NodeCreated(object_path, node_path));
+  }
+
+  // Called by dbus:: when the NodeCreated signal is initially connected.
+  void NodeCreatedConnected(const dbus::ObjectPath& object_path,
+                            const std::string& interface_name,
+                            const std::string& signal_name,
+                            bool success) {
+    LOG_IF(WARNING, !success) << object_path.value()
+                              << ": Failed to connect to NodeCreated signal.";
+  }
+
+  // Called by dbus:: when a NodeRemoved signal is received.
+  void NodeRemovedReceived(const dbus::ObjectPath& object_path,
+                           dbus::Signal* signal) {
+    DCHECK(signal);
+    dbus::MessageReader reader(signal);
+    dbus::ObjectPath node_path;
+    if (!reader.PopObjectPath(&node_path)) {
+      LOG(WARNING) << object_path.value()
+                   << ": NodeRemoved signal has incorrect parameters: "
+                   << signal->ToString();
+      return;
+    }
+
+    DVLOG(1) << object_path.value() << ": Node removed: "
+             << node_path.value();
+    FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
+                      NodeRemoved(object_path, node_path));
+  }
+
+  // Called by dbus:: when the NodeRemoved signal is initially connected.
+  void NodeRemovedConnected(const dbus::ObjectPath& object_path,
+                            const std::string& interface_name,
+                            const std::string& signal_name,
+                            bool success) {
+    LOG_IF(WARNING, !success) << object_path.value()
+                              << ": Failed to connect to NodeRemoved signal.";
+  }
+
+  // Called when a response for DiscoverServices() is received.
+  void OnDiscoverServices(const dbus::ObjectPath& object_path,
+                          const ServicesCallback& callback,
+                          dbus::Response* response) {
+    // Parse response.
+    bool success = false;
+    ServiceMap services;
+    if (response != NULL) {
+      dbus::MessageReader reader(response);
+
+      dbus::MessageReader array_reader(NULL);
+      if (!reader.PopArray(&array_reader)) {
+        LOG(WARNING) << "DiscoverServices response has incorrect parameters: "
+                     << response->ToString();
+      } else {
+        while (array_reader.HasMoreData()) {
+          dbus::MessageReader dict_entry_reader(NULL);
+          uint32 key = 0;
+          std::string value;
+          if (!array_reader.PopDictEntry(&dict_entry_reader)
+              || !dict_entry_reader.PopUint32(&key)
+              || !dict_entry_reader.PopString(&value)) {
+            LOG(WARNING) << "DiscoverServices response has "
+                            "incorrect parameters: " << response->ToString();
+          } else {
+            services[key] = value;
+          }
+        }
+
+        success = true;
+      }
+    } else {
+      LOG(WARNING) << "Failed to discover services.";
+    }
+
+    // Notify client.
+    callback.Run(object_path, services, success);
+  }
+
+  // Called when a response for CancelDiscovery() is received.
+  void OnCancelDiscovery(const dbus::ObjectPath& object_path,
+                         const DeviceCallback& callback,
+                         dbus::Response* response) {
+    LOG_IF(WARNING, !response) << object_path.value()
+                               << ": OnCancelDiscovery: failed.";
+    callback.Run(object_path, response);
+  }
+
+  // Called when a response for Disconnect() is received.
+  void OnDisconnect(const dbus::ObjectPath& object_path,
+                    const DeviceCallback& callback,
+                    dbus::Response* response) {
+    LOG_IF(WARNING, !response) << object_path.value()
+                               << ": OnDisconnect: failed.";
+    callback.Run(object_path, response);
+  }
+
+  // Called when a response for CreateNode() is received.
+  void OnCreateNode(const dbus::ObjectPath& object_path,
+                    const NodeCallback& callback,
+                    dbus::Response* response) {
+    // Parse response.
+    bool success = false;
+    dbus::ObjectPath node_path;
+    if (response != NULL) {
+      dbus::MessageReader reader(response);
+      if (!reader.PopObjectPath(&node_path)) {
+        LOG(WARNING) << "CreateNode response has incorrect parameters: "
+                     << response->ToString();
+      } else {
+        success = true;
+      }
+    } else {
+      LOG(WARNING) << "Failed to create node.";
+    }
+
+    // Notify client.
+    callback.Run(node_path, success);
+  }
+
+  // Called when a response for RemoveNode() is received.
+  void OnRemoveNode(const dbus::ObjectPath& object_path,
+                    const DeviceCallback& callback,
+                    dbus::Response* response) {
+    LOG_IF(WARNING, !response) << object_path.value()
+                               << ": OnRemoveNode: failed.";
+    callback.Run(object_path, response);
   }
 
   // Weak pointer factory for generating 'this' pointers that might live longer
@@ -195,6 +477,47 @@ class BluetoothDeviceClientStubImpl : public BluetoothDeviceClient {
       OVERRIDE {
     VLOG(1) << "GetProperties: " << object_path.value();
     return NULL;
+  }
+
+  // BluetoothDeviceClient override.
+  virtual void DiscoverServices(const dbus::ObjectPath& object_path,
+                                const std::string& pattern,
+                                const ServicesCallback& callback) OVERRIDE {
+    VLOG(1) << "DiscoverServices: " << object_path.value() << " " << pattern;
+
+    ServiceMap services;
+    callback.Run(object_path, services, false);
+  }
+
+  // BluetoothDeviceClient override.
+  virtual void CancelDiscovery(const dbus::ObjectPath& object_path,
+                               const DeviceCallback& callback) OVERRIDE {
+    VLOG(1) << "CancelDiscovery: " << object_path.value();
+    callback.Run(object_path, false);
+  }
+
+  // BluetoothDeviceClient override.
+  virtual void Disconnect(const dbus::ObjectPath& object_path,
+                          const DeviceCallback& callback) OVERRIDE {
+    VLOG(1) << "Disconnect: " << object_path.value();
+    callback.Run(object_path, false);
+  }
+
+  // BluetoothDeviceClient override.
+  virtual void CreateNode(const dbus::ObjectPath& object_path,
+                          const std::string& uuid,
+                          const NodeCallback& callback) OVERRIDE {
+    VLOG(1) << "CreateNode: " << object_path.value() << " " << uuid;
+    callback.Run(dbus::ObjectPath(), false);
+  }
+
+  // BluetoothDeviceClient override.
+  virtual void RemoveNode(const dbus::ObjectPath& object_path,
+                          const dbus::ObjectPath& node_path,
+                          const DeviceCallback& callback) OVERRIDE {
+    VLOG(1) << "RemoveNode: " << object_path.value()
+            << " " << node_path.value();
+    callback.Run(object_path, false);
   }
 };
 
