@@ -1797,6 +1797,7 @@ weston_input_update_drag_surface(struct wl_input_device *input_device,
 	    device->drag_surface->buffer) {
 		wl_list_insert(weston_compositor_top(device->compositor),
 			       &device->drag_surface->link);
+		weston_surface_assign_output(device->drag_surface);
 	}
 
 	if (!dx && !dy)
