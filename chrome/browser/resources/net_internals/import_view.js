@@ -91,7 +91,7 @@ var ImportView = (function() {
      * security reasons, which is why we allow the |files| array to be empty.
      */
     onDrag: function(event) {
-      return event.dataTransfer.types.indexOf('Files') == -1 ||
+      return !event.dataTransfer.types.contains('Files') ||
              event.dataTransfer.files.length > 1;
     },
 
@@ -100,7 +100,7 @@ var ImportView = (function() {
      * file, tries to load it as a log file.
      */
     onDrop: function(event) {
-      if (event.dataTransfer.types.indexOf('Files') == -1 ||
+      if (!event.dataTransfer.types.contains('Files') ||
           event.dataTransfer.files.length != 1) {
         return;
       }

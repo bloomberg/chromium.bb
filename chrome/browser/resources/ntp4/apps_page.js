@@ -791,7 +791,7 @@ cr.define('ntp4', function() {
     /** @inheritDoc */
     shouldAcceptDrag: function(e) {
       return !!ntp4.getCurrentlyDraggingTile() ||
-          (e.dataTransfer && e.dataTransfer.types.indexOf('url') != -1);
+          (e.dataTransfer && e.dataTransfer.types.contains('text/uri-list'));
     },
 
     /** @inheritDoc */
