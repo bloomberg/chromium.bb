@@ -47,16 +47,16 @@ WebDropData::WebDropData(const WebDragData& drag_data) {
         }
         custom_data.insert(std::make_pair(item.stringType, item.stringData));
         break;
-    }
+      }
       case WebDragData::Item::StorageTypeBinaryData:
-      file_contents.assign(item.binaryData.data(),
-                           item.binaryData.size());
-      file_description_filename = item.title;
-      break;
-    case WebDragData::Item::StorageTypeFilename:
-      // We don't currently use this.
-      NOTREACHED();
-    };
+        file_contents.assign(item.binaryData.data(),
+                             item.binaryData.size());
+        file_description_filename = item.title;
+        break;
+      case WebDragData::Item::StorageTypeFilename:
+        // We don't currently use this.
+        NOTREACHED();
+    }
   }
 }
 
