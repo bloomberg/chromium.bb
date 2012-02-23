@@ -32,7 +32,6 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/status/clock_updater.h"
 #include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "ui/gfx/native_widget_types.h"
 #endif
 
@@ -267,8 +266,7 @@ void StatusAreaHostAura::Observe(int type,
 
 bool StatusAreaHostAura::IsLoginOrLockScreenDisplayed() const {
 #if defined(OS_CHROMEOS)
-  if (!chromeos::UserManager::Get()->user_is_logged_in() &&
-      chromeos::system::runtime_environment::IsRunningOnChromeOS())
+  if (!chromeos::UserManager::Get()->user_is_logged_in())
     return true;
 
   const chromeos::ScreenLocker* locker =
