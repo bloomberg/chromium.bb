@@ -48,9 +48,13 @@ if test "x$enable_scanner" = "xyes"; then
 	AC_SUBST(EXPAT_LIBS)
 fi
 
+AC_PATH_PROG(XSLTPROC, xsltproc)
+AM_CONDITIONAL([HAVE_XSLTPROC], [test $XSLTPROC != ""])
+
 AC_CONFIG_FILES([Makefile
 		 wayland-scanner.m4
 		 src/Makefile
 		 src/wayland-server.pc
-		 src/wayland-client.pc])
+		 src/wayland-client.pc
+		 protocol/Makefile])
 AC_OUTPUT
