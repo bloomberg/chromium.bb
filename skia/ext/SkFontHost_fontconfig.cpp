@@ -208,19 +208,6 @@ SkTypeface* SkFontHost::CreateTypefaceFromFile(const char path[])
     return NULL;
 }
 
-// static
-bool SkFontHost::ValidFontID(SkFontID uniqueID) {
-    if (IsRemoteFont(UniqueIdToFileFaceId(uniqueID))) {
-        // remote font
-        SkAutoMutexAcquire ac(global_remote_font_map_lock);
-        return global_remote_fonts.find(uniqueID) != global_remote_fonts.end();
-    } else {
-        // local font
-        SkAutoMutexAcquire ac(global_fc_map_lock);
-        return global_fc_typefaces.find(uniqueID) != global_fc_typefaces.end();
-    }
-}
-
 void SkFontHost::Serialize(const SkTypeface*, SkWStream*) {
     SkASSERT(!"SkFontHost::Serialize unimplemented");
 }
