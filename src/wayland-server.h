@@ -27,6 +27,7 @@
 extern "C" {
 #endif
 
+#include <sys/types.h>
 #include <stdint.h>
 #include "wayland-util.h"
 #include "wayland-server-protocol.h"
