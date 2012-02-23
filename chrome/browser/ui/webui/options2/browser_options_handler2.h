@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/shell_integration.h"
@@ -103,6 +104,9 @@ class BrowserOptionsHandler
   // Updates the UI with the given state for the default browser.
   void SetDefaultBrowserUIString(int status_string_id);
 
+  // Updates the label of the 'Show Home page'.
+  void UpdateHomePageLabel() const;
+
   // Loads the possible default search engine list and reports it to the WebUI.
   void UpdateSearchEngines();
 
@@ -144,6 +148,10 @@ class BrowserOptionsHandler
 
   StringPrefMember homepage_;
   BooleanPrefMember default_browser_policy_;
+
+  // Used to observe updates to the preference of the list of URLs to load
+  // on startup, which can be updated via sync.
+  PrefChangeRegistrar pref_change_registrar_;
 
   TemplateURLService* template_url_service_;  // Weak.
 

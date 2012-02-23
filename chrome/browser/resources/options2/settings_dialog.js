@@ -52,6 +52,7 @@ cr.define('options', function() {
 
     /**
      * Handles the cancel button by closing the overlay.
+     * @private
      */
     handleCancel: function() {
       OptionsPage.closeOverlay();
