@@ -21,6 +21,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
+#include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/automation/ui_controls.h"
@@ -774,7 +775,7 @@ void AppendToPythonPath(const FilePath& dir) {
 TestWebSocketServer::TestWebSocketServer()
     : started_(false) {
 #if defined(OS_POSIX)
-  process_handle_ = base::kNullProcessHandle;
+  process_group_id_ = base::kNullProcessHandle;
 #endif
 }
 
@@ -799,11 +800,10 @@ bool TestWebSocketServer::Start(const FilePath& root_directory) {
   SetPythonPath();
 
   base::LaunchOptions options;
-  base::ProcessHandle* process_handle = NULL;
+  base::ProcessHandle process_handle;
 
 #if defined(OS_POSIX)
   options.new_process_group = true;
-  process_handle = &process_handle_;
 #elif defined(OS_WIN)
   job_handle_.Set(CreateJobObject(NULL, NULL));
   if (!job_handle_.IsValid()) {
@@ -821,11 +821,27 @@ bool TestWebSocketServer::Start(const FilePath& root_directory) {
 #endif
 
   // Launch a new WebSocket server process.
-  options.wait = true;
-  if (!base::LaunchProcess(*cmd_line.get(), options, process_handle)) {
+  if (!base::LaunchProcess(*cmd_line.get(), options, &process_handle)) {
     LOG(ERROR) << "Unable to launch websocket server.";
     return false;
   }
+#if defined(OS_POSIX)
+  process_group_id_ = process_handle;
+#endif
+  int exit_code;
+  bool wait_success = base::WaitForExitCodeWithTimeout(
+      process_handle,
+      &exit_code,
+      TestTimeouts::action_timeout_ms());
+  base::CloseProcessHandle(process_handle);
+
+  if (!wait_success || exit_code != 0) {
+    LOG(ERROR) << "Failed to run new-run-webkit-websocketserver: "
+               << "wait_success = " << wait_success << ", "
+               << "exit_code = " << exit_code;
+    return false;
+  }
+
   started_ = true;
   return true;
 }
@@ -880,7 +896,8 @@ TestWebSocketServer::~TestWebSocketServer() {
 
 #if defined(OS_POSIX)
   // Just to make sure that the server process terminates certainly.
-  base::KillProcessGroup(process_handle_);
+  if (process_group_id_ != base::kNullProcessHandle)
+    base::KillProcessGroup(process_group_id_);
 #endif
 }
 

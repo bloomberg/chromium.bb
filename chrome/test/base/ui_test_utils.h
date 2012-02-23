@@ -349,7 +349,7 @@ class TestWebSocketServer {
 
 #if defined(OS_POSIX)
   // ProcessHandle used to terminate child process.
-  base::ProcessHandle process_handle_;
+  base::ProcessHandle process_group_id_;
 #elif defined(OS_WIN)
   // JobObject used to clean up orphaned child process.
   base::win::ScopedHandle job_handle_;
