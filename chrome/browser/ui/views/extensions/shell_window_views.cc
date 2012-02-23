@@ -60,6 +60,9 @@ gfx::Rect ShellWindowFrameView::GetWindowBoundsForClientBounds(
 }
 
 int ShellWindowFrameView::NonClientHitTest(const gfx::Point& point) {
+  // No resize border when maximized.
+  if (GetWidget()->IsMaximized())
+    return HTCAPTION;
   int x = point.x();
   int y = point.y();
   if (x <= kResizeBorderWidth) {
@@ -125,6 +128,10 @@ bool ShellWindowViews::CanResize() const {
   return true;
 }
 
+bool ShellWindowViews::CanMaximize() const {
+  return true;
+}
+
 views::View* ShellWindowViews::GetContentsView() {
   return host_->view();
 }
@@ -153,22 +160,29 @@ void ShellWindowViews::OnViewWasResized() {
   int height = sz.height(), width = sz.width();
   int radius = 1;
   gfx::Path path;
-  path.moveTo(0, radius);
-  path.lineTo(radius, 0);
-  path.lineTo(width - radius, 0);
-  path.lineTo(width, radius);
-  path.lineTo(width, height - radius - 1);
-  path.lineTo(width - radius - 1, height);
-  path.lineTo(radius + 1, height);
-  path.lineTo(0, height - radius - 1);
-  path.close();
+  if (GetWidget()->IsMaximized()) {
+    // Don't round the corners when the window is maximized.
+    path.addRect(0, 0, width, height);
+  } else {
+    path.moveTo(0, radius);
+    path.lineTo(radius, 0);
+    path.lineTo(width - radius, 0);
+    path.lineTo(width, radius);
+    path.lineTo(width, height - radius - 1);
+    path.lineTo(width - radius - 1, height);
+    path.lineTo(radius + 1, height);
+    path.lineTo(0, height - radius - 1);
+    path.close();
+  }
   SetWindowRgn(host_->view()->native_view(), path.CreateNativeRegion(), 1);
 
   SkRegion* rgn = new SkRegion;
   rgn->op(0, 0, width, 20, SkRegion::kUnion_Op);
-  rgn->op(0, 0, kResizeBorderWidth, height, SkRegion::kUnion_Op);
-  rgn->op(width - kResizeBorderWidth, 0, width, height, SkRegion::kUnion_Op);
-  rgn->op(0, height - kResizeBorderWidth, width, height, SkRegion::kUnion_Op);
+  if (!GetWidget()->IsMaximized()) {
+    rgn->op(0, 0, kResizeBorderWidth, height, SkRegion::kUnion_Op);
+    rgn->op(width - kResizeBorderWidth, 0, width, height, SkRegion::kUnion_Op);
+    rgn->op(0, height - kResizeBorderWidth, width, height, SkRegion::kUnion_Op);
+  }
   host_->render_view_host()->view()->SetClickthroughRegion(rgn);
 #endif
 }

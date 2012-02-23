@@ -2122,7 +2122,8 @@ int NativeWidgetWin::GetShowState() const {
 gfx::Insets NativeWidgetWin::GetClientAreaInsets() const {
   // Returning an empty Insets object causes the default handling in
   // NativeWidgetWin::OnNCCalcSize() to be invoked.
-  if (!has_non_client_view_ || GetWidget()->ShouldUseNativeFrame())
+  if (!has_non_client_view_ ||
+      (GetWidget()->ShouldUseNativeFrame() && !remove_standard_frame_))
     return gfx::Insets();
 
   if (IsMaximized()) {

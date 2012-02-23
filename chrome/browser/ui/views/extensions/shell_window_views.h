@@ -25,6 +25,7 @@ class ShellWindowViews : public ShellWindow,
   virtual views::View* GetContentsView() OVERRIDE;
   virtual views::NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
   virtual bool CanResize() const OVERRIDE;
+  virtual bool CanMaximize() const OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
   virtual string16 GetWindowTitle() const OVERRIDE;
