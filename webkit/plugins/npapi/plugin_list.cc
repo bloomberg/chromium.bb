@@ -101,6 +101,9 @@ static const VersionRangeDefinition kJavaVersionRange[] = {
 static const VersionRangeDefinition kFlip4MacVersionRange[] = {
     { "", "", "2.2.1", true }
 };
+static const VersionRangeDefinition kDivXVersionRange[] = {
+    { "", "", "", true }
+};
 // Note: The Adobe Reader browser plug-in is not supported in Chrome.
 // Note: The Real Player plugin for mac doesn't expose a version at all.
 static const PluginGroupDefinition kGroupDefinitions[] = {
@@ -115,6 +118,9 @@ static const PluginGroupDefinition kGroupDefinitions[] = {
   { "flip4mac", "Flip4Mac", "Flip4Mac", kFlip4MacVersionRange,
     arraysize(kFlip4MacVersionRange),
     "http://www.telestream.net/flip4mac-wmv/overview.htm" },
+  { "divx-player", "DivX Plus Web Player", "DivX Plus Web Player",
+    kDivXVersionRange, arraysize(kDivXVersionRange),
+    "http://www.divx.com/en/software/divx-plus/web-player" },
   kShockwaveDefinition
 };
 
