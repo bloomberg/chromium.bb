@@ -122,7 +122,7 @@ def _SimpleRunCommand(command):
 def PushChange(stable_branch, tracking_branch, dryrun):
   """Pushes commits in the stable_branch to the remote git repository.
 
-  Pushes locals commits from calls to CommitChange to the remote git
+  Pushes local commits from calls to CommitChange to the remote git
   repository specified by current working directory.
 
   Args:
@@ -134,9 +134,10 @@ def PushChange(stable_branch, tracking_branch, dryrun):
   """
   # Sanity check to make sure we're on a stabilizing branch before pushing.
   if not _DoWeHaveLocalCommits(stable_branch, tracking_branch):
-    cros_build_lib.Info('Not work found to push.  Exiting')
+    cros_build_lib.Info('No work found to push.  Exiting')
     return
 
+  _SimpleRunCommand('repo sync .')
   description = _SimpleRunCommand('git log --format=format:%s%n%n%b ' +
                                   tracking_branch + '..')
   description = 'Marking set of ebuilds as stable\n\n%s' % description
@@ -144,7 +145,6 @@ def PushChange(stable_branch, tracking_branch, dryrun):
   merge_branch = GitBranch(constants.MERGE_BRANCH, tracking_branch)
   if merge_branch.Exists():
     merge_branch.Delete()
-  _SimpleRunCommand('repo sync .')
   merge_branch.CreateBranch()
   if not merge_branch.Exists():
     cros_build_lib.Die('Unable to create merge branch.')
