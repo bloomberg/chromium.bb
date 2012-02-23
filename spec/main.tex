@@ -162,7 +162,8 @@ The message header has 2 words in it:
 \end{itemize}
 
 The payload describes the request/event arguments.  Every argument is always
-aligned to 32-bits.  There is no prefix that describes the type, but it is
+aligned to 32-bits. Where padding is required, the value of padding bytes is
+undefined. There is no prefix that describes the type, but it is
 inferred implicitly from the xml specification.
 
 The representation of argument types are as follows:
