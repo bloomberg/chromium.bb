@@ -63,7 +63,7 @@ TEST(LinuxCoreDumperTest, BuildProcPath) {
 TEST(LinuxCoreDumperTest, VerifyDumpWithMultipleThreads) {
   CrashGenerator crash_generator;
   if (!crash_generator.HasDefaultCorePattern()) {
-    fprintf(stderr, "LinuxCoreDumperTest.VerifyDumpWithMultipleThreads test"
+    fprintf(stderr, "LinuxCoreDumperTest.VerifyDumpWithMultipleThreads test "
             "is skipped due to non-default core pattern\n");
     return;
   }
@@ -76,23 +76,15 @@ TEST(LinuxCoreDumperTest, VerifyDumpWithMultipleThreads) {
   // CrashGenerator is identified and fixed.
   if (!crash_generator.CreateChildCrash(kNumOfThreads, kCrashThread,
                                         kCrashSignal, &child_pid)) {
-    fprintf(stderr, "LinuxCoreDumperTest.VerifyDumpWithMultipleThreads test"
+    fprintf(stderr, "LinuxCoreDumperTest.VerifyDumpWithMultipleThreads test "
             "is skipped due to no core dump generated\n");
     return;
   }
 
   pid_t pid = getpid();
-  const char* core_file = crash_generator.GetCoreFilePath().c_str();
-
-  // Since CrashGenerator::CreateChildCrash() simply crashed a fork of
-  // this process, we expect that those proc files, which are used by
-  // LinuxCoreDumper, of crashed child process have the same content of
-  // this process. So we simply pass the proc files of this process to
-  // LinuxCoreDumper.
-  char procfs_path[NAME_MAX];
-  snprintf(procfs_path, NAME_MAX, "/proc/%d", pid);
-
-  LinuxCoreDumper dumper(child_pid, core_file, procfs_path);
+  const string core_file = crash_generator.GetCoreFilePath();
+  const string procfs_path = crash_generator.GetDirectoryOfProcFilesCopy();
+  LinuxCoreDumper dumper(child_pid, core_file.c_str(), procfs_path.c_str());
   dumper.Init();
 
   EXPECT_TRUE(dumper.IsPostMortem());

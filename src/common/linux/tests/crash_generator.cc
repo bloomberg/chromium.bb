@@ -55,6 +55,12 @@ struct ThreadData {
   pid_t* thread_id_ptr;
 };
 
+const char* const kProcFilesToCopy[] = {
+  "auxv", "cmdline", "environ", "maps", "status"
+};
+const size_t kNumProcFilesToCopy =
+    sizeof(kProcFilesToCopy) / sizeof(kProcFilesToCopy[0]);
+
 // Core file size limit set to 1 MB, which is big enough for test purposes.
 const rlim_t kCoreSizeLimit = 1024 * 1024;
 
@@ -93,6 +99,10 @@ bool CrashGenerator::HasDefaultCorePattern() const {
 
 std::string CrashGenerator::GetCoreFilePath() const {
   return temp_dir_.path() + "/core";
+}
+
+std::string CrashGenerator::GetDirectoryOfProcFilesCopy() const {
+  return temp_dir_.path() + "/proc";
 }
 
 pid_t CrashGenerator::GetThreadId(unsigned index) const {
@@ -160,6 +170,15 @@ bool CrashGenerator::CreateChildCrash(
     }
     if (SetCoreFileSizeLimit(kCoreSizeLimit)) {
       CreateThreadsInChildProcess(num_threads);
+      std::string proc_dir = GetDirectoryOfProcFilesCopy();
+      if (mkdir(proc_dir.c_str(), 0755) == -1) {
+        perror("CrashGenerator: Failed to create proc directory");
+        exit(1);
+      }
+      if (!CopyProcFiles(getpid(), proc_dir.c_str())) {
+        fprintf(stderr, "CrashGenerator: Failed to copy proc files\n");
+        exit(1);
+      }
       if (kill(*GetThreadIdPointer(crash_thread), crash_signal) == -1) {
         perror("CrashGenerator: Failed to kill thread by signal");
       }
@@ -182,6 +201,25 @@ bool CrashGenerator::CreateChildCrash(
 
   if (child_pid)
     *child_pid = pid;
+  return true;
+}
+
+bool CrashGenerator::CopyProcFiles(pid_t pid, const char* path) const {
+  char from_path[PATH_MAX], to_path[PATH_MAX];
+  for (size_t i = 0; i < kNumProcFilesToCopy; ++i) {
+    int num_chars = snprintf(from_path, PATH_MAX, "/proc/%d/%s",
+                             pid, kProcFilesToCopy[i]);
+    if (num_chars < 0 || num_chars >= PATH_MAX)
+      return false;
+
+    num_chars = snprintf(to_path, PATH_MAX, "%s/%s",
+                         path, kProcFilesToCopy[i]);
+    if (num_chars < 0 || num_chars >= PATH_MAX)
+      return false;
+
+    if (!CopyFile(from_path, to_path))
+      return false;
+  }
   return true;
 }
 

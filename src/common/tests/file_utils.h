@@ -35,6 +35,9 @@
 
 namespace google_breakpad {
 
+// Copies a file from |from_path| to |to_path|. Returns true on success.
+bool CopyFile(const char* from_path, const char* to_path);
+
 // Reads the content of a file at |path| into |buffer|. |buffer_size| specifies
 // the size of |buffer| in bytes and returns the number of bytes read from the
 // file on success. Returns true on success.
