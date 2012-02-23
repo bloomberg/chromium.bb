@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -154,6 +154,7 @@ TEST_F(SessionRestoreUITest, RestoresForwardAndBackwardNavs) {
 // cross-site page and then forward again works.  (Bug 1204135)
 TEST_F(SessionRestoreUITest, RestoresCrossSiteForwardAndBackwardNavs) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(test_server.Start());
 

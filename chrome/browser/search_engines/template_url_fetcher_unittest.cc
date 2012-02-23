@@ -108,6 +108,7 @@ void TemplateURLFetcherTestCallbacks::ConfirmAddSearchProvider(
 
 TemplateURLFetcherTest::TemplateURLFetcherTest()
     : test_server_(net::TestServer::TYPE_HTTP,
+                   net::TestServer::kLocalhost,
                    FilePath(FILE_PATH_LITERAL("chrome/test/data"))),
       callbacks_destroyed_(0),
       add_provider_called_(0),

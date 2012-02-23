@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,7 @@ TEST_F(MultipartResponseUITest, SingleVisit) {
   // Make sure that visiting a multipart/x-mixed-replace site only
   // creates one entry in the visits table.
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(test_server.Start());
 

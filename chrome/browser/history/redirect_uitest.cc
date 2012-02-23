@@ -31,6 +31,7 @@ class RedirectTest : public UITest {
  public:
   RedirectTest()
       : test_server_(net::TestServer::TYPE_HTTP,
+                     net::TestServer::kLocalhost,
                      FilePath(FILE_PATH_LITERAL("chrome/test/data"))) {
   }
 

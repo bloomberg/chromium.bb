@@ -393,6 +393,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
   // Create http and https servers for a cross-site transition.
   ASSERT_TRUE(test_server()->Start());
   net::TestServer https_test_server(net::TestServer::TYPE_HTTPS,
+                                    net::TestServer::kLocalhost,
                                     FilePath(kDocRoot));
   ASSERT_TRUE(https_test_server.Start());
   GURL http_url(test_server()->GetURL("files/title1.html"));
@@ -481,6 +482,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
   // Create http and https servers for a cross-site transition.
   ASSERT_TRUE(test_server()->Start());
   net::TestServer https_test_server(net::TestServer::TYPE_HTTPS,
+                                    net::TestServer::kLocalhost,
                                     FilePath(kDocRoot));
   ASSERT_TRUE(https_test_server.Start());
   GURL http_url(test_server()->GetURL("files/title1.html"));
@@ -589,7 +591,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutHttp) {
 IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutHttps) {
   CommandUpdater* command_updater = browser()->command_updater();
 
-  net::TestServer test_server(net::TestServer::TYPE_HTTPS, FilePath(kDocRoot));
+  net::TestServer test_server(net::TestServer::TYPE_HTTPS,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
   GURL https_url(test_server.GetURL("/"));
   ASSERT_TRUE(https_url.SchemeIs(chrome::kHttpsScheme));
@@ -600,7 +604,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutHttps) {
 IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutFtp) {
   CommandUpdater* command_updater = browser()->command_updater();
 
-  net::TestServer test_server(net::TestServer::TYPE_FTP, FilePath(kDocRoot));
+  net::TestServer test_server(net::TestServer::TYPE_FTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
   GURL ftp_url(test_server.GetURL(""));
   ASSERT_TRUE(ftp_url.SchemeIs(chrome::kFtpScheme));

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,9 @@ class LoginPromptTest : public UITest {
         username_digest_(UTF8ToUTF16("digestuser")),
         password_(UTF8ToUTF16("secret")),
         password_bad_(UTF8ToUTF16("denyme")),
-        test_server_(net::TestServer::TYPE_HTTP, FilePath(kDocRoot)) {
+        test_server_(net::TestServer::TYPE_HTTP,
+                     net::TestServer::kLocalhost,
+                     FilePath(kDocRoot)) {
   }
 
   void AppendTab(const GURL& url) {
