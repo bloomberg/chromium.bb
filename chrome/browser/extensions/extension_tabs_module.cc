@@ -1575,11 +1575,11 @@ bool CaptureVisibleTabFunction::RunImpl() {
 
   // Ask the renderer for a snapshot of the tab.
   TabContentsWrapper* wrapper = browser->GetSelectedTabContentsWrapper();
-  wrapper->snapshot_tab_helper()->CaptureSnapshot();
   registrar_.Add(this,
                  chrome::NOTIFICATION_TAB_SNAPSHOT_TAKEN,
-                 content::Source<TabContentsWrapper>(wrapper));
+                 content::Source<WebContents>(wrapper->web_contents()));
   AddRef();  // Balanced in CaptureVisibleTabFunction::Observe().
+  wrapper->snapshot_tab_helper()->CaptureSnapshot();
 
   return true;
 }
