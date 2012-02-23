@@ -280,11 +280,11 @@ void RecordOpen(const base::Time& end, bool first) {
 }
 
 void RecordHistorySize(int size) {
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Download.HistorySize",
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Download.HistorySize2",
                               size,
                               0/*min*/,
-                              (1 << 10)/*max*/,
-                              32/*num_buckets*/);
+                              (1 << 23)/*max*/,
+                              (1 << 7)/*num_buckets*/);
 }
 
 void RecordClearAllSize(int size) {
