@@ -698,13 +698,30 @@ TEST_PPAPI_OUT_OF_PROCESS(NetAddressPrivate_GetFamily)
 TEST_PPAPI_OUT_OF_PROCESS(NetAddressPrivate_GetPort)
 TEST_PPAPI_OUT_OF_PROCESS(NetAddressPrivate_GetAddress)
 
+// Frequently timing out on Windows. http://crbug.com/115440
+#if defined(OS_WIN)
+#define MAYBE_NetAddressPrivateUntrusted_Describe \
+  DISABLED_NetAddressPrivateUntrusted_Describe
+#define MAYBE_NetAddressPrivateUntrusted_ReplacePort \
+  DISABLED_NetAddressPrivateUntrusted_ReplacePort
+#define MAYBE_NetAddressPrivateUntrusted_GetPort \
+  DISABLED_NetAddressPrivateUntrusted_GetPort
+#else
+#define MAYBE_NetAddressPrivateUntrusted_Describe \
+  NetAddressPrivateUntrusted_Describe
+#define MAYBE_NetAddressPrivateUntrusted_ReplacePort \
+  NetAddressPrivateUntrusted_ReplacePort
+#define MAYBE_NetAddressPrivateUntrusted_GetPort \
+  NetAddressPrivateUntrusted_GetPort
+#endif
+
 TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_AreEqual)
 TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_AreHostsEqual)
-TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_Describe)
-TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_ReplacePort)
+TEST_PPAPI_NACL_VIA_HTTP(MAYBE_NetAddressPrivateUntrusted_Describe)
+TEST_PPAPI_NACL_VIA_HTTP(MAYBE_NetAddressPrivateUntrusted_ReplacePort)
 TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_GetAnyAddress)
 TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_GetFamily)
-TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_GetPort)
+TEST_PPAPI_NACL_VIA_HTTP(MAYBE_NetAddressPrivateUntrusted_GetPort)
 TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_GetAddress)
 
 // PPB_TCPSocket_Private currently isn't supported in-process.
