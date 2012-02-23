@@ -695,8 +695,10 @@
   bug_104776_maybe_benign
   ThreadSanitizer:Race
   fun:base::StatisticsRecorder::StatisticsRecorder
+  fun:::BrowserMainRunnerImpl::Initialize
   fun:BrowserMain
   fun:::RunNamedProcessTypeMain
+  fun:::ContentMainRunnerImpl::Run
   fun:content::ContentMain
   fun:ChromeMain
   fun:main
