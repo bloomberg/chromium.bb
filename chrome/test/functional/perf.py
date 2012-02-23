@@ -87,7 +87,8 @@ class BasePerfTest(pyauto.PyUITest):
     # Flush all buffers to disk and wait until system calms down.  Must be done
     # *after* calling pyauto.PyUITest.setUp, since that is where Chrome is
     # killed and re-initialized for a new test.
-    if self.IsLinux() or self.IsMac() or self.IsChromeOS():
+    # TODO(dennisjeffrey): Implement wait for idle CPU on Windows/Mac.
+    if self.IsLinux():  # IsLinux() also implies IsChromeOS().
       os.system('sync')
       self._WaitForIdleCPU(60.0, 0.03)
 
@@ -122,7 +123,7 @@ class BasePerfTest(pyauto.PyUITest):
 
        TODO: use taskmgr or similar on Windows.
     """
-    if self.IsLinux() or self.IsMac() or self.IsChromeOS():
+    if self.IsLinux() or self.IsMac():  # IsLinux() also implies IsChromeOS().
       logging.info('Logging current process activity using top.')
       cmd = 'top -b -d1 -n1'
       if self.IsMac():
