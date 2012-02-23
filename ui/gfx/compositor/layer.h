@@ -183,6 +183,8 @@ class COMPOSITOR_EXPORT Layer :
   bool SchedulePaint(const gfx::Rect& invalid_rect);
 
   // Schedules a redraw of the layer tree at the compositor.
+  // Note that this _does not_ invalidate any region of this layer; use
+  // SchedulePaint() for that.
   void ScheduleDraw();
 
   // Sends damaged rect to |compostior_| to repaint the content.

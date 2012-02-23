@@ -175,11 +175,12 @@ class ASH_EXPORT ImageGrid {
   int right_image_width_;
 
   // Heights of the tallest images in the top and bottom rows and the widest
-  // images in the left and right columns.
-  int top_row_height_;
-  int bottom_row_height_;
-  int left_column_width_;
-  int right_column_width_;
+  // images in the left and right columns.  Note that we may have less actual
+  // space than this available if the images are large and |size_| is small.
+  int base_top_row_height_;
+  int base_bottom_row_height_;
+  int base_left_column_width_;
+  int base_right_column_width_;
 
   // Layers used to display the various images.  Children of |layer_|.
   // Positions for which no images were supplied are NULL.

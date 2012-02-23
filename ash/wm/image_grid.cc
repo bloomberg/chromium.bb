@@ -31,10 +31,10 @@ ImageGrid::ImageGrid()
       bottom_image_height_(0),
       left_image_width_(0),
       right_image_width_(0),
-      top_row_height_(0),
-      bottom_row_height_(0),
-      left_column_width_(0),
-      right_column_width_(0) {
+      base_top_row_height_(0),
+      base_bottom_row_height_(0),
+      base_left_column_width_(0),
+      base_right_column_width_(0) {
 }
 
 ImageGrid::~ImageGrid() {
@@ -64,18 +64,18 @@ void ImageGrid::SetImages(const gfx::Image* top_left_image,
   left_image_width_ = GetImageSize(left_image).width();
   right_image_width_ = GetImageSize(right_image).width();
 
-  top_row_height_ = max(GetImageSize(top_left_image).height(),
-                        max(GetImageSize(top_image).height(),
-                            GetImageSize(top_right_image).height()));
-  bottom_row_height_ = max(GetImageSize(bottom_left_image).height(),
-                           max(GetImageSize(bottom_image).height(),
-                               GetImageSize(bottom_right_image).height()));
-  left_column_width_ = max(GetImageSize(top_left_image).width(),
-                           max(GetImageSize(left_image).width(),
-                               GetImageSize(bottom_left_image).width()));
-  right_column_width_ = max(GetImageSize(top_right_image).width(),
-                            max(GetImageSize(right_image).width(),
-                                GetImageSize(bottom_right_image).width()));
+  base_top_row_height_ = max(GetImageSize(top_left_image).height(),
+                             max(GetImageSize(top_image).height(),
+                                 GetImageSize(top_right_image).height()));
+  base_bottom_row_height_ = max(GetImageSize(bottom_left_image).height(),
+                                max(GetImageSize(bottom_image).height(),
+                                    GetImageSize(bottom_right_image).height()));
+  base_left_column_width_ = max(GetImageSize(top_left_image).width(),
+                                max(GetImageSize(left_image).width(),
+                                    GetImageSize(bottom_left_image).width()));
+  base_right_column_width_ = max(GetImageSize(top_right_image).width(),
+                                 max(GetImageSize(right_image).width(),
+                                     GetImageSize(bottom_right_image).width()));
 
   // Invalidate previous |size_| so calls to SetSize() will recompute it.
   size_.SetSize(0, 0);
@@ -91,14 +91,23 @@ void ImageGrid::SetSize(const gfx::Size& size) {
   updated_bounds.set_size(size);
   layer_->SetBounds(updated_bounds);
 
-  float center_width = size.width() - left_column_width_ - right_column_width_;
-  float center_height = size.height() - top_row_height_ - bottom_row_height_;
+  // Calculate the available amount of space for corner images on all sides of
+  // the grid.  If the images don't fit, we need to clip them.
+  const int left = min(base_left_column_width_, size_.width() / 2);
+  const int right = min(base_right_column_width_, size_.width() - left);
+  const int top = min(base_top_row_height_, size_.height() / 2);
+  const int bottom = min(base_bottom_row_height_, size_.height() - top);
+
+  // The remaining space goes to the center image.
+  int center_width = std::max(size.width() - left - right, 0);
+  int center_height = std::max(size.height() - top - bottom, 0);
 
   if (top_layer_.get()) {
     if (center_width > 0) {
       ui::Transform transform;
-      transform.SetScaleX(center_width / top_layer_->bounds().width());
-      transform.ConcatTranslate(left_column_width_, 0);
+      transform.SetScaleX(
+          static_cast<float>(center_width) / top_layer_->bounds().width());
+      transform.ConcatTranslate(left, 0);
       top_layer_->SetTransform(transform);
     }
     top_layer_->SetVisible(center_width > 0);
@@ -106,9 +115,10 @@ void ImageGrid::SetSize(const gfx::Size& size) {
   if (bottom_layer_.get()) {
     if (center_width > 0) {
       ui::Transform transform;
-      transform.SetScaleX(center_width / bottom_layer_->bounds().width());
+      transform.SetScaleX(
+          static_cast<float>(center_width) / bottom_layer_->bounds().width());
       transform.ConcatTranslate(
-          left_column_width_, size.height() - bottom_layer_->bounds().height());
+          left, size.height() - bottom_layer_->bounds().height());
       bottom_layer_->SetTransform(transform);
     }
     bottom_layer_->SetVisible(center_width > 0);
@@ -116,8 +126,9 @@ void ImageGrid::SetSize(const gfx::Size& size) {
   if (left_layer_.get()) {
     if (center_height > 0) {
       ui::Transform transform;
-      transform.SetScaleY(center_height / left_layer_->bounds().height());
-      transform.ConcatTranslate(0, top_row_height_);
+      transform.SetScaleY(
+          static_cast<float>(center_height) / left_layer_->bounds().height());
+      transform.ConcatTranslate(0, top);
       left_layer_->SetTransform(transform);
     }
     left_layer_->SetVisible(center_height > 0);
@@ -125,20 +136,14 @@ void ImageGrid::SetSize(const gfx::Size& size) {
   if (right_layer_.get()) {
     if (center_height > 0) {
       ui::Transform transform;
-      transform.SetScaleY(center_height / right_layer_->bounds().height());
+      transform.SetScaleY(
+          static_cast<float>(center_height) / right_layer_->bounds().height());
       transform.ConcatTranslate(
-          size.width() - right_layer_->bounds().width(), top_row_height_);
+          size.width() - right_layer_->bounds().width(), top);
       right_layer_->SetTransform(transform);
     }
     right_layer_->SetVisible(center_height > 0);
   }
-
-  // Calculate the available amount of space for corner images on all sides of
-  // the grid.  If the images don't fit, we need to clip them.
-  const int left = min(left_column_width_, size_.width() / 2);
-  const int right = min(right_column_width_, size_.width() - left);
-  const int top = min(top_row_height_, size_.height() / 2);
-  const int bottom = min(bottom_row_height_, size_.height() - top);
 
   if (top_left_layer_.get()) {
     // No transformation needed; it should be at (0, 0) and unscaled.
@@ -191,7 +196,7 @@ void ImageGrid::SetSize(const gfx::Size& size) {
       ui::Transform transform;
       transform.SetScale(center_width / center_layer_->bounds().width(),
                          center_height / center_layer_->bounds().height());
-      transform.ConcatTranslate(left_column_width_, top_row_height_);
+      transform.ConcatTranslate(left, top);
       center_layer_->SetTransform(transform);
     }
     center_layer_->SetVisible(center_width > 0 && center_height > 0);
@@ -202,7 +207,7 @@ void ImageGrid::ImagePainter::SetClipRect(const gfx::Rect& clip_rect,
                                           ui::Layer* layer) {
   if (clip_rect != clip_rect_) {
     clip_rect_ = clip_rect;
-    layer->ScheduleDraw();
+    layer->SchedulePaint(layer->bounds());
   }
 }
 
