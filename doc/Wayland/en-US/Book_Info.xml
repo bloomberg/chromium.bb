@@ -5,20 +5,27 @@
 ]>
 <bookinfo id="book-Wayland-Wayland">
 	<title>Wayland</title>
-	<subtitle>short description</subtitle>
+	<subtitle>The Wayland display server</subtitle>
 	<productname>Documentation</productname>
 	<productnumber>0.1</productnumber>
 	<edition>0</edition>
 	<pubsnumber>0</pubsnumber>
 	<abstract>
 		<para>
-			A short overview and summary of the book's subject and purpose, traditionally no more than one paragraph long. Note: the abstract will appear in the front matter of your book and will also be placed in the description field of the book's RPM spec file.
+			Wayland is a protocol for a compositor to talk to
+			its clients as well as a C library implementation of
+			that protocol. The compositor can be a standalone
+			display server running on Linux kernel modesetting
+			and evdev input devices, an X application, or a
+			wayland client itself. The clients can be
+			traditional applications, X servers (rootless or
+			fullscreen) or other display servers.
 		</para>
 	</abstract>
 	<corpauthor>
 		<inlinemediaobject>
 			<imageobject>
-				<imagedata fileref="Common_Content/images/title_logo.svg" format="SVG" />
+				<imagedata fileref="images/wayland.png" format="PNG" />
 			</imageobject>
 		</inlinemediaobject>
 	</corpauthor>

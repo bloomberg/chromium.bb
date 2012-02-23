@@ -5,12 +5,12 @@
 ]>
 <authorgroup>
 	<author>
-		<firstname>Dude</firstname>
-		<surname>McPants</surname>
+		<firstname>Kristian</firstname>
+		<surname>Høgsberg</surname>
 		<affiliation>
-			<orgname>Somewhere</orgname>
-			<orgdiv>Someone</orgdiv>
+			<orgname>Intel Corporation</orgname>
 		</affiliation>
-		<email>Dude.McPants@example.com</email>
+		<email>krh@bitplanet.net</email>
 	</author>
 </authorgroup>
+
