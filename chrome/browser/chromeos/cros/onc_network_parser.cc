@@ -565,7 +565,7 @@ Network* OncNetworkParser::CreateNetworkFromInfo(
   std::string ui_data_json;
   base::JSONWriter::Write(network->ui_data(), false, &ui_data_json);
   base::StringValue ui_data_string_value(ui_data_json);
-  network->UpdatePropertyMap(PROPERTY_INDEX_UI_DATA, ui_data_string_value);
+  network->UpdatePropertyMap(PROPERTY_INDEX_UI_DATA, &ui_data_string_value);
 
   if (VLOG_IS_ON(2)) {
     VLOG(2) << "Created Network '" << network->name()
@@ -623,7 +623,7 @@ bool OncNetworkParser::ParseNestedObject(Network* network,
     PropertyIndex index = signature[field_index].index;
     // We need to UpdatePropertyMap now since parser might want to
     // change the mapped value.
-    network->UpdatePropertyMap(index, *inner_value);
+    network->UpdatePropertyMap(index, inner_value);
     if (!parser(this, index, *inner_value, network)) {
       LOG(ERROR) << network->name() << ": field in " << onc_type
                  << " not parsed: " << key;
@@ -761,14 +761,22 @@ bool OncNetworkParser::ParseNetworkConfigurationValue(
     case PROPERTY_INDEX_TYPE: {
       // Update property with native value for type.
       std::string str =
-        NativeNetworkParser::network_type_mapper()->GetKey(network->type());
-      scoped_ptr<StringValue> val(Value::CreateStringValue(str));
-      network->UpdatePropertyMap(PROPERTY_INDEX_TYPE, *val.get());
+          NativeNetworkParser::network_type_mapper()->GetKey(network->type());
+      base::StringValue val(str);
+      network->UpdatePropertyMap(PROPERTY_INDEX_TYPE, &val);
       return true;
     }
     case PROPERTY_INDEX_GUID:
+      // Fall back to generic parser.
+      return parser->ParseValue(index, value, network);
     case PROPERTY_INDEX_NAME:
-      // Fall back to generic parser for these.
+      // flimflam doesn't allow setting name for non-VPN networks.
+      if (network->type() != TYPE_VPN) {
+        network->UpdatePropertyMap(PROPERTY_INDEX_NAME, NULL);
+        return true;
+      }
+
+      // Fall back to generic parser.
       return parser->ParseValue(index, value, network);
     default:
       break;
@@ -1171,8 +1179,8 @@ bool OncNetworkParser::ProcessProxySettings(OncNetworkParser* parser,
   // Add ProxyConfig property to property map so that it will be updated in
   // flimflam in NetworkLibraryImplCros::CallConfigureService after all parsing
   // has completed.
-  scoped_ptr<StringValue> val(Value::CreateStringValue(proxy_dict_str));
-  network->UpdatePropertyMap(PROPERTY_INDEX_PROXY_CONFIG, *val.get());
+  base::StringValue val(proxy_dict_str);
+  network->UpdatePropertyMap(PROPERTY_INDEX_PROXY_CONFIG, &val);
 
   // If |network| is currently being connected to or it exists in memory,
   // flimflam will fire PropertyChanged notification in ConfigureService,
@@ -1482,10 +1490,9 @@ bool OncWifiNetworkParser::ParseWifiValue(OncNetworkParser* parser,
       ConnectionSecurity security = ParseSecurity(GetStringValue(value));
       wifi_network->set_encryption(security);
       // Also update property with native value for security.
-      std::string str =
-          NativeNetworkParser::network_security_mapper()->GetKey(security);
-      scoped_ptr<StringValue> val(Value::CreateStringValue(str));
-      wifi_network->UpdatePropertyMap(index, *val.get());
+      base::StringValue val(
+          NativeNetworkParser::network_security_mapper()->GetKey(security));
+      wifi_network->UpdatePropertyMap(index, &val);
       return true;
     }
     case PROPERTY_INDEX_PASSPHRASE:
@@ -1527,17 +1534,16 @@ bool OncWifiNetworkParser::ParseEAPValue(OncNetworkParser* parser,
           GetUserExpandedValue(value, parser->onc_source()));
       wifi_network->set_eap_identity(expanded_identity);
       const StringValue expanded_identity_value(expanded_identity);
-      wifi_network->UpdatePropertyMap(index, expanded_identity_value);
+      wifi_network->UpdatePropertyMap(index, &expanded_identity_value);
       return true;
     }
     case PROPERTY_INDEX_EAP_METHOD: {
       EAPMethod eap_method = ParseEAPMethod(GetStringValue(value));
       wifi_network->set_eap_method(eap_method);
       // Also update property with native value for EAP method.
-      std::string str =
-          NativeNetworkParser::network_eap_method_mapper()->GetKey(eap_method);
-      scoped_ptr<StringValue> val(Value::CreateStringValue(str));
-      wifi_network->UpdatePropertyMap(index, *val.get());
+      base::StringValue val(
+          NativeNetworkParser::network_eap_method_mapper()->GetKey(eap_method));
+      wifi_network->UpdatePropertyMap(index, &val);
       return true;
     }
     case PROPERTY_INDEX_EAP_PHASE_2_AUTH: {
@@ -1545,10 +1551,10 @@ bool OncWifiNetworkParser::ParseEAPValue(OncNetworkParser* parser,
           GetStringValue(value));
       wifi_network->set_eap_phase_2_auth(eap_phase_2_auth);
       // Also update property with native value for EAP phase 2 auth.
-      std::string str = NativeNetworkParser::network_eap_auth_mapper()->GetKey(
-          eap_phase_2_auth);
-      scoped_ptr<StringValue> val(Value::CreateStringValue(str));
-      wifi_network->UpdatePropertyMap(index, *val.get());
+      base::StringValue val(
+          NativeNetworkParser::network_eap_auth_mapper()->GetKey(
+              eap_phase_2_auth));
+      wifi_network->UpdatePropertyMap(index, &val);
       return true;
     }
     case PROPERTY_INDEX_EAP_ANONYMOUS_IDENTITY: {
@@ -1556,7 +1562,7 @@ bool OncWifiNetworkParser::ParseEAPValue(OncNetworkParser* parser,
           GetUserExpandedValue(value, parser->onc_source()));
       wifi_network->set_eap_anonymous_identity(expanded_identity);
       const StringValue expanded_identity_value(expanded_identity);
-      wifi_network->UpdatePropertyMap(index, expanded_identity_value);
+      wifi_network->UpdatePropertyMap(index, &expanded_identity_value);
       return true;
     }
     case PROPERTY_INDEX_EAP_CERT_ID:
@@ -1667,12 +1673,10 @@ bool OncVirtualNetworkParser::ParseVPNValue(OncNetworkParser* parser,
   VirtualNetwork* virtual_network = static_cast<VirtualNetwork*>(network);
   switch (index) {
     case PROPERTY_INDEX_PROVIDER_HOST: {
-      scoped_ptr<StringValue> empty_value(
-          Value::CreateStringValue(std::string()));
+      base::StringValue empty_value("");
       virtual_network->set_server_hostname(GetStringValue(value));
       // Flimflam requires a domain property which is unused.
-      network->UpdatePropertyMap(PROPERTY_INDEX_VPN_DOMAIN,
-                                 *empty_value.get());
+      network->UpdatePropertyMap(PROPERTY_INDEX_VPN_DOMAIN, &empty_value);
       return true;
     }
     case PROPERTY_INDEX_ONC_IPSEC:
@@ -1705,12 +1709,11 @@ bool OncVirtualNetworkParser::ParseVPNValue(OncNetworkParser* parser,
       // The following are needed by flimflam to set up the OpenVPN
       // management channel which every ONC OpenVPN configuration will
       // use.
-      scoped_ptr<Value> empty_value(
-          Value::CreateStringValue(std::string()));
+      base::StringValue empty_value("");
       network->UpdatePropertyMap(PROPERTY_INDEX_OPEN_VPN_AUTHUSERPASS,
-                                 *empty_value.get());
+                                 &empty_value);
       network->UpdatePropertyMap(PROPERTY_INDEX_OPEN_VPN_MGMT_ENABLE,
-                                 *empty_value.get());
+                                 &empty_value);
       return parser->ParseNestedObject(network,
                                        onc::vpn::kOpenVPN,
                                        value,
@@ -1722,10 +1725,10 @@ bool OncVirtualNetworkParser::ParseVPNValue(OncNetworkParser* parser,
       ProviderType provider_type = GetCanonicalProviderType(
           virtual_network->provider_type());
       std::string str =
-        NativeVirtualNetworkParser::provider_type_mapper()->GetKey(
-            provider_type);
-      scoped_ptr<StringValue> val(Value::CreateStringValue(str));
-      network->UpdatePropertyMap(PROPERTY_INDEX_PROVIDER_TYPE, *val.get());
+          NativeVirtualNetworkParser::provider_type_mapper()->GetKey(
+              provider_type);
+      base::StringValue val(str);
+      network->UpdatePropertyMap(PROPERTY_INDEX_PROVIDER_TYPE, &val);
       return true;
     }
     default:
@@ -1783,13 +1786,10 @@ bool OncVirtualNetworkParser::ParseIPsecValue(OncNetworkParser* parser,
       return true;
     }
     case PROPERTY_INDEX_IPSEC_IKEVERSION: {
-      scoped_ptr<Value> string_value(
-          Value::CreateStringValue(ConvertValueToString(value)));
       if (!value.IsType(TYPE_STRING)) {
         // Flimflam wants all provider properties to be strings.
-        virtual_network->UpdatePropertyMap(
-            index,
-            *string_value.get());
+        base::StringValue string_value(ConvertValueToString(value));
+        virtual_network->UpdatePropertyMap(index, &string_value);
       }
       return true;
     }
@@ -1848,7 +1848,7 @@ bool OncVirtualNetworkParser::ParseL2TPValue(OncNetworkParser* parser,
           GetUserExpandedValue(value, parser->onc_source()));
       virtual_network->set_username(expanded_user);
       const StringValue expanded_user_value(expanded_user);
-      virtual_network->UpdatePropertyMap(index, expanded_user_value);
+      virtual_network->UpdatePropertyMap(index, &expanded_user_value);
       return true;
     }
     case PROPERTY_INDEX_SAVE_CREDENTIALS:
@@ -1881,7 +1881,7 @@ bool OncVirtualNetworkParser::ParseOpenVPNValue(OncNetworkParser* parser,
           GetUserExpandedValue(value, parser->onc_source()));
       virtual_network->set_username(expanded_user);
       const StringValue expanded_user_value(expanded_user);
-      virtual_network->UpdatePropertyMap(index, expanded_user_value);
+      virtual_network->UpdatePropertyMap(index, &expanded_user_value);
       return true;
     }
     case PROPERTY_INDEX_SAVE_CREDENTIALS:
@@ -1901,7 +1901,7 @@ bool OncVirtualNetworkParser::ParseOpenVPNValue(OncNetworkParser* parser,
         VLOG(1) << "RemoteCertKU must be non-empty list of strings";
         return false;
       }
-      virtual_network->UpdatePropertyMap(index, *first_item);
+      virtual_network->UpdatePropertyMap(index, first_item);
       return true;
     }
     case PROPERTY_INDEX_OPEN_VPN_AUTH:
@@ -1924,13 +1924,10 @@ bool OncVirtualNetworkParser::ParseOpenVPNValue(OncNetworkParser* parser,
     case PROPERTY_INDEX_OPEN_VPN_STATICCHALLENGE:
     case PROPERTY_INDEX_OPEN_VPN_TLSAUTHCONTENTS:
     case PROPERTY_INDEX_OPEN_VPN_TLSREMOTE: {
-      scoped_ptr<Value> string_value(
-          Value::CreateStringValue(ConvertValueToString(value)));
       if (!value.IsType(TYPE_STRING)) {
         // Flimflam wants all provider properties to be strings.
-        virtual_network->UpdatePropertyMap(
-            index,
-            *string_value.get());
+        base::StringValue string_value(ConvertValueToString(value));
+        virtual_network->UpdatePropertyMap(index, &string_value);
       }
       return true;
     }

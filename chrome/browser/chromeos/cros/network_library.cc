@@ -451,14 +451,24 @@ void Network::SetNetworkParser(NetworkParser* parser) {
   network_parser_.reset(parser);
 }
 
-void Network::UpdatePropertyMap(PropertyIndex index, const base::Value& value) {
+void Network::UpdatePropertyMap(PropertyIndex index, const base::Value* value) {
+  if (!value) {
+    // Clear the property if |value| is NULL.
+    PropertyMap::iterator iter(property_map_.find(index));
+    if (iter != property_map_.end()) {
+      delete iter->second;
+      property_map_.erase(iter);
+    }
+    return;
+  }
+
   // Add the property to property_map_.  Delete previous value if necessary.
   Value*& entry = property_map_[index];
   delete entry;
-  entry = value.DeepCopy();
+  entry = value->DeepCopy();
   if (VLOG_IS_ON(2)) {
     std::string value_json;
-    base::JSONWriter::Write(&value, true, &value_json);
+    base::JSONWriter::Write(value, true, &value_json);
     VLOG(2) << "Updated property map on network: "
             << unique_id() << "[" << index << "] = " << value_json;
   }

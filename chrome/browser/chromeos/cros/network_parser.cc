@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -129,7 +129,7 @@ bool NetworkParser::UpdateStatus(const std::string& key,
   PropertyIndex found_index = mapper().Get(key);
   if (index)
     *index = found_index;
-  network->UpdatePropertyMap(found_index, value);
+  network->UpdatePropertyMap(found_index, &value);
   if (!ParseValue(found_index, value, network)) {
     VLOG(1) << "Unhandled key '" << key << "' in Network: " << network->name()
             << " ID: " << network->unique_id()

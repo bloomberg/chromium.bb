@@ -801,8 +801,9 @@ class Network {
   NetworkParser* network_parser() { return network_parser_.get(); }
   void SetNetworkParser(NetworkParser* parser);
 
-  // Updates property_map_ for the corresponding property index.
-  void UpdatePropertyMap(PropertyIndex index, const base::Value& value);
+  // Updates |property_map_| for the corresponding property |index|. If |value|
+  // is non-NULL, it's put into the map. Otherwise, the entry is removed.
+  void UpdatePropertyMap(PropertyIndex index, const base::Value* value);
 
   // Set the state and update flags if necessary.
   void SetState(ConnectionState state);

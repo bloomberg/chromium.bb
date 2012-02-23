@@ -240,7 +240,7 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkEthernet) {
 
   EXPECT_EQ(chromeos::TYPE_ETHERNET, network->type());
   EthernetNetwork* ethernet = static_cast<EthernetNetwork*>(network.get());
-  EXPECT_EQ("My Ethernet Network", ethernet->name());
+  EXPECT_EQ(ethernet->unique_id(), "{485d6076-dd44-6b6d-69787465725f5045}");
 }
 
 TEST_F(OncNetworkParserTest, TestLoadEncryptedOnc) {
