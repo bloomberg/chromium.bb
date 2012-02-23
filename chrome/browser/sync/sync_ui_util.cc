@@ -649,6 +649,16 @@ void ConstructAboutInformation(ProfileSyncService* service,
       sync_ui_util::AddStringSyncDetails(details, "Last Sync Source",
           browser_sync::GetUpdatesSourceString(
           snapshot->source.updates_source));
+      sync_ui_util::AddStringSyncDetails(
+          details, "Last Sync's GetUpdates Result",
+          GetSyncerErrorString(snapshot->errors.last_download_updates_result));
+      sync_ui_util::AddStringSyncDetails(
+          details, "Last Sync's Post Commit Result",
+          GetSyncerErrorString(snapshot->errors.last_post_commit_result));
+      sync_ui_util::AddStringSyncDetails(
+          details, "Last Sync's Process Commit Response Result",
+          GetSyncerErrorString(
+              snapshot->errors.last_process_commit_response_result));
 
       // Print the count of entries from snapshot. Warning: This might be
       // slightly out of date if there are client side changes that are yet
