@@ -192,6 +192,7 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     ],
     'third_party/ffmpeg': [
         'GPL',
+        'GPL (v2)',
         'GPL (v2 or later)',
         'UNKNOWN',  # http://crbug.com/98123
     ],
