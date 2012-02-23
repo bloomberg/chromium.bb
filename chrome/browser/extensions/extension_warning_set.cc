@@ -111,7 +111,7 @@ void ExtensionWarningSet::SetWarning(ExtensionWarningSet::WarningType type,
 void ExtensionWarningSet::ClearWarnings(
     const std::set<ExtensionWarningSet::WarningType>& types) {
   bool deleted_anything = false;
-  for (const_iterator i = warnings_.begin(); i != warnings_.end();) {
+  for (iterator i = warnings_.begin(); i != warnings_.end();) {
     if (types.find(i->warning_type()) != types.end()) {
       deleted_anything = true;
       warnings_.erase(i++);

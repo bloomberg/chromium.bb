@@ -109,7 +109,7 @@ bool AppNotificationManager::Add(AppNotification* item) {
 
   SyncAddChange(*linked_item);
 
-  sort(list.begin(), list.end(), AppNotificationSortPredicate);
+  std::sort(list.begin(), list.end(), AppNotificationSortPredicate);
 
   if (list.size() > AppNotificationManager::kMaxNotificationPerApp) {
     AppNotification* removed = list.begin()->get();

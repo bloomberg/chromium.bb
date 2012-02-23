@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,6 +41,10 @@ ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(
 #elif defined(OS_MACOSX)
   // TODO(pkasting): Once Infobars have been ported to Mac, we can remove the
   // ifdefs and just use the Infobar constant below.
+  int default_height = 36;
+#elif defined(OS_ANDROID)
+  // TODO(dtrainor): This is not used.  Might need to pull this from Android UI
+  // level in the future.  Tracked via issue 115303.
   int default_height = 36;
 #endif
   height_ = std::max(0, height);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@ struct ProcessMap::Item {
 
   // Purposely implicit constructor needed on older gcc's. See:
   // http://codereview.chromium.org/8769022/
-  Item(const ProcessMap::Item& other)
+  explicit Item(const ProcessMap::Item& other)
       : extension_id(other.extension_id),
         process_id(other.process_id),
         site_instance_id(other.site_instance_id) {
@@ -72,7 +72,7 @@ bool ProcessMap::Remove(const std::string& extension_id, int process_id,
 
 int ProcessMap::RemoveAllFromProcess(int process_id) {
   int result = 0;
-  for (ItemSet::const_iterator iter = items_.begin(); iter != items_.end(); ) {
+  for (ItemSet::iterator iter = items_.begin(); iter != items_.end(); ) {
     if (iter->process_id == process_id) {
       items_.erase(iter++);
       ++result;

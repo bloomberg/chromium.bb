@@ -78,6 +78,7 @@ class ExtensionWarningSet {
 
  private:
   typedef std::set<ExtensionWarning>::const_iterator const_iterator;
+  typedef std::set<ExtensionWarning>::iterator iterator;
 
   // Shows or hides the warning badge on the wrench menu depending on whether
   // any non-suppressed warnings exist.
