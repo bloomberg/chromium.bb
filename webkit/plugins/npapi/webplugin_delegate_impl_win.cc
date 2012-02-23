@@ -148,7 +148,7 @@ BOOL (WINAPI *g_iat_orig_virtual_free)(LPVOID address,
                                        SIZE_T size,
                                        DWORD free_type);
 
-const size_t kMaxPluginExecMemSize = 64 * 1024 * 1024;  // 64mb.
+const size_t kMaxPluginExecMemSize = 16 * 1024 * 1024;  // 16mb.
 const DWORD kExecPageMask = PAGE_EXECUTE | PAGE_EXECUTE_READ |
                             PAGE_EXECUTE_READWRITE;
 static volatile intptr_t g_max_exec_mem_size;
@@ -165,6 +165,13 @@ size_t UpdateExecMemSize(intptr_t size) {
     g_max_exec_mem_size = g_exec_mem_size;
 
   return g_exec_mem_size;
+}
+
+// Throw a unique exception when the JIT limit is hit.
+inline void RaiseJITException() {
+  static const ULONG parameters[] = {1, 0xabad1dea /* 2880249322 */ };
+  ::RaiseException(EXCEPTION_ACCESS_VIOLATION, EXCEPTION_NONCONTINUABLE,
+                   2, parameters);
 }
 
 // http://crbug.com/16114
@@ -357,10 +364,8 @@ LPVOID WINAPI WebPluginDelegateImpl::VirtualAllocPatch(LPVOID address,
   if (size && p && (protect & kExecPageMask)) {
     bool limit_exceeded = UpdateExecMemSize(static_cast<intptr_t>(size)) >
                           kMaxPluginExecMemSize;
-#ifndef NDEBUG  // TODO(jschuh): Do this in release after we get numbers.
     if (limit_exceeded)
-      ::DebugBreak();
-#endif
+      RaiseJITException();
   }
   return p;
 }
@@ -375,10 +380,8 @@ BOOL WINAPI WebPluginDelegateImpl::VirtualProtectPatch(LPVOID address,
     if (is_exec && !was_exec) {
       bool limit_exceeded = UpdateExecMemSize(static_cast<intptr_t>(size)) >
                             kMaxPluginExecMemSize;
-#ifndef NDEBUG  // TODO(jschuh): Do this in release after we get numbers.
       if (limit_exceeded)
-        ::DebugBreak();
-#endif
+        RaiseJITException();
     } else if (!is_exec && was_exec) {
       UpdateExecMemSize(-(static_cast<intptr_t>(size)));
     }
