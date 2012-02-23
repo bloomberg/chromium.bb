@@ -121,8 +121,6 @@ GDI32.dll!*
 GDI32.dll!CreateFontIndirectExW
 GDI32.dll!CreateFontIndirectW
 
-# TODO(timurrrr): I'm too lazy to add name= to all the suppressions below now.
-
 UNINITIALIZED READ
 name=http://code.google.com/p/drmemory/issues/detail?id=18 a
 ...
@@ -355,7 +353,7 @@ name=http://code.google.com/p/drmemory/issues/detail?id=412 g
 # have frame pointers, and we have trouble unwinding from it.  Therefore, we use
 # this broad suppression, effectively disabling uninit checks in rsaenh.dll.
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=712 h
+name=http://code.google.com/p/drmemory/issues/detail?id=412 h
 RSAENH.dll!*
 
 UNINITIALIZED READ
@@ -483,35 +481,60 @@ CRYPT32.dll!CertOpenStore
 
 LEAK
 name=http://code.google.com/p/drmemory/issues/detail?id=476 d
+KERNEL*.dll!LocalAlloc
+...
+CRYPT32.dll!CertOpenSystemStore?
+
+LEAK
+name=http://code.google.com/p/drmemory/issues/detail?id=476 e
 RSAENH.dll!*
 ...
 CRYPT32.dll!CertGetCertificateChain
 
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=476 e
-RPCRT4.dll!*
-...
-CRYPT32.dll!CertGetCertificateChain
-
-LEAK
 name=http://code.google.com/p/drmemory/issues/detail?id=476 f
-KERNELBASE.dll!LocalAlloc
-SETUPAPI.dll!*
+RPCRT4.dll!*
 ...
 CRYPT32.dll!CertGetCertificateChain
 
 LEAK
 name=http://code.google.com/p/drmemory/issues/detail?id=476 g
-RPCRT4.dll!*
-RPCRT4.dll!*
+...
+SETUPAPI.dll!*
+...
+CRYPT32.dll!CertGetCertificateChain
+
+LEAK
+name=http://code.google.com/p/drmemory/issues/detail?id=476 h
 ...
 CRYPT32.dll!CertCompareIntegerBlob
 
+LEAK
+name=http://code.google.com/p/drmemory/issues/detail?id=476 i
+...
+CRYPT32.dll!CryptUnprotectData
+
+LEAK
+name=http://code.google.com/p/drmemory/issues/detail?id=476 j
+KERNEL*.dll!LocalAlloc
+...
+CRYPT32.dll!CertEnumCertificatesInStore
+
+UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=502 a
+system call NtSecureConnectPort parameter #3
+GDI32.dll!*
+GDI32.dll!*
+
+UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=502 b
+system call NtGdiEnumFonts parameter #6
+GDI32.dll!*
+GDI32.dll!*
+
 UNINITIALIZED READ
 name=http://code.google.com/p/drmemory/issues/detail?id=511 a
-RPCRT4.dll!*
-...
-RPCRT4.dll!UuidCreate
+RPCRT4.dll!...
 ole32.dll!*
 
 UNINITIALIZED READ
@@ -803,6 +826,28 @@ name=http://code.google.com/p/drmemory/issues/detail?id=778 c
 *!_PR_AttachThread
 *!_PRI_AttachThread
 
+# Needs more investigation...
+POSSIBLE LEAK
+name=NOCHECKIN
+RPCRT4.dll!*
+RPCRT4.dll!*
+RPCRT4.dll!NDRCContextBinding
+
+# Bit-level fps in rich edit layer.
+UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=791
+RICHED20.dll!*
+RICHED20.dll!*
+RICHED20.dll!*
+
+# Already suppressed by drmemory default supp we don't have yet.
+LEAK
+name=i#757: RPC binding leaks in sspicli.dll
+RPCRT4.dll!*
+...
+SspiCli.dll!*
+SspiCli.dll!Cre*
+
 ###############################################################
 # Benign issues in Chromium
 
@@ -853,8 +898,14 @@ LEAK
 name=http://crbug.com/86301
 *!operator new
 *!base::internal::PostTaskAndReplyImpl::PostTaskAndReply
-*!base::MessageLoopProxy::PostTaskAndReply
+*!base::TaskRunner::PostTaskAndReply
 *!*_DeadReplyLoopDoesNotDelete_Test::TestBody
+
+# Leak in a binary copy of Firefox 3's NSS dll.  Not much we can do about it.
+LEAK
+name=Firefox 3 NSS dll leak
+nspr4.dll!...
+*!NSSDecryptor::Free
 
 ###############################################################
 # Real issues in Chromium
@@ -995,3 +1046,44 @@ name=http://crbug.com/110049
 *!media::DoCrossfade<*>
 *!media::Crossfade
 *!media::AudioRendererAlgorithmBase::FillBuffer
+
+# Known sqlite3 leaks.
+LEAK
+name=http://crbug.com/113847 (1)
+...
+*!sqlite3MemMalloc
+*!mallocWithAlarm
+*!sqlite3Malloc
+...
+*!yy_reduce
+
+LEAK
+name=http://crbug.com/113847 (2)
+...
+*!openDatabase
+*!sqlite3_open
+
+UNINITIALIZED READ
+name=http://crbug.com/115326
+*!ToteWithReliability::Sort
+
+# Some unit tests must not be waiting for the file thread after deleting the
+# AppNotificationManager.
+LEAK
+name=http://crbug.com/115197
+...
+*!operator new
+*!AppNotificationStorage::Create
+*!AppNotificationManager::LoadOnFileThread
+
+# PasswordStoreWinTest.Migration creates leaks.  Some sqlite issue?  Reproduces
+# locally.
+LEAK
+name=http://crbug.com/115191
+...
+*!PasswordStoreWinTest::SetUp
+
+LEAK
+name=http://crbug.com/115328
+...
+*!GenericInfoViewTest_GenericInfoView_Test::TestBody
