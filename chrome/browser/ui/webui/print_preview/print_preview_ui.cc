@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -200,7 +200,9 @@ void PrintPreviewUI::OnDidGetPreviewPageCount(
   DCHECK_GT(params.page_count, 0);
   base::FundamentalValue count(params.page_count);
   base::FundamentalValue request_id(params.preview_request_id);
-  web_ui()->CallJavascriptFunction("onDidGetPreviewPageCount", count, request_id);
+  web_ui()->CallJavascriptFunction("onDidGetPreviewPageCount",
+                                   count,
+                                   request_id);
 }
 
 void PrintPreviewUI::OnDidGetDefaultPageLayout(
@@ -248,7 +250,7 @@ void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
           << expected_pages_count << " pages";
 
   if (!initial_preview_start_time_.is_null()) {
-    UMA_HISTOGRAM_TIMES("PrintPreview.InitalDisplayTime",
+    UMA_HISTOGRAM_TIMES("PrintPreview.InitialDisplayTime",
                         base::TimeTicks::Now() - initial_preview_start_time_);
     UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.Initial",
                          expected_pages_count);
