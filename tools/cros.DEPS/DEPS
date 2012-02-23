@@ -7,6 +7,6 @@ deps_os = {
     "src/third_party/cros":
       Var("chromiumos_git") + "/platform/cros.git@2b826b46",
     "src/third_party/cros_system_api":
-      Var("chromiumos_git") + "/platform/system_api.git@f6c6db00",
+      Var("chromiumos_git") + "/platform/system_api.git@9527535f",
   }
 }
