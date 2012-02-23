@@ -309,18 +309,24 @@ class BasePerfTest(pyauto.PyUITest):
     if units_x:
       assert isinstance(value, list)
 
-    # TODO(dennisjeffrey): Support long-running performance measurements on
-    # ChromeOS: crosbug.com/21881.
     if self.IsChromeOS():
-      perf_key = '%s_%s' % (units, description)
-      if len(perf_key) > 30:
-        logging.warning('The description "%s" will be truncated to "%s" '
-                        '(length 30) when added to the autotest database.',
-                        perf_key, perf_key[:30])
-      print '\n%s(\'%s\', %f)%s' % (self._PERF_OUTPUT_MARKER_PRE,
-                                      perf_key, value,
-                                      self._PERF_OUTPUT_MARKER_POST)
-      sys.stdout.flush()
+      if units_x:
+        # TODO(dennisjeffrey): Support long-running performance measurements on
+        # ChromeOS in a way that can be graphed: crosbug.com/21881.
+        pyauto_utils.PrintPerfResult(graph_name, description, value,
+                                     units + ' ' + units_x)
+      else:
+        # Output short-running performance results in a format understood by
+        # autotest.
+        perf_key = '%s_%s' % (units, description)
+        if len(perf_key) > 30:
+          logging.warning('The description "%s" will be truncated to "%s" '
+                          '(length 30) when added to the autotest database.',
+                          perf_key, perf_key[:30])
+        print '\n%s(\'%s\', %f)%s' % (self._PERF_OUTPUT_MARKER_PRE,
+                                        perf_key, value,
+                                        self._PERF_OUTPUT_MARKER_POST)
+        sys.stdout.flush()
     else:
       if units_x:
         # TODO(dennisjeffrey): Once changes to the Chrome graphing
