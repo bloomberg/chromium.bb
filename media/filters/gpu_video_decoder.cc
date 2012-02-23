@@ -48,6 +48,7 @@ GpuVideoDecoder::GpuVideoDecoder(
       factories_(factories),
       state_(kNormal),
       demuxer_read_in_progress_(false),
+      decoder_texture_target_(0),
       next_picture_buffer_id_(0),
       next_bitstream_buffer_id_(0),
       shutting_down_(false) {
@@ -326,7 +327,8 @@ void GpuVideoDecoder::ProvidePictureBuffers(uint32 count,
   }
 
   std::vector<uint32> texture_ids;
-  if (!factories_->CreateTextures(count, size, &texture_ids)) {
+  if (!factories_->CreateTextures(
+      count, size, &texture_ids, &decoder_texture_target_)) {
     NotifyError(VideoDecodeAccelerator::PLATFORM_FAILURE);
     return;
   }
@@ -382,8 +384,9 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
   base::TimeDelta duration;
   GetBufferTimeData(picture.bitstream_buffer_id(), &timestamp, &duration);
 
+  DCHECK(decoder_texture_target_);
   scoped_refptr<VideoFrame> frame(VideoFrame::WrapNativeTexture(
-      pb.texture_id(), pb.size().width(),
+      pb.texture_id(), decoder_texture_target_, pb.size().width(),
       pb.size().height(), timestamp, duration,
       base::Bind(&GpuVideoDecoder::ReusePictureBuffer, this,
                  picture.picture_buffer_id())));

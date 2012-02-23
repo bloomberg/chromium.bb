@@ -40,7 +40,8 @@ class MEDIA_EXPORT GpuVideoDecoder
 
     // Allocate & delete native textures.
     virtual bool CreateTextures(int32 count, const gfx::Size& size,
-                                std::vector<uint32>* texture_ids) = 0;
+                                std::vector<uint32>* texture_ids,
+                                uint32* texture_target) = 0;
     virtual void DeleteTexture(uint32 texture_id) = 0;
 
     // Allocate & return a shared memory segment.  Caller is responsible for
@@ -183,6 +184,9 @@ class MEDIA_EXPORT GpuVideoDecoder
   };
   std::map<int32, BufferPair> bitstream_buffers_in_decoder_;
   std::map<int32, PictureBuffer> picture_buffers_in_decoder_;
+
+  // The texture target used for decoded pictures.
+  uint32 decoder_texture_target_;
 
   struct BufferTimeData {
     BufferTimeData(int32 bbid, base::TimeDelta ts, base::TimeDelta dur);

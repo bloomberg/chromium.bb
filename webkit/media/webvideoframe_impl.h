@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,7 @@ class WebVideoFrameImpl : public WebKit::WebVideoFrame {
   virtual int stride(unsigned plane) const;
   virtual const void* data(unsigned plane) const;
   virtual unsigned textureId() const;
+  virtual unsigned textureTarget() const;
 
  private:
   scoped_refptr<media::VideoFrame> video_frame_;

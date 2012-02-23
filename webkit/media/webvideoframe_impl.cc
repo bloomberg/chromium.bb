@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -106,6 +106,12 @@ unsigned WebVideoFrameImpl::textureId() const {
   if (!video_frame_.get() || format() != FormatNativeTexture)
     return 0;
   return video_frame_->texture_id();
+}
+
+unsigned WebVideoFrameImpl::textureTarget() const {
+  if (!video_frame_.get() || format() != FormatNativeTexture)
+    return 0;
+  return video_frame_->texture_target();
 }
 
 }  // namespace webkit_media

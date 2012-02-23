@@ -40,7 +40,8 @@ class CONTENT_EXPORT RendererGpuVideoDecoderFactories
       media::VideoDecodeAccelerator::Client* client) OVERRIDE;
 
   virtual bool CreateTextures(int32 count, const gfx::Size& size,
-                              std::vector<uint32>* texture_ids) OVERRIDE;
+                              std::vector<uint32>* texture_ids,
+                              uint32* texture_target) OVERRIDE;
 
   virtual void DeleteTexture(uint32 texture_id) OVERRIDE;
 
@@ -62,7 +63,7 @@ class CONTENT_EXPORT RendererGpuVideoDecoderFactories
       base::WaitableEvent* waiter);
   void AsyncCreateTextures(
       int32 count, const gfx::Size& size, std::vector<uint32>* texture_ids,
-      bool* success, base::WaitableEvent* waiter);
+      uint32* texture_target, bool* success, base::WaitableEvent* waiter);
   void AsyncDeleteTexture(uint32 texture_id);
   void AsyncCreateSharedMemory(
       size_t size, base::SharedMemory** shm, base::WaitableEvent* waiter);
