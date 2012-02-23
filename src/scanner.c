@@ -139,7 +139,7 @@ uppercase_dup(const char *src)
 static void
 desc_dump(char *src, int startcol)
 {
-	int i, j = 0, col = startcol, line = 0, len;
+	int i, j = 0, col = startcol, line = 0;
 
 	/* Strip leading space */
 	for (i = 0; isspace(src[i]); i++)
