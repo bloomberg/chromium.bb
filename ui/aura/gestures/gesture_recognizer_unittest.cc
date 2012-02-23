@@ -52,6 +52,8 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
     pinch_end_ = false;
     long_press_ = false;
 
+    scroll_begin_position_.SetPoint(0, 0);
+
     scroll_x_ = 0;
     scroll_y_ = 0;
   }
@@ -66,6 +68,10 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   bool pinch_update() const { return pinch_update_; }
   bool pinch_end() const { return pinch_end_; }
   bool long_press() const { return long_press_; }
+
+  const gfx::Point scroll_begin_position() const {
+    return scroll_begin_position_;
+  }
 
   float scroll_x() const { return scroll_x_; }
   float scroll_y() const { return scroll_y_; }
@@ -84,6 +90,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         break;
       case ui::ET_GESTURE_SCROLL_BEGIN:
         scroll_begin_ = true;
+        scroll_begin_position_ = gesture->location();
         break;
       case ui::ET_GESTURE_SCROLL_UPDATE:
         scroll_update_ = true;
@@ -123,6 +130,8 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   bool pinch_update_;
   bool pinch_end_;
   bool long_press_;
+
+  gfx::Point scroll_begin_position_;
 
   float scroll_x_;
   float scroll_y_;
@@ -366,6 +375,8 @@ TEST_F(GestureRecognizerTest, GestureEventScroll) {
   EXPECT_FALSE(delegate->scroll_end());
   EXPECT_EQ(29, delegate->scroll_x());
   EXPECT_EQ(29, delegate->scroll_y());
+  EXPECT_EQ(gfx::Point(1, 1).ToString(),
+            delegate->scroll_begin_position().ToString());
 
   // Move some more to generate a few more scroll updates.
   SendScrollEvent(root_window(), 110, 211, delegate.get());

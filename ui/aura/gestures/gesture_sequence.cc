@@ -432,7 +432,7 @@ bool GestureSequence::ScrollStart(const TouchEvent& event,
       !point.IsInScrollWindow(event) ||
       !point.HasEnoughDataToEstablishRail())
     return false;
-  AppendScrollGestureBegin(point, point.last_touch_position(), gestures);
+  AppendScrollGestureBegin(point, point.first_touch_position(), gestures);
   if (point.IsInHorizontalRailWindow())
     scroll_type_ = ST_HORIZONTAL;
   else if (point.IsInVerticalRailWindow())
