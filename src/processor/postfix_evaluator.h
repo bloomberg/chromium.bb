@@ -153,6 +153,10 @@ class PostfixEvaluator {
   bool EvaluateInternal(const string &expression,
                         DictionaryValidityType *assigned);
 
+  bool EvaluateToken(const string &token,
+                     const string &expression,
+                     DictionaryValidityType *assigned);
+
   // The dictionary mapping constant and variable identifiers (strings) to
   // values.  Keys beginning with '$' are treated as variable names, and
   // PostfixEvaluator is free to create and modify these keys.  Weak pointer.
