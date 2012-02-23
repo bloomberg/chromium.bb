@@ -58,9 +58,6 @@ cr.define('options', function() {
       startupPagesList.autocompleteList = suggestionList;
     },
 
-    // TODO(tbreisacher): Work with jhawkins to refactor this so that we're not
-    // overriding private handle* methods in SettingsDialog.
-
     /** @inheritDoc */
     handleConfirm: function() {
       SettingsDialog.prototype.handleConfirm.call(this);

@@ -200,8 +200,18 @@ void UITestBase::SetLaunchSwitches() {
     launch_arguments_.AppendSwitch(switches::kEnableFileCookies);
   if (dom_automation_enabled_)
     launch_arguments_.AppendSwitch(switches::kDomAutomationController);
-  if (!homepage_.empty())
-    launch_arguments_.AppendSwitchASCII(switches::kHomePage, homepage_);
+  if (!homepage_.empty()) {
+    // Pass homepage_ both as an arg (so that it opens on startup) and to the
+    // homepage switch (so that the homepage is set).
+
+    // Don't add the homepage switch if it's already there.
+    if (!launch_arguments_.HasSwitch(switches::kHomePage))
+      launch_arguments_.AppendSwitchASCII(switches::kHomePage, homepage_);
+
+    // Don't add the arg if there is already an arg there.
+    if (launch_arguments_.GetArgs().empty())
+      launch_arguments_.AppendArg(homepage_);
+  }
   if (!test_name_.empty())
     launch_arguments_.AppendSwitchASCII(switches::kTestName, test_name_);
 #if defined(USE_AURA)
@@ -247,6 +257,33 @@ bool UITestBase::LaunchAnotherBrowserBlockUntilClosed(
   ProxyLauncher::LaunchState state = DefaultLaunchState();
   state.command.AppendArguments(cmdline, false);
   return launcher_->LaunchAnotherBrowserBlockUntilClosed(state);
+}
+
+bool UITestBase::LaunchAnotherBrowserNoUrlArg(const CommandLine& cmdline) {
+  // Clear the homepage temporarily, and reset the launch switches, so that the
+  // URL argument doesn't get added.
+
+  std::string homepage_original;
+  std::swap(homepage_original, homepage_);
+
+  CommandLine launch_arguments_original(launch_arguments_);
+  launch_arguments_ = CommandLine(launch_arguments_.GetProgram());
+
+  SetLaunchSwitches();
+
+  ProxyLauncher::LaunchState state = DefaultLaunchState();
+
+  // But do add the --homepage switch
+  state.command.AppendSwitchASCII(switches::kHomePage, homepage_original);
+
+  state.command.AppendArguments(cmdline, false);
+  bool result = launcher_->LaunchAnotherBrowserBlockUntilClosed(state);
+
+  // Reset launch_arguments_ and homepage_ to their original values.
+  std::swap(homepage_original, homepage_);
+  std::swap(launch_arguments_original, launch_arguments_);
+
+  return result;
 }
 #endif
 
