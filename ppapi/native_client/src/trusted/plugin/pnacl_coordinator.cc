@@ -74,15 +74,30 @@ const bool kWriteable = true;
 uint32_t LocalTempFile::next_identifier = 0;
 
 LocalTempFile::LocalTempFile(Plugin* plugin,
+                             pp::FileSystem* file_system)
+    : plugin_(plugin),
+      file_system_(file_system) {
+  PLUGIN_PRINTF(("LocalTempFile::LocalTempFile (plugin=%p, "
+                 "file_system=%p)\n",
+                 static_cast<void*>(plugin), static_cast<void*>(file_system)));
+  Initialize();
+}
+
+LocalTempFile::LocalTempFile(Plugin* plugin,
                              pp::FileSystem* file_system,
-                             PnaclCoordinator* coordinator)
+                             const nacl::string &filename)
     : plugin_(plugin),
       file_system_(file_system),
-      coordinator_(coordinator) {
+      filename_(nacl::string(kPnaclTempDir) + "/" + filename) {
   PLUGIN_PRINTF(("LocalTempFile::LocalTempFile (plugin=%p, "
-                 "file_system=%p, coordinator=%p)\n",
+                 "file_system=%p, filename=%s)\n",
                  static_cast<void*>(plugin), static_cast<void*>(file_system),
-                 static_cast<void*>(coordinator)));
+                 filename.c_str()));
+  file_ref_.reset(new pp::FileRef(*file_system_, filename_.c_str()));
+  Initialize();
+}
+
+void LocalTempFile::Initialize() {
   callback_factory_.Initialize(this);
   rng_desc_ = (struct NaClDescRng *) malloc(sizeof *rng_desc_);
   CHECK(rng_desc_ != NULL);
@@ -160,17 +175,21 @@ void LocalTempFile::WriteFileDidOpen(int32_t pp_error) {
     filename_ = "";
     OpenWrite(done_callback_);
   }
+  // Run the client's completion callback.
+  pp::Core* core = pp::Module::Get()->core();
+  if (pp_error != PP_OK) {
+    core->CallOnMainThread(0, done_callback_, pp_error);
+    return;
+  }
   // Remember the object temporary file descriptor.
   int32_t fd = GetFD(pp_error, *write_io_, kWriteable);
   if (fd < 0) {
-    coordinator_->ReportNonPpapiError("could not open write temp file.");
+    core->CallOnMainThread(0, done_callback_, pp_error);
     return;
   }
   // The descriptor for a writeable file needs to have quota management.
   write_wrapper_.reset(
       plugin_->wrapper_factory()->MakeFileDescQuota(fd, O_RDWR, identifier_));
-  // Run the client's completion callback.
-  pp::Core* core = pp::Module::Get()->core();
   core->CallOnMainThread(0, done_callback_, PP_OK);
 }
 
@@ -187,15 +206,19 @@ void LocalTempFile::OpenRead(const pp::CompletionCallback& cb) {
 void LocalTempFile::ReadFileDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("LocalTempFile::ReadFileDidOpen (pp_error=%"
                  NACL_PRId32")\n", pp_error));
+  // Run the client's completion callback.
+  pp::Core* core = pp::Module::Get()->core();
+  if (pp_error != PP_OK) {
+    core->CallOnMainThread(0, done_callback_, pp_error);
+    return;
+  }
   // Remember the object temporary file descriptor.
   int32_t fd = GetFD(pp_error, *read_io_, kReadOnly);
   if (fd < 0) {
-    coordinator_->ReportNonPpapiError("could not open read temp file.");
+    core->CallOnMainThread(0, done_callback_, PP_ERROR_FAILED);
     return;
   }
   read_wrapper_.reset(plugin_->wrapper_factory()->MakeFileDesc(fd, O_RDONLY));
-  // Run the client's completion callback.
-  pp::Core* core = pp::Module::Get()->core();
   core->CallOnMainThread(0, done_callback_, PP_OK);
 }
 
@@ -224,13 +247,20 @@ void LocalTempFile::Delete(const pp::CompletionCallback& cb) {
 
 void LocalTempFile::Rename(const nacl::string& new_name,
                            const pp::CompletionCallback& cb) {
-  PLUGIN_PRINTF(("LocalTempFile::Rename\n"));
   // Rename the temporary file.
-  filename_ = new_name;
-  nacl::scoped_ptr<pp::FileRef> old_ref(file_ref_.release());
-  file_ref_.reset(new pp::FileRef(*file_system_, new_name.c_str()));
-  old_ref->Rename(*file_ref_, cb);
+  filename_ = nacl::string(kPnaclTempDir) + "/" + new_name;
+  PLUGIN_PRINTF(("LocalTempFile::Rename to %s\n", filename_.c_str()));
+  // Remember the old ref until the rename is complete.
+  old_ref_.reset(file_ref_.release());
+  file_ref_.reset(new pp::FileRef(*file_system_, filename_.c_str()));
+  old_ref_->Rename(*file_ref_, cb);
 }
+
+void LocalTempFile::FinishRename() {
+  // Now we can release the old ref.
+  old_ref_.reset(NULL);
+}
+
 
 //////////////////////////////////////////////////////////////////////
 //  Pnacl-specific manifest support.
@@ -243,10 +273,12 @@ class ExtensionManifest : public Manifest {
   virtual ~ExtensionManifest() { }
 
   virtual bool GetProgramURL(nacl::string* full_url,
+                             nacl::string* cache_identity,
                              ErrorInfo* error_info,
                              bool* pnacl_translate) const {
     // Does not contain program urls.
     UNREFERENCED_PARAMETER(full_url);
+    UNREFERENCED_PARAMETER(cache_identity);
     UNREFERENCED_PARAMETER(error_info);
     UNREFERENCED_PARAMETER(pnacl_translate);
     PLUGIN_PRINTF(("ExtensionManifest does not contain a program\n"));
@@ -274,10 +306,13 @@ class ExtensionManifest : public Manifest {
 
   virtual bool ResolveKey(const nacl::string& key,
                           nacl::string* full_url,
+                          nacl::string* cache_identity,
                           ErrorInfo* error_info,
                           bool* pnacl_translate) const {
     // All of the extension files are native (do not require pnacl translate).
     *pnacl_translate = false;
+    // Do not cache these entries.
+    *cache_identity = "";
     // We can only resolve keys in the files/ namespace.
     const nacl::string kFilesPrefix = "files/";
     size_t files_prefix_pos = key.find(kFilesPrefix);
@@ -315,13 +350,15 @@ class PnaclLDManifest : public Manifest {
   virtual ~PnaclLDManifest() { }
 
   virtual bool GetProgramURL(nacl::string* full_url,
+                             nacl::string* cache_identity,
                              ErrorInfo* error_info,
                              bool* pnacl_translate) const {
-    if (nexe_manifest_->GetProgramURL(full_url, error_info, pnacl_translate)) {
+    if (nexe_manifest_->GetProgramURL(full_url, cache_identity,
+                                      error_info, pnacl_translate)) {
       return true;
     }
-    return extension_manifest_->GetProgramURL(full_url, error_info,
-                                              pnacl_translate);
+    return extension_manifest_->GetProgramURL(full_url, cache_identity,
+                                              error_info, pnacl_translate);
   }
 
   virtual bool ResolveURL(const nacl::string& relative_url,
@@ -342,13 +379,14 @@ class PnaclLDManifest : public Manifest {
 
   virtual bool ResolveKey(const nacl::string& key,
                           nacl::string* full_url,
+                          nacl::string* cache_identity,
                           ErrorInfo* error_info,
                           bool* pnacl_translate) const {
-    if (nexe_manifest_->ResolveKey(key, full_url,
+    if (nexe_manifest_->ResolveKey(key, full_url, cache_identity,
                                    error_info, pnacl_translate)) {
       return true;
     }
-    return extension_manifest_->ResolveKey(key, full_url,
+    return extension_manifest_->ResolveKey(key, full_url, cache_identity,
                                            error_info, pnacl_translate);
   }
 
@@ -365,11 +403,13 @@ class PnaclLDManifest : public Manifest {
 PnaclCoordinator* PnaclCoordinator::BitcodeToNative(
     Plugin* plugin,
     const nacl::string& pexe_url,
+    const nacl::string& cache_identity,
     const pp::CompletionCallback& translate_notify_callback) {
   PLUGIN_PRINTF(("PnaclCoordinator::BitcodeToNative (plugin=%p, pexe=%s)\n",
                  static_cast<void*>(plugin), pexe_url.c_str()));
   PnaclCoordinator* coordinator =
-      new PnaclCoordinator(plugin, pexe_url, translate_notify_callback);
+      new PnaclCoordinator(plugin, pexe_url,
+                           cache_identity, translate_notify_callback);
   PLUGIN_PRINTF(("PnaclCoordinator::BitcodeToNative (manifest=%p)\n",
                  reinterpret_cast<const void*>(coordinator->manifest_.get())));
   // Load llc and ld.
@@ -419,6 +459,7 @@ int32_t PnaclCoordinator::GetLoadedFileDesc(int32_t pp_error,
 PnaclCoordinator::PnaclCoordinator(
     Plugin* plugin,
     const nacl::string& pexe_url,
+    const nacl::string& cache_identity,
     const pp::CompletionCallback& translate_notify_callback)
   : plugin_(plugin),
     translate_notify_callback_(translate_notify_callback),
@@ -426,6 +467,7 @@ PnaclCoordinator::PnaclCoordinator(
     file_system_(new pp::FileSystem(plugin, PP_FILESYSTEMTYPE_LOCALTEMPORARY)),
     manifest_(new ExtensionManifest(plugin->url_util())),
     pexe_url_(pexe_url),
+    cache_identity_(cache_identity),
     error_already_reported_(false) {
   PLUGIN_PRINTF(("PnaclCoordinator::PnaclCoordinator (this=%p, plugin=%p)\n",
                  static_cast<void*>(this), static_cast<void*>(plugin)));
@@ -530,21 +572,29 @@ void PnaclCoordinator::NexeFileWasClosed(int32_t pp_error) {
     ReportPpapiError(pp_error);
     return;
   }
-  // TODO(sehr): enable renaming once cache ids are available.
   // Rename the nexe file to the cache id.
-  // pp::CompletionCallback cb =
-  //     callback_factory_.NewCallback(&PnaclCoordinator::NexeReadDidOpen);
-  // nexe_file_->Rename(new_name, cb);
-  NexeFileWasRenamed(PP_OK);
+  if (cache_identity_ != "") {
+    pp::CompletionCallback cb =
+         callback_factory_.NewCallback(&PnaclCoordinator::NexeFileWasRenamed);
+    nexe_file_->Rename(cache_identity_, cb);
+  } else {
+    // For now tolerate bitcode that is missing a cache identity.
+    PLUGIN_PRINTF(("PnaclCoordinator -- WARNING: missing cache identity,"
+                   " not caching.\n"));
+    NexeFileWasRenamed(PP_OK);
+  }
 }
 
 void PnaclCoordinator::NexeFileWasRenamed(int32_t pp_error) {
   PLUGIN_PRINTF(("PnaclCoordinator::NexeFileWasRenamed (pp_error=%"
                  NACL_PRId32")\n", pp_error));
+  // NOTE: if the file already existed, it looks like the rename will
+  // happily succeed. However, we should add a test for this.
   if (pp_error != PP_OK) {
-    ReportPpapiError(pp_error);
+    ReportPpapiError(pp_error, "Failed to place cached bitcode translation.");
     return;
   }
+  nexe_file_->FinishRename();
   // Open the nexe temporary file for reading.
   pp::CompletionCallback cb =
       callback_factory_.NewCallback(&PnaclCoordinator::NexeReadDidOpen);
@@ -555,7 +605,7 @@ void PnaclCoordinator::NexeReadDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("PnaclCoordinator::NexeReadDidOpen (pp_error=%"
                  NACL_PRId32")\n", pp_error));
   if (pp_error != PP_OK) {
-    ReportPpapiError(pp_error);
+    ReportPpapiError(pp_error, "Failed to open translated nexe.");
     return;
   }
   // Transfer ownership of the nexe wrapper to the coordinator.
@@ -612,8 +662,26 @@ void PnaclCoordinator::DirectoryWasCreated(int32_t pp_error) {
     ReportPpapiError(pp_error, "directory creation/check failed.");
     return;
   }
-  // Create the object file pair for connecting llc and ld.
-  obj_file_.reset(new LocalTempFile(plugin_, file_system_.get(), this));
+  if (cache_identity_ != "") {
+    nexe_file_.reset(new LocalTempFile(plugin_, file_system_.get(),
+                                       cache_identity_));
+    pp::CompletionCallback cb =
+        callback_factory_.NewCallback(&PnaclCoordinator::CachedFileDidOpen);
+    nexe_file_->OpenRead(cb);
+  } else {
+    // For now, tolerate lack of cache identity...
+    CachedFileDidOpen(PP_ERROR_FAILED);
+  }
+}
+
+void PnaclCoordinator::CachedFileDidOpen(int32_t pp_error) {
+
+  if (pp_error == PP_OK) {
+    NexeReadDidOpen(PP_OK);
+    return;
+  }
+
+  obj_file_.reset(new LocalTempFile(plugin_, file_system_.get()));
   pp::CompletionCallback cb =
       callback_factory_.NewCallback(&PnaclCoordinator::ObjectWriteDidOpen);
   obj_file_->OpenWrite(cb);
@@ -639,7 +707,7 @@ void PnaclCoordinator::ObjectReadDidOpen(int32_t pp_error) {
     return;
   }
   // Create the nexe file for connecting ld and sel_ldr.
-  nexe_file_.reset(new LocalTempFile(plugin_, file_system_.get(), this));
+  nexe_file_.reset(new LocalTempFile(plugin_, file_system_.get()));
   pp::CompletionCallback cb =
       callback_factory_.NewCallback(&PnaclCoordinator::NexeWriteDidOpen);
   nexe_file_->OpenWrite(cb);

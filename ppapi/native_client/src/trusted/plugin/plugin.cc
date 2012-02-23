@@ -1471,6 +1471,7 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
   HistogramSizeKB("NaCl.Perf.Size.Manifest",
                   static_cast<int32_t>(manifest_json.length() / 1024));
   nacl::string program_url;
+  nacl::string cache_identity;
   bool is_portable;
   ErrorInfo error_info;
   if (!SetManifestObject(manifest_json, &error_info)) {
@@ -1478,7 +1479,8 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
     return;
   }
 
-  if (SelectProgramURLFromManifest(&program_url, &error_info, &is_portable)) {
+  if (manifest_->GetProgramURL(&program_url, &cache_identity,
+                               &error_info, &is_portable)) {
     set_nacl_ready_state(LOADING);
     // Inform JavaScript that we found a nexe URL to load.
     EnqueueProgressEvent(kProgressEventProgress);
@@ -1489,6 +1491,7 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
       pnacl_coordinator_.reset(
           PnaclCoordinator::BitcodeToNative(this,
                                             program_url,
+                                            cache_identity,
                                             translate_callback));
       return;
     } else {
@@ -1573,17 +1576,6 @@ bool Plugin::SetManifestObject(const nacl::string& manifest_json,
   }
   manifest_.reset(json_manifest.release());
   return true;
-}
-
-bool Plugin::SelectProgramURLFromManifest(nacl::string* result,
-                                          ErrorInfo* error_info,
-                                          bool* is_portable) {
-  const nacl::string sandbox_isa(GetSandboxISA());
-  PLUGIN_PRINTF(("Plugin::SelectProgramURLFromManifest(): sandbox='%s'.\n",
-                 sandbox_isa.c_str()));
-  if (result == NULL || error_info == NULL || manifest_ == NULL)
-    return false;
-  return manifest_->GetProgramURL(result, error_info, is_portable);
 }
 
 void Plugin::UrlDidOpenForStreamAsFile(int32_t pp_error,

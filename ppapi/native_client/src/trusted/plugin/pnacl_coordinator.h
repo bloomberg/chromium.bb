@@ -46,7 +46,7 @@ class PnaclCoordinator;
 //     written by: llc     (passed in explicitly through SRPC)
 //     read by:    ld      (returned via lookup service from SRPC)
 // PnaclCoordinator::nexe_file_:
-//     written by: lc      (passed in explicitly through SRPC)
+//     written by: ld      (passed in explicitly through SRPC)
 //     read by:    sel_ldr (passed in explicitly to command channel)
 //
 
@@ -57,9 +57,13 @@ class PnaclCoordinator;
 // for the file are opened.
 class LocalTempFile {
  public:
+  // Create a LocalTempFile with a random name.
+  LocalTempFile(Plugin* plugin,
+                pp::FileSystem* file_system);
+  // Create a LocalTempFile with a specific filename.
   LocalTempFile(Plugin* plugin,
                 pp::FileSystem* file_system,
-                PnaclCoordinator* coordinator);
+                const nacl::string& filename);
   ~LocalTempFile();
   // Opens a writeable file IO object and descriptor referring to the file.
   void OpenWrite(const pp::CompletionCallback& cb);
@@ -72,6 +76,7 @@ class LocalTempFile {
   // Renames the temporary file.
   void Rename(const nacl::string& new_name,
               const pp::CompletionCallback& cb);
+  void FinishRename();
 
   // Accessors.
   // The nacl::DescWrapper* for the writeable version of the file.
@@ -93,6 +98,8 @@ class LocalTempFile {
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(LocalTempFile);
 
+  void Initialize();
+
   // Gets the POSIX file descriptor for a resource.
   int32_t GetFD(int32_t pp_error,
                 const pp::Resource& resource,
@@ -106,11 +113,12 @@ class LocalTempFile {
 
   Plugin* plugin_;
   pp::FileSystem* file_system_;
-  PnaclCoordinator* coordinator_;
   const PPB_FileIOTrusted* file_io_trusted_;
   pp::CompletionCallbackFactory<LocalTempFile> callback_factory_;
   nacl::string filename_;
   nacl::scoped_ptr<pp::FileRef> file_ref_;
+  // Temporarily holds the previous file ref during a rename operation.
+  nacl::scoped_ptr<pp::FileRef> old_ref_;
   // The PPAPI and wrapper state for the writeable file.
   nacl::scoped_ptr<pp::FileIO> write_io_;
   nacl::scoped_ptr<nacl::DescWrapper> write_wrapper_;
@@ -176,6 +184,9 @@ class PnaclRefCount {
 //     Complete when FileSystemDidOpen is invoked.
 // CREATED_PNACL_TEMP_DIRECTORY
 //     Complete when DirectoryWasCreated is invoked.
+// CACHED_FILE_OPEN
+//     Complete with success if cached version is available and jump to end.
+//     Otherwise, proceed with usual pipeline of translation.
 // OPEN_TMP_WRITE_FOR_LLC_TO_LD_COMMUNICATION
 //     Complete when ObjectWriteDidOpen is invoked.
 // OPEN_TMP_READ_FOR_LLC_TO_LD_COMMUNICATION
@@ -206,6 +217,7 @@ class PnaclCoordinator {
   static PnaclCoordinator* BitcodeToNative(
       Plugin* plugin,
       const nacl::string& pexe_url,
+      const nacl::string& cache_identity,
       const pp::CompletionCallback& translate_notify_callback);
 
   // Call this to take ownership of the FD of the translated nexe after
@@ -234,6 +246,7 @@ class PnaclCoordinator {
   // Therefore the constructor is private.
   PnaclCoordinator(Plugin* plugin,
                    const nacl::string& pexe_url,
+                   const nacl::string& cache_identity,
                    const pp::CompletionCallback& translate_notify_callback);
 
   // Callback for when llc and ld have been downloaded.
@@ -246,6 +259,8 @@ class PnaclCoordinator {
   void FileSystemDidOpen(int32_t pp_error);
   // Invoked after we are sure the PNaCl temporary directory exists.
   void DirectoryWasCreated(int32_t pp_error);
+  // Invoked after we have checked the PNaCl cache for a translated version.
+  void CachedFileDidOpen(int32_t pp_error);
   // Invoked when the write descriptor for obj_file_ is created.
   void ObjectWriteDidOpen(int32_t pp_error);
   // Invoked when the read descriptor for obj_file_ is created.
@@ -323,6 +338,8 @@ class PnaclCoordinator {
 
   // The URL for the pexe file.
   nacl::string pexe_url_;
+  // Optional cache identity for translation caching.
+  nacl::string cache_identity_;
   // Borrowed reference which must outlive the thread.
   nacl::scoped_ptr<nacl::DescWrapper> pexe_wrapper_;
   // Object file, produced by the translator and consumed by the linker.

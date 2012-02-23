@@ -47,6 +47,7 @@ class JsonManifest : public Manifest {
   // manifest file. Sets |pnacl_translate| to |true| if the program is
   // portable bitcode that must be translated.
   virtual bool GetProgramURL(nacl::string* full_url,
+                             nacl::string* cache_identity,
                              ErrorInfo* error_info,
                              bool* pnacl_translate) const;
 
@@ -68,6 +69,7 @@ class JsonManifest : public Manifest {
   // If there was an error, details are reported via error_info.
   virtual bool ResolveKey(const nacl::string& key,
                           nacl::string* full_url,
+                          nacl::string* cache_identity,
                           ErrorInfo* error_info,
                           bool* pnacl_translate) const;
 

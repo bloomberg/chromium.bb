@@ -39,13 +39,21 @@ const char* const kPortableKey =    "portable";
 const char* const kPnaclTranslateKey = "pnacl-translate";
 const char* const kUrlKey =            "url";
 
+// Cache support keys
+const char* const kCacheIdentityKey = "sha256";
+
 // Sample manifest file:
 // {
 //   "program": {
 //     "x86-32": {"url": "myprogram_x86-32.nexe"},
 //     "x86-64": {"url": "myprogram_x86-64.nexe"},
 //     "arm": {"url": "myprogram_arm.nexe"},
-//     "portable": {"pnacl-translate": {"url": "myprogram.pexe"} }
+//     "portable": {
+//       "pnacl-translate": {
+//         "url": "myprogram.pexe",
+//         "sha256": "..."
+//       }
+//     }
 //   },
 //   "interpreter": {
 //     "x86-32": {"url": "interpreter_x86-32.nexe"},
@@ -136,14 +144,18 @@ bool IsValidUrlSpec(const Json::Value& url_spec,
                     const nacl::string& container_key,
                     const nacl::string& parent_key,
                     nacl::string* error_string) {
-  static const char* kManifestUrlSpecProperties[] = {
+  static const char* kManifestUrlSpecRequired[] = {
     kUrlKey
   };
+  static const char* kManifestUrlSpecPlusOptional[] = {
+    kUrlKey,
+    kCacheIdentityKey
+  };
   if (!IsValidDictionary(url_spec, container_key, parent_key,
-                         kManifestUrlSpecProperties,
-                         NACL_ARRAY_SIZE(kManifestUrlSpecProperties),
-                         kManifestUrlSpecProperties,
-                         NACL_ARRAY_SIZE(kManifestUrlSpecProperties),
+                         kManifestUrlSpecPlusOptional,
+                         NACL_ARRAY_SIZE(kManifestUrlSpecPlusOptional),
+                         kManifestUrlSpecRequired,
+                         NACL_ARRAY_SIZE(kManifestUrlSpecRequired),
                          error_string)) {
     return false;
   }
@@ -246,18 +258,33 @@ bool IsValidISADictionary(const Json::Value& dictionary,
   return true;
 }
 
+void GrabUrlAndCacheIdentity(const Json::Value& url_spec,
+                             nacl::string* url,
+                             nacl::string* cache_identity) {
+  *url = url_spec[kUrlKey].asString();
+  if (url_spec.isMember(kCacheIdentityKey)) {
+    *cache_identity = url_spec[kCacheIdentityKey].asString();
+  }
+}
+
 bool GetURLFromISADictionary(const Json::Value& dictionary,
                              const nacl::string& parent_key,
                              const nacl::string& sandbox_isa,
                              bool prefer_portable,
                              nacl::string* url,
+                             nacl::string* cache_identity,
                              nacl::string* error_string,
                              bool* pnacl_translate) {
-  if (url == NULL || error_string == NULL || pnacl_translate == NULL)
+  if (url == NULL || cache_identity == NULL ||
+      error_string == NULL || pnacl_translate == NULL)
     return false;
 
   if (!IsValidISADictionary(dictionary, parent_key, sandbox_isa, error_string))
     return false;
+
+  *url = "";
+  *cache_identity = "";
+  *pnacl_translate = false;
 
   // The call to IsValidISADictionary() above guarantees that either
   // sandbox_isa or kPortableKey is present in the dictionary.
@@ -273,12 +300,13 @@ bool GetURLFromISADictionary(const Json::Value& dictionary,
   // Check if this requires a pnacl-translate, otherwise just grab the URL.
   // We may have pnacl-translate for isa-specific bitcode for CPU tuning.
   if (isa_spec.isMember(kPnaclTranslateKey)) {
-    *url = isa_spec[kPnaclTranslateKey][kUrlKey].asString();
+    GrabUrlAndCacheIdentity(isa_spec[kPnaclTranslateKey], url, cache_identity);
     *pnacl_translate = true;
   } else {
-    *url = isa_spec[kUrlKey].asString();
+    GrabUrlAndCacheIdentity(isa_spec, url, cache_identity);
     *pnacl_translate = false;
   }
+
   return true;
 }
 
@@ -288,11 +316,10 @@ bool GetKeyUrl(const Json::Value& dictionary,
                const Manifest* manifest,
                bool prefer_portable,
                nacl::string* full_url,
+               nacl::string* cache_identity,
                ErrorInfo* error_info,
                bool* pnacl_translate) {
   CHECK(full_url != NULL && error_info != NULL);
-  *full_url = "";
-  *pnacl_translate = false;
   if (!dictionary.isMember(key)) {
     error_info->SetReport(ERROR_MANIFEST_RESOLVE_URL,
                           "file key not found in manifest");
@@ -302,7 +329,8 @@ bool GetKeyUrl(const Json::Value& dictionary,
   nacl::string error_string;
   nacl::string relative_url;
   if (!GetURLFromISADictionary(isa_dict, key, sandbox_isa, prefer_portable,
-                               &relative_url, &error_string, pnacl_translate)) {
+                               &relative_url, cache_identity,
+                               &error_string, pnacl_translate)) {
     error_info->SetReport(ERROR_MANIFEST_RESOLVE_URL,
                           key + nacl::string(" manifest resolution error: ") +
                           error_string);
@@ -437,9 +465,11 @@ bool JsonManifest::ResolveURL(const nacl::string& relative_url,
 }
 
 bool JsonManifest::GetProgramURL(nacl::string* full_url,
+                                 nacl::string* cache_identity,
                                  ErrorInfo* error_info,
                                  bool* pnacl_translate) const {
-  if (full_url == NULL || error_info == NULL || pnacl_translate == NULL)
+  if (full_url == NULL || cache_identity == NULL ||
+      error_info == NULL || pnacl_translate == NULL)
     return false;
 
   Json::Value program = dictionary_[kProgramKey];
@@ -452,6 +482,7 @@ bool JsonManifest::GetProgramURL(nacl::string* full_url,
                                sandbox_isa_,
                                prefer_portable_,
                                &nexe_url,
+                               cache_identity,
                                &error_string,
                                pnacl_translate)) {
     error_info->SetReport(ERROR_MANIFEST_GET_NEXE_URL,
@@ -479,19 +510,19 @@ bool JsonManifest::GetFileKeys(std::set<nacl::string>* keys) const {
 
 bool JsonManifest::ResolveKey(const nacl::string& key,
                               nacl::string* full_url,
+                              nacl::string* cache_identity,
                               ErrorInfo* error_info,
                               bool* pnacl_translate) const {
   NaClLog(3, "JsonManifest::ResolveKey(%s)\n", key.c_str());
   // key must be one of kProgramKey or kFileKey '/' file-section-key
 
-  if (full_url == NULL || error_info == NULL || pnacl_translate == NULL)
+  if (full_url == NULL || cache_identity == NULL ||
+      error_info == NULL || pnacl_translate == NULL)
     return false;
 
-  *full_url = "";
-  *pnacl_translate = false;
   if (key == kProgramKey) {
     return GetKeyUrl(dictionary_, key, sandbox_isa_, this, prefer_portable_,
-                     full_url, error_info, pnacl_translate);
+                     full_url, cache_identity, error_info, pnacl_translate);
   }
   nacl::string::const_iterator p = find(key.begin(), key.end(), '/');
   if (p == key.end()) {
@@ -526,7 +557,7 @@ bool JsonManifest::ResolveKey(const nacl::string& key,
     return false;
   }
   return GetKeyUrl(files, rest, sandbox_isa_, this, prefer_portable_,
-                   full_url, error_info, pnacl_translate);
+                   full_url, cache_identity, error_info, pnacl_translate);
 }
 
 }  // namespace plugin

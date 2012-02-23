@@ -400,16 +400,6 @@ class Plugin : public pp::InstancePrivate {
   bool SetManifestObject(const nacl::string& manifest_json,
                          ErrorInfo* error_info);
 
-  // Determines the URL of the program module appropriate for the NaCl sandbox
-  // implemented by the installed sel_ldr.  The URL is determined from the
-  // Manifest in |manifest_|.  On success, |true| is returned and |result| is
-  // set to the URL to use for the program, and |is_portable| is set to
-  // |true| if the program is portable bitcode.
-  // On failure, |false| is returned.
-  bool SelectProgramURLFromManifest(nacl::string* result,
-                                    ErrorInfo* error_info,
-                                    bool* is_portable);
-
   // Logs timing information to a UMA histogram, and also logs the same timing
   // information divided by the size of the nexe to another histogram.
   void HistogramStartupTimeSmall(const std::string& name, float dt);

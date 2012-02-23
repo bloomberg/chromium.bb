@@ -247,7 +247,8 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
   NaClLog(4, "Entered OpenManifestEntry_MainThreadContinuation\n");
 
   std::string mapped_url;
-  if (!manifest_->ResolveKey(p->url, &mapped_url,
+  std::string cache_identity;
+  if (!manifest_->ResolveKey(p->url, &mapped_url, &cache_identity,
                              p->error_info, &p->pnacl_translate)) {
     NaClLog(4, "OpenManifestEntry_MainThreadContinuation: ResolveKey failed\n");
     // Failed, and error_info has the details on what happened.  Wake
@@ -301,6 +302,7 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
     pnacl_coordinator_.reset(
         PnaclCoordinator::BitcodeToNative(plugin_,
                                           mapped_url,
+                                          cache_identity,
                                           translate_callback));
   }
   // p is deleted automatically
