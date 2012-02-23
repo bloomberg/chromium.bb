@@ -104,7 +104,7 @@ WHITELIST_REGEX = [
     re.compile('/third_party/sqlite/'),
     re.compile('/third_party/xdg-utils/'),
     re.compile('/third_party/yasm/source/patched-yasm/config'),
-    re.compile('/third_party/ffmpeg/patched-ffmpeg/tools'),
+    re.compile('/third_party/ffmpeg/tools'),
 ]
 
 #### USER EDITABLE SECTION ENDS HERE ####
