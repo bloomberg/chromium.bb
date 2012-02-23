@@ -843,7 +843,7 @@ cr.define('options', function() {
    */
   OptionsPage.keyDownEventHandler_ = function(event) {
     if (event.keyCode == 27 &&  // Esc
-        !this.isOverlayVisible_) {
+        !this.isOverlayVisible_()) {
       this.closeTopSubPage_();
     }
   };
