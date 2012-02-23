@@ -84,7 +84,7 @@ v8::Handle<v8::Value> I18NCustomBindings::GetL10nMessage(
     // chrome.i18n.getMessage("message_name", ["more", "params"]);
     v8::Local<v8::Array> placeholders = v8::Local<v8::Array>::Cast(args[1]);
     uint32_t count = placeholders->Length();
-    if (count <= 0 || count > 9)
+    if (count > 9)
       return v8::Undefined();
     for (uint32_t i = 0; i < count; ++i) {
       std::string substitute =

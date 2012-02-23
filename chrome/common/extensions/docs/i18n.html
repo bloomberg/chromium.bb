@@ -809,7 +809,7 @@ For details on calling <code>getAcceptLanguages()</code>, see the
               <div class="summary"><span>string</span>
                   <!-- Note: intentionally longer 80 columns -->
                   <span>chrome.i18n.getMessage</span>(<span class="null"><span>string</span>
-                      <var><span>messageName</span></var></span><span class="optional"><span>, </span><span>string or array of string</span>
+                      <var><span>messageName</span></var></span><span class="optional"><span>, </span><span>boolean or number or string or array of boolean or number or string</span>
                       <var><span>substitutions</span></var></span>)</div>
               <div class="description">
                 <p>Gets the localized string for the specified message. If the message is missing, this method returns an empty string (''). If the format of the <code>getMessage()</code> call is wrong — for example, <em>messageName</em> is not a string or the <em>substitutions</em> array is empty or has more than 9 elements — this method returns <code>undefined</code>.</p>
@@ -850,14 +850,14 @@ For details on calling <code>getAcceptLanguages()</code>, see the
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <span>string or array of string</span>
+                        <span>boolean or number or string or array of boolean or number or string</span>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>1 - 9 substitution strings, if the message requires any.</dd>
+          <dd>Up to 9 substitution strings, if the message requires any.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->

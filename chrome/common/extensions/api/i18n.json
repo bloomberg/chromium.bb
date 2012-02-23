@@ -29,17 +29,23 @@
           },
           {
             "choices": [
+              { "type": "boolean" },
+              { "type": "number" },
               { "type": "string" },
-              {
-                "type": "array",
-                "items": { "type": "string" },
-                "minItems": 1,
+              { "type": "array",
+                "items": {
+                  "choices": [
+                    { "type": "boolean" },
+                    { "type": "number" },
+                    { "type": "string" }
+                  ]
+                },
                 "maxItems": 9
               }
             ],
             "name": "substitutions",
             "optional": true,
-            "description": "1 - 9 substitution strings, if the message requires any."
+            "description": "Up to 9 substitution strings, if the message requires any."
           }
         ],
         "returns": {

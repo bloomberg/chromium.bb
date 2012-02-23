@@ -349,6 +349,13 @@ function cleanupJstemplateMess(root) {
       continue;
     }
 
+    // Delete empty style attributes (this can happen when jsdisplay causes
+    // display values other than 'none').
+    var styleAttribute = n.getAttribute('style');
+    if (typeof(styleAttribute) === 'string' && styleAttribute.trim() === '') {
+      n.removeAttribute('style');
+    }
+
     // Remove jstemplate attributes from nodes that stick around.
     jsattributes.forEach(function(attributeName) {
       n.removeAttribute(attributeName);
