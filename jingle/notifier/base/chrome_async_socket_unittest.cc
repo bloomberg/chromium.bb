@@ -43,7 +43,7 @@ class AsyncSocketDataProvider : public net::SocketDataProvider {
     if (reads_.empty()) {
       DCHECK(!has_pending_read_);
       has_pending_read_ = true;
-      const net::MockRead pending_read(false, net::ERR_IO_PENDING);
+      const net::MockRead pending_read(net::SYNCHRONOUS, net::ERR_IO_PENDING);
       return pending_read;
     }
     net::MockRead mock_read = reads_.front();
@@ -58,14 +58,14 @@ class AsyncSocketDataProvider : public net::SocketDataProvider {
     net::MockWrite mock_write = writes_.front();
     writes_.pop_front();
     if (mock_write.result != net::OK) {
-      return net::MockWriteResult(mock_write.async, mock_write.result);
+      return net::MockWriteResult(mock_write.mode, mock_write.result);
     }
     std::string expected_data(mock_write.data, mock_write.data_len);
     EXPECT_EQ(expected_data, data);
     if (expected_data != data) {
-      return net::MockWriteResult(false, net::ERR_UNEXPECTED);
+      return net::MockWriteResult(net::SYNCHRONOUS, net::ERR_UNEXPECTED);
     }
-    return net::MockWriteResult(mock_write.async, data.size());
+    return net::MockWriteResult(mock_write.mode, data.size());
   }
 
   // We ignore resets so we can pre-load the socket data provider with
@@ -151,7 +151,7 @@ class ChromeAsyncSocketTest
       public sigslot::has_slots<> {
  protected:
   ChromeAsyncSocketTest()
-      : ssl_socket_data_provider_(true, net::OK),
+      : ssl_socket_data_provider_(net::ASYNC, net::OK),
         addr_(0xaabbccdd, 35) {}
 
   virtual ~ChromeAsyncSocketTest() {}
@@ -660,7 +660,7 @@ TEST_F(ChromeAsyncSocketTest, ReadError) {
   message_loop_.RunAllPending();
 
   async_socket_data_provider_.AddRead(
-      net::MockRead(false, net::ERR_TIMED_OUT));
+      net::MockRead(net::SYNCHRONOUS, net::ERR_TIMED_OUT));
 
   ExpectSignalSocketState(
       SignalSocketState(
@@ -714,7 +714,7 @@ TEST_F(ChromeAsyncSocketTest, PendingReadError) {
   ExpectNoSignal();
 
   async_socket_data_provider_.AddRead(
-      net::MockRead(true, net::ERR_TIMED_OUT));
+      net::MockRead(net::ASYNC, net::ERR_TIMED_OUT));
 
   ExpectSignalSocketState(
       SignalSocketState(
@@ -738,11 +738,12 @@ const char kWriteData[] = "mydatatowrite";
 
 TEST_F(ChromeAsyncSocketTest, SyncWrite) {
   async_socket_data_provider_.AddWrite(
-      net::MockWrite(false, kWriteData, 3));
+      net::MockWrite(net::SYNCHRONOUS, kWriteData, 3));
   async_socket_data_provider_.AddWrite(
-      net::MockWrite(false, kWriteData + 3, 5));
+      net::MockWrite(net::SYNCHRONOUS, kWriteData + 3, 5));
   async_socket_data_provider_.AddWrite(
-      net::MockWrite(false, kWriteData + 8, arraysize(kWriteData) - 8));
+      net::MockWrite(net::SYNCHRONOUS,
+                     kWriteData + 8, arraysize(kWriteData) - 8));
   DoOpenClosed();
 
   EXPECT_TRUE(chrome_async_socket_->Write(kWriteData, 3));
@@ -762,11 +763,11 @@ TEST_F(ChromeAsyncSocketTest, AsyncWrite) {
   DoOpenClosed();
 
   async_socket_data_provider_.AddWrite(
-      net::MockWrite(true, kWriteData, 3));
+      net::MockWrite(net::ASYNC, kWriteData, 3));
   async_socket_data_provider_.AddWrite(
-      net::MockWrite(true, kWriteData + 3, 5));
+      net::MockWrite(net::ASYNC, kWriteData + 3, 5));
   async_socket_data_provider_.AddWrite(
-      net::MockWrite(true, kWriteData + 8, arraysize(kWriteData) - 8));
+      net::MockWrite(net::ASYNC, kWriteData + 8, arraysize(kWriteData) - 8));
 
   EXPECT_TRUE(chrome_async_socket_->Write(kWriteData, 3));
   message_loop_.RunAllPending();
@@ -785,11 +786,11 @@ TEST_F(ChromeAsyncSocketTest, AsyncWriteError) {
   DoOpenClosed();
 
   async_socket_data_provider_.AddWrite(
-      net::MockWrite(true, kWriteData, 3));
+      net::MockWrite(net::ASYNC, kWriteData, 3));
   async_socket_data_provider_.AddWrite(
-      net::MockWrite(true, kWriteData + 3, 5));
+      net::MockWrite(net::ASYNC, kWriteData + 3, 5));
   async_socket_data_provider_.AddWrite(
-      net::MockWrite(true, net::ERR_TIMED_OUT));
+      net::MockWrite(net::ASYNC, net::ERR_TIMED_OUT));
 
   EXPECT_TRUE(chrome_async_socket_->Write(kWriteData, 3));
   message_loop_.RunAllPending();
@@ -955,7 +956,7 @@ TEST_F(ChromeAsyncSocketTest, WriteDuringSSLConnecting) {
   ExpectNonErrorState(ChromeAsyncSocket::STATE_TLS_CONNECTING);
 
   async_socket_data_provider_.AddWrite(
-      net::MockWrite(true, kWriteData, 3));
+      net::MockWrite(net::ASYNC, kWriteData, 3));
 
   // Shouldn't do anything.
   EXPECT_TRUE(chrome_async_socket_->Write(kWriteData, 3));
@@ -991,7 +992,7 @@ TEST_F(ChromeAsyncSocketTest, SSLConnectDuringPostedWrite) {
     DoOpenClosed();
 
     async_socket_data_provider_.AddWrite(
-        net::MockWrite(true, kWriteData, 3));
+        net::MockWrite(net::ASYNC, kWriteData, 3));
     EXPECT_TRUE(chrome_async_socket_->Write(kWriteData, 3));
 
     EXPECT_FALSE(chrome_async_socket_->StartTls("fakedomain.com"));
@@ -1025,11 +1026,12 @@ TEST_F(ChromeAsyncSocketTest, SSLRead) {
 
 TEST_F(ChromeAsyncSocketTest, SSLSyncWrite) {
   async_socket_data_provider_.AddWrite(
-      net::MockWrite(false, kWriteData, 3));
+      net::MockWrite(net::SYNCHRONOUS, kWriteData, 3));
   async_socket_data_provider_.AddWrite(
-      net::MockWrite(false, kWriteData + 3, 5));
+      net::MockWrite(net::SYNCHRONOUS, kWriteData + 3, 5));
   async_socket_data_provider_.AddWrite(
-      net::MockWrite(false, kWriteData + 8, arraysize(kWriteData) - 8));
+      net::MockWrite(net::SYNCHRONOUS,
+                     kWriteData + 8, arraysize(kWriteData) - 8));
   DoSSLOpenClosed();
 
   EXPECT_TRUE(chrome_async_socket_->Write(kWriteData, 3));
@@ -1049,11 +1051,11 @@ TEST_F(ChromeAsyncSocketTest, SSLAsyncWrite) {
   DoSSLOpenClosed();
 
   async_socket_data_provider_.AddWrite(
-      net::MockWrite(true, kWriteData, 3));
+      net::MockWrite(net::ASYNC, kWriteData, 3));
   async_socket_data_provider_.AddWrite(
-      net::MockWrite(true, kWriteData + 3, 5));
+      net::MockWrite(net::ASYNC, kWriteData + 3, 5));
   async_socket_data_provider_.AddWrite(
-      net::MockWrite(true, kWriteData + 8, arraysize(kWriteData) - 8));
+      net::MockWrite(net::ASYNC, kWriteData + 8, arraysize(kWriteData) - 8));
 
   EXPECT_TRUE(chrome_async_socket_->Write(kWriteData, 3));
   message_loop_.RunAllPending();

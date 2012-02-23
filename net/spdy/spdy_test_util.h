@@ -327,7 +327,7 @@ MockWrite CreateMockWrite(const spdy::SpdyFrame& req);
 // Create an async MockWrite from the given SpdyFrame and sequence number.
 MockWrite CreateMockWrite(const spdy::SpdyFrame& req, int seq);
 
-MockWrite CreateMockWrite(const spdy::SpdyFrame& req, int seq, bool async);
+MockWrite CreateMockWrite(const spdy::SpdyFrame& req, int seq, IoMode mode);
 
 // Create a MockRead from the given SpdyFrame.
 MockRead CreateMockRead(const spdy::SpdyFrame& resp);
@@ -335,7 +335,7 @@ MockRead CreateMockRead(const spdy::SpdyFrame& resp);
 // Create a MockRead from the given SpdyFrame and sequence number.
 MockRead CreateMockRead(const spdy::SpdyFrame& resp, int seq);
 
-MockRead CreateMockRead(const spdy::SpdyFrame& resp, int seq, bool async);
+MockRead CreateMockRead(const spdy::SpdyFrame& resp, int seq, IoMode mode);
 
 // Combines the given SpdyFrames into the given char array and returns
 // the total length.

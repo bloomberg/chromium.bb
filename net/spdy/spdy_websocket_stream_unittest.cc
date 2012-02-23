@@ -331,7 +331,7 @@ TEST_F(SpdyWebSocketStreamTest, Basic) {
     CreateMockRead(*message_frame_.get(), 4),
     // Skip sequence 6 to notify closing has been sent.
     CreateMockRead(*closing_frame_.get(), 7),
-    MockRead(false, 0, 8)  // EOF cause OnCloseSpdyStream event.
+    MockRead(SYNCHRONOUS, 0, 8)  // EOF cause OnCloseSpdyStream event.
   };
 
   EXPECT_EQ(OK, InitSession(reads, arraysize(reads),
@@ -403,7 +403,7 @@ TEST_F(SpdyWebSocketStreamTest, DestructionBeforeClose) {
   MockRead reads[] = {
     CreateMockRead(*response_frame_.get(), 2),
     CreateMockRead(*message_frame_.get(), 4),
-    MockRead(true, ERR_IO_PENDING, 5)
+    MockRead(ASYNC, ERR_IO_PENDING, 5)
   };
 
   EXPECT_EQ(OK, InitSession(reads, arraysize(reads),
@@ -465,7 +465,7 @@ TEST_F(SpdyWebSocketStreamTest, DestructionAfterExplicitClose) {
   MockRead reads[] = {
     CreateMockRead(*response_frame_.get(), 2),
     CreateMockRead(*message_frame_.get(), 4),
-    MockRead(true, ERR_IO_PENDING, 6)
+    MockRead(ASYNC, ERR_IO_PENDING, 6)
   };
 
   EXPECT_EQ(OK, InitSession(reads, arraysize(reads),
@@ -533,7 +533,7 @@ TEST_F(SpdyWebSocketStreamTest, IOPending) {
     CreateMockRead(*message_frame_.get(), 7),
     // Skip sequence 8 (I/O Pending)
     CreateMockRead(*closing_frame_.get(), 10),
-    MockRead(false, 0, 11)  // EOF cause OnCloseSpdyStream event.
+    MockRead(SYNCHRONOUS, 0, 11)  // EOF cause OnCloseSpdyStream event.
   };
 
   EXPECT_EQ(OK, InitSession(reads, arraysize(reads),

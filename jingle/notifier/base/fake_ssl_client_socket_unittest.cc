@@ -70,7 +70,7 @@ class MockClientSocket : public net::StreamSocket {
 
 // Break up |data| into a bunch of chunked MockReads/Writes and push
 // them onto |ops|.
-void AddChunkedOps(base::StringPiece data, size_t chunk_size, bool async,
+void AddChunkedOps(base::StringPiece data, size_t chunk_size, net::IoMode mode,
                    std::vector<net::MockRead>* ops) {
   DCHECK_GT(chunk_size, 0U);
   size_t offset = 0;
@@ -78,7 +78,7 @@ void AddChunkedOps(base::StringPiece data, size_t chunk_size, bool async,
     size_t bounded_chunk_size = std::min(data.size() - offset, chunk_size);
     // We take advantage of the fact that MockWrite is typedefed to
     // MockRead.
-    ops->push_back(net::MockRead(async, data.data() + offset,
+    ops->push_back(net::MockRead(mode, data.data() + offset,
                                  bounded_chunk_size));
     offset += bounded_chunk_size;
   }
@@ -109,9 +109,9 @@ class FakeSSLClientSocketTest : public testing::Test {
   }
 
   void ExpectStatus(
-      bool async, int expected_status, int immediate_status,
+      net::IoMode mode, int expected_status, int immediate_status,
       net::TestCompletionCallback* test_completion_callback) {
-    if (async) {
+    if (mode == net::ASYNC) {
       EXPECT_EQ(net::ERR_IO_PENDING, immediate_status);
       int status = test_completion_callback->WaitForResult();
       EXPECT_EQ(expected_status, status);
@@ -124,27 +124,26 @@ class FakeSSLClientSocketTest : public testing::Test {
   // (sliced up according to the parameters) and makes sure the
   // FakeSSLClientSocket behaves as expected.
   void RunSuccessfulHandshakeTest(
-      bool async, size_t read_chunk_size, size_t write_chunk_size,
+      net::IoMode mode, size_t read_chunk_size, size_t write_chunk_size,
       int num_resets) {
     base::StringPiece ssl_client_hello =
         FakeSSLClientSocket::GetSslClientHello();
     base::StringPiece ssl_server_hello =
         FakeSSLClientSocket::GetSslServerHello();
 
-    net::MockConnect mock_connect(async ? net::ASYNC : net::SYNCHRONOUS,
-                                  net::OK);
+    net::MockConnect mock_connect(mode, net::OK);
     std::vector<net::MockRead> reads;
     std::vector<net::MockWrite> writes;
     static const char kReadTestData[] = "read test data";
     static const char kWriteTestData[] = "write test data";
     for (int i = 0; i < num_resets + 1; ++i) {
       SCOPED_TRACE(i);
-      AddChunkedOps(ssl_server_hello, read_chunk_size, async, &reads);
-      AddChunkedOps(ssl_client_hello, write_chunk_size, async, &writes);
+      AddChunkedOps(ssl_server_hello, read_chunk_size, mode, &reads);
+      AddChunkedOps(ssl_client_hello, write_chunk_size, mode, &writes);
       reads.push_back(
-          net::MockRead(async, kReadTestData, arraysize(kReadTestData)));
+          net::MockRead(mode, kReadTestData, arraysize(kReadTestData)));
       writes.push_back(
-          net::MockWrite(async, kWriteTestData, arraysize(kWriteTestData)));
+          net::MockWrite(mode, kWriteTestData, arraysize(kWriteTestData)));
     }
     SetData(mock_connect, &reads, &writes);
 
@@ -155,10 +154,10 @@ class FakeSSLClientSocketTest : public testing::Test {
       net::TestCompletionCallback test_completion_callback;
       int status = fake_ssl_client_socket.Connect(
           test_completion_callback.callback());
-      if (async) {
+      if (mode == net::ASYNC) {
         EXPECT_FALSE(fake_ssl_client_socket.IsConnected());
       }
-      ExpectStatus(async, net::OK, status, &test_completion_callback);
+      ExpectStatus(mode, net::OK, status, &test_completion_callback);
       if (fake_ssl_client_socket.IsConnected()) {
         int read_len = arraysize(kReadTestData);
         int read_buf_len = 2 * read_len;
@@ -166,14 +165,14 @@ class FakeSSLClientSocketTest : public testing::Test {
             new net::IOBuffer(read_buf_len));
         int read_status = fake_ssl_client_socket.Read(
             read_buf, read_buf_len, test_completion_callback.callback());
-        ExpectStatus(async, read_len, read_status, &test_completion_callback);
+        ExpectStatus(mode, read_len, read_status, &test_completion_callback);
 
         scoped_refptr<net::IOBuffer> write_buf(
             new net::StringIOBuffer(kWriteTestData));
         int write_status = fake_ssl_client_socket.Write(
             write_buf, arraysize(kWriteTestData),
             test_completion_callback.callback());
-        ExpectStatus(async, arraysize(kWriteTestData), write_status,
+        ExpectStatus(mode, arraysize(kWriteTestData), write_status,
                      &test_completion_callback);
       } else {
         ADD_FAILURE();
@@ -186,20 +185,19 @@ class FakeSSLClientSocketTest : public testing::Test {
   // Sets up the mock socket to generate an unsuccessful handshake
   // FakeSSLClientSocket fails as expected.
   void RunUnsuccessfulHandshakeTestHelper(
-      bool async, int error, HandshakeErrorLocation location) {
+      net::IoMode mode, int error, HandshakeErrorLocation location) {
     DCHECK_NE(error, net::OK);
     base::StringPiece ssl_client_hello =
         FakeSSLClientSocket::GetSslClientHello();
     base::StringPiece ssl_server_hello =
         FakeSSLClientSocket::GetSslServerHello();
 
-    net::MockConnect mock_connect(async ? net::ASYNC : net::SYNCHRONOUS,
-                                  net::OK);
+    net::MockConnect mock_connect(mode, net::OK);
     std::vector<net::MockRead> reads;
     std::vector<net::MockWrite> writes;
     const size_t kChunkSize = 1;
-    AddChunkedOps(ssl_server_hello, kChunkSize, async, &reads);
-    AddChunkedOps(ssl_client_hello, kChunkSize, async, &writes);
+    AddChunkedOps(ssl_server_hello, kChunkSize, mode, &reads);
+    AddChunkedOps(ssl_client_hello, kChunkSize, mode, &writes);
     switch (location) {
       case CONNECT_ERROR:
         mock_connect.result = error;
@@ -232,7 +230,7 @@ class FakeSSLClientSocketTest : public testing::Test {
         if (error ==
             net::ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ) {
           static const char kDummyData[] = "DUMMY";
-          reads.push_back(net::MockRead(async, kDummyData));
+          reads.push_back(net::MockRead(mode, kDummyData));
         }
         break;
       }
@@ -252,14 +250,14 @@ class FakeSSLClientSocketTest : public testing::Test {
     int status = fake_ssl_client_socket.Connect(
         test_completion_callback.callback());
     EXPECT_FALSE(fake_ssl_client_socket.IsConnected());
-    ExpectStatus(async, expected_status, status, &test_completion_callback);
+    ExpectStatus(mode, expected_status, status, &test_completion_callback);
     EXPECT_FALSE(fake_ssl_client_socket.IsConnected());
   }
 
   void RunUnsuccessfulHandshakeTest(
       int error, HandshakeErrorLocation location) {
-    RunUnsuccessfulHandshakeTestHelper(false, error, location);
-    RunUnsuccessfulHandshakeTestHelper(true, error, location);
+    RunUnsuccessfulHandshakeTestHelper(net::SYNCHRONOUS, error, location);
+    RunUnsuccessfulHandshakeTestHelper(net::ASYNC, error, location);
   }
 
   // MockTCPClientSocket needs a message loop.
@@ -301,7 +299,7 @@ TEST_F(FakeSSLClientSocketTest, SuccessfulHandshakeSync) {
     SCOPED_TRACE(i);
     for (size_t j = 1; j < 100; j += 5) {
       SCOPED_TRACE(j);
-      RunSuccessfulHandshakeTest(false, i, j, 0);
+      RunSuccessfulHandshakeTest(net::SYNCHRONOUS, i, j, 0);
     }
   }
 }
@@ -311,13 +309,13 @@ TEST_F(FakeSSLClientSocketTest, SuccessfulHandshakeAsync) {
     SCOPED_TRACE(i);
     for (size_t j = 1; j < 100; j += 9) {
       SCOPED_TRACE(j);
-      RunSuccessfulHandshakeTest(true, i, j, 0);
+      RunSuccessfulHandshakeTest(net::ASYNC, i, j, 0);
     }
   }
 }
 
 TEST_F(FakeSSLClientSocketTest, ResetSocket) {
-  RunSuccessfulHandshakeTest(true, 1, 2, 3);
+  RunSuccessfulHandshakeTest(net::ASYNC, 1, 2, 3);
 }
 
 TEST_F(FakeSSLClientSocketTest, UnsuccessfulHandshakeConnectError) {

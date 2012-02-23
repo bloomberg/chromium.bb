@@ -807,25 +807,25 @@ void WebSocketJobTest::TestConnectByWebSocket(ThrottlingOption throttling) {
   // situation. If |throttling| was |THROTTLING_ON|, throttling limits the
   // latter connection.
   MockWrite writes[] = {
-    MockWrite(true,
+    MockWrite(ASYNC,
               kHandshakeRequestWithoutCookie,
               kHandshakeRequestWithoutCookieLength,
               1),
-    MockWrite(true,
+    MockWrite(ASYNC,
               kDataHello,
               kDataHelloLength,
               3)
   };
   MockRead reads[] = {
-    MockRead(true,
+    MockRead(ASYNC,
              kHandshakeResponseWithoutCookie,
              kHandshakeResponseWithoutCookieLength,
              2),
-    MockRead(true,
+    MockRead(ASYNC,
              kDataWorld,
              kDataWorldLength,
              4),
-    MockRead(false, 0, 5)  // EOF
+    MockRead(SYNCHRONOUS, 0, 5)  // EOF
   };
   data_.reset(new OrderedSocketData(
       reads, arraysize(reads), writes, arraysize(writes)));
@@ -880,25 +880,25 @@ void WebSocketJobTest::TestConnectBySpdy(
   // If you enabled spdy, you should specify |spdy| as |SPDY_ON|. Expected
   // results depend on its configuration.
   MockWrite writes_websocket[] = {
-    MockWrite(true,
+    MockWrite(ASYNC,
               kHandshakeRequestWithoutCookie,
               kHandshakeRequestWithoutCookieLength,
               1),
-    MockWrite(true,
+    MockWrite(ASYNC,
               kDataHello,
               kDataHelloLength,
               3)
   };
   MockRead reads_websocket[] = {
-    MockRead(true,
+    MockRead(ASYNC,
              kHandshakeResponseWithoutCookie,
              kHandshakeResponseWithoutCookieLength,
              2),
-    MockRead(true,
+    MockRead(ASYNC,
              kDataWorld,
              kDataWorldLength,
              4),
-    MockRead(false, 0, 5)  // EOF
+    MockRead(SYNCHRONOUS, 0, 5)  // EOF
   };
 
   const spdy::SpdyStreamId kStreamId = 1;
@@ -933,7 +933,7 @@ void WebSocketJobTest::TestConnectBySpdy(
   MockRead reads_spdy[] = {
     CreateMockRead(*response_frame.get(), 2),
     CreateMockRead(*data_world_frame.get(), 4),
-    MockRead(false, 0, 5)  // EOF
+    MockRead(SYNCHRONOUS, 0, 5)  // EOF
   };
 
   if (spdy == SPDY_ON)
