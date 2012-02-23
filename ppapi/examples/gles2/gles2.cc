@@ -170,7 +170,7 @@ GLES2DemoInstance::DecoderClient::DecoderClient(GLES2DemoInstance* gles2,
     : gles2_(gles2), decoder_(decoder), callback_factory_(this),
       next_picture_buffer_id_(0),
       next_bitstream_buffer_id_(0), encoded_data_next_pos_to_decode_(0) {
-};
+}
 
 GLES2DemoInstance::DecoderClient::~DecoderClient() {
   delete decoder_;
