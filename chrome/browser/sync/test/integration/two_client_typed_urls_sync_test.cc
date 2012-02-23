@@ -114,7 +114,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddExpired) {
   ASSERT_EQ(0U, urls.size());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddExpiredThenUpdate) {
+// Flake on mac: http://crbug/115526
+#if defined(OS_MACOSX)
+#define MAYBE_AddExpiredThenUpdate DISABLED_AddExpiredThenUpdate
+#else
+#define MAYBE_AddExpiredThenUpdate AddExpiredThenUpdate
+#endif
+IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, MAYBE_AddExpiredThenUpdate) {
   const string16 kHistoryUrl(
       ASCIIToUTF16("http://www.add-one-history.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
