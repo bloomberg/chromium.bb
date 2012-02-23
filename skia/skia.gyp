@@ -215,6 +215,7 @@
         '../third_party/skia/src/core/SkComposeShader.cpp',
         '../third_party/skia/src/core/SkConcaveToTriangles.cpp',
         '../third_party/skia/src/core/SkConcaveToTriangles.h',
+        '../third_party/skia/src/core/SkConfig8888.cpp',
         '../third_party/skia/src/core/SkConfig8888.h',
         '../third_party/skia/src/core/SkCordic.cpp',
         '../third_party/skia/src/core/SkCordic.h',
