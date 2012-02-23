@@ -52,7 +52,7 @@ class TestSpecialStoragePolicy : public quota::SpecialStoragePolicy {
 
 #if defined(OS_MACOSX)
 // http://crbug.com/115150. On Mac, failure rate is about 30% currently.
-#define MAYBE_ClearLocalState FLAKY_ClearLocalState
+#define MAYBE_ClearLocalState DISABLED_ClearLocalState
 #else
 #define MAYBE_ClearLocalState ClearLocalState
 #endif
