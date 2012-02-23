@@ -259,6 +259,11 @@ StringOrdinal ExtensionSorting::GetAppLaunchOrdinal(
 void ExtensionSorting::SetAppLaunchOrdinal(
     const std::string& extension_id,
     const StringOrdinal& new_app_launch_ordinal) {
+  // No work is required if the old and new values are the same.
+  if (new_app_launch_ordinal.EqualOrBothInvalid(
+          GetAppLaunchOrdinal(extension_id)))
+    return;
+
   StringOrdinal page_ordinal = GetPageOrdinal(extension_id);
   RemoveOrdinalMapping(
       extension_id, page_ordinal, GetAppLaunchOrdinal(extension_id));
@@ -340,6 +345,10 @@ StringOrdinal ExtensionSorting::GetPageOrdinal(const std::string& extension_id)
 
 void ExtensionSorting::SetPageOrdinal(const std::string& extension_id,
                                     const StringOrdinal& new_page_ordinal) {
+  // No work is required if the old and new values are the same.
+  if (new_page_ordinal.EqualOrBothInvalid(GetPageOrdinal(extension_id)))
+    return;
+
   StringOrdinal app_launch_ordinal = GetAppLaunchOrdinal(extension_id);
   RemoveOrdinalMapping(
       extension_id, GetPageOrdinal(extension_id), app_launch_ordinal);

@@ -161,4 +161,14 @@ TEST(StringOrdinalTest, StdFind) {
             ordinals.end());
 }
 
+TEST(StringOrdinalTest, EqualOrBothInvalid) {
+  StringOrdinal valid = StringOrdinal::CreateInitialOrdinal();
+  StringOrdinal invalid;
+
+  EXPECT_TRUE(valid.EqualOrBothInvalid(valid));
+  EXPECT_TRUE(invalid.EqualOrBothInvalid(invalid));
+
+  EXPECT_FALSE(invalid.EqualOrBothInvalid(valid));
+}
+
 }  // namespace

@@ -51,6 +51,10 @@ class StringOrdinal {
   // |other| < |*this| are both false).
   bool Equal(const StringOrdinal& other) const;
 
+  // Returns true iff |*this| == |other| or |*this| and |other|
+  // are both invalid.
+  bool EqualOrBothInvalid(const StringOrdinal& other) const;
+
   // Given |*this| != |other|, returns a StringOrdinal x such that
   // min(|*this|, |other|) < x < max(|*this|, |other|). It is an error
   // to call this function when |*this| == |other|.

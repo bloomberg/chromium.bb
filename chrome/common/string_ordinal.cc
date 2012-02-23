@@ -200,6 +200,16 @@ bool StringOrdinal::Equal(const StringOrdinal& other) const {
   return string_ordinal_ == other.string_ordinal_;
 }
 
+bool StringOrdinal::EqualOrBothInvalid(const StringOrdinal& other) const {
+  if (!IsValid() && !other.IsValid())
+    return true;
+
+  if (!IsValid() || !other.IsValid())
+    return false;
+
+  return Equal(other);
+}
+
 StringOrdinal StringOrdinal::CreateBetween(const StringOrdinal& other) const {
   CHECK(IsValid());
   CHECK(other.IsValid());
