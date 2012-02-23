@@ -12,3 +12,4 @@ This is an Objective-C wrapper around Mac OS X Icon Services' "IconFamily" data 
 
 Local Modifications:
 chromium_icon_family.patch: Fix minor erors and warnings. Put code that the custom icon code behind a DISABLE_CUSTOM_ICON flag.
+chromium_icon_family_2.patch: Add support for alpha first and non-premultiplied image formats. Patch submitted to project page: https://sourceforge.net/tracker/?func=detail&aid=3491306&group_id=164783&atid=833111

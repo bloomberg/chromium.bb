@@ -1,0 +1,189 @@
+diff --git a/third_party/icon_family/IconFamily.m b/third_party/icon_family/IconFamily.m
+index 439c2de..911ea31 100644
+--- a/third_party/icon_family/IconFamily.m
++++ b/third_party/icon_family/IconFamily.m
+@@ -1236,6 +1236,43 @@ enum {
+     return [newImage autorelease];
+ }
+ 
++void GetRGBAFrom32BitSource(unsigned char src1, unsigned char src2, unsigned char src3, unsigned char src4,
++                            unsigned char* redOut, unsigned char* greenOut, unsigned char* blueOut, unsigned char* alphaOut,
++                       bool isAlphaFirst, bool isAlphaPremultiplied) {
++    unsigned char r, g, b, a;
++    if (isAlphaFirst) {
++        a = src1;
++        r = src2;
++        g = src3;
++        b = src4;
++    } else {
++        r = src1;
++        g = src2;
++        b = src3;
++        a = src4;
++    }
++
++    if (isAlphaPremultiplied) {
++        // The RGB values are premultiplied by the alpha (so  that
++        // Quartz can save time when compositing the bitmap to a
++        // destination), and we undo this premultiplication (with some
++        // lossiness unfortunately) when retrieving the bitmap data.
++        float oneOverAlpha = 255.0f / (float)a;
++        r = r * oneOverAlpha;
++        g = g * oneOverAlpha;
++        b = b * oneOverAlpha;
++    }
++
++    if (redOut)
++      *redOut = r;
++    if (greenOut)
++      *greenOut = g;
++    if (blueOut)
++      *blueOut = b;
++    if (alphaOut)
++      *alphaOut = a;
++}
++
+ + (Handle) get32BitDataFromBitmapImageRep:(NSBitmapImageRep*)bitmapImageRep requiredPixelSize:(int)requiredPixelSize
+ {
+     Handle hRawData;
+@@ -1244,9 +1281,7 @@ enum {
+     unsigned char* pSrc;
+     unsigned char* pDest;
+     int x, y;
+-    unsigned char alphaByte;
+-    float oneOverAlpha;
+-    
++
+     // Get information about the bitmapImageRep.
+     long pixelsWide      = [bitmapImageRep pixelsWide];
+     long pixelsHigh      = [bitmapImageRep pixelsHigh];
+@@ -1256,6 +1291,8 @@ enum {
+     BOOL isPlanar       = [bitmapImageRep isPlanar];
+     long bytesPerRow     = [bitmapImageRep bytesPerRow];
+     unsigned char* bitmapData = [bitmapImageRep bitmapData];
++    BOOL isAlphaFirst = [bitmapImageRep bitmapFormat] & NSAlphaFirstBitmapFormat;
++    BOOL isAlphaPremultiplied = !([bitmapImageRep bitmapFormat] & NSAlphaNonpremultipliedBitmapFormat);
+ 
+     // Make sure bitmap has the required dimensions.
+     if (pixelsWide != requiredPixelSize || pixelsHigh != requiredPixelSize)
+@@ -1289,23 +1326,14 @@ enum {
+ 			for (y = 0; y < pixelsHigh; y++) {
+ 				pSrc = bitmapData + y * bytesPerRow;
+ 					for (x = 0; x < pixelsWide; x++) {
+-						// Each pixel is 3 bytes of RGB data, followed by 1 byte of
+-						// alpha.  The RGB values are premultiplied by the alpha (so
+-						// that Quartz can save time when compositing the bitmap to a
+-						// destination), and we undo this premultiplication (with some
+-						// lossiness unfortunately) when retrieving the bitmap data.
+-						*pDest++ = alphaByte = *(pSrc+3);
+-						if (alphaByte) {
+-							oneOverAlpha = 255.0f / (float)alphaByte;
+-							*pDest++ = *(pSrc+0) * oneOverAlpha;
+-							*pDest++ = *(pSrc+1) * oneOverAlpha;
+-							*pDest++ = *(pSrc+2) * oneOverAlpha;
+-						} else {
+-							*pDest++ = 0;
+-							*pDest++ = 0;
+-							*pDest++ = 0;
+-						}
+-						pSrc+=4;
++                        unsigned char r, g, b, a;
++                        GetRGBAFrom32BitSource(pSrc[0], pSrc[1], pSrc[2], pSrc[3],
++                                               &r, &g, &b, &a, isAlphaFirst, isAlphaPremultiplied);
++                        *pDest++ = a;
++                        *pDest++ = r;
++                        *pDest++ = g;
++                        *pDest++ = b;
++                        pSrc += 4;
+ 				}
+ 			}
+ 		} else if (bitsPerPixel == 24) {
+@@ -1347,6 +1375,8 @@ enum {
+     BOOL isPlanar       = [bitmapImageRep isPlanar];
+     long bytesPerRow     = [bitmapImageRep bytesPerRow];
+     unsigned char* bitmapData = [bitmapImageRep bitmapData];
++    BOOL isAlphaFirst = [bitmapImageRep bitmapFormat] & NSAlphaFirstBitmapFormat;
++    BOOL isAlphaPremultiplied = !([bitmapImageRep bitmapFormat] & NSAlphaNonpremultipliedBitmapFormat);
+     
+     // Make sure bitmap has the required dimensions.
+     if (pixelsWide != requiredPixelSize || pixelsHigh != requiredPixelSize)
+@@ -1383,9 +1413,12 @@ enum {
+ 			for (y = 0; y < pixelsHigh; y++) {
+ 				pSrc = bitmapData + y * bytesPerRow;
+ 				for (x = 0; x < pixelsWide; x++) {
+-					cgCol.red = ((float)*(pSrc)) / 255;
+-					cgCol.green = ((float)*(pSrc+1)) / 255;
+-					cgCol.blue = ((float)*(pSrc+2)) / 255;
++                    unsigned char r, g, b;
++                    GetRGBAFrom32BitSource(pSrc[0], pSrc[1], pSrc[2], pSrc[3],
++                                           &r, &g, &b, NULL, isAlphaFirst, isAlphaPremultiplied);
++					cgCol.red = (float)r / 255;
++					cgCol.green = (float)g / 255;
++					cgCol.blue = (float)b / 255;
+ 	
+ 					*pDest++ = CGPaletteGetIndexForColor(cgPal, cgCol);
+ 	
+@@ -1436,6 +1469,8 @@ enum {
+     BOOL isPlanar       = [bitmapImageRep isPlanar];
+     long bytesPerRow     = [bitmapImageRep bytesPerRow];
+     unsigned char* bitmapData = [bitmapImageRep bitmapData];
++    BOOL isAlphaFirst = [bitmapImageRep bitmapFormat] & NSAlphaFirstBitmapFormat;
++    BOOL isAlphaPremultiplied = !([bitmapImageRep bitmapFormat] & NSAlphaNonpremultipliedBitmapFormat);
+ 
+     // Make sure bitmap has the required dimensions.
+     if (pixelsWide != requiredPixelSize || pixelsHigh != requiredPixelSize)
+@@ -1469,8 +1504,11 @@ enum {
+ 			for (y = 0; y < pixelsHigh; y++) {
+ 				pSrc = bitmapData + y * bytesPerRow;
+ 				for (x = 0; x < pixelsWide; x++) {
+-					pSrc += 3;
+-					*pDest++ = *pSrc++;
++                    unsigned char a;
++                    GetRGBAFrom32BitSource(pSrc[0], pSrc[1], pSrc[2], pSrc[3],
++                                           NULL, NULL, NULL, &a, isAlphaFirst, isAlphaPremultiplied);
++                    *pDest++ = a;
++					pSrc += 4;
+ 				}
+ 			}
+ 		}
+@@ -1514,6 +1552,8 @@ enum {
+     BOOL isPlanar       = [bitmapImageRep isPlanar];
+     long bytesPerRow     = [bitmapImageRep bytesPerRow];
+     unsigned char* bitmapData = [bitmapImageRep bitmapData];
++    BOOL isAlphaFirst = [bitmapImageRep bitmapFormat] & NSAlphaFirstBitmapFormat;
++    BOOL isAlphaPremultiplied = !([bitmapImageRep bitmapFormat] & NSAlphaNonpremultipliedBitmapFormat);
+ 	
+     // Make sure bitmap has the required dimensions.
+     if (pixelsWide != requiredPixelSize || pixelsHigh != requiredPixelSize)
+@@ -1544,14 +1584,14 @@ enum {
+ 				pSrc = bitmapData + y * bytesPerRow;
+ 				for (x = 0; x < pixelsWide; x += 8) {
+ 					maskByte = 0;
+-					maskByte |= (*(unsigned*)pSrc & 0xff) ? 0x80 : 0; pSrc += 4;
+-					maskByte |= (*(unsigned*)pSrc & 0xff) ? 0x40 : 0; pSrc += 4;
+-					maskByte |= (*(unsigned*)pSrc & 0xff) ? 0x20 : 0; pSrc += 4;
+-					maskByte |= (*(unsigned*)pSrc & 0xff) ? 0x10 : 0; pSrc += 4;
+-					maskByte |= (*(unsigned*)pSrc & 0xff) ? 0x08 : 0; pSrc += 4;
+-					maskByte |= (*(unsigned*)pSrc & 0xff) ? 0x04 : 0; pSrc += 4;
+-					maskByte |= (*(unsigned*)pSrc & 0xff) ? 0x02 : 0; pSrc += 4;
+-					maskByte |= (*(unsigned*)pSrc & 0xff) ? 0x01 : 0; pSrc += 4;
++                    for (int i = 7; i >= 0; i--) {
++                        unsigned char a;
++                        GetRGBAFrom32BitSource(pSrc[0], pSrc[1], pSrc[2], pSrc[3],
++                                               NULL, NULL, NULL, &a, isAlphaFirst, isAlphaPremultiplied);
++                        if (a)
++                            maskByte |= 1 << i;
++                        pSrc += 4;
++                    }
+ 					*pDest++ = maskByte;
+ 				}
+ 			}
+diff --git a/third_party/icon_family/README.chromium b/third_party/icon_family/README.chromium
+index 915d197..bbe5096 100644
+--- a/third_party/icon_family/README.chromium
++++ b/third_party/icon_family/README.chromium
+@@ -12,3 +12,4 @@ This is an Objective-C wrapper around Mac OS X Icon Services' "IconFamily" data
+ 
+ Local Modifications:
+ chromium_icon_family.patch: Fix minor erors and warnings. Put code that the custom icon code behind a DISABLE_CUSTOM_ICON flag.
++chromium_icon_family_2.patch: Add support for alpha first and non-premultiplied image formats.
