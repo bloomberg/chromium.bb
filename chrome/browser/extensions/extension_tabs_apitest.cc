@@ -137,8 +137,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_CaptureVisibleTabPng) {
 
 // Times out on non-Windows.
 // See http://crbug.com/80212
-// See http://crbug.com/83876
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_CaptureVisibleTabRace) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_CaptureVisibleTabRace) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/capture_visible_tab",
                                   "test_race.html")) << message_;
 }
