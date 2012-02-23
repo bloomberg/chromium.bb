@@ -203,10 +203,21 @@ StackFrameX86 *StackwalkerX86::GetCallerByWindowsFrameInfo(
   dictionary[".cbCalleeParams"] = last_frame_callee_parameter_size;
   dictionary[".cbSavedRegs"] = last_frame_info->saved_register_size;
   dictionary[".cbLocals"] = last_frame_info->local_size;
-  dictionary[".raSearchStart"] = last_frame->context.esp +
-                                 last_frame_callee_parameter_size +
-                                 last_frame_info->local_size +
-                                 last_frame_info->saved_register_size;
+
+  u_int32_t raSearchStart = last_frame->context.esp +
+                            last_frame_callee_parameter_size +
+                            last_frame_info->local_size +
+                            last_frame_info->saved_register_size;
+  u_int32_t found; // dummy value
+  // Scan up to three words above the calculated search value, in case
+  // the stack was aligned to a quadword boundary.
+  ScanForReturnAddress(raSearchStart, &raSearchStart, &found, 3);
+  
+  // The difference between raSearch and raSearchStart is unknown,
+  // but making them the same seems to work well in practice.
+  dictionary[".raSearchStart"] = raSearchStart;
+  dictionary[".raSearch"] = raSearchStart;
+
   dictionary[".cbParams"] = last_frame_info->parameter_size;
 
   // Decide what type of program string to use. The program string is in

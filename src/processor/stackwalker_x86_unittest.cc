@@ -400,6 +400,67 @@ TEST_F(GetCallerFrame, WindowsFrameData) {
 }
 
 // Use Windows frame data (a "STACK WIN 4" record, from a
+// FrameTypeFrameData DIA record) to walk a stack frame where the stack
+// is aligned and we must search
+TEST_F(GetCallerFrame, WindowsFrameDataAligned) {
+  SetModuleSymbols(&module1,
+                   "STACK WIN 4 aa85 176 0 0 4 4 8 0 1"
+		   " $T1 .raSearch ="
+		   " $T0 $T1 4 - 8 @ ="
+		   " $ebp $T1 4 - ^ ="
+		   " $eip $T1 ^ ="
+		   " $esp $T1 4 + =");
+  Label frame1_esp, frame1_ebp;
+  stack_section.start() = 0x80000000;
+  stack_section
+    // frame 0
+    .D32(0x0ffa0ffa)                    // unused saved register
+    .D32(0xdeaddead)                    // locals
+    .D32(0xbeefbeef)
+    .D32(0)                             // 8-byte alignment
+    .D32(frame1_ebp)
+    .D32(0x5000129d)                    // return address
+    // frame 1
+    .Mark(&frame1_esp)
+    .D32(0x1)                           // parameter
+    .Mark(&frame1_ebp)
+    .D32(0)                             // saved %ebp (stack end)
+    .D32(0);                            // saved %eip (stack end)
+
+  RegionFromSection();
+  raw_context.eip = 0x4000aa85;
+  raw_context.esp = stack_section.start().Value();
+  raw_context.ebp = 0xf052c1de;         // should not be needed to walk frame
+
+  StackwalkerX86 walker(&system_info, &raw_context, &stack_region, &modules,
+                        &supplier, &resolver);
+  ASSERT_TRUE(walker.Walk(&call_stack));
+  frames = call_stack.frames();
+  ASSERT_EQ(2U, frames->size());
+
+  StackFrameX86 *frame0 = static_cast<StackFrameX86 *>(frames->at(0));
+  EXPECT_EQ(StackFrame::FRAME_TRUST_CONTEXT, frame0->trust);
+  ASSERT_EQ(StackFrameX86::CONTEXT_VALID_ALL, frame0->context_validity);
+  EXPECT_EQ(0x4000aa85U, frame0->instruction);
+  EXPECT_EQ(0x4000aa85U, frame0->context.eip);
+  EXPECT_EQ(stack_section.start().Value(), frame0->context.esp);
+  EXPECT_EQ(0xf052c1deU, frame0->context.ebp);
+  EXPECT_TRUE(frame0->windows_frame_info != NULL);
+
+  StackFrameX86 *frame1 = static_cast<StackFrameX86 *>(frames->at(1));
+  EXPECT_EQ(StackFrame::FRAME_TRUST_CFI, frame1->trust);
+  ASSERT_EQ((StackFrameX86::CONTEXT_VALID_EIP
+             | StackFrameX86::CONTEXT_VALID_ESP
+             | StackFrameX86::CONTEXT_VALID_EBP),
+            frame1->context_validity);
+  EXPECT_EQ(0x5000129dU, frame1->instruction + 1);
+  EXPECT_EQ(0x5000129dU, frame1->context.eip);
+  EXPECT_EQ(frame1_esp.Value(), frame1->context.esp);
+  EXPECT_EQ(frame1_ebp.Value(), frame1->context.ebp);
+  EXPECT_EQ(NULL, frame1->windows_frame_info);
+}
+
+// Use Windows frame data (a "STACK WIN 4" record, from a
 // FrameTypeFrameData DIA record) to walk a frame, and depend on the
 // parameter size from the callee as well.
 TEST_F(GetCallerFrame, WindowsFrameDataParameterSize) {
