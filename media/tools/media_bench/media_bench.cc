@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -228,11 +228,12 @@ int main(int argc, const char** argv) {
 #endif
 
   // Register FFmpeg and attempt to open file.
+  avcodec_init();
   av_log_set_level(verbose_level);
   av_register_all();
   av_register_protocol2(&kFFmpegFileProtocol, sizeof(kFFmpegFileProtocol));
   AVFormatContext* format_context = NULL;
-  // avformat_open_input() wants a char*, which can't work with wide paths.
+  // av_open_input_file wants a char*, which can't work with wide paths.
   // So we assume ASCII on Windows.  On other platforms we can pass the
   // path bytes through verbatim.
 #if defined(OS_WIN)
@@ -240,8 +241,8 @@ int main(int argc, const char** argv) {
 #else
   const std::string& string_path = in_path.value();
 #endif
-  int result = avformat_open_input(&format_context, string_path.c_str(),
-                                   NULL, NULL);
+  int result = av_open_input_file(&format_context, string_path.c_str(),
+                                  NULL, 0, NULL);
   if (result < 0) {
     switch (result) {
       case AVERROR(EINVAL):
@@ -278,7 +279,7 @@ int main(int argc, const char** argv) {
   }
 
   // Parse a little bit of the stream to fill out the format context.
-  if (avformat_find_stream_info(format_context, NULL) < 0) {
+  if (av_find_stream_info(format_context) < 0) {
     std::cerr << "Error: Could not find stream info for "
               << in_path.value() << std::endl;
     return 1;
@@ -340,7 +341,7 @@ int main(int argc, const char** argv) {
   }
   if (error_correction) {
     codec_context->error_concealment = FF_EC_GUESS_MVS | FF_EC_DEBLOCK;
-    codec_context->err_recognition = AV_EF_CAREFUL;
+    codec_context->error_recognition = FF_ER_CAREFUL;
   }
 
   // Initialize threaded decode.
@@ -349,7 +350,7 @@ int main(int argc, const char** argv) {
   }
 
   // Initialize our codec.
-  if (avcodec_open2(codec_context, codec, NULL) < 0) {
+  if (avcodec_open(codec_context, codec) < 0) {
     std::cerr << "Error: Could not open codec "
               << (codec_context->codec ? codec_context->codec->name : "(NULL)")
               << " for " << in_path.value() << std::endl;
@@ -532,7 +533,7 @@ int main(int argc, const char** argv) {
   if (codec_context)
     avcodec_close(codec_context);
   if (format_context)
-    avformat_close_input(&format_context);
+    av_close_input_file(format_context);
 
   // Calculate the sum of times.  Note that some of these may be zero.
   double sum = 0;

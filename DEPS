@@ -41,12 +41,7 @@ vars = {
   "libphonenumber_revision": "425",
   "libvpx_revision": "122996",
   "lss_revision": "9",
-
-  # These two FFmpeg variables must be updated together.  One is used for SVN
-  # checkouts and the other for Git checkouts.
-  "ffmpeg_revision": "123079",
-  "ffmpeg_hash": "8a05b9314610683d837eec3b03306ca7a894bef7",
-
+  "ffmpeg_revision": "122092",
   "sfntly_revision": "118",
   "skia_revision": "3226",
   # Three lines of non-changing comments so that
@@ -257,7 +252,7 @@ deps = {
     Var("libvpx_revision"),
 
   "src/third_party/ffmpeg":
-    "/trunk/deps/third_party/ffmpeg@" +
+    "/trunk/deps/third_party/ffmpeg/source@" +
     Var("ffmpeg_revision"),
 
   "src/third_party/libjingle/source":
@@ -343,6 +338,9 @@ deps_os = {
 
     "src/third_party/lighttpd":
       "/trunk/deps/third_party/lighttpd@33727",
+
+    "src/third_party/ffmpeg/binaries/chromium/win/ia32":
+      "/trunk/deps/third_party/ffmpeg/binaries/win@" + Var("ffmpeg_revision"),
 
     # Chrome Frame related deps
     "src/third_party/xulrunner-sdk":
