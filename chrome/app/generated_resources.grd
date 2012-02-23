@@ -5197,10 +5197,7 @@ Because search results are requested even while you're typing your query, your d
 
       <!-- Session restore & conflicting content settings -->
       <message name="IDS_SESSION_RESTORE_OVERLAY_TITLE" desc="Title of the session restore conflicts with content settings dialog">
-        Session only content settings have been disabled
-      </message>
-      <message name="IDS_SESSION_RESTORE_OVERLAY_MESSAGE" desc="Message of the session restore conflicts with content settings dialog">
-        Your last browsing session will now be continued after startup. Session only content settings and clearing data on exit have been disabled.
+        Continue where I left off
       </message>
 
       <message name="IDS_SEARCH_PREF_EXPLANATION" desc="Description of the search engine preference">
@@ -8112,8 +8109,8 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_OPTIONS_STARTUP_SHOW_LAST_SESSION" desc="The label of the 'Restore previously open pages' startup option radio button">
         Reopen the pages that were open last
       </message>
-      <message name="IDS_OPTIONS_STARTUP_RESTORE_LAST_SESSION" desc="The label of the 'Restore the pages to where I left off' startup option radio button">
-        Restore the pages to where I left off
+      <message name="IDS_OPTIONS_STARTUP_RESTORE_LAST_SESSION" desc="The label of the 'Continue where I left off' startup option radio button">
+        Continue where I left off
       </message>
       <message name="IDS_OPTIONS_STARTUP_SHOW_PAGES" desc="The label of the 'Show these pages:' startup option radio button on the old settings page">
         Open the following pages:
