@@ -199,6 +199,8 @@ weston_surface_create(struct weston_compositor *compositor)
 	if (surface == NULL)
 		return NULL;
 
+	wl_list_init(&surface->surface.resource.destroy_listener_list);
+
 	wl_list_init(&surface->link);
 	wl_list_init(&surface->buffer_link);
 
