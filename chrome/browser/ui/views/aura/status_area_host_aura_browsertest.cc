@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
@@ -33,9 +34,19 @@ IN_PROC_BROWSER_TEST_F(StatusAreaHostAuraTest, TextStyle) {
 
 #if defined(OS_CHROMEOS)
   ASSERT_FALSE(chromeos::UserManager::Get()->user_is_logged_in());
-  EXPECT_EQ(StatusAreaButton::GRAY_PLAIN_LIGHT, host->GetStatusAreaTextStyle());
-  EXPECT_EQ(StatusAreaHostAura::GetCompactModeLoginAndLockOffset().ToString(),
-            ash::Shell::GetInstance()->compact_status_area_offset().ToString());
+  if (chromeos::system::runtime_environment::IsRunningOnChromeOS()) {
+    EXPECT_EQ(StatusAreaButton::GRAY_PLAIN_LIGHT,
+              host->GetStatusAreaTextStyle());
+    EXPECT_EQ(StatusAreaHostAura::GetCompactModeLoginAndLockOffset().ToString(),
+              ash::Shell::GetInstance()->compact_status_area_offset().
+                  ToString());
+  } else {
+    EXPECT_EQ(StatusAreaButton::WHITE_HALOED_BOLD,
+              host->GetStatusAreaTextStyle());
+    EXPECT_EQ(StatusAreaHostAura::GetCompactModeBrowserOffset().ToString(),
+              ash::Shell::GetInstance()->compact_status_area_offset().
+                  ToString());
+  }
 
   // ProfileManager expects a profile dir to be set on Chrome OS.
   CommandLine::ForCurrentProcess()->AppendSwitchNative(
