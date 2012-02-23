@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/declarative/url_matcher.h"
 
 #include <algorithm>
+#include <iterator>
 
 #include "base/logging.h"
 #include "googleurl/src/gurl.h"
