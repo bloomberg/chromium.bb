@@ -677,6 +677,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableMediaStream,
     switches::kEnableShadowDOM,
     switches::kEnableStrictSiteIsolation,
+    switches::kEnableStyleScoped,
     switches::kDisableFullScreen,
     switches::kEnablePepperTesting,
     switches::kEnablePointerLock,

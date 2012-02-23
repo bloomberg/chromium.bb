@@ -298,6 +298,9 @@ const char kEnableSeccompSandbox[]          = "enable-seccomp-sandbox";
 // Enable shadow DOM API
 const char kEnableShadowDOM[]          = "enable-shadow-dom";
 
+// Enable <style scoped>
+const char kEnableStyleScoped[]             = "enable-style-scoped";
+
 // On platforms that support it, enables smooth scroll animation.
 const char kEnableSmoothScrolling[]         = "enable-smooth-scrolling";
 

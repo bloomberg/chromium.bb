@@ -565,6 +565,9 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableShadowDOM(
       command_line.HasSwitch(switches::kEnableShadowDOM));
 
+  WebRuntimeFeatures::enableStyleScoped(
+      command_line.HasSwitch(switches::kEnableStyleScoped));
+
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, WebKitInitialized());
 
   if (content::GetContentClient()->renderer()->

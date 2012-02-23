@@ -573,6 +573,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableShadowDOM)
   },
   {
+    "enable-style-scoped",
+    IDS_FLAGS_STYLE_SCOPED_NAME,
+    IDS_FLAGS_STYLE_SCOPED_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableStyleScoped)
+  },
+  {
     "ntp-app-install-hint",
     IDS_FLAGS_APP_INSTALL_HINT_NAME,
     IDS_FLAGS_APP_INSTALL_HINT_DESCRIPTION,

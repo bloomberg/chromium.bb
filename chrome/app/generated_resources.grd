@@ -5120,6 +5120,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SHADOW_DOM_DESCRIPTION" desc="Description for the flag to enable Shadow DOM.">
         This API allows web applications to use Web Components.
       </message>
+      <message name="IDS_FLAGS_STYLE_SCOPED_NAME" desc="Name for the flag to enable &lt;style scoped&gt;.">
+        Enable &lt;style scoped&gt;.
+      </message>
+      <message name="IDS_FLAGS_STYLE_SCOPED_DESCRIPTION" desc="Description for the flag to enable &lt;style scoped&gt;.">
+        Honor the 'scoped' attribute in &amp;lt;style&amp;gt; elements.
+      </message>
       <message name="IDS_FLAGS_WEBUI_TASK_MANAGER_NAME" desc="Title for the flag to use the WebUI task manager.">
         Enable experimental task manager.
       </message>
