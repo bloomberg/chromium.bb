@@ -19,6 +19,7 @@ GetInputMethodFunction::~GetInputMethodFunction() {
 bool GetInputMethodFunction::RunImpl() {
 #if !defined(OS_CHROMEOS)
   NOTREACHED();
+  return false;
 #else
   chromeos::ExtensionInputMethodEventRouter* router =
       profile_->GetExtensionService()->input_method_event_router();
