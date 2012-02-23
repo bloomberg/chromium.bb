@@ -363,7 +363,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndDontProceed) {
 
 // Visits a page with https error and then goes back using Browser::GoBack.
 IN_PROC_BROWSER_TEST_F(SSLUITest,
-                       TestHTTPSExpiredCertAndGoBackViaButton) {
+                       FLAKY_TestHTTPSExpiredCertAndGoBackViaButton) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(https_server_expired_.Start());
 
