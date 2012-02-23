@@ -1,4 +1,4 @@
-# Copyright (c) 2011 Google Inc. All rights reserved.
+# Copyright (c) 2012 Google Inc. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -2152,6 +2152,9 @@ def ValidateActionsInTarget(target, target_dict, build_file):
                       "An action must have an 'action_name' field." %
                       target_name)
     inputs = action.get('inputs', [])
+    action_command = action.get('action')
+    if action_command and not action_command[0]:
+      raise Exception("Empty action as command in target %s." % target_name)
 
 
 def ValidateRunAsInTarget(target, target_dict, build_file):
