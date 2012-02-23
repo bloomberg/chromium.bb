@@ -61,6 +61,18 @@ void GetEventFiltersToNotify(Window* target, EventFilters* filters) {
   }
 }
 
+Window* GestureEventHandlerForConsumedGesture(const GestureEvent& event,
+                                              Window* target) {
+  switch (event.type()) {
+    case ui::ET_GESTURE_SCROLL_END:
+    case ui::ET_GESTURE_PINCH_END:
+    case ui::ET_GESTURE_TAP:
+      return NULL;
+    default:
+      return target;
+  }
+}
+
 }  // namespace
 
 RootWindow* RootWindow::instance_ = NULL;
@@ -253,6 +265,10 @@ bool RootWindow::DispatchGestureEvent(GestureEvent* event) {
   if (target) {
     GestureEvent translated_event(*event, this, target);
     ui::GestureStatus status = ProcessGestureEvent(target, &translated_event);
+    if (status == ui::GESTURE_STATUS_CONSUMED) {
+      gesture_handler_ = GestureEventHandlerForConsumedGesture(
+          translated_event, target);
+    }
     return status != ui::GESTURE_STATUS_UNKNOWN;
   }
 
@@ -568,8 +584,10 @@ ui::GestureStatus RootWindow::ProcessGestureEvent(Window* target,
            rend = filters.rend();
        it != rend; ++it) {
     status = (*it)->PreHandleGestureEvent(target, event);
-    if (status != ui::GESTURE_STATUS_UNKNOWN)
+    if (status != ui::GESTURE_STATUS_UNKNOWN) {
+      gesture_handler_ = GestureEventHandlerForConsumedGesture(*event, target);
       return status;
+    }
   }
 
   status = target->delegate()->OnGestureEvent(event);
@@ -598,7 +616,7 @@ ui::GestureStatus RootWindow::ProcessGestureEvent(Window* target,
 
           MouseEvent synth(
               *type, event->location(), event->root_location(), flags);
-          if (gesture_handler_->delegate()->OnMouseEvent(&synth))
+          if (ProcessMouseEvent(gesture_handler_, &synth))
             status = ui::GESTURE_STATUS_SYNTH_MOUSE;
           // The window that was receiving the gestures may have closed/hidden
           // itself in response to one of the synthetic events. Stop sending
