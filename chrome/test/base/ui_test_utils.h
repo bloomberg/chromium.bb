@@ -554,6 +554,9 @@ class DOMMessageQueue : public content::NotificationObserver {
   DOMMessageQueue();
   virtual ~DOMMessageQueue();
 
+  // Removes all messages in the message queue.
+  void ClearQueue();
+
   // Wait for the next message to arrive. |message| will be set to the next
   // message, if not null. Returns true on success.
   bool WaitForMessage(std::string* message) WARN_UNUSED_RESULT;

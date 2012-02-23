@@ -1033,6 +1033,10 @@ void DOMMessageQueue::Observe(int type,
   }
 }
 
+void DOMMessageQueue::ClearQueue() {
+  message_queue_ = std::queue<std::string>();
+}
+
 bool DOMMessageQueue::WaitForMessage(std::string* message) {
   if (message_queue_.empty()) {
     waiting_for_message_ = true;

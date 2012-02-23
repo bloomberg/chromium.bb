@@ -37,6 +37,12 @@ function main()
     drawSomeFrames();
 }
 
+function notifyLoadFinished()
+{
+  domAutomationController.setAutomationId(1);
+  domAutomationController.send("ok");
+}
+
 function preCallResizeInChromium()
 {
   window.onresize = main;
@@ -133,7 +139,7 @@ function draw(gl) {
 }
 </script>
 </head>
-<body>
+<body onload="notifyLoadFinished()">
 <div style="position:relative; width:200px; height:200px; background-color:black"></div>
 <div style="position:absolute; top:0px; left:0px">
 <canvas id="c" width="200" height="200" class="nomargin"></canvas>

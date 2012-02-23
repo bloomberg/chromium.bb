@@ -43,6 +43,12 @@ function waitForFinish()
   }
 }
 
+function notifyLoadFinished()
+{
+  domAutomationController.setAutomationId(1);
+  domAutomationController.send("ok");
+}
+
 function preCallResizeInChromium()
 {
   window.onresize = main;
@@ -52,7 +58,7 @@ function preCallResizeInChromium()
 }
 </script>
 </head>
-<body>
+<body onload="notifyLoadFinished()">
 <div style="position:relative; width:200px; height:200px; background-color:black">
 </div>
 <div id="container" style="position:absolute; top:0px; left:0px">

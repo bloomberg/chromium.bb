@@ -115,13 +115,17 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
 
     ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
+    ui_test_utils::DOMMessageQueue message_queue;
     ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(url));
+
+    // Wait for notification that page is loaded.
+    ASSERT_TRUE(message_queue.WaitForMessage(NULL));
 
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
         browser()->GetSelectedWebContents()->GetRenderViewHost(),
         L"", L"preCallResizeInChromium();"));
 
-    ui_test_utils::DOMMessageQueue message_queue;
+    message_queue.ClearQueue();
     ResizeTabContainer(tab_container_size);
 
     // Wait for message from test page indicating the rendering is done.
