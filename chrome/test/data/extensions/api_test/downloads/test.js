@@ -449,11 +449,117 @@ chrome.test.getConfig(function(testConfig) {
                    {'url': SAFE_FAST_URL, 'headers': 'GOAT'});
     },
 
-    function downloadInvalidURL() {
+    function downloadInvalidURL0() {
       // Test that download() requires a valid url.
       downloads.download(
           {'url': 'foo bar'},
           chrome.test.callbackFail(downloads.ERROR_INVALID_URL));
+    },
+
+    function downloadInvalidURL1() {
+      // Test that download() requires a valid url, including protocol and
+      // hostname.
+      downloads.download(
+          {'url': '../hello'},
+          chrome.test.callbackFail(downloads.ERROR_INVALID_URL));
+    },
+
+    function downloadInvalidURL2() {
+      // Test that download() requires a valid url, including protocol and
+      // hostname.
+      downloads.download(
+          {'url': '/hello'},
+          chrome.test.callbackFail(downloads.ERROR_INVALID_URL));
+    },
+
+    function downloadInvalidURL3() {
+      // Test that download() requires a valid url, including protocol.
+      downloads.download(
+          {'url': 'google.com/'},
+          chrome.test.callbackFail(downloads.ERROR_INVALID_URL));
+    },
+
+    function downloadInvalidURL4() {
+      // Test that download() requires a valid url, including protocol and
+      // hostname.
+      downloads.download(
+          {'url': 'http://'},
+          chrome.test.callbackFail(downloads.ERROR_INVALID_URL));
+    },
+
+    function downloadInvalidURL5() {
+      // Test that download() requires a valid url, including protocol and
+      // hostname.
+      downloads.download(
+          {'url': '#frag'},
+          chrome.test.callbackFail(downloads.ERROR_INVALID_URL));
+    },
+
+    function downloadInvalidURL6() {
+      // Test that download() requires a valid url, including protocol and
+      // hostname.
+      downloads.download(
+          {'url': 'foo/bar.html#frag'},
+          chrome.test.callbackFail(downloads.ERROR_INVALID_URL));
+    },
+
+    function downloadAllowFragments() {
+      // Valid URLs plus fragments are still valid URLs.
+      var downloadId = getNextId();
+      console.log(downloadId);
+      downloads.download(
+          {'url': SAFE_FAST_URL + '#frag'},
+          chrome.test.callback(function(id) {
+            chrome.test.assertEq(downloadId, id);
+          }));
+    },
+
+    function downloadAllowDataURLs() {
+      // Valid data URLs are valid URLs.
+      var downloadId = getNextId();
+      console.log(downloadId);
+      downloads.download(
+          {'url': 'data:text/plain,hello'},
+          chrome.test.callback(function(id) {
+            chrome.test.assertEq(downloadId, id);
+          }));
+    },
+
+    function downloadAllowFileURLs() {
+      // Valid file URLs are valid URLs.
+      var downloadId = getNextId();
+      console.log(downloadId);
+      downloads.download(
+          {'url': 'file:///'},
+          chrome.test.callback(function(id) {
+            chrome.test.assertEq(downloadId, id);
+          }));
+    },
+
+    // TODO(benjhayden): Set up a test ftp server.
+    // function downloadAllowFTPURLs() {
+    //   // Valid ftp URLs are valid URLs.
+    //   var downloadId = getNextId();
+    //   console.log(downloadId);
+    //   downloads.download(
+    //       {'url': 'ftp://localhost:' + testConfig.testServer.port + '/'},
+    //       chrome.test.callback(function(id) {
+    //         chrome.test.assertEq(downloadId, id);
+    //       }));
+    // },
+
+    function downloadInvalidURL7() {
+      // Test that download() rejects javascript urls.
+      downloads.download(
+          {'url': 'javascript:document.write("hello");'},
+          chrome.test.callbackFail('net::ERR_ACCESS_DENIED'));
+    },
+
+    function downloadInvalidURL8() {
+      // Test that download() rejects javascript urls.
+      downloads.download(
+          {'url': 'javascript:return false;'},
+          chrome.test.callbackFail('net::ERR_ACCESS_DENIED'));
     },
 
     function downloadInvalidMethod() {
