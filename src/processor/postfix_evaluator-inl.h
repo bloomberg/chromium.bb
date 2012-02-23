@@ -131,7 +131,7 @@ bool PostfixEvaluator<ValueType>::EvaluateInternal(
           break;
         case BINARY_OP_ALIGN:
           result =
-            operand1 & (reinterpret_cast<ValueType>(-1) ^ (operand2 - 1));
+            operand1 & (static_cast<ValueType>(-1) ^ (operand2 - 1));
           break;
         case BINARY_OP_NONE:
           // This will not happen, but compilers will want a default or
