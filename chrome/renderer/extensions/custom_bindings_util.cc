@@ -149,7 +149,7 @@ std::string GetAPIName(const std::string& v8_extension_name) {
 
 bool AllowAPIInjection(const std::string& api_name,
                        const Extension& extension,
-                       ChromeV8Context::ContextType context_type) {
+                       ExtensionDispatcher* extension_dispatcher) {
   CHECK(api_name != "");
 
   // As in ExtensionAPI::GetSchemasForExtension, we need to allow any bindings
@@ -158,10 +158,12 @@ bool AllowAPIInjection(const std::string& api_name,
       extension.required_permission_set()->HasAnyAccessToAPI(api_name) ||
       extension.optional_permission_set()->HasAnyAccessToAPI(api_name);
 
-  if (allowed && context_type == ChromeV8Context::CONTENT_SCRIPT)
-    allowed = !ExtensionAPI::GetInstance()->IsWholeAPIPrivileged(api_name);
-
-  return allowed;
+  if (extension_dispatcher->is_extension_process()) {
+    return allowed;
+  } else {
+    return allowed &&
+           !ExtensionAPI::GetInstance()->IsWholeAPIPrivileged(api_name);
+  }
 }
 
 }  // namespace custom_bindings_util

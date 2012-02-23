@@ -256,12 +256,18 @@ const base::DictionaryValue* ExtensionAPI::GetSchema(
   return maybe_schema != schemas_.end() ? maybe_schema->second.get() : NULL;
 }
 
-void ExtensionAPI::GetSchemasForExtension(
-    const Extension& extension, SchemaMap* out) const {
+void ExtensionAPI::GetSchemasForExtension(const Extension& extension,
+                                          GetSchemasFilter filter,
+                                          SchemaMap* out) const {
   // Check both required_permissions and optional_permissions since we need
   // to return all schemas that might be needed.
-  GetSchemasForPermissions(*extension.required_permission_set(), out);
-  GetSchemasForPermissions(*extension.optional_permission_set(), out);
+  GetSchemasForPermissions(*extension.required_permission_set(), filter, out);
+  GetSchemasForPermissions(*extension.optional_permission_set(), filter, out);
+
+  // Note that dependency resolution might introduce APIs outside of the filter
+  // (for example, "extensions" has unprivileged componenents but relies on
+  // "tabs" which doesn't). It doesn't matter because schema_generated_bindings
+  // does individual function/event based checking anyway, but it's a shame.
   ResolveDependencies(out);
 }
 
@@ -279,16 +285,22 @@ void ExtensionAPI::ResolveDependencies(SchemaMap* out) const {
   }
 }
 
-void ExtensionAPI::GetDefaultSchemas(SchemaMap* out) const {
+void ExtensionAPI::GetDefaultSchemas(GetSchemasFilter filter,
+                                     SchemaMap* out) const {
   scoped_refptr<ExtensionPermissionSet> default_permissions(
       new ExtensionPermissionSet());
-  GetSchemasForPermissions(*default_permissions, out);
+  GetSchemasForPermissions(*default_permissions, filter, out);
+  ResolveDependencies(out);
 }
 
 void ExtensionAPI::GetSchemasForPermissions(
-    const ExtensionPermissionSet& permissions, SchemaMap* out) const {
+    const ExtensionPermissionSet& permissions,
+    GetSchemasFilter filter,
+    SchemaMap* out) const {
   for (SchemaMap::const_iterator it = schemas_.begin(); it != schemas_.end();
       ++it) {
+    if (filter == ONLY_UNPRIVILEGED && IsWholeAPIPrivileged(it->first))
+      continue;
     if (permissions.HasAnyAccessToAPI(it->first))
       (*out)[it->first] = it->second;
   }

@@ -141,17 +141,21 @@ class ExtensionImpl : public ChromeV8Extension {
 
     ChromeV8Context* v8_context = dispatcher->v8_context_set().GetCurrent();
     CHECK(v8_context);
-    std::string extension_id = v8_context->extension_id();
-    const ::Extension* extension = NULL;
-    if (!extension_id.empty())
-      extension = dispatcher->extensions()->GetByID(extension_id);
 
+    std::string extension_id = v8_context->extension_id();
     ExtensionAPI::SchemaMap schemas;
-    if (!extension) {
-      LOG(WARNING) << "Extension " << extension_id << " not found";
-      ExtensionAPI::GetInstance()->GetDefaultSchemas(&schemas);
+    ExtensionAPI::GetSchemasFilter filter =
+        dispatcher->is_extension_process() ?
+            ExtensionAPI::ALL : ExtensionAPI::ONLY_UNPRIVILEGED;
+
+    if (dispatcher->IsTestExtensionId(extension_id)) {
+      ExtensionAPI::GetInstance()->GetDefaultSchemas(filter, &schemas);
     } else {
-      ExtensionAPI::GetInstance()->GetSchemasForExtension(*extension, &schemas);
+      const ::Extension* extension =
+          dispatcher->extensions()->GetByID(extension_id);
+      CHECK(extension) << extension_id << " not found";
+      ExtensionAPI::GetInstance()->GetSchemasForExtension(
+          *extension, filter, &schemas);
     }
 
     v8::Persistent<v8::Context> context(v8::Context::New());
@@ -161,11 +165,6 @@ class ExtensionImpl : public ChromeV8Extension {
     for (ExtensionAPI::SchemaMap::iterator it = schemas.begin();
         it != schemas.end(); ++it) {
       std::string api_name = it->first;
-      // For content scripts, only allow APIs that have unprivileged components.
-      if (v8_context->context_type() == ChromeV8Context::CONTENT_SCRIPT &&
-          ExtensionAPI::GetInstance()->IsWholeAPIPrivileged(api_name)) {
-        continue;
-      }
       api->Set(api_index, GetV8SchemaForAPI(self, context, api_name));
       ++api_index;
     }

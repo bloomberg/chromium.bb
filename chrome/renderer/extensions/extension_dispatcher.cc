@@ -340,7 +340,7 @@ bool ExtensionDispatcher::AllowScriptExtension(
         return false;
       }
       return custom_bindings_util::AllowAPIInjection(
-          custom_binding_api_name, *extension, context_type);
+          custom_binding_api_name, *extension, this);
     }
 
     return true;
@@ -407,6 +407,10 @@ void ExtensionDispatcher::WillReleaseScriptContext(
 
 void ExtensionDispatcher::SetTestExtensionId(const std::string& id) {
   test_extension_id_ = id;
+}
+
+bool ExtensionDispatcher::IsTestExtensionId(const std::string& id) {
+  return id == test_extension_id_;
 }
 
 void ExtensionDispatcher::OnActivateApplication(

@@ -74,6 +74,7 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
                                 int world_id);
 
   void SetTestExtensionId(const std::string& extension_id);
+  bool IsTestExtensionId(const std::string& id);
 
   // TODO(mpcomplete): remove. http://crbug.com/100411
   bool IsAdblockWithWebRequestInstalled() const {

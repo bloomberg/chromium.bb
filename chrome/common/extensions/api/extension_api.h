@@ -29,6 +29,16 @@ namespace extensions {
 // C++ Wrapper for the JSON API definitions in chrome/common/extensions/api/.
 class ExtensionAPI {
  public:
+  // Filtering option for the GetSchemas functions.
+  enum GetSchemasFilter {
+    // Returns all schemas that an extension has permission for.
+    ALL,
+
+    // Returns schemas for only APIs with unprivileged components (i.e. those
+    // where !IsWholeAPIPrivileged).
+    ONLY_UNPRIVILEGED
+  };
+
   typedef std::map<std::string, linked_ptr<const DictionaryValue> > SchemaMap;
 
   // Returns the single instance of this class.
@@ -53,11 +63,13 @@ class ExtensionAPI {
   const base::DictionaryValue* GetSchema(const std::string& api_name) const;
 
   // Gets the API schemas that are available to an Extension.
-  void GetSchemasForExtension(const Extension& extension, SchemaMap* out) const;
+  void GetSchemasForExtension(const Extension& extension,
+                              GetSchemasFilter filter,
+                              SchemaMap* out) const;
 
   // Gets the schemas for the default set of APIs that are available to every
   // extension.
-  void GetDefaultSchemas(SchemaMap* out) const;
+  void GetDefaultSchemas(GetSchemasFilter filter, SchemaMap* out) const;
 
  private:
   friend struct DefaultSingletonTraits<ExtensionAPI>;
@@ -82,8 +94,9 @@ class ExtensionAPI {
                              const std::string& child_name) const;
 
   // Gets the schemas for the APIs that are allowed by a permission set.
-  void GetSchemasForPermissions(
-      const ExtensionPermissionSet& permissions, SchemaMap* out) const;
+  void GetSchemasForPermissions(const ExtensionPermissionSet& permissions,
+                                GetSchemasFilter filter,
+                                SchemaMap* out) const;
 
   // Adds dependent schemas to |out| as determined by the "dependencies"
   // property.

@@ -77,6 +77,7 @@ TEST(ExtensionAPI, Depends) {
   CHECK(error.empty());
 
   ExtensionAPI::SchemaMap schemas;
-  ExtensionAPI::GetInstance()->GetSchemasForExtension(*extension, &schemas);
+  ExtensionAPI::GetInstance()->GetSchemasForExtension(
+      *extension, ExtensionAPI::ALL, &schemas);
   EXPECT_EQ(1u, schemas.count("tts"));
 }

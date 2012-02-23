@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 
 class Extension;
@@ -39,7 +38,7 @@ std::string GetAPIName(const std::string& v8_extension_name);
 // to run in.
 bool AllowAPIInjection(const std::string& api_name,
                        const Extension& extension,
-                       ChromeV8Context::ContextType context_type);
+                       ExtensionDispatcher* extension_dispatcher);
 
 }  // namespace custom_bindings_util
 
