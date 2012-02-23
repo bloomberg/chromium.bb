@@ -246,8 +246,7 @@ class AutomationProvider
 
   // TraceSubscriber:
   virtual void OnEndTracingComplete() OVERRIDE;
-  virtual void OnTraceDataCollected(
-      const scoped_refptr<base::RefCountedString>& trace_fragment) OVERRIDE;
+  virtual void OnTraceDataCollected(const std::string& trace_fragment) OVERRIDE;
 
   void OnUnhandledMessage(const IPC::Message& message);
 

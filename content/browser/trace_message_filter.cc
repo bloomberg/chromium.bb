@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,9 +96,8 @@ void TraceMessageFilter::OnEndTracingAck(
 }
 
 void TraceMessageFilter::OnTraceDataCollected(const std::string& data) {
-  scoped_refptr<base::RefCountedString> data_ptr(new base::RefCountedString());
-  data_ptr->data() = data;
-  TraceController::GetInstance()->OnTraceDataCollected(data_ptr);
+  TraceController::GetInstance()->OnTraceDataCollected(
+      make_scoped_refptr(new base::debug::TraceLog::RefCountedString(data)));
 }
 
 void TraceMessageFilter::OnTraceBufferFull() {

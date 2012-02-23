@@ -73,8 +73,7 @@ class TracingMessageHandler
 
   // TraceSubscriber implementation.
   virtual void OnEndTracingComplete();
-  virtual void OnTraceDataCollected(
-      const scoped_refptr<base::RefCountedString>& trace_fragment);
+  virtual void OnTraceDataCollected(const std::string& trace_fragment);
   virtual void OnTraceBufferPercentFullReply(float percent_full);
 
   // GpuDataManagerObserver implementation.
@@ -380,7 +379,7 @@ void TracingMessageHandler::OnEndTracingComplete() {
 }
 
 void TracingMessageHandler::OnTraceDataCollected(
-    const scoped_refptr<base::RefCountedString>& trace_fragment) {
+    const std::string& trace_fragment) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   base::debug::TraceResultBuffer::SimpleOutput output;
@@ -388,7 +387,7 @@ void TracingMessageHandler::OnTraceDataCollected(
   trace_buffer.SetOutputCallback(output.GetCallback());
   output.Append("tracingController.onTraceDataCollected(");
   trace_buffer.Start();
-  trace_buffer.AddFragment(trace_fragment->data());
+  trace_buffer.AddFragment(trace_fragment);
   trace_buffer.Finish();
   output.Append(");");
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/debug/trace_event.h"
-#include "base/memory/ref_counted_memory.h"
 #include "base/memory/singleton.h"
 #include "content/common/content_export.h"
 
@@ -27,8 +26,7 @@ class CONTENT_EXPORT TraceSubscriber {
   // Called 0 or more times between TraceController::BeginTracing and
   // OnEndTracingComplete. Use base::debug::TraceResultBuffer to convert one or
   // more trace fragments to JSON.
-  virtual void OnTraceDataCollected(
-      const scoped_refptr<base::RefCountedString>& trace_fragment) = 0;
+  virtual void OnTraceDataCollected(const std::string& trace_fragment) = 0;
   // Called once after TraceController::GetKnownCategoriesAsync.
   virtual void OnKnownCategoriesCollected(
       const std::set<std::string>& known_categories);
@@ -156,7 +154,8 @@ class CONTENT_EXPORT TraceController {
   void OnTracingBegan(TraceSubscriber* subscriber);
   void OnEndTracingAck(const std::vector<std::string>& known_categories);
   void OnTraceDataCollected(
-      const scoped_refptr<base::RefCountedString>& events_str_ptr);
+      const scoped_refptr<base::debug::TraceLog::RefCountedString>&
+          events_str_ptr);
   void OnTraceBufferFull();
   void OnTraceBufferPercentFullReply(float percent_full);
 

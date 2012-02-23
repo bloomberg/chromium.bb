@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,9 +52,9 @@ class InProcessTraceController : public TraceSubscriber {
   }
 
   // TraceSubscriber
-  virtual void OnTraceDataCollected(
-      const scoped_refptr<base::RefCountedString>& trace_fragment) OVERRIDE {
-    trace_buffer_.AddFragment(trace_fragment->data());
+  virtual void OnTraceDataCollected(const std::string& trace_fragment)
+      OVERRIDE {
+    trace_buffer_.AddFragment(trace_fragment);
   }
 
   // For collecting trace data asynchronously.

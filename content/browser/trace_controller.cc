@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@ using content::BrowserThread;
 
 namespace {
 
-class AutoStopTraceSubscriberStdio : public content::TraceSubscriberStdio {
+class AutoStopTraceSubscriberStdio : public TraceSubscriberStdio {
  public:
   AutoStopTraceSubscriberStdio(const FilePath& file_path)
       : TraceSubscriberStdio(file_path) {}
@@ -86,6 +86,10 @@ void TraceController::InitStartupTracing(const CommandLine& command_line) {
   scoped_ptr<AutoStopTraceSubscriberStdio> subscriber(
       new AutoStopTraceSubscriberStdio(trace_file));
   DCHECK(can_begin_tracing(subscriber.get()));
+  if (!subscriber->IsValid()) {
+    TraceLog::GetInstance()->SetDisabled();
+    return;
+  }
 
   std::string delay_str = command_line.GetSwitchValueASCII(
       switches::kTraceStartupDuration);
@@ -310,7 +314,7 @@ void TraceController::OnEndTracingAck(
 }
 
 void TraceController::OnTraceDataCollected(
-    const scoped_refptr<base::RefCountedString>& events_str_ptr) {
+    const scoped_refptr<TraceLog::RefCountedString>& events_str_ptr) {
   // OnTraceDataCollected may be called from any browser thread, either by the
   // local event trace system or from child processes via TraceMessageFilter.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
@@ -322,7 +326,7 @@ void TraceController::OnTraceDataCollected(
 
   // Drop trace events if we are just getting categories.
   if (subscriber_ && !is_get_categories_)
-    subscriber_->OnTraceDataCollected(events_str_ptr);
+    subscriber_->OnTraceDataCollected(events_str_ptr->data);
 }
 
 void TraceController::OnTraceBufferFull() {

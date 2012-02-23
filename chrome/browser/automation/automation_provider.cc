@@ -406,8 +406,8 @@ void AutomationProvider::OnEndTracingComplete() {
 }
 
 void AutomationProvider::OnTraceDataCollected(
-    const scoped_refptr<base::RefCountedString>& trace_fragment) {
-  tracing_data_.trace_output.push_back(trace_fragment->data());
+    const std::string& trace_fragment) {
+  tracing_data_.trace_output.push_back(trace_fragment);
 }
 
 bool AutomationProvider::OnMessageReceived(const IPC::Message& message) {
