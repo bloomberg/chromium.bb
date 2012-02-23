@@ -6,7 +6,7 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-    <link href="wayland.css" rel="stylesheet" type="text/css" />
+    <link href="wayland-protocol.css" rel="stylesheet" type="text/css" />
     <title>Wayland</title>
   </head>
   <body>
