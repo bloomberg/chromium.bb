@@ -59,6 +59,7 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
 #else
       { switches::kEnablePrintPreview, prefs::kPrintPreviewDisabled, false },
 #endif
+      { switches::kManaged, prefs::kInManagedMode, true },
 };
 
 const CommandLinePrefStore::IntegerSwitchToPreferenceMapEntry

@@ -754,6 +754,9 @@ const char kLogNetLog[]                     = "log-net-log";
 // Uninstalls an extension with the specified extension id.
 const char kUninstallExtension[]            = "uninstall-extension";
 
+// Starts the browser in managed mode.
+const char kManaged[]                       = "managed";
+
 // Makes Chrome default browser
 const char kMakeDefaultBrowser[]            = "make-default-browser";
 

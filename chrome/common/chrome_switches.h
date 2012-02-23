@@ -208,8 +208,10 @@ extern const char kLoadOpencryptoki[];
 extern const char kUninstallExtension[];
 extern const char kLogNetLog[];
 extern const char kMakeDefaultBrowser[];
+extern const char kManaged[];
 extern const char kMediaCacheSize[];
 extern const char kMemoryProfiling[];
+extern const char kMemoryWidget[];
 extern const char kMessageLoopHistogrammer[];
 extern const char kMetricsRecordingOnly[];
 extern const char kMultiProfiles[];
@@ -312,7 +314,6 @@ extern const char kWhitelistedExtensionID[];
 extern const char kWindowPosition[];
 extern const char kWindowSize[];
 extern const char kWinHttpProxyResolver[];
-extern const char kMemoryWidget[];
 
 #if defined(OS_CHROMEOS)
 extern const char kSkipOAuthLogin[];

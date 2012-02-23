@@ -1765,4 +1765,7 @@ const char kWebIntentsEnabled[] = "webintents.enabled";
 const char kPinnedLauncherApps[] = "pinned_launcher_apps";
 #endif
 
+// Indicates whether the browser is in managed mode.
+const char kInManagedMode[] = "managed_mode";
+
 }  // namespace prefs

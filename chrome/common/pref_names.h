@@ -662,6 +662,8 @@ extern const char kWebIntentsEnabled[];
 extern const char kPinnedLauncherApps[];
 #endif
 
+extern const char kInManagedMode[];
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_
