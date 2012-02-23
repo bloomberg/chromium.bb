@@ -30,8 +30,10 @@ class AcceleratorHandlerGtkTest
     window_ = Widget::CreateWindowWithBounds(this, gfx::Rect(0, 0, 500, 500));
     window_->Show();
     FocusManager* focus_manager = window_->GetFocusManager();
-    focus_manager->RegisterAccelerator(kMenuAccelerator, this);
-    focus_manager->RegisterAccelerator(kHomepageAccelerator, this);
+    focus_manager->RegisterAccelerator(
+        kMenuAccelerator, ui::AcceleratorManager::kNormalPriority, this);
+    focus_manager->RegisterAccelerator(
+        kHomepageAccelerator, ui::AcceleratorManager::kNormalPriority, this);
     menu_pressed_ = false;
     home_pressed_ = false;
   }
