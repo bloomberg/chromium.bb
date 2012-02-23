@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -235,13 +235,14 @@ bool BookmarkContextMenuControllerViews::IsItemChecked(int id) const {
 }
 
 bool BookmarkContextMenuControllerViews::IsCommandEnabled(int id) const {
-  bool is_root_node =
-      (selection_.size() == 1 &&
-       selection_[0]->parent() == model_->root_node());
+  bool is_root_node = selection_.size() == 1 &&
+                      selection_[0]->parent() == model_->root_node();
   bool can_edit =
       profile_->GetPrefs()->GetBoolean(prefs::kEditBookmarksEnabled);
   IncognitoModePrefs::Availability incognito_avail =
       IncognitoModePrefs::GetAvailability(profile_->GetPrefs());
+  bool is_bookmark_bar_node = selection_.size() == 1 &&
+                              selection_[0] == model_->bookmark_bar_node();
   switch (id) {
     case IDC_BOOKMARK_BAR_OPEN_INCOGNITO:
       return !profile_->IsOffTheRecord() &&
@@ -250,13 +251,15 @@ bool BookmarkContextMenuControllerViews::IsCommandEnabled(int id) const {
     case IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO:
       return HasURLs() &&
              !profile_->IsOffTheRecord() &&
-             incognito_avail != IncognitoModePrefs::DISABLED;
+             incognito_avail != IncognitoModePrefs::DISABLED &&
+             !is_bookmark_bar_node;
 
     case IDC_BOOKMARK_BAR_OPEN_ALL:
-      return HasURLs();
+      return HasURLs() && !is_bookmark_bar_node;
     case IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW:
       return HasURLs() &&
-             incognito_avail != IncognitoModePrefs::FORCED;
+             incognito_avail != IncognitoModePrefs::FORCED &&
+             !is_bookmark_bar_node;
 
     case IDC_BOOKMARK_BAR_RENAME_FOLDER:
     case IDC_BOOKMARK_BAR_EDIT:
