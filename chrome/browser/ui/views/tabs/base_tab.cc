@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -487,6 +487,10 @@ void BaseTab::PaintTitle(gfx::Canvas* canvas, SkColor title_color) {
 }
 
 void BaseTab::AnimationProgressed(const ui::Animation* animation) {
+  // Ignore if the pulse animation is being performed on active tab because
+  // it repaints the same image. See |Tab::PaintTabBackground()|.
+  if (animation == pulse_animation_.get() && IsActive())
+    return;
   SchedulePaint();
 }
 
