@@ -111,6 +111,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool fullscreen_enabled;
   bool allow_displaying_insecure_content;
   bool allow_running_insecure_content;
+  bool password_echo_enabled;
   bool should_print_backgrounds;
   bool enable_scroll_animator;
   bool hixie76_websocket_protocol_enabled;

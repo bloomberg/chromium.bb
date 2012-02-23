@@ -86,6 +86,9 @@ extern const ui::ResourceBundle::FontStyle kAssociatedNetworkFontStyle;
 // Preferred infobar border padding in pixels.
 extern const int kInfoBarBorderPaddingVertical;
 
+// Last character display for passwords.
+extern const bool kPasswordEchoEnabled;
+
 //=============================================================================
 // Runtime "const" - set only once after parsing command line option and should
 // never be modified after that.

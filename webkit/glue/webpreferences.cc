@@ -97,6 +97,7 @@ WebPreferences::WebPreferences()
       fullscreen_enabled(false),
       allow_displaying_insecure_content(true),
       allow_running_insecure_content(false),
+      password_echo_enabled(false),
       should_print_backgrounds(false),
       enable_scroll_animator(false),
       hixie76_websocket_protocol_enabled(false),
@@ -338,6 +339,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setFullScreenEnabled(fullscreen_enabled);
   settings->setAllowDisplayOfInsecureContent(allow_displaying_insecure_content);
   settings->setAllowRunningOfInsecureContent(allow_running_insecure_content);
+  settings->setPasswordEchoEnabled(password_echo_enabled);
   settings->setShouldPrintBackgrounds(should_print_backgrounds);
   settings->setEnableScrollAnimator(enable_scroll_animator);
   settings->setHixie76WebSocketProtocolEnabled(
