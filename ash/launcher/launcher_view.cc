@@ -226,6 +226,8 @@ void LauncherView::Init() {
   overflow_button_->SetImage(
       views::CustomButton::BS_PUSHED,
       rb.GetImageNamed(IDR_AURA_LAUNCHER_OVERFLOW_PUSHED).ToSkBitmap());
+  overflow_button_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_AURA_LAUNCHER_OVERFLOW_NAME));
   ConfigureChildView(overflow_button_);
   AddChildView(overflow_button_);
 
