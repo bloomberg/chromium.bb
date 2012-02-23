@@ -435,7 +435,7 @@ void GpuChannel::DidDestroyCommandBuffer(gfx::GpuPreference gpu_preference) {
 }
 
 std::string GpuChannel::GetChannelName() {
-  return StringPrintf("%d.r%d.gpu", base::GetCurrentProcId(), channel_id_);
+  return StringPrintf("gpu.%d.%d", base::GetCurrentProcId(), channel_id_);
 }
 
 #if defined(OS_POSIX)

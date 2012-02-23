@@ -344,6 +344,15 @@ bool AddPolicyForGPU(CommandLine* cmd_line, sandbox::TargetPolicy* policy) {
                           sandbox::USER_LIMITED);
   }
 
+  // Allow the server side of GPU sockets, which are pipes that have
+  // the "chrome.gpu" namespace and an arbitrary suffix.
+  sandbox::ResultCode result = policy->AddRule(
+      sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,
+      sandbox::TargetPolicy::NAMEDPIPES_ALLOW_ANY,
+      L"\\\\.\\pipe\\chrome.gpu.*");
+  if (result != sandbox::SBOX_ALL_OK)
+    return false;
+
   AddGenericDllEvictionPolicy(policy);
 #endif
   return true;
