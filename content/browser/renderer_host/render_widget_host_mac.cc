@@ -6,17 +6,18 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 
-void RenderWidgetHost::OnMsgPluginFocusChanged(bool focused, int plugin_id) {
+void RenderWidgetHostImpl::OnMsgPluginFocusChanged(bool focused,
+                                                   int plugin_id) {
   if (view_)
     view_->PluginFocusChanged(focused, plugin_id);
 }
 
-void RenderWidgetHost::OnMsgStartPluginIme() {
+void RenderWidgetHostImpl::OnMsgStartPluginIme() {
   if (view_)
     view_->StartPluginIme();
 }
 
-void RenderWidgetHost::OnAllocateFakePluginWindowHandle(
+void RenderWidgetHostImpl::OnAllocateFakePluginWindowHandle(
     bool opaque,
     bool root,
     gfx::PluginWindowHandle* id) {
@@ -29,7 +30,7 @@ void RenderWidgetHost::OnAllocateFakePluginWindowHandle(
   }
 }
 
-void RenderWidgetHost::OnDestroyFakePluginWindowHandle(
+void RenderWidgetHostImpl::OnDestroyFakePluginWindowHandle(
     gfx::PluginWindowHandle id) {
   if (view_) {
     view_->DestroyFakePluginWindowHandle(id);
@@ -38,7 +39,7 @@ void RenderWidgetHost::OnDestroyFakePluginWindowHandle(
   }
 }
 
-void RenderWidgetHost::OnAcceleratedSurfaceSetIOSurface(
+void RenderWidgetHostImpl::OnAcceleratedSurfaceSetIOSurface(
     gfx::PluginWindowHandle window,
     int32 width,
     int32 height,
@@ -48,7 +49,7 @@ void RenderWidgetHost::OnAcceleratedSurfaceSetIOSurface(
   }
 }
 
-void RenderWidgetHost::OnAcceleratedSurfaceSetTransportDIB(
+void RenderWidgetHostImpl::OnAcceleratedSurfaceSetTransportDIB(
     gfx::PluginWindowHandle window,
     int32 width,
     int32 height,
@@ -59,7 +60,7 @@ void RenderWidgetHost::OnAcceleratedSurfaceSetTransportDIB(
   }
 }
 
-void RenderWidgetHost::OnAcceleratedSurfaceBuffersSwapped(
+void RenderWidgetHostImpl::OnAcceleratedSurfaceBuffersSwapped(
     gfx::PluginWindowHandle window, uint64 surface_id) {
   if (view_) {
     // This code path could be updated to implement flow control for

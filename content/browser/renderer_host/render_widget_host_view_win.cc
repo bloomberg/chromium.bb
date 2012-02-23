@@ -307,8 +307,7 @@ inline void SetTouchType(TOUCHINPUT* point, int type) {
 // RenderWidgetHostViewWin, public:
 
 RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
-    : render_widget_host_(widget),
-      compositor_host_window_(NULL),
+    : compositor_host_window_(NULL),
       hide_compositor_window_at_next_paint_(false),
       track_mouse_leave_(false),
       ime_notification_(false),
@@ -331,6 +330,7 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       focus_on_editable_field_(false),
       received_focus_change_after_pointer_down_(false),
       transparent_region_(0) {
+  render_widget_host_ = static_cast<RenderWidgetHostImpl*>(widget);
   render_widget_host_->SetView(this);
   registrar_.Add(this,
                  content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,

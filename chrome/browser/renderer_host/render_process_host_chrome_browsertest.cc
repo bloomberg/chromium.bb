@@ -28,7 +28,7 @@ RenderViewHost* FindFirstDevToolsHost() {
         render_process_host->ListenersIterator());
     for (; !iter.IsAtEnd(); iter.Advance()) {
       const RenderWidgetHost* widget =
-          static_cast<const RenderWidgetHost*>(iter.GetCurrentValue());
+          RenderWidgetHostImpl::FromIPCChannelListener(iter.GetCurrentValue());
       DCHECK(widget);
       if (!widget || !widget->IsRenderView())
         continue;

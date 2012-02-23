@@ -12,6 +12,7 @@
 #import "content/public/browser/render_widget_host_view_mac_delegate.h"
 
 class RenderWidgetHost;
+class RenderWidgetHostImpl;
 
 namespace ChromeRenderWidgetHostViewMacDelegateInternal {
 class SpellCheckRenderViewObserver;
@@ -20,7 +21,7 @@ class SpellCheckRenderViewObserver;
 @interface ChromeRenderWidgetHostViewMacDelegate
     : NSObject<RenderWidgetHostViewMacDelegate> {
  @private
-  RenderWidgetHost* renderWidgetHost_;  // weak
+  RenderWidgetHostImpl* renderWidgetHost_;  // weak
   scoped_ptr<ChromeRenderWidgetHostViewMacDelegateInternal::
       SpellCheckRenderViewObserver> spellingObserver_;
 

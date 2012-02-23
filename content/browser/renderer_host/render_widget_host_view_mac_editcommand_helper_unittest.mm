@@ -69,18 +69,18 @@ namespace {
 }  // namespace
 
 // Create a RenderWidget for which we can filter messages.
-class RenderWidgetHostEditCommandCounter : public RenderWidgetHost {
+class RenderWidgetHostEditCommandCounter : public RenderWidgetHostImpl {
  public:
   RenderWidgetHostEditCommandCounter(content::RenderProcessHost* process,
                                      int routing_id)
-    : RenderWidgetHost(process, routing_id),
+    : RenderWidgetHostImpl(process, routing_id),
       edit_command_message_count_(0) {
   }
 
   virtual bool Send(IPC::Message* message) {
     if (message->type() == ViewMsg_ExecuteEditCommand::ID)
       edit_command_message_count_++;
-    return RenderWidgetHost::Send(message);
+    return RenderWidgetHostImpl::Send(message);
   }
 
   unsigned int edit_command_message_count_;

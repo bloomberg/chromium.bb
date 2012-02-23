@@ -9,7 +9,6 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/renderer_host/backing_store_manager.h"
-#include "content/browser/renderer_host/backing_store_skia.h"
 #include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/public/browser/notification_service.h"
@@ -35,35 +34,15 @@ static const int kBitmapHeight = 100;
 //
 #if !defined(OS_MACOSX) && !defined(OS_WIN)
 
-// This test render widget host view uses BackingStoreSkia instead of
-// TestBackingStore, so that basic operations like CopyFromBackingStore()
-// works. The skia implementation doesn't have any hardware or system
-// dependencies.
-class TestRenderWidgetHostViewWithBackingStoreSkia
-    : public content::TestRenderWidgetHostView {
- public:
-  explicit TestRenderWidgetHostViewWithBackingStoreSkia(RenderWidgetHost* rwh)
-      : content::TestRenderWidgetHostView(rwh), rwh_(rwh) {}
-
-  BackingStore* AllocBackingStore(const gfx::Size& size) {
-    return new BackingStoreSkia(rwh_, size);
-  }
-
- private:
-  RenderWidgetHost* rwh_;
-  DISALLOW_COPY_AND_ASSIGN(TestRenderWidgetHostViewWithBackingStoreSkia);
-};
-
 class ThumbnailGeneratorTest : public testing::Test {
  public:
   ThumbnailGeneratorTest() {
     profile_.reset(new TestingProfile());
     process_ = new MockRenderProcessHost(profile_.get());
-    widget_.reset(new RenderWidgetHost(process_, MSG_ROUTING_NONE));
-    view_.reset(new TestRenderWidgetHostViewWithBackingStoreSkia(
-        widget_.get()));
-    // Paiting will be skipped if there's no view.
-    widget_->SetView(view_.get());
+    view_.reset(TestRenderWidgetHostViewWithBackingStoreSkia::Construct(
+        process_, MSG_ROUTING_NONE));
+    widget_ = view_->GetRenderWidgetHost();
+    DCHECK(view_.get() && widget_);
 
     // Need to send out a create notification for the RWH to get hooked. This is
     // a little scary in that we don't have a RenderView, but the only listener
@@ -72,7 +51,7 @@ class ThumbnailGeneratorTest : public testing::Test {
         content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
         content::Source<WebContents>(NULL),
         content::Details<RenderViewHost>(reinterpret_cast<RenderViewHost*>(
-            widget_.get())));
+            widget_)));
 
     transport_dib_.reset(TransportDIB::Create(kBitmapWidth * kBitmapHeight * 4,
                                               1));
@@ -80,7 +59,6 @@ class ThumbnailGeneratorTest : public testing::Test {
 
   ~ThumbnailGeneratorTest() {
     view_.reset();
-    widget_.reset();
     process_ = NULL;
     profile_.reset();
 
@@ -112,7 +90,7 @@ class ThumbnailGeneratorTest : public testing::Test {
     }
 
     gfx::Rect rect(0, 0, kBitmapWidth, kBitmapHeight);
-    SimulateUpdateRect(widget_.get(), transport_dib_->id(), rect);
+    SimulateUpdateRect(widget_, transport_dib_->id(), rect);
   }
 
   TransportType ClassifyFirstPixel(const SkBitmap& bitmap) {
@@ -146,7 +124,7 @@ class ThumbnailGeneratorTest : public testing::Test {
   // DeleteSoon(), hence the message loop needs to run pending tasks.
   MockRenderProcessHost* process_;
 
-  scoped_ptr<RenderWidgetHost> widget_;
+  RenderWidgetHost* widget_;
   scoped_ptr<TestRenderWidgetHostViewWithBackingStoreSkia> view_;
   ThumbnailGenerator generator_;
 
@@ -163,7 +141,7 @@ class ThumbnailGeneratorTest : public testing::Test {
 TEST_F(ThumbnailGeneratorTest, NoThumbnail) {
   // This is the case where there is no thumbnail available on the tab and
   // there is no backing store. There should be no image returned.
-  SkBitmap result = generator_.GetThumbnailForRenderer(widget_.get());
+  SkBitmap result = generator_.GetThumbnailForRenderer(widget_);
   EXPECT_TRUE(result.isNull());
 }
 
@@ -174,7 +152,7 @@ TEST_F(ThumbnailGeneratorTest, DiscardBackingStore) {
   ASSERT_TRUE(widget_->GetBackingStore(false));
 
   // The thumbnail generator should be able to retrieve a thumbnail.
-  SkBitmap result = generator_.GetThumbnailForRenderer(widget_.get());
+  SkBitmap result = generator_.GetThumbnailForRenderer(widget_);
   ASSERT_FALSE(result.isNull());
   // Valgrind reports MemoryCheck::Cond inside ClassifyFirstPixel(). With
   // --track-origins=yes, valgrind reports that the uninitialized value
@@ -189,12 +167,12 @@ TEST_F(ThumbnailGeneratorTest, DiscardBackingStore) {
   EXPECT_EQ(TRANSPORT_BLACK, ClassifyFirstPixel(result));
 
   // Discard the backing store.
-  ASSERT_TRUE(BackingStoreManager::ExpireBackingStoreForTest(widget_.get()));
+  ASSERT_TRUE(BackingStoreManager::ExpireBackingStoreForTest(widget_));
   ASSERT_FALSE(widget_->GetBackingStore(false));
 
   // The thumbnail generator should not be able to retrieve a thumbnail,
   // as the backing store is now gone.
-  result = generator_.GetThumbnailForRenderer(widget_.get());
+  result = generator_.GetThumbnailForRenderer(widget_);
   ASSERT_TRUE(result.isNull());
 }
 
