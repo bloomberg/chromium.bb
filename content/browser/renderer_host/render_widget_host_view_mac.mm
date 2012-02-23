@@ -26,7 +26,6 @@
 #include "content/browser/renderer_host/backing_store_mac.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/renderer_host/render_widget_host.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
 #import "content/browser/renderer_host/text_input_client_mac.h"
 #include "content/common/accessibility_messages.h"
@@ -231,7 +230,8 @@ void content::RenderWidgetHostViewPort::GetDefaultScreenInfo(
 // RenderWidgetHostViewMac, public:
 
 RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
-    : about_to_validate_and_paint_(false),
+    : render_widget_host_(widget),
+      about_to_validate_and_paint_(false),
       call_set_needs_display_in_rect_pending_(false),
       last_frame_was_accelerated_(false),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
@@ -241,8 +241,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
       accelerated_compositing_active_(false),
       needs_gpu_visibility_update_after_repaint_(false),
       compositing_surface_(gfx::kNullPluginWindow) {
-  render_widget_host_ = static_cast<RenderWidgetHostImpl*>(widget);
-
   // |cocoa_view_| owns us and we will be deleted when |cocoa_view_|
   // goes away.  Since we autorelease it, our caller must put
   // |GetNativeView()| into the view hierarchy right after calling us.
@@ -899,7 +897,7 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
   }
 
   if (params.route_id != 0) {
-    RenderWidgetHostImpl::AcknowledgeSwapBuffers(params.route_id, gpu_host_id);
+    RenderWidgetHost::AcknowledgeSwapBuffers(params.route_id, gpu_host_id);
   }
 }
 
@@ -926,8 +924,7 @@ void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
   }
 
   if (params.route_id != 0) {
-    RenderWidgetHostImpl::AcknowledgePostSubBuffer(
-        params.route_id, gpu_host_id);
+    RenderWidgetHost::AcknowledgePostSubBuffer(params.route_id, gpu_host_id);
   }
 }
 
@@ -970,8 +967,7 @@ void RenderWidgetHostViewMac::HandleDelayedGpuViewHiding() {
 
 void RenderWidgetHostViewMac::OnAcceleratedCompositingStateChange() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  bool activated =
-      GetRenderWidgetHostImpl()->is_accelerated_compositing_active();
+  bool activated = GetRenderWidgetHost()->is_accelerated_compositing_active();
   bool changed = accelerated_compositing_active_ != activated;
   accelerated_compositing_active_ = activated;
   if (!changed)
@@ -1465,7 +1461,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   // Don't cancel child popups; the key events are probably what's triggering
   // the popup in the first place.
 
-  RenderWidgetHostImpl* widgetHost = renderWidgetHostView_->render_widget_host_;
+  RenderWidgetHost* widgetHost = renderWidgetHostView_->render_widget_host_;
   DCHECK(widgetHost);
 
   NativeWebKeyboardEvent event(theEvent);
@@ -2038,7 +2034,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 }
 
 - (void)doDefaultAction:(int32)accessibilityObjectId {
-  RenderWidgetHostImpl* rwh = renderWidgetHostView_->render_widget_host_;
+  RenderWidgetHost* rwh = renderWidgetHostView_->render_widget_host_;
   rwh->Send(new AccessibilityMsg_DoDefaultAction(
       rwh->routing_id(), accessibilityObjectId));
 }
@@ -2059,7 +2055,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 - (void)setAccessibilityFocus:(BOOL)focus
               accessibilityId:(int32)accessibilityObjectId {
   if (focus) {
-    RenderWidgetHostImpl* rwh = renderWidgetHostView_->render_widget_host_;
+    RenderWidgetHost* rwh = renderWidgetHostView_->render_widget_host_;
     rwh->Send(new AccessibilityMsg_SetFocus(
         rwh->routing_id(), accessibilityObjectId));
   }
@@ -2511,7 +2507,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
     if (!StartsWithASCII(command, "insert", false))
       editCommands_.push_back(EditCommand(command, ""));
   } else {
-    RenderWidgetHostImpl* rwh = renderWidgetHostView_->render_widget_host_;
+    RenderWidgetHost* rwh = renderWidgetHostView_->render_widget_host_;
     rwh->Send(new ViewMsg_ExecuteEditCommand(rwh->routing_id(), command, ""));
   }
 }
@@ -2732,14 +2728,14 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 
 - (void)viewWillStartLiveResize {
   [super viewWillStartLiveResize];
-  RenderWidgetHostImpl* widget = renderWidgetHostView_->render_widget_host_;
+  RenderWidgetHost* widget = renderWidgetHostView_->render_widget_host_;
   if (widget)
     widget->Send(new ViewMsg_SetInLiveResize(widget->routing_id(), true));
 }
 
 - (void)viewDidEndLiveResize {
   [super viewDidEndLiveResize];
-  RenderWidgetHostImpl* widget = renderWidgetHostView_->render_widget_host_;
+  RenderWidgetHost* widget = renderWidgetHostView_->render_widget_host_;
   if (widget)
     widget->Send(new ViewMsg_SetInLiveResize(widget->routing_id(), false));
 }

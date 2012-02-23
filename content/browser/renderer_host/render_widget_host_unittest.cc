@@ -119,7 +119,7 @@ bool RenderWidgetHostProcess::WaitForUpdateMsg(int render_widget_id,
 // This test view allows us to specify the size.
 class TestView : public content::TestRenderWidgetHostView {
  public:
-  explicit TestView(RenderWidgetHostImpl* rwh)
+  explicit TestView(RenderWidgetHost* rwh)
       : content::TestRenderWidgetHostView(rwh) {
   }
 
@@ -146,10 +146,10 @@ class TestView : public content::TestRenderWidgetHostView {
 
 // MockRenderWidgetHost ----------------------------------------------------
 
-class MockRenderWidgetHost : public RenderWidgetHostImpl {
+class MockRenderWidgetHost : public RenderWidgetHost {
  public:
   MockRenderWidgetHost(content::RenderProcessHost* process, int routing_id)
-      : RenderWidgetHostImpl(process, routing_id),
+      : RenderWidgetHost(process, routing_id),
         prehandle_keyboard_event_(false),
         prehandle_keyboard_event_called_(false),
         prehandle_keyboard_event_type_(WebInputEvent::Undefined),
@@ -220,7 +220,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
 
 class MockPaintingObserver : public content::NotificationObserver {
  public:
-  void WidgetDidReceivePaintAtSizeAck(RenderWidgetHostImpl* host,
+  void WidgetDidReceivePaintAtSizeAck(RenderWidgetHost* host,
                                       int tag,
                                       const gfx::Size& size) {
     host_ = reinterpret_cast<MockRenderWidgetHost*>(host);
@@ -233,11 +233,11 @@ class MockPaintingObserver : public content::NotificationObserver {
                const content::NotificationDetails& details) {
     if (type ==
         content::NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK) {
-      RenderWidgetHostImpl::PaintAtSizeAckDetails* size_ack_details =
-          content::Details<RenderWidgetHostImpl::PaintAtSizeAckDetails>(
-              details).ptr();
+      RenderWidgetHost::PaintAtSizeAckDetails* size_ack_details =
+          content::Details<RenderWidgetHost::PaintAtSizeAckDetails>(details).
+              ptr();
       WidgetDidReceivePaintAtSizeAck(
-          content::Source<RenderWidgetHostImpl>(source).ptr(),
+          content::Source<RenderWidgetHost>(source).ptr(),
           size_ack_details->tag,
           size_ack_details->size);
     }
@@ -585,7 +585,7 @@ TEST_F(RenderWidgetHostTest, PaintAtSize) {
   registrar.Add(
       &observer,
       content::NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
-      content::Source<RenderWidgetHostImpl>(host_.get()));
+      content::Source<RenderWidgetHost>(host_.get()));
 
   host_->OnMsgPaintAtSizeAck(kPaintAtSizeTag, gfx::Size(20, 30));
   EXPECT_EQ(host_.get(), observer.host());

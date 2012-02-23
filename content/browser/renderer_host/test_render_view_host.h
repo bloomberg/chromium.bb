@@ -175,10 +175,8 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
 
   bool is_showing() const { return is_showing_; }
 
- protected:
-  RenderWidgetHostImpl* rwh_;
-
  private:
+  RenderWidgetHost* rwh_;
   bool is_showing_;
 };
 
@@ -373,32 +371,5 @@ class RenderViewHostTestHarness : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostTestHarness);
 };
-
-// This test render widget host view uses BackingStoreSkia instead of
-// TestBackingStore, so that basic operations like CopyFromBackingStore()
-// works. The skia implementation doesn't have any hardware or system
-// dependencies.
-class TestRenderWidgetHostViewWithBackingStoreSkia
-    : public content::TestRenderWidgetHostView {
- public:
-  virtual ~TestRenderWidgetHostViewWithBackingStoreSkia();
-
-  virtual RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
-  virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
-
-  // Creates a RWH with the given parameters, and uses it to create
-  // the test RWHV.  Also ensures painting is done.
-  static TestRenderWidgetHostViewWithBackingStoreSkia* Construct(
-      content::RenderProcessHost* process, int routing_id);
-
- private:
-  // Takes ownership of rwh, private since it should be constructed
-  // via Construct.
-  explicit TestRenderWidgetHostViewWithBackingStoreSkia(RenderWidgetHost* rwh)
-      : content::TestRenderWidgetHostView(rwh) {}
-
-  DISALLOW_COPY_AND_ASSIGN(TestRenderWidgetHostViewWithBackingStoreSkia);
-};
-
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_TEST_RENDER_VIEW_HOST_H_

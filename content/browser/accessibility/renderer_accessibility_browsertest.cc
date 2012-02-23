@@ -40,8 +40,7 @@ class RendererAccessibilityBrowserTest : public InProcessBrowserTest {
         content::NotificationService::AllSources());
     content::RenderWidgetHostView* host_view =
         browser()->GetSelectedWebContents()->GetRenderWidgetHostView();
-    RenderWidgetHostImpl* host = static_cast<RenderWidgetHostImpl*>(
-        host_view->GetRenderWidgetHost());
+    RenderWidgetHost* host = host_view->GetRenderWidgetHost();
     RenderViewHost* view_host = static_cast<RenderViewHost*>(host);
     view_host->set_save_accessibility_tree_for_testing(true);
     view_host->EnableRendererAccessibility();

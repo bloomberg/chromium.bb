@@ -93,8 +93,7 @@ RenderWidgetHostView* TabContentsViewHelper::CreateNewWidget(
     bool is_fullscreen,
     WebKit::WebPopupType popup_type) {
   content::RenderProcessHost* process = web_contents->GetRenderProcessHost();
-  RenderWidgetHostImpl* widget_host =
-      new RenderWidgetHostImpl(process, route_id);
+  RenderWidgetHost* widget_host = new RenderWidgetHost(process, route_id);
   RenderWidgetHostViewPort* widget_view =
       RenderWidgetHostViewPort::CreateViewForWidget(widget_host);
   if (!is_fullscreen) {
@@ -178,6 +177,6 @@ RenderWidgetHostView* TabContentsViewHelper::ShowCreatedWidget(
     widget_host_view->InitAsPopup(web_contents->GetRenderWidgetHostView(),
                                   initial_pos);
   }
-  RenderWidgetHostImpl::FromRWHV(widget_host_view)->Init();
+  widget_host_view->GetRenderWidgetHost()->Init();
   return widget_host_view;
 }

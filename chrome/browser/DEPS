@@ -70,6 +70,7 @@ include_rules = [
   "+content/browser/renderer_host/backing_store_gtk.h",
   "+content/browser/renderer_host/backing_store_mac.h",
   "+content/browser/renderer_host/backing_store_manager.h",
+  "+content/browser/renderer_host/backing_store_skia.h",
   "+content/browser/renderer_host/dummy_resource_handler.h",
   "+content/browser/renderer_host/media/media_observer.h",
   "+content/browser/renderer_host/media/media_stream_manager.h",

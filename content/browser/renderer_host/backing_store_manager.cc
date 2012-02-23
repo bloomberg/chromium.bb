@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -145,8 +145,7 @@ BackingStore* CreateBackingStore(RenderWidgetHost* host,
   } else {
     cache = small_cache;
   }
-  BackingStore* backing_store = static_cast<RenderWidgetHostImpl*>(
-      host)->AllocBackingStore(backing_store_size);
+  BackingStore* backing_store = host->AllocBackingStore(backing_store_size);
   if (backing_store)
     cache->Put(host, backing_store);
   return backing_store;

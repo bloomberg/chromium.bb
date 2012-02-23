@@ -201,7 +201,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
           render_process_host->ListenersIterator());
       for (; !iter.IsAtEnd(); iter.Advance()) {
         const RenderWidgetHost* widget =
-            RenderWidgetHost::FromIPCChannelListener(iter.GetCurrentValue());
+            static_cast<const RenderWidgetHost*>(iter.GetCurrentValue());
         DCHECK(widget);
         if (!widget || !widget->IsRenderView())
           continue;

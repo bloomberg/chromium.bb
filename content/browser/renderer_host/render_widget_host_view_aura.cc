@@ -122,7 +122,8 @@ class RenderWidgetHostViewAura::WindowObserver : public aura::WindowObserver {
 // RenderWidgetHostViewAura, public:
 
 RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(window_(new aura::Window(this))),
+    : host_(host),
+      ALLOW_THIS_IN_INITIALIZER_LIST(window_(new aura::Window(this))),
       is_fullscreen_(false),
       popup_parent_host_view_(NULL),
       popup_child_host_view_(NULL),
@@ -135,7 +136,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
 #endif
       paint_canvas_(NULL),
       synthetic_move_sent_(false) {
-  host_ = static_cast<RenderWidgetHostImpl*>(host);
   host_->SetView(this);
   window_observer_.reset(new WindowObserver(this));
   window_->AddObserver(window_observer_.get());
@@ -389,7 +389,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
   if (!compositor) {
     // We have no compositor, so we have no way to display the surface.
     // Must still send the ACK.
-    RenderWidgetHostImpl::AcknowledgeSwapBuffers(params.route_id, gpu_host_id);
+    RenderWidgetHost::AcknowledgeSwapBuffers(params.route_id, gpu_host_id);
   } else {
     gfx::Size surface_size =
         image_transport_clients_[params.surface_handle]->size();
@@ -397,7 +397,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
 
     // Add sending an ACK to the list of things to do OnCompositingEnded
     on_compositing_ended_callbacks_.push_back(
-        base::Bind(&RenderWidgetHostImpl::AcknowledgeSwapBuffers,
+        base::Bind(&RenderWidgetHost::AcknowledgeSwapBuffers,
                    params.route_id, gpu_host_id));
     if (!compositor->HasObserver(this))
       compositor->AddObserver(this);
@@ -418,8 +418,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
   if (!compositor) {
     // We have no compositor, so we have no way to display the surface
     // Must still send the ACK
-    RenderWidgetHostImpl::AcknowledgePostSubBuffer(
-        params.route_id, gpu_host_id);
+    RenderWidgetHost::AcknowledgePostSubBuffer(params.route_id, gpu_host_id);
   } else {
     gfx::Size surface_size =
         image_transport_clients_[params.surface_handle]->size();
@@ -434,7 +433,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
 
     // Add sending an ACK to the list of things to do OnCompositingEnded
     on_compositing_ended_callbacks_.push_back(
-        base::Bind(&RenderWidgetHostImpl::AcknowledgePostSubBuffer,
+        base::Bind(&RenderWidgetHost::AcknowledgePostSubBuffer,
                    params.route_id, gpu_host_id));
     if (!compositor->HasObserver(this))
       compositor->AddObserver(this);

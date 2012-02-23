@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
-#include "content/browser/renderer_host/render_widget_host.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 
 #if defined(TOOLKIT_USES_GTK)
@@ -55,6 +54,11 @@ BrowserAccessibilityManager*
   return browser_accessibility_manager_.get();
 }
 
+void RenderWidgetHostViewBase::SetBrowserAccessibilityManager(
+    BrowserAccessibilityManager* manager) {
+  browser_accessibility_manager_.reset(manager);
+}
+
 void RenderWidgetHostViewBase::SelectionChanged(const string16& text,
                                                 size_t offset,
                                                 const ui::Range& range) {
@@ -83,15 +87,6 @@ void RenderWidgetHostViewBase::SetPopupType(WebKit::WebPopupType popup_type) {
 
 WebKit::WebPopupType RenderWidgetHostViewBase::GetPopupType() {
   return popup_type_;
-}
-
-void RenderWidgetHostViewBase::SetBrowserAccessibilityManager(
-    BrowserAccessibilityManager* manager) {
-  browser_accessibility_manager_.reset(manager);
-}
-
-RenderWidgetHostImpl* RenderWidgetHostViewBase::GetRenderWidgetHostImpl() {
-  return static_cast<RenderWidgetHostImpl*>(GetRenderWidgetHost());
 }
 
 }  // namespace content

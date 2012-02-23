@@ -284,8 +284,7 @@ void GtkIMContextWrapper::OnFocusIn() {
   // Enables RenderWidget's IME related events, so that we can be notified
   // when WebKit wants to enable or disable IME.
   if (host_view_->GetRenderWidgetHost())
-    static_cast<RenderWidgetHostImpl*>(
-        host_view_->GetRenderWidgetHost())->SetInputMethodActive(true);
+    host_view_->GetRenderWidgetHost()->SetInputMethodActive(true);
 }
 
 void GtkIMContextWrapper::OnFocusOut() {
@@ -312,8 +311,7 @@ void GtkIMContextWrapper::OnFocusOut() {
 
   // Disable RenderWidget's IME related events to save bandwidth.
   if (host_view_->GetRenderWidgetHost())
-    static_cast<RenderWidgetHostImpl*>(
-        host_view_->GetRenderWidgetHost())->SetInputMethodActive(false);
+    host_view_->GetRenderWidgetHost()->SetInputMethodActive(false);
 }
 
 #if !defined(TOOLKIT_VIEWS)
@@ -409,7 +407,7 @@ void GtkIMContextWrapper::ProcessUnfilteredKeyPressEvent(
 
 void GtkIMContextWrapper::ProcessInputMethodResult(const GdkEventKey* event,
                                                    bool filtered) {
-  RenderWidgetHostImpl* host = RenderWidgetHostImpl::FromRWHV(host_view_);
+  RenderWidgetHost* host = host_view_->GetRenderWidgetHost();
   if (!host)
     return;
 
@@ -472,8 +470,7 @@ void GtkIMContextWrapper::ConfirmComposition() {
 
   if (is_composing_text_) {
     if (host_view_->GetRenderWidgetHost())
-      static_cast<RenderWidgetHostImpl*>(
-          host_view_->GetRenderWidgetHost())->ImeConfirmComposition();
+      host_view_->GetRenderWidgetHost()->ImeConfirmComposition();
 
     // Reset the input method.
     CancelComposition();
@@ -498,8 +495,7 @@ void GtkIMContextWrapper::HandleCommit(const string16& text) {
   if (!is_in_key_event_handler_ && host_view_->GetRenderWidgetHost()) {
     // Workaround http://crbug.com/45478 by sending fake key down/up events.
     SendFakeCompositionKeyEvent(WebKit::WebInputEvent::RawKeyDown);
-    static_cast<RenderWidgetHostImpl*>(
-        host_view_->GetRenderWidgetHost())->ImeConfirmComposition(text);
+    host_view_->GetRenderWidgetHost()->ImeConfirmComposition(text);
     SendFakeCompositionKeyEvent(WebKit::WebInputEvent::KeyUp);
   }
 }
@@ -547,8 +543,7 @@ void GtkIMContextWrapper::HandlePreeditChanged(const gchar* text,
     const std::vector<WebKit::WebCompositionUnderline>& underlines =
         reinterpret_cast<const std::vector<WebKit::WebCompositionUnderline>&>(
             composition_.underlines);
-    static_cast<RenderWidgetHostImpl*>(
-        host_view_->GetRenderWidgetHost())->ImeSetComposition(
+    host_view_->GetRenderWidgetHost()->ImeSetComposition(
         composition_.text, underlines, composition_.selection.start(),
         composition_.selection.end());
     SendFakeCompositionKeyEvent(WebKit::WebInputEvent::KeyUp);
@@ -565,8 +560,7 @@ void GtkIMContextWrapper::HandlePreeditEnd() {
     // we need inform webkit to clear it.
     // It's only necessary when it's not in ProcessKeyEvent ().
     if (!is_in_key_event_handler_ && host_view_->GetRenderWidgetHost())
-      static_cast<RenderWidgetHostImpl*>(
-          host_view_->GetRenderWidgetHost())->ImeCancelComposition();
+      host_view_->GetRenderWidgetHost()->ImeCancelComposition();
   }
 
   // Don't set is_composing_text_ to false here, because "preedit_end"

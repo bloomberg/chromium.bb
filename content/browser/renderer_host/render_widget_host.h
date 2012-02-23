@@ -31,7 +31,7 @@
 
 class BackingStore;
 struct EditCommand;
-class RenderViewHost;
+class RenderWidgetHostViewBase;
 class TransportDIB;
 struct ViewHostMsg_UpdateRect_Params;
 class WebCursor;
@@ -60,87 +60,6 @@ class WebMouseEvent;
 struct WebCompositionUnderline;
 struct WebScreenInfo;
 }
-
-// TODO(joi): Extract relevant bit of class documentation from
-// RenderWidgetHostImpl documentation.  TODO(joi): Move to
-// content/public/browser/render_widget_host.h
-//
-// TODO(joi): Once I finish defining this interface (once
-// RenderViewHost interface is also in place), group together
-// implementation functions in subclasses.
-class CONTENT_EXPORT RenderWidgetHost {
- public:
-  explicit RenderWidgetHost(content::RenderProcessHost* process);
-  virtual ~RenderWidgetHost() {}
-
-  // Used as the details object for a
-  // RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK notification.
-  // TODO(joi): Switch out for a std::pair.
-  struct PaintAtSizeAckDetails {
-    // The tag that was passed to the PaintAtSize() call that triggered this
-    // ack.
-    int tag;
-    gfx::Size size;
-  };
-
-  // This tells the renderer to paint into a bitmap and return it,
-  // regardless of whether the tab is hidden or not.  It resizes the
-  // web widget to match the |page_size| and then returns the bitmap
-  // scaled so it matches the |desired_size|, so that the scaling
-  // happens on the rendering thread.  When the bitmap is ready, the
-  // renderer sends a PaintAtSizeACK to this host, and a
-  // RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK notification is issued.
-  // Note that this bypasses most of the update logic that is normally invoked,
-  // and doesn't put the results into the backing store.
-  virtual void PaintAtSize(TransportDIB::Handle dib_handle,
-                           int tag,
-                           const gfx::Size& page_size,
-                           const gfx::Size& desired_size) = 0;
-
-  // Get access to the widget's backing store.  If a resize is in progress,
-  // then the current size of the backing store may be less than the size of
-  // the widget's view.  If you pass |force_create| as true, then the backing
-  // store will be created if it doesn't exist. Otherwise, NULL will be returned
-  // if the backing store doesn't already exist. It will also return NULL if the
-  // backing store could not be created.
-  virtual BackingStore* GetBackingStore(bool force_create) = 0;
-
-  // Returns true if this is a RenderViewHost, false if not.
-  virtual bool IsRenderView() const = 0;
-
-  // Called to notify the RenderWidget that it has been resized.
-  virtual void WasResized() = 0;
-
-  // TODO(joi): Get rid of these inline accessors and the associated
-  // data from the interface, make them into pure virtual GetFoo
-  // methods instead.
-  content::RenderProcessHost* process() const { return process_; }
-
-  // Gets the View of this RenderWidgetHost. Can be NULL, e.g. if the
-  // RenderWidget is being destroyed or the render process crashed. You should
-  // never cache this pointer since it can become NULL if the renderer crashes,
-  // instead you should always ask for it using the accessor.
-  content::RenderWidgetHostView* view() const;
-
-  // Gets a RenderVidgetHost pointer from an IPC::Channel::Listener pointer.
-  static RenderWidgetHost* FromIPCChannelListener(
-      IPC::Channel::Listener* listener);
-  static const RenderWidgetHost* FromIPCChannelListener(
-      const IPC::Channel::Listener* listener);
-
- protected:
-  // Created during construction but initialized during Init*(). Therefore, it
-  // is guaranteed never to be NULL, but its channel may be NULL if the
-  // renderer crashed, so you must always check that.
-  content::RenderProcessHost* process_;
-
-  // The View associated with the RenderViewHost. The lifetime of this object
-  // is associated with the lifetime of the Render process. If the Renderer
-  // crashes, its View is destroyed and this pointer becomes NULL, even though
-  // render_view_host_ lives on to load another URL (creating a new View while
-  // doing so).
-  content::RenderWidgetHostViewPort* view_;
-};
 
 // This class manages the browser side of a browser<->renderer HWND connection.
 // The HWND lives in the browser process, and windows events are sent over
@@ -216,21 +135,31 @@ class CONTENT_EXPORT RenderWidgetHost {
 // anything else. When the view is live, these messages are forwarded to it by
 // the RenderWidgetHost's IPC message map.
 //
-// TODO(joi): Move to content namespace.
-class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
-                                            public IPC::Channel::Listener,
-                                            public IPC::Channel::Sender {
+class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
+                                        public IPC::Channel::Sender {
  public:
+  // Used as the details object for a
+  // RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK notification.
+  struct PaintAtSizeAckDetails {
+    // The tag that was passed to the PaintAtSize() call that triggered this
+    // ack.
+    int tag;
+    gfx::Size size;
+  };
+
   // routing_id can be MSG_ROUTING_NONE, in which case the next available
   // routing id is taken from the RenderProcessHost.
-  RenderWidgetHostImpl(content::RenderProcessHost* process, int routing_id);
-  virtual ~RenderWidgetHostImpl();
+  RenderWidgetHost(content::RenderProcessHost* process, int routing_id);
+  virtual ~RenderWidgetHost();
 
-  static RenderWidgetHostImpl* FromRWHV(content::RenderWidgetHostView* rwhv);
-
-  // Sets the View of this RenderWidgetHost.
+  // Gets/Sets the View of this RenderWidgetHost. Can be NULL, e.g. if the
+  // RenderWidget is being destroyed or the render process crashed. You should
+  // never cache this pointer since it can become NULL if the renderer crashes,
+  // instead you should always ask for it using the accessor.
   void SetView(content::RenderWidgetHostView* view);
+  content::RenderWidgetHostView* view() const;
 
+  content::RenderProcessHost* process() const { return process_; }
   int routing_id() const { return routing_id_; }
   int surface_id() const { return surface_id_; }
   bool renderer_accessible() { return renderer_accessible_; }
@@ -252,7 +181,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   virtual void Shutdown();
 
   // Manual RTTI FTW. We are not hosting a web page.
-  virtual bool IsRenderView() const OVERRIDE;
+  virtual bool IsRenderView() const;
 
   // IPC::Channel::Listener
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
@@ -265,7 +194,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   void WasHidden();
   void WasRestored();
 
-  virtual void WasResized() OVERRIDE;
+  // Called to notify the RenderWidget that it has been resized.
+  void WasResized();
 
   // Called to notify the RenderWidget that the resize rect has changed without
   // the size of the RenderWidget itself changing.
@@ -300,12 +230,27 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // Indicates if the page has finished loading.
   void SetIsLoading(bool is_loading);
 
-  virtual void PaintAtSize(TransportDIB::Handle dib_handle,
-                           int tag,
-                           const gfx::Size& page_size,
-                           const gfx::Size& desired_size) OVERRIDE;
+  // This tells the renderer to paint into a bitmap and return it,
+  // regardless of whether the tab is hidden or not.  It resizes the
+  // web widget to match the |page_size| and then returns the bitmap
+  // scaled so it matches the |desired_size|, so that the scaling
+  // happens on the rendering thread.  When the bitmap is ready, the
+  // renderer sends a PaintAtSizeACK to this host, and a
+  // RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK notification is issued.
+  // Note that this bypasses most of the update logic that is normally invoked,
+  // and doesn't put the results into the backing store.
+  void PaintAtSize(TransportDIB::Handle dib_handle,
+                   int tag,
+                   const gfx::Size& page_size,
+                   const gfx::Size& desired_size);
 
-  virtual BackingStore* GetBackingStore(bool force_create) OVERRIDE;
+  // Get access to the widget's backing store.  If a resize is in progress,
+  // then the current size of the backing store may be less than the size of
+  // the widget's view.  If you pass |force_create| as true, then the backing
+  // store will be created if it doesn't exist. Otherwise, NULL will be returned
+  // if the backing store doesn't already exist. It will also return NULL if the
+  // backing store could not be created.
+  BackingStore* GetBackingStore(bool force_create);
 
   // Allocate a new backing store of the given size. Returns NULL on failure
   // (for example, if we don't currently have a RenderWidgetHostView.)
@@ -599,6 +544,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   void SetShouldAutoResize(bool enable);
 
  protected:
+  // The View associated with the RenderViewHost. The lifetime of this object
+  // is associated with the lifetime of the Render process. If the Renderer
+  // crashes, its View is destroyed and this pointer becomes NULL, even though
+  // render_view_host_ lives on to load another URL (creating a new View while
+  // doing so).
+  content::RenderWidgetHostViewPort* view_;
+
   // true if a renderer has once been valid. We use this flag to display a sad
   // tab only when we lose our renderer and not if a paint occurs during
   // initialization.
@@ -720,6 +672,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // screenreader is detected as it can potentially slow down Chrome.
   bool renderer_accessible_;
 
+  // Created during construction but initialized during Init*(). Therefore, it
+  // is guaranteed never to be NULL, but its channel may be NULL if the
+  // renderer crashed, so you must always check that.
+  content::RenderProcessHost* process_;
+
   // Stores random bits of data for others to associate with this object.
   base::PropertyBag property_bag_;
 
@@ -803,7 +760,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   int in_flight_event_count_;
 
   // This timer runs to check if time_when_considered_hung_ has past.
-  base::OneShotTimer<RenderWidgetHostImpl> hung_renderer_timer_;
+  base::OneShotTimer<RenderWidgetHost> hung_renderer_timer_;
 
   // Flag to detect recursive calls to GetBackingStore().
   bool in_get_backing_store_;
@@ -862,9 +819,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // not sent to the renderer.
   bool has_touch_handler_;
 
-  base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
+  base::WeakPtrFactory<RenderWidgetHost> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostImpl);
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHost);
 };
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_H_

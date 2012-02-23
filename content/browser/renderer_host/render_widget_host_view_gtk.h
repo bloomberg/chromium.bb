@@ -27,7 +27,6 @@
 #include "webkit/plugins/npapi/gtk_plugin_container_manager.h"
 
 class RenderWidgetHost;
-class RenderWidgetHostImpl;
 class GtkIMContextWrapper;
 struct NativeWebKeyboardEvent;
 
@@ -185,7 +184,7 @@ class RenderWidgetHostViewGtk : public content::RenderWidgetHostViewBase {
   gfx::Point GetWidgetCenter();
 
   // The model object.
-  RenderWidgetHostImpl* host_;
+  RenderWidgetHost* host_;
 
   // The native UI widget.
   ui::OwnedWidgetGtk view_;

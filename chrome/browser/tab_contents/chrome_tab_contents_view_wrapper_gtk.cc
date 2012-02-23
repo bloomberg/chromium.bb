@@ -112,7 +112,7 @@ void ChromeTabContentsViewWrapperGtk::ShowContextMenu(
       NOTREACHED();
       return;
     }
-    view = RenderWidgetHost::FromIPCChannelListener(listener)->view();
+    view = static_cast<RenderWidgetHost*>(listener)->view();
   } else {
     view = view_->web_contents()->GetRenderWidgetHostView();
   }

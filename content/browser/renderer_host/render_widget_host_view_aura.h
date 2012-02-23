@@ -38,7 +38,6 @@ namespace WebKit {
 class WebTouchEvent;
 }
 
-class RenderWidgetHostImpl;
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
 class ImageTransportClient;
 #endif
@@ -211,7 +210,7 @@ class RenderWidgetHostViewAura
   ui::Compositor* GetCompositor();
 
   // The model object.
-  RenderWidgetHostImpl* host_;
+  RenderWidgetHost* host_;
 
   aura::Window* window_;
 

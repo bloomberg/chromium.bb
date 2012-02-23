@@ -371,7 +371,7 @@ class RenderWidgetHostViewWin
   // The associated Model.  While |this| is being Destroyed,
   // |render_widget_host_| is NULL and the Windows message loop is run one last
   // time. Message handlers must check for a NULL |render_widget_host_|.
-  RenderWidgetHostImpl* render_widget_host_;
+  RenderWidgetHost* render_widget_host_;
 
   // When we are doing accelerated compositing
   HWND compositor_host_window_;

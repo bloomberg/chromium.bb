@@ -6,8 +6,7 @@
 
 #include "content/port/browser/render_widget_host_view_port.h"
 
-void RenderWidgetHostImpl::OnMsgCreatePluginContainer(
-    gfx::PluginWindowHandle id) {
+void RenderWidgetHost::OnMsgCreatePluginContainer(gfx::PluginWindowHandle id) {
   // TODO(piman): view_ can only be NULL with delayed view creation in
   // extensions (see ExtensionHost::CreateRenderViewSoon). Figure out how to
   // support plugins in that case.
@@ -18,8 +17,7 @@ void RenderWidgetHostImpl::OnMsgCreatePluginContainer(
   }
 }
 
-void RenderWidgetHostImpl::OnMsgDestroyPluginContainer(
-    gfx::PluginWindowHandle id) {
+void RenderWidgetHost::OnMsgDestroyPluginContainer(gfx::PluginWindowHandle id) {
   if (view_) {
     view_->DestroyPluginContainer(id);
   } else {

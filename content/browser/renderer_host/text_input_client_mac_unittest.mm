@@ -46,7 +46,7 @@ class TextInputClientMacTest : public testing::Test {
     thread_.message_loop()->PostDelayedTask(from_here, task, delay);
   }
 
-  RenderWidgetHostImpl* widget() {
+  RenderWidgetHost* widget() {
     return &widget_;
   }
 
@@ -62,7 +62,7 @@ class TextInputClientMacTest : public testing::Test {
 
   // Gets deleted when the last RWH in the "process" gets destroyed.
   MockRenderProcessHostFactory process_factory_;
-  RenderWidgetHostImpl widget_;
+  RenderWidgetHost widget_;
 
   base::Thread thread_;
 };

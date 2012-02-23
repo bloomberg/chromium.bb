@@ -106,7 +106,7 @@ RenderViewHost* RenderViewHost::FromID(int render_process_id,
       content::RenderProcessHost::FromID(render_process_id);
   if (!process)
     return NULL;
-  RenderWidgetHost* widget = RenderWidgetHost::FromIPCChannelListener(
+  RenderWidgetHost* widget = static_cast<RenderWidgetHost*>(
       process->GetListenerByID(render_view_id));
   if (!widget || !widget->IsRenderView())
     return NULL;
@@ -117,7 +117,7 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
                                RenderViewHostDelegate* delegate,
                                int routing_id,
                                SessionStorageNamespace* session_storage)
-    : RenderWidgetHostImpl(instance->GetProcess(), routing_id),
+    : RenderWidgetHost(instance->GetProcess(), routing_id),
       instance_(static_cast<SiteInstanceImpl*>(instance)),
       delegate_(delegate),
       waiting_for_drag_context_response_(false),
@@ -628,7 +628,7 @@ void RenderViewHost::SetWebUIProperty(const std::string& name,
 }
 
 void RenderViewHost::GotFocus() {
-  RenderWidgetHostImpl::GotFocus();  // Notifies the renderer it got focus.
+  RenderWidgetHost::GotFocus();  // Notifies the renderer it got focus.
 
   RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
   if (view)
@@ -636,12 +636,12 @@ void RenderViewHost::GotFocus() {
 }
 
 void RenderViewHost::LostCapture() {
-  RenderWidgetHostImpl::LostCapture();
+  RenderWidgetHost::LostCapture();
   delegate_->LostCapture();
 }
 
 void RenderViewHost::LostMouseLock() {
-  RenderWidgetHostImpl::LostMouseLock();
+  RenderWidgetHost::LostMouseLock();
   delegate_->LostMouseLock();
 }
 
@@ -793,8 +793,7 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_Notifications,
                         OnAccessibilityNotifications)
     // Have the super handle all other messages.
-    IPC_MESSAGE_UNHANDLED(
-        handled = RenderWidgetHostImpl::OnMessageReceived(msg))
+    IPC_MESSAGE_UNHANDLED(handled = RenderWidgetHost::OnMessageReceived(msg))
   IPC_END_MESSAGE_MAP_EX()
 
   if (!msg_is_ok) {
@@ -814,7 +813,7 @@ void RenderViewHost::Shutdown() {
     run_modal_reply_msg_ = NULL;
   }
 
-  RenderWidgetHostImpl::Shutdown();
+  RenderWidgetHost::Shutdown();
 }
 
 bool RenderViewHost::IsRenderView() const {
@@ -1284,7 +1283,7 @@ void RenderViewHost::ForwardMouseEvent(
   // We make a copy of the mouse event because
   // RenderWidgetHost::ForwardMouseEvent will delete |mouse_event|.
   WebKit::WebMouseEvent event_copy(mouse_event);
-  RenderWidgetHostImpl::ForwardMouseEvent(event_copy);
+  RenderWidgetHost::ForwardMouseEvent(event_copy);
 
   switch (event_copy.type) {
     case WebInputEvent::MouseMove:
@@ -1319,7 +1318,7 @@ void RenderViewHost::ForwardKeyboardEvent(
       delegate_->OnIgnoredUIEvent();
     return;
   }
-  RenderWidgetHostImpl::ForwardKeyboardEvent(key_event);
+  RenderWidgetHost::ForwardKeyboardEvent(key_event);
 }
 
 #if defined(OS_MACOSX)

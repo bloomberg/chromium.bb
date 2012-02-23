@@ -88,7 +88,7 @@ RenderWidgetHostViewPort* GetRenderWidgetHostViewFromSurfaceID(
   if (!process)
     return NULL;
 
-  RenderWidgetHostImpl* host = static_cast<RenderWidgetHostImpl*>(
+  RenderWidgetHost* host = static_cast<RenderWidgetHost*>(
       process->GetListenerByID(render_widget_id));
   return host ? RenderWidgetHostViewPort::FromRWHV(host->view()) : NULL;
 }

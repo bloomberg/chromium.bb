@@ -21,7 +21,6 @@
 #include "webkit/glue/webcursor.h"
 
 @class AcceleratedPluginView;
-class RenderWidgetHostImpl;
 class RenderWidgetHostViewMac;
 @protocol RenderWidgetHostViewMacDelegate;
 class RenderWidgetHostViewMacEditCommandHelper;
@@ -309,7 +308,7 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
 
   // The associated Model.  Can be NULL if Destroy() is called when
   // someone (other than superview) has retained |cocoa_view_|.
-  RenderWidgetHostImpl* render_widget_host_;
+  RenderWidgetHost* render_widget_host_;
 
   // This is true when we are currently painting and thus should handle extra
   // paint requests by expanding the invalid rect rather than actually painting.
