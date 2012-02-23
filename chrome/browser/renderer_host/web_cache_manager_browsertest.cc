@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,8 +22,7 @@ class WebCacheManagerBrowserTest : public InProcessBrowserTest {
 
 // Regression test for http://crbug.com/12362.  If a renderer crashes and the
 // user navigates to another tab and back, the browser doesn't crash.
-// Flaky, http://crbug.com/15288. Disabled, http://crbug.com/69918.
-IN_PROC_BROWSER_TEST_F(WebCacheManagerBrowserTest, DISABLED_CrashOnceOnly) {
+IN_PROC_BROWSER_TEST_F(WebCacheManagerBrowserTest, CrashOnceOnly) {
   const FilePath kTestDir(FILE_PATH_LITERAL("google"));
   const FilePath kTestFile(FILE_PATH_LITERAL("google.html"));
   GURL url(ui_test_utils::GetTestUrl(kTestDir, kTestFile));

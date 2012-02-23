@@ -3044,7 +3044,6 @@
             'app/chrome_version.rc.version',
             'browser/rlz/rlz_extension_apitest.cc',
             # http://crbug.com/15101 These tests fail on Linux and Mac.
-            'browser/renderer_host/web_cache_manager_browsertest.cc',
             '../content/browser/child_process_security_policy_browsertest.cc',
           ],
         }],
