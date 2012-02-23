@@ -126,6 +126,13 @@
       </description>
       <arg name="id" type="new_id" interface="wl_surface"/>
     </request>
+
+    <request name="create_region">
+      <description summary="create new region">
+	Ask the compositor to create a new region.
+      </description>
+      <arg name="id" type="new_id" interface="wl_region"/>
+    </request>
   </interface>
 
   <interface name="wl_shm" version="1">
@@ -568,6 +575,40 @@
       <arg name="callback" type="new_id" interface="wl_callback"/>
     </request>
 
+    <request name="set_opaque_region">
+      <description summary="set opaque region">
+	This requests sets the region of the surface that contain
+	opaque content.  The opaque region is an optimization hint for
+	the compositor that lets it optimize out redrawing of content
+	behind opaque regions.  Setting an opaque region is not
+	required for correct behaviour, but marking transparent
+	content as opaque will result in repaint artifacts.
+
+	The region will be clipped to the extents of the current
+	surface size.  Setting the region has copy semantics, and the
+	region object can be destroyed immediately after setting the
+	opaque region.  If a buffer of a different size is attached or
+	if a nil region is set, the opaque region will revert back to
+	default.  The default opaque region is empty.
+      </description>
+
+      <arg name="region" type="object" interface="wl_region"/>
+    </request>
+
+    <request name="set_input_region">
+      <description summary="set input region">
+	This requests sets the region of the surface that can receive
+	pointer and touch events.  The region will be clipped to the
+	extents of the current surface size.  Setting the region has
+	copy semantics, and the region object can be destroyed
+	immediately after setting the input region.  If a buffer of a
+	different size is attached or if a nil region is passed, the
+	input region will revert back to default.  The default input
+	region is the entire surface.
+      </description>
+
+      <arg name="region" type="object" interface="wl_region"/>
+    </request>
   </interface>
 
   <interface name="wl_input_device" version="1">
@@ -733,6 +774,41 @@
       <arg name="height" type="int"/>
       <arg name="refresh" type="int"/>
     </event>
+  </interface>
+
+  <interface name="wl_region" version="1">
+    <description summary="region interface">
+      Region.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy region">
+	Destroy the region.  This will invalidate the object id.
+      </description>
+    </request>
+
+    <request name="add">
+      <description summary="add rectangle to region">
+	Add the specified rectangle to the region
+      </description>
+
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+    </request>
+
+    <request name="subtract">
+      <description summary="subtract rectangle from region">
+	Subtract the specified rectangle from the region
+      </description>
+
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+    </request>
+
   </interface>
 
 </protocol>
