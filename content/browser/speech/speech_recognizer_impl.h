@@ -2,65 +2,49 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_SPEECH_SPEECH_RECOGNIZER_H_
-#define CONTENT_BROWSER_SPEECH_SPEECH_RECOGNIZER_H_
+#ifndef CONTENT_BROWSER_SPEECH_SPEECH_RECOGNIZER_IMPL_H_
+#define CONTENT_BROWSER_SPEECH_SPEECH_RECOGNIZER_IMPL_H_
 
 #include <list>
-#include <string>
 #include <utility>
 
-#include "base/memory/ref_counted.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/speech/audio_encoder.h"
 #include "content/browser/speech/endpointer/endpointer.h"
 #include "content/browser/speech/speech_recognition_request.h"
-#include "content/common/content_export.h"
+#include "content/public/browser/speech_recognizer.h"
 #include "content/public/common/speech_input_result.h"
 #include "media/audio/audio_input_controller.h"
 
 class AudioManager;
 
-namespace content {
-class SpeechRecognizerDelegate;
-}
-
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace speech_input {
 
 // Records audio, sends recorded audio to server and translates server response
 // to recognition result.
-class CONTENT_EXPORT SpeechRecognizer
-    : public base::RefCountedThreadSafe<SpeechRecognizer>,
+class CONTENT_EXPORT SpeechRecognizerImpl
+    : NON_EXPORTED_BASE(public content::SpeechRecognizer),
       public media::AudioInputController::EventHandler,
       public SpeechRecognitionRequestDelegate {
  public:
-  SpeechRecognizer(content::SpeechRecognizerDelegate* delegate,
-                   int caller_id,
-                   const std::string& language,
-                   const std::string& grammar,
-                   net::URLRequestContextGetter* context_getter,
-                   bool filter_profanities,
-                   const std::string& hardware_info,
-                   const std::string& origin_url);
+  SpeechRecognizerImpl(content::SpeechRecognizerDelegate* delegate,
+                       int caller_id,
+                       const std::string& language,
+                       const std::string& grammar,
+                       net::URLRequestContextGetter* context_getter,
+                       bool filter_profanities,
+                       const std::string& hardware_info,
+                       const std::string& origin_url);
 
-  virtual ~SpeechRecognizer();
+  virtual ~SpeechRecognizerImpl();
 
-  // Starts audio recording and does recognition after recording ends. The same
-  // SpeechRecognizer instance can be used multiple times for speech recognition
-  // though each recognition request can be made only after the previous one
-  // completes (i.e. after receiving
-  // SpeechRecognizerDelegate::DidCompleteRecognition).
-  bool StartRecording();
+  // SpeechRecognizer implementation:
+  virtual bool StartRecording() OVERRIDE;
+  virtual void CancelRecognition() OVERRIDE;
 
   // Stops recording audio and starts recognition.
   void StopRecording();
-
-  // Stops recording audio and cancels recognition. Any audio recorded so far
-  // gets discarded.
-  void CancelRecognition();
 
   // AudioInputController::EventHandler methods.
   virtual void OnCreated(media::AudioInputController* controller) OVERRIDE { }
@@ -116,9 +100,9 @@ class CONTENT_EXPORT SpeechRecognizer
   float audio_level_;
   AudioManager* audio_manager_;
 
-  DISALLOW_COPY_AND_ASSIGN(SpeechRecognizer);
+  DISALLOW_COPY_AND_ASSIGN(SpeechRecognizerImpl);
 };
 
 }  // namespace speech_input
 
-#endif  // CONTENT_BROWSER_SPEECH_SPEECH_RECOGNIZER_H_
+#endif  // CONTENT_BROWSER_SPEECH_SPEECH_RECOGNIZER_IMPL_H_

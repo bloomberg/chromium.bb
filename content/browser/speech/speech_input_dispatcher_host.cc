@@ -6,7 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "content/browser/speech/speech_input_manager.h"
-#include "content/browser/speech/speech_recognizer.h"
+#include "content/browser/speech/speech_recognizer_impl.h"
 #include "content/common/speech_input_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/speech_input_preferences.h"

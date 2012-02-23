@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/speech/speech_recognizer.h"
+#include "content/browser/speech/speech_recognizer_impl.h"
 #include "content/public/browser/speech_recognizer_delegate.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "media/audio/audio_manager.h"
@@ -34,15 +34,15 @@ class SpeechRecognizerTest : public content::SpeechRecognizerDelegate,
         audio_received_(false),
         error_(content::SPEECH_INPUT_ERROR_NONE),
         volume_(-1.0f) {
-    recognizer_ = new SpeechRecognizer(this, 1, std::string(), std::string(),
-                                       NULL, false, std::string(),
-                                       std::string());
+    recognizer_ = new SpeechRecognizerImpl(
+        this, 1, std::string(), std::string(), NULL, false, std::string(),
+        std::string());
     recognizer_->SetAudioManagerForTesting(audio_manager_.get());
     int audio_packet_length_bytes =
-        (SpeechRecognizer::kAudioSampleRate *
-         SpeechRecognizer::kAudioPacketIntervalMs *
-         ChannelLayoutToChannelCount(SpeechRecognizer::kChannelLayout) *
-         SpeechRecognizer::kNumBitsPerAudioSample) / (8 * 1000);
+        (SpeechRecognizerImpl::kAudioSampleRate *
+         SpeechRecognizerImpl::kAudioPacketIntervalMs *
+         ChannelLayoutToChannelCount(SpeechRecognizerImpl::kChannelLayout) *
+         SpeechRecognizerImpl::kNumBitsPerAudioSample) / (8 * 1000);
     audio_packet_.resize(audio_packet_length_bytes);
   }
 
@@ -113,7 +113,7 @@ class SpeechRecognizerTest : public content::SpeechRecognizerDelegate,
  protected:
   MessageLoopForIO message_loop_;
   BrowserThreadImpl io_thread_;
-  scoped_refptr<SpeechRecognizer> recognizer_;
+  scoped_refptr<SpeechRecognizerImpl> recognizer_;
   scoped_ptr<AudioManager> audio_manager_;
   bool recording_complete_;
   bool recognition_complete_;
@@ -329,8 +329,8 @@ TEST_F(SpeechRecognizerTest, NoSpeechCallbackIssued) {
   controller = audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
 
-  int num_packets = (SpeechRecognizer::kNoSpeechTimeoutSec * 1000) /
-                     SpeechRecognizer::kAudioPacketIntervalMs;
+  int num_packets = (SpeechRecognizerImpl::kNoSpeechTimeoutSec * 1000) /
+                     SpeechRecognizerImpl::kAudioPacketIntervalMs;
   // The vector is already filled with zero value samples on create.
   for (int i = 0; i < num_packets; ++i) {
     controller->event_handler()->OnData(controller, &audio_packet_[0],
@@ -356,8 +356,8 @@ TEST_F(SpeechRecognizerTest, NoSpeechCallbackNotIssued) {
   controller = audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
 
-  int num_packets = (SpeechRecognizer::kNoSpeechTimeoutSec * 1000) /
-                     SpeechRecognizer::kAudioPacketIntervalMs;
+  int num_packets = (SpeechRecognizerImpl::kNoSpeechTimeoutSec * 1000) /
+                     SpeechRecognizerImpl::kAudioPacketIntervalMs;
 
   // The vector is already filled with zero value samples on create.
   for (int i = 0; i < num_packets / 2; ++i) {
@@ -392,8 +392,8 @@ TEST_F(SpeechRecognizerTest, SetInputVolumeCallback) {
   ASSERT_TRUE(controller);
 
   // Feed some samples to begin with for the endpointer to do noise estimation.
-  int num_packets = SpeechRecognizer::kEndpointerEstimationTimeMs /
-                    SpeechRecognizer::kAudioPacketIntervalMs;
+  int num_packets = SpeechRecognizerImpl::kEndpointerEstimationTimeMs /
+                    SpeechRecognizerImpl::kAudioPacketIntervalMs;
   FillPacketWithNoise();
   for (int i = 0; i < num_packets; ++i) {
     controller->event_handler()->OnData(controller, &audio_packet_[0],

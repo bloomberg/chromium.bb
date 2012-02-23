@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/speech/speech_recognizer.h"
+#include "content/browser/speech/speech_recognizer_impl.h"
 
 #include "base/bind.h"
 #include "base/time.h"
@@ -14,6 +14,8 @@
 
 using content::BrowserMainLoop;
 using content::BrowserThread;
+using content::SpeechRecognizer;
+using content::SpeechRecognizerDelegate;
 using media::AudioInputController;
 using std::string;
 
@@ -50,23 +52,38 @@ bool Clipping(const int16* samples, int num_samples) {
 
 }  // namespace
 
+SpeechRecognizer* SpeechRecognizer::Create(
+    SpeechRecognizerDelegate* delegate,
+    int caller_id,
+    const std::string& language,
+    const std::string& grammar,
+    net::URLRequestContextGetter* context_getter,
+    bool filter_profanities,
+    const std::string& hardware_info,
+    const std::string& origin_url) {
+  return new speech_input::SpeechRecognizerImpl(
+      delegate, caller_id, language, grammar, context_getter,
+      filter_profanities, hardware_info, origin_url);
+}
+
 namespace speech_input {
 
-const int SpeechRecognizer::kAudioSampleRate = 16000;
-const int SpeechRecognizer::kAudioPacketIntervalMs = 100;
-const ChannelLayout SpeechRecognizer::kChannelLayout = CHANNEL_LAYOUT_MONO;
-const int SpeechRecognizer::kNumBitsPerAudioSample = 16;
-const int SpeechRecognizer::kNoSpeechTimeoutSec = 8;
-const int SpeechRecognizer::kEndpointerEstimationTimeMs = 300;
+const int SpeechRecognizerImpl::kAudioSampleRate = 16000;
+const int SpeechRecognizerImpl::kAudioPacketIntervalMs = 100;
+const ChannelLayout SpeechRecognizerImpl::kChannelLayout = CHANNEL_LAYOUT_MONO;
+const int SpeechRecognizerImpl::kNumBitsPerAudioSample = 16;
+const int SpeechRecognizerImpl::kNoSpeechTimeoutSec = 8;
+const int SpeechRecognizerImpl::kEndpointerEstimationTimeMs = 300;
 
-SpeechRecognizer::SpeechRecognizer(content::SpeechRecognizerDelegate* delegate,
-                                   int caller_id,
-                                   const std::string& language,
-                                   const std::string& grammar,
-                                   net::URLRequestContextGetter* context_getter,
-                                   bool filter_profanities,
-                                   const std::string& hardware_info,
-                                   const std::string& origin_url)
+SpeechRecognizerImpl::SpeechRecognizerImpl(
+    SpeechRecognizerDelegate* delegate,
+    int caller_id,
+    const std::string& language,
+    const std::string& grammar,
+    net::URLRequestContextGetter* context_getter,
+    bool filter_profanities,
+    const std::string& hardware_info,
+    const std::string& origin_url)
     : delegate_(delegate),
       caller_id_(caller_id),
       language_(language),
@@ -89,7 +106,7 @@ SpeechRecognizer::SpeechRecognizer(content::SpeechRecognizerDelegate* delegate,
   endpointer_.StartSession();
 }
 
-SpeechRecognizer::~SpeechRecognizer() {
+SpeechRecognizerImpl::~SpeechRecognizerImpl() {
   // Recording should have stopped earlier due to the endpointer or
   // |StopRecording| being called.
   DCHECK(!audio_controller_.get());
@@ -98,7 +115,7 @@ SpeechRecognizer::~SpeechRecognizer() {
   endpointer_.EndSession();
 }
 
-bool SpeechRecognizer::StartRecording() {
+bool SpeechRecognizerImpl::StartRecording() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!audio_controller_.get());
   DCHECK(!request_.get() || !request_->HasPendingRequest());
@@ -126,7 +143,7 @@ bool SpeechRecognizer::StartRecording() {
   return true;
 }
 
-void SpeechRecognizer::CancelRecognition() {
+void SpeechRecognizerImpl::CancelRecognition() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(audio_controller_.get() || request_.get());
 
@@ -140,7 +157,7 @@ void SpeechRecognizer::CancelRecognition() {
   request_.reset();
 }
 
-void SpeechRecognizer::StopRecording() {
+void SpeechRecognizerImpl::StopRecording() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // If audio recording has already stopped and we are in recognition phase,
@@ -167,7 +184,7 @@ void SpeechRecognizer::StopRecording() {
   // If we haven't got any audio yet end the recognition sequence here.
   if (request_ == NULL) {
     // Guard against the delegate freeing us until we finish our job.
-    scoped_refptr<SpeechRecognizer> me(this);
+    scoped_refptr<SpeechRecognizerImpl> me(this);
     delegate_->DidCompleteRecognition(caller_id_);
   } else {
     request_->UploadAudioChunk(encoded_data, true /* is_last_chunk */);
@@ -175,14 +192,14 @@ void SpeechRecognizer::StopRecording() {
 }
 
 // Invoked in the audio thread.
-void SpeechRecognizer::OnError(AudioInputController* controller,
-                               int error_code) {
+void SpeechRecognizerImpl::OnError(AudioInputController* controller,
+                                   int error_code) {
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                         base::Bind(&SpeechRecognizer::HandleOnError,
+                         base::Bind(&SpeechRecognizerImpl::HandleOnError,
                                     this, error_code));
 }
 
-void SpeechRecognizer::HandleOnError(int error_code) {
+void SpeechRecognizerImpl::HandleOnError(int error_code) {
   LOG(WARNING) << "SpeechRecognizer::HandleOnError, code=" << error_code;
 
   // Check if we are still recording before canceling recognition, as
@@ -194,18 +211,18 @@ void SpeechRecognizer::HandleOnError(int error_code) {
   InformErrorAndCancelRecognition(content::SPEECH_INPUT_ERROR_AUDIO);
 }
 
-void SpeechRecognizer::OnData(AudioInputController* controller,
-                              const uint8* data, uint32 size) {
+void SpeechRecognizerImpl::OnData(AudioInputController* controller,
+                                  const uint8* data, uint32 size) {
   if (size == 0)  // This could happen when recording stops and is normal.
     return;
 
   string* str_data = new string(reinterpret_cast<const char*>(data), size);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&SpeechRecognizer::HandleOnData,
+                          base::Bind(&SpeechRecognizerImpl::HandleOnData,
                                      this, str_data));
 }
 
-void SpeechRecognizer::HandleOnData(string* data) {
+void SpeechRecognizerImpl::HandleOnData(string* data) {
   // Check if we are still recording and if not discard this buffer, as
   // recording might have been stopped after this buffer was posted to the queue
   // by |OnData|.
@@ -285,7 +302,7 @@ void SpeechRecognizer::HandleOnData(string* data) {
     StopRecording();
 }
 
-void SpeechRecognizer::SetRecognitionResult(
+void SpeechRecognizerImpl::SetRecognitionResult(
     const content::SpeechInputResult& result) {
   if (result.error != content::SPEECH_INPUT_ERROR_NONE) {
     InformErrorAndCancelRecognition(result.error);
@@ -293,22 +310,22 @@ void SpeechRecognizer::SetRecognitionResult(
   }
 
   // Guard against the delegate freeing us until we finish our job.
-  scoped_refptr<SpeechRecognizer> me(this);
+  scoped_refptr<SpeechRecognizerImpl> me(this);
   delegate_->SetRecognitionResult(caller_id_, result);
   delegate_->DidCompleteRecognition(caller_id_);
 }
 
-void SpeechRecognizer::InformErrorAndCancelRecognition(
+void SpeechRecognizerImpl::InformErrorAndCancelRecognition(
     content::SpeechInputError error) {
   DCHECK_NE(error, content::SPEECH_INPUT_ERROR_NONE);
   CancelRecognition();
 
   // Guard against the delegate freeing us until we finish our job.
-  scoped_refptr<SpeechRecognizer> me(this);
+  scoped_refptr<SpeechRecognizerImpl> me(this);
   delegate_->OnRecognizerError(caller_id_, error);
 }
 
-void SpeechRecognizer::CloseAudioControllerSynchronously() {
+void SpeechRecognizerImpl::CloseAudioControllerSynchronously() {
   VLOG(1) << "SpeechRecognizer stopping record.";
 
   // TODO(satish): investigate the possibility to utilize the closure
@@ -321,7 +338,8 @@ void SpeechRecognizer::CloseAudioControllerSynchronously() {
   audio_controller_ = NULL;  // Releases the ref ptr.
 }
 
-void SpeechRecognizer::SetAudioManagerForTesting(AudioManager* audio_manager) {
+void SpeechRecognizerImpl::SetAudioManagerForTesting(
+    AudioManager* audio_manager) {
   audio_manager_ = audio_manager;
 }
 

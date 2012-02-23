@@ -8,7 +8,7 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/speech/speech_input_manager_delegate.h"
-#include "content/browser/speech/speech_recognizer.h"
+#include "content/browser/speech/speech_recognizer_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/resource_context.h"
@@ -163,7 +163,7 @@ void SpeechInputManager::ProceedStartingRecognition(
 
   SpeechInputRequest* request = &requests_[params.caller_id];
   request->delegate = params.delegate;
-  request->recognizer = new SpeechRecognizer(
+  request->recognizer = new SpeechRecognizerImpl(
       this, params.caller_id, params.language, params.grammar,
       params.context_getter, params.speech_input_prefs->FilterProfanities(),
       request_info_, can_report_metrics_ ? params.origin_url : "");

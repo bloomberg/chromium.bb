@@ -246,7 +246,7 @@
         'browser/site_instance_impl_unittest.cc',
         'browser/speech/endpointer/endpointer_unittest.cc',
         'browser/speech/speech_recognition_request_unittest.cc',
-        'browser/speech/speech_recognizer_unittest.cc',
+        'browser/speech/speech_recognizer_impl_unittest.cc',
         'browser/ssl/ssl_host_state_unittest.cc',
         'browser/tab_contents/navigation_controller_impl_unittest.cc',
         'browser/tab_contents/navigation_entry_impl_unittest.cc',

@@ -20,15 +20,14 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/speech/speech_recognizer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/speech_recognizer.h"
 #include "content/public/common/speech_input_result.h"
 
 using content::BrowserThread;
 using speech_input::ChromeSpeechInputManager;
-using speech_input::SpeechRecognizer;
 
 namespace {
 
@@ -602,8 +601,9 @@ void SpeechInputExtensionManager::StartRecording(
     bool filter_profanities) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!recognizer_);
-  recognizer_ = new SpeechRecognizer(delegate, caller_id, language, grammar,
-      context_getter, filter_profanities, "", "");
+  recognizer_ = content::SpeechRecognizer::Create(
+      delegate, caller_id, language, grammar, context_getter,
+      filter_profanities, "", "");
   recognizer_->StartRecording();
 }
 

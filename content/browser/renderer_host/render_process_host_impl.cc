@@ -115,7 +115,6 @@
 
 #if defined(ENABLE_INPUT_SPEECH)
 #include "content/browser/speech/speech_input_dispatcher_host.h"
-#include "content/browser/speech/speech_recognizer.h"
 #endif
 
 #include "third_party/skia/include/core/SkBitmap.h"

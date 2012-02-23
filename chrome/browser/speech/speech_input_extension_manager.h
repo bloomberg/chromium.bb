@@ -21,14 +21,11 @@ class SpeechInputExtensionNotification;
 
 namespace content {
 class NotificationRegistrar;
+class SpeechRecognizer;
 }
 
 namespace net {
 class URLRequestContextGetter;
-}
-
-namespace speech_input {
-class SpeechRecognizer;
 }
 
 // Used for API tests.
@@ -52,9 +49,6 @@ class SpeechInputExtensionInterface {
 
   // Called from the UI thread.
   virtual bool HasValidRecognizer() = 0;
-
- protected:
-  scoped_refptr<speech_input::SpeechRecognizer> recognizer_;
 };
 
 // Manages the speech input requests and responses from the extensions
@@ -204,6 +198,9 @@ class SpeechInputExtensionManager
   scoped_ptr<content::NotificationRegistrar> registrar_;
   SpeechInputExtensionInterface* speech_interface_;
   scoped_ptr<SpeechInputExtensionNotification> notification_;
+
+  // Used in the IO thread.
+  scoped_refptr<content::SpeechRecognizer> recognizer_;
 };
 
 #endif  // CHROME_BROWSER_SPEECH_SPEECH_INPUT_EXTENSION_MANAGER_H_

@@ -30,7 +30,7 @@ class URLRequestContextGetter;
 
 namespace speech_input {
 
-class SpeechRecognizer;
+class SpeechRecognizerImpl;
 
 // This is the gatekeeper for speech recognition in the browser process. It
 // handles requests received from various render views and makes sure only one
@@ -153,7 +153,7 @@ class CONTENT_EXPORT SpeechInputManager
     ~SpeechInputRequest();
 
     content::SpeechInputManagerDelegate* delegate;
-    scoped_refptr<SpeechRecognizer> recognizer;
+    scoped_refptr<SpeechRecognizerImpl> recognizer;
     bool is_active;  // Set to true when recording or recognition is going on.
   };
 
