@@ -464,6 +464,7 @@
                 '../third_party/angle/src/build_angle.gyp:libGLESv2',
                 '../media/media.gyp:media',
                 '../ui/gfx/gl/gl.gyp:gl',
+                '../ui/ui.gyp:ui',
               ],
               'conditions': [
                 ['win_use_allocator_shim==1', {
