@@ -631,7 +631,7 @@ destroy_surface(struct wl_resource *resource)
 	pixman_region32_fini(&surface->transform.boundingbox);
 	pixman_region32_fini(&surface->damage);
 	pixman_region32_fini(&surface->opaque);
-	if (!region_is_undefined(&surface->input)
+	if (!region_is_undefined(&surface->input))
 		pixman_region32_fini(&surface->input);
 
 	free(surface);

@@ -118,7 +118,7 @@ input_device_handle_key(void *data, struct wl_input_device *input_device,
 }
 
 static void
-input_device_handle_pointer_focus(void *data,
+input_device_handle_pointer_enter(void *data,
 				  struct wl_input_device *input_device,
 				  uint32_t time, struct wl_surface *surface,
 				  int32_t sx, int32_t sy)
@@ -126,11 +126,26 @@ input_device_handle_pointer_focus(void *data,
 }
 
 static void
-input_device_handle_keyboard_focus(void *data,
+input_device_handle_pointer_leave(void *data,
+				  struct wl_input_device *input_device,
+				  uint32_t time, struct wl_surface *surface)
+{
+}
+
+static void
+input_device_handle_keyboard_enter(void *data,
 				   struct wl_input_device *input_device,
 				   uint32_t time,
 				   struct wl_surface *surface,
 				   struct wl_array *keys)
+{
+}
+
+static void
+input_device_handle_keyboard_leave(void *data,
+				   struct wl_input_device *input_device,
+				   uint32_t time,
+				   struct wl_surface *surface)
 {
 }
 
@@ -213,8 +228,10 @@ static const struct wl_input_device_listener input_device_listener = {
 	input_device_handle_motion,
 	input_device_handle_button,
 	input_device_handle_key,
-	input_device_handle_pointer_focus,
-	input_device_handle_keyboard_focus,
+	input_device_handle_pointer_enter,
+	input_device_handle_pointer_leave,
+	input_device_handle_keyboard_enter,
+	input_device_handle_keyboard_leave,
 	input_device_handle_touch_down,
 	input_device_handle_touch_up,
 	input_device_handle_touch_motion,
