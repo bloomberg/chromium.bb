@@ -181,6 +181,18 @@
 # running overnight and removing outdated bugs/suppressions.
 
 {
+  bug_93932j
+  ThreadSanitizer:Race
+  fun:release_delayed_buffers
+  fun:frame_thread_free
+  fun:ff_thread_free
+  fun:avcodec_close
+  fun:avcodec_close
+  fun:media::FFmpegVideoDecoder::ReleaseFFmpegResources
+  fun:media::FFmpegVideoDecoder::Stop
+  fun:base::internal::RunnableAdapter::Run
+}
+{
   bug_100772a
   ThreadSanitizer:Race
   fun:CAGuard::Wait

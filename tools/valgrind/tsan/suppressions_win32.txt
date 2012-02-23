@@ -74,7 +74,7 @@
 {
   bug_93932a
   ThreadSanitizer:Race
-  fun:avcodec_default_release_buffer 
+  fun:avcodec_default_release_buffer
   fun:ff_mpeg4video_split
 }
 {
@@ -106,6 +106,29 @@
   ...
   fun:ff_thread_flush
   fun:media::FFmpegVideoDecoder::Flush
+}
+{
+  bug_93932g
+  ThreadSanitizer:Race
+  ...
+  fun:av_parser_close
+  ...
+  fun:BaseThreadInitThunk
+}
+{
+  bug_93932h
+  ThreadSanitizer:Race
+  ...
+  fun:av_parser_close
+  ...
+  fun:base::internal::RunnableAdapter::Run
+}
+{
+  bug_93932i
+  ThreadSanitizer:Race
+  fun:ff_simple_idct_add_mmx
+  ...
+  fun:BaseThreadInitThunk
 }
 {
   bug_110514_a
