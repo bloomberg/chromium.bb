@@ -531,7 +531,7 @@ input_handle_key(void *data, struct wl_input_device *input_device,
 }
 
 static void
-input_handle_pointer_focus(void *data,
+input_handle_pointer_enter(void *data,
 			   struct wl_input_device *input_device,
 			   uint32_t time, struct wl_surface *surface,
 			   int32_t sx, int32_t sy)
@@ -540,43 +540,58 @@ input_handle_pointer_focus(void *data,
 	struct wayland_output *output;
 	struct wayland_compositor *c = input->compositor;
 
-	if (surface) {
-		output = wl_surface_get_user_data(surface);
-		notify_pointer_focus(c->base.input_device,
-				     time, &output->base, sx, sy);
-
-		wl_input_device_attach(input->input_device, time, NULL, 0, 0);
-	} else {
-		notify_pointer_focus(c->base.input_device, time, NULL, 0, 0);
-	}
+	output = wl_surface_get_user_data(surface);
+	notify_pointer_focus(c->base.input_device,
+			     time, &output->base, sx, sy);
+	wl_input_device_attach(input->input_device, time, NULL, 0, 0);
 }
 
 static void
-input_handle_keyboard_focus(void *data,
-			     struct wl_input_device *input_device,
-			     uint32_t time,
-			     struct wl_surface *surface,
-			     struct wl_array *keys)
+input_handle_pointer_leave(void *data,
+			   struct wl_input_device *input_device,
+			   uint32_t time, struct wl_surface *surface)
+{
+	struct wayland_input *input = data;
+	struct wayland_compositor *c = input->compositor;
+
+	notify_pointer_focus(c->base.input_device, time, NULL, 0, 0);
+}
+
+static void
+input_handle_keyboard_enter(void *data,
+			    struct wl_input_device *input_device,
+			    uint32_t time,
+			    struct wl_surface *surface,
+			    struct wl_array *keys)
 {
 	struct wayland_input *input = data;
 	struct wayland_compositor *c = input->compositor;
 	struct wayland_output *output;
 
-	if (surface) {
-		output = wl_surface_get_user_data(surface);
-		notify_keyboard_focus(c->base.input_device,
-				      time, &output->base, keys);
-	} else {
-		notify_keyboard_focus(c->base.input_device, time, NULL, NULL);
-	}
+	output = wl_surface_get_user_data(surface);
+	notify_keyboard_focus(c->base.input_device, time, &output->base, keys);
+}
+
+static void
+input_handle_keyboard_leave(void *data,
+			    struct wl_input_device *input_device,
+			    uint32_t time,
+			    struct wl_surface *surface)
+{
+	struct wayland_input *input = data;
+	struct wayland_compositor *c = input->compositor;
+
+	notify_keyboard_focus(c->base.input_device, time, NULL, NULL);
 }
 
 static const struct wl_input_device_listener input_device_listener = {
 	input_handle_motion,
 	input_handle_button,
 	input_handle_key,
-	input_handle_pointer_focus,
-	input_handle_keyboard_focus,
+	input_handle_pointer_enter,
+	input_handle_pointer_leave,
+	input_handle_keyboard_enter,
+	input_handle_keyboard_leave,
 };
 
 static void

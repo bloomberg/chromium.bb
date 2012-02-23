@@ -1575,7 +1575,7 @@ input_remove_pointer_focus(struct input *input, uint32_t time)
 }
 
 static void
-input_handle_pointer_focus(void *data,
+input_handle_pointer_enter(void *data,
 			   struct wl_input_device *input_device,
 			   uint32_t time, struct wl_surface *surface,
 			   int32_t sx, int32_t sy)
@@ -1584,20 +1584,24 @@ input_handle_pointer_focus(void *data,
 	struct window *window;
 	struct widget *widget;
 
+	input->pointer_focus = wl_surface_get_user_data(surface);
 	window = input->pointer_focus;
-	if (window && window->surface != surface)
-		input_remove_pointer_focus(input, time);
 
-	if (surface) {
-		input->pointer_focus = wl_surface_get_user_data(surface);
-		window = input->pointer_focus;
+	input->sx = sx;
+	input->sy = sy;
 
-		input->sx = sx;
-		input->sy = sy;
+	widget = widget_find_widget(window->widget, sx, sy);
+	input_set_focus_widget(input, widget, time, sx, sy);
+}
 
-		widget = widget_find_widget(window->widget, sx, sy);
-		input_set_focus_widget(input, widget, time, sx, sy);
-	}
+static void
+input_handle_pointer_leave(void *data,
+			   struct wl_input_device *input_device,
+			   uint32_t time, struct wl_surface *surface)
+{
+	struct input *input = data;
+
+	input_remove_pointer_focus(input, time);
 }
 
 static void
@@ -1617,7 +1621,7 @@ input_remove_keyboard_focus(struct input *input)
 }
 
 static void
-input_handle_keyboard_focus(void *data,
+input_handle_keyboard_enter(void *data,
 			    struct wl_input_device *input_device,
 			    uint32_t time,
 			    struct wl_surface *surface,
@@ -1628,10 +1632,7 @@ input_handle_keyboard_focus(void *data,
 	struct display *d = input->display;
 	uint32_t *k, *end;
 
-	input_remove_keyboard_focus(input);
-
-	if (surface)
-		input->keyboard_focus = wl_surface_get_user_data(surface);
+	input->keyboard_focus = wl_surface_get_user_data(surface);
 
 	end = keys->data + keys->size;
 	input->modifiers = 0;
@@ -1639,13 +1640,22 @@ input_handle_keyboard_focus(void *data,
 		input->modifiers |= d->xkb->map->modmap[*k];
 
 	window = input->keyboard_focus;
-	if (window) {
-		window->keyboard_device = input;
-		if (window->keyboard_focus_handler)
-			(*window->keyboard_focus_handler)(window,
-							  window->keyboard_device,
-							  window->user_data);
-	}
+	window->keyboard_device = input;
+	if (window->keyboard_focus_handler)
+		(*window->keyboard_focus_handler)(window,
+						  window->keyboard_device,
+						  window->user_data);
+}
+
+static void
+input_handle_keyboard_leave(void *data,
+			    struct wl_input_device *input_device,
+			    uint32_t time,
+			    struct wl_surface *surface)
+{
+	struct input *input = data;
+
+	input_remove_keyboard_focus(input);
 }
 
 static void
@@ -1686,8 +1696,10 @@ static const struct wl_input_device_listener input_device_listener = {
 	input_handle_motion,
 	input_handle_button,
 	input_handle_key,
-	input_handle_pointer_focus,
-	input_handle_keyboard_focus,
+	input_handle_pointer_enter,
+	input_handle_pointer_leave,
+	input_handle_keyboard_enter,
+	input_handle_keyboard_leave,
 	input_handle_touch_down,
 	input_handle_touch_up,
 	input_handle_touch_motion,
