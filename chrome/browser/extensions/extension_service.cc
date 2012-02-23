@@ -2259,12 +2259,6 @@ void ExtensionService::OnExtensionInstalled(
     extension_prefs_->SetAllowFileAccess(id, true);
   }
 
-  // If the extension should automatically block network startup (e.g., it uses
-  // the webRequest API), set the preference. Otherwise clear it, in case the
-  // extension stopped using a relevant API.
-  extension_prefs_->SetDelaysNetworkRequests(
-      extension->id(), extension->ImplicitlyDelaysNetworkStartup());
-
   // Transfer ownership of |extension| to AddExtension.
   if (AddExtension(scoped_extension)) {
     content::NotificationService::current()->Notify(

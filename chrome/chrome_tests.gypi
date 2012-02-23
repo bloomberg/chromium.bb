@@ -1464,7 +1464,6 @@
         'browser/extensions/file_reader_unittest.cc',
         'browser/extensions/image_loading_tracker_unittest.cc',
         'browser/extensions/key_identifier_conversion_views_unittest.cc',
-        'browser/extensions/network_delay_listener_unittest.cc',
         'browser/extensions/process_map_unittest.cc',
         'browser/extensions/sandboxed_extension_unpacker_unittest.cc',
         'browser/extensions/settings/settings_frontend_unittest.cc',

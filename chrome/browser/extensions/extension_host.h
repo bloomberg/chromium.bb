@@ -168,9 +168,6 @@ class ExtensionHost : public content::WebContentsDelegate,
                        const content::NotificationDetails& details) OVERRIDE;
 
  protected:
-  // This should only be used by unit tests.
-  ExtensionHost(const Extension* extension, content::ViewType host_type);
-
  private:
   friend class ProcessCreationQueue;
 

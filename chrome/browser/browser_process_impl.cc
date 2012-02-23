@@ -29,7 +29,6 @@
 #include "chrome/browser/download/download_status_updater.h"
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_tab_id_map.h"
-#include "chrome/browser/extensions/network_delay_listener.h"
 #include "chrome/browser/extensions/user_script_listener.h"
 #include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/browser/google/google_url_tracker.h"
@@ -644,10 +643,9 @@ AudioManager* BrowserProcessImpl::audio_manager() {
 }
 
 void BrowserProcessImpl::ResourceDispatcherHostCreated() {
-  // UserScriptListener and NetworkDelayListener will delete themselves.
+  // UserScriptListener will delete itself.
   ResourceDispatcherHost* rdh = ResourceDispatcherHost::Get();
   rdh->AddResourceQueueDelegate(new UserScriptListener());
-  rdh->AddResourceQueueDelegate(new NetworkDelayListener());
 
   resource_dispatcher_host_delegate_.reset(
       new ChromeResourceDispatcherHostDelegate(rdh, prerender_tracker()));

@@ -148,21 +148,6 @@ ExtensionHost::ExtensionHost(const Extension* extension,
                  content::Source<Profile>(profile_));
 }
 
-// This "mock" constructor should only be used by unit tests.
-ExtensionHost::ExtensionHost(const Extension* extension,
-                             content::ViewType host_type)
-    : extension_(extension),
-      extension_id_(extension->id()),
-      profile_(NULL),
-      did_stop_loading_(false),
-      document_element_available_(false),
-      initial_url_(GURL()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          extension_function_dispatcher_(profile_, this)),
-      extension_host_type_(host_type),
-      associated_web_contents_(NULL) {
-}
-
 ExtensionHost::~ExtensionHost() {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,

@@ -1290,8 +1290,6 @@
         'browser/extensions/installed_loader.h',
         'browser/extensions/key_identifier_conversion_views.cc',
         'browser/extensions/key_identifier_conversion_views.h',
-        'browser/extensions/network_delay_listener.cc',
-        'browser/extensions/network_delay_listener.h',
         'browser/extensions/pack_extension_job.cc',
         'browser/extensions/pack_extension_job.h',
         'browser/extensions/pending_extension_info.cc',
