@@ -69,57 +69,24 @@ const int kShutdownRequestDelayMs = 50;
 // pre-shutdown states.
 const float kSlowCloseSizeRatio = 0.95f;
 
-// Containers holding screen locker windows.
-const int kScreenLockerContainerIds[] = {
-  internal::kShellWindowId_LockScreenContainer,
-  internal::kShellWindowId_LockSystemModalContainer,
-};
-
-// Containers holding additional windows that should be shown while the screen
-// is locked.
-const int kRelatedContainerIds[] = {
-  internal::kShellWindowId_StatusContainer,
-  internal::kShellWindowId_MenuContainer,
-  internal::kShellWindowId_DragImageAndTooltipContainer,
-  internal::kShellWindowId_SettingBubbleContainer,
-  internal::kShellWindowId_OverlayContainer,
-};
-
-// Is |window| a container that holds screen locker windows?
-bool IsScreenLockerContainer(aura::Window* window) {
-  for (size_t i = 0; i < arraysize(kScreenLockerContainerIds); ++i)
-    if (window->id() == kScreenLockerContainerIds[i])
-      return true;
-  return false;
-}
-
-// Is |window| a container that holds other windows that should be shown while
-// the screen is locked?
-bool IsRelatedContainer(aura::Window* window) {
-  for (size_t i = 0; i < arraysize(kRelatedContainerIds); ++i)
-    if (window->id() == kRelatedContainerIds[i])
-      return true;
-  return false;
-}
-
-// Returns the transform, based on |base_transform|, that should be applied
-// to containers for slow-close animation.
-ui::Transform GetSlowCloseTransform(const ui::Transform& base_transform) {
+// Returns the transform that should be applied to containers for the slow-close
+// animation.
+ui::Transform GetSlowCloseTransform() {
   gfx::Size root_size = Shell::GetRootWindow()->bounds().size();
-  ui::Transform transform(base_transform);
-  transform.ConcatScale(kSlowCloseSizeRatio, kSlowCloseSizeRatio);
+  ui::Transform transform;
+  transform.SetScale(kSlowCloseSizeRatio, kSlowCloseSizeRatio);
   transform.ConcatTranslate(
       floor(0.5 * (1.0 - kSlowCloseSizeRatio) * root_size.width() + 0.5),
       floor(0.5 * (1.0 - kSlowCloseSizeRatio) * root_size.height() + 0.5));
   return transform;
 }
 
-// Returns the transform, based on |base_transform|, that should be applied
-// to containers for fast-close animation.
-ui::Transform GetFastCloseTransform(const ui::Transform& base_transform) {
+// Returns the transform that should be applied to containers for the fast-close
+// animation.
+ui::Transform GetFastCloseTransform() {
   gfx::Size root_size = Shell::GetRootWindow()->bounds().size();
-  ui::Transform transform(base_transform);
-  transform.ConcatScale(0.0, 0.0);
+  ui::Transform transform;
+  transform.SetScale(0.0, 0.0);
   transform.ConcatTranslate(floor(0.5 * root_size.width() + 0.5),
                             floor(0.5 * root_size.height() + 0.5));
   return transform;
@@ -133,20 +100,19 @@ void StartSlowCloseAnimationForWindow(aura::Window* window) {
   animator->StartAnimation(
       new ui::LayerAnimationSequence(
           ui::LayerAnimationElement::CreateTransformElement(
-              GetSlowCloseTransform(window->layer()->GetTargetTransform()),
+              GetSlowCloseTransform(),
               base::TimeDelta::FromMilliseconds(kSlowCloseAnimMs))));
 }
 
 // Quickly undoes the effects of the slow-close animation on |window|.
-void StartUndoSlowCloseAnimationForWindow(aura::Window* window,
-                                          const ui::Transform& orig_transform) {
+void StartUndoSlowCloseAnimationForWindow(aura::Window* window) {
   ui::LayerAnimator* animator = window->layer()->GetAnimator();
   animator->set_preemption_strategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   animator->StartAnimation(
       new ui::LayerAnimationSequence(
           ui::LayerAnimationElement::CreateTransformElement(
-              orig_transform,
+              ui::Transform(),
               base::TimeDelta::FromMilliseconds(kUndoSlowCloseAnimMs))));
 }
 
@@ -159,7 +125,7 @@ void StartFastCloseAnimationForWindow(aura::Window* window) {
   animator->StartAnimation(
       new ui::LayerAnimationSequence(
           ui::LayerAnimationElement::CreateTransformElement(
-              GetFastCloseTransform(window->layer()->GetTargetTransform()),
+              GetFastCloseTransform(),
               base::TimeDelta::FromMilliseconds(kFastCloseAnimMs))));
   animator->StartAnimation(
       new ui::LayerAnimationSequence(
@@ -185,10 +151,78 @@ void HideWindow(aura::Window* window) {
 
 // Restores |window| to its original position and scale and full opacity
 // instantaneously.
-void RestoreWindow(aura::Window* window,
-                   const ui::Transform& orig_transform) {
-  window->layer()->SetTransform(orig_transform);
+void RestoreWindow(aura::Window* window) {
+  window->layer()->SetTransform(ui::Transform());
   window->layer()->SetOpacity(1.0);
+}
+
+// Fills |containers| with the containers described by |group|.
+void GetContainers(PowerButtonController::ContainerGroup group,
+                   aura::Window::Windows* containers) {
+  aura::Window* non_lock_screen_containers =
+      Shell::GetInstance()->GetContainer(
+          internal::kShellWindowId_NonLockScreenContainersContainer);
+  aura::Window* lock_screen_containers =
+      Shell::GetInstance()->GetContainer(
+          internal::kShellWindowId_LockScreenContainersContainer);
+  aura::Window* lock_screen_related_containers =
+      Shell::GetInstance()->GetContainer(
+          internal::kShellWindowId_LockScreenRelatedContainersContainer);
+
+  containers->clear();
+  switch (group) {
+    case PowerButtonController::ALL_CONTAINERS:
+      containers->push_back(non_lock_screen_containers);
+      containers->push_back(lock_screen_containers);
+      containers->push_back(lock_screen_related_containers);
+      break;
+    case PowerButtonController::SCREEN_LOCKER_CONTAINERS:
+      containers->push_back(lock_screen_containers);
+      break;
+    case PowerButtonController::SCREEN_LOCKER_AND_RELATED_CONTAINERS:
+      containers->push_back(lock_screen_containers);
+      containers->push_back(lock_screen_related_containers);
+      break;
+    case PowerButtonController::ALL_BUT_SCREEN_LOCKER_AND_RELATED_CONTAINERS:
+      containers->push_back(non_lock_screen_containers);
+      break;
+    default:
+      NOTREACHED() << "Unhandled container group " << group;
+  }
+}
+
+// Apply animation |type| to all containers described by |group|.
+void StartAnimation(PowerButtonController::ContainerGroup group,
+                    PowerButtonController::AnimationType type) {
+  aura::Window::Windows containers;
+  GetContainers(group, &containers);
+
+  for (aura::Window::Windows::const_iterator it = containers.begin();
+       it != containers.end(); ++it) {
+    aura::Window* window = *it;
+    switch (type) {
+      case PowerButtonController::ANIMATION_SLOW_CLOSE:
+        StartSlowCloseAnimationForWindow(window);
+        break;
+      case PowerButtonController::ANIMATION_UNDO_SLOW_CLOSE:
+        StartUndoSlowCloseAnimationForWindow(window);
+        break;
+      case PowerButtonController::ANIMATION_FAST_CLOSE:
+        StartFastCloseAnimationForWindow(window);
+        break;
+      case PowerButtonController::ANIMATION_FADE_IN:
+        FadeInWindow(window);
+        break;
+      case PowerButtonController::ANIMATION_HIDE:
+        HideWindow(window);
+        break;
+      case PowerButtonController::ANIMATION_RESTORE:
+        RestoreWindow(window);
+        break;
+      default:
+        NOTREACHED() << "Unhandled animation type " << type;
+    }
+  }
 }
 
 }  // namespace
@@ -196,7 +230,7 @@ void RestoreWindow(aura::Window* window,
 bool PowerButtonController::TestApi::ContainerGroupIsAnimated(
     ContainerGroup group, AnimationType type) const {
   aura::Window::Windows containers;
-  controller_->GetContainers(group, &containers);
+  GetContainers(group, &containers);
   for (aura::Window::Windows::const_iterator it = containers.begin();
        it != containers.end(); ++it) {
     aura::Window* window = *it;
@@ -204,19 +238,15 @@ bool PowerButtonController::TestApi::ContainerGroupIsAnimated(
 
     switch (type) {
       case PowerButtonController::ANIMATION_SLOW_CLOSE:
-        if (layer->GetTargetTransform() !=
-            GetSlowCloseTransform(
-                controller_->RetrieveOriginalTransform(window)))
+        if (layer->GetTargetTransform() != GetSlowCloseTransform())
           return false;
         break;
       case PowerButtonController::ANIMATION_UNDO_SLOW_CLOSE:
-        if (layer->GetTargetTransform() !=
-            controller_->RetrieveOriginalTransform(window))
-        return false;
+        if (layer->GetTargetTransform() != ui::Transform())
+          return false;
         break;
       case PowerButtonController::ANIMATION_FAST_CLOSE:
-        if (layer->GetTargetTransform() !=
-            GetFastCloseTransform(layer->GetTargetTransform()) ||
+        if (layer->GetTargetTransform() != GetFastCloseTransform() ||
             layer->GetTargetOpacity() > 0.0001)
           return false;
         break;
@@ -229,9 +259,7 @@ bool PowerButtonController::TestApi::ContainerGroupIsAnimated(
           return false;
         break;
       case PowerButtonController::ANIMATION_RESTORE:
-        if (layer->opacity() < 0.9999 ||
-            layer->transform() !=
-            controller_->RetrieveOriginalTransform(window))
+        if (layer->opacity() < 0.9999 || layer->transform() != ui::Transform())
           return false;
         break;
       default:
@@ -409,41 +437,6 @@ void PowerButtonController::RequestShutdown() {
     StartShutdownAnimationAndRequestShutdown();
 }
 
-// Fills |containers| with the containers described by |group|.
-void PowerButtonController::GetContainers(ContainerGroup group,
-                                          aura::Window::Windows* containers) {
-  containers->clear();
-
-  aura::Window* root = Shell::GetRootWindow();
-  for (aura::Window::Windows::const_iterator it = root->children().begin();
-       it != root->children().end(); ++it) {
-    aura::Window* window = *it;
-
-    bool matched = true;
-    if (group != ALL_CONTAINERS) {
-      bool is_screen_locker = IsScreenLockerContainer(window);
-      bool is_related = IsRelatedContainer(window);
-
-      switch (group) {
-        case SCREEN_LOCKER_CONTAINERS:
-          matched = is_screen_locker;
-          break;
-        case SCREEN_LOCKER_AND_RELATED_CONTAINERS:
-          matched = is_screen_locker || is_related;
-          break;
-        case ALL_BUT_SCREEN_LOCKER_AND_RELATED_CONTAINERS:
-          matched = !is_screen_locker && !is_related;
-          break;
-        default:
-          NOTREACHED() << "Unhandled container group " << group;
-      }
-    }
-
-    if (matched)
-      containers->push_back(window);
-  }
-}
-
 void PowerButtonController::OnRootWindowResized(const gfx::Size& new_size) {
   if (background_layer_.get())
     background_layer_->SetBounds(gfx::Rect(new_size));
@@ -544,54 +537,6 @@ void PowerButtonController::ShowBackgroundLayer() {
 
 void PowerButtonController::HideBackgroundLayer() {
   background_layer_.reset();
-}
-
-// Apply animation |type| to all containers described by |group|.
-void PowerButtonController::StartAnimation(ContainerGroup group,
-                                           AnimationType type) {
-  aura::Window::Windows containers;
-  GetContainers(group, &containers);
-  for (aura::Window::Windows::const_iterator it = containers.begin();
-       it != containers.end(); ++it) {
-    aura::Window* window = *it;
-
-    // Store this away so we can restore.
-    if (type != ANIMATION_RESTORE && type != ANIMATION_UNDO_SLOW_CLOSE)
-      container_transforms_[window] = window->layer()->GetTargetTransform();
-
-    switch (type) {
-      case ANIMATION_SLOW_CLOSE:
-        StartSlowCloseAnimationForWindow(window);
-        break;
-      case ANIMATION_UNDO_SLOW_CLOSE:
-        StartUndoSlowCloseAnimationForWindow(
-            window,
-            RetrieveOriginalTransform(window));
-        break;
-      case ANIMATION_FAST_CLOSE:
-        StartFastCloseAnimationForWindow(window);
-        break;
-      case ANIMATION_FADE_IN:
-        FadeInWindow(window);
-        break;
-      case ANIMATION_HIDE:
-        HideWindow(window);
-        break;
-      case ANIMATION_RESTORE:
-        RestoreWindow(window, RetrieveOriginalTransform(window));
-        break;
-      default:
-        NOTREACHED() << "Unhandled animation type " << type;
-    }
-  }
-}
-
-ui::Transform PowerButtonController::RetrieveOriginalTransform(
-    aura::Window* window) {
-  WindowTransformsMap::const_iterator it = container_transforms_.find(window);
-  if (it != container_transforms_.end())
-    return it->second;
-  return ui::Transform();
 }
 
 }  // namespace ash

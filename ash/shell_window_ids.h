@@ -12,50 +12,66 @@ namespace ash {
 
 namespace internal {
 
+// A higher-level container that holds all of the containers stacked below
+// kShellWindowId_LockScreenContainer.  Only used by PowerButtonController for
+// animating lower-level containers.
+const int kShellWindowId_NonLockScreenContainersContainer = 0;
+
+// A higher-level container that holds containers that hold lock-screen
+// windows.  Only used by PowerButtonController for animating lower-level
+// containers.
+const int kShellWindowId_LockScreenContainersContainer = 1;
+
+// A higher-level container that holds containers that hold lock-screen-related
+// windows (which we want to display while the screen is locked; effectively
+// containers stacked above kShellWindowId_LockSystemModalContainer).  Only used
+// by PowerButtonController for animating lower-level containers.
+const int kShellWindowId_LockScreenRelatedContainersContainer = 2;
+
 // A container used for windows of WINDOW_TYPE_CONTROL that have no parent.
 // This container is not visible.
-const int kShellWindowId_UnparentedControlContainer = 0;
+const int kShellWindowId_UnparentedControlContainer = 3;
 
 // The desktop background window.
-const int kShellWindowId_DesktopBackgroundContainer = 1;
+const int kShellWindowId_DesktopBackgroundContainer = 4;
 
 // The container for standard top-level windows.
-const int kShellWindowId_DefaultContainer = 2;
+const int kShellWindowId_DefaultContainer = 5;
 
 // The container for top-level windows with the 'always-on-top' flag set.
-const int kShellWindowId_AlwaysOnTopContainer = 3;
+const int kShellWindowId_AlwaysOnTopContainer = 6;
 
 // The container for panel windows.
-const int kShellWindowId_PanelContainer = 4;
+const int kShellWindowId_PanelContainer = 7;
 
 // The container for the launcher.
-const int kShellWindowId_LauncherContainer = 5;
+const int kShellWindowId_LauncherContainer = 8;
 
 // The container for user-specific modal windows.
-const int kShellWindowId_SystemModalContainer = 6;
+const int kShellWindowId_SystemModalContainer = 9;
 
 // The container for the lock screen.
-const int kShellWindowId_LockScreenContainer = 7;
+const int kShellWindowId_LockScreenContainer = 10;
 
 // The container for the lock screen modal windows.
-const int kShellWindowId_LockSystemModalContainer = 8;
+const int kShellWindowId_LockSystemModalContainer = 11;
 
 // The container for the status area.
-const int kShellWindowId_StatusContainer = 9;
+const int kShellWindowId_StatusContainer = 12;
 
 // The container for menus.
-const int kShellWindowId_MenuContainer = 10;
+const int kShellWindowId_MenuContainer = 13;
 
 // The container for drag/drop images and tooltips.
-const int kShellWindowId_DragImageAndTooltipContainer = 11;
+const int kShellWindowId_DragImageAndTooltipContainer = 14;
 
 // The container for bubbles briefly overlaid onscreen to show settings changes
 // (volume, brightness, etc.).
-const int kShellWindowId_SettingBubbleContainer = 12;
+const int kShellWindowId_SettingBubbleContainer = 15;
 
 // The container for special components overlaid onscreen, such as the
 // region selector for partial screenshots.
-const int kShellWindowId_OverlayContainer = 13;
+const int kShellWindowId_OverlayContainer = 16;
 
 }  // namespace internal
 

@@ -46,9 +46,15 @@ void RootWindowLayoutManager::OnWindowResized() {
   // resize to fit the new workspace area.
   Shell::GetInstance()->SetWindowModeForMonitorSize(fullscreen_bounds.size());
 
+  // Resize both our immediate children (the containers-of-containers animated
+  // by PowerButtonController) and their children (the actual containers).
   aura::Window::Windows::const_iterator i;
-  for (i = owner_->children().begin(); i != owner_->children().end(); ++i)
+  for (i = owner_->children().begin(); i != owner_->children().end(); ++i) {
     (*i)->SetBounds(fullscreen_bounds);
+    aura::Window::Windows::const_iterator j;
+    for (j = (*i)->children().begin(); j != (*i)->children().end(); ++j)
+      (*j)->SetBounds(fullscreen_bounds);
+  }
 
   if (background_widget_)
     background_widget_->SetBounds(fullscreen_bounds);

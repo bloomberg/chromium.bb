@@ -79,37 +79,53 @@ const int kOverlappingWindowModeWidthThreshold = 1366;
 // window on Chrome OS alex devices with that height.
 const int kOverlappingWindowModeHeightThreshold = 800;
 
+// Creates a new window for use as a container.
+aura::Window* CreateContainer(int window_id, aura::Window* parent) {
+  aura::Window* container = new aura::Window(NULL);
+  container->set_id(window_id);
+  container->Init(ui::Layer::LAYER_NOT_DRAWN);
+  parent->AddChild(container);
+  if (window_id != internal::kShellWindowId_UnparentedControlContainer)
+    container->Show();
+  return container;
+}
+
 // Creates each of the special window containers that holds windows of various
-// types in the shell UI. They are added to |containers| from back to front in
-// the z-index.
-void CreateSpecialContainers(aura::Window::Windows* containers) {
-  aura::Window* unparented_control_container = new aura::Window(NULL);
-  unparented_control_container->set_id(
-      internal::kShellWindowId_UnparentedControlContainer);
-  containers->push_back(unparented_control_container);
+// types in the shell UI.
+void CreateSpecialContainers(aura::Window* root_window) {
+  // These containers are just used by PowerButtonController to animate groups
+  // of containers simultaneously without messing up the current transformations
+  // on those containers.  These are direct children of the root window; all of
+  // the other containers are their children.
+  aura::Window* non_lock_screen_containers = CreateContainer(
+      internal::kShellWindowId_NonLockScreenContainersContainer, root_window);
+  aura::Window* lock_screen_containers = CreateContainer(
+      internal::kShellWindowId_LockScreenContainersContainer, root_window);
+  aura::Window* lock_screen_related_containers = CreateContainer(
+      internal::kShellWindowId_LockScreenRelatedContainersContainer,
+      root_window);
 
-  aura::Window* background_container = new aura::Window(NULL);
-  background_container->set_id(
-      internal::kShellWindowId_DesktopBackgroundContainer);
-  containers->push_back(background_container);
+  CreateContainer(internal::kShellWindowId_UnparentedControlContainer,
+                  non_lock_screen_containers);
 
-  aura::Window* default_container = new aura::Window(NULL);
+  CreateContainer(internal::kShellWindowId_DesktopBackgroundContainer,
+                  non_lock_screen_containers);
+
+  aura::Window* default_container = CreateContainer(
+      internal::kShellWindowId_DefaultContainer, non_lock_screen_containers);
   default_container->SetEventFilter(
       new ToplevelWindowEventFilter(default_container));
-  default_container->set_id(internal::kShellWindowId_DefaultContainer);
   SetChildWindowVisibilityChangesAnimated(default_container);
-  containers->push_back(default_container);
 
-  aura::Window* always_on_top_container = new aura::Window(NULL);
+  aura::Window* always_on_top_container = CreateContainer(
+      internal::kShellWindowId_AlwaysOnTopContainer,
+      non_lock_screen_containers);
   always_on_top_container->SetEventFilter(
       new ToplevelWindowEventFilter(always_on_top_container));
-  always_on_top_container->set_id(
-      internal::kShellWindowId_AlwaysOnTopContainer);
   SetChildWindowVisibilityChangesAnimated(always_on_top_container);
-  containers->push_back(always_on_top_container);
 
-  aura::Window* panel_container = new aura::Window(NULL);
-  panel_container->set_id(internal::kShellWindowId_PanelContainer);
+  aura::Window* panel_container = CreateContainer(
+      internal::kShellWindowId_PanelContainer, non_lock_screen_containers);
   if (CommandLine::ForCurrentProcess()->
       HasSwitch(switches::kAuraPanelManager)) {
     internal::PanelLayoutManager* layout_manager =
@@ -118,62 +134,52 @@ void CreateSpecialContainers(aura::Window::Windows* containers) {
         new internal::PanelWindowEventFilter(panel_container, layout_manager));
     panel_container->SetLayoutManager(layout_manager);
   }
-  containers->push_back(panel_container);
 
-  aura::Window* launcher_container = new aura::Window(NULL);
-  launcher_container->set_id(internal::kShellWindowId_LauncherContainer);
-  containers->push_back(launcher_container);
+  CreateContainer(internal::kShellWindowId_LauncherContainer,
+                  non_lock_screen_containers);
 
-  aura::Window* modal_container = new aura::Window(NULL);
+  aura::Window* modal_container = CreateContainer(
+      internal::kShellWindowId_SystemModalContainer,
+      non_lock_screen_containers);
   modal_container->SetEventFilter(
       new ToplevelWindowEventFilter(modal_container));
   modal_container->SetLayoutManager(
       new internal::SystemModalContainerLayoutManager(modal_container));
-  modal_container->set_id(internal::kShellWindowId_SystemModalContainer);
   SetChildWindowVisibilityChangesAnimated(modal_container);
-  containers->push_back(modal_container);
 
   // TODO(beng): Figure out if we can make this use
   // SystemModalContainerEventFilter instead of stops_event_propagation.
-  aura::Window* lock_container = new aura::Window(NULL);
+  aura::Window* lock_container = CreateContainer(
+      internal::kShellWindowId_LockScreenContainer, lock_screen_containers);
   lock_container->SetLayoutManager(new internal::BaseLayoutManager);
   lock_container->set_stops_event_propagation(true);
-  lock_container->set_id(internal::kShellWindowId_LockScreenContainer);
-  containers->push_back(lock_container);
 
-  aura::Window* lock_modal_container = new aura::Window(NULL);
+  aura::Window* lock_modal_container = CreateContainer(
+      internal::kShellWindowId_LockSystemModalContainer,
+      lock_screen_containers);
   lock_modal_container->SetEventFilter(
       new ToplevelWindowEventFilter(lock_modal_container));
   lock_modal_container->SetLayoutManager(
       new internal::SystemModalContainerLayoutManager(lock_modal_container));
-  lock_modal_container->set_id(
-      internal::kShellWindowId_LockSystemModalContainer);
   SetChildWindowVisibilityChangesAnimated(lock_modal_container);
-  containers->push_back(lock_modal_container);
 
-  aura::Window* status_container = new aura::Window(NULL);
-  status_container->set_id(internal::kShellWindowId_StatusContainer);
-  containers->push_back(status_container);
+  CreateContainer(internal::kShellWindowId_StatusContainer,
+                  lock_screen_related_containers);
 
-  aura::Window* menu_container = new aura::Window(NULL);
-  menu_container->set_id(internal::kShellWindowId_MenuContainer);
+  aura::Window* menu_container = CreateContainer(
+      internal::kShellWindowId_MenuContainer, lock_screen_related_containers);
   SetChildWindowVisibilityChangesAnimated(menu_container);
-  containers->push_back(menu_container);
 
-  aura::Window* drag_drop_container = new aura::Window(NULL);
-  drag_drop_container->set_id(
-      internal::kShellWindowId_DragImageAndTooltipContainer);
+  aura::Window* drag_drop_container = CreateContainer(
+      internal::kShellWindowId_DragImageAndTooltipContainer,
+      lock_screen_related_containers);
   SetChildWindowVisibilityChangesAnimated(drag_drop_container);
-  containers->push_back(drag_drop_container);
 
-  aura::Window* setting_bubble_container = new aura::Window(NULL);
-  setting_bubble_container->set_id(
-      internal::kShellWindowId_SettingBubbleContainer);
-  containers->push_back(setting_bubble_container);
+  CreateContainer(internal::kShellWindowId_SettingBubbleContainer,
+                  lock_screen_related_containers);
 
-  aura::Window* overlay_container = new aura::Window(NULL);
-  overlay_container->set_id(internal::kShellWindowId_OverlayContainer);
-  containers->push_back(overlay_container);
+  CreateContainer(internal::kShellWindowId_OverlayContainer,
+                  lock_screen_related_containers);
 }
 
 // Maximizes all the windows in a |container|.
@@ -323,15 +329,7 @@ void Shell::Init() {
 
   activation_controller_.reset(new internal::ActivationController);
 
-  aura::Window::Windows containers;
-  CreateSpecialContainers(&containers);
-  aura::Window::Windows::const_iterator i;
-  for (i = containers.begin(); i != containers.end(); ++i) {
-    (*i)->Init(ui::Layer::LAYER_NOT_DRAWN);
-    root_window->AddChild(*i);
-    if ((*i)->id() != internal::kShellWindowId_UnparentedControlContainer)
-      (*i)->Show();
-  }
+  CreateSpecialContainers(root_window);
 
   stacking_controller_.reset(new internal::StackingController);
 

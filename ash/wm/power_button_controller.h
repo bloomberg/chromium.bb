@@ -6,15 +6,12 @@
 #define ASH_WM_POWER_BUTTON_CONTROLLER_H_
 #pragma once
 
-#include <map>
-
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "ui/aura/root_window_observer.h"
-#include "ui/aura/window.h"
 
 namespace gfx {
 class Size;
@@ -22,7 +19,6 @@ class Size;
 
 namespace ui {
 class Layer;
-class Transform;
 }
 
 namespace ash {
@@ -159,10 +155,6 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver {
   // Displays the shutdown animation and requests shutdown when it's done.
   void RequestShutdown();
 
-  // Fills |containers| with the containers described by |group|.
-  void GetContainers(ContainerGroup group,
-                     aura::Window::Windows* containers);
-
   // aura::RootWindowObserver overrides:
   virtual void OnRootWindowResized(const gfx::Size& new_size) OVERRIDE;
 
@@ -195,12 +187,6 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver {
   // initializes the layer if it doesn't already exist.
   void ShowBackgroundLayer();
   void HideBackgroundLayer();
-
-  // Apply animation |type| to all containers described by |group|.
-  void StartAnimation(ContainerGroup group, AnimationType type);
-
-  // Retrieve original transform for |window| stored before animation started.
-  ui::Transform RetrieveOriginalTransform(aura::Window* window);
 
   scoped_ptr<PowerButtonControllerDelegate> delegate_;
 
@@ -263,10 +249,6 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver {
   // |background_layer_|, as the desktop background is now covering the whole
   // screen.
   base::OneShotTimer<PowerButtonController> hide_background_layer_timer_;
-
-  // Map from containers to their original layer transforms before animation.
-  typedef std::map<aura::Window*, ui::Transform> WindowTransformsMap;
-  WindowTransformsMap container_transforms_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerButtonController);
 };

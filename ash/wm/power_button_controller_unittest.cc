@@ -9,7 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/window.h"
 
 namespace ash {
 namespace test {
@@ -276,69 +275,6 @@ TEST_F(PowerButtonControllerTest, LockAndUnlock) {
           PowerButtonController::ALL_BUT_SCREEN_LOCKER_AND_RELATED_CONTAINERS,
           PowerButtonController::ANIMATION_RESTORE));
   EXPECT_FALSE(test_api_->BackgroundLayerIsVisible());
-}
-
-// Test that we restore transformations that are non empty.
-TEST_F(PowerButtonControllerTest, LockAndUnlockTransformed) {
-  controller_->set_has_legacy_power_button_for_test(false);
-  controller_->OnLoginStateChange(true /*logged_in*/, false /*is_guest*/);
-  controller_->OnLockStateChange(false);
-
-  // Get current transformation on the containers.
-  aura::Window::Windows windows;
-  controller_->GetContainers(
-          PowerButtonController::ALL_BUT_SCREEN_LOCKER_AND_RELATED_CONTAINERS,
-          &windows);
-
-  // Set a random transform to each container layer.
-  ui::Transform expected_transform;
-  expected_transform.ConcatTranslate(180, 180);
-  for (aura::Window::Windows::iterator it = windows.begin();
-       it != windows.end();
-       ++it) {
-    (*it)->layer()->SetTransform(expected_transform);
-  }
-
-  // Press the power button and check that the lock timer is started and that we
-  // start scaling the non-screen-locker containers.
-  controller_->OnPowerButtonEvent(true, base::TimeTicks::Now());
-  EXPECT_TRUE(test_api_->lock_timer_is_running());
-  EXPECT_FALSE(test_api_->shutdown_timer_is_running());
-  EXPECT_TRUE(
-      test_api_->ContainerGroupIsAnimated(
-          PowerButtonController::ALL_BUT_SCREEN_LOCKER_AND_RELATED_CONTAINERS,
-          PowerButtonController::ANIMATION_SLOW_CLOSE));
-
-  // Check current transformation is different than before.
-  windows.clear();
-  controller_->GetContainers(
-          PowerButtonController::ALL_BUT_SCREEN_LOCKER_AND_RELATED_CONTAINERS,
-          &windows);
-  for (aura::Window::Windows::iterator it = windows.begin();
-       it != windows.end();
-       ++it) {
-    EXPECT_NE(expected_transform, (*it)->layer()->GetTargetTransform());
-  }
-
-  // Release the button before the lock timer fires.
-  controller_->OnPowerButtonEvent(false, base::TimeTicks::Now());
-  EXPECT_FALSE(test_api_->lock_timer_is_running());
-  EXPECT_TRUE(
-      test_api_->ContainerGroupIsAnimated(
-          PowerButtonController::ALL_BUT_SCREEN_LOCKER_AND_RELATED_CONTAINERS,
-          PowerButtonController::ANIMATION_UNDO_SLOW_CLOSE));
-
-  // Get current transformation on the containers to compare,
-  // it shouldn't have changed.
-  windows.clear();
-  controller_->GetContainers(
-          PowerButtonController::ALL_BUT_SCREEN_LOCKER_AND_RELATED_CONTAINERS,
-          &windows);
-  for (aura::Window::Windows::iterator it = windows.begin();
-       it != windows.end();
-       ++it) {
-    EXPECT_EQ(expected_transform, (*it)->layer()->GetTargetTransform());
-  }
 }
 
 // Hold the power button down from the unlocked state to eventual shutdown.
