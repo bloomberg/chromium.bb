@@ -62,11 +62,6 @@ redraw_handler(struct widget *widget, void *data)
 	PopplerPage *page;
 	double width, height, doc_aspect, window_aspect, scale;
 
-	if (view->fullscreen)
-		window_set_transparent(view->window, 0);
-	else
-		window_set_transparent(view->window, 1);
-
 	widget_get_allocation(view->widget, &allocation);
 
 	surface = window_get_surface(view->window);

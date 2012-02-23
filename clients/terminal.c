@@ -2272,6 +2272,7 @@ terminal_create(struct display *display, int fullscreen)
 	terminal->window = window_create(display);
 	terminal->widget = frame_create(terminal->window, terminal);
 	window_set_title(terminal->window, "Wayland Terminal");
+	widget_set_transparent(terminal->widget, 0);
 
 	init_state_machine(&terminal->state_machine);
 	init_color_table(terminal);

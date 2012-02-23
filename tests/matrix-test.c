@@ -222,11 +222,9 @@ static int
 test(void)
 {
 	struct weston_matrix m;
-	struct weston_matrix n;
 	double det, errsup;
 
 	randomize_matrix(&m);
-	n = m;
 	det = determinant(&m);
 
 	errsup = test_inverse(&m);
@@ -237,7 +235,7 @@ test(void)
 		return TEST_NOT_INVERTIBLE_OK;
 
 	printf("test fail, det: %g, error sup: %g\n", det, errsup);
-/*	print_matrix(&n);*/
+
 	return TEST_FAIL;
 }
 

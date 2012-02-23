@@ -315,7 +315,6 @@ gears_create(struct display *display)
 	gears->d = display;
 	gears->window = window_create(display);
 	gears->widget = frame_create(gears->window, gears);
-	window_set_transparent(gears->window, 1);
 	window_set_title(gears->window, "Wayland Gears");
 
 	gears->display = display_get_egl_display(gears->d);

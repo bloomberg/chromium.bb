@@ -321,6 +321,8 @@ widget_set_allocation(struct widget *widget,
 void
 widget_set_size(struct widget *widget, int32_t width, int32_t height);
 void
+widget_set_transparent(struct widget *widget, int transparent);
+void
 widget_schedule_resize(struct widget *widget, int32_t width, int32_t height);
 
 void *

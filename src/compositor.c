@@ -1168,7 +1168,8 @@ surface_attach(struct wl_client *client,
 	if (es->geometry.width != buffer->width ||
 	    es->geometry.height != buffer->height) {
 		undef_region(&es->input);
-		undef_region(&es->opaque);
+		pixman_region32_fini(&es->opaque);
+		pixman_region32_init(&es->opaque);
 	}
 
 	if (es->output == NULL) {
@@ -1268,7 +1269,7 @@ surface_set_input_region(struct wl_client *client,
 			 struct wl_resource *region_resource)
 {
 	struct weston_surface *surface = resource->data;
-	struct weston_region *region = region_resource->data;
+	struct weston_region *region;
 
 	if (region_resource) {
 		region = region_resource->data;

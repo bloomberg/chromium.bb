@@ -85,6 +85,7 @@ struct display {
 	struct wl_list input_list;
 	struct wl_list output_list;
 	cairo_surface_t *active_frame, *inactive_frame, *shadow;
+	int frame_radius;
 	struct xkb_desc *xkb;
 	cairo_surface_t **pointer_surfaces;
 
@@ -111,6 +112,8 @@ struct window {
 	struct window *parent;
 	struct wl_surface *surface;
 	struct wl_shell_surface *shell_surface;
+	struct wl_region *input_region;
+	struct wl_region *opaque_region;
 	char *title;
 	struct rectangle allocation, saved_allocation, server_allocation;
 	struct rectangle pending_allocation;
@@ -152,6 +155,7 @@ struct widget {
 	widget_motion_handler_t motion_handler;
 	widget_button_handler_t button_handler;
 	void *user_data;
+	int opaque;
 };
 
 struct input {
@@ -827,6 +831,9 @@ window_attach_surface(struct window *window)
 		return;
 	}
 
+	wl_surface_set_input_region(window->surface, window->input_region);
+	wl_surface_set_opaque_region(window->surface, window->opaque_region);
+
 	wl_surface_damage(window->surface, 0, 0,
 			  window->allocation.width,
 			  window->allocation.height);
@@ -953,6 +960,11 @@ window_destroy(struct window *window)
 			input->focus_widget = NULL;
 	}
 
+	if (window->input_region)
+		wl_region_destroy(window->input_region);
+	if (window->opaque_region)
+		wl_region_destroy(window->opaque_region);
+
 	if (window->frame)
 		frame_destroy(window->frame);
 
@@ -1002,6 +1014,7 @@ widget_create(struct window *window, void *data)
 	widget->user_data = data;
 	widget->allocation = window->allocation;
 	wl_list_init(&widget->child_list);
+	widget->opaque = 0;
 
 	return widget;
 }
@@ -1061,6 +1074,12 @@ widget_set_allocation(struct widget *widget,
 	widget->allocation.x = x;
 	widget->allocation.y = y;
 	widget_set_size(widget, width, height);
+}
+
+void
+widget_set_transparent(struct widget *widget, int transparent)
+{
+	widget->opaque = !transparent;
 }
 
 void *
@@ -1140,7 +1159,9 @@ frame_resize_handler(struct widget *widget,
 	struct frame *frame = data;
 	struct widget *child = frame->child;
 	struct rectangle allocation;
+	struct display *display = widget->window->display;
 	int decoration_width, decoration_height;
+	int opaque_margin;
 
 	if (widget->window->type == TYPE_TOPLEVEL) {
 		decoration_width = 20 + frame->margin * 2;
@@ -1150,6 +1171,15 @@ frame_resize_handler(struct widget *widget,
 		allocation.y = 50 + frame->margin;
 		allocation.width = width - decoration_width;
 		allocation.height = height - decoration_height;
+
+		widget->window->input_region =
+			wl_compositor_create_region(display->compositor);
+		wl_region_add(widget->window->input_region,
+			      frame->margin, frame->margin,
+			      width - 2 * frame->margin,
+			      height - 2 * frame->margin);
+
+		opaque_margin = frame->margin + display->frame_radius;
 	} else {
 		decoration_width = 0;
 		decoration_height = 0;
@@ -1158,6 +1188,16 @@ frame_resize_handler(struct widget *widget,
 		allocation.y = 0;
 		allocation.width = width;
 		allocation.height = height;
+		opaque_margin = 0;
+	}
+
+	if (child->opaque) {
+		widget->window->opaque_region =
+			wl_compositor_create_region(display->compositor);
+		wl_region_add(widget->window->opaque_region,
+			      opaque_margin, opaque_margin,
+			      width - 2 * opaque_margin,
+			      height - 2 * opaque_margin);
 	}
 
 	widget_set_allocation(child, allocation.x, allocation.y,
@@ -2024,6 +2064,16 @@ idle_resize(struct task *task, uint32_t events)
 			      window->pending_allocation.width,
 			      window->pending_allocation.height);
 
+	if (window->input_region) {
+		wl_region_destroy(window->input_region);
+		window->input_region = NULL;
+	}
+
+	if (window->opaque_region) {
+		wl_region_destroy(window->opaque_region);
+		window->opaque_region = NULL;
+	}
+
 	if (widget->resize_handler)
 		widget->resize_handler(widget,
 				       widget->allocation.width,
@@ -2239,12 +2289,6 @@ window_set_close_handler(struct window *window,
 }
 
 void
-window_set_transparent(struct window *window, int transparent)
-{
-	window->transparent = transparent;
-}
-
-void
 window_set_title(struct window *window, const char *title)
 {
 	free(window->title);
@@ -2300,6 +2344,8 @@ window_create_internal(struct display *display, struct window *parent)
 	window->saved_allocation = window->allocation;
 	window->transparent = 1;
 	window->type = TYPE_TOPLEVEL;
+	window->input_region = NULL;
+	window->opaque_region = NULL;
 
 	if (display->dpy)
 #ifdef HAVE_CAIRO_EGL
@@ -2709,14 +2755,14 @@ display_handle_global(struct wl_display *display, uint32_t id,
 static void
 display_render_frame(struct display *d)
 {
-	int radius = 8;
 	cairo_t *cr;
 
+	d->frame_radius = 8;
 	d->shadow = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, 128, 128);
 	cr = cairo_create(d->shadow);
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 	cairo_set_source_rgba(cr, 0, 0, 0, 1);
-	rounded_rect(cr, 16, 16, 112, 112, radius);
+	rounded_rect(cr, 16, 16, 112, 112, d->frame_radius);
 	cairo_fill(cr);
 	cairo_destroy(cr);
 	blur_surface(d->shadow, 64);
@@ -2726,7 +2772,7 @@ display_render_frame(struct display *d)
 	cr = cairo_create(d->active_frame);
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 	cairo_set_source_rgba(cr, 0.8, 0.8, 0.4, 1);
-	rounded_rect(cr, 16, 16, 112, 112, radius);
+	rounded_rect(cr, 16, 16, 112, 112, d->frame_radius);
 	cairo_fill(cr);
 	cairo_destroy(cr);
 
@@ -2735,7 +2781,7 @@ display_render_frame(struct display *d)
 	cr = cairo_create(d->inactive_frame);
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 	cairo_set_source_rgba(cr, 0.6, 0.6, 0.6, 1);
-	rounded_rect(cr, 16, 16, 112, 112, radius);
+	rounded_rect(cr, 16, 16, 112, 112, d->frame_radius);
 	cairo_fill(cr);
 	cairo_destroy(cr);
 }

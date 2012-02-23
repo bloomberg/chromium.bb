@@ -188,7 +188,6 @@ create_wscreensaver_instance(struct wscreensaver *screensaver,
 		return NULL;
 	}
 
-	window_set_transparent(mi->window, 0);
 	window_set_title(mi->window, progname);
 
 	if (screensaver->interface) {
