@@ -1,0 +1,19 @@
+[
+  {
+    "namespace": "experimental.keybinding",
+    "nodoc": true,
+    "events": [
+      {
+        "name": "onCommand",
+        "description": "Fired when a registered command is activated using a keyboard shortcut.",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "command",
+            "type": "string"
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -791,6 +791,10 @@ TEST(ExtensionPermissionsTest, PermissionMessages) {
   // so we won't prompt for it for now.
   skip.insert(ExtensionAPIPermission::kFileBrowserHandler);
 
+  // This permission requires explicit user action (shortcut) so we don't
+  // prompt for it.
+  skip.insert(ExtensionAPIPermission::kKeybinding);
+
   // If you've turned on the experimental command-line flag, we don't need
   // to warn you further.
   skip.insert(ExtensionAPIPermission::kExperimental);

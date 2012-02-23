@@ -1958,7 +1958,8 @@ void View::RegisterPendingAccelerators() {
   for (std::vector<ui::Accelerator>::const_iterator i(
            accelerators_->begin() + registered_accelerator_count_);
        i != accelerators_->end(); ++i) {
-    accelerator_focus_manager_->RegisterAccelerator(*i, this);
+    accelerator_focus_manager_->RegisterAccelerator(
+        *i, ui::AcceleratorManager::kNormalPriority, this);
   }
   registered_accelerator_count_ = accelerators_->size();
 }

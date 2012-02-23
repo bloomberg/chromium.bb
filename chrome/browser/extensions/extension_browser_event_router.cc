@@ -653,3 +653,18 @@ void ExtensionBrowserEventRouter::BrowserActionExecuted(
   DispatchEventWithTab(profile, extension_id, "browserAction.onClicked",
                        tab_contents->web_contents(), true);
 }
+
+void ExtensionBrowserEventRouter::CommandExecuted(
+    Profile* profile,
+    const std::string& extension_id,
+    const std::string& command) {
+  ListValue args;
+  args.Append(Value::CreateStringValue(command));
+  std::string json_args;
+  base::JSONWriter::Write(&args, false, &json_args);
+
+  DispatchEventToExtension(profile,
+                           extension_id,
+                           "experimental.keybinding.onCommand",
+                           json_args);
+}

@@ -795,9 +795,10 @@ void ExternalTabContainer::OnForwardMessageToExternalHost(
 ////////////////////////////////////////////////////////////////////////////////
 // ExternalTabContainer, NotificationObserver implementation:
 
-void ExternalTabContainer::Observe(int type,
-                                   const content::NotificationSource& source,
-                                   const content::NotificationDetails& details) {
+void ExternalTabContainer::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   if (!automation_)
     return;
 
@@ -1118,8 +1119,10 @@ void ExternalTabContainer::LoadAccelerators() {
     accelerator_table_[accelerator] = accelerators[i].cmd;
 
     // Also register with the focus manager.
-    if (focus_manager_)
-      focus_manager_->RegisterAccelerator(accelerator, this);
+    if (focus_manager_) {
+      focus_manager_->RegisterAccelerator(
+          accelerator, ui::AcceleratorManager::kNormalPriority, this);
+    }
   }
 }
 

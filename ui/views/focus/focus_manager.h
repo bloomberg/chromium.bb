@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "ui/base/accelerators/accelerator_manager.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/events/event.h"
@@ -189,6 +190,14 @@ class VIEWS_EXPORT FocusManager {
   // Register a keyboard accelerator for the specified target. If multiple
   // targets are registered for an accelerator, a target registered later has
   // higher priority.
+  // |accelerator| is the accelerator to register.
+  // |priority| denotes the priority of the handler.
+  // NOTE: In almost all cases, you should specify kPriorityNormal for this
+  // parameter. Setting it to kPriorityHigh prevents Chrome from sending the
+  // shortcut to the webpage if the renderer has focus, which is not desirable
+  // except for very isolated cases.
+  // |target| is the AcceleratorTarget that handles the event once the
+  // accelerator is pressed.
   // Note that we are currently limited to accelerators that are either:
   // - a key combination including Ctrl or Alt
   // - the escape key
@@ -196,6 +205,7 @@ class VIEWS_EXPORT FocusManager {
   // - any F key (F1, F2, F3 ...)
   // - any browser specific keys (as available on special keyboards)
   void RegisterAccelerator(const ui::Accelerator& accelerator,
+                           ui::AcceleratorManager::HandlerPriority priority,
                            ui::AcceleratorTarget* target);
 
   // Unregister the specified keyboard accelerator for the specified target.
@@ -238,6 +248,9 @@ class VIEWS_EXPORT FocusManager {
   // accelerator.
   ui::AcceleratorTarget* GetCurrentTargetForAccelerator(
       const ui::Accelerator& accelertor) const;
+
+  // Whether the given |accelerator| has a priority handler associated with it.
+  bool HasPriorityHandler(const ui::Accelerator& accelerator) const;
 
   // Clears the native view having the focus.
   virtual void ClearNativeFocus();

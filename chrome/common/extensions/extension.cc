@@ -18,6 +18,7 @@
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -41,6 +42,7 @@
 #include "grit/theme_resources.h"
 #include "net/base/registry_controlled_domain.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/glue/image_decoder.h"
@@ -217,6 +219,102 @@ Extension::InputComponentInfo::~InputComponentInfo() {}
 
 Extension::TtsVoice::TtsVoice() {}
 Extension::TtsVoice::~TtsVoice() {}
+
+Extension::ExtensionKeybinding::ExtensionKeybinding() {}
+Extension::ExtensionKeybinding::~ExtensionKeybinding() {}
+
+bool Extension::ExtensionKeybinding::Parse(DictionaryValue* command,
+                                           const std::string& command_name,
+                                           int index,
+                                           string16* error) {
+  DCHECK(!command_name.empty());
+  std::string key_binding;
+  if (!command->GetString(keys::kKey, &key_binding) ||
+      key_binding.empty()) {
+    *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+        errors::kInvalidKeyBinding,
+        base::IntToString(index),
+        "Missing");
+    return false;
+  }
+
+  std::string original_keybinding = key_binding;
+  // Normalize '-' to '+'.
+  ReplaceSubstringsAfterOffset(&key_binding, 0, "-", "+");
+  // Remove all spaces.
+  ReplaceSubstringsAfterOffset(&key_binding, 0, " ", "");
+  // And finally, lower-case it.
+  key_binding = StringToLowerASCII(key_binding);
+
+  std::vector<std::string> tokens;
+  base::SplitString(key_binding, '+', &tokens);
+  if (tokens.size() < 2 || tokens.size() > 3) {
+    *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+        errors::kInvalidKeyBinding,
+        base::IntToString(index),
+        original_keybinding);
+    return false;
+  }
+
+  // Now, parse it into an accelerator.
+  bool ctrl = false;
+  bool alt = false;
+  bool shift = false;
+  ui::KeyboardCode key = ui::VKEY_UNKNOWN;
+  for (size_t i = 0; i < tokens.size(); i++) {
+    if (tokens[i] == "ctrl") {
+      ctrl = true;
+    } else if (tokens[i] == "alt") {
+      alt = true;
+    } else if (tokens[i] == "shift") {
+      shift = true;
+    } else if (tokens[i].size() == 1 &&
+               tokens[i][0] >= 'a' && tokens[i][0] <= 'z') {
+      if (key != ui::VKEY_UNKNOWN) {
+        // Multiple key assignments.
+        key = ui::VKEY_UNKNOWN;
+        break;
+      }
+
+      key = static_cast<ui::KeyboardCode>(ui::VKEY_A + (tokens[i][0] - 'a'));
+    } else {
+      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+          errors::kInvalidKeyBinding,
+          base::IntToString(index),
+          original_keybinding);
+      return false;
+    }
+  }
+
+  // We support Ctrl+foo, Alt+foo, Ctrl+Shift+foo, Alt+Shift+foo, but not
+  // Ctrl+Alt+foo. For a more detailed reason why we don't support Ctrl+Alt+foo:
+  // http://blogs.msdn.com/b/oldnewthing/archive/2004/03/29/101121.aspx.
+  if (key == ui::VKEY_UNKNOWN || (ctrl == true && alt == true)) {
+    *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+        errors::kInvalidKeyBinding,
+        base::IntToString(index),
+        original_keybinding);
+    return false;
+  }
+
+  accelerator_ = ui::Accelerator(key, shift, ctrl, alt);
+
+  if (command_name !=
+          extension_manifest_values::kPageActionKeybindingEvent &&
+      command_name !=
+          extension_manifest_values::kBrowserActionKeybindingEvent) {
+    if (!command->GetString(keys::kDescription, &description_) ||
+        description_.empty()) {
+      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+          errors::kInvalidKeyBindingDescription,
+          base::IntToString(index));
+      return false;
+    }
+  }
+
+  command_name_ = command_name;
+  return true;
+}
 
 //
 // Extension
@@ -857,7 +955,7 @@ FileBrowserHandler* Extension::LoadFileBrowserHandler(
   // Read the file browser action |default_icon| (optional).
   if (file_browser_handler->HasKey(keys::kPageActionDefaultIcon)) {
     if (!file_browser_handler->GetString(
-            keys::kPageActionDefaultIcon,&default_icon) ||
+            keys::kPageActionDefaultIcon, &default_icon) ||
         default_icon.empty()) {
       *error = ASCIIToUTF16(errors::kInvalidPageActionIconPath);
       return NULL;
@@ -1158,7 +1256,7 @@ bool Extension::LoadWebIntentServices(const extensions::Manifest* manifest,
         !one_service->GetList(keys::kIntentType, &mime_types) ||
         mime_types->GetSize() == 0) {
       *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidIntentType,*iter);
+          errors::kInvalidIntentType, *iter);
       return false;
     }
 
@@ -1173,7 +1271,7 @@ bool Extension::LoadWebIntentServices(const extensions::Manifest* manifest,
         if (!service_url.is_valid() ||
             !(web_extent().MatchesURL(service_url))) {
           *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
-              errors::kInvalidIntentPageInHostedApp,*iter);
+              errors::kInvalidIntentPageInHostedApp, *iter);
           return false;
         }
         service.service_url = service_url;
@@ -1181,7 +1279,7 @@ bool Extension::LoadWebIntentServices(const extensions::Manifest* manifest,
         // We do not allow absolute intent URLs in non-hosted apps.
         if (GURL(value).is_valid()) {
           *error =ExtensionErrorUtils::FormatErrorMessageUTF16(
-              errors::kCannotAccessPage,value.c_str());
+              errors::kCannotAccessPage, value.c_str());
           return false;
         }
         service.service_url = GetResourceURL(value);
@@ -1714,6 +1812,35 @@ bool Extension::InitFromValue(extensions::Manifest* manifest, int flags,
   if (manifest->HasKey(keys::kConvertedFromUserScript))
     manifest->GetBoolean(keys::kConvertedFromUserScript,
                         &converted_from_user_script_);
+
+  // Initialize commands (if present).
+  if (manifest->HasKey(keys::kCommands)) {
+    DictionaryValue* commands = NULL;
+    if (!manifest->GetDictionary(keys::kCommands, &commands)) {
+      *error = ASCIIToUTF16(errors::kInvalidCommandsKey);
+      return false;
+    }
+
+    int command_index = 0;
+    for (DictionaryValue::key_iterator iter = commands->begin_keys();
+         iter != commands->end_keys(); ++iter) {
+      ++command_index;
+
+      DictionaryValue* command = NULL;
+      if (!commands->GetDictionary(*iter, &command)) {
+        *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+            errors::kInvalidKeyBindingDictionary,
+            base::IntToString(command_index));
+        return false;
+      }
+
+      ExtensionKeybinding binding;
+      if (!binding.Parse(command, *iter, command_index, error))
+        return false;  // |error| already set.
+
+      commands_.push_back(binding);
+    }
+  }
 
   // Initialize icons (if present).
   if (manifest->HasKey(keys::kIcons)) {
@@ -2872,7 +2999,7 @@ bool Extension::CanSpecifyAPIPermission(
 
   bool supports_type = false;
   switch (GetType()) {
-    case TYPE_USER_SCRIPT: // Pass through.
+    case TYPE_USER_SCRIPT:  // Pass through.
     case TYPE_EXTENSION:
       supports_type = permission->supports_extensions();
       break;
@@ -3028,7 +3155,6 @@ bool Extension::IsSyncable() const {
   // their positions should sync.
   return location_ == Extension::INTERNAL ||
       ShouldDisplayInLauncher();
-
 }
 
 bool Extension::ShouldDisplayInLauncher() const {

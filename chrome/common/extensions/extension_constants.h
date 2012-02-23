@@ -24,6 +24,7 @@ namespace extension_manifest_keys {
   extern const char kBrowserAction[];
   extern const char kBrowseURLs[];
   extern const char kChromeURLOverrides[];
+  extern const char kCommands[];
   extern const char kContentScripts[];
   extern const char kContentSecurityPolicy[];
   extern const char kConvertedFromUserScript[];
@@ -33,6 +34,7 @@ namespace extension_manifest_keys {
   extern const char kDefaultLocale[];
   extern const char kDescription[];
   extern const char kDevToolsPage[];
+  extern const char kEventName[];
   extern const char kExcludeGlobs[];
   extern const char kExcludeMatches[];
   extern const char kFileFilters[];
@@ -50,6 +52,7 @@ namespace extension_manifest_keys {
   extern const char kIntentDisposition[];
   extern const char kIsolation[];
   extern const char kJs[];
+  extern const char kKey[];
   extern const char kKeycode[];
   extern const char kLanguage[];
   extern const char kLaunch[];
@@ -119,6 +122,7 @@ namespace extension_manifest_keys {
 
 // Some values expected in manifests.
 namespace extension_manifest_values {
+  extern const char kBrowserActionKeybindingEvent[];
   extern const char kIncognitoSplit[];
   extern const char kIncognitoSpanning[];
   extern const char kIntentDispositionWindow[];
@@ -128,6 +132,7 @@ namespace extension_manifest_values {
   extern const char kLaunchContainerShell[];
   extern const char kLaunchContainerTab[];
   extern const char kLaunchContainerWindow[];
+  extern const char kPageActionKeybindingEvent[];
   extern const char kPageActionTypePermanent[];
   extern const char kPageActionTypeTab[];
   extern const char kRunAtDocumentEnd[];
@@ -163,6 +168,7 @@ namespace extension_manifest_errors {
   extern const char kInvalidBrowseURL[];
   extern const char kInvalidBrowseURLs[];
   extern const char kInvalidChromeURLOverrides[];
+  extern const char kInvalidCommandsKey[];
   extern const char kInvalidContentScript[];
   extern const char kInvalidContentScriptsList[];
   extern const char kInvalidContentSecurityPolicy[];
@@ -203,6 +209,9 @@ namespace extension_manifest_errors {
   extern const char kInvalidJs[];
   extern const char kInvalidJsList[];
   extern const char kInvalidKey[];
+  extern const char kInvalidKeyBinding[];
+  extern const char kInvalidKeyBindingDescription[];
+  extern const char kInvalidKeyBindingDictionary[];
   extern const char kInvalidLaunchContainer[];
   extern const char kInvalidLaunchContainerForNonPlatform[];
   extern const char kInvalidLaunchContainerForPlatform[];

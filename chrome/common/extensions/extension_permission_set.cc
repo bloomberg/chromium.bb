@@ -229,6 +229,9 @@ void ExtensionAPIPermission::RegisterAllPermissions(
       ExtensionPermissionMessage::kBrowsingHistory,
       kFlagNone, kTypeDefault);
   info->RegisterPermission(
+      kKeybinding, "keybinding", 0,
+      ExtensionPermissionMessage::kNone, kFlagNone, kTypeDefault);
+  info->RegisterPermission(
       kIdle, "idle", 0, ExtensionPermissionMessage::kNone,
       kFlagNone, kTypeDefault);
   info->RegisterPermission(

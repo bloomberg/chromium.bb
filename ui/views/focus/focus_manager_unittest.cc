@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -211,7 +211,7 @@ class TestAcceleratorTarget : public ui::AcceleratorTarget {
  private:
   int accelerator_count_;  // number of times that the accelerator is activated
   bool process_accelerator_;  // return value of AcceleratorPressed
-  bool can_handle_accelerators_; // return value of CanHandleAccelerators
+  bool can_handle_accelerators_;  // return value of CanHandleAccelerators
 
   DISALLOW_COPY_AND_ASSIGN(TestAcceleratorTarget);
 };
@@ -231,8 +231,12 @@ TEST_F(FocusManagerTest, CallsNormalAcceleratorTarget) {
             focus_manager->GetCurrentTargetForAccelerator(escape_accelerator));
 
   // Register targets.
-  focus_manager->RegisterAccelerator(return_accelerator, &return_target);
-  focus_manager->RegisterAccelerator(escape_accelerator, &escape_target);
+  focus_manager->RegisterAccelerator(return_accelerator,
+                                     ui::AcceleratorManager::kNormalPriority,
+                                     &return_target);
+  focus_manager->RegisterAccelerator(escape_accelerator,
+                                     ui::AcceleratorManager::kNormalPriority,
+                                     &escape_target);
 
   // Checks if the correct target is registered.
   EXPECT_EQ(&return_target,
@@ -253,7 +257,9 @@ TEST_F(FocusManagerTest, CallsNormalAcceleratorTarget) {
   // Register another target for the return key.
   TestAcceleratorTarget return_target2(true);
   EXPECT_EQ(return_target2.accelerator_count(), 0);
-  focus_manager->RegisterAccelerator(return_accelerator, &return_target2);
+  focus_manager->RegisterAccelerator(return_accelerator,
+                                     ui::AcceleratorManager::kNormalPriority,
+                                     &return_target2);
   EXPECT_EQ(&return_target2,
             focus_manager->GetCurrentTargetForAccelerator(return_accelerator));
 
@@ -265,7 +271,9 @@ TEST_F(FocusManagerTest, CallsNormalAcceleratorTarget) {
   // Register a target that does not process the accelerator event.
   TestAcceleratorTarget return_target3(false);
   EXPECT_EQ(return_target3.accelerator_count(), 0);
-  focus_manager->RegisterAccelerator(return_accelerator, &return_target3);
+  focus_manager->RegisterAccelerator(return_accelerator,
+                                     ui::AcceleratorManager::kNormalPriority,
+                                     &return_target3);
   EXPECT_EQ(&return_target3,
             focus_manager->GetCurrentTargetForAccelerator(return_accelerator));
 
@@ -308,6 +316,95 @@ TEST_F(FocusManagerTest, CallsNormalAcceleratorTarget) {
   EXPECT_EQ(escape_target.accelerator_count(), 1);
 }
 
+TEST_F(FocusManagerTest, HighPriorityHandlers) {
+  FocusManager* focus_manager = GetFocusManager();
+  ui::Accelerator escape_accelerator(ui::VKEY_ESCAPE, false, false, false);
+
+  TestAcceleratorTarget escape_target_high(true);
+  TestAcceleratorTarget escape_target_normal(true);
+  EXPECT_EQ(escape_target_high.accelerator_count(), 0);
+  EXPECT_EQ(escape_target_normal.accelerator_count(), 0);
+  EXPECT_EQ(NULL,
+      focus_manager->GetCurrentTargetForAccelerator(escape_accelerator));
+  EXPECT_FALSE(focus_manager->HasPriorityHandler(escape_accelerator));
+
+  // Register high priority target.
+  focus_manager->RegisterAccelerator(escape_accelerator,
+                                     ui::AcceleratorManager::kHighPriority,
+                                     &escape_target_high);
+  EXPECT_EQ(&escape_target_high,
+     focus_manager->GetCurrentTargetForAccelerator(escape_accelerator));
+  EXPECT_TRUE(focus_manager->HasPriorityHandler(escape_accelerator));
+
+  // Hit the escape key.
+  EXPECT_TRUE(focus_manager->ProcessAccelerator(escape_accelerator));
+  EXPECT_EQ(escape_target_high.accelerator_count(), 1);
+  EXPECT_EQ(escape_target_normal.accelerator_count(), 0);
+
+  // Add a normal priority target and make sure it doesn't see the key.
+  focus_manager->RegisterAccelerator(escape_accelerator,
+                                     ui::AcceleratorManager::kNormalPriority,
+                                     &escape_target_normal);
+
+  // Checks if the correct target is registered (same as before, the high
+  // priority one).
+  EXPECT_EQ(&escape_target_high,
+      focus_manager->GetCurrentTargetForAccelerator(escape_accelerator));
+  EXPECT_TRUE(focus_manager->HasPriorityHandler(escape_accelerator));
+
+  // Hit the escape key.
+  EXPECT_TRUE(focus_manager->ProcessAccelerator(escape_accelerator));
+  EXPECT_EQ(escape_target_high.accelerator_count(), 2);
+  EXPECT_EQ(escape_target_normal.accelerator_count(), 0);
+
+  // Unregister the high priority accelerator.
+  focus_manager->UnregisterAccelerator(escape_accelerator, &escape_target_high);
+  EXPECT_EQ(&escape_target_normal,
+      focus_manager->GetCurrentTargetForAccelerator(escape_accelerator));
+  EXPECT_FALSE(focus_manager->HasPriorityHandler(escape_accelerator));
+
+  // Hit the escape key.
+  EXPECT_TRUE(focus_manager->ProcessAccelerator(escape_accelerator));
+  EXPECT_EQ(escape_target_high.accelerator_count(), 2);
+  EXPECT_EQ(escape_target_normal.accelerator_count(), 1);
+
+  // Add the high priority target back and make sure it starts seeing the key.
+  focus_manager->RegisterAccelerator(escape_accelerator,
+                                     ui::AcceleratorManager::kHighPriority,
+                                     &escape_target_high);
+  EXPECT_EQ(&escape_target_high,
+      focus_manager->GetCurrentTargetForAccelerator(escape_accelerator));
+  EXPECT_TRUE(focus_manager->HasPriorityHandler(escape_accelerator));
+
+  // Hit the escape key.
+  EXPECT_TRUE(focus_manager->ProcessAccelerator(escape_accelerator));
+  EXPECT_EQ(escape_target_high.accelerator_count(), 3);
+  EXPECT_EQ(escape_target_normal.accelerator_count(), 1);
+
+  // Unregister the normal priority accelerator.
+  focus_manager->UnregisterAccelerator(
+      escape_accelerator, &escape_target_normal);
+  EXPECT_EQ(&escape_target_high,
+      focus_manager->GetCurrentTargetForAccelerator(escape_accelerator));
+  EXPECT_TRUE(focus_manager->HasPriorityHandler(escape_accelerator));
+
+  // Hit the escape key.
+  EXPECT_TRUE(focus_manager->ProcessAccelerator(escape_accelerator));
+  EXPECT_EQ(escape_target_high.accelerator_count(), 4);
+  EXPECT_EQ(escape_target_normal.accelerator_count(), 1);
+
+  // Unregister the high priority accelerator.
+  focus_manager->UnregisterAccelerator(escape_accelerator, &escape_target_high);
+  EXPECT_EQ(NULL,
+      focus_manager->GetCurrentTargetForAccelerator(escape_accelerator));
+  EXPECT_FALSE(focus_manager->HasPriorityHandler(escape_accelerator));
+
+  // Hit the escape key (no change, no targets registered).
+  EXPECT_FALSE(focus_manager->ProcessAccelerator(escape_accelerator));
+  EXPECT_EQ(escape_target_high.accelerator_count(), 4);
+  EXPECT_EQ(escape_target_normal.accelerator_count(), 1);
+}
+
 TEST_F(FocusManagerTest, CallsEnabledAcceleratorTargetsOnly) {
   FocusManager* focus_manager = GetFocusManager();
   ui::Accelerator return_accelerator(ui::VKEY_RETURN, false, false, false);
@@ -315,8 +412,12 @@ TEST_F(FocusManagerTest, CallsEnabledAcceleratorTargetsOnly) {
   TestAcceleratorTarget return_target1(true);
   TestAcceleratorTarget return_target2(true);
 
-  focus_manager->RegisterAccelerator(return_accelerator, &return_target1);
-  focus_manager->RegisterAccelerator(return_accelerator, &return_target2);
+  focus_manager->RegisterAccelerator(return_accelerator,
+                                     ui::AcceleratorManager::kNormalPriority,
+                                     &return_target1);
+  focus_manager->RegisterAccelerator(return_accelerator,
+                                     ui::AcceleratorManager::kNormalPriority,
+                                     &return_target2);
   EXPECT_TRUE(focus_manager->ProcessAccelerator(return_accelerator));
   EXPECT_EQ(0, return_target1.accelerator_count());
   EXPECT_EQ(1, return_target2.accelerator_count());
@@ -381,7 +482,9 @@ TEST_F(FocusManagerTest, CallsSelfDeletingAcceleratorTarget) {
             focus_manager->GetCurrentTargetForAccelerator(return_accelerator));
 
   // Register the target.
-  focus_manager->RegisterAccelerator(return_accelerator, &target);
+  focus_manager->RegisterAccelerator(return_accelerator,
+                                     ui::AcceleratorManager::kNormalPriority,
+                                     &target);
   EXPECT_EQ(&target,
             focus_manager->GetCurrentTargetForAccelerator(return_accelerator));
 

@@ -115,6 +115,7 @@ class ExtensionAPIPermission {
     kIdle,
     kInput,
     kInputMethodPrivate,
+    kKeybinding,
     kManagement,
     kMediaPlayerPrivate,
     kMetricsPrivate,

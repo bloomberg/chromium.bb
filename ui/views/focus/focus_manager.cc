@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/accelerators/accelerator_manager.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/focus/view_storage.h"
@@ -74,11 +73,17 @@ bool FocusManager::OnKeyEvent(const KeyEvent& event) {
     return false;
 #endif
 
+  ui::Accelerator accelerator(event.key_code(),
+                              event.IsShiftDown(),
+                              event.IsControlDown(),
+                              event.IsAltDown());
+
 #if defined(OS_WIN)
   // If the focused view wants to process the key event as is, let it be.
   // On Linux we always dispatch key events to the focused view first, so
   // we should not do this check here. See also NativeWidgetGtk::OnKeyEvent().
-  if (focused_view_ && focused_view_->SkipDefaultKeyEventProcessing(event))
+  if (focused_view_ && focused_view_->SkipDefaultKeyEventProcessing(event) &&
+      !accelerator_manager_->HasPriorityHandler(accelerator))
     return true;
 #endif
 
@@ -125,10 +130,6 @@ bool FocusManager::OnKeyEvent(const KeyEvent& event) {
   // Process keyboard accelerators.
   // If the key combination matches an accelerator, the accelerator is
   // triggered, otherwise the key event is processed as usual.
-  ui::Accelerator accelerator(event.key_code(),
-                              event.IsShiftDown(),
-                              event.IsControlDown(),
-                              event.IsAltDown());
   if (ProcessAccelerator(accelerator)) {
     // If a shortcut was activated for this keydown message, do not propagate
     // the event further.
@@ -302,7 +303,7 @@ void FocusManager::StoreFocusedView() {
     return;
   }
 
-  // TODO (jcampan): when a TabContents containing a popup is closed, the focus
+  // TODO(jcivelli): when a TabContents containing a popup is closed, the focus
   // is stored twice causing an assert. We should find a better alternative than
   // removing the view from the storage explicitly.
   view_storage->RemoveView(stored_focused_view_storage_id_);
@@ -405,8 +406,9 @@ View* FocusManager::FindFocusableView(FocusTraversable* focus_traversable,
 
 void FocusManager::RegisterAccelerator(
     const ui::Accelerator& accelerator,
+    ui::AcceleratorManager::HandlerPriority priority,
     ui::AcceleratorTarget* target) {
-  accelerator_manager_->Register(accelerator, target);
+  accelerator_manager_->Register(accelerator, priority, target);
 }
 
 void FocusManager::UnregisterAccelerator(const ui::Accelerator& accelerator,
@@ -442,6 +444,11 @@ void FocusManager::ResetMenuKeyState() {
 ui::AcceleratorTarget* FocusManager::GetCurrentTargetForAccelerator(
     const ui::Accelerator& accelerator) const {
   return accelerator_manager_->GetCurrentTarget(accelerator);
+}
+
+bool FocusManager::HasPriorityHandler(
+    const ui::Accelerator& accelerator) const {
+  return accelerator_manager_->HasPriorityHandler(accelerator);
 }
 
 // static

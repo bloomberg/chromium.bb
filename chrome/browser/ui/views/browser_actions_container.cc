@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/pref_names.h"
@@ -83,6 +84,9 @@ BrowserActionButton::BrowserActionButton(const Extension* extension,
 }
 
 void BrowserActionButton::Destroy() {
+  if (keybinding_.get() && panel_->GetFocusManager())
+    panel_->GetFocusManager()->UnregisterAccelerator(*keybinding_.get(), this);
+
   if (context_menu_) {
     context_menu_->Cancel();
     MessageLoop::current()->DeleteSoon(FROM_HERE, this);
@@ -108,6 +112,20 @@ void BrowserActionButton::ViewHierarchyChanged(
                        gfx::Size(Extension::kBrowserActionIconMaxSize,
                                  Extension::kBrowserActionIconMaxSize),
                        ImageLoadingTracker::DONT_CACHE);
+
+    // Iterate through all the keybindings and see if one is assigned to the
+    // browserAction.
+    const std::vector<Extension::ExtensionKeybinding>& commands =
+        extension_->keybindings();
+    for (size_t i = 0; i < commands.size(); ++i) {
+      if (commands[i].command_name() ==
+          extension_manifest_values::kBrowserActionKeybindingEvent) {
+        keybinding_.reset(new ui::Accelerator(commands[i].accelerator()));
+        panel_->GetFocusManager()->RegisterAccelerator(
+            *keybinding_.get(), ui::AcceleratorManager::kHighPriority, this);
+        break;
+      }
+    }
   }
 
   MenuButton::ViewHierarchyChanged(is_add, parent, child);
@@ -271,6 +289,12 @@ void BrowserActionButton::ShowContextMenu(const gfx::Point& p,
   context_menu_ = NULL;
 }
 
+bool BrowserActionButton::AcceleratorPressed(
+    const ui::Accelerator& accelerator) {
+  panel_->OnBrowserActionExecuted(this, false);
+  return true;
+}
+
 void BrowserActionButton::SetButtonPushed() {
   SetState(views::CustomButton::BS_PUSHED);
   menu_visible_ = true;
@@ -359,6 +383,8 @@ BrowserActionsContainer::BrowserActionsContainer(Browser* browser,
       container_width_(0),
       chevron_(NULL),
       overflow_menu_(NULL),
+      extension_keybinding_registry_(browser->profile(),
+                                     owner_view->GetFocusManager()),
       suppress_chevron_(false),
       resize_amount_(0),
       animation_target_size_(0),

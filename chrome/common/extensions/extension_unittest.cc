@@ -921,6 +921,90 @@ TEST(ExtensionTest, OnlyDisplayAppsInLauncher) {
   EXPECT_TRUE(app->ShouldDisplayInLauncher());
 }
 
+TEST(ExtensionTest, ExtensionKeybindingParsing) {
+  const ui::Accelerator None = ui::Accelerator();
+  const ui::Accelerator ShiftF =
+      ui::Accelerator(ui::VKEY_F, true, false, false);
+  const ui::Accelerator CtrlF =
+      ui::Accelerator(ui::VKEY_F, false, true, false);
+  const ui::Accelerator AltF =
+      ui::Accelerator(ui::VKEY_F, false, false, true);
+  const ui::Accelerator CtrlShiftF =
+      ui::Accelerator(ui::VKEY_F, true, true, false);
+  const ui::Accelerator AltShiftF =
+      ui::Accelerator(ui::VKEY_F, true, false, true);
+
+  const struct {
+    bool expected_result;
+    ui::Accelerator accelerator;
+    const char* command_name;
+    const char* key;
+    const char* description;
+  } kTests[] = {
+    // Negative test (one or more missing required fields). We don't need to
+    // test |command_name| being blank as it is used as a key in the manifest,
+    // so it can't be blank (and we DCHECK when it is).
+    { false, None, "command", "",       "" },
+    { false, None, "command", "ctrl+f", "" },
+    { false, None, "command", "",       "description" },
+    // Ctrl+Alt is not permitted, see MSDN link in comments in Parse function.
+    { false, None, "command", "Ctrl+Alt+F", "description" },
+    // Unsupported shortcuts/too many.
+    { false, None, "command", "F10",      "description" },
+    { false, None, "command", "Ctrl+1",   "description" },
+    { false, None, "command", "Ctrl+F+G", "description" },
+    // Basic tests.
+    { true, CtrlF,      "command", "Ctrl+F",       "description" },
+    { true, ShiftF,     "command", "Shift+F",      "description" },
+    { true, AltF,       "command", "Alt+F",        "description" },
+    { true, CtrlShiftF, "command", "Ctrl+Shift+F", "description" },
+    { true, AltShiftF,  "command", "Alt+Shift+F",  "description" },
+    // Order tests.
+    { true, CtrlF,      "command", "F+Ctrl",       "description" },
+    { true, ShiftF,     "command", "F+Shift",      "description" },
+    { true, AltF,       "command", "F+Alt",        "description" },
+    { true, CtrlShiftF, "command", "F+Ctrl+Shift", "description" },
+    { true, CtrlShiftF, "command", "F+Shift+Ctrl", "description" },
+    { true, AltShiftF,  "command", "F+Alt+Shift",  "description" },
+    { true, AltShiftF,  "command", "F+Shift+Alt",  "description" },
+    // Case insensitivity is OK.
+    { true, CtrlF, "command", "Ctrl+F", "description" },
+    { true, CtrlF, "command", "cTrL+f", "description" },
+    // Extra spaces are fine.
+    { true, CtrlShiftF, "command", "  Ctrl + Shift   +F", "description" },
+    // Minus is equivalent to plus.
+    { true, CtrlShiftF, "command", "Ctrl+Shift-F", "description" },
+    // Skipping description is OK for browser- and pageActions.
+    { true, CtrlF, "browserAction", "Ctrl+F", "" },
+    { true, CtrlF, "pageAction",    "Ctrl+F", "" },
+  };
+
+  // TODO(finnur): test Command/Options on Mac when implemented.
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {
+    scoped_ptr<DictionaryValue> command(new DictionaryValue);
+    command->SetString("key", kTests[i].key);
+    command->SetString("description", kTests[i].description);
+
+    Extension::ExtensionKeybinding keybinding;
+    string16 error;
+    bool result =
+        keybinding.Parse(command.get(), kTests[i].command_name, i, &error);
+
+    SCOPED_TRACE(std::string("Command name: |") + kTests[i].command_name +
+                 "| key: |" + kTests[i].key +
+                 "| description: |" + kTests[i].description +
+                 "| index: " + base::IntToString(i));
+
+    EXPECT_EQ(kTests[i].expected_result, result);
+    if (result) {
+      EXPECT_STREQ(kTests[i].description, keybinding.description().c_str());
+      EXPECT_STREQ(kTests[i].command_name, keybinding.command_name().c_str());
+      EXPECT_EQ(kTests[i].accelerator, keybinding.accelerator());
+    }
+  }
+}
+
 // These last 2 tests don't make sense on Chrome OS, where extension plugins
 // are not allowed.
 #if !defined(OS_CHROMEOS)

@@ -276,7 +276,9 @@ void AcceleratorController::Init() {
 
 void AcceleratorController::Register(const ui::Accelerator& accelerator,
                                      ui::AcceleratorTarget* target) {
-  accelerator_manager_->Register(accelerator, target);
+  accelerator_manager_->Register(accelerator,
+                                 ui::AcceleratorManager::kNormalPriority,
+                                 target);
 }
 
 void AcceleratorController::Unregister(const ui::Accelerator& accelerator,
@@ -403,7 +405,7 @@ bool AcceleratorController::AcceleratorPressed(
       return HandlePrintWindowHierarchy();
 #endif
     default:
-      NOTREACHED() << "Unhandled action " << it->second;;
+      NOTREACHED() << "Unhandled action " << it->second;
   }
   return false;
 }

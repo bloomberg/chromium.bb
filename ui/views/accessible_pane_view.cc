@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,11 +60,13 @@ bool AccessiblePaneView::SetPaneFocus(views::View* initial_focus) {
 
   // Otherwise, set accelerators and start listening for focus change events.
   pane_has_focus_ = true;
-  focus_manager_->RegisterAccelerator(home_key_, this);
-  focus_manager_->RegisterAccelerator(end_key_, this);
-  focus_manager_->RegisterAccelerator(escape_key_, this);
-  focus_manager_->RegisterAccelerator(left_key_, this);
-  focus_manager_->RegisterAccelerator(right_key_, this);
+  ui::AcceleratorManager::HandlerPriority normal =
+      ui::AcceleratorManager::kNormalPriority;
+  focus_manager_->RegisterAccelerator(home_key_, normal, this);
+  focus_manager_->RegisterAccelerator(end_key_, normal, this);
+  focus_manager_->RegisterAccelerator(escape_key_, normal, this);
+  focus_manager_->RegisterAccelerator(left_key_, normal, this);
+  focus_manager_->RegisterAccelerator(right_key_, normal, this);
   focus_manager_->AddFocusChangeListener(this);
 
   return true;

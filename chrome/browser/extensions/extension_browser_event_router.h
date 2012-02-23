@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,6 +98,11 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
   void BrowserActionExecuted(Profile* profile,
                              const std::string& extension_id,
                              Browser* browser);
+
+  // A keyboard shortcut resulted in an extension command.
+  void CommandExecuted(Profile* profile,
+                       const std::string& extension_id,
+                       const std::string& command);
 
   // content::NotificationObserver.
   virtual void Observe(int type,

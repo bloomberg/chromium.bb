@@ -22,6 +22,7 @@ const char kBackgroundScripts[] = "background.scripts";
 const char kBackgroundPersistent[] = "background.persistent";
 const char kBrowserAction[] = "browser_action";
 const char kChromeURLOverrides[] = "chrome_url_overrides";
+const char kCommands[] = "commands";
 const char kContentScripts[] = "content_scripts";
 const char kContentSecurityPolicy[] = "content_security_policy";
 const char kConvertedFromUserScript[] = "converted_from_user_script";
@@ -31,6 +32,7 @@ const char kCurrentLocale[] = "current_locale";
 const char kDefaultLocale[] = "default_locale";
 const char kDescription[] = "description";
 const char kDevToolsPage[] = "devtools_page";
+const char kEventName[] = "event_name";
 const char kExcludeGlobs[] = "exclude_globs";
 const char kExcludeMatches[] = "exclude_matches";
 const char kFileFilters[] = "file_filters";
@@ -48,6 +50,7 @@ const char kIntentTitle[] = "title";
 const char kIntentDisposition[] = "disposition";
 const char kIsolation[] = "app.isolation";
 const char kJs[] = "js";
+const char kKey[] = "key";
 const char kKeycode[] = "keyCode";
 const char kLanguage[] = "language";
 const char kLaunch[] = "app.launch";
@@ -116,6 +119,7 @@ const char kWebURLs[] = "app.urls";
 }  // namespace extension_manifest_keys
 
 namespace extension_manifest_values {
+const char kBrowserActionKeybindingEvent[] = "browserAction";
 const char kIncognitoSplit[] = "split";
 const char kIncognitoSpanning[] = "spanning";
 const char kIntentDispositionWindow[] = "window";
@@ -124,6 +128,7 @@ const char kIsolatedStorage[] = "storage";
 const char kRunAtDocumentStart[] = "document_start";
 const char kRunAtDocumentEnd[] = "document_end";
 const char kRunAtDocumentIdle[] = "document_idle";
+const char kPageActionKeybindingEvent[] = "pageAction";
 const char kPageActionTypeTab[] = "tab";
 const char kPageActionTypePermanent[] = "permanent";
 const char kLaunchContainerPanel[] = "panel";
@@ -189,6 +194,8 @@ const char kInvalidBrowserAction[] =
     "Invalid value for 'browser_action'.";
 const char kInvalidChromeURLOverrides[] =
     "Invalid value for 'chrome_url_overrides'.";
+const char kInvalidCommandsKey[] =
+    "Invalid value for 'commands'.";
 const char kInvalidContentScript[] =
     "Invalid value for 'content_scripts[*]'.";
 const char kInvalidContentSecurityPolicy[] =
@@ -270,6 +277,12 @@ const char kInvalidJsList[] =
     "Required value 'content_scripts[*].js' is invalid.";
 const char kInvalidKey[] =
     "Value 'key' is missing or invalid.";
+const char kInvalidKeyBinding[] =
+    "Invalid value for 'commands[*].key':";
+const char kInvalidKeyBindingDescription[] =
+    "Invalid value for 'commands[*].description'.";
+const char kInvalidKeyBindingDictionary[] =
+    "Contents of 'commands[*]' invalid.";
 const char kInvalidLaunchContainer[] =
     "Invalid value for 'app.launch.container'.";
 const char kInvalidLaunchContainerForNonPlatform[] =

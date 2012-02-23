@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,9 +58,26 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
                      owner_->browser()->profile()->GetOriginalProfile()));
 
   set_accessibility_focusable(true);
+
+  // Iterate through all the keybindings and see if one is assigned to the
+  // pageAction.
+  const std::vector<Extension::ExtensionKeybinding>& commands =
+      extension->keybindings();
+  for (size_t i = 0; i < commands.size(); ++i) {
+    if (commands[i].command_name() ==
+        extension_manifest_values::kPageActionKeybindingEvent) {
+      keybinding_.reset(new ui::Accelerator(commands[i].accelerator()));
+      owner_->GetFocusManager()->RegisterAccelerator(
+          *keybinding_.get(), ui::AcceleratorManager::kHighPriority, this);
+      break;
+    }
+  }
 }
 
 PageActionImageView::~PageActionImageView() {
+  if (keybinding_.get() && owner_->GetFocusManager())
+    owner_->GetFocusManager()->UnregisterAccelerator(*keybinding_.get(), this);
+
   if (popup_)
     popup_->GetWidget()->RemoveObserver(this);
   HidePopup();
@@ -183,6 +200,20 @@ void PageActionImageView::OnImageLoaded(
   // doing so causes crash described in http://crbug.com/57333).
   if (parent())
     owner_->UpdatePageActions();
+}
+
+bool PageActionImageView::AcceleratorPressed(
+    const ui::Accelerator& accelerator) {
+  DCHECK(visible());  // Should not have happened due to CanHandleAccelerator.
+
+  ExecuteAction(1, false);  // 1 means left-click, false means "don't inspect".
+  return true;
+}
+
+bool PageActionImageView::CanHandleAccelerators() const {
+  // While visible, we don't handle accelerators and while so we also don't
+  // count as a priority accelerator handler.
+  return visible();
 }
 
 void PageActionImageView::UpdateVisibility(WebContents* contents,

@@ -26,6 +26,7 @@
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/extensions/url_pattern_set.h"
 #include "googleurl/src/gurl.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/gfx/size.h"
 
 class ExtensionAction;
@@ -151,6 +152,29 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     bool shortcut_alt;
     bool shortcut_ctrl;
     bool shortcut_shift;
+  };
+
+  class ExtensionKeybinding {
+   public:
+    // Define out of line constructor/destructor to please Clang.
+    ExtensionKeybinding();
+    ~ExtensionKeybinding();
+
+    // Parse the key binding.
+    bool Parse(base::DictionaryValue* command,
+               const std::string& command_name,
+               int index,
+               string16* error);
+
+    // Accessors:
+    const std::string& command_name() const { return command_name_; }
+    const ui::Accelerator& accelerator() const { return accelerator_; }
+    const std::string& description() const { return description_; }
+
+   private:
+    std::string command_name_;
+    ui::Accelerator accelerator_;
+    std::string description_;
   };
 
   struct TtsVoice {
@@ -528,6 +552,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const std::vector<InputComponentInfo>& input_components() const {
     return input_components_;
   }
+  const std::vector<ExtensionKeybinding>& keybindings() const {
+    return commands_;
+  }
   bool has_background_page() const {
     return background_url_.is_valid() || !background_scripts_.empty();
   }
@@ -804,6 +831,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Optional list of input components and associated properties.
   std::vector<InputComponentInfo> input_components_;
 
+  // Optional list of commands (keyboard shortcuts).
+  std::vector<ExtensionKeybinding> commands_;
+
   // Optional list of web accessible extension resources.
   base::hash_set<std::string> web_accessible_resources_;
 
@@ -943,8 +973,8 @@ struct UnloadedExtensionInfo {
 // The details sent for EXTENSION_PERMISSIONS_UPDATED notifications.
 struct UpdatedExtensionPermissionsInfo {
   enum Reason {
-    ADDED,   // The permissions were added to the extension.
-    REMOVED, // The permissions were removed from the extension.
+    ADDED,    // The permissions were added to the extension.
+    REMOVED,  // The permissions were removed from the extension.
   };
 
   Reason reason;

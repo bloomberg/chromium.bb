@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,6 +68,10 @@ class PageActionImageView : public views::ImageView,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Overridden from ui::AcceleratorTarget.
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
+  virtual bool CanHandleAccelerators() const OVERRIDE;
+
   // Called to notify the PageAction that it should determine whether to be
   // visible or hidden. |contents| is the TabContents that is active, |url| is
   // the current page URL.
@@ -112,6 +116,10 @@ class PageActionImageView : public views::ImageView,
   ExtensionPopup* popup_;
 
   content::NotificationRegistrar registrar_;
+
+  // The extension keybinding accelerator this page action is listening for (to
+  // show the popup).
+  scoped_ptr<ui::Accelerator> keybinding_;
 
   scoped_ptr<views::MenuRunner> menu_runner_;
 

@@ -2270,7 +2270,8 @@ void BrowserView::LoadAccelerators() {
     accelerator_table_[accelerator] = accelerators[i].cmd;
 
     // Also register with the focus manager.
-    focus_manager->RegisterAccelerator(accelerator, this);
+    focus_manager->RegisterAccelerator(
+        accelerator, ui::AcceleratorManager::kNormalPriority, this);
   }
 
   // We don't need the Windows accelerator table anymore.
@@ -2287,7 +2288,7 @@ void BrowserView::LoadAccelerators() {
     accelerator_table_[accelerator] = browser::kAcceleratorMap[i].command_id;
 
     // Also register with the focus manager.
-    focus_manager->RegisterAccelerator(accelerator, this);
+    focus_manager->RegisterAccelerator(accelerator, false, this);
   }
 #endif
 }

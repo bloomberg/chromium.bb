@@ -28,6 +28,7 @@ struct Restrictions {
     map[keys::kVersion] = Manifest::kTypeAll;
     map[keys::kManifestVersion] = Manifest::kTypeAll;
     map[keys::kDescription] = Manifest::kTypeAll;
+    map[keys::kCommands] = Manifest::kTypeAll;
     map[keys::kIcons] = Manifest::kTypeAll;
     map[keys::kCurrentLocale] = Manifest::kTypeAll;
     map[keys::kDefaultLocale] = Manifest::kTypeAll;
