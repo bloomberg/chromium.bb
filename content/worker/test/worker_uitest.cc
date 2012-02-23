@@ -27,8 +27,6 @@ const FilePath::CharType* kTestDir =
     FILE_PATH_LITERAL("workers");
 const FilePath::CharType* kManySharedWorkersFile =
     FILE_PATH_LITERAL("many_shared_workers.html");
-const FilePath::CharType* kManyWorkersFile =
-    FILE_PATH_LITERAL("many_workers.html");
 const FilePath::CharType* kQuerySharedWorkerShutdownFile =
     FILE_PATH_LITERAL("queued_shared_worker_shutdown.html");
 const FilePath::CharType* kShutdownSharedWorkerFile =
@@ -481,39 +479,36 @@ TEST_F(WorkerTest, DISABLED_MessagePorts) {
     RunLayoutTest(kLayoutTestFiles[i], kNoHttpPort);
 }
 
-// OS X: http://crbug.com/48664
-// Windows/Linux: http://crbug.com/36800
-TEST_F(WorkerTest, DISABLED_LimitPerPage) {
+TEST_F(WorkerTest, LimitPerPage) {
   int max_workers_per_tab = WorkerServiceImpl::kMaxWorkersPerTabWhenSeparate;
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir),
-                                       FilePath(kManyWorkersFile));
+                                       FilePath(kManySharedWorkersFile));
   url = GURL(url.spec() + StringPrintf("?count=%d", max_workers_per_tab + 1));
 
   NavigateToURL(url);
   ASSERT_TRUE(WaitForProcessCountToBe(1, max_workers_per_tab));
 }
 
-// Doesn't crash, but on all platforms, it sometimes fails.
-// Flaky on all platforms: http://crbug.com/28445
-// Hangs on Linux: http://crbug.com/30332
-// Possibly causing ui_tests to hang on Mac: http://crbug.com/88958
-// Times out consistently on all platforms.
-TEST_F(WorkerTest, DISABLED_LimitTotal) {
+TEST_F(WorkerTest, LimitTotal) {
   int max_workers_per_tab = WorkerServiceImpl::kMaxWorkersPerTabWhenSeparate;
   int total_workers = WorkerServiceImpl::kMaxWorkersWhenSeparate;
 
+  // Adding 1 so that we cause some workers to be queued.
   int tab_count = (total_workers / max_workers_per_tab) + 1;
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir),
-                                       FilePath(kManyWorkersFile));
+                                       FilePath(kManySharedWorkersFile));
   url = GURL(url.spec() + StringPrintf("?count=%d", max_workers_per_tab));
 
   scoped_refptr<TabProxy> tab(GetActiveTab());
   ASSERT_TRUE(tab.get());
-  ASSERT_TRUE(tab->NavigateToURL(url));
+  ASSERT_TRUE(tab->NavigateToURL(
+      GURL(url.spec() + StringPrintf("&client_id=%d", 0))));
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(window.get());
-  for (int i = 1; i < tab_count; ++i)
-    ASSERT_TRUE(window->AppendTab(url));
+  for (int i = 1; i < tab_count; ++i) {
+    ASSERT_TRUE(window->AppendTab(GURL(
+        url.spec() + StringPrintf("&client_id=%d", i))));
+  }
 
   // Check that we didn't create more than the max number of workers.
   ASSERT_TRUE(WaitForProcessCountToBe(tab_count, total_workers));
