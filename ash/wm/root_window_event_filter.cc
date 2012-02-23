@@ -63,7 +63,7 @@ void RootWindowEventFilter::LockCursor() {
 
 void RootWindowEventFilter::UnlockCursor() {
   cursor_lock_count_--;
-  DCHECK_GE(0, cursor_lock_count_);
+  DCHECK_GE(cursor_lock_count_, 0);
   if (cursor_lock_count_ == 0) {
     if (did_cursor_change_) {
       did_cursor_change_ = false;
