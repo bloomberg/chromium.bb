@@ -31,22 +31,40 @@ import pyauto
 import pyauto_paths
 import pyauto_utils
 
-# Settings for each network constraint.
-_BANDWIDTH_SETTINGS_KBPS = {'None': 0, 'Low': 256, 'Medium': 2000, 'High': 5000}
-_LATENCY_SETTINGS_MS = {'None': 0, 'Low': 43, 'Medium': 105, 'High': 180}
-_PACKET_LOSS_SETTINGS_PERCENT = {'None': 0, 'Medium': 2, 'High': 5}
-
-# Test constraints are all possible combination of the above settings.  Each
-# tuple must be of the form (Bandwidth, Latency, Packet Loss).
-_TEST_CONSTRAINTS = itertools.product(
-    _BANDWIDTH_SETTINGS_KBPS.values(),
-    _LATENCY_SETTINGS_MS.values(),
-    _PACKET_LOSS_SETTINGS_PERCENT.values())
-
-_TEST_CONSTRAINT_NAMES = itertools.product(
-    _BANDWIDTH_SETTINGS_KBPS.keys(),
-    _LATENCY_SETTINGS_MS.keys(),
-    _PACKET_LOSS_SETTINGS_PERCENT.keys())
+# The list of tests to run. Each entry is of the form:
+#    'TEST_NAME' : [BANDWIDTH_Kbps, LATENCY_ms, PACKET_LOSS_%]
+#
+# The first five tests were manually selected to cover a range of bad network
+# constraints to good ones. Those tests resulted in stable results and are
+# suitable for regression testing.
+#
+# The WiFi, DSL, and Cable settings were taken from webpagetest.org as
+# approximations of their respective real world networks. The settings were
+# based on 2011 FCC Broadband Data report (http://www.fcc.gov/document/
+# measuring-broadband-america-report-consumer-broadband-performance-us).
+#
+# Previous tests with 2% and 5% packet loss resulted in unstable data. Thus
+# packet loss is not used often for perf graphs. Tests with very low bandwidth,
+# such as 56K Dial-up resulted in very slow tests (about 8 mins to run each
+# test iteration). In addition, metrics for Dial-up would be out of range of the
+# other tests metrics, making the graphs hard to read.
+#
+# Note: The test name should satisfy the regex [\w\.-]+ (check
+# tools/perf_expectations/tests/perf_expectations_unittest.py for details).
+#
+# TODO(shadi): After recording metrics and getting stable results, remove the
+# first 5 settings if the last five are enough for regression testing.
+_TESTS_TO_RUN = {
+    'LowHighMedium': [256, 180, 2],
+    'LowMediumNone': [256, 105, 0],
+    'MediumMediumNone': [2000, 105, 0],
+    'HighMediumNone': [5000, 105, 0],
+    'HighLowNone': [5000, 43, 0],
+    'Wifi_1Mbps_60ms': [1024, 60, 0],
+    'DSL_1.5Mbps_50ms': [1541, 50, 0],
+    'Cable_5Mbps_28ms': [5120, 28, 0],
+    'NoConstraints': [0, 0, 0]
+}
 
 # HTML test path; relative to src/chrome/test/data.  Loads a test video and
 # records metrics in JavaScript.
@@ -172,10 +190,10 @@ class TestWorker(threading.Thread):
     For a clean shutdown, put the magic exit value (None, None) in the queue.
     """
     while True:
-      settings, name = self._tasks.get()
+      series_name, settings = self._tasks.get()
 
       # Check for magic exit values.
-      if (settings, name) == (None, None):
+      if (series_name, settings) == (None, None):
         break
 
       # Build video source URL.  Values <= 0 mean the setting is disabled.
@@ -209,7 +227,6 @@ class TestWorker(threading.Thread):
             timeout=10, debug=False)
 
         # Do not wait for epp if ttp is not available.
-        series_name = ''.join(name)
         if self._metrics['ttp'] >= 0:
           ttp_results.append(self._metrics['ttp'])
           self._pyauto.WaitUntil(
@@ -322,7 +339,7 @@ class MediaConstrainedNetworkPerfTest(pyauto.PyUITest):
       test_url: File URL to HTML/JavaScript test code.
     """
     tasks = Queue.Queue()
-    tasks.put(([5000, 0, 0], 'Dummy Test'))
+    tasks.put(('Dummy Test', [5000, 0, 0]))
     tasks.put((None, None))
     dummy_test = TestWorker(self, tasks, automation_lock, test_url)
     dummy_test.join()
@@ -349,8 +366,9 @@ class MediaConstrainedNetworkPerfTest(pyauto.PyUITest):
     for _ in xrange(_TEST_THREADS):
       threads.append(TestWorker(self, tasks, automation_lock, test_url))
 
-    for settings, name in zip(_TEST_CONSTRAINTS, _TEST_CONSTRAINT_NAMES):
-      tasks.put((settings, name))
+    for series_name, settings in _TESTS_TO_RUN.iteritems():
+      logging.debug('Add test: %s\tSettings: %s', series_name, settings)
+      tasks.put((series_name, settings))
 
     # Add shutdown magic to end of queue.
     for thread in threads:
