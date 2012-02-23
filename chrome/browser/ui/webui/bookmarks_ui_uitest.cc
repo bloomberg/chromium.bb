@@ -101,7 +101,13 @@ TEST_F(BookmarksUITest, CommandOpensBookmarksTab) {
   AssertIsBookmarksPage(tab);
 }
 
-TEST_F(BookmarksUITest, CommandAgainGoesBackToBookmarksTab) {
+#if defined(OS_MACOSX)
+// Acting flaky on Mac: http://crbug.com/87200
+#define MAYBE_CommandAgainGoesBackToBookmarksTab DISABLED_CommandAgainGoesBackToBookmarksTab
+#else
+#define MAYBE_CommandAgainGoesBackToBookmarksTab CommandAgainGoesBackToBookmarksTab
+#endif
+TEST_F(BookmarksUITest, MAYBE_CommandAgainGoesBackToBookmarksTab) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
 

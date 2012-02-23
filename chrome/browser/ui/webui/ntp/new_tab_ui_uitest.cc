@@ -39,6 +39,9 @@ class NewTabUITest : public UITest {
 #elif defined(OS_LINUX)
 // This test is flaky on Linux and CrOS: http://crbug/30367
 #define MAYBE_NTPHasThumbnails DISABLED_NTPHasThumbnails
+#elif defined(OS_MACOSX)
+// Acting flaky on Mac: http://crbug.com/87200
+#define MAYBE_NTPHasThumbnails DISABLED_NTPHasThumbnails
 #else
 #define MAYBE_NTPHasThumbnails NTPHasThumbnails
 #endif
@@ -97,6 +100,9 @@ TEST_F(NewTabUITest, DISABLED_NTPHasLoginName) {
 #define MAYBE_ChromeHangInNTP DISABLED_ChromeHangInNTP
 #elif defined(OS_CHROMEOS)
 #define MAYBE_ChromeHangInNTP DISABLED_ChromeHangInNTP
+#elif defined(OS_MACOSX)
+// Acting flaky on Mac: http://crbug.com/87200
+#define MAYBE_ChromeHangInNTP DISABLED_ChromeHangInNTP
 #else
 #define MAYBE_ChromeHangInNTP ChromeHangInNTP
 #endif
@@ -136,6 +142,9 @@ class NewTabUIProcessPerTabTest : public NewTabUITest {
 
 // Bug 87200: Disable NavBeforeNTPCommits for Windows
 #if defined(OS_WIN)
+#define MAYBE_NavBeforeNTPCommits DISABLED_NavBeforeNTPCommits
+#elif defined(OS_MACOSX)
+// Acting flaky on Mac: http://crbug.com/87200
 #define MAYBE_NavBeforeNTPCommits DISABLED_NavBeforeNTPCommits
 #else
 #define MAYBE_NavBeforeNTPCommits NavBeforeNTPCommits
