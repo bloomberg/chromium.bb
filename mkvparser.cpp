@@ -21,7 +21,7 @@ void mkvparser::GetVersion(int& major, int& minor, int& build, int& revision)
     major = 1;
     minor = 0;
     build = 0;
-    revision = 21;
+    revision = 22;
 }
 
 long long mkvparser::ReadUInt(IMkvReader* pReader, long long pos, long& len)
@@ -8455,16 +8455,18 @@ Block::Block(long long start, long long size_, IMkvReader* pReader) :
 
     assert(pos < stop);
 
-    unsigned char count;
+    unsigned char biased_count;
 
-    status = pReader->Read(pos, 1, &count);
+    status = pReader->Read(pos, 1, &biased_count);
     assert(status == 0);
 
     ++pos;  //consume frame count
     assert(pos <= stop);
 
-    m_frame_count = ++count;
+    m_frame_count = int(biased_count) + 1;
+
     m_frames = new Frame[m_frame_count];
+    assert(m_frames);
 
     if (lacing == 1)  //Xiph
     {
@@ -8472,8 +8474,9 @@ Block::Block(long long start, long long size_, IMkvReader* pReader) :
         Frame* const pf_end = pf + m_frame_count;
 
         long size = 0;
+        int frame_count = m_frame_count;
 
-        while (count > 1)
+        while (frame_count > 1)
         {
             long frame_size = 0;
 
@@ -8498,7 +8501,7 @@ Block::Block(long long start, long long size_, IMkvReader* pReader) :
             f.len = frame_size;
             size += frame_size;  //contribution of this frame
 
-            --count;
+            --frame_count;
         }
 
         assert(pf < pf_end);
@@ -8560,6 +8563,7 @@ Block::Block(long long start, long long size_, IMkvReader* pReader) :
         assert(pos < stop);
 
         long size = 0;
+        int frame_count = m_frame_count;
 
         long long frame_size = ReadUInt(pReader, pos, len);
         assert(frame_size > 0);
@@ -8579,9 +8583,9 @@ Block::Block(long long start, long long size_, IMkvReader* pReader) :
             size += curr.len;  //contribution of this frame
         }
 
-        --count;
+        --frame_count;
 
-        while (count > 1)
+        while (frame_count > 1)
         {
             assert(pos < stop);
             assert(pf < pf_end);
@@ -8610,7 +8614,7 @@ Block::Block(long long start, long long size_, IMkvReader* pReader) :
             curr.len = static_cast<long>(frame_size);
             size += curr.len;  //contribution of this frame
 
-            --count;
+            --frame_count;
         }
 
         {
