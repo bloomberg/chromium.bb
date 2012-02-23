@@ -5807,6 +5807,14 @@
    ...
    fun:_ZN17AudioRendererHost14OnCreateStreamEiRK15AudioParameters
 }
+{
+   bug_115411
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7content20TraceSubscriberStdioC2ERK8FilePath
+   fun:_ZN7content20TraceSubscriberStdioC1ERK8FilePath
+   fun:_ZN48TraceSubscriberStdioTest_CanWriteDataToFile_Test8TestBodyEv
+}
 
 
 #-----------------------------------------------------------------------
