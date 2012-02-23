@@ -7,14 +7,48 @@
 #include "base/scoped_temp_dir.h"
 #include "base/test/thread_test_helper.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/testing_profile.h"
-#include "content/browser/in_process_webkit/dom_storage_context.h"
+#include "content/browser/in_process_webkit/dom_storage_context_impl.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/common/url_constants.h"
+#include "content/test/test_browser_context.h"
+#include "googleurl/src/gurl.h"
+#include "webkit/quota/special_storage_policy.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
 
 typedef InProcessBrowserTest DOMStorageBrowserTest;
+
+namespace {
+
+class TestSpecialStoragePolicy : public quota::SpecialStoragePolicy {
+ public:
+  TestSpecialStoragePolicy() {
+  }
+
+  virtual bool IsStorageProtected(const GURL& origin) OVERRIDE {
+    return origin.SchemeIs(chrome::kChromeDevToolsScheme);
+  }
+
+  virtual bool IsStorageUnlimited(const GURL& origin) OVERRIDE {
+    return false;
+  }
+
+  virtual bool IsFileHandler(const std::string& extension_id) OVERRIDE {
+    return false;
+  }
+
+  virtual bool IsStorageSessionOnly(const GURL& origin) OVERRIDE {
+    return false;
+  }
+
+  virtual bool HasSessionOnlyOrigins() OVERRIDE {
+    return false;
+  }
+};
+
+}  // namespace
 
 #if defined(OS_MACOSX)
 // http://crbug.com/115150. On Mac, failure rate is about 30% currently.
@@ -30,13 +64,13 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, MAYBE_ClearLocalState) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath domstorage_dir = temp_dir.path().Append(
-      DOMStorageContext::kLocalStorageDirectory);
+      DOMStorageContextImpl::kLocalStorageDirectory);
   ASSERT_TRUE(file_util::CreateDirectory(domstorage_dir));
 
   FilePath::StringType file_name_1(FILE_PATH_LITERAL("http_foo_0"));
-  file_name_1.append(DOMStorageContext::kLocalStorageExtension);
-  FilePath::StringType file_name_2(FILE_PATH_LITERAL("chrome-extension_foo_0"));
-  file_name_2.append(DOMStorageContext::kLocalStorageExtension);
+  file_name_1.append(DOMStorageContextImpl::kLocalStorageExtension);
+  FilePath::StringType file_name_2(FILE_PATH_LITERAL("chrome-devtools_foo_0"));
+  file_name_2.append(DOMStorageContextImpl::kLocalStorageExtension);
   FilePath temp_file_path_1 = domstorage_dir.Append(file_name_1);
   FilePath temp_file_path_2 = domstorage_dir.Append(file_name_2);
 
@@ -46,8 +80,10 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, MAYBE_ClearLocalState) {
   // Create the scope which will ensure we run the destructor of the webkit
   // context which should trigger the clean up.
   {
-    TestingProfile profile;
-    WebKitContext* webkit_context = BrowserContext::GetWebKitContext(&profile);
+    TestBrowserContext browser_context;
+    browser_context.SetSpecialStoragePolicy(new TestSpecialStoragePolicy());
+    WebKitContext* webkit_context = BrowserContext::GetWebKitContext(
+        &browser_context);
     webkit_context->dom_storage_context()->
         set_data_path_for_testing(temp_dir.path());
     webkit_context->set_clear_local_state_on_exit(true);

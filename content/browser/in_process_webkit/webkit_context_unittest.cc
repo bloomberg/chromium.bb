@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/in_process_webkit/dom_storage_context.h"
+#include "content/browser/in_process_webkit/dom_storage_context_impl.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -11,11 +11,11 @@
 using content::BrowserThread;
 using content::BrowserThreadImpl;
 
-class MockDOMStorageContext : public DOMStorageContext {
+class MockDOMStorageContext : public DOMStorageContextImpl {
  public:
   MockDOMStorageContext(WebKitContext* webkit_context,
                         quota::SpecialStoragePolicy* special_storage_policy)
-      : DOMStorageContext(webkit_context, special_storage_policy),
+      : DOMStorageContextImpl(webkit_context, special_storage_policy),
         purge_count_(0) {
   }
 
@@ -62,7 +62,7 @@ TEST(WebKitContextTest, PurgeMemory) {
     MockDOMStorageContext* mock_context = new MockDOMStorageContext(
         context.get(), NULL);
     // Takes ownership.
-    context->set_dom_storage_context_for_testing(mock_context);
+    context->SetDOMStorageContextForTesting(mock_context);
 
     // Ensure PurgeMemory() calls our mock object on the right thread.
     EXPECT_EQ(0, mock_context->purge_count());

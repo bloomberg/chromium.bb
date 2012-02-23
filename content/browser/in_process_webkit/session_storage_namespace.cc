@@ -5,7 +5,7 @@
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 
 #include "base/logging.h"
-#include "content/browser/in_process_webkit/dom_storage_context.h"
+#include "content/browser/in_process_webkit/dom_storage_context_impl.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 
 SessionStorageNamespace::SessionStorageNamespace(WebKitContext* webkit_context)

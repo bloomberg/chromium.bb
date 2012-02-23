@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_CONTEXT_H_
-#define CONTENT_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_CONTEXT_H_
+#ifndef CONTENT_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_CONTEXT_IMPL_H_
+#define CONTENT_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_CONTEXT_IMPL_H_
 #pragma once
 
 #include <map>
 #include <set>
 
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/ref_counted.h"
-#include "base/string16.h"
 #include "base/time.h"
-#include "content/common/content_export.h"
+#include "content/public/browser/dom_storage_context.h"
 
 class DOMStorageArea;
 class DOMStorageMessageFilter;
@@ -32,11 +31,18 @@ class SpecialStoragePolicy;
 // on the WebKit thread unless noted otherwise.
 //
 // NOTE: Virtual methods facilitate mocking functions for testing.
-class CONTENT_EXPORT DOMStorageContext {
+class CONTENT_EXPORT DOMStorageContextImpl :
+    NON_EXPORTED_BASE(public content::DOMStorageContext) {
  public:
-  DOMStorageContext(WebKitContext* webkit_context,
-                    quota::SpecialStoragePolicy* special_storage_policy);
-  virtual ~DOMStorageContext();
+  DOMStorageContextImpl(WebKitContext* webkit_context,
+                        quota::SpecialStoragePolicy* special_storage_policy);
+  virtual ~DOMStorageContextImpl();
+
+  // DOMStorageContext implementation:
+  virtual std::vector<FilePath> GetAllStorageFiles() OVERRIDE;
+  virtual FilePath GetFilePath(const string16& origin_id) const OVERRIDE;
+  virtual void DeleteForOrigin(const string16& origin_id) OVERRIDE;
+  virtual void DeleteLocalStorageFile(const FilePath& file_path) OVERRIDE;
 
   // Invalid storage id.  No storage session will ever report this value.
   // Used in DOMStorageMessageFilter::OnStorageAreaId when coping with
@@ -82,12 +88,6 @@ class CONTENT_EXPORT DOMStorageContext {
   // are not deleted by this method.
   void DeleteDataModifiedSince(const base::Time& cutoff);
 
-  // Deletes a single local storage file.
-  void DeleteLocalStorageFile(const FilePath& file_path);
-
-  // Deletes the local storage file for the given origin.
-  void DeleteLocalStorageForOrigin(const string16& origin_id);
-
   // Deletes all local storage files.
   void DeleteAllLocalStorageFiles();
 
@@ -96,9 +96,6 @@ class CONTENT_EXPORT DOMStorageContext {
 
   // The local storage file extension.
   static const FilePath::CharType kLocalStorageExtension[];
-
-  // Get the file name of the local storage file for the given origin.
-  FilePath GetLocalStorageFilePath(const string16& origin_id) const;
 
   void set_clear_local_state_on_exit_(bool clear_local_state) {
     clear_local_state_on_exit_ = clear_local_state;
@@ -114,7 +111,6 @@ class CONTENT_EXPORT DOMStorageContext {
   }
 
  private:
-
   FRIEND_TEST_ALL_PREFIXES(DOMStorageTest, SessionOnly);
   FRIEND_TEST_ALL_PREFIXES(DOMStorageTest, SaveSessionState);
 
@@ -127,12 +123,8 @@ class CONTENT_EXPORT DOMStorageContext {
   // Used internally to register storage namespaces we create.
   void RegisterStorageNamespace(DOMStorageNamespace* storage_namespace);
 
-  // The WebKit thread half of CloneSessionStorage above.  Static because
-  // DOMStorageContext isn't ref counted thus we can't use a runnable method.
-  // That said, we know this is safe because this class is destroyed on the
-  // WebKit thread, so there's no way it could be destroyed before this is run.
-  static void CompleteCloningSessionStorage(DOMStorageContext* context,
-                                            int64 existing_id, int64 clone_id);
+  // The WebKit thread half of CloneSessionStorage above.
+  void CompleteCloningSessionStorage(int64 existing_id, int64 clone_id);
 
   // The last used storage_area_id and storage_namespace_id's.  For the storage
   // namespaces, IDs allocated on the UI thread are positive and count up while
@@ -171,7 +163,7 @@ class CONTENT_EXPORT DOMStorageContext {
 
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(DOMStorageContext);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(DOMStorageContextImpl);
 };
 
-#endif  // CONTENT_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_CONTEXT_H_
+#endif  // CONTENT_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_CONTEXT_IMPL_H_

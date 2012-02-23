@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/in_process_webkit/indexed_db_callbacks.h"
+#include "content/browser/in_process_webkit/indexed_db_context_impl.h"
 #include "content/browser/in_process_webkit/indexed_db_database_callbacks.h"
 #include "content/browser/in_process_webkit/indexed_db_transaction_callbacks.h"
 #include "content/browser/renderer_host/render_message_filter.h"
@@ -209,7 +210,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
   FilePath indexed_db_path;
   if (!base_path.empty()) {
     indexed_db_path = base_path.Append(
-        IndexedDBContext::kIndexedDBDirectory);
+        IndexedDBContextImpl::kIndexedDBDirectory);
   }
 
   // TODO(jorlow): This doesn't support file:/// urls properly. We probably need
@@ -235,7 +236,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
   FilePath indexed_db_path;
   if (!base_path.empty()) {
     indexed_db_path = base_path.Append(
-        IndexedDBContext::kIndexedDBDirectory);
+        IndexedDBContextImpl::kIndexedDBDirectory);
   }
 
   // TODO(jorlow): This doesn't support file:/// urls properly. We probably need
@@ -263,7 +264,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
   FilePath indexed_db_path;
   if (!base_path.empty()) {
     indexed_db_path = base_path.Append(
-        IndexedDBContext::kIndexedDBDirectory);
+        IndexedDBContextImpl::kIndexedDBDirectory);
   }
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));

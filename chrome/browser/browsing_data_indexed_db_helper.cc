@@ -13,13 +13,14 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/indexed_db_context.h"
 #include "webkit/database/database_util.h"
 #include "webkit/glue/webkit_glue.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
+using content::IndexedDBContext;
 using webkit_database::DatabaseUtil;
 
 namespace {
@@ -63,8 +64,7 @@ class BrowsingDataIndexedDBHelperImpl : public BrowsingDataIndexedDBHelper {
 
 BrowsingDataIndexedDBHelperImpl::BrowsingDataIndexedDBHelperImpl(
     Profile* profile)
-    : indexed_db_context_(
-          BrowserContext::GetWebKitContext(profile)->indexed_db_context()),
+    : indexed_db_context_(IndexedDBContext::GetForBrowserContext(profile)),
       is_fetching_(false) {
   DCHECK(indexed_db_context_.get());
 }
@@ -104,8 +104,7 @@ void BrowsingDataIndexedDBHelperImpl::DeleteIndexedDB(
 
 void BrowsingDataIndexedDBHelperImpl::FetchIndexedDBInfoInWebKitThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  std::vector<GURL> origins;
-  indexed_db_context_->GetAllOrigins(&origins);
+  std::vector<GURL> origins = indexed_db_context_->GetAllOrigins();
   for (std::vector<GURL>::const_iterator iter = origins.begin();
        iter != origins.end(); ++iter) {
     const GURL& origin = *iter;
@@ -137,7 +136,7 @@ void BrowsingDataIndexedDBHelperImpl::NotifyInUIThread() {
 void BrowsingDataIndexedDBHelperImpl::DeleteIndexedDBInWebKitThread(
     const GURL& origin) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  indexed_db_context_->DeleteIndexedDBForOrigin(origin);
+  indexed_db_context_->DeleteForOrigin(origin);
 }
 
 }  // namespace

@@ -16,7 +16,6 @@
 #include "chrome/browser/browsing_data_cookie_helper.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "content/browser/in_process_webkit/webkit_context.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"

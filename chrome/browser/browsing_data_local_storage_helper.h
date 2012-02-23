@@ -21,6 +21,10 @@
 
 class Profile;
 
+namespace content {
+class DOMStorageContext;
+}
+
 // This class fetches local storage information in the WebKit thread, and
 // notifies the UI thread upon completion.
 // A client of this class need to call StartFetching from the UI thread to
@@ -80,7 +84,7 @@ class BrowsingDataLocalStorageHelper
   // Notifies the completion callback in the UI thread.
   void NotifyInUIThread();
 
-  Profile* profile_;
+  scoped_refptr<content::DOMStorageContext> dom_storage_context_;
 
   // This only mutates on the UI thread.
   base::Callback<void(const std::list<LocalStorageInfo>&)> completion_callback_;

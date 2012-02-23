@@ -12,6 +12,7 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebExceptionCode.h"
 
+class GURL;
 class IndexedDBKey;
 class IndexedDBKeyRange;
 class NullableString16;
@@ -56,7 +57,7 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
   void TransactionComplete(int32 transaction_id);
 
   // A shortcut for accessing our context.
-  IndexedDBContext* Context() {
+  IndexedDBContextImpl* Context() {
     return webkit_context_->indexed_db_context();
   }
 

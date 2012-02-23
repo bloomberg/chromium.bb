@@ -60,8 +60,8 @@
 #include "chrome/common/string_ordinal.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/in_process_webkit/dom_storage_context.h"
-#include "content/browser/in_process_webkit/webkit_context.h"
+#include "content/public/browser/dom_storage_context.h"
+#include "content/public/browser/indexed_db_context.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
@@ -82,6 +82,8 @@
 
 using content::BrowserContext;
 using content::BrowserThread;
+using content::DOMStorageContext;
+using content::IndexedDBContext;
 using content::PluginService;
 
 namespace keys = extension_manifest_keys;
@@ -3089,18 +3091,18 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
 
   // Create local storage. We only simulate this by creating the backing file
   // since webkit is not initialized.
-  DOMStorageContext* context =
-      BrowserContext::GetWebKitContext(profile_.get())->dom_storage_context();
-  FilePath lso_path = context->GetLocalStorageFilePath(origin_id);
+  DOMStorageContext* context = DOMStorageContext::GetForBrowserContext(
+      profile_.get());
+  FilePath lso_path = context->GetFilePath(origin_id);
   EXPECT_TRUE(file_util::CreateDirectory(lso_path.DirName()));
   EXPECT_EQ(0, file_util::WriteFile(lso_path, NULL, 0));
   EXPECT_TRUE(file_util::PathExists(lso_path));
 
   // Create indexed db. Similarly, it is enough to only simulate this by
   // creating the directory on the disk.
-  IndexedDBContext* idb_context =
-      BrowserContext::GetWebKitContext(profile_.get())->indexed_db_context();
-  FilePath idb_path = idb_context->GetIndexedDBFilePath(origin_id);
+  IndexedDBContext* idb_context = IndexedDBContext::GetForBrowserContext(
+      profile_.get());
+  FilePath idb_path = idb_context->GetFilePathForTesting(origin_id);
   EXPECT_TRUE(file_util::CreateDirectory(idb_path));
   EXPECT_TRUE(file_util::DirectoryExists(idb_path));
 
@@ -3199,18 +3201,18 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
 
   // Create local storage. We only simulate this by creating the backing file
   // since webkit is not initialized.
-  DOMStorageContext* context =
-      BrowserContext::GetWebKitContext(profile_.get())->dom_storage_context();
-  FilePath lso_path = context->GetLocalStorageFilePath(origin_id);
+  DOMStorageContext* context = DOMStorageContext::GetForBrowserContext(
+      profile_.get());
+  FilePath lso_path = context->GetFilePath(origin_id);
   EXPECT_TRUE(file_util::CreateDirectory(lso_path.DirName()));
   EXPECT_EQ(0, file_util::WriteFile(lso_path, NULL, 0));
   EXPECT_TRUE(file_util::PathExists(lso_path));
 
   // Create indexed db. Similarly, it is enough to only simulate this by
   // creating the directory on the disk.
-  IndexedDBContext* idb_context =
-      BrowserContext::GetWebKitContext(profile_.get())->indexed_db_context();
-  FilePath idb_path = idb_context->GetIndexedDBFilePath(origin_id);
+  IndexedDBContext* idb_context = IndexedDBContext::GetForBrowserContext(
+      profile_.get());
+  FilePath idb_path = idb_context->GetFilePathForTesting(origin_id);
   EXPECT_TRUE(file_util::CreateDirectory(idb_path));
   EXPECT_TRUE(file_util::DirectoryExists(idb_path));
 

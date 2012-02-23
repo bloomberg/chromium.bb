@@ -8,6 +8,7 @@
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/mock_resource_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/quota/special_storage_policy.h"
 
 using content::DownloadManager;
 
@@ -20,6 +21,11 @@ TestBrowserContext::~TestBrowserContext() {
 
 FilePath TestBrowserContext::TakePath() {
   return browser_context_dir_.Take();
+}
+
+void TestBrowserContext::SetSpecialStoragePolicy(
+    quota::SpecialStoragePolicy* policy) {
+  special_storage_policy_ = policy;
 }
 
 FilePath TestBrowserContext::GetPath() {
@@ -68,5 +74,5 @@ bool TestBrowserContext::DidLastSessionExitCleanly() {
 }
 
 quota::SpecialStoragePolicy* TestBrowserContext::GetSpecialStoragePolicy() {
-  return NULL;
+  return special_storage_policy_.get();
 }

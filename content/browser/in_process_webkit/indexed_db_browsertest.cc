@@ -14,7 +14,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/in_process_webkit/indexed_db_context.h"
+#include "content/browser/in_process_webkit/indexed_db_context_impl.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/common/content_switches.h"
@@ -162,11 +162,11 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, MAYBE_ClearLocalState) {
     // Create some indexedDB paths.
     // With the levelDB backend, these are directories.
     WebKitContext* webkit_context = BrowserContext::GetWebKitContext(&profile);
-    IndexedDBContext* idb_context = webkit_context->indexed_db_context();
+    IndexedDBContextImpl* idb_context = webkit_context->indexed_db_context();
     idb_context->set_data_path_for_testing(temp_dir.path());
-    protected_path = idb_context->GetIndexedDBFilePath(
+    protected_path = idb_context->GetFilePathForTesting(
         DatabaseUtil::GetOriginIdentifier(kProtectedOrigin));
-    unprotected_path = idb_context->GetIndexedDBFilePath(
+    unprotected_path = idb_context->GetFilePathForTesting(
         DatabaseUtil::GetOriginIdentifier(kUnprotectedOrigin));
     ASSERT_TRUE(file_util::CreateDirectory(protected_path));
     ASSERT_TRUE(file_util::CreateDirectory(unprotected_path));
@@ -215,15 +215,15 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest,
     // Create some indexedDB paths.
     // With the levelDB backend, these are directories.
     WebKitContext* webkit_context = BrowserContext::GetWebKitContext(&profile);
-    IndexedDBContext* idb_context = webkit_context->indexed_db_context();
+    IndexedDBContextImpl* idb_context = webkit_context->indexed_db_context();
 
     // Override the storage policy with our own.
     idb_context->special_storage_policy_ = special_storage_policy;
     idb_context->set_data_path_for_testing(temp_dir.path());
 
-    normal_path = idb_context->GetIndexedDBFilePath(
+    normal_path = idb_context->GetFilePathForTesting(
         DatabaseUtil::GetOriginIdentifier(kNormalOrigin));
-    session_only_path = idb_context->GetIndexedDBFilePath(
+    session_only_path = idb_context->GetFilePathForTesting(
         DatabaseUtil::GetOriginIdentifier(kSessionOnlyOrigin));
     ASSERT_TRUE(file_util::CreateDirectory(normal_path));
     ASSERT_TRUE(file_util::CreateDirectory(session_only_path));
@@ -271,7 +271,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, MAYBE_SaveSessionState) {
     // Create some indexedDB paths.
     // With the levelDB backend, these are directories.
     WebKitContext* webkit_context = BrowserContext::GetWebKitContext(&profile);
-    IndexedDBContext* idb_context = webkit_context->indexed_db_context();
+    IndexedDBContextImpl* idb_context = webkit_context->indexed_db_context();
 
     // Override the storage policy with our own.
     idb_context->special_storage_policy_ = special_storage_policy;
@@ -281,9 +281,9 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, MAYBE_SaveSessionState) {
     // Save session state. This should bypass the destruction-time deletion.
     idb_context->SaveSessionState();
 
-    normal_path = idb_context->GetIndexedDBFilePath(
+    normal_path = idb_context->GetFilePathForTesting(
         DatabaseUtil::GetOriginIdentifier(kNormalOrigin));
-    session_only_path = idb_context->GetIndexedDBFilePath(
+    session_only_path = idb_context->GetFilePathForTesting(
         DatabaseUtil::GetOriginIdentifier(kSessionOnlyOrigin));
     ASSERT_TRUE(file_util::CreateDirectory(normal_path));
     ASSERT_TRUE(file_util::CreateDirectory(session_only_path));

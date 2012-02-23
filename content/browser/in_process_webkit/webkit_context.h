@@ -12,9 +12,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
-#include "content/browser/in_process_webkit/dom_storage_context.h"
-#include "content/browser/in_process_webkit/indexed_db_context.h"
 #include "content/common/content_export.h"
+
+class DOMStorageContextImpl;
+class IndexedDBContextImpl;
 
 namespace base {
 class MessageLoopProxy;
@@ -44,13 +45,8 @@ class CONTENT_EXPORT WebKitContext
   const FilePath& data_path() const { return data_path_; }
   bool is_incognito() const { return is_incognito_; }
 
-  DOMStorageContext* dom_storage_context() {
-    return dom_storage_context_.get();
-  }
-
-  IndexedDBContext* indexed_db_context() {
-    return indexed_db_context_.get();
-  }
+  DOMStorageContextImpl* dom_storage_context() { return dom_storage_context_; }
+  IndexedDBContextImpl* indexed_db_context() { return indexed_db_context_; }
 
   void set_clear_local_state_on_exit(bool clear_local_state) {
     clear_local_state_on_exit_ = clear_local_state;
@@ -58,10 +54,8 @@ class CONTENT_EXPORT WebKitContext
 
   // For unit tests, allow specifying a DOMStorageContext directly so it can be
   // mocked.
-  void set_dom_storage_context_for_testing(
-      DOMStorageContext* dom_storage_context) {
-    dom_storage_context_.reset(dom_storage_context);
-  }
+  void SetDOMStorageContextForTesting(
+      DOMStorageContextImpl* dom_storage_context);
 
   // Tells the DOMStorageContext to purge any memory it does not need.
   void PurgeMemory();
@@ -88,8 +82,8 @@ class CONTENT_EXPORT WebKitContext
   // True if the destructors of context objects should delete their files.
   bool clear_local_state_on_exit_;
 
-  scoped_ptr<DOMStorageContext> dom_storage_context_;
-  scoped_refptr<IndexedDBContext> indexed_db_context_;
+  scoped_refptr<DOMStorageContextImpl> dom_storage_context_;
+  scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebKitContext);
 };

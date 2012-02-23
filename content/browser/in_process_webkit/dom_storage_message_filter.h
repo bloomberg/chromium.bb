@@ -14,7 +14,7 @@
 #include "content/common/dom_storage_common.h"
 #include "content/public/browser/browser_message_filter.h"
 
-class DOMStorageContext;
+class DOMStorageContextImpl;
 class GURL;
 struct DOMStorageMsg_Event_Params;
 
@@ -65,7 +65,7 @@ class DOMStorageMessageFilter : public content::BrowserMessageFilter {
   void OnStorageEvent(const DOMStorageMsg_Event_Params& params);
 
   // A shortcut for accessing our context.
-  DOMStorageContext* Context() {
+  DOMStorageContextImpl* Context() {
     return webkit_context_->dom_storage_context();
   }
 

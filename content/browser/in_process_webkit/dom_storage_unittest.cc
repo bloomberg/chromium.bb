@@ -6,6 +6,7 @@
 #include "base/file_util.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
+#include "content/browser/in_process_webkit/dom_storage_context_impl.h"
 #include "content/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/quota/mock_special_storage_policy.h"
@@ -38,13 +39,13 @@ TEST_F(DOMStorageTest, SessionOnly) {
 
   // Create databases for permanent and session-only origins.
   FilePath domstorage_dir = browser_context->GetPath().Append(
-      DOMStorageContext::kLocalStorageDirectory);
+      DOMStorageContextImpl::kLocalStorageDirectory);
   FilePath::StringType session_only_database(
       FILE_PATH_LITERAL("http_www.sessiononly.com_0"));
   FilePath::StringType permanent_database(
       FILE_PATH_LITERAL("http_www.permanent.com_0"));
-  session_only_database.append(DOMStorageContext::kLocalStorageExtension);
-  permanent_database.append(DOMStorageContext::kLocalStorageExtension);
+  session_only_database.append(DOMStorageContextImpl::kLocalStorageExtension);
+  permanent_database.append(DOMStorageContextImpl::kLocalStorageExtension);
   FilePath session_only_database_path =
       domstorage_dir.Append(session_only_database);
   FilePath permanent_database_path =
@@ -83,13 +84,13 @@ TEST_F(DOMStorageTest, SaveSessionState) {
 
   // Create databases for permanent and session-only origins.
   FilePath domstorage_dir = browser_context->GetPath().Append(
-      DOMStorageContext::kLocalStorageDirectory);
+      DOMStorageContextImpl::kLocalStorageDirectory);
   FilePath::StringType session_only_database(
       FILE_PATH_LITERAL("http_www.sessiononly.com_0"));
   FilePath::StringType permanent_database(
       FILE_PATH_LITERAL("http_www.permanent.com_0"));
-  session_only_database.append(DOMStorageContext::kLocalStorageExtension);
-  permanent_database.append(DOMStorageContext::kLocalStorageExtension);
+  session_only_database.append(DOMStorageContextImpl::kLocalStorageExtension);
+  permanent_database.append(DOMStorageContextImpl::kLocalStorageExtension);
   FilePath session_only_database_path =
       domstorage_dir.Append(session_only_database);
   FilePath permanent_database_path =
@@ -101,7 +102,7 @@ TEST_F(DOMStorageTest, SaveSessionState) {
   ASSERT_EQ(1, file_util::WriteFile(permanent_database_path, ".", 1));
 
   // Inject MockSpecialStoragePolicy into DOMStorageContext.
-  DOMStorageContext* dom_storage_context =
+  DOMStorageContextImpl* dom_storage_context =
       BrowserContext::GetWebKitContext(browser_context.get())->
           dom_storage_context();
   dom_storage_context->special_storage_policy_ = special_storage_policy;

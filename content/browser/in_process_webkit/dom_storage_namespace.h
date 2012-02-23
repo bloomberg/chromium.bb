@@ -13,7 +13,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
 class DOMStorageArea;
-class DOMStorageContext;
+class DOMStorageContextImpl;
 class FilePath;
 
 namespace WebKit {
@@ -25,9 +25,10 @@ class WebStorageNamespace;
 class DOMStorageNamespace {
  public:
   static DOMStorageNamespace* CreateLocalStorageNamespace(
-      DOMStorageContext* dom_storage_context, const FilePath& data_dir_path);
+      DOMStorageContextImpl* dom_storage_context,
+      const FilePath& data_dir_path);
   static DOMStorageNamespace* CreateSessionStorageNamespace(
-      DOMStorageContext* dom_storage_context, int64 namespace_id);
+      DOMStorageContextImpl* dom_storage_context, int64 namespace_id);
 
   ~DOMStorageNamespace();
 
@@ -36,7 +37,7 @@ class DOMStorageNamespace {
 
   void PurgeMemory();
 
-  const DOMStorageContext* dom_storage_context() const {
+  const DOMStorageContextImpl* dom_storage_context() const {
     return dom_storage_context_;
   }
   int64 id() const { return id_; }
@@ -49,7 +50,7 @@ class DOMStorageNamespace {
 
  private:
   // Called by the static factory methods above.
-  DOMStorageNamespace(DOMStorageContext* dom_storage_context,
+  DOMStorageNamespace(DOMStorageContextImpl* dom_storage_context,
                       int64 id,
                       const WebKit::WebString& data_dir_path,
                       DOMStorageType storage_type);
@@ -62,7 +63,7 @@ class DOMStorageNamespace {
   OriginToStorageAreaMap origin_to_storage_area_;
 
   // The DOMStorageContext that owns us.
-  DOMStorageContext* dom_storage_context_;
+  DOMStorageContextImpl* dom_storage_context_;
 
   // The WebKit storage namespace we manage.
   scoped_ptr<WebKit::WebStorageNamespace> storage_namespace_;

@@ -12,16 +12,18 @@
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/thread_test_helper.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browsing_data_helper_browsertest.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/in_process_webkit/webkit_context.h"
+#include "content/public/browser/dom_storage_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+using content::DOMStorageContext;
 
 namespace {
 typedef
@@ -56,10 +58,8 @@ class BrowsingDataLocalStorageHelperTest : public InProcessBrowserTest {
   }
 
   FilePath GetLocalStoragePathForTestingProfile() {
-    FilePath storage_path(browser()->profile()->GetPath());
-    storage_path = storage_path.Append(
-        DOMStorageContext::kLocalStorageDirectory);
-    return storage_path;
+    return DOMStorageContext::GetForBrowserContext(browser()->profile())->
+        GetFilePath(ASCIIToUTF16("blah")).DirName();
   }
 };
 

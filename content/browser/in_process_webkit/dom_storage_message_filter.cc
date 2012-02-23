@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/nullable_string16.h"
 #include "content/browser/in_process_webkit/dom_storage_area.h"
-#include "content/browser/in_process_webkit/dom_storage_context.h"
+#include "content/browser/in_process_webkit/dom_storage_context_impl.h"
 #include "content/browser/in_process_webkit/dom_storage_namespace.h"
 #include "content/common/dom_storage_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -119,7 +119,7 @@ void DOMStorageMessageFilter::OnOpenStorageArea(int64 namespace_id,
   DOMStorageNamespace* storage_namespace =
       Context()->GetStorageNamespace(namespace_id, true);
   if (!storage_namespace) {
-    *storage_area_id = DOMStorageContext::kInvalidStorageId;
+    *storage_area_id = DOMStorageContextImpl::kInvalidStorageId;
     return;
   }
   DOMStorageArea* storage_area = storage_namespace->GetStorageArea(origin);
@@ -211,9 +211,9 @@ void DOMStorageMessageFilter::OnClear(int64 storage_area_id, const GURL& url,
 void DOMStorageMessageFilter::OnStorageEvent(
     const DOMStorageMsg_Event_Params& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  const DOMStorageContext::MessageFilterSet* set =
+  const DOMStorageContextImpl::MessageFilterSet* set =
       Context()->GetMessageFilterSet();
-  DOMStorageContext::MessageFilterSet::const_iterator cur = set->begin();
+  DOMStorageContextImpl::MessageFilterSet::const_iterator cur = set->begin();
   while (cur != set->end()) {
     // The renderer that generates the event handles it itself.
     if (*cur != this)

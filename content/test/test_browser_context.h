@@ -29,6 +29,8 @@ class TestBrowserContext : public content::BrowserContext {
   // this object is destructed.
   FilePath TakePath();
 
+  void SetSpecialStoragePolicy(quota::SpecialStoragePolicy* policy);
+
   virtual FilePath GetPath() OVERRIDE;
   virtual bool IsOffTheRecord() OVERRIDE;
   virtual content::DownloadManager* GetDownloadManager() OVERRIDE;
@@ -49,6 +51,7 @@ class TestBrowserContext : public content::BrowserContext {
 
   scoped_ptr<content::MockResourceContext> resource_context_;
   ScopedTempDir browser_context_dir_;
+  scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserContext);
 };

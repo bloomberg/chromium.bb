@@ -5,7 +5,6 @@
 #include "content/browser/in_process_webkit/dom_storage_area.h"
 
 #include "base/logging.h"
-#include "content/browser/in_process_webkit/dom_storage_context.h"
 #include "content/browser/in_process_webkit/dom_storage_namespace.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageArea.h"

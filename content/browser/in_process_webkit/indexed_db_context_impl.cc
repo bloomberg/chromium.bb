@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/in_process_webkit/indexed_db_context.h"
+#include "content/browser/in_process_webkit/indexed_db_context_impl.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/in_process_webkit/indexed_db_quota_client.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
@@ -25,11 +26,19 @@
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/special_storage_policy.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
+using content::IndexedDBContext;
 using webkit_database::DatabaseUtil;
 using WebKit::WebIDBDatabase;
 using WebKit::WebIDBFactory;
 using WebKit::WebSecurityOrigin;
+
+const FilePath::CharType IndexedDBContextImpl::kIndexedDBDirectory[] =
+    FILE_PATH_LITERAL("IndexedDB");
+
+const FilePath::CharType IndexedDBContextImpl::kIndexedDBExtension[] =
+    FILE_PATH_LITERAL(".leveldb");
 
 namespace {
 
@@ -44,7 +53,7 @@ void GetAllOriginsAndPaths(
       false, file_util::FileEnumerator::DIRECTORIES);
   for (FilePath file_path = file_enumerator.Next(); !file_path.empty();
        file_path = file_enumerator.Next()) {
-    if (file_path.Extension() == IndexedDBContext::kIndexedDBExtension) {
+    if (file_path.Extension() == IndexedDBContextImpl::kIndexedDBExtension) {
       WebKit::WebString origin_id_webstring =
           webkit_glue::FilePathToWebString(file_path.BaseName());
       origins->push_back(
@@ -82,13 +91,12 @@ void ClearLocalState(
 
 }  // namespace
 
-const FilePath::CharType IndexedDBContext::kIndexedDBDirectory[] =
-    FILE_PATH_LITERAL("IndexedDB");
+IndexedDBContext* IndexedDBContext::GetForBrowserContext(
+    BrowserContext* context) {
+  return BrowserContext::GetWebKitContext(context)->indexed_db_context();
+}
 
-const FilePath::CharType IndexedDBContext::kIndexedDBExtension[] =
-    FILE_PATH_LITERAL(".leveldb");
-
-IndexedDBContext::IndexedDBContext(
+IndexedDBContextImpl::IndexedDBContextImpl(
     WebKitContext* webkit_context,
     quota::SpecialStoragePolicy* special_storage_policy,
     quota::QuotaManagerProxy* quota_manager_proxy,
@@ -106,7 +114,7 @@ IndexedDBContext::IndexedDBContext(
   }
 }
 
-IndexedDBContext::~IndexedDBContext() {
+IndexedDBContextImpl::~IndexedDBContextImpl() {
   WebKit::WebIDBFactory* factory = idb_factory_.release();
   if (factory) {
     if (!BrowserThread::DeleteSoon(BrowserThread::WEBKIT_DEPRECATED,
@@ -136,7 +144,7 @@ IndexedDBContext::~IndexedDBContext() {
                  special_storage_policy_));
 }
 
-WebIDBFactory* IndexedDBContext::GetIDBFactory() {
+WebIDBFactory* IndexedDBContextImpl::GetIDBFactory() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   if (!idb_factory_.get()) {
     // Prime our cache of origins with existing databases so we can
@@ -147,7 +155,7 @@ WebIDBFactory* IndexedDBContext::GetIDBFactory() {
   return idb_factory_.get();
 }
 
-void IndexedDBContext::DeleteIndexedDBForOrigin(const GURL& origin_url) {
+void IndexedDBContextImpl::DeleteForOrigin(const GURL& origin_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   if (data_path_.empty() || !IsInOriginSet(origin_url))
     return;
@@ -167,23 +175,30 @@ void IndexedDBContext::DeleteIndexedDBForOrigin(const GURL& origin_url) {
   }
 }
 
-void IndexedDBContext::GetAllOrigins(std::vector<GURL>* origins) {
+FilePath IndexedDBContextImpl::GetFilePathForTesting(
+  const string16& origin_id) const {
+  return GetIndexedDBFilePath(origin_id);
+}
+
+std::vector<GURL> IndexedDBContextImpl::GetAllOrigins() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
+  std::vector<GURL> origins;
   std::set<GURL>* origins_set = GetOriginSet();
   for (std::set<GURL>::const_iterator iter = origins_set->begin();
        iter != origins_set->end(); ++iter) {
-    origins->push_back(*iter);
+    origins.push_back(*iter);
   }
+  return origins;
 }
 
-int64 IndexedDBContext::GetOriginDiskUsage(const GURL& origin_url) {
+int64 IndexedDBContextImpl::GetOriginDiskUsage(const GURL& origin_url) {
   if (data_path_.empty() || !IsInOriginSet(origin_url))
     return 0;
   EnsureDiskUsageCacheInitialized(origin_url);
   return origin_size_map_[origin_url];
 }
 
-base::Time IndexedDBContext::GetOriginLastModified(const GURL& origin_url) {
+base::Time IndexedDBContextImpl::GetOriginLastModified(const GURL& origin_url) {
   if (data_path_.empty() || !IsInOriginSet(origin_url))
     return base::Time();
   string16 origin_id = DatabaseUtil::GetOriginIdentifier(origin_url);
@@ -194,7 +209,7 @@ base::Time IndexedDBContext::GetOriginLastModified(const GURL& origin_url) {
   return file_info.last_modified;
 }
 
-void IndexedDBContext::ConnectionOpened(const GURL& origin_url) {
+void IndexedDBContextImpl::ConnectionOpened(const GURL& origin_url) {
   if (quota_manager_proxy()) {
     quota_manager_proxy()->NotifyStorageAccessed(
         quota::QuotaClient::kIndexedDatabase, origin_url,
@@ -210,7 +225,7 @@ void IndexedDBContext::ConnectionOpened(const GURL& origin_url) {
   QueryAvailableQuota(origin_url);
 }
 
-void IndexedDBContext::ConnectionClosed(const GURL& origin_url) {
+void IndexedDBContextImpl::ConnectionClosed(const GURL& origin_url) {
   DCHECK(connection_count_[origin_url] > 0);
   if (quota_manager_proxy()) {
     quota_manager_proxy()->NotifyStorageAccessed(
@@ -224,13 +239,13 @@ void IndexedDBContext::ConnectionClosed(const GURL& origin_url) {
   }
 }
 
-void IndexedDBContext::TransactionComplete(const GURL& origin_url) {
+void IndexedDBContextImpl::TransactionComplete(const GURL& origin_url) {
   DCHECK(connection_count_[origin_url] > 0);
   QueryDiskAndUpdateQuotaUsage(origin_url);
   QueryAvailableQuota(origin_url);
 }
 
-FilePath IndexedDBContext::GetIndexedDBFilePath(
+FilePath IndexedDBContextImpl::GetIndexedDBFilePath(
     const string16& origin_id) const {
   DCHECK(!data_path_.empty());
   FilePath::StringType id =
@@ -239,8 +254,8 @@ FilePath IndexedDBContext::GetIndexedDBFilePath(
   return data_path_.Append(id.append(kIndexedDBExtension));
 }
 
-bool IndexedDBContext::WouldBeOverQuota(const GURL& origin_url,
-                                        int64 additional_bytes) {
+bool IndexedDBContextImpl::WouldBeOverQuota(const GURL& origin_url,
+                                            int64 additional_bytes) {
   if (space_available_map_.find(origin_url) == space_available_map_.end()) {
     // We haven't heard back from the QuotaManager yet, just let it through.
     return false;
@@ -249,16 +264,16 @@ bool IndexedDBContext::WouldBeOverQuota(const GURL& origin_url,
   return over_quota;
 }
 
-bool IndexedDBContext::IsOverQuota(const GURL& origin_url) {
+bool IndexedDBContextImpl::IsOverQuota(const GURL& origin_url) {
   const int kOneAdditionalByte = 1;
   return WouldBeOverQuota(origin_url, kOneAdditionalByte);
 }
 
-quota::QuotaManagerProxy* IndexedDBContext::quota_manager_proxy() {
+quota::QuotaManagerProxy* IndexedDBContextImpl::quota_manager_proxy() {
   return quota_manager_proxy_;
 }
 
-int64 IndexedDBContext::ReadUsageFromDisk(const GURL& origin_url) const {
+int64 IndexedDBContextImpl::ReadUsageFromDisk(const GURL& origin_url) const {
   if (data_path_.empty())
     return 0;
   string16 origin_id = DatabaseUtil::GetOriginIdentifier(origin_url);
@@ -266,12 +281,14 @@ int64 IndexedDBContext::ReadUsageFromDisk(const GURL& origin_url) const {
   return file_util::ComputeDirectorySize(file_path);
 }
 
-void IndexedDBContext::EnsureDiskUsageCacheInitialized(const GURL& origin_url) {
+void IndexedDBContextImpl::EnsureDiskUsageCacheInitialized(
+    const GURL& origin_url) {
   if (origin_size_map_.find(origin_url) == origin_size_map_.end())
     origin_size_map_[origin_url] = ReadUsageFromDisk(origin_url);
 }
 
-void IndexedDBContext::QueryDiskAndUpdateQuotaUsage(const GURL& origin_url) {
+void IndexedDBContextImpl::QueryDiskAndUpdateQuotaUsage(
+    const GURL& origin_url) {
   int64 former_disk_usage = origin_size_map_[origin_url];
   int64 current_disk_usage = ReadUsageFromDisk(origin_url);
   int64 difference = current_disk_usage - former_disk_usage;
@@ -287,9 +304,9 @@ void IndexedDBContext::QueryDiskAndUpdateQuotaUsage(const GURL& origin_url) {
   }
 }
 
-void IndexedDBContext::GotUsageAndQuota(const GURL& origin_url,
-                                        quota::QuotaStatusCode status,
-                                        int64 usage, int64 quota) {
+void IndexedDBContextImpl::GotUsageAndQuota(const GURL& origin_url,
+                                            quota::QuotaStatusCode status,
+                                            int64 usage, int64 quota) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(status == quota::kQuotaStatusOk || status == quota::kQuotaErrorAbort)
       << "status was " << status;
@@ -299,23 +316,24 @@ void IndexedDBContext::GotUsageAndQuota(const GURL& origin_url,
   }
   BrowserThread::PostTask(
       BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
-      base::Bind(&IndexedDBContext::GotUpdatedQuota, this, origin_url, usage,
-                 quota));
+      base::Bind(&IndexedDBContextImpl::GotUpdatedQuota, this, origin_url,
+                 usage, quota));
 }
 
-void IndexedDBContext::GotUpdatedQuota(const GURL& origin_url, int64 usage,
-                                       int64 quota) {
+void IndexedDBContextImpl::GotUpdatedQuota(const GURL& origin_url, int64 usage,
+                                           int64 quota) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   space_available_map_[origin_url] = quota - usage;
 }
 
-void IndexedDBContext::QueryAvailableQuota(const GURL& origin_url) {
+void IndexedDBContextImpl::QueryAvailableQuota(const GURL& origin_url) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
     if (quota_manager_proxy())
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(&IndexedDBContext::QueryAvailableQuota, this, origin_url));
+          base::Bind(&IndexedDBContextImpl::QueryAvailableQuota, this,
+                     origin_url));
     return;
   }
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -324,11 +342,10 @@ void IndexedDBContext::QueryAvailableQuota(const GURL& origin_url) {
   quota_manager_proxy()->quota_manager()->GetUsageAndQuota(
       origin_url,
       quota::kStorageTypeTemporary,
-      base::Bind(&IndexedDBContext::GotUsageAndQuota,
-                 this, origin_url));
+      base::Bind(&IndexedDBContextImpl::GotUsageAndQuota, this, origin_url));
 }
 
-std::set<GURL>* IndexedDBContext::GetOriginSet() {
+std::set<GURL>* IndexedDBContextImpl::GetOriginSet() {
   if (!origin_set_.get()) {
     origin_set_.reset(new std::set<GURL>);
     std::vector<GURL> origins;
@@ -341,7 +358,7 @@ std::set<GURL>* IndexedDBContext::GetOriginSet() {
   return origin_set_.get();
 }
 
-void IndexedDBContext::ResetCaches() {
+void IndexedDBContextImpl::ResetCaches() {
   origin_set_.reset();
   origin_size_map_.clear();
   space_available_map_.clear();

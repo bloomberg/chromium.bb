@@ -8,7 +8,8 @@
 
 #include "base/file_util.h"
 #include "base/message_loop_proxy.h"
-#include "content/browser/in_process_webkit/indexed_db_context.h"
+#include "content/browser/in_process_webkit/indexed_db_context_impl.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/net_util.h"
 #include "webkit/database/database_util.h"
 
@@ -29,7 +30,7 @@ class IndexedDBQuotaClient::HelperTask : public quota::QuotaThreadTask {
   }
 
   IndexedDBQuotaClient* client_;
-  scoped_refptr<IndexedDBContext> indexed_db_context_;
+  scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
 };
 
 class IndexedDBQuotaClient::DeleteOriginTask : public HelperTask {
@@ -43,7 +44,7 @@ class IndexedDBQuotaClient::DeleteOriginTask : public HelperTask {
   }
  private:
   virtual void RunOnTargetThread() OVERRIDE {
-    indexed_db_context_->DeleteIndexedDBForOrigin(origin_url_);
+    indexed_db_context_->DeleteForOrigin(origin_url_);
   }
   virtual void Aborted() OVERRIDE {
     callback_.Reset();
@@ -89,8 +90,7 @@ class IndexedDBQuotaClient::GetOriginsTaskBase : public HelperTask {
   virtual bool ShouldAddOrigin(const GURL& origin) = 0;
 
   virtual void RunOnTargetThread() OVERRIDE {
-    std::vector<GURL> origins;
-    indexed_db_context_->GetAllOrigins(&origins);
+    std::vector<GURL> origins =  indexed_db_context_->GetAllOrigins();
     for (std::vector<GURL>::const_iterator iter = origins.begin();
          iter != origins.end(); ++iter) {
       if (ShouldAddOrigin(*iter))
@@ -150,7 +150,7 @@ class IndexedDBQuotaClient::GetOriginsForHostTask : public GetOriginsTaskBase {
 
 IndexedDBQuotaClient::IndexedDBQuotaClient(
     base::MessageLoopProxy* webkit_thread_message_loop,
-    IndexedDBContext* indexed_db_context)
+    IndexedDBContextImpl* indexed_db_context)
     : webkit_thread_message_loop_(webkit_thread_message_loop),
       indexed_db_context_(indexed_db_context) {
 }
@@ -249,7 +249,7 @@ void IndexedDBQuotaClient::DidGetOriginUsage(
 }
 
 void IndexedDBQuotaClient::DidGetAllOrigins(const std::set<GURL>& origins,
-    quota::StorageType type) {
+                                            quota::StorageType type) {
   DCHECK(origins_for_type_callbacks_.HasCallbacks());
   origins_for_type_callbacks_.Run(origins, type);
 }

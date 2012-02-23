@@ -28,7 +28,6 @@ class IOThread;
 class Profile;
 class ProtocolHandlerRegistry;
 class TransportSecurityPersister;
-class WebKitContext;
 
 namespace net {
 class CookieStore;
@@ -137,7 +136,6 @@ class ProfileIOData {
     scoped_refptr<CookieSettings> cookie_settings;
     scoped_refptr<net::SSLConfigService> ssl_config_service;
     scoped_refptr<net::CookieMonster::Delegate> cookie_monster_delegate;
-    scoped_refptr<WebKitContext> webkit_context;
     scoped_refptr<ExtensionInfoMap> extension_info_map;
     DesktopNotificationService* notification_service;
     scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry;

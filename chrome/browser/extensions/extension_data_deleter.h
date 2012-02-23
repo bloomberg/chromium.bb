@@ -14,6 +14,8 @@
 #include "googleurl/src/gurl.h"
 
 namespace content {
+class DOMStorageContext;
+class IndexedDBContext;
 class ResourceContext;
 }
 
@@ -30,7 +32,6 @@ class DatabaseTracker;
 }
 
 class Profile;
-class WebKitContext;
 
 // A helper class that takes care of removing local storage, databases and
 // cookies for a given extension. This is used by
@@ -71,11 +72,13 @@ class ExtensionDataDeleter
 
   // Deletes local storage for the extension. May only be called on the webkit
   // thread.
-  void DeleteLocalStorageOnWebkitThread();
+  void DeleteLocalStorageOnWebkitThread(
+    scoped_refptr<content::DOMStorageContext> dom_storage_context);
 
   // Deletes indexed db files for the extension. May only be called on the
   // webkit thread.
-  void DeleteIndexedDBOnWebkitThread();
+  void DeleteIndexedDBOnWebkitThread(
+      scoped_refptr<content::IndexedDBContext> indexed_db_context);
 
   // Deletes filesystem files for the extension. May only be called on the
   // file thread.
@@ -99,9 +102,6 @@ class ExtensionDataDeleter
 
   // The security origin identifier for which we're deleting stuff.
   string16 origin_id_;
-
-  // Webkit context for accessing the DOM storage helper.
-  scoped_refptr<WebKitContext> webkit_context_;
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
 

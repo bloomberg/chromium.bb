@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "content/browser/in_process_webkit/dom_storage_context_impl.h"
+#include "content/browser/in_process_webkit/indexed_db_context_impl.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -20,10 +22,10 @@ WebKitContext::WebKitContext(
       is_incognito_(is_incognito),
       clear_local_state_on_exit_(clear_local_state_on_exit),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          dom_storage_context_(new DOMStorageContext(
+          dom_storage_context_(new DOMStorageContextImpl(
               this, special_storage_policy))),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          indexed_db_context_(new IndexedDBContext(
+          indexed_db_context_(new IndexedDBContextImpl(
               this, special_storage_policy, quota_manager_proxy,
               webkit_thread_loop))) {
 }
@@ -34,12 +36,12 @@ WebKitContext::~WebKitContext() {
   // happens during testing).
   dom_storage_context_->set_clear_local_state_on_exit_(
       clear_local_state_on_exit_);
-  DOMStorageContext* dom_storage_context = dom_storage_context_.release();
-  if (!BrowserThread::DeleteSoon(
+  DOMStorageContextImpl* dom_storage_context = dom_storage_context_.release();
+  if (!BrowserThread::ReleaseSoon(
           BrowserThread::WEBKIT_DEPRECATED, FROM_HERE, dom_storage_context)) {
     // The WebKit thread wasn't created, and the task got deleted without
     // freeing the DOMStorageContext, so delete it manually.
-    delete dom_storage_context;
+    dom_storage_context->Release();
   }
 
   indexed_db_context_->set_clear_local_state_on_exit(
@@ -55,6 +57,11 @@ void WebKitContext::PurgeMemory() {
   }
 
   dom_storage_context_->PurgeMemory();
+}
+
+void WebKitContext::SetDOMStorageContextForTesting(
+    DOMStorageContextImpl* dom_storage_context) {
+  dom_storage_context_ = dom_storage_context;
 }
 
 void WebKitContext::DeleteDataModifiedSince(const base::Time& cutoff) {

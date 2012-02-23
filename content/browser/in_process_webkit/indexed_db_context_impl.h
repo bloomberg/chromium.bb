@@ -2,21 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_CONTEXT_H_
-#define CONTENT_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_CONTEXT_H_
+#ifndef CONTENT_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_CONTEXT_IMPL_H_
+#define CONTENT_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_CONTEXT_IMPL_H_
 #pragma once
 
 #include <map>
 #include <set>
-#include <vector>
 
-#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/common/content_export.h"
-#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/indexed_db_context.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/quota/quota_types.h"
 
@@ -37,15 +34,15 @@ class QuotaManagerProxy;
 class SpecialStoragePolicy;
 }
 
-class CONTENT_EXPORT IndexedDBContext
-    : public base::RefCountedThreadSafe<IndexedDBContext> {
+class CONTENT_EXPORT IndexedDBContextImpl
+    : NON_EXPORTED_BASE(public content::IndexedDBContext) {
  public:
-  IndexedDBContext(WebKitContext* webkit_context,
-                   quota::SpecialStoragePolicy* special_storage_policy,
-                   quota::QuotaManagerProxy* quota_manager_proxy,
-                   base::MessageLoopProxy* webkit_thread_loop);
+  IndexedDBContextImpl(WebKitContext* webkit_context,
+                       quota::SpecialStoragePolicy* special_storage_policy,
+                       quota::QuotaManagerProxy* quota_manager_proxy,
+                       base::MessageLoopProxy* webkit_thread_loop);
 
-  ~IndexedDBContext();
+  virtual ~IndexedDBContextImpl();
 
   WebKit::WebIDBFactory* GetIDBFactory();
 
@@ -64,13 +61,13 @@ class CONTENT_EXPORT IndexedDBContext
     save_session_state_ = true;
   }
 
-  // Deletes all indexed db files for the given origin.
-  void DeleteIndexedDBForOrigin(const GURL& origin_url);
-
-  // Methods used in response to QuotaManager requests.
-  void GetAllOrigins(std::vector<GURL>* origins);
-  int64 GetOriginDiskUsage(const GURL& origin_url);
-  base::Time GetOriginLastModified(const GURL& origin_url);
+  // IndexedDBContext implementation:
+  virtual std::vector<GURL> GetAllOrigins() OVERRIDE;
+  virtual int64 GetOriginDiskUsage(const GURL& origin_url) OVERRIDE;
+  virtual base::Time GetOriginLastModified(const GURL& origin_url) OVERRIDE;
+  virtual void DeleteForOrigin(const GURL& origin_url) OVERRIDE;
+  virtual FilePath GetFilePathForTesting(
+      const string16& origin_id) const OVERRIDE;
 
   // Methods called by IndexedDBDispatcherHost for quota support.
   void ConnectionOpened(const GURL& origin_url);
@@ -87,8 +84,6 @@ class CONTENT_EXPORT IndexedDBContext
   }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, ClearExtensionData);
-  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, ClearAppData);
   FRIEND_TEST_ALL_PREFIXES(IndexedDBBrowserTest, ClearLocalState);
   FRIEND_TEST_ALL_PREFIXES(IndexedDBBrowserTest, ClearSessionOnlyDatabases);
   FRIEND_TEST_ALL_PREFIXES(IndexedDBBrowserTest, SaveSessionState);
@@ -133,7 +128,7 @@ class CONTENT_EXPORT IndexedDBContext
   OriginToSizeMap space_available_map_;
   std::map<GURL, unsigned int> connection_count_;
 
-  DISALLOW_COPY_AND_ASSIGN(IndexedDBContext);
+  DISALLOW_COPY_AND_ASSIGN(IndexedDBContextImpl);
 };
 
-#endif  // CONTENT_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_CONTEXT_H_
+#endif  // CONTENT_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_CONTEXT_IMPL_H_

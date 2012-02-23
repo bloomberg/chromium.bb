@@ -11,7 +11,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/scoped_temp_dir.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/in_process_webkit/indexed_db_context.h"
+#include "content/browser/in_process_webkit/indexed_db_context_impl.h"
 #include "content/browser/in_process_webkit/indexed_db_quota_client.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/test/test_browser_context.h"
@@ -57,7 +57,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
   void setup_temp_dir() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     FilePath indexeddb_dir = temp_dir_.path().Append(
-        IndexedDBContext::kIndexedDBDirectory);
+        IndexedDBContextImpl::kIndexedDBDirectory);
     ASSERT_TRUE(file_util::CreateDirectory(indexeddb_dir));
     idb_context()->set_data_path_for_testing(indexeddb_dir);
   }
@@ -124,7 +124,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
     return delete_status_;
   }
 
-  IndexedDBContext* idb_context() { return idb_context_.get(); }
+  IndexedDBContextImpl* idb_context() { return idb_context_.get(); }
 
   void SetFileSizeTo(const FilePath& path, int size) {
     std::string junk(size, 'a');
@@ -132,7 +132,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
   }
 
   void AddFakeIndexedDB(const GURL& origin, int size) {
-    FilePath file_path_origin = idb_context()->GetIndexedDBFilePath(
+    FilePath file_path_origin = idb_context()->GetFilePathForTesting(
         DatabaseUtil::GetOriginIdentifier(origin));
     if (!file_util::CreateDirectory(file_path_origin)) {
       LOG(ERROR) << "failed to file_util::CreateDirectory "
@@ -162,7 +162,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
   int64 usage_;
   std::set<GURL> origins_;
   quota::StorageType type_;
-  scoped_refptr<IndexedDBContext> idb_context_;
+  scoped_refptr<IndexedDBContextImpl> idb_context_;
   base::WeakPtrFactory<IndexedDBQuotaClientTest> weak_factory_;
   MessageLoop message_loop_;
   BrowserThreadImpl db_thread_;

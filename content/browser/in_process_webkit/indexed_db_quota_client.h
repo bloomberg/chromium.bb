@@ -15,7 +15,7 @@
 #include "webkit/quota/quota_task.h"
 #include "webkit/quota/quota_types.h"
 
-class IndexedDBContext;
+class IndexedDBContextImpl;
 
 // A QuotaClient implementation to integrate IndexedDB
 // with the quota  management system. This interface is used
@@ -25,7 +25,7 @@ class IndexedDBQuotaClient : public quota::QuotaClient,
  public:
   CONTENT_EXPORT IndexedDBQuotaClient(
       base::MessageLoopProxy* tracker_thread,
-      IndexedDBContext* indexed_db_context);
+      IndexedDBContextImpl* indexed_db_context);
   CONTENT_EXPORT virtual ~IndexedDBQuotaClient();
 
   // QuotaClient method overrides
@@ -74,7 +74,7 @@ class IndexedDBQuotaClient : public quota::QuotaClient,
           quota::StorageType type);
 
   scoped_refptr<base::MessageLoopProxy> webkit_thread_message_loop_;
-  scoped_refptr<IndexedDBContext> indexed_db_context_;
+  scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
   UsageForOriginCallbackMap usage_for_origin_callbacks_;
   OriginsForTypeCallbackQueue origins_for_type_callbacks_;
   OriginsForHostCallbackMap origins_for_host_callbacks_;

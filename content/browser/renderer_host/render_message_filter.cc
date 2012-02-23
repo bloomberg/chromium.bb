@@ -19,6 +19,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/download_types.h"
+#include "content/browser/in_process_webkit/dom_storage_context_impl.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/plugin_service_filter.h"
 #include "content/browser/plugin_service_impl.h"

@@ -6,7 +6,7 @@
 
 #include "base/file_path.h"
 #include "content/browser/in_process_webkit/dom_storage_area.h"
-#include "content/browser/in_process_webkit/dom_storage_context.h"
+#include "content/browser/in_process_webkit/dom_storage_context_impl.h"
 #include "content/browser/in_process_webkit/dom_storage_message_filter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageArea.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageNamespace.h"
@@ -18,7 +18,7 @@ using WebKit::WebString;
 
 /* static */
 DOMStorageNamespace* DOMStorageNamespace::CreateLocalStorageNamespace(
-    DOMStorageContext* dom_storage_context, const FilePath& data_dir_path) {
+    DOMStorageContextImpl* dom_storage_context, const FilePath& data_dir_path) {
   int64 id = kLocalStorageNamespaceId;
   DCHECK(!dom_storage_context->GetStorageNamespace(id, false));
   return new DOMStorageNamespace(dom_storage_context, id,
@@ -27,16 +27,17 @@ DOMStorageNamespace* DOMStorageNamespace::CreateLocalStorageNamespace(
 
 /* static */
 DOMStorageNamespace* DOMStorageNamespace::CreateSessionStorageNamespace(
-    DOMStorageContext* dom_storage_context, int64 id) {
+    DOMStorageContextImpl* dom_storage_context, int64 id) {
   DCHECK(!dom_storage_context->GetStorageNamespace(id, false));
   return new DOMStorageNamespace(dom_storage_context, id, WebString(),
                                  DOM_STORAGE_SESSION);
 }
 
-DOMStorageNamespace::DOMStorageNamespace(DOMStorageContext* dom_storage_context,
-                                         int64 id,
-                                         const WebString& data_dir_path,
-                                         DOMStorageType dom_storage_type)
+DOMStorageNamespace::DOMStorageNamespace(
+    DOMStorageContextImpl* dom_storage_context,
+    int64 id,
+    const WebString& data_dir_path,
+    DOMStorageType dom_storage_type)
     : dom_storage_context_(dom_storage_context),
       id_(id),
       data_dir_path_(data_dir_path),

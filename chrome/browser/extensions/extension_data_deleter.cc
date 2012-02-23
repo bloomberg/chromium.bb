@@ -12,7 +12,8 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/in_process_webkit/webkit_context.h"
+#include "content/public/browser/dom_storage_context.h"
+#include "content/public/browser/indexed_db_context.h"
 #include "content/public/browser/resource_context.h"
 #include "net/base/completion_callback.h"
 #include "net/base/cookie_monster.h"
@@ -26,6 +27,8 @@
 
 using content::BrowserContext;
 using content::BrowserThread;
+using content::DOMStorageContext;
+using content::IndexedDBContext;
 using content::ResourceContext;
 
 // static
@@ -48,12 +51,15 @@ void ExtensionDataDeleter::StartDeleting(
   BrowserThread::PostTask(
       BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
       base::Bind(
-          &ExtensionDataDeleter::DeleteLocalStorageOnWebkitThread, deleter));
+          &ExtensionDataDeleter::DeleteLocalStorageOnWebkitThread, deleter,
+          make_scoped_refptr(DOMStorageContext::GetForBrowserContext(
+              profile))));
 
   BrowserThread::PostTask(
       BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
       base::Bind(
-          &ExtensionDataDeleter::DeleteIndexedDBOnWebkitThread, deleter));
+          &ExtensionDataDeleter::DeleteIndexedDBOnWebkitThread, deleter,
+          make_scoped_refptr(IndexedDBContext::GetForBrowserContext(profile))));
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
@@ -81,7 +87,6 @@ ExtensionDataDeleter::ExtensionDataDeleter(
     const GURL& storage_origin,
     bool is_storage_isolated)
     : extension_id_(extension_id) {
-  webkit_context_ = BrowserContext::GetWebKitContext(profile);
   database_tracker_ = BrowserContext::GetDatabaseTracker(profile);
   // Pick the right request context depending on whether it's an extension,
   // isolated app, or regular app.
@@ -121,16 +126,16 @@ void ExtensionDataDeleter::DeleteDatabaseOnFileThread() {
   DCHECK(rv == net::OK || rv == net::ERR_IO_PENDING);
 }
 
-void ExtensionDataDeleter::DeleteLocalStorageOnWebkitThread() {
+void ExtensionDataDeleter::DeleteLocalStorageOnWebkitThread(
+    scoped_refptr<DOMStorageContext> dom_storage_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  webkit_context_->dom_storage_context()->DeleteLocalStorageForOrigin(
-      origin_id_);
+  dom_storage_context->DeleteForOrigin(origin_id_);
 }
 
-void ExtensionDataDeleter::DeleteIndexedDBOnWebkitThread() {
+void ExtensionDataDeleter::DeleteIndexedDBOnWebkitThread(
+    scoped_refptr<IndexedDBContext> indexed_db_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  webkit_context_->indexed_db_context()->DeleteIndexedDBForOrigin(
-      storage_origin_);
+  indexed_db_context->DeleteForOrigin(storage_origin_);
 }
 
 void ExtensionDataDeleter::DeleteFileSystemOnFileThread() {
