@@ -28,13 +28,11 @@ namespace {
 // Returns a list of Aura windows from a BrowserList, using either a
 // const_iterator or const_reverse_iterator.
 template<typename IT>
-std::vector<aura::Window*> GetTabbedBrowserWindows(IT begin, IT end) {
+std::vector<aura::Window*> GetBrowserWindows(IT begin, IT end) {
   std::vector<aura::Window*> windows;
   for (IT it = begin; it != end; ++it) {
     Browser* browser = *it;
-    if (browser &&
-        browser->is_type_tabbed() &&
-        browser->window()->GetNativeHandle())
+    if (browser && browser->window()->GetNativeHandle())
       windows.push_back(browser->window()->GetNativeHandle());
   }
   return windows;
@@ -97,13 +95,13 @@ std::vector<aura::Window*> ChromeShellDelegate::GetCycleWindowList(
   switch (order) {
     case ORDER_MRU:
       // BrowserList maintains a list of browsers sorted by activity.
-      windows = GetTabbedBrowserWindows(BrowserList::begin_last_active(),
-                                        BrowserList::end_last_active());
+      windows = GetBrowserWindows(BrowserList::begin_last_active(),
+                                  BrowserList::end_last_active());
       break;
     case ORDER_LINEAR:
       // Just return windows in creation order.
-      windows = GetTabbedBrowserWindows(BrowserList::begin(),
-                                        BrowserList::end());
+      windows = GetBrowserWindows(BrowserList::begin(),
+                                  BrowserList::end());
       break;
     default:
       NOTREACHED();
