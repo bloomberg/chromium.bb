@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@ var extensionId = "enfkhcelefdadlmkffamgdlgplcionje";
 var appId = "iladmdjkfniedhfhcfoefgojhgaiaccc";
 
 var assertEq = chrome.test.assertEq;
+var assertFalse = chrome.test.assertFalse;
 var assertNoLastError = chrome.test.assertNoLastError;
 var assertTrue = chrome.test.assertTrue;
 var callbackFail = chrome.test.callbackFail;
@@ -58,13 +59,8 @@ function getIconData(callback) {
   img.src = "extension/icon.png";
 }
 
-var cachedManifest = null;
-
 // This returns the string contents of the extension's manifest file.
 function getManifest(alternativePath) {
-  if (cachedManifest)
-    return cachedManifest;
-
   // Do a synchronous XHR to get the manifest.
   var xhr = new XMLHttpRequest();
   xhr.open("GET",

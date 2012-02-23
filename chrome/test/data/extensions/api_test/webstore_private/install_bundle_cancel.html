@@ -1,0 +1,39 @@
+<!--
+ * Copyright (c) 2012 The Chromium Authors. All rights reserved.  Use of this
+ * source code is governed by a BSD-style license that can be found in the
+ * LICENSE file.
+-->
+<script src="common.js"></script>
+<script>
+
+var bundleItems = [
+  {
+    id: 'begfmnajjkbjdgmffnjaojchoncnmngg',
+    manifest: getManifest('bundle/app1.json'),
+    localizedName: 'app.1'
+  },
+  {
+    id: 'mpneghmdnmaolkljkipbhaienajcflfe',
+    manifest: getManifest('bundle/app2.json'),
+    localizedName: 'app.2'
+  },
+  {
+    id: 'bmfoocgfinpmkmlbjhcbofejhkhlbchk',
+    manifest: getManifest('bundle/extension1.json'),
+    localizedName: 'extension.1'
+  },
+  {
+    id: 'pkapffpjmiilhlhbibjhamlmdhfneidj',
+    manifest: getManifest('bundle/extension2.json'),
+    localizedName: 'extension.2'
+  }
+];
+
+runTests([
+  function installCanceled() {
+    chrome.webstorePrivate.installBundle(
+        bundleItems, callbackFail("user_canceled"));
+  }
+]);
+
+</script>

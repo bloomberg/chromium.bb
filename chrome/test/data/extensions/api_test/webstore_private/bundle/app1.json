@@ -1,0 +1,9 @@
+{
+  "name": "app.1",
+  "version": "1",
+  "app": {
+    "urls": [ "http://www.testapp.com" ],
+    "launch": { "web_url": "http://www.testapp.com" }
+  },
+  "permissions": [ "clipboardRead" ]
+}
