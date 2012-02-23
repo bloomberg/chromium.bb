@@ -168,8 +168,6 @@ class DependencySettings(GClientKeywords):
     if isinstance(self._url, basestring):
       # urls are sometime incorrectly written as proto://host/path/@rev. Replace
       # it to proto://host/path@rev.
-      if self._url.count('@') > 1:
-        raise gclient_utils.Error('Invalid url "%s"' % self._url)
       self._url = self._url.replace('/@', '@')
     elif not isinstance(self._url,
         (self.FromImpl, self.FileImpl, None.__class__)):
