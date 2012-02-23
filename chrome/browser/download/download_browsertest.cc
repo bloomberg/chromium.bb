@@ -20,6 +20,7 @@
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_shelf.h"
@@ -54,6 +55,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/test/test_navigation_observer.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -785,6 +787,67 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NoDownload) {
   // Check state.
   EXPECT_EQ(1, browser()->tab_count());
   CheckDownloadUI(browser(), false, false, FilePath());
+}
+
+// Verify that when the DownloadResourceThrottle cancels a download, the
+// download never makes it to the downloads system.
+IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {
+  ASSERT_TRUE(InitialSetup(false));
+
+  // Navigate to a page with the same domain as the file to download.  We can't
+  // navigate directly to the file we don't want to download because cross-site
+  // navigations reset the TabDownloadState.
+  FilePath same_site_path(FILE_PATH_LITERAL("download_script.html"));
+  GURL same_site_url(URLRequestMockHTTPJob::GetMockUrl(same_site_path));
+  ui_test_utils::NavigateToURL(browser(), same_site_url);
+
+  // Make sure the initial navigation didn't trigger a download.
+  scoped_refptr<CancelTestDataCollector> info(new CancelTestDataCollector());
+  info->WaitForDataCollected();
+  EXPECT_EQ(0, info->dfm_pending_downloads());
+
+  // Disable downloads for the tab.
+  content::NavigationController* controller =
+      &browser()->GetSelectedWebContents()->GetController();
+  DownloadRequestLimiter::TabDownloadState* tab_download_state =
+      g_browser_process->download_request_limiter()->GetDownloadState(
+          controller,
+          controller,
+          true);
+  ASSERT_TRUE(tab_download_state);
+  tab_download_state->set_download_status(
+      DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED);
+
+  // Try to start the download via Javascript and wait for the corresponding
+  // load stop event.
+  TestNavigationObserver observer(
+      content::Source<content::NavigationController>(controller),
+      NULL,
+      1);
+  bool download_assempted;
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      browser()->GetSelectedWebContents()->GetRenderViewHost(),
+      L"",
+      L"window.domAutomationController.send(startDownload());",
+      &download_assempted));
+  ASSERT_TRUE(download_assempted);
+  observer.WaitForObservation(
+      base::Bind(&ui_test_utils::RunMessageLoop),
+      base::Bind(&MessageLoop::Quit,
+                 base::Unretained(MessageLoopForUI::current())));
+
+  // Check that we did not download the file.
+  FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
+  FilePath file_path(DestinationFile(browser(), file));
+  EXPECT_FALSE(file_util::PathExists(file_path));
+
+  // Check state.
+  EXPECT_EQ(1, browser()->tab_count());
+  CheckDownloadUI(browser(), false, false, FilePath());
+
+  // Verify that there's no pending download.
+  info->WaitForDataCollected();
+  EXPECT_EQ(0, info->dfm_pending_downloads());
 }
 
 // Download a 0-size file with a content-disposition header, verify that the

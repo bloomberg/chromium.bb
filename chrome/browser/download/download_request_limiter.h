@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -183,6 +184,7 @@ class DownloadRequestLimiter
   void OnUserGesture(content::WebContents* tab);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(DownloadTest, DownloadResourceThrottleCancels);
   friend class base::RefCountedThreadSafe<DownloadRequestLimiter>;
   friend class DownloadRequestLimiterTest;
   friend class TabDownloadState;
