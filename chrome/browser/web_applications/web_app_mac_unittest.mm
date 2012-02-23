@@ -4,15 +4,21 @@
 
 #include "chrome/browser/web_applications/web_app_mac.h"
 
+#import <Cocoa/Cocoa.h>
+
 #include "base/file_util.h"
 #include "base/mac/foundation_util.h"
+#include "base/memory/scoped_nsobject.h"
 #include "base/scoped_temp_dir.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/mac/app_mode_common.h"
+#include "grit/theme_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
 
 using ::testing::_;
 using ::testing::Return;
@@ -37,6 +43,10 @@ ShellIntegration::ShortcutInfo GetShortcutInfo() {
   info.url = GURL("http://example.com/");
   return info;
 }
+
+}  // namespace
+
+namespace web_app {
 
 // This test currently fails because the Mac app loader isn't built yet.
 TEST(WebAppShortcutCreatorTest, FAILS_CreateShortcut) {
@@ -73,4 +83,25 @@ TEST(WebAppShortcutCreatorTest, CreateFailure) {
   EXPECT_FALSE(shortcut_creator.CreateShortcut());
 }
 
-}  // namespace
+TEST(WebAppShortcutCreatorTest, UpdateIcon) {
+  ScopedTempDir scoped_temp_dir;
+  ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+  FilePath dst_path = scoped_temp_dir.path();
+
+  ShellIntegration::ShortcutInfo info = GetShortcutInfo();
+  info.favicon = *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+      IDR_PRODUCT_LOGO_32).ToSkBitmap();
+  web_app::WebAppShortcutCreator shortcut_creator(info);
+
+  shortcut_creator.UpdateIcon(dst_path);
+  FilePath icon_path =
+      dst_path.Append("Contents").Append("Resources").Append("app.icns");
+
+  scoped_nsobject<NSImage> image([[NSImage alloc] initWithContentsOfFile:
+      base::mac::FilePathToNSString(icon_path)]);
+  EXPECT_TRUE(image);
+  EXPECT_EQ(info.favicon.width(), [image size].width);
+  EXPECT_EQ(info.favicon.height(), [image size].height);
+}
+
+}  // namespace web_app

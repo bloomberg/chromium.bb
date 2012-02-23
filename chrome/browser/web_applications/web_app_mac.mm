@@ -9,13 +9,32 @@
 #include "base/file_util.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
+#include "base/mac/mac_util.h"
+#include "base/memory/scoped_nsobject.h"
 #include "base/scoped_temp_dir.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/mac/app_mode_common.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/chromium_strings.h"
+#include "skia/ext/skia_utils_mac.h"
+#include "third_party/icon_family/IconFamily.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
+namespace {
+
+// Creates a NSBitmapImageRep from |bitmap|.
+NSBitmapImageRep* SkBitmapToImageRep(const SkBitmap& bitmap) {
+  base::mac::ScopedCFTypeRef<CGColorSpaceRef> color_space(
+      CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB));
+  NSImage* image = gfx::SkBitmapToNSImageWithColorSpace(
+    bitmap, color_space.get());
+  return base::mac::ObjCCast<NSBitmapImageRep>(
+      [[image representations] lastObject]);
+}
+
+}  // namespace
+
 
 namespace web_app {
 
@@ -98,8 +117,33 @@ bool WebAppShortcutCreator::UpdatePlist(const FilePath& app_path) const {
 }
 
 bool WebAppShortcutCreator::UpdateIcon(const FilePath& app_path) const {
-  // TODO:(sail) Need to implement this.
-  return true;
+  // TODO(sail): Add support for multiple icon sizes.
+  if (info_.favicon.empty() || info_.favicon.width() != 32 ||
+      info_.favicon.height() != 32) {
+    return true;
+  }
+
+  NSBitmapImageRep* image_rep = SkBitmapToImageRep(info_.favicon);
+  if (!image_rep)
+    return false;
+
+  scoped_nsobject<IconFamily> icon_family([[IconFamily alloc] init]);
+  bool success = [icon_family setIconFamilyElement:kLarge32BitData
+                                fromBitmapImageRep:image_rep] &&
+                 [icon_family setIconFamilyElement:kLarge8BitData
+                                fromBitmapImageRep:image_rep] &&
+                 [icon_family setIconFamilyElement:kLarge8BitMask
+                                fromBitmapImageRep:image_rep] &&
+                 [icon_family setIconFamilyElement:kLarge1BitMask
+                                fromBitmapImageRep:image_rep];
+  if (!success)
+    return false;
+
+  FilePath resources_path = app_path.Append("Contents").Append("Resources");
+  if (!file_util::CreateDirectory(resources_path))
+    return false;
+  FilePath icon_path = resources_path.Append("app.icns");
+  return [icon_family writeToFile:base::mac::FilePathToNSString(icon_path)];
 }
 
 }  // namespace

@@ -37,10 +37,11 @@ include_rules = [
   "+webkit/quota",
 
   # Allow inclusion of third-party code:
-  "+third_party/mozilla",   # Mozilla interface headers.
-  "+third_party/npapi",     # NPAPI interface headers.
-  "+third_party/tcmalloc",  # tcmallo
-  "+third_party/GTM",       # Google Toolbox for Mac.
+  "+third_party/icon_family", # IconFamily for Mac.
+  "+third_party/mozilla",     # Mozilla interface headers.
+  "+third_party/npapi",       # NPAPI interface headers.
+  "+third_party/tcmalloc",    # tcmallo
+  "+third_party/GTM",         # Google Toolbox for Mac.
 
   "+ui",
 ]

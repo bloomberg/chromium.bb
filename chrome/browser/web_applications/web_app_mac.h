@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/shell_integration.h"
 
 namespace web_app {
@@ -37,6 +38,8 @@ class WebAppShortcutCreator {
   bool UpdateIcon(const FilePath& app_path) const;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(WebAppShortcutCreatorTest, UpdateIcon);
+
   // Information about the app.
   ShellIntegration::ShortcutInfo info_;
 };
