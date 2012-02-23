@@ -1696,7 +1696,7 @@ void NaClVmHoleThreadStackIsSafe(struct NaClApp *nap) {
  * TODO(dje): add some explanation for the non-GDB person.
  */
 #if NACL_WINDOWS
-__declspec(dllexport,noinline)
+__declspec(dllexport noinline)
 #endif
 #ifdef __GNUC__
 __attribute__((noinline))
