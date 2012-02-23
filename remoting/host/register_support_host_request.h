@@ -63,9 +63,9 @@ class RegisterSupportHostRequest : public SignalStrategy::Listener {
  private:
   void DoSend();
 
-  // Caller owns the result.
-  buzz::XmlElement* CreateRegistrationRequest(const std::string& jid);
-  buzz::XmlElement* CreateSignature(const std::string& jid);
+  scoped_ptr<buzz::XmlElement> CreateRegistrationRequest(
+      const std::string& jid);
+  scoped_ptr<buzz::XmlElement> CreateSignature(const std::string& jid);
 
   void ProcessResponse(const buzz::XmlElement* response);
   bool ParseResponse(const buzz::XmlElement* response,

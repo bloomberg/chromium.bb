@@ -268,7 +268,7 @@ bool JingleMessage::ParseXml(const buzz::XmlElement* stanza,
   return true;
 }
 
-buzz::XmlElement* JingleMessage::ToXml() {
+scoped_ptr<buzz::XmlElement> JingleMessage::ToXml() {
   scoped_ptr<XmlElement> root(
       new XmlElement(QName("jabber:client", "iq"), true));
 
@@ -292,7 +292,7 @@ buzz::XmlElement* JingleMessage::ToXml() {
   if (action == SESSION_INFO) {
     if (info.get())
       jingle_tag->AddElement(new XmlElement(*info.get()));
-    return root.release();
+    return root.Pass();
   }
 
   if (action == SESSION_INITIATE)
@@ -330,7 +330,7 @@ buzz::XmlElement* JingleMessage::ToXml() {
     }
   }
 
-  return root.release();
+  return root.Pass();
 }
 
 JingleMessageReply::JingleMessageReply()
@@ -352,9 +352,10 @@ JingleMessageReply::JingleMessageReply(ErrorType error,
 
 JingleMessageReply::~JingleMessageReply() { }
 
-buzz::XmlElement* JingleMessageReply::ToXml(
+scoped_ptr<buzz::XmlElement> JingleMessageReply::ToXml(
     const buzz::XmlElement* request_stanza) const {
-  XmlElement* iq = new XmlElement(QName(kJabberNamespace, "iq"), true);
+  scoped_ptr<XmlElement> iq(
+      new XmlElement(QName(kJabberNamespace, "iq"), true));
   iq->SetAttr(QName(kEmptyNamespace, "to"),
               request_stanza->Attr(QName(kEmptyNamespace, "from")));
   iq->SetAttr(QName(kEmptyNamespace, "id"),
@@ -362,7 +363,7 @@ buzz::XmlElement* JingleMessageReply::ToXml(
 
   if (type == REPLY_RESULT) {
     iq->SetAttr(QName(kEmptyNamespace, "type"), "result");
-    return iq;
+    return iq.Pass();
   }
 
   DCHECK_EQ(type, REPLY_ERROR);
@@ -430,7 +431,7 @@ buzz::XmlElement* JingleMessageReply::ToXml(
     error->AddElement(text_elem);
   }
 
-  return iq;
+  return iq.Pass();
 }
 
 }  // namespace protocol

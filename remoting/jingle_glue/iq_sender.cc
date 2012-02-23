@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,15 +13,16 @@
 namespace remoting {
 
 // static
-buzz::XmlElement* IqSender::MakeIqStanza(const std::string& type,
-                                         const std::string& addressee,
-                                         buzz::XmlElement* iq_body) {
-  buzz::XmlElement* stanza = new buzz::XmlElement(buzz::QN_IQ);
+scoped_ptr<buzz::XmlElement> IqSender::MakeIqStanza(
+    const std::string& type,
+    const std::string& addressee,
+    scoped_ptr<buzz::XmlElement> iq_body) {
+  scoped_ptr<buzz::XmlElement> stanza(new buzz::XmlElement(buzz::QN_IQ));
   stanza->AddAttr(buzz::QN_TYPE, type);
   if (!addressee.empty())
     stanza->AddAttr(buzz::QN_TO, addressee);
-  stanza->AddElement(iq_body);
-  return stanza;
+  stanza->AddElement(iq_body.release());
+  return stanza.Pass();
 }
 
 IqSender::IqSender(SignalStrategy* signal_strategy)
@@ -33,25 +34,25 @@ IqSender::~IqSender() {
   signal_strategy_->RemoveListener(this);
 }
 
-IqRequest* IqSender::SendIq(buzz::XmlElement* stanza,
-                            const ReplyCallback& callback) {
+scoped_ptr<IqRequest> IqSender::SendIq(scoped_ptr<buzz::XmlElement> stanza,
+                                       const ReplyCallback& callback) {
   std::string id = signal_strategy_->GetNextId();
   stanza->AddAttr(buzz::QN_ID, id);
-  if (!signal_strategy_->SendStanza(stanza)) {
-    return NULL;
+  if (!signal_strategy_->SendStanza(stanza.Pass())) {
+    return scoped_ptr<IqRequest>(NULL);
   }
   DCHECK(requests_.find(id) == requests_.end());
-  IqRequest* request = new IqRequest(this, callback);
+  scoped_ptr<IqRequest> request(new IqRequest(this, callback));
   if (!callback.is_null())
-    requests_[id] = request;
-  return request;
+    requests_[id] = request.get();
+  return request.Pass();
 }
 
-IqRequest* IqSender::SendIq(const std::string& type,
-                            const std::string& addressee,
-                            buzz::XmlElement* iq_body,
-                            const ReplyCallback& callback) {
-  return SendIq(MakeIqStanza(type, addressee, iq_body), callback);
+scoped_ptr<IqRequest> IqSender::SendIq(const std::string& type,
+                                       const std::string& addressee,
+                                       scoped_ptr<buzz::XmlElement> iq_body,
+                                       const ReplyCallback& callback) {
+  return SendIq(MakeIqStanza(type, addressee, iq_body.Pass()), callback);
 }
 
 void IqSender::RemoveRequest(IqRequest* request) {

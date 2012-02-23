@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,7 +57,7 @@ struct JingleMessage {
   // message when parsing fails.
   bool ParseXml(const buzz::XmlElement* stanza, std::string* error);
 
-  buzz::XmlElement* ToXml();
+  scoped_ptr<buzz::XmlElement> ToXml();
 
   std::string from;
   std::string to;
@@ -98,7 +98,8 @@ struct JingleMessageReply {
   // Formats reply stanza for the specified |request_stanza|. Id and
   // recepient as well as other information needed to generate a valid
   // reply are taken from |request_stanza|.
-  buzz::XmlElement* ToXml(const buzz::XmlElement* request_stanza) const;
+  scoped_ptr<buzz::XmlElement> ToXml(
+      const buzz::XmlElement* request_stanza) const;
 
   ReplyType type;
   ErrorType error_type;

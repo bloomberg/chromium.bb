@@ -87,7 +87,7 @@ TEST_F(HeartbeatSenderTest, DoSendStanza) {
       .WillRepeatedly(Return(kTestJid));
   EXPECT_CALL(signal_strategy_, GetNextId())
       .WillOnce(Return(kStanzaId));
-  EXPECT_CALL(signal_strategy_, SendStanza(NotNull()))
+  EXPECT_CALL(signal_strategy_, SendStanzaPtr(NotNull()))
       .WillOnce(DoAll(SaveArg<0>(&sent_iq), Return(true)));
 
   heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
@@ -109,7 +109,7 @@ TEST_F(HeartbeatSenderTest, DoSendStanzaTwice) {
       .WillRepeatedly(Return(kTestJid));
   EXPECT_CALL(signal_strategy_, GetNextId())
       .WillOnce(Return(kStanzaId));
-  EXPECT_CALL(signal_strategy_, SendStanza(NotNull()))
+  EXPECT_CALL(signal_strategy_, SendStanzaPtr(NotNull()))
       .WillOnce(DoAll(SaveArg<0>(&sent_iq), Return(true)));
 
   heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
@@ -126,7 +126,7 @@ TEST_F(HeartbeatSenderTest, DoSendStanzaTwice) {
       .WillRepeatedly(Return(kTestJid));
   EXPECT_CALL(signal_strategy_, GetNextId())
       .WillOnce(Return(kStanzaId + 1));
-  EXPECT_CALL(signal_strategy_, SendStanza(NotNull()))
+  EXPECT_CALL(signal_strategy_, SendStanzaPtr(NotNull()))
       .WillOnce(DoAll(SaveArg<0>(&sent_iq), Return(true)));
 
   heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
@@ -148,7 +148,7 @@ TEST_F(HeartbeatSenderTest, DoSendStanzaWithExpectedSequenceId) {
       .WillRepeatedly(Return(kTestJid));
   EXPECT_CALL(signal_strategy_, GetNextId())
       .WillOnce(Return(kStanzaId));
-  EXPECT_CALL(signal_strategy_, SendStanza(NotNull()))
+  EXPECT_CALL(signal_strategy_, SendStanzaPtr(NotNull()))
       .WillOnce(DoAll(SaveArg<0>(&sent_iq), Return(true)));
 
   heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
@@ -163,7 +163,7 @@ TEST_F(HeartbeatSenderTest, DoSendStanzaWithExpectedSequenceId) {
       .WillRepeatedly(Return(kTestJid));
   EXPECT_CALL(signal_strategy_, GetNextId())
       .WillOnce(Return(kStanzaId + 1));
-  EXPECT_CALL(signal_strategy_, SendStanza(NotNull()))
+  EXPECT_CALL(signal_strategy_, SendStanzaPtr(NotNull()))
       .WillOnce(DoAll(SaveArg<0>(&sent_iq2), Return(true)));
 
   scoped_ptr<XmlElement> response(new XmlElement(buzz::QN_IQ));

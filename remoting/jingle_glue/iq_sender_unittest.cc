@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,16 +55,16 @@ class IqSenderTest : public testing::Test {
 };
 
 TEST_F(IqSenderTest, SendIq) {
-  XmlElement* iq_body =
-      new XmlElement(QName(kNamespace, kBodyTag));
+  scoped_ptr<XmlElement> iq_body(
+      new XmlElement(QName(kNamespace, kBodyTag)));
   XmlElement* sent_stanza;
   EXPECT_CALL(signal_strategy_, GetNextId())
       .WillOnce(Return(kStanzaId));
-  EXPECT_CALL(signal_strategy_, SendStanza(_))
+  EXPECT_CALL(signal_strategy_, SendStanzaPtr(_))
       .WillOnce(DoAll(SaveArg<0>(&sent_stanza), Return(true)));
-  scoped_ptr<IqRequest> request(
-      sender_->SendIq(kType, kTo, iq_body, base::Bind(
-          &MockCallback::OnReply, base::Unretained(&callback_))));
+  scoped_ptr<IqRequest> request =
+      sender_->SendIq(kType, kTo, iq_body.Pass(), base::Bind(
+          &MockCallback::OnReply, base::Unretained(&callback_)));
 
   std::string expected_xml_string =
       base::StringPrintf(

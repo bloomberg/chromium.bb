@@ -101,9 +101,9 @@ void LogToServer::SendPendingEntries() {
     pending_entries_.pop_front();
   }
   // Send the stanza to the server.
-  scoped_ptr<IqRequest> req(iq_sender_->SendIq(
-      buzz::STR_SET, kChromotingBotJid, stanza.release(),
-      IqSender::ReplyCallback()));
+  scoped_ptr<IqRequest> req = iq_sender_->SendIq(
+      buzz::STR_SET, kChromotingBotJid, stanza.Pass(),
+      IqSender::ReplyCallback());
   // We ignore any response, so let the IqRequest be destroyed.
   return;
 }

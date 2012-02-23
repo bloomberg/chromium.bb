@@ -42,7 +42,7 @@ class XmppSignalStrategy : public base::NonThreadSafe,
   virtual std::string GetLocalJid() const OVERRIDE;
   virtual void AddListener(Listener* listener) OVERRIDE;
   virtual void RemoveListener(Listener* listener) OVERRIDE;
-  virtual bool SendStanza(buzz::XmlElement* stanza) OVERRIDE;
+  virtual bool SendStanza(scoped_ptr<buzz::XmlElement> stanza) OVERRIDE;
   virtual std::string GetNextId() OVERRIDE;
 
   // buzz::XmppStanzaHandler interface.

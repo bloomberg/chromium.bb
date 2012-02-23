@@ -51,7 +51,7 @@ TEST_F(LogToServerTest, SendNow) {
         .WillRepeatedly(Return("host@domain.com/1234"));
     EXPECT_CALL(signal_strategy_, AddListener(_));
     EXPECT_CALL(signal_strategy_, GetNextId());
-    EXPECT_CALL(signal_strategy_, SendStanza(_))
+    EXPECT_CALL(signal_strategy_, SendStanzaPtr(_))
         .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
     EXPECT_CALL(signal_strategy_, RemoveListener(_))
         .WillOnce(QuitMainMessageLoop(&message_loop_))
@@ -71,7 +71,7 @@ TEST_F(LogToServerTest, SendLater) {
         .WillRepeatedly(Return("host@domain.com/1234"));
     EXPECT_CALL(signal_strategy_, AddListener(_));
     EXPECT_CALL(signal_strategy_, GetNextId());
-    EXPECT_CALL(signal_strategy_, SendStanza(_))
+    EXPECT_CALL(signal_strategy_, SendStanzaPtr(_))
         .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
     EXPECT_CALL(signal_strategy_, RemoveListener(_))
         .WillOnce(QuitMainMessageLoop(&message_loop_))
@@ -91,7 +91,7 @@ TEST_F(LogToServerTest, SendTwoEntriesLater) {
         .WillRepeatedly(Return("host@domain.com/1234"));
     EXPECT_CALL(signal_strategy_, AddListener(_));
     EXPECT_CALL(signal_strategy_, GetNextId());
-    EXPECT_CALL(signal_strategy_, SendStanza(_))
+    EXPECT_CALL(signal_strategy_, SendStanzaPtr(_))
         .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
     EXPECT_CALL(signal_strategy_, RemoveListener(_))
         .WillOnce(QuitMainMessageLoop(&message_loop_))

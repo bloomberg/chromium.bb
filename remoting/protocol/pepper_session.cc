@@ -102,10 +102,10 @@ void PepperSession::StartConnection(
   message.description.reset(
       new ContentDescription(candidate_config_->Clone(),
                              authenticator_->GetNextMessage()));
-  initiate_request_.reset(session_manager_->iq_sender()->SendIq(
+  initiate_request_ = session_manager_->iq_sender()->SendIq(
       message.ToXml(),
       base::Bind(&PepperSession::OnSessionInitiateResponse,
-                 base::Unretained(this))));
+                 base::Unretained(this)));
 
   SetState(CONNECTING);
 }
@@ -158,10 +158,10 @@ void PepperSession::AcceptIncomingConnection(
   message.description.reset(
       new ContentDescription(CandidateSessionConfig::CreateFrom(config_),
                              auth_message.Pass()));
-  initiate_request_.reset(session_manager_->iq_sender()->SendIq(
+  initiate_request_ = session_manager_->iq_sender()->SendIq(
       message.ToXml(),
       base::Bind(&PepperSession::OnSessionInitiateResponse,
-                 base::Unretained(this))));
+                 base::Unretained(this)));
 
   // Update state.
   SetState(CONNECTED);
@@ -452,10 +452,10 @@ void PepperSession::ProcessAuthenticationStep() {
     message.info = authenticator_->GetNextMessage();
     DCHECK(message.info.get());
 
-    session_info_request_.reset(session_manager_->iq_sender()->SendIq(
+    session_info_request_ = session_manager_->iq_sender()->SendIq(
         message.ToXml(), base::Bind(
             &PepperSession::OnSessionInfoResponse,
-            base::Unretained(this))));
+            base::Unretained(this)));
   }
   DCHECK_NE(authenticator_->state(), Authenticator::MESSAGE_READY);
 
@@ -496,10 +496,10 @@ void PepperSession::OnTransportInfoResponse(const buzz::XmlElement* response) {
 void PepperSession::SendTransportInfo() {
   JingleMessage message(peer_jid_, JingleMessage::TRANSPORT_INFO, session_id_);
   message.candidates.swap(pending_candidates_);
-  transport_info_request_.reset(session_manager_->iq_sender()->SendIq(
+  transport_info_request_ = session_manager_->iq_sender()->SendIq(
       message.ToXml(), base::Bind(
           &PepperSession::OnTransportInfoResponse,
-          base::Unretained(this))));
+          base::Unretained(this)));
 }
 
 
@@ -527,9 +527,8 @@ void PepperSession::CloseInternal(Error error) {
     JingleMessage message(peer_jid_, JingleMessage::SESSION_TERMINATE,
                           session_id_);
     message.reason = reason;
-    scoped_ptr<IqRequest> terminate_request(
-        session_manager_->iq_sender()->SendIq(
-            message.ToXml(), IqSender::ReplyCallback()));
+    session_manager_->iq_sender()->SendIq(
+        message.ToXml(), IqSender::ReplyCallback());
   }
 
   error_ = error;

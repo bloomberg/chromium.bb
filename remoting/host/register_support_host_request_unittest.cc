@@ -87,7 +87,7 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
   XmlElement* sent_iq = NULL;
   EXPECT_CALL(signal_strategy_, GetNextId())
       .WillOnce(Return(kStanzaId));
-  EXPECT_CALL(signal_strategy_, SendStanza(NotNull()))
+  EXPECT_CALL(signal_strategy_, SendStanzaPtr(NotNull()))
       .WillOnce(DoAll(SaveArg<0>(&sent_iq), Return(true)));
 
   request->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);

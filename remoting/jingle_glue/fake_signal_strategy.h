@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,12 +31,12 @@ class FakeSignalStrategy : public SignalStrategy,
   virtual std::string GetLocalJid() const OVERRIDE;
   virtual void AddListener(Listener* listener) OVERRIDE;
   virtual void RemoveListener(Listener* listener) OVERRIDE;
-  virtual bool SendStanza(buzz::XmlElement* stanza) OVERRIDE;
+  virtual bool SendStanza(scoped_ptr<buzz::XmlElement> stanza) OVERRIDE;
   virtual std::string GetNextId() OVERRIDE;
 
  private:
   // Called by the |peer_|. Takes ownership of |stanza|.
-  void OnIncomingMessage(buzz::XmlElement* stanza);
+  void OnIncomingMessage(scoped_ptr<buzz::XmlElement> stanza);
 
   void DeliverIncomingMessages();
 

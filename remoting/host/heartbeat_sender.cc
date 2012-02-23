@@ -99,10 +99,10 @@ void HeartbeatSender::ResendStanza() {
 
 void HeartbeatSender::DoSendStanza() {
   VLOG(1) << "Sending heartbeat stanza to " << kChromotingBotJid;
-  request_.reset(iq_sender_->SendIq(
+  request_ = iq_sender_->SendIq(
       buzz::STR_SET, kChromotingBotJid, CreateHeartbeatMessage(),
       base::Bind(&HeartbeatSender::ProcessResponse,
-                 base::Unretained(this))));
+                 base::Unretained(this)));
   ++sequence_id_;
 }
 
@@ -207,26 +207,26 @@ void HeartbeatSender::SetSequenceId(int sequence_id) {
   sequence_id_was_set_ = true;
 }
 
-XmlElement* HeartbeatSender::CreateHeartbeatMessage() {
-  XmlElement* query = new XmlElement(
-      QName(kChromotingXmlNamespace, kHeartbeatQueryTag));
+scoped_ptr<XmlElement> HeartbeatSender::CreateHeartbeatMessage() {
+  scoped_ptr<XmlElement> query(new XmlElement(
+      QName(kChromotingXmlNamespace, kHeartbeatQueryTag)));
   query->AddAttr(QName(kChromotingXmlNamespace, kHostIdAttr), host_id_);
   query->AddAttr(QName(kChromotingXmlNamespace, kSequenceIdAttr),
                  base::IntToString(sequence_id_));
-  query->AddElement(CreateSignature());
-  return query;
+  query->AddElement(CreateSignature().release());
+  return query.Pass();
 }
 
-XmlElement* HeartbeatSender::CreateSignature() {
-  XmlElement* signature_tag = new XmlElement(
-      QName(kChromotingXmlNamespace, kHeartbeatSignatureTag));
+scoped_ptr<XmlElement> HeartbeatSender::CreateSignature() {
+  scoped_ptr<XmlElement> signature_tag(new XmlElement(
+      QName(kChromotingXmlNamespace, kHeartbeatSignatureTag)));
 
   std::string message = signal_strategy_->GetLocalJid() + ' ' +
       base::IntToString(sequence_id_);
   std::string signature(key_pair_->GetSignature(message));
   signature_tag->AddText(signature);
 
-  return signature_tag;
+  return signature_tag.Pass();
 }
 
 }  // namespace remoting

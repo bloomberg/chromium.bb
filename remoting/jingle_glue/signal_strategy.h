@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace buzz {
 class XmlElement;
@@ -71,8 +72,8 @@ class SignalStrategy {
   // Remove a |listener| previously added with AddListener().
   virtual void RemoveListener(Listener* listener) = 0;
 
-  // Sends a raw XMPP stanza. Takes ownership of the |stanza|.
-  virtual bool SendStanza(buzz::XmlElement* stanza) = 0;
+  // Sends a raw XMPP stanza.
+  virtual bool SendStanza(scoped_ptr<buzz::XmlElement> stanza) = 0;
 
   // Returns new ID that should be used for the next outgoing IQ
   // request.

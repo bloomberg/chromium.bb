@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,17 +35,16 @@ class IqSender : public SignalStrategy::Listener {
   // Send an iq stanza. Returns an IqRequest object that represends
   // the request. |callback| is called when response to |stanza| is
   // received. Destroy the returned IqRequest to cancel the callback.
-  // Takes ownership of |stanza|. Caller must take ownership of the
-  // result. Result must be destroyed before sender is destroyed.
-  IqRequest* SendIq(buzz::XmlElement* stanza,
-                    const ReplyCallback& callback) WARN_UNUSED_RESULT;
+  // Caller must take ownership of the result. Result must be
+  // destroyed before sender is destroyed.
+  scoped_ptr<IqRequest> SendIq(scoped_ptr<buzz::XmlElement> stanza,
+                               const ReplyCallback& callback);
 
-  // Same as above, but also formats the message. Takes ownership of
-  // |iq_body|.
-  IqRequest* SendIq(const std::string& type,
-                    const std::string& addressee,
-                    buzz::XmlElement* iq_body,
-                    const ReplyCallback& callback) WARN_UNUSED_RESULT;
+  // Same as above, but also formats the message.
+  scoped_ptr<IqRequest> SendIq(const std::string& type,
+                               const std::string& addressee,
+                               scoped_ptr<buzz::XmlElement> iq_body,
+                               const ReplyCallback& callback);
 
   // SignalStrategy::Listener implementation.
   virtual void OnSignalStrategyStateChange(
@@ -58,9 +57,10 @@ class IqSender : public SignalStrategy::Listener {
   friend class IqRequest;
 
   // Helper function used to create iq stanzas.
-  static buzz::XmlElement* MakeIqStanza(const std::string& type,
-                                        const std::string& addressee,
-                                        buzz::XmlElement* iq_body);
+  static scoped_ptr<buzz::XmlElement> MakeIqStanza(
+      const std::string& type,
+      const std::string& addressee,
+      scoped_ptr<buzz::XmlElement> iq_body);
 
   // Removes |request| from the list of pending requests. Called by IqRequest.
   void RemoveRequest(IqRequest* request);

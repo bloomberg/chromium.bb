@@ -171,8 +171,8 @@ bool PepperSessionManager::OnSignalStrategyIncomingStanza(
 
 void PepperSessionManager::SendReply(const buzz::XmlElement* original_stanza,
                                      JingleMessageReply::ErrorType error) {
-  buzz::XmlElement* stanza = JingleMessageReply(error).ToXml(original_stanza);
-  signal_strategy_->SendStanza(stanza);
+  signal_strategy_->SendStanza(
+      JingleMessageReply(error).ToXml(original_stanza));
 }
 
 void PepperSessionManager::SessionDestroyed(PepperSession* session) {

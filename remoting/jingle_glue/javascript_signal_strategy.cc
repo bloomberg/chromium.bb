@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,10 +66,9 @@ void JavascriptSignalStrategy::RemoveListener(Listener* listener) {
   listeners_.RemoveObserver(listener);
 }
 
-bool JavascriptSignalStrategy::SendStanza(buzz::XmlElement* stanza) {
+bool JavascriptSignalStrategy::SendStanza(scoped_ptr<buzz::XmlElement> stanza) {
   DCHECK(CalledOnValidThread());
   xmpp_proxy_->SendIq(stanza->Str());
-  delete stanza;
   return true;
 }
 

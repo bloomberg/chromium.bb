@@ -98,16 +98,15 @@ void XmppSignalStrategy::RemoveListener(Listener* listener) {
   listeners_.RemoveObserver(listener);
 }
 
-bool XmppSignalStrategy::SendStanza(buzz::XmlElement* stanza) {
+bool XmppSignalStrategy::SendStanza(scoped_ptr<buzz::XmlElement> stanza) {
   DCHECK(CalledOnValidThread());
   if (!xmpp_client_) {
     LOG(INFO) << "Dropping signalling message because XMPP "
         "connection has been terminated.";
-    delete stanza;
     return false;
   }
 
-  buzz::XmppReturnStatus status = xmpp_client_->SendStanza(stanza);
+  buzz::XmppReturnStatus status = xmpp_client_->SendStanza(stanza.release());
   return status == buzz::XMPP_RETURN_OK || status == buzz::XMPP_RETURN_PENDING;
 }
 

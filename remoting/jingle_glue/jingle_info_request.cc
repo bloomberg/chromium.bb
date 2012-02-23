@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,11 +25,11 @@ JingleInfoRequest::~JingleInfoRequest() {
 
 void JingleInfoRequest::Send(const OnJingleInfoCallback& callback) {
   on_jingle_info_cb_ = callback;
-  buzz::XmlElement* iq_body =
-      new buzz::XmlElement(buzz::QN_JINGLE_INFO_QUERY, true);
-  request_.reset(iq_sender_.SendIq(
-      buzz::STR_GET, buzz::STR_EMPTY, iq_body,
-      base::Bind(&JingleInfoRequest::OnResponse, base::Unretained(this))));
+  scoped_ptr<buzz::XmlElement> iq_body(
+      new buzz::XmlElement(buzz::QN_JINGLE_INFO_QUERY, true));
+  request_ = iq_sender_.SendIq(
+      buzz::STR_GET, buzz::STR_EMPTY, iq_body.Pass(),
+      base::Bind(&JingleInfoRequest::OnResponse, base::Unretained(this)));
 }
 
 void JingleInfoRequest::OnResponse(const buzz::XmlElement* stanza) {

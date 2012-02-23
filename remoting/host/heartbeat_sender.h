@@ -108,9 +108,8 @@ class HeartbeatSender : public SignalStrategy::Listener {
   void SetSequenceId(int sequence_id);
 
   // Helper methods used by DoSendStanza() to generate heartbeat stanzas.
-  // Caller owns the result.
-  buzz::XmlElement* CreateHeartbeatMessage();
-  buzz::XmlElement* CreateSignature();
+  scoped_ptr<buzz::XmlElement> CreateHeartbeatMessage();
+  scoped_ptr<buzz::XmlElement> CreateSignature();
 
   std::string host_id_;
   SignalStrategy* signal_strategy_;
