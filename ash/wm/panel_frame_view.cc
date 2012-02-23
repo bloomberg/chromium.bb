@@ -64,12 +64,7 @@ class PanelCaption : public views::View,
     close_button_ =
         new PanelControlButton(this,
                                *rb.GetBitmapNamed(IDR_AURA_WINDOW_CLOSE_ICON));
-    minimize_button_ =
-        // TODO(dslomov): minimize: whole caption dclick/different icon
-        new PanelControlButton(this,
-                               *rb.GetBitmapNamed(IDR_AURA_WINDOW_ZOOM_ICON));
     AddChildView(close_button_);
-    AddChildView(minimize_button_);
   }
   virtual ~PanelCaption() {}
 
@@ -82,8 +77,6 @@ class PanelCaption : public views::View,
     View::ConvertPointToView(parent(), this, &translated_point);
     if (close_button_->GetMirroredBounds().Contains(translated_point))
       return HTCLOSE;
-    else if (minimize_button_->GetMirroredBounds().Contains(translated_point))
-      return HTMINBUTTON;
     return HTCAPTION;
   }
 
@@ -109,10 +102,6 @@ class PanelCaption : public views::View,
     close_button_->SetBoundsRect(
         gfx::Rect(width() - close_ps.width(), 0,
                   close_ps.width(), close_ps.height()));
-    gfx::Size minimize_ps = minimize_button_->GetPreferredSize();
-    minimize_button_->SetBoundsRect(
-        gfx::Rect(width() - close_ps.width() - minimize_ps.width(), 0,
-                  minimize_ps.width(), minimize_ps.height()));
   }
 
   // Overriden from views::ButtonListener:
@@ -120,12 +109,9 @@ class PanelCaption : public views::View,
                              const views::Event& event) OVERRIDE {
     if (sender == close_button_)
       GetWidget()->Close();
-    else if (sender == minimize_button_)
-      GetWidget()->Minimize();
   }
 
   views::Button* close_button_;
-  views::Button* minimize_button_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelCaption);
 };

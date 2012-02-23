@@ -41,6 +41,8 @@ class ASH_EXPORT PanelLayoutManager : public aura::LayoutManager {
   void StartDragging(aura::Window* panel);
   void FinishDragging();
 
+  void ToggleMinimize(aura::Window* panel);
+
   // Overridden from aura::LayoutManager:
   virtual void OnWindowResized() OVERRIDE;
   virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE;

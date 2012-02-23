@@ -26,7 +26,8 @@ PanelWindowEventFilter::PanelWindowEventFilter(
     : aura::EventFilter(),
       panel_container_(panel_container),
       layout_manager_(layout_manager),
-      dragged_panel_(NULL) {
+      dragged_panel_(NULL),
+      drag_state_(DRAG_NONE) {
 }
 
 PanelWindowEventFilter::~PanelWindowEventFilter() {
@@ -44,19 +45,48 @@ bool PanelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
       int hitResult = target->delegate()->
           GetNonClientComponent(event->location());
       if (hitResult == HTCAPTION) {
-        StartDrag(target, event);
-        return true;
+        if (drag_state_ == DRAG_NONE) {
+          dragged_panel_ = target;
+          drag_location_in_dragged_window_ = event->location();
+          drag_state_ = DRAG_CLICKED;
+          return true;
+        } else {
+          return false;
+        }
       } else {
         return false;
       }
     }
+
     case ui::ET_MOUSE_DRAGGED:
-      if (dragged_panel_ != NULL)
+      if (drag_state_ == DRAG_CLICKED) {
+        drag_state_ = DRAG_STARTED;
+        layout_manager_->StartDragging(dragged_panel_);
+      }
+      if (drag_state_ == DRAG_STARTED)
         return HandleDrag(target, event);
+      else
+        return false;
+
+    case ui::ET_MOUSE_CAPTURE_CHANGED:
+      if (drag_state_ == DRAG_STARTED) {
+        FinishDrag();
+        return true;
+      } else if (drag_state_ == DRAG_CLICKED) {
+        drag_state_ = DRAG_NONE;
+        dragged_panel_ = NULL;
+        return true;
+      }
       return false;
+
     case ui::ET_MOUSE_RELEASED:
-      if (dragged_panel_ != NULL) {
-        CompleteDrag(target, event);
+      if (drag_state_ == DRAG_STARTED) {
+        FinishDrag();
+        return true;
+      } else if (dragged_panel_ != NULL) {
+        drag_state_ = DRAG_NONE;
+        layout_manager_->ToggleMinimize(dragged_panel_);
+        dragged_panel_ = NULL;
         return true;
       }
       return false;
@@ -77,13 +107,6 @@ ui::GestureStatus PanelWindowEventFilter::PreHandleGestureEvent(
 }
 
 
-void PanelWindowEventFilter::StartDrag(aura::Window* target,
-                                       aura::LocatedEvent* event) {
-  dragged_panel_ = target;
-  drag_location_in_dragged_window_ = event->location();
-  layout_manager_->StartDragging(target);
-}
-
 bool PanelWindowEventFilter::HandleDrag(aura::Window* target,
                                         aura::LocatedEvent* event) {
   gfx::Rect target_bounds = dragged_panel_->bounds();
@@ -95,13 +118,12 @@ bool PanelWindowEventFilter::HandleDrag(aura::Window* target,
       event_location_in_parent.x() - drag_location_in_dragged_window_.x());
   dragged_panel_->SetBounds(target_bounds);
   return true;
-
 }
 
-void PanelWindowEventFilter::CompleteDrag(aura::Window* target,
-                                          aura::LocatedEvent* event) {
-  dragged_panel_ = NULL;
+void PanelWindowEventFilter::FinishDrag() {
   layout_manager_->FinishDragging();
+  drag_state_ = DRAG_NONE;
+  dragged_panel_ = NULL;
 }
 
 }

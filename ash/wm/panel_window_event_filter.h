@@ -38,16 +38,21 @@ class PanelWindowEventFilter : public aura::EventFilter {
       aura::GestureEvent* event) OVERRIDE;
 
  private:
-  void StartDrag(aura::Window* target, aura::LocatedEvent* event);
+  enum DragState {
+    DRAG_NONE,
+    DRAG_CLICKED,
+    DRAG_STARTED
+  };
+
   bool HandleDrag(aura::Window* target, aura::LocatedEvent* event);
-  void CompleteDrag(aura::Window* target, aura::LocatedEvent* event);
+  void FinishDrag();
 
   aura::Window* panel_container_;
   PanelLayoutManager* layout_manager_;
   gfx::Point drag_origin_;
   gfx::Point drag_location_in_dragged_window_;
-  bool started_dragging_;
   aura::Window* dragged_panel_;
+  DragState drag_state_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelWindowEventFilter);
 };

@@ -8,15 +8,21 @@
 
 #include "ash/launcher/launcher.h"
 #include "ash/shell.h"
+#include "ash/wm/property_util.h"
 #include "base/auto_reset.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
 const int kPanelMarginEdge = 4;
 const int kPanelMarginMiddle = 8;
+
+const int kMinimizedHeight = 24;
+
 const float kMaxHeightFactor = .80f;
 const float kMaxWidthFactor = .50f;
 }
@@ -46,6 +52,34 @@ void PanelLayoutManager::StartDragging(aura::Window* panel) {
 void PanelLayoutManager::FinishDragging() {
   DCHECK(dragged_panel_ != NULL);
   dragged_panel_ = NULL;
+  Relayout();
+}
+
+void PanelLayoutManager::ToggleMinimize(aura::Window* panel) {
+  DCHECK(panel->parent() == panel_container_);
+  if (panel->GetProperty(aura::client::kShowStateKey) ==
+      ui::SHOW_STATE_MINIMIZED) {
+    const gfx::Rect& old_bounds = panel->bounds();
+    panel->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+
+    gfx::Rect new_bounds(old_bounds);
+    const gfx::Rect* restore_bounds = GetRestoreBounds(panel);
+    if (restore_bounds != NULL) {
+      new_bounds.set_height(restore_bounds->height());
+      new_bounds.set_y(old_bounds.bottom() - restore_bounds->height());
+      SetChildBounds(panel, new_bounds);
+      ClearRestoreBounds(panel);
+    }
+  } else {
+    const gfx::Rect& old_bounds = panel->bounds();
+    panel->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
+    SetRestoreBounds(panel, old_bounds);
+    SetChildBounds(panel,
+                   gfx::Rect(old_bounds.x(),
+                             old_bounds.bottom() - kMinimizedHeight,
+                             old_bounds.width(),
+                             kMinimizedHeight));
+  }
   Relayout();
 }
 
