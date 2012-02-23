@@ -12,8 +12,6 @@
 // The maximum number of 64-char URL chunks we will report.
 static const int kMaxUrlChunks = 8;
 
-// Calls InitCrashReporterThread in its own thread for the browser process
-// or directly for the plugin and renderer process.
 void InitCrashReporter();
 
 // Intercepts a crash but does not process it, just ask if we want to restart
