@@ -67,30 +67,35 @@ class ExtensionInputImeEventRouter {
 
 class SetCompositionFunction : public SyncExtensionFunction {
  public:
+  virtual ~SetCompositionFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("input.ime.setComposition");
 };
 
 class ClearCompositionFunction : public SyncExtensionFunction {
  public:
+  virtual ~ClearCompositionFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("input.ime.clearComposition");
 };
 
 class CommitTextFunction : public SyncExtensionFunction {
  public:
+  virtual ~CommitTextFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("input.ime.commitText");
 };
 
 class SetCandidateWindowPropertiesFunction : public SyncExtensionFunction {
  public:
+  virtual ~SetCandidateWindowPropertiesFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("input.ime.setCandidateWindowProperties");
 };
 
 class SetCandidatesFunction : public SyncExtensionFunction {
  public:
+  virtual ~SetCandidatesFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("input.ime.setCandidates");
  private:
@@ -101,24 +106,28 @@ class SetCandidatesFunction : public SyncExtensionFunction {
 
 class SetCursorPositionFunction : public SyncExtensionFunction {
  public:
+  virtual ~SetCursorPositionFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("input.ime.setCursorPosition");
 };
 
 class SetMenuItemsFunction : public SyncExtensionFunction {
  public:
+  virtual ~SetMenuItemsFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("input.ime.setMenuItems");
 };
 
 class UpdateMenuItemsFunction : public SyncExtensionFunction {
  public:
+  virtual ~UpdateMenuItemsFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("input.ime.updateMenuItems");
 };
 
 class InputEventHandled : public AsyncExtensionFunction {
  public:
+  virtual ~InputEventHandled() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("input.ime.eventHandled");
 };
