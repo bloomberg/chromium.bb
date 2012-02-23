@@ -48,35 +48,4 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate {
   DISALLOW_COPY_AND_ASSIGN(AutoLoginInfoBarDelegate);
 };
 
-// This is the actual infobar displayed to prompt the user to reverse
-// auto-login.
-class ReverseAutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate {
- public:
-  ReverseAutoLoginInfoBarDelegate(InfoBarTabHelper* owner,
-                                  const std::string& continue_url);
-  virtual ~ReverseAutoLoginInfoBarDelegate();
-
- private:
-  // ConfirmInfoBarDelegate overrides.
-  virtual void InfoBarDismissed() OVERRIDE;
-  virtual gfx::Image* GetIcon() const OVERRIDE;
-  virtual Type GetInfoBarType() const OVERRIDE;
-  virtual string16 GetMessageText() const OVERRIDE;
-  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
-  virtual string16 GetLinkText() const OVERRIDE;
-  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
-
-  void RecordHistogramAction(int action);
-
-  // The URL to continue from after the user logs in via the syncpromo.
-  const std::string continue_url_;
-
-  // Whether any UI controls in the infobar were pressed or not.
-  bool button_pressed_;
-
-  DISALLOW_COPY_AND_ASSIGN(ReverseAutoLoginInfoBarDelegate);
-};
-
 #endif  // CHROME_BROWSER_UI_AUTO_LOGIN_INFO_BAR_DELEGATE_H_

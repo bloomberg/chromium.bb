@@ -36,9 +36,7 @@ class AutoLoginPrompter : public content::NotificationObserver {
  private:
   AutoLoginPrompter(content::WebContents* web_contents,
                     const std::string& username,
-                    const std::string& args,
-                    const std::string& continue_url,
-                    bool use_normal_auto_login_infobar);
+                    const std::string& args);
 
   virtual ~AutoLoginPrompter();
 
@@ -57,16 +55,7 @@ class AutoLoginPrompter : public content::NotificationObserver {
   content::WebContents* web_contents_;
   const std::string username_;
   const std::string args_;
-  const std::string continue_url_;
   content::NotificationRegistrar registrar_;
-
-  // There are two code flows for auto-login.  When the profile is connected
-  // to a Google account, we want to show the infobar asking if the user would
-  // like to automatically sign in.  This is the normal auto-login flow.
-  // When the profile is not connected, we want to show an infobat asking if
-  // the user would like to connect his profile instead.  This the reverse
-  // auto-login flow.
-  bool use_normal_auto_login_infobar_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoLoginPrompter);
 };

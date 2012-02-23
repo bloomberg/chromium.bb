@@ -38,35 +38,13 @@ using content::BrowserThread;
 using content::NavigationController;
 using content::WebContents;
 
-static std::string ExtractContinueUrl(const GURL& url) {
-  DCHECK(url.is_valid());
-  const std::string& spec = url.spec();
-  url_parse::Component query = url.parsed_for_possibly_invalid_spec().query;
-  url_parse::Component key;
-  url_parse::Component value;
-  while (url_parse::ExtractQueryKeyValue(spec.c_str(), &query, &key, &value)) {
-    if (key.is_nonempty() && spec.substr(key.begin, key.len) == "continue") {
-      if (value.is_nonempty())
-        return spec.substr(value.begin, value.len);
-      break;
-    }
-  }
-
-  // If no continue URL is found, redirect user to Google home page.
-  return GoogleURLTracker::GoogleURL().spec();
-}
-
 AutoLoginPrompter::AutoLoginPrompter(
     WebContents* web_contents,
     const std::string& username,
-    const std::string& args,
-    const std::string& continue_url,
-    bool use_normal_auto_login_infobar)
+    const std::string& args)
     : web_contents_(web_contents),
       username_(username),
-      args_(args),
-      continue_url_(continue_url),
-      use_normal_auto_login_infobar_(use_normal_auto_login_infobar){
+      args_(args) {
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                  content::Source<NavigationController>(
                     &web_contents_->GetController()));
@@ -138,6 +116,9 @@ void AutoLoginPrompter::ShowInfoBarUIThread(const std::string& account,
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
+  if (!profile->GetPrefs()->GetBoolean(prefs::kAutologinEnabled))
+    return;
+
   // In an incognito window, there may not be a profile sync service and/or
   // signin manager.
   if (!ProfileSyncServiceFactory::GetInstance()->HasProfileSyncService(
@@ -145,41 +126,26 @@ void AutoLoginPrompter::ShowInfoBarUIThread(const std::string& account,
     return;
   }
 
+  if (!profile->GetTokenService()->AreCredentialsValid())
+    return;
+
   SigninManager* signin_manager =
       SigninManagerFactory::GetInstance()->GetForProfile(profile);
   if (!signin_manager)
     return;
 
-  // If there are credentials in the token manager, then we want to show the
-  // user the regular auto-login infobar, asking if they want to turn on
-  // auto-login.  If there are no credentials in the token manager, then we
-  // want to show the reverse auto-login infobar, asking if they want to
-  // connect their profile to a Google account.
-  bool use_normal_auto_login_infobar =
-      profile->GetTokenService()->AreCredentialsValid();
   const std::string& username = signin_manager->GetAuthenticatedUsername();
-  std::string continue_url;
 
-  if (use_normal_auto_login_infobar) {
-    // Make sure that |account|, if specified, matches the logged in user.
-    // However, |account| is usually empty.
-    if (!account.empty() && (username != account))
-      return;
-
-    if (!profile->GetPrefs()->GetBoolean(prefs::kAutologinEnabled))
-      return;
-  } else if (profile->GetPrefs()->GetBoolean(prefs::kReverseAutologinEnabled)) {
-    continue_url = ExtractContinueUrl(url);
-  } else {
+  // Make sure that |account|, if specified, matches the logged in user.
+  // However, |account| is usually empty.
+  if (!account.empty() && (username != account))
     return;
-  }
 
   // We can't add the infobar just yet, since we need to wait for the tab to
   // finish loading.  If we don't, the info bar appears and then disappears
   // immediately.  Create an AutoLoginPrompter instance to listen for the
   // relevant notifications; it will delete itself.
-  new AutoLoginPrompter(web_contents, username, args, continue_url,
-                        use_normal_auto_login_infobar);
+  new AutoLoginPrompter(web_contents, username, args);
 }
 
 void AutoLoginPrompter::Observe(int type,
@@ -191,16 +157,9 @@ void AutoLoginPrompter::Observe(int type,
     // |wrapper| is NULL for TabContents hosted in HTMLDialog.
     if (wrapper) {
       InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
-      InfoBarDelegate* delegate = NULL;
-      if (use_normal_auto_login_infobar_) {
-        delegate = new AutoLoginInfoBarDelegate(infobar_helper, username_,
-                                                args_);
-      } else {
-        delegate = new ReverseAutoLoginInfoBarDelegate(infobar_helper,
-                                                       continue_url_);
-      }
-
-      infobar_helper->AddInfoBar(delegate);
+      infobar_helper->AddInfoBar(new AutoLoginInfoBarDelegate(infobar_helper,
+                                                              username_,
+                                                              args_));
     }
   }
   // Either we couldn't add the infobar, we added the infobar, or the tab
