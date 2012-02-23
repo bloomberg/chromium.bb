@@ -31,8 +31,11 @@ class HelpHandler : public content::WebUIMessageHandler {
   // Initializes querying values for the page.
   void OnPageLoaded(const base::ListValue* args);
 
-  // Relaunches the browser.
+  // Relaunches the browser. |args| must be NULL.
   void RelaunchNow(const base::ListValue* args);
+
+  // Opens the feedback dialog. |args| must be NULL.
+  void OpenFeedbackDialog(const base::ListValue* args);
 
 #if defined(OS_CHROMEOS)
   // Sets the release track version.

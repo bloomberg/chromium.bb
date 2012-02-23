@@ -38,9 +38,16 @@ cr.define('help', function() {
       moreInfoOverlay.initializePage();
 
       var self = this;
-      $('more-info').onclick = function() {
-        self.showOverlay_($('more-info-overlay'));
-      };
+      var moreInfo = $('more-info');
+      if (moreInfo) {
+        moreInfo.onclick = function() {
+          self.showOverlay_($('more-info-overlay'));
+        };
+      }
+
+      var reportIssue = $('report-issue');
+      if (reportIssue)
+        reportIssue.onclick = this.reportAnIssue_.bind(this);
 
       if (!cr.isLinux) {
         $('relaunch').onclick = function() {
@@ -50,6 +57,13 @@ cr.define('help', function() {
 
       // Attempt to update.
       chrome.send('onPageLoaded');
+    },
+
+    /**
+     * @private
+     */
+    reportAnIssue_: function() {
+      chrome.send('openFeedbackDialog');
     },
 
     /**

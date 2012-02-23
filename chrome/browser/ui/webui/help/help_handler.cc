@@ -15,6 +15,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
@@ -30,6 +32,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/prefs/pref_service.h"
 #endif
+
+using base::ListValue;
 
 namespace {
 
@@ -112,10 +116,9 @@ void HelpHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
     { "upToDate", IDS_UPGRADE_UP_TO_DATE },
     { "updating", IDS_UPGRADE_UPDATING },
     { "updateAlmostDone", IDS_UPGRADE_SUCCESSFUL_RELAUNCH },
-    // TODO(jhawkins): Verify the following UI is only in the official build.
 #if defined(OFFICIAL_BUILD)
     { "getHelpWithChrome",  IDS_GET_HELP_USING_CHROME },
-    { "reportAProblem",  IDS_REPORT_A_PROBLEM },
+    { "reportAnIssue",  IDS_REPORT_AN_ISSUE },
 #endif
 #if defined(OS_CHROMEOS)
     { "platform", IDS_PLATFORM_LABEL },
@@ -160,6 +163,8 @@ void HelpHandler::RegisterMessages() {
       base::Bind(&HelpHandler::OnPageLoaded, base::Unretained(this)));
   web_ui()->RegisterMessageCallback("relaunchNow",
       base::Bind(&HelpHandler::RelaunchNow, base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("openFeedbackDialog",
+      base::Bind(&HelpHandler::OpenFeedbackDialog, base::Unretained(this)));
 #if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback("setReleaseTrack",
       base::Bind(&HelpHandler::SetReleaseTrack, base::Unretained(this)));
@@ -191,7 +196,15 @@ void HelpHandler::OnPageLoaded(const ListValue* args) {
 }
 
 void HelpHandler::RelaunchNow(const ListValue* args) {
+  CHECK(args->empty());
   version_updater_->RelaunchBrowser();
+}
+
+void HelpHandler::OpenFeedbackDialog(const ListValue* args) {
+  CHECK(args->empty());
+  Browser* browser = BrowserList::FindBrowserWithWebContents(
+      web_ui()->GetWebContents());
+  browser->OpenFeedbackDialog();
 }
 
 #if defined(OS_CHROMEOS)
