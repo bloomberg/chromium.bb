@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/browser_url_handler.h"
+#include "content/browser/renderer_host/backing_store_skia.h"
 #include "content/browser/renderer_host/test_backing_store.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance_impl.h"
@@ -56,7 +57,7 @@ void SimulateUpdateRect(RenderWidgetHost* widget,
   params.bitmap = bitmap;
 
   ViewHostMsg_UpdateRect msg(1, params);
-  widget->OnMessageReceived(msg);
+  static_cast<RenderWidgetHostImpl*>(widget)->OnMessageReceived(msg);
 }
 
 TestRenderViewHost* TestRenderViewHost::GetPendingForController(
@@ -157,8 +158,8 @@ void TestRenderViewHost::set_contents_mime_type(const std::string& mime_type) {
 namespace content {
 
 TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
-    : rwh_(rwh),
-      is_showing_(false) {
+    : is_showing_(false) {
+  rwh_ = static_cast<RenderWidgetHostImpl*>(rwh);
 }
 
 TestRenderWidgetHostView::~TestRenderWidgetHostView() {
@@ -420,4 +421,32 @@ void RenderViewHostTestHarness::TearDown() {
   // Release the browser context on the UI thread.
   message_loop_.DeleteSoon(FROM_HERE, browser_context_.release());
   message_loop_.RunAllPending();
+}
+
+TestRenderWidgetHostViewWithBackingStoreSkia::
+~TestRenderWidgetHostViewWithBackingStoreSkia() {
+  delete rwh_;
+}
+
+RenderWidgetHost*
+TestRenderWidgetHostViewWithBackingStoreSkia::GetRenderWidgetHost() const {
+  return rwh_;
+}
+
+BackingStore* TestRenderWidgetHostViewWithBackingStoreSkia::AllocBackingStore(
+    const gfx::Size& size) {
+  return new BackingStoreSkia(rwh_, size);
+}
+
+// static
+TestRenderWidgetHostViewWithBackingStoreSkia*
+TestRenderWidgetHostViewWithBackingStoreSkia::Construct(
+    content::RenderProcessHost* process,
+    int routing_id) {
+  RenderWidgetHostImpl* rwh = new RenderWidgetHostImpl(process, routing_id);
+  TestRenderWidgetHostViewWithBackingStoreSkia* rwhv =
+      new TestRenderWidgetHostViewWithBackingStoreSkia(rwh);
+  // Painting will be skipped if there's no view.
+  rwh->SetView(rwhv);
+  return rwhv;
 }

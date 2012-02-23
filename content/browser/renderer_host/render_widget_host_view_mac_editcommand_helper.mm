@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -138,7 +138,7 @@ void EditCommandImp(id self, SEL _cmd, id sender) {
   DCHECK(rwhv);
 
   // The second parameter is the core command value which isn't used here.
-  RenderWidgetHost* rwh = rwhv->GetRenderWidgetHost();
+  RenderWidgetHostImpl* rwh = RenderWidgetHostImpl::FromRWHV(rwhv);
   rwh->ExecuteEditCommand(command, "");
 }
 

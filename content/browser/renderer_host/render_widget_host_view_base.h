@@ -23,6 +23,8 @@
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "ui/base/range/range.h"
 
+class RenderWidgetHostImpl;
+
 namespace content {
 
 // Basic implementation shared by concrete RenderWidgetHostView
@@ -54,6 +56,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual WebKit::WebPopupType GetPopupType() OVERRIDE;
 
   void SetBrowserAccessibilityManager(BrowserAccessibilityManager* manager);
+
+  RenderWidgetHostImpl* GetRenderWidgetHostImpl();
 
  protected:
   // Interface class only, do not construct.

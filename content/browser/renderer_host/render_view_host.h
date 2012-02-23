@@ -126,7 +126,8 @@ class ExecuteNotificationObserver : public content::NotificationObserver {
 //  if we want to bring that and other functionality down into this object so
 //  it can be shared by others.
 //
-class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
+// TODO(joi): Hide most of this from chrome.
+class CONTENT_EXPORT RenderViewHost : public RenderWidgetHostImpl {
  public:
   // Returns the RenderViewHost given its ID and the ID of its render process.
   // Returns NULL if the IDs do not correspond to a live RenderViewHost.
