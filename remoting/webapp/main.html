@@ -132,7 +132,7 @@ found in the LICENSE file.
         <h2 i18n-content="MODE_ME2ME"></h2>
         <table id="host-list" class="host-list-table"></table>
         <div id="host-list-error" class="error-state"></div>
-        <div id="daemon-control" data-ui-mode="home.daemon">
+        <div id="daemon-control" data-daemon-state="enabled disabled">
           <table class="host-list-table">
             <!-- TODO(jamiewalch): Rewrite this using flex boxes and apply the
                  host-offline style if the daemon is not running -->
@@ -142,30 +142,30 @@ found in the LICENSE file.
               </td>
               <td class="host-list-label">
                 <span id="this-computer-name"
-                      data-ui-mode="home.daemon.enabled">
+                      data-daemon-state="enabled">
                   Spongebob Squaretrousers
                 </span>
                 <span i18n-content="HOME_DAEMON_START_MESSAGE"
-                      data-ui-mode="home.daemon.disabled">
+                      data-daemon-state="disabled">
                 </span>
               </td>
               <td class="mode-select-button-column">
                 <button type="button"
                         id="stop-daemon"
                         i18n-content="HOME_DAEMON_STOP_BUTTON"
-                        data-ui-mode="home.daemon.enabled"
+                        data-daemon-state="enabled"
                         class="kd-button">
                 </button>
                 <button type="button"
                         id="start-daemon"
                         i18n-content="HOME_DAEMON_START_BUTTON"
-                        data-ui-mode="home.daemon.disabled"
+                        data-daemon-state="disabled"
                         class="kd-button">
                 </button>
               </td>
             </tr>
           </table>
-          <div data-ui-mode="home.daemon.enabled">
+          <div data-daemon-state="enabled">
             <span i18n-content="HOME_DAEMON_ACTIVE_MESSAGE"></span>
             <a id="change-daemon-pin"
                href="#"

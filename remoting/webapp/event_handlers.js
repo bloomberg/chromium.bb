@@ -39,7 +39,7 @@ function onLoad() {
   };
   var stopDaemon = function() {
     remoting.daemonPlugin.stop();
-    remoting.setMode(remoting.daemonPlugin.uiMode());
+    remoting.daemonPlugin.updateDom();
   };
   /** @type {Array.<{event: string, id: string, fn: function(Event):void}>} */
   var actions = [

@@ -63,6 +63,7 @@ remoting.init = function() {
 
   // No valid URL parameters, start up normally.
   remoting.daemonPlugin = new remoting.DaemonPlugin();
+  remoting.daemonPlugin.updateDom();
   remoting.setMode(getAppStartupMode_());
   remoting.askPinDialog = new remoting.AskPinDialog(remoting.daemonPlugin);
   if (isHostModeSupported_()) {
@@ -176,7 +177,7 @@ function getAppStartupMode_() {
   if (!remoting.oauth2.isAuthenticated()) {
     return remoting.AppMode.UNAUTHENTICATED;
   }
-  return remoting.daemonPlugin.uiMode();
+  return remoting.AppMode.HOME;
 }
 
 /**

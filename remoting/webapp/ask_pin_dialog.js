@@ -88,7 +88,7 @@ remoting.AskPinDialog.prototype.pollDaemonState_ = function() {
       break;
     case remoting.DaemonPlugin.State.STARTED:
       this.hide();
-      remoting.setMode(this.daemon_.uiMode());
+      this.daemon_.updateDom();
       break;
     case remoting.DaemonPlugin.State.START_FAILED:
       // TODO(jamiewalch): Show an error message.

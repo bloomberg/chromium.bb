@@ -30,22 +30,32 @@ remoting.DaemonPlugin.State = {
 
 /** @return {remoting.DaemonPlugin.State} The current state of the daemon. */
 remoting.DaemonPlugin.prototype.state = function() {
-  return this.plugin_.daemonState;
+  try {
+    return this.plugin_.daemonState;
+  } catch (err) {
+    // If the plug-in can't be instantiated, for example on ChromeOS, then
+    // return something sensible.
+    return remoting.DaemonPlugin.State.NOT_IMPLEMENTED;
+  }
 };
 
-/** @return {remoting.AppMode} The AppMode that should be used to correctly
- *      display the daemon components.
+/**
+ * Show or hide daemon-specific parts of the UI.
+ * @return {void} Nothing.
  */
-remoting.DaemonPlugin.prototype.uiMode = function() {
+remoting.DaemonPlugin.prototype.updateDom = function() {
+  var match = '';
   switch (this.state()) {
-    case remoting.DaemonPlugin.State.NOT_IMPLEMENTED:
-    case remoting.DaemonPlugin.State.UNKNOWN:
-      return remoting.AppMode.HOME;
     case remoting.DaemonPlugin.State.STARTED:
-      return remoting.AppMode.HOME_DAEMON_ENABLED;
-    default:
-      return remoting.AppMode.HOME_DAEMON_DISABLED;
+      match = 'enabled';
+      break;
+    case remoting.DaemonPlugin.State.STOPPED:
+    case remoting.DaemonPlugin.State.NOT_INSTALLED:
+    case remoting.DaemonPlugin.State.START_FAILED:
+      match = 'disabled';
+      break;
   }
+  remoting.updateModalUi(match, 'data-daemon-state');
 };
 
 /**
