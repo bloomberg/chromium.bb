@@ -2492,7 +2492,8 @@
    Memcheck:Leak
    fun:malloc
    fun:ScanFromString
-   fun:_Z14PaParseStringsPKPKcPKiiR13TParseContext
+   fun:_Z12glslang_scaniPKPKcPKiP13TParseContext
+   fun:_Z14PaParseStringsiPKPKcPKiP13TParseContext
    fun:_ZN9TCompiler7compileEPKPKcii
    fun:ShCompile
    fun:_ZN6WebKit31WebGraphicsContext3DDefaultImpl25angleValidateShaderSourceERNS0_17ShaderSourceEntryE
@@ -2542,9 +2543,9 @@
    fun:vbo_exec_DrawElements
    fun:neutral_DrawElements
    fun:glDrawElements
+   fun:_ZN3gpu5gles216GLES2DecoderImpl14DoDrawElementsEbjijii
    fun:_ZN3gpu5gles216GLES2DecoderImpl18HandleDrawElementsEjRKNS0_12DrawElementsE
    fun:_ZN3gpu5gles216GLES2DecoderImpl9DoCommandEjjPKv
-   fun:_ZN3gpu13CommandParser14ProcessCommandEv
 }
 {
    bug_60670a
@@ -5419,6 +5420,17 @@
    fun:_ZN6webkit3gpu18GLInProcessContext12PumpCommandsEv
 }
 {
+   bug_109495_c
+   Memcheck:Leak
+   ...
+   fun:_ZN3gpu5gles216GLES2DecoderImpl15DoCompileShaderEj
+   fun:_ZN3gpu5gles216GLES2DecoderImpl19HandleCompileShaderEjRKNS0_13CompileShaderE
+   fun:_ZN3gpu5gles216GLES2DecoderImpl9DoCommandEjjPKv
+   fun:_ZN3gpu13CommandParser14ProcessCommandEv
+   fun:_ZN3gpu12GpuScheduler10PutChangedEv
+   fun:_ZN6webkit3gpu18GLInProcessContext12PumpCommandsEv
+}
+{
    bug_109496
    Memcheck:Uninitialized
    ...
@@ -5814,6 +5826,42 @@
    fun:_ZN7content20TraceSubscriberStdioC2ERK8FilePath
    fun:_ZN7content20TraceSubscriberStdioC1ERK8FilePath
    fun:_ZN48TraceSubscriberStdioTest_CanWriteDataToFile_Test8TestBodyEv
+}
+{
+   bug_115419_1
+   Memcheck:Uninitialized
+   fun:fetch_texel_2d_f_rgba8888
+   fun:texture_get_row
+   fun:fast_read_rgba_pixels
+   fun:read_rgba_pixels
+   fun:_swrast_ReadPixels
+   fun:_mesa_ReadPixels
+   fun:glReadPixels
+   fun:_ZN3gpu5gles216GLES2DecoderImpl16HandleReadPixelsEjRKNS0_10ReadPixelsE
+   fun:_ZN3gpu5gles216GLES2DecoderImpl9DoCommandEjjPKv
+   fun:_ZN3gpu13CommandParser14ProcessCommandEv
+   fun:_ZN3gpu12GpuScheduler10PutChangedEv
+   fun:_ZN6webkit3gpu18GLInProcessContext12PumpCommandsEv
+}
+{
+   bug_115419_2
+   Memcheck:Uninitialized
+   fun:get_src_arg_mask
+   fun:_mesa_remove_extra_move_use
+   fun:_mesa_optimize_program
+   fun:_Z16get_mesa_programP14__GLcontextRecP17gl_shader_programP9gl_shader
+   fun:_mesa_ir_link_shader
+   fun:_mesa_glsl_link_shader
+   fun:link_program
+   fun:_mesa_LinkProgramARB
+   fun:glLinkProgram
+   fun:_ZN3gpu5gles214ProgramManager11ProgramInfo4LinkEv
+   fun:_ZN3gpu5gles216GLES2DecoderImpl13DoLinkProgramEj
+   fun:_ZN3gpu5gles216GLES2DecoderImpl17HandleLinkProgramEjRKNS0_11LinkProgramE
+   fun:_ZN3gpu5gles216GLES2DecoderImpl9DoCommandEjjPKv
+   fun:_ZN3gpu13CommandParser14ProcessCommandEv
+   fun:_ZN3gpu12GpuScheduler10PutChangedEv
+   fun:_ZN6webkit3gpu18GLInProcessContext12PumpCommandsEv
 }
 
 
