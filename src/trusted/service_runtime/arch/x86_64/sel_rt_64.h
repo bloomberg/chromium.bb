@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -42,12 +42,12 @@ struct NaClThreadContext {
   /*          0xa4 */
   uint16_t    sys_fcw;
   /*          0xa6 */
-  nacl_reg_t  exception_stack;
+  uint32_t    exception_stack;
   /*          0xa8 */
-  nacl_reg_t  exception_flag;
-  /*          0xb0 */
+  uint32_t    exception_flag;
+  /*          0xac */
 };
-/* 0xb8 */
+/* 0xb0 */
 
 /*
  * Argument passing convention in AMD64, from

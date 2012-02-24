@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -116,9 +116,9 @@ struct NaClThreadContext {
   uint16_t    cs; /* spring_addr and cs must be adjacent */
   /*          3c */
   char        dummy1[2];
-  nacl_reg_t  exception_stack;
+  uint32_t    exception_stack;
   /*          40 */
-  nacl_reg_t  exception_flag;
+  uint32_t    exception_flag;
   /*          44 */
 };
 
