@@ -3050,8 +3050,6 @@
             'app/chrome_dll_resource.h',
             'app/chrome_version.rc.version',
             'browser/rlz/rlz_extension_apitest.cc',
-            # http://crbug.com/15101 These tests fail on Linux and Mac.
-            '../content/browser/child_process_security_policy_browsertest.cc',
           ],
         }],
         ['toolkit_uses_gtk == 1', {
