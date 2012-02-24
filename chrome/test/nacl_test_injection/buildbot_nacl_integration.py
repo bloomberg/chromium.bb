@@ -90,12 +90,7 @@ def Main(args):
          '--build-dir=',
          '--',
          nacl_integration_script,
-         '--disable_tests=%s' % ','.join(tests_to_disable)]
-  # TODO(ncbray) reenable glibc on Mac
-  # http://code.google.com/p/chromium/issues/detail?id=115325
-  if sys.platform == 'darwin':
-    cmd.append('--disable_glibc')
-  cmd += args
+         '--disable_tests=%s' % ','.join(tests_to_disable)] + args
   sys.stdout.write('Running %s\n' % ' '.join(cmd))
   sys.stdout.flush()
   return subprocess.call(cmd)
