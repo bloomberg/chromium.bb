@@ -790,9 +790,6 @@ _release.add_config('autotest-experimental',
   usepkg_setup_board=True,
   usepkg_build_packages=True,
   chroot_replace=False,
-
-  platform='netbook_ALEX',
-  hw_tests=['bvt', 'regression', 'performance', 'platform', 'pyauto']
 )
 
 _arm_release = _release.derive(arm)
