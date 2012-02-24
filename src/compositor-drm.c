@@ -1093,6 +1093,24 @@ create_sprites(struct drm_compositor *ec)
 	free(plane_res);
 }
 
+static void
+destroy_sprites(struct drm_compositor *compositor)
+{
+	struct drm_sprite *sprite, *next;
+	struct drm_output *output;
+
+	output = container_of(compositor->base.output_list.next,
+			      struct drm_output, base.link);
+
+	wl_list_for_each_safe(sprite, next, &compositor->sprite_list, link) {
+		drmModeSetPlane(compositor->drm.fd,
+				sprite->plane_id,
+				output->crtc_id, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0);
+		drmModeRmFB(compositor->drm.fd, sprite->fb_id);
+		free(sprite);
+	}
+}
 
 static int
 create_outputs(struct drm_compositor *ec, int option_connector)
@@ -1263,6 +1281,7 @@ drm_destroy(struct weston_compositor *ec)
 
 	weston_compositor_shutdown(ec);
 	gbm_device_destroy(d->gbm);
+	destroy_sprites(d);
 	drmDropMaster(d->drm.fd);
 	tty_destroy(d->tty);
 
@@ -1300,6 +1319,8 @@ vt_func(struct weston_compositor *compositor, int event)
 	struct drm_compositor *ec = (struct drm_compositor *) compositor;
 	struct weston_output *output;
 	struct weston_input_device *input;
+	struct drm_sprite *sprite;
+	struct drm_output *drm_output;
 
 	switch (event) {
 	case TTY_ENTER_VT:
@@ -1331,6 +1352,15 @@ vt_func(struct weston_compositor *compositor, int event)
 			output->repaint_needed = 0;
 			drm_output_set_cursor(output, NULL);
 		}
+
+		drm_output = container_of(ec->base.output_list.next,
+					  struct drm_output, base.link);
+
+		wl_list_for_each(sprite, &ec->sprite_list, link)
+			drmModeSetPlane(ec->drm.fd,
+					sprite->plane_id,
+					drm_output->crtc_id, 0, 0,
+					0, 0, 0, 0, 0, 0, 0, 0);
 
 		wl_list_for_each(input, &compositor->input_device_list, link)
 			evdev_remove_devices(input);
