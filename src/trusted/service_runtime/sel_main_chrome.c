@@ -118,7 +118,7 @@ void NaClMainForChromium(int handle_count, const NaClHandle *handles,
    */
 
   /* import IMC handle - used to be "-i" */
-  CHECK(handle_count == 3);
+  CHECK(handle_count == 1);
   NaClAddImcHandle(nap, handles[0], export_addr_to);
   NaClAddImcHandle(nap, handles[1], 6); /* async_receive_desc */
   NaClAddImcHandle(nap, handles[2], 7); /* async_send_desc */
