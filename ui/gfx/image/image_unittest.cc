@@ -66,6 +66,18 @@ TEST_F(ImageTest, SkiaToSkia) {
     EXPECT_FALSE(image.HasRepresentation(gt::GetPlatformRepresentationType()));
 }
 
+TEST_F(ImageTest, SkiaRefToSkia) {
+  gfx::Image image(*gt::CreateBitmap(25, 25));
+  const SkBitmap* bitmap = image.ToSkBitmap();
+  EXPECT_TRUE(bitmap);
+  EXPECT_FALSE(bitmap->isNull());
+  EXPECT_EQ(1U, image.RepresentationCount());
+
+  EXPECT_EQ(bitmap, image.ToSkBitmap());
+  if (!kUsesSkiaNatively)
+    EXPECT_FALSE(image.HasRepresentation(gt::GetPlatformRepresentationType()));
+}
+
 TEST_F(ImageTest, SkiaToSkiaRef) {
   gfx::Image image(gt::CreateBitmap(25, 25));
 

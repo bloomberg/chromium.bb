@@ -65,6 +65,10 @@ class UI_EXPORT Image {
   // ownership of the image.
   explicit Image(const SkBitmap* bitmap);
 
+  // Creates a new image by copying the bitmap for use as the default
+  // representation.
+  explicit Image(const SkBitmap& bitmap);
+
   // To create an Image that supports multiple resolutions pass a vector
   // of bitmaps, one for each resolution.
   explicit Image(const std::vector<const SkBitmap*>& bitmaps);
