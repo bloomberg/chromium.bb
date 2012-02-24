@@ -25,7 +25,8 @@ _template_dir = _base_dir + "/template"
 _samples_dir = _base_dir + "/examples"
 _extension_api_dir = os.path.normpath(_base_dir + "/../api")
 
-_extension_api_json_schemas = glob.glob(_extension_api_dir + '/*.json')
+_extension_api_json_schemas = glob.glob(_extension_api_dir +
+                                        '/[a-zA-Z0-9]*.json')
 _api_template_html = _template_dir + "/api_template.html"
 _page_shell_html = _template_dir + "/page_shell.html"
 _generator_html = _build_dir + "/generator.html"
