@@ -37,6 +37,9 @@ const char kGeneratedDir[] = "generated-dir";
 // Command line flag for overriding the default location for reference images.
 const char kReferenceDir[] = "reference-dir";
 
+// Corner shadow size.
+const int kCornerDecorationSize = 10;
+
 // Reads and decodes a PNG image to a bitmap. Returns true on success. The PNG
 // should have been encoded using |gfx::PNGCodec::Encode|.
 bool ReadPNGFile(const FilePath& file_path, SkBitmap* bitmap) {
@@ -135,11 +138,17 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
     while (message.compare("\"resized\"")) {
       ASSERT_TRUE(message_queue.WaitForMessage(&message));
       message_queue.ClearQueue();
-   }
+    }
+
+    bool ignore_bottom_corners = false;
+#if defined(OS_MACOSX)
+    // On Mac Lion, bottom corners have shadows with random pixels.
+    ignore_bottom_corners = true;
+#endif
 
     SkBitmap bitmap;
     ASSERT_TRUE(TabSnapShotToImage(&bitmap));
-    ASSERT_TRUE(CompareImages(bitmap));
+    ASSERT_TRUE(CompareImages(bitmap, ignore_bottom_corners));
   }
 
   const FilePath& test_data_dir() const {
@@ -172,7 +181,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
   //     FAIL_<ref_image_name>, DIFF_<ref_image_name>
   // E.g.,
   //     FAIL_WebGLTeapot_19762.png, DIFF_WebGLTeapot_19762.png
-  bool CompareImages(const SkBitmap& gen_bmp) {
+  bool CompareImages(const SkBitmap& gen_bmp, bool skip_bottom_corners) {
     SkBitmap ref_bmp_on_disk;
     const SkBitmap* ref_bmp;
     bool save_gen = false;
@@ -234,6 +243,11 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
       uint32_t kAlphaMask = 0x00FFFFFF;
       for (int x = 0; x < gen_bmp.width(); ++x) {
         for (int y = 0; y < gen_bmp.height(); ++y) {
+          if (skip_bottom_corners &&
+              (x < kCornerDecorationSize ||
+               x >= gen_bmp.width() - kCornerDecorationSize) &&
+              y >= gen_bmp.height() - kCornerDecorationSize)
+            continue;
           if ((*gen_bmp.getAddr32(x, y) & kAlphaMask) !=
               (*ref_bmp->getAddr32(x, y) & kAlphaMask)) {
             ++diff_pixels_count;
