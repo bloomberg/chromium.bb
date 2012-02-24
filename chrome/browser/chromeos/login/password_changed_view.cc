@@ -58,7 +58,7 @@ views::View* PasswordChangedView::GetInitiallyFocusedView() {
 }
 
 ui::ModalType PasswordChangedView::GetModalType() const {
-  return ui::MODAL_TYPE_WINDOW;
+  return ui::MODAL_TYPE_SYSTEM;
 }
 
 views::View* PasswordChangedView::GetContentsView() {
