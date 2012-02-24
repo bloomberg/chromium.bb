@@ -35,6 +35,16 @@ cr.define('options.network', function() {
                              'airplaneMode'];
 
   /**
+   * Mapping of network category titles to the network type.
+   */
+  var categoryMap = {
+    'cellular': Constants.TYPE_CELLULAR,
+    'ethernet': Constants.TYPE_ETHERNET,
+    'wifi': Constants.TYPE_WIFI,
+    'vpn': Constants.TYPE_VPN
+  };
+
+  /**
    * ID of the menu that is currently visible.
    * @type {?string}
    * @private
@@ -161,10 +171,17 @@ cr.define('options.network', function() {
         this.icon_.classList.remove('network-connecting');
     },
 
+    /**
+     * Indicates if the network is in the process of being connected.
+     * @type{boolean}
+     */
     get connecting() {
       return this.connecting_;
     },
 
+    /**
+     * Indicate that the selector arrow should be shown.
+     */
     showSelector: function() {
       this.subtitle_.classList.add('network-selector');
     },
@@ -262,8 +279,20 @@ cr.define('options.network', function() {
                        data: {networkType: Constants.TYPE_WIFI,
                               servicePath: '?'}});
       }
+      var list = this.data.rememberedNetworks;
+      if (list && list.length > 0) {
+        var callback = function(list) {
+          $('remembered-network-list').clear();
+          var dialog = options.PreferredNetworks.getInstance();
+          OptionsPage.showPageByName('preferredNetworksPage', false);
+          dialog.update(list);
+        };
+        addendum.push({label: localStrings.getString('preferredNetworks'),
+                       command: callback,
+                       data: list});
+      }
       var empty = true;
-      var list = this.data_.networkList;
+      list = this.data.networkList;
       if (list) {
         for (var i = 0; i < list.length; i++) {
           var data = list[i];
@@ -276,11 +305,6 @@ cr.define('options.network', function() {
               empty = false;
             }
           } else if (data.connected) {
-            if (data.networkType == Constants.TYPE_WIFI) {
-              addendum.push({label: localStrings.getString('networkShare'),
-                            command: 'share',
-                            data: data});
-            }
             addendum.push({label: localStrings.getString('networkOptions'),
                            command: 'options',
                            data: data});
@@ -325,13 +349,12 @@ cr.define('options.network', function() {
     },
 
     /**
-     * Adds a command to a menu, which calls back into chrome
-     * for modifying network settings.
+     * Adds a command to a menu for modifying network settings.
      * @param {!Element} menu Parent menu.
      * @param {Object} data Description of the network.
      * @param {string} label Display name for the menu item.
-     * @param {string} command Name of the command for the
-     *    callback.
+     * @param {string|function} command Callback function or name
+     *     of the command for |buttonClickCallback|.
      * @return {!Element} The created menu item.
      * @private
      */
@@ -339,13 +362,21 @@ cr.define('options.network', function() {
       var button = this.ownerDocument.createElement('div');
       button.className = 'network-menu-item';
       button.textContent = label;
-      var type = String(data.networkType);
-      var path = data.servicePath;
-      button.addEventListener('click', function() {
-        chrome.send('buttonClickCallback',
-                    [type, path, command]);
-        closeMenu_();
-      });
+      var callback = null;
+      if (typeof command == 'string') {
+        var type = String(data.networkType);
+        var path = data.servicePath;
+        callback = function() {
+          chrome.send('buttonClickCallback',
+                      [type, path, command]);
+          closeMenu_();
+        };
+      } else {
+        callback = function() {
+          command(data);
+        };
+      }
+      button.addEventListener('click', callback);
       MenuItem.decorate(button);
       menu.appendChild(button);
       return button;
@@ -418,6 +449,8 @@ cr.define('options.network', function() {
           this.addEventListener('click', this.data.command);
         if (this.data.iconURL)
           this.iconURL = this.data.iconURL;
+        else if (this.data.iconType)
+          this.iconType = this.data.iconType;
     },
   };
 
@@ -554,29 +587,28 @@ cr.define('options.network', function() {
       $('network-list').deleteItem('ethernet');
     }
 
-    // TODO(kevers): Store off list of remembered networks for use in the
-    // "preferred networks" tab of the "More options..." dialog.
-
-    loadData_('wifi',
-              data.wirelessList,
-              function(data) {
-      return data.networkType == Constants.TYPE_WIFI;
-    });
+    if (data.wifiEnabled) {
+      loadData_('wifi', data.wirelessList, data.rememberedList);
+    } else {
+      var enableWifi = function() {
+        chrome.send('enableWifi');
+      };
+      $('network-list').update({key: 'wifi',
+                        subtitle: localStrings.getString('networkDisabled'),
+                        iconType: 'wifi',
+                        command: enableWifi});
+    }
 
     // Only show cellular control if available and enabled.
     if (data.cellularEnabled && data.cellularAvailable) {
-      loadData_('cellular',
-                data.wirelessList,
-                function(data) {
-        return data.networkType == Constants.TYPE_CELLULAR;
-      });
+      loadData_('cellular', data.wirelessList, data.rememberedList);
     } else {
       $('network-list').deleteItem('cellular');
     }
 
     // Only show VPN control if there is an internet connection.
     if (ethernetConnection || isConnected_(wirelessNetworks_))
-      loadData_('vpn', data.vpnList);
+      loadData_('vpn', data.vpnList, data.rememberedList);
     else
       $('network-list').deleteItem('vpn');
 
@@ -588,19 +620,25 @@ cr.define('options.network', function() {
    * Updates the list of available networks and their status, filtered by
    * network type.
    * @param {string} category The type of network.
-   * @param {Array} list The list of networks and their status.
-   * @param {function(Object)=} opt_filter Optional filter for pruning the list
-   *     of networks.
+   * @param {Array} available The list of available networks and their status.
+   * @param {Array} remembered The list of remmebered networks.
    */
-  function loadData_(category, list, opt_filter) {
-    var data = {key: category, networkList: list};
-    if (opt_filter) {
-      var filteredList = [];
-      for (var i = 0; i < list.length; i++) {
-        if (opt_filter(list[i]))
-          filteredList.push(list[i]);
+  function loadData_(category, available, remembered) {
+    var data = {key: category};
+    var type = categoryMap[category];
+    var availableNetworks = [];
+    for (var i = 0; i < available.length; i++) {
+      if (available[i].networkType == type)
+        availableNetworks.push(available[i]);
+    }
+    data.networkList = availableNetworks;
+    if (remembered) {
+      var rememberedNetworks = [];
+      for (var i = 0; i < remembered.length; i++) {
+        if (remembered[i].networkType == type)
+          rememberedNetworks.push(remembered[i]);
       }
-      data.networkList = filteredList;
+      data.rememberedNetworks = rememberedNetworks;
     }
     $('network-list').update(data);
   }
