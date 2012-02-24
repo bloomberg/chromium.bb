@@ -38,6 +38,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/bytes_formatting.h"
@@ -97,10 +98,12 @@ TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
   AddResourceProvider(
       new TaskManagerExtensionProcessResourceProvider(task_manager));
 
+#if defined(ENABLE_NOTIFICATIONS)
   TaskManager::ResourceProvider* provider =
       TaskManagerNotificationResourceProvider::Create(task_manager);
   if (provider)
     AddResourceProvider(provider);
+#endif
 
   AddResourceProvider(new TaskManagerWorkerResourceProvider(task_manager));
 }

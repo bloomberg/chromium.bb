@@ -4703,7 +4703,6 @@
           ],
           'sources/': [
             ['exclude', '^browser/notifications/'],
-            ['exclude', '^browser/task_manager/'],
             ['exclude', '^browser/themes/'],
             ['exclude', '^browser/ui/panels/'],
             ['exclude', '^browser/ui/tabs/'],
