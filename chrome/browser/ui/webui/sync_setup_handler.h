@@ -7,9 +7,9 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/signin/signin_tracker.h"
 #include "chrome/browser/sync/sync_setup_flow_handler.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
-#include "chrome/browser/ui/webui/signin/signin_tracker.h"
 
 class LoginUIService;
 class ProfileManager;

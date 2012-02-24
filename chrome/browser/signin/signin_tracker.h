@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_SIGNIN_SIGNIN_TRACKER_H_
-#define CHROME_BROWSER_UI_WEBUI_SIGNIN_SIGNIN_TRACKER_H_
+#ifndef CHROME_BROWSER_SIGNIN_SIGNIN_TRACKER_H_
+#define CHROME_BROWSER_SIGNIN_SIGNIN_TRACKER_H_
 
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "content/public/browser/notification_observer.h"
@@ -110,5 +110,5 @@ class SigninTracker : public ProfileSyncServiceObserver,
   DISALLOW_COPY_AND_ASSIGN(SigninTracker);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_SIGNIN_SIGNIN_TRACKER_H_
+#endif  // CHROME_BROWSER_SIGNIN_SIGNIN_TRACKER_H_
 
