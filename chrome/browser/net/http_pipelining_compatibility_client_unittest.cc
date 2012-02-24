@@ -48,6 +48,7 @@ class HttpPipeliningCompatibilityClientTest : public testing::Test {
   HttpPipeliningCompatibilityClientTest()
       : test_server_(
           net::TestServer::TYPE_HTTP,
+          net::TestServer::kLocalhost,
           FilePath(FILE_PATH_LITERAL("chrome/test/data/http_pipelining"))),
         io_thread_(content::BrowserThread::IO, &message_loop_) {
   }

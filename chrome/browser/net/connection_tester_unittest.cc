@@ -90,7 +90,9 @@ class ConnectionTesterTest : public PlatformTest {
       : message_loop_(MessageLoop::TYPE_IO),
         io_thread_(BrowserThread::IO, &message_loop_),
         test_server_(net::TestServer::TYPE_HTTP,
-            FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest"))),
+                     net::TestServer::kLocalhost,
+                     FilePath(
+                         FILE_PATH_LITERAL("net/data/url_request_unittest"))),
         proxy_script_fetcher_context_(new net::URLRequestContext) {
     InitializeRequestContext();
   }

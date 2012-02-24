@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -280,7 +280,9 @@ void URLFetcherTempFileTest::CreateFetcher(const GURL& url) {
 }
 
 TEST_F(URLFetcherTempFileTest, SmallGet) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   // Get a small file.
@@ -296,7 +298,9 @@ TEST_F(URLFetcherTempFileTest, SmallGet) {
 }
 
 TEST_F(URLFetcherTempFileTest, LargeGet) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   // Get a file large enough to require more than one read into
@@ -310,7 +314,9 @@ TEST_F(URLFetcherTempFileTest, LargeGet) {
 }
 
 TEST_F(URLFetcherTempFileTest, CanTakeOwnershipOfFile) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   // Get a small file.
@@ -526,7 +532,9 @@ void URLFetcherTempFileTest::OnURLFetchComplete(
 }
 
 TEST_F(URLFetcherTest, SameThreadsTest) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   // Create the fetcher on the main thread.  Since IO will happen on the main
@@ -543,7 +551,9 @@ TEST_F(URLFetcherTest, DISABLED_DifferentThreadsTest) {
 #else
 TEST_F(URLFetcherTest, DifferentThreadsTest) {
 #endif
-  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   // Create a separate thread that will create the URLFetcher.  The current
@@ -568,7 +578,9 @@ TEST_F(URLFetcherPostTest, DISABLED_Basic) {
 #else
 TEST_F(URLFetcherPostTest, Basic) {
 #endif
-  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   CreateFetcher(test_server.GetURL("echo"));
@@ -576,7 +588,9 @@ TEST_F(URLFetcherPostTest, Basic) {
 }
 
 TEST_F(URLFetcherHeadersTest, Headers) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+  net::TestServer test_server(
+      net::TestServer::TYPE_HTTP,
+      net::TestServer::kLocalhost,
       FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
   ASSERT_TRUE(test_server.Start());
 
@@ -586,7 +600,9 @@ TEST_F(URLFetcherHeadersTest, Headers) {
 }
 
 TEST_F(URLFetcherSocketAddressTest, SocketAddress) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+  net::TestServer test_server(
+      net::TestServer::TYPE_HTTP,
+      net::TestServer::kLocalhost,
       FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
   ASSERT_TRUE(test_server.Start());
   expected_port_ = test_server.host_port_pair().port();
@@ -598,7 +614,9 @@ TEST_F(URLFetcherSocketAddressTest, SocketAddress) {
 }
 
 TEST_F(URLFetcherProtectTest, Overload) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   GURL url(test_server.GetURL("defaultresponse"));
@@ -619,7 +637,9 @@ TEST_F(URLFetcherProtectTest, Overload) {
 }
 
 TEST_F(URLFetcherProtectTest, ServerUnavailable) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   GURL url(test_server.GetURL("files/server-unavailable.html"));
@@ -642,7 +662,9 @@ TEST_F(URLFetcherProtectTest, ServerUnavailable) {
 }
 
 TEST_F(URLFetcherProtectTestPassedThrough, ServerUnavailablePropagateResponse) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   GURL url(test_server.GetURL("files/server-unavailable.html"));
@@ -688,7 +710,9 @@ TEST_F(URLFetcherCancelTest, DISABLED_ReleasesContext) {
 #else
 TEST_F(URLFetcherCancelTest, ReleasesContext) {
 #endif
-  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   GURL url(test_server.GetURL("files/server-unavailable.html"));
@@ -721,7 +745,9 @@ TEST_F(URLFetcherCancelTest, ReleasesContext) {
 }
 
 TEST_F(URLFetcherCancelTest, CancelWhileDelayedStartTaskPending) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   GURL url(test_server.GetURL("files/server-unavailable.html"));
@@ -754,7 +780,9 @@ TEST_F(URLFetcherCancelTest, CancelWhileDelayedStartTaskPending) {
 }
 
 TEST_F(URLFetcherMultipleAttemptTest, SameData) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   // Create the fetcher on the main thread.  Since IO will happen on the main
@@ -773,7 +801,9 @@ void CancelAllOnIO() {
 
 // Tests to make sure CancelAll() will successfully cancel existing URLFetchers.
 TEST_F(URLFetcherTest, CancelAll) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
   EXPECT_EQ(0, GetNumFetcherCores());
 

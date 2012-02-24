@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,6 +29,7 @@ class NetworkStatsTestUDP : public NetworkStatsTest {
  public:
   NetworkStatsTestUDP()
       : test_server_(net::TestServer::TYPE_UDP_ECHO,
+                     net::TestServer::kLocalhost,
                      FilePath(FILE_PATH_LITERAL("net/data"))) {
   }
 
@@ -56,6 +57,7 @@ class NetworkStatsTestTCP : public NetworkStatsTest {
  public:
   NetworkStatsTestTCP()
       : test_server_(net::TestServer::TYPE_TCP_ECHO,
+                     net::TestServer::kLocalhost,
                      FilePath(FILE_PATH_LITERAL("net/data"))) {
   }
 
