@@ -228,10 +228,6 @@ void ToolbarView::Update(WebContents* tab, bool should_restore_state) {
     browser_actions_->RefreshBrowserActionViews();
 }
 
-void ToolbarView::SetPaneFocusAndFocusLocationBar() {
-  SetPaneFocus(location_bar_);
-}
-
 void ToolbarView::SetPaneFocusAndFocusAppMenu() {
   SetPaneFocus(app_menu_);
 }
@@ -633,9 +629,14 @@ bool ToolbarView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 // ToolbarView, protected:
 
 // Override this so that when the user presses F6 to rotate toolbar panes,
-// the location bar gets focus, not the first control in the toolbar.
-views::View* ToolbarView::GetDefaultFocusableChild() {
-  return location_bar_;
+// the location bar gets focus, not the first control in the toolbar - and
+// also so that it selects all content in the location bar.
+bool ToolbarView::SetPaneFocusAndFocusDefault() {
+  if (!SetPaneFocus(location_bar_))
+    return false;
+
+  location_bar_->SelectAll();
+  return true;
 }
 
 void ToolbarView::RemovePaneFocus() {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,11 +54,6 @@ class ToolbarView : public views::AccessiblePaneView,
   // (back?) to this tab and should restore any previous location bar state
   // (such as user editing) as well.
   void Update(content::WebContents* tab, bool should_restore_state);
-
-  // Set focus to the toolbar with complete keyboard access, with the
-  // focus initially set to the location bar. Focus will be restored
-  // to the last focused view if the user escapes.
-  void SetPaneFocusAndFocusLocationBar();
 
   // Set focus to the toolbar with complete keyboard access, with the
   // focus initially set to the app menu. Focus will be restored
@@ -138,7 +133,7 @@ class ToolbarView : public views::AccessiblePaneView,
 
  protected:
   // Overridden from AccessiblePaneView
-  virtual views::View* GetDefaultFocusableChild() OVERRIDE;
+  virtual bool SetPaneFocusAndFocusDefault() OVERRIDE;
   virtual void RemovePaneFocus() OVERRIDE;
 
  private:
