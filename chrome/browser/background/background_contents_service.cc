@@ -101,6 +101,7 @@ class CrashNotificationDelegate : public NotificationDelegate {
 };
 
 void ShowBalloon(const Extension* extension, Profile* profile) {
+#if defined(ENABLE_NOTIFICATIONS)
   string16 message = l10n_util::GetStringFUTF16(
       extension->is_app() ?  IDS_BACKGROUND_CRASHED_APP_BALLOON_MESSAGE :
       IDS_BACKGROUND_CRASHED_EXTENSION_BALLOON_MESSAGE,
@@ -113,6 +114,7 @@ void ShowBalloon(const Extension* extension, Profile* profile) {
       extension->url(), GURL(content_url), string16(), string16(),
       new CrashNotificationDelegate(profile, extension));
   g_browser_process->notification_ui_manager()->Add(notification, profile);
+#endif
 }
 
 }

@@ -4702,7 +4702,6 @@
             'browser/ui/webui/certificate_viewer_webui.cc',
           ],
           'sources/': [
-            ['exclude', '^browser/background/'],
             ['exclude', '^browser/notifications/'],
             ['exclude', '^browser/task_manager/'],
             ['exclude', '^browser/themes/'],

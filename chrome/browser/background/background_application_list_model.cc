@@ -97,7 +97,7 @@ void GetServiceApplications(ExtensionService* service,
   icu::Locale loc(locale.c_str());
   UErrorCode error = U_ZERO_ERROR;
   scoped_ptr<icu::Collator> collator(icu::Collator::createInstance(loc, error));
-  sort(applications_result->begin(), applications_result->end(),
+  std::sort(applications_result->begin(), applications_result->end(),
        ExtensionNameComparator(collator.get()));
 }
 
