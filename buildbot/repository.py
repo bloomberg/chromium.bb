@@ -52,6 +52,27 @@ def IsARepoRoot(root):
   return os.path.isdir(repo_dir)
 
 
+def RepoSyncUsingSSH(git_repo):
+  """Fetch the latest code for the given directory using repo sync over ssh.
+
+  Args:
+    git_repo: Git repository to sync.
+  """
+  cros_lib.RunCommand(['git',
+                       'config',
+                       'url.%s.insteadof' % constants.GERRIT_SSH_URL,
+                       constants.GIT_HTTP_URL], cwd=git_repo)
+  try:
+    cros_lib.RunCommand(['repo', 'sync', '.'], cwd=git_repo)
+  finally:
+    cros_lib.RunCommand(['git',
+                         'config',
+                         '--unset',
+                         'url.%s.insteadof' % constants.GERRIT_SSH_URL],
+                         cwd=git_repo)
+
+
+
 def CloneGitRepo(working_dir, repo_url):
   """Clone given git repo
   Args:

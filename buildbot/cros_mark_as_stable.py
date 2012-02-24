@@ -15,7 +15,7 @@ import constants
 if __name__ == '__main__':
   sys.path.insert(0, constants.SOURCE_ROOT)
 
-from chromite.buildbot import portage_utilities
+from chromite.buildbot import portage_utilities, repository
 from chromite.lib import cros_build_lib
 
 
@@ -137,7 +137,7 @@ def PushChange(stable_branch, tracking_branch, dryrun):
     cros_build_lib.Info('No work found to push.  Exiting')
     return
 
-  _SimpleRunCommand('repo sync .')
+  repository.RepoSyncUsingSSH('.')
   description = _SimpleRunCommand('git log --format=format:%s%n%n%b ' +
                                   tracking_branch + '..')
   description = 'Marking set of ebuilds as stable\n\n%s' % description
