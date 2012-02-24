@@ -339,7 +339,7 @@ void WebPluginProxy::Paint(const gfx::Rect& rect) {
   if (!windowless_context())
     return;
 #else
-  if (!windowless_canvas())
+  if (!windowless_canvas() || !windowless_canvas()->getDevice())
     return;
 #endif
 
@@ -390,7 +390,7 @@ void WebPluginProxy::Paint(const gfx::Rect& rect) {
   windowless_canvas()->clipRect(sk_rect);
 
   // Setup the background.
-  if (background_canvas_.get()) {
+  if (background_canvas_.get() && background_canvas_.get()->getDevice()) {
     // When a background canvas is given, we're in transparent mode. This means
     // the plugin wants to have the image of the page in the canvas it's drawing
     // into (which is windowless_canvases_) so it can do blending. So we copy
