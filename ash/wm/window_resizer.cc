@@ -205,15 +205,12 @@ void WindowResizer::Drag(const gfx::Point& location) {
 void WindowResizer::CompleteDrag() {
   if (grid_size_ <= 1 || !did_move_or_resize_)
     return;
-  gfx::Rect new_bounds(GetFinalBounds());
+  const gfx::Rect& bounds(window_->bounds());
+  int x = AlignToGrid(bounds.x(), grid_size_);
+  int y = AlignToGrid(bounds.y(), grid_size_);
+  gfx::Rect new_bounds(x, y, bounds.width(), bounds.height());
   if (new_bounds == window_->bounds())
     return;
-
-  if (new_bounds.size() != window_->bounds().size()) {
-    // Don't attempt to animate a size change.
-    window_->SetBounds(new_bounds);
-    return;
-  }
 
   ui::ScopedLayerAnimationSettings scoped_setter(
       window_->layer()->GetAnimator());
@@ -257,13 +254,6 @@ gfx::Rect WindowResizer::GetBoundsForDrag(const gfx::Point& location) {
     new_bounds.set_height(new_bounds.height() + delta);
   }
   return new_bounds;
-}
-
-gfx::Rect WindowResizer::GetFinalBounds() {
-  const gfx::Rect& bounds(window_->bounds());
-  int x = AlignToGrid(bounds.x(), grid_size_);
-  int y = AlignToGrid(bounds.y(), grid_size_);
-  return gfx::Rect(x, y, bounds.width(), bounds.height());
 }
 
 gfx::Point WindowResizer::GetOriginForDrag(

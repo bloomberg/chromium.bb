@@ -38,7 +38,7 @@ class ASH_EXPORT WindowResizer {
                 const gfx::Point& location,
                 int window_component,
                 int grid_size);
-  virtual ~WindowResizer();
+  ~WindowResizer();
 
   // Returns a bitmask of the kBoundsChange_ values.
   static int GetBoundsChangeForWindowComponent(int component);
@@ -64,20 +64,12 @@ class ASH_EXPORT WindowResizer {
   }
   int window_component() const { return window_component_; }
   aura::Window* window() const { return window_; }
-  int grid_size() const { return grid_size_; }
-  bool did_move_or_resize() const { return did_move_or_resize_; }
-  int bounds_change() const { return bounds_change_; }
-
- protected:
-  // Returns the bounds to give to the window once the mouse has moved to
-  // |location|.
-  virtual gfx::Rect GetBoundsForDrag(const gfx::Point& location);
-
-  // Returns the final bounds. This differs from current bounds if a grid_size
-  // was specified.
-  virtual gfx::Rect GetFinalBounds();
 
  private:
+  // Returns the bounds to give to the window once the mouse has moved to
+  // |location|.
+  gfx::Rect GetBoundsForDrag(const gfx::Point& location);
+
   // Returns the new origin of the window. The arguments are the difference
   // between the current location and the initial location.
   gfx::Point GetOriginForDrag(int delta_x, int delta_y) const;
