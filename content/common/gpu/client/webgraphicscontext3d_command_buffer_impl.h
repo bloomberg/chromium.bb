@@ -481,6 +481,8 @@ class WebGraphicsContext3DCommandBufferImpl
       WGC3Denum target, WGC3Dint levels, WGC3Duint internalformat,
       WGC3Dint width, WGC3Dint height);
 
+  ContentGLContext* content_gl_context() const { return context_; }
+
  protected:
 #if WEBKIT_USING_SKIA
   virtual GrGLInterface* onCreateGrGLInterface();

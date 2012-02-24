@@ -156,7 +156,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual void SetScrollOffsetPinning(
       bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE { }
 
-#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
+#if defined(USE_AURA)
   virtual void AcceleratedSurfaceNew(
       int32 width, int32 height, uint64* surface_id,
       TransportDIB::Handle* surface_handle) OVERRIDE { }

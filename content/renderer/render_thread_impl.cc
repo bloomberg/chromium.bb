@@ -856,18 +856,16 @@ GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
       return GetGpuChannel();
 
     // Recreate the channel if it has been lost.
-    if (gpu_channel_->state() == GpuChannelHost::kLost)
-      gpu_channel_ = NULL;
+    gpu_channel_ = NULL;
   }
 
-  if (!gpu_channel_.get())
-    gpu_channel_ = new GpuChannelHost(this);
-
   // Ask the browser for the channel name.
+  int client_id = 0;
   IPC::ChannelHandle channel_handle;
   base::ProcessHandle renderer_process_for_gpu;
   content::GPUInfo gpu_info;
   if (!Send(new GpuHostMsg_EstablishGpuChannel(cause_for_gpu_launch,
+                                               &client_id,
                                                &channel_handle,
                                                &renderer_process_for_gpu,
                                                &gpu_info)) ||
@@ -881,6 +879,7 @@ GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
     return NULL;
   }
 
+  gpu_channel_ = new GpuChannelHost(this, client_id);
   gpu_channel_->set_gpu_info(gpu_info);
   content::GetContentClient()->SetGpuInfo(gpu_info);
 

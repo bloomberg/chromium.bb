@@ -202,8 +202,9 @@ IPC_MESSAGE_CONTROL0(GpuMsg_Hang)
 // A renderer sends this when it wants to create a connection to the GPU
 // process. The browser will create the GPU process if necessary, and will
 // return a handle to the channel via a GpuChannelEstablished message.
-IPC_SYNC_MESSAGE_CONTROL1_3(GpuHostMsg_EstablishGpuChannel,
+IPC_SYNC_MESSAGE_CONTROL1_4(GpuHostMsg_EstablishGpuChannel,
                             content::CauseForGpuLaunch,
+                            int /* client id */,
                             IPC::ChannelHandle /* handle to channel */,
                             base::ProcessHandle /* renderer_process_for_gpu */,
                             content::GPUInfo /* stats about GPU process*/)

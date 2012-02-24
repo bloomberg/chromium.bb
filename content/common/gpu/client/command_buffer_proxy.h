@@ -109,6 +109,8 @@ class CommandBufferProxy : public gpu::CommandBuffer,
 
   void SetOnConsoleMessageCallback(const GpuConsoleMessageCallback& callback);
 
+  GpuChannelHost* channel() const { return channel_; }
+
  private:
   // Send an IPC message over the GPU channel. This is private to fully
   // encapsulate the channel; all callers of this function must explicitly

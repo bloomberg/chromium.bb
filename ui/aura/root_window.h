@@ -17,6 +17,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/events.h"
 #include "ui/gfx/compositor/compositor.h"
+#include "ui/gfx/compositor/compositor_observer.h"
 #include "ui/gfx/compositor/layer_animation_observer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
@@ -44,6 +45,7 @@ class GestureEvent;
 
 // RootWindow is responsible for hosting a set of windows.
 class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
+                               public ui::CompositorObserver,
                                public Window,
                                public internal::FocusManager,
                                public ui::LayerAnimationObserver {
@@ -195,6 +197,9 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Overridden from ui::CompositorDelegate:
   virtual void ScheduleDraw() OVERRIDE;
 
+  // Overridden from ui::CompositorObserver:
+  virtual void OnCompositingEnded(ui::Compositor*) OVERRIDE;
+
  private:
   // TODO(beng): remove this friendship once the linux dispatcher is moved.
   friend class Env;
@@ -311,6 +316,8 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   scoped_ptr<GestureRecognizer> gesture_recognizer_;
 
   bool synthesize_mouse_move_;
+  bool waiting_on_compositing_end_;
+  bool draw_on_compositing_end_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindow);
 };

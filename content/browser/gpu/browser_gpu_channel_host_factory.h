@@ -19,6 +19,7 @@ class BrowserGpuChannelHostFactory : public GpuChannelHostFactory {
  public:
   static void Initialize();
   static void Terminate();
+  static BrowserGpuChannelHostFactory* Get();
 
   // GpuChannelHostFactory implementation.
   virtual bool IsMainThread() OVERRIDE;
@@ -33,6 +34,8 @@ class BrowserGpuChannelHostFactory : public GpuChannelHostFactory {
       const GPUCreateCommandBufferConfig& init_params) OVERRIDE;
   virtual GpuChannelHost* EstablishGpuChannelSync(
       CauseForGpuLaunch cause_for_gpu_launch) OVERRIDE;
+
+ int gpu_client_id() { return gpu_client_id_; }
 
  private:
   struct CreateRequest {

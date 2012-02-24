@@ -195,7 +195,7 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
       TransportDIB::Handle transport_dib) = 0;
 #endif
 
-#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
+#if defined(USE_AURA)
   virtual void AcceleratedSurfaceNew(
       int32 width,
       int32 height,

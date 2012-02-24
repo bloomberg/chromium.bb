@@ -171,8 +171,6 @@ class COMPOSITOR_EXPORT Layer :
 
   // Assigns a new external texture.  |texture| can be NULL to disable external
   // updates.
-  // TODO(beng): This can be removed from the API when we are in a
-  //             single-compositor world.
   void SetExternalTexture(ui::Texture* texture);
 
   // Sets the layer's fill color.  May only be called for LAYER_SOLID_COLOR.

@@ -198,12 +198,12 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
     IPC_MESSAGE_HANDLER(GpuHostMsg_ResizeView, OnResizeView)
 #endif
 
-#if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
+#if defined(OS_MACOSX) || defined(USE_AURA)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceNew,
                         OnAcceleratedSurfaceNew)
 #endif
 
-#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
+#if defined(USE_AURA)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceRelease,
                         OnAcceleratedSurfaceRelease)
 #endif
@@ -279,7 +279,7 @@ void GpuProcessHostUIShim::OnResizeView(int32 surface_id,
 
 #endif
 
-#if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
+#if defined(OS_MACOSX) || defined(USE_AURA)
 
 void GpuProcessHostUIShim::OnAcceleratedSurfaceNew(
     const GpuHostMsg_AcceleratedSurfaceNew_Params& params) {
@@ -325,7 +325,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceNew(
                                          params.height,
                                          surface_handle);
   }
-#else  // defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
+#else  // defined(USE_AURA)
   view->AcceleratedSurfaceNew(
       params.width, params.height, &surface_handle, &shm_handle);
 #endif
@@ -388,7 +388,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceSuspend(int32 surface_id) {
   view->AcceleratedSurfaceSuspend();
 }
 
-#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
+#if defined(USE_AURA)
 
 void GpuProcessHostUIShim::OnAcceleratedSurfaceRelease(
     const GpuHostMsg_AcceleratedSurfaceRelease_Params& params) {

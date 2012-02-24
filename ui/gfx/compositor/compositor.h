@@ -6,59 +6,79 @@
 #define UI_GFX_COMPOSITOR_COMPOSITOR_H_
 #pragma once
 
+#include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebLayer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebLayerTreeView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebLayerTreeViewClient.h"
 #include "ui/gfx/compositor/compositor_export.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/gl/gl_share_group.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/transform.h"
 
 
 class SkBitmap;
-class SkCanvas;
 namespace gfx {
 class GLContext;
 class GLSurface;
 class GLShareGroup;
 class Point;
 class Rect;
-class ScopedMakeCurrent;
 }
 
 namespace ui {
 
+class Compositor;
 class CompositorObserver;
 class Layer;
 
-class COMPOSITOR_EXPORT SharedResources {
+// This class abstracts the creation of the 3D context for the compositor. It is
+// a global object.
+class COMPOSITOR_EXPORT ContextFactory {
  public:
-  static SharedResources* GetInstance();
+  virtual ~ContextFactory() { }
 
-  // Creates an instance of ScopedMakeCurrent.
-  // Note: Caller is responsible for managing lifetime of returned pointer.
-  gfx::ScopedMakeCurrent* GetScopedMakeCurrent();
+  // Gets the global instance.
+  static ContextFactory* GetInstance();
 
-  gfx::GLShareGroup* GetShareGroup();
+  // Sets the global instance. Caller keeps ownership.
+  // If this function isn't called (for tests), a "default" factory will be
+  // created on the first call of GetInstance.
+  static void SetInstance(ContextFactory* instance);
 
- private:
-  friend struct DefaultSingletonTraits<SharedResources>;
+  // Creates a context for given compositor. The factory may keep per-compositor
+  // data (e.g. a shared context), that needs to be cleaned up by calling
+  // RemoveCompositor when the compositor gets destroyed.
+  virtual WebKit::WebGraphicsContext3D* CreateContext(
+      Compositor* compositor) = 0;
 
-  SharedResources();
-  ~SharedResources();
+  // Destroys per-compositor data.
+  virtual void RemoveCompositor(Compositor* compositor) = 0;
+};
+
+// The default factory that creates in-process contexts.
+class COMPOSITOR_EXPORT DefaultContextFactory : public ContextFactory {
+ public:
+  DefaultContextFactory();
+  virtual ~DefaultContextFactory();
+
+  // ContextFactory implementation
+  virtual WebKit::WebGraphicsContext3D* CreateContext(
+      Compositor* compositor) OVERRIDE;
+  virtual void RemoveCompositor(Compositor* compositor) OVERRIDE;
 
   bool Initialize();
-  void Destroy();
 
-  bool initialized_;
+  void set_share_group(gfx::GLShareGroup* share_group) {
+    share_group_ = share_group;
+  }
 
-  scoped_refptr<gfx::GLContext> context_;
-  scoped_refptr<gfx::GLSurface> surface_;
+ private:
+  scoped_refptr<gfx::GLShareGroup> share_group_;
 
-  DISALLOW_COPY_AND_ASSIGN(SharedResources);
+  DISALLOW_COPY_AND_ASSIGN(DefaultContextFactory);
 };
 
 // Texture provide an abstraction over the external texture that can be passed
@@ -69,15 +89,15 @@ class COMPOSITOR_EXPORT Texture : public base::RefCounted<Texture> {
   virtual ~Texture();
 
   unsigned int texture_id() const { return texture_id_; }
+  void set_texture_id(unsigned int id) { texture_id_ = id; }
   bool flipped() const { return flipped_; }
   gfx::Size size() const { return size_; }
 
- protected:
+ private:
   unsigned int texture_id_;
   bool flipped_;
   gfx::Size size_;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(Texture);
 };
 
@@ -139,13 +159,28 @@ class COMPOSITOR_EXPORT Compositor
   void WidgetSizeChanged(const gfx::Size& size);
 
   // Returns the size of the widget that is being drawn to.
-  const gfx::Size& size() { return size_; }
+  const gfx::Size& size() const { return size_; }
+
+  // Returns the widget for this compositor.
+  gfx::AcceleratedWidget widget() const { return widget_; }
 
   // Compositor does not own observers. It is the responsibility of the
   // observer to remove itself when it is done observing.
   void AddObserver(CompositorObserver* observer);
   void RemoveObserver(CompositorObserver* observer);
   bool HasObserver(CompositorObserver* observer);
+
+  // Internal functions, called back by command-buffer contexts on swap buffer
+  // events.
+
+  // Signals swap has been posted.
+  void OnSwapBuffersPosted();
+
+  // Signals swap has completed.
+  void OnSwapBuffersComplete();
+
+  // Signals swap has aborted (e.g. lost context).
+  void OnSwapBuffersAborted();
 
   // WebLayerTreeViewClient implementation.
   virtual void updateAnimations(double frameBeginTime);
@@ -177,6 +212,10 @@ class COMPOSITOR_EXPORT Compositor
   gfx::AcceleratedWidget widget_;
   WebKit::WebLayer root_web_layer_;
   WebKit::WebLayerTreeView host_;
+
+  // This is set to true when the swap buffers has been posted and we're waiting
+  // for completion.
+  bool swap_posted_;
 
   friend class base::RefCounted<Compositor>;
 };

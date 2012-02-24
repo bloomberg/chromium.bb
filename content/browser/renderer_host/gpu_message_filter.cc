@@ -9,11 +9,14 @@
 #include "content/browser/renderer_host/gpu_message_filter.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/process_util.h"
+#include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/public/common/content_switches.h"
 
 using content::BrowserThread;
 
@@ -21,8 +24,17 @@ GpuMessageFilter::GpuMessageFilter(int render_process_id,
                                    RenderWidgetHelper* render_widget_helper)
     : gpu_host_id_(0),
       render_process_id_(render_process_id),
+      share_client_id_(0),
       render_widget_helper_(render_widget_helper) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kUIUseGPUProcess)) {
+    // When using the GPU process for UI, we need to share renderer GL contexts
+    // with the compositor context.
+    share_client_id_ =
+        content::BrowserGpuChannelHostFactory::Get()->gpu_client_id();
+  }
 }
 
 GpuMessageFilter::~GpuMessageFilter() {
@@ -70,6 +82,7 @@ void GpuMessageFilter::OnEstablishGpuChannel(
 
   host->EstablishGpuChannel(
       render_process_id_,
+      share_client_id_,
       base::Bind(&GpuMessageFilter::EstablishChannelCallback,
                  AsWeakPtr(),
                  reply));
@@ -142,7 +155,7 @@ void GpuMessageFilter::EstablishChannelCallback(
   }
 
   GpuHostMsg_EstablishGpuChannel::WriteReplyParams(
-      reply, channel, renderer_process_for_gpu, gpu_info);
+      reply, render_process_id_, channel, renderer_process_for_gpu, gpu_info);
   Send(reply);
 }
 

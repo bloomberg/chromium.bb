@@ -31,10 +31,6 @@ ChromeBrowserMainExtraPartsAura::ChromeBrowserMainExtraPartsAura()
 }
 
 void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestCompositor)) {
-    ui::SetupTestCompositor();
-  }
-
 #if defined(OS_CHROMEOS)
   if (chromeos::system::runtime_environment::IsRunningOnChromeOS() ||
       CommandLine::ForCurrentProcess()->HasSwitch(

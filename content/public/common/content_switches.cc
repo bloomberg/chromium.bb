@@ -567,6 +567,9 @@ const char kTraceStartupFile[]              = "trace-startup-file";
 // --startup-trace-file=none was supplied.
 const char kTraceStartupDuration[]          = "trace-startup-duration";
 
+// Enables the use of the GPU process for UI. Only meaningful for Aura.
+const char kUIUseGPUProcess[]               = "ui-use-gpu-process";
+
 // A string used to override the default user agent with a custom one.
 const char kUserAgent[]                     = "user-agent";
 
@@ -631,5 +634,10 @@ const char kEnablePerTilePainting[]         = "enable-per-tile-painting";
 
 // Disables the use of a 3D software rasterizer.
 const char kDisableSoftwareRasterizer[]     = "disable-software-rasterizer";
+
+#if defined(USE_AURA)
+// Forces usage of the test compositor. Needed to run ui tests on bots.
+extern const char kTestCompositor[]         = "test-compositor";
+#endif
 
 }  // namespace switches

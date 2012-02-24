@@ -1317,11 +1317,6 @@ const char kDisablePrintPreview[]           = "disable-print-preview";
 const char kEnablePrintPreview[]            = "enable-print-preview";
 #endif
 
-#if defined(USE_AURA)
-// Forces usage of the test compositor. Needed to run ui tests on bots.
-extern const char kTestCompositor[]         = "test-compositor";
-#endif
-
 // -----------------------------------------------------------------------------
 // DO NOT ADD YOUR CRAP TO THE BOTTOM OF THIS FILE.
 //

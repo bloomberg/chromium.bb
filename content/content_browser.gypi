@@ -463,6 +463,9 @@
     'browser/renderer_host/gtk_window_utils.h',
     'browser/renderer_host/image_transport_client.cc',
     'browser/renderer_host/image_transport_client.h',
+    'browser/renderer_host/image_transport_client_linux.cc',
+    'browser/renderer_host/image_transport_factory.cc',
+    'browser/renderer_host/image_transport_factory.h',
     'browser/renderer_host/java/java_bound_object.cc',
     'browser/renderer_host/java/java_bound_object.h',
     'browser/renderer_host/java/java_bridge_channel_host.cc',
@@ -813,6 +816,7 @@
     ['use_aura==1', {
       'dependencies': [
         '../ui/aura/aura.gyp:aura',
+        '../ui/gfx/compositor/compositor.gyp:compositor',
       ],
       'sources/': [
         ['exclude', '^browser/accessibility/browser_accessibility_manager_win.cc'],
@@ -829,13 +833,16 @@
       ],
     }, {
       'sources/': [
+        ['exclude', '^browser/renderer_host/image_transport_client.cc'],
+        ['exclude', '^browser/renderer_host/image_transport_client.h'],
+        ['exclude', '^browser/renderer_host/image_transport_factory.cc'],
+        ['exclude', '^browser/renderer_host/image_transport_factory.h'],
         ['exclude', '^browser/renderer_host/render_widget_host_view_aura.cc'],
         ['exclude', '^browser/renderer_host/render_widget_host_view_aura.h'],
       ],
     }],
     ['ui_compositor_image_transport==1', {
       'dependencies': [
-        '../ui/gfx/compositor/compositor.gyp:compositor',
         '../ui/gfx/gl/gl.gyp:gl',
       ],
       'link_settings': {
@@ -848,8 +855,7 @@
       ],
     }, {
       'sources/': [
-        ['exclude', '^browser/renderer_host/image_transport_client.cc'],
-        ['exclude', '^browser/renderer_host/image_transport_client.h'],
+        ['exclude', '^browser/renderer_host/image_transport_client_linux.cc'],
       ],
     }],
     ['java_bridge==1', {
