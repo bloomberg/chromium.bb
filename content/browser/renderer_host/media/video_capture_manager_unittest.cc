@@ -137,11 +137,13 @@ class VideoCaptureManagerTest : public testing::Test {
 TEST_F(VideoCaptureManagerTest, CreateAndClose) {
   InSequence s;
   EXPECT_CALL(*listener_, DevicesEnumerated(_))
-    .Times(1);
-  EXPECT_CALL(*listener_, Opened(media_stream::kVideoCapture, _))
-    .Times(1);
-  EXPECT_CALL(*listener_, Closed(media_stream::kVideoCapture, _))
-    .Times(1);
+      .Times(1);
+  EXPECT_CALL(*listener_,
+              Opened(content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE, _))
+      .Times(1);
+  EXPECT_CALL(*listener_,
+              Closed(content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE, _))
+      .Times(1);
 
   vcm_->EnumerateDevices();
 
@@ -169,11 +171,13 @@ TEST_F(VideoCaptureManagerTest, CreateAndClose) {
 TEST_F(VideoCaptureManagerTest, OpenTwice) {
   InSequence s;
   EXPECT_CALL(*listener_, DevicesEnumerated(_))
-    .Times(1);
-  EXPECT_CALL(*listener_, Opened(media_stream::kVideoCapture, _))
-    .Times(2);
-  EXPECT_CALL(*listener_, Closed(media_stream::kVideoCapture, _))
-    .Times(2);
+      .Times(1);
+  EXPECT_CALL(*listener_,
+              Opened(content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE, _))
+      .Times(2);
+  EXPECT_CALL(*listener_,
+              Closed(content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE, _))
+      .Times(2);
 
   vcm_->EnumerateDevices();
 
@@ -199,11 +203,13 @@ TEST_F(VideoCaptureManagerTest, OpenTwice) {
 TEST_F(VideoCaptureManagerTest, OpenTwo) {
   InSequence s;
   EXPECT_CALL(*listener_, DevicesEnumerated(_))
-    .Times(1);
-  EXPECT_CALL(*listener_, Opened(media_stream::kVideoCapture, _))
-    .Times(2);
-  EXPECT_CALL(*listener_, Closed(media_stream::kVideoCapture, _))
-    .Times(2);
+      .Times(1);
+  EXPECT_CALL(*listener_,
+              Opened(content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE, _))
+      .Times(2);
+  EXPECT_CALL(*listener_,
+              Closed(content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE, _))
+      .Times(2);
 
   vcm_->EnumerateDevices();
 
@@ -229,17 +235,18 @@ TEST_F(VideoCaptureManagerTest, OpenTwo) {
 TEST_F(VideoCaptureManagerTest, OpenNotExisting) {
   InSequence s;
   EXPECT_CALL(*listener_, DevicesEnumerated(_))
-    .Times(1);
-  EXPECT_CALL(*listener_, Error(media_stream::kVideoCapture, _,
-                                media_stream::kDeviceNotAvailable))
-    .Times(1);
+      .Times(1);
+  EXPECT_CALL(*listener_, Error(content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE,
+                                _, media_stream::kDeviceNotAvailable))
+      .Times(1);
 
   vcm_->EnumerateDevices();
 
   // Wait to get device callback.
   SyncWithVideoCaptureManagerThread();
 
-  media_stream::MediaStreamType stream_type = media_stream::kVideoCapture;
+  media_stream::MediaStreamType stream_type =
+      content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE;
   std::string device_name("device_doesnt_exist");
   std::string device_id("id_doesnt_exist");
   media_stream::StreamDeviceInfo dummy_device(stream_type, device_name,
@@ -256,10 +263,12 @@ TEST_F(VideoCaptureManagerTest, OpenNotExisting) {
 // Start a device using "magic" id, i.e. call Start without calling Open.
 TEST_F(VideoCaptureManagerTest, StartUsingId) {
   InSequence s;
-  EXPECT_CALL(*listener_, Opened(media_stream::kVideoCapture, _))
-    .Times(1);
-  EXPECT_CALL(*listener_, Closed(media_stream::kVideoCapture, _))
-    .Times(1);
+  EXPECT_CALL(*listener_,
+              Opened(content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE, _))
+      .Times(1);
+  EXPECT_CALL(*listener_,
+              Closed(content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE, _))
+      .Times(1);
 
   media::VideoCaptureParams capture_params;
   capture_params.session_id =
@@ -284,11 +293,13 @@ TEST_F(VideoCaptureManagerTest, StartUsingId) {
 TEST_F(VideoCaptureManagerTest, CloseWithoutStop) {
   InSequence s;
   EXPECT_CALL(*listener_, DevicesEnumerated(_))
-  .Times(1);
-  EXPECT_CALL(*listener_, Opened(media_stream::kVideoCapture, _))
-  .Times(1);
-  EXPECT_CALL(*listener_, Closed(media_stream::kVideoCapture, _))
-  .Times(1);
+      .Times(1);
+  EXPECT_CALL(*listener_,
+              Opened(content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE, _))
+      .Times(1);
+  EXPECT_CALL(*listener_,
+              Closed(content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE, _))
+      .Times(1);
 
   vcm_->EnumerateDevices();
 

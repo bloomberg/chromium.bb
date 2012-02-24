@@ -30,19 +30,21 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 
 namespace media_stream {
 
+class MediaStreamDeviceSettingsRequest;
 class SettingsRequester;
-struct StreamOptions;
 
 // MediaStreamDeviceSettings is responsible for getting user permission to use
 // a media capture device as well as selecting what device to use.
-class MediaStreamDeviceSettings {
+class CONTENT_EXPORT MediaStreamDeviceSettings
+    : public base::SupportsWeakPtr<MediaStreamDeviceSettings> {
  public:
   explicit MediaStreamDeviceSettings(SettingsRequester* requester);
-  ~MediaStreamDeviceSettings();
+  virtual ~MediaStreamDeviceSettings();
 
   // Called when a new request of capture device usage is made.
   void RequestCaptureDeviceUsage(const std::string& label,
@@ -56,19 +58,27 @@ class MediaStreamDeviceSettings {
   void AvailableDevices(const std::string& label, MediaStreamType stream_type,
                         const StreamDeviceInfoArray& devices);
 
+  // Called by the InfoBar when the user grants/denies access to some devices
+  // to the webpage. This is placed here, so the request can be cleared from the
+  // list of pending requests, instead of letting the InfoBar itself respond to
+  // the requester. An empty list of devices means that access has been denied.
+  // This method must be called on the IO thread.
+  void PostResponse(const std::string& label,
+                    const content::MediaStreamDeviceArray& devices);
+
   // Used for testing only. This function is called to use faked UI, which is
   // needed for server based tests. The first non-opened device(s) will be
   // picked.
   void UseFakeUI();
 
  private:
-  struct SettingsRequest;
+  typedef std::map< std::string, MediaStreamDeviceSettingsRequest* >
+      SettingsRequests;
 
   SettingsRequester* requester_;
-
-  typedef std::map<std::string, SettingsRequest*> SettingsRequests;
   SettingsRequests requests_;
 
+  // See comment above for method UseFakeUI. Used for automated testing.
   bool use_fake_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDeviceSettings);

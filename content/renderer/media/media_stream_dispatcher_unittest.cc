@@ -105,14 +105,16 @@ TEST(MediaStreamDispatcherTest, BasicStream) {
   media_stream::StreamDeviceInfoArray audio_device_array(1);
   media_stream::StreamDeviceInfo audio_device_info;
   audio_device_info.name = "Microphone";
-  audio_device_info.stream_type = media_stream::kAudioCapture;
+  audio_device_info.stream_type =
+      content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE;
   audio_device_info.session_id = kAudioSessionId;
   audio_device_array[0] = audio_device_info;
 
   media_stream::StreamDeviceInfoArray video_device_array(1);
   media_stream::StreamDeviceInfo video_device_info;
   video_device_info.name = "Camera";
-  video_device_info.stream_type = media_stream::kVideoCapture;
+  video_device_info.stream_type =
+      content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE;
   video_device_info.session_id = kVideoSessionId;
   video_device_array[0] = video_device_info;
 
@@ -167,18 +169,21 @@ TEST(MediaStreamDispatcherTest, BasicVideoDevice) {
 
   int ipc_request_id1 = dispatcher->next_ipc_id_;
   dispatcher->EnumerateDevices(kRequestId1, handler.get(),
-                               media_stream::kVideoCapture, security_origin);
+                               content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE,
+                               security_origin);
   int ipc_request_id2 = dispatcher->next_ipc_id_;
   EXPECT_NE(ipc_request_id1, ipc_request_id2);
   dispatcher->EnumerateDevices(kRequestId2, handler.get(),
-                               media_stream::kVideoCapture, security_origin);
+                               content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE,
+                               security_origin);
   EXPECT_EQ(dispatcher->requests_.size(), size_t(2));
 
   media_stream::StreamDeviceInfoArray video_device_array(1);
   media_stream::StreamDeviceInfo video_device_info;
   video_device_info.name = "Camera";
   video_device_info.device_id = "device_path";
-  video_device_info.stream_type = media_stream::kVideoCapture;
+  video_device_info.stream_type =
+      content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE;
   video_device_info.session_id = kVideoSessionId;
   video_device_array[0] = video_device_info;
 
@@ -198,12 +203,14 @@ TEST(MediaStreamDispatcherTest, BasicVideoDevice) {
   int ipc_request_id3 = dispatcher->next_ipc_id_;
   dispatcher->OpenDevice(kRequestId3, handler.get(),
                          video_device_info.device_id,
-                         media_stream::kVideoCapture, security_origin);
+                         content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE,
+                         security_origin);
   int ipc_request_id4 = dispatcher->next_ipc_id_;
   EXPECT_NE(ipc_request_id3, ipc_request_id4);
   dispatcher->OpenDevice(kRequestId4, handler.get(),
                          video_device_info.device_id,
-                         media_stream::kVideoCapture, security_origin);
+                         content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE,
+                         security_origin);
   EXPECT_EQ(dispatcher->requests_.size(), size_t(2));
 
   // Complete the OpenDevice of request 1.
@@ -268,14 +275,16 @@ TEST(MediaStreamDispatcherTest, TestFailure) {
   media_stream::StreamDeviceInfoArray audio_device_array(1);
   media_stream::StreamDeviceInfo audio_device_info;
   audio_device_info.name = "Microphone";
-  audio_device_info.stream_type = media_stream::kAudioCapture;
+  audio_device_info.stream_type =
+      content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE;
   audio_device_info.session_id = kAudioSessionId;
   audio_device_array[0] = audio_device_info;
 
   media_stream::StreamDeviceInfoArray video_device_array(1);
   media_stream::StreamDeviceInfo video_device_info;
   video_device_info.name = "Camera";
-  video_device_info.stream_type = media_stream::kVideoCapture;
+  video_device_info.stream_type =
+      content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE;
   video_device_info.session_id = kVideoSessionId;
   video_device_array[0] = video_device_info;
 

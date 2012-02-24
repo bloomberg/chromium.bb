@@ -221,6 +221,11 @@ void ShellContentBrowserClient::AddNewCertificate(
     int render_view_id) {
 }
 
+void ShellContentBrowserClient::RequestMediaAccessPermission(
+    const content::MediaStreamRequest* request,
+    const content::MediaResponseCallback& callback) {
+}
+
 void ShellContentBrowserClient::RequestDesktopNotificationPermission(
     const GURL& source_origin,
     int callback_context,

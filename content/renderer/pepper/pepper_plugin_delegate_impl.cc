@@ -32,6 +32,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/common/media_stream_request.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/media/audio_hardware.h"
@@ -585,24 +586,24 @@ class QuotaCallbackTranslator : public QuotaDispatcher::Callback {
 media_stream::MediaStreamType FromPepperDeviceType(PP_DeviceType_Dev type) {
   switch (type) {
     case PP_DEVICETYPE_DEV_INVALID:
-      return media_stream::kNoService;
+      return content::MEDIA_STREAM_DEVICE_TYPE_NO_SERVICE;
     case PP_DEVICETYPE_DEV_AUDIOCAPTURE:
-      return media_stream::kAudioCapture;
+      return content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE;
     case PP_DEVICETYPE_DEV_VIDEOCAPTURE:
-      return media_stream::kVideoCapture;
+      return content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE;
     default:
       NOTREACHED();
-      return media_stream::kNoService;
+      return content::MEDIA_STREAM_DEVICE_TYPE_NO_SERVICE;
   }
 }
 
 PP_DeviceType_Dev FromMediaStreamType(media_stream::MediaStreamType type) {
   switch (type) {
-    case media_stream::kNoService:
+    case content::MEDIA_STREAM_DEVICE_TYPE_NO_SERVICE:
       return PP_DEVICETYPE_DEV_INVALID;
-    case media_stream::kAudioCapture:
+    case content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE:
       return PP_DEVICETYPE_DEV_AUDIOCAPTURE;
-    case media_stream::kVideoCapture:
+    case content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE:
       return PP_DEVICETYPE_DEV_VIDEOCAPTURE;
     default:
       NOTREACHED();

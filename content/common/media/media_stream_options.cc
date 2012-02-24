@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@ namespace media_stream {
 const int StreamDeviceInfo::kNoId = -1;
 
 StreamDeviceInfo::StreamDeviceInfo()
-    : stream_type(kNoService),
+    : stream_type(content::MEDIA_STREAM_DEVICE_TYPE_NO_SERVICE),
       in_use(false),
       session_id(kNoId) {}
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "content/common/content_export.h"
+#include "content/public/common/media_stream_request.h"
 
 namespace media_stream {
 
@@ -34,13 +35,7 @@ struct CONTENT_EXPORT StreamOptions {
   VideoOption video_option;
 };
 
-// Type of media stream.
-enum MediaStreamType {
-  kNoService = 0,
-  kAudioCapture,
-  kVideoCapture,
-  kNumMediaStreamTypes
-};
+typedef content::MediaStreamDeviceType MediaStreamType;
 
 // StreamDeviceInfo describes information about a device.
 struct CONTENT_EXPORT StreamDeviceInfo {

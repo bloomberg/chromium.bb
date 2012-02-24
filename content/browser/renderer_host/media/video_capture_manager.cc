@@ -144,8 +144,9 @@ void VideoCaptureManager::OnEnumerateDevices() {
   for (media::VideoCaptureDevice::Names::iterator it =
            device_names.begin(); it != device_names.end(); ++it) {
     bool opened = DeviceOpened(*it);
-    devices.push_back(StreamDeviceInfo(kVideoCapture, it->device_name,
-                                       it->unique_id, opened));
+    devices.push_back(StreamDeviceInfo(
+        content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE, it->device_name,
+        it->unique_id, opened));
   }
 
   PostOnDevicesEnumerated(devices);
@@ -272,7 +273,8 @@ void VideoCaptureManager::OnOpened(int capture_session_id) {
     // Listener has been removed.
     return;
   }
-  listener_->Opened(kVideoCapture, capture_session_id);
+  listener_->Opened(content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE,
+                    capture_session_id);
 }
 
 void VideoCaptureManager::OnClosed(int capture_session_id) {
@@ -281,7 +283,8 @@ void VideoCaptureManager::OnClosed(int capture_session_id) {
     // Listener has been removed.
     return;
   }
-  listener_->Closed(kVideoCapture, capture_session_id);
+  listener_->Closed(content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE,
+                    capture_session_id);
 }
 
 void VideoCaptureManager::OnDevicesEnumerated(
@@ -291,7 +294,8 @@ void VideoCaptureManager::OnDevicesEnumerated(
     // Listener has been removed.
     return;
   }
-  listener_->DevicesEnumerated(kVideoCapture, devices);
+  listener_->DevicesEnumerated(content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE,
+                               devices);
 }
 
 void VideoCaptureManager::OnError(int capture_session_id,
@@ -301,7 +305,8 @@ void VideoCaptureManager::OnError(int capture_session_id,
     // Listener has been removed.
     return;
   }
-  listener_->Error(kVideoCapture, capture_session_id, error);
+  listener_->Error(content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE,
+                   capture_session_id, error);
 }
 
 void VideoCaptureManager::PostOnOpened(int capture_session_id) {
@@ -485,7 +490,7 @@ media::VideoCaptureDevice* VideoCaptureManager::GetDeviceInternal(
       // No devices available.
       return NULL;
     }
-    StreamDeviceInfo device(kVideoCapture,
+    StreamDeviceInfo device(content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE,
                             device_names.front().device_name,
                             device_names.front().unique_id, false);
 

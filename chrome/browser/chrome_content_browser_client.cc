@@ -1056,6 +1056,24 @@ void ChromeContentBrowserClient::AddNewCertificate(
   new SSLAddCertHandler(request, cert, render_process_id, render_view_id);
 }
 
+void ChromeContentBrowserClient::RequestMediaAccessPermission(
+    const content::MediaStreamRequest* request,
+    const content::MediaResponseCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  content::MediaStreamDeviceArray devices;
+  for (content::MediaStreamDeviceMap::const_iterator it =
+       request->devices.begin(); it != request->devices.end(); ++it) {
+    devices.push_back(*it->second.begin());
+  }
+
+  // TODO(macourteau): This is temporary. The base::Callback object will be
+  // passed to the Infobar, which will Run it with the request's label and the
+  // list of accepted devices (if any), or an empty list of devices if the user
+  // has denied the request.
+  callback.Run(devices);
+}
+
 void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
     const GURL& source_origin,
     int callback_context,

@@ -196,6 +196,11 @@ void MockContentBrowserClient::AddNewCertificate(
     int render_view_id) {
 }
 
+void MockContentBrowserClient::RequestMediaAccessPermission(
+    const content::MediaStreamRequest* request,
+    const content::MediaResponseCallback& callback) {
+}
+
 void MockContentBrowserClient::RequestDesktopNotificationPermission(
     const GURL& source_origin,
     int callback_context,
