@@ -59,7 +59,7 @@ class SSLTest(pyauto.PyUITest):
 
   def testSSLProceed(self):
     """Verify able to proceed from an interstitial page."""
-    for server in (self._https_server_ok, self._https_server_expired,
+    for server in (self._https_server_expired,
                    self._https_server_mismatched):
       url = server.GetURL('google.html').spec()
       self.NavigateToURL(url)
@@ -76,7 +76,7 @@ class SSLTest(pyauto.PyUITest):
 
     Visits a page with https error and then goes back using Browser::GoBack.
     """
-    for server in (self._https_server_ok, self._https_server_expired,
+    for server in (self._https_server_expired,
                    self._https_server_mismatched):
       self.NavigateToURL(
           self.GetHttpURLForDataPath('ssl', 'google.html'))
@@ -90,6 +90,17 @@ class SSLTest(pyauto.PyUITest):
       self.assertEqual(self.GetActiveTabTitle(), first_page_title,
                        msg="Did not go back to previous page correctly.")
 
+  def testSSLCertOK(self):
+    for server in (self._https_server_expired, self._https_server_expired,
+                   self._https_server_mismatched):
+      self.NavigateToURL(
+          self.GetHttpURLForDataPath('ssl', 'google.html'))
+      first_page_title = self.GetActiveTabTitle()
+      self.NavigateToURL(
+          server.GetURL('google.html').spec())
+      tab_proxy = self.GetBrowserWindow(0).GetTab(0)
+      # Equivalent to clicking 'back to safety' button.
+      print tab_proxy.GetPageType(PAGE_TYPE_NORMAL)
 
 
 if __name__ == '__main__':

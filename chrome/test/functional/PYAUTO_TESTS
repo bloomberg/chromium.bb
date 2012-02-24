@@ -93,8 +93,6 @@
       '-autofill.AutofillTest.testNoDuplicatePhoneNumsInPrefs',
       # crbug.com/115534
       '-gtalk.test_basic',
-      # crbug.com/114296
-      '-https.SSLTest',
       # crbug.com/99506
       '-notifications.NotificationsTest.testSpecialURLNotification',
       # crbug.com/71715
