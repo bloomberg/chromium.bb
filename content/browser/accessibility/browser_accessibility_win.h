@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,11 +78,6 @@ BrowserAccessibilityWin
   // is embedded in the response to IAccessibleText::get_text, indicating the
   // position where a non-static text child object appears.
   CONTENT_EXPORT static const char16 kEmbeddedCharacter[];
-
-  // Mappings from roles and states to human readable strings. Initialize
-  // with |InitializeStringMaps|.
-  static std::map<int32, string16> role_string_map;
-  static std::map<int32, string16> state_string_map;
 
   CONTENT_EXPORT BrowserAccessibilityWin();
 
@@ -700,10 +695,6 @@ CONTENT_EXPORT virtual void PostInitialize();
       const _ATL_INTMAP_ENTRY* entries,
       REFIID iid,
       void** object);
-
-  // Accessors to IA2 role and state.
-  int32 ia2_role() { return ia2_role_; }
-  int32 ia2_state() { return ia2_state_; }
 
  private:
   // Add one to the reference count and return the same object. Always
