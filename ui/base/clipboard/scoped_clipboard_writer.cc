@@ -123,6 +123,11 @@ void ScopedClipboardWriter::WritePickledData(
   objects_[Clipboard::CBF_DATA] = parameters;
 }
 
+void ScopedClipboardWriter::Reset() {
+  url_text_.clear();
+  objects_.clear();
+}
+
 void ScopedClipboardWriter::WriteTextOrURL(const string16& text, bool is_url) {
   if (text.empty())
     return;

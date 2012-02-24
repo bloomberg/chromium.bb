@@ -9,7 +9,8 @@
  */
 
 label Chrome {
-  M17 = 3.0
+  M17 = 3.0,
+  M19 = 4.0
 };
 
 #inline c
@@ -49,9 +50,7 @@ enum PP_Flash_Clipboard_Format {
  * The <code>PPB_Flash_Clipboard</code> interface contains pointers to functions
  * used by Pepper Flash to access the clipboard.
  *
- * TODO(viettrungluu): Support more formats (e.g., HTML)....
  */
-[version=3.0]
 interface PPB_Flash_Clipboard {
   /**
    * Checks whether a given data format is available from the given clipboard.
@@ -63,19 +62,51 @@ interface PPB_Flash_Clipboard {
       [in] PP_Flash_Clipboard_Format format);
 
   /**
-   * Reads plain text data from the clipboard.
+   * Deprecated in 4.0.
    */
+  [version=3.0, deprecate=4.0]
   PP_Var ReadPlainText(
       [in] PP_Instance instance_id,
       [in] PP_Flash_Clipboard_Type clipboard_type);
 
   /**
-   * Writes plain text data to the clipboard. If <code>text</code> is too large,
-   * it will return <code>PP_ERROR_NOSPACE</code> and not write to the
-   * clipboard.
+   * Deprecated in 4.0.
    */
+  [version=3.0, deprecate=4.0]
   int32_t WritePlainText(
       [in] PP_Instance instance_id,
       [in] PP_Flash_Clipboard_Type clipboard_type,
       [in] PP_Var text);
+
+  /**
+   * Reads data in the given <code>format</code> from the clipboard. An
+   * undefined <code>PP_Var</code> is returned if there is an error in reading
+   * the clipboard data and a null <code>PP_Var</code> is returned if there is
+   * no data of the specified <code>format</code> to read.
+   */
+  [version=4.0]
+  PP_Var ReadData([in] PP_Instance instance_id,
+      [in] PP_Flash_Clipboard_Type clipboard_type,
+      [in] PP_Flash_Clipboard_Format format);
+
+  /**
+   * Writes the given array of data items to the clipboard. All existing
+   * clipboard data in any format is erased before writing this data. Thus,
+   * passing an array of size 0 has the effect of clearing the clipboard without
+   * writing any data. Each data item in the array should have a different
+   * <code>PP_Flash_Clipboard_Format</code>. If multiple data items have the
+   * same format, only the last item with that format will be written.
+   * If there is an error writing any of the items in the array to the
+   * clipboard, none will be written and an error code is returned.
+   * The error code will be <code>PP_ERROR_NOSPACE</code> if the value is
+   * too large to be written, <code>PP_ERROR_BADARGUMENT</code> if a PP_Var
+   * cannot be converted into the format supplied or <code>PP_FAILED</code>
+   * if the format is not supported.
+   */
+  [version=4.0]
+  int32_t WriteData([in] PP_Instance instance_id,
+      [in] PP_Flash_Clipboard_Type clipboard_type,
+      [in] uint32_t data_item_count,
+      [in, size_is(data_item_count)] PP_Flash_Clipboard_Format[] formats,
+      [in, size_is(data_item_count)] PP_Var[] data_items);
 };

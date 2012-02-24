@@ -63,6 +63,9 @@ class UI_EXPORT ScopedClipboardWriter {
   void WritePickledData(const Pickle& pickle,
                         const Clipboard::FormatType& format);
 
+  // Removes all objects that would be written to the clipboard.
+  void Reset();
+
  protected:
   // Converts |text| to UTF-8 and adds it to the clipboard.  If it's a URL, we
   // also notify the clipboard of that fact.

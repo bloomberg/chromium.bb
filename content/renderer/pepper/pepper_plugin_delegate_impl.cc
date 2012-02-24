@@ -47,6 +47,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
+#include "content/renderer/renderer_clipboard_client.h"
 #include "content/renderer/webplugin_delegate_proxy.h"
 #include "ipc/ipc_channel_handle.h"
 #include "media/audio/audio_manager_base.h"
@@ -2368,4 +2369,9 @@ void PepperPluginDelegateImpl::UnSetAndDeleteLockTargetAdapter(
     delete target;
     mouse_lock_instances_.erase(it);
   }
+}
+
+webkit_glue::ClipboardClient*
+    PepperPluginDelegateImpl::CreateClipboardClient() const {
+  return new RendererClipboardClient;
 }

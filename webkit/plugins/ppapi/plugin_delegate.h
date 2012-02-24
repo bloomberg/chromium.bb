@@ -26,6 +26,7 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ui/gfx/size.h"
 #include "webkit/fileapi/file_system_types.h"
+#include "webkit/glue/clipboard_client.h"
 #include "webkit/plugins/ppapi/dir_contents.h"
 #include "webkit/quota/quota_types.h"
 
@@ -68,6 +69,7 @@ struct WebFileChooserParams;
 }
 
 namespace webkit_glue {
+class ClipboardClient;
 class P2PTransport;
 }  // namespace webkit_glue
 
@@ -574,6 +576,9 @@ class PluginDelegate {
   // callback will be the same as the return value.
   virtual int EnumerateDevices(PP_DeviceType_Dev type,
                                const EnumerateDevicesCallback& callback) = 0;
+  // Create a ClipboardClient for writing to the clipboard. The caller will own
+  // the pointer to this.
+  virtual webkit_glue::ClipboardClient* CreateClipboardClient() const = 0;
 };
 
 }  // namespace ppapi

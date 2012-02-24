@@ -734,14 +734,16 @@ IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlashClipboard_IsFormatAvailable,
                            int /* clipboard_type */,
                            int /* format */,
                            bool /* result */)
-IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlashClipboard_ReadPlainText,
+IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlashClipboard_ReadData,
                            PP_Instance /* instance */,
                            int /* clipboard_type */,
+                           int /* format */,
                            ppapi::proxy::SerializedVar /* result */)
-IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBFlashClipboard_WritePlainText,
+IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBFlashClipboard_WriteData,
                     PP_Instance /* instance */,
                     int /* clipboard_type */,
-                    ppapi::proxy::SerializedVar /* text */)
+                    std::vector<int> /* formats */,
+                    std::vector<ppapi::proxy::SerializedVar> /* data */)
 
 // PPB_Flash_File_FileRef.
 IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBFlashFile_FileRef_OpenFile,

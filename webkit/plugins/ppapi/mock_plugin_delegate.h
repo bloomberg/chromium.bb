@@ -8,6 +8,7 @@
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
 struct PP_NetAddress_Private;
+namespace webkit_glue { class ClipboardClient; }
 
 namespace webkit {
 namespace ppapi {
@@ -171,6 +172,7 @@ class MockPluginDelegate : public PluginDelegate {
   virtual bool IsPageVisible() const;
   virtual int EnumerateDevices(PP_DeviceType_Dev type,
                                const EnumerateDevicesCallback& callback);
+  virtual webkit_glue::ClipboardClient* CreateClipboardClient() const;
 };
 
 }  // namespace ppapi

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_flash_clipboard.idl modified Wed Dec 14 18:08:00 2011. */
+/* From private/ppb_flash_clipboard.idl modified Thu Feb 23 23:15:40 2012. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_CLIPBOARD_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_CLIPBOARD_H_
@@ -15,7 +15,8 @@
 #include "ppapi/c/pp_var.h"
 
 #define PPB_FLASH_CLIPBOARD_INTERFACE_3_0 "PPB_Flash_Clipboard;3.0"
-#define PPB_FLASH_CLIPBOARD_INTERFACE PPB_FLASH_CLIPBOARD_INTERFACE_3_0
+#define PPB_FLASH_CLIPBOARD_INTERFACE_4_0 "PPB_Flash_Clipboard;4.0"
+#define PPB_FLASH_CLIPBOARD_INTERFACE PPB_FLASH_CLIPBOARD_INTERFACE_4_0
 
 /**
  * @file
@@ -70,9 +71,8 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Flash_Clipboard_Format, 4);
  * The <code>PPB_Flash_Clipboard</code> interface contains pointers to functions
  * used by Pepper Flash to access the clipboard.
  *
- * TODO(viettrungluu): Support more formats (e.g., HTML)....
  */
-struct PPB_Flash_Clipboard_3_0 {
+struct PPB_Flash_Clipboard_4_0 {
   /**
    * Checks whether a given data format is available from the given clipboard.
    * Returns true if the given format is available from the given clipboard.
@@ -81,21 +81,47 @@ struct PPB_Flash_Clipboard_3_0 {
                                PP_Flash_Clipboard_Type clipboard_type,
                                PP_Flash_Clipboard_Format format);
   /**
-   * Reads plain text data from the clipboard.
+   * Reads data in the given <code>format</code> from the clipboard. An
+   * undefined <code>PP_Var</code> is returned if there is an error in reading
+   * the clipboard data and a null <code>PP_Var</code> is returned if there is
+   * no data of the specified <code>format</code> to read.
    */
+  struct PP_Var (*ReadData)(PP_Instance instance_id,
+                            PP_Flash_Clipboard_Type clipboard_type,
+                            PP_Flash_Clipboard_Format format);
+  /**
+   * Writes the given array of data items to the clipboard. All existing
+   * clipboard data in any format is erased before writing this data. Thus,
+   * passing an array of size 0 has the effect of clearing the clipboard without
+   * writing any data. Each data item in the array should have a different
+   * <code>PP_Flash_Clipboard_Format</code>. If multiple data items have the
+   * same format, only the last item with that format will be written.
+   * If there is an error writing any of the items in the array to the
+   * clipboard, none will be written and an error code is returned.
+   * The error code will be <code>PP_ERROR_NOSPACE</code> if the value is
+   * too large to be written, <code>PP_ERROR_BADARGUMENT</code> if a PP_Var
+   * cannot be converted into the format supplied or <code>PP_FAILED</code>
+   * if the format is not supported.
+   */
+  int32_t (*WriteData)(PP_Instance instance_id,
+                       PP_Flash_Clipboard_Type clipboard_type,
+                       uint32_t data_item_count,
+                       const PP_Flash_Clipboard_Format formats[],
+                       const struct PP_Var data_items[]);
+};
+
+typedef struct PPB_Flash_Clipboard_4_0 PPB_Flash_Clipboard;
+
+struct PPB_Flash_Clipboard_3_0 {
+  PP_Bool (*IsFormatAvailable)(PP_Instance instance_id,
+                               PP_Flash_Clipboard_Type clipboard_type,
+                               PP_Flash_Clipboard_Format format);
   struct PP_Var (*ReadPlainText)(PP_Instance instance_id,
                                  PP_Flash_Clipboard_Type clipboard_type);
-  /**
-   * Writes plain text data to the clipboard. If <code>text</code> is too large,
-   * it will return <code>PP_ERROR_NOSPACE</code> and not write to the
-   * clipboard.
-   */
   int32_t (*WritePlainText)(PP_Instance instance_id,
                             PP_Flash_Clipboard_Type clipboard_type,
                             struct PP_Var text);
 };
-
-typedef struct PPB_Flash_Clipboard_3_0 PPB_Flash_Clipboard;
 /**
  * @}
  */

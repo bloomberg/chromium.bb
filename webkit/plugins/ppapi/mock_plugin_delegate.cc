@@ -411,5 +411,10 @@ int MockPluginDelegate::EnumerateDevices(
   return -1;
 }
 
+webkit_glue::ClipboardClient*
+MockPluginDelegate::CreateClipboardClient() const {
+  return NULL;
+}
+
 }  // namespace ppapi
 }  // namespace webkit

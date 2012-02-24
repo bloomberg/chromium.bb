@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,32 +62,45 @@ PP_Bool PPB_Flash_Clipboard_Proxy::IsFormatAvailable(
       &result));
   return PP_FromBool(result);
 }
-
-PP_Var PPB_Flash_Clipboard_Proxy::ReadPlainText(
+PP_Var PPB_Flash_Clipboard_Proxy::ReadData(
     PP_Instance instance,
-    PP_Flash_Clipboard_Type clipboard_type) {
-  if (!IsValidClipboardType(clipboard_type))
+    PP_Flash_Clipboard_Type clipboard_type,
+    PP_Flash_Clipboard_Format format) {
+  if (!IsValidClipboardType(clipboard_type) || !IsValidClipboardFormat(format))
     return PP_MakeUndefined();
 
   ReceiveSerializedVarReturnValue result;
-  dispatcher()->Send(new PpapiHostMsg_PPBFlashClipboard_ReadPlainText(
+  dispatcher()->Send(new PpapiHostMsg_PPBFlashClipboard_ReadData(
       API_ID_PPB_FLASH_CLIPBOARD, instance,
-      static_cast<int>(clipboard_type), &result));
+      static_cast<int>(clipboard_type), static_cast<int>(format), &result));
   return result.Return(dispatcher());
 }
 
-int32_t PPB_Flash_Clipboard_Proxy::WritePlainText(
+
+int32_t PPB_Flash_Clipboard_Proxy::WriteData(
     PP_Instance instance,
     PP_Flash_Clipboard_Type clipboard_type,
-    const PP_Var& text) {
+    uint32_t data_item_count,
+    const PP_Flash_Clipboard_Format formats[],
+    const PP_Var data_items[]) {
   if (!IsValidClipboardType(clipboard_type))
     return PP_ERROR_BADARGUMENT;
 
-  dispatcher()->Send(new PpapiHostMsg_PPBFlashClipboard_WritePlainText(
+  std::vector<int> formats_vector(formats, formats + data_item_count);
+
+  std::vector<SerializedVar> data_items_vector;
+  SerializedVarSendInput::ConvertVector(
+      dispatcher(),
+      data_items,
+      data_item_count,
+      &data_items_vector);
+
+  dispatcher()->Send(new PpapiHostMsg_PPBFlashClipboard_WriteData(
       API_ID_PPB_FLASH_CLIPBOARD,
       instance,
       static_cast<int>(clipboard_type),
-      SerializedVarSendInput(dispatcher(), text)));
+      formats_vector,
+      data_items_vector));
   // Assume success, since it allows us to avoid a sync IPC.
   return PP_OK;
 }
@@ -97,10 +110,10 @@ bool PPB_Flash_Clipboard_Proxy::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(PPB_Flash_Clipboard_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlashClipboard_IsFormatAvailable,
                         OnMsgIsFormatAvailable)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlashClipboard_ReadPlainText,
-                        OnMsgReadPlainText)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlashClipboard_WritePlainText,
-                        OnMsgWritePlainText)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlashClipboard_ReadData,
+                        OnMsgReadData)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlashClipboard_WriteData,
+                        OnMsgWriteData)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -122,29 +135,44 @@ void PPB_Flash_Clipboard_Proxy::OnMsgIsFormatAvailable(
   }
 }
 
-void PPB_Flash_Clipboard_Proxy::OnMsgReadPlainText(
+void PPB_Flash_Clipboard_Proxy::OnMsgReadData(
     PP_Instance instance,
     int clipboard_type,
+    int format,
     SerializedVarReturnValue result) {
   EnterFlashClipboardNoLock enter(instance, true);
   if (enter.succeeded()) {
     result.Return(dispatcher(),
-                  enter.functions()->ReadPlainText(
+                  enter.functions()->ReadData(
                       instance,
-                      static_cast<PP_Flash_Clipboard_Type>(clipboard_type)));
+                      static_cast<PP_Flash_Clipboard_Type>(clipboard_type),
+                      static_cast<PP_Flash_Clipboard_Format>(format)));
   }
 }
 
-void PPB_Flash_Clipboard_Proxy::OnMsgWritePlainText(
+void PPB_Flash_Clipboard_Proxy::OnMsgWriteData(
     PP_Instance instance,
     int clipboard_type,
-    SerializedVarReceiveInput text) {
+    std::vector<int> formats,
+    SerializedVarVectorReceiveInput data_items) {
   EnterFlashClipboardNoLock enter(instance, true);
   if (enter.succeeded()) {
-    int32_t result = enter.functions()->WritePlainText(
+    uint32_t data_item_count;
+    PP_Var* data_items_array = data_items.Get(dispatcher(), &data_item_count);
+    CHECK(data_item_count == formats.size());
+
+    scoped_array<PP_Flash_Clipboard_Format> formats_array(
+        new PP_Flash_Clipboard_Format[formats.size()]);
+    for (uint32_t i = 0; i < formats.size(); ++i) {
+      formats_array[i] = static_cast<PP_Flash_Clipboard_Format>(formats[i]);
+    }
+
+    int32_t result = enter.functions()->WriteData(
         instance,
         static_cast<PP_Flash_Clipboard_Type>(clipboard_type),
-        text.Get(dispatcher()));
+        data_item_count,
+        formats_array.get(),
+        data_items_array);
     DLOG_IF(WARNING, result != PP_OK)
         << "Write to clipboard failed unexpectedly.";
     (void)result;  // Prevent warning in release mode.

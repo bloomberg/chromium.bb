@@ -125,6 +125,10 @@ class PpapiBrokerImpl : public webkit::ppapi::PluginDelegate::PpapiBroker,
   DISALLOW_COPY_AND_ASSIGN(PpapiBrokerImpl);
 };
 
+namespace webkit_glue {
+  class ClipboardClient;
+}
+
 class PepperPluginDelegateImpl
     : public webkit::ppapi::PluginDelegate,
       public base::SupportsWeakPtr<PepperPluginDelegateImpl>,
@@ -404,6 +408,7 @@ class PepperPluginDelegateImpl
   virtual int EnumerateDevices(
       PP_DeviceType_Dev type,
       const EnumerateDevicesCallback& callback) OVERRIDE;
+  virtual webkit_glue::ClipboardClient* CreateClipboardClient() const OVERRIDE;
 
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

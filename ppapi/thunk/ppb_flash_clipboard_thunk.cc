@@ -24,33 +24,64 @@ PP_Bool IsFormatAvailable(PP_Instance instance,
   return enter.functions()->IsFormatAvailable(instance, clipboard_type, format);
 }
 
-PP_Var ReadPlainText(PP_Instance instance,
-                     PP_Flash_Clipboard_Type clipboard_type) {
+PP_Var ReadData(PP_Instance instance,
+                PP_Flash_Clipboard_Type clipboard_type,
+                PP_Flash_Clipboard_Format format) {
   EnterFlashClipboard enter(instance, true);
   if (enter.failed())
     return PP_MakeUndefined();
-  return enter.functions()->ReadPlainText(instance, clipboard_type);
+  return enter.functions()->ReadData(instance, clipboard_type, format);
+}
+
+int32_t WriteData(PP_Instance instance,
+                  PP_Flash_Clipboard_Type clipboard_type,
+                  uint32_t data_item_count,
+                  const PP_Flash_Clipboard_Format formats[],
+                  const PP_Var data_items[]) {
+  EnterFlashClipboard enter(instance, true);
+  if (enter.failed())
+    return enter.retval();
+  return enter.functions()->WriteData(instance,
+                                      clipboard_type,
+                                      data_item_count,
+                                      formats,
+                                      data_items);
+}
+
+PP_Var ReadPlainText(PP_Instance instance,
+                     PP_Flash_Clipboard_Type clipboard_type) {
+  return ReadData(instance,
+                  clipboard_type,
+                  PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT);
 }
 
 int32_t WritePlainText(PP_Instance instance,
                        PP_Flash_Clipboard_Type clipboard_type,
                        PP_Var text) {
-  EnterFlashClipboard enter(instance, true);
-  if (enter.failed())
-    return enter.retval();
-  return enter.functions()->WritePlainText(instance, clipboard_type, text);
+  PP_Flash_Clipboard_Format format = PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT;
+  return WriteData(instance, clipboard_type, 1, &format, &text);
 }
 
-const PPB_Flash_Clipboard g_ppb_flash_clipboard_thunk = {
+const PPB_Flash_Clipboard_3_0 g_ppb_flash_clipboard_thunk_3_0 = {
   &IsFormatAvailable,
   &ReadPlainText,
   &WritePlainText
 };
 
+const PPB_Flash_Clipboard_4_0 g_ppb_flash_clipboard_thunk_4_0 = {
+  &IsFormatAvailable,
+  &ReadData,
+  &WriteData
+};
+
 }  // namespace
 
 const PPB_Flash_Clipboard_3_0* GetPPB_Flash_Clipboard_3_0_Thunk() {
-  return &g_ppb_flash_clipboard_thunk;
+  return &g_ppb_flash_clipboard_thunk_3_0;
+}
+
+const PPB_Flash_Clipboard_4_0* GetPPB_Flash_Clipboard_4_0_Thunk() {
+  return &g_ppb_flash_clipboard_thunk_4_0;
 }
 
 }  // namespace thunk

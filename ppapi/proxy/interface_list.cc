@@ -276,6 +276,8 @@ void InterfaceList::AddFlashInterfaces() {
 
   AddProxy(API_ID_PPB_FLASH_CLIPBOARD,
            &ProxyFactory<PPB_Flash_Clipboard_Proxy>);
+  AddPPB(PPB_FLASH_CLIPBOARD_INTERFACE_4_0, API_ID_PPB_FLASH_CLIPBOARD,
+         thunk::GetPPB_Flash_Clipboard_4_0_Thunk());
   AddPPB(PPB_FLASH_CLIPBOARD_INTERFACE_3_0, API_ID_PPB_FLASH_CLIPBOARD,
          thunk::GetPPB_Flash_Clipboard_3_0_Thunk());
   AddPPB(PPB_FLASH_CLIPBOARD_INTERFACE_3_LEGACY, API_ID_PPB_FLASH_CLIPBOARD,

@@ -5,6 +5,8 @@
 #ifndef PPAPI_PROXY_PPB_FLASH_CLIPBOARD_PROXY_H_
 #define PPAPI_PROXY_PPB_FLASH_CLIPBOARD_PROXY_H_
 
+#include <vector>
+
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/thunk/ppb_flash_clipboard_api.h"
@@ -14,6 +16,7 @@ namespace proxy {
 
 class SerializedVarReceiveInput;
 class SerializedVarReturnValue;
+class SerializedVarVectorReceiveInput;
 
 class PPB_Flash_Clipboard_Proxy
     : public InterfaceProxy,
@@ -30,11 +33,14 @@ class PPB_Flash_Clipboard_Proxy
   virtual PP_Bool IsFormatAvailable(PP_Instance instance,
                                     PP_Flash_Clipboard_Type clipboard_type,
                                     PP_Flash_Clipboard_Format format) OVERRIDE;
-  virtual PP_Var ReadPlainText(PP_Instance instance,
-                               PP_Flash_Clipboard_Type clipboard_type) OVERRIDE;
-  virtual int32_t WritePlainText(PP_Instance instance,
-                                 PP_Flash_Clipboard_Type clipboard_type,
-                                 const PP_Var& text) OVERRIDE;
+  virtual PP_Var ReadData(PP_Instance instance,
+                          PP_Flash_Clipboard_Type clipboard_type,
+                          PP_Flash_Clipboard_Format format) OVERRIDE;
+  virtual int32_t WriteData(PP_Instance instance,
+                            PP_Flash_Clipboard_Type clipboard_type,
+                            uint32_t data_item_count,
+                            const PP_Flash_Clipboard_Format formats[],
+                            const PP_Var data_items[]) OVERRIDE;
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
@@ -47,12 +53,14 @@ class PPB_Flash_Clipboard_Proxy
                               int clipboard_type,
                               int format,
                               bool* result);
-  void OnMsgReadPlainText(PP_Instance instance,
-                          int clipboard_type,
-                          SerializedVarReturnValue result);
-  void OnMsgWritePlainText(PP_Instance instance,
-                           int clipboard_type,
-                           SerializedVarReceiveInput text);
+  void OnMsgReadData(PP_Instance instance,
+                     int clipboard_type,
+                     int format,
+                     SerializedVarReturnValue result);
+  void OnMsgWriteData(PP_Instance instance,
+                      int clipboard_type,
+                      std::vector<int> formats,
+                      SerializedVarVectorReceiveInput data_items);
 };
 
 }  // namespace proxy
