@@ -90,18 +90,6 @@ class SSLTest(pyauto.PyUITest):
       self.assertEqual(self.GetActiveTabTitle(), first_page_title,
                        msg="Did not go back to previous page correctly.")
 
-  def testSSLCertOK(self):
-    for server in (self._https_server_expired, self._https_server_expired,
-                   self._https_server_mismatched):
-      self.NavigateToURL(
-          self.GetHttpURLForDataPath('ssl', 'google.html'))
-      first_page_title = self.GetActiveTabTitle()
-      self.NavigateToURL(
-          server.GetURL('google.html').spec())
-      tab_proxy = self.GetBrowserWindow(0).GetTab(0)
-      # Equivalent to clicking 'back to safety' button.
-      print tab_proxy.GetPageType(PAGE_TYPE_NORMAL)
-
 
 if __name__ == '__main__':
   pyauto_functional.Main()
