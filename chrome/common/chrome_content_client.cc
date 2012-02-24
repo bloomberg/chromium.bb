@@ -413,9 +413,11 @@ bool ChromeContentClient::SandboxPlugin(CommandLine* command_line,
         install_dir.append(L"*");
       // This is not a hard failure because a reparse point in the path can
       // cause the rule to fail, but we should not abort sandboxing.
-      DCHECK_EQ(policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
-                                sandbox::TargetPolicy::FILES_ALLOW_READONLY,
-                                install_dir.c_str()), sandbox::SBOX_ALL_OK);
+      if (policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
+                          sandbox::TargetPolicy::FILES_ALLOW_READONLY,
+                          install_dir.c_str()) != sandbox::SBOX_ALL_OK) {
+        DVLOG(ERROR) << "Failed adding sandbox rule for Talk plugin";
+      }
     }
     talk_key.Close();
   }
