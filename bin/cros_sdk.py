@@ -21,7 +21,6 @@ from chromite.lib import locking
 cros_build_lib.STRICT_SUDO = True
 
 
-DEFAULT_CHROOT_DIR = 'chroot'
 DEFAULT_URL = 'https://commondatastorage.googleapis.com/chromiumos-sdk/'
 SRC_ROOT = os.path.realpath(constants.SOURCE_ROOT)
 SDK_DIR = os.path.join(SRC_ROOT, 'sdks')
@@ -245,8 +244,9 @@ Action taken is the following:
 
   # Global options:
   parser.add_option('', '--chroot',
-                    dest='chroot', default=DEFAULT_CHROOT_DIR,
-                    help=('SDK chroot dir name [%s]' % DEFAULT_CHROOT_DIR))
+                    dest='chroot', default=constants.DEFAULT_CHROOT_DIR,
+                    help=('SDK chroot dir name [%s]' %
+                          constants.DEFAULT_CHROOT_DIR))
 
   # Additional options:
   parser.add_option('', '--chrome_root',

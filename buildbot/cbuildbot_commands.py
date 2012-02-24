@@ -177,6 +177,12 @@ def RunChrootUpgradeHooks(buildroot, chrome_root=None):
 def RefreshPackageStatus(buildroot, boards, debug):
   """Wrapper around refresh_package_status"""
   cwd = os.path.join(buildroot, 'src', 'scripts')
+
+  # First run check_gdata_token to validate or refresh auth token.
+  cmd = ['../../chromite/bin/check_gdata_token']
+  cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=False)
+
+  # Prepare refresh_package_status command.
   cmd = ['../../chromite/bin/refresh_package_status']
 
   # Skip the host board if present.

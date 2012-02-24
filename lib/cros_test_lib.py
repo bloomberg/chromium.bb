@@ -8,6 +8,7 @@
 
 from __future__ import print_function
 import cStringIO
+import exceptions
 import os
 import re
 import shutil
@@ -382,6 +383,43 @@ class TestCase(unittest.TestCase):
     check_msg_func = self._GenCheckMsgFunc(None, regexp)
     return self._AssertOutputEndsInMsg(check_msg_func,
                                        check_stdout, check_stderr)
+
+  def FuncCatchSystemExit(self, func, *args, **kwargs):
+    """Run |func| with |args| and |kwargs| and catch exceptions.SystemExit.
+
+    Return tuple (return value or None, SystemExit number code or None).
+    """
+    try:
+      returnval = func(*args, **kwargs)
+
+      return returnval, None
+    except exceptions.SystemExit as ex:
+      exit_code = ex.args[0]
+      return None, exit_code
+
+  def AssertFuncSystemExitZero(self, func, *args, **kwargs):
+    """Run |func| with |args| and |kwargs| catching exceptions.SystemExit.
+
+    If the func does not raise a SystemExit with exit code 0 then assert.
+    """
+    returnval, exit_code = self.FuncCatchSystemExit(func, *args, **kwargs)
+    self.assertFalse(exit_code is None,
+                      msg='Expected system exit code 0, but caught none')
+    self.assertTrue(exit_code == 0,
+                    msg='Expected system exit code 0, but caught %d' %
+                    exit_code)
+
+  def AssertFuncSystemExitNonZero(self, func, *args, **kwargs):
+    """Run |func| with |args| and |kwargs| catching exceptions.SystemExit.
+
+    If the func does not raise a non-zero SystemExit code then assert.
+    """
+    returnval, exit_code = self.FuncCatchSystemExit(func, *args, **kwargs)
+    self.assertFalse(exit_code is None,
+                      msg='Expected non-zero system exit code, but caught none')
+    self.assertFalse(exit_code == 0,
+                     msg='Expected non-zero system exit code, but caught %d' %
+                     exit_code)
 
   def AssertRaisesAndReturn(self, error, func, *args, **kwargs):
     """Like assertRaises, but return exception raised."""
