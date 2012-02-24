@@ -42,6 +42,7 @@ class OverflowPanelStrip : public PanelStrip,
   virtual void ActivatePanel(Panel* panel) OVERRIDE;
   virtual void MinimizePanel(Panel* panel) OVERRIDE;
   virtual void RestorePanel(Panel* panel) OVERRIDE;
+  virtual bool CanShowPanelAsActive(const Panel* panel) const OVERRIDE;
   virtual bool CanDragPanel(const Panel* panel) const OVERRIDE;
   virtual void StartDraggingPanel(Panel* panel) OVERRIDE;
   virtual void DragPanel(Panel* panel, int delta_x, int delta_y) OVERRIDE;

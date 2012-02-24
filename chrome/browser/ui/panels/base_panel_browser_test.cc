@@ -364,7 +364,7 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
     // More waiting, because gaining or losing focus may require inter-process
     // asynchronous communication, and it is not enough to just run the local
     // message loop to make sure this activity has completed.
-    WaitForPanelActiveState(panel, params.show_flag);
+    WaitForPanelActiveState(panel, params.expected_active_state);
 
     // On Linux, window size is not available right away and we should wait
     // before moving forward with the test.

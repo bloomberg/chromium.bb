@@ -299,8 +299,10 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, CreateOverflowPanels) {
   EXPECT_TRUE(IsPanelInOverflowStrip(panel3));
   EXPECT_EQ(gfx::Size(255, 200), panel3->restored_size());
 
-  // Create 1 more overflow panel.
+  // Create 1 more overflow panel, make it active initially.
   params.name = "Panel4";
+  params.show_flag = SHOW_AS_ACTIVE;
+  params.expected_active_state = SHOW_AS_INACTIVE;
   Panel* panel4 = CreatePanelWithParams(params);
   WaitForLayoutModeChanged(panel4, PanelStrip::IN_OVERFLOW);
 
@@ -309,6 +311,8 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, CreateOverflowPanels) {
   EXPECT_EQ(2, overflow_strip->num_panels());
   EXPECT_FALSE(overflow_strip->overflow_indicator());
   EXPECT_TRUE(IsPanelVisible(panel4));
+  EXPECT_TRUE(IsPanelInOverflowStrip(panel4));
+  EXPECT_FALSE(panel4->IsActive());
 
   PanelManager::GetInstance()->CloseAll();
 }

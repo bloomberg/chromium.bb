@@ -246,6 +246,11 @@ bool DockedPanelStrip::DoRemove(Panel* panel) {
   return true;
 }
 
+bool DockedPanelStrip::CanShowPanelAsActive(const Panel* panel) const {
+  // Panels with temporary layout cannot be shown as active.
+  return !panel->has_temporary_layout();
+}
+
 bool DockedPanelStrip::CanDragPanel(const Panel* panel) const {
   // Only the panels having temporary layout can't be dragged.
   return !panel->has_temporary_layout();

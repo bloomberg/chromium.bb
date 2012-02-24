@@ -80,6 +80,11 @@ void DetachedPanelStrip::RestorePanel(Panel* panel) {
   NOTIMPLEMENTED();
 }
 
+bool DetachedPanelStrip::CanShowPanelAsActive(const Panel* panel) const {
+  // All detached panels can be shown as active.
+  return true;
+}
+
 bool DetachedPanelStrip::CanDragPanel(const Panel* panel) const {
   // All detached panels are draggable.
   return true;

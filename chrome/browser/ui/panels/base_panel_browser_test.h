@@ -56,6 +56,7 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
     ActiveState show_flag;
     GURL url;
     bool wait_for_fully_created;
+    ActiveState expected_active_state;
 
     CreatePanelParams(const std::string& name,
                       const gfx::Rect& bounds,
@@ -63,7 +64,8 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
         : name(name),
           bounds(bounds),
           show_flag(show_flag),
-          wait_for_fully_created(true) {
+          wait_for_fully_created(true),
+          expected_active_state(show_flag) {
     }
   };
 

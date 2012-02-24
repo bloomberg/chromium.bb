@@ -181,6 +181,11 @@ void OverflowPanelStrip::RestorePanel(Panel* panel) {
   docked_strip->RestorePanel(panel);
 }
 
+bool OverflowPanelStrip::CanShowPanelAsActive(const Panel* panel) const {
+  // All overflow panels cannot be shown as active.
+  return false;
+}
+
 bool OverflowPanelStrip::CanDragPanel(const Panel* panel) const {
   // All overflow panels are not draggable.
   return false;

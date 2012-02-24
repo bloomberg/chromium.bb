@@ -62,6 +62,9 @@ class PanelStrip {
   virtual void MinimizePanel(Panel* panel) = 0;
   virtual void RestorePanel(Panel* panel) = 0;
 
+  // Returns true if |panel| can be shown as active.
+  virtual bool CanShowPanelAsActive(const Panel* panel) const = 0;
+
   // Returns true if |panel| is draggable.
   virtual bool CanDragPanel(const Panel* panel) const = 0;
 

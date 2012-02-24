@@ -189,11 +189,10 @@ void Panel::FullScreenModeChanged(bool is_full_screen) {
 }
 
 void Panel::Show() {
-  // Don't show panel as active if it is in overflow.
-  if (PanelStrip::IN_OVERFLOW == panel_strip_->type())
-    ShowInactive();
-  else
+  if (panel_strip_->CanShowPanelAsActive(this))
     native_panel_->ShowPanel();
+  else
+    ShowInactive();
 }
 
 void Panel::ShowInactive() {
