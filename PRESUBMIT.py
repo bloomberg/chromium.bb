@@ -63,8 +63,8 @@ def _WarnAboutManualSteps():
 
 def _WarnIfReadmeIsUnchanged(input_api, output_api):
   """Warn if the README file hasn't been updated with change notes."""
-  readme_re = re.compile(r'.*[/\\]chromium[/\\]patches[/\\]README$')
-  for f in input_api.AffectedSourceFiles(input_api.FilterSourceFile):
+  readme_re = re.compile(r'.*[/\\]?chromium[/\\]patches[/\\]README$')
+  for f in input_api.AffectedFiles():
     if readme_re.match(f.LocalPath()):
       return []
 
