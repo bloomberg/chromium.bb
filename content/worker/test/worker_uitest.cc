@@ -491,10 +491,10 @@ TEST_F(WorkerTest, LimitPerPage) {
 
 // http://crbug.com/36800
 #if defined(OS_WIN)
-#define MAYBE_LimitTotal DISABLE_LimitTotal
+#define MAYBE_LimitTotal DISABLED_LimitTotal
 #else
 #define MAYBE_LimitTotal LimitTotal
-#endif // defined(OS_WIN)
+#endif  // defined(OS_WIN)
 TEST_F(WorkerTest, MAYBE_LimitTotal) {
   int max_workers_per_tab = WorkerServiceImpl::kMaxWorkersPerTabWhenSeparate;
   int total_workers = WorkerServiceImpl::kMaxWorkersWhenSeparate;
