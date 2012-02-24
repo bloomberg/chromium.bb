@@ -497,32 +497,6 @@ cr.define('options', function() {
     },
 
     /**
-     * Returns true if the custom startup page control block should be enabled.
-     * @return {boolean} Whether the startup page controls should be enabled.
-     */
-    shouldEnableCustomStartupPageControls: function(pages) {
-      return $('startup-show-pages').checked &&
-          !this.startup_pages_pref_.disabled;
-    },
-
-    /**
-     * Sets the enabled state of the custom startup page list controls
-     * based on the current startup radio button selection.
-     * @private
-     */
-    updateCustomStartupPageControlStates_: function() {
-      var disable = !this.shouldEnableCustomStartupPageControls();
-      var startupPagesList = $('startupPagesList');
-      startupPagesList.disabled = disable;
-      startupPagesList.setAttribute('tabindex', disable ? -1 : 0);
-      // Explicitly set disabled state for input text elements.
-      var inputs = startupPagesList.querySelectorAll("input[type='text']");
-      for (var i = 0; i < inputs.length; i++)
-        inputs[i].disabled = disable;
-      $('startupUseCurrentButton').disabled = disable;
-    },
-
-    /**
      * Set the default search engine based on the popup selection.
      * @private
      */
