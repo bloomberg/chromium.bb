@@ -1426,7 +1426,15 @@ LRESULT OmniboxViewWin::OnImeNotify(UINT message,
       break;
     case IMN_CLOSECANDIDATE:
       ime_candidate_window_open_ = false;
-      UpdatePopup();
+
+      // UpdatePopup assumes user input is in progress, so only call it if
+      // that's the case. Otherwise, autocomplete may run on an empty user
+      // text. For example, Baidu Japanese IME sends IMN_CLOSECANDIDATE when
+      // composition mode is entered, but the user may not have input anything
+      // yet.
+      if (model_->user_input_in_progress())
+        UpdatePopup();
+
       break;
     default:
       break;
