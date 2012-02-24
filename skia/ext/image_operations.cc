@@ -415,7 +415,7 @@ SkBitmap ImageOperations::ResizeSubpixel(const SkBitmap& source,
     uint32* src = src_row;
     uint32* dst = dst_row;
     for (int x = 0; x < dest_subset.width(); x++, src += w, dst++) {
-      uint8 r, g, b, a;
+      uint8 r = 0, g = 0, b = 0, a = 0;
       switch (order) {
         case SkFontHost::kRGB_LCDOrder:
           switch (orientation) {
@@ -449,6 +449,8 @@ SkBitmap ImageOperations::ResizeSubpixel(const SkBitmap& source,
               break;
           }
           break;
+        case SkFontHost::kNONE_LCDOrder:
+          NOTREACHED();
       }
       // Premultiplied alpha is very fragile.
       a = a > r ? a : r;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
 #include "skia/ext/image_operations.h"
@@ -537,7 +538,7 @@ TEST(ImageOperations, ResizeShouldAverageColors) {
 
   // For each method, downscale by 16 in each dimension,
   // and check each tested pixel against the expected average color.
-  bool all_methods_ok = true;
+  bool all_methods_ok ALLOW_UNUSED = true;
 
   for (size_t method_index = 0;
        method_index < arraysize(tested_methods);
