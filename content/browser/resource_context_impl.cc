@@ -79,9 +79,12 @@ HostZoomMap* GetHostZoomMapForResourceContext(ResourceContext* context) {
       context->GetUserData(kHostZoomMapKeyName))->host_zoom_map();
 }
 
-void InitializeResourceContext(BrowserContext* browser_context) {
+void EnsureResourceContextInitialized(BrowserContext* browser_context) {
   ResourceContext* resource_context = browser_context->GetResourceContext();
-  DCHECK(!resource_context->GetUserData(kWebKitContextKeyName));
+
+  if (resource_context->GetUserData(kWebKitContextKeyName))
+    return;
+
   resource_context->SetUserData(
       kWebKitContextKeyName,
       new UserDataAdapter<WebKitContext>(

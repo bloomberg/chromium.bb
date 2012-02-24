@@ -31,7 +31,7 @@ ChromeBlobStorageContext* GetChromeBlobStorageContextForResourceContext(
 HostZoomMap* GetHostZoomMapForResourceContext(ResourceContext* context);
 
 // Initialize the above data on the ResourceContext from a given BrowserContext.
-void InitializeResourceContext(BrowserContext* browser_context);
+void EnsureResourceContextInitialized(BrowserContext* browser_context);
 
 }  // namespace content
 

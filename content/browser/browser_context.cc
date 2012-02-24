@@ -79,7 +79,7 @@ void CreateQuotaManagerAndClients(BrowserContext* context) {
       kAppCacheServicKeyName,
       new UserDataAdapter<ChromeAppCacheService>(appcache_service));
 
-  InitializeResourceContext(context);
+  EnsureResourceContextInitialized(context);
 
   // Check first to avoid memory leak in unittests.
   if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
@@ -125,9 +125,7 @@ FileSystemContext* BrowserContext::GetFileSystemContext(
 }
 
 void BrowserContext::EnsureResourceContextInitialized(BrowserContext* context) {
-  if (context->GetResourceContext()->GetUserData(kWebKitContextKeyName))
-    return;
-  InitializeResourceContext(context);
+  content::EnsureResourceContextInitialized(context);
 }
 
 BrowserContext::~BrowserContext() {
