@@ -150,7 +150,7 @@ namespace {
     /* Use this and “Instruction instruction { }”…  */
     #define INSTRUCTION_FLAG(x) bool x :1;
 #endif
-    #include "gen-decoder-flags.C"
+    #include "gen-decoder-flags.cc"
     #undef INSTRUCTION_FLAG
   };
   std::vector<Instruction> instructions;
@@ -303,7 +303,7 @@ namespace {
                 auto &flag = *flag_it;
                 #define INSTRUCTION_FLAG(x) \
                   if (flag == #x) {instruction.x = true;} else
-                #include "gen-decoder-flags.C"
+                #include "gen-decoder-flags.cc"
                 #undef INSTRUCTION_FLAG
                 if (flag == "ia32") {
                   if (!ia32_mode) {
