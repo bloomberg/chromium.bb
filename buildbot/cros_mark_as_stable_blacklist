@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -9,3 +9,7 @@
 chromeos-base/courgette
 chromeos-base/libchrome
 chromeos-base/libchrome_crypto
+
+# Temporary (Feb 24, 2012) blacklist of this until we can move the
+# kernel source to be public.
+sys-kernel/exynos-kernel
