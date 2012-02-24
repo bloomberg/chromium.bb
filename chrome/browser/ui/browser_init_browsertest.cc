@@ -31,7 +31,16 @@
 
 class BrowserInitTest : public ExtensionBrowserTest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual bool SetUpUserDataDirectory() OVERRIDE {
+    // Make sure the first run sentinel file exists before running these tests,
+    // since some of them customize the session startup pref whose value can
+    // be different than the default during the first run.
+    // TODO(bauerb): set the first run flag instead of creating a sentinel file.
+    first_run::CreateSentinel();
+    return ExtensionBrowserTest::SetUpUserDataDirectory();
+  }
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnablePanels);
   }
