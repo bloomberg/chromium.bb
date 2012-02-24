@@ -314,7 +314,7 @@ gfx::Rect View::GetContentsBounds() const {
 }
 
 gfx::Rect View::GetLocalBounds() const {
-  return gfx::Rect(gfx::Point(), size());
+  return gfx::Rect(size());
 }
 
 gfx::Insets View::GetInsets() const {
@@ -327,7 +327,7 @@ gfx::Insets View::GetInsets() const {
 gfx::Rect View::GetVisibleBounds() const {
   if (!IsDrawn())
     return gfx::Rect();
-  gfx::Rect vis_bounds(0, 0, width(), height());
+  gfx::Rect vis_bounds(GetLocalBounds());
   gfx::Rect ancestor_bounds;
   const View* view = this;
   ui::Transform transform;

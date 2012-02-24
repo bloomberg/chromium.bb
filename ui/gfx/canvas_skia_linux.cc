@@ -115,7 +115,7 @@ void DrawStringContext::DrawWithHalo(const SkColor& text_color,
                                      const SkColor& halo_color) {
   gfx::Size size(bounds_.width() + 2, bounds_.height() + 2);
   gfx::CanvasSkia text_canvas(size, false);
-  text_canvas.FillRect(gfx::Rect(gfx::Point(), size), static_cast<SkColor>(0));
+  text_canvas.FillRect(gfx::Rect(size), static_cast<SkColor>(0));
 
   {
     skia::ScopedPlatformPaint scoped_platform_paint(text_canvas.sk_canvas());

@@ -228,8 +228,7 @@ class TestLayerDelegate : public LayerDelegate {
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
     SkBitmap contents = canvas->AsCanvasSkia()->ExtractBitmap();
     paint_size_ = gfx::Size(contents.width(), contents.height());
-    canvas->FillRect(gfx::Rect(gfx::Point(), paint_size_),
-                     colors_[color_index_]);
+    canvas->FillRect(gfx::Rect(paint_size_), colors_[color_index_]);
     color_index_ = (color_index_ + 1) % static_cast<int>(colors_.size());
   }
 

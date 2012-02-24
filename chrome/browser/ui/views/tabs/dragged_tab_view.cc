@@ -60,7 +60,7 @@ DraggedTabView::DraggedTabView(const std::vector<views::View*>& renderers,
   }
 #endif
   container_->SetOpacity(kTransparentAlpha);
-  container_->SetBounds(gfx::Rect(gfx::Point(), params.bounds.size()));
+  container_->SetBounds(gfx::Rect(params.bounds.size()));
 }
 
 DraggedTabView::~DraggedTabView() {

@@ -915,8 +915,7 @@ void RenderWidgetHostViewAura::OnPaint(gfx::Canvas* canvas) {
     static_cast<BackingStoreSkia*>(backing_store)->SkiaShowRect(gfx::Point(),
                                                                 canvas);
   } else {
-    canvas->FillRect(gfx::Rect(gfx::Point(), window_->bounds().size()),
-                     SK_ColorWHITE);
+    canvas->FillRect(gfx::Rect(window_->bounds().size()), SK_ColorWHITE);
   }
 }
 

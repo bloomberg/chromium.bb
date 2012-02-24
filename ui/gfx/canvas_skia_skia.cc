@@ -312,7 +312,7 @@ void CanvasSkia::DrawStringWithHalo(const string16& text,
                                     int flags) {
   // Some callers will have semitransparent halo colors, which we don't handle
   // (since the resulting image can have 1-bit transparency only).
-  SkColor halo_color = halo_color_in | 0xFF000000;
+  SkColor halo_color = SkColorSetA(halo_color_in, 0xFF);
 
   // Create a temporary buffer filled with the halo color. It must leave room
   // for the 1-pixel border around the text.
