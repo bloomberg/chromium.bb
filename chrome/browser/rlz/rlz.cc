@@ -59,7 +59,7 @@ void RecordProductEvents(bool first_run, bool google_default_search,
     // empty rlz which means we haven't got a chance to do it.
     char omnibox_rlz[rlz_lib::kMaxRlzLength + 1];
     if (!rlz_lib::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, omnibox_rlz,
-                                    rlz_lib::kMaxRlzLength, NULL)) {
+                                    rlz_lib::kMaxRlzLength)) {
       omnibox_rlz[0] = 0;
     }
 
@@ -72,7 +72,7 @@ void RecordProductEvents(bool first_run, bool google_default_search,
 
     char homepage_rlz[rlz_lib::kMaxRlzLength + 1];
     if (!rlz_lib::GetAccessPointRlz(rlz_lib::CHROME_HOME_PAGE, homepage_rlz,
-                                    rlz_lib::kMaxRlzLength, NULL)) {
+                                    rlz_lib::kMaxRlzLength)) {
       homepage_rlz[0] = 0;
     }
 
@@ -110,7 +110,7 @@ bool SendFinancialPing(const std::string& brand,
   std::string referral_ascii(WideToASCII(referral));
   return rlz_lib::SendFinancialPing(rlz_lib::CHROME, points, "chrome",
                                     brand.c_str(), referral_ascii.c_str(),
-                                    lang_ascii.c_str(), false, NULL, true);
+                                    lang_ascii.c_str(), false, true);
 }
 
 }  // namespace
@@ -371,7 +371,7 @@ bool RLZTracker::GetAccessPointRlzImpl(rlz_lib::AccessPoint point,
     return false;
 
   char str_rlz[rlz_lib::kMaxRlzLength + 1];
-  if (!rlz_lib::GetAccessPointRlz(point, str_rlz, rlz_lib::kMaxRlzLength, NULL))
+  if (!rlz_lib::GetAccessPointRlz(point, str_rlz, rlz_lib::kMaxRlzLength))
     return false;
 
   string16 rlz_local(ASCIIToWide(std::string(str_rlz)));
