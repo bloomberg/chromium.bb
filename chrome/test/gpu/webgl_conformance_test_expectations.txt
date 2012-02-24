@@ -99,6 +99,13 @@ UNFILED MAC INTEL : conformance_limits_gl_max_texture_dimensions = FAIL
 UNFILED MAC INTEL : conformance_rendering_line_loop_tri_fan = FAIL
 UNFILED MAC INTEL : conformance_textures_texture_size = FAIL
 
+UNFILED MAC AMD : conformance_attribs_gl_vertex_attrib = FAIL
+UNFILED MAC AMD : conformance_attribs_gl_vertexattribpointer_offsets = FAIL
+UNFILED MAC AMD : conformance_attribs_gl_vertexattribpointer = FAIL
+UNFILED MAC AMD : conformance_misc_type_conversion_test = FAIL
+UNFILED MAC AMD : conformance_renderbuffers_framebuffer_object_attachment = FAIL
+UNFILED MAC AMD : conformance_textures_copy_tex_image_and_sub_image_2d = FAIL
+
 UNFILED LINUX NVIDIA : conformance_uniforms_uniform_location = FAIL
 UNFILED LINUX NVIDIA : conformance_textures_texture_mips = FAIL
 
