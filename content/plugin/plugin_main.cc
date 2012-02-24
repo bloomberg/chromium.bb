@@ -12,6 +12,7 @@
 #include <dshow.h>
 #endif
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -76,6 +77,41 @@ int PreloadIMEForFlash() {
   return 2;
 }
 
+// VirtualAlloc doesn't randomize well, so we use these calls to poke a
+// random-sized hole in the address space and set an event to later remove it.
+void FreeRandomMemoryHole(void *hole) {
+  ::VirtualFree(hole, 0, MEM_RELEASE);
+}
+
+bool CreateRandomMemoryHole() {
+  static const uint32_t kRandomValueMask = 0xFFF;  // 4095
+  static const uint32_t kRandomValueShift = 2;
+  static const uint32_t kMaxWaitSeconds = 22 * 60;  // 22 Minutes in seconds.
+  COMPILE_ASSERT((kMaxWaitSeconds > (kRandomValueMask >> kRandomValueShift)),
+                 kMaxWaitSeconds_value_too_small);
+
+  uint32_t rand_val;
+  if (rand_s(&rand_val) != S_OK) {
+    DVLOG(ERROR) << "rand_s() failed";
+  }
+
+  rand_val &= kRandomValueMask;
+  // Reserve up to 256mb (randomly selected) of address space.
+  if (void* hole = ::VirtualAlloc(NULL, 65536 * (1 + rand_val),
+                                  MEM_RESERVE, PAGE_NOACCESS)) {
+    // Set up an event to remove the memory hole. Base the wait time on the
+    // inverse of the allocation size, meaning a bigger hole gets a shorter
+    // wait (ranging from 5-22 minutes).
+    const uint32_t wait = kMaxWaitSeconds - (rand_val >> kRandomValueShift);
+    MessageLoop::current()->PostDelayedTask(FROM_HERE,
+        base::Bind(&FreeRandomMemoryHole, hole),
+        base::TimeDelta::FromSeconds(wait));
+    return true;
+  }
+
+  return false;
+}
+
 #endif
 
 // main() routine for running as the plugin process.
@@ -136,6 +172,12 @@ int PluginMain(const content::MainFunctionParams& parameters) {
       // start elevated and it will call DelayedLowerToken(0) when it's ready.
       if (IsPluginBuiltInFlash(parsed_command_line)) {
         DVLOG(1) << "Sandboxing flash";
+
+        // Poke hole in the address space to improve randomization.
+        if (!CreateRandomMemoryHole()) {
+          DVLOG(ERROR) << "Failed to create random memory hole";
+        }
+
         if (!PreloadIMEForFlash())
           DVLOG(1) << "IME preload failed";
 
