@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -83,9 +83,7 @@ void AppendRatingStarsShim(const SkBitmap* skiaImage, void* data) {
 
 - (id)initWithParentWindow:(NSWindow*)window
                    profile:(Profile*)profile
-                 extension:(const Extension*)extension
                   delegate:(ExtensionInstallUI::Delegate*)delegate
-                      icon:(SkBitmap*)icon
                     prompt:(const ExtensionInstallUI::Prompt&)prompt {
   NSString* nibpath = nil;
 
@@ -109,9 +107,7 @@ void AppendRatingStarsShim(const SkBitmap* skiaImage, void* data) {
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     parentWindow_ = window;
     profile_ = profile;
-    icon_ = *icon;
     delegate_ = delegate;
-    extension_ = extension;
     prompt_.reset(new ExtensionInstallUI::Prompt(prompt));
   }
   return self;
@@ -126,8 +122,8 @@ void AppendRatingStarsShim(const SkBitmap* skiaImage, void* data) {
 }
 
 - (IBAction)storeLinkClicked:(id)sender {
-  GURL store_url(
-      extension_urls::GetWebstoreItemDetailURLPrefix() + extension_->id());
+  GURL store_url(extension_urls::GetWebstoreItemDetailURLPrefix() +
+                 prompt_->extension()->id());
   BrowserList::GetLastActiveWithProfile(profile_)->OpenURL(OpenURLParams(
       store_url, Referrer(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK,
       false));
@@ -152,8 +148,7 @@ void AppendRatingStarsShim(const SkBitmap* skiaImage, void* data) {
                       [[self window] delegate]));
 
   // Set control labels.
-  [titleField_ setStringValue:base::SysUTF16ToNSString(
-      prompt_->GetHeading(extension_->name()))];
+  [titleField_ setStringValue:base::SysUTF16ToNSString(prompt_->GetHeading())];
   [okButton_ setTitle:base::SysUTF16ToNSString(
       prompt_->GetAcceptButtonLabel())];
   [cancelButton_ setTitle:prompt_->HasAbortButtonLabel() ?
@@ -167,8 +162,7 @@ void AppendRatingStarsShim(const SkBitmap* skiaImage, void* data) {
         prompt_->GetUserCount())];
   }
 
-  NSImage* image = gfx::SkBitmapToNSImage(icon_);
-  [iconView_ setImage:image];
+  [iconView_ setImage:prompt_->icon().ToNSImage()];
 
   // Resize |titleField_| to fit the title.
   CGFloat originalTitleWidth = [titleField_ frame].size.width;
@@ -198,7 +192,7 @@ void AppendRatingStarsShim(const SkBitmap* skiaImage, void* data) {
   // If there are any warnings, then we have to do some special layout.
   if (prompt_->GetPermissionCount() > 0) {
     [subtitleField_ setStringValue:base::SysUTF16ToNSString(
-        prompt_->GetPermissionsHeader())];
+        prompt_->GetPermissionsHeading())];
 
     // We display the permission warnings as a simple text string, separated by
     // newlines.
@@ -295,8 +289,6 @@ void AppendRatingStarsShim(const SkBitmap* skiaImage, void* data) {
 void ShowExtensionInstallDialogImpl(
     Profile* profile,
     ExtensionInstallUI::Delegate* delegate,
-    const Extension* extension,
-    SkBitmap* icon,
     const ExtensionInstallUI::Prompt& prompt) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser) {
@@ -316,9 +308,7 @@ void ShowExtensionInstallDialogImpl(
       [[ExtensionInstallDialogController alloc]
         initWithParentWindow:native_window
                      profile:profile
-                   extension:extension
                     delegate:delegate
-                        icon:icon
                       prompt:prompt];
 
   // TODO(mihaip): Switch this to be tab-modal (http://crbug.com/95455)
