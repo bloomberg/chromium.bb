@@ -62,7 +62,7 @@ struct ExtensionIconSource::ExtensionIconRequest {
   int request_id;
   const Extension* extension;
   bool grayscale;
-  Extension::Icons size;
+  int size;
   ExtensionIconSet::MatchType match;
 };
 
@@ -73,7 +73,7 @@ ExtensionIconSource::~ExtensionIconSource() {
 
 // static
 GURL ExtensionIconSource::GetIconURL(const Extension* extension,
-                                     Extension::Icons icon_size,
+                                     int icon_size,
                                      ExtensionIconSet::MatchType match,
                                      bool grayscale,
                                      bool* exists) {
@@ -139,7 +139,7 @@ void ExtensionIconSource::LoadIconFailed(int request_id) {
   ExtensionResource icon =
       request->extension->GetIconResource(request->size, request->match);
 
-  if (request->size == Extension::EXTENSION_ICON_BITTY)
+  if (request->size == ExtensionIconSet::EXTENSION_ICON_BITTY)
     LoadFaviconImage(request_id);
   else
     LoadDefaultImage(request_id);
@@ -300,14 +300,9 @@ bool ExtensionIconSource::ParseData(const std::string& path,
   std::string match_param = path_parts.at(2);
   match_param = match_param.substr(0, match_param.find('?'));
 
-  // The icon size and match types are encoded as string representations of
-  // their enum values, so to get the enum back, we read the string as an int
-  // and then cast to the enum.
-  Extension::Icons size;
-  int size_num;
-  if (!base::StringToInt(size_param, &size_num))
+  int size;
+  if (!base::StringToInt(size_param, &size))
     return false;
-  size = static_cast<Extension::Icons>(size_num);
   if (size <= 0)
     return false;
 
@@ -344,7 +339,7 @@ void ExtensionIconSource::SendDefaultResponse(int request_id) {
 void ExtensionIconSource::SetData(int request_id,
                                   const Extension* extension,
                                   bool grayscale,
-                                  Extension::Icons size,
+                                  int size,
                                   ExtensionIconSet::MatchType match) {
   ExtensionIconRequest* request = new ExtensionIconRequest();
   request->request_id = request_id;

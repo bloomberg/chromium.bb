@@ -69,12 +69,13 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
   // Load the Extension's icon image.
   void LoadIcon() {
     const Extension* extension = delegate_->extension_host()->extension();
-    ExtensionResource icon_resource = extension->GetIconResource(
-        Extension::EXTENSION_ICON_BITTY, ExtensionIconSet::MATCH_EXACTLY);
+    ExtensionResource icon_resource =
+        extension->GetIconResource(ExtensionIconSet::EXTENSION_ICON_BITTY,
+                                   ExtensionIconSet::MATCH_EXACTLY);
     if (!icon_resource.relative_path().empty()) {
       tracker_.LoadImage(extension, icon_resource,
-                         gfx::Size(Extension::EXTENSION_ICON_BITTY,
-                                   Extension::EXTENSION_ICON_BITTY),
+                         gfx::Size(ExtensionIconSet::EXTENSION_ICON_BITTY,
+                                   ExtensionIconSet::EXTENSION_ICON_BITTY),
                          ImageLoadingTracker::DONT_CACHE);
     } else {
       OnImageLoaded(NULL, icon_resource, 0);
@@ -100,7 +101,7 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
 
     SkBitmap* drop_image = rb.GetBitmapNamed(IDR_APP_DROPARROW);
 
-    const int image_size = Extension::EXTENSION_ICON_BITTY;
+    const int image_size = ExtensionIconSet::EXTENSION_ICON_BITTY;
     scoped_ptr<gfx::CanvasSkia> canvas(
         new gfx::CanvasSkia(
             gfx::Size(image_size + kDropArrowLeftMarginPx + drop_image->width(),

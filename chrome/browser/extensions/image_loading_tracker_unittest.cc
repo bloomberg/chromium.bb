@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,10 +102,10 @@ TEST_F(ImageLoadingTrackerTest, Cache) {
   ASSERT_TRUE(extension.get() != NULL);
 
   ExtensionResource image_resource =
-      extension->GetIconResource(Extension::EXTENSION_ICON_SMALLISH,
+      extension->GetIconResource(ExtensionIconSet::EXTENSION_ICON_SMALLISH,
                                  ExtensionIconSet::MATCH_EXACTLY);
-  gfx::Size max_size(Extension::EXTENSION_ICON_SMALLISH,
-                     Extension::EXTENSION_ICON_SMALLISH);
+  gfx::Size max_size(ExtensionIconSet::EXTENSION_ICON_SMALLISH,
+                     ExtensionIconSet::EXTENSION_ICON_SMALLISH);
   ImageLoadingTracker loader(static_cast<ImageLoadingTracker::Observer*>(this));
   loader.LoadImage(extension.get(),
                    image_resource,
@@ -121,13 +121,13 @@ TEST_F(ImageLoadingTrackerTest, Cache) {
   EXPECT_EQ(1, image_loaded_count());
 
   // Check that the image was loaded.
-  EXPECT_EQ(Extension::EXTENSION_ICON_SMALLISH, image_.width());
+  EXPECT_EQ(ExtensionIconSet::EXTENSION_ICON_SMALLISH, image_.width());
 
   // The image should be cached in the Extension.
   EXPECT_TRUE(extension->HasCachedImage(image_resource, max_size));
 
   // Make sure the image is in the extension.
-  EXPECT_EQ(Extension::EXTENSION_ICON_SMALLISH,
+  EXPECT_EQ(ExtensionIconSet::EXTENSION_ICON_SMALLISH,
             extension->GetCachedImage(image_resource, max_size).width());
 
   // Ask the tracker for the image again, this should call us back immediately.
@@ -139,7 +139,7 @@ TEST_F(ImageLoadingTrackerTest, Cache) {
   EXPECT_EQ(1, image_loaded_count());
 
   // Check that the image was loaded.
-  EXPECT_EQ(Extension::EXTENSION_ICON_SMALLISH, image_.width());
+  EXPECT_EQ(ExtensionIconSet::EXTENSION_ICON_SMALLISH, image_.width());
 }
 
 // Tests deleting an extension while waiting for the image to load doesn't cause
@@ -149,13 +149,13 @@ TEST_F(ImageLoadingTrackerTest, DeleteExtensionWhileWaitingForCache) {
   ASSERT_TRUE(extension.get() != NULL);
 
   ExtensionResource image_resource =
-      extension->GetIconResource(Extension::EXTENSION_ICON_SMALLISH,
+      extension->GetIconResource(ExtensionIconSet::EXTENSION_ICON_SMALLISH,
                                  ExtensionIconSet::MATCH_EXACTLY);
   ImageLoadingTracker loader(static_cast<ImageLoadingTracker::Observer*>(this));
   loader.LoadImage(extension.get(),
                    image_resource,
-                   gfx::Size(Extension::EXTENSION_ICON_SMALLISH,
-                             Extension::EXTENSION_ICON_SMALLISH),
+                   gfx::Size(ExtensionIconSet::EXTENSION_ICON_SMALLISH,
+                             ExtensionIconSet::EXTENSION_ICON_SMALLISH),
                    ImageLoadingTracker::CACHE);
 
   // The image isn't cached, so we should not have received notification.
@@ -180,5 +180,5 @@ TEST_F(ImageLoadingTrackerTest, DeleteExtensionWhileWaitingForCache) {
   EXPECT_EQ(1, image_loaded_count());
 
   // Check that the image was loaded.
-  EXPECT_EQ(Extension::EXTENSION_ICON_SMALLISH, image_.width());
+  EXPECT_EQ(ExtensionIconSet::EXTENSION_ICON_SMALLISH, image_.width());
 }

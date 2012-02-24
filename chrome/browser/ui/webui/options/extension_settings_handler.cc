@@ -29,6 +29,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_view_type.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -653,7 +654,7 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   DictionaryValue* extension_data = new DictionaryValue();
   GURL icon =
       ExtensionIconSource::GetIconURL(extension,
-                                      Extension::EXTENSION_ICON_MEDIUM,
+                                      ExtensionIconSet::EXTENSION_ICON_MEDIUM,
                                       ExtensionIconSet::MATCH_BIGGER,
                                       !enabled, NULL);
   extension_data->SetString("id", extension->id());

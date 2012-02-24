@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_icon_set.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class ExtensionIconSet;
@@ -51,13 +51,13 @@ class ExtensionIconSource : public ChromeURLDataManager::DataSource,
   explicit ExtensionIconSource(Profile* profile);
   virtual ~ExtensionIconSource();
 
-  // Gets the URL of the |extension| icon in the given |size|, falling back
+  // Gets the URL of the |extension| icon in the given |icon_size|, falling back
   // based on the |match| type. If |grayscale|, the URL will be for the
   // desaturated version of the icon. |exists|, if non-NULL, will be set to true
   // if the icon exists; false if it will lead to a default or not-present
   // image.
   static GURL GetIconURL(const Extension* extension,
-                         Extension::Icons icon_size,
+                         int icon_size,
                          ExtensionIconSet::MatchType match,
                          bool grayscale,
                          bool* exists);
@@ -138,7 +138,7 @@ class ExtensionIconSource : public ChromeURLDataManager::DataSource,
   void SetData(int request_id,
                const Extension* extension,
                bool grayscale,
-               Extension::Icons size,
+               int size,
                ExtensionIconSet::MatchType match);
 
   // Returns the ExtensionIconRequest for the given |request_id|.

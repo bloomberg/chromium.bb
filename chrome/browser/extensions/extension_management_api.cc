@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,10 +81,10 @@ static DictionaryValue* CreateExtensionInfo(const Extension& extension,
   const ExtensionIconSet::IconMap& icons = extension.icons().map();
   if (!icons.empty()) {
     ListValue* icon_list = new ListValue();
-    std::map<int, std::string>::const_iterator icon_iter;
+    std::map<ExtensionIconSet::Icons, std::string>::const_iterator icon_iter;
     for (icon_iter = icons.begin(); icon_iter != icons.end(); ++icon_iter) {
       DictionaryValue* icon_info = new DictionaryValue();
-      Extension::Icons size = static_cast<Extension::Icons>(icon_iter->first);
+      ExtensionIconSet::Icons size = icon_iter->first;
       GURL url = ExtensionIconSource::GetIconURL(
           &extension, size, ExtensionIconSet::MATCH_EXACTLY, false, NULL);
       icon_info->SetInteger(keys::kSizeKey, icon_iter->first);

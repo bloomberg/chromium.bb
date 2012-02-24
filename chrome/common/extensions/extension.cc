@@ -191,14 +191,6 @@ const size_t Extension::kIdSize = 16;
 
 const char Extension::kMimeType[] = "application/x-chrome-extension";
 
-const int Extension::kIconSizes[] = {
-  EXTENSION_ICON_LARGE,
-  EXTENSION_ICON_MEDIUM,
-  EXTENSION_ICON_SMALL,
-  EXTENSION_ICON_SMALLISH,
-  EXTENSION_ICON_BITTY
-};
-
 const int Extension::kPageActionIconMaxSize = 19;
 const int Extension::kBrowserActionIconMaxSize = 19;
 
@@ -1536,16 +1528,25 @@ bool Extension::FormatPEMForFileOutput(const std::string& input,
 
 // static
 void Extension::DecodeIcon(const Extension* extension,
-                           Icons icon_size,
+                           ExtensionIconSet::Icons preferred_icon_size,
+                           ExtensionIconSet::MatchType match_type,
                            scoped_ptr<SkBitmap>* result) {
-  FilePath icon_path = extension->GetIconResource(
-      icon_size, ExtensionIconSet::MATCH_EXACTLY).GetFilePath();
-  DecodeIconFromPath(icon_path, icon_size, result);
+  std::string path = extension->icons().Get(preferred_icon_size, match_type);
+  ExtensionIconSet::Icons size = extension->icons().GetIconSizeFromPath(path);
+  ExtensionResource icon_resource = extension->GetResource(path);
+  DecodeIconFromPath(icon_resource.GetFilePath(), size, result);
+}
+
+// static
+void Extension::DecodeIcon(const Extension* extension,
+                           ExtensionIconSet::Icons icon_size,
+                           scoped_ptr<SkBitmap>* result) {
+  DecodeIcon(extension, icon_size, ExtensionIconSet::MATCH_EXACTLY, result);
 }
 
 // static
 void Extension::DecodeIconFromPath(const FilePath& icon_path,
-                                   Icons icon_size,
+                                   ExtensionIconSet::Icons icon_size,
                                    scoped_ptr<SkBitmap>* result) {
   if (icon_path.empty())
     return;
@@ -1850,8 +1851,8 @@ bool Extension::InitFromValue(extensions::Manifest* manifest, int flags,
       return false;
     }
 
-    for (size_t i = 0; i < arraysize(kIconSizes); ++i) {
-      std::string key = base::IntToString(kIconSizes[i]);
+    for (size_t i = 0; i < ExtensionIconSet::kNumIconSizes; ++i) {
+      std::string key = base::IntToString(ExtensionIconSet::kIconSizes[i]);
       if (icons_value->HasKey(key)) {
         std::string icon_path;
         if (!icons_value->GetString(key, &icon_path)) {
@@ -1869,7 +1870,7 @@ bool Extension::InitFromValue(extensions::Manifest* manifest, int flags,
           return false;
         }
 
-        icons_.Add(kIconSizes[i], icon_path);
+        icons_.Add(ExtensionIconSet::kIconSizes[i], icon_path);
       }
     }
   }

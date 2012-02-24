@@ -108,13 +108,13 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
   // Instead of setting grayscale here, we do it in apps_page.js.
   GURL icon_big =
       ExtensionIconSource::GetIconURL(extension,
-                                      Extension::EXTENSION_ICON_LARGE,
-                                      ExtensionIconSet::MATCH_EXACTLY,
+                                      ExtensionIconSet::EXTENSION_ICON_LARGE,
+                                      ExtensionIconSet::MATCH_BIGGER,
                                       false, &icon_big_exists);
   bool icon_small_exists = true;
   GURL icon_small =
       ExtensionIconSource::GetIconURL(extension,
-                                      Extension::EXTENSION_ICON_BITTY,
+                                      ExtensionIconSet::EXTENSION_ICON_BITTY,
                                       ExtensionIconSet::MATCH_BIGGER,
                                       false, &icon_small_exists);
 

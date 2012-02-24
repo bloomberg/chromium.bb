@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,8 +33,8 @@ void ExtensionUninstallDialog::ConfirmUninstall(const Extension* extension) {
   extension_ = extension;
 
   ExtensionResource image =
-      extension_->GetIconResource(Extension::EXTENSION_ICON_LARGE,
-                                  ExtensionIconSet::MATCH_EXACTLY);
+      extension_->GetIconResource(ExtensionIconSet::EXTENSION_ICON_LARGE,
+                                  ExtensionIconSet::MATCH_BIGGER);
   // Load the image asynchronously. The response will be sent to OnImageLoaded.
   tracker_.LoadImage(extension_, image,
                      gfx::Size(kIconSize, kIconSize),

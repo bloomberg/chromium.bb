@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,7 +55,8 @@ class BackgroundApplicationListModel : public content::NotificationObserver {
   //
   // NOTE: The model manages the SkBitmap result, that is it "owns" the memory,
   //       releasing it if the associated background application is unloaded.
-  // NOTE: All icons are currently sized as Extension::EXTENSION_ICON_BITTY.
+  // NOTE: All icons are currently sized as
+  //       ExtensionIconSet::EXTENSION_ICON_BITTY.
   const SkBitmap* GetIcon(const Extension* extension);
 
   // Return the position of |extension| within this list model.

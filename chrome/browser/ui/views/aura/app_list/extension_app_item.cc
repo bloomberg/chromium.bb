@@ -86,8 +86,7 @@ const Extension* ExtensionAppItem::GetExtension() const {
 
 void ExtensionAppItem::LoadImage(const Extension* extension) {
   ExtensionResource icon = extension->GetIconResource(
-      ash::AppListItemView::kIconSize,
-      ExtensionIconSet::MATCH_BIGGER);
+      ash::AppListItemView::kIconSize, ExtensionIconSet::MATCH_BIGGER);
   if (icon.relative_path().empty()) {
     LoadDefaultImage();
     return;

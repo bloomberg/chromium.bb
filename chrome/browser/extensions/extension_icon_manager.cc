@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,7 +48,7 @@ ExtensionIconManager::~ExtensionIconManager() {
 
 void ExtensionIconManager::LoadIcon(const Extension* extension) {
   ExtensionResource icon_resource = extension->GetIconResource(
-      Extension::EXTENSION_ICON_BITTY, ExtensionIconSet::MATCH_BIGGER);
+      ExtensionIconSet::EXTENSION_ICON_BITTY, ExtensionIconSet::MATCH_BIGGER);
   if (!icon_resource.extension_root().empty()) {
     // Insert into pending_icons_ first because LoadImage can call us back
     // synchronously if the image is already cached.

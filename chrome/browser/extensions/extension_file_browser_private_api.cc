@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/file_browser_handler.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -678,7 +679,7 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
     // manifest instead of the default extension icon.
     GURL icon =
         ExtensionIconSource::GetIconURL(extension,
-                                        Extension::EXTENSION_ICON_BITTY,
+                                        ExtensionIconSet::EXTENSION_ICON_BITTY,
                                         ExtensionIconSet::MATCH_BIGGER,
                                         false, NULL);     // grayscale
     task->SetString("iconUrl", icon.spec());

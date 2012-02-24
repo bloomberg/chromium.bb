@@ -77,7 +77,7 @@ void ExtensionInfoBarGtk::OnImageLoaded(
 
   SkBitmap* drop_image = rb.GetBitmapNamed(IDR_APP_DROPARROW);
 
-  int image_size = Extension::EXTENSION_ICON_BITTY;
+  int image_size = ExtensionIconSet::EXTENSION_ICON_BITTY;
   // The margin between the extension icon and the drop-down arrow bitmap.
   static const int kDropArrowLeftMargin = 3;
   scoped_ptr<gfx::CanvasSkia> canvas(new gfx::CanvasSkia(
@@ -109,12 +109,12 @@ void ExtensionInfoBarGtk::BuildWidgets() {
   // Start loading the image for the menu button.
   const Extension* extension = delegate_->extension_host()->extension();
   ExtensionResource icon_resource = extension->GetIconResource(
-      Extension::EXTENSION_ICON_BITTY, ExtensionIconSet::MATCH_EXACTLY);
+      ExtensionIconSet::EXTENSION_ICON_BITTY, ExtensionIconSet::MATCH_EXACTLY);
   if (!icon_resource.relative_path().empty()) {
     // Create a tracker to load the image. It will report back on OnImageLoaded.
     tracker_.LoadImage(extension, icon_resource,
-                       gfx::Size(Extension::EXTENSION_ICON_BITTY,
-                                 Extension::EXTENSION_ICON_BITTY),
+                       gfx::Size(ExtensionIconSet::EXTENSION_ICON_BITTY,
+                                 ExtensionIconSet::EXTENSION_ICON_BITTY),
                        ImageLoadingTracker::DONT_CACHE);
   } else {
     OnImageLoaded(NULL, icon_resource, 0);

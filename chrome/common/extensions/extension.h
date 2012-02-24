@@ -90,16 +90,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     NEW_INSTALL
   };
 
-  // NOTE: If you change this list, you should also change kIconSizes in the cc
-  // file.
-  enum Icons {
-    EXTENSION_ICON_LARGE = 128,
-    EXTENSION_ICON_MEDIUM = 48,
-    EXTENSION_ICON_SMALL = 32,
-    EXTENSION_ICON_SMALLISH = 24,
-    EXTENSION_ICON_BITTY = 16,
-  };
-
   // Do not change the order of entries or remove entries in this list
   // as this is used in UMA_HISTOGRAM_ENUMERATIONs about extensions.
   enum Type {
@@ -248,9 +238,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // its install source should be set to GetHigherPriorityLocation(A, B).
   static Location GetHigherPriorityLocation(Location loc1, Location loc2);
 
-  // Icon sizes used by the extension system.
-  static const int kIconSizes[];
-
   // Max size (both dimensions) for browser and page actions.
   static const int kPageActionIconMaxSize;
   static const int kBrowserActionIconMaxSize;
@@ -377,12 +364,21 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                                      std::string* output,
                                      bool is_public);
 
+  // Given an extension, icon size and match type, read a valid icon if present
+  // and decode it into result. In the browser process, this will DCHECK if not
+  // called on the file thread. To easily load extension images on the UI
+  // thread, see ImageLoadingTracker.
+  static void DecodeIcon(const Extension* extension,
+                         ExtensionIconSet::Icons icon_size,
+                         ExtensionIconSet::MatchType match_type,
+                         scoped_ptr<SkBitmap>* result);
+
   // Given an extension and icon size, read it if present and decode it into
   // result. In the browser process, this will DCHECK if not called on the
   // file thread. To easily load extension images on the UI thread, see
   // ImageLoadingTracker.
   static void DecodeIcon(const Extension* extension,
-                         Icons icon_size,
+                         ExtensionIconSet::Icons icon_size,
                          scoped_ptr<SkBitmap>* result);
 
   // Given an icon_path and icon size, read it if present and decode it into
@@ -390,7 +386,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // file thread. To easily load extension images on the UI thread, see
   // ImageLoadingTracker.
   static void DecodeIconFromPath(const FilePath& icon_path,
-                                 Icons icon_size,
+                                 ExtensionIconSet::Icons icon_size,
                                  scoped_ptr<SkBitmap>* result);
 
   // Returns the default extension/app icon (for extensions or apps that don't

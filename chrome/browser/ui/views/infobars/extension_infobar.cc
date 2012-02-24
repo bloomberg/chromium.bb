@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,7 +90,7 @@ void ExtensionInfoBar::ViewHierarchyChanged(bool is_add,
   // which assumes that particular children (e.g. the close button) have already
   // been added.
   const Extension* extension = extension_host->extension();
-  int image_size = Extension::EXTENSION_ICON_BITTY;
+  ExtensionIconSet::Icons image_size = ExtensionIconSet::EXTENSION_ICON_BITTY;
   ExtensionResource icon_resource = extension->GetIconResource(
       image_size, ExtensionIconSet::MATCH_EXACTLY);
   if (!icon_resource.relative_path().empty()) {
@@ -119,7 +119,7 @@ void ExtensionInfoBar::OnImageLoaded(SkBitmap* image,
 
   SkBitmap* drop_image = rb.GetBitmapNamed(IDR_APP_DROPARROW);
 
-  int image_size = Extension::EXTENSION_ICON_BITTY;
+  int image_size = ExtensionIconSet::EXTENSION_ICON_BITTY;
   // The margin between the extension icon and the drop-down arrow bitmap.
   static const int kDropArrowLeftMargin = 3;
   scoped_ptr<gfx::CanvasSkia> canvas(new gfx::CanvasSkia(

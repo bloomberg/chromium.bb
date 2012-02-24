@@ -25,6 +25,7 @@
 #include "chrome/browser/extensions/convert_web_app.h"
 #include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
+#include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/shell_integration.h"
@@ -361,7 +362,9 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
   }
 
   if (client_) {
-    Extension::DecodeIcon(extension_.get(), Extension::EXTENSION_ICON_LARGE,
+    Extension::DecodeIcon(extension_.get(),
+                          ExtensionIconSet::EXTENSION_ICON_LARGE,
+                          ExtensionIconSet::MATCH_BIGGER,
                           &install_icon_);
   }
 

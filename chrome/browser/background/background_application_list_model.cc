@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -60,7 +61,7 @@ class BackgroundApplicationListModel::Application
 
   // Uses the FILE thread to request this extension's icon, sized
   // appropriately.
-  void RequestIcon(Extension::Icons size);
+  void RequestIcon(ExtensionIconSet::Icons size);
 
   const Extension* extension_;
   scoped_ptr<SkBitmap> icon_;
@@ -138,7 +139,7 @@ void BackgroundApplicationListModel::Application::OnImageLoaded(
 }
 
 void BackgroundApplicationListModel::Application::RequestIcon(
-    Extension::Icons size) {
+    ExtensionIconSet::Icons size) {
   ExtensionResource resource = extension_->GetIconResource(
       size, ExtensionIconSet::MATCH_BIGGER);
   tracker_.LoadImage(extension_, resource, gfx::Size(size, size),
@@ -189,7 +190,7 @@ void BackgroundApplicationListModel::AssociateApplicationData(
     application = new Application(this, extension);
     applications_[extension->id()] = application;
     Update();
-    application->RequestIcon(Extension::EXTENSION_ICON_BITTY);
+    application->RequestIcon(ExtensionIconSet::EXTENSION_ICON_BITTY);
   }
 }
 

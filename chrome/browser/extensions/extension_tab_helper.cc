@@ -241,10 +241,10 @@ void ExtensionTabHelper::UpdateExtensionAppIcon(const Extension* extension) {
     extension_app_image_loader_.reset(new ImageLoadingTracker(this));
     extension_app_image_loader_->LoadImage(
         extension,
-        extension->GetIconResource(Extension::EXTENSION_ICON_SMALLISH,
+        extension->GetIconResource(ExtensionIconSet::EXTENSION_ICON_SMALLISH,
                                    ExtensionIconSet::MATCH_EXACTLY),
-        gfx::Size(Extension::EXTENSION_ICON_SMALLISH,
-                  Extension::EXTENSION_ICON_SMALLISH),
+        gfx::Size(ExtensionIconSet::EXTENSION_ICON_SMALLISH,
+                  ExtensionIconSet::EXTENSION_ICON_SMALLISH),
         ImageLoadingTracker::CACHE);
   } else {
     extension_app_image_loader_.reset(NULL);

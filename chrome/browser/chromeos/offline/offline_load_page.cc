@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -140,8 +141,8 @@ void OfflineLoadPage::GetAppOfflineStrings(
     DictionaryValue* strings) const {
   strings->SetString("title", app->name());
 
-  GURL icon_url = app->GetIconURL(Extension::EXTENSION_ICON_LARGE,
-                                  ExtensionIconSet::MATCH_EXACTLY);
+  GURL icon_url = app->GetIconURL(ExtensionIconSet::EXTENSION_ICON_LARGE,
+                                  ExtensionIconSet::MATCH_BIGGER);
   if (icon_url.is_empty()) {
     strings->SetString("display_icon", "none");
     strings->SetString("icon", string16());

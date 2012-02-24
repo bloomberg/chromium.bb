@@ -44,10 +44,10 @@ void LauncherIconLoader::FetchImage(const std::string& id) {
   map_[image_loader_->next_id()] = id;
   image_loader_->LoadImage(
       extension,
-      extension->GetIconResource(Extension::EXTENSION_ICON_SMALL,
+      extension->GetIconResource(ExtensionIconSet::EXTENSION_ICON_SMALL,
                                  ExtensionIconSet::MATCH_BIGGER),
-      gfx::Size(Extension::EXTENSION_ICON_SMALL,
-                Extension::EXTENSION_ICON_SMALL),
+      gfx::Size(ExtensionIconSet::EXTENSION_ICON_SMALL,
+                ExtensionIconSet::EXTENSION_ICON_SMALL),
       ImageLoadingTracker::CACHE);
 }
 

@@ -69,7 +69,7 @@ void ExtensionActivityUI::HandleRequestExtensionData(
 
   GURL icon =
       ExtensionIconSource::GetIconURL(extension_,
-                                      Extension::EXTENSION_ICON_MEDIUM,
+                                      ExtensionIconSet::EXTENSION_ICON_MEDIUM,
                                       ExtensionIconSet::MATCH_BIGGER,
                                       false, NULL);
 

@@ -26,6 +26,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
@@ -105,7 +106,7 @@ void ShowBalloon(const Extension* extension, Profile* profile) {
       IDS_BACKGROUND_CRASHED_EXTENSION_BALLOON_MESSAGE,
       UTF8ToUTF16(extension->name()));
   string16 content_url = DesktopNotificationService::CreateDataUrl(
-      extension->GetIconURL(Extension::EXTENSION_ICON_SMALLISH,
+      extension->GetIconURL(ExtensionIconSet::EXTENSION_ICON_SMALLISH,
                             ExtensionIconSet::MATCH_BIGGER),
       string16(), message, WebKit::WebTextDirectionDefault);
   Notification notification(
