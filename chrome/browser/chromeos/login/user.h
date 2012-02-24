@@ -12,6 +12,9 @@
 #include "base/basictypes.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
+// The demo user is represented by a domainless username.
+const char kDemoUser[] = "demouser";
+
 namespace chromeos {
 
 // A class representing information about a previously logged in user.

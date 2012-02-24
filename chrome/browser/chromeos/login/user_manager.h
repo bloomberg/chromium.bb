@@ -56,6 +56,9 @@ class UserManager : public ProfileDownloaderDelegate,
   // The persistent list will be updated accordingly.
   void UserLoggedIn(const std::string& email);
 
+  // Indicates that user just logged on as the demo user.
+  void DemoUserLoggedIn();
+
   // Indicates that user just started incognito session.
   void GuestUserLoggedIn();
 
@@ -140,6 +143,9 @@ class UserManager : public ProfileDownloaderDelegate,
   }
 
   bool user_is_logged_in() const { return user_is_logged_in_; }
+
+  // Returns true if we're logged in as a demo user.
+  bool IsLoggedInAsDemoUser() const;
 
   // Returns true if we're logged in as a Guest.
   bool IsLoggedInAsGuest() const;
@@ -254,6 +260,9 @@ class UserManager : public ProfileDownloaderDelegate,
   // Map of users' display names used to determine which users have unique
   // display names.
   mutable base::hash_map<std::string, size_t> display_name_count_;
+
+  // User instance used to represent the demo user.
+  User demo_user_;
 
   // User instance used to represent the off-the-record (guest) user.
   User guest_user_;

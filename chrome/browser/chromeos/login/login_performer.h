@@ -75,6 +75,7 @@ class LoginPerformer : public LoginStatusConsumer,
 
   // LoginStatusConsumer implementation:
   virtual void OnLoginFailure(const LoginFailure& error) OVERRIDE;
+  virtual void OnDemoUserLoginSuccess() OVERRIDE;
   virtual void OnLoginSuccess(
       const std::string& username,
       const std::string& password,
@@ -89,6 +90,9 @@ class LoginPerformer : public LoginStatusConsumer,
 
   // Performs login with the |username| and |password| specified.
   void Login(const std::string& username, const std::string& password);
+
+  // Performs login for the demo user.
+  void LoginDemoUser();
 
   // Performs actions to prepare Guest mode login.
   void LoginOffTheRecord();
