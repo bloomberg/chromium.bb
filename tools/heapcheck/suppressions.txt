@@ -825,7 +825,7 @@
    ...
    fun:gfx::CanvasSkia::SizeStringInt
    fun:gfx::CanvasSkia::GetStringWidth
-   fun:gfx::Font::GetStringWidth
+   fun:gfx::PlatformFontPango::GetStringWidth
    ...
    fun:ui::TextEliderTest_*_Test::TestBody
 }
