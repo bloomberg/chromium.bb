@@ -8,6 +8,7 @@
 #include "remoting/host/remoting_host_service_win.h"
 
 #include <windows.h>
+#include <wtsapi32.h>
 #include <stdio.h>
 
 #include "base/at_exit.h"
@@ -20,9 +21,12 @@
 #include "base/path_service.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/wrapped_window_proc.h"
 
-#include "remoting/base/scoped_sc_handle_win.h"
 #include "remoting/host/remoting_host_service_resource.h"
+#include "remoting/base/scoped_sc_handle_win.h"
+#include "remoting/host/wts_console_observer_win.h"
+#include "remoting/host/wts_session_process_launcher_win.h"
 
 using base::StringPrintf;
 
@@ -35,6 +39,13 @@ const char kMuiStringFormat[] = "@%ls,-%d";
 const char kServiceDependencies[] = "";
 
 const DWORD kServiceStopTimeoutMs = 30 * 1000;
+
+// Session id that does not represent any session.
+const uint32 kInvalidSession = 0xffffffff;
+
+// A window class for the session change notifications window.
+static const char kSessionNotificationWindowClass[] =
+  "Chromoting_SessionNotificationWindow";
 
 // Command line actions and switches:
 // "run" sumply runs the service as usual.
@@ -80,14 +91,51 @@ void usage(const char* program_name) {
 namespace remoting {
 
 HostService::HostService() :
+  console_session_id_(kInvalidSession),
+  message_loop_(NULL),
   run_routine_(&HostService::RunAsService),
   service_name_(ASCIIToUTF16(kServiceName)),
   service_status_handle_(0),
-  stopped_event_(true, false),
-  message_loop_(NULL) {
+  shutting_down_(false),
+  stopped_event_(true, false) {
 }
 
 HostService::~HostService() {
+}
+
+void HostService::AddWtsConsoleObserver(WtsConsoleObserver* observer) {
+  console_observers_.AddObserver(observer);
+}
+
+void HostService::RemoveWtsConsoleObserver(WtsConsoleObserver* observer) {
+  console_observers_.RemoveObserver(observer);
+}
+
+void HostService::OnSessionChange() {
+  // WTSGetActiveConsoleSessionId is a very cheap API. It basically reads
+  // a single value from shared memory. Therefore it is better to check if
+  // the console session is still the same every time a session change
+  // notification event is posted. This also takes care of coalescing multiple
+  // events into one since we look at the latest state.
+  uint32 console_session_id = kInvalidSession;
+  if (!shutting_down_) {
+    console_session_id = WTSGetActiveConsoleSessionId();
+  }
+  if (console_session_id_ != console_session_id) {
+    if (console_session_id_ != kInvalidSession) {
+      FOR_EACH_OBSERVER(WtsConsoleObserver,
+                        console_observers_,
+                        OnSessionDetached());
+    }
+
+    console_session_id_ = console_session_id;
+
+    if (console_session_id_ != kInvalidSession) {
+      FOR_EACH_OBSERVER(WtsConsoleObserver,
+                        console_observers_,
+                        OnSessionAttached(console_session_id_));
+    }
+  }
 }
 
 BOOL WINAPI HostService::ConsoleControlHandler(DWORD event) {
@@ -274,8 +322,14 @@ int HostService::Run() {
 }
 
 void HostService::RunMessageLoop() {
+  WtsSessionProcessLauncher launcher(this);
+
   // Run the service.
   message_loop_->Run();
+
+  // Clean up the observers by emulating detaching from the console.
+  shutting_down_ = true;
+  OnSessionChange();
 
   // Release the control handler.
   stopped_event_.Signal();
@@ -297,20 +351,69 @@ int HostService::RunAsService() {
 }
 
 int HostService::RunInConsole() {
-  MessageLoop message_loop;
+  MessageLoop message_loop(MessageLoop::TYPE_UI);
 
   // Allow other threads to post to our message loop.
   message_loop_ = &message_loop;
+
+  int result = kErrorExitCode;
 
   // Subscribe to Ctrl-C and other console events.
   if (!SetConsoleCtrlHandler(&HostService::ConsoleControlHandler, TRUE)) {
     LOG_GETLASTERROR(ERROR)
         << "Failed to set console control handler";
-    return kErrorExitCode;
+    return result;
   }
 
-  // Run the service.
-  RunMessageLoop();
+  // Create a window for receiving session change notifications.
+  LPCWSTR atom = NULL;
+  HWND window = NULL;
+  HINSTANCE instance = GetModuleHandle(NULL);
+  string16 window_class = ASCIIToUTF16(kSessionNotificationWindowClass);
+
+  WNDCLASSEX wc = {0};
+  wc.cbSize = sizeof(wc);
+  wc.lpfnWndProc = base::win::WrappedWindowProc<SessionChangeNotificationProc>;
+  wc.hInstance = instance;
+  wc.lpszClassName = window_class.c_str();
+  atom = reinterpret_cast<LPCWSTR>(RegisterClassExW(&wc));
+  if (atom == NULL) {
+    LOG_GETLASTERROR(ERROR)
+        << "Failed to register the window class '"
+        << kSessionNotificationWindowClass << "'";
+    goto cleanup;
+  }
+
+  window = CreateWindowW(atom, 0, 0, 0, 0, 0, 0, HWND_MESSAGE, 0, instance, 0);
+  if (window == NULL) {
+    LOG_GETLASTERROR(ERROR)
+        << "Failed to creat the session notificationwindow";
+    goto cleanup;
+  }
+
+  // Post a dummy session change notification to peek up the current console
+  // session.
+  message_loop.PostTask(FROM_HERE, base::Bind(
+      &HostService::OnSessionChange, base::Unretained(this)));
+
+  // Subscribe to session change notifications.
+  if (WTSRegisterSessionNotification(window,
+                                     NOTIFY_FOR_ALL_SESSIONS) != FALSE) {
+    // Run the service.
+    RunMessageLoop();
+
+    WTSUnRegisterSessionNotification(window);
+    result = kSuccessExitCode;
+  }
+
+cleanup:
+  if (window != NULL) {
+    DestroyWindow(window);
+  }
+
+  if (atom != 0) {
+    UnregisterClass(atom, instance);
+  }
 
   // Unsubscribe from console events. Ignore the exit code. There is nothing
   // we can do about it now and the program is about to exit anyway. Even if
@@ -318,7 +421,7 @@ int HostService::RunInConsole() {
   SetConsoleCtrlHandler(&HostService::ConsoleControlHandler, FALSE);
 
   message_loop_ = NULL;
-  return kSuccessExitCode;
+  return result;
 }
 
 DWORD WINAPI HostService::ServiceControlHandler(DWORD control,
@@ -334,6 +437,11 @@ DWORD WINAPI HostService::ServiceControlHandler(DWORD control,
     case SERVICE_CONTROL_STOP:
       self->message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
       self->stopped_event_.Wait();
+      return NO_ERROR;
+
+    case SERVICE_CONTROL_SESSIONCHANGE:
+      self->message_loop_->PostTask(FROM_HERE, base::Bind(
+          &HostService::OnSessionChange, base::Unretained(self)));
       return NO_ERROR;
 
     default:
@@ -365,7 +473,8 @@ VOID WINAPI HostService::ServiceMain(DWORD argc, WCHAR* argv[]) {
   service_status.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
   service_status.dwCurrentState = SERVICE_RUNNING;
   service_status.dwControlsAccepted = SERVICE_ACCEPT_SHUTDOWN |
-                                      SERVICE_ACCEPT_STOP;
+                                      SERVICE_ACCEPT_STOP |
+                                      SERVICE_ACCEPT_SESSIONCHANGE;
   service_status.dwWin32ExitCode = kSuccessExitCode;
 
   if (!SetServiceStatus(self->service_status_handle_, &service_status)) {
@@ -373,6 +482,11 @@ VOID WINAPI HostService::ServiceMain(DWORD argc, WCHAR* argv[]) {
         << "Failed to report service status to the service control manager";
     return;
   }
+
+  // Post a dummy session change notification to peek up the current console
+  // session.
+  message_loop.PostTask(FROM_HERE, base::Bind(
+      &HostService::OnSessionChange, base::Unretained(self)));
 
   // Run the service.
   self->RunMessageLoop();
@@ -388,6 +502,22 @@ VOID WINAPI HostService::ServiceMain(DWORD argc, WCHAR* argv[]) {
   }
 
   self->message_loop_ = NULL;
+}
+
+LRESULT CALLBACK HostService::SessionChangeNotificationProc(HWND hwnd,
+                                                            UINT message,
+                                                            WPARAM wparam,
+                                                            LPARAM lparam) {
+  switch (message) {
+    case WM_WTSSESSION_CHANGE: {
+      HostService* self = HostService::GetInstance();
+      self->OnSessionChange();
+      return 0;
+    }
+
+    default:
+      return DefWindowProc(hwnd, message, wparam, lparam);
+  }
 }
 
 } // namespace remoting

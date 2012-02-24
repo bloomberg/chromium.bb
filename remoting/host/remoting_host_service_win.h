@@ -8,15 +8,20 @@
 #include <windows.h>
 
 #include "base/memory/singleton.h"
+#include "base/observer_list.h"
 #include "base/string16.h"
 #include "base/synchronization/waitable_event.h"
+
+#include "remoting/host/wts_console_monitor_win.h"
 
 class CommandLine;
 class MessageLoop;
 
 namespace remoting {
 
-class HostService {
+class WtsConsoleObserver;
+
+class HostService : public WtsConsoleMonitor {
  public:
   static HostService* GetInstance();
 
@@ -26,9 +31,17 @@ class HostService {
   // Invoke the choosen action routine.
   int Run();
 
+  // WtsConsoleMonitor implementation
+  virtual void AddWtsConsoleObserver(WtsConsoleObserver* observer) OVERRIDE;
+  virtual void RemoveWtsConsoleObserver(
+                   WtsConsoleObserver* observer) OVERRIDE;
+
  private:
   HostService();
   ~HostService();
+
+  // Notifies the service of changes in session state.
+  void OnSessionChange();
 
   // This routine registers the service with the service control manager.
   int Install();
@@ -60,6 +73,21 @@ class HostService {
   // The main service entry point.
   static VOID WINAPI ServiceMain(DWORD argc, WCHAR* argv[]);
 
+  static LRESULT CALLBACK SessionChangeNotificationProc(HWND hwnd,
+                                                        UINT message,
+                                                        WPARAM wparam,
+                                                        LPARAM lparam);
+
+  // Current physical console session id.
+  uint32 console_session_id_;
+
+  // The list of observers receiving notifications about any session attached
+  // to the physical console.
+  ObserverList<WtsConsoleObserver> console_observers_;
+
+  // Service message loop.
+  MessageLoop* message_loop_;
+
   // The action routine to be executed.
   int (HostService::*run_routine_)();
 
@@ -72,8 +100,8 @@ class HostService {
   // The service status handle.
   SERVICE_STATUS_HANDLE service_status_handle_;
 
-  // Service message loop.
-  MessageLoop* message_loop_;
+  // True if the service is being stopped.
+  bool shutting_down_;
 
   // A waitable event that is used to wait until the service is stopped.
   base::WaitableEvent stopped_event_;

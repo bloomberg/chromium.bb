@@ -236,7 +236,18 @@
             'host/remoting_host_service_resource.h',
             'host/remoting_host_service_win.cc',
             'host/remoting_host_service_win.h',
+            'host/wts_console_monitor_win.h',
+            'host/wts_console_observer_win.h',
+            'host/wts_session_process_launcher_win.cc',
+            'host/wts_session_process_launcher_win.h',
           ],
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'AdditionalDependencies': [
+                'wtsapi32.lib',
+              ],
+            },
+          },
         },  # end of target 'remoting_service'
       ],
     }],  # 'OS=="win"'
