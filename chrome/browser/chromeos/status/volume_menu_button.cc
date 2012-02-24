@@ -44,14 +44,14 @@ bool ShouldShowStatusAreaVolume() {
 static int g_volume_percent = 0;
 
 int GetVolumePercent() {
-  AudioHandler* audio_handler = AudioHandler::GetInstanceIfInitialized();
+  AudioHandler* audio_handler = AudioHandler::GetInstance();
   if (audio_handler)
     return audio_handler->IsMuted() ? 0 : audio_handler->GetVolumePercent();
   return g_volume_percent;
 }
 
 void SetVolumePercent(int percent) {
-  AudioHandler* audio_handler = AudioHandler::GetInstanceIfInitialized();
+  AudioHandler* audio_handler = AudioHandler::GetInstance();
   if (audio_handler)
     audio_handler->SetVolumePercent(percent);
   g_volume_percent = percent;

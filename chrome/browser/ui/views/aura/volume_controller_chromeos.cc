@@ -22,13 +22,10 @@ const double kStepPercentage = 4.0;
 const double kVolumePercentOnVolumeUpWhileMuted = 25.0;
 
 void ShowVolumeBubble() {
-  chromeos::AudioHandler* audio_handler =
-      chromeos::AudioHandler::GetInstanceIfInitialized();
-  if (audio_handler) {
-    chromeos::VolumeBubble::GetInstance()->ShowBubble(
-        audio_handler->GetVolumePercent(),
-        !audio_handler->IsMuted());
-  }
+  chromeos::AudioHandler* audio_handler = chromeos::AudioHandler::GetInstance();
+  chromeos::VolumeBubble::GetInstance()->ShowBubble(
+      audio_handler->GetVolumePercent(),
+      !audio_handler->IsMuted());
   chromeos::BrightnessBubble::GetInstance()->HideBubble();
 }
 
@@ -38,10 +35,7 @@ bool VolumeController::HandleVolumeMute(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_F8)
     content::RecordAction(content::UserMetricsAction("Accel_VolumeMute_F8"));
 
-  chromeos::AudioHandler* audio_handler =
-      chromeos::AudioHandler::GetInstanceIfInitialized();
-  if (!audio_handler)
-    return false;
+  chromeos::AudioHandler* audio_handler = chromeos::AudioHandler::GetInstance();
 
   // Always muting (and not toggling) as per final decision on
   // http://crosbug.com/3751
@@ -57,11 +51,7 @@ bool VolumeController::HandleVolumeDown(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_F9)
     content::RecordAction(content::UserMetricsAction("Accel_VolumeDown_F9"));
 
-  chromeos::AudioHandler* audio_handler =
-      chromeos::AudioHandler::GetInstanceIfInitialized();
-  if (!audio_handler)
-    return false;
-
+  chromeos::AudioHandler* audio_handler = chromeos::AudioHandler::GetInstance();
   if (audio_handler->IsMuted())
     audio_handler->SetVolumePercent(0.0);
   else
@@ -77,11 +67,7 @@ bool VolumeController::HandleVolumeUp(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_F10)
     content::RecordAction(content::UserMetricsAction("Accel_VolumeUp_F10"));
 
-  chromeos::AudioHandler* audio_handler =
-      chromeos::AudioHandler::GetInstanceIfInitialized();
-  if (!audio_handler)
-    return false;
-
+  chromeos::AudioHandler* audio_handler = chromeos::AudioHandler::GetInstance();
   if (audio_handler->IsMuted()) {
     audio_handler->SetMuted(false);
     if (audio_handler->GetVolumePercent() <= 0.1)  // float comparison

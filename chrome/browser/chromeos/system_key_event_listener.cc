@@ -214,9 +214,7 @@ void SystemKeyEventListener::OnBrightnessUp() {
 }
 
 void SystemKeyEventListener::OnVolumeMute() {
-  AudioHandler* audio_handler = AudioHandler::GetInstanceIfInitialized();
-  if (!audio_handler)
-    return;
+  AudioHandler* audio_handler = AudioHandler::GetInstance();
 
   // Always muting (and not toggling) as per final decision on
   // http://crosbug.com/3751
@@ -228,9 +226,7 @@ void SystemKeyEventListener::OnVolumeMute() {
 }
 
 void SystemKeyEventListener::OnVolumeDown() {
-  AudioHandler* audio_handler = AudioHandler::GetInstanceIfInitialized();
-  if (!audio_handler)
-    return;
+  AudioHandler* audio_handler = AudioHandler::GetInstance();
 
   if (audio_handler->IsMuted())
     audio_handler->SetVolumePercent(0.0);
@@ -243,9 +239,7 @@ void SystemKeyEventListener::OnVolumeDown() {
 }
 
 void SystemKeyEventListener::OnVolumeUp() {
-  AudioHandler* audio_handler = AudioHandler::GetInstanceIfInitialized();
-  if (!audio_handler)
-    return;
+  AudioHandler* audio_handler = AudioHandler::GetInstance();
 
   if (audio_handler->IsMuted()) {
     audio_handler->SetMuted(false);
@@ -269,12 +263,10 @@ void SystemKeyEventListener::OnCapsLock(bool enabled) {
 
 #if !defined(USE_AURA)
 void SystemKeyEventListener::ShowVolumeBubble() {
-  AudioHandler* audio_handler = AudioHandler::GetInstanceIfInitialized();
-  if (audio_handler) {
-    VolumeBubble::GetInstance()->ShowBubble(
-        audio_handler->GetVolumePercent(),
-        !audio_handler->IsMuted());
-  }
+  AudioHandler* audio_handler = AudioHandler::GetInstance();
+  VolumeBubble::GetInstance()->ShowBubble(
+      audio_handler->GetVolumePercent(),
+      !audio_handler->IsMuted());
   BrightnessBubble::GetInstance()->HideBubble();
 }
 #endif

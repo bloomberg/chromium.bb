@@ -36,9 +36,6 @@ class AudioHandler {
   // GetInstance returns NULL if not initialized or if already shutdown.
   static AudioHandler* GetInstance();
 
-  // TODO(derat): Delete this now that |mixer_| can be used immediately.
-  static AudioHandler* GetInstanceIfInitialized() { return GetInstance(); }
-
   // Registers volume and mute preferences.
   static void RegisterPrefs(PrefService* local_state);
 
