@@ -157,14 +157,7 @@ void WizardController::Init(const std::string& first_screen_name,
     is_out_of_box_ = true;
   }
 
-  ShowFirstScreen(first_screen_name);
-}
-
-void WizardController::CancelOOBEUpdate() {
-  if (update_screen_.get() &&
-      update_screen_.get() == current_screen_) {
-    GetUpdateScreen()->CancelUpdate();
-  }
+  AdvanceToScreen(first_screen_name);
 }
 
 chromeos::NetworkScreen* WizardController::GetNetworkScreen() {
@@ -530,29 +523,29 @@ void WizardController::SetStatusAreaVisible(bool visible) {
   host_->SetStatusAreaVisible(visible);
 }
 
-void WizardController::ShowFirstScreen(const std::string& first_screen_name) {
-  if (first_screen_name == kNetworkScreenName) {
+void WizardController::AdvanceToScreen(const std::string& screen_name) {
+  if (screen_name == kNetworkScreenName) {
     ShowNetworkScreen();
-  } else if (first_screen_name == kLoginScreenName) {
+  } else if (screen_name == kLoginScreenName) {
     ShowLoginScreen();
-  } else if (first_screen_name == kUpdateScreenName) {
+  } else if (screen_name == kUpdateScreenName) {
     InitiateOOBEUpdate();
-  } else if (first_screen_name == kUserImageScreenName) {
+  } else if (screen_name == kUserImageScreenName) {
     ShowUserImageScreen();
-  } else if (first_screen_name == kEulaScreenName) {
+  } else if (screen_name == kEulaScreenName) {
     ShowEulaScreen();
-  } else if (first_screen_name == kRegistrationScreenName) {
+  } else if (screen_name == kRegistrationScreenName) {
     if (is_official_build_) {
       ShowRegistrationScreen();
     } else {
       // Just proceed to image screen.
       OnRegistrationSuccess();
     }
-  } else if (first_screen_name == kHTMLPageScreenName) {
+  } else if (screen_name == kHTMLPageScreenName) {
     ShowHTMLPageScreen();
-  } else if (first_screen_name == kEnterpriseEnrollmentScreenName) {
+  } else if (screen_name == kEnterpriseEnrollmentScreenName) {
     ShowEnterpriseEnrollmentScreen();
-  } else if (first_screen_name != kTestNoScreenName) {
+  } else if (screen_name != kTestNoScreenName) {
     if (is_out_of_box_) {
       ShowNetworkScreen();
     } else {

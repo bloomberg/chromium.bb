@@ -71,7 +71,7 @@ class WizardControllerTest : public WizardInProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(WizardControllerTest, SwitchLanguage) {
   ASSERT_TRUE(controller() != NULL);
-  controller()->ShowFirstScreen(WizardController::kNetworkScreenName);
+  controller()->AdvanceToScreen(WizardController::kNetworkScreenName);
 
   // Checking the default locale. Provided that the profile is cleared in SetUp.
   EXPECT_EQ("en-US", g_browser_process->GetApplicationLocale());
@@ -121,7 +121,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
     // Switch to the initial screen.
     EXPECT_EQ(NULL, controller()->current_screen());
     EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
-    controller()->ShowFirstScreen(WizardController::kNetworkScreenName);
+    controller()->AdvanceToScreen(WizardController::kNetworkScreenName);
 
     return ret;
   }
@@ -229,7 +229,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
   EXPECT_CALL(*mock_enterprise_enrollment_screen_, Show()).Times(1);
   EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
 
-  controller()->ShowEnterpriseEnrollmentScreen();
+  controller()->AdvanceToScreen(
+      WizardController::kEnterpriseEnrollmentScreenName);
   EnterpriseEnrollmentScreen* screen =
       controller()->GetEnterpriseEnrollmentScreen();
   EXPECT_EQ(screen, controller()->current_screen());
