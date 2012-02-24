@@ -9,13 +9,13 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class CommandLine;
-class FilePath;
 
 #if defined(USE_X11)
 namespace base {
@@ -76,6 +76,7 @@ class ShellIntegration {
     std::string extension_id;
     string16 title;
     string16 description;
+    FilePath extension_path;
     SkBitmap favicon;
 
     bool create_on_desktop;

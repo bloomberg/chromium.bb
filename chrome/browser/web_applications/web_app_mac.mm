@@ -117,6 +117,8 @@ bool WebAppShortcutCreator::UpdatePlist(const FilePath& app_path) const {
            forKey:app_mode::kCrAppModeShortcutURLKey];
   [dict setObject:base::mac::FilePathToNSString(user_data_dir_)
            forKey:app_mode::kCrAppModeUserDataDirKey];
+  [dict setObject:base::mac::FilePathToNSString(info_.extension_path)
+           forKey:app_mode::kCrAppModeExtensionPathKey];
   return [dict writeToFile:plist_path atomically:YES];
 }
 

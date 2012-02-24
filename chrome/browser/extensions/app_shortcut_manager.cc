@@ -71,6 +71,7 @@ void AppShortcutManager::InstallApplicationShortcuts(
   shortcut_info_.url = GURL(extension->launch_web_url());
   shortcut_info_.title = UTF8ToUTF16(extension->name());
   shortcut_info_.description = UTF8ToUTF16(extension->description());
+  shortcut_info_.extension_path = extension->path();
   shortcut_info_.create_in_applications_menu = true;
   shortcut_info_.create_in_quick_launch_bar = true;
   shortcut_info_.create_on_desktop = true;

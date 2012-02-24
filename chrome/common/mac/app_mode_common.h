@@ -39,6 +39,9 @@ extern NSString* const kCrAppModeShortcutURLKey;
 // Key for the app user data directory.
 extern NSString* const kCrAppModeUserDataDirKey;
 
+// Key for the app's extension path.
+extern NSString* const kCrAppModeExtensionPathKey;
+
 // Current major/minor version numbers of |ChromeAppModeInfo| (defined below).
 const unsigned kCurrentChromeAppModeInfoMajorVersion = 1;
 const unsigned kCurrentChromeAppModeInfoMinorVersion = 0;
@@ -85,6 +88,9 @@ struct ChromeAppModeInfo {
 
   // Path to the app's user data directory.
   FilePath user_data_dir;
+
+  // Path to the app's extension.
+  FilePath extension_path;
 };
 
 }  // namespace app_mode

@@ -98,6 +98,9 @@ void LoadFramework(void** cr_dylib, app_mode::ChromeAppModeInfo* info) {
   info->user_data_dir = base::mac::NSStringToFilePath(
       [info_plist objectForKey:app_mode::kCrAppModeUserDataDirKey]);
 
+  info->extension_path = base::mac::NSStringToFilePath(
+      [info_plist objectForKey:app_mode::kCrAppModeExtensionPathKey]);
+
   // Open the framework.
   *cr_dylib = dlopen(framework_shlib_path.value().c_str(), RTLD_LAZY);
   CHECK(cr_dylib) << "couldn't load framework: " << dlerror();

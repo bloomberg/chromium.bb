@@ -10,9 +10,11 @@
 #include <string>  // TODO(viettrungluu): only needed for temporary hack
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "chrome/common/chrome_paths_internal.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/mac/app_mode_common.h"
 
 extern "C" {
@@ -42,15 +44,19 @@ int ChromeAppModeStart(const app_mode::ChromeAppModeInfo* info) {
   RAW_CHECK(!chrome_versioned_path->empty());
   chrome::SetOverrideVersionedDirectory(chrome_versioned_path);
 
-  // TODO(viettrungluu): do something intelligent with data
-  //  return ChromeMain(info->argc, info->argv);
-  // For now, a cheesy hack instead.
+  CommandLine command_line(CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch(info->argv[0]);
   RAW_CHECK(info->app_mode_id.size());
-  std::string argv1(std::string("--app-id=") + info->app_mode_id);
-  std::string argv2(
-      std::string("--user-data-dir=") + info->user_data_dir.value());
-  char* argv[] = { info->argv[0],
-                   const_cast<char*>(argv1.c_str()),
-                   const_cast<char*>(argv2.c_str()) };
-  return ChromeMain(static_cast<int>(arraysize(argv)), argv);
+  command_line.AppendSwitchASCII(switches::kAppId, info->app_mode_id);
+  command_line.AppendSwitchPath(switches::kUserDataDir, info->user_data_dir);
+  // TODO(sail): Use a different flag that doesn't imply Location::LOAD for the
+  // extension.
+  command_line.AppendSwitchPath(switches::kLoadExtension, info->extension_path);
+
+  int argc = command_line.argv().size();
+  char* argv[argc];
+  for (int i = 0; i < argc; ++i)
+    argv[i] = const_cast<char*>(command_line.argv()[i].c_str());
+
+  return ChromeMain(argc, argv);
 }
