@@ -1,0 +1,167 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "webkit/chromeos/fileapi/remote_file_system_operation.h"
+
+#include "base/bind.h"
+#include "base/utf_string_conversions.h"
+#include "base/platform_file.h"
+#include "base/values.h"
+#include "webkit/fileapi/file_system_callback_dispatcher.h"
+
+namespace chromeos {
+
+RemoteFileSystemOperation::RemoteFileSystemOperation(
+    scoped_refptr<fileapi::RemoteFileSystemProxyInterface> remote_proxy)
+      : remote_proxy_(remote_proxy),
+        pending_operation_(kOperationNone) {
+}
+
+RemoteFileSystemOperation::~RemoteFileSystemOperation() {
+}
+
+void RemoteFileSystemOperation::GetMetadata(const GURL& path,
+    const GetMetadataCallback& callback) {
+  DCHECK(SetPendingOperationType(kOperationGetMetadata));
+  remote_proxy_->GetFileInfo(path,
+      base::Bind(&RemoteFileSystemOperation::DidGetMetadata,
+                 base::Owned(this), callback));
+}
+
+void RemoteFileSystemOperation::DirectoryExists(const GURL& path,
+    const StatusCallback& callback) {
+  DCHECK(SetPendingOperationType(kOperationDirectoryExists));
+  remote_proxy_->GetFileInfo(path,
+      base::Bind(&RemoteFileSystemOperation::DidDirectoryExists,
+                 base::Owned(this), callback));
+}
+
+void RemoteFileSystemOperation::FileExists(const GURL& path,
+    const StatusCallback& callback) {
+  DCHECK(SetPendingOperationType(kOperationFileExists));
+  remote_proxy_->GetFileInfo(path,
+      base::Bind(base::Bind(&RemoteFileSystemOperation::DidFileExists,
+                            base::Owned(this), callback)));
+}
+
+void RemoteFileSystemOperation::ReadDirectory(const GURL& path,
+    const ReadDirectoryCallback& callback) {
+  DCHECK(SetPendingOperationType(kOperationReadDirectory));
+  remote_proxy_->ReadDirectory(path,
+      base::Bind(&RemoteFileSystemOperation::DidReadDirectory,
+                 base::Owned(this), callback));
+}
+
+void RemoteFileSystemOperation::CreateFile(const GURL& path,
+                                           bool exclusive,
+                                           const StatusCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
+void RemoteFileSystemOperation::CreateDirectory(
+    const GURL& path, bool exclusive, bool recursive,
+    const StatusCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
+void RemoteFileSystemOperation::Copy(const GURL& src_path,
+                                     const GURL& dest_path,
+                                     const StatusCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
+void RemoteFileSystemOperation::Move(const GURL& src_path,
+                                     const GURL& dest_path,
+                  const StatusCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
+void RemoteFileSystemOperation::Remove(const GURL& path, bool recursive,
+                                       const StatusCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
+void RemoteFileSystemOperation::Write(
+    const net::URLRequestContext* url_request_context,
+    const GURL& path,
+    const GURL& blob_url,
+    int64 offset,
+    const WriteCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
+void RemoteFileSystemOperation::Truncate(const GURL& path,
+                                         int64 length,
+                                         const StatusCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
+void RemoteFileSystemOperation::Cancel(const StatusCallback& cancel_callback) {
+  NOTIMPLEMENTED();
+}
+
+void RemoteFileSystemOperation::TouchFile(const GURL& path,
+                                          const base::Time& last_access_time,
+                                          const base::Time& last_modified_time,
+                                          const StatusCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
+void RemoteFileSystemOperation::OpenFile(const GURL& path,
+                                         int file_flags,
+                                         base::ProcessHandle peer_handle,
+                                         const OpenFileCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
+fileapi::FileSystemOperation*
+RemoteFileSystemOperation::AsFileSystemOperation() {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
+bool RemoteFileSystemOperation::SetPendingOperationType(OperationType type) {
+  if (pending_operation_ != kOperationNone)
+    return false;
+  pending_operation_ = type;
+  return true;
+}
+
+void RemoteFileSystemOperation::DidDirectoryExists(
+    const StatusCallback& callback,
+    base::PlatformFileError rv,
+    const base::PlatformFileInfo& file_info,
+    const FilePath& unused) {
+  if (rv == base::PLATFORM_FILE_OK && !file_info.is_directory)
+    rv = base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+  callback.Run(rv);
+}
+
+void RemoteFileSystemOperation::DidFileExists(
+    const StatusCallback& callback,
+    base::PlatformFileError rv,
+    const base::PlatformFileInfo& file_info,
+    const FilePath& unused) {
+  if (rv == base::PLATFORM_FILE_OK && file_info.is_directory)
+    rv = base::PLATFORM_FILE_ERROR_NOT_A_FILE;
+  callback.Run(rv);
+}
+
+void RemoteFileSystemOperation::DidGetMetadata(
+    const GetMetadataCallback& callback,
+    base::PlatformFileError rv,
+    const base::PlatformFileInfo& file_info,
+    const FilePath& platform_path) {
+  callback.Run(rv, file_info, platform_path);
+}
+
+void RemoteFileSystemOperation::DidReadDirectory(
+    const ReadDirectoryCallback& callback,
+    base::PlatformFileError rv,
+    const std::vector<base::FileUtilProxy::Entry>& entries,
+    bool has_more) {
+  callback.Run(rv, entries, has_more /* has_more */);
+}
+
+}  // namespace chromeos

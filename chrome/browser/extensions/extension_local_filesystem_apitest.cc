@@ -25,7 +25,7 @@ class FileSystemExtensionApiTest : public ExtensionApiTest {
     fileapi::ExternalFileSystemMountPointProvider* provider =
         BrowserContext::GetFileSystemContext(browser()->profile())->
             external_provider();
-    provider->AddMountPoint(test_mount_point_);
+    provider->AddLocalMountPoint(test_mount_point_);
   }
 
  private:

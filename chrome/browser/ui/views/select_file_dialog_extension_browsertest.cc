@@ -105,7 +105,7 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
     fileapi::ExternalFileSystemMountPointProvider* provider =
         BrowserContext::GetFileSystemContext(browser()->profile())->
             external_provider();
-    provider->AddMountPoint(path);
+    provider->AddLocalMountPoint(path);
   }
 
   void OpenDialog(SelectFileDialog::Type dialog_type,

@@ -194,6 +194,27 @@ class FileSystemOperationInterface {
   // TODO(kinuko): this hack should go away once appropriate upload-stream
   // handling based on element types is supported.
   virtual FileSystemOperation* AsFileSystemOperation() = 0;
+
+ protected:
+  // Used only for internal assertions.
+  enum OperationType {
+    kOperationNone,
+    kOperationCreateFile,
+    kOperationCreateDirectory,
+    kOperationCopy,
+    kOperationMove,
+    kOperationDirectoryExists,
+    kOperationFileExists,
+    kOperationGetMetadata,
+    kOperationReadDirectory,
+    kOperationRemove,
+    kOperationWrite,
+    kOperationTruncate,
+    kOperationTouchFile,
+    kOperationOpenFile,
+    kOperationGetLocalPath,
+    kOperationCancel,
+  };
 };
 
 }  // namespace fileapi

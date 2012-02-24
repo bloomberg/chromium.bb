@@ -93,27 +93,7 @@ class FileSystemOperation : public FileSystemOperationInterface {
   // Synchronously gets the platform path for the given |path|.
   void SyncGetPlatformPath(const GURL& path, FilePath* platform_path);
 
- private:
-  // Used only for internal assertions.
-  enum OperationType {
-    kOperationNone,
-    kOperationCreateFile,
-    kOperationCreateDirectory,
-    kOperationCopy,
-    kOperationMove,
-    kOperationDirectoryExists,
-    kOperationFileExists,
-    kOperationGetMetadata,
-    kOperationReadDirectory,
-    kOperationRemove,
-    kOperationWrite,
-    kOperationTruncate,
-    kOperationTouchFile,
-    kOperationOpenFile,
-    kOperationGetLocalPath,
-    kOperationCancel,
-  };
-
+ protected:
   class ScopedQuotaUtilHelper;
 
   // Only MountPointProviders or testing class can create a
@@ -205,7 +185,8 @@ class FileSystemOperation : public FileSystemOperationInterface {
   void DidReadDirectory(
       const ReadDirectoryCallback& callback,
       base::PlatformFileError rv,
-      const std::vector<base::FileUtilProxy::Entry>& entries);
+      const std::vector<base::FileUtilProxy::Entry>& entries,
+      bool has_more);
   void DidWrite(base::PlatformFileError rv,
                 int64 bytes,
                 bool complete);

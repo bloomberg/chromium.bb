@@ -26,6 +26,7 @@ namespace fileapi {
 class FileSystemContext;
 class FileSystemFileUtil;
 class FileSystemOperationInterface;
+class RemoteFileSystemProxyInterface;
 
 // An interface to provide mount-point-specific path-related utilities
 // and specialized FileSystemFileUtil instance.
@@ -101,10 +102,16 @@ class ExternalFileSystemMountPointProvider
   // Revoke file access from extension identified with |extension_id|.
   virtual void RevokeAccessForExtension(
         const std::string& extension_id) = 0;
-  // Adds a new mount point.
-  virtual void AddMountPoint(FilePath mount_point) = 0;
+  // Checks if a given |mount_point| already exists.
+  virtual bool HasMountPoint(const FilePath& mount_point) = 0;
+  // Adds a new local mount point.
+  virtual void AddLocalMountPoint(const FilePath& mount_point) = 0;
+  // Adds a new remote mount point.
+  virtual void AddRemoteMountPoint(
+      const FilePath& mount_point,
+      RemoteFileSystemProxyInterface* remote_proxy) = 0;
   // Remove a mount point.
-  virtual void RemoveMountPoint(FilePath mount_point) = 0;
+  virtual void RemoveMountPoint(const FilePath& mount_point) = 0;
   // Gets virtual path by known filesystem path. Returns false when filesystem
   // path is not exposed by this provider.
   virtual bool GetVirtualPath(const FilePath& filesystem_path,

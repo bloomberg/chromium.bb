@@ -41,8 +41,8 @@ class FileSystemFileUtilProxy {
                               const FilePath& /* platform_path */
                               )> GetFileInfoCallback;
   typedef base::Callback<void(PlatformFileError,
-                              const std::vector<Entry>&
-                              )> ReadDirectoryCallback;
+                              const std::vector<Entry>&,
+                              bool has_more)> ReadDirectoryCallback;
 
   typedef base::Callback<PlatformFileError(bool* /* created */
                                            )> EnsureFileExistsTask;

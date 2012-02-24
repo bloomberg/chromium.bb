@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -81,6 +81,9 @@
             '../chromeos/fileapi/file_access_permissions.cc',
             '../chromeos/fileapi/file_access_permissions.h',
             '../chromeos/fileapi/file_util_async.h',
+            '../chromeos/fileapi/remote_file_system_operation.cc',
+            '../chromeos/fileapi/remote_file_system_operation.h',
+            '../chromeos/fileapi/remote_file_system_proxy.h',
           ],
         }],
       ],
