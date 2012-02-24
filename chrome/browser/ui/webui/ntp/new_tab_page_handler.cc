@@ -27,7 +27,7 @@ static const int kIntroDisplayMax = 10;
 
 // The URL of a knowledge-base article about the new NTP.
 static const char kNtp4IntroURL[] =
-  "http://www.google.com/support/chrome/bin/answer.py?answer=95451";
+    "http://www.google.com/support/chrome/bin/answer.py?answer=95451";
 
 static const char kDefaultPageTypeHistogram[] =
     "NewTabPage.DefaultPageType";
