@@ -5901,6 +5901,32 @@
    fun:_ZN7content20TraceSubscriberStdioC1ERK8FilePath
    fun:_ZN48TraceSubscriberStdioTest_CanWriteDataToFile_Test8TestBodyEv
 }
+{
+   bug_113638
+   Memcheck:Unaddressable
+   fun:_ZN4aura6Window5layerEv
+   fun:_ZN5views16NativeWidgetAura10SetOpacityEh
+   fun:_ZN5views6Widget10SetOpacityEh
+   fun:_ZN17StatusBubbleViews10StatusView10SetOpacityEd
+   fun:_ZN17StatusBubbleViews10StatusView14AnimationEndedEPKN2ui9AnimationE
+   fun:_ZN2ui9Animation4StopEv
+   fun:_ZN17StatusBubbleViews10StatusViewD0Ev
+   fun:_ZN10scoped_ptrIN5views4ViewEED1Ev
+   fun:_ZN5views4View17DoRemoveChildViewEPS0_bbb
+   fun:_ZN5views4View19RemoveAllChildViewsEb
+   fun:_ZN5views8internal8RootViewD0Ev
+   fun:_ZN10scoped_ptrIN5views8internal8RootViewEE5resetEPS2_
+   fun:_ZN5views6Widget15DestroyRootViewEv
+   fun:_ZN5views6WidgetD0Ev
+   fun:_ZN10scoped_ptrIN5views6WidgetEED1Ev
+   fun:_ZN17StatusBubbleViewsD0Ev
+   fun:_ZN10scoped_ptrI17StatusBubbleViewsED1Ev
+   fun:_ZN11BrowserViewD0Ev
+   fun:_ZN5views4ViewD2Ev
+   fun:_ZN5views13NonClientViewD0Ev
+   fun:_ZN10scoped_ptrIN5views4ViewEED1Ev
+   fun:_ZN5views4View17DoRemoveChildViewEPS0_bbb
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
