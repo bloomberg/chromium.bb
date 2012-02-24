@@ -23,6 +23,19 @@ class TestKeyEvent : public aura::KeyEvent {
   }
 };
 
+class TestTouchEvent : public aura::TouchEvent {
+ public:
+  TestTouchEvent(ui::EventType type,
+                 const gfx::Point& root_location,
+                 int flags)
+      : TouchEvent(type, root_location, 0) {
+    set_flags(flags);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestTouchEvent);
+};
+
 gfx::Point CenterOfWindowInRootWindowCoordinate(aura::RootWindow* root_window,
                                                 aura::Window* window) {
   gfx::Point center = window->bounds().CenterPoint();
@@ -119,19 +132,19 @@ void EventGenerator::MoveMouseToCenterOf(Window* window) {
 }
 
 void EventGenerator::PressTouch() {
-  TouchEvent touchev(ui::ET_TOUCH_PRESSED, current_location_, flags_);
+  TestTouchEvent touchev(ui::ET_TOUCH_PRESSED, current_location_, flags_);
   Dispatch(touchev);
 }
 
 void EventGenerator::ReleaseTouch() {
-  TouchEvent touchev(ui::ET_TOUCH_RELEASED, current_location_, flags_);
+  TestTouchEvent touchev(ui::ET_TOUCH_RELEASED, current_location_, flags_);
   Dispatch(touchev);
 }
 
 void EventGenerator::PressMoveAndReleaseTouchTo(const gfx::Point& point) {
   PressTouch();
 
-  TouchEvent touchev(ui::ET_TOUCH_MOVED, point, flags_);
+  TestTouchEvent touchev(ui::ET_TOUCH_MOVED, point, flags_);
   Dispatch(touchev);
 
   current_location_ = point;

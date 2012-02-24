@@ -65,8 +65,8 @@ class ASH_EXPORT ToplevelWindowEventFilter :
   // Are we running a nested message loop from RunMoveLoop().
   bool in_move_loop_;
 
-  // Set of touch ids currently pressed.
-  std::set<int> pressed_touch_ids_;
+  // Is a gesture-resize in progress?
+  bool in_gesture_resize_;
 
   // See description above setter.
   int grid_size_;

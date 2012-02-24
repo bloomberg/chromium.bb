@@ -24,6 +24,7 @@ namespace ash {
 
 ToplevelWindowEventFilter::ToplevelWindowEventFilter(aura::Window* owner)
     : in_move_loop_(false),
+      in_gesture_resize_(false),
       grid_size_(0) {
   aura::client::SetWindowMoveClient(owner, this);
 }
@@ -77,45 +78,44 @@ bool ToplevelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
 ui::TouchStatus ToplevelWindowEventFilter::PreHandleTouchEvent(
     aura::Window* target,
     aura::TouchEvent* event) {
-  // TODO(sad): Allow resizing/maximizing etc. from touch?
-  int component =
-      target->delegate()->GetNonClientComponent(event->location());
-  if (WindowResizer::GetBoundsChangeForWindowComponent(component) == 0) {
-    // TODO: this seems wrong, shouldn't we reset state such as window_resizer_?
-    return ui::TOUCH_STATUS_UNKNOWN;
-  }
-
-  // Handle touch move by simulate mouse drag with single touch.
-  switch (event->type()) {
-    case ui::ET_TOUCH_PRESSED:
-      window_resizer_.reset(
-          new WindowResizer(target, event->location(), component, grid_size_));
-      pressed_touch_ids_.insert(event->touch_id());
-      if (pressed_touch_ids_.size() == 1)
-        return ui::TOUCH_STATUS_START;
-      break;
-    case ui::ET_TOUCH_MOVED:
-      if (pressed_touch_ids_.size() == 1 && HandleDrag(target, event))
-        return ui::TOUCH_STATUS_CONTINUE;
-      break;
-    case ui::ET_TOUCH_RELEASED:
-      pressed_touch_ids_.erase(event->touch_id());
-      if (pressed_touch_ids_.empty()) {
-        CompleteDrag(target);
-        return ui::TOUCH_STATUS_END;
-      }
-      break;
-    default:
-      break;
-  }
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
 ui::GestureStatus ToplevelWindowEventFilter::PreHandleGestureEvent(
     aura::Window* target, aura::GestureEvent* event) {
-  // TODO(sad): Process gestures as appropriate (e.g. switch between windows,
-  // close window etc.)
-  return ui::GESTURE_STATUS_UNKNOWN;
+  switch (event->type()) {
+    case ui::ET_GESTURE_SCROLL_BEGIN: {
+      int component =
+          target->delegate()->GetNonClientComponent(event->location());
+      if (WindowResizer::GetBoundsChangeForWindowComponent(component) == 0) {
+        window_resizer_.reset();
+        return ui::GESTURE_STATUS_UNKNOWN;
+      }
+      in_gesture_resize_ = true;
+      window_resizer_.reset(
+          new WindowResizer(target, event->location(), component, grid_size_));
+      if (!window_resizer_->is_resizable())
+        window_resizer_.reset();
+      break;
+    }
+    case ui::ET_GESTURE_SCROLL_UPDATE: {
+      if (!in_gesture_resize_)
+        return ui::GESTURE_STATUS_UNKNOWN;
+      HandleDrag(target, event);
+      break;
+    }
+    case ui::ET_GESTURE_SCROLL_END: {
+      if (!in_gesture_resize_)
+        return ui::GESTURE_STATUS_UNKNOWN;
+      CompleteDrag(target);
+      in_gesture_resize_ = false;
+      break;
+    }
+    default:
+      return ui::GESTURE_STATUS_UNKNOWN;
+  }
+
+  return ui::GESTURE_STATUS_CONSUMED;
 }
 
 void ToplevelWindowEventFilter::RunMoveLoop(aura::Window* source) {
@@ -154,7 +154,8 @@ bool ToplevelWindowEventFilter::HandleDrag(aura::Window* target,
   // This function only be triggered to move window
   // by mouse drag or touch move event.
   DCHECK(event->type() == ui::ET_MOUSE_DRAGGED ||
-         event->type() == ui::ET_TOUCH_MOVED);
+         event->type() == ui::ET_TOUCH_MOVED ||
+         event->type() == ui::ET_GESTURE_SCROLL_UPDATE);
 
   if (!window_resizer_.get())
     return false;
