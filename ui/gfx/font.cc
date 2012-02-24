@@ -5,7 +5,6 @@
 #include "ui/gfx/font.h"
 
 #include "base/utf_string_conversions.h"
-#include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/platform_font.h"
 
 namespace gfx {
@@ -60,7 +59,7 @@ int Font::GetAverageCharacterWidth() const {
 }
 
 int Font::GetStringWidth(const string16& text) const {
-  return CanvasSkia::GetStringWidth(text, *this);
+  return platform_font_->GetStringWidth(text);
 }
 
 int Font::GetExpectedTextWidth(int length) const {

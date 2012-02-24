@@ -10,6 +10,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
 
 namespace gfx {
@@ -53,6 +54,11 @@ int PlatformFontMac::GetBaseline() const {
 
 int PlatformFontMac::GetAverageCharacterWidth() const {
   return average_width_;
+}
+
+int PlatformFontMac::GetStringWidth(const string16& text) const {
+  return CanvasSkia::GetStringWidth(text,
+                                    Font(const_cast<PlatformFontMac*>(this)));
 }
 
 int PlatformFontMac::GetExpectedTextWidth(int length) const {

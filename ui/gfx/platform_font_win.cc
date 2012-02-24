@@ -13,6 +13,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/win_util.h"
+#include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
 
 namespace {
@@ -99,6 +100,11 @@ int PlatformFontWin::GetBaseline() const {
 
 int PlatformFontWin::GetAverageCharacterWidth() const {
   return font_ref_->ave_char_width();
+}
+
+int PlatformFontWin::GetStringWidth(const string16& text) const {
+  return CanvasSkia::GetStringWidth(text,
+                                    Font(const_cast<PlatformFontWin*>(this)));
 }
 
 int PlatformFontWin::GetExpectedTextWidth(int length) const {
