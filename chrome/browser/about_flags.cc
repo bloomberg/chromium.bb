@@ -67,14 +67,6 @@ const char kMediaPlayerExperimentName[] = "media-player";
 const char kAdvancedFileSystemExperimentName[] = "advanced-file-system";
 const char kVerticalTabsExperimentName[] = "vertical-tabs";
 
-const Experiment::Choice kPrerenderFromOmniboxChoices[] = {
-  { IDS_FLAGS_PRERENDER_FROM_OMNIBOX_AUTOMATIC, "", "" },
-  { IDS_FLAGS_PRERENDER_FROM_OMNIBOX_ENABLED, switches::kPrerenderFromOmnibox,
-    switches::kPrerenderFromOmniboxSwitchValueEnabled },
-  { IDS_FLAGS_PRERENDER_FROM_OMNIBOX_DISABLED, switches::kPrerenderFromOmnibox,
-    switches::kPrerenderFromOmniboxSwitchValueDisabled }
-};
-
 const Experiment::Choice kOmniboxAggressiveHistoryURLChoices[] = {
   { IDS_FLAGS_OMNIBOX_AGGRESSIVE_HISTORY_URL_SCORING_AUTOMATIC, "", "" },
   { IDS_FLAGS_OMNIBOX_AGGRESSIVE_HISTORY_URL_SCORING_ENABLED,
@@ -379,13 +371,6 @@ const Experiment kExperiments[] = {
     // On by default for the Mac (different implementation in WebKit).
     kOsWin | kOsLinux | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnableSmoothScrolling)
-  },
-  {
-    "prerender-from-omnibox",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_PRERENDER_FROM_OMNIBOX_NAME,
-    IDS_FLAGS_PRERENDER_FROM_OMNIBOX_DESCRIPTION,
-    kOsAll,
-    MULTI_VALUE_TYPE(kPrerenderFromOmniboxChoices)
   },
   {
     "omnibox-aggressive-with-history-url",

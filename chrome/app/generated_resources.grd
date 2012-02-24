@@ -4943,21 +4943,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enable Omnibox History in the sync settings. This allows syncing your typed URL history to other clients to assist in omnibox auto-completion.
         </message>
       </if>
-      <message name="IDS_FLAGS_PRERENDER_FROM_OMNIBOX_NAME" desc="Title for the flag to prerender from the omnibox">
-        Prerender from omnibox
-      </message>
-      <message name="IDS_FLAGS_PRERENDER_FROM_OMNIBOX_DESCRIPTION" desc="Description for the flag to prerender from the omnibox">
-        Enables prerendering of suggestions from the Omnibox and predicts appropriate network actions (prerendering, Instant, DNS preconnect) by calculating a confidence value for each Omnibox result.
-      </message>
-      <message name="IDS_FLAGS_PRERENDER_FROM_OMNIBOX_AUTOMATIC" desc="Option name for automatic selection in the Prerendering from Omnibox lab">
-        Automatic
-      </message>
-      <message name="IDS_FLAGS_PRERENDER_FROM_OMNIBOX_ENABLED" desc="Option name for always enabling Prerendering from the Omnibox">
-        Enabled
-      </message>
-      <message name="IDS_FLAGS_PRERENDER_FROM_OMNIBOX_DISABLED" desc="Option name for always disabling Prerendering from Omnibox">
-        Disabled
-      </message>
       <message name="IDS_FLAGS_OMNIBOX_AGGRESSIVE_HISTORY_URL_SCORING_NAME" desc="Title for the flag for omnibox to be more aggressive with matches from the HistoryURL provider">
         Aggressive history URL scoring
       </message>
