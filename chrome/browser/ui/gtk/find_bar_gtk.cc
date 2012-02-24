@@ -508,8 +508,7 @@ void FindBarGtk::Observe(int type,
 
     gtk_misc_set_alignment(GTK_MISC(match_count_label_), 0.5, 0.5);
   } else {
-    GdkColor gray = GDK_COLOR_RGB(0x7f, 0x7f, 0x7f);
-    gtk_widget_modify_cursor(text_entry_, &ui::kGdkBlack, &gray);
+    gtk_widget_modify_cursor(text_entry_, &ui::kGdkBlack, &ui::kGdkGray);
     gtk_widget_modify_base(text_entry_, GTK_STATE_NORMAL,
                            &kEntryBackgroundColor);
     gtk_widget_modify_text(text_entry_, GTK_STATE_NORMAL, &kEntryTextColor);

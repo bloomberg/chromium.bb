@@ -128,7 +128,7 @@ ExtensionInstallDialog::ExtensionInstallDialog(
                      center_heading, 0);
 
   if (is_inline_install) {
-    // Average rating (as stars) and number of ratings
+    // Average rating (as stars) and number of ratings.
     GtkWidget* stars_hbox = gtk_hbox_new(FALSE, 0);
     gtk_box_pack_start(GTK_BOX(heading_vbox), stars_hbox, FALSE, FALSE, 0);
     prompt.AppendRatingStars(AddResourceIcon, stars_hbox);
@@ -138,17 +138,16 @@ ExtensionInstallDialog::ExtensionInstallDialog(
     gtk_box_pack_start(GTK_BOX(stars_hbox), rating_label,
                        FALSE, FALSE, 3);
 
-    // User count
+    // User count.
     GtkWidget* users_label = gtk_label_new(UTF16ToUTF8(
         prompt.GetUserCount()).c_str());
     gtk_util::SetLabelWidth(users_label, kLeftColumnMinWidth);
-    GdkColor gray = GDK_COLOR_RGB(0x7f, 0x7f, 0x7f);
-    gtk_util::SetLabelColor(users_label, &gray);
+    gtk_util::SetLabelColor(users_label, &ui::kGdkGray);
     gtk_util::ForceFontSizePixels(rating_label, kRatingTextSize);
     gtk_box_pack_start(GTK_BOX(heading_vbox), users_label,
                        FALSE, FALSE, 0);
 
-    // Store link
+    // Store link.
     GtkWidget* store_link = gtk_chrome_link_button_new(
         l10n_util::GetStringUTF8(IDS_EXTENSION_PROMPT_STORE_LINK).c_str());
     gtk_util::ForceFontSizePixels(store_link, kRatingTextSize);
