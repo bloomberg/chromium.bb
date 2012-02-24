@@ -1793,8 +1793,14 @@ TEST_F(TabStripModelTest, Apps) {
 #elif defined(OS_POSIX)
   FilePath path(FILE_PATH_LITERAL("/foo"));
 #endif
-  scoped_refptr<Extension> extension_app(new Extension(path,
-                                                       Extension::INVALID));
+
+  DictionaryValue manifest;
+  manifest.SetString("name", "hi!");
+  manifest.SetString("version", "1");
+  std::string error;
+  scoped_refptr<Extension> extension_app(
+      Extension::Create(path, Extension::INVALID, manifest, Extension::NO_FLAGS,
+                        &error));
   extension_app->launch_web_url_ = "http://www.google.com";
   TabContentsWrapper* contents1 = CreateTabContents();
   contents1->extension_tab_helper()->SetExtensionApp(extension_app);

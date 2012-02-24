@@ -78,18 +78,21 @@ void ParseEnumSet(const DictionaryValue* value,
                   const std::string& property,
                   std::set<T>* enum_set,
                   const std::map<std::string, T>& mapping) {
-  std::set<std::string> string_set;
-  ParseSet(value, property, &string_set);
-  for (std::set<std::string>::iterator iter = string_set.begin();
-       iter != string_set.end(); ++iter) {
-    if (*iter == "all") {
+  std::string property_string;
+  if (value->GetString(property, &property_string)) {
+    if (property_string == "all") {
       for (typename std::map<std::string, T>::const_iterator j =
                mapping.begin(); j != mapping.end(); ++j) {
         enum_set->insert(j->second);
       }
-      return;
     }
+    return;
+  }
 
+  std::set<std::string> string_set;
+  ParseSet(value, property, &string_set);
+  for (std::set<std::string>::iterator iter = string_set.begin();
+       iter != string_set.end(); ++iter) {
     T enum_value = static_cast<T>(0);
     ParseEnum(*iter, &enum_value, mapping);
     enum_set->insert(enum_value);
@@ -115,7 +118,7 @@ scoped_ptr<Feature> Feature::Parse(const DictionaryValue* value) {
   scoped_ptr<Feature> feature(new Feature());
 
   ParseSet(value, "whitelist", feature->whitelist());
-  ParseEnumSet<Extension::Type>(value, "package_type",
+  ParseEnumSet<Extension::Type>(value, "extension_types",
                                 feature->extension_types(),
                                 g_mappings.Get().extension_types);
   ParseEnumSet<Context>(value, "contexts", feature->contexts(),

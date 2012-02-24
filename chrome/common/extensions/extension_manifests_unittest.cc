@@ -997,9 +997,11 @@ TEST_F(ExtensionManifestTest, BackgroundPage) {
   EXPECT_EQ("/foo.html", extension->GetBackgroundURL().path());
 
   manifest->SetInteger(keys::kManifestVersion, 2);
-  extension = LoadAndExpectSuccess(Manifest(manifest.get(), ""));
-  ASSERT_TRUE(extension);
-  EXPECT_FALSE(extension->GetBackgroundURL().is_valid());
+  LoadAndExpectError(
+      Manifest(manifest.get(), ""),
+      ExtensionErrorUtils::FormatErrorMessage(
+          errors::kFeatureNotAllowed, "background_page"),
+      Extension::INTERNAL, Extension::STRICT_ERROR_CHECKS);
 }
 
 TEST_F(ExtensionManifestTest, BackgroundScripts) {

@@ -10,9 +10,5 @@
     ],
     "name": "name",
     "popup": "popup.html"
-  },
-  "page_actions": [
-    {
-    }
-  ]
+  }
 }

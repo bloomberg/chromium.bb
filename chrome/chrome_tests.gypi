@@ -2047,6 +2047,7 @@
         'common/extensions/extension_unittest.cc',
         'common/extensions/extension_unpacker_unittest.cc',
         'common/extensions/feature_unittest.cc',
+        'common/extensions/manifest_feature_provider_unittest.cc',
         'common/extensions/manifest_unittest.cc',
         'common/extensions/update_manifest_unittest.cc',
         'common/extensions/url_pattern_set_unittest.cc',

@@ -8,132 +8,36 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/string_split.h"
-#include "base/values.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
+#include "chrome/common/extensions/manifest_feature_provider.h"
 
 namespace errors = extension_manifest_errors;
 namespace keys = extension_manifest_keys;
 
 namespace extensions {
 
-namespace {
-
-typedef std::map<std::string, int> RestrictionMap;
-
-struct Restrictions {
-  Restrictions() {
-    // Base keys that all manifests can specify.
-    map[keys::kName] = Manifest::kTypeAll;
-    map[keys::kVersion] = Manifest::kTypeAll;
-    map[keys::kManifestVersion] = Manifest::kTypeAll;
-    map[keys::kDescription] = Manifest::kTypeAll;
-    map[keys::kCommands] = Manifest::kTypeAll;
-    map[keys::kIcons] = Manifest::kTypeAll;
-    map[keys::kCurrentLocale] = Manifest::kTypeAll;
-    map[keys::kDefaultLocale] = Manifest::kTypeAll;
-    map[keys::kSignature] = Manifest::kTypeAll;
-    map[keys::kUpdateURL] = Manifest::kTypeAll;
-    map[keys::kPublicKey] = Manifest::kTypeAll;
-
-    // Type specific.
-    map[keys::kApp] = Manifest::kTypeHostedApp | Manifest::kTypePackagedApp |
-                      Manifest::kTypePlatformApp;
-    map[keys::kTheme] = Manifest::kTypeTheme;
-
-    // keys::kPlatformApp holds a boolean, so all types can define it.
-    map[keys::kPlatformApp] = Manifest::kTypeAll;
-
-    // Extensions only.
-    map[keys::kBrowserAction] = Manifest::kTypeExtension;
-    map[keys::kPageAction] = Manifest::kTypeExtension;
-    map[keys::kPageActions] = Manifest::kTypeExtension;
-
-    // Everything except themes.
-    int all_but_themes = Manifest::kTypeAll - Manifest::kTypeTheme;
-    map[keys::kPermissions] = all_but_themes;
-    map[keys::kOptionalPermissions] = all_but_themes;
-    map[keys::kOptionsPage] = all_but_themes;
-    map[keys::kBackground] = all_but_themes;
-    map[keys::kBackgroundPageLegacy] = all_but_themes;
-    map[keys::kOfflineEnabled] = all_but_themes;
-    map[keys::kMinimumChromeVersion] = all_but_themes;
-    map[keys::kRequirements] = all_but_themes;
-    map[keys::kConvertedFromUserScript] = all_but_themes;
-    map[keys::kNaClModules] = all_but_themes;
-    map[keys::kWebAccessibleResources] = all_but_themes;
-    map[keys::kIntents] = all_but_themes;
-
-    // Everything except themes and platform apps.
-    map[keys::kPlugins] = all_but_themes - Manifest::kTypePlatformApp;
-
-    // Extensions and packaged apps.
-    int ext_and_packaged =
-        Manifest::kTypeExtension | Manifest::kTypePackagedApp;
-    map[keys::kContentScripts] = ext_and_packaged;
-    map[keys::kOmnibox] = ext_and_packaged;
-    map[keys::kDevToolsPage] = ext_and_packaged;
-    map[keys::kHomepageURL] = ext_and_packaged;
-    map[keys::kChromeURLOverrides] = ext_and_packaged;
-    map[keys::kInputComponents] = ext_and_packaged;
-    map[keys::kTtsEngine] = ext_and_packaged;
-    map[keys::kFileBrowserHandlers] = ext_and_packaged;
-
-    // Extensions, packaged apps and platform apps.
-    int local_apps_and_ext = ext_and_packaged | Manifest::kTypePlatformApp;
-    map[keys::kContentSecurityPolicy] = local_apps_and_ext;
-    map[keys::kIncognito] = local_apps_and_ext;
-  }
-
-  // Returns true if the |key| is recognized.
-  bool IsKnownKey(const std::string& key) const {
-    RestrictionMap::const_iterator i = map.find(key);
-    return i != map.end();
-  }
-
-  // Returns true if the given |key| can be specified by the manifest |type|.
-  bool CanAccessKey(const std::string& key, Manifest::Type type) const {
-    RestrictionMap::const_iterator i = map.find(key);
-    return (i != map.end() && (type & i->second) != 0);
-  }
-
-  RestrictionMap map;
-
-  DISALLOW_COPY_AND_ASSIGN(Restrictions);
-};
-
-static base::LazyInstance<Restrictions> g_restrictions =
-    LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
-
-// static
-std::set<std::string> Manifest::GetAllKnownKeys() {
-  std::set<std::string> keys;
-  const RestrictionMap& map = g_restrictions.Get().map;
-  for (RestrictionMap::const_iterator i = map.begin(); i != map.end(); i++)
-    keys.insert(i->first);
-  return keys;
+Manifest::Manifest(Extension::Location location,
+                   scoped_ptr<DictionaryValue> value)
+    : location_(location), value_(value.Pass()) {
 }
 
-Manifest::Manifest(DictionaryValue* value) : value_(value) {}
-Manifest::~Manifest() {}
+Manifest::~Manifest() {
+}
 
 bool Manifest::ValidateManifest(string16* error) const {
-  const Restrictions& restrictions = g_restrictions.Get();
-  Type type = GetType();
-
   for (DictionaryValue::key_iterator key = value_->begin_keys();
        key != value_->end_keys(); ++key) {
-    // When validating the extension manifests, we ignore keys that are not
-    // recognized for forward compatibility.
-    if (!restrictions.IsKnownKey(*key)) {
-      // TODO(aa): Consider having an error here in the case of strict error
-      // checking to let developers know when they screw up.
-      continue;
-    }
+    bool was_known = false;
+    if (!CanAccessKey(*key, &was_known)) {
+      // When validating the extension manifests, we ignore keys that are not
+      // recognized for forward compatibility.
+      if (!was_known) {
+        // TODO(aa): Consider having an error here in the case of strict error
+        // checking to let developers know when they screw up.
+        continue;
+      }
 
-    if (!restrictions.CanAccessKey(*key, type)) {
       *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
           errors::kFeatureNotAllowed, *key);
       return false;
@@ -144,8 +48,7 @@ bool Manifest::ValidateManifest(string16* error) const {
 }
 
 bool Manifest::HasKey(const std::string& key) const {
-  const Restrictions& restrictions = g_restrictions.Get();
-  return restrictions.CanAccessKey(key, GetType()) && value_->HasKey(key);
+  return CanAccessKey(key, NULL) && value_->HasKey(key);
 }
 
 bool Manifest::Get(
@@ -184,53 +87,75 @@ bool Manifest::GetList(
 }
 
 Manifest* Manifest::DeepCopy() const {
-  return new Manifest(value_->DeepCopy());
+  Manifest* manifest = new Manifest(
+      location_, scoped_ptr<DictionaryValue>(value_->DeepCopy()));
+  manifest->set_extension_id(extension_id_);
+  return manifest;
 }
 
 bool Manifest::Equals(const Manifest* other) const {
   return other && value_->Equals(other->value());
 }
 
-Manifest::Type Manifest::GetType() const {
+int Manifest::GetManifestVersion() const {
+  int manifest_version = 1;  // default to version 1 if no version is specified
+  value_->GetInteger(keys::kManifestVersion, &manifest_version);
+  return manifest_version;
+}
+
+Extension::Type Manifest::GetType() const {
   if (value_->HasKey(keys::kTheme))
-    return kTypeTheme;
+    return Extension::TYPE_THEME;
   bool is_platform_app = false;
   if (value_->GetBoolean(keys::kPlatformApp, &is_platform_app) &&
       is_platform_app)
-    return kTypePlatformApp;
+    return Extension::TYPE_PLATFORM_APP;
   if (value_->HasKey(keys::kApp)) {
     if (value_->Get(keys::kWebURLs, NULL) ||
         value_->Get(keys::kLaunchWebURL, NULL))
-      return kTypeHostedApp;
+      return Extension::TYPE_HOSTED_APP;
     else
-      return kTypePackagedApp;
+      return Extension::TYPE_PACKAGED_APP;
   } else {
-    return kTypeExtension;
+    return Extension::TYPE_EXTENSION;
   }
 }
 
 bool Manifest::IsTheme() const {
-  return GetType() == kTypeTheme;
+  return GetType() == Extension::TYPE_THEME;
 }
 
 bool Manifest::IsPlatformApp() const {
-  return GetType() == kTypePlatformApp;
+  return GetType() == Extension::TYPE_PLATFORM_APP;
 }
 
 bool Manifest::IsPackagedApp() const {
-  return GetType() == kTypePackagedApp;
+  return GetType() == Extension::TYPE_PACKAGED_APP;
 }
 
 bool Manifest::IsHostedApp() const {
-  return GetType() == kTypeHostedApp;
+  return GetType() == Extension::TYPE_HOSTED_APP;
 }
 
 bool Manifest::CanAccessPath(const std::string& path) const {
   std::vector<std::string> components;
   base::SplitString(path, '.', &components);
+  return CanAccessKey(components[0], NULL);
+}
 
-  const Restrictions& restrictions = g_restrictions.Get();
-  return restrictions.CanAccessKey(components[0], GetType());
+bool Manifest::CanAccessKey(const std::string& key, bool *was_known) const {
+  scoped_ptr<Feature> feature =
+      ManifestFeatureProvider::GetDefaultInstance()->GetFeature(key);
+  if (!feature.get())
+    return false;
+
+  if (was_known)
+    *was_known = true;
+
+  return feature->IsAvailable(extension_id_,
+                              GetType(),
+                              Feature::ConvertLocation(location_),
+                              GetManifestVersion());
 }
 
 }  // namespace extensions

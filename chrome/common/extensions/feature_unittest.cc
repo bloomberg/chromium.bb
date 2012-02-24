@@ -200,7 +200,7 @@ TEST(ExtensionFeatureTest, ParsePackageTypes) {
   extension_types->Append(Value::CreateStringValue("packaged_app"));
   extension_types->Append(Value::CreateStringValue("hosted_app"));
   extension_types->Append(Value::CreateStringValue("platform_app"));
-  value->Set("package_type", extension_types);
+  value->Set("extension_types", extension_types);
   scoped_ptr<Feature> feature(Feature::Parse(value.get()));
   EXPECT_EQ(5u, feature->extension_types()->size());
   EXPECT_TRUE(feature->extension_types()->count(Extension::TYPE_EXTENSION));
@@ -209,8 +209,7 @@ TEST(ExtensionFeatureTest, ParsePackageTypes) {
   EXPECT_TRUE(feature->extension_types()->count(Extension::TYPE_HOSTED_APP));
   EXPECT_TRUE(feature->extension_types()->count(Extension::TYPE_PLATFORM_APP));
 
-  extension_types->Clear();
-  extension_types->Append(Value::CreateStringValue("all"));
+  value->SetString("extension_types", "all");
   scoped_ptr<Feature> feature2(Feature::Parse(value.get()));
   EXPECT_EQ(*(feature->extension_types()), *(feature2->extension_types()));
 }
@@ -228,8 +227,7 @@ TEST(ExtensionFeatureTest, ParseContexts) {
   EXPECT_TRUE(feature->contexts()->count(Feature::UNPRIVILEGED_CONTEXT));
   EXPECT_TRUE(feature->contexts()->count(Feature::CONTENT_SCRIPT_CONTEXT));
 
-  contexts->Clear();
-  contexts->Append(Value::CreateStringValue("all"));
+  value->SetString("contexts", "all");
   scoped_ptr<Feature> feature2(Feature::Parse(value.get()));
   EXPECT_EQ(*(feature->contexts()), *(feature2->contexts()));
 }

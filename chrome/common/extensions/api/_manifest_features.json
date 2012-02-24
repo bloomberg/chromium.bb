@@ -1,0 +1,149 @@
+{
+  "app": {
+    "extension_types": ["packaged_app", "hosted_app", "platform_app"]
+  },
+  "background": {
+    "extension_types": [
+      "extension", "packaged_app", "hosted_app", "platform_app"
+    ]
+  },
+  "background_page": {
+    "extension_types": [
+      "extension", "packaged_app", "hosted_app", "platform_app"
+    ],
+    "max_manifest_version": 1
+  },
+  "browser_action": {
+    "extension_types": ["extension"]
+  },
+  "chrome_url_overrides": {
+    "extension_types": ["extension", "packaged_app"]
+  },
+  "commands": {
+    "extension_types": "all"
+  },
+  "content_security_policy": {
+    "extension_types": ["extension", "packaged_app", "platform_app"]
+  },
+  "content_scripts": {
+    "extension_types": ["extension", "packaged_app"]
+  },
+  "converted_from_user_script": {
+    "extension_types": [
+      "extension", "packaged_app", "hosted_app", "platform_app"
+    ],
+    "no_doc": true
+  },
+  "current_locale": {
+    "extension_types": "all"
+  },
+  "default_locale": {
+    "extension_types": "all"
+  },
+  "description": {
+    "extension_types": "all"
+  },
+  "devtools_page": {
+    "extension_types": ["extension", "packaged_app"]
+  },
+  "file_browser_handlers": {
+    "extension_types": ["extension", "packaged_app"]
+  },
+  "homepage_url": {
+    "extension_types": ["extension", "packaged_app"]
+  },
+  "icons": {
+    "extension_types": "all"
+  },
+  "incognito": {
+    "extension_types": ["extension", "packaged_app", "platform_app"]
+  },
+  "input_components": {
+    "extension_types": ["extension", "packaged_app"]
+  },
+  "intents": {
+    "extension_types": [
+      "extension", "packaged_app", "hosted_app", "platform_app"
+    ]
+  },
+  "key": {
+    "extension_types": "all"
+  },
+  "manifest_version": {
+    "extension_types": "all"
+  },
+  "minimum_chrome_version": {
+    "extension_types": [
+      "extension", "packaged_app", "hosted_app", "platform_app"
+    ]
+  },
+  "nacl_modules": {
+    "extension_types": [
+      "extension", "packaged_app", "hosted_app", "platform_app"
+    ]
+  },
+  "name": {
+    "extension_types": "all"
+  },
+  "offline_enabled": {
+    "extension_types": [
+      "extension", "packaged_app", "hosted_app", "platform_app"
+    ]
+  },
+  "omnibox": {
+    "extension_types": ["extension", "packaged_app"]
+  },
+  "optional_permissions": {
+    "extension_types": [
+      "extension", "packaged_app", "hosted_app", "platform_app"
+    ]
+  },
+  "options_page": {
+    "extension_types": [
+      "extension", "packaged_app", "hosted_app", "platform_app"
+    ]
+  },
+  "page_action": {
+    "extension_types": ["extension"]
+  },
+  "page_actions": {
+    "extension_types": ["extension"],
+    "max_manifest_version": 1
+  },
+  "permissions": {
+    "extension_types": [
+      "extension", "packaged_app", "hosted_app", "platform_app"
+    ]
+  },
+  "platform_app": {
+    "extension_types": ["platform_app"]
+  },
+  "plugins": {
+    "extension_types": ["extension", "packaged_app", "hosted_app"]
+  },
+  "requirements": {
+    "extension_types": [
+      "extension", "packaged_app", "hosted_app", "platform_app"
+    ]
+  },
+  "signature": {
+    "extension_types": "all"
+  },
+  "theme": {
+    "extension_types": ["theme"]
+  },
+  "tts_engine": {
+    "extension_types": ["extension", "packaged_app"]
+  },
+  "update_url": {
+    "extension_types": "all"
+  },
+  "version": {
+    "extension_types": "all"
+  },
+  "web_accessible_resources": {
+    "extension_types": [
+      "extension", "packaged_app", "hosted_app", "platform_app"
+    ]
+  }
+}

@@ -13,148 +13,25 @@
 #include "base/values.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
+#include "chrome/common/extensions/manifest_feature_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace keys = extension_manifest_keys;
 namespace errors = extension_manifest_errors;
+namespace keys = extension_manifest_keys;
 
 namespace extensions {
-
-namespace {
-
-// Keys that define types.
-const char* kTypeKeys[] = {
-  keys::kApp,
-  keys::kTheme,
-  keys::kPlatformApp
-};
-
-// Keys that are not accesible by themes.
-const char* kNotThemeKeys[] = {
-  keys::kBrowserAction,
-  keys::kPageAction,
-  keys::kPageActions,
-  keys::kChromeURLOverrides,
-  keys::kPermissions,
-  keys::kOptionalPermissions,
-  keys::kOptionsPage,
-  keys::kBackground,
-  keys::kBackgroundPageLegacy,
-  keys::kOfflineEnabled,
-  keys::kMinimumChromeVersion,
-  keys::kRequirements,
-  keys::kConvertedFromUserScript,
-  keys::kNaClModules,
-  keys::kPlugins,
-  keys::kContentScripts,
-  keys::kOmnibox,
-  keys::kDevToolsPage,
-  keys::kHomepageURL,
-  keys::kContentSecurityPolicy,
-  keys::kFileBrowserHandlers,
-  keys::kIncognito,
-  keys::kInputComponents,
-  keys::kTtsEngine,
-  keys::kIntents,
-  keys::kWebAccessibleResources
-};
-
-// Keys that are not accessible by hosted apps.
-const char* kNotHostedAppKeys[] = {
-  keys::kBrowserAction,
-  keys::kPageAction,
-  keys::kPageActions,
-  keys::kChromeURLOverrides,
-  keys::kContentScripts,
-  keys::kOmnibox,
-  keys::kDevToolsPage,
-  keys::kHomepageURL,
-  keys::kContentSecurityPolicy,
-  keys::kFileBrowserHandlers,
-  keys::kIncognito,
-  keys::kInputComponents,
-  keys::kTtsEngine
-};
-
-// Keys not accessible by packaged aps.
-const char* kNotPackagedAppKeys[] = {
-  keys::kBrowserAction,
-  keys::kPageAction,
-  keys::kPageActions
-};
-
-// Keys not accessible by platform apps.
-const char* kNotPlatformAppKeys[] = {
-  keys::kBrowserAction,
-  keys::kPageAction,
-  keys::kPageActions,
-  keys::kChromeURLOverrides,
-  keys::kContentScripts,
-  keys::kOmnibox,
-  keys::kDevToolsPage,
-  keys::kHomepageURL,
-  keys::kPlugins,
-  keys::kInputComponents,
-  keys::kTtsEngine,
-  keys::kFileBrowserHandlers
-};
-
-// Returns all the manifest keys not including those in |filtered| or kTypeKeys.
-std::set<std::string> GetAccessibleKeys(const char* filtered[], size_t length) {
-  std::set<std::string> all_keys = Manifest::GetAllKnownKeys();
-  std::set<std::string> filtered_keys(filtered, filtered + length);
-
-  // Starting with all possible manfiest keys, remove the keys that aren't
-  // accessible for the given type.
-  std::set<std::string> intermediate;
-  std::set_difference(all_keys.begin(), all_keys.end(),
-                      filtered_keys.begin(), filtered_keys.end(),
-                      std::insert_iterator<std::set<std::string> >(
-                          intermediate, intermediate.begin()));
-
-  // Then remove the keys that specify types (app, platform_app, etc.).
-  std::set<std::string> result;
-  std::set<std::string> type_keys(
-      kTypeKeys, kTypeKeys + ARRAYSIZE_UNSAFE(kTypeKeys));
-  std::set_difference(intermediate.begin(), intermediate.end(),
-                      type_keys.begin(), type_keys.end(),
-                      std::insert_iterator<std::set<std::string> >(
-                          result, result.begin()));
-
-  return result;
-}
-
-}  // namespace
 
 class ManifestTest : public testing::Test {
  public:
   ManifestTest() : default_value_("test") {}
 
  protected:
-  void AssertType(Manifest* manifest, Manifest::Type type) {
+  void AssertType(Manifest* manifest, Extension::Type type) {
     EXPECT_EQ(type, manifest->GetType());
-    EXPECT_EQ(type == Manifest::kTypeTheme, manifest->IsTheme());
-    EXPECT_EQ(type == Manifest::kTypePlatformApp, manifest->IsPlatformApp());
-    EXPECT_EQ(type == Manifest::kTypePackagedApp, manifest->IsPackagedApp());
-    EXPECT_EQ(type == Manifest::kTypeHostedApp, manifest->IsHostedApp());
-  }
-
-  void TestRestrictedKeys(Manifest* manifest,
-                          const char* restricted_keys[],
-                          size_t restricted_keys_length) {
-    // Verify that the keys on the restricted key list for the given manifest
-    // fail validation and are filtered out.
-    DictionaryValue* value = manifest->value();
-    for (size_t i = 0; i < restricted_keys_length; ++i) {
-      std::string str;
-      string16 error;
-      value->Set(restricted_keys[i], Value::CreateStringValue(default_value_));
-      EXPECT_FALSE(manifest->ValidateManifest(&error));
-      EXPECT_EQ(error, ExtensionErrorUtils::FormatErrorMessageUTF16(
-          errors::kFeatureNotAllowed, restricted_keys[i]));
-      EXPECT_FALSE(manifest->GetString(restricted_keys[i], &str));
-      EXPECT_TRUE(value->Remove(restricted_keys[i], NULL));
-    }
+    EXPECT_EQ(type == Extension::TYPE_THEME, manifest->IsTheme());
+    EXPECT_EQ(type == Extension::TYPE_PLATFORM_APP, manifest->IsPlatformApp());
+    EXPECT_EQ(type == Extension::TYPE_PACKAGED_APP, manifest->IsPackagedApp());
+    EXPECT_EQ(type == Extension::TYPE_HOSTED_APP, manifest->IsHostedApp());
   }
 
   std::string default_value_;
@@ -162,233 +39,151 @@ class ManifestTest : public testing::Test {
 
 // Verifies that extensions can access the correct keys.
 TEST_F(ManifestTest, Extension) {
-  // Generate the list of keys accessible by extensions.
-  std::set<std::string> extension_keys = GetAccessibleKeys(NULL, 0u);
+  scoped_ptr<DictionaryValue> manifest_value(new DictionaryValue());
+  manifest_value->SetString(keys::kName, "extension");
+  manifest_value->SetString(keys::kVersion, "1");
+  // Only supported in manifest_version=1.
+  manifest_value->SetString(keys::kBackgroundPageLegacy, "bg.html");
+  manifest_value->SetString("unknown_key", "foo");
 
-  // Construct the underlying value using every single key other than those
-  // on the restricted list.. We can use the same value for every key because we
-  // validate only by checking the presence of the keys.
-  DictionaryValue* value = new DictionaryValue();
-  for (std::set<std::string>::iterator i = extension_keys.begin();
-       i != extension_keys.end(); ++i)
-    value->Set(*i, Value::CreateStringValue(default_value_));
-
-  scoped_ptr<Manifest> manifest(new Manifest(value));
+  scoped_ptr<Manifest> manifest(
+      new Manifest(Extension::INTERNAL, manifest_value.Pass()));
   string16 error;
   EXPECT_TRUE(manifest->ValidateManifest(&error));
   EXPECT_EQ(ASCIIToUTF16(""), error);
-  AssertType(manifest.get(), Manifest::kTypeExtension);
+  AssertType(manifest.get(), Extension::TYPE_EXTENSION);
 
-  // Verify that all the extension keys are accessible.
-  for (std::set<std::string>::iterator i = extension_keys.begin();
-       i != extension_keys.end(); ++i) {
-    std::string value;
-    manifest->GetString(*i, &value);
-    EXPECT_EQ(default_value_, value) << *i;
-  }
+  // The known key 'background_page' should be accessible.
+  std::string value;
+  EXPECT_TRUE(manifest->GetString(keys::kBackgroundPageLegacy, &value));
+  EXPECT_EQ("bg.html", value);
+
+  // The unknown key 'unknown_key' should be inaccesible.
+  value.clear();
+  EXPECT_FALSE(manifest->GetString("unknown_key", &value));
+  EXPECT_EQ("", value);
+
+  // Set the manifest_version to 2; background_page should stop working.
+  value.clear();
+  manifest->value()->SetInteger(keys::kManifestVersion, 2);
+  EXPECT_FALSE(manifest->GetString("background_page", &value));
+  EXPECT_EQ("", value);
+
+  // Validate should also stop working.
+  error.clear();
+  EXPECT_FALSE(manifest->ValidateManifest(&error));
+  EXPECT_EQ(ExtensionErrorUtils::FormatErrorMessageUTF16(
+      errors::kFeatureNotAllowed, "background_page"), error);
 
   // Test DeepCopy and Equals.
   scoped_ptr<Manifest> manifest2(manifest->DeepCopy());
   EXPECT_TRUE(manifest->Equals(manifest2.get()));
   EXPECT_TRUE(manifest2->Equals(manifest.get()));
-  value->Set("foo", Value::CreateStringValue("blah"));
+  manifest->value()->Set("foo", Value::CreateStringValue("blah"));
   EXPECT_FALSE(manifest->Equals(manifest2.get()));
 }
 
-// Verifies that themes can access the right keys.
-TEST_F(ManifestTest, Theme) {
-  std::set<std::string> theme_keys =
-      GetAccessibleKeys(kNotThemeKeys, ARRAYSIZE_UNSAFE(kNotThemeKeys));
+// Verifies that key restriction based on type works.
+TEST_F(ManifestTest, ExtensionTypes) {
+  scoped_ptr<DictionaryValue> value(new DictionaryValue());
+  value->SetString(keys::kName, "extension");
+  value->SetString(keys::kVersion, "1");
 
-  DictionaryValue* value = new DictionaryValue();
-  for (std::set<std::string>::iterator i = theme_keys.begin();
-       i != theme_keys.end(); ++i)
-    value->Set(*i, Value::CreateStringValue(default_value_));
-
-  std::string theme_key = keys::kTheme + std::string(".test");
-  value->Set(theme_key, Value::CreateStringValue(default_value_));
-
-  scoped_ptr<Manifest> manifest(new Manifest(value));
+  scoped_ptr<Manifest> manifest(
+      new Manifest(Extension::INTERNAL, value.Pass()));
   string16 error;
   EXPECT_TRUE(manifest->ValidateManifest(&error));
   EXPECT_EQ(ASCIIToUTF16(""), error);
-  AssertType(manifest.get(), Manifest::kTypeTheme);
 
-  // Verify that all the theme keys are accessible.
-  std::string str;
-  for (std::set<std::string>::iterator i = theme_keys.begin();
-       i != theme_keys.end(); ++i) {
-    EXPECT_TRUE(manifest->GetString(*i, &str));
-    EXPECT_EQ(default_value_, str) << *i;
-  }
-  EXPECT_TRUE(manifest->GetString(theme_key, &str));
-  EXPECT_EQ(default_value_, str) << theme_key;
+  // By default, the type is Extension.
+  AssertType(manifest.get(), Extension::TYPE_EXTENSION);
 
-  // And that all the other keys fail validation and are filtered out
-  TestRestrictedKeys(manifest.get(), kNotThemeKeys,
-                     ARRAYSIZE_UNSAFE(kNotThemeKeys));
-};
+  // Theme.
+  manifest->value()->Set(keys::kTheme, new DictionaryValue());
+  AssertType(manifest.get(), Extension::TYPE_THEME);
+  manifest->value()->Remove(keys::kTheme, NULL);
 
-// Verifies that platform apps can access the right keys.
-TEST_F(ManifestTest, PlatformApp) {
-  std::set<std::string> platform_keys = GetAccessibleKeys(
-      kNotPlatformAppKeys,
-      ARRAYSIZE_UNSAFE(kNotPlatformAppKeys));
+  // Platform app.
+  manifest->value()->Set(keys::kPlatformApp, new DictionaryValue());
+  AssertType(manifest.get(), Extension::TYPE_EXTENSION);  // must be boolean
+  manifest->value()->SetBoolean(keys::kPlatformApp, false);
+  AssertType(manifest.get(), Extension::TYPE_EXTENSION);  // must be true
+  manifest->value()->SetBoolean(keys::kPlatformApp, true);
+  AssertType(manifest.get(), Extension::TYPE_PLATFORM_APP);
+  manifest->value()->Remove(keys::kPlatformApp, NULL);
 
-  DictionaryValue* value = new DictionaryValue();
-  for (std::set<std::string>::iterator i = platform_keys.begin();
-       i != platform_keys.end(); ++i)
-    value->Set(*i, Value::CreateStringValue(default_value_));
+  // Packaged app.
+  manifest->value()->Set(keys::kApp, new DictionaryValue());
+  AssertType(manifest.get(), Extension::TYPE_PACKAGED_APP);
 
-  value->Set(keys::kPlatformApp, Value::CreateBooleanValue(true));
-
-  scoped_ptr<Manifest> manifest(new Manifest(value));
-  string16 error;
-  EXPECT_TRUE(manifest->ValidateManifest(&error));
-  EXPECT_EQ(ASCIIToUTF16(""), error);
-  AssertType(manifest.get(), Manifest::kTypePlatformApp);
-
-  // Verify that all the platform app keys are accessible.
-  std::string str;
-  for (std::set<std::string>::iterator i = platform_keys.begin();
-       i != platform_keys.end(); ++i) {
-    EXPECT_TRUE(manifest->GetString(*i, &str));
-    EXPECT_EQ(default_value_, str) << *i;
-  }
-  bool is_platform_app = false;
-  EXPECT_TRUE(manifest->GetBoolean(keys::kPlatformApp, &is_platform_app));
-  EXPECT_TRUE(is_platform_app) << keys::kPlatformApp;
-
-  // And that all the other keys fail validation and are filtered out.
-  TestRestrictedKeys(manifest.get(), kNotPlatformAppKeys,
-                     ARRAYSIZE_UNSAFE(kNotPlatformAppKeys));
-};
-
-// Verifies that hosted apps can access the right keys.
-TEST_F(ManifestTest, HostedApp) {
-  std::set<std::string> keys = GetAccessibleKeys(
-      kNotHostedAppKeys,
-      ARRAYSIZE_UNSAFE(kNotHostedAppKeys));
-
-  DictionaryValue* value = new DictionaryValue();
-  for (std::set<std::string>::iterator i = keys.begin();
-       i != keys.end(); ++i)
-    value->Set(*i, Value::CreateStringValue(default_value_));
-
-  value->Set(keys::kWebURLs, Value::CreateStringValue(default_value_));
-
-  scoped_ptr<Manifest> manifest(new Manifest(value));
-  string16 error;
-  EXPECT_TRUE(manifest->ValidateManifest(&error));
-  EXPECT_EQ(ASCIIToUTF16(""), error);
-  AssertType(manifest.get(), Manifest::kTypeHostedApp);
-
-  // Verify that all the hosted app keys are accessible.
-  std::string str;
-  for (std::set<std::string>::iterator i = keys.begin();
-       i != keys.end(); ++i) {
-    EXPECT_TRUE(manifest->GetString(*i, &str));
-    EXPECT_EQ(default_value_, str) << *i;
-  }
-  EXPECT_TRUE(manifest->GetString(keys::kWebURLs, &str));
-  EXPECT_EQ(default_value_, str) << keys::kWebURLs;
-
-  // And that all the other keys fail validation and are filtered out.
-  TestRestrictedKeys(manifest.get(), kNotHostedAppKeys,
-                     ARRAYSIZE_UNSAFE(kNotHostedAppKeys));
-};
-
-// Verifies that packaged apps can access the right keys.
-TEST_F(ManifestTest, PackagedApp) {
-  std::set<std::string> keys = GetAccessibleKeys(
-      kNotPackagedAppKeys,
-      ARRAYSIZE_UNSAFE(kNotPackagedAppKeys));
-
-  DictionaryValue* value = new DictionaryValue();
-  for (std::set<std::string>::iterator i = keys.begin();
-       i != keys.end(); ++i)
-    value->Set(*i, Value::CreateStringValue(default_value_));
-  value->Set(keys::kApp, Value::CreateStringValue(default_value_));
-
-  scoped_ptr<Manifest> manifest(new Manifest(value));
-  string16 error;
-  EXPECT_TRUE(manifest->ValidateManifest(&error));
-  EXPECT_EQ(ASCIIToUTF16(""), error);
-  AssertType(manifest.get(), Manifest::kTypePackagedApp);
-
-  // Verify that all the packaged app keys are accessible.
-  std::string str;
-  for (std::set<std::string>::iterator i = keys.begin();
-       i != keys.end(); ++i) {
-    EXPECT_TRUE(manifest->GetString(*i, &str));
-    EXPECT_EQ(default_value_, str) << *i;
-  }
-  EXPECT_TRUE(manifest->GetString(keys::kApp, &str));
-  EXPECT_EQ(default_value_, str) << keys::kApp;
-
-  // And that all the other keys fail validation and are filtered out.
-  TestRestrictedKeys(manifest.get(), kNotPackagedAppKeys,
-                     ARRAYSIZE_UNSAFE(kNotPackagedAppKeys));
+  // Hosted app.
+  manifest->value()->Set(keys::kWebURLs, new ListValue());
+  AssertType(manifest.get(), Extension::TYPE_HOSTED_APP);
+  manifest->value()->Remove(keys::kWebURLs, NULL);
+  manifest->value()->SetString(keys::kLaunchWebURL, "foo");
+  AssertType(manifest.get(), Extension::TYPE_HOSTED_APP);
+  manifest->value()->Remove(keys::kLaunchWebURL, NULL);
 };
 
 // Verifies that the various getters filter unknown and restricted keys.
 TEST_F(ManifestTest, Getters) {
-  DictionaryValue* value = new DictionaryValue();
-  scoped_ptr<Manifest> manifest(new Manifest(value));
+  scoped_ptr<DictionaryValue> value(new DictionaryValue());
+  scoped_ptr<Manifest> manifest(
+      new Manifest(Extension::INTERNAL, value.Pass()));
   std::string unknown_key = "asdfaskldjf";
 
   // Verify that the key filtering works for each of the getters.
   // Get and GetBoolean
   bool expected_bool = true, actual_bool = false;
-  value->Set(unknown_key, Value::CreateBooleanValue(expected_bool));
+  manifest->value()->Set(unknown_key, Value::CreateBooleanValue(expected_bool));
   EXPECT_FALSE(manifest->HasKey(unknown_key));
   EXPECT_FALSE(manifest->GetBoolean(unknown_key, &actual_bool));
   EXPECT_FALSE(actual_bool);
   Value* actual_value = NULL;
   EXPECT_FALSE(manifest->Get(unknown_key, &actual_value));
-  EXPECT_TRUE(value->Remove(unknown_key, NULL));
+  EXPECT_TRUE(manifest->value()->Remove(unknown_key, NULL));
 
   // GetInteger
   int expected_int = 5, actual_int = 0;
-  value->Set(unknown_key, Value::CreateIntegerValue(expected_int));
+  manifest->value()->Set(unknown_key, Value::CreateIntegerValue(expected_int));
   EXPECT_FALSE(manifest->GetInteger(unknown_key, &actual_int));
   EXPECT_NE(expected_int, actual_int);
-  EXPECT_TRUE(value->Remove(unknown_key, NULL));
+  EXPECT_TRUE(manifest->value()->Remove(unknown_key, NULL));
 
   // GetString
   std::string expected_str = "hello", actual_str;
-  value->Set(unknown_key, Value::CreateStringValue(expected_str));
+  manifest->value()->Set(unknown_key, Value::CreateStringValue(expected_str));
   EXPECT_FALSE(manifest->GetString(unknown_key, &actual_str));
   EXPECT_NE(expected_str, actual_str);
-  EXPECT_TRUE(value->Remove(unknown_key, NULL));
+  EXPECT_TRUE(manifest->value()->Remove(unknown_key, NULL));
 
   // GetString (string16)
   string16 expected_str16(UTF8ToUTF16("hello")), actual_str16;
-  value->Set(unknown_key, Value::CreateStringValue(expected_str16));
+  manifest->value()->Set(unknown_key, Value::CreateStringValue(expected_str16));
   EXPECT_FALSE(manifest->GetString(unknown_key, &actual_str16));
   EXPECT_NE(expected_str16, actual_str16);
-  EXPECT_TRUE(value->Remove(unknown_key, NULL));
+  EXPECT_TRUE(manifest->value()->Remove(unknown_key, NULL));
 
   // GetDictionary
   DictionaryValue* expected_dict = new DictionaryValue();
   DictionaryValue* actual_dict = NULL;
   expected_dict->Set("foo", Value::CreateStringValue("bar"));
-  value->Set(unknown_key, expected_dict);
+  manifest->value()->Set(unknown_key, expected_dict);
   EXPECT_FALSE(manifest->GetDictionary(unknown_key, &actual_dict));
   EXPECT_EQ(NULL, actual_dict);
   std::string path = unknown_key + ".foo";
   EXPECT_FALSE(manifest->GetString(path, &actual_str));
   EXPECT_NE("bar", actual_str);
-  EXPECT_TRUE(value->Remove(unknown_key, NULL));
+  EXPECT_TRUE(manifest->value()->Remove(unknown_key, NULL));
 
   // GetList
   ListValue* expected_list = new ListValue();
   ListValue* actual_list = NULL;
   expected_list->Append(Value::CreateStringValue("blah"));
-  value->Set(unknown_key, expected_list);
+  manifest->value()->Set(unknown_key, expected_list);
   EXPECT_FALSE(manifest->GetList(unknown_key, &actual_list));
   EXPECT_EQ(NULL, actual_list);
-  EXPECT_TRUE(value->Remove(unknown_key, NULL));
+  EXPECT_TRUE(manifest->value()->Remove(unknown_key, NULL));
 }
 
 }  // namespace extensions

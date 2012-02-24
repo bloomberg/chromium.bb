@@ -2274,13 +2274,11 @@ TEST_F(ExtensionServiceTest, UpdateExtensionPreservesLocation) {
 
   FilePath path = data_dir_.AppendASCII("good.crx");
 
-  const Extension* good = InstallCRX(path, INSTALL_NEW);
+  const Extension* good =
+      InstallCRXWithLocation(path, Extension::EXTERNAL_PREF, INSTALL_NEW);
 
   ASSERT_EQ("1.0.0.0", good->VersionString());
   ASSERT_EQ(good_crx, good->id());
-
-  // Simulate non-internal location.
-  const_cast<Extension*>(good)->location_ = Extension::EXTERNAL_PREF;
 
   path = data_dir_.AppendASCII("good2.crx");
   UpdateExtension(good_crx, path, ENABLED);
