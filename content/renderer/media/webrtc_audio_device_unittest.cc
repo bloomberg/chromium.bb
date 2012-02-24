@@ -78,6 +78,11 @@ bool IsRunningHeadless() {
   return false;
 }
 
+// Return true if at least one element in the array matches |value|.
+bool FindElementInArray(int* array, int size, int value) {
+  return (std::find(&array[0], &array[0] + size, value) != &array[size]);
+}
+
 // This method returns false if a non-supported rate is detected on the
 // input or output side.
 // TODO(henrika): add support for automatic fallback to Windows Wave audio
@@ -85,17 +90,32 @@ bool IsRunningHeadless() {
 // invalid audio settings by actually trying to open the audio streams instead
 // of relying on hard coded conditions.
 bool HardwareSampleRatesAreValid() {
-  int output_sample_rate =
-      static_cast<int>(audio_hardware::GetOutputSampleRate());
+  // These are the currently supported hardware sample rates in both directions.
+  // The actual WebRTC client can limit these ranges further depending on
+  // platform but this is the maximum range we support today.
+  int valid_input_rates[] = {16000, 32000, 44100, 48000, 96000};
+  int valid_output_rates[] = {44100, 48000, 96000};
+
+  // Verify the input sample rate.
   int input_sample_rate =
       static_cast<int>(audio_hardware::GetInputSampleRate());
-  bool rates_are_valid =
-      ((output_sample_rate == 96000 || output_sample_rate == 48000 ||
-        output_sample_rate == 44100) &&
-       (input_sample_rate == 48000 || input_sample_rate == 44100 ||
-        input_sample_rate == 32000 || input_sample_rate == 16000));
-  DLOG_IF(WARNING, !rates_are_valid) << "Non-supported sample rate detected.";
-  return rates_are_valid;
+
+  if (!FindElementInArray(valid_input_rates, arraysize(valid_input_rates),
+                          input_sample_rate)) {
+    DLOG(WARNING) << "Non-supported input sample rate detected.";
+    return false;
+  }
+
+  // Given that the input rate was OK, verify the output rate as well.
+  int output_sample_rate =
+      static_cast<int>(audio_hardware::GetOutputSampleRate());
+  if (!FindElementInArray(valid_output_rates, arraysize(valid_output_rates),
+                          output_sample_rate)) {
+    DLOG(WARNING) << "Non-supported output sample rate detected.";
+    return false;
+  }
+
+  return true;
 }
 
 
@@ -167,6 +187,48 @@ class WebRTCMediaProcessImpl : public webrtc::VoEMediaProcess {
 };
 
 }  // end namespace
+
+// Trivial test which verifies that one part of the test harness
+// (HardwareSampleRatesAreValid()) works as intended for all supported
+// hardware input sample rates.
+TEST_F(WebRTCAudioDeviceTest, TestValidInputRates) {
+  int valid_rates[] = {16000, 32000, 44100, 48000, 96000};
+
+  // Verify that we will approve all rates listed in |valid_rates|.
+  for (size_t i = 0; i < arraysize(valid_rates); ++i) {
+    EXPECT_TRUE(FindElementInArray(valid_rates, arraysize(valid_rates),
+        valid_rates[i]));
+  }
+
+  // Verify that any value outside the valid range results in negative
+  // find results.
+  int invalid_rates[] = {-1, 0, 8000, 11025, 22050, 192000};
+  for (size_t i = 0; i < arraysize(invalid_rates); ++i) {
+    EXPECT_FALSE(FindElementInArray(valid_rates, arraysize(valid_rates),
+        invalid_rates[i]));
+  }
+}
+
+// Trivial test which verifies that one part of the test harness
+// (HardwareSampleRatesAreValid()) works as intended for all supported
+// hardware output sample rates.
+TEST_F(WebRTCAudioDeviceTest, TestValidOutputRates) {
+  int valid_rates[] = {44100, 48000, 96000};
+
+  // Verify that we will approve all rates listed in |valid_rates|.
+  for (size_t i = 0; i < arraysize(valid_rates); ++i) {
+    EXPECT_TRUE(FindElementInArray(valid_rates, arraysize(valid_rates),
+        valid_rates[i]));
+  }
+
+  // Verify that any value outside the valid range results in negative
+  // find results.
+  int invalid_rates[] = {-1, 0, 8000, 11025, 22050, 32000, 192000};
+  for (size_t i = 0; i < arraysize(invalid_rates); ++i) {
+    EXPECT_FALSE(FindElementInArray(valid_rates, arraysize(valid_rates),
+        invalid_rates[i]));
+  }
+}
 
 // Basic test that instantiates and initializes an instance of
 // WebRtcAudioDeviceImpl.

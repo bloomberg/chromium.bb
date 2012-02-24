@@ -13,6 +13,21 @@
 
 static const int64 kMillisecondsBetweenProcessCalls = 5000;
 
+// Supported hardware sample rates for input and output sides.
+#if defined(OS_WIN) || defined(OS_MACOSX)
+// media::GetAudioInput[Output]HardwareSampleRate() asks the audio layer
+// for its current sample rate (set by the user) on Windows and Mac OS X.
+// The listed rates below adds restrictions and WebRtcAudioDeviceImpl::Init()
+// will fail if the user selects any rate outside these ranges.
+static int kValidInputRates[] = {96000, 48000, 44100, 32000, 16000};
+static int kValidOutputRates[] = {96000, 48000, 44100};
+#elif defined(OS_LINUX) || defined(OS_OPENBSD)
+// media::GetAudioInput[Output]HardwareSampleRate() is hardcoded to return
+// 48000 in both directions on Linux.
+static int kValidInputRates[] = {48000};
+static int kValidOutputRates[] = {48000};
+#endif
+
 WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()
     : ref_count_(0),
       render_loop_(base::MessageLoopProxy::current()),
@@ -280,17 +295,41 @@ int32_t WebRtcAudioDeviceImpl::Init() {
   DCHECK(!input_buffer_.get());
   DCHECK(!output_buffer_.get());
 
+  // TODO(henrika): it could be possible to allow one of the directions (input
+  // or output) to use a non-supported rate. As an example: if only the
+  // output rate is OK, we could finalize Init() and only set up an AudioDevice.
+
   // Ask the browser for the default audio output hardware sample-rate.
   // This request is based on a synchronous IPC message.
   int output_sample_rate =
       static_cast<int>(audio_hardware::GetOutputSampleRate());
   DVLOG(1) << "Audio output hardware sample rate: " << output_sample_rate;
 
+  // Verify that the reported output hardware sample rate is supported
+  // on the current platform.
+  if (std::find(&kValidOutputRates[0],
+                &kValidOutputRates[0] + arraysize(kValidOutputRates),
+                output_sample_rate) ==
+      &kValidOutputRates[arraysize(kValidOutputRates)]) {
+    DLOG(ERROR) << output_sample_rate << " is not a supported output rate.";
+    return -1;
+  }
+
   // Ask the browser for the default audio input hardware sample-rate.
   // This request is based on a synchronous IPC message.
   int input_sample_rate =
       static_cast<int>(audio_hardware::GetInputSampleRate());
   DVLOG(1) << "Audio input hardware sample rate: " << input_sample_rate;
+
+  // Verify that the reported input hardware sample rate is supported
+  // on the current platform.
+  if (std::find(&kValidInputRates[0],
+                &kValidInputRates[0] + arraysize(kValidInputRates),
+                input_sample_rate) ==
+      &kValidInputRates[arraysize(kValidInputRates)]) {
+    DLOG(ERROR) << input_sample_rate << " is not a supported input rate.";
+    return -1;
+  }
 
   // Ask the browser for the default number of audio input channels.
   // This request is based on a synchronous IPC message.
@@ -307,17 +346,6 @@ int32_t WebRtcAudioDeviceImpl::Init() {
 
 // Windows
 #if defined(OS_WIN)
-  if (input_sample_rate != 48000 && input_sample_rate != 44100 &&
-      input_sample_rate != 32000 && input_sample_rate != 16000) {
-    DLOG(ERROR) << "Only 48, 44.1, 32 and 16kHz input rates are supported.";
-    return -1;
-  }
-  if (output_sample_rate != 96000 && output_sample_rate != 48000 &&
-      output_sample_rate != 44100) {
-    DLOG(ERROR) << "Only 96, 48 and 44.1kHz output rates are supported.";
-    return -1;
-  }
-
   // Always use stereo rendering on Windows.
   output_channels = 2;
 
@@ -361,16 +389,6 @@ int32_t WebRtcAudioDeviceImpl::Init() {
 
 // Mac OS X
 #elif defined(OS_MACOSX)
-  if (input_sample_rate != 48000 && input_sample_rate != 44100 &&
-      input_sample_rate != 32000 && input_sample_rate != 16000) {
-    DLOG(ERROR) << "Only 48, 44.1, 32 and 16kHz input rates are supported.";
-    return -1;
-  }
-  if (output_sample_rate != 48000 && output_sample_rate != 44100) {
-    DLOG(ERROR) << "Only 48 and 44.1kHz output rates are supported on Mac OSX.";
-    return -1;
-  }
-
   output_channels = 1;
 
   // Capture side: AUDIO_PCM_LOW_LATENCY on Mac OS X is based on a callback-
@@ -400,10 +418,6 @@ int32_t WebRtcAudioDeviceImpl::Init() {
   }
 // Linux
 #elif defined(OS_LINUX) || defined(OS_OPENBSD)
-  if (output_sample_rate != 48000) {
-    DLOG(ERROR) << "Only 48kHz sample rate is supported on Linux.";
-    return -1;
-  }
   input_channels = 2;
   output_channels = 1;
 
