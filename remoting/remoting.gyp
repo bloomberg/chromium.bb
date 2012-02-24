@@ -932,7 +932,6 @@
         'base/base_mock_objects.h',
         'base/util_unittest.cc',
         'client/mouse_input_filter_unittest.cc',
-        'host/capturer_helper_unittest.cc',
         'host/capturer_linux_unittest.cc',
         'host/capturer_mac_unittest.cc',
         'host/capturer_win_unittest.cc',
