@@ -901,12 +901,10 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHostResolverInfo(
 
   ListValue* entry_list = new ListValue();
 
-  for (net::HostCache::EntryMap::const_iterator it =
-       cache->entries().begin();
-       it != cache->entries().end();
-       ++it) {
-    const net::HostCache::Key& key = it->first;
-    const net::HostCache::Entry* entry = it->second.get();
+  net::HostCache::EntryMap::Iterator it(cache->entries());
+  for (; it.HasNext(); it.Advance()) {
+    const net::HostCache::Key& key = it.key();
+    const net::HostCache::Entry& entry = it.value();
 
     DictionaryValue* entry_dict = new DictionaryValue();
 
@@ -914,14 +912,14 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHostResolverInfo(
     entry_dict->SetInteger("address_family",
         static_cast<int>(key.address_family));
     entry_dict->SetString("expiration",
-                          net::NetLog::TickCountToString(entry->expiration));
+                          net::NetLog::TickCountToString(it.expiration()));
 
-    if (entry->error != net::OK) {
-      entry_dict->SetInteger("error", entry->error);
+    if (entry.error != net::OK) {
+      entry_dict->SetInteger("error", entry.error);
     } else {
       // Append all of the resolved addresses.
       ListValue* address_list = new ListValue();
-      const struct addrinfo* current_address = entry->addrlist.head();
+      const struct addrinfo* current_address = entry.addrlist.head();
       while (current_address) {
         address_list->Append(Value::CreateStringValue(
             net::NetAddressToStringWithPort(current_address)));

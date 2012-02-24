@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/file_path.h"
+#include "base/format_macros.h"
 #include "base/stringprintf.h"
 #include "net/base/cert_test_util.h"
 #include "net/base/net_errors.h"
@@ -18,27 +19,15 @@ namespace net {
 
 namespace {
 
-class TestTimeService : public CertVerifier::TimeService {
- public:
-  // CertVerifier::TimeService methods:
-  virtual base::Time Now() { return current_time_; }
-
-  void set_current_time(base::Time now) { current_time_ = now; }
-
- private:
-  base::Time current_time_;
-};
-
 void FailTest(int /* result */) {
   FAIL();
 }
 
-// Tests a cache hit, which should results in synchronous completion.
+}  // namespace;
+
+// Tests a cache hit, which should result in synchronous completion.
 TEST(CertVerifierTest, CacheHit) {
-  TestTimeService* time_service = new TestTimeService;
-  base::Time current_time = base::Time::Now();
-  time_service->set_current_time(current_time);
-  CertVerifier verifier(time_service);
+  CertVerifier verifier;
 
   FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
@@ -77,10 +66,7 @@ TEST(CertVerifierTest, CacheHit) {
 // certificates.  These should be treated as different certificate chains even
 // though the two X509Certificate objects contain the same server certificate.
 TEST(CertVerifierTest, DifferentCACerts) {
-  TestTimeService* time_service = new TestTimeService;
-  base::Time current_time = base::Time::Now();
-  time_service->set_current_time(current_time);
-  CertVerifier verifier(time_service);
+  CertVerifier verifier;
 
   FilePath certs_dir = GetTestCertsDirectory();
 
@@ -140,10 +126,7 @@ TEST(CertVerifierTest, DifferentCACerts) {
 
 // Tests an inflight join.
 TEST(CertVerifierTest, InflightJoin) {
-  TestTimeService* time_service = new TestTimeService;
-  base::Time current_time = base::Time::Now();
-  time_service->set_current_time(current_time);
-  CertVerifier verifier(time_service);
+  CertVerifier verifier;
 
   FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
@@ -174,127 +157,6 @@ TEST(CertVerifierTest, InflightJoin) {
   ASSERT_EQ(2u, verifier.requests());
   ASSERT_EQ(0u, verifier.cache_hits());
   ASSERT_EQ(1u, verifier.inflight_joins());
-}
-
-// Tests cache entry expiration.
-TEST(CertVerifierTest, ExpiredCacheEntry) {
-  TestTimeService* time_service = new TestTimeService;
-  base::Time current_time = base::Time::Now();
-  time_service->set_current_time(current_time);
-  CertVerifier verifier(time_service);
-
-  FilePath certs_dir = GetTestCertsDirectory();
-  scoped_refptr<X509Certificate> test_cert(
-      ImportCertFromFile(certs_dir, "ok_cert.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
-
-  int error;
-  CertVerifyResult verify_result;
-  TestCompletionCallback callback;
-  CertVerifier::RequestHandle request_handle;
-
-  error = verifier.Verify(
-      test_cert, "www.example.com", 0, NULL, &verify_result,
-      callback.callback(), &request_handle, BoundNetLog());
-  ASSERT_EQ(ERR_IO_PENDING, error);
-  ASSERT_TRUE(request_handle != NULL);
-  error = callback.WaitForResult();
-  ASSERT_TRUE(IsCertificateError(error));
-  ASSERT_EQ(1u, verifier.requests());
-  ASSERT_EQ(0u, verifier.cache_hits());
-  ASSERT_EQ(0u, verifier.inflight_joins());
-
-  // Before expiration, should have a cache hit.
-  error = verifier.Verify(
-      test_cert, "www.example.com", 0, NULL, &verify_result,
-      callback.callback(), &request_handle, BoundNetLog());
-  // Synchronous completion.
-  ASSERT_NE(ERR_IO_PENDING, error);
-  ASSERT_TRUE(IsCertificateError(error));
-  ASSERT_TRUE(request_handle == NULL);
-  ASSERT_EQ(2u, verifier.requests());
-  ASSERT_EQ(1u, verifier.cache_hits());
-  ASSERT_EQ(0u, verifier.inflight_joins());
-
-  // After expiration, should not have a cache hit.
-  ASSERT_EQ(1u, verifier.GetCacheSize());
-  current_time += base::TimeDelta::FromMinutes(60);
-  time_service->set_current_time(current_time);
-  error = verifier.Verify(
-      test_cert, "www.example.com", 0, NULL, &verify_result,
-      callback.callback(), &request_handle, BoundNetLog());
-  ASSERT_EQ(ERR_IO_PENDING, error);
-  ASSERT_TRUE(request_handle != NULL);
-  ASSERT_EQ(0u, verifier.GetCacheSize());
-  error = callback.WaitForResult();
-  ASSERT_TRUE(IsCertificateError(error));
-  ASSERT_EQ(3u, verifier.requests());
-  ASSERT_EQ(1u, verifier.cache_hits());
-  ASSERT_EQ(0u, verifier.inflight_joins());
-}
-
-// Tests a full cache.
-TEST(CertVerifierTest, FullCache) {
-  TestTimeService* time_service = new TestTimeService;
-  base::Time current_time = base::Time::Now();
-  time_service->set_current_time(current_time);
-  CertVerifier verifier(time_service);
-
-  // Reduce the maximum cache size in this test so that we can fill up the
-  // cache quickly.
-  const unsigned kCacheSize = 5;
-  verifier.set_max_cache_entries(kCacheSize);
-
-  FilePath certs_dir = GetTestCertsDirectory();
-  scoped_refptr<X509Certificate> test_cert(
-      ImportCertFromFile(certs_dir, "ok_cert.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
-
-  int error;
-  CertVerifyResult verify_result;
-  TestCompletionCallback callback;
-  CertVerifier::RequestHandle request_handle;
-
-  error = verifier.Verify(
-      test_cert, "www.example.com", 0, NULL, &verify_result,
-      callback.callback(), &request_handle, BoundNetLog());
-  ASSERT_EQ(ERR_IO_PENDING, error);
-  ASSERT_TRUE(request_handle != NULL);
-  error = callback.WaitForResult();
-  ASSERT_TRUE(IsCertificateError(error));
-  ASSERT_EQ(1u, verifier.requests());
-  ASSERT_EQ(0u, verifier.cache_hits());
-  ASSERT_EQ(0u, verifier.inflight_joins());
-
-  for (unsigned i = 0; i < kCacheSize; i++) {
-    std::string hostname = base::StringPrintf("www%d.example.com", i + 1);
-    error = verifier.Verify(
-        test_cert, hostname, 0, NULL, &verify_result,
-        callback.callback(), &request_handle, BoundNetLog());
-    ASSERT_EQ(ERR_IO_PENDING, error);
-    ASSERT_TRUE(request_handle != NULL);
-    error = callback.WaitForResult();
-    ASSERT_TRUE(IsCertificateError(error));
-  }
-  ASSERT_EQ(kCacheSize + 1, verifier.requests());
-  ASSERT_EQ(0u, verifier.cache_hits());
-  ASSERT_EQ(0u, verifier.inflight_joins());
-
-  ASSERT_EQ(kCacheSize, verifier.GetCacheSize());
-  current_time += base::TimeDelta::FromMinutes(60);
-  time_service->set_current_time(current_time);
-  error = verifier.Verify(
-      test_cert, "www999.example.com", 0, NULL, &verify_result,
-      callback.callback(), &request_handle, BoundNetLog());
-  ASSERT_EQ(ERR_IO_PENDING, error);
-  ASSERT_TRUE(request_handle != NULL);
-  ASSERT_EQ(kCacheSize, verifier.GetCacheSize());
-  error = callback.WaitForResult();
-  ASSERT_EQ(1u, verifier.GetCacheSize());
-  ASSERT_TRUE(IsCertificateError(error));
-  ASSERT_EQ(kCacheSize + 2, verifier.requests());
-  ASSERT_EQ(0u, verifier.cache_hits());
-  ASSERT_EQ(0u, verifier.inflight_joins());
 }
 
 // Tests that the callback of a canceled request is never made.
@@ -354,6 +216,78 @@ TEST(CertVerifierTest, CancelRequestThenQuit) {
   // Destroy |verifier| by going out of scope.
 }
 
-}  // namespace
+TEST(CertVerifierTest, RequestParamsComparators) {
+  SHA1Fingerprint a_key;
+  memset(a_key.data, 'a', sizeof(a_key.data));
+
+  SHA1Fingerprint z_key;
+  memset(z_key.data, 'z', sizeof(z_key.data));
+
+  struct {
+    // Keys to test
+    CertVerifier::RequestParams key1;
+    CertVerifier::RequestParams key2;
+
+    // Expectation:
+    // -1 means key1 is less than key2
+    //  0 means key1 equals key2
+    //  1 means key1 is greater than key2
+    int expected_result;
+  } tests[] = {
+    {  // Test for basic equivalence.
+      CertVerifier::RequestParams(a_key, a_key, "www.example.test", 0),
+      CertVerifier::RequestParams(a_key, a_key, "www.example.test", 0),
+      0,
+    },
+    {  // Test that different certificates but with the same CA and for
+       // the same host are different validation keys.
+      CertVerifier::RequestParams(a_key, a_key, "www.example.test", 0),
+      CertVerifier::RequestParams(z_key, a_key, "www.example.test", 0),
+      -1,
+    },
+    {  // Test that the same EE certificate for the same host, but with
+       // different chains are different validation keys.
+      CertVerifier::RequestParams(a_key, z_key, "www.example.test", 0),
+      CertVerifier::RequestParams(a_key, a_key, "www.example.test", 0),
+      1,
+    },
+    {  // The same certificate, with the same chain, but for different
+       // hosts are different validation keys.
+      CertVerifier::RequestParams(a_key, a_key, "www1.example.test", 0),
+      CertVerifier::RequestParams(a_key, a_key, "www2.example.test", 0),
+      -1,
+    },
+    {  // The same certificate, chain, and host, but with different flags
+       // are different validation keys.
+      CertVerifier::RequestParams(a_key, a_key, "www.example.test",
+                                  X509Certificate::VERIFY_EV_CERT),
+      CertVerifier::RequestParams(a_key, a_key, "www.example.test", 0),
+      1,
+    }
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+    SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]", i));
+
+    const CertVerifier::RequestParams& key1 = tests[i].key1;
+    const CertVerifier::RequestParams& key2 = tests[i].key2;
+
+    switch (tests[i].expected_result) {
+      case -1:
+        EXPECT_TRUE(key1 < key2);
+        EXPECT_FALSE(key2 < key1);
+        break;
+      case 0:
+        EXPECT_FALSE(key1 < key2);
+        EXPECT_FALSE(key2 < key1);
+        break;
+      case 1:
+        EXPECT_FALSE(key1 < key2);
+        EXPECT_TRUE(key2 < key1);
+        break;
+      default:
+        FAIL() << "Invalid expectation. Can be only -1, 0, 1";
+    }
+  }
+}
 
 }  // namespace net
