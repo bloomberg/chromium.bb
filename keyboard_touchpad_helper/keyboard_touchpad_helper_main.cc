@@ -26,6 +26,10 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
+#ifndef EVIOCSCLOCKID
+#define EVIOCSCLOCKID  _IOW('E', 0xa0, int)
+#endif
+
 using std::string;
 using std::vector;
 
@@ -323,6 +327,13 @@ class MainLoop {
       return;
     }
     kb_fd_ = open(path.c_str(), O_RDONLY | O_NONBLOCK, 0);
+    if (kb_fd_) {
+      // Try to get monotonic clock events
+      unsigned int clk = CLOCK_MONOTONIC;
+      int rc = ioctl(kb_fd_, EVIOCSCLOCKID, &clk);
+      if (rc < 0)
+        fprintf(stderr, "Failed to switch to monotonic timestamps\n");
+    }
   }
 
   // Lifted from http://codereview.chromium.org/6975057/patch/16001/17005
