@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -93,7 +93,11 @@ FunctionSequence.prototype.nextStep_ = function(var_args) {
     this.logger.vlog('Attempting to start step ['
                       + this.steps_[this.currentStepIdx_].name
                       + ']');
-    this.steps_[this.currentStepIdx_].apply(this, arguments);
+    try {
+      this.steps_[this.currentStepIdx_].apply(this, arguments);
+    } catch(e) {
+      this.onError(e.toString());
+    }
   }
 };
 

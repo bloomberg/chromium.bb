@@ -67,7 +67,9 @@ Id3Parser.prototype.readString_ = function(reader, encoding, size) {
       return reader.readNullTerminatedStringUTF16(false, size);
 
     case Id3Parser.v2.ENCODING.UTF_8:
-      // TODO: implement UTF_8. Fall through for now.
+      // TODO: implement UTF_8.
+      this.log('UTF8 encoding not supported, used ISO_8859_1 instead');
+      return reader.readNullTerminatedString(size);
 
     default: {
       this.log('Unsupported encoding in ID3 tag: ' + encoding);
@@ -157,6 +159,9 @@ Id3Parser.prototype.readAPIC_ = function(reader, majorVersion, frame, end) {
  * @return {Object} frame read
  */
 Id3Parser.prototype.readFrame_ = function(reader, majorVersion) {
+  if (reader.eof())
+    return null;
+
   var frame = {};
 
   reader.pushSeek(reader.tell(), ByteReader.SEEK_BEG);

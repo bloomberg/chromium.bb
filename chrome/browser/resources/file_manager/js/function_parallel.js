@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,6 +65,10 @@ FunctionParallel.prototype.start = function(var_args) {
   }
   for (var i=0; i < this.steps_.length; i++) {
     this.logger.vlog('Attempting to start step [' + this.steps_[i].name + ']');
-    this.steps_[i].apply(this, arguments);
+    try {
+      this.steps_[i].apply(this, arguments);
+    } catch(e) {
+      this.onError(e.toString());
+    }
   }
 };
