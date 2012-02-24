@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -78,6 +78,10 @@ SHA256_0 = hashlib.sha256('0').digest()
 # List of bad machine identifiers that trigger the |valid_serial_number_missing|
 # flag to be set set in the policy fetch response.
 BAD_MACHINE_IDS = [ '123490EN400015' ];
+
+# List of machines that trigger the server to send kiosk enrollment response
+# for the register request.
+KIOSK_MACHINE_IDS = [ 'KIOSK' ];
 
 class RequestHandler(object):
   """Decodes and handles device management requests from clients.
@@ -209,6 +213,7 @@ class RequestHandler(object):
     response.register_response.device_management_token = (
         token_info['device_token'])
     response.register_response.machine_name = token_info['machine_name']
+    response.register_response.enrollment_type = token_info['enrollment_mode']
 
     self.DumpMessage('Response', response)
 
@@ -600,12 +605,17 @@ class TestServer(object):
       dm.DeviceRegisterRequest.DEVICE: ['google/chromeos/device'],
       dm.DeviceRegisterRequest.TT: ['google/chromeos/user'],
     }
+    if machine_id in KIOSK_MACHINE_IDS:
+      enrollment_mode = dm.DeviceRegisterResponse.KIOSK
+    else:
+      enrollment_mode = dm.DeviceRegisterResponse.ENTERPRISE
     self._registered_tokens[dmtoken] = {
       'device_id': device_id,
       'device_token': dmtoken,
       'allowed_policy_types': allowed_policy_types[type],
       'machine_name': 'chromeos-' + machine_id,
       'machine_id': machine_id,
+      'enrollment_mode': enrollment_mode,
     }
     return self._registered_tokens[dmtoken]
 

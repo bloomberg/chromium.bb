@@ -56,6 +56,20 @@ message DeviceRegisterResponse {
   // the format of "Machine Model - Machine Id".  However, domain
   // admin can update it using CPanel, so do NOT treat it as constant.
   optional string machine_name = 2;
+
+  // Enum listing the possible modes the device should be locked into when the
+  // registration is finished.
+  enum DeviceMode {
+    // In ENTERPRISE mode the device has no local owner and device settings are
+    // controlled through the cloud policy infrastructure. Auto-enrollment is
+    // supported in that mode.
+    ENTERPRISE = 0;
+    // Devices in KIOSK mode also have no local owner and get their device
+    // settings from the cloud, but additionally this mode enables the demo
+    // account on the device.
+    KIOSK = 1;
+  }
+  optional DeviceMode enrollment_type = 3 [default = ENTERPRISE];
 }
 
 // Request from device to server to unregister device.
