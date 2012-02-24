@@ -143,6 +143,13 @@ AutoEnrollmentClient* AutoEnrollmentClient::Create(
                                   power_limit);
 }
 
+// static
+void AutoEnrollmentClient::CancelAutoEnrollment() {
+  PrefService* local_state = g_browser_process->local_state();
+  local_state->SetBoolean(prefs::kShouldAutoEnroll, false);
+  local_state->CommitPendingWrite();
+}
+
 void AutoEnrollmentClient::Start() {
   // Drop the previous job and reset state.
   request_job_.reset();

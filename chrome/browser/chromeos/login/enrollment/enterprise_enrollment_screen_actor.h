@@ -70,6 +70,7 @@ class EnterpriseEnrollmentScreenActor {
   virtual void ShowEnrollmentModeError() = 0;
   virtual void ShowFatalAuthError() = 0;
   virtual void ShowFatalEnrollmentError() = 0;
+  virtual void ShowAutoEnrollmentError() = 0;
   virtual void ShowNetworkEnrollmentError() = 0;
 
   // Used for testing only.

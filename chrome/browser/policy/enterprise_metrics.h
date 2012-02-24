@@ -138,6 +138,9 @@ enum MetricEnrollment {
   // Enrollment failed because the enrollment mode was not supplied by the
   // DMServer or the mode is not known to the client.
   kMetricEnrollmentInvalidEnrollmentMode,
+  // Auto-enrollment is not supported for the mode supplied by the server.
+  // This presently means trying to auto-enroll in kiosk mode.
+  kMetricEnrollmentAutoEnrollmentNotSupported,
 
   kMetricEnrollmentSize  // Must be the last.
 };

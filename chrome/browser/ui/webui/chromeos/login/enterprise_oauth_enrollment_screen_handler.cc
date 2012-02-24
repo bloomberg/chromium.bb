@@ -9,16 +9,14 @@
 #include "base/callback.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
+#include "chrome/browser/policy/auto_enrollment_client.h"
 #include "chrome/browser/policy/enterprise_metrics.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
-#include "chrome/common/pref_names.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -214,6 +212,22 @@ void EnterpriseOAuthEnrollmentScreenHandler::ShowFatalEnrollmentError() {
   NotifyObservers(false);
 }
 
+void EnterpriseOAuthEnrollmentScreenHandler::ShowAutoEnrollmentError() {
+  UMAFailure(policy::kMetricEnrollmentAutoEnrollmentNotSupported);
+  // The reason for showing this error is that we have been trying to
+  // auto-enroll and this failed, so we have to verify whether auto-enrollment
+  // is on, and if so switch it off, update the UI accordingly and show the
+  // error message.
+  std::string user;
+  is_auto_enrollment_ = controller_ && controller_->IsAutoEnrollment(&user);
+  base::FundamentalValue value(is_auto_enrollment_);
+  web_ui()->CallJavascriptFunction(
+      "oobe.OAuthEnrollmentScreen.setIsAutoEnrollment", value);
+
+  ShowError(IDS_ENTERPRISE_AUTO_ENROLLMENT_ERROR, false);
+  NotifyObservers(false);
+}
+
 void EnterpriseOAuthEnrollmentScreenHandler::ShowNetworkEnrollmentError() {
   UMAFailure(policy::kMetricEnrollmentNetworkFailed);
   ShowError(IDS_ENTERPRISE_ENROLLMENT_NETWORK_ENROLLMENT_ERROR, true);
@@ -352,9 +366,7 @@ void EnterpriseOAuthEnrollmentScreenHandler::HandleClose(
   } else if (reason == "autocancel") {
     // Store the user's decision so that the sign-in screen doesn't go
     // automatically to the enrollment screen again.
-    PrefService* local_state = g_browser_process->local_state();
-    local_state->SetBoolean(prefs::kShouldAutoEnroll, false);
-    local_state->CommitPendingWrite();
+    policy::AutoEnrollmentClient::CancelAutoEnrollment();
     UMA(policy::kMetricEnrollmentAutoCancelled);
   } else if (reason == "done") {
     // If the user account used for enrollment is not whitelisted, send the user

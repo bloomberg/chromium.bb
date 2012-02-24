@@ -286,8 +286,7 @@ TEST_F(AutoEnrollmentClientTest, ReuseCachedDecision) {
   client_->Start();
   EXPECT_TRUE(client_->should_auto_enroll());
   EXPECT_EQ(1, completion_callback_count_);
-  local_state_->SetUserPref(prefs::kShouldAutoEnroll,
-                            Value::CreateBooleanValue(false));
+  AutoEnrollmentClient::CancelAutoEnrollment();
   client_->Start();
   EXPECT_FALSE(client_->should_auto_enroll());
   EXPECT_EQ(2, completion_callback_count_);

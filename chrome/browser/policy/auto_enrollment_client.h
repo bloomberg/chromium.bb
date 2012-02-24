@@ -56,6 +56,12 @@ class AutoEnrollmentClient {
   // Convenience method to create instances of this class.
   static AutoEnrollmentClient* Create(const base::Closure& completion_callback);
 
+  // Cancels auto-enrollment.
+  // This function does not interrupt a running auto-enrollment check. It only
+  // stores a pref in |local_state| that prevents the client from entering
+  // auto-enrollment mode for the future.
+  static void CancelAutoEnrollment();
+
   // Starts the auto-enrollment check protocol with the device management
   // service. Subsequent calls drop any previous requests. Notice that this
   // call can invoke the |completion_callback_| if errors occur.

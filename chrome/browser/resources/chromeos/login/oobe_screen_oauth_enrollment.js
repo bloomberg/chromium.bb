@@ -22,6 +22,15 @@ cr.define('oobe', function() {
   };
 
   /**
+   * Sets the |isAutoEnrollment| flag of the OAuthEnrollmentScreen class and
+   * updates the UI.
+   * @param is_auto_enrollment {bool} the new value of the flag.
+   */
+  OAuthEnrollmentScreen.setIsAutoEnrollment = function(is_auto_enrollment) {
+    $('oauth-enrollment').setIsAutoEnrollment(is_auto_enrollment);
+  };
+
+  /**
    * Switches between the different steps in the enrollment flow.
    * @param screen {string} the steps to show, one of "signin", "working",
    * "error", "success".
@@ -139,24 +148,10 @@ cr.define('oobe', function() {
     },
 
     /**
-     * Event handler that is invoked just before the frame is shown.
-     * @param data {dictionary} Screen init payload, contains the signin frame
-     * URL.
+     * Changes the auto-enrollment flag and updates the UI.
      */
-    onBeforeShow: function(data) {
-      var url = data.signin_url;
-      if (data.gaiaOrigin)
-        url += '?gaiaOrigin=' + encodeURIComponent(data.gaiaOrigin);
-      if (data.test_email) {
-        url += '&test_email=' + encodeURIComponent(data.test_email);
-        url += '&test_password=' + encodeURIComponent(data.test_password);
-      }
-      this.signInUrl_ = url;
-      this.isAutoEnrollment_ = data.is_auto_enrollment;
-
-      $('oauth-enroll-signin-frame').contentWindow.location.href =
-          this.signInUrl_;
-
+    setIsAutoEnrollment: function(is_auto_enrollment) {
+      this.isAutoEnrollment_ = is_auto_enrollment;
       // The cancel button is not available during auto-enrollment.
       var cancel = this.isAutoEnrollment_ ? null : 'cancel';
       // During auto-enrollment the user must try again from the error screen.
@@ -180,6 +175,26 @@ cr.define('oobe', function() {
       var links = document.querySelectorAll('.oauth-enroll-explain-link');
       for (var i = 0; i < links.length; i++)
         links[i].hidden = !this.isAutoEnrollment_;
+    },
+
+    /**
+     * Event handler that is invoked just before the frame is shown.
+     * @param data {dictionary} Screen init payload, contains the signin frame
+     * URL.
+     */
+    onBeforeShow: function(data) {
+      var url = data.signin_url;
+      if (data.gaiaOrigin)
+        url += '?gaiaOrigin=' + encodeURIComponent(data.gaiaOrigin);
+      if (data.test_email) {
+        url += '&test_email=' + encodeURIComponent(data.test_email);
+        url += '&test_password=' + encodeURIComponent(data.test_password);
+      }
+      this.signInUrl_ = url;
+      this.setIsAutoEnrollment(data.is_auto_enrollment);
+
+      $('oauth-enroll-signin-frame').contentWindow.location.href =
+          this.signInUrl_;
 
       this.showStep('signin');
     },

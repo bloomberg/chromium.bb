@@ -12,7 +12,9 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
+#include "chrome/browser/policy/auto_enrollment_client.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/enterprise_metrics.h"
 
 namespace chromeos {
@@ -115,8 +117,23 @@ void EnterpriseEnrollmentScreen::OnPolicyStateChanged(
         actor_->ShowNetworkEnrollmentError();
         break;
       case policy::CloudPolicySubsystem::TOKEN_FETCHED:
-        WriteInstallAttributesData();
-        return;
+        if (!is_auto_enrollment_ ||
+            g_browser_process->browser_policy_connector()->
+                GetDeviceCloudPolicyDataStore()->device_mode() ==
+            policy::DEVICE_MODE_ENTERPRISE) {
+          WriteInstallAttributesData();
+          return;
+        } else {
+          LOG(ERROR) << "Enrollment can not proceed because Auto-enrollment is "
+                     << "not supported for non-enterprise enrollment modes.";
+          policy::AutoEnrollmentClient::CancelAutoEnrollment();
+          is_auto_enrollment_ = false;
+          actor_->ShowAutoEnrollmentError();
+          // Set the error state to something distinguishable in the logs.
+          state = policy::CloudPolicySubsystem::LOCAL_ERROR;
+          error_details = policy::CloudPolicySubsystem::AUTO_ENROLLMENT_ERROR;
+        }
+        break;
       case policy::CloudPolicySubsystem::SUCCESS:
         // Success!
         registrar_.reset();
