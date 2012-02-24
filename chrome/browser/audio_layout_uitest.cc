@@ -63,7 +63,7 @@ TEST_F(AudioUILayoutTest, AudioNoInstalledEngines) {
 
 #if defined(OS_CHROMEOS) && defined(USE_AURA)
 // http://crbug.com/115530
-#define MAYBE_AudioOnlyVideoIntrinsicSize FLAKY_AudioOnlyVideoIntrinsicSize
+#define MAYBE_AudioOnlyVideoIntrinsicSize DISABLED_AudioOnlyVideoIntrinsicSize
 #else
 #define MAYBE_AudioOnlyVideoIntrinsicSize AudioOnlyVideoIntrinsicSize
 #endif
