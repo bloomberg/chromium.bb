@@ -24,8 +24,10 @@
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/backend_migrator.h"
@@ -1651,4 +1653,23 @@ void ProfileSyncService::ReconfigureDatatypeManager() {
 
 const FailedDatatypesHandler& ProfileSyncService::failed_datatypes_handler() {
   return failed_datatypes_handler_;
+}
+
+void ProfileSyncService::ResetForTest(ProfileSyncService* service) {
+  DCHECK(service) << "Cannot reset null ProfileSyncService object.";
+  Profile* profile = service->profile();
+  SigninManager* signin = SigninManagerFactory::GetForProfile(profile);
+  ProfileSyncService::StartBehavior behavior =
+      browser_defaults::kSyncAutoStarts ? ProfileSyncService::AUTO_START
+                                        : ProfileSyncService::MANUAL_START;
+
+  void* place = service;
+  service->~ProfileSyncService();
+  service = new(place) ProfileSyncService(
+      new ProfileSyncComponentsFactoryImpl(profile,
+                                           CommandLine::ForCurrentProcess()),
+      profile,
+      signin,
+      behavior);
+  DCHECK(service) << "Could not create new ProfileSyncService.";
 }

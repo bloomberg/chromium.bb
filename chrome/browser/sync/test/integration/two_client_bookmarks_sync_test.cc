@@ -1904,3 +1904,20 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, RacyPositionChanges) {
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllModelsMatch());
 }
+
+// Restart the sync service on one client and make sure all data is synced when
+// the service restarts.
+IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, RestartSyncService) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  ASSERT_TRUE(AddURL(0, L"Google", GURL("http://www.google.com")));
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(AllModelsMatchVerifier());
+
+  RestartSyncService(0);
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Restarted sync."));
+  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_EQ(ProfileSyncService::Status::READY,
+            GetClient(0)->GetStatus().summary);
+  ASSERT_EQ(0, GetClient(0)->GetStatus().unsynced_count);
+}

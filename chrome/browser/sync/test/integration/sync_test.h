@@ -137,6 +137,10 @@ class SyncTest : public InProcessBrowserTest {
   // Initializes sync clients and profiles if required and syncs each of them.
   virtual bool SetupSync() WARN_UNUSED_RESULT;
 
+  // Restarts the sync service for the profile at |index|. This is equivalent to
+  // closing and reopening all browser windows for the profile.
+  virtual void RestartSyncService(int index);
+
   // Enable outgoing network connections for the given profile.
   virtual void EnableNetwork(Profile* profile);
 
@@ -222,6 +226,10 @@ class SyncTest : public InProcessBrowserTest {
   // InProcessBrowserTest override. Resets the host resolver its default
   // behavior.
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE;
+
+  // Creates Profile, Browser and ProfileSyncServiceHarness instances for
+  // |index|. Used by SetupClients().
+  virtual void InitializeInstance(int index);
 
   // GAIA account used by the test case.
   std::string username_;

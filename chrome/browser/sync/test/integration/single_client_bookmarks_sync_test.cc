@@ -155,3 +155,21 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, Sanity) {
       "Move after addition of bookmarks."));
   ASSERT_TRUE(ModelMatchesVerifier(0));
 }
+
+// Restart the sync service on a client and make sure sync is up and running.
+IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, RestartSyncService) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  ASSERT_TRUE(AddURL(0, L"Google", GURL("http://www.google.com")));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Added a bookmark."));
+  ASSERT_TRUE(ModelMatchesVerifier(0));
+  ASSERT_EQ(ProfileSyncService::Status::READY,
+            GetClient(0)->GetStatus().summary);
+
+  RestartSyncService(0);
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Restarted sync."));
+  ASSERT_TRUE(ModelMatchesVerifier(0));
+  ASSERT_EQ(ProfileSyncService::Status::READY,
+            GetClient(0)->GetStatus().summary);
+  ASSERT_EQ(0, GetClient(0)->GetStatus().unsynced_count);
+}

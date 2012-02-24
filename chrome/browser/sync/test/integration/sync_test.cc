@@ -24,6 +24,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sync/notifier/p2p_notifier.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
@@ -282,23 +283,11 @@ bool SyncTest::SetupClients() {
   SetUpTestServerIfRequired();
 
   // Create the required number of sync profiles, browsers and clients.
+  profiles_.resize(num_clients_);
+  browsers_.resize(num_clients_);
+  clients_.resize(num_clients_);
   for (int i = 0; i < num_clients_; ++i) {
-    profiles_.push_back(MakeProfile(
-        base::StringPrintf(FILE_PATH_LITERAL("Profile%d"), i)));
-    EXPECT_FALSE(GetProfile(i) == NULL) << "GetProfile(" << i << ") failed.";
-
-    browsers_.push_back(Browser::Create(GetProfile(i)));
-    EXPECT_FALSE(GetBrowser(i) == NULL) << "GetBrowser(" << i << ") failed.";
-
-    clients_.push_back(
-        new ProfileSyncServiceHarness(GetProfile(i), username_, password_));
-    EXPECT_FALSE(GetClient(i) == NULL) << "GetClient(" << i << ") failed.";
-
-    ui_test_utils::WaitForBookmarkModelToLoad(
-        GetProfile(i)->GetBookmarkModel());
-
-    ui_test_utils::WaitForTemplateURLServiceToLoad(
-        TemplateURLServiceFactory::GetForProfile(GetProfile(i)));
+    InitializeInstance(i);
   }
 
   // Create the verifier profile.
@@ -307,6 +296,43 @@ bool SyncTest::SetupClients() {
   ui_test_utils::WaitForTemplateURLServiceToLoad(
       TemplateURLServiceFactory::GetForProfile(verifier()));
   return (verifier_ != NULL);
+}
+
+void SyncTest::InitializeInstance(int index) {
+  profiles_[index] = MakeProfile(
+      base::StringPrintf(FILE_PATH_LITERAL("Profile%d"), index));
+  EXPECT_FALSE(GetProfile(index) == NULL) << "Could not create Profile "
+                                          << index << ".";
+
+  browsers_[index] = Browser::Create(GetProfile(index));
+  EXPECT_FALSE(GetBrowser(index) == NULL) << "Could not create Browser "
+                                          << index << ".";
+
+  clients_[index] = new ProfileSyncServiceHarness(GetProfile(index),
+                                                  username_,
+                                                  password_);
+  EXPECT_FALSE(GetClient(index) == NULL) << "Could not create Client "
+                                         << index << ".";
+
+  ui_test_utils::WaitForBookmarkModelToLoad(
+      GetProfile(index)->GetBookmarkModel());
+
+  ui_test_utils::WaitForTemplateURLServiceToLoad(
+      TemplateURLServiceFactory::GetForProfile(GetProfile(index)));
+}
+
+void SyncTest::RestartSyncService(int index) {
+  DVLOG(1) << "Restarting profile sync service for profile " << index << ".";
+  delete clients_[index];
+  Profile* profile = GetProfile(index);
+  ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetForProfile(profile);
+  ProfileSyncService::ResetForTest(service);
+  clients_[index] = new ProfileSyncServiceHarness(profile,
+                                                  username_,
+                                                  password_);
+  service->Initialize();
+  GetClient(index)->AwaitSyncRestart();
 }
 
 bool SyncTest::SetupSync() {
