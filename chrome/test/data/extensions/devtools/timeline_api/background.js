@@ -25,13 +25,19 @@ function setListenersOnTab(tabId) {
 }
 
 function testReceivePageEvent() {
+  var sawPage = false;
   if (receivedEvents.length == 1) {
     var eventName = receivedEvents.pop();
-    window.domAutomationController.send(eventName === "onPageEvent");
+    if (eventName === "onPageEvent")
+      sawPage = true;
+    else
+      console.warn('received ' + eventName + '; expecting onPageEvent');
   } else {
+    console.warn('received ' + receivedEvents.toString() +
+                 '; expecting onPageEvent');
     receivedEvents = [];
-    window.domAutomationController.send(false);
   }
+  window.domAutomationController.send(sawPage);
 }
 
 function testReceiveTabCloseEvent() {
