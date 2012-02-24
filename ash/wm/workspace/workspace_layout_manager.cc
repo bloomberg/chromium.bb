@@ -31,6 +31,38 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(
 
 WorkspaceLayoutManager::~WorkspaceLayoutManager() {}
 
+void WorkspaceLayoutManager::PrepareForMoveOrResize(
+    aura::Window* drag,
+    aura::MouseEvent* event) {
+}
+
+void WorkspaceLayoutManager::CancelMoveOrResize(
+    aura::Window* drag,
+    aura::MouseEvent* event) {
+}
+
+void WorkspaceLayoutManager::ProcessMove(
+    aura::Window* drag,
+    aura::MouseEvent* event) {
+  // TODO: needs implementation for TYPE_SPLIT. For TYPE_SPLIT I want to
+  // disallow eventfilter from moving and instead deal with it here.
+}
+
+void WorkspaceLayoutManager::EndMove(
+    aura::Window* drag,
+    aura::MouseEvent* evnet) {
+  // TODO: see comment in ProcessMove.
+}
+
+void WorkspaceLayoutManager::EndResize(
+    aura::Window* drag,
+    aura::MouseEvent* evnet) {
+  // TODO: see comment in ProcessMove.
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WorkspaceLayoutManager, aura::LayoutManager implementation:
+
 void WorkspaceLayoutManager::OnWindowResized() {
   // Workspace is updated via RootWindowObserver::OnRootWindowResized.
 }
@@ -80,14 +112,10 @@ void WorkspaceLayoutManager::SetChildBounds(
     aura::Window* child,
     const gfx::Rect& requested_bounds) {
   gfx::Rect child_bounds(requested_bounds);
-  if (window_util::IsWindowMaximized(child)) {
+  if (window_util::IsWindowMaximized(child))
     child_bounds = gfx::Screen::GetMonitorWorkAreaNearestWindow(child);
-  } else if (window_util::IsWindowFullscreen(child)) {
+  else if (window_util::IsWindowFullscreen(child))
     child_bounds = gfx::Screen::GetMonitorAreaNearestWindow(child);
-  } else {
-    child_bounds = gfx::Screen::GetMonitorWorkAreaNearestWindow(child).
-        AdjustToFit(requested_bounds);
-  }
   SetChildBoundsDirect(child, child_bounds);
 }
 

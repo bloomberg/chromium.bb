@@ -48,7 +48,8 @@ bool ToplevelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
           target->delegate()->GetNonClientComponent(event->location());
       if (WindowResizer::GetBoundsChangeForWindowComponent(component)) {
         window_resizer_.reset(
-            CreateWindowResizer(target, event->location(), component));
+            new WindowResizer(target, event->location(), component,
+                              grid_size_));
         if (!window_resizer_->is_resizable())
           window_resizer_.reset();
       } else {
@@ -92,7 +93,7 @@ ui::GestureStatus ToplevelWindowEventFilter::PreHandleGestureEvent(
       }
       in_gesture_resize_ = true;
       window_resizer_.reset(
-          CreateWindowResizer(target, event->location(), component));
+          new WindowResizer(target, event->location(), component, grid_size_));
       if (!window_resizer_->is_resizable())
         window_resizer_.reset();
       break;
@@ -124,7 +125,7 @@ void ToplevelWindowEventFilter::RunMoveLoop(aura::Window* source) {
   aura::Window::ConvertPointToWindow(
       Shell::GetRootWindow(), source, &source_mouse_location);
   window_resizer_.reset(
-      CreateWindowResizer(source, source_mouse_location, HTCAPTION));
+      new WindowResizer(source, source_mouse_location, HTCAPTION, grid_size_));
 #if !defined(OS_MACOSX)
   MessageLoopForUI::current()->RunWithDispatcher(
       aura::Env::GetInstance()->GetDispatcher());
@@ -140,13 +141,6 @@ void ToplevelWindowEventFilter::EndMoveLoop() {
   window_resizer_.reset();
   MessageLoopForUI::current()->Quit();
   Shell::GetRootWindow()->PostNativeEvent(ui::CreateNoopEvent());
-}
-
-WindowResizer* ToplevelWindowEventFilter::CreateWindowResizer(
-    aura::Window* window,
-    const gfx::Point& point,
-    int window_component) {
-  return new WindowResizer(window, point, window_component, grid_size_);
 }
 
 void ToplevelWindowEventFilter::CompleteDrag(aura::Window* window) {
