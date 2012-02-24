@@ -8,7 +8,11 @@
         "AutoConnect": true,
         "EAP": {
           "Outer": "PEAP",
-          "UseSystemCAs": false
+          "UseSystemCAs": false,
+          "Recommended": [
+            "Identity",
+            "Password"
+          ]
         },
         "SSID": "ssid",
         "Security": "WPA-EAP"

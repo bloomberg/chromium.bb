@@ -13,8 +13,12 @@
           "PSK": "passphrase"
         },
         "L2TP": {
-          "SaveCredentials": false
-        },
+          "SaveCredentials": false,
+          "Recommended": [
+            "Username",
+            "Password"
+          ]
+         },
         "Type": "L2TP-IPsec"
       }
     }
