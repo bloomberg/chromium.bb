@@ -36,16 +36,18 @@ class JingleInfoRequest;
 
 namespace protocol {
 
-class PepperSession;
+class JingleSession;
 
-// This class implements SessionManager interface on top of the Pepper
-// P2P Transport API.
-class PepperSessionManager : public SessionManager,
+// JingleSessionManager and JingleSession implement the subset of the
+// Jingle protocol used in Chromoting. JingleSessionManager provides
+// the protocol::SessionManager interface for accepting incoming and
+// creating outgoing sessions.
+class JingleSessionManager : public SessionManager,
                              public SignalStrategy::Listener {
  public:
-  explicit PepperSessionManager(
+  explicit JingleSessionManager(
       scoped_ptr<TransportFactory> transport_factory);
-  virtual ~PepperSessionManager();
+  virtual ~JingleSessionManager();
 
   // SessionManager interface.
   virtual void Init(SignalStrategy* signal_strategy,
@@ -67,9 +69,9 @@ class PepperSessionManager : public SessionManager,
       const buzz::XmlElement* stanza) OVERRIDE;
 
  private:
-  friend class PepperSession;
+  friend class JingleSession;
 
-  typedef std::map<std::string, PepperSession*> SessionsMap;
+  typedef std::map<std::string, JingleSession*> SessionsMap;
 
   void OnJingleInfo(
       const std::string& relay_token,
@@ -80,8 +82,8 @@ class PepperSessionManager : public SessionManager,
   void SendReply(const buzz::XmlElement* original_stanza,
                  JingleMessageReply::ErrorType error);
 
-  // Called by PepperSession when it is being destroyed.
-  void SessionDestroyed(PepperSession* session);
+  // Called by JingleSession when it is being destroyed.
+  void SessionDestroyed(JingleSession* session);
 
   scoped_ptr<TransportFactory> transport_factory_;
 
@@ -98,7 +100,7 @@ class PepperSessionManager : public SessionManager,
 
   SessionsMap sessions_;
 
-  DISALLOW_COPY_AND_ASSIGN(PepperSessionManager);
+  DISALLOW_COPY_AND_ASSIGN(JingleSessionManager);
 };
 
 }  // namespace protocol

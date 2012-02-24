@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/protocol/pepper_session.h"
+#include "remoting/protocol/jingle_session.h"
 
 #include "base/bind.h"
 #include "base/message_loop.h"
@@ -15,7 +15,7 @@
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/connection_tester.h"
 #include "remoting/protocol/fake_authenticator.h"
-#include "remoting/protocol/pepper_session_manager.h"
+#include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/libjingle_transport_factory.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/jingle_glue/fake_signal_strategy.h"
@@ -79,9 +79,9 @@ class MockStreamChannelCallback {
 
 }  // namespace
 
-class PepperSessionTest : public testing::Test {
+class JingleSessionTest : public testing::Test {
  public:
-  PepperSessionTest()
+  JingleSessionTest()
       : message_loop_(talk_base::Thread::Current()) {
   }
 
@@ -132,7 +132,7 @@ class PepperSessionTest : public testing::Test {
 
     EXPECT_CALL(host_server_listener_, OnSessionManagerReady())
         .Times(1);
-    host_server_.reset(new PepperSessionManager(
+    host_server_.reset(new JingleSessionManager(
         scoped_ptr<TransportFactory>(new LibjingleTransportFactory())));
     host_server_->Init(host_signal_strategy_.get(), &host_server_listener_,
                        NetworkSettings(false));
@@ -143,7 +143,7 @@ class PepperSessionTest : public testing::Test {
 
     EXPECT_CALL(client_server_listener_, OnSessionManagerReady())
         .Times(1);
-    client_server_.reset(new PepperSessionManager(
+    client_server_.reset(new JingleSessionManager(
         scoped_ptr<TransportFactory>(new LibjingleTransportFactory())));
     client_server_->Init(client_signal_strategy_.get(),
                          &client_server_listener_, NetworkSettings());
@@ -167,7 +167,7 @@ class PepperSessionTest : public testing::Test {
                           bool expect_fail) {
     EXPECT_CALL(host_server_listener_, OnIncomingSession(_, _))
         .WillOnce(DoAll(
-            WithArg<0>(Invoke(this, &PepperSessionTest::SetHostSession)),
+            WithArg<0>(Invoke(this, &JingleSessionTest::SetHostSession)),
             SetArgumentPointee<1>(protocol::SessionManager::ACCEPT)));
 
     {
@@ -229,9 +229,9 @@ class PepperSessionTest : public testing::Test {
 
   void CreateChannel(bool expect_fail) {
     client_session_->CreateStreamChannel(kChannelName, base::Bind(
-        &PepperSessionTest::OnClientChannelCreated, base::Unretained(this)));
+        &JingleSessionTest::OnClientChannelCreated, base::Unretained(this)));
     host_session_->CreateStreamChannel(kChannelName, base::Bind(
-        &PepperSessionTest::OnHostChannelCreated, base::Unretained(this)));
+        &JingleSessionTest::OnHostChannelCreated, base::Unretained(this)));
 
     int counter = 2;
     EXPECT_CALL(client_channel_callback_, OnDone(_))
@@ -254,9 +254,9 @@ class PepperSessionTest : public testing::Test {
   scoped_ptr<FakeSignalStrategy> host_signal_strategy_;
   scoped_ptr<FakeSignalStrategy> client_signal_strategy_;
 
-  scoped_ptr<PepperSessionManager> host_server_;
+  scoped_ptr<JingleSessionManager> host_server_;
   MockSessionManagerListener host_server_listener_;
-  scoped_ptr<PepperSessionManager> client_server_;
+  scoped_ptr<JingleSessionManager> client_server_;
   MockSessionManagerListener client_server_listener_;
 
   scoped_ptr<Session> host_session_;
@@ -274,13 +274,13 @@ class PepperSessionTest : public testing::Test {
 
 // Verify that we can create and destroy session managers without a
 // connection.
-TEST_F(PepperSessionTest, CreateAndDestoy) {
+TEST_F(JingleSessionTest, CreateAndDestoy) {
   CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
 }
 
 // Verify that an incoming session can be rejected, and that the
 // status of the connection is set to FAILED in this case.
-TEST_F(PepperSessionTest, RejectConnection) {
+TEST_F(JingleSessionTest, RejectConnection) {
   CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
 
   // Reject incoming session.
@@ -309,31 +309,31 @@ TEST_F(PepperSessionTest, RejectConnection) {
 }
 
 // Verify that we can connect two endpoints with single-step authentication.
-TEST_F(PepperSessionTest, Connect) {
+TEST_F(JingleSessionTest, Connect) {
   CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
   InitiateConnection(1, FakeAuthenticator::ACCEPT, false);
 }
 
 // Verify that we can connect two endpoints with multi-step authentication.
-TEST_F(PepperSessionTest, ConnectWithMultistep) {
+TEST_F(JingleSessionTest, ConnectWithMultistep) {
   CreateSessionManagers(3, FakeAuthenticator::ACCEPT);
   InitiateConnection(3, FakeAuthenticator::ACCEPT, false);
 }
 
 // Verify that connection is terminated when single-step auth fails.
-TEST_F(PepperSessionTest, ConnectWithBadAuth) {
+TEST_F(JingleSessionTest, ConnectWithBadAuth) {
   CreateSessionManagers(1, FakeAuthenticator::REJECT);
   InitiateConnection(1, FakeAuthenticator::ACCEPT, true);
 }
 
 // Verify that connection is terminated when multi-step auth fails.
-TEST_F(PepperSessionTest, ConnectWithBadMultistepAuth) {
+TEST_F(JingleSessionTest, ConnectWithBadMultistepAuth) {
   CreateSessionManagers(3, FakeAuthenticator::REJECT);
   InitiateConnection(3, FakeAuthenticator::ACCEPT, true);
 }
 
 // Verify that data can be sent over stream channel.
-TEST_F(PepperSessionTest, TestStreamChannel) {
+TEST_F(JingleSessionTest, TestStreamChannel) {
   CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
   ASSERT_NO_FATAL_FAILURE(
       InitiateConnection(1, FakeAuthenticator::ACCEPT, false));
@@ -348,7 +348,7 @@ TEST_F(PepperSessionTest, TestStreamChannel) {
 }
 
 // Verify that we can connect channels with multistep auth.
-TEST_F(PepperSessionTest, TestMultistepAuthStreamChannel) {
+TEST_F(JingleSessionTest, TestMultistepAuthStreamChannel) {
   CreateSessionManagers(3, FakeAuthenticator::ACCEPT);
   ASSERT_NO_FATAL_FAILURE(
       InitiateConnection(3, FakeAuthenticator::ACCEPT, false));
@@ -363,7 +363,7 @@ TEST_F(PepperSessionTest, TestMultistepAuthStreamChannel) {
 }
 
 // Verify that we shutdown properly when channel authentication fails.
-TEST_F(PepperSessionTest, TestFailedChannelAuth) {
+TEST_F(JingleSessionTest, TestFailedChannelAuth) {
   CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
   ASSERT_NO_FATAL_FAILURE(
       InitiateConnection(1, FakeAuthenticator::REJECT_CHANNEL, false));

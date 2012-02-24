@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/protocol/pepper_session.h"
+#include "remoting/protocol/jingle_session.h"
 
 #include "base/bind.h"
 #include "base/rand_util.h"
@@ -14,7 +14,7 @@
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/content_description.h"
 #include "remoting/protocol/jingle_messages.h"
-#include "remoting/protocol/pepper_session_manager.h"
+#include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/session_config.h"
 #include "third_party/libjingle/source/talk/p2p/base/candidate.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
@@ -46,37 +46,37 @@ Session::Error AuthRejectionReasonToError(
 
 }  // namespace
 
-PepperSession::PepperSession(PepperSessionManager* session_manager)
+JingleSession::JingleSession(JingleSessionManager* session_manager)
     : session_manager_(session_manager),
       state_(INITIALIZING),
       error_(OK),
       config_is_set_(false) {
 }
 
-PepperSession::~PepperSession() {
+JingleSession::~JingleSession() {
   STLDeleteContainerPairSecondPointers(channels_.begin(), channels_.end());
   session_manager_->SessionDestroyed(this);
 }
 
-void PepperSession::SetStateChangeCallback(
+void JingleSession::SetStateChangeCallback(
     const StateChangeCallback& callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(!callback.is_null());
   state_change_callback_ = callback;
 }
 
-void PepperSession::SetRouteChangeCallback(
+void JingleSession::SetRouteChangeCallback(
     const RouteChangeCallback& callback) {
   DCHECK(CalledOnValidThread());
   route_change_callback_ = callback;
 }
 
-Session::Error PepperSession::error() {
+Session::Error JingleSession::error() {
   DCHECK(CalledOnValidThread());
   return error_;
 }
 
-void PepperSession::StartConnection(
+void JingleSession::StartConnection(
     const std::string& peer_jid,
     scoped_ptr<Authenticator> authenticator,
     scoped_ptr<CandidateSessionConfig> config,
@@ -104,13 +104,13 @@ void PepperSession::StartConnection(
                              authenticator_->GetNextMessage()));
   initiate_request_ = session_manager_->iq_sender()->SendIq(
       message.ToXml(),
-      base::Bind(&PepperSession::OnSessionInitiateResponse,
+      base::Bind(&JingleSession::OnSessionInitiateResponse,
                  base::Unretained(this)));
 
   SetState(CONNECTING);
 }
 
-void PepperSession::InitializeIncomingConnection(
+void JingleSession::InitializeIncomingConnection(
     const JingleMessage& initiate_message,
     scoped_ptr<Authenticator> authenticator) {
   DCHECK(CalledOnValidThread());
@@ -126,7 +126,7 @@ void PepperSession::InitializeIncomingConnection(
   SetState(CONNECTING);
 }
 
-void PepperSession::AcceptIncomingConnection(
+void JingleSession::AcceptIncomingConnection(
     const JingleMessage& initiate_message) {
   DCHECK(config_is_set_);
 
@@ -160,7 +160,7 @@ void PepperSession::AcceptIncomingConnection(
                              auth_message.Pass()));
   initiate_request_ = session_manager_->iq_sender()->SendIq(
       message.ToXml(),
-      base::Bind(&PepperSession::OnSessionInitiateResponse,
+      base::Bind(&JingleSession::OnSessionInitiateResponse,
                  base::Unretained(this)));
 
   // Update state.
@@ -175,7 +175,7 @@ void PepperSession::AcceptIncomingConnection(
   return;
 }
 
-void PepperSession::OnSessionInitiateResponse(
+void JingleSession::OnSessionInitiateResponse(
     const buzz::XmlElement* response) {
   const std::string& type = response->Attr(buzz::QName("", "type"));
   if (type != "result") {
@@ -189,7 +189,7 @@ void PepperSession::OnSessionInitiateResponse(
   }
 }
 
-void PepperSession::CreateStreamChannel(
+void JingleSession::CreateStreamChannel(
       const std::string& name,
       const StreamChannelCallback& callback) {
   DCHECK(!channels_[name]);
@@ -204,7 +204,7 @@ void PepperSession::CreateStreamChannel(
   channels_[name] = channel.release();
 }
 
-void PepperSession::CreateDatagramChannel(
+void JingleSession::CreateDatagramChannel(
     const std::string& name,
     const DatagramChannelCallback& callback) {
   DCHECK(!channels_[name]);
@@ -219,7 +219,7 @@ void PepperSession::CreateDatagramChannel(
   channels_[name] = channel.release();
 }
 
-void PepperSession::CancelChannelCreation(const std::string& name) {
+void JingleSession::CancelChannelCreation(const std::string& name) {
   ChannelsMap::iterator it = channels_.find(name);
   if (it != channels_.end() && !it->second->is_connected()) {
     delete it->second;
@@ -227,35 +227,35 @@ void PepperSession::CancelChannelCreation(const std::string& name) {
   }
 }
 
-const std::string& PepperSession::jid() {
+const std::string& JingleSession::jid() {
   DCHECK(CalledOnValidThread());
   return peer_jid_;
 }
 
-const CandidateSessionConfig* PepperSession::candidate_config() {
+const CandidateSessionConfig* JingleSession::candidate_config() {
   DCHECK(CalledOnValidThread());
   return candidate_config_.get();
 }
 
-const SessionConfig& PepperSession::config() {
+const SessionConfig& JingleSession::config() {
   DCHECK(CalledOnValidThread());
   return config_;
 }
 
-void PepperSession::set_config(const SessionConfig& config) {
+void JingleSession::set_config(const SessionConfig& config) {
   DCHECK(CalledOnValidThread());
   DCHECK(!config_is_set_);
   config_ = config;
   config_is_set_ = true;
 }
 
-void PepperSession::Close() {
+void JingleSession::Close() {
   DCHECK(CalledOnValidThread());
 
   CloseInternal(OK);
 }
 
-void PepperSession::OnTransportCandidate(Transport* transport,
+void JingleSession::OnTransportCandidate(Transport* transport,
                                          const cricket::Candidate& candidate) {
   pending_candidates_.push_back(candidate);
 
@@ -264,11 +264,11 @@ void PepperSession::OnTransportCandidate(Transport* transport,
     // that we can send in one message.
     transport_infos_timer_.Start(
         FROM_HERE, base::TimeDelta::FromMilliseconds(kTransportInfoSendDelayMs),
-        this, &PepperSession::SendTransportInfo);
+        this, &JingleSession::SendTransportInfo);
   }
 }
 
-void PepperSession::OnTransportRouteChange(Transport* transport,
+void JingleSession::OnTransportRouteChange(Transport* transport,
                                            const TransportRoute& route) {
   if (!route_change_callback_.is_null()) {
     route_change_callback_.Run(transport->name(), route.remote_address,
@@ -276,13 +276,13 @@ void PepperSession::OnTransportRouteChange(Transport* transport,
   }
 }
 
-void PepperSession::OnTransportDeleted(Transport* transport) {
+void JingleSession::OnTransportDeleted(Transport* transport) {
   ChannelsMap::iterator it = channels_.find(transport->name());
   DCHECK_EQ(it->second, transport);
   channels_.erase(it);
 }
 
-void PepperSession::OnIncomingMessage(const JingleMessage& message,
+void JingleSession::OnIncomingMessage(const JingleMessage& message,
                                       const ReplyCallback& reply_callback) {
   DCHECK(CalledOnValidThread());
 
@@ -315,7 +315,7 @@ void PepperSession::OnIncomingMessage(const JingleMessage& message,
   }
 }
 
-void PepperSession::OnAccept(const JingleMessage& message,
+void JingleSession::OnAccept(const JingleMessage& message,
                              const ReplyCallback& reply_callback) {
   if (state_ != CONNECTING) {
     reply_callback.Run(JingleMessageReply::UNEXPECTED_REQUEST);
@@ -354,7 +354,7 @@ void PepperSession::OnAccept(const JingleMessage& message,
   }
 }
 
-void PepperSession::OnSessionInfo(const JingleMessage& message,
+void JingleSession::OnSessionInfo(const JingleMessage& message,
                                   const ReplyCallback& reply_callback) {
   if (!message.info.get() ||
       !Authenticator::IsAuthenticatorMessage(message.info.get())) {
@@ -377,7 +377,7 @@ void PepperSession::OnSessionInfo(const JingleMessage& message,
   ProcessAuthenticationStep();
 }
 
-void PepperSession::ProcessTransportInfo(const JingleMessage& message) {
+void JingleSession::ProcessTransportInfo(const JingleMessage& message) {
   for (std::list<cricket::Candidate>::const_iterator it =
            message.candidates.begin();
        it != message.candidates.end(); ++it) {
@@ -390,7 +390,7 @@ void PepperSession::ProcessTransportInfo(const JingleMessage& message) {
   }
 }
 
-void PepperSession::OnTerminate(const JingleMessage& message,
+void JingleSession::OnTerminate(const JingleMessage& message,
                                 const ReplyCallback& reply_callback) {
   if (state_ != CONNECTING && state_ != CONNECTED && state_ != AUTHENTICATED) {
     LOG(WARNING) << "Received unexpected session-terminate message.";
@@ -428,7 +428,7 @@ void PepperSession::OnTerminate(const JingleMessage& message,
   }
 }
 
-bool PepperSession::InitializeConfigFromDescription(
+bool JingleSession::InitializeConfigFromDescription(
     const ContentDescription* description) {
   DCHECK(description);
 
@@ -444,7 +444,7 @@ bool PepperSession::InitializeConfigFromDescription(
   return true;
 }
 
-void PepperSession::ProcessAuthenticationStep() {
+void JingleSession::ProcessAuthenticationStep() {
   DCHECK_EQ(state_, CONNECTED);
 
   if (authenticator_->state() == Authenticator::MESSAGE_READY) {
@@ -454,7 +454,7 @@ void PepperSession::ProcessAuthenticationStep() {
 
     session_info_request_ = session_manager_->iq_sender()->SendIq(
         message.ToXml(), base::Bind(
-            &PepperSession::OnSessionInfoResponse,
+            &JingleSession::OnSessionInfoResponse,
             base::Unretained(this)));
   }
   DCHECK_NE(authenticator_->state(), Authenticator::MESSAGE_READY);
@@ -467,7 +467,7 @@ void PepperSession::ProcessAuthenticationStep() {
   }
 }
 
-void PepperSession::OnSessionInfoResponse(const buzz::XmlElement* response) {
+void JingleSession::OnSessionInfoResponse(const buzz::XmlElement* response) {
   const std::string& type = response->Attr(buzz::QName("", "type"));
   if (type != "result") {
     LOG(ERROR) << "Received error in response to session-info message: \""
@@ -477,7 +477,7 @@ void PepperSession::OnSessionInfoResponse(const buzz::XmlElement* response) {
   }
 }
 
-void PepperSession::OnTransportInfoResponse(const buzz::XmlElement* response) {
+void JingleSession::OnTransportInfoResponse(const buzz::XmlElement* response) {
   const std::string& type = response->Attr(buzz::QName("", "type"));
   if (type != "result") {
     LOG(ERROR) << "Received error in response to session-initiate message: \""
@@ -493,17 +493,17 @@ void PepperSession::OnTransportInfoResponse(const buzz::XmlElement* response) {
   }
 }
 
-void PepperSession::SendTransportInfo() {
+void JingleSession::SendTransportInfo() {
   JingleMessage message(peer_jid_, JingleMessage::TRANSPORT_INFO, session_id_);
   message.candidates.swap(pending_candidates_);
   transport_info_request_ = session_manager_->iq_sender()->SendIq(
       message.ToXml(), base::Bind(
-          &PepperSession::OnTransportInfoResponse,
+          &JingleSession::OnTransportInfoResponse,
           base::Unretained(this)));
 }
 
 
-void PepperSession::CloseInternal(Error error) {
+void JingleSession::CloseInternal(Error error) {
   DCHECK(CalledOnValidThread());
 
   if (state_ == CONNECTING || state_ == CONNECTED || state_ == AUTHENTICATED) {
@@ -542,7 +542,7 @@ void PepperSession::CloseInternal(Error error) {
   }
 }
 
-void PepperSession::SetState(State new_state) {
+void JingleSession::SetState(State new_state) {
   DCHECK(CalledOnValidThread());
 
   if (new_state != state_) {

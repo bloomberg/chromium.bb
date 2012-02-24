@@ -16,7 +16,7 @@
 #include "remoting/protocol/client_control_dispatcher.h"
 #include "remoting/protocol/client_event_dispatcher.h"
 #include "remoting/protocol/client_stub.h"
-#include "remoting/protocol/pepper_session_manager.h"
+#include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/pepper_transport_factory.h"
 #include "remoting/protocol/video_reader.h"
 #include "remoting/protocol/video_stub.h"
@@ -72,7 +72,7 @@ void ConnectionToHost::Connect(scoped_refptr<XmppProxy> xmpp_proxy,
 
   scoped_ptr<TransportFactory> transport_factory(
       new PepperTransportFactory(pp_instance_));
-  session_manager_.reset(new PepperSessionManager(transport_factory.Pass()));
+  session_manager_.reset(new JingleSessionManager(transport_factory.Pass()));
   session_manager_->Init(signal_strategy_.get(), this,
                          NetworkSettings(allow_nat_traversal_));
 }

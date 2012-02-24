@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/protocol/pepper_session_manager.h"
+#include "remoting/protocol/jingle_session_manager.h"
 
 #include "base/bind.h"
 #include "remoting/jingle_glue/iq_sender.h"
@@ -11,7 +11,7 @@
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/content_description.h"
 #include "remoting/protocol/jingle_messages.h"
-#include "remoting/protocol/pepper_session.h"
+#include "remoting/protocol/jingle_session.h"
 #include "third_party/libjingle/source/talk/base/socketaddress.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
@@ -20,7 +20,7 @@ using buzz::QName;
 namespace remoting {
 namespace protocol {
 
-PepperSessionManager::PepperSessionManager(
+JingleSessionManager::JingleSessionManager(
     scoped_ptr<TransportFactory> transport_factory)
     : transport_factory_(transport_factory.Pass()),
       signal_strategy_(NULL),
@@ -28,11 +28,11 @@ PepperSessionManager::PepperSessionManager(
       ready_(false) {
 }
 
-PepperSessionManager::~PepperSessionManager() {
+JingleSessionManager::~JingleSessionManager() {
   Close();
 }
 
-void PepperSessionManager::Init(
+void JingleSessionManager::Init(
     SignalStrategy* signal_strategy,
     SessionManager::Listener* listener,
     const NetworkSettings& network_settings) {
@@ -49,7 +49,7 @@ void PepperSessionManager::Init(
   OnSignalStrategyStateChange(signal_strategy_->GetState());
 }
 
-void PepperSessionManager::OnJingleInfo(
+void JingleSessionManager::OnJingleInfo(
     const std::string& relay_token,
     const std::vector<std::string>& relay_hosts,
     const std::vector<talk_base::SocketAddress>& stun_hosts) {
@@ -70,19 +70,19 @@ void PepperSessionManager::OnJingleInfo(
   }
 }
 
-scoped_ptr<Session> PepperSessionManager::Connect(
+scoped_ptr<Session> JingleSessionManager::Connect(
     const std::string& host_jid,
     scoped_ptr<Authenticator> authenticator,
     scoped_ptr<CandidateSessionConfig> config,
     const Session::StateChangeCallback& state_change_callback) {
-  scoped_ptr<PepperSession> session(new PepperSession(this));
+  scoped_ptr<JingleSession> session(new JingleSession(this));
   session->StartConnection(host_jid, authenticator.Pass(), config.Pass(),
                            state_change_callback);
   sessions_[session->session_id_] = session.get();
   return session.PassAs<Session>();
 }
 
-void PepperSessionManager::Close() {
+void JingleSessionManager::Close() {
   DCHECK(CalledOnValidThread());
 
   // Close() can be called only after all sessions are destroyed.
@@ -97,19 +97,19 @@ void PepperSessionManager::Close() {
   }
 }
 
-void PepperSessionManager::set_authenticator_factory(
+void JingleSessionManager::set_authenticator_factory(
     scoped_ptr<AuthenticatorFactory> authenticator_factory) {
   DCHECK(CalledOnValidThread());
   authenticator_factory_ = authenticator_factory.Pass();
 }
 
-void PepperSessionManager::OnSignalStrategyStateChange(
+void JingleSessionManager::OnSignalStrategyStateChange(
     SignalStrategy::State state) {
   // If NAT traversal is enabled then we need to request STUN/Relay info.
   if (state == SignalStrategy::CONNECTED) {
     if (transport_config_.nat_traversal) {
       jingle_info_request_.reset(new JingleInfoRequest(signal_strategy_));
-      jingle_info_request_->Send(base::Bind(&PepperSessionManager::OnJingleInfo,
+      jingle_info_request_->Send(base::Bind(&JingleSessionManager::OnJingleInfo,
                                             base::Unretained(this)));
     } else if (!ready_) {
       ready_ = true;
@@ -118,7 +118,7 @@ void PepperSessionManager::OnSignalStrategyStateChange(
   }
 }
 
-bool PepperSessionManager::OnSignalStrategyIncomingStanza(
+bool JingleSessionManager::OnSignalStrategyIncomingStanza(
     const buzz::XmlElement* stanza) {
   if (!JingleMessage::IsJingleMessage(stanza))
     return false;
@@ -140,7 +140,7 @@ bool PepperSessionManager::OnSignalStrategyIncomingStanza(
         authenticator_factory_->CreateAuthenticator(
             message.from, message.description->authenticator_message());
 
-    PepperSession* session = new PepperSession(this);
+    JingleSession* session = new JingleSession(this);
     session->InitializeIncomingConnection(message, authenticator.Pass());
     sessions_[session->session_id_] = session;
 
@@ -165,17 +165,17 @@ bool PepperSessionManager::OnSignalStrategyIncomingStanza(
   }
 
   it->second->OnIncomingMessage(message, base::Bind(
-      &PepperSessionManager::SendReply, base::Unretained(this), stanza));
+      &JingleSessionManager::SendReply, base::Unretained(this), stanza));
   return true;
 }
 
-void PepperSessionManager::SendReply(const buzz::XmlElement* original_stanza,
+void JingleSessionManager::SendReply(const buzz::XmlElement* original_stanza,
                                      JingleMessageReply::ErrorType error) {
   signal_strategy_->SendStanza(
       JingleMessageReply(error).ToXml(original_stanza));
 }
 
-void PepperSessionManager::SessionDestroyed(PepperSession* session) {
+void JingleSessionManager::SessionDestroyed(JingleSession* session) {
   sessions_.erase(session->session_id_);
 }
 

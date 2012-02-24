@@ -30,15 +30,15 @@ class IqRequest;
 
 namespace protocol {
 
-class PepperSessionManager;
+class JingleSessionManager;
 
-// Implements the protocol::Session interface using the Pepper P2P
-// Transport API. Created by PepperSessionManager for incoming and
-// outgoing connections.
-class PepperSession : public Session,
+// JingleSessionManager and JingleSession implement the subset of the
+// Jingle protocol used in Chromoting. Instances of this class are
+// created by the JingleSessionManager.
+class JingleSession : public Session,
                       public Transport::EventHandler {
  public:
-  virtual ~PepperSession();
+  virtual ~JingleSession();
 
   // Session interface.
   virtual void SetStateChangeCallback(
@@ -68,12 +68,12 @@ class PepperSession : public Session,
   virtual void OnTransportDeleted(Transport* transport) OVERRIDE;
 
  private:
-  friend class PepperSessionManager;
+  friend class JingleSessionManager;
 
   typedef std::map<std::string, Transport*> ChannelsMap;
   typedef base::Callback<void(JingleMessageReply::ErrorType)> ReplyCallback;
 
-  explicit PepperSession(PepperSessionManager* session_manager);
+  explicit JingleSession(JingleSessionManager* session_manager);
 
   // Start connection by sending session-initiate message.
   void StartConnection(const std::string& peer_jid,
@@ -81,7 +81,7 @@ class PepperSession : public Session,
                        scoped_ptr<CandidateSessionConfig> config,
                        const StateChangeCallback& state_change_callback);
 
-  // Called by PepperSessionManager for incoming connections.
+  // Called by JingleSessionManager for incoming connections.
   void InitializeIncomingConnection(const JingleMessage& initiate_message,
                                     scoped_ptr<Authenticator> authenticator);
   void AcceptIncomingConnection(const JingleMessage& initiate_message);
@@ -89,7 +89,7 @@ class PepperSession : public Session,
   // Handler for session-initiate response.
   void OnSessionInitiateResponse(const buzz::XmlElement* response);
 
-  // Called by PepperSessionManager on incoming |message|. Must call
+  // Called by JingleSessionManager on incoming |message|. Must call
   // |reply_callback| to send reply message before sending any other
   // messages.
   void OnIncomingMessage(const JingleMessage& message,
@@ -121,7 +121,7 @@ class PepperSession : public Session,
   // Sets |state_| to |new_state| and calls state change callback.
   void SetState(State new_state);
 
-  PepperSessionManager* session_manager_;
+  JingleSessionManager* session_manager_;
   std::string peer_jid_;
   scoped_ptr<CandidateSessionConfig> candidate_config_;
   StateChangeCallback state_change_callback_;
@@ -142,10 +142,10 @@ class PepperSession : public Session,
 
   ChannelsMap channels_;
 
-  base::OneShotTimer<PepperSession> transport_infos_timer_;
+  base::OneShotTimer<JingleSession> transport_infos_timer_;
   std::list<cricket::Candidate> pending_candidates_;
 
-  DISALLOW_COPY_AND_ASSIGN(PepperSession);
+  DISALLOW_COPY_AND_ASSIGN(JingleSession);
 };
 
 }  // namespace protocol
