@@ -637,27 +637,12 @@ drm_output_set_cursor(struct weston_output *output_base,
 		(struct drm_compositor *) output->base.compositor;
 	EGLint handle, stride;
 	int ret = -1;
-	pixman_region32_t cursor_region;
 	struct gbm_bo *bo;
 
 	if (eid == NULL) {
 		drmModeSetCursor(c->drm.fd, output->crtc_id, 0, 0, 0);
 		return 0;
 	}
-
-	pixman_region32_init_rect(&cursor_region,
-				  eid->sprite->geometry.x,
-				  eid->sprite->geometry.y,
-				  eid->sprite->geometry.width,
-				  eid->sprite->geometry.height);
-
-	pixman_region32_intersect_rect(&cursor_region, &cursor_region,
-				       output->base.x, output->base.y,
-				       output->base.current->width,
-				       output->base.current->height);
-
-	if (!pixman_region32_not_empty(&cursor_region))
-		goto out;
 
 	if (eid->sprite->image == EGL_NO_IMAGE_KHR)
 		goto out;
@@ -698,7 +683,6 @@ drm_output_set_cursor(struct weston_output *output_base,
 	}
 
 out:
-	pixman_region32_fini(&cursor_region);
 	if (ret)
 		drmModeSetCursor(c->drm.fd, output->crtc_id, 0, 0, 0);
 	return ret;
