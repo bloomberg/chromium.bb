@@ -290,6 +290,15 @@ html[dir='rtl'] #decrement {
   border-top-right-radius: 0;
 }
 
+#system-dialog-link {
+  -webkit-margin-start: 16px;
+  margin-top: 10px;
+  /* TODO: Remove !important when it is also removed from link-button in
+   * chrome/browser/resources/shared/css/button.css also removes it.
+   */
+  padding: 0 !important;
+}
+
 /* PDF view */
 
 #print-preview #mainview {
