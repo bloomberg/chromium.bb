@@ -92,10 +92,11 @@ void VersionUpdaterCros::UpdateStatusChanged(
       my_status = NEARLY_UPDATED;
       break;
     default:
+      // TODO(jhawkins): Handle error conditions.
       break;
   }
 
-  callback_.Run(my_status, progress);
+  callback_.Run(my_status, progress, string16());
 }
 
 // Callback from UpdateEngine with channel information.

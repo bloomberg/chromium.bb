@@ -68,7 +68,7 @@ body {
   background-repeat: no-repeat;
   display: inline-block;
   height: 17px;
-  margin-right: 13px;
+  margin-right: 4px;
   vertical-align: middle;
   width: 17px;
 }
@@ -79,6 +79,14 @@ body {
 
 #update-status-icon.up-to-date {
   background-image: url('chrome://theme/IDR_UPDATE_UPTODATE');
+}
+
+#update-status-icon.working {
+  background-image: url('chrome://resources/images/throbber.svg');
+}
+
+#update-status-icon.failed {
+  background-image: url('chrome://theme/IDR_UPDATE_FAIL');
 }
 
 /* TODO(jhawkins): Copied from extensions.css; refactor. */

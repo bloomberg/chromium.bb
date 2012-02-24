@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/string16.h"
 
 // Interface implemented to expose per-platform updating functionality.
 class VersionUpdater {
@@ -22,12 +23,30 @@ class VersionUpdater {
     CHECKING,
     UPDATING,
     NEARLY_UPDATED,
-    UPDATED
+    UPDATED,
+    FAILED,
+    DISABLED,
   };
 
+#if defined(OS_MACOSX)
+  // Promotion state.
+  enum PromotionState {
+    PROMOTE_HIDDEN,
+    PROMOTE_ENABLED,
+    PROMOTE_DISABLED
+  };
+#endif  // defined(OS_MACOSX)
+
   // Used to update the client of status changes. int parameter is the progress
-  // and should only be non-zero for the UPDATING state.
-  typedef base::Callback<void(Status, int)> StatusCallback;
+  // and should only be non-zero for the UPDATING state.  string16 parameter is
+  // a message explaining a failure.
+  typedef base::Callback<void(Status, int, const string16&)>
+      StatusCallback;
+
+#if defined(OS_MACOSX)
+  // Used to show or hide the promote UI elements.
+  typedef base::Callback<void(PromotionState)> PromoteCallback;
+#endif
 
   virtual ~VersionUpdater() {}
 
@@ -35,8 +54,19 @@ class VersionUpdater {
   // specialization.
   static VersionUpdater* Create();
 
-  // Begins the update process.  |callback| is called for each status update.
-  virtual void CheckForUpdate(const StatusCallback& callback) = 0;
+  // Begins the update process by checking for update availability.
+  // |status_callback| is called for each status update. |promote_callback| can
+  // be used to show or hide the promote UI elements.
+  virtual void CheckForUpdate(const StatusCallback& status_callback
+#if defined(OS_MACOSX)
+                              , const PromoteCallback& promote_callback
+#endif
+                              ) = 0;
+
+#if defined(OS_MACOSX)
+  // Make updates available for all users.
+  virtual void PromoteUpdater() const = 0;
+#endif
 
   // Relaunches the browser, generally after being updated.
   virtual void RelaunchBrowser() const = 0;

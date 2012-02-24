@@ -3953,6 +3953,8 @@
         'browser/ui/webui/help/version_updater.h',
         'browser/ui/webui/help/version_updater_chromeos.cc',
         'browser/ui/webui/help/version_updater_chromeos.h',
+        'browser/ui/webui/help/version_updater_mac.mm',
+        'browser/ui/webui/help/version_updater_mac.h',
         'browser/ui/webui/help/version_updater_unimplemented.cc',
         'browser/ui/webui/help/version_updater_unimplemented.h',
         'browser/ui/webui/history_ui.cc',
@@ -4737,6 +4739,8 @@
             'browser/ui/tabs/tab_resources.cc',
             'browser/ui/views/extensions/extension_view.cc',
             'browser/ui/views/extensions/extension_view.h',
+            'browser/ui/webui/help/version_updater_unimplemented.cc',
+            'browser/ui/webui/help/version_updater_unimplemented.h',
           ],
           'sources': [
             # Build Apple sample code

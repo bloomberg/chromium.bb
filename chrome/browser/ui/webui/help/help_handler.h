@@ -31,6 +31,11 @@ class HelpHandler : public content::WebUIMessageHandler {
   // Initializes querying values for the page.
   void OnPageLoaded(const base::ListValue* args);
 
+#if defined(OS_MACOSX)
+  // Promotes the updater for all users.
+  void PromoteUpdater(const base::ListValue* args);
+#endif
+
   // Relaunches the browser. |args| must be NULL.
   void RelaunchNow(const base::ListValue* args);
 
@@ -43,7 +48,13 @@ class HelpHandler : public content::WebUIMessageHandler {
 #endif
 
   // Callback method which forwards status updates to the page.
-  void UpdateStatus(VersionUpdater::Status status, int progress);
+  void SetUpdateStatus(VersionUpdater::Status status, int progress,
+                       const string16& fail_message);
+
+#if defined(OS_MACOSX)
+  // Callback method which forwards promotion state to the page.
+  void SetPromotionState(VersionUpdater::PromotionState state);
+#endif
 
 #if defined(OS_CHROMEOS)
   // Callbacks from VersionLoader.

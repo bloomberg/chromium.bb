@@ -161,6 +161,10 @@ void HelpHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
 void HelpHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("onPageLoaded",
       base::Bind(&HelpHandler::OnPageLoaded, base::Unretained(this)));
+#if defined(OS_MACOSX)
+  web_ui()->RegisterMessageCallback("promoteUpdater",
+      base::Bind(&HelpHandler::PromoteUpdater, base::Unretained(this)));
+#endif
   web_ui()->RegisterMessageCallback("relaunchNow",
       base::Bind(&HelpHandler::RelaunchNow, base::Unretained(this)));
   web_ui()->RegisterMessageCallback("openFeedbackDialog",
@@ -187,13 +191,23 @@ void HelpHandler::OnPageLoaded(const ListValue* args) {
 #endif  // defined(OS_CHROMEOS)
 
   version_updater_->CheckForUpdate(
-      base::Bind(&HelpHandler::UpdateStatus, base::Unretained(this)));
+      base::Bind(&HelpHandler::SetUpdateStatus, base::Unretained(this))
+#if defined(OS_MACOSX)
+      , base::Bind(&HelpHandler::SetPromotionState, base::Unretained(this))
+#endif
+      );
 
 #if defined(OS_CHROMEOS)
   version_updater_->GetReleaseChannel(
       base::Bind(&HelpHandler::OnReleaseChannel, base::Unretained(this)));
 #endif
 }
+
+#if defined(OS_MACOSX)
+void HelpHandler::PromoteUpdater(const ListValue* args) {
+  version_updater_->PromoteUpdater();
+}
+#endif
 
 void HelpHandler::RelaunchNow(const ListValue* args) {
   CHECK(args->empty());
@@ -224,7 +238,8 @@ void HelpHandler::SetReleaseTrack(const ListValue* args) {
 
 #endif  // defined(OS_CHROMEOS)
 
-void HelpHandler::UpdateStatus(VersionUpdater::Status status, int progress) {
+void HelpHandler::SetUpdateStatus(VersionUpdater::Status status,
+                                  int progress, const string16& message) {
   // Only UPDATING state should have progress set.
   DCHECK(status == VersionUpdater::UPDATING || progress == 0);
 
@@ -242,11 +257,18 @@ void HelpHandler::UpdateStatus(VersionUpdater::Status status, int progress) {
   case VersionUpdater::UPDATED:
     status_str = "updated";
     break;
+  case VersionUpdater::FAILED:
+    status_str = "failed";
+    break;
+  case VersionUpdater::DISABLED:
+    status_str = "disabled";
+    break;
   }
 
   scoped_ptr<Value> status_value(Value::CreateStringValue(status_str));
+  scoped_ptr<Value> message_value(Value::CreateStringValue(message));
   web_ui()->CallJavascriptFunction("help.HelpPage.setUpdateStatus",
-                                   *status_value);
+                                   *status_value, *message_value);
 
   if (status == VersionUpdater::UPDATING) {
     scoped_ptr<Value> progress_value(Value::CreateIntegerValue(progress));
@@ -255,8 +277,27 @@ void HelpHandler::UpdateStatus(VersionUpdater::Status status, int progress) {
   }
 }
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_MACOSX)
+void HelpHandler::SetPromotionState(VersionUpdater::PromotionState state) {
+  std::string state_str;
+  switch (state) {
+  case VersionUpdater::PROMOTE_HIDDEN:
+    state_str = "hidden";
+    break;
+  case VersionUpdater::PROMOTE_ENABLED:
+    state_str = "enabled";
+    break;
+  case VersionUpdater::PROMOTE_DISABLED:
+    state_str = "disabled";
+    break;
+  }
 
+  scoped_ptr<Value> state_value(Value::CreateStringValue(state_str));
+  web_ui()->CallJavascriptFunction("HelpPage.setPromotionState", *state_value);
+}
+#endif  // defined(OS_MACOSX)
+
+#if defined(OS_CHROMEOS)
 void HelpHandler::OnOSVersion(chromeos::VersionLoader::Handle handle,
                               std::string version) {
   if (version.size()) {
@@ -280,5 +321,4 @@ void HelpHandler::OnReleaseChannel(const std::string& channel) {
   web_ui()->CallJavascriptFunction(
       "help.HelpPage.updateSelectedChannel", *channel_string);
 }
-
 #endif // defined(OS_CHROMEOS)

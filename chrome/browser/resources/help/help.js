@@ -49,8 +49,16 @@ cr.define('help', function() {
       if (reportIssue)
         reportIssue.onclick = this.reportAnIssue_.bind(this);
 
-      if (!cr.isLinux) {
-        $('relaunch').onclick = function() {
+      var promote = $('promote');
+      if (promote) {
+        promote.onclick = function() {
+          chrome.send('promoteUpdater');
+        };
+      }
+
+      var relaunch = $('relaunch');
+      if (relaunch) {
+        relaunch.onclick = function() {
           chrome.send('relaunchNow');
         };
       }
@@ -76,13 +84,13 @@ cr.define('help', function() {
     /**
      * @private
      */
-    setUpdateStatus_: function(status) {
+    setUpdateStatus_: function(status, message) {
       if (status == 'checking') {
-        this.setUpdateImage_('available');
+        this.setUpdateImage_('working');
         $('update-status').innerHTML =
             localStrings.getString('updateCheckStarted');
       } else if (status == 'updating') {
-        this.setUpdateImage_('available');
+        this.setUpdateImage_('working');
         $('update-status').innerHTML = localStrings.getString('updating');
       } else if (status == 'nearly_updated') {
         this.setUpdateImage_('up-to-date');
@@ -91,9 +99,17 @@ cr.define('help', function() {
       } else if (status == 'updated') {
         this.setUpdateImage_('up-to-date');
         $('update-status').innerHTML = localStrings.getString('upToDate');
+      } else if (status == 'failed') {
+        this.setUpdateImage_('failed');
+        $('update-status').innerHTML = message;
+      } else if (status == 'disabled') {
+        $('update-status-container').hidden = true;
+        return;
       }
 
-      $('update-percentage').hidden = status != 'updating';
+      if (!cr.isMac)
+        $('update-percentage').hidden = status != 'updating';
+
       $('relaunch').hidden = status != 'nearly_updated';
     },
 
@@ -102,6 +118,21 @@ cr.define('help', function() {
      */
     setProgress_: function(progress) {
       $('update-percentage').innerHTML = progress + "%";
+    },
+
+    /**
+     * @private
+     */
+    setPromotionState_: function(state) {
+      if (state == 'hidden') {
+        $('promote').hidden = true;
+      } else if (state == 'enabled') {
+        $('promote').disabled = false;
+        $('promote').hidden = false;
+      } else if (state == 'disabled') {
+        $('promote').disabled = true;
+        $('promote').hidden = false;
+      }
     },
 
     /**
@@ -169,12 +200,16 @@ cr.define('help', function() {
     },
   };
 
-  HelpPage.setUpdateStatus = function(status) {
-    HelpPage.getInstance().setUpdateStatus_(status);
+  HelpPage.setUpdateStatus = function(status, message) {
+    HelpPage.getInstance().setUpdateStatus_(status, message);
   };
 
   HelpPage.setProgress = function(progress) {
     HelpPage.getInstance().setProgress_(progress);
+  };
+
+  HelpPage.setPromotionState = function(state) {
+    HelpPage.getInstance().setPromotionState_(state);
   };
 
   HelpPage.setOSVersion = function(version) {
