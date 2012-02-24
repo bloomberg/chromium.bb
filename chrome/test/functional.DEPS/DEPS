@@ -9,7 +9,6 @@ deps = {
   'src/third_party/pyftpdlib/src': 'http://pyftpdlib.googlecode.com/svn/trunk',
   'src/third_party/simplejson': '/trunk/src/third_party/simplejson',
   'src/third_party/tlslite': '/trunk/src/third_party/tlslite',
-  'src/third_party/psutil': '/trunk/src/third_party/psutil',
   'src/third_party/webdriver/pylib/selenium':
       'http://selenium.googlecode.com/svn/trunk/py/selenium@13487',
 }
