@@ -914,8 +914,7 @@ weston_output_repaint(struct weston_output *output, int msecs)
 	struct weston_surface *es;
 	struct weston_animation *animation, *next;
 	struct weston_frame_callback *cb, *cnext;
-	pixman_region32_t opaque, new_damage, total_damage,
-		overlap, surface_overlap;
+	pixman_region32_t opaque, new_damage, total_damage;
 	int32_t width, height;
 
 	weston_compositor_update_drag_surfaces(ec);
@@ -928,21 +927,11 @@ weston_output_repaint(struct weston_output *output, int msecs)
 
 	pixman_region32_init(&new_damage);
 	pixman_region32_init(&opaque);
-	pixman_region32_init(&overlap);
 
-	wl_list_for_each(es, &ec->surface_list, link) {
+	wl_list_for_each(es, &ec->surface_list, link)
 		/* Update surface transform now to avoid calling it ever
 		 * again from the repaint sub-functions. */
 		weston_surface_update_transform(es);
-
-		pixman_region32_init(&surface_overlap);
-		pixman_region32_intersect(&surface_overlap, &overlap,
-					  &es->transform.boundingbox);
-		es->overlapped = pixman_region32_not_empty(&surface_overlap);
-		pixman_region32_fini(&surface_overlap);
-		pixman_region32_union(&overlap, &overlap,
-				      &es->transform.boundingbox);
-	}
 
 	if (output->assign_planes)
 		/*
@@ -966,7 +955,6 @@ weston_output_repaint(struct weston_output *output, int msecs)
 				  &new_damage, &output->region);
 
 	pixman_region32_fini(&opaque);
-	pixman_region32_fini(&overlap);
 	pixman_region32_fini(&new_damage);
 
 	wl_list_for_each(es, &ec->surface_list, link) {

@@ -256,7 +256,6 @@ struct weston_surface {
 	struct weston_shader *shader;
 	GLfloat color[4];
 	uint32_t alpha;
-	int overlapped;
 
 	/* Surface geometry state, mutable.
 	 * If you change anything, set dirty = 1.
