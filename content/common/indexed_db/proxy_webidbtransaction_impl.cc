@@ -26,14 +26,14 @@ RendererWebIDBTransactionImpl::~RendererWebIDBTransactionImpl() {
   // object since inside WebKit, they hold a reference to the object wich owns
   // this object. But, if that ever changed, then we'd need to invalidate
   // any such pointers.
-  ChildThread::current()->Send(new IndexedDBHostMsg_TransactionDestroyed(
+  IndexedDBDispatcher::Send(new IndexedDBHostMsg_TransactionDestroyed(
       idb_transaction_id_));
 }
 
 int RendererWebIDBTransactionImpl::mode() const
 {
   int mode;
-  ChildThread::current()->Send(new IndexedDBHostMsg_TransactionMode(
+  IndexedDBDispatcher::Send(new IndexedDBHostMsg_TransactionMode(
       idb_transaction_id_, &mode));
   return mode;
 }
@@ -43,7 +43,7 @@ WebIDBObjectStore* RendererWebIDBTransactionImpl::objectStore(
     WebKit::WebExceptionCode& ec)
 {
   int object_store_id;
-  ChildThread::current()->Send(
+  IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_TransactionObjectStore(
           idb_transaction_id_, name, &object_store_id, &ec));
   if (!object_store_id)
@@ -53,13 +53,13 @@ WebIDBObjectStore* RendererWebIDBTransactionImpl::objectStore(
 
 void RendererWebIDBTransactionImpl::abort()
 {
-  ChildThread::current()->Send(new IndexedDBHostMsg_TransactionAbort(
+  IndexedDBDispatcher::Send(new IndexedDBHostMsg_TransactionAbort(
       idb_transaction_id_));
 }
 
 void RendererWebIDBTransactionImpl::didCompleteTaskEvents()
 {
-  ChildThread::current()->Send(
+  IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_TransactionDidCompleteTaskEvents(
           idb_transaction_id_));
 }

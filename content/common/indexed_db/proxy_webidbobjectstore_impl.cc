@@ -38,27 +38,27 @@ RendererWebIDBObjectStoreImpl::~RendererWebIDBObjectStoreImpl() {
   // object since inside WebKit, they hold a reference to the object wich owns
   // this object. But, if that ever changed, then we'd need to invalidate
   // any such pointers.
-  ChildThread::current()->Send(
+  IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_ObjectStoreDestroyed(idb_object_store_id_));
 }
 
 WebString RendererWebIDBObjectStoreImpl::name() const {
   string16 result;
-  ChildThread::current()->Send(
+  IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_ObjectStoreName(idb_object_store_id_, &result));
   return result;
 }
 
 WebString RendererWebIDBObjectStoreImpl::keyPath() const {
   NullableString16 result;
-  ChildThread::current()->Send(
+  IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_ObjectStoreKeyPath(idb_object_store_id_, &result));
   return result;
 }
 
 WebDOMStringList RendererWebIDBObjectStoreImpl::indexNames() const {
   std::vector<string16> result;
-  ChildThread::current()->Send(
+  IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_ObjectStoreIndexNames(
           idb_object_store_id_, &result));
   WebDOMStringList web_result;
@@ -143,7 +143,7 @@ WebIDBIndex* RendererWebIDBObjectStoreImpl::createIndex(
   params.idb_object_store_id = idb_object_store_id_;
 
   int32 index_id;
-  ChildThread::current()->Send(
+  IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_ObjectStoreCreateIndex(params, &index_id, &ec));
   if (!index_id)
     return NULL;
@@ -154,7 +154,7 @@ WebIDBIndex* RendererWebIDBObjectStoreImpl::index(
     const WebString& name,
     WebExceptionCode& ec) {
   int32 idb_index_id;
-  ChildThread::current()->Send(
+  IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_ObjectStoreIndex(idb_object_store_id_, name,
                                             &idb_index_id, &ec));
   if (!idb_index_id)
@@ -166,7 +166,7 @@ void RendererWebIDBObjectStoreImpl::deleteIndex(
     const WebString& name,
     const WebIDBTransaction& transaction,
     WebExceptionCode& ec) {
-  ChildThread::current()->Send(
+  IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_ObjectStoreDeleteIndex(
           idb_object_store_id_, name,
           IndexedDBDispatcher::TransactionId(transaction), &ec));

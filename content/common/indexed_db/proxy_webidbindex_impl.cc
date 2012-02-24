@@ -25,41 +25,41 @@ RendererWebIDBIndexImpl::~RendererWebIDBIndexImpl() {
   // object since inside WebKit, they hold a reference to the object wich owns
   // this object. But, if that ever changed, then we'd need to invalidate
   // any such pointers.
-  ChildThread::current()->Send(new IndexedDBHostMsg_IndexDestroyed(
+  IndexedDBDispatcher::Send(new IndexedDBHostMsg_IndexDestroyed(
       idb_index_id_));
 }
 
 WebString RendererWebIDBIndexImpl::name() const {
   string16 result;
-  ChildThread::current()->Send(
+  IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_IndexName(idb_index_id_, &result));
   return result;
 }
 
 WebString RendererWebIDBIndexImpl::storeName() const {
   string16 result;
-  ChildThread::current()->Send(
+  IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_IndexStoreName(idb_index_id_, &result));
   return result;
 }
 
 WebString RendererWebIDBIndexImpl::keyPath() const {
   NullableString16 result;
-  ChildThread::current()->Send(
+  IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_IndexKeyPath(idb_index_id_, &result));
   return result;
 }
 
 bool RendererWebIDBIndexImpl::unique() const {
   bool result;
-  ChildThread::current()->Send(
+  IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_IndexUnique(idb_index_id_, &result));
   return result;
 }
 
 bool RendererWebIDBIndexImpl::multiEntry() const {
   bool result;
-  ChildThread::current()->Send(
+  IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_IndexMultiEntry(idb_index_id_, &result));
   return result;
 }

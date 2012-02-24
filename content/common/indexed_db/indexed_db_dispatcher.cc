@@ -97,8 +97,13 @@ void IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
   DCHECK(handled);
 }
 
-void IndexedDBDispatcher::Send(IPC::Message* msg) {
-  ChildThread::current()->Send(msg);
+bool IndexedDBDispatcher::Send(IPC::Message* msg) {
+  if (CurrentWorkerId()) {
+    scoped_refptr<IPC::SyncMessageFilter> filter(
+        ChildThread::current()->sync_message_filter());
+    return filter->Send(msg);
+  }
+  return ChildThread::current()->Send(msg);
 }
 
 void IndexedDBDispatcher::RequestIDBCursorUpdate(

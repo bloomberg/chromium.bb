@@ -11,6 +11,7 @@
 
 #include "base/id_map.h"
 #include "base/nullable_string16.h"
+#include "ipc/ipc_sync_message_filter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebExceptionCode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabase.h"
@@ -51,7 +52,7 @@ class IndexedDBDispatcher : public webkit_glue::WorkerTaskRunner::Observer {
   virtual void OnWorkerRunLoopStopped() OVERRIDE;
 
   void OnMessageReceived(const IPC::Message& msg);
-  void Send(IPC::Message* msg);
+  static bool Send(IPC::Message* msg);
 
   void RequestIDBFactoryGetDatabaseNames(
       WebKit::WebIDBCallbacks* callbacks,

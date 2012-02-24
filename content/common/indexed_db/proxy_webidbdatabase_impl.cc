@@ -32,27 +32,27 @@ RendererWebIDBDatabaseImpl::~RendererWebIDBDatabaseImpl() {
   // object since inside WebKit, they hold a reference to the object which owns
   // this object. But, if that ever changed, then we'd need to invalidate
   // any such pointers.
-  ChildThread::current()->Send(new IndexedDBHostMsg_DatabaseDestroyed(
+  IndexedDBDispatcher::Send(new IndexedDBHostMsg_DatabaseDestroyed(
       idb_database_id_));
 }
 
 WebString RendererWebIDBDatabaseImpl::name() const {
   string16 result;
-  ChildThread::current()->Send(
+  IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_DatabaseName(idb_database_id_, &result));
   return result;
 }
 
 WebString RendererWebIDBDatabaseImpl::version() const {
   string16 result;
-  ChildThread::current()->Send(
+  IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_DatabaseVersion(idb_database_id_, &result));
   return result;
 }
 
 WebDOMStringList RendererWebIDBDatabaseImpl::objectStoreNames() const {
   std::vector<string16> result;
-  ChildThread::current()->Send(
+  IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_DatabaseObjectStoreNames(idb_database_id_, &result));
   WebDOMStringList webResult;
   for (std::vector<string16>::const_iterator it = result.begin();
@@ -76,7 +76,7 @@ WebKit::WebIDBObjectStore* RendererWebIDBDatabaseImpl::createObjectStore(
   params.idb_database_id = idb_database_id_;
 
   int object_store;
-  ChildThread::current()->Send(
+  IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_DatabaseCreateObjectStore(
           params, &object_store, &ec));
   if (!object_store)
@@ -88,7 +88,7 @@ void RendererWebIDBDatabaseImpl::deleteObjectStore(
     const WebString& name,
     const WebIDBTransaction& transaction,
     WebExceptionCode& ec) {
-  ChildThread::current()->Send(
+  IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_DatabaseDeleteObjectStore(
           idb_database_id_, name,
           IndexedDBDispatcher::TransactionId(transaction), &ec));
@@ -114,7 +114,7 @@ WebKit::WebIDBTransaction* RendererWebIDBDatabaseImpl::transaction(
     object_stores.push_back(names.item(i));
 
   int transaction_id;
-  ChildThread::current()->Send(new IndexedDBHostMsg_DatabaseTransaction(
+  IndexedDBDispatcher::Send(new IndexedDBHostMsg_DatabaseTransaction(
       WorkerTaskRunner::Instance()->CurrentWorkerId(),
       idb_database_id_, object_stores, mode, &transaction_id, &ec));
   if (!transaction_id)
