@@ -192,10 +192,9 @@ base::ProcessHandle LaunchChrome(const std::wstring& url) {
 }
 
 base::ProcessHandle LaunchIEOnVista(const std::wstring& url) {
-  typedef HRESULT (WINAPI* IELaunchURLPtr)(
-      const wchar_t* url,
-      PROCESS_INFORMATION *pi,
-      VOID *info);
+  typedef HRESULT (WINAPI* IELaunchURLPtr)(const wchar_t* url,
+                                           PROCESS_INFORMATION* pi,
+                                           VOID* info);
 
   IELaunchURLPtr launch;
   PROCESS_INFORMATION pi = {0};
@@ -661,12 +660,13 @@ ScopedChromeFrameRegistrar::RegistrationType GetTestBedType() {
 }
 
 void ClearIESessionHistory() {
-  wchar_t local_app_data_path[MAX_PATH + 1] = {0};
-  SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, NULL, SHGFP_TYPE_CURRENT,
-                  local_app_data_path);
+  FilePath session_history_path;
+  if (!PathService::Get(base::DIR_LOCAL_APP_DATA, &session_history_path))
+    return;
 
-  std::wstring session_history_path = local_app_data_path;
-  session_history_path += L"\\Microsoft\\Internet Explorer\\Recovery";
+  session_history_path = session_history_path.AppendASCII("Microsoft");
+  session_history_path = session_history_path.AppendASCII("Internet Explorer");
+  session_history_path = session_history_path.AppendASCII("Recovery");
   file_util::Delete(session_history_path, true);
 }
 

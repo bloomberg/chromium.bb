@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,7 +36,6 @@ BASE_EXPORT void AppendToPath(std::wstring* path,
 BASE_EXPORT std::wstring GetFileExtensionFromPath(const std::wstring& path);
 
 // Use version that takes a FilePath.
-BASE_EXPORT bool Delete(const std::wstring& path, bool recursive);
 BASE_EXPORT bool CopyDirectory(const std::wstring& from_path,
                                const std::wstring& to_path,
                                bool recursive);
@@ -44,7 +43,7 @@ BASE_EXPORT int ReadFile(const std::wstring& filename, char* data, int size);
 BASE_EXPORT int WriteFile(const std::wstring& filename,
                           const char* data, int size);
 
-}
+}  // namespace file_util
 
 #endif  // OS_WIN
 

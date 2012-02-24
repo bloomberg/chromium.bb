@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -11,8 +11,10 @@
 #pragma once
 
 #include <windows.h>
+
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "chrome/installer/util/work_item_list.h"
@@ -164,7 +166,7 @@ class ShellUtil {
   // returns false. If system_level is true this function returns the path
   // to Default Users Quick Launch shortcuts path. Adding a shortcut to Default
   // User's profile only affects any new user profiles (not existing ones).
-  static bool GetQuickLaunchPath(bool system_level, std::wstring* path);
+  static bool GetQuickLaunchPath(bool system_level, FilePath* path);
 
   // Gets a mapping of all registered browser (on local machine) names and
   // their reinstall command (which usually sets browser as default).

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -756,12 +756,13 @@ installer::InstallStatus InstallProductsHelper(
   // rollback here and we schedule for deletion on reboot if the delete fails.
   // As such, we do not use DeleteTreeWorkItem.
   if (cmd_line.HasSwitch(installer::switches::kInstallerData)) {
-    std::wstring prefs_path(cmd_line.GetSwitchValueNative(
+    FilePath prefs_path(cmd_line.GetSwitchValuePath(
         installer::switches::kInstallerData));
     if (!file_util::Delete(prefs_path, true)) {
-      LOG(ERROR) << "Failed deleting master preferences file " << prefs_path
+      LOG(ERROR) << "Failed deleting master preferences file "
+                 << prefs_path.value()
                  << ", scheduling for deletion after reboot.";
-      ScheduleFileSystemEntityForDeletion(prefs_path.c_str());
+      ScheduleFileSystemEntityForDeletion(prefs_path.value().c_str());
     }
   }
 
