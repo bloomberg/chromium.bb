@@ -2358,3 +2358,14 @@
    fun:find_registered_purgeable_zone
    fun:malloc_make_purgeable
 }
+{
+   bug_115647
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZNSt3mapISsPN9talk_base7NetworkESt4lessISsESaISt4pairIKSsS2_EEEixERS6_
+   fun:_ZN9talk_base18NetworkManagerBase16MergeNetworkListERKSt6vectorIPNS_7NetworkESaIS3_EE
+   fun:_ZN9talk_base19BasicNetworkManager16DoUpdateNetworksEv
+   fun:_ZN9talk_base19BasicNetworkManager9OnMessageEPNS_7MessageE
+   fun:_ZThn64_N9talk_base19BasicNetworkManager9OnMessageEPNS_7MessageE
+}
