@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 
 #include "chrome/browser/sync/internal_api/http_post_provider_factory.h"
 #include "chrome/browser/sync/internal_api/http_post_provider_interface.h"
-#include "chrome/browser/sync/util/oauth.h"
 #include "chrome/common/net/http_return.h"
 #include "net/base/net_errors.h"
 
@@ -42,12 +41,8 @@ bool SyncAPIBridgedConnection::Init(const char* path,
   http->SetURL(connection_url.c_str(), sync_server_port);
 
   if (!auth_token.empty()) {
-    std::string headers;
-    if (browser_sync::IsUsingOAuth()) {
-      headers = "Authorization: OAuth " + auth_token;
-    } else {
-      headers = "Authorization: GoogleLogin auth=" + auth_token;
-    }
+    const std::string& headers =
+        "Authorization: GoogleLogin auth=" + auth_token;
     http->SetExtraRequestHeaders(headers.c_str());
   }
 

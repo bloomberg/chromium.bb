@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -19,7 +19,6 @@ const char kPicasaService[] = "lh2";
 
 // Service/scope names for sync.
 const char kSyncService[] = "chromiumsync";
-const char kSyncServiceOAuth[] = "https://www.googleapis.com/auth/chromesync";
 
 // Service name for XMPP Google Talk.
 const char kTalkService[] = "talk";

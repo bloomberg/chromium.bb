@@ -24,7 +24,6 @@
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
-
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/token_service.h"
@@ -43,7 +42,6 @@
 #include "chrome/browser/sync/profile_sync_components_factory_impl.h"
 #include "chrome/browser/sync/sync_global_error.h"
 #include "chrome/browser/sync/util/cryptographer.h"
-#include "chrome/browser/sync/util/oauth.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -176,7 +174,7 @@ bool ProfileSyncService::AreCredentialsAvailable(
     return false;
 
   // TODO(chron): Verify CrOS unit test behavior.
-  if (!token_service->HasTokenForService(browser_sync::SyncServiceName()))
+  if (!token_service->HasTokenForService(GaiaConstants::kSyncService))
     return false;
   return !check_oauth_login_token || token_service->HasOAuthLoginToken();
 }
@@ -309,7 +307,7 @@ SyncCredentials ProfileSyncService::GetCredentials() {
   DCHECK(!credentials.email.empty());
   TokenService* service = profile_->GetTokenService();
   credentials.sync_token = service->GetTokenForService(
-      browser_sync::SyncServiceName());
+      GaiaConstants::kSyncService);
   return credentials;
 }
 

@@ -20,7 +20,6 @@
 #include "chrome/browser/sync/sync_setup_flow_handler.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/user_selectable_sync_type.h"
-#include "chrome/browser/sync/util/oauth.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_constants.h"

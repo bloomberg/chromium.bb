@@ -8,6 +8,8 @@
 
 #include <string>
 
+#include "base/string16.h"
+
 class SyncSetupFlow;
 
 namespace base {

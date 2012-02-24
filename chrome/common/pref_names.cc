@@ -1478,9 +1478,6 @@ const char kSyncMaxInvalidationVersions[] = "sync.max_invalidation_versions";
 const char kSyncEncryptionBootstrapToken[] =
     "sync.encryption_bootstrap_token";
 
-// Boolean tracking whether the user authenticated with OAuth.
-const char kSyncUsingOAuth[] = "sync.using_oauth";
-
 // Boolean tracking whether the user chose to specify a secondary encryption
 // passphrase.
 const char kSyncUsingSecondaryPassphrase[] = "sync.using_secondary_passphrase";

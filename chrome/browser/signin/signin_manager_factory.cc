@@ -31,8 +31,6 @@ SigninManagerFactory* SigninManagerFactory::GetInstance() {
 }
 
 void SigninManagerFactory::RegisterUserPrefs(PrefService* user_prefs) {
-  user_prefs->RegisterBooleanPref(prefs::kSyncUsingOAuth, true,
-                                  PrefService::UNSYNCABLE_PREF);
   user_prefs->RegisterStringPref(prefs::kGoogleServicesUsername, "",
                                  PrefService::UNSYNCABLE_PREF);
   user_prefs->RegisterBooleanPref(prefs::kAutologinEnabled, true,

@@ -558,9 +558,6 @@ const char kEnableSdch[]                    = "enable-sdch";
 // Enables syncing extension settings.
 const char kEnableSyncExtensionSettings[]   = "enable-sync-extension-settings";
 
-// Enables OAuth sign-in for sync.
-const char kEnableSyncOAuth[]               = "enable-sync-oauth";
-
 // Enables syncing browser sessions.
 const char kEnableSyncTabs[]                = "enable-sync-tabs";
 

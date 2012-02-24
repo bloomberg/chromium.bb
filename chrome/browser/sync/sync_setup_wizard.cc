@@ -12,7 +12,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
-#include "chrome/browser/sync/util/oauth.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 

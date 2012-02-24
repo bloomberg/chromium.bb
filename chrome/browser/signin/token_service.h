@@ -41,8 +41,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/net/gaia/gaia_oauth_consumer.h"
-#include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
@@ -60,7 +58,6 @@ class URLRequestContextGetter;
 // The TokenService is a Profile member, so all calls are expected
 // from the UI thread.
 class TokenService : public GaiaAuthConsumer,
-                     public GaiaOAuthConsumer,
                      public WebDataServiceConsumer,
                      public content::NotificationObserver {
  public:
@@ -108,18 +105,11 @@ class TokenService : public GaiaAuthConsumer,
   void UpdateCredentials(
       const GaiaAuthConsumer::ClientLoginResult& credentials);
 
-  // Update OAuth credentials in the token service.
-  // Afterwards you can StartFetchingOAuthTokens.
-  void UpdateOAuthCredentials(
-      const std::string& oauth_token,
-      const std::string& oauth_secret);
-
   // Terminate any running requests and reset the TokenService to a clean
   // slate. Resets in memory structures. Does not modify the DB.
   // When this is done, no tokens will be left in memory and no
   // user credentials will be left. Useful if a user is logging out.
-  // Initialize doesn't need to be called again but UpdateCredentials and
-  // UpdateOAuthCredentials do.
+  // Initialize doesn't need to be called again but UpdateCredentials does.
   void ResetCredentialsInMemory();
 
   // Async load all tokens for services we know of from the DB.
@@ -143,17 +133,10 @@ class TokenService : public GaiaAuthConsumer,
   // Did we get a proper LSID?
   virtual bool AreCredentialsValid() const;
 
-  // For services with their own auth routines, they can read the OAuth token
-  // and secret directly. Deprecated (in the sense of discouraged).
-  bool HasOAuthCredentials() const;
-  const std::string& GetOAuthToken() const;
-  const std::string& GetOAuthSecret() const;
-
   // Tokens will be fetched for all services(sync, talk) in the background.
   // Results come back via event channel. Services can also poll before events
   // are issued.
   void StartFetchingTokens();
-  void StartFetchingOAuthTokens();
   virtual bool HasTokenForService(const char* service) const;
   const std::string& GetTokenForService(const char* const service) const;
 
@@ -180,19 +163,6 @@ class TokenService : public GaiaAuthConsumer,
                                         int expires_in_secs) OVERRIDE;
   virtual void OnOAuthLoginTokenFailure(const GoogleServiceAuthError& error)
       OVERRIDE;
-
-  // GaiaOAuthConsumer implementation.
-  virtual void OnOAuthGetAccessTokenSuccess(const std::string& token,
-                                            const std::string& secret) OVERRIDE;
-  virtual void OnOAuthGetAccessTokenFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
-
-  virtual void OnOAuthWrapBridgeSuccess(const std::string& service_scope,
-                                        const std::string& token,
-                                        const std::string& expires_in) OVERRIDE;
-  virtual void OnOAuthWrapBridgeFailure(
-      const std::string& service_name,
-      const GoogleServiceAuthError& error) OVERRIDE;
 
   // WebDataServiceConsumer implementation.
   virtual void OnWebDataServiceRequestDone(
@@ -242,35 +212,15 @@ class TokenService : public GaiaAuthConsumer,
   std::string source_;
   // Credentials from ClientLogin for Issuing auth tokens.
   GaiaAuthConsumer::ClientLoginResult credentials_;
-  // Credentials from Gaia OAuth (uber/login token)
-  std::string oauth_token_;
-  std::string oauth_secret_;
 
   // Size of array of services capable of ClientLogin-based authentication.
   // This value must be defined here.
-  // NOTE: The use of --enable-sync-oauth does not affect this count.  The
-  // TokenService can continue to do some degree of ClientLogin token
-  // management, mostly related to persistence while Sync and possibly other
-  // services are using OAuth-based authentication.
   static const int kNumServices = 5;
   // List of services that are capable of ClientLogin-based authentication.
   static const char* kServices[kNumServices];
   // A bunch of fetchers suitable for ClientLogin token issuing. We don't care
   // about the ordering, nor do we care which is for which service.
   scoped_ptr<GaiaAuthFetcher> fetchers_[kNumServices];
-
-  // Size of array of services capable of OAuth-based authentication.  This
-  // value must be defined here.
-  // NOTE: The use of --enable-sync-oauth does not affect this count.  The
-  // TokenService can continue to do some degree of OAuth token
-  // management, mostly related to persistence while Sync and possibly other
-  // services are using ClientLogin-based authentication.
-  static const int kNumOAuthServices = 1;
-  // List of services that are capable of OAuth-based authentication.
-  static const char* kOAuthServices[kNumOAuthServices];
-  // A bunch of fetchers suitable for OAuth token issuing. We don't care about
-  // the ordering, nor do we care which is for which service.
-  scoped_ptr<GaiaOAuthFetcher> oauth_fetchers_[kNumOAuthServices];
 
   // Map from service to token.
   std::map<std::string, std::string> token_map_;

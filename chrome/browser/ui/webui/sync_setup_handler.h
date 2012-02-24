@@ -5,9 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SYNC_SETUP_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SYNC_SETUP_HANDLER_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/net/gaia/gaia_oauth_consumer.h"
-#include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
 #include "chrome/browser/sync/sync_setup_flow_handler.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/browser/ui/webui/signin/signin_tracker.h"
@@ -18,8 +17,7 @@ class ProfileSyncService;
 class SigninManager;
 class SyncSetupFlow;
 
-class SyncSetupHandler : public GaiaOAuthConsumer,
-                         public OptionsPageUIHandler,
+class SyncSetupHandler : public OptionsPageUIHandler,
                          public SyncSetupFlowHandler,
                          public SigninTracker::Observer {
  public:
@@ -40,11 +38,6 @@ class SyncSetupHandler : public GaiaOAuthConsumer,
   virtual void ShowSetupDone(const string16& user) OVERRIDE;
   virtual void SetFlow(SyncSetupFlow* flow) OVERRIDE;
   virtual void Focus() OVERRIDE;
-
-  // GaiaOAuthConsumer implementation.
-  virtual void OnGetOAuthTokenSuccess(const std::string& oauth_token) OVERRIDE;
-  virtual void OnGetOAuthTokenFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
 
   // SigninTracker::Observer implementation
   virtual void GaiaCredentialsValid() OVERRIDE;

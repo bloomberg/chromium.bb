@@ -159,7 +159,6 @@ extern const char kEnableSdch[];
 // TODO(kalman): Add to about:flags when UI for syncing extension settings has
 // been figured out.
 extern const char kEnableSyncExtensionSettings[];
-extern const char kEnableSyncOAuth[];
 extern const char kEnableSyncTabs[];
 extern const char kEnableSyncTabsForOtherClients[];
 extern const char kEnableTabGroupsContextMenu[];

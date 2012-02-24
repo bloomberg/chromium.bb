@@ -22,7 +22,6 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
-#include "chrome/browser/sync/util/oauth.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
@@ -379,22 +378,6 @@ bool SyncSetupHandler::IsActiveLogin() const {
   return service && (service->current_login_ui() == web_ui());
 }
 
-void SyncSetupHandler::OnGetOAuthTokenSuccess(const std::string& oauth_token) {
-  Profile* profile = GetProfile();
-  SigninManager* signin = GetSignin();
-  GaiaOAuthFetcher* fetcher = new GaiaOAuthFetcher(
-      signin,
-      profile->GetRequestContext(),
-      profile,
-      GaiaConstants::kSyncServiceOAuth);
-  signin->StartOAuthSignIn(oauth_token, fetcher);
-}
-
-void SyncSetupHandler::OnGetOAuthTokenFailure(
-    const GoogleServiceAuthError& error) {
-  CloseOverlay();
-}
-
 void SyncSetupHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("SyncSetupDidClosePage",
       base::Bind(&SyncSetupHandler::OnDidClosePage,
@@ -432,7 +415,6 @@ void SyncSetupHandler::DisplayGaiaLogin(bool fatal_error) {
 
 void SyncSetupHandler::DisplayGaiaLoginWithErrorMessage(
     const string16& error_message, bool fatal_error) {
-  DCHECK(!browser_sync::IsUsingOAuth());
   // If we're exiting from sync config (due to some kind of error), notify
   // SyncSetupFlow.
   if (flow_) {
