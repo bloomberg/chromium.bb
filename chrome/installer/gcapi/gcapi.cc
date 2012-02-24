@@ -17,6 +17,7 @@
 #include <windows.h>
 
 #include <cstdlib>
+#include <iterator>
 #include <limits>
 #include <string>
 
