@@ -12,7 +12,8 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/browser_url_handler.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/in_process_webkit/session_storage_namespace.h"
+#include "content/browser/in_process_webkit/dom_storage_context_impl.h"
+#include "content/browser/in_process_webkit/session_storage_namespace_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"  // Temporary
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/tab_contents/debug_urls.h"
@@ -34,10 +35,12 @@
 #include "webkit/glue/webkit_glue.h"
 
 using content::BrowserContext;
+using content::DOMStorageContext;
 using content::GlobalRequestID;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
+using content::SessionStorageNamespace;
 using content::SiteInstance;
 using content::UserMetricsAction;
 using content::WebContents;
@@ -168,7 +171,7 @@ void NavigationController::DisablePromptOnRepost() {
 NavigationControllerImpl::NavigationControllerImpl(
     TabContents* contents,
     BrowserContext* browser_context,
-    SessionStorageNamespace* session_storage_namespace)
+    SessionStorageNamespaceImpl* session_storage_namespace)
     : browser_context_(browser_context),
       pending_entry_(NULL),
       last_committed_entry_index_(-1),
@@ -182,8 +185,9 @@ NavigationControllerImpl::NavigationControllerImpl(
       pending_reload_(NO_RELOAD) {
   DCHECK(browser_context_);
   if (!session_storage_namespace_) {
-    session_storage_namespace_ = new SessionStorageNamespace(
-        BrowserContext::GetWebKitContext(browser_context_));
+    session_storage_namespace_ = new SessionStorageNamespaceImpl(
+        static_cast<DOMStorageContextImpl*>(
+            DOMStorageContext::GetForBrowserContext(browser_context_)));
   }
 }
 

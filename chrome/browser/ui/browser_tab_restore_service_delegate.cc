@@ -10,6 +10,7 @@
 #include "content/public/browser/navigation_controller.h"
 
 using content::NavigationController;
+using content::SessionStorageNamespace;
 using content::WebContents;
 
 void BrowserTabRestoreServiceDelegate::ShowBrowserWindow() {

@@ -14,6 +14,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_type.h"
 
+class SessionStorageNamespaceImpl;
 class TabContents;
 struct ViewHostMsg_FrameNavigate_Params;
 
@@ -26,9 +27,10 @@ class SiteInstance;
 class CONTENT_EXPORT NavigationControllerImpl
     : public NON_EXPORTED_BASE(content::NavigationController) {
  public:
-  NavigationControllerImpl(TabContents* tab_contents,
-                           content::BrowserContext* browser_context,
-                           SessionStorageNamespace* session_storage_namespace);
+  NavigationControllerImpl(
+      TabContents* tab_contents,
+      content::BrowserContext* browser_context,
+      SessionStorageNamespaceImpl* session_storage_namespace);
   virtual ~NavigationControllerImpl();
 
   // NavigationController implementation:
@@ -76,7 +78,8 @@ class CONTENT_EXPORT NavigationControllerImpl
   virtual void GoToIndex(int index) OVERRIDE;
   virtual void GoToOffset(int offset) OVERRIDE;
   virtual void RemoveEntryAtIndex(int index) OVERRIDE;
-  virtual SessionStorageNamespace* GetSessionStorageNamespace() const OVERRIDE;
+  virtual content::SessionStorageNamespace*
+      GetSessionStorageNamespace() const OVERRIDE;
   virtual void SetMaxRestoredPageID(int32 max_id) OVERRIDE;
   virtual int32 GetMaxRestoredPageID() const OVERRIDE;
   virtual bool NeedsReload() const OVERRIDE;
@@ -310,7 +313,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   base::TimeTicks last_document_loaded_;
 
   // The session storage id that any (indirectly) owned RenderView should use.
-  scoped_refptr<SessionStorageNamespace> session_storage_namespace_;
+  scoped_refptr<SessionStorageNamespaceImpl> session_storage_namespace_;
 
   // The maximum number of entries that a navigation controller can store.
   static size_t max_entry_count_for_testing_;

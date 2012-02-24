@@ -64,10 +64,6 @@ class CONTENT_EXPORT WebKitContext
   // last modified on or after the following time.
   void DeleteDataModifiedSince(const base::Time& cutoff);
 
-  // Delete the session storage namespace associated with this id.  Can be
-  // called from any thread.
-  void DeleteSessionStorageNamespace(int64 session_storage_namespace_id);
-
   // Tells all children to not do delete data when destructed.
   void SaveSessionState();
 

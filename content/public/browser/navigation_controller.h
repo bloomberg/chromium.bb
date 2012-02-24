@@ -15,12 +15,12 @@
 #include "content/public/common/page_transition_types.h"
 
 class GURL;
-class SessionStorageNamespace;
 
 namespace content {
 
 class BrowserContext;
 class NavigationEntry;
+class SessionStorageNamespace;
 class WebContents;
 struct Referrer;
 

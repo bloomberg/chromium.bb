@@ -1388,7 +1388,7 @@ WebContents* Browser::AddRestoredTab(
     bool select,
     bool pin,
     bool from_last_session,
-    SessionStorageNamespace* session_storage_namespace) {
+    content::SessionStorageNamespace* session_storage_namespace) {
   GURL restore_url = navigations.at(selected_navigation).virtual_url();
   TabContentsWrapper* wrapper = TabContentsFactory(
       profile(),
@@ -1440,7 +1440,7 @@ void Browser::ReplaceRestoredTab(
     int selected_navigation,
     bool from_last_session,
     const std::string& extension_app_id,
-    SessionStorageNamespace* session_storage_namespace) {
+    content::SessionStorageNamespace* session_storage_namespace) {
   GURL restore_url = navigations.at(selected_navigation).virtual_url();
   TabContentsWrapper* wrapper = TabContentsFactory(
       profile(),
@@ -5383,7 +5383,7 @@ TabContentsWrapper* Browser::TabContentsFactory(
     SiteInstance* site_instance,
     int routing_id,
     const WebContents* base_web_contents,
-    SessionStorageNamespace* session_storage_namespace) {
+    content::SessionStorageNamespace* session_storage_namespace) {
   WebContents* new_contents = WebContents::Create(
       profile, site_instance, routing_id, base_web_contents,
       session_storage_namespace);

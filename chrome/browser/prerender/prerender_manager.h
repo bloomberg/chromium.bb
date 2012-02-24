@@ -111,7 +111,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // tab at the time the prerender is generated from the omnibox.
   bool AddPrerenderFromOmnibox(
       const GURL& url,
-      SessionStorageNamespace* session_storage_namespace);
+      content::SessionStorageNamespace* session_storage_namespace);
 
   // Destroy all prerenders for the given child route id pair and assign a final
   // status to them.
@@ -286,7 +286,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       const std::pair<int, int>& child_route_id_pair,
       const GURL& url,
       const content::Referrer& referrer,
-      SessionStorageNamespace* session_storage_namespace);
+      content::SessionStorageNamespace* session_storage_namespace);
 
   // Retrieves the PrerenderContents object for the specified URL, if it
   // has been prerendered.  The caller will then have ownership of the

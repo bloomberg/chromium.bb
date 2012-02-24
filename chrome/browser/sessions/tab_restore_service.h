@@ -16,7 +16,7 @@
 #include "chrome/browser/sessions/base_session_service.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_types.h"
-#include "content/browser/in_process_webkit/session_storage_namespace.h"
+#include "content/public/browser/session_storage_namespace.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class Profile;
@@ -26,6 +26,7 @@ struct SessionWindow;
 
 namespace content {
 class NavigationController;
+class SessionStorageNamespace;
 }
 
 // TabRestoreService is responsible for maintaining the most recently closed
@@ -102,7 +103,7 @@ class TabRestoreService : public BaseSessionService {
     std::string extension_app_id;
 
     // The associated session storage namespace (if any).
-    scoped_refptr<SessionStorageNamespace> session_storage_namespace;
+    scoped_refptr<content::SessionStorageNamespace> session_storage_namespace;
   };
 
   // Represents a previously open window.

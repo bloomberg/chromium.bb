@@ -75,20 +75,6 @@ void WebKitContext::DeleteDataModifiedSince(const base::Time& cutoff) {
   dom_storage_context_->DeleteDataModifiedSince(cutoff);
 }
 
-void WebKitContext::DeleteSessionStorageNamespace(
-    int64 session_storage_namespace_id) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED) &&
-      BrowserThread::PostTask(
-          BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
-          base::Bind(&WebKitContext::DeleteSessionStorageNamespace, this,
-              session_storage_namespace_id))) {
-    return;
-  }
-
-  dom_storage_context_->DeleteSessionStorageNamespace(
-      session_storage_namespace_id);
-}
-
 void WebKitContext::SaveSessionState() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED)) {
     BrowserThread::PostTask(

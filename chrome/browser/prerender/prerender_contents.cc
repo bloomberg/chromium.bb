@@ -23,7 +23,6 @@
 #include "chrome/common/icon_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_request_details.h"
 #include "content/public/browser/notification_service.h"
@@ -243,7 +242,7 @@ PrerenderContents::Factory* PrerenderContents::CreateFactory() {
 
 void PrerenderContents::StartPrerendering(
     const RenderViewHost* source_render_view_host,
-    SessionStorageNamespace* session_storage_namespace) {
+    content::SessionStorageNamespace* session_storage_namespace) {
   DCHECK(profile_ != NULL);
   DCHECK(!prerendering_has_started_);
   DCHECK(prerender_contents_.get() == NULL);

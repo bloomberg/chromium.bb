@@ -21,7 +21,6 @@
 
 class Profile;
 class RenderViewHost;
-class SessionStorageNamespace;
 class TabContentsWrapper;
 struct FaviconURL;
 
@@ -31,6 +30,7 @@ class ProcessMetrics;
 
 namespace content {
 class RenderViewHostDelegate;
+class SessionStorageNamespace;
 }
 
 namespace prerender {
@@ -108,7 +108,7 @@ class PrerenderContents : public content::NotificationObserver,
   // prerendering.
   virtual void StartPrerendering(
       const RenderViewHost* source_render_view_host,
-      SessionStorageNamespace* session_storage_namespace);
+      content::SessionStorageNamespace* session_storage_namespace);
 
   // Verifies that the prerendering is not using too many resources, and kills
   // it if not.

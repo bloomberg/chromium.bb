@@ -20,7 +20,6 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/host_zoom_map_impl.h"
-#include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/intents/web_intents_dispatcher_impl.h"
 #include "content/browser/load_from_memory_cache_details.h"
 #include "content/browser/load_notification_details.h"
@@ -125,6 +124,7 @@ using content::OpenURLParams;
 using content::RenderViewHostDelegate;
 using content::RenderWidgetHostView;
 using content::RenderWidgetHostViewPort;
+using content::SessionStorageNamespace;
 using content::SiteInstance;
 using content::SSLStatus;
 using content::UserMetricsAction;
@@ -214,11 +214,12 @@ WebContents* WebContents::Create(
     int routing_id,
     const WebContents* base_tab_contents,
     SessionStorageNamespace* session_storage_namespace) {
-  return new TabContents(browser_context,
-                         site_instance,
-                         routing_id,
-                         static_cast<const TabContents*>(base_tab_contents),
-                         session_storage_namespace);
+  return new TabContents(
+      browser_context,
+      site_instance,
+      routing_id,
+      static_cast<const TabContents*>(base_tab_contents),
+      static_cast<SessionStorageNamespaceImpl*>(session_storage_namespace));
 }
 }
 
@@ -228,7 +229,7 @@ TabContents::TabContents(content::BrowserContext* browser_context,
                          SiteInstance* site_instance,
                          int routing_id,
                          const TabContents* base_tab_contents,
-                         SessionStorageNamespace* session_storage_namespace)
+                         SessionStorageNamespaceImpl* session_storage_namespace)
     : delegate_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(controller_(
           this, browser_context, session_storage_namespace)),

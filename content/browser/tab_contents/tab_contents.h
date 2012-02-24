@@ -34,7 +34,7 @@ class InterstitialPageImpl;
 class LoadNotificationDetails;
 class RenderViewHost;
 class SavePackage;
-class SessionStorageNamespace;
+class SessionStorageNamespaceImpl;
 struct ViewHostMsg_DidFailProvisionalLoadWithError_Params;
 
 namespace content {
@@ -60,7 +60,7 @@ class CONTENT_EXPORT TabContents
               content::SiteInstance* site_instance,
               int routing_id,
               const TabContents* base_tab_contents,
-              SessionStorageNamespace* session_storage_namespace);
+              SessionStorageNamespaceImpl* session_storage_namespace);
   virtual ~TabContents();
 
   // Returns the content specific prefs for the given RVH.

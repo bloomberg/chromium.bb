@@ -63,7 +63,6 @@ class InstantController;
 class InstantUnloadHandler;
 class PrefService;
 class Profile;
-class SessionStorageNamespace;
 class SkBitmap;
 class StatusBubble;
 class TabNavigation;
@@ -72,6 +71,7 @@ struct WebApplicationInfo;
 
 namespace content {
 class NavigationController;
+class SessionStorageNamespace;
 }
 
 namespace gfx {
@@ -452,7 +452,7 @@ class Browser : public TabHandlerDelegate,
       bool select,
       bool pin,
       bool from_last_session,
-      SessionStorageNamespace* storage_namespace);
+      content::SessionStorageNamespace* storage_namespace);
   // Creates a new tab with the already-created WebContents 'new_contents'.
   // The window for the added contents will be reparented correctly when this
   // method returns.  If |disposition| is NEW_POPUP, |pos| should hold the
@@ -490,7 +490,7 @@ class Browser : public TabHandlerDelegate,
       int selected_navigation,
       bool from_last_session,
       const std::string& extension_app_id,
-      SessionStorageNamespace* session_storage_namespace);
+      content::SessionStorageNamespace* session_storage_namespace);
 
   // Navigate to an index in the tab history, opening a new tab depending on the
   // disposition.
@@ -794,12 +794,12 @@ class Browser : public TabHandlerDelegate,
 
   // Centralized method for creating a TabContents, configuring and installing
   // all its supporting objects and observers.
-  static TabContentsWrapper*
-      TabContentsFactory(Profile* profile,
-                         content::SiteInstance* site_instance,
-                         int routing_id,
-                         const content::WebContents* base_web_contents,
-                         SessionStorageNamespace* session_storage_namespace);
+  static TabContentsWrapper* TabContentsFactory(
+      Profile* profile,
+      content::SiteInstance* site_instance,
+      int routing_id,
+      const content::WebContents* base_web_contents,
+      content::SessionStorageNamespace* session_storage_namespace);
 
   // Overridden from TabHandlerDelegate:
   virtual Profile* GetProfile() const OVERRIDE;

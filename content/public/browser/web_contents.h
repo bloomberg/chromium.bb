@@ -18,7 +18,6 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class RenderViewHost;
-class SessionStorageNamespace;
 
 namespace base {
 class PropertyBag;
@@ -41,12 +40,11 @@ class InterstitialPage;
 class NavigationController;
 class RenderProcessHost;
 class RenderWidgetHostView;
-class WebContentsDelegate;
-struct RendererPreferences;
+class SessionStorageNamespace;
 class SiteInstance;
-// TODO(jam): of course we will have to rename WebContentsView etc to use
-// WebContents.
+class WebContentsDelegate;
 class WebContentsView;
+struct RendererPreferences;
 
 // Describes what goes in the main content area of a tab.
 class WebContents : public PageNavigator {

@@ -37,13 +37,13 @@ class BrowserTabRestoreServiceDelegate : public TabRestoreServiceDelegate {
       bool select,
       bool pin,
       bool from_last_session,
-      SessionStorageNamespace* storage_namespace) OVERRIDE;
+      content::SessionStorageNamespace* storage_namespace) OVERRIDE;
   virtual void ReplaceRestoredTab(
       const std::vector<TabNavigation>& navigations,
       int selected_navigation,
       bool from_last_session,
       const std::string& extension_app_id,
-      SessionStorageNamespace* session_storage_namespace) OVERRIDE;
+      content::SessionStorageNamespace* session_storage_namespace) OVERRIDE;
   virtual void CloseTab() OVERRIDE;
 
  private:

@@ -305,7 +305,7 @@ class TestRenderViewHostFactory : public RenderViewHostFactory {
       content::SiteInstance* instance,
       content::RenderViewHostDelegate* delegate,
       int routing_id,
-      SessionStorageNamespace* session_storage) OVERRIDE;
+      content::SessionStorageNamespace* session_storage) OVERRIDE;
 
  private:
   // This is a bit of a hack. With the current design of the site instances /

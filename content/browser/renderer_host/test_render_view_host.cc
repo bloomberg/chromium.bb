@@ -23,6 +23,7 @@
 using content::NavigationController;
 using content::NavigationEntry;
 using content::RenderViewHostDelegate;
+using content::SessionStorageNamespace;
 using content::SiteInstance;
 using webkit::forms::PasswordForm;
 

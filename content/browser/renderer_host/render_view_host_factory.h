@@ -10,10 +10,10 @@
 #include "content/common/content_export.h"
 
 class RenderViewHost;
-class SessionStorageNamespace;
 
 namespace content {
 class RenderViewHostDelegate;
+class SessionStorageNamespace;
 class SiteInstance;
 }
 
@@ -25,10 +25,11 @@ class RenderViewHostFactory {
   // Creates a RenderViewHost using the currently registered factory, or the
   // default one if no factory is registered. Ownership of the returned
   // pointer will be passed to the caller.
-  static RenderViewHost* Create(content::SiteInstance* instance,
-                                content::RenderViewHostDelegate* delegate,
-                                int routing_id,
-                                SessionStorageNamespace* session_storage);
+  static RenderViewHost* Create(
+      content::SiteInstance* instance,
+      content::RenderViewHostDelegate* delegate,
+      int routing_id,
+      content::SessionStorageNamespace* session_storage);
 
   // Returns true if there is currently a globally-registered factory.
   static bool has_factory() {
@@ -45,7 +46,7 @@ class RenderViewHostFactory {
       content::SiteInstance* instance,
       content::RenderViewHostDelegate* delegate,
       int routing_id,
-      SessionStorageNamespace* session_storage_namespace) = 0;
+      content::SessionStorageNamespace* session_storage_namespace) = 0;
 
   // Registers your factory to be called when new RenderViewHosts are created.
   // We have only one global factory, so there must be no factory registered

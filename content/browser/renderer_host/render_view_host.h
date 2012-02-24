@@ -15,6 +15,7 @@
 #include "base/observer_list.h"
 #include "base/process_util.h"
 #include "base/values.h"
+#include "content/browser/in_process_webkit/session_storage_namespace_impl.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/content_export.h"
@@ -34,7 +35,7 @@ class ChildProcessSecurityPolicyImpl;
 class FilePath;
 class GURL;
 class PowerSaveBlocker;
-class SessionStorageNamespace;
+class SessionStorageNamespaceImpl;
 class SkBitmap;
 class ViewMsg_Navigate;
 struct AccessibilityHostMsg_NotificationParams;
@@ -53,6 +54,7 @@ class ListValue;
 namespace content {
 class RenderViewHostDelegate;
 class RenderViewHostObserver;
+class SessionStorageNamespace;
 struct FileChooserParams;
 struct ContextMenuParams;
 struct CustomContextMenuContext;
@@ -143,7 +145,7 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHostImpl {
   RenderViewHost(content::SiteInstance* instance,
                  content::RenderViewHostDelegate* delegate,
                  int routing_id,
-                 SessionStorageNamespace* session_storage_namespace);
+                 content::SessionStorageNamespace* session_storage_namespace);
   virtual ~RenderViewHost();
 
   content::SiteInstance* site_instance() const { return instance_; }
@@ -491,7 +493,7 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHostImpl {
   // (and what action to take regarding the selection).
   void StopFinding(content::StopFindAction action);
 
-  SessionStorageNamespace* session_storage_namespace() {
+  content::SessionStorageNamespace* session_storage_namespace() {
     return session_storage_namespace_.get();
   }
 
@@ -685,7 +687,7 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHostImpl {
   bool sudden_termination_allowed_;
 
   // The session storage namespace to be used by the associated render view.
-  scoped_refptr<SessionStorageNamespace> session_storage_namespace_;
+  scoped_refptr<SessionStorageNamespaceImpl> session_storage_namespace_;
 
   // Whether the accessibility tree should be saved, for unit testing.
   bool save_accessibility_tree_for_testing_;

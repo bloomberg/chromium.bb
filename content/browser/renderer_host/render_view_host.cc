@@ -22,7 +22,7 @@
 #include "content/browser/cross_site_request_manager.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/host_zoom_map_impl.h"
-#include "content/browser/in_process_webkit/session_storage_namespace.h"
+#include "content/browser/in_process_webkit/dom_storage_context_impl.h"
 #include "content/browser/power_save_blocker.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host.h"
@@ -63,8 +63,10 @@ using content::BrowserContext;
 using content::BrowserMessageFilter;
 using content::BrowserThread;
 using content::DomOperationNotificationDetails;
+using content::DOMStorageContext;
 using content::HostZoomMap;
 using content::RenderViewHostDelegate;
+using content::SessionStorageNamespace;
 using content::SiteInstance;
 using content::UserMetricsAction;
 using WebKit::WebConsoleMessage;
@@ -132,13 +134,16 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
       unload_ack_is_for_cross_site_transition_(false),
       are_javascript_messages_suppressed_(false),
       sudden_termination_allowed_(false),
-      session_storage_namespace_(session_storage),
+      session_storage_namespace_(
+          static_cast<SessionStorageNamespaceImpl*>(session_storage)),
       save_accessibility_tree_for_testing_(false),
       send_accessibility_updated_notifications_(false),
       render_view_termination_status_(base::TERMINATION_STATUS_STILL_RUNNING) {
   if (!session_storage_namespace_) {
-    session_storage_namespace_ = new SessionStorageNamespace(
-        BrowserContext::GetWebKitContext(process()->GetBrowserContext()));
+    DOMStorageContext* dom_storage_context =
+        DOMStorageContext::GetForBrowserContext(process()->GetBrowserContext());
+    session_storage_namespace_ = new SessionStorageNamespaceImpl(
+        static_cast<DOMStorageContextImpl*>(dom_storage_context));
   }
 
   DCHECK(instance_);

@@ -31,7 +31,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
-#include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
@@ -55,6 +54,7 @@
 
 using content::NavigationController;
 using content::NavigationEntry;
+using content::SessionStorageNamespace;
 using content::WebContents;
 
 namespace {
