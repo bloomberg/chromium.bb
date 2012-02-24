@@ -179,6 +179,7 @@ void GpuVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
   natural_size_ = config.natural_size();
   config_frame_duration_ = GetFrameDuration(config);
 
+  DVLOG(1) << "GpuVideoDecoder::Initialize() succeeded.";
   callback.Run(PIPELINE_OK);
 }
 

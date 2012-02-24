@@ -29,6 +29,7 @@ GpuVideoDecodeAcceleratorHost::GpuVideoDecodeAcceleratorHost(
 GpuVideoDecodeAcceleratorHost::~GpuVideoDecodeAcceleratorHost() {}
 
 void GpuVideoDecodeAcceleratorHost::OnChannelError() {
+  DLOG(ERROR) << "GpuVideoDecodeAcceleratorHost::OnChannelError()";
   OnErrorNotification(PLATFORM_FAILURE);
   channel_ = NULL;
 }
