@@ -44,6 +44,7 @@ class EnterpriseOAuthEnrollmentScreenHandler
   virtual void ShowAuthError(const GoogleServiceAuthError& error) OVERRIDE;
   virtual void ShowAccountError() OVERRIDE;
   virtual void ShowSerialNumberError() OVERRIDE;
+  virtual void ShowEnrollmentModeError() OVERRIDE;
   virtual void ShowFatalAuthError() OVERRIDE;
   virtual void ShowFatalEnrollmentError() OVERRIDE;
   virtual void ShowNetworkEnrollmentError() OVERRIDE;

@@ -14747,6 +14747,9 @@ Battery full
       <message name="IDS_ENTERPRISE_ENROLLMENT_SERIAL_NUMBER_ERROR" desc="Error message to show when the serial number reported by the device cannot be enrolled in the requested domain.">
         This device cannot be enrolled in the domain this user account belongs to.
       </message>
+      <message name="IDS_ENTERPRISE_ENROLLMENT_MODE_ERROR" desc="Error message to show when the DM Server didn't send or send unsupported enrollment mode to the client.">
+        The supplied enrollment mode is not supported by this version of the operating system. Please make sure you are running the newest version and try again. 
+      </message>
       <message name="IDS_ENTERPRISE_ENROLLMENT_SCREEN_TITLE" desc="The title on the enterprise enrollment dialog.">
         Enterprise enrollment
       </message>

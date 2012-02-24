@@ -135,6 +135,9 @@ enum MetricEnrollment {
   kMetricEnrollmentAutoCancelled,
   // Auto-enrollment succeeded.
   kMetricEnrollmentAutoOK,
+  // Enrollment failed because the enrollment mode was not supplied by the
+  // DMServer or the mode is not known to the client.
+  kMetricEnrollmentInvalidEnrollmentMode,
 
   kMetricEnrollmentSize  // Must be the last.
 };

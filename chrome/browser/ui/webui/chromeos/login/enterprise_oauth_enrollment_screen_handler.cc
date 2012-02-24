@@ -196,6 +196,12 @@ void EnterpriseOAuthEnrollmentScreenHandler::ShowSerialNumberError() {
   NotifyObservers(false);
 }
 
+void EnterpriseOAuthEnrollmentScreenHandler::ShowEnrollmentModeError() {
+  UMAFailure(policy::kMetricEnrollmentInvalidEnrollmentMode);
+  ShowError(IDS_ENTERPRISE_ENROLLMENT_MODE_ERROR, false);
+  NotifyObservers(false);
+}
+
 void EnterpriseOAuthEnrollmentScreenHandler::ShowFatalAuthError() {
   UMAFailure(policy::kMetricEnrollmentLoginFailed);
   ShowError(IDS_ENTERPRISE_ENROLLMENT_FATAL_AUTH_ERROR, false);

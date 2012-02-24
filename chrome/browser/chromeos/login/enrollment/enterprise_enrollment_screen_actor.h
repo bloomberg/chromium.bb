@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,6 +67,7 @@ class EnterpriseEnrollmentScreenActor {
   virtual void ShowAuthError(const GoogleServiceAuthError& error) = 0;
   virtual void ShowAccountError() = 0;
   virtual void ShowSerialNumberError() = 0;
+  virtual void ShowEnrollmentModeError() = 0;
   virtual void ShowFatalAuthError() = 0;
   virtual void ShowFatalEnrollmentError() = 0;
   virtual void ShowNetworkEnrollmentError() = 0;

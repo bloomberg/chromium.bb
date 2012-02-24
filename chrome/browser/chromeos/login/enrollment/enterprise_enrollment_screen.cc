@@ -93,12 +93,17 @@ void EnterpriseEnrollmentScreen::OnPolicyStateChanged(
   if (is_showing_) {
     switch (state) {
       case policy::CloudPolicySubsystem::UNENROLLED:
-        if (error_details == policy::CloudPolicySubsystem::BAD_SERIAL_NUMBER) {
-          actor_->ShowSerialNumberError();
-          break;
+        switch (error_details) {
+          case policy::CloudPolicySubsystem::BAD_SERIAL_NUMBER:
+            actor_->ShowSerialNumberError();
+            break;
+          case policy::CloudPolicySubsystem::BAD_ENROLLMENT_MODE:
+            actor_->ShowEnrollmentModeError();
+            break;
+          default:  // Still working...
+            return;
         }
-        // Still working...
-        return;
+        break;
       case policy::CloudPolicySubsystem::BAD_GAIA_TOKEN:
       case policy::CloudPolicySubsystem::LOCAL_ERROR:
         actor_->ShowFatalEnrollmentError();
