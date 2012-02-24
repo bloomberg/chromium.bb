@@ -22,6 +22,7 @@ var API_TEMPLATE = 'template/api_template.html';
 var MODULE_SCHEMAS = [
   '../api/bookmarks.json',
   '../api/browserAction.json',
+  '../api/browsingData.json',
   '../api/chromeAuthPrivate.json',
   '../api/chromePrivate.json',
   '../api/chromeosInfoPrivate.json',
@@ -33,7 +34,6 @@ var MODULE_SCHEMAS = [
   '../api/experimental.accessibility.json',
   '../api/experimental.app.json',
   '../api/experimental.bookmarkManager.json',
-  '../api/experimental.browsingData.json',
   '../api/experimental.dns.json',
   '../api/experimental.downloads.json',
   '../api/experimental.extension.json',

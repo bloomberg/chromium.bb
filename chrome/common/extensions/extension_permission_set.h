@@ -97,6 +97,7 @@ class ExtensionAPIPermission {
     kAppNotifications,
     kBackground,
     kBookmark,
+    kBrowsingData,
     kChromeAuthPrivate,
     kChromePrivate,
     kChromeosInfoPrivate,

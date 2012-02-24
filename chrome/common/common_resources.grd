@@ -12,6 +12,7 @@
       <include name="IDR_EXTENSION_MANIFEST_FEATURES" file="extensions\api\_manifest_features.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_BOOKMARKS" file="extensions\api\bookmarks.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_BROWSERACTION" file="extensions\api\browserAction.json" type="BINDATA" />
+      <include name="IDR_EXTENSION_API_JSON_BROWSING_DATA" file="extensions\api\browsingData.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_CHROMEAUTHPRIVATE" file="extensions\api\chromeAuthPrivate.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_CHROMEOSINFOPRIVATE" file="extensions\api\chromeosInfoPrivate.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_CHROMEPRIVATE" file="extensions\api\chromePrivate.json" type="BINDATA" />
@@ -24,7 +25,6 @@
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_APP" file="extensions\api\experimental.app.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_BOOKMARKMANAGER" file="extensions\api\experimental.bookmarkManager.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_DECLARATIVE" file="extensions\api\experimental.declarative.json" type="BINDATA" />
-      <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_BROWSING_DATA" file="extensions\api\experimental.browsingData.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_DNS" file="extensions\api\experimental.dns.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_DOWNLOADS" file="extensions\api\experimental.downloads.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_EXTENSIONS" file="extensions\api\experimental.extension.json" type="BINDATA" />

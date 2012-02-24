@@ -109,7 +109,7 @@ PopupController.prototype = {
     if (removal_start !== undefined) {
       this.button_.setAttribute('disabled', 'disabled');
       this.button_.innerText = 'Clearing...';
-      chrome.experimental.browsingData.remove(removal_start, {
+      chrome.browsingData.remove(removal_start, {
         "appcache": true,
         "cache": true,
         "cookies": true,
@@ -119,6 +119,7 @@ PopupController.prototype = {
         "history": true,
         "indexedDB": true,
         "localStorage": true,
+        "originBoundCertificates": true,
         "pluginData": true,
         "passwords": true,
         "webSQL": true

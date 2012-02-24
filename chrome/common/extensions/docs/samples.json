@@ -24,6 +24,19 @@
     "chrome.browserAction.setIcon": "browserAction.html#method-setIcon",
     "chrome.browserAction.setPopup": "browserAction.html#method-setPopup",
     "chrome.browserAction.setTitle": "browserAction.html#method-setTitle",
+    "chrome.browsingData.remove": "browsingData.html#method-remove",
+    "chrome.browsingData.removeAppcache": "browsingData.html#method-removeAppcache",
+    "chrome.browsingData.removeCache": "browsingData.html#method-removeCache",
+    "chrome.browsingData.removeCookies": "browsingData.html#method-removeCookies",
+    "chrome.browsingData.removeDownloads": "browsingData.html#method-removeDownloads",
+    "chrome.browsingData.removeFileSystems": "browsingData.html#method-removeFileSystems",
+    "chrome.browsingData.removeFormData": "browsingData.html#method-removeFormData",
+    "chrome.browsingData.removeHistory": "browsingData.html#method-removeHistory",
+    "chrome.browsingData.removeIndexedDB": "browsingData.html#method-removeIndexedDB",
+    "chrome.browsingData.removeLocalStorage": "browsingData.html#method-removeLocalStorage",
+    "chrome.browsingData.removePasswords": "browsingData.html#method-removePasswords",
+    "chrome.browsingData.removePluginData": "browsingData.html#method-removePluginData",
+    "chrome.browsingData.removeWebSQL": "browsingData.html#method-removeWebSQL",
     "chrome.contextMenus.create": "contextMenus.html#method-create",
     "chrome.contextMenus.remove": "contextMenus.html#method-remove",
     "chrome.contextMenus.removeAll": "contextMenus.html#method-removeAll",
@@ -51,19 +64,6 @@
     "chrome.devtools.panels.setOpenResourceHandler": "devtools.panels.html#method-setOpenResourceHandler",
     "chrome.experimental.app.clearAllNotifications": "experimental.app.html#method-clearAllNotifications",
     "chrome.experimental.app.notify": "experimental.app.html#method-notify",
-    "chrome.experimental.browsingData.remove": "experimental.browsingData.html#method-remove",
-    "chrome.experimental.browsingData.removeAppcache": "experimental.browsingData.html#method-removeAppcache",
-    "chrome.experimental.browsingData.removeCache": "experimental.browsingData.html#method-removeCache",
-    "chrome.experimental.browsingData.removeCookies": "experimental.browsingData.html#method-removeCookies",
-    "chrome.experimental.browsingData.removeDownloads": "experimental.browsingData.html#method-removeDownloads",
-    "chrome.experimental.browsingData.removeFileSystems": "experimental.browsingData.html#method-removeFileSystems",
-    "chrome.experimental.browsingData.removeFormData": "experimental.browsingData.html#method-removeFormData",
-    "chrome.experimental.browsingData.removeHistory": "experimental.browsingData.html#method-removeHistory",
-    "chrome.experimental.browsingData.removeIndexedDB": "experimental.browsingData.html#method-removeIndexedDB",
-    "chrome.experimental.browsingData.removeLocalStorage": "experimental.browsingData.html#method-removeLocalStorage",
-    "chrome.experimental.browsingData.removePasswords": "experimental.browsingData.html#method-removePasswords",
-    "chrome.experimental.browsingData.removePluginData": "experimental.browsingData.html#method-removePluginData",
-    "chrome.experimental.browsingData.removeWebSQL": "experimental.browsingData.html#method-removeWebSQL",
     "chrome.experimental.devtools.audits.addCategory": "experimental.devtools.audits.html#method-addCategory",
     "chrome.experimental.devtools.console.addMessage": "experimental.devtools.console.html#method-addMessage",
     "chrome.experimental.devtools.console.getMessages": "experimental.devtools.console.html#method-getMessages",
@@ -495,14 +495,13 @@
     },
     {
       "api_calls": [
-        "chrome.experimental.browsingData.remove"
+        "chrome.browsingData.remove"
       ],
       "crx_path": null,
       "description": "A trivial usage example.",
       "features": [
         "browser_action",
         "browsingData",
-        "experimental",
         "popup"
       ],
       "icon": null,
@@ -511,14 +510,14 @@
       "packaged_app": false,
       "path": "examples\/api\/browsingData\/basic\/",
       "protocols": [],
-      "search_string": "BROWSINGDATA API: BASICS A TRIVIAL USAGE EXAMPLE. BROWSER_ACTION BROWSINGDATA EXPERIMENTAL POPUP CHROME.EXPERIMENTAL.BROWSINGDATA.REMOVE",
+      "search_string": "BROWSINGDATA API: BASICS A TRIVIAL USAGE EXAMPLE. BROWSER_ACTION BROWSINGDATA POPUP CHROME.BROWSINGDATA.REMOVE",
       "source_files": [
         "manifest.json",
         "popup.css",
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "be5c852d38ee7b7d21483b2d070a1bdebbf6b27c",
+      "source_hash": "d03a62493eb36bf3da3472f15df777137e159171",
       "zip_path": "examples\/api\/browsingData\/basic.zip"
     },
     {

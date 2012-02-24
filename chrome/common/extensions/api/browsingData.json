@@ -1,6 +1,6 @@
 [
   {
-    "namespace": "experimental.browsingData",
+    "namespace": "browsingData",
     "types": [
       {
         "id": "RemovalOptions",

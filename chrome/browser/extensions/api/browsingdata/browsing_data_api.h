@@ -6,8 +6,8 @@
 // clearing browsing data, and clearing the browser's cache (which, let's be
 // honest, are the same thing), as specified in the extension API JSON.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_BROWSING_DATA_API_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_BROWSING_DATA_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_BROWSINGDATA_BROWSING_DATA_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_BROWSINGDATA_BROWSING_DATA_API_H_
 #pragma once
 
 #include <string>
@@ -84,7 +84,7 @@ class RemoveAppCacheFunction : public BrowsingDataExtensionFunction {
   // BrowsingDataTypeExtensionFunction interface method.
   virtual int GetRemovalMask() const OVERRIDE;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.browsingData.removeAppcache")
+  DECLARE_EXTENSION_FUNCTION_NAME("browsingData.removeAppcache")
 };
 
 class RemoveBrowsingDataFunction : public BrowsingDataExtensionFunction {
@@ -96,7 +96,7 @@ class RemoveBrowsingDataFunction : public BrowsingDataExtensionFunction {
   // BrowsingDataExtensionFunction interface method.
   virtual int GetRemovalMask() const OVERRIDE;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.browsingData.remove")
+  DECLARE_EXTENSION_FUNCTION_NAME("browsingData.remove")
 };
 
 class RemoveCacheFunction : public BrowsingDataExtensionFunction {
@@ -108,7 +108,7 @@ class RemoveCacheFunction : public BrowsingDataExtensionFunction {
   // BrowsingDataTypeExtensionFunction interface method.
   virtual int GetRemovalMask() const OVERRIDE;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.browsingData.removeCache")
+  DECLARE_EXTENSION_FUNCTION_NAME("browsingData.removeCache")
 };
 
 class RemoveCookiesFunction : public BrowsingDataExtensionFunction {
@@ -120,7 +120,7 @@ class RemoveCookiesFunction : public BrowsingDataExtensionFunction {
   // BrowsingDataTypeExtensionFunction interface method.
   virtual int GetRemovalMask() const OVERRIDE;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.browsingData.removeCookies")
+  DECLARE_EXTENSION_FUNCTION_NAME("browsingData.removeCookies")
 };
 
 class RemoveDownloadsFunction : public BrowsingDataExtensionFunction {
@@ -132,7 +132,7 @@ class RemoveDownloadsFunction : public BrowsingDataExtensionFunction {
   // BrowsingDataTypeExtensionFunction interface method.
   virtual int GetRemovalMask() const OVERRIDE;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.browsingData.removeDownloads")
+  DECLARE_EXTENSION_FUNCTION_NAME("browsingData.removeDownloads")
 };
 
 class RemoveFileSystemsFunction : public BrowsingDataExtensionFunction {
@@ -144,7 +144,7 @@ class RemoveFileSystemsFunction : public BrowsingDataExtensionFunction {
   // BrowsingDataTypeExtensionFunction interface method.
   virtual int GetRemovalMask() const OVERRIDE;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.browsingData.removeFileSystems")
+  DECLARE_EXTENSION_FUNCTION_NAME("browsingData.removeFileSystems")
 };
 
 class RemoveFormDataFunction : public BrowsingDataExtensionFunction {
@@ -156,7 +156,7 @@ class RemoveFormDataFunction : public BrowsingDataExtensionFunction {
   // BrowsingDataTypeExtensionFunction interface method.
   virtual int GetRemovalMask() const OVERRIDE;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.browsingData.removeFormData")
+  DECLARE_EXTENSION_FUNCTION_NAME("browsingData.removeFormData")
 };
 
 class RemoveHistoryFunction : public BrowsingDataExtensionFunction {
@@ -168,7 +168,7 @@ class RemoveHistoryFunction : public BrowsingDataExtensionFunction {
   // BrowsingDataTypeExtensionFunction interface method.
   virtual int GetRemovalMask() const OVERRIDE;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.browsingData.removeHistory")
+  DECLARE_EXTENSION_FUNCTION_NAME("browsingData.removeHistory")
 };
 
 class RemoveIndexedDBFunction : public BrowsingDataExtensionFunction {
@@ -180,7 +180,7 @@ class RemoveIndexedDBFunction : public BrowsingDataExtensionFunction {
   // BrowsingDataTypeExtensionFunction interface method.
   virtual int GetRemovalMask() const OVERRIDE;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.browsingData.removeIndexedDB")
+  DECLARE_EXTENSION_FUNCTION_NAME("browsingData.removeIndexedDB")
 };
 
 class RemoveLocalStorageFunction : public BrowsingDataExtensionFunction {
@@ -192,8 +192,7 @@ class RemoveLocalStorageFunction : public BrowsingDataExtensionFunction {
   // BrowsingDataTypeExtensionFunction interface method.
   virtual int GetRemovalMask() const OVERRIDE;
 
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.browsingData.removeLocalStorage")
+  DECLARE_EXTENSION_FUNCTION_NAME("browsingData.removeLocalStorage")
 };
 
 class RemoveOriginBoundCertsFunction : public BrowsingDataExtensionFunction {
@@ -205,8 +204,7 @@ class RemoveOriginBoundCertsFunction : public BrowsingDataExtensionFunction {
   // BrowsingDataTypeExtensionFunction interface method.
   virtual int GetRemovalMask() const OVERRIDE;
 
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.browsingData.removeOriginBoundCertificates")
+  DECLARE_EXTENSION_FUNCTION_NAME("browsingData.removeOriginBoundCertificates")
 };
 
 class RemovePluginDataFunction : public BrowsingDataExtensionFunction {
@@ -218,7 +216,7 @@ class RemovePluginDataFunction : public BrowsingDataExtensionFunction {
   // BrowsingDataTypeExtensionFunction interface method.
   virtual int GetRemovalMask() const OVERRIDE;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.browsingData.removePluginData")
+  DECLARE_EXTENSION_FUNCTION_NAME("browsingData.removePluginData")
 };
 
 class RemovePasswordsFunction : public BrowsingDataExtensionFunction {
@@ -230,7 +228,7 @@ class RemovePasswordsFunction : public BrowsingDataExtensionFunction {
   // BrowsingDataTypeExtensionFunction interface method.
   virtual int GetRemovalMask() const OVERRIDE;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.browsingData.removePasswords")
+  DECLARE_EXTENSION_FUNCTION_NAME("browsingData.removePasswords")
 };
 
 class RemoveWebSQLFunction : public BrowsingDataExtensionFunction {
@@ -242,6 +240,6 @@ class RemoveWebSQLFunction : public BrowsingDataExtensionFunction {
   // BrowsingDataTypeExtensionFunction interface method.
   virtual int GetRemovalMask() const OVERRIDE;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.browsingData.removeWebSQL")
+  DECLARE_EXTENSION_FUNCTION_NAME("browsingData.removeWebSQL")
 };
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_BROWSING_DATA_API_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_BROWSINGDATA_BROWSING_DATA_API_H_

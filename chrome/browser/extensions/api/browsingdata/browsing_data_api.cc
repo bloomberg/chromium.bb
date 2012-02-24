@@ -6,7 +6,7 @@
 // clearing browsing data, and clearing the browser's cache (which, let's be
 // honest, are the same thing), as specified in the extension API JSON.
 
-#include "chrome/browser/extensions/extension_browsing_data_api.h"
+#include "chrome/browser/extensions/api/browsingdata/browsing_data_api.h"
 
 #include <string>
 

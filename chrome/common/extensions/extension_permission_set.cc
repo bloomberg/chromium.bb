@@ -211,6 +211,9 @@ void ExtensionAPIPermission::RegisterAllPermissions(
       kBookmark, "bookmarks", IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS,
       ExtensionPermissionMessage::kBookmarks, kFlagNone, kTypeDefault);
   info->RegisterPermission(
+      kBrowsingData, "browsingData", 0,
+      ExtensionPermissionMessage::kNone, kFlagNone, kTypeDefault);
+  info->RegisterPermission(
       kContentSettings, "contentSettings",
       IDS_EXTENSION_PROMPT_WARNING_CONTENT_SETTINGS,
       ExtensionPermissionMessage::kContentSettings, kFlagNone, kTypeDefault);
