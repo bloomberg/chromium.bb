@@ -181,15 +181,14 @@ class InterfaceTest(mox.MoxTestBase):
   def testDebugBuildBotSetByDefault(self):
     """Test that debug and buildbot flags are set by default."""
     args = ['-r', self._BUILD_ROOT, self._X86_PREFLIGHT]
-    (options, args) = self.parser.parse_args(args=args)
-    cbuildbot._PostParseCheck(options, args)
+    (options, args) = cbuildbot._ParseCommandLine(self.parser, args)
     self.assertEquals(options.debug, True)
     self.assertEquals(options.buildbot, False)
 
   def testBuildBotOption(self):
     """Test that --buildbot option unsets debug flag."""
     args = ['-r', self._BUILD_ROOT, '--buildbot', self._X86_PREFLIGHT]
-    (options, args) = self.parser.parse_args(args=args)
+    (options, args) = cbuildbot._ParseCommandLine(self.parser, args)
     self.assertEquals(options.debug, False)
     self.assertEquals(options.buildbot, True)
 
@@ -197,20 +196,20 @@ class InterfaceTest(mox.MoxTestBase):
     """Test that --debug option overrides --buildbot option."""
     args = ['-r', self._BUILD_ROOT, '--buildbot', '--debug',
             self._X86_PREFLIGHT]
-    (options, args) = self.parser.parse_args(args=args)
+    (options, args) = cbuildbot._ParseCommandLine(self.parser, args)
     self.assertEquals(options.debug, True)
     self.assertEquals(options.buildbot, True)
 
   def testBuildBotWithoutProfileOption(self):
     """Test that no --profile option gets defaulted."""
     args = ['--buildbot', self._X86_PREFLIGHT]
-    (options, args) = self.parser.parse_args(args=args)
+    (options, args) = cbuildbot._ParseCommandLine(self.parser, args)
     self.assertEquals(options.profile, None)
 
   def testBuildBotWithProfileOption(self):
     """Test that --profile option gets parsed."""
     args = ['--buildbot', '--profile', 'carp', self._X86_PREFLIGHT]
-    (options, args) = self.parser.parse_args(args=args)
+    (options, args) = cbuildbot._ParseCommandLine(self.parser, args)
     self.assertEquals(options.profile, 'carp')
 
   def testValidateClobberUserDeclines_1(self):
@@ -258,8 +257,7 @@ class InterfaceTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(cros_lib, 'Die')
     cros_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
     self.mox.ReplayAll()
-    (options, args) = self.parser.parse_args(args=args)
-    self.assertRaises(Exception, cbuildbot._PostParseCheck, options, args)
+    self.assertRaises(Exception, cbuildbot._ParseCommandLine, self.parser, args)
     self.mox.VerifyAll()
 
   def testBuildBotWithBadChromeRootOption(self):
@@ -272,8 +270,7 @@ class InterfaceTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(cros_lib, 'Die')
     cros_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
     self.mox.ReplayAll()
-    (options, args) = self.parser.parse_args(args=args)
-    self.assertRaises(Exception, cbuildbot._PostParseCheck, options, args)
+    self.assertRaises(Exception, cbuildbot._ParseCommandLine, self.parser, args)
     self.mox.VerifyAll()
 
   def testBuildBotWithBadChromeRevOptionLocal(self):
@@ -285,8 +282,7 @@ class InterfaceTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(cros_lib, 'Die')
     cros_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
     self.mox.ReplayAll()
-    (options, args) = self.parser.parse_args(args=args)
-    self.assertRaises(Exception, cbuildbot._PostParseCheck, options, args)
+    self.assertRaises(Exception, cbuildbot._ParseCommandLine, self.parser, args)
     self.mox.VerifyAll()
 
   def testBuildBotWithGoodChromeRootOption(self):
@@ -297,8 +293,7 @@ class InterfaceTest(mox.MoxTestBase):
         self._X86_PREFLIGHT]
     self.mox.StubOutWithMock(cros_lib, 'Die')
     self.mox.ReplayAll()
-    (options, args) = self.parser.parse_args(args=args)
-    cbuildbot._PostParseCheck(options, args)
+    (options, args) = cbuildbot._ParseCommandLine(self.parser, args)
     self.mox.VerifyAll()
     self.assertEquals(options.chrome_rev, constants.CHROME_REV_LOCAL)
     self.assertNotEquals(options.chrome_root, None)
@@ -320,8 +315,7 @@ class InterfaceTest(mox.MoxTestBase):
         self._X86_PREFLIGHT]
     self.mox.StubOutWithMock(cros_lib, 'Die')
     self.mox.ReplayAll()
-    (options, args) = self.parser.parse_args(args=args)
-    cbuildbot._PostParseCheck(options, args)
+    (options, args) = cbuildbot._ParseCommandLine(self.parser, args)
     self.mox.VerifyAll()
     self.assertEquals(options.chrome_rev, constants.CHROME_REV_LOCAL)
     self.assertNotEquals(options.chrome_root, None)

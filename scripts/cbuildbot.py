@@ -776,8 +776,7 @@ def _CreateParser():
   # Debug options
   group = optparse.OptionGroup(parser, "Debug Options")
 
-  group.add_option('--debug', action='store_true', dest='debug',
-                    default=False,
+  group.add_option('--debug', action='store_true', default=None,
                     help='Override some options to run as a developer.')
   group.add_option('--dump_config', action='store_true', dest='dump_config',
                     default=False,
@@ -789,15 +788,16 @@ def _CreateParser():
   return parser
 
 
-def _PostParseCheck(options, args):
-  """Perform some usage validation after we've parsed the arguments
+def _FinishParsing(options, args):
+  """Perform some parsing tasks that need to take place after optparse.
+
+  This function needs to be easily testable!  Keep it free of
+  environment-dependent code.  Put more detailed usage validation in
+  _PostParseCheck().
 
   Args:
-    options: The options object returned by optparse
+    options, args: The options/args object returned by optparse
   """
-  if cros_lib.IsInsideChroot():
-    cros_lib.Die('Please run cbuildbot from outside the chroot.')
-
   if options.chrome_root:
     if options.chrome_rev != constants.CHROME_REV_LOCAL:
       cros_lib.Die('Chrome rev must be %s if chrome_root is set.' %
@@ -819,35 +819,56 @@ def _PostParseCheck(options, args):
   if options.remote and options.local_patches:
     cros_lib.Die('Local patching not yet supported with remote tryjobs.')
 
-  # Set debug correctly.  If --debug is set explicitly, always set
-  # options.debug to true, o/w if not buildbot.
-  options.debug = options.debug | (not options.buildbot)
-
-  if not options.resume:
-    try:
-      if options.local_patches:
-        _CheckAndSplitLocalPatches(options)
-
-    except optparse.OptionValueError as e:
-      cros_lib.Die(str(e))
-
   if options.remote and not options.gerrit_patches:
     cros_lib.Die('Must provide patches when running with --remote.')
 
   if len(args) > 1 and not options.remote:
     cros_lib.Die('Multiple configs not supported if not running with --remote.')
 
+  # Record whether --debug was set explicitly vs. it was inferred.
+  options.debug_forced = False
+  if options.debug:
+    options.debug_forced = True
+  else:
+    options.debug = not options.buildbot
 
-def main(argv):
 
-  # Set umask to 022 so files created by buildbot are readable.
-  os.umask(022)
+def _PostParseCheck(options, args):
+  """Perform some usage validation after we've parsed the arguments
 
-  parser = _CreateParser()
+  Args:
+    options/args: The options/args object returned by optparse
+  """
+  if not options.resume:
+    try:
+      # TODO(rcui): Split this into two stages, one that parses, another that
+      # validates.  Parsing step will be called by _FinishParsing().
+      if options.local_patches:
+        _CheckAndSplitLocalPatches(options)
+
+    except optparse.OptionValueError as e:
+      cros_lib.Die(str(e))
+
+
+def _ParseCommandLine(parser, argv):
+  """Completely parse the commandline arguments"""
   (options, args) = parser.parse_args(argv)
   # Strip out null arguments.
   # TODO(rcui): Remove when buildbot is fixed
   args = [arg for arg in args if arg]
+  _FinishParsing(options, args)
+  return options, args
+
+
+def main(argv):
+  # Set umask to 022 so files created by buildbot are readable.
+  os.umask(022)
+
+  if cros_lib.IsInsideChroot():
+    cros_lib.Die('Please run cbuildbot from outside the chroot.')
+
+  parser = _CreateParser()
+  (options, args) = _ParseCommandLine(parser, argv)
 
   if options.list:
     _PrintValidConfigs(not options.print_all)
@@ -910,7 +931,6 @@ def main(argv):
 
   # Sanity check of buildroot- specifically that it's not pointing into the
   # midst of an existing repo since git-repo doesn't support nesting.
-
   if (not repository.IsARepoRoot(options.buildroot) and
       repository.InARepoRepository(options.buildroot)):
     parser.error('Configured buildroot %s points into a repository checkout, '
