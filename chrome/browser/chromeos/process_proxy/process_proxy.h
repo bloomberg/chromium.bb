@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_CHROMEOS_PROCESS_PROXY_PROCESS_PROXY_H_
 #pragma once
 
-#include <cstdio>
 #include <fcntl.h>
 #include <signal.h>
+
+#include <cstdio>
+#include <string>
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/process_proxy/process_output_watcher.h"

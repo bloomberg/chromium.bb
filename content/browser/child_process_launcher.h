@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,7 +38,7 @@ class CONTENT_EXPORT ChildProcessLauncher {
       const FilePath& exposed_dir,
 #elif defined(OS_POSIX)
       bool use_zygote,
-      const base::environment_vector& environ,
+      const base::EnvironmentVector& environ,
       int ipcfd,
 #endif
       CommandLine* cmd_line,

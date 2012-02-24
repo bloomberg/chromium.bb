@@ -4,6 +4,8 @@
 
 #include "content/browser/ppapi_plugin_process_host.h"
 
+#include <string>
+
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -70,7 +72,7 @@ PpapiPluginProcessHost* PpapiPluginProcessHost::CreatePluginHost(
     net::HostResolver* host_resolver) {
   PpapiPluginProcessHost* plugin_host =
       new PpapiPluginProcessHost(host_resolver);
-  if(plugin_host->Init(info))
+  if (plugin_host->Init(info))
     return plugin_host;
 
   NOTREACHED();  // Init is not expected to fail.
@@ -81,7 +83,7 @@ PpapiPluginProcessHost* PpapiPluginProcessHost::CreateBrokerHost(
     const content::PepperPluginInfo& info) {
   PpapiPluginProcessHost* plugin_host =
       new PpapiPluginProcessHost();
-  if(plugin_host->Init(info))
+  if (plugin_host->Init(info))
     return plugin_host;
 
   NOTREACHED();  // Init is not expected to fail.
@@ -189,7 +191,7 @@ bool PpapiPluginProcessHost::Init(const content::PepperPluginInfo& info) {
       FilePath(),
 #elif defined(OS_POSIX)
       use_zygote,
-      base::environment_vector(),
+      base::EnvironmentVector(),
 #endif
       cmd_line);
   return true;

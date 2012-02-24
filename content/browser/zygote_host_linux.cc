@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -95,7 +95,7 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
 #else
   CHECK(socketpair(PF_UNIX, SOCK_SEQPACKET, 0, fds) == 0);
 #endif
-  base::file_handle_mapping_vector fds_to_map;
+  base::FileHandleMappingVector fds_to_map;
   fds_to_map.push_back(std::make_pair(fds[1], 3));
 
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
@@ -273,7 +273,7 @@ pid_t ZygoteHost::ForkRequest(
     const ssize_t len = ReadReply(buf, sizeof(buf));
 
     Pickle reply_pickle(buf, len);
-    void *iter = NULL;
+    void* iter = NULL;
     if (len <= 0 || !reply_pickle.ReadInt(&iter, &pid))
       return base::kNullProcessHandle;
 

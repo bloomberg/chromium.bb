@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,7 +55,7 @@ bool LaunchXdgUtility(const std::vector<std::string>& argv, int* exit_code) {
   int devnull = open("/dev/null", O_RDONLY);
   if (devnull < 0)
     return false;
-  base::file_handle_mapping_vector no_stdin;
+  base::FileHandleMappingVector no_stdin;
   no_stdin.push_back(std::make_pair(devnull, STDIN_FILENO));
 
   base::ProcessHandle handle;

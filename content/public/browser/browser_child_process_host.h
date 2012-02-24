@@ -39,7 +39,7 @@ class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Message::Sender {
       const FilePath& exposed_dir,
 #elif defined(OS_POSIX)
       bool use_zygote,
-      const base::environment_vector& environ,
+      const base::EnvironmentVector& environ,
 #endif
       CommandLine* cmd_line) = 0;
 

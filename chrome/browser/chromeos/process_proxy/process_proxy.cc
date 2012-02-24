@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/process_proxy/process_proxy.h"
 
-#include <cstdio>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
@@ -120,8 +119,8 @@ void ProcessProxy::OnProcessOutput(ProcessOutputType type,
 }
 
 bool ProcessProxy::StopWatching() {
-   if (!watcher_started_)
-     return true;
+  if (!watcher_started_)
+    return true;
   // Signal Watcher that we are done. We use self-pipe trick to unblock watcher.
   // Anything may be written to the pipe.
   const char message[] = "q";
@@ -207,9 +206,9 @@ bool ProcessProxy::CreatePseudoTerminalPair(int *pt_pair) {
 }
 
 bool ProcessProxy::LaunchProcess(const std::string& command, int slave_fd,
-                                 pid_t *pid) {
+                                 pid_t* pid) {
   // Redirect crosh  process' output and input so we can read it.
-  base::file_handle_mapping_vector fds_mapping;
+  base::FileHandleMappingVector fds_mapping;
   fds_mapping.push_back(std::make_pair(slave_fd, STDIN_FILENO));
   fds_mapping.push_back(std::make_pair(slave_fd, STDOUT_FILENO));
   fds_mapping.push_back(std::make_pair(slave_fd, STDERR_FILENO));

@@ -5,6 +5,7 @@
 #include "content/browser/worker_host/worker_process_host.h"
 
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/base_switches.h"
@@ -192,7 +193,7 @@ bool WorkerProcessHost::Init(int render_process_id) {
       FilePath(),
 #elif defined(OS_POSIX)
       use_zygote,
-      base::environment_vector(),
+      base::EnvironmentVector(),
 #endif
       cmd_line);
 

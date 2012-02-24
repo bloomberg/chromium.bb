@@ -31,7 +31,7 @@ UtilityProcessHost* UtilityProcessHost::Create(
   return new UtilityProcessHostImpl(client, client_thread_id);
 }
 
-}
+}  // namespace content
 
 UtilityProcessHostImpl::UtilityProcessHostImpl(
     UtilityProcessHostClient* client,
@@ -90,7 +90,7 @@ void UtilityProcessHostImpl::EnableZygote() {
 
 #if defined(OS_POSIX)
 
-void UtilityProcessHostImpl::SetEnv(const base::environment_vector& env) {
+void UtilityProcessHostImpl::SetEnv(const base::EnvironmentVector& env) {
   env_ = env;
 }
 

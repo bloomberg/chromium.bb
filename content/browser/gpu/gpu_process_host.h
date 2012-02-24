@@ -8,6 +8,7 @@
 
 #include <map>
 #include <queue>
+#include <string>
 
 #include "base/callback.h"
 #include "base/memory/linked_ptr.h"

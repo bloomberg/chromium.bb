@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <sys/resource.h>
 #include <sys/socket.h>
+
+#include <set>
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -47,7 +49,7 @@ void NaClForkDelegate::Init(const bool sandboxed,
   DCHECK(kNaClSandboxDescriptor == sandboxdesc);
 
   CHECK(socketpair(PF_UNIX, SOCK_SEQPACKET, 0, fds) == 0);
-  base::file_handle_mapping_vector fds_to_map;
+  base::FileHandleMappingVector fds_to_map;
   fds_to_map.push_back(std::make_pair(fds[1], kNaClZygoteDescriptor));
   fds_to_map.push_back(std::make_pair(sandboxdesc, kNaClSandboxDescriptor));
 

@@ -2,13 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
-
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 
-#if defined(OS_POSIX)
-#include <fcntl.h>
-#endif
+#include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -17,6 +14,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
@@ -31,13 +29,16 @@
 #include "native_client/src/shared/imc/nacl_imc.h"
 
 #if defined(OS_POSIX)
+#include <fcntl.h>
+
 #include "ipc/ipc_channel_posix.h"
 #elif defined(OS_WIN)
+#include <windows.h>
+
 #include "base/threading/thread.h"
 #include "base/process_util.h"
 #include "chrome/browser/nacl_host/nacl_broker_service_win.h"
 #include "native_client/src/trusted/service_runtime/win/debug_exception_handler.h"
-#include <windows.h>
 #endif
 
 using content::BrowserThread;
@@ -413,7 +414,7 @@ bool NaClProcessHost::LaunchSelLdr() {
   }
 #elif defined(OS_POSIX)
   process_->Launch(nacl_loader_prefix.empty(),  // use_zygote
-                   base::environment_vector(),
+                   base::EnvironmentVector(),
                    cmd_line);
 #endif
 

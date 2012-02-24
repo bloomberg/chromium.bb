@@ -390,7 +390,7 @@ base::ProcessHandle CloudPrintProxyPolicyStartupTest::Launch(
       this, IOMessageLoopProxy()));
 
 #if defined(OS_POSIX)
-  base::file_handle_mapping_vector ipc_file_list;
+  base::FileHandleMappingVector ipc_file_list;
   ipc_file_list.push_back(std::make_pair(
       startup_channel_->TakeClientFileDescriptor(),
       kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor));

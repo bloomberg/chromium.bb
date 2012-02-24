@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -99,7 +99,7 @@ TEST_F(ProcessInfoSnapshotMacTest, EffectiveVsRealUserIDTest) {
   // Create a pipe to be able to read top's output.
   int fds[2];
   PCHECK(pipe(fds) == 0);
-  base::file_handle_mapping_vector fds_to_remap;
+  base::FileHandleMappingVector fds_to_remap;
   fds_to_remap.push_back(std::make_pair(fds[1], 1));
 
   // Hook up top's stderr to the test process' stderr.

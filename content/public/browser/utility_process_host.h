@@ -57,7 +57,7 @@ class UtilityProcessHost : public IPC::Message::Sender,
   virtual void EnableZygote() = 0;
 
 #if defined(OS_POSIX)
-  virtual void SetEnv(const base::environment_vector& env) = 0;
+  virtual void SetEnv(const base::EnvironmentVector& env) = 0;
 #endif
 };
 

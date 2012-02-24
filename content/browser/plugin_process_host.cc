@@ -254,7 +254,7 @@ bool PluginProcessHost::Init(const webkit::WebPluginInfo& info) {
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
 
 #if defined(OS_POSIX)
-  base::environment_vector env;
+  base::EnvironmentVector env;
 #if defined(OS_MACOSX) && !defined(__LP64__)
   // Add our interposing library for Carbon. This is stripped back out in
   // plugin_main.cc, so changes here should be reflected there.

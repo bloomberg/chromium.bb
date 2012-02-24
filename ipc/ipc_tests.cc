@@ -84,7 +84,7 @@ base::ProcessHandle IPCChannelTest::SpawnChild(ChildType child_type,
   bool debug_on_start =
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kDebugChildren);
 
-  base::file_handle_mapping_vector fds_to_map;
+  base::FileHandleMappingVector fds_to_map;
   const int ipcfd = channel->GetClientFileDescriptor();
   if (ipcfd > -1) {
     fds_to_map.push_back(std::pair<int, int>(ipcfd, kPrimaryIPCChannel + 3));
@@ -301,7 +301,7 @@ TEST_F(IPCChannelTest, ChannelProxyTest) {
 #elif defined(OS_POSIX)
     bool debug_on_start = CommandLine::ForCurrentProcess()->HasSwitch(
                               switches::kDebugChildren);
-    base::file_handle_mapping_vector fds_to_map;
+    base::FileHandleMappingVector fds_to_map;
     const int ipcfd = chan.GetClientFileDescriptor();
     if (ipcfd > -1) {
       fds_to_map.push_back(std::pair<int, int>(ipcfd, kPrimaryIPCChannel + 3));
@@ -466,6 +466,7 @@ class ChannelReflectorListener : public IPC::Channel::Listener {
     channel_->Send(msg);
     return true;
   }
+
  private:
   IPC::Channel *channel_;
   int count_messages_;

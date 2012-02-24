@@ -431,7 +431,7 @@ bool RenderProcessHostImpl::Init(bool is_accessibility_enabled) {
         FilePath(),
 #elif defined(OS_POSIX)
         renderer_prefix.empty(),
-        base::environment_vector(),
+        base::EnvironmentVector(),
         channel_->TakeClientFileDescriptor(),
 #endif
         cmd_line,

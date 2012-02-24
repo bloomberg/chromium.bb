@@ -109,7 +109,7 @@ bool TestServer::LaunchPython(const FilePath& testserver_path) {
   child_fd_ = pipefd[0];
   child_fd_closer_.reset(&child_fd_);
   file_util::ScopedFD write_closer(&pipefd[1]);
-  base::file_handle_mapping_vector map_write_fd;
+  base::FileHandleMappingVector map_write_fd;
   map_write_fd.push_back(std::make_pair(pipefd[1], pipefd[1]));
 
   python_command.AppendArg("--startup-pipe=" + base::IntToString(pipefd[1]));

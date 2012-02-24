@@ -151,7 +151,7 @@ bool RelaunchAppWithHelper(const std::string& helper,
                  kRelauncherSyncFD != STDERR_FILENO,
                  kRelauncherSyncFD_must_not_conflict_with_stdio_fds);
 
-  base::file_handle_mapping_vector fd_map;
+  base::FileHandleMappingVector fd_map;
   fd_map.push_back(std::make_pair(*pipe_write_fd, kRelauncherSyncFD));
 
   base::LaunchOptions options;

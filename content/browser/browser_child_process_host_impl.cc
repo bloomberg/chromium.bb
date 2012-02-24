@@ -30,8 +30,6 @@
 
 #if defined(OS_WIN)
 #include "base/synchronization/waitable_event.h"
-#else
-#include "base/bind.h"
 #endif
 
 using content::BrowserChildProcessHostDelegate;
@@ -107,7 +105,7 @@ void BrowserChildProcessHostImpl::Launch(
     const FilePath& exposed_dir,
 #elif defined(OS_POSIX)
     bool use_zygote,
-    const base::environment_vector& environ,
+    const base::EnvironmentVector& environ,
 #endif
     CommandLine* cmd_line) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

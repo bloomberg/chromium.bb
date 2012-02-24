@@ -4,6 +4,8 @@
 
 #include "chrome/test/automation/proxy_launcher.h"
 
+#include <vector>
+
 #include "base/environment.h"
 #include "base/file_util.h"
 #include "base/string_number_conversions.h"
@@ -476,7 +478,7 @@ bool ProxyLauncher::LaunchBrowserHelper(const LaunchState& state,
 #elif defined(OS_POSIX)
   int ipcfd = -1;
   file_util::ScopedFD ipcfd_closer(&ipcfd);
-  base::file_handle_mapping_vector fds;
+  base::FileHandleMappingVector fds;
   if (main_launch && automation_proxy_.get()) {
     ipcfd = automation_proxy_->channel()->TakeClientFileDescriptor();
     fds.push_back(std::make_pair(ipcfd, kPrimaryIPCChannel + 3));

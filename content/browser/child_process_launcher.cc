@@ -61,7 +61,7 @@ class ChildProcessLauncher::Context
       const FilePath& exposed_dir,
 #elif defined(OS_POSIX)
       bool use_zygote,
-      const base::environment_vector& environ,
+      const base::EnvironmentVector& environ,
       int ipcfd,
 #endif
       CommandLine* cmd_line,
@@ -113,7 +113,7 @@ class ChildProcessLauncher::Context
       const FilePath& exposed_dir,
 #elif defined(OS_POSIX)
       bool use_zygote,
-      const base::environment_vector& env,
+      const base::EnvironmentVector& env,
       int ipcfd,
 #endif
       CommandLine* cmd_line) {
@@ -147,7 +147,7 @@ class ChildProcessLauncher::Context
     // Fall through to the normal posix case below when we're not zygoting.
 #endif
     {
-      base::file_handle_mapping_vector fds_to_map;
+      base::FileHandleMappingVector fds_to_map;
       fds_to_map.push_back(std::make_pair(
           ipcfd,
           kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
@@ -307,7 +307,7 @@ ChildProcessLauncher::ChildProcessLauncher(
     const FilePath& exposed_dir,
 #elif defined(OS_POSIX)
     bool use_zygote,
-    const base::environment_vector& environ,
+    const base::EnvironmentVector& environ,
     int ipcfd,
 #endif
     CommandLine* cmd_line,

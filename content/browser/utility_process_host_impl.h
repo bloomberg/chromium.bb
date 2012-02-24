@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_UTILITY_PROCESS_HOST_H_
-#define CONTENT_BROWSER_UTILITY_PROCESS_HOST_H_
+#ifndef CONTENT_BROWSER_UTILITY_PROCESS_HOST_IMPL_H_
+#define CONTENT_BROWSER_UTILITY_PROCESS_HOST_IMPL_H_
 #pragma once
 
 #include <string>
@@ -34,7 +34,7 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   virtual void DisableSandbox() OVERRIDE;
   virtual void EnableZygote() OVERRIDE;
 #if defined(OS_POSIX)
-  virtual void SetEnv(const base::environment_vector& env) OVERRIDE;
+  virtual void SetEnv(const base::EnvironmentVector& env) OVERRIDE;
 #endif
 
   void set_child_flags(int flags) { child_flags_ = flags; }
@@ -66,7 +66,7 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   // Launch the utility process from the zygote. Defaults to false.
   bool use_linux_zygote_;
 
-  base::environment_vector env_;
+  base::EnvironmentVector env_;
 
   bool started_;
 
@@ -75,4 +75,4 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   DISALLOW_COPY_AND_ASSIGN(UtilityProcessHostImpl);
 };
 
-#endif  // CONTENT_BROWSER_UTILITY_PROCESS_HOST_H_
+#endif  // CONTENT_BROWSER_UTILITY_PROCESS_HOST_IMPL_H_

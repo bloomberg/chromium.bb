@@ -201,7 +201,7 @@ GpuProcessHost* GpuProcessHost::GetForClient(
   // this will be extended to allow the use of multiple GPU processes.
   for (IDMap<GpuProcessHost>::iterator it(g_hosts_by_id.Pointer());
        !it.IsAtEnd(); it.Advance()) {
-    GpuProcessHost *host = it.GetCurrentValue();
+    GpuProcessHost* host = it.GetCurrentValue();
 
     if (host->sandboxed() != (client_id != 0))
       continue;
@@ -245,7 +245,7 @@ GpuProcessHost* GpuProcessHost::FromID(int host_id) {
   if (host_id == 0)
     return NULL;
 
-  GpuProcessHost *host = g_hosts_by_id.Pointer()->Lookup(host_id);
+  GpuProcessHost* host = g_hosts_by_id.Pointer()->Lookup(host_id);
   if (HostIsValid(host))
     return host;
 
@@ -366,8 +366,9 @@ bool GpuProcessHost::Init() {
     in_process_gpu_thread_->StartWithOptions(options);
 
     OnProcessLaunched();  // Fake a callback that the process is ready.
-  } else if (!LaunchGpuProcess(channel_id))
+  } else if (!LaunchGpuProcess(channel_id)) {
     return false;
+  }
 
   return Send(new GpuMsg_Initialize());
 }
@@ -662,7 +663,7 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
       FilePath(),
 #elif defined(OS_POSIX)
       false,  // Never use the zygote (GPU plugin can't be sandboxed).
-      base::environment_vector(),
+      base::EnvironmentVector(),
 #endif
       cmd_line);
   process_launched_ = true;

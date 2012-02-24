@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,7 @@ bool LaunchNSSDecrypterChildProcess(const FilePath& nss_path,
   // Set env variable needed for FF encryption libs to load.
   // See "chrome/browser/importer/nss_decryptor_mac.mm" for an explanation of
   // why we need this.
-  base::environment_vector env;
+  base::EnvironmentVector env;
   std::pair<std::string, std::string> dyld_override;
   dyld_override.first = "DYLD_FALLBACK_LIBRARY_PATH";
   dyld_override.second = nss_path.value();
@@ -50,7 +50,7 @@ bool LaunchNSSDecrypterChildProcess(const FilePath& nss_path,
     return false;
 
   file_util::ScopedFD client_file_descriptor_closer(&ipcfd);
-  base::file_handle_mapping_vector fds_to_map;
+  base::FileHandleMappingVector fds_to_map;
   fds_to_map.push_back(std::pair<int,int>(ipcfd, kPrimaryIPCChannel + 3));
 
   bool debug_on_start = CommandLine::ForCurrentProcess()->HasSwitch(

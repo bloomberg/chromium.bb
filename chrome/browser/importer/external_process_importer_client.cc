@@ -81,7 +81,7 @@ void ExternalProcessImporterClient::StartProcessOnIOThread(
   utility_process_host_->DisableSandbox();
 
 #if defined(OS_MACOSX)
-  base::environment_vector env;
+  base::EnvironmentVector env;
   std::string dylib_path = GetFirefoxDylibPath().value();
   if (!dylib_path.empty())
     env.push_back(std::make_pair("DYLD_FALLBACK_LIBRARY_PATH", dylib_path));
