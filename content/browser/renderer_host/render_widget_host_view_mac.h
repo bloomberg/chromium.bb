@@ -338,6 +338,7 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
 
   // Current text input type.
   ui::TextInputType text_input_type_;
+  bool can_compose_inline_;
 
   typedef std::map<gfx::PluginWindowHandle, AcceleratedPluginView*>
       PluginViewMap;

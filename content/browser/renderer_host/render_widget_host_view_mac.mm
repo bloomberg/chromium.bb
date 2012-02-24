@@ -235,6 +235,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
       call_set_needs_display_in_rect_pending_(false),
       last_frame_was_accelerated_(false),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
+      can_compose_inline_(true),
       is_loading_(false),
       is_hidden_(false),
       weak_factory_(this),
@@ -516,18 +517,16 @@ void RenderWidgetHostViewMac::SetIsLoading(bool is_loading) {
 void RenderWidgetHostViewMac::TextInputStateChanged(
     ui::TextInputType type,
     bool can_compose_inline) {
-  // TODO(kinaba): currently, can_compose_inline is ignored and always treated
-  // as true. We need to support "can_compose_inline=false" for PPAPI plugins
-  // that may want to avoid drawing composition-text by themselves and pass
-  // the responsibility to the browser.
-  if (text_input_type_ != type) {
+  if (text_input_type_ != type || can_compose_inline_ != can_compose_inline) {
     text_input_type_ = type;
+    can_compose_inline_ = can_compose_inline;
     if (HasFocus()) {
       SetTextInputActive(true);
 
       // Let AppKit cache the new input context to make IMEs happy.
       // See http://crbug.com/73039.
       [NSApp updateWindows];
+      UseInputWindow(TSMGetActiveDocument(), !can_compose_inline_);
     }
   }
 }
