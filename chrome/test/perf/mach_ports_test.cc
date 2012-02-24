@@ -26,6 +26,7 @@ class MachPortsTest : public UIPerfTest {
  public:
   MachPortsTest()
       : server_(net::TestServer::TYPE_HTTP,
+                net::TestServer::kLocalhost,
                 FilePath(FILE_PATH_LITERAL("data/mach_ports/moz"))) {
   }
 

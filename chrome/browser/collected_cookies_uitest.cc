@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,7 +28,9 @@ typedef UITest CollectedCookiesTest;
 #define MAYBE_DoubleDisplay DoubleDisplay
 #endif
 TEST_F(CollectedCookiesTest, MAYBE_DoubleDisplay) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
@@ -56,7 +58,9 @@ TEST_F(CollectedCookiesTest, MAYBE_DoubleDisplay) {
 #define MAYBE_NavigateAway NavigateAway
 #endif
 TEST_F(CollectedCookiesTest, MAYBE_NavigateAway) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));

@@ -113,7 +113,9 @@ class PPAPITestBase : public UITest {
       web_dir = web_dir.Append(exe_parts[match]);
     }
 
-    net::TestServer test_server(net::TestServer::TYPE_HTTP, web_dir);
+    net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                                net::TestServer::kLocalhost,
+                                web_dir);
     ASSERT_TRUE(test_server.Start());
     std::string query = BuildQuery("files/test_case.html?", test_case);
 

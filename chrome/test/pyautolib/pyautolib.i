@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -418,7 +418,8 @@ class TestServer {
     TYPE_SYNC,
   };
 
-  TestServer(Type type, const FilePath& document_root);
+  // Initialize a TestServer listening on the specified host (IP or hostname).
+  TestServer(Type type, const std::string& host, const FilePath& document_root);
   // Initialize a HTTPS TestServer with a specific set of HTTPSOptions.
   TestServer(const HTTPSOptions& https_options,
              const FilePath& document_root);

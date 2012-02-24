@@ -748,7 +748,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       A handle to Sync Server, an instance of TestServer
     """
     sync_server = pyautolib.TestServer(pyautolib.TestServer.TYPE_SYNC,
-        pyautolib.FilePath(''))
+                                       '127.0.0.1',
+                                       pyautolib.FilePath(''))
     assert sync_server.Start(), 'Could not start sync server'
     sync_server.ports = dict(port=sync_server.GetPort(),
                              xmpp_port=sync_server.GetSyncXmppPort())
@@ -771,7 +772,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       handle to FTP Server, an instance of TestServer
     """
     ftp_server = pyautolib.TestServer(pyautolib.TestServer.TYPE_FTP,
-        pyautolib.FilePath(data_dir))
+                                      '127.0.0.1',
+                                      pyautolib.FilePath(data_dir))
     assert ftp_server.Start(), 'Could not start ftp server'
     logging.debug('Started ftp server at "%s".', data_dir)
     return ftp_server
@@ -793,7 +795,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       handle to the HTTP TestServer
     """
     http_server = pyautolib.TestServer(pyautolib.TestServer.TYPE_HTTP,
-        pyautolib.FilePath(data_dir))
+                                       '127.0.0.1',
+                                       pyautolib.FilePath(data_dir))
     assert http_server.Start(), 'Could not start HTTP server'
     logging.debug('Started HTTP server at "%s".', data_dir)
     return http_server
@@ -4637,7 +4640,8 @@ class PyUITestSuite(pyautolib.PyUITestSuiteBase, unittest.TestSuite):
     assert not _HTTP_SERVER, 'HTTP Server already started'
     http_data_dir = _OPTIONS.http_data_dir
     http_server = pyautolib.TestServer(pyautolib.TestServer.TYPE_HTTP,
-        pyautolib.FilePath(http_data_dir))
+                                       '127.0.0.1',
+                                       pyautolib.FilePath(http_data_dir))
     assert http_server.Start(), 'Could not start http server'
     _HTTP_SERVER = http_server
     logging.debug('Started http server at "%s".', http_data_dir)

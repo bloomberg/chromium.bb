@@ -1054,6 +1054,7 @@ TEST_F(ExternalTabUITest, DISABLED_TabPostMessage) {
 TEST_F(ExternalTabUITest, DISABLED_PostMessageTarget)  {
   net::TestServer test_server(
       net::TestServer::TYPE_HTTP,
+      net::TestServer::kLocalhost,
       FilePath(FILE_PATH_LITERAL("chrome/test/data/external_tab")));
   ASSERT_TRUE(test_server.Start());
 

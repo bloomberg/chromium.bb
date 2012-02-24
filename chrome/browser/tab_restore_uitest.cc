@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -445,6 +445,7 @@ TEST_F(TabRestoreUITest, RestoreIntoSameWindow) {
 // to an existing SiteInstance.  (Bug 1230446)
 TEST_F(TabRestoreUITest, RestoreWithExistingSiteInstance) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(test_server.Start());
 
@@ -492,6 +493,7 @@ TEST_F(TabRestoreUITest, RestoreWithExistingSiteInstance) {
 // already exists.  (Bug 1204135)
 TEST_F(TabRestoreUITest, RestoreCrossSiteWithExistingSiteInstance) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(test_server.Start());
 
@@ -634,6 +636,7 @@ TEST_F(TabRestoreUITest, RestoreTabWithSpecialURL) {
 // entry and see that it loads properly. See http://crbug.com/31905
 TEST_F(TabRestoreUITest, RestoreTabWithSpecialURLOnBack) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(test_server.Start());
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,9 +47,12 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
   void RunReferrerTest(const std::string referrer_policy,
                        bool start_on_https,
                        ExpectedReferrer expected_referrer) {
-    net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+    net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                                net::TestServer::kLocalhost,
+                                FilePath(kDocRoot));
     ASSERT_TRUE(test_server.Start());
     net::TestServer ssl_test_server(net::TestServer::TYPE_HTTPS,
+                                    net::TestServer::kLocalhost,
                                     FilePath(kDocRoot));
     ASSERT_TRUE(ssl_test_server.Start());
 
@@ -112,9 +115,12 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, HttpsNever) {
 }
 
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, Redirect) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
   net::TestServer ssl_test_server(net::TestServer::TYPE_HTTPS,
+                                  net::TestServer::kLocalhost,
                                   FilePath(kDocRoot));
   ASSERT_TRUE(ssl_test_server.Start());
   GURL start_url = test_server.GetURL(
