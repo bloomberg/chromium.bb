@@ -415,7 +415,9 @@ class GIT(object):
   def AssertVersion(cls, min_version):
     """Asserts git's version is at least min_version."""
     if cls.current_version is None:
-      cls.current_version = cls.Capture(['--version'], '.').split()[-1]
+      current_version = cls.Capture(['--version'], '.')
+      matched = re.search(r'version ([0-9\.]+)', current_version)
+      cls.current_version = matched.group(1)
     current_version_list = map(only_int, cls.current_version.split('.'))
     for min_ver in map(int, min_version.split('.')):
       ver = current_version_list.pop(0)

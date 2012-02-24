@@ -948,7 +948,7 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
         "\n_____ foo at refs/heads/master\n\n"
         "________ running 'git clone --progress -b master --verbose %s %s'"
         " in '%s'\n"
-        "Cloning into %s...\ndone.\n") % (
+        "Cloning into '%s'...\ndone.\n") % (
           join(self.root_dir, '.', '.git'),
           join(root_dir, 'foo'),
           root_dir,
@@ -1263,7 +1263,7 @@ class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
         "\n_____ foo at refs/heads/master\n\n"
         "________ running 'git clone --progress -b master --verbose %s %s'"
         " in '%s'\n"
-        "Cloning into %s...\ndone.\n") % (
+        "Cloning into '%s'...\ndone.\n") % (
           join(self.root_dir, '.', '.git'),
           join(root_dir, 'foo'),
           root_dir,
