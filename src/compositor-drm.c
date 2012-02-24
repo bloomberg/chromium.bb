@@ -597,8 +597,6 @@ drm_assign_planes(struct weston_output *output)
 	 */
 	pixman_region32_init(&overlap);
 	wl_list_for_each(es, &ec->surface_list, link) {
-		weston_surface_update_transform(es);
-
 		/*
 		 * FIXME: try to assign hw cursors here too, they're just
 		 * special overlays
