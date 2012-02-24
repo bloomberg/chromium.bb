@@ -251,7 +251,8 @@ int main(int argc, char** argv) {
 
   ash::shell::InitWindowTypeLauncher();
 
-  ash::Shell::GetRootWindow()->Run();
+  ash::Shell::GetRootWindow()->ShowRootWindow();
+  MessageLoopForUI::current()->Run();
 
   window_watcher.reset();
 
