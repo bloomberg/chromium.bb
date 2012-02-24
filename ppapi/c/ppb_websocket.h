@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_websocket.idl modified Mon Feb  6 14:29:34 2012. */
+/* From ppb_websocket.idl modified Wed Feb 15 11:18:43 2012. */
 
 #ifndef PPAPI_C_PPB_WEBSOCKET_H_
 #define PPAPI_C_PPB_WEBSOCKET_H_
@@ -21,7 +21,8 @@
 
 /**
  * @file
- * This file defines the <code>PPB_WebSocket</code> interface.
+ * This file defines the <code>PPB_WebSocket</code> interface providing
+ * bi-directional, full-duplex, communications over a single TCP socket.
  */
 
 
@@ -61,7 +62,8 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_WebSocketReadyState, 4);
 
 /**
  * This enumeration contains status codes. These codes are used in Close() and
- * GetCloseCode(). See also RFC 6455, The WebSocket Protocol.
+ * GetCloseCode(). Refer to RFC 6455, The WebSocket Protocol, for further
+ * information.
  * <code>PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE</code> and codes in the range
  * <code>PP_WEBSOCKETSTATUSCODE_USER_REGISTERED_MIN</code> to
  * <code>PP_WEBSOCKETSTATUSCODE_USER_REGISTERED_MAX</code>, and
@@ -165,6 +167,10 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_WebSocketCloseCode, 4);
  * @addtogroup Interfaces
  * @{
  */
+/**
+ * The <code>PPB_WebSocket</code> interface provides bi-directional,
+ * full-duplex, communications over a single TCP socket.
+ */
 struct PPB_WebSocket_1_0 {
   /**
    * Create() creates a WebSocket instance.
@@ -190,8 +196,8 @@ struct PPB_WebSocket_1_0 {
    */
   PP_Bool (*IsWebSocket)(PP_Resource resource);
   /**
-   * Connect() connects to the specified WebSocket server. Caller can call this
-   * method at most once for a <code>web_socket</code>.
+   * Connect() connects to the specified WebSocket server. You can call this
+   * function once for a <code>web_socket</code>.
    *
    * @param[in] web_socket A <code>PP_Resource</code> corresponding to a
    * WebSocket.
@@ -208,23 +214,25 @@ struct PPB_WebSocket_1_0 {
    * @param[in] protocol_count The number of sub-protocols in
    * <code>protocols</code>.
    *
-   * @param[in] callback A <code>PP_CompletionCallback</code> which is called
+   * @param[in] callback A <code>PP_CompletionCallback</code> called
    * when a connection is established or an error occurs in establishing
    * connection.
    *
    * @return An int32_t containing an error code from <code>pp_errors.h</code>.
-   * Returns <code>PP_ERROR_BADARGUMENT</code> if specified <code>url</code>,
-   * or <code>protocols</code> contains invalid string as
-   * <code>The WebSocket API specification</code> defines. It corresponds to
-   * SyntaxError of the specification.
+   * Returns <code>PP_ERROR_BADARGUMENT</code> if the specified
+   * <code>url</code>, or <code>protocols</code> contain an invalid string as
+   * defined in the WebSocket API specification.
+   * <code>PP_ERROR_BADARGUMENT</code> corresponds to a SyntaxError in the
+   * WebSocket API specification.
    * Returns <code>PP_ERROR_NOACCESS</code> if the protocol specified in the
    * <code>url</code> is not a secure protocol, but the origin of the caller
-   * has a secure scheme. Also returns it if the port specified in the
-   * <code>url</code> is a port to which the user agent is configured to block
-   * access because the port is a well-known port like SMTP. It corresponds to
-   * SecurityError of the specification.
-   * Returns <code>PP_ERROR_INPROGRESS</code> if the call is not the first
-   * time.
+   * has a secure scheme. Also returns <code>PP_ERROR_NOACCESS</CODE> if the
+   * port specified in the <code>url</code> is a port that the user agent
+   * is configured to block access to because it is a well-known port like
+   * SMTP. <code>PP_ERROR_NOACCESS</code> corresponds to SecurityError of the
+   * specification.
+   * Returns <code>PP_ERROR_INPROGRESS</code> if this is not the first call to
+   * Connect().
    */
   int32_t (*Connect)(PP_Resource web_socket,
                      struct PP_Var url,
@@ -246,23 +254,25 @@ struct PPB_WebSocket_1_0 {
    * <code>PP_WEBSOCKETSTATUSCODE_USER_PRIVATE_MIN</code> to
    * <code>PP_WEBSOCKETSTATUSCODE_USER_PRIVATE_MAX</code> are available.
    *
-   * @param[in] reason A <code>PP_Var</code> which represents the WebSocket
-   * close reason. Ignored if it is <code>PP_VARTYPE_UNDEFINED</code>.
+   * @param[in] reason A <code>PP_Var</code> representing the WebSocket
+   * close reason. This is ignored if it is <code>PP_VARTYPE_UNDEFINED</code>.
    * Otherwise, its <code>PP_VarType</code> must be
    * <code>PP_VARTYPE_STRING</code>.
    *
-   * @param[in] callback A <code>PP_CompletionCallback</code> which is called
+   * @param[in] callback A <code>PP_CompletionCallback</code> called
    * when the connection is closed or an error occurs in closing the
    * connection.
    *
    * @return An int32_t containing an error code from <code>pp_errors.h</code>.
    * Returns <code>PP_ERROR_BADARGUMENT</code> if <code>reason</code> contains
-   * an invalid character as a UTF-8 string, or longer than 123 bytes. It
-   * corresponds to JavaScript SyntaxError of the specification.
+   * an invalid character as a UTF-8 string, or is longer than 123 bytes.
+   * <code>PP_ERROR_BADARGUMENT</code> corresponds to a JavaScript SyntaxError
+   * in the WebSocket API specification.
    * Returns <code>PP_ERROR_NOACCESS</code> if the code is not an integer
-   * equal to 1000 or in the range 3000 to 4999. It corresponds to
-   * InvalidAccessError of the specification. Returns
-   * <code>PP_ERROR_INPROGRESS</code> if the call is not the first time.
+   * equal to 1000 or in the range 3000 to 4999. <code>PP_ERROR_NOACCESS</code>
+   * corresponds to InvalidAccessError of the specification. Returns
+   * <code>PP_ERROR_INPROGRESS</code> if this is not the first call to
+   * Close().
    */
   int32_t (*Close)(PP_Resource web_socket,
                    uint16_t code,
@@ -271,26 +281,25 @@ struct PPB_WebSocket_1_0 {
   /**
    * ReceiveMessage() receives a message from the WebSocket server.
    * This interface only returns a single message. That is, this interface must
-   * be called at least N times to receive N messages, no matter how small each
-   * message is.
+   * be called at least N times to receive N messages, no matter the size of
+   * each message.
    *
    * @param[in] web_socket A <code>PP_Resource</code> corresponding to a
    * WebSocket.
    *
    * @param[out] message The received message is copied to provided
    * <code>message</code>. The <code>message</code> must remain valid until
-   * the ReceiveMessage operation completes. Its <code>PP_VarType</code>
-   * will be <code>PP_VARTYPE_STRING</code> or
-   * <code>PP_VARTYPE_ARRAY_BUFFER</code> on receiving.
+   * ReceiveMessage() completes. Its received <code>PP_VarType</code> will be
+   * <code>PP_VARTYPE_STRING</code> or <code>PP_VARTYPE_ARRAY_BUFFER</code>.
    *
-   * @param[in] callback A <code>PP_CompletionCallback</code> which is called
-   * when the receiving message is completed. It is ignored if ReceiveMessage
-   * completes synchronously and returns <code>PP_OK</code>.
+   * @param[in] callback A <code>PP_CompletionCallback</code> called
+   * when ReceiveMessage() completes. This callback is ignored if
+   * ReceiveMessage() completes synchronously and returns <code>PP_OK</code>.
    *
    * @return An int32_t containing an error code from <code>pp_errors.h</code>.
-   * If an error is detected or connection is closed, returns
+   * If an error is detected or connection is closed, ReceiveMessage() returns
    * <code>PP_ERROR_FAILED</code> after all buffered messages are received.
-   * Until buffered message become empty, continues to returns
+   * Until buffered message become empty, ReceiveMessage() continues to return
    * <code>PP_OK</code> as if connection is still established without errors.
    */
   int32_t (*ReceiveMessage)(PP_Resource web_socket,
@@ -302,25 +311,27 @@ struct PPB_WebSocket_1_0 {
    * @param[in] web_socket A <code>PP_Resource</code> corresponding to a
    * WebSocket.
    *
-   * @param[in] message A message to send. The message is copied to internal
-   * buffer. So caller can free <code>message</code> safely after returning
-   * from the function. Its <code>PP_VarType</code> must be
+   * @param[in] message A message to send. The message is copied to an internal
+   * buffer, so the caller can free <code>message</code> safely after returning
+   * from the function. Its sent <code>PP_VarType</code> must be
    * <code>PP_VARTYPE_STRING</code> or <code>PP_VARTYPE_ARRAY_BUFFER</code>.
    *
    * @return An int32_t containing an error code from <code>pp_errors.h</code>.
    * Returns <code>PP_ERROR_FAILED</code> if the ReadyState is
-   * <code>PP_WEBSOCKETREADYSTATE_CONNECTING</code>. It corresponds JavaScript
-   * InvalidStateError of the specification.
-   * Returns <code>PP_ERROR_BADARGUMENT</code> if provided <code>message</code>
-   * of string type contains an invalid character as a UTF-8 string. It
-   * corresponds to JavaScript SyntaxError of the specification.
-   * Otherwise, returns <code>PP_OK</code>, but it doesn't necessarily mean
+   * <code>PP_WEBSOCKETREADYSTATE_CONNECTING</code>.
+   * <code>PP_ERROR_FAILED</code> corresponds to the JavaScript
+   * InvalidStateError in the WebSocket API specification.
+   * Returns <code>PP_ERROR_BADARGUMENT</code> if the provided
+   * <code>message</code> contains an invalid character as a UTF-8 string.
+   * <code>PP_ERROR_BADARGUMENT</code> corresponds to the JavaScript
+   * SyntaxError in the WebSocket API specification.
+   * Otherwise, returns <code>PP_OK</code>, which doesn't necessarily mean
    * that the server received the message.
    */
   int32_t (*SendMessage)(PP_Resource web_socket, struct PP_Var message);
   /**
    * GetBufferedAmount() returns the number of bytes of text and binary
-   * messages that have been queued for the WebSocket connection to send but
+   * messages that have been queued for the WebSocket connection to send, but
    * have not been transmitted to the network yet.
    *
    * @param[in] web_socket A <code>PP_Resource</code> corresponding to a
@@ -347,7 +358,7 @@ struct PPB_WebSocket_1_0 {
    * WebSocket.
    *
    * @return Returns a <code>PP_VARTYPE_STRING</code> var. If called before the
-   * close reason is set, it contains an empty string. Returns a
+   * close reason is set, the return value contains an empty string. Returns a
    * <code>PP_VARTYPE_UNDEFINED</code> if called on an invalid resource.
    */
   struct PP_Var (*GetCloseReason)(PP_Resource web_socket);
@@ -359,9 +370,9 @@ struct PPB_WebSocket_1_0 {
    * WebSocket.
    *
    * @return Returns <code>PP_FALSE</code> if called before the connection is
-   * closed, or called on an invalid resource. Otherwise, returns
-   * <code>PP_TRUE</code> if the connection was closed cleanly, or returns
-   * <code>PP_FALSE</code> if the connection was closed for abnormal reasons.
+   * closed, called on an invalid resource, or closed for abnormal reasons.
+   * Otherwise, returns <code>PP_TRUE</code> if the connection was closed
+   * cleanly.
    */
   PP_Bool (*GetCloseWasClean)(PP_Resource web_socket);
   /**
@@ -372,9 +383,9 @@ struct PPB_WebSocket_1_0 {
    * WebSocket.
    *
    * @return Returns a <code>PP_VARTYPE_STRING</code> var. If called before the
-   * connection is established, its data is an empty string. Returns a
+   * connection is established, the var's data is an empty string. Returns a
    * <code>PP_VARTYPE_UNDEFINED</code> if called on an invalid resource.
-   * Currently its data for valid resources are always an empty string.
+   * Currently the var's data for valid resources are always an empty string.
    */
   struct PP_Var (*GetExtensions)(PP_Resource web_socket);
   /**
@@ -385,7 +396,7 @@ struct PPB_WebSocket_1_0 {
    * WebSocket.
    *
    * @return Returns a <code>PP_VARTYPE_STRING</code> var. If called before the
-   * connection is established, it contains the empty string. Returns a
+   * connection is established, the var contains the empty string. Returns a
    * <code>PP_VARTYPE_UNDEFINED</code> if called on an invalid resource.
    */
   struct PP_Var (*GetProtocol)(PP_Resource web_socket);
@@ -397,7 +408,8 @@ struct PPB_WebSocket_1_0 {
    * WebSocket.
    *
    * @return Returns <code>PP_WEBSOCKETREADYSTATE_INVALID</code> if called
-   * before connect() is called, or called on an invalid resource.
+   * before Connect() is called, or if this function is called on an
+   * invalid resource.
    */
   PP_WebSocketReadyState (*GetReadyState)(PP_Resource web_socket);
   /**
@@ -407,8 +419,9 @@ struct PPB_WebSocket_1_0 {
    * WebSocket.
    *
    * @return Returns a <code>PP_VARTYPE_STRING</code> var. If called before the
-   * connection is established, it contains the empty string. Return a
-   * <code>PP_VARTYPE_UNDEFINED</code> if called on an invalid resource.
+   * connection is established, the var contains the empty string. Returns a
+   * <code>PP_VARTYPE_UNDEFINED</code> if this function is called on an
+   * invalid resource.
    */
   struct PP_Var (*GetURL)(PP_Resource web_socket);
 };
