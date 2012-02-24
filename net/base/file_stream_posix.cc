@@ -124,7 +124,7 @@ void ReadFile(base::PlatformFile file,
   *result = res;
 }
 
-// Helper function used for FileStream::Read().
+// Helper function used for FileStreamPosix::Read().
 void ReadFileFromIOBuffer(base::PlatformFile file,
                           scoped_refptr<IOBuffer> buf,
                           int buf_len,
@@ -155,7 +155,7 @@ void WriteFile(base::PlatformFile file,
   *result = res;
 }
 
-// Helper function used for FileStream::Write().
+// Helper function used for FileStreamPosix::Write().
 void WriteFileToIOBuffer(base::PlatformFile file,
                          scoped_refptr<IOBuffer> buf,
                          int buf_len,
@@ -184,9 +184,9 @@ int FlushFile(base::PlatformFile file,
 
 }  // namespace
 
-// FileStream ------------------------------------------------------------
+// FileStreamPosix ------------------------------------------------------------
 
-FileStream::FileStream(net::NetLog* net_log)
+FileStreamPosix::FileStreamPosix(net::NetLog* net_log)
     : file_(base::kInvalidPlatformFileValue),
       open_flags_(0),
       auto_closed_(true),
@@ -197,7 +197,8 @@ FileStream::FileStream(net::NetLog* net_log)
   bound_net_log_.BeginEvent(net::NetLog::TYPE_FILE_STREAM_ALIVE, NULL);
 }
 
-FileStream::FileStream(base::PlatformFile file, int flags, net::NetLog* net_log)
+FileStreamPosix::FileStreamPosix(
+    base::PlatformFile file, int flags, net::NetLog* net_log)
     : file_(file),
       open_flags_(flags),
       auto_closed_(false),
@@ -208,7 +209,7 @@ FileStream::FileStream(base::PlatformFile file, int flags, net::NetLog* net_log)
   bound_net_log_.BeginEvent(net::NetLog::TYPE_FILE_STREAM_ALIVE, NULL);
 }
 
-FileStream::~FileStream() {
+FileStreamPosix::~FileStreamPosix() {
   if (auto_closed_) {
     if (open_flags_ & base::PLATFORM_FILE_ASYNC) {
       // Block until the last read/write operation is complete, if needed.
@@ -229,7 +230,7 @@ FileStream::~FileStream() {
   bound_net_log_.EndEvent(net::NetLog::TYPE_FILE_STREAM_ALIVE, NULL);
 }
 
-void FileStream::Close(const CompletionCallback& callback) {
+void FileStreamPosix::Close(const CompletionCallback& callback) {
   DCHECK(open_flags_ & base::PLATFORM_FILE_ASYNC);
   DCHECK(callback_.is_null());
 
@@ -237,12 +238,12 @@ void FileStream::Close(const CompletionCallback& callback) {
   const bool posted = base::WorkerPool::PostTaskAndReply(
       FROM_HERE,
       base::Bind(&CloseFile, file_, bound_net_log_),
-      base::Bind(&FileStream::OnClosed, weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&FileStreamPosix::OnClosed, weak_ptr_factory_.GetWeakPtr()),
       true /* task_is_slow */);
   DCHECK(posted);
 }
 
-void FileStream::CloseSync() {
+void FileStreamPosix::CloseSync() {
   // Abort any existing asynchronous operations.
 
   // TODO(satorux): Replace this with a DCHECK once once all async clients
@@ -255,7 +256,7 @@ void FileStream::CloseSync() {
   file_ = base::kInvalidPlatformFileValue;
 }
 
-int FileStream::Open(const FilePath& path, int open_flags,
+int FileStreamPosix::Open(const FilePath& path, int open_flags,
                      const CompletionCallback& callback) {
   if (IsOpen()) {
     DLOG(FATAL) << "File is already open!";
@@ -275,7 +276,7 @@ int FileStream::Open(const FilePath& path, int open_flags,
       FROM_HERE,
       base::Bind(&OpenFile, path, open_flags, record_uma_, file, result,
                  bound_net_log_),
-      base::Bind(&FileStream::OnOpened,
+      base::Bind(&FileStreamPosix::OnOpened,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Owned(file),
                  base::Owned(result)),
@@ -284,7 +285,7 @@ int FileStream::Open(const FilePath& path, int open_flags,
   return ERR_IO_PENDING;
 }
 
-int FileStream::OpenSync(const FilePath& path, int open_flags) {
+int FileStreamPosix::OpenSync(const FilePath& path, int open_flags) {
   if (IsOpen()) {
     DLOG(FATAL) << "File is already open!";
     return ERR_UNEXPECTED;
@@ -301,11 +302,11 @@ int FileStream::OpenSync(const FilePath& path, int open_flags) {
   return result;
 }
 
-bool FileStream::IsOpen() const {
+bool FileStreamPosix::IsOpen() const {
   return file_ != base::kInvalidPlatformFileValue;
 }
 
-int64 FileStream::Seek(Whence whence, int64 offset) {
+int64 FileStreamPosix::Seek(Whence whence, int64 offset) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   if (!IsOpen())
@@ -327,7 +328,7 @@ int64 FileStream::Seek(Whence whence, int64 offset) {
   return res;
 }
 
-int64 FileStream::Available() {
+int64 FileStreamPosix::Available() {
   base::ThreadRestrictions::AssertIOAllowed();
 
   if (!IsOpen())
@@ -351,7 +352,7 @@ int64 FileStream::Available() {
   return size - cur_pos;
 }
 
-int FileStream::Read(
+int FileStreamPosix::Read(
     IOBuffer* in_buf, int buf_len, const CompletionCallback& callback) {
   if (!IsOpen())
     return ERR_UNEXPECTED;
@@ -373,7 +374,7 @@ int FileStream::Read(
       FROM_HERE,
       base::Bind(&ReadFileFromIOBuffer, file_, buf, buf_len,
                  record_uma_, result, on_io_complete_.get(), bound_net_log_),
-      base::Bind(&FileStream::OnIOComplete,
+      base::Bind(&FileStreamPosix::OnIOComplete,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Owned(result)),
       true /* task is slow */);
@@ -381,7 +382,7 @@ int FileStream::Read(
   return ERR_IO_PENDING;
 }
 
-int FileStream::ReadSync(char* buf, int buf_len) {
+int FileStreamPosix::ReadSync(char* buf, int buf_len) {
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
@@ -395,7 +396,7 @@ int FileStream::ReadSync(char* buf, int buf_len) {
   return result;
 }
 
-int FileStream::ReadUntilComplete(char *buf, int buf_len) {
+int FileStreamPosix::ReadUntilComplete(char *buf, int buf_len) {
   int to_read = buf_len;
   int bytes_total = 0;
 
@@ -416,7 +417,7 @@ int FileStream::ReadUntilComplete(char *buf, int buf_len) {
   return bytes_total;
 }
 
-int FileStream::Write(
+int FileStreamPosix::Write(
     IOBuffer* in_buf, int buf_len, const CompletionCallback& callback) {
   if (!IsOpen())
     return ERR_UNEXPECTED;
@@ -437,7 +438,7 @@ int FileStream::Write(
       FROM_HERE,
       base::Bind(&WriteFileToIOBuffer, file_, buf, buf_len,
                  record_uma_, result, on_io_complete_.get(), bound_net_log_),
-      base::Bind(&FileStream::OnIOComplete,
+      base::Bind(&FileStreamPosix::OnIOComplete,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Owned(result)),
       true /* task is slow */);
@@ -445,7 +446,7 @@ int FileStream::Write(
   return ERR_IO_PENDING;
 }
 
-int FileStream::WriteSync(
+int FileStreamPosix::WriteSync(
     const char* buf, int buf_len) {
   if (!IsOpen())
     return ERR_UNEXPECTED;
@@ -459,7 +460,7 @@ int FileStream::WriteSync(
   return result;
 }
 
-int64 FileStream::Truncate(int64 bytes) {
+int64 FileStreamPosix::Truncate(int64 bytes) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   if (!IsOpen())
@@ -484,18 +485,18 @@ int64 FileStream::Truncate(int64 bytes) {
                            bound_net_log_);
 }
 
-int FileStream::Flush() {
+int FileStreamPosix::Flush() {
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
   return FlushFile(file_, record_uma_, bound_net_log_);
 }
 
-void FileStream::EnableErrorStatistics() {
+void FileStreamPosix::EnableErrorStatistics() {
   record_uma_ = true;
 }
 
-void FileStream::SetBoundNetLogSource(
+void FileStreamPosix::SetBoundNetLogSource(
     const net::BoundNetLog& owner_bound_net_log) {
   if ((owner_bound_net_log.source().id == net::NetLog::Source::kInvalidId) &&
       (bound_net_log_.source().id == net::NetLog::Source::kInvalidId)) {
@@ -519,7 +520,11 @@ void FileStream::SetBoundNetLogSource(
                                          bound_net_log_.source())));
 }
 
-void FileStream::OnClosed() {
+base::PlatformFile FileStreamPosix::GetPlatformFileForTesting() {
+  return file_;
+}
+
+void FileStreamPosix::OnClosed() {
   file_ = base::kInvalidPlatformFileValue;
 
   CompletionCallback temp = callback_;
@@ -527,7 +532,7 @@ void FileStream::OnClosed() {
   temp.Run(OK);
 }
 
-void FileStream::OnOpened(base::PlatformFile* file, int* result) {
+void FileStreamPosix::OnOpened(base::PlatformFile* file, int* result) {
   file_ = *file;
 
   CompletionCallback temp = callback_;
@@ -535,7 +540,7 @@ void FileStream::OnOpened(base::PlatformFile* file, int* result) {
   temp.Run(*result);
 }
 
-void FileStream::OnIOComplete(int* result) {
+void FileStreamPosix::OnIOComplete(int* result) {
   CompletionCallback temp_callback = callback_;
   callback_.Reset();
 

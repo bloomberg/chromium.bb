@@ -100,9 +100,9 @@ void CloseFile(base::PlatformFile file,
 
 }  // namespace
 
-// FileStream::AsyncContext ----------------------------------------------
+// FileStreamWin::AsyncContext ----------------------------------------------
 
-class FileStream::AsyncContext : public MessageLoopForIO::IOHandler {
+class FileStreamWin::AsyncContext : public MessageLoopForIO::IOHandler {
  public:
   explicit AsyncContext(const net::BoundNetLog& bound_net_log)
       : context_(), is_closing_(false),
@@ -137,7 +137,7 @@ class FileStream::AsyncContext : public MessageLoopForIO::IOHandler {
   FileErrorSource error_source_;
 };
 
-FileStream::AsyncContext::~AsyncContext() {
+FileStreamWin::AsyncContext::~AsyncContext() {
   is_closing_ = true;
   bool waited = false;
   base::TimeTicks start = base::TimeTicks::Now();
@@ -152,7 +152,7 @@ FileStream::AsyncContext::~AsyncContext() {
   }
 }
 
-void FileStream::AsyncContext::IOCompletionIsPending(
+void FileStreamWin::AsyncContext::IOCompletionIsPending(
     const CompletionCallback& callback,
     IOBuffer* buf) {
   DCHECK(callback_.is_null());
@@ -160,7 +160,7 @@ void FileStream::AsyncContext::IOCompletionIsPending(
   in_flight_buf_ = buf;  // Hold until the async operation ends.
 }
 
-void FileStream::AsyncContext::OnIOCompleted(
+void FileStreamWin::AsyncContext::OnIOCompleted(
     MessageLoopForIO::IOContext* context, DWORD bytes_read, DWORD error) {
   DCHECK_EQ(&context_, context);
   DCHECK(!callback_.is_null());
@@ -189,7 +189,7 @@ void FileStream::AsyncContext::OnIOCompleted(
 
 // FileStream ------------------------------------------------------------
 
-FileStream::FileStream(net::NetLog* net_log)
+FileStreamWin::FileStreamWin(net::NetLog* net_log)
     : file_(base::kInvalidPlatformFileValue),
       open_flags_(0),
       auto_closed_(true),
@@ -200,7 +200,8 @@ FileStream::FileStream(net::NetLog* net_log)
   bound_net_log_.BeginEvent(net::NetLog::TYPE_FILE_STREAM_ALIVE, NULL);
 }
 
-FileStream::FileStream(base::PlatformFile file, int flags, net::NetLog* net_log)
+FileStreamWin::FileStreamWin(
+    base::PlatformFile file, int flags, net::NetLog* net_log)
     : file_(file),
       open_flags_(flags),
       auto_closed_(false),
@@ -219,7 +220,7 @@ FileStream::FileStream(base::PlatformFile file, int flags, net::NetLog* net_log)
   }
 }
 
-FileStream::~FileStream() {
+FileStreamWin::~FileStreamWin() {
   if (auto_closed_) {
     if (async_context_.get()) {
       // Block until the last read/write operation is complete, if needed.
@@ -241,7 +242,7 @@ FileStream::~FileStream() {
   bound_net_log_.EndEvent(net::NetLog::TYPE_FILE_STREAM_ALIVE, NULL);
 }
 
-void FileStream::Close(const CompletionCallback& callback) {
+void FileStreamWin::Close(const CompletionCallback& callback) {
   DCHECK(callback_.is_null());
   callback_ = callback;
 
@@ -253,12 +254,12 @@ void FileStream::Close(const CompletionCallback& callback) {
   const bool posted = base::WorkerPool::PostTaskAndReply(
       FROM_HERE,
       base::Bind(&CloseFile, file_, bound_net_log_),
-      base::Bind(&FileStream::OnClosed, weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&FileStreamWin::OnClosed, weak_ptr_factory_.GetWeakPtr()),
       true /* task_is_slow */);
   DCHECK(posted);
 }
 
-void FileStream::CloseSync() {
+void FileStreamWin::CloseSync() {
   // The logic here is similar to CloseFile() but async_context_.reset() is
   // caled in this function.
 
@@ -279,7 +280,7 @@ void FileStream::CloseSync() {
   }
 }
 
-int FileStream::Open(const FilePath& path, int open_flags,
+int FileStreamWin::Open(const FilePath& path, int open_flags,
                      const CompletionCallback& callback) {
   if (IsOpen()) {
     DLOG(FATAL) << "File is already open!";
@@ -299,7 +300,7 @@ int FileStream::Open(const FilePath& path, int open_flags,
       FROM_HERE,
       base::Bind(&OpenFile, path, open_flags, record_uma_, bound_net_log_,
                  file, result),
-      base::Bind(&FileStream::OnOpened,
+      base::Bind(&FileStreamWin::OnOpened,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Owned(file),
                  base::Owned(result)),
@@ -308,7 +309,7 @@ int FileStream::Open(const FilePath& path, int open_flags,
   return ERR_IO_PENDING;
 }
 
-int FileStream::OpenSync(const FilePath& path, int open_flags) {
+int FileStreamWin::OpenSync(const FilePath& path, int open_flags) {
   if (IsOpen()) {
     DLOG(FATAL) << "File is already open!";
     return ERR_UNEXPECTED;
@@ -334,11 +335,11 @@ int FileStream::OpenSync(const FilePath& path, int open_flags) {
   return OK;
 }
 
-bool FileStream::IsOpen() const {
+bool FileStreamWin::IsOpen() const {
   return file_ != base::kInvalidPlatformFileValue;
 }
 
-int64 FileStream::Seek(Whence whence, int64 offset) {
+int64 FileStreamWin::Seek(Whence whence, int64 offset) {
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
@@ -362,7 +363,7 @@ int64 FileStream::Seek(Whence whence, int64 offset) {
   return result.QuadPart;
 }
 
-int64 FileStream::Available() {
+int64 FileStreamWin::Available() {
   base::ThreadRestrictions::AssertIOAllowed();
 
   if (!IsOpen())
@@ -385,7 +386,7 @@ int64 FileStream::Available() {
   return file_size.QuadPart - cur_pos;
 }
 
-int FileStream::Read(
+int FileStreamWin::Read(
     IOBuffer* buf, int buf_len, const CompletionCallback& callback) {
   DCHECK(async_context_.get());
 
@@ -426,7 +427,7 @@ int FileStream::Read(
   return rv;
 }
 
-int FileStream::ReadSync(char* buf, int buf_len) {
+int FileStreamWin::ReadSync(char* buf, int buf_len) {
   DCHECK(!async_context_.get());
   base::ThreadRestrictions::AssertIOAllowed();
 
@@ -455,7 +456,7 @@ int FileStream::ReadSync(char* buf, int buf_len) {
   return rv;
 }
 
-int FileStream::ReadUntilComplete(char *buf, int buf_len) {
+int FileStreamWin::ReadUntilComplete(char *buf, int buf_len) {
   int to_read = buf_len;
   int bytes_total = 0;
 
@@ -476,7 +477,7 @@ int FileStream::ReadUntilComplete(char *buf, int buf_len) {
   return bytes_total;
 }
 
-int FileStream::Write(
+int FileStreamWin::Write(
     IOBuffer* buf, int buf_len, const CompletionCallback& callback) {
   DCHECK(async_context_.get());
 
@@ -514,7 +515,7 @@ int FileStream::Write(
   return rv;
 }
 
-int FileStream::WriteSync(
+int FileStreamWin::WriteSync(
     const char* buf, int buf_len) {
   DCHECK(!async_context_.get());
   base::ThreadRestrictions::AssertIOAllowed();
@@ -539,7 +540,7 @@ int FileStream::WriteSync(
   return rv;
 }
 
-int FileStream::Flush() {
+int FileStreamWin::Flush() {
   base::ThreadRestrictions::AssertIOAllowed();
 
   if (!IsOpen())
@@ -556,7 +557,7 @@ int FileStream::Flush() {
                            bound_net_log_);
 }
 
-int64 FileStream::Truncate(int64 bytes) {
+int64 FileStreamWin::Truncate(int64 bytes) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   if (!IsOpen())
@@ -585,14 +586,14 @@ int64 FileStream::Truncate(int64 bytes) {
   return seek_position;
 }
 
-void FileStream::EnableErrorStatistics() {
+void FileStreamWin::EnableErrorStatistics() {
   record_uma_ = true;
 
   if (async_context_.get())
     async_context_->EnableErrorStatistics();
 }
 
-void FileStream::SetBoundNetLogSource(
+void FileStreamWin::SetBoundNetLogSource(
     const net::BoundNetLog& owner_bound_net_log) {
   if ((owner_bound_net_log.source().id == net::NetLog::Source::kInvalidId) &&
       (bound_net_log_.source().id == net::NetLog::Source::kInvalidId)) {
@@ -616,7 +617,11 @@ void FileStream::SetBoundNetLogSource(
                                          bound_net_log_.source())));
 }
 
-void FileStream::OnClosed() {
+base::PlatformFile FileStreamWin::GetPlatformFileForTesting() {
+  return file_;
+}
+
+void FileStreamWin::OnClosed() {
   file_ = base::kInvalidPlatformFileValue;
 
   CompletionCallback temp = callback_;
@@ -624,7 +629,7 @@ void FileStream::OnClosed() {
   temp.Run(OK);
 }
 
-void FileStream::OnOpened(base::PlatformFile* file, int* result) {
+void FileStreamWin::OnOpened(base::PlatformFile* file, int* result) {
   file_ = *file;
 
   if (*result == OK) {
