@@ -188,8 +188,9 @@ class COMPOSITOR_EXPORT Compositor
   virtual void applyScrollAndScale(const WebKit::WebSize& scrollDelta,
                                    float scaleFactor);
   virtual WebKit::WebGraphicsContext3D* createContext3D();
-  virtual void didCompleteSwapBuffers();
   virtual void didRebindGraphicsContext(bool success);
+  virtual void didCommitAndDrawFrame();
+  virtual void didCompleteSwapBuffers();
   virtual void scheduleComposite();
 
  private:
