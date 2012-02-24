@@ -419,13 +419,6 @@ bool ProfileManager::AddProfile(Profile* profile) {
 
   RegisterProfile(profile, true);
   DoFinalInit(profile, ShouldGoOffTheRecord());
-  ProfileMetrics::LogNumberOfProfiles(this, ProfileMetrics::ADD_PROFILE_EVENT);
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PROFILE_ADDED,
-      content::Source<Profile>(profile),
-      content::NotificationService::NoDetails());
-
   return true;
 }
 
@@ -606,6 +599,13 @@ void ProfileManager::DoFinalInit(Profile* profile, bool go_off_the_record) {
 #if defined(OS_WIN)
   CreateDesktopShortcut(profile);
 #endif
+
+  ProfileMetrics::LogNumberOfProfiles(this, ProfileMetrics::ADD_PROFILE_EVENT);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PROFILE_ADDED,
+      content::Source<Profile>(profile),
+      content::NotificationService::NoDetails());
+
 }
 
 void ProfileManager::DoFinalInitForServices(Profile* profile,
