@@ -103,9 +103,12 @@ class ExecuteTasksFileBrowserFunction : public AsyncExtensionFunction {
   // each element of |files_list|.
   bool InitiateFileTaskExecution(const std::string& task_id,
                                  base::ListValue* files_list);
-  void RequestFileEntryOnFileThread(const GURL& source_url,
-                                    const std::string& task_id,
-                                    const std::vector<GURL>& file_urls);
+  void RequestFileEntryOnFileThread(
+      const std::string& task_id,
+      const GURL& handler_base_url,
+      const scoped_refptr<const Extension>& handler,
+      int handler_pid,
+      const std::vector<GURL>& file_urls);
   void RespondFailedOnUIThread(base::PlatformFileError error_code);
   void ExecuteFileActionsOnUIThread(const std::string& task_id,
                                     const std::string& file_system_name,

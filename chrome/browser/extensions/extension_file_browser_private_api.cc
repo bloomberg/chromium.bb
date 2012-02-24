@@ -127,6 +127,37 @@ std::string MakeTaskID(const char* extension_id,
   return base::StringPrintf("%s|%s", extension_id, action_id);
 }
 
+// Gets extension specified by extension id in |task_id|.
+const Extension* ExtractExtensionFromTaskId(const std::string& task_id,
+                                            Profile* profile) {
+  // Get task details.
+  std::string action_id;
+  std::string extension_id;
+  if (!CrackTaskIdentifier(task_id, &extension_id, &action_id))
+    return NULL;
+
+  ExtensionService* service = profile->GetExtensionService();
+  if (!service)
+     return NULL;
+
+  return service->GetExtensionById(extension_id, false);
+}
+
+// Returns process id of the process the extension is running in.
+int ExtractProcessFromExtensionId(const std::string& extension_id,
+                                  Profile* profile) {
+  GURL extension_url =
+      Extension::GetBaseURLFromExtensionId(extension_id);
+  ExtensionProcessManager* manager = profile->GetExtensionProcessManager();
+
+  SiteInstance* site_instance = manager->GetSiteInstanceForURL(extension_url);
+  if (!site_instance || !site_instance->HasProcess())
+    return -1;
+  content::RenderProcessHost* process = site_instance->GetProcess();
+
+  return process->GetID();
+}
+
 bool GetFileBrowserHandlers(Profile* profile,
                             const GURL& selected_file_url,
                             ActionSet* results) {
@@ -666,16 +697,16 @@ class
   static fileapi::FileSystemContext::OpenFileSystemCallback CreateCallback(
       ExecuteTasksFileBrowserFunction* function,
       Profile* profile,
-      int child_id,
       const GURL& source_url,
-      scoped_refptr<const Extension> extension,
       const std::string task_id,
+      scoped_refptr<const Extension> handler_extension,
+      int handler_pid,
       const std::vector<GURL>& file_urls) {
     return base::Bind(
         &ExecuteTasksFileSystemCallbackDispatcher::DidOpenFileSystem,
         base::Owned(new ExecuteTasksFileSystemCallbackDispatcher(
-            function, profile, child_id, source_url, extension,
-            task_id, file_urls)));
+            function, profile, source_url, task_id, handler_extension,
+            handler_pid, file_urls)));
   }
 
   void DidOpenFileSystem(base::PlatformFileError result,
@@ -730,50 +761,29 @@ class
   ExecuteTasksFileSystemCallbackDispatcher(
       ExecuteTasksFileBrowserFunction* function,
       Profile* profile,
-      int child_id,
       const GURL& source_url,
-      const scoped_refptr<const Extension>& extension,
-      const std::string task_id,
+      const std::string& task_id,
+      const scoped_refptr<const Extension>& handler_extension,
+      int handler_pid,
       const std::vector<GURL>& file_urls)
       : function_(function),
-        target_process_id_(0),
         profile_(profile),
         source_url_(source_url),
-        extension_(extension),
         task_id_(task_id),
+        handler_extension_(handler_extension),
+        handler_pid_(handler_pid),
         origin_file_urls_(file_urls) {
     DCHECK(function_);
-    ExtractTargetExtensionAndProcessID();
-  }
-
-  // Extracts target extension's id and process from the tasks's id.
-  void ExtractTargetExtensionAndProcessID() {
-    // Get task details.
-    std::string action_id;
-    if (!CrackTaskIdentifier(task_id_, &target_extension_id_, &action_id))
-      return;
-
-    GURL extension_url =
-        Extension::GetBaseURLFromExtensionId(target_extension_id_);
-    ExtensionProcessManager* manager = profile_->GetExtensionProcessManager();
-
-    SiteInstance* site_instance = manager->GetSiteInstanceForURL(
-        extension_url);
-    if (!site_instance || !site_instance->HasProcess())
-      return;
-    content::RenderProcessHost* process = site_instance->GetProcess();
-
-    target_process_id_ = process->GetID();
   }
 
   // Checks legitimacy of file url and grants file RO access permissions from
   // handler (target) extension and its renderer process.
   bool SetupFileAccessPermissions(const GURL& origin_file_url,
       GURL* target_file_url, FilePath* file_path, bool* is_directory) {
-    if (!extension_.get())
+    if (!handler_extension_.get())
       return false;
 
-    if (target_process_id_ == 0)
+    if (handler_pid_ == 0)
       return false;
 
     GURL file_origin_url;
@@ -827,26 +837,26 @@ class
     if (file_info.is_symbolic_link)
       return false;
 
-    // TODO(zelidrag): Add explicit R/W + R/O permissions for non-component
+    // TODO(tbarzic): Add explicit R/W + R/O permissions for non-component
     // extensions.
 
     // Grant R/O access permission to non-component extension and R/W to
     // component extensions.
     ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
-        target_process_id_,
+        handler_pid_,
         final_file_path,
-        extension_->location() != Extension::COMPONENT ?
-        kReadOnlyFilePermissions : kReadWriteFilePermissions);
+        handler_extension_->location() != Extension::COMPONENT ?
+            kReadOnlyFilePermissions : kReadWriteFilePermissions);
 
     // Grant access to this particular file to target extension. This will
     // ensure that the target extension can access only this FS entry and
     // prevent from traversing FS hierarchy upward.
-    external_provider->GrantFileAccessToExtension(target_extension_id_,
+    external_provider->GrantFileAccessToExtension(handler_extension_->id(),
                                                   virtual_path);
 
     // Output values.
     GURL target_origin_url(Extension::GetBaseURLFromExtensionId(
-        target_extension_id_));
+        handler_extension_->id()));
     GURL base_url = fileapi::GetFileSystemRootURI(target_origin_url,
         fileapi::kFileSystemTypeExternal);
     *target_file_url = GURL(base_url.spec() + virtual_path.value());
@@ -857,13 +867,12 @@ class
   }
 
   ExecuteTasksFileBrowserFunction* function_;
-  int target_process_id_;
   Profile* profile_;
   // Extension source URL.
   GURL source_url_;
-  scoped_refptr<const Extension> extension_;
   std::string task_id_;
-  std::string target_extension_id_;
+  scoped_refptr<const Extension> handler_extension_;
+  int handler_pid_;
   std::vector<GURL> origin_file_urls_;
   DISALLOW_COPY_AND_ASSIGN(ExecuteTasksFileSystemCallbackDispatcher);
 };
@@ -897,33 +906,48 @@ bool ExecuteTasksFileBrowserFunction::InitiateFileTaskExecution(
     }
     file_urls.push_back(GURL(origin_file_url));
   }
+
+  scoped_refptr<const Extension> handler =
+      ExtractExtensionFromTaskId(task_id, profile());
+  if (!handler.get())
+    return false;
+
+  int handler_pid = ExtractProcessFromExtensionId(handler->id(), profile());
+  if (handler_pid < 0)
+    return false;
+
   // Get local file system instance on file thread.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(
           &ExecuteTasksFileBrowserFunction::RequestFileEntryOnFileThread,
           this,
-          source_url_,
           task_id,
+          Extension::GetBaseURLFromExtensionId(handler->id()),
+          handler,
+          handler_pid,
           file_urls));
   result_.reset(new base::FundamentalValue(true));
   return true;
 }
 
 void ExecuteTasksFileBrowserFunction::RequestFileEntryOnFileThread(
-    const GURL& source_url, const std::string& task_id,
+    const std::string& task_id,
+    const GURL& handler_base_url,
+    const scoped_refptr<const Extension>& handler,
+    int handler_pid,
     const std::vector<GURL>& file_urls) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  GURL origin_url = source_url.GetOrigin();
+  GURL origin_url = handler_base_url.GetOrigin();
   BrowserContext::GetFileSystemContext(profile())->OpenFileSystem(
       origin_url, fileapi::kFileSystemTypeExternal, false, // create
       ExecuteTasksFileSystemCallbackDispatcher::CreateCallback(
           this,
           profile(),
-          render_view_host()->process()->GetID(),
-          source_url,
-          GetExtension(),
+          source_url_,
           task_id,
+          handler,
+          handler_pid,
           file_urls));
 }
 

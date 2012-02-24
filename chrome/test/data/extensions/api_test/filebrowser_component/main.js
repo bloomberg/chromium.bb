@@ -1,104 +1,99 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 /*
 This component extension test does the following:
 
-1. Creates a txt file on the local file system with some random text.
-2. Finds a registered task (file item context menu) and invokes it with url
-   of the test file.
+1. Creates a txt and log file on the local file system with some random text.
+2. Finds a registered task (file item context menu) for txt file and invokes it
+   with url of the test file.
 3. Listens for a message from context menu handler and makes sure its payload
    matches the random text from the test file.
 */
 
-// The ID of this extension.
-var fileBrowserExtensionId = "ddammdhioacbehjngdmkjcjbnfginlla";
+// Object used to create files on filesystem. Defined in test_file_util.js.
+var fileCreator = new testFileCreator();
 
-var fileSystem = null;
-var testDirName = "tmp/test_dir_" + Math.floor(Math.random()*10000);
-var testFileName = "test_file_" + Math.floor(Math.random()*10000)+".Txt";
-var fileUrl = "filesystem:chrome-extension://" + fileBrowserExtensionId +
-              "/external/" + testDirName + "/" + testFileName;
-var testDirectory = null;
-var randomText = "random file text " + Math.floor(Math.random()*10000);
+var expectedText = undefined;
+var cleanupError = 'Got unexpected error while cleaning up test directory.';
 
 function onFileSystemFetched(fs) {
   if (!fs) {
     errorCallback(chrome.extensions.lastError);
     return;
   }
-  fileSystem = fs;
-  console.log("DONE requesting local filesystem: " + fileSystem.name);
-  console.log("Creating directory : " + testDirName);
-  fileSystem.root.getDirectory(testDirName, {create:true},
-                               directoryCreateCallback, errorCallback);
-}
 
-function directoryCreateCallback(directory) {
-  testDirectory = directory;
-  console.log("DONE creating directory: " + directory.fullPath);
-  directory.getFile(testFileName, {create:true}, fileCreatedCallback,
-                    errorCallback);
-}
+  fileCreator.init(fs, onFileCreatorInit, errorCallback);
+};
 
-function fileCreatedCallback(fileEntry) {
-  console.log("DONE creating file: " + fileEntry.fullPath);
-  fileEntry.createWriter(onGetFileWriter);
-}
+function onFileCreatorInit() {
+  fileCreator.createFile('.log',
+      function(file, text) {
+        fileCreator.createFile('.tXt',
+                               onFileCreated,
+                               errorCallback);
+      },
+      errorCallback);
+};
 
-function onGetFileWriter(writer) {
-  // Start
-  console.log("Got file writer");
-  writer.onerror = errorCallback;
-  writer.onwrite = onFileWriteCompleted;
-  var bb = new WebKitBlobBuilder();
-  bb.append(randomText);
-  writer.write(bb.getBlob('text/plain'));
-}
+function onFileCreated(file, text) {
+  console.log('Get registered tasks now...');
+  expectedText = text;
+  var fileUrl = file.toURL();
+  chrome.fileBrowserPrivate.getFileTasks([fileUrl],
+                                         onGetTasks.bind(this, fileUrl));
+};
 
-function onFileWriteCompleted(e) {
-  // Start
-  console.log("DONE writing file content");
-  console.log("Get registered tasks now...");
-  chrome.fileBrowserPrivate.getFileTasks([fileUrl], onGetTasks);
-
-}
-
-function onGetTasks(tasks) {
-  console.log("Tasks: ");
+function onGetTasks(fileUrl, tasks) {
+  console.log('Tasks: ');
   console.log(tasks);
   if (!tasks || !tasks.length) {
-    chrome.test.fail("No tasks registered");
+    errorCallback({message: 'No tasks registered'});
     return;
   }
 
   var expected_tasks = {'TextAction': ['filesystem:*.txt'],
                         'BaseAction': ['filesystem:*', 'filesystem:*.*']};
 
-  console.log("DONE fetching " + tasks.length + " tasks");
+  console.log('DONE fetching ' + tasks.length + ' tasks');
 
-  if (tasks.length != 2)
-    chrome.test.fail('Wrong number of tasks found.');
+  if (tasks.length != 2) {
+    errorCallback({message: 'Wrong number of tasks found.'});
+    return;
+  }
 
   for (var i = 0; i < tasks.length; ++i) {
     var task_name = /^.*[|](\w+)$/.exec(tasks[i].taskId)[1];
     var patterns = tasks[i].patterns;
     var expected_patterns = expected_tasks[task_name];
-    if (!expected_patterns)
-      chrome.test.fail('Wrong task from getFileTasks(): ' + task_name);
+    if (!expected_patterns) {
+      errorCallback({message: 'Wrong task from getFileTasks(): ' + task_name});
+      return;
+    }
     patterns = patterns.sort();
     expected_patterns = expected_patterns.sort();
     for (var j = 0; j < patterns.length; ++j) {
-      if (patterns[j] != expected_patterns[j])
-        chrome.test.fail('Wrong patterns set for task ' + task_name + '. ' +
-                         'Got: ' + patterns +
-                         ' expected: ' + expected_patterns);
+      if (patterns[j] != expected_patterns[j]) {
+        errorCallback({message: 'Wrong patterns set for task ' +
+                                task_name + '. ' +
+                                'Got: ' + patterns +
+                                ' expected: ' + expected_patterns});
+        return;
+      }
     }
   }
 
   chrome.fileBrowserPrivate.executeTask(tasks[0].taskId, [fileUrl]);
-}
+};
+
+function reportSuccess(entry) {
+  chrome.test.succeed();
+};
+
+function reportFail(message) {
+  chrome.test.fail(message);
+};
 
 function errorCallback(e) {
   var msg = '';
@@ -126,31 +121,29 @@ function errorCallback(e) {
         break;
     };
   }
-  chrome.test.fail("Got unexpected error: " + msg);
-  console.log('Error: ' + msg);
-  alert('Error: ' + msg);
-}
 
-function onCleanupFinished(entry) {
-  chrome.test.succeed();
-}
+  fileCreator.cleanupAndEndTest(
+      reportFail.bind(this, 'Got unexpected error: ' + msg),
+      reportFail.bind(this, 'Got unexpected error: ' + msg));
+};
 
 // For simple requests:
 chrome.extension.onRequestExternal.addListener(
   function(request, sender, sendResponse) {
-    if (request.fileContent && request.fileContent == randomText) {
+    if (request.fileContent && request.fileContent == expectedText) {
       sendResponse({success: true});
-      testDirectory.removeRecursively(onCleanupFinished, errorCallback);
+      fileCreator.cleanupAndEndTest(reportSuccess,
+                                    reportFail.bind(this, cleanupError));
     } else {
       sendResponse({success: false});
       console.log('Error message received');
       console.log(request);
-      chrome.test.fail("Got error: " + request.error);
+      errorCallback(request.error);
     }
   });
 
 chrome.test.runTests([function tab() {
   // Get local FS, create dir with a file in it.
-  console.log("Requesting local file system...");
+  console.log('Requesting local file system...');
   chrome.fileBrowserPrivate.requestLocalFileSystem(onFileSystemFetched);
 }]);
