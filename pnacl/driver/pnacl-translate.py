@@ -39,11 +39,11 @@ EXTRA_ENV = {
   'LD_ARGS' : '${STDLIB ? ${LD_ARGS_normal} : ${LD_ARGS_nostdlib}}',
 
   'LD_ARGS_IRT_SHIM':
-    '--entry=_pnacl_wrapper_start -lpnacl_irt_shim',
+    '--entry=_pnacl_wrapper_start -l:libpnacl_irt_shim.a',
 
   'CRTBEGIN' : '${SHARED ? -l:crtbeginS.o : -l:crtbegin.o}',
   'CRTEND'   : '${SHARED ? -l:crtendS.o : -l:crtend.o}',
-  'LIBGCC_EH': '${STATIC ? -lgcc_eh : -lgcc_s}',
+  'LIBGCC_EH': '${STATIC ? -l:libgcc_eh.a : -l:libgcc_s.so.1}',
 
   'LD_ARGS_nostdlib': '-nostdlib ${ld_inputs}',
 
@@ -59,7 +59,7 @@ EXTRA_ENV = {
   # TODO(pdox): To simplify translation, reduce from 3 to 2 cases.
   # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2423
   'DEFAULTLIBS':
-    '${LINKER_HACK} ${GLIBC_STATIC_HACK} ${LIBGCC_EH} -lgcc ${MISC_LIBS}',
+    '${LINKER_HACK} ${LIBGCC_EH} -l:libgcc.a ${MISC_LIBS}',
 
   'MISC_LIBS':
     # TODO(pdox):
@@ -70,12 +70,6 @@ EXTRA_ENV = {
     # between X86-32 and X86-64.
     # TODO(pdox): Unify the names.
     '${LIBMODE_GLIBC && !STATIC ? -l:ld-2.9.so}',
-
-  # GLibC static is poorly supported.
-  # We cannot correctly record native dependencies in bitcode.
-  # As an hack, just always assume these libraries are needed.
-  'GLIBC_STATIC_HACK':
-    '${LIBMODE_GLIBC && STATIC ? -lstdc++ -lm -lc -lpthread}',
 
   # Because our bitcode linker doesn't record symbol resolution information,
   # some libraries still need to be included directly in the native link.

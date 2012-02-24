@@ -146,6 +146,13 @@ readonly INSTALL_GLIBC="${INSTALL_ROOT}/glibc"
 readonly INSTALL_NEWLIB_BIN="${INSTALL_NEWLIB}/bin"
 readonly INSTALL_GLIBC_BIN="${INSTALL_GLIBC}/bin"
 
+
+# Place links into glibc/lib-<arch> so that the driver can find
+# the native libraries for bitcode linking.
+# See make-glibc-link() for the primary use of this value.
+# TODO(pdox): Replace with .pso stubs in glibc/lib.
+readonly INSTALL_GLIBC_LIB_ARCH="${INSTALL_ROOT}/glibc/lib-"
+
 # Bitcode lib directories. These will soon be split apart.
 # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2452
 readonly INSTALL_LIB_NEWLIB="${INSTALL_NEWLIB}/lib"
@@ -231,6 +238,27 @@ GetInstallDir() {
   glibc) echo "${INSTALL_GLIBC}" ;;
   *) Fatal "Unknown library mode in GetInstallDir: ${libmode}" ;;
   esac
+}
+
+#+ make-glibc-link <arch> <target> <linkname> -
+#+     Create a symbolic link from the GLibC arch-specific lib directory
+#+     to the translator lib directory.
+#+     <arch> can be a single arch, a list, or 'all'.
+make-glibc-link() {
+  local arches="$1"
+  local target="$2"
+  local linkname="$3"
+
+  if [ "${arches}" == "all" ]; then
+    arches="x86-32 x86-64"
+  fi
+
+  local arch
+  for arch in ${arches}; do
+    local dest="${INSTALL_GLIBC_LIB_ARCH}"${arch}
+    mkdir -p "${dest}"
+    ln -sf ../../lib-${arch}/"${target}" "${dest}"/"${linkname}"
+  done
 }
 
 # For a production (release) build, we want the sandboxed
@@ -924,40 +952,84 @@ glibc-copy() {
   mkdir -p "${INSTALL_LIB_X8664}"
   mkdir -p "${GLIBC_INSTALL_DIR}"
 
-  # Files in: ${NACL64_TARGET}/lib[32]/
-  local LIBS_TO_COPY="libstdc++.so* \
+  # Figure out the GlibC version number.
+  local naclgcc_base="${NNACL_GLIBC_ROOT}/${NACL64_TARGET}"
+  local ver
+  spushd "${naclgcc_base}/lib"
+  ver=`echo libc.so.*`
+  ver=${ver/libc\.so\./}
+  spopd
+  StepBanner "GLIBC" "GLibC version ID is ${ver}"
+
+  # Files to copy from ${naclgcc_base} into the translator library directories
+  local LIBS_TO_COPY="libstdc++.so.6 \
                       libc_nonshared.a \
-                      libc-2.9.so libc.so libc.so.* \
-                      libm-2.9.so libm.so libm.so.* \
-                      libdl-2.9.so libdl.so.* libdl.so \
-                      librt-2.9.so librt.so.* librt.so \
-                      libpthread-2.9.so libpthread.so \
-                      libpthread.so.* libpthread_nonshared.a \
+                      libc.so.${ver} \
+                      libm.so.${ver} \
+                      libdl.so.${ver} \
+                      librt.so.${ver} \
+                      libpthread_nonshared.a \
+                      libpthread.so.${ver} \
                       runnable-ld.so \
                       ld-2.9.so"
-
+  local lib
   for lib in ${LIBS_TO_COPY} ; do
-    cp -a "${NNACL_GLIBC_ROOT}/${NACL64_TARGET}/lib32/"${lib} \
-          "${INSTALL_LIB_X8632}"
-    cp -a "${NNACL_GLIBC_ROOT}/${NACL64_TARGET}/lib/"${lib} \
-          "${INSTALL_LIB_X8664}"
+    cp -a "${naclgcc_base}/lib32/"${lib} "${INSTALL_LIB_X8632}"
+    cp -a "${naclgcc_base}/lib/"${lib} "${INSTALL_LIB_X8664}"
   done
+
+  # libc.so and libpthread.so are linker scripts
+  # Place them in the GLibC arch-specific directory only.
+  # They don't need to be in the translator directory.
+  # TODO(pdox): These should go in the architecture-independent glibc/lib
+  # directory, but they have an OUTPUT_FORMAT statement. Gold might already
+  # ignore this.
+  mkdir -p "${INSTALL_GLIBC_LIB_ARCH}"x86-32
+  mkdir -p "${INSTALL_GLIBC_LIB_ARCH}"x86-64
+  local lib
+  for lib in libc libpthread; do
+    cp -a "${naclgcc_base}"/lib32/${lib}.so "${INSTALL_GLIBC_LIB_ARCH}"x86-32
+    cp -a "${naclgcc_base}"/lib/${lib}.so "${INSTALL_GLIBC_LIB_ARCH}"x86-64
+    make-glibc-link all ${lib}.so.${ver} ${lib}-2.9.so
+    make-glibc-link all ${lib}.so.${ver} ${lib}.so.${ver}
+  done
+
+  # Make symlinks for the other libraries.
+  # TODO(pdox): Replace these with .pso stubs.
+  local lib
+  for lib in libdl libm librt; do
+    make-glibc-link all ${lib}.so.${ver} ${lib}-2.9.so
+    make-glibc-link all ${lib}.so.${ver} ${lib}.so
+  done
+  make-glibc-link all libstdc++.so.6 libstdc++.so
+  make-glibc-link all libstdc++.so.6 libstdc++.so.6.0.13
+
+  # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2615
+  make-glibc-link all libc_nonshared.a libc_nonshared.a
+  make-glibc-link all libpthread_nonshared.a libpthread_nonshared.a
 
   # Copy linker scripts
   # We currently only depend on elf[64]_nacl.x,
   # elf[64]_nacl.xs, and elf[64]_nacl.x.static.
-  cp -a "${NNACL_GLIBC_ROOT}/${NACL64_TARGET}/lib/ldscripts/elf_nacl.x"* \
-        "${INSTALL_LIB_X8632}"
-  cp -a "${NNACL_GLIBC_ROOT}/${NACL64_TARGET}/lib/ldscripts/elf64_nacl.x"* \
-        "${INSTALL_LIB_X8664}"
+  # TODO(pdox): Remove the need for these, by making the built-in
+  #             binutils linker script work.
+  local ldscripts="${NNACL_GLIBC_ROOT}/${NACL64_TARGET}/lib/ldscripts"
+  local ext
+  for ext in .x .xs .x.static; do
+    cp -a "${ldscripts}"/elf_nacl${ext}   "${INSTALL_LIB_X8632}"
+    make-glibc-link x86-32 elf_nacl${ext} elf_nacl${ext}
+
+    cp -a "${ldscripts}"/elf64_nacl${ext} "${INSTALL_LIB_X8664}"
+    make-glibc-link x86-64 elf64_nacl${ext} elf64_nacl${ext}
+  done
 
   # ld-nacl have different sonames across 32/64.
   # Create symlinks to make them look the same.
-  # TODO(pdox): Can this be fixed in glibc?
-  ln -sf "ld-2.9.so" "${INSTALL_LIB_X8632}"/ld-nacl-x86-32.so.1
-  ln -sf "ld-2.9.so" "${INSTALL_LIB_X8632}"/ld-nacl-x86-64.so.1
-  ln -sf "ld-2.9.so" "${INSTALL_LIB_X8664}"/ld-nacl-x86-32.so.1
-  ln -sf "ld-2.9.so" "${INSTALL_LIB_X8664}"/ld-nacl-x86-64.so.1
+  # TODO(pdox): Make the sonames match in GlibC.
+  #             Also, replace these links with PSO stubs.
+  for arch in x86-32 x86-64; do
+    make-glibc-link ${arch} ld-2.9.so ld-nacl-${arch}.so.1
+  done
 
   # Copy the glibc headers
   mkdir -p "${GLIBC_INSTALL_DIR}"/include
@@ -1712,7 +1784,7 @@ libgcc_eh() {
     cp ${subdir}/libgcc_eh.a "${installdir}"
   elif [ "${libmode}" == "glibc" ]; then
     cp ${subdir}/libgcc_s.so.1 "${installdir}"
-    ln -s libgcc_s.so.1 "${installdir}"/libgcc_s.so
+    make-glibc-link ${arch} libgcc_s.so.1 libgcc_s.so
   fi
 }
 
