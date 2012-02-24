@@ -203,8 +203,6 @@ struct weston_compositor {
 
 	void (*destroy)(struct weston_compositor *ec);
 	int (*authenticate)(struct weston_compositor *c, uint32_t id);
-	EGLImageKHR (*create_cursor_image)(struct weston_compositor *c,
-					   int32_t *width, int32_t *height);
 
 	struct screenshooter *screenshooter;
 };

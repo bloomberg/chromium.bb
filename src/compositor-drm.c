@@ -1255,32 +1255,6 @@ udev_drm_event(int fd, uint32_t mask, void *data)
 	return 1;
 }
 
-static EGLImageKHR
-drm_compositor_create_cursor_image(struct weston_compositor *ec,
-				   int32_t *width, int32_t *height)
-{
-	struct drm_compositor *c = (struct drm_compositor *) ec;
-	struct gbm_bo *bo;
-	EGLImageKHR image;
-
-	if (*width > 64 || *height > 64)
-		return EGL_NO_IMAGE_KHR;
-
-	bo = gbm_bo_create(c->gbm,
-			   /* width, height, */ 64, 64,
-			   GBM_BO_FORMAT_ARGB8888,
-			   GBM_BO_USE_CURSOR_64X64 | GBM_BO_USE_RENDERING);
-
-	image = ec->create_image(c->base.display, NULL,
-				 EGL_NATIVE_PIXMAP_KHR, bo, NULL);
-	gbm_bo_destroy(bo);
-
-	*width = 64;
-	*height = 64;
-
-	return image;
-}
-
 static void
 drm_destroy(struct weston_compositor *ec)
 {
@@ -1433,7 +1407,6 @@ drm_compositor_create(struct wl_display *display,
 	udev_device_unref(drm_device);
 
 	ec->base.destroy = drm_destroy;
-	ec->base.create_cursor_image = drm_compositor_create_cursor_image;
 
 	ec->base.focus = 1;
 
