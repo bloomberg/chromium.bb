@@ -296,6 +296,13 @@ INSTANTIATE_TEST_CASE_P(, FrameRateGpuCanvasInternalTest, ::testing::Values(
 
 INTERNAL_FRAME_RATE_TEST_CANVAS_GPU(fireflies)
 INTERNAL_FRAME_RATE_TEST_CANVAS_GPU(FishIE)
-INTERNAL_FRAME_RATE_TEST_CANVAS_GPU(speedreading)
+
+// crbug.com/115720
+#if defined(OS_LINUX)
+#define MAYBE_speedreading FAILS_speedreading
+#else
+#define MAYBE_speedreading speedreading
+#endif
+INTERNAL_FRAME_RATE_TEST_CANVAS_GPU(MAYBE_speedreading)
 
 }  // namespace
