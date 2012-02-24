@@ -901,6 +901,7 @@ void ExternalTabContainer::OnDestroy() {
 }
 
 void ExternalTabContainer::OnFinalMessage(HWND window) {
+  GetWidget()->OnNativeWidgetDestroyed();
   // Release the reference which we grabbed in WM_CREATE.
   Release();
 }
