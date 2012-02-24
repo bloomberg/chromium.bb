@@ -69,8 +69,6 @@ class Panel : public BrowserWindow,
   // top-most windows.
   void EnsureFullyVisible();
 
-  void ApplyVisualStyleForStrip();
-
   int TitleOnlyHeight() const;
 
   // Returns the size of the panel when it is iconified, as shown on the

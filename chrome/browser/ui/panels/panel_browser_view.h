@@ -120,7 +120,6 @@ class PanelBrowserView : public BrowserView,
   virtual void DestroyPanelBrowser() OVERRIDE;
   virtual gfx::Size IconOnlySize() const OVERRIDE;
   virtual void EnsurePanelFullyVisible() OVERRIDE;
-  virtual void ApplyVisualStyleForStrip() OVERRIDE;
   virtual void SetPanelAppIconVisibility(bool visible) OVERRIDE;
 
   // Overridden from AnimationDelegate:

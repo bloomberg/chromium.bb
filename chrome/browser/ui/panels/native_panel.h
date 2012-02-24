@@ -84,8 +84,6 @@ class NativePanel {
   // will make sure that the panel is not obscured by other top-most windows.
   virtual void EnsurePanelFullyVisible() = 0;
 
-  virtual void ApplyVisualStyleForStrip() = 0;
-
   // Sets whether the panel app icon is visible (usually refers to the app icons
   // in the desktop bar).
   virtual void SetPanelAppIconVisibility(bool visible) = 0;

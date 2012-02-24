@@ -98,7 +98,6 @@ void OverflowPanelStrip::AddPanel(Panel* panel) {
 
   // Set panel properties for this strip.
   panel->SetAppIconVisibility(false);
-  panel->ApplyVisualStyleForStrip();
 
   if (num_panels() == 1) {
     panel_manager_->mouse_watcher()->AddObserver(this);

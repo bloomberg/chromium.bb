@@ -105,7 +105,6 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   virtual int TitleOnlyHeight() const OVERRIDE;
   virtual gfx::Size IconOnlySize() const OVERRIDE;
   virtual void EnsurePanelFullyVisible() OVERRIDE;
-  virtual void ApplyVisualStyleForStrip() OVERRIDE;
   virtual void SetPanelAppIconVisibility(bool visible) OVERRIDE;
 
  private:

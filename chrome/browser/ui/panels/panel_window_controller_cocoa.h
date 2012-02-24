@@ -142,7 +142,7 @@ class PanelBrowserWindowCocoa;
 // Returns width of titlebar when shown in "icon only" mode.
 - (int)titlebarIconOnlyWidthInScreenCoordinates;
 
-- (void)applyVisualStyleForStrip;
+- (void)ensureFullyVisible;
 
 @end  // @interface PanelWindowController
 

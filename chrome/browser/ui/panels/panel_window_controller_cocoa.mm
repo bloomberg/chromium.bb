@@ -542,13 +542,10 @@ enum {
   return [[self titlebarView] iconOnlyWidthInScreenCoordinates];
 }
 
-- (void)applyVisualStyleForStrip {
-  Panel* panel = windowShim_->panel();
-  if (panel->manager()->is_full_screen())
-    return;
-  [[self window] setLevel:(
-      panel->panel_strip()->type() == PanelStrip::IN_OVERFLOW ?
-      NSStatusWindowLevel + 1 : NSStatusWindowLevel)];
+- (void)ensureFullyVisible {
+  // Shows the window without making it key, on top of its layer, even if
+  // Chromium is not an active app.
+  [[self window] orderFrontRegardless];
 }
 
 // TODO(dcheng): These two selectors are almost copy-and-paste from

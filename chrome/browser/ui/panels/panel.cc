@@ -303,10 +303,6 @@ void Panel::EnsureFullyVisible() {
   native_panel_->EnsurePanelFullyVisible();
 }
 
-void Panel::ApplyVisualStyleForStrip() {
-  native_panel_->ApplyVisualStyleForStrip();
-}
-
 bool Panel::IsMaximized() const {
   // Size of panels is managed by PanelManager, they are never 'zoomed'.
   return false;

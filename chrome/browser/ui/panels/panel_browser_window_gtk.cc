@@ -488,10 +488,6 @@ void PanelBrowserWindowGtk::EnsurePanelFullyVisible() {
   gtk_window_present(window());
 }
 
-void PanelBrowserWindowGtk::ApplyVisualStyleForStrip() {
-  // TODO(prasdt): to be implemented.
-}
-
 void PanelBrowserWindowGtk::SetPanelAppIconVisibility(bool visible) {
   return;
 }
