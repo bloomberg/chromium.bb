@@ -119,6 +119,10 @@ struct weston_move_grab {
 	int32_t dx, dy;
 };
 
+struct weston_zoom_grab {
+	struct wl_keyboard_grab grab;
+};
+
 struct rotate_grab {
 	struct wl_pointer_grab grab;
 	struct shell_surface *surface;
@@ -1035,18 +1039,36 @@ resize_binding(struct wl_input_device *device, uint32_t time,
 }
 
 static void
-zoom_in_binding(struct wl_input_device *device, uint32_t time,
-	       uint32_t key, uint32_t button, uint32_t state, void *data)
+zoom_grab_key(struct wl_keyboard_grab *grab,
+		uint32_t time, uint32_t key, int32_t state)
 {
+	struct wl_input_device *device = grab->input_device;
 	struct weston_input_device *wd = (struct weston_input_device *) device;
 	struct weston_compositor *compositor = wd->compositor;
 	struct weston_output *output;
+	struct weston_zoom_grab *zoom;
+
+	if (!(wd->modifier_state & MODIFIER_SUPER)) {
+		zoom = container_of(grab, struct weston_zoom_grab, grab);
+		wl_input_device_end_keyboard_grab(device, time);
+		free(zoom);
+		return;
+	}
 
 	wl_list_for_each(output, &compositor->output_list, link) {
 		if (pixman_region32_contains_point(&output->region,
 						device->x, device->y, NULL)) {
-			output->zoom.active = 1;
-			output->zoom.level -= output->zoom.increment;
+			if (state && key == KEY_UP) {
+				output->zoom.active = 1;
+				output->zoom.level -= output->zoom.increment;
+			}
+			if (state && key == KEY_DOWN)
+				output->zoom.level += output->zoom.increment;
+
+			if (output->zoom.level >= 1.0) {
+				output->zoom.active = 0;
+				output->zoom.level = 1.0;
+			}
 
 			if (output->zoom.level < output->zoom.increment)
 				output->zoom.level = output->zoom.increment;
@@ -1056,26 +1078,24 @@ zoom_in_binding(struct wl_input_device *device, uint32_t time,
 	}
 }
 
+static const struct wl_keyboard_grab_interface zoom_grab = {
+	zoom_grab_key,
+};
+
 static void
-zoom_out_binding(struct wl_input_device *device, uint32_t time,
+zoom_binding(struct wl_input_device *device, uint32_t time,
 	       uint32_t key, uint32_t button, uint32_t state, void *data)
 {
 	struct weston_input_device *wd = (struct weston_input_device *) device;
-	struct weston_compositor *compositor = wd->compositor;
-	struct weston_output *output;
+	struct weston_zoom_grab *zoom;
 
-	wl_list_for_each(output, &compositor->output_list, link) {
-		if (pixman_region32_contains_point(&output->region,
-						device->x, device->y, NULL)) {
-			output->zoom.level += output->zoom.increment;
-			if (output->zoom.level >= 1.0) {
-				output->zoom.active = 0;
-				output->zoom.level = 1.0;
-			}
+	zoom = malloc(sizeof *zoom);
+	if (!zoom)
+		return;
 
-			weston_output_update_zoom(output, device->x, device->y);
-		}
-	}
+	zoom->grab.interface = &zoom_grab;
+
+	wl_input_device_start_keyboard_grab(&wd->input_device, &zoom->grab, time);
 }
 
 static void
@@ -1878,9 +1898,9 @@ shell_init(struct weston_compositor *ec)
 	weston_compositor_add_binding(ec, 0, BTN_LEFT, 0,
 				    click_to_activate_binding, ec);
 	weston_compositor_add_binding(ec, KEY_UP, 0, MODIFIER_SUPER,
-				    zoom_in_binding, shell);
+				    zoom_binding, shell);
 	weston_compositor_add_binding(ec, KEY_DOWN, 0, MODIFIER_SUPER,
-				    zoom_out_binding, shell);
+				    zoom_binding, shell);
 	weston_compositor_add_binding(ec, 0, BTN_LEFT,
 				      MODIFIER_SUPER | MODIFIER_ALT,
 				      rotate_binding, NULL);
