@@ -25,16 +25,21 @@ void main(void)
 </script>
 
 <script>
-var g_swapsBeforeAck = 10;
+var g_swapsBeforeAck = 6;
+var g_paintLoopStarted = false;
 var gl;
 
 function main()
 {
-  var canvas = document.getElementById("c");
-  gl = initGL(canvas);
+  g_swapsBeforeAck = 6;
 
-  if (gl && setup(gl))
-    drawSomeFrames();
+  if (!g_paintLoopStarted) {
+    g_paintLoopStarted = true;
+    var canvas = document.getElementById("c");
+    gl = initGL(canvas);
+    if (gl && setup(gl))
+      drawSomeFrames();
+  }
 }
 
 function notifyLoadFinished()

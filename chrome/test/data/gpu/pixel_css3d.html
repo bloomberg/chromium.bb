@@ -24,11 +24,16 @@
 }
 </style>
 <script>
-var g_swapsBeforeAck = 10;
+var g_swapsBeforeAck = 6;
+var g_paintLoopStarted = false;
 
 function main()
 {
-  waitForFinish();
+  g_swapsBeforeAck = 6;
+  if (!g_paintLoopStarted) {
+    g_paintLoopStarted = true;
+    waitForFinish();
+  }
 }
 
 function waitForFinish()
@@ -59,7 +64,7 @@ function preCallResizeInChromium()
 </script>
 </head>
 <body onload="notifyLoadFinished()">
-<div style="position:relative; width:200px; height:200px; background-color:black">
+<div style="position:relative; width:200px; height:200px; background-color:black; zindex-0">
 </div>
 <div id="container" style="position:absolute; top:0px; left:0px">
   <div id="blue_box"></div>
