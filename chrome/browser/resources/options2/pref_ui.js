@@ -612,6 +612,40 @@ cr.define('options', function() {
     __proto__: HTMLInputElement.prototype,
 
     /**
+     * @type {string} The stored value of the preference that this text field
+     * controls.
+     */
+    prefValue_: null,
+
+    /**
+     * Saves the value of the input back into the preference. May be called
+     * directly to save dialog preferences.
+     */
+    savePrefState: function() {
+      switch(this.dataType) {
+        case 'number':
+          Preferences.setIntegerPref(this.pref, this.value, this.metric);
+          break;
+        case 'double':
+          Preferences.setDoublePref(this.pref, this.value, this.metric);
+          break;
+        case 'url':
+          Preferences.setURLPref(this.pref, this.value, this.metric);
+          break;
+        default:
+          Preferences.setStringPref(this.pref, this.value, this.metric);
+          break;
+      }
+    },
+
+    /**
+     * Resets the input to the stored value.
+     */
+    resetPrefState: function() {
+      this.value = this.prefValue_;
+    },
+
+    /**
      * Initialization function for the cr.ui framework.
      */
     decorate: function() {
@@ -624,26 +658,13 @@ cr.define('options', function() {
                 event.value['value'] : event.value;
 
             updateElementState_(self, event);
+
+            self.prefValue_ = self.value;
           });
 
       // Listen to user events.
-      this.addEventListener('change',
-          function(e) {
-            switch (self.dataType) {
-              case 'number':
-                Preferences.setIntegerPref(self.pref, self.value, self.metric);
-                break;
-              case 'double':
-                Preferences.setDoublePref(self.pref, self.value, self.metric);
-                break;
-              case 'url':
-                Preferences.setURLPref(self.pref, self.value, self.metric);
-                break;
-              default:
-                Preferences.setStringPref(self.pref, self.value, self.metric);
-                break;
-            }
-          });
+      if (!this.dialogPref)
+        this.addEventListener('change', this.savePrefState.bind(this));
 
       window.addEventListener('unload',
           function() {
@@ -665,6 +686,14 @@ cr.define('options', function() {
    * @type {string}
    */
   cr.defineProperty(PrefTextField, 'pref', cr.PropertyKind.ATTR);
+
+  /**
+   * A special preference type specific to dialogs. These preferences are reset
+   * when the dialog is shown and are not saved until the user confirms the
+   * dialog.
+   * @type {boolean}
+   */
+  cr.defineProperty(PrefTextField, 'dialogPref', cr.PropertyKind.BOOL_ATTR);
 
   /**
    * Whether the preference is controlled by something else than the user's
