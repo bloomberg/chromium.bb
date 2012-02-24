@@ -115,7 +115,6 @@ class ProfileSyncComponentsFactory {
   virtual SyncComponents CreateExtensionOrAppSettingSyncComponents(
       // Either EXTENSION_SETTINGS or APP_SETTINGS.
       syncable::ModelType type,
-      SyncableService* settings_service,
       ProfileSyncService* profile_sync_service,
       browser_sync::DataTypeErrorHandler* error_handler) = 0;
 

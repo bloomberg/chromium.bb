@@ -166,8 +166,10 @@ class TestingSettingsStorageFactory : public SettingsStorageFactory {
   std::map<std::string, TestingSettingsStorage*> created_;
 };
 
-void AssignSettingsService(SyncableService** dst, SyncableService* src) {
-  *dst = src;
+void AssignSettingsService(SyncableService** dst,
+                           const SettingsFrontend* frontend,
+                           syncable::ModelType type) {
+  *dst = frontend->GetBackendForSync(type);
 }
 
 }  // namespace
@@ -203,11 +205,8 @@ class ExtensionSettingsSyncTest : public testing::Test {
 
   // Gets the SyncableService for the given sync type.
   SyncableService* GetSyncableService(syncable::ModelType model_type) {
-    SyncableService* settings_service = NULL;
-    frontend_->RunWithSyncableService(
-        model_type, base::Bind(&AssignSettingsService, &settings_service));
     MessageLoop::current()->RunAllPending();
-    return settings_service;
+    return frontend_->GetBackendForSync(model_type);
   }
 
   // Gets all the sync data from the SyncableService for a sync type as a map

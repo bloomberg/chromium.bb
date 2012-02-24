@@ -55,7 +55,6 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
   virtual SyncComponents CreateExtensionOrAppSettingSyncComponents(
       // Either EXTENSION_SETTING or APP_SETTING.
       syncable::ModelType type,
-      SyncableService* settings_service,
       ProfileSyncService* profile_sync_service,
       browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
 

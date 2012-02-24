@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,27 +69,21 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
   }
 
   void InitSync(SyncChangeProcessor* sync_processor) {
-    browser()->profile()->GetExtensionService()->
-        settings_frontend()->RunWithSyncableService(
-            // TODO(kalman): test both EXTENSION_SETTINGS and APP_SETTINGS.
-            syncable::EXTENSION_SETTINGS,
-            base::Bind(
-                &ExtensionSettingsApiTest::InitSyncWithSyncableService,
-                this,
-                sync_processor));
     MessageLoop::current()->RunAllPending();
+    // TODO(kalman): test both EXTENSION_SETTINGS and APP_SETTINGS.
+    InitSyncWithSyncableService(
+        sync_processor,
+        browser()->profile()->GetExtensionService()->settings_frontend()->
+              GetBackendForSync(syncable::EXTENSION_SETTINGS));
   }
 
   void SendChanges(const SyncChangeList& change_list) {
-    browser()->profile()->GetExtensionService()->
-        settings_frontend()->RunWithSyncableService(
-            // TODO(kalman): test both EXTENSION_SETTINGS and APP_SETTINGS.
-            syncable::EXTENSION_SETTINGS,
-            base::Bind(
-                &ExtensionSettingsApiTest::SendChangesToSyncableService,
-                this,
-                change_list));
     MessageLoop::current()->RunAllPending();
+    // TODO(kalman): test both EXTENSION_SETTINGS and APP_SETTINGS.
+    SendChangesToSyncableService(
+        change_list,
+        browser()->profile()->GetExtensionService()->settings_frontend()->
+              GetBackendForSync(syncable::EXTENSION_SETTINGS));
   }
 
  private:

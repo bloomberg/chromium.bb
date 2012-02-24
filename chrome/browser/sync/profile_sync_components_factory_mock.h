@@ -55,9 +55,8 @@ class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
   MOCK_METHOD2(CreateExtensionSyncComponents,
       SyncComponents(ProfileSyncService* profile_sync_service,
                      browser_sync::DataTypeErrorHandler* error_handler));
-  MOCK_METHOD4(CreateExtensionOrAppSettingSyncComponents,
+  MOCK_METHOD3(CreateExtensionOrAppSettingSyncComponents,
       SyncComponents(syncable::ModelType model_type,
-                     SyncableService* settings_service,
                      ProfileSyncService* profile_sync_service,
                      browser_sync::DataTypeErrorHandler* error_handler));
   MOCK_METHOD3(CreatePasswordSyncComponents,

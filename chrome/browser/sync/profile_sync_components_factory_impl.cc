@@ -5,7 +5,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/settings/settings_backend.h"
+#include "chrome/browser/extensions/settings/settings_frontend.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -281,12 +281,13 @@ ProfileSyncComponentsFactory::SyncComponents
 ProfileSyncComponentsFactory::SyncComponents
     ProfileSyncComponentsFactoryImpl::CreateExtensionOrAppSettingSyncComponents(
         syncable::ModelType type,
-        SyncableService* settings_service,
         ProfileSyncService* profile_sync_service,
         DataTypeErrorHandler* error_handler) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(type == syncable::EXTENSION_SETTINGS ||
          type == syncable::APP_SETTINGS);
+  SyncableService* settings_service = profile_->GetExtensionService()->
+      settings_frontend()->GetBackendForSync(type);
   sync_api::UserShare* user_share = profile_sync_service->GetUserShare();
   GenericChangeProcessor* change_processor =
       new GenericChangeProcessor(error_handler,

@@ -6,8 +6,6 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/settings/settings_frontend.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/api/syncable_service.h"
 #include "chrome/browser/sync/glue/generic_change_processor.h"
@@ -28,8 +26,7 @@ ExtensionSettingDataTypeController::ExtensionSettingDataTypeController(
                                     profile_sync_service),
       type_(type),
       profile_(profile),
-      profile_sync_service_(profile_sync_service),
-      settings_service_(NULL) {
+      profile_sync_service_(profile_sync_service) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(type == syncable::EXTENSION_SETTINGS ||
          type == syncable::APP_SETTINGS);
@@ -50,14 +47,7 @@ bool ExtensionSettingDataTypeController::PostTaskOnBackendThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(profile_->GetExtensionService());
-  profile_->GetExtensionService()->settings_frontend()->RunWithSyncableService(
-      type_,
-      base::Bind(
-          &ExtensionSettingDataTypeController::RunTaskOnBackendThread,
-          this,
-          task));
-  return true;
+  return BrowserThread::PostTask(BrowserThread::FILE, from_here, task);
 }
 
 bool ExtensionSettingDataTypeController::StartModels() {
@@ -69,10 +59,9 @@ bool ExtensionSettingDataTypeController::StartModels() {
 void ExtensionSettingDataTypeController::CreateSyncComponents() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK_EQ(state(), ASSOCIATING);
-  DCHECK(settings_service_);
   ProfileSyncComponentsFactory::SyncComponents sync_components =
       profile_sync_factory()->CreateExtensionOrAppSettingSyncComponents(
-          type_, settings_service_, profile_sync_service_, this);
+          type_, profile_sync_service_, this);
   set_model_associator(sync_components.model_associator);
   set_change_processor(sync_components.change_processor);
 }
@@ -92,15 +81,6 @@ void ExtensionSettingDataTypeController::RecordStartFailure(
     StartResult result) {
   UMA_HISTOGRAM_ENUMERATION(
       "Sync.ExtensionSettingStartFailures", result, MAX_START_RESULT);
-}
-
-void ExtensionSettingDataTypeController::RunTaskOnBackendThread(
-    const base::Closure& task,
-    SyncableService* settings_service) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  // Store |settings_service| so that |task| can use it.
-  settings_service_ = settings_service;
-  task.Run();
 }
 
 }  // namespace browser_sync

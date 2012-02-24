@@ -161,6 +161,11 @@ class SettingsFrontend::BackendWrapper
             callback));
   }
 
+  SettingsBackend* GetBackend() const {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    return backend_;
+  }
+
  private:
   friend class base::RefCountedThreadSafe<BackendWrapper>;
 
@@ -273,23 +278,21 @@ SettingsFrontend::~SettingsFrontend() {
   observers_->RemoveObserver(profile_observer_.get());
 }
 
-void SettingsFrontend::RunWithSyncableService(
-    syncable::ModelType model_type, const SyncableServiceCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  scoped_refptr<BackendWrapper> backend;
-  switch (model_type) {
+SyncableService* SettingsFrontend::GetBackendForSync(
+    syncable::ModelType type) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  std::map<settings_namespace::Namespace, BackendWrappers>::const_iterator
+      sync_backends = backends_.find(settings_namespace::SYNC);
+  DCHECK(sync_backends != backends_.end());
+  switch (type) {
     case syncable::APP_SETTINGS:
-      backend = backends_[settings_namespace::SYNC].app;
-      break;
-
+      return sync_backends->second.app->GetBackend();
     case syncable::EXTENSION_SETTINGS:
-      backend = backends_[settings_namespace::SYNC].extension;
-      break;
-
+      return sync_backends->second.extension->GetBackend();
     default:
       NOTREACHED();
+      return NULL;
   }
-  backend->RunWithBackend(base::Bind(&CallbackWithSyncableService, callback));
 }
 
 void SettingsFrontend::RunWithStorage(

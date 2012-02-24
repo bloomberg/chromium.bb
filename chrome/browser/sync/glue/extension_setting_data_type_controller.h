@@ -50,19 +50,12 @@ class ExtensionSettingDataTypeController
   virtual void RecordAssociationTime(base::TimeDelta time) OVERRIDE;
   virtual void RecordStartFailure(StartResult result) OVERRIDE;
 
-  // Used by PostTaskOnBackendThread().
-  void RunTaskOnBackendThread(const base::Closure& task,
-                              SyncableService* settings_service);
-
   // Either EXTENSION_SETTINGS or APP_SETTINGS.
   syncable::ModelType type_;
 
   // These only used on the UI thread.
   Profile* profile_;
   ProfileSyncService* profile_sync_service_;
-
-  // Only used on the FILE thread.
-  SyncableService* settings_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSettingDataTypeController);
 };
