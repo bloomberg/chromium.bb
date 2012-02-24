@@ -5,15 +5,21 @@
 #ifndef REMOTING_CLIENT_RECTANGLE_UPDATE_DECODER_H_
 #define REMOTING_CLIENT_RECTANGLE_UPDATE_DECODER_H_
 
+#include <list>
+
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "media/base/video_frame.h"
 #include "remoting/base/decoder.h"
+#include "remoting/client/frame_producer.h"
 
 namespace base {
 class MessageLoopProxy;
 }  // namespace base
+
+namespace pp {
+class ImageData;
+};
 
 namespace remoting {
 
@@ -28,7 +34,8 @@ class SessionConfig;
 // conditions on each step are reported.  Should they be CHECKs? Logs? Other?
 // TODO(sergeyu): Rename this class.
 class RectangleUpdateDecoder :
-    public base::RefCountedThreadSafe<RectangleUpdateDecoder> {
+    public base::RefCountedThreadSafe<RectangleUpdateDecoder>,
+    public FrameProducer {
  public:
   RectangleUpdateDecoder(base::MessageLoopProxy* message_loop,
                          FrameConsumer* consumer);
@@ -36,55 +43,41 @@ class RectangleUpdateDecoder :
   // Initializes decoder with the infromation from the protocol config.
   void Initialize(const protocol::SessionConfig& config);
 
-  // Decodes the contents of |packet| calling OnPartialFrameOutput() in the
-  // regsitered as data is avaialable. DecodePacket may keep a reference to
+  // Decodes the contents of |packet|. DecodePacket may keep a reference to
   // |packet| so the |packet| must remain alive and valid until |done| is
   // executed.
   void DecodePacket(const VideoPacket* packet, const base::Closure& done);
 
-  // Set the output dimensions to scale video output to.
-  void SetOutputSize(const SkISize& size);
-
-  // Set a new clipping rectangle for the decoder. Decoder should respect
-  // this clipping rectangle and only decode content in this rectangle and
-  // report dirty rectangles accordingly to enhance performance.
-  void UpdateClipRect(const SkIRect& clip_rect);
-
-  // Force the decoder to output the last decoded video frame without any
-  // clipping.
-  void RefreshFullFrame();
+  // FrameProducer implementation.
+  virtual void DrawBuffer(pp::ImageData* buffer) OVERRIDE;
+  virtual void InvalidateRegion(const SkRegion& region) OVERRIDE;
+  virtual void RequestReturnBuffers(const base::Closure& done) OVERRIDE;
+  virtual void SetOutputSizeAndClip(const SkISize& view_size,
+                                    const SkIRect& clip_area) OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<RectangleUpdateDecoder>;
-  friend class PartialFrameCleanup;
 
-  ~RectangleUpdateDecoder();
+  virtual ~RectangleUpdateDecoder();
 
-  void AllocateFrame(const VideoPacket* packet, const base::Closure& done);
-  void ProcessPacketData(const VideoPacket* packet, const base::Closure& done);
-
-  // Obtain updated rectangles from decoder and submit it to the consumer.
-  void SubmitToConsumer();
-
-  // Use |refresh_rects_| to do a refresh to the backing video frame.
-  // When done the affected rectangles are submitted to the consumer.
-  void DoRefresh();
-
-  // Callback for FrameConsumer::OnPartialFrameOutput()
-  void OnFrameConsumed(SkRegion* region);
+  // Paint the invalidated region to the next available buffer and return it
+  // to the consumer.
+  void DoPaint();
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   FrameConsumer* consumer_;
 
-  SkISize screen_size_;
-  SkIRect clip_rect_;
-  SkRegion refresh_region_;
-
   scoped_ptr<Decoder> decoder_;
-  bool decoder_needs_reset_;
 
-  // The video frame that the decoder writes to.
-  scoped_refptr<media::VideoFrame> frame_;
+  // Remote screen size in pixels.
+  SkISize source_size_;
+
+  // The current dimentions of the frame consumer view.
+  SkISize view_size_;
+  SkIRect clip_area_;
+
+  // The drawing buffers supplied by the frame consumer.
+  std::list<pp::ImageData*> buffers_;
 };
 
 }  // namespace remoting

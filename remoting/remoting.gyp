@@ -664,6 +664,7 @@
         'client/frame_consumer.h',
         'client/frame_consumer_proxy.cc',
         'client/frame_consumer_proxy.h',
+        'client/frame_producer.h',
         'client/mouse_input_filter.cc',
         'client/mouse_input_filter.h',
         'client/rectangle_update_decoder.cc',

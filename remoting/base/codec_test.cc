@@ -123,12 +123,9 @@ class DecoderTester {
   DecoderTester(Decoder* decoder)
       : strict_(false),
         decoder_(decoder) {
-    frame_ = media::VideoFrame::CreateFrame(media::VideoFrame::RGB32,
-                                            kWidth, kHeight,
-                                            base::TimeDelta(),
-                                            base::TimeDelta());
-    EXPECT_TRUE(frame_.get());
-    decoder_->Initialize(frame_);
+    image_data_.reset(new uint8[kWidth * kHeight * kBytesPerPixel]);
+    EXPECT_TRUE(image_data_.get());
+    decoder_->Initialize(SkISize::Make(kWidth, kHeight));
   }
 
   void Reset() {
@@ -142,7 +139,11 @@ class DecoderTester {
     ASSERT_NE(Decoder::DECODE_ERROR, result);
 
     if (result == Decoder::DECODE_DONE) {
-      decoder_->GetUpdatedRegion(&update_region_);
+      decoder_->RenderFrame(SkISize::Make(kWidth, kHeight),
+                            SkIRect::MakeXYWH(0, 0, kWidth, kHeight),
+                            image_data_.get(),
+                            kWidth * kBytesPerPixel,
+                            &update_region_);
     }
   }
 
@@ -169,12 +170,12 @@ class DecoderTester {
     // Test the content of the update region.
     EXPECT_EQ(expected_region_, update_region_);
     for (SkRegion::Iterator i(update_region_); !i.done(); i.next()) {
-      EXPECT_EQ(frame_->stride(0), capture_data_->data_planes().strides[0]);
-      const int stride = frame_->stride(0);
+      const int stride = kWidth * kBytesPerPixel;
+      EXPECT_EQ(stride, capture_data_->data_planes().strides[0]);
       const int offset =  stride * i.rect().top() +
           kBytesPerPixel * i.rect().left();
       const uint8* original = capture_data_->data_planes().data[0] + offset;
-      const uint8* decoded = frame_->data(0) + offset;
+      const uint8* decoded = image_data_.get() + offset;
       const int row_size = kBytesPerPixel * i.rect().width();
       for (int y = 0; y < i.rect().height(); ++y) {
         EXPECT_EQ(0, memcmp(original, decoded, row_size))
@@ -190,7 +191,7 @@ class DecoderTester {
   SkRegion expected_region_;
   SkRegion update_region_;
   Decoder* decoder_;
-  scoped_refptr<media::VideoFrame> frame_;
+  scoped_array<uint8> image_data_;
   scoped_refptr<CaptureData> capture_data_;
 
   DISALLOW_COPY_AND_ASSIGN(DecoderTester);

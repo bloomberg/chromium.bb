@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,9 +48,6 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
 
   // Return the stats recorded by this client.
   ChromotingStats* GetStats();
-
-  // Signals that the associated view may need updating.
-  virtual void Repaint();
 
   // ConnectionToHost::HostEventCallback implementation.
   virtual void OnConnectionState(

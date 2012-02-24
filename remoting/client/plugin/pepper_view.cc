@@ -4,8 +4,11 @@
 
 #include "remoting/client/plugin/pepper_view.h"
 
+#include <functional>
+
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/synchronization/waitable_event.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/image_data.h"
@@ -15,12 +18,18 @@
 #include "remoting/base/util.h"
 #include "remoting/client/chromoting_stats.h"
 #include "remoting/client/client_context.h"
+#include "remoting/client/frame_producer.h"
 #include "remoting/client/plugin/chromoting_instance.h"
 #include "remoting/client/plugin/pepper_util.h"
+
+using base::Passed;
 
 namespace remoting {
 
 namespace {
+
+// The maximum number of image buffers to be allocated at any point of time.
+const size_t kMaxPendingBuffersCount = 2;
 
 ChromotingInstance::ConnectionError ConvertConnectionError(
     protocol::ConnectionToHost::Error error) {
@@ -42,16 +51,25 @@ ChromotingInstance::ConnectionError ConvertConnectionError(
 
 }  // namespace
 
-PepperView::PepperView(ChromotingInstance* instance, ClientContext* context)
+PepperView::PepperView(ChromotingInstance* instance,
+                       ClientContext* context,
+                       FrameProducer* producer)
   : instance_(instance),
     context_(context),
-    flush_blocked_(false),
-    is_static_fill_(false),
-    static_fill_color_(0),
+    producer_(producer),
+    merge_buffer_(NULL),
+    merge_clip_area_(SkIRect::MakeEmpty()),
+    view_size_(SkISize::Make(0, 0)),
+    clip_area_(SkIRect::MakeEmpty()),
+    source_size_(SkISize::Make(0, 0)),
+    flush_pending_(false),
+    in_teardown_(false),
     ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
 PepperView::~PepperView() {
+  DCHECK(merge_buffer_ == NULL);
+  DCHECK(buffers_.empty());
 }
 
 bool PepperView::Initialize() {
@@ -61,126 +79,235 @@ bool PepperView::Initialize() {
 void PepperView::TearDown() {
   DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
+  // The producer should now return any pending buffers. At this point, however,
+  // ReturnBuffer() tasks scheduled by the producer will not be delivered,
+  // so we free all the buffers once the producer's queue is empty.
+  in_teardown_ = true;
+  base::WaitableEvent done_event(true, false);
+  producer_->RequestReturnBuffers(
+      base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done_event)));
+  done_event.Wait();
+
+  merge_buffer_ = NULL;
+  while (!buffers_.empty()) {
+    FreeBuffer(buffers_.front());
+  }
+
   weak_factory_.InvalidateWeakPtrs();
 }
 
-void PepperView::Paint() {
+void PepperView::SetConnectionState(protocol::ConnectionToHost::State state,
+                                    protocol::ConnectionToHost::Error error) {
   DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
-  if (is_static_fill_) {
-    VLOG(1) << "Static filling " << static_fill_color_;
-    pp::ImageData image(instance_, pp::ImageData::GetNativeImageDataFormat(),
-                        pp::Size(graphics2d_.size().width(),
-                                 graphics2d_.size().height()),
-                        false);
-    if (image.is_null()) {
-      LOG(ERROR) << "Unable to allocate image of size: "
-                 << graphics2d_.size().width() << " x "
-                 << graphics2d_.size().height();
-      return;
-    }
+  switch (state) {
+    case protocol::ConnectionToHost::CONNECTING:
+      instance_->SetConnectionState(
+          ChromotingInstance::STATE_CONNECTING,
+          ConvertConnectionError(error));
+      break;
 
-    for (int y = 0; y < image.size().height(); y++) {
-      for (int x = 0; x < image.size().width(); x++) {
-        *image.GetAddr32(pp::Point(x, y)) = static_fill_color_;
-      }
-    }
+    case protocol::ConnectionToHost::CONNECTED:
+      instance_->SetConnectionState(
+          ChromotingInstance::STATE_CONNECTED,
+          ConvertConnectionError(error));
+      break;
 
-    // For ReplaceContents, make sure the image size matches the device context
-    // size!  Otherwise, this will just silently do nothing.
-    graphics2d_.ReplaceContents(&image);
-    FlushGraphics(base::Time::Now());
+    case protocol::ConnectionToHost::CLOSED:
+      instance_->SetConnectionState(
+          ChromotingInstance::STATE_CLOSED,
+          ConvertConnectionError(error));
+      break;
+
+    case protocol::ConnectionToHost::FAILED:
+      instance_->SetConnectionState(
+          ChromotingInstance::STATE_FAILED,
+          ConvertConnectionError(error));
+      break;
+  }
+}
+
+void PepperView::SetView(const SkISize& view_size,
+                         const SkIRect& clip_area) {
+  bool view_changed = false;
+
+  // TODO(alexeypa): Prevent upscaling because the YUV-to-RGB conversion code
+  // currently does not support upscaling. Once it does, this code be removed.
+  SkISize size = SkISize::Make(
+                     std::min(view_size.width(), source_size_.width()),
+                     std::min(view_size.height(), source_size_.height()));
+
+  if (view_size_ != size) {
+    view_changed = true;
+    view_size_ = size;
+
+    pp::Size pp_size = pp::Size(view_size_.width(), view_size_.height());
+    graphics2d_ = pp::Graphics2D(instance_, pp_size, true);
+    bool result = instance_->BindGraphics(graphics2d_);
+
+    // There is no good way to handle this error currently.
+    DCHECK(result) << "Couldn't bind the device context.";
+  }
+
+  if (clip_area_ != clip_area) {
+    view_changed = true;
+
+    // YUV to RGB conversion may require even X and Y coordinates for
+    // the top left corner of the clipping area.
+    clip_area_ = AlignRect(clip_area);
+    clip_area_.intersect(SkIRect::MakeSize(view_size_));
+  }
+
+  if (view_changed) {
+    producer_->SetOutputSizeAndClip(view_size_, clip_area_);
+    InitiateDrawing();
+  }
+}
+
+void PepperView::ApplyBuffer(const SkISize& view_size,
+                             const SkIRect& clip_area,
+                             pp::ImageData* buffer,
+                             const SkRegion& region) {
+  DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
+
+  // Currently we cannot use the data in the buffer is scale factor has changed
+  // already.
+  // TODO(alexeypa): We could rescale and draw it (or even draw it without
+  // rescaling) to reduce the perceived lag while we are waiting for
+  // the properly scaled data.
+  if (view_size_ != view_size) {
+    FreeBuffer(buffer);
+    InitiateDrawing();
   } else {
-    // TODO(ajwong): We need to keep a backing store image of the host screen
-    // that has the data here which can be redrawn.
-    return;
+    FlushBuffer(clip_area, buffer, region);
   }
 }
 
-void PepperView::SetHostSize(const SkISize& host_size) {
+void PepperView::ReturnBuffer(pp::ImageData* buffer) {
   DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
-  if (host_size_ == host_size)
-    return;
-
-  host_size_ = host_size;
-
-  // Submit an update of desktop size to Javascript.
-  instance_->SetDesktopSize(host_size.width(), host_size.height());
-}
-
-void PepperView::PaintFrame(media::VideoFrame* frame, const SkRegion& region) {
-  DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
-
-  SetHostSize(SkISize::Make(frame->width(), frame->height()));
-
-  if (!backing_store_.get() || backing_store_->is_null()) {
-    LOG(ERROR) << "Backing store is not available.";
+  // Free the buffer if there is nothing to paint.
+  if (in_teardown_) {
+    FreeBuffer(buffer);
     return;
   }
 
+  // Reuse the buffer if it is large enough, otherwise drop it on the floor
+  // and allocate a new one.
+  if (buffer->size().width() >= clip_area_.width() &&
+      buffer->size().height() >= clip_area_.height()) {
+    producer_->DrawBuffer(buffer);
+  } else {
+    FreeBuffer(buffer);
+    InitiateDrawing();
+  }
+}
+
+void PepperView::SetSourceSize(const SkISize& source_size) {
+  DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
+
+  if (source_size_ == source_size)
+    return;
+
+  source_size_ = source_size;
+
+  // Notify JavaScript of the change in source size.
+  instance_->SetDesktopSize(source_size.width(), source_size.height());
+}
+
+pp::ImageData* PepperView::AllocateBuffer() {
+  pp::ImageData* buffer = NULL;
+  if (buffers_.size() < kMaxPendingBuffersCount) {
+    pp::Size pp_size = pp::Size(clip_area_.width(), clip_area_.height());
+    buffer =  new pp::ImageData(instance_,
+                                PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+                                pp_size,
+                                false);
+    if (buffer->is_null()) {
+      LOG(WARNING) << "Not enough memory for frame buffers.";
+      delete buffer;
+      buffer = NULL;
+    } else {
+      buffers_.push_back(buffer);
+    }
+  }
+
+  return buffer;
+}
+
+void PepperView::FreeBuffer(pp::ImageData* buffer) {
+  DCHECK(std::find(buffers_.begin(), buffers_.end(), buffer) != buffers_.end());
+
+  buffers_.remove(buffer);
+  delete buffer;
+}
+
+void PepperView::InitiateDrawing() {
+  // Do not schedule drawing if there is nothing to paint.
+  if (in_teardown_)
+    return;
+
+  pp::ImageData* buffer = AllocateBuffer();
+  while (buffer) {
+    producer_->DrawBuffer(buffer);
+    buffer = AllocateBuffer();
+  }
+}
+
+void PepperView::FlushBuffer(const SkIRect& clip_area,
+                             pp::ImageData* buffer,
+                             const SkRegion& region) {
+
+  // Defer drawing if the flush is already in progress.
+  if (flush_pending_) {
+    // |merge_buffer_| is guaranteed to be free here because we allocate only
+    // two buffers simultaneously. If more buffers are allowed this code should
+    // apply all pending changes to the screen.
+    DCHECK(merge_buffer_ == NULL);
+
+    merge_clip_area_ = clip_area;
+    merge_buffer_ = buffer;
+    merge_region_ = region;
+    return;
+  }
+
+  // Notify Pepper API about the updated areas and flush pixels to the screen.
   base::Time start_time = base::Time::Now();
 
-  // Copy updated regions to the backing store and then paint the regions.
-  bool changes_made = false;
-  for (SkRegion::Iterator i(region); !i.done(); i.next())
-    changes_made |= PaintRect(frame, i.rect());
+  for (SkRegion::Iterator i(region); !i.done(); i.next()) {
+    SkIRect rect = i.rect();
 
-  if (changes_made)
-    FlushGraphics(start_time);
-}
+    // Re-clip |region| with the current clipping area |clip_area_| because
+    // the latter could change from the time the buffer was drawn.
+    if (!rect.intersect(clip_area_))
+      continue;
 
-bool PepperView::PaintRect(media::VideoFrame* frame, const SkIRect& r) {
-  const uint8* frame_data = frame->data(media::VideoFrame::kRGBPlane);
-  const int kFrameStride = frame->stride(media::VideoFrame::kRGBPlane);
-  const int kBytesPerPixel = GetBytesPerPixel(media::VideoFrame::RGB32);
+    // Specify the rectangle coordinates relative to the clipping area.
+    rect.offset(-clip_area.left(), -clip_area.top());
 
-  pp::Size backing_store_size = backing_store_->size();
-  SkIRect rect(r);
-  if (!rect.intersect(SkIRect::MakeWH(backing_store_size.width(),
-                                      backing_store_size.height()))) {
-    return false;
+    // Pepper Graphics 2D has a strange and badly documented API that the
+    // point here is the offset from the source rect. Why?
+    graphics2d_.PaintImageData(
+        *buffer,
+        pp::Point(clip_area.left(), clip_area.top()),
+        pp::Rect(rect.left(), rect.top(), rect.width(), rect.height()));
   }
 
-  const uint8* in =
-      frame_data +
-      kFrameStride * rect.fTop +   // Y offset.
-      kBytesPerPixel * rect.fLeft;  // X offset.
-  uint8* out =
-      reinterpret_cast<uint8*>(backing_store_->data()) +
-      backing_store_->stride() * rect.fTop +  // Y offset.
-      kBytesPerPixel * rect.fLeft;  // X offset.
-
-  // TODO(hclam): We really should eliminate this memory copy.
-  for (int j = 0; j < rect.height(); ++j) {
-    memcpy(out, in, rect.width() * kBytesPerPixel);
-    in += kFrameStride;
-    out += backing_store_->stride();
+  // Notify the producer that some parts of the region weren't painted because
+  // the clipping area has changed already.
+  if (clip_area != clip_area_) {
+    SkRegion not_painted = region;
+    not_painted.op(clip_area_, SkRegion::kDifference_Op);
+    if (!not_painted.isEmpty()) {
+      producer_->InvalidateRegion(not_painted);
+    }
   }
 
-  // Pepper Graphics 2D has a strange and badly documented API that the
-  // point here is the offset from the source rect. Why?
-  graphics2d_.PaintImageData(
-      *backing_store_.get(),
-      pp::Point(0, 0),
-      pp::Rect(rect.fLeft, rect.fTop, rect.width(), rect.height()));
-  return true;
-}
-
-void PepperView::BlankRect(pp::ImageData& image_data, const pp::Rect& rect) {
-  const int kBytesPerPixel = GetBytesPerPixel(media::VideoFrame::RGB32);
-  for (int y = rect.y(); y < rect.bottom(); y++) {
-    uint8* to = reinterpret_cast<uint8*>(image_data.data()) +
-        (y * image_data.stride()) + (rect.x() * kBytesPerPixel);
-    memset(to, 0xff, rect.width() * kBytesPerPixel);
-  }
-}
-
-void PepperView::FlushGraphics(base::Time paint_start) {
+  // Flush the updated areas to the screen.
   scoped_ptr<base::Closure> task(
       new base::Closure(
-          base::Bind(&PepperView::OnPaintDone, weak_factory_.GetWeakPtr(),
-                     paint_start)));
+          base::Bind(&PepperView::OnFlushDone, weak_factory_.GetWeakPtr(),
+                     start_time, buffer)));
 
   // Flag needs to be set here in order to get a proper error code for Flush().
   // Otherwise Flush() will always return PP_OK_COMPLETIONPENDING and the error
@@ -194,142 +321,44 @@ void PepperView::FlushGraphics(base::Time paint_start) {
                                      PP_COMPLETIONCALLBACK_FLAG_OPTIONAL);
   int error = graphics2d_.Flush(pp_callback);
 
-  // There is already a flush in progress so set this flag to true so that we
-  // can flush again later.
-  // |paint_start| is then discarded but this is fine because we're not aiming
-  // for precise measurement of timing, otherwise we need to keep a list of
-  // queued start time(s).
-  if (error == PP_ERROR_INPROGRESS)
-    flush_blocked_ = true;
-  else
-    flush_blocked_ = false;
-
   // If Flush() returns asynchronously then release the task.
-  if (error == PP_OK_COMPLETIONPENDING)
+  flush_pending_ = (error == PP_OK_COMPLETIONPENDING);
+  if (flush_pending_) {
     ignore_result(task.release());
-}
+  } else {
+    instance_->GetStats()->video_paint_ms()->Record(
+        (base::Time::Now() - start_time).InMilliseconds());
 
-void PepperView::SetSolidFill(uint32 color) {
-  DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
+    ReturnBuffer(buffer);
 
-  is_static_fill_ = true;
-  static_fill_color_ = color;
-
-  Paint();
-}
-
-void PepperView::UnsetSolidFill() {
-  DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
-
-  is_static_fill_ = false;
-}
-
-void PepperView::SetConnectionState(protocol::ConnectionToHost::State state,
-                                    protocol::ConnectionToHost::Error error) {
-  DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
-
-  switch (state) {
-    case protocol::ConnectionToHost::CONNECTING:
-      SetSolidFill(kCreatedColor);
-      instance_->SetConnectionState(
-          ChromotingInstance::STATE_CONNECTING,
-          ConvertConnectionError(error));
-      break;
-
-    case protocol::ConnectionToHost::CONNECTED:
-      UnsetSolidFill();
-      instance_->SetConnectionState(
-          ChromotingInstance::STATE_CONNECTED,
-          ConvertConnectionError(error));
-      break;
-
-    case protocol::ConnectionToHost::CLOSED:
-      SetSolidFill(kDisconnectedColor);
-      instance_->SetConnectionState(
-          ChromotingInstance::STATE_CLOSED,
-          ConvertConnectionError(error));
-      break;
-
-    case protocol::ConnectionToHost::FAILED:
-      SetSolidFill(kFailedColor);
-      instance_->SetConnectionState(
-          ChromotingInstance::STATE_FAILED,
-          ConvertConnectionError(error));
-      break;
+    // Resume painting for the buffer that was previoulsy postponed because of
+    // pending flush.
+    if (merge_buffer_ != NULL) {
+      buffer = merge_buffer_;
+      merge_buffer_ = NULL;
+      FlushBuffer(merge_clip_area_, buffer, merge_region_);
+    }
   }
 }
 
-bool PepperView::SetViewSize(const SkISize& view_size) {
-  if (view_size_ == view_size)
-    return false;
-  view_size_ = view_size;
-
-  pp::Size pp_size = pp::Size(view_size.width(), view_size.height());
-
-  graphics2d_ = pp::Graphics2D(instance_, pp_size, true);
-  if (!instance_->BindGraphics(graphics2d_)) {
-    LOG(ERROR) << "Couldn't bind the device context.";
-    return false;
-  }
-
-  if (view_size.isEmpty())
-    return false;
-
-  // Allocate the backing store to save the desktop image.
-  if ((backing_store_.get() == NULL) ||
-      (backing_store_->size() != pp_size)) {
-    VLOG(1) << "Allocate backing store: "
-            << view_size.width() << " x " << view_size.height();
-    backing_store_.reset(
-        new pp::ImageData(instance_, pp::ImageData::GetNativeImageDataFormat(),
-                          pp_size, false));
-    DCHECK(backing_store_.get() && !backing_store_->is_null())
-        << "Not enough memory for backing store.";
-  }
-  return true;
-}
-
-void PepperView::AllocateFrame(media::VideoFrame::Format format,
-                               const SkISize& size,
-                               scoped_refptr<media::VideoFrame>* frame_out,
-                               const base::Closure& done) {
+void PepperView::OnFlushDone(base::Time paint_start,
+                             pp::ImageData* buffer) {
   DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
+  DCHECK(flush_pending_);
 
-  *frame_out = media::VideoFrame::CreateFrame(
-      media::VideoFrame::RGB32, size.width(), size.height(),
-      base::TimeDelta(), base::TimeDelta());
-  (*frame_out)->AddRef();
-  done.Run();
-}
-
-void PepperView::ReleaseFrame(media::VideoFrame* frame) {
-  DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
-
-  if (frame)
-    frame->Release();
-}
-
-void PepperView::OnPartialFrameOutput(media::VideoFrame* frame,
-                                      SkRegion* region,
-                                      const base::Closure& done) {
-  DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
-
-  // TODO(ajwong): Clean up this API to be async so we don't need to use a
-  // member variable as a hack.
-  PaintFrame(frame, *region);
-  done.Run();
-}
-
-void PepperView::OnPaintDone(base::Time paint_start) {
-  DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
   instance_->GetStats()->video_paint_ms()->Record(
       (base::Time::Now() - paint_start).InMilliseconds());
 
-  // If the last flush failed because there was already another one in progress
-  // then we perform the flush now.
-  if (flush_blocked_)
-    FlushGraphics(base::Time::Now());
-  return;
+  flush_pending_ = false;
+  ReturnBuffer(buffer);
+
+  // Resume painting for the buffer that was previoulsy postponed because of
+  // pending flush.
+  if (merge_buffer_ != NULL) {
+    buffer = merge_buffer_;
+    merge_buffer_ = NULL;
+    FlushBuffer(merge_clip_area_, buffer, merge_region_);
+  }
 }
 
 }  // namespace remoting

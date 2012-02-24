@@ -197,13 +197,11 @@ bool ChromotingInstance::Init(uint32_t argc,
   // Create the chromoting objects that don't depend on the network connection.
   // Because we decode on a separate thread we need a FrameConsumerProxy to
   // bounce calls from the RectangleUpdateDecoder back to the plugin thread.
-  view_.reset(new PepperView(this, &context_));
-  consumer_proxy_ = new FrameConsumerProxy(view_.get(), plugin_message_loop_);
+  consumer_proxy_ = new FrameConsumerProxy(plugin_message_loop_);
   rectangle_decoder_ = new RectangleUpdateDecoder(
       context_.decode_message_loop(), consumer_proxy_.get());
-
-  // Default to a medium grey.
-  view_->SetSolidFill(0xFFCDCDCD);
+  view_.reset(new PepperView(this, &context_, rectangle_decoder_.get()));
+  consumer_proxy_->Attach(view_.get());
 
   return true;
 }
@@ -261,15 +259,14 @@ void ChromotingInstance::DidChangeView(const pp::Rect& position,
   DCHECK(plugin_message_loop_->BelongsToCurrentThread());
 
   SkISize new_size = SkISize::Make(position.width(), position.height());
-  if (view_->SetViewSize(new_size)) {
-    if (mouse_input_filter_.get()) {
-      mouse_input_filter_->set_input_size(new_size);
-    }
-    rectangle_decoder_->SetOutputSize(new_size);
-  }
+  SkIRect new_clip =
+    SkIRect::MakeXYWH(clip.x(), clip.y(), clip.width(), clip.height());
 
-  rectangle_decoder_->UpdateClipRect(
-      SkIRect::MakeXYWH(clip.x(), clip.y(), clip.width(), clip.height()));
+  view_->SetView(new_size, new_clip);
+
+  if (mouse_input_filter_.get()) {
+    mouse_input_filter_->set_input_size(view_->get_view_size());
+  }
 }
 
 bool ChromotingInstance::HandleInputEvent(const pp::InputEvent& event) {
@@ -282,7 +279,7 @@ bool ChromotingInstance::HandleInputEvent(const pp::InputEvent& event) {
   // this there.
   // If |input_handler_| is valid, then |mouse_input_filter_| must also be
   // since they are constructed together as part of the input pipeline
-  mouse_input_filter_->set_output_size(view_->get_host_size());
+  mouse_input_filter_->set_output_size(view_->get_screen_size());
 
   return input_handler_->HandleInputEvent(event);
 }

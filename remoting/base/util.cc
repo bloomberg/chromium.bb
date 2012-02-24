@@ -221,9 +221,9 @@ SkIRect ScaleRect(const SkIRect& rect,
                   const SkISize& out_size) {
   int left = (rect.left() * out_size.width()) / in_size.width();
   int top = (rect.top() * out_size.height()) / in_size.height();
-  int right = (rect.right() * out_size.width() + out_size.width() - 1) /
+  int right = (rect.right() * out_size.width() + in_size.width() - 1) /
       in_size.width();
-  int bottom = (rect.bottom() * out_size.height() + out_size.height() - 1) /
+  int bottom = (rect.bottom() * out_size.height() + in_size.height() - 1) /
       in_size.height();
   return SkIRect::MakeLTRB(left, top, right, bottom);
 }

@@ -22,8 +22,7 @@ DecoderVp8::DecoderVp8()
     : state_(kUninitialized),
       codec_(NULL),
       last_image_(NULL),
-      clip_rect_(SkIRect::MakeEmpty()),
-      output_size_(SkISize::Make(0, 0)) {
+      screen_size_(SkISize::Make(0, 0)) {
 }
 
 DecoderVp8::~DecoderVp8() {
@@ -34,16 +33,8 @@ DecoderVp8::~DecoderVp8() {
   delete codec_;
 }
 
-void DecoderVp8::Initialize(scoped_refptr<media::VideoFrame> frame) {
-  DCHECK_EQ(kUninitialized, state_);
-
-  if (frame->format() != media::VideoFrame::RGB32) {
-    LOG(INFO) << "DecoderVp8 only supports RGB32 as output";
-    state_ = kError;
-    return;
-  }
-  frame_ = frame;
-
+void DecoderVp8::Initialize(const SkISize& screen_size) {
+  screen_size_ = screen_size;
   state_ = kReady;
 }
 
@@ -102,17 +93,8 @@ Decoder::DecodeResult DecoderVp8::DecodePacket(const VideoPacket* packet) {
     region.op(rect, SkRegion::kUnion_Op);
   }
 
-  RefreshRegion(region);
+  updated_region_.op(region, SkRegion::kUnion_Op);
   return DECODE_DONE;
-}
-
-void DecoderVp8::GetUpdatedRegion(SkRegion* region) {
-  region->swap(updated_region_);
-}
-
-void DecoderVp8::Reset() {
-  frame_ = NULL;
-  state_ = kUninitialized;
 }
 
 bool DecoderVp8::IsReadyForData() {
@@ -123,68 +105,49 @@ VideoPacketFormat::Encoding DecoderVp8::Encoding() {
   return VideoPacketFormat::ENCODING_VP8;
 }
 
-void DecoderVp8::SetOutputSize(const SkISize& size) {
-  output_size_ = size;
-}
-
-void DecoderVp8::SetClipRect(const SkIRect& clip_rect) {
-  clip_rect_ = clip_rect;
-}
-
-void DecoderVp8::RefreshRegion(const SkRegion& region) {
-  // TODO(wez): Fix the rest of the decode pipeline not to assume the frame
-  // size is the host dimensions, since it's not when scaling.  If the host
-  // gets smaller, then the output size will be too big and we'll overrun the
-  // frame, so currently we render 1:1 in that case; the app will see the
-  // host size change and resize us if need be.
-  if (output_size_.width() > static_cast<int>(frame_->width()))
-    output_size_.set(frame_->width(), output_size_.height());
-  if (output_size_.height() > static_cast<int>(frame_->height()))
-    output_size_.set(output_size_.width(), frame_->height());
-
-  if (!last_image_)
-    return;
-
-  updated_region_.setEmpty();
-
-  // Clip based on both the output dimensions and Pepper clip rect.
-  // ConvertAndScaleYUVToRGB32Rect() requires even X and Y coordinates, so we
-  // align |clip_rect| to prevent clipping from breaking alignment.  We then
-  // clamp it to the image dimensions, which may lead to odd width & height,
-  // which we can cope with.
-  SkIRect clip_rect = AlignRect(clip_rect_);
-  if (!clip_rect.intersect(SkIRect::MakeSize(output_size_)))
-    return;
-
-  SkISize image_size = SkISize::Make(last_image_->d_w, last_image_->d_h);
-  uint8* output_rgb_buf = frame_->data(media::VideoFrame::kRGBPlane);
-  const int output_stride = frame_->stride(media::VideoFrame::kRGBPlane);
-
+void DecoderVp8::Invalidate(const SkISize& view_size,
+                            const SkRegion& region) {
   for (SkRegion::Iterator i(region); !i.done(); i.next()) {
+    SkIRect rect = i.rect();
+    rect = ScaleRect(rect, view_size, screen_size_);
+    updated_region_.op(rect, SkRegion::kUnion_Op);
+  }
+}
+
+void DecoderVp8::RenderFrame(const SkISize& view_size,
+                             const SkIRect& clip_area,
+                             uint8* image_buffer,
+                             int image_stride,
+                             SkRegion* output_region) {
+  SkIRect source_clip = SkIRect::MakeWH(last_image_->d_w, last_image_->d_h);
+
+  for (SkRegion::Iterator i(updated_region_); !i.done(); i.next()) {
     // Determine the scaled area affected by this rectangle changing.
-    // Align the rectangle so the top-left coordinates are even, for
-    // ConvertAndScaleYUVToRGB32Rect().
-    SkIRect output_rect = ScaleRect(AlignRect(i.rect()),
-                                    image_size, output_size_);
-    if (!output_rect.intersect(clip_rect))
+    SkIRect rect = i.rect();
+    if (!rect.intersect(source_clip))
+      continue;
+    rect = ScaleRect(rect, screen_size_, view_size);
+    if (!rect.intersect(clip_area))
       continue;
 
-    // The scaler will not to read outside the input dimensions.
     ConvertAndScaleYUVToRGB32Rect(last_image_->planes[0],
                                   last_image_->planes[1],
                                   last_image_->planes[2],
                                   last_image_->stride[0],
                                   last_image_->stride[1],
-                                  image_size,
-                                  SkIRect::MakeSize(image_size),
-                                  output_rgb_buf,
-                                  output_stride,
-                                  output_size_,
-                                  SkIRect::MakeSize(output_size_),
-                                  output_rect);
+                                  screen_size_,
+                                  source_clip,
+                                  image_buffer,
+                                  image_stride,
+                                  view_size,
+                                  clip_area,
+                                  rect);
 
-    updated_region_.op(output_rect, SkRegion::kUnion_Op);
+    output_region->op(rect, SkRegion::kUnion_Op);
   }
+
+  updated_region_.op(ScaleRect(clip_area, view_size, screen_size_),
+                     SkRegion::kDifference_Op);
 }
 
 }  // namespace remoting

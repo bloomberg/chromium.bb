@@ -8,11 +8,10 @@
 #ifndef REMOTING_CLIENT_PLUGIN_PEPPER_VIEW_H_
 #define REMOTING_CLIENT_PLUGIN_PEPPER_VIEW_H_
 
-#include <vector>
+#include <list>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "media/base/video_frame.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/point.h"
 #include "remoting/client/chromoting_view.h"
@@ -22,64 +21,64 @@ namespace remoting {
 
 class ChromotingInstance;
 class ClientContext;
+class FrameProducer;
 
 class PepperView : public ChromotingView,
                    public FrameConsumer {
  public:
-  // Constructs a PepperView for the |instance|. The |instance| and
-  // |context| must outlive this class.
-  PepperView(ChromotingInstance* instance, ClientContext* context);
+  // Constructs a PepperView for the |instance|. The |instance|, |context|
+  // and |producer| must outlive this class.
+  PepperView(ChromotingInstance* instance,
+             ClientContext* context,
+             FrameProducer* producer);
   virtual ~PepperView();
 
   // ChromotingView implementation.
   virtual bool Initialize() OVERRIDE;
   virtual void TearDown() OVERRIDE;
-  virtual void Paint() OVERRIDE;
-  virtual void SetSolidFill(uint32 color) OVERRIDE;
-  virtual void UnsetSolidFill() OVERRIDE;
   virtual void SetConnectionState(
       protocol::ConnectionToHost::State state,
       protocol::ConnectionToHost::Error error) OVERRIDE;
 
   // FrameConsumer implementation.
-  virtual void AllocateFrame(media::VideoFrame::Format format,
-                             const SkISize& size,
-                             scoped_refptr<media::VideoFrame>* frame_out,
-                             const base::Closure& done) OVERRIDE;
-  virtual void ReleaseFrame(media::VideoFrame* frame) OVERRIDE;
-  virtual void OnPartialFrameOutput(media::VideoFrame* frame,
-                                    SkRegion* region,
-                                    const base::Closure& done) OVERRIDE;
+  virtual void ApplyBuffer(const SkISize& view_size,
+                           const SkIRect& clip_area,
+                           pp::ImageData* buffer,
+                           const SkRegion& region) OVERRIDE;
+  virtual void ReturnBuffer(pp::ImageData* buffer) OVERRIDE;
+  virtual void SetSourceSize(const SkISize& source_size) OVERRIDE;
 
-  // Sets the display size of this view.  Returns true if plugin size has
-  // changed, false otherwise.
-  bool SetViewSize(const SkISize& plugin_size);
+  // Sets the display size and clipping area of this view.
+  void SetView(const SkISize& view_size, const SkIRect& clip_area);
 
   // Return the client view and original host dimensions.
   const SkISize& get_view_size() const {
     return view_size_;
   }
-  const SkISize& get_host_size() const {
-    return host_size_;
+  const SkISize& get_screen_size() const {
+    return source_size_;
   }
 
  private:
-  void OnPaintDone(base::Time paint_start);
+  // This routine allocates an image buffer.
+  pp::ImageData* AllocateBuffer();
 
-  // Set the dimension of the entire host screen.
-  void SetHostSize(const SkISize& host_size);
+  // This routine frees an image buffer allocated by AllocateBuffer().
+  void FreeBuffer(pp::ImageData* buffer);
 
-  void PaintFrame(media::VideoFrame* frame, const SkRegion& region);
+  // This routine makes sure that enough image buffers are in flight to keep
+  // the decoding pipeline busy.
+  void InitiateDrawing();
 
-  // Render the rectangle of |frame| to the backing store.
-  // Returns true if this rectangle is not clipped.
-  bool PaintRect(media::VideoFrame* frame, const SkIRect& rect);
+  // This routine applies the given image buffer to the screen taking into
+  // account |clip_area| of the buffer and |region| describing valid parts
+  // of the buffer.
+  void FlushBuffer(const SkIRect& clip_area,
+                   pp::ImageData* buffer,
+                   const SkRegion& region);
 
-  // Blanks out a rectangle in an image.
-  void BlankRect(pp::ImageData& image_data, const pp::Rect& rect);
-
-  // Perform a flush on the graphics context.
-  void FlushGraphics(base::Time paint_start);
+  // This is a completion callback for FlushGraphics().
+  void OnFlushDone(base::Time paint_start, pp::ImageData* buffer);
 
   // Reference to the creating plugin instance. Needed for interacting with
   // pepper.  Marking explicitly as const since it must be initialized at
@@ -91,21 +90,28 @@ class PepperView : public ChromotingView,
 
   pp::Graphics2D graphics2d_;
 
-  // A backing store that saves the current desktop image.
-  scoped_ptr<pp::ImageData> backing_store_;
+  FrameProducer* producer_;
 
-  // True if there is pending paint commands in Pepper's queue. This is set to
-  // true if the last flush returns a PP_ERROR_INPROGRESS error.
-  bool flush_blocked_;
+  // List of allocated image buffers.
+  std::list<pp::ImageData*> buffers_;
+
+  pp::ImageData* merge_buffer_;
+  SkIRect merge_clip_area_;
+  SkRegion merge_region_;
 
   // The size of the plugin element.
   SkISize view_size_;
 
-  // The size of the host screen.
-  SkISize host_size_;
+  // The current clip area rectangle.
+  SkIRect clip_area_;
 
-  bool is_static_fill_;
-  uint32 static_fill_color_;
+  // The size of the host screen.
+  SkISize source_size_;
+
+  // True if there is already a Flush() pending on the Graphics2D context.
+  bool flush_pending_;
+
+  bool in_teardown_;
 
   base::WeakPtrFactory<PepperView> weak_factory_;
 

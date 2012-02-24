@@ -103,11 +103,6 @@ ChromotingStats* ChromotingClient::GetStats() {
   return &stats_;
 }
 
-void ChromotingClient::Repaint() {
-  DCHECK(message_loop()->BelongsToCurrentThread());
-  view_->Paint();
-}
-
 void ChromotingClient::ProcessVideoPacket(const VideoPacket* packet,
                                           const base::Closure& done) {
   DCHECK(message_loop()->BelongsToCurrentThread());

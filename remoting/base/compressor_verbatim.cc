@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ bool CompressorVerbatim::Process(const uint8* input_data, int input_size,
 
   // Since we're just a memcpy, consumed and written are the same.
   *consumed = *written = bytes_to_copy;
-  return true;
+  return (flush != CompressorFinish) || (output_size < bytes_to_copy);
 }
 
 }  // namespace remoting

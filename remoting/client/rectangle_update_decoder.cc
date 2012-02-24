@@ -10,6 +10,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
+#include "ppapi/cpp/image_data.h"
 #include "remoting/base/decoder.h"
 #include "remoting/base/decoder_row_based.h"
 #include "remoting/base/decoder_vp8.h"
@@ -17,6 +18,7 @@
 #include "remoting/client/frame_consumer.h"
 #include "remoting/protocol/session_config.h"
 
+using base::Passed;
 using remoting::protocol::ChannelConfig;
 using remoting::protocol::SessionConfig;
 
@@ -26,9 +28,9 @@ RectangleUpdateDecoder::RectangleUpdateDecoder(
     base::MessageLoopProxy* message_loop, FrameConsumer* consumer)
     : message_loop_(message_loop),
       consumer_(consumer),
-      screen_size_(SkISize::Make(0, 0)),
-      clip_rect_(SkIRect::MakeEmpty()),
-      decoder_needs_reset_(false) {
+      source_size_(SkISize::Make(0, 0)),
+      view_size_(SkISize::Make(0, 0)),
+      clip_area_(SkIRect::MakeEmpty()) {
 }
 
 RectangleUpdateDecoder::~RectangleUpdateDecoder() {
@@ -56,67 +58,29 @@ void RectangleUpdateDecoder::DecodePacket(const VideoPacket* packet,
                               this, packet, done));
     return;
   }
-  AllocateFrame(packet, done);
-}
 
-void RectangleUpdateDecoder::AllocateFrame(const VideoPacket* packet,
-                                           const base::Closure& done) {
-  if (!message_loop_->BelongsToCurrentThread()) {
-    message_loop_->PostTask(
-        FROM_HERE, base::Bind(&RectangleUpdateDecoder::AllocateFrame,
-                              this, packet, done));
-    return;
-  }
   base::ScopedClosureRunner done_runner(done);
+  bool decoder_needs_reset = false;
 
   // If the packet includes a screen size, store it.
   if (packet->format().has_screen_width() &&
       packet->format().has_screen_height()) {
-    screen_size_.set(packet->format().screen_width(),
-                     packet->format().screen_height());
+    SkISize source_size = SkISize::Make(packet->format().screen_width(),
+                                        packet->format().screen_height());
+    if (source_size_ != source_size) {
+      source_size_ = source_size;
+      decoder_needs_reset = true;
+    }
   }
 
   // If we've never seen a screen size, ignore the packet.
-  if (screen_size_.isZero()) {
+  if (source_size_.isZero()) {
     return;
   }
 
-  // Ensure the output frame is the right size.
-  SkISize frame_size = SkISize::Make(0, 0);
-  if (frame_)
-    frame_size.set(frame_->width(), frame_->height());
-
-  // Allocate a new frame, if necessary.
-  if ((!frame_) || (screen_size_ != frame_size)) {
-    if (frame_) {
-      consumer_->ReleaseFrame(frame_);
-      frame_ = NULL;
-    }
-
-    consumer_->AllocateFrame(
-        media::VideoFrame::RGB32, screen_size_, &frame_,
-        base::Bind(&RectangleUpdateDecoder::ProcessPacketData,
-                   this, packet, done_runner.Release()));
-    decoder_needs_reset_ = true;
-    return;
-  }
-  ProcessPacketData(packet, done_runner.Release());
-}
-
-void RectangleUpdateDecoder::ProcessPacketData(
-    const VideoPacket* packet, const base::Closure& done) {
-  if (!message_loop_->BelongsToCurrentThread()) {
-    message_loop_->PostTask(
-        FROM_HERE, base::Bind(&RectangleUpdateDecoder::ProcessPacketData,
-                              this, packet, done));
-    return;
-  }
-  base::ScopedClosureRunner done_runner(done);
-
-  if (decoder_needs_reset_) {
-    decoder_->Reset();
-    decoder_->Initialize(frame_);
-    decoder_needs_reset_ = false;
+  if (decoder_needs_reset) {
+    decoder_->Initialize(source_size_);
+    consumer_->SetSourceSize(source_size_);
   }
 
   if (!decoder_->IsReadyForData()) {
@@ -126,109 +90,109 @@ void RectangleUpdateDecoder::ProcessPacketData(
   }
 
   if (decoder_->DecodePacket(packet) == Decoder::DECODE_DONE)
-    SubmitToConsumer();
+    DoPaint();
 }
 
-void RectangleUpdateDecoder::SetOutputSize(const SkISize& size) {
+void RectangleUpdateDecoder::DoPaint() {
+  if (buffers_.empty())
+    return;
+
+  // Draw the invalidated region to the buffer.
+  pp::ImageData* buffer = buffers_.front();
+  SkRegion output_region;
+  decoder_->RenderFrame(view_size_, clip_area_,
+                        reinterpret_cast<uint8*>(buffer->data()),
+                        buffer->stride(),
+                        &output_region);
+
+  // Notify the consumer that painting is done.
+  if (!output_region.isEmpty()) {
+    buffers_.pop_front();
+    consumer_->ApplyBuffer(view_size_, clip_area_, buffer, output_region);
+  }
+}
+
+void RectangleUpdateDecoder::RequestReturnBuffers(const base::Closure& done) {
   if (!message_loop_->BelongsToCurrentThread()) {
     message_loop_->PostTask(
-        FROM_HERE, base::Bind(&RectangleUpdateDecoder::SetOutputSize,
-                              this, size));
+        FROM_HERE, base::Bind(&RectangleUpdateDecoder::RequestReturnBuffers,
+        this, done));
     return;
   }
 
-  // TODO(wez): Refresh the frame only if the ratio has changed.
-  if (frame_) {
-    SkIRect frame_rect = SkIRect::MakeWH(frame_->width(), frame_->height());
-    refresh_region_.op(frame_rect, SkRegion::kUnion_Op);
+  while (!buffers_.empty()) {
+    consumer_->ReturnBuffer(buffers_.front());
+    buffers_.pop_front();
   }
 
-  // TODO(hclam): If the scale ratio has changed we should reallocate a
-  // VideoFrame of different size. However if the scale ratio is always
-  // smaller than 1.0 we can use the same video frame.
-  if (decoder_.get()) {
-    decoder_->SetOutputSize(size);
-    RefreshFullFrame();
-  }
+  if (!done.is_null())
+    done.Run();
 }
 
-void RectangleUpdateDecoder::UpdateClipRect(const SkIRect& new_clip_rect) {
+void RectangleUpdateDecoder::DrawBuffer(pp::ImageData* buffer) {
   if (!message_loop_->BelongsToCurrentThread()) {
     message_loop_->PostTask(
-        FROM_HERE, base::Bind(&RectangleUpdateDecoder::UpdateClipRect,
-                              this, new_clip_rect));
+        FROM_HERE, base::Bind(&RectangleUpdateDecoder::DrawBuffer,
+                              this, buffer));
     return;
   }
 
-  if (new_clip_rect == clip_rect_ || !decoder_.get())
-    return;
+  DCHECK(clip_area_.width() <= buffer->size().width() &&
+         clip_area_.height() <= buffer->size().height());
 
-  // TODO(wez): Only refresh newly-exposed portions of the frame.
-  if (frame_) {
-    SkIRect frame_rect = SkIRect::MakeWH(frame_->width(), frame_->height());
-    refresh_region_.op(frame_rect, SkRegion::kUnion_Op);
-  }
-
-  clip_rect_ = new_clip_rect;
-  decoder_->SetClipRect(new_clip_rect);
-
-  // TODO(wez): Defer refresh so that multiple events can be batched.
-  DoRefresh();
+  buffers_.push_back(buffer);
+  DoPaint();
 }
 
-void RectangleUpdateDecoder::RefreshFullFrame() {
+void RectangleUpdateDecoder::InvalidateRegion(const SkRegion& region) {
   if (!message_loop_->BelongsToCurrentThread()) {
     message_loop_->PostTask(
-        FROM_HERE, base::Bind(&RectangleUpdateDecoder::RefreshFullFrame, this));
-    return;
-  }
-
-  // If a video frame or the decoder is not allocated yet then don't
-  // save the refresh rectangle to avoid wasted computation.
-  if (!frame_ || !decoder_.get())
-    return;
-
-  SkIRect frame_rect = SkIRect::MakeWH(frame_->width(), frame_->height());
-  refresh_region_.op(frame_rect, SkRegion::kUnion_Op);
-
-  DoRefresh();
-}
-
-void RectangleUpdateDecoder::SubmitToConsumer() {
-  // A frame is not allocated yet, we can reach here because of a refresh
-  // request.
-  if (!frame_)
-    return;
-
-  SkRegion* dirty_region = new SkRegion;
-  decoder_->GetUpdatedRegion(dirty_region);
-
-  consumer_->OnPartialFrameOutput(frame_, dirty_region, base::Bind(
-      &RectangleUpdateDecoder::OnFrameConsumed, this, dirty_region));
-}
-
-void RectangleUpdateDecoder::DoRefresh() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-
-  if (refresh_region_.isEmpty())
-    return;
-
-  decoder_->RefreshRegion(refresh_region_);
-  refresh_region_.setEmpty();
-  SubmitToConsumer();
-}
-
-void RectangleUpdateDecoder::OnFrameConsumed(SkRegion* region) {
-  if (!message_loop_->BelongsToCurrentThread()) {
-    message_loop_->PostTask(
-        FROM_HERE, base::Bind(&RectangleUpdateDecoder::OnFrameConsumed,
+        FROM_HERE, base::Bind(&RectangleUpdateDecoder::InvalidateRegion,
                               this, region));
     return;
   }
 
-  delete region;
+  if (decoder_.get()) {
+    decoder_->Invalidate(view_size_, region);
+    DoPaint();
+  }
+}
 
-  DoRefresh();
+void RectangleUpdateDecoder::SetOutputSizeAndClip(const SkISize& view_size,
+                                                  const SkIRect& clip_area) {
+  if (!message_loop_->BelongsToCurrentThread()) {
+    message_loop_->PostTask(
+        FROM_HERE, base::Bind(&RectangleUpdateDecoder::SetOutputSizeAndClip,
+                              this, view_size, clip_area));
+    return;
+  }
+
+  // The whole frame needs to be repainted if the scaling factor has changed.
+  if (view_size_ != view_size && decoder_.get()) {
+    SkRegion region;
+    region.op(SkIRect::MakeSize(view_size), SkRegion::kUnion_Op);
+    decoder_->Invalidate(view_size, region);
+  }
+
+  if (view_size_ != view_size ||
+      clip_area_ != clip_area) {
+    view_size_ = view_size;
+    clip_area_ = clip_area;
+
+    // Return buffers that are smaller than needed to the consumer for
+    // reuse/reallocation.
+    std::list<pp::ImageData*>::iterator i = buffers_.begin();
+    while (i != buffers_.end()) {
+      pp::Size buffer_size = (*i)->size();
+      if (buffer_size.width() < clip_area_.width() ||
+          buffer_size.height() < clip_area_.height()) {
+        consumer_->ReturnBuffer(*i);
+        i = buffers_.erase(i);
+      } else {
+        ++i;
+      }
+    }
+  }
 }
 
 }  // namespace remoting

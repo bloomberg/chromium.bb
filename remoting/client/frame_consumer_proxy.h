@@ -25,19 +25,20 @@ class FrameConsumerProxy
  public:
   // Constructs a proxy for |frame_consumer| which will trampoline invocations
   // to |frame_consumer_message_loop|.
-  FrameConsumerProxy(FrameConsumer* frame_consumer,
-                     base::MessageLoopProxy* frame_consumer_message_loop);
+  FrameConsumerProxy(base::MessageLoopProxy* frame_consumer_message_loop);
   virtual ~FrameConsumerProxy();
 
   // FrameConsumer implementation.
-  virtual void AllocateFrame(media::VideoFrame::Format format,
-                             const SkISize& size,
-                             scoped_refptr<media::VideoFrame>* frame_out,
-                             const base::Closure& done) OVERRIDE;
-  virtual void ReleaseFrame(media::VideoFrame* frame) OVERRIDE;
-  virtual void OnPartialFrameOutput(media::VideoFrame* frame,
-                                    SkRegion* region,
-                                    const base::Closure& done) OVERRIDE;
+  virtual void ApplyBuffer(const SkISize& view_size,
+                           const SkIRect& clip_area,
+                           pp::ImageData* buffer,
+                           const SkRegion& region) OVERRIDE;
+  virtual void ReturnBuffer(pp::ImageData* buffer) OVERRIDE;
+  virtual void SetSourceSize(const SkISize& source_size) OVERRIDE;
+
+  // Attaches to |frame_consumer_|.
+  // This must only be called from |frame_consumer_message_loop_|.
+  void Attach(FrameConsumer* frame_consumer);
 
   // Detaches from |frame_consumer_|, ensuring no further calls reach it.
   // This must only be called from |frame_consumer_message_loop_|.

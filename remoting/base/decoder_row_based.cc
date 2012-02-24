@@ -34,17 +34,11 @@ DecoderRowBased::DecoderRowBased(Decompressor* decompressor,
       decompressor_(decompressor),
       encoding_(encoding),
       row_pos_(0),
-      row_y_(0) {
+      row_y_(0),
+      screen_size_(SkISize::Make(0, 0)) {
 }
 
 DecoderRowBased::~DecoderRowBased() {
-}
-
-void DecoderRowBased::Reset() {
-  frame_ = NULL;
-  decompressor_->Reset();
-  state_ = kUninitialized;
-  updated_region_.setEmpty();
 }
 
 bool DecoderRowBased::IsReadyForData() {
@@ -62,17 +56,18 @@ bool DecoderRowBased::IsReadyForData() {
   return false;
 }
 
-void DecoderRowBased::Initialize(scoped_refptr<media::VideoFrame> frame) {
-  // Make sure we are not currently initialized.
-  CHECK_EQ(kUninitialized, state_);
+void DecoderRowBased::Initialize(const SkISize& screen_size) {
+  decompressor_->Reset();
+  updated_region_.setEmpty();
+  screen_buffer_.reset(NULL);
 
-  if (frame->format() != media::VideoFrame::RGB32) {
-    LOG(WARNING) << "DecoderRowBased only supports RGB32.";
-    state_ = kError;
-    return;
+  screen_size_ = screen_size;
+  // Allocate the screen buffer, if necessary.
+  if (!screen_size_.isEmpty()) {
+    screen_buffer_.reset(new uint8[
+        screen_size_.width() * screen_size_.height() * kBytesPerPixel]);
   }
 
-  frame_ = frame;
   state_ = kReady;
 }
 
@@ -85,13 +80,11 @@ Decoder::DecodeResult DecoderRowBased::DecodePacket(const VideoPacket* packet) {
 
   const uint8* in = reinterpret_cast<const uint8*>(packet->data().data());
   const int in_size = packet->data().size();
-
   const int row_size = clip_.width() * kBytesPerPixel;
-  int stride = frame_->stride(media::VideoFrame::kRGBPlane);
-  uint8* rect_begin = frame_->data(media::VideoFrame::kRGBPlane);
 
-  uint8* out = rect_begin + stride * (clip_.fTop + row_y_) +
-      kBytesPerPixel * clip_.fLeft;
+  int out_stride = screen_size_.width() * kBytesPerPixel;
+  uint8* out = screen_buffer_.get() + out_stride * (clip_.top() + row_y_) +
+      kBytesPerPixel * clip_.left();
 
   // Consume all the data in the message.
   bool decompress_again = true;
@@ -105,8 +98,6 @@ Decoder::DecodeResult DecoderRowBased::DecodePacket(const VideoPacket* packet) {
 
     int written = 0;
     int consumed = 0;
-    // TODO(ajwong): This assume source and dest stride are the same, which is
-    // incorrect.
     decompress_again = decompressor_->Process(
         in + used, in_size - used, out + row_pos_, row_size - row_pos_,
         &consumed, &written);
@@ -117,7 +108,7 @@ Decoder::DecodeResult DecoderRowBased::DecodePacket(const VideoPacket* packet) {
     if (row_pos_ == row_size) {
       ++row_y_;
       row_pos_ = 0;
-      out += stride;
+      out += out_stride;
     }
   }
 
@@ -150,11 +141,17 @@ void DecoderRowBased::UpdateStateForPacket(const VideoPacket* packet) {
       LOG(WARNING) << "Received unexpected FIRST_PACKET.";
       return;
     }
-    state_ = kProcessing;
 
     // Reset the buffer location status variables on the first packet.
     clip_.setXYWH(packet->format().x(), packet->format().y(),
                   packet->format().width(), packet->format().height());
+    if (!SkIRect::MakeSize(screen_size_).contains(clip_)) {
+      state_ = kError;
+      LOG(WARNING) << "Invalid clipping area received.";
+      return;
+    }
+
+    state_ = kProcessing;
     row_pos_ = 0;
     row_y_ = 0;
   }
@@ -186,13 +183,43 @@ void DecoderRowBased::UpdateStateForPacket(const VideoPacket* packet) {
   return;
 }
 
-void DecoderRowBased::GetUpdatedRegion(SkRegion* region) {
-  region->swap(updated_region_);
-  updated_region_.setEmpty();
-}
-
 VideoPacketFormat::Encoding DecoderRowBased::Encoding() {
   return encoding_;
+}
+
+void DecoderRowBased::Invalidate(const SkISize& view_size,
+                                 const SkRegion& region) {
+  updated_region_.op(region, SkRegion::kUnion_Op);
+}
+
+void DecoderRowBased::RenderFrame(const SkISize& view_size,
+                                  const SkIRect& clip_area,
+                                  uint8* image_buffer,
+                                  int image_stride,
+                                  SkRegion* output_region) {
+  output_region->setEmpty();
+
+  // TODO(alexeypa): scaling is not implemented.
+  SkIRect clip_rect = SkIRect::MakeSize(screen_size_);
+  if (!clip_rect.intersect(clip_area))
+    return;
+
+  int screen_stride = screen_size_.width() * kBytesPerPixel;
+
+  for (SkRegion::Iterator i(updated_region_); !i.done(); i.next()) {
+    SkIRect rect(i.rect());
+    if (!rect.intersect(clip_rect))
+      continue;
+
+    CopyRGB32Rect(screen_buffer_.get(), screen_stride,
+                  clip_rect,
+                  image_buffer, image_stride,
+                  clip_area,
+                  rect);
+    output_region->op(rect, SkRegion::kUnion_Op);
+  }
+
+  updated_region_.setEmpty();
 }
 
 }  // namespace remoting
