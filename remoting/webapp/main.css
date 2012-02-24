@@ -2931,17 +2931,11 @@ html.y-expand #kd-modalshield {
     -ms-box-shadow: 0 4px 16px rgba(0,0,0,0.2);
     box-shadow: 0 4px 16px rgba(0,0,0,0.2);
     background: white;
-    left: 50%;
     outline:1px solid rgba(0,0,0,0.2);/* border:1px solid #CCC;/*THIS IS FOR NON-WEBKIT BROWSERS ONLY - OTHER BROWSERS DO NOT INTERPRET THE OUTLINE STYLE CORRECTLY*/
     padding:30px 42px;
-    position: fixed;
-    right: auto;
-    width: 512px;
     height: auto;
     overflow: hidden;
     z-index: 100;
-    top: 72px;
-    margin-left: -256px;
     opacity: 0.0;
     -webkit-transform: scale(1.05);
     -moz-transform: scale(1.05);
@@ -4470,11 +4464,12 @@ button:active, .toggle-button-active, .toggle-button-active:hover {
   -webkit-box-shadow: inset 0px 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-button[disabled], .button[disabled]:hover {
-  background: -webkit-linear-gradient(#fafafa, #f4f4f4 40%, #e5e5e5);
-  border-color: #aaa;
-  color: #888;
-  -webkit-box-shadow: none;
+/* TODO(jamiewalch): Remove the !important tags when the CSS is rationalized */
+button[disabled], .button[disabled]:hover, .button[disabled]:active {
+  background: -webkit-linear-gradient(#fafafa, #f4f4f4 40%, #e5e5e5) !important;
+  border-color: #aaa !important;
+  color: #888 !important;
+  -webkit-box-shadow: none !important;
 }
 
 form {
@@ -4499,8 +4494,9 @@ header {
   width: 100%;
 }
 
-header > .box-spacer {
-  -webkit-box-flex: 1;
+html {
+  -webkit-user-select: none;
+  cursor: default;
 }
 
 label {
@@ -4535,6 +4531,10 @@ section {
   padding: 6px;
 }
 
+.box-spacer {
+  -webkit-box-flex: 1;
+}
+
 .centered-button {
   /*
     Used to force buttons to center correctly on Chrome due to a quirk
@@ -4562,6 +4562,11 @@ section {
 
 .clickable {
   cursor: pointer;
+}
+
+.selectable {
+  -webkit-user-select: text;
+  cursor: text;
 }
 
 .error-state {
@@ -4608,13 +4613,9 @@ section {
   display: -webkit-box;
 }
 
-.information-box-padding {
-  -webkit-box-flex: 1;
-}
-
 .message {
   text-align:center;
-  margin-bottom: 10px;
+  margin-bottom: 24px;
 }
 
 .mode-select-button-column {
@@ -4708,8 +4709,21 @@ td {
   color: #AAA;
 }
 
+.waiting:before {
+  content: url('spinner.gif');
+  position: absolute;
+  left: 0px;
+  top: -3px;
+}
+
 .waiting {
   color: rgb(180, 180, 180);
+  margin-left: 30px;
+}
+
+.waiting-container {
+  position: relative;
+  margin-top: 30px;
 }
 
 /* Ids */
@@ -4751,7 +4765,7 @@ td {
   padding: 0 20px;
 }
 
-#cancel-button {
+#cancel-button, #cancel-share-button {
   float: __MSG_@@bidi_end_edge__;
 }
 
@@ -4766,6 +4780,14 @@ td {
 #daemon-plugin-container {
   width: 0;
   height: 0;
+}
+
+#dialog-container {
+  position: absolute;
+  top: 200px;
+  left: 0;
+  width: 100%;
+  display: -webkit-box;
 }
 
 #dialog-screen {
@@ -4790,6 +4812,15 @@ td {
   margin-__MSG_@@bidi_end_edge__: 0.5ex;
 }
 
+#host-dialog-and-nat {
+  width: 504px;
+}
+
+#host-plugin-container {
+  width: 0;
+  height: 0;
+}
+
 #icon {
   height: 64px;
   width: 64px;
@@ -4797,6 +4828,10 @@ td {
 
 #host-list-error {
   margin-__MSG_@@bidi_start_edge__: 40px;
+}
+
+#nat-box-container {
+  margin-top: 40px;
 }
 
 #session-mode {
@@ -4818,4 +4853,8 @@ td {
 
 #top-secondary {
   margin-top: 10px
+}
+
+* {
+  box-sizing: border-box;
 }

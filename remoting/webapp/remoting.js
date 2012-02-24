@@ -76,21 +76,6 @@ remoting.init = function() {
 };
 
 /**
- * If there is an incomplete share or connection in progress, cancel it.
- */
-remoting.cancelPendingOperation = function() {
-  document.getElementById('cancel-button').disabled = true;
-  switch (remoting.getMajorMode()) {
-    case remoting.AppMode.HOST:
-      remoting.cancelShare();
-      break;
-    case remoting.AppMode.CLIENT:
-      remoting.cancelConnect();
-      break;
-  }
-};
-
-/**
  * If the client is connected, or the host is shared, prompt before closing.
  *
  * @return {?string} The prompt string if a connection is active.

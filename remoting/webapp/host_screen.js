@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,7 @@ remoting.tryShare = function() {
 
   onNatTraversalPolicyChanged_(true);  // Hide warning by default.
   remoting.setMode(remoting.AppMode.HOST_WAITING_FOR_CODE);
-  document.getElementById('cancel-button').disabled = false;
+  document.getElementById('cancel-share-button').disabled = false;
   disableTimeoutCountdown_();
 
   var div = document.getElementById('host-plugin-container');
@@ -158,6 +158,7 @@ function showShareError_(errorTag) {
  * @return {void} Nothing.
  */
 remoting.cancelShare = function() {
+  document.getElementById('cancel-share-button').disabled = true;
   remoting.debug.log('Canceling share...');
   remoting.lastShareWasCancelled = true;
   try {

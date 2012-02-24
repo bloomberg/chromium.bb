@@ -53,7 +53,7 @@ found in the LICENSE file.
 
     <div id="daemon-plugin-container"></div>
 
-    <header data-ui-mode="auth home client host" hidden>
+    <header data-ui-mode="auth home client" hidden>
       <div>
         <img src="chromoting48.png">
         <h1 class="icon-label" i18n-content="PRODUCT_NAME"></h1>
@@ -71,7 +71,7 @@ found in the LICENSE file.
       </div>
     </header>
 
-    <section id="auth-panel" data-ui-mode="auth">
+    <section id="auth-panel" data-ui-mode="auth" hidden>
       <h2 i18n-content="MODE_AUTHORIZE"></h2>
       <p i18n-content="DESCRIPTION_AUTHORIZE"></p>
       <div class="centered-button">
@@ -83,7 +83,7 @@ found in the LICENSE file.
       </div>
     </section> <!-- auth-panel -->
 
-    <div data-ui-mode="home">
+    <div data-ui-mode="home" hidden>
       <section>
         <div i18n-content="DESCRIPTION_HOME"
              i18n-value-1="<a href='https://chrome.google.com/remotedesktop'>chrome.google.com/remotedesktop</a>"></div>
@@ -173,181 +173,194 @@ found in the LICENSE file.
           </div>
         </div> <!-- daemon-control -->
       </section> <!-- host-list-div -->
+    </div> <!-- home -->
 
-        <div id="dialog-screen" hidden></div>
+    <div id="dialog-screen" data-ui-mode="home.host" hidden></div>
 
-        <div id="ask-pin-dialog" hidden>
-          <p i18n-content="ASK_PIN_DIALOG_DESCRIPTION"></p>
-          <form id="ask-pin-form"
-                action="">
-            <label for="daemon-pin-input"
-                   i18n-content="ASK_PIN_DIALOG_LABEL"></label>
-            <input id="daemon-pin-entry" type="password">
-            <br>
-            <label for="daemon-pin-confirm"
-                   i18n-content="ASK_PIN_DIALOG_CONFIRM_LABEL"></label>
-            <input id="daemon-pin-confirm" type="password">
-            <button id="daemon-pin-ok" type="submit" i18n-content="OK"></button>
-            <img id="start-daemon-spinner" src="spinner.gif" hidden>
-          </form>
-        </div>
+    <div id="dialog-container" data-ui-mode="home.host" hidden>
 
-      </div> <!-- home -->
+      <div class="box-spacer"></div>
 
-      <div id="host-panel" data-ui-mode="host">
+      <div id="ask-pin-dialog" hidden>
+        <p i18n-content="ASK_PIN_DIALOG_DESCRIPTION"></p>
+        <form id="ask-pin-form"
+              action="">
+          <label for="daemon-pin-input"
+                 i18n-content="ASK_PIN_DIALOG_LABEL"></label>
+          <input id="daemon-pin-entry" type="password">
+          <br>
+          <label for="daemon-pin-confirm"
+                 i18n-content="ASK_PIN_DIALOG_CONFIRM_LABEL"></label>
+          <input id="daemon-pin-confirm" type="password">
+          <button id="daemon-pin-ok" type="submit" i18n-content="OK"></button>
+          <img id="start-daemon-spinner" src="spinner.gif" hidden>
+        </form>
+      </div>
 
-        <div data-ui-mode="host.waiting-for-code" class="message"
-             i18n-content="MESSAGE_GENERATING">
-        </div> <!-- host.waiting-for-code -->
+      <div id="host-dialog-and-nat" data-ui-mode="home.host" hidden>
 
-        <div data-ui-mode="host.waiting-for-connection">
-          <div i18n-content="INSTRUCTIONS_SHARE_ABOVE"></div>
-          <div id="access-code-display" dir="ltr"></div>
-          <div id="access-code-countdown-container">
-            <div id="access-code-countdown" class="expiring" hidden>
-              <span id="seconds-remaining"
-                    i18n-content="ACCESS_CODE_TIMER"></span>
+        <div id="host-dialog" class="kd-modaldialog visible">
+
+          <div data-ui-mode="home.host.waiting-for-code" class="message"
+               i18n-content="MESSAGE_GENERATING">
+          </div> <!-- host.waiting-for-code -->
+
+          <div data-ui-mode="home.host.waiting-for-connection">
+            <div i18n-content="INSTRUCTIONS_SHARE_ABOVE"></div>
+            <div id="access-code-display" dir="ltr" class="selectable"></div>
+            <div id="access-code-countdown-container">
+              <div id="access-code-countdown" class="expiring" hidden>
+                <span id="seconds-remaining"
+                      i18n-content="ACCESS_CODE_TIMER"></span>
+              </div>
             </div>
-          </div>
-          <div i18n-content="INSTRUCTIONS_SHARE_BELOW"></div>
-        </div> <!-- host.waiting-for-connection -->
+            <div i18n-content="INSTRUCTIONS_SHARE_BELOW"></div>
+          </div> <!-- host.waiting-for-connection -->
 
-        <div data-ui-mode="host.shared">
-          <div id="host-shared-message" class="message"
-               i18n-content="MESSAGE_SHARED"></div>
-          <div class="centered-button">
-            <button id="cancel-share-button"
+          <div data-ui-mode="home.host.shared">
+            <div id="host-shared-message" class="message"
+                 i18n-content="MESSAGE_SHARED"></div>
+            <div class="centered-button">
+              <button id="stop-sharing-button"
+                      type="button"
+                      class="kd-button"
+                      i18n-content="STOP_SHARING_BUTTON">
+              </button>
+            </div>
+          </div> <!-- host.shared -->
+
+          <div data-ui-mode="home.host.share-failed" class="message">
+            <span id="host-plugin-error" class="error-state"></span>
+          </div> <!-- host.share-failed -->
+
+          <div data-ui-mode="home.host.share-finished" class="message"
+               i18n-content="MESSAGE_SESSION_FINISHED">
+          </div> <!-- host.share-finished -->
+
+          <div class="centered-button"
+               data-ui-mode="home.host.share-failed home.host.share-finished">
+            <button id="host-finished-button"
                     type="button"
                     class="kd-button"
-                    i18n-content="STOP_SHARING_BUTTON">
+                    autofocus="autofocus"
+                    i18n-content="OK">
             </button>
           </div>
-        </div> <!-- host.shared -->
 
-        <div data-ui-mode="host.share-failed" class="message">
-          <span id="host-plugin-error" class="error-state"></span>
-        </div> <!-- host.share-failed -->
+          <div data-ui-mode="home.host.waiting-for-connection home.host.waiting-for-code"
+               class="waiting-container">
+            <span class="waiting" i18n-content="FOOTER_WAITING"></span>
+            <button id="cancel-share-button"
+                    class="kd-button"
+                    i18n-content="CANCEL">
+            </button>
+          </div>
 
-        <div data-ui-mode="host.share-finished" class="message"
-             i18n-content="MESSAGE_SESSION_FINISHED">
-        </div> <!-- host.share-finished -->
+          <div id="host-plugin-container"></div>
 
-        <div class="centered-button"
-             data-ui-mode="host.share-failed host.share-finished">
-          <button id="host-finished-button"
-                  type="button"
-                  class="kd-button"
-                  autofocus="autofocus"
-                  i18n-content="OK">
-          </button>
         </div>
 
-        <div id="host-plugin-container"></div>
+        <div id="nat-box-container"
+             class="information-box"
+             data-ui-mode="home.host.waiting-for-code home.host.waiting-for-connection"
+             i18n-content="WARNING_NAT_DISABLED"
+             hidden>
+        </div> <!-- nat-box-container -->
 
-      </div> <!-- host-panel -->
+      </div> <!-- host dialog -->
 
-      <div id="client-panel" data-ui-mode="client">
-        <div data-ui-mode="client.unconnected">
-          <div i18n-content="DESCRIPTION_CONNECT"></div>
-          <div id="access-code-entry-row">
-            <form id="access-code-form" action="">
-              <label for="access-code-entry" i18n-content="ACCESS_CODE"></label>
-              <input id="access-code-entry"
-                     type="text"
-                     autofocus="autofocus"
-                     autocomplete="off"/>
-              <button id="connect-button"
-                      class="kd-button"
-                      type="submit"
-                      i18n-content="CONNECT_BUTTON">
-              </button>
-              <button id="client-cancel-button"
-                      class="kd-button"
-                      type="button"
-                      i18n-content="CANCEL">
-              </button>
-            </form>
-          </div> <!-- code-entry-row -->
-        </div> <!-- client.unconnected -->
+      <div class="box-spacer"></div>
 
-        <div data-ui-mode="client.connecting" class="message"
-             i18n-content="MESSAGE_CONNECTING">
-        </div> <!-- client.connecting -->
+    </div> <!-- dialog-container -->
 
-        <div data-ui-mode="client.pin-prompt" class="message">
-          <div>
-            <form id="pin-form" action="">
-              <label for="pin-entry" i18n-content="PIN"></label>
-              <input id="pin-entry"
-                     type="password"
-                     autofocus="autofocus"
-                     autocomplete="off"/>
-              <button id="connect-button"
-                      class="kd-button"
-                      type="submit"
-                      i18n-content="CONNECT_BUTTON">
-              </button>
-            </form>
-          </div>
-        </div> <!-- client.pin-prompt -->
+    <div id="client-panel" data-ui-mode="client" hidden>
+      <div data-ui-mode="client.unconnected">
+        <div i18n-content="DESCRIPTION_CONNECT"></div>
+        <div id="access-code-entry-row">
+          <form id="access-code-form" action="">
+            <label for="access-code-entry" i18n-content="ACCESS_CODE"></label>
+            <input id="access-code-entry"
+                   type="text"
+                   autofocus="autofocus"
+                   autocomplete="off"/>
+            <button id="connect-button"
+                    class="kd-button"
+                    type="submit"
+                    i18n-content="CONNECT_BUTTON">
+            </button>
+            <button id="cancel-connect-button"
+                    class="kd-button"
+                    type="button"
+                    i18n-content="CANCEL">
+            </button>
+          </form>
+        </div> <!-- code-entry-row -->
+      </div> <!-- client.unconnected -->
 
-        <div data-ui-mode="client.connect-failed"
-             class="message">
-          <span id="connect-error-message" class="error-state"></span>
-        </div> <!-- client.connect-failed -->
+      <div data-ui-mode="client.connecting" class="message"
+           i18n-content="MESSAGE_CONNECTING">
+      </div> <!-- client.connecting -->
 
-        <div data-ui-mode="client.session-finished"
-             class="message" i18n-content="MESSAGE_SESSION_FINISHED">
-        </div> <!-- client.session-finished -->
+      <div data-ui-mode="client.pin-prompt" class="message">
+        <div>
+          <form id="pin-form" action="">
+            <label for="pin-entry" i18n-content="PIN"></label>
+            <input id="pin-entry"
+                   type="password"
+                   autofocus="autofocus"
+                   autocomplete="off"/>
+            <button id="connect-button"
+                    class="kd-button"
+                    type="submit"
+                    i18n-content="CONNECT_BUTTON">
+            </button>
+          </form>
+        </div>
+      </div> <!-- client.pin-prompt -->
 
-        <div data-ui-mode="client.connect-failed.it2me client.session-finished.it2me"
-             class="centered-button">
-          <button id="client-finished-it2me-button"
-                  type="button"
-                  class="kd-button"
-                  i18n-content="OK"
-                  autofocus="autofocus">
-          </button>
-        </div> <!-- client.connect-failed.it2me client.session-finished.it2me -->
+      <div data-ui-mode="client.connect-failed"
+           class="message">
+        <span id="connect-error-message" class="error-state"></span>
+      </div> <!-- client.connect-failed -->
 
-        <div data-ui-mode="client.connect-failed.me2me client.session-finished.me2me"
-             class="centered-button">
-          <button id="client-finished-me2me-button"
-                  type="button"
-                  class="kd-button"
-                  i18n-content="OK"
-                  autofocus="autofocus">
-          </button>
-          <button id="client-reconnect-button"
-                  type="button"
-                  class="kd-button"
-                  i18n-content="RECONNECT">
-          </button>
-        </div> <!-- client.connect-failed.me2me client.session-finished.me2me -->
+      <div data-ui-mode="client.session-finished"
+           class="message" i18n-content="MESSAGE_SESSION_FINISHED">
+      </div> <!-- client.session-finished -->
 
-      </div> <!-- client-panel -->
+      <div data-ui-mode="client.connect-failed.it2me client.session-finished.it2me"
+           class="centered-button">
+        <button id="client-finished-it2me-button"
+                type="button"
+                class="kd-button"
+                i18n-content="OK"
+                autofocus="autofocus">
+        </button>
+      </div> <!-- client.connect-failed.it2me client.session-finished.it2me -->
 
-      <footer class="choice-footer">
-        <div id="waiting-footer"
-             data-ui-mode="host.waiting-for-connection host.waiting-for-code client.connecting">
-          <img src="spinner.gif">
-          <span class="waiting icon-label" i18n-content="FOOTER_WAITING"></span>
-          <button id="cancel-button"
-                  class="kd-button"
-                  i18n-content="CANCEL">
-          </button>
-        </div> <!-- waiting-footer -->
-      </footer>
+      <div data-ui-mode="client.connect-failed.me2me client.session-finished.me2me"
+           class="centered-button">
+        <button id="client-finished-me2me-button"
+                type="button"
+                class="kd-button"
+                i18n-content="OK"
+                autofocus="autofocus">
+        </button>
+        <button id="client-reconnect-button"
+                type="button"
+                class="kd-button"
+                i18n-content="RECONNECT">
+        </button>
+      </div> <!-- client.connect-failed.me2me client.session-finished.me2me -->
 
-    <div id="nat-box-container" class="information-box-centerer" hidden>
-      <div class="information-box-padding"></div>
-      <div class="information-box"
-           i18n-content="WARNING_NAT_DISABLED"
-           data-ui-mode="host.waiting-for-code host.waiting-for-connection">
+    </div> <!-- client-panel -->
+
+    <footer class="choice-footer" hidden>
+      <div data-ui-mode="client.connecting" class="waiting-container">
+        <span class="waiting" i18n-content="FOOTER_WAITING"></span>
+        <button id="cancel-button" class="kd-button" i18n-content="CANCEL">
+        </button>
       </div>
-      <div class="information-box-padding"></div>
-    </div> <!-- nat-box-container -->
-
+    </footer>
 
     <div id="session-mode" data-ui-mode="in-session client" hidden>
       <div id="session-toolbar"

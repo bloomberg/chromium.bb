@@ -17,8 +17,16 @@
 var remoting = remoting || {};
 
 /** @enum {string} */
+// TODO(jamiewalch): Move 'in-session' to a separate web-page so that the
+// 'home' state applies to all elements and can be removed.
 remoting.AppMode = {
   HOME: 'home',
+    HOST: 'home.host',
+      HOST_WAITING_FOR_CODE: 'home.host.waiting-for-code',
+      HOST_WAITING_FOR_CONNECTION: 'home.host.waiting-for-connection',
+      HOST_SHARED: 'home.host.shared',
+      HOST_SHARE_FAILED: 'home.host.share-failed',
+      HOST_SHARE_FINISHED: 'home.host.share-finished',
   UNAUTHENTICATED: 'auth',
   CLIENT: 'client',
     CLIENT_UNCONNECTED: 'client.unconnected',
@@ -28,12 +36,6 @@ remoting.AppMode = {
     CLIENT_CONNECT_FAILED_ME2ME: 'client.connect-failed.me2me',
     CLIENT_SESSION_FINISHED_IT2ME: 'client.session-finished.it2me',
     CLIENT_SESSION_FINISHED_ME2ME: 'client.session-finished.me2me',
-  HOST: 'host',
-    HOST_WAITING_FOR_CODE: 'host.waiting-for-code',
-    HOST_WAITING_FOR_CONNECTION: 'host.waiting-for-connection',
-    HOST_SHARED: 'host.shared',
-    HOST_SHARE_FAILED: 'host.share-failed',
-    HOST_SHARE_FINISHED: 'host.share-finished',
   IN_SESSION: 'in-session'
 };
 
