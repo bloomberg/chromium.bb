@@ -785,11 +785,16 @@ _release.add_config('autotest-experimental',
   boards=['x86-alex'],
   prebuilts=False,
   push_image=False,
+  chrome_tests=False,
+  unittests=False,
 
   # Make this experimental bot build/test incrementally.
   usepkg_setup_board=True,
   usepkg_build_packages=True,
   chroot_replace=False,
+
+  platform='netbook_ALEX',
+  hw_tests=['bvt']
 )
 
 _arm_release = _release.derive(arm)
