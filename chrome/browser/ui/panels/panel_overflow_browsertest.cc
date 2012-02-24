@@ -656,7 +656,13 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, CloseWithDelayedOverflow) {
   overflow_panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, ActivateOverflowPanels) {
+// http://crbug.com/115568
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#define MAYBE_ActivateOverflowPanels ActivateOverflowPanels
+#else
+#define MAYBE_ActivateOverflowPanels DISABLED_ActivateOverflowPanels
+#endif
+IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_ActivateOverflowPanels) {
   // Compiz refuses to activate initially inactive windows.
   if (SkipTestIfCompizWM())
     return;
@@ -1163,8 +1169,14 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
   panel_manager->CloseAll();
 }
 
+// http://crbug.com/115568
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#define MAYBE_HoverOverOverflowAreaWithOverflowOfOverflow HoverOverOverflowAreaWithOverflowOfOverflow
+#else
+#define MAYBE_HoverOverOverflowAreaWithOverflowOfOverflow DISABLED_HoverOverOverflowAreaWithOverflowOfOverflow
+#endif
 IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
-                       HoverOverOverflowAreaWithOverflowOfOverflow) {
+                       MAYBE_HoverOverOverflowAreaWithOverflowOfOverflow) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   OverflowPanelStrip* overflow_strip =
       panel_manager->overflow_strip();
