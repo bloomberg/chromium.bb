@@ -13,7 +13,6 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/extensions/extension_install_dialog.h"
 #include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
@@ -43,31 +42,26 @@
 #include "ui/base/resource/resource_bundle.h"
 
 using content::WebContents;
-using extensions::BundleInstaller;
 
 static const int kTitleIds[ExtensionInstallUI::NUM_PROMPT_TYPES] = {
-  0,  // The regular install prompt depends on what's being installed.
+  0,
   IDS_EXTENSION_INLINE_INSTALL_PROMPT_TITLE,
-  IDS_EXTENSION_INSTALL_PROMPT_TITLE,
   IDS_EXTENSION_RE_ENABLE_PROMPT_TITLE,
   IDS_EXTENSION_PERMISSIONS_PROMPT_TITLE
 };
 static const int kHeadingIds[ExtensionInstallUI::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_INSTALL_PROMPT_HEADING,
-  0,  // Inline installs use the extension name.
-  0,  // Heading for bundle installs depends on the bundle contents.
+  IDS_EXTENSION_INSTALL_PROMPT_HEADING,
   IDS_EXTENSION_RE_ENABLE_PROMPT_HEADING,
   IDS_EXTENSION_PERMISSIONS_PROMPT_HEADING
 };
 static const int kAcceptButtonIds[ExtensionInstallUI::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_PROMPT_INSTALL_BUTTON,
   IDS_EXTENSION_PROMPT_INSTALL_BUTTON,
-  IDS_EXTENSION_PROMPT_INSTALL_BUTTON,
   IDS_EXTENSION_PROMPT_RE_ENABLE_BUTTON,
   IDS_EXTENSION_PROMPT_PERMISSIONS_BUTTON
 };
 static const int kAbortButtonIds[ExtensionInstallUI::NUM_PROMPT_TYPES] = {
-  0,  // These all use the platform's default cancel label.
   0,
   0,
   0,
@@ -76,7 +70,6 @@ static const int kAbortButtonIds[ExtensionInstallUI::NUM_PROMPT_TYPES] = {
 static const int kPermissionsHeaderIds[ExtensionInstallUI::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO,
   IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO,
-  IDS_EXTENSION_PROMPT_THESE_WILL_HAVE_ACCESS_TO,
   IDS_EXTENSION_PROMPT_WILL_NOW_HAVE_ACCESS_TO,
   IDS_EXTENSION_PROMPT_WANTS_ACCESS_TO,
 };
@@ -112,9 +105,10 @@ void ExtensionInstallUI::Prompt::SetInlineInstallWebstoreData(
   rating_count_ = rating_count;
 }
 
-string16 ExtensionInstallUI::Prompt::GetDialogTitle() const {
+string16 ExtensionInstallUI::Prompt::GetDialogTitle(
+    const Extension* extension) const {
   if (type_ == INSTALL_PROMPT) {
-    return l10n_util::GetStringUTF16(extension_->is_app() ?
+    return l10n_util::GetStringUTF16(extension->is_app() ?
         IDS_EXTENSION_INSTALL_APP_PROMPT_TITLE :
         IDS_EXTENSION_INSTALL_EXTENSION_PROMPT_TITLE);
   } else {
@@ -122,14 +116,13 @@ string16 ExtensionInstallUI::Prompt::GetDialogTitle() const {
   }
 }
 
-string16 ExtensionInstallUI::Prompt::GetHeading() const {
+string16 ExtensionInstallUI::Prompt::GetHeading(
+    const std::string& extension_name) const {
   if (type_ == INLINE_INSTALL_PROMPT) {
-    return UTF8ToUTF16(extension_->name());
-  } else if (type_ == BUNDLE_INSTALL_PROMPT) {
-    return bundle_->GetHeadingTextFor(BundleInstaller::Item::STATE_PENDING);
+    return UTF8ToUTF16(extension_name);
   } else {
     return l10n_util::GetStringFUTF16(
-        kHeadingIds[type_], UTF8ToUTF16(extension_->name()));
+        kHeadingIds[type_], UTF8ToUTF16(extension_name));
   }
 }
 
@@ -146,7 +139,7 @@ string16 ExtensionInstallUI::Prompt::GetAbortButtonLabel() const {
   return l10n_util::GetStringUTF16(kAbortButtonIds[type_]);
 }
 
-string16 ExtensionInstallUI::Prompt::GetPermissionsHeading() const {
+string16 ExtensionInstallUI::Prompt::GetPermissionsHeader() const {
   return l10n_util::GetStringUTF16(kPermissionsHeaderIds[type_]);
 }
 
@@ -197,8 +190,7 @@ size_t ExtensionInstallUI::Prompt::GetPermissionCount() const {
   return permissions_.size();
 }
 
-string16 ExtensionInstallUI::Prompt::GetPermission(size_t index) const {
-  CHECK_LT(index, permissions_.size());
+string16 ExtensionInstallUI::Prompt::GetPermission(int index) const {
   return l10n_util::GetStringFUTF16(
       IDS_EXTENSION_PERMISSION_LINE, permissions_[index]);
 }
@@ -313,10 +305,10 @@ bool disable_failure_ui_for_tests = false;
 
 void ExtensionInstallUI::OnInstallFailure(const string16& error) {
   DCHECK(ui_loop_ == MessageLoop::current());
-  if (disable_failure_ui_for_tests || skip_post_install_ui_)
-    return;
 
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+  if (disable_failure_ui_for_tests)
+    return;
   browser::ShowErrorBox(
       browser ? browser->window()->GetNativeHandle() : NULL,
       l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALL_FAILURE_TITLE),
@@ -348,9 +340,8 @@ void ExtensionInstallUI::OnImageLoaded(
 
       Prompt prompt(prompt_type_);
       prompt.SetPermissions(permissions_->GetWarningMessages());
-      prompt.set_extension(extension_);
-      prompt.set_icon(gfx::Image(new SkBitmap(icon_)));
-      ShowExtensionInstallDialog(profile_, delegate_, prompt);
+      ShowExtensionInstallDialog(
+          profile_, delegate_, extension_, &icon_, prompt);
       break;
     }
     default:

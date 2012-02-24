@@ -68,6 +68,8 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
                                    public views::LinkListener {
  public:
   ExtensionInstallDialogView(ExtensionInstallUI::Delegate* delegate,
+                             const Extension* extension,
+                             SkBitmap* skia_icon,
                              const ExtensionInstallUI::Prompt& prompt);
   virtual ~ExtensionInstallDialogView();
 
@@ -91,6 +93,7 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   }
 
   ExtensionInstallUI::Delegate* delegate_;
+  const Extension* extension_;
   ExtensionInstallUI::Prompt prompt_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallDialogView);
@@ -98,8 +101,11 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
 
 ExtensionInstallDialogView::ExtensionInstallDialogView(
     ExtensionInstallUI::Delegate* delegate,
+    const Extension* extension,
+    SkBitmap* skia_icon,
     const ExtensionInstallUI::Prompt& prompt)
     : delegate_(delegate),
+      extension_(extension),
       prompt_(prompt) {
   // Possible grid layouts:
   // Inline install
@@ -158,7 +164,8 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
 
   layout->StartRow(0, column_set_id);
 
-  views::Label* heading = new views::Label(prompt.GetHeading());
+  views::Label* heading = new views::Label(
+      prompt.GetHeading(extension->name()));
   heading->SetFont(heading->font().DeriveFont(kHeadingFontSizeDelta,
                                               gfx::Font::BOLD));
   heading->SetMultiLine(true);
@@ -167,13 +174,12 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
   layout->AddView(heading);
 
   // Scale down to icon size, but allow smaller icons (don't scale up).
-  SkBitmap bitmap = prompt.icon();
-  gfx::Size size(bitmap.width(), bitmap.height());
+  gfx::Size size(skia_icon->width(), skia_icon->height());
   if (size.width() > kIconSize || size.height() > kIconSize)
     size = gfx::Size(kIconSize, kIconSize);
   views::ImageView* icon = new views::ImageView();
   icon->SetImageSize(size);
-  icon->SetImage(bitmap);
+  icon->SetImage(*skia_icon);
   icon->SetHorizontalAlignment(views::ImageView::CENTER);
   icon->SetVerticalAlignment(views::ImageView::CENTER);
   int icon_row_span = 1;
@@ -229,7 +235,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
 
     layout->StartRow(0, column_set_id);
     views::Label* permissions_header = new views::Label(
-        prompt.GetPermissionsHeading());
+        prompt.GetPermissionsHeader());
     permissions_header->SetMultiLine(true);
     permissions_header->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     permissions_header->SizeToFit(left_column_width);
@@ -285,7 +291,7 @@ ui::ModalType ExtensionInstallDialogView::GetModalType() const {
 }
 
 string16 ExtensionInstallDialogView::GetWindowTitle() const {
-  return prompt_.GetDialogTitle();
+  return prompt_.GetDialogTitle(extension_);
 }
 
 views::View* ExtensionInstallDialogView::GetContentsView() {
@@ -294,8 +300,8 @@ views::View* ExtensionInstallDialogView::GetContentsView() {
 
 void ExtensionInstallDialogView::LinkClicked(views::Link* source,
                                              int event_flags) {
-  GURL store_url(extension_urls::GetWebstoreItemDetailURLPrefix() +
-                 prompt_.extension()->id());
+  GURL store_url(
+      extension_urls::GetWebstoreItemDetailURLPrefix() + extension_->id());
   OpenURLParams params(
       store_url, Referrer(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK,
       false);
@@ -306,6 +312,8 @@ void ExtensionInstallDialogView::LinkClicked(views::Link* source,
 void ShowExtensionInstallDialogImpl(
     Profile* profile,
     ExtensionInstallUI::Delegate* delegate,
+    const Extension* extension,
+    SkBitmap* icon,
     const ExtensionInstallUI::Prompt& prompt) {
 #if defined(OS_CHROMEOS)
   // Use a tabbed browser window as parent on ChromeOS.
@@ -325,7 +333,7 @@ void ShowExtensionInstallDialogImpl(
   }
 
   ExtensionInstallDialogView* dialog = new ExtensionInstallDialogView(
-      delegate, prompt);
+      delegate, extension, icon, prompt);
 
   views::Widget* window =  browser::CreateViewsWindow(
       browser_window->GetNativeHandle(), dialog, STYLE_GENERIC);

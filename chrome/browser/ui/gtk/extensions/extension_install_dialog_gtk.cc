@@ -4,10 +4,8 @@
 
 #include <gtk/gtk.h>
 
-#include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/extensions/extension_install_dialog.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -24,7 +22,6 @@
 #include "ui/gfx/gtk_util.h"
 
 using content::OpenURLParams;
-using extensions::BundleInstaller;
 
 namespace {
 
@@ -34,7 +31,6 @@ const int kImageSize = 69;
 // Additional padding (beyond on ui::kControlSpacing) all sides of each
 // permission in the permissions list.
 const int kPermissionsPadding = 2;
-const int kExtensionsPadding = kPermissionsPadding;
 
 const double kRatingTextSize = 12.1;  // 12.1px = 9pt @ 96dpi
 
@@ -54,6 +50,8 @@ class ExtensionInstallDialog {
  public:
   ExtensionInstallDialog(GtkWindow* parent,
                          ExtensionInstallUI::Delegate *delegate,
+                         const Extension* extension,
+                         SkBitmap* skia_icon,
                          const ExtensionInstallUI::Prompt& prompt);
  private:
   ~ExtensionInstallDialog();
@@ -62,28 +60,25 @@ class ExtensionInstallDialog {
   CHROMEGTK_CALLBACK_0(ExtensionInstallDialog, void, OnStoreLinkClick);
 
   ExtensionInstallUI::Delegate* delegate_;
-  std::string extension_id_;  // Set for INLINE_INSTALL_PROMPT.
+  const Extension* extension_;
   GtkWidget* dialog_;
 };
 
 ExtensionInstallDialog::ExtensionInstallDialog(
     GtkWindow* parent,
     ExtensionInstallUI::Delegate *delegate,
+    const Extension* extension,
+    SkBitmap* skia_icon,
     const ExtensionInstallUI::Prompt& prompt)
     : delegate_(delegate),
-      dialog_(NULL) {
+      extension_(extension) {
   bool show_permissions = prompt.GetPermissionCount() > 0;
   bool is_inline_install =
       prompt.type() == ExtensionInstallUI::INLINE_INSTALL_PROMPT;
-  bool is_bundle_install =
-      prompt.type() == ExtensionInstallUI::BUNDLE_INSTALL_PROMPT;
-
-  if (is_inline_install)
-    extension_id_ = prompt.extension()->id();
 
   // Build the dialog.
   dialog_ = gtk_dialog_new_with_buttons(
-      UTF16ToUTF8(prompt.GetDialogTitle()).c_str(),
+      UTF16ToUTF8(prompt.GetDialogTitle(extension)).c_str(),
       parent,
       GTK_DIALOG_MODAL,
       NULL);
@@ -126,7 +121,7 @@ ExtensionInstallDialog::ExtensionInstallDialog(
 
   // Heading
   GtkWidget* heading_label = gtk_util::CreateBoldLabel(
-      UTF16ToUTF8(prompt.GetHeading().c_str()));
+      UTF16ToUTF8(prompt.GetHeading(extension_->name())).c_str());
   gtk_label_set_line_wrap(GTK_LABEL(heading_label), true);
   gtk_misc_set_alignment(GTK_MISC(heading_label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(heading_vbox), heading_label, center_heading,
@@ -164,44 +159,21 @@ ExtensionInstallDialog::ExtensionInstallDialog(
                      G_CALLBACK(OnStoreLinkClickThunk), this);
   }
 
-  if (is_bundle_install) {
-    // Add the list of extensions to be installed.
-    GtkWidget* extensions_vbox = gtk_vbox_new(FALSE, ui::kControlSpacing);
-    gtk_box_pack_start(GTK_BOX(heading_vbox), extensions_vbox, FALSE, FALSE,
-                       ui::kControlSpacing);
-
-    BundleInstaller::ItemList items = prompt.bundle()->GetItemsWithState(
-        BundleInstaller::Item::STATE_PENDING);
-    for (size_t i = 0; i < items.size(); ++i) {
-      string16 extension_name = UTF8ToUTF16(items[i].localized_name);
-      base::i18n::AdjustStringForLocaleDirection(&extension_name);
-
-      GtkWidget* extension_label = gtk_label_new(UTF16ToUTF8(
-          l10n_util::GetStringFUTF16(
-              IDS_EXTENSION_PERMISSION_LINE, extension_name)).c_str());
-      gtk_util::SetLabelWidth(extension_label, kLeftColumnMinWidth);
-      gtk_box_pack_start(GTK_BOX(extensions_vbox), extension_label,
-                         FALSE, FALSE, kExtensionsPadding);
-    }
+  // Resize the icon if necessary.
+  SkBitmap scaled_icon = *skia_icon;
+  if (scaled_icon.width() > kImageSize || scaled_icon.height() > kImageSize) {
+    scaled_icon = skia::ImageOperations::Resize(scaled_icon,
+        skia::ImageOperations::RESIZE_LANCZOS3,
+        kImageSize, kImageSize);
   }
 
-  if (!is_bundle_install) {
-    // Resize the icon if necessary.
-    SkBitmap scaled_icon = prompt.icon();
-    if (scaled_icon.width() > kImageSize || scaled_icon.height() > kImageSize) {
-      scaled_icon = skia::ImageOperations::Resize(
-          scaled_icon, skia::ImageOperations::RESIZE_LANCZOS3,
-          kImageSize, kImageSize);
-    }
-
-    // Put icon in the right column.
-    GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&scaled_icon);
-    GtkWidget* icon = gtk_image_new_from_pixbuf(pixbuf);
-    g_object_unref(pixbuf);
-    gtk_box_pack_start(GTK_BOX(top_content_hbox), icon, FALSE, FALSE, 0);
-    // Top justify the image.
-    gtk_misc_set_alignment(GTK_MISC(icon), 0.5, 0.0);
-  }
+  // Put icon in the right column.
+  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&scaled_icon);
+  GtkWidget* icon = gtk_image_new_from_pixbuf(pixbuf);
+  g_object_unref(pixbuf);
+  gtk_box_pack_start(GTK_BOX(top_content_hbox), icon, FALSE, FALSE, 0);
+  // Top justify the image.
+  gtk_misc_set_alignment(GTK_MISC(icon), 0.5, 0.0);
 
   // Permissions are shown separated by a divider for inline installs, or
   // directly under the heading for regular installs (where we don't have
@@ -217,7 +189,7 @@ ExtensionInstallDialog::ExtensionInstallDialog(
     }
 
     GtkWidget* permissions_header = gtk_util::CreateBoldLabel(
-        UTF16ToUTF8(prompt.GetPermissionsHeading()).c_str());
+        UTF16ToUTF8(prompt.GetPermissionsHeader()).c_str());
     gtk_util::SetLabelWidth(permissions_header, kLeftColumnMinWidth);
     gtk_box_pack_start(GTK_BOX(permissions_container), permissions_header,
                        FALSE, FALSE, 0);
@@ -255,7 +227,7 @@ void ExtensionInstallDialog::OnResponse(GtkWidget* dialog, int response_id) {
 
 void ExtensionInstallDialog::OnStoreLinkClick(GtkWidget* sender) {
   GURL store_url(
-      extension_urls::GetWebstoreItemDetailURLPrefix() + extension_id_);
+      extension_urls::GetWebstoreItemDetailURLPrefix() + extension_->id());
   BrowserList::GetLastActive()->OpenURL(OpenURLParams(
       store_url, content::Referrer(), NEW_FOREGROUND_TAB,
       content::PAGE_TRANSITION_LINK, false));
@@ -268,6 +240,8 @@ void ExtensionInstallDialog::OnStoreLinkClick(GtkWidget* sender) {
 void ShowExtensionInstallDialogImpl(
     Profile* profile,
     ExtensionInstallUI::Delegate* delegate,
+    const Extension* extension,
+    SkBitmap* icon,
     const ExtensionInstallUI::Prompt& prompt) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser) {
@@ -282,5 +256,9 @@ void ShowExtensionInstallDialogImpl(
     return;
   }
 
-  new ExtensionInstallDialog(browser_window->window(), delegate, prompt);
+  new ExtensionInstallDialog(browser_window->window(),
+                             delegate,
+                             extension,
+                             icon,
+                             prompt);
 }

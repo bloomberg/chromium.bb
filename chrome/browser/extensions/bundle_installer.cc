@@ -4,23 +4,18 @@
 
 #include "chrome/browser/extensions/bundle_installer.h"
 
-#include <algorithm>
 #include <string>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/crx_installer.h"
-#include "chrome/browser/extensions/extension_install_dialog.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using content::NavigationController;
 
@@ -54,35 +49,6 @@ scoped_refptr<Extension> CreateDummyExtension(BundleInstaller::Item item,
                            item.id,
                            &error);
 }
-
-bool IsAppPredicate(scoped_refptr<const Extension> extension) {
-  return extension->is_app();
-}
-
-struct MatchIdFunctor {
-  explicit MatchIdFunctor(const std::string& id) : id(id) {}
-  bool operator()(scoped_refptr<const Extension> extension) {
-    return extension->id() == id;
-  }
-  std::string id;
-};
-
-// Holds the message IDs for BundleInstaller::GetHeadingTextFor.
-const int kHeadingIds[3][4] = {
-  {
-    0,
-    IDS_EXTENSION_BUNDLE_INSTALL_PROMPT_HEADING_EXTENSIONS,
-    IDS_EXTENSION_BUNDLE_INSTALL_PROMPT_HEADING_APPS,
-    IDS_EXTENSION_BUNDLE_INSTALL_PROMPT_HEADING_EXTENSION_APPS
-  },
-  {
-    0,
-    IDS_EXTENSION_BUNDLE_INSTALLED_HEADING_EXTENSIONS,
-    IDS_EXTENSION_BUNDLE_INSTALLED_HEADING_APPS,
-    IDS_EXTENSION_BUNDLE_INSTALLED_HEADING_EXTENSION_APPS
-  },
-  { IDS_EXTENSION_BUNDLE_ERROR_HEADING, 0, 0, 0 }
-};
 
 }  // namespace
 
@@ -161,39 +127,11 @@ void BundleInstaller::CompleteInstall(NavigationController* controller,
   }
 }
 
-string16 BundleInstaller::GetHeadingTextFor(Item::State state) const {
-  size_t total = 0;
-  size_t apps = 0;
-
-  // For STATE_FAILED, we can't tell if the items were apps or extensions
-  // so we always show the same message.
-  if (state == Item::STATE_INSTALLED || state == Item::STATE_PENDING) {
-    total = GetItemsWithState(state).size();
-    apps = std::count_if(
-        dummy_extensions_.begin(), dummy_extensions_.end(), &IsAppPredicate);
-  }
-
-  bool has_apps = apps > 0;
-  bool has_extensions = apps < total;
-  size_t index = (has_extensions << 0) + (has_apps << 1);
-
-  CHECK_LT(static_cast<size_t>(state), arraysize(kHeadingIds));
-  CHECK_LT(index, arraysize(kHeadingIds[state]));
-
-  int msg_id = kHeadingIds[state][index];
-  if (!msg_id)
-    return string16();
-
-  return l10n_util::GetStringUTF16(msg_id);
-}
-
-#if !defined(TOOLKIT_USES_GTK)
 // static
 void BundleInstaller::ShowInstalledBubble(
     const BundleInstaller* bundle, Browser* browser) {
   // TODO(jstritar): provide platform specific implementations.
 }
-#endif
 
 void BundleInstaller::ParseManifests() {
   if (items_.empty()) {
@@ -251,18 +189,13 @@ void BundleInstaller::ShowPrompt() {
           permissions, dummy_extensions_[i]->required_permission_set());
   }
 
-  if (g_auto_approve_for_test == PROCEED) {
+  // TODO(jstritar): show the actual prompt.
+  if (g_auto_approve_for_test == PROCEED)
     InstallUIProceed();
-  } else if (g_auto_approve_for_test == ABORT) {
+  else if (g_auto_approve_for_test == ABORT)
     InstallUIAbort(true);
-  } else {
-    ExtensionInstallUI::Prompt prompt(
-        ExtensionInstallUI::BUNDLE_INSTALL_PROMPT);
-    prompt.SetPermissions(permissions->GetWarningMessages());
-    prompt.set_bundle(this);
-
-    ShowExtensionInstallDialog(profile_, this, prompt);
-  }
+  else
+    InstallUIAbort(false);
 }
 
 void BundleInstaller::ShowInstalledBubbleIfDone() {
@@ -328,9 +261,6 @@ void BundleInstaller::OnExtensionInstallSuccess(const std::string& id) {
 void BundleInstaller::OnExtensionInstallFailure(const std::string& id,
                                                 const std::string& error) {
   items_[id].state = Item::STATE_FAILED;
-
-  std::remove_if(dummy_extensions_.begin(), dummy_extensions_.end(),
-                 MatchIdFunctor(id));
 
   ShowInstalledBubbleIfDone();
 }

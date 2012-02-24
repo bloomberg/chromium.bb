@@ -417,17 +417,16 @@ void CrxInstaller::ConfirmInstall() {
   scoped_ptr<CrxInstaller::WhitelistEntry> entry(
       RemoveWhitelistEntry(extension_->id()));
   if (is_gallery_install() && entry.get() && original_manifest_.get()) {
-    whitelisted = true;
-    if (entry->use_app_installed_bubble)
-      client_->set_use_app_installed_bubble(true);
-    if (entry->skip_post_install_ui)
-      client_->set_skip_post_install_ui(true);
-
     if (!(original_manifest_->Equals(entry->parsed_manifest.get()))) {
       ReportFailureFromUIThread(
           l10n_util::GetStringUTF16(IDS_EXTENSION_MANIFEST_INVALID));
       return;
     }
+    whitelisted = true;
+    if (entry->use_app_installed_bubble)
+      client_->set_use_app_installed_bubble(true);
+    if (entry->skip_post_install_ui)
+      client_->set_skip_post_install_ui(true);
   }
 
   if (client_ &&
