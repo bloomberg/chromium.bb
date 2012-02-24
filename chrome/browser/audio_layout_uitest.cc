@@ -61,7 +61,14 @@ TEST_F(AudioUILayoutTest, AudioNoInstalledEngines) {
   RunMediaLayoutTest("audio-no-installed-engines.html");
 }
 
-TEST_F(AudioUILayoutTest, AudioOnlyVideoIntrinsicSize) {
+#if defined(OS_CHROMEOS) && defined(USE_AURA)
+// http://crbug.com/115530
+#define MAYBE_AudioOnlyVideoIntrinsicSize FLAKY_AudioOnlyVideoIntrinsicSize
+#else
+#define MAYBE_AudioOnlyVideoIntrinsicSize AudioOnlyVideoIntrinsicSize
+#endif
+
+TEST_F(AudioUILayoutTest, MAYBE_AudioOnlyVideoIntrinsicSize) {
   RunMediaLayoutTest("audio-only-video-intrinsic-size.html");
 }
 
