@@ -183,8 +183,11 @@ bool BrowserPolicyConnector::IsEnterpriseManaged() {
 EnterpriseInstallAttributes::LockResult
     BrowserPolicyConnector::LockDevice(const std::string& user) {
 #if defined(OS_CHROMEOS)
-  if (install_attributes_.get())
-    return install_attributes_->LockDevice(user);
+  if (install_attributes_.get()) {
+    return install_attributes_->LockDevice(user,
+                                           device_data_store_->device_mode(),
+                                           device_data_store_->device_id());
+  }
 #endif
 
   return EnterpriseInstallAttributes::LOCK_BACKEND_ERROR;
@@ -214,6 +217,18 @@ std::string BrowserPolicyConnector::GetEnterpriseDomain() {
 #endif
 
   return std::string();
+}
+
+DeviceMode BrowserPolicyConnector::GetDeviceMode() {
+#if defined(OS_CHROMEOS)
+  if (install_attributes_.get())
+    return install_attributes_->GetMode();
+  else
+    return DEVICE_MODE_UNKNOWN;
+#endif
+
+  // We only have the notion of "enterprise" device on ChromeOS for now.
+  return DEVICE_MODE_CONSUMER;
 }
 
 void BrowserPolicyConnector::ResetDevicePolicy() {
@@ -338,8 +353,7 @@ void BrowserPolicyConnector::RegisterForUserPolicy(
   }
 }
 
-const CloudPolicyDataStore*
-    BrowserPolicyConnector::GetDeviceCloudPolicyDataStore() const {
+CloudPolicyDataStore* BrowserPolicyConnector::GetDeviceCloudPolicyDataStore() {
 #if defined(OS_CHROMEOS)
   return device_data_store_.get();
 #else
@@ -347,8 +361,7 @@ const CloudPolicyDataStore*
 #endif
 }
 
-const CloudPolicyDataStore*
-    BrowserPolicyConnector::GetUserCloudPolicyDataStore() const {
+CloudPolicyDataStore* BrowserPolicyConnector::GetUserCloudPolicyDataStore() {
   return user_data_store_.get();
 }
 

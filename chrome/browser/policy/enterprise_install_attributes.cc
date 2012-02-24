@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,22 +7,75 @@
 #include "base/logging.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 
-namespace {
+namespace policy {
 
+namespace {
+// Constants for the possible device modes that can be stored in the lockbox.
+const char kConsumerDeviceMode[] = "consumer";
+const char kEnterpiseDeviceMode[] = "enterprise";
+const char kKioskDeviceMode[] = "kiosk";
+const char kUnknownDeviceMode[] = "unknown";
+
+// Field names in the lockbox.
+const char kAttrEnterpriseDeviceId[] = "enterprise.device_id";
+const char kAttrEnterpriseDomain[] = "enterprise.domain";
+const char kAttrEnterpriseMode[] = "enterprise.mode";
 const char kAttrEnterpriseOwned[] = "enterprise.owned";
 const char kAttrEnterpriseUser[] = "enterprise.user";
 
-}  // namespace
+// Extract the domain from a given email.
+std::string ExtractDomainName(const std::string& email) {
+  size_t separator_pos = email.find('@');
+  if (separator_pos != email.npos && separator_pos < email.length() - 1)
+    return email.substr(separator_pos + 1);
+  else
+    NOTREACHED() << "Not a proper email address: " << email;
+  return std::string();
+}
 
-namespace policy {
+// Translates DeviceMode constants to strings used in the lockbox.
+std::string GetDeviceModeString(DeviceMode mode) {
+  switch (mode) {
+    case DEVICE_MODE_CONSUMER:
+      return kConsumerDeviceMode;
+    case DEVICE_MODE_ENTERPRISE:
+      return kEnterpiseDeviceMode;
+    case DEVICE_MODE_KIOSK:
+      return kKioskDeviceMode;
+    case DEVICE_MODE_UNKNOWN:
+      break;
+  }
+  NOTREACHED() << "Invalid device mode: " << mode;
+  return kUnknownDeviceMode;
+}
+
+// Translates strings used in the lockbox to DeviceMode values.
+DeviceMode GetDeviceModeFromString(
+    const std::string& mode) {
+  if (mode == kConsumerDeviceMode)
+    return DEVICE_MODE_CONSUMER;
+  else if (mode == kEnterpiseDeviceMode)
+    return DEVICE_MODE_ENTERPRISE;
+  else if (mode == kKioskDeviceMode)
+    return DEVICE_MODE_KIOSK;
+  NOTREACHED() << "Unknown device mode string: " << mode;
+  return DEVICE_MODE_UNKNOWN;
+}
+
+}  // namespace
 
 EnterpriseInstallAttributes::EnterpriseInstallAttributes(
     chromeos::CryptohomeLibrary* cryptohome)
     : cryptohome_(cryptohome),
-      device_locked_(false) {}
+      device_locked_(false),
+      registration_mode_(DEVICE_MODE_UNKNOWN) {}
 
 EnterpriseInstallAttributes::LockResult EnterpriseInstallAttributes::LockDevice(
-    const std::string& user) {
+    const std::string& user,
+    DeviceMode device_mode,
+    const std::string& device_id) {
+  CHECK_NE(device_mode, DEVICE_MODE_UNKNOWN);
+
   // Check for existing lock first.
   if (device_locked_) {
     return !registration_user_.empty() && user == registration_user_ ?
@@ -48,9 +101,15 @@ EnterpriseInstallAttributes::LockResult EnterpriseInstallAttributes::LockDevice(
   if (!cryptohome_->InstallAttributesIsFirstInstall())
     return LOCK_WRONG_USER;
 
+  std::string domain = ExtractDomainName(user);
+  std::string mode = GetDeviceModeString(device_mode);
+
   // Set values in the InstallAttrs and lock it.
   if (!cryptohome_->InstallAttributesSet(kAttrEnterpriseOwned, "true") ||
-      !cryptohome_->InstallAttributesSet(kAttrEnterpriseUser, user)) {
+      !cryptohome_->InstallAttributesSet(kAttrEnterpriseUser, user) ||
+      !cryptohome_->InstallAttributesSet(kAttrEnterpriseDomain, domain) ||
+      !cryptohome_->InstallAttributesSet(kAttrEnterpriseMode, mode) ||
+      !cryptohome_->InstallAttributesSet(kAttrEnterpriseDeviceId, device_id)) {
     LOG(ERROR) << "Failed writing attributes";
     return LOCK_BACKEND_ERROR;
   }
@@ -83,12 +142,19 @@ std::string EnterpriseInstallAttributes::GetDomain() {
   if (!IsEnterpriseDevice())
     return std::string();
 
-  std::string domain;
-  size_t pos = registration_user_.find('@');
-  if (pos != std::string::npos)
-    domain = registration_user_.substr(pos + 1);
+  return registration_domain_;
+}
 
-  return domain;
+std::string EnterpriseInstallAttributes::GetDeviceId() {
+  if (!IsEnterpriseDevice())
+    return std::string();
+
+  return registration_device_id_;
+}
+
+DeviceMode EnterpriseInstallAttributes::GetMode() {
+  ReadImmutableAttributes();
+  return registration_mode_;
 }
 
 void EnterpriseInstallAttributes::ReadImmutableAttributes() {
@@ -109,6 +175,29 @@ void EnterpriseInstallAttributes::ReadImmutableAttributes() {
         enterprise_owned == "true" &&
         !enterprise_user.empty()) {
       registration_user_ = enterprise_user;
+
+      // Initialize the mode to the legacy enterprise mode here and update below
+      // if more information is present.
+      registration_mode_ = DEVICE_MODE_ENTERPRISE;
+
+      // If we could extract basic setting we should try to extract the extended
+      // ones too. We try to set these to defaults as good as possible if not
+      // present, which could happen for device enrolled in pre-R19 revisions of
+      // the code, before these new attributes were added.
+      if (!cryptohome_->InstallAttributesGet(kAttrEnterpriseDomain,
+                                             &registration_domain_)) {
+        registration_domain_ = ExtractDomainName(registration_user_);
+      }
+      if (!cryptohome_->InstallAttributesGet(kAttrEnterpriseDeviceId,
+                                             &registration_device_id_)) {
+        registration_device_id_.clear();
+      }
+      std::string mode;
+      if (cryptohome_->InstallAttributesGet(kAttrEnterpriseMode, &mode))
+        registration_mode_ = GetDeviceModeFromString(mode);
+    } else if (enterprise_user.empty() && enterprise_owned != "true") {
+      // |registration_user_| is empty on consumer devices.
+      registration_mode_ = DEVICE_MODE_CONSUMER;
     }
   }
 }

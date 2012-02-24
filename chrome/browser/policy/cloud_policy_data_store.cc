@@ -33,7 +33,8 @@ CloudPolicyDataStore::CloudPolicyDataStore(
       policy_register_type_(policy_register_type),
       policy_type_(policy_type),
       known_machine_id_(false),
-      token_cache_loaded_(false) {}
+      token_cache_loaded_(false),
+      device_mode_(DEVICE_MODE_UNKNOWN) {}
 
 void CloudPolicyDataStore::SetDeviceToken(const std::string& device_token,
                                           bool from_cache) {
@@ -111,6 +112,10 @@ void CloudPolicyDataStore::set_known_machine_id(bool known_machine_id) {
   known_machine_id_ = known_machine_id;
 }
 
+void CloudPolicyDataStore::set_device_mode(DeviceMode device_mode) {
+  device_mode_ = device_mode;
+}
+
 const std::string& CloudPolicyDataStore::device_token() const {
   return device_token_;
 }
@@ -160,6 +165,10 @@ bool CloudPolicyDataStore::known_machine_id() const {
   return known_machine_id_;
 }
 
+DeviceMode CloudPolicyDataStore::device_mode() const {
+  return device_mode_;
+}
+
 #if defined(OS_CHROMEOS)
 DeviceStatusCollector*
     CloudPolicyDataStore::device_status_collector() {
@@ -170,7 +179,7 @@ void CloudPolicyDataStore::set_device_status_collector(
     DeviceStatusCollector* collector) {
   device_status_collector_.reset(collector);
 }
-#endif
+#endif  // OS_CHROMEOS
 
 void CloudPolicyDataStore::AddObserver(
     CloudPolicyDataStore::Observer* observer) {

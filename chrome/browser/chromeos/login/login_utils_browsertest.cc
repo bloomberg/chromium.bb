@@ -21,6 +21,7 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
@@ -54,9 +55,14 @@ using content::BrowserThread;
 const char kTrue[] = "true";
 const char kDomain[] = "domain.com";
 const char kUsername[] = "user@domain.com";
+const char kMode[] = "enterprise";
+const char kDeviceId[] = "100200300";
 const char kUsernameOtherDomain[] = "user@other.com";
 const char kAttributeOwned[] = "enterprise.owned";
 const char kAttributeOwner[] = "enterprise.user";
+const char kAttrEnterpriseDomain[] = "enterprise.domain";
+const char kAttrEnterpriseMode[] = "enterprise.mode";
+const char kAttrEnterpriseDeviceId[] = "enterprise.device_id";
 
 const char kOAuthTokenCookie[] = "oauth_token=1234";
 const char kOAuthGetAccessTokenData[] =
@@ -150,6 +156,15 @@ class LoginUtilsTestBase : public TESTBASE,
     EXPECT_CALL(*cryptohome_, InstallAttributesSet(kAttributeOwner,
                                                    kUsername))
         .WillRepeatedly(Return(true));
+    EXPECT_CALL(*cryptohome_, InstallAttributesSet(kAttrEnterpriseDomain,
+                                                   kDomain))
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*cryptohome_, InstallAttributesSet(kAttrEnterpriseMode,
+                                                   kMode))
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*cryptohome_, InstallAttributesSet(kAttrEnterpriseDeviceId,
+                                                   kDeviceId))
+        .WillRepeatedly(Return(true));
     EXPECT_CALL(*cryptohome_, InstallAttributesFinalize())
         .WillRepeatedly(Return(true));
     EXPECT_CALL(*cryptohome_, InstallAttributesGet(kAttributeOwned, _))
@@ -157,6 +172,15 @@ class LoginUtilsTestBase : public TESTBASE,
                               Return(true)));
     EXPECT_CALL(*cryptohome_, InstallAttributesGet(kAttributeOwner, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(kUsername),
+                              Return(true)));
+    EXPECT_CALL(*cryptohome_, InstallAttributesGet(kAttrEnterpriseDomain, _))
+        .WillRepeatedly(DoAll(SetArgPointee<1>(kDomain),
+                              Return(true)));
+    EXPECT_CALL(*cryptohome_, InstallAttributesGet(kAttrEnterpriseMode, _))
+        .WillRepeatedly(DoAll(SetArgPointee<1>(kMode),
+                              Return(true)));
+    EXPECT_CALL(*cryptohome_, InstallAttributesGet(kAttrEnterpriseDeviceId, _))
+        .WillRepeatedly(DoAll(SetArgPointee<1>(kDeviceId),
                               Return(true)));
     test_api->SetCryptohomeLibrary(cryptohome_, true);
 
@@ -229,6 +253,10 @@ class LoginUtilsTestBase : public TESTBASE,
     EXPECT_CALL(*cryptohome_, InstallAttributesIsFirstInstall())
         .WillOnce(Return(true))
         .WillRepeatedly(Return(false));
+    policy::CloudPolicyDataStore* device_data_store =
+        connector_->GetDeviceCloudPolicyDataStore();
+    device_data_store->set_device_mode(policy::DEVICE_MODE_ENTERPRISE);
+    device_data_store->set_device_id(kDeviceId);
     EXPECT_EQ(policy::EnterpriseInstallAttributes::LOCK_SUCCESS,
               connector_->LockDevice(username));
     loop_.RunAllPending();
@@ -290,6 +318,8 @@ class LoginUtilsTestBase : public TESTBASE,
     em::DeviceRegisterResponse* register_response =
         response.mutable_register_response();
     register_response->set_device_management_token(kDMToken);
+    register_response->set_enrollment_type(
+        em::DeviceRegisterResponse::ENTERPRISE);
     return PrepareDMServiceFetcher(kDMRegisterRequest, response);
   }
 

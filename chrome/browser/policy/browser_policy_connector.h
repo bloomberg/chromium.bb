@@ -93,6 +93,12 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   // Returns the enterprise domain if device is managed.
   std::string GetEnterpriseDomain();
 
+  // Returns the device mode. For ChromeOS this function will return the mode
+  // stored in the lockbox, or DEVICE_MODE_CONSUMER if the lockbox has been
+  // locked empty, or DEVICE_MODE_UNKNOWN if the device has not been owned yet.
+  // For other OSes the function will always return DEVICE_MODE_CONSUMER.
+  DeviceMode GetDeviceMode();
+
   // Reset the device policy machinery. This stops any automatic retry behavior
   // and clears the error flags, so potential retries have a chance to succeed.
   void ResetDevicePolicy();
@@ -124,8 +130,10 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   // isn't being used.
   void RegisterForUserPolicy(const std::string& oauth_token);
 
-  const CloudPolicyDataStore* GetDeviceCloudPolicyDataStore() const;
-  const CloudPolicyDataStore* GetUserCloudPolicyDataStore() const;
+  // The data stores should be considered read-only for everyone except for
+  // tests.
+  CloudPolicyDataStore* GetDeviceCloudPolicyDataStore();
+  CloudPolicyDataStore* GetUserCloudPolicyDataStore();
 
   const ConfigurationPolicyHandlerList* GetHandlerList() const;
 

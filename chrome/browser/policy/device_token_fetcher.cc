@@ -18,6 +18,8 @@
 #include "chrome/browser/policy/policy_notifier.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 
+namespace em = enterprise_management;
+
 namespace policy {
 
 namespace {
@@ -71,9 +73,21 @@ void SampleErrorStatus(DeviceManagementStatus status) {
     NOTREACHED();
 }
 
-}  // namespace
+// Translates the DeviceRegisterResponse::DeviceMode |mode| to the enum used
+// internally to represent different device modes.
+DeviceMode TranslateProtobufDeviceMode(
+    em::DeviceRegisterResponse::DeviceMode mode) {
+  switch (mode) {
+    case em::DeviceRegisterResponse::ENTERPRISE:
+      return DEVICE_MODE_ENTERPRISE;
+    case em::DeviceRegisterResponse::KIOSK:
+      return DEVICE_MODE_KIOSK;
+  }
+  LOG(ERROR) << "Unknown enrollment mode in registration response: " << mode;
+  return  DEVICE_MODE_UNKNOWN;
+}
 
-namespace em = enterprise_management;
+}  // namespace
 
 DeviceTokenFetcher::DeviceTokenFetcher(
     DeviceManagementService* service,
@@ -187,6 +201,23 @@ void DeviceTokenFetcher::OnTokenFetchCompleted(
       if (register_response.has_device_management_token()) {
         UMA_HISTOGRAM_ENUMERATION(kMetricToken, kMetricTokenFetchOK,
                                   kMetricTokenSize);
+
+        if (data_store_->policy_register_type() ==
+                em::DeviceRegisterRequest::DEVICE) {
+          // TODO(pastarmovj): Default to DEVICE_MODE_UNKNOWN once DM server has
+          // been updated. http://crosbug.com/26624
+          DeviceMode mode = DEVICE_MODE_ENTERPRISE;
+          if (register_response.has_enrollment_type()) {
+            mode = TranslateProtobufDeviceMode(
+                register_response.enrollment_type());
+          }
+          if (mode == DEVICE_MODE_UNKNOWN) {
+            LOG(ERROR) << "Enrollment mode missing or unknown!";
+            SetState(STATE_BAD_ENROLLMENT_MODE);
+            return;
+          }
+          data_store_->set_device_mode(mode);
+        }
         data_store_->SetDeviceToken(register_response.device_management_token(),
                                     false);
         SetState(STATE_TOKEN_AVAILABLE);
@@ -251,6 +282,11 @@ void DeviceTokenFetcher::SetState(FetcherState state) {
                         CloudPolicySubsystem::BAD_SERIAL_NUMBER,
                         PolicyNotifier::TOKEN_FETCHER);
       break;
+    case STATE_BAD_ENROLLMENT_MODE:
+      notifier_->Inform(CloudPolicySubsystem::UNENROLLED,
+                        CloudPolicySubsystem::BAD_ENROLLMENT_MODE,
+                        PolicyNotifier::TOKEN_FETCHER);
+      break;
     case STATE_UNMANAGED:
       delayed_work_at = cache_->last_policy_refresh_time() +
           base::TimeDelta::FromMilliseconds(
@@ -306,6 +342,7 @@ void DeviceTokenFetcher::DoWork() {
     case STATE_INACTIVE:
     case STATE_TOKEN_AVAILABLE:
     case STATE_BAD_SERIAL:
+    case STATE_BAD_ENROLLMENT_MODE:
       break;
     case STATE_UNMANAGED:
     case STATE_ERROR:

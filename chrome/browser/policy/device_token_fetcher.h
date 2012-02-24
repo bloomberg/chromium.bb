@@ -79,7 +79,10 @@ class DeviceTokenFetcher {
     // Temporary error. Retry sooner.
     STATE_TEMPORARY_ERROR,
     // Server rejected the auth token.
-    STATE_BAD_AUTH
+    STATE_BAD_AUTH,
+    // Server didn't send enrollment mode or the enrollment mode is not known to
+    // the client.
+    STATE_BAD_ENROLLMENT_MODE,
   };
 
   // Common initialization helper.

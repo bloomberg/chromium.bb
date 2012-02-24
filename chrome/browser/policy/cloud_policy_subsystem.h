@@ -46,7 +46,9 @@ class CloudPolicySubsystem
     BAD_DMTOKEN,           // The server rejected the DMToken.
     POLICY_LOCAL_ERROR,    // The policy cache encountered a local error.
     SIGNATURE_MISMATCH,    // The policy cache detected a signature mismatch.
-    BAD_SERIAL_NUMBER      // The serial number of the device is not valid.
+    BAD_SERIAL_NUMBER,     // The serial number of the device is not valid.
+    AUTO_ENROLLMENT_ERROR, // Auto-enrollment is not supported.
+    BAD_ENROLLMENT_MODE,   // The enrollment mode was not recognized.
   };
 
   class Observer {

@@ -65,6 +65,8 @@ ACTION_P(CreateSuccessfulRegisterResponse, token) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   em::DeviceManagementResponse response_data;
   response_data.mutable_register_response()->set_device_management_token(token);
+  response_data.mutable_register_response()->set_enrollment_type(
+      em::DeviceRegisterResponse::ENTERPRISE);
 
   arg3->response_data = response_data.SerializeAsString();
   arg3->response_code = 200;

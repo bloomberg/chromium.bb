@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,7 +49,8 @@ void PolicyNotifier::RecomputeState() {
     state_ = CloudPolicySubsystem::UNMANAGED;
     error_details_ = CloudPolicySubsystem::NO_DETAILS;
   } else if (s[TOKEN_FETCHER] == CloudPolicySubsystem::UNENROLLED &&
-             e[TOKEN_FETCHER] == CloudPolicySubsystem::BAD_SERIAL_NUMBER) {
+             (e[TOKEN_FETCHER] == CloudPolicySubsystem::BAD_SERIAL_NUMBER ||
+              e[TOKEN_FETCHER] == CloudPolicySubsystem::BAD_ENROLLMENT_MODE)) {
     state_ = s[TOKEN_FETCHER];
     error_details_ = e[TOKEN_FETCHER];
   } else if (s[TOKEN_FETCHER] == CloudPolicySubsystem::NETWORK_ERROR) {

@@ -76,6 +76,7 @@ class CloudPolicyDataStore {
   void set_user_name(const std::string& user_name);
   void set_user_affiliation(UserAffiliation user_affiliation);
   void set_known_machine_id(bool known_machine_id);
+  void set_device_mode(DeviceMode device_mode);
 
 #if defined(OS_CHROMEOS)
   void set_device_status_collector(DeviceStatusCollector* collector);
@@ -96,6 +97,7 @@ class CloudPolicyDataStore {
   const std::string& user_name() const;
   UserAffiliation user_affiliation() const;
   bool known_machine_id() const;
+  DeviceMode device_mode() const;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -129,6 +131,8 @@ class CloudPolicyDataStore {
   bool known_machine_id_;
 
   bool token_cache_loaded_;
+
+  DeviceMode device_mode_;
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<DeviceStatusCollector> device_status_collector_;

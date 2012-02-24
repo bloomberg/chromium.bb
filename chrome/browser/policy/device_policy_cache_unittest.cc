@@ -91,7 +91,10 @@ class DevicePolicyCacheTest : public testing::Test {
 
   void MakeEnterpriseDevice(const char* registration_user) {
     ASSERT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS,
-              install_attributes_.LockDevice(registration_user));
+              install_attributes_.LockDevice(
+                  registration_user,
+                  DEVICE_MODE_ENTERPRISE,
+                  std::string()));
   }
 
   const Value* GetPolicy(const char* policy_name) {

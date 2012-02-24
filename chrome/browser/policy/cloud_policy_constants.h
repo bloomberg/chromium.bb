@@ -81,6 +81,14 @@ enum DeviceManagementStatus {
   DM_STATUS_SERVICE_POLICY_NOT_FOUND = 902,
 };
 
+// List of modes that the device can be locked into.
+enum DeviceMode {
+  DEVICE_MODE_UNKNOWN,     // The device is not yet enrolled or owned.
+  DEVICE_MODE_CONSUMER,    // The device is locally owned as consumer device.
+  DEVICE_MODE_ENTERPRISE,  // The device is enrolled as an enterprise device.
+  DEVICE_MODE_KIOSK,       // The device is enrolled as kiosk/retail device.
+};
+
 }  // namespace policy
 
 #endif  // CHROME_BROWSER_POLICY_CLOUD_POLICY_CONSTANTS_H_
