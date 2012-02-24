@@ -1808,5 +1808,23 @@
    fun:talk_base::Thread::Run
    fun:remoting::::JingleMessagePump::Run
 }
-
-
+{
+   bug_115611_a
+   Heapcheck:Leak
+   fun:base::Bind
+   fun:content::TraceSubscriberStdioImpl::OnStart
+}
+{
+   bug_115611_b
+   Heapcheck:Leak
+   fun:*TraceSubscriberStdio*
+   fun:TraceSubscriberStdioTest_CanWriteDataToFile_Test::TestBody
+}
+{
+   bug_115611_c
+   Heapcheck:Leak
+   ...
+   fun:FilePath::Append
+   fun:FilePath::AppendASCII
+   fun:TraceSubscriberStdioTest_CanWriteDataToFile_Test::TestBody
+}

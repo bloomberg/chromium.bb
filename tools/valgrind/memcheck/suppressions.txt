@@ -5894,6 +5894,13 @@
    fun:_ZN9talk_base19BasicNetworkManager16DoUpdateNetworksEv
    fun:_ZN9talk_base19BasicNetworkManager9OnMessageEPNS_7MessageE
 }
+{
+   bug_115611
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7content20TraceSubscriberStdioC1ERK8FilePath
+   fun:_ZN48TraceSubscriberStdioTest_CanWriteDataToFile_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
