@@ -5867,7 +5867,7 @@
    bug_115606
    Memcheck:Leak
    ...
-   fun:_ZN5media14WebMListParser16ParseListElementEiilPKhi
+   fun:_ZN5media14WebMListParser16ParseListElementE*
    fun:_ZN5media14WebMListParser5ParseEPKhi
 }
 {
