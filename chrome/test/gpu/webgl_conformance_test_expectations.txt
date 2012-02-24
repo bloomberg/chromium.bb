@@ -27,7 +27,7 @@
 WONTFIX LINUX DEBUG : conformance_more_conformance_quickCheckAPI_B1 = TIMEOUT
 WONTFIX LINUX DEBUG : conformance_more_conformance_quickCheckAPI_G_I = TIMEOUT
 
-115122 LINUX NVIDIA DEBUG : conformance_textures_tex_image_and_sub_image_2d_with_video = TIMEOUT
+115122 LINUX WIN7 NVIDIA DEBUG : conformance_textures_tex_image_and_sub_image_2d_with_video = TIMEOUT
 
 // -----------------------------------------------------------------------------
 // FAILING TESTS
