@@ -30,26 +30,16 @@ class WorkspaceEventFilter : public ToplevelWindowEventFilter,
   // Overriden from WindowObserver:
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
 
+ protected:
+  // Overriden from ToplevelWindowEventFilter:
+  virtual WindowResizer* CreateWindowResizer(aura::Window* window,
+                                             const gfx::Point& point,
+                                             int window_component) OVERRIDE;
+
  private:
-  enum DragState {
-    DRAG_NONE,
-    DRAG_MOVE,
-    DRAG_RESIZE
-  };
-
-  // If the mouse is currently over a portion of the window that should
-  // trigger a drag or resize, drag_state_ is set appropriately and true
-  // is returned. If the mouse is not over a portion of the window that should
-  // trigger a more or resize, drag_state_ is not updated and false is returned.
-  bool UpdateDragState();
-
   // Updates the top-level window under the mouse so that we can change
   // the look of the caption area based on mouse-hover.
   void UpdateHoveredWindow(aura::Window* toplevel);
-
-  aura::Window* owner_;
-
-  DragState drag_state_;
 
   // Top-level window under the mouse cursor.
   aura::Window* hovered_window_;

@@ -36,21 +36,6 @@ class ASH_EXPORT WorkspaceLayoutManager : public aura::LayoutManager {
     return workspace_manager_;
   }
 
-  // Invoked when a window receives drag event.
-  void PrepareForMoveOrResize(aura::Window* drag, aura::MouseEvent* event);
-
-  // Invoked when a drag event didn't start any drag operation.
-  void CancelMoveOrResize(aura::Window* drag, aura::MouseEvent* event);
-
-  // Invoked when a drag event moved the |window|.
-  void ProcessMove(aura::Window* window, aura::MouseEvent* event);
-
-  // Invoked when a user finished moving window.
-  void EndMove(aura::Window* drag, aura::MouseEvent* event);
-
-  // Invoked when a user finished resizing window.
-  void EndResize(aura::Window* drag, aura::MouseEvent* event);
-
   // Overridden from aura::LayoutManager:
   virtual void OnWindowResized() OVERRIDE;
   virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE;
