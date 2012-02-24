@@ -57,7 +57,6 @@ class ParallelAuthenticator : public Authenticator,
     NEED_OLD_PW,     // User changed pw, and we have the new one.
     HAVE_NEW_PW,     // We have verified new pw, time to migrate key.
     OFFLINE_LOGIN,   // Login succeeded offline.
-    DEMO_LOGIN,      // Logged in as the demo user.
     ONLINE_LOGIN,    // Offline and online login succeeded.
     UNLOCK,          // Screen unlock succeeded.
     ONLINE_FAILED,   // Online login disallowed, but offline succeeded.
@@ -111,18 +110,15 @@ class ParallelAuthenticator : public Authenticator,
   virtual void AuthenticateToUnlock(const std::string& username,
                                     const std::string& password) OVERRIDE;
 
-  // Initiates demo user login.
-  // Mounts tmpfs and notifies consumer on the success/failure.
-  virtual void LoginDemoUser() OVERRIDE;
-
   // Initiates incognito ("browse without signing in") login.
   // Mounts tmpfs and notifies consumer on the success/failure.
   virtual void LoginOffTheRecord() OVERRIDE;
 
   // These methods must be called on the UI thread, as they make DBus calls
   // and also call back to the login UI.
-  virtual void OnDemoUserLoginSuccess()  OVERRIDE;
-  virtual void OnLoginSuccess(bool request_pending)  OVERRIDE;
+  virtual void OnLoginSuccess(
+      bool request_pending)  OVERRIDE;
+
   virtual void OnLoginFailure(const LoginFailure& error) OVERRIDE;
   virtual void RecoverEncryptedData(
       const std::string& old_password) OVERRIDE;

@@ -116,13 +116,6 @@ void LoginPerformer::OnLoginFailure(const LoginFailure& failure) {
   }
 }
 
-void LoginPerformer::OnDemoUserLoginSuccess() {
-  content::RecordAction(
-      UserMetricsAction("Login_DemoUserLoginSuccess"));
-
-  LoginStatusConsumer::OnDemoUserLoginSuccess();
-}
-
 void LoginPerformer::OnLoginSuccess(
     const std::string& username,
     const std::string& password,
@@ -324,13 +317,6 @@ void LoginPerformer::Login(const std::string& username,
     else
       NOTREACHED();
   }
-}
-
-void LoginPerformer::LoginDemoUser() {
-  authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&Authenticator::LoginDemoUser, authenticator_.get()));
 }
 
 void LoginPerformer::LoginOffTheRecord() {

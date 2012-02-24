@@ -271,16 +271,6 @@ void ParallelAuthenticator::AuthenticateToUnlock(const std::string& username,
                  static_cast<AuthAttemptStateResolver*>(this)));
 }
 
-void ParallelAuthenticator::LoginDemoUser() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Note: we use kDemoUser other places to identify if we're in demo mode.
-  current_state_.reset(
-      new AuthAttemptState(kDemoUser, "", "", "", "", false));
-  mount_guest_attempted_ = true;
-  MountGuest(current_state_.get(),
-             static_cast<AuthAttemptStateResolver*>(this));
-}
-
 void ParallelAuthenticator::LoginOffTheRecord() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   current_state_.reset(new AuthAttemptState("", "", "", "", "", false));
@@ -289,19 +279,8 @@ void ParallelAuthenticator::LoginOffTheRecord() {
              static_cast<AuthAttemptStateResolver*>(this));
 }
 
-void ParallelAuthenticator::OnDemoUserLoginSuccess() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  VLOG(1) << "Demo user login success";
-  // Send notification of success
-  AuthenticationNotificationDetails details(true);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_LOGIN_AUTHENTICATION,
-      content::NotificationService::AllSources(),
-      content::Details<AuthenticationNotificationDetails>(&details));
-  consumer_->OnDemoUserLoginSuccess();
-}
-
-void ParallelAuthenticator::OnLoginSuccess(bool request_pending) {
+void ParallelAuthenticator::OnLoginSuccess(
+    bool request_pending) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   VLOG(1) << "Login success";
   // Send notification of success
@@ -532,13 +511,6 @@ void ParallelAuthenticator::Resolve() {
           base::Bind(&ParallelAuthenticator::OnLoginSuccess, this,
                      request_pending));
       break;
-    case DEMO_LOGIN:
-      VLOG(2) << "Demo login";
-      using_oauth_ = false;
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&ParallelAuthenticator::OnDemoUserLoginSuccess, this));
-      break;
     case GUEST_LOGIN:
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
@@ -662,12 +634,8 @@ ParallelAuthenticator::ResolveCryptohomeSuccessState() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (remove_attempted_)
     return CREATE_NEW;
-  if (mount_guest_attempted_) {
-    if (current_state_->username == kDemoUser)
-      return DEMO_LOGIN;
-    else
-      return GUEST_LOGIN;
-  }
+  if (mount_guest_attempted_)
+    return GUEST_LOGIN;
   if (migrate_attempted_)
     return RECOVER_MOUNT;
   if (check_key_attempted_)

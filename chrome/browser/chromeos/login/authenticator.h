@@ -51,19 +51,14 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
   virtual void AuthenticateToUnlock(const std::string& username,
                                     const std::string& password) = 0;
 
-  // Initiates demo user login.
-  virtual void LoginDemoUser() = 0;
-
   // Initiates incognito ("browse without signing in") login.
   virtual void LoginOffTheRecord() = 0;
-
-  // Initiates a demo user login.
-  virtual void OnDemoUserLoginSuccess() = 0;
 
   // |request_pending| is true if we still plan to call consumer_ with the
   // results of more requests.
   // Must be called on the UI thread.
-  virtual void OnLoginSuccess(bool request_pending) = 0;
+  virtual void OnLoginSuccess(
+      bool request_pending) = 0;
 
   // Must be called on the UI thread.
   virtual void OnLoginFailure(const LoginFailure& error) = 0;

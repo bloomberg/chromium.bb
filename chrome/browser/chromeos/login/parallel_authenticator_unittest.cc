@@ -144,13 +144,6 @@ class ParallelAuthenticatorTest : public testing::Test {
         .WillByDefault(Invoke(MockConsumer::OnFailQuitAndFail));
   }
 
-  // Allow test to fail and exit gracefully, even if
-  // OnDemoUserLoginSuccess() wasn't supposed to happen.
-  void FailOnDemoUserLoginSuccess() {
-    ON_CALL(consumer_, OnDemoUserLoginSuccess())
-        .WillByDefault(Invoke(MockConsumer::OnDemoUserSuccessQuitAndFail));
-  }
-
   // Allow test to fail and exit gracefully, even if OnLoginSuccess()
   // wasn't supposed to happen.
   void FailOnLoginSuccess() {
@@ -168,12 +161,6 @@ class ParallelAuthenticatorTest : public testing::Test {
   void ExpectLoginFailure(const LoginFailure& failure) {
     EXPECT_CALL(consumer_, OnLoginFailure(failure))
         .WillOnce(Invoke(MockConsumer::OnFailQuit))
-        .RetiresOnSaturation();
-  }
-
-  void ExpectDemoUserLoginSuccess() {
-    EXPECT_CALL(consumer_, OnDemoUserLoginSuccess())
-        .WillOnce(Invoke(MockConsumer::OnDemoUserSuccessQuit))
         .RetiresOnSaturation();
   }
 
@@ -338,36 +325,6 @@ TEST_F(ParallelAuthenticatorTest, DriveGuestLoginButFail) {
       .RetiresOnSaturation();
 
   auth_->LoginOffTheRecord();
-  message_loop_.Run();
-}
-
-TEST_F(ParallelAuthenticatorTest, DriveDemoUserLogin) {
-  ExpectDemoUserLoginSuccess();
-  FailOnLoginFailure();
-
-  // Set up mock cryptohome library to respond as though a tmpfs mount
-  // attempt has occurred and succeeded.
-  mock_library_->SetUp(true, 0);
-  EXPECT_CALL(*mock_library_, AsyncMountGuest(_))
-      .Times(1)
-      .RetiresOnSaturation();
-
-  auth_->LoginDemoUser();
-  message_loop_.Run();
-}
-
-TEST_F(ParallelAuthenticatorTest, DriveDemoUserLoginButFail) {
-  FailOnDemoUserLoginSuccess();
-  ExpectLoginFailure(LoginFailure(LoginFailure::COULD_NOT_MOUNT_TMPFS));
-
-  // Set up mock cryptohome library to respond as though a tmpfs mount
-  // attempt has occurred and failed.
-  mock_library_->SetUp(false, 0);
-  EXPECT_CALL(*mock_library_, AsyncMountGuest(_))
-      .Times(1)
-      .RetiresOnSaturation();
-
-  auth_->LoginDemoUser();
   message_loop_.Run();
 }
 

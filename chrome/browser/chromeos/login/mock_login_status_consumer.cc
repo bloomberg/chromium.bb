@@ -15,17 +15,6 @@ MockConsumer::MockConsumer() {}
 MockConsumer::~MockConsumer() {}
 
 // static
-void MockConsumer::OnDemoUserSuccessQuit() {
-  MessageLoop::current()->Quit();
-}
-
-// static
-void MockConsumer::OnDemoUserSuccessQuitAndFail() {
-  ADD_FAILURE() << "Demo Login should have failed!";
-  MessageLoop::current()->Quit();
-}
-
-// static
 void MockConsumer::OnGuestSuccessQuit() {
   MessageLoop::current()->Quit();
 }

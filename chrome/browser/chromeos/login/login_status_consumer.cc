@@ -6,10 +6,6 @@
 
 namespace chromeos {
 
-void LoginStatusConsumer::OnDemoUserLoginSuccess() {
-  OnLoginSuccess(kDemoUser, "", false, false);
-}
-
 void LoginStatusConsumer::OnPasswordChangeDetected() {
   NOTREACHED();
 }
