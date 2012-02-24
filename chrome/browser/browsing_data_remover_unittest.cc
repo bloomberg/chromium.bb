@@ -163,6 +163,7 @@ class RemoveProfileCookieTester : public RemoveCookieTester {
   }
 };
 
+#if defined(ENABLE_SAFE_BROWSING)
 class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
  public:
   RemoveSafeBrowsingCookieTester()
@@ -193,6 +194,7 @@ class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
 
   DISALLOW_COPY_AND_ASSIGN(RemoveSafeBrowsingCookieTester);
 };
+#endif
 
 class RemoveOriginBoundCertTester : public BrowsingDataRemoverTester {
  public:
@@ -477,6 +479,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveCookieLastHour) {
   EXPECT_FALSE(tester->ContainsCookie());
 }
 
+#if defined(ENABLE_SAFE_BROWSING)
 TEST_F(BrowsingDataRemoverTest, RemoveSafeBrowsingCookieForever) {
   scoped_ptr<RemoveSafeBrowsingCookieTester> tester(
       new RemoveSafeBrowsingCookieTester());
@@ -506,6 +509,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveSafeBrowsingCookieLastHour) {
   // browsing cookies.
   EXPECT_TRUE(tester->ContainsCookie());
 }
+#endif
 
 TEST_F(BrowsingDataRemoverTest, RemoveOriginBoundCertForever) {
   scoped_ptr<RemoveOriginBoundCertTester> tester(
