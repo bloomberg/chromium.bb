@@ -148,6 +148,8 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
  private:
   struct Item;
 
+  typedef std::vector<Item> ItemVector;
+
   // Functions for inserting items into |items_|.
   void AppendItem(const Item& item);
   void InsertItemAtIndex(const Item& item, int index);
@@ -156,7 +158,7 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
   // Notify the delegate that the menu is closed.
   void OnMenuClosed();
 
-  std::vector<Item> items_;
+  ItemVector items_;
 
   Delegate* delegate_;
 

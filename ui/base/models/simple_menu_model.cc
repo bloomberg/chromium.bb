@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -187,10 +187,9 @@ void SimpleMenuModel::Clear() {
 }
 
 int SimpleMenuModel::GetIndexOfCommandId(int command_id) {
-  std::vector<Item>::iterator itr;
-  for (itr = items_.begin(); itr != items_.end(); itr++) {
-    if ((*itr).command_id == command_id) {
-      return FlipIndex(static_cast<int>(std::distance(items_.begin(), itr)));
+  for (ItemVector::iterator i = items_.begin(); i != items_.end(); ++i) {
+    if ((*i).command_id == command_id) {
+      return FlipIndex(static_cast<int>(std::distance(items_.begin(), i)));
     }
   }
   return -1;
@@ -200,9 +199,8 @@ int SimpleMenuModel::GetIndexOfCommandId(int command_id) {
 // SimpleMenuModel, MenuModel implementation:
 
 bool SimpleMenuModel::HasIcons() const {
-  for (std::vector<Item>::const_iterator iter = items_.begin();
-       iter != items_.end(); ++iter) {
-    if (!iter->icon.isNull())
+  for (ItemVector::const_iterator i = items_.begin(); i != items_.end(); ++i) {
+    if (!i->icon.isNull())
       return true;
   }
 
