@@ -17,8 +17,12 @@ publican_sources = \
 	$(srcdir)/en-US/images/x-architecture.png
 
 
-Wayland: publican.cfg $(publican_sources)
+Wayland: docbook-xsl publican.cfg $(publican_sources)
 	publican build --lang en-US --format html,pdf
+
+# This must be run befor the publican run
+docbook-xsl: $(top_srcdir)/protocol/wayland.xml protocol-to-docbook.xsl
+	$(AM_V_GEN)$(XSLTPROC) protocol-to-docbook.xsl $(top_srcdir)/protocol/wayland.xml > $(srcdir)/en-US/Protocol.xml
 
 clean-local:
 	-rm -rf Wayland
@@ -31,5 +35,6 @@ uninstall-local:
 	-rm -rf $(DESTDIR)$(docdir)/Wayland/*
 	-rmdir $(DESTDIR)$(docdir)/Wayland
 
-EXTRA_DIST = $(publican_sources) publican.cfg
+EXTRA_DIST = $(publican_sources) publican.cfg protocol-to-docbook.xsl
+
 endif
