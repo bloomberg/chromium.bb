@@ -14,8 +14,6 @@
 #include "base/scoped_temp_dir.h"
 #include "content/public/browser/browser_context.h"
 
-class WebKitContext;
-
 namespace content {
 class MockResourceContext;
 }

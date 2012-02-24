@@ -303,8 +303,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
 
   if (remove_mask & REMOVE_LOCAL_STORAGE &&
       BrowserThread::IsMessageLoopValid(BrowserThread::WEBKIT_DEPRECATED)) {
-    DOMStorageContext* context =
-        DOMStorageContext::GetForBrowserContext(profile_);
+    DOMStorageContext* context = BrowserContext::GetDOMStorageContext(profile_);
     BrowserThread::PostTask(
         BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
         base::Bind(&BrowsingDataRemover::ClearDOMStorageOnWebKitThread,

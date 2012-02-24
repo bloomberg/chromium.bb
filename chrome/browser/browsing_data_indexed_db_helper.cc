@@ -64,7 +64,7 @@ class BrowsingDataIndexedDBHelperImpl : public BrowsingDataIndexedDBHelper {
 
 BrowsingDataIndexedDBHelperImpl::BrowsingDataIndexedDBHelperImpl(
     Profile* profile)
-    : indexed_db_context_(IndexedDBContext::GetForBrowserContext(profile)),
+    : indexed_db_context_(BrowserContext::GetIndexedDBContext(profile)),
       is_fetching_(false) {
   DCHECK(indexed_db_context_.get());
 }

@@ -187,7 +187,7 @@ NavigationControllerImpl::NavigationControllerImpl(
   if (!session_storage_namespace_) {
     session_storage_namespace_ = new SessionStorageNamespaceImpl(
         static_cast<DOMStorageContextImpl*>(
-            DOMStorageContext::GetForBrowserContext(browser_context_)));
+            BrowserContext::GetDOMStorageContext(browser_context_)));
   }
 }
 

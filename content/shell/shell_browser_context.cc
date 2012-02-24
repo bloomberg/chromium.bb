@@ -11,7 +11,6 @@
 #include "base/path_service.h"
 #include "base/threading/thread.h"
 #include "content/browser/download/download_manager_impl.h"
-#include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/geolocation_permission_context.h"
 #include "content/public/browser/speech_input_preferences.h"

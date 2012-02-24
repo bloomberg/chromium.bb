@@ -8,7 +8,6 @@
 #include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/browser/in_process_webkit/dom_storage_context_impl.h"
 #include "content/browser/in_process_webkit/indexed_db_context_impl.h"
-#include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_constants.h"
@@ -28,17 +27,19 @@ using webkit_database::DatabaseTracker;
 // Key names on BrowserContext.
 static const char* kAppCacheServicKeyName = "content_appcache_service_tracker";
 static const char* kDatabaseTrackerKeyName = "content_database_tracker";
+static const char* kDOMStorageContextKeyName = "content_dom_storage_context";
 static const char* kFileSystemContextKeyName = "content_file_system_context";
+static const char* kIndexedDBContextKeyName = "content_indexed_db_context";
 static const char* kQuotaManagerKeyName = "content_quota_manager";
-static const char* kWebKitContextKeyName = "content_webkit_context";
 
 namespace content {
 
 void CreateQuotaManagerAndClients(BrowserContext* context) {
   if (context->GetUserData(kQuotaManagerKeyName)) {
     DCHECK(context->GetUserData(kDatabaseTrackerKeyName));
+    DCHECK(context->GetUserData(kDOMStorageContextKeyName));
     DCHECK(context->GetUserData(kFileSystemContextKeyName));
-    DCHECK(context->GetUserData(kWebKitContextKeyName));
+    DCHECK(context->GetUserData(kIndexedDBContextKeyName));
     return;
   }
 
@@ -70,13 +71,20 @@ void CreateQuotaManagerAndClients(BrowserContext* context) {
   context->SetUserData(kDatabaseTrackerKeyName, 
                        new UserDataAdapter<DatabaseTracker>(db_tracker));
 
-  scoped_refptr<WebKitContext> webkit_context = new WebKitContext(
-      context->IsOffTheRecord(), context->GetPath(),
-      context->GetSpecialStoragePolicy(), quota_manager->proxy(),
+  FilePath path = context->IsOffTheRecord() ? FilePath() : context->GetPath();
+  scoped_refptr<DOMStorageContext> dom_storage_context =
+      new DOMStorageContextImpl(path, context->GetSpecialStoragePolicy());
+  context->SetUserData(
+      kDOMStorageContextKeyName,
+      new UserDataAdapter<DOMStorageContext>(dom_storage_context));
+
+  scoped_refptr<IndexedDBContext> indexed_db_context = new IndexedDBContextImpl(
+      path, context->GetSpecialStoragePolicy(), quota_manager->proxy(),
       BrowserThread::GetMessageLoopProxyForThread(
           BrowserThread::WEBKIT_DEPRECATED));
-  context->SetUserData(kWebKitContextKeyName,
-                       new UserDataAdapter<WebKitContext>(webkit_context));
+  context->SetUserData(
+      kIndexedDBContextKeyName,
+      new UserDataAdapter<IndexedDBContext>(indexed_db_context));
 
   scoped_refptr<ChromeAppCacheService> appcache_service =
       new ChromeAppCacheService(quota_manager->proxy());
@@ -127,9 +135,17 @@ QuotaManager* BrowserContext::GetQuotaManager(BrowserContext* context) {
   return UserDataAdapter<QuotaManager>::Get(context, kQuotaManagerKeyName);
 }
 
-WebKitContext* BrowserContext::GetWebKitContext(BrowserContext* context) {
+DOMStorageContext* BrowserContext::GetDOMStorageContext(
+    BrowserContext* context) {
   CreateQuotaManagerAndClients(context);
-  return UserDataAdapter<WebKitContext>::Get(context, kWebKitContextKeyName);
+  return UserDataAdapter<DOMStorageContext>::Get(
+      context, kDOMStorageContextKeyName);
+}
+
+IndexedDBContext* BrowserContext::GetIndexedDBContext(BrowserContext* context) {
+  CreateQuotaManagerAndClients(context);
+  return UserDataAdapter<IndexedDBContext>::Get(
+      context, kIndexedDBContextKeyName);
 }
 
 DatabaseTracker* BrowserContext::GetDatabaseTracker(BrowserContext* context) {
@@ -168,9 +184,9 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
 
   if (BrowserThread::IsMessageLoopValid(BrowserThread::WEBKIT_DEPRECATED)) {
     DOMStorageContextImpl* dom_context = static_cast<DOMStorageContextImpl*>(
-        DOMStorageContextImpl::GetForBrowserContext(browser_context));
+        GetDOMStorageContext(browser_context));
     IndexedDBContextImpl* indexed_db = static_cast<IndexedDBContextImpl*>(
-        IndexedDBContext::GetForBrowserContext(browser_context));
+        GetIndexedDBContext(browser_context));
     BrowserThread::PostTask(
         BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
         base::Bind(&SaveSessionStateOnWebkitThread,
@@ -181,11 +197,11 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
 
 void BrowserContext::ClearLocalOnDestruction(BrowserContext* browser_context) {
   DOMStorageContextImpl* dom_context = static_cast<DOMStorageContextImpl*>(
-        DOMStorageContextImpl::GetForBrowserContext(browser_context));
+      GetDOMStorageContext(browser_context));
   dom_context->set_clear_local_state_on_exit(true);
 
   IndexedDBContextImpl* indexed_db = static_cast<IndexedDBContextImpl*>(
-        IndexedDBContext::GetForBrowserContext(browser_context));
+      GetIndexedDBContext(browser_context));
   indexed_db->set_clear_local_state_on_exit(true);
 
   GetDatabaseTracker(browser_context)->SetClearLocalStateOnExit(true);
@@ -208,7 +224,7 @@ void BrowserContext::PurgeMemory(BrowserContext* browser_context) {
 
   if (BrowserThread::IsMessageLoopValid(BrowserThread::WEBKIT_DEPRECATED)) {
     DOMStorageContextImpl* dom_context = static_cast<DOMStorageContextImpl*>(
-        DOMStorageContextImpl::GetForBrowserContext(browser_context));
+        GetDOMStorageContext(browser_context));
     BrowserThread::PostTask(
         BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
         base::Bind(&PurgeMemoryOnWebkitThread,
@@ -217,12 +233,22 @@ void BrowserContext::PurgeMemory(BrowserContext* browser_context) {
 }
 
 BrowserContext::~BrowserContext() {
+  // These message loop checks are just to avoid leaks in unittests.
   if (GetUserData(kDatabaseTrackerKeyName) &&
       BrowserThread::IsMessageLoopValid(BrowserThread::FILE)) {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         base::Bind(&webkit_database::DatabaseTracker::Shutdown,
                    GetDatabaseTracker(this)));
+  }
+
+  if (GetUserData(kDOMStorageContextKeyName) &&
+      BrowserThread::IsMessageLoopValid(BrowserThread::WEBKIT_DEPRECATED)) {
+    DOMStorageContext* dom_storage_context =
+        (static_cast<UserDataAdapter<DOMStorageContext>*>(
+            GetUserData(kDOMStorageContextKeyName)))->release();
+    BrowserThread::ReleaseSoon(
+        BrowserThread::WEBKIT_DEPRECATED, FROM_HERE, dom_storage_context);
   }
 }
 

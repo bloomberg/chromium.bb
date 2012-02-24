@@ -8,7 +8,6 @@
 #include "base/test/thread_test_helper.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/browser/in_process_webkit/dom_storage_context_impl.h"
-#include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_constants.h"
 #include "content/test/test_browser_context.h"
@@ -82,11 +81,11 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, MAYBE_ClearLocalState) {
   {
     TestBrowserContext browser_context;
     browser_context.SetSpecialStoragePolicy(new TestSpecialStoragePolicy());
-    WebKitContext* webkit_context = BrowserContext::GetWebKitContext(
-        &browser_context);
-    webkit_context->dom_storage_context()->
-        set_data_path_for_testing(temp_dir.path());
-    webkit_context->dom_storage_context()->set_clear_local_state_on_exit(true);
+    DOMStorageContextImpl* dom_storage_context =
+        static_cast<DOMStorageContextImpl*>(
+            BrowserContext::GetDOMStorageContext(&browser_context));
+    dom_storage_context->set_data_path_for_testing(temp_dir.path());
+    dom_storage_context->set_clear_local_state_on_exit(true);
   }
   // Make sure we wait until the destructor has run.
   scoped_refptr<base::ThreadTestHelper> helper(

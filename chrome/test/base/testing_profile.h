@@ -47,7 +47,6 @@ class ProfileDependencyManager;
 class ProfileSyncService;
 class TemplateURLService;
 class TestingPrefService;
-class WebKitContext;
 
 class TestingProfile : public Profile {
  public:
@@ -241,7 +240,6 @@ class TestingProfile : public Profile {
   virtual bool IsSameProfile(Profile *p) OVERRIDE;
   virtual base::Time GetStartTime() const OVERRIDE;
   virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry() OVERRIDE;
-  virtual WebKitContext* GetOffTheRecordWebKitContext();
   virtual void MarkAsCleanShutdown() OVERRIDE {}
   virtual void InitExtensions(bool extensions_enabled) OVERRIDE {}
   virtual void InitPromoResources() OVERRIDE {}

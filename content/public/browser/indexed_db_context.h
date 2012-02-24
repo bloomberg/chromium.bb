@@ -20,16 +20,11 @@ class Time;
 
 namespace content {
 
-class BrowserContext;
-
 // Represents the per-BrowserContext IndexedDB data.
 // Call these methods only on the WebKit thread.
 class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
  public:
   virtual ~IndexedDBContext() {}
-
-  CONTENT_EXPORT static IndexedDBContext* GetForBrowserContext(
-      BrowserContext* browser_context);
 
   // Methods used in response to QuotaManager requests.
   virtual std::vector<GURL> GetAllOrigins() = 0;

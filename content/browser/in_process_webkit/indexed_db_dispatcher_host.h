@@ -8,11 +8,11 @@
 
 #include "base/basictypes.h"
 #include "base/id_map.h"
-#include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebExceptionCode.h"
 
 class GURL;
+class IndexedDBContextImpl;
 class IndexedDBKey;
 class IndexedDBKeyRange;
 class NullableString16;
@@ -44,7 +44,8 @@ class SerializedScriptValue;
 class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
  public:
   // Only call the constructor from the UI thread.
-  IndexedDBDispatcherHost(int process_id, WebKitContext* webkit_context);
+  IndexedDBDispatcherHost(int process_id,
+                          IndexedDBContextImpl* indexed_db_context);
 
   // content::BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
@@ -57,9 +58,7 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
   void TransactionComplete(int32 transaction_id);
 
   // A shortcut for accessing our context.
-  IndexedDBContextImpl* Context() {
-    return webkit_context_->indexed_db_context();
-  }
+  IndexedDBContextImpl* Context() { return indexed_db_context_; }
 
   // The various IndexedDBCallbacks children call these methods to add the
   // results into the applicable map.  See below for more details.
@@ -308,8 +307,7 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
     WebIDBTransactionIDToSizeMap transaction_size_map_;
   };
 
-  // Data shared between renderer processes with the same browser context.
-  scoped_refptr<WebKitContext> webkit_context_;
+  scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
 
   // Only access on WebKit thread.
   scoped_ptr<DatabaseDispatcherHost> database_dispatcher_host_;

@@ -68,7 +68,7 @@ class DOMStorageNamespace {
   // The WebKit storage namespace we manage.
   scoped_ptr<WebKit::WebStorageNamespace> storage_namespace_;
 
-  // Our id.  Unique to our parent WebKitContext class.
+  // Our id.  Unique to our parent DOMStorageContext class.
   int64 id_;
 
   // The path used to create us, so we can recreate our WebStorageNamespace on

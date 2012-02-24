@@ -15,7 +15,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/in_process_webkit/indexed_db_context_impl.h"
-#include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/common/content_switches.h"
 #include "webkit/database/database_util.h"
@@ -161,8 +160,9 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, MAYBE_ClearLocalState) {
 
     // Create some indexedDB paths.
     // With the levelDB backend, these are directories.
-    WebKitContext* webkit_context = BrowserContext::GetWebKitContext(&profile);
-    IndexedDBContextImpl* idb_context = webkit_context->indexed_db_context();
+    IndexedDBContextImpl* idb_context =
+        static_cast<IndexedDBContextImpl*>(
+            BrowserContext::GetIndexedDBContext(&profile));
     idb_context->set_data_path_for_testing(temp_dir.path());
     protected_path = idb_context->GetFilePathForTesting(
         DatabaseUtil::GetOriginIdentifier(kProtectedOrigin));
@@ -214,8 +214,9 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest,
 
     // Create some indexedDB paths.
     // With the levelDB backend, these are directories.
-    WebKitContext* webkit_context = BrowserContext::GetWebKitContext(&profile);
-    IndexedDBContextImpl* idb_context = webkit_context->indexed_db_context();
+    IndexedDBContextImpl* idb_context =
+        static_cast<IndexedDBContextImpl*>(
+            BrowserContext::GetIndexedDBContext(&profile));
 
     // Override the storage policy with our own.
     idb_context->special_storage_policy_ = special_storage_policy;
@@ -270,8 +271,9 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, MAYBE_SaveSessionState) {
 
     // Create some indexedDB paths.
     // With the levelDB backend, these are directories.
-    WebKitContext* webkit_context = BrowserContext::GetWebKitContext(&profile);
-    IndexedDBContextImpl* idb_context = webkit_context->indexed_db_context();
+    IndexedDBContextImpl* idb_context =
+        static_cast<IndexedDBContextImpl*>(
+            BrowserContext::GetIndexedDBContext(&profile));
 
     // Override the storage policy with our own.
     idb_context->special_storage_policy_ = special_storage_policy;

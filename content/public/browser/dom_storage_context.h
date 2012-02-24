@@ -28,9 +28,6 @@ class DOMStorageContext : public base::RefCountedThreadSafe<DOMStorageContext> {
  public:
   virtual ~DOMStorageContext() {}
 
-  CONTENT_EXPORT static DOMStorageContext* GetForBrowserContext(
-      BrowserContext* browser_context);
-
   // Returns all the file paths of local storage files.
   virtual std::vector<FilePath> GetAllStorageFiles() = 0;
 

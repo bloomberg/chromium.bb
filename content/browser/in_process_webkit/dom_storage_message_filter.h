@@ -10,7 +10,6 @@
 #include "base/message_loop_helpers.h"
 #include "base/process.h"
 #include "content/browser/in_process_webkit/dom_storage_area.h"
-#include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/common/dom_storage_common.h"
 #include "content/public/browser/browser_message_filter.h"
 
@@ -24,7 +23,8 @@ struct DOMStorageMsg_Event_Params;
 class DOMStorageMessageFilter : public content::BrowserMessageFilter {
  public:
   // Only call the constructor from the UI thread.
-  DOMStorageMessageFilter(int process_id, WebKitContext* webkit_context);
+  DOMStorageMessageFilter(int process_id,
+                          DOMStorageContextImpl* dom_storage_context);
 
   // content::BrowserMessageFilter implementation
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
@@ -65,9 +65,7 @@ class DOMStorageMessageFilter : public content::BrowserMessageFilter {
   void OnStorageEvent(const DOMStorageMsg_Event_Params& params);
 
   // A shortcut for accessing our context.
-  DOMStorageContextImpl* Context() {
-    return webkit_context_->dom_storage_context();
-  }
+  DOMStorageContextImpl* Context() { return dom_storage_context_; }
 
   // Use whenever there's a chance OnStorageEvent will be called.
   class ScopedStorageEventContext {
@@ -82,8 +80,7 @@ class DOMStorageMessageFilter : public content::BrowserMessageFilter {
   static DOMStorageMessageFilter* storage_event_message_filter;
   static const GURL* storage_event_url_;
 
-  // Data shared between renderer processes with the same browser context.
-  scoped_refptr<WebKitContext> webkit_context_;
+  scoped_refptr<DOMStorageContextImpl> dom_storage_context_;
 
   // Used to dispatch messages to the correct view host.
   int process_id_;

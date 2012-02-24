@@ -284,7 +284,7 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
       new content::WorkerDevToolsMessageFilter(process_->GetData().id));
   process_->GetHost()->AddFilter(new IndexedDBDispatcherHost(
       process_->GetData().id,
-      content::GetWebKitContextForResourceContext(resource_context_)));
+      content::GetIndexedDBContextForResourceContext(resource_context_)));
 }
 
 void WorkerProcessHost::CreateWorker(const WorkerInstance& instance) {

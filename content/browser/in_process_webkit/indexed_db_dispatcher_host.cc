@@ -61,8 +61,8 @@ void DeleteOnWebKitThread(T* obj) {
 }
 
 IndexedDBDispatcherHost::IndexedDBDispatcherHost(
-    int process_id, WebKitContext* webkit_context)
-    : webkit_context_(webkit_context),
+    int process_id, IndexedDBContextImpl* indexed_db_context)
+    : indexed_db_context_(indexed_db_context),
       ALLOW_THIS_IN_INITIALIZER_LIST(database_dispatcher_host_(
           new DatabaseDispatcherHost(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(index_dispatcher_host_(
@@ -74,7 +74,7 @@ IndexedDBDispatcherHost::IndexedDBDispatcherHost(
       ALLOW_THIS_IN_INITIALIZER_LIST(transaction_dispatcher_host_(
           new TransactionDispatcherHost(this))),
       process_id_(process_id) {
-  DCHECK(webkit_context_.get());
+  DCHECK(indexed_db_context_.get());
 }
 
 IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {
@@ -206,7 +206,7 @@ WebIDBCursor* IndexedDBDispatcherHost::GetCursorFromId(int32 cursor_id) {
 void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
     const IndexedDBHostMsg_FactoryGetDatabaseNames_Params& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  FilePath base_path = webkit_context_->data_path();
+  FilePath base_path = indexed_db_context_->data_path();
   FilePath indexed_db_path;
   if (!base_path.empty()) {
     indexed_db_path = base_path.Append(
@@ -232,7 +232,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
 void IndexedDBDispatcherHost::OnIDBFactoryOpen(
     const IndexedDBHostMsg_FactoryOpen_Params& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  FilePath base_path = webkit_context_->data_path();
+  FilePath base_path = indexed_db_context_->data_path();
   FilePath indexed_db_path;
   if (!base_path.empty()) {
     indexed_db_path = base_path.Append(
@@ -260,7 +260,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
 
 void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
     const IndexedDBHostMsg_FactoryDeleteDatabase_Params& params) {
-  FilePath base_path = webkit_context_->data_path();
+  FilePath base_path = indexed_db_context_->data_path();
   FilePath indexed_db_path;
   if (!base_path.empty()) {
     indexed_db_path = base_path.Append(

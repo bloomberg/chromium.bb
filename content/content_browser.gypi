@@ -366,8 +366,6 @@
     'browser/in_process_webkit/indexed_db_transaction_callbacks.h',
     'browser/in_process_webkit/session_storage_namespace_impl.cc',
     'browser/in_process_webkit/session_storage_namespace_impl.h',
-    'browser/in_process_webkit/webkit_context.cc',
-    'browser/in_process_webkit/webkit_context.h',
     'browser/in_process_webkit/webkit_thread.cc',
     'browser/in_process_webkit/webkit_thread.h',
     'browser/intents/intent_injector.cc',

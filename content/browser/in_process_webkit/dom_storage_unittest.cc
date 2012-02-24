@@ -5,7 +5,6 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/in_process_webkit/dom_storage_context_impl.h"
 #include "content/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -57,8 +56,10 @@ TEST_F(DOMStorageTest, SessionOnly) {
   ASSERT_EQ(1, file_util::WriteFile(permanent_database_path, ".", 1));
 
   // Inject MockSpecialStoragePolicy into DOMStorageContext.
-  BrowserContext::GetWebKitContext(browser_context.get())->
-      dom_storage_context()->special_storage_policy_ = special_storage_policy;
+  DOMStorageContextImpl* dom_storage_context =
+      static_cast<DOMStorageContextImpl*>(
+          BrowserContext::GetDOMStorageContext(browser_context.get()));
+  dom_storage_context->special_storage_policy_ = special_storage_policy;
 
   // Delete the TestBrowserContext but own the temp dir. This way the
   // temporary data directory stays alive long enough to conduct the test.
@@ -103,8 +104,8 @@ TEST_F(DOMStorageTest, SaveSessionState) {
 
   // Inject MockSpecialStoragePolicy into DOMStorageContext.
   DOMStorageContextImpl* dom_storage_context =
-      BrowserContext::GetWebKitContext(browser_context.get())->
-          dom_storage_context();
+      static_cast<DOMStorageContextImpl*>(
+          BrowserContext::GetDOMStorageContext(browser_context.get()));
   dom_storage_context->special_storage_policy_ = special_storage_policy;
 
   dom_storage_context->set_clear_local_state_on_exit(true);

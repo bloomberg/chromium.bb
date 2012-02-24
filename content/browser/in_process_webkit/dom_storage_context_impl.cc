@@ -12,16 +12,13 @@
 #include "base/string_util.h"
 #include "content/browser/in_process_webkit/dom_storage_area.h"
 #include "content/browser/in_process_webkit/dom_storage_namespace.h"
-#include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/common/dom_storage_common.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/quota/special_storage_policy.h"
 
-using content::BrowserContext;
 using content::BrowserThread;
 using content::DOMStorageContext;
 using WebKit::WebSecurityOrigin;
@@ -59,13 +56,8 @@ void ClearLocalState(const FilePath& domstorage_path,
 
 }  // namespace
 
-DOMStorageContext* DOMStorageContext::GetForBrowserContext(
-    BrowserContext* context) {
-  return BrowserContext::GetWebKitContext(context)->dom_storage_context();
-}
-
 DOMStorageContextImpl::DOMStorageContextImpl(
-    WebKitContext* webkit_context,
+    const FilePath& data_path,
     quota::SpecialStoragePolicy* special_storage_policy)
     : last_storage_area_id_(0),
       last_session_storage_namespace_id_on_ui_thread_(kLocalStorageNamespaceId),
@@ -73,7 +65,7 @@ DOMStorageContextImpl::DOMStorageContextImpl(
       clear_local_state_on_exit_(false),
       save_session_state_(false),
       special_storage_policy_(special_storage_policy) {
-  data_path_ = webkit_context->data_path();
+  data_path_ = data_path;
 }
 
 DOMStorageContextImpl::~DOMStorageContextImpl() {

@@ -50,7 +50,7 @@ class DOMStorageArea {
   // The storage area we wrap.
   scoped_ptr<WebKit::WebStorageArea> storage_area_;
 
-  // Our storage area id.  Unique to our parent WebKitContext.
+  // Our storage area id.  Unique to our parent DOMStorageContext.
   int64 id_;
 
   // The DOMStorageNamespace that owns us.

@@ -50,8 +50,10 @@
 #include "content/browser/geolocation/geolocation_dispatcher_host.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
+#include "content/browser/in_process_webkit/dom_storage_context_impl.h"
 #include "content/browser/in_process_webkit/dom_storage_message_filter.h"
 #include "content/browser/in_process_webkit/indexed_db_dispatcher_host.h"
+#include "content/browser/in_process_webkit/indexed_db_context_impl.h"
 #include "content/browser/mime_registry_message_filter.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/profiler_message_filter.h"
@@ -473,9 +475,11 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       GetID()));
   channel_->AddFilter(new ClipboardMessageFilter());
   channel_->AddFilter(new DOMStorageMessageFilter(GetID(),
-      BrowserContext::GetWebKitContext(browser_context)));
+      static_cast<DOMStorageContextImpl*>(
+          BrowserContext::GetDOMStorageContext(browser_context))));
   channel_->AddFilter(new IndexedDBDispatcherHost(GetID(),
-      BrowserContext::GetWebKitContext(browser_context)));
+      static_cast<IndexedDBContextImpl*>(
+          BrowserContext::GetIndexedDBContext(browser_context))));
   channel_->AddFilter(GeolocationDispatcherHost::New(
       GetID(), browser_context->GetGeolocationPermissionContext()));
   channel_->AddFilter(new GpuMessageFilter(GetID(), widget_helper_.get()));

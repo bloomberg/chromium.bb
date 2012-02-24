@@ -19,16 +19,16 @@
 #include "base/shared_memory.h"
 #include "base/string16.h"
 #include "build/build_config.h"
-#include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/surface/transport_dib.h"
 
-struct FontDescriptor;
+class DOMStorageContextImpl;
 class PluginServiceImpl;
 class RenderWidgetHelper;
+struct FontDescriptor;
 struct ViewHostMsg_CreateWindow_Params;
 
 namespace WebKit {
@@ -253,7 +253,7 @@ class RenderMessageFilter : public content::BrowserMessageFilter {
   // Initialized to 0, accessed on FILE thread only.
   base::TimeTicks last_plugin_refresh_time_;
 
-  scoped_refptr<WebKitContext> webkit_context_;
+  scoped_refptr<DOMStorageContextImpl> dom_storage_context_;
 
   int render_process_id_;
 

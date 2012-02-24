@@ -12,8 +12,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/in_process_webkit/indexed_db_quota_client.h"
-#include "content/browser/in_process_webkit/webkit_context.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
@@ -26,7 +24,6 @@
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/special_storage_policy.h"
 
-using content::BrowserContext;
 using content::BrowserThread;
 using content::IndexedDBContext;
 using webkit_database::DatabaseUtil;
@@ -91,13 +88,8 @@ void ClearLocalState(
 
 }  // namespace
 
-IndexedDBContext* IndexedDBContext::GetForBrowserContext(
-    BrowserContext* context) {
-  return BrowserContext::GetWebKitContext(context)->indexed_db_context();
-}
-
 IndexedDBContextImpl::IndexedDBContextImpl(
-    WebKitContext* webkit_context,
+    const FilePath& data_path,
     quota::SpecialStoragePolicy* special_storage_policy,
     quota::QuotaManagerProxy* quota_manager_proxy,
     base::MessageLoopProxy* webkit_thread_loop)
@@ -105,8 +97,8 @@ IndexedDBContextImpl::IndexedDBContextImpl(
       save_session_state_(false),
       special_storage_policy_(special_storage_policy),
       quota_manager_proxy_(quota_manager_proxy) {
-  if (!webkit_context->is_incognito())
-    data_path_ = webkit_context->data_path().Append(kIndexedDBDirectory);
+  if (!data_path.empty())
+    data_path_ = data_path.Append(kIndexedDBDirectory);
   if (quota_manager_proxy &&
       !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess)) {
     quota_manager_proxy->RegisterClient(

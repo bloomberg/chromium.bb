@@ -19,7 +19,6 @@
 
 class GURL;
 class FilePath;
-class WebKitContext;
 
 namespace WebKit {
 class WebIDBFactory;
@@ -37,7 +36,8 @@ class SpecialStoragePolicy;
 class CONTENT_EXPORT IndexedDBContextImpl
     : NON_EXPORTED_BASE(public content::IndexedDBContext) {
  public:
-  IndexedDBContextImpl(WebKitContext* webkit_context,
+  // If |data_path| is empty, nothing will be saved to disk.
+  IndexedDBContextImpl(const FilePath& data_path,
                        quota::SpecialStoragePolicy* special_storage_policy,
                        quota::QuotaManagerProxy* quota_manager_proxy,
                        base::MessageLoopProxy* webkit_thread_loop);
@@ -77,6 +77,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
   bool IsOverQuota(const GURL& origin_url);
 
   quota::QuotaManagerProxy* quota_manager_proxy();
+
+  FilePath data_path() const { return data_path_; }
 
   // For unit tests allow to override the |data_path_|.
   void set_data_path_for_testing(const FilePath& data_path) {

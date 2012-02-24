@@ -43,8 +43,8 @@ ScopedStorageEventContext::~ScopedStorageEventContext() {
 }
 
 DOMStorageMessageFilter::DOMStorageMessageFilter(
-    int process_id, WebKitContext* webkit_context)
-    : webkit_context_(webkit_context),
+    int process_id, DOMStorageContextImpl* dom_storage_context)
+    : dom_storage_context_(dom_storage_context),
       process_id_(process_id) {
 }
 

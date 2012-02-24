@@ -18,13 +18,12 @@
 class DOMStorageArea;
 class DOMStorageMessageFilter;
 class DOMStorageNamespace;
-class WebKitContext;
 
 namespace quota {
 class SpecialStoragePolicy;
 }
 
-// This is owned by WebKitContext and is all the dom storage information that's
+// This is owned by BrowserContext and is all the dom storage information that's
 // shared by all the DOMStorageMessageFilters that share the same browser
 // context.  The specifics of responsibilities are fairly well documented here
 // and in StorageNamespace and StorageArea.  Everything is only to be accessed
@@ -32,7 +31,8 @@ class SpecialStoragePolicy;
 class CONTENT_EXPORT DOMStorageContextImpl :
     NON_EXPORTED_BASE(public content::DOMStorageContext) {
  public:
-  DOMStorageContextImpl(WebKitContext* webkit_context,
+  // If |data_path| is empty, nothing will be saved to disk.
+  DOMStorageContextImpl(const FilePath& data_path,
                         quota::SpecialStoragePolicy* special_storage_policy);
   virtual ~DOMStorageContextImpl();
 

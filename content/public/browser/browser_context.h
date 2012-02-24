@@ -32,12 +32,13 @@ class DatabaseTracker;
 }
 
 class FilePath;
-class WebKitContext;
 
 namespace content {
 
+class DOMStorageContext;
 class DownloadManager;
 class GeolocationPermissionContext;
+class IndexedDBContext;
 class ResourceContext;
 class SpeechInputPreferences;
 
@@ -45,9 +46,10 @@ class SpeechInputPreferences;
 // It lives on the UI thread.
 class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
  public:
-  // Getter for the QuotaManager associated with the given BrowserContext.
   static quota::QuotaManager* GetQuotaManager(BrowserContext* browser_context);
-  static WebKitContext* GetWebKitContext(BrowserContext* browser_context);
+  static DOMStorageContext* GetDOMStorageContext(
+      BrowserContext* browser_context);
+  static IndexedDBContext* GetIndexedDBContext(BrowserContext* browser_context);
   static webkit_database::DatabaseTracker* GetDatabaseTracker(
       BrowserContext* browser_context);
   static appcache::AppCacheService* GetAppCacheService(

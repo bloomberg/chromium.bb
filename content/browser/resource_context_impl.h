@@ -7,8 +7,8 @@
 
 #include "content/public/browser/resource_context.h"
 
+class IndexedDBContextImpl;
 class ChromeBlobStorageContext;
-class WebKitContext;
 
 namespace webkit_database {
 class DatabaseTracker;
@@ -24,7 +24,7 @@ class HostZoomMap;
 // public API.
 webkit_database::DatabaseTracker* GetDatabaseTrackerForResourceContext(
     ResourceContext* resource_context);
-WebKitContext* GetWebKitContextForResourceContext(
+IndexedDBContextImpl* GetIndexedDBContextForResourceContext(
     ResourceContext* resource_context);
 ChromeBlobStorageContext* GetChromeBlobStorageContextForResourceContext(
     ResourceContext* resource_context);

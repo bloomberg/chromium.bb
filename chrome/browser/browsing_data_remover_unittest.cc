@@ -349,7 +349,7 @@ class BrowsingDataRemoverTest : public testing::Test,
   }
 
   void TearDown() {
-    // TestingProfile contains a WebKitContext.  WebKitContext's destructor
+    // TestingProfile contains a DOMStorageContext.  BrowserContext's destructor
     // posts a message to the WEBKIT thread to delete some of its member
     // variables. We need to ensure that the profile is destroyed, and that
     // the message loop is cleared out, before destroying the threads and loop.

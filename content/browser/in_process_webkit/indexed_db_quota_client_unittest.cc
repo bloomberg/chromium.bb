@@ -13,7 +13,6 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/in_process_webkit/indexed_db_context_impl.h"
 #include "content/browser/in_process_webkit/indexed_db_quota_client.h"
-#include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/database/database_util.h"
@@ -49,8 +48,8 @@ class IndexedDBQuotaClientTest : public testing::Test {
             BrowserThread::FILE_USER_BLOCKING, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_) {
     browser_context_.reset(new TestBrowserContext());
-    idb_context_ = BrowserContext::GetWebKitContext(browser_context_.get())->
-        indexed_db_context();
+    idb_context_ = static_cast<IndexedDBContextImpl*>(
+        BrowserContext::GetIndexedDBContext(browser_context_.get()));
     message_loop_.RunAllPending();
     setup_temp_dir();
   }

@@ -22,6 +22,7 @@
 #include "content/public/browser/dom_storage_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
 using content::DOMStorageContext;
 
@@ -58,7 +59,7 @@ class BrowsingDataLocalStorageHelperTest : public InProcessBrowserTest {
   }
 
   FilePath GetLocalStoragePathForTestingProfile() {
-    return DOMStorageContext::GetForBrowserContext(browser()->profile())->
+    return BrowserContext::GetDOMStorageContext(browser()->profile())->
         GetFilePath(ASCIIToUTF16("blah")).DirName();
   }
 };

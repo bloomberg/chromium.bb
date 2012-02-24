@@ -52,14 +52,13 @@ void ExtensionDataDeleter::StartDeleting(
       BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
       base::Bind(
           &ExtensionDataDeleter::DeleteLocalStorageOnWebkitThread, deleter,
-          make_scoped_refptr(DOMStorageContext::GetForBrowserContext(
-              profile))));
+          make_scoped_refptr(BrowserContext::GetDOMStorageContext(profile))));
 
   BrowserThread::PostTask(
       BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
       base::Bind(
           &ExtensionDataDeleter::DeleteIndexedDBOnWebkitThread, deleter,
-          make_scoped_refptr(IndexedDBContext::GetForBrowserContext(profile))));
+          make_scoped_refptr(BrowserContext::GetIndexedDBContext(profile))));
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,

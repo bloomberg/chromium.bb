@@ -275,7 +275,8 @@ RenderMessageFilter::RenderMessageFilter(
       resource_context_(browser_context->GetResourceContext()),
       render_widget_helper_(render_widget_helper),
       incognito_(browser_context->IsOffTheRecord()),
-      webkit_context_(BrowserContext::GetWebKitContext(browser_context)),
+      dom_storage_context_(static_cast<DOMStorageContextImpl*>(
+          BrowserContext::GetDOMStorageContext(browser_context))),
       render_process_id_(render_process_id),
       cpu_usage_(0) {
   DCHECK(request_context_);
@@ -408,7 +409,7 @@ void RenderMessageFilter::OnMsgCreateWindow(
   }
 
   *cloned_session_storage_namespace_id =
-      webkit_context_->dom_storage_context()->CloneSessionStorage(
+      dom_storage_context_->CloneSessionStorage(
           params.session_storage_namespace_id);
   render_widget_helper_->CreateNewWindow(params,
                                          peer_handle(),
