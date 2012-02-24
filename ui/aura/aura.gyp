@@ -73,6 +73,7 @@
         'layout_manager.h',
         'root_window_host.h',
         'root_window_host_linux.cc',
+        'root_window_host_linux.h',
         'root_window_host_mac.h',
         'root_window_host_mac.mm',
         'root_window_host_win.cc',
