@@ -496,7 +496,7 @@ def main(args):
   # Archive on non-trybots.
   if options.archive or '-sdk' in os.environ.get('BUILDBOT_BUILDERNAME', ''):
     buildbot_common.BuildStep('Archive build')
-    Archive(tarname,
+    buildbot_common.Archive(tarname,
         'nativeclient-mirror/nacl/nacl_sdk/%s' % build_utils.ChromeVersion(),
         OUT_DIR)
 
