@@ -5115,9 +5115,7 @@ class NetworkLibraryImplStub : public NetworkLibraryImplBase {
 
   virtual void CallRemoveNetwork(const Network* network) OVERRIDE {}
 
-  virtual void EnableOfflineMode(bool enable) OVERRIDE {
-    offline_mode_ = enable;
-  }
+  virtual void EnableOfflineMode(bool enable) OVERRIDE;
 
   virtual NetworkIPConfigVector GetIPConfigs(
       const std::string& device_path,
@@ -5673,6 +5671,14 @@ void NetworkLibraryImplStub::DisconnectFromNetwork(const Network* network) {
     active_virtual_ = NULL;
   SignalNetworkManagerObservers();
   NotifyNetworkChanged(network);
+}
+
+void NetworkLibraryImplStub::EnableOfflineMode(bool enable) {
+  if (enable != offline_mode_) {
+    offline_mode_ = enable;
+    CallEnableNetworkDeviceType(TYPE_WIFI, !enable);
+    CallEnableNetworkDeviceType(TYPE_CELLULAR, !enable);
+  }
 }
 
 NetworkIPConfigVector NetworkLibraryImplStub::GetIPConfigs(
