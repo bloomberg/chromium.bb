@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@
 #define MAYBE_Infobars DISABLED_Infobars
 #endif
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Infobars) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Infobars) {
   // TODO(finnur): Remove once infobars are no longer experimental (bug 39511).
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);

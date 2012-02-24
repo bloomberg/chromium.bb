@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -245,6 +245,6 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest,
   WaitForTabsAndPopups(browser(), 1, 1, 0);
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpener) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_WindowOpener) {
   ASSERT_TRUE(RunExtensionTest("window_open/opener")) << message_;
 }
