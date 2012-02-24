@@ -506,7 +506,7 @@
       # crbug.com/113090
       '-extensions.ExtensionsTest.testAllowIncognitoExtension',
       # crbug.com/115427
-      '-extensions.ExtensionsTest.testAlwaysAuthorizePlugins',
+      '-enterprise.EnterpriseTest.testAlwaysAuthorizePlugins',
       # crbug.com/96896
       '-enterprise.EnterpriseTest.testDisabledPlugins',
       '-enterprise.EnterpriseTest.testEnabledPlugins',
