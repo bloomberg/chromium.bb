@@ -115,9 +115,16 @@ bool NativeTextfieldViews::OnMousePressed(const MouseEvent& event) {
   return true;
 }
 
+bool NativeTextfieldViews::ExceededDragThresholdFromLastClickLocation(
+    const MouseEvent& event) {
+  gfx::Point location_delta = event.location().Subtract(last_click_location_);
+  return ExceededDragThreshold(location_delta.x(), location_delta.y());
+}
+
 bool NativeTextfieldViews::OnMouseDragged(const MouseEvent& event) {
-  // Don't adjust the cursor on a potential drag and drop.
-  if (initiating_drag_)
+  // Don't adjust the cursor on a potential drag and drop, or if the mouse
+  // movement from the last mouse click does not exceed the drag threshold.
+  if (initiating_drag_ || !ExceededDragThresholdFromLastClickLocation(event))
     return true;
 
   OnBeforeUserAction();
@@ -1056,9 +1063,8 @@ bool NativeTextfieldViews::Paste() {
 void NativeTextfieldViews::TrackMouseClicks(const MouseEvent& event) {
   if (event.IsOnlyLeftMouseButton()) {
     base::TimeDelta time_delta = event.time_stamp() - last_click_time_;
-    gfx::Point location_delta = event.location().Subtract(last_click_location_);
     if (time_delta.InMilliseconds() <= GetDoubleClickInterval() &&
-        !ExceededDragThreshold(location_delta.x(), location_delta.y())) {
+        !ExceededDragThresholdFromLastClickLocation(event)) {
       aggregated_clicks_ = (aggregated_clicks_ + 1) % 3;
     } else {
       aggregated_clicks_ = 0;

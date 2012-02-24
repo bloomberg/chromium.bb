@@ -231,6 +231,10 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
   // Returns true if the current text input type allows access by the IME.
   bool ImeEditingAllowed() const;
 
+  // Returns true if distance between |event| and |last_click_location_|
+  // exceeds the drag threshold.
+  bool ExceededDragThresholdFromLastClickLocation(const MouseEvent& event);
+
   // Checks if a char is ok to be inserted into the textfield. The |ch| is a
   // modified character, i.e., modifiers took effect when generating this char.
   static bool ShouldInsertChar(char16 ch, int flags);
