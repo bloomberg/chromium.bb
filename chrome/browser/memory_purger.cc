@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/render_messages.h"
-#include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/renderer_host/backing_store_manager.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_context.h"
@@ -24,7 +23,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
-#include "webkit/appcache/appcache_service.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -45,15 +43,12 @@ class PurgeMemoryIOHelper
   void AddRequestContextGetter(
       scoped_refptr<net::URLRequestContextGetter> request_context_getter);
 
-  void AddResourceContext(content::ResourceContext* resource_context);
-
   void PurgeMemoryOnIOThread();
 
  private:
   typedef scoped_refptr<net::URLRequestContextGetter> RequestContextGetter;
 
   std::vector<RequestContextGetter> request_context_getters_;
-  std::vector<content::ResourceContext*> resource_contexts_;
   scoped_refptr<SafeBrowsingService> safe_browsing_service_;
 
   DISALLOW_COPY_AND_ASSIGN(PurgeMemoryIOHelper);
@@ -64,11 +59,6 @@ void PurgeMemoryIOHelper::AddRequestContextGetter(
   request_context_getters_.push_back(request_context_getter);
 }
 
-void PurgeMemoryIOHelper::AddResourceContext(
-    content::ResourceContext* resource_context) {
-  resource_contexts_.push_back(resource_context);
-}
-
 void PurgeMemoryIOHelper::PurgeMemoryOnIOThread() {
   // Ask ProxyServices to purge any memory they can (generally garbage in the
   // wrapped ProxyResolver's JS engine).
@@ -76,9 +66,6 @@ void PurgeMemoryIOHelper::PurgeMemoryOnIOThread() {
     request_context_getters_[i]->GetURLRequestContext()->proxy_service()->
         PurgeMemory();
   }
-
-  for (size_t i = 0; i < resource_contexts_.size(); ++i)
-    ResourceContext::GetAppCacheService(resource_contexts_[i])->PurgeMemory();
 
   safe_browsing_service_->PurgeMemory();
 }
@@ -108,8 +95,6 @@ void MemoryPurger::PurgeBrowser() {
   for (size_t i = 0; i < profiles.size(); ++i) {
     purge_memory_io_helper->AddRequestContextGetter(
         make_scoped_refptr(profiles[i]->GetRequestContext()));
-    purge_memory_io_helper->AddResourceContext(
-        profiles[i]->GetResourceContext());
 
     // NOTE: Some objects below may be duplicates across profiles.  We could
     // conceivably put all these in sets and then iterate over the sets.
@@ -128,10 +113,7 @@ void MemoryPurger::PurgeBrowser() {
     if (web_data_service)
       web_data_service->UnloadDatabase();
 
-    // Ask all WebKitContexts to purge memory (freeing memory used to cache
-    // the LocalStorage sqlite DB).  WebKitContext creation is basically free so
-    // we don't bother with a "...WithoutCreating()" function.
-    BrowserContext::GetWebKitContext(profiles[i])->PurgeMemory();
+    BrowserContext::PurgeMemory(profiles[i]);
   }
 
   BrowserThread::PostTask(

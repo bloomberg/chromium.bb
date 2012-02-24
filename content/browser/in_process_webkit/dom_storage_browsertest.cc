@@ -86,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, MAYBE_ClearLocalState) {
         &browser_context);
     webkit_context->dom_storage_context()->
         set_data_path_for_testing(temp_dir.path());
-    webkit_context->set_clear_local_state_on_exit(true);
+    webkit_context->dom_storage_context()->set_clear_local_state_on_exit(true);
   }
   // Make sure we wait until the destructor has run.
   scoped_refptr<base::ThreadTestHelper> helper(

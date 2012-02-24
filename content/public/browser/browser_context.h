@@ -62,6 +62,16 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // that the ResourceContext is ready.
   static void EnsureResourceContextInitialized(BrowserContext* browser_context);
 
+  // Tells the HTML5 objects on this context to persist their session state
+  // across the next restart.
+  static void SaveSessionState(BrowserContext* browser_context);
+
+  // Tells the HTML5 objects on this context to clear their data on destruction.
+  static void ClearLocalOnDestruction(BrowserContext* browser_context);
+
+  // Tells the HTML5 objects on this context to purge any uneeded memory.
+  static void PurgeMemory(BrowserContext* browser_context);
+
   virtual ~BrowserContext();
 
   // Returns the path of the directory where this context's data is stored.

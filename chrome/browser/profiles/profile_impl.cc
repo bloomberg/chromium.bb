@@ -91,7 +91,6 @@
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_service.h"
@@ -169,15 +168,6 @@ FilePath GetCachePath(const FilePath& base) {
 
 FilePath GetMediaCachePath(const FilePath& base) {
   return base.Append(chrome::kMediaCacheDirname);
-}
-
-void SaveSessionStateOnIOThread(
-    net::URLRequestContextGetter* url_request_context_getter,
-    appcache::AppCacheService* appcache_service) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  url_request_context_getter->GetURLRequestContext()->cookie_store()->
-      GetCookieMonster()->SaveSessionCookies();
-  appcache_service->set_save_session_state(true);
 }
 
 }  // namespace
@@ -570,14 +560,10 @@ ProfileImpl::~ProfileImpl() {
   // next startup.
   SessionStartupPref pref = SessionStartupPref::GetStartupPref(this);
   if (pref.type == SessionStartupPref::LAST) {
-    SaveSessionState();
+    if (session_restore_enabled_)
+      BrowserContext::SaveSessionState(this);
   } else if (clear_local_state_on_exit_) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&appcache::AppCacheService::set_clear_local_state_on_exit,
-            base::Unretained(BrowserContext::GetAppCacheService(this)), true));
-    BrowserContext::GetWebKitContext(this)->set_clear_local_state_on_exit(true);
-    BrowserContext::GetDatabaseTracker(this)->SetClearLocalStateOnExit(true);
+    BrowserContext::ClearLocalOnDestruction(this);    
   }
 
   StopCreateSessionServiceTimer();
@@ -1431,19 +1417,6 @@ GURL ProfileImpl::GetHomePage() {
   if (!home_page.is_valid())
     return GURL(chrome::kChromeUINewTabURL);
   return home_page;
-}
-
-void ProfileImpl::SaveSessionState() {
-  if (!session_restore_enabled_)
-    return;
-  BrowserContext::GetWebKitContext(this)->SaveSessionState();
-  BrowserContext::GetDatabaseTracker(this)->SaveSessionState();
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&SaveSessionStateOnIOThread,
-                 make_scoped_refptr(GetRequestContext()),
-                 BrowserContext::GetAppCacheService(this)));
 }
 
 void ProfileImpl::UpdateProfileUserNameCache() {

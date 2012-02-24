@@ -452,9 +452,6 @@ class Profile : public content::BrowserContext {
   // Returns the home page for this profile.
   virtual GURL GetHomePage() = 0;
 
-  // Makes the session state, e.g., cookies, persistent across the next restart.
-  virtual void SaveSessionState() {}
-
   std::string GetDebugName();
 
   // Returns whether it is a guest session.

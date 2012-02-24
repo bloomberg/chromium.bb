@@ -172,7 +172,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, MAYBE_ClearLocalState) {
     ASSERT_TRUE(file_util::CreateDirectory(unprotected_path));
 
     // Setup to clear all unprotected origins on exit.
-    webkit_context->set_clear_local_state_on_exit(true);
+    idb_context->set_clear_local_state_on_exit(true);
   }
 
   // Make sure we wait until the destructor has run.

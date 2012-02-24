@@ -107,7 +107,7 @@ TEST_F(DOMStorageTest, SaveSessionState) {
           dom_storage_context();
   dom_storage_context->special_storage_policy_ = special_storage_policy;
 
-  dom_storage_context->set_clear_local_state_on_exit_(true);
+  dom_storage_context->set_clear_local_state_on_exit(true);
 
   // Save session state. This should bypass the destruction-time deletion.
   dom_storage_context->SaveSessionState();

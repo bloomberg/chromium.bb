@@ -15,12 +15,10 @@ using content::BrowserThread;
 WebKitContext::WebKitContext(
     bool is_incognito, const FilePath& data_path,
     quota::SpecialStoragePolicy* special_storage_policy,
-    bool clear_local_state_on_exit,
     quota::QuotaManagerProxy* quota_manager_proxy,
     base::MessageLoopProxy* webkit_thread_loop)
     : data_path_(is_incognito ? FilePath() : data_path),
       is_incognito_(is_incognito),
-      clear_local_state_on_exit_(clear_local_state_on_exit),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           dom_storage_context_(new DOMStorageContextImpl(
               this, special_storage_policy))),
@@ -34,8 +32,6 @@ WebKitContext::~WebKitContext() {
   // If the WebKit thread was ever spun up, delete the object there.  The task
   // will just get deleted if the WebKit thread isn't created (which only
   // happens during testing).
-  dom_storage_context_->set_clear_local_state_on_exit_(
-      clear_local_state_on_exit_);
   DOMStorageContextImpl* dom_storage_context = dom_storage_context_.release();
   if (!BrowserThread::ReleaseSoon(
           BrowserThread::WEBKIT_DEPRECATED, FROM_HERE, dom_storage_context)) {
@@ -43,45 +39,4 @@ WebKitContext::~WebKitContext() {
     // freeing the DOMStorageContext, so delete it manually.
     dom_storage_context->Release();
   }
-
-  indexed_db_context_->set_clear_local_state_on_exit(
-      clear_local_state_on_exit_);
-}
-
-void WebKitContext::PurgeMemory() {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED)) {
-    BrowserThread::PostTask(
-        BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
-        base::Bind(&WebKitContext::PurgeMemory, this));
-    return;
-  }
-
-  dom_storage_context_->PurgeMemory();
-}
-
-void WebKitContext::SetDOMStorageContextForTesting(
-    DOMStorageContextImpl* dom_storage_context) {
-  dom_storage_context_ = dom_storage_context;
-}
-
-void WebKitContext::DeleteDataModifiedSince(const base::Time& cutoff) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED)) {
-    BrowserThread::PostTask(
-        BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
-        base::Bind(&WebKitContext::DeleteDataModifiedSince, this, cutoff));
-    return;
-  }
-
-  dom_storage_context_->DeleteDataModifiedSince(cutoff);
-}
-
-void WebKitContext::SaveSessionState() {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED)) {
-    BrowserThread::PostTask(
-        BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
-        base::Bind(&WebKitContext::SaveSessionState, this));
-    return;
-  }
-  dom_storage_context_->SaveSessionState();
-  indexed_db_context_->SaveSessionState();
 }

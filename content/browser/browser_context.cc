@@ -6,10 +6,15 @@
 
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/file_system/browser_file_system_helper.h"
+#include "content/browser/in_process_webkit/dom_storage_context_impl.h"
+#include "content/browser/in_process_webkit/indexed_db_context_impl.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_constants.h"
+#include "net/base/cookie_monster.h"
+#include "net/base/cookie_store.h"
+#include "net/url_request/url_request_context.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/quota/quota_manager.h"
 
@@ -67,7 +72,7 @@ void CreateQuotaManagerAndClients(BrowserContext* context) {
 
   scoped_refptr<WebKitContext> webkit_context = new WebKitContext(
       context->IsOffTheRecord(), context->GetPath(),
-      context->GetSpecialStoragePolicy(), false, quota_manager->proxy(),
+      context->GetSpecialStoragePolicy(), quota_manager->proxy(),
       BrowserThread::GetMessageLoopProxyForThread(
           BrowserThread::WEBKIT_DEPRECATED));
   context->SetUserData(kWebKitContextKeyName,
@@ -92,6 +97,29 @@ void CreateQuotaManagerAndClients(BrowserContext* context) {
                    context->GetResourceContext(),
                    make_scoped_refptr(context->GetSpecialStoragePolicy())));
   }
+}
+
+void SaveSessionStateOnIOThread(ResourceContext* resource_context) {
+  resource_context->GetRequestContext()->cookie_store()->GetCookieMonster()->
+      SaveSessionCookies();
+  ResourceContext::GetAppCacheService(resource_context)->set_save_session_state(
+      true);
+}
+
+void SaveSessionStateOnWebkitThread(
+    scoped_refptr<DOMStorageContextImpl> dom_storage_context,
+    scoped_refptr<IndexedDBContextImpl> indexed_db_context) {
+  dom_storage_context->SaveSessionState();
+  indexed_db_context->SaveSessionState();
+}
+
+void PurgeMemoryOnIOThread(ResourceContext* resource_context) {
+  ResourceContext::GetAppCacheService(resource_context)->PurgeMemory();
+}
+
+void PurgeMemoryOnWebkitThread(
+    scoped_refptr<DOMStorageContextImpl> dom_storage_context) {
+  dom_storage_context->PurgeMemory();
 }
 
 QuotaManager* BrowserContext::GetQuotaManager(BrowserContext* context) {
@@ -126,6 +154,66 @@ FileSystemContext* BrowserContext::GetFileSystemContext(
 
 void BrowserContext::EnsureResourceContextInitialized(BrowserContext* context) {
   content::EnsureResourceContextInitialized(context);
+}
+
+void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
+  GetDatabaseTracker(browser_context)->SaveSessionState();
+
+  if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&SaveSessionStateOnIOThread,
+                   browser_context->GetResourceContext()));
+  }
+
+  if (BrowserThread::IsMessageLoopValid(BrowserThread::WEBKIT_DEPRECATED)) {
+    DOMStorageContextImpl* dom_context = static_cast<DOMStorageContextImpl*>(
+        DOMStorageContextImpl::GetForBrowserContext(browser_context));
+    IndexedDBContextImpl* indexed_db = static_cast<IndexedDBContextImpl*>(
+        IndexedDBContext::GetForBrowserContext(browser_context));
+    BrowserThread::PostTask(
+        BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
+        base::Bind(&SaveSessionStateOnWebkitThread,
+                   make_scoped_refptr(dom_context),
+                   make_scoped_refptr(indexed_db)));
+  }
+}
+
+void BrowserContext::ClearLocalOnDestruction(BrowserContext* browser_context) {
+  DOMStorageContextImpl* dom_context = static_cast<DOMStorageContextImpl*>(
+        DOMStorageContextImpl::GetForBrowserContext(browser_context));
+  dom_context->set_clear_local_state_on_exit(true);
+
+  IndexedDBContextImpl* indexed_db = static_cast<IndexedDBContextImpl*>(
+        IndexedDBContext::GetForBrowserContext(browser_context));
+  indexed_db->set_clear_local_state_on_exit(true);
+
+  GetDatabaseTracker(browser_context)->SetClearLocalStateOnExit(true);
+
+  if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
+    BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::Bind(&appcache::AppCacheService::set_clear_local_state_on_exit,
+              base::Unretained(GetAppCacheService(browser_context)), true));
+  }
+}
+
+void BrowserContext::PurgeMemory(BrowserContext* browser_context) {
+  if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&PurgeMemoryOnIOThread,
+                   browser_context->GetResourceContext()));
+  }
+
+  if (BrowserThread::IsMessageLoopValid(BrowserThread::WEBKIT_DEPRECATED)) {
+    DOMStorageContextImpl* dom_context = static_cast<DOMStorageContextImpl*>(
+        DOMStorageContextImpl::GetForBrowserContext(browser_context));
+    BrowserThread::PostTask(
+        BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
+        base::Bind(&PurgeMemoryOnWebkitThread,
+                   make_scoped_refptr(dom_context)));
+  }
 }
 
 BrowserContext::~BrowserContext() {

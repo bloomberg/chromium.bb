@@ -29,8 +29,6 @@ class SpecialStoragePolicy;
 // context.  The specifics of responsibilities are fairly well documented here
 // and in StorageNamespace and StorageArea.  Everything is only to be accessed
 // on the WebKit thread unless noted otherwise.
-//
-// NOTE: Virtual methods facilitate mocking functions for testing.
 class CONTENT_EXPORT DOMStorageContextImpl :
     NON_EXPORTED_BASE(public content::DOMStorageContext) {
  public:
@@ -43,6 +41,7 @@ class CONTENT_EXPORT DOMStorageContextImpl :
   virtual FilePath GetFilePath(const string16& origin_id) const OVERRIDE;
   virtual void DeleteForOrigin(const string16& origin_id) OVERRIDE;
   virtual void DeleteLocalStorageFile(const FilePath& file_path) OVERRIDE;
+  virtual void DeleteDataModifiedSince(const base::Time& cutoff) OVERRIDE;
 
   // Invalid storage id.  No storage session will ever report this value.
   // Used in DOMStorageMessageFilter::OnStorageAreaId when coping with
@@ -81,12 +80,7 @@ class CONTENT_EXPORT DOMStorageContextImpl :
   const MessageFilterSet* GetMessageFilterSet() const;
 
   // Tells storage namespaces to purge any memory they do not need.
-  virtual void PurgeMemory();
-
-  // Delete any local storage files that have been touched since the cutoff
-  // date that's supplied. Protected origins, per the SpecialStoragePolicy,
-  // are not deleted by this method.
-  void DeleteDataModifiedSince(const base::Time& cutoff);
+  void PurgeMemory();
 
   // Deletes all local storage files.
   void DeleteAllLocalStorageFiles();
@@ -97,7 +91,7 @@ class CONTENT_EXPORT DOMStorageContextImpl :
   // The local storage file extension.
   static const FilePath::CharType kLocalStorageExtension[];
 
-  void set_clear_local_state_on_exit_(bool clear_local_state) {
+  void set_clear_local_state_on_exit(bool clear_local_state) {
     clear_local_state_on_exit_ = clear_local_state;
   }
 

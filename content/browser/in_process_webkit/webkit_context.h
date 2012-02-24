@@ -11,7 +11,6 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
 #include "content/common/content_export.h"
 
 class DOMStorageContextImpl;
@@ -38,7 +37,6 @@ class CONTENT_EXPORT WebKitContext
  public:
   WebKitContext(bool is_incognito, const FilePath& data_path,
                 quota::SpecialStoragePolicy* special_storage_policy,
-                bool clear_local_state_on_exit,
                 quota::QuotaManagerProxy* quota_manager_proxy,
                 base::MessageLoopProxy* webkit_thread_loop);
 
@@ -48,25 +46,6 @@ class CONTENT_EXPORT WebKitContext
   DOMStorageContextImpl* dom_storage_context() { return dom_storage_context_; }
   IndexedDBContextImpl* indexed_db_context() { return indexed_db_context_; }
 
-  void set_clear_local_state_on_exit(bool clear_local_state) {
-    clear_local_state_on_exit_ = clear_local_state;
-  }
-
-  // For unit tests, allow specifying a DOMStorageContext directly so it can be
-  // mocked.
-  void SetDOMStorageContextForTesting(
-      DOMStorageContextImpl* dom_storage_context);
-
-  // Tells the DOMStorageContext to purge any memory it does not need.
-  void PurgeMemory();
-
-  // Tell all children (where applicable) to delete any objects that were
-  // last modified on or after the following time.
-  void DeleteDataModifiedSince(const base::Time& cutoff);
-
-  // Tells all children to not do delete data when destructed.
-  void SaveSessionState();
-
  private:
   friend class base::RefCountedThreadSafe<WebKitContext>;
   virtual ~WebKitContext();
@@ -74,9 +53,6 @@ class CONTENT_EXPORT WebKitContext
   // Copies of browser context data that can be accessed on any thread.
   const FilePath data_path_;
   const bool is_incognito_;
-
-  // True if the destructors of context objects should delete their files.
-  bool clear_local_state_on_exit_;
 
   scoped_refptr<DOMStorageContextImpl> dom_storage_context_;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;

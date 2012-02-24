@@ -522,7 +522,7 @@ void BrowserList::AttemptRestart() {
           switches::kEnableRestoreSessionState)) {
     BrowserVector::const_iterator it;
     for (it = begin(); it != end(); ++it)
-      (*it)->profile()->SaveSessionState();
+      content::BrowserContext::SaveSessionState((*it)->profile());
   }
 
   PrefService* pref_service = g_browser_process->local_state();

@@ -14,6 +14,10 @@
 
 class FilePath;
 
+namespace base {
+class Time;
+}
+
 namespace content {
 
 class BrowserContext;
@@ -38,6 +42,11 @@ class DOMStorageContext : public base::RefCountedThreadSafe<DOMStorageContext> {
 
   // Deletes a single local storage file.
   virtual void DeleteLocalStorageFile(const FilePath& file_path) = 0;
+
+  // Delete any local storage files that have been touched since the cutoff
+  // date that's supplied. Protected origins, per the SpecialStoragePolicy,
+  // are not deleted by this method.
+  virtual void DeleteDataModifiedSince(const base::Time& cutoff) = 0;
 };
 
 }  // namespace content

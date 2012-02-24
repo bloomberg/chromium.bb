@@ -221,7 +221,6 @@
         'browser/host_zoom_map_impl_unittest.cc',
         'browser/in_process_webkit/dom_storage_unittest.cc',
         'browser/in_process_webkit/indexed_db_quota_client_unittest.cc',
-        'browser/in_process_webkit/webkit_context_unittest.cc',
         'browser/in_process_webkit/webkit_thread_unittest.cc',
         'browser/mac/closure_blocks_leopard_compat_unittest.cc',
         'browser/mach_broker_mac_unittest.cc',

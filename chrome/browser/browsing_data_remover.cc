@@ -41,8 +41,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_data_remover.h"
@@ -61,6 +61,7 @@
 
 using content::BrowserContext;
 using content::BrowserThread;
+using content::DOMStorageContext;
 using content::DownloadManager;
 using content::UserMetricsAction;
 
@@ -300,14 +301,14 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     }
   }
 
-  if (remove_mask & REMOVE_LOCAL_STORAGE) {
-    // Remove data such as local databases, STS state, etc. These only can
-    // be removed if a WEBKIT thread exists, so check that first:
-    if (BrowserThread::IsMessageLoopValid(BrowserThread::WEBKIT_DEPRECATED)) {
-      // We assume the end time is now.
-      BrowserContext::GetWebKitContext(profile_)->
-          DeleteDataModifiedSince(delete_begin_);
-    }
+  if (remove_mask & REMOVE_LOCAL_STORAGE &&
+      BrowserThread::IsMessageLoopValid(BrowserThread::WEBKIT_DEPRECATED)) {
+    DOMStorageContext* context =
+        DOMStorageContext::GetForBrowserContext(profile_);
+    BrowserThread::PostTask(
+        BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
+        base::Bind(&BrowsingDataRemover::ClearDOMStorageOnWebKitThread,
+                   base::Unretained(this), make_scoped_refptr(context)));
   }
 
   if (remove_mask & REMOVE_INDEXEDDB || remove_mask & REMOVE_WEBSQL ||
@@ -434,6 +435,12 @@ base::Time BrowsingDataRemover::CalculateBeginDeleteTime(
       break;
   }
   return delete_begin_time - diff;
+}
+
+void BrowsingDataRemover::ClearDOMStorageOnWebKitThread(
+    scoped_refptr<DOMStorageContext> dom_storage_context) {
+  // We assume the end time is now.
+  dom_storage_context->DeleteDataModifiedSince(delete_begin_);
 }
 
 void BrowsingDataRemover::Observe(int type,
