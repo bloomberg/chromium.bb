@@ -14,8 +14,8 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
-#include "content/browser/speech/speech_input_manager.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/browser/speech_input_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -110,7 +110,7 @@ void SpeechInputBubbleGtk::OnTryAgainClicked(GtkWidget* widget) {
 }
 
 void SpeechInputBubbleGtk::OnMicSettingsClicked(GtkWidget* widget) {
-  speech_input::SpeechInputManager::ShowAudioInputSettings();
+  content::SpeechInputManager::GetInstance()->ShowAudioInputSettings();
   Hide();
 }
 

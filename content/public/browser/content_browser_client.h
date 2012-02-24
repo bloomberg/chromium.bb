@@ -33,6 +33,7 @@ class AccessTokenStore;
 class BrowserMainParts;
 class RenderProcessHost;
 class SiteInstance;
+class SpeechInputManagerDelegate;
 class WebContents;
 class WebContentsView;
 struct MainFunctionParams;
@@ -53,10 +54,6 @@ class SSLInfo;
 class URLRequest;
 class URLRequestContext;
 class X509Certificate;
-}
-
-namespace speech_input {
-class SpeechInputManager;
 }
 
 namespace ui {
@@ -319,11 +316,14 @@ class ContentBrowserClient {
   // This is when it can optionally add a delegate or ResourceQueueDelegates.
   virtual void ResourceDispatcherHostCreated() = 0;
 
+  // Allows the embedder to return a delegate for the SpeechInputManager. The
+  // delegate will be owned by the manager. It's valid to return NULL.
+  virtual SpeechInputManagerDelegate* GetSpeechInputManagerDelegate() = 0;
+
   // Getters for common objects.
   virtual ui::Clipboard* GetClipboard() = 0;
   virtual MHTMLGenerationManager* GetMHTMLGenerationManager() = 0;
   virtual net::NetLog* GetNetLog() = 0;
-  virtual speech_input::SpeechInputManager* GetSpeechInputManager() = 0;
 
   // Creates a new AccessTokenStore for gelocation.
   virtual AccessTokenStore* CreateAccessTokenStore() = 0;

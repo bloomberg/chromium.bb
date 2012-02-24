@@ -11,7 +11,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "content/common/content_export.h"
+#include "base/memory/singleton.h"
+#include "content/public/browser/speech_input_manager.h"
 #include "content/public/browser/speech_recognizer_delegate.h"
 #include "ui/gfx/rect.h"
 
@@ -19,8 +20,8 @@ class AudioManager;
 
 namespace content {
 class ResourceContext;
-class SpeechInputPreferences;
 class SpeechInputManagerDelegate;
+class SpeechInputPreferences;
 struct SpeechInputResult;
 }
 
@@ -30,33 +31,23 @@ class URLRequestContextGetter;
 
 namespace speech_input {
 
+class SpeechInputDispatcherHost;
 class SpeechRecognizerImpl;
 
-// This is the gatekeeper for speech recognition in the browser process. It
-// handles requests received from various render views and makes sure only one
-// of them can use speech recognition at a time. It also sends recognition
-// results and status events to the render views when required.
-class CONTENT_EXPORT SpeechInputManager
-    : public NON_EXPORTED_BASE(content::SpeechRecognizerDelegate) {
+class CONTENT_EXPORT SpeechInputManagerImpl
+    : NON_EXPORTED_BASE(public content::SpeechInputManager),
+      NON_EXPORTED_BASE(public content::SpeechRecognizerDelegate) {
  public:
-  // Describes the microphone errors that are reported via ShowMicError.
-  enum MicError {
-    kNoDeviceAvailable = 0,
-    kDeviceInUse
-  };
+  static SpeechInputManagerImpl* GetInstance();
 
-  SpeechInputManager();
-
-  // Invokes the platform provided microphone settings UI in a non-blocking way,
-  // via the BrowserThread::FILE thread.
-  static void ShowAudioInputSettings();
-
-  virtual ~SpeechInputManager();
-
-  // These are wrappers around AudioManager.
-  bool HasAudioInputDevices();
-  bool IsRecordingInProcess();
-  string16 GetAudioInputDeviceModel();
+  // SpeechInputManager implementation:
+  virtual void StartRecognitionForRequest(int caller_id) OVERRIDE;
+  virtual void CancelRecognitionForRequest(int caller_id) OVERRIDE;
+  virtual void FocusLostForRequest(int caller_id) OVERRIDE;
+  virtual bool HasAudioInputDevices() OVERRIDE;
+  virtual bool IsRecordingInProcess() OVERRIDE;
+  virtual string16 GetAudioInputDeviceModel() OVERRIDE;
+  virtual void ShowAudioInputSettings() OVERRIDE;
 
   // Handlers for requests from render views.
 
@@ -67,7 +58,7 @@ class CONTENT_EXPORT SpeechInputManager
   // |element_rect| is the display bounds of the html element requesting speech
   // input (in page coordinates).
   virtual void StartRecognition(
-      content::SpeechInputManagerDelegate* delegate,
+      SpeechInputDispatcherHost* delegate,
       int caller_id,
       int render_process_id,
       int render_view_id,
@@ -79,7 +70,7 @@ class CONTENT_EXPORT SpeechInputManager
       content::SpeechInputPreferences* speech_input_prefs);
   virtual void CancelRecognition(int caller_id);
   virtual void CancelAllRequestsWithDelegate(
-      content::SpeechInputManagerDelegate* delegate);
+      SpeechInputDispatcherHost* delegate);
   virtual void StopRecording(int caller_id);
 
   // Overridden from content::SpeechRecognizerDelegate:
@@ -99,76 +90,38 @@ class CONTENT_EXPORT SpeechInputManager
                               float noise_volume) OVERRIDE;
 
  protected:
-  // The pure virtual methods are used for displaying the current state of
-  // recognition and for fetching optional request information.
-
-  // Get the optional request information if available.
-  virtual void GetRequestInfo(bool* can_report_metrics,
-                              std::string* request_info) = 0;
-
-  // Called when recognition has been requested from point |element_rect_| on
-  // the view port for the given caller.
-  virtual void ShowRecognitionRequested(int caller_id,
-                                        int render_process_id,
-                                        int render_view_id,
-                                        const gfx::Rect& element_rect) = 0;
-
-  // Called when recognition is starting up.
-  virtual void ShowWarmUp(int caller_id) = 0;
-
-  // Called when recognition has started.
-  virtual void ShowRecognizing(int caller_id) = 0;
-
-  // Called when recording has started.
-  virtual void ShowRecording(int caller_id) = 0;
-
-  // Continuously updated with the current input volume.
-  virtual void ShowInputVolume(int caller_id,
-                               float volume,
-                               float noise_volume) = 0;
-
-  // Called when no microphone has been found.
-  virtual void ShowMicError(int caller_id, MicError error) = 0;
-
-  // Called when there has been a error with the recognition.
-  virtual void ShowRecognizerError(int caller_id,
-                                   content::SpeechInputError error) = 0;
-
-  // Called when recognition has ended or has been canceled.
-  virtual void DoClose(int caller_id) = 0;
-
-  // Cancels recognition for the specified caller if it is active.
-  void OnFocusChanged(int caller_id);
+  // Private constructor to enforce singleton.
+  friend struct DefaultSingletonTraits<SpeechInputManagerImpl>;
+  SpeechInputManagerImpl();
+  virtual ~SpeechInputManagerImpl();
 
   bool HasPendingRequest(int caller_id) const;
-
-  // Starts/restarts recognition for an existing request.
-  void StartRecognitionForRequest(int caller_id);
-
-  void CancelRecognitionAndInformDelegate(int caller_id);
 
  private:
   struct SpeechInputRequest {
     SpeechInputRequest();
     ~SpeechInputRequest();
 
-    content::SpeechInputManagerDelegate* delegate;
+    SpeechInputDispatcherHost* delegate;
     scoped_refptr<SpeechRecognizerImpl> recognizer;
     bool is_active;  // Set to true when recording or recognition is going on.
   };
 
   struct SpeechInputParams;
 
-  content::SpeechInputManagerDelegate* GetDelegate(int caller_id) const;
+  SpeechInputDispatcherHost* GetDelegate(int caller_id) const;
 
   void CheckRenderViewTypeAndStartRecognition(const SpeechInputParams& params);
   void ProceedStartingRecognition(const SpeechInputParams& params);
+
+  void CancelRecognitionAndInformDelegate(int caller_id);
 
   typedef std::map<int, SpeechInputRequest> SpeechRecognizerMap;
   SpeechRecognizerMap requests_;
   std::string request_info_;
   bool can_report_metrics_;
   int recording_caller_id_;
+  content::SpeechInputManagerDelegate* delegate_;
 };
 
 }  // namespace speech_input

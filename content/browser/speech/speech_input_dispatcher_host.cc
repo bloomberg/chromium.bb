@@ -5,10 +5,9 @@
 #include "content/browser/speech/speech_input_dispatcher_host.h"
 
 #include "base/lazy_instance.h"
-#include "content/browser/speech/speech_input_manager.h"
+#include "content/browser/speech/speech_input_manager_impl.h"
 #include "content/browser/speech/speech_recognizer_impl.h"
 #include "content/common/speech_input_messages.h"
-#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/speech_input_preferences.h"
 
 using content::BrowserThread;
@@ -107,9 +106,9 @@ int SpeechInputDispatcherHost::SpeechInputCallers::request_id(int id) {
 
 //-------------------------- SpeechInputDispatcherHost -------------------------
 
-SpeechInputManager* SpeechInputDispatcherHost::manager_;
+SpeechInputManagerImpl* SpeechInputDispatcherHost::manager_;
 
-void SpeechInputDispatcherHost::set_manager(SpeechInputManager* manager) {
+void SpeechInputDispatcherHost::set_manager(SpeechInputManagerImpl* manager) {
   manager_ = manager;
 }
 
@@ -138,10 +137,14 @@ SpeechInputDispatcherHost::~SpeechInputDispatcherHost() {
     manager()->CancelAllRequestsWithDelegate(this);
 }
 
-SpeechInputManager* SpeechInputDispatcherHost::manager() {
+SpeechInputManagerImpl* SpeechInputDispatcherHost::manager() {
   if (manager_)
     return manager_;
-  return content::GetContentClient()->browser()->GetSpeechInputManager();
+#if defined(ENABLE_INPUT_SPEECH)
+  return SpeechInputManagerImpl::GetInstance();
+#else
+  return NULL;
+#endif
 }
 
 bool SpeechInputDispatcherHost::OnMessageReceived(

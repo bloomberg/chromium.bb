@@ -245,6 +245,11 @@ std::string MockContentBrowserClient::GetWorkerProcessTitle(
 void MockContentBrowserClient::ResourceDispatcherHostCreated() {
 }
 
+SpeechInputManagerDelegate*
+    MockContentBrowserClient::GetSpeechInputManagerDelegate() {
+  return NULL;
+}
+
 ui::Clipboard* MockContentBrowserClient::GetClipboard() {
   static ui::Clipboard clipboard;
   return &clipboard;
@@ -255,11 +260,6 @@ MHTMLGenerationManager* MockContentBrowserClient::GetMHTMLGenerationManager() {
 }
 
 net::NetLog* MockContentBrowserClient::GetNetLog() {
-  return NULL;
-}
-
-speech_input::SpeechInputManager*
-    MockContentBrowserClient::GetSpeechInputManager() {
   return NULL;
 }
 

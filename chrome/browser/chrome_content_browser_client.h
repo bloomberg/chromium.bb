@@ -133,10 +133,11 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual std::string GetWorkerProcessTitle(
       const GURL& url, content::ResourceContext* context) OVERRIDE;
   virtual void ResourceDispatcherHostCreated() OVERRIDE;
+  virtual content::SpeechInputManagerDelegate*
+      GetSpeechInputManagerDelegate() OVERRIDE;
   virtual ui::Clipboard* GetClipboard() OVERRIDE;
   virtual MHTMLGenerationManager* GetMHTMLGenerationManager() OVERRIDE;
   virtual net::NetLog* GetNetLog() OVERRIDE;
-  virtual speech_input::SpeechInputManager* GetSpeechInputManager() OVERRIDE;
   virtual content::AccessTokenStore* CreateAccessTokenStore() OVERRIDE;
   virtual bool IsFastShutdownPossible() OVERRIDE;
   virtual void OverrideWebkitPrefs(RenderViewHost* rvh,

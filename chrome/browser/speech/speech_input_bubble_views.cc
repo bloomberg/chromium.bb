@@ -12,8 +12,8 @@
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/browser/ui/views/window.h"
-#include "content/browser/speech/speech_input_manager.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/browser/speech_input_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
@@ -220,7 +220,7 @@ void SpeechInputBubbleView::ButtonPressed(views::Button* source,
 
 void SpeechInputBubbleView::LinkClicked(views::Link* source, int event_flags) {
   DCHECK_EQ(source, mic_settings_);
-  speech_input::SpeechInputManager::ShowAudioInputSettings();
+  content::SpeechInputManager::GetInstance()->ShowAudioInputSettings();
 }
 
 gfx::Size SpeechInputBubbleView::GetPreferredSize() {

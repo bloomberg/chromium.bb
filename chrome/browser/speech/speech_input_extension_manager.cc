@@ -15,7 +15,6 @@
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
-#include "chrome/browser/speech/chrome_speech_input_manager.h"
 #include "chrome/browser/speech/speech_input_extension_notification.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -23,11 +22,12 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/speech_input_manager.h"
 #include "content/public/browser/speech_recognizer.h"
 #include "content/public/common/speech_input_result.h"
 
 using content::BrowserThread;
-using speech_input::ChromeSpeechInputManager;
+using content::SpeechInputManager;
 
 namespace {
 
@@ -557,12 +557,12 @@ void SpeechInputExtensionManager::StartOnIOThread(
 
 bool SpeechInputExtensionManager::HasAudioInputDevices() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return ChromeSpeechInputManager::GetInstance()->HasAudioInputDevices();
+  return SpeechInputManager::GetInstance()->HasAudioInputDevices();
 }
 
 bool SpeechInputExtensionManager::IsRecordingInProcess() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return ChromeSpeechInputManager::GetInstance()->IsRecordingInProcess();
+  return SpeechInputManager::GetInstance()->IsRecordingInProcess();
 }
 
 void SpeechInputExtensionManager::IsRecording(

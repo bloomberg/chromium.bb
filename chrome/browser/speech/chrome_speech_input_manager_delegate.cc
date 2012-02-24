@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/speech/chrome_speech_input_manager.h"
+#include "chrome/browser/speech/chrome_speech_input_manager_delegate.h"
 
 #include <string>
 
@@ -17,6 +17,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/browser/speech_input_manager.h"
 #include "content/public/common/speech_input_result.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -26,6 +27,7 @@
 #endif
 
 using content::BrowserThread;
+using content::SpeechInputManager;
 
 namespace speech_input {
 
@@ -33,7 +35,7 @@ namespace speech_input {
 // the user has opted into UMA. This information is sent with speech input
 // requests to the server for identifying and improving quality issues with
 // specific device configurations.
-class ChromeSpeechInputManager::OptionalRequestInfo
+class ChromeSpeechInputManagerDelegate::OptionalRequestInfo
     : public base::RefCountedThreadSafe<OptionalRequestInfo> {
  public:
   OptionalRequestInfo() : can_report_metrics_(false) {
@@ -61,7 +63,7 @@ class ChromeSpeechInputManager::OptionalRequestInfo
     base::AutoLock lock(lock_);
     can_report_metrics_ = true;
     string16 device_model =
-        ChromeSpeechInputManager::GetInstance()->GetAudioInputDeviceModel();
+        SpeechInputManager::GetInstance()->GetAudioInputDeviceModel();
 #if defined(OS_WIN)
     value_ = UTF16ToUTF8(
         installer::WMIComputerSystem::GetModel() + L"|" + device_model);
@@ -92,19 +94,15 @@ class ChromeSpeechInputManager::OptionalRequestInfo
   DISALLOW_COPY_AND_ASSIGN(OptionalRequestInfo);
 };
 
-ChromeSpeechInputManager* ChromeSpeechInputManager::GetInstance() {
-  return Singleton<ChromeSpeechInputManager>::get();
-}
-
-ChromeSpeechInputManager::ChromeSpeechInputManager()
+ChromeSpeechInputManagerDelegate::ChromeSpeechInputManagerDelegate()
     : bubble_controller_(new SpeechInputBubbleController(
           ALLOW_THIS_IN_INITIALIZER_LIST(this))) {
 }
 
-ChromeSpeechInputManager::~ChromeSpeechInputManager() {
+ChromeSpeechInputManagerDelegate::~ChromeSpeechInputManagerDelegate() {
 }
 
-void ChromeSpeechInputManager::ShowRecognitionRequested(
+void ChromeSpeechInputManagerDelegate::ShowRecognitionRequested(
     int caller_id,
     int render_process_id,
     int render_view_id,
@@ -113,7 +111,7 @@ void ChromeSpeechInputManager::ShowRecognitionRequested(
                                    render_view_id, element_rect);
 }
 
-void ChromeSpeechInputManager::GetRequestInfo(
+void ChromeSpeechInputManagerDelegate::GetRequestInfo(
     bool* can_report_metrics,
     std::string* request_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -132,33 +130,32 @@ void ChromeSpeechInputManager::GetRequestInfo(
   *request_info = optional_request_info_->value();
 }
 
-void ChromeSpeechInputManager::ShowWarmUp(int caller_id) {
+void ChromeSpeechInputManagerDelegate::ShowWarmUp(int caller_id) {
   bubble_controller_->SetBubbleWarmUpMode(caller_id);
 }
 
-void ChromeSpeechInputManager::ShowRecognizing(int caller_id) {
+void ChromeSpeechInputManagerDelegate::ShowRecognizing(int caller_id) {
   bubble_controller_->SetBubbleRecognizingMode(caller_id);
 }
 
-void ChromeSpeechInputManager::ShowRecording(int caller_id) {
+void ChromeSpeechInputManagerDelegate::ShowRecording(int caller_id) {
   bubble_controller_->SetBubbleRecordingMode(caller_id);
 }
 
-void ChromeSpeechInputManager::ShowInputVolume(
+void ChromeSpeechInputManagerDelegate::ShowInputVolume(
     int caller_id, float volume, float noise_volume) {
   bubble_controller_->SetBubbleInputVolume(caller_id, volume, noise_volume);
 }
 
-void ChromeSpeechInputManager::ShowMicError(
-    int caller_id,
-    SpeechInputManager::MicError error) {
+void ChromeSpeechInputManagerDelegate::ShowMicError(int caller_id,
+                                                    MicError error) {
   switch (error) {
-    case SpeechInputManager::kNoDeviceAvailable:
+    case MIC_ERROR_NO_DEVICE_AVAILABLE:
       bubble_controller_->SetBubbleMessage(
           caller_id, l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_NO_MIC));
       break;
 
-    case SpeechInputManager::kDeviceInUse:
+    case MIC_ERROR_DEVICE_IN_USE:
       bubble_controller_->SetBubbleMessage(
           caller_id, l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_MIC_IN_USE));
       break;
@@ -168,7 +165,7 @@ void ChromeSpeechInputManager::ShowMicError(
   }
 }
 
-void ChromeSpeechInputManager::ShowRecognizerError(
+void ChromeSpeechInputManagerDelegate::ShowRecognizerError(
     int caller_id, content::SpeechInputError error) {
   struct ErrorMessageMapEntry {
     content::SpeechInputError error;
@@ -197,29 +194,25 @@ void ChromeSpeechInputManager::ShowRecognizerError(
   NOTREACHED() << "unknown error " << error;
 }
 
-void ChromeSpeechInputManager::DoClose(int caller_id) {
+void ChromeSpeechInputManagerDelegate::DoClose(int caller_id) {
   bubble_controller_->CloseBubble(caller_id);
 }
 
-void ChromeSpeechInputManager::InfoBubbleButtonClicked(
+void ChromeSpeechInputManagerDelegate::InfoBubbleButtonClicked(
     int caller_id, SpeechInputBubble::Button button) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  // Ignore if the caller id was not in our active recognizers list because the
-  // user might have clicked more than once, or recognition could have been
-  // cancelled due to other reasons before the user click was processed.
-  if (!HasPendingRequest(caller_id))
-    return;
 
   if (button == SpeechInputBubble::BUTTON_CANCEL) {
-    CancelRecognitionAndInformDelegate(caller_id);
+    SpeechInputManager::GetInstance()->CancelRecognitionForRequest(caller_id);
   } else if (button == SpeechInputBubble::BUTTON_TRY_AGAIN) {
-    StartRecognitionForRequest(caller_id);
+    SpeechInputManager::GetInstance()->StartRecognitionForRequest(caller_id);
   }
 }
 
-void ChromeSpeechInputManager::InfoBubbleFocusChanged(int caller_id) {
+void ChromeSpeechInputManagerDelegate::InfoBubbleFocusChanged(int caller_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  OnFocusChanged(caller_id);
+
+  SpeechInputManager::GetInstance()->FocusLostForRequest(caller_id);
 }
 
 }  // namespace speech_input

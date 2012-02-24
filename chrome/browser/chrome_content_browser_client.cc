@@ -52,7 +52,7 @@
 #include "chrome/browser/renderer_host/chrome_render_view_host_observer.h"
 #include "chrome/browser/renderer_host/plugin_info_message_filter.h"
 #include "chrome/browser/search_engines/search_provider_install_state_message_filter.h"
-#include "chrome/browser/speech/chrome_speech_input_manager.h"
+#include "chrome/browser/speech/chrome_speech_input_manager_delegate.h"
 #include "chrome/browser/spellchecker/spellcheck_message_filter.h"
 #include "chrome/browser/ssl/ssl_add_cert_handler.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
@@ -1186,6 +1186,11 @@ void ChromeContentBrowserClient::ResourceDispatcherHostCreated() {
   return g_browser_process->ResourceDispatcherHostCreated();
 }
 
+content::SpeechInputManagerDelegate*
+    ChromeContentBrowserClient::GetSpeechInputManagerDelegate() {
+  return new speech_input::ChromeSpeechInputManagerDelegate();
+}
+
 ui::Clipboard* ChromeContentBrowserClient::GetClipboard() {
   return g_browser_process->clipboard();
 }
@@ -1197,15 +1202,6 @@ MHTMLGenerationManager*
 
 net::NetLog* ChromeContentBrowserClient::GetNetLog() {
   return g_browser_process->net_log();
-}
-
-speech_input::SpeechInputManager*
-    ChromeContentBrowserClient::GetSpeechInputManager() {
-#if defined(ENABLE_INPUT_SPEECH)
-  return speech_input::ChromeSpeechInputManager::GetInstance();
-#else
-  return NULL;
-#endif
 }
 
 AccessTokenStore* ChromeContentBrowserClient::CreateAccessTokenStore() {

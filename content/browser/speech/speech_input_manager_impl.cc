@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/speech/speech_input_manager.h"
+#include "content/browser/speech/speech_input_manager_impl.h"
 
 #include "base/bind.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/speech/speech_input_manager_delegate.h"
+#include "content/browser/speech/speech_input_dispatcher_host.h"
 #include "content/browser/speech/speech_recognizer_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/browser/speech_input_manager_delegate.h"
 #include "content/public/browser/speech_input_preferences.h"
 #include "content/public/common/view_type.h"
 
@@ -19,10 +21,14 @@ using content::BrowserMainLoop;
 using content::BrowserThread;
 using content::SpeechInputManagerDelegate;
 
+content::SpeechInputManager* content::SpeechInputManager::GetInstance() {
+  return speech_input::SpeechInputManagerImpl::GetInstance();
+}
+
 namespace speech_input {
 
-struct SpeechInputManager::SpeechInputParams {
-  SpeechInputParams(SpeechInputManagerDelegate* delegate,
+struct SpeechInputManagerImpl::SpeechInputParams {
+  SpeechInputParams(SpeechInputDispatcherHost* delegate,
                     int caller_id,
                     int render_process_id,
                     int render_view_id,
@@ -44,7 +50,7 @@ struct SpeechInputManager::SpeechInputParams {
         speech_input_prefs(speech_input_prefs) {
   }
 
-  SpeechInputManagerDelegate* delegate;
+  SpeechInputDispatcherHost* delegate;
   int caller_id;
   int render_process_id;
   int render_view_id;
@@ -56,45 +62,51 @@ struct SpeechInputManager::SpeechInputParams {
   content::SpeechInputPreferences* speech_input_prefs;
 };
 
-SpeechInputManager::SpeechInputManager()
-    : can_report_metrics_(false),
-      recording_caller_id_(0) {
+SpeechInputManagerImpl* SpeechInputManagerImpl::GetInstance() {
+  return Singleton<SpeechInputManagerImpl>::get();
 }
 
-SpeechInputManager::~SpeechInputManager() {
+SpeechInputManagerImpl::SpeechInputManagerImpl()
+    : can_report_metrics_(false),
+      recording_caller_id_(0) {
+  delegate_ =
+      content::GetContentClient()->browser()->GetSpeechInputManagerDelegate();
+}
+
+SpeechInputManagerImpl::~SpeechInputManagerImpl() {
   while (requests_.begin() != requests_.end())
     CancelRecognition(requests_.begin()->first);
 }
 
-bool SpeechInputManager::HasAudioInputDevices() {
+bool SpeechInputManagerImpl::HasAudioInputDevices() {
   return BrowserMainLoop::GetAudioManager()->HasAudioInputDevices();
 }
 
-bool SpeechInputManager::IsRecordingInProcess() {
+bool SpeechInputManagerImpl::IsRecordingInProcess() {
   return BrowserMainLoop::GetAudioManager()->IsRecordingInProcess();
 }
 
-string16 SpeechInputManager::GetAudioInputDeviceModel() {
+string16 SpeechInputManagerImpl::GetAudioInputDeviceModel() {
   return BrowserMainLoop::GetAudioManager()->GetAudioInputDeviceModel();
 }
 
-bool SpeechInputManager::HasPendingRequest(int caller_id) const {
+bool SpeechInputManagerImpl::HasPendingRequest(int caller_id) const {
   return requests_.find(caller_id) != requests_.end();
 }
 
-SpeechInputManagerDelegate* SpeechInputManager::GetDelegate(
+SpeechInputDispatcherHost* SpeechInputManagerImpl::GetDelegate(
     int caller_id) const {
   return requests_.find(caller_id)->second.delegate;
 }
 
-// static
-void SpeechInputManager::ShowAudioInputSettings() {
+void SpeechInputManagerImpl::ShowAudioInputSettings() {
   // Since AudioManager::ShowAudioInputSettings can potentially launch external
   // processes, do that in the FILE thread to not block the calling threads.
   if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        base::Bind(&SpeechInputManager::ShowAudioInputSettings));
+        base::Bind(&SpeechInputManagerImpl::ShowAudioInputSettings,
+                   base::Unretained(this)));
     return;
   }
 
@@ -104,8 +116,8 @@ void SpeechInputManager::ShowAudioInputSettings() {
     audio_manager->ShowAudioInputSettings();
 }
 
-void SpeechInputManager::StartRecognition(
-    SpeechInputManagerDelegate* delegate,
+void SpeechInputManagerImpl::StartRecognition(
+    SpeechInputDispatcherHost* delegate,
     int caller_id,
     int render_process_id,
     int render_view_id,
@@ -119,7 +131,7 @@ void SpeechInputManager::StartRecognition(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(
-          &SpeechInputManager::CheckRenderViewTypeAndStartRecognition,
+          &SpeechInputManagerImpl::CheckRenderViewTypeAndStartRecognition,
           base::Unretained(this),
           SpeechInputParams(
               delegate, caller_id, render_process_id, render_view_id,
@@ -127,7 +139,7 @@ void SpeechInputManager::StartRecognition(
               speech_input_prefs)));
 }
 
-void SpeechInputManager::CheckRenderViewTypeAndStartRecognition(
+void SpeechInputManagerImpl::CheckRenderViewTypeAndStartRecognition(
     const SpeechInputParams& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -146,20 +158,22 @@ void SpeechInputManager::CheckRenderViewTypeAndStartRecognition(
       content::VIEW_TYPE_TAB_CONTENTS) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&SpeechInputManager::ProceedStartingRecognition,
+        base::Bind(&SpeechInputManagerImpl::ProceedStartingRecognition,
         base::Unretained(this), params));
   }
 }
 
-void SpeechInputManager::ProceedStartingRecognition(
+void SpeechInputManagerImpl::ProceedStartingRecognition(
     const SpeechInputParams& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!HasPendingRequest(params.caller_id));
 
-  ShowRecognitionRequested(
-      params.caller_id, params.render_process_id, params.render_view_id,
-      params.element_rect);
-  GetRequestInfo(&can_report_metrics_, &request_info_);
+  if (delegate_) {
+    delegate_->ShowRecognitionRequested(
+        params.caller_id, params.render_process_id, params.render_view_id,
+        params.element_rect);
+    delegate_->GetRequestInfo(&can_report_metrics_, &request_info_);
+  }
 
   SpeechInputRequest* request = &requests_[params.caller_id];
   request->delegate = params.delegate;
@@ -172,7 +186,7 @@ void SpeechInputManager::ProceedStartingRecognition(
   StartRecognitionForRequest(params.caller_id);
 }
 
-void SpeechInputManager::StartRecognitionForRequest(int caller_id) {
+void SpeechInputManagerImpl::StartRecognitionForRequest(int caller_id) {
   SpeechRecognizerMap::iterator request = requests_.find(caller_id);
   if (request == requests_.end()) {
     NOTREACHED();
@@ -184,29 +198,60 @@ void SpeechInputManager::StartRecognitionForRequest(int caller_id) {
     CancelRecognitionAndInformDelegate(recording_caller_id_);
 
   if (!HasAudioInputDevices()) {
-    ShowMicError(caller_id, kNoDeviceAvailable);
+    if (delegate_) {
+      delegate_->ShowMicError(
+          caller_id, SpeechInputManagerDelegate::MIC_ERROR_NO_DEVICE_AVAILABLE);
+    }
   } else if (IsRecordingInProcess()) {
-    ShowMicError(caller_id, kDeviceInUse);
+    if (delegate_) {
+      delegate_->ShowMicError(
+          caller_id, SpeechInputManagerDelegate::MIC_ERROR_DEVICE_IN_USE);
+    }
   } else {
     recording_caller_id_ = caller_id;
     requests_[caller_id].is_active = true;
     requests_[caller_id].recognizer->StartRecording();
-    ShowWarmUp(caller_id);
+    if (delegate_)
+      delegate_->ShowWarmUp(caller_id);
   }
 }
 
-void SpeechInputManager::CancelRecognition(int caller_id) {
+void SpeechInputManagerImpl::CancelRecognitionForRequest(int caller_id) {
+  // Ignore if the caller id was not in our active recognizers list because the
+  // user might have clicked more than once, or recognition could have been
+  // ended due to other reasons before the user click was processed.
+  if (!HasPendingRequest(caller_id))
+    return;
+
+  CancelRecognitionAndInformDelegate(caller_id);
+}
+
+void SpeechInputManagerImpl::FocusLostForRequest(int caller_id) {
+  // See above comment.
+  if (!HasPendingRequest(caller_id))
+    return;
+
+  // If this is an ongoing recording or if we were displaying an error message
+  // to the user, abort it since user has switched focus. Otherwise
+  // recognition has started and keep that going so user can start speaking to
+  // another element while this gets the results in parallel.
+  if (recording_caller_id_ == caller_id || !requests_[caller_id].is_active)
+    CancelRecognitionAndInformDelegate(caller_id);
+}
+
+void SpeechInputManagerImpl::CancelRecognition(int caller_id) {
   DCHECK(HasPendingRequest(caller_id));
   if (requests_[caller_id].is_active)
     requests_[caller_id].recognizer->CancelRecognition();
   requests_.erase(caller_id);
   if (recording_caller_id_ == caller_id)
     recording_caller_id_ = 0;
-  DoClose(caller_id);
+  if (delegate_)
+    delegate_->DoClose(caller_id);
 }
 
-void SpeechInputManager::CancelAllRequestsWithDelegate(
-    SpeechInputManagerDelegate* delegate) {
+void SpeechInputManagerImpl::CancelAllRequestsWithDelegate(
+    SpeechInputDispatcherHost* delegate) {
   SpeechRecognizerMap::iterator it = requests_.begin();
   while (it != requests_.end()) {
     if (it->second.delegate == delegate) {
@@ -219,7 +264,7 @@ void SpeechInputManager::CancelAllRequestsWithDelegate(
   }
 }
 
-void SpeechInputManager::StopRecording(int caller_id) {
+void SpeechInputManagerImpl::StopRecording(int caller_id) {
   // No pending requests on extension popups.
   if (!HasPendingRequest(caller_id))
     return;
@@ -227,87 +272,77 @@ void SpeechInputManager::StopRecording(int caller_id) {
   requests_[caller_id].recognizer->StopRecording();
 }
 
-void SpeechInputManager::SetRecognitionResult(
+void SpeechInputManagerImpl::SetRecognitionResult(
     int caller_id, const content::SpeechInputResult& result) {
   DCHECK(HasPendingRequest(caller_id));
   GetDelegate(caller_id)->SetRecognitionResult(caller_id, result);
 }
 
-void SpeechInputManager::DidCompleteRecording(int caller_id) {
+void SpeechInputManagerImpl::DidCompleteRecording(int caller_id) {
   DCHECK(recording_caller_id_ == caller_id);
   DCHECK(HasPendingRequest(caller_id));
   recording_caller_id_ = 0;
   GetDelegate(caller_id)->DidCompleteRecording(caller_id);
-  ShowRecognizing(caller_id);
+  if (delegate_)
+    delegate_->ShowRecognizing(caller_id);
 }
 
-void SpeechInputManager::DidCompleteRecognition(int caller_id) {
+void SpeechInputManagerImpl::DidCompleteRecognition(int caller_id) {
   GetDelegate(caller_id)->DidCompleteRecognition(caller_id);
   requests_.erase(caller_id);
-  DoClose(caller_id);
+  if (delegate_)
+    delegate_->DoClose(caller_id);
 }
 
-void SpeechInputManager::DidStartReceivingSpeech(int caller_id) {
+void SpeechInputManagerImpl::DidStartReceivingSpeech(int caller_id) {
 }
 
-void SpeechInputManager::DidStopReceivingSpeech(int caller_id) {
+void SpeechInputManagerImpl::DidStopReceivingSpeech(int caller_id) {
 }
 
-void SpeechInputManager::OnRecognizerError(
+void SpeechInputManagerImpl::OnRecognizerError(
     int caller_id, content::SpeechInputError error) {
   if (caller_id == recording_caller_id_)
     recording_caller_id_ = 0;
   requests_[caller_id].is_active = false;
-  ShowRecognizerError(caller_id, error);
+  if (delegate_)
+    delegate_->ShowRecognizerError(caller_id, error);
 }
 
-void SpeechInputManager::DidStartReceivingAudio(int caller_id) {
+void SpeechInputManagerImpl::DidStartReceivingAudio(int caller_id) {
   DCHECK(HasPendingRequest(caller_id));
   DCHECK(recording_caller_id_ == caller_id);
-  ShowRecording(caller_id);
+  if (delegate_)
+    delegate_->ShowRecording(caller_id);
 }
 
-void SpeechInputManager::DidCompleteEnvironmentEstimation(int caller_id) {
+void SpeechInputManagerImpl::DidCompleteEnvironmentEstimation(int caller_id) {
   DCHECK(HasPendingRequest(caller_id));
   DCHECK(recording_caller_id_ == caller_id);
 }
 
-void SpeechInputManager::SetInputVolume(int caller_id, float volume,
-                                        float noise_volume) {
+void SpeechInputManagerImpl::SetInputVolume(int caller_id, float volume,
+                                            float noise_volume) {
   DCHECK(HasPendingRequest(caller_id));
   DCHECK_EQ(recording_caller_id_, caller_id);
-  ShowInputVolume(caller_id, volume, noise_volume);
+  if (delegate_)
+    delegate_->ShowInputVolume(caller_id, volume, noise_volume);
 }
 
-void SpeechInputManager::CancelRecognitionAndInformDelegate(
+void SpeechInputManagerImpl::CancelRecognitionAndInformDelegate(
     int caller_id) {
-  SpeechInputManagerDelegate* cur_delegate = GetDelegate(caller_id);
+  SpeechInputDispatcherHost* cur_delegate = GetDelegate(caller_id);
   CancelRecognition(caller_id);
   cur_delegate->DidCompleteRecording(caller_id);
   cur_delegate->DidCompleteRecognition(caller_id);
 }
 
-void SpeechInputManager::OnFocusChanged(int caller_id) {
-  // Ignore if the caller id was not in our active recognizers list because the
-  // user might have clicked more than once, or recognition could have been
-  // ended due to other reasons before the user click was processed.
-  if (HasPendingRequest(caller_id)) {
-    // If this is an ongoing recording or if we were displaying an error message
-    // to the user, abort it since user has switched focus. Otherwise
-    // recognition has started and keep that going so user can start speaking to
-    // another element while this gets the results in parallel.
-    if (recording_caller_id_ == caller_id || !requests_[caller_id].is_active) {
-      CancelRecognitionAndInformDelegate(caller_id);
-    }
-  }
-}
-
-SpeechInputManager::SpeechInputRequest::SpeechInputRequest()
+SpeechInputManagerImpl::SpeechInputRequest::SpeechInputRequest()
     : delegate(NULL),
       is_active(false) {
 }
 
-SpeechInputManager::SpeechInputRequest::~SpeechInputRequest() {
+SpeechInputManagerImpl::SpeechInputRequest::~SpeechInputRequest() {
 }
 
 }  // namespace speech_input

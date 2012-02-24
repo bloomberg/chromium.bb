@@ -270,6 +270,11 @@ std::string ShellContentBrowserClient::GetWorkerProcessTitle(
 void ShellContentBrowserClient::ResourceDispatcherHostCreated() {
 }
 
+SpeechInputManagerDelegate*
+    ShellContentBrowserClient::GetSpeechInputManagerDelegate() {
+  return NULL;
+}
+
 ui::Clipboard* ShellContentBrowserClient::GetClipboard() {
   return shell_browser_main_parts_->GetClipboard();
 }
@@ -279,11 +284,6 @@ MHTMLGenerationManager* ShellContentBrowserClient::GetMHTMLGenerationManager() {
 }
 
 net::NetLog* ShellContentBrowserClient::GetNetLog() {
-  return NULL;
-}
-
-speech_input::SpeechInputManager*
-    ShellContentBrowserClient::GetSpeechInputManager() {
   return NULL;
 }
 

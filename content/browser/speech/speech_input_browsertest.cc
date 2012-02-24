@@ -13,7 +13,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/speech/speech_input_dispatcher_host.h"
-#include "content/browser/speech/speech_input_manager.h"
+#include "content/browser/speech/speech_input_manager_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/content_switches.h"
@@ -31,7 +31,7 @@ namespace speech_input {
 
 const char kTestResult[] = "Pictures of the moon";
 
-class FakeSpeechInputManager : public SpeechInputManager {
+class FakeSpeechInputManager : public SpeechInputManagerImpl {
  public:
   FakeSpeechInputManager()
       : caller_id_(0),
@@ -63,7 +63,7 @@ class FakeSpeechInputManager : public SpeechInputManager {
 
   // SpeechInputManager methods.
   virtual void StartRecognition(
-      content::SpeechInputManagerDelegate* delegate,
+      SpeechInputDispatcherHost* delegate,
       int caller_id,
       int render_process_id,
       int render_view_id,
@@ -104,7 +104,7 @@ class FakeSpeechInputManager : public SpeechInputManager {
     // Nothing to do here since we aren't really recording.
   }
   virtual void CancelAllRequestsWithDelegate(
-      content::SpeechInputManagerDelegate* delegate) OVERRIDE {
+      SpeechInputDispatcherHost* delegate) OVERRIDE {
     VLOG(1) << "CancelAllRequestsWithDelegate invoked.";
     // delegate_ is set to NULL if a fake result was received (see below), so
     // check that delegate_ matches the incoming parameter only when there is
@@ -112,23 +112,6 @@ class FakeSpeechInputManager : public SpeechInputManager {
     EXPECT_TRUE(should_send_fake_response_ || delegate_ == delegate);
     did_cancel_all_ = true;
   }
-
- protected:
-  virtual void GetRequestInfo(bool* can_report_metrics,
-                              std::string* request_info) OVERRIDE {}
-  virtual void ShowRecognitionRequested(
-      int caller_id, int render_process_id, int render_view_id,
-      const gfx::Rect& element_rect) OVERRIDE {}
-  virtual void ShowWarmUp(int caller_id) OVERRIDE {}
-  virtual void ShowRecognizing(int caller_id) OVERRIDE {}
-  virtual void ShowRecording(int caller_id) OVERRIDE {}
-  virtual void ShowInputVolume(
-      int caller_id, float volume, float noise_volume) OVERRIDE {}
-  virtual void ShowMicError(
-      int caller_id, SpeechInputManager::MicError error) OVERRIDE {}
-  virtual void ShowRecognizerError(
-      int caller_id, content::SpeechInputError error) OVERRIDE {}
-  virtual void DoClose(int caller_id) OVERRIDE {}
 
  private:
   void SetFakeRecognitionResult() {
@@ -147,7 +130,7 @@ class FakeSpeechInputManager : public SpeechInputManager {
   }
 
   int caller_id_;
-  content::SpeechInputManagerDelegate* delegate_;
+  SpeechInputDispatcherHost* delegate_;
   std::string grammar_;
   bool did_cancel_all_;
   bool should_send_fake_response_;
@@ -224,10 +207,10 @@ class SpeechInputBrowserTest : public InProcessBrowserTest {
 
   // This is used by the static |fakeManager|, and it is a pointer rather than a
   // direct instance per the style guide.
-  static SpeechInputManager* speech_input_manager_;
+  static SpeechInputManagerImpl* speech_input_manager_;
 };
 
-SpeechInputManager* SpeechInputBrowserTest::speech_input_manager_ = NULL;
+SpeechInputManagerImpl* SpeechInputBrowserTest::speech_input_manager_ = NULL;
 
 // TODO(satish): Once this flakiness has been fixed, add a second test here to
 // check for sending many clicks in succession to the speech button and verify
