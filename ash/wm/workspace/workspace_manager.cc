@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/shelf_layout_manager.h"
+#include "ash/wm/window_resizer.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/managed_workspace.h"
 #include "ash/wm/workspace/maximized_workspace.h"
@@ -49,22 +50,13 @@ void SetWindowLayerVisibility(const std::vector<aura::Window*>& windows,
   }
 }
 
-// TODO(sky): this is a copy of that in ToplevelWindowEventFilter. Figure out
-// the right place to put it.
-int AlignToGrid(int location, int grid_size) {
-  if (grid_size <= 1 || location % grid_size == 0)
-    return location;
-  return floor(static_cast<float>(location) / static_cast<float>(grid_size) +
-               .5f) * grid_size;
-}
-
 gfx::Rect AlignRectToGrid(const gfx::Rect& rect, int grid_size) {
   if (grid_size <= 1)
     return rect;
-  return gfx::Rect(AlignToGrid(rect.x(), grid_size),
-                   AlignToGrid(rect.y(), grid_size),
-                   AlignToGrid(rect.width(), grid_size),
-                   AlignToGrid(rect.height(), grid_size));
+  return gfx::Rect(ash::WindowResizer::AlignToGrid(rect.x(), grid_size),
+                   ash::WindowResizer::AlignToGrid(rect.y(), grid_size),
+                   ash::WindowResizer::AlignToGrid(rect.width(), grid_size),
+                   ash::WindowResizer::AlignToGrid(rect.height(), grid_size));
 }
 
 }

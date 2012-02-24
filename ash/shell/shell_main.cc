@@ -118,6 +118,8 @@ class LauncherDelegateImpl : public ash::LauncherDelegate {
       : watcher_(watcher) {
   }
 
+  void set_watcher(WindowWatcher* watcher) { watcher_ = watcher; }
+
   // LauncherDelegate overrides:
   virtual void CreateNewWindow() OVERRIDE {
     ash::shell::ToplevelWindow::CreateParams create_params;
@@ -154,9 +156,13 @@ class LauncherDelegateImpl : public ash::LauncherDelegate {
 
 class ShellDelegateImpl : public ash::ShellDelegate {
  public:
-  ShellDelegateImpl() {}
+  ShellDelegateImpl() : watcher_(NULL), launcher_delegate_(NULL) {}
 
-  void set_watcher(WindowWatcher* watcher) { watcher_ = watcher; }
+  void SetWatcher(WindowWatcher* watcher) {
+    watcher_ = watcher;
+    if (launcher_delegate_)
+      launcher_delegate_->set_watcher(watcher);
+  }
 
   virtual views::Widget* CreateStatusArea() OVERRIDE {
     return ash::internal::CreateStatusArea();
@@ -198,12 +204,15 @@ class ShellDelegateImpl : public ash::ShellDelegate {
 
   virtual ash::LauncherDelegate* CreateLauncherDelegate(
       ash::LauncherModel* model) OVERRIDE {
-    return new LauncherDelegateImpl(watcher_);
+    launcher_delegate_ = new LauncherDelegateImpl(watcher_);
+    return launcher_delegate_;
   }
 
  private:
   // Used to update Launcher. Owned by main.
   WindowWatcher* watcher_;
+
+  LauncherDelegateImpl* launcher_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellDelegateImpl);
 };
@@ -238,7 +247,7 @@ int main(int argc, char** argv) {
   ash::Shell::CreateInstance(delegate);
 
   scoped_ptr<WindowWatcher> window_watcher(new WindowWatcher);
-  delegate->set_watcher(window_watcher.get());
+  delegate->SetWatcher(window_watcher.get());
 
   ash::shell::InitWindowTypeLauncher();
 
