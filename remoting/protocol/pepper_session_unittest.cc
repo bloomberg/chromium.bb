@@ -113,6 +113,7 @@ class PepperSessionTest : public testing::Test {
   virtual void TearDown() {
     CloseSessions();
     CloseSessionManager();
+    message_loop_.RunAllPending();
   }
 
   void CloseSessions() {

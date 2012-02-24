@@ -5871,30 +5871,6 @@
    fun:_ZN5media14WebMListParser5ParseEPKhi
 }
 {
-   bug_115608_a
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN8remoting8protocol25LibjingleTransportFactoryC1Ev
-   fun:_ZN8remoting8protocol17PepperSessionTest21CreateSessionManagersEiNS0_17FakeAuthenticator6ActionE
-}
-{
-   bug_115608_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKSsPN9talk_base7NetworkEEEE8allocateEmPKv
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN9talk_base7NetworkEESt10_Select1stIS5_ESt4lessISsESaIS5_EE11_M_get_nodeEv
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN9talk_base7NetworkEESt10_Select1stIS5_ESt4lessISsESaIS5_EE14_M_create_nodeERKS5_
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN9talk_base7NetworkEESt10_Select1stIS5_ESt4lessISsESaIS5_EE10_M_insert_EPKSt18_Rb_tree_node_baseSE_RKS5_
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN9talk_base7NetworkEESt10_Select1stIS5_ESt4lessISsESaIS5_EE16_M_insert_uniqueERKS5_
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN9talk_base7NetworkEESt10_Select1stIS5_ESt4lessISsESaIS5_EE17_M_insert_unique_ESt23_Rb_tree_const_iteratorIS5_ERKS5_
-   fun:_ZNSt3mapISsPN9talk_base7NetworkESt4lessISsESaISt4pairIKSsS2_EEE6insertESt17_Rb_tree_iteratorIS7_ERKS7_
-   fun:_ZNSt3mapISsPN9talk_base7NetworkESt4lessISsESaISt4pairIKSsS2_EEEixERS6_
-   fun:_ZN9talk_base18NetworkManagerBase16MergeNetworkListERKSt6vectorIPNS_7NetworkESaIS3_EE
-   fun:_ZN9talk_base19BasicNetworkManager16DoUpdateNetworksEv
-   fun:_ZN9talk_base19BasicNetworkManager9OnMessageEPNS_7MessageE
-}
-{
    bug_115611
    Memcheck:Leak
    fun:_Znw*
