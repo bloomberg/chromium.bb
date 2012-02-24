@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -191,19 +191,21 @@ void ImeInput::MoveImeWindow(HWND window_handle, HIMC imm_context) {
   int x = caret_rect_.x();
   int y = caret_rect_.y();
   const int kCaretMargin = 1;
-  // As written in a comment in ImeInput::CreateImeWindow(),
-  // Chinese IMEs ignore function calls to ::ImmSetCandidateWindow()
-  // when a user disables TSF (Text Service Framework) and CUAS (Cicero
-  // Unaware Application Support).
-  // On the other hand, when a user enables TSF and CUAS, Chinese IMEs
-  // ignore the position of the current system caret and uses the
-  // parameters given to ::ImmSetCandidateWindow() with its 'dwStyle'
-  // parameter CFS_CANDIDATEPOS.
-  // Therefore, we do not only call ::ImmSetCandidateWindow() but also
-  // set the positions of the temporary system caret if it exists.
-  CANDIDATEFORM candidate_position = {0, CFS_CANDIDATEPOS, {x, y},
-                                      {0, 0, 0, 0}};
-  ::ImmSetCandidateWindow(imm_context, &candidate_position);
+  if (PRIMARYLANGID(input_language_id_) == LANG_CHINESE) {
+    // As written in a comment in ImeInput::CreateImeWindow(),
+    // Chinese IMEs ignore function calls to ::ImmSetCandidateWindow()
+    // when a user disables TSF (Text Service Framework) and CUAS (Cicero
+    // Unaware Application Support).
+    // On the other hand, when a user enables TSF and CUAS, Chinese IMEs
+    // ignore the position of the current system caret and uses the
+    // parameters given to ::ImmSetCandidateWindow() with its 'dwStyle'
+    // parameter CFS_CANDIDATEPOS.
+    // Therefore, we do not only call ::ImmSetCandidateWindow() but also
+    // set the positions of the temporary system caret if it exists.
+    CANDIDATEFORM candidate_position = {0, CFS_CANDIDATEPOS, {x, y},
+                                        {0, 0, 0, 0}};
+    ::ImmSetCandidateWindow(imm_context, &candidate_position);
+  }
   if (system_caret_) {
     switch (PRIMARYLANGID(input_language_id_)) {
       case LANG_JAPANESE:
