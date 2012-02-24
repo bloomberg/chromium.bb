@@ -498,9 +498,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   tree_updated_observer1.Wait();
 
   // Check the browser's copy of the renderer accessibility tree.
-  AccessibleChecker body_checker(L"", L"body", L"");
+  AccessibleChecker group_checker(L"", ROLE_SYSTEM_GROUPING, L"");
   AccessibleChecker document_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
-  document_checker.AppendExpectedChild(&body_checker);
+  document_checker.AppendExpectedChild(&group_checker);
   document_checker.CheckAccessible(GetRendererAccessible());
 
   // Change the children of the document body.
@@ -512,7 +512,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
   // Check that the accessibility tree of the browser has been updated.
   AccessibleChecker text_checker(L"new text", ROLE_SYSTEM_TEXT, L"");
-  body_checker.AppendExpectedChild(&text_checker);
+  group_checker.AppendExpectedChild(&text_checker);
   document_checker.CheckAccessible(GetRendererAccessible());
 }
 
@@ -544,9 +544,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
   // Check that the accessibility tree of the browser has been updated.
   AccessibleChecker static_text_checker(L"text", ROLE_SYSTEM_TEXT, L"");
-  AccessibleChecker div_checker(L"", L"div", L"");
-  document_checker.AppendExpectedChild(&div_checker);
-  div_checker.AppendExpectedChild(&static_text_checker);
+  AccessibleChecker group_checker(L"", ROLE_SYSTEM_GROUPING, L"");
+  document_checker.AppendExpectedChild(&group_checker);
+  group_checker.AppendExpectedChild(&static_text_checker);
   document_checker.CheckAccessible(GetRendererAccessible());
 }
 
@@ -565,11 +565,11 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   tree_updated_observer1.Wait();
 
   // Check the browser's copy of the renderer accessibility tree.
-  AccessibleChecker div_checker(L"", L"div", L"");
-  div_checker.SetExpectedState(
+  AccessibleChecker group_checker(L"", ROLE_SYSTEM_GROUPING, L"");
+  group_checker.SetExpectedState(
       STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_OFFSCREEN | STATE_SYSTEM_READONLY);
   AccessibleChecker document_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
-  document_checker.AppendExpectedChild(&div_checker);
+  document_checker.AppendExpectedChild(&group_checker);
   document_checker.CheckAccessible(GetRendererAccessible());
 
   // Focus the div in the document
@@ -580,7 +580,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   tree_updated_observer2.Wait();
 
   // Check that the accessibility tree of the browser has been updated.
-  div_checker.SetExpectedState(
+  group_checker.SetExpectedState(
       STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_READONLY | STATE_SYSTEM_FOCUSED);
   document_checker.CheckAccessible(GetRendererAccessible());
 
@@ -597,7 +597,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   tree_updated_observer3.Wait();
 
   // Check that the accessibility tree of the browser has been updated.
-  div_checker.SetExpectedState(
+  group_checker.SetExpectedState(
       STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_READONLY);
   document_checker.CheckAccessible(GetRendererAccessible());
 }
