@@ -67,7 +67,8 @@ TEST_F(ImageTest, SkiaToSkia) {
 }
 
 TEST_F(ImageTest, SkiaRefToSkia) {
-  gfx::Image image(*gt::CreateBitmap(25, 25));
+  scoped_ptr<SkBitmap> originalBitmap(gt::CreateBitmap(25, 25));
+  gfx::Image image(*originalBitmap.get());
   const SkBitmap* bitmap = image.ToSkBitmap();
   EXPECT_TRUE(bitmap);
   EXPECT_FALSE(bitmap->isNull());
