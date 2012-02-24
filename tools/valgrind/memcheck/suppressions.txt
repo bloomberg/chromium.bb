@@ -5863,7 +5863,13 @@
    fun:_ZN3gpu12GpuScheduler10PutChangedEv
    fun:_ZN6webkit3gpu18GLInProcessContext12PumpCommandsEv
 }
-
+{
+   bug_115606
+   Memcheck:Leak
+   ...
+   fun:_ZN5media14WebMListParser16ParseListElementEiilPKhi
+   fun:_ZN5media14WebMListParser5ParseEPKhi
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
