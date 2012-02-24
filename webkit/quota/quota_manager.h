@@ -155,8 +155,6 @@ class QuotaManager : public QuotaTaskObserver,
   // specified by the caller as a bitmask built from QuotaClient::IDs. Setting
   // the mask to QuotaClient::kAllClientsMask will remove all clients from the
   // origin, regardless of type.
-  //
-  // Both methods must be called on the UI thread.
   virtual void DeleteOriginData(const GURL& origin,
                                 StorageType type,
                                 int quota_client_mask,
