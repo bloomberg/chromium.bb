@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -8,7 +8,15 @@ import shutil
 import subprocess
 import sys
 import tempfile
-import _winreg
+
+if sys.platform == 'win32':
+  import _winreg
+elif sys.platform == 'cygwin':
+  try:
+    import cygwinreg as _winreg
+  except ImportError:
+    print "Please install cygwinreg so I can access the registry."
+    print "Install setuptools and run 'easy_install cygwinreg'."
 
 
 VSVARS_PATH = ('C:\\Program Files (x86)\\Microsoft Visual Studio 9.0\\'
