@@ -268,7 +268,7 @@ surface_to_global_float(struct weston_surface *surface,
 	}
 }
 
-static void
+WL_EXPORT void
 weston_surface_damage_below(struct weston_surface *surface)
 {
 	struct weston_surface *below;
@@ -902,48 +902,6 @@ fade_frame(struct weston_animation *animation,
 	}
 }
 
-static void
-weston_output_set_cursor(struct weston_output *output,
-			 struct wl_input_device *dev)
-{
-	struct weston_input_device *device =
-		(struct weston_input_device *) dev;
-	pixman_region32_t cursor_region;
-	int prior_was_hardware;
-
-	if (device->sprite == NULL)
-		return;
-
-	pixman_region32_init(&cursor_region);
-	pixman_region32_intersect(&cursor_region,
-				  &device->sprite->transform.boundingbox,
-				  &output->region);
-
-	if (!pixman_region32_not_empty(&cursor_region)) {
-		output->set_hardware_cursor(output, NULL);
-		goto out;
-	}
-
-	prior_was_hardware = device->hw_cursor;
-	if (device->sprite->overlapped ||
-	    output->set_hardware_cursor(output, device) < 0) {
-		if (prior_was_hardware) {
-			weston_surface_damage(device->sprite);
-			output->set_hardware_cursor(output, NULL);
-		}
-		device->hw_cursor = 0;
-	} else {
-		if (!prior_was_hardware)
-			weston_surface_damage_below(device->sprite);
-		pixman_region32_fini(&device->sprite->damage);
-		pixman_region32_init(&device->sprite->damage);
-		device->hw_cursor = 1;
-	}
-
-out:
-	pixman_region32_fini(&cursor_region);
-}
-
 struct weston_frame_callback {
 	struct wl_resource resource;
 	struct wl_list link;
@@ -994,8 +952,6 @@ weston_output_repaint(struct weston_output *output, int msecs)
 		 * else.
 		 */
 		output->assign_planes(output);
-
-	weston_output_set_cursor(output, ec->input_device);
 
 	wl_list_for_each(es, &ec->surface_list, link) {
 		pixman_region32_subtract(&es->damage, &es->damage, &opaque);

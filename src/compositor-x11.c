@@ -221,13 +221,6 @@ finish_frame_handler(void *data)
 	return 1;
 }
 
-static int
-x11_output_set_cursor(struct weston_output *output_base,
-		      struct weston_input_device *input)
-{
-	return -1;
-}
-
 static void
 x11_output_destroy(struct weston_output *output_base)
 {
@@ -446,7 +439,6 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 		wl_event_loop_add_timer(loop, finish_frame_handler, output);
 
 	output->base.repaint = x11_output_repaint;
-	output->base.set_hardware_cursor = x11_output_set_cursor;
 	output->base.destroy = x11_output_destroy;
 	output->base.assign_planes = NULL;
 

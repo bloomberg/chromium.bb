@@ -529,12 +529,58 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	return 0;
 }
 
+static int
+drm_output_set_cursor(struct weston_output *output_base,
+		      struct weston_input_device *eid);
+
+static void
+weston_output_set_cursor(struct weston_output *output,
+			 struct weston_input_device *device,
+			 pixman_region32_t *overlap)
+{
+	pixman_region32_t cursor_region;
+	int prior_was_hardware;
+
+	if (device->sprite == NULL)
+		return;
+
+	pixman_region32_init(&cursor_region);
+	pixman_region32_intersect(&cursor_region,
+				  &device->sprite->transform.boundingbox,
+				  &output->region);
+
+	if (!pixman_region32_not_empty(&cursor_region)) {
+		drm_output_set_cursor(output, NULL);
+		goto out;
+	}
+
+	prior_was_hardware = device->hw_cursor;
+	if (pixman_region32_not_empty(overlap) ||
+	    drm_output_set_cursor(output, device) < 0) {
+		if (prior_was_hardware) {
+			weston_surface_damage(device->sprite);
+			drm_output_set_cursor(output, NULL);
+		}
+		device->hw_cursor = 0;
+	} else {
+		if (!prior_was_hardware)
+			weston_surface_damage_below(device->sprite);
+		pixman_region32_fini(&device->sprite->damage);
+		pixman_region32_init(&device->sprite->damage);
+		device->hw_cursor = 1;
+	}
+
+out:
+	pixman_region32_fini(&cursor_region);
+}
+
 static void
 drm_assign_planes(struct weston_output *output)
 {
 	struct weston_compositor *ec = output->compositor;
 	struct weston_surface *es;
 	pixman_region32_t overlap, surface_overlap;
+	struct weston_input_device *device;
 
 	/*
 	 * Find a surface for each sprite in the output using some heuristics:
@@ -561,8 +607,16 @@ drm_assign_planes(struct weston_output *output)
 		pixman_region32_intersect(&surface_overlap, &overlap,
 					  &es->transform.boundingbox);
 
-		if (!drm_output_prepare_overlay_surface(output, es,
-							&surface_overlap)) {
+		device = (struct weston_input_device *) ec->input_device;
+		if (es == device->sprite) {
+			weston_output_set_cursor(output, device,
+						 &surface_overlap);
+
+			if (!device->hw_cursor)
+				pixman_region32_union(&overlap, &overlap,
+						      &es->transform.boundingbox);
+		} else if (!drm_output_prepare_overlay_surface(output, es,
+							       &surface_overlap)) {
 			pixman_region32_fini(&es->damage);
 			pixman_region32_init(&es->damage);
 		} else {
@@ -1002,7 +1056,6 @@ create_output_for_connector(struct drm_compositor *ec,
 
 	output->pending_fs_surf_fb_id = 0;
 	output->base.repaint = drm_output_repaint;
-	output->base.set_hardware_cursor = drm_output_set_cursor;
 	output->base.destroy = drm_output_destroy;
 	output->base.assign_planes = drm_assign_planes;
 

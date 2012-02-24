@@ -84,8 +84,6 @@ struct weston_output {
 	struct wl_list mode_list;
 
 	void (*repaint)(struct weston_output *output);
-	int (*set_hardware_cursor)(struct weston_output *output,
-				   struct weston_input_device *input);
 	void (*destroy)(struct weston_output *output);
 	void (*assign_planes)(struct weston_output *output);
 };
@@ -417,6 +415,9 @@ weston_surface_assign_output(struct weston_surface *surface);
 
 void
 weston_surface_damage(struct weston_surface *surface);
+
+void
+weston_surface_damage_below(struct weston_surface *surface);
 
 void
 weston_buffer_post_release(struct wl_buffer *buffer);

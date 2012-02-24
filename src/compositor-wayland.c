@@ -355,13 +355,6 @@ wayland_output_repaint(struct weston_output *output_base)
 	return;
 }
 
-static int
-wayland_output_set_cursor(struct weston_output *output_base,
-			  struct weston_input_device *input)
-{
-	return -1;
-}
-
 static void
 wayland_output_destroy(struct weston_output *output_base)
 {
@@ -440,7 +433,6 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 	wl_shell_surface_set_toplevel(output->parent.shell_surface);
 
 	output->base.repaint = wayland_output_repaint;
-	output->base.set_hardware_cursor = wayland_output_set_cursor;
 	output->base.destroy = wayland_output_destroy;
 	output->base.assign_planes = NULL;
 
