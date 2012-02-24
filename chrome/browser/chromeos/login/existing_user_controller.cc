@@ -295,12 +295,17 @@ void ExistingUserController::CompleteLogin(const std::string& username,
   if (!time_init_.is_null()) {
     base::TimeDelta delta = base::Time::Now() - time_init_;
     UMA_HISTOGRAM_MEDIUM_TIMES("Login.PromptToCompleteLoginTime", delta);
+    time_init_ = base::Time();  // Reset to null.
   }
   host_->OnCompleteLogin();
   // Auto-enrollment must have made a decision by now. It's too late to enroll
   // if the protocol isn't done at this point.
   if (do_auto_enrollment_) {
     VLOG(1) << "Forcing auto-enrollment before completing login";
+    // The only way to get out of the enrollment screen from now on is to either
+    // complete enrollment, or opt-out of it. So this controller shouldn't force
+    // enrollment again if it is reused for another sign-in.
+    do_auto_enrollment_ = false;
     auto_enrollment_username_ = username;
     resume_login_callback_ = base::Bind(
         &ExistingUserController::CompleteLoginInternal,
