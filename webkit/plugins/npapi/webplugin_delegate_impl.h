@@ -411,12 +411,6 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
   // GetKeyStatePatch interceptor for UIPI Flash plugin.
   static SHORT WINAPI GetKeyStatePatch(int vkey);
 
-  // Virtual* VM patches for flash JIT hardenning.
-  static LPVOID WINAPI VirtualAllocPatch(LPVOID address,
-                                         SIZE_T size,
-                                         DWORD allocation_type,
-                                         DWORD protect);
-
   static BOOL WINAPI VirtualProtectPatch(LPVOID address,
                                          SIZE_T size,
                                          DWORD new_protect,

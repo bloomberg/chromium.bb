@@ -127,14 +127,7 @@ void ClearSavedKeyState() {
   memset(g_saved_key_state, 0, sizeof(g_saved_key_state));
 }
 
-// Helper objects for patching VirtualQuery, VirtualAlloc, VirtualProtect.
-base::LazyInstance<base::win::IATPatchFunction> g_iat_patch_virtual_alloc =
-    LAZY_INSTANCE_INITIALIZER;
-LPVOID (WINAPI *g_iat_orig_virtual_alloc)(LPVOID address,
-                                          SIZE_T size,
-                                          DWORD allocation_type,
-                                          DWORD protect);
-
+// Helper objects for patching VirtualQuery, VirtualProtect.
 base::LazyInstance<base::win::IATPatchFunction> g_iat_patch_virtual_protect =
     LAZY_INSTANCE_INITIALIZER;
 BOOL (WINAPI *g_iat_orig_virtual_protect)(LPVOID address,
@@ -148,9 +141,8 @@ BOOL (WINAPI *g_iat_orig_virtual_free)(LPVOID address,
                                        SIZE_T size,
                                        DWORD free_type);
 
-const size_t kMaxPluginExecMemSize = 16 * 1024 * 1024;  // 16mb.
-const DWORD kExecPageMask = PAGE_EXECUTE | PAGE_EXECUTE_READ |
-                            PAGE_EXECUTE_READWRITE;
+const size_t kMaxPluginExecMemSize = 32 * 1024 * 1024;  // 32mb.
+const DWORD kExecPageMask = PAGE_EXECUTE_READ;
 static volatile intptr_t g_max_exec_mem_size;
 static intptr_t g_exec_mem_size = 0;
 static scoped_ptr<base::Lock> g_exec_mem_lock;
@@ -355,21 +347,7 @@ SHORT WINAPI WebPluginDelegateImpl::GetKeyStatePatch(int vkey) {
 }
 
 // We need to track RX memory usage in plugins to prevent JIT spraying attacks.
-// This is done by hooking VirtualAlloc, VirtualProtect, and VirtualFree.
-LPVOID WINAPI WebPluginDelegateImpl::VirtualAllocPatch(LPVOID address,
-                                                       SIZE_T size,
-                                                       DWORD allocation_type,
-                                                       DWORD protect) {
-  void* p = g_iat_orig_virtual_alloc(address, size, allocation_type, protect);
-  if (size && p && (protect & kExecPageMask)) {
-    bool limit_exceeded = UpdateExecMemSize(static_cast<intptr_t>(size)) >
-                          kMaxPluginExecMemSize;
-    if (limit_exceeded)
-      RaiseJITException();
-  }
-  return p;
-}
-
+// This is done by hooking VirtualProtect and VirtualFree.
 BOOL WINAPI WebPluginDelegateImpl::VirtualProtectPatch(LPVOID address,
                                                        SIZE_T size,
                                                        DWORD new_protect,
@@ -631,12 +609,6 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
     if (!g_exec_mem_lock.get())
       g_exec_mem_lock.reset(new base::Lock());
 
-    if (!g_iat_patch_virtual_alloc.Pointer()->is_patched()) {
-      g_iat_orig_virtual_alloc = ::VirtualAlloc;
-      g_iat_patch_virtual_alloc.Pointer()->Patch(
-          L"gcswf32.dll", "kernel32.dll", "VirtualAlloc",
-          WebPluginDelegateImpl::VirtualAllocPatch);
-    }
     if (!g_iat_patch_virtual_protect.Pointer()->is_patched()) {
       g_iat_orig_virtual_protect = ::VirtualProtect;
       g_iat_patch_virtual_protect.Pointer()->Patch(
