@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,14 +28,17 @@ using content::BrowserThread;
 
 namespace {
 
-void OnProfileCreated(Profile* profile,
+void OnProfileCreated(bool always_create,
+                      Profile* profile,
                       Profile::CreateStatus status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (status == Profile::CREATE_STATUS_INITIALIZED) {
-    ProfileManager::NewWindowWithProfile(profile,
-                                         BrowserInit::IS_NOT_PROCESS_STARTUP,
-                                         BrowserInit::IS_NOT_FIRST_RUN);
+    ProfileManager::FindOrCreateNewWindowForProfile(
+        profile,
+        BrowserInit::IS_NOT_PROCESS_STARTUP,
+        BrowserInit::IS_NOT_FIRST_RUN,
+        always_create);
   }
 }
 
@@ -72,11 +75,11 @@ AvatarMenuModel::Item::Item(size_t model_index, const gfx::Image& icon)
 AvatarMenuModel::Item::~Item() {
 }
 
-void AvatarMenuModel::SwitchToProfile(size_t index) {
+void AvatarMenuModel::SwitchToProfile(size_t index, bool always_create) {
   const Item& item = GetItemAt(index);
   FilePath path = profile_info_->GetPathOfProfileAtIndex(item.model_index);
   g_browser_process->profile_manager()->CreateProfileAsync(
-      path, base::Bind(&OnProfileCreated));
+      path, base::Bind(&OnProfileCreated, always_create));
 
   ProfileMetrics::LogProfileSwitchUser(ProfileMetrics::SWITCH_PROFILE_ICON);
 }

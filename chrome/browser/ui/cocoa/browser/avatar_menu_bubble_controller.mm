@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#import "chrome/browser/ui/cocoa/event_utils.h"
 #import "chrome/browser/ui/cocoa/hover_image_button.h"
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
@@ -93,7 +94,10 @@ const CGFloat kLabelInset = 49.0;
 }
 
 - (IBAction)switchToProfile:(id)sender {
-  model_->SwitchToProfile([sender modelIndex]);
+  // Check the event flags to see if a new window should be crated.
+  bool always_create = event_utils::WindowOpenDispositionFromNSEvent(
+      [NSApp currentEvent]) == NEW_WINDOW;
+  model_->SwitchToProfile([sender modelIndex], always_create);
 }
 
 - (IBAction)editProfile:(id)sender {

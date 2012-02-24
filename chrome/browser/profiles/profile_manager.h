@@ -139,14 +139,16 @@ class ProfileManager : public base::NonThreadSafe,
   // otherwise return NULL.
   Profile* GetProfileByPath(const FilePath& path) const;
 
-  // Opens a new window with the given profile. This launches a new browser for
-  // the profile or activates an existing one; it is the static equivalent of
-  // the instance method Browser::NewWindow(), used for the creation of a
-  // Window from the multi-profile dropdown menu.
-  static void NewWindowWithProfile(
+  // Activates a window for |profile|.  If no such window yet exists, or if
+  // |always_create| is true, this first creates a new window, then activates
+  // that. If activating an exiting window and multiple windows exists then the
+  // window that was most recently active is activated. This is used for
+  // creation of a window from the multi-profile dropdown menu.
+  static void FindOrCreateNewWindowForProfile(
       Profile* profile,
       BrowserInit::IsProcessStartup process_startup,
-      BrowserInit::IsFirstRun is_first_run);
+      BrowserInit::IsFirstRun is_first_run,
+      bool always_create);
 
   // Profile::Delegate implementation:
   virtual void OnProfileCreated(Profile* profile, bool success) OVERRIDE;

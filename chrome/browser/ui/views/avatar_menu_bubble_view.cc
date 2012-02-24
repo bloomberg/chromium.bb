@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -438,8 +438,10 @@ void AvatarMenuBubbleView::ButtonPressed(views::Button* sender,
     ProfileItemView* item_view = static_cast<ProfileItemView*>(item_views_[i]);
     if (sender == item_view) {
       // Clicking on the active profile shouldn't do anything.
-      if (!item_view->item().active)
-        avatar_menu_model_->SwitchToProfile(i);
+      if (!item_view->item().active) {
+        avatar_menu_model_->SwitchToProfile(
+            i, browser::DispositionFromEventFlags(event.flags()) == NEW_WINDOW);
+      }
       break;
     }
   }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,8 +55,9 @@ class AvatarMenuModel : public content::NotificationObserver {
   // Actions performed by the view that the controller forwards back to the
   // model:
   // Opens a Browser with the specified profile in response to the user
-  // selecting an item.
-  void SwitchToProfile(size_t index);
+  // selecting an item. If |always_create| is true then a new window is created
+  // even if a window for that profile already exists.
+  void SwitchToProfile(size_t index, bool always_create);
   // Opens the profile settings in response to clicking the edit button next to
   // an item.
   void EditProfile(size_t index);
