@@ -292,8 +292,14 @@ void DraggedTabControllerGtk::ContinueDragging() {
 
 void DraggedTabControllerGtk::RestoreSelection(TabStripModel* model) {
   for (size_t i = 0; i < drag_data_->size(); ++i) {
-    int index = model->GetIndexOfTabContents(drag_data_->get(i)->contents_);
-    model->AddTabAtToSelection(index);
+    TabContentsWrapper* contents = drag_data_->get(i)->contents_;
+    // If a tab is destroyed while dragging contents might be null. See
+    // http://crbug.com/115409.
+    if (contents != NULL) {
+      int index = model->GetIndexOfTabContents(contents);
+      CHECK(index != TabStripModel::kNoTab);
+      model->AddTabAtToSelection(index);
+    }
   }
 }
 
