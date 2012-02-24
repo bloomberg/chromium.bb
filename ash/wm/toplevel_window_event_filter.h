@@ -54,6 +54,12 @@ class ASH_EXPORT ToplevelWindowEventFilter :
   virtual void RunMoveLoop(aura::Window* source) OVERRIDE;
   virtual void EndMoveLoop() OVERRIDE;
 
+ protected:
+  // Creates a new WindowResizer.
+  virtual WindowResizer* CreateWindowResizer(aura::Window* window,
+                                             const gfx::Point& point,
+                                             int window_component);
+
  private:
   // Invoked when the mouse is released to cleanup after a drag.
   void CompleteDrag(aura::Window* window);
