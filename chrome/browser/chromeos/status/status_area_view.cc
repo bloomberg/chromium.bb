@@ -21,7 +21,8 @@
 const int kSeparation = 0;
 
 StatusAreaView::StatusAreaView()
-    : need_return_focus_(false) {
+    : need_return_focus_(false),
+      skip_next_focus_return_(true) {
   set_id(VIEW_ID_STATUS_AREA);
 }
 
@@ -125,32 +126,28 @@ void StatusAreaView::UpdateButtonTextStyle() {
 void StatusAreaView::TakeFocus(
     bool reverse,
     const ReturnFocusCallback& return_focus_cb) {
-  // Emulates focus receive by AccessiblePaneView::SetPaneFocus.
-  if (!focus_manager_)
-    focus_manager_ = GetFocusManager();
-  focus_manager_->SetFocusedView(
-      reverse ? GetLastFocusableChild() : GetFirstFocusableChild());
-  pane_has_focus_ = true;
+  SetPaneFocus(reverse ? GetLastFocusableChild() : GetFirstFocusableChild());
   need_return_focus_ = true;
   return_focus_cb_ = return_focus_cb;
-  focus_manager_->AddFocusChangeListener(this);
+  GetWidget()->AddObserver(this);
 }
 
 void StatusAreaView::ReturnFocus(bool reverse) {
-  // Emulates focus loss by AccessiblePaneView::RemovePaneFocus.
-  if (!focus_manager_)
-    focus_manager_ = GetFocusManager();
-  focus_manager_->RemoveFocusChangeListener(this);
-  pane_has_focus_ = false;
-  need_return_focus_ = false;
-  focus_manager_->ClearFocus();
+  ClearFocus();
   return_focus_cb_.Run(reverse);
+}
+
+void StatusAreaView::ClearFocus() {
+  GetWidget()->RemoveObserver(this);
+  RemovePaneFocus();
+  focus_manager_->ClearFocus();
+  need_return_focus_ = false;
 }
 
 void StatusAreaView::OnDidChangeFocus(views::View* focused_before,
                                       views::View* focused_now) {
   views::AccessiblePaneView::OnDidChangeFocus(focused_before, focused_now);
-  if (need_return_focus_) {
+  if (need_return_focus_ && !skip_next_focus_return_) {
     const views::View* first = GetFirstFocusableChild();
     const views::View* last = GetLastFocusableChild();
     const bool first_to_last = (focused_before == first && focused_now == last);
@@ -159,4 +156,24 @@ void StatusAreaView::OnDidChangeFocus(views::View* focused_before,
     if (first_to_last || last_to_first)
       ReturnFocus(first_to_last);
   }
+  skip_next_focus_return_ = false;
+}
+
+void StatusAreaView::OnWidgetActivationChanged(views::Widget* widget,
+                                               bool active) {
+  if (!active)
+    ClearFocus();
+}
+
+bool StatusAreaView::AcceleratorPressed(const ui::Accelerator& accelerator) {
+  if (need_return_focus_ && accelerator.key_code() == ui::VKEY_ESCAPE) {
+    // Override Escape handling to return focus back.
+    ReturnFocus(false);
+    return true;
+  } else if (accelerator.key_code() == ui::VKEY_HOME ||
+             accelerator.key_code() == ui::VKEY_END) {
+    // Do not return focus if it wraps right after pressing Home/End.
+    skip_next_focus_return_ = true;
+  }
+  return AccessiblePaneView::AcceleratorPressed(accelerator);
 }
