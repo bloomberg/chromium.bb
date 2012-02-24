@@ -303,5 +303,6 @@ ORTH = \
 	nqo.orth \
 	brx.orth \
 	sat.orth \
-	doi.orth
+	doi.orth \
+	mni.orth
 #	^-------------- Add new orth files here
