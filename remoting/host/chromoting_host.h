@@ -177,15 +177,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   DesktopEnvironment* desktop_environment_;
   protocol::NetworkSettings network_settings_;
 
-  // TODO(lambroslambrou): The following is a temporary fix for Me2Me
-  // (crbug.com/105995), pending the AuthenticatorFactory work.
-  // Cache the shared secret, in case SetSharedSecret() is called before the
-  // session manager has been created.
-  // The |have_shared_secret_| flag is to distinguish SetSharedSecret() not
-  // being called at all, from being called with an empty string.
-  std::string shared_secret_;
-  bool have_shared_secret_;
-
   // Connection objects.
   SignalStrategy* signal_strategy_;
   scoped_ptr<protocol::SessionManager> session_manager_;

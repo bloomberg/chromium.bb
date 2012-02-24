@@ -31,10 +31,6 @@ ConnectionToClient::ConnectionToClient(protocol::Session* session)
 }
 
 ConnectionToClient::~ConnectionToClient() {
-  if (session_.get()) {
-    base::MessageLoopProxy::current()->DeleteSoon(
-        FROM_HERE, session_.release());
-  }
 }
 
 void ConnectionToClient::SetEventHandler(EventHandler* event_handler) {
@@ -53,12 +49,7 @@ void ConnectionToClient::Disconnect() {
   CloseChannels();
 
   DCHECK(session_.get());
-  Session* session = session_.release();
-
-  // It may not be safe to delete |session_| here becase this method
-  // may be invoked in resonse to a libjingle event and libjingle's
-  // sigslot doesn't handle it properly, so postpone the deletion.
-  base::MessageLoopProxy::current()->DeleteSoon(FROM_HERE, session);
+  scoped_ptr<Session> session = session_.Pass();
 
   // This should trigger OnConnectionClosed() event and this object
   // may be destroyed as the result.

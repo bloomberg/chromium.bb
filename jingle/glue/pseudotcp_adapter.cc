@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,6 +52,8 @@ class PseudoTcpAdapter::Core : public cricket::IPseudoTcpNotify,
   void SetNoDelay(bool no_delay);
   void SetReceiveBufferSize(int32 size);
   void SetSendBufferSize(int32 size);
+
+  void DeleteSocket();
 
  private:
   // These are invoked by the underlying Socket, and may trigger callbacks.
@@ -282,6 +284,10 @@ void PseudoTcpAdapter::Core::SetSendBufferSize(int32 size) {
   pseudo_tcp_.SetOption(cricket::PseudoTcp::OPT_SNDBUF, size);
 }
 
+void PseudoTcpAdapter::Core::DeleteSocket() {
+  socket_.reset();
+}
+
 cricket::IPseudoTcpNotify::WriteResult PseudoTcpAdapter::Core::TcpWritePacket(
     PseudoTcp* tcp,
     const char* buffer,
@@ -299,9 +305,14 @@ cricket::IPseudoTcpNotify::WriteResult PseudoTcpAdapter::Core::TcpWritePacket(
 
   // Our underlying socket is datagram-oriented, which means it should either
   // send exactly as many bytes as we requested, or fail.
-  int result = socket_->Write(write_buffer, len,
-                              base::Bind(&PseudoTcpAdapter::Core::OnWritten,
-                                         base::Unretained(this)));
+  int result;
+  if (socket_.get()) {
+    result = socket_->Write(write_buffer, len,
+                            base::Bind(&PseudoTcpAdapter::Core::OnWritten,
+                                       base::Unretained(this)));
+  } else {
+    result = net::ERR_CONNECTION_CLOSED;
+  }
   if (result == net::ERR_IO_PENDING) {
     socket_write_pending_ = true;
     return IPseudoTcpNotify::WR_SUCCESS;
@@ -318,14 +329,13 @@ void PseudoTcpAdapter::Core::DoReadFromSocket() {
   if (!socket_read_buffer_)
     socket_read_buffer_ = new net::IOBuffer(kReadBufferSize);
 
-  while (true) {
-    int result = socket_->Read(socket_read_buffer_, kReadBufferSize,
-                               base::Bind(&PseudoTcpAdapter::Core::OnRead,
-                                          base::Unretained(this)));
-    if (result == net::ERR_IO_PENDING)
-      break;
-
-    HandleReadResults(result);
+  int result = 1;
+  while (socket_.get() && result > 0) {
+    result = socket_->Read(socket_read_buffer_, kReadBufferSize,
+                           base::Bind(&PseudoTcpAdapter::Core::OnRead,
+                                      base::Unretained(this)));
+    if (result != net::ERR_IO_PENDING)
+      HandleReadResults(result);
   }
 }
 
@@ -385,6 +395,9 @@ PseudoTcpAdapter::PseudoTcpAdapter(net::Socket* socket)
 
 PseudoTcpAdapter::~PseudoTcpAdapter() {
   Disconnect();
+
+  // Make sure that the underlying socket is destroyed before PseudoTcp.
+  core_->DeleteSocket();
 }
 
 int PseudoTcpAdapter::Read(net::IOBuffer* buffer, int buffer_size,

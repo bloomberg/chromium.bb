@@ -39,7 +39,6 @@ ChromotingHost::ChromotingHost(
     : context_(context),
       desktop_environment_(environment),
       network_settings_(network_settings),
-      have_shared_secret_(false),
       signal_strategy_(signal_strategy),
       stopping_recorders_(0),
       state_(kInitial),
@@ -101,18 +100,10 @@ void ChromotingHost::Shutdown(const base::Closure& shutdown_task) {
     clients_.front()->Disconnect();
   }
 
-  // Stop session manager.
-  if (session_manager_.get()) {
-    session_manager_->Close();
-    // It may not be safe to delete |session_manager_| here becase
-    // this method may be invoked in response to a libjingle event and
-    // libjingle's sigslot doesn't handle it properly, so postpone the
-    // deletion.
-    context_->network_message_loop()->DeleteSoon(
-        FROM_HERE, session_manager_.release());
-    have_shared_secret_ = false;
-  }
+  // Destroy session manager.
+  session_manager_.reset();
 
+  // Stop screen recorder
   if (recorder_.get()) {
     StopScreenRecorder();
   } else if (!stopping_recorders_) {

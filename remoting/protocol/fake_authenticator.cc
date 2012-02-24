@@ -6,6 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
+#include "net/base/io_buffer.h"
 #include "net/socket/stream_socket.h"
 #include "remoting/base/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -15,8 +16,10 @@ namespace remoting {
 namespace protocol {
 
 FakeChannelAuthenticator::FakeChannelAuthenticator(bool accept, bool async)
-    : accept_(accept),
+    : result_(accept ? net::OK : net::ERR_FAILED),
       async_(async),
+      did_read_bytes_(false),
+      did_write_bytes_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
@@ -26,29 +29,49 @@ FakeChannelAuthenticator::~FakeChannelAuthenticator() {
 void FakeChannelAuthenticator::SecureAndAuthenticate(
     scoped_ptr<net::StreamSocket> socket,
     const DoneCallback& done_callback) {
-  net::Error error;
-
-  if (accept_) {
-    error = net::OK;
-  } else {
-    error = net::ERR_FAILED;
-    socket.reset();
-  }
+  socket_ = socket.Pass();
 
   if (async_) {
-    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-        &FakeChannelAuthenticator::CallCallback, weak_factory_.GetWeakPtr(),
-        done_callback, error, base::Passed(&socket)));
+    done_callback_ = done_callback;
+
+    scoped_refptr<net::IOBuffer> write_buf = new net::IOBuffer(1);
+    write_buf->data()[0] = 0;
+    int result = socket_->Write(
+        write_buf, 1, base::Bind(&FakeChannelAuthenticator::OnAuthBytesWritten,
+                                 weak_factory_.GetWeakPtr()));
+    if (result != net::ERR_IO_PENDING) {
+      // This will not call the callback because |did_read_bytes_| is
+      // still set to false.
+      OnAuthBytesWritten(result);
+    }
+
+    scoped_refptr<net::IOBuffer> read_buf = new net::IOBuffer(1);
+    result = socket_->Read(
+        read_buf, 1, base::Bind(&FakeChannelAuthenticator::OnAuthBytesRead,
+                                weak_factory_.GetWeakPtr()));
+    if (result != net::ERR_IO_PENDING)
+      OnAuthBytesRead(result);
   } else {
-    done_callback.Run(error, socket.Pass());
+    if (result_ != net::OK)
+      socket_.reset();
+    done_callback.Run(result_, socket_.Pass());
   }
 }
 
-void FakeChannelAuthenticator::CallCallback(
-    const DoneCallback& done_callback,
-    net::Error error,
-    scoped_ptr<net::StreamSocket> socket) {
-  done_callback.Run(error, socket.Pass());
+void FakeChannelAuthenticator::OnAuthBytesWritten(int result) {
+  EXPECT_EQ(1, result);
+  EXPECT_FALSE(did_write_bytes_);
+  did_write_bytes_ = true;
+  if (did_read_bytes_)
+    done_callback_.Run(result_, socket_.Pass());
+}
+
+void FakeChannelAuthenticator::OnAuthBytesRead(int result) {
+  EXPECT_EQ(1, result);
+  EXPECT_FALSE(did_read_bytes_);
+  did_read_bytes_ = true;
+  if (did_write_bytes_)
+    done_callback_.Run(result_, socket_.Pass());
 }
 
 FakeAuthenticator::FakeAuthenticator(

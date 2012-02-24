@@ -254,8 +254,8 @@ void PepperStreamTransport::OnAuthenticationDone(
 void PepperStreamTransport::NotifyConnected(
     scoped_ptr<net::StreamSocket> socket) {
   DCHECK(!connected_);
-  callback_.Run(socket.Pass());
   connected_ = true;
+  callback_.Run(socket.Pass());
 }
 
 void PepperStreamTransport::NotifyConnectFailed() {

@@ -226,7 +226,7 @@ class PepperSessionTest : public testing::Test {
     message_loop_.RunAllPending();
   }
 
-  void CreateChannel() {
+  void CreateChannel(bool expect_fail) {
     client_session_->CreateStreamChannel(kChannelName, base::Bind(
         &PepperSessionTest::OnClientChannelCreated, base::Unretained(this)));
     host_session_->CreateStreamChannel(kChannelName, base::Bind(
@@ -238,6 +238,14 @@ class PepperSessionTest : public testing::Test {
     EXPECT_CALL(host_channel_callback_, OnDone(_))
         .WillOnce(QuitThreadOnCounter(&counter));
     message_loop_.Run();
+
+    if (expect_fail) {
+      // At least one socket should fail to connect.
+      EXPECT_TRUE((!client_socket_.get()) || (!host_socket_.get()));
+    } else {
+      EXPECT_TRUE(client_socket_.get());
+      EXPECT_TRUE(host_socket_.get());
+    }
   }
 
   JingleThreadMessageLoop message_loop_;
@@ -323,13 +331,13 @@ TEST_F(PepperSessionTest, ConnectWithBadMultistepAuth) {
   InitiateConnection(3, FakeAuthenticator::ACCEPT, true);
 }
 
-// Verify that data can sent over stream channel.
+// Verify that data can be sent over stream channel.
 TEST_F(PepperSessionTest, TestStreamChannel) {
   CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
   ASSERT_NO_FATAL_FAILURE(
       InitiateConnection(1, FakeAuthenticator::ACCEPT, false));
 
-  ASSERT_NO_FATAL_FAILURE(CreateChannel());
+  ASSERT_NO_FATAL_FAILURE(CreateChannel(false));
 
   StreamConnectionTester tester(host_socket_.get(), client_socket_.get(),
                                 kMessageSize, kMessages);
@@ -344,13 +352,22 @@ TEST_F(PepperSessionTest, TestMultistepAuthStreamChannel) {
   ASSERT_NO_FATAL_FAILURE(
       InitiateConnection(3, FakeAuthenticator::ACCEPT, false));
 
-  ASSERT_NO_FATAL_FAILURE(CreateChannel());
+  ASSERT_NO_FATAL_FAILURE(CreateChannel(false));
 
   StreamConnectionTester tester(host_socket_.get(), client_socket_.get(),
                                 kMessageSize, kMessages);
   tester.Start();
   message_loop_.Run();
   tester.CheckResults();
+}
+
+// Verify that we shutdown properly when channel authentication fails.
+TEST_F(PepperSessionTest, TestFailedChannelAuth) {
+  CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
+  ASSERT_NO_FATAL_FAILURE(
+      InitiateConnection(1, FakeAuthenticator::REJECT_CHANNEL, false));
+
+  ASSERT_NO_FATAL_FAILURE(CreateChannel(true));
 }
 
 }  // namespace protocol

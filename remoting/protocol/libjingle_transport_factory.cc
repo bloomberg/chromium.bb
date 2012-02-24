@@ -4,6 +4,7 @@
 
 #include "remoting/protocol/libjingle_transport_factory.h"
 
+#include "base/message_loop_proxy.h"
 #include "jingle/glue/channel_socket_adapter.h"
 #include "jingle/glue/pseudotcp_adapter.h"
 #include "jingle/glue/utils.h"
@@ -97,6 +98,15 @@ LibjingleStreamTransport::~LibjingleStreamTransport() {
   event_handler_->OnTransportDeleted(this);
   // Channel should be already destroyed if we were connected.
   DCHECK(!is_connected() || socket_.get() == NULL);
+
+  if (channel_.get()) {
+    base::MessageLoopProxy::current()->DeleteSoon(
+        FROM_HERE, channel_.release());
+  }
+  if (port_allocator_.get()) {
+    base::MessageLoopProxy::current()->DeleteSoon(
+        FROM_HERE, port_allocator_.release());
+  }
 }
 
 void LibjingleStreamTransport::Initialize(
@@ -160,6 +170,7 @@ void LibjingleStreamTransport::Connect(
   // Create net::Socket adapter for the P2PTransportChannel.
   scoped_ptr<jingle_glue::TransportChannelSocketAdapter> channel_adapter(
       new jingle_glue::TransportChannelSocketAdapter(channel_.get()));
+
   channel_adapter->SetOnDestroyedCallback(base::Bind(
       &LibjingleStreamTransport::OnChannelDestroyed, base::Unretained(this)));
 
@@ -273,13 +284,27 @@ void LibjingleStreamTransport::OnChannelDestroyed() {
 void LibjingleStreamTransport::NotifyConnected(
     scoped_ptr<net::StreamSocket> socket) {
   DCHECK(!is_connected());
-  callback_.Run(socket.Pass());
+  StreamTransport::ConnectedCallback callback = callback_;
   callback_.Reset();
+  callback.Run(socket.Pass());
 }
 
 void LibjingleStreamTransport::NotifyConnectFailed() {
+  DCHECK(!is_connected());
+
   socket_.reset();
-  channel_.reset();
+
+  // This method may be called in response to a libjingle signal, so
+  // libjingle objects must be deleted asynchronously.
+  if (channel_.get()) {
+    base::MessageLoopProxy::current()->DeleteSoon(
+        FROM_HERE, channel_.release());
+  }
+  if (port_allocator_.get()) {
+    base::MessageLoopProxy::current()->DeleteSoon(
+        FROM_HERE, port_allocator_.release());
+  }
+
   authenticator_.reset();
 
   NotifyConnected(scoped_ptr<net::StreamSocket>(NULL));
@@ -294,6 +319,12 @@ LibjingleTransportFactory::LibjingleTransportFactory()
 }
 
 LibjingleTransportFactory::~LibjingleTransportFactory() {
+  // This method may be called in response to a libjingle signal, so
+  // libjingle objects must be deleted asynchronously.
+  base::MessageLoopProxy::current()->DeleteSoon(
+      FROM_HERE, socket_factory_.release());
+  base::MessageLoopProxy::current()->DeleteSoon(
+      FROM_HERE, network_manager_.release());
 }
 
 scoped_ptr<StreamTransport> LibjingleTransportFactory::CreateStreamTransport() {
