@@ -198,19 +198,26 @@ void EnterpriseEnrollmentScreen::RegisterForDevicePolicy(
   policy::BrowserPolicyConnector* connector =
       g_browser_process->browser_policy_connector();
   if (!connector->device_cloud_policy_subsystem()) {
-    NOTREACHED() << "Cloud policy subsystem not initialized.";
-    if (is_showing_)
-      actor_->ShowFatalEnrollmentError();
+    LOG(ERROR) << "Cloud policy subsystem not initialized.";
+  } else if (connector->IsEnterpriseManaged()) {
+    LOG(ERROR) << "Device is already enterprise managed!";
+  } else if (connector->device_cloud_policy_subsystem()->state() ==
+      policy::CloudPolicySubsystem::SUCCESS) {
+    LOG(ERROR) << "A previous enrollment already succeeded!";
+  } else {
+    // Make sure the device policy subsystem is in a clean slate.
+    connector->ResetDevicePolicy();
+    connector->ScheduleServiceInitialization(0);
+    registrar_.reset(new policy::CloudPolicySubsystem::ObserverRegistrar(
+        connector->device_cloud_policy_subsystem(), this));
+    // Push the credentials to the policy infrastructure. It'll start enrollment
+    // and notify us of progress through CloudPolicySubsystem::Observer.
+    connector->RegisterForDevicePolicy(user_, token, is_auto_enrollment_);
     return;
   }
-
-  connector->ScheduleServiceInitialization(0);
-  registrar_.reset(new policy::CloudPolicySubsystem::ObserverRegistrar(
-      connector->device_cloud_policy_subsystem(), this));
-
-  // Push the credentials to the policy infrastructure. It'll start enrollment
-  // and notify us of progress through CloudPolicySubsystem::Observer.
-  connector->RegisterForDevicePolicy(user_, token, is_auto_enrollment_);
+  NOTREACHED();
+  if (is_showing_)
+    actor_->ShowFatalEnrollmentError();
 }
 
 }  // namespace chromeos

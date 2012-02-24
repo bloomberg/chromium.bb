@@ -165,6 +165,10 @@ void BrowserPolicyConnector::RegisterForDevicePolicy(
     bool known_machine_id) {
 #if defined(OS_CHROMEOS)
   if (device_data_store_.get()) {
+    if (!device_data_store_->device_token().empty()) {
+      LOG(ERROR) << "Device policy data store already has a DMToken; "
+                 << "RegisterForDevicePolicy won't trigger a new registration.";
+    }
     device_data_store_->set_user_name(owner_email);
     device_data_store_->set_known_machine_id(known_machine_id);
     device_data_store_->SetOAuthToken(token);
