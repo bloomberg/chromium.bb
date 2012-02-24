@@ -4,43 +4,27 @@
  */
 
 /* From private/ppb_network_list_private.idl,
- *   modified Fri Feb 17 11:34:34 2012.
+ *   modified Fri Feb 24 10:14:10 2012.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NETWORK_LIST_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NETWORK_LIST_PRIVATE_H_
 
 #include "ppapi/c/pp_bool.h"
-#include "ppapi/c/pp_completion_callback.h"
-#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
 
-#define PPB_NETWORKLIST_PRIVATE_INTERFACE_0_1 "PPB_NetworkList_Private;0.1"
-#define PPB_NETWORKLIST_PRIVATE_INTERFACE PPB_NETWORKLIST_PRIVATE_INTERFACE_0_1
+#define PPB_NETWORKLIST_PRIVATE_INTERFACE_0_2 "PPB_NetworkList_Private;0.2"
+#define PPB_NETWORKLIST_PRIVATE_INTERFACE PPB_NETWORKLIST_PRIVATE_INTERFACE_0_2
 
 /**
  * @file
  * This file defines the <code>PPB_NetworkList_Private</code> interface.
  */
 
-
-/**
- * @addtogroup Typedefs
- * @{
- */
-/**
- * <code>PPB_NetworkListChanged_Callback</code> is a callback function
- * type that is used to receive notifications about changes in the
- * NetworkList.
- */
-typedef void (*PPB_NetworkListChanged_Callback)(void* user_data);
-/**
- * @}
- */
 
 /**
  * @addtogroup Enums
@@ -62,8 +46,8 @@ typedef enum {
    * Cellular network (e.g. LTE).
    */
   PP_NETWORKLIST_CELLULAR = 2
-} PP_NetworkListType;
-PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_NetworkListType, 4);
+} PP_NetworkListType_Private;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_NetworkListType_Private, 4);
 
 /**
  * State of a network interface.
@@ -77,8 +61,8 @@ typedef enum {
    * Network interface is up.
    */
   PP_NETWORKLIST_UP = 1
-} PP_NetworkListState;
-PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_NetworkListState, 4);
+} PP_NetworkListState_Private;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_NetworkListState_Private, 4);
 /**
  * @}
  */
@@ -88,20 +72,13 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_NetworkListState, 4);
  * @{
  */
 /**
- * The <code>PPB_NetworkList_Private</code> provides list of network
- * interfaces and associated IP addressed.
+ * The <code>PPB_NetworkList_Private</code> is used to represent a
+ * list of network interfaces and their configuration. The content of
+ * the list is immutable. The current networks configuration can be
+ * received using the <code>PPB_NetworkMonitor_Private</code>
+ * interface.
  */
-struct PPB_NetworkList_Private_0_1 {
-  /**
-   * Create() creates a new <code>NetworkList</code> object.
-   *
-   * @param[in] instance A <code>PP_Instance</code> identifying one instance
-   * of a module.
-   *
-   * @return A <code>PP_Resource</code> corresponding to a NetworkList if
-   * successful, 0 if the instance is invalid.
-   */
-  PP_Resource (*Create)(PP_Instance instance);
+struct PPB_NetworkList_Private_0_2 {
   /**
    * Determines if the specified <code>resource</code> is a
    * <code>NetworkList</code> object.
@@ -113,26 +90,6 @@ struct PPB_NetworkList_Private_0_1 {
    * otherwise.
    */
   PP_Bool (*IsNetworkList)(PP_Resource resource);
-  /**
-   * Updates the list with the current state of the network interfaces
-   * in the system.
-   */
-  int32_t (*Update)(struct PP_CompletionCallback callback);
-  /**
-   * Starts change notifications. The specified <code>callback</code>
-   * will be called every time the network list changes. Every time
-   * the callback is called the plugin must call Update() method to
-   * actually receive updated list.
-   */
-  int32_t (*StartNotifications)(PP_Resource resource,
-                                PPB_NetworkListChanged_Callback callback,
-                                void* user_data);
-  /**
-   * Stops change notifications. After this method is called the
-   * callback specified in <code>StartNotifications()</code> will not
-   * be called anymore.
-   */
-  int32_t (*StopNotifications)(PP_Resource resource);
   /**
    * @return Returns number of available network interfaces or 0 if
    * the list has never been updated.
@@ -147,21 +104,26 @@ struct PPB_NetworkList_Private_0_1 {
    * @return Returns type of the network interface with the specified
    * <code>index</code>.
    */
-  PP_NetworkListType (*GetType)(PP_Resource resource, uint32_t index);
+  PP_NetworkListType_Private (*GetType)(PP_Resource resource, uint32_t index);
   /**
    * @return Returns current state of the network interface with the
    * specified <code>index</code>.
    */
-  PP_NetworkListState (*GetState)(PP_Resource resource, uint32_t index);
+  PP_NetworkListState_Private (*GetState)(PP_Resource resource, uint32_t index);
   /**
-   * @return Returns <code>NetAddress</code> object that contains
-   * address of the specified <code>family</code> for the network
-   * interface with the specified <code>index</code>, or 0 if the
-   * address is not assigned.
+   * Gets list of IP addresses for the network interface with the
+   * specified <code>index</code> and stores them in
+   * <code>addresses</code>. If the caller didn't allocate sufficient
+   * space to store all addresses, then only the first
+   * <code>count</code> addresses are filled in.
+   *
+   * @return Returns total number of IP addresses assigned to the
+   * network interface or a negative error code.
    */
-  PP_Resource (*GetIpAddress)(PP_Resource resource,
-                              uint32_t index,
-                              PP_NetAddressFamily_Private family);
+  int32_t (*GetIpAddresses)(PP_Resource resource,
+                            uint32_t index,
+                            struct PP_NetAddress_Private* addresses[],
+                            int32_t count);
   /**
    * @return Returns display name for the network interface with the
    * specified <code>index</code>.
@@ -174,7 +136,7 @@ struct PPB_NetworkList_Private_0_1 {
   uint32_t (*GetMTU)(PP_Resource resource, uint32_t index);
 };
 
-typedef struct PPB_NetworkList_Private_0_1 PPB_NetworkList_Private;
+typedef struct PPB_NetworkList_Private_0_2 PPB_NetworkList_Private;
 /**
  * @}
  */

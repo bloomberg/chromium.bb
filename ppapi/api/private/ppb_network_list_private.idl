@@ -8,21 +8,14 @@
  */
 
 label Chrome {
-  M19 = 0.1
+  M19 = 0.2
 };
-
-/**
- * <code>PPB_NetworkListChanged_Callback</code> is a callback function
- * type that is used to receive notifications about changes in the
- * NetworkList.
- */
-typedef void PPB_NetworkListChanged_Callback([inout] mem_t user_data);
 
 /**
  * Type of a network interface.
  */
 [assert_size(4)]
-enum PP_NetworkListType {
+enum PP_NetworkListType_Private {
   /**
    * Wired Ethernet network.
    */
@@ -43,7 +36,7 @@ enum PP_NetworkListType {
  * State of a network interface.
  */
 [assert_size(4)]
-enum PP_NetworkListState {
+enum PP_NetworkListState_Private  {
   /**
    * Network interface is down.
    */
@@ -56,21 +49,13 @@ enum PP_NetworkListState {
 };
 
 /**
- * The <code>PPB_NetworkList_Private</code> provides list of network
- * interfaces and associated IP addressed.
+ * The <code>PPB_NetworkList_Private</code> is used to represent a
+ * list of network interfaces and their configuration. The content of
+ * the list is immutable. The current networks configuration can be
+ * received using the <code>PPB_NetworkMonitor_Private</code>
+ * interface.
  */
 interface PPB_NetworkList_Private {
-  /**
-   * Create() creates a new <code>NetworkList</code> object.
-   *
-   * @param[in] instance A <code>PP_Instance</code> identifying one instance
-   * of a module.
-   *
-   * @return A <code>PP_Resource</code> corresponding to a NetworkList if
-   * successful, 0 if the instance is invalid.
-   */
-  PP_Resource Create([in] PP_Instance instance);
-
   /**
    * Determines if the specified <code>resource</code> is a
    * <code>NetworkList</code> object.
@@ -82,29 +67,6 @@ interface PPB_NetworkList_Private {
    * otherwise.
    */
   PP_Bool IsNetworkList([in] PP_Resource resource);
-
-  /**
-   * Updates the list with the current state of the network interfaces
-   * in the system.
-   */
-  int32_t Update([in] PP_CompletionCallback callback);
-
-  /**
-   * Starts change notifications. The specified <code>callback</code>
-   * will be called every time the network list changes. Every time
-   * the callback is called the plugin must call Update() method to
-   * actually receive updated list.
-   */
-  int32_t StartNotifications([in] PP_Resource resource,
-                             [in] PPB_NetworkListChanged_Callback callback,
-                             [inout] mem_t user_data);
-
-  /**
-   * Stops change notifications. After this method is called the
-   * callback specified in <code>StartNotifications()</code> will not
-   * be called anymore.
-   */
-  int32_t StopNotifications([in] PP_Resource resource);
 
   /**
    * @return Returns number of available network interfaces or 0 if
@@ -123,25 +85,31 @@ interface PPB_NetworkList_Private {
    * @return Returns type of the network interface with the specified
    * <code>index</code>.
    */
-  PP_NetworkListType GetType([in] PP_Resource resource,
-                             [in] uint32_t index);
+  PP_NetworkListType_Private  GetType([in] PP_Resource resource,
+                                    [in] uint32_t index);
 
   /**
    * @return Returns current state of the network interface with the
    * specified <code>index</code>.
    */
-  PP_NetworkListState GetState([in] PP_Resource resource,
-                               [in] uint32_t index);
+  PP_NetworkListState_Private  GetState([in] PP_Resource resource,
+                                      [in] uint32_t index);
 
   /**
-   * @return Returns <code>NetAddress</code> object that contains
-   * address of the specified <code>family</code> for the network
-   * interface with the specified <code>index</code>, or 0 if the
-   * address is not assigned.
+   * Gets list of IP addresses for the network interface with the
+   * specified <code>index</code> and stores them in
+   * <code>addresses</code>. If the caller didn't allocate sufficient
+   * space to store all addresses, then only the first
+   * <code>count</code> addresses are filled in.
+   *
+   * @return Returns total number of IP addresses assigned to the
+   * network interface or a negative error code.
    */
-  PP_Resource GetIpAddress([in] PP_Resource resource,
-                           [in] uint32_t index,
-                           [in] PP_NetAddressFamily_Private family);
+  int32_t GetIpAddresses(
+      [in] PP_Resource resource,
+      [in] uint32_t index,
+      [out, size_is(count)] PP_NetAddress_Private[] addresses,
+      [in] int32_t count);
 
   /**
    * @return Returns display name for the network interface with the

@@ -1,0 +1,64 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/**
+ * This file defines the <code>PPB_NetworkMonitor_Private</code> interface.
+ */
+
+label Chrome {
+  M19 = 0.2
+};
+
+/**
+ * <code>PPB_NetworkMonitor_Callback</code> is a callback function
+ * type that is used to receive notifications about network
+ * configuration changes. The <code>network_list</code> passed to this
+ * callback is a <code>PPB_NetworkList_Private</code> resource that
+ * contains current configuration of network interfaces.
+ */
+typedef void PPB_NetworkMonitor_Callback([inout] mem_t user_data,
+                                         [in] PP_Resource network_list);
+
+
+/**
+ * The <code>PPB_NetworkMonitor_Private</code> provides access to
+ * notifications of network configuration changes.
+ */
+interface PPB_NetworkMonitor_Private {
+  /**
+   * Starts network change monitoring. The specified
+   * <code>callback</code> will be called on the main thread once
+   * after this method is called (to supply the initial network
+   * configuarion) and then later every time network configuration
+   * changes. Notifications are stopped when the returned resource is
+   * destroyed. If the plugin doesn't have access to the network list
+   * then the callback will be called once with the
+   * <code>network_list</code> parameter is set to 0.
+   *
+   * @param[in] callback The callback that will be called every time
+   * network configuration changes or NULL to stop network monitoring.
+   *
+   * @param[inout] user_data The data to be passed to the callback on
+   * each call.
+   *
+   * @return A <code>PP_Resource</code> containing the created
+   * NetworkMonitor resource.
+   */
+  PP_Resource Create([in] PP_Instance instance,
+                     [in] PPB_NetworkMonitor_Callback callback,
+                     [inout] mem_t user_data);
+
+  /**
+   * Determines if the specified <code>resource</code> is a
+   * <code>NetworkMonitor</code> object.
+   *
+   * @param[in] resource A <code>PP_Resource</code> resource.
+   *
+   * @return Returns <code>PP_TRUE</code> if <code>resource</code> is
+   * a <code>PPB_NetworkMonitor_Private</code>, <code>PP_FALSE</code>
+   * otherwise.
+   */
+  PP_Bool IsNetworkMonitor([in] PP_Resource resource);
+};
