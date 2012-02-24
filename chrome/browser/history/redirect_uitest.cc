@@ -133,23 +133,13 @@ TEST_F(RedirectTest, DISABLED_ClientEmptyReferer) {
 
 // Tests to make sure a location change when a pending redirect exists isn't
 // flagged as a redirect.
-#if defined(USE_AURA)
-// http://crbug.com/104396
-#define MAYBE_ClientCancelled FAILS_ClientCancelled
-#elif defined(OS_MACOSX)
-// SimulateOSClick is broken on the Mac: http://crbug.com/45162
-#define MAYBE_ClientCancelled DISABLED_ClientCancelled
-#elif defined(OS_WIN)
-// http://crbug.com/53091
-#define MAYBE_ClientCancelled FAILS_ClientCancelled
-#elif defined(OS_LINUX)
-// SimulateOSClick is broken on the Linux: http://crbug.com/113958
-#define MAYBE_ClientCancelled DISABLED_ClientCancelled
-#else
-#define MAYBE_ClientCancelled ClientCancelled
-#endif
-
-TEST_F(RedirectTest, MAYBE_ClientCancelled) {
+// SimulateOSClick is broken on Mac: http://crbug.com/45162
+// SimulateOSClick is broken on Linux: http://crbug.com/113958
+// SimulateOSClick is broken on Windows: http://crbug.com/53091
+// Probably never worked on Aura.
+// When it fails, it takes 45 seconds to fail, slowing down all the test bots.
+// Needs to be rewritten as an interactive_test. http://crbug.com/115673
+TEST_F(RedirectTest, DISABLED_ClientCancelled) {
   FilePath first_path(test_data_directory_);
   first_path = first_path.AppendASCII("cancelled_redirect_test.html");
   ASSERT_TRUE(file_util::AbsolutePath(&first_path));
