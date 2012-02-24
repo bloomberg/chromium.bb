@@ -317,7 +317,15 @@ int main(int argc, char* argv[]) {
   const mkvparser::Cluster* cluster = parser_segment->GetFirst();
 
   while ((cluster != NULL) && !cluster->EOS()) {
-    const mkvparser::BlockEntry* block_entry = cluster->GetFirst();
+    const mkvparser::BlockEntry* block_entry;
+
+    long status = cluster->GetFirst(block_entry);
+
+    if (status)
+    {
+        printf("\n Could not get first block of cluster.\n");
+        return EXIT_FAILURE;
+    }
 
     while ((block_entry != NULL) && !block_entry->EOS()) {
       const mkvparser::Block* const block = block_entry->GetBlock();
@@ -362,7 +370,13 @@ int main(int argc, char* argv[]) {
         }
       }
 
-      block_entry = cluster->GetNext(block_entry);
+      status = cluster->GetNext(block_entry, block_entry);
+
+      if (status)
+      {
+          printf("\n Could not get next block of cluster.\n");
+          return EXIT_FAILURE;
+      }
     }
 
     cluster = parser_segment->GetNext(cluster);

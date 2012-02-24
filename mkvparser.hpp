@@ -80,8 +80,10 @@ public:
     const long long m_start;
     const long long m_size;
 
-    Block(long long start, long long size, IMkvReader*);
+    Block(long long start, long long size);
     ~Block();
+
+    long Parse(IMkvReader*);
 
     long long GetTrackNumber() const;
     long long GetTimeCode(const Cluster*) const;  //absolute, but not scaled
@@ -126,6 +128,7 @@ protected:
 
 public:
     virtual ~BlockEntry();
+
     bool EOS() const;
     const Cluster* GetCluster() const;
     long GetIndex() const;
@@ -148,6 +151,7 @@ class SimpleBlock : public BlockEntry
 
 public:
     SimpleBlock(Cluster*, long index, long long start, long long size);
+    long Parse();
 
     Kind GetKind() const;
     const Block* GetBlock() const;
@@ -172,6 +176,8 @@ public:
         long long prev,
         long long next,
         long long duration);
+
+    long Parse();
 
     Kind GetKind() const;
     const Block* GetBlock() const;
@@ -345,9 +351,6 @@ protected:
     public:
         EOSBlock();
 
-        //bool EOS() const;
-        //const Cluster* GetCluster() const;
-        //long GetIndex() const;
         Kind GetKind() const;
         const Block* GetBlock() const;
     };
@@ -680,9 +683,10 @@ public:
     long long GetFirstTime() const;  //time (ns) of first (earliest) block
     long long GetLastTime() const;   //time (ns) of last (latest) block
 
-    const BlockEntry* GetFirst() const;
-    const BlockEntry* GetLast() const;
-    const BlockEntry* GetNext(const BlockEntry*) const;
+    long GetFirst(const BlockEntry*&) const;
+    long GetLast(const BlockEntry*&) const;
+    long GetNext(const BlockEntry* curr, const BlockEntry*& next) const;
+
     const BlockEntry* GetEntry(const Track*, long long ns = -1) const;
     const BlockEntry* GetEntry(
         const CuePoint&,
@@ -731,12 +735,12 @@ private:
     mutable long m_entries_size;
     mutable long m_entries_count;
 
-    long ParseSimpleBlock(long long, long long&, long&) const;
-    long ParseBlockGroup(long long, long long&, long&) const;
+    long ParseSimpleBlock(long long, long long&, long&);
+    long ParseBlockGroup(long long, long long&, long&);
 
-    void CreateBlock(long long id, long long pos, long long size) const;
-    void CreateBlockGroup(long long, long long, BlockEntry**&) const;
-    void CreateSimpleBlock(long long, long long, BlockEntry**&) const;
+    long CreateBlock(long long id, long long pos, long long size);
+    long CreateBlockGroup(long long, long long);
+    long CreateSimpleBlock(long long, long long);
 
 };
 

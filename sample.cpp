@@ -256,7 +256,16 @@ int main(int argc, char* argv[])
         const long long time_ns = pCluster->GetTime();
         printf("\t\tCluster Time (ns)\t: %lld\n", time_ns);
 
-        const BlockEntry* pBlockEntry = pCluster->GetFirst();
+        const BlockEntry* pBlockEntry;
+
+        long status = pCluster->GetFirst(pBlockEntry);
+
+        if (status < 0)  //error
+        {
+            printf("\t\tError parsing first block of cluster\n");
+            fflush(stdout);
+            goto done;
+        }
 
         while ((pBlockEntry != NULL) && !pBlockEntry->EOS())
         {
@@ -281,12 +290,20 @@ int main(int argc, char* argv[])
                 printf("\t\t\t %15ld,%15llx\n", size, offset);
             }
 
-            pBlockEntry = pCluster->GetNext(pBlockEntry);
+            status = pCluster->GetNext(pBlockEntry, pBlockEntry);
+
+            if (status < 0)
+            {
+                printf("\t\t\tError parsing next block of cluster\n");
+                fflush(stdout);
+                goto done;
+            }
         }
 
         pCluster = pSegment->GetNext(pCluster);
     }
 
+done:
     delete pSegment;
     return 0;
 
