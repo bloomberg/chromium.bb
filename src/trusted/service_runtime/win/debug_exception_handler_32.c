@@ -4,14 +4,19 @@
  * found in the LICENSE file.
  */
 
+#include <stdio.h>
+#include <windows.h>
+
+#include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
+#include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
+#include "native_client/src/trusted/service_runtime/nacl_config.h"
+#include "native_client/src/trusted/service_runtime/nacl_globals.h"
+#include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/sel_rt.h"
+#include "native_client/src/trusted/service_runtime/sel_util.h"
 #include "native_client/src/trusted/service_runtime/win/debug_exception_handler.h"
 #include "native_client/src/trusted/service_runtime/win/thread_handle_map.h"
-#include "native_client/src/trusted/service_runtime/nacl_config.h"
-#include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
-#include "native_client/src/trusted/service_runtime/arch/x86_32/sel_rt_32.h"
-#include "native_client/src/trusted/service_runtime/sel_util.h"
-#include <windows.h>
-#include <stdio.h>
+
 
 static int HandleBreakpointException(HANDLE thread_handle);
 static int HandleException(HANDLE process_handle, HANDLE thread_handle);
@@ -70,6 +75,18 @@ static BOOL WriteProcessMemoryChecked(HANDLE process_handle, void *remote_addr,
                              size, &bytes_copied)
           && bytes_copied == size);
 }
+
+
+#define READ_MEM(process_handle, remote_ptr, local_ptr) \
+  (sizeof(*remote_ptr) == sizeof(*local_ptr) && \
+   ReadProcessMemoryChecked(process_handle, remote_ptr, local_ptr, \
+                            sizeof(*local_ptr)))
+
+#define WRITE_MEM(process_handle, remote_ptr, local_ptr) \
+  (sizeof(*remote_ptr) == sizeof(*local_ptr) && \
+   WriteProcessMemoryChecked(process_handle, remote_ptr, local_ptr, \
+                             sizeof(*local_ptr)))
+
 
 /*
  * DebugLoop below handles debug events in NaCl program.
@@ -192,160 +209,109 @@ static BOOL HandleBreakpointException(HANDLE thread_handle) {
   return cs_limit == 0xfffff;
 }
 
-static BOOL GetExceptionHandlingInfo(HANDLE process_handle,
-                                     int base,
-                                     CONTEXT *context,
-                                     void **nacl_context,
-                                     DWORD *exception_handler,
-                                     DWORD *exception_stack,
-                                     DWORD *exception_flag) {
-  void* nacl_user;
-  void* nap_exception_handler;
-  DWORD handler_data[2];
-  int nacl_thread_id = context->SegGs / 8;
 
-  if (!ReadProcessMemoryChecked(
-           process_handle,
-           (LPCVOID)(base + NACL_TRAMPOLINE_END -
-                     NACL_SYSCALL_BLOCK_SIZE - sizeof(nacl_user)),
-           &nacl_user, sizeof(nacl_user))) {
+static BOOL GetThreadIndex(HANDLE process_handle, HANDLE thread_handle,
+                           const CONTEXT *regs,
+                           uint32_t *nacl_thread_index) {
+  LDT_ENTRY cs_entry;
+  LDT_ENTRY ds_entry;
+  DWORD cs_limit;
+  DWORD ds_limit;
+
+  GetThreadSelectorEntry(thread_handle, regs->SegCs, &cs_entry);
+  cs_limit = cs_entry.LimitLow + (((int)cs_entry.HighWord.Bits.LimitHi) << 16);
+  GetThreadSelectorEntry(thread_handle, regs->SegDs, &ds_entry);
+  ds_limit = ds_entry.LimitLow + (((int)ds_entry.HighWord.Bits.LimitHi) << 16);
+  /* Segment limits are 4Gb in trusted code */
+  if (cs_limit == 0xfffff || ds_limit == 0xfffff) {
     return FALSE;
   }
-  if (!ReadProcessMemoryChecked(
-           process_handle,
-           (LPCVOID)((DWORD_PTR)nacl_user +
-                     sizeof(*nacl_context) * nacl_thread_id),
-           nacl_context, sizeof(*nacl_context))) {
-    return FALSE;
-  }
-  if (!ReadProcessMemoryChecked(
-           process_handle,
-           (LPCVOID)((DWORD_PTR)*nacl_context +
-                     NACL_THREAD_CONTEXT_EXCEPTION_HANDLER_OFFSET),
-           &handler_data, sizeof(handler_data))) {
-    return FALSE;
-  }
-  *exception_stack = handler_data[0];
-  *exception_flag = handler_data[1];
-  if (*exception_stack == 0) {
-    *exception_stack = context->Esp;
-  }
-  if (!ReadProcessMemoryChecked(
-           process_handle,
-           (LPCVOID)(base + NACL_TRAMPOLINE_END - 1 - sizeof(nacl_user) -
-                     NACL_SYSCALL_BLOCK_SIZE - sizeof(nap_exception_handler)),
-           &nap_exception_handler, sizeof(nap_exception_handler))) {
-    return FALSE;
-  }
-  if (!ReadProcessMemoryChecked(
-           process_handle,
-           (LPCVOID)nap_exception_handler,
-           exception_handler, sizeof(*exception_handler))) {
-    return FALSE;
-  }
+  *nacl_thread_index = regs->SegGs >> 3;
   return TRUE;
-}
-
-static BOOL SetExceptionFlag(HANDLE process_handle, void* nacl_context) {
-  DWORD exception_flag = 1;
-  if (!WriteProcessMemoryChecked(
-            process_handle,
-            (LPVOID)((DWORD_PTR)nacl_context + 2 * sizeof(DWORD) +
-                     NACL_THREAD_CONTEXT_EXCEPTION_HANDLER_OFFSET),
-            &exception_flag, sizeof(exception_flag))) {
-    return FALSE;
-  }
-  return TRUE;
-}
-
-static BOOL IsExceptionHandlerValid(HANDLE process_handle, DWORD base,
-                                    DWORD cs_limit, DWORD ds_limit,
-                                    DWORD exception_handler,
-                                    DWORD exception_stack) {
-  uint32_t code_segment_size = (cs_limit + 1) << 12;
-  uint32_t data_segment_size = (ds_limit + 1) << 12;
-  uint32_t exception_frame_end;
-
-  /* check exception_handler value */
-  if (exception_handler >= code_segment_size) {
-    return FALSE;
-  }
-  if (exception_handler % NACL_INSTR_BLOCK_SIZE != 0) {
-    return FALSE;
-  }
-
-  exception_frame_end = exception_stack + sizeof(struct ExceptionFrame);
-  if (exception_frame_end < exception_stack) {
-    /* Unsigned overflow. */
-    return FALSE;
-  }
-  if (exception_frame_end > data_segment_size) {
-    return FALSE;
-  }
-  return TRUE;
-}
-
-static BOOL TransferControlToHandler(HANDLE process_handle,
-                                     HANDLE thread_handle,
-                                     DWORD base,
-                                     CONTEXT *context,
-                                     DWORD exception_handler,
-                                     DWORD exception_stack) {
-  struct ExceptionFrame new_stack;
-
-  new_stack.return_addr = 0;
-  new_stack.prog_ctr = context->Eip;
-  new_stack.stack_ptr = context->Esp;
-  if (!WriteProcessMemoryChecked(
-           process_handle,
-           (LPVOID) (base + exception_stack),
-           &new_stack,
-           sizeof(new_stack))) {
-    return FALSE;
-  }
-
-  context->Eip = exception_handler;
-  context->Esp = exception_stack;
-  context->EFlags &= ~NACL_X86_DIRECTION_FLAG;
-  return SetThreadContext(thread_handle, context);
 }
 
 static BOOL HandleException(HANDLE process_handle, HANDLE thread_handle) {
   CONTEXT context;
-  LDT_ENTRY cs_entry;
-  LDT_ENTRY ds_entry;
-  DWORD base;
-  DWORD cs_limit;
-  DWORD ds_limit;
-  DWORD exception_handler;
-  DWORD exception_stack;
-  DWORD exception_flag;
-  void* nacl_context;
+  uint32_t nacl_thread_index;
+  uintptr_t addr_space_size;
+  uint32_t exception_stack;
+  uint32_t exception_frame_end;
+  uint32_t exception_flag;
+  struct ExceptionFrame new_stack;
+  /*
+   * natp_remote and nap_remote point into the debuggee process's
+   * address space, so cannot be dereferenced directly.  We use
+   * pointer types for the convenience of calculating field offsets
+   * and sizes.
+   */
+  struct NaClAppThread *natp_remote;
+  struct NaClAppThread appthread_copy;
+  struct NaClApp app_copy;
 
   context.ContextFlags = CONTEXT_SEGMENTS | CONTEXT_INTEGER | CONTEXT_CONTROL;
   if (!GetThreadContext(thread_handle, &context)) {
     return FALSE;
   }
-  GetThreadSelectorEntry(thread_handle, context.SegCs, &cs_entry);
-  base = cs_entry.BaseLow +
-         (((int)cs_entry.HighWord.Bytes.BaseMid) << 16) +
-         (((int)cs_entry.HighWord.Bytes.BaseHi) << 24);
-  cs_limit = cs_entry.LimitLow + (((int)cs_entry.HighWord.Bits.LimitHi) << 16);
-  GetThreadSelectorEntry(thread_handle, context.SegDs, &ds_entry);
-  ds_limit = ds_entry.LimitLow + (((int)ds_entry.HighWord.Bits.LimitHi) << 16);
-  /* Segment limits are 4Gb in trusted code*/
-  if (cs_limit == 0xfffff || ds_limit == 0xfffff) {
-    return FALSE;
-  }
-  if (!GetExceptionHandlingInfo(process_handle, base, &context,
-                                &nacl_context, &exception_handler,
-                                &exception_stack, &exception_flag)) {
-    return FALSE;
-  }
-  if (exception_flag) {
+
+  if (!GetThreadIndex(process_handle, thread_handle, &context,
+                      &nacl_thread_index)) {
+    /*
+     * We can get here if the faulting thread is running trusted code
+     * (an expected situation) or if an unexpected error occurred.
+     */
     return FALSE;
   }
 
+  /*
+   * Note that this assumes that nacl_thread (a global array) is at
+   * the same address in the debuggee process as in this debugger
+   * process.  This assumes that the debuggee is running the same
+   * executable/DLL as this process, and that address space
+   * randomisation for a given executable/DLL does not vary across
+   * processes (which is true on Windows).
+   */
+  if (!READ_MEM(process_handle, nacl_thread + nacl_thread_index,
+                &natp_remote)) {
+    return FALSE;
+  }
+  if (natp_remote == NULL) {
+    /*
+     * This means the nacl_thread and nacl_thread_ids arrays do not
+     * match up.  TODO(mseaborn): Complain more noisily about such
+     * unexpected cases and terminate the NaCl process.
+     */
+    return FALSE;
+  }
+  if (!READ_MEM(process_handle, natp_remote, &appthread_copy)) {
+    return FALSE;
+  }
+  if (!READ_MEM(process_handle, appthread_copy.nap, &app_copy)) {
+    return FALSE;
+  }
+
+  exception_stack = appthread_copy.user.exception_stack;
+  exception_flag = appthread_copy.user.exception_flag;
+  if (exception_flag) {
+    return FALSE;
+  }
+  exception_flag = 1;
+  if (!WRITE_MEM(process_handle, &natp_remote->user.exception_flag,
+                 &exception_flag)) {
+    return FALSE;
+  }
+
+  /*
+   * Sanity check: Ensure the entry point is properly aligned.  We do
+   * not expect this to fail because alignment was checked by the
+   * syscall when the function was registered.
+   */
+  if (app_copy.exception_handler % NACL_INSTR_BLOCK_SIZE != 0) {
+    return FALSE;
+  }
+
+  if (exception_stack == 0) {
+    exception_stack = context.Esp;
+  }
   /*
    * Calculate the position of the exception stack frame, with
    * suitable alignment.
@@ -353,17 +319,34 @@ static BOOL HandleException(HANDLE process_handle, HANDLE thread_handle) {
   exception_stack -= sizeof(struct ExceptionFrame) - NACL_STACK_PAD_BELOW_ALIGN;
   exception_stack = exception_stack & ~NACL_STACK_ALIGN_MASK;
   exception_stack -= NACL_STACK_PAD_BELOW_ALIGN;
+  /*
+   * Ensure that the exception frame would be written within the
+   * bounds of untrusted address space.
+   */
+  exception_frame_end = exception_stack + sizeof(struct ExceptionFrame);
+  if (exception_frame_end < exception_stack) {
+    /* Unsigned overflow. */
+    return FALSE;
+  }
+  addr_space_size = (uintptr_t) 1U << app_copy.addr_bits;
+  if (exception_frame_end > addr_space_size) {
+    return FALSE;
+  }
 
-  if (!IsExceptionHandlerValid(process_handle, base, cs_limit, ds_limit,
-                               exception_handler, exception_stack)) {
+  new_stack.return_addr = 0;
+  new_stack.prog_ctr = context.Eip;
+  new_stack.stack_ptr = context.Esp;
+  if (!WRITE_MEM(process_handle,
+                 (struct ExceptionFrame *) (app_copy.mem_start
+                                            + exception_stack),
+                 &new_stack)) {
     return FALSE;
   }
-  if (!SetExceptionFlag(process_handle, nacl_context)) {
-    return FALSE;
-  }
-  return TransferControlToHandler(process_handle, thread_handle, base,
-                                  &context, exception_handler,
-                                  exception_stack);
+
+  context.Eip = app_copy.exception_handler;
+  context.Esp = exception_stack;
+  context.EFlags &= ~NACL_X86_DIRECTION_FLAG;
+  return SetThreadContext(thread_handle, &context);
 }
 
 int NaClLaunchAndDebugItself(char *program, DWORD *exit_code) {
