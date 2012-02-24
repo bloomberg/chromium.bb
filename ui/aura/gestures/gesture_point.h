@@ -54,7 +54,7 @@ class GesturePoint {
   const gfx::Point& last_touch_position() const { return last_touch_position_; }
 
   void set_touch_id(unsigned int touch_id) { touch_id_ = touch_id; }
-  const unsigned int touch_id() const { return touch_id_; }
+  unsigned int touch_id() const { return touch_id_; }
 
   double x_delta() const {
     return last_touch_position_.x() - first_touch_position_.x();

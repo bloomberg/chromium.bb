@@ -4,7 +4,6 @@
 
 #include "ash/wm/root_window_layout_manager.h"
 
-#include "ash/shell.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
 
@@ -41,10 +40,6 @@ void RootWindowLayoutManager::SetBackgroundLayer(ui::Layer* layer) {
 void RootWindowLayoutManager::OnWindowResized() {
   gfx::Rect fullscreen_bounds =
       gfx::Rect(owner_->bounds().width(), owner_->bounds().height());
-
-  // Change window mode before setting bounds on children so the children will
-  // resize to fit the new workspace area.
-  Shell::GetInstance()->SetWindowModeForMonitorSize(fullscreen_bounds.size());
 
   // Resize both our immediate children (the containers-of-containers animated
   // by PowerButtonController) and their children (the actual containers).

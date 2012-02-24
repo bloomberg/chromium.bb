@@ -11,12 +11,6 @@
 namespace ash {
 namespace switches {
 
-// Dynamically choose window mode based on screen resolution, switching to
-// compact mode on small screens and overlapping mode on large screens.
-// TODO(jamescook): We probably don't want this if we end up with a simple
-// variant of overlapping mode on small screens.  See Shell::ComputeWindowMode.
-const char kAuraDynamicWindowMode[] = "aura-dynamic-window-mode";
-
 // Force the "compact" window mode regardless of the value of kAuraWindowMode.
 // This can be used to override a value set in chrome://flags.
 // TODO(derat): Remove this once the normal mode is usable on all platforms.

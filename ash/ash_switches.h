@@ -16,7 +16,6 @@ namespace switches {
 // see chromeos::LoginUtil::GetOffTheRecordCommandLine().)
 
 // Please keep alphabetized.
-ASH_EXPORT extern const char kAuraDynamicWindowMode[];
 ASH_EXPORT extern const char kAuraForceCompactWindowMode[];
 ASH_EXPORT extern const char kAuraGoogleDialogFrames[];
 ASH_EXPORT extern const char kAuraLegacyPowerButton[];

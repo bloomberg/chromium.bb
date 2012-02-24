@@ -49,7 +49,6 @@ enum AcceleratorAction {
   PRINT_LAYER_HIERARCHY,
   PRINT_WINDOW_HIERARCHY,
   ROTATE_SCREEN,
-  TOGGLE_COMPACT_WINDOW_MODE,
   TOGGLE_DESKTOP_BACKGROUND_MODE,
   TOGGLE_ROOT_WINDOW_FULL_SCREEN,
 #endif
@@ -123,8 +122,6 @@ const struct AcceleratorData {
 #if !defined(NDEBUG)
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_HOME, false, true, false,
     ROTATE_SCREEN },
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_A, false, true, true,
-    TOGGLE_COMPACT_WINDOW_MODE },
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_B, false, true, true,
     TOGGLE_DESKTOP_BACKGROUND_MODE },
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F11, false, true, false,
@@ -196,14 +193,6 @@ bool HandleRotateScreen() {
   screen_rotation->AddObserver(ash::Shell::GetRootWindow());
   ash::Shell::GetRootWindow()->layer()->GetAnimator()->StartAnimation(
       screen_rotation.release());
-  return true;
-}
-
-bool HandleToggleCompactWindowMode() {
-  if (ash::Shell::GetInstance()->IsWindowModeCompact())
-    ash::Shell::GetInstance()->ChangeWindowMode(ash::Shell::MODE_OVERLAPPING);
-  else
-    ash::Shell::GetInstance()->ChangeWindowMode(ash::Shell::MODE_COMPACT);
   return true;
 }
 
@@ -393,8 +382,6 @@ bool AcceleratorController::AcceleratorPressed(
 #if !defined(NDEBUG)
     case ROTATE_SCREEN:
       return HandleRotateScreen();
-    case TOGGLE_COMPACT_WINDOW_MODE:
-      return HandleToggleCompactWindowMode();
     case TOGGLE_DESKTOP_BACKGROUND_MODE:
       return HandleToggleDesktopBackgroundMode();
     case TOGGLE_ROOT_WINDOW_FULL_SCREEN:

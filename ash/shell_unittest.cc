@@ -288,59 +288,47 @@ TEST_F(ShellTest, IsScreenLocked) {
 }
 
 TEST_F(ShellTest, ComputeWindowMode) {
-  // By default, we use overlapping mode for large screens.
+  // By default, we use overlapping mode.
   Shell* shell = Shell::GetInstance();
-  gfx::Size monitor_size(1440, 900);
+  Shell::TestApi test_api(shell);
   CommandLine command_line_blank(CommandLine::NO_PROGRAM);
   EXPECT_EQ(Shell::MODE_OVERLAPPING,
-            shell->ComputeWindowMode(monitor_size, &command_line_blank));
+            test_api.ComputeWindowMode(&command_line_blank));
 
-  // By default, we use overlapping mode for small screens too.
-  monitor_size.SetSize(800, 600);
-  EXPECT_EQ(Shell::MODE_OVERLAPPING,
-            shell->ComputeWindowMode(monitor_size, &command_line_blank));
+  // Sometimes we force compact mode.
+  CommandLine command_line_force(CommandLine::NO_PROGRAM);
+  command_line_force.AppendSwitch(switches::kAuraForceCompactWindowMode);
+  EXPECT_EQ(Shell::MODE_COMPACT,
+            test_api.ComputeWindowMode(&command_line_force));
 
-  // Even for a large screen, the user can force compact mode.
-  monitor_size.SetSize(1920, 1080);
+  // The user can set compact mode.
   CommandLine command_line_compact(CommandLine::NO_PROGRAM);
   command_line_compact.AppendSwitchASCII(switches::kAuraWindowMode,
                                          switches::kAuraWindowModeCompact);
   EXPECT_EQ(Shell::MODE_COMPACT,
-            shell->ComputeWindowMode(monitor_size, &command_line_compact));
+            test_api.ComputeWindowMode(&command_line_compact));
 
-  // Now test dynamic window mode computation.
-  Shell::GetInstance()->set_dynamic_window_mode(true);
-
-  // Alex-sized screens need compact mode when choosing dynamically.
-  monitor_size.SetSize(1280, 800);
-  EXPECT_EQ(Shell::MODE_COMPACT,
-            shell->ComputeWindowMode(monitor_size, &command_line_blank));
-
-  // ZGB-sized screens need compact mode when choosing dynamically.
-  monitor_size.SetSize(1366, 768);
-  EXPECT_EQ(Shell::MODE_COMPACT,
-            shell->ComputeWindowMode(monitor_size, &command_line_blank));
-
-  // Even for a small screen, the user can force overlapping mode.
-  monitor_size.SetSize(800, 600);
-  CommandLine command_line_force(CommandLine::NO_PROGRAM);
-  command_line_force.AppendSwitchASCII(switches::kAuraWindowMode,
-                                         switches::kAuraWindowModeOverlapping);
-  EXPECT_EQ(Shell::MODE_OVERLAPPING,
-            shell->ComputeWindowMode(monitor_size, &command_line_force));
+  // The user can set managed.
+  CommandLine command_line_managed(CommandLine::NO_PROGRAM);
+  command_line_managed.AppendSwitchASCII(switches::kAuraWindowMode,
+                                         switches::kAuraWindowModeManaged);
+  EXPECT_EQ(Shell::MODE_MANAGED,
+            test_api.ComputeWindowMode(&command_line_managed));
 }
 
-// Fails on Mac only.  Need to be corrected.  http://crbug.com/111279.
+// Fails on Mac, see http://crbug.com/115662
 #if defined(OS_MACOSX)
-#define MAYBE_ChangeWindowMode FAILS_ChangeWindowMode
+#define MAYBE_OverlappingWindowModeBasics FAILS_OverlappingWindowModeBasics
 #else
-#define MAYBE_ChangeWindowMode ChangeWindowMode
+#define MAYBE_OverlappingWindowModeBasics OverlappingWindowModeBasics
 #endif
-TEST_F(ShellTest, MAYBE_ChangeWindowMode) {
+TEST_F(ShellTest, MAYBE_OverlappingWindowModeBasics) {
+  Shell* shell = Shell::GetInstance();
+  Shell::TestApi test_api(shell);
+
   // We start with the usual window containers.
   ExpectAllContainers();
   // We're not in compact window mode by default.
-  Shell* shell = Shell::GetInstance();
   EXPECT_FALSE(shell->IsWindowModeCompact());
   // We have a default container event filter (for window drags).
   EXPECT_TRUE(GetDefaultContainer()->event_filter());
@@ -352,8 +340,8 @@ TEST_F(ShellTest, MAYBE_ChangeWindowMode) {
   EXPECT_EQ(Shell::GetRootWindow()->GetHostSize().height(),
             launcher_widget->GetWindowScreenBounds().bottom());
   // We have a desktop background but not a bare layer.
-  EXPECT_TRUE(shell->root_window_layout_->background_widget());
-  EXPECT_FALSE(shell->root_window_layout_->background_layer());
+  EXPECT_TRUE(test_api.root_window_layout()->background_widget());
+  EXPECT_FALSE(test_api.root_window_layout()->background_layer());
 
   // Create a normal window.  It is not maximized.
   views::Widget::InitParams widget_params(
@@ -362,73 +350,13 @@ TEST_F(ShellTest, MAYBE_ChangeWindowMode) {
   views::Widget* widget = CreateTestWindow(widget_params);
   widget->Show();
   EXPECT_FALSE(widget->IsMaximized());
-
-  // Set our new mode.
-  shell->ChangeWindowMode(Shell::MODE_COMPACT);
-  EXPECT_TRUE(shell->IsWindowModeCompact());
-  // Compact mode does not use a default container event filter.
-  EXPECT_FALSE(GetDefaultContainer()->event_filter());
-  // We still have all the usual containers.
-  ExpectAllContainers();
-
-  // In compact window mode, all windows are maximized.
-  EXPECT_TRUE(widget->IsMaximized());
-  // Window bounds got updated to fill the work area.
-  EXPECT_EQ(widget->GetWorkAreaBoundsInScreen(),
-            widget->GetWindowScreenBounds());
-  // Launcher is hidden.
-  EXPECT_FALSE(launcher_widget->IsVisible());
-  // Desktop background widget is gone but we have a layer.
-  EXPECT_FALSE(shell->root_window_layout_->background_widget());
-  EXPECT_TRUE(shell->root_window_layout_->background_layer());
-
-  // Switch back to overlapping mode.
-  shell->ChangeWindowMode(Shell::MODE_OVERLAPPING);
-  EXPECT_FALSE(shell->IsWindowModeCompact());
-  // Event filter came back.
-  EXPECT_TRUE(GetDefaultContainer()->event_filter());
-  // Launcher is visible again.
-  EXPECT_TRUE(launcher_widget->IsVisible());
-  // Launcher is at bottom-left of screen.
-  EXPECT_EQ(0, launcher_widget->GetWindowScreenBounds().x());
-  EXPECT_EQ(Shell::GetRootWindow()->GetHostSize().height(),
-            launcher_widget->GetWindowScreenBounds().bottom());
-  // Desktop background is back.
-  EXPECT_TRUE(shell->root_window_layout_->background_widget());
-  EXPECT_FALSE(shell->root_window_layout_->background_layer());
 
   // Clean up.
   widget->Close();
 }
 
-// Windows bots won't let us create large root windows, and this behavior is
-// only relevant on Chrome OS devices.
-#if defined(OS_CHROMEOS)
-TEST_F(ShellTest, ResizeRootWindow) {
-  // Allow dynamic window mode switching.
-  Shell::GetInstance()->set_dynamic_window_mode(true);
-
-  // Switching to a small screen enables compact window mode.
-  Shell::GetRootWindow()->SetHostSize(gfx::Size(1024, 768));
-  EXPECT_TRUE(Shell::GetInstance()->IsWindowModeCompact());
-
-  // Launcher is hidden.
-  views::Widget* launcher_widget = Shell::GetInstance()->launcher()->widget();
-  EXPECT_FALSE(launcher_widget->IsVisible());
-
-  // Switching to a large screen disables compact window mode.
-  Shell::GetRootWindow()->SetHostSize(gfx::Size(1920, 1080));
-  EXPECT_FALSE(Shell::GetInstance()->IsWindowModeCompact());
-
-  // Launcher is in the bottom-left corner of window.
-  EXPECT_EQ(0, launcher_widget->GetWindowScreenBounds().x());
-  EXPECT_EQ(1080, launcher_widget->GetWindowScreenBounds().bottom());
-}
-#endif  // defined(OS_CHROMEOS)
-
 TEST_F(ShellTest, FullscreenWindowHidesShelf) {
   ExpectAllContainers();
-  Shell* shell = Shell::GetInstance();
 
   // Create a normal window.  It is not maximized.
   views::Widget::InitParams widget_params(
@@ -438,30 +366,76 @@ TEST_F(ShellTest, FullscreenWindowHidesShelf) {
   widget->Show();
   EXPECT_FALSE(widget->IsMaximized());
 
-  // Test in the compact mode. There should be no shelf.
-  shell->ChangeWindowMode(Shell::MODE_COMPACT);
-  EXPECT_FALSE(Shell::GetInstance()->shelf());
-
-  // Test in the managed mode.
-  shell->ChangeWindowMode(Shell::MODE_MANAGED);
+  // Shelf defaults to visible.
   EXPECT_TRUE(Shell::GetInstance()->shelf()->visible());
 
+  // Fullscreen window hides it.
   widget->SetFullscreen(true);
   EXPECT_FALSE(Shell::GetInstance()->shelf()->visible());
 
+  // Restoring the window restores it.
   widget->Restore();
   EXPECT_TRUE(Shell::GetInstance()->shelf()->visible());
 
-  // Test in the overlap mode.
-  shell->ChangeWindowMode(Shell::MODE_OVERLAPPING);
-  EXPECT_TRUE(Shell::GetInstance()->shelf()->visible());
+  // Clean up.
+  widget->Close();
+}
 
-  widget->SetFullscreen(true);
-  EXPECT_FALSE(Shell::GetInstance()->shelf()->visible());
+// Window mode is computed at Shell initialization time.  Rather than changing
+// the global command line to select compact mode we set a switch before
+// initializing the shell.
+class ShellCompactWindowModeTest : public test::AshTestBase {
+ public:
+  ShellCompactWindowModeTest() {}
+  virtual ~ShellCompactWindowModeTest() {}
 
-  widget->Restore();
-  EXPECT_TRUE(Shell::GetInstance()->shelf()->visible());
+  virtual void SetUp() OVERRIDE {
+    // Must set this before base class initializes the shell.
+    Shell::set_compact_window_mode_for_test(true);
+    test::AshTestBase::SetUp();
+  }
 
+  virtual void TearDown() OVERRIDE {
+    test::AshTestBase::TearDown();
+    Shell::set_compact_window_mode_for_test(false);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ShellCompactWindowModeTest);
+};
+
+TEST_F(ShellCompactWindowModeTest, CompactWindowModeBasics) {
+  Shell* shell = Shell::GetInstance();
+  Shell::TestApi test_api(shell);
+
+  EXPECT_TRUE(shell->IsWindowModeCompact());
+  // Compact mode does not use a default container event filter.
+  EXPECT_FALSE(GetDefaultContainer()->event_filter());
+  // We have all the usual containers.
+  ExpectAllContainers();
+
+  // Compact mode has no shelf.
+  EXPECT_TRUE(shell->shelf() == NULL);
+
+  // Create a window.  In compact mode, windows are created maximized.
+  views::Widget::InitParams widget_params(
+      views::Widget::InitParams::TYPE_WINDOW);
+  widget_params.bounds.SetRect(11, 22, 300, 400);
+  widget_params.show_state = ui::SHOW_STATE_MAXIMIZED;
+  views::Widget* widget = CreateTestWindow(widget_params);
+  widget->Show();
+
+  // Window bounds got updated to fill the work area.
+  EXPECT_EQ(widget->GetWorkAreaBoundsInScreen(),
+            widget->GetWindowScreenBounds());
+  // Launcher is hidden.
+  views::Widget* launcher_widget = shell->launcher()->widget();
+  EXPECT_FALSE(launcher_widget->IsVisible());
+  // Desktop background widget is gone but we have a layer.
+  EXPECT_FALSE(test_api.root_window_layout()->background_widget());
+  EXPECT_TRUE(test_api.root_window_layout()->background_layer());
+
+  // Clean up.
   widget->Close();
 }
 

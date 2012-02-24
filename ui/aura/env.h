@@ -16,8 +16,10 @@ namespace aura {
 class EnvObserver;
 class Window;
 
+#if !defined(OS_MACOSX)
 // Creates a platform-specific native event dispatcher.
 MessageLoop::Dispatcher* CreateDispatcher();
+#endif
 
 // A singleton object that tracks general state within Aura.
 // TODO(beng): manage RootWindows.

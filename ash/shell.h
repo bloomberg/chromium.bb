@@ -90,6 +90,20 @@ class ASH_EXPORT Shell {
     BACKWARD
   };
 
+  // Accesses private data from a Shell for testing.
+  class ASH_EXPORT TestApi {
+   public:
+    explicit TestApi(Shell* shell);
+
+    WindowMode ComputeWindowMode(CommandLine* cmd) const;
+    internal::RootWindowLayoutManager* root_window_layout();
+
+   private:
+    Shell* shell_;  // not owned
+
+    DISALLOW_COPY_AND_ASSIGN(TestApi);
+  };
+
   // A shell must be explicitly created so that it can call |Init()| with the
   // delegate set. |delegate| can be NULL (if not required for initialization).
   static Shell* CreateInstance(ShellDelegate* delegate);
@@ -123,19 +137,6 @@ class ASH_EXPORT Shell {
 
   // Toggles app list.
   void ToggleAppList();
-
-  // Dynamic window mode chooses between MODE_OVERLAPPING and MODE_COMPACT
-  // based on screen resolution and dynamically changes modes when the screen
-  // resolution changes (e.g. plugging in a monitor).
-  void set_dynamic_window_mode(bool value) { dynamic_window_mode_ = value; }
-
-  // Changes the current window mode, which will cause all the open windows
-  // to be laid out in the new mode and layout managers and event filters to be
-  // installed or removed.
-  void ChangeWindowMode(WindowMode mode);
-
-  // Sets an appropriate window mode for the given screen resolution.
-  void SetWindowModeForMonitorSize(const gfx::Size& monitor_size);
 
   // Sets the desktop background mode.
   void SetDesktopBackgroundMode(BackgroundMode mode);
@@ -197,10 +198,11 @@ class ASH_EXPORT Shell {
     return shadow_controller_.get();
   }
 
- private:
-  FRIEND_TEST_ALL_PREFIXES(ShellTest, ComputeWindowMode);
-  FRIEND_TEST_ALL_PREFIXES(ShellTest, ChangeWindowMode);
+  static void set_compact_window_mode_for_test(bool compact) {
+    compact_window_mode_for_test_ = compact;
+  }
 
+ private:
   typedef std::pair<aura::Window*, gfx::Rect> WindowAndBoundsPair;
 
   explicit Shell(ShellDelegate* delegate);
@@ -208,10 +210,9 @@ class ASH_EXPORT Shell {
 
   void Init();
 
-  // Returns the appropriate window mode to use based on the primary monitor's
-  // |monitor_size| and the user's |command_line|.
-  WindowMode ComputeWindowMode(const gfx::Size& monitor_size,
-                               CommandLine* command_line) const;
+  // Returns the appropriate window mode to use based on the |command_line|
+  // and |compact_window_mode_for_test_|.
+  WindowMode ComputeWindowMode(CommandLine* command_line) const;
 
   // Initializes or re-initializes the layout managers and event filters needed
   // to support a given window mode and cleans up the unneeded ones.
@@ -223,6 +224,10 @@ class ASH_EXPORT Shell {
   void ResetLayoutManager(int container_id);
 
   static Shell* instance_;
+
+  // Window mode is computed at shell initialization time, so allow it to be
+  // overridden without modifying the global command line.
+  static bool compact_window_mode_for_test_;
 
   internal::RootWindowEventFilter* root_filter_;  // not owned
 
@@ -270,10 +275,7 @@ class ASH_EXPORT Shell {
   // the status area.
   internal::ShelfLayoutManager* shelf_;
 
-  // Change window mode based on screen resolution.
-  bool dynamic_window_mode_;
-
-  // Can change at runtime.
+  // Does not change after Init().
   WindowMode window_mode_;
 
   // Can change at runtime.

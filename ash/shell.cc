@@ -69,16 +69,6 @@ namespace {
 using aura::Window;
 using views::Widget;
 
-// Screen width above which we automatically start in overlapping window mode,
-// in pixels. Should be at least 1366 pixels as we traditionally used a single
-// window on Chrome OS ZGB devices with that width.
-const int kOverlappingWindowModeWidthThreshold = 1366;
-
-// Screen height above which we automatically start in overlapping window mode,
-// in pixels. Should be at least 800 pixels as we traditionally used a single
-// window on Chrome OS alex devices with that height.
-const int kOverlappingWindowModeHeightThreshold = 800;
-
 // Creates a new window for use as a container.
 aura::Window* CreateContainer(int window_id, aura::Window* parent) {
   aura::Window* container = new aura::Window(NULL);
@@ -182,30 +172,25 @@ void CreateSpecialContainers(aura::Window* root_window) {
                   lock_screen_related_containers);
 }
 
-// Maximizes all the windows in a |container|.
-void MaximizeWindows(aura::Window* container) {
-  const std::vector<aura::Window*>& windows = container->children();
-  for (std::vector<aura::Window*>::const_iterator it = windows.begin();
-       it != windows.end();
-       ++it)
-    window_util::MaximizeWindow(*it);
-}
-
-// Restores all maximized windows in a |container|.
-void RestoreMaximizedWindows(aura::Window* container) {
-  const std::vector<aura::Window*>& windows = container->children();
-  for (std::vector<aura::Window*>::const_iterator it = windows.begin();
-       it != windows.end();
-       ++it) {
-    if (window_util::IsWindowMaximized(*it))
-      window_util::RestoreWindow(*it);
-  }
-}
-
 }  // namespace
 
 // static
 Shell* Shell::instance_ = NULL;
+// static
+bool Shell::compact_window_mode_for_test_ = false;
+
+////////////////////////////////////////////////////////////////////////////////
+// Shell::TestApi
+
+Shell::TestApi::TestApi(Shell* shell) : shell_(shell) {}
+
+Shell::WindowMode Shell::TestApi::ComputeWindowMode(CommandLine* cmd) const {
+  return shell_->ComputeWindowMode(cmd);
+}
+
+internal::RootWindowLayoutManager* Shell::TestApi::root_window_layout() {
+  return shell_->root_window_layout_;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Shell, public:
@@ -218,7 +203,6 @@ Shell::Shell(ShellDelegate* delegate)
 #endif
       delegate_(delegate),
       shelf_(NULL),
-      dynamic_window_mode_(false),
       window_mode_(MODE_OVERLAPPING),
       desktop_background_mode_(BACKGROUND_IMAGE),
       root_window_layout_(NULL),
@@ -315,14 +299,9 @@ void Shell::Init() {
   input_method_filter_.reset(new internal::InputMethodEventFilter);
   AddRootWindowEventFilter(input_method_filter_.get());
 
-  // Dynamic window mode affects window mode computation.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  dynamic_window_mode_ = command_line->HasSwitch(
-      switches::kAuraDynamicWindowMode);
-
   // Window mode must be set before computing containers or layout managers.
-  gfx::Size monitor_size = gfx::Screen::GetPrimaryMonitorSize();
-  window_mode_ = ComputeWindowMode(monitor_size, command_line);
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  window_mode_ = ComputeWindowMode(command_line);
 
   aura::RootWindow* root_window = GetRootWindow();
   root_window->SetCursor(aura::kCursorPointer);
@@ -377,8 +356,10 @@ void Shell::Init() {
   window_cycle_controller_.reset(new WindowCycleController);
 }
 
-Shell::WindowMode Shell::ComputeWindowMode(const gfx::Size& monitor_size,
-                                           CommandLine* command_line) const {
+Shell::WindowMode Shell::ComputeWindowMode(CommandLine* command_line) const {
+  if (compact_window_mode_for_test_)
+    return MODE_COMPACT;
+
   // Some devices don't perform well with overlapping windows.
   if (command_line->HasSwitch(switches::kAuraForceCompactWindowMode))
     return MODE_COMPACT;
@@ -394,16 +375,6 @@ Shell::WindowMode Shell::ComputeWindowMode(const gfx::Size& monitor_size,
     if (mode == switches::kAuraWindowModeOverlapping)
       return MODE_OVERLAPPING;
   }
-
-  // If we're trying to dynamically choose window mode based on screen
-  // resolution, use compact mode for narrow/short screens.
-  // TODO(jamescook): If we go with a simple variant of overlapping mode for
-  // small screens we should remove this and the dynamic mode switching code
-  // in SetupCompactWindowMode and SetupNonCompactWindowMode.
-  if (dynamic_window_mode_ &&
-      monitor_size.width() <= kOverlappingWindowModeWidthThreshold &&
-      monitor_size.height() <= kOverlappingWindowModeHeightThreshold)
-    return Shell::MODE_COMPACT;
 
   // Overlapping is the default.
   return Shell::MODE_OVERLAPPING;
@@ -443,26 +414,6 @@ void Shell::ToggleAppList() {
   if (!app_list_.get())
     app_list_.reset(new internal::AppList);
   app_list_->SetVisible(!app_list_->IsVisible());
-}
-
-void Shell::ChangeWindowMode(WindowMode mode) {
-  if (mode == window_mode_)
-    return;
-  // Window mode must be set before we resize/layout the windows.
-  window_mode_ = mode;
-  if (window_mode_ == MODE_COMPACT)
-    SetupCompactWindowMode();
-  else
-    SetupNonCompactWindowMode();
-}
-
-void Shell::SetWindowModeForMonitorSize(const gfx::Size& monitor_size) {
-  // If we're running on a device, a resolution change means the user plugged in
-  // or unplugged an external monitor. Change window mode to be appropriate for
-  // the new screen resolution.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  WindowMode new_mode = ComputeWindowMode(monitor_size, command_line);
-  ChangeWindowMode(new_mode);
 }
 
 void Shell::SetDesktopBackgroundMode(BackgroundMode mode) {
@@ -535,13 +486,6 @@ void Shell::SetupCompactWindowMode() {
   DCHECK(root_window_layout_);
   DCHECK(status_widget_);
 
-  shelf_ = NULL;
-
-  // Clean out the old layout managers before we start.
-  ResetLayoutManager(internal::kShellWindowId_DefaultContainer);
-  ResetLayoutManager(internal::kShellWindowId_LauncherContainer);
-  ResetLayoutManager(internal::kShellWindowId_StatusContainer);
-
   // Don't use an event filter for the default container, as we don't support
   // window dragging, double-click to maximize, etc.
   aura::Window* default_container =
@@ -562,9 +506,6 @@ void Shell::SetupCompactWindowMode() {
   // maximizing the windows so the work area is the right size.
   launcher_->widget()->Hide();
 
-  // Maximize all the windows, using the new layout manager.
-  MaximizeWindows(default_container);
-
   // Set a solid black background.
   SetDesktopBackgroundMode(BACKGROUND_SOLID_COLOR);
 }
@@ -572,11 +513,6 @@ void Shell::SetupCompactWindowMode() {
 void Shell::SetupNonCompactWindowMode() {
   DCHECK(root_window_layout_);
   DCHECK(status_widget_);
-
-  // Clean out the old layout managers before we start.
-  ResetLayoutManager(internal::kShellWindowId_DefaultContainer);
-  ResetLayoutManager(internal::kShellWindowId_LauncherContainer);
-  ResetLayoutManager(internal::kShellWindowId_StatusContainer);
 
   internal::ShelfLayoutManager* shelf_layout_manager =
       new internal::ShelfLayoutManager(launcher_->widget(), status_widget_);
@@ -607,11 +543,6 @@ void Shell::SetupNonCompactWindowMode() {
   }
   // Ensure launcher is visible.
   launcher_->widget()->Show();
-
-  // Restore all maximized windows.  Don't change full screen windows, as we
-  // don't want to disrupt a user trying to plug in an external monitor to
-  // give a presentation.
-  RestoreMaximizedWindows(default_container);
 
   // Create the desktop background image.
   SetDesktopBackgroundMode(BACKGROUND_IMAGE);
