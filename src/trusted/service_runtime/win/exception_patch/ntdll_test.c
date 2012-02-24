@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -35,7 +35,7 @@ void ReplacementHandler() {
      */
     void (*exit_fast)(void)
       = (void (*)(void)) NaCl_exception_dispatcher_exit_fast;
-    fprintf(stderr, "** intended_exit_status=trusted_segfault\n");
+    fprintf(stderr, "** intended_exit_status=untrusted_segfault\n");
     exit_fast();
   }
 }

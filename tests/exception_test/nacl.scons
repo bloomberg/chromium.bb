@@ -44,13 +44,14 @@ if env.Bit('irt'):
 
 exception_crash_test = env.ComponentProgram(
     'exception_crash_test', ['exception_crash_test.c'],
-    EXTRA_LIBS=['${NONIRT_LIBS}'])
+    EXTRA_LIBS=['${NONIRT_LIBS}', 'imc_syscalls'])
 
 for subtest in ('test_bad_handler',
                 'test_stack_outside_sandbox',
                 'test_stack_in_rwdata',
                 'test_stack_in_rodata',
-                'test_stack_in_code'):
+                'test_stack_in_code',
+                'test_crash_in_syscall'):
   node = env.CommandSelLdrTestNacl(
       'exception_%s.out' % subtest,
       exception_crash_test, [subtest], **test_args)

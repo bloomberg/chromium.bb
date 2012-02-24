@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/nacl_syscalls.h>
 #include <unistd.h>
 
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
@@ -186,6 +187,28 @@ void test_stack_in_code() {
 }
 
 
+/*
+ * This checks that crashes in trusted code (such as inside NaCl
+ * syscalls) do not cause the untrusted exception handler to run.
+ */
+void test_crash_in_syscall() {
+  int rc = NACL_SYSCALL(exception_handler)(bad_stack_exception_handler, NULL);
+  assert(rc == 0);
+  rc = NACL_SYSCALL(exception_stack)((void *) stack_in_rwdata,
+                                     sizeof(stack_in_rwdata));
+  assert(rc == 0);
+  fprintf(stderr, "** intended_exit_status=trusted_segfault\n");
+  /*
+   * Cause a crash inside a NaCl syscall.  This is based on
+   * tests/signal_handler/crash_in_syscall.c.
+   * TODO(mseaborn): Add a specific testing syscall for this purpose.
+   */
+  imc_recvmsg(0, (struct NaClImcMsgHdr *) 0x1000, 0);
+  /* Should not reach here. */
+  _exit(1);
+}
+
+
 int main(int argc, char **argv) {
   if (argc != 2) {
     fprintf(stderr, "Usage: program <test-name>\n");
@@ -200,6 +223,7 @@ int main(int argc, char **argv) {
   TRY_TEST(test_stack_in_rwdata);
   TRY_TEST(test_stack_in_rodata);
   TRY_TEST(test_stack_in_code);
+  TRY_TEST(test_crash_in_syscall);
 
   fprintf(stderr, "Error: Unknown test: \"%s\"\n", argv[1]);
   return 1;

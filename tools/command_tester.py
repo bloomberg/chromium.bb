@@ -195,11 +195,10 @@ win32_untrusted_crash_exit = [
     MungeWindowsErrorExit(STATUS_ACCESS_VIOLATION),
     MungeWindowsErrorExit(STATUS_PRIVILEGED_INSTRUCTION)]
 
-# Since we patch Windows' KiUserExceptionDispatcher on x86-64 to
-# terminate the process safely, we always get the same exit status
-# from a crash.  We get the exit code associated with the HLT
-# instruction.
-win64_crash_exit = [
+# We patch Windows' KiUserExceptionDispatcher on x86-64 to terminate
+# the process safely when untrusted code crashes.  We get the exit
+# code associated with the HLT instruction.
+win64_exit_via_ntdll_patch = [
     MungeWindowsErrorExit(STATUS_PRIVILEGED_INSTRUCTION)]
 
 # Mac OS X returns SIGBUS in most of the cases where Linux returns
@@ -227,33 +226,33 @@ status_map = {
         'linux2': [-11], # SIGSEGV
         'darwin': [-11], # SIGSEGV
         'win32':  win32_untrusted_crash_exit,
-        'win64':  win64_crash_exit,
+        'win64':  win64_exit_via_ntdll_patch,
         },
     'untrusted_segfault': {
         'linux2': [-11], # SIGSEGV
         'darwin': [-10], # SIGBUS
         'win32':  win32_untrusted_crash_exit,
-        'win64':  win64_crash_exit,
+        'win64':  win64_exit_via_ntdll_patch,
         'win_fakesig': 11, # SIGSEGV
         },
     'untrusted_sigsegv_or_equivalent': {
         'linux2': [-11], # SIGSEGV
         'darwin': [-11], # SIGSEGV
         'win32':  win32_untrusted_crash_exit,
-        'win64':  win64_crash_exit,
+        'win64':  win64_exit_via_ntdll_patch,
         },
     'trusted_segfault': {
         'linux2': [-11], # SIGSEGV
         'darwin': [-10], # SIGBUS
-        'win32':  [-11], # SIGSEGV
-        'win64':  win64_crash_exit,
+        'win32':  [MungeWindowsErrorExit(STATUS_ACCESS_VIOLATION)],
+        'win64':  [MungeWindowsErrorExit(STATUS_ACCESS_VIOLATION)],
         'win_fakesig': 11, # SIGSEGV
         },
     'trusted_sigsegv_or_equivalent': {
         'linux2': [-11], # SIGSEGV
         'darwin': [-11], # SIGSEGV
-        'win32':  [-11], # SIGSEGV
-        'win64':  [-11], # SIGSEGV
+        'win32':  [],
+        'win64':  [],
         'win_fakesig': 11, # SIGSEGV
         },
     # This is like 'untrusted_segfault', but without the 'untrusted_'

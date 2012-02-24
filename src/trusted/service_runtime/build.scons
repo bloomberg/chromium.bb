@@ -631,13 +631,13 @@ if env.Bit('windows') and env.Bit('target_x86_64'):
   node = env.CommandTest(
       'ntdll_intercept_test.out',
       command=[intercept_test_prog, 'test_intercept'],
-      exit_status='trusted_segfault',
+      exit_status='untrusted_segfault',
       stdout_golden=env.File('win/exception_patch/intercept_test.stdout'))
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_ntdll_intercept_test')
   node = env.CommandTest(
       'ntdll_fallback_test.out',
       command=[intercept_test_prog, 'test_fallback'],
-      exit_status='trusted_segfault',
+      exit_status='untrusted_segfault',
       stdout_golden=env.File('win/exception_patch/fallback_test.stdout'))
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_ntdll_fallback_test')
 
