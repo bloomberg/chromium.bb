@@ -4812,8 +4812,8 @@ td {
   margin-__MSG_@@bidi_end_edge__: 0.5ex;
 }
 
-#host-dialog-and-nat {
-  width: 504px;
+#host-dialog {
+  width: 500px;
 }
 
 #host-plugin-container {
@@ -4830,8 +4830,15 @@ td {
   margin-__MSG_@@bidi_start_edge__: 40px;
 }
 
-#nat-box-container {
-  margin-top: 40px;
+#nat-box {
+  margin-top: 30px;
+}
+
+/* The NAT traversal state is independent of the app mode, and both need
+ * to be combined to determine the visibility of the butter bar. We use
+ * a style for the former and the 'hidden' property for the latter. */
+#nat-box.traversal-enabled {
+  display: none;
 }
 
 #session-mode {

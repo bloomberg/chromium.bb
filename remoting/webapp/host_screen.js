@@ -267,6 +267,9 @@ function updateAccessCodeTimeoutElement_() {
  * @return {void} Nothing.
  */
 function onNatTraversalPolicyChanged_(enabled) {
-  var container = document.getElementById('nat-box-container');
-  container.hidden = enabled;
+  if (enabled) {
+    addClass(document.getElementById('nat-box'), 'traversal-enabled');
+  } else {
+    removeClass(document.getElementById('nat-box'), 'traversal-enabled');
+  }
 }
