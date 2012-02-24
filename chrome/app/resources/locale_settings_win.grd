@@ -119,15 +119,11 @@
     <messages fallback_to_english="true">
       <!-- The font used in Web UI (e.g. History). -->
       <message name="IDS_WEB_FONT_FAMILY" use_name_for_id="true">
-        'Open Sans', 'Segoe UI', Arial, sans-serif
-      </message>
-      <!-- The font used in Web UI on Windows Vista (e.g. History). -->
-      <message name="IDS_WEB_FONT_FAMILY_VISTA" use_name_for_id="true">
-        'Segoe UI', Arial, sans-serif
+        'Segoe UI', Tahoma, sans-serif
       </message>
       <!-- The font used in Web UI on Windows XP (e.g. History). -->
       <message name="IDS_WEB_FONT_FAMILY_XP" use_name_for_id="true">
-        Arial, sans-serif
+        Tahoma, sans-serif
       </message>
 
       <!-- The relative font size in % used in Web UI (e.g. History).  -->

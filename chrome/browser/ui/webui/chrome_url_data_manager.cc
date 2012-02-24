@@ -158,10 +158,8 @@ void ChromeURLDataManager::DataSource::SetFontAndTextDirection(
   int web_font_family_id = IDS_WEB_FONT_FAMILY;
   int web_font_size_id = IDS_WEB_FONT_SIZE;
 #if defined(OS_WIN)
-  // Vary font settings for Windows Vista and/or Windows XP.
-  if (base::win::GetVersion() == base::win::VERSION_VISTA) {
-    web_font_family_id = IDS_WEB_FONT_FAMILY_VISTA;
-  } else if (base::win::GetVersion() < base::win::VERSION_VISTA) {
+  // Vary font settings for Windows XP.
+  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
     web_font_family_id = IDS_WEB_FONT_FAMILY_XP;
     web_font_size_id = IDS_WEB_FONT_SIZE_XP;
   }

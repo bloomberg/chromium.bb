@@ -191,7 +191,7 @@ html[dir='rtl'] .weakrtl input::-webkit-input-placeholder {
 
 /* TODO(estade): remove this: http://crbug.com/109967
  * For now it's a bandaid until we install open sans properly. */
-<if expr="not pp_ifdef('chromeos')">
+<if expr="is_posix and not is_macosx and not pp_ifdef('chromeos')">
 @font-face {
   font-family: 'Open Sans';
   font-style: normal;
