@@ -251,6 +251,12 @@ void FileStreamPosix::CloseSync() {
   //
   // DCHECK(!(open_flags_ & base::PLATFORM_FILE_ASYNC));
   weak_ptr_factory_.InvalidateWeakPtrs();
+  // Block until the last read/write operation is complete, if needed.
+  // This is needed to close the file safely.
+  if (on_io_complete_.get()) {
+    on_io_complete_->Wait();
+    on_io_complete_.reset();  // So the destructor won't be stuck.
+  }
 
   CloseFile(file_, bound_net_log_);
   file_ = base::kInvalidPlatformFileValue;
@@ -423,6 +429,7 @@ int FileStreamPosix::Write(
     return ERR_UNEXPECTED;
 
   DCHECK(open_flags_ & base::PLATFORM_FILE_ASYNC);
+  DCHECK(open_flags_ & base::PLATFORM_FILE_WRITE);
   // write(..., 0) will return 0, which indicates end-of-file.
   DCHECK_GT(buf_len, 0);
   // Make sure we don't have a request in flight.
@@ -452,6 +459,7 @@ int FileStreamPosix::WriteSync(
     return ERR_UNEXPECTED;
 
   DCHECK(!(open_flags_ & base::PLATFORM_FILE_ASYNC));
+  DCHECK(open_flags_ & base::PLATFORM_FILE_WRITE);
   // write(..., 0) will return 0, which indicates end-of-file.
   DCHECK_GT(buf_len, 0);
 
