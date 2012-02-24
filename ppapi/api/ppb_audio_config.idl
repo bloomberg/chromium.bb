@@ -10,7 +10,7 @@
 
 label Chrome {
   M14 = 1.0,
-  M18 = 1.1
+  M19 = 1.1
 };
 
 /**
@@ -134,7 +134,7 @@ interface PPB_AudioConfig {
    * <code>PP_AUDIOMINSAMPLEFRAMECOUNT</code> and greater than
    * <code>PP_AUDIOMAXSAMPLEFRAMECOUNT</code> are never supported on any
    * system, but values in between aren't necessarily valid. This function
-   * will return a supported count closest to the requested value.
+   * will return a supported count closest to the requested frame count.
    *
    * RecommendSampleFrameCount() result is intended for audio output devices.
    *
@@ -199,7 +199,8 @@ interface PPB_AudioConfig {
    * RecommendSampleRate() returns the native sample rate that the browser
    * is using in the backend.  Applications that use the recommended sample
    * rate will have potentially better latency and fidelity.  The return value
-   * is indended for audio output devices.
+   * is indended for audio output devices.  If the output sample rate cannot be
+   * determined, this function can return PP_AUDIOSAMPLERATE_NONE.
    *
    * @param[in] instance
    *

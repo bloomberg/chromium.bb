@@ -52,11 +52,19 @@ std::string TestAudio::TestCreation() {
     PP_AUDIOMINSAMPLEFRAMECOUNT,
     PP_AUDIOMAXSAMPLEFRAMECOUNT,
     // Include some "okay-looking" frame counts; check their validity below.
+    PP_AUDIOSAMPLERATE_44100 / 100,  // 10ms @ 44.1kHz
+    PP_AUDIOSAMPLERATE_48000 / 100,  // 10ms @ 48kHz
+    2 * PP_AUDIOSAMPLERATE_44100 / 100,  // 20ms @ 44.1kHz
+    2 * PP_AUDIOSAMPLERATE_48000 / 100,  // 20ms @ 48kHz
     1024,
     2048,
     4096
   };
-
+  PP_AudioSampleRate sample_rate = audio_config_interface_->RecommendSampleRate(
+      instance_->pp_instance());
+  ASSERT_TRUE(sample_rate == PP_AUDIOSAMPLERATE_NONE ||
+              sample_rate == PP_AUDIOSAMPLERATE_44100 ||
+              sample_rate == PP_AUDIOSAMPLERATE_48000);
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kSampleRates); i++) {
     PP_AudioSampleRate sample_rate = kSampleRates[i];
 

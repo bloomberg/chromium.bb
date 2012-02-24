@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_audio_config.idl modified Thu Feb 16 16:23:46 2012. */
+/* From ppb_audio_config.idl modified Wed Feb 22 14:49:51 2012. */
 
 #ifndef PPAPI_C_PPB_AUDIO_CONFIG_H_
 #define PPAPI_C_PPB_AUDIO_CONFIG_H_
@@ -121,7 +121,7 @@ struct PPB_AudioConfig_1_1 {
    * <code>PP_AUDIOMINSAMPLEFRAMECOUNT</code> and greater than
    * <code>PP_AUDIOMAXSAMPLEFRAMECOUNT</code> are never supported on any
    * system, but values in between aren't necessarily valid. This function
-   * will return a supported count closest to the requested value.
+   * will return a supported count closest to the requested frame count.
    *
    * RecommendSampleFrameCount() result is intended for audio output devices.
    *
@@ -178,7 +178,8 @@ struct PPB_AudioConfig_1_1 {
    * RecommendSampleRate() returns the native sample rate that the browser
    * is using in the backend.  Applications that use the recommended sample
    * rate will have potentially better latency and fidelity.  The return value
-   * is indended for audio output devices.
+   * is indended for audio output devices.  If the output sample rate cannot be
+   * determined, this function can return PP_AUDIOSAMPLERATE_NONE.
    *
    * @param[in] instance
    *
