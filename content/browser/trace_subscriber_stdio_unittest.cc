@@ -1,40 +1,34 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/browser/trace_subscriber_stdio.h"
 
+#include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
+#include "base/threading/sequenced_worker_pool.h"
+#include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
+TEST(TraceSubscriberStdioTest, CanWriteDataToFile) {
+  ScopedTempDir trace_dir;
+  ASSERT_TRUE(trace_dir.CreateUniqueTempDir());
+  FilePath trace_file(trace_dir.path().AppendASCII("trace.txt"));
+  {
+    content::TraceSubscriberStdio subscriber(trace_file);
 
-class TraceSubscriberStdioTest : public testing::Test {
- public:
-  virtual void SetUp() {
-    ASSERT_TRUE(trace_dir_.CreateUniqueTempDir());
-    trace_file_ = trace_dir_.path().AppendASCII("trace.txt");
+    std::string foo("foo");
+    subscriber.OnTraceDataCollected(
+        make_scoped_refptr(base::RefCountedString::TakeString(&foo)));
+
+    std::string bar("bar");
+    subscriber.OnTraceDataCollected(
+        make_scoped_refptr(base::RefCountedString::TakeString(&bar)));
+
+    subscriber.OnEndTracingComplete();
   }
-
-  std::string ReadTraceFile() {
-    std::string result;
-    EXPECT_TRUE(file_util::ReadFileToString(trace_file_, &result));
-    return result;
-  }
-
-  ScopedTempDir trace_dir_;
-  FilePath trace_file_;
-};
-
-}  // namespace
-
-TEST_F(TraceSubscriberStdioTest, CanWriteDataToFile) {
-  TraceSubscriberStdio subscriber(trace_file_);
-  subscriber.OnTraceDataCollected("[foo]");
-  subscriber.OnTraceDataCollected("[bar]");
-  EXPECT_TRUE(subscriber.IsValid());
-
-  subscriber.OnEndTracingComplete();
-  EXPECT_FALSE(subscriber.IsValid());
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  std::string result;
+  EXPECT_TRUE(file_util::ReadFileToString(trace_file, &result));
+  EXPECT_EQ("[foo,bar]", result);
 }
-
