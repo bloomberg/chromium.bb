@@ -179,6 +179,10 @@ bool GetScrollOffsets(const base::NativeEvent& native_event,
   return false;
 }
 
+bool IsNoopEvent(base::NativeEvent event) {
+  return ([event type] == NSApplicationDefined && [event subtype] == 0);
+}
+
 base::NativeEvent CreateNoopEvent() {
   return [NSEvent otherEventWithType:NSApplicationDefined
                             location:NSZeroPoint
