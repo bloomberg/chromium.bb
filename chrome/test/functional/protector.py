@@ -11,8 +11,8 @@ import logging
 import os
 
 
-class ProtectorTest(pyauto.PyUITest):
-  """TestCase for Protector."""
+class BaseProtectorTest(pyauto.PyUITest):
+  """Base class for Protector test cases."""
 
   _default_search_id_key = 'Default Search Provider ID'
 
@@ -123,6 +123,10 @@ class ProtectorTest(pyauto.PyUITest):
     """Test that no change is reported on a clean profile."""
     self.assertFalse(self.GetProtectorState()['showing_change'])
 
+
+class ProtectorTest(BaseProtectorTest):
+  """TestCase for Protector in normal (enabled) state."""
+
   def testDetectSearchEngineChangeAndApply(self):
     """Test for detecting and applying a default search engine change."""
     # Get current search engine.
@@ -230,6 +234,44 @@ class ProtectorTest(pyauto.PyUITest):
 
 # TODO(ivankr): more hijacking cases (remove the current default search engine,
 # add new search engines to the list, invalidate backup, etc).
+
+
+class ProtectorDisabledTest(BaseProtectorTest):
+  """TestCase for Protector in disabled state."""
+
+  def ExtraChromeFlags(self):
+    """Ensures Protector is disabled.
+
+    Returns:
+      A list of extra flags to pass to Chrome when it is launched.
+    """
+    return super(ProtectorDisabledTest, self).ExtraChromeFlags() + [
+        '--no-protector'
+        ]
+
+  def testInfobarIsPresent(self):
+    """Verify that an infobar is present when running Chrome with --no-protector
+    flag.
+    """
+    self.assertTrue(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
+
+  def testNoSearchEngineChangeReported(self):
+    """Test that the default search engine change is neither reported to user
+    nor reverted.
+    """
+    # Get current search engine.
+    old_default_search = self._GetDefaultSearchEngine()
+    self.assertTrue(old_default_search)
+    # Close browser, change the search engine and start it again.
+    self.RestartBrowser(clear_profile=False,
+                        pre_launch_hook=self._ChangeDefaultSearchEngine)
+    # The change must not be reported by Protector.
+    self.assertFalse(self.GetProtectorState()['showing_change'])
+    default_search = self._GetDefaultSearchEngine()
+    # The new search engine must be active.
+    self.assertEqual(self._new_default_search_keyword,
+                     default_search['keyword'])
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
