@@ -1791,3 +1791,22 @@
    fun:media::WebMListParser::ParseListElement
    fun:media::WebMListParser::Parse
 }
+{
+   bug_115608_a
+   Heapcheck:Leak
+   fun:remoting::protocol::LibjingleTransportFactory::LibjingleTransportFactory
+   fun:remoting::protocol::PepperSessionTest::CreateSessionManagers
+}
+{
+   bug_115608_b
+   Heapcheck:Leak
+   ...
+   fun:talk_base::BasicNetworkManager::DoUpdateNetworks
+   fun:talk_base::BasicNetworkManager::OnMessage
+   fun:talk_base::MessageQueue::Dispatch
+   fun:talk_base::Thread::ProcessMessages
+   fun:talk_base::Thread::Run
+   fun:remoting::::JingleMessagePump::Run
+}
+
+
