@@ -367,7 +367,10 @@ bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format,
     // This tries a number of common text targets.
     if (data) {
       retval = gtk_selection_data_targets_include_text(data);
-    } else {
+    }
+    // Some programs like Java decide to set an empty TARGETS list, so even if
+    // data is not NULL, we still have to fall back.
+    if (!retval) {
       // Some programs post data to the clipboard without any targets. If this
       // is the case we attempt to make sense of the contents as text. This is
       // pretty unfortunate since it means we have to actually copy the data to
