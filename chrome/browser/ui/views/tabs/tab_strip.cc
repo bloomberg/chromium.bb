@@ -1697,12 +1697,22 @@ double TabStrip::GenerateIdealBoundsWithStacking() {
   if (active_tab_index < 0)
     return 0.0;
 
+  // Pinned tabs always have their desired size, and don't pan. We rely on
+  // GenerateIdealBounds to have positioned pinned tabs already, so don't move
+  // them.
+  int first_unpinned = GetMiniTabCount();
+  int left_start = 0;
+  if (first_unpinned > 0) {
+    const gfx::Rect& last_pinned = ideal_bounds(first_unpinned - 1);
+    left_start = last_pinned.right() + kTabHOffset + kMiniToNonMiniGap;
+  }
+
   std::vector<int> ideal;
   ideal.resize(tab_count());
   // Figure out where each tab would like to be, if there were room.
   // These are relative to the active_tab.
   int ideal_x = 0;
-  for (int i = active_tab_index - 1; i >= 0; --i) {
+  for (int i = active_tab_index - 1; i >= first_unpinned; --i) {
     ideal_x -= ideal_bounds(i).width() + kTabHOffset;
     ideal[i] = ideal_x;
   }
@@ -1719,10 +1729,10 @@ double TabStrip::GenerateIdealBoundsWithStacking() {
   // N tabs in each of these spots, depending on design.
   int active_x = tab_data_[active_tab_index].tab->bounds().x();
   int new_tab_x = 0;
-  for (int i = 0; i < tab_count(); ++i) {
+  for (int i = first_unpinned; i < tab_count(); ++i) {
     gfx::Rect new_bounds = ideal_bounds(i);
     int target = active_x + ideal[i];
-    int left_edge = i * kOffsetForEdgeStack;
+    int left_edge = left_start + (i - first_unpinned) * kOffsetForEdgeStack;
     int right_edge = width() - new_bounds.width() - newtab_button_->width() -
         (tab_count() - 1 - i) * kOffsetForEdgeStack;
     int smallest_valid_x = left_edge, largest_valid_x = right_edge;

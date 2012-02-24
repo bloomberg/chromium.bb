@@ -434,10 +434,6 @@ class TabStrip : public AbstractTabStripView,
   // hit-test region of the specified Tab.
   bool IsPointInTab(Tab* tab, const gfx::Point& point_in_tabstrip_coords);
 
-  // -- Touch -----------------------------------------------------------------
-  // Returns true if we should use the touch friendly UI code.
-  static bool IsTouchOptimized();
-
   // -- Member Variables ------------------------------------------------------
 
   scoped_ptr<TabStripController> controller_;
