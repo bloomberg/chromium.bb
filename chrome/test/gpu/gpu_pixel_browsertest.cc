@@ -120,16 +120,22 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
 
     // Wait for notification that page is loaded.
     ASSERT_TRUE(message_queue.WaitForMessage(NULL));
+    message_queue.ClearQueue();
 
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
         browser()->GetSelectedWebContents()->GetRenderViewHost(),
         L"", L"preCallResizeInChromium();"));
 
+    ASSERT_TRUE(message_queue.WaitForMessage(NULL));
     message_queue.ClearQueue();
     ResizeTabContainer(tab_container_size);
 
     // Wait for message from test page indicating the rendering is done.
-    ASSERT_TRUE(message_queue.WaitForMessage(NULL));
+    std::string message;
+    while (message.compare("\"resized\"")) {
+      ASSERT_TRUE(message_queue.WaitForMessage(&message));
+      message_queue.ClearQueue();
+   }
 
     SkBitmap bitmap;
     ASSERT_TRUE(TabSnapShotToImage(&bitmap));

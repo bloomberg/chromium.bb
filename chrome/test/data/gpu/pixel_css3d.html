@@ -35,7 +35,7 @@ function waitForFinish()
 {
   if (g_swapsBeforeAck == 0) {
     domAutomationController.setAutomationId(1);
-    domAutomationController.send("ok");
+    domAutomationController.send("resized");
   } else {
     g_swapsBeforeAck--;
     document.getElementById('blue_box').style.zIndex = g_swapsBeforeAck + 1;

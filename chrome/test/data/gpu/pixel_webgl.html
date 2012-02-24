@@ -55,7 +55,7 @@ function drawSomeFrames()
 {
   if (g_swapsBeforeAck == 0) {
     domAutomationController.setAutomationId(1);
-    domAutomationController.send("ok");
+    domAutomationController.send("resized");
   } else {
     g_swapsBeforeAck--;
     draw(gl);
