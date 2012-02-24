@@ -36,6 +36,9 @@ extern NSString* const kCrAppModeShortcutNameKey;
 // Key for the app's URL.
 extern NSString* const kCrAppModeShortcutURLKey;
 
+// Key for the app user data directory.
+extern NSString* const kCrAppModeUserDataDirKey;
+
 // Current major/minor version numbers of |ChromeAppModeInfo| (defined below).
 const unsigned kCurrentChromeAppModeInfoMajorVersion = 1;
 const unsigned kCurrentChromeAppModeInfoMinorVersion = 0;
@@ -79,6 +82,9 @@ struct ChromeAppModeInfo {
 
   // URL for the shortcut. Must be a valid URL.
   std::string app_mode_url;  // Required: v1.0
+
+  // Path to the app's user data directory.
+  FilePath user_data_dir;
 };
 
 }  // namespace app_mode

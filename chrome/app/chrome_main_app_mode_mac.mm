@@ -45,10 +45,10 @@ int ChromeAppModeStart(const app_mode::ChromeAppModeInfo* info) {
   // TODO(viettrungluu): do something intelligent with data
   //  return ChromeMain(info->argc, info->argv);
   // For now, a cheesy hack instead.
-  RAW_CHECK(info->app_mode_url.size());
-  std::string argv1(std::string("--app=") + info->app_mode_url);
   RAW_CHECK(info->app_mode_id.size());
-  std::string argv2(std::string("--user-data-dir=/tmp/") + info->app_mode_id);
+  std::string argv1(std::string("--app-id=") + info->app_mode_id);
+  std::string argv2(
+      std::string("--user-data-dir=") + info->user_data_dir.value());
   char* argv[] = { info->argv[0],
                    const_cast<char*>(argv1.c_str()),
                    const_cast<char*>(argv2.c_str()) };

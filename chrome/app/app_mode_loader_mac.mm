@@ -95,6 +95,9 @@ void LoadFramework(void** cr_dylib, app_mode::ChromeAppModeInfo* info) {
       [info_plist objectForKey:app_mode::kCrAppModeShortcutURLKey]);
   CHECK(info->app_mode_url.size()) << "couldn't get app shortcut URL";
 
+  info->user_data_dir = base::mac::NSStringToFilePath(
+      [info_plist objectForKey:app_mode::kCrAppModeUserDataDirKey]);
+
   // Open the framework.
   *cr_dylib = dlopen(framework_shlib_path.value().c_str(), RTLD_LAZY);
   CHECK(cr_dylib) << "couldn't load framework: " << dlerror();

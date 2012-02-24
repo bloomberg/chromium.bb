@@ -12,6 +12,7 @@ NSString* const kCrAppModeShortcutIDKey = @"CrAppModeShortcutID";
 NSString* const kCrAppModeShortcutShortNameKey = @"CrAppModeShortcutShortName";
 NSString* const kCrAppModeShortcutNameKey = @"CrAppModeShortcutName";
 NSString* const kCrAppModeShortcutURLKey = @"CrAppModeShortcutURL";
+NSString* const kCrAppModeUserDataDirKey = @"CrAppModeUserDataDir";
 
 ChromeAppModeInfo::ChromeAppModeInfo()
     : major_version(0),

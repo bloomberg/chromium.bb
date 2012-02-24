@@ -30,7 +30,7 @@ class WebAppShortcutCreatorMock : public web_app::WebAppShortcutCreator {
  public:
   explicit WebAppShortcutCreatorMock(
       const ShellIntegration::ShortcutInfo& shortcut_info)
-      : WebAppShortcutCreator(shortcut_info) {
+      : WebAppShortcutCreator(FilePath(), shortcut_info) {
   }
 
   MOCK_CONST_METHOD1(GetDestinationPath, FilePath(const FilePath&));
@@ -91,7 +91,7 @@ TEST(WebAppShortcutCreatorTest, UpdateIcon) {
   ShellIntegration::ShortcutInfo info = GetShortcutInfo();
   info.favicon = *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
       IDR_PRODUCT_LOGO_32).ToSkBitmap();
-  web_app::WebAppShortcutCreator shortcut_creator(info);
+  WebAppShortcutCreatorMock shortcut_creator(info);
 
   shortcut_creator.UpdateIcon(dst_path);
   FilePath icon_path =

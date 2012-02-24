@@ -228,8 +228,8 @@ void UpdateShortcutWorker::UpdateShortcuts() {
 void UpdateShortcutWorker::UpdateShortcutsOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  FilePath web_app_path = web_app::internals::GetWebAppDataDirectory(
-      web_app::GetDataDir(profile_path_), shortcut_info_);
+  FilePath web_app_path = web_app::GetWebAppDataDirectory(
+      profile_path_, shortcut_info_.extension_id, shortcut_info_.url);
 
   // Ensure web_app_path exists. web_app_path could be missing for a legacy
   // shortcut created by Gears.

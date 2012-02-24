@@ -17,7 +17,9 @@ namespace web_app {
 class WebAppShortcutCreator {
  public:
   // Creates a new shortcut based on information in |shortcut_info|.
+  // The shortcut stores its user data directory in |user_data_dir|.
   explicit WebAppShortcutCreator(
+      const FilePath& user_data_dir,
       const ShellIntegration::ShortcutInfo& shortcut_info);
   virtual ~WebAppShortcutCreator();
 
@@ -39,6 +41,11 @@ class WebAppShortcutCreator {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebAppShortcutCreatorTest, UpdateIcon);
+
+  // Path to the app's user data directory. For example:
+  // ~/Library/Application Support/Chromium/Default/Web Applications/_crx_abc/
+  // Note, the user data directory is the parent of the profile directory.
+  FilePath user_data_dir_;
 
   // Information about the app.
   ShellIntegration::ShortcutInfo info_;

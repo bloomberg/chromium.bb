@@ -44,9 +44,20 @@ TEST_F(WebApplicationTest, GetShortcutInfoForTab) {
   EXPECT_EQ(url, info.url);
 }
 
-TEST_F(WebApplicationTest, GetDataDir) {
-  FilePath test_path(FILE_PATH_LITERAL("/path/to/test"));
-  FilePath result = web_app::GetDataDir(test_path);
-  test_path = test_path.AppendASCII("Web Applications");
-  EXPECT_EQ(test_path.value(), result.value());
+TEST_F(WebApplicationTest, AppDirWithId) {
+  FilePath profile_path(FILE_PATH_LITERAL("profile"));
+  FilePath result(web_app::GetWebAppDataDirectory(profile_path, "123", GURL()));
+  FilePath expected = profile_path.AppendASCII("Web Applications")
+                                  .AppendASCII("_crx_123");
+  EXPECT_EQ(expected, result);
+}
+
+TEST_F(WebApplicationTest, AppDirWithUrl) {
+  FilePath profile_path(FILE_PATH_LITERAL("profile"));
+  FilePath result(web_app::GetWebAppDataDirectory(
+      profile_path, "", GURL("http://example.com")));
+  FilePath expected = profile_path.AppendASCII("Web Applications")
+                                  .AppendASCII("example.com")
+                                  .AppendASCII("http_80");
+  EXPECT_EQ(expected, result);
 }

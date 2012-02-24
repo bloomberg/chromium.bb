@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -17,34 +18,6 @@
 using content::BrowserThread;
 
 namespace {
-
-// Returns relative directory of given web app url.
-FilePath GetWebAppDir(const ShellIntegration::ShortcutInfo& info) {
-  if (!info.extension_id.empty()) {
-    std::string app_name =
-        web_app::GenerateApplicationNameFromExtensionId(info.extension_id);
-#if defined(OS_WIN)
-    return FilePath(UTF8ToUTF16(app_name));
-#elif defined(OS_POSIX)
-    return FilePath(app_name);
-#endif
-  } else {
-    FilePath::StringType host;
-    FilePath::StringType scheme_port;
-
-#if defined(OS_WIN)
-    host = UTF8ToUTF16(info.url.host());
-    scheme_port = (info.url.has_scheme() ? UTF8ToUTF16(info.url.scheme())
-        : L"http") + FILE_PATH_LITERAL("_") +
-        (info.url.has_port() ? UTF8ToUTF16(info.url.port()) : L"80");
-#elif defined(OS_POSIX)
-    host = info.url.host();
-    scheme_port = info.url.scheme() + FILE_PATH_LITERAL("_") + info.url.port();
-#endif
-
-    return FilePath(host).Append(scheme_port);
-  }
-}
 
 #if defined(TOOLKIT_VIEWS)
 // Predicator for sorting images from largest to smallest.
@@ -68,12 +41,6 @@ static const char* kCrxAppPrefix = "_crx_";
 
 namespace internals {
 
-// Returns data directory for given web app url
-FilePath GetWebAppDataDirectory(const FilePath& root_dir,
-                                const ShellIntegration::ShortcutInfo& info) {
-  return root_dir.Append(GetWebAppDir(info));
-}
-
 FilePath GetSanitizedFileName(const string16& name) {
 #if defined(OS_WIN)
   string16 file_name = name;
@@ -85,6 +52,38 @@ FilePath GetSanitizedFileName(const string16& name) {
 }
 
 }  // namespace internals
+
+FilePath GetWebAppDataDirectory(const FilePath& profile_path,
+                                const std::string& extension_id,
+                                const GURL& url) {
+  FilePath app_data_dir(profile_path.Append(chrome::kWebAppDirname));
+
+  if (!extension_id.empty()) {
+    return app_data_dir.AppendASCII(
+        GenerateApplicationNameFromExtensionId(extension_id));
+  }
+
+  std::string host(url.host());
+  std::string scheme(url.has_scheme() ? url.scheme() : "http");
+  std::string port(url.has_port() ? url.port() : "80");
+  std::string scheme_port(scheme + "_" + port);
+
+#if defined(OS_WIN)
+  FilePath::StringType host_path(UTF8ToUTF16(host));
+  FilePath::StringType scheme_port_path(UTF8ToUTF16(scheme_port));
+#elif defined(OS_POSIX)
+  FilePath::StringType host_path(host);
+  FilePath::StringType scheme_port_path(scheme_port);
+#endif
+
+  return app_data_dir.Append(host_path).Append(scheme_port_path);
+}
+
+FilePath GetWebAppDataDirectory(const FilePath& profile_path,
+                                const Extension& extension) {
+  return GetWebAppDataDirectory(
+      profile_path, extension.id(), GURL(extension.launch_web_url()));
+}
 
 std::string GenerateApplicationNameFromInfo(
     const ShellIntegration::ShortcutInfo& shortcut_info) {
@@ -125,9 +124,10 @@ void CreateShortcut(
       BrowserThread::FILE,
       FROM_HERE,
       base::Bind(&internals::CreateShortcutTask,
-                 web_app::internals::GetWebAppDataDirectory(
-                      web_app::GetDataDir(data_dir),
-                      shortcut_info),
+                 GetWebAppDataDirectory(
+                      data_dir,
+                      shortcut_info.extension_id,
+                      shortcut_info.url),
                  data_dir,
                  shortcut_info));
 }
@@ -147,10 +147,6 @@ bool IsValidUrl(const GURL& url) {
   }
 
   return false;
-}
-
-FilePath GetDataDir(const FilePath& profile_path) {
-  return profile_path.Append(chrome::kWebAppDirname);
 }
 
 #if defined(TOOLKIT_VIEWS)

@@ -39,8 +39,10 @@ NSBitmapImageRep* SkBitmapToImageRep(const SkBitmap& bitmap) {
 namespace web_app {
 
 WebAppShortcutCreator::WebAppShortcutCreator(
+    const FilePath& user_data_dir,
     const ShellIntegration::ShortcutInfo& shortcut_info)
-    : info_(shortcut_info) {
+    : user_data_dir_(user_data_dir),
+      info_(shortcut_info) {
 }
 
 WebAppShortcutCreator::~WebAppShortcutCreator() {
@@ -113,6 +115,8 @@ bool WebAppShortcutCreator::UpdatePlist(const FilePath& app_path) const {
            forKey:app_mode::kCrAppModeShortcutNameKey];
   [dict setObject:base::SysUTF8ToNSString(info_.url.spec())
            forKey:app_mode::kCrAppModeShortcutURLKey];
+  [dict setObject:base::mac::FilePathToNSString(user_data_dir_)
+           forKey:app_mode::kCrAppModeUserDataDirKey];
   return [dict writeToFile:plist_path atomically:YES];
 }
 
@@ -155,7 +159,7 @@ void CreateShortcutTask(const FilePath& web_app_path,
                         const FilePath& profile_path,
                         const ShellIntegration::ShortcutInfo& shortcut_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
-  WebAppShortcutCreator shortcut_creator(shortcut_info);
+  WebAppShortcutCreator shortcut_creator(web_app_path, shortcut_info);
   shortcut_creator.CreateShortcut();
 }
 
