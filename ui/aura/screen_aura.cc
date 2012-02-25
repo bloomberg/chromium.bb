@@ -46,7 +46,7 @@ gfx::NativeWindow ScreenAura::GetWindowAtCursorScreenPointImpl() {
 }
 
 gfx::Rect ScreenAura::GetBounds() {
-  return gfx::Rect(root_window_->GetHostSize());
+  return gfx::Rect(root_window_->bounds().size());
 }
 
 gfx::Rect ScreenAura::GetWorkAreaBounds() {
