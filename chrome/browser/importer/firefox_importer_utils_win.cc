@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include <shlobj.h>
 
 #include "base/file_util.h"
+#include "base/path_service.h"
 #include "base/string16.h"
 #include "base/win/registry.h"
 
@@ -21,6 +22,9 @@ static const HKEY kFireFoxRegistryPaths[] = {
   HKEY_LOCAL_MACHINE
 };
 
+static const wchar_t* kFirefoxPath = L"Software\\Mozilla\\Mozilla Firefox";
+static const wchar_t* kCurrentVersion = L"CurrentVersion";
+
 int GetCurrentFirefoxMajorVersionFromRegistry() {
   TCHAR ver_buffer[128];
   DWORD ver_buffer_length = sizeof(ver_buffer);
@@ -29,10 +33,10 @@ int GetCurrentFirefoxMajorVersionFromRegistry() {
   // written under HKLM\Mozilla. Otherwise it the keys will be written under
   // HKCU\Mozilla.
   for (int i = 0; i < arraysize(kFireFoxRegistryPaths); ++i) {
-    base::win::RegKey reg_key(kFireFoxRegistryPaths[i],
-                              L"Software\\Mozilla\\Mozilla Firefox", KEY_READ);
+    base::win::RegKey reg_key(kFireFoxRegistryPaths[i], kFirefoxPath,
+                              KEY_READ);
 
-    LONG result = reg_key.ReadValue(L"CurrentVersion", ver_buffer,
+    LONG result = reg_key.ReadValue(kCurrentVersion, ver_buffer,
                                     &ver_buffer_length, NULL);
     if (result != ERROR_SUCCESS)
       continue;
@@ -43,12 +47,12 @@ int GetCurrentFirefoxMajorVersionFromRegistry() {
 
 FilePath GetFirefoxInstallPathFromRegistry() {
   // Detects the path that Firefox is installed in.
-  string16 registry_path = L"Software\\Mozilla\\Mozilla Firefox";
+  string16 registry_path = kFirefoxPath;
   wchar_t buffer[MAX_PATH];
   DWORD buffer_length = sizeof(buffer);
   base::win::RegKey reg_key(HKEY_LOCAL_MACHINE, registry_path.c_str(),
                             KEY_READ);
-  LONG result = reg_key.ReadValue(L"CurrentVersion", buffer,
+  LONG result = reg_key.ReadValue(kCurrentVersion, buffer,
                                   &buffer_length, NULL);
   if (result != ERROR_SUCCESS)
     return FilePath();
@@ -66,14 +70,13 @@ FilePath GetFirefoxInstallPathFromRegistry() {
 FilePath GetProfilesINI() {
   FilePath ini_file;
   // The default location of the profile folder containing user data is
-  // under the "Application Data" folder in Windows XP.
-  wchar_t buffer[MAX_PATH] = {0};
-  if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_APPDATA, NULL,
-                                SHGFP_TYPE_CURRENT, buffer))) {
-    ini_file = FilePath(buffer).Append(L"Mozilla\\Firefox\\profiles.ini");
-  }
-  if (file_util::PathExists(ini_file))
-    return ini_file;
+  // under the "Application Data" folder in Windows XP, Vista, and 7.
+  if (!PathService::Get(base::DIR_APP_DATA, &ini_file))
+    return FilePath();
 
-  return FilePath();
+  ini_file = ini_file.AppendASCII("Mozilla");
+  ini_file = ini_file.AppendASCII("Firefox");
+  ini_file = ini_file.AppendASCII("profiles.ini");
+
+  return file_util::PathExists(ini_file) ? ini_file : FilePath();
 }
