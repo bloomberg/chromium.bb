@@ -223,24 +223,6 @@ class UI_EXPORT Canvas {
   virtual const SkCanvas* GetSkCanvas() const;
 };
 
-class UI_EXPORT CanvasPaint {
- public:
-  virtual ~CanvasPaint() {}
-
-  // Creates a canvas that paints to |view| when it is destroyed. The canvas is
-  // sized to the client area of |view|.
-  static CanvasPaint* CreateCanvasPaint(gfx::NativeView view);
-
-  // Returns true if the canvas has an invalid rect that needs to be repainted.
-  virtual bool IsValid() const = 0;
-
-  // Returns the rectangle that is invalid.
-  virtual gfx::Rect GetInvalidRect() const = 0;
-
-  // Returns the underlying Canvas.
-  virtual Canvas* AsCanvas() = 0;
-};
-
 }  // namespace gfx
 
 #endif  // UI_GFX_CANVAS_H_

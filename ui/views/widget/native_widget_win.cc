@@ -25,6 +25,7 @@
 #include "ui/base/view_prop.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/mouse_wheel_util.h"
+#include "ui/gfx/canvas_paint.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/icon_util.h"

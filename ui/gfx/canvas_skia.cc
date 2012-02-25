@@ -404,33 +404,4 @@ Canvas* Canvas::CreateCanvas(const gfx::Size& size, bool is_opaque) {
   return new CanvasSkia(size, is_opaque);
 }
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-// TODO(beng): move to canvas_win.cc, etc.
-class CanvasPaintWin : public CanvasSkiaPaint, public CanvasPaint {
- public:
-  CanvasPaintWin(gfx::NativeView view) : CanvasSkiaPaint(view) {}
-
-  // Overridden from CanvasPaint2:
-  virtual bool IsValid() const {
-    return isEmpty();
-  }
-
-  virtual gfx::Rect GetInvalidRect() const {
-    return gfx::Rect(paintStruct().rcPaint);
-  }
-
-  virtual Canvas* AsCanvas() {
-    return this;
-  }
-};
-#endif
-
-CanvasPaint* CanvasPaint::CreateCanvasPaint(gfx::NativeView view) {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  return new CanvasPaintWin(view);
-#else
-  return NULL;
-#endif
-}
-
 }  // namespace gfx
