@@ -745,10 +745,6 @@ void UserManager::NotifyOnLogin() {
       content::Source<UserManager>(this),
       content::Details<const User>(logged_in_user_));
 
-  // Shut down the IME so that it will reload the user's settings.
-  chromeos::input_method::InputMethodManager::GetInstance()->
-      StopInputMethodDaemon();
-
 #if defined(TOOLKIT_USES_GTK)
   // Let the window manager know that we're logged in now.
   WmIpc::instance()->SetLoggedInProperty(true);
