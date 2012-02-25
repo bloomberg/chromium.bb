@@ -741,4 +741,25 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(NODETYPE_ELEMENT, node_type);
   EXPECT_EQ(0, num_children);
 }
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestRoleGroup) {
+  ui_test_utils::WindowedNotificationObserver tree_updated_observer1(
+      content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
+      content::NotificationService::AllSources());
+  GURL tree_url("data:text/html,<fieldset></fieldset><div role=group></div>");
+
+  browser()->OpenURL(OpenURLParams(
+      tree_url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED,
+      false));
+  GetRendererAccessible();
+  tree_updated_observer1.Wait();
+
+  // Check the browser's copy of the renderer accessibility tree.
+  AccessibleChecker grouping1_checker(L"", ROLE_SYSTEM_GROUPING, L"");
+  AccessibleChecker grouping2_checker(L"", ROLE_SYSTEM_GROUPING, L"");
+  AccessibleChecker document_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
+  document_checker.AppendExpectedChild(&grouping1_checker);
+  document_checker.AppendExpectedChild(&grouping2_checker);
+  document_checker.CheckAccessible(GetRendererAccessible());
+}
 }  // namespace.
