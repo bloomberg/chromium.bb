@@ -79,7 +79,6 @@ bool ShellContentRendererClient::AllowPopup(const GURL& creator) {
 
 bool ShellContentRendererClient::ShouldFork(WebKit::WebFrame* frame,
                                             const GURL& url,
-                                            bool is_content_initiated,
                                             bool is_initial_navigation,
                                             bool* send_referrer) {
   return false;

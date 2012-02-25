@@ -640,7 +640,6 @@ bool ChromeContentRendererClient::AllowPopup(const GURL& creator) {
 
 bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
                                              const GURL& url,
-                                             bool is_content_initiated,
                                              bool is_initial_navigation,
                                              bool* send_referrer) {
   const ExtensionSet* extensions = extension_dispatcher_->extensions();
@@ -662,16 +661,14 @@ bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
     // navigation test)
     *send_referrer = true;
 
-    if (is_content_initiated) {
-      const Extension* extension =
-          extension_dispatcher_->extensions()->GetExtensionOrAppByURL(
-              ExtensionURLInfo(url));
-      if (extension && extension->is_app()) {
-        UMA_HISTOGRAM_ENUMERATION(
-            extension_misc::kAppLaunchHistogram,
-            extension_misc::APP_LAUNCH_CONTENT_NAVIGATION,
-            extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
-      }
+    const Extension* extension =
+        extension_dispatcher_->extensions()->GetExtensionOrAppByURL(
+            ExtensionURLInfo(url));
+    if (extension && extension->is_app()) {
+      UMA_HISTOGRAM_ENUMERATION(
+          extension_misc::kAppLaunchHistogram,
+          extension_misc::APP_LAUNCH_CONTENT_NAVIGATION,
+          extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
     }
     return true;
   }
@@ -688,7 +685,7 @@ bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
   // Navigating to a new chrome:// scheme (in a new tab) from within a
   // chrome:// page must be a browser navigation so that the browser can
   // register the new associated data source.
-  if (is_content_initiated && url.SchemeIs(kChromeUIScheme))
+  if (url.SchemeIs(kChromeUIScheme))
     return true;
 
   return false;

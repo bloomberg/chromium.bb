@@ -48,7 +48,6 @@ class MockContentRendererClient : public ContentRendererClient {
   virtual bool AllowPopup(const GURL& creator) OVERRIDE;
   virtual bool ShouldFork(WebKit::WebFrame* frame,
                           const GURL& url,
-                          bool is_content_initiated,
                           bool is_initial_navigation,
                           bool* send_referrer) OVERRIDE;
   virtual bool WillSendRequest(WebKit::WebFrame* frame,

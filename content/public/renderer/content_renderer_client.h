@@ -127,7 +127,6 @@ class ContentRendererClient {
   // Returns true if we should fork a new process for the given navigation.
   virtual bool ShouldFork(WebKit::WebFrame* frame,
                           const GURL& url,
-                          bool is_content_initiated,
                           bool is_initial_navigation,
                           bool* send_referrer) = 0;
 
