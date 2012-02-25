@@ -13,7 +13,6 @@
 #include "base/timer.h"
 #include "crypto/rsa_private_key.h"
 #include "net/base/completion_callback.h"
-#include "remoting/jingle_glue/iq_sender.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/session.h"
@@ -26,6 +25,9 @@ class StreamSocket;
 }  // namespace net
 
 namespace remoting {
+
+class IqRequest;
+
 namespace protocol {
 
 class JingleSessionManager;
@@ -84,15 +86,8 @@ class JingleSession : public Session,
                                     scoped_ptr<Authenticator> authenticator);
   void AcceptIncomingConnection(const JingleMessage& initiate_message);
 
-  // Helper to send IqRequests to the peer. It sets up the response
-  // callback to OnMessageResponse() which simply terminates the
-  // session whenever a request fails or times out. This method should
-  // not be used for messages that need to be handled differently.
-  void SendMessage(const JingleMessage& message);
-  void OnMessageResponse(JingleMessage::ActionType request_type,
-                         IqRequest* request,
-                         const buzz::XmlElement* response);
-  void CleanupPendingRequests(IqRequest* request);
+  // Handler for session-initiate response.
+  void OnSessionInitiateResponse(const buzz::XmlElement* response);
 
   // Called by JingleSessionManager on incoming |message|. Must call
   // |reply_callback| to send reply message before sending any other
@@ -113,8 +108,10 @@ class JingleSession : public Session,
   bool InitializeConfigFromDescription(const ContentDescription* description);
 
   void ProcessAuthenticationStep();
+  void OnSessionInfoResponse(const buzz::XmlElement* response);
 
   void SendTransportInfo();
+  void OnTransportInfoResponse(const buzz::XmlElement* response);
 
   // Terminates the session and sends session-terminate if it is
   // necessary. |error| specifies the error code in case when the
@@ -139,10 +136,9 @@ class JingleSession : public Session,
 
   scoped_ptr<Authenticator> authenticator_;
 
-  // Container for pending Iq requests. Requests are removed in
-  // CleanupPendingRequests() which is called when a response is
-  // received or one of the requests times out.
-  std::list<IqRequest*> pending_requests_;
+  scoped_ptr<IqRequest> initiate_request_;
+  scoped_ptr<IqRequest> session_info_request_;
+  scoped_ptr<IqRequest> transport_info_request_;
 
   ChannelsMap channels_;
 

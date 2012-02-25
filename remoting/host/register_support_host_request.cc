@@ -161,8 +161,7 @@ bool RegisterSupportHostRequest::ParseResponse(const XmlElement* response,
   return true;
 }
 
-void RegisterSupportHostRequest::ProcessResponse(IqRequest* request,
-                                                 const XmlElement* response) {
+void RegisterSupportHostRequest::ProcessResponse(const XmlElement* response) {
   std::string support_id;
   base::TimeDelta lifetime;
   bool success = ParseResponse(response, &support_id, &lifetime);

@@ -67,7 +67,7 @@ class RegisterSupportHostRequest : public SignalStrategy::Listener {
       const std::string& jid);
   scoped_ptr<buzz::XmlElement> CreateSignature(const std::string& jid);
 
-  void ProcessResponse(IqRequest* request, const buzz::XmlElement* response);
+  void ProcessResponse(const buzz::XmlElement* response);
   bool ParseResponse(const buzz::XmlElement* response,
                      std::string* support_id, base::TimeDelta* lifetime);
 

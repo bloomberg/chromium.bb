@@ -52,13 +52,12 @@ struct JingleMessage {
 
   // Caller keeps ownership of |stanza|.
   static bool IsJingleMessage(const buzz::XmlElement* stanza);
-  static std::string GetActionName(ActionType action);
 
   // Caller keeps ownership of |stanza|. |error| is set to debug error
   // message when parsing fails.
   bool ParseXml(const buzz::XmlElement* stanza, std::string* error);
 
-  scoped_ptr<buzz::XmlElement> ToXml() const;
+  scoped_ptr<buzz::XmlElement> ToXml();
 
   std::string from;
   std::string to;
