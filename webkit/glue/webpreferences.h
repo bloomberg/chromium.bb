@@ -92,6 +92,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool show_fps_counter;
   bool asynchronous_spell_checking_enabled;
   bool unified_textchecker_enabled;
+  bool threaded_animation_enabled;
   bool accelerated_compositing_enabled;
   bool threaded_compositing_enabled;
   bool force_compositing_mode;

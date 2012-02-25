@@ -78,6 +78,7 @@ WebPreferences::WebPreferences()
       show_fps_counter(false),
       asynchronous_spell_checking_enabled(true),
       unified_textchecker_enabled(false),
+      threaded_animation_enabled(false),
       accelerated_compositing_enabled(false),
       threaded_compositing_enabled(false),
       force_compositing_mode(false),
@@ -266,6 +267,8 @@ void WebPreferences::Apply(WebView* web_view) const {
   // Display the current compositor tree as overlay if requested on
   // the command line
   settings->setShowPlatformLayerTree(show_composited_layer_tree);
+
+  settings->setThreadedAnimationEnabled(threaded_animation_enabled);
 
   // Enable gpu-accelerated compositing if requested on the command line.
   settings->setAcceleratedCompositingEnabled(accelerated_compositing_enabled);

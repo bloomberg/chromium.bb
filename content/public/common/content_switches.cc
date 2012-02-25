@@ -317,6 +317,9 @@ const char kEnableStatsTable[]              = "enable-stats-table";
 // This is expected to break compatibility with many pages for now.
 const char kEnableStrictSiteIsolation[]     = "enable-strict-site-isolation";
 
+// Enable animation on the compositor thread.
+const char kEnableThreadedAnimation[]       = "enable-threaded-animation";
+
 // Enable multithreaded GPU compositing of web content.
 const char kEnableThreadedCompositing[]     = "enable-threaded-compositing";
 
