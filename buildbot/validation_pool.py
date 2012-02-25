@@ -99,6 +99,7 @@ class ValidationPool(object):
     self._internal = internal
     self._build_number = build_number
     self._builder_name = builder_name
+    self._content_merging_projects = None
 
   def __getnewargs__(self):
     """Used for pickling to re-create validation pool."""
@@ -231,6 +232,14 @@ class ValidationPool(object):
 
     return pool
 
+  @property
+  def ContentMergingProjects(self):
+    val = self._content_merging_projects
+    if val is None:
+      val = self.gerrit_helper.FindContentMergingProjects()
+      self._content_merging_projects = val
+    return val
+
   @staticmethod
   def _FilterNonCrosProjects(changes, buildroot):
     """Filters changes to a tuple of relevant changes.
@@ -352,8 +361,13 @@ class ValidationPool(object):
             continue
           elif change in changes_that_failed_to_apply_to_tot:
             break
+          # If we're in dryrun mode, then 3way is always allowed.
+          # Otherwise, allow 3way only if the gerrit project allows it.
+          if self.dryrun:
+            trivial = False
           else:
-            change.Apply(buildroot, trivial=not self.dryrun)
+            trivial = change.project not in self.ContentMergingProjects
+          change.Apply(buildroot, trivial=trivial)
 
         except cros_patch.ApplyPatchException as e:
           if e.type == cros_patch.ApplyPatchException.TYPE_REBASE_TO_TOT:

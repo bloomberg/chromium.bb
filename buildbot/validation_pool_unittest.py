@@ -46,13 +46,20 @@ class TestValidationPool(mox.MoxTestBase):
                           _CountingSource.next())
     patch.url = 'fake_url/%i' % (change_id,)
     patch.apply_error_message = None
+    patch.project = 'chromiumos/chromite'
     return patch
 
   def GetPool(self, *args):
     pool = validation_pool.ValidationPool(*args)
     self.mox.StubOutWithMock(pool, '_SendNotification')
     self.mox.StubOutWithMock(pool.gerrit_helper, '_SqlQuery')
+    self.mox.StubOutWithMock(pool.gerrit_helper, 'FindContentMergingProjects')
     return pool
+
+  @staticmethod
+  def SetPoolsContentMergingProjects(pool, *projects):
+    pool.gerrit_helper.FindContentMergingProjects().AndReturn(
+        frozenset(projects))
 
   def _TreeStatusFile(self, message, general_state):
     """Returns a file-like object with the status message writtin in it."""
@@ -118,6 +125,7 @@ class TestValidationPool(mox.MoxTestBase):
 
     pool = self.GetPool(False, 1, 'build_name', True, False)
     pool.changes = [patch1, patch2]
+    self.SetPoolsContentMergingProjects(pool)
 
     patch1.GerritDependencies(build_root).AndReturn(['ChangeId2'])
     patch1.PaladinDependencies(build_root).AndReturn([])
@@ -163,12 +171,16 @@ class TestValidationPool(mox.MoxTestBase):
 
     pool = self.GetPool(False, 1, 'build_name', True, False)
     pool.changes = [patch2]
-    helper = self.mox.CreateMock(gerrit_helper.GerritHelper)
-    pool.gerrit_helper = helper
+    patch2.project = '3way-project'
+    self.SetPoolsContentMergingProjects(pool, '3way-project')
+
+    self.mox.StubOutWithMock(pool.gerrit_helper, 'IsChangeCommitted')
+    pool.gerrit_helper.IsChangeCommitted(
+        patch1.id, must_match=False).AndReturn(True)
+
     patch2.GerritDependencies(build_root).AndReturn(['ChangeId1'])
     patch2.PaladinDependencies(build_root).AndReturn([])
-    helper.IsChangeCommitted(patch1.id, must_match=False).AndReturn(True)
-    patch2.Apply(build_root, trivial=True)
+    patch2.Apply(build_root, trivial=False)
     pool.HandleApplied(patch2)
 
     self.mox.ReplayAll()
@@ -193,8 +205,8 @@ class TestValidationPool(mox.MoxTestBase):
 
     pool = self.GetPool(False, 1, 'build_name', True, False)
     pool.changes = [patch1, patch2, patch3, patch4]
-    pool.gerrit_helper = self.mox.CreateMock(gerrit_helper.GerritHelper)
     self.mox.StubOutWithMock(pool.gerrit_helper, 'RemoveCommitReady')
+    self.SetPoolsContentMergingProjects(pool)
     pool.build_log = 'log'
 
     patch1.GerritDependencies(build_root).AndReturn([])
@@ -236,6 +248,7 @@ class TestValidationPool(mox.MoxTestBase):
 
     pool.changes = [patch1, patch2]
     pool.build_log = 'log'
+    self.SetPoolsContentMergingProjects(pool)
 
     patch1.GerritDependencies(build_root).AndRaise(
         cros_patch.MissingChangeIDException('Could not find changeid'))
@@ -274,6 +287,8 @@ class TestValidationPool(mox.MoxTestBase):
     pool = self.GetPool(False, 1, 'build_name', True, False)
     pool.changes = [patch1, patch2, patch3, patch4, patch5]
 
+    self.SetPoolsContentMergingProjects(pool)
+
     patch1.GerritDependencies(build_root).AndReturn(['ChangeId2'])
     patch1.PaladinDependencies(build_root).AndReturn([])
     patch3.GerritDependencies(build_root).AndReturn(['ChangeId1', 'ChangeId2'])
@@ -307,6 +322,7 @@ class TestValidationPool(mox.MoxTestBase):
 
     pool = self.GetPool(False, 1, 'build_name', True, False)
     pool.changes = [patch1, patch2]
+    self.SetPoolsContentMergingProjects(pool)
 
     patch1.GerritDependencies(build_root).AndReturn([])
     patch1.PaladinDependencies(build_root).AndReturn([])
