@@ -38,11 +38,6 @@ class BookmarkDataTypeController : public FrontendDataTypeController,
   virtual bool StartModels() OVERRIDE;
   virtual void CleanUpState() OVERRIDE;
   virtual void CreateSyncComponents() OVERRIDE;
-  virtual void RecordUnrecoverableError(
-      const tracked_objects::Location& from_here,
-      const std::string& message) OVERRIDE;
-  virtual void RecordAssociationTime(base::TimeDelta time) OVERRIDE;
-  virtual void RecordStartFailure(StartResult result) OVERRIDE;
 
   // Helper that returns true iff both the bookmark model and the history
   // service have finished loading.

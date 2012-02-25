@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,11 +32,6 @@ class ExtensionDataTypeController : public FrontendDataTypeController {
   // DataTypeController implementations.
   virtual bool StartModels() OVERRIDE;
   virtual void CreateSyncComponents() OVERRIDE;
-  virtual void RecordUnrecoverableError(
-      const tracked_objects::Location& from_here,
-      const std::string& message) OVERRIDE;
-  virtual void RecordAssociationTime(base::TimeDelta time) OVERRIDE;
-  virtual void RecordStartFailure(StartResult result) OVERRIDE;
 
   scoped_ptr<GenericChangeProcessor> generic_change_processor_;
 

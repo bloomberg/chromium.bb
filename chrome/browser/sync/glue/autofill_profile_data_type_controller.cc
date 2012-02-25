@@ -113,24 +113,4 @@ browser_sync::ModelSafeGroup
   return browser_sync::GROUP_DB;
 }
 
-void AutofillProfileDataTypeController::RecordUnrecoverableError(
-    const tracked_objects::Location& from_here,
-    const std::string& message) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  UMA_HISTOGRAM_COUNTS("Sync.AutofillProfileRunFailures", 1);
-}
-
-void AutofillProfileDataTypeController::RecordAssociationTime(
-    base::TimeDelta time) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  UMA_HISTOGRAM_TIMES("Sync.AutofillProfileAssociationTime", time);
-}
-
-void AutofillProfileDataTypeController::RecordStartFailure(StartResult result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  UMA_HISTOGRAM_ENUMERATION("Sync.AutofillProfileStartFailures",
-                            result,
-                            MAX_START_RESULT);
-}
-
 }  // namepsace browser_sync

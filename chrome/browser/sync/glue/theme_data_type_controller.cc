@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,22 +37,6 @@ void ThemeDataTypeController::CreateSyncComponents() {
                                                      this);
   set_model_associator(sync_components.model_associator);
   set_change_processor(sync_components.change_processor);
-}
-
-void ThemeDataTypeController::RecordUnrecoverableError(
-    const tracked_objects::Location& from_here,
-    const std::string& message) {
-  UMA_HISTOGRAM_COUNTS("Sync.ThemeRunFailures", 1);
-}
-
-void ThemeDataTypeController::RecordAssociationTime(base::TimeDelta time) {
-  UMA_HISTOGRAM_TIMES("Sync.ThemeAssociationTime", time);
-}
-
-void ThemeDataTypeController::RecordStartFailure(StartResult result) {
-  UMA_HISTOGRAM_ENUMERATION("Sync.ThemeStartFailures",
-                            result,
-                            MAX_START_RESULT);
 }
 
 }  // namespace browser_sync

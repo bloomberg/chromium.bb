@@ -66,21 +66,4 @@ void ExtensionSettingDataTypeController::CreateSyncComponents() {
   set_change_processor(sync_components.change_processor);
 }
 
-void ExtensionSettingDataTypeController::RecordUnrecoverableError(
-    const tracked_objects::Location& from_here,
-    const std::string& message) {
-  UMA_HISTOGRAM_COUNTS("Sync.ExtensionSettingRunFailures", 1);
-}
-
-void ExtensionSettingDataTypeController::RecordAssociationTime(
-    base::TimeDelta time) {
-  UMA_HISTOGRAM_TIMES("Sync.ExtensionSettingAssociationTime", time);
-}
-
-void ExtensionSettingDataTypeController::RecordStartFailure(
-    StartResult result) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Sync.ExtensionSettingStartFailures", result, MAX_START_RESULT);
-}
-
 }  // namespace browser_sync

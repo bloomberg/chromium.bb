@@ -36,9 +36,6 @@ class ChangeProcessor;
 //    model_safe_group()
 //    PostTaskOnBackendThread()
 //    CreateSyncComponents()
-//    RecordUnrecoverableError(...)
-//    RecordAssociationTime(...);
-//    RecordStartFailure(...);
 class NonFrontendDataTypeController : public DataTypeController {
  public:
   NonFrontendDataTypeController(
@@ -117,17 +114,16 @@ class NonFrontendDataTypeController : public DataTypeController {
   virtual void DisableImpl(const tracked_objects::Location& from_here,
                            const std::string& message);
 
-  // DataType specific histogram methods. Because histograms use static's, the
-  // specific datatype controllers must implement this themselves.
+  // DataType specific histogram methods.
   // Important: calling them on other threads can lead to memory corruption!
   // Record unrecoverable errors. Called on Datatype's thread.
   virtual void RecordUnrecoverableError(
       const tracked_objects::Location& from_here,
-      const std::string& message) = 0;
+      const std::string& message);
   // Record association time. Called on Datatype's thread.
-  virtual void RecordAssociationTime(base::TimeDelta time) = 0;
+  virtual void RecordAssociationTime(base::TimeDelta time);
   // Record causes of start failure. Called on UI thread.
-  virtual void RecordStartFailure(StartResult result) = 0;
+  virtual void RecordStartFailure(StartResult result);
 
   // Post the association task to the thread the datatype lives on.
   // Note: this is performed on the frontend (UI) thread.

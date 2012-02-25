@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,22 +38,6 @@ void PreferenceDataTypeController::CreateSyncComponents() {
 
 GenericChangeProcessor* PreferenceDataTypeController::change_processor() const {
   return generic_change_processor_.get();
-}
-
-void PreferenceDataTypeController::RecordUnrecoverableError(
-    const tracked_objects::Location& from_here,
-    const std::string& message) {
-  UMA_HISTOGRAM_COUNTS("Sync.PreferenceRunFailures", 1);
-}
-
-void PreferenceDataTypeController::RecordAssociationTime(base::TimeDelta time) {
-  UMA_HISTOGRAM_TIMES("Sync.PreferenceAssociationTime", time);
-}
-
-void PreferenceDataTypeController::RecordStartFailure(StartResult result) {
-  UMA_HISTOGRAM_ENUMERATION("Sync.PreferenceStartFailures",
-                            result,
-                            MAX_START_RESULT);
 }
 
 }  // namespace browser_sync

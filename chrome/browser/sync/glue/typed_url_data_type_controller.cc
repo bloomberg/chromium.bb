@@ -144,22 +144,4 @@ browser_sync::ModelSafeGroup TypedUrlDataTypeController::model_safe_group()
   return browser_sync::GROUP_HISTORY;
 }
 
-void TypedUrlDataTypeController::RecordUnrecoverableError(
-    const tracked_objects::Location& from_here,
-    const std::string& message) {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-  UMA_HISTOGRAM_COUNTS("Sync.TypedUrlRunFailures", 1);
-}
-
-void TypedUrlDataTypeController::RecordAssociationTime(base::TimeDelta time) {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-  UMA_HISTOGRAM_TIMES("Sync.TypedUrlAssociationTime", time);
-}
-
-void TypedUrlDataTypeController::RecordStartFailure(StartResult result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  UMA_HISTOGRAM_ENUMERATION("Sync.TypedUrlStartFailures",
-                            result,
-                            MAX_START_RESULT);
-}
 }  // namespace browser_sync

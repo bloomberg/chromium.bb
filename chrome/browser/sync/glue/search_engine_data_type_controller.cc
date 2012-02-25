@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,23 +78,6 @@ void SearchEngineDataTypeController::CreateSyncComponents() {
 GenericChangeProcessor* SearchEngineDataTypeController::change_processor()
     const {
   return generic_change_processor_.get();
-}
-
-void SearchEngineDataTypeController::RecordUnrecoverableError(
-    const tracked_objects::Location& from_here,
-    const std::string& message) {
-  UMA_HISTOGRAM_COUNTS("Sync.SearchEngineRunFailures", 1);
-}
-
-void SearchEngineDataTypeController::RecordAssociationTime(
-    base::TimeDelta time) {
-  UMA_HISTOGRAM_TIMES("Sync.SearchEngineAssociationTime", time);
-}
-
-void SearchEngineDataTypeController::RecordStartFailure(StartResult result) {
-  UMA_HISTOGRAM_ENUMERATION("Sync.SearchEngineStartFailures",
-                            result,
-                            MAX_START_RESULT);
 }
 
 }  // namespace browser_sync

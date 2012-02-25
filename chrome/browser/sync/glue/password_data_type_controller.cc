@@ -75,23 +75,4 @@ browser_sync::ModelSafeGroup PasswordDataTypeController::model_safe_group()
   return browser_sync::GROUP_PASSWORD;
 }
 
-void PasswordDataTypeController::RecordUnrecoverableError(
-    const tracked_objects::Location& from_here,
-    const std::string& message) {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-  UMA_HISTOGRAM_COUNTS("Sync.PasswordRunFailures", 1);
-}
-
-void PasswordDataTypeController::RecordAssociationTime(base::TimeDelta time) {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-  UMA_HISTOGRAM_TIMES("Sync.PasswordAssociationTime", time);
-}
-
-void PasswordDataTypeController::RecordStartFailure(StartResult result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  UMA_HISTOGRAM_ENUMERATION("Sync.PasswordStartFailures",
-                            result,
-                            MAX_START_RESULT);
-}
-
 }  // namespace browser_sync

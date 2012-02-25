@@ -92,20 +92,4 @@ void BookmarkDataTypeController::CreateSyncComponents() {
   set_change_processor(sync_components.change_processor);
 }
 
-void BookmarkDataTypeController::RecordUnrecoverableError(
-    const tracked_objects::Location& from_here,
-    const std::string& message) {
-  UMA_HISTOGRAM_COUNTS("Sync.BookmarkRunFailures", 1);
-}
-
-void BookmarkDataTypeController::RecordAssociationTime(base::TimeDelta time) {
-  UMA_HISTOGRAM_TIMES("Sync.BookmarkAssociationTime", time);
-}
-
-void BookmarkDataTypeController::RecordStartFailure(StartResult result) {
-  UMA_HISTOGRAM_ENUMERATION("Sync.BookmarkStartFailures",
-                            result,
-                            MAX_START_RESULT);
-}
-
 }  // namespace browser_sync

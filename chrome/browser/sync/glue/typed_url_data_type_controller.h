@@ -63,11 +63,6 @@ class TypedUrlDataTypeController : public NonFrontendDataTypeController,
       const base::Closure& task) OVERRIDE;
   virtual void CreateSyncComponents() OVERRIDE;
   virtual void StopModels() OVERRIDE;
-  virtual void RecordUnrecoverableError(
-      const tracked_objects::Location& from_here,
-      const std::string& message) OVERRIDE;
-  virtual void RecordAssociationTime(base::TimeDelta time) OVERRIDE;
-  virtual void RecordStartFailure(StartResult result) OVERRIDE;
 
  private:
   // Used by PostTaskOnBackendThread().

@@ -83,23 +83,4 @@ browser_sync::ModelSafeGroup AutofillDataTypeController::model_safe_group()
   return browser_sync::GROUP_DB;
 }
 
-void AutofillDataTypeController::RecordUnrecoverableError(
-    const tracked_objects::Location& from_here,
-    const std::string& message) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  UMA_HISTOGRAM_COUNTS("Sync.AutofillRunFailures", 1);
-}
-
-void AutofillDataTypeController::RecordAssociationTime(base::TimeDelta time) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  UMA_HISTOGRAM_TIMES("Sync.AutofillAssociationTime", time);
-}
-
-void AutofillDataTypeController::RecordStartFailure(StartResult result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  UMA_HISTOGRAM_ENUMERATION("Sync.AutofillStartFailures",
-                            result,
-                            MAX_START_RESULT);
-}
-
 }  // namespace browser_sync

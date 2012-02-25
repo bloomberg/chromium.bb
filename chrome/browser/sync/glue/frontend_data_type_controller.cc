@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "chrome/browser/sync/util/data_type_histogram.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -196,9 +197,9 @@ DataTypeController::State FrontendDataTypeController::state() const {
 
 void FrontendDataTypeController::OnUnrecoverableError(
     const tracked_objects::Location& from_here, const std::string& message) {
-  // The ProfileSyncService will invoke our Stop() method in response to this.
   RecordUnrecoverableError(from_here, message);
 
+  // The ProfileSyncService will invoke our Stop() method in response to this.
   // We dont know the current state of the caller. Posting a task will allow
   // the caller to unwind the stack before we process unrecoverable error.
   MessageLoop::current()->PostTask(from_here,
@@ -212,6 +213,32 @@ void FrontendDataTypeController::OnSingleDatatypeUnrecoverableError(
     const tracked_objects::Location& from_here, const std::string& message) {
   RecordUnrecoverableError(from_here, message);
   sync_service_->OnDisableDatatype(type(), from_here, message);
+}
+
+void FrontendDataTypeController::RecordUnrecoverableError(
+    const tracked_objects::Location& from_here,
+    const std::string& message) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures", type(),
+                            syncable::MODEL_TYPE_COUNT);
+}
+
+void FrontendDataTypeController::RecordAssociationTime(base::TimeDelta time) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+#define PER_DATA_TYPE_MACRO(type_str) \
+    UMA_HISTOGRAM_TIMES("Sync." type_str "AssociationTime", time);
+  SYNC_DATA_TYPE_HISTOGRAM(type());
+#undef PER_DATA_TYPE_MACRO
+}
+void FrontendDataTypeController::RecordStartFailure(StartResult result) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures", type(),
+                            syncable::MODEL_TYPE_COUNT);
+#define PER_DATA_TYPE_MACRO(type_str) \
+    UMA_HISTOGRAM_ENUMERATION("Sync." type_str "StartFailure", result, \
+                              MAX_START_RESULT);
+  SYNC_DATA_TYPE_HISTOGRAM(type());
+#undef PER_DATA_TYPE_MACRO
 }
 
 AssociatorInterface* FrontendDataTypeController::model_associator() const {

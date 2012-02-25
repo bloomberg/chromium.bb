@@ -34,11 +34,6 @@ class ChangeProcessor;
 // Derived classes must implement (at least):
 //    syncable::ModelType type() const
 //    void CreateSyncComponents();
-//    void RecordUnrecoverableError(
-//        const tracked_objects::Location& from_here,
-//        const std::string& message);
-//    void RecordAssociationTime(base::TimeDelta time);
-//    void RecordStartFailure(StartResult result);
 class FrontendDataTypeController : public DataTypeController {
  public:
   FrontendDataTypeController(
@@ -92,16 +87,15 @@ class FrontendDataTypeController : public DataTypeController {
   virtual void StartFailed(StartResult result, const SyncError& error);
   virtual void FinishStart(StartResult result);
 
-  // DataType specific histogram methods. Because histograms use static's, the
-  // specific datatype controllers must implement this themselves.
+  // DataType specific histogram methods.
   // Record unrecoverable errors.
   virtual void RecordUnrecoverableError(
       const tracked_objects::Location& from_here,
-      const std::string& message) = 0;
+      const std::string& message);
   // Record association time.
-  virtual void RecordAssociationTime(base::TimeDelta time) = 0;
+  virtual void RecordAssociationTime(base::TimeDelta time);
   // Record causes of start failure.
-  virtual void RecordStartFailure(StartResult result) = 0;
+  virtual void RecordStartFailure(StartResult result);
 
   virtual AssociatorInterface* model_associator() const;
   virtual void set_model_associator(AssociatorInterface* associator);
