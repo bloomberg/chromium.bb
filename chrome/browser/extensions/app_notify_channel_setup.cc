@@ -15,6 +15,8 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
@@ -147,8 +149,8 @@ URLFetcher* AppNotifyChannelSetup::CreateURLFetcher(
 }
 
 bool AppNotifyChannelSetup::ShouldPromptForLogin() const {
-  std::string username = profile_->GetPrefs()->GetString(
-      prefs::kGoogleServicesUsername);
+  std::string username =
+      SigninManagerFactory::GetForProfile(profile_)->GetAuthenticatedUsername();
   // Prompt for login if either:
   // 1. the user has not logged in at all or
   // 2. if the user is logged in but there is no OAuth2 login token.

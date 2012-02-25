@@ -973,12 +973,6 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
   NotifyObservers();
 }
 
-void ProfileSyncService::ShowLoginDialog() {
-  // TODO(atwilson): Remove this API and have the callers directly call
-  // LoginUIService.
-  LoginUIServiceFactory::GetForProfile(profile_)->ShowLoginUI();
-}
-
 void ProfileSyncService::ShowErrorUI() {
   if (WizardIsVisible()) {
     wizard_.Focus();
@@ -992,7 +986,7 @@ void ProfileSyncService::ShowErrorUI() {
   // Any other errors (such as unrecoverable error) should be handled by the UI
   // itself and should not result in a call to ShowErrorUI.
   if (last_auth_error_.state() != AuthError::NONE) {
-    ShowLoginDialog();
+    LoginUIServiceFactory::GetForProfile(profile_)->ShowLoginUI();
   } else if (ShouldShowActionOnUI(last_actionable_error_)) {
     ShowSyncSetup(chrome::kPersonalOptionsSubPage);
   } else {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,13 +66,6 @@ MessageType GetStatus(ProfileSyncService* service);
 
 // Returns a string with the synchronization status.
 string16 GetSyncMenuLabel(ProfileSyncService* service);
-
-// Open the appropriate sync dialog for the given profile (which can be
-// incognito). |browser| is the browser window that should be used if the UI
-// is in-window (i.e., WebUI). |code| should be one of the START_FROM_* codes.
-void OpenSyncMyBookmarksDialog(Profile* profile,
-                               Browser* browser,
-                               ProfileSyncService::SyncEventCodes code);
 
 void AddBoolSyncDetail(base::ListValue* details,
                        const std::string& stat_name,

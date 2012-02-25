@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ TEST_F(SyncStatusUIHelperMacTest, UpdateSyncItem) {
       [[NSMenuItem alloc] initWithTitle:@""
                                  action:@selector(commandDispatch)
                           keyEquivalent:@""]);
-  [syncMenuItem setTag:IDC_SYNC_BOOKMARKS];
+  [syncMenuItem setTag:IDC_SHOW_SYNC_SETUP];
 
   std::string userName = "foo@example.com";
 
@@ -72,7 +72,7 @@ TEST_F(SyncStatusUIHelperMacTest, UpdateSyncItemWithSeparator) {
       [menu addItemWithTitle:@""
                       action:@selector(commandDispatch)
                keyEquivalent:@""];
-  [syncMenuItem setTag:IDC_SYNC_BOOKMARKS];
+  [syncMenuItem setTag:IDC_SHOW_SYNC_SETUP];
   NSMenuItem* followingSeparator = [NSMenuItem separatorItem];
   [menu addItem:followingSeparator];
 
@@ -99,7 +99,7 @@ TEST_F(SyncStatusUIHelperMacTest, UpdateSyncItemWithNonSeparator) {
       [menu addItemWithTitle:@""
                       action:@selector(commandDispatch)
                keyEquivalent:@""];
-  [syncMenuItem setTag:IDC_SYNC_BOOKMARKS];
+  [syncMenuItem setTag:IDC_SHOW_SYNC_SETUP];
   NSMenuItem* followingNonSeparator =
       [menu addItemWithTitle:@""
                       action:@selector(commandDispatch)

@@ -13,6 +13,8 @@
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -116,10 +118,8 @@ void AppNotifyChannelUIImpl::PromptSyncSetup(
 void AppNotifyChannelUIImpl::OnInfoBarResult(bool accepted) {
   if (accepted) {
     StartObservingSync();
-    ProfileSyncService* service =
-        ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-            browser_->profile()->GetOriginalProfile());
-    service->ShowLoginDialog();
+    LoginUIServiceFactory::GetForProfile(
+        browser_->profile()->GetOriginalProfile())->ShowLoginUI();
   } else {
     delegate_->OnSyncSetupResult(false);
   }

@@ -767,7 +767,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
           // dialog.
           enable = [self keyWindowIsNotModal] || ([NSApp modalWindow] == nil);
           break;
-        case IDC_SYNC_BOOKMARKS: {
+        case IDC_SHOW_SYNC_SETUP: {
           Profile* lastProfile = [self lastProfile];
           // The profile may be NULL during shutdown -- see
           // http://code.google.com/p/chromium/issues/detail?id=43048 .
@@ -906,21 +906,11 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
       else
         Browser::OpenHelpWindow(lastProfile);
       break;
-    case IDC_SYNC_BOOKMARKS:
-      // The profile may be NULL during shutdown -- see
-      // http://code.google.com/p/chromium/issues/detail?id=43048 .
-      //
-      // TODO(akalin,viettrungluu): Figure out whether this method can
-      // be prevented from being called if lastProfile is NULL.
-      if (!lastProfile) {
-        LOG(WARNING) << "NULL lastProfile detected -- not doing anything";
-        break;
-      }
-      // TODO(akalin): Add a constant to denote starting sync from the
-      // main menu and use that instead of START_FROM_WRENCH.
-      sync_ui_util::OpenSyncMyBookmarksDialog(
-          lastProfile, ActivateBrowser(lastProfile),
-          ProfileSyncService::START_FROM_WRENCH);
+    case IDC_SHOW_SYNC_SETUP:
+      if (Browser* browser = ActivateBrowser(lastProfile))
+        browser->ShowSyncSetup();
+      else
+        Browser::OpenSyncSetupWindow(lastProfile);
       break;
     case IDC_TASK_MANAGER:
       content::RecordAction(UserMetricsAction("TaskManager"));
@@ -1045,7 +1035,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
   menuState_->UpdateCommandEnabled(IDC_HELP_PAGE, true);
   menuState_->UpdateCommandEnabled(IDC_IMPORT_SETTINGS, true);
   menuState_->UpdateCommandEnabled(IDC_FEEDBACK, true);
-  menuState_->UpdateCommandEnabled(IDC_SYNC_BOOKMARKS, true);
+  menuState_->UpdateCommandEnabled(IDC_SHOW_SYNC_SETUP, true);
   menuState_->UpdateCommandEnabled(IDC_TASK_MANAGER, true);
 }
 

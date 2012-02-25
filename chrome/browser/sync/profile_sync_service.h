@@ -282,9 +282,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   SyncSetupWizard& get_wizard() { return wizard_; }
 
-  // Shows the login screen of the Sync setup wizard.
-  virtual void ShowLoginDialog();
-
   // This method handles clicks on "sync error" UI, showing the appropriate
   // dialog for the error condition (relogin / enter passphrase).
   virtual void ShowErrorUI();

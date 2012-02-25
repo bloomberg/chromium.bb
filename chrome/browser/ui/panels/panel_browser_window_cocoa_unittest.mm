@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -313,7 +313,7 @@ TEST_F(PanelBrowserWindowCocoaTest, MenuItems) {
   NSMenuItem* fullscreen_menu_item = CreateMenuItem(menu, IDC_FULLSCREEN);
   NSMenuItem* presentation_menu_item =
       CreateMenuItem(menu, IDC_PRESENTATION_MODE);
-  NSMenuItem* bookmarks_menu_item = CreateMenuItem(menu, IDC_SYNC_BOOKMARKS);
+  NSMenuItem* sync_menu_item = CreateMenuItem(menu, IDC_SHOW_SYNC_SETUP);
 
   PanelBrowserWindowCocoa* native_window =
       static_cast<PanelBrowserWindowCocoa*>(panel->native_panel());
@@ -329,7 +329,7 @@ TEST_F(PanelBrowserWindowCocoaTest, MenuItems) {
   EXPECT_TRUE([find_next_menu_item isEnabled]);
   EXPECT_FALSE([fullscreen_menu_item isEnabled]);
   EXPECT_FALSE([presentation_menu_item isEnabled]);
-  EXPECT_FALSE([bookmarks_menu_item isEnabled]);
+  EXPECT_FALSE([sync_menu_item isEnabled]);
 
   ClosePanelAndWait(panel->browser());
 }

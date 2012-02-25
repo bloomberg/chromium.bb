@@ -19,6 +19,8 @@
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
@@ -447,30 +449,6 @@ string16 GetSyncMenuLabel(ProfileSyncService* service) {
     return l10n_util::GetStringUTF16(IDS_SYNC_MENU_SYNC_ERROR_LABEL);
   else
     return l10n_util::GetStringUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL);
-}
-
-void OpenSyncMyBookmarksDialog(Profile* profile,
-                               Browser* browser,
-                               ProfileSyncService::SyncEventCodes code) {
-  ProfileSyncService* service =
-    ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-        profile->GetOriginalProfile());
-  if (!service || !service->IsSyncEnabled()) {
-    LOG(DFATAL) << "OpenSyncMyBookmarksDialog called with sync disabled";
-    return;
-  }
-
-  if (service->HasSyncSetupCompleted()) {
-    bool create_window = browser == NULL;
-    if (create_window)
-      browser = Browser::Create(profile);
-    browser->ShowOptionsTab(chrome::kPersonalOptionsSubPage);
-    if (create_window)
-      browser->window()->Show();
-  } else {
-    service->ShowLoginDialog();
-    ProfileSyncService::SyncEvent(code);  // UMA stats
-  }
 }
 
 void AddBoolSyncDetail(ListValue* details,

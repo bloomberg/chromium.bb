@@ -230,7 +230,6 @@ bool WrenchMenuModel::IsItemForCommandIdDynamic(int command_id) const {
 #if defined(OS_MACOSX)
          command_id == IDC_FULLSCREEN ||
 #endif
-         command_id == IDC_SYNC_BOOKMARKS ||
          command_id == IDC_VIEW_BACKGROUND_PAGES ||
          command_id == IDC_UPGRADE_DIALOG ||
          command_id == IDC_SHOW_SYNC_SETUP;
@@ -238,8 +237,6 @@ bool WrenchMenuModel::IsItemForCommandIdDynamic(int command_id) const {
 
 string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
   switch (command_id) {
-    case IDC_SYNC_BOOKMARKS:
-      return GetSyncMenuLabel();
     case IDC_ZOOM_PERCENT_DISPLAY:
       return zoom_label_;
 #if defined(OS_MACOSX)

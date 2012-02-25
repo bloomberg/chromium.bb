@@ -286,7 +286,7 @@ enum {
         case IDC_CLOSE_TAB:
         case IDC_FULLSCREEN:
         case IDC_PRESENTATION_MODE:
-        case IDC_SYNC_BOOKMARKS:
+        case IDC_SHOW_SYNC_SETUP:
           enable = NO;
           break;
         default:

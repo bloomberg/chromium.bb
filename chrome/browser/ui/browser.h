@@ -328,6 +328,7 @@ class Browser : public TabHandlerDelegate,
   static void OpenDownloadsWindow(Profile* profile);
   static void OpenHelpWindow(Profile* profile);
   static void OpenOptionsWindow(Profile* profile);
+  static void OpenSyncSetupWindow(Profile* profile);
   static void OpenClearBrowsingDataDialogWindow(Profile* profile);
   static void OpenImportSettingsDialogWindow(Profile* profile);
   static void OpenInstantConfirmDialogWindow(Profile* profile);

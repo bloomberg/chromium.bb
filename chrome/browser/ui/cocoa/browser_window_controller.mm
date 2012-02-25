@@ -1046,7 +1046,7 @@ enum {
           }
           break;
         }
-        case IDC_SYNC_BOOKMARKS: {
+        case IDC_SHOW_SYNC_SETUP: {
           Profile* original_profile =
               browser_->profile()->GetOriginalProfile();
           enable &= original_profile->IsSyncAccessible();

@@ -132,6 +132,8 @@
 #include "chrome/browser/ui/webui/feedback_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/options/content_settings_handler.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/browser/upgrade_detector.h"
@@ -927,6 +929,13 @@ void Browser::OpenHelpWindow(Profile* profile) {
 void Browser::OpenOptionsWindow(Profile* profile) {
   Browser* browser = Browser::Create(profile);
   browser->OpenOptionsDialog();
+  browser->window()->Show();
+}
+
+// static
+void Browser::OpenSyncSetupWindow(Profile* profile) {
+  Browser* browser = Browser::Create(profile);
+  browser->ShowSyncSetup();
   browser->window()->Show();
 }
 
@@ -2374,11 +2383,6 @@ void Browser::OpenInstantConfirmDialog() {
   ShowOptionsTab(chrome::kInstantConfirmPage);
 }
 
-void Browser::OpenSyncMyBookmarksDialog() {
-  sync_ui_util::OpenSyncMyBookmarksDialog(
-      profile_, this, ProfileSyncService::START_FROM_WRENCH);
-}
-
 void Browser::OpenAboutChromeDialog() {
   content::RecordAction(UserMetricsAction("AboutChrome"));
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableUberPage)) {
@@ -3069,7 +3073,6 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_SHOW_HISTORY:          ShowHistoryTab();                 break;
     case IDC_SHOW_DOWNLOADS:        ShowDownloadsTab();               break;
     case IDC_MANAGE_EXTENSIONS:     ShowExtensionsTab();              break;
-    case IDC_SYNC_BOOKMARKS:        OpenSyncMyBookmarksDialog();      break;
     case IDC_OPTIONS:               OpenOptionsDialog();              break;
     case IDC_EDIT_SEARCH_ENGINES:   OpenSearchEngineOptionsDialog();  break;
     case IDC_VIEW_PASSWORDS:        OpenPasswordManager();            break;
@@ -4456,7 +4459,7 @@ void Browser::OnStateChanged() {
   if (!window_)
     return;
   const bool show_main_ui = IsShowingMainUI(window_->IsFullscreen());
-  command_updater_.UpdateCommandEnabled(IDC_SYNC_BOOKMARKS,
+  command_updater_.UpdateCommandEnabled(IDC_SHOW_SYNC_SETUP,
       show_main_ui && profile_->GetOriginalProfile()->IsSyncAccessible());
 }
 
@@ -4792,7 +4795,7 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_DEVELOPER_MENU, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_FEEDBACK, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_SYNC_BOOKMARKS,
+  command_updater_.UpdateCommandEnabled(IDC_SHOW_SYNC_SETUP,
       show_main_ui && profile_->GetOriginalProfile()->IsSyncAccessible());
 
   // Settings page/subpages are forced to open in normal mode. We disable these
@@ -5568,15 +5571,20 @@ void Browser::ShowSyncSetup() {
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(
           profile()->GetOriginalProfile());
+  LoginUIService* login_service =
+      LoginUIServiceFactory::GetForProfile(profile()->GetOriginalProfile());
   if (service->HasSyncSetupCompleted()) {
     ShowOptionsTab(chrome::kPersonalOptionsSubPage);
-  } else if (SyncPromoUI::ShouldShowSyncPromo(profile())) {
+  } else if (SyncPromoUI::ShouldShowSyncPromo(profile()) &&
+             login_service->current_login_ui() == NULL) {
+    // There is no currently active login UI, so display a new promo page.
     GURL url(SyncPromoUI::GetSyncPromoURL(GURL(), false, std::string()));
     browser::NavigateParams params(GetSingletonTabNavigateParams(GURL(url)));
     params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
     ShowSingletonTabOverwritingNTP(params);
   } else {
-    service->ShowLoginDialog();
+    LoginUIServiceFactory::GetForProfile(
+        profile()->GetOriginalProfile())->ShowLoginUI();
   }
 }
 
