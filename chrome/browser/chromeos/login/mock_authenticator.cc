@@ -41,8 +41,16 @@ void MockAuthenticator::AuthenticateToUnlock(const std::string& username,
                       std::string(), std::string());
 }
 
+void MockAuthenticator::LoginDemoUser() {
+  consumer_->OnDemoUserLoginSuccess();
+}
+
 void MockAuthenticator::LoginOffTheRecord() {
   consumer_->OnOffTheRecordLoginSuccess();
+}
+
+void MockAuthenticator::OnDemoUserLoginSuccess() {
+  consumer_->OnDemoUserLoginSuccess();
 }
 
 void MockAuthenticator::OnLoginSuccess(

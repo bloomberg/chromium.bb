@@ -279,6 +279,11 @@ void UserManager::UserLoggedIn(const std::string& email) {
     return;
   }
 
+  if (email == kDemoUser) {
+    DemoUserLoggedIn();
+    return;
+  }
+
   EnsureUsersLoaded();
 
   // Clear the prefs view of the users.
@@ -341,6 +346,11 @@ void UserManager::UserLoggedIn(const std::string& email) {
                               histogram_index,
                               kHistogramImagesCount);
   }
+}
+
+void UserManager::DemoUserLoggedIn() {
+  logged_in_user_ = &demo_user_;
+  NotifyOnLogin();
 }
 
 void UserManager::GuestUserLoggedIn() {
@@ -599,6 +609,10 @@ void UserManager::set_current_user_is_owner(bool current_user_is_owner) {
   current_user_is_owner_ = current_user_is_owner;
 }
 
+bool UserManager::IsLoggedInAsDemoUser() const {
+  return logged_in_user_ == &demo_user_;
+}
+
 bool UserManager::IsLoggedInAsGuest() const {
   return logged_in_user_ == &guest_user_;
 }
@@ -621,6 +635,7 @@ void UserManager::NotifyLocalStateChanged() {
 // Protected constructor and destructor.
 UserManager::UserManager()
     : ALLOW_THIS_IN_INITIALIZER_LIST(image_loader_(new UserImageLoader)),
+      demo_user_(kDemoUser, false),
       guest_user_(kGuestUser, true),
       stub_user_(kStubUser, false),
       logged_in_user_(NULL),
