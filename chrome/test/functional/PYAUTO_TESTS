@@ -113,6 +113,8 @@
       '-special_tabs.SpecialTabsTest.testAboutAppCacheTab',
       # crbug.com/95140
       '-translate.TranslateTest.testGoBackAndForwardToTranslatePage',
+      # crbug.com/115646
+      '-translate.TranslateTest.testSeveralLanguages',
       # crbug.com/86524
       '-plugins.PluginsTest.testAllowPluginException',
       # crbug.com/85307
@@ -143,6 +145,8 @@
       # -imports.ImportsTest.testFirefoxImportFromPrefs
       # Disabled on vista in the actual test. crbug.com/89767
       # -imports.ImportsTest.testImportFirefoxPasswordsFromPrefs
+      # crbug.com/115707
+      '-browser.BrowserTest.testMaxProcess',
       # crbug.com/70694, crbug.com/73078
       '-passwords.PasswordTest.testInfoBarDisappearByReload',
       '-passwords.PasswordTest.testNeverSavePasswords',
