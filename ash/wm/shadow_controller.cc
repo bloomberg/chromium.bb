@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "ash/ash_switches.h"
-#include "ash/shell.h"
 #include "ash/wm/shadow.h"
 #include "ash/wm/shadow_types.h"
 #include "ash/wm/window_properties.h"
@@ -47,7 +46,7 @@ ShadowType GetShadowTypeFromWindow(aura::Window* window) {
 ShadowController::ShadowController() {
   aura::Env::GetInstance()->AddObserver(this);
   // Watch for window activation changes.
-  Shell::GetRootWindow()->AddObserver(this);
+  aura::RootWindow::GetInstance()->AddObserver(this);
 }
 
 ShadowController::~ShadowController() {
@@ -55,7 +54,7 @@ ShadowController::~ShadowController() {
        it != window_shadows_.end(); ++it) {
     it->first->RemoveObserver(this);
   }
-  Shell::GetRootWindow()->RemoveObserver(this);
+  aura::RootWindow::GetInstance()->RemoveObserver(this);
   aura::Env::GetInstance()->RemoveObserver(this);
 }
 
