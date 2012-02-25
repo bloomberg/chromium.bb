@@ -246,6 +246,7 @@
         '../ui/views/test/test_views_delegate.h',
         'accelerators/accelerator_controller_unittest.cc',
         'accelerators/accelerator_filter_unittest.cc',
+	'accelerators/nested_dispatcher_controller_unittest.cc',
         'drag_drop/drag_drop_controller_unittest.cc',
         'ime/input_method_event_filter_unittest.cc',
         'launcher/launcher_model_unittest.cc',
@@ -298,6 +299,7 @@
           'sources/': [
             ['exclude', 'accelerators/accelerator_controller_unittest.cc'],
             ['exclude', 'accelerators/accelerator_filter_unittest.cc'],
+	    ['exclude', 'accelerators/nested_dispatcher_controller_unittest.cc'],
             ['exclude', 'drag_drop/drag_drop_controller_unittest.cc'],
             ['exclude', 'tooltips/tooltip_controller_unittest.cc'],
           ],
