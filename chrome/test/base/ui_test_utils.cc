@@ -278,7 +278,8 @@ void RunMessageLoop() {
   MessageLoop::ScopedNestableTaskAllower allow(loop);
   if (ui_loop) {
 #if defined(USE_AURA)
-    ash::Shell::GetRootWindow()->Run();
+    ash::Shell::GetRootWindow()->ShowRootWindow();
+    ui_loop->Run();
 #elif defined(TOOLKIT_VIEWS)
     views::AcceleratorHandler handler;
     ui_loop->RunWithDispatcher(&handler);

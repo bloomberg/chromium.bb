@@ -1852,7 +1852,8 @@ bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
   RecordBrowserStartupTime();
 
 #if defined(USE_AURA)
-  ash::Shell::GetRootWindow()->Run();
+  ash::Shell::GetRootWindow()->ShowRootWindow();
+  MessageLoopForUI::current()->Run();
 #elif defined(TOOLKIT_VIEWS)
   views::AcceleratorHandler accelerator_handler;
   MessageLoopForUI::current()->RunWithDispatcher(&accelerator_handler);
