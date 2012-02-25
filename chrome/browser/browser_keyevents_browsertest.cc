@@ -813,7 +813,8 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, PageUpDownKeys) {
   EXPECT_NO_FATAL_FAILURE(CheckTextBoxValue(tab_index, L"A", L""));
 }
 
-#if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
+#if defined(OS_WIN)
+// AltKey is enabled only on Windows. See crbug.com/114537.
 IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, FocusMenuBarByAltKey) {
   static const KeyEventTestData kTestAltKey = {
     ui::VKEY_MENU, false, false, false, false,
