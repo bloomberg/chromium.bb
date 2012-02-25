@@ -299,10 +299,8 @@ INTERNAL_FRAME_RATE_TEST_CANVAS_GPU(FishIE)
 
 // crbug.com/115720
 #if defined(OS_LINUX)
-#define MAYBE_speedreading FAILS_speedreading
-#else
-#define MAYBE_speedreading speedreading
+#define speedreading FAILS_speedreading
 #endif
-INTERNAL_FRAME_RATE_TEST_CANVAS_GPU(MAYBE_speedreading)
+INTERNAL_FRAME_RATE_TEST_CANVAS_GPU(speedreading)
 
 }  // namespace
