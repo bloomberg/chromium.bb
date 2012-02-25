@@ -20,8 +20,8 @@
 #endif
 
 // Window resizes are not completed by the time the callback happens,
-// so these tests fail on linux. http://crbug.com/72369
-#if defined(OS_LINUX)
+// so these tests fail on linux/gtk. http://crbug.com/72369
+#if defined(OS_LINUX) && !defined(USE_AURA)
 #define MAYBE_FocusWindowDoesNotExitFullscreen \
   DISABLED_FocusWindowDoesNotExitFullscreen
 #define MAYBE_UpdateWindowSizeExitsFullscreen \

@@ -57,6 +57,18 @@ TEST_F(BaseLayoutManagerTest, Maximize) {
   EXPECT_EQ(bounds, window->bounds());
 }
 
+// Tests normal->minimize->normal.
+TEST_F(BaseLayoutManagerTest, Minimize) {
+  gfx::Rect bounds(100, 100, 200, 200);
+  scoped_ptr<aura::Window> window(CreateTestWindow(bounds));
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
+  // Note: Currently minimize doesn't do anything except set the state.
+  // See crbug.com/104571.
+  EXPECT_EQ(bounds, window->bounds());
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  EXPECT_EQ(bounds, window->bounds());
+}
+
 // Tests maximized window size during root window resize.
 TEST_F(BaseLayoutManagerTest, MaximizeRootWindowResize) {
   gfx::Rect bounds(100, 100, 200, 200);

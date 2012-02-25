@@ -411,9 +411,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DontCreateTabInClosingPopupWindow) {
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, InvalidUpdateWindowState) {
   int window_id = ExtensionTabUtil::GetWindowId(browser());
 
-#if !defined(USE_AURA)
-  // Disabled for now (crbug.com/105173) because window minimization is not
-  // supported on Aura yet (crbug.com/104571).
   static const char kArgsMinimizedWithFocus[] =
       "[%u, {\"state\": \"minimized\", \"focused\": true}]";
   EXPECT_TRUE(MatchPattern(
@@ -422,7 +419,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, InvalidUpdateWindowState) {
           base::StringPrintf(kArgsMinimizedWithFocus, window_id),
           browser()),
       keys::kInvalidWindowStateError));
-#endif
 
   static const char kArgsMaximizedWithoutFocus[] =
       "[%u, {\"state\": \"maximized\", \"focused\": false}]";
@@ -433,9 +429,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, InvalidUpdateWindowState) {
           browser()),
       keys::kInvalidWindowStateError));
 
-#if !defined(USE_AURA)
-  // Disabled for now (crbug.com/105173) because window minimization is not
-  // supported on Aura yet (crbug.com/104571).
   static const char kArgsMinimizedWithBounds[] =
       "[%u, {\"state\": \"minimized\", \"width\": 500}]";
   EXPECT_TRUE(MatchPattern(
@@ -444,7 +437,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, InvalidUpdateWindowState) {
           base::StringPrintf(kArgsMinimizedWithBounds, window_id),
           browser()),
       keys::kInvalidWindowStateError));
-#endif
 
   static const char kArgsMaximizedWithBounds[] =
       "[%u, {\"state\": \"maximized\", \"width\": 500}]";

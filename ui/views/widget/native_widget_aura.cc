@@ -409,6 +409,11 @@ gfx::Rect NativeWidgetAura::GetClientAreaScreenBounds() const {
 }
 
 gfx::Rect NativeWidgetAura::GetRestoredBounds() const {
+  // Restored bounds should only be relevant if the window is minimized or
+  // maximized. However, in some places the code expectes GetRestoredBounds()
+  // to return the current window bounds if the window is not in either state.
+  if (!IsMinimized() && !IsMaximized() && !IsFullscreen())
+    return window_->bounds();
   gfx::Rect* restore_bounds =
       window_->GetProperty(aura::client::kRestoreBoundsKey);
   return restore_bounds ? *restore_bounds : window_->bounds();
@@ -517,8 +522,9 @@ void NativeWidgetAura::Maximize() {
 }
 
 void NativeWidgetAura::Minimize() {
-  // No minimized window for aura. crbug.com/104571.
-  NOTREACHED();
+  // Note: This currently does not do anything except set the property,
+  // see crbug.com/104571.
+  window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
 }
 
 bool NativeWidgetAura::IsMaximized() const {
