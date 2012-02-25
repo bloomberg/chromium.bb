@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop.h"
 #include "base/stringprintf.h"
 #include "remoting/jingle_glue/iq_sender.h"
 #include "remoting/jingle_glue/mock_objects.h"
@@ -14,6 +15,7 @@
 
 using ::testing::_;
 using ::testing::DeleteArg;
+using ::testing::InvokeWithoutArgs;
 using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::SaveArg;
@@ -34,7 +36,7 @@ const char kTo[] = "user@domain.com";
 
 class MockCallback {
  public:
-  MOCK_METHOD1(OnReply, void(const XmlElement* reply));
+  MOCK_METHOD2(OnReply, void(IqRequest* request, const XmlElement* reply));
 };
 
 }  // namespace
@@ -49,43 +51,100 @@ class IqSenderTest : public testing::Test {
   }
 
  protected:
+  void SendTestMessage() {
+    scoped_ptr<XmlElement> iq_body(
+        new XmlElement(QName(kNamespace, kBodyTag)));
+    XmlElement* sent_stanza;
+    EXPECT_CALL(signal_strategy_, GetNextId())
+        .WillOnce(Return(kStanzaId));
+    EXPECT_CALL(signal_strategy_, SendStanzaPtr(_))
+        .WillOnce(DoAll(SaveArg<0>(&sent_stanza), Return(true)));
+    request_ = sender_->SendIq(kType, kTo, iq_body.Pass(), base::Bind(
+        &MockCallback::OnReply, base::Unretained(&callback_)));
+
+    std::string expected_xml_string =
+        base::StringPrintf(
+            "<cli:iq type=\"%s\" to=\"%s\" id=\"%s\" "
+            "xmlns:cli=\"jabber:client\">"
+            "<%s:%s xmlns:%s=\"%s\"/>"
+            "</cli:iq>",
+            kType, kTo, kStanzaId, kNamespacePrefix, kBodyTag,
+            kNamespacePrefix, kNamespace);
+    EXPECT_EQ(expected_xml_string, sent_stanza->Str());
+    delete sent_stanza;
+  }
+
+  MessageLoop message_loop_;
   MockSignalStrategy signal_strategy_;
   scoped_ptr<IqSender> sender_;
   MockCallback callback_;
+  scoped_ptr<IqRequest> request_;
 };
 
 TEST_F(IqSenderTest, SendIq) {
-  scoped_ptr<XmlElement> iq_body(
-      new XmlElement(QName(kNamespace, kBodyTag)));
-  XmlElement* sent_stanza;
-  EXPECT_CALL(signal_strategy_, GetNextId())
-      .WillOnce(Return(kStanzaId));
-  EXPECT_CALL(signal_strategy_, SendStanzaPtr(_))
-      .WillOnce(DoAll(SaveArg<0>(&sent_stanza), Return(true)));
-  scoped_ptr<IqRequest> request =
-      sender_->SendIq(kType, kTo, iq_body.Pass(), base::Bind(
-          &MockCallback::OnReply, base::Unretained(&callback_)));
-
-  std::string expected_xml_string =
-      base::StringPrintf(
-          "<cli:iq type=\"%s\" to=\"%s\" id=\"%s\" "
-          "xmlns:cli=\"jabber:client\">"
-          "<%s:%s xmlns:%s=\"%s\"/>"
-          "</cli:iq>",
-          kType, kTo, kStanzaId, kNamespacePrefix, kBodyTag,
-          kNamespacePrefix, kNamespace);
-  EXPECT_EQ(expected_xml_string, sent_stanza->Str());
-  delete sent_stanza;
+  ASSERT_NO_FATAL_FAILURE({
+    SendTestMessage();
+  });
 
   scoped_ptr<XmlElement> response(new XmlElement(buzz::QN_IQ));
   response->AddAttr(QName("", "type"), "result");
   response->AddAttr(QName("", "id"), kStanzaId);
+  response->AddAttr(QName("", "from"), kTo);
 
   XmlElement* result = new XmlElement(
       QName("test:namespace", "response-body"));
   response->AddElement(result);
 
-  EXPECT_CALL(callback_, OnReply(response.get()));
+  EXPECT_CALL(callback_, OnReply(request_.get(), response.get()));
+  EXPECT_TRUE(sender_->OnSignalStrategyIncomingStanza(response.get()));
+}
+
+TEST_F(IqSenderTest, Timeout) {
+  ASSERT_NO_FATAL_FAILURE({
+    SendTestMessage();
+  });
+
+  request_->SetTimeout(base::TimeDelta::FromMilliseconds(2));
+
+  EXPECT_CALL(callback_, OnReply(request_.get(), NULL))
+      .WillOnce(InvokeWithoutArgs(&message_loop_, &MessageLoop::Quit));
+  message_loop_.Run();
+}
+
+TEST_F(IqSenderTest, InvalidFrom) {
+  ASSERT_NO_FATAL_FAILURE({
+    SendTestMessage();
+  });
+
+  scoped_ptr<XmlElement> response(new XmlElement(buzz::QN_IQ));
+  response->AddAttr(QName("", "type"), "result");
+  response->AddAttr(QName("", "id"), kStanzaId);
+  response->AddAttr(QName("", "from"), "different_user@domain.com");
+
+  XmlElement* result = new XmlElement(
+      QName("test:namespace", "response-body"));
+  response->AddElement(result);
+
+  EXPECT_CALL(callback_, OnReply(request_.get(), response.get()))
+      .Times(0);
+  EXPECT_FALSE(sender_->OnSignalStrategyIncomingStanza(response.get()));
+}
+
+TEST_F(IqSenderTest, IdMatchingHack) {
+  ASSERT_NO_FATAL_FAILURE({
+    SendTestMessage();
+  });
+
+  scoped_ptr<XmlElement> response(new XmlElement(buzz::QN_IQ));
+  response->AddAttr(QName("", "type"), "result");
+  response->AddAttr(QName("", "id"), "DIFFERENT_ID");
+  response->AddAttr(QName("", "from"), kTo);
+
+  XmlElement* result = new XmlElement(
+      QName("test:namespace", "response-body"));
+  response->AddElement(result);
+
+  EXPECT_CALL(callback_, OnReply(request_.get(), response.get()));
   EXPECT_TRUE(sender_->OnSignalStrategyIncomingStanza(response.get()));
 }
 

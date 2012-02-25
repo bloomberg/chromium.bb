@@ -32,6 +32,11 @@ namespace {
 // process.
 const int kTransportInfoSendDelayMs = 2;
 
+// How long we should wait for a response from the other end. This
+// value is used for all requests include |session-initiate| and
+// |transport-info|.
+const int kMessageResponseTimeoutSeconds = 10;
+
 Session::Error AuthRejectionReasonToError(
     Authenticator::RejectionReason reason) {
   switch (reason) {
@@ -54,6 +59,8 @@ JingleSession::JingleSession(JingleSessionManager* session_manager)
 }
 
 JingleSession::~JingleSession() {
+  STLDeleteContainerPointers(pending_requests_.begin(),
+                             pending_requests_.end());
   STLDeleteContainerPairSecondPointers(channels_.begin(), channels_.end());
   session_manager_->SessionDestroyed(this);
 }
@@ -102,10 +109,7 @@ void JingleSession::StartConnection(
   message.description.reset(
       new ContentDescription(candidate_config_->Clone(),
                              authenticator_->GetNextMessage()));
-  initiate_request_ = session_manager_->iq_sender()->SendIq(
-      message.ToXml(),
-      base::Bind(&JingleSession::OnSessionInitiateResponse,
-                 base::Unretained(this)));
+  SendMessage(message);
 
   SetState(CONNECTING);
 }
@@ -158,10 +162,7 @@ void JingleSession::AcceptIncomingConnection(
   message.description.reset(
       new ContentDescription(CandidateSessionConfig::CreateFrom(config_),
                              auth_message.Pass()));
-  initiate_request_ = session_manager_->iq_sender()->SendIq(
-      message.ToXml(),
-      base::Bind(&JingleSession::OnSessionInitiateResponse,
-                 base::Unretained(this)));
+  SendMessage(message);
 
   // Update state.
   SetState(CONNECTED);
@@ -173,20 +174,6 @@ void JingleSession::AcceptIncomingConnection(
   }
 
   return;
-}
-
-void JingleSession::OnSessionInitiateResponse(
-    const buzz::XmlElement* response) {
-  const std::string& type = response->Attr(buzz::QName("", "type"));
-  if (type != "result") {
-    LOG(ERROR) << "Received error in response to session-initiate message: \""
-               << response->Str()
-               << "\". Terminating the session.";
-
-    // TODO(sergeyu): There may be different reasons for error
-    // here. Parse the response stanza to find failure reason.
-    CloseInternal(PEER_IS_OFFLINE);
-  }
 }
 
 void JingleSession::CreateStreamChannel(
@@ -280,6 +267,87 @@ void JingleSession::OnTransportDeleted(Transport* transport) {
   ChannelsMap::iterator it = channels_.find(transport->name());
   DCHECK_EQ(it->second, transport);
   channels_.erase(it);
+}
+
+void JingleSession::SendMessage(const JingleMessage& message) {
+  scoped_ptr<IqRequest> request = session_manager_->iq_sender()->SendIq(
+      message.ToXml(),
+      base::Bind(&JingleSession::OnMessageResponse,
+                 base::Unretained(this), message.action));
+  if (request.get()) {
+    request->SetTimeout(
+        base::TimeDelta::FromSeconds(kMessageResponseTimeoutSeconds));
+    pending_requests_.push_back(request.release());
+  } else {
+    LOG(ERROR) << "Failed to send a "
+               << JingleMessage::GetActionName(message.action) << " message";
+  }
+}
+
+void JingleSession::OnMessageResponse(
+    JingleMessage::ActionType request_type,
+    IqRequest* request,
+    const buzz::XmlElement* response) {
+  Error error = OK;
+
+  std::string type_str = JingleMessage::GetActionName(request_type);
+
+  if (!response) {
+    LOG(ERROR) << type_str << " request timed out.";
+    // Most likely the session-initiate timeout indicates a problem
+    // with the signaling.
+    error = UNKNOWN_ERROR;
+  } else {
+    const std::string& type = response->Attr(buzz::QName("", "type"));
+    if (type != "result") {
+      LOG(ERROR) << "Received error in response to " << type_str
+                 << " message: \"" << response->Str()
+                 << "\". Terminating the session.";
+
+      switch (request_type) {
+        case JingleMessage::SESSION_INFO:
+          // session-info is used for the new authentication protocol,
+          // and wasn't previously supported.
+          error = INCOMPATIBLE_PROTOCOL;
+
+        default:
+          // TODO(sergeyu): There may be different reasons for error
+          // here. Parse the response stanza to find failure reason.
+          error = PEER_IS_OFFLINE;
+      }
+    }
+  }
+
+  CleanupPendingRequests(request);
+
+  if (error != OK) {
+    CloseInternal(error);
+  }
+}
+
+void JingleSession::CleanupPendingRequests(IqRequest* request) {
+  DCHECK(!pending_requests_.empty());
+  DCHECK(request);
+
+  // This method is called whenever a response to |request| is
+  // received. Here we delete that request and all requests that were
+  // sent before it. The idea here is that if we send messages A, B
+  // and C and then suddenly receive response to C then it means that
+  // either A and B messages or the corresponding response messages
+  // were somehow lost. E.g. that may happen when the client switches
+  // from one network to another. The best way to handle that case is
+  // to ignore errors and timeouts for A and B by deleting the
+  // corresponding IqRequest objects.
+  while (!pending_requests_.empty() && pending_requests_.front() != request) {
+    delete pending_requests_.front();
+    pending_requests_.pop_front();
+  }
+
+  // Delete the |request| itself.
+  DCHECK_EQ(request, pending_requests_.front());
+  delete request;
+  if (!pending_requests_.empty())
+    pending_requests_.pop_front();
 }
 
 void JingleSession::OnIncomingMessage(const JingleMessage& message,
@@ -451,11 +519,7 @@ void JingleSession::ProcessAuthenticationStep() {
     JingleMessage message(peer_jid_, JingleMessage::SESSION_INFO, session_id_);
     message.info = authenticator_->GetNextMessage();
     DCHECK(message.info.get());
-
-    session_info_request_ = session_manager_->iq_sender()->SendIq(
-        message.ToXml(), base::Bind(
-            &JingleSession::OnSessionInfoResponse,
-            base::Unretained(this)));
+    SendMessage(message);
   }
   DCHECK_NE(authenticator_->state(), Authenticator::MESSAGE_READY);
 
@@ -467,41 +531,11 @@ void JingleSession::ProcessAuthenticationStep() {
   }
 }
 
-void JingleSession::OnSessionInfoResponse(const buzz::XmlElement* response) {
-  const std::string& type = response->Attr(buzz::QName("", "type"));
-  if (type != "result") {
-    LOG(ERROR) << "Received error in response to session-info message: \""
-               << response->Str()
-               << "\". Terminating the session.";
-    CloseInternal(INCOMPATIBLE_PROTOCOL);
-  }
-}
-
-void JingleSession::OnTransportInfoResponse(const buzz::XmlElement* response) {
-  const std::string& type = response->Attr(buzz::QName("", "type"));
-  if (type != "result") {
-    LOG(ERROR) << "Received error in response to session-initiate message: \""
-               << response->Str()
-               << "\". Terminating the session.";
-
-    if (state_ == CONNECTING) {
-      CloseInternal(PEER_IS_OFFLINE);
-    } else {
-      // Host has disconnected without sending session-terminate message.
-      CloseInternal(OK);
-    }
-  }
-}
-
 void JingleSession::SendTransportInfo() {
   JingleMessage message(peer_jid_, JingleMessage::TRANSPORT_INFO, session_id_);
   message.candidates.swap(pending_candidates_);
-  transport_info_request_ = session_manager_->iq_sender()->SendIq(
-      message.ToXml(), base::Bind(
-          &JingleSession::OnTransportInfoResponse,
-          base::Unretained(this)));
+  SendMessage(message);
 }
-
 
 void JingleSession::CloseInternal(Error error) {
   DCHECK(CalledOnValidThread());
@@ -527,8 +561,7 @@ void JingleSession::CloseInternal(Error error) {
     JingleMessage message(peer_jid_, JingleMessage::SESSION_TERMINATE,
                           session_id_);
     message.reason = reason;
-    session_manager_->iq_sender()->SendIq(
-        message.ToXml(), IqSender::ReplyCallback());
+    SendMessage(message);
   }
 
   error_ = error;

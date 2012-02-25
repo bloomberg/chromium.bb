@@ -106,7 +106,8 @@ void HeartbeatSender::DoSendStanza() {
   ++sequence_id_;
 }
 
-void HeartbeatSender::ProcessResponse(const XmlElement* response) {
+void HeartbeatSender::ProcessResponse(IqRequest* request,
+                                      const XmlElement* response) {
   std::string type = response->Attr(buzz::QN_TYPE);
   if (type == buzz::STR_ERROR) {
     const XmlElement* error_element =

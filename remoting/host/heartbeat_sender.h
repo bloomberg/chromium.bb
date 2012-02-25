@@ -103,7 +103,7 @@ class HeartbeatSender : public SignalStrategy::Listener {
   void SendStanza();
   void ResendStanza();
   void DoSendStanza();
-  void ProcessResponse(const buzz::XmlElement* response);
+  void ProcessResponse(IqRequest* request, const buzz::XmlElement* response);
   void SetInterval(int interval);
   void SetSequenceId(int sequence_id);
 
