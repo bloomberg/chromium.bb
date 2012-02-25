@@ -105,6 +105,11 @@ UNFILED MAC AMD : conformance_attribs_gl_vertexattribpointer = FAIL
 UNFILED MAC AMD : conformance_misc_type_conversion_test = FAIL
 UNFILED MAC AMD : conformance_renderbuffers_framebuffer_object_attachment = FAIL
 UNFILED MAC AMD : conformance_textures_copy_tex_image_and_sub_image_2d = FAIL
+UNFILED MAC AMD : conformance_typedarrays_array_unit_tests = FAIL
+UNFILED MAC AMD : conformance_glsl_functions_glsl_function_distance = FAIL
+UNFILED MAC AMD : conformance_glsl_functions_glsl_function_dot = FAIL
+UNFILED MAC AMD : conformance_glsl_functions_glsl_function_length = FAIL
+UNFILED MAC AMD : conformance_glsl_variables_gl_pointcoord = FAIL
 
 UNFILED LINUX NVIDIA : conformance_uniforms_uniform_location = FAIL
 UNFILED LINUX NVIDIA : conformance_textures_texture_mips = FAIL
