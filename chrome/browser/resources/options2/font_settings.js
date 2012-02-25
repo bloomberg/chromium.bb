@@ -7,12 +7,6 @@ cr.define('options', function() {
   var OptionsPage = options.OptionsPage;
 
   /**
-   * This is the absolute difference maintained between standard and
-   * fixed-width font sizes. Refer http://crbug.com/91922.
-   */
-  const SIZE_DIFFERENCE_FIXED_STANDARD = 3;
-
-  /**
    * FontSettings class
    * Encapsulated handling of the 'Fonts and Encoding' page.
    * @class
@@ -101,7 +95,7 @@ cr.define('options', function() {
 
       fontSampleEl = $('fixed-font-sample');
       this.setUpFontSample_(fontSampleEl,
-                            value - SIZE_DIFFERENCE_FIXED_STANDARD,
+                            value - OptionsPage.SIZE_DIFFERENCE_FIXED_STANDARD,
                             fontSampleEl.style.fontFamily, false);
     },
 
@@ -115,7 +109,7 @@ cr.define('options', function() {
     standardFontSizeChanged_: function(el, value) {
       Preferences.setIntegerPref(
         'webkit.webprefs.global.default_fixed_font_size',
-        value - SIZE_DIFFERENCE_FIXED_STANDARD, '');
+        value - OptionsPage.SIZE_DIFFERENCE_FIXED_STANDARD, '');
     },
 
     /**

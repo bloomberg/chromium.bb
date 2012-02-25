@@ -141,8 +141,11 @@ cr.define('options', function() {
         chrome.send('coreOptionsUserMetricsAction', ['Options_FontSettings']);
       };
       $('defaultFontSize').onchange = function(event) {
-        chrome.send('defaultFontSizeAction',
-            [String(event.target.options[event.target.selectedIndex].value)]);
+        var value = event.target.options[event.target.selectedIndex].value;
+        Preferences.setIntegerPref(
+             'webkit.webprefs.global.default_fixed_font_size',
+             value - OptionsPage.SIZE_DIFFERENCE_FIXED_STANDARD, '');
+        chrome.send('defaultFontSizeAction', [String(value)]);
       };
       $('defaultZoomFactor').onchange = function(event) {
         chrome.send('defaultZoomFactorAction',

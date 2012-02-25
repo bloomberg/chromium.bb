@@ -26,6 +26,12 @@ cr.define('options', function() {
   const HORIZONTAL_OFFSET = 155;
 
   /**
+   * This is the absolute difference maintained between standard and
+   * fixed-width font sizes. Refer http://crbug.com/91922.
+   */
+  OptionsPage.SIZE_DIFFERENCE_FIXED_STANDARD = 3;
+
+  /**
    * Main level option pages. Maps lower-case page names to the respective page
    * object.
    * @protected
