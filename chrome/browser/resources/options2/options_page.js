@@ -658,7 +658,8 @@ cr.define('options', function() {
 
       // Install handler for key presses.
       document.addEventListener('keydown',
-                                this.keyDownEventHandler_.bind(this));
+                                this.keyDownEventHandler_.bind(this),
+                                true);
 
       document.addEventListener('focus', this.manageFocusChange_.bind(this),
                                 true);
