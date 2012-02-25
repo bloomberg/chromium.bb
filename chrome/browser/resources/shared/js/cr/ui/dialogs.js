@@ -111,8 +111,28 @@ cr.define('cr.ui.dialogs', function() {
     this.showWithTitle(null, message, onOk, onCancel, onShow);
   }
 
+  BaseDialog.prototype.findFocusableElements_ = function(doc) {
+    var elements = Array.prototype.filter.call(
+        doc.querySelectorAll('*'),
+        function(n) { return n.tabIndex >= 0; });
+
+    var iframes = doc.querySelectorAll('iframe');
+    for (var i = 0; i < iframes.length; i++) {
+      elements = elements.concat(this.findFocusableElements_(
+          iframes[i].contentDocument));
+    }
+    return elements;
+  };
+
   BaseDialog.prototype.showWithTitle = function(title, message,
       onOk, onCancel, onShow) {
+    // Make all outside nodes unfocusable while the dialog is active.
+    this.deactivatedNodes_ = this.findFocusableElements_(this.document_);
+    this.tabIndexes_ = this.deactivatedNodes_.map(
+        function(n) { return n.getAttribute('tabindex'); });
+    this.deactivatedNodes_.forEach(
+        function(n) { n.tabIndex = -1; });
+
     this.previousActiveElement_ = this.document_.activeElement;
     this.parentNode_.appendChild(this.container_);
 
@@ -156,6 +176,17 @@ cr.define('cr.ui.dialogs', function() {
   };
 
   BaseDialog.prototype.hide = function(onHide) {
+    // Restore focusability.
+    for (var i = 0; i < this.deactivatedNodes_.length; i++) {
+      var node = this.deactivatedNodes_[i];
+      if (this.tabIndexes_[i] === null)
+        node.removeAttribute('tabidex');
+      else
+        node.setAttribute('tabindex', this.tabIndexes_[i]);
+    }
+    this.deactivatedNodes_ = null;
+    this.tabIndexes_ = null;
+
     // Note that we control the opacity of the *container*, but the top/left
     // of the *frame*.
     this.container_.style.opacity = '0';
