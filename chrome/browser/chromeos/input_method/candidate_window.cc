@@ -593,17 +593,20 @@ class InfolistView : public views::View {
 
 // The implementation of CandidateWindowController.
 // CandidateWindowController controls the CandidateWindow.
-class CandidateWindowController::Impl : public CandidateWindowView::Observer,
-                                        public IBusUiController::Observer {
+class CandidateWindowControllerImpl : public CandidateWindowController,
+                                      public CandidateWindowView::Observer,
+                                      public IBusUiController::Observer {
  public:
-  Impl();
-  virtual ~Impl();
+  CandidateWindowControllerImpl();
+  virtual ~CandidateWindowControllerImpl();
 
   // Initializes the candidate window. Returns true on success.
-  bool Init();
+  virtual bool Init() OVERRIDE;
 
-  void AddObserver(CandidateWindowController::Observer* observer);
-  void RemoveObserver(CandidateWindowController::Observer* observer);
+  virtual void AddObserver(
+      CandidateWindowController::Observer* observer) OVERRIDE;
+  virtual void RemoveObserver(
+      CandidateWindowController::Observer* observer) OVERRIDE;
 
  private:
   // CandidateWindowView::Observer implementation.
@@ -647,7 +650,7 @@ class CandidateWindowController::Impl : public CandidateWindowView::Observer,
 
   ObserverList<CandidateWindowController::Observer> observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(Impl);
+  DISALLOW_COPY_AND_ASSIGN(CandidateWindowControllerImpl);
 };
 
 CandidateView::CandidateView(
@@ -1600,7 +1603,7 @@ void InfolistWindowView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 
-bool CandidateWindowController::Impl::Init() {
+bool CandidateWindowControllerImpl::Init() {
   // Create the candidate window view.
   CreateView();
 
@@ -1611,7 +1614,7 @@ bool CandidateWindowController::Impl::Init() {
   return true;
 }
 
-void CandidateWindowController::Impl::CreateView() {
+void CandidateWindowControllerImpl::CreateView() {
   // Create a non-decorated frame.
   frame_.reset(new views::Widget);
   // The size is initially zero.
@@ -1640,32 +1643,32 @@ void CandidateWindowController::Impl::CreateView() {
   infolist_frame_->SetContentsView(infolist_window_);
 }
 
-CandidateWindowController::Impl::Impl()
+CandidateWindowControllerImpl::CandidateWindowControllerImpl()
     : ibus_ui_controller_(IBusUiController::Create()),
       candidate_window_(NULL),
       infolist_window_(NULL) {
 }
 
-CandidateWindowController::Impl::~Impl() {
+CandidateWindowControllerImpl::~CandidateWindowControllerImpl() {
   ibus_ui_controller_->RemoveObserver(this);
   candidate_window_->RemoveObserver(this);
   // ibus_ui_controller_'s destructor will close the connection.
 }
 
-void CandidateWindowController::Impl::OnHideAuxiliaryText() {
+void CandidateWindowControllerImpl::OnHideAuxiliaryText() {
   candidate_window_->HideAuxiliaryText();
 }
 
-void CandidateWindowController::Impl::OnHideLookupTable() {
+void CandidateWindowControllerImpl::OnHideLookupTable() {
   candidate_window_->HideLookupTable();
   infolist_window_->Hide();
 }
 
-void CandidateWindowController::Impl::OnHidePreeditText() {
+void CandidateWindowControllerImpl::OnHidePreeditText() {
   candidate_window_->HidePreeditText();
 }
 
-void CandidateWindowController::Impl::OnSetCursorLocation(
+void CandidateWindowControllerImpl::OnSetCursorLocation(
     int x,
     int y,
     int width,
@@ -1689,7 +1692,7 @@ void CandidateWindowController::Impl::OnSetCursorLocation(
   infolist_window_->ResizeAndMoveParentFrame();
 }
 
-void CandidateWindowController::Impl::OnUpdateAuxiliaryText(
+void CandidateWindowControllerImpl::OnUpdateAuxiliaryText(
     const std::string& utf8_text,
     bool visible) {
   // If it's not visible, hide the auxiliary text and return.
@@ -1701,7 +1704,7 @@ void CandidateWindowController::Impl::OnUpdateAuxiliaryText(
   candidate_window_->ShowAuxiliaryText();
 }
 
-void CandidateWindowController::Impl::OnUpdateLookupTable(
+void CandidateWindowControllerImpl::OnUpdateLookupTable(
     const InputMethodLookupTable& lookup_table) {
   // If it's not visible, hide the lookup table and return.
   if (!lookup_table.visible) {
@@ -1736,7 +1739,7 @@ void CandidateWindowController::Impl::OnUpdateLookupTable(
   }
 }
 
-void CandidateWindowController::Impl::OnUpdatePreeditText(
+void CandidateWindowControllerImpl::OnUpdatePreeditText(
     const std::string& utf8_text, unsigned int cursor, bool visible) {
   // If it's not visible, hide the preedit text and return.
   if (!visible || utf8_text.empty()) {
@@ -1747,59 +1750,43 @@ void CandidateWindowController::Impl::OnUpdatePreeditText(
   candidate_window_->ShowPreeditText();
 }
 
-void CandidateWindowController::Impl::OnCandidateCommitted(int index,
+void CandidateWindowControllerImpl::OnCandidateCommitted(int index,
                                                            int button,
                                                            int flags) {
   ibus_ui_controller_->NotifyCandidateClicked(index, button, flags);
 }
 
-void CandidateWindowController::Impl::OnCandidateWindowOpened() {
+void CandidateWindowControllerImpl::OnCandidateWindowOpened() {
   FOR_EACH_OBSERVER(CandidateWindowController::Observer, observers_,
                     CandidateWindowOpened());
 }
 
-void CandidateWindowController::Impl::OnCandidateWindowClosed() {
+void CandidateWindowControllerImpl::OnCandidateWindowClosed() {
   FOR_EACH_OBSERVER(CandidateWindowController::Observer, observers_,
                     CandidateWindowClosed());
 }
 
-void CandidateWindowController::Impl::AddObserver(
+void CandidateWindowControllerImpl::AddObserver(
     CandidateWindowController::Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void CandidateWindowController::Impl::RemoveObserver(
+void CandidateWindowControllerImpl::RemoveObserver(
     CandidateWindowController::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void CandidateWindowController::Impl::OnConnectionChange(bool connected) {
+void CandidateWindowControllerImpl::OnConnectionChange(bool connected) {
   if (!connected) {
     candidate_window_->HideAll();
     infolist_window_->Hide();
   }
 }
 
-CandidateWindowController::CandidateWindowController()
-    : impl_(new CandidateWindowController::Impl) {
-}
-
-CandidateWindowController::~CandidateWindowController() {
-  delete impl_;
-}
-
-bool CandidateWindowController::Init() {
-  return impl_->Init();
-}
-
-void CandidateWindowController::AddObserver(
-    CandidateWindowController::Observer* observer) {
-  impl_->AddObserver(observer);
-}
-
-void CandidateWindowController::RemoveObserver(
-    CandidateWindowController::Observer* observer) {
-  impl_->RemoveObserver(observer);
+// static
+CandidateWindowController*
+CandidateWindowController::CreateCandidateWindowController() {
+  return new CandidateWindowControllerImpl;
 }
 
 }  // namespace input_method

@@ -1278,7 +1278,8 @@ class InputMethodManagerImpl
 
 #if !defined(USE_VIRTUAL_KEYBOARD)
     if (!candidate_window_controller_.get()) {
-      candidate_window_controller_.reset(new CandidateWindowController);
+      candidate_window_controller_.reset(
+          CandidateWindowController::CreateCandidateWindowController());
       if (candidate_window_controller_->Init()) {
         candidate_window_controller_->AddObserver(this);
       } else {
