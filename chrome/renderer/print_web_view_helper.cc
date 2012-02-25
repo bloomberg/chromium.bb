@@ -1021,7 +1021,7 @@ void PrintWebViewHelper::Print(WebKit::WebFrame* frame,
 
   // Some full screen plugins can say they don't want to print.
   if (!expected_page_count) {
-    DidFinishPrinting(OK);  // Release resources and fail silently.
+    DidFinishPrinting(FAIL_PRINT);
     return;
   }
 

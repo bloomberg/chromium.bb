@@ -158,6 +158,9 @@ class PrintViewManager : public content::NotificationObserver,
   // Helper method for Print*Now().
   bool PrintNowInternal(IPC::Message* message);
 
+  // Release the PrinterQuery associated with our |cookie_|.
+  void ReleasePrinterQuery();
+
   // TabContentsWrapper we're associated with.
   TabContentsWrapper* tab_;
 

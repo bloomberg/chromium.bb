@@ -36,23 +36,6 @@ using content::BrowserThread;
 
 namespace {
 
-// Release the PrinterQuery identified by |cookie|.
-void ReleasePrinterQuery(int cookie) {
-  printing::PrintJobManager* print_job_manager =
-      g_browser_process->print_job_manager();
-  // May be NULL in tests.
-  if (!print_job_manager)
-    return;
-
-  scoped_refptr<printing::PrinterQuery> printer_query;
-  print_job_manager->PopPrinterQuery(cookie, &printer_query);
-  if (printer_query.get()) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&printing::PrinterQuery::StopWorker, printer_query.get()));
-  }
-}
-
 // Keeps track of pending scripted print preview closures.
 // No locking, only access on the UI thread.
 typedef std::map<content::RenderProcessHost*, base::Closure>
@@ -81,7 +64,7 @@ PrintViewManager::PrintViewManager(TabContentsWrapper* tab)
 
 PrintViewManager::~PrintViewManager() {
   DCHECK_EQ(NOT_PREVIEWING, print_preview_state_);
-  ReleasePrinterQuery(cookie_);
+  ReleasePrinterQuery();
   DisconnectFromCurrentPrintJob();
 }
 
@@ -166,6 +149,7 @@ void PrintViewManager::StopNavigation() {
 
 void PrintViewManager::RenderViewGone(base::TerminationStatus status) {
   print_preview_state_ = NOT_PREVIEWING;
+  ReleasePrinterQuery();
 
   if (!print_job_.get())
     return;
@@ -262,7 +246,11 @@ void PrintViewManager::OnDidPrintPage(
 }
 
 void PrintViewManager::OnPrintingFailed(int cookie) {
-  ReleasePrinterQuery(cookie);
+  if (cookie != cookie_) {
+    NOTREACHED();
+    return;
+  }
+  ReleasePrinterQuery();
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PRINT_JOB_RELEASED,
@@ -606,6 +594,28 @@ bool PrintViewManager::PrintNowInternal(IPC::Message* message) {
   if (web_contents()->ShowingInterstitialPage())
     return false;
   return Send(message);
+}
+
+void PrintViewManager::ReleasePrinterQuery() {
+  if (!cookie_)
+    return;
+
+  int cookie = cookie_;
+  cookie_ = 0;
+
+  printing::PrintJobManager* print_job_manager =
+      g_browser_process->print_job_manager();
+  // May be NULL in tests.
+  if (!print_job_manager)
+    return;
+
+  scoped_refptr<printing::PrinterQuery> printer_query;
+  print_job_manager->PopPrinterQuery(cookie, &printer_query);
+  if (!printer_query.get())
+    return;
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&PrinterQuery::StopWorker, printer_query.get()));
 }
 
 }  // namespace printing
