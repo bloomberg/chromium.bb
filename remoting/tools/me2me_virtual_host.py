@@ -24,6 +24,7 @@ import signal
 import socket
 import subprocess
 import sys
+import tempfile
 import time
 import urllib2
 import uuid
@@ -435,6 +436,14 @@ def daemonize(log_filename):
   """Background this process and detach from controlling terminal, redirecting
   stdout/stderr to |log_filename|."""
 
+  # TODO(lambroslambrou): Having stdout/stderr redirected to a log file is not
+  # ideal - it could create a filesystem DoS if the daemon or a child process
+  # were to write excessive amounts to stdout/stderr.  Ideally, stdout/stderr
+  # should be redirected to a pipe or socket, and a process at the other end
+  # should consume the data and write it to a logging facility which can do
+  # data-capping or log-rotation. The 'logger' command-line utility could be
+  # used for this, but it might cause too much syslog spam.
+
   # Create new (temporary) file-descriptors before forking, so any errors get
   # reported to the main process and set the correct exit-code.
   # The mode is provided, since Python otherwise sets a default mode of 0777,
@@ -626,10 +635,10 @@ def main():
 
   # daemonize() must only be called after prompting for user/password, as the
   # process will become detached from the controlling terminal.
-  log_filename = os.path.join(CONFIG_DIR, "host#%s.log" % host_hash)
 
   if not options.foreground:
-    daemonize(log_filename)
+    log_file = tempfile.NamedTemporaryFile(prefix="me2me_host_", delete=False)
+    daemonize(log_file.name)
 
   g_pidfile.write_pid()
 
