@@ -113,9 +113,6 @@ void RegisterLocalState(PrefService* local_state) {
   KeywordEditorController::RegisterPrefs(local_state);
   MetricsLog::RegisterPrefs(local_state);
   MetricsService::RegisterPrefs(local_state);
-  NewTabPageHandler::RegisterPrefs(local_state);
-  printing::PrintJobManager::RegisterPrefs(local_state);
-  PromoResourceService::RegisterPrefs(local_state);
 
 #if defined(ENABLE_SAFE_BROWSING)
   SafeBrowsingService::RegisterPrefs(local_state);
@@ -127,7 +124,6 @@ void RegisterLocalState(PrefService* local_state) {
   UpgradeDetector::RegisterPrefs(local_state);
   TaskManager::RegisterPrefs(local_state);
   geolocation::RegisterPrefs(local_state);
-  BackgroundModeManager::RegisterPrefs(local_state);
   NotificationUIManager::RegisterPrefs(local_state);
   PrefProxyConfigTrackerImpl::RegisterPrefs(local_state);
   SSLConfigServiceManager::RegisterPrefs(local_state);
@@ -136,6 +132,14 @@ void RegisterLocalState(PrefService* local_state) {
 #endif
   ProfileInfoCache::RegisterPrefs(local_state);
   ProfileManager::RegisterPrefs(local_state);
+
+#if !defined(OS_ANDROID)
+  NewTabPageHandler::RegisterPrefs(local_state);
+  printing::PrintJobManager::RegisterPrefs(local_state);
+  PromoResourceService::RegisterPrefs(local_state);
+  BackgroundModeManager::RegisterPrefs(local_state);
+#endif
+
 #if defined(OS_CHROMEOS)
   chromeos::AudioHandler::RegisterPrefs(local_state);
   chromeos::UserManager::RegisterPrefs(local_state);
@@ -169,9 +173,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   ExtensionSettingsHandler::RegisterUserPrefs(user_prefs);
   IncognitoModePrefs::RegisterUserPrefs(user_prefs);
   NewTabUI::RegisterUserPrefs(user_prefs);
-  PluginsUI::RegisterUserPrefs(user_prefs);
   ProfileImpl::RegisterUserPrefs(user_prefs);
-  PromoResourceService::RegisterUserPrefs(user_prefs);
   HostContentSettingsMap::RegisterUserPrefs(user_prefs);
   DevToolsWindow::RegisterUserPrefs(user_prefs);
   PinnedTabCodec::RegisterUserPrefs(user_prefs);
@@ -199,13 +201,17 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   SyncPromoUI::RegisterUserPrefs(user_prefs);
   GAIAInfoUpdateService::RegisterUserPrefs(user_prefs);
   chrome_browser_net::HttpServerPropertiesManager::RegisterPrefs(user_prefs);
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
   default_apps::RegisterUserPrefs(user_prefs);
 #endif
   extensions::ComponentLoader::RegisterUserPrefs(user_prefs);
   web_intents::RegisterUserPrefs(user_prefs);
 #if defined(USE_AURA)
   ChromeLauncherDelegate::RegisterUserPrefs(user_prefs);
+#endif
+#if !defined(OS_ANDROID)
+  PluginsUI::RegisterUserPrefs(user_prefs);
+  PromoResourceService::RegisterUserPrefs(user_prefs);
 #endif
 }
 
