@@ -1158,8 +1158,6 @@ void RenderWidgetHostViewWin::OnNCPaint(HRGN update_region) {
 }
 
 void RenderWidgetHostViewWin::SetClickthroughRegion(SkRegion* region) {
-  if (transparent_region_.Get())
-    transparent_region_.release();
   transparent_region_.Set(region);
 }
 
