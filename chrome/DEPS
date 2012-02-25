@@ -32,6 +32,7 @@ include_rules = [
   "+third_party/WebKit/Source/WebKit/chromium",
   "+webkit/appcache",
   "+webkit/blob",
+  "+webkit/chromeos/fileapi",
   "+webkit/database",
   "+webkit/fileapi",
   "+webkit/quota",

@@ -54,15 +54,16 @@ const char kGDataVersionHeader[] = "GData-Version: 3.0";
 // etag matching header.
 const char kIfMatchHeaderFormat[] = "If-Match: %s";
 
-// URL requesting documents list.
+// URL requesting documents list that belong to the authenticated user only
+// (handled with '-/mine' part).
 const char kGetDocumentListURL[] =
-    "https://docs.google.com/feeds/default/private/full?"
-    "v=3&alt=json&showfolders=true&max-results=%d";
+    "https://docs.google.com/feeds/default/private/full/-/mine";
 
 #ifndef NDEBUG
-// Use super small 'page' size while debugging to ensure we hit feed reload
-// almost always.
-const int kMaxDocumentsPerFeed = 10;
+// Use smaller 'page' size while debugging to ensure we hit feed reload
+// almost always. Be careful not to use something too small on account that
+// have many items because server side 503 error might kick in.
+const int kMaxDocumentsPerFeed = 1000;
 #else
 const int kMaxDocumentsPerFeed = 1000;
 #endif
@@ -134,6 +135,21 @@ std::string GetResponseHeadersAsString(const content::URLFetcher* url_fetcher) {
     url_fetcher->GetResponseHeaders()->GetNormalizedHeaders(&headers);
   }
   return headers;
+}
+
+// Adds additional parameters for API version, output content type and to show
+// folders in the feed are added to document feed URLs.
+GURL AddFeedUrlParams(const GURL& url) {
+  GURL result = chrome_browser_net::AppendQueryParameter(url, "v", "3");
+  result = chrome_browser_net::AppendQueryParameter(result, "alt", "json");
+  result = chrome_browser_net::AppendQueryParameter(result,
+                                                    "showfolders",
+                                                    "true");
+  result = chrome_browser_net::AppendQueryParameter(
+      result,
+      "max-results",
+      base::StringPrintf("%d", kMaxDocumentsPerFeed));
+  return result;
 }
 
 }  // namespace
@@ -365,7 +381,9 @@ class GetDataOperation : public UrlFetchOperation<GetDataCallback> {
       LOG(ERROR) << "Error while parsing entry response: "
                  << error_message
                  << ", code: "
-                 << error_code;
+                 << error_code
+                 << ", data:\n"
+                 << data;
       return NULL;
     }
     return root_value.release();
@@ -406,9 +424,9 @@ void GetDocumentsOperation::SetUrl(const GURL& url) {
 
 GURL GetDocumentsOperation::GetURL() const {
   if (!override_url_.is_empty())
-    return override_url_;
+    return AddFeedUrlParams(override_url_);
 
-  return GURL(base::StringPrintf(kGetDocumentListURL, kMaxDocumentsPerFeed));
+  return AddFeedUrlParams(GURL(kGetDocumentListURL));
 }
 
 //============================ DownloadFileOperation ===========================
@@ -788,45 +806,55 @@ void DocumentsService::Initialize(Profile* profile) {
   GDataService::Initialize(profile);
 }
 
-void DocumentsService::GetDocuments(GetDataCallback callback) {
+void DocumentsService::GetDocuments(const GURL& url,
+                                    const GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
   if (!IsFullyAuthenticated()) {
     // Fetch OAuth2 authetication token from the refresh token first.
     StartAuthentication(base::Bind(&DocumentsService::GetDocumentsOnAuthRefresh,
                                    base::Unretained(this),
+                                   url,
                                    callback));
     return;
   }
 
   get_documents_started_ = true;
-  (new GetDocumentsOperation(profile_, oauth2_auth_token()))->Start(
-      base::Bind(&DocumentsService::OnGetDocumentsCompleted,
-                 base::Unretained(this),
-                 callback));
+  // operation is self-destructing, we don't need to clean it here.
+  GetDocumentsOperation* operation = new GetDocumentsOperation(profile_,
+      oauth2_auth_token());
+  if (!url.is_empty())
+    operation->SetUrl(url);
+
+  operation->Start(base::Bind(&DocumentsService::OnGetDocumentsCompleted,
+                              base::Unretained(this),
+                              url,
+                              callback));
 }
 
-void DocumentsService::GetDocumentsOnAuthRefresh(GetDataCallback callback,
-                                                 GDataErrorCode error,
-                                                 const std::string& token) {
+void DocumentsService::GetDocumentsOnAuthRefresh(const GURL& url,
+    const GetDataCallback& callback,
+    GDataErrorCode error,
+    const std::string& token) {
   if (error != HTTP_SUCCESS) {
     if (!callback.is_null())
       callback.Run(error, NULL);
     return;
   }
   DCHECK(IsPartiallyAuthenticated());
-  GetDocuments(callback);
+  GetDocuments(url, callback);
 }
 
-void DocumentsService::OnGetDocumentsCompleted(GetDataCallback callback,
-                                               GDataErrorCode error,
-                                               base::Value* value) {
+void DocumentsService::OnGetDocumentsCompleted(const GURL& url,
+    const GetDataCallback& callback,
+    GDataErrorCode error,
+    base::Value* value) {
   switch (error) {
   case HTTP_UNAUTHORIZED:
     DCHECK(!value);
     auth_token_.clear();
     // User authentication might have expired - rerun the request to force
     // auth token refresh.
-    GetDocuments(callback);
+    GetDocuments(url, callback);
     return;
   default:
     break;
@@ -985,7 +1013,7 @@ void DocumentsService::InitiateUpload(const UploadFileInfo& upload_file_info,
 
     // Start GetDocuments if it hasn't even started.
     if (!get_documents_started_) {
-      GetDocuments(base::Bind(&DocumentsService::UpdateFilelist,
+      GetDocuments(GURL(), base::Bind(&DocumentsService::UpdateFilelist,
                               base::Unretained(this)));
     }
 
@@ -1133,10 +1161,9 @@ void DocumentsService::OnOAuth2RefreshTokenChanged() {
     if (!IsPartiallyAuthenticated())
       return;
 
-    // TODO(zelidrag): Remove this becasue we probably don't want to fetch this
-    // before it is really needed.
     if (!feed_value_.get() && !get_documents_started_) {
-      GetDocuments(base::Bind(&DocumentsService::UpdateFilelist,
+      GetDocuments(GURL(),
+                   base::Bind(&DocumentsService::UpdateFilelist,
                               base::Unretained(this)));
     }
   }

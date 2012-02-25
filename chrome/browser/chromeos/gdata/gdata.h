@@ -182,8 +182,10 @@ class DocumentsService : public GDataService {
   // GDataService override.
   virtual void Initialize(Profile* profile) OVERRIDE;
 
-  // Gets the document list. Upon completion, invokes |callback| with results.
-  void GetDocuments(GetDataCallback callback);
+  // Gets the document feed from |feed_url|. If this URL is empty, the call
+  // will fetch the default ('root') document feed. Upon completion,
+  // invokes |callback| with results.
+  void GetDocuments(const GURL& feed_url, const GetDataCallback& callback);
 
   // Delete a document identified by its 'self' |url| and |etag|.
   // Upon completion, invokes |callback| with results.
@@ -253,12 +255,15 @@ class DocumentsService : public GDataService {
   // duplication.
 
   // Callback when re-authenticating user during document list fetching.
-  void GetDocumentsOnAuthRefresh(GetDataCallback callback,
+  void GetDocumentsOnAuthRefresh(const GURL& feed_url,
+                                 const GetDataCallback& callback,
                                  GDataErrorCode error,
                                  const std::string& auth_token);
 
   // Pass-through callback for re-authentication during document list fetching.
-  void OnGetDocumentsCompleted(GetDataCallback callback,
+  // If the call is successful, parsed document feed will be returned as |root|.
+  void OnGetDocumentsCompleted(const GURL& feed_url,
+                               const GetDataCallback& callback,
                                GDataErrorCode error,
                                base::Value* root);
 

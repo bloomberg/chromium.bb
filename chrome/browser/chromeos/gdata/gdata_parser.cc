@@ -43,6 +43,9 @@ const EntryKindMap kEntryKindMap[] = {
     { DocumentEntry::DOCUMENT,     "document"},
     { DocumentEntry::SPREADSHEET,  "spreadsheet" },
     { DocumentEntry::PRESENTATION, "presentation" },
+    { DocumentEntry::DRAWING,      "drawing"},
+    { DocumentEntry::TABLE,        "table"},
+    { DocumentEntry::SITE,         "site"},
     { DocumentEntry::FOLDER,       "folder"},
     { DocumentEntry::FILE,         "file"},
     { DocumentEntry::PDF,          "pdf"},
@@ -341,6 +344,20 @@ void DocumentEntry::RegisterJSONConverter(
       kSizeField, &DocumentEntry::file_size_, &base::StringToInt64);
   converter->RegisterStringField(
       kSuggestedFileNameField, &DocumentEntry::suggested_filename_);
+}
+
+std::string DocumentEntry::GetEntryKindText() const {
+  return std::string(GetEntryKindDescription(kind_));
+}
+
+// static
+const char* DocumentEntry::GetEntryKindDescription(
+    DocumentEntry::EntryKind kind) {
+  for (size_t i = 0; i < arraysize(kEntryKindMap); i++) {
+    if (kEntryKindMap[i].kind == kind)
+      return kEntryKindMap[i].entry;
+  }
+  return "";
 }
 
 // static

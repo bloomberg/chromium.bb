@@ -274,14 +274,21 @@ class GDataEntry {
 class DocumentEntry : public GDataEntry {
  public:
   enum EntryKind {
-    UNKNOWN,
-    ITEM,
-    DOCUMENT,
-    SPREADSHEET,
-    PRESENTATION,
-    FOLDER,
-    FILE,
-    PDF,
+    UNKNOWN       = 0x000000,
+    // Special entries.
+    ITEM          = 0x001001,
+    SITE          = 0x001002,
+    // Hosted documents.
+    DOCUMENT      = 0x002001,
+    SPREADSHEET   = 0x002002,
+    PRESENTATION  = 0x002003,
+    DRAWING       = 0x002004,
+    TABLE         = 0x002005,
+    // Folders, collections.
+    FOLDER        = 0x004001,
+    // Regular files.
+    FILE          = 0x008001,
+    PDF           = 0x008002,
   };
   virtual ~DocumentEntry();
 
@@ -335,6 +342,21 @@ class DocumentEntry : public GDataEntry {
   // Document feed file size (exists only for kinds FILE and PDF).
   int64 file_size() const { return file_size_; }
 
+  // Text version of document entry kind. Returns an empty string for
+  // unknown entry kind.
+  std::string GetEntryKindText() const;
+
+  // True if document entry is remotely hosted.
+  bool is_hosted_document() const { return (kind_ & 0x002000) != 0; }
+  // True if document entry is a folder (collection).
+  bool is_folder() const { return (kind_ & 0x004000) != 0; }
+  // True if document entry is regular file.
+  bool is_file() const { return (kind_ & 0x008000) != 0; }
+  // True if document entry can't be mapped to the file system.
+  bool is_special() const {
+    return !is_file() && !is_folder() && !is_hosted_document();
+  }
+
  private:
   friend class base::internal::RepeatedMessageConverter<DocumentEntry>;
   friend class DocumentFeed;
@@ -346,6 +368,8 @@ class DocumentEntry : public GDataEntry {
 
   // Converts categories.term into EntryKind enum.
   static EntryKind GetEntryKindFromTerm(const std::string& term);
+  // Converts |kind| into its text identifier equivalent.
+  static const char* GetEntryKindDescription(EntryKind kind);
 
   std::string resource_id_;
   std::string id_;
