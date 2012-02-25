@@ -106,24 +106,32 @@ void SetRestoreBounds(aura::Window* window, const gfx::Rect& bounds) {
 class NativeWidgetAura::ActiveWindowObserver : public aura::WindowObserver {
  public:
   explicit ActiveWindowObserver(NativeWidgetAura* host) : host_(host) {
-    aura::RootWindow::GetInstance()->AddObserver(this);
+    host_->GetNativeView()->GetRootWindow()->AddObserver(this);
+    host_->GetNativeView()->AddObserver(this);
   }
-  virtual ~ActiveWindowObserver() {
-    aura::RootWindow::GetInstance()->RemoveObserver(this);
-  }
+  virtual ~ActiveWindowObserver() {}
 
   // Overridden from aura::WindowObserver:
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,
                                        intptr_t old) OVERRIDE {
-    if (key != aura::client::kRootWindowActiveWindowKey)
+    if (window != host_->GetNativeView() ||
+        key != aura::client::kRootWindowActiveWindowKey) {
       return;
+    }
     aura::Window* active =
         aura::client::GetActivationClient()->GetActiveWindow();
     if (!active || (active != host_->window_ &&
                     active->transient_parent() != host_->window_)) {
       host_->delegate_->EnableInactiveRendering();
     }
+  }
+
+  virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE {
+    if (window != host_->GetNativeView())
+      return;
+    host_->GetNativeView()->GetRootWindow()->RemoveObserver(this);
+    host_->GetNativeView()->RemoveObserver(this);
   }
 
  private:
@@ -320,7 +328,7 @@ bool NativeWidgetAura::HasMouseCapture() const {
 }
 
 InputMethod* NativeWidgetAura::CreateInputMethod() {
-  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  aura::RootWindow* root_window = window_->GetRootWindow();
   ui::InputMethod* host =
       root_window->GetProperty(aura::client::kRootWindowInputMethodKey);
   InputMethod* input_method = new InputMethodBridge(this, host);
@@ -593,7 +601,7 @@ void NativeWidgetAura::SchedulePaintInRect(const gfx::Rect& rect) {
 
 void NativeWidgetAura::SetCursor(gfx::NativeCursor cursor) {
   cursor_ = cursor;
-  aura::RootWindow::GetInstance()->SetCursor(cursor);
+  window_->GetRootWindow()->SetCursor(cursor);
 }
 
 void NativeWidgetAura::ClearNativeFocus() {

@@ -437,10 +437,10 @@ TEST_F(GestureRecognizerTest, GestureEventLongPress) {
       static_cast<TimerTestGestureSequence*>(
           gesture_recognizer->GetGestureSequenceForTesting());
 
-  RootWindow::GetInstance()->SetGestureRecognizerForTesting(gesture_recognizer);
+  root_window()->SetGestureRecognizerForTesting(gesture_recognizer);
 
   TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201), 0);
-  RootWindow::GetInstance()->DispatchTouchEvent(&press1);
+  root_window()->DispatchTouchEvent(&press1);
   EXPECT_TRUE(delegate->tap_down());
 
   // We haven't pressed long enough for a long press to occur
@@ -453,7 +453,7 @@ TEST_F(GestureRecognizerTest, GestureEventLongPress) {
 
   delegate->Reset();
   TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201), 0);
-  RootWindow::GetInstance()->DispatchTouchEvent(&release1);
+  root_window()->DispatchTouchEvent(&release1);
   EXPECT_FALSE(delegate->long_press());
 }
 
@@ -475,10 +475,10 @@ TEST_F(GestureRecognizerTest, GestureEventLongPressCancelledByScroll) {
       static_cast<TimerTestGestureSequence*>(
           gesture_recognizer->GetGestureSequenceForTesting());
 
-  RootWindow::GetInstance()->SetGestureRecognizerForTesting(gesture_recognizer);
+  root_window()->SetGestureRecognizerForTesting(gesture_recognizer);
 
   TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201), 0);
-  RootWindow::GetInstance()->DispatchTouchEvent(&press1);
+  root_window()->DispatchTouchEvent(&press1);
   EXPECT_TRUE(delegate->tap_down());
 
   // We haven't pressed long enough for a long press to occur
@@ -492,7 +492,7 @@ TEST_F(GestureRecognizerTest, GestureEventLongPressCancelledByScroll) {
 
   delegate->Reset();
   TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201), 0);
-  RootWindow::GetInstance()->DispatchTouchEvent(&release1);
+  root_window()->DispatchTouchEvent(&release1);
   EXPECT_FALSE(delegate->long_press());
 }
 
@@ -512,11 +512,11 @@ TEST_F(GestureRecognizerTest, GestureEventLongPressCancelledByPinch) {
       static_cast<TimerTestGestureSequence*>(
           gesture_recognizer->GetGestureSequenceForTesting());
 
-  RootWindow::GetInstance()->SetGestureRecognizerForTesting(gesture_recognizer);
+  root_window()->SetGestureRecognizerForTesting(gesture_recognizer);
 
   delegate->Reset();
   TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201), 0);
-  RootWindow::GetInstance()->DispatchTouchEvent(&press);
+  root_window()->DispatchTouchEvent(&press);
   EXPECT_TRUE(delegate->tap_down());
 
   // We haven't pressed long enough for a long press to occur
@@ -525,7 +525,7 @@ TEST_F(GestureRecognizerTest, GestureEventLongPressCancelledByPinch) {
   // Pinch, to cancel the long press
   delegate->Reset();
   TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), 1);
-  RootWindow::GetInstance()->DispatchTouchEvent(&press2);
+  root_window()->DispatchTouchEvent(&press2);
   EXPECT_TRUE(delegate->tap_down());
   EXPECT_TRUE(delegate->pinch_begin());
 
@@ -537,7 +537,7 @@ TEST_F(GestureRecognizerTest, GestureEventLongPressCancelledByPinch) {
 
   delegate->Reset();
   TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201), 0);
-  RootWindow::GetInstance()->DispatchTouchEvent(&release1);
+  root_window()->DispatchTouchEvent(&release1);
   EXPECT_FALSE(delegate->long_press());
 }
 
