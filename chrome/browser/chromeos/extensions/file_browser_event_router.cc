@@ -61,6 +61,12 @@ const char* MountErrorToString(chromeos::MountError error) {
       return "error_invalid_archive";
     case chromeos::MOUNT_ERROR_LIBRARY_NOT_LOADED:
       return "error_libcros_missing";
+    case chromeos::MOUNT_ERROR_NOT_AUTHENTICATED:
+      return "error_authentication";
+    case chromeos::MOUNT_ERROR_NETWORK_ERROR:
+      return "error_libcros_missing";
+    case chromeos::MOUNT_ERROR_PATH_UNMOUNTED:
+      return "error_path_unmounted";
     default:
       NOTREACHED();
   }

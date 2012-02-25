@@ -15,6 +15,7 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
+#include "chrome/browser/chromeos/gdata/gdata_file_system_proxy.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -1281,6 +1282,7 @@ bool AddMountFunction::RunImpl() {
     case chromeos::MOUNT_TYPE_GDATA: {
       gdata::DocumentsService* service = gdata::DocumentsService::GetInstance();
       if (service->IsFullyAuthenticated()) {
+        AddGDataMountPoint();
         RaiseGDataMountEvent(gdata::HTTP_SUCCESS, service->oauth2_auth_token());
         SendResponse(true);
       } else if (service->IsPartiallyAuthenticated()) {
@@ -1311,6 +1313,18 @@ bool AddMountFunction::RunImpl() {
   return true;
 }
 
+
+void AddMountFunction::AddGDataMountPoint() {
+  fileapi::ExternalFileSystemMountPointProvider* provider =
+      BrowserContext::GetFileSystemContext(profile_)->external_provider();
+  const FilePath mount_point(kGDataMountPoint);
+  if (!provider || provider->HasMountPoint(mount_point))
+    return;
+
+  provider->AddRemoteMountPoint(mount_point,
+                                new gdata::GDataFileSystemProxy());
+}
+
 void AddMountFunction::RaiseGDataMountEvent(gdata::GDataErrorCode error,
                                             const std::string auth_token) {
   chromeos::MountError error_code = error == gdata::HTTP_SUCCESS ?
@@ -1330,6 +1344,9 @@ void AddMountFunction::RaiseGDataMountEvent(gdata::GDataErrorCode error,
 
 void AddMountFunction::OnGDataAuthentication(gdata::GDataErrorCode error,
                                              const std::string& token) {
+  if (error == gdata::HTTP_SUCCESS)
+    AddGDataMountPoint();
+
   RaiseGDataMountEvent(error, token);
   SendResponse(true);
 }

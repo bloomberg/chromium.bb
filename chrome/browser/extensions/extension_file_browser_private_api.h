@@ -241,6 +241,8 @@ class AddMountFunction
   // Sends gdata mount event to renderers.
   void RaiseGDataMountEvent(gdata::GDataErrorCode error,
                             const std::string auth_token);
+  // Adds gdata mount point.
+  void AddGDataMountPoint();
   // A callback method to handle the result of GData authentication request.
   void OnGDataAuthentication(gdata::GDataErrorCode error,
                              const std::string& token);
