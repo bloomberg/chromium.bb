@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/zygote_host_linux.h"
+#include "content/browser/zygote_host_impl_linux.h"
 
 #include <sys/socket.h>
 #include <sys/stat.h>
@@ -58,7 +58,12 @@ static void SaveSUIDUnsafeEnvironmentVariables() {
   }
 }
 
-ZygoteHost::ZygoteHost()
+// static
+content::ZygoteHost* content::ZygoteHost::GetInstance() {
+  return ZygoteHostImpl::GetInstance();
+}
+
+ZygoteHostImpl::ZygoteHostImpl()
     : control_fd_(-1),
       pid_(-1),
       init_(false),
@@ -66,17 +71,17 @@ ZygoteHost::ZygoteHost()
       have_read_sandbox_status_word_(false),
       sandbox_status_(0) {}
 
-ZygoteHost::~ZygoteHost() {
+ZygoteHostImpl::~ZygoteHostImpl() {
   if (init_)
     close(control_fd_);
 }
 
 // static
-ZygoteHost* ZygoteHost::GetInstance() {
-  return Singleton<ZygoteHost>::get();
+ZygoteHostImpl* ZygoteHostImpl::GetInstance() {
+  return Singleton<ZygoteHostImpl>::get();
 }
 
-void ZygoteHost::Init(const std::string& sandbox_cmd) {
+void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
   DCHECK(!init_);
   init_ = true;
 
@@ -221,7 +226,7 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
   // We don't wait for the reply. We'll read it in ReadReply.
 }
 
-ssize_t ZygoteHost::ReadReply(void* buf, size_t buf_len) {
+ssize_t ZygoteHostImpl::ReadReply(void* buf, size_t buf_len) {
   // At startup we send a kCmdGetSandboxStatus request to the zygote, but don't
   // wait for the reply. Thus, the first time that we read from the zygote, we
   // get the reply to that request.
@@ -237,7 +242,7 @@ ssize_t ZygoteHost::ReadReply(void* buf, size_t buf_len) {
   return HANDLE_EINTR(read(control_fd_, buf, buf_len));
 }
 
-pid_t ZygoteHost::ForkRequest(
+pid_t ZygoteHostImpl::ForkRequest(
     const std::vector<std::string>& argv,
     const base::GlobalDescriptors::Mapping& mapping,
     const std::string& process_type) {
@@ -319,7 +324,8 @@ pid_t ZygoteHost::ForkRequest(
 }
 
 #if !defined(OS_OPENBSD)
-void ZygoteHost::AdjustRendererOOMScore(base::ProcessHandle pid, int score) {
+void ZygoteHostImpl::AdjustRendererOOMScore(base::ProcessHandle pid,
+                                            int score) {
   // 1) You can't change the oom_score_adj of a non-dumpable process
   //    (EPERM) unless you're root. Because of this, we can't set the
   //    oom_adj from the browser process.
@@ -387,7 +393,7 @@ void ZygoteHost::AdjustRendererOOMScore(base::ProcessHandle pid, int score) {
 }
 #endif
 
-void ZygoteHost::EnsureProcessTerminated(pid_t process) {
+void ZygoteHostImpl::EnsureProcessTerminated(pid_t process) {
   DCHECK(init_);
   Pickle pickle;
 
@@ -398,7 +404,7 @@ void ZygoteHost::EnsureProcessTerminated(pid_t process) {
     PLOG(ERROR) << "write";
 }
 
-base::TerminationStatus ZygoteHost::GetTerminationStatus(
+base::TerminationStatus ZygoteHostImpl::GetTerminationStatus(
     base::ProcessHandle handle,
     int* exit_code) {
   DCHECK(init_);
@@ -442,4 +448,14 @@ base::TerminationStatus ZygoteHost::GetTerminationStatus(
     *exit_code = tmp_exit_code;
 
   return static_cast<base::TerminationStatus>(status);
+}
+
+pid_t ZygoteHostImpl::GetPid() const {
+  return pid_;
+}
+
+int ZygoteHostImpl::GetSandboxStatus() const {
+  if (have_read_sandbox_status_word_)
+    return sandbox_status_;
+  return 0;
 }

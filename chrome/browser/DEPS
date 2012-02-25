@@ -95,7 +95,6 @@ include_rules = [
   "+content/browser/tab_contents/web_drag_source_gtk.h",
   "+content/browser/tab_contents/web_drag_source_mac.h",
   "+content/browser/trace_controller.h",
-  "+content/browser/zygote_host_linux.h",
   # DO NOT ADD ANY MORE ITEMS TO THE ABOVE LIST!
 
   "-content/common",

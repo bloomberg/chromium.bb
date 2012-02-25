@@ -28,7 +28,7 @@
 #elif defined(OS_POSIX)
 #include "base/memory/singleton.h"
 #include "content/browser/renderer_host/render_sandbox_host_linux.h"
-#include "content/browser/zygote_host_linux.h"
+#include "content/browser/zygote_host_impl_linux.h"
 #endif
 
 #if defined(OS_POSIX)
@@ -140,9 +140,9 @@ class ChildProcessLauncher::Context
         mapping.push_back(std::pair<uint32_t, int>(kCrashDumpSignal,
                                                    crash_signal_fd));
       }
-      handle = ZygoteHost::GetInstance()->ForkRequest(cmd_line->argv(),
-                                                      mapping,
-                                                      process_type);
+      handle = ZygoteHostImpl::GetInstance()->ForkRequest(cmd_line->argv(),
+                                                          mapping,
+                                                          process_type);
     } else
     // Fall through to the normal posix case below when we're not zygoting.
 #endif
@@ -276,7 +276,7 @@ class ChildProcessLauncher::Context
     if (zygote) {
       // If the renderer was created via a zygote, we have to proxy the reaping
       // through the zygote process.
-      ZygoteHost::GetInstance()->EnsureProcessTerminated(handle);
+      ZygoteHostImpl::GetInstance()->EnsureProcessTerminated(handle);
     } else
 #endif  // !OS_MACOSX
     {
@@ -349,7 +349,7 @@ base::TerminationStatus ChildProcessLauncher::GetChildTerminationStatus(
   }
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   if (context_->zygote_) {
-    context_->termination_status_ = ZygoteHost::GetInstance()->
+    context_->termination_status_ = ZygoteHostImpl::GetInstance()->
         GetTerminationStatus(handle, &context_->exit_code_);
   } else
 #endif

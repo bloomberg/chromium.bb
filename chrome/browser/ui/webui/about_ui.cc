@@ -79,9 +79,9 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #include "chrome/browser/oom_priority_manager.h"
-#include "content/browser/zygote_host_linux.h"
+#include "content/public/browser/zygote_host_linux.h"
 #elif defined(OS_LINUX) || defined(OS_OPENBSD)
-#include "content/browser/zygote_host_linux.h"
+#include "content/public/browser/zygote_host_linux.h"
 #endif
 
 #if defined(USE_TCMALLOC)
@@ -962,24 +962,24 @@ std::string AboutSandbox() {
   data.append(l10n_util::GetStringUTF8(IDS_ABOUT_SANDBOX_TITLE));
   data.append("</h1>");
 
-  const int status = ZygoteHost::GetInstance()->sandbox_status();
+  const int status = content::ZygoteHost::GetInstance()->GetSandboxStatus();
 
   data.append("<table>");
 
   AboutSandboxRow(&data, "", IDS_ABOUT_SANDBOX_SUID_SANDBOX,
-                  status & ZygoteHost::kSandboxSUID);
+                  status & content::ZygoteHost::kSandboxSUID);
   AboutSandboxRow(&data, "&nbsp;&nbsp;", IDS_ABOUT_SANDBOX_PID_NAMESPACES,
-                  status & ZygoteHost::kSandboxPIDNS);
+                  status & content::ZygoteHost::kSandboxPIDNS);
   AboutSandboxRow(&data, "&nbsp;&nbsp;", IDS_ABOUT_SANDBOX_NET_NAMESPACES,
-                  status & ZygoteHost::kSandboxNetNS);
+                  status & content::ZygoteHost::kSandboxNetNS);
   AboutSandboxRow(&data, "", IDS_ABOUT_SANDBOX_SECCOMP_SANDBOX,
-                  status & ZygoteHost::kSandboxSeccomp);
+                  status & content::ZygoteHost::kSandboxSeccomp);
 
   data.append("</table>");
 
-  bool good = ((status & ZygoteHost::kSandboxSUID) &&
-               (status & ZygoteHost::kSandboxPIDNS)) ||
-              (status & ZygoteHost::kSandboxSeccomp);
+  bool good = ((status & content::ZygoteHost::kSandboxSUID) &&
+               (status & content::ZygoteHost::kSandboxPIDNS)) ||
+              (status & content::ZygoteHost::kSandboxSeccomp);
   if (good) {
     data.append("<p style=\"color: green\">");
     data.append(l10n_util::GetStringUTF8(IDS_ABOUT_SANDBOX_OK));

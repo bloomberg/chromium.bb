@@ -68,7 +68,7 @@
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include <sys/stat.h>
 #include "content/browser/renderer_host/render_sandbox_host_linux.h"
-#include "content/browser/zygote_host_linux.h"
+#include "content/browser/zygote_host_impl_linux.h"
 #endif
 
 #if defined(USE_X11)
@@ -105,10 +105,8 @@ void SetupSandbox(const CommandLine& parsed_command_line) {
     sandbox_cmd = sandbox_binary;
 
   // Tickle the sandbox host and zygote host so they fork now.
-  RenderSandboxHostLinux* shost = RenderSandboxHostLinux::GetInstance();
-  shost->Init(sandbox_cmd);
-  ZygoteHost* zhost = ZygoteHost::GetInstance();
-  zhost->Init(sandbox_cmd);
+  RenderSandboxHostLinux::GetInstance()->Init(sandbox_cmd);
+  ZygoteHostImpl::GetInstance()->Init(sandbox_cmd);
 }
 #endif
 

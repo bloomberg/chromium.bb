@@ -34,7 +34,7 @@
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "content/browser/renderer_host/render_sandbox_host_linux.h"
-#include "content/browser/zygote_host_linux.h"
+#include "content/public/browser/zygote_host_linux.h"
 #endif
 
 using content::BrowserChildProcessHostIterator;
@@ -157,7 +157,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-  const pid_t zygote_pid = ZygoteHost::GetInstance()->pid();
+  const pid_t zygote_pid = content::ZygoteHost::GetInstance()->GetPid();
   const pid_t sandbox_helper_pid = RenderSandboxHostLinux::GetInstance()->pid();
 #endif
 

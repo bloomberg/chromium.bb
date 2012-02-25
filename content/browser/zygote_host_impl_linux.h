@@ -2,34 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ZYGOTE_HOST_LINUX_H_
-#define CONTENT_BROWSER_ZYGOTE_HOST_LINUX_H_
+#ifndef CONTENT_BROWSER_ZYGOTE_HOST_IMPL_LINUX_H_
+#define CONTENT_BROWSER_ZYGOTE_HOST_IMPL_LINUX_H_
 #pragma once
-
-#include <unistd.h>
 
 #include <string>
 #include <vector>
 
 #include "base/global_descriptors_posix.h"
-#include "base/process.h"
 #include "base/process_util.h"
 #include "base/synchronization/lock.h"
-#include "content/common/content_export.h"
+#include "content/public/browser/zygote_host_linux.h"
 
 template<typename Type>
 struct DefaultSingletonTraits;
 
 static const char kZygoteMagic[] = "ZYGOTE_OK";
 
-// http://code.google.com/p/chromium/wiki/LinuxZygote
-
-// The zygote host is the interface, in the browser process, to the zygote
-// process.
-class CONTENT_EXPORT ZygoteHost {
+class CONTENT_EXPORT ZygoteHostImpl : public content::ZygoteHost {
  public:
   // Returns the singleton instance.
-  static ZygoteHost* GetInstance();
+  static ZygoteHostImpl* GetInstance();
 
   void Init(const std::string& sandbox_cmd);
 
@@ -56,34 +49,16 @@ class CONTENT_EXPORT ZygoteHost {
     kCmdGetSandboxStatus = 3,      // Read a bitmask of kSandbox*
   };
 
-  // These form a bitmask which describes the conditions of the sandbox that
-  // the zygote finds itself in.
-  enum {
-    kSandboxSUID = 1 << 0,     // SUID sandbox active
-    kSandboxPIDNS = 1 << 1,    // SUID sandbox is using the PID namespace
-    kSandboxNetNS = 1 << 2,    // SUID sandbox is using the network namespace
-    kSandboxSeccomp = 1 << 3,  // seccomp sandbox active.
-  };
-
-  pid_t pid() const { return pid_; }
-
-  // Returns an int which is a bitmask of kSandbox* values. Only valid after
-  // the first render has been forked.
-  int sandbox_status() const {
-    if (have_read_sandbox_status_word_)
-      return sandbox_status_;
-    return 0;
-  }
-
-  // Adjust the OOM score of the given renderer's PID.  The allowed
-  // range for the score is [0, 1000], where higher values are more
-  // likely to be killed by the OOM killer.
-  void AdjustRendererOOMScore(base::ProcessHandle process_handle, int score);
+  // ZygoteHost implementation:
+  virtual pid_t GetPid() const OVERRIDE;
+  virtual int GetSandboxStatus() const OVERRIDE;
+  virtual void AdjustRendererOOMScore(base::ProcessHandle process_handle,
+                                      int score) OVERRIDE;
 
  private:
-  friend struct DefaultSingletonTraits<ZygoteHost>;
-  ZygoteHost();
-  ~ZygoteHost();
+  friend struct DefaultSingletonTraits<ZygoteHostImpl>;
+  ZygoteHostImpl();
+  virtual ~ZygoteHostImpl();
 
   ssize_t ReadReply(void* buf, size_t buflen);
 
@@ -100,4 +75,4 @@ class CONTENT_EXPORT ZygoteHost {
   int sandbox_status_;
 };
 
-#endif  // CONTENT_BROWSER_ZYGOTE_HOST_LINUX_H_
+#endif  // CONTENT_BROWSER_ZYGOTE_HOST_IMPL_LINUX_H_

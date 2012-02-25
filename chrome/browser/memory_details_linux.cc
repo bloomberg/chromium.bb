@@ -18,8 +18,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/zygote_host_linux.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/zygote_host_linux.h"
 #include "content/public/common/process_type.h"
 #include "grit/chromium_strings.h"
 
@@ -239,7 +239,7 @@ void MemoryDetails::CollectProcessData(
   }
 
   std::vector<pid_t> current_browser_processes;
-  const pid_t zygote = ZygoteHost::GetInstance()->pid();
+  const pid_t zygote = content::ZygoteHost::GetInstance()->GetPid();
   GetAllChildren(processes, getpid(), zygote, &current_browser_processes);
   ProcessData current_browser;
   GetProcessDataMemoryInformation(current_browser_processes, &current_browser);

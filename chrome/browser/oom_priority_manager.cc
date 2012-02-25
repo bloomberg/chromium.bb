@@ -24,12 +24,12 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/browser/renderer_host/render_widget_host.h"
-#include "content/browser/zygote_host_linux.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/zygote_host_linux.h"
 
 #if !defined(OS_CHROMEOS)
 #error This file only meant to be compiled on ChromeOS
@@ -183,7 +183,7 @@ bool OomPriorityManager::CompareTabStats(TabStats first,
 void OomPriorityManager::AdjustFocusedTabScoreOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::AutoLock pid_to_oom_score_autolock(pid_to_oom_score_lock_);
-  ZygoteHost::GetInstance()->AdjustRendererOOMScore(
+  content::ZygoteHost::GetInstance()->AdjustRendererOOMScore(
       focused_tab_pid_, chrome::kLowestRendererOomScore);
   pid_to_oom_score_[focused_tab_pid_] = chrome::kLowestRendererOomScore;
 }
@@ -330,7 +330,7 @@ void OomPriorityManager::AdjustOomPrioritiesOnFileThread(
       score = static_cast<int>(priority + 0.5f);
       it = pid_to_oom_score_.find(iterator->renderer_handle);
       if (it == pid_to_oom_score_.end() || it->second != score) {
-        ZygoteHost::GetInstance()->AdjustRendererOOMScore(
+        content::ZygoteHost::GetInstance()->AdjustRendererOOMScore(
             iterator->renderer_handle, score);
         pid_to_oom_score_[iterator->renderer_handle] = score;
       }

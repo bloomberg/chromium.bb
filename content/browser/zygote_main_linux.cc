@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/zygote_host_linux.h"
+#include "content/browser/zygote_host_impl_linux.h"
 
 #include <dlfcn.h>
 #include <fcntl.h>
@@ -174,21 +174,21 @@ class Zygote {
     int kind;
     if (pickle.ReadInt(&iter, &kind)) {
       switch (kind) {
-        case ZygoteHost::kCmdFork:
+        case ZygoteHostImpl::kCmdFork:
           // This function call can return multiple times, once per fork().
           return HandleForkRequest(fd, pickle, iter, fds);
 
-        case ZygoteHost::kCmdReap:
+        case ZygoteHostImpl::kCmdReap:
           if (!fds.empty())
             break;
           HandleReapRequest(fd, pickle, iter);
           return false;
-        case ZygoteHost::kCmdGetTerminationStatus:
+        case ZygoteHostImpl::kCmdGetTerminationStatus:
           if (!fds.empty())
             break;
           HandleGetTerminationStatus(fd, pickle, iter);
           return false;
-        case ZygoteHost::kCmdGetSandboxStatus:
+        case ZygoteHostImpl::kCmdGetSandboxStatus:
           HandleGetSandboxStatus(fd, pickle, iter);
           return false;
         default:
@@ -846,11 +846,11 @@ bool ZygoteMain(const content::MainFunctionParams& params,
 
   int sandbox_flags = 0;
   if (getenv("SBX_D"))
-    sandbox_flags |= ZygoteHost::kSandboxSUID;
+    sandbox_flags |= ZygoteHostImpl::kSandboxSUID;
   if (getenv("SBX_PID_NS"))
-    sandbox_flags |= ZygoteHost::kSandboxPIDNS;
+    sandbox_flags |= ZygoteHostImpl::kSandboxPIDNS;
   if (getenv("SBX_NET_NS"))
-    sandbox_flags |= ZygoteHost::kSandboxNetNS;
+    sandbox_flags |= ZygoteHostImpl::kSandboxNetNS;
 
 #if defined(SECCOMP_SANDBOX)
   // The seccomp sandbox will be turned on when the renderers start. But we can
@@ -867,7 +867,7 @@ bool ZygoteMain(const content::MainFunctionParams& params,
                     "sandboxing disabled.";
     } else {
       VLOG(1) << "Enabling experimental Seccomp sandbox.";
-      sandbox_flags |= ZygoteHost::kSandboxSeccomp;
+      sandbox_flags |= ZygoteHostImpl::kSandboxSeccomp;
     }
   }
 #endif  // SECCOMP_SANDBOX
