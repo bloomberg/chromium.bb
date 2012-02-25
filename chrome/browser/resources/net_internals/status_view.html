@@ -1,33 +1,50 @@
 <!--
-Copyright (c) 2011 The Chromium Authors. All rights reserved.
+Copyright (c) 2012 The Chromium Authors. All rights reserved.
 Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
-<!-- Status bar at top of screen.  We use a different status bar when in capture
-     mode vs view-only mode vs file mode. -->
-<div id=status-view>
-  <div id=status-view-for-capture>
-    <table id=status-view-for-capture-table><tr>
+<!-- Status bar at top of screen when in capture mode. -->
+<div id=capture-status-view>
+  <table width=100%><tr>
+    <td>
+      Capturing network events
+      (<span id=capture-status-view-captured-events-count
+             title='Number of events captured to this window'></span>)
+      <button id=capture-status-view-stop>Stop</button>
+      <button id=capture-status-view-reset>Reset</button>
+    </td>
+    <td align=right>
+      <button id=capture-status-view-clear-cache class=warningText>
+        Clear cache</button>
+      <button id=capture-status-view-flush-sockets class=warningText>
+        Flush sockets</button>
+    </td>
+  </tr></table>
+</div>
+
+<!-- Status bar at top of screen when capturing is stopped -->
+<div id=halted-status-view>
+  <!-- The use of a table here is to get things to center vertically.
+       We need this since the CSS adds padding to our DIV to make the
+       various status bars have similar heights.  -->
+  <table height=100%>
+    <tr valign=middle>
+      <td>Capturing halted</td>
+    </tr>
+  </table>
+</div>
+
+<!-- Status bar at top of screen when displaying a loaded dump file -->
+<div id=loaded-status-view>
+  <!-- The use of a table here is to get things to center vertically.
+       We need this since the CSS adds padding to our DIV to make the
+       various status bars have similar heights.  -->
+  <table height=100%>
+    <tr valign=middle>
       <td>
-        Recording network events...
-        <button id=status-view-stop-capturing>Stop capturing</button>
+        Displaying log file (<span id=loaded-status-view-dump-file-name></span>)
       </td>
-      <td id=status-view-for-capture-mutating-buttons>
-        <button id=status-view-clear-events>Clear events</button>
-        <button id=status-view-clear-cache class=warningText>
-          Clear cache</button>
-        <button id=status-view-flush-sockets class=warningText>
-          Flush sockets</button>
-      </td>
-    </tr></table>
-  </div>
-
-  <div id=status-view-for-view style="display:none">
-    Logging halted
-  </div>
-
-  <div id=status-view-for-file style="display:none">
-    Displaying log file (<span id=status-view-dump-file-name></span>)
-  </div>
+    </tr>
+  </table>
 </div>

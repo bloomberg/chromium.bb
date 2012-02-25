@@ -1,17 +1,17 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 /**
  * The status view at the top of the page.  It displays what mode net-internals
- * is in (capturing, viewing only, viewing loaded log), and may have a couple
- * buttons as well.
+ * is in (capturing, viewing only, viewing loaded log), and may have extra
+ * information and actions depending on the mode.
  */
 var StatusView = (function() {
   'use strict';
 
-  // We inherit from DivView.
-  var superClass = DivView;
+  // We inherit from View.
+  var superClass = View;
 
   /**
    * Main entry point. Called once the page has loaded.
@@ -20,29 +20,22 @@ var StatusView = (function() {
   function StatusView() {
     assertFirstConstructorCall(StatusView);
 
-    superClass.call(this, StatusView.MAIN_BOX_ID);
+    superClass.call(this);
 
-    $(StatusView.STOP_CAPTURING_BUTTON_ID).onclick = switchToViewOnlyMode_;
+    this.subViews_ = {
+      capture: new CaptureStatusView(),
+      loaded: new LoadedStatusView(),
+      halted: new HaltedStatusView()
+    };
 
-    $(StatusView.CLEAR_EVENTS_BUTTON_ID).onclick =
-        g_browser.sourceTracker.deleteAllSourceEntries.bind(
-            g_browser.sourceTracker);
-    $(StatusView.CLEAR_CACHE_BUTTON_ID).onclick =
-        g_browser.sendClearAllCache.bind(g_browser);
-    $(StatusView.FLUSH_SOCKETS_BUTTON_ID).onclick =
-        g_browser.sendFlushSocketPools.bind(g_browser);
+    this.activeSubViewName_ = 'capture';
+
+    // Hide the non-active views.
+    for (var k in this.subViews_) {
+      if (k != this.activeSubViewName_)
+        this.subViews_[k].show(false);
+    }
   }
-
-  // IDs for special HTML elements in status_view.html
-  StatusView.MAIN_BOX_ID = 'status-view';
-  StatusView.FOR_CAPTURE_ID = 'status-view-for-capture';
-  StatusView.FOR_VIEW_ID = 'status-view-for-view';
-  StatusView.FOR_FILE_ID = 'status-view-for-file';
-  StatusView.STOP_CAPTURING_BUTTON_ID = 'status-view-stop-capturing';
-  StatusView.CLEAR_EVENTS_BUTTON_ID = 'status-view-clear-events';
-  StatusView.CLEAR_CACHE_BUTTON_ID = 'status-view-clear-cache';
-  StatusView.FLUSH_SOCKETS_BUTTON_ID = 'status-view-flush-sockets';
-  StatusView.DUMP_FILE_NAME_ID = 'status-view-dump-file-name';
 
   cr.addSingletonGetter(StatusView);
 
@@ -50,32 +43,51 @@ var StatusView = (function() {
     // Inherit the superclass's methods.
     __proto__: superClass.prototype,
 
-    /**
-     * Called when switching mode.  Hides all the StatusView nodes except for
-     * |id|, and updates the file name displayed when viewing a file.  When
-     * not viewing a file, |fileName| is ignored.
-     */
-    onSwitchMode: function(id, fileName) {
-      setNodeDisplay($(StatusView.FOR_CAPTURE_ID),
-                     StatusView.FOR_CAPTURE_ID == id);
-      setNodeDisplay($(StatusView.FOR_VIEW_ID),
-                     StatusView.FOR_VIEW_ID == id);
-      setNodeDisplay($(StatusView.FOR_FILE_ID),
-                     StatusView.FOR_FILE_ID == id);
+    setGeometry: function(left, top, width, height) {
+      superClass.prototype.setGeometry.call(this, left, top, width, height);
+      this.getActiveSubView_().setGeometry(left, top, width, height);
+    },
 
-      if (StatusView.FOR_FILE_ID == id)
-        $(StatusView.DUMP_FILE_NAME_ID).innerText = fileName;
+    getHeight: function() {
+      return this.getActiveSubView_().getHeight();
+    },
+
+    show: function(isVisible) {
+      superClass.prototype.show.call(this, isVisible);
+      this.getActiveSubView_().show(isVisible);
+    },
+
+    setLayoutParent: function(view) {
+      this.layoutParent_ = view;
+    },
+
+    /**
+     * Switch the active subview.
+     */
+    switchToSubView: function(name) {
+      if (!this.subViews_[name])
+        throw 'Invalid subview name: ' + name;
+
+      var prevSubView = this.getActiveSubView_();
+      this.activeSubViewName_ = name;
+      var newSubView = this.getActiveSubView_();
+
+      prevSubView.show(false);
+      newSubView.show(this.isVisible());
+
+      // Since the subview's dimensions may have changed, re-trigger a layout
+      // for our parent.
+      var view = this.layoutParent_;
+      view.setGeometry(view.getLeft(), view.getTop(),
+                       view.getWidth(), view.getHeight());
+
+      return newSubView;
+    },
+
+    getActiveSubView_: function() {
+      return this.subViews_[this.activeSubViewName_];
     }
   };
-
-  /**
-   * Calls the corresponding function of MainView.  This is needed because we
-   * can't call MainView.getInstance() in the constructor, as it hasn't been
-   * created yet.
-   */
-  function switchToViewOnlyMode_() {
-    MainView.getInstance().switchToViewOnlyMode();
-  }
 
   return StatusView;
 })();

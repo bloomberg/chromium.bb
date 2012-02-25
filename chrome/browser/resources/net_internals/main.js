@@ -126,6 +126,7 @@ var MainView = (function() {
     // area.
     this.statusView_ = StatusView.getInstance(this);
     var verticalSplitView = new VerticalSplitView(this.statusView_, this);
+    this.statusView_.setLayoutParent(verticalSplitView);
     var windowView = new WindowView(verticalSplitView);
 
     // Trigger initial layout.
@@ -180,10 +181,10 @@ var MainView = (function() {
       if (opt_fileName != undefined) {
         // If there's a file name, a log file was loaded, so swap out the status
         // bar to indicate we're no longer capturing events.
-        this.statusView_.onSwitchMode(StatusView.FOR_FILE_ID, opt_fileName);
+        this.statusView_.switchToSubView('loaded').setFileName(opt_fileName);
       } else {
         // Otherwise, the "Stop Capturing" button was presumably pressed.
-        this.statusView_.onSwitchMode(StatusView.FOR_VIEW_ID, '');
+        this.statusView_.switchToSubView('halted');
       }
     },
 

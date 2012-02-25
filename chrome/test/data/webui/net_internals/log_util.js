@@ -50,7 +50,7 @@ CreateAndLoadLogTask.prototype = {
   onLogDumpCreated: function(logDumpText) {
     expectEquals('Log loaded.', log_util.loadLogFile(logDumpText, 'log.txt'));
 
-    NetInternalsTest.expectStatusViewNodeVisible(StatusView.FOR_FILE_ID);
+    NetInternalsTest.expectStatusViewNodeVisible(LoadedStatusView.MAIN_BOX_ID);
 
     expectEquals(this.userComments_,
                  $(ExportView.USER_COMMENTS_TEXT_AREA_ID).value);
@@ -130,7 +130,7 @@ function checkViewsAfterLogLoaded() {
  */
 TEST_F('NetInternalsTest', 'netInternalsExportImportDump', function() {
   expectFalse(g_browser.isDisabled());
-  NetInternalsTest.expectStatusViewNodeVisible(StatusView.FOR_CAPTURE_ID);
+  NetInternalsTest.expectStatusViewNodeVisible(CaptureStatusView.MAIN_BOX_ID);
 
   var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(new CreateAndLoadLogTask('Detailed explanation.'));
@@ -162,12 +162,12 @@ TEST_F('NetInternalsTest', 'netInternalsStopCapturing', function() {
 
   taskQueue.addFunctionTask(
       NetInternalsTest.expectStatusViewNodeVisible.bind(
-          null, StatusView.FOR_VIEW_ID));
+          null, HaltedStatusView.MAIN_BOX_ID));
   taskQueue.addFunctionTask(checkViewsAfterLogLoaded);
   taskQueue.run();
 
   // Simulate a click on the stop capturing button.
-  $(StatusView.STOP_CAPTURING_BUTTON_ID).click();
+  $(CaptureStatusView.STOP_BUTTON_ID).click();
 });
 
 /**
@@ -181,14 +181,14 @@ TEST_F('NetInternalsTest', 'netInternalsStopCapturingExportImport', function() {
 
   taskQueue.addFunctionTask(
       NetInternalsTest.expectStatusViewNodeVisible.bind(
-          null, StatusView.FOR_VIEW_ID));
+          null, HaltedStatusView.MAIN_BOX_ID));
   taskQueue.addFunctionTask(checkViewsAfterLogLoaded);
   taskQueue.addTask(new CreateAndLoadLogTask('Detailed explanation.'));
   taskQueue.addFunctionTask(checkViewsAfterLogLoaded);
   taskQueue.run();
 
   // Simulate a click on the stop capturing button.
-  $(StatusView.STOP_CAPTURING_BUTTON_ID).click();
+  $(CaptureStatusView.STOP_BUTTON_ID).click();
 });
 
 })();  // Anonymous namespace
