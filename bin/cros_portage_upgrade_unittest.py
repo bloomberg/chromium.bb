@@ -2018,12 +2018,10 @@ class RunBoardTest(CpuTestBase):
     os.path.exists(mocked_upgrader._upstream_repo).AndReturn(False)
     root = os.path.dirname(mocked_upgrader._upstream_repo).AndReturn('root')
     name = os.path.basename(mocked_upgrader._upstream_repo).AndReturn('name')
+    os.path.basename('origin/gentoo').AndReturn('gentoo')
     mocked_upgrader._RunGit(root,
-                            ['clone', cpu.Upgrader.PORTAGE_GIT_URL, name])
-    mocked_upgrader._RunGit(mocked_upgrader._upstream_repo,
-                            ['checkout', 'origin/gentoo'],
-                            redirect_stdout=True,
-                            combine_stdout_stderr=True)
+                            ['clone', '--branch', 'gentoo',
+                             cpu.Upgrader.PORTAGE_GIT_URL, name])
     tempfile.mkdtemp()
     self.mox.ReplayAll()
 
@@ -2822,15 +2820,9 @@ class CommitTest(CpuTestBase):
                        'TEST=test everything',
                        'again and again',
                        ]
-    git_show_output = ('__BEGIN BODY__\n'
-                       + '\n'.join(old_upgrade_lines) + '\n'
+    git_show_output = ('\n'.join(old_upgrade_lines) + '\n'
                        + '\n'
-                       + '\n'.join(remaining_lines) +
-                       '__END BODY__\n'
-                       'some other stuff\n'
-                       'even more stuff\n'
-                       'not important\n'
-                       )
+                       + '\n'.join(remaining_lines))
     self._TestAmendCommitMessage(new_upgrade_lines, old_upgrade_lines,
                                  remaining_lines, git_show_output)
 
@@ -2838,23 +2830,14 @@ class CommitTest(CpuTestBase):
     old_upgrade_lines = ['Upgraded xyz/uvw to version 3.2.1 on arm, x86',
                          'Upgraded mno/pqr to version 12345 on x86',
                          ]
-    git_show_output = ('__BEGIN BODY__\n'
-                       + '\n'.join(old_upgrade_lines) + '\n'
-                       '__END BODY__\n'
-                       'some other stuff\n'
-                       'even more stuff\n'
-                       'not important\n'
-                       )
+    git_show_output = ('\n'.join(old_upgrade_lines))
     self._TestAmendCommitMessage([], old_upgrade_lines, [], git_show_output)
 
   def testNewOnly(self):
     new_upgrade_lines = ['Upgraded abc/efg to version 1.2.3 on amd64, arm, x86',
                          'Upgraded mno/pqr to version 4.5-r1 on x86',
                          ]
-    git_show_output = ('some other stuff\n'
-                       'even more stuff\n'
-                       'not important\n'
-                       )
+    git_show_output = ''
     self._TestAmendCommitMessage(new_upgrade_lines, [], [], git_show_output)
 
   def testOldEditedAndNew(self):
@@ -2870,15 +2853,9 @@ class CommitTest(CpuTestBase):
                        'TEST=test everything',
                        'again and again',
                        ]
-    git_show_output = ('__BEGIN BODY__\n'
-                       + '\n'.join(old_upgrade_lines) + '\n'
+    git_show_output = ('\n'.join(old_upgrade_lines) + '\n'
                        + '\n'
-                       + '\n'.join(remaining_lines) +
-                       '__END BODY__\n'
-                       'some other stuff\n'
-                       'even more stuff\n'
-                       'not important\n'
-                       )
+                       + '\n'.join(remaining_lines))
 
     # In this test, it should not recognize the existing old_upgrade_lines
     # as a previous commit message from this script.  So it should give a
@@ -3686,6 +3663,7 @@ class MainTest(CpuTestBase):
   def testFlowUpgradeOneBoard(self):
     """Test main flow for basic one-board upgrade."""
     self.mox.StubOutWithMock(cpu.Upgrader, 'PreRunChecks')
+    self.mox.StubOutWithMock(cpu.Upgrader, 'CheckBoardList')
     self.mox.StubOutWithMock(cpu, '_BoardIsSetUp')
     self.mox.StubOutWithMock(cpu.Upgrader, 'PrepareToRun')
     self.mox.StubOutWithMock(cpu.Upgrader, 'RunBoard')
@@ -3693,6 +3671,7 @@ class MainTest(CpuTestBase):
     self.mox.StubOutWithMock(cpu.Upgrader, 'WriteTableFiles')
 
     cpu.Upgrader.PreRunChecks()
+    cpu.Upgrader.CheckBoardList(['any-board'])
     cpu._BoardIsSetUp('any-board').AndReturn(True)
     cpu.Upgrader.PrepareToRun()
     cpu.Upgrader.RunBoard('any-board')
@@ -3708,6 +3687,7 @@ class MainTest(CpuTestBase):
   def testFlowUpgradeTwoBoards(self):
     """Test main flow for two-board upgrade."""
     self.mox.StubOutWithMock(cpu.Upgrader, 'PreRunChecks')
+    self.mox.StubOutWithMock(cpu.Upgrader, 'CheckBoardList')
     self.mox.StubOutWithMock(cpu, '_BoardIsSetUp')
     self.mox.StubOutWithMock(cpu.Upgrader, 'PrepareToRun')
     self.mox.StubOutWithMock(cpu.Upgrader, 'RunBoard')
@@ -3715,6 +3695,7 @@ class MainTest(CpuTestBase):
     self.mox.StubOutWithMock(cpu.Upgrader, 'WriteTableFiles')
 
     cpu.Upgrader.PreRunChecks()
+    cpu.Upgrader.CheckBoardList(['board1', 'board2'])
     cpu._BoardIsSetUp('board1').AndReturn(True)
     cpu._BoardIsSetUp('board2').AndReturn(True)
     cpu.Upgrader.PrepareToRun()
@@ -3733,6 +3714,7 @@ class MainTest(CpuTestBase):
   def testFlowUpgradeTwoBoardsAndHost(self):
     """Test main flow for two-board and host upgrade."""
     self.mox.StubOutWithMock(cpu.Upgrader, 'PreRunChecks')
+    self.mox.StubOutWithMock(cpu.Upgrader, 'CheckBoardList')
     self.mox.StubOutWithMock(cpu, '_BoardIsSetUp')
     self.mox.StubOutWithMock(cpu.Upgrader, 'PrepareToRun')
     self.mox.StubOutWithMock(cpu.Upgrader, 'RunBoard')
@@ -3740,6 +3722,7 @@ class MainTest(CpuTestBase):
     self.mox.StubOutWithMock(cpu.Upgrader, 'WriteTableFiles')
 
     cpu.Upgrader.PreRunChecks()
+    cpu.Upgrader.CheckBoardList(['board1', 'board2'])
     cpu._BoardIsSetUp('board1').AndReturn(True)
     cpu._BoardIsSetUp('board2').AndReturn(True)
     cpu.Upgrader.PrepareToRun()

@@ -30,6 +30,7 @@ oper = operation.Operation('cros_portage_upgrade')
 NOT_APPLICABLE = 'N/A'
 WORLD_TARGET = 'world'
 UPGRADED = 'Upgraded'
+STANDARD_BOARD_ARCHS = set(['amd64', 'arm', 'x86'])
 
 # Files we do not include in our upgrades by convention.
 BLACKLISTED_FILES = set(['Manifest', 'ChangeLog', 'metadata.xml'])
@@ -1611,6 +1612,29 @@ class Upgrader(object):
       # Stable source must be on branch.
       self._CheckStableRepoOnBranch()
 
+  def CheckBoardList(self, boards):
+    """Validate list of specified |boards| before running any of them."""
+
+    # If this is an upgrade run (i.e. --upgrade was specified), then in
+    # almost all cases we want all our supported architectures to be covered.
+    if self._IsInUpgradeMode():
+      board_archs = set()
+      for board in boards:
+        board_archs.add(Upgrader._FindBoardArch(board))
+
+      if not STANDARD_BOARD_ARCHS.issubset(board_archs):
+        # Only proceed if user acknowledges.
+        oper.Warning('You have selected boards for archs %r, which does not'
+                     ' cover all standard archs %r' %
+                     (sorted(board_archs), sorted(STANDARD_BOARD_ARCHS)))
+        oper.Warning('If you continue with this upgrade you may break'
+                     ' builds for architectures not covered by your\n'
+                     'boards.  Continue only if you have a reason to limit'
+                     ' this upgrade to these specific architectures.\n')
+        prompt = 'Do you want to continue anyway'
+        if not 'yes' == cros_lib.YesNoPrompt('no', prompt=prompt):
+          raise RuntimeError('Missing one or more of the standard archs')
+
   def RunBoard(self, board):
     """Runs the upgrader based on the supplied options and arguments.
 
@@ -1872,7 +1896,16 @@ def main():
   boards = []
   if options.board:
     boards = options.board.split(':')
-    boards = [Upgrader.HOST_BOARD if b == 'host' else b for b in boards]
+
+    # Specifying --board=host is equivalent to --host.
+    if 'host' in boards:
+      options.host = True
+
+    boards = [b for b in boards if b != 'host']
+
+    # If --board and --upgrade are given then in almost all cases
+    # the user should cover all architectures.
+    upgrader.CheckBoardList(boards)
 
   # Make sure host pseudo-board is run first.
   if options.host and Upgrader.HOST_BOARD not in boards:
