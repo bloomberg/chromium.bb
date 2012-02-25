@@ -57,7 +57,7 @@ DownloadTestObserver::DownloadTestObserver(
   finished_downloads_at_construction_ = finished_downloads_.size();
   EXPECT_NE(DownloadItem::REMOVING, download_finished_state)
       << "Waiting for REMOVING is not supported.  Try COMPLETE.";
-      }
+}
 
 DownloadTestObserver::~DownloadTestObserver() {
   for (DownloadSet::iterator it = downloads_observed_.begin();

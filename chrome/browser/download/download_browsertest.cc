@@ -73,29 +73,6 @@ const FilePath kGoodCrxPath(FILE_PATH_LITERAL("extensions/good.crx"));
 const char kLargeThemeCrxId[] = "pjpgmfcmabopnnfonnhmdjglfpjjfkbf";
 const FilePath kLargeThemePath(FILE_PATH_LITERAL("extensions/theme2.crx"));
 
-// Action a test should take if a dangerous download is encountered.
-enum DangerousDownloadAction {
-  ON_DANGEROUS_DOWNLOAD_ACCEPT,  // Accept the download
-  ON_DANGEROUS_DOWNLOAD_DENY,  // Deny the download
-  ON_DANGEROUS_DOWNLOAD_FAIL  // Fail if a dangerous download is seen
-};
-
-// Fake user click on "Accept".
-void AcceptDangerousDownload(scoped_refptr<DownloadManager> download_manager,
-                             int32 download_id) {
-  DownloadItem* download = download_manager->GetDownloadItem(download_id);
-  download->DangerousDownloadValidated();
-}
-
-// Fake user click on "Deny".
-void DenyDangerousDownload(scoped_refptr<DownloadManager> download_manager,
-                           int32 download_id) {
-  DownloadItem* download = download_manager->GetDownloadItem(download_id);
-  ASSERT_TRUE(download->IsPartialDownload());
-  download->Cancel(true);
-  download->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
-}
-
 // Collect the information from FILE and IO threads needed for the Cancel
 // Test, specifically the number of outstanding requests on the
 // ResourceDispatcherHost and the number of pending downloads on the
@@ -313,6 +290,20 @@ class DownloadTest : public InProcessBrowserTest {
     EXPECT_NO_SELECT_DIALOG = -1,
     EXPECT_NOTHING,
     EXPECT_SELECT_DIALOG
+  };
+
+  // Choice of navigation or direct fetch.  Used by |DownloadFileCheckErrors()|.
+  enum DownloadMethod {
+    DOWNLOAD_NAVIGATE,
+    DOWNLOAD_DIRECT
+  };
+
+  // Information passed in to |DownloadFileCheckErrors()|.
+  struct DownloadInfo {
+    const char* url_name;  // URL for the download.
+    DownloadMethod download_method;  // Navigation or Direct.
+    InterruptReason reason;  // Download interrupt reason (NONE is OK).
+    bool show_download_item;  // True if the download item appears on the shelf.
   };
 
   DownloadTest() {
@@ -687,6 +678,62 @@ class DownloadTest : public InProcessBrowserTest {
       return false;
 
     return true;
+  }
+
+  // Attempts to download a file, based on information in |download_info|.
+  void DownloadFileCheckErrors(const DownloadInfo& download_info) {
+    ASSERT_TRUE(test_server()->Start());
+    std::vector<DownloadItem*> download_items;
+    GetDownloads(browser(), &download_items);
+    ASSERT_TRUE(download_items.empty());
+
+    std::string server_path = "files/downloads/";
+    server_path += download_info.url_name;
+    GURL url = test_server()->GetURL(server_path);
+    ASSERT_TRUE(url.is_valid());
+
+    DownloadManager* download_manager = DownloadManagerForBrowser(browser());
+    scoped_ptr<DownloadTestObserver> observer(
+        new DownloadTestObserver(
+            download_manager,
+            1,
+            download_info.reason == DOWNLOAD_INTERRUPT_REASON_NONE ?
+                DownloadItem::COMPLETE :  // Really done
+                DownloadItem::INTERRUPTED,
+            true,                   // Bail on select file
+            DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+
+    if (download_info.download_method == DOWNLOAD_DIRECT) {
+      // Go directly to download.
+      WebContents* web_contents = browser()->GetSelectedWebContents();
+      ASSERT_TRUE(web_contents);
+      DownloadSaveInfo save_info;
+      save_info.prompt_for_save_location = false;
+
+      DownloadManagerForBrowser(browser())->DownloadUrl(
+          url, GURL(""), "", false, -1, save_info, web_contents);
+    } else {
+      // Navigate to URL normally, wait until done.
+      ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(),
+                                                                url,
+                                                                1);
+    }
+
+    if (download_info.show_download_item)
+      observer->WaitForFinished();
+
+    // Validate that the correct file was downloaded.
+    download_items.clear();
+    GetDownloads(browser(), &download_items);
+    size_t item_count = download_info.show_download_item ? 1 : 0;
+    ASSERT_EQ(item_count, download_items.size());
+
+    if (download_info.show_download_item) {
+      DownloadItem* item = download_items[0];
+      ASSERT_EQ(url, item->GetOriginalUrl());
+
+      ASSERT_EQ(download_info.reason, item->GetLastReason());
+    }
   }
 
  private:
@@ -1955,4 +2002,82 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaPost) {
   ASSERT_EQ(2u, download_items.size());
   ASSERT_EQ(jpeg_url, download_items[0]->GetOriginalUrl());
   ASSERT_EQ(jpeg_url, download_items[1]->GetOriginalUrl());
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadNavigate) {
+  DownloadInfo download_info = {
+    "a_zip_file.zip",
+    DOWNLOAD_NAVIGATE,
+    DOWNLOAD_INTERRUPT_REASON_NONE,
+    true
+  };
+
+  // Do initial setup.
+  ASSERT_TRUE(InitialSetup(false));
+  DownloadFileCheckErrors(download_info);
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadDirect) {
+  DownloadInfo download_info = {
+    "a_zip_file.zip",
+    DOWNLOAD_DIRECT,
+    DOWNLOAD_INTERRUPT_REASON_NONE,
+    true
+  };
+
+  // Do initial setup.
+  ASSERT_TRUE(InitialSetup(false));
+  DownloadFileCheckErrors(download_info);
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadError404Direct) {
+  DownloadInfo download_info = {
+    "there_IS_no_spoon.zip",
+    DOWNLOAD_DIRECT,
+    DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
+    true
+  };
+
+  // Do initial setup.
+  ASSERT_TRUE(InitialSetup(false));
+  DownloadFileCheckErrors(download_info);
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadError404Navigate) {
+  DownloadInfo download_info = {
+    "there_IS_no_spoon.zip",
+    DOWNLOAD_NAVIGATE,
+    DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
+    false
+  };
+
+  // Do initial setup.
+  ASSERT_TRUE(InitialSetup(false));
+  DownloadFileCheckErrors(download_info);
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadError400Direct) {
+  DownloadInfo download_info = {
+    "zip_file_not_found.zip",
+    DOWNLOAD_DIRECT,
+    DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
+    true
+  };
+
+  // Do initial setup.
+  ASSERT_TRUE(InitialSetup(false));
+  DownloadFileCheckErrors(download_info);
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadError400Navigate) {
+  DownloadInfo download_info = {
+    "zip_file_not_found.zip",
+    DOWNLOAD_NAVIGATE,
+    DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
+    false
+  };
+
+  // Do initial setup.
+  ASSERT_TRUE(InitialSetup(false));
+  DownloadFileCheckErrors(download_info);
 }

@@ -99,20 +99,33 @@ void DownloadFileManager::CreateDownloadFile(
   // Life of |info| ends here. No more references to it after this method.
   scoped_ptr<DownloadCreateInfo> infop(info);
 
+  // Create the download file.
   scoped_ptr<DownloadFile> download_file(download_file_factory_->CreateFile(
       info, request_handle, download_manager, get_hash, bound_net_log));
-  if (net::OK != download_file->Initialize()) {
-    request_handle.CancelRequest();
-    return;
+
+  net::Error init_result = download_file->Initialize();
+  if (net::OK != init_result) {
+    // Error:  Handle via download manager/item.
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(
+            &DownloadManager::OnDownloadInterrupted,
+            download_manager,
+            info->download_id.local(),
+            0,
+            "",
+            ConvertNetErrorToInterruptReason(init_result,
+                                             DOWNLOAD_INTERRUPT_FROM_DISK)));
+  } else {
+    DCHECK(GetDownloadFile(info->download_id) == NULL);
+    downloads_[info->download_id] = download_file.release();
+
+    // The file is now ready, we can un-pause the request and start saving data.
+    request_handle.ResumeRequest();
+
+    StartUpdateTimer();
   }
-
-  DCHECK(GetDownloadFile(info->download_id) == NULL);
-  downloads_[info->download_id] = download_file.release();
-
-  // The file is now ready, we can un-pause the request and start saving data.
-  request_handle.ResumeRequest();
-
-  StartUpdateTimer();
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

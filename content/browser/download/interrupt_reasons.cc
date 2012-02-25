@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,7 +28,7 @@ InterruptReason ConvertNetErrorToInterruptReason(
     FILE_ERROR_TO_INTERRUPT_REASON(ACCESS_DENIED, ACCESS_DENIED)
 
     // There were not enough resources to complete the operation.
-     FILE_ERROR_TO_INTERRUPT_REASON(INSUFFICIENT_RESOURCES, TRANSIENT_ERROR)
+    FILE_ERROR_TO_INTERRUPT_REASON(INSUFFICIENT_RESOURCES, TRANSIENT_ERROR)
 
     // Memory allocation failed.
     FILE_ERROR_TO_INTERRUPT_REASON(OUT_OF_MEMORY, TRANSIENT_ERROR)

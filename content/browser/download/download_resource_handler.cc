@@ -267,11 +267,32 @@ void DownloadResourceHandler::OnResponseCompletedInternal(
   InterruptReason reason =
       ConvertNetErrorToInterruptReason(error_code,
                                        DOWNLOAD_INTERRUPT_FROM_NETWORK);
+
   if ((status.status() == net::URLRequestStatus::CANCELED) &&
       (status.error() == net::ERR_ABORTED)) {
     // TODO(ahendrickson) -- Find a better set of codes to use here, as
     // CANCELED/ERR_ABORTED can occur for reasons other than user cancel.
     reason = DOWNLOAD_INTERRUPT_REASON_USER_CANCELED;  // User canceled.
+  }
+
+  if (status.is_success()) {
+    int response_code = request_->GetResponseCode();
+    if (response_code >= 400) {
+      switch(response_code) {
+        case 404:  // File Not Found.
+          reason = DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
+          break;
+        case 416:  // Range Not Satisfiable.
+          reason = DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE;
+          break;
+        case 412:  // Precondition Failed.
+          reason = DOWNLOAD_INTERRUPT_REASON_SERVER_PRECONDITION;
+          break;
+        default:
+          reason = DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED;
+          break;
+      }
+    }
   }
 
   download_stats::RecordAcceptsRanges(accept_ranges_, bytes_read_);
