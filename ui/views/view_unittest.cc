@@ -40,8 +40,8 @@
 #endif
 #if defined(USE_AURA)
 #include "ui/aura/event.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/gestures/gesture_recognizer.h"
+#include "ui/aura/root_window.h"
 #endif
 
 using ::testing::_;
@@ -335,10 +335,10 @@ void TestView::OnMouseReleased(const MouseEvent& event) {
 
 TEST_F(ViewTest, MouseEvent) {
   TestView* v1 = new TestView();
-  v1->SetBounds(0, 0, 300, 300);
+  v1->SetBoundsRect(gfx::Rect(0, 0, 300, 300));
 
   TestView* v2 = new TestView();
-  v2->SetBounds(100, 100, 100, 100);
+  v2->SetBoundsRect(gfx::Rect(100, 100, 100, 100));
 
   scoped_ptr<Widget> widget(new Widget);
   Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
@@ -420,13 +420,13 @@ ui::TouchStatus TestViewIgnoreTouch::OnTouchEvent(const TouchEvent& event) {
 
 TEST_F(ViewTest, TouchEvent) {
   TestView* v1 = new TestView();
-  v1->SetBounds(0, 0, 300, 300);
+  v1->SetBoundsRect(gfx::Rect(0, 0, 300, 300));
 
   TestView* v2 = new TestView();
-  v2->SetBounds(100, 100, 100, 100);
+  v2->SetBoundsRect(gfx::Rect(100, 100, 100, 100));
 
   TestView* v3 = new TestViewIgnoreTouch();
-  v3->SetBounds(0, 0, 100, 100);
+  v3->SetBoundsRect(gfx::Rect(0, 0, 100, 100));
 
   scoped_ptr<Widget> widget(new Widget());
   Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
@@ -517,13 +517,13 @@ ui::GestureStatus TestView::OnGestureEvent(const GestureEvent& event) {
 TEST_F(ViewTest, GestureEvent) {
   // Views hierarchy for non delivery of GestureEvent.
   TestView* v1 = new TestViewConsumeGesture();
-  v1->SetBounds(0, 0, 300, 300);
+  v1->SetBoundsRect(gfx::Rect(0, 0, 300, 300));
 
   TestView* v2 = new TestViewConsumeGesture();
-  v2->SetBounds(100, 100, 100, 100);
+  v2->SetBoundsRect(gfx::Rect(100, 100, 100, 100));
 
   TestView* v3 = new TestViewIgnoreGesture();
-  v3->SetBounds(0, 0, 100, 100);
+  v3->SetBoundsRect(gfx::Rect(0, 0, 100, 100));
 
   scoped_ptr<Widget> widget(new Widget());
   Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
@@ -601,19 +601,19 @@ TEST_F(ViewTest, DISABLED_Painting) {
   View* root = window.GetRootView();
 
   TestView* v1 = new TestView();
-  v1->SetBounds(0, 0, 650, 650);
+  v1->SetBoundsRect(gfx::Rect(0, 0, 650, 650));
   root->AddChildView(v1);
 
   TestView* v2 = new TestView();
-  v2->SetBounds(10, 10, 80, 80);
+  v2->SetBoundsRect(gfx::Rect(10, 10, 80, 80));
   v1->AddChildView(v2);
 
   TestView* v3 = new TestView();
-  v3->SetBounds(10, 10, 60, 60);
+  v3->SetBoundsRect(gfx::Rect(10, 10, 60, 60));
   v2->AddChildView(v3);
 
   TestView* v4 = new TestView();
-  v4->SetBounds(10, 200, 100, 100);
+  v4->SetBoundsRect(gfx::Rect(10, 200, 100, 100));
   v1->AddChildView(v4);
 
   // Make sure to paint current rects
@@ -806,7 +806,7 @@ TEST_F(ViewTest, HitTestMasks) {
   Widget* widget = new Widget;
   widget->Init(Widget::InitParams(Widget::InitParams::TYPE_POPUP));
   View* root_view = widget->GetRootView();
-  root_view->SetBounds(0, 0, 500, 500);
+  root_view->SetBoundsRect(gfx::Rect(0, 0, 500, 500));
 
   gfx::Rect v1_bounds = gfx::Rect(0, 0, 100, 100);
   HitTestView* v1 = new HitTestView(false);
@@ -1487,7 +1487,7 @@ class ButtonDropDownTest : public ViewTest {
         Widget::CreateWindowWithBounds(test_dialog_, gfx::Rect(0, 0, 100, 100));
     test_dialog_->widget_ = window;
     window->Show();
-    test_dialog_->button_drop_->SetBounds(0, 0, 100, 100);
+    test_dialog_->button_drop_->SetBoundsRect(gfx::Rect(0, 0, 100, 100));
     // We have to cast the button back into a View in order to invoke it's
     // OnMouseReleased method.
     button_as_view_ = static_cast<View*>(test_dialog_->button_drop_);
@@ -1703,10 +1703,10 @@ class TransformPaintView : public TestView {
 
 TEST_F(ViewTest, TransformPaint) {
   TransformPaintView* v1 = new TransformPaintView();
-  v1->SetBounds(0, 0, 500, 300);
+  v1->SetBoundsRect(gfx::Rect(0, 0, 500, 300));
 
   TestView* v2 = new TestView();
-  v2->SetBounds(100, 100, 200, 100);
+  v2->SetBoundsRect(gfx::Rect(100, 100, 200, 100));
 
   Widget* widget = new Widget;
   Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
@@ -1742,10 +1742,10 @@ TEST_F(ViewTest, TransformPaint) {
 
 TEST_F(ViewTest, TransformEvent) {
   TestView* v1 = new TestView();
-  v1->SetBounds(0, 0, 500, 300);
+  v1->SetBoundsRect(gfx::Rect(0, 0, 500, 300));
 
   TestView* v2 = new TestView();
-  v2->SetBounds(100, 100, 200, 100);
+  v2->SetBoundsRect(gfx::Rect(100, 100, 200, 100));
 
   Widget* widget = new Widget;
   Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
@@ -1807,7 +1807,7 @@ TEST_F(ViewTest, TransformEvent) {
   v2->SetTransform(ui::Transform());
 
   TestView* v3 = new TestView();
-  v3->SetBounds(10, 10, 20, 30);
+  v3->SetBoundsRect(gfx::Rect(10, 10, 20, 30));
   v2->AddChildView(v3);
 
   // Rotate |v3| clockwise with respect to |v2|.
@@ -1892,11 +1892,11 @@ TEST_F(ViewTest, TransformVisibleBound) {
   View* contents = new View;
   viewport->AddChildView(contents);
   viewport->SetBoundsRect(viewport_bounds);
-  contents->SetBounds(0, 0, 100, 200);
+  contents->SetBoundsRect(gfx::Rect(0, 0, 100, 200));
 
   View* child = new View;
   contents->AddChildView(child);
-  child->SetBounds(10, 90, 50, 50);
+  child->SetBoundsRect(gfx::Rect(10, 90, 50, 50));
   EXPECT_EQ(gfx::Rect(0, 0, 50, 10), child->GetVisibleBounds());
 
   // Rotate |child| counter-clockwise
@@ -1951,13 +1951,13 @@ TEST_F(ViewTest, OnVisibleBoundsChanged) {
   View* contents = new View;
   viewport->AddChildView(contents);
   viewport->SetBoundsRect(viewport_bounds);
-  contents->SetBounds(0, 0, 100, 200);
+  contents->SetBoundsRect(gfx::Rect(0, 0, 100, 200));
 
   // Create a view that cares about visible bounds notifications, and position
   // it just outside the visible bounds of the viewport.
   VisibleBoundsView* child = new VisibleBoundsView;
   contents->AddChildView(child);
-  child->SetBounds(10, 110, 50, 50);
+  child->SetBoundsRect(gfx::Rect(10, 110, 50, 50));
 
   // The child bound should be fully clipped.
   EXPECT_TRUE(child->GetVisibleBounds().IsEmpty());
@@ -1988,13 +1988,13 @@ TEST_F(ViewTest, SetBoundsPaint) {
   TestView top_view;
   TestView* child_view = new TestView;
 
-  top_view.SetBounds(0, 0, 100, 100);
+  top_view.SetBoundsRect(gfx::Rect(0, 0, 100, 100));
   top_view.scheduled_paint_rects_.clear();
-  child_view->SetBounds(10, 10, 20, 20);
+  child_view->SetBoundsRect(gfx::Rect(10, 10, 20, 20));
   top_view.AddChildView(child_view);
 
   top_view.scheduled_paint_rects_.clear();
-  child_view->SetBounds(30, 30, 20, 20);
+  child_view->SetBoundsRect(gfx::Rect(30, 30, 20, 20));
   EXPECT_EQ(2U, top_view.scheduled_paint_rects_.size());
 
   // There should be 2 rects, spanning from (10, 10) to (50, 50).
@@ -2013,14 +2013,14 @@ TEST_F(ViewTest, ConvertPointToViewWithTransform) {
   top_view.AddChildView(child);
   child->AddChildView(child_child);
 
-  top_view.SetBounds(0, 0, 1000, 1000);
+  top_view.SetBoundsRect(gfx::Rect(0, 0, 1000, 1000));
 
-  child->SetBounds(7, 19, 500, 500);
+  child->SetBoundsRect(gfx::Rect(7, 19, 500, 500));
   ui::Transform transform;
   transform.SetScale(3.0f, 4.0f);
   child->SetTransform(transform);
 
-  child_child->SetBounds(17, 13, 100, 100);
+  child_child->SetBoundsRect(gfx::Rect(17, 13, 100, 100));
   transform = ui::Transform();
   transform.SetScale(5.0f, 7.0f);
   child_child->SetTransform(transform);
@@ -2127,8 +2127,8 @@ TEST_F(ViewTest, ConvertRectWithTransform) {
   root->AddChildView(v1);
   v1->AddChildView(v2);
 
-  v1->SetBounds(10, 10, 500, 500);
-  v2->SetBounds(20, 20, 100, 200);
+  v1->SetBoundsRect(gfx::Rect(10, 10, 500, 500));
+  v2->SetBoundsRect(gfx::Rect(20, 20, 100, 200));
 
   // |v2| now occupies (30, 30) to (130, 230) in |widget|
   gfx::Rect rect(5, 5, 15, 40);
@@ -2622,7 +2622,7 @@ TEST_F(ViewLayerTest, LayerToggling) {
   View* v1 = new View;
   v1->SetPaintToLayer(true);
   EXPECT_TRUE(v1->layer() != NULL);
-  v1->SetBounds(20, 30, 140, 150);
+  v1->SetBoundsRect(gfx::Rect(20, 30, 140, 150));
   content_view->AddChildView(v1);
   ASSERT_TRUE(v1->layer() != NULL);
   EXPECT_EQ(root_layer, v1->layer()->parent());
@@ -2632,7 +2632,7 @@ TEST_F(ViewLayerTest, LayerToggling) {
   View* v2 = new View;
   v1->AddChildView(v2);
   EXPECT_TRUE(v2->layer() == NULL);
-  v2->SetBounds(10, 20, 30, 40);
+  v2->SetBoundsRect(gfx::Rect(10, 20, 30, 40));
   v2->SetPaintToLayer(true);
   ASSERT_TRUE(v2->layer() != NULL);
   EXPECT_EQ(v1->layer(), v2->layer()->parent());
@@ -2673,7 +2673,7 @@ TEST_F(ViewLayerTest, NestedLayerToggling) {
   // Create v1, give it a bounds and verify everything is set up correctly.
   View* v1 = new View;
   content_view->AddChildView(v1);
-  v1->SetBounds(20, 30, 140, 150);
+  v1->SetBoundsRect(gfx::Rect(20, 30, 140, 150));
 
   View* v2 = new View;
   v1->AddChildView(v2);
@@ -2716,10 +2716,10 @@ TEST_F(ViewLayerTest, BoundsChangeWithLayer) {
 
   View* v1 = new View;
   content_view->AddChildView(v1);
-  v1->SetBounds(20, 30, 140, 150);
+  v1->SetBoundsRect(gfx::Rect(20, 30, 140, 150));
 
   View* v2 = new View;
-  v2->SetBounds(10, 11, 40, 50);
+  v2->SetBoundsRect(gfx::Rect(10, 11, 40, 50));
   v1->AddChildView(v2);
   v2->SetPaintToLayer(true);
   ASSERT_TRUE(v2->layer() != NULL);
@@ -2737,7 +2737,7 @@ TEST_F(ViewLayerTest, BoundsChangeWithLayer) {
   EXPECT_EQ(gfx::Rect(31, 42, 40, 50), v2->layer()->bounds());
 
   v2->SetVisible(false);
-  v2->SetBounds(10, 11, 20, 30);
+  v2->SetBoundsRect(gfx::Rect(10, 11, 20, 30));
   EXPECT_EQ(gfx::Rect(30, 41, 20, 30), v2->layer()->bounds());
 }
 
