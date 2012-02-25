@@ -4,6 +4,8 @@
 
 #include "remoting/host/event_executor.h"
 
+#include <set>
+
 #include <X11/Xlib.h>
 #include <X11/XF86keysym.h>
 #include <X11/keysym.h>
@@ -38,7 +40,8 @@ class EventExecutorLinux : public EventExecutor {
   void InjectScrollWheelClicks(int button, int count);
 
   MessageLoop* message_loop_;
-  Capturer* capturer_;
+
+  std::set<int> pressed_keys_;
 
   // X11 graphics context.
   Display* display_;
@@ -250,7 +253,6 @@ int ChromotocolKeycodeToX11Keysym(int32_t keycode) {
 EventExecutorLinux::EventExecutorLinux(MessageLoop* message_loop,
                                        Capturer* capturer)
     : message_loop_(message_loop),
-      capturer_(capturer),
       display_(XOpenDisplay(NULL)),
       root_window_(BadValue),
       width_(0),
@@ -317,6 +319,15 @@ void EventExecutorLinux::InjectKeyEvent(const KeyEvent& event) {
   VLOG(3) << "Got pepper key: " << event.keycode()
           << " sending keysym: " << keysym
           << " to keycode: " << keycode;
+
+  if (event.pressed()) {
+    if (pressed_keys_.find(keycode) != pressed_keys_.end())
+      XTestFakeKeyEvent(display_, keycode, False, CurrentTime);
+    pressed_keys_.insert(keycode);
+  } else {
+    pressed_keys_.erase(keycode);
+  }
+
   XTestFakeKeyEvent(display_, keycode, event.pressed(), CurrentTime);
   XFlush(display_);
 }
