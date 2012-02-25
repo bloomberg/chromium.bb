@@ -5,53 +5,14 @@
 // Defines global variables.
 var commands = TaskManagerCommands;
 var taskmanager = undefined;  // This will be instantiated in main.js.
-var taskmanagerForceUpdate = false;
-var pendingTaskUpdates = [];
-
-/**
- * Invoked when new items are added.
- */
-function taskAdded(start, length, tasks) {
-  pendingTaskUpdates.push(
-      {type: 'add', start: start, length: length, tasks: tasks});
-
-  // Sometimes this can get called too early.
-  if (!taskmanager)
-    return;
-  taskmanager.processTaskChange(pendingTaskUpdates);
-}
 
 /**
  * Invoked when a range of items has changed.
  */
 function taskChanged(start, length, tasks) {
-  pendingTaskUpdates.push(
-      {type: 'change', start: start, length: length, tasks: tasks});
+  var task = {type: 'change', start: start, length: length, tasks: tasks};
 
-  if (taskmanager)
-    taskmanager.processTaskChange(pendingTaskUpdates);
-}
-
-/**
- * Invoked when a range of items has been removed.
- */
-function taskRemoved(start, length) {
-  pendingTaskUpdates.push(
-      {type: 'remove', start: start, length: length, tasks: undefined});
-
-  if (taskmanager)
-    taskmanager.processTaskChange(pendingTaskUpdates);
-}
-
-/**
- * Invoked when the initialization of the model has been finished and periodical
- * updates is started.
- */
-function onReadyPeriodicalUpdate() {
-  taskmanagerForceUpdate = true;
-
-  if (taskmanager)
-    taskmanager.processTaskChange(pendingTaskUpdates);
+  if (taskmanager) taskmanager.processTaskChange(task);
 }
 
 // Enable the taskmanager model before the loading of scripts.
@@ -60,7 +21,7 @@ function onReadyPeriodicalUpdate() {
     if (DEFAULT_COLUMNS[i][3])
       commands.setUpdateColumn(DEFAULT_COLUMNS[i][0], true);
   }
+  commands.enableTaskManager();
   commands.setUpdateColumn('canInspect', true);
   commands.setUpdateColumn('canActivate', true);
-  commands.enableTaskManager();
 })();

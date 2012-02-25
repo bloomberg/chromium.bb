@@ -65,9 +65,6 @@ class TaskManagerHandler : public content::WebUIMessageHandler,
 
   bool is_enabled_;
 
-  // Table to cache the group index of the resource index.
-  std::vector<int> resource_to_group_table_;
-
   // Set to store the enabled columns.
   std::set<std::string> enabled_columns_;
 
@@ -76,9 +73,6 @@ class TaskManagerHandler : public content::WebUIMessageHandler,
   void OnGroupAdded(int start, int length);
   void OnGroupChanged(int start, int length);
   void OnGroupRemoved(int start, int length);
-
-  // Updates |resource_to_group_table_|.
-  void UpdateResourceGroupTable(int start, int length);
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerHandler);
 };

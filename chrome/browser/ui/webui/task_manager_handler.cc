@@ -226,96 +226,17 @@ TaskManagerHandler::~TaskManagerHandler() {
 // TaskManagerHandler, public: -----------------------------------------------
 
 void TaskManagerHandler::OnModelChanged() {
-  const int count = model_->GroupCount();
-
-  base::FundamentalValue start_value(0);
-  base::FundamentalValue length_value(count);
-  base::ListValue tasks_value;
-  for (int i = 0; i < count; ++i)
-    tasks_value.Append(CreateTaskGroupValue(model_, i, enabled_columns_));
-
-  if (is_enabled_) {
-    web_ui()->CallJavascriptFunction("taskChanged",
-                                     start_value, length_value, tasks_value);
-  }
+  OnGroupChanged(0, model_->GroupCount());
 }
 
 void TaskManagerHandler::OnItemsChanged(const int start, const int length) {
-  UpdateResourceGroupTable(start, length);
-
-  // Converts from an index of resources to an index of groups.
-  int group_start = model_->GetGroupIndexForResource(start);
-  int group_end = model_->GetGroupIndexForResource(start + length - 1);
-
-  OnGroupChanged(group_start, group_end - group_start + 1);
+  OnGroupChanged(0, model_->GroupCount());
 }
 
 void TaskManagerHandler::OnItemsAdded(const int start, const int length) {
-  UpdateResourceGroupTable(start, length);
-
-  // Converts from an index of resources to an index of groups.
-  int group_start = model_->GetGroupIndexForResource(start);
-  int group_end = model_->GetGroupIndexForResource(start + length - 1);
-
-  // First group to add does not contain all the items in the group. Because the
-  // first item to add and the previous one are in same group.
-  if (!model_->IsResourceFirstInGroup(start)) {
-    OnGroupChanged(group_start, 1);
-    if (group_start == group_end)
-      return;
-    else
-      group_start++;
-  }
-
-  // Last group to add does not contain all the items in the group. Because the
-  // last item to add and the next one are in same group.
-  if (!model_->IsResourceLastInGroup(start + length - 1)) {
-    OnGroupChanged(group_end, 1);
-    if (group_start == group_end)
-      return;
-    else
-      group_end--;
-  }
-
-  OnGroupAdded(group_start, group_end - group_start + 1);
 }
 
 void TaskManagerHandler::OnItemsRemoved(const int start, const int length) {
-  // Returns if this is called before updating |resource_to_group_table_|.
-  if (resource_to_group_table_.size() <= static_cast<size_t>(start + length))
-    return;
-
-  // Converts from an index of resources to an index of groups.
-  int group_start = resource_to_group_table_[start];
-  int group_end = resource_to_group_table_[start + length - 1];
-
-  // First group to remove does not contain all the items in the group. Because
-  // the first item to remove and the previous one are in same group.
-  if (start != 0 && group_start == resource_to_group_table_[start - 1]) {
-    OnGroupChanged(group_start, 1);
-    if (group_start == group_end)
-      return;
-    else
-      group_start++;
-  }
-
-  // Last group to remove does not contain all the items in the group. Because
-  // the last item to remove and the next one are in same group.
-  if (start + length != model_->ResourceCount() &&
-      group_end == resource_to_group_table_[start + length]) {
-    OnGroupChanged(group_end, 1);
-    if (group_start == group_end)
-      return;
-    else
-      group_end--;
-  }
-
-  std::vector<int>::iterator it_first =
-      resource_to_group_table_.begin() + start;
-  std::vector<int>::iterator it_last = it_first + length - 1;
-  resource_to_group_table_.erase(it_first, it_last);
-
-  OnGroupRemoved(group_start, group_end - group_start + 1);
 }
 
 void TaskManagerHandler::RegisterMessages() {
@@ -410,6 +331,9 @@ void TaskManagerHandler::EnableTaskManager(const ListValue* indexes) {
     return;
 
   is_enabled_ = true;
+
+  OnGroupChanged(0, model_->GroupCount());
+
   model_->AddObserver(this);
   model_->StartUpdating();
 
@@ -454,22 +378,6 @@ bool TaskManagerHandler::is_alive() {
   return web_ui()->GetWebContents()->GetRenderViewHost() != NULL;
 }
 
-void TaskManagerHandler::UpdateResourceGroupTable(int start, int length) {
-  if (resource_to_group_table_.size() < static_cast<size_t>(start)) {
-    length += start - resource_to_group_table_.size();
-    start = resource_to_group_table_.size();
-  }
-
-  // Makes room to fill group_index at first since inserting vector is too slow.
-  std::vector<int>::iterator it = resource_to_group_table_.begin() + start;
-  resource_to_group_table_.insert(it, static_cast<size_t>(length), -1);
-
-  for (int i = start; i < start + length; ++i) {
-    const int group_index = model_->GetGroupIndexForResource(i);
-    resource_to_group_table_[i] = group_index;
-  }
-}
-
 void TaskManagerHandler::OnGroupChanged(const int group_start,
                                         const int group_length) {
   base::FundamentalValue start_value(group_start);
@@ -488,28 +396,11 @@ void TaskManagerHandler::OnGroupChanged(const int group_start,
 
 void TaskManagerHandler::OnGroupAdded(const int group_start,
                                       const int group_length) {
-  base::FundamentalValue start_value(group_start);
-  base::FundamentalValue length_value(group_length);
-  base::ListValue tasks_value;
-  for (int i = 0; i < group_length; ++i)
-    tasks_value.Append(
-        CreateTaskGroupValue(model_, group_start + i, enabled_columns_));
-
-  if (is_enabled_ && is_alive()) {
-    web_ui()->CallJavascriptFunction("taskAdded",
-                                     start_value, length_value, tasks_value);
-  }
 }
 
 void TaskManagerHandler::OnGroupRemoved(const int group_start,
                                         const int group_length) {
-  base::FundamentalValue start_value(group_start);
-  base::FundamentalValue length_value(group_length);
-  if (is_enabled_ && is_alive())
-    web_ui()->CallJavascriptFunction("taskRemoved", start_value, length_value);
 }
 
 void TaskManagerHandler::OnReadyPeriodicalUpdate() {
-  if (is_enabled_ && is_alive())
-    web_ui()->CallJavascriptFunction("onReadyPeriodicalUpdate");
 }

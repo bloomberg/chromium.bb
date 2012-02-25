@@ -21,8 +21,8 @@ TaskManager.prototype = {
   },
 
   /**
-   * Handle selection change.
-   * This is also called when data of tasks are refleshed, even if selection
+   * Handles selection changes.
+   * This is also called when data of tasks are refreshed, even if selection
    * has not been changed.
    */
   onSelectionChange: function () {
@@ -152,9 +152,6 @@ TaskManager.prototype = {
 
     // Populate the static localized strings.
     i18nTemplate.process(this.document_, templateData);
-
-    if (taskmanagerForceUpdate)
-      this.processTaskChange(pendingTaskUpdates);
 
     measureTime.recordInterval('Load.DOM');
     measureTime.recordInterval('Load.Total');
@@ -529,57 +526,34 @@ TaskManager.prototype = {
   },
 
   /**
-   * Updates the task list with the |pendingTaskUpdates| queue.
-   * This function does nothing if it is less than 900 ms after last update. In
-   * such case, the queue remains at that time, and it will update the list
-   * at next change event or at periodical every-second reflesh.
+   * Updates the task list with the supplied task.
    * @private
    */
-  processTaskChange: function(pendingTaskUpdates) {
-    var now = +new Date();  // Casts to integer and gets milliseconds.
-
-    // If it is less than 900 ms after last update, the list isn't updated now.
-    // 900 ms is a time to allow at least periodical reflesh of every second.
-    if (!taskmanagerForceUpdate && (now - this.lastUpdate_) < 900)
-      return;
-    this.lastUpdate_ = now;
-    taskmanagerForceUpdate = false;
-
+  processTaskChange: function(task) {
     var dm = this.dataModel_;
     var sm = this.selectionModel_;
-    if (!dm || !sm || pendingTaskUpdates.length == 0)
-      return;
+    if (!dm || !sm) return;
 
     this.table_.list.startBatchUpdates();
     sm.beginChange();
 
-    var task;
-    while (task = pendingTaskUpdates.shift()) {
-      var type = task.type;
-      var start = task.start;
-      var length = task.length;
-      var tasks = task.tasks;
-      if (type == 'change') {
-        // We have to store the selected indexes and restore them after
-        // splice(), because it might replace some items but the replaced
-        // items would lost the selection.
-        var oldSelectedIndexes = sm.selectedIndexes;
+    var type = task.type;
+    var start = task.start;
+    var length = task.length;
+    var tasks = task.tasks;
 
-        var args = [].slice.call(tasks);
-        args.unshift(start, length);
-        dm.splice.apply(dm, args);
+    // We have to store the selected indexes and restore them after
+    // splice(), because it might replace some items but the replaced
+    // items would lose the selection.
+    var oldSelectedIndexes = sm.selectedIndexes;
 
-        sm.selectedIndexes = oldSelectedIndexes.filter(function(index) {
-          return index < dm.length;
-        });
-      } else if (type == 'add') {
-        var args = [].slice.call(tasks);
-        args.unshift(start, 0);
-        dm.splice.apply(dm, args);
-      } else if (type == 'remove') {
-        dm.splice(start, length);
-      }
-    }
+    var args = tasks.slice();
+    args.unshift(start, dm.length);
+    dm.splice.apply(dm, args);
+
+    sm.selectedIndexes = oldSelectedIndexes.filter(function(index) {
+      return index < dm.length;
+    });
 
     var pids = [];
     for (var i = 0; i < dm.length; i++) {
@@ -629,7 +603,7 @@ TaskManager.prototype = {
 
   /**
    * Store resourceIndex of target resource of context menu, because resource
-   * will be replaced when it is refleshed.
+   * will be replaced when it is refreshed.
    */
   onTableContextMenuOpened_: function (e) {
     if (!this.isFinishedInitDelayed_)
@@ -646,15 +620,12 @@ TaskManager.prototype = {
     activate_menuitem.disabled = true;
 
     var target = e.target;
-    var classes = target.classList;
-    while (target &&
-        Array.prototype.indexOf.call(classes, 'detail-title') == -1) {
-      target = target.parentNode;
-      classes = target.classList;
+    for (; ; target = target.parentNode) {
+      if (!target) return;
+      var classes = target.classList;
+      if (classes &&
+          Array.prototype.indexOf.call(classes, 'detail-title') != -1) break;
     }
-
-    if (!target)
-      return;
 
     var index_in_group = target.index_in_group;
 

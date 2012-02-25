@@ -629,10 +629,9 @@ void TaskManagerModel::StartUpdating() {
   // If update_state_ is STOPPING, it means a task is still pending.  Setting
   // it to TASK_PENDING ensures the tasks keep being posted (by Refresh()).
   if (update_state_ == IDLE) {
-      MessageLoop::current()->PostDelayedTask(
+      MessageLoop::current()->PostTask(
           FROM_HERE,
-          base::Bind(&TaskManagerModel::Refresh, this),
-          base::TimeDelta::FromMilliseconds(kUpdateTimeMs));
+          base::Bind(&TaskManagerModel::Refresh, this));
   }
   update_state_ = TASK_PENDING;
 
