@@ -183,8 +183,6 @@ bool DirectoryBackingStore::DeleteEntries(const MetahandleSet& handles) {
 
   sql::Statement statement(db_.GetCachedStatement(
           SQL_FROM_HERE, "DELETE FROM metas WHERE metahandle = ?"));
-  if (!statement)
-    return false;
 
   for (MetahandleSet::const_iterator i = handles.begin(); i != handles.end();
        ++i) {
@@ -229,12 +227,11 @@ bool DirectoryBackingStore::SaveChanges(
             "SET store_birthday = ?, "
             "next_id = ?, "
             "notification_state = ?"));
-    if (!s1)
-      return false;
     s1.BindString(0, info.store_birthday);
     s1.BindInt64(1, info.next_id);
     s1.BindBlob(2, info.notification_state.data(),
                    info.notification_state.size());
+
     if (!s1.Run())
       return false;
     DCHECK_EQ(db_.GetLastChangeCount(), 1);
@@ -244,8 +241,7 @@ bool DirectoryBackingStore::SaveChanges(
             "INSERT OR REPLACE "
             "INTO models (model_id, progress_marker, initial_sync_ended) "
             "VALUES (?, ?, ?)"));
-    if (!s2)
-      return false;
+
     for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
       // We persist not ModelType but rather a protobuf-derived ID.
       string model_id = ModelTypeEnumToModelId(ModelTypeFromInt(i));
@@ -440,8 +436,6 @@ bool DirectoryBackingStore::LoadEntries(MetahandlesIndex* entry_bucket) {
   select.append(" FROM metas ");
 
   sql::Statement s(db_.GetUniqueStatement(select.c_str()));
-  if (!s)
-    return false;
 
   while (s.Step()) {
     EntryKernel *kernel = UnpackEntry(&s);
@@ -456,9 +450,6 @@ bool DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
         db_.GetUniqueStatement(
             "SELECT store_birthday, next_id, cache_guid, notification_state "
             "FROM share_info"));
-    if (!s)
-      return false;
-
     if (!s.Step())
       return false;
 
@@ -477,8 +468,6 @@ bool DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
         db_.GetUniqueStatement(
             "SELECT model_id, progress_marker, initial_sync_ended "
             "FROM models"));
-    if (!s)
-      return false;
 
     while (s.Step()) {
       ModelType type = ModelIdToModelTypeEnum(s.ColumnBlob(0),
@@ -497,8 +486,6 @@ bool DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
     sql::Statement s(
         db_.GetUniqueStatement(
             "SELECT MAX(metahandle) FROM metas"));
-    if (!s)
-      return false;
     if (!s.Step())
       return false;
 
@@ -540,9 +527,6 @@ bool DirectoryBackingStore::SaveEntryToDB(const EntryKernel& entry) {
   } else {
     save_entry_statement_.Reset();
   }
-
-  if (!save_entry_statement_)
-    return false;
 
   BindFields(entry, &save_entry_statement_);
   return save_entry_statement_.Run();
@@ -610,12 +594,7 @@ bool DirectoryBackingStore::MigrateToSpecifics(
       "UPDATE metas SET %s = ? WHERE metahandle = ?", specifics_column);
 
   sql::Statement query(db_.GetUniqueStatement(query_sql.c_str()));
-  if (!query)
-    return false;
-
   sql::Statement update(db_.GetUniqueStatement(update_sql.c_str()));
-  if (!update)
-    return false;
 
   while (query.Step()) {
     int64 metahandle = query.ColumnInt64(0);
@@ -638,9 +617,8 @@ bool DirectoryBackingStore::MigrateToSpecifics(
 bool DirectoryBackingStore::SetVersion(int version) {
   sql::Statement s(db_.GetCachedStatement(
           SQL_FROM_HERE, "UPDATE share_version SET data = ?"));
-  if (!s)
-    return false;
   s.BindInt(0, version);
+
   return s.Run();
 }
 
@@ -650,8 +628,6 @@ int DirectoryBackingStore::GetVersion() {
 
   sql::Statement statement(db_.GetUniqueStatement(
           "SELECT data FROM share_version"));
-  if (!statement)
-    return false;
   if (statement.Step()) {
     return statement.ColumnInt(0);
   } else {
@@ -775,8 +751,6 @@ bool DirectoryBackingStore::MigrateVersion70To71() {
   {
     sql::Statement fetch(db_.GetUniqueStatement(
             "SELECT last_sync_timestamp, initial_sync_ended FROM share_info"));
-    if (!fetch)
-      return false;
     if (!fetch.Step())
       return false;
 
@@ -790,12 +764,11 @@ bool DirectoryBackingStore::MigrateVersion70To71() {
     sql::Statement update(db_.GetUniqueStatement(
             "INSERT INTO models (model_id, "
             "last_download_timestamp, initial_sync_ended) VALUES (?, ?, ?)"));
-    if (!update)
-      return false;
     string bookmark_model_id = ModelTypeEnumToModelId(BOOKMARKS);
     update.BindBlob(0, bookmark_model_id.data(), bookmark_model_id.size());
     update.BindInt64(1, last_sync_timestamp);
     update.BindBool(2, initial_sync_ended);
+
     if (!update.Run())
       return false;
   }
@@ -896,14 +869,10 @@ bool DirectoryBackingStore::MigrateVersion74To75() {
   sql::Statement query(db_.GetUniqueStatement(
           "SELECT model_id, last_download_timestamp, initial_sync_ended "
           "FROM temp_models"));
-  if (!query)
-    return false;
 
   sql::Statement update(db_.GetUniqueStatement(
           "INSERT INTO models (model_id, "
           "progress_marker, initial_sync_ended) VALUES (?, ?, ?)"));
-  if (!update)
-    return false;
 
   while (query.Step()) {
     ModelType type = ModelIdToModelTypeEnum(query.ColumnBlob(0),
@@ -972,8 +941,6 @@ bool DirectoryBackingStore::MigrateVersion76To77() {
           TO_UNIX_TIME_MS(ctime) ", "
           TO_UNIX_TIME_MS(server_ctime)));
 #undef TO_UNIX_TIME_MS
-  if (!update_timestamps)
-    return false;
   if (!update_timestamps.Run())
     return false;
   SetVersion(77);
@@ -1002,10 +969,9 @@ bool DirectoryBackingStore::CreateTables() {
   {
     sql::Statement s(db_.GetUniqueStatement(
             "INSERT INTO share_version VALUES(?, ?)"));
-    if (!s)
-      return false;
     s.BindString(0, dir_name_);
     s.BindInt(1, kCurrentDBVersion);
+
     if (!s.Run())
       return false;
   }
@@ -1026,8 +992,6 @@ bool DirectoryBackingStore::CreateTables() {
             "-2, "  // next_id
             "?, "   // cache_guid
             "?);"));  // notification_state
-    if (!s)
-      return false;
     s.BindString(0, dir_name_);                   // id
     s.BindString(1, dir_name_);                   // name
     s.BindString(2, "");                          // store_birthday
@@ -1035,6 +999,7 @@ bool DirectoryBackingStore::CreateTables() {
     s.BindInt(4, static_cast<int32>(time(0)));    // db_create_time
     s.BindString(5, GenerateCacheGUID());         // cache_guid
     s.BindBlob(6, NULL, 0);                       // notification_state
+
     if (!s.Run())
       return false;
   }
@@ -1053,10 +1018,9 @@ bool DirectoryBackingStore::CreateTables() {
             "INSERT INTO metas "
             "( id, metahandle, is_dir, ctime, mtime) "
             "VALUES ( \"r\", 1, 1, ?, ?)"));
-    if (!s)
-      return false;
     s.BindInt64(0, now);
     s.BindInt64(1, now);
+
     if (!s.Run())
       return false;
   }

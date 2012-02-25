@@ -53,8 +53,7 @@ TEST_F(MultipartResponseUITest, SingleVisit) {
       test_server.host_port_pair().HostForURL() + ":%/multipart'");
   {
     sql::Statement statement(db.GetUniqueStatement(query.c_str()));
-    EXPECT_TRUE(statement);
-    EXPECT_TRUE(statement.Step());
+    ASSERT_TRUE(statement.Step());
     EXPECT_EQ(1, statement.ColumnInt(0));
   }
   db.Close();

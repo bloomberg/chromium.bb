@@ -251,7 +251,6 @@ TEST_F(SQLiteOriginBoundCertStoreTest, TestUpgradeV1) {
       ASSERT_TRUE(db.Open(v1_db_path));
       sql::Statement smt(db.GetUniqueStatement(
           "SELECT value FROM meta WHERE key = \"version\""));
-      ASSERT_TRUE(smt);
       ASSERT_TRUE(smt.Step());
       EXPECT_EQ(4, smt.ColumnInt(0));
       EXPECT_FALSE(smt.Step());
@@ -340,7 +339,6 @@ TEST_F(SQLiteOriginBoundCertStoreTest, TestUpgradeV2) {
       ASSERT_TRUE(db.Open(v2_db_path));
       sql::Statement smt(db.GetUniqueStatement(
           "SELECT value FROM meta WHERE key = \"version\""));
-      ASSERT_TRUE(smt);
       ASSERT_TRUE(smt.Step());
       EXPECT_EQ(4, smt.ColumnInt(0));
       EXPECT_FALSE(smt.Step());
@@ -433,7 +431,6 @@ TEST_F(SQLiteOriginBoundCertStoreTest, TestUpgradeV3) {
       ASSERT_TRUE(db.Open(v3_db_path));
       sql::Statement smt(db.GetUniqueStatement(
           "SELECT value FROM meta WHERE key = \"version\""));
-      ASSERT_TRUE(smt);
       ASSERT_TRUE(smt.Step());
       EXPECT_EQ(4, smt.ColumnInt(0));
       EXPECT_FALSE(smt.Step());
