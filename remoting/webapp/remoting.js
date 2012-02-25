@@ -34,9 +34,11 @@ remoting.init = function() {
   button.title = chrome.i18n.getMessage(/*i18n-content*/'TOOLTIP_SCALING');
   // Create global objects.
   remoting.oauth2 = new remoting.OAuth2();
-  remoting.debug = new remoting.DebugLog(
-      document.getElementById('debug-messages'),
+  remoting.stats = new remoting.ConnectionStats(
       document.getElementById('statistics'));
+  // TODO(garykac): Rename this to formatIq and convert all calls to debug.log
+  // to use console.log directly.
+  remoting.debug = new remoting.FormatIq();
   remoting.hostList = new remoting.HostList(
       document.getElementById('host-list'),
       document.getElementById('host-list-error'));

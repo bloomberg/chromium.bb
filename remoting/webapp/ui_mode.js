@@ -80,9 +80,11 @@ remoting.setMode = function(mode) {
   remoting.debug.log('App mode: ' + mode);
   remoting.currentMode = mode;
   if (mode == remoting.AppMode.IN_SESSION) {
-    document.removeEventListener('keydown', remoting.DebugLog.onKeydown, false);
+    document.removeEventListener('keydown', remoting.ConnectionStats.onKeydown,
+                                 false);
   } else {
-    document.addEventListener('keydown', remoting.DebugLog.onKeydown, false);
+    document.addEventListener('keydown', remoting.ConnectionStats.onKeydown,
+                              false);
   }
   if (mode == remoting.AppMode.HOME) {
     var display = function() { remoting.hostList.display(); };

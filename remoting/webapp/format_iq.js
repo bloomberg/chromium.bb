@@ -4,7 +4,7 @@
 
 /**
  * @fileoverview
- * Module to support logging debug messages.
+ * Module to format IQ messages so they can be displayed in the debug log.
  */
 
 'use strict';
@@ -14,27 +14,17 @@ var remoting = remoting || {};
 
 /**
  * @constructor
- * @param {Element} logElement The HTML div to which to add log messages.
- * @param {Element} statsElement The HTML div to which to update stats.
  */
-remoting.DebugLog = function(logElement, statsElement) {
-  this.logElement = logElement;
-  this.statsElement = statsElement;
+remoting.FormatIq = function() {
   this.clientJid = '';
   this.hostJid = '';
 };
 
 /**
- * Maximum number of lines to record in the debug log. Only the most
- * recent <n> lines are displayed.
- */
-remoting.DebugLog.prototype.MAX_DEBUG_LOG_SIZE = 1000;
-
-/**
  * JID for the remoting bot which is used to bridge communication between
  * the Talk network and the Remoting directory service.
  */
-remoting.DebugLog.prototype.REMOTING_DIRECTORY_SERVICE_BOT =
+remoting.FormatIq.prototype.REMOTING_DIRECTORY_SERVICE_BOT =
     'remoting@bot.talk.google.com';
 
 /**
@@ -43,24 +33,8 @@ remoting.DebugLog.prototype.REMOTING_DIRECTORY_SERVICE_BOT =
  * @param {number} indentLevel The indention level for this message.
  * @param {string} message The debug info to add to the log.
  */
-remoting.DebugLog.prototype.logIndent = function(indentLevel, message) {
-  // Remove lines from top if we've hit our max log size.
-  if (this.logElement.childNodes.length == this.MAX_DEBUG_LOG_SIZE) {
-    this.logElement.removeChild(this.logElement.firstChild);
-  }
-
-  // Add the new <p> to the end of the debug log.
-  var p = document.createElement('p');
-  if (indentLevel == 1) {
-    p.className = 'indent';
-  } else if (indentLevel > 1) {
-    p.className = 'indent2';
-  }
-  p.appendChild(document.createTextNode(message));
-  this.logElement.appendChild(p);
-
-  // Scroll to bottom of div
-  this.logElement.scrollTop = this.logElement.scrollHeight;
+remoting.FormatIq.prototype.logIndent = function(indentLevel, message) {
+  console.log(Array(indentLevel+1).join("  ") + message);
 };
 
 /**
@@ -68,83 +42,9 @@ remoting.DebugLog.prototype.logIndent = function(indentLevel, message) {
  *
  * @param {string} message The debug info to add to the log.
  */
-remoting.DebugLog.prototype.log = function(message) {
-  this.logIndent(0, message);
+remoting.FormatIq.prototype.log = function(message) {
+  console.log(message);
 }
-
-/**
- * Show or hide the debug log.
- */
-remoting.DebugLog.prototype.toggle = function() {
-  var debugLog = /** @type {Element} */ this.logElement.parentNode;
-  if (debugLog.hidden) {
-    debugLog.hidden = false;
-  } else {
-    debugLog.hidden = true;
-  }
-};
-
-/**
- * Update the statistics panel.
- * @param {remoting.ClientSession.PerfStats} stats The connection statistics.
- */
-remoting.DebugLog.prototype.updateStatistics = function(stats) {
-  var units = '';
-  var videoBandwidth = stats.videoBandwidth;
-  if (videoBandwidth != undefined) {
-    if (videoBandwidth < 1024) {
-      units = 'Bps';
-    } else if (videoBandwidth < 1048576) {
-      units = 'KiBps';
-      videoBandwidth = videoBandwidth / 1024;
-    } else if (videoBandwidth < 1073741824) {
-      units = 'MiBps';
-      videoBandwidth = videoBandwidth / 1048576;
-    } else {
-      units = 'GiBps';
-      videoBandwidth = videoBandwidth / 1073741824;
-    }
-  }
-
-  /**
-   * @param {number} value
-   * @param {string} units
-   * @returns {string} Formatted number.
-   */
-  function formatStatNumber(value, units) {
-    if (value != undefined) {
-      return value.toFixed(2) + ' ' + units;
-    } else {
-      return "n/a";
-    }
-  }
-
-  var statistics = document.getElementById('statistics');
-  this.statsElement.innerText = (
-      'Bandwidth: ' + formatStatNumber(videoBandwidth, units) +
-      ', Frame Rate: ' + formatStatNumber(stats.videoFrameRate, 'fps') +
-      ', Capture: ' + formatStatNumber(stats.captureLatency, 'ms') +
-      ', Encode: ' + formatStatNumber(stats.encodeLatency, 'ms') +
-      ', Decode: ' + formatStatNumber(stats.decodeLatency, 'ms') +
-      ', Render: ' + formatStatNumber(stats.renderLatency, 'ms') +
-      ', Latency: ' + formatStatNumber(stats.roundtripLatency, 'ms'));
-};
-
-/**
- * Check for the debug toggle hot-key.
- *
- * @param {Event} event The keyboard event.
- * @return {void} Nothing.
- */
-remoting.DebugLog.onKeydown = function(event) {
-  var element = /** @type {Element} */ (event.target);
-  if (element.tagName == 'INPUT' || element.tagName == 'TEXTAREA') {
-    return;
-  }
-  if (String.fromCharCode(event.which) == 'D') {
-    remoting.debug.toggle();
-  }
-};
 
 /**
  * Verify that the only attributes on the given |node| are those specified
@@ -155,7 +55,7 @@ remoting.DebugLog.onKeydown = function(event) {
  *
  * @return {boolean} True if the node contains only valid attributes.
  */
-remoting.DebugLog.prototype.verifyAttributes = function(node, validAttrs) {
+remoting.FormatIq.prototype.verifyAttributes = function(node, validAttrs) {
   var attrs = ',' + validAttrs + ',';
   var len = node.attributes.length;
   for (var i = 0; i < len; i++) {
@@ -176,7 +76,7 @@ remoting.DebugLog.prototype.verifyAttributes = function(node, validAttrs) {
  * @param {string} clientJid The client JID string.
  * @param {string} hostJid The host JID string.
  */
-remoting.DebugLog.prototype.setJids = function(clientJid, hostJid) {
+remoting.FormatIq.prototype.setJids = function(clientJid, hostJid) {
   this.clientJid = clientJid;
   this.hostJid = hostJid;
 }
@@ -189,7 +89,7 @@ remoting.DebugLog.prototype.setJids = function(clientJid, hostJid) {
  *
  * @return {Array} Array of boolean result and pretty-version of |server| node.
  */
-remoting.DebugLog.prototype.calcServerString = function(server) {
+remoting.FormatIq.prototype.calcServerString = function(server) {
   if (!this.verifyAttributes(server, 'host,udp,tcp,tcpssl')) {
     return [false, ''];
   }
@@ -217,7 +117,7 @@ remoting.DebugLog.prototype.calcServerString = function(server) {
  *
  * @return {Array} Array of result and pretty-version of |channel| node.
  */
-remoting.DebugLog.prototype.calcChannelString = function(channel) {
+remoting.FormatIq.prototype.calcChannelString = function(channel) {
   var name = channel.nodeName;
   if (!this.verifyAttributes(channel, 'transport,version,codec')) {
     return [false, ''];
@@ -238,7 +138,7 @@ remoting.DebugLog.prototype.calcChannelString = function(channel) {
  *
  * @return {boolean} True if we were able to pretty-print the information.
  */
-remoting.DebugLog.prototype.prettyJingleinfo = function(query) {
+remoting.FormatIq.prototype.prettyJingleinfo = function(query) {
   var nodes = query.childNodes;
   var stun_servers = '';
   for (var i = 0; i < nodes.length; i++) {
@@ -306,7 +206,7 @@ remoting.DebugLog.prototype.prettyJingleinfo = function(query) {
  *
  * @return {boolean} True if we were able to pretty-print the information.
  */
-remoting.DebugLog.prototype.prettySessionInitiateAccept = function(jingle) {
+remoting.FormatIq.prototype.prettySessionInitiateAccept = function(jingle) {
   if (jingle.childNodes.length != 1) {
     return false;
   }
@@ -384,7 +284,7 @@ remoting.DebugLog.prototype.prettySessionInitiateAccept = function(jingle) {
  *
  * @return {boolean} True if we were able to pretty-print the information.
  */
-remoting.DebugLog.prototype.prettySessionTerminate = function(jingle) {
+remoting.FormatIq.prototype.prettySessionTerminate = function(jingle) {
   if (jingle.childNodes.length != 1) {
     return false;
   }
@@ -409,7 +309,7 @@ remoting.DebugLog.prototype.prettySessionTerminate = function(jingle) {
  *
  * @return {boolean} True if we were able to pretty-print the information.
  */
-remoting.DebugLog.prototype.prettyTransportInfo = function(jingle) {
+remoting.FormatIq.prototype.prettyTransportInfo = function(jingle) {
   if (jingle.childNodes.length != 1) {
     return false;
   }
@@ -464,7 +364,7 @@ remoting.DebugLog.prototype.prettyTransportInfo = function(jingle) {
  *
  * @return {boolean} True if we were able to pretty-print the information.
  */
-remoting.DebugLog.prototype.prettyJingleAction = function(jingle, action) {
+remoting.FormatIq.prototype.prettyJingleAction = function(jingle, action) {
   if (action == 'session-initiate' || action == 'session-accept') {
     return this.prettySessionInitiateAccept(jingle);
   }
@@ -484,7 +384,7 @@ remoting.DebugLog.prototype.prettyJingleAction = function(jingle, action) {
  *
  * @return {boolean} True if we were able to pretty-print the information.
  */
-remoting.DebugLog.prototype.prettyError = function(error) {
+remoting.FormatIq.prototype.prettyError = function(error) {
   if (!this.verifyAttributes(error, 'xmlns:err,code,type,err:hostname,' +
                              'err:bnsname,err:stacktrace')) {
     return false;
@@ -522,7 +422,7 @@ remoting.DebugLog.prototype.prettyError = function(error) {
  * @param {string} desc Description of iq action for this node.
  * @param {string|null} sid Session id.
  */
-remoting.DebugLog.prototype.prettyIqHeading = function(action, id, desc, sid) {
+remoting.FormatIq.prototype.prettyIqHeading = function(action, id, desc, sid) {
   var message = 'iq ' + action + ' id=' + id;
   if (desc) {
     message = message + ' ' + desc;
@@ -541,7 +441,7 @@ remoting.DebugLog.prototype.prettyIqHeading = function(action, id, desc, sid) {
  *
  * @return {boolean} True if the data was logged successfully.
  */
-remoting.DebugLog.prototype.prettyIqResult = function(action, iq_list) {
+remoting.FormatIq.prototype.prettyIqResult = function(action, iq_list) {
   /** @type {Node} */
   var iq = iq_list[0];
   var id = iq.getAttribute('id');
@@ -582,7 +482,7 @@ remoting.DebugLog.prototype.prettyIqResult = function(action, iq_list) {
  *
  * @return {boolean} True if the data was logged successfully.
  */
-remoting.DebugLog.prototype.prettyIqGet = function(action, iq_list) {
+remoting.FormatIq.prototype.prettyIqGet = function(action, iq_list) {
   /** @type {Node} */
   var iq = iq_list[0];
   var id = iq.getAttribute('id');
@@ -613,7 +513,7 @@ remoting.DebugLog.prototype.prettyIqGet = function(action, iq_list) {
  *
  * @return {boolean} True if the data was logged successfully.
  */
-remoting.DebugLog.prototype.prettyIqSet = function(action, iq_list) {
+remoting.FormatIq.prototype.prettyIqSet = function(action, iq_list) {
   /** @type {Node} */
   var iq = iq_list[0];
   var id = iq.getAttribute('id');
@@ -677,7 +577,7 @@ remoting.DebugLog.prototype.prettyIqSet = function(action, iq_list) {
  *
  * @return {boolean} True if the data was logged successfully.
  */
-remoting.DebugLog.prototype.prettyIqError = function(action, iq_list) {
+remoting.FormatIq.prototype.prettyIqError = function(action, iq_list) {
   /** @type {Node} */
   var iq = iq_list[0];
   var id = iq.getAttribute('id');
@@ -720,7 +620,7 @@ remoting.DebugLog.prototype.prettyIqError = function(action, iq_list) {
  *
  * @return {boolean} True if the stanza was logged.
  */
-remoting.DebugLog.prototype.prettyIq = function(send, message) {
+remoting.FormatIq.prototype.prettyIq = function(send, message) {
   var parser = new DOMParser();
   var xml = parser.parseFromString(message, 'text/xml');
 
@@ -736,7 +636,7 @@ remoting.DebugLog.prototype.prettyIq = function(send, message) {
     var to = iq.getAttribute('to');
     var from = iq.getAttribute('from');
     var action = '';
-    var bot = remoting.DebugLog.prototype.REMOTING_DIRECTORY_SERVICE_BOT;
+    var bot = remoting.FormatIq.prototype.REMOTING_DIRECTORY_SERVICE_BOT;
     if (send) {
       if (to && to != this.hostJid && to != bot) {
         this.log('bad to: ' + to);
@@ -790,7 +690,7 @@ remoting.DebugLog.prototype.prettyIq = function(send, message) {
  * @param {boolean} send True if we're sending this stanza; false for receiving.
  * @param {string} message The XML stanza to add to the log.
  */
-remoting.DebugLog.prototype.logIq = function(send, message) {
+remoting.FormatIq.prototype.logIq = function(send, message) {
   if (!this.prettyIq(send, message)) {
     // Fall back to showing the raw stanza.
     var prefix = (send ? 'Sending Iq: ' : 'Receiving Iq: ');
@@ -798,5 +698,5 @@ remoting.DebugLog.prototype.logIq = function(send, message) {
   }
 };
 
-/** @type {remoting.DebugLog} */
+/** @type {remoting.FormatIq} */
 remoting.debug = null;
