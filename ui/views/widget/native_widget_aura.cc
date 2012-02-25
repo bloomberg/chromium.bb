@@ -106,10 +106,10 @@ void SetRestoreBounds(aura::Window* window, const gfx::Rect& bounds) {
 class NativeWidgetAura::ActiveWindowObserver : public aura::WindowObserver {
  public:
   explicit ActiveWindowObserver(NativeWidgetAura* host) : host_(host) {
-    host_->GetNativeView()->GetRootWindow()->AddObserver(this);
+    aura::RootWindow::GetInstance()->AddObserver(this);
   }
   virtual ~ActiveWindowObserver() {
-    host_->GetNativeView()->GetRootWindow()->RemoveObserver(this);
+    aura::RootWindow::GetInstance()->RemoveObserver(this);
   }
 
   // Overridden from aura::WindowObserver:
@@ -320,7 +320,7 @@ bool NativeWidgetAura::HasMouseCapture() const {
 }
 
 InputMethod* NativeWidgetAura::CreateInputMethod() {
-  aura::RootWindow* root_window = window_->GetRootWindow();
+  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
   ui::InputMethod* host =
       root_window->GetProperty(aura::client::kRootWindowInputMethodKey);
   InputMethod* input_method = new InputMethodBridge(this, host);
@@ -587,7 +587,7 @@ void NativeWidgetAura::SchedulePaintInRect(const gfx::Rect& rect) {
 
 void NativeWidgetAura::SetCursor(gfx::NativeCursor cursor) {
   cursor_ = cursor;
-  window_->GetRootWindow()->SetCursor(cursor);
+  aura::RootWindow::GetInstance()->SetCursor(cursor);
 }
 
 void NativeWidgetAura::ClearNativeFocus() {

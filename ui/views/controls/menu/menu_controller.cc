@@ -2017,10 +2017,8 @@ void MenuController::SetExitType(ExitType type) {
   // is necessary to exit from nested loop (See Dispatch methods).
   // Send non-op event so that Dispatch method will always be called.
   // crbug.com/104684.
-  if (exit_type_ == EXIT_ALL || exit_type_ == EXIT_DESTROYED) {
-    owner_->GetNativeView()->GetRootWindow()->PostNativeEvent(
-        ui::CreateNoopEvent());
-  }
+  if (exit_type_ == EXIT_ALL || exit_type_ == EXIT_DESTROYED)
+    aura::RootWindow::GetInstance()->PostNativeEvent(ui::CreateNoopEvent());
 #endif
 }
 
