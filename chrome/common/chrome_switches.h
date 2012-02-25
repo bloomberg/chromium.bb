@@ -76,6 +76,7 @@ extern const char kDiagnostics[];
 extern const char kDisableAuthNegotiateCnameLookup[];
 extern const char kDisableBackgroundMode[];
 extern const char kDisableBackgroundNetworking[];
+extern const char kDisableBundledPpapiFlash[];
 extern const char kDisableClientSidePhishingDetection[];
 extern const char kDisableConnectBackupJobs[];
 extern const char kDisableCRLSets[];
