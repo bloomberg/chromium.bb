@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_HISTORY_VISIT_DATABASE_H_
 #pragma once
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/history/history_types.h"
 
 namespace sql {
@@ -173,6 +174,9 @@ class VisitDatabase {
   static bool FillVisitVector(sql::Statement& statement, VisitVector* visits);
 
  private:
+  class VisitAnalysis;
+  scoped_ptr<VisitAnalysis> visit_analysis_;
+
   DISALLOW_COPY_AND_ASSIGN(VisitDatabase);
 };
 

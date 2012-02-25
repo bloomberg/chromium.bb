@@ -10,7 +10,11 @@
 #include <set>
 
 #include "base/logging.h"
+#include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
+#include "base/timer.h"
+#include "base/stl_util.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/common/page_transition_types.h"
@@ -22,13 +26,275 @@
 
 namespace history {
 
-VisitDatabase::VisitDatabase() {
+// Performs analysis of all local browsing data in the visits table to
+// assess the feasibility of performing prerendering on that data.
+// Will emulate prerendering based on a simple heuristic: On each
+// pageview, pick most likely next page viewed in the next 5 minutes
+// based on historical data; keep a maximum of 5 prerenders; evict
+// prerenders older than 5 minutes or based on likelihood.  Will report
+// back hypothetical prerender rate & accuracy via histograms.
+// TODO(tburkard): Remove this before the branch for the next beta is cut.
+class VisitDatabase::VisitAnalysis {
+ public:
+  explicit VisitAnalysis(VisitDatabase* visit_database)
+      : visit_database_(visit_database),
+        visits_fetched_(false) {
+    emulated_prerender_managers_.push_back(
+        new EmulatedPrerenderManager(this,
+                                     1,
+                                     VA_PRERENDER_STARTED_1,
+                                     VA_PRERENDER_USED_1));
+    emulated_prerender_managers_.push_back(
+        new EmulatedPrerenderManager(this,
+                                     3,
+                                     VA_PRERENDER_STARTED_3,
+                                     VA_PRERENDER_USED_3));
+    emulated_prerender_managers_.push_back(
+        new EmulatedPrerenderManager(this,
+                                     5,
+                                     VA_PRERENDER_STARTED_5,
+                                     VA_PRERENDER_USED_5));
+  }
+  ~VisitAnalysis() {
+    STLDeleteElements(&emulated_prerender_managers_);
+  }
+  void Init() {
+    // Only schedule the callback if we are actually run inside a message
+    // loop.
+    if (MessageLoop::current() && !timer_.IsRunning()) {
+      timer_.Start(FROM_HERE,
+                   base::TimeDelta::FromMilliseconds(kFetchDelayMs),
+                   this,
+                   &VisitDatabase::VisitAnalysis::FetchHistory);
+    }
+  }
+  void AddVisit(VisitRow* visit) {
+    visits_to_process_.push_back(*visit);
+    MaybeProcessVisits();
+  }
+
+ private:
+  enum VA_EVENTS {
+    VA_VISIT = 0,
+    VA_PRERENDER_STARTED_1 = 1,
+    VA_PRERENDER_USED_1 = 2,
+    VA_PRERENDER_STARTED_3 = 3,
+    VA_PRERENDER_USED_3 = 4,
+    VA_PRERENDER_STARTED_5 = 5,
+    VA_PRERENDER_USED_5 = 6,
+    VA_EVENT_MAX = 7
+  };
+  void RecordEvent(VA_EVENTS event, base::Time timestamp) {
+    int64 ts = timestamp.ToInternalValue();
+    if (time_event_bitmaps_.count(ts) < 1)
+      time_event_bitmaps_[ts] = 0;
+    int mask = (1 << event);
+    VLOG(1) << "event " << ts << " " << event;
+    if (time_event_bitmaps_[ts] & mask) {
+      VLOG(1) << "duplicate event";
+      return;
+    }
+    VLOG(1) << "recording event";
+    time_event_bitmaps_[ts] |= mask;
+    UMA_HISTOGRAM_ENUMERATION("Prerender.LocalVisitEvents",
+                              event, VA_EVENT_MAX);
+  }
+  class EmulatedPrerenderManager {
+   public:
+    struct PrerenderData {
+      base::Time started;
+      URLID url;
+      double priority;
+    };
+    EmulatedPrerenderManager(VisitAnalysis* visit_analysis, int num_prerenders,
+                             VA_EVENTS prerender_event,
+                             VA_EVENTS prerender_used_event)
+        : visit_analysis_(visit_analysis),
+          num_prerenders_(num_prerenders),
+          prerender_event_(prerender_event),
+          prerender_used_event_(prerender_used_event) {
+      for (int i = 0; i < num_prerenders; i++) {
+        PrerenderData prerender_data;
+        prerender_data.started = base::Time();
+        prerender_data.url = 0;
+        prerender_data.priority = 0.0;
+        prerenders_.push_back(prerender_data);
+      }
+    }
+    void MaybeRecordPrerenderUsed(VisitRow visit) {
+      base::TimeDelta max_age =
+          base::TimeDelta::FromSeconds(kPrerenderExpirationSeconds);
+      for (int i = 0; i < num_prerenders_; i++) {
+        if (prerenders_[i].started >= visit.visit_time - max_age &&
+            prerenders_[i].url == visit.url_id) {
+          VLOG(1) << "PRERENDER USED " << num_prerenders_
+                    << " " << visit.url_id;
+          prerenders_[i].started = base::Time();
+          visit_analysis_->RecordEvent(prerender_used_event_, visit.visit_time);
+        }
+      }
+    }
+    void MaybeAddPrerender(PrerenderData prerender, VisitRow visit) {
+      if (MaybeAddPrerenderInternal(prerender)) {
+        visit_analysis_->RecordEvent(prerender_event_, visit.visit_time);
+      }
+      VLOG(1) << "Maybe add prerender result: " << num_prerenders_;
+      for (int i = 0; i < static_cast<int>(prerenders_.size()); i++) {
+        if (prerenders_[i].started == base::Time())
+          VLOG(1) << "---";
+        else
+          VLOG(1) << prerenders_[i].url << " " << prerenders_[i].priority;
+      }
+    }
+   private:
+    bool MaybeAddPrerenderInternal(PrerenderData prerender) {
+      base::Time cutoff = prerender.started -
+          base::TimeDelta::FromSeconds(kPrerenderExpirationSeconds);
+      int earliest = 0;
+      int weakest = 0;
+      for (int i = 1; i < num_prerenders_; i++) {
+        if (prerenders_[i].url == prerender.url) {
+          if (prerenders_[i].priority < prerender.priority)
+            prerenders_[i].priority = prerender.priority;
+          return false;
+        }
+        if (prerenders_[i].started < prerenders_[earliest].started)
+          earliest = i;
+        if (prerenders_[i].priority < prerenders_[weakest].priority)
+          weakest = i;
+      }
+      if (prerenders_[earliest].started < cutoff) {
+        prerenders_[earliest] = prerender;
+        return true;
+      }
+      if (prerenders_[weakest].priority < prerender.priority) {
+        prerenders_[weakest] = prerender;
+        return true;
+      }
+      return false;
+    }
+    VisitAnalysis* visit_analysis_;
+    int num_prerenders_;
+    std::vector<PrerenderData> prerenders_;
+    VA_EVENTS prerender_event_;
+    VA_EVENTS prerender_used_event_;
+  };
+  void ProcessVisit(VisitRow visit) {
+    VLOG(1) << "processing visit to " << visit.url_id;
+    RecordEvent(VA_VISIT, visit.visit_time);
+    for (int i = 0; i < static_cast<int>(emulated_prerender_managers_.size());
+         i++) {
+      emulated_prerender_managers_[i]->MaybeRecordPrerenderUsed(visit);
+    }
+    base::TimeDelta max_age =
+        base::TimeDelta::FromSeconds(kPrerenderExpirationSeconds);
+    base::TimeDelta min_age =
+        base::TimeDelta::FromMilliseconds(kMinSpacingMilliseconds);
+    std::set<URLID> currently_found;
+    std::map<URLID, int> found;
+    int num_occurrences = 0;
+    base::Time last_started;
+    URLID best_prerender = 0;
+    int best_count = 0;
+    for (int i = 0; i < static_cast<int>(visits_.size()); i++) {
+      VLOG(1) << visits_[i].visit_time.ToInternalValue()/1000000 << " "
+              << visits_[i].url_id;
+      if (visits_[i].url_id == visit.url_id) {
+        VLOG(1) << "****";
+        last_started = visits_[i].visit_time;
+        num_occurrences++;
+        currently_found.clear();
+        continue;
+      }
+      if (last_started > visits_[i].visit_time - max_age &&
+          last_started < visits_[i].visit_time - min_age) {
+        currently_found.insert(visits_[i].url_id);
+        VLOG(1) << "OK";
+      }
+      if (i == static_cast<int>(visits_.size()) - 1 ||
+          visits_[i+1].url_id == visit.url_id) {
+        VLOG(1) << "#########";
+        // output last window
+        for (std::set<URLID>::iterator it = currently_found.begin();
+             it != currently_found.end();
+             ++it) {
+          if (found.count(*it) < 1)
+            found[*it] = 0;
+          found[*it]++;
+          if (found[*it] > best_count) {
+            best_count = found[*it];
+            best_prerender = *it;
+          }
+        }
+        currently_found.clear();
+      }
+    }
+    VLOG(1) << "best hast count " << best_count << "/" << num_occurrences
+            << ", URL " << best_prerender;
+    // Only add a prerender if the page was viewed at least twice, and
+    // at least 10% of the time.
+    if (num_occurrences > 0 && best_count > 1 &&
+        best_count * 10 > num_occurrences) {
+      EmulatedPrerenderManager::PrerenderData prerender;
+      prerender.started = visit.visit_time;
+      prerender.url = best_prerender;
+      prerender.priority = static_cast<double>(best_count) /
+          static_cast<double>(num_occurrences);
+      VLOG(1) << "requesting prerender";
+      for (int i = 0; i < static_cast<int>(emulated_prerender_managers_.size());
+           i++) {
+        emulated_prerender_managers_[i]->MaybeAddPrerender(prerender, visit);
+      }
+    }
+  }
+  void MaybeProcessVisits() {
+    if (!visits_fetched_)
+      return;
+    for (int i = 0; i < static_cast<int>(visits_to_process_.size()); i++) {
+      VisitRow visit = visits_to_process_[i];
+      ProcessVisit(visit);
+      visits_.push_back(visit);
+    }
+    visits_to_process_.clear();
+    VLOG(1) << "done processing new visit.  new visit size = "
+            << visits_.size();
+  }
+  void FetchHistory() {
+    VLOG(1) << "VDB: fetching history";
+    visit_database_->GetAllVisitsInRange(base::Time(), base::Time(), 0,
+                                         &visits_);
+    VLOG(1) << "READ visits " << visits_.size();
+    if (logging::GetVlogVerbosity() >= 1) {
+      for (int i = 0; i < static_cast<int>(visits_.size()); i++) {
+        VLOG(1) << " Read visit: " << visits_[i].url_id;
+      }
+    }
+    UMA_HISTOGRAM_COUNTS("Prerender.LocalVisitDatabaseSize", visits_.size());
+
+    VLOG(1) << "--- all visits read.";
+    visits_fetched_ = true;
+    MaybeProcessVisits();
+  }
+  static const int kFetchDelayMs = 30 * 1000;
+  static const int kPrerenderExpirationSeconds = 300;
+  static const int kMinSpacingMilliseconds = 1000;
+  VisitDatabase* visit_database_;
+  base::OneShotTimer<VisitAnalysis> timer_;
+  VisitVector visits_;
+  VisitVector visits_to_process_;
+  bool visits_fetched_;
+  std::map<int64, int> time_event_bitmaps_;
+  std::vector<EmulatedPrerenderManager *> emulated_prerender_managers_;
+};
+
+VisitDatabase::VisitDatabase() : visit_analysis_(new VisitAnalysis(this)) {
 }
 
 VisitDatabase::~VisitDatabase() {
 }
 
 bool VisitDatabase::InitVisitTable() {
+  visit_analysis_->Init();
   if (!GetDB().DoesTableExist("visits")) {
     if (!GetDB().Execute("CREATE TABLE visits("
         "id INTEGER PRIMARY KEY,"
@@ -119,6 +385,7 @@ bool VisitDatabase::FillVisitVector(sql::Statement& statement,
 }
 
 VisitID VisitDatabase::AddVisit(VisitRow* visit, VisitSource source) {
+  visit_analysis_->AddVisit(visit);
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "INSERT INTO visits "
       "(url, visit_time, from_visit, transition, segment_id, is_indexed) "
