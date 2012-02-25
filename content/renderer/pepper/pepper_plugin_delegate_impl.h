@@ -222,7 +222,7 @@ class PepperPluginDelegateImpl
   virtual SkBitmap* GetSadPluginBitmap() OVERRIDE;
   virtual uint32_t GetAudioHardwareOutputSampleRate() OVERRIDE;
   virtual uint32_t GetAudioHardwareOutputBufferSize() OVERRIDE;
-  virtual PlatformAudio* CreateAudio(
+  virtual PlatformAudioOutput* CreateAudioOutput(
       uint32_t sample_rate,
       uint32_t sample_count,
       PlatformAudioCommonClient* client) OVERRIDE;

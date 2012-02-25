@@ -36,9 +36,10 @@ class MockPluginDelegate : public PluginDelegate {
       PlatformVideoCaptureEventHandler* handler);
   virtual uint32_t GetAudioHardwareOutputSampleRate();
   virtual uint32_t GetAudioHardwareOutputBufferSize();
-  virtual PlatformAudio* CreateAudio(uint32_t sample_rate,
-                                     uint32_t sample_count,
-                                     PlatformAudioCommonClient* client);
+  virtual PlatformAudioOutput* CreateAudioOutput(
+      uint32_t sample_rate,
+      uint32_t sample_count,
+      PlatformAudioCommonClient* client);
   virtual PlatformAudioInput* CreateAudioInput(
       uint32_t sample_rate,
       uint32_t sample_count,

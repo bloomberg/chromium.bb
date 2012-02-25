@@ -77,9 +77,9 @@ bool PPB_Audio_Impl::Init(PP_Resource config,
 
   // When the stream is created, we'll get called back on StreamCreated().
   CHECK(!audio_);
-  audio_ = plugin_delegate->CreateAudio(enter.object()->GetSampleRate(),
-                                        enter.object()->GetSampleFrameCount(),
-                                        this);
+  audio_ = plugin_delegate->CreateAudioOutput(
+      enter.object()->GetSampleRate(), enter.object()->GetSampleFrameCount(),
+      this);
   return audio_ != NULL;
 }
 
@@ -123,9 +123,9 @@ int32_t PPB_Audio_Impl::OpenTrusted(PP_Resource config,
 
   // When the stream is created, we'll get called back on StreamCreated().
   DCHECK(!audio_);
-  audio_ = plugin_delegate->CreateAudio(enter.object()->GetSampleRate(),
-                                        enter.object()->GetSampleFrameCount(),
-                                        this);
+  audio_ = plugin_delegate->CreateAudioOutput(
+      enter.object()->GetSampleRate(), enter.object()->GetSampleFrameCount(),
+      this);
   if (!audio_)
     return PP_ERROR_FAILED;
 

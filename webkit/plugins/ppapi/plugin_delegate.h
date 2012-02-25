@@ -202,7 +202,7 @@ class PluginDelegate {
                                base::SyncSocket::Handle socket) = 0;
   };
 
-  class PlatformAudio {
+  class PlatformAudioOutput {
    public:
     // Starts the playback. Returns false on error or if called before the
     // stream is created or after the stream is closed.
@@ -217,7 +217,7 @@ class PluginDelegate {
     virtual void ShutDown() = 0;
 
    protected:
-    virtual ~PlatformAudio() {}
+    virtual ~PlatformAudioOutput() {}
   };
 
   class PlatformAudioInput {
@@ -336,13 +336,15 @@ class PluginDelegate {
 
   // The caller is responsible for calling Shutdown() on the returned pointer
   // to clean up the corresponding resources allocated during this call.
-  virtual PlatformAudio* CreateAudio(uint32_t sample_rate,
-                                     uint32_t sample_count,
-                                     PlatformAudioCommonClient* client) = 0;
+  virtual PlatformAudioOutput* CreateAudioOutput(
+      uint32_t sample_rate,
+      uint32_t sample_count,
+      PlatformAudioCommonClient* client) = 0;
 
   // The caller is responsible for calling Shutdown() on the returned pointer
   // to clean up the corresponding resources allocated during this call.
-  virtual PlatformAudioInput* CreateAudioInput(uint32_t sample_rate,
+  virtual PlatformAudioInput* CreateAudioInput(
+      uint32_t sample_rate,
       uint32_t sample_count,
       PlatformAudioCommonClient* client) = 0;
 
