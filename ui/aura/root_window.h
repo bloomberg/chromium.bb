@@ -201,8 +201,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   virtual void OnCompositingEnded(ui::Compositor*) OVERRIDE;
 
  private:
-  // TODO(beng): remove this friendship once the linux dispatcher is moved.
-  friend class Env;
   friend class Window;
 
   RootWindow();

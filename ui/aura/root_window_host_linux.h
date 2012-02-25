@@ -23,10 +23,10 @@ class RootWindowHostLinux : public RootWindowHost,
   explicit RootWindowHostLinux(const gfx::Rect& bounds);
   virtual ~RootWindowHostLinux();
 
- private:
-  // MessageLoop::Dispatcher Override.
-  virtual DispatchStatus Dispatch(XEvent* xev) OVERRIDE;
+  // Handles an event targeted at this host's window.
+  base::MessagePumpDispatcher::DispatchStatus Dispatch(XEvent* xev);
 
+ private:
   // RootWindowHost Overrides.
   virtual void SetRootWindow(RootWindow* root_window) OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
@@ -44,7 +44,6 @@ class RootWindowHostLinux : public RootWindowHost,
   virtual void UnConfineCursor() OVERRIDE;
   virtual void MoveCursorTo(const gfx::Point& location) OVERRIDE;
   virtual void PostNativeEvent(const base::NativeEvent& event) OVERRIDE;
-  virtual MessageLoop::Dispatcher* GetDispatcher() OVERRIDE;
 
   // MessageLoop::DestructionObserver Overrides.
   virtual void WillDestroyCurrentMessageLoop() OVERRIDE;

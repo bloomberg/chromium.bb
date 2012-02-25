@@ -5,11 +5,12 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
+#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 
 namespace aura {
 
-class DispatcherWin : public MessageLoop::Dispatcher {
+class DispatcherWin : public Dispatcher {
  public:
   DispatcherWin() {}
   virtual ~DispatcherWin() {}
@@ -27,7 +28,7 @@ bool DispatcherWin::Dispatch(const MSG& msg) {
   return true;
 }
 
-MessageLoop::Dispatcher* CreateDispatcher() {
+Dispatcher* CreateDispatcher() {
   return new DispatcherWin;
 }
 

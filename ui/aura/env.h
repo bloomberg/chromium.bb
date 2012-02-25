@@ -16,9 +16,14 @@ namespace aura {
 class EnvObserver;
 class Window;
 
+class Dispatcher : public MessageLoop::Dispatcher {
+ public:
+  virtual ~Dispatcher() {}
+};
+
 #if !defined(OS_MACOSX)
 // Creates a platform-specific native event dispatcher.
-MessageLoop::Dispatcher* CreateDispatcher();
+Dispatcher* CreateDispatcher();
 #endif
 
 // A singleton object that tracks general state within Aura.
@@ -49,9 +54,8 @@ class AURA_EXPORT Env {
   void NotifyWindowInitialized(Window* window);
 
   ObserverList<EnvObserver> observers_;
-#if defined(OS_WIN)
-  // TODO(beng): remove the ifdef once the linux dispatcher is complete.
-  scoped_ptr<MessageLoop::Dispatcher> dispatcher_;
+#if !defined(OS_MACOSX)
+  scoped_ptr<Dispatcher> dispatcher_;
 #endif
 
   static Env* instance_;

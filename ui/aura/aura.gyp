@@ -48,6 +48,8 @@
         'client/window_move_client.h',
         'client/window_types.h',
         'cursor.h',
+        'dispatcher_linux.cc',
+        'dispatcher_linux.h',
         'dispatcher_win.cc',
         'env.cc',
         'env.h',

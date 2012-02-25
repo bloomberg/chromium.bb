@@ -23,11 +23,7 @@ class RootWindow;
 // RootWindowHost bridges between a native window and the embedded RootWindow.
 // It provides the accelerated widget and maps events from the native os to
 // aura.
-#if defined(OS_MACOSX) || defined(OS_WIN)
 class RootWindowHost {
-#else
-class RootWindowHost : public MessageLoop::Dispatcher {
-#endif  // defined(OS_MACOSX)
  public:
   virtual ~RootWindowHost() {}
 
@@ -86,11 +82,6 @@ class RootWindowHost : public MessageLoop::Dispatcher {
   // Posts |native_event| to the platform's event queue.
 #if !defined(OS_MACOSX)
   virtual void PostNativeEvent(const base::NativeEvent& native_event) = 0;
-
-#if !defined(OS_WIN)
-  // See documentation for RootWindow::GetDispatcher().
-  virtual MessageLoop::Dispatcher* GetDispatcher() = 0;
-#endif
 #endif
 };
 

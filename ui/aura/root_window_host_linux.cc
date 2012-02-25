@@ -10,6 +10,8 @@
 
 #include "base/message_pump_x.h"
 #include "ui/aura/cursor.h"
+#include "ui/aura/dispatcher_linux.h"
+#include "ui/aura/env.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -287,6 +289,8 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
       CopyFromParent,  // visual
       CWBackPixmap,
       &swa);
+  static_cast<DispatcherLinux*>(Env::GetInstance()->GetDispatcher())->
+      RootWindowHostCreated(xwindow_, this);
 
   long event_mask = ButtonPressMask | ButtonReleaseMask | FocusChangeMask |
                     KeyPressMask | KeyReleaseMask |
@@ -301,7 +305,6 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
   if (base::MessagePumpForUI::HasXInput2())
     ui::TouchFactory::GetInstance()->SetupXI2ForXWindow(xwindow_);
 
-  base::MessagePumpX::SetDefaultDispatcher(this);
   MessageLoopForUI::current()->AddDestructionObserver(this);
 
   // Initialize invisible cursor.
@@ -317,6 +320,8 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
 }
 
 RootWindowHostLinux::~RootWindowHostLinux() {
+  static_cast<DispatcherLinux*>(Env::GetInstance()->GetDispatcher())->
+      RootWindowHostDestroying(xwindow_);
   XDestroyWindow(xdisplay_, xwindow_);
 
   // Clears XCursorCache.
@@ -325,7 +330,6 @@ RootWindowHostLinux::~RootWindowHostLinux() {
   XFreeCursor(xdisplay_, invisible_cursor_);
 
   MessageLoopForUI::current()->RemoveDestructionObserver(this);
-  base::MessagePumpX::SetDefaultDispatcher(NULL);
 }
 
 base::MessagePumpDispatcher::DispatchStatus RootWindowHostLinux::Dispatch(
@@ -489,7 +493,8 @@ base::MessagePumpDispatcher::DispatchStatus RootWindowHostLinux::Dispatch(
       break;
     }
   }
-  return handled ? EVENT_PROCESSED : EVENT_IGNORED;
+  return handled ? base::MessagePumpDispatcher::EVENT_PROCESSED :
+      base::MessagePumpDispatcher::EVENT_IGNORED;
 }
 
 void RootWindowHostLinux::SetRootWindow(RootWindow* root_window) {
@@ -624,10 +629,6 @@ void RootWindowHostLinux::PostNativeEvent(
       break;
   }
   XSendEvent(xdisplay_, xwindow_, False, 0, &xevent);
-}
-
-MessageLoop::Dispatcher* RootWindowHostLinux::GetDispatcher() {
-  return this;
 }
 
 void RootWindowHostLinux::WillDestroyCurrentMessageLoop() {
