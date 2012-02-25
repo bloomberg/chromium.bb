@@ -27,6 +27,9 @@ extern const bool kCanToggleSystemTitleBar;
 
 #endif
 
+// The default value for session startup.
+extern const SessionStartupPref::Type kDefaultSessionStartupType;
+
 // Width of mini-tabs.
 extern const int kMiniTabWidth;
 

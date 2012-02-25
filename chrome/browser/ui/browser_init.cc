@@ -800,11 +800,6 @@ SessionStartupPref BrowserInit::GetSessionStartupPref(
     const CommandLine& command_line,
     Profile* profile) {
   SessionStartupPref pref = SessionStartupPref::GetStartupPref(profile);
-
-  // Session restore should be avoided on the first run.
-  if (first_run::IsChromeFirstRun())
-    pref.type = SessionStartupPref::DEFAULT;
-
   if (command_line.HasSwitch(switches::kRestoreLastSession) ||
       BrowserInit::WasRestarted()) {
     pref.type = SessionStartupPref::LAST;
@@ -1116,7 +1111,8 @@ bool BrowserInit::LaunchWithProfile::ProcessStartupURLs(
   SessionStartupPref pref = GetSessionStartupPref(command_line_, profile_);
   if (command_line_.HasSwitch(switches::kTestingChannelID) &&
       !command_line_.HasSwitch(switches::kRestoreLastSession) &&
-      pref.type != SessionStartupPref::DEFAULT) {
+      browser_defaults::kDefaultSessionStartupType !=
+      SessionStartupPref::DEFAULT) {
     // When we have non DEFAULT session start type, then we won't open up a
     // fresh session. But none of the tests are written with this in mind, so
     // we explicitly ignore it during testing.
@@ -1166,7 +1162,7 @@ Browser* BrowserInit::LaunchWithProfile::ProcessSpecifiedURLs(
   SessionStartupPref pref = GetSessionStartupPref(command_line_, profile_);
   std::vector<Tab> tabs;
   // Pinned tabs should not be displayed when chrome is launched
-  // in incognito mode.
+  // in icognito mode.
   if (!IncognitoModePrefs::ShouldLaunchIncognito(command_line_,
                                                  profile_->GetPrefs())) {
     tabs = PinnedTabCodec::ReadPinnedTabs(profile_);

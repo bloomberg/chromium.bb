@@ -6,13 +6,17 @@
 
 #include <string>
 
+#include "base/string_piece.h"
+#include "base/utf_string_conversions.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 
-#if defined(OS_MACOSX)
+#ifdef OS_MACOSX
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/ui/cocoa/window_restore_utils.h"
 #endif
 
@@ -37,16 +41,19 @@ int TypeToPrefValue(SessionStartupPref::Type type) {
 
 // static
 void SessionStartupPref::RegisterUserPrefs(PrefService* prefs) {
-#if defined(OS_CHROMEOS)
-  SessionStartupPref::Type type = SessionStartupPref::LAST;
-#else
-  SessionStartupPref::Type type = SessionStartupPref::DEFAULT;
-#endif
+  SessionStartupPref::Type type = browser_defaults::kDefaultSessionStartupType;
 
-#if defined(OS_MACOSX)
-  // Use Lion's system preference, if it is set.
-  if (restore_utils::IsWindowRestoreEnabled())
-    type = SessionStartupPref::LAST;
+#ifdef OS_MACOSX
+  // During first run the calling code relies on |DEFAULT| session preference
+  // value to avoid session restore.  That is respected here.
+  if (!first_run::IsChromeFirstRun()) {
+    // |DEFAULT| really means "Don't restore".  The actual default value could
+    // change, so explicitly set both.
+    if (restore_utils::IsWindowRestoreEnabled())
+      type = SessionStartupPref::LAST;
+    else
+      type = SessionStartupPref::DEFAULT;
+  }
 #endif
 
   prefs->RegisterIntegerPref(prefs::kRestoreOnStartup,

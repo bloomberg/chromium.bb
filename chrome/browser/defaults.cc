@@ -31,6 +31,8 @@ const int kAutocompleteEditFontPixelSize = 15;
 
 const int kAutocompleteEditFontPixelSizeInPopup = 10;
 
+const SessionStartupPref::Type kDefaultSessionStartupType =
+    SessionStartupPref::LAST;
 const int kMiniTabWidth = 64;
 const bool kCanToggleSystemTitleBar = false;
 const bool kRestorePopups = false;
@@ -62,6 +64,8 @@ const bool kCanToggleSystemTitleBar = true;
 
 #if !defined(OS_CHROMEOS)
 
+const SessionStartupPref::Type kDefaultSessionStartupType =
+    SessionStartupPref::DEFAULT;
 const int kMiniTabWidth = 56;
 const bool kRestorePopups = false;
 const bool kShowImportOnBookmarkBar = true;
