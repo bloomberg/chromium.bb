@@ -202,6 +202,8 @@
         'wm/workspace/workspace_layout_manager.h',
         'wm/workspace/workspace_manager.cc',
         'wm/workspace/workspace_manager.h',
+        'wm/workspace/workspace_window_resizer.cc',
+        'wm/workspace/workspace_window_resizer.h',
       ],
       'conditions': [
         ['OS=="mac"', {
@@ -282,6 +284,7 @@
         'wm/window_cycle_controller_unittest.cc',
         'wm/window_modality_controller_unittest.cc',
         'wm/workspace/workspace_manager_unittest.cc',
+        'wm/workspace/workspace_window_resizer_unittest.cc',
         'wm/workspace_controller_unittest.cc',
 
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
