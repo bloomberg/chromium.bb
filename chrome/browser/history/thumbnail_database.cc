@@ -46,6 +46,20 @@ static const int kCompatibleVersionNumber = 5;
 // sensitive to artifacts for these small sized, highly detailed images.
 static const int kImageQuality = 90;
 
+ThumbnailDatabase::IconMappingEnumerator::IconMappingEnumerator() {
+}
+
+ThumbnailDatabase::IconMappingEnumerator::~IconMappingEnumerator() {
+}
+
+bool ThumbnailDatabase::IconMappingEnumerator::GetNextIconMapping(
+    IconMapping* icon_mapping) {
+  if (!statement_.Step())
+    return false;
+  FillIconMapping(statement_, GURL(statement_.ColumnString(3)), icon_mapping);
+  return true;
+}
+
 ThumbnailDatabase::ThumbnailDatabase()
     : history_publisher_(NULL),
       use_top_sites_(false) {
@@ -535,6 +549,20 @@ bool ThumbnailDatabase::CloneIconMapping(const GURL& old_page_url,
   return statement.Run();
 }
 
+bool ThumbnailDatabase::InitIconMappingEnumerator(
+    IconType type,
+    IconMappingEnumerator* enumerator) {
+  DCHECK(!enumerator->statement_.is_valid());
+  enumerator->statement_.Assign(db_.GetCachedStatement(
+      SQL_FROM_HERE,
+      "SELECT icon_mapping.id, icon_mapping.icon_id, favicons.icon_type, "
+             "icon_mapping.page_url "
+         "FROM icon_mapping JOIN favicons ON ("
+              "icon_mapping.icon_id = favicons.id) "
+         "WHERE favicons.icon_type = ?"));
+  enumerator->statement_.BindInt(0, type);
+  return enumerator->statement_.is_valid();
+}
 
 bool ThumbnailDatabase::MigrateIconMappingData(URLDatabase* url_db) {
   URLDatabase::IconMappingEnumerator e;

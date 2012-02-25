@@ -15,6 +15,7 @@
 #include "sql/connection.h"
 #include "sql/init_status.h"
 #include "sql/meta_table.h"
+#include "sql/statement.h"
 
 class FilePath;
 class RefCountedMemory;
@@ -168,6 +169,30 @@ class ThumbnailDatabase {
   // Clones the existing mappings from |old_page_url| if |new_page_url| has no
   // mappings. Otherwise, will leave mappings alone.
   bool CloneIconMapping(const GURL& old_page_url, const GURL& new_page_url);
+
+  // The class to enumerate icon mappings. Use InitIconMappingEnumerator to
+  // initialize.
+  class IconMappingEnumerator {
+   public:
+    IconMappingEnumerator();
+    ~IconMappingEnumerator();
+
+    // Get the next icon mapping, return false if no more are available.
+    bool GetNextIconMapping(IconMapping* icon_mapping);
+
+   private:
+    friend class ThumbnailDatabase;
+
+    // Used to query database and return the data for filling IconMapping in
+    // each call of GetNextIconMapping().
+    sql::Statement statement_;
+
+    DISALLOW_COPY_AND_ASSIGN(IconMappingEnumerator);
+  };
+
+  // Return all icon mappings of the given |icon_type|.
+  bool InitIconMappingEnumerator(IconType type,
+                                 IconMappingEnumerator* enumerator);
 
   // Temporary IconMapping -----------------------------------------------------
   //

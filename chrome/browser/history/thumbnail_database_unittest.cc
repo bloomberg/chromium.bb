@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -548,6 +548,70 @@ TEST_F(IconMappingMigrationTest, TestIconMappingMigration) {
   // Test a page without icon
   GURL page_url4 = GURL("http://www.google.com/blank.html");
   EXPECT_FALSE(db.GetIconMappingsForPageURL(page_url4, NULL));
+}
+
+TEST_F(ThumbnailDatabaseTest, IconMappingEnumerator) {
+  ThumbnailDatabase db;
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
+  db.BeginTransaction();
+
+  std::vector<unsigned char> data(blob1, blob1 + sizeof(blob1));
+  scoped_refptr<RefCountedBytes> favicon(new RefCountedBytes(data));
+
+  GURL url("http://google.com");
+  FaviconID touch_icon_id1 = db.AddFavicon(url, TOUCH_ICON);
+  ASSERT_NE(0, touch_icon_id1);
+  ASSERT_TRUE(db.SetFavicon(touch_icon_id1, favicon, base::Time::Now()));
+  IconMappingID touch_mapping_id1 = db.AddIconMapping(url, touch_icon_id1);
+  ASSERT_NE(0, touch_mapping_id1);
+
+  FaviconID favicon_id1 = db.AddFavicon(url, FAVICON);
+  ASSERT_NE(0, favicon_id1);
+  ASSERT_TRUE(db.SetFavicon(favicon_id1, favicon, base::Time::Now()));
+  IconMappingID favicon_mapping_id1 = db.AddIconMapping(url, favicon_id1);
+  ASSERT_NE(0, favicon_mapping_id1);
+
+  GURL url2("http://chromium.org");
+  FaviconID favicon_id2 = db.AddFavicon(url2, FAVICON);
+  ASSERT_NE(0, favicon_id2);
+  ASSERT_TRUE(db.SetFavicon(favicon_id2, favicon, base::Time::Now()));
+  IconMappingID favicon_mapping_id2 = db.AddIconMapping(url2, favicon_id2);
+  ASSERT_NE(0, favicon_mapping_id2);
+
+  IconMapping icon_mapping;
+  ThumbnailDatabase::IconMappingEnumerator enumerator1;
+  ASSERT_TRUE(db.InitIconMappingEnumerator(FAVICON, &enumerator1));
+  // There are 2 favicon mappings.
+  bool has_favicon_mapping1 = false;
+  bool has_favicon_mapping2 = false;
+  int mapping_count = 0;
+  while (enumerator1.GetNextIconMapping(&icon_mapping)) {
+    mapping_count++;
+    if (favicon_mapping_id1 == icon_mapping.mapping_id) {
+      has_favicon_mapping1 = true;
+      EXPECT_EQ(url, icon_mapping.page_url);
+      EXPECT_EQ(favicon_id1, icon_mapping.icon_id);
+      EXPECT_EQ(FAVICON, icon_mapping.icon_type);
+    } else if (favicon_mapping_id2 == icon_mapping.mapping_id) {
+      has_favicon_mapping2 = true;
+      EXPECT_EQ(url2, icon_mapping.page_url);
+      EXPECT_EQ(favicon_id2, icon_mapping.icon_id);
+      EXPECT_EQ(FAVICON, icon_mapping.icon_type);
+    }
+  }
+  EXPECT_EQ(2, mapping_count);
+  EXPECT_TRUE(has_favicon_mapping1);
+  EXPECT_TRUE(has_favicon_mapping2);
+
+  ThumbnailDatabase::IconMappingEnumerator enumerator2;
+  ASSERT_TRUE(db.InitIconMappingEnumerator(TOUCH_ICON, &enumerator2));
+  ASSERT_TRUE(enumerator2.GetNextIconMapping(&icon_mapping));
+  EXPECT_EQ(touch_mapping_id1, icon_mapping.mapping_id);
+  EXPECT_EQ(url, icon_mapping.page_url);
+  EXPECT_EQ(touch_icon_id1, icon_mapping.icon_id);
+  EXPECT_EQ(TOUCH_ICON, icon_mapping.icon_type);
+
+  EXPECT_FALSE(enumerator2.GetNextIconMapping(&icon_mapping));
 }
 
 }  // namespace history
