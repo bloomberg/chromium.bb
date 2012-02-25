@@ -115,8 +115,7 @@ int main(int argc, char** argv) {
   window3.Show();
   window3.SetParent(&window2);
 
-  aura::RootWindow::GetInstance()->ShowRootWindow();
-  MessageLoopForUI::current()->Run();
+  aura::RootWindow::GetInstance()->Run();
 
   ui::CompositorTestSupport::Terminate();
 

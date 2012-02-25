@@ -99,6 +99,9 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // using this function. Returns true if successful.
   bool ConfineCursorToWindow();
 
+  // Shows the root window host and runs an event loop for it.
+  void Run();
+
   // Draws the necessary set of windows.
   void Draw();
 

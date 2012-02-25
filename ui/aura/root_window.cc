@@ -138,6 +138,11 @@ bool RootWindow::ConfineCursorToWindow() {
   return host_->ConfineCursorToRootWindow();
 }
 
+void RootWindow::Run() {
+  ShowRootWindow();
+  MessageLoopForUI::current()->Run();
+}
+
 void RootWindow::Draw() {
   if (waiting_on_compositing_end_) {
     draw_on_compositing_end_ = true;
