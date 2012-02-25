@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_REMOTING_HOST_SERVICE_WIN_H_
-#define REMOTING_HOST_REMOTING_HOST_SERVICE_WIN_H_
+#ifndef REMOTING_HOST_HOST_SERVICE_WIN_H_
+#define REMOTING_HOST_HOST_SERVICE_WIN_H_
 
 #include <windows.h>
 
@@ -114,4 +114,4 @@ class HostService : public WtsConsoleMonitor {
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_REMOTING_HOST_SERVICE_WIN_H_
+#endif  // REMOTING_HOST_HOST_SERVICE_WIN_H_

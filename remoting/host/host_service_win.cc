@@ -5,7 +5,7 @@
 // This file implements the Windows service controlling Me2Me host processes
 // running within user sessions.
 
-#include "remoting/host/remoting_host_service_win.h"
+#include "remoting/host/host_service_win.h"
 
 #include <windows.h>
 #include <wtsapi32.h>
@@ -23,7 +23,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/wrapped_window_proc.h"
 
-#include "remoting/host/remoting_host_service_resource.h"
+#include "remoting/host/host_service_resource.h"
 #include "remoting/base/scoped_sc_handle_win.h"
 #include "remoting/host/wts_console_observer_win.h"
 #include "remoting/host/wts_session_process_launcher_win.h"

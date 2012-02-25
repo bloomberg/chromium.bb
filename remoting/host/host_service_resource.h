@@ -4,7 +4,7 @@
 
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by remoting_host_service.rc
+// Used by host_service.rc
 //
 #define IDS_DISPLAY_SERVICE_NAME        101
 #define IDS_SERVICE_DESCRIPTION         102
