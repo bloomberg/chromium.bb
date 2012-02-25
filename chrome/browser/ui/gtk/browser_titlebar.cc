@@ -639,8 +639,9 @@ void BrowserTitlebar::UpdateThrobber(WebContents* web_contents) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
     // Note: we want to exclude the application popup window.
-    if (browser_window_->browser()->is_app() &&
-        browser_window_->browser()->is_type_popup()) {
+    if ((browser_window_->browser()->is_app() &&
+        browser_window_->browser()->is_type_popup()) ||
+        IsTypePanel()) {
       SkBitmap icon = browser_window_->browser()->GetCurrentPageIcon();
       if (icon.empty()) {
         // Fallback to the Chromium icon if the page has no icon.
@@ -916,7 +917,7 @@ void BrowserTitlebar::OnButtonClicked(GtkWidget* button) {
 
 gboolean BrowserTitlebar::OnFaviconMenuButtonPressed(GtkWidget* widget,
                                                      GdkEventButton* event) {
-  if (event->button != 1)
+  if (event->button != 1 || IsTypePanel())
     return FALSE;
 
   ShowFaviconMenu(event);
