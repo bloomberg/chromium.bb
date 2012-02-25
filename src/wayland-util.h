@@ -80,10 +80,18 @@ struct wl_object {
  *
  * The following code will initialize a list:
  *
- *	wl_list_init(foo_list);
- *	wl_list_insert(foo_list, item1);	Pushes item1 at the head
- *	wl_list_insert(foo_list, item2);	Pushes item2 at the head
- *	wl_list_insert(item2, item3);   	Pushes item3 after item2
+ * 	struct wl_list foo_list;
+ *
+ * 	struct item_t {
+ * 		int foo;
+ * 		struct wl_list link;
+ * 	};
+ * 	struct item_t item1, item2, item3;
+ *
+ *	wl_list_init(&foo_list);
+ *	wl_list_insert(&foo_list, &item1.link);	Pushes item1 at the head
+ *	wl_list_insert(&foo_list, &item2.link);	Pushes item2 at the head
+ *	wl_list_insert(&item2.link, &item3.link);Pushes item3 after item2
  *
  * The list now looks like [item2, item3, item1]
  *
