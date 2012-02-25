@@ -69,7 +69,7 @@ class BluetoothProperty : public dbus::Property<T> {
   //
   // dbus::Property<> override.
   void Set(const T& value, SetCallback callback) {
-    dbus::MethodCall method_call(this->GetInterface(),
+    dbus::MethodCall method_call(this->property_set()->interface(),
                                  bluetooth_common::kSetProperty);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(this->name());
