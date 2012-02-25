@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
@@ -24,6 +25,10 @@ class Profile;
 class InfoBarDelegate;
 class TabContentsWrapper;
 
+namespace extensions {
+class BundleInstaller;
+}  // namespace extensions
+
 // Displays all the UI around extension installation.
 class ExtensionInstallUI : public ImageLoadingTracker::Observer {
  public:
@@ -31,6 +36,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
     UNSET_PROMPT_TYPE = -1,
     INSTALL_PROMPT = 0,
     INLINE_INSTALL_PROMPT,
+    BUNDLE_INSTALL_PROMPT,
     RE_ENABLE_PROMPT,
     PERMISSIONS_PROMPT,
     NUM_PROMPT_TYPES
@@ -53,12 +59,12 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
     PromptType type() const { return type_; }
 
     // Getters for UI element labels.
-    string16 GetDialogTitle(const Extension* extension) const;
-    string16 GetHeading(const std::string& extension_name) const;
+    string16 GetDialogTitle() const;
+    string16 GetHeading() const;
     string16 GetAcceptButtonLabel() const;
     bool HasAbortButtonLabel() const;
     string16 GetAbortButtonLabel() const;
-    string16 GetPermissionsHeader() const;
+    string16 GetPermissionsHeading() const;
 
     // Getters for webstore metadata. Only populated when the type is
     // INLINE_INSTALL_PROMPT.
@@ -72,13 +78,33 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
     string16 GetRatingCount() const;
     string16 GetUserCount() const;
     size_t GetPermissionCount() const;
-    string16 GetPermission(int index) const;
+    string16 GetPermission(size_t index) const;
+
+    // Populated for BUNDLE_INSTALL_PROMPT.
+    const extensions::BundleInstaller* bundle() const { return bundle_; }
+    void set_bundle(const extensions::BundleInstaller* bundle) {
+      bundle_ = bundle;
+    }
+
+    // Populated for all other types.
+    const Extension* extension() const { return extension_; }
+    void set_extension(const Extension* extension) { extension_ = extension; }
+
+    const gfx::Image& icon() const { return icon_; }
+    void set_icon(const gfx::Image& icon) { icon_ = icon; }
 
    private:
     PromptType type_;
     // Permissions that are being requested (may not be all of an extension's
     // permissions if only additional ones are being requested)
     std::vector<string16> permissions_;
+
+    // The extension or bundle being installed.
+    const Extension* extension_;
+    const extensions::BundleInstaller* bundle_;
+
+    // The icon to be displayed.
+    gfx::Image icon_;
 
     // These fields are populated only when the prompt type is
     // INLINE_INSTALL_PROMPT
@@ -117,8 +143,8 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   }
 
   // Whether or not to show the default UI after completing the installation.
-  void set_skip_post_install_ui(bool is_bundle) {
-    skip_post_install_ui_ = is_bundle;
+  void set_skip_post_install_ui(bool skip_ui) {
+    skip_post_install_ui_ = skip_ui;
   }
 
   // This is called by the installer to verify whether the installation should

@@ -22,15 +22,11 @@ class DictionaryValue;
 
 void ShowExtensionInstallDialog(Profile* profile,
                                 ExtensionInstallUI::Delegate* delegate,
-                                const Extension* extension,
-                                SkBitmap* icon,
                                 const ExtensionInstallUI::Prompt& prompt);
 
 // The implementations of this function are platform-specific.
 void ShowExtensionInstallDialogImpl(Profile* profile,
                                     ExtensionInstallUI::Delegate* delegate,
-                                    const Extension* extension,
-                                    SkBitmap* icon,
                                     const ExtensionInstallUI::Prompt& prompt);
 
 // Wrapper around ShowExtensionInstallDialog that shows the install dialog for

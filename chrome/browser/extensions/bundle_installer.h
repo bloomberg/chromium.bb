@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
+#include "base/string16.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
@@ -95,6 +96,15 @@ class BundleInstaller : public WebstoreInstallHelper::Delegate,
   void CompleteInstall(content::NavigationController* controller,
                        Browser* browser,
                        Delegate* delegate);
+
+  // We change the headings in the install prompt and installed bubble depending
+  // on whether the bundle contains apps, extensions or both. This method gets
+  // the correct heading for the items in the specified |state|, or an empty
+  // string if no items are in the |state|.
+  //   STATE_PENDING   - install prompt
+  //   STATE_INSTALLED - installed bubble successful installs list
+  //   STATE_FAILED    - installed bubble failed installs list
+  string16 GetHeadingTextFor(Item::State state) const;
 
  private:
   friend class base::RefCountedThreadSafe<BundleInstaller>;

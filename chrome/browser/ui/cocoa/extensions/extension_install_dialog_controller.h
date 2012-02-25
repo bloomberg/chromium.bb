@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,9 +40,7 @@ class Profile;
   NSWindow* parentWindow_;  // weak
   Profile* profile_;  // weak
   ExtensionInstallUI::Delegate* delegate_;  // weak
-  const Extension* extension_; // weak
   scoped_ptr<ExtensionInstallUI::Prompt> prompt_;
-  SkBitmap icon_;
 }
 
 // For unit test use only
@@ -59,9 +57,7 @@ class Profile;
 
 - (id)initWithParentWindow:(NSWindow*)window
                    profile:(Profile*)profile
-                 extension:(const Extension*)extension
                   delegate:(ExtensionInstallUI::Delegate*)delegate
-                      icon:(SkBitmap*)bitmap
                     prompt:(const ExtensionInstallUI::Prompt&)prompt;
 - (void)runAsModalSheet;
 - (IBAction)storeLinkClicked:(id)sender; // Callback for "View details" link.
