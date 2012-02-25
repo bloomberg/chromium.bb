@@ -45,15 +45,6 @@ class GerritHelper():
   def ssh_prefix(self):
     return ['ssh', '-p', self.ssh_port, self.ssh_host]
 
-  def GetGerritSqlCommand(self, command_list):
-    """Returns array corresponding to Gerrit Review command.
-
-    Review can be used to modify a changelist.  Specifically it can change
-    scores, abandon, restore or submit it.  Pass in |command|.
-    """
-    assert isinstance(command_list, list), 'Sql command must be list.'
-    return self.ssh_prefix + ['gerrit', 'gsql'] + command_list
-
   def GetGerritReviewCommand(self, command_list):
     """Returns array corresponding to Gerrit Review command.
 
@@ -207,17 +198,18 @@ class GerritHelper():
       return [cros_patch.GerritPatch(x, self.internal) for x in result]
     return result
 
-  def InterpretJSONResults(self, queries, result_string, query_type='stats'):
+  def InterpretJSONResults(self, query, result_string, query_type='stats',
+                           mode='query'):
     result = map(json.loads, result_string.splitlines())
 
     status = result[-1]
     if 'type' not in status:
-      raise GerritException('weird results from gerrit: asked %s, got %s' %
-        (queries, result))
+      raise GerritException('Weird results from gerrit: asked %s %s, got %s' %
+        (mode, query, result))
 
     if status['type'] != query_type:
-      raise GerritException('bad gerrit query: parameters %s, error %s' %
-        (queries, status.get('message', status)))
+      raise GerritException('Bad gerrit %s: query %s, error %s' %
+        (mode, query, status.get('message', status)))
 
     return result[:-1]
 
@@ -298,6 +290,49 @@ class GerritHelper():
 
       yield query, result
       last_patch_id = query
+
+  def _SqlQuery(self, input, dryrun=False, is_command=False):
+    """Run a gsql query against gerrit.
+
+    Doing so requires an admin account, and a fair amount of care-
+    bad code can trash the underlying DB pretty easily.
+
+    Args:
+     input: SQL query to run.
+     dryrun: Should we run the SQL, or just pretend we did?
+     is_command: Does the SQL modify records (DML), or is it just
+       a query?  If it's DML, then this must be set to True.
+
+    Return:
+     List of dictionaries returned from gerrit for the SQL ran.
+    """
+    if dryrun:
+      logging.Info("Would have ran sql query %r" % (input,))
+      return []
+
+    command = self.ssh_prefix + ['gerrit', 'gsql', '--format=JSON']
+    result = cros_build_lib.RunCommand(command, redirect_stdout=True,
+                                       input=input)
+
+    query_type = 'update-stats' if is_command else 'query-stats'
+
+    result = self.InterpretJSONResults(input, result.output,
+                                       query_type=query_type,
+                                       mode='gsql')
+    return result
+
+  def RemoveCommitReady(self, change, dryrun=False):
+    """Remove any commit ready bits associated with CL.
+
+    Args:
+     change: GerritChange instance to strip the CR bit from.
+     dryrun: Whether to perform the operation or not.
+    """
+    query = ("DELETE FROM patch_set_approvals WHERE change_id=%s"
+             " AND patch_set_id=%s "
+             " AND category_id='COMR';"
+             % (change.gerrit_number, change.patch_number))
+    self._SqlQuery(query, dryrun=dryrun, is_command=True)
 
 
 def GetGerritPatchInfo(patches):

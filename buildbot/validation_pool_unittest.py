@@ -51,6 +51,7 @@ class TestValidationPool(mox.MoxTestBase):
   def GetPool(self, *args):
     pool = validation_pool.ValidationPool(*args)
     self.mox.StubOutWithMock(pool, '_SendNotification')
+    self.mox.StubOutWithMock(pool.gerrit_helper, '_SqlQuery')
     return pool
 
   def _TreeStatusFile(self, message, general_state):
@@ -192,6 +193,8 @@ class TestValidationPool(mox.MoxTestBase):
 
     pool = self.GetPool(False, 1, 'build_name', True, False)
     pool.changes = [patch1, patch2, patch3, patch4]
+    pool.gerrit_helper = self.mox.CreateMock(gerrit_helper.GerritHelper)
+    self.mox.StubOutWithMock(pool.gerrit_helper, 'RemoveCommitReady')
     pool.build_log = 'log'
 
     patch1.GerritDependencies(build_root).AndReturn([])
@@ -343,7 +346,7 @@ class TestValidationPool(mox.MoxTestBase):
     pool.dryrun = False
 
     self.mox.StubOutWithMock(pool, 'SubmitChange')
-    self.mox.StubOutWithMock(pool, 'RemoveCommitReady')
+    self.mox.StubOutWithMock(helper, 'RemoveCommitReady')
     pool.SubmitChange(patch1)
     helper.IsChangeCommitted(patch1.id, False).AndReturn(False)
     pool.HandleCouldNotSubmit(patch1)
@@ -433,11 +436,12 @@ class TestValidationPool(mox.MoxTestBase):
   def testGerritHandleApplyError(self):
     """Tests review string looks correct."""
     pool = self.GetPool(False, 1, 'build_name', True, False)
+    pool.gerrit_helper._SqlQuery(mox.IgnoreArg(), dryrun=mox.IgnoreArg(),
+                                 is_command=True).AndReturn(None)
 
     my_patch = cros_patch.GerritPatch(self.test_json, False)
     pool._SendNotification(my_patch, mox.IgnoreArg())
 
-    pool.RemoveCommitReady(my_patch)
     self.mox.ReplayAll()
     pool.HandleCouldNotApply(my_patch)
     self.mox.VerifyAll()
@@ -445,11 +449,12 @@ class TestValidationPool(mox.MoxTestBase):
   def testGerritHandleSubmitError(self):
     """Tests review string looks correct."""
     pool = self.GetPool(False, 1, 'build_name', True, False)
+    pool.gerrit_helper._SqlQuery(mox.IgnoreArg(), dryrun=mox.IgnoreArg(),
+                                 is_command=True).AndReturn(None)
 
     my_patch = cros_patch.GerritPatch(self.test_json, False)
     pool._SendNotification(my_patch, mox.IgnoreArg())
 
-    pool.RemoveCommitReady(my_patch)
     self.mox.ReplayAll()
     pool.HandleCouldNotSubmit(my_patch)
     self.mox.VerifyAll()
@@ -457,11 +462,12 @@ class TestValidationPool(mox.MoxTestBase):
   def testGerritHandleVerifyError(self):
     """Tests review string looks correct."""
     pool = self.GetPool(False, 1, 'build_name', True, False)
+    pool.gerrit_helper._SqlQuery(mox.IgnoreArg(), dryrun=mox.IgnoreArg(),
+                                 is_command=True).AndReturn(None)
 
     my_patch = cros_patch.GerritPatch(self.test_json, False)
     pool._SendNotification(my_patch, mox.IgnoreArg())
 
-    pool.RemoveCommitReady(my_patch)
     self.mox.ReplayAll()
     pool.HandleCouldNotVerify(my_patch)
     self.mox.VerifyAll()

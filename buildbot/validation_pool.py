@@ -467,18 +467,6 @@ class ValidationPool(object):
       logging.info('Validation failed for change %s.', change)
       self.HandleCouldNotVerify(change)
 
-  def RemoveCommitReady(self, change):
-    """Remove any commit ready bits associated with CL."""
-    # TODO(ferringb): move this to gerrit_helper
-    query = ['-c',
-             '"DELETE FROM patch_set_approvals WHERE change_id=%s'
-             " AND patch_set_id=%s "
-             " AND category_id='COMR';\""
-             % (change.gerrit_number, change.patch_number)
-            ]
-    cmd = self.gerrit_helper.GetGerritSqlCommand(query)
-    _RunCommand(cmd, self.dryrun)
-
   def _SendNotification(self, change, msg):
     msg %= {'build_log':self.build_log}
     PaladinMessage(msg, change, self.gerrit_helper).Send(self.dryrun)
@@ -497,7 +485,7 @@ class ValidationPool(object):
         'The Commit Queue failed to submit your change in %(build_log)s . '
         'This can happen if you submitted your change or someone else '
         'submitted a conflicting change while your change was being tested.')
-    self.RemoveCommitReady(change)
+    self.gerrit_helper.RemoveCommitReady(change, dryrun=self.dryrun)
 
   def HandleCouldNotVerify(self, change):
     """Handler for when Paladin fails to validate a change.
@@ -513,7 +501,7 @@ class ValidationPool(object):
         'The Commit Queue failed to verify your change in %(build_log)s . '
         'If you believe this happened in error, just re-mark your commit as '
         'ready. Your change will then get automatically retried.')
-    self.RemoveCommitReady(change)
+    self.gerrit_helper.RemoveCommitReady(change, dryrun=self.dryrun)
 
   def HandleCouldNotApply(self, change):
     """Handler for when Paladin fails to apply a change.
@@ -533,7 +521,7 @@ class ValidationPool(object):
 
     msg += extra_msg
     self._SendNotification(change, msg)
-    self.RemoveCommitReady(change)
+    self.gerrit_helper.RemoveCommitReady(change, dryrun=self.dryrun)
 
   def HandleApplied(self, change):
     """Handler for when Paladin successfully applies a change.
