@@ -29,6 +29,7 @@
 #include "ui/views/examples/radio_button_example.h"
 #include "ui/views/examples/scroll_view_example.h"
 #include "ui/views/examples/single_split_view_example.h"
+#include "ui/views/examples/slider_example.h"
 #include "ui/views/examples/tabbed_pane_example.h"
 #include "ui/views/examples/table_example.h"
 #include "ui/views/examples/text_example.h"
@@ -177,6 +178,7 @@ class ExamplesWindowContents : public WidgetDelegateView,
     combobox_model_.AddExample(new RadioButtonExample);
     combobox_model_.AddExample(new ScrollViewExample);
     combobox_model_.AddExample(new SingleSplitViewExample);
+    combobox_model_.AddExample(new SliderExample);
     combobox_model_.AddExample(new TabbedPaneExample);
     combobox_model_.AddExample(new TextExample);
     combobox_model_.AddExample(new TextfieldExample);
