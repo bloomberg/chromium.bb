@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,6 +40,10 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
             int between_child_spacing);
   virtual ~BoxLayout();
 
+  void set_spread_blank_space(bool spread) {
+    spread_blank_space_ = spread;
+  }
+
   // Overridden from views::LayoutManager:
   virtual void Layout(View* host) OVERRIDE;
   virtual gfx::Size GetPreferredSize(View* host) OVERRIDE;
@@ -53,6 +57,10 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
 
   // Spacing to put in between child views.
   const int between_child_spacing_;
+
+  // Whether the available extra space should be distributed among the child
+  // views.
+  bool spread_blank_space_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(BoxLayout);
 };

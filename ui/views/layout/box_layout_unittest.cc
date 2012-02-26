@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -108,4 +108,21 @@ TEST_F(BoxLayoutTest, InvisibleChild) {
   host_->SetBounds(0, 0, 30, 30);
   layout_->Layout(host_.get());
   EXPECT_EQ(gfx::Rect(10, 10, 10, 10), v2->bounds());
+}
+
+TEST_F(BoxLayoutTest, DistributeEmptySpace) {
+  layout_.reset(
+      new views::BoxLayout(views::BoxLayout::kHorizontal, 10, 10, 10));
+  layout_->set_spread_blank_space(true);
+
+  views::View* v1 = new StaticSizedView(gfx::Size(20, 20));
+  host_->AddChildView(v1);
+  views::View* v2 = new StaticSizedView(gfx::Size(10, 10));
+  host_->AddChildView(v2);
+  EXPECT_EQ(gfx::Size(60, 40), layout_->GetPreferredSize(host_.get()));
+
+  host_->SetBounds(0, 0, 100, 40);
+  layout_->Layout(host_.get());
+  EXPECT_EQ(gfx::Rect(10, 10, 40, 20).ToString(), v1->bounds().ToString());
+  EXPECT_EQ(gfx::Rect(60, 10, 30, 20).ToString(), v2->bounds().ToString());
 }
