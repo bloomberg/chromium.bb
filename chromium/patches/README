@@ -61,6 +61,9 @@ revert c98c1f434eed06390f4990dd23f7ec15dbe53703
 291c9b62855d555ac5385e23219461b6080da7db
   rbultje: h264: change underread for 10bit QPEL to overread.
 
+b0c4f04338234ee011d7b704621347ef232294fe
+  rbultje: h264: fix mmxext chroma deblock to use correct TC values.
+
 Patches still existing from the pre-GIT workflow:
 
 to_upstream/
