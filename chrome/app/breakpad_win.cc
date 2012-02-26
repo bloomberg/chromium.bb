@@ -54,6 +54,8 @@ const MINIDUMP_TYPE kFullDumpType = static_cast<MINIDUMP_TYPE>(
     MiniDumpWithHandleData |  // Get all handle information.
     MiniDumpWithUnloadedModules);  // Get unloaded modules when available.
 
+const char kPipeNameVar[] = "CHROME_BREAKPAD_PIPE_NAME";
+
 const wchar_t kGoogleUpdatePipeName[] = L"\\\\.\\pipe\\GoogleCrashServices\\";
 const wchar_t kChromePipeName[] = L"\\\\.\\pipe\\ChromeCrashServices";
 
@@ -605,6 +607,57 @@ static bool MetricsReportingControlledByPolicy(bool* result) {
   return false;
 }
 
+static void InitPipeNameEnvVar(bool is_per_user_install) {
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  if (env->HasVar(kPipeNameVar)) {
+    // The Breakpad pipe name is already configured: nothing to do.
+    return;
+  }
+
+  // Check whether configuration management controls crash reporting.
+  bool crash_reporting_enabled = true;
+  bool controlled_by_policy =
+      MetricsReportingControlledByPolicy(&crash_reporting_enabled);
+
+  const CommandLine& command = *CommandLine::ForCurrentProcess();
+  bool use_crash_service = !controlled_by_policy &&
+      ((command.HasSwitch(switches::kNoErrorDialogs) ||
+      GetEnvironmentVariable(
+          ASCIIToWide(env_vars::kHeadless).c_str(), NULL, 0)));
+
+  std::wstring pipe_name;
+  if (use_crash_service) {
+    // Crash reporting is done by crash_service.exe.
+    pipe_name = kChromePipeName;
+  } else {
+    // We want to use the Google Update crash reporting. We need to check if the
+    // user allows it first (in case the administrator didn't already decide
+    // via policy).
+    if (!controlled_by_policy)
+      crash_reporting_enabled = GoogleUpdateSettings::GetCollectStatsConsent();
+
+    if (!crash_reporting_enabled) {
+      return;
+    }
+
+    // Build the pipe name. It can be either:
+    // System-wide install: "NamedPipe\GoogleCrashServices\S-1-5-18"
+    // Per-user install: "NamedPipe\GoogleCrashServices\<user SID>"
+    std::wstring user_sid;
+    if (is_per_user_install) {
+      if (!base::win::GetUserSidString(&user_sid)) {
+        return;
+      }
+    } else {
+      user_sid = kSystemPrincipalSid;
+    }
+
+    pipe_name = kGoogleUpdatePipeName;
+    pipe_name += user_sid;
+  }
+  env->SetVar(kPipeNameVar, WideToASCII(pipe_name));
+}
+
 // TODO(mseaborn): This function could be merged with InitCrashReporter().
 static void InitCrashReporterMain(CrashReporterInfo* param) {
   scoped_ptr<CrashReporterInfo> info(param);
@@ -631,62 +684,23 @@ static void InitCrashReporterMain(CrashReporterInfo* param) {
     default_filter = &ServiceExceptionFilter;
   }
 
-  // Check whether configuration management controls crash reporting.
-  bool crash_reporting_enabled = true;
-  bool controlled_by_policy =
-      MetricsReportingControlledByPolicy(&crash_reporting_enabled);
-
-  const CommandLine& command = *CommandLine::ForCurrentProcess();
-  bool use_crash_service = !controlled_by_policy &&
-      ((command.HasSwitch(switches::kNoErrorDialogs) ||
-      GetEnvironmentVariable(
-          ASCIIToWide(env_vars::kHeadless).c_str(), NULL, 0)));
-
-  std::wstring pipe_name;
-  if (use_crash_service) {
-    // Crash reporting is done by crash_service.exe.
-    const wchar_t* var_name = L"CHROME_BREAKPAD_PIPE_NAME";
-    DWORD value_length = ::GetEnvironmentVariableW(var_name, NULL, 0);
-    if (value_length == 0) {
-      pipe_name = kChromePipeName;
-    } else {
-      scoped_array<wchar_t> value(new wchar_t[value_length]);
-      ::GetEnvironmentVariableW(var_name, value.get(), value_length);
-      pipe_name = value.get();
-    }
-  } else {
-    // We want to use the Google Update crash reporting. We need to check if the
-    // user allows it first (in case the administrator didn't already decide
-    // via policy).
-    if (!controlled_by_policy)
-      crash_reporting_enabled = GoogleUpdateSettings::GetCollectStatsConsent();
-
-    if (!crash_reporting_enabled) {
-      // Configuration managed or the user did not allow Google Update to send
-      // crashes, we need to use our default crash handler instead, but only
-      // for the browser/service processes.
-      if (default_filter)
-        InitDefaultCrashCallback(default_filter);
-      return;
-    }
-
-    // Build the pipe name. It can be either:
-    // System-wide install: "NamedPipe\GoogleCrashServices\S-1-5-18"
-    // Per-user install: "NamedPipe\GoogleCrashServices\<user SID>"
-    std::wstring user_sid;
-    if (is_per_user_install) {
-      if (!base::win::GetUserSidString(&user_sid)) {
-        if (default_filter)
-          InitDefaultCrashCallback(default_filter);
-        return;
-      }
-    } else {
-      user_sid = kSystemPrincipalSid;
-    }
-
-    pipe_name = kGoogleUpdatePipeName;
-    pipe_name += user_sid;
+  if (info->process_type == L"browser") {
+    InitPipeNameEnvVar(is_per_user_install);
   }
+
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::string pipe_name_ascii;
+  if (!env->GetVar(kPipeNameVar, &pipe_name_ascii)) {
+    // Breakpad is not enabled.  Configuration is managed or the user
+    // did not allow Google Update to send crashes.  We need to use
+    // our default crash handler instead, but only for the
+    // browser/service processes.
+    if (default_filter)
+      InitDefaultCrashCallback(default_filter);
+    return;
+  }
+  std::wstring pipe_name = ASCIIToWide(pipe_name_ascii);
+
 #ifdef _WIN64
   // The protocol for connecting to the out-of-process Breakpad crash
   // reporter is different for x86-32 and x86-64: the message sizes
@@ -702,6 +716,7 @@ static void InitCrashReporterMain(CrashReporterInfo* param) {
 
   MINIDUMP_TYPE dump_type = kSmallDumpType;
   // Capture full memory if explicitly instructed to.
+  const CommandLine& command = *CommandLine::ForCurrentProcess();
   if (command.HasSwitch(switches::kFullMemoryCrashReport)) {
     dump_type = kFullDumpType;
   } else {
