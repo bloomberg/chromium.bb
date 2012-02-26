@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -629,65 +629,6 @@ void Viewport(
     PP_Resource context, GLint x, GLint y, GLsizei width, GLsizei height) {
   PluginGraphics3D::implFromResource(context)->Viewport(x, y, width, height);
 }
-void BlitFramebufferEXT(
-    PP_Resource context, GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1,
-    GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask,
-    GLenum filter) {
-  PluginGraphics3D::implFromResource(
-      context)->BlitFramebufferEXT(
-          srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask,
-          filter);
-}
-void RenderbufferStorageMultisampleEXT(
-    PP_Resource context, GLenum target, GLsizei samples, GLenum internalformat,
-    GLsizei width, GLsizei height) {
-  PluginGraphics3D::implFromResource(
-      context)->RenderbufferStorageMultisampleEXT(
-          target, samples, internalformat, width, height);
-}
-GLboolean EnableFeatureCHROMIUM(PP_Resource context, const char* feature) {
-  return PluginGraphics3D::implFromResource(
-      context)->EnableFeatureCHROMIUM(feature);
-}
-void* MapBufferSubDataCHROMIUM(
-    PP_Resource context, GLuint target, GLintptr offset, GLsizeiptr size,
-    GLenum access) {
-  return PluginGraphics3D::implFromResource(
-      context)->MapBufferSubDataCHROMIUM(target, offset, size, access);
-}
-void UnmapBufferSubDataCHROMIUM(PP_Resource context, const void* mem) {
-  PluginGraphics3D::implFromResource(context)->UnmapBufferSubDataCHROMIUM(mem);
-}
-void* MapTexSubImage2DCHROMIUM(
-    PP_Resource context, GLenum target, GLint level, GLint xoffset,
-    GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type,
-    GLenum access) {
-  return PluginGraphics3D::implFromResource(
-      context)->MapTexSubImage2DCHROMIUM(
-          target, level, xoffset, yoffset, width, height, format, type,
-          access);
-}
-void UnmapTexSubImage2DCHROMIUM(PP_Resource context, const void* mem) {
-  PluginGraphics3D::implFromResource(context)->UnmapTexSubImage2DCHROMIUM(mem);
-}
-void DrawArraysInstancedANGLE(
-    PP_Resource context, GLenum mode, GLint first, GLsizei count,
-    GLsizei primcount) {
-  PluginGraphics3D::implFromResource(
-      context)->DrawArraysInstancedANGLE(mode, first, count, primcount);
-}
-void DrawElementsInstancedANGLE(
-    PP_Resource context, GLenum mode, GLsizei count, GLenum type,
-    const void* indices, GLsizei primcount) {
-  PluginGraphics3D::implFromResource(
-      context)->DrawElementsInstancedANGLE(
-          mode, count, type, indices, primcount);
-}
-void VertexAttribDivisorANGLE(
-    PP_Resource context, GLuint index, GLuint divisor) {
-  PluginGraphics3D::implFromResource(
-      context)->VertexAttribDivisorANGLE(index, divisor);
-}
 
 } // namespace
 
@@ -835,46 +776,6 @@ const PPB_OpenGLES2* PluginGraphics3D::GetOpenGLESInterface() {
     &VertexAttrib4fv,
     &VertexAttribPointer,
     &Viewport
-  };
-  return &ppb_opengles;
-}
-const PPB_OpenGLES2InstancedArrays_Dev*
-    PluginGraphics3D::GetOpenGLESInstancedArraysInterface() {
-  const static struct PPB_OpenGLES2InstancedArrays_Dev ppb_opengles = {
-    &DrawArraysInstancedANGLE,
-    &DrawElementsInstancedANGLE,
-    &VertexAttribDivisorANGLE
-  };
-  return &ppb_opengles;
-}
-const PPB_OpenGLES2FramebufferBlit_Dev*
-    PluginGraphics3D::GetOpenGLESFramebufferBlitInterface() {
-  const static struct PPB_OpenGLES2FramebufferBlit_Dev ppb_opengles = {
-    &BlitFramebufferEXT
-  };
-  return &ppb_opengles;
-}
-const PPB_OpenGLES2FramebufferMultisample_Dev*
-    PluginGraphics3D::GetOpenGLESFramebufferMultisampleInterface() {
-  const static struct PPB_OpenGLES2FramebufferMultisample_Dev ppb_opengles = {
-    &RenderbufferStorageMultisampleEXT
-  };
-  return &ppb_opengles;
-}
-const PPB_OpenGLES2ChromiumEnableFeature_Dev*
-    PluginGraphics3D::GetOpenGLESChromiumEnableFeatureInterface() {
-  const static struct PPB_OpenGLES2ChromiumEnableFeature_Dev ppb_opengles = {
-    &EnableFeatureCHROMIUM
-  };
-  return &ppb_opengles;
-}
-const PPB_OpenGLES2ChromiumMapSub_Dev*
-    PluginGraphics3D::GetOpenGLESChromiumMapSubInterface() {
-  const static struct PPB_OpenGLES2ChromiumMapSub_Dev ppb_opengles = {
-    &MapBufferSubDataCHROMIUM,
-    &UnmapBufferSubDataCHROMIUM,
-    &MapTexSubImage2DCHROMIUM,
-    &UnmapTexSubImage2DCHROMIUM
   };
   return &ppb_opengles;
 }

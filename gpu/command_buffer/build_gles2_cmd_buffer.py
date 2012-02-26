@@ -731,17 +731,6 @@ _ENUM_LISTS = {
   },
 }
 
-# This table specifies the different pepper interfaces that are supported for
-# GL commands. 'dev' is true if it's a dev interface.
-_PEPPER_INTERFACES = [
-  {'name': '', 'dev': False},
-  {'name': 'InstancedArrays', 'dev': True},
-  {'name': 'FramebufferBlit', 'dev': True},
-  {'name': 'FramebufferMultisample', 'dev': True},
-  {'name': 'ChromiumEnableFeature', 'dev': True},
-  {'name': 'ChromiumMapSub', 'dev': True},
-]
-
 # This table specifies types and other special data for the commands that
 # will be generated.
 #
@@ -774,7 +763,6 @@ _PEPPER_INTERFACES = [
 #               bind function.
 # valid_args:   A dictionary of argument indices to args to use in unit tests
 #               when they can not be automatically determined.
-# pepper_interface: The pepper interface that is used for this extension
 
 _FUNCTION_INFO = {
   'ActiveTexture': {
@@ -811,7 +799,6 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoBlitFramebufferEXT',
     'unit_test': False,
     'extension': True,
-    'pepper_interface': 'FramebufferBlit',
   },
   'BufferData': {
     'type': 'Manual',
@@ -847,7 +834,6 @@ _FUNCTION_INFO = {
     'result': ['GLint'],
     'extension': True,
     'chromium': True,
-    'pepper_interface': 'ChromiumEnableFeature',
   },
   'CompileShader': {'decoder_func': 'DoCompileShader', 'unit_test': False},
   'CompressedTexImage2D': {
@@ -1201,14 +1187,12 @@ _FUNCTION_INFO = {
     'extension': True,
     'chromium': True,
     'client_test': False,
-    'pepper_interface': 'ChromiumMapSub',
   },
   'MapTexSubImage2DCHROMIUM': {
     'gen_cmd': False,
     'extension': True,
     'chromium': True,
     'client_test': False,
-    'pepper_interface': 'ChromiumMapSub',
   },
   'PixelStorei': {'type': 'Manual'},
   'PostSubBufferCHROMIUM': {
@@ -1230,7 +1214,6 @@ _FUNCTION_INFO = {
     'expectation': False,
     'unit_test': False,
     'extension': True,
-    'pepper_interface': 'FramebufferMultisample',
   },
   'ReadPixels': {
     'cmd_comment':
@@ -1407,14 +1390,12 @@ _FUNCTION_INFO = {
     'extension': True,
     'chromium': True,
     'client_test': False,
-    'pepper_interface': 'ChromiumMapSub',
-  },
+    },
   'UnmapTexSubImage2DCHROMIUM': {
     'gen_cmd': False,
     'extension': True,
     'chromium': True,
     'client_test': False,
-    'pepper_interface': 'ChromiumMapSub',
   },
   'UseProgram': {'decoder_func': 'DoUseProgram', 'unit_test': False},
   'ValidateProgram': {'decoder_func': 'DoValidateProgram'},
@@ -1518,7 +1499,6 @@ _FUNCTION_INFO = {
                 'GLsizei primcount',
     'extension': True,
     'unit_test': False,
-    'pepper_interface': 'InstancedArrays',
   },
   'DrawElementsInstancedANGLE': {
     'type': 'Manual',
@@ -1527,14 +1507,12 @@ _FUNCTION_INFO = {
     'extension': True,
     'unit_test': False,
     'client_test': False,
-    'pepper_interface': 'InstancedArrays',
   },
   'VertexAttribDivisorANGLE': {
     'type': 'Manual',
     'cmd_args': 'GLuint index, GLuint divisor',
     'extension': True,
     'unit_test': False,
-    'pepper_interface': 'InstancedArrays',
   },
 
 }
@@ -1625,18 +1603,6 @@ class CWriter(object):
     while not done:
       splitter = string[0:end].rfind(',')
       if splitter < 0 or (splitter > 0 and string[splitter - 1] == '"'):
-        if last_splitter == -1:
-          break
-        return last_splitter
-      elif splitter >= 80:
-        end = splitter
-      else:
-        return splitter
-    end = len(string)
-    last_splitter = -1
-    while not done:
-      splitter = string[0:end].rfind(' ')
-      if splitter < 0 or (splitter > 0 and string[splitter - 1] == '"'):
         return last_splitter
       elif splitter >= 80:
         end = splitter
@@ -1649,15 +1615,10 @@ class CWriter(object):
       i = self.__FindSplit(line)
       if i > 0:
         line1 = line[0:i + 1]
-        if line1[-1] == ' ':
-          line1 = line1[:-1]
-        lineend = ''
-        if line1[0] == '#':
-          lineend = ' \\'
         nolint = ''
         if len(line1) > 80:
           nolint = '  // NOLINT'
-        self.__AddLine(line1 + nolint + lineend + '\n')
+        self.__AddLine(line1 + nolint + '\n')
         match = re.match("( +)", line1)
         indent = ""
         if match:
@@ -4987,15 +4948,6 @@ class Function(object):
   def IsCoreGLFunction(self):
     return not self.GetInfo('extension')
 
-  def InPepperInterface(self, interface):
-    ext = self.GetInfo('pepper_interface')
-    if not interface.GetName():
-      return self.IsCoreGLFunction()
-    return ext == interface.GetName()
-
-  def InAnyPepperExtension(self):
-    return self.IsCoreGLFunction() or self.GetInfo('pepper_interface')
-
   def GetGLFunctionName(self):
     """Gets the function to call to execute GL for this command."""
     if self.GetInfo('decoder_func'):
@@ -5184,38 +5136,6 @@ class Function(object):
   def WriteFormatTest(self, file):
     """Writes the cmd's format test."""
     self.type_handler.WriteFormatTest(self, file)
-
-
-class PepperInterface(object):
-  """A class that represents a function."""
-
-  def __init__(self, info):
-    self.name = info["name"]
-    self.dev = info["dev"]
-
-  def GetName(self):
-    return self.name
-
-  def GetInterfaceName(self):
-    upperint = ""
-    dev = ""
-    if self.name:
-      upperint = "_" + self.name.upper()
-    if self.dev:
-      dev = "_DEV"
-    return "PPB_OPENGLES2%s%s_INTERFACE" % (upperint, dev)
-
-  def GetInterfaceString(self):
-    dev = ""
-    if self.dev:
-      dev = "(Dev)"
-    return "PPB_OpenGLES2%s%s" % (self.name, dev)
-
-  def GetStructName(self):
-    dev = ""
-    if self.dev:
-      dev = "_Dev"
-    return "PPB_OpenGLES2%s%s" % (self.name, dev)
 
 
 class ImmediateFunction(Function):
@@ -5416,8 +5336,6 @@ class GLGenerator(object):
     self._function_info = {}
     self._empty_type_handler = TypeHandler()
     self._empty_function_info = FunctionInfo({}, self._empty_type_handler)
-    self.pepper_interfaces = []
-    self.interface_info = {}
 
     self._type_handlers = {
       'Bind': BindHandler(),
@@ -5446,10 +5364,6 @@ class GLGenerator(object):
         type = info['type']
       self._function_info[func_name] = FunctionInfo(info,
                                                     self.GetTypeHandler(type))
-    for interface in _PEPPER_INTERFACES:
-      interface = PepperInterface(interface)
-      self.pepper_interfaces.append(interface)
-      self.interface_info[interface.GetName()] = interface
 
   def AddFunction(self, func):
     """Adds a function."""
@@ -5812,44 +5726,36 @@ const size_t GLES2Util::enum_to_string_table_len_ =
 """)
     file.Close()
 
-  def WritePepperGLES2Interface(self, filename, dev):
+  def WritePepperGLES2Interface(self, filename):
     """Writes the Pepper OpenGLES interface definition."""
     file = CHeaderWriter(
         filename,
         "// OpenGL ES interface.\n",
-        2)
+        3)
 
-    file.Write("#include \"ppapi/c/pp_resource.h\"\n")
-    if dev:
-      file.Write("#include \"ppapi/c/ppb_opengles2.h\"\n\n")
-    else:
-      file.Write("\n#ifndef __gl2_h_\n")
-      for (k, v) in _GL_TYPES.iteritems():
-        file.Write("typedef %s %s;\n" % (v, k))
-      file.Write("#endif  // __gl2_h_\n\n")
+    file.Write("#include \"ppapi/c/pp_resource.h\"\n\n")
 
-    for interface in self.pepper_interfaces:
-      if interface.dev != dev:
+    file.Write("#ifndef __gl2_h_\n")
+    for (k, v) in _GL_TYPES.iteritems():
+      file.Write("typedef %s %s;\n" % (v, k))
+    file.Write("#endif  // __gl2_h_\n\n")
+
+    file.Write("#define PPB_OPENGLES2_INTERFACE_1_0 \"PPB_OpenGLES2;1.0\"\n")
+    file.Write("#define PPB_OPENGLES2_INTERFACE PPB_OPENGLES2_INTERFACE_1_0\n")
+
+    file.Write("\nstruct PPB_OpenGLES2 {\n")
+    for func in self.original_functions:
+      if not func.IsCoreGLFunction():
         continue
-      file.Write("#define %s_1_0 \"%s;1.0\"\n" %
-                 (interface.GetInterfaceName(), interface.GetInterfaceString()))
-      file.Write("#define %s %s_1_0\n" %
-                 (interface.GetInterfaceName(), interface.GetInterfaceName()))
 
-      file.Write("\nstruct %s {\n" % interface.GetStructName())
-      for func in self.original_functions:
-        if not func.InPepperInterface(interface):
-          continue
-
-        original_arg = func.MakeTypedOriginalArgString("")
-        context_arg = "PP_Resource context"
-        if len(original_arg):
-          arg = context_arg + ", " + original_arg
-        else:
-          arg = context_arg
-        file.Write("  %s (*%s)(%s);\n" % (func.return_type, func.name, arg))
-      file.Write("};\n\n")
-
+      original_arg = func.MakeTypedOriginalArgString("")
+      context_arg = "PP_Resource context"
+      if len(original_arg):
+        arg = context_arg + ", " + original_arg
+      else:
+        arg = context_arg
+      file.Write("  %s (*%s)(%s);\n" % (func.return_type, func.name, arg))
+    file.Write("};\n\n")
 
     file.Close()
 
@@ -5879,7 +5785,7 @@ const size_t GLES2Util::enum_to_string_table_len_ =
     file.Write("}\n\n")
 
     for func in self.original_functions:
-      if not func.InAnyPepperExtension():
+      if not func.IsCoreGLFunction():
         continue
 
       original_arg = func.MakeTypedOriginalArgString("")
@@ -5896,23 +5802,21 @@ const size_t GLES2Util::enum_to_string_table_len_ =
                   func.MakeOriginalArgString("")))
       file.Write("}\n\n")
 
+    file.Write("\nconst struct PPB_OpenGLES2 ppb_opengles2 = {\n")
+    file.Write("  &")
+    file.Write(",\n  &".join(
+      f.name for f in self.original_functions if f.IsCoreGLFunction()))
+    file.Write("\n")
+    file.Write("};\n\n")
+
     file.Write("}  // namespace\n")
 
-    for interface in self.pepper_interfaces:
-      file.Write("const %s* PPB_OpenGLES2_Shared::Get%sInterface() {\n" %
-                 (interface.GetStructName(), interface.GetName()))
-      file.Write("  static const struct %s "
-                 "ppb_opengles2 = {\n" % interface.GetStructName())
-      file.Write("    &")
-      file.Write(",\n    &".join(
-        f.name for f in self.original_functions
-          if f.InPepperInterface(interface)))
-      file.Write("\n")
+    file.Write("""
+const PPB_OpenGLES2* PPB_OpenGLES2_Shared::GetInterface() {
+  return &ppb_opengles2;
+}
 
-      file.Write("  };\n")
-      file.Write("  return &ppb_opengles2;\n")
-      file.Write("}\n")
-
+""")
     file.Write("}  // namespace ppapi\n")
     file.Close()
 
@@ -5927,35 +5831,23 @@ const size_t GLES2Util::enum_to_string_table_len_ =
     file.Write("#include \"ppapi/lib/gl/gles2/gl2ext_ppapi.h\"\n\n")
 
     for func in self.original_functions:
-      if not func.InAnyPepperExtension():
+      if not func.IsCoreGLFunction():
         continue
-
-      interface = self.interface_info[func.GetInfo('pepper_interface') or '']
 
       file.Write("%s GL_APIENTRY gl%s(%s) {\n" %
                  (func.return_type, func.name,
                   func.MakeTypedOriginalArgString("")))
       return_str = "" if func.return_type == "void" else "return "
-      interface_str = "glGet%sInterfacePPAPI()" % interface.GetName()
+      interface_str = "glGetInterfacePPAPI()"
       original_arg = func.MakeOriginalArgString("")
       context_arg = "glGetCurrentContextPPAPI()"
       if len(original_arg):
         arg = context_arg + ", " + original_arg
       else:
         arg = context_arg
-      if interface.GetName():
-        file.Write("  const struct %s* ext = %s;\n" %
-                   (interface.GetStructName(), interface_str))
-        file.Write("  if (ext)\n")
-        file.Write("    %sext->%s(%s);\n" %
-                   (return_str, func.name, arg))
-        if return_str:
-          file.Write("  %s0;\n" % return_str)
-      else:
-        file.Write("  %s%s->%s(%s);\n" %
-                   (return_str, interface_str, func.name, arg))
+      file.Write("  %s%s->%s(%s);\n" %
+                 (return_str, interface_str, func.name, arg))
       file.Write("}\n\n")
-    file.Close()
 
   def WritePepperGLES2NaClProxy(self, filename):
     """Writes the Pepper OpenGLES interface implementation for NaCl."""
@@ -5967,14 +5859,15 @@ const size_t GLES2Util::enum_to_string_table_len_ =
         "/plugin_ppb_graphics_3d.h\"\n\n")
 
     file.Write("#include \"gpu/command_buffer/client/gles2_implementation.h\"")
-    file.Write("\n#include \"ppapi/c/ppb_opengles2.h\"\n\n")
+    file.Write("\n#include \"native_client/src/third_party"
+        "/ppapi/c/dev/ppb_opengles_dev.h\"\n\n")
 
     file.Write("using ppapi_proxy::PluginGraphics3D;\n")
     file.Write("using ppapi_proxy::PluginResource;\n\n")
     file.Write("namespace {\n\n")
 
     for func in self.original_functions:
-      if not func.InAnyPepperExtension():
+      if not func.IsCoreGLFunction():
         continue
       args = func.MakeTypedOriginalArgString("")
       if len(args) != 0:
@@ -5993,21 +5886,17 @@ const size_t GLES2Util::enum_to_string_table_len_ =
 
     file.Write("\n} // namespace\n\n")
 
-    for interface in self.pepper_interfaces:
-      file.Write("const %s* "
-                 "PluginGraphics3D::GetOpenGLES%sInterface() {\n" %
-                 (interface.GetStructName(), interface.GetName()))
+    file.Write("const PPB_OpenGLES2* "
+               "PluginGraphics3D::GetOpenGLESInterface() {\n")
 
-      file.Write("  const static struct %s ppb_opengles = {\n" %
-                 interface.GetStructName())
-      file.Write("    &")
-      file.Write(",\n    &".join(
-        f.name for f in self.original_functions
-          if f.InPepperInterface(interface)))
-      file.Write("\n")
-      file.Write("  };\n")
-      file.Write("  return &ppb_opengles;\n")
-      file.Write("}\n")
+    file.Write("  const static struct PPB_OpenGLES2 ppb_opengles = {\n")
+    file.Write("    &")
+    file.Write(",\n    &".join(
+      f.name for f in self.original_functions if f.IsCoreGLFunction()))
+    file.Write("\n")
+    file.Write("  };\n")
+    file.Write("  return &ppb_opengles;\n")
+    file.Write("}\n")
     file.Close()
 
 
@@ -6047,8 +5936,7 @@ def main(argv):
   if options.alternate_mode == "ppapi":
     # To trigger this action, do "make ppapi_gles_bindings"
     os.chdir("ppapi");
-    gen.WritePepperGLES2Interface("c/ppb_opengles2.h", False)
-    gen.WritePepperGLES2Interface("c/dev/ppb_opengles2ext_dev.h", True)
+    gen.WritePepperGLES2Interface("c/ppb_opengles2.h")
     gen.WriteGLES2ToPPAPIBridge("lib/gl/gles2/gles2.c")
 
   elif options.alternate_mode == "chrome_ppapi":
@@ -6057,7 +5945,6 @@ def main(argv):
         "ppapi/shared_impl/ppb_opengles2_shared.cc")
 
   elif options.alternate_mode == "nacl_ppapi":
-    os.chdir("ppapi")
     gen.WritePepperGLES2NaClProxy(
         "native_client/src/shared/ppapi_proxy/plugin_opengles.cc")
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -743,258 +743,156 @@ void Viewport(
   GetGLES(context_id)->Viewport(x, y, width, height);
 }
 
-void BlitFramebufferEXT(
-    PP_Resource context_id, GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1,
-    GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask,
-    GLenum filter) {
-  GetGLES(
-      context_id)->BlitFramebufferEXT(
-          srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask,
-          filter);
-}
 
-void RenderbufferStorageMultisampleEXT(
-    PP_Resource context_id, GLenum target, GLsizei samples,
-    GLenum internalformat, GLsizei width, GLsizei height) {
-  GetGLES(
-      context_id)->RenderbufferStorageMultisampleEXT(
-          target, samples, internalformat, width, height);
-}
-
-GLboolean EnableFeatureCHROMIUM(PP_Resource context_id, const char* feature) {
-  return GetGLES(context_id)->EnableFeatureCHROMIUM(feature);
-}
-
-void* MapBufferSubDataCHROMIUM(
-    PP_Resource context_id, GLuint target, GLintptr offset, GLsizeiptr size,
-    GLenum access) {
-  return GetGLES(
-      context_id)->MapBufferSubDataCHROMIUM(target, offset, size, access);
-}
-
-void UnmapBufferSubDataCHROMIUM(PP_Resource context_id, const void* mem) {
-  GetGLES(context_id)->UnmapBufferSubDataCHROMIUM(mem);
-}
-
-void* MapTexSubImage2DCHROMIUM(
-    PP_Resource context_id, GLenum target, GLint level, GLint xoffset,
-    GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type,
-    GLenum access) {
-  return GetGLES(
-      context_id)->MapTexSubImage2DCHROMIUM(
-          target, level, xoffset, yoffset, width, height, format, type,
-          access);
-}
-
-void UnmapTexSubImage2DCHROMIUM(PP_Resource context_id, const void* mem) {
-  GetGLES(context_id)->UnmapTexSubImage2DCHROMIUM(mem);
-}
-
-void DrawArraysInstancedANGLE(
-    PP_Resource context_id, GLenum mode, GLint first, GLsizei count,
-    GLsizei primcount) {
-  GetGLES(context_id)->DrawArraysInstancedANGLE(mode, first, count, primcount);
-}
-
-void DrawElementsInstancedANGLE(
-    PP_Resource context_id, GLenum mode, GLsizei count, GLenum type,
-    const void* indices, GLsizei primcount) {
-  GetGLES(
-      context_id)->DrawElementsInstancedANGLE(
-          mode, count, type, indices, primcount);
-}
-
-void VertexAttribDivisorANGLE(
-    PP_Resource context_id, GLuint index, GLuint divisor) {
-  GetGLES(context_id)->VertexAttribDivisorANGLE(index, divisor);
-}
+const struct PPB_OpenGLES2 ppb_opengles2 = {
+  &ActiveTexture,
+  &AttachShader,
+  &BindAttribLocation,
+  &BindBuffer,
+  &BindFramebuffer,
+  &BindRenderbuffer,
+  &BindTexture,
+  &BlendColor,
+  &BlendEquation,
+  &BlendEquationSeparate,
+  &BlendFunc,
+  &BlendFuncSeparate,
+  &BufferData,
+  &BufferSubData,
+  &CheckFramebufferStatus,
+  &Clear,
+  &ClearColor,
+  &ClearDepthf,
+  &ClearStencil,
+  &ColorMask,
+  &CompileShader,
+  &CompressedTexImage2D,
+  &CompressedTexSubImage2D,
+  &CopyTexImage2D,
+  &CopyTexSubImage2D,
+  &CreateProgram,
+  &CreateShader,
+  &CullFace,
+  &DeleteBuffers,
+  &DeleteFramebuffers,
+  &DeleteProgram,
+  &DeleteRenderbuffers,
+  &DeleteShader,
+  &DeleteTextures,
+  &DepthFunc,
+  &DepthMask,
+  &DepthRangef,
+  &DetachShader,
+  &Disable,
+  &DisableVertexAttribArray,
+  &DrawArrays,
+  &DrawElements,
+  &Enable,
+  &EnableVertexAttribArray,
+  &Finish,
+  &Flush,
+  &FramebufferRenderbuffer,
+  &FramebufferTexture2D,
+  &FrontFace,
+  &GenBuffers,
+  &GenerateMipmap,
+  &GenFramebuffers,
+  &GenRenderbuffers,
+  &GenTextures,
+  &GetActiveAttrib,
+  &GetActiveUniform,
+  &GetAttachedShaders,
+  &GetAttribLocation,
+  &GetBooleanv,
+  &GetBufferParameteriv,
+  &GetError,
+  &GetFloatv,
+  &GetFramebufferAttachmentParameteriv,
+  &GetIntegerv,
+  &GetProgramiv,
+  &GetProgramInfoLog,
+  &GetRenderbufferParameteriv,
+  &GetShaderiv,
+  &GetShaderInfoLog,
+  &GetShaderPrecisionFormat,
+  &GetShaderSource,
+  &GetString,
+  &GetTexParameterfv,
+  &GetTexParameteriv,
+  &GetUniformfv,
+  &GetUniformiv,
+  &GetUniformLocation,
+  &GetVertexAttribfv,
+  &GetVertexAttribiv,
+  &GetVertexAttribPointerv,
+  &Hint,
+  &IsBuffer,
+  &IsEnabled,
+  &IsFramebuffer,
+  &IsProgram,
+  &IsRenderbuffer,
+  &IsShader,
+  &IsTexture,
+  &LineWidth,
+  &LinkProgram,
+  &PixelStorei,
+  &PolygonOffset,
+  &ReadPixels,
+  &ReleaseShaderCompiler,
+  &RenderbufferStorage,
+  &SampleCoverage,
+  &Scissor,
+  &ShaderBinary,
+  &ShaderSource,
+  &StencilFunc,
+  &StencilFuncSeparate,
+  &StencilMask,
+  &StencilMaskSeparate,
+  &StencilOp,
+  &StencilOpSeparate,
+  &TexImage2D,
+  &TexParameterf,
+  &TexParameterfv,
+  &TexParameteri,
+  &TexParameteriv,
+  &TexSubImage2D,
+  &Uniform1f,
+  &Uniform1fv,
+  &Uniform1i,
+  &Uniform1iv,
+  &Uniform2f,
+  &Uniform2fv,
+  &Uniform2i,
+  &Uniform2iv,
+  &Uniform3f,
+  &Uniform3fv,
+  &Uniform3i,
+  &Uniform3iv,
+  &Uniform4f,
+  &Uniform4fv,
+  &Uniform4i,
+  &Uniform4iv,
+  &UniformMatrix2fv,
+  &UniformMatrix3fv,
+  &UniformMatrix4fv,
+  &UseProgram,
+  &ValidateProgram,
+  &VertexAttrib1f,
+  &VertexAttrib1fv,
+  &VertexAttrib2f,
+  &VertexAttrib2fv,
+  &VertexAttrib3f,
+  &VertexAttrib3fv,
+  &VertexAttrib4f,
+  &VertexAttrib4fv,
+  &VertexAttribPointer,
+  &Viewport
+};
 
 }  // namespace
+
 const PPB_OpenGLES2* PPB_OpenGLES2_Shared::GetInterface() {
-  static const struct PPB_OpenGLES2 ppb_opengles2 = {
-    &ActiveTexture,
-    &AttachShader,
-    &BindAttribLocation,
-    &BindBuffer,
-    &BindFramebuffer,
-    &BindRenderbuffer,
-    &BindTexture,
-    &BlendColor,
-    &BlendEquation,
-    &BlendEquationSeparate,
-    &BlendFunc,
-    &BlendFuncSeparate,
-    &BufferData,
-    &BufferSubData,
-    &CheckFramebufferStatus,
-    &Clear,
-    &ClearColor,
-    &ClearDepthf,
-    &ClearStencil,
-    &ColorMask,
-    &CompileShader,
-    &CompressedTexImage2D,
-    &CompressedTexSubImage2D,
-    &CopyTexImage2D,
-    &CopyTexSubImage2D,
-    &CreateProgram,
-    &CreateShader,
-    &CullFace,
-    &DeleteBuffers,
-    &DeleteFramebuffers,
-    &DeleteProgram,
-    &DeleteRenderbuffers,
-    &DeleteShader,
-    &DeleteTextures,
-    &DepthFunc,
-    &DepthMask,
-    &DepthRangef,
-    &DetachShader,
-    &Disable,
-    &DisableVertexAttribArray,
-    &DrawArrays,
-    &DrawElements,
-    &Enable,
-    &EnableVertexAttribArray,
-    &Finish,
-    &Flush,
-    &FramebufferRenderbuffer,
-    &FramebufferTexture2D,
-    &FrontFace,
-    &GenBuffers,
-    &GenerateMipmap,
-    &GenFramebuffers,
-    &GenRenderbuffers,
-    &GenTextures,
-    &GetActiveAttrib,
-    &GetActiveUniform,
-    &GetAttachedShaders,
-    &GetAttribLocation,
-    &GetBooleanv,
-    &GetBufferParameteriv,
-    &GetError,
-    &GetFloatv,
-    &GetFramebufferAttachmentParameteriv,
-    &GetIntegerv,
-    &GetProgramiv,
-    &GetProgramInfoLog,
-    &GetRenderbufferParameteriv,
-    &GetShaderiv,
-    &GetShaderInfoLog,
-    &GetShaderPrecisionFormat,
-    &GetShaderSource,
-    &GetString,
-    &GetTexParameterfv,
-    &GetTexParameteriv,
-    &GetUniformfv,
-    &GetUniformiv,
-    &GetUniformLocation,
-    &GetVertexAttribfv,
-    &GetVertexAttribiv,
-    &GetVertexAttribPointerv,
-    &Hint,
-    &IsBuffer,
-    &IsEnabled,
-    &IsFramebuffer,
-    &IsProgram,
-    &IsRenderbuffer,
-    &IsShader,
-    &IsTexture,
-    &LineWidth,
-    &LinkProgram,
-    &PixelStorei,
-    &PolygonOffset,
-    &ReadPixels,
-    &ReleaseShaderCompiler,
-    &RenderbufferStorage,
-    &SampleCoverage,
-    &Scissor,
-    &ShaderBinary,
-    &ShaderSource,
-    &StencilFunc,
-    &StencilFuncSeparate,
-    &StencilMask,
-    &StencilMaskSeparate,
-    &StencilOp,
-    &StencilOpSeparate,
-    &TexImage2D,
-    &TexParameterf,
-    &TexParameterfv,
-    &TexParameteri,
-    &TexParameteriv,
-    &TexSubImage2D,
-    &Uniform1f,
-    &Uniform1fv,
-    &Uniform1i,
-    &Uniform1iv,
-    &Uniform2f,
-    &Uniform2fv,
-    &Uniform2i,
-    &Uniform2iv,
-    &Uniform3f,
-    &Uniform3fv,
-    &Uniform3i,
-    &Uniform3iv,
-    &Uniform4f,
-    &Uniform4fv,
-    &Uniform4i,
-    &Uniform4iv,
-    &UniformMatrix2fv,
-    &UniformMatrix3fv,
-    &UniformMatrix4fv,
-    &UseProgram,
-    &ValidateProgram,
-    &VertexAttrib1f,
-    &VertexAttrib1fv,
-    &VertexAttrib2f,
-    &VertexAttrib2fv,
-    &VertexAttrib3f,
-    &VertexAttrib3fv,
-    &VertexAttrib4f,
-    &VertexAttrib4fv,
-    &VertexAttribPointer,
-    &Viewport
-  };
   return &ppb_opengles2;
 }
-const PPB_OpenGLES2InstancedArrays_Dev*
-    PPB_OpenGLES2_Shared::GetInstancedArraysInterface() {
-  static const struct PPB_OpenGLES2InstancedArrays_Dev ppb_opengles2 = {
-    &DrawArraysInstancedANGLE,
-    &DrawElementsInstancedANGLE,
-    &VertexAttribDivisorANGLE
-  };
-  return &ppb_opengles2;
-}
-const PPB_OpenGLES2FramebufferBlit_Dev*
-    PPB_OpenGLES2_Shared::GetFramebufferBlitInterface() {
-  static const struct PPB_OpenGLES2FramebufferBlit_Dev ppb_opengles2 = {
-    &BlitFramebufferEXT
-  };
-  return &ppb_opengles2;
-}
-const PPB_OpenGLES2FramebufferMultisample_Dev*
-    PPB_OpenGLES2_Shared::GetFramebufferMultisampleInterface() {
-  static const struct PPB_OpenGLES2FramebufferMultisample_Dev ppb_opengles2 = {
-    &RenderbufferStorageMultisampleEXT
-  };
-  return &ppb_opengles2;
-}
-const PPB_OpenGLES2ChromiumEnableFeature_Dev*
-    PPB_OpenGLES2_Shared::GetChromiumEnableFeatureInterface() {
-  static const struct PPB_OpenGLES2ChromiumEnableFeature_Dev ppb_opengles2 = {
-    &EnableFeatureCHROMIUM
-  };
-  return &ppb_opengles2;
-}
-const PPB_OpenGLES2ChromiumMapSub_Dev*
-    PPB_OpenGLES2_Shared::GetChromiumMapSubInterface() {
-  static const struct PPB_OpenGLES2ChromiumMapSub_Dev ppb_opengles2 = {
-    &MapBufferSubDataCHROMIUM,
-    &UnmapBufferSubDataCHROMIUM,
-    &MapTexSubImage2DCHROMIUM,
-    &UnmapTexSubImage2DCHROMIUM
-  };
-  return &ppb_opengles2;
-}
+
 }  // namespace ppapi
