@@ -301,7 +301,7 @@ void DumpProcess() {
 
 }  // namespace
 
-pid_t HandleCrashDump(const BreakpadInfo& info) {
+void HandleCrashDump(const BreakpadInfo& info) {
   // WARNING: this code runs in a compromised context. It may not call into
   // libc nor allocate memory normally.
 
@@ -309,14 +309,14 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
   if (dumpfd < 0) {
     static const char msg[] = "Cannot upload crash dump: failed to open\n";
     sys_write(2, msg, sizeof(msg));
-    return -1;
+    return;
   }
   struct kernel_stat st;
   if (sys_fstat(dumpfd, &st) != 0) {
     static const char msg[] = "Cannot upload crash dump: stat failed\n";
     sys_write(2, msg, sizeof(msg));
     IGNORE_RET(sys_close(dumpfd));
-    return -1;
+    return;
   }
 
   google_breakpad::PageAllocator allocator;
@@ -326,7 +326,7 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
     static const char msg[] = "Cannot upload crash dump: cannot alloc\n";
     sys_write(2, msg, sizeof(msg));
     IGNORE_RET(sys_close(dumpfd));
-    return -1;
+    return;
   }
 
   sys_read(dumpfd, dump_data, st.st_size);
@@ -340,13 +340,13 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
     static const char msg[] = "Cannot upload crash dump because /dev/urandom"
                               " is missing\n";
     sys_write(2, msg, sizeof(msg) - 1);
-    return -1;
+    return;
   }
 
   static const char temp_file_template[] =
       "/tmp/chromium-upload-XXXXXXXXXXXXXXXX";
   char temp_file[sizeof(temp_file_template)];
-  int fd = -1;
+  int temp_file_fd = -1;
   if (info.upload) {
     memcpy(temp_file, temp_file_template, sizeof(temp_file_template));
 
@@ -355,25 +355,25 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
       sys_read(ufd, &t, sizeof(t));
       write_uint64_hex(temp_file + sizeof(temp_file) - (16 + 1), t);
 
-      fd = sys_open(temp_file, O_WRONLY | O_CREAT | O_EXCL, 0600);
-      if (fd >= 0)
+      temp_file_fd = sys_open(temp_file, O_WRONLY | O_CREAT | O_EXCL, 0600);
+      if (temp_file_fd >= 0)
         break;
     }
 
-    if (fd < 0) {
+    if (temp_file_fd < 0) {
       static const char msg[] = "Failed to create temporary file in /tmp: "
           "cannot upload crash dump\n";
       sys_write(2, msg, sizeof(msg) - 1);
       IGNORE_RET(sys_close(ufd));
-      return -1;
+      return;
     }
   } else {
-    fd = sys_open(info.filename, O_WRONLY, 0600);
-    if (fd < 0) {
+    temp_file_fd = sys_open(info.filename, O_WRONLY, 0600);
+    if (temp_file_fd < 0) {
       static const char msg[] = "Failed to save crash dump: failed to open\n";
       sys_write(2, msg, sizeof(msg) - 1);
       IGNORE_RET(sys_close(ufd));
-      return -1;
+      return;
     }
   }
 
@@ -458,7 +458,7 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
   //   <dump contents>
   //   \r\n BOUNDARY -- \r\n
 
-  MimeWriter writer(fd, mime_boundary);
+  MimeWriter writer(temp_file_fd, mime_boundary);
   {
 #if defined(OS_CHROMEOS)
     static const char chrome_product_msg[] = "Chrome_ChromeOS";
@@ -596,10 +596,10 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
   writer.AddEnd();
   writer.Flush();
 
-  IGNORE_RET(sys_close(fd));
+  IGNORE_RET(sys_close(temp_file_fd));
 
   if (!info.upload)
-    return 0;
+    return;
 
   // The --header argument to wget looks like:
   //   --header=Content-Type: multipart/form-data; boundary=XYZ
@@ -623,6 +623,8 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
 
   const pid_t child = sys_fork();
   if (!child) {
+    // Spawned helper process.
+    //
     // This code is called both when a browser is crashing (in which case,
     // nothing really matters any more) and when a renderer/plugin crashes, in
     // which case we need to continue.
@@ -654,70 +656,79 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
     // Leave one end of a pipe in the wget process and watch for it getting
     // closed by the wget process exiting.
     int fds[2];
-    IGNORE_RET(sys_pipe(fds));
+    if (sys_pipe(fds) >= 0) {
+      const pid_t wget_child = sys_fork();
+      if (!wget_child) {
+        // Wget process.
+        IGNORE_RET(sys_close(fds[0]));
+        IGNORE_RET(sys_dup2(fds[1], 3));
+        static const char* const kWgetBinary = "/usr/bin/wget";
+        const char* args[] = {
+          kWgetBinary,
+          header,
+          post_file,
+          kUploadURL,
+          "--timeout=10",  // Set a timeout so we don't hang forever.
+          "--tries=1",     // Don't retry if the upload fails.
+          "-O",  // output reply to fd 3
+          "/dev/fd/3",
+          NULL,
+        };
 
-    const pid_t child = sys_fork();
-    if (child) {
-      IGNORE_RET(sys_close(fds[1]));
-      char id_buf[17];
-      const int len = HANDLE_EINTR(sys_read(fds[0], id_buf,
-                                   sizeof(id_buf) - 1));
-      if (len > 0) {
-        // Write crash dump id to stderr.
-        id_buf[len] = 0;
-        static const char msg[] = "\nCrash dump id: ";
+        execve(kWgetBinary, const_cast<char**>(args), environ);
+        static const char msg[] = "Cannot upload crash dump: cannot exec "
+                                  "/usr/bin/wget\n";
         sys_write(2, msg, sizeof(msg) - 1);
-        sys_write(2, id_buf, my_strlen(id_buf));
-        sys_write(2, "\n", 1);
+        sys__exit(1);
+      }
 
-        // Write crash dump id to crash log as: seconds_since_epoch,crash_id
-        struct kernel_timeval tv;
-        if (g_crash_log_path && !sys_gettimeofday(&tv, NULL)) {
-          uint64_t time = kernel_timeval_to_ms(&tv) / 1000;
-          char time_str[21];
-          const unsigned time_len = my_uint64_len(time);
-          my_uint64tos(time_str, time, time_len);
+      // Helper process.
+      if (wget_child > 0) {
+        IGNORE_RET(sys_close(fds[1]));
+        char id_buf[17];  // Crash report IDs are expected to be 16 chars.
+        const int len = HANDLE_EINTR(sys_read(fds[0], id_buf,
+                                              sizeof(id_buf) - 1));
+        if (len > 0) {
+          // Write crash dump id to stderr.
+          id_buf[len] = 0;
+          static const char msg[] = "\nCrash dump id: ";
+          sys_write(2, msg, sizeof(msg) - 1);
+          sys_write(2, id_buf, my_strlen(id_buf));
+          sys_write(2, "\n", 1);
 
-          int log_fd = sys_open(g_crash_log_path, O_CREAT | O_WRONLY | O_APPEND,
-                                0600);
-          if (log_fd > 0) {
-            sys_write(log_fd, time_str, time_len);
-            sys_write(log_fd, ",", 1);
-            sys_write(log_fd, id_buf, my_strlen(id_buf));
-            sys_write(log_fd, "\n", 1);
-            IGNORE_RET(sys_close(log_fd));
+          // Write crash dump id to crash log as: seconds_since_epoch,crash_id
+          struct kernel_timeval tv;
+          if (g_crash_log_path && !sys_gettimeofday(&tv, NULL)) {
+            uint64_t time = kernel_timeval_to_ms(&tv) / 1000;
+            char time_str[21];
+            const unsigned time_len = my_uint64_len(time);
+            my_uint64tos(time_str, time, time_len);
+
+            int log_fd = sys_open(g_crash_log_path,
+                                  O_CREAT | O_WRONLY | O_APPEND,
+                                  0600);
+            if (log_fd > 0) {
+              sys_write(log_fd, time_str, time_len);
+              sys_write(log_fd, ",", 1);
+              sys_write(log_fd, id_buf, my_strlen(id_buf));
+              sys_write(log_fd, "\n", 1);
+              IGNORE_RET(sys_close(log_fd));
+            }
           }
         }
       }
-      IGNORE_RET(sys_unlink(info.filename));
-      IGNORE_RET(sys_unlink(temp_file));
-      sys__exit(0);
     }
 
-    IGNORE_RET(sys_close(fds[0]));
-    IGNORE_RET(sys_dup2(fds[1], 3));
-    static const char* const kWgetBinary = "/usr/bin/wget";
-    const char* args[] = {
-      kWgetBinary,
-      header,
-      post_file,
-      kUploadURL,
-      "--timeout=10",  // Set a timeout so we don't hang forever.
-      "--tries=1",     // Don't retry if the upload fails.
-      "-O",  // output reply to fd 3
-      "/dev/fd/3",
-      NULL,
-    };
-
-    execve(kWgetBinary, const_cast<char**>(args), environ);
-    static const char msg[] = "Cannot upload crash dump: cannot exec "
-                              "/usr/bin/wget\n";
-    sys_write(2, msg, sizeof(msg) - 1);
-    sys__exit(1);
+    // Helper process.
+    IGNORE_RET(sys_unlink(info.filename));
+    IGNORE_RET(sys_unlink(temp_file));
+    sys__exit(0);
   }
 
+  // Main browser process.
+  if (child <= 0)
+    return;
   HANDLE_EINTR(sys_waitpid(child, NULL, 0));
-  return child;
 }
 
 static bool CrashDone(const char* dump_path,
@@ -754,11 +765,10 @@ static bool CrashDone(const char* dump_path,
   info.upload = upload;
   info.process_start_time = g_process_start_time;
   HandleCrashDump(info);
-
   return true;
 }
 
-// Wrapper script, do not add more code here.
+// Wrapper function, do not add more code here.
 static bool CrashDoneNoUpload(const char* dump_path,
                       const char* minidump_id,
                       void* context,
@@ -766,7 +776,7 @@ static bool CrashDoneNoUpload(const char* dump_path,
   return CrashDone(dump_path, minidump_id, false, succeeded);
 }
 
-// Wrapper script, do not add more code here.
+// Wrapper function, do not add more code here.
 static bool CrashDoneUpload(const char* dump_path,
                       const char* minidump_id,
                       void* context,
@@ -890,16 +900,16 @@ static bool NonBrowserCrashHandler(const void* crash_context,
   ((int*) CMSG_DATA(hdr))[1] = fds[1];
 
   if (HANDLE_EINTR(sys_sendmsg(fd, &msg, 0)) < 0) {
-    static const char msg[] = "Failed to tell parent about crash.\n";
-    sys_write(2, msg, sizeof(msg)-1);
+    static const char errmsg[] = "Failed to tell parent about crash.\n";
+    sys_write(2, errmsg, sizeof(errmsg)-1);
     IGNORE_RET(sys_close(fds[1]));
     return false;
   }
   IGNORE_RET(sys_close(fds[1]));
 
   if (HANDLE_EINTR(sys_read(fds[0], &b, 1)) != 1) {
-    static const char msg[] = "Parent failed to complete crash dump.\n";
-    sys_write(2, msg, sizeof(msg)-1);
+    static const char errmsg[] = "Parent failed to complete crash dump.\n";
+    sys_write(2, errmsg, sizeof(errmsg)-1);
   }
 
   return true;
