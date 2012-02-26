@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,7 +40,7 @@ class WEBKIT_PLUGINS_EXPORT PPB_Broker_Impl
  private:
   // PluginDelegate ppapi broker object.
   // We don't own this pointer but are responsible for calling Disconnect on it.
-  PluginDelegate::PpapiBroker* broker_;
+  PluginDelegate::Broker* broker_;
 
   // Callback invoked from BrokerConnected.
   scoped_refptr< ::ppapi::TrackedCallback> connect_callback_;

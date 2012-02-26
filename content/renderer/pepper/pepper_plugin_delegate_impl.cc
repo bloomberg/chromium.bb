@@ -39,10 +39,12 @@
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
 #include "content/renderer/media/pepper_platform_video_decoder_impl.h"
 #include "content/renderer/p2p/p2p_transport_impl.h"
+#include "content/renderer/pepper/pepper_broker_impl.h"
 #include "content/renderer/pepper/pepper_platform_audio_input_impl.h"
 #include "content/renderer/pepper/pepper_platform_audio_output_impl.h"
 #include "content/renderer/pepper/pepper_platform_context_3d_impl.h"
 #include "content/renderer/pepper/pepper_platform_video_capture_impl.h"
+#include "content/renderer/pepper/pepper_proxy_channel_delegate_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
@@ -76,7 +78,6 @@
 #include "webkit/plugins/ppapi/ppb_file_io_impl.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/ppb_broker_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_net_connector_impl.h"
 #include "webkit/plugins/ppapi/ppb_tcp_server_socket_private_impl.h"
@@ -89,29 +90,6 @@ using WebKit::WebView;
 using WebKit::WebFrame;
 
 namespace {
-
-base::SyncSocket::Handle DuplicateHandle(base::SyncSocket::Handle handle) {
-  base::SyncSocket::Handle out_handle = base::kInvalidPlatformFileValue;
-#if defined(OS_WIN)
-  DWORD options = DUPLICATE_SAME_ACCESS;
-  if (!::DuplicateHandle(::GetCurrentProcess(),
-                         handle,
-                         ::GetCurrentProcess(),
-                         &out_handle,
-                         0,
-                         FALSE,
-                         options)) {
-    out_handle = base::kInvalidPlatformFileValue;
-  }
-#elif defined(OS_POSIX)
-  // If asked to close the source, we can simply re-use the source fd instead of
-  // dup()ing and close()ing.
-  out_handle = ::dup(handle);
-#else
-  #error Not implemented.
-#endif
-  return out_handle;
-}
 
 // Implements the Image2D using a TransportDIB.
 class PlatformImage2DImpl
@@ -163,22 +141,6 @@ class PlatformImage2DImpl
   DISALLOW_COPY_AND_ASSIGN(PlatformImage2DImpl);
 };
 
-class DispatcherDelegate : public ppapi::proxy::ProxyChannel::Delegate {
- public:
-  virtual ~DispatcherDelegate() {}
-
-  // ProxyChannel::Delegate implementation.
-  virtual base::MessageLoopProxy* GetIPCMessageLoop() {
-    // This is called only in the renderer so we know we have a child process.
-    DCHECK(ChildProcess::current()) << "Must be in the renderer.";
-    return ChildProcess::current()->io_message_loop_proxy();
-  }
-  virtual base::WaitableEvent* GetShutdownEvent() {
-    DCHECK(ChildProcess::current()) << "Must be in the renderer.";
-    return ChildProcess::current()->GetShutDownEvent();
-  }
-};
-
 class HostDispatcherWrapper
     : public webkit::ppapi::PluginDelegate::OutOfProcessProxy {
  public:
@@ -199,7 +161,7 @@ class HostDispatcherWrapper
       return false;
 #endif
 
-    dispatcher_delegate_.reset(new DispatcherDelegate);
+    dispatcher_delegate_.reset(new PepperProxyChannelDelegateImpl);
     dispatcher_.reset(new ppapi::proxy::HostDispatcher(
         plugin_process_handle, pp_module, local_get_interface));
 
@@ -309,205 +271,6 @@ class PluginInstanceLockTarget : public MouseLockDispatcher::LockTarget {
 };
 
 }  // namespace
-
-BrokerDispatcherWrapper::BrokerDispatcherWrapper() {
-}
-
-BrokerDispatcherWrapper::~BrokerDispatcherWrapper() {
-}
-
-bool BrokerDispatcherWrapper::Init(
-    base::ProcessHandle broker_process_handle,
-    const IPC::ChannelHandle& channel_handle) {
-  if (channel_handle.name.empty())
-    return false;
-
-#if defined(OS_POSIX)
-  DCHECK_NE(-1, channel_handle.socket.fd);
-  if (channel_handle.socket.fd == -1)
-    return false;
-#endif
-
-  dispatcher_delegate_.reset(new DispatcherDelegate);
-  dispatcher_.reset(
-      new ppapi::proxy::BrokerHostDispatcher(broker_process_handle));
-
-  if (!dispatcher_->InitBrokerWithChannel(dispatcher_delegate_.get(),
-                                          channel_handle,
-                                          true)) {  // Client.
-    dispatcher_.reset();
-    dispatcher_delegate_.reset();
-    return false;
-  }
-  dispatcher_->channel()->SetRestrictDispatchToSameChannel(true);
-  return true;
-}
-
-// Does not take ownership of the local pipe.
-int32_t BrokerDispatcherWrapper::SendHandleToBroker(
-    PP_Instance instance,
-    base::SyncSocket::Handle handle) {
-  IPC::PlatformFileForTransit foreign_socket_handle =
-      dispatcher_->ShareHandleWithRemote(handle, false);
-  if (foreign_socket_handle == IPC::InvalidPlatformFileForTransit())
-    return PP_ERROR_FAILED;
-
-  int32_t result;
-  if (!dispatcher_->Send(
-      new PpapiMsg_ConnectToPlugin(instance, foreign_socket_handle, &result))) {
-    // The plugin did not receive the handle, so it must be closed.
-    // The easiest way to clean it up is to just put it in an object
-    // and then close it. This failure case is not performance critical.
-    // The handle could still leak if Send succeeded but the IPC later failed.
-    base::SyncSocket temp_socket(
-        IPC::PlatformFileForTransitToPlatformFile(foreign_socket_handle));
-    return PP_ERROR_FAILED;
-  }
-
-  return result;
-}
-
-PpapiBrokerImpl::PpapiBrokerImpl(webkit::ppapi::PluginModule* plugin_module,
-                                 PepperPluginDelegateImpl* delegate)
-    : plugin_module_(plugin_module),
-      delegate_(delegate->AsWeakPtr()) {
-  DCHECK(plugin_module_);
-  DCHECK(delegate_);
-
-  plugin_module_->SetBroker(this);
-}
-
-PpapiBrokerImpl::~PpapiBrokerImpl() {
-  // Report failure to all clients that had pending operations.
-  for (ClientMap::iterator i = pending_connects_.begin();
-       i != pending_connects_.end(); ++i) {
-    base::WeakPtr<webkit::ppapi::PPB_Broker_Impl>& weak_ptr = i->second;
-    if (weak_ptr) {
-      weak_ptr->BrokerConnected(
-          ppapi::PlatformFileToInt(base::kInvalidPlatformFileValue),
-          PP_ERROR_ABORTED);
-    }
-  }
-  pending_connects_.clear();
-
-  plugin_module_->SetBroker(NULL);
-  plugin_module_ = NULL;
-}
-
-// If the channel is not ready, queue the connection.
-void PpapiBrokerImpl::Connect(webkit::ppapi::PPB_Broker_Impl* client) {
-  DCHECK(pending_connects_.find(client) == pending_connects_.end())
-      << "Connect was already called for this client";
-
-  // Ensure this object and the associated broker exist as long as the
-  // client exists. There is a corresponding Release() call in Disconnect(),
-  // which is called when the PPB_Broker_Impl is destroyed. The only other
-  // possible reference is in pending_connect_broker_, which only holds a
-  // transient reference. This ensures the broker is available as long as the
-  // plugin needs it and allows the plugin to release the broker when it is no
-  // longer using it.
-  AddRef();
-
-  if (!dispatcher_.get()) {
-    pending_connects_[client] = client->AsWeakPtr();
-    return;
-  }
-  DCHECK(pending_connects_.empty());
-
-  ConnectPluginToBroker(client);
-}
-
-void PpapiBrokerImpl::Disconnect(webkit::ppapi::PPB_Broker_Impl* client) {
-  // Remove the pending connect if one exists. This class will not call client's
-  // callback.
-  pending_connects_.erase(client);
-
-  // TODO(ddorwin): Send message disconnect message using dispatcher_.
-
-  if (pending_connects_.empty()) {
-    // There are no more clients of this broker. Ensure it will be deleted even
-    // if the IPC response never comes and OnPpapiBrokerChannelCreated is not
-    // called to remove this object from pending_connect_broker_.
-    // Before the broker is connected, clients must either be in
-    // pending_connects_ or not yet associated with this object. Thus, if this
-    // object is in pending_connect_broker_, there can be no associated clients
-    // once pending_connects_ is empty and it is thus safe to remove this from
-    // pending_connect_broker_. Doing so will cause this object to be deleted,
-    // removing it from the PluginModule. Any new clients will create a new
-    // instance of this object.
-    // This doesn't solve all potential problems, but it helps with the ones
-    // we can influence.
-    if (delegate_) {
-      bool stopped = delegate_->StopWaitingForPpapiBrokerConnection(this);
-
-      // Verify the assumption that there are no references other than the one
-      // client holds, which will be released below.
-      DCHECK(!stopped || HasOneRef());
-    }
-  }
-
-  // Release the reference added in Connect().
-  // This must be the last statement because it may delete this object.
-  Release();
-}
-
-void PpapiBrokerImpl::OnBrokerChannelConnected(
-    base::ProcessHandle broker_process_handle,
-    const IPC::ChannelHandle& channel_handle) {
-  scoped_ptr<BrokerDispatcherWrapper> dispatcher(new BrokerDispatcherWrapper);
-  if (dispatcher->Init(broker_process_handle, channel_handle)) {
-    dispatcher_.reset(dispatcher.release());
-
-    // Process all pending channel requests from the plugins.
-    for (ClientMap::iterator i = pending_connects_.begin();
-         i != pending_connects_.end(); ++i) {
-      base::WeakPtr<webkit::ppapi::PPB_Broker_Impl>& weak_ptr = i->second;
-      if (weak_ptr)
-        ConnectPluginToBroker(weak_ptr);
-    }
-  } else {
-    // Report failure to all clients.
-    for (ClientMap::iterator i = pending_connects_.begin();
-         i != pending_connects_.end(); ++i) {
-      base::WeakPtr<webkit::ppapi::PPB_Broker_Impl>& weak_ptr = i->second;
-      if (weak_ptr) {
-        weak_ptr->BrokerConnected(
-            ppapi::PlatformFileToInt(base::kInvalidPlatformFileValue),
-            PP_ERROR_FAILED);
-      }
-    }
-  }
-  pending_connects_.clear();
-}
-
-void PpapiBrokerImpl::ConnectPluginToBroker(
-    webkit::ppapi::PPB_Broker_Impl* client) {
-  base::SyncSocket::Handle plugin_handle = base::kInvalidPlatformFileValue;
-  int32_t result = PP_OK;
-
-  // The socket objects will be deleted when this function exits, closing the
-  // handles. Any uses of the socket must duplicate them.
-  scoped_ptr<base::SyncSocket> broker_socket(new base::SyncSocket());
-  scoped_ptr<base::SyncSocket> plugin_socket(new base::SyncSocket());
-  if (base::SyncSocket::CreatePair(broker_socket.get(), plugin_socket.get())) {
-    result = dispatcher_->SendHandleToBroker(client->pp_instance(),
-                                             broker_socket->handle());
-
-    // If the broker has its pipe handle, duplicate the plugin's handle.
-    // Otherwise, the plugin's handle will be automatically closed.
-    if (result == PP_OK)
-      plugin_handle = DuplicateHandle(plugin_socket->handle());
-  } else {
-    result = PP_ERROR_FAILED;
-  }
-
-  // TOOD(ddorwin): Change the IPC to asynchronous: Queue an object containing
-  // client and plugin_socket.release(), then return.
-  // That message handler will then call client->BrokerConnected() with the
-  // saved pipe handle.
-  // Temporarily, just call back.
-  client->BrokerConnected(ppapi::PlatformFileToInt(plugin_handle), result);
-}
 
 class PepperPluginDelegateImpl::DeviceEnumerationEventHandler
     : public MediaStreamDispatcherEventHandler,
@@ -692,7 +455,7 @@ PepperPluginDelegateImpl::CreatePepperPluginModule(
   return module;
 }
 
-scoped_refptr<PpapiBrokerImpl> PepperPluginDelegateImpl::CreatePpapiBroker(
+scoped_refptr<PepperBrokerImpl> PepperPluginDelegateImpl::CreateBroker(
     webkit::ppapi::PluginModule* plugin_module) {
   DCHECK(plugin_module);
   DCHECK(!plugin_module->GetBroker());
@@ -700,11 +463,11 @@ scoped_refptr<PpapiBrokerImpl> PepperPluginDelegateImpl::CreatePpapiBroker(
   // The broker path is the same as the plugin.
   const FilePath& broker_path = plugin_module->path();
 
-  scoped_refptr<PpapiBrokerImpl> broker =
-      new PpapiBrokerImpl(plugin_module, this);
+  scoped_refptr<PepperBrokerImpl> broker =
+      new PepperBrokerImpl(plugin_module, this);
 
   int request_id =
-      pending_connect_broker_.Add(new scoped_refptr<PpapiBrokerImpl>(broker));
+      pending_connect_broker_.Add(new scoped_refptr<PepperBrokerImpl>(broker));
 
   // Have the browser start the broker process for us.
   IPC::Message* msg =
@@ -713,7 +476,7 @@ scoped_refptr<PpapiBrokerImpl> PepperPluginDelegateImpl::CreatePpapiBroker(
                                                broker_path);
   if (!render_view_->Send(msg)) {
     pending_connect_broker_.Remove(request_id);
-    return scoped_refptr<PpapiBrokerImpl>();
+    return scoped_refptr<PepperBrokerImpl>();
   }
 
   return broker;
@@ -723,10 +486,10 @@ void PepperPluginDelegateImpl::OnPpapiBrokerChannelCreated(
     int request_id,
     base::ProcessHandle broker_process_handle,
     const IPC::ChannelHandle& handle) {
-  scoped_refptr<PpapiBrokerImpl>* broker_ptr =
+  scoped_refptr<PepperBrokerImpl>* broker_ptr =
       pending_connect_broker_.Lookup(request_id);
   if (broker_ptr) {
-    scoped_refptr<PpapiBrokerImpl> broker = *broker_ptr;
+    scoped_refptr<PepperBrokerImpl> broker = *broker_ptr;
     pending_connect_broker_.Remove(request_id);
     broker->OnBrokerChannelConnected(broker_process_handle, handle);
   } else {
@@ -734,7 +497,7 @@ void PepperPluginDelegateImpl::OnPpapiBrokerChannelCreated(
     // clean up and possibly exit.
     // The easiest way to clean it up is to just put it in an object
     // and then close them. This failure case is not performance critical.
-    BrokerDispatcherWrapper temp_dispatcher;
+    PepperBrokerDispatcherWrapper temp_dispatcher;
     temp_dispatcher.Init(broker_process_handle, handle);
   }
 }
@@ -742,8 +505,8 @@ void PepperPluginDelegateImpl::OnPpapiBrokerChannelCreated(
 // Iterates through pending_connect_broker_ to find the broker.
 // Cannot use Lookup() directly because pending_connect_broker_ does not store
 // the raw pointer to the broker. Assumes maximum of one copy of broker exists.
-bool PepperPluginDelegateImpl::StopWaitingForPpapiBrokerConnection(
-    PpapiBrokerImpl* broker) {
+bool PepperPluginDelegateImpl::StopWaitingForBrokerConnection(
+    PepperBrokerImpl* broker) {
   for (BrokerMap::iterator i(&pending_connect_broker_);
        !i.IsAtEnd(); i.Advance()) {
     if (i.GetCurrentValue()->get() == broker) {
@@ -1073,23 +836,23 @@ PepperPluginDelegateImpl::CreateAudioInput(
 }
 
 // If a broker has not already been created for this plugin, creates one.
-webkit::ppapi::PluginDelegate::PpapiBroker*
-PepperPluginDelegateImpl::ConnectToPpapiBroker(
+webkit::ppapi::PluginDelegate::Broker*
+PepperPluginDelegateImpl::ConnectToBroker(
     webkit::ppapi::PPB_Broker_Impl* client) {
-  CHECK(client);
+  DCHECK(client);
 
   // If a broker needs to be created, this will ensure it does not get deleted
   // before Connect() adds a reference.
-  scoped_refptr<PpapiBrokerImpl> broker_impl;
+  scoped_refptr<PepperBrokerImpl> broker_impl;
 
   webkit::ppapi::PluginModule* plugin_module =
       webkit::ppapi::ResourceHelper::GetPluginModule(client);
   if (!plugin_module)
     return NULL;
 
-  PpapiBroker* broker = plugin_module->GetBroker();
+  webkit::ppapi::PluginDelegate::Broker* broker = plugin_module->GetBroker();
   if (!broker) {
-    broker_impl = CreatePpapiBroker(plugin_module);
+    broker_impl = CreateBroker(plugin_module);
     if (!broker_impl.get())
       return NULL;
     broker = broker_impl;

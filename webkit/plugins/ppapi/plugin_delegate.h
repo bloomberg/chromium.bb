@@ -264,7 +264,7 @@ class PluginDelegate {
   };
 
   // Provides access to the ppapi broker.
-  class PpapiBroker {
+  class Broker {
    public:
     virtual void Connect(webkit::ppapi::PPB_Broker_Impl* client) = 0;
 
@@ -275,7 +275,7 @@ class PluginDelegate {
     virtual void Disconnect(webkit::ppapi::PPB_Broker_Impl* client) = 0;
 
    protected:
-    virtual ~PpapiBroker() {}
+    virtual ~Broker() {}
   };
 
   // Notification that the given plugin is focused or unfocused.
@@ -352,8 +352,7 @@ class PluginDelegate {
   // BrokerConnected has been called.
   // The caller is responsible for calling Release() on the returned pointer
   // to clean up the corresponding resources allocated during this call.
-  virtual PpapiBroker* ConnectToPpapiBroker(
-      webkit::ppapi::PPB_Broker_Impl* client) = 0;
+  virtual Broker* ConnectToBroker(webkit::ppapi::PPB_Broker_Impl* client) = 0;
 
   // Notifies that the number of find results has changed.
   virtual void NumberOfFindResultsChanged(int identifier,

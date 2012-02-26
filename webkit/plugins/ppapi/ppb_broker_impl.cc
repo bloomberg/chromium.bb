@@ -58,12 +58,12 @@ int32_t PPB_Broker_Impl::Connect(PP_CompletionCallback connect_callback) {
     return PP_ERROR_FAILED;
 
   // The callback must be populated now in case we are connected to the broker
-  // and BrokerConnected is called before ConnectToPpapiBroker returns.
+  // and BrokerConnected is called before ConnectToBroker returns.
   // Because it must be created now, it must be aborted and cleared if
-  // ConnectToPpapiBroker fails.
+  // ConnectToBroker fails.
   connect_callback_ = new TrackedCallback(this, connect_callback);
 
-  broker_ = plugin_instance->delegate()->ConnectToPpapiBroker(this);
+  broker_ = plugin_instance->delegate()->ConnectToBroker(this);
   if (!broker_) {
     TrackedCallback::ClearAndAbort(&connect_callback_);
     return PP_ERROR_FAILED;

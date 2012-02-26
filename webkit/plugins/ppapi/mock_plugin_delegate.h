@@ -44,7 +44,7 @@ class MockPluginDelegate : public PluginDelegate {
       uint32_t sample_rate,
       uint32_t sample_count,
       PlatformAudioCommonClient* client);
-  virtual PpapiBroker* ConnectToPpapiBroker(PPB_Broker_Impl* client);
+  virtual Broker* ConnectToBroker(PPB_Broker_Impl* client);
   virtual void NumberOfFindResultsChanged(int identifier,
                                           int total,
                                           bool final_result);

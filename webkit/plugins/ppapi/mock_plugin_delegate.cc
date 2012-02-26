@@ -93,7 +93,7 @@ MockPluginDelegate::PlatformAudioInput* MockPluginDelegate::CreateAudioInput(
   return NULL;
 }
 
-MockPluginDelegate::PpapiBroker* MockPluginDelegate::ConnectToPpapiBroker(
+MockPluginDelegate::Broker* MockPluginDelegate::ConnectToBroker(
     PPB_Broker_Impl* client) {
   return NULL;
 }

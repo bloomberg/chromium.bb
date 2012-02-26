@@ -142,8 +142,8 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
   bool ReserveInstanceID(PP_Instance instance);
 
   // These should only be called from the main thread.
-  void SetBroker(PluginDelegate::PpapiBroker* broker);
-  PluginDelegate::PpapiBroker* GetBroker();
+  void SetBroker(PluginDelegate::Broker* broker);
+  PluginDelegate::Broker* GetBroker();
 
  private:
   // Calls the InitializeModule entrypoint. The entrypoint must have been
@@ -173,7 +173,7 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
 
   // Non-owning pointer to the broker for this plugin module, if one exists.
   // It is populated and cleared in the main thread.
-  PluginDelegate::PpapiBroker* broker_;
+  PluginDelegate::Broker* broker_;
 
   // Holds a reference to the base::NativeLibrary handle if this PluginModule
   // instance wraps functions loaded from a library.  Can be NULL.  If

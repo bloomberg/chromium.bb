@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/message_loop.h"
 #include "content/common/accessibility_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/render_view_impl.h"

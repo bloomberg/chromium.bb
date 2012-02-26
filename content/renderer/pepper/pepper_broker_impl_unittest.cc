@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
+#include "content/renderer/pepper/pepper_broker_impl.h"
 
 #if defined(OS_POSIX)
 #include <fcntl.h>
@@ -12,17 +12,17 @@
 #include "content/test/mock_render_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class PepperPluginDelegateImplTest : public ::testing::Test {
+class PepperBrokerImplTest : public ::testing::Test {
  protected:
   MessageLoopForIO message_loop_;
   // We need a render process for ppapi::proxy::ProxyChannel to work.
   MockRenderProcess mock_process_;
 };
 
-// Try to initialize BrokerDispatcherWrapper with invalid ChannelHandle.
+// Try to initialize PepperBrokerDispatcherWrapper with invalid ChannelHandle.
 // Initialization should fail.
-TEST_F(PepperPluginDelegateImplTest, BrokerDispatcherWrapperInitFailure) {
-  BrokerDispatcherWrapper dispatcher_wrapper;
+TEST_F(PepperBrokerImplTest, InitFailure) {
+  PepperBrokerDispatcherWrapper dispatcher_wrapper;
   base::ProcessHandle broker_process_handle = base::kNullProcessHandle;
   IPC::ChannelHandle invalid_channel;  // Invalid by default.
 
@@ -35,8 +35,8 @@ TEST_F(PepperPluginDelegateImplTest, BrokerDispatcherWrapperInitFailure) {
 }
 
 // On valid ChannelHandle, initialization should succeed.
-TEST_F(PepperPluginDelegateImplTest, BrokerDispatcherWrapperInitSuccess) {
-  BrokerDispatcherWrapper dispatcher_wrapper;
+TEST_F(PepperBrokerImplTest, InitSuccess) {
+  PepperBrokerDispatcherWrapper dispatcher_wrapper;
   base::ProcessHandle broker_process_handle = base::kNullProcessHandle;
   const char kChannelName[] = "PepperPluginDelegateImplTestChannelName";
 #if defined(OS_POSIX)

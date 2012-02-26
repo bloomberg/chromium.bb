@@ -19,16 +19,14 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/pepper/pepper_parent_context_provider.h"
-#include "ppapi/proxy/broker_dispatcher.h"
-#include "ppapi/proxy/proxy_channel.h"
 #include "ppapi/shared_impl/private/tcp_socket_private_impl.h"
 #include "ppapi/shared_impl/private/udp_socket_private_impl.h"
 #include "ui/base/ime/text_input_type.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
-#include "webkit/plugins/ppapi/ppb_broker_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_menu_impl.h"
 
 class FilePath;
+class PepperBrokerImpl;
 class PepperPluginDelegateImpl;
 class RenderViewImpl;
 
@@ -64,70 +62,6 @@ struct WebFileChooserParams;
 }
 
 class TransportDIB;
-
-// This object is NOT thread-safe.
-class CONTENT_EXPORT BrokerDispatcherWrapper {
- public:
-  BrokerDispatcherWrapper();
-  ~BrokerDispatcherWrapper();
-
-  bool Init(base::ProcessHandle plugin_process_handle,
-            const IPC::ChannelHandle& channel_handle);
-
-  int32_t SendHandleToBroker(PP_Instance instance,
-                             base::SyncSocket::Handle handle);
-
- private:
-  scoped_ptr<ppapi::proxy::BrokerDispatcher> dispatcher_;
-  scoped_ptr<ppapi::proxy::ProxyChannel::Delegate> dispatcher_delegate_;
-};
-
-// This object is NOT thread-safe.
-class PpapiBrokerImpl : public webkit::ppapi::PluginDelegate::PpapiBroker,
-                        public base::RefCountedThreadSafe<PpapiBrokerImpl>{
- public:
-  PpapiBrokerImpl(webkit::ppapi::PluginModule* plugin_module,
-                  PepperPluginDelegateImpl* delegate_);
-
-  // PpapiBroker implementation.
-  virtual void Connect(webkit::ppapi::PPB_Broker_Impl* client) OVERRIDE;
-  virtual void Disconnect(webkit::ppapi::PPB_Broker_Impl* client) OVERRIDE;
-
-  // Called when the channel to the broker has been established.
-  void OnBrokerChannelConnected(base::ProcessHandle broker_process_handle,
-                                const IPC::ChannelHandle& channel_handle);
-
-  // Connects the plugin to the broker via a pipe.
-  void ConnectPluginToBroker(webkit::ppapi::PPB_Broker_Impl* client);
-
-  // Asynchronously sends a pipe to the broker.
-  int32_t SendHandleToBroker(PP_Instance instance,
-                             base::SyncSocket::Handle handle);
-
- protected:
-  friend class base::RefCountedThreadSafe<PpapiBrokerImpl>;
-  virtual ~PpapiBrokerImpl();
-  scoped_ptr<BrokerDispatcherWrapper> dispatcher_;
-
-  // A map of pointers to objects that have requested a connection to the weak
-  // pointer we can use to reference them. The mapping is needed so we can clean
-  // up entries for objects that may have been deleted.
-  typedef std::map<webkit::ppapi::PPB_Broker_Impl*,
-                   base::WeakPtr<webkit::ppapi::PPB_Broker_Impl> > ClientMap;
-  ClientMap pending_connects_;
-
-  // Pointer to the associated plugin module.
-  // Always set and cleared at the same time as the module's pointer to this.
-  webkit::ppapi::PluginModule* plugin_module_;
-
-  base::WeakPtr<PepperPluginDelegateImpl> delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(PpapiBrokerImpl);
-};
-
-namespace webkit_glue {
-  class ClipboardClient;
-}
 
 class PepperPluginDelegateImpl
     : public webkit::ppapi::PluginDelegate,
@@ -178,7 +112,7 @@ class PepperPluginDelegateImpl
                                    const IPC::ChannelHandle& handle);
 
   // Removes broker from pending_connect_broker_ if present. Returns true if so.
-  bool StopWaitingForPpapiBrokerConnection(PpapiBrokerImpl* broker);
+  bool StopWaitingForBrokerConnection(PepperBrokerImpl* broker);
 
   // Notification that the render view has been focused or defocused. This
   // notifies all of the plugins.
@@ -238,7 +172,7 @@ class PepperPluginDelegateImpl
   virtual PlatformVideoDecoder* CreateVideoDecoder(
       media::VideoDecodeAccelerator::Client* client,
       int32 command_buffer_route_id) OVERRIDE;
-  virtual PpapiBroker* ConnectToPpapiBroker(
+  virtual Broker* ConnectToBroker(
       webkit::ppapi::PPB_Broker_Impl* client) OVERRIDE;
   virtual void NumberOfFindResultsChanged(int identifier,
                                           int total,
@@ -475,7 +409,7 @@ class PepperPluginDelegateImpl
   class DeviceEnumerationEventHandler;
 
   // Asynchronously attempts to create a PPAPI broker for the given plugin.
-  scoped_refptr<PpapiBrokerImpl> CreatePpapiBroker(
+  scoped_refptr<PepperBrokerImpl> CreateBroker(
       webkit::ppapi::PluginModule* plugin_module);
 
   // Implementation of PepperParentContextProvider.
@@ -514,7 +448,7 @@ class PepperPluginDelegateImpl
   IDMap<scoped_refptr<webkit::ppapi::PPB_Flash_Menu_Impl>,
         IDMapOwnPointer> pending_context_menus_;
 
-  typedef IDMap<scoped_refptr<PpapiBrokerImpl>, IDMapOwnPointer> BrokerMap;
+  typedef IDMap<scoped_refptr<PepperBrokerImpl>, IDMapOwnPointer> BrokerMap;
   BrokerMap pending_connect_broker_;
 
   // Whether or not the focus is on a PPAPI plugin
