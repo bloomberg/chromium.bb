@@ -19,6 +19,7 @@
 #include "ppapi/c/dev/ppb_keyboard_input_event_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppb_message_loop_dev.h"
+#include "ppapi/c/dev/ppb_opengles2ext_dev.h"
 #include "ppapi/c/dev/ppb_resource_array_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/dev/ppb_text_input_dev.h"
@@ -180,6 +181,16 @@ InterfaceList::InterfaceList() {
          PPB_MessageLoop_Proxy::GetInterface());
   AddPPB(PPB_OPENGLES2_INTERFACE_1_0, API_ID_NONE,
          PPB_OpenGLES2_Shared::GetInterface());
+  AddPPB(PPB_OPENGLES2_INSTANCEDARRAYS_DEV_INTERFACE_1_0, API_ID_NONE,
+         PPB_OpenGLES2_Shared::GetInstancedArraysInterface());
+  AddPPB(PPB_OPENGLES2_FRAMEBUFFERBLIT_DEV_INTERFACE_1_0, API_ID_NONE,
+         PPB_OpenGLES2_Shared::GetFramebufferBlitInterface());
+  AddPPB(PPB_OPENGLES2_FRAMEBUFFERMULTISAMPLE_DEV_INTERFACE_1_0, API_ID_NONE,
+         PPB_OpenGLES2_Shared::GetFramebufferMultisampleInterface());
+  AddPPB(PPB_OPENGLES2_CHROMIUMENABLEFEATURE_DEV_INTERFACE_1_0, API_ID_NONE,
+         PPB_OpenGLES2_Shared::GetChromiumEnableFeatureInterface());
+  AddPPB(PPB_OPENGLES2_CHROMIUMMAPSUB_DEV_INTERFACE_1_0, API_ID_NONE,
+         PPB_OpenGLES2_Shared::GetChromiumMapSubInterface());
   AddPPB(PPB_VAR_ARRAY_BUFFER_INTERFACE_1_0, API_ID_NONE,
          PPB_Var_Shared::GetVarArrayBufferInterface1_0());
   AddPPB(PPB_VAR_INTERFACE_1_1, API_ID_NONE,

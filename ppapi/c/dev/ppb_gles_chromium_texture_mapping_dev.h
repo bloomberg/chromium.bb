@@ -13,6 +13,9 @@
 #define PPB_GLES_CHROMIUM_TEXTURE_MAPPING_DEV_INTERFACE \
     PPB_GLES_CHROMIUM_TEXTURE_MAPPING_DEV_INTERFACE_0_1
 
+// This interface is deprecated. Please use
+// PPB_OPENGLES2_CHROMIUMMAPSUB_DEV_INTERFACE_1_0 instead.
+
 struct PPB_GLESChromiumTextureMapping_Dev_0_1 {
   // Maps the sub-image of a texture. 'level', 'xoffset', 'yoffset', 'width',
   // 'height', 'format' and 'type' correspond to the similarly named parameters
