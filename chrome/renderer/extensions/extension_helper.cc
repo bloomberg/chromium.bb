@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/json/json_value_serializer.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"

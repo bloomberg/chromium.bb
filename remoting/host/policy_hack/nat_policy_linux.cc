@@ -19,7 +19,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/files/file_path_watcher.h"
-#include "base/json/json_value_serializer.h"
+#include "base/json/json_file_value_serializer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop_proxy.h"

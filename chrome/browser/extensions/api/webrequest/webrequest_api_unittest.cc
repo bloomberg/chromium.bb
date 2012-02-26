@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_util.h"
-#include "base/json/json_value_serializer.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"

@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/file_util.h"
-#include "base/json/json_value_serializer.h"
+#include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/stringprintf.h"

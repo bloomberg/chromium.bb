@@ -8,7 +8,7 @@
 #include <pk11pub.h>
 
 #include "base/base64.h"
-#include "base/json/json_value_serializer.h"
+#include "base/json/json_string_value_serializer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "base/json/json_writer.h"  // for debug output only.
 #include "base/stringprintf.h"

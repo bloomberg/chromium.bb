@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
-#include "base/json/json_value_serializer.h"
+#include "base/json/json_file_value_serializer.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"

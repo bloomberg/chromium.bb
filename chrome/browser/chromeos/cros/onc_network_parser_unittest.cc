@@ -9,7 +9,7 @@
 #include <pk11pub.h>
 
 #include "base/file_util.h"
-#include "base/json/json_value_serializer.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"

@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/file_util.h"
-#include "base/json/json_value_serializer.h"
+#include "base/json/json_file_value_serializer.h"
 #include "base/memory/scoped_handle.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"

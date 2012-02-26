@@ -5,10 +5,10 @@
 // Unit tests for master preferences related methods.
 
 #include "base/file_util.h"
-#include "base/json/json_value_serializer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/stringprintf.h"
+#include "base/values.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"

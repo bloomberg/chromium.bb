@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/json/json_value_serializer.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/string16.h"
 #include "base/threading/platform_thread.h"

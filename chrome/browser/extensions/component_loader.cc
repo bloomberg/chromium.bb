@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/path_service.h"
-#include "base/json/json_value_serializer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"

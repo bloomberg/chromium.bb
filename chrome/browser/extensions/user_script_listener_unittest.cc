@@ -1,11 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/json/json_file_value_serializer.h"
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
-#include "base/json/json_value_serializer.h"
 #include "chrome/browser/extensions/extension_service_unittest.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/user_script_listener.h"

@@ -1,10 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/test/automation/javascript_execution_controller.h"
 
-#include "base/json/json_value_serializer.h"
+#include "base/json/json_string_value_serializer.h"
 #include "chrome/test/automation/javascript_message_utils.h"
 
 using javascript_utils::JavaScriptPrintf;

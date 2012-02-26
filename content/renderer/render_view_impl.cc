@@ -13,7 +13,6 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/json/json_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"

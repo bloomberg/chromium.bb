@@ -12,7 +12,7 @@
 #include "base/debug/trace_event.h"
 #include "base/file_path.h"
 #include "base/json/json_reader.h"
-#include "base/json/json_value_serializer.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
 #include "base/message_loop.h"

@@ -6,7 +6,7 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/json/json_value_serializer.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/time.h"
 #include "base/tracked_objects.h"
 #include "content/public/common/content_client.h"

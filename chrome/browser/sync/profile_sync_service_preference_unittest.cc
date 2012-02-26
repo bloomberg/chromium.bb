@@ -9,7 +9,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/json/json_reader.h"
-#include "base/json/json_value_serializer.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
 #include "base/stl_util.h"
 #include "base/string_piece.h"

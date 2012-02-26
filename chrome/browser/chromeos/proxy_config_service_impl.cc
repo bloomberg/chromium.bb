@@ -7,7 +7,7 @@
 #include <ostream>
 
 #include "base/bind.h"
-#include "base/json/json_value_serializer.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"

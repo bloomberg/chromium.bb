@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/file_util_proxy.h"
-#include "base/json/json_value_serializer.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/memory/scoped_handle.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"

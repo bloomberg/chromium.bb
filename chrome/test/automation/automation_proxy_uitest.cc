@@ -9,7 +9,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/i18n/rtl.h"
-#include "base/json/json_value_serializer.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"

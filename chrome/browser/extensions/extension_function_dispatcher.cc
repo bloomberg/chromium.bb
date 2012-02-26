@@ -6,7 +6,7 @@
 
 #include <map>
 
-#include "base/json/json_value_serializer.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/process_util.h"

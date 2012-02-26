@@ -7,7 +7,7 @@
 #include <set>
 
 #include "base/file_util.h"
-#include "base/json/json_value_serializer.h"
+#include "base/json/json_file_value_serializer.h"
 #include "base/memory/scoped_handle.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"

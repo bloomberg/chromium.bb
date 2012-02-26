@@ -4,7 +4,7 @@
 
 #include "chrome/common/extensions/extension_permission_set.h"
 
-#include "base/json/json_value_serializer.h"
+#include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"

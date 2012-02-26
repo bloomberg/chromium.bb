@@ -5,7 +5,7 @@
 #include "chrome/browser/intents/cws_intents_registry.h"
 
 #include "base/callback.h"
-#include "base/json/json_value_serializer.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/string16.h"

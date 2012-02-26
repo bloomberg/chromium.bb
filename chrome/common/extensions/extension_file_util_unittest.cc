@@ -5,7 +5,7 @@
 #include "chrome/common/extensions/extension_file_util.h"
 
 #include "base/file_util.h"
-#include "base/json/json_value_serializer.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/stringprintf.h"
