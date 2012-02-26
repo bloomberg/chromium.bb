@@ -20,12 +20,13 @@ const WindowProperty<DragDropClient*>* const
 
 }  // namespace
 
-void SetDragDropClient(DragDropClient* client) {
-  RootWindow::GetInstance()->SetProperty(kRootWindowDragDropClientKey, client);
+void SetDragDropClient(RootWindow* root_window, DragDropClient* client) {
+  root_window->SetProperty(kRootWindowDragDropClientKey, client);
 }
 
-DragDropClient* GetDragDropClient() {
-  return RootWindow::GetInstance()->GetProperty(kRootWindowDragDropClientKey);
+DragDropClient* GetDragDropClient(RootWindow* root_window) {
+  return root_window ?
+      root_window->GetProperty(kRootWindowDragDropClientKey) : NULL;
 }
 
 }  // namespace client

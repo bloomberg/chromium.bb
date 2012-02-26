@@ -66,7 +66,6 @@ ViewsTestBase::ViewsTestBase()
   OleInitialize(NULL);
 #endif
 #if defined(USE_AURA)
-  test_activation_client_.reset(new aura::test::TestActivationClient);
   test_input_method_.reset(new DummyInputMethod);
 #endif
 }
@@ -91,6 +90,8 @@ void ViewsTestBase::SetUp() {
   root_window_->SetProperty(
       aura::client::kRootWindowInputMethodKey,
       test_input_method_.get());
+  test_activation_client_.reset(
+      new aura::test::TestActivationClient(root_window_));
 #endif
 }
 
@@ -102,6 +103,7 @@ void ViewsTestBase::TearDown() {
   views_delegate_.reset();
   testing::Test::TearDown();
 #if defined(USE_AURA)
+  test_activation_client_.reset();
   aura::RootWindow::DeleteInstance();
 #endif
 }

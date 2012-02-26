@@ -225,7 +225,7 @@ Shell::~Shell() {
 
   // TooltipController is deleted with the Shell so removing its references.
   RemoveRootWindowEventFilter(tooltip_controller_.get());
-  aura::client::SetTooltipClient(NULL);
+  aura::client::SetTooltipClient(GetRootWindow(), NULL);
 
   // Make sure we delete WorkspaceController before launcher is
   // deleted as it has a reference to launcher model.
@@ -344,11 +344,9 @@ void Shell::Init() {
   AddRootWindowEventFilter(window_modality_controller_.get());
 
   visibility_controller_.reset(new internal::VisibilityController);
-  aura::client::SetVisibilityClient(visibility_controller_.get());
 
   tooltip_controller_.reset(new internal::TooltipController);
   AddRootWindowEventFilter(tooltip_controller_.get());
-  aura::client::SetTooltipClient(tooltip_controller_.get());
 
   drag_drop_controller_.reset(new internal::DragDropController);
   power_button_controller_.reset(new PowerButtonController);

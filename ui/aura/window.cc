@@ -578,10 +578,13 @@ void Window::SetVisible(bool visible) {
 
   bool was_visible = IsVisible();
   if (visible != layer_->visible()) {
-    if (client::GetVisibilityClient())
-      client::GetVisibilityClient()->UpdateLayerVisibility(this, visible);
-    else
+    RootWindow* root_window = GetRootWindow();
+    if (client::GetVisibilityClient(root_window)) {
+      client::GetVisibilityClient(root_window)->UpdateLayerVisibility(
+          this, visible);
+    } else {
       layer_->SetVisible(visible);
+    }
   }
   visible_ = visible;
   bool is_visible = IsVisible();

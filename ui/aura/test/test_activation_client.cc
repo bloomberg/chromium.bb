@@ -1,9 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ui/aura/test/test_activation_client.h"
 
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 
 namespace aura {
@@ -12,8 +13,9 @@ namespace test {
 ////////////////////////////////////////////////////////////////////////////////
 // TestActivationClient, public:
 
-TestActivationClient::TestActivationClient() : active_window_(NULL) {
-  client::SetActivationClient(this);
+TestActivationClient::TestActivationClient(RootWindow* root_window)
+    : active_window_(NULL) {
+  client::SetActivationClient(root_window, this);
 }
 
 TestActivationClient::~TestActivationClient() {

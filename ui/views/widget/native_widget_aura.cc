@@ -121,8 +121,9 @@ class NativeWidgetAura::ActiveWindowObserver : public aura::WindowObserver {
         key != aura::client::kRootWindowActiveWindowKey) {
       return;
     }
+    aura::RootWindow* root_window = window->GetRootWindow();
     aura::Window* active =
-        aura::client::GetActivationClient()->GetActiveWindow();
+        aura::client::GetActivationClient(root_window)->GetActiveWindow();
     if (!active || (active != host_->window_ &&
                     active->transient_parent() != host_->window_)) {
       host_->delegate_->EnableInactiveRendering();
@@ -519,15 +520,18 @@ bool NativeWidgetAura::IsVisible() const {
 }
 
 void NativeWidgetAura::Activate() {
-  aura::client::GetActivationClient()->ActivateWindow(window_);
+  aura::client::GetActivationClient(window_->GetRootWindow())->ActivateWindow(
+      window_);
 }
 
 void NativeWidgetAura::Deactivate() {
-  aura::client::GetActivationClient()->DeactivateWindow(window_);
+  aura::client::GetActivationClient(window_->GetRootWindow())->DeactivateWindow(
+      window_);
 }
 
 bool NativeWidgetAura::IsActive() const {
-  return aura::client::GetActivationClient()->GetActiveWindow() == window_;
+  return aura::client::GetActivationClient(window_->GetRootWindow())->
+      GetActiveWindow() == window_;
 }
 
 void NativeWidgetAura::SetAlwaysOnTop(bool on_top) {
@@ -596,11 +600,12 @@ void NativeWidgetAura::RunShellDrag(View* view,
                                    const gfx::Point& location,
                                    int operation) {
   gfx::Point root_location(location);
-  aura::Window::ConvertPointToWindow(window_,
-      window_->GetRootWindow(), &root_location);
-  if (aura::client::GetDragDropClient())
-    aura::client::GetDragDropClient()->StartDragAndDrop(data, root_location,
-        operation);
+  aura::RootWindow* root_window = window_->GetRootWindow();
+  aura::Window::ConvertPointToWindow(window_, root_window, &root_location);
+  if (aura::client::GetDragDropClient(root_window)) {
+    aura::client::GetDragDropClient(root_window)->StartDragAndDrop(data,
+        root_location, operation);
+  }
 }
 
 void NativeWidgetAura::SchedulePaintInRect(const gfx::Rect& rect) {

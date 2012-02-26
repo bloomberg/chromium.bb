@@ -4,6 +4,7 @@
 
 #include "ash/wm/window_util.h"
 
+#include "ash/shell.h"
 #include "ash/wm/activation_controller.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
@@ -26,11 +27,13 @@ const aura::WindowProperty<bool>* const
 }  // namespace
 
 void ActivateWindow(aura::Window* window) {
-  aura::client::GetActivationClient()->ActivateWindow(window);
+  aura::client::GetActivationClient(Shell::GetRootWindow())->ActivateWindow(
+      window);
 }
 
 void DeactivateWindow(aura::Window* window) {
-  aura::client::GetActivationClient()->DeactivateWindow(window);
+  aura::client::GetActivationClient(Shell::GetRootWindow())->DeactivateWindow(
+      window);
 }
 
 bool IsActiveWindow(aura::Window* window) {
@@ -38,7 +41,8 @@ bool IsActiveWindow(aura::Window* window) {
 }
 
 aura::Window* GetActiveWindow() {
-  return aura::client::GetActivationClient()->GetActiveWindow();
+  return aura::client::GetActivationClient(Shell::GetRootWindow())->
+      GetActiveWindow();
 }
 
 aura::Window* GetActivatableWindow(aura::Window* window) {

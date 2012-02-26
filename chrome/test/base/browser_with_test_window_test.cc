@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/root_window.h"
+#endif
+
 using content::BrowserThread;
 using content::NavigationController;
 using content::WebContents;
@@ -32,9 +36,6 @@ BrowserWithTestWindowTest::BrowserWithTestWindowTest()
 #if defined(OS_WIN)
   OleInitialize(NULL);
 #endif
-#if defined(USE_AURA)
-  test_activation_client_.reset(new aura::test::TestActivationClient);
-#endif
 }
 
 void BrowserWithTestWindowTest::SetUp() {
@@ -44,6 +45,18 @@ void BrowserWithTestWindowTest::SetUp() {
   browser_.reset(new Browser(Browser::TYPE_TABBED, profile()));
   window_.reset(new TestBrowserWindow(browser()));
   browser_->SetWindowForTesting(window_.get());
+#if defined(USE_AURA)
+  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  test_activation_client_.reset(
+      new aura::test::TestActivationClient(root_window));
+#endif
+}
+
+void BrowserWithTestWindowTest::TearDown() {
+  testing::Test::TearDown();
+#if defined(USE_AURA)
+  aura::RootWindow::DeleteInstance();
+#endif
 }
 
 BrowserWithTestWindowTest::~BrowserWithTestWindowTest() {

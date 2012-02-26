@@ -21,13 +21,13 @@ const WindowProperty<VisibilityClient*>* const
 
 }  // namespace
 
-void SetVisibilityClient(VisibilityClient* client) {
-  RootWindow::GetInstance()->SetProperty(kRootWindowVisibilityClientKey,
-                                         client);
+void SetVisibilityClient(RootWindow* root_window, VisibilityClient* client) {
+  root_window->SetProperty(kRootWindowVisibilityClientKey, client);
 }
 
-VisibilityClient* GetVisibilityClient() {
-  return RootWindow::GetInstance()->GetProperty(kRootWindowVisibilityClientKey);
+VisibilityClient* GetVisibilityClient(RootWindow* root_window) {
+  return root_window ?
+      root_window->GetProperty(kRootWindowVisibilityClientKey) : NULL;
 }
 
 }  // namespace client

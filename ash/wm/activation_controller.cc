@@ -71,7 +71,7 @@ void StackTransientParentsBelowModalWindow(aura::Window* window) {
 ActivationController::ActivationController()
     : updating_activation_(false),
       default_container_for_test_(NULL) {
-  aura::client::SetActivationClient(this);
+  aura::client::SetActivationClient(Shell::GetRootWindow(), this);
   aura::Env::GetInstance()->AddObserver(this);
   Shell::GetRootWindow()->AddRootWindowObserver(this);
 }

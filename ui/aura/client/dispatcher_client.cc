@@ -20,12 +20,12 @@ const WindowProperty<DispatcherClient*>* const
 
 }  // namespace
 
-void SetDispatcherClient(DispatcherClient* client) {
-  RootWindow::GetInstance()->SetProperty(kDispatcherClientKey, client);
+void SetDispatcherClient(RootWindow* root_window, DispatcherClient* client) {
+  root_window->SetProperty(kDispatcherClientKey, client);
 }
 
-DispatcherClient* GetDispatcherClient() {
-  return RootWindow::GetInstance()->GetProperty(kDispatcherClientKey);
+DispatcherClient* GetDispatcherClient(RootWindow* root_window) {
+  return root_window ? root_window->GetProperty(kDispatcherClientKey) : NULL;
 }
 
 }  // namespace client

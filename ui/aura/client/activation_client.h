@@ -10,6 +10,7 @@
 #include "ui/aura/window.h"
 
 namespace aura {
+class RootWindow;
 namespace client {
 
 // An interface implemented by an object that manages window activation.
@@ -34,8 +35,9 @@ class AURA_EXPORT ActivationClient {
 };
 
 // Sets/Gets the activation client on the RootWindow.
-AURA_EXPORT void SetActivationClient(ActivationClient* client);
-AURA_EXPORT ActivationClient* GetActivationClient();
+AURA_EXPORT void SetActivationClient(RootWindow* root_window,
+                                     ActivationClient* client);
+AURA_EXPORT ActivationClient* GetActivationClient(RootWindow* root_window);
 
 // A property key to store what the client defines as the active window on the
 // RootWindow.

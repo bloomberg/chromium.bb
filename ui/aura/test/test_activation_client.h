@@ -12,12 +12,13 @@
 #include "ui/aura/window_observer.h"
 
 namespace aura {
+class RootWindow;
 namespace test {
 
 class TestActivationClient : public client::ActivationClient,
                              public WindowObserver {
  public:
-  TestActivationClient();
+  explicit TestActivationClient(RootWindow* root_window);
   virtual ~TestActivationClient();
 
   // Overridden from client::ActivationClient:

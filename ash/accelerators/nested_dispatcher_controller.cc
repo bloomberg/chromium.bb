@@ -5,11 +5,12 @@
 #include "ash/accelerators/nested_dispatcher_controller.h"
 
 #include "ash/accelerators/accelerator_dispatcher.h"
+#include "ash/shell.h"
 
 namespace ash {
 
 NestedDispatcherController::NestedDispatcherController() {
-  aura::client::SetDispatcherClient(this);
+  aura::client::SetDispatcherClient(Shell::GetRootWindow(), this);
 }
 
 NestedDispatcherController::~NestedDispatcherController() {

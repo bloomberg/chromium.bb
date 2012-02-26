@@ -25,12 +25,13 @@ const WindowProperty<string16*>* const kTooltipTextKey = &kTooltipTextProp;
 
 }  // namespace
 
-void SetTooltipClient(TooltipClient* client) {
-  RootWindow::GetInstance()->SetProperty(kRootWindowTooltipClientKey, client);
+void SetTooltipClient(RootWindow* root_window, TooltipClient* client) {
+  root_window->SetProperty(kRootWindowTooltipClientKey, client);
 }
 
-TooltipClient* GetTooltipClient() {
-  return RootWindow::GetInstance()->GetProperty(kRootWindowTooltipClientKey);
+TooltipClient* GetTooltipClient(RootWindow* root_window) {
+  return root_window ?
+      root_window->GetProperty(kRootWindowTooltipClientKey) : NULL;
 }
 
 void SetTooltipText(Window* window, string16* tooltip_text) {

@@ -14,6 +14,7 @@ class OSExchangeData;
 }
 
 namespace aura {
+class RootWindow;
 class Window;
 namespace client {
 
@@ -42,8 +43,9 @@ class AURA_EXPORT DragDropClient {
   virtual bool IsDragDropInProgress() = 0;
 };
 
-AURA_EXPORT void SetDragDropClient(DragDropClient* client);
-AURA_EXPORT DragDropClient* GetDragDropClient();
+AURA_EXPORT void SetDragDropClient(RootWindow* root_window,
+                                   DragDropClient* client);
+AURA_EXPORT DragDropClient* GetDragDropClient(RootWindow* root_window);
 
 }  // namespace client
 }  // namespace aura

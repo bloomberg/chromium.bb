@@ -219,6 +219,7 @@ TooltipController::TooltipController()
   tooltip_timer_.Start(FROM_HERE,
       base::TimeDelta::FromMilliseconds(kTooltipTimeoutMs),
       this, &TooltipController::TooltipTimerFired);
+  aura::client::SetTooltipClient(Shell::GetRootWindow(), this);
 }
 
 TooltipController::~TooltipController() {

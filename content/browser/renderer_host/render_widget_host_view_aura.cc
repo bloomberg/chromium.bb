@@ -337,8 +337,9 @@ void RenderWidgetHostViewAura::Destroy() {
 
 void RenderWidgetHostViewAura::SetTooltipText(const string16& tooltip_text) {
   tooltip_ = tooltip_text;
-  if (aura::client::GetTooltipClient())
-    aura::client::GetTooltipClient()->UpdateTooltip(window_);
+  aura::RootWindow* root_window = window_->GetRootWindow();
+  if (aura::client::GetTooltipClient(root_window))
+    aura::client::GetTooltipClient(root_window)->UpdateTooltip(window_);
 }
 
 void RenderWidgetHostViewAura::SelectionBoundsChanged(
@@ -530,8 +531,8 @@ bool RenderWidgetHostViewAura::LockMouse() {
     root_window->ShowCursor(false);
     synthetic_move_sent_ = true;
     root_window->MoveCursorTo(window_->bounds().CenterPoint());
-    if (aura::client::GetTooltipClient())
-      aura::client::GetTooltipClient()->SetTooltipsEnabled(false);
+    if (aura::client::GetTooltipClient(root_window))
+      aura::client::GetTooltipClient(root_window)->SetTooltipsEnabled(false);
     return true;
   } else {
     mouse_locked_ = false;
@@ -550,8 +551,8 @@ void RenderWidgetHostViewAura::UnlockMouse() {
   root_window->ReleaseCapture(window_);
   root_window->MoveCursorTo(unlocked_global_mouse_position_);
   root_window->ShowCursor(true);
-  if (aura::client::GetTooltipClient())
-    aura::client::GetTooltipClient()->SetTooltipsEnabled(true);
+  if (aura::client::GetTooltipClient(root_window))
+    aura::client::GetTooltipClient(root_window)->SetTooltipsEnabled(true);
 
   host_->LostMouseLock();
 }

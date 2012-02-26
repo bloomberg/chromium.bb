@@ -4,6 +4,7 @@
 
 #include "ash/wm/visibility_controller.h"
 
+#include "ash/shell.h"
 #include "ash/wm/window_animations.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
@@ -31,6 +32,7 @@ bool GetChildWindowVisibilityChangesAnimated(aura::Window* window) {
 }  // namespace
 
 VisibilityController::VisibilityController() {
+  aura::client::SetVisibilityClient(Shell::GetRootWindow(), this);
 }
 
 VisibilityController::~VisibilityController() {

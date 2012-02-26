@@ -200,7 +200,8 @@ void NativeTabContentsViewAura::StartDragging(const WebDropData& drop_data,
                                              WebKit::WebDragOperationsMask ops,
                                              const SkBitmap& image,
                                              const gfx::Point& image_offset) {
-  if (!aura::client::GetDragDropClient())
+  aura::RootWindow* root_window = GetNativeView()->GetRootWindow();
+  if (!aura::client::GetDragDropClient(root_window))
     return;
 
   ui::OSExchangeDataProviderAura* provider = new ui::OSExchangeDataProviderAura;
@@ -219,10 +220,10 @@ void NativeTabContentsViewAura::StartDragging(const WebDropData& drop_data,
     // always start from a mouse-event (e.g. a touch or gesture event could
     // initiate the drag). The location information should be carried over from
     // webkit. http://crbug.com/114754
-    gfx::Point location(ash::Shell::GetRootWindow()->last_mouse_location());
+    gfx::Point location(root_window->last_mouse_location());
     location.Offset(-image_offset.x(), -image_offset.y());
     MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
-    result_op = aura::client::GetDragDropClient()->StartDragAndDrop(
+    result_op = aura::client::GetDragDropClient(root_window)->StartDragAndDrop(
         data, location, ConvertFromWeb(ops));
   }
 
@@ -231,13 +232,15 @@ void NativeTabContentsViewAura::StartDragging(const WebDropData& drop_data,
 }
 
 void NativeTabContentsViewAura::CancelDrag() {
-  if (aura::client::GetDragDropClient())
-    aura::client::GetDragDropClient()->DragCancel();
+  aura::RootWindow* root_window = GetNativeView()->GetRootWindow();
+  if (aura::client::GetDragDropClient(root_window))
+    aura::client::GetDragDropClient(root_window)->DragCancel();
 }
 
 bool NativeTabContentsViewAura::IsDoingDrag() const {
-  if (aura::client::GetDragDropClient())
-    return aura::client::GetDragDropClient()->IsDragDropInProgress();
+  aura::RootWindow* root_window = GetNativeView()->GetRootWindow();
+  if (aura::client::GetDragDropClient(root_window))
+    return aura::client::GetDragDropClient(root_window)->IsDragDropInProgress();
   return false;
 }
 

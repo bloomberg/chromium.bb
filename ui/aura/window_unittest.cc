@@ -1280,11 +1280,11 @@ TEST_F(WindowTest, StackTransientsWhoseLayersHaveNoDelegate) {
 
 class TestVisibilityClient : public client::VisibilityClient {
 public:
-  TestVisibilityClient() : ignore_visibility_changes_(false) {
-    client::SetVisibilityClient(this);
+  explicit TestVisibilityClient(RootWindow* root_window)
+      : ignore_visibility_changes_(false) {
+    client::SetVisibilityClient(root_window, this);
   }
   virtual ~TestVisibilityClient() {
-    client::SetVisibilityClient(NULL);
   }
 
   void set_ignore_visibility_changes(bool ignore_visibility_changes) {
@@ -1304,7 +1304,7 @@ public:
 };
 
 TEST_F(WindowTest, VisibilityClientIsVisible) {
-  TestVisibilityClient client;
+  TestVisibilityClient client(root_window());
 
   scoped_ptr<Window> window(CreateTestWindowWithId(1, NULL));
   EXPECT_TRUE(window->IsVisible());
@@ -1442,11 +1442,11 @@ class StackingMadrigalLayoutManager : public LayoutManager {
 
 class StackingMadrigalVisibilityClient : public client::VisibilityClient {
  public:
-  StackingMadrigalVisibilityClient() : ignored_window_(NULL) {
-    client::SetVisibilityClient(this);
+  explicit StackingMadrigalVisibilityClient(RootWindow* root_window)
+      : ignored_window_(NULL) {
+    client::SetVisibilityClient(root_window, this);
   }
   virtual ~StackingMadrigalVisibilityClient() {
-    client::SetVisibilityClient(NULL);
   }
 
   void set_ignored_window(Window* ignored_window) {
@@ -1489,7 +1489,7 @@ class StackingMadrigalVisibilityClient : public client::VisibilityClient {
 // verifies this fix.
 TEST_F(WindowTest, StackingMadrigal) {
   new StackingMadrigalLayoutManager(root_window());
-  StackingMadrigalVisibilityClient visibility_client;
+  StackingMadrigalVisibilityClient visibility_client(root_window());
 
   scoped_ptr<Window> window1(CreateTestWindowWithId(1, NULL));
   scoped_ptr<Window> window11(CreateTransientChild(11, window1.get()));

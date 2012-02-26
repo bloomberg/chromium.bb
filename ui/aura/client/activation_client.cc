@@ -27,13 +27,13 @@ const WindowProperty<ActivationClient*>* const
 const WindowProperty<Window*>* const
     kRootWindowActiveWindowKey = &kRootWindowActiveWindowProp;
 
-void SetActivationClient(ActivationClient* client) {
-  RootWindow::GetInstance()->SetProperty(kRootWindowActivationClientKey,
-                                         client);
+void SetActivationClient(RootWindow* root_window, ActivationClient* client) {
+  root_window->SetProperty(kRootWindowActivationClientKey, client);
 }
 
-ActivationClient* GetActivationClient() {
-  return RootWindow::GetInstance()->GetProperty(kRootWindowActivationClientKey);
+ActivationClient* GetActivationClient(RootWindow* root_window) {
+  return root_window ?
+      root_window->GetProperty(kRootWindowActivationClientKey) : NULL;
 }
 
 }  // namespace client

@@ -690,8 +690,8 @@ void RootWindow::OnWindowHidden(Window* invisible, bool destroyed) {
     }
     if (focus_to &&
         (!focus_to->IsVisible() ||
-         (client::GetActivationClient() &&
-          !client::GetActivationClient()->CanFocusWindow(focus_to)))) {
+         (client::GetActivationClient(this) &&
+          !client::GetActivationClient(this)->CanFocusWindow(focus_to)))) {
       focus_to = NULL;
     }
     SetFocusedWindow(focus_to);
@@ -755,8 +755,8 @@ void RootWindow::SetFocusedWindow(Window* focused_window) {
   // The NULL-check of |focused_window| is essential here before asking the
   // activation client, since it is valid to clear the focus by calling
   // SetFocusedWindow() to NULL.
-  if (focused_window && client::GetActivationClient() &&
-      !client::GetActivationClient()->CanFocusWindow(focused_window)) {
+  if (focused_window && client::GetActivationClient(this) &&
+      !client::GetActivationClient(this)->CanFocusWindow(focused_window)) {
     return;
   }
 
