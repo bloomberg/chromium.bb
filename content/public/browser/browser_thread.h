@@ -107,6 +107,10 @@ class CONTENT_EXPORT BrowserThread {
                               const tracked_objects::Location& from_here,
                               const base::Closure& task,
                               int64 delay_ms);
+  static bool PostDelayedTask(ID identifier,
+                              const tracked_objects::Location& from_here,
+                              const base::Closure& task,
+                              base::TimeDelta delay);
   static bool PostNonNestableTask(ID identifier,
                                   const tracked_objects::Location& from_here,
                                   const base::Closure& task);
@@ -115,6 +119,11 @@ class CONTENT_EXPORT BrowserThread {
       const tracked_objects::Location& from_here,
       const base::Closure& task,
       int64 delay_ms);
+  static bool PostNonNestableDelayedTask(
+      ID identifier,
+      const tracked_objects::Location& from_here,
+      const base::Closure& task,
+      base::TimeDelta delay);
 
   static bool PostTaskAndReply(
       ID identifier,

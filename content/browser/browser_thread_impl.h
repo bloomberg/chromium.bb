@@ -41,7 +41,7 @@ class CONTENT_EXPORT BrowserThreadImpl
       BrowserThread::ID identifier,
       const tracked_objects::Location& from_here,
       const base::Closure& task,
-      int64 delay_ms,
+      base::TimeDelta delay,
       bool nestable);
 
   // Common initialization code for the constructors.

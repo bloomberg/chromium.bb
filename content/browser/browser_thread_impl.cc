@@ -141,7 +141,7 @@ bool BrowserThreadImpl::PostTaskHelper(
     BrowserThread::ID identifier,
     const tracked_objects::Location& from_here,
     const base::Closure& task,
-    int64 delay_ms,
+    base::TimeDelta delay,
     bool nestable) {
   DCHECK(identifier >= 0 && identifier < ID_COUNT);
   // Optimization: to avoid unnecessary locks, we listed the ID enumeration in
@@ -162,7 +162,6 @@ bool BrowserThreadImpl::PostTaskHelper(
   MessageLoop* message_loop = globals.threads[identifier] ?
       globals.threads[identifier]->message_loop() : NULL;
   if (message_loop) {
-    base::TimeDelta delay = base::TimeDelta::FromMilliseconds(delay_ms);
     if (nestable) {
       message_loop->PostDelayedTask(from_here, task, delay);
     } else {
@@ -187,8 +186,13 @@ class BrowserThreadMessageLoopProxy : public base::MessageLoopProxy {
   // MessageLoopProxy implementation.
   virtual bool PostDelayedTask(
       const tracked_objects::Location& from_here,
-      const base::Closure& task, int64 delay_ms) OVERRIDE{
+      const base::Closure& task, int64 delay_ms) OVERRIDE {
     return BrowserThread::PostDelayedTask(id_, from_here, task, delay_ms);
+  }
+  virtual bool PostDelayedTask(
+      const tracked_objects::Location& from_here,
+      const base::Closure& task, base::TimeDelta delay) OVERRIDE {
+    return BrowserThread::PostDelayedTask(id_, from_here, task, delay);
   }
 
   virtual bool PostNonNestableDelayedTask(
@@ -197,6 +201,13 @@ class BrowserThreadMessageLoopProxy : public base::MessageLoopProxy {
       int64 delay_ms) OVERRIDE {
     return BrowserThread::PostNonNestableDelayedTask(id_, from_here, task,
                                                      delay_ms);
+  }
+  virtual bool PostNonNestableDelayedTask(
+      const tracked_objects::Location& from_here,
+      const base::Closure& task,
+      base::TimeDelta delay) OVERRIDE {
+    return BrowserThread::PostNonNestableDelayedTask(id_, from_here, task,
+                                                     delay);
   }
 
   virtual bool RunsTasksOnCurrentThread() const OVERRIDE {
@@ -266,7 +277,7 @@ bool BrowserThread::PostTask(ID identifier,
                              const tracked_objects::Location& from_here,
                              const base::Closure& task) {
   return BrowserThreadImpl::PostTaskHelper(
-      identifier, from_here, task, 0, true);
+      identifier, from_here, task, base::TimeDelta(), true);
 }
 
 // static
@@ -275,7 +286,20 @@ bool BrowserThread::PostDelayedTask(ID identifier,
                                     const base::Closure& task,
                                     int64 delay_ms) {
   return BrowserThreadImpl::PostTaskHelper(
-      identifier, from_here, task, delay_ms, true);
+      identifier,
+      from_here,
+      task,
+      base::TimeDelta::FromMilliseconds(delay_ms),
+      true);
+}
+
+// static
+bool BrowserThread::PostDelayedTask(ID identifier,
+                                    const tracked_objects::Location& from_here,
+                                    const base::Closure& task,
+                                    base::TimeDelta delay) {
+  return BrowserThreadImpl::PostTaskHelper(
+      identifier, from_here, task, delay, true);
 }
 
 // static
@@ -284,7 +308,7 @@ bool BrowserThread::PostNonNestableTask(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
   return BrowserThreadImpl::PostTaskHelper(
-      identifier, from_here, task, 0, false);
+      identifier, from_here, task, base::TimeDelta(), false);
 }
 
 // static
@@ -294,7 +318,21 @@ bool BrowserThread::PostNonNestableDelayedTask(
     const base::Closure& task,
     int64 delay_ms) {
   return BrowserThreadImpl::PostTaskHelper(
-      identifier, from_here, task, delay_ms, false);
+      identifier,
+      from_here,
+      task,
+      base::TimeDelta::FromMilliseconds(delay_ms),
+      false);
+}
+
+// static
+bool BrowserThread::PostNonNestableDelayedTask(
+    ID identifier,
+    const tracked_objects::Location& from_here,
+    const base::Closure& task,
+    base::TimeDelta delay) {
+  return BrowserThreadImpl::PostTaskHelper(
+      identifier, from_here, task, delay, false);
 }
 
 // static

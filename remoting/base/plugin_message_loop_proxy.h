@@ -22,7 +22,7 @@ class PluginMessageLoopProxy : public base::MessageLoopProxy {
     virtual ~Delegate() { }
 
     virtual bool RunOnPluginThread(
-        int delay_ms, void(function)(void*), void* data) = 0;
+        base::TimeDelta delay, void(function)(void*), void* data) = 0;
   };
 
   // Caller keeps ownership of delegate.
@@ -36,10 +36,18 @@ class PluginMessageLoopProxy : public base::MessageLoopProxy {
       const tracked_objects::Location& from_here,
       const base::Closure& task,
       int64 delay_ms) OVERRIDE;
+  virtual bool PostDelayedTask(
+      const tracked_objects::Location& from_here,
+      const base::Closure& task,
+      base::TimeDelta delay) OVERRIDE;
   virtual bool PostNonNestableDelayedTask(
       const tracked_objects::Location& from_here,
       const base::Closure& task,
       int64 delay_ms) OVERRIDE;
+  virtual bool PostNonNestableDelayedTask(
+      const tracked_objects::Location& from_here,
+      const base::Closure& task,
+      base::TimeDelta delay) OVERRIDE;
 
   virtual bool RunsTasksOnCurrentThread() const OVERRIDE;
 

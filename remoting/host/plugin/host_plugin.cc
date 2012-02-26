@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -148,13 +148,13 @@ class HostNPPlugin : public remoting::PluginMessageLoopProxy::Delegate {
 
   // PluginMessageLoopProxy::Delegate implementation.
   virtual bool RunOnPluginThread(
-      int delay_ms, void(function)(void*), void* data) OVERRIDE {
-    if (delay_ms == 0) {
+      base::TimeDelta delay, void(function)(void*), void* data) OVERRIDE {
+    if (delay == base::TimeDelta()) {
       g_npnetscape_funcs->pluginthreadasynccall(instance_, function, data);
     } else {
       base::AutoLock auto_lock(timers_lock_);
       uint32_t timer_id = g_npnetscape_funcs->scheduletimer(
-          instance_, delay_ms, false, &NPDelayedTaskSpringboard);
+          instance_, delay.InMilliseconds(), false, &NPDelayedTaskSpringboard);
       DelayedTask task = {function, data};
       timers_[timer_id] = task;
     }

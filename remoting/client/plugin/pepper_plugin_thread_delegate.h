@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ class PepperPluginThreadDelegate : public PluginMessageLoopProxy::Delegate {
   virtual ~PepperPluginThreadDelegate();
 
   virtual bool RunOnPluginThread(
-      int delay_ms, void(CDECL function)(void*), void* data) OVERRIDE;
+      base::TimeDelta delay, void(CDECL function)(void*), void* data) OVERRIDE;
 
  private:
   pp::Core* core_;
