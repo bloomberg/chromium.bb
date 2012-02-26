@@ -68,9 +68,6 @@ ViewsTestBase::ViewsTestBase()
 #if defined(USE_AURA)
   test_activation_client_.reset(new aura::test::TestActivationClient);
   test_input_method_.reset(new DummyInputMethod);
-  aura::RootWindow::GetInstance()->SetProperty(
-      aura::client::kRootWindowInputMethodKey,
-      test_input_method_.get());
 #endif
 }
 
@@ -89,6 +86,12 @@ void ViewsTestBase::SetUp() {
   setup_called_ = true;
   if (!views_delegate_.get())
     views_delegate_.reset(new TestViewsDelegate());
+#if defined(USE_AURA)
+  root_window_ = aura::RootWindow::GetInstance();
+  root_window_->SetProperty(
+      aura::client::kRootWindowInputMethodKey,
+      test_input_method_.get());
+#endif
 }
 
 void ViewsTestBase::TearDown() {
@@ -98,6 +101,9 @@ void ViewsTestBase::TearDown() {
   teardown_called_ = true;
   views_delegate_.reset();
   testing::Test::TearDown();
+#if defined(USE_AURA)
+  aura::RootWindow::DeleteInstance();
+#endif
 }
 
 void ViewsTestBase::RunPendingMessages() {

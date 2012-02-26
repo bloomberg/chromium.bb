@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "ui/views/test/test_views_delegate.h"
 
 namespace aura {
+class RootWindow;
 namespace test {
 class TestActivationClient;
 }
@@ -53,6 +54,7 @@ class ViewsTestBase : public testing::Test {
 #if defined(USE_AURA)
   scoped_ptr<aura::test::TestActivationClient> test_activation_client_;
   scoped_ptr<ui::InputMethod> test_input_method_;
+  aura::RootWindow* root_window_;
 #endif
   bool setup_called_;
   bool teardown_called_;

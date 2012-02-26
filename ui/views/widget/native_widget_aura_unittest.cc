@@ -27,21 +27,26 @@ NativeWidgetAura* Init(aura::Window* parent, Widget* widget) {
 
 class NativeWidgetAuraTest : public testing::Test {
  public:
-  NativeWidgetAuraTest() {}
+  NativeWidgetAuraTest() : root_window_(NULL) {}
   virtual ~NativeWidgetAuraTest() {}
 
   // testing::Test overrides:
   virtual void SetUp() OVERRIDE {
-    aura::RootWindow::GetInstance()->SetBounds(gfx::Rect(0, 0, 640, 480));
-    aura::RootWindow::GetInstance()->SetHostSize(gfx::Size(640, 480));
+    root_window_ = aura::RootWindow::GetInstance();
+    root_window_->SetBounds(gfx::Rect(0, 0, 640, 480));
+    root_window_->SetHostSize(gfx::Size(640, 480));
   }
   virtual void TearDown() OVERRIDE {
     aura::RootWindow::DeleteInstance();
     message_loop_.RunAllPending();
   }
 
+ protected:
+  aura::RootWindow* root_window() { return root_window_; }
+
  private:
   MessageLoopForUI message_loop_;
+  aura::RootWindow* root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetAuraTest);
 };
@@ -135,8 +140,8 @@ class TestWidget : public views::Widget {
 // RenderWidgetHostViewAura ends up getting resized during construction, which
 // leads to noticable flashes.
 TEST_F(NativeWidgetAuraTest, ShowMaximizedDoesntBounceAround) {
-  aura::RootWindow::GetInstance()->SetBounds(gfx::Rect(0, 0, 640, 480));
-  aura::RootWindow::GetInstance()->SetLayoutManager(new TestLayoutManager);
+  root_window()->SetBounds(gfx::Rect(0, 0, 640, 480));
+  root_window()->SetLayoutManager(new TestLayoutManager);
   scoped_ptr<TestWidget> widget(new TestWidget());
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
