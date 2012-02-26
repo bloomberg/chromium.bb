@@ -12,29 +12,33 @@ namespace views {
 
 namespace {
 
-// A simple border with a fixed thickness and single color.
-class SolidBorder : public Border {
+// A simple border with different thicknesses on each side and single color.
+class SidedSolidBorder : public Border {
  public:
-  SolidBorder(int thickness, SkColor color);
+  SidedSolidBorder(int top, int left, int bottom, int right, SkColor color);
 
   virtual void Paint(const View& view, gfx::Canvas* canvas) const;
   virtual void GetInsets(gfx::Insets* insets) const;
 
  private:
-  int thickness_;
+  int top_, left_, bottom_, right_;
   SkColor color_;
   gfx::Insets insets_;
 
-  DISALLOW_COPY_AND_ASSIGN(SolidBorder);
+  DISALLOW_COPY_AND_ASSIGN(SidedSolidBorder);
 };
 
-SolidBorder::SolidBorder(int thickness, SkColor color)
-    : thickness_(thickness),
+SidedSolidBorder::SidedSolidBorder(int top, int left, int bottom, int right,
+    SkColor color)
+    : top_(top),
+      left_(left),
+      bottom_(bottom),
+      right_(right),
       color_(color),
-      insets_(thickness, thickness, thickness, thickness) {
+      insets_(top, left, bottom, right) {
 }
 
-void SolidBorder::Paint(const View& view, gfx::Canvas* canvas) const {
+void SidedSolidBorder::Paint(const View& view, gfx::Canvas* canvas) const {
   // Top border.
   canvas->FillRect(gfx::Rect(0, 0, view.width(), insets_.top()), color_);
   // Left border.
@@ -47,10 +51,21 @@ void SolidBorder::Paint(const View& view, gfx::Canvas* canvas) const {
                              view.height()), color_);
 }
 
-void SolidBorder::GetInsets(gfx::Insets* insets) const {
+void SidedSolidBorder::GetInsets(gfx::Insets* insets) const {
   DCHECK(insets);
   insets->Set(insets_.top(), insets_.left(), insets_.bottom(), insets_.right());
 }
+
+// A variation of SidedSolidBorder, where each side has the same thickness.
+class SolidBorder : public SidedSolidBorder {
+ public:
+  SolidBorder(int thickness, SkColor color)
+      : SidedSolidBorder(thickness, thickness, thickness, thickness, color) {
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SolidBorder);
+};
 
 class EmptyBorder : public Border {
  public:
@@ -115,6 +130,13 @@ Border* Border::CreateSolidBorder(int thickness, SkColor color) {
 // static
 Border* Border::CreateEmptyBorder(int top, int left, int bottom, int right) {
   return new EmptyBorder(top, left, bottom, right);
+}
+
+// static
+Border* Border::CreateSolidSidedBorder(int top, int left,
+    int bottom, int right,
+    SkColor color) {
+  return new SidedSolidBorder(top, left, bottom, right, color);
 }
 
 //static

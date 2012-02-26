@@ -48,6 +48,12 @@ class VIEWS_EXPORT Border {
   // paint anything.
   static Border* CreateEmptyBorder(int top, int left, int bottom, int right);
 
+  // Creates a border of the specified color, and specified thickness on each
+  // side.
+  static Border* CreateSolidSidedBorder(int top, int left,
+      int bottom, int right,
+      SkColor color);
+
   // Creates a Border from the specified Painter. The border owns the painter,
   // thus the painter is deleted when the Border is deleted.
   static Border* CreateBorderPainter(Painter* painter);
