@@ -52,8 +52,14 @@ TBDxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 599888a48040f4086c9086aae958b7231b37afcc
   thakis: Fixes yasm alignment issue for text sections.
 
-revert c98c1f434eed06390f4990dd23f7ec15dbe53703:
+revert c98c1f434eed06390f4990dd23f7ec15dbe53703
   dalecurtis: Fixes a webm parsing regression.
+
+8fb26950ed3c4cd1e175c4439726884926cba022
+  rbultje: h264: don't use redzone in loopfilter on win64.
+
+291c9b62855d555ac5385e23219461b6080da7db
+  rbultje: h264: change underread for 10bit QPEL to overread.
 
 Patches still existing from the pre-GIT workflow:
 
