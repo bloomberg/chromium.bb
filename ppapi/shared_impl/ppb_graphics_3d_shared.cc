@@ -71,23 +71,6 @@ int32_t PPB_Graphics3D_Shared::SwapBuffers(PP_CompletionCallback callback) {
   return DoSwapBuffers();
 }
 
-void* PPB_Graphics3D_Shared::MapTexSubImage2DCHROMIUM(GLenum target,
-                                                      GLint level,
-                                                      GLint xoffset,
-                                                      GLint yoffset,
-                                                      GLsizei width,
-                                                      GLsizei height,
-                                                      GLenum format,
-                                                      GLenum type,
-                                                      GLenum access) {
-  return gles2_impl_->MapTexSubImage2DCHROMIUM(
-      target, level, xoffset, yoffset, width, height, format, type, access);
-}
-
-void PPB_Graphics3D_Shared::UnmapTexSubImage2DCHROMIUM(const void* mem) {
-  gles2_impl_->UnmapTexSubImage2DCHROMIUM(mem);
-}
-
 void PPB_Graphics3D_Shared::SwapBuffersACK(int32_t pp_error) {
   DCHECK(HasPendingSwap());
   TrackedCallback::ClearAndRun(&swap_callback_, pp_error);

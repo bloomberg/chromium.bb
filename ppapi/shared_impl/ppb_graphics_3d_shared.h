@@ -37,16 +37,6 @@ class PPAPI_SHARED_EXPORT PPB_Graphics3D_Shared
   virtual int32_t GetError() OVERRIDE;
   virtual int32_t ResizeBuffers(int32_t width, int32_t height) OVERRIDE;
   virtual int32_t SwapBuffers(PP_CompletionCallback callback) OVERRIDE;
-  virtual void* MapTexSubImage2DCHROMIUM(GLenum target,
-                                         GLint level,
-                                         GLint xoffset,
-                                         GLint yoffset,
-                                         GLsizei width,
-                                         GLsizei height,
-                                         GLenum format,
-                                         GLenum type,
-                                         GLenum access) OVERRIDE;
-  virtual void UnmapTexSubImage2DCHROMIUM(const void* mem) OVERRIDE;
 
   gpu::gles2::GLES2Implementation* gles2_impl() {
     return gles2_impl_.get();

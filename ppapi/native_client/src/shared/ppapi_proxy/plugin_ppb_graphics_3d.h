@@ -11,6 +11,7 @@
 #include "ppapi/c/pp_graphics_3d.h"
 #include "ppapi/c/ppb_graphics_3d.h"
 #include "ppapi/c/ppb_opengles2.h"
+#include "ppapi/c/dev/ppb_opengles2ext_dev.h"
 #include "ppapi/c/pp_instance.h"
 
 namespace gpu {
@@ -32,6 +33,16 @@ class PluginGraphics3D : public PluginResource {
 
   static const PPB_Graphics3D* GetInterface();
   static const PPB_OpenGLES2* GetOpenGLESInterface();
+  static const PPB_OpenGLES2InstancedArrays_Dev*
+      GetOpenGLESInstancedArraysInterface();
+  static const PPB_OpenGLES2FramebufferBlit_Dev*
+      GetOpenGLESFramebufferBlitInterface();
+  static const PPB_OpenGLES2FramebufferMultisample_Dev*
+      GetOpenGLESFramebufferMultisampleInterface();
+  static const PPB_OpenGLES2ChromiumEnableFeature_Dev*
+      GetOpenGLESChromiumEnableFeatureInterface();
+  static const PPB_OpenGLES2ChromiumMapSub_Dev*
+      GetOpenGLESChromiumMapSubInterface();
 
   virtual bool InitFromBrowserResource(PP_Resource graphics3d_id);
 
