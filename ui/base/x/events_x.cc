@@ -58,32 +58,18 @@ class UI_EXPORT CMTEventData {
     device_to_valuators_.clear();
 
     int count = 0;
-    XDeviceInfo* dev_list = XListInputDevices(display, &count);
-    Atom xi_touchpad = XInternAtom(display, XI_TOUCHPAD, false);
-    for (int i = 0; i < count; ++i) {
-      XDeviceInfo* dev = dev_list + i;
-      if (dev->type == xi_touchpad)
-        cmt_devices_[dev_list[i].id] = true;
-    }
-    if (dev_list)
-      XFreeDeviceList(dev_list);
-
     XIDeviceInfo* info_list = XIQueryDevice(display, XIAllDevices, &count);
     Atom x_axis = XInternAtom(display, AXIS_LABEL_PROP_REL_HWHEEL, false);
     Atom y_axis = XInternAtom(display, AXIS_LABEL_PROP_REL_WHEEL, false);
     Atom start_time =
         XInternAtom(display, AXIS_LABEL_PROP_ABS_START_TIME, false);
     Atom end_time = XInternAtom(display, AXIS_LABEL_PROP_ABS_END_TIME, false);
+
     for (int i = 0; i < count; ++i) {
       XIDeviceInfo* info = info_list + i;
 
-      if (!cmt_devices_[info->deviceid])
+      if (info->use != XISlavePointer && info->use != XIFloatingSlave)
         continue;
-
-      if (info->use != XISlavePointer && info->use != XIFloatingSlave) {
-        cmt_devices_[info->deviceid] = false;
-        continue;
-      }
 
       Valuators valuators;
       for (int j = 0; j < info->num_classes; ++j) {
@@ -104,10 +90,13 @@ class UI_EXPORT CMTEventData {
         else if (v->label == end_time)
           valuators.end_time = number;
       }
-      if (valuators.x_scroll >= 0 && valuators.y_scroll >= 0)
+      if (valuators.x_scroll >= 0 ||
+          valuators.y_scroll >= 0 ||
+          valuators.start_time >= 0 ||
+          valuators.end_time >= 0) {
         device_to_valuators_[info->deviceid] = valuators;
-      else
-        cmt_devices_[info->deviceid] = false;
+        cmt_devices_[info->deviceid] = true;
+      }
     }
     XIFreeDeviceInfo(info_list);
   }
@@ -131,7 +120,7 @@ class UI_EXPORT CMTEventData {
     bool has_y_offset = XIMaskIsSet(xiev->valuators.mask, v.y_scroll);
     bool is_scroll = has_x_offset || has_y_offset;
 
-    if (!x_offset && !y_offset)
+    if (!is_scroll || (!x_offset && !y_offset))
       return is_scroll;
 
     double* valuators = xiev->valuators.values;
@@ -145,7 +134,7 @@ class UI_EXPORT CMTEventData {
       }
     }
 
-    return is_scroll;
+    return true;
   }
 
   bool GetGestureTimes(const XEvent& xev,
