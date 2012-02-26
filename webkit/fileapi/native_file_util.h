@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,7 @@ class NativeFileUtil : public FileSystemFileUtil {
 
   virtual PlatformFileError CreateOrOpen(
       FileSystemOperationContext* unused,
-      const FilePath& file_path,
+      const FileSystemPath& path,
       int file_flags,
       PlatformFile* file_handle,
       bool* created) OVERRIDE;
@@ -38,61 +38,61 @@ class NativeFileUtil : public FileSystemFileUtil {
       PlatformFile) OVERRIDE;
   virtual PlatformFileError EnsureFileExists(
       FileSystemOperationContext* unused,
-      const FilePath& file_path, bool* created) OVERRIDE;
+      const FileSystemPath& path, bool* created) OVERRIDE;
   virtual PlatformFileError CreateDirectory(
       FileSystemOperationContext* context,
-      const FilePath& file_path,
+      const FileSystemPath& path,
       bool exclusive,
       bool recursive) OVERRIDE;
   virtual PlatformFileError GetFileInfo(
       FileSystemOperationContext* unused,
-      const FilePath& file_,
+      const FileSystemPath& path,
       base::PlatformFileInfo* file_info,
-      FilePath* platform_path) OVERRIDE;
+      FilePath* platform_file_path) OVERRIDE;
   virtual PlatformFileError ReadDirectory(
       FileSystemOperationContext* unused,
-      const FilePath& file_path,
+      const FileSystemPath& path,
       std::vector<base::FileUtilProxy::Entry>* entries) OVERRIDE;
   virtual AbstractFileEnumerator* CreateFileEnumerator(
       FileSystemOperationContext* unused,
-      const FilePath& root_path) OVERRIDE;
+      const FileSystemPath& root_path) OVERRIDE;
   virtual PlatformFileError GetLocalFilePath(
       FileSystemOperationContext* unused,
-      const FilePath& virtual_path,
-      FilePath* local_path) OVERRIDE;
+      const FileSystemPath& file_system_path,
+      FilePath* local_file_path) OVERRIDE;
   virtual PlatformFileError Touch(
       FileSystemOperationContext* unused,
-      const FilePath& file_path,
+      const FileSystemPath& path,
       const base::Time& last_access_time,
       const base::Time& last_modified_time) OVERRIDE;
   virtual PlatformFileError Truncate(
       FileSystemOperationContext* unused,
-      const FilePath& path,
+      const FileSystemPath& path,
       int64 length) OVERRIDE;
   virtual bool PathExists(
       FileSystemOperationContext* unused,
-      const FilePath& file_path) OVERRIDE;
+      const FileSystemPath& path) OVERRIDE;
   virtual bool DirectoryExists(
       FileSystemOperationContext* unused,
-      const FilePath& file_path) OVERRIDE;
+      const FileSystemPath& path) OVERRIDE;
   virtual bool IsDirectoryEmpty(
       FileSystemOperationContext* unused,
-      const FilePath& file_path) OVERRIDE;
+      const FileSystemPath& path) OVERRIDE;
   virtual PlatformFileError CopyOrMoveFile(
       FileSystemOperationContext* unused,
-      const FilePath& src_file_path,
-      const FilePath& dest_file_path,
+      const FileSystemPath& src_path,
+      const FileSystemPath& dest_path,
       bool copy) OVERRIDE;
   virtual PlatformFileError CopyInForeignFile(
         FileSystemOperationContext* unused,
-        const FilePath& src_file_path,
-        const FilePath& dest_file_path) OVERRIDE;
+        const FileSystemPath& underlying_src_path,
+        const FileSystemPath& dest_path) OVERRIDE;
   virtual PlatformFileError DeleteFile(
       FileSystemOperationContext* unused,
-      const FilePath& file_path) OVERRIDE;
+      const FileSystemPath& path) OVERRIDE;
   virtual PlatformFileError DeleteSingleDirectory(
       FileSystemOperationContext* unused,
-      const FilePath& file_path) OVERRIDE;
+      const FileSystemPath& path) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NativeFileUtil);

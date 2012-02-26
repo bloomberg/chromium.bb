@@ -119,36 +119,22 @@ class FileSystemQuotaClientTest : public testing::Test {
                    weak_factory_.GetWeakPtr()));
   }
 
-  FilePath GetOriginBasePath(const std::string& origin_url,
-                             quota::StorageType type) {
-    // Note: this test assumes sandbox_provider impl is used for
-    // temporary and persistent filesystem.
-    return file_system_context_->sandbox_provider()->
-        GetBaseDirectoryForOriginAndType(
-            GURL(origin_url), QuotaStorageTypeToFileSystemType(type), true);
-  }
-
-  FileSystemOperationContext* CreateFileSystemOperationContext(
-      FileSystemFileUtil* file_util,
-      const FilePath& virtual_path,
-      const std::string& origin_url,
-      quota::StorageType type) {
+  FileSystemOperationContext* CreateFileSystemOperationContext() {
     FileSystemOperationContext* context =
-        new FileSystemOperationContext(file_system_context_, file_util);
-    context->set_src_origin_url(GURL(origin_url));
-    context->set_src_type(QuotaStorageTypeToFileSystemType(type));
+        new FileSystemOperationContext(file_system_context_);
     context->set_allowed_bytes_growth(100000000);
     return context;
   }
 
-  bool CreateFileSystemDirectory(const FilePath& path,
+  bool CreateFileSystemDirectory(const FilePath& file_path,
                                  const std::string& origin_url,
-                                 quota::StorageType type) {
-    FileSystemFileUtil* file_util = file_system_context_->
-        GetFileUtil(QuotaStorageTypeToFileSystemType(type));
+                                 quota::StorageType storage_type) {
+    FileSystemType type = QuotaStorageTypeToFileSystemType(storage_type);
+    FileSystemFileUtil* file_util = file_system_context_->GetFileUtil(type);
 
+    FileSystemPath path(GURL(origin_url), type, file_path, file_util);
     scoped_ptr<FileSystemOperationContext> context(
-        CreateFileSystemOperationContext(file_util, path, origin_url, type));
+        CreateFileSystemOperationContext());
 
     base::PlatformFileError result =
         file_util->CreateDirectory(context.get(), path, false, false);
@@ -157,18 +143,20 @@ class FileSystemQuotaClientTest : public testing::Test {
     return true;
   }
 
-  bool CreateFileSystemFile(const FilePath& path,
+  bool CreateFileSystemFile(const FilePath& file_path,
                             int64 file_size,
                             const std::string& origin_url,
-                            quota::StorageType type) {
-    if (path.empty())
+                            quota::StorageType storage_type) {
+    if (file_path.empty())
       return false;
 
     FileSystemFileUtil* file_util = file_system_context_->
         sandbox_provider()->GetFileUtil();
 
+    FileSystemType type = QuotaStorageTypeToFileSystemType(storage_type);
+    FileSystemPath path(GURL(origin_url), type, file_path, file_util);
     scoped_ptr<FileSystemOperationContext> context(
-        CreateFileSystemOperationContext(file_util, path, origin_url, type));
+        CreateFileSystemOperationContext());
 
     bool created = false;
     if (base::PLATFORM_FILE_OK !=

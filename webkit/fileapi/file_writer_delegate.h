@@ -14,6 +14,7 @@
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request.h"
+#include "webkit/fileapi/file_system_path.h"
 
 namespace fileapi {
 
@@ -25,6 +26,7 @@ class FileWriterDelegate : public net::URLRequest::Delegate {
  public:
   FileWriterDelegate(
       FileSystemOperation* write_operation,
+      const FileSystemPath& path,
       int64 offset,
       scoped_refptr<base::MessageLoopProxy> proxy);
   virtual ~FileWriterDelegate();
@@ -66,6 +68,7 @@ class FileWriterDelegate : public net::URLRequest::Delegate {
 
   FileSystemOperation* file_system_operation_;
   base::PlatformFile file_;
+  FileSystemPath path_;
   int64 size_;
   int64 offset_;
   scoped_refptr<base::MessageLoopProxy> proxy_;

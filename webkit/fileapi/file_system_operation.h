@@ -49,49 +49,49 @@ class FileSystemOperation : public FileSystemOperationInterface {
   virtual ~FileSystemOperation();
 
   // FileSystemOperation overrides.
-  virtual void CreateFile(const GURL& path,
+  virtual void CreateFile(const GURL& path_url,
                           bool exclusive,
                           const StatusCallback& callback) OVERRIDE;
-  virtual void CreateDirectory(const GURL& path,
+  virtual void CreateDirectory(const GURL& path_url,
                                bool exclusive,
                                bool recursive,
                                const StatusCallback& callback) OVERRIDE;
-  virtual void Copy(const GURL& src_path,
-                    const GURL& dest_path,
+  virtual void Copy(const GURL& src_path_url,
+                    const GURL& dest_path_url,
                     const StatusCallback& callback) OVERRIDE;
-  virtual void Move(const GURL& src_path,
-                    const GURL& dest_path,
+  virtual void Move(const GURL& src_path_url,
+                    const GURL& dest_path_url,
                     const StatusCallback& callback) OVERRIDE;
-  virtual void DirectoryExists(const GURL& path,
+  virtual void DirectoryExists(const GURL& path_url,
                                const StatusCallback& callback) OVERRIDE;
-  virtual void FileExists(const GURL& path,
+  virtual void FileExists(const GURL& path_url,
                           const StatusCallback& callback) OVERRIDE;
-  virtual void GetMetadata(const GURL& path,
+  virtual void GetMetadata(const GURL& path_url,
                            const GetMetadataCallback& callback) OVERRIDE;
-  virtual void ReadDirectory(const GURL& path,
+  virtual void ReadDirectory(const GURL& path_url,
                              const ReadDirectoryCallback& callback) OVERRIDE;
-  virtual void Remove(const GURL& path, bool recursive,
+  virtual void Remove(const GURL& path_url, bool recursive,
                       const StatusCallback& callback) OVERRIDE;
   virtual void Write(const net::URLRequestContext* url_request_context,
-                     const GURL& path,
+                     const GURL& path_url,
                      const GURL& blob_url,
                      int64 offset,
                      const WriteCallback& callback) OVERRIDE;
-  virtual void Truncate(const GURL& path, int64 length,
+  virtual void Truncate(const GURL& path_url, int64 length,
                         const StatusCallback& callback) OVERRIDE;
-  virtual void TouchFile(const GURL& path,
+  virtual void TouchFile(const GURL& path_url,
                          const base::Time& last_access_time,
                          const base::Time& last_modified_time,
                          const StatusCallback& callback) OVERRIDE;
-  virtual void OpenFile(const GURL& path,
+  virtual void OpenFile(const GURL& path_url,
                         int file_flags,
                         base::ProcessHandle peer_handle,
                         const OpenFileCallback& callback) OVERRIDE;
   virtual void Cancel(const StatusCallback& cancel_callback) OVERRIDE;
   virtual FileSystemOperation* AsFileSystemOperation() OVERRIDE;
 
-  // Synchronously gets the platform path for the given |path|.
-  void SyncGetPlatformPath(const GURL& path, FilePath* platform_path);
+  // Synchronously gets the platform path for the given |path_url|.
+  void SyncGetPlatformPath(const GURL& path_url, FilePath* platform_path);
 
  protected:
   class ScopedQuotaUtilHelper;
@@ -123,12 +123,13 @@ class FileSystemOperation : public FileSystemOperationInterface {
   // file_util on their own should call this before performing the actual
   // operation. If it is given it will not be overwritten by the class.
   void set_override_file_util(FileSystemFileUtil* file_util) {
-    operation_context_.set_src_file_util(file_util);
-    operation_context_.set_dest_file_util(file_util);
+    src_path_.set_file_util(file_util);
+    dest_path_.set_file_util(file_util);
   }
 
   void GetUsageAndQuotaThenCallback(
-      const GURL& origin_url,
+      const GURL& origin,
+      FileSystemType type,
       const quota::QuotaManager::GetUsageAndQuotaCallback& callback);
 
   void DelayedCreateFileForQuota(const StatusCallback& callback,
@@ -202,60 +203,18 @@ class FileSystemOperation : public FileSystemOperationInterface {
                             base::PassPlatformFile file,
                             bool created);
 
-  // Checks the validity of a given |path| for reading, cracks the path into
-  // root URL and virtual path components, and returns the correct
-  // FileSystemFileUtil subclass for this type.
-  // Returns true if the given |path| is a valid FileSystem path.
-  // Otherwise it calls dispatcher's DidFail method with
-  // PLATFORM_FILE_ERROR_SECURITY and returns false.
-  // (Note: this doesn't delete this when it calls DidFail and returns false;
-  // it's the caller's responsibility.)
-  base::PlatformFileError VerifyFileSystemPathForRead(
-      const GURL& path,
-      GURL* root_url,
-      FileSystemType* type,
-      FilePath* virtual_path,
-      FileSystemFileUtil** file_util);
+  enum SetUpPathMode {
+    PATH_FOR_READ,
+    PATH_FOR_WRITE,
+    PATH_FOR_CREATE,
+  };
 
-  // Checks the validity of a given |path| for writing, cracks the path into
-  // root URL and virtual path components, and returns the correct
-  // FileSystemFileUtil subclass for this type.
-  // Returns true if the given |path| is a valid FileSystem path, and
-  // its origin embedded in the path has the right to write.
-  // Otherwise it fires dispatcher's DidFail method with
-  // PLATFORM_FILE_ERROR_SECURITY if the path is not valid for writing,
-  // or with PLATFORM_FILE_ERROR_NO_SPACE if the origin is not allowed to
-  // write to the storage.
-  // In either case it returns false after firing DidFail.
-  // If |create| flag is true this also checks if the |path| contains
-  // any restricted names and chars. If it does, the call fires dispatcher's
-  // DidFail with PLATFORM_FILE_ERROR_SECURITY and returns false.
-  // (Note: this doesn't delete this when it calls DidFail and returns false;
-  // it's the caller's responsibility.)
-  base::PlatformFileError VerifyFileSystemPathForWrite(
-      const GURL& path,
-      bool create,
-      GURL* root_url,
-      FileSystemType* type,
-      FilePath* virtual_path,
-      FileSystemFileUtil** file_util);
-
-  // Common internal routine for VerifyFileSystemPathFor{Read,Write}.
-  base::PlatformFileError VerifyFileSystemPath(const GURL& path,
-                                               GURL* root_url,
-                                               FileSystemType* type,
-                                               FilePath* virtual_path,
-                                               FileSystemFileUtil** file_util);
-
-  // Setup*Context*() functions will call the appropriate VerifyFileSystem
-  // function and store the results to operation_context_ and
-  // *_virtual_path_.
-  // Return the result of VerifyFileSystem*().
-  base::PlatformFileError SetupSrcContextForRead(const GURL& path);
-  base::PlatformFileError SetupSrcContextForWrite(const GURL& path,
-                                                  bool create);
-  base::PlatformFileError SetupDestContextForWrite(const GURL& path,
-                                                   bool create);
+  // Checks the validity of a given |path_url| and and sets up the
+  // |file_system_path| for |mode|.
+  base::PlatformFileError SetUpFileSystemPath(
+      const GURL& path_url,
+      FileSystemPath* file_system_path,
+      SetUpPathMode mode);
 
   // Used only for internal assertions.
   // Returns false if there's another inflight pending operation.
@@ -265,6 +224,8 @@ class FileSystemOperation : public FileSystemOperationInterface {
   scoped_refptr<base::MessageLoopProxy> proxy_;
 
   FileSystemOperationContext operation_context_;
+  FileSystemPath src_path_;
+  FileSystemPath dest_path_;
 
   scoped_ptr<ScopedQuotaUtilHelper> quota_util_helper_;
 
@@ -286,12 +247,6 @@ class FileSystemOperation : public FileSystemOperationInterface {
   // Used only by OpenFile, in order to clone the file handle back to the
   // requesting process.
   base::ProcessHandle peer_handle_;
-
-  // Used to keep a virtual path around while we check for quota.
-  // If an operation needs only one path, use src_virtual_path_, even if it's a
-  // write.
-  FilePath src_virtual_path_;
-  FilePath dest_virtual_path_;
 
   // A flag to make sure we call operation only once per instance.
   OperationType pending_operation_;

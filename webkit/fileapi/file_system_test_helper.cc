@@ -106,7 +106,7 @@ FilePath FileSystemTestOriginHelper::GetLocalPath(const FilePath& path) {
   DCHECK(file_util_);
   FilePath local_path;
   scoped_ptr<FileSystemOperationContext> context(NewOperationContext());
-  file_util_->GetLocalFilePath(context.get(), path, &local_path);
+  file_util_->GetLocalFilePath(context.get(), CreatePath(path), &local_path);
   return local_path;
 }
 
@@ -123,6 +123,11 @@ GURL FileSystemTestOriginHelper::GetURLForPath(const FilePath& path) const {
 FilePath FileSystemTestOriginHelper::GetUsageCachePath() const {
   return file_system_context_->
       sandbox_provider()->GetUsageCachePathForOriginAndType(origin_, type_);
+}
+
+FileSystemPath FileSystemTestOriginHelper::CreatePath(
+    const FilePath& path) const {
+  return FileSystemPath(origin_, type_, path, file_util_);
 }
 
 int64 FileSystemTestOriginHelper::GetCachedOriginUsage() const {
@@ -147,26 +152,14 @@ FileSystemOperation* FileSystemTestOriginHelper::NewOperation() {
     new FileSystemOperation(base::MessageLoopProxy::current(),
                             file_system_context_.get());
   operation->set_override_file_util(file_util_);
-  InitializeOperationContext(operation->file_system_operation_context());
   return operation;
 }
 
 FileSystemOperationContext* FileSystemTestOriginHelper::NewOperationContext() {
   DCHECK(file_system_context_.get());
-  DCHECK(file_util_);
   FileSystemOperationContext* context =
-    new FileSystemOperationContext(file_system_context_.get(), file_util_);
-  InitializeOperationContext(context);
+    new FileSystemOperationContext(file_system_context_.get());
   return context;
-}
-
-void FileSystemTestOriginHelper::InitializeOperationContext(
-    FileSystemOperationContext* context) {
-  DCHECK(context);
-  context->set_src_origin_url(origin_);
-  context->set_src_type(type_);
-  context->set_dest_origin_url(origin_);
-  context->set_dest_type(type_);
 }
 
 }  // namespace fileapi

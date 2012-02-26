@@ -139,12 +139,14 @@ class FileSystemURLRequestJobTest : public testing::Test {
   }
 
   void CreateDirectory(const base::StringPiece& dir_name) {
-    FilePath path = FilePath().AppendASCII(dir_name);
     FileSystemFileUtil* file_util = file_system_context_->
         sandbox_provider()->GetFileUtil();
-    FileSystemOperationContext context(file_system_context_, file_util);
-    context.set_src_origin_url(GURL("http://remote"));
-    context.set_src_type(fileapi::kFileSystemTypeTemporary);
+    FileSystemPath path(GURL("http://remote"),
+                        kFileSystemTypeTemporary,
+                        FilePath().AppendASCII(dir_name),
+                        file_util);
+
+    FileSystemOperationContext context(file_system_context_);
     context.set_allowed_bytes_growth(1024);
 
     ASSERT_EQ(base::PLATFORM_FILE_OK, file_util->CreateDirectory(
@@ -156,12 +158,14 @@ class FileSystemURLRequestJobTest : public testing::Test {
 
   void WriteFile(const base::StringPiece& file_name,
                  const char* buf, int buf_size) {
-    FilePath path = FilePath().AppendASCII(file_name);
     FileSystemFileUtil* file_util = file_system_context_->
         sandbox_provider()->GetFileUtil();
-    FileSystemOperationContext context(file_system_context_, file_util);
-    context.set_src_origin_url(GURL("http://remote"));
-    context.set_src_type(fileapi::kFileSystemTypeTemporary);
+    FileSystemPath path(GURL("http://remote"),
+                        kFileSystemTypeTemporary,
+                        FilePath().AppendASCII(file_name),
+                        file_util);
+
+    FileSystemOperationContext context(file_system_context_);
     context.set_allowed_bytes_growth(1024);
 
     base::PlatformFile handle = base::kInvalidPlatformFileValue;

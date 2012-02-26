@@ -520,11 +520,10 @@ int64 SandboxMountPointProvider::GetOriginUsageOnFileThread(
   // Get the directory size now and update the cache.
   FileSystemUsageCache::Delete(usage_file_path);
 
-  FileSystemOperationContext context(NULL, sandbox_file_util_);
-  context.set_src_origin_url(origin_url);
-  context.set_src_type(type);
+  FileSystemOperationContext context(NULL);
+  FileSystemPath path(origin_url, type, FilePath(), sandbox_file_util_);
   scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> enumerator(
-      sandbox_file_util_->CreateFileEnumerator(&context, FilePath()));
+      sandbox_file_util_->CreateFileEnumerator(&context, path));
 
   FilePath file_path_each;
   int64 usage = 0;

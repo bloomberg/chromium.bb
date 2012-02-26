@@ -22,6 +22,8 @@ namespace {
 
 // Checks if copying in the same filesystem can be performed.
 // This method is not called for moving within a single filesystem.
+// Note: this method assumes the underlying file system uses platform
+// file paths.
 bool CanCopy(
     const FilePath& src_file_path,
     const FilePath& dest_file_path,
@@ -46,7 +48,7 @@ bool CanCopy(
 }
 
 void NotifyUpdate(FileSystemOperationContext* operation_context,
-                  const GURL& origin_url,
+                  const GURL& origin,
                   FileSystemType type,
                   int64 growth) {
   DCHECK(operation_context);
@@ -62,7 +64,7 @@ void NotifyUpdate(FileSystemOperationContext* operation_context,
       operation_context->allowed_bytes_growth() - growth);
   if (quota_util)
     quota_util->UpdateOriginUsageOnFileThread(
-        quota_manager_proxy, origin_url, type, growth);
+        quota_manager_proxy, origin, type, growth);
 }
 
 }  // namespace (anonymous)
@@ -81,13 +83,13 @@ QuotaFileUtil* QuotaFileUtil::CreateDefault() {
 
 base::PlatformFileError QuotaFileUtil::Truncate(
     FileSystemOperationContext* fs_context,
-    const FilePath& path,
+    const FileSystemPath& path,
     int64 length) {
   int64 allowed_bytes_growth = fs_context->allowed_bytes_growth();
 
   int64 growth = 0;
   base::PlatformFileInfo file_info;
-  if (!file_util::GetFileInfo(path, &file_info))
+  if (!file_util::GetFileInfo(path.internal_path(), &file_info))
     return base::PLATFORM_FILE_ERROR_FAILED;
 
   growth = length - file_info.size;
@@ -99,9 +101,7 @@ base::PlatformFileError QuotaFileUtil::Truncate(
       fs_context, path, length);
 
   if (error == base::PLATFORM_FILE_OK)
-    NotifyUpdate(fs_context,
-                 fs_context->src_origin_url(),
-                 fs_context->src_type(),
+    NotifyUpdate(fs_context, path.origin(), path.type(),
                  growth);
 
   return error;
@@ -109,8 +109,8 @@ base::PlatformFileError QuotaFileUtil::Truncate(
 
 base::PlatformFileError QuotaFileUtil::CopyOrMoveFile(
     FileSystemOperationContext* fs_context,
-    const FilePath& src_file_path,
-    const FilePath& dest_file_path,
+    const FileSystemPath& src_path,
+    const FileSystemPath& dest_path,
     bool copy) {
   DCHECK(fs_context);
 
@@ -121,25 +121,23 @@ base::PlatformFileError QuotaFileUtil::CopyOrMoveFile(
   if (copy) {
     int64 allowed_bytes_growth = fs_context->allowed_bytes_growth();
     // The third argument (growth) is not used for now.
-    if (!CanCopy(src_file_path, dest_file_path, allowed_bytes_growth, &growth))
+    if (!CanCopy(src_path.internal_path(), dest_path.internal_path(),
+                 allowed_bytes_growth, &growth))
       return base::PLATFORM_FILE_ERROR_NO_SPACE;
   } else {
     base::PlatformFileInfo dest_file_info;
-    if (!file_util::GetFileInfo(dest_file_path, &dest_file_info))
+    if (!file_util::GetFileInfo(dest_path.internal_path(), &dest_file_info))
       dest_file_info.size = 0;
     growth = -dest_file_info.size;
   }
 
   base::PlatformFileError error = underlying_file_util()->CopyOrMoveFile(
-      fs_context, src_file_path, dest_file_path, copy);
+      fs_context, src_path, dest_path, copy);
 
   if (error == base::PLATFORM_FILE_OK) {
     // TODO(kinuko): For cross-filesystem move case, call this with -growth
     // for source and growth for dest.
-    NotifyUpdate(fs_context,
-                 fs_context->dest_origin_url(),
-                 fs_context->dest_type(),
-                 growth);
+    NotifyUpdate(fs_context, dest_path.origin(), dest_path.type(), growth);
   }
 
   return error;
@@ -147,23 +145,20 @@ base::PlatformFileError QuotaFileUtil::CopyOrMoveFile(
 
 base::PlatformFileError QuotaFileUtil::DeleteFile(
     FileSystemOperationContext* fs_context,
-    const FilePath& file_path) {
+    const FileSystemPath& path) {
   DCHECK(fs_context);
 
   int64 growth = 0;
   base::PlatformFileInfo file_info;
-  if (!file_util::GetFileInfo(file_path, &file_info))
+  if (!file_util::GetFileInfo(path.internal_path(), &file_info))
     file_info.size = 0;
   growth = -file_info.size;
 
   base::PlatformFileError error = underlying_file_util()->DeleteFile(
-      fs_context, file_path);
+      fs_context, path);
 
   if (error == base::PLATFORM_FILE_OK)
-    NotifyUpdate(fs_context,
-                 fs_context->src_origin_url(),
-                 fs_context->src_type(),
-                 growth);
+    NotifyUpdate(fs_context, path.origin(), path.type(), growth);
 
   return error;
 }

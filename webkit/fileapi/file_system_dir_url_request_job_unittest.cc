@@ -32,6 +32,7 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
+#include "webkit/fileapi/file_system_path.h"
 #include "webkit/fileapi/mock_file_system_options.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/quota/mock_special_storage_policy.h"
@@ -110,45 +111,50 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     TestRequestHelper(url, false);
   }
 
-  FileSystemOperationContext* NewOperationContext(const FilePath& path) {
-    FileSystemOperationContext* context(new FileSystemOperationContext(
-        file_system_context_, file_util()));
+  FileSystemPath CreatePath(const FilePath& file_path) {
+    return FileSystemPath(GURL("http://remote"),
+                          fileapi::kFileSystemTypeTemporary,
+                          file_path,
+                          file_util());
+  }
 
-    context->set_src_origin_url(GURL("http://remote"));
-    context->set_src_type(fileapi::kFileSystemTypeTemporary);
+  FileSystemOperationContext* NewOperationContext() {
+    FileSystemOperationContext* context(new FileSystemOperationContext(
+        file_system_context_));
     context->set_allowed_bytes_growth(1024);
     return context;
   }
 
-  void CreateDirectory(const base::StringPiece dir_name) {
+  void CreateDirectory(const base::StringPiece& dir_name) {
     FilePath path = FilePath().AppendASCII(dir_name);
-    scoped_ptr<FileSystemOperationContext> context(NewOperationContext(path));
+    scoped_ptr<FileSystemOperationContext> context(NewOperationContext());
     ASSERT_EQ(base::PLATFORM_FILE_OK, file_util()->CreateDirectory(
         context.get(),
-        path,
+        CreatePath(path),
         false /* exclusive */,
         false /* recursive */));
   }
 
   void EnsureFileExists(const base::StringPiece file_name) {
     FilePath path = FilePath().AppendASCII(file_name);
-    scoped_ptr<FileSystemOperationContext> context(NewOperationContext(path));
+    scoped_ptr<FileSystemOperationContext> context(NewOperationContext());
     ASSERT_EQ(base::PLATFORM_FILE_OK, file_util()->EnsureFileExists(
-        context.get(), path, NULL));
+        context.get(), CreatePath(path), NULL));
   }
 
   void TruncateFile(const base::StringPiece file_name, int64 length) {
     FilePath path = FilePath().AppendASCII(file_name);
-    scoped_ptr<FileSystemOperationContext> context(NewOperationContext(path));
+    scoped_ptr<FileSystemOperationContext> context(NewOperationContext());
     ASSERT_EQ(base::PLATFORM_FILE_OK, file_util()->Truncate(
-        context.get(), path, length));
+        context.get(), CreatePath(path), length));
   }
 
   PlatformFileError GetFileInfo(const FilePath& path,
                    base::PlatformFileInfo* file_info,
                    FilePath* platform_file_path) {
-    scoped_ptr<FileSystemOperationContext> context(NewOperationContext(path));
-    return file_util()->GetFileInfo(context.get(), path,
+    scoped_ptr<FileSystemOperationContext> context(NewOperationContext());
+    return file_util()->GetFileInfo(context.get(),
+                                    CreatePath(path),
                                     file_info, platform_file_path);
   }
 

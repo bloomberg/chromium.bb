@@ -30,12 +30,14 @@ class InitializeTask : public base::RefCountedThreadSafe<InitializeTask> {
  public:
   InitializeTask(
       base::PlatformFile file,
+      const FileSystemPath& path,
       FileSystemOperationContext* context,
       const InitializeTaskCallback& callback)
       : origin_message_loop_proxy_(
             base::MessageLoopProxy::current()),
         error_code_(base::PLATFORM_FILE_OK),
         file_(file),
+        path_(path),
         context_(*context),
         callback_(callback) {
     DCHECK_EQ(false, callback.is_null());
@@ -58,11 +60,10 @@ class InitializeTask : public base::RefCountedThreadSafe<InitializeTask> {
   void ProcessOnTargetThread() {
     DCHECK(context_.file_system_context());
     FileSystemQuotaUtil* quota_util = context_.file_system_context()->
-        GetQuotaUtil(context_.src_type());
+        GetQuotaUtil(path_.type());
     if (quota_util) {
       DCHECK(quota_util->proxy());
-      quota_util->proxy()->StartUpdateOrigin(
-          context_.src_origin_url(), context_.src_type());
+      quota_util->proxy()->StartUpdateOrigin(path_.origin(), path_.type());
     }
     if (!base::GetPlatformFileInfo(file_, &file_info_))
       error_code_ = base::PLATFORM_FILE_ERROR_FAILED;
@@ -75,6 +76,7 @@ class InitializeTask : public base::RefCountedThreadSafe<InitializeTask> {
   base::PlatformFileError error_code_;
 
   base::PlatformFile file_;
+  FileSystemPath path_;
   FileSystemOperationContext context_;
   InitializeTaskCallback callback_;
 
@@ -84,10 +86,13 @@ class InitializeTask : public base::RefCountedThreadSafe<InitializeTask> {
 }  // namespace (anonymous)
 
 FileWriterDelegate::FileWriterDelegate(
-    FileSystemOperation* file_system_operation, int64 offset,
+    FileSystemOperation* file_system_operation,
+    const FileSystemPath& path,
+    int64 offset,
     scoped_refptr<base::MessageLoopProxy> proxy)
     : file_system_operation_(file_system_operation),
       file_(base::kInvalidPlatformFileValue),
+      path_(path),
       offset_(offset),
       proxy_(proxy),
       bytes_written_backlog_(0),
@@ -132,7 +137,8 @@ void FileWriterDelegate::Start(base::PlatformFile file,
   request_ = request;
 
   scoped_refptr<InitializeTask> relay = new InitializeTask(
-      file_, file_system_operation_context(),
+      file_, path_,
+      file_system_operation_context(),
       base::Bind(&FileWriterDelegate::OnGetFileInfoAndCallStartUpdate,
                  weak_factory_.GetWeakPtr()));
   relay->Start(proxy_, FROM_HERE);
@@ -268,11 +274,8 @@ void FileWriterDelegate::OnError(base::PlatformFileError error) {
   request_->set_delegate(NULL);
   request_->Cancel();
 
-  if (quota_util()) {
-    quota_util()->proxy()->EndUpdateOrigin(
-        file_system_operation_context()->src_origin_url(),
-        file_system_operation_context()->src_type());
-  }
+  if (quota_util())
+    quota_util()->proxy()->EndUpdateOrigin(path_.origin(), path_.type());
 
   file_system_operation_->DidWrite(error, 0, true);
 }
@@ -287,8 +290,7 @@ void FileWriterDelegate::OnProgress(int bytes_written, bool done) {
       overlapped = size_ - total_bytes_written_ - offset_;
     quota_util()->proxy()->UpdateOriginUsage(
         file_system_operation_->file_system_context()->quota_manager_proxy(),
-        file_system_operation_context()->src_origin_url(),
-        file_system_operation_context()->src_type(),
+        path_.origin(), path_.type(),
         bytes_written - overlapped);
   }
   static const int kMinProgressDelayMS = 200;
@@ -299,13 +301,8 @@ void FileWriterDelegate::OnProgress(int bytes_written, bool done) {
     bytes_written += bytes_written_backlog_;
     last_progress_event_time_ = currentTime;
     bytes_written_backlog_ = 0;
-    if (done && quota_util()) {
-      if (quota_util()) {
-        quota_util()->proxy()->EndUpdateOrigin(
-            file_system_operation_context()->src_origin_url(),
-            file_system_operation_context()->src_type());
-      }
-    }
+    if (done && quota_util())
+      quota_util()->proxy()->EndUpdateOrigin(path_.origin(), path_.type());
     file_system_operation_->DidWrite(
         base::PLATFORM_FILE_OK, bytes_written, done);
     return;
@@ -325,7 +322,7 @@ FileSystemQuotaUtil* FileWriterDelegate::quota_util() const {
   DCHECK(file_system_operation_->file_system_context());
   DCHECK(file_system_operation_->file_system_operation_context());
   return file_system_operation_->file_system_context()->GetQuotaUtil(
-      file_system_operation_context()->src_type());
+      path_.type());
 }
 
 }  // namespace fileapi

@@ -114,6 +114,7 @@ class FileWriterDelegateTest : public PlatformTest {
     result_.reset(new Result());
     file_writer_delegate_.reset(new FileWriterDelegate(
         CreateNewOperation(result_.get(), allowed_growth),
+        test_helper_.CreatePath(file_path_),
         offset, base::MessageLoopProxy::current()));
     request_.reset(new net::URLRequest(blob_url, file_writer_delegate_.get()));
   }
@@ -321,6 +322,7 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimitConcurrent) {
   result2.reset(new Result());
   file_writer_delegate2.reset(new FileWriterDelegate(
       CreateNewOperation(result2.get(), QuotaFileUtil::kNoLimit),
+      test_helper_.CreatePath(file_path2),
       0, base::MessageLoopProxy::current()));
   request2.reset(new net::URLRequest(kBlobURL2, file_writer_delegate2.get()));
 

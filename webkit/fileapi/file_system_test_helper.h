@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/fileapi/file_system_path.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/quota/quota_types.h"
@@ -56,6 +57,12 @@ class FileSystemTestOriginHelper {
   GURL GetURLForPath(const FilePath& path) const;
   FilePath GetUsageCachePath() const;
 
+  // Creates a new FileSystemPath for the given |path|.
+  FileSystemPath CreatePath(const FilePath& path) const;
+  FileSystemPath CreatePathFromUTF8(const std::string& utf8) const {
+    return CreatePath(FilePath::FromUTF8Unsafe(utf8));
+  }
+
   int64 GetCachedOriginUsage() const;
   bool RevokeUsageCache() const;
 
@@ -77,8 +84,6 @@ class FileSystemTestOriginHelper {
   FileSystemFileUtil* file_util() { return file_util_; }
 
  private:
-  void InitializeOperationContext(FileSystemOperationContext* context);
-
   scoped_refptr<FileSystemContext> file_system_context_;
   const GURL origin_;
   const FileSystemType type_;

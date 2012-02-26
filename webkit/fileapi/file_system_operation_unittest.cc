@@ -149,8 +149,7 @@ FilePath ASCIIToFilePath(const std::string& str) {
 
 }  // namespace (anonymous)
 
-// Test class for FileSystemOperation.  Note that this just tests low-level
-// operations but doesn't test OpenFileSystem.
+// Test class for FileSystemOperation.
 class FileSystemOperationTest
     : public testing::Test,
       public base::SupportsWeakPtr<FileSystemOperationTest> {

@@ -37,6 +37,8 @@
         'file_system_options.h',
         'file_system_origin_database.cc',
         'file_system_origin_database.h',
+        'file_system_path.cc',
+        'file_system_path.h',
         'file_system_quota_client.cc',
         'file_system_quota_client.h',
         'file_system_quota_util.cc',

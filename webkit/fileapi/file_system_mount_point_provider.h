@@ -114,7 +114,7 @@ class ExternalFileSystemMountPointProvider
   virtual void RemoveMountPoint(const FilePath& mount_point) = 0;
   // Gets virtual path by known filesystem path. Returns false when filesystem
   // path is not exposed by this provider.
-  virtual bool GetVirtualPath(const FilePath& filesystem_path,
+  virtual bool GetVirtualPath(const FilePath& file_system_path,
                               FilePath* virtual_path) = 0;
 };
 

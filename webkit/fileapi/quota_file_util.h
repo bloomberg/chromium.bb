@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,16 +31,16 @@ class QuotaFileUtil : public FileSystemFileUtil {
 
   virtual base::PlatformFileError Truncate(
       FileSystemOperationContext* fs_context,
-      const FilePath& path,
+      const FileSystemPath& path,
       int64 length) OVERRIDE;
   virtual base::PlatformFileError CopyOrMoveFile(
       FileSystemOperationContext* fs_context,
-      const FilePath& src_file_path,
-      const FilePath& dest_file_path,
+      const FileSystemPath& src_path,
+      const FileSystemPath& dest_path,
       bool copy) OVERRIDE;
   virtual base::PlatformFileError DeleteFile(
       FileSystemOperationContext* fs_context,
-      const FilePath& file_path) OVERRIDE;
+      const FileSystemPath& path) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuotaFileUtil);

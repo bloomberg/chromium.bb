@@ -38,8 +38,8 @@ class QuotaFileUtilTest : public testing::Test {
     return quota_test_helper_.NewOperationContext();
   }
 
-  FilePath Path(const std::string& file_name) {
-    return base_dir_.AppendASCII(file_name);
+  FileSystemPath Path(const std::string& file_name) {
+    return quota_test_helper_.CreatePath(base_dir_.AppendASCII(file_name));
   }
 
   base::PlatformFileError CreateFile(const char* file_name,

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,7 @@ using base::PlatformFile;
 using base::PlatformFileError;
 
 class FileSystemOperationContext;
+class FileSystemPath;
 
 // An instance of this class is created and owned by *MountPointProvider.
 class LocalFileUtil : public FileSystemFileUtil {
@@ -42,76 +43,74 @@ class LocalFileUtil : public FileSystemFileUtil {
 
   virtual PlatformFileError CreateOrOpen(
       FileSystemOperationContext* context,
-      const FilePath& file_path,
+      const FileSystemPath& path,
       int file_flags,
       PlatformFile* file_handle,
       bool* created) OVERRIDE;
   virtual PlatformFileError EnsureFileExists(
       FileSystemOperationContext* context,
-      const FilePath& file_path, bool* created) OVERRIDE;
+      const FileSystemPath& path, bool* created) OVERRIDE;
   virtual PlatformFileError CreateDirectory(
       FileSystemOperationContext* context,
-      const FilePath& file_path,
+      const FileSystemPath& path,
       bool exclusive,
       bool recursive) OVERRIDE;
   virtual PlatformFileError GetFileInfo(
       FileSystemOperationContext* context,
-      const FilePath& file,
+      const FileSystemPath& path,
       base::PlatformFileInfo* file_info,
       FilePath* platform_file) OVERRIDE;
   virtual PlatformFileError ReadDirectory(
       FileSystemOperationContext* context,
-      const FilePath& file_path,
+      const FileSystemPath& path,
       std::vector<base::FileUtilProxy::Entry>* entries) OVERRIDE;
   virtual AbstractFileEnumerator* CreateFileEnumerator(
       FileSystemOperationContext* context,
-      const FilePath& root_path) OVERRIDE;
+      const FileSystemPath& root_path) OVERRIDE;
   virtual PlatformFileError GetLocalFilePath(
       FileSystemOperationContext* context,
-      const FilePath& virtual_file,
-      FilePath* local_path) OVERRIDE;
+      const FileSystemPath& file_system_path,
+      FilePath* local_file_path) OVERRIDE;
   virtual PlatformFileError Touch(
       FileSystemOperationContext* context,
-      const FilePath& file_path,
+      const FileSystemPath& path,
       const base::Time& last_access_time,
       const base::Time& last_modified_time) OVERRIDE;
   virtual PlatformFileError Truncate(
       FileSystemOperationContext* context,
-      const FilePath& path,
+      const FileSystemPath& path,
       int64 length) OVERRIDE;
   virtual bool PathExists(
       FileSystemOperationContext* context,
-      const FilePath& file_path) OVERRIDE;
+      const FileSystemPath& path) OVERRIDE;
   virtual bool DirectoryExists(
       FileSystemOperationContext* context,
-      const FilePath& file_path) OVERRIDE;
+      const FileSystemPath& path) OVERRIDE;
   virtual bool IsDirectoryEmpty(
       FileSystemOperationContext* context,
-      const FilePath& file_path) OVERRIDE;
+      const FileSystemPath& path) OVERRIDE;
   virtual PlatformFileError CopyOrMoveFile(
       FileSystemOperationContext* context,
-      const FilePath& src_file_path,
-      const FilePath& dest_file_path,
+      const FileSystemPath& src_path,
+      const FileSystemPath& dest_path,
       bool copy) OVERRIDE;
   virtual PlatformFileError CopyInForeignFile(
         FileSystemOperationContext* context,
-        const FilePath& src_file_path,
-        const FilePath& dest_file_path) OVERRIDE;
+        const FileSystemPath& underlying_src_path,
+        const FileSystemPath& dest_path) OVERRIDE;
   virtual PlatformFileError DeleteFile(
       FileSystemOperationContext* context,
-      const FilePath& file_path) OVERRIDE;
+      const FileSystemPath& path) OVERRIDE;
   virtual PlatformFileError DeleteSingleDirectory(
       FileSystemOperationContext* context,
-      const FilePath& file_path) OVERRIDE;
+      const FileSystemPath& path) OVERRIDE;
 
  private:
-  // Given the filesystem's root URL and a virtual path, produces a real, full
-  // local path.
-  FilePath GetLocalPath(
+  // Given the filesystem path, produces a real, full local path for the
+  // underlying filesystem (which is usually the native filesystem).
+  FileSystemPath GetLocalPath(
       FileSystemOperationContext* context,
-      const GURL& origin_url,
-      FileSystemType type,
-      const FilePath& virtual_path);
+      const FileSystemPath& path);
 
   DISALLOW_COPY_AND_ASSIGN(LocalFileUtil);
 };
