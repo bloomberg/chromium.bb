@@ -176,7 +176,7 @@ TEST_F(HeartbeatSenderTest, DoSendStanzaWithExpectedSequenceId) {
   result->AddElement(expected_sequence_id);
   const int kExpectedSequenceId = 456;
   expected_sequence_id->AddText(base::IntToString(kExpectedSequenceId));
-  heartbeat_sender_->ProcessResponse(response.get());
+  heartbeat_sender_->ProcessResponse(NULL, response.get());
   message_loop_.RunAllPending();
 
   scoped_ptr<XmlElement> stanza2(sent_iq2);
@@ -204,7 +204,7 @@ TEST_F(HeartbeatSenderTest, ProcessResponseSetInterval) {
   const int kTestInterval = 123;
   set_interval->AddText(base::IntToString(kTestInterval));
 
-  heartbeat_sender_->ProcessResponse(response.get());
+  heartbeat_sender_->ProcessResponse(NULL, response.get());
 
   EXPECT_EQ(kTestInterval * 1000, heartbeat_sender_->interval_ms_);
 }

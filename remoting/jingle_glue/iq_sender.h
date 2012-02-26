@@ -12,7 +12,12 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "remoting/jingle_glue/signal_strategy.h"
+
+namespace base {
+class TimeDelta;
+}  // namespace base
 
 namespace buzz {
 class XmlElement;
@@ -27,7 +32,10 @@ class SignalStrategy;
 // those requests.
 class IqSender : public SignalStrategy::Listener {
  public:
-  typedef base::Callback<void(const buzz::XmlElement*)> ReplyCallback;
+  // Callback that is called when an Iq response is received. Called
+  // with the |response| set to NULL in case of a timeout.
+  typedef base::Callback<void(IqRequest* request,
+                              const buzz::XmlElement* response)> ReplyCallback;
 
   explicit IqSender(SignalStrategy* signal_strategy);
   virtual ~IqSender();
@@ -72,19 +80,28 @@ class IqSender : public SignalStrategy::Listener {
 };
 
 // This call must only be used on the thread it was created on.
-class IqRequest {
+class IqRequest : public  base::SupportsWeakPtr<IqRequest> {
  public:
-  IqRequest(IqSender* sender, const IqSender::ReplyCallback& callback);
+  IqRequest(IqSender* sender, const IqSender::ReplyCallback& callback,
+            const std::string& addressee);
   ~IqRequest();
+
+  // Sets timeout for the request. When the timeout expires the
+  // callback is called with the |response| set to NULL.
+  void SetTimeout(base::TimeDelta timeout);
 
  private:
   friend class IqSender;
+
+  void CallCallback(const buzz::XmlElement* stanza);
+  void OnTimeout();
 
   // Called by IqSender when a response is received.
   void OnResponse(const buzz::XmlElement* stanza);
 
   IqSender* sender_;
   IqSender::ReplyCallback callback_;
+  std::string addressee_;
 
   DISALLOW_COPY_AND_ASSIGN(IqRequest);
 };

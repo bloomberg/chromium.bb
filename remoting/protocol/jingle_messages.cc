@@ -141,6 +141,11 @@ bool JingleMessage::IsJingleMessage(const buzz::XmlElement* stanza) {
       stanza->FirstNamed(QName(kJingleNamespace, "jingle")) != NULL;
 }
 
+// static
+std::string JingleMessage::GetActionName(ActionType action) {
+  return ValueToName(kActionTypes, arraysize(kActionTypes), action);
+}
+
 JingleMessage::JingleMessage()
     : action(UNKNOWN_ACTION),
       reason(UNKNOWN_REASON) {
@@ -268,7 +273,7 @@ bool JingleMessage::ParseXml(const buzz::XmlElement* stanza,
   return true;
 }
 
-scoped_ptr<buzz::XmlElement> JingleMessage::ToXml() {
+scoped_ptr<buzz::XmlElement> JingleMessage::ToXml() const {
   scoped_ptr<XmlElement> root(
       new XmlElement(QName("jabber:client", "iq"), true));
 

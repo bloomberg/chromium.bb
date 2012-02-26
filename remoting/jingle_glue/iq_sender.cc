@@ -4,8 +4,12 @@
 
 #include "remoting/jingle_glue/iq_sender.h"
 
+#include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/message_loop_proxy.h"
 #include "base/string_number_conversions.h"
+#include "base/time.h"
 #include "remoting/jingle_glue/signal_strategy.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 #include "third_party/libjingle/source/talk/xmpp/constants.h"
@@ -36,13 +40,14 @@ IqSender::~IqSender() {
 
 scoped_ptr<IqRequest> IqSender::SendIq(scoped_ptr<buzz::XmlElement> stanza,
                                        const ReplyCallback& callback) {
+  std::string addressee = stanza->Attr(buzz::QN_TO);
   std::string id = signal_strategy_->GetNextId();
   stanza->AddAttr(buzz::QN_ID, id);
   if (!signal_strategy_->SendStanza(stanza.Pass())) {
     return scoped_ptr<IqRequest>(NULL);
   }
   DCHECK(requests_.find(id) == requests_.end());
-  scoped_ptr<IqRequest> request(new IqRequest(this, callback));
+  scoped_ptr<IqRequest> request(new IqRequest(this, callback, addressee));
   if (!callback.is_null())
     requests_[id] = request.get();
   return request.Pass();
@@ -92,32 +97,72 @@ bool IqSender::OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) {
     return false;
   }
 
+  std::string from = stanza->Attr(buzz::QN_FROM);
+
   IqRequestMap::iterator it = requests_.find(id);
+
+  // This is a hack to workaround the issue with the WCS changing IDs
+  // of IQ responses sent from client to host. Whenever we receive a
+  // stanza with an unknown ID we try to match it with an outstanding
+  // request sent to the same peer.
+  if (it == requests_.end()) {
+    for (it = requests_.begin(); it != requests_.end(); ++it) {
+      if (it->second->addressee_ == from) {
+        break;
+      }
+    }
+  }
+
   if (it == requests_.end()) {
     return false;
   }
 
   IqRequest* request = it->second;
-  requests_.erase(it);
 
+  if (request->addressee_ != from) {
+    LOG(ERROR) << "Received IQ response from from a invalid JID. Ignoring it."
+               << " Message received from: " << from
+               << " Original JID: " << request->addressee_;
+    return false;
+  }
+
+  requests_.erase(it);
   request->OnResponse(stanza);
+
   return true;
 }
 
-IqRequest::IqRequest(IqSender* sender, const IqSender::ReplyCallback& callback)
+IqRequest::IqRequest(IqSender* sender, const IqSender::ReplyCallback& callback,
+                     const std::string& addressee)
     : sender_(sender),
-      callback_(callback) {
+      callback_(callback),
+      addressee_(addressee) {
 }
 
 IqRequest::~IqRequest() {
   sender_->RemoveRequest(this);
 }
 
+void IqRequest::SetTimeout(base::TimeDelta timeout) {
+  base::MessageLoopProxy::current()->PostDelayedTask(
+      FROM_HERE, base::Bind(&IqRequest::OnTimeout, AsWeakPtr()),
+      timeout.InMilliseconds());
+}
+
+void IqRequest::CallCallback(const buzz::XmlElement* stanza) {
+  if (!callback_.is_null()) {
+    IqSender::ReplyCallback callback(callback_);
+    callback_.Reset();
+    callback.Run(this, stanza);
+  }
+}
+
+void IqRequest::OnTimeout() {
+  CallCallback(NULL);
+}
+
 void IqRequest::OnResponse(const buzz::XmlElement* stanza) {
-  DCHECK(!callback_.is_null());
-  IqSender::ReplyCallback callback(callback_);
-  callback_.Reset();
-  callback.Run(stanza);
+  CallCallback(stanza);
 }
 
 }  // namespace remoting

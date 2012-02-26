@@ -32,7 +32,8 @@ void JingleInfoRequest::Send(const OnJingleInfoCallback& callback) {
       base::Bind(&JingleInfoRequest::OnResponse, base::Unretained(this)));
 }
 
-void JingleInfoRequest::OnResponse(const buzz::XmlElement* stanza) {
+void JingleInfoRequest::OnResponse(IqRequest* request,
+                                   const buzz::XmlElement* stanza) {
   const buzz::XmlElement* query =
       stanza->FirstNamed(buzz::QN_JINGLE_INFO_QUERY);
   if (query == NULL) {
