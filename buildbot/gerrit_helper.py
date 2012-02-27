@@ -189,6 +189,7 @@ class GerritHelper():
     cmd.extend(options)
     if current_patch:
       cmd.append('--current-patch-set')
+    else:
       raw = True
 
 
