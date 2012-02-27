@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -357,6 +357,13 @@ TEST_F(InputMethodUtilTest, TestGetLanguageCodesFromInputMethodIds) {
   EXPECT_EQ("en-US", language_codes[0]);
   EXPECT_EQ("ja", language_codes[1]);
   EXPECT_EQ("fr", language_codes[2]);
+}
+
+TEST_F(InputMethodUtilTest, TestSetHardwareInputMethodId) {
+  util_.SetHardwareInputMethodIdForTesting("xkb:fr::fra");
+  EXPECT_EQ("xkb:fr::fra", util_.GetHardwareInputMethodId());
+  // Reset to the default behavior just in case.
+  util_.SetHardwareInputMethodIdForTesting("");
 }
 
 }  // namespace input_method

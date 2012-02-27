@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -562,6 +562,10 @@ void InputMethodUtil::GetLanguageCodesFromInputMethodIds(
 }
 
 std::string InputMethodUtil::GetHardwareInputMethodId() const {
+  if (!hardware_input_method_id_for_testing_.empty()) {
+    return hardware_input_method_id_for_testing_;
+  }
+
   if (!(g_browser_process && g_browser_process->local_state())) {
     // This shouldn't happen but just in case.
     VLOG(1) << "Local state is not yet ready";
@@ -636,6 +640,11 @@ void InputMethodUtil::ReloadInternalMaps() {
 
 void InputMethodUtil::OnLocaleChanged() {
   ReloadInternalMaps();
+}
+
+void InputMethodUtil::SetHardwareInputMethodIdForTesting(
+    const std::string& input_method_id) {
+  hardware_input_method_id_for_testing_ = input_method_id;
 }
 
 }  // namespace input_method

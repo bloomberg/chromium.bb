@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -132,12 +132,16 @@ class InputMethodUtil {
       const std::vector<std::string>& input_method_ids,
       std::vector<std::string>* out_language_codes) const;
 
-  // Returns the input method ID of the hardware keyboard.
+  // Returns the input method ID of the hardware keyboard. e.g. "xkb:us::eng"
+  // for the US Qwerty keyboard.
   std::string GetHardwareInputMethodId() const;
 
   // This function should be called when Chrome's application locale is
   // changed, so that the internal maps of this library is reloaded.
   void OnLocaleChanged();
+
+  // Sets an input method ID of the hardware keyboard for testing.
+  void SetHardwareInputMethodIdForTesting(const std::string& input_method_id);
 
   // Returns true if the given input method id is for a keyboard layout.
   static bool IsKeyboardLayout(const std::string& input_method_id);
@@ -201,6 +205,8 @@ class InputMethodUtil {
 
   typedef base::hash_map<std::string, int> HashType;
   HashType english_to_resource_id_;
+
+  std::string hardware_input_method_id_for_testing_;
 };
 
 }  // namespace input_method
