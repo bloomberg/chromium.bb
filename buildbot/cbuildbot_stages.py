@@ -441,31 +441,15 @@ class ImportantBuilderFailedException(Exception):
 class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
   """Stage that records whether we passed or failed to build/test manifest."""
 
-  def WasBuildSuccessful(self):
-    if not ManifestVersionedSyncStage.manifest_manager:
-      return True
-
-    super(LKGMCandidateSyncCompletionStage, self)._PerformStage()
+  def _GetImportantBuildersStatus(self):
     # If debugging or a slave, just check its local status.
     if not self._build_config['master'] or self._options.debug:
       builders = [self._bot_id]
     else:
       builders = self._GetImportantBuildersForMaster(cbuildbot_config.config)
 
-    statuses = ManifestVersionedSyncStage.manifest_manager.GetBuildersStatus(
+    return ManifestVersionedSyncStage.manifest_manager.GetBuildersStatus(
         builders, os.path.join(self._build_root, constants.VERSION_FILE))
-    success = True
-    for builder in builders:
-      status = statuses[builder]
-      if status != lkgm_manager.LKGMManager.STATUS_PASSED:
-        cros_lib.Warning('Builder %s reported status %s' % (builder, status))
-        success = False
-
-    return success
-
-  def HandleError(self):
-    raise ImportantBuilderFailedException(
-          'An important build failed with this manifest.')
 
   def HandleSuccess(self):
     # We only promote for the pfq, not chrome pfq.
@@ -475,13 +459,40 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         self._build_config['build_type'] != constants.CHROME_PFQ_TYPE):
       ManifestVersionedSyncStage.manifest_manager.PromoteCandidate()
 
-  def _PerformStage(self):
-    success = self.WasBuildSuccessful()
-    if success:
-      self.HandleSuccess()
-    else:
-      self.HandleError()
+  def HandleValidationFailure(self, failing_builders):
+    print '\n@@@STEP_WARNINGS@@@'
+    print 'The following builders failed with this manifest:'
+    print ', '.join(sorted(failing_builders))
+    print 'Please check the logs of the failing builders for details.'
 
+  def HandleValidationTimeout(self, inflight_builders):
+    print '\n@@@STEP_WARNINGS@@@'
+    print 'The following builders took too long to finish:'
+    print ', '.join(sorted(inflight_builders))
+    print 'Please check the logs of these builders for details.'
+
+  def _PerformStage(self):
+    super(LKGMCandidateSyncCompletionStage, self)._PerformStage()
+
+    if ManifestVersionedSyncStage.manifest_manager:
+      statuses = self._GetImportantBuildersStatus()
+      failing_builders, inflight_builders = set(), set()
+      for builder, status in statuses.iteritems():
+        if status == lkgm_manager.LKGMManager.STATUS_FAILED:
+          failing_builders.add(builder)
+        elif status != lkgm_manager.LKGMManager.STATUS_PASSED:
+          inflight_builders.add(builder)
+
+      if failing_builders:
+        self.HandleValidationFailure(failing_builders)
+
+      if inflight_builders:
+        self.HandleValidationTimeout(inflight_builders)
+
+      if failing_builders or inflight_builders:
+        raise bs.NonBacktraceBuildException()  # Suppress redundant output.
+      else:
+        self.HandleSuccess()
 
 class CommitQueueCompletionStage(LKGMCandidateSyncCompletionStage):
   """Commits or reports errors to CL's that failed to be validated."""
@@ -495,9 +506,16 @@ class CommitQueueCompletionStage(LKGMCandidateSyncCompletionStage):
       if cbuildbot_config.IsPFQType(self._build_config['build_type']):
         super(CommitQueueCompletionStage, self).HandleSuccess()
 
-  def HandleError(self):
-    CommitQueueSyncStage.pool.HandleValidationFailure()
-    super(CommitQueueCompletionStage, self).HandleError()
+  def HandleValidationTimeout(self, inflight_builders):
+    super(CommitQueueCompletionStage, self).HandleValidationTimeout(
+        inflight_builders)
+    CommitQueueSyncStage.pool.HandleValidationTimeout()
+
+  def _PerformStage(self):
+    if not self.success:
+      CommitQueueSyncStage.pool.HandleValidationFailure()
+
+    super(CommitQueueCompletionStage, self)._PerformStage()
 
 
 class RefreshPackageStatusStage(bs.BuilderStage):

@@ -490,6 +490,19 @@ class ValidationPool(object):
       logging.info('Validation failed for change %s.', change)
       self.HandleCouldNotVerify(change)
 
+  def HandleValidationTimeout(self):
+    """Handles changes that timed out."""
+    logging.info('Validation timed out for all changes.')
+    for change in self.changes:
+      logging.info('Validation timed out for change %s.', change)
+      self._SendNotification(change,
+          'The Commit Queue timed out while verifying your change in '
+          '%(build_log)s . This means that a supporting builder did not '
+          'finish building your change within the specified timeout. If you '
+          'believe this happened in error, just re-mark your commit as ready. '
+          'Your change will then get automatically retried.')
+      self.gerrit_helper.RemoveCommitReady(change, dryrun=self.dryrun)
+
   def _SendNotification(self, change, msg):
     msg %= {'build_log':self.build_log}
     PaladinMessage(msg, change, self.gerrit_helper).Send(self.dryrun)
