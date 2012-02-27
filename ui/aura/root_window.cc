@@ -148,7 +148,7 @@ void RootWindow::Draw() {
 }
 
 void RootWindow::ScheduleFullDraw() {
-  // compositor_->ScheduleFullDraw();
+  compositor_->ScheduleFullDraw();
 }
 
 bool RootWindow::DispatchMouseEvent(MouseEvent* event) {
