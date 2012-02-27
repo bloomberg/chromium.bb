@@ -90,9 +90,7 @@ include_rules = [
   "+content/browser/tab_contents/web_contents_view_mac.h",
   "+content/browser/tab_contents/web_drag_dest_delegate.h",
   "+content/browser/tab_contents/web_drag_dest_gtk.h",
-  "+content/browser/tab_contents/web_drag_dest_mac.h",
   "+content/browser/tab_contents/web_drag_source_gtk.h",
-  "+content/browser/tab_contents/web_drag_source_mac.h",
   "+content/browser/trace_controller.h",
   # DO NOT ADD ANY MORE ITEMS TO THE ABOVE LIST!
 
