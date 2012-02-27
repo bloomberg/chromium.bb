@@ -286,12 +286,15 @@ bool BaseSessionService::RestoreUpdateTabNavigationCommand(
         policy);
 
     // And even later, compressed content state was added.
+    base::TimeTicks start_time_ = base::TimeTicks::Now();
     std::string content_state;
     if (CompressDataHelper::ReadAndDecompressStringFromPickle(
             *pickle.get(), &iterator, &content_state) &&
         !content_state.empty()) {
       navigation->state_ = content_state;
     }
+    base::TimeDelta total_time = base::TimeTicks::Now() - start_time_;
+    time_spent_reading_compressed_content_states += total_time;
   }
 
   navigation->virtual_url_ = GURL(url_spec);
@@ -345,4 +348,14 @@ bool BaseSessionService::RunTaskOnBackendThread(
     task.Run();
     return true;
   }
+}
+
+void BaseSessionService::ResetContentStateReadingMetrics() {
+  time_spent_reading_compressed_content_states = base::TimeDelta();
+}
+
+void BaseSessionService::WriteContentStateReadingMetrics() {
+  UMA_HISTOGRAM_TIMES("SessionService.ReadingCompressedContentStates",
+                      time_spent_reading_compressed_content_states);
+  ResetContentStateReadingMetrics();
 }

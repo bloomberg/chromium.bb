@@ -160,6 +160,10 @@ class BaseSessionService : public CancelableRequestProvider,
   bool RunTaskOnBackendThread(const tracked_objects::Location& from_here,
                               const base::Closure& task);
 
+  // For metrics
+  void ResetContentStateReadingMetrics();
+  void WriteContentStateReadingMetrics();
+
   // Max number of navigation entries in each direction we'll persist.
   static const int max_persist_navigation_count;
 
@@ -191,6 +195,9 @@ class BaseSessionService : public CancelableRequestProvider,
 
   // Whether to save the HTTP bodies of the POST requests.
   bool save_post_data_;
+
+  // For metrics.
+  base::TimeDelta time_spent_reading_compressed_content_states;
 
   DISALLOW_COPY_AND_ASSIGN(BaseSessionService);
 };
