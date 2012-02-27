@@ -4,7 +4,6 @@
 
 #include "chrome/browser/event_disposition.h"
 #include "chrome/browser/ui/views/event_utils.h"
-#include "content/browser/disposition_utils.h"
 #include "ui/views/events/event.h"
 
 using views::Event;

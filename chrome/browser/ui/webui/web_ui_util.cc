@@ -7,8 +7,9 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/logging.h"
 #include "base/values.h"
-#include "content/browser/disposition_utils.h"
+#include "chrome/browser/disposition_utils.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
 

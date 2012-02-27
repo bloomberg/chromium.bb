@@ -13,10 +13,10 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/webui/generic_handler.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui_controller.h"
+#include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/bindings_policy.h"
 #include "ui/base/ui_base_switches.h"
 
@@ -55,7 +55,6 @@ WebUIImpl::WebUIImpl(WebContents* contents)
       bindings_(content::BINDINGS_POLICY_WEB_UI),
       web_contents_(contents) {
   DCHECK(contents);
-  AddMessageHandler(new GenericHandler());
 }
 
 WebUIImpl::~WebUIImpl() {

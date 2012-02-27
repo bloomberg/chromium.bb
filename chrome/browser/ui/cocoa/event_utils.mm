@@ -5,7 +5,6 @@
 #import "chrome/browser/ui/cocoa/event_utils.h"
 
 #include "chrome/browser/event_disposition.h"
-#include "content/browser/disposition_utils.h"
 #include "ui/base/events.h"
 
 namespace {

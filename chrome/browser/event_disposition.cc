@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/event_disposition.h"
-#include "content/browser/disposition_utils.h"
+
+#include "chrome/browser/disposition_utils.h"
 #include "ui/base/events.h"
 
 namespace browser {
