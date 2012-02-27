@@ -25,6 +25,7 @@ bool SuccessResourceRead(int32_t num_bytes) {
 }
 
 nacl_abi_size_t ResourceReadSize(int32_t result) {
+  UNREFERENCED_PARAMETER(result);
   return static_cast<nacl_abi_size_t>(sizeof(PP_Resource));
 }
 
