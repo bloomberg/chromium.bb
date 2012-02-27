@@ -21,13 +21,13 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
-#include "chrome/common/net/http_return.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_fetcher.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
 
 using base::StringPrintf;
@@ -263,7 +263,7 @@ void AppNotifyChannelSetup::EndRecordGrant(const URLFetcher* source) {
   net::URLRequestStatus status = source->GetStatus();
 
   if (status.status() == net::URLRequestStatus::SUCCESS) {
-    if (source->GetResponseCode() == RC_REQUEST_OK) {
+    if (source->GetResponseCode() == net::HTTP_OK) {
       state_ = RECORD_GRANT_DONE;
       BeginGetChannelId();
     } else {
@@ -293,7 +293,7 @@ void AppNotifyChannelSetup::EndGetChannelId(const URLFetcher* source) {
   net::URLRequestStatus status = source->GetStatus();
 
   if (status.status() == net::URLRequestStatus::SUCCESS) {
-    if (source->GetResponseCode() == RC_REQUEST_OK) {
+    if (source->GetResponseCode() == net::HTTP_OK) {
       std::string data;
       source->GetResponseAsString(&data);
       std::string channel_id;

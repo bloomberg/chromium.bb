@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,8 @@
 
 #include <string>
 
-#include "chrome/common/net/http_return.h"
 #include "googleurl/src/gurl.h"
+#include "net/http/http_status_code.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::string;
@@ -24,7 +24,7 @@ class GaiaAuthMockForGaiaAuthenticator : public GaiaAuthenticator {
  protected:
   bool Post(const GURL& url, const string& post_body,
             unsigned long* response_code, string* response_body) {
-    *response_code = RC_REQUEST_OK;
+    *response_code = net::HTTP_OK;
     response_body->assign("body\n");
     return true;
   }

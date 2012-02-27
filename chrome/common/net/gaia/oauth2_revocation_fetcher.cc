@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,9 +14,9 @@
 #include "base/values.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
-#include "chrome/common/net/http_return.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
@@ -115,7 +115,7 @@ void OAuth2RevocationFetcher::EndRevocation(const URLFetcher* source) {
     return;
   }
 
-  if (source->GetResponseCode() != RC_REQUEST_OK_EMPTY_BODY) {
+  if (source->GetResponseCode() != net::HTTP_NO_CONTENT) {
     OnRevocationFailure(GoogleServiceAuthError(
         GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
     return;

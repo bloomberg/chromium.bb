@@ -16,7 +16,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/net/http_return.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/client_model.pb.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
@@ -30,6 +29,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
@@ -329,14 +329,14 @@ void ClientSideDetectionService::HandleModelResponse(
     const net::ResponseCookies& cookies,
     const std::string& data) {
   base::TimeDelta max_age;
-  if (status.is_success() && RC_REQUEST_OK == response_code &&
+  if (status.is_success() && net::HTTP_OK == response_code &&
       source->GetResponseHeaders() &&
       source->GetResponseHeaders()->GetMaxAgeValue(&max_age)) {
     model_max_age_.reset(new base::TimeDelta(max_age));
   }
   scoped_ptr<ClientSideModel> model(new ClientSideModel());
   ClientModelStatus model_status;
-  if (!status.is_success() || RC_REQUEST_OK != response_code) {
+  if (!status.is_success() || net::HTTP_OK != response_code) {
     model_status = MODEL_FETCH_FAILED;
   } else if (data.empty()) {
     model_status = MODEL_EMPTY;
@@ -372,7 +372,7 @@ void ClientSideDetectionService::HandlePhishingVerdict(
   ClientPhishingResponse response;
   scoped_ptr<ClientReportInfo> info(client_phishing_reports_[source]);
   bool is_phishing = false;
-  if (status.is_success() && RC_REQUEST_OK == response_code &&
+  if (status.is_success() && net::HTTP_OK == response_code &&
       response.ParseFromString(data)) {
     // Cache response, possibly flushing an old one.
     cache_[info->phishing_url] =

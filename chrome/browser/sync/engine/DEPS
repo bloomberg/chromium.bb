@@ -15,11 +15,6 @@ include_rules = [
   # internal_api/, then remove this DEPS rule.
   "+chrome/browser/sync/internal_api",
 
-  # this should live in base
-  "+chrome/browser/sync/weak_handle.h",
-
-  "+chrome/common/net/http_return.h",
-
   # various command line flags
   "+chrome/common/chrome_switches.h",
 ]

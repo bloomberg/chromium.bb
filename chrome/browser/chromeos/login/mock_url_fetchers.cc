@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,11 +9,11 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
-#include "chrome/common/net/http_return.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_fetcher.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -54,7 +54,7 @@ GotCanceledFetcher::GotCanceledFetcher(
     : TestURLFetcher(0, url, d) {
   set_url(url);
   set_status(net::URLRequestStatus(net::URLRequestStatus::CANCELED, 0));
-  set_response_code(RC_FORBIDDEN);
+  set_response_code(net::HTTP_FORBIDDEN);
 }
 
 GotCanceledFetcher::~GotCanceledFetcher() {}
@@ -71,7 +71,7 @@ SuccessFetcher::SuccessFetcher(bool success,
     : TestURLFetcher(0, url, d) {
   set_url(url);
   set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0));
-  set_response_code(RC_REQUEST_OK);
+  set_response_code(net::HTTP_OK);
 }
 
 SuccessFetcher::~SuccessFetcher() {}
@@ -88,7 +88,7 @@ FailFetcher::FailFetcher(bool success,
     : TestURLFetcher(0, url, d) {
   set_url(url);
   set_status(net::URLRequestStatus(net::URLRequestStatus::FAILED, ECONNRESET));
-  set_response_code(RC_REQUEST_OK);
+  set_response_code(net::HTTP_OK);
 }
 
 FailFetcher::~FailFetcher() {}
@@ -115,7 +115,7 @@ CaptchaFetcher::CaptchaFetcher(bool success,
     : TestURLFetcher(0, url, d) {
   set_url(url);
   set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0));
-  set_response_code(RC_FORBIDDEN);
+  set_response_code(net::HTTP_FORBIDDEN);
   SetResponseString(base::StringPrintf("Error=%s\n"
                                        "Url=%s\n"
                                        "CaptchaUrl=%s\n"
@@ -155,7 +155,7 @@ HostedFetcher::HostedFetcher(bool success,
     : TestURLFetcher(0, url, d) {
   set_url(url);
   set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0));
-  set_response_code(RC_REQUEST_OK);
+  set_response_code(net::HTTP_OK);
 }
 
 HostedFetcher::~HostedFetcher() {}
@@ -164,7 +164,7 @@ void HostedFetcher::Start() {
   VLOG(1) << upload_data();
   if (upload_data().find("HOSTED") == std::string::npos) {
     VLOG(1) << "HostedFetcher failing request";
-    set_response_code(RC_FORBIDDEN);
+    set_response_code(net::HTTP_FORBIDDEN);
     SetResponseString("Error=BadAuthentication");
   }
   delegate()->OnURLFetchComplete(this);

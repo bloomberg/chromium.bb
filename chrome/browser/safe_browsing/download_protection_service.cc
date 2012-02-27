@@ -18,7 +18,6 @@
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/signature_util.h"
-#include "chrome/common/net/http_return.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
@@ -27,6 +26,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/x509_cert_types.h"
 #include "net/base/x509_certificate.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
@@ -433,7 +433,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
     DownloadCheckResultReason reason = REASON_SERVER_PING_FAILED;
     DownloadCheckResult result = SAFE;
     if (source->GetStatus().is_success() &&
-        RC_REQUEST_OK == source->GetResponseCode()) {
+        net::HTTP_OK == source->GetResponseCode()) {
       ClientDownloadResponse response;
       std::string data;
       bool got_data = source->GetResponseAsString(&data);

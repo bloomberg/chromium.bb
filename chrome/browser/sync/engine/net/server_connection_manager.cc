@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,8 +17,8 @@
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
-#include "chrome/common/net/http_return.h"
 #include "googleurl/src/gurl.h"
+#include "net/http/http_status_code.h"
 
 namespace browser_sync {
 
@@ -69,7 +69,7 @@ bool ServerConnectionManager::Connection::ReadBufferResponse(
     string* buffer_out,
     HttpResponse* response,
     bool require_response) {
-  if (RC_REQUEST_OK != response->response_code) {
+  if (net::HTTP_OK != response->response_code) {
     response->server_status = HttpResponse::SYNC_SERVER_ERROR;
     return false;
   }
@@ -254,7 +254,7 @@ bool ServerConnectionManager::PostBufferToPath(PostBufferParams* params,
   if (params->response.server_status == HttpResponse::SYNC_AUTH_ERROR)
     InvalidateAndClearAuthToken();
 
-  if (!ok || RC_REQUEST_OK != params->response.response_code)
+  if (!ok || net::HTTP_OK != params->response.response_code)
     return false;
 
   if (post.get()->ReadBufferResponse(

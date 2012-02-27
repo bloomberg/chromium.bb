@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -16,13 +16,13 @@
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
-#include "chrome/common/net/http_return.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -163,7 +163,7 @@ TEST_F(GaiaOAuthFetcherTest, OAuthGetAccessToken) {
   TestURLFetcher test_fetcher(0, GURL(), &oauth_fetcher);
   test_fetcher.set_url(url);
   test_fetcher.set_status(status);
-  test_fetcher.set_response_code(RC_REQUEST_OK);
+  test_fetcher.set_response_code(net::HTTP_OK);
   test_fetcher.set_cookies(cookies);
   test_fetcher.SetResponseString(data);
   oauth_fetcher.OnURLFetchComplete(&test_fetcher);
@@ -198,7 +198,7 @@ TEST_F(GaiaOAuthFetcherTest, OAuthWrapBridge) {
   TestURLFetcher test_fetcher(0, GURL(), &oauth_fetcher);
   test_fetcher.set_url(url);
   test_fetcher.set_status(status);
-  test_fetcher.set_response_code(RC_REQUEST_OK);
+  test_fetcher.set_response_code(net::HTTP_OK);
   test_fetcher.set_cookies(cookies);
   test_fetcher.SetResponseString(data);
   oauth_fetcher.OnURLFetchComplete(&test_fetcher);
@@ -228,7 +228,7 @@ TEST_F(GaiaOAuthFetcherTest, UserInfo) {
   TestURLFetcher test_fetcher(0, GURL(), &oauth_fetcher);
   test_fetcher.set_url(url);
   test_fetcher.set_status(status);
-  test_fetcher.set_response_code(RC_REQUEST_OK);
+  test_fetcher.set_response_code(net::HTTP_OK);
   test_fetcher.set_cookies(cookies);
   test_fetcher.SetResponseString(data);
   oauth_fetcher.OnURLFetchComplete(&test_fetcher);
@@ -253,7 +253,7 @@ TEST_F(GaiaOAuthFetcherTest, OAuthRevokeToken) {
   TestURLFetcher test_fetcher(0, GURL(), &oauth_fetcher);
   test_fetcher.set_url(url);
   test_fetcher.set_status(status);
-  test_fetcher.set_response_code(RC_REQUEST_OK);
+  test_fetcher.set_response_code(net::HTTP_OK);
   test_fetcher.set_cookies(cookies);
   oauth_fetcher.OnURLFetchComplete(&test_fetcher);
 }

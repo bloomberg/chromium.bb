@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,12 +12,12 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/net/http_return.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
 #include "chrome/service/cloud_print/job_status_updater.h"
 #include "googleurl/src/gurl.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_status_code.h"
 
 PrinterJobHandler::JobDetails::JobDetails() {}
 
@@ -277,7 +277,7 @@ CloudPrintURLFetcher::ResponseAction PrinterJobHandler::HandleRawResponse(
   // 415 (Unsupported media type) error while fetching data from the server
   // means data conversion error. Stop fetching process and mark job as error.
   if (next_data_handler_ == (&PrinterJobHandler::HandlePrintDataResponse) &&
-      response_code == RC_UNSUPPORTED_MEDIA_TYPE) {
+      response_code == net::HTTP_UNSUPPORTED_MEDIA_TYPE) {
     MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&PrinterJobHandler::JobFailed, this, JOB_DOWNLOAD_FAILED));

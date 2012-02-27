@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,13 +6,13 @@
 
 #include "base/stringprintf.h"
 #include "base/values.h"
-#include "chrome/common/net/http_return.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
 #include "chrome/service/cloud_print/cloud_print_token_store.h"
 #include "chrome/service/net/service_url_request_context.h"
 #include "chrome/service/service_process.h"
 #include "googleurl/src/gurl.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
 
 CloudPrintURLFetcher::CloudPrintURLFetcher()
@@ -72,7 +72,7 @@ void CloudPrintURLFetcher::OnURLFetchComplete(
 
   // If we get auth error, notify delegate and check if it wants to proceed.
   if (action == CONTINUE_PROCESSING &&
-      source->GetResponseCode() == RC_FORBIDDEN) {
+      source->GetResponseCode() == net::HTTP_FORBIDDEN) {
     action = delegate_->OnRequestAuthError();
   }
 
@@ -111,7 +111,7 @@ void CloudPrintURLFetcher::OnURLFetchComplete(
     // If we receive error code from the server "Media Type Not Supported",
     // there is no reason to retry, request will never succeed.
     // In that case we should call OnRequestGiveUp() right away.
-    if (source->GetResponseCode() == RC_UNSUPPORTED_MEDIA_TYPE)
+    if (source->GetResponseCode() == net::HTTP_UNSUPPORTED_MEDIA_TYPE)
       num_retries_ = source->GetMaxRetries();
 
     ++num_retries_;

@@ -6,8 +6,8 @@
 
 #include "chrome/browser/sync/internal_api/http_post_provider_factory.h"
 #include "chrome/browser/sync/internal_api/http_post_provider_interface.h"
-#include "chrome/common/net/http_return.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_status_code.h"
 
 using browser_sync::HttpResponse;
 
@@ -68,7 +68,7 @@ bool SyncAPIBridgedConnection::Init(const char* path,
       static_cast<int64>(http->GetResponseContentLength());
   if (response->response_code < 400)
     response->server_status = HttpResponse::SERVER_CONNECTION_OK;
-  else if (response->response_code == RC_UNAUTHORIZED)
+  else if (response->response_code == net::HTTP_UNAUTHORIZED)
     response->server_status = HttpResponse::SYNC_AUTH_ERROR;
   else
     response->server_status = HttpResponse::SYNC_SERVER_ERROR;

@@ -15,13 +15,13 @@
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
-#include "chrome/common/net/http_return.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -74,10 +74,10 @@ MockFetcher::MockFetcher(bool success,
   net::URLRequestStatus::Status code;
   
   if (success) {
-    set_response_code(RC_REQUEST_OK);
+    set_response_code(net::HTTP_OK);
     code = net::URLRequestStatus::SUCCESS;
   } else {
-    set_response_code(RC_FORBIDDEN);
+    set_response_code(net::HTTP_FORBIDDEN);
     code = net::URLRequestStatus::FAILED;
   }
 
@@ -284,7 +284,7 @@ TEST_F(GaiaAuthFetcherTest, LoginDenied) {
       profile_.GetRequestContext());
 
   MockFetcher mock_fetcher(
-      client_login_source_, status, RC_FORBIDDEN, cookies_, data,
+      client_login_source_, status, net::HTTP_FORBIDDEN, cookies_, data,
       content::URLFetcher::GET, &auth);
   auth.OnURLFetchComplete(&mock_fetcher);
 }
@@ -332,7 +332,7 @@ TEST_F(GaiaAuthFetcherTest, OnlineLogin) {
       profile_.GetRequestContext());
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   MockFetcher mock_fetcher(
-      client_login_source_, status, RC_REQUEST_OK, cookies_, data,
+      client_login_source_, status, net::HTTP_OK, cookies_, data,
       content::URLFetcher::GET, &auth);
   auth.OnURLFetchComplete(&mock_fetcher);
 }
@@ -346,7 +346,7 @@ TEST_F(GaiaAuthFetcherTest, WorkingIssueAuthToken) {
       profile_.GetRequestContext());
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   MockFetcher mock_fetcher(
-      issue_auth_token_source_, status, RC_REQUEST_OK, cookies_, "token",
+      issue_auth_token_source_, status, net::HTTP_OK, cookies_, "token",
       content::URLFetcher::GET, &auth);
   auth.OnURLFetchComplete(&mock_fetcher);
 }
@@ -378,7 +378,7 @@ TEST_F(GaiaAuthFetcherTest, TwoFactorLogin) {
       profile_.GetRequestContext());
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   MockFetcher mock_fetcher(
-      client_login_source_, status, RC_FORBIDDEN, cookies_, response,
+      client_login_source_, status, net::HTTP_FORBIDDEN, cookies_, response,
       content::URLFetcher::GET, &auth);
   auth.OnURLFetchComplete(&mock_fetcher);
 }
@@ -534,7 +534,7 @@ TEST_F(GaiaAuthFetcherTest, ClientFetchPending) {
   MockFetcher mock_fetcher(
       client_login_source_,
       net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0),
-      RC_REQUEST_OK, cookies_, "SID=sid\nLSID=lsid\nAuth=auth\n",
+      net::HTTP_OK, cookies_, "SID=sid\nLSID=lsid\nAuth=auth\n",
       content::URLFetcher::GET, &auth);
   auth.OnURLFetchComplete(&mock_fetcher);
   EXPECT_FALSE(auth.HasPendingFetch());
@@ -556,7 +556,7 @@ TEST_F(GaiaAuthFetcherTest, FullTokenSuccess) {
   MockFetcher mock_fetcher(
       issue_auth_token_source_,
       net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0),
-      RC_REQUEST_OK, cookies_, "token",
+      net::HTTP_OK, cookies_, "token",
       content::URLFetcher::GET, &auth);
   auth.OnURLFetchComplete(&mock_fetcher);
   EXPECT_FALSE(auth.HasPendingFetch());
@@ -578,7 +578,7 @@ TEST_F(GaiaAuthFetcherTest, FullTokenFailure) {
   MockFetcher mock_fetcher(
       issue_auth_token_source_,
       net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0),
-      RC_FORBIDDEN, cookies_, "", content::URLFetcher::GET, &auth);
+      net::HTTP_FORBIDDEN, cookies_, "", content::URLFetcher::GET, &auth);
   auth.OnURLFetchComplete(&mock_fetcher);
   EXPECT_FALSE(auth.HasPendingFetch());
 }
@@ -601,14 +601,14 @@ TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenSuccess) {
   MockFetcher mock_fetcher1(
       client_login_to_oauth2_source_,
       net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0),
-      RC_REQUEST_OK, cookies, "",
+      net::HTTP_OK, cookies, "",
       content::URLFetcher::POST, &auth);
   auth.OnURLFetchComplete(&mock_fetcher1);
   EXPECT_TRUE(auth.HasPendingFetch());
   MockFetcher mock_fetcher2(
       oauth2_token_source_,
       net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0),
-      RC_REQUEST_OK, cookies_, kGetTokenPairValidResponse,
+      net::HTTP_OK, cookies_, kGetTokenPairValidResponse,
       content::URLFetcher::POST, &auth);
   auth.OnURLFetchComplete(&mock_fetcher2);
   EXPECT_FALSE(auth.HasPendingFetch());
@@ -631,7 +631,7 @@ TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenClientLoginToOAuth2Failure) {
   MockFetcher mock_fetcher(
       client_login_to_oauth2_source_,
       net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0),
-      RC_FORBIDDEN, cookies, "",
+      net::HTTP_FORBIDDEN, cookies, "",
       content::URLFetcher::POST, &auth);
   auth.OnURLFetchComplete(&mock_fetcher);
   EXPECT_FALSE(auth.HasPendingFetch());
@@ -655,14 +655,14 @@ TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenOAuth2TokenPairFailure) {
   MockFetcher mock_fetcher1(
       client_login_to_oauth2_source_,
       net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0),
-      RC_REQUEST_OK, cookies, "",
+      net::HTTP_OK, cookies, "",
       content::URLFetcher::POST, &auth);
   auth.OnURLFetchComplete(&mock_fetcher1);
   EXPECT_TRUE(auth.HasPendingFetch());
   MockFetcher mock_fetcher2(
       oauth2_token_source_,
       net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0),
-      RC_FORBIDDEN, cookies_, "",
+      net::HTTP_FORBIDDEN, cookies_, "",
       content::URLFetcher::POST, &auth);
   auth.OnURLFetchComplete(&mock_fetcher2);
   EXPECT_FALSE(auth.HasPendingFetch());
@@ -684,7 +684,7 @@ TEST_F(GaiaAuthFetcherTest, TokenAuthSuccess) {
   MockFetcher mock_fetcher(
       token_auth_source_,
       net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0),
-      RC_REQUEST_OK, cookies_, "<html></html>", content::URLFetcher::GET,
+      net::HTTP_OK, cookies_, "<html></html>", content::URLFetcher::GET,
       &auth);
   auth.OnURLFetchComplete(&mock_fetcher);
   EXPECT_FALSE(auth.HasPendingFetch());
@@ -706,7 +706,7 @@ TEST_F(GaiaAuthFetcherTest, TokenAuthUnauthorizedFailure) {
   MockFetcher mock_fetcher(
       token_auth_source_,
       net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0),
-      RC_UNAUTHORIZED, cookies_, "", content::URLFetcher::GET, &auth);
+      net::HTTP_UNAUTHORIZED, cookies_, "", content::URLFetcher::GET, &auth);
   auth.OnURLFetchComplete(&mock_fetcher);
   EXPECT_FALSE(auth.HasPendingFetch());
 }
@@ -727,7 +727,7 @@ TEST_F(GaiaAuthFetcherTest, TokenAuthNetFailure) {
   MockFetcher mock_fetcher(
       token_auth_source_,
       net::URLRequestStatus(net::URLRequestStatus::FAILED, 0),
-      RC_REQUEST_OK, cookies_, "", content::URLFetcher::GET, &auth);
+      net::HTTP_OK, cookies_, "", content::URLFetcher::GET, &auth);
   auth.OnURLFetchComplete(&mock_fetcher);
   EXPECT_FALSE(auth.HasPendingFetch());
 }
@@ -748,7 +748,7 @@ TEST_F(GaiaAuthFetcherTest, MergeSessionSuccess) {
   MockFetcher mock_fetcher(
       merge_session_source_,
       net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0),
-      RC_REQUEST_OK, cookies_, "<html></html>", content::URLFetcher::GET,
+      net::HTTP_OK, cookies_, "<html></html>", content::URLFetcher::GET,
       &auth);
   auth.OnURLFetchComplete(&mock_fetcher);
   EXPECT_FALSE(auth.HasPendingFetch());
@@ -777,7 +777,7 @@ TEST_F(GaiaAuthFetcherTest, MergeSessionSuccessRedirect) {
   test_fetcher->set_url(final_url);
   test_fetcher->set_status(
       net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0));
-  test_fetcher->set_response_code(RC_REQUEST_OK);
+  test_fetcher->set_response_code(net::HTTP_OK);
   test_fetcher->set_cookies(cookies_);
   test_fetcher->SetResponseString("<html></html>");
 
@@ -801,7 +801,7 @@ TEST_F(GaiaAuthFetcherTest, UberAuthTokenSuccess) {
   MockFetcher mock_fetcher(
       uberauth_token_source_,
       net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0),
-      RC_REQUEST_OK, cookies_, "uberToken", content::URLFetcher::POST,
+      net::HTTP_OK, cookies_, "uberToken", content::URLFetcher::POST,
       &auth);
   auth.OnURLFetchComplete(&mock_fetcher);
   EXPECT_FALSE(auth.HasPendingFetch());

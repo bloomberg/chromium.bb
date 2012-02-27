@@ -14,9 +14,9 @@
 #include "base/values.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
-#include "chrome/common/net/http_return.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
@@ -134,7 +134,7 @@ void OAuth2AccessTokenFetcher::EndGetAccessToken(const URLFetcher* source) {
     return;
   }
 
-  if (source->GetResponseCode() != RC_REQUEST_OK) {
+  if (source->GetResponseCode() != net::HTTP_OK) {
     OnGetTokenFailure(GoogleServiceAuthError(
         GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
     return;

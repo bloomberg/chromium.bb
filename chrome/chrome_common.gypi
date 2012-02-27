@@ -375,7 +375,6 @@
       'target_name': 'common_net',
       'type': 'static_library',
       'sources': [
-        'common/net/http_return.h',
         'common/net/net_resource_provider.cc',
         'common/net/net_resource_provider.h',
         'common/net/predictor_common.h',

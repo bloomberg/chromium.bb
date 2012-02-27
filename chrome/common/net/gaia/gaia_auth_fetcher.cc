@@ -18,10 +18,10 @@
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
-#include "chrome/common/net/http_return.h"
 #include "content/public/common/url_fetcher.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
@@ -705,7 +705,7 @@ GoogleServiceAuthError GaiaAuthFetcher::GenerateOAuthLoginError(
 void GaiaAuthFetcher::OnClientLoginFetched(const std::string& data,
                                            const net::URLRequestStatus& status,
                                            int response_code) {
-  if (status.is_success() && response_code == RC_REQUEST_OK) {
+  if (status.is_success() && response_code == net::HTTP_OK) {
     DVLOG(1) << "ClientLogin successful!";
     std::string sid;
     std::string lsid;
@@ -722,7 +722,7 @@ void GaiaAuthFetcher::OnIssueAuthTokenFetched(
     const std::string& data,
     const net::URLRequestStatus& status,
     int response_code) {
-  if (status.is_success() && response_code == RC_REQUEST_OK) {
+  if (status.is_success() && response_code == net::HTTP_OK) {
     // Only the bare token is returned in the body of this Gaia call
     // without any padding.
     consumer_->OnIssueAuthTokenSuccess(requested_service_, data);
@@ -737,7 +737,7 @@ void GaiaAuthFetcher::OnClientLoginToOAuth2Fetched(
     const net::ResponseCookies& cookies,
     const net::URLRequestStatus& status,
     int response_code) {
-  if (status.is_success() && response_code == RC_REQUEST_OK) {
+  if (status.is_success() && response_code == net::HTTP_OK) {
     std::string auth_code;
     ParseClientLoginToOAuth2Response(cookies, &auth_code);
     StartOAuth2TokenPairFetch(auth_code);
@@ -765,7 +765,7 @@ void GaiaAuthFetcher::OnOAuth2TokenPairFetched(
     const std::string& data,
     const net::URLRequestStatus& status,
     int response_code) {
-  if (status.is_success() && response_code == RC_REQUEST_OK) {
+  if (status.is_success() && response_code == net::HTTP_OK) {
     std::string refresh_token;
     std::string access_token;
     int expires_in_secs = 0;
@@ -783,7 +783,7 @@ void GaiaAuthFetcher::OnGetUserInfoFetched(
     const std::string& data,
     const net::URLRequestStatus& status,
     int response_code) {
-  if (status.is_success() && response_code == RC_REQUEST_OK) {
+  if (status.is_success() && response_code == net::HTTP_OK) {
     std::vector<std::pair<std::string, std::string> > tokens;
     UserInfoMap matches;
     base::SplitStringIntoKeyValuePairs(data, '=', '\n', &tokens);
@@ -800,7 +800,7 @@ void GaiaAuthFetcher::OnGetUserInfoFetched(
 void GaiaAuthFetcher::OnTokenAuthFetched(const std::string& data,
                                          const net::URLRequestStatus& status,
                                          int response_code) {
-  if (status.is_success() && response_code == RC_REQUEST_OK) {
+  if (status.is_success() && response_code == net::HTTP_OK) {
     consumer_->OnTokenAuthSuccess(data);
   } else {
     consumer_->OnTokenAuthFailure(GenerateAuthError(data, status));
@@ -810,7 +810,7 @@ void GaiaAuthFetcher::OnTokenAuthFetched(const std::string& data,
 void GaiaAuthFetcher::OnMergeSessionFetched(const std::string& data,
                                             const net::URLRequestStatus& status,
                                             int response_code) {
-  if (status.is_success() && response_code == RC_REQUEST_OK) {
+  if (status.is_success() && response_code == net::HTTP_OK) {
     consumer_->OnMergeSessionSuccess(data);
   } else {
     consumer_->OnMergeSessionFailure(GenerateAuthError(data, status));
@@ -820,7 +820,7 @@ void GaiaAuthFetcher::OnMergeSessionFetched(const std::string& data,
 void GaiaAuthFetcher::OnUberAuthTokenFetch(const std::string& data,
                                            const net::URLRequestStatus& status,
                                            int response_code) {
-  if (status.is_success() && response_code == RC_REQUEST_OK) {
+  if (status.is_success() && response_code == net::HTTP_OK) {
     consumer_->OnUberAuthTokenSuccess(data);
   } else {
     consumer_->OnUberAuthTokenFailure(GenerateAuthError(data, status));

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,12 +21,12 @@
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/net/gaia/oauth_request_signer.h"
-#include "chrome/common/net/http_return.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/common/url_fetcher.h"
 #include "grit/chromium_strings.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -558,7 +558,7 @@ void GaiaOAuthFetcher::OnGetOAuthTokenUrlFetched(
     const net::ResponseCookies& cookies,
     const net::URLRequestStatus& status,
     int response_code) {
-  if (status.is_success() && response_code == RC_REQUEST_OK) {
+  if (status.is_success() && response_code == net::HTTP_OK) {
     for (net::ResponseCookies::const_iterator iter = cookies.begin();
         iter != cookies.end(); ++iter) {
       net::CookieMonster::ParsedCookie cookie(*iter);
@@ -580,7 +580,7 @@ void GaiaOAuthFetcher::OnOAuthLoginFetched(
     const std::string& data,
     const net::URLRequestStatus& status,
     int response_code) {
-  if (status.is_success() && response_code == RC_REQUEST_OK) {
+  if (status.is_success() && response_code == net::HTTP_OK) {
     std::string sid;
     std::string lsid;
     std::string auth;
@@ -599,7 +599,7 @@ void GaiaOAuthFetcher::OnOAuthGetAccessTokenFetched(
     const std::string& data,
     const net::URLRequestStatus& status,
     int response_code) {
-  if (status.is_success() && response_code == RC_REQUEST_OK) {
+  if (status.is_success() && response_code == net::HTTP_OK) {
     VLOG(1) << "OAuth1 access token fetched.";
     std::string secret;
     std::string token;
@@ -618,7 +618,7 @@ void GaiaOAuthFetcher::OnOAuthWrapBridgeFetched(
     const std::string& data,
     const net::URLRequestStatus& status,
     int response_code) {
-  if (status.is_success() && response_code == RC_REQUEST_OK) {
+  if (status.is_success() && response_code == net::HTTP_OK) {
     VLOG(1) << "OAuth2 access token fetched.";
     std::string token;
     std::string expires_in;
@@ -637,7 +637,7 @@ void GaiaOAuthFetcher::OnOAuthRevokeTokenFetched(
     const std::string& data,
     const net::URLRequestStatus& status,
     int response_code) {
-  if (status.is_success() && response_code == RC_REQUEST_OK) {
+  if (status.is_success() && response_code == net::HTTP_OK) {
     consumer_->OnOAuthRevokeTokenSuccess();
   } else {
     LOG(ERROR) << "Token revocation failure " << response_code << ": " << data;
@@ -650,7 +650,7 @@ void GaiaOAuthFetcher::OnUserInfoFetched(
     const std::string& data,
     const net::URLRequestStatus& status,
     int response_code) {
-  if (status.is_success() && response_code == RC_REQUEST_OK) {
+  if (status.is_success() && response_code == net::HTTP_OK) {
     std::string email;
     ParseUserInfoResponse(data, &email);
     VLOG(1) << "GAIA user info fetched for " << email << ".";

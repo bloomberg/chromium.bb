@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,9 +11,9 @@
 #include "base/basictypes.h"
 #include "base/port.h"
 #include "base/string_split.h"
-#include "chrome/common/net/http_return.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
+#include "net/http/http_status_code.h"
 
 using std::pair;
 using std::string;
@@ -170,10 +170,10 @@ bool GaiaAuthenticator::PerformGaiaRequest(const AuthParams& params,
 
   // Parse reply in two different ways, depending on if request failed or
   // succeeded.
-  if (RC_FORBIDDEN == server_response_code) {
+  if (net::HTTP_FORBIDDEN == server_response_code) {
     ExtractAuthErrorFrom(message_text, results);
     return false;
-  } else if (RC_REQUEST_OK == server_response_code) {
+  } else if (net::HTTP_OK == server_response_code) {
     ExtractTokensFrom(message_text, results);
     if (!IssueAuthToken(results, service_id_)) {
       return false;
@@ -214,11 +214,11 @@ bool GaiaAuthenticator::LookupEmail(AuthResults* results) {
   }
 
   // Check if we received a valid AuthToken; if not, ignore it.
-  if (RC_FORBIDDEN == server_response_code) {
+  if (net::HTTP_FORBIDDEN == server_response_code) {
     // Server says we're not authenticated.
     ExtractAuthErrorFrom(message_text, results);
     return false;
-  } else if (RC_REQUEST_OK == server_response_code) {
+  } else if (net::HTTP_OK == server_response_code) {
     typedef vector<pair<string, string> > Tokens;
     Tokens tokens;
     base::SplitStringIntoKeyValuePairs(message_text, '=', '\n', &tokens);
@@ -266,11 +266,11 @@ bool GaiaAuthenticator::IssueAuthToken(AuthResults* results,
   }
 
   // Check if we received a valid AuthToken; if not, ignore it.
-  if (RC_FORBIDDEN == server_response_code) {
+  if (net::HTTP_FORBIDDEN == server_response_code) {
     // Server says we're not authenticated.
     ExtractAuthErrorFrom(message_text, results);
     return false;
-  } else if (RC_REQUEST_OK == server_response_code) {
+  } else if (net::HTTP_OK == server_response_code) {
     // Note that the format of message_text is different from what is returned
     // in the first request, or to the sole request that is made to Gaia V2.
     // Specifically, the entire string is the AuthToken, and looks like:

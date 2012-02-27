@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,11 +8,11 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/common/net/http_return.h"
 #include "content/public/common/url_fetcher.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace {
@@ -134,14 +134,14 @@ void GaiaOAuthClient::Core::HandleResponse(
   *should_retry_request = false;
   // RC_BAD_REQUEST means the arguments are invalid. No point retrying. We are
   // done here.
-  if (source->GetResponseCode() == RC_BAD_REQUEST) {
+  if (source->GetResponseCode() == net::HTTP_BAD_REQUEST) {
     delegate_->OnOAuthError();
     return;
   }
   std::string access_token;
   std::string refresh_token;
   int expires_in_seconds = 0;
-  if (source->GetResponseCode() == RC_REQUEST_OK) {
+  if (source->GetResponseCode() == net::HTTP_OK) {
     std::string data;
     source->GetResponseAsString(&data);
     scoped_ptr<Value> message_value(base::JSONReader::Read(data, false));

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -12,7 +12,6 @@
 #include <string>
 
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
-#include "chrome/common/net/http_return.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 

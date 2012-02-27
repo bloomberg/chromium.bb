@@ -509,6 +509,7 @@
         'common',
         '../base/base.gyp:base',
         '../crypto/crypto.gyp:crypto',
+        '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
         'browser/sync/protocol/sync_proto.gyp:sync_proto',
       ],
