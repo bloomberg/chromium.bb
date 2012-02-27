@@ -140,7 +140,7 @@ deps_os = {
         'src/rlz':
             Var('git_url') + '/external/rlz.git@989bdfbeafc78e8cdbc7021acddbb8a83e8318e2',
         'src/third_party/GTM':
-            Var('git_url') + '/external/google-toolbox-for-mac.git@370bfbfa0a7f3177da752965cd63d3b377d742fb',
+            Var('git_url') + '/external/google-toolbox-for-mac.git@9fcac4c557e0cb5d6ecbac6b59aaddeb15469acd',
         'src/third_party/lighttpd':
             Var('git_url') + '/chromium/deps/lighttpd.git@9dfa55d15937a688a92cbf2b7a8621b0927d06eb',
         'src/third_party/nss':
