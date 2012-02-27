@@ -22,23 +22,6 @@ class MockCryptohomeLibrary : public CryptohomeLibrary {
  public:
   MockCryptohomeLibrary();
   virtual ~MockCryptohomeLibrary();
-
-  void SetUp(bool outcome, int code);
-
-  MOCK_METHOD3(AsyncCheckKey, void(const std::string& user_email,
-                                   const std::string& passhash,
-                                   AsyncMethodCallback callback));
-  MOCK_METHOD4(AsyncMigrateKey, void(const std::string& user_email,
-                                     const std::string& old_hash,
-                                     const std::string& new_hash,
-                                     AsyncMethodCallback callback));
-  MOCK_METHOD4(AsyncMount, void(const std::string& user_email,
-                                const std::string& passhash,
-                                const bool create_if_missing,
-                                AsyncMethodCallback callback));
-  MOCK_METHOD1(AsyncMountGuest, void(AsyncMethodCallback callback));
-  MOCK_METHOD2(AsyncRemove, void(const std::string& user_email,
-                                 AsyncMethodCallback callback));
   MOCK_METHOD0(IsMounted, bool(void));
   MOCK_METHOD1(HashPassword, std::string(const std::string& password));
   MOCK_METHOD0(GetSystemSalt, std::string(void));
@@ -60,19 +43,7 @@ class MockCryptohomeLibrary : public CryptohomeLibrary {
   MOCK_METHOD0(InstallAttributesIsReady, bool(void));
   MOCK_METHOD0(InstallAttributesIsInvalid, bool(void));
   MOCK_METHOD0(InstallAttributesIsFirstInstall, bool(void));
-
-  void SetAsyncBehavior(bool outcome, int code) {
-    outcome_ = outcome;
-    code_ = code;
-  }
-
-  void DoCallback(AsyncMethodCallback callback) {
-    callback.Run(outcome_, code_);
-  }
-
  private:
-  bool outcome_;
-  int code_;
   DISALLOW_COPY_AND_ASSIGN(MockCryptohomeLibrary);
 };
 

@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_library_loader.h"
+#include "chrome/browser/chromeos/cryptohome/mock_async_method_caller.h"
 #include "chrome/browser/chromeos/login/mock_login_status_consumer.h"
 #include "chrome/browser/chromeos/login/mock_url_fetchers.h"
 #include "chrome/browser/chromeos/login/test_attempt_state.h"
@@ -91,9 +92,14 @@ class ParallelAuthenticatorTest : public testing::Test {
     hash_ascii_.append(std::string(16, '0'));
   }
 
-  ~ParallelAuthenticatorTest() {}
+  ~ParallelAuthenticatorTest() {
+    DCHECK(!mock_caller_);
+  }
 
   virtual void SetUp() {
+    mock_caller_ = new cryptohome::MockAsyncMethodCaller;
+    cryptohome::AsyncMethodCaller::InitializeForTesting(mock_caller_);
+
     chromeos::CrosLibrary::TestApi* test_api =
         chromeos::CrosLibrary::Get()->GetTestApi();
 
@@ -126,6 +132,9 @@ class ParallelAuthenticatorTest : public testing::Test {
         chromeos::CrosLibrary::Get()->GetTestApi();
     test_api->SetLibraryLoader(NULL, false);
     test_api->SetCryptohomeLibrary(NULL, false);
+
+    cryptohome::AsyncMethodCaller::Shutdown();
+    mock_caller_ = NULL;
   }
 
   FilePath PopulateTempFile(const char* data, int data_len) {
@@ -228,6 +237,8 @@ class ParallelAuthenticatorTest : public testing::Test {
   MockCryptohomeLibrary* mock_library_;
   MockLibraryLoader* loader_;
 
+  cryptohome::MockAsyncMethodCaller* mock_caller_;
+
   MockConsumer consumer_;
   scoped_refptr<ParallelAuthenticator> auth_;
   scoped_ptr<TestAttemptState> state_;
@@ -305,7 +316,7 @@ TEST_F(ParallelAuthenticatorTest, DriveFailedMount) {
 
   // Set up state as though a cryptohome mount attempt has occurred
   // and failed.
-  state_->PresetCryptohomeStatus(false, 0);
+  state_->PresetCryptohomeStatus(false, cryptohome::MOUNT_ERROR_NONE);
   SetAttemptState(auth_, state_.release());
 
   RunResolve(auth_.get(), &message_loop_);
@@ -317,8 +328,8 @@ TEST_F(ParallelAuthenticatorTest, DriveGuestLogin) {
 
   // Set up mock cryptohome library to respond as though a tmpfs mount
   // attempt has occurred and succeeded.
-  mock_library_->SetUp(true, 0);
-  EXPECT_CALL(*mock_library_, AsyncMountGuest(_))
+  mock_caller_->SetUp(true, cryptohome::MOUNT_ERROR_NONE);
+  EXPECT_CALL(*mock_caller_, AsyncMountGuest(_))
       .Times(1)
       .RetiresOnSaturation();
 
@@ -332,8 +343,8 @@ TEST_F(ParallelAuthenticatorTest, DriveGuestLoginButFail) {
 
   // Set up mock cryptohome library to respond as though a tmpfs mount
   // attempt has occurred and failed.
-  mock_library_->SetUp(false, 0);
-  EXPECT_CALL(*mock_library_, AsyncMountGuest(_))
+  mock_caller_->SetUp(false, cryptohome::MOUNT_ERROR_NONE);
+  EXPECT_CALL(*mock_caller_, AsyncMountGuest(_))
       .Times(1)
       .RetiresOnSaturation();
 
@@ -378,11 +389,11 @@ TEST_F(ParallelAuthenticatorTest, DriveDataResync) {
   // Set up mock cryptohome library to respond successfully to a cryptohome
   // remove attempt and a cryptohome create attempt (specified by the |true|
   // argument to AsyncMount).
-  mock_library_->SetUp(true, 0);
-  EXPECT_CALL(*mock_library_, AsyncRemove(username_, _))
+  mock_caller_->SetUp(true, cryptohome::MOUNT_ERROR_NONE);
+  EXPECT_CALL(*mock_caller_, AsyncRemove(username_, _))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_library_, AsyncMount(username_, hash_ascii_, true, _))
+  EXPECT_CALL(*mock_caller_, AsyncMount(username_, hash_ascii_, true, _))
       .Times(1)
       .RetiresOnSaturation();
 
@@ -398,8 +409,8 @@ TEST_F(ParallelAuthenticatorTest, DriveResyncFail) {
   ExpectLoginFailure(LoginFailure(LoginFailure::DATA_REMOVAL_FAILED));
 
   // Set up mock cryptohome library to fail a cryptohome remove attempt.
-  mock_library_->SetUp(false, 0);
-  EXPECT_CALL(*mock_library_, AsyncRemove(username_, _))
+  mock_caller_->SetUp(false, cryptohome::MOUNT_ERROR_NONE);
+  EXPECT_CALL(*mock_caller_, AsyncRemove(username_, _))
       .Times(1)
       .RetiresOnSaturation();
 
@@ -425,11 +436,11 @@ TEST_F(ParallelAuthenticatorTest, DriveDataRecover) {
   FailOnLoginFailure();
 
   // Set up mock cryptohome library to respond successfully to a key migration.
-  mock_library_->SetUp(true, 0);
-  EXPECT_CALL(*mock_library_, AsyncMigrateKey(username_, _, hash_ascii_, _))
+  mock_caller_->SetUp(true, cryptohome::MOUNT_ERROR_NONE);
+  EXPECT_CALL(*mock_caller_, AsyncMigrateKey(username_, _, hash_ascii_, _))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_library_, AsyncMount(username_, hash_ascii_, false, _))
+  EXPECT_CALL(*mock_caller_, AsyncMount(username_, hash_ascii_, false, _))
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_library_, HashPassword(_))
@@ -449,8 +460,8 @@ TEST_F(ParallelAuthenticatorTest, DriveDataRecoverButFail) {
 
   // Set up mock cryptohome library to fail a key migration attempt,
   // asserting that the wrong password was used.
-  mock_library_->SetUp(false, cryptohome::MOUNT_ERROR_KEY_FAILURE);
-  EXPECT_CALL(*mock_library_, AsyncMigrateKey(username_, _, hash_ascii_, _))
+  mock_caller_->SetUp(false, cryptohome::MOUNT_ERROR_KEY_FAILURE);
+  EXPECT_CALL(*mock_caller_, AsyncMigrateKey(username_, _, hash_ascii_, _))
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_library_, HashPassword(_))
@@ -513,8 +524,8 @@ TEST_F(ParallelAuthenticatorTest, DriveCreateForNewUser) {
 
   // Set up mock cryptohome library to respond successfully to a cryptohome
   // create attempt (specified by the |true| argument to AsyncMount).
-  mock_library_->SetUp(true, 0);
-  EXPECT_CALL(*mock_library_, AsyncMount(username_, hash_ascii_, true, _))
+  mock_caller_->SetUp(true, cryptohome::MOUNT_ERROR_NONE);
+  EXPECT_CALL(*mock_caller_, AsyncMount(username_, hash_ascii_, true, _))
       .Times(1)
       .RetiresOnSaturation();
 
@@ -535,7 +546,7 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLogin) {
 
   // Set up state as though a cryptohome mount attempt has occurred and
   // succeeded.
-  state_->PresetCryptohomeStatus(true, 0);
+  state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);
   GoogleServiceAuthError error =
       GoogleServiceAuthError::FromConnectionError(net::ERR_CONNECTION_RESET);
   state_->PresetOnlineLoginStatus(LoginFailure::FromNetworkAuthFailure(error));
@@ -550,7 +561,7 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginDelayedOnline) {
 
   // Set up state as though a cryptohome mount attempt has occurred and
   // succeeded.
-  state_->PresetCryptohomeStatus(true, 0);
+  state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);
   // state_ is released further down.
   SetAttemptState(auth_, state_.get());
   RunResolve(auth_.get(), &message_loop_);
@@ -570,8 +581,8 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetNewPassword) {
   FailOnLoginFailure();
 
   // Set up mock cryptohome library to respond successfully to a key migration.
-  mock_library_->SetUp(true, 0);
-  EXPECT_CALL(*mock_library_, AsyncMigrateKey(username_,
+  mock_caller_->SetUp(true, cryptohome::MOUNT_ERROR_NONE);
+  EXPECT_CALL(*mock_caller_, AsyncMigrateKey(username_,
                                               state_->ascii_hash,
                                               _,
                                               _))
@@ -583,7 +594,7 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetNewPassword) {
 
   // Set up state as though a cryptohome mount attempt has occurred and
   // succeeded; also, an online request that never made it.
-  state_->PresetCryptohomeStatus(true, 0);
+  state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);
   // state_ is released further down.
   SetAttemptState(auth_, state_.get());
   RunResolve(auth_.get(), &message_loop_);
@@ -620,7 +631,7 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetCaptchad) {
 
   // Set up state as though a cryptohome mount attempt has occurred and
   // succeeded; also, an online request that never made it.
-  state_->PresetCryptohomeStatus(true, 0);
+  state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);
   // state_ is released further down.
   SetAttemptState(auth_, state_.get());
   RunResolve(auth_.get(), &message_loop_);
@@ -659,7 +670,7 @@ TEST_F(ParallelAuthenticatorTest, DriveOnlineLogin) {
 
   // Set up state as though a cryptohome mount attempt has occurred and
   // succeeded.
-  state_->PresetCryptohomeStatus(true, 0);
+  state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);
   state_->PresetOnlineLoginStatus(LoginFailure::None());
   SetAttemptState(auth_, state_.release());
 
@@ -678,7 +689,7 @@ TEST_F(ParallelAuthenticatorTest, DISABLED_DriveNeedNewPassword) {
 
   // Set up state as though a cryptohome mount attempt has occurred and
   // succeeded.
-  state_->PresetCryptohomeStatus(true, 0);
+  state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);
   state_->PresetOnlineLoginStatus(failure);
   SetAttemptState(auth_, state_.release());
 
@@ -691,8 +702,8 @@ TEST_F(ParallelAuthenticatorTest, DriveUnlock) {
 
   // Set up mock cryptohome library to respond successfully to a cryptohome
   // key-check attempt.
-  mock_library_->SetUp(true, 0);
-  EXPECT_CALL(*mock_library_, AsyncCheckKey(username_, _, _))
+  mock_caller_->SetUp(true, cryptohome::MOUNT_ERROR_NONE);
+  EXPECT_CALL(*mock_caller_, AsyncCheckKey(username_, _, _))
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_library_, HashPassword(_))

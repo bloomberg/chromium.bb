@@ -443,6 +443,8 @@
         'browser/chromeos/cros_settings_names.h',
         'browser/chromeos/cros_settings_provider.cc',
         'browser/chromeos/cros_settings_provider.h',
+        'browser/chromeos/cryptohome/async_method_caller.cc',
+        'browser/chromeos/cryptohome/async_method_caller.h',
         'browser/chromeos/customization_document.cc',
         'browser/chromeos/customization_document.h',
         'browser/chromeos/dbus/bluetooth_adapter_client.cc',

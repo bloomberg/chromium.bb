@@ -27,6 +27,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/cros_settings.h"
+#include "chrome/browser/chromeos/cryptohome/async_method_caller.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -153,7 +154,7 @@ void AddProfileImageTimeHistogram(ProfileDownloadResult result,
 // Callback that is called after user removal is complete.
 void OnRemoveUserComplete(const std::string& user_email,
                           bool success,
-                          int return_code) {
+                          cryptohome::MountError return_code) {
   // Log the error, but there's not much we can do.
   if (!success) {
     LOG(ERROR) << "Removal of cryptohome for " << user_email
@@ -185,7 +186,7 @@ void RemoveUserInternal(const std::string& user_email,
     delegate->OnBeforeUserRemoved(user_email);
 
   chromeos::UserManager::Get()->RemoveUserFromList(user_email);
-  CrosLibrary::Get()->GetCryptohomeLibrary()->AsyncRemove(
+  cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
       user_email, base::Bind(&OnRemoveUserComplete, user_email));
 
   if (delegate)

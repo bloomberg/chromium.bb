@@ -8,64 +8,14 @@
 
 #include <string>
 
-#include "base/callback.h"
-
 namespace chromeos {
 
 // This interface defines the interaction with the ChromeOS cryptohome library
 // APIs.
 class CryptohomeLibrary {
  public:
-  // A callback type which is called back on the UI thread when the results of
-  // AsyncXXX methods are ready.
-  typedef base::Callback<void(bool success, int return_code)
-                         > AsyncMethodCallback;
-
   CryptohomeLibrary();
   virtual ~CryptohomeLibrary();
-
-  // Asks cryptohomed to asynchronously try to find the cryptohome for
-  // |user_email| and then use |passhash| to unlock the key.
-  // Returns true if the attempt is successfully initiated.
-  // callback->OnComplete() will be called with status info on completion.
-  virtual void AsyncCheckKey(const std::string& user_email,
-                             const std::string& passhash,
-                             AsyncMethodCallback callback) = 0;
-
-  // Asks cryptohomed to asynchronously try to find the cryptohome for
-  // |user_email| and then change from using |old_hash| to lock the
-  // key to using |new_hash|.
-  // Returns true if the attempt is successfully initiated.
-  // callback->OnComplete() will be called with status info on completion.
-  virtual void AsyncMigrateKey(const std::string& user_email,
-                               const std::string& old_hash,
-                               const std::string& new_hash,
-                               AsyncMethodCallback callback) = 0;
-
-  // Asks cryptohomed to asynchronously try to find the cryptohome for
-  // |user_email| and then mount it using |passhash| to unlock the key.
-  // |create_if_missing| controls whether or not we ask cryptohomed to
-  // create a new home dir if one does not yet exist for |user_email|.
-  // Returns true if the attempt is successfully initiated.
-  // callback->OnComplete() will be called with status info on completion.
-  // If |create_if_missing| is false, and no cryptohome exists for |user_email|,
-  // we'll get
-  // callback->OnComplete(false, kCryptohomeMountErrorUserDoesNotExist).
-  // Otherwise, we expect the normal range of return codes.
-  virtual void AsyncMount(const std::string& user_email,
-                          const std::string& passhash,
-                          const bool create_if_missing,
-                          AsyncMethodCallback callback) = 0;
-
-  // Asks cryptohomed to asynchronously to mount a tmpfs for guest mode.
-  // Returns true if the attempt is successfully initiated.
-  // callback->OnComplete() will be called with status info on completion.
-  virtual void AsyncMountGuest(AsyncMethodCallback callback) = 0;
-
-  // Asks cryptohomed to asynchronously try to find the cryptohome for
-  // |user_email| and then nuke it.
-  virtual void AsyncRemove(const std::string& user_email,
-                           AsyncMethodCallback callback) = 0;
 
   // Asks cryptohomed if a drive is currently mounted.
   virtual bool IsMounted() = 0;

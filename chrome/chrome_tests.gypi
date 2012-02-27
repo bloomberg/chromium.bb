@@ -93,6 +93,8 @@
         'browser/chromeos/cros/mock_library_loader.h',
         'browser/chromeos/cros/mock_network_library.cc',
         'browser/chromeos/cros/mock_network_library.h',
+        'browser/chromeos/cryptohome/mock_async_method_caller.cc',
+        'browser/chromeos/cryptohome/mock_async_method_caller.h',
         'browser/chromeos/dbus/mock_bluetooth_adapter_client.cc',
         'browser/chromeos/dbus/mock_bluetooth_adapter_client.h',
         'browser/chromeos/dbus/mock_bluetooth_device_client.cc',

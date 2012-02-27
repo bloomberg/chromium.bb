@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
+#include "chrome/browser/chromeos/cryptohome/async_method_caller.h"
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
@@ -39,7 +40,7 @@ const int kClientLoginTimeoutMs = 10000;
 void TriggerResolve(AuthAttemptState* attempt,
                     AuthAttemptStateResolver* resolver,
                     bool success,
-                    int return_code) {
+                    cryptohome::MountError return_code) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   attempt->RecordCryptohomeStatus(success, return_code);
   resolver->Resolve();
@@ -49,7 +50,7 @@ void TriggerResolve(AuthAttemptState* attempt,
 void TriggerResolveOnIoThread(AuthAttemptState* attempt,
                               AuthAttemptStateResolver* resolver,
                               bool success,
-                              int return_code) {
+                              cryptohome::MountError return_code) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&TriggerResolve, attempt, resolver, success, return_code));
@@ -61,7 +62,7 @@ void TriggerResolveOnIoThreadWithLoginTimeMarker(
     AuthAttemptState* attempt,
     AuthAttemptStateResolver* resolver,
     bool success,
-    int return_code) {
+    cryptohome::MountError return_code) {
   chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(marker_name, false);
   TriggerResolveOnIoThread(attempt, resolver, success, return_code);
 }
@@ -73,7 +74,7 @@ void Mount(AuthAttemptState* attempt,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
       "CryptohomeMount-Start", false);
-  CrosLibrary::Get()->GetCryptohomeLibrary()->AsyncMount(
+  cryptohome::AsyncMethodCaller::GetInstance()->AsyncMount(
       attempt->username,
       attempt->ascii_hash,
       create_if_missing,
@@ -87,7 +88,7 @@ void Mount(AuthAttemptState* attempt,
 void MountGuest(AuthAttemptState* attempt,
                 AuthAttemptStateResolver* resolver) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  CrosLibrary::Get()->GetCryptohomeLibrary()->AsyncMountGuest(
+  cryptohome::AsyncMethodCaller::GetInstance()->AsyncMountGuest(
       base::Bind(&TriggerResolveOnIoThreadWithLoginTimeMarker,
                  "CryptohomeMount-End",
                  attempt,
@@ -102,9 +103,10 @@ void Migrate(AuthAttemptState* attempt,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
       "CryptohomeMigrate-Start", false);
-  CryptohomeLibrary* lib = CrosLibrary::Get()->GetCryptohomeLibrary();
+  cryptohome::AsyncMethodCaller* caller =
+      cryptohome::AsyncMethodCaller::GetInstance();
   if (passing_old_hash) {
-    lib->AsyncMigrateKey(
+    caller->AsyncMigrateKey(
         attempt->username,
         hash,
         attempt->ascii_hash,
@@ -113,7 +115,7 @@ void Migrate(AuthAttemptState* attempt,
                    attempt,
                    resolver));
   } else {
-    lib->AsyncMigrateKey(
+    caller->AsyncMigrateKey(
         attempt->username,
         attempt->ascii_hash,
         hash,
@@ -130,7 +132,7 @@ void Remove(AuthAttemptState* attempt,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
       "CryptohomeRemove-Start", false);
-  CrosLibrary::Get()->GetCryptohomeLibrary()->AsyncRemove(
+  cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
       attempt->username,
       base::Bind(&TriggerResolveOnIoThreadWithLoginTimeMarker,
                  "CryptohomeRemove-End",
@@ -142,7 +144,7 @@ void Remove(AuthAttemptState* attempt,
 void CheckKey(AuthAttemptState* attempt,
               AuthAttemptStateResolver* resolver) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  CrosLibrary::Get()->GetCryptohomeLibrary()->AsyncCheckKey(
+  cryptohome::AsyncMethodCaller::GetInstance()->AsyncCheckKey(
       attempt->username,
       attempt->ascii_hash,
       base::Bind(&TriggerResolveOnIoThread, attempt, resolver));

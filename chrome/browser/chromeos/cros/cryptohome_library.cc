@@ -4,9 +4,7 @@
 
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 
-#include "base/bind.h"
 #include "base/command_line.h"
-#include "base/hash_tables.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -16,7 +14,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "crypto/encryptor.h"
 #include "crypto/sha2.h"
-#include "third_party/cros_system_api/dbus/service_constants.h"
 
 using content::BrowserThread;
 
@@ -33,68 +30,9 @@ namespace chromeos {
 class CryptohomeLibraryImpl : public CryptohomeLibrary {
  public:
   CryptohomeLibraryImpl() : weak_ptr_factory_(this) {
-    DBusThreadManager::Get()->GetCryptohomeClient()->SetAsyncCallStatusHandler(
-        base::Bind(&CryptohomeLibraryImpl::HandleAsyncResponse,
-                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   virtual ~CryptohomeLibraryImpl() {
-    DBusThreadManager::Get()->GetCryptohomeClient()->
-        ResetAsyncCallStatusHandler();
-  }
-
-  virtual void AsyncCheckKey(const std::string& user_email,
-                             const std::string& passhash,
-                             AsyncMethodCallback callback) OVERRIDE {
-    DBusThreadManager::Get()->GetCryptohomeClient()->
-        AsyncCheckKey(user_email, passhash, base::Bind(
-            &CryptohomeLibraryImpl::RegisterAsyncCallback,
-            weak_ptr_factory_.GetWeakPtr(),
-            callback,
-            "Couldn't initiate async check of user's key."));
-  }
-
-  virtual void AsyncMigrateKey(const std::string& user_email,
-                       const std::string& old_hash,
-                       const std::string& new_hash,
-                       AsyncMethodCallback callback) OVERRIDE {
-    DBusThreadManager::Get()->GetCryptohomeClient()->
-        AsyncMigrateKey(user_email, old_hash, new_hash, base::Bind(
-            &CryptohomeLibraryImpl::RegisterAsyncCallback,
-            weak_ptr_factory_.GetWeakPtr(),
-            callback,
-            "Couldn't initiate aync migration of user's key"));
-  }
-
-  virtual void AsyncMount(const std::string& user_email,
-                          const std::string& passhash,
-                          const bool create_if_missing,
-                          AsyncMethodCallback callback) OVERRIDE {
-    DBusThreadManager::Get()->GetCryptohomeClient()->
-        AsyncMount(user_email, passhash, create_if_missing, base::Bind(
-            &CryptohomeLibraryImpl::RegisterAsyncCallback,
-            weak_ptr_factory_.GetWeakPtr(),
-            callback,
-            "Couldn't initiate async mount of cryptohome."));
-  }
-
-  virtual void AsyncMountGuest(AsyncMethodCallback callback) OVERRIDE {
-    DBusThreadManager::Get()->GetCryptohomeClient()->
-        AsyncMountGuest(base::Bind(
-            &CryptohomeLibraryImpl::RegisterAsyncCallback,
-            weak_ptr_factory_.GetWeakPtr(),
-            callback,
-            "Couldn't initiate async mount of cryptohome."));
-  }
-
-  virtual void AsyncRemove(
-      const std::string& user_email, AsyncMethodCallback callback) OVERRIDE {
-    DBusThreadManager::Get()->GetCryptohomeClient()->
-        AsyncRemove(user_email, base::Bind(
-            &CryptohomeLibraryImpl::RegisterAsyncCallback,
-            weak_ptr_factory_.GetWeakPtr(),
-            callback,
-            "Couldn't initiate async removal of cryptohome."));
   }
 
   virtual bool IsMounted() OVERRIDE {
@@ -228,40 +166,6 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
   }
 
  private:
-  typedef base::hash_map<int, AsyncMethodCallback> CallbackMap;
-
-  // Hanldes the response for async calls.
-  // Below is described how async calls work.
-  // 1. CryptohomeClient::AsyncXXX returns "async ID".
-  // 2. RegisterAsyncCallback registers the "async ID" with the user-provided
-  //    callback.
-  // 3. Cryptohome will return the result asynchronously as a signal with
-  //    "async ID"
-  // 4. "HandleAsyncResponse" handles the result signal and call the registered
-  //    callback associated with the "async ID".
-  void HandleAsyncResponse(int async_id, bool return_status, int return_code) {
-    const CallbackMap::iterator it = callback_map_.find(async_id);
-    if (it == callback_map_.end()) {
-      LOG(ERROR) << "Received signal for unknown async_id " << async_id;
-      return;
-    }
-    it->second.Run(return_status, return_code);
-    callback_map_.erase(it);
-  }
-
-  // Registers a callback which is called when the result for AsyncXXX is ready.
-  void RegisterAsyncCallback(AsyncMethodCallback callback,
-                             const char* error,
-                             int async_id) {
-    if (async_id == 0) {
-      LOG(ERROR) << error;
-      return;
-    }
-    VLOG(1) << "Adding handler for " << async_id;
-    DCHECK_EQ(callback_map_.count(async_id), 0U);
-    callback_map_[async_id] = callback;
-  }
-
   void LoadSystemSalt() {
     if (!system_salt_.empty())
       return;
@@ -273,7 +177,6 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
 
   base::WeakPtrFactory<CryptohomeLibraryImpl> weak_ptr_factory_;
   std::vector<uint8> system_salt_;
-  mutable CallbackMap callback_map_;
 
   DISALLOW_COPY_AND_ASSIGN(CryptohomeLibraryImpl);
 };
@@ -283,44 +186,6 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
   CryptohomeLibraryStubImpl()
     : locked_(false) {}
   virtual ~CryptohomeLibraryStubImpl() {}
-
-  virtual void AsyncCheckKey(const std::string& user_email,
-                             const std::string& passhash,
-                             AsyncMethodCallback callback) OVERRIDE {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&DoStubCallback, callback));
-  }
-
-  virtual void AsyncMigrateKey(const std::string& user_email,
-                               const std::string& old_hash,
-                               const std::string& new_hash,
-                               AsyncMethodCallback callback) OVERRIDE {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&DoStubCallback, callback));
-  }
-
-  virtual void AsyncMount(const std::string& user_email,
-                          const std::string& passhash,
-                          const bool create_if_missing,
-                          AsyncMethodCallback callback) OVERRIDE {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&DoStubCallback, callback));
-  }
-
-  virtual void AsyncMountGuest(AsyncMethodCallback callback) OVERRIDE {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(&DoStubCallback, callback));
-  }
-
-  virtual void AsyncRemove(
-      const std::string& user_email, AsyncMethodCallback callback) OVERRIDE {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&DoStubCallback, callback));
-  }
 
   virtual bool IsMounted() OVERRIDE {
     return true;
@@ -404,10 +269,6 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
   }
 
  private:
-  static void DoStubCallback(AsyncMethodCallback callback) {
-    callback.Run(true, cryptohome::MOUNT_ERROR_NONE);
-  }
-
   std::map<std::string, std::string> install_attrs_;
   bool locked_;
   DISALLOW_COPY_AND_ASSIGN(CryptohomeLibraryStubImpl);

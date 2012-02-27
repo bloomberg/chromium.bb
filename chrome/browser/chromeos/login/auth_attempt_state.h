@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
 
@@ -50,7 +51,8 @@ class AuthAttemptState {
   // Copy |cryptohome_code| and |cryptohome_outcome| into this object,
   // so we can have a copy we're sure to own, and can make available
   // on the IO thread.  Must be called from the IO thread.
-  void RecordCryptohomeStatus(bool cryptohome_outcome, int cryptohome_code);
+  void RecordCryptohomeStatus(bool cryptohome_outcome,
+                              cryptohome::MountError cryptohome_code);
 
   // Blow away locally stored cryptohome login status.
   // Must be called from the IO thread.
@@ -63,7 +65,7 @@ class AuthAttemptState {
 
   virtual bool cryptohome_complete();
   virtual bool cryptohome_outcome();
-  virtual int cryptohome_code();
+  virtual cryptohome::MountError cryptohome_code();
 
   const std::string oauth1_access_token() const { return oauth1_access_token_; }
   const std::string oauth1_access_secret() const {
@@ -98,7 +100,7 @@ class AuthAttemptState {
   // Status of our cryptohome op attempt. Can only have one in flight at a time.
   bool cryptohome_complete_;
   bool cryptohome_outcome_;
-  int cryptohome_code_;
+  cryptohome::MountError cryptohome_code_;
   std::string oauth1_access_token_;
   std::string oauth1_access_secret_;
 

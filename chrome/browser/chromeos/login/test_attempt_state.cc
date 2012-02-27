@@ -41,8 +41,9 @@ void TestAttemptState::DisableHosted() {
   hosted_policy_ = GaiaAuthFetcher::HostedAccountsNotAllowed;
 }
 
-void TestAttemptState::PresetCryptohomeStatus(bool cryptohome_outcome,
-                                                int cryptohome_code) {
+void TestAttemptState::PresetCryptohomeStatus(
+    bool cryptohome_outcome,
+    cryptohome::MountError cryptohome_code) {
   cryptohome_complete_ = true;
   cryptohome_outcome_ = cryptohome_outcome;
   cryptohome_code_ = cryptohome_code;
@@ -72,7 +73,7 @@ bool TestAttemptState::cryptohome_outcome() {
   return cryptohome_outcome_;
 }
 
-int TestAttemptState::cryptohome_code() {
+cryptohome::MountError TestAttemptState::cryptohome_code() {
   return cryptohome_code_;
 }
 

@@ -9,7 +9,6 @@
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/cros_system_api/dbus/service_constants.h"
 
 using content::BrowserThread;
 
@@ -84,8 +83,9 @@ void AuthAttemptState::DisableHosted() {
   hosted_policy_ = GaiaAuthFetcher::HostedAccountsNotAllowed;
 }
 
-void AuthAttemptState::RecordCryptohomeStatus(bool cryptohome_outcome,
-                                              int cryptohome_code) {
+void AuthAttemptState::RecordCryptohomeStatus(
+    bool cryptohome_outcome,
+    cryptohome::MountError cryptohome_code) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   cryptohome_complete_ = true;
   cryptohome_outcome_ = cryptohome_outcome;
@@ -129,7 +129,7 @@ bool AuthAttemptState::cryptohome_outcome() {
   return cryptohome_outcome_;
 }
 
-int AuthAttemptState::cryptohome_code() {
+cryptohome::MountError AuthAttemptState::cryptohome_code() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return cryptohome_code_;
 }

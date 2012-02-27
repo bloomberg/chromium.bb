@@ -36,7 +36,8 @@ class TestAttemptState : public AuthAttemptState {
   void DisableHosted();
 
   // Act as though an cryptohome login attempt completed already.
-  void PresetCryptohomeStatus(bool cryptohome_outcome, int cryptohome_code);
+  void PresetCryptohomeStatus(bool cryptohome_outcome,
+                              cryptohome::MountError cryptohome_code);
 
   // To allow state to be queried on the main thread during tests.
   virtual bool online_complete() OVERRIDE;
@@ -45,7 +46,7 @@ class TestAttemptState : public AuthAttemptState {
   virtual GaiaAuthFetcher::HostedAccountsSetting hosted_policy() OVERRIDE;
   virtual bool cryptohome_complete() OVERRIDE;
   virtual bool cryptohome_outcome() OVERRIDE;
-  virtual int cryptohome_code() OVERRIDE;
+  virtual cryptohome::MountError cryptohome_code() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAttemptState);

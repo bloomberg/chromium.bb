@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cryptohome/async_method_caller.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/dbus/session_manager_client.h"
@@ -221,8 +221,8 @@ ChromeBrowserMainPartsChromeos::ChromeBrowserMainPartsChromeos(
 }
 
 ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
+  cryptohome::AsyncMethodCaller::Shutdown();
   chromeos::imageburner::BurnManager::Shutdown();
-
   chromeos::disks::DiskMountManager::Shutdown();
 
   // CrosLibrary is shut down before DBusThreadManager even though the former
@@ -289,8 +289,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   session_manager_observer_.reset(new chromeos::SessionManagerObserver);
 
   chromeos::disks::DiskMountManager::Initialize();
-
   chromeos::imageburner::BurnManager::Initialize();
+  cryptohome::AsyncMethodCaller::Initialize();
 
   // Initialize the network change notifier for Chrome OS. The network
   // change notifier starts to monitor changes from the power manager and

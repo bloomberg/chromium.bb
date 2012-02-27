@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_library_loader.h"
+#include "chrome/browser/chromeos/cryptohome/mock_async_method_caller.h"
 #include "chrome/browser/chromeos/dbus/mock_dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/mock_session_manager_client.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
@@ -103,6 +104,9 @@ class LoginUtilsTestBase : public TESTBASE,
         ui_thread_(content::BrowserThread::UI, &loop_),
         file_thread_(content::BrowserThread::FILE, &loop_),
         io_thread_(content::BrowserThread::IO),
+        mock_async_method_caller_(NULL),
+        connector_(NULL),
+        cryptohome_(NULL),
         prepared_profile_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
@@ -129,6 +133,10 @@ class LoginUtilsTestBase : public TESTBASE,
         mock_dbus_thread_manager_.mock_session_manager_client();
     EXPECT_CALL(*session_managed_client, RetrievePolicy(_))
         .WillRepeatedly(MockSessionManagerClientPolicyCallback(""));
+
+    mock_async_method_caller_ = new cryptohome::MockAsyncMethodCaller;
+    cryptohome::AsyncMethodCaller::InitializeForTesting(
+        mock_async_method_caller_);
 
     io_thread_state_.reset(new IOThread(local_state_.Get(), NULL, NULL));
     browser_process_->SetIOThread(io_thread_state_.get());
@@ -193,6 +201,9 @@ class LoginUtilsTestBase : public TESTBASE,
   }
 
   virtual void TearDown() OVERRIDE {
+    cryptohome::AsyncMethodCaller::Shutdown();
+    mock_async_method_caller_ = NULL;
+
     loop_.RunAllPending();
     {
       // chrome_browser_net::Predictor usually skips its shutdown routines on
@@ -268,7 +279,7 @@ class LoginUtilsTestBase : public TESTBASE,
     EXPECT_CALL(*session_managed_client, StartSession(_));
     EXPECT_CALL(*cryptohome_, GetSystemSalt())
         .WillRepeatedly(Return(std::string("stub_system_salt")));
-    EXPECT_CALL(*cryptohome_, AsyncMount(_, _, _, _))
+    EXPECT_CALL(*mock_async_method_caller_, AsyncMount(_, _, _, _))
         .WillRepeatedly(Return());
 
     scoped_refptr<Authenticator> authenticator =
@@ -343,6 +354,8 @@ class LoginUtilsTestBase : public TESTBASE,
 
   MockDBusThreadManager mock_dbus_thread_manager_;
   TestURLFetcherFactory test_url_fetcher_factory_;
+
+  cryptohome::MockAsyncMethodCaller* mock_async_method_caller_;
 
   policy::BrowserPolicyConnector* connector_;
   MockCryptohomeLibrary* cryptohome_;
