@@ -249,6 +249,7 @@
         'accelerators/accelerator_controller_unittest.cc',
         'accelerators/accelerator_filter_unittest.cc',
         'drag_drop/drag_drop_controller_unittest.cc',
+        'focus_cycler_unittest.cc',
         'ime/input_method_event_filter_unittest.cc',
         'launcher/launcher_model_unittest.cc',
         'launcher/launcher_unittest.cc',
@@ -295,6 +296,12 @@
         ['use_ibus==1', {
           'dependencies': [
             '../build/linux/system.gyp:ibus',
+          ],
+        }],
+        ['OS=="win"', {
+          # TODO(zork): fix this test to build on Windows. See: crosbug.com/26906
+          'sources/': [
+            ['exclude', 'focus_cycler_unittest.cc'],
           ],
         }],
         ['OS=="mac"', {
