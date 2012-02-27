@@ -3122,9 +3122,17 @@ void RenderViewImpl::didExhaustMemoryAvailableForScript(WebFrame* frame) {
 
 void RenderViewImpl::didCreateScriptContext(WebFrame* frame,
                                             v8::Handle<v8::Context> context,
+                                            int extension_group,
                                             int world_id) {
   content::GetContentClient()->renderer()->DidCreateScriptContext(
-      frame, context, world_id);
+      frame, context, extension_group, world_id);
+}
+
+void RenderViewImpl::didCreateScriptContext(WebFrame* frame,
+                                            v8::Handle<v8::Context> context,
+                                            int world_id) {
+  content::GetContentClient()->renderer()->DidCreateScriptContext(
+      frame, context, -1, world_id);
 }
 
 void RenderViewImpl::willReleaseScriptContext(WebFrame* frame,

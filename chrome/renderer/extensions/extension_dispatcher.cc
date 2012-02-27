@@ -288,7 +288,7 @@ namespace {
 //
 // TODO(koz): Plumb extension_group through to AllowScriptExtension() from
 // WebKit.
-static int hack_DidCreateScriptContext_extension_group = 0;
+static int g_hack_extension_group = 0;
 
 }
 
@@ -297,7 +297,7 @@ bool ExtensionDispatcher::AllowScriptExtension(
     const std::string& v8_extension_name,
     int extension_group,
     int world_id) {
-  hack_DidCreateScriptContext_extension_group = extension_group;
+  g_hack_extension_group = extension_group;
 
   // NULL in unit tests.
   if (!RenderThread::Get())
@@ -350,14 +350,17 @@ bool ExtensionDispatcher::AllowScriptExtension(
 }
 
 void ExtensionDispatcher::DidCreateScriptContext(
-    WebFrame* frame, v8::Handle<v8::Context> v8_context, int world_id) {
+    WebFrame* frame, v8::Handle<v8::Context> v8_context, int extension_group,
+    int world_id) {
+  // TODO(koz): If the caller didn't pass extension_group, use the last value.
+  if (extension_group == -1)
+    extension_group = g_hack_extension_group;
   ChromeV8Context* context =
       new ChromeV8Context(
           v8_context,
           frame,
           GetExtensionID(frame, world_id),
-          ExtensionGroupToContextType(
-              hack_DidCreateScriptContext_extension_group));
+          ExtensionGroupToContextType(extension_group));
   v8_context_set_.Add(context);
 
   const Extension* extension = extensions_.GetByID(context->extension_id());

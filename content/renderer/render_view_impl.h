@@ -526,6 +526,11 @@ class RenderViewImpl : public RenderWidget,
   virtual void didExhaustMemoryAvailableForScript(WebKit::WebFrame* frame);
   virtual void didCreateScriptContext(WebKit::WebFrame* frame,
                                       v8::Handle<v8::Context>,
+                                      int extension_group,
+                                      int world_id);
+  // TODO(koz): Remove once WebKit no longer calls this.
+  virtual void didCreateScriptContext(WebKit::WebFrame* frame,
+                                      v8::Handle<v8::Context>,
                                       int world_id);
   virtual void willReleaseScriptContext(WebKit::WebFrame* frame,
                                         v8::Handle<v8::Context>,
