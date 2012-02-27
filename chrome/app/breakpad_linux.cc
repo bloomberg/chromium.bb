@@ -9,10 +9,12 @@
 #include "chrome/app/breakpad_linux.h"
 
 #include <fcntl.h>
+#include <poll.h>
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <sys/uio.h>
 #include <time.h>
 #include <unistd.h>
@@ -686,8 +688,24 @@ void HandleCrashDump(const BreakpadInfo& info) {
       if (wget_child > 0) {
         IGNORE_RET(sys_close(fds[1]));
         char id_buf[17];  // Crash report IDs are expected to be 16 chars.
-        const int len = HANDLE_EINTR(sys_read(fds[0], id_buf,
-                                              sizeof(id_buf) - 1));
+        ssize_t len = -1;
+        // Wget should finish in about 10 seconds. Add a few more 500 ms
+        // internals to account for process startup time.
+        for (size_t wait_count = 0; wait_count < 24; ++wait_count) {
+          struct kernel_pollfd poll_fd;
+          poll_fd.fd = fds[0];
+          poll_fd.events = POLLIN | POLLPRI | POLLERR;
+          int ret = sys_poll(&poll_fd, 1, 500);
+          if (ret < 0) {
+            // Error
+            break;
+          } else if (ret > 0) {
+            // There is data to read.
+            len = HANDLE_EINTR(sys_read(fds[0], id_buf, sizeof(id_buf) - 1));
+            break;
+          }
+          // ret == 0 -> timed out, continue waiting.
+        }
         if (len > 0) {
           // Write crash dump id to stderr.
           id_buf[len] = 0;
@@ -715,6 +733,10 @@ void HandleCrashDump(const BreakpadInfo& info) {
               IGNORE_RET(sys_close(log_fd));
             }
           }
+        }
+        if (sys_waitpid(wget_child, NULL, WNOHANG) == 0) {
+          // Wget process is still around, kill it.
+          sys_kill(wget_child, SIGKILL);
         }
       }
     }
