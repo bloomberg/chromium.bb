@@ -613,21 +613,25 @@ ScoredHistoryMatch URLIndexPrivateData::ScoredMatchForURL(
   const int kDaysAgoLevel[] = { 1, 10, 20, 30 };
   int days_ago_value = ScoreForValue((base::Time::Now() -
       row.last_visit()).InDays(), kDaysAgoLevel);
-  const int kVisitCountLevel[] = { 30, 10, 5, 3 };
+  const int kVisitCountLevel[] = { 50, 30, 10, 5 };
   int visit_count_value = ScoreForValue(row.visit_count(), kVisitCountLevel);
-  const int kTypedCountLevel[] = { 20, 10, 3, 1 };
+  const int kTypedCountLevel[] = { 50, 30, 10, 5 };
   int typed_count_value = ScoreForValue(row.typed_count(), kTypedCountLevel);
 
   // The final raw score is calculated by:
   //   - multiplying each factor by a 'relevance'
   //   - calculating the average.
-  const int kTermScoreRelevance = 1;
+  // Note that visit_count is reduced by typed_count because both are bumped
+  // when a typed URL is recorded thus giving visit_count too much weight.
+  const int kTermScoreRelevance = 4;
   const int kDaysAgoRelevance = 2;
-  const int kVisitCountRelevance = 3;
-  const int kTypedCountRelevance = 4;
+  const int kVisitCountRelevance = 2;
+  const int kTypedCountRelevance = 5;
+  int effective_visit_count_value =
+      std::max(0, visit_count_value - typed_count_value);
   match.raw_score = term_score * kTermScoreRelevance +
                     days_ago_value * kDaysAgoRelevance +
-                    visit_count_value * kVisitCountRelevance +
+                    effective_visit_count_value * kVisitCountRelevance +
                     typed_count_value * kTypedCountRelevance;
   match.raw_score /= (kTermScoreRelevance + kDaysAgoRelevance +
                       kVisitCountRelevance + kTypedCountRelevance);
