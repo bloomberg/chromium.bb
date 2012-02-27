@@ -34,7 +34,8 @@ extern void NCDecodeSegment(uint8_t* mbase, NaClPcAddress vbase,
 /* Print out the instruction (including the sequence of disassembled
  * hexidecimal bytes) to the given file.
  */
-extern void NCPrintInst(const struct NCDecoderInst* inst, struct Gio* file);
+extern void NCPrintInstWithHex(const struct NCDecoderInst* inst,
+                               struct Gio* file);
 
 /* Print out the instruction (excluding the sequence of disassembled
  * hexidecimal bytes) to the given file.
@@ -45,7 +46,7 @@ extern void NCPrintInstWithoutHex(const struct NCDecoderInst* inst,
 /* Generate a (malloc allocated) string describing the instruction (including
  * the sequence of disassembled hexidecimal bytes).
  */
-extern char* NCInstToString(const struct NCDecoderInst* inst);
+extern char* NCInstWithHexToString(const struct NCDecoderInst* inst);
 
 /* Generate a (malloc allocated) string describing the instruction (excluding
  * the sequence of disassembled hexidecimal bytes).

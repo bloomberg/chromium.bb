@@ -556,7 +556,7 @@ void NCPrintInstWithoutHex(const NCDecoderInst *dinst, struct Gio* fp) {
   NCPrintInstTextUsingFormat(DisFmt(dinst), dinst, fp);
 }
 
-void NCPrintInst(const NCDecoderInst *dinst, struct Gio *fp) {
+void NCPrintInstWithHex(const NCDecoderInst *dinst, struct Gio *fp) {
   int i;
   DEBUG( printf("use format: %s\n", DisFmt(dinst)) );
   gprintf(fp, " %"NACL_PRIxNaClPcAddress":\t%02x",
@@ -571,7 +571,7 @@ void NCPrintInst(const NCDecoderInst *dinst, struct Gio *fp) {
 }
 
 static Bool PrintInstLogGio(const NCDecoderInst *dinst) {
-  NCPrintInst(dinst, NaClLogGetGio());
+  NCPrintInstWithHex(dinst, NaClLogGetGio());
   return TRUE;
 }
 
@@ -605,8 +605,8 @@ static char* InstToStringConvert(const NCDecoderInst* dinst,
   return result;
 }
 
-char* NCInstToString(const NCDecoderInst* dinst) {
-  return InstToStringConvert(dinst, NCPrintInst);
+char* NCInstWithHexToString(const NCDecoderInst* dinst) {
+  return InstToStringConvert(dinst, NCPrintInstWithHex);
 }
 
 char* NCInstWithoutHexToString(const NCDecoderInst* dinst) {

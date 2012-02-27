@@ -51,7 +51,7 @@ uint8_t NaClInstLength(NaClInstStruct *inst) {
 }
 
 char *NaClInstToStr(NaClInstStruct *inst) {
-  return NCInstToString(NACL_INST(inst));
+  return NCInstWithHexToString(NACL_INST(inst));
 }
 
 /* Defines a buffer size big enough to hold an instruction. */
