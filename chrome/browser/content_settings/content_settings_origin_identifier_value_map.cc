@@ -57,7 +57,7 @@ class RuleIteratorImpl : public RuleIterator {
 
 OriginIdentifierValueMap::EntryMapKey::EntryMapKey(
     ContentSettingsType content_type,
-    ResourceIdentifier resource_identifier)
+    const ResourceIdentifier& resource_identifier)
     : content_type(content_type),
       resource_identifier(resource_identifier) {
 }
