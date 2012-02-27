@@ -262,7 +262,7 @@
 </p>
 <h2 id="manifest">Manifest</h2>
 <p>
-  You must declare the "clear" permission in the
+  You must declare the "browsingData" permission in the
   <a href="manifest.html">extension manifest</a> to use this API.
 </p>
 <pre>{
@@ -1815,7 +1815,7 @@ chrome.browsingData.removeCookies({
                 </div>
               </em>
           </dt>
-          <dd>Remove data accumulated on or after this date, represented in milliseconds since the epoch ('Date().GetTime()'). If absent, defaults to 0 (which would remove everything).</dd>
+          <dd>Remove data accumulated on or after this date, represented in milliseconds since the epoch (accessible via the <code>getTime</code> method of the JavaScript <code>Date</code> object). If absent, defaults to 0 (which would remove all browsing data).</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->

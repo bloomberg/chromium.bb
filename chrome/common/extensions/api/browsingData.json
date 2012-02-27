@@ -10,7 +10,7 @@
           "since": {
             "type": "number",
             "optional": true,
-            "description": "Remove data accumulated on or after this date, represented in milliseconds since the epoch ('Date().GetTime()'). If absent, defaults to 0 (which would remove everything)."
+            "description": "Remove data accumulated on or after this date, represented in milliseconds since the epoch (accessible via the <code>getTime</code> method of the JavaScript <code>Date</code> object). If absent, defaults to 0 (which would remove all browsing data)."
           }
         }
       }
