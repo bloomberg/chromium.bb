@@ -132,7 +132,7 @@ class FileSystemQuotaClientTest : public testing::Test {
     FileSystemType type = QuotaStorageTypeToFileSystemType(storage_type);
     FileSystemFileUtil* file_util = file_system_context_->GetFileUtil(type);
 
-    FileSystemPath path(GURL(origin_url), type, file_path, file_util);
+    FileSystemPath path(GURL(origin_url), type, file_path);
     scoped_ptr<FileSystemOperationContext> context(
         CreateFileSystemOperationContext());
 
@@ -154,7 +154,7 @@ class FileSystemQuotaClientTest : public testing::Test {
         sandbox_provider()->GetFileUtil();
 
     FileSystemType type = QuotaStorageTypeToFileSystemType(storage_type);
-    FileSystemPath path(GURL(origin_url), type, file_path, file_util);
+    FileSystemPath path(GURL(origin_url), type, file_path);
     scoped_ptr<FileSystemOperationContext> context(
         CreateFileSystemOperationContext());
 

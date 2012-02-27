@@ -517,6 +517,8 @@ class ObfuscatedFileUtilTest : public testing::Test {
     EXPECT_NE(base::Time(), GetModifiedTime(dest_dir_path));
   }
 
+  const FileSystemTestOriginHelper& test_helper() const { return test_helper_; }
+
  private:
   ScopedTempDir data_dir_;
   scoped_refptr<ObfuscatedFileUtil> obfuscated_file_util_;
@@ -1171,7 +1173,7 @@ TEST_F(ObfuscatedFileUtilTest, TestEnumerator) {
   EXPECT_FALSE(ofu()->DirectoryExists(context.get(), dest_path));
   context.reset(NewContext(NULL));
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-      ofu()->Copy(context.get(), src_path, dest_path));
+            test_helper().SameFileUtilCopy(context.get(), src_path, dest_path));
 
   ValidateTestDirectory(dest_path, files, directories);
   context.reset(NewContext(NULL));

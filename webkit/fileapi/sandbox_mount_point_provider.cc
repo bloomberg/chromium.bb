@@ -521,7 +521,7 @@ int64 SandboxMountPointProvider::GetOriginUsageOnFileThread(
   FileSystemUsageCache::Delete(usage_file_path);
 
   FileSystemOperationContext context(NULL);
-  FileSystemPath path(origin_url, type, FilePath(), sandbox_file_util_);
+  FileSystemPath path(origin_url, type, FilePath());
   scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> enumerator(
       sandbox_file_util_->CreateFileEnumerator(&context, path));
 

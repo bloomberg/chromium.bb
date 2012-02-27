@@ -127,7 +127,31 @@ FilePath FileSystemTestOriginHelper::GetUsageCachePath() const {
 
 FileSystemPath FileSystemTestOriginHelper::CreatePath(
     const FilePath& path) const {
-  return FileSystemPath(origin_, type_, path, file_util_);
+  return FileSystemPath(origin_, type_, path);
+}
+
+base::PlatformFileError FileSystemTestOriginHelper::SameFileUtilCopy(
+    FileSystemOperationContext* context,
+    const FileSystemPath& src,
+    const FileSystemPath& dest) const {
+  CrossFileUtilHelper cross_util_helper(
+      context,
+      file_util(), file_util(),
+      src, dest,
+      CrossFileUtilHelper::OPERATION_COPY);
+  return cross_util_helper.DoWork();
+}
+
+base::PlatformFileError FileSystemTestOriginHelper::SameFileUtilMove(
+    FileSystemOperationContext* context,
+    const FileSystemPath& src,
+    const FileSystemPath& dest) const {
+  CrossFileUtilHelper cross_util_helper(
+      context,
+      file_util(), file_util(),
+      src, dest,
+      CrossFileUtilHelper::OPERATION_MOVE);
+  return cross_util_helper.DoWork();
 }
 
 int64 FileSystemTestOriginHelper::GetCachedOriginUsage() const {

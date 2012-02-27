@@ -123,8 +123,8 @@ class FileSystemOperation : public FileSystemOperationInterface {
   // file_util on their own should call this before performing the actual
   // operation. If it is given it will not be overwritten by the class.
   void set_override_file_util(FileSystemFileUtil* file_util) {
-    src_path_.set_file_util(file_util);
-    dest_path_.set_file_util(file_util);
+    src_util_ = file_util;
+    dest_util_ = file_util;
   }
 
   void GetUsageAndQuotaThenCallback(
@@ -209,11 +209,12 @@ class FileSystemOperation : public FileSystemOperationInterface {
     PATH_FOR_CREATE,
   };
 
-  // Checks the validity of a given |path_url| and and sets up the
-  // |file_system_path| for |mode|.
+  // Checks the validity of a given |path_url| and and populates
+  // |path| and |file_util| for |mode|.
   base::PlatformFileError SetUpFileSystemPath(
       const GURL& path_url,
       FileSystemPath* file_system_path,
+      FileSystemFileUtil** file_util,
       SetUpPathMode mode);
 
   // Used only for internal assertions.
@@ -226,6 +227,8 @@ class FileSystemOperation : public FileSystemOperationInterface {
   FileSystemOperationContext operation_context_;
   FileSystemPath src_path_;
   FileSystemPath dest_path_;
+  FileSystemFileUtil* src_util_;  // Not owned.
+  FileSystemFileUtil* dest_util_;  // Not owned.
 
   scoped_ptr<ScopedQuotaUtilHelper> quota_util_helper_;
 

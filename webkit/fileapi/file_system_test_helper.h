@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/fileapi/cross_file_util_helper.h"
 #include "webkit/fileapi/file_system_path.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
@@ -63,6 +64,16 @@ class FileSystemTestOriginHelper {
     return CreatePath(FilePath::FromUTF8Unsafe(utf8));
   }
 
+  // Helper methods for same-FileUtil copy/move.
+  base::PlatformFileError SameFileUtilCopy(
+      FileSystemOperationContext* context,
+      const FileSystemPath& src,
+      const FileSystemPath& dest) const;
+  base::PlatformFileError SameFileUtilMove(
+      FileSystemOperationContext* context,
+      const FileSystemPath& src,
+      const FileSystemPath& dest) const;
+
   int64 GetCachedOriginUsage() const;
   bool RevokeUsageCache() const;
 
@@ -81,7 +92,7 @@ class FileSystemTestOriginHelper {
   quota::StorageType storage_type() const {
     return FileSystemTypeToQuotaStorageType(type_);
   }
-  FileSystemFileUtil* file_util() { return file_util_; }
+  FileSystemFileUtil* file_util() const { return file_util_; }
 
  private:
   scoped_refptr<FileSystemContext> file_system_context_;

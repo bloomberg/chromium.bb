@@ -5,7 +5,13 @@
 #include "webkit/fileapi/file_system_file_util_proxy.h"
 
 #include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
+#include "webkit/fileapi/cross_file_util_helper.h"
+#include "webkit/fileapi/file_system_file_util.h"
+#include "webkit/fileapi/file_system_operation_context.h"
+
+namespace fileapi {
 
 namespace {
 
@@ -16,6 +22,28 @@ using base::PlatformFileError;
 using base::Unretained;
 
 typedef fileapi::FileSystemFileUtilProxy Proxy;
+
+class CopyOrMoveHelper {
+ public:
+  CopyOrMoveHelper(CrossFileUtilHelper* helper)
+      : helper_(helper),
+        error_(base::PLATFORM_FILE_OK) {}
+  ~CopyOrMoveHelper() {}
+
+  void RunWork() {
+    error_ = helper_->DoWork();
+  }
+
+  void Reply(const Proxy::StatusCallback& callback) {
+    if (!callback.is_null())
+      callback.Run(error_);
+  }
+
+ private:
+  scoped_ptr<CrossFileUtilHelper> helper_;
+  base::PlatformFileError error_;
+  DISALLOW_COPY_AND_ASSIGN(CopyOrMoveHelper);
+};
 
 class EnsureFileExistsHelper {
  public:
@@ -80,7 +108,43 @@ class ReadDirectoryHelper {
 
 }  // namespace
 
-namespace fileapi {
+// static
+bool FileSystemFileUtilProxy::Copy(
+    scoped_refptr<MessageLoopProxy> message_loop_proxy,
+    FileSystemOperationContext* context,
+    FileSystemFileUtil* src_util,
+    FileSystemFileUtil* dest_util,
+    const FileSystemPath& src_path,
+    const FileSystemPath& dest_path,
+    const StatusCallback& callback) {
+  CopyOrMoveHelper* helper = new CopyOrMoveHelper(
+      new CrossFileUtilHelper(
+          context, src_util, dest_util, src_path, dest_path,
+          CrossFileUtilHelper::OPERATION_COPY));
+  return message_loop_proxy->PostTaskAndReply(
+        FROM_HERE,
+        Bind(&CopyOrMoveHelper::RunWork, Unretained(helper)),
+        Bind(&CopyOrMoveHelper::Reply, Owned(helper), callback));
+}
+
+// static
+bool FileSystemFileUtilProxy::Move(
+    scoped_refptr<MessageLoopProxy> message_loop_proxy,
+    FileSystemOperationContext* context,
+      FileSystemFileUtil* src_util,
+      FileSystemFileUtil* dest_util,
+      const FileSystemPath& src_path,
+      const FileSystemPath& dest_path,
+    const StatusCallback& callback) {
+  CopyOrMoveHelper* helper = new CopyOrMoveHelper(
+      new CrossFileUtilHelper(
+          context, src_util, dest_util, src_path, dest_path,
+          CrossFileUtilHelper::OPERATION_MOVE));
+  return message_loop_proxy->PostTaskAndReply(
+        FROM_HERE,
+        Bind(&CopyOrMoveHelper::RunWork, Unretained(helper)),
+        Bind(&CopyOrMoveHelper::Reply, Owned(helper), callback));
+}
 
 // static
 bool FileSystemFileUtilProxy::RelayEnsureFileExists(

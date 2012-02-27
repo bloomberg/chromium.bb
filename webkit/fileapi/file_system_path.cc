@@ -9,18 +9,15 @@
 namespace fileapi {
 
 FileSystemPath::FileSystemPath()
-    : type_(kFileSystemTypeUnknown),
-      file_util_(NULL) {}
+    : type_(kFileSystemTypeUnknown) {}
 
 FileSystemPath::FileSystemPath(
     const GURL& origin,
     FileSystemType type,
-    const FilePath& internal_path,
-    FileSystemFileUtil* file_util)
+    const FilePath& internal_path)
     : origin_(origin),
       type_(type),
-      internal_path_(internal_path),
-      file_util_(file_util) {}
+      internal_path_(internal_path) {}
 
 FileSystemPath::~FileSystemPath() {}
 

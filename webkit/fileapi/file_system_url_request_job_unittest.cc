@@ -143,8 +143,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
         sandbox_provider()->GetFileUtil();
     FileSystemPath path(GURL("http://remote"),
                         kFileSystemTypeTemporary,
-                        FilePath().AppendASCII(dir_name),
-                        file_util);
+                        FilePath().AppendASCII(dir_name));
 
     FileSystemOperationContext context(file_system_context_);
     context.set_allowed_bytes_growth(1024);
@@ -162,8 +161,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
         sandbox_provider()->GetFileUtil();
     FileSystemPath path(GURL("http://remote"),
                         kFileSystemTypeTemporary,
-                        FilePath().AppendASCII(file_name),
-                        file_util);
+                        FilePath().AppendASCII(file_name));
 
     FileSystemOperationContext context(file_system_context_);
     context.set_allowed_bytes_growth(1024);

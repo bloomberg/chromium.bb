@@ -213,7 +213,7 @@ class SandboxMountPointProviderMigrationTest : public testing::Test {
     FilePath seed_file_path = FilePath().AppendASCII(
         URLAndTypeToSeedString(origin_url, type));
 
-    FileSystemPath root(origin_url, type, FilePath(), file_util());
+    FileSystemPath root(origin_url, type, FilePath());
     FileSystemPath seed = root.Append(seed_file_path);
 
     context.reset(NewContext());

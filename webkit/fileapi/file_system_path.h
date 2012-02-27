@@ -26,8 +26,7 @@ class FileSystemPath {
   FileSystemPath();
   FileSystemPath(const GURL& origin,
                  FileSystemType type,
-                 const FilePath& internal_path,
-                 FileSystemFileUtil* file_util);
+                 const FilePath& internal_path);
   ~FileSystemPath();
 
   // Gets and sets the origin URL of this filesystem.
@@ -46,11 +45,6 @@ class FileSystemPath {
   void set_internal_path(const FilePath& internal_path) {
     internal_path_ = internal_path;
   }
-
-  // Gets and sets the FileSystemFileUtil with which the file pointed by this
-  // FileSystemPath is handled.
-  FileSystemFileUtil* file_util() const { return file_util_; }
-  void set_file_util(FileSystemFileUtil* util) { file_util_ = util; }
 
   // Returns a new FileSystemPath with the given internal_path.
   // This doesn't change the calling instance's data.
@@ -82,11 +76,6 @@ class FileSystemPath {
   GURL origin_;
   FileSystemType type_;
   FilePath internal_path_;
-
-  // Not owned.
-  // TODO(kinuko): This needs to be cleaned up; this value doesn't always
-  // reflect the current FileUtil in underlying filesystems.
-  FileSystemFileUtil* file_util_;
 };
 
 }  // namespace fileapi

@@ -58,42 +58,6 @@ class FileSystemFileUtil {
 
   virtual ~FileSystemFileUtil();
 
-  // Copies or moves a single file.
-  // Copies a file or a directory from |src_path| to |dest_path|.
-  //
-  // Error cases:
-  // If destination's parent doesn't exist.
-  // If source dir exists but destination path is an existing file.
-  // If source file exists but destination path is an existing directory.
-  // If source is a parent of destination.
-  // If source doesn't exist.
-  //
-  // This method calls one of the following methods depending on whether the
-  // target is a directory or not.
-  // - (virtual) CopyOrMoveFile or
-  // - (non-virtual) CopyOrMoveDirectory.
-  //
-  // TODO(kinuko,kinaba): Move this cross-FileUtil code out of this interface.
-  PlatformFileError Copy(
-      FileSystemOperationContext* context,
-      const FileSystemPath& src_path,
-      const FileSystemPath& dest_path);
-
-  // Moves a file or a directory from src_path to dest_path.
-  //
-  // Error cases are similar to Copy method's error cases.
-  //
-  // This method calls one of the following methods depending on whether the
-  // target is a directory or not.
-  // - (virtual) CopyOrMoveFile or
-  // - (non-virtual) CopyOrMoveDirectory.
-  //
-  // TODO(kinuko,kinaba): Move this cross-FileUtil code out of this interface.
-  PlatformFileError Move(
-      FileSystemOperationContext* context,
-      const FileSystemPath& src_path,
-      const FileSystemPath& dest_path);
-
   // Deletes a file or a directory.
   // It is an error to delete a non-empty directory with recursive=false.
   //
@@ -242,34 +206,6 @@ class FileSystemFileUtil {
  protected:
   FileSystemFileUtil();
   explicit FileSystemFileUtil(FileSystemFileUtil* underlying_file_util);
-
-  // This also removes the destination directory if it's non-empty and all
-  // other checks are passed (so that the copy/move correctly overwrites the
-  // destination).
-  PlatformFileError PerformCommonCheckAndPreparationForMoveAndCopy(
-      FileSystemOperationContext* context,
-      const FileSystemPath& src_path,
-      const FileSystemPath& dest_path);
-
-  // Performs recursive copy or move by calling CopyOrMoveFile for individual
-  // files. Operations for recursive traversal are encapsulated in this method.
-  // It assumes src_path and dest_path have passed
-  // PerformCommonCheckAndPreparationForMoveAndCopy().
-  PlatformFileError CopyOrMoveDirectory(
-      FileSystemOperationContext* context,
-      const FileSystemPath& src_path,
-      const FileSystemPath& dest_path,
-      bool copy);
-
-  // Determines whether a simple same-filesystem move or copy can be done.  If
-  // so, it delegates to CopyOrMoveFile.  Otherwise it looks up the true
-  // platform path of the source file, delegates to CopyInForeignFile, and [for
-  // move] calls DeleteFile on the source file.
-  PlatformFileError CopyOrMoveFileHelper(
-      FileSystemOperationContext* context,
-      const FileSystemPath& src_path,
-      const FileSystemPath& dest_path,
-      bool copy);
 
   // Deletes a directory and all entries under the directory.
   //

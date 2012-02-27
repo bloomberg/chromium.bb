@@ -25,20 +25,23 @@ using base::PlatformFile;
 using base::PlatformFileError;
 using base::PlatformFileInfo;
 
-// This class provides relay methods for supporting asynchronous access to
-// FileSystem API operations.  (Most of necessary relay methods are provided
-// by base::FileUtilProxy, but there are a few operations that are not
-// covered or are slightly different from the version of base::FileUtilProxy.
+class FileSystemFileUtil;
+class FileSystemOperationContext;
+class FileSystemPath;
+
+// This class provides asynchronous access to FileSystemFileUtil methods for
+// FileSystem API operations.  This also implements cross-FileUtil copy/move
+// operations on top of FileSystemFileUtil methods.
 class FileSystemFileUtilProxy {
  public:
   typedef base::FileUtilProxy::Entry Entry;
-
-  typedef base::Callback<void(PlatformFileError,
-                              bool /* created */
+  typedef base::Callback<void(PlatformFileError status)> StatusCallback;
+  typedef base::Callback<void(PlatformFileError status,
+                              bool created
                               )> EnsureFileExistsCallback;
-  typedef base::Callback<void(PlatformFileError,
-                              const PlatformFileInfo&,
-                              const FilePath& /* platform_path */
+  typedef base::Callback<void(PlatformFileError status,
+                              const PlatformFileInfo& info,
+                              const FilePath& platform_path
                               )> GetFileInfoCallback;
   typedef base::Callback<void(PlatformFileError,
                               const std::vector<Entry>&,
@@ -50,6 +53,42 @@ class FileSystemFileUtilProxy {
                                            FilePath*)> GetFileInfoTask;
   typedef base::Callback<PlatformFileError(std::vector<Entry>*
                                            )> ReadDirectoryTask;
+
+  // Copies a file or a directory from |src_path| to |dest_path| by calling
+  // FileSystemFileUtil's following methods on the given |message_loop_proxy|.
+  // - CopyOrMoveFile() for same-filesystem operations
+  // - CopyInForeignFile() for (limited) cross-filesystem operations
+  //
+  // Error cases:
+  // If destination's parent doesn't exist.
+  // If source dir exists but destination path is an existing file.
+  // If source file exists but destination path is an existing directory.
+  // If source is a parent of destination.
+  // If source doesn't exist.
+  // If source and dest are the same path in the same filesystem.
+  static bool Copy(
+      scoped_refptr<MessageLoopProxy> message_loop_proxy,
+      FileSystemOperationContext* context,
+      FileSystemFileUtil* src_util,
+      FileSystemFileUtil* dest_util,
+      const FileSystemPath& src_path,
+      const FileSystemPath& dest_path,
+      const StatusCallback& callback);
+
+  // Moves a file or a directory from |src_path| to |dest_path| by calling
+  // FileSystemFileUtil's following methods on the given |message_loop_proxy|.
+  // - CopyOrMoveFile() for same-filesystem operations
+  // - CopyInForeignFile() for (limited) cross-filesystem operations
+  //
+  // This method returns an error on the same error cases with Copy.
+  static bool Move(
+      scoped_refptr<MessageLoopProxy> message_loop_proxy,
+      FileSystemOperationContext* context,
+      FileSystemFileUtil* src_util,
+      FileSystemFileUtil* dest_util,
+      const FileSystemPath& src_path,
+      const FileSystemPath& dest_path,
+      const StatusCallback& callback);
 
   // Calls EnsureFileExistsTask |task| on the given |message_loop_proxy|.
   static bool RelayEnsureFileExists(

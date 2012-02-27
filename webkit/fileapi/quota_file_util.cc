@@ -118,6 +118,8 @@ base::PlatformFileError QuotaFileUtil::CopyOrMoveFile(
 
   // It assumes copy/move operations are always in the same fs currently.
   // TODO(dmikurube): Do quota check if moving between different fs.
+  // TODO(kinuko,kinaba): FileSystemFileUtil shouldn't support cross-filesystem
+  // operations from the beginning.
   if (copy) {
     int64 allowed_bytes_growth = fs_context->allowed_bytes_growth();
     // The third argument (growth) is not used for now.

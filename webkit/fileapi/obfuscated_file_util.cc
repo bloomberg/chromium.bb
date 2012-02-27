@@ -1096,8 +1096,7 @@ PlatformFileError ObfuscatedFileUtil::CreateFile(
 
   dest_file_path = dest_file_path.AppendASCII(
       StringPrintf("%02" PRIu64, directory_number));
-  FileSystemPath dest_path(dest_origin, dest_type, dest_file_path,
-                           underlying_file_util());
+  FileSystemPath dest_path(dest_origin, dest_type, dest_file_path);
 
   PlatformFileError error;
   error = underlying_file_util()->CreateDirectory(
@@ -1197,9 +1196,8 @@ FileSystemPath ObfuscatedFileUtil::DataPathToLocalPath(
     const GURL& origin, FileSystemType type, const FilePath& data_path) {
   FilePath root = GetDirectoryForOriginAndType(origin, type, false);
   if (root.empty())
-    return FileSystemPath(origin, type, root, underlying_file_util());
-  return FileSystemPath(origin, type, root.Append(data_path),
-                        underlying_file_util());
+    return FileSystemPath(origin, type, root);
+  return FileSystemPath(origin, type, root.Append(data_path));
 }
 
 FilePath ObfuscatedFileUtil::LocalPathToDataPath(
