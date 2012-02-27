@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/autofill/test_autofill_external_delegate.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
@@ -102,7 +103,7 @@ IN_PROC_BROWSER_TEST_F(AutofillPopupViewBrowserTest,
       GURL(chrome::kAboutBlankURL), content::Referrer(),
       CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
   browser()->OpenURL(content::OpenURLParams(
-      GURL(chrome::kChromeUICrashURL), content::Referrer(),
+      GURL(chrome::kChromeUIAboutURL), content::Referrer(),
       CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
   observer.Wait();
 
