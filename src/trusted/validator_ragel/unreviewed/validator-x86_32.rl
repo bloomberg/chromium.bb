@@ -76,9 +76,17 @@
     };
 
   main := ((one_instruction | special_instruction) >{
+        begin = p;
         BitmapSetBit(valid_targets, p - data);
      })*
-    $!{ process_error(p, userdata);
+     @{
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       begin = p + 1;
+     }
+    $err{
+        process_error(begin, userdata);
         result = 1;
         goto error_detected;
     };
@@ -151,7 +159,7 @@ int ValidateChunkIA32(const uint8_t *data, size_t size,
   uint8_t *jump_dests = BitmapAllocate(size);
 
   const uint8_t *p = data;
-/*  const uint8_t *begin;*/
+  const uint8_t *begin = p;  /* Start of the instruction being processed.  */
 
   int result = 0;
 
@@ -167,8 +175,7 @@ int ValidateChunkIA32(const uint8_t *data, size_t size,
   }
 
   if (CheckJumpTargets(valid_targets, jump_dests, size)) {
-    result = 1;
-    goto error_detected;
+    return 1;
   }
 
 error_detected:
