@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -163,12 +163,15 @@ InputMethodMenu::InputMethodMenu(PrefService* pref_service,
                    chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                    content::NotificationService::AllSources());
 #if defined(USE_AURA)
-    // On Aura status area is not recreated on sign in.
+    // On Aura status area is not recreated on sign in. Instead, 2 notifications
+    // are sent to Chrome on sign in: NOTIFICATION_LOGIN_USER_CHANGED with
+    // StatusAreaViewChromeos::IsLoginMode() and NOTIFICATION_SESSION_STARTED
+    // with StatusAreaViewChromeos::IsBrowserMode().
     // In case of Chrome crash, Chrome will be reloaded but IsLoginMode() will
-    // return false at this point so NOTIFICATION_PROFILE_CREATED will be
+    // return false at this point so NOTIFICATION_SESSION_STARTED will be
     // ignored and all initialization will happen in ctor.
     registrar_.Add(this,
-                   chrome::NOTIFICATION_PROFILE_CREATED,
+                   chrome::NOTIFICATION_SESSION_STARTED,
                    content::NotificationService::AllSources());
 #endif
   }
@@ -413,6 +416,7 @@ void InputMethodMenu::InputMethodChanged(
   UpdateUIFromInputMethod(current_input_method, num_active_input_methods);
 }
 
+// TODO(yusukes): Move code for handling preferences to chromeos/input_method/.
 void InputMethodMenu::PreferenceUpdateNeeded(
     InputMethodManager* manager,
     const input_method::InputMethodDescriptor& previous_input_method,
@@ -706,11 +710,12 @@ void InputMethodMenu::Observe(int type,
     RemoveObservers();
   }
 #if defined(USE_AURA)
-  if (type == chrome::NOTIFICATION_PROFILE_CREATED) {
-    // On Aura status area is not recreated on login for normal user sign in.
-    // NOTIFICATION_LOGIN_USER_CHANGED has been notified early in login process.
+  if (type == chrome::NOTIFICATION_SESSION_STARTED) {
     InitializePrefMembers();
     AddObservers();
+    InputMethodManager* manager = InputMethodManager::GetInstance();
+    UpdateUIFromInputMethod(manager->current_input_method(),
+                            manager->GetNumActiveInputMethods());
   }
 #endif
 }
