@@ -10142,6 +10142,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_PLAYBACK_ERROR" desc="Error playing back.">
         Error playing back
       </message>
+      <message name="IDS_FILE_BROWSER_NO_ACTION_FOR_FILE" desc="Message shown when user tries to open file, which we can't handle.">
+	      To view this file, convert it to a format that's viewable on the web.  <ph name="BEGIN_LINK">&lt;a target='_blank' href='$1'&gt;</ph>Learn More<ph name="END_LINK">&lt;/a&gt;</ph>
+      </message>
       <message name="IDS_FILE_BROWSER_ID3_ALBUM" desc="Album">
         Album
       </message>

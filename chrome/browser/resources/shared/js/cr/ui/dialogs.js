@@ -109,7 +109,13 @@ cr.define('cr.ui.dialogs', function() {
 
   BaseDialog.prototype.show = function(message, onOk, onCancel, onShow) {
     this.showWithTitle(null, message, onOk, onCancel, onShow);
-  }
+  };
+
+  BaseDialog.prototype.showHtml = function(title, message,
+      onOk, onCancel, onShow) {
+    this.text_.innerHTML = message;
+    this.show_(title, onOk, onCancel, onShow);
+  };
 
   BaseDialog.prototype.findFocusableElements_ = function(doc) {
     var elements = Array.prototype.filter.call(
@@ -126,6 +132,11 @@ cr.define('cr.ui.dialogs', function() {
 
   BaseDialog.prototype.showWithTitle = function(title, message,
       onOk, onCancel, onShow) {
+    this.text_.textContent = message;
+    this.show_(title, onOk, onCancel, onShow);
+  };
+
+  BaseDialog.prototype.show_ = function(title, onOk, onCancel, onShow) {
     // Make all outside nodes unfocusable while the dialog is active.
     this.deactivatedNodes_ = this.findFocusableElements_(this.document_);
     this.tabIndexes_ = this.deactivatedNodes_.map(
@@ -146,7 +157,6 @@ cr.define('cr.ui.dialogs', function() {
       this.title_.textContent = "";
       this.title_.hidden = true;
     }
-    this.text_.textContent = message;
 
     var top = (this.document_.body.clientHeight -
                this.frame_.clientHeight) / 2;

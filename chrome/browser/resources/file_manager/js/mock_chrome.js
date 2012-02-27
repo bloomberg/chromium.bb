@@ -291,9 +291,7 @@ chrome.fileBrowserPrivate = {
       OPEN_LABEL: 'Open',
       SAVE_LABEL: 'Save',
       OK_LABEL: 'OK',
-      ERROR_VIEWING_FILE_TITLE: '$1',
-      ERROR_VIEWING_FILE: 'To view this file, convert it to a format that\'s ' +
-          'viewable on the web. For example, you can upload it to Google Docs.',
+      NO_ACTION_FOR_FILE: "To view this file, convert it to a format that's viewable on the web. <a target='_blank' href='$1'>Learn More.</a>",
 
       DEFAULT_NEW_FOLDER_NAME: 'New Folder',
       MORE_FILES: 'Show all files',
