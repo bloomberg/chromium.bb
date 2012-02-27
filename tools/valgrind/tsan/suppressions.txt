@@ -874,7 +874,7 @@
   ThreadSanitizer:Race
   ...
   fun:base::SupportsUserData::SetUserData
-  fun:content::InitializeResourceContext
+  ...
   fun:content::BrowserContext::EnsureResourceContextInitialized
   fun:ProfileIOData::InitializeOnUIThread
   fun:OffTheRecordProfileIOData::Handle::LazyInitialize
