@@ -1045,8 +1045,9 @@ gfx::Rect Browser::GetSavedWindowBounds() const {
 }
 
 ui::WindowShowState Browser::GetSavedWindowShowState() const {
-  // Only tabbed browsers use the command line or preference state.
-  if (!is_type_tabbed())
+  // Only tabbed browsers use the command line or preference state, with the
+  // exception of devtools.
+  if (!is_type_tabbed() && !is_devtools())
     return show_state_;
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kStartMaximized))
