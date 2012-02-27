@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// These have to be sync'd with extension_file_browser_private_apitest.cc
+// These have to be sync'd with file_browser_private_apitest.cc
 var expectedVolume1 = {
   devicePath: 'device_path1',
   mountPath: 'removable/mount_path1',

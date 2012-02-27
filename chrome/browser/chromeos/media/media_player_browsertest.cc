@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,10 +36,6 @@ class MediaPlayerBrowserTest : public InProcessBrowserTest {
   bool IsPlayerVisible() {
     return IsBrowserVisible(MediaPlayer::GetInstance()->mediaplayer_browser_);
   }
-
-  bool IsPlaylistVisible() {
-    return IsBrowserVisible(MediaPlayer::GetInstance()->playlist_browser_);
-  }
 };
 
 IN_PROC_BROWSER_TEST_F(MediaPlayerBrowserTest, Popup) {
@@ -53,27 +49,7 @@ IN_PROC_BROWSER_TEST_F(MediaPlayerBrowserTest, Popup) {
   ASSERT_FALSE(IsPlayerVisible());
 
   player->PopupMediaPlayer(NULL);
-  player->EnqueueMediaFileUrl(GetMusicTestURL());
+  player->ForcePlayMediaURL(GetMusicTestURL());
 
   ASSERT_TRUE(IsPlayerVisible());
 }
-
-IN_PROC_BROWSER_TEST_F(MediaPlayerBrowserTest, PopupPlaylist) {
-  ASSERT_TRUE(test_server()->Start());
-  // Doing this so we have a valid profile.
-  ui_test_utils::NavigateToURL(browser(),
-                               GURL("chrome://downloads"));
-
-
-  MediaPlayer* player = MediaPlayer::GetInstance();
-
-  player->PopupMediaPlayer(NULL);
-  player->EnqueueMediaFileUrl(GetMusicTestURL());
-
-  EXPECT_FALSE(IsPlaylistVisible());
-
-  player->TogglePlaylistWindowVisible();
-
-  EXPECT_TRUE(IsPlaylistVisible());
-}
-

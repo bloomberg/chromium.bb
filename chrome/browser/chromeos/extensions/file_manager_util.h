@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_FILE_MANAGER_UTIL_H_
-#define CHROME_BROWSER_EXTENSIONS_FILE_MANAGER_UTIL_H_
+#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_UTIL_H_
+#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_UTIL_H_
 #pragma once
 
 #include <string>
@@ -57,14 +57,15 @@ void ViewRemovableDrive(const FilePath& dir);
 void ViewFolder(const FilePath& dir);
 
 // Opens file in the browser.
+// TODO(kaznacheev): remove the obsolete enqueue parameter.
 void ViewFile(const FilePath& full_path, bool enqueue);
 
 // Tries to open |file| directly in the browser. Returns false if the browser
 // can't directly handle this type of file.
-bool TryViewingFile(const FilePath& file, bool enqueue);
+bool TryViewingFile(const FilePath& file);
 
 void InstallCRX(Profile* profile, const FilePath& full_path);
 
 }  // namespace file_manager_util
 
-#endif  // CHROME_BROWSER_EXTENSIONS_FILE_MANAGER_UTIL_H_
+#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_UTIL_H_

@@ -89,11 +89,11 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/extensions/api/terminal/terminal_private_api.h"
-#include "chrome/browser/extensions/extension_file_browser_private_api.h"
 #include "chrome/browser/extensions/extension_info_private_api_chromeos.h"
 #include "chrome/browser/extensions/extension_input_ime_api.h"
 #include "chrome/browser/extensions/extension_input_method_api.h"
-#include "chrome/browser/extensions/extension_mediaplayer_private_api.h"
+#include "chrome/browser/chromeos/extensions/file_browser_private_api.h"
+#include "chrome/browser/chromeos/media/media_player_extension_api.h"
 #endif
 
 using extensions::ExtensionAPI;
@@ -412,11 +412,10 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<ViewFilesFunction>();
 
   // Mediaplayer
-  RegisterFunction<PlayAtMediaplayerFunction>();
-  RegisterFunction<SetPlaybackErrorMediaplayerFunction>();
+  RegisterFunction<PlayMediaplayerFunction>();
   RegisterFunction<GetPlaylistMediaplayerFunction>();
-  RegisterFunction<TogglePlaylistPanelMediaplayerFunction>();
-  RegisterFunction<ToggleFullscreenMediaplayerFunction>();
+  RegisterFunction<SetWindowHeightMediaplayerFunction>();
+  RegisterFunction<CloseWindowMediaplayerFunction>();
 
   // InputMethod
   RegisterFunction<GetInputMethodFunction>();

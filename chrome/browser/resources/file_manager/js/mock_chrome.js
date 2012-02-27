@@ -40,9 +40,9 @@ chrome.fileBrowserPrivate = {
   viewFiles: function(selectedFiles) {
     console.log('viewFiles called: ' + selectedFiles.length +
                 ' files selected');
-    chrome.mediaPlayerPrivate.setPlaylist_({
-      items: selectedFiles.map(function(url) { return {path: url} })
-    });
+    for (var i = 0; i != selectedFiles.length; i++) {
+      window.open(selectedFiles[i]);
+    }
   },
 
   /**
@@ -398,8 +398,8 @@ chrome.mediaPlayerPrivate = {
 
   onPlaylistChanged: new MockEventSource(),
 
-  setPlaylist_: function(playlist) {
-    this.playlist_ = playlist;
+  play: function(urls, position) {
+    this.playlist_ = { items: urls, position: position };
 
     if (this.popup_) {
       this.onPlaylistChanged.notify();
@@ -410,7 +410,8 @@ chrome.mediaPlayerPrivate = {
     this.popup_ = document.createElement('iframe');
     this.popup_.scrolling = 'no';
     this.popup_.style.cssText = 'position:absolute; border:none; z-index:10;' +
-        'width:280px; height:0; right:10px; bottom:80px';
+        'width:280px; height:93px; right:10px; bottom:80px;' +
+        '-webkit-transition: height 200ms ease';
 
     document.body.appendChild(this.popup_);
 
@@ -423,7 +424,7 @@ chrome.mediaPlayerPrivate = {
     this.popup_.src = "mediaplayer.html?no_auto_load";
   },
 
-  getPlaylist: function(flag, callback) {
+  getPlaylist: function(callback) {
     callback(this.playlist_);
   },
 

@@ -2119,10 +2119,6 @@ FileManager.prototype = {
               chrome.extension.getURL('images/icon_play_16x16.png');
           task.title = str('PLAY_MEDIA').replace("&", "");
           this.playTask_ = task;
-        } else if (task_parts[1] == 'enqueue') {
-          task.iconUrl =
-              chrome.extension.getURL('images/icon_add_to_queue_16x16.png');
-          task.title = str('ENQUEUE');
         } else if (task_parts[1] == 'mount-archive') {
           task.iconUrl =
               chrome.extension.getURL('images/icon_mount_archive_16x16.png');
@@ -2241,17 +2237,21 @@ FileManager.prototype = {
       return;
     }
 
-    function callback(success) {
-      if (!success && selection.entries.length == 1)
-        this.alert.showWithTitle(
-            unescape(selection.entries[0].name),
-            strf('ERROR_VIEWING_FILE'),
-            function() {});
-    }
+    if (selection.urls.length == 1) {
+      // We don't have tasks, so try the default browser action.
+      // We only do that for single selection to avoid confusion.
 
-    // We don't have tasks, so try the default browser action.
-    chrome.fileBrowserPrivate.viewFiles(selection.urls, 'default',
-        callback.bind(this));
+      function callback(success) {
+        if (!success && selection.entries.length == 1)
+          this.alert.showWithTitle(
+              unescape(selection.entries[0].name),
+              strf('ERROR_VIEWING_FILE'),
+              function() {});
+      }
+
+      chrome.fileBrowserPrivate.viewFiles(selection.urls, 'default',
+          callback.bind(this));
+    }
   };
 
   FileManager.prototype.dispatchFileTask_ = function(task, urls) {
@@ -2332,9 +2332,18 @@ FileManager.prototype = {
    */
   FileManager.prototype.onFileTaskExecute_ = function(id, details) {
     var urls = details.urls;
-    if (id == 'play' || id == 'enqueue') {
-      // The Media Player popup is now only used to play audio.
-      chrome.fileBrowserPrivate.viewFiles(urls, id);
+    if (id == 'play') {
+      var position = 0;
+      if (urls.length == 1) {
+        // If just a single audio file is selected pass along every audio file
+        // in the directory.
+        var selectedUrl = urls[0];
+        urls = this.getAllUrlsInCurrentDirectory_().filter(function(url) {
+          return FileType.getMediaType(url) == 'audio';
+        });
+        position = urls.indexOf(selectedUrl);
+      }
+      chrome.mediaPlayerPrivate.play(urls, position);
     } else if (id == 'mount-archive') {
       for (var index = 0; index < urls.length; ++index) {
         // Url in MountCompleted event won't be escaped, so let's make sure
@@ -2373,6 +2382,15 @@ FileManager.prototype = {
     return undefined;
   };
 
+  FileManager.prototype.getAllUrlsInCurrentDirectory_ = function() {
+    var urls = [];
+    var dm = this.directoryModel_.fileList;
+    for (var i = 0; i != dm.length; i++) {
+      urls.push(dm.item(i).toURL());
+    }
+    return urls;
+  }
+
   FileManager.prototype.openGallery_ = function(urls, shareActions) {
     var self = this;
 
@@ -2389,16 +2407,10 @@ FileManager.prototype = {
       // in the ribbon.
       // We do not do that if a single video is selected because the UI is
       // cleaner without the ribbon.
-      urls = [];
-      var dm = this.directoryModel_.fileList;
-      for (var i = 0; i != dm.length; i++) {
-        var entry = dm.item(i);
-        var url = entry.toURL();
+      urls = this.getAllUrlsInCurrentDirectory_().filter(function(url) {
         var type = FileType.getMediaType(url);
-        if (type == 'image' || type == 'video') {
-          urls.push(url);
-        }
-      }
+        return type == 'image' || type == 'video';
+      });
     } else {
       // Pass just the selected items, select the first entry.
       selectedUrl = urls[0];

@@ -6,6 +6,7 @@
 
 body {
   padding: 0;
+  -webkit-user-select: none;
 }
 
 .audio-player {
@@ -19,7 +20,7 @@ body {
   background-color: #1d1d1d;
 
   font-family: Open Sans,Droid Sans Fallback,sans-serif;
-  font-size: 13pt;
+  font-size: 10pt;
 }
 
 /* Title buttons.
@@ -34,6 +35,7 @@ body {
   cursor: pointer;
   background-repeat: no-repeat;
   background-position: center center;
+  z-index: 2;
 }
 
 .title-button:hover {
@@ -63,17 +65,19 @@ body {
   display: none;
 }
 
-/* Playlist. */
-
-.audio-player > .playlist {
+/* Common properties for track containers. */
+.audio-player > .track-list,
+.audio-player > .track-stack {
   position: absolute;
-
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-
-  top: -1px;  /* Hide the border in the collapsed state. */
   left: 0;
   right: 0;
   bottom: 35px;  /* Room for the controls bar. */
+}
+
+/* Scrollable list of tracks.
+  Displayed in expanded mode if there is more than one track. */
+.audio-player > .track-list {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -84,52 +88,101 @@ body {
   overflow-y: auto;
 }
 
-.audio-player:not(.collapsed):not(.single-track) > .playlist {
-  top: 29px;  /* Room for the title buttons. */
+/* A single track container.
+  Displayed in the compact mode or when there is only one track. */
+.audio-player > .track-stack {
+  height: 58px;
 }
 
+.audio-player.collapsed > .track-list,
+.audio-player.single_track > .track-list,
+.audio-player:not(.collapsed):not(.single-track) > .track-stack {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Track item. */
 .track {
   width: 100%;
   height: 58px;
 
-  display: none;
+  display: -webkit-box;
   -webkit-box-orient: horizontal;
   -webkit-box-align: center;
   -webkit-box-pack: start;
 }
 
-.audio-player:not(.collapsed):not(.single-track) .track,
-.track.selected {
-  display: -webkit-box;
-}
-
-.track.selected {
+/* In the expanded mode the selected track is highlighted. */
+.track-list .track.selected {
   background-color: #2d2d2d;
 }
 
-.track:hover {
+.track-list .track:hover {
   background-color: #272727 !important;
 }
 
+.track-list .track:not(.selected) .data {
+  opacity: 0.7;
+}
+
+/* In the compact mode all tracks are in the same position, only the selected
+  is visible.*/
+.track-stack > .track {
+  position: absolute;
+  top: 0;
+}
+
+.track-stack > .track.selected {
+  z-index: 1;
+}
+
+/* Opacity transition is controlled differently for the text and the artwork.
+   Text transition looks better if fade-in and fade-out go in parallel.
+   For the artwork we start fading out the old icon only after the new one
+   is completely opaque (otherwise when transitioning between identical icons
+   we see some fading because the background transpires). */
+.track-stack > .track:not(.selected) .data,
+.track-stack > .track:not(.visible) .art {
+  -webkit-transition: opacity 220ms ease-out;
+  opacity: 0;
+}
+
+/* Track data. */
+
 .track .art {
+  position: relative;
   width: 48px;
   height: 48px;
-  margin: 4px 8px 4px 4px;
+  margin: 4px 0px 6px 4px;
+  -webkit-box-sizing: border-box;
+}
+
+.track .art.blank {
+  border: 1px solid #808080;
+  background-color: #1d1d1d;
+}
+
+.track .art img {
+  width: 100%;
+  height: 100%;
+}
+
+.track .art.blank img {
+  display: none;
+}
+
+.noart .track .art {
+  display: none;
 }
 
 .track .data {
-  width: 220px;
   margin-right: 4px;
+  margin-left: 8px;
 
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-box-pack: center;
-
-  opacity: 0.7;
-}
-
-.track.selected .data {
-  opacity: 1;
+  -webkit-box-flex: 1;
 }
 
 .track .data .data-title,
@@ -141,6 +194,14 @@ body {
 
 .track .data .data-title {
   font-weight: bold;
+}
+
+.single-track .data-title {
+  padding-right: 20px;
+}
+
+.collapsed:not(.single-track) .data-title {
+  padding-right: 50px;
 }
 
 /* Controls bar. */
@@ -198,18 +259,18 @@ body {
   min-height: 28px;
   padding-top: 100px;
   background-clip: padding-box;
-  background-color: rgba(255,255,255,0.05);
+  background-color: rgba(255,255,255,0.15);
   -webkit-box-shadow: inset 1px 1px 0px rgba(0,0,0,0.10),
                       inset 0px -1px 0px  rgba(0,0,0,0.07);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255,255,255,0.13);
+  background-color: rgba(255,255,255,0.20);
   -webkit-box-shadow: inset 1px 1px 1px rgba(0,0,0,0.25);
 }
 
 ::-webkit-scrollbar-thumb:active {
-  background-color: rgba(255,255,255,0.2);
+  background-color: rgba(255,255,255,0.25);
   -webkit-box-shadow: inset 1px 1px 3px rgba(0,0,0,0.35);
 }
 

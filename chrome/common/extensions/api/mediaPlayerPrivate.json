@@ -11,59 +11,39 @@
           "items": {
             "name": "items",
             "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "path": { "type": "string", "description": "URL of mediafile (in 'filesystem:' scheme for local files)." },
-                "error": { "type": "boolean", "description": "True if the file has failed to play ('playbackError' with its URL called)." }
-              }
-            }
+            "description": "Array of URLs for media files (in 'filesystem:' scheme for local files)",
+            "items": { "type": "string" }
           },
           "position": {
             "type": "integer",
-            "description": "Index of item in the 'items' array to play next."
-          },
-          "pendingPlaybackRequest": {
-            "type": "boolean",
-            "optional": "true",
-            "description": "Informs that a request to play current item has been received. This flag is reset automatically."
+            "description": "A position in the playlist."
           }
         }
       }
     ],
     "functions": [
       {
-        "name": "playAt",
-        "description": "Sets playlist positions and sets flag of pending play request. Then fires the onPlaylistChanged event.",
+        "name": "play",
+        "description": "Plays a new playlist from a given position.",
         "parameters": [
+          {
+            "name": "items",
+            "type": "array",
+            "description": "Array of URLs for media files (in 'filesystem:' scheme for local files)",
+            "items": { "type": "string" }
+          },
           {
             "name": "position",
             "type": "integer",
-            "description": "New position in the playlist."
-          }
-        ]
-      },
-      {
-        "name": "setPlaybackError",
-        "description": "Marks the URL as failed to play one. Mediaplayer will visually marks such an item. Then fires the onPlaylistChanged event.",
-        "parameters": [
-          {
-            "name": "url",
-            "type": "string",
-            "description": "URL failed to play."
+            "description": "A position in the playlist."
           }
         ]
       },
       {
         "name": "getPlaylist",
         "type": "function",
-        "description": "Returns current play list, position and flag of penging play request.",
+        "description": "Returns current playlist and position.",
         "parameters": [
-          {
-            "name": "resetPendingPlaybackRequest",
-            "type": "boolean",
-            "description": "If true the result will include pending playback request status and this status will be reset."
-          },
           {
             "name": "callback",
             "type": "function",
@@ -79,18 +59,19 @@
         ]
       },
       {
-        "name": "togglePlaylistPanel",
-        "description": "Shows or hides the playlist panel.",
-        "parameters": []
+        "name": "setWindowHeight",
+        "description": "Changes the height of the media player window.",
+        "parameters": [
+          {
+            "name": "height",
+            "type": "integer",
+            "description": "Height of the media player window (not including window title or borders)."
+          }
+        ]
       },
       {
-        "name": "toggleFullscreen",
-        "description": "Switches fullscreen mode on/off for the mediaplayer.",
-        "parameters": []
-      },
-      {
-        "name": "showPlaylistPanel",
-        "description": "Shows the playlist panel.",
+        "name": "closeWindow",
+        "description": "Closes the media player window.",
         "parameters": []
       }
     ],

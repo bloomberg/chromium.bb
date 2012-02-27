@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_file_browser_private_api.h"
+#include "chrome/browser/chromeos/extensions/file_browser_private_api.h"
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -15,13 +15,13 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
+#include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system_proxy.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/extensions/file_manager_util.h"
 #include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -72,9 +72,6 @@ const char kVolumeDevicePathNotFound[] = "Device path not found";
 #if defined(OS_CHROMEOS)
 const char kGDataMountPoint[] = "/special/gdata";
 #endif
-
-// Internal task ids.
-const char kEnqueueTaskId[] = "enqueue";
 
 const int kReadOnlyFilePermissions = base::PLATFORM_FILE_OPEN |
                                      base::PLATFORM_FILE_READ |
@@ -1190,9 +1187,7 @@ void ViewFilesFunction::GetLocalPathsResponseOnUIThread(
   for (FilePathList::const_iterator iter = files.begin();
        iter != files.end();
        ++iter) {
-    bool handled = file_manager_util::TryViewingFile(*iter,
-        // Start the first one, enqueue others.
-        internal_task_id == kEnqueueTaskId || iter != files.begin());
+    bool handled = file_manager_util::TryViewingFile(*iter);
     // If there is no default browser-defined handler for viewing this type
     // of file, try to see if we have any extension installed for it instead.
     if (!handled && files.size() == 1)

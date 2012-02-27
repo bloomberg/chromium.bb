@@ -19,9 +19,9 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/extensions/file_manager_util.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -57,8 +57,17 @@ using content::UserMetricsAction;
 static const char* kMediaPlayerAppName = "mediaplayer";
 static const int kPopupLeft = 0;
 static const int kPopupTop = 0;
-static const int kPopupWidth = 350;
-static const int kPopupHeight = 300;
+static const int kPopupWidth = 280;
+
+// Set the initial height to the minimum possible height. Keep the constants
+// in sync with chrome/browser/resources/file_manager/css/audio_player.css.
+// SetWindowHeight will be called soon after the popup creation with the correct
+// height which will cause a nice slide-up animation.
+// TODO(kaznacheev): Remove kTitleHeight when MediaPlayer becomes chromeless.
+static const int kTitleHeight = 24;
+static const int kTrackHeight = 58;
+static const int kControlsHeight = 35;
+static const int kPopupHeight = kTitleHeight + kTrackHeight + kControlsHeight;
 
 const MediaPlayer::UrlVector& MediaPlayer::GetPlaylist() const {
   return current_playlist_;
@@ -82,17 +91,27 @@ MediaPlayer* MediaPlayer::GetInstance() {
   return Singleton<MediaPlayer>::get();
 }
 
-void MediaPlayer::EnqueueMediaFile(Profile* profile,
-                                   const FilePath& file_path) {
-  GURL url;
-  file_manager_util::ConvertFileToFileSystemUrl(profile, file_path,
-                                                GetOriginUrl(), &url);
-  EnqueueMediaFileUrl(url);
+void MediaPlayer::SetWindowHeight(int height) {
+  if (mediaplayer_browser_ != NULL) {
+    mediaplayer_browser_->window()->SetBounds(gfx::Rect(kPopupLeft,
+                                                        kPopupTop,
+                                                        kPopupWidth,
+                                                        height + kTitleHeight));
+  }
+}
+
+void MediaPlayer::CloseWindow() {
+  if (mediaplayer_browser_ != NULL) {
+    mediaplayer_browser_->window()->Close();
+  }
+}
+
+void MediaPlayer::ClearPlaylist() {
+  current_playlist_.clear();
 }
 
 void MediaPlayer::EnqueueMediaFileUrl(const GURL& url) {
-  current_playlist_.push_back(MediaUrl(url));
-  NotifyPlaylistChanged();
+  current_playlist_.push_back(url);
 }
 
 void MediaPlayer::ForcePlayMediaFile(Profile* profile,
@@ -105,41 +124,14 @@ void MediaPlayer::ForcePlayMediaFile(Profile* profile,
 }
 
 void MediaPlayer::ForcePlayMediaURL(const GURL& url) {
-  current_playlist_.clear();
-  current_playlist_.push_back(MediaUrl(url));
-  current_position_ = current_playlist_.size() - 1;
-  pending_playback_request_ = true;
+  ClearPlaylist();
+  EnqueueMediaFileUrl(url);
+  SetPlaylistPosition(0);
   NotifyPlaylistChanged();
-}
-
-void MediaPlayer::TogglePlaylistWindowVisible() {
-  if (playlist_browser_)
-    ClosePlaylistWindow();
-  else
-    PopupPlaylist(NULL);
-}
-
-void MediaPlayer::ClosePlaylistWindow() {
-  if (playlist_browser_ != NULL)
-    playlist_browser_->window()->Close();
 }
 
 void MediaPlayer::SetPlaylistPosition(int position) {
-  const int playlist_size = current_playlist_.size();
-  if (current_position_ < 0 || current_position_ > playlist_size)
-    position = current_playlist_.size();
-  if (current_position_ != position) {
-    current_position_ = position;
-    NotifyPlaylistChanged();
-  }
-}
-
-void MediaPlayer::SetPlaybackError(GURL const& url) {
-  for (size_t x = 0; x < current_playlist_.size(); x++) {
-    if (current_playlist_[x].url == url)
-      current_playlist_[x].haderror = true;
-  }
-  NotifyPlaylistChanged();
+  current_position_ = position;
 }
 
 void MediaPlayer::Observe(int type,
@@ -150,48 +142,10 @@ void MediaPlayer::Observe(int type,
 
   if (content::Source<Browser>(source).ptr() == mediaplayer_browser_)
     mediaplayer_browser_ = NULL;
-  else if (content::Source<Browser>(source).ptr() == playlist_browser_)
-    playlist_browser_ = NULL;
 }
 
 void MediaPlayer::NotifyPlaylistChanged() {
   ExtensionMediaPlayerEventRouter::GetInstance()->NotifyPlaylistChanged();
-}
-
-bool MediaPlayer::GetPendingPlayRequestAndReset() {
-  bool result = pending_playback_request_;
-  pending_playback_request_ = false;
-  return result;
-}
-
-void MediaPlayer::SetPlaybackRequest() {
-  pending_playback_request_ = true;
-}
-
-void MediaPlayer::ToggleFullscreen() {
-  if (mediaplayer_browser_)
-    mediaplayer_browser_->ToggleFullscreenMode();
-}
-
-void MediaPlayer::PopupPlaylist(Browser* creator) {
-  if (playlist_browser_)
-    return;  // Already opened.
-
-  Profile* profile = BrowserList::GetLastActive()->profile();
-  playlist_browser_ = Browser::CreateForApp(Browser::TYPE_PANEL,
-                                            kMediaPlayerAppName,
-                                            gfx::Rect(),
-                                            profile);
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_BROWSER_CLOSED,
-                 content::Source<Browser>(playlist_browser_));
-  playlist_browser_->AddSelectedTabWithURL(GetMediaplayerPlaylistUrl(),
-                                           content::PAGE_TRANSITION_LINK);
-  playlist_browser_->window()->SetBounds(gfx::Rect(kPopupLeft,
-                                                   kPopupTop,
-                                                   kPopupWidth,
-                                                   kPopupHeight));
-  playlist_browser_->window()->Show();
 }
 
 void MediaPlayer::PopupMediaPlayer(Browser* creator) {
@@ -209,7 +163,10 @@ void MediaPlayer::PopupMediaPlayer(Browser* creator) {
   Profile* profile = BrowserList::GetLastActive()->profile();
   mediaplayer_browser_ = Browser::CreateForApp(Browser::TYPE_PANEL,
                                                kMediaPlayerAppName,
-                                               gfx::Rect(),
+                                               gfx::Rect(kPopupLeft,
+                                                         kPopupTop,
+                                                         kPopupWidth,
+                                                         kPopupHeight),
                                                profile);
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_CLOSED,
@@ -229,10 +186,6 @@ void MediaPlayer::PopupMediaPlayer(Browser* creator) {
 #endif
   mediaplayer_browser_->AddSelectedTabWithURL(GetMediaPlayerUrl(),
                                               content::PAGE_TRANSITION_LINK);
-  mediaplayer_browser_->window()->SetBounds(gfx::Rect(kPopupLeft,
-                                                      kPopupTop,
-                                                      kPopupWidth,
-                                                      kPopupHeight));
   mediaplayer_browser_->window()->Show();
 }
 
@@ -242,11 +195,9 @@ net::URLRequestJob* MediaPlayer::MaybeIntercept(net::URLRequest* request) {
   return NULL;
 }
 
-// This is the list of mime types currently supported by the Google
-// Document Viewer.
+// This is the list of mime types currently supported by the Media Player.
 static const char* const supported_mime_type_list[] = {
   "audio/mpeg",
-  "video/mp4",
   "audio/mp3"
 };
 
@@ -276,18 +227,12 @@ GURL MediaPlayer::GetOriginUrl() const {
   return file_manager_util::GetMediaPlayerUrl().GetOrigin();
 }
 
-GURL MediaPlayer::GetMediaplayerPlaylistUrl() const {
-  return file_manager_util::GetMediaPlayerPlaylistUrl();
-}
-
 GURL MediaPlayer::GetMediaPlayerUrl() const {
   return file_manager_util::GetMediaPlayerUrl();
 }
 
 MediaPlayer::MediaPlayer()
     : current_position_(0),
-      pending_playback_request_(false),
-      playlist_browser_(NULL),
       mediaplayer_browser_(NULL) {
   for (size_t i = 0; i < arraysize(supported_mime_type_list); ++i) {
     supported_mime_types_.insert(supported_mime_type_list[i]);

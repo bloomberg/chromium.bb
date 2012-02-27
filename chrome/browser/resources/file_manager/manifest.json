@@ -41,19 +41,6 @@
       ]
     },
     {
-      "id": "enqueue",
-      "default_title": "__MSG_ENQUEUE_MEDIA__",
-      "default_icon": "images/icon_add_to_queue_16x16.png",
-      "file_filters": [
-        "filesystem:*.flac",
-        "filesystem:*.m4a",
-        "filesystem:*.mp3",
-        "filesystem:*.oga",
-        "filesystem:*.ogg",
-        "filesystem:*.wav"
-      ]
-    },
-    {
       "id": "mount-archive",
       "default_title": "__MSG_MOUNT_ARCHIVE__",
       "default_icon": "images/icon_mount_archive_16x16.png",

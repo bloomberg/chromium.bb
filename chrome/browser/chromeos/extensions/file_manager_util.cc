@@ -1,7 +1,7 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "chrome/browser/extensions/file_manager_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager_util.h"
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
@@ -73,9 +73,9 @@ const char* kBrowserSupportedExtensions[] = {
 // List of file extension that can be handled with the media player.
 const char* kAVExtensions[] = {
 #if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
-    ".3gp", ".avi", ".mp3", ".mp4", ".m4v", ".mov", ".m4a",
+    ".mp3", ".m4a",
 #endif
-    ".flac", ".ogm", ".ogv", ".ogx", ".ogg", ".oga", ".wav", ".webm",
+    ".flac", ".ogm", ".ogg", ".oga", ".wav",
 /* TODO(zelidrag): Add unsupported ones as we enable them:
     ".mkv", ".divx", ".xvid", ".wmv", ".asf", ".mpeg", ".mpg",
     ".wma", ".aiff",
@@ -354,7 +354,7 @@ void ViewFolder(const FilePath& dir) {
 }
 
 void ViewFile(const FilePath& full_path, bool enqueue) {
-  if (!TryViewingFile(full_path, enqueue)) {
+  if (!TryViewingFile(full_path)) {
     Browser* browser = BrowserList::GetLastActive();
     if (!browser)
       return;
@@ -368,7 +368,7 @@ void ViewFile(const FilePath& full_path, bool enqueue) {
   }
 }
 
-bool TryViewingFile(const FilePath& full_path, bool enqueue) {
+bool TryViewingFile(const FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // There is nothing we can do if the browser is not present.
@@ -388,18 +388,8 @@ bool TryViewingFile(const FilePath& full_path, bool enqueue) {
 #if defined(OS_CHROMEOS)
   if (IsSupportedAVExtension(file_extension.data())) {
     MediaPlayer* mediaplayer = MediaPlayer::GetInstance();
-
-    if (mediaplayer->GetPlaylist().empty())
-      enqueue = false;  // Force to start playback if current playlist is
-                        // empty.
-
-    if (enqueue) {
-      mediaplayer->PopupPlaylist(browser);
-      mediaplayer->EnqueueMediaFile(browser->profile(), full_path);
-    } else {
-      mediaplayer->PopupMediaPlayer(browser);
-      mediaplayer->ForcePlayMediaFile(browser->profile(), full_path);
-    }
+    mediaplayer->PopupMediaPlayer(browser);
+    mediaplayer->ForcePlayMediaFile(browser->profile(), full_path);
     return true;
   }
 #endif  // OS_CHROMEOS

@@ -19,6 +19,9 @@ function AudioPlayer(container) {
   this.container_ = container;
   this.metadataProvider_ = new MetadataProvider();
   this.currentTrack_ = -1;
+  this.playlistGeneration_ = 0;
+
+  this.container_.classList.add('collapsed');
 
   function createChild(opt_className, opt_tag) {
     var child = container.ownerDocument.createElement(opt_tag || 'div');
@@ -28,7 +31,11 @@ function AudioPlayer(container) {
     return child;
   }
 
-  this.playlist_ = createChild('playlist');
+  // We create two separate containers (for expanded and compact view) and keep
+  // two sets of TrackInfo instances. We could fiddle with a single set instead
+  // but it would make keeping the list scroll position very tricky.
+  this.trackList_ = createChild('track-list');
+  this.trackStack_ = createChild('track-stack');
 
   createChild('title-button close').addEventListener(
       'click', function() { chrome.mediaPlayerPrivate.closeWindow() });
@@ -43,74 +50,147 @@ function AudioPlayer(container) {
 }
 
 AudioPlayer.load = function() {
+  document.ondragstart = function(e) { e.preventDefault() };
+
   var player = new AudioPlayer(document.querySelector('.audio-player'));
   function getPlaylist() {
-    chrome.mediaPlayerPrivate.getPlaylist(true, player.load.bind(player));
+    chrome.mediaPlayerPrivate.getPlaylist(player.load.bind(player));
   }
   getPlaylist();
   chrome.mediaPlayerPrivate.onPlaylistChanged.addListener(getPlaylist);
 };
 
 AudioPlayer.prototype.load = function(playlist) {
-  this.stopTrack_();
+  this.playlistGeneration_++;
 
-  this.playlist_.textContent = '';
+  this.audioControls_.pause();
 
-  this.trackInfo_ = [];
+  this.currentTrack_ = -1;
 
-  for (var i = 0; i != playlist.items.length; i++) {
-    var url = playlist.items[i].path;
-    var trackInfo = new AudioPlayer.TrackInfo(
-        this.playlist_, url, this.select_.bind(this, i));
-    this.metadataProvider_.fetch(url, trackInfo.setMetadata.bind(trackInfo));
-    this.trackInfo_.push(trackInfo);
-  }
+  this.urls_ = playlist.items;
 
-  if (this.trackInfo_.length == 1)
+  if (this.urls_.length == 1)
     this.container_.classList.add('single-track');
   else
     this.container_.classList.remove('single-track');
 
-  this.currentTrack_ = 0;
-  this.playTrack_();
-
   this.syncHeight_();
-};
 
-AudioPlayer.prototype.select_ = function(track) {
-  if (this.currentTrack_ != track) {
-    this.stopTrack_();
-    this.currentTrack_ = track;
-    this.playTrack_();
+  this.trackList_.textContent = '';
+  this.trackStack_.textContent = '';
+
+  this.trackListItems_ = [];
+  this.trackStackItems_ = [];
+
+  for (var i = 0; i != this.urls_.length; i++) {
+    var url = this.urls_[i];
+    var onClick = this.select_.bind(this, i);
+    this.trackListItems_.push(
+        new AudioPlayer.TrackInfo(this.trackList_, url, onClick));
+    this.trackStackItems_.push(
+        new AudioPlayer.TrackInfo(this.trackStack_, url, onClick));
+  }
+
+  this.select_(playlist.position);
+
+  // This class will be removed if at least one track has art.
+  this.container_.classList.add('noart');
+
+  // Load the selected track metadata first, then load the rest.
+  this.loadMetadata_(playlist.position);
+  for (i = 0; i != this.urls_.length; i++) {
+    if (i != playlist.position)
+      this.loadMetadata_(i);
   }
 };
 
-AudioPlayer.prototype.stopTrack_ = function() {
-  if (this.currentTrack_ != -1) {
-    this.audioControls_.pause();
-    this.trackInfo_[this.currentTrack_].select(false);
-  }
+AudioPlayer.prototype.loadMetadata_ = function(track) {
+  this.metadataProvider_.fetch(
+      this.urls_[track],
+      function(generation, metadata) {
+        // Do nothing if another load happened since the metadata request.
+        if (this.playlistGeneration_ != generation)
+          return;
+
+        if (metadata.thumbnailURL) {
+          this.container_.classList.remove('noart');
+        }
+        this.trackListItems_[track].setMetadata(metadata);
+        this.trackStackItems_[track].setMetadata(metadata);
+      }.bind(this, this.playlistGeneration_));
 };
 
-AudioPlayer.prototype.playTrack_ = function() {
-  var trackInfo = this.trackInfo_[this.currentTrack_];
+AudioPlayer.prototype.select_ = function(newTrack) {
+  if (this.currentTrack_ == newTrack) return;
+
+  this.changeSelectionInList_(this.currentTrack_, newTrack);
+  this.changeSelectionInStack_(this.currentTrack_, newTrack);
+
+  this.currentTrack_ = newTrack;
+  this.scrollToCurrent_(false);
+
   var media = this.audioControls_.getMedia();
-  trackInfo.select(true);
-  media.src = trackInfo.getUrl();
+  media.src = this.urls_[this.currentTrack_];
   media.load();
   this.audioControls_.play();
 };
 
+AudioPlayer.prototype.changeSelectionInList_ = function(oldTrack, newTrack) {
+  this.trackListItems_[newTrack].getBox().classList.add('selected');
+
+  if (oldTrack >= 0) {
+    this.trackListItems_[oldTrack].getBox().classList.remove('selected');
+  }
+};
+
+AudioPlayer.prototype.changeSelectionInStack_ = function(oldTrack, newTrack) {
+  var newBox = this.trackStackItems_[newTrack].getBox();
+  newBox.classList.add('selected');  // Put on top immediately.
+  newBox.classList.add('visible');  // Start fading in.
+
+  if (oldTrack >= 0) {
+    var oldBox = this.trackStackItems_[oldTrack].getBox();
+    oldBox.classList.remove('selected'); // Put under immediately.
+    setTimeout(function () {
+      if (!oldBox.classList.contains('selected')) {
+        // This will start fading out which is not really necessary because
+        // oldBox is already completely obscured by newBox.
+        oldBox.classList.remove('visible');
+      }
+    }, 300);
+  }
+};
+
+/**
+ * Scrolls the current track into the viewport.
+ *
+ * @param {boolean} keepAtBottom If true, make the selected track the last
+ *   of the visible (if possible). If false, perform minimal scrolling.
+ */
+AudioPlayer.prototype.scrollToCurrent_ = function(keepAtBottom) {
+  var box = this.trackListItems_[this.currentTrack_].getBox();
+  this.trackList_.scrollTop = Math.max(
+      keepAtBottom ? 0 : Math.min(box.offsetTop, this.trackList_.scrollTop),
+      box.offsetTop + box.offsetHeight - this.trackList_.clientHeight);
+};
+
+AudioPlayer.prototype.isCompact_ = function() {
+  return this.container_.classList.contains('collapsed') ||
+         this.container_.classList.contains('single-track');
+};
+
 AudioPlayer.prototype.advance_ = function(forward) {
   var newTrack = this.currentTrack_ + (forward ? 1 : -1);
-  if (newTrack < 0) newTrack = this.trackInfo_.length - 1;
-  if (newTrack == this.trackInfo_.length) newTrack = 0;
+  if (newTrack < 0) newTrack = this.urls_.length - 1;
+  if (newTrack == this.urls_.length) newTrack = 0;
   this.select_(newTrack);
 };
 
 AudioPlayer.prototype.onExpandCollapse_ = function() {
   this.container_.classList.toggle('collapsed');
   this.syncHeight_();
+  if (!this.isCompact_())
+    this.scrollToCurrent_(true);
 };
 
 /* Keep the below constants in sync with the CSS. */
@@ -119,12 +199,14 @@ AudioPlayer.TRACK_HEIGHT = 58;
 AudioPlayer.CONTROLS_HEIGHT = 35;
 
 AudioPlayer.prototype.syncHeight_ = function() {
-  var collapsed = this.container_.classList.contains('collapsed');
-  var singleTrack = this.container_.classList.contains('single-track');
-  var visibleTracks = Math.min(this.trackInfo_.length, collapsed ? 1 : 3);
+  var expandedListHeight =
+      Math.min(this.urls_.length, 3) * AudioPlayer.TRACK_HEIGHT;
+  this.trackList_.style.height = expandedListHeight + 'px';
+
   chrome.mediaPlayerPrivate.setWindowHeight(
-    ((collapsed || singleTrack)? 0 : AudioPlayer.HEADER_HEIGHT) +
-    visibleTracks * AudioPlayer.TRACK_HEIGHT +
+    (this.isCompact_() ?
+        AudioPlayer.TRACK_HEIGHT :
+        AudioPlayer.HEADER_HEIGHT + expandedListHeight) +
     AudioPlayer.CONTROLS_HEIGHT);
 };
 
@@ -147,9 +229,12 @@ AudioPlayer.TrackInfo = function(container, url, onClick) {
   this.box_.addEventListener('click', onClick);
   container.appendChild(this.box_);
 
-  this.art_ = doc.createElement('img');
-  this.art_.className = 'art';
+  this.art_ = doc.createElement('div');
+  this.art_.className = 'art blank';
   this.box_.appendChild(this.art_);
+
+  this.img_ = doc.createElement('img');
+  this.art_.appendChild(this.img_);
 
   this.data_ = doc.createElement('div');
   this.data_.className = 'data';
@@ -164,11 +249,7 @@ AudioPlayer.TrackInfo = function(container, url, onClick) {
   this.data_.appendChild(this.artist_);
 };
 
-AudioPlayer.TrackInfo.prototype.getUrl = function() { return this.url_ };
-
-AudioPlayer.TrackInfo.prototype.getDefaultArtwork = function() {
-  return 'images/filetype_large_audio.png';
-};
+AudioPlayer.TrackInfo.prototype.getBox = function() { return this.box_ };
 
 AudioPlayer.TrackInfo.prototype.getDefaultTitle = function() {
   var title = this.url_.split('/').pop();
@@ -182,21 +263,10 @@ AudioPlayer.TrackInfo.prototype.getDefaultArtist = function() {
 };
 
 AudioPlayer.TrackInfo.prototype.setMetadata = function(metadata) {
-  this.art_.src = metadata.thumbnailURL || this.getDefaultArtwork();
+  if (metadata.thumbnailURL) {
+    this.art_.classList.remove('blank');
+    this.img_.src = metadata.thumbnailURL;
+  }
   this.title_.textContent = metadata.title || this.getDefaultTitle();
   this.artist_.textContent = metadata.artist || this.getDefaultArtist();
-};
-
-AudioPlayer.TrackInfo.prototype.select = function(on) {
-  if (on) {
-    this.box_.classList.add('selected');
-
-    // Scroll if necessary to make the selected item fully visible.
-    var parent = this.box_.parentNode;
-    parent.scrollTop = Math.max(
-        this.box_.offsetTop + this.box_.offsetHeight - parent.offsetHeight,
-        Math.min(this.box_.offsetTop, parent.scrollTop));
-  } else {
-    this.box_.classList.remove('selected');
-  }
 };

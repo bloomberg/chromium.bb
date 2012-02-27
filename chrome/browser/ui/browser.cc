@@ -220,7 +220,7 @@
 #endif
 
 #if defined(FILE_MANAGER_EXTENSION)
-#include "chrome/browser/extensions/file_manager_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #endif
 
 using base::TimeDelta;

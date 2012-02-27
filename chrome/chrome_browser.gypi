@@ -489,6 +489,10 @@
         'browser/chromeos/extensions/file_browser_event_router.h',
         'browser/chromeos/extensions/file_browser_notifications.cc',
         'browser/chromeos/extensions/file_browser_notifications.h',
+        'browser/chromeos/extensions/file_browser_private_api.cc',
+        'browser/chromeos/extensions/file_browser_private_api.h',
+        'browser/chromeos/extensions/file_manager_util.cc',
+        'browser/chromeos/extensions/file_manager_util.h',
         'browser/chromeos/extensions/input_method_event_router.cc',
         'browser/chromeos/extensions/input_method_event_router.h',
         'browser/chromeos/extensions/media_player_event_router.cc',
@@ -706,6 +710,8 @@
         'browser/chromeos/login/wizard_screen.h',
         'browser/chromeos/media/media_player.cc',
         'browser/chromeos/media/media_player.h',
+        'browser/chromeos/media/media_player_extension_api.cc',
+        'browser/chromeos/media/media_player_extension_api.h',
         'browser/chromeos/mobile_config.cc',
         'browser/chromeos/mobile_config.h',
         'browser/chromeos/native_dialog_window.cc',
@@ -1123,8 +1129,6 @@
         'browser/extensions/extension_event_router.h',
         'browser/extensions/extension_event_router_forwarder.cc',
         'browser/extensions/extension_event_router_forwarder.h',
-        'browser/extensions/extension_file_browser_private_api.cc',
-        'browser/extensions/extension_file_browser_private_api.h',
         'browser/extensions/extension_font_settings_api.cc',
         'browser/extensions/extension_font_settings_api.h',
         'browser/extensions/extension_function.cc',
@@ -1173,8 +1177,6 @@
         'browser/extensions/extension_management_api.h',
         'browser/extensions/extension_management_api_constants.cc',
         'browser/extensions/extension_management_api_constants.h',
-        'browser/extensions/extension_mediaplayer_private_api.cc',
-        'browser/extensions/extension_mediaplayer_private_api.h',
         'browser/extensions/extension_menu_manager.cc',
         'browser/extensions/extension_menu_manager.h',
         'browser/extensions/extension_message_handler.cc',
@@ -1294,8 +1296,6 @@
         'browser/extensions/external_pref_extension_loader.h',
         'browser/extensions/external_registry_extension_loader_win.cc',
         'browser/extensions/external_registry_extension_loader_win.h',
-        'browser/extensions/file_manager_util.cc',
-        'browser/extensions/file_manager_util.h',
         'browser/extensions/file_reader.cc',
         'browser/extensions/file_reader.h',
         'browser/extensions/image_loading_tracker.cc',
@@ -4468,12 +4468,12 @@
         }],
         ['file_manager_extension==0', {
           'sources/': [
-            ['exclude', 'browser/extensions/extension_file_browser_private_api.cc'],
-            ['exclude', 'browser/extensions/extension_file_browser_private_api.h'],
-            ['exclude', 'browser/extensions/extension_mediaplayer_private_api.cc'],
-            ['exclude', 'browser/extensions/extension_mediaplayer_private_api.h'],
-            ['exclude', 'browser/extensions/file_manager_util.h'],
-            ['exclude', 'browser/extensions/file_manager_util.cc'],
+            ['exclude', 'browser/chromeos/media/media_player_extension_api.cc'],
+            ['exclude', 'browser/chromeos/media/media_player_extension_api.h'],
+            ['exclude', 'browser/chromeos/extensions/file_browser_private_api.cc'],
+            ['exclude', 'browser/chromeos/extensions/file_browser_private_api.h'],
+            ['exclude', 'browser/chromeos/extensions/file_manager_util.h'],
+            ['exclude', 'browser/chromeos/extensions/file_manager_util.cc'],
           ],
         }],
         ['use_ibus==1', {
@@ -5306,7 +5306,7 @@
             # non-ChromeOS views Linux builds.
             ['OS=="linux" and toolkit_views==1 and chromeos==0', {
               'sources/': [
-                ['exclude', '^browser/extensions/extension_file_browser_private_api'],
+                ['exclude', '^browser/chromeos/extensions/file_browser_private_api'],
                 ['include', '^browser/ui/gtk/select_file_dialog_impl.cc'],
                 ['include', '^browser/ui/gtk/select_file_dialog_impl.h'],
                 ['include', '^browser/ui/gtk/select_file_dialog_impl_gtk.cc'],
@@ -5338,18 +5338,6 @@
                 ['include', '^browser/ui/views/status_icons/status_tray_chromeos.cc'],
                 ['include', '^browser/ui/views/status_icons/status_tray_chromeos.h'],
                 ['exclude', '^browser/ui/views/status_icons/status_tray_linux.cc'],
-              ],
-            }],
-            # Exclude file manager files again
-            # (Required because of the '^browser/extensions/' include above)
-            ['file_manager_extension==0', {
-              'sources/': [
-                ['exclude', 'browser/extensions/extension_file_browser_private_api.cc'],
-                ['exclude', 'browser/extensions/extension_file_browser_private_api.h'],
-                ['exclude', 'browser/extensions/extension_mediaplayer_private_api.cc'],
-                ['exclude', 'browser/extensions/extension_mediaplayer_private_api.h'],
-                ['exclude', 'browser/extensions/file_manager_util.h'],
-                ['exclude', 'browser/extensions/file_manager_util.cc'],
               ],
             }],
             # GTK build only
