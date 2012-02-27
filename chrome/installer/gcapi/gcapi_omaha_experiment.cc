@@ -11,6 +11,7 @@
 #include "base/win/registry.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
+#include "chrome/installer/gcapi/gcapi.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -73,10 +74,17 @@ int GetCurrentRlzWeek() {
 
 }  // namespace
 
-bool SetOmahaExperimentLabel(const wchar_t* brand_code) {
+bool SetOmahaExperimentLabel(const wchar_t* brand_code, int shell_mode) {
   if (!brand_code) {
     return false;
   }
+
+  // When this function is invoked in standard, non-elevated shell, we default
+  // to writing the experiment label to HKCU.  When it is invoked in a UAC-
+  // elevated shell, we write the experiment label to HKLM.
+  HKEY registry_hive =
+      shell_mode == GCAPI_INVOKED_UAC_ELEVATION ? HKEY_LOCAL_MACHINE :
+                                                  HKEY_CURRENT_USER;
 
   int week_number = GetCurrentRlzWeek();
   if (week_number < 0 || week_number > 999)
@@ -84,7 +92,7 @@ bool SetOmahaExperimentLabel(const wchar_t* brand_code) {
 
   string16 experiment_label;
   base::SStringPrintf(&experiment_label,
-                      L"%ls_%d|%ls",
+                      L"reacbrand=%ls_%d|%ls",
                       brand_code,
                       week_number,
                       BuildOmahaExperimentDateString().c_str());
@@ -95,7 +103,7 @@ bool SetOmahaExperimentLabel(const wchar_t* brand_code) {
     experiment_path += L"\\";
     experiment_path += kExperimentAppGuids[i];
 
-    RegKey client_state(HKEY_LOCAL_MACHINE, experiment_path.c_str(),
+    RegKey client_state(registry_hive, experiment_path.c_str(),
                         KEY_SET_VALUE);
     if (client_state.Valid()) {
       if (client_state.WriteValue(kExperimentLabels,

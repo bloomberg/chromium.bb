@@ -7,6 +7,7 @@
 #include "base/time.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/google_update_constants.h"
+#include "chrome/installer/gcapi/gcapi.h"
 
 using base::Time;
 using base::win::RegKey;
@@ -44,8 +45,13 @@ bool HasBeenReactivatedByBrandCodes(
   return success;
 }
 
-bool SetReactivationBrandCode(const std::wstring& brand_code) {
+bool SetReactivationBrandCode(const std::wstring& brand_code, int shell_mode) {
   bool success = false;
+
+  // This function currently only should be run in a non-elevated shell,
+  // so we return "true" if it is being invoked from an elevated shell.
+  if (shell_mode == GCAPI_INVOKED_UAC_ELEVATION)
+    return true;
 
   std::wstring path(google_update::kRegPathClientState);
   path += L"\\";

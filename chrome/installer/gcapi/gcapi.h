@@ -24,18 +24,27 @@ extern "C" {
 #define REACTIVATE_ERROR_INVALID_INPUT           0x08
 #define REACTIVATE_ERROR_REACTIVATION_FAILED     0x10
 
+// Flags to indicate how GCAPI is invoked
+#define GCAPI_INVOKED_STANDARD_SHELL             0x01
+#define GCAPI_INVOKED_UAC_ELEVATION              0x02
+
 // The minimum number of days an installation can be dormant before reactivation
 // may be offered.
 const int kReactivationMinDaysDormant = 50;
 
 // This function returns TRUE if Google Chrome should be offered.
-// If the return is FALSE, the reasons DWORD explains why.  If you don't care
-// for the reason, you can pass NULL for reasons.
-// set_flag indicates whether a flag should be set indicating that Chrome was
+// If the return is FALSE, the |reasons| DWORD explains why.  If you don't care
+// for the reason, you can pass NULL for |reasons|.
+// |set_flag| indicates whether a flag should be set indicating that Chrome was
 // offered within the last six months; if passed FALSE, this method will not
 // set the flag even if Chrome can be offered.  If passed TRUE, this method
 // will set the flag only if Chrome can be offered.
-BOOL __stdcall GoogleChromeCompatibilityCheck(BOOL set_flag, DWORD* reasons);
+// |shell_mode| should be set to one of GCAPI_INVOKED_STANDARD_SHELL or
+// GCAPI_INVOKED_UAC_ELEVATION depending on whether this method is invoked
+// from an elevated or non-elevated process.
+BOOL __stdcall GoogleChromeCompatibilityCheck(BOOL set_flag,
+                                              int shell_mode,
+                                              DWORD* reasons);
 
 // This function launches Google Chrome after a successful install. Make
 // sure COM library is NOT initialized before you call this function (so if
@@ -71,9 +80,13 @@ int __stdcall GoogleChromeDaysSinceLastRun();
 // as |previous_brand_codes|. Returns false if the vendor may not offer
 // reactivation at this time, and places one of the REACTIVATE_ERROR_XXX values
 // in |error_code| if |error_code| is non-null.
+// |shell_mode| should be set to one of GCAPI_INVOKED_STANDARD_SHELL or
+// GCAPI_INVOKED_UAC_ELEVATION depending on whether this method is invoked
+// from an elevated or non-elevated process.
 BOOL __stdcall CanOfferReactivation(const wchar_t* brand_code,
                                     int previous_brand_codes_length,
                                     const wchar_t** previous_brand_codes,
+                                    int shell_mode,
                                     DWORD* error_code);
 
 // Attempts to reactivate Chrome for the specified |brand_code|. If the vendor
@@ -81,23 +94,29 @@ BOOL __stdcall CanOfferReactivation(const wchar_t* brand_code,
 // size |previous_brand_codes_length| as |previous_brand_codes|. Returns false
 // if reactivation fails, and places one of the REACTIVATE_ERROR_XXX values
 // in |error_code| if |error_code| is non-null.
+// |shell_mode| should be set to one of GCAPI_INVOKED_STANDARD_SHELL or
+// GCAPI_INVOKED_UAC_ELEVATION depending on whether this method is invoked
+// from an elevated or non-elevated process.
 BOOL __stdcall ReactivateChrome(wchar_t* brand_code,
                                 int previous_brand_codes_length,
                                 const wchar_t** previous_brand_codes,
+                                int shell_mode,
                                 DWORD* error_code);
 
 // Function pointer type declarations to use with GetProcAddress.
-typedef BOOL (__stdcall *GCCC_CompatibilityCheck)(BOOL, DWORD *);
+typedef BOOL (__stdcall *GCCC_CompatibilityCheck)(BOOL, int, DWORD *);
 typedef BOOL (__stdcall *GCCC_LaunchGC)(HANDLE *);
 typedef BOOL (__stdcall *GCCC_LaunchGCWithDimensions)(int, int, int, int);
 typedef int (__stdcall *GCCC_GoogleChromeDaysSinceLastRun)();
 typedef BOOL (__stdcall *GCCC_CanOfferReactivation)(const wchar_t*,
                                                     int,
                                                     const wchar_t**,
+                                                    int,
                                                     DWORD*);
 typedef BOOL (__stdcall *GCCC_ReactivateChrome)(const wchar_t*,
                                                 int,
                                                 const wchar_t**,
+                                                int,
                                                 DWORD*);
 
 }  // extern "C"

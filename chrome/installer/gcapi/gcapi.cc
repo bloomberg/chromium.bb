@@ -320,7 +320,9 @@ bool GetUserIdForProcess(size_t pid, wchar_t** user_sid) {
 }
 }  // namespace
 
-BOOL __stdcall GoogleChromeCompatibilityCheck(BOOL set_flag, DWORD* reasons) {
+BOOL __stdcall GoogleChromeCompatibilityCheck(BOOL set_flag,
+                                              int shell_mode,
+                                              DWORD* reasons) {
   DWORD local_reasons = 0;
 
   WindowsVersion windows_version = GetWindowsVersion();
@@ -334,13 +336,17 @@ BOOL __stdcall GoogleChromeCompatibilityCheck(BOOL set_flag, DWORD* reasons) {
   if (IsChromeInstalled(HKEY_CURRENT_USER))
     local_reasons |= GCCC_ERROR_USERLEVELALREADYPRESENT;
 
-  if (!VerifyHKLMAccess()) {
+  if (shell_mode == GCAPI_INVOKED_UAC_ELEVATION) {
+    // Only check that we have HKLM write permissions if we specify that
+    // GCAPI is being invoked from an elevated shell, or in admin mode
+    if (!VerifyHKLMAccess()) {
     local_reasons |= GCCC_ERROR_ACCESSDENIED;
-  } else if ((windows_version == VERSION_VISTA_OR_HIGHER) &&
-             !VerifyAdminGroup()) {
+    } else if ((windows_version == VERSION_VISTA_OR_HIGHER) &&
+         !VerifyAdminGroup()) {
     // For Vista or later check for elevation since even for admin user we could
     // be running in non-elevated mode. We require integrity level High.
     local_reasons |= GCCC_ERROR_INTEGRITYLEVEL;
+    }
   }
 
   // Then only check whether we can re-offer, if everything else is OK.
@@ -545,6 +551,7 @@ int __stdcall GoogleChromeDaysSinceLastRun() {
 BOOL __stdcall CanOfferReactivation(const wchar_t* brand_code,
                                     int previous_brand_codes_length,
                                     const wchar_t** previous_brand_codes,
+                                    int shell_mode,
                                     DWORD* error_code) {
   DCHECK(error_code);
 
@@ -574,17 +581,23 @@ BOOL __stdcall CanOfferReactivation(const wchar_t* brand_code,
 
   // Make sure we haven't previously been reactivated by this brand code
   // or any of the previous brand codes from this partner.
-  std::vector<std::wstring> reactivation_brands;
-  reactivation_brands.push_back(brand_code);
-  if (previous_brand_codes_length > 0 && previous_brand_codes != NULL) {
-    std::copy(previous_brand_codes,
-              previous_brand_codes + previous_brand_codes_length,
-              std::back_inserter(reactivation_brands));
-  }
-  if (HasBeenReactivatedByBrandCodes(reactivation_brands)) {
-    if (error_code)
-      *error_code = REACTIVATE_ERROR_ALREADY_REACTIVATED;
-    return FALSE;
+  // Since this function is invoked by ReactivateChrome, and since
+  // ReactivateChrome is called first in non-elevated shell and
+  // second in UAC-elevated shell, we only want to execute this block
+  // of code the first time, in non-elevated mode.
+  if (shell_mode == GCAPI_INVOKED_STANDARD_SHELL) {
+    std::vector<std::wstring> reactivation_brands;
+    reactivation_brands.push_back(brand_code);
+    if (previous_brand_codes_length > 0 && previous_brand_codes != NULL) {
+      std::copy(previous_brand_codes,
+                previous_brand_codes + previous_brand_codes_length,
+                std::back_inserter(reactivation_brands));
+    }
+    if (HasBeenReactivatedByBrandCodes(reactivation_brands)) {
+      if (error_code)
+        *error_code = REACTIVATE_ERROR_ALREADY_REACTIVATED;
+      return FALSE;
+    }
   }
 
   return TRUE;
@@ -593,16 +606,18 @@ BOOL __stdcall CanOfferReactivation(const wchar_t* brand_code,
 BOOL __stdcall ReactivateChrome(wchar_t* brand_code,
                                 int previous_brand_codes_length,
                                 const wchar_t** previous_brand_codes,
+                                int shell_mode,
                                 DWORD* error_code) {
   BOOL result = FALSE;
   if (CanOfferReactivation(brand_code,
                            previous_brand_codes_length,
                            previous_brand_codes,
+                           shell_mode,
                            error_code)) {
-    if (SetReactivationBrandCode(brand_code)) {
+    if (SetReactivationBrandCode(brand_code, shell_mode)) {
       // Currently set this as a best-effort thing. We return TRUE if
       // reactivation succeeded regardless of the experiment label result.
-      SetOmahaExperimentLabel(brand_code);
+      SetOmahaExperimentLabel(brand_code, shell_mode);
 
       result = TRUE;
     } else {
