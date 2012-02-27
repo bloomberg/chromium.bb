@@ -226,7 +226,7 @@ class ValidationPool(object):
       project = pending_commit.getAttribute(lkgm_manager.PALADIN_PROJECT_ATTR)
       change = pending_commit.getAttribute(lkgm_manager.PALADIN_CHANGE_ID_ATTR)
       commit = pending_commit.getAttribute(lkgm_manager.PALADIN_COMMIT_ATTR)
-      pool.append(pool.gerrit_helper.GrabPatchFromGerrit(
+      pool.changes.append(pool.gerrit_helper.GrabPatchFromGerrit(
           project, change, commit))
 
     return pool
