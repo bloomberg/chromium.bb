@@ -1,5 +1,17 @@
 liblouis NEWS -- history of user-visible changes.
 
+* Noteworthy changes in release 2.?.? (????-??-??)
+
+** New features
+*** Improvements to the python bindings
+    All constants defined in liblouis.h are now exposed in the bindings.
+
+** Improved the documentation
+
+** Bug fixes
+
+** Braille Table Improvements
+
 * Noteworthy changes in release 2.4.1 (2012-2-22)
 
 ** New features
@@ -13,7 +25,6 @@ liblouis NEWS -- history of user-visible changes.
    - Updates and additions to Icelandic 8-dot braille table.
    - Improvements to the uncontracted Spanish computer braille table.
    - Improvements to the Norwegian braille table thanks to David Hole.
-
 
 * Noteworthy changes in release 2.4.0 (2012-01-31)
 

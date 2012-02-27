@@ -1,3 +1,8 @@
+2012-02-27  Mesar Hameed <mesar.hameed@gmail.com>
+
+	* python/louis/__init__.py.in: Expose the constants otherTrans and
+	ucBrl in the python bindings.
+
 2012-02-22  Christian Egli  <christian.egli@sbs.ch>
 
 	* configure.ac: Update version number

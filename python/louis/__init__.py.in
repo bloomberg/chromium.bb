@@ -282,6 +282,8 @@ dotsIO = 4
 comp8Dots = 8
 pass1Only = 16
 compbrlLeftCursor = 32
+otherTrans = 64
+ucBrl = 128
 #}
 
 if __name__ == '__main__':
