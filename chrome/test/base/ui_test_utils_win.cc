@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "ui/base/win/foreground_helper.h"
 #include "ui/views/focus/focus_manager.h"
 
 namespace ui_test_utils {
@@ -51,6 +52,11 @@ bool ShowAndFocusNativeWindow(gfx::NativeWindow window) {
   // TODO(jcampan): retrieve the NativeWidgetWin and show/hide on it instead of
   // using Windows API.
   ::ShowWindow(window, SW_SHOW);
+
+  if (GetForegroundWindow() != window) {
+    VLOG(1) << "Forcefully refocusing front window";
+    ui::ForegroundHelper::SetForeground(window);
+  }
 
   // ShowWindow does not necessarily activate the window. In particular if a
   // window from another app is the foreground window then the request to

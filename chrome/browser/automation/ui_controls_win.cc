@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,8 @@ bool SendKeyPress(gfx::NativeWindow window,
                   bool alt,
                   bool command) {
   DCHECK(!command);  // No command key on Windows
-  return internal::SendKeyPressImpl(key, control, shift, alt, base::Closure());
+  return internal::SendKeyPressImpl(window, key, control, shift, alt,
+                                    base::Closure());
 }
 
 bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
@@ -30,7 +31,7 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
                                 bool command,
                                 const base::Closure& task) {
   DCHECK(!command);  // No command key on Windows
-  return internal::SendKeyPressImpl(key, control, shift, alt, task);
+  return internal::SendKeyPressImpl(window, key, control, shift, alt, task);
 }
 
 bool SendMouseMove(long x, long y) {
