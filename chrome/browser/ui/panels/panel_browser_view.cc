@@ -73,13 +73,11 @@ void PanelBrowserView::Init() {
 }
 
 void PanelBrowserView::Show() {
-  if (!panel_->manager()->is_full_screen())
-    BrowserView::Show();
+  BrowserView::Show();
 }
 
 void PanelBrowserView::ShowInactive() {
-  if (!panel_->manager()->is_full_screen())
-    BrowserView::ShowInactive();
+  BrowserView::ShowInactive();
 }
 
 void PanelBrowserView::Close() {

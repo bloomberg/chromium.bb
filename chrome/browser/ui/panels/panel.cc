@@ -189,6 +189,9 @@ void Panel::FullScreenModeChanged(bool is_full_screen) {
 }
 
 void Panel::Show() {
+  if (manager()->is_full_screen())
+    return;
+
   if (panel_strip_->CanShowPanelAsActive(this))
     native_panel_->ShowPanel();
   else
@@ -196,6 +199,9 @@ void Panel::Show() {
 }
 
 void Panel::ShowInactive() {
+  if (manager()->is_full_screen())
+    return;
+
   native_panel_->ShowPanelInactive();
 }
 

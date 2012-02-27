@@ -124,16 +124,11 @@ Panel* PanelManager::CreatePanel(Browser* browser) {
       content::Source<Panel>(panel),
       content::NotificationService::NoDetails());
 
-// We don't enable full screen detection for Linux as z-order rules for
-// panels on Linux ensures that they're below any app running in full screen
-// mode.
-#if defined(OS_WIN) || defined(OS_MACOSX)
   if (num_panels() == 1) {
     full_screen_mode_timer_.Start(FROM_HERE,
         base::TimeDelta::FromMilliseconds(kFullScreenModeCheckIntervalMs),
         this, &PanelManager::CheckFullScreenMode);
   }
-#endif
 
   return panel;
 }
@@ -152,10 +147,8 @@ void PanelManager::CheckFullScreenMode() {
 }
 
 void PanelManager::OnPanelRemoved(Panel* panel) {
-#if defined(OS_WIN) || defined(OS_MACOSX)
   if (num_panels() == 0)
     full_screen_mode_timer_.Stop();
-#endif
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_REMOVED,

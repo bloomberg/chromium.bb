@@ -100,7 +100,8 @@ void OverflowPanelStrip::AddPanel(Panel* panel) {
   panel->SetAppIconVisibility(false);
 
   if (num_panels() == 1) {
-    panel_manager_->mouse_watcher()->AddObserver(this);
+    if (!panel_manager_->is_full_screen())
+      panel_manager_->mouse_watcher()->AddObserver(this);
     UpdateMaxVisiblePanelsOnHover();
   }
 
@@ -127,7 +128,7 @@ bool OverflowPanelStrip::RemovePanel(Panel* panel) {
   DoRefresh(index, panels_.size() - 1);
   panel_manager_->OnPanelRemoved(panel);
 
-  if (panels_.empty())
+  if (panels_.empty() && !panel_manager_->is_full_screen())
     panel_manager_->mouse_watcher()->RemoveObserver(this);
 
   // Update the overflow indicator. If the number of overflow panels fall below
@@ -298,7 +299,7 @@ void OverflowPanelStrip::OnMouseMove(const gfx::Point& mouse_position) {
 
 bool OverflowPanelStrip::ShouldShowOverflowTitles(
     const gfx::Point& mouse_position) const {
-  if (panels_.empty())
+  if (panels_.empty() || panel_manager_->is_full_screen())
     return false;
 
   Panel* top_visible_panel = num_panels() >= max_visible_panels() ?
@@ -388,6 +389,17 @@ void OverflowPanelStrip::AnimationProgressed(const ui::Animation* animation) {
 }
 
 void OverflowPanelStrip::OnFullScreenModeChanged(bool is_full_screen) {
+  if (panels_.empty())
+    return;
+
+  // Only watch mouse events if not full screen. Cannot show
+  // expanded overflow panels when in full screen mode so no need
+  // to detect when mouse hovers over the overflow strip.
+  if (is_full_screen)
+    panel_manager_->mouse_watcher()->RemoveObserver(this);
+  else
+    panel_manager_->mouse_watcher()->AddObserver(this);
+
   for (size_t i = 0; i < panels_.size(); ++i)
     panels_[i]->FullScreenModeChanged(is_full_screen);
 }

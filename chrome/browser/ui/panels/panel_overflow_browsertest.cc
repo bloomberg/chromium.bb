@@ -1616,3 +1616,44 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_DrawOverflowAttention) {
 
   panel_manager->CloseAll();
 }
+
+IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, FullScreenMode) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+  OverflowPanelStrip* overflow_strip = panel_manager->overflow_strip();
+  int iconified_width = overflow_strip->current_display_width();
+
+  // Create docked and overflow panels.
+  //   docked:               P0, P1, P2
+  //   overflow:             P3, P4
+  const int panel_widths[] = {
+      250, 260, 200,  // docked
+      255, 220        // overflow
+  };
+  std::vector<Panel*> panels = CreateOverflowPanels(3, 2, panel_widths);
+
+  // Mouse over overflow panel expands overflow area.
+  gfx::Point in_overflow_area = panels[4]->GetBounds().origin();
+  EXPECT_TRUE(panel_manager->mouse_watcher()->IsActive());
+  MoveMouse(in_overflow_area);
+  EXPECT_GT(overflow_strip->current_display_width(), iconified_width);
+  gfx::Point beyond_overflow_area =
+      gfx::Point(overflow_strip->current_display_width() + 5, 10);
+  MoveMouse(beyond_overflow_area);
+  EXPECT_EQ(iconified_width, overflow_strip->current_display_width());
+
+  // In full screen mode, no expansion.
+  overflow_strip->OnFullScreenModeChanged(true);
+  EXPECT_FALSE(panel_manager->mouse_watcher()->IsActive());
+  MoveMouse(in_overflow_area);
+  EXPECT_EQ(iconified_width, overflow_strip->current_display_width());
+
+  // End full screen mode, expansion occurs again.
+  overflow_strip->OnFullScreenModeChanged(false);
+  EXPECT_TRUE(panel_manager->mouse_watcher()->IsActive());
+  MoveMouse(in_overflow_area);
+  EXPECT_GT(overflow_strip->current_display_width(), iconified_width);
+  MoveMouse(beyond_overflow_area);
+  EXPECT_EQ(iconified_width, overflow_strip->current_display_width());
+
+  panel_manager->CloseAll();
+}
