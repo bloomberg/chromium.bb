@@ -49,7 +49,6 @@ include_rules = [
   "+content/browser/find_pasteboard.h",
   "+content/browser/font_list_async.h",
   "+content/browser/geolocation/wifi_data_provider_common.h",
-  "+content/browser/intents/intent_injector.h",
   "+content/browser/load_notification_details.h",
   "+content/browser/mac/closure_blocks_leopard_compat.h",
   "+content/browser/mach_broker_mac.h",

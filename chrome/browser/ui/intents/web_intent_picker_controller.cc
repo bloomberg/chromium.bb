@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/browser/intents/intent_injector.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_intents_dispatcher.h"
