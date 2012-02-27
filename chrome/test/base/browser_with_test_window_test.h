@@ -14,16 +14,13 @@
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_AURA)
-#include "ui/aura/test/test_activation_client.h"
-#endif
-
 class GURL;
 
 #if defined(USE_AURA)
 namespace aura {
 namespace test {
 class TestActivationClient;
+class TestStackingClient;
 }
 }
 #endif
@@ -128,6 +125,7 @@ class BrowserWithTestWindowTest : public testing::Test {
 
 #if defined(USE_AURA)
   scoped_ptr<aura::test::TestActivationClient> test_activation_client_;
+  scoped_ptr<aura::test::TestStackingClient> test_stacking_client_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(BrowserWithTestWindowTest);

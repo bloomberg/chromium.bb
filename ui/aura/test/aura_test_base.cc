@@ -4,8 +4,8 @@
 
 #include "ui/aura/test/aura_test_base.h"
 
-#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/test/test_stacking_client.h"
 
 namespace aura {
 namespace test {
@@ -27,9 +27,11 @@ AuraTestBase::~AuraTestBase() {
 void AuraTestBase::SetUp() {
   testing::Test::SetUp();
   helper_.SetUp();
+  stacking_client_.reset(new TestStackingClient(root_window()));
 }
 
 void AuraTestBase::TearDown() {
+  stacking_client_.reset();
   helper_.TearDown();
   testing::Test::TearDown();
 }

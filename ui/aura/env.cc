@@ -15,7 +15,7 @@ Env* Env::instance_ = NULL;
 ////////////////////////////////////////////////////////////////////////////////
 // Env, public:
 
-Env::Env() {
+Env::Env() : stacking_client_(NULL) {
 #if !defined(OS_MACOSX)
   dispatcher_.reset(CreateDispatcher());
 #endif

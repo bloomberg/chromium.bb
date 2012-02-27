@@ -32,7 +32,7 @@ Window* GetParentForWindow(Window* window, Window* suggested_parent) {
     return suggested_parent;
   if (client::GetStackingClient())
     return client::GetStackingClient()->GetDefaultParent(window);
-  return RootWindow::GetInstance();
+  return NULL;
 }
 
 }  // namespace

@@ -15,6 +15,7 @@ namespace aura {
 class RootWindow;
 namespace test {
 class TestActivationClient;
+class TestStackingClient;
 }
 }
 
@@ -53,6 +54,7 @@ class ViewsTestBase : public testing::Test {
   scoped_ptr<TestViewsDelegate> views_delegate_;
 #if defined(USE_AURA)
   scoped_ptr<aura::test::TestActivationClient> test_activation_client_;
+  scoped_ptr<aura::test::TestStackingClient> test_stacking_client_;
   scoped_ptr<ui::InputMethod> test_input_method_;
   aura::RootWindow* root_window_;
 #endif

@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "base/observer_list.h"
 #include "ui/aura/aura_export.h"
+#include "ui/aura/client/stacking_client.h"
 
 namespace aura {
 
@@ -39,6 +40,11 @@ class AURA_EXPORT Env {
   void AddObserver(EnvObserver* observer);
   void RemoveObserver(EnvObserver* observer);
 
+  client::StackingClient* stacking_client() { return stacking_client_; }
+  void set_stacking_client(client::StackingClient* stacking_client) {
+    stacking_client_ = stacking_client;
+  }
+
   // Returns the native event dispatcher. The result should only be passed to
   // MessageLoopForUI::RunWithDispatcher() or
   // MessageLoopForUI::RunAllPendingWithDispatcher(), or used to dispatch
@@ -59,6 +65,7 @@ class AURA_EXPORT Env {
 #endif
 
   static Env* instance_;
+  client::StackingClient* stacking_client_;
 
   DISALLOW_COPY_AND_ASSIGN(Env);
 };

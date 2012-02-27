@@ -14,6 +14,7 @@
 namespace aura {
 class RootWindow;
 namespace test {
+class TestStackingClient;
 
 // A base class for aura unit tests.
 // TODO(beng): Instances of this test will create and own a RootWindow.
@@ -34,6 +35,7 @@ class AuraTestBase : public testing::Test {
  private:
   AuraTestHelper helper_;
   RootWindow* root_window_;
+  scoped_ptr<TestStackingClient> stacking_client_;
 
   DISALLOW_COPY_AND_ASSIGN(AuraTestBase);
 };

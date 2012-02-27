@@ -20,6 +20,11 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/root_window.h"
+#include "ui/aura/test/test_stacking_client.h"
+#endif
+
 using content::NavigationController;
 using content::NavigationEntry;
 using content::RenderViewHostDelegate;
@@ -409,11 +414,18 @@ void RenderViewHostTestHarness::Reload() {
 }
 
 void RenderViewHostTestHarness::SetUp() {
+#if defined(USE_AURA)
+  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  test_stacking_client_.reset(new aura::test::TestStackingClient(root_window));
+#endif
   SetContents(CreateTestTabContents());
 }
 
 void RenderViewHostTestHarness::TearDown() {
   SetContents(NULL);
+#if defined(USE_AURA)
+  test_stacking_client_.reset();
+#endif
 
   // Make sure that we flush any messages related to TabContents destruction
   // before we destroy the browser context.

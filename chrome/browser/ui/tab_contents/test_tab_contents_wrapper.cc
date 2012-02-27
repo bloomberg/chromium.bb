@@ -29,8 +29,7 @@ void TabContentsWrapperTestHarness::SetContents(TestTabContents* contents) {
 }
 
 void TabContentsWrapperTestHarness::SetUp() {
-  if (!browser_context_.get())
-    browser_context_.reset(new TestingProfile());
+  ChromeRenderViewHostTestHarness::SetUp();
   SetContents(CreateTestTabContents());
 }
 

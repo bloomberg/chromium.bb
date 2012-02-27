@@ -125,6 +125,8 @@
         'test/test_activation_client.h',
         'test/test_event_filter.cc',
         'test/test_event_filter.h',
+        'test/test_stacking_client.cc',
+        'test/test_stacking_client.h',
         'test/test_windows.cc',
         'test/test_windows.h',
         'test/test_window_delegate.cc',

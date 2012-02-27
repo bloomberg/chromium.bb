@@ -20,6 +20,8 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/root_window.h"
+#include "ui/aura/test/test_activation_client.h"
+#include "ui/aura/test/test_stacking_client.h"
 #endif
 
 using content::BrowserThread;
@@ -49,12 +51,16 @@ void BrowserWithTestWindowTest::SetUp() {
   aura::RootWindow* root_window = aura::RootWindow::GetInstance();
   test_activation_client_.reset(
       new aura::test::TestActivationClient(root_window));
+  test_stacking_client_.reset(
+      new aura::test::TestStackingClient(root_window));
 #endif
 }
 
 void BrowserWithTestWindowTest::TearDown() {
   testing::Test::TearDown();
 #if defined(USE_AURA)
+  test_activation_client_.reset();
+  test_stacking_client_.reset();
   aura::RootWindow::DeleteInstance();
 #endif
 }

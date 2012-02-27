@@ -17,6 +17,14 @@
 #include "content/public/common/page_transition_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(USE_AURA)
+namespace aura {
+namespace test {
+class TestStackingClient;
+}
+}
+#endif
+
 namespace content {
 class BrowserContext;
 class NavigationController;
@@ -370,6 +378,9 @@ class RenderViewHostTestHarness : public testing::Test {
 
  private:
   scoped_ptr<TestTabContents> contents_;
+#if defined(USE_AURA)
+  scoped_ptr<aura::test::TestStackingClient> test_stacking_client_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostTestHarness);
 };

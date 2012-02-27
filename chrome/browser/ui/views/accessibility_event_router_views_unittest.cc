@@ -24,6 +24,11 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/root_window.h"
+#include "ui/aura/test/test_stacking_client.h"
+#endif
+
 #if defined(TOOLKIT_VIEWS)
 
 class AccessibilityViewsDelegate : public views::ViewsDelegate {
@@ -115,9 +120,17 @@ class AccessibilityEventRouterViewsTest
  public:
   virtual void SetUp() {
     views::ViewsDelegate::views_delegate = new AccessibilityViewsDelegate();
+#if defined(USE_AURA)
+    aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+    test_stacking_client_.reset(
+        new aura::test::TestStackingClient(root_window));
+#endif
   }
 
   virtual void TearDown() {
+#if defined(USE_AURA)
+    test_stacking_client_.reset();
+#endif
     delete views::ViewsDelegate::views_delegate;
     views::ViewsDelegate::views_delegate = NULL;
 
@@ -151,6 +164,9 @@ class AccessibilityEventRouterViewsTest
   int focus_event_count_;
   std::string last_control_name_;
   std::string last_control_context_;
+#if defined(USE_AURA)
+  scoped_ptr<aura::test::TestStackingClient> test_stacking_client_;
+#endif
 };
 
 TEST_F(AccessibilityEventRouterViewsTest, TestFocusNotification) {

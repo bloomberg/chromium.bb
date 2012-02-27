@@ -10,6 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/test/test_stacking_client.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -35,8 +36,11 @@ class NativeWidgetAuraTest : public testing::Test {
     root_window_ = aura::RootWindow::GetInstance();
     root_window_->SetBounds(gfx::Rect(0, 0, 640, 480));
     root_window_->SetHostSize(gfx::Size(640, 480));
+    test_stacking_client_.reset(
+        new aura::test::TestStackingClient(root_window_));
   }
   virtual void TearDown() OVERRIDE {
+    test_stacking_client_.reset();
     aura::RootWindow::DeleteInstance();
     message_loop_.RunAllPending();
   }
@@ -47,6 +51,7 @@ class NativeWidgetAuraTest : public testing::Test {
  private:
   MessageLoopForUI message_loop_;
   aura::RootWindow* root_window_;
+  scoped_ptr<aura::test::TestStackingClient> test_stacking_client_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetAuraTest);
 };
