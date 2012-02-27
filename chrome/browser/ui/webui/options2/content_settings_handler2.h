@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/ui/webui/options2/options_ui2.h"
 #include "chrome/common/content_settings_types.h"
+#include "chrome/common/content_settings.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -88,6 +89,10 @@ class ContentSettingsHandler : public OptionsPageUIHandler {
   void CheckExceptionPatternValidity(const ListValue* args);
 
   // Utility functions ---------------------------------------------------------
+
+  // Applies content settings whitelists to reduce breakage / user confusion.
+  void ApplyWhitelist(ContentSettingsType content_type,
+                      ContentSetting default_setting);
 
   // Gets the HostContentSettingsMap for the normal profile.
   HostContentSettingsMap* GetContentSettingsMap();

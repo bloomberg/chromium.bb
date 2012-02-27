@@ -18,6 +18,7 @@
 #include "base/values.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/plugin_prefs.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -275,12 +276,19 @@ void PluginsDOMHandler::HandleSetPluginAlwaysAllowed(const ListValue* args) {
     NOTREACHED();
     return;
   }
-  Profile::FromWebUI(web_ui())->GetHostContentSettingsMap()->SetContentSetting(
+  Profile* profile = Profile::FromWebUI(web_ui());
+  profile->GetHostContentSettingsMap()->SetContentSetting(
       ContentSettingsPattern::Wildcard(),
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_PLUGINS,
       plugin,
       allowed ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_DEFAULT);
+
+  // Keep track of the whitelist separately, so that we can distinguish plug-ins
+  // whitelisted by the user from automatically whitelisted ones.
+  DictionaryPrefUpdate update(profile->GetPrefs(),
+                              prefs::kContentSettingsPluginWhitelist);
+  update->SetBoolean(plugin, allowed);
 }
 
 void PluginsDOMHandler::Observe(int type,
@@ -442,7 +450,6 @@ PluginsUI::PluginsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
       CreatePluginsUIHTMLSource());
 }
 
-
 // static
 RefCountedMemory* PluginsUI::GetFaviconResourceBytes() {
   return ResourceBundle::GetSharedInstance().
@@ -457,4 +464,6 @@ void PluginsUI::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kPluginsShowSetReaderDefaultInfobar,
                              true,
                              PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDictionaryPref(prefs::kContentSettingsPluginWhitelist,
+                                PrefService::SYNCABLE_PREF);
 }

@@ -55,6 +55,10 @@ namespace npapi {
 
 // Some version ranges can be shared across operating systems. This should be
 // done where possible to avoid duplication.
+static const VersionRangeDefinition kAllVersionsVersionRange[] = {
+    { "", "", "", true }
+};
+
 // This is up to date with
 // http://www.adobe.com/support/security/bulletins/apsb12-03.html
 // NOTE: We would like to go to the 4th component value but we cannot because
@@ -91,6 +95,14 @@ static const VersionRangeDefinition kSilverlightVersionRange[] = {
     kSilverlightVersionRange, arraysize(kSilverlightVersionRange), \
     "http://www.microsoft.com/getsilverlight/" }
 
+#define kChromePdfDefinition { \
+    "google-chrome-pdf", "Chrome PDF Viewer", "Chrome PDF Viewer", \
+    kAllVersionsVersionRange, arraysize(kAllVersionsVersionRange), "" }
+
+#define kGoogleTalkDefinition { \
+    "google-talk", "Google Talk NPAPI Plugin", "Google Talk NPAPI Plugin", \
+    kAllVersionsVersionRange, arraysize(kAllVersionsVersionRange), ""}
+
 #if defined(OS_MACOSX)
 // Plugin Groups for Mac.
 // Plugins are listed here as soon as vulnerabilities and solutions
@@ -126,7 +138,9 @@ static const PluginGroupDefinition kGroupDefinitions[] = {
   { "divx-player", "DivX Plus Web Player", "DivX Plus Web Player",
     kDivXVersionRange, arraysize(kDivXVersionRange),
     "http://www.divx.com/en/software/divx-plus/web-player" },
-  kShockwaveDefinition
+  kShockwaveDefinition,
+  kChromePdfDefinition,
+  kGoogleTalkDefinition,
 };
 
 #elif defined(OS_WIN)
@@ -153,12 +167,6 @@ static const VersionRangeDefinition kDivXVersionRange[] = {
 static const VersionRangeDefinition kRealPlayerVersionRange[] = {
     { "", "", "15.0.2.71", true }
 };
-static const VersionRangeDefinition kWindowsMediaPlayerVersionRange[] = {
-    { "", "", "", true }
-};
-static const VersionRangeDefinition kNvidia3DVersionRange[] = {
-    { "", "", "", true }
-};
 static const PluginGroupDefinition kGroupDefinitions[] = {
   kFlashDefinition,
   { "apple-quicktime", PluginGroup::kQuickTimeGroupName, "QuickTime Plug-in",
@@ -181,18 +189,23 @@ static const PluginGroupDefinition kGroupDefinitions[] = {
     "http://www.real.com/realplayer/download" },
   // These are here for grouping, no vulnerabilities known.
   { "windows-media-player", PluginGroup::kWindowsMediaPlayerGroupName,
-    "Windows Media Player", kWindowsMediaPlayerVersionRange,
-    arraysize(kWindowsMediaPlayerVersionRange), "" },
+    "Windows Media Player", kAllVersionsVersionRange,
+    arraysize(kAllVersionsVersionRange), "" },
   { "microsoft-office", "Microsoft Office", "Microsoft Office",
     NULL, 0, "" },
-  { "nvidia-3d", "NVIDIA 3D", "NVIDIA 3D", kNvidia3DVersionRange,
-    arraysize(kNvidia3DVersionRange), "" },
+  { "nvidia-3d", "NVIDIA 3D", "NVIDIA 3D", kAllVersionsVersionRange,
+    arraysize(kAllVersionsVersionRange), "" },
+  kChromePdfDefinition,
+  kGoogleTalkDefinition,
 };
 
 #elif defined(OS_CHROMEOS)
 // ChromeOS generally has (autoupdated) system plug-ins and no user-installable
-// plug-ins.
-static const PluginGroupDefinition kGroupDefinitions[] = { };
+// plug-ins, so we just use these definitions for grouping.
+static const PluginGroupDefinition kGroupDefinitions[] = {
+  kFlashDefinition,
+  kChromePdfDefinition,
+};
 
 #else  // Most importantly, covers desktop Linux.
 static const VersionRangeDefinition kJavaVersionRange[] = {
@@ -220,6 +233,8 @@ static const PluginGroupDefinition kGroupDefinitions[] = {
   { "redhat-icetea-java", "IcedTea", "IcedTea",
     kRedhatIcedTeaVersionRange, arraysize(kRedhatIcedTeaVersionRange),
     "http://www.linuxsecurity.com/content/section/3/170/" },
+  kChromePdfDefinition,
+  kGoogleTalkDefinition,
 };
 #endif
 

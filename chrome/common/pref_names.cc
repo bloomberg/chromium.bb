@@ -815,6 +815,14 @@ const char kContentSettingsPatterns[] = "profile.content_settings.patterns";
 const char kContentSettingsPatternPairs[] =
     "profile.content_settings.pattern_pairs";
 
+// Version of the content settings whitelist.
+const char kContentSettingsDefaultWhitelistVersion[] =
+    "profile.content_settings.whitelist_version";
+
+// Which plugins have been whitelisted manually by the user.
+const char kContentSettingsPluginWhitelist[] =
+    "profile.content_settings.plugin_whitelist";
+
 // Boolean that is true if we should unconditionally block third-party cookies,
 // regardless of other content settings.
 const char kBlockThirdPartyCookies[] = "profile.block_third_party_cookies";
