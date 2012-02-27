@@ -65,7 +65,7 @@ void CreateQuotaManagerAndClients(BrowserContext* context) {
       new UserDataAdapter<FileSystemContext>(filesystem_context));
 
   scoped_refptr<DatabaseTracker> db_tracker = new DatabaseTracker(
-      context->GetPath(), context->IsOffTheRecord(), false,
+      context->GetPath(), context->IsOffTheRecord(),
       context->GetSpecialStoragePolicy(), quota_manager->proxy(),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   context->SetUserData(kDatabaseTrackerKeyName, 

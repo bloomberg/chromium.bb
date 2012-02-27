@@ -93,13 +93,12 @@ OriginInfo::OriginInfo(const string16& origin, int64 total_size)
 DatabaseTracker::DatabaseTracker(
     const FilePath& profile_path,
     bool is_incognito,
-    bool clear_local_state_on_exit,
     quota::SpecialStoragePolicy* special_storage_policy,
     quota::QuotaManagerProxy* quota_manager_proxy,
     base::MessageLoopProxy* db_tracker_thread)
     : is_initialized_(false),
       is_incognito_(is_incognito),
-      clear_local_state_on_exit_(clear_local_state_on_exit),
+      clear_local_state_on_exit_(false),
       save_session_state_(false),
       shutting_down_(false),
       profile_path_(profile_path),
