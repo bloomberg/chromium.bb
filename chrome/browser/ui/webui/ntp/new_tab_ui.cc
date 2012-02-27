@@ -133,8 +133,6 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
       new NewTabHTMLSource(GetProfile()->GetOriginalProfile());
   GetProfile()->GetChromeURLDataManager()->AddDataSource(html_source);
 
-  pref_change_registrar_.Init(GetProfile()->GetPrefs());
-  pref_change_registrar_.Add(prefs::kShowBookmarkBar, this);
   // Listen for theme installation.
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(
@@ -199,19 +197,14 @@ void NewTabUI::Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_PREF_CHANGED: {  // kShowBookmarkBar
-      StringValue attached(
-          GetProfile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) ?
-              "true" : "false");
-      web_ui()->CallJavascriptFunction("ntp4.setBookmarkBarAttached", attached);
-      break;
-    }
     case chrome::NOTIFICATION_BROWSER_THEME_CHANGED: {
       InitializeCSSCaches();
-      StringValue attribution(
+      ListValue args;
+      args.Append(Value::CreateStringValue(
           ThemeServiceFactory::GetForProfile(GetProfile())->HasCustomImage(
-              IDR_THEME_NTP_ATTRIBUTION) ? "true" : "false");
-      web_ui()->CallJavascriptFunction("themeChanged", attribution);
+              IDR_THEME_NTP_ATTRIBUTION) ?
+          "true" : "false"));
+      web_ui()->CallJavascriptFunction("themeChanged", args);
       break;
     }
     case content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT: {
@@ -250,6 +243,7 @@ void NewTabUI::SetupFieldTrials() {
   g_footer_group = trial->AppendGroup("FooterLink", 40);
   g_hint_group = trial->AppendGroup("PlusIcon", 40);
 }
+
 
 // static
 bool NewTabUI::ShouldShowWebStoreFooterLink() {

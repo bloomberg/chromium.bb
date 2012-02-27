@@ -52,7 +52,6 @@ class ThemeService : public base::NonThreadSafe,
   // Public constants used in ThemeService and its subclasses:
 
   // Strings used in alignment properties.
-  static const char* kAlignmentCenter;
   static const char* kAlignmentTop;
   static const char* kAlignmentBottom;
   static const char* kAlignmentLeft;

@@ -261,20 +261,13 @@ cr.define('ntp4', function() {
     document.querySelector('head').appendChild(styleElement);
   }
 
-  function themeChanged(opt_hasAttribution) {
-    $('themecss').href = 'chrome://theme/css/new_tab_theme.css?' + Date.now();
-
-    if (typeof opt_hasAttribution != 'undefined') {
-      document.documentElement.setAttribute('hasattribution',
-                                            opt_hasAttribution);
-    }
-
+  // TODO(estade): rename newtab.css to new_tab_theme.css
+  function themeChanged(hasAttribution) {
+    $('themecss').href = 'chrome://theme/css/newtab.css?' + Date.now();
+    if (typeof hasAttribution != 'undefined')
+      document.documentElement.setAttribute('hasattribution', hasAttribution);
     updateLogo();
     updateAttribution();
-  }
-
-  function setBookmarkBarAttached(attached) {
-    document.documentElement.setAttribute('bookmarkbarattached', attached);
   }
 
   /**
@@ -546,7 +539,6 @@ cr.define('ntp4', function() {
     leaveRearrangeMode: leaveRearrangeMode,
     saveAppPageName: saveAppPageName,
     setAppToBeHighlighted: setAppToBeHighlighted,
-    setBookmarkBarAttached: setBookmarkBarAttached,
     setMostVisitedPages: setMostVisitedPages,
     setRecentlyClosedTabs: setRecentlyClosedTabs,
     setStripeColor: setStripeColor,

@@ -11,7 +11,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "content/public/browser/notification_observer.h"
@@ -116,8 +115,6 @@ class NewTabUI : public content::WebUIController,
 
   // If the sync promo NTP bubble is being shown.
   bool showing_sync_bubble_;
-
-  PrefChangeRegistrar pref_change_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(NewTabUI);
 };

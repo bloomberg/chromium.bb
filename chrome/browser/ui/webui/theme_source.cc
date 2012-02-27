@@ -21,8 +21,8 @@
 using content::BrowserThread;
 
 // use a resource map rather than hard-coded strings.
-static const char* kNewTabCSSPath = "css/new_tab_theme.css";
-static const char* kNewIncognitoTabCSSPath = "css/incognito_new_tab_theme.css";
+static const char* kNewTabCSSPath = "css/newtab.css";
+static const char* kNewIncognitoTabCSSPath = "css/newincognitotab.css";
 
 static std::string StripQueryParams(const std::string& path) {
   GURL path_url = GURL(std::string(chrome::kChromeUIScheme) + "://" +

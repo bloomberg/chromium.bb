@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ntp_background_util.h"
 
-#include <cmath>
-
 #include "base/logging.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "grit/theme_resources.h"
@@ -24,22 +22,15 @@ void PaintThemeBackground(
   int width = area.width() + ntp_background->width();
   int height = area.height() + ntp_background->height();
 
-  if (alignment & ThemeService::ALIGN_BOTTOM) {
+  if (alignment & ThemeService::ALIGN_BOTTOM)
     y_pos += area.height() + tab_contents_height - ntp_background->height();
-  } else if (alignment & ThemeService::ALIGN_TOP) {
-    // no op
-  } else {  // ALIGN_CENTER
-    y_pos += std::floor(area.height() + tab_contents_height / 2.0 -
-        ntp_background->height() / 2.0 + 0.5);
-  }
 
   if (alignment & ThemeService::ALIGN_RIGHT) {
     x_pos += area.width() - ntp_background->width();
   } else if (alignment & ThemeService::ALIGN_LEFT) {
     // no op
   } else {  // ALIGN_CENTER
-    x_pos +=
-        std::floor(area.width() / 2.0 - ntp_background->width() / 2.0 + 0.5);
+    x_pos += area.width() / 2 - ntp_background->width() / 2;
   }
 
   if (tiling != ThemeService::REPEAT &&
@@ -77,7 +68,7 @@ void NtpBackgroundUtil::PaintBackgroundDetachedMode(ui::ThemeProvider* tp,
     tp->GetDisplayProperty(ThemeService::NTP_BACKGROUND_TILING, &tiling);
     int alignment;
     if (tp->GetDisplayProperty(ThemeService::NTP_BACKGROUND_ALIGNMENT,
-                               &alignment)) {
+        &alignment)) {
       SkBitmap* ntp_background = tp->GetBitmapNamed(IDR_THEME_NTP_BACKGROUND);
 
       PaintThemeBackground(
