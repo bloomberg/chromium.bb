@@ -13,6 +13,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -74,8 +75,8 @@ const char kFeedField[] = "feed";
 const char kUploadParamConvertKey[] = "convert";
 const char kUploadParamConvertValue[] = "false";
 const char kUploadContentType[] = "X-Upload-Content-Type: %s";
-const char kUploadContentLength[] = "X-Upload-Content-Length: %u";
-const char kUploadContentRangeFormat[] = "Content-Range: bytes %lld-%lld/%u";
+const char kUploadContentLength[] = "X-Upload-Content-Length: ";
+const char kUploadContentRange[] = "Content-Range: bytes ";
 const char kUploadResponseLocation[] = "location";
 const char kUploadResponseRange[] = "range";
 
@@ -157,11 +158,13 @@ GURL AddFeedUrlParams(const GURL& url) {
 //=============================== UploadFileInfo ===============================
 
 UploadFileInfo::UploadFileInfo()
-    : content_length(0),
+    : file_size(0),
+      content_length(0),
       file_stream(NULL),
       buf_len(0),
       start_range(0),
-      end_range(0) {
+      end_range(-1),
+      download_complete(false) {
 }
 
 UploadFileInfo::~UploadFileInfo() {
@@ -258,9 +261,9 @@ class UrlFetchOperation : public content::URLFetcherDelegate {
     url_fetcher_->AddExtraRequestHeader(
           base::StringPrintf(kAuthorizationHeaderFormat, auth_token_.data()));
     std::vector<std::string> headers = GetExtraRequestHeaders();
-    for (std::vector<std::string>::iterator iter = headers.begin();
-         iter != headers.end(); ++iter) {
-      url_fetcher_->AddExtraRequestHeader(*iter);
+    for (size_t i = 0; i < headers.size(); ++i) {
+      url_fetcher_->AddExtraRequestHeader(headers[i]);
+      DVLOG(1) << "Extra header " << headers[i];
     }
 
     // Set upload data if available.
@@ -587,8 +590,8 @@ std::vector<std::string>
   std::vector<std::string> headers;
   headers.push_back(base::StringPrintf(
       kUploadContentType, upload_file_info_.content_type.data()));
-  headers.push_back(base::StringPrintf(
-      kUploadContentLength, upload_file_info_.content_length));
+  headers.push_back(kUploadContentLength +
+      base::Int64ToString(upload_file_info_.content_length));
   return headers;
 }
 
@@ -703,11 +706,20 @@ content::URLFetcher::RequestType ResumeUploadOperation::GetRequestType() const {
 }
 
 std::vector<std::string> ResumeUploadOperation::GetExtraRequestHeaders() const {
+  // The header looks like
+  // Content-Range: bytes <start_range>-<end_range>/<content_length>
+  // for example:
+  // Content-Range: bytes 7864320-8388607/13851821
+  // Use * for unknown/streaming content length.
+  // TODO(achuith): Add a unit test for this.
+  std::string range = kUploadContentRange +
+      base::Int64ToString(upload_file_info_.start_range) + "-" +
+      base::Int64ToString(upload_file_info_.end_range) + "/" +
+      (upload_file_info_.content_length == -1 ? "*" :
+          base::Int64ToString(upload_file_info_.content_length));
+
   std::vector<std::string> headers;
-  headers.push_back(base::StringPrintf(kUploadContentRangeFormat,
-                                       upload_file_info_.start_range,
-                                       upload_file_info_.end_range,
-                                       upload_file_info_.content_length));
+  headers.push_back(range);
   return headers;
 }
 

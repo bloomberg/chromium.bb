@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_UPLOADER_H_
 #pragma once
 
+#include <map>
 #include <set>
 #include <string>
 
@@ -27,19 +28,14 @@ class GDataUploader : public content::DownloadManager::Observer,
   void Initialize(Profile* profile);
 
  private:
-  // Uploads a file with given |title|, |content_type|
-  // and |file_size| from |file_path|.
-  void UploadFile(const FilePath& file_path,
-                  const std::string& content_type,
-                  int64 file_size);
+  // Uploads a file. |file_url| is a file:// url of the downloaded file.
+  void UploadFile(const GURL& file_url);
 
   // net::FileStream::Open completion callback.
   //
   // Called when an file to be uploaded is opened. The result of the file
   // open operation is passed as |result|.
-  void OpenCompletionCallback(const FilePath& file_path,
-                              const UploadFileInfo& upload_file_info,
-                              int result);
+  void OpenCompletionCallback(const GURL& file_url, int result);
 
   // DocumentsService callback for InitiateUpload.
   void OnUploadLocationReceived(GDataErrorCode code,
@@ -53,8 +49,8 @@ class GDataUploader : public content::DownloadManager::Observer,
       UploadFileInfo* upload_file_info);
 
   // net::FileStream::Read completion callback.
-  void ReadCompletionCallback(const UploadFileInfo& upload_file_info,
-      int64 bytes_to_read,
+  void ReadCompletionCallback(const GURL& file_url,
+      int bytes_to_read,
       int bytes_read);
 
   // DocumentsService callback for ResumeUpload.
@@ -64,21 +60,44 @@ class GDataUploader : public content::DownloadManager::Observer,
       int64 end_range_received);
 
   // DownloadManager overrides.
+  virtual void ManagerGoingDown(content::DownloadManager* manager) OVERRIDE;
   virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;
 
   // DownloadItem overrides.
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
   virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE {}
 
-  // Adds/Removes |download| to pending_downloads_. Also start/stop
-  // observing |download|.
+  // Helper functions.
+
+  // Adds/Removes |download| to pending_downloads_.
+  // Also start/stop observing |download|.
   void AddPendingDownload(content::DownloadItem* download);
   void RemovePendingDownload(content::DownloadItem* download);
+
+  // Update metadata of ongoing upload if it exists.
+  void UpdateUpload(content::DownloadItem* download);
+
+  // Check if this DownloadItem should be uploaded.
+  bool ShouldUpload(content::DownloadItem* download);
+
+  // Start the upload of a downloaded/downloading file.
+  void UploadDownloadItem(content::DownloadItem* download);
+
+  // Lookup UploadFileInfo* in pending_uploads_.
+  UploadFileInfo* GetUploadFileInfo(const GURL& file_url);
+
+  // Destroys |upload_file_info|.
+  void RemovePendingUpload(UploadFileInfo* upload_file_info);
+
+  // Private data.
 
   DocumentsService* docs_service_;
 
   typedef std::set<content::DownloadItem*> DownloadSet;
   DownloadSet pending_downloads_;
+
+  typedef std::map<GURL, UploadFileInfo*> UploadFileInfoMap;
+  UploadFileInfoMap pending_uploads_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataUploader);
 };

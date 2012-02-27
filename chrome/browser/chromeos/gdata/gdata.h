@@ -80,10 +80,13 @@ struct UploadFileInfo {
 
   // Data to be initialized by caller before initiating upload request.
   // URL of physical file to be uploaded, used as main identifier in callbacks.
-  GURL file_url;
+  GURL file_url;  // file: url of the file to the uploaded.
+  FilePath file_path;  // The path of the file to be uploaded.
+  size_t file_size;  // Last known size of the file.
+
   std::string title;  // Title to be used for file to be uploaded.
   std::string content_type;  // Content-Type of file.
-  size_t content_length;  // Content-Length of file.
+  int64 content_length;  // Header content-Length.
 
   // Data cached by caller and used when preparing upload data in chunks for
   // multiple ResumeUpload requests.
@@ -95,11 +98,14 @@ struct UploadFileInfo {
   scoped_refptr<net::IOBuffer> buf;  // Holds current content to be uploaded.
   // Size of |buf|, max is 512KB; Google Docs requires size of each upload chunk
   // to be a multiple of 512KB.
-  int buf_len;
+  size_t buf_len;
 
   // Data to be updated by caller before sending each ResumeUpload request.
+  // Note that end_range is inclusive, so start_range=0, end_range=8 is 9 bytes.
   int64 start_range;  // Start of range of contents currently stored in |buf|.
   int64 end_range;  // End of range of contents currently stored in |buf|.
+
+  bool download_complete;  // Whether this file has finished downloading.
 };
 
 // Different callback types for various functionalities in DocumentsService.
