@@ -32,12 +32,12 @@ TEST_F(FocusCyclerTest, CycleFocusBrowserOnly) {
       ash::Shell::GetInstance()->GetContainer(
           internal::kShellWindowId_DefaultContainer);
   scoped_ptr<Window> window0(CreateTestWindowWithId(0, default_container));
-  ActivateWindow(window0.get());
-  EXPECT_TRUE(IsActiveWindow(window0.get()));
+  wm::ActivateWindow(window0.get());
+  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 
   // Cycle the window
   focus_cycler->RotateFocus(FocusCycler::FORWARD);
-  EXPECT_TRUE(IsActiveWindow(window0.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 }
 
 TEST_F(FocusCyclerTest, CycleFocusForward) {
@@ -65,8 +65,8 @@ TEST_F(FocusCyclerTest, CycleFocusForward) {
       ash::Shell::GetInstance()->GetContainer(
           internal::kShellWindowId_DefaultContainer);
   scoped_ptr<Window> window0(CreateTestWindowWithId(0, default_container));
-  ActivateWindow(window0.get());
-  EXPECT_TRUE(IsActiveWindow(window0.get()));
+  wm::ActivateWindow(window0.get());
+  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 
   // Cycle focus to the status area
   focus_cycler->RotateFocus(FocusCycler::FORWARD);
@@ -78,7 +78,7 @@ TEST_F(FocusCyclerTest, CycleFocusForward) {
 
   // Cycle focus to the browser
   focus_cycler->RotateFocus(FocusCycler::FORWARD);
-  EXPECT_TRUE(IsActiveWindow(window0.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 }
 
 TEST_F(FocusCyclerTest, CycleFocusBackward) {
@@ -106,8 +106,8 @@ TEST_F(FocusCyclerTest, CycleFocusBackward) {
       ash::Shell::GetInstance()->GetContainer(
           internal::kShellWindowId_DefaultContainer);
   scoped_ptr<Window> window0(CreateTestWindowWithId(0, default_container));
-  ActivateWindow(window0.get());
-  EXPECT_TRUE(IsActiveWindow(window0.get()));
+  wm::ActivateWindow(window0.get());
+  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 
   // Cycle focus to the launcher
   focus_cycler->RotateFocus(FocusCycler::BACKWARD);
@@ -119,7 +119,7 @@ TEST_F(FocusCyclerTest, CycleFocusBackward) {
 
   // Cycle focus to the browser
   focus_cycler->RotateFocus(FocusCycler::BACKWARD);
-  EXPECT_TRUE(IsActiveWindow(window0.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 }
 
 }  // namespace test
