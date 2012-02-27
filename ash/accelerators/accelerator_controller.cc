@@ -220,7 +220,7 @@ bool HandlePrintLayerHierarchy() {
 void PrintWindowHierarchy(aura::Window* window, int indent) {
   std::string indent_str(indent, ' ');
   VLOG(1) << indent_str << window->name() << " type " << window->type()
-      << (ash::IsActiveWindow(window) ? "active" : "");
+      << (ash::wm::IsActiveWindow(window) ? "active" : "");
   for (size_t i = 0; i < window->children().size(); ++i)
     PrintWindowHierarchy(window->children()[i], indent + 3);
 }

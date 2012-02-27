@@ -85,7 +85,7 @@ TEST_F(AcceleratorFilterTest, TestFilterWithFocus) {
       -1,
       gfx::Rect(),
       default_container));
-  ActivateWindow(window.get());
+  wm::ActivateWindow(window.get());
 
   DummyScreenshotDelegate* delegate = new DummyScreenshotDelegate;
   GetController()->SetScreenshotDelegate(
@@ -112,7 +112,7 @@ TEST_F(AcceleratorFilterTest, TestCapsLockMask) {
       -1,
       gfx::Rect(),
       default_container));
-  ActivateWindow(window.get());
+  wm::ActivateWindow(window.get());
 
   DummyScreenshotDelegate* delegate = new DummyScreenshotDelegate;
   GetController()->SetScreenshotDelegate(

@@ -118,7 +118,7 @@ bool RootWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
   if (FilterMouseEvent(target, event))
     return true;
 
-  if (event->type() == ui::ET_MOUSE_PRESSED && GetActiveWindow() != target)
+  if (event->type() == ui::ET_MOUSE_PRESSED && wm::GetActiveWindow() != target)
     target->GetFocusManager()->SetFocusedWindow(FindFocusableWindowFor(target));
 
   return false;

@@ -12,9 +12,9 @@
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
-#include "ui/gfx/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animation_sequence.h"
+#include "ui/gfx/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 
@@ -247,7 +247,7 @@ aura::Window* CompactLayoutManager::FindReplacementWindow(
 void CompactLayoutManager::SwitchToReplacementWindow() {
   current_window_ = FindReplacementWindow(current_window_);
   if (current_window_) {
-    ActivateWindow(current_window_);
+    wm::ActivateWindow(current_window_);
     AnimateSlideTo(current_window_->bounds().x());
   }
 }

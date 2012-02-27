@@ -148,7 +148,7 @@ bool SystemModalContainerLayoutManager::CanWindowReceiveEvents(
   if (ash::Shell::GetInstance()->IsScreenLocked() &&
       container_->id() < ash::internal::kShellWindowId_LockScreenContainer)
     return true;
-  return GetActivatableWindow(window) == modal_window();
+  return wm::GetActivatableWindow(window) == modal_window();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -169,7 +169,7 @@ void SystemModalContainerLayoutManager::RemoveModalWindow(
   if (modal_windows_.empty())
     HideModalScreen();
   else
-    ash::ActivateWindow(modal_window());
+    wm::ActivateWindow(modal_window());
 }
 
 void SystemModalContainerLayoutManager::CreateModalScreen() {

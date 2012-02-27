@@ -14,7 +14,7 @@
 void TestingAutomationProvider::ActivateWindow(int handle) {
   aura::Window* window = window_tracker_->GetResource(handle);
   if (window) {
-    ash::ActivateWindow(window);
+    ash::wm::ActivateWindow(window);
   }
 }
 

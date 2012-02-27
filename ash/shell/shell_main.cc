@@ -13,8 +13,8 @@
 #include "ash/shell_factory.h"
 #include "ash/shell_window_ids.h"
 #include "ash/shell/example_factory.h"
-#include "ash/shell/shell_main_parts.h"
 #include "ash/shell/toplevel_window.h"
+#include "ash/shell/shell_main_parts.h"
 #include "ash/wm/partial_screenshot_view.h"
 #include "ash/wm/window_util.h"
 #include "base/at_exit.h"
@@ -131,7 +131,7 @@ class LauncherDelegateImpl : public ash::LauncherDelegate {
   virtual void ItemClicked(const ash::LauncherItem& item) OVERRIDE {
     aura::Window* window = watcher_->GetWindowByID(item.id);
     window->Show();
-    ash::ActivateWindow(window);
+    ash::wm::ActivateWindow(window);
   }
 
   virtual int GetBrowserShortcutResourceId() OVERRIDE {

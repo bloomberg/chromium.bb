@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,11 +19,11 @@ gfx::NativeView GetParent(gfx::NativeView view) {
 }
 
 bool IsWindowActive(gfx::NativeWindow window) {
-  return ash::IsActiveWindow(window);
+  return ash::wm::IsActiveWindow(window);
 }
 
 void ActivateWindow(gfx::NativeWindow window) {
-  ash::ActivateWindow(window);
+  ash::wm::ActivateWindow(window);
 }
 
 bool IsVisible(gfx::NativeView view) {

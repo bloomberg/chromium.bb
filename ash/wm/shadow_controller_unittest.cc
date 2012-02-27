@@ -99,7 +99,7 @@ TEST_F(ShadowControllerTest, ShadowStyle) {
   window1->SetParent(NULL);
   window1->SetBounds(gfx::Rect(10, 20, 300, 400));
   window1->Show();
-  ActivateWindow(window1.get());
+  wm::ActivateWindow(window1.get());
 
   // window1 is active, so style should have active appearance.
   Shadow* shadow1 = api.GetShadowForWindow(window1.get());
@@ -113,7 +113,7 @@ TEST_F(ShadowControllerTest, ShadowStyle) {
   window2->SetParent(NULL);
   window2->SetBounds(gfx::Rect(11, 21, 301, 401));
   window2->Show();
-  ActivateWindow(window2.get());
+  wm::ActivateWindow(window2.get());
 
   // window1 is now inactive, so shadow should go inactive.
   Shadow* shadow2 = api.GetShadowForWindow(window2.get());

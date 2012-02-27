@@ -79,7 +79,7 @@ void WorkspaceController::OnWindowPropertyChanged(aura::Window* window,
                                                   const void* key,
                                                   intptr_t old) {
   if (key == aura::client::kRootWindowActiveWindowKey)
-    workspace_manager_->SetActiveWorkspaceByWindow(GetActiveWindow());
+    workspace_manager_->SetActiveWorkspaceByWindow(wm::GetActiveWindow());
 }
 
 bool WorkspaceController::IsCommandIdChecked(int command_id) const {

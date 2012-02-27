@@ -9,8 +9,8 @@
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/event_generator.h"
-#include "ui/aura/test/test_windows.h"
 #include "ui/aura/test/test_window_delegate.h"
+#include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 
@@ -29,7 +29,7 @@ bool ValidateStacking(aura::Window* parent, int ids[], int count) {
   return true;
 }
 
-}
+}  // namespace
 
 // Creates three windows, w1, w11, and w12. w11 is a non-modal transient, w12 is
 // a modal transient.
@@ -47,33 +47,33 @@ TEST_F(WindowModalityControllerTest, BasicActivation) {
       aura::test::CreateTestWindowWithDelegate(&d, -12, gfx::Rect(), NULL));
 
   w1->AddTransientChild(w11.get());
-  ActivateWindow(w1.get());
-  EXPECT_TRUE(IsActiveWindow(w1.get()));
-  ActivateWindow(w11.get());
-  EXPECT_TRUE(IsActiveWindow(w11.get()));
+  wm::ActivateWindow(w1.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
+  wm::ActivateWindow(w11.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w11.get()));
 
   w12->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
   w1->AddTransientChild(w12.get());
-  ActivateWindow(w12.get());
-  EXPECT_TRUE(IsActiveWindow(w12.get()));
+  wm::ActivateWindow(w12.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w12.get()));
 
-  ActivateWindow(w11.get());
-  EXPECT_TRUE(IsActiveWindow(w11.get()));
+  wm::ActivateWindow(w11.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w11.get()));
 
   int check1[] = { -1, -12, -11 };
   EXPECT_TRUE(ValidateStacking(w1->parent(), check1, arraysize(check1)));
 
-  ActivateWindow(w1.get());
-  EXPECT_TRUE(IsActiveWindow(w12.get()));
+  wm::ActivateWindow(w1.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w12.get()));
   // Transient children are always stacked above their transient parent, which
   // is why this order is not -11, -1, -12.
   int check2[] = { -1, -11, -12 };
   EXPECT_TRUE(ValidateStacking(w1->parent(), check2, arraysize(check2)));
 
   w12.reset();
-  EXPECT_TRUE(IsActiveWindow(w11.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(w11.get()));
   w11.reset();
-  EXPECT_TRUE(IsActiveWindow(w1.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
 }
 
 // Create two toplevel windows w1 and w2, and nest two modals w11 and w111 below
@@ -96,39 +96,39 @@ TEST_F(WindowModalityControllerTest, NestedModals) {
   w1->AddTransientChild(w11.get());
   w11->AddTransientChild(w111.get());
 
-  ActivateWindow(w1.get());
-  EXPECT_TRUE(IsActiveWindow(w1.get()));
-  ActivateWindow(w2.get());
-  EXPECT_TRUE(IsActiveWindow(w2.get()));
+  wm::ActivateWindow(w1.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
+  wm::ActivateWindow(w2.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
 
   // Set up modality.
   w11->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
   w111->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
 
-  ActivateWindow(w1.get());
-  EXPECT_TRUE(IsActiveWindow(w111.get()));
+  wm::ActivateWindow(w1.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w111.get()));
   int check1[] = { -2, -1, -11, -111 };
   EXPECT_TRUE(ValidateStacking(w1->parent(), check1, arraysize(check1)));
 
-  ActivateWindow(w11.get());
-  EXPECT_TRUE(IsActiveWindow(w111.get()));
+  wm::ActivateWindow(w11.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w111.get()));
   EXPECT_TRUE(ValidateStacking(w1->parent(), check1, arraysize(check1)));
 
-  ActivateWindow(w111.get());
-  EXPECT_TRUE(IsActiveWindow(w111.get()));
+  wm::ActivateWindow(w111.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w111.get()));
   EXPECT_TRUE(ValidateStacking(w1->parent(), check1, arraysize(check1)));
 
-  ActivateWindow(w2.get());
-  EXPECT_TRUE(IsActiveWindow(w2.get()));
+  wm::ActivateWindow(w2.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
   int check2[] = { -1, -11, -111, -2 };
   EXPECT_TRUE(ValidateStacking(w1->parent(), check2, arraysize(check2)));
 
   w2.reset();
-  EXPECT_TRUE(IsActiveWindow(w111.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(w111.get()));
   w111.reset();
-  EXPECT_TRUE(IsActiveWindow(w11.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(w11.get()));
   w11.reset();
-  EXPECT_TRUE(IsActiveWindow(w1.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
 }
 
 // Create two toplevel windows w1 and w2, and nest two modals w11 and w111 below
@@ -150,27 +150,27 @@ TEST_F(WindowModalityControllerTest, NestedModalsOuterClosed) {
   w1->AddTransientChild(w11.get());
   w11->AddTransientChild(w111);
 
-  ActivateWindow(w1.get());
-  EXPECT_TRUE(IsActiveWindow(w1.get()));
-  ActivateWindow(w2.get());
-  EXPECT_TRUE(IsActiveWindow(w2.get()));
+  wm::ActivateWindow(w1.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
+  wm::ActivateWindow(w2.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
 
   // Set up modality.
   w11->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
   w111->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
 
-  ActivateWindow(w1.get());
-  EXPECT_TRUE(IsActiveWindow(w111));
+  wm::ActivateWindow(w1.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w111));
 
   w111->Hide();
-  EXPECT_TRUE(IsActiveWindow(w11.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(w11.get()));
 
   // TODO(oshima): Re-showing doesn't set the focus back to
   // modal window. There is no such use case right now, but it
   // probably should.
 
   w11.reset();
-  EXPECT_TRUE(IsActiveWindow(w1.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
 }
 
 // Modality also prevents events from being passed to the transient parent.
@@ -188,7 +188,7 @@ TEST_F(WindowModalityControllerTest, Events) {
     aura::test::EventGenerator generator(Shell::GetRootWindow(),
                                          gfx::Point(10, 10));
     generator.ClickLeftButton();
-    EXPECT_TRUE(IsActiveWindow(w1.get()));
+    EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
   }
 
   w11->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
@@ -198,10 +198,9 @@ TEST_F(WindowModalityControllerTest, Events) {
     aura::test::EventGenerator generator(Shell::GetRootWindow(),
                                          gfx::Point(10, 10));
     generator.ClickLeftButton();
-    EXPECT_TRUE(IsActiveWindow(w11.get()));
+    EXPECT_TRUE(wm::IsActiveWindow(w11.get()));
   }
 }
-
 
 }  // namespace internal
 }  // namespace ash

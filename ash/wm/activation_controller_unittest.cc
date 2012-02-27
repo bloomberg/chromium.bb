@@ -11,8 +11,8 @@
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
-#include "ui/aura/test/test_windows.h"
 #include "ui/aura/test/test_window_delegate.h"
+#include "ui/aura/test/test_windows.h"
 
 #if defined(OS_WIN)
 // Windows headers define macros for these function names which screw with us.
@@ -92,32 +92,32 @@ class GetTopmostWindowToActivateTest : public ActivationControllerTest {
 
 // Hiding the active window should activate the next valid activatable window.
 TEST_F(GetTopmostWindowToActivateTest, HideActivatesNext) {
-  ActivateWindow(w2());
-  EXPECT_TRUE(IsActiveWindow(w2()));
+  wm::ActivateWindow(w2());
+  EXPECT_TRUE(wm::IsActiveWindow(w2()));
 
   w2()->Hide();
-  EXPECT_TRUE(IsActiveWindow(w4()));
+  EXPECT_TRUE(wm::IsActiveWindow(w4()));
 }
 
 // Destroying the active window should activate the next valid activatable
 // window.
 TEST_F(GetTopmostWindowToActivateTest, DestroyActivatesNext) {
-  ActivateWindow(w2());
-  EXPECT_TRUE(IsActiveWindow(w2()));
+  wm::ActivateWindow(w2());
+  EXPECT_TRUE(wm::IsActiveWindow(w2()));
 
   DestroyWindow2();
   EXPECT_EQ(NULL, w2());
-  EXPECT_TRUE(IsActiveWindow(w4()));
+  EXPECT_TRUE(wm::IsActiveWindow(w4()));
 }
 
 // Deactivating the active window should activate the next valid activatable
 // window.
 TEST_F(GetTopmostWindowToActivateTest, DeactivateActivatesNext) {
-  ActivateWindow(w2());
-  EXPECT_TRUE(IsActiveWindow(w2()));
+  wm::ActivateWindow(w2());
+  EXPECT_TRUE(wm::IsActiveWindow(w2()));
 
-  DeactivateWindow(w2());
-  EXPECT_TRUE(IsActiveWindow(w4()));
+  wm::DeactivateWindow(w2());
+  EXPECT_TRUE(wm::IsActiveWindow(w4()));
 }
 
 // Test if the clicking on a menu picks the transient parent as activatable
@@ -130,12 +130,12 @@ TEST_F(ActivationControllerTest, ClickOnMenu) {
   scoped_ptr<aura::Window> w1(aura::test::CreateTestWindowWithDelegate(
       &wd, 1, gfx::Rect(100, 100), NULL));
   ad1.SetWindow(w1.get());
-  EXPECT_TRUE(IsActiveWindow(NULL));
+  EXPECT_TRUE(wm::IsActiveWindow(NULL));
 
   // Clicking on an activatable window activtes the window.
   aura::test::EventGenerator generator(Shell::GetRootWindow(), w1.get());
   generator.ClickLeftButton();
-  EXPECT_TRUE(IsActiveWindow(w1.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
 
   // Creates a menu that covers the transient parent.
   scoped_ptr<aura::Window> menu(aura::test::CreateTestWindowWithDelegateAndType(
@@ -146,7 +146,7 @@ TEST_F(ActivationControllerTest, ClickOnMenu) {
   // Clicking on a menu whose transient parent is active window shouldn't
   // change the active window.
   generator.ClickLeftButton();
-  EXPECT_TRUE(IsActiveWindow(w1.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
 }
 
 // Various assertions for activating/deactivating.
@@ -162,21 +162,21 @@ TEST_F(ActivationControllerTest, Deactivate) {
   ASSERT_TRUE(parent);
   ASSERT_EQ(2u, parent->children().size());
   // Activate w2 and make sure it's active and frontmost.
-  ActivateWindow(w2.get());
-  EXPECT_TRUE(IsActiveWindow(w2.get()));
-  EXPECT_FALSE(IsActiveWindow(w1.get()));
+  wm::ActivateWindow(w2.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
+  EXPECT_FALSE(wm::IsActiveWindow(w1.get()));
   EXPECT_EQ(w2.get(), parent->children()[1]);
 
   // Activate w1 and make sure it's active and frontmost.
-  ActivateWindow(w1.get());
-  EXPECT_TRUE(IsActiveWindow(w1.get()));
-  EXPECT_FALSE(IsActiveWindow(w2.get()));
+  wm::ActivateWindow(w1.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
+  EXPECT_FALSE(wm::IsActiveWindow(w2.get()));
   EXPECT_EQ(w1.get(), parent->children()[1]);
 
   // Deactivate w1 and make sure w2 becomes active and frontmost.
-  DeactivateWindow(w1.get());
-  EXPECT_FALSE(IsActiveWindow(w1.get()));
-  EXPECT_TRUE(IsActiveWindow(w2.get()));
+  wm::DeactivateWindow(w1.get());
+  EXPECT_FALSE(wm::IsActiveWindow(w1.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
   EXPECT_EQ(w2.get(), parent->children()[1]);
 }
 
@@ -192,20 +192,20 @@ TEST_F(ActivationControllerTest, NotActiveInLostActive) {
       NULL, 1, gfx::Rect(10, 10, 50, 50), NULL));
 
   // Activate w1.
-  ActivateWindow(w1.get());
-  EXPECT_TRUE(IsActiveWindow(w1.get()));
+  wm::ActivateWindow(w1.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
   EXPECT_EQ(1, ad1.activated_count());
   // Should not have gotten a OnLostActive yet.
   EXPECT_EQ(0, ad1.lost_active_count());
 
   // ActivateWindow(NULL) should deactivate the active window.
-  ActivateWindow(NULL);
-  EXPECT_FALSE(IsActiveWindow(w1.get()));
+  wm::ActivateWindow(NULL);
+  EXPECT_FALSE(wm::IsActiveWindow(w1.get()));
   EXPECT_EQ(1, ad1.lost_active_count());
   EXPECT_FALSE(ad1.window_was_active());
 
   // Activate w1 again. w1 should have gotten OnActivated.
-  ActivateWindow(w1.get());
+  wm::ActivateWindow(w1.get());
   EXPECT_EQ(2, ad1.activated_count());
   EXPECT_EQ(1, ad1.lost_active_count());
 
@@ -213,7 +213,7 @@ TEST_F(ActivationControllerTest, NotActiveInLostActive) {
   ad1.Clear();
 
   // Now activate another window.
-  ActivateWindow(w2.get());
+  wm::ActivateWindow(w2.get());
 
   // Should have gotten OnLostActive and w1 shoouldn't have been
   // active window in OnLostActive.
@@ -233,20 +233,20 @@ TEST_F(ActivationControllerTest, FocusTriggersActivation) {
   scoped_ptr<aura::Window> w21(aura::test::CreateTestWindowWithDelegate(
       &wd, -21, gfx::Rect(50, 50), w2.get()));
 
-  ActivateWindow(w1.get());
-  EXPECT_TRUE(IsActiveWindow(w1.get()));
+  wm::ActivateWindow(w1.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
   EXPECT_TRUE(w1->HasFocus());
 
   w2->Focus();
-  EXPECT_TRUE(IsActiveWindow(w2.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
   EXPECT_TRUE(w2->HasFocus());
 
-  ActivateWindow(w1.get());
-  EXPECT_TRUE(IsActiveWindow(w1.get()));
+  wm::ActivateWindow(w1.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
   EXPECT_TRUE(w1->HasFocus());
 
   w21->Focus();
-  EXPECT_TRUE(IsActiveWindow(w2.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
   EXPECT_TRUE(w21->HasFocus());
 }
 
@@ -262,29 +262,29 @@ TEST_F(ActivationControllerTest, PreventFocusToNonActivatableWindow) {
   scoped_ptr<aura::Window> w21(aura::test::CreateTestWindowWithDelegate(
       &wd, -21, gfx::Rect(50, 50), w2.get()));
 
-  ActivateWindow(w1.get());
-  EXPECT_TRUE(IsActiveWindow(w1.get()));
+  wm::ActivateWindow(w1.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
   EXPECT_TRUE(w1->HasFocus());
 
   // Try activating |w2|. It's not a child of an activatable container, so it
   // should neither be activated nor get focus.
-  ActivateWindow(w2.get());
-  EXPECT_FALSE(IsActiveWindow(w2.get()));
+  wm::ActivateWindow(w2.get());
+  EXPECT_FALSE(wm::IsActiveWindow(w2.get()));
   EXPECT_FALSE(w2->HasFocus());
-  EXPECT_TRUE(IsActiveWindow(w1.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
   EXPECT_TRUE(w1->HasFocus());
 
   // Try focusing |w2|. Same rules apply.
   w2->Focus();
-  EXPECT_FALSE(IsActiveWindow(w2.get()));
+  EXPECT_FALSE(wm::IsActiveWindow(w2.get()));
   EXPECT_FALSE(w2->HasFocus());
-  EXPECT_TRUE(IsActiveWindow(w1.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
   EXPECT_TRUE(w1->HasFocus());
 
   // Try focusing |w21|. Same rules apply.
-  EXPECT_FALSE(IsActiveWindow(w2.get()));
+  EXPECT_FALSE(wm::IsActiveWindow(w2.get()));
   EXPECT_FALSE(w21->HasFocus());
-  EXPECT_TRUE(IsActiveWindow(w1.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
   EXPECT_TRUE(w1->HasFocus());
 }
 

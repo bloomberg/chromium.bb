@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,7 +46,7 @@ void TestActivationDelegate::OnActivated() {
 }
 void TestActivationDelegate::OnLostActive() {
   if (lost_active_count_++ == 0)
-    window_was_active_ = IsActiveWindow(window_);
+    window_was_active_ = wm::IsActiveWindow(window_);
 }
 
 }  // namespace test

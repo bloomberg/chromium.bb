@@ -60,7 +60,7 @@ bool WindowModalityController::PreHandleMouseEvent(aura::Window* target,
                                                    aura::MouseEvent* event) {
   aura::Window* modal_transient_child = GetWindowModalTransient(target);
   if (modal_transient_child && event->type() == ui::ET_MOUSE_PRESSED)
-    ActivateWindow(modal_transient_child);
+    wm::ActivateWindow(modal_transient_child);
   return !!modal_transient_child;
 }
 

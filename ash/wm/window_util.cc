@@ -26,6 +26,8 @@ const aura::WindowProperty<bool>* const
 
 }  // namespace
 
+namespace wm {
+
 void ActivateWindow(aura::Window* window) {
   aura::client::GetActivationClient(Shell::GetRootWindow())->ActivateWindow(
       window);
@@ -48,6 +50,8 @@ aura::Window* GetActiveWindow() {
 aura::Window* GetActivatableWindow(aura::Window* window) {
   return internal::ActivationController::GetActivatableWindow(window);
 }
+
+}  // namespace wm
 
 namespace window_util {
 

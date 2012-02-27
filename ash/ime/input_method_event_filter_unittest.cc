@@ -68,7 +68,7 @@ TEST_F(InputMethodEventFilterTest, TestInputMethodKeyEventPropagation) {
       -1,
       gfx::Rect(),
       default_container));
-  ActivateWindow(window.get());
+  wm::ActivateWindow(window.get());
 
   // Send a fake key event to the root window. InputMethodEventFilter, which is
   // automatically set up by AshTestBase, consumes it and sends a new

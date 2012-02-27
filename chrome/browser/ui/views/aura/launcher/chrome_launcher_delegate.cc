@@ -15,9 +15,9 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -284,7 +284,7 @@ void ChromeLauncherDelegate::Open(ash::LauncherID id) {
   LauncherUpdater* updater = id_to_item_map_[id].updater;
   if (updater) {
     updater->window()->Show();
-    ash::ActivateWindow(updater->window());
+    ash::wm::ActivateWindow(updater->window());
     TabContentsWrapper* tab = updater->GetTab(id);
     if (tab) {
       updater->tab_model()->ActivateTabAt(

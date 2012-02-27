@@ -9,16 +9,16 @@
 #include "ash/test/test_activation_delegate.h"
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/window_util.h"
-#include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/client/activation_client.h"
+#include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/cursor.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
-#include "ui/aura/test/test_windows.h"
 #include "ui/aura/test/test_event_filter.h"
 #include "ui/aura/test/test_window_delegate.h"
+#include "ui/aura/test/test_windows.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/screen.h"
 
@@ -198,8 +198,8 @@ TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
   d2.Clear();
 
   // Activate window1.
-  ash::ActivateWindow(w1.get());
-  EXPECT_TRUE(IsActiveWindow(w1.get()));
+  wm::ActivateWindow(w1.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
   EXPECT_EQ(w1.get(), focus_manager->GetFocusedWindow());
   EXPECT_EQ(1, d1.activated_count());
   EXPECT_EQ(0, d1.lost_active_count());
@@ -211,7 +211,7 @@ TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
     generator.ClickLeftButton();
 
     // Window2 should have become active.
-    EXPECT_TRUE(IsActiveWindow(w2.get()));
+    EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
     EXPECT_EQ(w2.get(), focus_manager->GetFocusedWindow());
     EXPECT_EQ(0, d1.activated_count());
     EXPECT_EQ(1, d1.lost_active_count());
@@ -228,7 +228,7 @@ TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
     generator.ClickLeftButton();
 
     // Window2 should still be active and focused.
-    EXPECT_TRUE(IsActiveWindow(w2.get()));
+    EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
     EXPECT_EQ(w2.get(), focus_manager->GetFocusedWindow());
     EXPECT_EQ(0, d1.activated_count());
     EXPECT_EQ(0, d1.lost_active_count());
@@ -243,7 +243,7 @@ TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
   w2.reset();
   EXPECT_EQ(0, d2.activated_count());
   EXPECT_EQ(0, d2.lost_active_count());
-  EXPECT_TRUE(IsActiveWindow(w1.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
   EXPECT_EQ(w1.get(), focus_manager->GetFocusedWindow());
   EXPECT_EQ(1, d1.activated_count());
   EXPECT_EQ(0, d1.lost_active_count());
@@ -257,7 +257,7 @@ TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
     // First set the focus to the child |w11|.
     generator.ClickLeftButton();
     EXPECT_EQ(w11.get(), focus_manager->GetFocusedWindow());
-    EXPECT_EQ(w1.get(), GetActiveWindow());
+    EXPECT_EQ(w1.get(), wm::GetActiveWindow());
 
     // Then click the parent active window. The focus shouldn't move.
     gfx::Point left_top = w1->bounds().origin();
@@ -266,7 +266,7 @@ TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
     generator.MoveMouseTo(left_top);
     generator.ClickLeftButton();
     EXPECT_EQ(w11.get(), focus_manager->GetFocusedWindow());
-    EXPECT_EQ(w1.get(), GetActiveWindow());
+    EXPECT_EQ(w1.get(), wm::GetActiveWindow());
   }
 
   // Clicking on a non-focusable window inside a background window should still
@@ -310,8 +310,8 @@ TEST_F(RootWindowEventFilterTest, ActivateOnTouch) {
   d2.Clear();
 
   // Activate window1.
-  ash::ActivateWindow(w1.get());
-  EXPECT_TRUE(IsActiveWindow(w1.get()));
+  wm::ActivateWindow(w1.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
   EXPECT_EQ(w1.get(), focus_manager->GetFocusedWindow());
   EXPECT_EQ(1, d1.activated_count());
   EXPECT_EQ(0, d1.lost_active_count());
@@ -324,7 +324,7 @@ TEST_F(RootWindowEventFilterTest, ActivateOnTouch) {
   root_window->DispatchTouchEvent(&touchev1);
 
   // Window2 should have become active.
-  EXPECT_TRUE(IsActiveWindow(w2.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
   EXPECT_EQ(w2.get(), focus_manager->GetFocusedWindow());
   EXPECT_EQ(0, d1.activated_count());
   EXPECT_EQ(1, d1.lost_active_count());
@@ -341,7 +341,7 @@ TEST_F(RootWindowEventFilterTest, ActivateOnTouch) {
   root_window->DispatchTouchEvent(&touchev2);
 
   // Window2 should still be active and focused.
-  EXPECT_TRUE(IsActiveWindow(w2.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
   EXPECT_EQ(w2.get(), focus_manager->GetFocusedWindow());
   EXPECT_EQ(0, d1.activated_count());
   EXPECT_EQ(0, d1.lost_active_count());
@@ -355,7 +355,7 @@ TEST_F(RootWindowEventFilterTest, ActivateOnTouch) {
   w2.reset();
   EXPECT_EQ(0, d2.activated_count());
   EXPECT_EQ(0, d2.lost_active_count());
-  EXPECT_TRUE(IsActiveWindow(w1.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
   EXPECT_EQ(w1.get(), focus_manager->GetFocusedWindow());
   EXPECT_EQ(1, d1.activated_count());
   EXPECT_EQ(0, d1.lost_active_count());
@@ -465,7 +465,7 @@ TEST_F(RootWindowEventFilterTest, TransformActivate) {
                             hit_point,
                             ui::EF_LEFT_MOUSE_BUTTON);
   root_window->DispatchMouseEvent(&mouseev2);
-  EXPECT_TRUE(IsActiveWindow(w1.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
   EXPECT_EQ(w1.get(), w1->GetFocusManager()->GetFocusedWindow());
 }
 
@@ -475,7 +475,7 @@ TEST_F(RootWindowEventFilterTest, AdditionalFilters) {
   // Creates a window and make it active
   scoped_ptr<aura::Window> w1(aura::test::CreateTestWindow(
       SK_ColorWHITE, -1, gfx::Rect(0, 0, 100, 100), NULL));
-  ash::ActivateWindow(w1.get());
+  wm::ActivateWindow(w1.get());
 
   // Creates two addition filters
   scoped_ptr<aura::test::TestEventFilter> f1(new aura::test::TestEventFilter);

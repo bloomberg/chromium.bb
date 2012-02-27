@@ -44,7 +44,7 @@ bool WorkspaceEventFilter::PreHandleMouseEvent(aura::Window* target,
                                                aura::MouseEvent* event) {
   switch (event->type()) {
     case ui::ET_MOUSE_ENTERED:
-      UpdateHoveredWindow(GetActivatableWindow(target));
+      UpdateHoveredWindow(wm::GetActivatableWindow(target));
       break;
     case ui::ET_MOUSE_CAPTURE_CHANGED:
     case ui::ET_MOUSE_EXITED:

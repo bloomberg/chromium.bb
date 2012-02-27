@@ -15,8 +15,7 @@ class Window;
 }
 
 namespace ash {
-
-// TODO(jamescook): Put all these functions in namespace window_util.
+namespace wm {
 
 // Convenience setters/getters for |aura::client::kRootWindowActiveWindow|.
 ASH_EXPORT void ActivateWindow(aura::Window* window);
@@ -30,6 +29,8 @@ ASH_EXPORT aura::Window* GetActiveWindow();
 // If you're looking for a function to get the activatable "top level" window,
 // this is probably what you're looking for.
 ASH_EXPORT aura::Window* GetActivatableWindow(aura::Window* window);
+
+}  // namespace wm
 
 namespace window_util {
 
