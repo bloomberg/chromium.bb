@@ -89,9 +89,22 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // Returns true if |host| is managed by this process manager.
   bool HasExtensionHost(ExtensionHost* host) const;
 
-  // Called when the render reports that the extension is idle (only if
-  // lazy background pages are enabled).
-  void OnExtensionIdle(const std::string& extension_id);
+  // Getter and setter for the lazy background page's keepalive count. This is
+  // the count of how many outstanding "things" are keeping the page alive.
+  // When this reaches 0, we will begin the process of shutting down the page.
+  // "Things" include pending events, resource loads, and API calls.
+  int GetLazyKeepaliveCount(const Extension* extension);
+  int IncrementLazyKeepaliveCount(const Extension* extension);
+  int DecrementLazyKeepaliveCount(const Extension* extension);
+
+  // These are called when the extension transitions between idle and active.
+  // They control the process of closing the background page when idle.
+  void OnLazyBackgroundPageIdle(const std::string& extension_id);
+  void OnLazyBackgroundPageActive(const std::string& extension_id);
+
+  // Handle a response to the ShouldClose message, used for lazy background
+  // pages.
+  void OnShouldCloseAck(const std::string& extension_id, int sequence_id);
 
   typedef std::set<ExtensionHost*> ExtensionHostSet;
   typedef ExtensionHostSet::const_iterator const_iterator;

@@ -103,10 +103,6 @@ class ExtensionEventRouter : public content::NotificationObserver {
   // Record the Event Ack from the renderer. (One less event in-flight.)
   void OnExtensionEventAck(const std::string& extension_id);
 
-  // Check if there are any Extension Events that have not yet been acked by
-  // the renderer.
-  bool HasInFlightEvents(const std::string& extension_id);
-
  protected:
   // The details of an event to be dispatched.
   struct ExtensionEvent;
@@ -179,7 +175,6 @@ class ExtensionEventRouter : public content::NotificationObserver {
   // Track of the number of dispatched events that have not yet sent an
   // ACK from the renderer.
   void IncrementInFlightEvents(const Extension* extension);
-  std::map<std::string, int> in_flight_events_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionEventRouter);
 };

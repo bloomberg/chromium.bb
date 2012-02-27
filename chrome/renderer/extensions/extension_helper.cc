@@ -189,8 +189,6 @@ void ExtensionHelper::OnExtensionResponse(int request_id,
   SchemaGeneratedBindings::HandleResponse(
       extension_dispatcher_->v8_context_set(), request_id, success,
       response, error, &extension_id);
-
-  extension_dispatcher_->CheckIdleStatus(extension_id);
 }
 
 void ExtensionHelper::OnExtensionMessageInvoke(const std::string& extension_id,

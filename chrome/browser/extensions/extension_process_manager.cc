@@ -37,6 +37,22 @@ using content::SiteInstance;
 
 namespace {
 
+// An accessor for an extension's lazy_keepalive_count.
+// TODO(mpcomplete): Should we store this on ExtensionHost instead?
+static base::LazyInstance<base::PropertyAccessor<int> >
+    g_property_accessor = LAZY_INSTANCE_INITIALIZER;
+
+int& GetLazyKeepaliveCount(Profile* profile, const Extension* extension) {
+  base::PropertyBag* bag =
+      profile->GetExtensionService()->GetPropertyBag(extension);
+  int* count = g_property_accessor.Get().GetProperty(bag);
+  if (!count) {
+    g_property_accessor.Get().SetProperty(bag, 0);
+    count = g_property_accessor.Get().GetProperty(bag);
+  }
+  return *count;
+}
+
 // Incognito profiles use this process manager. It is mostly a shim that decides
 // whether to fall back on the original profile's ExtensionProcessManager based
 // on whether a given extension uses "split" or "spanning" incognito behavior.
@@ -290,13 +306,58 @@ bool ExtensionProcessManager::HasExtensionHost(ExtensionHost* host) const {
   return all_hosts_.find(host) != all_hosts_.end();
 }
 
-void ExtensionProcessManager::OnExtensionIdle(const std::string& extension_id) {
+int ExtensionProcessManager::GetLazyKeepaliveCount(const Extension* extension) {
+  if (extension->background_page_persists())
+    return 0;
+
+  return ::GetLazyKeepaliveCount(GetProfile(), extension);
+}
+
+int ExtensionProcessManager::IncrementLazyKeepaliveCount(
+     const Extension* extension) {
+  if (extension->background_page_persists())
+    return 0;
+
+  // TODO(mpcomplete): Handle visible views changing.
+  int& count = ::GetLazyKeepaliveCount(GetProfile(), extension);
+  if (++count == 1)
+    OnLazyBackgroundPageActive(extension->id());
+
+  return count;
+}
+
+int ExtensionProcessManager::DecrementLazyKeepaliveCount(
+     const Extension* extension) {
+  if (extension->background_page_persists())
+    return 0;
+
+  int& count = ::GetLazyKeepaliveCount(GetProfile(), extension);
+  DCHECK(count > 0);
+  if (--count == 0)
+    OnLazyBackgroundPageIdle(extension->id());
+
+  return count;
+}
+
+void ExtensionProcessManager::OnLazyBackgroundPageIdle(
+    const std::string& extension_id) {
   ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
-  if (host && !HasVisibleViews(extension_id)) {
-    Profile* profile = GetProfile();
-    if (!profile->GetExtensionEventRouter()->HasInFlightEvents(extension_id))
-      CloseBackgroundHost(host);
-  }
+  if (host && !HasVisibleViews(extension_id))
+    host->SendShouldClose();
+}
+
+void ExtensionProcessManager::OnLazyBackgroundPageActive(
+    const std::string& extension_id) {
+  ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
+  if (host)
+    host->CancelShouldClose();
+}
+
+void ExtensionProcessManager::OnShouldCloseAck(
+     const std::string& extension_id, int sequence_id) {
+  ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
+  if (host)
+    host->OnShouldCloseAck(sequence_id);
 }
 
 bool ExtensionProcessManager::HasVisibleViews(const std::string& extension_id) {

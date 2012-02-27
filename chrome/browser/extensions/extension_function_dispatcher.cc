@@ -728,6 +728,19 @@ void ExtensionFunctionDispatcher::Dispatch(
     function->OnQuotaExceeded();
     LogFailure(extension, params.name, kQuotaExceeded);
   }
+
+  // We only adjust the keepalive count for UIThreadExtensionFunction for
+  // now, largely for simplicity's sake. This is OK because currently, only
+  // the webRequest API uses IOThreadExtensionFunction, and that API is not
+  // compatible with lazy background pages.
+  profile()->GetExtensionProcessManager()->IncrementLazyKeepaliveCount(
+      extension);
+}
+
+void ExtensionFunctionDispatcher::OnExtensionFunctionCompleted(
+    const Extension* extension) {
+  profile()->GetExtensionProcessManager()->DecrementLazyKeepaliveCount(
+      extension);
 }
 
 // static

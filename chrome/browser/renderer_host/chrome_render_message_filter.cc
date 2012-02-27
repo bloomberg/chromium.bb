@@ -90,11 +90,12 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnExtensionAddLazyListener)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_RemoveLazyListener,
                         OnExtensionRemoveLazyListener)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_ExtensionIdle, OnExtensionIdle)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_ExtensionEventAck, OnExtensionEventAck)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_CloseChannel, OnExtensionCloseChannel)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_RequestForIOThread,
                         OnExtensionRequestForIOThread)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_ShouldCloseAck,
+                        OnExtensionShouldCloseAck)
 #if defined(USE_TCMALLOC)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RendererTcmalloc, OnRendererTcmalloc)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_WriteTcmallocHeapProfile_ACK,
@@ -139,9 +140,9 @@ void ChromeRenderMessageFilter::OverrideThreadForMessage(
     case ExtensionHostMsg_RemoveListener::ID:
     case ExtensionHostMsg_AddLazyListener::ID:
     case ExtensionHostMsg_RemoveLazyListener::ID:
-    case ExtensionHostMsg_ExtensionIdle::ID:
     case ExtensionHostMsg_ExtensionEventAck::ID:
     case ExtensionHostMsg_CloseChannel::ID:
+    case ExtensionHostMsg_ShouldCloseAck::ID:
     case ChromeViewHostMsg_UpdatedCacheStats::ID:
       *thread = BrowserThread::UI;
       break;
@@ -370,12 +371,6 @@ void ChromeRenderMessageFilter::OnExtensionRemoveLazyListener(
         event_name, extension_id);
 }
 
-void ChromeRenderMessageFilter::OnExtensionIdle(
-    const std::string& extension_id) {
-  if (profile_->GetExtensionProcessManager())
-    profile_->GetExtensionProcessManager()->OnExtensionIdle(extension_id);
-}
-
 void ChromeRenderMessageFilter::OnExtensionEventAck(
     const std::string& extension_id) {
   if (profile_->GetExtensionEventRouter())
@@ -398,6 +393,13 @@ void ChromeRenderMessageFilter::OnExtensionRequestForIOThread(
   ExtensionFunctionDispatcher::DispatchOnIOThread(
       extension_info_map_, profile_, render_process_id_,
       weak_ptr_factory_.GetWeakPtr(), routing_id, params);
+}
+
+void ChromeRenderMessageFilter::OnExtensionShouldCloseAck(
+     const std::string& extension_id, int sequence_id) {
+  if (profile_->GetExtensionProcessManager())
+    profile_->GetExtensionProcessManager()->OnShouldCloseAck(
+        extension_id, sequence_id);
 }
 
 #if defined(USE_TCMALLOC)

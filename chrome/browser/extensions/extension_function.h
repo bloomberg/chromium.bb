@@ -287,7 +287,7 @@ class UIThreadExtensionFunction : public ExtensionFunction {
  private:
   // Helper class to track the lifetime of ExtensionFunction's RenderViewHost
   // pointer and NULL it out when it dies. It also allows us to filter IPC
-  // messages comming from the RenderViewHost. We use this separate class
+  // messages coming from the RenderViewHost. We use this separate class
   // (instead of implementing NotificationObserver on ExtensionFunction) because
   // it is/ common for subclasses of ExtensionFunction to be
   // NotificationObservers, and it would be an easy error to forget to call the

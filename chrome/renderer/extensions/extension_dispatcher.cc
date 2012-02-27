@@ -95,6 +95,7 @@ bool ExtensionDispatcher::OnControlMessageReceived(
     IPC_MESSAGE_HANDLER(ExtensionMsg_UpdatePermissions, OnUpdatePermissions)
     IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateUserScripts, OnUpdateUserScripts)
     IPC_MESSAGE_HANDLER(ExtensionMsg_UsingWebRequestAPI, OnUsingWebRequestAPI)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_ShouldClose, OnShouldClose)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -183,15 +184,7 @@ void ExtensionDispatcher::OnMessageInvoke(const std::string& extension_id,
       function_name == "Event.dispatchJSON") { // may always be true
     RenderThread::Get()->Send(
         new ExtensionHostMsg_ExtensionEventAck(extension_id));
-    CheckIdleStatus(extension_id);
   }
-}
-
-void ExtensionDispatcher::CheckIdleStatus(const std::string& extension_id) {
-  const Extension* extension = extensions_.GetByID(extension_id);
-  if (extension && !extension->background_page_persists() &&
-      !SchemaGeneratedBindings::HasPendingRequests(extension_id))
-    RenderThread::Get()->Send(new ExtensionHostMsg_ExtensionIdle(extension_id));
 }
 
 void ExtensionDispatcher::OnDeliverMessage(int target_port_id,
@@ -541,4 +534,10 @@ void ExtensionDispatcher::OnUsingWebRequestAPI(
   webrequest_adblock_ = adblock;
   webrequest_adblock_plus_ = adblock_plus;
   webrequest_other_ = other;
+}
+
+void ExtensionDispatcher::OnShouldClose(const std::string& extension_id,
+                                        int sequence_id) {
+  RenderThread::Get()->Send(
+      new ExtensionHostMsg_ShouldCloseAck(extension_id, sequence_id));
 }

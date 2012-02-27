@@ -100,6 +100,10 @@ class ExtensionFunctionDispatcher
   void Dispatch(const ExtensionHostMsg_Request_Params& params,
                 RenderViewHost* sender);
 
+  // Called when an ExtensionFunction is done executing, after it has sent
+  // a response (if any) to the extension.
+  void OnExtensionFunctionCompleted(const Extension* extension);
+
   // Returns the current browser. Callers should generally prefer
   // ExtensionFunction::GetCurrentBrowser() over this method, as that one
   // provides the correct value for |include_incognito|.

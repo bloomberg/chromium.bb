@@ -231,7 +231,7 @@ IPC_MESSAGE_ROUTED1(ExtensionMsg_UpdateBrowserWindowId,
 // Tell the renderer to update an extension's permission set.
 IPC_MESSAGE_CONTROL5(ExtensionMsg_UpdatePermissions,
                      int /* UpdateExtensionPermissionsInfo::REASON */,
-                     std::string /* extension_id*/,
+                     std::string /* extension_id */,
                      ExtensionAPIPermissionSet /* permissions */,
                      URLPatternSet /* explicit_hosts */,
                      URLPatternSet /* scriptable_hosts */)
@@ -245,6 +245,13 @@ IPC_MESSAGE_CONTROL3(ExtensionMsg_UsingWebRequestAPI,
                      bool /* adblock */,
                      bool /* adblock_plus */,
                      bool /* other_webrequest */)
+
+// Ask the renderer if it is ready to shutdown. Used for lazy background pages
+// when they are considered idle. The renderer will reply with the same
+// sequence_id so that we can tell which message it is responding to.
+IPC_MESSAGE_CONTROL2(ExtensionMsg_ShouldClose,
+                     std::string /* extension_id */,
+                     int /* sequence_id */)
 
 // Messages sent from the renderer to the browser.
 
@@ -281,11 +288,6 @@ IPC_MESSAGE_CONTROL2(ExtensionHostMsg_AddLazyListener,
 IPC_MESSAGE_CONTROL2(ExtensionHostMsg_RemoveLazyListener,
                      std::string /* extension_id */,
                      std::string /* name */)
-
-// Notify the browser that the extension is idle so it's lazy background page
-// can be closed.
-IPC_MESSAGE_CONTROL1(ExtensionHostMsg_ExtensionIdle,
-                     std::string /* extension_id */)
 
 // Notify the browser that an event has finished being dispatched.
 IPC_MESSAGE_CONTROL1(ExtensionHostMsg_ExtensionEventAck,
@@ -367,6 +369,11 @@ IPC_MESSAGE_ROUTED4(ExtensionHostMsg_GetAppNotifyChannel,
 // function has been processed.
 IPC_MESSAGE_ROUTED1(ExtensionHostMsg_ResponseAck,
                     int /* request_id */)
+
+// Response to ExtensionMsg_ShouldClose.
+IPC_MESSAGE_CONTROL2(ExtensionHostMsg_ShouldCloseAck,
+                     std::string /* extension_id */,
+                     int /* sequence_id */)
 
 // Response to the renderer for the above message.
 IPC_MESSAGE_ROUTED3(ExtensionMsg_GetAppNotifyChannelResponse,

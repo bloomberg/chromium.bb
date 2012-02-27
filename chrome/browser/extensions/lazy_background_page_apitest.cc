@@ -45,18 +45,24 @@ public:
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
   }
+
+  // Loads the extension, which temporarily starts the lazy background page
+  // to dispatch the onInstalled event. We wait until it shuts down again.
+  const Extension* LoadExtensionAndWait(const std::string& test_name) {
+    LazyBackgroundObserver page_complete;
+    FilePath extdir = test_data_dir_.AppendASCII("lazy_background_page").
+        AppendASCII(test_name);
+    const Extension* extension = LoadExtension(extdir);
+    if (extension)
+      page_complete.Wait();
+    return extension;
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, BrowserActionCreateTab) {
-  FilePath extdir = test_data_dir_.AppendASCII("lazy_background_page").
-      AppendASCII("browser_action_create_tab");
-  ASSERT_TRUE(LoadExtension(extdir));
+  ASSERT_TRUE(LoadExtensionAndWait("browser_action_create_tab"));
 
   // Lazy Background Page doesn't exist yet.
-  // Note: We actually loaded and destroyed the page to dispatch the onInstalled
-  // event. LoadExtension waits for the load to finish, after which onInstalled
-  // is dispatched. Since the extension isn't listening to it, we immediately
-  // tear it down again.
   ExtensionProcessManager* pm =
       browser()->profile()->GetExtensionProcessManager();
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
@@ -77,9 +83,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, BrowserActionCreateTab) {
 
 IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest,
                        BrowserActionCreateTabAfterCallback) {
-  FilePath extdir = test_data_dir_.AppendASCII("lazy_background_page").
-      AppendASCII("browser_action_with_callback");
-  ASSERT_TRUE(LoadExtension(extdir));
+  ASSERT_TRUE(LoadExtensionAndWait("browser_action_with_callback"));
 
   // Lazy Background Page doesn't exist yet.
   ExtensionProcessManager* pm =
@@ -101,9 +105,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest,
 IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, BroadcastEvent) {
   ASSERT_TRUE(StartTestServer());
 
-  FilePath extdir = test_data_dir_.AppendASCII("lazy_background_page").
-      AppendASCII("broadcast_event");
-  const Extension* extension = LoadExtension(extdir);
+  const Extension* extension = LoadExtensionAndWait("broadcast_event");
   ASSERT_TRUE(extension);
 
   // Lazy Background Page doesn't exist yet.
@@ -131,16 +133,12 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, BroadcastEvent) {
                 GetLocationBarForTesting()->PageActionVisibleCount());
 }
 
+// Tests that the lazy background page receives the onInstalled event and shuts
+// down.
 IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, OnInstalled) {
-  LazyBackgroundObserver page_complete;
   ResultCatcher catcher;
-  FilePath extdir = test_data_dir_.AppendASCII("lazy_background_page").
-      AppendASCII("on_installed");
-  const Extension* extension = LoadExtension(extdir);
-  ASSERT_TRUE(extension);
-
+  ASSERT_TRUE(LoadExtensionAndWait("on_installed"));
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-  page_complete.Wait();
 
   // Lazy Background Page has been shut down.
   ExtensionProcessManager* pm =

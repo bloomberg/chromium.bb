@@ -131,7 +131,8 @@ ExtensionHost::ExtensionHost(const Extension* extension,
       ALLOW_THIS_IN_INITIALIZER_LIST(
           extension_function_dispatcher_(profile_, this)),
       extension_host_type_(host_type),
-      associated_web_contents_(NULL) {
+      associated_web_contents_(NULL),
+      close_sequence_id_(0) {
   host_contents_.reset(WebContents::Create(
       profile_, site_instance, MSG_ROUTING_NONE, NULL, NULL));
   content::WebContentsObserver::Observe(host_contents_.get());
@@ -214,6 +215,25 @@ void ExtensionHost::CreateRenderViewNow() {
   }
 }
 
+void ExtensionHost::SendShouldClose() {
+  CHECK(!extension()->background_page_persists());
+  render_view_host()->Send(new ExtensionMsg_ShouldClose(
+      extension()->id(), ++close_sequence_id_));
+  // TODO(mpcomplete): start timeout
+}
+
+void ExtensionHost::CancelShouldClose() {
+  CHECK(!extension()->background_page_persists());
+  ++close_sequence_id_;
+}
+
+void ExtensionHost::OnShouldCloseAck(int sequence_id) {
+  CHECK(!extension()->background_page_persists());
+  if (sequence_id != close_sequence_id_)
+    return;
+  Close();
+}
+
 const Browser* ExtensionHost::GetBrowser() const {
   return view() ? view()->browser() : NULL;
 }
@@ -238,6 +258,13 @@ void ExtensionHost::LoadInitialURL() {
   host_contents_->GetController().LoadURL(
       initial_url_, content::Referrer(), content::PAGE_TRANSITION_LINK,
       std::string());
+}
+
+void ExtensionHost::Close() {
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
+      content::Source<Profile>(profile_),
+      content::Details<ExtensionHost>(this));
 }
 
 void ExtensionHost::Observe(int type,
@@ -380,16 +407,14 @@ void ExtensionHost::DocumentLoadedInFrame(int64 frame_id) {
 }
 
 void ExtensionHost::CloseContents(WebContents* contents) {
+  // TODO(mpcomplete): is this check really necessary?
   if (extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_POPUP ||
       extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_DIALOG ||
       extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE ||
       extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_INFOBAR ||
       extension_host_type_ == chrome::VIEW_TYPE_APP_SHELL ||
       extension_host_type_ == chrome::VIEW_TYPE_PANEL) {
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-        content::Source<Profile>(profile_),
-        content::Details<ExtensionHost>(this));
+    Close();
   }
 }
 
@@ -433,10 +458,7 @@ void ExtensionHost::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   if (extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_POPUP) {
     if (event.type == NativeWebKeyboardEvent::RawKeyDown &&
         event.windowsKeyCode == ui::VKEY_ESCAPE) {
-      content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-          content::Source<Profile>(profile_),
-          content::Details<ExtensionHost>(this));
+      Close();
       return;
     }
   }
@@ -544,7 +566,6 @@ void ExtensionHost::AddNewContents(WebContents* source,
   params.user_gesture = user_gesture;
   browser::Navigate(&params);
 }
-
 
 void ExtensionHost::RenderViewReady() {
   content::NotificationService::current()->Notify(

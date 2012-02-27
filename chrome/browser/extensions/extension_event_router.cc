@@ -259,11 +259,9 @@ bool ExtensionEventRouter::CanDispatchEventNow(const Extension* extension) {
   if (extension->has_background_page() &&
       !extension->background_page_persists()) {
     ExtensionProcessManager* pm = profile_->GetExtensionProcessManager();
-
-    // TODO(mpcomplete): this is incorrect. We need to check whether the page
-    // has finished loading. If not, we can't dispatch the event (because the
-    // listener hasn't been set up yet).
-    if (!pm->GetBackgroundHostForExtension(extension->id()))
+    ExtensionHost* background_host =
+        pm->GetBackgroundHostForExtension(extension->id());
+    if (!background_host || !background_host->did_stop_loading())
       return false;
   }
 
@@ -369,18 +367,20 @@ void ExtensionEventRouter::LoadLazyBackgroundPagesForEvent(
 }
 
 void ExtensionEventRouter::IncrementInFlightEvents(const Extension* extension) {
-  if (!extension->background_page_persists())
-    in_flight_events_[extension->id()]++;
+  if (!extension->background_page_persists()) {
+    profile_->GetExtensionProcessManager()->IncrementLazyKeepaliveCount(
+        extension);
+  }
 }
 
 void ExtensionEventRouter::OnExtensionEventAck(
     const std::string& extension_id) {
-  CHECK(in_flight_events_[extension_id] > 0);
-  in_flight_events_[extension_id]--;
-}
-
-bool ExtensionEventRouter::HasInFlightEvents(const std::string& extension_id) {
-  return in_flight_events_[extension_id] > 0;
+  const Extension* extension =
+      profile_->GetExtensionService()->extensions()->GetByID(extension_id);
+  if (extension && !extension->background_page_persists()) {
+    profile_->GetExtensionProcessManager()->DecrementLazyKeepaliveCount(
+        extension);
+  }
 }
 
 void ExtensionEventRouter::AppendEvent(
@@ -403,8 +403,18 @@ void ExtensionEventRouter::DispatchPendingEvents(
   CHECK(!extension_id.empty());
   PendingEventsPerExtMap::const_iterator map_it =
       pending_events_.find(extension_id);
-  if (map_it == pending_events_.end())
+  if (map_it == pending_events_.end()) {
+    NOTREACHED();  // lazy page should not load without any pending events
     return;
+  }
+
+  // Temporarily increment the keepalive count while dispatching the events.
+  // This also ensures that if no events were dispatched, the extension returns
+  // to "idle" and is shut down.
+  const Extension* extension =
+      profile_->GetExtensionService()->extensions()->GetByID(extension_id);
+  ExtensionProcessManager* pm = profile_->GetExtensionProcessManager();
+  pm->IncrementLazyKeepaliveCount(extension);
 
   PendingEventsList* events_list = map_it->second.get();
   for (PendingEventsList::const_iterator it = events_list->begin();
@@ -414,9 +424,7 @@ void ExtensionEventRouter::DispatchPendingEvents(
   events_list->clear();
   pending_events_.erase(extension_id);
 
-  // Check if the extension is idle, which may be the case if no events were
-  // successfully dispatched.
-  profile_->GetExtensionProcessManager()->OnExtensionIdle(extension_id);
+  pm->DecrementLazyKeepaliveCount(extension);
 }
 
 void ExtensionEventRouter::Observe(
@@ -452,6 +460,7 @@ void ExtensionEventRouter::Observe(
       if (eh->extension_host_type() ==
               chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE &&
           !eh->extension()->background_page_persists()) {
+        CHECK(eh->did_stop_loading());
         DispatchPendingEvents(eh->extension_id());
       }
       break;

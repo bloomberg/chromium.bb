@@ -88,10 +88,6 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
     return webrequest_other_;
   }
 
-  // If the extension is in fact idle, tell the browser process to close
-  // the background page.
-  void CheckIdleStatus(const std::string& extension_id);
-
  private:
   friend class RenderViewTest;
 
@@ -125,6 +121,7 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
       bool adblock,
       bool adblock_plus,
       bool other_webrequest);
+  void OnShouldClose(const std::string& extension_id, int sequence_id);
 
   // Update the list of active extensions that will be reported when we crash.
   void UpdateActiveExtensions();

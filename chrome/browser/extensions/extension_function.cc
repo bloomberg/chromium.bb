@@ -151,6 +151,8 @@ UIThreadExtensionFunction::UIThreadExtensionFunction()
 }
 
 UIThreadExtensionFunction::~UIThreadExtensionFunction() {
+  if (dispatcher())
+    dispatcher()->OnExtensionFunctionCompleted(GetExtension());
 }
 
 UIThreadExtensionFunction*

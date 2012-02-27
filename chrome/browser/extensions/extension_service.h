@@ -263,9 +263,9 @@ class ExtensionService
   bool GetBrowserActionVisibility(const Extension* extension);
   void SetBrowserActionVisibility(const Extension* extension, bool visible);
 
-  // Whether the background page, if any, is ready. We don't load other
-  // components until then. If there is no background page, we consider it to
-  // be ready.
+  // Whether the persistent background page, if any, is ready. We don't load
+  // other components until then. If there is no background page, or if it is
+  // non-persistent (lazy), we consider it to be ready.
   bool IsBackgroundPageReady(const Extension* extension);
   void SetBackgroundPageReady(const Extension* extension);
 

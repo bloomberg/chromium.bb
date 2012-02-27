@@ -117,12 +117,13 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
                                   const std::string& event_name);
   void OnExtensionRemoveLazyListener(const std::string& extension_id,
                                      const std::string& event_name);
-  void OnExtensionIdle(const std::string& extension_id);
   void OnExtensionEventAck(const std::string& extension_id);
   void OnExtensionCloseChannel(int port_id);
   void OnExtensionRequestForIOThread(
       int routing_id,
       const ExtensionHostMsg_Request_Params& params);
+  void OnExtensionShouldCloseAck(const std::string& extension_id,
+                                 int sequence_id);
 #if defined(USE_TCMALLOC)
   void OnRendererTcmalloc(const std::string& output);
   void OnWriteTcmallocHeapProfile(const FilePath::StringType& filename,
