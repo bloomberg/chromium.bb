@@ -59,25 +59,20 @@ class CompilerHandler(BaseHTTPRequestHandler):
   def _ShowPanels(self, parsed_url, head, body):
     """Show the previewer frame structure.
 
-    Frames can be accessed in javascript (from a iframe) by using
-    parent.document.getElementById(|iframe id|).
-
-    Code panes are set by onClick events of links in the nav pane.
+    Code panes are populated via XHR after links in the nav pane are clicked.
     """
     (head.Append('<style>')
          .Append('body {')
          .Append('  margin: 0;')
          .Append('}')
-         .Append('iframe {')
-         .Append('  border: none;')
+         .Append('.pane {')
          .Append('  height: 100%;')
+         .Append('  overflow-x: auto;')
+         .Append('  overflow-y: scroll;')
+         .Append('  display: inline-block;')
          .Append('}')
          .Append('#nav_pane {')
          .Append('  width: 20%;')
-         .Append('  height: 100%;')
-         .Append('  overflow-x: hidden;')
-         .Append('  overflow-y: scroll;')
-         .Append('  display: inline-block;')
          .Append('}')
          .Append('#nav_pane ul {')
          .Append('  list-style-type: none;')
@@ -93,9 +88,9 @@ class CompilerHandler(BaseHTTPRequestHandler):
     )
 
     body.Append(
-        '<div id="nav_pane">%s</div>'
-        '<iframe id="h_pane"></iframe>'
-        '<iframe id="cc_pane"></iframe>' %
+        '<div class="pane" id="nav_pane">%s</div>'
+        '<div class="pane" id="h_pane"></div>'
+        '<div class="pane" id="cc_pane"></div>' %
         self._RenderNavPane(parsed_url.path[1:])
     )
 
@@ -132,19 +127,32 @@ function updateEverything() {
     localStorage[highlighterStyle.id + 'Value'] = highlighterStyle.value;
   });
 
-  // Set the iframe targets.
+  // Populate the code panes.
+  function populateViaXHR(elementId, requestPath) {
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState != 4)
+        return;
+      if (xhr.status != 200) {
+        alert('XHR error to ' + requestPath);
+        return;
+      }
+      document.getElementById(elementId).innerHTML = xhr.responseText;
+    };
+    xhr.open('GET', requestPath, true);
+    xhr.send();
+  }
+
   var targetName = window.location.hash;
   targetName = targetName.substring('#'.length);
   targetName = targetName.substring(0, targetName.length - '.json'.length);
 
   if (targetName !== '') {
     var basePath = window.location.pathname;
-    var highlighterQuery = 'highlighter=' + highlighterName + '&' +
-                           'style=' + highlighterStyleName;
-    document.getElementById("h_pane").src =
-        basePath + '/' + targetName + '.h?' + highlighterQuery;
-    document.getElementById("cc_pane").src =
-        basePath + '/' + targetName + '.cc?' + highlighterQuery;
+    var query = 'highlighter=' + highlighterName + '&' +
+                'style=' + highlighterStyleName;
+    populateViaXHR('h_pane',  basePath + '/' + targetName + '.h?'  + query);
+    populateViaXHR('cc_pane', basePath + '/' + targetName + '.cc?' + query);
   }
 }
 
@@ -290,7 +298,7 @@ updateEverything();
       if os.path.isdir(full_path):
         html.Append('<li><a href="/%s/">%s/</a>' % (full_path, filename))
       elif file_ext == '.json':
-        # iframes will automatically update via the hash change event.
+        # cc/h panes will automatically update via the hash change event.
         html.Append('<li><a href="#%s">%s</a>' %
             (filename, filename))
 
@@ -319,7 +327,7 @@ if __name__ == '__main__':
     print('')
     print('  http://localhost:%d/chrome/common/extensions/api' % opts.port)
     print('')
-    server = PreviewHTTPServer(('', opts.port), CompilerHandler,
+    server = PreviewHTTPServer(int(opts.port), CompilerHandler,
       {
         'pygments': pygments_highlighter.PygmentsHighlighter(),
         'hilite': hilite_me_highlighter.HiliteMeHighlighter(),
