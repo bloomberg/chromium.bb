@@ -6,13 +6,17 @@
 #define CHROME_BROWSER_RENDERER_HOST_CHROME_RESOURCE_DISPATCHER_HOST_DELEGATE_H_
 #pragma once
 
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 
+class DelayedResourceQueue;
 class DownloadRequestLimiter;
 class ResourceDispatcherHost;
 class SafeBrowsingService;
+class UserScriptListener;
 
 namespace prerender {
 class PrerenderTracker;
@@ -78,17 +82,18 @@ class ChromeResourceDispatcherHostDelegate
       content::ResourceResponse* response) OVERRIDE;
 
  private:
-  void AppendSafeBrowsingResourceThrottle(
+  void AppendStandardResourceThrottles(
       const net::URLRequest* request,
       content::ResourceContext* resource_context,
       int child_id,
       int route_id,
-      bool is_subresource_request,
+      ResourceType::Type resource_type,
       ScopedVector<content::ResourceThrottle>* throttles);
 
   ResourceDispatcherHost* resource_dispatcher_host_;
   scoped_refptr<DownloadRequestLimiter> download_request_limiter_;
   scoped_refptr<SafeBrowsingService> safe_browsing_;
+  scoped_refptr<UserScriptListener> user_script_listener_;
   prerender::PrerenderTracker* prerender_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeResourceDispatcherHostDelegate);

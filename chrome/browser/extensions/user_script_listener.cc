@@ -13,10 +13,26 @@
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/resource_throttle.h"
+#include "content/public/browser/resource_throttle_controller.h"
 #include "net/url_request/url_request.h"
 
 using content::BrowserThread;
-using content::GlobalRequestID;
+using content::ResourceThrottle;
+
+class UserScriptListener::Throttle
+    : public ResourceThrottle,
+      public base::SupportsWeakPtr<UserScriptListener::Throttle> {
+ public:
+  void Resume() {
+    controller()->Resume();
+  }
+
+  // ResourceThrottle implementation:
+  virtual void WillStartRequest(bool* defer) {
+    *defer = true;
+  }
+};
 
 struct UserScriptListener::ProfileData {
   // True if the user scripts contained in |url_patterns| are ready for
@@ -30,9 +46,8 @@ struct UserScriptListener::ProfileData {
 };
 
 UserScriptListener::UserScriptListener()
-    : resource_queue_(NULL),
-      user_scripts_ready_(false) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    : user_scripts_ready_(false) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::NotificationService::AllSources());
@@ -42,25 +57,31 @@ UserScriptListener::UserScriptListener()
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::NotificationService::AllSources());
-  AddRef();  // Will be balanced in WillShutdownResourceQueue().
 }
 
-void UserScriptListener::Initialize(ResourceQueue* resource_queue) {
-  resource_queue_ = resource_queue;
+ResourceThrottle* UserScriptListener::CreateResourceThrottle(
+    const GURL& url,
+    ResourceType::Type resource_type) {
+  if (!ShouldDelayRequest(url, resource_type))
+    return NULL;
+
+  Throttle* throttle = new Throttle();
+  throttles_.push_back(throttle->AsWeakPtr());
+  return throttle;
 }
 
-bool UserScriptListener::ShouldDelayRequest(
-    net::URLRequest* request,
-    const ResourceDispatcherHostRequestInfo& request_info,
-    const GlobalRequestID& request_id) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+UserScriptListener::~UserScriptListener() {
+}
+
+bool UserScriptListener::ShouldDelayRequest(const GURL& url,
+                                            ResourceType::Type resource_type) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // If it's a frame load, then we need to check the URL against the list of
   // user scripts to see if we need to wait.
-  if (request_info.resource_type() != ResourceType::MAIN_FRAME &&
-      request_info.resource_type() != ResourceType::SUB_FRAME) {
+  if (resource_type != ResourceType::MAIN_FRAME &&
+      resource_type != ResourceType::SUB_FRAME)
     return false;
-  }
 
   // Note: we could delay only requests made by the profile who is causing the
   // delay, but it's a little more complicated to associate requests with the
@@ -73,7 +94,7 @@ bool UserScriptListener::ShouldDelayRequest(
        pt != profile_data_.end(); ++pt) {
     for (URLPatterns::const_iterator it = pt->second.url_patterns.begin();
          it != pt->second.url_patterns.end(); ++it) {
-      if ((*it).MatchesURL(request->url())) {
+      if ((*it).MatchesURL(url)) {
         // One of the user scripts wants to inject into this request, but the
         // script isn't ready yet. Delay the request.
         return true;
@@ -84,17 +105,17 @@ bool UserScriptListener::ShouldDelayRequest(
   return false;
 }
 
-void UserScriptListener::WillShutdownResourceQueue() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  resource_queue_ = NULL;
-  Release();
-}
-
-UserScriptListener::~UserScriptListener() {
+void UserScriptListener::StartDelayedRequests() {
+  WeakThrottleList::const_iterator it;
+  for (it = throttles_.begin(); it != throttles_.end(); ++it) {
+    if (*it)
+      (*it)->Resume();
+  }
+  throttles_.clear();
 }
 
 void UserScriptListener::CheckIfAllUserScriptsReady() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   bool was_ready = user_scripts_ready_;
 
   user_scripts_ready_ = true;
@@ -104,10 +125,8 @@ void UserScriptListener::CheckIfAllUserScriptsReady() {
       user_scripts_ready_ = false;
   }
 
-  if (user_scripts_ready_ && !was_ready) {
-    if (resource_queue_)
-      resource_queue_->StartDelayedRequests(this);
-  }
+  if (user_scripts_ready_ && !was_ready)
+    StartDelayedRequests();
 }
 
 void UserScriptListener::UserScriptsReady(void* profile_id) {
@@ -118,7 +137,7 @@ void UserScriptListener::UserScriptsReady(void* profile_id) {
 }
 
 void UserScriptListener::ProfileDestroyed(void* profile_id) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   profile_data_.erase(profile_id);
 
   // We may have deleted the only profile we were waiting on.
@@ -140,7 +159,7 @@ void UserScriptListener::AppendNewURLPatterns(void* profile_id,
 
 void UserScriptListener::ReplaceURLPatterns(void* profile_id,
                                             const URLPatterns& patterns) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   ProfileData& data = profile_data_[profile_id];
   data.url_patterns = patterns;
@@ -148,7 +167,7 @@ void UserScriptListener::ReplaceURLPatterns(void* profile_id,
 
 void UserScriptListener::CollectURLPatterns(const Extension* extension,
                                             URLPatterns* patterns) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const UserScriptList& scripts = extension->content_scripts();
   for (UserScriptList::const_iterator iter = scripts.begin();
@@ -162,7 +181,7 @@ void UserScriptListener::CollectURLPatterns(const Extension* extension,
 void UserScriptListener::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_LOADED: {

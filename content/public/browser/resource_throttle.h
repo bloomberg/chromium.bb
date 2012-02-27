@@ -26,6 +26,10 @@ class ResourceThrottle {
   virtual void WillRedirectRequest(const GURL& new_url, bool* defer) {}
   virtual void WillProcessResponse(bool* defer) {}
 
+  void set_controller_for_testing(ResourceThrottleController* c) {
+    controller_ = c;
+  }
+
  protected:
   ResourceThrottle() : controller_(NULL) {}
   ResourceThrottleController* controller() { return controller_; }

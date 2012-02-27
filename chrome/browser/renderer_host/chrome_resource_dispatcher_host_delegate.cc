@@ -10,6 +10,7 @@
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_resource_throttle.h"
 #include "chrome/browser/download/download_util.h"
+#include "chrome/browser/extensions/user_script_listener.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/instant/instant_loader.h"
 #include "chrome/browser/net/load_timing_observer.h"
@@ -81,6 +82,7 @@ ChromeResourceDispatcherHostDelegate::ChromeResourceDispatcherHostDelegate(
     : resource_dispatcher_host_(resource_dispatcher_host),
       download_request_limiter_(g_browser_process->download_request_limiter()),
       safe_browsing_(g_browser_process->safe_browsing_service()),
+      user_script_listener_(new UserScriptListener()),
       prerender_tracker_(prerender_tracker) {
 }
 
@@ -166,12 +168,12 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
                                                  route_id));
   }
 
-  AppendSafeBrowsingResourceThrottle(request,
-                                     resource_context,
-                                     child_id,
-                                     route_id,
-                                     resource_type != ResourceType::MAIN_FRAME,
-                                     throttles);
+  AppendStandardResourceThrottles(request,
+                                  resource_context,
+                                  child_id,
+                                  route_id,
+                                  resource_type,
+                                  throttles);
 }
 
 void ChromeResourceDispatcherHostDelegate::DownloadStarting(
@@ -191,12 +193,12 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
   // path is only hit for requests initiated through the browser, and not the
   // web, so no need to add the download throttle.
   if (is_new_request) {
-    AppendSafeBrowsingResourceThrottle(request,
-                                       resource_context,
-                                       child_id,
-                                       route_id,
-                                       false,
-                                       throttles);
+    AppendStandardResourceThrottles(request,
+                                    resource_context,
+                                    child_id,
+                                    route_id,
+                                    ResourceType::MAIN_FRAME,
+                                    throttles);
   } else {
     throttles->push_back(new DownloadResourceThrottle(
         download_request_limiter_, child_id, route_id, request_id));
@@ -270,22 +272,29 @@ void ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
       base::Bind(&ExternalProtocolHandler::LaunchUrl, url, child_id, route_id));
 }
 
-void ChromeResourceDispatcherHostDelegate::AppendSafeBrowsingResourceThrottle(
+void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
     const net::URLRequest* request,
     content::ResourceContext* resource_context,
     int child_id,
     int route_id,
-    bool is_subresource_request,
+    ResourceType::Type resource_type,
     ScopedVector<content::ResourceThrottle>* throttles) {
 #if defined(ENABLE_SAFE_BROWSING)
   // Insert safe browsing at the front of the list, so it gets to decide on
   // policies first.
+  bool is_subresource_request = resource_type != ResourceType::MAIN_FRAME;
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
   if (io_data->safe_browsing_enabled()->GetValue()) {
     throttles->push_back(SafeBrowsingResourceThrottle::Create(
         request, child_id, route_id, is_subresource_request, safe_browsing_));
   }
 #endif
+
+  content::ResourceThrottle* throttle =
+      user_script_listener_->CreateResourceThrottle(request->url(),
+                                                    resource_type);
+  if (throttle)
+    throttles->push_back(throttle);
 }
 
 bool ChromeResourceDispatcherHostDelegate::ShouldForceDownloadResource(

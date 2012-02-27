@@ -40,7 +40,6 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
-#include "content/browser/renderer_host/resource_queue.h"
 #include "content/browser/renderer_host/resource_request_details.h"
 #include "content/browser/renderer_host/sync_resource_handler.h"
 #include "content/browser/renderer_host/throttling_resource_handler.h"
@@ -308,8 +307,7 @@ ResourceDispatcherHost* ResourceDispatcherHost::Get() {
 }
 
 ResourceDispatcherHost::ResourceDispatcherHost()
-    : temporarily_delegate_set_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
+    : ALLOW_THIS_IN_INITIALIZER_LIST(
           download_file_manager_(new DownloadFileManager(this, NULL))),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           save_file_manager_(new SaveFileManager(this))),
@@ -325,11 +323,7 @@ ResourceDispatcherHost::ResourceDispatcherHost()
   DCHECK(!g_resource_dispatcher_host);
   g_resource_dispatcher_host = this;
 
-  ResourceQueue::DelegateSet resource_queue_delegates;
-  temporarily_delegate_set_ = &resource_queue_delegates;
   content::GetContentClient()->browser()->ResourceDispatcherHostCreated();
-  resource_queue_.Initialize(resource_queue_delegates);
-  temporarily_delegate_set_ = NULL;
 
   ANNOTATE_BENIGN_RACE(
       &last_user_gesture_time_,
@@ -358,11 +352,6 @@ void ResourceDispatcherHost::Shutdown() {
                           FROM_HERE,
                           base::Bind(&ResourceDispatcherHost::OnShutdown,
                                      base::Unretained(this)));
-}
-
-void ResourceDispatcherHost::AddResourceQueueDelegate(
-    ResourceQueueDelegate* delegate) {
-  temporarily_delegate_set_->insert(delegate);
 }
 
 scoped_refptr<ResourceHandler>
@@ -399,7 +388,6 @@ void ResourceDispatcherHost::SetRequestInfo(
 void ResourceDispatcherHost::OnShutdown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   is_shutdown_ = true;
-  resource_queue_.Shutdown();
   for (PendingRequestList::const_iterator i = pending_requests_.begin();
        i != pending_requests_.end(); ++i) {
     transferred_navigations_.erase(i->first);
@@ -1052,8 +1040,7 @@ void ResourceDispatcherHost::StartDeferredRequest(int child_id,
   // TODO(eroman): are there other considerations for paused or blocked
   //               requests?
 
-  net::URLRequest* request = i->second;
-  InsertIntoResourceQueue(request, *InfoForRequest(request));
+  StartRequest(i->second);
 }
 
 bool ResourceDispatcherHost::WillSendData(int child_id,
@@ -1305,7 +1292,6 @@ void ResourceDispatcherHost::RemovePendingRequest(
     info->login_delegate()->OnRequestCancelled();
   if (info->ssl_client_auth_handler())
     info->ssl_client_auth_handler()->OnRequestCancelled();
-  resource_queue_.RemoveRequest(iter->first);
   transferred_navigations_.erase(
       GlobalRequestID(info->child_id(), info->request_id()));
 
@@ -1688,13 +1674,11 @@ void ResourceDispatcherHost::BeginRequestInternal(net::URLRequest* request) {
   }
 
   if (!defer_start)
-    InsertIntoResourceQueue(request, *info);
+    StartRequest(request);
 }
 
-void ResourceDispatcherHost::InsertIntoResourceQueue(
-    net::URLRequest* request,
-    const ResourceDispatcherHostRequestInfo& request_info) {
-  resource_queue_.AddRequest(request, request_info);
+void ResourceDispatcherHost::StartRequest(net::URLRequest* request) {
+  request->Start();
 
   // Make sure we have the load state monitor running
   if (!update_load_states_timer_.IsRunning()) {

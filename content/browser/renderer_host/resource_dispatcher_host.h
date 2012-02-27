@@ -24,7 +24,6 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "content/browser/download/download_resource_handler.h"
-#include "content/browser/renderer_host/resource_queue.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/notification_types.h"
@@ -69,10 +68,6 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
   // Puts the resource dispatcher host in an inactive state (unable to begin
   // new requests).  Cancels all pending requests.
   void Shutdown();
-
-  // Adds a delegate that can delay requests. This should be called early, i.e.
-  // in the ContentBrowserClient::ResourceDispatcherHostCreated callback.
-  void AddResourceQueueDelegate(ResourceQueueDelegate* delegate);
 
   // Returns true if the message was a resource message that was processed.
   // If it was, message_was_ok will be false iff the message was corrupt.
@@ -304,6 +299,8 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
   // A shutdown helper that runs on the IO thread.
   void OnShutdown();
 
+  void StartRequest(net::URLRequest* request);
+
   // Returns true if the request is paused.
   bool PauseRequestIfNeeded(ResourceDispatcherHostRequestInfo* info);
 
@@ -337,11 +334,6 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
   // request was actually cancelled.  If a renderer cancels a request
   // for a download, we ignore the cancellation.
   bool CancelRequestInternal(net::URLRequest* request, bool from_renderer);
-
-  // Helper function that inserts |request| into the resource queue.
-  void InsertIntoResourceQueue(
-      net::URLRequest* request,
-      const ResourceDispatcherHostRequestInfo& request_info);
 
   // Updates the "cost" of outstanding requests for |child_id|.
   // The "cost" approximates how many bytes are consumed by all the in-memory
@@ -473,12 +465,6 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
   // A timer that periodically calls UpdateLoadStates while pending_requests_
   // is not empty.
   base::RepeatingTimer<ResourceDispatcherHost> update_load_states_timer_;
-
-  // Handles the resource requests from the moment we want to start them.
-  ResourceQueue resource_queue_;
-
-  // Used temporarily during construction.
-  ResourceQueue::DelegateSet* temporarily_delegate_set_;
 
   // We own the download file writing thread and manager
   scoped_refptr<DownloadFileManager> download_file_manager_;
