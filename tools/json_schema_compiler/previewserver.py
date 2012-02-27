@@ -1,4 +1,5 @@
-#!/usr/bin/env/python
+#!/usr/bin/env python
+
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -36,10 +37,8 @@ class CompilerHandler(BaseHTTPRequestHandler):
     body = code.Code()
 
     try:
-      if parsed_url.path.split('/')[1] == 'nav':
-        self._ListFoldersAndJsons(parsed_url, head, body)
-      elif os.path.isdir(request_path):
-        self._ShowFrameset(parsed_url, head, body)
+      if os.path.isdir(request_path):
+        self._ShowPanels(parsed_url, head, body)
       else:
         self._ShowCompiledFile(parsed_url, head, body)
     finally:
@@ -57,7 +56,7 @@ class CompilerHandler(BaseHTTPRequestHandler):
       path = parsed_url.path.replace('/nav', '')
     return os.path.normpath(os.curdir + path)
 
-  def _ShowFrameset(self, parsed_url, head, body):
+  def _ShowPanels(self, parsed_url, head, body):
     """Show the previewer frame structure.
 
     Frames can be accessed in javascript (from a iframe) by using
@@ -75,6 +74,14 @@ class CompilerHandler(BaseHTTPRequestHandler):
          .Append('}')
          .Append('#nav_pane {')
          .Append('  width: 20%;')
+         .Append('  height: 100%;')
+         .Append('  overflow-x: hidden;')
+         .Append('  overflow-y: scroll;')
+         .Append('  display: inline-block;')
+         .Append('}')
+         .Append('#nav_pane ul {')
+         .Append('  list-style-type: none;')
+         .Append('  padding: 0 0 0 1em;')
          .Append('}')
          .Append('#cc_pane {')
          .Append('  width: 40%;')
@@ -84,14 +91,80 @@ class CompilerHandler(BaseHTTPRequestHandler):
          .Append('}')
          .Append('</style>')
     )
+
     body.Append(
-        '<iframe src="/nav/%(path)s?%(query)s"></iframe>'
+        '<div id="nav_pane">%s</div>'
         '<iframe id="h_pane"></iframe>'
-        '<iframe id="cc_pane"></iframe>' % {
-            'path': parsed_url.path,
-            'query': parsed_url.query
-        }
+        '<iframe id="cc_pane"></iframe>' %
+        self._RenderNavPane(parsed_url.path[1:])
     )
+
+    # The Javascript that interacts with the nav pane and panes to show the
+    # compiled files as the URL or highlighting options change.
+    body.Append('''<script type="text/javascript">
+// Calls a function for each highlighter style <select> element.
+function forEachHighlighterStyle(callback) {
+  var highlighterStyles =
+      document.getElementsByClassName('highlighter_styles');
+  for (var i = 0; i < highlighterStyles.length; ++i)
+    callback(highlighterStyles[i]);
+}
+
+// Called when anything changes, such as the highlighter or hashtag.
+function updateEverything() {
+  var highlighters = document.getElementById('highlighters');
+  var highlighterName = highlighters.value;
+
+  // Cache in localStorage for when the page loads next.
+  localStorage.highlightersValue = highlighterName;
+
+  // Show/hide the highlighter styles.
+  var highlighterStyleName = '';
+  forEachHighlighterStyle(function(highlighterStyle) {
+    if (highlighterStyle.id === highlighterName + '_styles') {
+      highlighterStyle.removeAttribute('style')
+      highlighterStyleName = highlighterStyle.value;
+    } else {
+      highlighterStyle.setAttribute('style', 'display:none')
+    }
+
+    // Cache in localStorage for when the page next loads.
+    localStorage[highlighterStyle.id + 'Value'] = highlighterStyle.value;
+  });
+
+  // Set the iframe targets.
+  var targetName = window.location.hash;
+  targetName = targetName.substring('#'.length);
+  targetName = targetName.substring(0, targetName.length - '.json'.length);
+
+  if (targetName !== '') {
+    var basePath = window.location.pathname;
+    var highlighterQuery = 'highlighter=' + highlighterName + '&' +
+                           'style=' + highlighterStyleName;
+    document.getElementById("h_pane").src =
+        basePath + '/' + targetName + '.h?' + highlighterQuery;
+    document.getElementById("cc_pane").src =
+        basePath + '/' + targetName + '.cc?' + highlighterQuery;
+  }
+}
+
+// Initial load: set the values of highlighter and highlighterStyles from
+// localStorage.
+(function() {
+var cachedValue = localStorage.highlightersValue;
+if (cachedValue)
+  document.getElementById('highlighters').value = cachedValue;
+
+forEachHighlighterStyle(function(highlighterStyle) {
+  var cachedValue = localStorage[highlighterStyle.id + 'Value'];
+  if (cachedValue)
+    highlighterStyle.value = cachedValue;
+});
+})();
+
+window.addEventListener('hashchange', updateEverything, false);
+updateEverything();
+</script>''')
 
   def _ShowCompiledFile(self, parsed_url, head, body):
     """Show the compiled version of a json file given the path to the compiled
@@ -164,55 +237,66 @@ class CompilerHandler(BaseHTTPRequestHandler):
     return (query_dict.get('highlighter', ['pygments'])[0],
         query_dict.get('style', ['colorful'])[0])
 
-  def _ListFoldersAndJsons(self, parsed_url, head, body):
-    """List folders and .json files in given directory.
+  def _RenderNavPane(self, path):
+    """Renders an HTML nav pane.
+
+    This consists of a select element to set highlight style, and a list of all
+    files at |path| with the appropriate onclick handlers to open either
+    subdirectories or JSON files.
     """
-    request_path = self._GetRequestPath(parsed_url, strip_nav=True)
-    (highlighter_param, style_param) = self._GetHighlighterParams(parsed_url)
+    html = code.Code()
 
-    body.Append('<select onChange="'
-        'document.location.href=\'%s?highlighter=\' + this.value">' %
-            parsed_url.path)
-    for key, value in self.server.highlighters.items():
-      body.Append('<option %s value="%s">%s</option>' %
-          ('selected="true"' if key == highlighter_param else '',
-              key, value.DisplayName()))
-    body.Append('</select><br />')
+    # Highlighter chooser.
+    html.Append('<select id="highlighters" onChange="updateEverything()">')
+    for name, highlighter in self.server.highlighters.items():
+      html.Append('<option value="%s">%s</option>' %
+          (name, highlighter.DisplayName()))
+    html.Append('</select>')
 
-    highlighter = self.server.highlighters[highlighter_param]
-    styles = sorted(highlighter.GetStyles())
-    if styles:
-      body.Append('<select onChange="'
-          'document.location.href=\'%s?highlighter=%s&style=\' '
-          '+ this.value">' % (parsed_url.path, highlighter_param))
+    html.Append('<br/>')
+
+    # Style for each highlighter.
+    # The correct highlighting will be shown by Javascript.
+    for name, highlighter in self.server.highlighters.items():
+      styles = sorted(highlighter.GetStyles())
+      if not styles:
+        continue
+
+      html.Append('<select class="highlighter_styles" id="%s_styles" '
+                  'onChange="updateEverything()">' % name)
       for style in styles:
-        body.Append('<option %s>%s</option>' %
-            ('selected="true"' if style == style_param else '', style))
+        html.Append('<option>%s</option>' % style)
+      html.Append('</select>')
 
-      body.Append('</select><br />')
+    html.Append('<br/>')
 
-    if not os.path.samefile(os.curdir, request_path):
-      body.Append('<a href="%s?%s">../</a><br />' %
-          (os.path.split(os.path.normpath(parsed_url.path))[0],
-              parsed_url.query))
-    files = os.listdir(request_path)
-    for filename in sorted(files):
-      full_path = os.path.join(request_path, filename)
+    # The files, with appropriate handlers.
+    html.Append('<ul>')
+
+    # Make path point to a non-empty directory. This can happen if a URL like
+    # http://localhost:8000 is navigated to.
+    if path == '':
+      path = os.curdir
+
+    # Firstly, a .. link if this isn't the root.
+    if not os.path.samefile(os.curdir, path):
+      normpath = os.path.normpath(os.path.join(path, os.pardir))
+      html.Append('<li><a href="/%s">%s/</a>' % (normpath, os.pardir))
+
+    # Each file under path/
+    for filename in sorted(os.listdir(path)):
+      full_path = os.path.join(path, filename)
       (file_root, file_ext) = os.path.splitext(full_path)
       if os.path.isdir(full_path):
-        body.Append('<a href="/nav/%s/">%s/</a><br />' %
-            (full_path, filename))
+        html.Append('<li><a href="/%s/">%s/</a>' % (full_path, filename))
       elif file_ext == '.json':
-        body.Append('<a href="#%(file_root)s" onClick="'
-            'parent.document.getElementById(\'cc_pane\').src='
-                '\'/%(file_root)s.cc?%(query)s\'; '
-            'parent.document.getElementById(\'h_pane\').src='
-                '\'/%(file_root)s.h?%(query)s\';'
-            '">%(filename)s</a><br />' % {
-                'file_root': file_root,
-                'filename': filename,
-                'query': parsed_url.query,
-        })
+        # iframes will automatically update via the hash change event.
+        html.Append('<li><a href="#%s">%s</a>' %
+            (filename, filename))
+
+    html.Append('</ul>')
+
+    return html.Render()
 
 class PreviewHTTPServer(HTTPServer, object):
   def __init__(self, server_address, handler, highlighters):
@@ -230,7 +314,11 @@ if __name__ == '__main__':
   (opts, argv) = parser.parse_args()
 
   try:
-    print('Starting httpserver on port %d' % opts.port)
+    print('Starting previewserver on port %d' % opts.port)
+    print('The extension documentation can be found at:')
+    print('')
+    print('  http://localhost:%d/chrome/common/extensions/api' % opts.port)
+    print('')
     server = PreviewHTTPServer(('', opts.port), CompilerHandler,
       {
         'pygments': pygments_highlighter.PygmentsHighlighter(),
@@ -239,5 +327,4 @@ if __name__ == '__main__':
       })
     server.serve_forever()
   except KeyboardInterrupt:
-    print('Shutting down server')
     server.socket.close()
