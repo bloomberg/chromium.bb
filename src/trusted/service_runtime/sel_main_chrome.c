@@ -30,8 +30,6 @@
 #include "native_client/src/trusted/service_runtime/sel_qualify.h"
 #include "native_client/src/trusted/service_runtime/win/exception_patch/ntdll_patch.h"
 
-static int const kSrpcFd = 5;
-
 int verbosity = 0;
 
 static int g_irt_file_desc = -1;
@@ -81,7 +79,7 @@ void NaClMainForChromium(int handle_count, const NaClHandle *handles,
   int ac = 1;
   const char **envp;
   struct NaClApp state;
-  int export_addr_to = kSrpcFd; /* Used to be set by -X. */
+  int export_addr_to = (int) handles[0]; /* Used to be set by -X. */
   struct NaClApp *nap = &state;
   NaClErrorCode errcode = LOAD_INTERNAL;
   int ret_code = 1;
