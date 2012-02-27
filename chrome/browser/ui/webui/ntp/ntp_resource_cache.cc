@@ -141,9 +141,9 @@ std::string GetNewTabBackgroundCSS(const ui::ThemeProvider* theme_provider,
 
   if (alignment & ThemeService::ALIGN_TOP) {
     if (alignment & ThemeService::ALIGN_LEFT)
-      return "0% " + base::IntToString(-offset) + "px";
+      return "left " + base::IntToString(-offset) + "px";
     else if (alignment & ThemeService::ALIGN_RIGHT)
-      return "100% " + base::IntToString(-offset) + "px";
+      return "right " + base::IntToString(-offset) + "px";
     return "center " + base::IntToString(-offset) + "px";
   }
   return ThemeService::AlignmentToString(alignment);
