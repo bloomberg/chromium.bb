@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright (c) 2010 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -244,7 +244,8 @@ def FindChromeUprevCandidate(stable_ebuilds, chrome_rev, sticky_branch):
     stable_ebuilds: A list of stable ebuilds.
     chrome_rev: The chrome_rev designating which candidate to find.
     sticky_branch:  The the branch that is currently sticky with Major/Minor
-      components.  For example: 9.0.553
+      components.  For example: 9.0.553. Can be None but not if chrome_rev
+      is CHROME_REV_STICKY.
   Returns:
     Returns the EBuild, otherwise None if none found.
   """
@@ -259,6 +260,7 @@ def FindChromeUprevCandidate(stable_ebuilds, chrome_rev, sticky_branch):
         candidates.append(ebuild)
 
   elif chrome_rev == constants.CHROME_REV_STICKY:
+    assert sticky_branch is not None
     chrome_branch_re = re.compile('%s\..*' % sticky_branch)
     for ebuild in stable_ebuilds:
       if chrome_branch_re.search(ebuild.version):
@@ -267,8 +269,7 @@ def FindChromeUprevCandidate(stable_ebuilds, chrome_rev, sticky_branch):
   else:
     chrome_branch_re = re.compile('%s.*_rc.*' % _CHROME_VERSION_REGEX)
     for ebuild in stable_ebuilds:
-      if chrome_branch_re.search(ebuild.version) and (
-          not ebuild.chrome_version.startswith(sticky_branch)):
+      if chrome_branch_re.search(ebuild.version):
         candidates.append(ebuild)
 
   if candidates:
@@ -320,8 +321,7 @@ def GetChromeRevisionListLink(old_chrome, new_chrome, chrome_rev):
                                            new_chrome.chrome_version)
 
 def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
-                             chrome_version, commit, overlay_dir,
-                             sticky_ebuild):
+                             chrome_version, commit, overlay_dir):
   """Uprevs the chrome ebuild specified by chrome_rev.
 
   This is the main function that uprevs the chrome_rev from a stable candidate
@@ -345,7 +345,6 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
     chrome_version:  The \d.\d.\d.\d version of Chrome.
     commit:  Used with constants.CHROME_REV_TOT.  The svn revision of chrome.
     overlay_dir:  Path to the chromeos-chrome package dir.
-    sticky_ebuild: EBuild class for the sticky ebuild.
   Returns:
     Full portage version atom (including rc's, etc) that was revved.
   """
@@ -404,7 +403,7 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
                                                 chrome_rev))
 
   RunCommand(['git', 'add', new_ebuild_path])
-  if stable_candidate and stable_candidate != sticky_ebuild:
+  if stable_candidate and not stable_candidate.IsSticky():
     RunCommand(['git', 'rm', stable_candidate.ebuild_path])
 
   portage_utilities.EBuild.CommitChange(
@@ -448,11 +447,9 @@ def main():
   chrome_rev = args[0]
   version_to_uprev = None
   commit_to_use = None
+  sticky_branch = None
 
   (unstable_ebuild, stable_ebuilds) = FindChromeCandidates(overlay_dir)
-  sticky_ebuild = _GetStickyEBuild(stable_ebuilds)
-  sticky_version = sticky_ebuild.chrome_version
-  sticky_branch = sticky_version.rpartition('.')[0]
 
   if chrome_rev == constants.CHROME_REV_LOCAL:
     if 'CHROME_ROOT' in os.environ:
@@ -464,7 +461,6 @@ def main():
     commit_to_use = 'Unknown'
     Info('Using local source, versioning is untrustworthy.')
   elif chrome_rev == constants.CHROME_REV_SPEC:
-    # TODO(sosa): Buildbot may pass url@revision, check and fix commit.
     commit_to_use = options.force_revision
     if '@' in commit_to_use: commit_to_use = ParseMaxRevision(commit_to_use)
     version_to_uprev = _GetSpecificVersionUrl(options.chrome_url,
@@ -475,11 +471,10 @@ def main():
                                               commit_to_use)
   elif chrome_rev == constants.CHROME_REV_LATEST:
     version_to_uprev = _GetLatestRelease(options.chrome_url)
-    # Don't rev on stable branch for latest_release.
-    if re.match('%s\.\d+' % sticky_branch, version_to_uprev):
-      Info('Latest release is sticky branch.  Nothing to do.')
-      return
   else:
+    sticky_ebuild = _GetStickyEBuild(stable_ebuilds)
+    sticky_version = sticky_ebuild.chrome_version
+    sticky_branch = sticky_version.rpartition('.')[0]
     version_to_uprev = _GetLatestRelease(options.chrome_url, sticky_branch)
 
   stable_candidate = FindChromeUprevCandidate(stable_ebuilds, chrome_rev,
@@ -497,7 +492,7 @@ def main():
   work_branch.CreateBranch()
   chrome_version_atom = MarkChromeEBuildAsStable(
       stable_candidate, unstable_ebuild, chrome_rev, version_to_uprev,
-      commit_to_use, overlay_dir, sticky_ebuild)
+      commit_to_use, overlay_dir)
   # Explicit print to communicate to caller.
   if chrome_version_atom:
     cros_mark_as_stable.CleanStalePackages(options.boards.split(':'),

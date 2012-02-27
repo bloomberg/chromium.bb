@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -121,6 +121,10 @@ class EBuild(object):
     command_result = cros_build_lib.RunCommand(
       command, redirect_stdout=True, print_cmd=cls.VERBOSE, shell=True)
     return command_result.output
+
+  def IsSticky(self):
+    """Returns True if the ebuild is sticky."""
+    return self.is_stable and self.current_revision == 0
 
   @classmethod
   def UpdateEBuild(cls, ebuild_path, commit_keyword, commit_value,

@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright (c) 2010 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -284,7 +284,6 @@ class CrosMarkChromeAsStable(mox.MoxTestBase):
     self.mox.StubOutWithMock(portage_utilities.EBuild, 'CommitChange')
     stable_candidate = cros_mark_chrome_as_stable.ChromeEBuild(old_ebuild_path)
     unstable_ebuild = cros_mark_chrome_as_stable.ChromeEBuild(self.unstable)
-    sticky_ebuild = cros_mark_chrome_as_stable.ChromeEBuild(self.sticky)
     chrome_version = new_version
     commit = None
     overlay_dir = self.mock_chrome_dir
@@ -297,7 +296,7 @@ class CrosMarkChromeAsStable(mox.MoxTestBase):
     self.mox.ReplayAll()
     cros_mark_chrome_as_stable.MarkChromeEBuildAsStable(
         stable_candidate, unstable_ebuild, chrome_rev, chrome_version, commit,
-        overlay_dir, sticky_ebuild)
+        overlay_dir)
     self.mox.VerifyAll()
 
   def testStickyMarkAsStable(self):

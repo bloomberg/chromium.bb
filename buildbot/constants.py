@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -49,8 +49,8 @@ CREATED_BRANCHES = [
 # revsion of the Chromium src tree and build with that checkout.
 CHROME_REV_TOT = 'tot'
 
-# Builds and validates _alpha ebuilds.  These builds sync to a particular
-# revsion of the Chromium src tree and build with that checkout.
+# Builds and validates chrome at a given revision through cbuildbot
+# --chrome_version
 CHROME_REV_SPEC = 'spec'
 
 # Builds and validates the latest Chromium release as defined by
