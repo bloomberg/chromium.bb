@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "webkit/dom_storage/dom_storage_area.h"
 
 class GURL;
 

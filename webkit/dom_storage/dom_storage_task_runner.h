@@ -25,12 +25,12 @@ class DomStorageTaskRunner
   virtual ~DomStorageTaskRunner();
 
   // Schedules a task to be run immediately.
-  virtual void PostTask(
+  virtual bool PostTask(
       const tracked_objects::Location& from_here,
       const base::Closure& task);
 
   // Schedules a task to be run after a delay.
-  virtual void PostDelayedTask(
+  virtual bool PostDelayedTask(
       const tracked_objects::Location& from_here,
       const base::Closure& task,
       base::TimeDelta delay);
@@ -50,12 +50,12 @@ class DomStorageWorkerPoolTaskRunner : public DomStorageTaskRunner {
   virtual ~DomStorageWorkerPoolTaskRunner();
 
   // Schedules a sequenced worker task to be run immediately.
-  virtual void PostTask(
+  virtual bool PostTask(
       const tracked_objects::Location& from_here,
       const base::Closure& task) OVERRIDE;
 
   // Schedules a sequenced worker task to be run after a delay.
-  virtual void PostDelayedTask(
+  virtual bool PostDelayedTask(
       const tracked_objects::Location& from_here,
       const base::Closure& task,
       base::TimeDelta delay) OVERRIDE;
@@ -63,6 +63,20 @@ class DomStorageWorkerPoolTaskRunner : public DomStorageTaskRunner {
  private:
   base::SequencedWorkerPool* sequenced_worker_pool_;  // not owned
   base::SequencedWorkerPool::SequenceToken sequence_token_;
+};
+
+// A derived class used in unit tests that causes us to ignore the
+// delay in PostDelayedTask so we don't need to block in unit tests
+// for the timeout to expire.
+class MockDomStorageTaskRunner : public DomStorageTaskRunner {
+ public:
+  explicit MockDomStorageTaskRunner(base::MessageLoopProxy* message_loop);
+  virtual ~MockDomStorageTaskRunner() { }
+
+  virtual bool PostDelayedTask(
+      const tracked_objects::Location& from_here,
+      const base::Closure& task,
+      base::TimeDelta delay) OVERRIDE;
 };
 
 }  // namespace dom_storage

@@ -53,6 +53,7 @@ class DomStorageDatabase {
                            TestCanOpenAndReadWebCoreDatabase);
   FRIEND_TEST_ALL_PREFIXES(DomStorageDatabaseTest,
                            TestCanOpenFileThatIsNotADatabase);
+  FRIEND_TEST_ALL_PREFIXES(DomStorageAreaTest, BackingDatabaseOpened);
 
   enum SchemaVersion {
     INVALID,

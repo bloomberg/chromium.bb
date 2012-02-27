@@ -20,17 +20,18 @@ DomStorageTaskRunner::DomStorageTaskRunner(
 DomStorageTaskRunner::~DomStorageTaskRunner() {
 }
 
-void DomStorageTaskRunner::PostTask(
+bool DomStorageTaskRunner::PostTask(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
-  message_loop_->PostTask(from_here, task);
+  return message_loop_->PostTask(from_here, task);
 }
 
-void DomStorageTaskRunner::PostDelayedTask(
+bool DomStorageTaskRunner::PostDelayedTask(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
     base::TimeDelta delay) {
-  message_loop_->PostDelayedTask(from_here, task, delay.InMilliseconds());
+  return message_loop_->PostDelayedTask(from_here, task,
+                                        delay.InMilliseconds());
 }
 
 // DomStorageWorkerPoolTaskRunner
@@ -47,25 +48,41 @@ DomStorageWorkerPoolTaskRunner::DomStorageWorkerPoolTaskRunner(
 DomStorageWorkerPoolTaskRunner::~DomStorageWorkerPoolTaskRunner() {
 }
 
-void DomStorageWorkerPoolTaskRunner::PostTask(
+bool DomStorageWorkerPoolTaskRunner::PostTask(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
-  // TODO(michaeln): Do all tasks need to be run prior to shutdown?
-  // Maybe make better use of the SHUTDOWN_BEHAVIOR.
-  sequenced_worker_pool_->PostSequencedWorkerTask(
-      sequence_token_, from_here, task);
+  // We can skip on shutdown as the destructor of DomStorageArea will ensure
+  // that any remaining data is committed to disk.
+  return sequenced_worker_pool_->PostSequencedWorkerTaskWithShutdownBehavior(
+      sequence_token_, from_here, task,
+      base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
 }
 
-void DomStorageWorkerPoolTaskRunner::PostDelayedTask(
+bool DomStorageWorkerPoolTaskRunner::PostDelayedTask(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
     base::TimeDelta delay) {
   // Post a task to call this->PostTask() after the delay.
-  message_loop_->PostDelayedTask(
+  return message_loop_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&DomStorageWorkerPoolTaskRunner::PostTask, this,
-                 from_here, task),
+      base::Bind(base::IgnoreResult(&DomStorageWorkerPoolTaskRunner::PostTask),
+                 this, from_here, task),
       delay.InMilliseconds());
+}
+
+// MockDomStorageTaskRunner
+
+MockDomStorageTaskRunner::MockDomStorageTaskRunner(
+    base::MessageLoopProxy* message_loop)
+    : DomStorageTaskRunner(message_loop) {
+}
+
+bool MockDomStorageTaskRunner::PostDelayedTask(
+    const tracked_objects::Location& from_here,
+    const base::Closure& task,
+    base::TimeDelta delay) {
+  // Don't wait in unit tests.
+  return PostTask(from_here, task);
 }
 
 }  // namespace dom_storage

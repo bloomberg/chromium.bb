@@ -7,18 +7,18 @@
 #pragma once
 
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/nullable_string16.h"
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/dom_storage/dom_storage_task_runner.h"
-
-class FilePath;
-class GURL;
+#include "webkit/dom_storage/dom_storage_database.h"
+#include "webkit/dom_storage/dom_storage_types.h"
 
 namespace dom_storage {
 
 class DomStorageMap;
+class DomStorageTaskRunner;
 
 // Container for a per-origin Map of key/value pairs potentially
 // backed by storage on disk and lazily commits changes to disk.
@@ -47,7 +47,20 @@ class DomStorageArea
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DomStorageAreaTest, DomStorageAreaBasics);
+  FRIEND_TEST_ALL_PREFIXES(DomStorageAreaTest, BackingDatabaseOpened);
+  FRIEND_TEST_ALL_PREFIXES(DomStorageAreaTest, TestDatabaseFilePath);
   friend class base::RefCountedThreadSafe<DomStorageArea>;
+
+  // If we haven't done so already and this is a local storage area,
+  // will attempt to read any values for this origin currently
+  // stored on disk.
+  void InitialImportIfNeeded();
+
+  // Posts a task to write the set of changed values to disk.
+  void ScheduleCommitChanges();
+  void CommitChanges();
+
+  static FilePath DatabaseFileNameFromOrigin(const GURL& origin);
 
   ~DomStorageArea();
 
@@ -56,8 +69,11 @@ class DomStorageArea
   FilePath directory_;
   scoped_refptr<DomStorageTaskRunner> task_runner_;
   scoped_refptr<DomStorageMap> map_;
-  // TODO(benm): integrate with DomStorageDatabase to read from
-  // and lazily write to disk.
+  scoped_ptr<DomStorageDatabase> backing_;
+  bool initial_import_done_;
+  ValuesMap changed_values_;
+  bool clear_all_next_commit_;
+  bool commit_in_flight_;
 };
 
 }  // namespace dom_storage
