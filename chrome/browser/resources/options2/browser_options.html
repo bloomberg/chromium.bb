@@ -95,7 +95,7 @@
           i18n-content="themesSetClassic"></button>
     </div>
 </if>
-<if expr="pp_ifdef('toolkit_views') or os == 'win32' or os == 'darwin'">
+<if expr="pp_ifdef('toolkit_views') or is_win or is_macosx">
     <div>
       <button id="themes-gallery" i18n-content="themesGallery"></button>
       <button id="themes-reset" i18n-content="themesReset"></button>

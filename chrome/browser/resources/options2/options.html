@@ -48,7 +48,7 @@
 <if expr="pp_ifdef('chromeos') and pp_ifdef('use_virtual_keyboard')">
   <link rel="stylesheet" href="chromeos/virtual_keyboard.css">
 </if>
-<if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
+<if expr="not is_win and not is_macosx">
   <link rel="stylesheet" href="certificate_manager.css">
   <link rel="stylesheet" href="certificate_tree.css">
 </if>
@@ -100,7 +100,7 @@
     <include src="chromeos/keyboard_overlay.html">
     <include src="chromeos/pointer_overlay.html">
   </if>
-  <if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
+  <if expr="not is_win and not is_macosx">
     <include src="certificate_manager.html">
   </if>
 </div>
@@ -124,7 +124,7 @@
   <if expr="pp_ifdef('enable_register_protocol_handler')">
     <include src="handler_options.html">
   </if>
-  <if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
+  <if expr="not is_win and not is_macosx">
     <include src="certificate_restore_overlay.html">
     <include src="certificate_backup_overlay.html">
     <include src="certificate_edit_ca_trust_overlay.html">

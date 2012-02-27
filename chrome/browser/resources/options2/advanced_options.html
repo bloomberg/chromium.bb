@@ -186,13 +186,7 @@
           <select id="defaultZoomFactor" dataType="double"></select>
         </label>
       </div>
-<if expr="not pp_ifdef('chromeos') or os == 'win32'">
-      <div class="section-group">
-</if>
-<if expr="not pp_ifdef('chromeos') or os == 'win32'">
-      </div>
-</if>
-<if expr="os == 'darwin'">
+<if expr="is_macosx">
       <div class="checkbox">
         <label>
           <input id="tabsToLinksPref" pref="webkit.webprefs.tabs_to_links"
@@ -320,7 +314,7 @@
     </div>
   </section>
 </if>
-<if expr="os != 'darwin' and not pp_ifdef('chromeos')">
+<if expr="not is_macosx and not pp_ifdef('chromeos')">
   <section id="background-section">
     <h3 i18n-content="advancedSectionTitleBackground"></h3>
     <div class="checkbox">
