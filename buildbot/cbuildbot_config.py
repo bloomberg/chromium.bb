@@ -657,41 +657,50 @@ internal_paladin.add_config('mario-paladin',
   push_overlays='private',
   boards=['x86-mario'],
   gs_path='gs://chromeos-x86-mario/pre-flight-master',
+  paladin_builder_name='mario paladin',
 )
 
 internal_arm_paladin.add_config('kaen-paladin',
   boards=['tegra2_kaen'],
+  paladin_builder_name='tegra2 kaen paladin',
 )
 
 internal_arm_paladin.add_config('ironhide-paladin',
   boards=['ironhide'],
   important=False,
+  paladin_builder_name='ironhide paladin',
 )
 
 internal_paladin.add_config('zgb-paladin',
   boards=['x86-zgb'],
   important=False,
+  paladin_builder_name='zgb paladin',
 )
 
 internal_paladin.add_config('alex-paladin',
   boards=['x86-alex'],
+  paladin_builder_name='alex paladin',
 )
 
 internal_paladin.add_config('stumpy-paladin',
   boards=['stumpy'],
+  paladin_builder_name='stumpy paladin',
 )
 
 internal_paladin.add_config('lumpy-paladin',
   boards=['lumpy'],
+  paladin_builder_name='lumpy paladin',
 )
 
 internal_paladin.add_config('lumpy64-paladin',
   boards=['lumpy64'],
   important=False,
+  paladin_builder_name='lumpy64 paladin',
 )
 
 internal_paladin.add_config('link-paladin',
   boards=['link'],
+  paladin_builder_name='link paladin',
 )
 
 internal_incremental.add_config('mario-incremental',
