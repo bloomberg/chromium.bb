@@ -224,13 +224,10 @@ class DesiredCapabilitiesTest(ChromeDriverTest):
   """Tests for webdriver desired capabilities."""
 
   def testCustomSwitches(self):
-    switches = ['enable-file-cookie', 'homepage=about:memory']
+    switches = ['enable-file-cookie']
     capabilities = {'chrome.switches': switches}
 
     driver = self.GetNewDriver(capabilities)
-    url = driver.current_url
-    self.assertTrue('memory' in url,
-                    'URL does not contain with "memory":' + url)
     driver.get('about:version')
     self.assertNotEqual(-1, driver.page_source.find('enable-file-cookie'))
     driver.quit()
