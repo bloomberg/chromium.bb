@@ -21,11 +21,12 @@ body {
 }
 
 #attribution,
-a.link-color {
-  color: $9;  /* COLOR_NTP_LINK */
+.link-button,
+.link-span {
+  color: $21;  /* COLOR_NTP_TEXT_LIGHT */
 }
 
-.app span {
+.link-button:active {
   color: $8;  /* COLOR_NTP_TEXT */
 }
 
@@ -51,20 +52,6 @@ a.link-color {
 
 .tile-page-scrollbar {
   background-color: $21;  /* COLOR_NTP_TEXT_LIGHT */
-}
-
-/* Login Status. **************************************************************/
-
-#login-container {
-  color: $8;  /* COLOR_NTP_TEXT */
-}
-
-#login-status-sub-header {
-  color: $21;  /* COLOR_NTP_TEXT_LIGHT */
-}
-
-.link-span {
-  color: $9;  /* COLOR_NTP_LINK */
 }
 
 /* Footer *********************************************************************/

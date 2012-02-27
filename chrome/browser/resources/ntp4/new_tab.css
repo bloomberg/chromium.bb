@@ -49,7 +49,6 @@ html[dir='rtl'] #notification-container {
 }
 
 #notification {
-  color: black;
   display: inline-block;
   font-weight: bold;
 }
@@ -94,10 +93,6 @@ html[dir='rtl'] #notification-container {
 
 .link-button {
   -webkit-margin-start: 0.5em;
-  color: rgb(0, 102, 204);
-  cursor: pointer;
-  display: inline-block;
-  text-decoration: underline;
 }
 
 #card-slider-frame {
@@ -184,6 +179,7 @@ html[dir='rtl'] #attribution {
   -webkit-box-shadow: none;
   background: transparent none;
   border: none;
+  color: inherit;
   cursor: pointer;
   font-size: 1.1em;
   /* Leave room for the scrollbar. */
@@ -214,11 +210,8 @@ html[dir='rtl'] .login-status-icon {
   background-position-x: left;
 }
 
-.profile-name:hover {
-  text-decoration: underline;
-}
-
-.link-span {
+.profile-name:hover,
+.link-span:hover {
   text-decoration: underline;
 }
 
