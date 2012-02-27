@@ -71,6 +71,7 @@
     "chrome.experimental.extension.onInstalled": "experimental.extension.html#event-onInstalled",
     "chrome.experimental.fontSettings.getFontName": "experimental.fontSettings.html#method-getFontName",
     "chrome.experimental.infobars.show": "experimental.infobars.html#method-show",
+    "chrome.experimental.keybinding.onCommand": "experimental.keybinding.html#event-onCommand",
     "chrome.experimental.speechInput.isRecording": "experimental.speechInput.html#method-isRecording",
     "chrome.experimental.speechInput.onError": "experimental.speechInput.html#event-onError",
     "chrome.experimental.speechInput.onResult": "experimental.speechInput.html#event-onResult",
