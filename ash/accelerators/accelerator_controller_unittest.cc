@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/brightness_control_delegate.h"
 #include "ash/caps_lock_delegate.h"
 #include "ash/ime/event.h"
 #include "ash/ime_control_delegate.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/system/brightness/brightness_control_delegate.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/volume_control_delegate.h"
 #include "ash/wm/window_util.h"

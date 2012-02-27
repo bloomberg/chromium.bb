@@ -16,6 +16,7 @@
 #include "ash/shell_factory.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/audio/tray_volume.h"
+#include "ash/system/brightness/tray_brightness.h"
 #include "ash/system/settings/tray_settings.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray.h"
@@ -381,6 +382,7 @@ void Shell::Init() {
     status_widget_->GetContentsView()->AddChildView(tray_.get());
 
     tray_->AddTrayItem(new TrayVolume());
+    tray_->AddTrayItem(new TrayBrightness());
     tray_->AddTrayItem(new TraySettings());
 
     if (delegate_.get())

@@ -48,7 +48,6 @@ class VolumeView : public views::View,
     views::Slider* slider = new views::Slider(this, views::Slider::HORIZONTAL);
     slider->SetValue(delegate->VolumeLevel());
     AddChildView(slider);
-    slider->SetVisible(true);
   }
 
  private:

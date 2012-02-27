@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_BRIGHTNESS_CONTROL_DELEGATE_H_
-#define ASH_BRIGHTNESS_CONTROL_DELEGATE_H_
+#ifndef ASH_SYSTEM_BRIGHTNESS_BRIGHTNESS_CONTROL_DELEGATE_H_
+#define ASH_SYSTEM_BRIGHTNESS_BRIGHTNESS_CONTROL_DELEGATE_H_
 #pragma once
 
 namespace ui {
@@ -23,4 +23,4 @@ class BrightnessControlDelegate {
 
 }  // namespace ash
 
-#endif  // ASH_BRIGHTNESS_CONTROL_DELEGATE_H_
+#endif  // ASH_SYSTEM_BRIGHTNESS_BRIGHTNESS_CONTROL_DELEGATE_H_

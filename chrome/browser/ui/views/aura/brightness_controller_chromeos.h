@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_AURA_BRIGHTNESS_CONTROLLER_CHROMEOS_H_
 #pragma once
 
-#include "ash/brightness_control_delegate.h"
+#include "ash/system/brightness/brightness_control_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 

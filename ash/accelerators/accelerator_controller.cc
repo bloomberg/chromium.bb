@@ -4,7 +4,6 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 
-#include "ash/brightness_control_delegate.h"
 #include "ash/caps_lock_delegate.h"
 #include "ash/ime_control_delegate.h"
 #include "ash/launcher/launcher.h"
@@ -13,6 +12,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
+#include "ash/system/brightness/brightness_control_delegate.h"
 #include "ash/volume_control_delegate.h"
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_util.h"
