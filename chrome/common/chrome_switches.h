@@ -116,6 +116,7 @@ extern const char kDisableSyncTypedUrls[];
 extern const char kDisableTabCloseableStateWatcher[];
 extern const char kDisableTLS1[];
 extern const char kDisableTranslate[];
+extern const char kDisableUberPage[];
 extern const char kDisableWebResources[];
 extern const char kDiskCacheDir[];
 extern const char kDiskCacheSize[];
