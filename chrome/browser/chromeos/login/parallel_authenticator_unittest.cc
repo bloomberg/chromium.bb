@@ -358,8 +358,8 @@ TEST_F(ParallelAuthenticatorTest, DriveDemoUserLogin) {
 
   // Set up mock cryptohome library to respond as though a tmpfs mount
   // attempt has occurred and succeeded.
-  mock_library_->SetUp(true, 0);
-  EXPECT_CALL(*mock_library_, AsyncMountGuest(_))
+  mock_caller_->SetUp(true, cryptohome::MOUNT_ERROR_NONE);
+  EXPECT_CALL(*mock_caller_, AsyncMountGuest(_))
       .Times(1)
       .RetiresOnSaturation();
 
@@ -373,8 +373,8 @@ TEST_F(ParallelAuthenticatorTest, DriveDemoUserLoginButFail) {
 
   // Set up mock cryptohome library to respond as though a tmpfs mount
   // attempt has occurred and failed.
-  mock_library_->SetUp(false, 0);
-  EXPECT_CALL(*mock_library_, AsyncMountGuest(_))
+  mock_caller_->SetUp(false, cryptohome::MOUNT_ERROR_NONE);
+  EXPECT_CALL(*mock_caller_, AsyncMountGuest(_))
       .Times(1)
       .RetiresOnSaturation();
 
