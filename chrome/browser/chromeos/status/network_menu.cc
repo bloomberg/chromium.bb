@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -649,7 +649,8 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
       }
 
       int flag = FLAG_CELLULAR;
-      bool isActive = active_cellular &&
+      // If wifi is associated, then cellular is not active.
+      bool isActive = !cros->wifi_network() && active_cellular &&
           cell_networks[i]->service_path() == active_cellular->service_path() &&
           (cell_networks[i]->connecting() || cell_networks[i]->connected());
       bool supports_data_plan =
