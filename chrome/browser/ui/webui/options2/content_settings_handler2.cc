@@ -284,8 +284,8 @@ void ContentSettingsHandler::GetLocalizedValues(
                                 web_intents::IsWebIntentsEnabled());
   localized_strings->SetBoolean(
       "enable_restore_session_state",
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableRestoreSessionState));
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableRestoreSessionState));
 }
 
 void ContentSettingsHandler::Initialize() {

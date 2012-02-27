@@ -85,7 +85,7 @@ BaseSessionService::BaseSessionService(SessionType type,
     DCHECK(!profile->IsOffTheRecord());
     const CommandLine* command_line = CommandLine::ForCurrentProcess();
     save_post_data_ =
-        command_line->HasSwitch(switches::kEnableRestoreSessionState);
+        !command_line->HasSwitch(switches::kDisableRestoreSessionState);
   }
   backend_ = new SessionBackend(type,
       profile_ ? profile_->GetPath() : path_);

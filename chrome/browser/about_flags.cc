@@ -519,11 +519,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kTabBrowserDragging)
   },
   {
-    "enable-restore-session-state",
-    IDS_FLAGS_ENABLE_RESTORE_SESSION_STATE_NAME,
-    IDS_FLAGS_ENABLE_RESTORE_SESSION_STATE_DESCRIPTION,
+    "disable-restore-session-state",
+    IDS_FLAGS_DISABLE_RESTORE_SESSION_STATE_NAME,
+    IDS_FLAGS_DISABLE_RESTORE_SESSION_STATE_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableRestoreSessionState)
+    SINGLE_VALUE_TYPE(switches::kDisableRestoreSessionState)
   },
   {
     "disable-software-rasterizer",

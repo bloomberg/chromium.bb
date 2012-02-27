@@ -97,6 +97,7 @@ extern const char kDisableIPPooling[];
 extern const char kDisablePreconnect[];
 extern const char kDisablePromptOnRepost[];
 extern const char kDisableRestoreBackgroundContents[];
+extern const char kDisableRestoreSessionState[];
 extern const char kDisableShortcutsProvider[];
 extern const char kDisableSSL3[];
 extern const char kDisableSync[];
@@ -154,7 +155,6 @@ extern const char kEnablePasswordGeneration[];
 extern const char kEnablePlatformApps[];
 extern const char kEnablePnacl[];
 extern const char kEnableProfiling[];
-extern const char kEnableRestoreSessionState[];
 extern const char kEnableResourceContentSettings[];
 extern const char kEnableSdch[];
 // TODO(kalman): Add to about:flags when UI for syncing extension settings has

@@ -518,8 +518,8 @@ void BrowserList::AttemptUserExit() {
 
 // static
 void BrowserList::AttemptRestart() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableRestoreSessionState)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableRestoreSessionState)) {
     BrowserVector::const_iterator it;
     for (it = begin(); it != end(); ++it)
       content::BrowserContext::SaveSessionState((*it)->profile());

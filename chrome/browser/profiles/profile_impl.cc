@@ -260,7 +260,7 @@ ProfileImpl::ProfileImpl(const FilePath& path,
       g_browser_process->profile_manager() == NULL);
 
   session_restore_enabled_ =
-      command_line->HasSwitch(switches::kEnableRestoreSessionState);
+      !command_line->HasSwitch(switches::kDisableRestoreSessionState);
   if (delegate_) {
     prefs_.reset(PrefService::CreatePrefService(
         GetPrefFilePath(),

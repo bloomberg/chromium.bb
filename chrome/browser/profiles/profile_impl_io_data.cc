@@ -342,7 +342,7 @@ void ProfileImplIOData::LazyInitializeInternal(
     cookie_store =
         new net::CookieMonster(cookie_db.get(),
                                profile_params->cookie_monster_delegate);
-    if (command_line.HasSwitch(switches::kEnableRestoreSessionState))
+    if (!command_line.HasSwitch(switches::kDisableRestoreSessionState))
       cookie_store->GetCookieMonster()->SetPersistSessionCookies(true);
   }
 

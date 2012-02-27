@@ -334,6 +334,10 @@ const char kDisablePromptOnRepost[]         = "disable-prompt-on-repost";
 const char kDisableRestoreBackgroundContents[] =
     "disable-restore-background-contents";
 
+// Disables restoring session state (cookies, session storage, etc.) when
+// restoring the browsing session.
+const char kDisableRestoreSessionState[]   = "disable-restore-session-state";
+
 // Disables the ShortcutsProvider for autocomplete results.
 const char kDisableShortcutsProvider[]      = "disable-shortcuts-provider";
 
@@ -547,10 +551,6 @@ const char kEnablePnacl[]                    = "enable-pnacl";
 // Some tracking will still take place at startup, but it will be turned off
 // during chrome_browser_main.
 const char kEnableProfiling[]               = "enable-profiling";
-
-// Experimental. Enables restoring session state (cookies, session storage,
-// etc.) when autorestarting.
-const char kEnableRestoreSessionState[]   = "enable-restore-session-state";
 
 // Controls the support for SDCH filtering (dictionary based expansion of
 // content). By default SDCH filtering is enabled. To disable SDCH filtering,
