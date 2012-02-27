@@ -247,6 +247,25 @@ SessionCommand* BaseSessionService::CreateSetTabExtensionAppIDCommand(
   return new SessionCommand(command_id, pickle);
 }
 
+SessionCommand* BaseSessionService::CreateSetWindowAppNameCommand(
+    SessionID::id_type command_id,
+    SessionID::id_type window_id,
+    const std::string& app_name) {
+  // Use pickle to handle marshalling.
+  Pickle pickle;
+  pickle.WriteInt(window_id);
+
+  // Enforce a max for ids. They should never be anywhere near this size.
+  static const SessionCommand::size_type max_id_size =
+      std::numeric_limits<SessionCommand::size_type>::max() - 1024;
+
+  int bytes_written = 0;
+
+  WriteStringToPickle(pickle, &bytes_written, max_id_size, app_name);
+
+  return new SessionCommand(command_id, pickle);
+}
+
 bool BaseSessionService::RestoreUpdateTabNavigationCommand(
     const SessionCommand& command,
     TabNavigation* navigation,
@@ -312,6 +331,19 @@ bool BaseSessionService::RestoreSetTabExtensionAppIDCommand(
   void* iterator = NULL;
   return pickle->ReadInt(&iterator, tab_id) &&
       pickle->ReadString(&iterator, extension_app_id);
+}
+
+bool BaseSessionService::RestoreSetWindowAppNameCommand(
+    const SessionCommand& command,
+    SessionID::id_type* window_id,
+    std::string* app_name) {
+  scoped_ptr<Pickle> pickle(command.PayloadAsPickle());
+  if (!pickle.get())
+    return false;
+
+  void* iterator = NULL;
+  return pickle->ReadInt(&iterator, window_id) &&
+      pickle->ReadString(&iterator, app_name);
 }
 
 bool BaseSessionService::ShouldTrackEntry(const GURL& url) {

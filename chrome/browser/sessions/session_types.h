@@ -200,6 +200,8 @@ struct SessionWindow {
   // Is the window maximized, minimized, or normal?
   ui::WindowShowState show_state;
 
+  std::string app_name;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionWindow);
 };

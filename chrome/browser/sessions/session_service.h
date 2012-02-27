@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,6 +55,12 @@ class SessionService : public BaseSessionService,
                        public content::NotificationObserver {
   friend class SessionServiceTestHelper;
  public:
+  // Used to distinguish an application window from a normal one.
+  enum AppType {
+    TYPE_APP,
+    TYPE_NORMAL
+  };
+
   // Creates a SessionService for the specified profile.
   explicit SessionService(Profile* profile);
   // For testing.
@@ -121,7 +127,13 @@ class SessionService : public BaseSessionService,
   // Sets the type of window. In order for the contents of a window to be
   // tracked SetWindowType must be invoked with a type we track
   // (should_track_changes_for_browser_type returns true).
-  void SetWindowType(const SessionID& window_id, Browser::Type type);
+  void SetWindowType(const SessionID& window_id,
+                     Browser::Type type,
+                     AppType app_type);
+
+  // Sets the application name of the specified window.
+  void SetWindowAppName(const SessionID& window_id,
+                        const std::string& app_name);
 
   // Invoked when the NavigationController has removed entries from the back of
   // the list. |count| gives the number of entries in the navigation controller.
@@ -362,7 +374,9 @@ class SessionService : public BaseSessionService,
   bool ShouldTrackChangesToWindow(const SessionID& window_id);
 
   // Returns true if we track changes to the specified browser type.
-  static bool should_track_changes_for_browser_type(Browser::Type type);
+  static bool should_track_changes_for_browser_type(
+      Browser::Type type,
+      AppType app_type);
 
   // Returns true if we should record a window close as pending.
   // |has_open_trackable_browsers_| must be up-to-date before calling this.

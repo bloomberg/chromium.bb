@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,6 +36,9 @@ class TabRestoreServiceDelegate {
   // see Browser::active_index()
   virtual int GetSelectedIndex() const = 0;
 
+  // see Browser::app_name()
+  virtual std::string GetAppName() const = 0;
+
   // see Browser methods with the same names
   virtual content::WebContents* GetWebContentsAt(int index) const = 0;
   virtual content::WebContents* GetSelectedWebContents() const = 0;
@@ -58,7 +61,8 @@ class TabRestoreServiceDelegate {
   virtual void CloseTab() = 0;
 
   // see Browser::Create
-  static TabRestoreServiceDelegate* Create(Profile* profile);
+  static TabRestoreServiceDelegate* Create(Profile* profile,
+                                           const std::string& app_name);
 
   // see BrowserList::GetBrowserForController
   static TabRestoreServiceDelegate* FindDelegateForController(

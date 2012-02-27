@@ -8,18 +8,26 @@
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
+#include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/chrome_render_view_test.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 
 typedef TabRestoreService::Tab Tab;
+typedef TabRestoreService::Window Window;
 
 using content::NavigationEntry;
 
@@ -97,7 +105,8 @@ class TabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
         SessionServiceFactory::GetForProfile(profile());
     SessionID tab_id;
     SessionID window_id;
-    session_service->SetWindowType(window_id, Browser::TYPE_TABBED);
+    session_service->SetWindowType(
+        window_id, Browser::TYPE_TABBED, SessionService::TYPE_NORMAL);
     session_service->SetTabWindow(window_id, tab_id);
     session_service->SetTabIndexInWindow(window_id, tab_id, 0);
     session_service->SetSelectedTabInWindow(window_id, 0);
@@ -248,6 +257,36 @@ TEST_F(TabRestoreServiceTest, RestorePinnedAndApp) {
   EXPECT_EQ(2, tab->current_navigation_index);
   EXPECT_TRUE(extension_app_id == tab->extension_app_id);
 }
+
+// We only restore apps on chromeos.
+#if defined(OS_CHROMEOS)
+
+typedef InProcessBrowserTest TabRestoreServiceBrowserTest;
+
+IN_PROC_BROWSER_TEST_F(TabRestoreServiceBrowserTest, RestoreApp) {
+  Profile* profile = browser()->profile();
+  TabRestoreService* trs = TabRestoreServiceFactory::GetForProfile(profile);
+  const char* app_name = "TestApp";
+
+  Browser* app_browser = CreateBrowserForApp(app_name, profile);
+  app_browser->window()->Close();
+  ui_test_utils::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED,
+      content::Source<Browser>(app_browser));
+  observer.Wait();
+
+  // One entry should be created.
+  ASSERT_EQ(1U, trs->entries().size());
+  const TabRestoreService::Entry* restored_entry = trs->entries().front();
+
+  // It should be a window with an app.
+  ASSERT_EQ(TabRestoreService::WINDOW, restored_entry->type);
+  const Window* restored_window =
+      static_cast<const Window*>(restored_entry);
+  EXPECT_EQ(app_name, restored_window->app_name);
+
+}
+#endif
 
 // Make sure we persist entries to disk that have post data.
 TEST_F(TabRestoreServiceTest, DontPersistPostData) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,7 @@ class BrowserTabRestoreServiceDelegate : public TabRestoreServiceDelegate {
   virtual const SessionID& GetSessionID() const OVERRIDE;
   virtual int GetTabCount() const OVERRIDE;
   virtual int GetSelectedIndex() const OVERRIDE;
+  virtual std::string GetAppName() const OVERRIDE;
   virtual content::WebContents* GetWebContentsAt(int index) const OVERRIDE;
   virtual content::WebContents* GetSelectedWebContents() const OVERRIDE;
   virtual bool IsTabPinned(int index) const OVERRIDE;

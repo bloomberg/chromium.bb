@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,6 +27,10 @@ int BrowserTabRestoreServiceDelegate::GetTabCount() const {
 
 int BrowserTabRestoreServiceDelegate::GetSelectedIndex() const {
   return browser_->active_index();
+}
+
+std::string BrowserTabRestoreServiceDelegate::GetAppName() const {
+  return browser_->app_name();
 }
 
 WebContents* BrowserTabRestoreServiceDelegate::GetWebContentsAt(
@@ -74,8 +78,19 @@ void BrowserTabRestoreServiceDelegate::CloseTab() {
 // Implementations of TabRestoreServiceDelegate static methods
 
 // static
-TabRestoreServiceDelegate* TabRestoreServiceDelegate::Create(Profile* profile) {
-  Browser* browser = Browser::Create(profile);
+TabRestoreServiceDelegate* TabRestoreServiceDelegate::Create(
+    Profile* profile,
+    const std::string& app_name) {
+  Browser* browser;
+  if (app_name.empty()) {
+    browser = Browser::Create(profile);
+  } else {
+    browser = Browser::CreateForApp(
+        Browser::TYPE_POPUP,
+        app_name,
+        gfx::Rect(),
+        profile);
+  }
   if (browser)
     return browser->tab_restore_service_delegate();
   else
