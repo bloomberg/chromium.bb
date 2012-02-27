@@ -37,7 +37,7 @@ class KeybindingApiTest : public ExtensionApiTest {
   }
 };
 
-#if defined(OS_WIN)  // Not implemented on other platforms yet.
+#if defined(TOOLKIT_VIEWS)  // Not implemented on other platforms yet.
 IN_PROC_BROWSER_TEST_F(KeybindingApiTest, Basic) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("keybinding/basics")) << message_;
@@ -78,4 +78,4 @@ IN_PROC_BROWSER_TEST_F(KeybindingApiTest, Basic) {
       &result));
   ASSERT_TRUE(result);
 }
-#endif  // OS_WIN
+#endif  // TOOLKIT_VIEWS
