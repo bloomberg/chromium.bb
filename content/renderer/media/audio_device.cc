@@ -99,9 +99,7 @@ void AudioDevice::Start() {
 }
 
 void AudioDevice::Stop() {
-  DCHECK(!message_loop()->BelongsToCurrentThread());
-
-  audio_thread_.Stop(ChildProcess::current()->main_thread()->message_loop());
+  audio_thread_.Stop(MessageLoop::current());
 
   message_loop()->PostTask(FROM_HERE,
       base::Bind(&AudioDevice::ShutDownOnIOThread, this));
