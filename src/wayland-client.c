@@ -422,7 +422,9 @@ wl_display_get_fd(struct wl_display *display,
 	display->update = update;
 	display->update_data = data;
 
-	display->update(display->mask, display->update_data);
+	if (display->update)
+		display->update(display->mask,
+		                display->update_data);
 
 	return display->fd;
 }
