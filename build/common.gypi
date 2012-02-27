@@ -1,14 +1,14 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 {
   'variables': {
     # .gyp files should set chromium_code to 1 if they build Chromium-specific
-    # code, as opposed to external (third party) code.  This variable is
-    # used to control such things as the set of warnings to enable, and
-    # whether warnings are treated as errors.
-    'chromium_code%': 1,
+    # code, as opposed to external code.  This variable is used to control
+    # such things as the set of warnings to enable, and whether warnings are
+    # treated as errors.
+    'chromium_code%': 0,
 
     # Variables expected to be overriden on the GYP command line (-D) or by
     # ~/.gyp/include.gypi.
