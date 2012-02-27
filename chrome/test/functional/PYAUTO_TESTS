@@ -499,6 +499,8 @@
       # crbug.com/105948
       '-autofill.AutofillTest.testDisplayLineItemForEntriesWithNoCCNum',
       '-autofill.AutofillTest.testPostalCodeAndStateLabelsBasedOnCountry',
+      # crbug.com/115707
+      '-browser.BrowserTest.testMaxProcess',
       # crbug.com/111289
       '-extensions.ExtensionsTest.testAllowAccessFileURLs',
       # crbug.com/113090
@@ -512,6 +514,8 @@
       '-enterprise.EnterpriseTestReverse.testDefaultSearchProviderDisabled',
       # crbug.com/100893
       '-enterprise.EnterpriseTestReverse.testEnableSPDY',
+      # crbug.com/115646
+      '-translate.TranslateTest.testSeveralLanguages',
     ],
 
     'mac': [
@@ -524,6 +528,8 @@
 
       # Consistently failing on Mac QA bots only: crbug.com/97810
       '-process_count',
+      # crbug.com/115646
+      '-translate.TranslateTest.testSeveralLanguages',
     ],
 
     'linux': [
