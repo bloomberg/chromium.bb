@@ -520,6 +520,27 @@ void GLES2TexStorage2DEXT(
   gles2::GetGLContext()->TexStorage2DEXT(
       target, levels, internalFormat, width, height);
 }
+void GLES2GenQueriesEXT(GLsizei n, GLuint* ids) {
+  gles2::GetGLContext()->GenQueriesEXT(n, ids);
+}
+void GLES2DeleteQueriesEXT(GLsizei n, const GLuint* ids) {
+  gles2::GetGLContext()->DeleteQueriesEXT(n, ids);
+}
+GLboolean GLES2IsQueryEXT(GLuint id) {
+  return gles2::GetGLContext()->IsQueryEXT(id);
+}
+void GLES2BeginQueryEXT(GLenum target, GLuint id) {
+  gles2::GetGLContext()->BeginQueryEXT(target, id);
+}
+void GLES2EndQueryEXT(GLenum target) {
+  gles2::GetGLContext()->EndQueryEXT(target);
+}
+void GLES2GetQueryivEXT(GLenum target, GLenum pname, GLint* params) {
+  gles2::GetGLContext()->GetQueryivEXT(target, pname, params);
+}
+void GLES2GetQueryObjectuivEXT(GLuint id, GLenum pname, GLuint* params) {
+  gles2::GetGLContext()->GetQueryObjectuivEXT(id, pname, params);
+}
 void GLES2SwapBuffers() {
   gles2::GetGLContext()->SwapBuffers();
 }

@@ -10,6 +10,19 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_3_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_3_AUTOGEN_H_
 
+// TODO(gman): DeleteSharedIdsCHROMIUM
+
+// TODO(gman): RegisterSharedIdsCHROMIUM
+
+// TODO(gman): EnableFeatureCHROMIUM
+
+// TODO(gman): ResizeCHROMIUM
+// TODO(gman): GetRequestableExtensionsCHROMIUM
+
+// TODO(gman): RequestExtensionCHROMIUM
+
+// TODO(gman): GetMultipleIntegervCHROMIUM
+
 // TODO(gman): GetProgramInfoCHROMIUM
 
 // TODO(gman): CreateStreamTextureCHROMIUM

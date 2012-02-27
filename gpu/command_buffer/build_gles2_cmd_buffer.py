@@ -433,6 +433,26 @@ _ENUM_LISTS = {
       'GL_ACTIVE_UNIFORM_MAX_LENGTH',
     ],
   },
+  'QueryObjectParameter': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_QUERY_RESULT_EXT',
+      'GL_QUERY_RESULT_AVAILABLE_EXT',
+    ],
+  },
+  'QueryParameter': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_CURRENT_QUERY_EXT',
+    ],
+  },
+  'QueryTarget': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_ANY_SAMPLES_PASSED_EXT',
+      'GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT',
+    ],
+  },
   'RenderBufferParameter': {
     'type': 'GLenum',
     'valid': [
@@ -1536,7 +1556,13 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'pepper_interface': 'InstancedArrays',
   },
-
+  'GenQueriesEXT': {'type': 'Todo'},
+  'DeleteQueriesEXT': {'type': 'Todo'},
+  'IsQueryEXT': {'type': 'Todo'},
+  'BeginQueryEXT': {'type': 'Todo'},
+  'EndQueryEXT': {'type': 'Todo'},
+  'GetQueryivEXT': {'type': 'Todo'},
+  'GetQueryObjectuivEXT': {'type': 'Todo'},
 }
 
 
@@ -2154,11 +2180,11 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
 
   def WriteImmediateCmdInit(self, func, file):
     """Writes the Init function for the immediate version of a command."""
-    raise Error
+    raise NotImplementedError(func.name)
 
   def WriteImmediateCmdSet(self, func, file):
     """Writes the Set function for the immediate version of a command."""
-    raise Error
+    raise NotImplementedError(func.name)
 
   def WriteCmdHelper(self, func, file):
     """Writes the cmd helper definition for a cmd."""
@@ -2252,9 +2278,45 @@ class CustomHandler(TypeHandler):
 class TodoHandler(CustomHandler):
   """Handle for commands that are not yet implemented."""
 
+  def AddImmediateFunction(self, generator, func):
+    """Overrriden from TypeHandler."""
+    pass
+
   def WriteImmediateFormatTest(self, func, file):
     """Overrriden from TypeHandler."""
     pass
+
+  def WriteGLES2ImplementationUnitTest(self, func, file):
+    """Overrriden from TypeHandler."""
+    pass
+
+  def WriteGLES2ImplementationHeader(self, func, file):
+    """Overrriden from TypeHandler."""
+    file.Write("%s %s(%s) {\n" %
+               (func.return_type, func.original_name,
+                func.MakeTypedOriginalArgString("")))
+    file.Write("  // TODO: for now this is a no-op\n")
+    file.Write(
+        "  SetGLError(GL_INVALID_OPERATION, \"gl%s not implemented\");\n" %
+        func.name)
+    if func.return_type != "void":
+      file.Write("  return 0;\n")
+    file.Write("}\n")
+    file.Write("\n")
+
+  def WriteServiceImplementation(self, func, file):
+    """Overrriden from TypeHandler."""
+    file.Write(
+        "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
+    file.Write(
+        "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
+    file.Write("  // TODO: for now this is a no-op\n")
+    file.Write(
+        "  SetGLError(GL_INVALID_OPERATION, \"gl%s not implemented\");\n" %
+        func.name)
+    file.Write("  return error::kNoError;\n")
+    file.Write("}\n")
+    file.Write("\n")
 
 
 class HandWrittenHandler(CustomHandler):
@@ -2626,7 +2688,7 @@ class GENnHandler(TypeHandler):
         'name': func.original_name,
         'typed_args': func.MakeTypedOriginalArgString(""),
         'args': func.MakeOriginalArgString(""),
-        'resource_type': func.name[3:],
+        'resource_type': func.GetInfo('resource_type') or func.name[3:],
         'count_name': func.GetOriginalArgs()[0].name,
       }
     file.Write("%(return_type)s %(name)s(%(typed_args)s) {\n" % args)

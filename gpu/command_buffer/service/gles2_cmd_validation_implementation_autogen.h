@@ -267,6 +267,20 @@ static GLenum valid_program_parameter_table[] = {
   GL_ACTIVE_UNIFORM_MAX_LENGTH,
 };
 
+static GLenum valid_query_object_parameter_table[] = {
+  GL_QUERY_RESULT_EXT,
+  GL_QUERY_RESULT_AVAILABLE_EXT,
+};
+
+static GLenum valid_query_parameter_table[] = {
+  GL_CURRENT_QUERY_EXT,
+};
+
+static GLenum valid_query_target_table[] = {
+  GL_ANY_SAMPLES_PASSED_EXT,
+  GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT,
+};
+
 static GLenum valid_read_pixel_format_table[] = {
   GL_ALPHA,
   GL_RGB,
@@ -528,6 +542,13 @@ Validators::Validators()
       program_parameter(
           valid_program_parameter_table, arraysize(
               valid_program_parameter_table)),
+      query_object_parameter(
+          valid_query_object_parameter_table, arraysize(
+              valid_query_object_parameter_table)),
+      query_parameter(
+          valid_query_parameter_table, arraysize(valid_query_parameter_table)),
+      query_target(
+          valid_query_target_table, arraysize(valid_query_target_table)),
       read_pixel_format(
           valid_read_pixel_format_table, arraysize(
               valid_read_pixel_format_table)),

@@ -919,6 +919,33 @@ std::string GLES2Util::GetStringProgramParameter(uint32 value) {
       string_table, arraysize(string_table), value);
 }
 
+std::string GLES2Util::GetStringQueryObjectParameter(uint32 value) {
+  static EnumToString string_table[] = {
+    { GL_QUERY_RESULT_EXT, "GL_QUERY_RESULT_EXT" },
+    { GL_QUERY_RESULT_AVAILABLE_EXT, "GL_QUERY_RESULT_AVAILABLE_EXT" },
+  };
+  return GLES2Util::GetQualifiedEnumString(
+      string_table, arraysize(string_table), value);
+}
+
+std::string GLES2Util::GetStringQueryParameter(uint32 value) {
+  static EnumToString string_table[] = {
+    { GL_CURRENT_QUERY_EXT, "GL_CURRENT_QUERY_EXT" },
+  };
+  return GLES2Util::GetQualifiedEnumString(
+      string_table, arraysize(string_table), value);
+}
+
+std::string GLES2Util::GetStringQueryTarget(uint32 value) {
+  static EnumToString string_table[] = {
+    { GL_ANY_SAMPLES_PASSED_EXT, "GL_ANY_SAMPLES_PASSED_EXT" },
+    { GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT,
+    "GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT" },
+  };
+  return GLES2Util::GetQualifiedEnumString(
+      string_table, arraysize(string_table), value);
+}
+
 std::string GLES2Util::GetStringReadPixelFormat(uint32 value) {
   static EnumToString string_table[] = {
     { GL_ALPHA, "GL_ALPHA" },

@@ -1806,22 +1806,23 @@ TEST_F(GLES2DecoderTest2, ViewportInvalidArgs3_0) {
 // TODO(gman): BlitFramebufferEXT
 // TODO(gman): RenderbufferStorageMultisampleEXT
 // TODO(gman): TexStorage2DEXT
+// TODO(gman): GenQueriesEXT
+
+// TODO(gman): DeleteQueriesEXT
+
+// TODO(gman): IsQueryEXT
+
+// TODO(gman): BeginQueryEXT
+
+// TODO(gman): EndQueryEXT
+
+// TODO(gman): GetQueryivEXT
+
+// TODO(gman): GetQueryObjectuivEXT
+
 // TODO(gman): SwapBuffers
 // TODO(gman): GetMaxValueInBufferCHROMIUM
 // TODO(gman): GenSharedIdsCHROMIUM
-
-// TODO(gman): DeleteSharedIdsCHROMIUM
-
-// TODO(gman): RegisterSharedIdsCHROMIUM
-
-// TODO(gman): EnableFeatureCHROMIUM
-
-// TODO(gman): ResizeCHROMIUM
-// TODO(gman): GetRequestableExtensionsCHROMIUM
-
-// TODO(gman): RequestExtensionCHROMIUM
-
-// TODO(gman): GetMultipleIntegervCHROMIUM
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 

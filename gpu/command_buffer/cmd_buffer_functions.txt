@@ -149,6 +149,13 @@ GL_APICALL void         GL_APIENTRY glViewport (GLint x, GLint y, GLsizei width,
 GL_APICALL void         GL_APIENTRY glBlitFramebufferEXT (GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenumBlitFilter filter);
 GL_APICALL void         GL_APIENTRY glRenderbufferStorageMultisampleEXT (GLenumRenderBufferTarget target, GLsizei samples, GLenumRenderBufferFormat internalformat, GLsizei width, GLsizei height);
 GL_APICALL void         GL_APIENTRY glTexStorage2DEXT (GLenumTextureTarget target, GLsizei levels, GLenumTextureInternalFormatStorage internalFormat, GLsizei width, GLsizei height);
+GL_APICALL void         GL_APIENTRY glGenQueriesEXT (GLsizeiNotNegative n, GLuint* ids);
+GL_APICALL void         GL_APIENTRY glDeleteQueriesEXT (GLsizeiNotNegative n, const GLuint* ids);
+GL_APICALL GLboolean    GL_APIENTRY glIsQueryEXT (GLidQuery id);
+GL_APICALL void         GL_APIENTRY glBeginQueryEXT (GLenumQueryTarget target, GLidQuery id);
+GL_APICALL void         GL_APIENTRY glEndQueryEXT (GLenumQueryTarget target);
+GL_APICALL void         GL_APIENTRY glGetQueryivEXT (GLenumQueryTarget target, GLenumQueryParameter pname, GLint* params);
+GL_APICALL void         GL_APIENTRY glGetQueryObjectuivEXT (GLidQuery id, GLenumQueryObjectParameter pname, GLuint* params);
 // Non-GL commands.
 GL_APICALL void         GL_APIENTRY glSwapBuffers (void);
 GL_APICALL GLuint       GL_APIENTRY glGetMaxValueInBufferCHROMIUM (GLidBuffer buffer_id, GLsizei count, GLenumGetMaxIndexType type, GLuint offset);

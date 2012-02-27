@@ -1409,6 +1409,42 @@ void TexStorage2DEXT(
   helper_->TexStorage2DEXT(target, levels, internalFormat, width, height);
 }
 
+void GenQueriesEXT(GLsizei n, GLuint* ids) {
+  // TODO: for now this is a no-op
+  SetGLError(GL_INVALID_OPERATION, "glGenQueriesEXT not implemented");
+}
+
+void DeleteQueriesEXT(GLsizei n, const GLuint* ids) {
+  // TODO: for now this is a no-op
+  SetGLError(GL_INVALID_OPERATION, "glDeleteQueriesEXT not implemented");
+}
+
+GLboolean IsQueryEXT(GLuint id) {
+  // TODO: for now this is a no-op
+  SetGLError(GL_INVALID_OPERATION, "glIsQueryEXT not implemented");
+  return 0;
+}
+
+void BeginQueryEXT(GLenum target, GLuint id) {
+  // TODO: for now this is a no-op
+  SetGLError(GL_INVALID_OPERATION, "glBeginQueryEXT not implemented");
+}
+
+void EndQueryEXT(GLenum target) {
+  // TODO: for now this is a no-op
+  SetGLError(GL_INVALID_OPERATION, "glEndQueryEXT not implemented");
+}
+
+void GetQueryivEXT(GLenum target, GLenum pname, GLint* params) {
+  // TODO: for now this is a no-op
+  SetGLError(GL_INVALID_OPERATION, "glGetQueryivEXT not implemented");
+}
+
+void GetQueryObjectuivEXT(GLuint id, GLenum pname, GLuint* params) {
+  // TODO: for now this is a no-op
+  SetGLError(GL_INVALID_OPERATION, "glGetQueryObjectuivEXT not implemented");
+}
+
 void SwapBuffers();
 
 GLuint GetMaxValueInBufferCHROMIUM(

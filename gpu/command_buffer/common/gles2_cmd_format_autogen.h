@@ -8523,6 +8523,300 @@ COMPILE_ASSERT(offsetof(TexStorage2DEXT, width) == 16,
 COMPILE_ASSERT(offsetof(TexStorage2DEXT, height) == 20,
                OffsetOf_TexStorage2DEXT_height_not_20);
 
+struct GenQueriesEXT {
+  typedef GenQueriesEXT ValueType;
+  static const CommandId kCmdId = kGenQueriesEXT;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(GLsizei _n, uint32 _ids_shm_id, uint32 _ids_shm_offset) {
+    SetHeader();
+    n = _n;
+    ids_shm_id = _ids_shm_id;
+    ids_shm_offset = _ids_shm_offset;
+  }
+
+  void* Set(
+      void* cmd, GLsizei _n, uint32 _ids_shm_id, uint32 _ids_shm_offset) {
+    static_cast<ValueType*>(cmd)->Init(_n, _ids_shm_id, _ids_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  int32 n;
+  uint32 ids_shm_id;
+  uint32 ids_shm_offset;
+};
+
+COMPILE_ASSERT(sizeof(GenQueriesEXT) == 16,
+               Sizeof_GenQueriesEXT_is_not_16);
+COMPILE_ASSERT(offsetof(GenQueriesEXT, header) == 0,
+               OffsetOf_GenQueriesEXT_header_not_0);
+COMPILE_ASSERT(offsetof(GenQueriesEXT, n) == 4,
+               OffsetOf_GenQueriesEXT_n_not_4);
+COMPILE_ASSERT(offsetof(GenQueriesEXT, ids_shm_id) == 8,
+               OffsetOf_GenQueriesEXT_ids_shm_id_not_8);
+COMPILE_ASSERT(offsetof(GenQueriesEXT, ids_shm_offset) == 12,
+               OffsetOf_GenQueriesEXT_ids_shm_offset_not_12);
+
+struct DeleteQueriesEXT {
+  typedef DeleteQueriesEXT ValueType;
+  static const CommandId kCmdId = kDeleteQueriesEXT;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(GLsizei _n, uint32 _ids_shm_id, uint32 _ids_shm_offset) {
+    SetHeader();
+    n = _n;
+    ids_shm_id = _ids_shm_id;
+    ids_shm_offset = _ids_shm_offset;
+  }
+
+  void* Set(
+      void* cmd, GLsizei _n, uint32 _ids_shm_id, uint32 _ids_shm_offset) {
+    static_cast<ValueType*>(cmd)->Init(_n, _ids_shm_id, _ids_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  int32 n;
+  uint32 ids_shm_id;
+  uint32 ids_shm_offset;
+};
+
+COMPILE_ASSERT(sizeof(DeleteQueriesEXT) == 16,
+               Sizeof_DeleteQueriesEXT_is_not_16);
+COMPILE_ASSERT(offsetof(DeleteQueriesEXT, header) == 0,
+               OffsetOf_DeleteQueriesEXT_header_not_0);
+COMPILE_ASSERT(offsetof(DeleteQueriesEXT, n) == 4,
+               OffsetOf_DeleteQueriesEXT_n_not_4);
+COMPILE_ASSERT(offsetof(DeleteQueriesEXT, ids_shm_id) == 8,
+               OffsetOf_DeleteQueriesEXT_ids_shm_id_not_8);
+COMPILE_ASSERT(offsetof(DeleteQueriesEXT, ids_shm_offset) == 12,
+               OffsetOf_DeleteQueriesEXT_ids_shm_offset_not_12);
+
+struct IsQueryEXT {
+  typedef IsQueryEXT ValueType;
+  static const CommandId kCmdId = kIsQueryEXT;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(GLuint _id) {
+    SetHeader();
+    id = _id;
+  }
+
+  void* Set(void* cmd, GLuint _id) {
+    static_cast<ValueType*>(cmd)->Init(_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 id;
+};
+
+COMPILE_ASSERT(sizeof(IsQueryEXT) == 8,
+               Sizeof_IsQueryEXT_is_not_8);
+COMPILE_ASSERT(offsetof(IsQueryEXT, header) == 0,
+               OffsetOf_IsQueryEXT_header_not_0);
+COMPILE_ASSERT(offsetof(IsQueryEXT, id) == 4,
+               OffsetOf_IsQueryEXT_id_not_4);
+
+struct BeginQueryEXT {
+  typedef BeginQueryEXT ValueType;
+  static const CommandId kCmdId = kBeginQueryEXT;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(GLenum _target, GLuint _id) {
+    SetHeader();
+    target = _target;
+    id = _id;
+  }
+
+  void* Set(void* cmd, GLenum _target, GLuint _id) {
+    static_cast<ValueType*>(cmd)->Init(_target, _id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 target;
+  uint32 id;
+};
+
+COMPILE_ASSERT(sizeof(BeginQueryEXT) == 12,
+               Sizeof_BeginQueryEXT_is_not_12);
+COMPILE_ASSERT(offsetof(BeginQueryEXT, header) == 0,
+               OffsetOf_BeginQueryEXT_header_not_0);
+COMPILE_ASSERT(offsetof(BeginQueryEXT, target) == 4,
+               OffsetOf_BeginQueryEXT_target_not_4);
+COMPILE_ASSERT(offsetof(BeginQueryEXT, id) == 8,
+               OffsetOf_BeginQueryEXT_id_not_8);
+
+struct EndQueryEXT {
+  typedef EndQueryEXT ValueType;
+  static const CommandId kCmdId = kEndQueryEXT;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(GLenum _target) {
+    SetHeader();
+    target = _target;
+  }
+
+  void* Set(void* cmd, GLenum _target) {
+    static_cast<ValueType*>(cmd)->Init(_target);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 target;
+};
+
+COMPILE_ASSERT(sizeof(EndQueryEXT) == 8,
+               Sizeof_EndQueryEXT_is_not_8);
+COMPILE_ASSERT(offsetof(EndQueryEXT, header) == 0,
+               OffsetOf_EndQueryEXT_header_not_0);
+COMPILE_ASSERT(offsetof(EndQueryEXT, target) == 4,
+               OffsetOf_EndQueryEXT_target_not_4);
+
+struct GetQueryivEXT {
+  typedef GetQueryivEXT ValueType;
+  static const CommandId kCmdId = kGetQueryivEXT;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(
+      GLenum _target, GLenum _pname, uint32 _params_shm_id,
+      uint32 _params_shm_offset) {
+    SetHeader();
+    target = _target;
+    pname = _pname;
+    params_shm_id = _params_shm_id;
+    params_shm_offset = _params_shm_offset;
+  }
+
+  void* Set(
+      void* cmd, GLenum _target, GLenum _pname, uint32 _params_shm_id,
+      uint32 _params_shm_offset) {
+    static_cast<ValueType*>(
+        cmd)->Init(_target, _pname, _params_shm_id, _params_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 target;
+  uint32 pname;
+  uint32 params_shm_id;
+  uint32 params_shm_offset;
+};
+
+COMPILE_ASSERT(sizeof(GetQueryivEXT) == 20,
+               Sizeof_GetQueryivEXT_is_not_20);
+COMPILE_ASSERT(offsetof(GetQueryivEXT, header) == 0,
+               OffsetOf_GetQueryivEXT_header_not_0);
+COMPILE_ASSERT(offsetof(GetQueryivEXT, target) == 4,
+               OffsetOf_GetQueryivEXT_target_not_4);
+COMPILE_ASSERT(offsetof(GetQueryivEXT, pname) == 8,
+               OffsetOf_GetQueryivEXT_pname_not_8);
+COMPILE_ASSERT(offsetof(GetQueryivEXT, params_shm_id) == 12,
+               OffsetOf_GetQueryivEXT_params_shm_id_not_12);
+COMPILE_ASSERT(offsetof(GetQueryivEXT, params_shm_offset) == 16,
+               OffsetOf_GetQueryivEXT_params_shm_offset_not_16);
+
+struct GetQueryObjectuivEXT {
+  typedef GetQueryObjectuivEXT ValueType;
+  static const CommandId kCmdId = kGetQueryObjectuivEXT;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(
+      GLuint _id, GLenum _pname, uint32 _params_shm_id,
+      uint32 _params_shm_offset) {
+    SetHeader();
+    id = _id;
+    pname = _pname;
+    params_shm_id = _params_shm_id;
+    params_shm_offset = _params_shm_offset;
+  }
+
+  void* Set(
+      void* cmd, GLuint _id, GLenum _pname, uint32 _params_shm_id,
+      uint32 _params_shm_offset) {
+    static_cast<ValueType*>(
+        cmd)->Init(_id, _pname, _params_shm_id, _params_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 id;
+  uint32 pname;
+  uint32 params_shm_id;
+  uint32 params_shm_offset;
+};
+
+COMPILE_ASSERT(sizeof(GetQueryObjectuivEXT) == 20,
+               Sizeof_GetQueryObjectuivEXT_is_not_20);
+COMPILE_ASSERT(offsetof(GetQueryObjectuivEXT, header) == 0,
+               OffsetOf_GetQueryObjectuivEXT_header_not_0);
+COMPILE_ASSERT(offsetof(GetQueryObjectuivEXT, id) == 4,
+               OffsetOf_GetQueryObjectuivEXT_id_not_4);
+COMPILE_ASSERT(offsetof(GetQueryObjectuivEXT, pname) == 8,
+               OffsetOf_GetQueryObjectuivEXT_pname_not_8);
+COMPILE_ASSERT(offsetof(GetQueryObjectuivEXT, params_shm_id) == 12,
+               OffsetOf_GetQueryObjectuivEXT_params_shm_id_not_12);
+COMPILE_ASSERT(offsetof(GetQueryObjectuivEXT, params_shm_offset) == 16,
+               OffsetOf_GetQueryObjectuivEXT_params_shm_offset_not_16);
+
 struct SwapBuffers {
   typedef SwapBuffers ValueType;
   static const CommandId kCmdId = kSwapBuffers;

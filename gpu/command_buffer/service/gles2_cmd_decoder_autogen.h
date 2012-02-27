@@ -2607,6 +2607,55 @@ error::Error GLES2DecoderImpl::HandleTexStorage2DEXT(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleGenQueriesEXT(
+    uint32 immediate_data_size, const gles2::GenQueriesEXT& c) {
+  // TODO: for now this is a no-op
+  SetGLError(GL_INVALID_OPERATION, "glGenQueriesEXT not implemented");
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleDeleteQueriesEXT(
+    uint32 immediate_data_size, const gles2::DeleteQueriesEXT& c) {
+  // TODO: for now this is a no-op
+  SetGLError(GL_INVALID_OPERATION, "glDeleteQueriesEXT not implemented");
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleIsQueryEXT(
+    uint32 immediate_data_size, const gles2::IsQueryEXT& c) {
+  // TODO: for now this is a no-op
+  SetGLError(GL_INVALID_OPERATION, "glIsQueryEXT not implemented");
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleBeginQueryEXT(
+    uint32 immediate_data_size, const gles2::BeginQueryEXT& c) {
+  // TODO: for now this is a no-op
+  SetGLError(GL_INVALID_OPERATION, "glBeginQueryEXT not implemented");
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleEndQueryEXT(
+    uint32 immediate_data_size, const gles2::EndQueryEXT& c) {
+  // TODO: for now this is a no-op
+  SetGLError(GL_INVALID_OPERATION, "glEndQueryEXT not implemented");
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleGetQueryivEXT(
+    uint32 immediate_data_size, const gles2::GetQueryivEXT& c) {
+  // TODO: for now this is a no-op
+  SetGLError(GL_INVALID_OPERATION, "glGetQueryivEXT not implemented");
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleGetQueryObjectuivEXT(
+    uint32 immediate_data_size, const gles2::GetQueryObjectuivEXT& c) {
+  // TODO: for now this is a no-op
+  SetGLError(GL_INVALID_OPERATION, "glGetQueryObjectuivEXT not implemented");
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleGetMaxValueInBufferCHROMIUM(
     uint32 immediate_data_size, const gles2::GetMaxValueInBufferCHROMIUM& c) {
   GLuint buffer_id = c.buffer_id;
