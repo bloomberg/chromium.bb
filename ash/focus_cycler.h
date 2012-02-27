@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "ash/ash_export.h"
 #include "base/compiler_specific.h"
 #include "ui/base/accelerators/accelerator.h"
 
@@ -21,7 +22,7 @@ namespace internal {
 
 // This class handles moving focus between a set of widgets and the main browser
 // window.
-class FocusCycler : public ui::AcceleratorTarget {
+class ASH_EXPORT FocusCycler : public ui::AcceleratorTarget {
  public:
   enum Direction {
     FORWARD,
