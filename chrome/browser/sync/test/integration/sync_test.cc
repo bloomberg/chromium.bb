@@ -327,7 +327,7 @@ void SyncTest::RestartSyncService(int index) {
   Profile* profile = GetProfile(index);
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile);
-  service->ResetForTest();
+  ProfileSyncService::ResetForTest(service);
   clients_[index] = new ProfileSyncServiceHarness(profile,
                                                   username_,
                                                   password_);
