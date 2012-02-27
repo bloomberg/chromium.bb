@@ -14,6 +14,7 @@
 
 namespace aura {
 class GestureEvent;
+class RootWindow;
 class TouchEvent;
 class Window;
 
@@ -21,7 +22,7 @@ class Window;
 // into gestures.
 class AURA_EXPORT GestureRecognizer {
  public:
-  static GestureRecognizer* Create();
+  static GestureRecognizer* Create(RootWindow* root_window);
 
   // List of GestureEvent*.
   typedef std::vector<linked_ptr<GestureEvent> > Gestures;

@@ -35,8 +35,9 @@ namespace aura {
 ////////////////////////////////////////////////////////////////////////////////
 // GestureRecognizerAura, public:
 
-GestureRecognizerAura::GestureRecognizerAura()
-    : default_sequence_(CreateSequence()) {
+GestureRecognizerAura::GestureRecognizerAura(RootWindow* root_window)
+    : default_sequence_(CreateSequence(root_window)),
+      root_window_(root_window) {
 }
 
 GestureRecognizerAura::~GestureRecognizerAura() {
@@ -45,8 +46,9 @@ GestureRecognizerAura::~GestureRecognizerAura() {
 ////////////////////////////////////////////////////////////////////////////////
 // GestureRecognizerAura, protected:
 
-GestureSequence* GestureRecognizerAura::CreateSequence() {
-  return new GestureSequence();
+GestureSequence* GestureRecognizerAura::CreateSequence(
+    RootWindow* root_window) {
+  return new GestureSequence(root_window);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -78,7 +80,7 @@ GestureSequence::Gestures* GestureRecognizerAura::AdvanceTouchQueue(
 
   GestureSequence* sequence = window_sequence_[window];
   if (!sequence) {
-    sequence = new GestureSequence();
+    sequence = new GestureSequence(root_window_);
     window_sequence_[window] = sequence;
   }
 
@@ -99,8 +101,8 @@ void GestureRecognizerAura::FlushTouchQueue(Window* window) {
 }
 
 // GestureRecognizer, static
-GestureRecognizer* GestureRecognizer::Create() {
-  return new GestureRecognizerAura();
+GestureRecognizer* GestureRecognizer::Create(RootWindow* root_window) {
+  return new GestureRecognizerAura(root_window);
 }
 
 }  // namespace aura

@@ -156,13 +156,14 @@ EdgeStateSignatureType Signature(GestureState gesture_state,
 ////////////////////////////////////////////////////////////////////////////////
 // GestureSequence Public:
 
-GestureSequence::GestureSequence()
+GestureSequence::GestureSequence(RootWindow* root_window)
     : state_(GS_NO_GESTURE),
       flags_(0),
       pinch_distance_start_(0.f),
       pinch_distance_current_(0.f),
       long_press_timer_(CreateTimer()),
-      point_count_(0) {
+      point_count_(0),
+      root_window_(root_window) {
   for (int i = 0; i < kMaxGesturePoints; ++i) {
     points_[i].set_touch_id(i);
   }
@@ -491,7 +492,7 @@ void GestureSequence::AppendLongPressGestureEvent() {
       base::Time::FromDoubleT(point.last_touch_time()),
       point.touch_id(), 0.f);
 
-  RootWindow::GetInstance()->DispatchGestureEvent(gesture);
+  root_window_->DispatchGestureEvent(gesture);
 }
 
 bool GestureSequence::ScrollEnd(const TouchEvent& event,

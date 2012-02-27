@@ -32,7 +32,7 @@ enum ScrollType {
 // A GestureSequence recognizes gestures from touch sequences.
 class AURA_EXPORT GestureSequence {
  public:
-  GestureSequence();
+  explicit GestureSequence(RootWindow* root_window);
   virtual ~GestureSequence();
 
   typedef GestureRecognizer::Gestures Gestures;
@@ -146,6 +146,8 @@ class AURA_EXPORT GestureSequence {
 
   GesturePoint points_[kMaxGesturePoints];
   int point_count_;
+
+  RootWindow* root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureSequence);
 };

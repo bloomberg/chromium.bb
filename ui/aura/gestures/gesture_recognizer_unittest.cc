@@ -241,8 +241,8 @@ class TestOneShotGestureSequenceTimer
 
 class TimerTestGestureSequence : public GestureSequence {
  public:
-  TimerTestGestureSequence()
-      : GestureSequence() {
+  TimerTestGestureSequence(RootWindow* root_window)
+      : GestureSequence(root_window) {
   }
 
   void ForceTimeout() {
@@ -257,16 +257,16 @@ class TimerTestGestureSequence : public GestureSequence {
 
 class TestGestureRecognizer : public GestureRecognizerAura {
   public:
-  TestGestureRecognizer()
-      : GestureRecognizerAura() {
+  TestGestureRecognizer(RootWindow* root_window)
+      : GestureRecognizerAura(root_window) {
   }
 
   GestureSequence* GetGestureSequenceForTesting() {
     return gesture_sequence();
   }
 
-  virtual GestureSequence* CreateSequence() {
-    return new TimerTestGestureSequence();
+  virtual GestureSequence* CreateSequence(RootWindow* root_window) OVERRIDE {
+    return new TimerTestGestureSequence(root_window);
   }
 };
 
@@ -432,7 +432,7 @@ TEST_F(GestureRecognizerTest, GestureEventLongPress) {
   delegate->Reset();
 
   TestGestureRecognizer* gesture_recognizer =
-      new TestGestureRecognizer();
+      new TestGestureRecognizer(root_window());
   TimerTestGestureSequence* gesture_sequence =
       static_cast<TimerTestGestureSequence*>(
           gesture_recognizer->GetGestureSequenceForTesting());
@@ -470,7 +470,7 @@ TEST_F(GestureRecognizerTest, GestureEventLongPressCancelledByScroll) {
   delegate->Reset();
 
   TestGestureRecognizer* gesture_recognizer =
-      new TestGestureRecognizer();
+      new TestGestureRecognizer(root_window());
   TimerTestGestureSequence* gesture_sequence =
       static_cast<TimerTestGestureSequence*>(
           gesture_recognizer->GetGestureSequenceForTesting());
@@ -507,7 +507,7 @@ TEST_F(GestureRecognizerTest, GestureEventLongPressCancelledByPinch) {
       delegate.get(), -1234, bounds, NULL));
 
   TestGestureRecognizer* gesture_recognizer =
-      new TestGestureRecognizer();
+      new TestGestureRecognizer(root_window());
   TimerTestGestureSequence* gesture_sequence =
       static_cast<TimerTestGestureSequence*>(
           gesture_recognizer->GetGestureSequenceForTesting());

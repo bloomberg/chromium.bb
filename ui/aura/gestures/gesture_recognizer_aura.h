@@ -24,11 +24,11 @@ class GestureSequence;
 
 class AURA_EXPORT GestureRecognizerAura : public GestureRecognizer {
  public:
-  GestureRecognizerAura();
+  explicit GestureRecognizerAura(RootWindow* root_window);
   virtual ~GestureRecognizerAura();
 
  protected:
-  virtual GestureSequence* CreateSequence();
+  virtual GestureSequence* CreateSequence(RootWindow* root_window);
   GestureSequence* gesture_sequence() { return default_sequence_.get(); }
 
  private:
@@ -46,6 +46,7 @@ class AURA_EXPORT GestureRecognizerAura : public GestureRecognizer {
   typedef std::queue<TouchEvent*> TouchEventQueue;
   std::map<Window*, TouchEventQueue*> event_queue_;
   std::map<Window*, GestureSequence*> window_sequence_;
+  RootWindow* root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureRecognizerAura);
 };

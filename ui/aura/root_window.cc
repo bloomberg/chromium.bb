@@ -461,7 +461,8 @@ RootWindow::RootWindow()
       focused_window_(NULL),
       touch_event_handler_(NULL),
       gesture_handler_(NULL),
-      gesture_recognizer_(GestureRecognizer::Create()),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          gesture_recognizer_(GestureRecognizer::Create(this))),
       synthesize_mouse_move_(false),
       waiting_on_compositing_end_(false),
       draw_on_compositing_end_(false) {
