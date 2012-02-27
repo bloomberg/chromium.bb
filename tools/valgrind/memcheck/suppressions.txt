@@ -5357,7 +5357,7 @@
    fun:_ZN8appcache17AppCacheDiskCache10ActiveCall17OnAsyncCompletionEi
 }
 {
-   bug_109491
+   bug_109491_a
    Memcheck:Uninitialized
    fun:_ZNK7WebCore15FontDescriptioneqERKS0_
    fun:_ZNK7WebCore4FonteqERKS0_
@@ -5372,6 +5372,23 @@
    fun:_ZN7WebCore14DocumentLoader15finishedLoadingEv
    fun:_ZN7WebCore11FrameLoader15finishedLoadingEv
    fun:_ZN7WebCore18MainResourceLoader16didFinishLoadingEd
+}
+{
+   bug_109491_b
+   Memcheck:Uninitialized
+   fun:_ZNK7WebCore15FontDescriptioneqERKS0_
+   fun:_ZNK7WebCore15FontDescriptionneERKS0_
+   fun:_ZN7WebCore11RenderStyle18setFontDescriptionERKNS_15FontDescriptionE
+   fun:_ZN7WebCore16CSSStyleSelector18setFontDescriptionENS_15FontDescriptionE
+   fun:_ZN7WebCore16CSSStyleSelector13applyPropertyEiPNS_8CSSValueE
+   fun:_ZN7WebCore16CSSStyleSelector15applyPropertiesILb1EEEvPKNS_16StylePropertySetEPNS_12CSSStyleRuleEbb
+   fun:_ZN7WebCore16CSSStyleSelector22applyMatchedPropertiesILb1EEEvRKNS0_11MatchResultEbiib
+   fun:_ZN7WebCore16CSSStyleSelector22applyMatchedPropertiesERKNS0_11MatchResultE
+   fun:_ZN7WebCore16CSSStyleSelector15styleForElementEPNS_7ElementEPNS_11RenderStyleEbbPNS_12RenderRegionE
+   fun:_ZN7WebCore7Element16styleForRendererEv
+   fun:_ZN7WebCore19NodeRendererFactory22createRendererIfNeededEv
+   fun:_ZN7WebCore4Node22createRendererIfNeededEv
+   fun:_ZN7WebCore7Element6attachEv
 }
 {
    bug_109495a
