@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@
 
 class AutocompleteEditModel;
 class AutocompletePopupModel;
-class GtkThemeService;
+class ThemeServiceGtk;
 class OmniboxView;
 class SkBitmap;
 
@@ -103,7 +103,7 @@ class OmniboxPopupViewGtk : public AutocompletePopupView,
   // The pango layout object created from the window, cached across exposes.
   PangoLayout* layout_;
 
-  GtkThemeService* theme_service_;
+  ThemeServiceGtk* theme_service_;
   content::NotificationRegistrar registrar_;
 
   // Font used for suggestions after being derived from the constructor's

@@ -50,7 +50,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #endif  // defined(OS_CHROMEOS)
 #if defined(TOOLKIT_GTK)
-#include "chrome/browser/ui/gtk/gtk_theme_service.h"
+#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #endif  // defined(TOOLKIT_GTK)
 
 using content::UserMetricsAction;
@@ -341,7 +341,7 @@ void PersonalOptionsHandler::OnStateChanged() {
 void PersonalOptionsHandler::ObserveThemeChanged() {
   Profile* profile = Profile::FromWebUI(web_ui());
 #if defined(TOOLKIT_GTK)
-  GtkThemeService* theme_service = GtkThemeService::GetFrom(profile);
+  ThemeServiceGtk* theme_service = ThemeServiceGtk::GetFrom(profile);
   bool is_gtk_theme = theme_service->UsingNativeTheme();
   base::FundamentalValue gtk_enabled(!is_gtk_theme);
   web_ui()->CallJavascriptFunction(

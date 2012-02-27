@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@
 #include "ui/base/gtk/gtk_signal.h"
 
 typedef struct _GtkWidget GtkWidget;
-class GtkThemeService;
+class ThemeServiceGtk;
 class Profile;
 
 class BookmarkBarInstructionsGtk : public content::NotificationObserver {
@@ -48,7 +48,7 @@ class BookmarkBarInstructionsGtk : public content::NotificationObserver {
 
   Profile* profile_;
 
-  GtkThemeService* theme_service_;
+  ThemeServiceGtk* theme_service_;
 
   // HBox that holds the the label and link of bookmark bar import promotion.
   GtkWidget* instructions_hbox_;

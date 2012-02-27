@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -88,7 +88,7 @@ class BookmarkBubbleGtk : public BubbleDelegateGtk,
   BookmarkModel* model_;
 
   // Provides colors and stuff.
-  GtkThemeService* theme_service_;
+  ThemeServiceGtk* theme_service_;
 
   // The widget relative to which we are positioned.
   GtkWidget* anchor_;

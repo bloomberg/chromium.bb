@@ -8,8 +8,8 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
-#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/ui_resources_standard.h"
@@ -19,7 +19,7 @@
 #include "ui/gfx/image/cairo_cached_surface.h"
 #include "ui/gfx/skbitmap_operations.h"
 
-CustomDrawButtonBase::CustomDrawButtonBase(GtkThemeService* theme_provider,
+CustomDrawButtonBase::CustomDrawButtonBase(ThemeServiceGtk* theme_provider,
                                            int normal_id,
                                            int pressed_id,
                                            int hover_id,
@@ -237,7 +237,7 @@ CustomDrawButton::CustomDrawButton(int normal_id,
   SetBrowserTheme();
 }
 
-CustomDrawButton::CustomDrawButton(GtkThemeService* theme_provider,
+CustomDrawButton::CustomDrawButton(ThemeServiceGtk* theme_provider,
                                    int normal_id,
                                    int pressed_id,
                                    int hover_id,
@@ -258,7 +258,7 @@ CustomDrawButton::CustomDrawButton(GtkThemeService* theme_provider,
                  content::Source<ThemeService>(theme_provider));
 }
 
-CustomDrawButton::CustomDrawButton(GtkThemeService* theme_provider,
+CustomDrawButton::CustomDrawButton(ThemeServiceGtk* theme_provider,
                                    int normal_id,
                                    int pressed_id,
                                    int hover_id,
@@ -347,7 +347,7 @@ gboolean CustomDrawButton::OnCustomExpose(GtkWidget* sender,
 
 // static
 CustomDrawButton* CustomDrawButton::CloseButton(
-    GtkThemeService* theme_provider) {
+    ThemeServiceGtk* theme_provider) {
   CustomDrawButton* button = new CustomDrawButton(theme_provider, IDR_CLOSE_BAR,
       IDR_CLOSE_BAR_P, IDR_CLOSE_BAR_H, 0, GTK_STOCK_CLOSE, GTK_ICON_SIZE_MENU);
   return button;

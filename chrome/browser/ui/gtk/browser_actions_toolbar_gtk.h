@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,7 +28,7 @@
 class Browser;
 class BrowserActionButton;
 class Extension;
-class GtkThemeService;
+class ThemeServiceGtk;
 class Profile;
 
 typedef struct _GdkDragContext GdkDragContext;
@@ -173,7 +173,7 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   Browser* browser_;
 
   Profile* profile_;
-  GtkThemeService* theme_service_;
+  ThemeServiceGtk* theme_service_;
 
   ExtensionToolbarModel* model_;
 

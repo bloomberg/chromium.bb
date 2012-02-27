@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,7 +22,7 @@
 #include "ui/base/gtk/owned_widget_gtk.h"
 #include "ui/gfx/point.h"
 
-class GtkThemeService;
+class ThemeServiceGtk;
 class Profile;
 
 namespace ui {
@@ -116,7 +116,7 @@ class StatusBubbleGtk : public StatusBubble,
   content::NotificationRegistrar registrar_;
 
   // Provides colors.
-  GtkThemeService* theme_service_;
+  ThemeServiceGtk* theme_service_;
 
   // The toplevel event box.
   ui::OwnedWidgetGtk container_;

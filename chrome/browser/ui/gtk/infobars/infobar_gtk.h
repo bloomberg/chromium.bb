@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@
 #include "ui/base/gtk/owned_widget_gtk.h"
 
 class CustomDrawButton;
-class GtkThemeService;
+class ThemeServiceGtk;
 
 namespace ui {
 class GtkSignalRegistrar;
@@ -106,7 +106,7 @@ class InfoBarGtk : public InfoBar,
   scoped_ptr<CustomDrawButton> close_button_;
 
   // The theme provider, used for getting border colors.
-  GtkThemeService* theme_service_;
+  ThemeServiceGtk* theme_service_;
 
   content::NotificationRegistrar registrar_;
 

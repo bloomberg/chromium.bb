@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@
 
 class BookmarkModel;
 class BookmarkNode;
-class GtkThemeService;
+class ThemeServiceGtk;
 class Profile;
 
 typedef struct _GdkDragContext GdkDragContext;
@@ -35,15 +35,15 @@ GdkPixbuf* GetPixbufForNode(const BookmarkNode* node, BookmarkModel* model,
 // gtk_drag_set_icon_widget().
 GtkWidget* GetDragRepresentation(GdkPixbuf* pixbuf,
                                  const string16& title,
-                                 GtkThemeService* provider);
+                                 ThemeServiceGtk* provider);
 GtkWidget* GetDragRepresentationForNode(const BookmarkNode* node,
                                         BookmarkModel* model,
-                                        GtkThemeService* provider);
+                                        ThemeServiceGtk* provider);
 
 // Helper function that sets visual properties of GtkButton |button| to the
 // contents of |node|.
 void ConfigureButtonForNode(const BookmarkNode* node, BookmarkModel* model,
-                            GtkWidget* button, GtkThemeService* provider);
+                            GtkWidget* button, ThemeServiceGtk* provider);
 
 // Returns the tooltip.
 std::string BuildTooltipFor(const BookmarkNode* node);
@@ -55,7 +55,7 @@ std::string BuildMenuLabelFor(const BookmarkNode* node);
 const BookmarkNode* BookmarkNodeForWidget(GtkWidget* widget);
 
 // Set the colors on |label| as per the theme.
-void SetButtonTextColors(GtkWidget* label, GtkThemeService* provider);
+void SetButtonTextColors(GtkWidget* label, ThemeServiceGtk* provider);
 
 // Drag and drop. --------------------------------------------------------------
 

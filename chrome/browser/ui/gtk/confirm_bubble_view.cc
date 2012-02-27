@@ -13,8 +13,8 @@
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
-#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "grit/theme_resources.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -68,7 +68,7 @@ void ConfirmBubbleView::Show() {
   GtkWidget* toplevel = gtk_widget_get_toplevel(anchor_);
   BrowserWindowGtk* browser_window =
       BrowserWindowGtk::GetBrowserWindowForNativeWindow(GTK_WINDOW(toplevel));
-  GtkThemeService* theme_service = GtkThemeService::GetFrom(
+  ThemeServiceGtk* theme_service = ThemeServiceGtk::GetFrom(
       browser_window->browser()->profile());
 
   GtkWidget* content = gtk_vbox_new(FALSE, kInterLineSpacing);

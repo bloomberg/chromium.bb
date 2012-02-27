@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
-#include "chrome/browser/ui/gtk/gtk_theme_service.h"
+#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "ui/gfx/image/image.h"
 
 namespace {
@@ -27,7 +27,7 @@ void AddSingleNodeToTreeStore(GtkTreeStore* store, const BookmarkNode* node,
   // differently).
   gtk_tree_store_set(store, iter,
       bookmark_utils::FOLDER_ICON,
-      GtkThemeService::GetFolderIcon(true)->ToGdkPixbuf(),
+      ThemeServiceGtk::GetFolderIcon(true)->ToGdkPixbuf(),
       bookmark_utils::FOLDER_NAME,
       UTF16ToUTF8(node->GetTitle()).c_str(),
       bookmark_utils::ITEM_ID, node->id(),

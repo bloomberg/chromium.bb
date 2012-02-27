@@ -27,7 +27,7 @@
 class BrowserWindowGtk;
 class CustomDrawButton;
 class DraggedTabControllerGtk;
-class GtkThemeService;
+class ThemeServiceGtk;
 
 namespace gfx {
 class Image;
@@ -157,7 +157,7 @@ class TabStripGtk : public TabStripModelObserver,
   virtual void ContinueDrag(GdkDragContext* context) OVERRIDE;
   virtual bool EndDrag(bool canceled) OVERRIDE;
   virtual bool HasAvailableDragActions() const OVERRIDE;
-  virtual GtkThemeService* GetThemeProvider() OVERRIDE;
+  virtual ThemeServiceGtk* GetThemeProvider() OVERRIDE;
   virtual TabStripMenuController* GetTabStripMenuControllerForTab(
       TabGtk* tab) OVERRIDE;
 
@@ -463,7 +463,7 @@ class TabStripGtk : public TabStripModelObserver,
   BrowserWindowGtk* window_;
 
   // Theme resources.
-  GtkThemeService* theme_service_;
+  ThemeServiceGtk* theme_service_;
 
   // The currently running animation.
   scoped_ptr<TabAnimation> active_animation_;

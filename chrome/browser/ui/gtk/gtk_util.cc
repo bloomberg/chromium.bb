@@ -26,7 +26,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/gtk/gtk_theme_service.h"
+#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "content/browser/disposition_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -915,7 +915,7 @@ void DrawThemedToolbarBackground(GtkWidget* widget,
                                  cairo_t* cr,
                                  GdkEventExpose* event,
                                  const gfx::Point& tabstrip_origin,
-                                 GtkThemeService* theme_service) {
+                                 ThemeServiceGtk* theme_service) {
   // Fill the entire region with the toolbar color.
   GdkColor color = theme_service->GetGdkColor(
       ThemeService::COLOR_TOOLBAR);

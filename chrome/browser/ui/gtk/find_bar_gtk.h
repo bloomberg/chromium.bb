@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@ class Browser;
 class BrowserWindowGtk;
 class CustomDrawButton;
 class FindBarController;
-class GtkThemeService;
+class ThemeServiceGtk;
 class NineBox;
 class SlideAnimatorGtk;
 
@@ -172,7 +172,7 @@ class FindBarGtk : public FindBar,
   BrowserWindowGtk* window_;
 
   // Provides colors and information about GTK.
-  GtkThemeService* theme_service_;
+  ThemeServiceGtk* theme_service_;
 
   // The widget that animates the slide-in and -out of the findbar.
   scoped_ptr<SlideAnimatorGtk> slide_widget_;

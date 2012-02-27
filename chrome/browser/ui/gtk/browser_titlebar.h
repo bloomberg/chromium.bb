@@ -25,7 +25,7 @@
 class AvatarMenuButtonGtk;
 class BrowserWindowGtk;
 class CustomDrawButton;
-class GtkThemeService;
+class ThemeServiceGtk;
 class MenuGtk;
 class PopupPageMenuModel;
 class TabContents;
@@ -291,7 +291,7 @@ class BrowserTitlebar : public content::NotificationObserver,
   scoped_ptr<AvatarMenuButtonGtk> avatar_button_;
 
   // Theme provider for building buttons.
-  GtkThemeService* theme_service_;
+  ThemeServiceGtk* theme_service_;
 
   content::NotificationRegistrar registrar_;
 };

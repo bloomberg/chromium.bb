@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@
 #include "ui/base/gtk/owned_widget_gtk.h"
 
 class Browser;
-class GtkThemeService;
+class ThemeServiceGtk;
 class LocationBarViewGtk;
 
 class ReloadButtonGtk : public content::NotificationObserver {
@@ -77,7 +77,7 @@ class ReloadButtonGtk : public content::NotificationObserver {
   // Used to listen for theme change notifications.
   content::NotificationRegistrar registrar_;
 
-  GtkThemeService* theme_service_;
+  ThemeServiceGtk* theme_service_;
 
   CustomDrawButtonBase reload_;
   CustomDrawButtonBase stop_;

@@ -51,7 +51,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/ui/gtk/gtk_theme_service.h"
+#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #endif
 
 using base::Time;
@@ -121,7 +121,7 @@ void Profile::RegisterUserPrefs(PrefService* prefs) {
                              PrefService::UNSYNCABLE_PREF);
 #if defined(TOOLKIT_USES_GTK)
   prefs->RegisterBooleanPref(prefs::kUsesSystemTheme,
-                             GtkThemeService::DefaultUsesSystemTheme(),
+                             ThemeServiceGtk::DefaultUsesSystemTheme(),
                              PrefService::UNSYNCABLE_PREF);
 #endif
   prefs->RegisterFilePathPref(prefs::kCurrentThemePackFilename,

@@ -19,7 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/gtk/gtk_theme_service.h"
+#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/notification_details.h"
@@ -184,7 +184,7 @@ void ExtensionPopupGtk::ShowPopup() {
                             arrow_location,
                             false,  // match_system_theme
                             !being_inspected_,  // grab_input
-                            GtkThemeService::GetFrom(browser_->profile()),
+                            ThemeServiceGtk::GetFrom(browser_->profile()),
                             this);
 }
 

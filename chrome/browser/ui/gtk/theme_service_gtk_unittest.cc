@@ -6,32 +6,32 @@
 
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/gtk/gtk_theme_service.h"
+#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/skia_utils_gtk.h"
 
-class GtkThemeServiceTest : public testing::Test {
+class ThemeServiceGtkTest : public testing::Test {
  public:
-  GtkThemeServiceTest() : provider_(NULL) {}
+  ThemeServiceGtkTest() : provider_(NULL) {}
 
   void SetUseGtkTheme(bool use_gtk_theme) {
     profile_.GetPrefs()->SetBoolean(prefs::kUsesSystemTheme, use_gtk_theme);
   }
 
   void BuildProvider() {
-    provider_ = GtkThemeService::GetFrom(&profile_);
+    provider_ = ThemeServiceGtk::GetFrom(&profile_);
   }
 
  protected:
   TestingProfile profile_;
 
-  GtkThemeService* provider_;
+  ThemeServiceGtk* provider_;
 };
 
-TEST_F(GtkThemeServiceTest, DefaultValues) {
+TEST_F(ThemeServiceGtkTest, DefaultValues) {
   SetUseGtkTheme(false);
   BuildProvider();
 
@@ -43,7 +43,7 @@ TEST_F(GtkThemeServiceTest, DefaultValues) {
   }
 }
 
-TEST_F(GtkThemeServiceTest, UsingGtkValues) {
+TEST_F(ThemeServiceGtkTest, UsingGtkValues) {
   SetUseGtkTheme(true);
   BuildProvider();
 

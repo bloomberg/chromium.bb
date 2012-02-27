@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,7 @@ class Browser;
 class BrowserActionsToolbarGtk;
 class BrowserWindowGtk;
 class CustomDrawButton;
-class GtkThemeService;
+class ThemeServiceGtk;
 class LocationBar;
 class LocationBarViewGtk;
 class ReloadButtonGtk;
@@ -191,7 +191,7 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // The model that contains the security level, text, icon to display...
   ToolbarModel* model_;
 
-  GtkThemeService* theme_service_;
+  ThemeServiceGtk* theme_service_;
 
   scoped_ptr<MenuGtk> wrench_menu_;
 

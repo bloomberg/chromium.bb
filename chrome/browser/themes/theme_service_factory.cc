@@ -11,7 +11,7 @@
 #include "chrome/browser/themes/theme_service.h"
 
 #if defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/ui/gtk/gtk_theme_service.h"
+#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #endif
 
 // static
@@ -45,7 +45,7 @@ ProfileKeyedService* ThemeServiceFactory::BuildServiceInstanceFor(
     Profile* profile) const {
   ThemeService* provider = NULL;
 #if defined(TOOLKIT_USES_GTK)
-  provider = new GtkThemeService;
+  provider = new ThemeServiceGtk;
 #else
   provider = new ThemeService;
 #endif

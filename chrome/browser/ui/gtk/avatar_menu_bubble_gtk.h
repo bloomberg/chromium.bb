@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,7 +22,7 @@
 
 class AvatarMenuModel;
 class Browser;
-class GtkThemeService;
+class ThemeServiceGtk;
 
 // This bubble is displayed when the user clicks on the avatar button.
 // It displays a list of profiles and allows users to switch between profiles.
@@ -74,7 +74,7 @@ class AvatarMenuBubbleGtk : public BubbleDelegateGtk,
   BubbleGtk* bubble_;
 
   // A weak pointer to the theme service.
-  GtkThemeService* theme_service_;
+  ThemeServiceGtk* theme_service_;
 
   // A weak pointer to the new proifle link to keep its theme information
   // updated.

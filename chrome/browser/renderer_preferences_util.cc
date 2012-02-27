@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,8 @@
 #include "content/public/common/renderer_preferences.h"
 
 #if defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #endif
 
 namespace renderer_preferences_util {
@@ -22,7 +22,7 @@ void UpdateFromSystemSettings(
   gtk_util::UpdateGtkFontSettings(prefs);
 
 #if !defined(OS_CHROMEOS)
-  GtkThemeService* theme_service = GtkThemeService::GetFrom(profile);
+  ThemeServiceGtk* theme_service = ThemeServiceGtk::GetFrom(profile);
 
   prefs->focus_ring_color = theme_service->get_focus_ring_color();
   prefs->thumb_active_color = theme_service->get_thumb_active_color();

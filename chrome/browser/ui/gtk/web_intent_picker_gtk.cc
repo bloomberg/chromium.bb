@@ -17,10 +17,10 @@
 #include "chrome/browser/ui/gtk/browser_toolbar_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
-#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/ui/gtk/tab_contents_container_gtk.h"
+#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
@@ -54,8 +54,8 @@ const int kWebStoreLabelLength = 300;
 // The pixel size of the label at the bottom of the picker.
 const int kWebStoreLabelPixelSize = 11;
 
-GtkThemeService *GetThemeService(TabContentsWrapper* wrapper) {
-  return GtkThemeService::GetFrom(wrapper->profile());
+ThemeServiceGtk *GetThemeService(TabContentsWrapper* wrapper) {
+  return ThemeServiceGtk::GetFrom(wrapper->profile());
 }
 
 // Set the image of |button| to |pixbuf|.
@@ -232,7 +232,7 @@ void WebIntentPickerGtk::OnServiceButtonClick(GtkWidget* button) {
 }
 
 void WebIntentPickerGtk::InitContents() {
-  GtkThemeService* theme_service = GetThemeService(wrapper_);
+  ThemeServiceGtk* theme_service = GetThemeService(wrapper_);
 
   // Main contents vbox.
   contents_ = gtk_vbox_new(FALSE, ui::kContentAreaSpacing);

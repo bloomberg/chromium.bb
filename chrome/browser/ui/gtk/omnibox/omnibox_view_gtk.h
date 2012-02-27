@@ -44,7 +44,7 @@ class View;
 }
 
 #if !defined(TOOLKIT_VIEWS)
-class GtkThemeService;
+class ThemeServiceGtk;
 #endif
 
 class OmniboxViewGtk : public OmniboxView,
@@ -443,7 +443,7 @@ class OmniboxViewGtk : public OmniboxView,
   views::View* location_bar_view_;
 #else
   // Supplies colors, et cetera.
-  GtkThemeService* theme_service_;
+  ThemeServiceGtk* theme_service_;
 
   content::NotificationRegistrar registrar_;
 #endif

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,7 @@
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 
-class GtkThemeService;
+class ThemeServiceGtk;
 
 // This widget contains the profile icon, user name, and synchronization status
 // to be displayed in the AvatarMenuBubble. Clicking the profile will open a new
@@ -36,7 +36,7 @@ class AvatarMenuItemGtk : public content::NotificationObserver {
   AvatarMenuItemGtk(Delegate* delegate,
                     const AvatarMenuModel::Item& item,
                     size_t item_index,
-                    GtkThemeService* theme_service);
+                    ThemeServiceGtk* theme_service);
   virtual ~AvatarMenuItemGtk();
 
   void OpenProfile();
@@ -72,7 +72,7 @@ class AvatarMenuItemGtk : public content::NotificationObserver {
   CHROMEGTK_CALLBACK_0(AvatarMenuItemGtk, void, OnEditProfileLinkClicked);
 
   // Create all widgets in this menu item, using |theme_service|.
-  void Init(GtkThemeService* theme_service);
+  void Init(ThemeServiceGtk* theme_service);
 
   // A weak pointer to the item's delegate.
   Delegate* delegate_;
@@ -88,7 +88,7 @@ class AvatarMenuItemGtk : public content::NotificationObserver {
   ui::OwnedWidgetGtk widget_;
 
   // Provides colors.
-  GtkThemeService* theme_service_;
+  ThemeServiceGtk* theme_service_;
 
   // A weak pointer to a label that displays the sync status. It is not shown
   // when the user is hovering over the item if the profile is the active

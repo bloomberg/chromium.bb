@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,7 @@
 class BookmarkMenuController;
 class Browser;
 class BrowserWindowGtk;
-class GtkThemeService;
+class ThemeServiceGtk;
 class MenuGtk;
 class TabstripOriginProvider;
 
@@ -361,7 +361,7 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   GtkToolItem* toolbar_drop_item_;
 
   // Theme provider for building buttons.
-  GtkThemeService* theme_service_;
+  ThemeServiceGtk* theme_service_;
 
   // Whether we should show the instructional text in the bookmark bar.
   bool show_instructions_;

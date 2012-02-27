@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,9 +11,9 @@
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
-#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
+#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/speech_input_manager.h"
 #include "content/public/browser/web_contents.h"
@@ -174,7 +174,7 @@ void SpeechInputBubbleGtk::Show() {
       kBubbleControlHorizontalSpacing, kBubbleControlHorizontalSpacing);
   gtk_container_add(GTK_CONTAINER(content), vbox);
 
-  GtkThemeService* theme_provider = GtkThemeService::GetFrom(profile);
+  ThemeServiceGtk* theme_provider = ThemeServiceGtk::GetFrom(profile);
   GtkWidget* reference_widget = web_contents()->GetNativeView();
   gfx::Rect container_rect;
   web_contents()->GetContainerBounds(&container_rect);

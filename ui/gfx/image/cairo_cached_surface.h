@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,10 +24,10 @@ namespace gfx {
 // once. From then on, that cached version is used so we don't upload the same
 // image each and every time we expose.
 //
-// Most cached surfaces are owned by the GtkThemeService, which associates
+// Most cached surfaces are owned by the ThemeServiceGtk, which associates
 // them with a certain XDisplay. Some users of surfaces (CustomDrawButtonBase,
 // for example) own their surfaces instead since they interact with the
-// ResourceBundle instead of the GtkThemeService.
+// ResourceBundle instead of the ThemeServiceGtk.
 class UI_EXPORT CairoCachedSurface {
  public:
   CairoCachedSurface();
