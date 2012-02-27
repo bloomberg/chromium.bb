@@ -92,7 +92,7 @@ void CreateQuotaManagerAndClients(BrowserContext* context) {
       kAppCacheServicKeyName,
       new UserDataAdapter<ChromeAppCacheService>(appcache_service));
 
-  EnsureResourceContextInitialized(context);
+  InitializeResourceContext(context);
 
   // Check first to avoid memory leak in unittests.
   if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
@@ -169,7 +169,13 @@ FileSystemContext* BrowserContext::GetFileSystemContext(
 }
 
 void BrowserContext::EnsureResourceContextInitialized(BrowserContext* context) {
-  content::EnsureResourceContextInitialized(context);
+  // This will be enough to tickle initialization of BrowserContext if
+  // necessary, which initializes ResourceContext. The reason we don't call
+  // ResourceContext::InitializeResourceContext directly here is that if
+  // ResourceContext ends up initializing it will call back into BrowserContext
+  // and when that call return it'll end rewriting its UserData map (with the
+  // same value) but this causes a race condition. See http://crbug.com/115678.
+  CreateQuotaManagerAndClients(context);
 }
 
 void BrowserContext::SaveSessionState(BrowserContext* browser_context) {

@@ -79,16 +79,9 @@ HostZoomMap* GetHostZoomMapForResourceContext(ResourceContext* context) {
       context->GetUserData(kHostZoomMapKeyName))->host_zoom_map();
 }
 
-void EnsureResourceContextInitialized(BrowserContext* browser_context) {
+void InitializeResourceContext(BrowserContext* browser_context) {
   ResourceContext* resource_context = browser_context->GetResourceContext();
-  if (resource_context->GetUserData(kIndexedDBContextKeyName)) {
-    DCHECK(resource_context->GetUserData(kAppCacheServicKeyName));
-    DCHECK(resource_context->GetUserData(kBlobStorageContextKeyName));
-    DCHECK(resource_context->GetUserData(kDatabaseTrackerKeyName));
-    DCHECK(resource_context->GetUserData(kFileSystemContextKeyName));
-    DCHECK(resource_context->GetUserData(kHostZoomMapKeyName));
-    return;
-  }
+  DCHECK(!resource_context->GetUserData(kIndexedDBContextKeyName));
 
   resource_context->SetUserData(
       kIndexedDBContextKeyName,

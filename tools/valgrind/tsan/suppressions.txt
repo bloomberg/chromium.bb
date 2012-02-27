@@ -858,30 +858,3 @@
   fun:AudioRendererHost::OnCreated
   fun:media::AudioOutputController::DoCreate
 }
-{
-  bug_115678_a
-  ThreadSanitizer:Race
-  fun:*ptr::get
-  ...
-  fun:base::UserDataAdapter::Get
-  ...
-  fun:ProfileIOData::LazyInitialize
-  fun:ProfileIOData::ResourceContext::EnsureInitialized
-  fun:ProfileIOData::ResourceContext::GetRequestContext
-}
-{
-  bug_115678_b
-  ThreadSanitizer:Race
-  ...
-  fun:base::SupportsUserData::SetUserData
-  ...
-  fun:content::BrowserContext::EnsureResourceContextInitialized
-  fun:ProfileIOData::InitializeOnUIThread
-  fun:OffTheRecordProfileIOData::Handle::LazyInitialize
-  fun:OffTheRecordProfileIOData::Handle::GetChromeURLDataManagerBackendGetter
-  fun:OffTheRecordProfileImpl::GetChromeURLDataManager
-  fun:OffTheRecordProfileImpl::Init
-  fun:Profile::CreateOffTheRecordProfile
-  fun:ProfileImpl::GetOffTheRecordProfile
-  fun:Browser::NewIncognitoWindow
-}
