@@ -4,12 +4,6 @@
 
 #include "chrome/browser/sessions/session_restore.h"
 
-#if defined(OS_WIN)
-#include <malloc.h>
-#else
-#include <alloca.h>
-#endif
-
 #include <algorithm>
 #include <list>
 #include <set>
@@ -19,7 +13,6 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/debug/stack_trace.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/platform_file.h"
@@ -60,7 +53,7 @@ namespace {
 
 class SessionRestoreImpl;
 
-// Pointers to profiles for which the session restore is in progress.
+// Pointers to SessionRestoreImpls which are currently restoring the session.
 std::set<SessionRestoreImpl*>* active_session_restorers = NULL;
 
 // TabLoader ------------------------------------------------------------------
@@ -434,29 +427,18 @@ class SessionRestoreImpl : public content::NotificationObserver {
         restore_started_(base::TimeTicks::Now()),
         browser_shown_(false) {
 
-    // Iterate the active session restorers to find if there is a
-    // SessionRestoreImpl referring the same profile. This should not happen but
-    // for some reason it happens still. TODO(marja): figure out why.
     if (active_session_restorers == NULL)
       active_session_restorers = new std::set<SessionRestoreImpl*>();
 
+    // Only one SessionRestoreImpl should be operating on the profile at the
+    // same time.
     std::set<SessionRestoreImpl*>::const_iterator it;
     for (it = active_session_restorers->begin();
          it != active_session_restorers->end(); ++it) {
       if ((*it)->profile_ == profile)
         break;
     }
-    if (it != active_session_restorers->end()) {
-      // We'd like to know how the SessionRestoreImpl having the same profile
-      // than this was created. Copy the addresses of the stack trace to the
-      // stack so that it will be included in the dump.
-      size_t frames_found = 0;
-      const void* const* addresses =
-          (*it)->creation_stack_trace_.Addresses(&frames_found);
-      void* ptr = alloca(frames_found * sizeof(void*));
-      memcpy(ptr, addresses, frames_found * sizeof(void*));
-      CHECK(false);
-    }
+    DCHECK(it == active_session_restorers->end());
 
     active_session_restorers->insert(this);
 
@@ -911,9 +893,6 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
   // Set to true after the first browser is shown.
   bool browser_shown_;
-
-  // For debugging. TODO(marja): Remove asap.
-  base::debug::StackTrace creation_stack_trace_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionRestoreImpl);
 };
