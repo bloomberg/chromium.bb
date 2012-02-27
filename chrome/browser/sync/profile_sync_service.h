@@ -697,12 +697,12 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Keep track of where we are in a server clear operation
   ClearServerDataState clear_server_data_state_;
 
-  // Deletes / recreates an instance of ProfileSyncService using placement new.
-  // Used exclusively by the sync integration tests so they can restart sync
-  // from scratch without tearing down and recreating the browser process.
-  // Needed because simply calling Shutdown() and Initialize() will not recreate
-  // other internal objects like SyncBackendHost, SyncManager, etc.
-  static void ResetForTest(ProfileSyncService* service);
+  // Destroys / recreates an instance of ProfileSyncService. Used exclusively by
+  // the sync integration tests so they can restart sync from scratch without
+  // tearing down and recreating the browser process. Needed because simply
+  // calling Shutdown() and Initialize() will not recreate other internal
+  // objects like SyncBackendHost, SyncManager, etc.
+  void ResetForTest();
 
   // Timeout for the clear data command.  This timeout is a temporary hack
   // and is necessary because the nudge sync framework can drop nudges for
