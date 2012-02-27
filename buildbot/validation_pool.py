@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2011-2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -22,6 +22,7 @@ from chromite.lib import cros_build_lib
 
 _BUILD_DASHBOARD = 'http://build.chromium.org/p/chromiumos'
 _BUILD_INT_DASHBOARD = 'http://chromegw/i/chromeos'
+
 
 def _RunCommand(cmd, dryrun):
   """Runs the specified shell cmd if dryrun=False."""
