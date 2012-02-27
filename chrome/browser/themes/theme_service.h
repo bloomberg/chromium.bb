@@ -145,14 +145,15 @@ class ThemeService : public base::NonThreadSafe,
     REPEAT = 3
   };
 
+  virtual void Init(Profile* profile);
+
   // Returns a cross platform image for an id.
   //
   // TODO(erg): Make this part of the ui::ThemeProvider and the main way to get
   // theme properties out of the theme provider since it's cross platform.
   virtual const gfx::Image* GetImageNamed(int id) const;
 
-  // ui::ThemeProvider implementation.
-  virtual void Init(Profile* profile) OVERRIDE;
+  // Overridden from ui::ThemeProvider:
   virtual SkBitmap* GetBitmapNamed(int id) const OVERRIDE;
   virtual SkColor GetColor(int id) const OVERRIDE;
   virtual bool GetDisplayProperty(int id, int* result) const OVERRIDE;

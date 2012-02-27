@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,8 +13,6 @@
 #include "ui/base/theme_provider.h"
 #include "ui/views/views_export.h"
 
-class Profile;
-
 namespace ui {
 class ResourceBundle;
 }
@@ -27,8 +25,7 @@ class VIEWS_EXPORT DefaultThemeProvider : public ui::ThemeProvider {
   DefaultThemeProvider();
   virtual ~DefaultThemeProvider();
 
-  // Overridden from ui::ThemeProvider.
-  virtual void Init(Profile* profile) OVERRIDE;
+  // Overridden from ui::ThemeProvider:
   virtual SkBitmap* GetBitmapNamed(int id) const OVERRIDE;
   virtual SkColor GetColor(int id) const OVERRIDE;
   virtual bool GetDisplayProperty(int id, int* result) const OVERRIDE;

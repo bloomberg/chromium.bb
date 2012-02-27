@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,11 +12,11 @@
 #include "ui/base/theme_provider.h"
 
 class BackgroundTheme : public ui::ThemeProvider {
-public:
+ public:
   BackgroundTheme(ui::ThemeProvider* provider);
   virtual ~BackgroundTheme();
 
-  virtual void Init(Profile* profile) OVERRIDE {}
+  // Overridden from ui::ThemeProvider:
   virtual SkBitmap* GetBitmapNamed(int id) const OVERRIDE;
   virtual SkColor GetColor(int id) const OVERRIDE;
   virtual bool GetDisplayProperty(int id, int* result) const OVERRIDE;
@@ -30,7 +30,7 @@ public:
   virtual NSColor* GetNSColorTint(int id, bool allow_default) const OVERRIDE;
   virtual NSGradient* GetNSGradient(int id) const OVERRIDE;
 
-private:
+ private:
   ui::ThemeProvider* provider_;
   scoped_nsobject<NSGradient> buttonGradient_;
   scoped_nsobject<NSGradient> buttonPressedGradient_;

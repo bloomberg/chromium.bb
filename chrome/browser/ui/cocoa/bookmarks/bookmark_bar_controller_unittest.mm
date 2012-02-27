@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -185,10 +185,9 @@
 
 class FakeTheme : public ui::ThemeProvider {
  public:
-  FakeTheme(NSColor* color) : color_(color) { }
+  FakeTheme(NSColor* color) : color_(color) {}
   scoped_nsobject<NSColor> color_;
 
-  virtual void Init(Profile* profile) { }
   virtual SkBitmap* GetBitmapNamed(int id) const { return nil; }
   virtual SkColor GetColor(int id) const { return SkColor(); }
   virtual bool GetDisplayProperty(int id, int* result) const { return false; }
