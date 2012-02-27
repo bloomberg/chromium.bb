@@ -895,8 +895,10 @@ void VirtualNetwork::SetOpenVPNCredentials(
   SetStringProperty(flimflam::kOpenVPNClientCertIdProperty,
                     client_cert_id, &client_cert_id_);
   SetStringProperty(flimflam::kOpenVPNUserProperty, username, &username_);
-  SetStringProperty(flimflam::kOpenVPNPasswordProperty,
-                    user_passphrase, &user_passphrase_);
+  if (!user_passphrase.empty()) {
+    SetStringProperty(flimflam::kOpenVPNPasswordProperty,
+                      user_passphrase, &user_passphrase_);
+  }
   SetStringProperty(flimflam::kOpenVPNOTPProperty, otp, NULL);
 }
 
