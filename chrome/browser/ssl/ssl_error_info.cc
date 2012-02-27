@@ -1,9 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ssl/ssl_error_info.h"
 
+#include "base/i18n/time_formatting.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/time_format.h"
 #include "content/browser/cert_store.h"
@@ -72,9 +73,11 @@ SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
           l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXTRA_INFO_1));
       if (cert->HasExpired()) {
         title = l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXPIRED_TITLE);
-        details = l10n_util::GetStringFUTF16(IDS_CERT_ERROR_EXPIRED_DETAILS,
-                                        UTF8ToUTF16(request_url.host()),
-                                        UTF8ToUTF16(request_url.host()));
+        details = l10n_util::GetStringFUTF16(
+            IDS_CERT_ERROR_EXPIRED_DETAILS,
+            UTF8ToUTF16(request_url.host()),
+            UTF8ToUTF16(request_url.host()),
+            base::TimeFormatFriendlyDateAndTime(base::Time::Now()));
         short_description =
             l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXPIRED_DESCRIPTION);
         extra_info.push_back(l10n_util::GetStringUTF16(
@@ -87,7 +90,8 @@ SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
         details = l10n_util::GetStringFUTF16(
             IDS_CERT_ERROR_NOT_YET_VALID_DETAILS,
             UTF8ToUTF16(request_url.host()),
-            UTF8ToUTF16(request_url.host()));
+            UTF8ToUTF16(request_url.host()),
+            base::TimeFormatFriendlyDateAndTime(base::Time::Now()));
         short_description =
             l10n_util::GetStringUTF16(IDS_CERT_ERROR_NOT_YET_VALID_DESCRIPTION);
         extra_info.push_back(
