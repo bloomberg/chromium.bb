@@ -28,12 +28,33 @@
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(USE_AURA)
+#include "ash/shell.h"
+#include "ui/aura/root_window.h"
+#endif
+
 namespace {
 
 const int kLanguageMainMenuSize = 5;
 // TODO(glotov): need to specify the list as a part of the image customization.
 const char kLanguagesTopped[] = "es,it,de,fr,en-US";
 const int kMoreLanguagesSubMenu = 200;
+
+#if defined(USE_AURA)
+// Notifies all views::Widgets attached to |window|'s hierarchy that their
+// locale has changed.
+void NotifyLocaleChanged(aura::Window* window) {
+  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
+  if (widget)
+    widget->LocaleChanged();
+
+  const aura::Window::Windows& children = window->children();
+  for (aura::Window::Windows::const_iterator it = children.begin();
+       it != children.end(); ++it) {
+    NotifyLocaleChanged(*it);
+  }
+}
+#endif
 
 }  // namespace
 
@@ -201,8 +222,12 @@ void LanguageSwitchMenu::ExecuteCommand(int command_id) {
   SwitchLanguageAndEnableKeyboardLayouts(locale);
   InitLanguageMenu();
 
+#if defined(USE_AURA)
+  NotifyLocaleChanged(ash::Shell::GetRootWindow());
+#else
   // Update all view hierarchies that the locale has changed.
   views::Widget::NotifyLocaleChanged();
+#endif
 }
 
 }  // namespace chromeos

@@ -200,6 +200,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Enumerates all windows pertaining to us and notifies their
   // view hierarchies that the locale has changed.
+  // TODO(beng): remove post-Aurafication of ChromeOS.
   static void NotifyLocaleChanged();
 
   // Closes all Widgets that aren't identified as "secondary widgets". Called

@@ -62,34 +62,6 @@ aura::client::WindowType GetAuraWindowTypeForWidgetType(
   }
 }
 
-typedef void (*WidgetCallback)(Widget*);
-
-void ForEachNativeWidgetInternal(aura::Window* window,
-                                 WidgetCallback callback) {
-  Widget* widget = Widget::GetWidgetForNativeWindow(window);
-  if (widget)
-    callback(widget);
-
-  const aura::Window::Windows& children = window->children();
-  for (aura::Window::Windows::const_iterator it = children.begin();
-       it != children.end(); ++it) {
-    ForEachNativeWidgetInternal(*it, callback);
-  }
-}
-
-void ForEachNativeWidget(WidgetCallback callback) {
-  ForEachNativeWidgetInternal(aura::RootWindow::GetInstance(), callback);
-}
-
-void NotifyLocaleChangedCallback(Widget* widget) {
-    widget->LocaleChanged();
-}
-
-void CloseAllSecondaryWidgetsCallback(Widget* widget) {
-  if (widget->is_secondary_widget())
-    widget->Close();
-}
-
 const gfx::Rect* GetRestoreBounds(aura::Window* window) {
   return window->GetProperty(aura::client::kRestoreBoundsKey);
 }
@@ -848,12 +820,12 @@ int NativeWidgetAura::OnPerformDrop(const aura::DropTargetEvent& event) {
 
 // static
 void Widget::NotifyLocaleChanged() {
-  ForEachNativeWidget(NotifyLocaleChangedCallback);
+  // Deliberately not implemented.
 }
 
 // static
 void Widget::CloseAllSecondaryWidgets() {
-  ForEachNativeWidget(CloseAllSecondaryWidgetsCallback);
+  // Deliberately not implemented.
 }
 
 bool Widget::ConvertRect(const Widget* source,
