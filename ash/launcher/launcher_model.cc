@@ -4,8 +4,8 @@
 
 #include "ash/launcher/launcher_model.h"
 
-#include "ui/aura/window.h"
 #include "ash/launcher/launcher_model_observer.h"
+#include "ui/aura/window.h"
 
 namespace ash {
 
@@ -62,7 +62,7 @@ void LauncherModel::SetPendingUpdate(int index) {
 
 int LauncherModel::ItemIndexByID(LauncherID id) {
   LauncherItems::const_iterator i = ItemByID(id);
-  return i == items_.end() ? -1 : static_cast<int>((i - items_.begin()));
+  return i == items_.end() ? -1 : static_cast<int>(i - items_.begin());
 }
 
 LauncherItems::const_iterator LauncherModel::ItemByID(int id) const {
