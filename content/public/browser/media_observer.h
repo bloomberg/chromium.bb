@@ -1,21 +1,21 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_OBSERVER_H_
-#define CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_OBSERVER_H_
+#ifndef CONTENT_PUBLIC_BROWSER_MEDIA_OBSERVER_H_
+#define CONTENT_PUBLIC_BROWSER_MEDIA_OBSERVER_H_
 #pragma once
 
 namespace media {
 struct MediaLogEvent;
 }
 
+namespace content {
+
 // A class may implement MediaObserver and register itself with ResourceContext
 // to receive callbacks as media events occur.
 class MediaObserver {
  public:
-  virtual ~MediaObserver() {}
-
   // Called when an audio stream is deleted.
   virtual void OnDeleteAudioStream(void* host, int stream_id) = 0;
 
@@ -35,6 +35,11 @@ class MediaObserver {
   // Called when a MediaEvent occurs.
   virtual void OnMediaEvent(int render_process_id,
                             const media::MediaLogEvent& event) = 0;
+
+ protected:
+  virtual ~MediaObserver() {}
 };
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_OBSERVER_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_BROWSER_MEDIA_OBSERVER_H_

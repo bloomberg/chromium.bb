@@ -5,11 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_RESOURCE_CONTEXT_H_
 #define CONTENT_PUBLIC_BROWSER_RESOURCE_CONTEXT_H_
 
-#include "base/basictypes.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
-
-class MediaObserver;
 
 namespace appcache {
 class AppCacheService;
@@ -29,6 +26,8 @@ class BlobStorageController;
 }
 
 namespace content {
+
+class MediaObserver;
 
 // ResourceContext contains the relevant context information required for
 // resource loading. It lives on the IO thread, although it is constructed on

@@ -408,7 +408,7 @@ net::URLRequestContext* ProfileIOData::ResourceContext::GetRequestContext()  {
   return request_context_;
 }
 
-MediaObserver* ProfileIOData::ResourceContext::GetMediaObserver()  {
+content::MediaObserver* ProfileIOData::ResourceContext::GetMediaObserver()  {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   EnsureInitialized();
   return media_observer_;

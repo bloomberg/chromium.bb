@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,11 +9,11 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "content/browser/renderer_host/media/media_observer.h"
+#include "content/public/browser/media_observer.h"
 #include "media/base/media_log_event.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-class MockMediaObserver : public MediaObserver {
+class MockMediaObserver : public content::MediaObserver {
  public:
   MockMediaObserver();
   virtual ~MockMediaObserver();

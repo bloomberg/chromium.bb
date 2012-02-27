@@ -55,9 +55,9 @@
 
 class AudioManager;
 struct AudioParameters;
-class MediaObserver;
 
 namespace content {
+class MediaObserver;
 class ResourceContext;
 }  // namespace content
 
@@ -182,14 +182,14 @@ class CONTENT_EXPORT AudioRendererHost
   // This is necessary because resource_context_ can be destructed before all
   // AudioEntries have been deleted. The MediaObserver's lifetime is tied to
   // that of the IO thread, so this is safe.
-  MediaObserver* media_observer();
+  content::MediaObserver* GetMediaObserver();
 
   // A map of stream IDs to audio sources.
   AudioEntryMap audio_entries_;
 
   content::ResourceContext* resource_context_;
   AudioManager* audio_manager_;
-  MediaObserver* media_observer_;
+  content::MediaObserver* media_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererHost);
 };
