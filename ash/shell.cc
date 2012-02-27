@@ -15,6 +15,10 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_factory.h"
 #include "ash/shell_window_ids.h"
+#include "ash/system/audio/tray_volume.h"
+#include "ash/system/settings/tray_settings.h"
+#include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/system_tray.h"
 #include "ash/tooltips/tooltip_controller.h"
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/base_layout_manager.h"
@@ -172,6 +176,46 @@ void CreateSpecialContainers(aura::Window* root_window) {
                   lock_screen_related_containers);
 }
 
+class DummySystemTrayDelegate : public SystemTrayDelegate {
+ public:
+  DummySystemTrayDelegate()
+      : muted_(false),
+        volume_(0.5) {
+  }
+
+  virtual ~DummySystemTrayDelegate() {}
+
+ private:
+
+  // SystemTrayDelegate implementation.
+  virtual void ShowSettings() OVERRIDE {
+  }
+
+  virtual void ShowHelp() OVERRIDE {
+  }
+
+  virtual bool AudioMuted() OVERRIDE {
+    return muted_;
+  }
+
+  virtual void SetAudioMuted(bool muted) OVERRIDE {
+    muted_ = muted;
+  }
+
+  virtual float VolumeLevel() OVERRIDE {
+    return volume_;
+  }
+
+  virtual void SetVolumeLevel(float volume) OVERRIDE {
+    volume_ = volume;
+  }
+
+  bool muted_;
+  float volume_;
+
+  DISALLOW_COPY_AND_ASSIGN(DummySystemTrayDelegate);
+};
+
 }  // namespace
 
 // static
@@ -230,6 +274,9 @@ Shell::~Shell() {
   // Make sure we delete WorkspaceController before launcher is
   // deleted as it has a reference to launcher model.
   workspace_controller_.reset();
+
+  // The system tray needs to be reset before all the windows are destroyed.
+  tray_.reset();
 
   // Delete containers now so that child windows does not access
   // observers when they are destructed.
@@ -319,6 +366,28 @@ void Shell::Init() {
     status_widget_ = delegate_->CreateStatusArea();
   if (!status_widget_)
     status_widget_ = internal::CreateStatusArea();
+
+  if (command_line->HasSwitch(switches::kAshUberTray)) {
+    // TODO(sad): This is rather ugly at the moment. This is because we are
+    // supporting both the old and the new status bar at the same time. This
+    // will soon get better once the new one is ready and the old one goes out
+    // the door.
+    if (delegate_.get())
+      status_widget_ = delegate_->CreateStatusArea();
+    if (!status_widget_)
+      status_widget_ = internal::CreateStatusArea();
+    status_widget_->GetContentsView()->RemoveAllChildViews(false);
+    tray_.reset(new SystemTray());
+    status_widget_->GetContentsView()->AddChildView(tray_.get());
+
+    tray_->AddTrayItem(new TrayVolume());
+    tray_->AddTrayItem(new TraySettings());
+
+    if (delegate_.get())
+      tray_delegate_.reset(delegate_->CreateSystemTrayDelegate());
+    if (!tray_delegate_.get())
+      tray_delegate_.reset(new DummySystemTrayDelegate());
+  }
 
   aura::Window* default_container =
       GetContainer(internal::kShellWindowId_DefaultContainer);

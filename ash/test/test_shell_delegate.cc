@@ -66,5 +66,8 @@ LauncherDelegate* TestShellDelegate::CreateLauncherDelegate(
   return NULL;
 }
 
+SystemTrayDelegate* TestShellDelegate::CreateSystemTrayDelegate() {
+  return NULL;
+}
 }  // namespace test
 }  // namespace ash

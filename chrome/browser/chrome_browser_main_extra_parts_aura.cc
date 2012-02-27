@@ -5,6 +5,7 @@
 #include "chrome/browser/chrome_browser_main_extra_parts_aura.h"
 
 #include "ash/accelerators/accelerator_controller.h"
+#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
@@ -64,7 +65,10 @@ void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
 
 void ChromeBrowserMainExtraPartsAura::PostProfileInit() {
   // Add the status area buttons after Profile has been initialized.
-  ChromeShellDelegate::instance()->status_area_host()->AddButtons();
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+        ash::switches::kAshUberTray)) {
+    ChromeShellDelegate::instance()->status_area_host()->AddButtons();
+  }
 }
 
 void ChromeBrowserMainExtraPartsAura::PostMainMessageLoopRun() {

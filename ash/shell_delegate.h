@@ -28,6 +28,7 @@ class LauncherDelegate;
 class LauncherModel;
 struct LauncherItem;
 class ScreenshotDelegate;
+class SystemTrayDelegate;
 
 // Delegate of the Shell.
 class ASH_EXPORT ShellDelegate {
@@ -84,6 +85,9 @@ class ASH_EXPORT ShellDelegate {
   // value.
   virtual LauncherDelegate* CreateLauncherDelegate(
       ash::LauncherModel* model) = 0;
+
+  // Creates a system-tray delegate. Shell takes ownership of the delegate.
+  virtual SystemTrayDelegate* CreateSystemTrayDelegate() = 0;
 };
 
 }  // namespace ash

@@ -42,6 +42,8 @@ class Launcher;
 class NestedDispatcherController;
 class PowerButtonController;
 class ShellDelegate;
+class SystemTrayDelegate;
+class SystemTray;
 class VideoDetector;
 class WindowCycleController;
 
@@ -188,10 +190,13 @@ class ASH_EXPORT Shell {
   }
 
   ShellDelegate* delegate() { return delegate_.get(); }
+  SystemTrayDelegate* tray_delegate() { return tray_delegate_.get(); }
 
   Launcher* launcher() { return launcher_.get(); }
 
   internal::ShelfLayoutManager* shelf() const { return shelf_; }
+
+  SystemTray* tray() const { return tray_.get(); }
 
   // Made available for tests.
   internal::ShadowController* shadow_controller() {
@@ -240,6 +245,7 @@ class ASH_EXPORT Shell {
 #endif  // !defined(OS_MACOSX)
 
   scoped_ptr<ShellDelegate> delegate_;
+  scoped_ptr<SystemTrayDelegate> tray_delegate_;
 
   scoped_ptr<Launcher> launcher_;
 
@@ -286,6 +292,10 @@ class ASH_EXPORT Shell {
 
   // Status area with clock, Wi-Fi signal, etc.
   views::Widget* status_widget_;
+
+  // System tray with clock, Wi-Fi signal, etc. (a replacement in progress for
+  // |status_widget_|).
+  scoped_ptr<SystemTray> tray_;
 
   // Offset between the corner of the status area and the corner of the screen
   // when in the compact window mode.

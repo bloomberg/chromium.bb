@@ -208,6 +208,10 @@ class ShellDelegateImpl : public ash::ShellDelegate {
     return launcher_delegate_;
   }
 
+  virtual ash::SystemTrayDelegate* CreateSystemTrayDelegate() {
+    return NULL;
+  }
+
  private:
   // Used to update Launcher. Owned by main.
   WindowWatcher* watcher_;

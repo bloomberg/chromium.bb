@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
 
 #include "ash/launcher/launcher_types.h"
+#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm/partial_screenshot_view.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
@@ -22,6 +23,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
+#include "chrome/browser/chromeos/system/ash_system_tray_delegate.h"
 #endif
 namespace {
 
@@ -120,4 +122,12 @@ ash::LauncherDelegate* ChromeShellDelegate::CreateLauncherDelegate(
   ChromeLauncherDelegate* delegate = new ChromeLauncherDelegate(NULL, model);
   delegate->Init();
   return delegate;
+}
+
+ash::SystemTrayDelegate* ChromeShellDelegate::CreateSystemTrayDelegate() {
+#if defined(OS_CHROMEOS)
+  return chromeos::CreateSystemTrayDelegate();
+#else
+  return NULL;
+#endif
 }

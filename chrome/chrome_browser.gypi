@@ -824,6 +824,8 @@
         'browser/chromeos/status/volume_menu_button.h',
         'browser/chromeos/stub_cros_settings_provider.cc',
         'browser/chromeos/stub_cros_settings_provider.h',
+        'browser/chromeos/system/ash_system_tray_delegate.cc',
+        'browser/chromeos/system/ash_system_tray_delegate.h',
         'browser/chromeos/system/input_device_settings.cc',
         'browser/chromeos/system/input_device_settings.h',
         'browser/chromeos/system/name_value_pairs_parser.cc',

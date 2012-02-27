@@ -11,6 +11,9 @@
 namespace ash {
 namespace switches {
 
+// Use the in-progress uber system tray.
+const char kAshUberTray[] = "ash-uber-tray";
+
 // Force the "compact" window mode regardless of the value of kAuraWindowMode.
 // This can be used to override a value set in chrome://flags.
 // TODO(derat): Remove this once the normal mode is usable on all platforms.
