@@ -22,7 +22,7 @@ table,caption,tbody,tfoot,thead,tr,th,td {
     vertical-align: baseline;
 }
 body {
-    line-height: 1;
+    line-height: 1.3;
     color: black;
     background: white;
 }
@@ -55,7 +55,7 @@ input::-moz-focus-inner {
 body,body input,body button,body td {
     font-family: "Arial", "Helvetica", sans-serif;
     color: #222;
-    font-size:12px;
+    font-size: 13px;
     -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
 h1,h2,h3,h4,h5 {
@@ -1213,7 +1213,7 @@ Component: Toolbar
     width:34px;
 }
 .kd-toolbar .kd-button{
-    min-width:0;
+  min-width: 72px;
 }
 .kd-toolbarbutton:hover {
     border: 1px solid #C6C6C6;
@@ -1391,7 +1391,7 @@ Component: Buttons
 ------------------------------------------------------------------*/
 .kd-button {
     display: inline-block;
-    min-width: 54px;*min-width:70px;/*hello,IE7!*/
+    min-width: 72px;*min-width:70px;/*hello,IE7!*/
     border:1px solid #DCDCDC;
     border: 1px solid rgba(0,0,0,0.1);
     text-align: center;
@@ -2933,6 +2933,7 @@ html.y-expand #kd-modalshield {
     background: white;
     outline:1px solid rgba(0,0,0,0.2);/* border:1px solid #CCC;/*THIS IS FOR NON-WEBKIT BROWSERS ONLY - OTHER BROWSERS DO NOT INTERPRET THE OUTLINE STYLE CORRECTLY*/
     padding:30px 42px;
+    width: 500px;
     height: auto;
     overflow: hidden;
     z-index: 100;
@@ -4004,40 +4005,6 @@ Component: Tooltips
 }
 
 /*------------------------------------------------------------------
-Component: Sample Form
-------------------------------------------------------------------*/
-form ul li{
-    margin-bottom:16px;
-}
-form{
-    width:336px;
-}
-fieldset{
-    border:1px solid #ebebeb;
-    padding:16px;
-}
-legend{
-    padding:0 6px;
-}
-form label{
-    display:block;
-    line-height:29px;
-}
-form input[type=text]{
-    width:100%;
-}
-form label input[type=radio], form label input[type=checkbox]{
-    bottom:-1px;
-}
-form label input[type=checkbox]{
-    margin-right:5px;
-}
-form .kd-button.kd-select{
-    float:none;
-    margin-left:0;
-}
-
-/*------------------------------------------------------------------
 Component: Form Errors
 ------------------------------------------------------------------*/
 #errorDemo{
@@ -4445,7 +4412,6 @@ button, input {
 button {
   background: -webkit-linear-gradient(#fafafa, #f4f4f4 40%, #e5e5e5);
   border: 1px solid #aaa;
-  min-width: 72px;
   -webkit-border-radius: 2px;
   -webkit-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
   -webkit-user-select: none;
@@ -4574,8 +4540,7 @@ section {
   background-repeat: no-repeat;
   background-position: top __MSG_@@bidi_start_edge__;
   padding-__MSG_@@bidi_start_edge__: 30px;
-  padding-top: 3px;
-  margin-bottom: 8px;
+  padding-top: 5px;
   color: #900;
   display: inline-block;
 }
@@ -4723,6 +4688,9 @@ td {
 
 .waiting-container {
   position: relative;
+}
+
+.space-before {
   margin-top: 30px;
 }
 
@@ -4740,17 +4708,8 @@ td {
   text-align: center;
 }
 
-#access-code-entry {
-  font-weight: bold;
-  font-size: 18px;
-  height: 25px;
-  margin: 0 10px;
-  padding-__MSG_@@bidi_start_edge__: 5px;
-  width: 12em;
-}
-
 #access-code-entry-row {
-  text-align: center;
+  margin-top: 24px;
 }
 
 #ask-pin-dialog {
@@ -4765,7 +4724,7 @@ td {
   padding: 0 20px;
 }
 
-#cancel-button, #cancel-share-button {
+#cancel-connect-button, #cancel-share-button {
   float: __MSG_@@bidi_end_edge__;
 }
 
@@ -4812,10 +4771,6 @@ td {
   margin-__MSG_@@bidi_end_edge__: 0.5ex;
 }
 
-#host-dialog {
-  width: 500px;
-}
-
 #host-plugin-container {
   width: 0;
   height: 0;
@@ -4824,10 +4779,6 @@ td {
 #icon {
   height: 64px;
   width: 64px;
-}
-
-#host-list-error {
-  margin-__MSG_@@bidi_start_edge__: 40px;
 }
 
 #nat-box {

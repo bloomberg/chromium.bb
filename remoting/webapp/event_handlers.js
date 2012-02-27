@@ -56,6 +56,8 @@ function onLoad() {
         fn: goFinishedIt2Me },
       { event: 'click', id: 'client-finished-me2me-button', fn: goHome },
       { event: 'click', id: 'client-reconnect-button', fn: reload },
+      { event: 'click', id: 'cancel-access-code-button',
+        fn: remoting.cancelConnect },
       { event: 'click', id: 'cancel-connect-button',
         fn: remoting.cancelConnect },
       { event: 'click', id: 'toolbar-stub',

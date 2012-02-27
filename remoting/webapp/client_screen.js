@@ -70,7 +70,6 @@ remoting.currentConnectionType = null;
  */
 remoting.connectIt2Me = function() {
   remoting.currentConnectionType = remoting.ConnectionType.It2Me;
-  document.getElementById('cancel-connect-button').disabled = false;
   remoting.WcsLoader.load(connectIt2MeWithAccessToken_);
 };
 
@@ -80,7 +79,6 @@ remoting.connectIt2Me = function() {
  * @return {void} Nothing.
  */
 remoting.cancelConnect = function() {
-  document.getElementById('cancel-connect-button').disabled = true;
   if (remoting.supportHostsXhr_) {
     remoting.supportHostsXhr_.abort();
     remoting.supportHostsXhr_ = null;
@@ -90,6 +88,7 @@ remoting.cancelConnect = function() {
     remoting.clientSession = null;
   }
   remoting.setMode(remoting.AppMode.HOME);
+  document.getElementById('access-code-entry').value = '';
 };
 
 /**

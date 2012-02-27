@@ -20,6 +20,7 @@ var remoting = remoting || {};
 // TODO(jamiewalch): Move 'in-session' to a separate web-page so that the
 // 'home' state applies to all elements and can be removed.
 remoting.AppMode = {
+  UNAUTHENTICATED: 'auth',
   HOME: 'home',
     HOST: 'home.host',
       HOST_WAITING_FOR_CODE: 'home.host.waiting-for-code',
@@ -27,15 +28,14 @@ remoting.AppMode = {
       HOST_SHARED: 'home.host.shared',
       HOST_SHARE_FAILED: 'home.host.share-failed',
       HOST_SHARE_FINISHED: 'home.host.share-finished',
-  UNAUTHENTICATED: 'auth',
-  CLIENT: 'client',
-    CLIENT_UNCONNECTED: 'client.unconnected',
-    CLIENT_PIN_PROMPT: 'client.pin-prompt',
-    CLIENT_CONNECTING: 'client.connecting',
-    CLIENT_CONNECT_FAILED_IT2ME: 'client.connect-failed.it2me',
-    CLIENT_CONNECT_FAILED_ME2ME: 'client.connect-failed.me2me',
-    CLIENT_SESSION_FINISHED_IT2ME: 'client.session-finished.it2me',
-    CLIENT_SESSION_FINISHED_ME2ME: 'client.session-finished.me2me',
+    CLIENT: 'home.client',
+      CLIENT_UNCONNECTED: 'home.client.unconnected',
+      CLIENT_PIN_PROMPT: 'home.client.pin-prompt',
+      CLIENT_CONNECTING: 'home.client.connecting',
+      CLIENT_CONNECT_FAILED_IT2ME: 'home.client.connect-failed.it2me',
+      CLIENT_CONNECT_FAILED_ME2ME: 'home.client.connect-failed.me2me',
+      CLIENT_SESSION_FINISHED_IT2ME: 'home.client.session-finished.it2me',
+      CLIENT_SESSION_FINISHED_ME2ME: 'home.client.session-finished.me2me',
   IN_SESSION: 'in-session'
 };
 

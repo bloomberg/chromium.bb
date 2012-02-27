@@ -187,10 +187,6 @@
     "message": "Connected:",
     "description": "String displayed in front of the host when a connection is active informing the client user who they are connected to."
   },
-  "MESSAGE_CONNECTING": {
-    "message": "Connecting\u2026",
-    "description": "Message displayed on the client while a connection to the host is being established."
-  },
   "MESSAGE_GENERATING": {
     "message": "Generating access code\u2026",
     "description": "Text shown while generating an access code."
