@@ -147,9 +147,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   void AddRootWindowObserver(RootWindowObserver* observer);
   void RemoveRootWindowObserver(RootWindowObserver* observer);
 
-  // Are any mouse buttons currently down?
-  bool IsMouseButtonDown() const;
-
   // Posts |native_event| to the platform's event queue.
   void PostNativeEvent(const base::NativeEvent& native_event);
 

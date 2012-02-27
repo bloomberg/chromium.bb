@@ -12,6 +12,7 @@
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/window_move_client.h"
 #include "ui/aura/client/window_types.h"
+#include "ui/aura/env.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -922,7 +923,7 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
 
 // static
 bool NativeWidgetPrivate::IsMouseButtonDown() {
-  return aura::RootWindow::GetInstance()->IsMouseButtonDown();
+  return aura::Env::GetInstance()->is_mouse_button_down();
 }
 
 }  // namespace internal

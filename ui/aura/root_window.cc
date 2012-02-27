@@ -15,6 +15,7 @@
 #include "base/string_split.h"
 #include "ui/aura/aura_switches.h"
 #include "ui/aura/client/activation_client.h"
+#include "ui/aura/env.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/aura/event.h"
@@ -174,10 +175,12 @@ bool RootWindow::DispatchMouseEvent(MouseEvent* event) {
       if (!mouse_pressed_handler_)
         mouse_pressed_handler_ = target;
       mouse_button_flags_ = event->flags() & kMouseButtonFlagMask;
+      Env::GetInstance()->set_mouse_button_flags(mouse_button_flags_);
       break;
     case ui::ET_MOUSE_RELEASED:
       mouse_pressed_handler_ = NULL;
       mouse_button_flags_ = event->flags() & kMouseButtonFlagMask;
+      Env::GetInstance()->set_mouse_button_flags(mouse_button_flags_);
       break;
     default:
       break;
@@ -333,10 +336,6 @@ void RootWindow::AddRootWindowObserver(RootWindowObserver* observer) {
 
 void RootWindow::RemoveRootWindowObserver(RootWindowObserver* observer) {
   observers_.RemoveObserver(observer);
-}
-
-bool RootWindow::IsMouseButtonDown() const {
-  return mouse_button_flags_ != 0;
 }
 
 void RootWindow::PostNativeEvent(const base::NativeEvent& native_event) {

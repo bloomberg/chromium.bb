@@ -15,7 +15,7 @@ Env* Env::instance_ = NULL;
 ////////////////////////////////////////////////////////////////////////////////
 // Env, public:
 
-Env::Env() : stacking_client_(NULL) {
+Env::Env() : mouse_button_flags_(0), stacking_client_(NULL) {
 #if !defined(OS_MACOSX)
   dispatcher_.reset(CreateDispatcher());
 #endif

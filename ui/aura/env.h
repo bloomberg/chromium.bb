@@ -40,6 +40,11 @@ class AURA_EXPORT Env {
   void AddObserver(EnvObserver* observer);
   void RemoveObserver(EnvObserver* observer);
 
+  bool is_mouse_button_down() const { return mouse_button_flags_ != 0; }
+  void set_mouse_button_flags(int mouse_button_flags) {
+    mouse_button_flags_ = mouse_button_flags;
+  }
+
   client::StackingClient* stacking_client() { return stacking_client_; }
   void set_stacking_client(client::StackingClient* stacking_client) {
     stacking_client_ = stacking_client;
@@ -65,6 +70,7 @@ class AURA_EXPORT Env {
 #endif
 
   static Env* instance_;
+  int mouse_button_flags_;
   client::StackingClient* stacking_client_;
 
   DISALLOW_COPY_AND_ASSIGN(Env);
