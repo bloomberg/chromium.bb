@@ -79,6 +79,7 @@ all_units = [
          'ppb_net_address_private.srpc',
          'ppb_pdf.srpc',
          'ppb_scrollbar.srpc',
+         'ppb_tcp_server_socket_private.srpc',
          'ppb_tcp_socket_private.srpc',
          'ppb_testing.srpc',
          'ppb_udp_socket_private.srpc',

@@ -2490,6 +2490,99 @@ NaClSrpcError PpbScrollbarRpcClient::PPB_Scrollbar_ScrollBy(
   return retval;
 }
 
+NaClSrpcError PpbTCPServerSocketPrivateRpcClient::PPB_TCPServerSocket_Private_Create(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    PP_Resource* resource)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_TCPServerSocket_Private_Create:i:i",
+      instance,
+      resource
+  );
+  return retval;
+}
+
+NaClSrpcError PpbTCPServerSocketPrivateRpcClient::PPB_TCPServerSocket_Private_IsTCPServerSocket(
+    NaClSrpcChannel* channel,
+    PP_Resource resource,
+    int32_t* is_tcp_server_socket)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_TCPServerSocket_Private_IsTCPServerSocket:i:i",
+      resource,
+      is_tcp_server_socket
+  );
+  return retval;
+}
+
+NaClSrpcError PpbTCPServerSocketPrivateRpcClient::PPB_TCPServerSocket_Private_Listen(
+    NaClSrpcChannel* channel,
+    PP_Resource tcp_server_socket,
+    nacl_abi_size_t addr_bytes, char* addr,
+    int32_t backlog,
+    int32_t callback_id,
+    int32_t* pp_error)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_TCPServerSocket_Private_Listen:iCii:i",
+      tcp_server_socket,
+      addr_bytes, addr,
+      backlog,
+      callback_id,
+      pp_error
+  );
+  return retval;
+}
+
+NaClSrpcError PpbTCPServerSocketPrivateRpcClient::PPB_TCPServerSocket_Private_Accept(
+    NaClSrpcChannel* channel,
+    PP_Resource tcp_server_socket,
+    int32_t callback_id,
+    PP_Resource* tcp_socket,
+    int32_t* pp_error)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_TCPServerSocket_Private_Accept:ii:ii",
+      tcp_server_socket,
+      callback_id,
+      tcp_socket,
+      pp_error
+  );
+  return retval;
+}
+
+NaClSrpcError PpbTCPServerSocketPrivateRpcClient::PPB_TCPServerSocket_Private_StopListening(
+    NaClSrpcChannel* channel,
+    PP_Resource tcp_server_socket)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_TCPServerSocket_Private_StopListening:i:",
+      tcp_server_socket
+  );
+  return retval;
+}
+
 NaClSrpcError PpbTCPSocketPrivateRpcClient::PPB_TCPSocket_Private_Create(
     NaClSrpcChannel* channel,
     PP_Instance instance,

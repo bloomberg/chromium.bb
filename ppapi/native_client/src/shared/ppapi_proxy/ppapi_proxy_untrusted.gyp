@@ -73,6 +73,7 @@
           'plugin_ppb_net_address_private.cc',
           'plugin_ppb_pdf.cc',
           'plugin_ppb_scrollbar.cc',
+          'plugin_ppb_tcp_server_socket_private.cc',
           'plugin_ppb_tcp_socket_private.cc',
           'plugin_ppb_testing.cc',
           'plugin_ppb_udp_socket_private.cc',

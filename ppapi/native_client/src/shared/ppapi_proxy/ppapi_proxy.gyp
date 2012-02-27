@@ -36,6 +36,7 @@
         'browser_ppb_pdf_rpc_server.cc',
         'browser_ppb_rpc_server.cc',
         'browser_ppb_scrollbar_rpc_server.cc',
+        'browser_ppb_tcp_server_socket_private_rpc_server.cc',
         'browser_ppb_tcp_socket_private_rpc_server.cc',
         'browser_ppb_testing_rpc_server.cc',
         'browser_ppb_udp_socket_private_rpc_server.cc',

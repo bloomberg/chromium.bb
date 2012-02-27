@@ -1007,6 +1007,44 @@ class PpbScrollbarRpcServer {
   void operator=(const PpbScrollbarRpcServer);
 };  // class PpbScrollbarRpcServer
 
+class PpbTCPServerSocketPrivateRpcServer {
+ public:
+  static void PPB_TCPServerSocket_Private_Create(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      PP_Resource* resource);
+  static void PPB_TCPServerSocket_Private_IsTCPServerSocket(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource resource,
+      int32_t* is_tcp_server_socket);
+  static void PPB_TCPServerSocket_Private_Listen(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource tcp_server_socket,
+      nacl_abi_size_t addr_bytes, char* addr,
+      int32_t backlog,
+      int32_t callback_id,
+      int32_t* pp_error);
+  static void PPB_TCPServerSocket_Private_Accept(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource tcp_server_socket,
+      int32_t callback_id,
+      PP_Resource* tcp_socket,
+      int32_t* pp_error);
+  static void PPB_TCPServerSocket_Private_StopListening(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource tcp_server_socket);
+
+ private:
+  PpbTCPServerSocketPrivateRpcServer();
+  PpbTCPServerSocketPrivateRpcServer(const PpbTCPServerSocketPrivateRpcServer&);
+  void operator=(const PpbTCPServerSocketPrivateRpcServer);
+};  // class PpbTCPServerSocketPrivateRpcServer
+
 class PpbTCPSocketPrivateRpcServer {
  public:
   static void PPB_TCPSocket_Private_Create(

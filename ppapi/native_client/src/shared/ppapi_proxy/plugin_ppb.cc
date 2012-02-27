@@ -30,6 +30,7 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_net_address_private.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_pdf.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_scrollbar.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_tcp_server_socket_private.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_tcp_socket_private.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_testing.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_udp_socket_private.h"
@@ -109,6 +110,9 @@ InterfaceMapElement interface_map[] = {
     true },
   { PPB_PDF_INTERFACE, PluginPDF::GetInterface(), true },
   { PPB_SCROLLBAR_DEV_INTERFACE, PluginScrollbar::GetInterface(), true },
+  { PPB_TCPSERVERSOCKET_PRIVATE_INTERFACE,
+    PluginTCPServerSocketPrivate::GetInterface(),
+    true },
   { PPB_TCPSOCKET_PRIVATE_INTERFACE, PluginTCPSocketPrivate::GetInterface(),
     true },
   { PPB_TESTING_DEV_INTERFACE_0_9, PluginTesting::GetInterface(), true },

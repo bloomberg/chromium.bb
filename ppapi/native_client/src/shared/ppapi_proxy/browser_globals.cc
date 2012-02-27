@@ -451,6 +451,13 @@ const PPB_PDF* PPBPDFInterface() {
   return ppb;
 }
 
+const PPB_TCPServerSocket_Private* PPBTCPServerSocketPrivateInterface() {
+  static const PPB_TCPServerSocket_Private* ppb =
+      static_cast<const PPB_TCPServerSocket_Private*>(
+          GetBrowserInterfaceSafe(PPB_TCPSERVERSOCKET_PRIVATE_INTERFACE));
+  return ppb;
+}
+
 const PPB_TCPSocket_Private* PPBTCPSocketPrivateInterface() {
   static const PPB_TCPSocket_Private* ppb =
       static_cast<const PPB_TCPSocket_Private*>(

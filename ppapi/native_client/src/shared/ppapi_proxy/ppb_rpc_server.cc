@@ -2005,6 +2005,81 @@ static void PPB_Scrollbar_ScrollByDispatcher(
   );
 }
 
+static void PPB_TCPServerSocket_Private_CreateDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbTCPServerSocketPrivateRpcServer::PPB_TCPServerSocket_Private_Create(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_TCPServerSocket_Private_IsTCPServerSocketDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbTCPServerSocketPrivateRpcServer::PPB_TCPServerSocket_Private_IsTCPServerSocket(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_TCPServerSocket_Private_ListenDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbTCPServerSocketPrivateRpcServer::PPB_TCPServerSocket_Private_Listen(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      inputs[2]->u.ival,
+      inputs[3]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_TCPServerSocket_Private_AcceptDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbTCPServerSocketPrivateRpcServer::PPB_TCPServerSocket_Private_Accept(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      &(outputs[0]->u.ival),
+      &(outputs[1]->u.ival)
+  );
+}
+
+static void PPB_TCPServerSocket_Private_StopListeningDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PpbTCPServerSocketPrivateRpcServer::PPB_TCPServerSocket_Private_StopListening(
+      rpc,
+      done,
+      inputs[0]->u.ival
+  );
+}
+
 static void PPB_TCPSocket_Private_CreateDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -3087,6 +3162,11 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_Scrollbar_SetDocumentSize:ii:", PPB_Scrollbar_SetDocumentSizeDispatcher },
   { "PPB_Scrollbar_SetTickMarks:iCi:", PPB_Scrollbar_SetTickMarksDispatcher },
   { "PPB_Scrollbar_ScrollBy:iii:", PPB_Scrollbar_ScrollByDispatcher },
+  { "PPB_TCPServerSocket_Private_Create:i:i", PPB_TCPServerSocket_Private_CreateDispatcher },
+  { "PPB_TCPServerSocket_Private_IsTCPServerSocket:i:i", PPB_TCPServerSocket_Private_IsTCPServerSocketDispatcher },
+  { "PPB_TCPServerSocket_Private_Listen:iCii:i", PPB_TCPServerSocket_Private_ListenDispatcher },
+  { "PPB_TCPServerSocket_Private_Accept:ii:ii", PPB_TCPServerSocket_Private_AcceptDispatcher },
+  { "PPB_TCPServerSocket_Private_StopListening:i:", PPB_TCPServerSocket_Private_StopListeningDispatcher },
   { "PPB_TCPSocket_Private_Create:i:i", PPB_TCPSocket_Private_CreateDispatcher },
   { "PPB_TCPSocket_Private_IsTCPSocket:i:i", PPB_TCPSocket_Private_IsTCPSocketDispatcher },
   { "PPB_TCPSocket_Private_Connect:isii:i", PPB_TCPSocket_Private_ConnectDispatcher },
