@@ -311,27 +311,43 @@ class Rietveld(object):
 
   def _send(self, request_path, **kwargs):
     """Sends a POST/GET to Rietveld.  Returns the response body."""
-    maxtries = 5
-    for retry in xrange(maxtries):
-      try:
-        logging.debug('%s' % request_path)
-        result = self.rpc_server.Send(request_path, **kwargs)
-        # Sometimes GAE returns a HTTP 200 but with HTTP 500 as the content. How
-        # nice.
-        return result
-      except urllib2.HTTPError, e:
-        if retry >= (maxtries - 1):
-          raise
-        if e.code not in (500, 502, 503):
-          raise
-      except urllib2.URLError, e:
-        if retry >= (maxtries - 1):
-          raise
-        if not 'Name or service not known' in e.reason:
-          # Usually internal GAE flakiness.
-          raise
-      # If reaching this line, loop again. Uses a small backoff.
-      time.sleep(1+maxtries*2)
+    try:
+      # Sadly, upload.py calls ErrorExit() which does a sys.exit(1) on HTTP
+      # 500 in AbstractRpcServer.Send().
+      old_error_exit = upload.ErrorExit
+      def trap_http_500(msg):
+        """Converts an incorrect ErrorExit() call into a HTTPError exception."""
+        m = re.search(r'(50\d) Server Error', msg)
+        if m:
+          # Fake an HTTPError exception. Cheezy. :(
+          raise urllib2.HTTPError(
+              request_path, m.group(1), e.args[0], None, None)
+        old_error_exit(msg)
+      upload.ErrorExit = trap_http_500
+
+      maxtries = 5
+      for retry in xrange(maxtries):
+        try:
+          logging.debug('%s' % request_path)
+          result = self.rpc_server.Send(request_path, **kwargs)
+          # Sometimes GAE returns a HTTP 200 but with HTTP 500 as the content.
+          # How nice.
+          return result
+        except urllib2.HTTPError, e:
+          if retry >= (maxtries - 1):
+            raise
+          if e.code not in (500, 502, 503):
+            raise
+        except urllib2.URLError, e:
+          if retry >= (maxtries - 1):
+            raise
+          if not 'Name or service not known' in e.reason:
+            # Usually internal GAE flakiness.
+            raise
+        # If reaching this line, loop again. Uses a small backoff.
+        time.sleep(1+maxtries*2)
+    finally:
+      upload.ErrorExit = old_error_exit
 
   # DEPRECATED.
   Send = get
