@@ -1,7 +1,6 @@
 [
   {
     "namespace": "experimental.keybinding",
-    "nodoc": true,
     "events": [
       {
         "name": "onCommand",

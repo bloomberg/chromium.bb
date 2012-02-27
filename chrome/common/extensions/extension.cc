@@ -281,7 +281,7 @@ bool Extension::ExtensionKeybinding::Parse(DictionaryValue* command,
   // We support Ctrl+foo, Alt+foo, Ctrl+Shift+foo, Alt+Shift+foo, but not
   // Ctrl+Alt+foo. For a more detailed reason why we don't support Ctrl+Alt+foo:
   // http://blogs.msdn.com/b/oldnewthing/archive/2004/03/29/101121.aspx.
-  if (key == ui::VKEY_UNKNOWN || (ctrl == true && alt == true)) {
+  if (key == ui::VKEY_UNKNOWN || (ctrl && alt)) {
     *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
         errors::kInvalidKeyBinding,
         base::IntToString(index),

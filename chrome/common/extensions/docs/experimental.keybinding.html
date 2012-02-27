@@ -16,7 +16,7 @@
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/sidebar.js"></script>
-  <title>chrome.experimental.* APIs - Google Chrome Extensions - Google Code</title></head>
+  <meta name="description" content="Documentation for the chrome.experimental.keybinding module, which is part of the Google Chrome  extension APIs."><title>chrome.experimental.keybinding - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="devModeWarning" class="displayModeWarning">
     You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
   </div>
@@ -183,147 +183,163 @@
       </script>
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.experimental.* APIs</h1>
+        <h1 class="page_title">chrome.experimental.keybinding</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
           <h2>Contents</h2>
           <ol>
             <li>
-              <a href="#overview">
-List of APIs
-</a>
+              <a href="#manifest">Manifest</a>
               <ol>
               </ol>
             </li><li>
-              <a href="#using">How to use experimental APIs</a>
-              <ol>
-              </ol>
-            </li><li>
-              <a href="#other">More APIs</a>
+              <a href="#usage">Usage</a>
               <ol>
               </ol>
             </li>
+              <li>
+                <a href="#apiReference">API reference: chrome.experimental.keybinding</a>
+                <ol>
+                  <li>
+            <a href="#global-events">Events</a>
+            <ol>
+              <li>
+                <a href="#event-onCommand">onCommand</a>
+              </li>
+            </ol>
+          </li>
+                </ol>
+              </li>
           </ol>
         </div>
         <!-- /TABLE OF CONTENTS -->
         <!-- Standard content lead-in for experimental API pages -->
+        <p id="classSummary">
+          For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
+        </p>
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-name" class="pageData">chrome.experimental.* APIs</div>
-<div id="pageData-showTOC" class="pageData">true</div>
+        <div id="static"><!-- BEGIN AUTHORED CONTENT -->
 <p>
-Before you start, <strong>choose the right version of this page.</strong>
-You should read either:
+The keybinding API allows you to add keyboard shortcuts that trigger actions in
+your extension. An action can be opening the browser action or page action popup
+or sending a command to the extension.
 </p>
-<ul>
-  <li> <a href="http://code.google.com/chrome/extensions/trunk/experimental.html">Most recent experimental APIs</a>
-  </li><li> <a href="http://code.google.com/chrome/extensions/dev/experimental.html">Dev channel experimental APIs</a></li>
-</ul>
+<h2 id="manifest">Manifest</h2>
 <p>
-For information about browser versions such as
-Canary (bleeding edge) and the Dev channel, see
-<a href="http://www.chromium.org/getting-involved/dev-channel">Chrome Release Channels</a>.
-For details about channel-specific docs,
-see <a href="docs.html#versions">Doc versions</a>.
+In addition to the "experimental" permission you must declare the "keybinding"
+permission in your extension's manifest to use this API.
 </p>
-<h2 id="overview">
-List of APIs
-</h2>
-<p>
-We'd like your <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions/topics">feedback</a>
-on the following experimental APIs:
-</p>
-<ul>
-  <li>
-  <a href="experimental.app.html">experimental.app</a></li><li>
-  <a href="experimental.devtools.audits.html">experimental.devtools.audits</a></li><li>
-  <a href="experimental.devtools.console.html">experimental.devtools.console</a></li><li>
-  <a href="experimental.extension.html">experimental.extension</a></li><li>
-  <a href="experimental.infobars.html">experimental.infobars</a></li><li>
-  <a href="experimental.keybinding.html">experimental.keybinding</a></li><li>
-  <a href="experimental.speechInput.html">experimental.speechInput</a></li>
-</ul>
-<p>
-Pay special attention to the following APIs,
-which we expect to finalize soon:
-<b>devtools</b>,
-<b>infobars</b>,
-<b>permissions</b>,
-For examples of using the experimental APIs, see
-<a href="samples.html#experimental">Samples</a>.
-</p>
-<p class="warning">
-<b>Caution:</b>
-Don't depend on these experimental APIs.
-They might disappear,
-and they <em>will</em> change.
-Also, the Chrome Web Store doesn't allow you to
-upload extensions that use experimental APIs.
-</p>
-<h2 id="using">How to use experimental APIs</h2>
-<ol>
-  <li>
-    Make sure you're using either
-    <a href="http://tools.google.com/dlpage/chromesxs">Canary</a>
-    (which you can use at the same time as other Chrome channels) or the
-<a href="http://www.chromium.org/getting-involved/dev-channel">Dev channel</a>.
-    Although the experimental APIs might work in other versions,
-    we need your feedback on the latest incarnation of the APIs,
-    which you can find in Canary and on the Dev channel.
-  </li>
-  <li>
-    Using either the
-    <a href="http://code.google.com/chrome/extensions/trunk/experimental.html">most recent API documentation</a> (if you're using Canary) or the
-    <a href="http://code.google.com/chrome/extensions/dev/experimental.html">API documentation for the Dev channel</a>,
-    write the code for your extension.
-  </li>
-  <li>
-    Specify the "experimental"
-    <a href="manifest.html#permissions">permission</a>
-    in your extension's manifest, like this:
-<pre>"permissions": [
-  <b>"experimental"</b>,
+<pre>{
+  "name": "My extension",
   ...
-],
+<b>  "permissions": [
+    "experimental",
+    "keybinding",
+  ]</b>,
+  ...
+}</pre>
+<h2 id="usage">Usage</h2>
+<p>The keybinding API allows you to define specific commands, and bind them to a
+default key combination. Each command your extension accepts must be listed in
+the manifest as an attribute of the 'commands' manifest key. Note: Combinations
+that involve Ctrl+Alt are not permitted in order to avoid conflicts with the
+AltGr key.</p>
+<pre>{
+  "name": "My extension",
+  ...
+<b>  "commands": {
+    "toggle-feature-foo": {
+      "key": "Ctrl+Shift+Y",
+      "description": "Toggle feature foo"
+    },
+    "browserAction": {
+      "key": "Ctrl+Shift+B"
+    },
+    "pageAction": {
+      "key": "Alt+P"
+    }
+  }</b>,
+  ...
+}</pre>
+<p>In your background page, you can bind a handler to each of the commands
+defined in the manifest (except for 'browserAction' and 'pageAction') via
+onCommand.addListener. For example:</p>
+<pre>chrome.experimental.keybinding.onCommand.addListener(function(command) {
+  console.log('Command:', command);
+});
 </pre>
-  </li>
-  <li>
-    Enable the experimental API in your browser.
-    You can do this in either of two ways:
-    <ul>
-      <li> Go to <b>chrome://flags</b>,
-        find "Experimental Extension APIs",
-        click its "Enable" link,
-        and restart Chrome.
-        From now on,
-        unless you return to that page and disable experimental APIs,
-        you'll be able to run extensions that use experimental APIs.
-      </li>
-      <li> Specify the <b>--enable-experimental-extension-apis</b> flag
-        each time you launch the browser.
-        On Windows, you can do this by modifying
-        the properties of the shortcut that you use to launch Google Chrome.
-        For example:
-<pre><em>path_to_chrome.exe</em> <b>--enable-experimental-extension-apis</b></pre>
-      </li>
-    </ul>
-  </li>
-  <li>
-    <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions/topics">Give us feedback!</a>
-    Your comments and suggestions help us
-    improve the APIs and decide
-    which ones should move from experimental to supported.
-  </li>
-</ol>
-<h2 id="other">More APIs</h2>
-<p>
-For information on the standard APIs that extensions can use, see
-<a href="api_index.html">chrome.* APIs</a> and
-<a href="api_other.html">Other APIs</a>.
+<p>The 'browserAction' and 'pageAction' commands are reserved for the action of
+opening your extension's popups. They won't normally generate events that you
+can handle. If you need to take action based on your popup opening, consider
+listening for an 'onDomReady' event inside your popup's code.
 </p>
+<!-- END AUTHORED CONTENT -->
 </div>
         <!-- API PAGE -->
-         <!-- /apiPage -->
+        <div class="apiPage">
+        <a name="apiReference"></a>
+        <h2>API reference: chrome.experimental.keybinding</h2>
+          <!-- PROPERTIES -->
+           <!-- /apiGroup -->
+          <!-- METHODS -->
+            <!-- /apiGroup -->
+          <!-- EVENTS -->
+          <div id="eventsTemplate" class="apiGroup">
+            <a name="global-events"></a>
+            <h3>Events</h3>
+            <!-- iterates over all events -->
+            <div class="apiItem">
+              <a name="event-onCommand"></a>
+              <h4>onCommand</h4>
+              <div class="summary">
+                <!-- Note: intentionally longer 80 columns -->
+                <span class="subdued">chrome.experimental.keybinding.</span><span>onCommand</span><span class="subdued">.addListener</span>(function(<span>string command</span>) <span class="subdued">{...}</span><span></span>);
+              </div>
+              <div class="description">
+                <p>Fired when a registered command is activated using a keyboard shortcut.</p>
+                <!-- LISTENER PARAMETERS -->
+                <div>
+                  <h4>Listener parameters</h4>
+                  <dl>
+                    <div>
+                      <div>
+          <dt>
+            <var>command</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                    </div>
+                  </dl>
+                </div>
+                <!-- EXTRA PARAMETERS -->
+                <!-- LISTENER RETURN VALUE -->
+                <dl>
+                </dl>
+              </div> <!-- /description -->
+            </div> <!-- /apiItem -->
+          </div> <!-- /apiGroup -->
+          <!-- TYPES -->
+           <!-- /apiGroup -->
+        </div> <!-- /apiPage -->
       </div> <!-- /gc-pagecontent -->
     </div> <!-- /g-section -->
   </div> <!-- /codesiteContent -->

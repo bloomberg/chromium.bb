@@ -40,6 +40,7 @@ var MODULE_SCHEMAS = [
   '../api/experimental.infobars.json',
   '../api/experimental.input.ui.json',
   '../api/experimental.input.virtualKeyboard.json',
+  '../api/experimental.keybinding.json',
   '../api/experimental.processes.json',
   '../api/experimental.rlz.json',
   '../api/experimental.serial.json',
