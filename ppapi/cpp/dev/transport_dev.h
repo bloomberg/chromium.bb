@@ -11,12 +11,14 @@
 
 namespace pp {
 
-class Instance;
+class InstanceHandle;
 class Var;
 
 class Transport_Dev : public Resource {
  public:
-  Transport_Dev(Instance* instance, const char* name, PP_TransportType type);
+  Transport_Dev(const InstanceHandle& instance,
+                const char* name,
+                PP_TransportType type);
 
   bool IsWritable();
   int32_t SetProperty(PP_TransportProperty property, const Var& value);

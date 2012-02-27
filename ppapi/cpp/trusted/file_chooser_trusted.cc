@@ -24,7 +24,7 @@ template <> const char* interface_name<PPB_FileChooserTrusted>() {
 FileChooser_Trusted::FileChooser_Trusted() : save_as_(false) {
 }
 
-FileChooser_Trusted::FileChooser_Trusted(const Instance* instance,
+FileChooser_Trusted::FileChooser_Trusted(const InstanceHandle& instance,
                                          PP_FileChooserMode_Dev mode,
                                          const Var& accept_mime_types,
                                          bool save_as,

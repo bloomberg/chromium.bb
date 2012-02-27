@@ -8,6 +8,7 @@
 #include "ppapi/c/ppb_file_system.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/file_ref.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
 
@@ -24,12 +25,12 @@ template <> const char* interface_name<PPB_FileSystem>() {
 FileSystem::FileSystem() {
 }
 
-FileSystem::FileSystem(Instance* instance,
+FileSystem::FileSystem(const InstanceHandle& instance,
                        PP_FileSystemType type) {
   if (!has_interface<PPB_FileSystem>())
     return;
   PassRefFromConstructor(get_interface<PPB_FileSystem>()->Create(
-      instance->pp_instance(), type));
+      instance.pp_instance(), type));
 }
 
 int32_t FileSystem::Open(int64_t expected_size,

@@ -169,7 +169,7 @@ std::string TestURLLoader::LoadAndCompareBody(
     const std::string& expected_body) {
   TestCompletionCallback callback(instance_->pp_instance(), force_async_);
 
-  pp::URLLoader loader(*instance_);
+  pp::URLLoader loader(instance_);
   int32_t rv = loader.Open(request, callback);
   if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
     return ReportError("URLLoader::Open force_async", rv);
@@ -251,7 +251,7 @@ std::string TestURLLoader::GetReachableAbsoluteURL(
   // Get the absolute page URL and replace the test case file name
   // with the given one.
   pp::Var document_url(
-      pp::Var::PassRef(),
+      pp::PASS_REF,
       testing_interface_->GetDocumentURL(instance_->pp_instance(),
                                          NULL));
   std::string url(document_url.AsString());
@@ -306,7 +306,7 @@ int32_t TestURLLoader::OpenTrusted(const pp::URLRequestInfo& request) {
 
 int32_t TestURLLoader::Open(const pp::URLRequestInfo& request,
                             bool trusted) {
-  pp::URLLoader loader(*instance_);
+  pp::URLLoader loader(instance_);
   if (trusted)
     url_loader_trusted_interface_->GrantUniversalAccess(loader.pp_resource());
   TestCompletionCallback callback(instance_->pp_instance(), force_async_);
@@ -439,7 +439,7 @@ std::string TestURLLoader::TestStreamToFile() {
 
   TestCompletionCallback callback(instance_->pp_instance(), force_async_);
 
-  pp::URLLoader loader(*instance_);
+  pp::URLLoader loader(instance_);
   int32_t rv = loader.Open(request, callback);
   if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
     return ReportError("URLLoader::Open force_async", rv);
@@ -728,7 +728,7 @@ std::string TestURLLoader::TestAuditURLRedirect() {
 
   TestCompletionCallback callback(instance_->pp_instance(), force_async_);
 
-  pp::URLLoader loader(*instance_);
+  pp::URLLoader loader(instance_);
   int32_t rv = loader.Open(request, callback);
   if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
     return ReportError("URLLoader::Open force_async", rv);
@@ -777,7 +777,7 @@ std::string TestURLLoader::TestAbortCalls() {
   // Abort |Open()|.
   {
     callback.reset_run_count();
-    rv = pp::URLLoader(*instance_).Open(request, callback);
+    rv = pp::URLLoader(instance_).Open(request, callback);
     if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
       return ReportError("URLLoader::Open force_async", rv);
     if (callback.run_count() > 0)
@@ -795,7 +795,7 @@ std::string TestURLLoader::TestAbortCalls() {
   {
     char buf[2] = { 0 };
     {
-      pp::URLLoader loader(*instance_);
+      pp::URLLoader loader(instance_);
       rv = loader.Open(request, callback);
       if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
         return ReportError("URLLoader::Open force_async", rv);
@@ -836,7 +836,7 @@ std::string TestURLLoader::TestUntendedLoad() {
   request.SetRecordDownloadProgress(true);
   TestCompletionCallback callback(instance_->pp_instance(), force_async_);
 
-  pp::URLLoader loader(*instance_);
+  pp::URLLoader loader(instance_);
   int32_t rv = loader.Open(request, callback);
   if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
     return ReportError("URLLoader::Open force_async", rv);

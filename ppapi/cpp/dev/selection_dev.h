@@ -6,10 +6,10 @@
 #define PPAPI_CPP_DEV_SELECTION_DEV_H_
 
 #include "ppapi/c/dev/ppp_selection_dev.h"
+#include "ppapi/cpp/instance_handle.h"
 
 namespace pp {
 
-class Instance;
 class Var;
 
 // This class allows you to associate the PPP_Selection_Dev C-based interface
@@ -36,7 +36,7 @@ class Var;
 //   };
 class Selection_Dev {
  public:
-  Selection_Dev(Instance* instance);
+  explicit Selection_Dev(const InstanceHandle& instance);
   virtual ~Selection_Dev();
 
   // PPP_Selection_Dev functions exposed as virtual functions for you to
@@ -44,7 +44,7 @@ class Selection_Dev {
   virtual Var GetSelectedText(bool html) = 0;
 
  private:
-  Instance* associated_instance_;
+  InstanceHandle associated_instance_;
 };
 
 }  // namespace pp

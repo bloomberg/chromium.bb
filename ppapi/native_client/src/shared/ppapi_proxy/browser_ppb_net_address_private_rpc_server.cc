@@ -107,7 +107,7 @@ void PpbNetAddressPrivateRpcServer::PPB_NetAddress_Private_Describe(
       module,
       reinterpret_cast<PP_NetAddress_Private*>(addr),
       static_cast<PP_Bool>(include_port));
-  pp::Var address(pp::Var::PassRef(), pp_address);
+  pp::Var address(pp::PASS_REF, pp_address);
 
   if (!SerializeTo(&address.pp_var(), description, description_bytes))
     return;

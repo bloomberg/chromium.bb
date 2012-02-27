@@ -12,6 +12,7 @@
 #endif
 
 #include "ppapi/cpp/dev/message_loop_dev.h"
+#include "ppapi/cpp/instance_handle.h"
 
 namespace pp {
 
@@ -27,7 +28,7 @@ class SimpleThread {
 
   typedef void (*ThreadFunc)(MessageLoop_Dev&, void* user_data);
 
-  SimpleThread(Instance* instance);
+  explicit SimpleThread(const InstanceHandle& instance);
   ~SimpleThread();
 
   // Starts a thread and runs a message loop in it. If you need control over
@@ -49,7 +50,7 @@ class SimpleThread {
   ThreadHandle thread() const { return thread_; }
 
  private:
-  Instance* instance_;
+  InstanceHandle instance_;
   MessageLoop_Dev message_loop_;
 
   ThreadHandle thread_;

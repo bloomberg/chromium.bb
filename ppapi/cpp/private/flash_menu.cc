@@ -6,7 +6,7 @@
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/completion_callback.h"
-#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
 #include "ppapi/cpp/point.h"
@@ -23,7 +23,8 @@ template <> const char* interface_name<PPB_Flash_Menu>() {
 
 namespace flash {
 
-Menu::Menu(const Instance& instance, const struct PP_Flash_Menu* menu_data) {
+Menu::Menu(const InstanceHandle& instance,
+           const struct PP_Flash_Menu* menu_data) {
   if (has_interface<PPB_Flash_Menu>()) {
     PassRefFromConstructor(get_interface<PPB_Flash_Menu>()->Create(
         instance.pp_instance(), menu_data));

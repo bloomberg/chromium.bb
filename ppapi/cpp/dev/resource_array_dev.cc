@@ -5,7 +5,7 @@
 #include "ppapi/cpp/dev/resource_array_dev.h"
 
 #include "ppapi/c/dev/ppb_resource_array_dev.h"
-#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module_impl.h"
 
 namespace pp {
@@ -21,20 +21,20 @@ template <> const char* interface_name<PPB_ResourceArray_Dev>() {
 ResourceArray_Dev::ResourceArray_Dev() {
 }
 
-ResourceArray_Dev::ResourceArray_Dev(PassRef, PP_Resource resource) {
-  PassRefFromConstructor(resource);
+ResourceArray_Dev::ResourceArray_Dev(PassRef, PP_Resource resource)
+    : Resource(PASS_REF, resource) {
 }
 
 ResourceArray_Dev::ResourceArray_Dev(const ResourceArray_Dev& other)
     : Resource(other) {
 }
 
-ResourceArray_Dev::ResourceArray_Dev(Instance* instance,
+ResourceArray_Dev::ResourceArray_Dev(const InstanceHandle& instance,
                                      const PP_Resource elements[],
                                      uint32_t size) {
-  if (has_interface<PPB_ResourceArray_Dev>() && instance) {
+  if (has_interface<PPB_ResourceArray_Dev>()) {
     PassRefFromConstructor(get_interface<PPB_ResourceArray_Dev>()->Create(
-        instance->pp_instance(), elements, size));
+        instance.pp_instance(), elements, size));
   }
 }
 

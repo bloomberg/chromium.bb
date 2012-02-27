@@ -7,7 +7,7 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/cpp/completion_callback.h"
-#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
 #include "ppapi/cpp/var.h"
@@ -22,11 +22,11 @@ template <> const char* interface_name<PPB_WebSocket_Dev>() {
 
 }  // namespace
 
-WebSocket_Dev::WebSocket_Dev(Instance* instance) {
+WebSocket_Dev::WebSocket_Dev(const InstanceHandle& instance) {
   if (!has_interface<PPB_WebSocket_Dev>())
     return;
   PassRefFromConstructor(get_interface<PPB_WebSocket_Dev>()->Create(
-    instance->pp_instance()));
+    instance.pp_instance()));
 }
 
 WebSocket_Dev::~WebSocket_Dev() {
@@ -101,8 +101,8 @@ Var WebSocket_Dev::GetCloseReason() {
   if (!has_interface<PPB_WebSocket_Dev>())
     return 0;
 
-  return Var(Var::PassRef(),
-      get_interface<PPB_WebSocket_Dev>()->GetCloseReason(pp_resource()));
+  return Var(PASS_REF,
+             get_interface<PPB_WebSocket_Dev>()->GetCloseReason(pp_resource()));
 }
 
 bool WebSocket_Dev::GetCloseWasClean() {
@@ -118,16 +118,16 @@ Var WebSocket_Dev::GetExtensions() {
   if (!has_interface<PPB_WebSocket_Dev>())
     return Var();
 
-  return Var(Var::PassRef(),
-      get_interface<PPB_WebSocket_Dev>()->GetExtensions(pp_resource()));
+  return Var(PASS_REF,
+             get_interface<PPB_WebSocket_Dev>()->GetExtensions(pp_resource()));
 }
 
 Var WebSocket_Dev::GetProtocol() {
   if (!has_interface<PPB_WebSocket_Dev>())
     return Var();
 
-  return Var(Var::PassRef(),
-      get_interface<PPB_WebSocket_Dev>()->GetProtocol(pp_resource()));
+  return Var(PASS_REF,
+             get_interface<PPB_WebSocket_Dev>()->GetProtocol(pp_resource()));
 }
 
 PP_WebSocketReadyState_Dev WebSocket_Dev::GetReadyState() {
@@ -141,8 +141,8 @@ Var WebSocket_Dev::GetURL() {
   if (!has_interface<PPB_WebSocket_Dev>())
     return Var();
 
-  return Var(Var::PassRef(),
-      get_interface<PPB_WebSocket_Dev>()->GetURL(pp_resource()));
+  return Var(PASS_REF,
+             get_interface<PPB_WebSocket_Dev>()->GetURL(pp_resource()));
 }
 
 }  // namespace pp

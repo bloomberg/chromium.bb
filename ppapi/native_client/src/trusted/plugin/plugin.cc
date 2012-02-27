@@ -340,7 +340,7 @@ class PrintingAdapter : public pp::Printing_Dev {
       PP_Resource image_data = ppp_printing_->PrintPages(plugin_->pp_instance(),
                                                          page_ranges,
                                                          page_range_count);
-      return pp::ImageData(pp::ImageData::PassRef(), image_data);
+      return pp::ImageData(pp::PASS_REF, image_data);
     }
     return pp::Resource();
   }
@@ -383,7 +383,7 @@ class SelectionAdapter : public pp::Selection_Dev {
     if (ppp_selection_ != NULL) {
       PP_Var var = ppp_selection_->GetSelectedText(plugin_->pp_instance(),
                                                    PP_FromBool(html));
-      return pp::Var(pp::Var::PassRef(), var);
+      return pp::Var(pp::PASS_REF, var);
     }
     return pp::Var();
   }
@@ -825,7 +825,7 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
     // manifest.  This takes into account the setting of <base> tags that
     // precede the embed/object.
     CHECK(url_util_ != NULL);
-    pp::Var base_var = url_util_->GetDocumentURL(*this);
+    pp::Var base_var = url_util_->GetDocumentURL(this);
     if (!base_var.is_string()) {
       PLUGIN_PRINTF(("Plugin::Init (unable to find document url)\n"));
       return false;

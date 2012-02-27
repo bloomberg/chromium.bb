@@ -7,6 +7,7 @@
 #include "ppapi/c/dev/ppp_video_decoder_dev.h"
 #include "ppapi/cpp/dev/video_decoder_dev.h"
 #include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
 
@@ -21,8 +22,8 @@ void ProvidePictureBuffers(PP_Instance instance,
                            PP_Resource decoder,
                            uint32_t req_num_of_bufs,
                            const PP_Size* dimensions) {
-  void* object = pp::Instance::GetPerInstanceObject(
-      instance, kPPPVideoDecoderInterface);
+  void* object = Instance::GetPerInstanceObject(instance,
+                                                kPPPVideoDecoderInterface);
   if (!object)
     return;
   static_cast<VideoDecoderClient_Dev*>(object)->ProvidePictureBuffers(
@@ -32,8 +33,8 @@ void ProvidePictureBuffers(PP_Instance instance,
 void DismissPictureBuffer(PP_Instance instance,
                           PP_Resource decoder,
                           int32_t picture_buffer_id) {
-  void* object = pp::Instance::GetPerInstanceObject(
-      instance, kPPPVideoDecoderInterface);
+  void* object = Instance::GetPerInstanceObject(instance,
+                                                kPPPVideoDecoderInterface);
   if (!object)
     return;
   static_cast<VideoDecoderClient_Dev*>(object)->DismissPictureBuffer(
@@ -43,8 +44,8 @@ void DismissPictureBuffer(PP_Instance instance,
 void PictureReady(PP_Instance instance,
                   PP_Resource decoder,
                   const PP_Picture_Dev* picture) {
-  void* object = pp::Instance::GetPerInstanceObject(
-      instance, kPPPVideoDecoderInterface);
+  void* object = Instance::GetPerInstanceObject(instance,
+                                                kPPPVideoDecoderInterface);
   if (!object)
     return;
   static_cast<VideoDecoderClient_Dev*>(object)->PictureReady(decoder, *picture);
@@ -53,8 +54,8 @@ void PictureReady(PP_Instance instance,
 void NotifyError(PP_Instance instance,
                  PP_Resource decoder,
                  PP_VideoDecodeError_Dev error) {
-  void* object = pp::Instance::GetPerInstanceObject(
-      instance, kPPPVideoDecoderInterface);
+  void* object = Instance::GetPerInstanceObject(instance,
+                                                kPPPVideoDecoderInterface);
   if (!object)
     return;
   static_cast<VideoDecoderClient_Dev*>(object)->NotifyError(decoder, error);
@@ -69,17 +70,16 @@ static PPP_VideoDecoder_Dev videodecoder_interface = {
 
 }  // namespace
 
-VideoDecoderClient_Dev::VideoDecoderClient_Dev(Instance* instance)
+VideoDecoderClient_Dev::VideoDecoderClient_Dev(const InstanceHandle& instance)
     : associated_instance_(instance) {
-  pp::Module::Get()->AddPluginInterface(kPPPVideoDecoderInterface,
-                                        &videodecoder_interface);
-  associated_instance_->AddPerInstanceObject(
-      kPPPVideoDecoderInterface, this);
+  Module::Get()->AddPluginInterface(kPPPVideoDecoderInterface,
+                                    &videodecoder_interface);
+  Instance::AddPerInstanceObject(instance, kPPPVideoDecoderInterface, this);
 }
 
 VideoDecoderClient_Dev::~VideoDecoderClient_Dev() {
-  associated_instance_->RemovePerInstanceObject(
-      kPPPVideoDecoderInterface, this);
+  Instance::RemovePerInstanceObject(associated_instance_,
+                                    kPPPVideoDecoderInterface, this);
 }
 
 }  // namespace pp

@@ -8,7 +8,7 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/file_ref.h"
-#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
 
@@ -25,11 +25,11 @@ template <> const char* interface_name<PPB_FileIO>() {
 FileIO::FileIO() {
 }
 
-FileIO::FileIO(Instance* instance) {
+FileIO::FileIO(const InstanceHandle& instance) {
   if (!has_interface<PPB_FileIO>())
     return;
   PassRefFromConstructor(get_interface<PPB_FileIO>()->Create(
-      instance->pp_instance()));
+      instance.pp_instance()));
 }
 
 FileIO::FileIO(const FileIO& other)

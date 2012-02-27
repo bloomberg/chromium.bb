@@ -6,7 +6,7 @@
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash_message_loop.h"
-#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module_impl.h"
 
 namespace pp {
@@ -21,10 +21,10 @@ template <> const char* interface_name<PPB_Flash_MessageLoop>() {
 
 namespace flash {
 
-MessageLoop::MessageLoop(Instance* instance) {
+MessageLoop::MessageLoop(const InstanceHandle& instance) {
   if (has_interface<PPB_Flash_MessageLoop>()) {
     PassRefFromConstructor(get_interface<PPB_Flash_MessageLoop>()->Create(
-        instance->pp_instance()));
+        instance.pp_instance()));
   }
 }
 

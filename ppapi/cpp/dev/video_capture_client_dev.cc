@@ -6,6 +6,7 @@
 
 #include "ppapi/c/dev/ppp_video_capture_dev.h"
 #include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module.h"
 
 namespace pp {
@@ -64,15 +65,16 @@ PPP_VideoCapture_Dev ppp_video_capture = {
 
 }  // namespace
 
-VideoCaptureClient_Dev::VideoCaptureClient_Dev(Instance* instance)
+VideoCaptureClient_Dev::VideoCaptureClient_Dev(const InstanceHandle& instance)
     : instance_(instance) {
-  pp::Module::Get()->AddPluginInterface(kPPPVideoCaptureInterface,
-                                        &ppp_video_capture);
-  instance_->AddPerInstanceObject(kPPPVideoCaptureInterface, this);
+  Module::Get()->AddPluginInterface(kPPPVideoCaptureInterface,
+                                    &ppp_video_capture);
+  Instance::AddPerInstanceObject(instance, kPPPVideoCaptureInterface, this);
 }
 
 VideoCaptureClient_Dev::~VideoCaptureClient_Dev() {
-  instance_->RemovePerInstanceObject(kPPPVideoCaptureInterface, this);
+  Instance::RemovePerInstanceObject(instance_,
+                                    kPPPVideoCaptureInterface, this);
 }
 
 }  // namespace pp

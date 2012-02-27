@@ -49,7 +49,7 @@ bool TestTCPSocketPrivate::Init() {
     return false;
 
   PP_URLComponents_Dev components;
-  pp::Var pp_url = pp::URLUtil_Dev::Get()->GetDocumentURL(*instance_,
+  pp::Var pp_url = pp::URLUtil_Dev::Get()->GetDocumentURL(instance_,
                                                           &components);
   if (!pp_url.is_string())
     return false;

@@ -54,7 +54,7 @@ std::string TestFlashClipboard::ReadStringVar(
     PP_Flash_Clipboard_Format format) {
   std::string result_str;
   pp::Var result_var(
-      pp::Var::PassRef(),
+      pp::PASS_REF,
       clipboard_interface_->ReadData(instance_->pp_instance(),
                                      PP_FLASH_CLIPBOARD_TYPE_STANDARD,
                                      format));

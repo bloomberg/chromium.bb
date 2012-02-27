@@ -13,7 +13,7 @@
 namespace pp {
 
 class CompletionCallback;
-class Instance;
+class InstanceHandle;
 class URLRequestInfo;
 class URLResponseInfo;
 
@@ -26,10 +26,6 @@ class URLLoader : public Resource {
   /// <code>URLLoader</code> object.
   URLLoader() {}
 
-  // TODO(brettw) remove this when NaCl is updated to use the new version
-  // that takes a pointer.
-  explicit URLLoader(const Instance& instance);
-
   /// A constructor used when a <code>PP_Resource</code> is provided as a
   /// return value whose reference count we need to increment.
   ///
@@ -40,8 +36,9 @@ class URLLoader : public Resource {
   /// A constructor used to allocate a new URLLoader in the browser. The
   /// resulting object will be <code>is_null</code> if the allocation failed.
   ///
-  /// @param[in] instance An <code>Instance</code>.
-  explicit URLLoader(Instance* instance);
+  /// @param[in] instance The instance with which this resource will be
+  /// associated.
+  explicit URLLoader(const InstanceHandle& instance);
 
   /// The copy constructor for <code>URLLoader</code>.
   ///

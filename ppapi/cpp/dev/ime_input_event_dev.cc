@@ -38,7 +38,7 @@ IMEInputEvent_Dev::IMEInputEvent_Dev(const InputEvent& event) : InputEvent() {
 Var IMEInputEvent_Dev::GetText() const {
   if (!has_interface<PPB_IMEInputEvent_Dev>())
     return Var();
-  return Var(Var::PassRef(),
+  return Var(PASS_REF,
              get_interface<PPB_IMEInputEvent_Dev>()->GetText(pp_resource()));
 }
 

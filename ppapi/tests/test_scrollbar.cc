@@ -18,7 +18,7 @@ REGISTER_TEST_CASE(Scrollbar);
 TestScrollbar::TestScrollbar(TestingInstance* instance)
     : TestCase(instance),
       WidgetClient_Dev(instance),
-      scrollbar_(*instance, true),
+      scrollbar_(instance, true),
       scrollbar_value_changed_(false) {
 }
 

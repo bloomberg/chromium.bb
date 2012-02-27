@@ -44,6 +44,9 @@ Resource::Resource(PP_Resource resource) : pp_resource_(resource) {
     Module::Get()->core()->AddRefResource(pp_resource_);
 }
 
+Resource::Resource(PassRef, PP_Resource resource) : pp_resource_(resource) {
+}
+
 void Resource::PassRefFromConstructor(PP_Resource resource) {
   PP_DCHECK(!pp_resource_);
   pp_resource_ = resource;

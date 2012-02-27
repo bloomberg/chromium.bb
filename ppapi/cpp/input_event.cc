@@ -4,7 +4,7 @@
 
 #include "ppapi/cpp/input_event.h"
 
-#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
 #include "ppapi/cpp/point.h"
@@ -84,7 +84,7 @@ MouseInputEvent::MouseInputEvent(const InputEvent& event) : InputEvent() {
   }
 }
 
-MouseInputEvent::MouseInputEvent(Instance* instance,
+MouseInputEvent::MouseInputEvent(const InstanceHandle& instance,
                                  PP_InputEvent_Type type,
                                  PP_TimeTicks time_stamp,
                                  uint32_t modifiers,
@@ -96,7 +96,7 @@ MouseInputEvent::MouseInputEvent(Instance* instance,
   if (!has_interface<PPB_MouseInputEvent>())
     return;
   PassRefFromConstructor(get_interface<PPB_MouseInputEvent>()->Create(
-      instance->pp_instance(), type, time_stamp, modifiers, mouse_button,
+      instance.pp_instance(), type, time_stamp, modifiers, mouse_button,
       &mouse_position.pp_point(), click_count, &mouse_movement.pp_point()));
 }
 
@@ -140,7 +140,7 @@ WheelInputEvent::WheelInputEvent(const InputEvent& event) : InputEvent() {
   }
 }
 
-WheelInputEvent::WheelInputEvent(Instance* instance,
+WheelInputEvent::WheelInputEvent(const InstanceHandle& instance,
                                  PP_TimeTicks time_stamp,
                                  uint32_t modifiers,
                                  const FloatPoint& wheel_delta,
@@ -150,7 +150,7 @@ WheelInputEvent::WheelInputEvent(Instance* instance,
   if (!has_interface<PPB_WheelInputEvent>())
     return;
   PassRefFromConstructor(get_interface<PPB_WheelInputEvent>()->Create(
-      instance->pp_instance(), time_stamp, modifiers,
+      instance.pp_instance(), time_stamp, modifiers,
       &wheel_delta.pp_float_point(), &wheel_ticks.pp_float_point(),
       PP_FromBool(scroll_by_page)));
 }
@@ -190,7 +190,7 @@ KeyboardInputEvent::KeyboardInputEvent(const InputEvent& event) : InputEvent() {
   }
 }
 
-KeyboardInputEvent::KeyboardInputEvent(Instance* instance,
+KeyboardInputEvent::KeyboardInputEvent(const InstanceHandle& instance,
                                        PP_InputEvent_Type type,
                                        PP_TimeTicks time_stamp,
                                        uint32_t modifiers,
@@ -200,7 +200,7 @@ KeyboardInputEvent::KeyboardInputEvent(Instance* instance,
   if (!has_interface<PPB_KeyboardInputEvent>())
     return;
   PassRefFromConstructor(get_interface<PPB_KeyboardInputEvent>()->Create(
-      instance->pp_instance(), type, time_stamp, modifiers, key_code,
+      instance.pp_instance(), type, time_stamp, modifiers, key_code,
       character_text.pp_var()));
 }
 
@@ -213,7 +213,7 @@ uint32_t KeyboardInputEvent::GetKeyCode() const {
 Var KeyboardInputEvent::GetCharacterText() const {
   if (!has_interface<PPB_KeyboardInputEvent>())
     return Var();
-  return Var(Var::PassRef(),
+  return Var(PASS_REF,
              get_interface<PPB_KeyboardInputEvent>()->GetCharacterText(
                  pp_resource()));
 }

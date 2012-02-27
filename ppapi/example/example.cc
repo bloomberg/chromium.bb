@@ -98,14 +98,14 @@ class MyFetcher {
     callback_factory_.Initialize(this);
   }
 
-  void Start(const pp::InstancePrivate& instance,
+  void Start(pp::Instance* instance,
              const pp::Var& url,
              MyFetcherClient* client) {
     pp::URLRequestInfo request;
     request.SetURL(url);
     request.SetMethod("GET");
 
-    loader_ = pp::URLLoader(instance);
+    loader_ = pp::URLLoader(pp::InstanceHandle(instance));
     client_ = client;
 
     pp::CompletionCallback callback =
@@ -415,7 +415,7 @@ int gettimeofday(struct timeval *tv, struct timezone*) {
 
     if (!fetcher_) {
       fetcher_ = new MyFetcher();
-      fetcher_->Start(*this, href, this);
+      fetcher_->Start(this, href, this);
     }
   }
 

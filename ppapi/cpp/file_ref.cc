@@ -23,8 +23,7 @@ template <> const char* interface_name<PPB_FileRef>() {
 FileRef::FileRef(PP_Resource resource) : Resource(resource) {
 }
 
-FileRef::FileRef(PassRef, PP_Resource resource) {
-  PassRefFromConstructor(resource);
+FileRef::FileRef(PassRef, PP_Resource resource) : Resource(PASS_REF, resource) {
 }
 
 FileRef::FileRef(const FileSystem& file_system,
@@ -48,23 +47,20 @@ PP_FileSystemType FileRef::GetFileSystemType() const {
 Var FileRef::GetName() const {
   if (!has_interface<PPB_FileRef>())
     return Var();
-  return Var(Var::PassRef(),
-             get_interface<PPB_FileRef>()->GetName(pp_resource()));
+  return Var(PASS_REF, get_interface<PPB_FileRef>()->GetName(pp_resource()));
 }
 
 Var FileRef::GetPath() const {
   if (!has_interface<PPB_FileRef>())
     return Var();
-  return Var(Var::PassRef(),
-             get_interface<PPB_FileRef>()->GetPath(pp_resource()));
+  return Var(PASS_REF, get_interface<PPB_FileRef>()->GetPath(pp_resource()));
 }
 
 FileRef FileRef::GetParent() const {
   if (!has_interface<PPB_FileRef>())
     return FileRef();
-  return FileRef(PassRef(),
-                     get_interface<PPB_FileRef>()->GetParent(
-                         pp_resource()));
+  return FileRef(PASS_REF,
+                 get_interface<PPB_FileRef>()->GetParent(pp_resource()));
 }
 
 int32_t FileRef::MakeDirectory(const CompletionCallback& cc) {

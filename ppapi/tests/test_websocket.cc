@@ -584,7 +584,7 @@ std::string TestWebSocket::TestCcInterfaces() {
   for (uint32_t i = 0; i < binary_length; ++i)
     binary_message[i] = i;
   result = ws.SendMessage(pp::Var(
-      pp::Var::PassRef(), CreateVarBinary(binary_message, binary_length)));
+      pp::PASS_REF, CreateVarBinary(binary_message, binary_length)));
   ASSERT_EQ(PP_OK, result);
 
   pp::Var text_receive_var;

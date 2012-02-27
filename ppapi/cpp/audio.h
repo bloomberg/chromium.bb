@@ -8,7 +8,6 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/ppb_audio.h"
 #include "ppapi/cpp/audio_config.h"
-#include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/resource.h"
 
 /// @file
@@ -16,6 +15,8 @@
 /// capabilities.
 
 namespace pp {
+
+class InstanceHandle;
 
 /// An audio resource. Refer to the
 /// <a href="/native-client/devguide/coding/audio">Audio</a>
@@ -38,14 +39,17 @@ class Audio : public Resource {
   /// the device configuration and is specified in the <code>AudioConfig</code>
   /// documentation.
   ///
-  /// @param[in] instance A pointer to an <code>Instance</code> identifying one
-  /// instance of a module.
+  /// @param[in] instance The instance with which this resource will be
+  /// associated.
+  //
   /// @param[in] config An <code>AudioConfig</code> containing the audio config
   /// resource.
+  //
   /// @param[in] callback A <code>PPB_Audio_Callback</code> callback function
   /// that the browser calls when it needs more samples to play.
+  //
   /// @param[in] user_data A pointer to user data used in the callback function.
-  Audio(Instance* instance,
+  Audio(const InstanceHandle& instance,
         const AudioConfig& config,
         PPB_Audio_Callback callback,
         void* user_data);

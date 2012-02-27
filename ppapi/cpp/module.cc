@@ -138,7 +138,7 @@ void Messaging_HandleMessage(PP_Instance pp_instance, PP_Var var) {
   Instance* instance = module_singleton->InstanceForPPInstance(pp_instance);
   if (!instance)
     return;
-  instance->HandleMessage(Var(Var::PassRef(), var));
+  instance->HandleMessage(Var(PASS_REF, var));
 }
 
 static PPP_Messaging instance_messaging_interface = {

@@ -6,7 +6,7 @@
 
 #include "ppapi/c/dev/ppb_audio_input_dev.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
 
@@ -20,14 +20,14 @@ template <> const char* interface_name<PPB_AudioInput_Dev>() {
 
 }  // namespace
 
-AudioInput_Dev::AudioInput_Dev(Instance* instance,
+AudioInput_Dev::AudioInput_Dev(const InstanceHandle& instance,
                                const AudioConfig& config,
                                PPB_AudioInput_Callback callback,
                                void* user_data)
     : config_(config) {
   if (has_interface<PPB_AudioInput_Dev>()) {
     PassRefFromConstructor(get_interface<PPB_AudioInput_Dev>()->Create(
-        instance->pp_instance(), config.pp_resource(), callback, user_data));
+        instance.pp_instance(), config.pp_resource(), callback, user_data));
   }
 }
 

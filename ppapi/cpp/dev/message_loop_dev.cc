@@ -7,7 +7,7 @@
 #include "ppapi/c/dev/ppb_message_loop_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/completion_callback.h"
-#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module_impl.h"
 
 namespace pp {
@@ -23,10 +23,10 @@ template <> const char* interface_name<PPB_MessageLoop_Dev>() {
 MessageLoop_Dev::MessageLoop_Dev() : Resource() {
 }
 
-MessageLoop_Dev::MessageLoop_Dev(Instance* instance) : Resource() {
+MessageLoop_Dev::MessageLoop_Dev(const InstanceHandle& instance) : Resource() {
   if (has_interface<PPB_MessageLoop_Dev>()) {
     PassRefFromConstructor(get_interface<PPB_MessageLoop_Dev>()->Create(
-        instance->pp_instance()));
+        instance.pp_instance()));
   }
 }
 

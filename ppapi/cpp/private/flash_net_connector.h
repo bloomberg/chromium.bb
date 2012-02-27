@@ -11,13 +11,13 @@
 namespace pp {
 
 class CompletionCallback;
-class Instance;
+class InstanceHandle;
 
 namespace flash {
 
 class NetConnector : public Resource {
  public:
-  explicit NetConnector(const Instance& instance);
+  explicit NetConnector(const InstanceHandle& instance);
 
   int32_t ConnectTcp(const char* host,
                      uint16_t port,

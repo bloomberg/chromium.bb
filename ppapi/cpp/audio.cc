@@ -4,6 +4,7 @@
 
 #include "ppapi/cpp/audio.h"
 
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module_impl.h"
 
 namespace pp {
@@ -16,14 +17,14 @@ template <> const char* interface_name<PPB_Audio>() {
 
 }  // namespace
 
-Audio::Audio(Instance* instance,
+Audio::Audio(const InstanceHandle& instance,
              const AudioConfig& config,
              PPB_Audio_Callback callback,
              void* user_data)
     : config_(config) {
   if (has_interface<PPB_Audio>()) {
     PassRefFromConstructor(get_interface<PPB_Audio>()->Create(
-        instance->pp_instance(), config.pp_resource(), callback, user_data));
+        instance.pp_instance(), config.pp_resource(), callback, user_data));
   }
 }
 

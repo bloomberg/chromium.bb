@@ -8,7 +8,7 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/file_ref.h"
-#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
 #include "ppapi/cpp/url_request_info.h"
@@ -27,19 +27,11 @@ template <> const char* interface_name<PPB_URLLoader>() {
 URLLoader::URLLoader(PP_Resource resource) : Resource(resource) {
 }
 
-// TODO(brettw) remove this when NaCl is updated.
-URLLoader::URLLoader(const Instance& instance) {
+URLLoader::URLLoader(const InstanceHandle& instance) {
   if (!has_interface<PPB_URLLoader>())
     return;
   PassRefFromConstructor(get_interface<PPB_URLLoader>()->Create(
       instance.pp_instance()));
-}
-
-URLLoader::URLLoader(Instance* instance) {
-  if (!has_interface<PPB_URLLoader>())
-    return;
-  PassRefFromConstructor(get_interface<PPB_URLLoader>()->Create(
-      instance->pp_instance()));
 }
 
 URLLoader::URLLoader(const URLLoader& other) : Resource(other) {
@@ -81,7 +73,7 @@ bool URLLoader::GetDownloadProgress(
 URLResponseInfo URLLoader::GetResponseInfo() const {
   if (!has_interface<PPB_URLLoader>())
     return URLResponseInfo();
-  return URLResponseInfo(URLResponseInfo::PassRef(),
+  return URLResponseInfo(PASS_REF,
                          get_interface<PPB_URLLoader>()->GetResponseInfo(
                              pp_resource()));
 }

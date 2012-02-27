@@ -5,7 +5,7 @@
 #include "ppapi/cpp/dev/transport_dev.h"
 
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/resource.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
@@ -21,12 +21,12 @@ template <> const char* interface_name<PPB_Transport_Dev>() {
 
 }  // namespace
 
-Transport_Dev::Transport_Dev(Instance* instance,
+Transport_Dev::Transport_Dev(const InstanceHandle& instance,
                              const char* name,
                              PP_TransportType type) {
   if (has_interface<PPB_Transport_Dev>())
     PassRefFromConstructor(get_interface<PPB_Transport_Dev>()->CreateTransport(
-        instance->pp_instance(), name, type));
+        instance.pp_instance(), name, type));
 }
 
 bool Transport_Dev::IsWritable() {
@@ -58,7 +58,7 @@ int32_t Transport_Dev::GetNextAddress(Var* address,
   PP_Var temp_address = PP_MakeUndefined();
   int32_t ret_val = get_interface<PPB_Transport_Dev>()->GetNextAddress(
       pp_resource(), &temp_address, cc.pp_completion_callback());
-  *address = Var(Var::PassRef(), temp_address);
+  *address = Var(PASS_REF, temp_address);
   return ret_val;
 }
 

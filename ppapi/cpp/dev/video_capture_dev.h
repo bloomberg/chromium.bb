@@ -14,11 +14,11 @@ namespace pp {
 
 class CompletionCallback;
 class DeviceRef_Dev;
-class Instance;
+class InstanceHandle;
 
 class VideoCapture_Dev : public Resource {
  public:
-  explicit VideoCapture_Dev(const Instance& instance);
+  explicit VideoCapture_Dev(const InstanceHandle& instance);
   VideoCapture_Dev(PP_Resource resource);
   VideoCapture_Dev(const VideoCapture_Dev& other);
 

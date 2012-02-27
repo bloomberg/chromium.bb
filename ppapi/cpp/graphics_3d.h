@@ -13,7 +13,7 @@
 namespace pp {
 
 class CompletionCallback;
-class Instance;
+class InstanceHandle;
 
 /// This class represents a 3D rendering context in the browser.
 class Graphics3D : public Resource {
@@ -26,7 +26,8 @@ class Graphics3D : public Resource {
   /// to a module instance using <code>Instance::BindGraphics</code> to draw on
   /// the web page.
   ///
-  /// @param[in] instance The instance that will own the new Graphics3D.
+  /// @param[in] instance The instance with which this resource will be
+  /// associated.
   ///
   /// @param[in] attrib_list The list of attributes (name=value pairs) for the
   /// context. The list is terminated with
@@ -61,7 +62,7 @@ class Graphics3D : public Resource {
   /// Default: Implementation defined.
   ///
   /// On failure, the object will be is_null().
-  Graphics3D(const Instance* instance,
+  Graphics3D(const InstanceHandle& instance,
              const int32_t attrib_list[]);
 
   /// A constructor for creating and initializing a 3D rendering context. The
@@ -84,7 +85,7 @@ class Graphics3D : public Resource {
   /// 2-argument version of this constructor for more information.
   ///
   /// On failure, the object will be is_null().
-  Graphics3D(const Instance* instance,
+  Graphics3D(const InstanceHandle& instance,
              const Graphics3D& share_context,
              const int32_t attrib_list[]);
 

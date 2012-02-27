@@ -6,13 +6,12 @@
 #define PPAPI_CPP_GRAPHICS_3D_CLIENT_H_
 
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/cpp/instance_handle.h"
 
 /// @file
 /// This file defines the API for callbacks related to 3D.
 
 namespace pp {
-
-class Instance;
 
 // This class provides a C++ interface for callbacks related to 3D. You
 // would normally use multiple inheritance to derive from this class in your
@@ -24,7 +23,7 @@ class Graphics3DClient {
   ///
   /// @param[in] instance The instance that will own the new
   /// <code>Graphics3DClient</code>.
-  explicit Graphics3DClient(Instance* instance);
+  explicit Graphics3DClient(const InstanceHandle& instance);
 
   /// Destructor.
   virtual ~Graphics3DClient();
@@ -34,7 +33,7 @@ class Graphics3DClient {
   virtual void Graphics3DContextLost() = 0;
 
  private:
-  Instance* associated_instance_;
+  InstanceHandle associated_instance_;
 };
 
 }  // namespace pp

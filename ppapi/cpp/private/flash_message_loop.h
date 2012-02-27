@@ -10,13 +10,13 @@
 
 namespace pp {
 
-class Instance;
+class InstanceHandle;
 
 namespace flash {
 
 class MessageLoop : public Resource {
  public:
-  explicit MessageLoop(Instance* instance);
+  explicit MessageLoop(const InstanceHandle& instance);
   virtual ~MessageLoop();
 
   static bool IsAvailable();

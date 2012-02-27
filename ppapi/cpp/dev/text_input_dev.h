@@ -6,17 +6,17 @@
 #define PPAPI_CPP_DEV_TEXT_INPUT_DEV_H_
 
 #include "ppapi/c/dev/ppb_text_input_dev.h"
+#include "ppapi/cpp/instance_handle.h"
 
 /// @file
 /// This file defines the API for controlling text input methods.
 namespace pp {
 
-class Instance;
 class Rect;
 
 class TextInput_Dev {
  public:
-  explicit TextInput_Dev(Instance* instance);
+  explicit TextInput_Dev(const InstanceHandle& instance);
   virtual ~TextInput_Dev();
 
   void SetTextInputType(PP_TextInput_Type type);
@@ -24,7 +24,7 @@ class TextInput_Dev {
   void CancelCompositionText();
 
  private:
-  Instance* instance_;
+  InstanceHandle instance_;
 };
 
 }  // namespace pp

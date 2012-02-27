@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "ppapi/c/pp_var.h"
-
+#include "ppapi/cpp/pass_ref.h"
 
 /// @file
 /// This file defines the API for handling the passing of data types between
@@ -49,12 +49,6 @@ class Var {
 
   /// A constructor used to create a UTF-8 character <code>Var</code>.
   Var(const std::string& utf8_str);  // Must be encoded in UTF-8.
-
-  /// PassRef can be used to construct a <code>Var</code> with a
-  /// <code>PP_Var</code> when the <code>PP_Var</code>
-  /// already has had its reference count incremented.  For example:
-  /// <code>pp::Var my_var(PassRef(), my_pp_var);</code>
-  struct PassRef {};
 
   /// A constructor used when you have received a <code>Var</code> as a return
   /// value that has had its reference count incremented for you.
@@ -269,7 +263,7 @@ class Var {
     /// Destructor.
     ~OutException() {
       if (output_ && !originally_had_exception_)
-        *output_ = Var(PassRef(), temp_);
+        *output_ = Var(PASS_REF, temp_);
     }
 
     PP_Var* get() {

@@ -17,7 +17,7 @@ namespace pp {
 
 class CompletionCallback;
 class FileRef;
-class Instance;
+class InstanceHandle;
 
 /// The <code>FileIO</code> class represents a regular file.
 class FileIO : public Resource {
@@ -29,8 +29,9 @@ class FileIO : public Resource {
   /// A constructor used to create a <code>FileIO</code> and associate it with
   /// the provided <code>Instance</code>.
   ///
-  /// @param[in] instance An <code>Instance</code>.
-  FileIO(Instance* instance);
+  /// @param[in] instance The instance with which this resource will be
+  /// associated.
+  explicit FileIO(const InstanceHandle& instance);
 
   /// The copy constructor for <code>FileIO</code>.
   ///

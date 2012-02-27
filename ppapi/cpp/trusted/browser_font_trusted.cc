@@ -158,7 +158,7 @@ BrowserFont_Trusted& BrowserFont_Trusted::operator=(
 Var BrowserFont_Trusted::GetFontFamilies(Instance* instance) {
   if (!has_interface<PPB_Font_Dev>())
     return Var();
-  return Var(Var::PassRef(),
+  return Var(PASS_REF,
              get_interface<PPB_Font_Dev>()->GetFontFamilies(
                  instance->pp_instance()));
 }
@@ -179,7 +179,7 @@ bool BrowserFont_Trusted::Describe(
         BrowserFontMetricsToFontMetrics(metrics)))
       return false;
   }
-  description->face_ = Var(Var::PassRef(),
+  description->face_ = Var(PASS_REF,
                            description->pp_font_description_.face);
   return true;
 }

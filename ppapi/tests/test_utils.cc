@@ -50,7 +50,7 @@ bool GetLocalHostPort(PP_Instance instance, std::string* host, uint16_t* port) {
     return false;
 
   PP_URLComponents_Dev components;
-  pp::Var pp_url(pp::Var::PassRef(),
+  pp::Var pp_url(pp::PASS_REF,
                  testing->GetDocumentURL(instance, &components));
   if (!pp_url.is_string())
     return false;

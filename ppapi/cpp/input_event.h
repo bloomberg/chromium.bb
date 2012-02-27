@@ -16,7 +16,7 @@
 namespace pp {
 
 class FloatPoint;
-class Instance;
+class InstanceHandle;
 class Point;
 class Var;
 
@@ -124,7 +124,7 @@ class MouseInputEvent : public InputEvent {
   // TODO(brettw) figure out exactly what this means.
   ///
   /// @param[in] mouse_movement The change in position of the mouse.
-  MouseInputEvent(Instance* instance,
+  MouseInputEvent(const InstanceHandle& instance,
                   PP_InputEvent_Type type,
                   PP_TimeTicks time_stamp,
                   uint32_t modifiers,
@@ -193,7 +193,7 @@ class WheelInputEvent : public InputEvent {
   ///
   /// @param[in] scroll_by_page When true, the user is requesting to scroll
   /// by pages. When false, the user is requesting to scroll by lines.
-  WheelInputEvent(Instance* instance,
+  WheelInputEvent(const InstanceHandle& instance,
                   PP_TimeTicks time_stamp,
                   uint32_t modifiers,
                   const FloatPoint& wheel_delta,
@@ -279,7 +279,7 @@ class KeyboardInputEvent : public InputEvent {
   ///
   /// @param[in] character_text This value represents the typed character as a
   /// UTF-8 string.
-  KeyboardInputEvent(Instance* instance,
+  KeyboardInputEvent(const InstanceHandle& instance,
                      PP_InputEvent_Type type,
                      PP_TimeTicks time_stamp,
                      uint32_t modifiers,

@@ -50,14 +50,14 @@ Var InstancePrivate::GetInstanceObject() {
 VarPrivate InstancePrivate::GetWindowObject() {
   if (!has_interface<PPB_Instance_Private>())
     return VarPrivate();
-  return VarPrivate(Var::PassRef(),
+  return VarPrivate(PASS_REF,
       get_interface<PPB_Instance_Private>()->GetWindowObject(pp_instance()));
 }
 
 VarPrivate InstancePrivate::GetOwnerElementObject() {
   if (!has_interface<PPB_Instance_Private>())
     return VarPrivate();
-  return VarPrivate(Var::PassRef(),
+  return VarPrivate(PASS_REF,
       get_interface<PPB_Instance_Private>()->GetOwnerElementObject(
           pp_instance()));
 }
@@ -65,7 +65,7 @@ VarPrivate InstancePrivate::GetOwnerElementObject() {
 VarPrivate InstancePrivate::ExecuteScript(const Var& script, Var* exception) {
   if (!has_interface<PPB_Instance_Private>())
     return VarPrivate();
-  return VarPrivate(Var::PassRef(),
+  return VarPrivate(PASS_REF,
              get_interface<PPB_Instance_Private>()->ExecuteScript(
                  pp_instance(),
                  script.pp_var(),

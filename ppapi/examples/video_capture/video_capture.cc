@@ -150,7 +150,7 @@ VCDemoInstance::VCDemoInstance(PP_Instance instance, pp::Module* module)
       texture_y_(0),
       texture_u_(0),
       texture_v_(0),
-      video_capture_(*this),
+      video_capture_(this),
       callback_factory_(this),
       context_(NULL) {
   gles2_if_ = static_cast<const struct PPB_OpenGLES2*>(

@@ -38,7 +38,7 @@ void* RunThread(void* void_data) {
 
 }   // namespace
 
-SimpleThread::SimpleThread(Instance* instance)
+SimpleThread::SimpleThread(const InstanceHandle& instance)
     : instance_(instance),
       message_loop_(instance),
       thread_(0) {

@@ -9,7 +9,7 @@
 
 namespace pp {
 
-class InstancePrivate;
+class InstanceHandle;
 
 namespace deprecated {
 class ScriptableObject;
@@ -29,7 +29,8 @@ class VarPrivate : public Var {
   VarPrivate(const std::string& utf8_str) : Var(utf8_str) {}
   VarPrivate(PassRef, PP_Var var) : Var(PassRef(), var) {}
   VarPrivate(DontManage, PP_Var var) : Var(DontManage(), var) {}
-  VarPrivate(InstancePrivate* instance, deprecated::ScriptableObject* object);
+  VarPrivate(const InstanceHandle& instance,
+             deprecated::ScriptableObject* object);
   VarPrivate(const Var& other) : Var(other) {}
 
   virtual ~VarPrivate() {}

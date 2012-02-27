@@ -8,7 +8,7 @@
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module_impl.h"
 #include "ppapi/cpp/var.h"
 
@@ -35,37 +35,37 @@ bool Clipboard::IsAvailable() {
 }
 
 // static
-bool Clipboard::IsFormatAvailable(Instance* instance,
+bool Clipboard::IsFormatAvailable(const InstanceHandle& instance,
                                   PP_Flash_Clipboard_Type clipboard_type,
                                   PP_Flash_Clipboard_Format format) {
   bool rv = false;
   if (has_interface<PPB_Flash_Clipboard>()) {
     rv = PP_ToBool(get_interface<PPB_Flash_Clipboard>()->IsFormatAvailable(
-        instance->pp_instance(), clipboard_type, format));
+        instance.pp_instance(), clipboard_type, format));
   }
   return rv;
 }
 
 // static
 bool Clipboard::ReadData(
-    Instance* instance,
+    const InstanceHandle& instance,
     PP_Flash_Clipboard_Type clipboard_type,
     PP_Flash_Clipboard_Format clipboard_format,
     Var* out) {
   bool rv = false;
   if (has_interface<PPB_Flash_Clipboard>()) {
     PP_Var result = get_interface<PPB_Flash_Clipboard>()->ReadData(
-        instance->pp_instance(),
+        instance.pp_instance(),
         clipboard_type,
         clipboard_format);
-    *out = Var(Var::PassRef(), result);
+    *out = Var(PASS_REF, result);
     rv = true;
   } else if (has_interface<PPB_Flash_Clipboard_3_0>() &&
              clipboard_format == PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT) {
     PP_Var result = get_interface<PPB_Flash_Clipboard_3_0>()->ReadPlainText(
-        instance->pp_instance(),
+        instance.pp_instance(),
         clipboard_type);
-    *out = Var(Var::PassRef(), result);
+    *out = Var(PASS_REF, result);
     rv = true;
   }
   return rv;
@@ -73,7 +73,7 @@ bool Clipboard::ReadData(
 
 // static
 bool Clipboard::WriteData(
-    Instance* instance,
+    const InstanceHandle& instance,
     PP_Flash_Clipboard_Type clipboard_type,
     const std::vector<PP_Flash_Clipboard_Format>& formats,
     const std::vector<Var>& data_items) {
@@ -98,7 +98,7 @@ bool Clipboard::WriteData(
     }
 
     rv = (get_interface<PPB_Flash_Clipboard>()->WriteData(
-        instance->pp_instance(),
+        instance.pp_instance(),
         clipboard_type,
         data_items.size(),
         formats_ptr,
@@ -110,7 +110,7 @@ bool Clipboard::WriteData(
     for (int32_t i = formats.size() - 1; i >= 0; --i) {
       if (formats[i] == PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT) {
         rv = (get_interface<PPB_Flash_Clipboard_3_0>()->WritePlainText(
-            instance->pp_instance(),
+            instance.pp_instance(),
             clipboard_type,
             data_items[i].pp_var()) == PP_OK);
         break;

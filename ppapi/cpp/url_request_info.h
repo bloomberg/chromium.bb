@@ -14,7 +14,7 @@
 namespace pp {
 
 class FileRef;
-class Instance;
+class InstanceHandle;
 
 /// URLRequestInfo provides an API for creating and manipulating URL requests.
 class URLRequestInfo : public Resource {
@@ -27,8 +27,9 @@ class URLRequestInfo : public Resource {
   /// browser. The resulting object will be <code>is_null</code> if the
   /// allocation failed.
   ///
-  /// @param[in] instance An <code>Instance</code>.
-  explicit URLRequestInfo(Instance* instance);
+  /// @param[in] instance The instance with which this resource will be
+  /// associated.
+  explicit URLRequestInfo(const InstanceHandle& instance);
 
   /// The copy constructor for <code>URLRequestInfo</code>.
   ///

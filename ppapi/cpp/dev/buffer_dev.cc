@@ -5,7 +5,7 @@
 #include "ppapi/cpp/dev/buffer_dev.h"
 
 #include "ppapi/c/dev/ppb_buffer_dev.h"
-#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
 
@@ -32,14 +32,14 @@ Buffer_Dev::Buffer_Dev(PP_Resource resource)
   Init();
 }
 
-Buffer_Dev::Buffer_Dev(Instance* instance, uint32_t size)
+Buffer_Dev::Buffer_Dev(const InstanceHandle& instance, uint32_t size)
     : data_(NULL),
       size_(0) {
   if (!has_interface<PPB_Buffer_Dev>())
     return;
 
   PassRefFromConstructor(get_interface<PPB_Buffer_Dev>()->Create(
-      instance->pp_instance(), size));
+      instance.pp_instance(), size));
   Init();
 }
 

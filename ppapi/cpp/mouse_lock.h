@@ -6,6 +6,7 @@
 #define PPAPI_CPP_MOUSE_LOCK_H_
 
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/cpp/instance_handle.h"
 
 /// @file
 /// This file defines the API for locking the target of mouse events to a
@@ -14,7 +15,6 @@
 namespace pp {
 
 class CompletionCallback;
-class Instance;
 
 /// This class allows you to associate the <code>PPP_MouseLock</code> and
 /// <code>PPB_MouseLock</code> C-based interfaces with an object. It associates
@@ -50,9 +50,9 @@ class MouseLock {
  public:
   /// A constructor for creating a <code>MouseLock</code>.
   ///
-  /// @param[in] instance The instance that will own the new
-  /// <code>MouseLock</code>.
-  explicit MouseLock(Instance* instance);
+  /// @param[in] instance The instance with which this resource will be
+  /// associated.
+  explicit MouseLock(const InstanceHandle& instance);
 
   /// Destructor.
   virtual ~MouseLock();
@@ -90,7 +90,7 @@ class MouseLock {
   void UnlockMouse();
 
  private:
-  Instance* associated_instance_;
+  InstanceHandle associated_instance_;
 };
 
 }  // namespace pp

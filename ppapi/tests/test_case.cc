@@ -126,7 +126,7 @@ std::string TestCase::CheckResourcesAndVars() {
              << kVarsToPrint <<"):<p>";
       errors += output.str();
       for (uint32_t i = 0; i < std::min(tracked_vars, kVarsToPrint); ++i) {
-        pp::Var leaked_var(pp::Var::PassRef(), vars[i]);
+        pp::Var leaked_var(pp::PASS_REF, vars[i]);
 #if (defined __native_client__)
         errors += leaked_var.DebugString() + "<p>";
 #else

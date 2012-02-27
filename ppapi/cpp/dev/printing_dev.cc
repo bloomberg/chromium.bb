@@ -5,6 +5,7 @@
 #include "ppapi/cpp/dev/printing_dev.h"
 
 #include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
 
@@ -16,7 +17,7 @@ static const char kPPPPrintingInterface[] = PPP_PRINTING_DEV_INTERFACE;
 
 uint32_t QuerySupportedFormats(PP_Instance instance) {
   void* object =
-      pp::Instance::GetPerInstanceObject(instance, kPPPPrintingInterface);
+      Instance::GetPerInstanceObject(instance, kPPPPrintingInterface);
   if (!object)
     return 0;
   return static_cast<Printing_Dev*>(object)->QuerySupportedPrintOutputFormats();
@@ -25,7 +26,7 @@ uint32_t QuerySupportedFormats(PP_Instance instance) {
 int32_t Begin(PP_Instance instance,
               const struct PP_PrintSettings_Dev* print_settings) {
   void* object =
-      pp::Instance::GetPerInstanceObject(instance, kPPPPrintingInterface);
+      Instance::GetPerInstanceObject(instance, kPPPPrintingInterface);
   if (!object)
     return 0;
   return static_cast<Printing_Dev*>(object)->PrintBegin(*print_settings);
@@ -69,14 +70,15 @@ const PPP_Printing_Dev ppp_printing = {
 
 }  // namespace
 
-Printing_Dev::Printing_Dev(Instance* instance)
+Printing_Dev::Printing_Dev(const InstanceHandle& instance)
       : associated_instance_(instance) {
-  pp::Module::Get()->AddPluginInterface(kPPPPrintingInterface, &ppp_printing);
-  associated_instance_->AddPerInstanceObject(kPPPPrintingInterface, this);
+  Module::Get()->AddPluginInterface(kPPPPrintingInterface, &ppp_printing);
+  Instance::AddPerInstanceObject(instance, kPPPPrintingInterface, this);
 }
 
 Printing_Dev::~Printing_Dev() {
-  associated_instance_->RemovePerInstanceObject(kPPPPrintingInterface, this);
+  Instance::RemovePerInstanceObject(associated_instance_,
+                                    kPPPPrintingInterface, this);
 }
 
 }  // namespace pp

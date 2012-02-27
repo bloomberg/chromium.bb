@@ -13,7 +13,7 @@
 
 namespace pp {
 
-class Instance;
+class InstanceHandle;
 
 namespace flash {
 
@@ -23,20 +23,20 @@ class Clipboard {
   static bool IsAvailable();
 
   // Returns true if the given format is available from the given clipboard.
-  static bool IsFormatAvailable(Instance* instance,
+  static bool IsFormatAvailable(const InstanceHandle& instance,
                                 PP_Flash_Clipboard_Type clipboard_type,
                                 PP_Flash_Clipboard_Format format);
 
   // Returns true on success, in which case |out| will be filled with
   // data read from the given clipboard in the given format.
-  static bool ReadData(Instance* instance,
+  static bool ReadData(const InstanceHandle& instance,
                        PP_Flash_Clipboard_Type clipboard_type,
                        PP_Flash_Clipboard_Format clipboard_format,
                        Var* out);
 
   // Returns true on success in which case all of |data| will be written to
   // the clipboard. Otherwise nothing will be written.
-  static bool WriteData(Instance* instance,
+  static bool WriteData(const InstanceHandle& instance,
                         PP_Flash_Clipboard_Type clipboard_type,
                         const std::vector<PP_Flash_Clipboard_Format>& formats,
                         const std::vector<Var>& data_items);

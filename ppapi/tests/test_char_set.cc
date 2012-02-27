@@ -352,11 +352,11 @@ std::string TestCharSet::TestCharSetToUTF16() {
 
 std::string TestCharSet::TestGetDefaultCharSet() {
   // Test invalid instance.
-  pp::Var result(pp::Var::PassRef(), char_set_interface_->GetDefaultCharSet(0));
+  pp::Var result(pp::PASS_REF, char_set_interface_->GetDefaultCharSet(0));
   ASSERT_TRUE(result.is_undefined());
 
   // Just make sure the default char set is a nonempty string.
-  result = pp::Var(pp::Var::PassRef(),
+  result = pp::Var(pp::PASS_REF,
       char_set_interface_->GetDefaultCharSet(instance_->pp_instance()));
   ASSERT_TRUE(result.is_string());
   ASSERT_FALSE(result.AsString().empty());

@@ -10,7 +10,7 @@
 
 namespace pp {
 
-class Instance;
+class InstanceHandle;
 
 // Simple wrapper around the PPB_URLUtil interface.
 class URLUtil_Dev {
@@ -28,18 +28,18 @@ class URLUtil_Dev {
   Var ResolveRelativeToURL(const Var& base_url,
                            const Var& relative_string,
                            PP_URLComponents_Dev* components = NULL) const;
-  Var ResolveRelativeToDocument(const Instance& instance,
+  Var ResolveRelativeToDocument(const InstanceHandle& instance,
                                 const Var& relative_string,
                                 PP_URLComponents_Dev* components = NULL) const;
 
   bool IsSameSecurityOrigin(const Var& url_a, const Var& url_b) const;
-  bool DocumentCanRequest(const Instance& instance, const Var& url) const;
-  bool DocumentCanAccessDocument(const Instance& active,
-                                 const Instance& target) const;
-  Var GetDocumentURL(const Instance& instance,
+  bool DocumentCanRequest(const InstanceHandle& instance, const Var& url) const;
+  bool DocumentCanAccessDocument(const InstanceHandle& active,
+                                 const InstanceHandle& target) const;
+  Var GetDocumentURL(const InstanceHandle& instance,
                      PP_URLComponents_Dev* components = NULL) const;
 
-  Var GetPluginInstanceURL(const Instance& instance,
+  Var GetPluginInstanceURL(const InstanceHandle& instance,
                            PP_URLComponents_Dev* components = NULL) const;
 
  private:

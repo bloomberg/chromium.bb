@@ -6,7 +6,7 @@
 
 #include "ppapi/cpp/dev/scrollbar_dev.h"
 
-#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
 #include "ppapi/cpp/rect.h"
@@ -24,7 +24,7 @@ template <> const char* interface_name<PPB_Scrollbar_Dev>() {
 Scrollbar_Dev::Scrollbar_Dev(PP_Resource resource) : Widget_Dev(resource) {
 }
 
-Scrollbar_Dev::Scrollbar_Dev(const Instance& instance, bool vertical) {
+Scrollbar_Dev::Scrollbar_Dev(const InstanceHandle& instance, bool vertical) {
   if (!has_interface<PPB_Scrollbar_Dev>())
     return;
   PassRefFromConstructor(get_interface<PPB_Scrollbar_Dev>()->Create(

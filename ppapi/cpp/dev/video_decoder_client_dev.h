@@ -7,10 +7,10 @@
 
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/dev/pp_video_dev.h"
+#include "ppapi/cpp/instance_handle.h"
 
 namespace pp {
 
-class Instance;
 class VideoDecoder_Dev;
 
 // This class provides a C++ interface for callbacks related to video decoding.
@@ -19,7 +19,7 @@ class VideoDecoder_Dev;
 // instance.
 class VideoDecoderClient_Dev {
  public:
-  VideoDecoderClient_Dev(Instance* instance);
+  VideoDecoderClient_Dev(const InstanceHandle& instance);
   virtual ~VideoDecoderClient_Dev();
 
   // Callback to provide buffers for the decoded output pictures.
@@ -41,7 +41,7 @@ class VideoDecoderClient_Dev {
                            PP_VideoDecodeError_Dev error) = 0;
 
  private:
-  Instance* associated_instance_;
+  InstanceHandle associated_instance_;
 };
 
 }  // namespace pp

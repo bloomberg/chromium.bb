@@ -12,11 +12,11 @@
 namespace pp {
 
 class CompletionCallback;
-class Instance;
+class InstanceHandle;
 
 class UDPSocketPrivate : public Resource {
  public:
-  explicit UDPSocketPrivate(Instance* instance);
+  explicit UDPSocketPrivate(const InstanceHandle& instance);
 
   int32_t Bind(const PP_NetAddress_Private* addr,
                const CompletionCallback& callback);

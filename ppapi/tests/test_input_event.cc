@@ -212,9 +212,9 @@ bool TestInputEvent::AreEquivalentEvents(PP_Resource received,
       return
           keyboard_input_event_interface_->GetKeyCode(received) ==
           keyboard_input_event_interface_->GetKeyCode(expected) &&
-          pp::Var(pp::Var::PassRef(),
+          pp::Var(pp::PASS_REF,
               keyboard_input_event_interface_->GetCharacterText(received)) ==
-          pp::Var(pp::Var::PassRef(),
+          pp::Var(pp::PASS_REF,
               keyboard_input_event_interface_->GetCharacterText(expected));
 
     default:

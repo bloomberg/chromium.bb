@@ -132,6 +132,6 @@ void PpbTestingRpcServer::PPB_Testing_GetDocumentURL(
     return;
 
   DebugPrintf("PPB_Testing_Dev::GetDocumentURL: url=%s\n",
-              pp::Var(pp::Var::PassRef(), pp_url).AsString().c_str());
+              pp::Var(pp::PASS_REF, pp_url).AsString().c_str());
   rpc->result = NACL_SRPC_RESULT_OK;
 }

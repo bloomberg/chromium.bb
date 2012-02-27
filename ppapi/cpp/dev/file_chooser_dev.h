@@ -12,7 +12,7 @@ namespace pp {
 
 class CompletionCallback;
 class FileRef;
-class Instance;
+class InstanceHandle;
 class Var;
 
 class FileChooser_Dev : public Resource {
@@ -42,7 +42,7 @@ class FileChooser_Dev : public Resource {
   /// TODO(darin): What if the mime type is unknown to the system?  The plugin
   /// may wish to describe the mime type and provide a matching file extension.
   /// It is more webby to use mime types here instead of file extensions.
-  FileChooser_Dev(const Instance* instance,
+  FileChooser_Dev(const InstanceHandle& instance,
                   PP_FileChooserMode_Dev mode,
                   const Var& accept_mime_types);
 

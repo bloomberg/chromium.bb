@@ -6,7 +6,7 @@
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/completion_callback.h"
-#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module_impl.h"
 #include "ppapi/cpp/var.h"
 
@@ -23,20 +23,20 @@ template <> const char* interface_name<PPB_Graphics3D>() {
 Graphics3D::Graphics3D() {
 }
 
-Graphics3D::Graphics3D(const Instance* instance,
+Graphics3D::Graphics3D(const InstanceHandle& instance,
                        const int32_t attrib_list[]) {
   if (has_interface<PPB_Graphics3D>()) {
     PassRefFromConstructor(get_interface<PPB_Graphics3D>()->Create(
-        instance->pp_instance(), 0, attrib_list));
+        instance.pp_instance(), 0, attrib_list));
   }
 }
 
-Graphics3D::Graphics3D(const Instance* instance,
+Graphics3D::Graphics3D(const InstanceHandle& instance,
                        const Graphics3D& share_context,
                        const int32_t attrib_list[]) {
   if (has_interface<PPB_Graphics3D>()) {
     PassRefFromConstructor(get_interface<PPB_Graphics3D>()->Create(
-        instance->pp_instance(),
+        instance.pp_instance(),
         share_context.pp_resource(),
         attrib_list));
   }

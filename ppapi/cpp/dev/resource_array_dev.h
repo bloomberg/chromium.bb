@@ -10,19 +10,17 @@
 
 namespace pp {
 
-class Instance;
+class InstanceHandle;
 
 class ResourceArray_Dev : public Resource {
  public:
   ResourceArray_Dev();
 
-  struct PassRef {};
-
   ResourceArray_Dev(PassRef, PP_Resource resource);
 
   ResourceArray_Dev(const ResourceArray_Dev& other);
 
-  ResourceArray_Dev(Instance* instance,
+  ResourceArray_Dev(const InstanceHandle& instance,
                     const PP_Resource elements[],
                     uint32_t size);
 

@@ -12,11 +12,11 @@
 namespace pp {
 
 class CompletionCallback;
-class Instance;
+class InstanceHandle;
 
 class TCPSocketPrivate : public Resource {
  public:
-  explicit TCPSocketPrivate(Instance* instance);
+  explicit TCPSocketPrivate(const InstanceHandle& instance);
 
   // Returns true if the required interface is available.
   static bool IsAvailable();

@@ -5,7 +5,7 @@
 #include "ppapi/cpp/url_request_info.h"
 
 #include "ppapi/cpp/file_ref.h"
-#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
 
@@ -19,11 +19,11 @@ template <> const char* interface_name<PPB_URLRequestInfo>() {
 
 }  // namespace
 
-URLRequestInfo::URLRequestInfo(Instance* instance) {
+URLRequestInfo::URLRequestInfo(const InstanceHandle& instance) {
   if (!has_interface<PPB_URLRequestInfo>())
     return;
   PassRefFromConstructor(
-      get_interface<PPB_URLRequestInfo>()->Create(instance->pp_instance()));
+      get_interface<PPB_URLRequestInfo>()->Create(instance.pp_instance()));
 }
 
 URLRequestInfo::URLRequestInfo(const URLRequestInfo& other)

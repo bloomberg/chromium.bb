@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "ppapi/cpp/image_data.h"
-#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/module_impl.h"
@@ -102,11 +102,12 @@ Font_Dev::Font_Dev() : Resource() {
 Font_Dev::Font_Dev(PP_Resource resource) : Resource(resource) {
 }
 
-Font_Dev::Font_Dev(Instance* instance, const FontDescription_Dev& description) {
+Font_Dev::Font_Dev(const InstanceHandle& instance,
+                   const FontDescription_Dev& description) {
   if (!has_interface<PPB_Font_Dev>())
     return;
   PassRefFromConstructor(get_interface<PPB_Font_Dev>()->Create(
-      instance->pp_instance(), &description.pp_font_description()));
+      instance.pp_instance(), &description.pp_font_description()));
 }
 
 Font_Dev::Font_Dev(const Font_Dev& other) : Resource(other) {
@@ -118,12 +119,11 @@ Font_Dev& Font_Dev::operator=(const Font_Dev& other) {
 }
 
 // static
-Var Font_Dev::GetFontFamilies(Instance* instance) {
+Var Font_Dev::GetFontFamilies(const InstanceHandle& instance) {
   if (!has_interface<PPB_Font_Dev>())
     return Var();
-  return Var(Var::PassRef(),
-             get_interface<PPB_Font_Dev>()->GetFontFamilies(
-                 instance->pp_instance()));
+  return Var(PASS_REF, get_interface<PPB_Font_Dev>()->GetFontFamilies(
+                 instance.pp_instance()));
 }
 
 bool Font_Dev::Describe(FontDescription_Dev* description,
@@ -136,7 +136,7 @@ bool Font_Dev::Describe(FontDescription_Dev* description,
   if (!get_interface<PPB_Font_Dev>()->Describe(
       pp_resource(), &description->pp_font_description_, metrics))
     return false;
-  description->face_ = Var(Var::PassRef(),
+  description->face_ = Var(PASS_REF,
                            description->pp_font_description_.face);
 
   return true;

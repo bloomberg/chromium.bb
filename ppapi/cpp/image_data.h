@@ -10,23 +10,18 @@
 #include "ppapi/cpp/size.h"
 #include "ppapi/cpp/resource.h"
 
-
 /// @file
 /// This file defines the APIs for determining how a browser
 /// handles image data.
 namespace pp {
 
-class Instance;
+class InstanceHandle;
 
 class ImageData : public Resource {
  public:
   /// Default constructor for creating an is_null() <code>ImageData</code>
   /// object.
   ImageData();
-
-  /// A special structure used by the constructor that does not increment the
-  /// reference count of the underlying Image resource.
-  struct PassRef {};
 
   /// A constructor used when you have received a <code>PP_Resource</code> as a
   /// return value that has already been reference counted.
@@ -45,8 +40,8 @@ class ImageData : public Resource {
   /// with the provided parameters. The resulting object will be is_null() if
   /// the allocation failed.
   ///
-  /// @param[in] instance A <code>PP_Instance</code> identifying one instance
-  /// of a module.
+  /// @param[in] instance The instance with which this resource will be
+  /// associated.
   ///
   /// @param[in] format A PP_ImageDataFormat containing desired image format.
   /// PP_ImageDataFormat is an enumeration of the different types of
@@ -62,7 +57,7 @@ class ImageData : public Resource {
   /// initialized to transparent during the creation process. If this flag is
   /// not set, the current contents of the bitmap will be undefined, and the
   /// module should be sure to set all the pixels.
-  ImageData(Instance* instance,
+  ImageData(const InstanceHandle& instance,
             PP_ImageDataFormat format,
             const Size& size,
             bool init_to_zero);
@@ -123,7 +118,7 @@ class ImageData : public Resource {
   uint32_t* GetAddr32(const Point& coord);
 
  private:
-  void PassRefAndInitData(PP_Resource resource);
+  void InitData();
 
   PP_ImageDataDesc desc_;
   void* data_;

@@ -151,6 +151,8 @@
       'cpp/input_event.h',
       'cpp/instance.cc',
       'cpp/instance.h',
+      'cpp/instance_handle.cc',
+      'cpp/instance_handle.h',
       'cpp/logging.h',
       'cpp/module.cc',
       'cpp/module.h',

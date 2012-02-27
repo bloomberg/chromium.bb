@@ -6,18 +6,17 @@
 #define PPAPI_CPP_DEV_PRINTING_DEV_H_
 
 #include "ppapi/c/dev/ppp_printing_dev.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/resource.h"
 
 namespace pp {
-
-class Instance;
 
 // You would typically use this either via inheritance on your instance or
 // by composition: see find_dev.h for an example.
 class Printing_Dev {
  public:
   // The instance parameter must outlive this class.
-  explicit Printing_Dev(Instance* instance);
+  explicit Printing_Dev(const InstanceHandle& instance);
   virtual ~Printing_Dev();
 
   // PPP_Printing_Dev functions exposed as virtual functions for you to
@@ -30,7 +29,7 @@ class Printing_Dev {
   virtual bool IsPrintScalingDisabled() = 0;
 
  private:
-  Instance* associated_instance_;
+  InstanceHandle associated_instance_;
 };
 
 }  // namespace pp

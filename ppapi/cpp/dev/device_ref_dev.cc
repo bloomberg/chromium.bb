@@ -22,8 +22,8 @@ DeviceRef_Dev::DeviceRef_Dev() {
 DeviceRef_Dev::DeviceRef_Dev(PP_Resource resource) : Resource(resource) {
 }
 
-DeviceRef_Dev::DeviceRef_Dev(PassRef, PP_Resource resource) {
-  PassRefFromConstructor(resource);
+DeviceRef_Dev::DeviceRef_Dev(PassRef, PP_Resource resource)
+    : Resource(PASS_REF, resource) {
 }
 
 DeviceRef_Dev::DeviceRef_Dev(const DeviceRef_Dev& other) : Resource(other) {
@@ -41,7 +41,7 @@ PP_DeviceType_Dev DeviceRef_Dev::GetType() const {
 Var DeviceRef_Dev::GetName() const {
   if (!has_interface<PPB_DeviceRef_Dev>())
     return Var();
-  return Var(Var::PassRef(),
+  return Var(PASS_REF,
              get_interface<PPB_DeviceRef_Dev>()->GetName(pp_resource()));
 }
 

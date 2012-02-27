@@ -86,7 +86,10 @@ class Module {
   const void* GetBrowserInterface(const char* interface_name);
 
   /// InstanceForPPInstance() returns the object associated with this
-  /// <code>PP_Instance</code>, or NULL if one is not found.
+  /// <code>PP_Instance</code>, or NULL if one is not found. This should only
+  /// be called from the main thread! This instance object may be destroyed at
+  /// any time on the main thread, so using it on other threads may cause a
+  /// crash.
   ///
   /// @param[in] instance This <code>PP_Instance</code>.
   ///

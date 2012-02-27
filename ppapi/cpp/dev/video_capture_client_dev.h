@@ -9,15 +9,14 @@
 
 #include "ppapi/c/dev/pp_video_capture_dev.h"
 #include "ppapi/cpp/dev/buffer_dev.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/resource.h"
 
 namespace pp {
 
-class Instance;
-
 class VideoCaptureClient_Dev {
  public:
-  explicit VideoCaptureClient_Dev(Instance* instance);
+  explicit VideoCaptureClient_Dev(const InstanceHandle& instance);
   virtual ~VideoCaptureClient_Dev();
 
   virtual void OnDeviceInfo(PP_Resource video_capture,
@@ -28,7 +27,7 @@ class VideoCaptureClient_Dev {
   virtual void OnBufferReady(PP_Resource video_capture, uint32_t buffer) = 0;
 
  private:
-  Instance* instance_;
+  InstanceHandle instance_;
 };
 
 }  // namespace pp

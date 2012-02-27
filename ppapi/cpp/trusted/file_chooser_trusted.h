@@ -16,7 +16,7 @@ class FileChooser_Trusted : public FileChooser_Dev {
   /// Creates an is_null() FileChooser_Trusted object.
   FileChooser_Trusted();
 
-  FileChooser_Trusted(const Instance* instance,
+  FileChooser_Trusted(const InstanceHandle& instance,
                       PP_FileChooserMode_Dev mode,
                       const Var& accept_mime_types,
                       bool save_as,

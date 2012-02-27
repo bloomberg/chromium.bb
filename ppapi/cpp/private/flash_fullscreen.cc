@@ -20,7 +20,7 @@ template <> const char* interface_name<PPB_FlashFullscreen>() {
 
 }  // namespace
 
-FlashFullscreen::FlashFullscreen(Instance* instance)
+FlashFullscreen::FlashFullscreen(const InstanceHandle& instance)
     : instance_(instance) {
 }
 
@@ -30,21 +30,21 @@ FlashFullscreen::~FlashFullscreen() {
 bool FlashFullscreen::IsFullscreen() {
   return has_interface<PPB_FlashFullscreen>() &&
       get_interface<PPB_FlashFullscreen>()->IsFullscreen(
-          instance_->pp_instance());
+          instance_.pp_instance());
 }
 
 bool FlashFullscreen::SetFullscreen(bool fullscreen) {
   if (!has_interface<PPB_FlashFullscreen>())
     return false;
   return PP_ToBool(get_interface<PPB_FlashFullscreen>()->SetFullscreen(
-      instance_->pp_instance(), PP_FromBool(fullscreen)));
+      instance_.pp_instance(), PP_FromBool(fullscreen)));
 }
 
 bool FlashFullscreen::GetScreenSize(Size* size) {
   if (!has_interface<PPB_FlashFullscreen>())
     return false;
   return PP_ToBool(get_interface<PPB_FlashFullscreen>()->GetScreenSize(
-      instance_->pp_instance(), &size->pp_size()));
+      instance_.pp_instance(), &size->pp_size()));
 }
 
 }  // namespace pp

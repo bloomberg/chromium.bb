@@ -9,7 +9,7 @@
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/dev/device_ref_dev.h"
 #include "ppapi/cpp/dev/resource_array_dev.h"
-#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
 
@@ -39,7 +39,7 @@ struct VideoCapture_Dev::EnumerateDevicesState {
   VideoCapture_Dev* video_capture;
 };
 
-VideoCapture_Dev::VideoCapture_Dev(const Instance& instance)
+VideoCapture_Dev::VideoCapture_Dev(const InstanceHandle& instance)
     : enum_state_(NULL) {
   if (!has_interface<PPB_VideoCapture_Dev>())
     return;
@@ -149,8 +149,7 @@ void VideoCapture_Dev::OnEnumerateDevicesComplete(void* user_data,
 
   if (result == PP_OK) {
     // It will take care of releasing the reference.
-    ResourceArray_Dev resources(ResourceArray_Dev::PassRef(),
-                                enum_state->devices_resource);
+    ResourceArray_Dev resources(pp::PASS_REF, enum_state->devices_resource);
 
     if (need_to_callback) {
       enum_state->devices->clear();

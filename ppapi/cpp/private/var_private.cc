@@ -6,6 +6,7 @@
 
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/private/instance_private.h"
 #include "ppapi/cpp/logging.h"
 #include "ppapi/cpp/module_impl.h"
@@ -23,10 +24,11 @@ template <> const char* interface_name<PPB_Var_Deprecated>() {
 
 using namespace deprecated;
 
-VarPrivate::VarPrivate(InstancePrivate* instance, ScriptableObject* object) {
+VarPrivate::VarPrivate(const InstanceHandle& instance,
+                       ScriptableObject* object) {
   if (has_interface<PPB_Var_Deprecated>()) {
     var_ = get_interface<PPB_Var_Deprecated>()->CreateObject(
-        instance->pp_instance(), object->GetClass(), object);
+        instance.pp_instance(), object->GetClass(), object);
     needs_release_ = true;
   } else {
     var_.type = PP_VARTYPE_NULL;

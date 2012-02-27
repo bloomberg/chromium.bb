@@ -51,7 +51,7 @@ std::string NetAddressPrivate::Describe(const PP_NetAddress_Private& addr,
   if (!module)
     return std::string();
 
-  Var result(Var::PassRef(),
+  Var result(PASS_REF,
              get_interface<PPB_NetAddress_Private>()->Describe(
                  module->pp_module(),
                  &addr,

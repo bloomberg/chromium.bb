@@ -22,10 +22,6 @@ class URLResponseInfo : public Resource {
   /// resource.
   URLResponseInfo() {}
 
-  /// A special structure used by the constructor that does not increment the
-  /// reference count of the underlying resource.
-  struct PassRef {};
-
   /// A constructor used when you have received a <code>PP_Resource</code> as a
   /// return value that has already been reference counted.
   ///

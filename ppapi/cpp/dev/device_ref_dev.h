@@ -17,8 +17,6 @@ class DeviceRef_Dev : public Resource {
 
   explicit DeviceRef_Dev(PP_Resource resource);
 
-  struct PassRef {};
-
   DeviceRef_Dev(PassRef, PP_Resource resource);
 
   DeviceRef_Dev(const DeviceRef_Dev& other);

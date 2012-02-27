@@ -4,7 +4,7 @@
 
 #include "ppapi/cpp/dev/text_input_dev.h"
 
-#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module_impl.h"
 #include "ppapi/cpp/rect.h"
 
@@ -19,7 +19,8 @@ template <> const char* interface_name<PPB_TextInput_Dev>() {
 }  // namespace
 
 
-TextInput_Dev::TextInput_Dev(Instance* instance) : instance_(instance) {
+TextInput_Dev::TextInput_Dev(const InstanceHandle& instance)
+    : instance_(instance) {
 }
 
 TextInput_Dev::~TextInput_Dev() {
@@ -29,7 +30,7 @@ void TextInput_Dev::SetTextInputType(PP_TextInput_Type type) {
   if (!has_interface<PPB_TextInput_Dev>())
     return;
   get_interface<PPB_TextInput_Dev>()->SetTextInputType(
-      instance_->pp_instance(), type);
+      instance_.pp_instance(), type);
 }
 
 void TextInput_Dev::UpdateCaretPosition(const Rect& caret,
@@ -37,14 +38,14 @@ void TextInput_Dev::UpdateCaretPosition(const Rect& caret,
   if (!has_interface<PPB_TextInput_Dev>())
     return;
   get_interface<PPB_TextInput_Dev>()->UpdateCaretPosition(
-      instance_->pp_instance(), &caret.pp_rect(), &bounding_box.pp_rect());
+      instance_.pp_instance(), &caret.pp_rect(), &bounding_box.pp_rect());
 }
 
 void TextInput_Dev::CancelCompositionText() {
   if (!has_interface<PPB_TextInput_Dev>())
     return;
   get_interface<PPB_TextInput_Dev>()->CancelCompositionText(
-      instance_->pp_instance());
+      instance_.pp_instance());
 }
 
 }  // namespace pp

@@ -22,14 +22,14 @@ URLResponseInfo::URLResponseInfo(const URLResponseInfo& other)
     : Resource(other) {
 }
 
-URLResponseInfo::URLResponseInfo(PassRef, PP_Resource resource) {
-  PassRefFromConstructor(resource);
+URLResponseInfo::URLResponseInfo(PassRef, PP_Resource resource)
+    : Resource(PASS_REF, resource) {
 }
 
 Var URLResponseInfo::GetProperty(PP_URLResponseProperty property) const {
   if (!has_interface<PPB_URLResponseInfo>())
     return Var();
-  return Var(Var::PassRef(),
+  return Var(PASS_REF,
              get_interface<PPB_URLResponseInfo>()->GetProperty(pp_resource(),
                                                                property));
 }
@@ -37,7 +37,7 @@ Var URLResponseInfo::GetProperty(PP_URLResponseProperty property) const {
 FileRef URLResponseInfo::GetBodyAsFileRef() const {
   if (!has_interface<PPB_URLResponseInfo>())
     return FileRef();
-  return FileRef(FileRef::PassRef(),
+  return FileRef(PASS_REF,
                  get_interface<PPB_URLResponseInfo>()->GetBodyAsFileRef(
                      pp_resource()));
 }

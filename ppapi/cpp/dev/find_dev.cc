@@ -22,8 +22,7 @@ static const char kPPPFindInterface[] = PPP_FIND_DEV_INTERFACE;
 PP_Bool StartFind(PP_Instance instance,
                   const char* text,
                   PP_Bool case_sensitive) {
-  void* object =
-      pp::Instance::GetPerInstanceObject(instance, kPPPFindInterface);
+  void* object = Instance::GetPerInstanceObject(instance, kPPPFindInterface);
   if (!object)
     return PP_FALSE;
   bool return_value = static_cast<Find_Dev*>(object)->StartFind(
@@ -32,15 +31,13 @@ PP_Bool StartFind(PP_Instance instance,
 }
 
 void SelectFindResult(PP_Instance instance, PP_Bool forward) {
-  void* object =
-      pp::Instance::GetPerInstanceObject(instance, kPPPFindInterface);
+  void* object = Instance::GetPerInstanceObject(instance, kPPPFindInterface);
   if (object)
     static_cast<Find_Dev*>(object)->SelectFindResult(PP_ToBool(forward));
 }
 
 void StopFind(PP_Instance instance) {
-  void* object =
-      pp::Instance::GetPerInstanceObject(instance, kPPPFindInterface);
+  void* object = Instance::GetPerInstanceObject(instance, kPPPFindInterface);
   if (object)
     static_cast<Find_Dev*>(object)->StopFind();
 }
@@ -53,26 +50,28 @@ const PPP_Find_Dev ppp_find = {
 
 }  // namespace
 
-Find_Dev::Find_Dev(Instance* instance) : associated_instance_(instance) {
-  pp::Module::Get()->AddPluginInterface(kPPPFindInterface, &ppp_find);
-  associated_instance_->AddPerInstanceObject(kPPPFindInterface, this);
+Find_Dev::Find_Dev(const InstanceHandle& instance)
+    : associated_instance_(instance) {
+  Module::Get()->AddPluginInterface(kPPPFindInterface, &ppp_find);
+  Instance::AddPerInstanceObject(instance, kPPPFindInterface, this);
 }
 
 Find_Dev::~Find_Dev() {
-  associated_instance_->RemovePerInstanceObject(kPPPFindInterface, this);
+  Instance::RemovePerInstanceObject(associated_instance_,
+                                    kPPPFindInterface, this);
 }
 
 void Find_Dev::NumberOfFindResultsChanged(int32_t total, bool final_result) {
   if (has_interface<PPB_Find_Dev>()) {
     get_interface<PPB_Find_Dev>()->NumberOfFindResultsChanged(
-        associated_instance_->pp_instance(), total, PP_FromBool(final_result));
+        associated_instance_.pp_instance(), total, PP_FromBool(final_result));
   }
 }
 
 void Find_Dev::SelectedFindResultChanged(int32_t index) {
   if (has_interface<PPB_Find_Dev>()) {
     get_interface<PPB_Find_Dev>()->SelectedFindResultChanged(
-        associated_instance_->pp_instance(), index);
+        associated_instance_.pp_instance(), index);
   }
 }
 

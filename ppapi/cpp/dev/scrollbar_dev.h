@@ -10,7 +10,7 @@
 
 namespace pp {
 
-class Instance;
+class InstanceHandle;
 
 // This class allows a plugin to use the browser's scrollbar widget.
 class Scrollbar_Dev : public Widget_Dev {
@@ -19,7 +19,7 @@ class Scrollbar_Dev : public Widget_Dev {
   Scrollbar_Dev() {}
 
   explicit Scrollbar_Dev(PP_Resource resource);
-  Scrollbar_Dev(const Instance& instance, bool vertical);
+  Scrollbar_Dev(const InstanceHandle& instance, bool vertical);
   Scrollbar_Dev(const Scrollbar_Dev& other);
 
   Scrollbar_Dev& operator=(const Scrollbar_Dev& other);

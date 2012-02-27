@@ -11,14 +11,14 @@
 
 namespace pp {
 
-class Instance;
+class InstanceHandle;
 
 class AudioInput_Dev : public Resource {
  public:
   /// An empty constructor for an AudioInput resource.
   AudioInput_Dev() {}
 
-  AudioInput_Dev(Instance* instance,
+  AudioInput_Dev(const InstanceHandle& instance,
                  const AudioConfig& config,
                  PPB_AudioInput_Callback callback,
                  void* user_data);

@@ -16,7 +16,7 @@ namespace pp {
 
 class CompletionCallback;
 class ImageData;
-class Instance;
+class InstanceHandle;
 class Point;
 class Rect;
 
@@ -37,9 +37,12 @@ class Graphics2D : public Resource {
   /// in the browser, resulting object will be is_null() if the allocation
   /// failed.
   ///
-  /// @param[in] instance The module instance.
+  /// @param[in] instance The instance with which this resource will be
+  /// associated.
+  ///
   /// @param[in] size The size of the 2D graphics context in the browser,
   /// measured in device pixels.
+  ///
   /// @param[in] is_always_opaque Set the <code>is_always_opaque</code> flag
   /// to true if you know that you will be painting only opaque data to this
   /// context. This option will disable blending when compositing the module
@@ -49,7 +52,9 @@ class Graphics2D : public Resource {
   /// always be set to 0xFF or there may be painting artifacts. The alpha values
   /// overwrite the destination alpha values without blending when
   /// <code>is_always_opaque</code> is true.
-  Graphics2D(Instance* instance, const Size& size, bool is_always_opaque);
+  Graphics2D(const InstanceHandle& instance,
+             const Size& size,
+             bool is_always_opaque);
 
   /// A destructor that decrements the reference count of a
   /// <code>Graphics2D</code> object made using the previous copy constructor.

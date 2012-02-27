@@ -10,7 +10,7 @@
 namespace pp {
 
 class CompletionCallback;
-class Instance;
+class InstanceHandle;
 
 /// A message loop allows PPAPI calls to be issued on a thread. You may not
 /// issue any API calls on a thread without creating a message loop. It also
@@ -135,7 +135,7 @@ class MessageLoop_Dev : public Resource {
   /// This may be called from any thread. After your thread starts but before
   /// issuing any other PPAPI calls on it, you must associate it with a message
   /// loop by calling AttachToCurrentThread.
-  explicit MessageLoop_Dev(Instance* instance);
+  explicit MessageLoop_Dev(const InstanceHandle& instance);
 
   MessageLoop_Dev(const MessageLoop_Dev& other);
 

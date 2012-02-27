@@ -11,7 +11,7 @@
 namespace pp {
 
 class CompletionCallback;
-class Instance;
+class InstanceHandle;
 class Point;
 
 namespace flash {
@@ -19,7 +19,7 @@ namespace flash {
 class Menu : public Resource {
  public:
   // TODO(viettrungluu): Write a proper C++ wrapper of |PP_Flash_Menu|.
-  Menu(const Instance& instance, const struct PP_Flash_Menu* menu_data);
+  Menu(const InstanceHandle& instance, const struct PP_Flash_Menu* menu_data);
 
   int32_t Show(const Point& location,
                int32_t* selected_id,

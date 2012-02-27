@@ -41,27 +41,27 @@ std::string TestFlash::TestSetInstanceAlwaysOnTop() {
 }
 
 std::string TestFlash::TestGetProxyForURL() {
-  Var result(Var::PassRef(),
+  Var result(pp::PASS_REF,
              flash_interface_->GetProxyForURL(instance_->pp_instance(),
                                               "http://127.0.0.1/foobar/"));
   ASSERT_TRUE(result.is_string());
   // Assume no one configures a proxy for localhost.
   ASSERT_EQ("DIRECT", result.AsString());
 
-  result = Var(Var::PassRef(),
+  result = Var(pp::PASS_REF,
                flash_interface_->GetProxyForURL(instance_->pp_instance(),
                                                 "http://www.google.com"));
   // Don't know what the proxy might be, but it should be a valid result.
   ASSERT_TRUE(result.is_string());
 
-  result = Var(Var::PassRef(),
+  result = Var(pp::PASS_REF,
                flash_interface_->GetProxyForURL(instance_->pp_instance(),
                                                 "file:///tmp"));
   ASSERT_TRUE(result.is_string());
   // Should get "DIRECT" for file:// URLs.
   ASSERT_EQ("DIRECT", result.AsString());
 
-  result = Var(Var::PassRef(),
+  result = Var(pp::PASS_REF,
                flash_interface_->GetProxyForURL(instance_->pp_instance(),
                                                 "this_isnt_an_url"));
   // Should be an error.
@@ -91,7 +91,7 @@ std::string TestFlash::TestGetLocalTimeZoneOffset() {
 }
 
 std::string TestFlash::TestGetCommandLineArgs() {
-  Var result(Var::PassRef(),
+  Var result(pp::PASS_REF,
              flash_interface_->GetCommandLineArgs(
                  pp::Module::Get()->pp_module()));
   ASSERT_TRUE(result.is_string());

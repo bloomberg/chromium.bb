@@ -30,11 +30,12 @@ class FileSystem : public Resource {
 
   /// This constructor creates a file system object of the given type.
   ///
-  /// @param[in] instance A <code>Instance</code> identifying the instance
-  /// with the file.
+  /// @param[in] instance The instance with which this resource will be
+  /// associated.
+  ///
   /// @param[in] type A file system type as defined by
   /// <code>PP_FileSystemType</code> enum.
-  FileSystem(Instance* instance, PP_FileSystemType type);
+  FileSystem(const InstanceHandle& instance, PP_FileSystemType type);
 
   /// Open() opens the file system. A file system must be opened before running
   /// any other operation on it.

@@ -14,14 +14,17 @@
 namespace pp {
 
 class CompletionCallback;
-class Instance;
+class InstanceHandle;
 class Var;
 
 /// The <code>WebSocket</code> class
 class WebSocket : public Resource {
  public:
   /// Constructs a WebSocket object.
-  WebSocket(Instance* instance);
+  ///
+  /// @param[in] instance The instance with which this resource will be
+  /// associated.
+  explicit WebSocket(const InstanceHandle& instance);
 
   /// Destructs a WebSocket object.
   virtual ~WebSocket();

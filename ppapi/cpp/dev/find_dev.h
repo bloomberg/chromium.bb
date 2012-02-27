@@ -8,10 +8,9 @@
 #include <string>
 
 #include "ppapi/c/dev/ppp_find_dev.h"
+#include "ppapi/cpp/instance_handle.h"
 
 namespace pp {
-
-class Instance;
 
 // This class allows you to associate the PPP_Find and PPB_Find C-based
 // interfaces with an object. It associates itself with the given instance, and
@@ -39,7 +38,7 @@ class Instance;
 class Find_Dev {
  public:
   // The instance parameter must outlive this class.
-  Find_Dev(Instance* instance);
+  Find_Dev(const InstanceHandle& instance);
   virtual ~Find_Dev();
 
   // PPP_Find_Dev functions exposed as virtual functions for you to
@@ -53,7 +52,7 @@ class Find_Dev {
   void SelectedFindResultChanged(int32_t index);
 
  private:
-  Instance* associated_instance_;
+  InstanceHandle associated_instance_;
 };
 
 }  // namespace pp

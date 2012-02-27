@@ -8,7 +8,7 @@
 
 #include <algorithm>
 
-#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
 
@@ -33,16 +33,13 @@ ImageData::ImageData(const ImageData& other)
 }
 
 ImageData::ImageData(PassRef, PP_Resource resource)
-    : data_(NULL) {
+    : Resource(PASS_REF, resource),
+      data_(NULL) {
   memset(&desc_, 0, sizeof(PP_ImageDataDesc));
-
-  if (!has_interface<PPB_ImageData>())
-    return;
-
-  PassRefAndInitData(resource);
+  InitData();
 }
 
-ImageData::ImageData(Instance* instance,
+ImageData::ImageData(const InstanceHandle& instance,
                      PP_ImageDataFormat format,
                      const Size& size,
                      bool init_to_zero)
@@ -52,9 +49,10 @@ ImageData::ImageData(Instance* instance,
   if (!has_interface<PPB_ImageData>())
     return;
 
-  PassRefAndInitData(get_interface<PPB_ImageData>()->Create(
-      instance->pp_instance(), format, &size.pp_size(),
+  PassRefFromConstructor(get_interface<PPB_ImageData>()->Create(
+      instance.pp_instance(), format, &size.pp_size(),
       PP_FromBool(init_to_zero)));
+  InitData();
 }
 
 ImageData& ImageData::operator=(const ImageData& other) {
@@ -83,8 +81,9 @@ PP_ImageDataFormat ImageData::GetNativeImageDataFormat() {
   return get_interface<PPB_ImageData>()->GetNativeImageDataFormat();
 }
 
-void ImageData::PassRefAndInitData(PP_Resource resource) {
-  PassRefFromConstructor(resource);
+void ImageData::InitData() {
+  if (!has_interface<PPB_ImageData>())
+    return;
   if (!get_interface<PPB_ImageData>()->Describe(pp_resource(), &desc_) ||
       !(data_ = get_interface<PPB_ImageData>()->Map(pp_resource())))
     *this = ImageData();

@@ -8,10 +8,9 @@
 #include <string>
 
 #include "ppapi/c/dev/ppp_zoom_dev.h"
+#include "ppapi/cpp/instance_handle.h"
 
 namespace pp {
-
-class Instance;
 
 // This class allows you to associate the PPP_Zoom_Dev and PPB_Zoom_Dev C-based
 // interfaces with an object. It associates itself with the given instance, and
@@ -38,7 +37,7 @@ class Instance;
 //   };
 class Zoom_Dev {
  public:
-  Zoom_Dev(Instance* instance);
+  explicit Zoom_Dev(const InstanceHandle& instance);
   virtual ~Zoom_Dev();
 
   // PPP_Zoom_Dev functions exposed as virtual functions for you to
@@ -50,7 +49,7 @@ class Zoom_Dev {
   void ZoomLimitsChanged(double minimum_factor, double maximium_factor);
 
  private:
-  Instance* associated_instance_;
+  InstanceHandle associated_instance_;
 };
 
 }  // namespace pp

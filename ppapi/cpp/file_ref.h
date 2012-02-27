@@ -27,15 +27,12 @@ class FileRef : public Resource {
   /// object.
   FileRef() {}
 
- /// A constructor used to create a <code>FileRef</code> and associate it with
-  /// the provided <code>Instance</code>.
+  /// A constructor used when you have an existing PP_Resource for a FileRef
+  /// and which to create a C++ object that takes an additional reference to
+  /// the resource.
   ///
-  /// @param[in] resource An <code>Instance</code>.
+  /// @param[in] resource A PP_Resource corresponding to file reference.
   explicit FileRef(PP_Resource resource);
-
-  /// A special structure used by the constructor that does not increment the
-  /// reference count of the underlying file reference.
-  struct PassRef {};
 
   /// A constructor used when you have received a PP_Resource as a return
   /// value that has already been reference counted.

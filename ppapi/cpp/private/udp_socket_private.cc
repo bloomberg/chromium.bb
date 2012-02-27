@@ -7,7 +7,7 @@
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/completion_callback.h"
-#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
 
@@ -21,10 +21,10 @@ template <> const char* interface_name<PPB_UDPSocket_Private>() {
 
 }  // namespace
 
-UDPSocketPrivate::UDPSocketPrivate(Instance* instance) {
-  if (has_interface<PPB_UDPSocket_Private>() && instance) {
+UDPSocketPrivate::UDPSocketPrivate(const InstanceHandle& instance) {
+  if (has_interface<PPB_UDPSocket_Private>()) {
     PassRefFromConstructor(get_interface<PPB_UDPSocket_Private>()->Create(
-                               instance->pp_instance()));
+                               instance.pp_instance()));
   }
 }
 

@@ -11,6 +11,7 @@
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/graphics_3d.h"
 #include "ppapi/cpp/image_data.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/logging.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
@@ -137,6 +138,18 @@ void Instance::AddPerInstanceObject(const std::string& interface_name,
   interface_name_to_objects_[interface_name] = object;
 }
 
+// static
+void Instance::AddPerInstanceObject(const InstanceHandle& instance,
+                                    const std::string& interface_name,
+                                    void* object) {
+  // TODO(brettw) assert we're on the main thread (instance is not threadsafe
+  // and may be deleted from the main thread).
+  Instance* that = Module::Get()->InstanceForPPInstance(instance.pp_instance());
+  if (!that)
+    return;
+  that->AddPerInstanceObject(interface_name, object);
+}
+
 void Instance::RemovePerInstanceObject(const std::string& interface_name,
                                        void* object) {
   InterfaceNameToObjectMap::iterator found = interface_name_to_objects_.find(
@@ -153,6 +166,17 @@ void Instance::RemovePerInstanceObject(const std::string& interface_name,
   (void)object;  // Prevent warning in release mode.
 
   interface_name_to_objects_.erase(found);
+}
+
+// static
+void Instance::RemovePerInstanceObject(const InstanceHandle& instance,
+                                       const std::string& interface_name,
+                                       void* object) {
+  // TODO(brettw) assert we're on the main thread.
+  Instance* that = Module::Get()->InstanceForPPInstance(instance.pp_instance());
+  if (!that)
+    return;
+  that->RemovePerInstanceObject(interface_name, object);
 }
 
 // static

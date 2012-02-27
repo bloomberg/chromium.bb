@@ -14,6 +14,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/view.h"
 
 struct PP_InputEvent;
@@ -24,6 +25,7 @@ namespace pp {
 class Graphics2D;
 class Graphics3D;
 class InputEvent;
+class InstanceHandle;
 class Rect;
 class URLLoader;
 class Var;
@@ -60,8 +62,7 @@ class Instance {
   virtual ~Instance();
 
   /// This function returns the <code>PP_Instance</code> identifying this
-  /// object. When using the PPAPI C++ wrappers this is not normally necessary,
-  /// but is required when using the lower-level C APIs.
+  /// object.
   ///
   /// @return A <code>PP_Instance</code> identifying this object.
   PP_Instance pp_instance() const { return pp_instance_; }
@@ -486,6 +487,13 @@ class Instance {
   /// @param[in] object
   void AddPerInstanceObject(const std::string& interface_name, void* object);
 
+  /// Static version of AddPerInstanceObject that takes an InstanceHandle. As
+  /// with all other instance functions, this must only be called on the main
+  /// thread.
+  static void AddPerInstanceObject(const InstanceHandle& instance,
+                                   const std::string& interface_name,
+                                   void* object);
+
   // {PENDING: summarize Remove method here}
   ///
   /// Refer to AddPerInstanceObject() for further information.
@@ -494,6 +502,13 @@ class Instance {
   /// instance
   /// @param[in] object
   void RemovePerInstanceObject(const std::string& interface_name, void* object);
+
+  /// Static version of AddPerInstanceObject that takes an InstanceHandle. As
+  /// with all other instance functions, this must only be called on the main
+  /// thread.
+  static void RemovePerInstanceObject(const InstanceHandle& instance,
+                                      const std::string& interface_name,
+                                      void* object);
 
   /// Look up an object previously associated with an instance. Returns NULL
   /// if the instance is invalid or there is no object for the given interface
