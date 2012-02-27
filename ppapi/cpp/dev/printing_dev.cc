@@ -70,10 +70,10 @@ const PPP_Printing_Dev ppp_printing = {
 
 }  // namespace
 
-Printing_Dev::Printing_Dev(const InstanceHandle& instance)
+Printing_Dev::Printing_Dev(Instance* instance)
       : associated_instance_(instance) {
   Module::Get()->AddPluginInterface(kPPPPrintingInterface, &ppp_printing);
-  Instance::AddPerInstanceObject(instance, kPPPPrintingInterface, this);
+  instance->AddPerInstanceObject(kPPPPrintingInterface, this);
 }
 
 Printing_Dev::~Printing_Dev() {

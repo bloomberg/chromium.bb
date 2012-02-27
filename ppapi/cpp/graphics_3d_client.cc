@@ -30,11 +30,11 @@ static PPP_Graphics3D graphics3d_interface = {
 
 }  // namespace
 
-Graphics3DClient::Graphics3DClient(const InstanceHandle& instance)
+Graphics3DClient::Graphics3DClient(Instance* instance)
     : associated_instance_(instance) {
   Module::Get()->AddPluginInterface(kPPPGraphics3DInterface,
                                     &graphics3d_interface);
-  Instance::AddPerInstanceObject(instance, kPPPGraphics3DInterface, this);
+  instance->AddPerInstanceObject(kPPPGraphics3DInterface, this);
 }
 
 Graphics3DClient::~Graphics3DClient() {

@@ -36,10 +36,10 @@ template <> const char* interface_name<PPB_MouseLock>() {
 
 }  // namespace
 
-MouseLock::MouseLock(const InstanceHandle& instance)
+MouseLock::MouseLock(Instance* instance)
     : associated_instance_(instance) {
   Module::Get()->AddPluginInterface(kPPPMouseLockInterface, &ppp_mouse_lock);
-  Instance::AddPerInstanceObject(instance, kPPPMouseLockInterface, this);
+  instance->AddPerInstanceObject(kPPPMouseLockInterface, this);
 }
 
 MouseLock::~MouseLock() {

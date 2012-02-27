@@ -35,10 +35,9 @@ template <> const char* interface_name<PPB_Zoom_Dev>() {
 
 }  // namespace
 
-Zoom_Dev::Zoom_Dev(const InstanceHandle& instance)
-    : associated_instance_(instance) {
+Zoom_Dev::Zoom_Dev(Instance* instance) : associated_instance_(instance) {
   Module::Get()->AddPluginInterface(kPPPZoomInterface, &ppp_zoom);
-  Instance::AddPerInstanceObject(instance, kPPPZoomInterface, this);
+  instance->AddPerInstanceObject(kPPPZoomInterface, this);
 }
 
 Zoom_Dev::~Zoom_Dev() {

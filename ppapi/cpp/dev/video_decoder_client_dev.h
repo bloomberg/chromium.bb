@@ -11,6 +11,7 @@
 
 namespace pp {
 
+class Instance;
 class VideoDecoder_Dev;
 
 // This class provides a C++ interface for callbacks related to video decoding.
@@ -19,7 +20,7 @@ class VideoDecoder_Dev;
 // instance.
 class VideoDecoderClient_Dev {
  public:
-  VideoDecoderClient_Dev(const InstanceHandle& instance);
+  VideoDecoderClient_Dev(Instance* instance);
   virtual ~VideoDecoderClient_Dev();
 
   // Callback to provide buffers for the decoded output pictures.

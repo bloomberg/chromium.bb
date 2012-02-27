@@ -138,18 +138,6 @@ void Instance::AddPerInstanceObject(const std::string& interface_name,
   interface_name_to_objects_[interface_name] = object;
 }
 
-// static
-void Instance::AddPerInstanceObject(const InstanceHandle& instance,
-                                    const std::string& interface_name,
-                                    void* object) {
-  // TODO(brettw) assert we're on the main thread (instance is not threadsafe
-  // and may be deleted from the main thread).
-  Instance* that = Module::Get()->InstanceForPPInstance(instance.pp_instance());
-  if (!that)
-    return;
-  that->AddPerInstanceObject(interface_name, object);
-}
-
 void Instance::RemovePerInstanceObject(const std::string& interface_name,
                                        void* object) {
   InterfaceNameToObjectMap::iterator found = interface_name_to_objects_.find(

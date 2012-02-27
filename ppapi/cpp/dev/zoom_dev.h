@@ -12,6 +12,8 @@
 
 namespace pp {
 
+class Instance;
+
 // This class allows you to associate the PPP_Zoom_Dev and PPB_Zoom_Dev C-based
 // interfaces with an object. It associates itself with the given instance, and
 // registers as the global handler for handling the PPP_Zoom_Dev interface that
@@ -37,7 +39,7 @@ namespace pp {
 //   };
 class Zoom_Dev {
  public:
-  explicit Zoom_Dev(const InstanceHandle& instance);
+  explicit Zoom_Dev(Instance* instance);
   virtual ~Zoom_Dev();
 
   // PPP_Zoom_Dev functions exposed as virtual functions for you to

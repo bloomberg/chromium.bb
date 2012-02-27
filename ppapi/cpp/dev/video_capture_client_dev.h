@@ -14,9 +14,11 @@
 
 namespace pp {
 
+class Instance;
+
 class VideoCaptureClient_Dev {
  public:
-  explicit VideoCaptureClient_Dev(const InstanceHandle& instance);
+  explicit VideoCaptureClient_Dev(Instance* instance);
   virtual ~VideoCaptureClient_Dev();
 
   virtual void OnDeviceInfo(PP_Resource video_capture,

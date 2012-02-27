@@ -36,7 +36,7 @@ class Var;
 //   };
 class Selection_Dev {
  public:
-  explicit Selection_Dev(const InstanceHandle& instance);
+  explicit Selection_Dev(Instance* instance);
   virtual ~Selection_Dev();
 
   // PPP_Selection_Dev functions exposed as virtual functions for you to

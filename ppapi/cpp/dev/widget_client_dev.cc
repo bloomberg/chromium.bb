@@ -69,13 +69,13 @@ static PPP_Scrollbar_Dev scrollbar_interface = {
 
 }  // namespace
 
-WidgetClient_Dev::WidgetClient_Dev(const InstanceHandle& instance)
+WidgetClient_Dev::WidgetClient_Dev(Instance* instance)
     : associated_instance_(instance) {
   Module::Get()->AddPluginInterface(kPPPWidgetInterface, &widget_interface);
-  Instance::AddPerInstanceObject(instance, kPPPWidgetInterface, this);
+  instance->AddPerInstanceObject(kPPPWidgetInterface, this);
   Module::Get()->AddPluginInterface(kPPPScrollbarInterface,
                                     &scrollbar_interface);
-  Instance::AddPerInstanceObject(instance, kPPPScrollbarInterface, this);
+  instance->AddPerInstanceObject(kPPPScrollbarInterface, this);
 }
 
 WidgetClient_Dev::~WidgetClient_Dev() {

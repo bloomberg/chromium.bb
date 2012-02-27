@@ -15,6 +15,7 @@
 namespace pp {
 
 class CompletionCallback;
+class Instance;
 
 /// This class allows you to associate the <code>PPP_MouseLock</code> and
 /// <code>PPB_MouseLock</code> C-based interfaces with an object. It associates
@@ -52,7 +53,7 @@ class MouseLock {
   ///
   /// @param[in] instance The instance with which this resource will be
   /// associated.
-  explicit MouseLock(const InstanceHandle& instance);
+  explicit MouseLock(Instance* instance);
 
   /// Destructor.
   virtual ~MouseLock();

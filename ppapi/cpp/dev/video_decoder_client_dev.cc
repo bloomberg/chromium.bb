@@ -70,11 +70,11 @@ static PPP_VideoDecoder_Dev videodecoder_interface = {
 
 }  // namespace
 
-VideoDecoderClient_Dev::VideoDecoderClient_Dev(const InstanceHandle& instance)
+VideoDecoderClient_Dev::VideoDecoderClient_Dev(Instance* instance)
     : associated_instance_(instance) {
   Module::Get()->AddPluginInterface(kPPPVideoDecoderInterface,
                                     &videodecoder_interface);
-  Instance::AddPerInstanceObject(instance, kPPPVideoDecoderInterface, this);
+  instance->AddPerInstanceObject(kPPPVideoDecoderInterface, this);
 }
 
 VideoDecoderClient_Dev::~VideoDecoderClient_Dev() {

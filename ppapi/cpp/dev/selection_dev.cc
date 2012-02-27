@@ -30,10 +30,10 @@ const PPP_Selection_Dev ppp_selection = {
 
 }  // namespace
 
-Selection_Dev::Selection_Dev(const InstanceHandle& instance)
+Selection_Dev::Selection_Dev(Instance* instance)
     : associated_instance_(instance) {
   Module::Get()->AddPluginInterface(kPPPSelectionInterface, &ppp_selection);
-  Instance::AddPerInstanceObject(instance, kPPPSelectionInterface, this);
+  instance->AddPerInstanceObject(kPPPSelectionInterface, this);
 }
 
 Selection_Dev::~Selection_Dev() {

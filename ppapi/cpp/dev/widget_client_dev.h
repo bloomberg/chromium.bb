@@ -10,6 +10,7 @@
 
 namespace pp {
 
+class Instance;
 class Rect;
 class Scrollbar_Dev;
 class Widget_Dev;
@@ -19,7 +20,7 @@ class Widget_Dev;
 // instance.
 class WidgetClient_Dev {
  public:
-  explicit WidgetClient_Dev(const InstanceHandle& instance);
+  explicit WidgetClient_Dev(Instance* instance);
   virtual ~WidgetClient_Dev();
 
   /**

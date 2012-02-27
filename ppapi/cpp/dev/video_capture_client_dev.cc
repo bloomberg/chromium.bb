@@ -65,11 +65,11 @@ PPP_VideoCapture_Dev ppp_video_capture = {
 
 }  // namespace
 
-VideoCaptureClient_Dev::VideoCaptureClient_Dev(const InstanceHandle& instance)
+VideoCaptureClient_Dev::VideoCaptureClient_Dev(Instance* instance)
     : instance_(instance) {
   Module::Get()->AddPluginInterface(kPPPVideoCaptureInterface,
                                     &ppp_video_capture);
-  Instance::AddPerInstanceObject(instance, kPPPVideoCaptureInterface, this);
+  instance->AddPerInstanceObject(kPPPVideoCaptureInterface, this);
 }
 
 VideoCaptureClient_Dev::~VideoCaptureClient_Dev() {

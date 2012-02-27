@@ -13,6 +13,8 @@
 
 namespace pp {
 
+class Instance;
+
 // This class provides a C++ interface for callbacks related to 3D. You
 // would normally use multiple inheritance to derive from this class in your
 // instance.
@@ -23,7 +25,7 @@ class Graphics3DClient {
   ///
   /// @param[in] instance The instance that will own the new
   /// <code>Graphics3DClient</code>.
-  explicit Graphics3DClient(const InstanceHandle& instance);
+  explicit Graphics3DClient(Instance* instance);
 
   /// Destructor.
   virtual ~Graphics3DClient();

@@ -487,13 +487,6 @@ class Instance {
   /// @param[in] object
   void AddPerInstanceObject(const std::string& interface_name, void* object);
 
-  /// Static version of AddPerInstanceObject that takes an InstanceHandle. As
-  /// with all other instance functions, this must only be called on the main
-  /// thread.
-  static void AddPerInstanceObject(const InstanceHandle& instance,
-                                   const std::string& interface_name,
-                                   void* object);
-
   // {PENDING: summarize Remove method here}
   ///
   /// Refer to AddPerInstanceObject() for further information.

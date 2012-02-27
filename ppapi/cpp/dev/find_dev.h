@@ -12,6 +12,8 @@
 
 namespace pp {
 
+class Instance;
+
 // This class allows you to associate the PPP_Find and PPB_Find C-based
 // interfaces with an object. It associates itself with the given instance, and
 // registers as the global handler for handling the PPP_Find interface that the
@@ -38,7 +40,7 @@ namespace pp {
 class Find_Dev {
  public:
   // The instance parameter must outlive this class.
-  Find_Dev(const InstanceHandle& instance);
+  Find_Dev(Instance* instance);
   virtual ~Find_Dev();
 
   // PPP_Find_Dev functions exposed as virtual functions for you to

@@ -50,10 +50,9 @@ const PPP_Find_Dev ppp_find = {
 
 }  // namespace
 
-Find_Dev::Find_Dev(const InstanceHandle& instance)
-    : associated_instance_(instance) {
+Find_Dev::Find_Dev(Instance* instance) : associated_instance_(instance) {
   Module::Get()->AddPluginInterface(kPPPFindInterface, &ppp_find);
-  Instance::AddPerInstanceObject(instance, kPPPFindInterface, this);
+  instance->AddPerInstanceObject(kPPPFindInterface, this);
 }
 
 Find_Dev::~Find_Dev() {
