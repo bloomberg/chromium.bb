@@ -8,6 +8,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/time.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -36,7 +37,7 @@ class DomStorageTaskRunner
       base::TimeDelta delay);
 
  protected:
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  const scoped_refptr<base::MessageLoopProxy> message_loop_;
 };
 
 // A derived class that utlizes the SequenceWorkerPool under a
@@ -61,7 +62,7 @@ class DomStorageWorkerPoolTaskRunner : public DomStorageTaskRunner {
       base::TimeDelta delay) OVERRIDE;
 
  private:
-  base::SequencedWorkerPool* sequenced_worker_pool_;  // not owned
+  const scoped_refptr<base::SequencedWorkerPool> sequenced_worker_pool_;
   base::SequencedWorkerPool::SequenceToken sequence_token_;
 };
 

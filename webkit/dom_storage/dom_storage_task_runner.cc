@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/message_loop_proxy.h"
+#include "base/tracked_objects.h"
 
 namespace dom_storage {
 

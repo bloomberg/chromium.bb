@@ -5,7 +5,9 @@
 #include "webkit/dom_storage/dom_storage_area.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/time.h"
+#include "base/tracked_objects.h"
 #include "webkit/dom_storage/dom_storage_map.h"
 #include "webkit/dom_storage/dom_storage_namespace.h"
 #include "webkit/dom_storage/dom_storage_task_runner.h"

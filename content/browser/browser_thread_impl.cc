@@ -52,9 +52,7 @@ struct BrowserThreadGlobals {
   // by this array, rather by whoever calls BrowserThread::SetDelegate.
   BrowserThreadDelegate* thread_delegates[BrowserThread::ID_COUNT];
 
-  // This pointer is deliberately leaked on shutdown. This allows the pool to
-  // implement "continue on shutdown" semantics.
-  base::SequencedWorkerPool* blocking_pool;
+  const scoped_refptr<base::SequencedWorkerPool> blocking_pool;
 };
 
 base::LazyInstance<BrowserThreadGlobals>::Leaky
