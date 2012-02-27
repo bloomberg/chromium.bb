@@ -124,7 +124,7 @@ class ValidationPool(object):
     """
     state_field = 'general_state'
     # Limit sleep interval to the set of 1-30
-    sleep_timeout = min(max(max_timeout/5, 1), 30)
+    sleep_timeout = min(max(max_timeout / 5, 1), 30)
 
     def _SleepWithExponentialBackOff(current_sleep):
       """Helper function to sleep with exponential backoff."""
@@ -345,6 +345,7 @@ class ValidationPool(object):
                           change.id, dep))
               logging.info(message)
               change.apply_error_message = message
+              changes_that_failed_to_apply_to_tot.add(change)
               apply_chain = False
               break
           except gerrit_helper.QueryNotSpecific:
@@ -352,6 +353,7 @@ class ValidationPool(object):
                        '%s matching multiple branches.' % (change.id, dep))
             logging.info(message)
             change.apply_error_message = message
+            changes_that_failed_to_apply_to_tot.add(change)
             apply_chain = False
             break
         else:

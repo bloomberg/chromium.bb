@@ -157,6 +157,8 @@ class TestValidationPool(mox.MoxTestBase):
     patch2.GerritDependencies(build_root).AndReturn(['ChangeId1'])
     patch2.PaladinDependencies(build_root).AndReturn([])
     helper.IsChangeCommitted(patch1.id, must_match=False).AndReturn(False)
+    pool._SendNotification(patch2, mox.StrContains('dependent change'))
+    helper.RemoveCommitReady(patch2, dryrun=False)
 
     self.mox.ReplayAll()
     self.assertFalse(pool.ApplyPoolIntoRepo(build_root))
