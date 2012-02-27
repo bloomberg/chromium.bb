@@ -96,7 +96,7 @@ CFDictionaryRef Launchd::CopyJobDictionary(CFStringRef label) {
 }
 
 CFDictionaryRef Launchd::CopyDictionaryByCheckingIn(CFErrorRef* error) {
-  return GTMSMJobCheckIn(error);
+  return GTMSMCopyJobCheckInDictionary(error);
 }
 
 bool Launchd::RemoveJob(CFStringRef label, CFErrorRef* error) {
