@@ -149,10 +149,6 @@ class Browser : public TabHandlerDelegate,
 
     // The bounds of the window to open.
     gfx::Rect initial_bounds;
-
-    ui::WindowShowState initial_show_state;
-
-    bool is_session_restore;
   };
 
   // Constructors, Creation, Showing //////////////////////////////////////////

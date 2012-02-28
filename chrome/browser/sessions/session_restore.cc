@@ -485,8 +485,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
       Browser* browser = CreateRestoredBrowser(
           static_cast<Browser::Type>((*i)->type),
           (*i)->bounds,
-          (*i)->show_state,
-          (*i)->app_name);
+          (*i)->show_state);
 
       // Restore and show the browser.
       const int initial_tab_count = browser->tab_count();
@@ -675,10 +674,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
         }
 
         browser = CreateRestoredBrowser(
-            static_cast<Browser::Type>((*i)->type),
-            (*i)->bounds,
-            show_state,
-            (*i)->app_name);
+            static_cast<Browser::Type>((*i)->type), (*i)->bounds, show_state);
 #if defined(OS_CHROMEOS)
     chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
         "SessionRestore-CreateRestoredBrowser-End", false);
@@ -790,14 +786,13 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
   Browser* CreateRestoredBrowser(Browser::Type type,
                                  gfx::Rect bounds,
-                                 ui::WindowShowState show_state,
-                                 const std::string& app_name) {
-    Browser::CreateParams params(type, profile_);
-    params.app_name = app_name;
-    params.initial_bounds = bounds;
-    params.initial_show_state = show_state;
-    params.is_session_restore = true;
-    return Browser::CreateWithParams(params);
+                                 ui::WindowShowState show_state) {
+    Browser* browser = new Browser(type, profile_);
+    browser->set_override_bounds(bounds);
+    browser->set_show_state(show_state);
+    browser->set_is_session_restore(true);
+    browser->InitBrowserWindow();
+    return browser;
   }
 
   void ShowBrowser(Browser* browser,

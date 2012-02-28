@@ -116,9 +116,6 @@ class TabRestoreService : public BaseSessionService {
 
     // Index of the selected tab.
     int selected_tab_index;
-
-    // If an application window, the name of the app.
-    std::string app_name;
   };
 
   typedef std::list<Entry*> Entries;

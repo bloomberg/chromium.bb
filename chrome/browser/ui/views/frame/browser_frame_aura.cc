@@ -229,11 +229,6 @@ class BrowserFrameAura::WindowPropertyWatcher : public aura::WindowObserver {
     if (key != aura::client::kShowStateKey)
       return;
 
-    // Allow the frame to be replaced when maximizing an app.
-    if (browser_frame_->non_client_view() &&
-        browser_frame_aura_->browser_view()->browser()->is_app())
-      browser_frame_->non_client_view()->UpdateFrame();
-
     // When migrating from regular ChromeOS to Aura, windows can have saved
     // restore bounds that are exactly equal to the maximized bounds.  Thus when
     // you hit maximize, there is no resize and the layout doesn't get

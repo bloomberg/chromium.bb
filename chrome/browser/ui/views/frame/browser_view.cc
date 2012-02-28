@@ -1709,7 +1709,7 @@ bool BrowserView::CanClose() {
     // down. When the tab strip is empty we'll be called back again.
     frame_->Hide();
     browser_->OnWindowClosing();
-   return false;
+    return false;
   }
 
   // Empty TabStripModel, it's now safe to allow the Window to be closed.

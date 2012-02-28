@@ -323,9 +323,7 @@ bool ParseCommaSeparatedIntegers(const std::string& str,
 
 Browser::CreateParams::CreateParams(Type type, Profile* profile)
     : type(type),
-      profile(profile),
-      initial_show_state(ui::SHOW_STATE_DEFAULT),
-      is_session_restore(false) {
+      profile(profile) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -490,15 +488,9 @@ Browser* Browser::Create(Profile* profile) {
 
 // static
 Browser* Browser::CreateWithParams(const CreateParams& params) {
-  if (!params.app_name.empty())
-    RegisterAppPrefs(params.app_name, params.profile);
-
   Browser* browser = new Browser(params.type, params.profile);
   browser->app_name_ = params.app_name;
   browser->set_override_bounds(params.initial_bounds);
-  browser->set_show_state(params.initial_show_state);
-  browser->set_is_session_restore(params.is_session_restore);
-
   browser->InitBrowserWindow();
   return browser;
 }
@@ -516,6 +508,8 @@ Browser* Browser::CreateForApp(Type type,
                                Profile* profile) {
   DCHECK(type != TYPE_TABBED);
   DCHECK(!app_name.empty());
+
+  RegisterAppPrefs(app_name, profile);
 
 #if !defined(OS_CHROMEOS) || defined(USE_AURA)
   if (type == TYPE_PANEL &&
@@ -993,10 +987,6 @@ bool Browser::ShouldSaveWindowPlacement() const {
     case TYPE_POPUP:
       // Only save the window placement of popups if they are restored,
       // or the window belongs to DevTools.
-#if defined USE_AURA
-      if (is_app())
-        return true;
-#endif
       return browser_defaults::kRestorePopups || is_devtools();
     case TYPE_PANEL:
       // Do not save the window placement of panels.
@@ -1057,14 +1047,7 @@ gfx::Rect Browser::GetSavedWindowBounds() const {
 ui::WindowShowState Browser::GetSavedWindowShowState() const {
   // Only tabbed browsers use the command line or preference state, with the
   // exception of devtools.
-  bool show_state = !is_type_tabbed();
-
-#if defined(USE_AURA)
-  // Apps save state on aura.
-  show_state &= !is_app();
-#endif
-
-  if (show_state)
+  if (!is_type_tabbed() && !is_devtools())
     return show_state_;
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kStartMaximized))
@@ -1181,12 +1164,6 @@ void Browser::OnWindowClosing() {
 
   TabRestoreService* tab_restore_service =
       TabRestoreServiceFactory::GetForProfile(profile());
-
-#if defined(USE_AURA)
-  if (tab_restore_service && is_app())
-    tab_restore_service->BrowserClosing(tab_restore_service_delegate());
-#endif
-
   if (tab_restore_service && is_type_tabbed() && tab_count())
     tab_restore_service->BrowserClosing(tab_restore_service_delegate());
 

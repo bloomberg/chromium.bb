@@ -142,10 +142,6 @@ class InProcessBrowserTest : public BrowserTestBase {
   // for the tab to finish loading, and shows the browser.
   Browser* CreateBrowserForPopup(Profile* profile);
 
-  // Creates a browser for an application and waits for it to load and shows
-  // the browser.
-  Browser* CreateBrowserForApp(const std::string& app_name, Profile* profile);
-
   // Called from the various CreateBrowser methods to add a blank tab, wait for
   // the navigation to complete, and show the browser's window.
   void AddBlankTabAndShow(Browser* browser);

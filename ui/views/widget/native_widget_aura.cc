@@ -215,6 +215,8 @@ NonClientFrameView* NativeWidgetAura::CreateNonClientFrameView() {
 }
 
 void NativeWidgetAura::UpdateFrameAfterFrameChange() {
+  // We don't support changing the frame type.
+  NOTREACHED();
 }
 
 bool NativeWidgetAura::ShouldUseNativeFrame() const {
