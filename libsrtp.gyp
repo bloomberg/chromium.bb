@@ -44,8 +44,8 @@
       }],
       ['OS=="win"', {
         'defines': [
-          'HAVE_WINSOCK2_H',
           'inline=__inline',
+          'HAVE_BYTESWAP_METHODS_H',
          ],
       }],
     ],
@@ -86,8 +86,8 @@
         }],
         ['OS=="win"', {
           'defines': [
-            'HAVE_WINSOCK2_H',
             'inline=__inline',
+            'HAVE_BYTESWAP_METHODS_H',
           ],
         }],
       ],

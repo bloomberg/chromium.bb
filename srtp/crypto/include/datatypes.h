@@ -60,8 +60,15 @@
 #  include <netinet/in.h>
 # elif defined HAVE_WINSOCK2_H
 #  include <winsock2.h>
+# elif defined_HAVE_BYTESWAP_METHODS_H
+#  include <stdlib.h>
+#  define ntohl(x) _byteswap_ulong (x)
+#  define ntohs(x) _byteswap_ushort (x)
+#  define htonl(x) _byteswap_ulong (x)
+#  define htons(x) _byteswap_ushort (x)
 # endif
 #endif
+
 
 
 /* if DATATYPES_USE_MACROS is defined, then little functions are macros */
