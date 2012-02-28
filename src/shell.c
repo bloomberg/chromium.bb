@@ -1747,6 +1747,7 @@ switcher_next(struct switcher *switcher)
 				next = surface;
 			prev = surface;
 			surface->alpha = 64;
+			surface->geometry.dirty = 1;
 			weston_surface_damage(surface);
 			break;
 		default:
