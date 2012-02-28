@@ -244,14 +244,24 @@ var chrome = chrome || {};
   // API, a custom callback, etc).
   function APIFunctions() {
     this._apiFunctions = {};
+    this._unavailableApiFunctions = {};
   }
   APIFunctions.prototype.register = function(apiName, apiFunction) {
     this._apiFunctions[apiName] = apiFunction;
   };
+  // Registers a function as existing but not available, meaning that calls to
+  // the set* methods that reference this function should be ignored rather
+  // than throwing Errors.
+  APIFunctions.prototype.registerUnavailable = function(apiName) {
+    this._unavailableApiFunctions[apiName] = apiName;
+  };
   APIFunctions.prototype._setHook =
       function(apiName, propertyName, customizedFunction) {
-    if (this._apiFunctions.hasOwnProperty(apiName))
-      this._apiFunctions[apiName][propertyName] = customizedFunction;
+    if (this._unavailableApiFunctions.hasOwnProperty(apiName))
+      return;
+    if (!this._apiFunctions.hasOwnProperty(apiName))
+      throw new Error('Tried to set hook for unknown API "' + apiName + '"');
+    this._apiFunctions[apiName][propertyName] = customizedFunction;
   };
   APIFunctions.prototype.setHandleRequest =
       function(apiName, customizedFunction) {
@@ -273,6 +283,40 @@ var chrome = chrome || {};
   };
 
   var apiFunctions = new APIFunctions();
+
+  // Wraps the calls to the set* methods of APIFunctions with the namespace of
+  // an API, and validates that all calls to set* methods aren't prefixed with
+  // a namespace.
+  //
+  // For example, if constructed with 'browserAction', a call to
+  // handleRequest('foo') will be transformed into
+  // handleRequest('browserAction.foo').
+  //
+  // Likewise, if a call to handleRequest is called with 'browserAction.foo',
+  // it will throw an error.
+  //
+  // These help with isolating custom bindings from each other.
+  function NamespacedAPIFunctions(namespace, delegate) {
+    var self = this;
+    function wrap(methodName) {
+      self[methodName] = function(apiName, customizedFunction) {
+        var prefix = namespace + '.';
+        if (apiName.indexOf(prefix) === 0) {
+          throw new Error(methodName + ' called with "' + apiName +
+                          '" which has a "' + prefix + '" prefix. ' +
+                          'This is unnecessary and must be left out.');
+        }
+        return delegate[methodName].call(delegate,
+                                         prefix + apiName, customizedFunction);
+      };
+    }
+
+    wrap('contains');
+    wrap('setHandleRequest');
+    wrap('setUpdateArgumentsPostValidate');
+    wrap('setUpdateArgumentsPreValidate');
+    wrap('setCustomCallback');
+  }
 
   //
   // The API through which the ${api_name}_custom_bindings.js files customize
@@ -430,17 +474,23 @@ var chrome = chrome || {};
             throw new Error('Function ' + functionDef.name +
                             ' already defined in ' + apiDef.namespace);
           }
-          if (!isSchemaNodeSupported(functionDef, platform, manifestVersion))
+
+          var apiFunctionName = apiDef.namespace + "." + functionDef.name;
+
+          if (!isSchemaNodeSupported(functionDef, platform, manifestVersion)) {
+            apiFunctions.registerUnavailable(apiFunctionName);
             return;
+          }
           if (!isSchemaAccessAllowed(functionDef)) {
+            apiFunctions.registerUnavailable(apiFunctionName);
             addUnprivilegedAccessGetter(mod, functionDef.name);
             return;
           }
 
           var apiFunction = {};
           apiFunction.definition = functionDef;
-          apiFunction.name = apiDef.namespace + "." + functionDef.name;
-          apiFunctions.register(apiFunction.name, apiFunction);
+          apiFunction.name = apiFunctionName;
+          apiFunctions.register(apiFunctionName, apiFunction);
 
           mod[functionDef.name] = (function() {
             var args = arguments;
@@ -564,7 +614,8 @@ var chrome = chrome || {};
       // by custom bindings JS files. Create a new one so that bindings can't
       // interfere with each other.
       hook({
-        apiFunctions: apiFunctions,
+        apiFunctions: new NamespacedAPIFunctions(apiDef.namespace,
+                                                 apiFunctions),
         sendRequest: sendRequest,
         setIcon: setIcon,
         apiDefinitions: apiDefinitions,

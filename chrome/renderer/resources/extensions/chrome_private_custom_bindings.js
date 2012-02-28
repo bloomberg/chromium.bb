@@ -12,8 +12,7 @@ native function DecodeJPEG(jpegImage);
 GetChromeHidden().registerCustomHook('chromePrivate', function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
-  apiFunctions.setHandleRequest(
-      "chromePrivate.decodeJPEG", function(jpeg_image) {
+  apiFunctions.setHandleRequest('decodeJPEG', function(jpeg_image) {
     return DecodeJPEG(jpeg_image);
   });
 });

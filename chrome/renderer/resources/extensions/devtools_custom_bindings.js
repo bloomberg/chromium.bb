@@ -11,7 +11,7 @@ native function GetChromeHidden();
 GetChromeHidden().registerCustomHook('devtools', function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
-  apiFunctions.setHandleRequest('devtools.getTabEvents', function(tabId) {
+  apiFunctions.setHandleRequest('getTabEvents', function(tabId) {
     var tabIdProxy = {};
     var functions = ['onPageEvent', 'onTabClose'];
     functions.forEach(function(name) {

@@ -10,9 +10,8 @@ native function GetChromeHidden();
 
 var chromeHidden = GetChromeHidden();
 
-chromeHidden.registerCustomHook(
-    'experimental.declarative',
-    function(bindingsAPI) {
+chromeHidden.registerCustomHook('experimental.declarative',
+                                function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
   var sendRequest = bindingsAPI.sendRequest;
   var apiDefinitions = bindingsAPI.apiDefinitions;
@@ -23,7 +22,7 @@ chromeHidden.registerCustomHook(
       return cachedEventOptions[qualifiedEventName];
 
     // Parse qualifiedEventName into namespace and event name.
-    var lastSeparator = qualifiedEventName.lastIndexOf(".");
+    var lastSeparator = qualifiedEventName.lastIndexOf('.');
     var eventName = qualifiedEventName.substr(lastSeparator + 1);
     var namespace = qualifiedEventName.substr(0, lastSeparator);
 
@@ -42,9 +41,9 @@ chromeHidden.registerCustomHook(
   // data types.
   function buildArrayOfChoicesSchema(typesList) {
     return {
-      "type": "array",
-      "items": {
-        "choices": typesList.map(function(el) {return {"$ref": el};})
+      'type': 'array',
+      'items': {
+        'choices': typesList.map(function(el) {return {'$ref': el};})
       }
     };
   }
@@ -65,12 +64,12 @@ chromeHidden.registerCustomHook(
     })
   }
 
-  apiFunctions.setHandleRequest("experimental.declarative.addRules",
-      function(eventName, rules, opt_callback) {
+  apiFunctions.setHandleRequest('addRules',
+                                function(eventName, rules, opt_callback) {
     var eventOptions = getEventOptions(eventName);
     if (!eventOptions.conditions || !eventOptions.actions) {
-      throw new Error("Event " + eventName + " misses conditions or " +
-                      "actions in the API specification.");
+      throw new Error('Event ' + eventName + ' misses conditions or ' +
+                      'actions in the API specification.');
     }
     validateRules(rules,
                   eventOptions.conditions,

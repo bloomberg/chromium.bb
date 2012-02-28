@@ -14,7 +14,7 @@ var chromeHidden = GetChromeHidden();
 chromeHidden.registerCustomHook('tabs', function(bindingsAPI, extensionId) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
-  apiFunctions.setHandleRequest('tabs.connect', function(tabId, connectInfo) {
+  apiFunctions.setHandleRequest('connect', function(tabId, connectInfo) {
     var name = '';
     if (connectInfo) {
       name = connectInfo.name || name;
@@ -23,8 +23,8 @@ chromeHidden.registerCustomHook('tabs', function(bindingsAPI, extensionId) {
     return chromeHidden.Port.createPort(portId, name);
   });
 
-  apiFunctions.setHandleRequest('tabs.sendRequest',
-      function(tabId, request, responseCallback) {
+  apiFunctions.setHandleRequest('sendRequest',
+                                function(tabId, request, responseCallback) {
     var port = chrome.tabs.connect(tabId,
                                    {name: chromeHidden.kRequestChannel});
     port.postMessage(request);
@@ -48,8 +48,7 @@ chromeHidden.registerCustomHook('tabs', function(bindingsAPI, extensionId) {
   // replacement of this code with code that matches arguments by type.
   // Once this is working for captureVisibleTab() it can be enabled for
   // the rest of the API. See crbug/29215 .
-  apiFunctions.setUpdateArgumentsPreValidate('tabs.captureVisibleTab',
-                                             function() {
+  apiFunctions.setUpdateArgumentsPreValidate('captureVisibleTab', function() {
     // Old signature:
     //    captureVisibleTab(int windowId, function callback);
     // New signature:

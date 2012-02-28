@@ -20,7 +20,7 @@ GetChromeHidden().registerCustomHook('input.ime', function() {
       }
     }
     if (this.listeners_.length > 1) {
-      console.error("Too many listeners for 'onKeyEvent': " + e.stack);
+      console.error('Too many listeners for onKeyEvent: ' + e.stack);
       chrome.input.ime.eventHandled(requestId, false);
       return;
     }
@@ -30,7 +30,7 @@ GetChromeHidden().registerCustomHook('input.ime', function() {
         var result = this.listeners_[i].apply(null, args);
         chrome.input.ime.eventHandled(requestId, result);
       } catch (e) {
-        console.error("Error in event handler for 'onKeyEvent': " + e.stack);
+        console.error('Error in event handler for onKeyEvent: ' + e.stack);
         chrome.input.ime.eventHandled(requestId, false);
       }
     }

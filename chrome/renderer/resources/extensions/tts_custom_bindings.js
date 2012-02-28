@@ -31,7 +31,7 @@ chromeHidden.registerCustomHook('tts', function(api) {
     }
   });
 
-  apiFunctions.setHandleRequest("tts.speak", function() {
+  apiFunctions.setHandleRequest('speak', function() {
     var args = arguments;
     if (args.length > 1 && args[1] && args[1].onEvent) {
       var id = GetNextTTSEventId();

@@ -17,7 +17,7 @@ chromeHidden.registerCustomHook('contextMenus', function(bindingsAPI) {
 
   chromeHidden.contextMenus = {};
   chromeHidden.contextMenus.handlers = {};
-  var eventName = "contextMenus";
+  var eventName = 'contextMenus';
   chromeHidden.contextMenus.event = new chrome.Event(eventName);
   chromeHidden.contextMenus.ensureListenerSetup = function() {
     if (chromeHidden.contextMenus.listening) {
@@ -35,7 +35,7 @@ chromeHidden.registerCustomHook('contextMenus', function(bindingsAPI) {
     });
   };
 
-  apiFunctions.setHandleRequest("contextMenus.create", function() {
+  apiFunctions.setHandleRequest('create', function() {
     var args = arguments;
     var id = GetNextContextMenuId();
     args[0].generatedId = id;
@@ -46,8 +46,7 @@ chromeHidden.registerCustomHook('contextMenus', function(bindingsAPI) {
     return id;
   });
 
-  apiFunctions.setCustomCallback("contextMenus.create",
-      function(name, request, response) {
+  apiFunctions.setCustomCallback('create', function(name, request, response) {
     if (chrome.extension.lastError) {
       return;
     }
@@ -62,8 +61,7 @@ chromeHidden.registerCustomHook('contextMenus', function(bindingsAPI) {
     }
   });
 
-  apiFunctions.setCustomCallback("contextMenus.remove",
-      function(name, request, response) {
+  apiFunctions.setCustomCallback('remove', function(name, request, response) {
     if (chrome.extension.lastError) {
       return;
     }
@@ -71,8 +69,7 @@ chromeHidden.registerCustomHook('contextMenus', function(bindingsAPI) {
     delete chromeHidden.contextMenus.handlers[id];
   });
 
-  apiFunctions.setCustomCallback("contextMenus.update",
-      function(name, request, response) {
+  apiFunctions.setCustomCallback('update', function(name, request, response) {
     if (chrome.extension.lastError) {
       return;
     }
@@ -82,8 +79,8 @@ chromeHidden.registerCustomHook('contextMenus', function(bindingsAPI) {
     }
   });
 
-  apiFunctions.setCustomCallback("contextMenus.removeAll",
-      function(name, request, response) {
+  apiFunctions.setCustomCallback('removeAll',
+                                 function(name, request, response) {
     if (chrome.extension.lastError) {
       return;
     }

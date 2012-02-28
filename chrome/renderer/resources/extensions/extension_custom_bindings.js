@@ -23,40 +23,38 @@ chromeHidden.registerCustomHook('extension',
                                 function(bindingsAPI, extensionId) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
-  apiFunctions.setHandleRequest("extension.getViews", function(properties) {
+  apiFunctions.setHandleRequest('getViews', function(properties) {
     var windowId = WINDOW_ID_NONE;
-    var type = "ALL";
-    if (typeof(properties) != "undefined") {
-      if (typeof(properties.type) != "undefined") {
+    var type = 'ALL';
+    if (typeof(properties) != 'undefined') {
+      if (typeof(properties.type) != 'undefined') {
         type = properties.type;
       }
-      if (typeof(properties.windowId) != "undefined") {
+      if (typeof(properties.windowId) != 'undefined') {
         windowId = properties.windowId;
       }
     }
     return GetExtensionViews(windowId, type) || null;
   });
 
-  apiFunctions.setHandleRequest("extension.getBackgroundPage", function() {
-    return GetExtensionViews(-1, "BACKGROUND")[0] || null;
+  apiFunctions.setHandleRequest('getBackgroundPage', function() {
+    return GetExtensionViews(-1, 'BACKGROUND')[0] || null;
   });
 
-  apiFunctions.setHandleRequest("extension.getExtensionTabs",
-                                function(windowId) {
-    if (typeof(windowId) == "undefined")
+  apiFunctions.setHandleRequest('getExtensionTabs', function(windowId) {
+    if (typeof(windowId) == 'undefined')
       windowId = WINDOW_ID_NONE;
-    return GetExtensionViews(windowId, "TAB");
+    return GetExtensionViews(windowId, 'TAB');
   });
 
-  apiFunctions.setHandleRequest("extension.getURL", function(path) {
+  apiFunctions.setHandleRequest('getURL', function(path) {
     path = String(path);
-    if (!path.length || path[0] != "/")
-      path = "/" + path;
-    return "chrome-extension://" + extensionId + path;
+    if (!path.length || path[0] != '/')
+      path = '/' + path;
+    return 'chrome-extension://' + extensionId + path;
   });
 
-  apiFunctions.setUpdateArgumentsPreValidate("extension.sendRequest",
-                                             function() {
+  apiFunctions.setUpdateArgumentsPreValidate('sendRequest', function() {
     // Align missing (optional) function arguments with the arguments that
     // schema validation is expecting, e.g.
     //   extension.sendRequest(req)     -> extension.sendRequest(null, req)
@@ -65,7 +63,7 @@ chromeHidden.registerCustomHook('extension',
 
     // responseCallback (last argument) is optional.
     var responseCallback = null;
-    if (typeof(arguments[lastArg]) == "function")
+    if (typeof(arguments[lastArg]) == 'function')
       responseCallback = arguments[lastArg--];
 
     // request (second argument) is required.
@@ -77,13 +75,12 @@ chromeHidden.registerCustomHook('extension',
       targetId = arguments[lastArg--];
 
     if (lastArg != -1)
-      throw new Error("Invalid arguments to sendRequest.");
+      throw new Error('Invalid arguments to sendRequest.');
     return [targetId, request, responseCallback];
   });
 
-  apiFunctions.setHandleRequest(
-      "extension.sendRequest",
-      function(targetId, request, responseCallback) {
+  apiFunctions.setHandleRequest('sendRequest',
+                                function(targetId, request, responseCallback) {
     if (!targetId)
       targetId = extensionId;
     if (!responseCallback)
@@ -112,7 +109,7 @@ chromeHidden.registerCustomHook('extension',
     });
   });
 
-  apiFunctions.setUpdateArgumentsPreValidate("extension.connect", function() {
+  apiFunctions.setUpdateArgumentsPreValidate('connect', function() {
     // Align missing (optional) function arguments with the arguments that
     // schema validation is expecting, e.g.
     //   extension.connect()   -> extension.connect(null, null)
@@ -121,31 +118,30 @@ chromeHidden.registerCustomHook('extension',
 
     // targetId (first argument) is optional.
     var targetId = null;
-    if (typeof(arguments[nextArg]) == "string")
+    if (typeof(arguments[nextArg]) == 'string')
       targetId = arguments[nextArg++];
 
     // connectInfo (second argument) is optional.
     var connectInfo = null;
-    if (typeof(arguments[nextArg]) == "object")
+    if (typeof(arguments[nextArg]) == 'object')
       connectInfo = arguments[nextArg++];
 
     if (nextArg != arguments.length)
-      throw new Error("Invalid arguments to connect");
+      throw new Error('Invalid arguments to connect');
     return [targetId, connectInfo];
   });
 
-  apiFunctions.setHandleRequest("extension.connect",
-                                function(targetId, connectInfo) {
+  apiFunctions.setHandleRequest('connect', function(targetId, connectInfo) {
     if (!targetId)
       targetId = extensionId;
-    var name = "";
+    var name = '';
     if (connectInfo && connectInfo.name)
       name = connectInfo.name;
 
     var portId = OpenChannelToExtension(extensionId, targetId, name);
     if (portId >= 0)
       return chromeHidden.Port.createPort(portId, name);
-    throw new Error("Error connecting to extension '" + targetId + "'");
+    throw new Error('Error connecting to extension ' + targetId);
   });
 });
 

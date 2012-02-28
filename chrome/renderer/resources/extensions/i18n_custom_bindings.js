@@ -13,7 +13,7 @@ GetChromeHidden().registerCustomHook('i18n',
                                      function(bindingsAPI, extensionId) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
-  apiFunctions.setHandleRequest('i18n.getMessage',
+  apiFunctions.setHandleRequest('getMessage',
                                 function(messageName, substitutions) {
     return GetL10nMessage(messageName, substitutions, extensionId);
   });

@@ -10,7 +10,7 @@ native function GetChromeHidden();
 native function GetExternalFileEntry();
 
 var chromeHidden = GetChromeHidden();
-chromeHidden.Event.registerArgumentMassager("fileBrowserHandler.onExecute",
+chromeHidden.Event.registerArgumentMassager('fileBrowserHandler.onExecute',
     function(args) {
   if (args.length < 2)
     return;

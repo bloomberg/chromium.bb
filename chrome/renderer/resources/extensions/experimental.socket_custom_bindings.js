@@ -14,7 +14,7 @@
       var apiFunctions = api.apiFunctions;
       var sendRequest = api.sendRequest;
 
-      apiFunctions.setHandleRequest("experimental.socket.create", function() {
+      apiFunctions.setHandleRequest('create', function() {
           var args = arguments;
           if (args.length > 3 && args[3] && args[3].onEvent) {
             var id = GetNextSocketEventId();
@@ -32,14 +32,14 @@
           var eventHandler = chromeHidden.socket.handlers[event.srcId];
           if (eventHandler) {
             switch (event.type) {
-              case "writeComplete":
-              case "connectComplete":
+              case 'writeComplete':
+              case 'connectComplete':
                 eventHandler({
                  type: event.type,
                         resultCode: event.resultCode,
                         });
               break;
-              case "dataRead":
+              case 'dataRead':
                 eventHandler({
                  type: event.type,
                         resultCode: event.resultCode,
@@ -47,7 +47,7 @@
                         });
                 break;
               default:
-                console.error("Unexpected SocketEvent, type " + event.type);
+                console.error('Unexpected SocketEvent, type ' + event.type);
               break;
             }
             if (event.isFinalEvent) {
