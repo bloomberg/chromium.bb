@@ -116,6 +116,40 @@ TEST(IntegralGestureFilterInterpreterTestInterpreter, OverflowTest) {
   }
 }
 
+// This test moves the cursor 3.9 pixels, which causes an output of 3px w/ a
+// stored remainder of 0.9 px. Then, all fingers are removed, which should
+// reset the remainders. Then the curor is moved 0.2 pixels, which would
+// result in a 1px move if the remainders weren't cleared.
+TEST(IntegralGestureFilterInterpreterTest, ResetTest) {
+  IntegralGestureFilterInterpreterTestInterpreter* base_interpreter =
+      new IntegralGestureFilterInterpreterTestInterpreter;
+  IntegralGestureFilterInterpreter interpreter(base_interpreter);
+
+  // causing finger, dx, dy, fingers, buttons down, buttons mask, hwstate:
+  base_interpreter->return_values_.push_back(
+      Gesture(kGestureMove, 0, 0, 3.9, 0.0));
+  base_interpreter->return_values_.push_back(
+      Gesture());
+  base_interpreter->return_values_.push_back(
+      Gesture(kGestureMove, 0, 0, .2, 0.0));
+
+  FingerState fs = { 0, 0, 0, 0, 1, 0, 0, 0, 1 };
+  HardwareState hs[] = {
+    { 10000.00, 0, 1, 1, &fs },
+    { 10000.01, 0, 0, 0, NULL },
+    { 10000.02, 0, 1, 1, &fs },
+  };
+
+  size_t iter = 0;
+  Gesture* out = interpreter.SyncInterpret(&hs[iter++], NULL);
+  ASSERT_NE(reinterpret_cast<Gesture*>(NULL), out);
+  EXPECT_EQ(kGestureTypeMove, out->type);
+  out = interpreter.SyncInterpret(&hs[iter++], NULL);
+  EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), out);
+  out = interpreter.SyncInterpret(&hs[iter++], NULL);
+  EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), out);
+}
+
 TEST(IntegralGestureFilterInterpreterTest, SetHwpropsTest) {
   HardwareProperties hwprops = {
     0, 0, 1, 1,  // left, top, right, bottom

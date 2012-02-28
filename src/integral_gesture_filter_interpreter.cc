@@ -25,6 +25,9 @@ IntegralGestureFilterInterpreter::~IntegralGestureFilterInterpreter() {}
 
 Gesture* IntegralGestureFilterInterpreter::SyncInterpret(
     HardwareState* hwstate, stime_t* timeout) {
+  if (hwstate->finger_cnt == 0 && hwstate->touch_cnt == 0)
+    x_move_remainder_ = y_move_remainder_ = hscroll_remainder_ =
+        vscroll_remainder_ = 0.0;
   Gesture* fg = next_->SyncInterpret(hwstate, timeout);
   Gesture** ret = &fg;
   HandleGesture(ret);
