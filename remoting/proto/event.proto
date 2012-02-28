@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,9 +12,14 @@ package remoting.protocol;
 
 // Defines a keyboard event.
 message KeyEvent {
-  // The POSIX key code.
+  // The Windows Virtual Key code.
   required int32 keycode = 1;
   required bool pressed = 2;
+
+  // The USB key code.
+  // The upper 16-bits are the USB Page (0x07 for key events).
+  // The lower 16-bits are the USB Usage ID (which identifies the actual key).
+  optional uint32 usb_key_code = 3;
 }
 
 // Defines a mouse event message on the event channel. 
