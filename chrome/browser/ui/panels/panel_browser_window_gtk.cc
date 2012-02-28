@@ -74,9 +74,6 @@ PanelBrowserWindowGtk::~PanelBrowserWindowGtk() {
 void PanelBrowserWindowGtk::Init() {
   BrowserWindowGtk::Init();
 
-  // Keep the window docked to the bottom of the screen on resizes.
-  gtk_window_set_gravity(window(), GDK_GRAVITY_SOUTH_EAST);
-
   // Keep the window always on top.
   gtk_window_set_keep_above(window(), TRUE);
 
@@ -276,14 +273,9 @@ void PanelBrowserWindowGtk::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_PANEL_CHANGED_LAYOUT_MODE: {
-      GdkGravity gravity =
-          panel_->panel_strip()->type() == PanelStrip::IN_OVERFLOW ?
-              GDK_GRAVITY_NORTH_WEST : GDK_GRAVITY_SOUTH_EAST;
-      gtk_window_set_gravity(window(), gravity);
+    case chrome::NOTIFICATION_PANEL_CHANGED_LAYOUT_MODE:
       titlebar()->UpdateCustomFrame(true);
       // No break. Accept focus code should execute for both cases.
-    }
     case chrome::NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE:
       gtk_window_set_accept_focus(window(), !panel_->IsMinimized());
       break;
@@ -590,42 +582,10 @@ void PanelBrowserWindowGtk::AnimationProgressed(
   gfx::Rect new_bounds = bounds_animator_->CurrentValueBetween(
       animation_start_bounds_, bounds_);
 
-  // Resize if necessary.
-  if (animation_start_bounds_.size() != bounds_.size())
-    ResizeWindow(new_bounds.width(), new_bounds.height());
-
-  // Only move if bottom right corner or top left corner changes respectively
-  // for GDK_GRAVITY_SOUTH_EAST or GDK_GRAVITY_NORTH_WEST respectively.
-  //
-  // The comments below are for GDK_GRAVITY_SOUTH_EAST but similar logic may be
-  // used for GDK_GRAVITY_NORTH_WEST gravity.
-  //
-  // Panels use window gravity of GDK_GRAVITY_SOUTH_EAST when docked to bottom,
-  // which means the window is anchored to the bottom right corner on resize,
-  // making it unnecessary to move the window if the bottom right corner is
-  // unchanged. For example, when we minimize to the bottom, moving can actually
-  // result in the wrong behavior.
-  //   - Say window is 100x100 with x,y=900,900 on a 1000x1000 screen.
-  //   - Say you minimize the window to 100x3 and move it to 900,997 to keep it
-  //     anchored to the bottom.
-  //   - resize is an async operation and the window manager will decide that
-  //     the move will take the window off screen and it won't honor the
-  //     request.
-  //   - When resize finally happens, you'll have a 100x3 window a x,y=900,900.
-
-  GdkGravity gravity = gtk_window_get_gravity(window());
-  bool move = true;
-
-  if (gravity == GDK_GRAVITY_SOUTH_EAST) {
-    move = (animation_start_bounds_.bottom() != bounds_.bottom()) ||
-        (animation_start_bounds_.right() != bounds_.right());
-  } else if (gravity == GDK_GRAVITY_NORTH_WEST) {
-    move = animation_start_bounds_.origin() != bounds_.origin();
-  } else {
-    NOTREACHED();
-  }
-  if (move)
-    gtk_window_move(window_, new_bounds.x(), new_bounds.y());
+  gdk_window_move_resize(gtk_widget_get_window(GTK_WIDGET(window())),
+                         new_bounds.x(), new_bounds.y(),
+                         std::max(new_bounds.width(), 1),  // 0 not allowed
+                         std::max(new_bounds.height(), 1));  // 0 not allowed
 
   last_animation_progressed_bounds_ = new_bounds;
 }
