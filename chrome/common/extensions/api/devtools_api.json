@@ -280,7 +280,7 @@
             "parameters": [
               { 
                 "name": "window",
-                "type": "DOMWindow",
+                "type": "Window",
                 "description": "The <code>window</code> object of panel's page."
               }
             ]
@@ -378,7 +378,7 @@
             "parameters": [
               { 
                 "name": "window",
-                "type": "DOMWindow",
+                "type": "Window",
                 "optional": true,
                 "description": "The <code>window</code> object of the sidebar page, if one was set with the <code>setPage()</code> method."
               }

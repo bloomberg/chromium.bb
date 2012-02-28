@@ -113,7 +113,7 @@ function show_options() {
     }
     var tabs = chrome.extension.getExtensionTabs();
     if (tabs && tabs.length) {
-      // To avoid "Uncaught TypeError: Object DOMWindow has no method 
+      // To avoid "Uncaught TypeError: Object Window has no method 
       // 'setUrl' ". Sometimes tabs are not the desired extension tabs.
       if (tabs[0].$suburl != undefined) {
         tabs[0].setUrl(testUrl);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -287,7 +287,7 @@ chromeHidden.JSONSchemaValidator.prototype.validateObject = function(
       // Special-case constructors that can not always be found on the global
       // object, but for which we to allow validation.
       var allowedNamedConstructors = {
-        "DOMWindow": true,
+        "Window": true,
         "ImageData": true
       }
       if (!allowedNamedConstructors[schema.isInstanceOf]) {
