@@ -540,7 +540,8 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   WebRuntimeFeatures::enablePushState(true);
 
-  WebRuntimeFeatures::enableTouch(false);
+  WebRuntimeFeatures::enableTouch(
+      command_line.HasSwitch(switches::kEnableTouchEvents));
 
   WebRuntimeFeatures::enableDeviceMotion(
       command_line.HasSwitch(switches::kEnableDeviceMotion));

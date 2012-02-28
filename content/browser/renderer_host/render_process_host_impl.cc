@@ -702,6 +702,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableSeccompSandbox,
     switches::kEnableStatsTable,
     switches::kEnableThreadedCompositing,
+    switches::kEnableTouchEvents,
     switches::kEnableVideoTrack,
     switches::kFullMemoryCrashReport,
 #if !defined (GOOGLE_CHROME_BUILD)
