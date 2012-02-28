@@ -166,8 +166,8 @@ SyncError SyncableSettingsStorage::SendLocalSettingsToSync(
 
   SyncChangeList changes;
   for (DictionaryValue::Iterator it(settings); it.HasNext(); it.Advance()) {
-    changes.push_back(
-        settings_sync_util::CreateAdd(extension_id_, it.key(), it.value()));
+    changes.push_back(settings_sync_util::CreateAdd(
+        extension_id_, it.key(), it.value(), sync_type_));
   }
 
   if (changes.empty()) {
@@ -210,7 +210,7 @@ SyncError SyncableSettingsStorage::OverwriteLocalSettingsWithSync(
                 SyncChange::ACTION_UPDATE,
                 extension_id_,
                 it.key(),
-                sync_value.release()));
+                sync_value.Pass()));
       }
     } else {
       // Not synced, delete local setting.
@@ -219,7 +219,7 @@ SyncError SyncableSettingsStorage::OverwriteLocalSettingsWithSync(
               SyncChange::ACTION_DELETE,
               extension_id_,
               it.key(),
-              new DictionaryValue()));
+              scoped_ptr<Value>(new DictionaryValue())));
     }
   }
 
@@ -230,7 +230,10 @@ SyncError SyncableSettingsStorage::OverwriteLocalSettingsWithSync(
     CHECK(new_sync_state->RemoveWithoutPathExpansion(key, &value));
     changes.push_back(
         SettingSyncData(
-            SyncChange::ACTION_ADD, extension_id_, key, value));
+            SyncChange::ACTION_ADD,
+            extension_id_,
+            key,
+            scoped_ptr<Value>(value)));
   }
 
   if (changes.empty()) {
@@ -362,21 +365,19 @@ void SyncableSettingsStorage::SendChangesToSync(
     if (value) {
       if (synced_keys_.count(key)) {
         // New value, key is synced; send ACTION_UPDATE.
-        sync_changes.push_back(
-            settings_sync_util::CreateUpdate(
-                extension_id_, key, *value));
+        sync_changes.push_back(settings_sync_util::CreateUpdate(
+            extension_id_, key, *value, sync_type_));
       } else {
         // New value, key is not synced; send ACTION_ADD.
-        sync_changes.push_back(
-            settings_sync_util::CreateAdd(
-                extension_id_, key, *value));
+        sync_changes.push_back(settings_sync_util::CreateAdd(
+            extension_id_, key, *value, sync_type_));
         added_keys.insert(key);
       }
     } else {
       if (synced_keys_.count(key)) {
         // Clearing value, key is synced; send ACTION_DELETE.
-        sync_changes.push_back(
-            settings_sync_util::CreateDelete(extension_id_, key));
+        sync_changes.push_back(settings_sync_util::CreateDelete(
+            extension_id_, key, sync_type_));
         deleted_keys.insert(key);
       } else {
         LOG(WARNING) << "Deleted " << key << " but not in synced_keys_";

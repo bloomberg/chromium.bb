@@ -26,6 +26,10 @@ bool AllProfilesHaveSameAppsAsVerifier() WARN_UNUSED_RESULT;
 // ID of the new app.
 std::string InstallApp(Profile* profile, int index);
 
+// Installs the app for the given index to all profiles (including the
+// verifier), and returns the extension ID of the new app.
+std::string InstallAppForAllProfiles(int index);
+
 // Uninstalls the app for the given index from |profile|. Assumes that it was
 // previously installed.
 void UninstallApp(Profile* profile, int index);

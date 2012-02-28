@@ -32,6 +32,10 @@ bool AllProfilesHaveSameExtensions() WARN_UNUSED_RESULT;
 // extension ID of the new extension.
 std::string InstallExtension(Profile* profile, int index);
 
+// Installs the extension for the given index to all profiles (including the
+// verifier), and returns the extension ID of the new extension.
+std::string InstallExtensionForAllProfiles(int index);
+
 // Uninstalls the extension for the given index from |profile|. Assumes that
 // it was previously installed.
 void UninstallExtension(Profile* profile, int index);

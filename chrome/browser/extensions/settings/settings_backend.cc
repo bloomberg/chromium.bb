@@ -133,10 +133,11 @@ std::set<std::string> SettingsBackend::GetKnownExtensionIDs() const {
 static void AddAllSyncData(
     const std::string& extension_id,
     const DictionaryValue& src,
+    syncable::ModelType type,
     SyncDataList* dst) {
   for (DictionaryValue::Iterator it(src); it.HasNext(); it.Advance()) {
-    dst->push_back(
-        settings_sync_util::CreateData(extension_id, it.key(), it.value()));
+    dst->push_back(settings_sync_util::CreateData(
+        extension_id, it.key(), it.value(), type));
   }
 }
 
@@ -161,7 +162,7 @@ SyncDataList SettingsBackend::GetAllSyncData(
           maybe_settings.error();
       continue;
     }
-    AddAllSyncData(*it, maybe_settings.settings(), &all_sync_data);
+    AddAllSyncData(*it, maybe_settings.settings(), type, &all_sync_data);
   }
 
   return all_sync_data;

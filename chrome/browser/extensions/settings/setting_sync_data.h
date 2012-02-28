@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,17 +12,20 @@
 #include "chrome/browser/sync/api/sync_change.h"
 
 class SyncData;
+namespace sync_pb {
+class ExtensionSettingSpecifics;
+}
 
 namespace extensions {
 
-// Container for data interpreted from sync data/changes.  Safe and efficient
-// to copy.
+// Container for data interpreted from sync data/changes for an extension or
+// app setting. Safe and efficient to copy.
 class SettingSyncData {
  public:
   // Creates from a sync change.
   explicit SettingSyncData(const SyncChange& sync_change);
 
-  // Creates from sync data.  change_type will be ACTION_INVALID.
+  // Creates from sync data. |change_type| will be ACTION_INVALID.
   explicit SettingSyncData(const SyncData& sync_data);
 
   // Creates explicitly.
@@ -30,8 +33,7 @@ class SettingSyncData {
       SyncChange::SyncChangeType change_type,
       const std::string& extension_id,
       const std::string& key,
-      // May NOT be NULL.  Ownership taken.
-      Value* value);
+      scoped_ptr<Value> value);
 
   ~SettingSyncData();
 
@@ -52,11 +54,11 @@ class SettingSyncData {
   // TODO(kalman): Use browser_sync::Immutable<Internal>.
   class Internal : public base::RefCountedThreadSafe<Internal> {
    public:
-    explicit Internal(
+    Internal(
       SyncChange::SyncChangeType change_type,
       const std::string& extension_id,
       const std::string& key,
-      Value* value);
+      scoped_ptr<Value> value);
 
     SyncChange::SyncChangeType change_type_;
     std::string extension_id_;
@@ -68,8 +70,13 @@ class SettingSyncData {
     ~Internal();
   };
 
-  // Initializes internal_ from sync data.
+  // Initializes internal_ from sync data for an extension or app setting.
   void Init(SyncChange::SyncChangeType change_type, const SyncData& sync_data);
+
+  // Initializes internal_ from extension specifics.
+  void InitFromExtensionSettingSpecifics(
+      SyncChange::SyncChangeType change_type,
+      const sync_pb::ExtensionSettingSpecifics& specifics);
 
   scoped_refptr<Internal> internal_;
 };

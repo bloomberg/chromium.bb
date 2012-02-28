@@ -3837,7 +3837,7 @@
         'browser/sync/test/integration/two_client_apps_sync_test.cc',
         'browser/sync/test/integration/two_client_autofill_sync_test.cc',
         'browser/sync/test/integration/two_client_bookmarks_sync_test.cc',
-        'browser/sync/test/integration/two_client_extension_settings_sync_test.cc',
+        'browser/sync/test/integration/two_client_extension_settings_and_app_settings_sync_test.cc',
         'browser/sync/test/integration/two_client_extensions_sync_test.cc',
         'browser/sync/test/integration/two_client_passwords_sync_test.cc',
         'browser/sync/test/integration/two_client_preferences_sync_test.cc',

@@ -24,6 +24,9 @@ using namespace settings_namespace;
 
 namespace {
 
+// TODO(kalman): test both EXTENSION_SETTINGS and APP_SETTINGS.
+const syncable::ModelType kModelType = syncable::EXTENSION_SETTINGS;
+
 class NoopSyncChangeProcessor : public SyncChangeProcessor {
  public:
   virtual SyncError ProcessSyncChanges(
@@ -70,20 +73,18 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
 
   void InitSync(SyncChangeProcessor* sync_processor) {
     MessageLoop::current()->RunAllPending();
-    // TODO(kalman): test both EXTENSION_SETTINGS and APP_SETTINGS.
     InitSyncWithSyncableService(
         sync_processor,
         browser()->profile()->GetExtensionService()->settings_frontend()->
-              GetBackendForSync(syncable::EXTENSION_SETTINGS));
+              GetBackendForSync(kModelType));
   }
 
   void SendChanges(const SyncChangeList& change_list) {
     MessageLoop::current()->RunAllPending();
-    // TODO(kalman): test both EXTENSION_SETTINGS and APP_SETTINGS.
     SendChangesToSyncableService(
         change_list,
         browser()->profile()->GetExtensionService()->settings_frontend()->
-              GetBackendForSync(syncable::EXTENSION_SETTINGS));
+              GetBackendForSync(kModelType));
   }
 
  private:
@@ -132,7 +133,7 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
   void InitSyncWithSyncableService(
       SyncChangeProcessor* sync_processor, SyncableService* settings_service) {
     EXPECT_FALSE(settings_service->MergeDataAndStartSyncing(
-        syncable::EXTENSION_SETTINGS,
+        kModelType,
         SyncDataList(),
         sync_processor).IsSet());
   }
@@ -284,7 +285,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
   SyncChangeList sync_changes;
   StringValue bar("bar");
   sync_changes.push_back(settings_sync_util::CreateAdd(
-      extension_id, "foo", bar));
+      extension_id, "foo", bar, kModelType));
   SendChanges(sync_changes);
 
   ReplyWhenSatisfied(SYNC,
@@ -294,7 +295,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
   // Remove "foo" via sync.
   sync_changes.clear();
   sync_changes.push_back(settings_sync_util::CreateDelete(
-      extension_id, "foo"));
+      extension_id, "foo", kModelType));
   SendChanges(sync_changes);
 
   FinalReplyWhenSatisfied(SYNC,
@@ -332,7 +333,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
   SyncChangeList sync_changes;
   StringValue bar("bar");
   sync_changes.push_back(settings_sync_util::CreateAdd(
-      extension_id, "foo", bar));
+      extension_id, "foo", bar, kModelType));
   SendChanges(sync_changes);
 
   ReplyWhenSatisfied(LOCAL, "assertNoNotifications", "assertNoNotifications");
@@ -340,7 +341,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
   // Remove "foo" via sync.
   sync_changes.clear();
   sync_changes.push_back(settings_sync_util::CreateDelete(
-      extension_id, "foo"));
+      extension_id, "foo", kModelType));
   SendChanges(sync_changes);
 
   FinalReplyWhenSatisfied(LOCAL,

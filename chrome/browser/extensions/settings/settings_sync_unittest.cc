@@ -125,7 +125,8 @@ class MockSyncChangeProcessor : public SyncChangeProcessor {
       ADD_FAILURE() << "No matching changes for " << extension_id << "/" <<
           key << " (out of " << changes_.size() << ")";
       return SettingSyncData(
-          SyncChange::ACTION_INVALID, "", "", new DictionaryValue());
+          SyncChange::ACTION_INVALID, "", "",
+          scoped_ptr<Value>(new DictionaryValue()));
     }
     if (matching_changes.size() != 1u) {
       ADD_FAILURE() << matching_changes.size() << " matching changes for " <<
@@ -285,9 +286,9 @@ TEST_F(ExtensionSettingsSyncTest, InSyncDataDoesNotInvokeSync) {
 
   SyncDataList sync_data;
   sync_data.push_back(settings_sync_util::CreateData(
-      "s1", "foo", value1));
+      "s1", "foo", value1, model_type));
   sync_data.push_back(settings_sync_util::CreateData(
-      "s2", "bar", value2));
+      "s2", "bar", value2, model_type));
 
   GetSyncableService(model_type)->MergeDataAndStartSyncing(
       model_type, sync_data, &sync_);
@@ -356,9 +357,9 @@ TEST_F(ExtensionSettingsSyncTest, AnySyncDataOverwritesLocalData) {
 
   SyncDataList sync_data;
   sync_data.push_back(settings_sync_util::CreateData(
-      "s1", "foo", value1));
+      "s1", "foo", value1, model_type));
   sync_data.push_back(settings_sync_util::CreateData(
-      "s2", "bar", value2));
+      "s2", "bar", value2, model_type));
   GetSyncableService(model_type)->MergeDataAndStartSyncing(
       model_type, sync_data, &sync_);
   expected1.Set("foo", value1.DeepCopy());
@@ -397,7 +398,7 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
 
   SyncDataList sync_data;
   sync_data.push_back(settings_sync_util::CreateData(
-      "s2", "bar", value2));
+      "s2", "bar", value2, model_type));
 
   GetSyncableService(model_type)->MergeDataAndStartSyncing(
       model_type, sync_data, &sync_);
@@ -406,9 +407,9 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
   // Make sync add some settings.
   SyncChangeList change_list;
   change_list.push_back(settings_sync_util::CreateAdd(
-      "s1", "bar", value2));
+      "s1", "bar", value2, model_type));
   change_list.push_back(settings_sync_util::CreateAdd(
-      "s2", "foo", value1));
+      "s2", "foo", value1, model_type));
   GetSyncableService(model_type)->ProcessSyncChanges(FROM_HERE, change_list);
   expected1.Set("bar", value2.DeepCopy());
   expected2.Set("foo", value1.DeepCopy());
@@ -420,9 +421,9 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
   // initial setting.
   change_list.clear();
   change_list.push_back(settings_sync_util::CreateUpdate(
-      "s1", "bar", value2));
+      "s1", "bar", value2, model_type));
   change_list.push_back(settings_sync_util::CreateUpdate(
-      "s2", "bar", value1));
+      "s2", "bar", value1, model_type));
   GetSyncableService(model_type)->ProcessSyncChanges(FROM_HERE, change_list);
   expected1.Set("bar", value2.DeepCopy());
   expected2.Set("bar", value1.DeepCopy());
@@ -434,9 +435,9 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
   // new setting.
   change_list.clear();
   change_list.push_back(settings_sync_util::CreateDelete(
-      "s1", "foo"));
+      "s1", "foo", model_type));
   change_list.push_back(settings_sync_util::CreateDelete(
-      "s2", "foo"));
+      "s2", "foo", model_type));
   GetSyncableService(model_type)->ProcessSyncChanges(FROM_HERE, change_list);
   expected1.Remove("foo", NULL);
   expected2.Remove("foo", NULL);
@@ -467,9 +468,9 @@ TEST_F(ExtensionSettingsSyncTest, PushToSync) {
 
   SyncDataList sync_data;
   sync_data.push_back(settings_sync_util::CreateData(
-      "s3", "bar", value2));
+      "s3", "bar", value2, model_type));
   sync_data.push_back(settings_sync_util::CreateData(
-      "s4", "bar", value2));
+      "s4", "bar", value2, model_type));
 
   GetSyncableService(model_type)->MergeDataAndStartSyncing(
       model_type, sync_data, &sync_);
@@ -616,7 +617,7 @@ TEST_F(ExtensionSettingsSyncTest, ExtensionAndAppSettingsSyncSeparately) {
   // Stop each separately, there should be no changes either time.
   SyncDataList sync_data;
   sync_data.push_back(settings_sync_util::CreateData(
-      "s1", "foo", value1));
+      "s1", "foo", value1, syncable::EXTENSION_SETTINGS));
 
   GetSyncableService(syncable::EXTENSION_SETTINGS)->
       MergeDataAndStartSyncing(syncable::EXTENSION_SETTINGS, sync_data, &sync_);
@@ -626,7 +627,7 @@ TEST_F(ExtensionSettingsSyncTest, ExtensionAndAppSettingsSyncSeparately) {
 
   sync_data.clear();
   sync_data.push_back(settings_sync_util::CreateData(
-      "s2", "bar", value2));
+      "s2", "bar", value2, syncable::APP_SETTINGS));
 
   GetSyncableService(syncable::APP_SETTINGS)->
       MergeDataAndStartSyncing(syncable::APP_SETTINGS, sync_data, &sync_);
@@ -656,10 +657,10 @@ TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {
   testing_factory->GetExisting("bad")->SetFailAllRequests(true);
   {
     SyncDataList sync_data;
-    sync_data.push_back(
-        settings_sync_util::CreateData("good", "foo", fooValue));
-    sync_data.push_back(
-        settings_sync_util::CreateData("bad", "foo", fooValue));
+    sync_data.push_back(settings_sync_util::CreateData(
+          "good", "foo", fooValue, model_type));
+    sync_data.push_back(settings_sync_util::CreateData(
+          "bad", "foo", fooValue, model_type));
     GetSyncableService(model_type)->MergeDataAndStartSyncing(
         model_type, sync_data, &sync_);
   }
@@ -701,12 +702,12 @@ TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {
   // not failing).
   {
     SyncChangeList change_list;
-    change_list.push_back(
-        settings_sync_util::CreateUpdate("good", "foo", barValue));
+    change_list.push_back(settings_sync_util::CreateUpdate(
+          "good", "foo", barValue, model_type));
     // (Sending UPDATE here even though it's adding, since that's what the state
     // of sync is.  In any case, it won't work.)
-    change_list.push_back(
-        settings_sync_util::CreateUpdate("bad", "foo", barValue));
+    change_list.push_back(settings_sync_util::CreateUpdate(
+          "bad", "foo", barValue, model_type));
     GetSyncableService(model_type)->ProcessSyncChanges(FROM_HERE, change_list);
   }
 
@@ -749,11 +750,11 @@ TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {
   testing_factory->GetExisting("bad")->SetFailAllRequests(true);
   {
     SyncChangeList change_list;
-    change_list.push_back(
-        settings_sync_util::CreateUpdate("good", "foo", fooValue));
+    change_list.push_back(settings_sync_util::CreateUpdate(
+          "good", "foo", fooValue, model_type));
     // (Ditto.)
-    change_list.push_back(
-        settings_sync_util::CreateUpdate("bad", "foo", fooValue));
+    change_list.push_back(settings_sync_util::CreateUpdate(
+          "bad", "foo", fooValue, model_type));
     GetSyncableService(model_type)->ProcessSyncChanges(FROM_HERE, change_list);
   }
   testing_factory->GetExisting("bad")->SetFailAllRequests(false);
@@ -805,10 +806,10 @@ TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {
   // And ProcessSyncChanges work, too.
   {
     SyncChangeList change_list;
-    change_list.push_back(
-        settings_sync_util::CreateUpdate("good", "bar", fooValue));
-    change_list.push_back(
-        settings_sync_util::CreateUpdate("bad", "bar", fooValue));
+    change_list.push_back(settings_sync_util::CreateUpdate(
+          "good", "bar", fooValue, model_type));
+    change_list.push_back(settings_sync_util::CreateUpdate(
+          "bad", "bar", fooValue, model_type));
     GetSyncableService(model_type)->ProcessSyncChanges(FROM_HERE, change_list);
   }
 
@@ -844,10 +845,10 @@ TEST_F(ExtensionSettingsSyncTest, FailingProcessChangesDisablesSync) {
   // Unlike before, initially succeeding MergeDataAndStartSyncing.
   {
     SyncDataList sync_data;
-    sync_data.push_back(
-        settings_sync_util::CreateData("good", "foo", fooValue));
-    sync_data.push_back(
-        settings_sync_util::CreateData("bad", "foo", fooValue));
+    sync_data.push_back(settings_sync_util::CreateData(
+          "good", "foo", fooValue, model_type));
+    sync_data.push_back(settings_sync_util::CreateData(
+          "bad", "foo", fooValue, model_type));
     GetSyncableService(model_type)->MergeDataAndStartSyncing(
         model_type, sync_data, &sync_);
   }
@@ -869,10 +870,10 @@ TEST_F(ExtensionSettingsSyncTest, FailingProcessChangesDisablesSync) {
   testing_factory->GetExisting("bad")->SetFailAllRequests(true);
   {
     SyncChangeList change_list;
-    change_list.push_back(
-        settings_sync_util::CreateAdd("good", "bar", barValue));
-    change_list.push_back(
-        settings_sync_util::CreateAdd("bad", "bar", barValue));
+    change_list.push_back(settings_sync_util::CreateAdd(
+          "good", "bar", barValue, model_type));
+    change_list.push_back(settings_sync_util::CreateAdd(
+          "bad", "bar", barValue, model_type));
     GetSyncableService(model_type)->ProcessSyncChanges(FROM_HERE, change_list);
   }
   testing_factory->GetExisting("bad")->SetFailAllRequests(false);
@@ -902,10 +903,10 @@ TEST_F(ExtensionSettingsSyncTest, FailingProcessChangesDisablesSync) {
   // No more changes received from sync should go to bad.
   {
     SyncChangeList change_list;
-    change_list.push_back(
-        settings_sync_util::CreateAdd("good", "foo", fooValue));
-    change_list.push_back(
-        settings_sync_util::CreateAdd("bad", "foo", fooValue));
+    change_list.push_back(settings_sync_util::CreateAdd(
+          "good", "foo", fooValue, model_type));
+    change_list.push_back(settings_sync_util::CreateAdd(
+          "bad", "foo", fooValue, model_type));
     GetSyncableService(model_type)->ProcessSyncChanges(FROM_HERE, change_list);
   }
 
@@ -1016,12 +1017,12 @@ TEST_F(ExtensionSettingsSyncTest, FailureToReadChangesToPushDisablesSync) {
 
   {
     SyncChangeList change_list;
-    change_list.push_back(
-        settings_sync_util::CreateUpdate("good", "foo", barValue));
+    change_list.push_back(settings_sync_util::CreateUpdate(
+          "good", "foo", barValue, model_type));
     // (Sending ADD here even though it's updating, since that's what the state
     // of sync is.  In any case, it won't work.)
-    change_list.push_back(
-        settings_sync_util::CreateAdd("bad", "foo", barValue));
+    change_list.push_back(settings_sync_util::CreateAdd(
+          "bad", "foo", barValue, model_type));
     GetSyncableService(model_type)->ProcessSyncChanges(FROM_HERE, change_list);
   }
 
@@ -1107,10 +1108,10 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalStateDisablesSync) {
   // Changes from sync will be sent to good, not to bad.
   {
     SyncChangeList change_list;
-    change_list.push_back(
-        settings_sync_util::CreateAdd("good", "bar", barValue));
-    change_list.push_back(
-        settings_sync_util::CreateAdd("bad", "bar", barValue));
+    change_list.push_back(settings_sync_util::CreateAdd(
+          "good", "bar", barValue, model_type));
+    change_list.push_back(settings_sync_util::CreateAdd(
+          "bad", "bar", barValue, model_type));
     GetSyncableService(model_type)->ProcessSyncChanges(FROM_HERE, change_list);
   }
 
@@ -1197,10 +1198,10 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalChangeDisablesSync) {
   // Changes from sync will be sent to good, not to bad.
   {
     SyncChangeList change_list;
-    change_list.push_back(
-        settings_sync_util::CreateAdd("good", "bar", barValue));
-    change_list.push_back(
-        settings_sync_util::CreateAdd("bad", "bar", barValue));
+    change_list.push_back(settings_sync_util::CreateAdd(
+          "good", "bar", barValue, model_type));
+    change_list.push_back(settings_sync_util::CreateAdd(
+          "bad", "bar", barValue, model_type));
     GetSyncableService(model_type)->ProcessSyncChanges(FROM_HERE, change_list);
   }
 
@@ -1270,10 +1271,10 @@ TEST_F(ExtensionSettingsSyncTest,
   SettingsStorage* storage2 = AddExtensionAndGetStorage("s2", type);
   {
     SyncChangeList change_list;
-    change_list.push_back(
-        settings_sync_util::CreateAdd("s1", "large_value", large_value));
-    change_list.push_back(
-        settings_sync_util::CreateAdd("s2", "large_value", large_value));
+    change_list.push_back(settings_sync_util::CreateAdd(
+          "s1", "large_value", large_value, model_type));
+    change_list.push_back(settings_sync_util::CreateAdd(
+          "s2", "large_value", large_value, model_type));
     GetSyncableService(model_type)->ProcessSyncChanges(FROM_HERE, change_list);
   }
   {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,27 +18,32 @@ namespace extensions {
 
 namespace settings_sync_util {
 
-// Creates a SyncData object for an extension setting.
+// Creates a SyncData object for an extension or app setting.
 SyncData CreateData(
     const std::string& extension_id,
     const std::string& key,
-    const base::Value& value);
+    const base::Value& value,
+    syncable::ModelType type);
 
-// Creates an "add" sync change for an extension setting.
+// Creates an "add" sync change for an extension or app setting.
 SyncChange CreateAdd(
     const std::string& extension_id,
     const std::string& key,
-    const base::Value& value);
+    const base::Value& value,
+    syncable::ModelType type);
 
-// Creates an "update" sync change for an extension setting.
+// Creates an "update" sync change for an extension or app setting.
 SyncChange CreateUpdate(
-  const std::string& extension_id,
-  const std::string& key,
-  const base::Value& value);
+    const std::string& extension_id,
+    const std::string& key,
+    const base::Value& value,
+    syncable::ModelType type);
 
-// Creates a "delete" sync change for an extension setting.
+// Creates a "delete" sync change for an extension or app setting.
 SyncChange CreateDelete(
-    const std::string& extension_id, const std::string& key);
+    const std::string& extension_id,
+    const std::string& key,
+    syncable::ModelType type);
 
 }  // namespace settings_sync_util
 

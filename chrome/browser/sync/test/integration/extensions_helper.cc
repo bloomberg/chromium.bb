@@ -54,6 +54,12 @@ std::string InstallExtension(Profile* profile, int index) {
       profile, CreateFakeExtensionName(index), Extension::TYPE_EXTENSION);
 }
 
+std::string InstallExtensionForAllProfiles(int index) {
+  for (int i = 0; i < test()->num_clients(); ++i)
+    InstallExtension(test()->GetProfile(i), index);
+  return InstallExtension(test()->verifier(), index);
+}
+
 void UninstallExtension(Profile* profile, int index) {
   return SyncExtensionHelper::GetInstance()->UninstallExtension(
       profile, CreateFakeExtensionName(index));
