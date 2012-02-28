@@ -328,13 +328,6 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
   return &custom_client_info;
 }
 
-// Contains the information needed by InitCrashReporterMain().
-struct CrashReporterInfo {
-  google_breakpad::CustomClientInfo* custom_info;
-  std::wstring exe_path;
-  std::wstring process_type;
-};
-
 // This callback is used when we want to get a dump without crashing the
 // process.
 bool DumpDoneCallbackWhenNoCrash(const wchar_t*, const wchar_t*, void*,
@@ -658,33 +651,45 @@ static void InitPipeNameEnvVar(bool is_per_user_install) {
   env->SetVar(kPipeNameVar, WideToASCII(pipe_name));
 }
 
-// TODO(mseaborn): This function could be merged with InitCrashReporter().
-static void InitCrashReporterMain(CrashReporterInfo* param) {
-  scoped_ptr<CrashReporterInfo> info(param);
+void InitCrashReporter() {
+  const CommandLine& command = *CommandLine::ForCurrentProcess();
+  if (command.HasSwitch(switches::kDisableBreakpad))
+    return;
 
-  bool is_per_user_install =
-      InstallUtil::IsPerUserInstall(info->exe_path.c_str());
+  // Disable the message box for assertions.
+  _CrtSetReportMode(_CRT_ASSERT, 0);
+
+  std::wstring process_type =
+    command.GetSwitchValueNative(switches::kProcessType);
+  if (process_type.empty())
+    process_type = L"browser";
+
+  wchar_t exe_path[MAX_PATH];
+  exe_path[0] = 0;
+  GetModuleFileNameW(NULL, exe_path, MAX_PATH);
+
+  bool is_per_user_install = InstallUtil::IsPerUserInstall(exe_path);
 
   std::wstring channel_string;
   GoogleUpdateSettings::GetChromeChannelAndModifiers(!is_per_user_install,
                                                      &channel_string);
 
-  info->custom_info = GetCustomInfo(info->exe_path, info->process_type,
-                                    channel_string);
+  google_breakpad::CustomClientInfo* custom_info =
+    GetCustomInfo(exe_path, process_type, channel_string);
 
   google_breakpad::ExceptionHandler::MinidumpCallback callback = NULL;
   LPTOP_LEVEL_EXCEPTION_FILTER default_filter = NULL;
   // We install the post-dump callback only for the browser and service
   // processes. It spawns a new browser/service process.
-  if (info->process_type == L"browser") {
+  if (process_type == L"browser") {
     callback = &DumpDoneCallback;
     default_filter = &ChromeExceptionFilter;
-  } else if (info->process_type == L"service") {
+  } else if (process_type == L"service") {
     callback = &DumpDoneCallback;
     default_filter = &ServiceExceptionFilter;
   }
 
-  if (info->process_type == L"browser") {
+  if (process_type == L"browser") {
     InitPipeNameEnvVar(is_per_user_install);
   }
 
@@ -716,7 +721,6 @@ static void InitCrashReporterMain(CrashReporterInfo* param) {
 
   MINIDUMP_TYPE dump_type = kSmallDumpType;
   // Capture full memory if explicitly instructed to.
-  const CommandLine& command = *CommandLine::ForCurrentProcess();
   if (command.HasSwitch(switches::kFullMemoryCrashReport)) {
     dump_type = kFullDumpType;
   } else {
@@ -732,7 +736,7 @@ static void InitCrashReporterMain(CrashReporterInfo* param) {
   g_breakpad = new google_breakpad::ExceptionHandler(temp_dir, &FilterCallback,
                    callback, NULL,
                    google_breakpad::ExceptionHandler::HANDLER_ALL,
-                   dump_type, pipe_name.c_str(), info->custom_info);
+                   dump_type, pipe_name.c_str(), custom_info);
 
   // Now initialize the non crash dump handler.
   g_dumphandler_no_crash = new google_breakpad::ExceptionHandler(temp_dir,
@@ -743,7 +747,7 @@ static void InitCrashReporterMain(CrashReporterInfo* param) {
       // |handler_stack_| in |ExceptionHandler| which is a list of exception
       // handlers.
       google_breakpad::ExceptionHandler::HANDLER_NONE,
-      dump_type, pipe_name.c_str(), info->custom_info);
+      dump_type, pipe_name.c_str(), custom_info);
 
   if (g_breakpad->IsOutOfProcess()) {
     // Tells breakpad to handle breakpoint and single step exceptions.
@@ -755,24 +759,4 @@ static void InitCrashReporterMain(CrashReporterInfo* param) {
 
 void InitDefaultCrashCallback(LPTOP_LEVEL_EXCEPTION_FILTER filter) {
   previous_filter = SetUnhandledExceptionFilter(filter);
-}
-
-void InitCrashReporter() {
-  const CommandLine& command = *CommandLine::ForCurrentProcess();
-  if (!command.HasSwitch(switches::kDisableBreakpad)) {
-    // Disable the message box for assertions.
-    _CrtSetReportMode(_CRT_ASSERT, 0);
-
-    CrashReporterInfo* info(new CrashReporterInfo);
-    info->process_type = command.GetSwitchValueNative(switches::kProcessType);
-    if (info->process_type.empty())
-      info->process_type = L"browser";
-
-    wchar_t exe_path[MAX_PATH];
-    exe_path[0] = 0;
-    GetModuleFileNameW(NULL, exe_path, MAX_PATH);
-    info->exe_path = exe_path;
-
-    InitCrashReporterMain(info);
-  }
 }
