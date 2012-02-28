@@ -63,6 +63,16 @@ then
   # Valgrind binary.
   export VALGRIND_LIB="$CHROME_VALGRIND/lib/valgrind"
   export VALGRIND_LIB_INNER="$CHROME_VALGRIND/lib/valgrind"
+
+  # Clean up some /tmp directories that might be stale due to interrupted
+  # chrome_tests.py execution.
+  # FYI:
+  #   -mtime +1  <- only print files modified more than 24h ago,
+  #   -print0/-0 are needed to handle possible newlines in the filenames.
+  echo "Cleanup /tmp from Valgrind stuff"
+  find /tmp -maxdepth 1 \(\
+        -name "vgdb-pipe-*" -or -name "vg_logs_*" -or -name "valgrind.*" \
+      \) -mtime +1 -print0 | xargs -0 rm -rf
 fi
 
 if [ "$NEEDS_DRMEMORY" == "1" ]
