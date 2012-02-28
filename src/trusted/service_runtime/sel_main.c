@@ -24,11 +24,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm || NACL_SANDBOX_FIXED_AT_ZERO == 1
-/* Required for our use of mallopt -- see below. */
-#include <malloc.h>
-#endif
-
 #include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/shared/platform/nacl_check.h"
@@ -217,28 +212,6 @@ int main(int  argc,
   /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
   extern char **environ;
   envp = (const char **) environ;
-#endif
-
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm || NACL_SANDBOX_FIXED_AT_ZERO == 1
-  /*
-   * Set malloc not to use mmap even for large allocations.  This is currently
-   * necessary when we must use a specific area of RAM for the sandbox.
-   *
-   * During startup, before the sandbox is set up, the sel_ldr allocates a chunk
-   * of memory to store the untrusted code.  Normally such an allocation would
-   * go into the sel_ldr's heap area, but the allocation is typically large --
-   * at least hundreds of KiB.  The default malloc configuration on Linux (at
-   * least) switches to mmap for such allocations, and mmap will select
-   * essentially any unoccupied section of the address space.  The result: the
-   * nexe is allocated in the region we use for the sandbox, we protect the
-   * address space, and then the memcpy into the sandbox (of course) fails.
-   *
-   * This is at best a temporary fix.  The proper fix is to reserve the
-   * sandbox region early enough that this isn't a problem.  Possible methods
-   * are discussed in this bug:
-   *   http://code.google.com/p/nativeclient/issues/detail?id=232
-   */
-  mallopt(M_MMAP_MAX, 0);
 #endif
 
   ret_code = 1;
