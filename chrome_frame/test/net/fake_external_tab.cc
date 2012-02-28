@@ -96,14 +96,6 @@ const char kChromeFrameHtml[] = "<html><head>"
     "<link rel=\"shortcut icon\" href=\"file://c:\\favicon.ico\"/>"
     "</head><body>Chrome Frame should now be loaded</body></html>";
 
-bool ShouldLaunchBrowser() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(kManualBrowserLaunch);
-}
-
-bool PromptAfterSetup() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(kPromptAfterSetup);
-}
-
 // Uses the IAccessible interface for the window to set the focus.
 // This can be useful when you don't have control over the thread that
 // owns the window.
@@ -297,6 +289,8 @@ void FilterDisabledTests() {
     "URLRequestTestHTTP.NetworkDelegateRedirectRequestPost",
     "URLRequestTestHTTP.GetTest",
     "HTTPSRequestTest.HTTPSPreloadedHSTSTest",
+    // This always hangs on erikwright's box with IE9.
+    "URLRequestTestHTTP.Redirect302Tests"
   };
 
   std::string filter("-");  // All following filters will be negative.
@@ -485,14 +479,18 @@ CFUrlRequestUnittestRunner::CFUrlRequestUnittestRunner(int argc, char** argv)
     : NetTestSuite(argc, argv, false),
       chrome_frame_html_("/chrome_frame", kChromeFrameHtml),
       registrar_(chrome_frame_test::GetTestBedType()),
-      test_result_(0) {
+      test_result_(0),
+      launch_browser_(
+          !CommandLine::ForCurrentProcess()->HasSwitch(kManualBrowserLaunch)),
+      prompt_after_setup_(
+          CommandLine::ForCurrentProcess()->HasSwitch(kPromptAfterSetup)) {
 }
 
 CFUrlRequestUnittestRunner::~CFUrlRequestUnittestRunner() {
 }
 
 void CFUrlRequestUnittestRunner::StartChromeFrameInHostBrowser() {
-  if (!ShouldLaunchBrowser())
+  if (!launch_browser_)
     return;
 
   base::win::ScopedCOMInitializer com;
@@ -516,7 +514,7 @@ void CFUrlRequestUnittestRunner::StartChromeFrameInHostBrowser() {
 }
 
 void CFUrlRequestUnittestRunner::ShutDownHostBrowser() {
-  if (ShouldLaunchBrowser()) {
+  if (launch_browser_) {
     base::win::ScopedCOMInitializer com;
     chrome_frame_test::CloseAllIEWindows();
   }
@@ -567,7 +565,7 @@ void CFUrlRequestUnittestRunner::OnInitialTabLoaded() {
 }
 
 void CFUrlRequestUnittestRunner::StartTests() {
-  if (PromptAfterSetup())
+  if (prompt_after_setup_)
     MessageBoxA(NULL, "click ok to run", "", MB_OK);
 
   DCHECK_EQ(test_thread_.IsValid(), false);
@@ -582,19 +580,19 @@ DWORD CFUrlRequestUnittestRunner::RunAllUnittests(void* param) {
   CFUrlRequestUnittestRunner* me =
       reinterpret_cast<CFUrlRequestUnittestRunner*>(param);
   me->test_result_ = me->Run();
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(TakeDownBrowser, me));
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&CFUrlRequestUnittestRunner::TakeDownBrowser,
+                 base::Unretained(me)));
   return 0;
 }
 
-// static
-void CFUrlRequestUnittestRunner::TakeDownBrowser(
-    CFUrlRequestUnittestRunner* me) {
-  if (PromptAfterSetup())
+void CFUrlRequestUnittestRunner::TakeDownBrowser() {
+  if (prompt_after_setup_)
     MessageBoxA(NULL, "click ok to exit", "", MB_OK);
 
-  me->ShutDownHostBrowser();
+  ShutDownHostBrowser();
   BrowserThread::PostDelayedTask(BrowserThread::UI,
                                  FROM_HERE,
                                  MessageLoop::QuitClosure(),
@@ -761,16 +759,6 @@ int main(int argc, char** argv) {
   ScopedChromeFrameRegistrar::RegisterAndExitProcessIfDirected();
   g_argc = argc;
   g_argv = argv;
-
-  if (chrome_frame_test::GetInstalledIEVersion() >= IE_9) {
-    // Adding this here as the command line and the logging stuff gets
-    // initialized in the NetTestSuite constructor. Did not want to break that.
-    base::AtExitManager at_exit_manager;
-    CommandLine::Init(argc, argv);
-    CFUrlRequestUnittestRunner::InitializeLogging();
-    LOG(INFO) << "Not running ChromeFrame net tests on IE9+";
-    return 0;
-  }
 
   google_breakpad::scoped_ptr<google_breakpad::ExceptionHandler> breakpad(
       InitializeCrashReporting(HEADLESS));

@@ -118,7 +118,7 @@ class CFUrlRequestUnittestRunner
   // will be called.
   static DWORD WINAPI RunAllUnittests(void* param);
 
-  static void TakeDownBrowser(CFUrlRequestUnittestRunner* me);
+  void TakeDownBrowser();
 
  protected:
   base::win::ScopedHandle test_thread_;
@@ -140,6 +140,9 @@ class CFUrlRequestUnittestRunner
   // Causes HTTP tests to run over an external address rather than 127.0.0.1.
   // See http://crbug.com/114369 .
   void OverrideHttpHost();
+
+  bool launch_browser_;
+  bool prompt_after_setup_;
 
   DISALLOW_COPY_AND_ASSIGN(CFUrlRequestUnittestRunner);
 };
