@@ -998,10 +998,10 @@ enum NotificationType {
   // Used only in coordination with notification balloons.
   NOTIFICATION_PANEL_ADDED,
 
-  // Sent when panel is removed from the panel manager.
+  // Sent when panel is closed.
   // The source is the Panel, no details.
   // Used only in coordination with notification balloons.
-  NOTIFICATION_PANEL_REMOVED,
+  NOTIFICATION_PANEL_CLOSED,
 
   // Sent when a global error has changed and the error UI should update it
   // self. The source is a Source<Profile> containing the profile for the

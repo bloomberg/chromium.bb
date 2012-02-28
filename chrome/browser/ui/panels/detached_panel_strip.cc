@@ -39,11 +39,7 @@ void DetachedPanelStrip::AddPanel(Panel* panel) {
 }
 
 bool DetachedPanelStrip::RemovePanel(Panel* panel) {
-  if (panels_.erase(panel)) {
-    panel_manager_->OnPanelRemoved(panel);
-    return true;
-  }
-  return false;
+  return panels_.erase(panel) != 0;
 }
 
 void DetachedPanelStrip::CloseAll() {
@@ -106,4 +102,8 @@ void DetachedPanelStrip::EndDraggingPanel(Panel* panel, bool cancelled) {
         panel_manager_->drag_controller()->dragging_panel_original_position());
     panel->SetPanelBounds(new_bounds);
   }
+}
+
+bool DetachedPanelStrip::HasPanel(Panel* panel) const {
+  return panels_.find(panel) != panels_.end();
 }

@@ -284,6 +284,7 @@ void PanelBrowserWindowGtk::Observe(
       if (bounds_animator_.get())
         bounds_animator_.reset();
 
+      CleanupDragDrop();
       if (drag_widget_) {
         // Terminate the grab if we have it. We could do this using any widget,
         // |drag_widget_| is just convenient.

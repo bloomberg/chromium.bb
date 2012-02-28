@@ -23,6 +23,9 @@ class PanelDragController {
   void Drag(int delta_x, int delta_y);
   void EndDragging(bool cancelled);
 
+  // Asynchronous confirmation of panel having been closed.
+  void OnPanelClosed(Panel* panel);
+
   bool IsDragging() const { return dragging_panel_ != NULL; }
 
   Panel* dragging_panel() const { return dragging_panel_; }

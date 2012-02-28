@@ -5,13 +5,13 @@
 #include "chrome/browser/ui/panels/docked_panel_strip.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/panels/overflow_panel_strip.h"
-#include "chrome/browser/ui/panels/panel_drag_controller.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -60,14 +60,14 @@ DockedPanelStrip::DockedPanelStrip(PanelManager* panel_manager)
       minimized_panel_count_(0),
       are_titlebars_up_(false),
       disable_layout_refresh_(false),
-      dragging_panel_original_x_(0),
       delayed_titlebar_action_(NO_ACTION),
       titlebar_action_factory_(this) {
+  dragging_panel_current_iterator_ = dragging_panel_original_iterator_ =
+      panels_.end();
 }
 
 DockedPanelStrip::~DockedPanelStrip() {
   DCHECK(panels_.empty());
-  DCHECK(panels_pending_to_remove_.empty());
   DCHECK(panels_in_temporary_layout_.empty());
   DCHECK_EQ(0, minimized_panel_count_);
 }
@@ -209,30 +209,6 @@ bool DockedPanelStrip::RemovePanel(Panel* panel) {
     return true;
   }
 
-  if (find(panels_.begin(), panels_.end(), panel) == panels_.end())
-    return false;
-
-  // If we're in the process of dragging, delay the removal.
-  if (panel_manager_->drag_controller()->IsDragging()) {
-    panels_pending_to_remove_.push_back(panel);
-    return true;
-  }
-  DoRemove(panel);
-
-  if (!disable_layout_refresh_)
-    RefreshLayout();
-
-  return true;
-}
-
-void DockedPanelStrip::DelayedRemove() {
-  for (size_t i = 0; i < panels_pending_to_remove_.size(); ++i)
-    DoRemove(panels_pending_to_remove_[i]);
-  panels_pending_to_remove_.clear();
-  RefreshLayout();
-}
-
-bool DockedPanelStrip::DoRemove(Panel* panel) {
   Panels::iterator iter = find(panels_.begin(), panels_.end(), panel);
   if (iter == panels_.end())
     return false;
@@ -240,8 +216,31 @@ bool DockedPanelStrip::DoRemove(Panel* panel) {
   if (panel->expansion_state() != Panel::EXPANDED)
     DecrementMinimizedPanels();
 
-  panels_.erase(iter);
-  panel_manager_->OnPanelRemoved(panel);
+  // Removing an element from the list will invalidate the iterator that refers
+  // to it. So we need to check if the dragging panel iterators are affected.
+  bool update_original_dragging_iterator_after_erase = false;
+  if (dragging_panel_original_iterator_ != panels_.end()) {
+    if (dragging_panel_current_iterator_ == iter) {
+      // If the dragging panel is being removed, set both dragging iterators to
+      // the end of the list.
+      dragging_panel_current_iterator_ = dragging_panel_original_iterator_ =
+          panels_.end();
+    } else if (dragging_panel_original_iterator_ == iter) {
+      // If |dragging_panel_original_iterator_| refers to the element being
+      // removed, set the flag so that the iterator can be updated to next
+      // element.
+      update_original_dragging_iterator_after_erase = true;
+    }
+  }
+
+  iter = panels_.erase(iter);
+
+  if (update_original_dragging_iterator_after_erase)
+    dragging_panel_original_iterator_ = iter;
+
+  if (!disable_layout_refresh_)
+    RefreshLayout();
+
   return true;
 }
 
@@ -255,12 +254,16 @@ bool DockedPanelStrip::CanDragPanel(const Panel* panel) const {
   return !panel->has_temporary_layout();
 }
 
-void DockedPanelStrip::StartDraggingPanel(Panel* panel) {
-  dragging_panel_iterator_ = find(panels_.begin(), panels_.end(), panel);
-  DCHECK(dragging_panel_iterator_ != panels_.end());
+Panel* DockedPanelStrip::dragging_panel() const {
+  return dragging_panel_current_iterator_ == panels_.end() ? NULL :
+      *dragging_panel_current_iterator_;
+}
 
-  dragging_panel_bounds_ = panel->GetBounds();
-  dragging_panel_original_x_ = dragging_panel_bounds_.x();
+void DockedPanelStrip::StartDraggingPanel(Panel* panel) {
+  dragging_panel_current_iterator_ =
+      find(panels_.begin(), panels_.end(), panel);
+  DCHECK(dragging_panel_current_iterator_ != panels_.end());
+  dragging_panel_original_iterator_ = dragging_panel_current_iterator_;
 }
 
 void DockedPanelStrip::DragPanel(Panel* panel, int delta_x, int delta_y) {
@@ -277,6 +280,10 @@ void DockedPanelStrip::DragPanel(Panel* panel, int delta_x, int delta_y) {
     DragRight(panel);
   else
     DragLeft(panel);
+
+  // Layout refresh will automatically recompute the bounds of all affected
+  // panels due to their position changes.
+  RefreshLayout();
 }
 
 void DockedPanelStrip::DragLeft(Panel* dragging_panel) {
@@ -284,38 +291,25 @@ void DockedPanelStrip::DragLeft(Panel* dragging_panel) {
   // all the panels on its left.
   int dragging_panel_left_boundary = dragging_panel->GetBounds().x();
 
-  // This is the right corner which a panel will be moved to.
-  int current_panel_right_boundary =
-      dragging_panel_bounds_.x() + dragging_panel_bounds_.width();
-
   // Checks the panels to the left of the dragging panel.
-  Panels::iterator current_panel_iterator = dragging_panel_iterator_;
+  Panels::iterator current_panel_iterator = dragging_panel_current_iterator_;
   ++current_panel_iterator;
   for (; current_panel_iterator != panels_.end(); ++current_panel_iterator) {
     Panel* current_panel = *current_panel_iterator;
 
-    // Current panel will only be affected if the left corner of dragging
-    // panel goes beyond the middle position of the current panel.
+    // Can we swap dragging panel with its left panel? The criterion is that
+    // the left corner of dragging panel should pass the middle position of
+    // its left panel.
     if (dragging_panel_left_boundary > current_panel->GetBounds().x() +
             current_panel->GetBounds().width() / 2)
       break;
 
-    // Moves current panel to the new position.
-    gfx::Rect bounds(current_panel->GetBounds());
-    bounds.set_x(current_panel_right_boundary - bounds.width());
-    current_panel_right_boundary -= bounds.width() + kPanelsHorizontalSpacing;
-    current_panel->SetPanelBounds(bounds);
-
-    // Swaps current panel and dragging panel.
-    *dragging_panel_iterator_ = current_panel;
+    // Swaps the contents and makes |dragging_panel_current_iterator_| refers
+    // to the new position.
+    *dragging_panel_current_iterator_ = current_panel;
     *current_panel_iterator = dragging_panel;
-    dragging_panel_iterator_ = current_panel_iterator;
+    dragging_panel_current_iterator_ = current_panel_iterator;
   }
-
-  // Updates the potential final position of dragging panel as the result of
-  // swapping with panels on its left.
-  dragging_panel_bounds_.set_x(current_panel_right_boundary -
-                               dragging_panel_bounds_.width());
 }
 
 void DockedPanelStrip::DragRight(Panel* dragging_panel) {
@@ -324,45 +318,60 @@ void DockedPanelStrip::DragRight(Panel* dragging_panel) {
   int dragging_panel_right_boundary = dragging_panel->GetBounds().x() +
       dragging_panel->GetBounds().width() - 1;
 
-  // This is the left corner which a panel will be moved to.
-  int current_panel_left_boundary = dragging_panel_bounds_.x();
-
   // Checks the panels to the right of the dragging panel.
-  Panels::iterator current_panel_iterator = dragging_panel_iterator_;
+  Panels::iterator current_panel_iterator = dragging_panel_current_iterator_;
   while (current_panel_iterator != panels_.begin()) {
     current_panel_iterator--;
     Panel* current_panel = *current_panel_iterator;
 
-    // Current panel will only be affected if the right corner of dragging
-    // panel goes beyond the middle position of the current panel.
+    // Can we swap dragging panel with its right panel? The criterion is that
+    // the left corner of dragging panel should pass the middle position of
+    // its right panel.
     if (dragging_panel_right_boundary < current_panel->GetBounds().x() +
             current_panel->GetBounds().width() / 2)
       break;
 
-    // Moves current panel to the new position.
-    gfx::Rect bounds(current_panel->GetBounds());
-    bounds.set_x(current_panel_left_boundary);
-    current_panel_left_boundary += bounds.width() + kPanelsHorizontalSpacing;
-    current_panel->SetPanelBounds(bounds);
-
-    // Swaps current panel and dragging panel.
-    *dragging_panel_iterator_ = current_panel;
+    // Swaps the contents and makes |dragging_panel_current_iterator_| refers
+    // to the new position.
+    *dragging_panel_current_iterator_ = current_panel;
     *current_panel_iterator = dragging_panel;
-    dragging_panel_iterator_ = current_panel_iterator;
+    dragging_panel_current_iterator_ = current_panel_iterator;
   }
-
-  // Updates the potential final position of dragging panel as the result of
-  // swapping with panels on its right.
-  dragging_panel_bounds_.set_x(current_panel_left_boundary);
 }
 
 void DockedPanelStrip::EndDraggingPanel(Panel* panel, bool cancelled) {
-  if (cancelled)
-    DragPanel(panel, dragging_panel_original_x_ - panel->GetBounds().x(), 0);
-  else
-    panel->SetPanelBounds(dragging_panel_bounds_);
+  if (cancelled) {
+    if (dragging_panel_current_iterator_ != dragging_panel_original_iterator_) {
+      // Find out if the dragging panel should be moved toward the end/beginning
+      // of the list.
+      bool move_towards_end_of_list = true;
+      for (Panels::iterator iter = dragging_panel_original_iterator_;
+           iter != panels_.end(); ++iter) {
+        if (iter == dragging_panel_current_iterator_) {
+          move_towards_end_of_list = false;
+          break;
+        }
+      }
 
-  DelayedRemove();
+      // Move the dragging panel back to its original position by swapping it
+      // with its adjacent element until it reach its original position.
+      while (dragging_panel_current_iterator_ !=
+             dragging_panel_original_iterator_) {
+        Panels::iterator next_iter = dragging_panel_current_iterator_;
+        if (move_towards_end_of_list)
+          ++next_iter;
+        else
+          --next_iter;
+        iter_swap(dragging_panel_current_iterator_, next_iter);
+        dragging_panel_current_iterator_ = next_iter;
+      }
+    }
+  }
+
+  dragging_panel_current_iterator_ = dragging_panel_original_iterator_ =
+      panels_.end();
+
+  RefreshLayout();
 }
 
 void DockedPanelStrip::OnPanelExpansionStateChanged(Panel* panel) {
@@ -520,8 +529,7 @@ bool DockedPanelStrip::ShouldBringUpTitlebars(int mouse_x, int mouse_y) const {
 
     // If the panel is showing titlebar only, we want to keep it up when it is
     // being dragged.
-    if (state == Panel::TITLE_ONLY &&
-        panel == panel_manager_->drag_controller()->dragging_panel())
+    if (state == Panel::TITLE_ONLY && panel == dragging_panel())
       return true;
 
     // We do not want to bring up other minimized panels if the mouse is over
@@ -683,13 +691,16 @@ void DockedPanelStrip::RefreshLayout() {
     if (x < display_area_.x())
       break;
 
-    new_bounds.set_x(x);
-    new_bounds.set_y(
-        GetBottomPositionForExpansionState(panel->expansion_state()) -
-            new_bounds.height());
-    panel->SetPanelBounds(new_bounds);
+    // Don't update the docked panel that is currently dragged.
+    if (panel != dragging_panel()) {
+      new_bounds.set_x(x);
+      new_bounds.set_y(
+          GetBottomPositionForExpansionState(panel->expansion_state()) -
+              new_bounds.height());
+      panel->SetPanelBounds(new_bounds);
+    }
 
-    rightmost_position = new_bounds.x() - kPanelsHorizontalSpacing;
+    rightmost_position = x - kPanelsHorizontalSpacing;
   }
 
   // Add/remove panels from/to overflow. A change in work area or the

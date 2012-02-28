@@ -38,13 +38,11 @@ class PanelManager : public AutoHidingDesktopBar::Observer {
   // later.
   Panel* CreatePanel(Browser* browser);
 
-  void Remove(Panel* panel);
-
   // Close all panels (asynchronous). Panels will be removed after closing.
   void CloseAll();
 
-  // Asynchronous confirmation of panel having been removed.
-  void OnPanelRemoved(Panel* panel);
+  // Asynchronous confirmation of panel having been closed.
+  void OnPanelClosed(Panel* panel);
 
   // Drags the given panel.
   void StartDragging(Panel* panel);

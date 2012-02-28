@@ -43,6 +43,8 @@ class DetachedPanelStrip : public PanelStrip {
   virtual void DragPanel(Panel* panel, int delta_x, int delta_y) OVERRIDE;
   virtual void EndDraggingPanel(Panel* panel, bool cancelled) OVERRIDE;
 
+  bool HasPanel(Panel* panel) const;
+
   int num_panels() const { return panels_.size(); }
   const Panels& panels() const { return panels_; }
 

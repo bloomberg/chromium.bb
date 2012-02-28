@@ -126,7 +126,6 @@ bool OverflowPanelStrip::RemovePanel(Panel* panel) {
 
   panels_.erase(iter);
   DoRefresh(index, panels_.size() - 1);
-  panel_manager_->OnPanelRemoved(panel);
 
   if (panels_.empty() && !panel_manager_->is_full_screen())
     panel_manager_->mouse_watcher()->RemoveObserver(this);

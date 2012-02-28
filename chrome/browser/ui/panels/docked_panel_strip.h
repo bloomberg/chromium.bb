@@ -8,7 +8,6 @@
 
 #include <list>
 #include <set>
-#include <vector>
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/panels/auto_hiding_desktop_bar.h"
@@ -112,14 +111,6 @@ class DockedPanelStrip : public PanelStrip,
   void IncrementMinimizedPanels();
   void DecrementMinimizedPanels();
 
-  // Handles all the panels that're delayed to be removed.
-  void DelayedRemove();
-
-  // Does the actual remove. Caller is responsible for rearranging
-  // the panel strip if necessary.
-  // Returns |false| if panel is not in the strip.
-  bool DoRemove(Panel* panel);
-
   // Help functions to drag the given panel.
   void DragLeft(Panel* dragging_panel);
   void DragRight(Panel* dragging_panel);
@@ -139,16 +130,14 @@ class DockedPanelStrip : public PanelStrip,
   // panels are (at least briefly) visible before entering overflow.
   void DelayedMovePanelToOverflow(Panel* panel);
 
+  Panel* dragging_panel() const;
+
   PanelManager* panel_manager_;  // Weak, owns us.
 
   // All panels in the panel strip must fit within this area.
   gfx::Rect display_area_;
 
   Panels panels_;
-
-  // Stores the panels that are pending to remove. We want to delay the removal
-  // when we're in the process of the dragging.
-  std::vector<Panel*> panels_pending_to_remove_;
 
   // Stores newly created panels that have a temporary layout until they
   // are moved to overflow after a delay.
@@ -161,17 +150,13 @@ class DockedPanelStrip : public PanelStrip,
   // moving panels to overflow area to make room for a panel in this strip.
   bool disable_layout_refresh_;
 
-  // Iterator of panel being dragged.
-  Panels::iterator dragging_panel_iterator_;
+  // Referring to current position in |panels_| where the dragging panel
+  // resides.
+  Panels::iterator dragging_panel_current_iterator_;
 
-  // Original x coordinate of the panel to drag. This is used to get back to
-  // the original position when we cancel the dragging.
-  int dragging_panel_original_x_;
-
-  // Bounds of the panel to drag. It is first set to the original bounds when
-  // the dragging happens. Then it is updated to the position that will be set
-  // to when the dragging ends.
-  gfx::Rect dragging_panel_bounds_;
+  // Referring to original position in |panels_| where the dragging panel
+  // resides.
+  Panels::iterator dragging_panel_original_iterator_;
 
   // Delayed transitions support. Sometimes transitions between minimized and
   // title-only states are delayed, for better usability with Taskbars/Docks.

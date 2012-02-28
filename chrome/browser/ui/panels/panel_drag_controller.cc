@@ -34,7 +34,19 @@ void PanelDragController::Drag(int delta_x, int delta_y) {
 void PanelDragController::EndDragging(bool cancelled) {
   DCHECK(dragging_panel_);
 
-  dragging_panel_->panel_strip()->EndDraggingPanel(dragging_panel_, cancelled);
+  // The code in PanelStrip::EndDraggingPanel might call DragController to find
+  // out if the drag has ended. So we need to reset |dragging_panel_| to reflect
+  // this.
+  Panel* panel = dragging_panel_;
   dragging_panel_ = NULL;
+  panel->panel_strip()->EndDraggingPanel(panel, cancelled);
 }
 
+void PanelDragController::OnPanelClosed(Panel* panel) {
+  if (!dragging_panel_)
+    return;
+
+  // If the dragging panel is closed, abort the drag.
+  if (dragging_panel_ == panel)
+    EndDragging(false);
+}

@@ -69,6 +69,7 @@ void Panel::OnNativePanelClosed() {
   if (auto_resizable_)
     native_panel_->GetPanelBrowser()->tabstrip_model()->RemoveObserver(this);
   panel_strip_->RemovePanel(this);
+  manager()->OnPanelClosed(this);
 }
 
 PanelManager* Panel::manager() const {

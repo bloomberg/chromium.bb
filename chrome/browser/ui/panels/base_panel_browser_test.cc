@@ -233,7 +233,7 @@ void BasePanelBrowserTest::WaitForPanelRemoved(Panel* panel) {
   if (!ExistsPanel(panel))
     return;
   ui_test_utils::WindowedNotificationObserver signal(
-      chrome::NOTIFICATION_PANEL_REMOVED,
+      chrome::NOTIFICATION_PANEL_CLOSED,
       content::Source<Panel>(panel));
   signal.Wait();
   EXPECT_FALSE(ExistsPanel(panel));

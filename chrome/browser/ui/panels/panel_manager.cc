@@ -146,12 +146,14 @@ void PanelManager::CheckFullScreenMode() {
   overflow_strip_->OnFullScreenModeChanged(is_full_screen_);
 }
 
-void PanelManager::OnPanelRemoved(Panel* panel) {
+void PanelManager::OnPanelClosed(Panel* panel) {
   if (num_panels() == 0)
     full_screen_mode_timer_.Stop();
 
+  drag_controller_->OnPanelClosed(panel);
+
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PANEL_REMOVED,
+      chrome::NOTIFICATION_PANEL_CLOSED,
       content::Source<Panel>(panel),
       content::NotificationService::NoDetails());
 }
