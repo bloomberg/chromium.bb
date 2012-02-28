@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/extensions/shell_window.h"
 
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -63,7 +64,16 @@ ShellWindow::ShellWindow(ExtensionHost* host)
   // apps are no longer tied to the browser process).
   registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
+
+  // Prevent the browser process from shutting down while this window is open.
+  BrowserList::StartKeepAlive();
 }
 
 ShellWindow::~ShellWindow() {
+  // Unregister now to prevent getting NOTIFICATION_APP_TERMINATING if we're the
+  // last window open.
+  registrar_.RemoveAll();
+
+  // Remove shutdown prevention.
+  BrowserList::EndKeepAlive();
 }
