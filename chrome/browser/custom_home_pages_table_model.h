@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,6 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/history/history.h"
-#include "chrome/browser/favicon/favicon_service.h"
 #include "ui/base/models/table_model.h"
 
 class GURL;
@@ -54,17 +53,16 @@ class CustomHomePagesTableModel : public ui::TableModel {
   // TableModel overrides:
   virtual int RowCount() OVERRIDE;
   virtual string16 GetText(int row, int column_id) OVERRIDE;
-  virtual SkBitmap GetIcon(int row) OVERRIDE;
   virtual string16 GetTooltip(int row) OVERRIDE;
   virtual void SetObserver(ui::TableModelObserver* observer) OVERRIDE;
 
  private:
-  // Each item in the model is represented as an Entry. Entry stores the URL,
-  // title, and favicon of the page.
+  // Each item in the model is represented as an Entry. Entry stores the URL
+  // and title of the page.
   struct Entry;
 
-  // Loads the title and favicon for the specified entry.
-  void LoadTitleAndFavicon(Entry* entry);
+  // Loads the title for the specified entry.
+  void LoadTitle(Entry* entry);
 
   // Callback from history service. Updates the title of the Entry whose
   // |title_handle| matches |handle| and notifies the observer of the change.
@@ -72,11 +70,6 @@ class CustomHomePagesTableModel : public ui::TableModel {
                   bool found_url,
                   const history::URLRow* row,
                   history::VisitVector* visits);
-
-  // Callback from history service. Updates the icon of the Entry whose
-  // |favicon_handle| matches |handle| and notifies the observer of the change.
-  void OnGotFavicon(FaviconService::Handle handle,
-                    history::FaviconData favicon);
 
   // Returns the entry whose |member| matches |handle| and sets |entry_index| to
   // the index of the entry.
@@ -90,17 +83,13 @@ class CustomHomePagesTableModel : public ui::TableModel {
   // Set of entries we're showing.
   std::vector<Entry> entries_;
 
-  // Default icon to show when one can't be found for the URL.
-  SkBitmap* default_favicon_;
-
-  // Profile used to load titles and icons.
+  // Profile used to load titles.
   Profile* profile_;
 
   ui::TableModelObserver* observer_;
 
-  // Used in loading titles and favicons.
+  // Used in loading titles.
   CancelableRequestConsumer history_query_consumer_;
-  CancelableRequestConsumer favicon_query_consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomHomePagesTableModel);
 };

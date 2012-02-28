@@ -19,14 +19,12 @@
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
 #include "net/base/net_util.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/table_model_observer.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
 
 struct CustomHomePagesTableModel::Entry {
-  Entry() : title_handle(0), favicon_handle(0) {}
+  Entry() : title_handle(0) {}
 
   // URL of the page.
   GURL url;
@@ -34,22 +32,13 @@ struct CustomHomePagesTableModel::Entry {
   // Page title.  If this is empty, we'll display the URL as the entry.
   string16 title;
 
-  // Icon for the page.
-  SkBitmap icon;
-
   // If non-zero, indicates we're loading the title for the page.
   HistoryService::Handle title_handle;
-
-  // If non-zero, indicates we're loading the favicon for the page.
-  FaviconService::Handle favicon_handle;
 };
 
 CustomHomePagesTableModel::CustomHomePagesTableModel(Profile* profile)
-    : default_favicon_(NULL),
-      profile_(profile),
+    : profile_(profile),
       observer_(NULL) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  default_favicon_ = rb.GetBitmapNamed(IDR_DEFAULT_FAVICON);
 }
 
 CustomHomePagesTableModel::~CustomHomePagesTableModel() {
@@ -60,8 +49,7 @@ void CustomHomePagesTableModel::SetURLs(const std::vector<GURL>& urls) {
   for (size_t i = 0; i < urls.size(); ++i) {
     entries_[i].url = urls[i];
     entries_[i].title.erase();
-    entries_[i].icon.reset();
-    LoadTitleAndFavicon(&(entries_[i]));
+    LoadTitle(&(entries_[i]));
   }
   // Complete change, so tell the view to just rebuild itself.
   if (observer_)
@@ -130,7 +118,7 @@ void CustomHomePagesTableModel::Add(int index, const GURL& url) {
   DCHECK(index >= 0 && index <= RowCount());
   entries_.insert(entries_.begin() + static_cast<size_t>(index), Entry());
   entries_[index].url = url;
-  LoadTitleAndFavicon(&(entries_[index]));
+  LoadTitle(&(entries_[index]));
   if (observer_)
     observer_->OnItemsAdded(index, 1);
 }
@@ -145,12 +133,6 @@ void CustomHomePagesTableModel::Remove(int index) {
         profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
     if (history_service)
       history_service->CancelRequest(entry->title_handle);
-  }
-  if (entry->favicon_handle) {
-    FaviconService* favicon_service =
-        profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
-    if (favicon_service)
-      favicon_service->CancelRequest(entry->favicon_handle);
   }
   entries_.erase(entries_.begin() + static_cast<size_t>(index));
   if (observer_)
@@ -201,11 +183,6 @@ string16 CustomHomePagesTableModel::GetText(int row, int column_id) {
   return entries_[row].title.empty() ? FormattedURL(row) : entries_[row].title;
 }
 
-SkBitmap CustomHomePagesTableModel::GetIcon(int row) {
-  DCHECK(row >= 0 && row < RowCount());
-  return entries_[row].icon.isNull() ? *default_favicon_ : entries_[row].icon;
-}
-
 string16 CustomHomePagesTableModel::GetTooltip(int row) {
   return entries_[row].title.empty() ? string16() :
       l10n_util::GetStringFUTF16(IDS_OPTIONS_STARTUP_PAGE_TOOLTIP,
@@ -216,21 +193,13 @@ void CustomHomePagesTableModel::SetObserver(ui::TableModelObserver* observer) {
   observer_ = observer;
 }
 
-void CustomHomePagesTableModel::LoadTitleAndFavicon(Entry* entry) {
+void CustomHomePagesTableModel::LoadTitle(Entry* entry) {
   HistoryService* history_service =
       profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   if (history_service) {
     entry->title_handle = history_service->QueryURL(entry->url, false,
         &history_query_consumer_,
         base::Bind(&CustomHomePagesTableModel::OnGotTitle,
-                   base::Unretained(this)));
-  }
-  FaviconService* favicon_service =
-      profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
-  if (favicon_service) {
-    entry->favicon_handle = favicon_service->GetFaviconForURL(entry->url,
-        history::FAVICON, &favicon_query_consumer_,
-        base::Bind(&CustomHomePagesTableModel::OnGotFavicon,
                    base::Unretained(this)));
   }
 }
@@ -251,34 +220,6 @@ void CustomHomePagesTableModel::OnGotTitle(HistoryService::Handle handle,
     entry->title = row->title();
     if (observer_)
       observer_->OnItemsChanged(static_cast<int>(entry_index), 1);
-  }
-}
-
-void CustomHomePagesTableModel::OnGotFavicon(
-    FaviconService::Handle handle,
-    history::FaviconData favicon) {
-  int entry_index;
-  Entry* entry =
-      GetEntryByLoadHandle(&Entry::favicon_handle, handle, &entry_index);
-  if (!entry) {
-    // The URLs changed before we were called back.
-    return;
-  }
-  entry->favicon_handle = 0;
-  if (favicon.is_valid()) {
-    int width, height;
-    std::vector<unsigned char> decoded_data;
-    if (gfx::PNGCodec::Decode(favicon.image_data->front(),
-                              favicon.image_data->size(),
-                              gfx::PNGCodec::FORMAT_BGRA, &decoded_data,
-                              &width, &height)) {
-      entry->icon.setConfig(SkBitmap::kARGB_8888_Config, width, height);
-      entry->icon.allocPixels();
-      memcpy(entry->icon.getPixels(), &decoded_data.front(),
-             width * height * 4);
-      if (observer_)
-        observer_->OnItemsChanged(static_cast<int>(entry_index), 1);
-    }
   }
 }
 
