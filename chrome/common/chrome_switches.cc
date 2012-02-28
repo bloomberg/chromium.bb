@@ -336,7 +336,7 @@ const char kDisableRestoreBackgroundContents[] =
 
 // Disables restoring session state (cookies, session storage, etc.) when
 // restoring the browsing session.
-const char kDisableRestoreSessionState[]   = "disable-restore-session-state";
+const char kDisableRestoreSessionState[]    = "disable-restore-session-state";
 
 // Disables the ShortcutsProvider for autocomplete results.
 const char kDisableShortcutsProvider[]      = "disable-shortcuts-provider";
@@ -347,23 +347,29 @@ const char kDisableSSL3[]                   = "disable-ssl3";
 // Disables syncing browser data to a Google Account.
 const char kDisableSync[]                   = "disable-sync";
 
+// Disables syncing of app settings.
+const char kDisableSyncAppSettings[]        = "disable-sync-app-settings";
+
 // Disables syncing of apps.
 const char kDisableSyncApps[]               = "disable-sync-apps";
 
 // Disable syncing app notifications.
-const char kDisableSyncAppNotifications[]    = "disable-sync-app-notifications";
+const char kDisableSyncAppNotifications[]   = "disable-sync-app-notifications";
 
 // Disables syncing of autofill.
 const char kDisableSyncAutofill[]           = "disable-sync-autofill";
 
 // Disables syncing of autofill Profile.
-const char kDisableSyncAutofillProfile[]     = "disable-sync-autofill-profile";
+const char kDisableSyncAutofillProfile[]    = "disable-sync-autofill-profile";
 
 // Disables syncing of bookmarks.
 const char kDisableSyncBookmarks[]          = "disable-sync-bookmarks";
 
 // Disables sync encryption options.
-const char kDisableSyncEncryption[]          = "disable-sync-encryption";
+const char kDisableSyncEncryption[]         = "disable-sync-encryption";
+
+// Disables syncing extension settings.
+const char kDisableSyncExtensionSettings[]  = "disable-sync-extension-settings";
 
 // Disables syncing of extensions.
 const char kDisableSyncExtensions[]         = "disable-sync-extensions";
@@ -381,7 +387,7 @@ const char kDisableSyncSearchEngines[]      = "disable-sync-search-engines";
 const char kDisableSyncThemes[]             = "disable-sync-themes";
 
 // Disables syncing browser typed urls.
-const char kDisableSyncTypedUrls[]           = "disable-sync-typed-urls";
+const char kDisableSyncTypedUrls[]          = "disable-sync-typed-urls";
 
 // TabCloseableStateWatcher disallows closing of tabs and browsers under
 // certain situations on ChromeOS. Some tests expect tabs or browsers to close,
@@ -560,9 +566,6 @@ const char kEnableProfiling[]               = "enable-profiling";
 // use "--enable-sdch=0" as command line argument. SDCH is currently only
 // supported server-side for searches on google.com.
 const char kEnableSdch[]                    = "enable-sdch";
-
-// Enables syncing extension settings.
-const char kEnableSyncExtensionSettings[]   = "enable-sync-extension-settings";
 
 // Enables syncing browser sessions.
 const char kEnableSyncTabs[]                = "enable-sync-tabs";

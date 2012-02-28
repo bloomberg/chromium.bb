@@ -33,17 +33,19 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
   // Returns the collection of default datatypes.
   static std::vector<syncable::ModelType> DefaultDatatypes() {
     std::vector<syncable::ModelType> datatypes;
-    datatypes.push_back(syncable::BOOKMARKS);
-    datatypes.push_back(syncable::PREFERENCES);
-    datatypes.push_back(syncable::AUTOFILL);
-    datatypes.push_back(syncable::THEMES);
-    datatypes.push_back(syncable::EXTENSIONS);
     datatypes.push_back(syncable::APPS);
     datatypes.push_back(syncable::APP_NOTIFICATIONS);
+    datatypes.push_back(syncable::APP_SETTINGS);
+    datatypes.push_back(syncable::AUTOFILL);
     datatypes.push_back(syncable::AUTOFILL_PROFILE);
+    datatypes.push_back(syncable::BOOKMARKS);
+    datatypes.push_back(syncable::EXTENSIONS);
+    datatypes.push_back(syncable::EXTENSION_SETTINGS);
     datatypes.push_back(syncable::PASSWORDS);
-    datatypes.push_back(syncable::TYPED_URLS);
+    datatypes.push_back(syncable::PREFERENCES);
     datatypes.push_back(syncable::SEARCH_ENGINES);
+    datatypes.push_back(syncable::THEMES);
+    datatypes.push_back(syncable::TYPED_URLS);
     return datatypes;
   }
 

@@ -101,12 +101,14 @@ extern const char kDisableRestoreSessionState[];
 extern const char kDisableShortcutsProvider[];
 extern const char kDisableSSL3[];
 extern const char kDisableSync[];
+extern const char kDisableSyncAppSettings[];
 extern const char kDisableSyncApps[];
 extern const char kDisableSyncAppNotifications[];
 extern const char kDisableSyncAutofill[];
 extern const char kDisableSyncAutofillProfile[];
 extern const char kDisableSyncBookmarks[];
 extern const char kDisableSyncEncryption[];
+extern const char kDisableSyncExtensionSettings[];
 extern const char kDisableSyncExtensions[];
 extern const char kDisableSyncPasswords[];
 extern const char kDisableSyncPreferences[];
@@ -158,9 +160,6 @@ extern const char kEnablePnacl[];
 extern const char kEnableProfiling[];
 extern const char kEnableResourceContentSettings[];
 extern const char kEnableSdch[];
-// TODO(kalman): Add to about:flags when UI for syncing extension settings has
-// been figured out.
-extern const char kEnableSyncExtensionSettings[];
 extern const char kEnableSyncTabs[];
 extern const char kEnableSyncTabsForOtherClients[];
 extern const char kEnableTabGroupsContextMenu[];

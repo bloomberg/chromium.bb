@@ -160,12 +160,17 @@ void ProfileSyncComponentsFactoryImpl::RegisterDataTypes(
         new SessionDataTypeController(this, profile_, pss));
   }
 
-  // Extension setting sync is disabled by default.  Register only if
-  // explicitly enabled.
-  if (command_line_->HasSwitch(switches::kEnableSyncExtensionSettings)) {
+  // Extension setting sync is enabled by default.  Register unless explicitly
+  // disabled.
+  if (!command_line_->HasSwitch(switches::kDisableSyncExtensionSettings)) {
     pss->RegisterDataTypeController(
         new ExtensionSettingDataTypeController(
             syncable::EXTENSION_SETTINGS, this, profile_, pss));
+  }
+
+  // App setting sync is enabled by default.  Register unless explicitly
+  // disabled.
+  if (!command_line_->HasSwitch(switches::kDisableSyncAppSettings)) {
     pss->RegisterDataTypeController(
         new ExtensionSettingDataTypeController(
             syncable::APP_SETTINGS, this, profile_, pss));
