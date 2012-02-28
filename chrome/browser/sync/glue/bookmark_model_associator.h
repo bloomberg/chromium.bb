@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,8 +14,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync/internal_api/includes/unrecoverable_error_handler.h"
-#include "chrome/browser/sync/glue/data_type_controller.h"
-#include "chrome/browser/sync/glue/data_type_error_handler.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 
 class BookmarkModel;
@@ -39,7 +37,7 @@ class BookmarkModelAssociator
   BookmarkModelAssociator(
       BookmarkModel* bookmark_model,
       sync_api::UserShare* user_share,
-      DataTypeErrorHandler* unrecoverable_error_handler);
+      UnrecoverableErrorHandler* unrecoverable_error_handler);
   virtual ~BookmarkModelAssociator();
 
   // Updates the visibility of the permanents node in the BookmarkModel.
@@ -129,7 +127,7 @@ class BookmarkModelAssociator
 
   BookmarkModel* bookmark_model_;
   sync_api::UserShare* user_share_;
-  DataTypeErrorHandler* unrecoverable_error_handler_;
+  UnrecoverableErrorHandler* unrecoverable_error_handler_;
   BookmarkIdToSyncIdMap id_map_;
   SyncIdToBookmarkNodeMap id_map_inverse_;
   // Stores sync ids for dirty associations.

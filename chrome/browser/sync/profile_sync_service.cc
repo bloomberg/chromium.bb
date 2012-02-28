@@ -367,8 +367,7 @@ bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {
 
 void ProfileSyncService::OnSyncConfigureDone(
     DataTypeManager::ConfigureResult result) {
-  if (failed_datatypes_handler_.UpdateFailedDatatypes(result.errors,
-          FailedDatatypesHandler::STARTUP)) {
+  if (failed_datatypes_handler_.UpdateFailedDatatypes(result)) {
     ReconfigureDatatypeManager();
   }
 }
@@ -601,29 +600,6 @@ void ProfileSyncService::OnUnrecoverableError(
   MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&ProfileSyncService::ShutdownImpl, weak_factory_.GetWeakPtr(),
                  true));
-}
-
-void ProfileSyncService::OnDisableDatatype(
-    syncable::ModelType type,
-    const tracked_objects::Location& from_here,
-    std::string message) {
-  // First deactivate the type so that no further server changes are
-  // passed onto the change processor.
-  DeactivateDataType(type);
-
-  SyncError error(from_here, message, type);
-
-  std::list<SyncError> errors;
-  errors.push_back(error);
-
-  // Update this before posting a task. So if a configure happens before
-  // the task that we are going to post, this type would still be disabled.
-  failed_datatypes_handler_.UpdateFailedDatatypes(errors,
-      FailedDatatypesHandler::RUNTIME);
-
-  MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&ProfileSyncService::ReconfigureDatatypeManager,
-                 weak_factory_.GetWeakPtr()));
 }
 
 void ProfileSyncService::OnBackendInitialized(

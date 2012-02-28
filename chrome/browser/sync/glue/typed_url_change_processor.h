@@ -12,7 +12,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
-#include "chrome/browser/sync/glue/data_type_error_handler.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/typed_url_model_associator.h"
 #include "content/public/browser/notification_observer.h"
@@ -36,7 +35,7 @@ class URLRow;
 
 namespace browser_sync {
 
-class DataTypeErrorHandler;
+class UnrecoverableErrorHandler;
 
 // This class is responsible for taking changes from the history backend and
 // applying them to the sync_api 'syncable' model, and vice versa. All
@@ -47,7 +46,7 @@ class TypedUrlChangeProcessor : public ChangeProcessor,
   TypedUrlChangeProcessor(Profile* profile,
                           TypedUrlModelAssociator* model_associator,
                           history::HistoryBackend* history_backend,
-                          DataTypeErrorHandler* error_handler);
+                          UnrecoverableErrorHandler* error_handler);
   virtual ~TypedUrlChangeProcessor();
 
   // content::NotificationObserver implementation.

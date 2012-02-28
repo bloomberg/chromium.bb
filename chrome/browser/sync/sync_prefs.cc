@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -122,13 +122,6 @@ syncable::ModelTypeSet SyncPrefs::GetPreferredDataTypes(
   DCHECK(non_thread_safe_.CalledOnValidThread());
   if (!pref_service_) {
     return syncable::ModelTypeSet();
-  }
-
-  // First remove any datatypes that are inconsistent with the current
-  // policies on the client.
-  if (pref_service_->HasPrefPath(prefs::kSavingBrowserHistoryDisabled) &&
-      pref_service_->GetBoolean(prefs::kSavingBrowserHistoryDisabled)) {
-    registered_types.Remove(syncable::TYPED_URLS);
   }
 
   if (pref_service_->GetBoolean(prefs::kSyncKeepEverythingSynced)) {

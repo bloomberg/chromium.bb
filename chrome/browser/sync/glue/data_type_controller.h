@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,6 @@
 #include "base/location.h"
 #include "base/message_loop_helpers.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
-#include "chrome/browser/sync/glue/data_type_error_handler.h"
 #include "chrome/browser/sync/internal_api/includes/unrecoverable_error_handler.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "content/public/browser/browser_thread.h"
@@ -27,7 +26,7 @@ namespace browser_sync {
 class DataTypeController
     : public base::RefCountedThreadSafe<
           DataTypeController, content::BrowserThread::DeleteOnUIThread>,
-      public DataTypeErrorHandler {
+      public UnrecoverableErrorHandler {
  public:
   enum State {
     NOT_RUNNING,    // The controller has never been started or has
@@ -92,11 +91,6 @@ class DataTypeController
 
   // Current state of the data type controller.
   virtual State state() const = 0;
-
-  virtual void OnSingleDatatypeUnrecoverableError(
-      const tracked_objects::Location& from_here,
-      const std::string& message) = 0;
-
 
  protected:
   friend struct content::BrowserThread::DeleteOnThread<

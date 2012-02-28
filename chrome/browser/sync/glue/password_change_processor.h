@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/sync/glue/data_type_error_handler.h"
 #include "chrome/browser/sync/glue/password_model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "content/public/browser/notification_observer.h"
@@ -22,7 +21,7 @@ class MessageLoop;
 
 namespace browser_sync {
 
-class DataTypeErrorHandler;
+class UnrecoverableErrorHandler;
 
 // This class is responsible for taking changes from the password backend and
 // applying them to the sync_api 'syncable' model, and vice versa. All
@@ -33,7 +32,7 @@ class PasswordChangeProcessor : public ChangeProcessor,
  public:
   PasswordChangeProcessor(PasswordModelAssociator* model_associator,
                           PasswordStore* password_store,
-                          DataTypeErrorHandler* error_handler);
+                          UnrecoverableErrorHandler* error_handler);
   virtual ~PasswordChangeProcessor();
 
   // content::NotificationObserver implementation.

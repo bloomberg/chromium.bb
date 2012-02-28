@@ -80,7 +80,7 @@ using browser_sync::ThemeModelAssociator;
 using browser_sync::TypedUrlChangeProcessor;
 using browser_sync::TypedUrlDataTypeController;
 using browser_sync::TypedUrlModelAssociator;
-using browser_sync::DataTypeErrorHandler;
+using browser_sync::UnrecoverableErrorHandler;
 using content::BrowserThread;
 
 ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
@@ -194,7 +194,7 @@ DataTypeManager* ProfileSyncComponentsFactoryImpl::CreateDataTypeManager(
 browser_sync::GenericChangeProcessor*
     ProfileSyncComponentsFactoryImpl::CreateGenericChangeProcessor(
         ProfileSyncService* profile_sync_service,
-        browser_sync::DataTypeErrorHandler* error_handler,
+        browser_sync::UnrecoverableErrorHandler* error_handler,
         const base::WeakPtr<SyncableService>& local_service) {
   sync_api::UserShare* user_share = profile_sync_service->GetUserShare();
   return new GenericChangeProcessor(error_handler,
@@ -236,7 +236,7 @@ base::WeakPtr<SyncableService> ProfileSyncComponentsFactoryImpl::
 ProfileSyncComponentsFactory::SyncComponents
     ProfileSyncComponentsFactoryImpl::CreateAppSyncComponents(
         ProfileSyncService* profile_sync_service,
-        DataTypeErrorHandler* error_handler) {
+        UnrecoverableErrorHandler* error_handler) {
   base::WeakPtr<SyncableService> app_sync_service =
       profile_sync_service->profile()->GetExtensionService()->AsWeakPtr();
   sync_api::UserShare* user_share = profile_sync_service->GetUserShare();
@@ -264,7 +264,7 @@ base::WeakPtr<SyncableService>
 ProfileSyncComponentsFactory::SyncComponents
     ProfileSyncComponentsFactoryImpl::CreateBookmarkSyncComponents(
         ProfileSyncService* profile_sync_service,
-        DataTypeErrorHandler* error_handler) {
+        UnrecoverableErrorHandler* error_handler) {
   BookmarkModel* bookmark_model =
       profile_sync_service->profile()->GetBookmarkModel();
   sync_api::UserShare* user_share = profile_sync_service->GetUserShare();
@@ -282,7 +282,7 @@ ProfileSyncComponentsFactory::SyncComponents
     ProfileSyncComponentsFactoryImpl::CreateExtensionOrAppSettingSyncComponents(
         syncable::ModelType type,
         ProfileSyncService* profile_sync_service,
-        DataTypeErrorHandler* error_handler) {
+        UnrecoverableErrorHandler* error_handler) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(type == syncable::EXTENSION_SETTINGS ||
          type == syncable::APP_SETTINGS);
@@ -303,7 +303,7 @@ ProfileSyncComponentsFactory::SyncComponents
 ProfileSyncComponentsFactory::SyncComponents
     ProfileSyncComponentsFactoryImpl::CreateExtensionSyncComponents(
         ProfileSyncService* profile_sync_service,
-        DataTypeErrorHandler* error_handler) {
+        UnrecoverableErrorHandler* error_handler) {
   base::WeakPtr<SyncableService> extension_sync_service =
       profile_sync_service->profile()->GetExtensionService()->AsWeakPtr();
   sync_api::UserShare* user_share = profile_sync_service->GetUserShare();
@@ -322,7 +322,7 @@ ProfileSyncComponentsFactory::SyncComponents
     ProfileSyncComponentsFactoryImpl::CreatePasswordSyncComponents(
         ProfileSyncService* profile_sync_service,
         PasswordStore* password_store,
-        DataTypeErrorHandler* error_handler) {
+        UnrecoverableErrorHandler* error_handler) {
   PasswordModelAssociator* model_associator =
       new PasswordModelAssociator(profile_sync_service,
                                   password_store);
@@ -336,7 +336,7 @@ ProfileSyncComponentsFactory::SyncComponents
 ProfileSyncComponentsFactory::SyncComponents
     ProfileSyncComponentsFactoryImpl::CreatePreferenceSyncComponents(
         ProfileSyncService* profile_sync_service,
-        DataTypeErrorHandler* error_handler) {
+        UnrecoverableErrorHandler* error_handler) {
   base::WeakPtr<SyncableService> pref_sync_service =
       profile_->GetPrefs()->GetSyncableService()->AsWeakPtr();
   sync_api::UserShare* user_share = profile_sync_service->GetUserShare();
@@ -354,7 +354,7 @@ ProfileSyncComponentsFactory::SyncComponents
 ProfileSyncComponentsFactory::SyncComponents
     ProfileSyncComponentsFactoryImpl::CreateThemeSyncComponents(
         ProfileSyncService* profile_sync_service,
-        DataTypeErrorHandler* error_handler) {
+        UnrecoverableErrorHandler* error_handler) {
   ThemeModelAssociator* model_associator =
       new ThemeModelAssociator(profile_sync_service);
   ThemeChangeProcessor* change_processor =
@@ -366,7 +366,7 @@ ProfileSyncComponentsFactory::SyncComponents
     ProfileSyncComponentsFactoryImpl::CreateTypedUrlSyncComponents(
         ProfileSyncService* profile_sync_service,
         history::HistoryBackend* history_backend,
-        browser_sync::DataTypeErrorHandler* error_handler) {
+        browser_sync::UnrecoverableErrorHandler* error_handler) {
   TypedUrlModelAssociator* model_associator =
       new TypedUrlModelAssociator(profile_sync_service,
                                   history_backend);
@@ -381,7 +381,7 @@ ProfileSyncComponentsFactory::SyncComponents
 ProfileSyncComponentsFactory::SyncComponents
     ProfileSyncComponentsFactoryImpl::CreateSessionSyncComponents(
        ProfileSyncService* profile_sync_service,
-        DataTypeErrorHandler* error_handler) {
+        UnrecoverableErrorHandler* error_handler) {
   SessionModelAssociator* model_associator =
       new SessionModelAssociator(profile_sync_service);
   SessionChangeProcessor* change_processor =
@@ -392,7 +392,7 @@ ProfileSyncComponentsFactory::SyncComponents
 ProfileSyncComponentsFactory::SyncComponents
     ProfileSyncComponentsFactoryImpl::CreateSearchEngineSyncComponents(
         ProfileSyncService* profile_sync_service,
-        DataTypeErrorHandler* error_handler) {
+        UnrecoverableErrorHandler* error_handler) {
   base::WeakPtr<SyncableService> se_sync_service =
       TemplateURLServiceFactory::GetForProfile(profile_)->AsWeakPtr();
   DCHECK(se_sync_service);
@@ -411,7 +411,7 @@ ProfileSyncComponentsFactory::SyncComponents
 ProfileSyncComponentsFactory::SyncComponents
     ProfileSyncComponentsFactoryImpl::CreateAppNotificationSyncComponents(
         ProfileSyncService* profile_sync_service,
-        browser_sync::DataTypeErrorHandler* error_handler) {
+        browser_sync::UnrecoverableErrorHandler* error_handler) {
   base::WeakPtr<SyncableService> notif_sync_service =
       profile_->GetExtensionService()->app_notification_manager()->AsWeakPtr();
   DCHECK(notif_sync_service);

@@ -372,10 +372,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
       const tracked_objects::Location& from_here,
       const std::string& message) OVERRIDE;
 
-  virtual void OnDisableDatatype(syncable::ModelType type,
-      const tracked_objects::Location& from_here,
-      std::string message);
-
   // The functions below (until ActivateDataType()) should only be
   // called if sync_initialized() is true.
 

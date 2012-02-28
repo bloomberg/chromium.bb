@@ -14,7 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
-#include "chrome/browser/sync/glue/data_type_error_handler.h"
 
 class Profile;
 class ProfileSyncService;
@@ -52,13 +51,10 @@ class NonFrontendDataTypeController : public DataTypeController {
   virtual std::string name() const OVERRIDE;
   virtual State state() const OVERRIDE;
 
-  // DataTypeErrorHandler interface.
+  // UnrecoverableErrorHandler interface.
   // Note: this is performed on the datatype's thread.
   virtual void OnUnrecoverableError(const tracked_objects::Location& from_here,
                                     const std::string& message) OVERRIDE;
-  virtual void OnSingleDatatypeUnrecoverableError(
-      const tracked_objects::Location& from_here,
-      const std::string& message) OVERRIDE;
  protected:
   // For testing only.
   NonFrontendDataTypeController();
@@ -108,11 +104,6 @@ class NonFrontendDataTypeController : public DataTypeController {
   virtual void OnUnrecoverableErrorImpl(
       const tracked_objects::Location& from_here,
       const std::string& message);
-
-  // The actual implementation of Disabling the datatype. This happens
-  // on the UI thread.
-  virtual void DisableImpl(const tracked_objects::Location& from_here,
-                           const std::string& message);
 
   // DataType specific histogram methods.
   // Important: calling them on other threads can lead to memory corruption!

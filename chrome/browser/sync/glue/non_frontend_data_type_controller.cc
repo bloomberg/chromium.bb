@@ -273,18 +273,6 @@ void NonFrontendDataTypeController::OnUnrecoverableError(
                  message));
 }
 
-void NonFrontendDataTypeController::OnSingleDatatypeUnrecoverableError(
-    const tracked_objects::Location& from_here,
-    const std::string& message) {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-  RecordUnrecoverableError(from_here, message);
-  BrowserThread::PostTask(BrowserThread::UI, from_here,
-      base::Bind(&NonFrontendDataTypeController::DisableImpl,
-                 this,
-                 from_here,
-                 message));
-}
-
 void NonFrontendDataTypeController::OnUnrecoverableErrorImpl(
     const tracked_objects::Location& from_here,
     const std::string& message) {
@@ -307,13 +295,6 @@ bool NonFrontendDataTypeController::StopAssociationAsync() {
       FROM_HERE,
       base::Bind(
           &NonFrontendDataTypeController::StopAssociation, this));
-}
-
-void NonFrontendDataTypeController::DisableImpl(
-    const tracked_objects::Location& from_here,
-    const std::string& message) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  profile_sync_service_->OnDisableDatatype(type(), from_here, message);
 }
 
 void NonFrontendDataTypeController::RecordUnrecoverableError(

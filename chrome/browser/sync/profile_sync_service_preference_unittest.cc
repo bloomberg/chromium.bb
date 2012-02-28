@@ -52,11 +52,11 @@ using testing::Return;
 
 typedef std::map<const std::string, const Value*> PreferenceValues;
 
-ACTION_P5(BuildPrefSyncComponents, profile_sync_service, pref_sync_service,
-    data_type_controller, model_associator_ptr, change_processor_ptr) {
+ACTION_P4(BuildPrefSyncComponents, profile_sync_service, pref_sync_service,
+    model_associator_ptr, change_processor_ptr) {
   sync_api::UserShare* user_share = profile_sync_service->GetUserShare();
   *change_processor_ptr = new GenericChangeProcessor(
-      data_type_controller,
+      profile_sync_service,
       pref_sync_service->AsWeakPtr(),
       user_share);
   *model_associator_ptr = new browser_sync::SyncableServiceAdapter(
@@ -136,22 +136,18 @@ class ProfileSyncServicePreferenceTest
         prefs_->GetSyncableService());
     if (!pref_sync_service_)
       return false;
-
-    dtc_ = new PreferenceDataTypeController(factory,
-                                            profile_.get(),
-                                            service_.get());
-
     EXPECT_CALL(*factory, CreatePreferenceSyncComponents(_, _)).
         WillOnce(BuildPrefSyncComponents(service_.get(),
                                          pref_sync_service_,
-                                         dtc_,
                                          &model_associator_,
                                          &change_processor_));
 
     EXPECT_CALL(*factory, CreateDataTypeManager(_, _)).
         WillOnce(ReturnNewDataTypeManager());
 
-
+    dtc_ = new PreferenceDataTypeController(factory,
+                                            profile_.get(),
+                                            service_.get());
     service_->RegisterDataTypeController(dtc_);
     profile_->GetTokenService()->IssueAuthTokenForTest(
         GaiaConstants::kSyncService, "token");

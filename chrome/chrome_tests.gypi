@@ -1725,8 +1725,6 @@
         'browser/sync/glue/chrome_extensions_activity_monitor_unittest.cc',
         'browser/sync/glue/data_type_controller_mock.cc',
         'browser/sync/glue/data_type_controller_mock.h',
-        'browser/sync/glue/data_type_error_handler_mock.cc',
-        'browser/sync/glue/data_type_error_handler_mock.cc',
         'browser/sync/glue/data_type_manager_impl_unittest.cc',
         'browser/sync/glue/data_type_manager_mock.cc',
         'browser/sync/glue/data_type_manager_mock.h',

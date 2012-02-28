@@ -187,7 +187,7 @@ const BookmarkNode* BookmarkNodeIdIndex::Find(int64 id) const {
 BookmarkModelAssociator::BookmarkModelAssociator(
     BookmarkModel* bookmark_model,
     sync_api::UserShare* user_share,
-    DataTypeErrorHandler* unrecoverable_error_handler)
+    UnrecoverableErrorHandler* unrecoverable_error_handler)
     : bookmark_model_(bookmark_model),
       user_share_(user_share),
       unrecoverable_error_handler_(unrecoverable_error_handler),

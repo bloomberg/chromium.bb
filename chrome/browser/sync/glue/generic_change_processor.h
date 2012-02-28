@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,8 +13,6 @@
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/sync/api/sync_change_processor.h"
 #include "chrome/browser/sync/glue/change_processor.h"
-#include "chrome/browser/sync/glue/data_type_controller.h"
-#include "chrome/browser/sync/glue/data_type_error_handler.h"
 
 class SyncData;
 class SyncableService;
@@ -38,7 +36,7 @@ class GenericChangeProcessor : public ChangeProcessor,
                                public base::NonThreadSafe {
  public:
   // Create a change processor and connect it to the syncer.
-  GenericChangeProcessor(DataTypeErrorHandler* error_handler,
+  GenericChangeProcessor(UnrecoverableErrorHandler* error_handler,
                          const base::WeakPtr<SyncableService>& local_service,
                          sync_api::UserShare* user_share);
   virtual ~GenericChangeProcessor();

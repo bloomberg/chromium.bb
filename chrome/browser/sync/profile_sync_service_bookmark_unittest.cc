@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,8 +25,6 @@
 #include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
-#include "chrome/browser/sync/glue/data_type_error_handler.h"
-#include "chrome/browser/sync/glue/data_type_error_handler_mock.h"
 #include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/internal_api/read_node.h"
 #include "chrome/browser/sync/internal_api/read_transaction.h"
@@ -54,9 +52,9 @@ class TestBookmarkModelAssociator : public BookmarkModelAssociator {
   TestBookmarkModelAssociator(
       BookmarkModel* bookmark_model,
       sync_api::UserShare* user_share,
-      DataTypeErrorHandler* error_handler)
+      UnrecoverableErrorHandler* unrecoverable_error_handler)
       : BookmarkModelAssociator(bookmark_model, user_share,
-                                error_handler),
+                                unrecoverable_error_handler),
         user_share_(user_share) {}
 
   // TODO(akalin): This logic lazily creates any tagged node that is
@@ -361,7 +359,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     model_associator_.reset(new TestBookmarkModelAssociator(
         profile_.GetBookmarkModel(),
         test_user_share_.user_share(),
-        &mock_error_handler_));
+        &mock_unrecoverable_error_handler_));
     SyncError error;
     EXPECT_TRUE(model_associator_->AssociateModels(&error));
     MessageLoop::current()->RunAllPending();
@@ -369,7 +367,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     // Set up change processor.
     change_processor_.reset(
         new BookmarkChangeProcessor(model_associator_.get(),
-                                    &mock_error_handler_));
+                                    &mock_unrecoverable_error_handler_));
     change_processor_->Start(&profile_, test_user_share_.user_share());
   }
 
@@ -554,7 +552,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
   BookmarkModel* model_;
   TestUserShare test_user_share_;
   scoped_ptr<BookmarkChangeProcessor> change_processor_;
-  StrictMock<DataTypeErrorHandlerMock> mock_error_handler_;
+  StrictMock<MockUnrecoverableErrorHandler> mock_unrecoverable_error_handler_;
 };
 
 TEST_F(ProfileSyncServiceBookmarkTest, InitialState) {
@@ -909,7 +907,7 @@ TEST_F(ProfileSyncServiceBookmarkTest, RepeatedMiddleInsertion) {
 // Introduce a consistency violation into the model, and see that it
 // puts itself into a lame, error state.
 TEST_F(ProfileSyncServiceBookmarkTest, UnrecoverableErrorSuspendsService) {
-  EXPECT_CALL(mock_error_handler_,
+  EXPECT_CALL(mock_unrecoverable_error_handler_,
               OnUnrecoverableError(_, _));
 
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);

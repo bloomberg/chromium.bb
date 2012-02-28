@@ -9,7 +9,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/sync/glue/change_processor.h"
-#include "chrome/browser/sync/glue/data_type_error_handler.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
@@ -19,7 +18,7 @@ class Profile;
 namespace browser_sync {
 
 class SessionModelAssociator;
-class DataTypeErrorHandler;
+class UnrecoverableErrorHandler;
 
 // This class is responsible for taking changes from the
 // SessionService and applying them to the sync_api 'syncable'
@@ -30,11 +29,11 @@ class SessionChangeProcessor : public ChangeProcessor,
  public:
   // Does not take ownership of either argument.
   SessionChangeProcessor(
-      DataTypeErrorHandler* error_handler,
+      UnrecoverableErrorHandler* error_handler,
       SessionModelAssociator* session_model_associator);
   // For testing only.
   SessionChangeProcessor(
-      DataTypeErrorHandler* error_handler,
+      UnrecoverableErrorHandler* error_handler,
       SessionModelAssociator* session_model_associator,
       bool setup_for_test);
   virtual ~SessionChangeProcessor();
