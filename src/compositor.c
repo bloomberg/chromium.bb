@@ -335,9 +335,13 @@ weston_surface_update_transform_disable(struct weston_surface *surface)
 				  surface->geometry.width,
 				  surface->geometry.height);
 
-	pixman_region32_copy(&surface->transform.opaque, &surface->opaque);
-	pixman_region32_translate(&surface->transform.opaque,
-				  surface->geometry.x, surface->geometry.y);
+	if (surface->alpha == 255) {
+		pixman_region32_copy(&surface->transform.opaque,
+				     &surface->opaque);
+		pixman_region32_translate(&surface->transform.opaque,
+					  surface->geometry.x,
+					  surface->geometry.y);
+	}
 }
 
 static int
