@@ -285,11 +285,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   // the main message loop is started, as it uses the message loop.
   chromeos::DBusThreadManager::Initialize();
 
-  // Initialize the brightness observer so that we'll display an onscreen
-  // indication of brightness changes during login.
-  brightness_observer_.reset(new chromeos::BrightnessObserver());
-  resume_observer_.reset(new chromeos::ResumeObserver());
-  screen_lock_observer_.reset(new chromeos::ScreenLockObserver());
   // Initialize the session manager observer so that we'll take actions
   // per signals sent from the session manager.
   session_manager_observer_.reset(new chromeos::SessionManagerObserver);
@@ -434,6 +429,15 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // Thus only show login manager in normal (non-testing) mode.
   if (!parameters().ui_task)
     OptionallyRunChromeOSLoginManager(parsed_command_line(), profile());
+
+  // These observers must be initialized after the profile because
+  // they use the profile to dispatch extension events.
+  //
+  // Initialize the brightness observer so that we'll display an onscreen
+  // indication of brightness changes during login.
+  brightness_observer_.reset(new chromeos::BrightnessObserver());
+  resume_observer_.reset(new chromeos::ResumeObserver());
+  screen_lock_observer_.reset(new chromeos::ScreenLockObserver());
 
   ChromeBrowserMainPartsLinux::PostProfileInit();
 }
