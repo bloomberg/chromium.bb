@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -137,6 +137,11 @@ void PepperPluginRegistry::PreloadModules() {
       std::string error;
       base::NativeLibrary library = base::LoadNativeLibrary(plugins[i].path,
                                                             &error);
+#if defined(OS_CHROMEOS)
+      // TODO(xiyuan): Remove this once crosbug.com/26646 is resolved.
+      LOG(ERROR) << "#### PepperPluginRegistry::PreloadModules"
+                 << ", path=" << plugins[i].path.value();
+#endif  // defined (OS_CHROMEOS)
       DLOG_IF(WARNING, !library) << "Unable to load plugin "
                                  << plugins[i].path.value() << " "
                                  << error;
