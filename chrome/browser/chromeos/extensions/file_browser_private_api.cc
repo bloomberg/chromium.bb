@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system_proxy.h"
+#include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -68,10 +69,6 @@ namespace {
 const char kFileError[] = "File error %d";
 const char kInvalidFileUrl[] = "Invalid file URL";
 const char kVolumeDevicePathNotFound[] = "Device path not found";
-
-#if defined(OS_CHROMEOS)
-const char kGDataMountPoint[] = "/special/gdata";
-#endif
 
 const int kReadOnlyFilePermissions = base::PLATFORM_FILE_OPEN |
                                      base::PLATFORM_FILE_READ |
@@ -1312,7 +1309,7 @@ bool AddMountFunction::RunImpl() {
 void AddMountFunction::AddGDataMountPoint() {
   fileapi::ExternalFileSystemMountPointProvider* provider =
       BrowserContext::GetFileSystemContext(profile_)->external_provider();
-  const FilePath mount_point(kGDataMountPoint);
+  const FilePath mount_point = gdata::util::GetGDataMountPointPath();
   if (!provider || provider->HasMountPoint(mount_point))
     return;
 
@@ -1325,8 +1322,8 @@ void AddMountFunction::RaiseGDataMountEvent(gdata::GDataErrorCode error,
   chromeos::MountError error_code = error == gdata::HTTP_SUCCESS ?
       chromeos::MOUNT_ERROR_NONE : chromeos::MOUNT_ERROR_NOT_AUTHENTICATED;
   DiskMountManager::MountPointInfo mount_info(
-      kGDataMountPoint,
-      kGDataMountPoint,
+      gdata::util::GetGDataMountPointPathAsString(),
+      gdata::util::GetGDataMountPointPathAsString(),
       auth_token,
       chromeos::MOUNT_TYPE_GDATA,
       chromeos::disks::MOUNT_CONDITION_NONE);

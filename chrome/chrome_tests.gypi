@@ -1348,6 +1348,7 @@
         'browser/chromeos/external_metrics_unittest.cc',
         'browser/chromeos/gdata/gdata_file_system_unittest.cc',
         'browser/chromeos/gdata/gdata_parser_unittest.cc',
+        'browser/chromeos/gdata/gdata_util_unittest.cc',
         'browser/chromeos/gview_request_interceptor_unittest.cc',
         'browser/chromeos/imageburner/burn_manager_unittest.cc',
         'browser/chromeos/input_method/candidate_window_view_unittest.cc',

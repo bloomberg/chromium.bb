@@ -524,6 +524,8 @@
         'browser/chromeos/gdata/gdata_parser.h',
         'browser/chromeos/gdata/gdata_uploader.cc',
         'browser/chromeos/gdata/gdata_uploader.h',
+        'browser/chromeos/gdata/gdata_util.cc',
+        'browser/chromeos/gdata/gdata_util.h',
         'browser/chromeos/gview_request_interceptor.cc',
         'browser/chromeos/gview_request_interceptor.h',
         'browser/chromeos/imageburner/burn_controller.cc',
