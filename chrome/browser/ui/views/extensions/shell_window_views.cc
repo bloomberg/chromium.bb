@@ -99,7 +99,10 @@ ShellWindowViews::ShellWindowViews(ExtensionHost* host)
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.delegate = this;
   params.remove_standard_frame = true;
-  gfx::Rect bounds(10, 10, 512, 384);
+  int width = host_->extension()->launch_width();
+  int height = host_->extension()->launch_height();
+  // TODO(jeremya): we should figure out a better way to position the window.
+  gfx::Rect bounds(10, 10, width, height);
   params.bounds = bounds;
   window_->Init(params);
 #if defined(OS_WIN) && !defined(USE_AURA)
