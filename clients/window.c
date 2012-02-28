@@ -3069,7 +3069,7 @@ display_destroy(struct display *display)
 	close(display->epoll_fd);
 
 	wl_display_flush(display->display);
-	wl_display_destroy(display->display);
+	wl_display_disconnect(display->display);
 	free(display);
 }
 
