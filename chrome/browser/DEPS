@@ -74,7 +74,6 @@ include_rules = [
   "+content/browser/renderer_host/render_widget_host_view_mac_delegate.h",
   "+content/browser/renderer_host/resource_dispatcher_host.h",
   "+content/browser/renderer_host/resource_dispatcher_host_request_info.h",
-  "+content/browser/renderer_host/resource_queue.h",
   "+content/browser/renderer_host/resource_request_details.h",
   "+content/browser/renderer_host/test_render_view_host.h",
   "+content/browser/tab_contents/popup_menu_helper_mac.h",
