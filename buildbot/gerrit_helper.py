@@ -31,8 +31,8 @@ class GerritHelper():
   """Helper class to manage interaction with Gerrit server."""
 
   _CQ_READY_QUERY = ('status:open AND CodeReview=+2 AND Verified=+1 '
-                    'AND CommitReady=+1 '
-                    'AND NOT CodeReview=-2 AND NOT Verified=-1')
+                    'AND CommitReady=+1 AND age:5m '
+                    'AND NOT ( CodeReview=-2 OR Verified=-1 )')
 
   def __init__(self, internal):
     """Initializes variables for interaction with a gerrit server."""
