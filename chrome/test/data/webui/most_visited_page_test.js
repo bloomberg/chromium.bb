@@ -25,7 +25,7 @@ function refreshDataBasic() {
   // Tests that we toss out pages that don't appear in the new data.
   var oldData = [{url: 'foo'}];
   var newData = [{url: 'bar'}];
-  var mergedData = ntp4.refreshData(oldData, newData);
+  var mergedData = ntp.refreshData(oldData, newData);
   assertTrue(pageObjectArrayEquals(mergedData, newData));
 }
 
@@ -44,7 +44,7 @@ function refreshDataOrdering() {
     {url: 'foo', title: 'foo (2)'},
     {url: 'bar', title: 'bar (2)'}];
 
-  var mergedData = ntp4.refreshData(oldData, newData);
+  var mergedData = ntp.refreshData(oldData, newData);
   assertTrue(pageObjectArrayEquals(mergedData, expectedData));
 }
 
@@ -58,13 +58,13 @@ function refreshDataPinning() {
     {url: 'bar', title: 'bar (2)', pinned: true},
     {url: 'foo', title: 'foo (2)'}];
 
-  var mergedData = ntp4.refreshData(oldData, newData);
+  var mergedData = ntp.refreshData(oldData, newData);
   assertTrue(pageObjectArrayEquals(mergedData, newData));
 
   // Tests we don't choke on empty data before a pinned entry.
   oldData = [{url: 'foo', title: 'foo (1)'}];
   newData = [{}, {url: 'foo', title: 'foo (2)', pinned: true}];
 
-  mergedData = ntp4.refreshData(oldData, newData);
+  mergedData = ntp.refreshData(oldData, newData);
   assertTrue(pageObjectArrayEquals(mergedData, newData));
 }

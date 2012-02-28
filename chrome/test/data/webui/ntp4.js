@@ -22,7 +22,7 @@ NTP4WebUITest.prototype = {
 // errors.
 TEST_F('NTP4WebUITest', 'TestBrowsePages', function() {
 // This tests the ntp4 new tab page which is not used on touch builds.
-  var cardSlider = ntp4.getCardSlider();
+  var cardSlider = ntp.getCardSlider();
   assertNotEquals(null, cardSlider);
   for (var i = 0; i < cardSlider.cardCount; ++i) {
     cardSlider.selectCard(i);
