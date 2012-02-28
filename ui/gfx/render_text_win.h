@@ -8,6 +8,8 @@
 
 #include <usp10.h>
 
+#include <map>
+#include <string>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
@@ -95,6 +97,9 @@ class RenderTextWin : public RenderText {
   void ItemizeLogicalText();
   void LayoutVisualText();
 
+  // Returns a vector of linked fonts corresponding to |font|.
+  const std::vector<Font>* GetLinkedFonts(const Font& font) const;
+
   // Return the run index that contains the argument; or the length of the
   // |runs_| vector if argument exceeds the text length or width.
   size_t GetRunContainingPosition(size_t position) const;
@@ -108,6 +113,9 @@ class RenderTextWin : public RenderText {
 
   // Cached HDC for performing Uniscribe API calls.
   static HDC cached_hdc_;
+
+  // Cached map from font names to vectors of linked fonts.
+  static std::map<std::string, std::vector<Font> > cached_linked_fonts_;
 
   SCRIPT_CONTROL script_control_;
   SCRIPT_STATE script_state_;

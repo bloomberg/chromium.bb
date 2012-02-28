@@ -10,7 +10,9 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/registry.h"
 #include "ui/gfx/font_smoothing_win.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
@@ -84,6 +86,37 @@ bool ChooseFallbackFont(HDC hdc,
   return found_fallback;
 }
 
+// Queries the Registry to get a list of linked fonts for |font|.
+void QueryLinkedFontsFromRegistry(const gfx::Font& font,
+                                   std::vector<gfx::Font>* linked_fonts) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  const wchar_t* kSystemLink =
+      L"Software\\Microsoft\\Windows NT\\CurrentVersion\\FontLink\\SystemLink";
+
+  base::win::RegKey key;
+  if (FAILED(key.Open(HKEY_LOCAL_MACHINE, kSystemLink, KEY_READ)))
+    return;
+
+  const std::wstring font_name = UTF8ToWide(font.GetFontName());
+  std::vector<std::wstring> values;
+  if (FAILED(key.ReadValues(font_name.c_str(), &values))) {
+    key.Close();
+    return;
+  }
+
+  for (size_t i = 0; i < values.size(); i++) {
+    // The font name follows the comma in each entry.
+    const size_t index = values[i].find(',');
+    if ((index != string16::npos) && (index + 1 != values[i].length())) {
+      const std::string linked_name = UTF16ToUTF8(values[i].substr(index + 1));
+      const gfx::Font linked_font(linked_name, font.GetFontSize());
+      linked_fonts->push_back(linked_font);
+    }
+  }
+
+  key.Close();
+}
+
 }  // namespace
 
 namespace gfx {
@@ -109,6 +142,9 @@ TextRun::~TextRun() {
 
 // static
 HDC RenderTextWin::cached_hdc_ = NULL;
+
+// static
+std::map<std::string, std::vector<Font> > RenderTextWin::cached_linked_fonts_;
 
 RenderTextWin::RenderTextWin()
     : RenderText(),
@@ -603,9 +639,16 @@ void RenderTextWin::LayoutVisualText() {
     size_t run_length = run->range.length();
     const wchar_t* run_text = &(text()[run->range.start()]);
     bool tried_fallback = false;
+    size_t linked_font_index = 0;
+    const std::vector<gfx::Font>* linked_fonts = NULL;
 
     // Select the font desired for glyph generation.
     SelectObject(cached_hdc_, run->font.GetNativeFont());
+
+    SCRIPT_FONTPROPERTIES font_properties;
+    memset(&font_properties, 0, sizeof(font_properties));
+    font_properties.cBytes = sizeof(SCRIPT_FONTPROPERTIES);
+    ScriptGetFontProperties(cached_hdc_, &run->script_cache, &font_properties);
 
     run->logical_clusters.reset(new WORD[run_length]);
     run->glyph_count = 0;
@@ -626,6 +669,35 @@ void RenderTextWin::LayoutVisualText() {
                        &(run->glyph_count));
       if (hr == E_OUTOFMEMORY) {
         max_glyphs *= 2;
+      } else if (hr == S_OK) {
+        // If |hr| is S_OK, there could still be missing glyphs in the output,
+        // see: http://msdn.microsoft.com/en-us/library/windows/desktop/dd368564.aspx
+        //
+        // If there are missing glyphs, use font linking to try to find a
+        // matching font.
+        bool glyphs_missing = false;
+        for (int i = 0; i < run->glyph_count; i++) {
+          if (run->glyphs[i] == font_properties.wgDefault) {
+            glyphs_missing = true;
+            break;
+          }
+        }
+        // No glyphs missing - good to go.
+        if (!glyphs_missing)
+          break;
+
+        // First time through, get the linked fonts list.
+        if (linked_fonts == NULL)
+          linked_fonts = GetLinkedFonts(run->font);
+
+        // None of the linked fonts worked - break out of the loop.
+        if (linked_font_index == linked_fonts->size())
+          break;
+
+        // Try the next linked font.
+        run->font = linked_fonts->at(linked_font_index++);
+        ScriptFreeCache(&run->script_cache);
+        SelectObject(cached_hdc_, run->font.GetNativeFont());
       } else if (hr == USP_E_SCRIPT_NOT_IN_FONT) {
         // Only try font fallback if it hasn't yet been attempted for this run.
         if (tried_fallback) {
@@ -700,6 +772,19 @@ void RenderTextWin::LayoutVisualText() {
     preceding_run_widths += run->width;
   }
   string_width_ = preceding_run_widths;
+}
+
+const std::vector<Font>* RenderTextWin::GetLinkedFonts(const Font& font) const {
+  const std::string& font_name = font.GetFontName();
+  std::map<std::string, std::vector<Font> >::const_iterator it =
+      cached_linked_fonts_.find(font_name);
+  if (it != cached_linked_fonts_.end())
+    return &it->second;
+
+  cached_linked_fonts_[font_name] = std::vector<Font>();
+  std::vector<Font>* linked_fonts = &cached_linked_fonts_[font_name];
+  QueryLinkedFontsFromRegistry(font, linked_fonts);
+  return linked_fonts;
 }
 
 size_t RenderTextWin::GetRunContainingPosition(size_t position) const {
