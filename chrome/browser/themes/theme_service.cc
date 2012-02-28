@@ -29,6 +29,7 @@ using content::BrowserThread;
 using content::UserMetricsAction;
 
 // Strings used in alignment properties.
+const char* ThemeService::kAlignmentCenter = "center";
 const char* ThemeService::kAlignmentTop = "top";
 const char* ThemeService::kAlignmentBottom = "bottom";
 const char* ThemeService::kAlignmentLeft = "left";
@@ -377,8 +378,8 @@ std::string ThemeService::GetThemeID() const {
 // static
 std::string ThemeService::AlignmentToString(int alignment) {
   // Convert from an AlignmentProperty back into a string.
-  std::string vertical_string;
-  std::string horizontal_string;
+  std::string vertical_string(kAlignmentCenter);
+  std::string horizontal_string(kAlignmentCenter);
 
   if (alignment & ThemeService::ALIGN_TOP)
     vertical_string = kAlignmentTop;
@@ -390,11 +391,7 @@ std::string ThemeService::AlignmentToString(int alignment) {
   else if (alignment & ThemeService::ALIGN_RIGHT)
     horizontal_string = kAlignmentRight;
 
-  if (vertical_string.empty())
-    return horizontal_string;
-  if (horizontal_string.empty())
-    return vertical_string;
-  return vertical_string + " " + horizontal_string;
+  return horizontal_string + " " + vertical_string;
 }
 
 // static

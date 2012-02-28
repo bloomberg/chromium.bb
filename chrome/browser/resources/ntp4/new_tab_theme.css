@@ -2,13 +2,16 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-html,
-#most-visited-settings {
+html {
   background-attachment: fixed;
   background-color: $2;  /* COLOR_NTP_BACKGROUND */
   background-image: url(chrome://theme/IDR_THEME_NTP_BACKGROUND?$1);
   background-position: $3;
   background-repeat: $5;
+}
+
+html[bookmarkbarattached='true'] {
+  background-position: $4;
 }
 
 body {

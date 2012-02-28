@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,8 +61,9 @@ class WebUISourcesTest : public testing::Test {
 };
 
 TEST_F(WebUISourcesTest, ThemeSourceMimeTypes) {
-  EXPECT_EQ(theme_source()->GetMimeType("css/newtab.css"), "text/css");
-  EXPECT_EQ(theme_source()->GetMimeType("css/newtab.css?foo"), "text/css");
+  EXPECT_EQ(theme_source()->GetMimeType("css/new_tab_theme.css"), "text/css");
+  EXPECT_EQ(theme_source()->GetMimeType("css/new_tab_theme.css?foo"),
+                                        "text/css");
   EXPECT_EQ(theme_source()->GetMimeType("WRONGURL"), "image/png");
 }
 
@@ -88,11 +89,11 @@ TEST_F(WebUISourcesTest, ThemeSourceCSS) {
   // just check for a successful request and data that is non-null.
   size_t empty_size = 0;
 
-  theme_source()->StartDataRequest("css/newtab.css", false, 1);
+  theme_source()->StartDataRequest("css/new_tab_theme.css", false, 1);
   EXPECT_EQ(theme_source()->result_request_id_, 1);
   EXPECT_NE(theme_source()->result_data_size_, empty_size);
 
-  theme_source()->StartDataRequest("css/newtab.css?pie", false, 3);
+  theme_source()->StartDataRequest("css/new_tab_theme.css?pie", false, 3);
   EXPECT_EQ(theme_source()->result_request_id_, 3);
   EXPECT_NE(theme_source()->result_data_size_, empty_size);
 

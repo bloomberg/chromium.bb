@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,8 +21,8 @@
 using content::BrowserThread;
 
 // use a resource map rather than hard-coded strings.
-static const char* kNewTabCSSPath = "css/newtab.css";
-static const char* kNewIncognitoTabCSSPath = "css/newincognitotab.css";
+static const char* kNewTabCSSPath = "css/new_tab_theme.css";
+static const char* kNewIncognitoTabCSSPath = "css/incognito_new_tab_theme.css";
 
 static std::string StripQueryParams(const std::string& path) {
   GURL path_url = GURL(std::string(chrome::kChromeUIScheme) + "://" +
