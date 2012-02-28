@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,6 +36,27 @@ void CopyPolicyToTarget(const void* source, size_t size, void* dest) {
       buffer -= offset;
       policy->entry[i] = reinterpret_cast<sandbox::PolicyBuffer*>(buffer);
     }
+  }
+}
+
+// Reserve a random range at the bottom of the address space in the target
+// process to prevent predictable alocations at low addresses.
+void PoisonLowerAddressRange(HANDLE process) {
+  unsigned int limit;
+  rand_s(&limit);
+  char* ptr = 0;
+  const size_t kMask64k = 0xFFFF;
+  // Random range (512k-4.5mb) in 64k steps.
+  const char* end = ptr + ((((limit % 4096) + 512) * 1024) & ~kMask64k);
+  while (ptr < end) {
+    MEMORY_BASIC_INFORMATION memory_info;
+    if (!::VirtualQueryEx(process, ptr, &memory_info, sizeof(memory_info)))
+      break;
+    size_t size = std::min((memory_info.RegionSize + kMask64k) & ~kMask64k,
+                           static_cast<SIZE_T>(end - ptr));
+    if (ptr && memory_info.State == MEM_FREE)
+      ::VirtualAllocEx(process, ptr, size, MEM_RESERVE, PAGE_NOACCESS);
+    ptr += size;
   }
 }
 
@@ -151,6 +172,8 @@ DWORD TargetProcess::Create(const wchar_t* exe_path,
                               &process_info)) {
     return ::GetLastError();
   }
+
+  PoisonLowerAddressRange(process_info.hProcess);
 
   DWORD win_result = ERROR_SUCCESS;
 
