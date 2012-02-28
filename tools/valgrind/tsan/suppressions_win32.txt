@@ -161,4 +161,12 @@
   ...
   fun:media::FFmpegAudioDecoder::DoDecodeBuffer
 }
+{
+   bug_115987
+   ThreadSanitizer:Race
+   ...
+   fun:base::Histogram::Add
+   fun:base::SequencedWorkerPool::Inner::GetWork
+   fun:base::SequencedWorkerPool::Inner::ThreadLoop
+}
 

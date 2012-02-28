@@ -5931,7 +5931,14 @@
    fun:_ZN7WebCore18HarfBuzzShaperBase10setPaddingEi
    fun:_ZN7WebCore21ComplexTextController*
 }
-
+{
+   bug_115987
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base12_GLOBAL__N_123SequencedWorkerPoolTestC2Ev
+   fun:_ZN4base*SequencedWorkerPoolTest_*
+   fun:_ZN7testing8internal15TestFactoryImplIN4base*SequencedWorkerPoolTest_*
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations

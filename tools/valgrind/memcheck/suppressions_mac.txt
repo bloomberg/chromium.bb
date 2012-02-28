@@ -2358,3 +2358,31 @@
    fun:find_registered_purgeable_zone
    fun:malloc_make_purgeable
 }
+{
+   bug_115987_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base19SequencedWorkerPool5Inner30FinishStartingAdditionalThreadEi
+   fun:_ZN4base19SequencedWorkerPool5Inner8PostTaskEPKSsNS0_13SequenceTokenENS0_14WorkerShutdownERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEE
+   fun:_ZN4base19SequencedWorkerPool14PostWorkerTaskERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEE
+}
+{
+   bug_115987_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base12_GLOBAL__N_123SequencedWorkerPoolTestC2Ev
+   fun:_ZN4base*SequencedWorkerPoolTest_*
+   fun:_ZN4base*SequencedWorkerPoolTest_*
+   fun:_ZN7testing8internal15TestFactoryImplIN4base*SequencedWorkerPoolTest_*
+}
+{
+   bug_115987_c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorI10linked_ptrIN4base19SequencedWorkerPool6WorkerEEE8allocateEmPKv
+   fun:_ZNSt12_Vector_baseI10linked_ptrIN4base19SequencedWorkerPool6WorkerEESaIS4_EE11_M_allocateEm
+   fun:_ZNSt6vectorI10linked_ptrIN4base19SequencedWorkerPool6WorkerEESaIS4_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS4_S6_EERKS4_
+   fun:_ZNSt6vectorI10linked_ptrIN4base19SequencedWorkerPool6WorkerEESaIS4_EE9push_backERKS4_
+   fun:_ZN4base19SequencedWorkerPool5Inner10ThreadLoopEPNS0_6WorkerE
+   fun:_ZN4base19SequencedWorkerPool6Worker3RunEv
+}
