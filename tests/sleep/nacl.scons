@@ -9,4 +9,5 @@ nexe = env.ComponentProgram('sleep_test', 'sleep_test.c',
                             EXTRA_LIBS=['${NONIRT_LIBS}'])
 
 node = env.CommandSelLdrTestNacl('sleep_test.out', nexe)
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_sleep_test')
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_sleep_test',
+                       is_broken=env.Bit('nacl_glibc'))
