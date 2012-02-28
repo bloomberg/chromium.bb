@@ -174,6 +174,10 @@
         <include name="IDR_AURA_WINDOW_CLOSE_ICON" file="aura/slab_close.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_BOTTOM_LEFT" file="aura/window_bottom_left.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_BOTTOM_RIGHT" file="aura/window_bottom_right.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_FULLSCREEN_CLOSE" file="aura/window_fullscreen_close.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_FULLSCREEN_RESTORE" file="aura/window_fullscreen_restore.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_FULLSCREEN_SEPARATOR" file="aura/window_fullscreen_separator.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_FULLSCREEN_SHADOW" file="aura/window_fullscreen_shadow.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_TOP_LEFT" file="aura/window_top_left.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_TOP_RIGHT" file="aura/window_top_right.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_ZOOM_ICON" file="aura/slab_zoom.png" type="BINDATA" />

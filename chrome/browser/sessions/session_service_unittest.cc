@@ -48,7 +48,8 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
     SessionService* session_service = new SessionService(path_);
     helper_.set_service(session_service);
 
-    service()->SetWindowType(window_id, Browser::TYPE_TABBED);
+    service()->SetWindowType(
+        window_id, Browser::TYPE_TABBED, SessionService::TYPE_NORMAL);
     service()->SetWindowBounds(window_id,
                                window_bounds,
                                ui::SHOW_STATE_NORMAL);
@@ -275,7 +276,8 @@ TEST_F(SessionServiceTest, TwoWindows) {
   UpdateNavigation(window_id, tab1_id, nav1, 0, true);
 
   const gfx::Rect window2_bounds(3, 4, 5, 6);
-  service()->SetWindowType(window2_id, Browser::TYPE_TABBED);
+  service()->SetWindowType(
+      window2_id, Browser::TYPE_TABBED, SessionService::TYPE_NORMAL);
   service()->SetWindowBounds(window2_id,
                              window2_bounds,
                              ui::SHOW_STATE_MAXIMIZED);
@@ -329,7 +331,8 @@ TEST_F(SessionServiceTest, WindowWithNoTabsGetsPruned) {
   UpdateNavigation(window_id, tab1_id, nav1, 0, true);
 
   const gfx::Rect window2_bounds(3, 4, 5, 6);
-  service()->SetWindowType(window2_id, Browser::TYPE_TABBED);
+  service()->SetWindowType(
+      window2_id, Browser::TYPE_TABBED, SessionService::TYPE_NORMAL);
   service()->SetWindowBounds(window2_id,
                              window2_bounds,
                              ui::SHOW_STATE_NORMAL);
@@ -391,7 +394,8 @@ TEST_F(SessionServiceTest, WindowCloseCommittedAfterNavigate) {
   SessionID tab2_id;
   ASSERT_NE(window2_id.id(), window_id.id());
 
-  service()->SetWindowType(window2_id, Browser::TYPE_TABBED);
+  service()->SetWindowType(
+      window2_id, Browser::TYPE_TABBED, SessionService::TYPE_NORMAL);
   service()->SetWindowBounds(window2_id,
                              window_bounds,
                              ui::SHOW_STATE_NORMAL);
@@ -436,7 +440,8 @@ TEST_F(SessionServiceTest, IgnorePopups) {
   SessionID tab2_id;
   ASSERT_NE(window2_id.id(), window_id.id());
 
-  service()->SetWindowType(window2_id, Browser::TYPE_POPUP);
+  service()->SetWindowType(
+      window2_id, Browser::TYPE_POPUP, SessionService::TYPE_NORMAL);
   service()->SetWindowBounds(window2_id,
                              window_bounds,
                              ui::SHOW_STATE_NORMAL);
@@ -477,7 +482,8 @@ TEST_F(SessionServiceTest, RestorePopup) {
   SessionID tab2_id;
   ASSERT_NE(window2_id.id(), window_id.id());
 
-  service()->SetWindowType(window2_id, Browser::TYPE_POPUP);
+  service()->SetWindowType(
+      window2_id, Browser::TYPE_POPUP, SessionService::TYPE_NORMAL);
   service()->SetWindowBounds(window2_id,
                              window_bounds,
                              ui::SHOW_STATE_NORMAL);
@@ -518,6 +524,61 @@ TEST_F(SessionServiceTest, RestorePopup) {
   helper_.AssertTabEquals(window2_id, tab2_id, 0, 0, 1, *tab);
   helper_.AssertNavigationEquals(nav2, tab->navigations[0]);
 }
+
+#if defined (USE_AURA)
+// Makes sure we track apps. Only applicable on aura.
+TEST_F(SessionServiceTest, RestoreApp) {
+  SessionID window2_id;
+  SessionID tab_id;
+  SessionID tab2_id;
+  ASSERT_NE(window2_id.id(), window_id.id());
+
+  service()->SetWindowType(
+      window2_id, Browser::TYPE_POPUP, SessionService::TYPE_APP);
+  service()->SetWindowBounds(window2_id,
+                             window_bounds,
+                             ui::SHOW_STATE_NORMAL);
+  service()->SetWindowAppName(window2_id, "TestApp");
+
+  TabNavigation nav1(0, GURL("http://google.com"), content::Referrer(),
+                     ASCIIToUTF16("abc"), "def",
+                     content::PAGE_TRANSITION_QUALIFIER_MASK);
+  TabNavigation nav2(0, GURL("http://google2.com"), content::Referrer(),
+                     ASCIIToUTF16("abcd"), "defg",
+                     content::PAGE_TRANSITION_AUTO_BOOKMARK);
+
+  helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
+  UpdateNavigation(window_id, tab_id, nav1, 0, true);
+
+  helper_.PrepareTabInWindow(window2_id, tab2_id, 0, false);
+  UpdateNavigation(window2_id, tab2_id, nav2, 0, true);
+
+  ScopedVector<SessionWindow> windows;
+  ReadWindows(&(windows.get()));
+
+  ASSERT_EQ(2U, windows->size());
+  int tabbed_index = windows[0]->type == Browser::TYPE_TABBED ?
+      0 : 1;
+  int app_index = tabbed_index == 0 ? 1 : 0;
+  ASSERT_EQ(0, windows[tabbed_index]->selected_tab_index);
+  ASSERT_EQ(window_id.id(), windows[tabbed_index]->window_id.id());
+  ASSERT_EQ(1U, windows[tabbed_index]->tabs.size());
+
+  SessionTab* tab = windows[tabbed_index]->tabs[0];
+  helper_.AssertTabEquals(window_id, tab_id, 0, 0, 1, *tab);
+  helper_.AssertNavigationEquals(nav1, tab->navigations[0]);
+
+  ASSERT_EQ(0, windows[app_index]->selected_tab_index);
+  ASSERT_EQ(window2_id.id(), windows[app_index]->window_id.id());
+  ASSERT_EQ(1U, windows[app_index]->tabs.size());
+  ASSERT_TRUE(windows[app_index]->type == Browser::TYPE_POPUP);
+  ASSERT_EQ("TestApp", windows[app_index]->app_name);
+
+  tab = windows[app_index]->tabs[0];
+  helper_.AssertTabEquals(window2_id, tab2_id, 0, 0, 1, *tab);
+  helper_.AssertNavigationEquals(nav2, tab->navigations[0]);
+}
+#endif
 
 // Tests pruning from the front.
 TEST_F(SessionServiceTest, PruneFromFront) {

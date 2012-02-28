@@ -243,6 +243,18 @@ Browser* InProcessBrowserTest::CreateBrowserForPopup(Profile* profile) {
   return browser;
 }
 
+Browser* InProcessBrowserTest::CreateBrowserForApp(
+    const std::string& app_name,
+    Profile* profile) {
+  Browser* browser = Browser::CreateForApp(
+      Browser::TYPE_POPUP,
+      app_name,
+      gfx::Rect(),
+      profile);
+  AddBlankTabAndShow(browser);
+  return browser;
+}
+
 void InProcessBrowserTest::AddBlankTabAndShow(Browser* browser) {
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,

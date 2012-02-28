@@ -125,6 +125,12 @@ class BaseSessionService : public CancelableRequestProvider,
       SessionID::id_type tab_id,
       const std::string& extension_id);
 
+  // Creates a SessionCommand stores a browser window's app name.
+  SessionCommand* CreateSetWindowAppNameCommand(
+      SessionID::id_type command_id,
+      SessionID::id_type window_id,
+      const std::string& app_name);
+
   // Converts a SessionCommand previously created by
   // CreateUpdateTabNavigationCommand into a TabNavigation. Returns true
   // on success. If successful |tab_id| is set to the id of the restored tab.
@@ -139,6 +145,13 @@ class BaseSessionService : public CancelableRequestProvider,
       const SessionCommand& command,
       SessionID::id_type* tab_id,
       std::string* extension_app_id);
+
+  // Extracts a SessionCommand as previously created by
+  // CreateSetWindowAppNameCommand into the window id and application name.
+  bool RestoreSetWindowAppNameCommand(
+      const SessionCommand& command,
+      SessionID::id_type* window_id,
+      std::string* app_name);
 
   // Returns true if the entry at specified |url| should be written to disk.
   bool ShouldTrackEntry(const GURL& url);
