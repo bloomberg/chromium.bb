@@ -55,13 +55,19 @@ ContentSettingImageView::ContentSettingImageView(
     : content_setting_image_model_(
           ContentSettingImageModel::CreateContentSettingImageModel(
               content_type)),
+      bubble_widget_(NULL),
       parent_(parent),
+      pause_animation_(false),
       text_size_(0),
       visible_text_size_(0) {
   SetHorizontalAlignment(ImageView::LEADING);
 }
 
 ContentSettingImageView::~ContentSettingImageView() {
+  if (bubble_widget_) {
+    bubble_widget_->RemoveObserver(this);
+    bubble_widget_ = NULL;
+  }
 }
 
 void ContentSettingImageView::UpdateFromWebContents(WebContents* web_contents) {
@@ -122,12 +128,15 @@ gfx::Size ContentSettingImageView::GetPreferredSize() {
 }
 
 void ContentSettingImageView::AnimationEnded(const ui::Animation* animation) {
-  visible_text_size_ = 0;
+  if (pause_animation_)
+    pause_animation_ = false;
   slide_animator_->Reset();
 }
 
 void ContentSettingImageView::AnimationProgressed(
     const ui::Animation* animation) {
+  if (pause_animation_)
+    return;
   double state = slide_animator_->GetCurrentValue();
   if (state >= 1.0) {
     // Animaton is over, clear the variables.
@@ -164,6 +173,12 @@ void ContentSettingImageView::OnMouseReleased(const views::MouseEvent& event) {
   if (!tab_contents)
     return;
 
+  // Stop animation.
+  if (slide_animator_.get() && slide_animator_->is_animating()) {
+    slide_animator_->Reset();
+    pause_animation_ = true;
+  }
+
   Profile* profile = parent_->browser()->profile();
   ContentSettingBubbleContents* bubble = new ContentSettingBubbleContents(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
@@ -175,7 +190,8 @@ void ContentSettingImageView::OnMouseReleased(const views::MouseEvent& event) {
       tab_contents->web_contents(),
       this,
       views::BubbleBorder::TOP_RIGHT);
-  browser::CreateViewsBubble(bubble);
+  bubble_widget_ = browser::CreateViewsBubble(bubble);
+  bubble_widget_->AddObserver(this);
   bubble->Show();
 }
 
@@ -185,7 +201,8 @@ void ContentSettingImageView::OnPaint(gfx::Canvas* canvas) {
   // sliding out and then back in. When the text completely slid out the yellow
   // border is no longer painted around the icon. |visible_text_size_| is 0 when
   // animation is stopped.
-  if (slide_animator_.get() && slide_animator_->is_animating()) {
+  if (slide_animator_.get() &&
+      (slide_animator_->is_animating() || pause_animation_)) {
     // In the non-animated state borders' left() is 0, in the animated state it
     // is the kIconLeftMargin, so we need to animate border reduction when it
     // starts to disappear.
@@ -211,26 +228,41 @@ void ContentSettingImageView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void ContentSettingImageView::OnPaintBackground(gfx::Canvas* canvas) {
-  if (!slide_animator_.get() || !slide_animator_->is_animating()) {
+  if (slide_animator_.get() &&
+      (slide_animator_->is_animating() || pause_animation_)) {
+    // Paint yellow gradient background if in animation mode.
+    const int kEdgeThickness = 1;
+    SkPaint paint;
+    paint.setShader(gfx::CreateGradientShader(kEdgeThickness,
+                    height() - (2 * kEdgeThickness),
+                    kTopBoxColor, kBottomBoxColor));
+    SkSafeUnref(paint.getShader());
+    SkRect color_rect;
+    color_rect.iset(0, 0, width() - 1, height() - 1);
+    canvas->GetSkCanvas()->drawRoundRect(color_rect, kBoxCornerRadius,
+                                         kBoxCornerRadius, paint);
+    SkPaint outer_paint;
+    outer_paint.setStyle(SkPaint::kStroke_Style);
+    outer_paint.setColor(kBorderColor);
+    color_rect.inset(SkIntToScalar(kEdgeThickness),
+                     SkIntToScalar(kEdgeThickness));
+    canvas->GetSkCanvas()->drawRoundRect(color_rect, kBoxCornerRadius,
+                                         kBoxCornerRadius, outer_paint);
+  } else {
     views::ImageView::OnPaintBackground(canvas);
     return;
   }
-  // Paint yellow gradient background if in animation mode.
-  const int kEdgeThickness = 1;
-  SkPaint paint;
-  paint.setShader(gfx::CreateGradientShader(kEdgeThickness,
-                  height() - (2 * kEdgeThickness),
-                  kTopBoxColor, kBottomBoxColor));
-  SkSafeUnref(paint.getShader());
-  SkRect color_rect;
-  color_rect.iset(0, 0, width() - 1, height() - 1);
-  canvas->GetSkCanvas()->drawRoundRect(color_rect, kBoxCornerRadius,
-                                       kBoxCornerRadius, paint);
-  SkPaint outer_paint;
-  outer_paint.setStyle(SkPaint::kStroke_Style);
-  outer_paint.setColor(kBorderColor);
-  color_rect.inset(SkIntToScalar(kEdgeThickness),
-                   SkIntToScalar(kEdgeThickness));
-  canvas->GetSkCanvas()->drawRoundRect(color_rect, kBoxCornerRadius,
-                                       kBoxCornerRadius, outer_paint);
+}
+
+void ContentSettingImageView::OnWidgetClosing(views::Widget* widget) {
+  if (bubble_widget_) {
+    bubble_widget_->RemoveObserver(this);
+    bubble_widget_ = NULL;
+  }
+  if (pause_animation_) {
+    slide_animator_->Reset(
+        1.0 - (visible_text_size_ * kAnimatingFraction) / text_size_);
+    pause_animation_ = false;
+    slide_animator_->Show();
+  }
 }

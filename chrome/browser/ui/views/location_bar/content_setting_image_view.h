@@ -12,6 +12,7 @@
 #include "chrome/common/content_settings_types.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/widget/widget.h"
 
 class ContentSettingImageModel;
 class ContentSettingBubbleContents;
@@ -33,7 +34,8 @@ class SlideAnimation;
 class ContentSettingsDelegateView;
 
 class ContentSettingImageView : public views::ImageView,
-                                public ui::AnimationDelegate {
+                                public ui::AnimationDelegate,
+                                public views::Widget::Observer {
  public:
   ContentSettingImageView(ContentSettingsType content_type,
                           LocationBarView* parent);
@@ -51,6 +53,9 @@ class ContentSettingImageView : public views::ImageView,
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
   virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE;
 
+  // views::Widget::Observer override:
+  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+
  private:
   // views::ImageView overrides:
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
@@ -60,11 +65,14 @@ class ContentSettingImageView : public views::ImageView,
 
   scoped_ptr<ContentSettingImageModel> content_setting_image_model_;
 
+  views::Widget* bubble_widget_;
+
   // The owning LocationBarView.
   LocationBarView* parent_;
 
   scoped_ptr<ui::SlideAnimation> slide_animator_;
   string16 animated_text_;
+  bool pause_animation_;
   int text_size_;
   int visible_text_size_;
   gfx::Insets saved_insets_;
