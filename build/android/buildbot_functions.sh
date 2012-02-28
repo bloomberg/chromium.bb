@@ -103,7 +103,7 @@ function bb_compile_experimental {
   for target in ${EXPERIMENTAL_TARGETS} ; do
     echo "@@@BUILD_STEP Experimental Compile $target @@@"
     set +e
-    make -j4 "${target}"
+    make -k -j4 "${target}"
     if [ $? -ne 0 ] ; then
       echo "@@@STEP_WARNINGS@@@"
     fi
