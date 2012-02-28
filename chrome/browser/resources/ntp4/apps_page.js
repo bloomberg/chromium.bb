@@ -925,8 +925,6 @@ cr.define('ntp4', function() {
       this.appInstallHint_.style.top = realY + 'px';
       this.appInstallHint_.style.width = layout.tileWidth + 'px';
       this.appInstallHint_.style.height = layout.tileWidth + 'px';
-      this.appInstallHint_.querySelector('.app-install-hint-interior').
-          style.borderWidth = (layout.tileWidth / 32) + 'px';
     },
 
     /** @inheritDoc */

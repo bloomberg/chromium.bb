@@ -190,7 +190,7 @@ html[dir='rtl'] .apps-promo-extras {
 }
 
 .app-install-hint-interior {
-  border: 5px dashed #666;
+  border: 2px dashed;
   border-radius: 20%;
   box-sizing: border-box;
   height: 60%;
@@ -201,18 +201,35 @@ html[dir='rtl'] .apps-promo-extras {
   width: 60%;
 }
 
-.app-install-hint-interior > div {
-  border-radius: 3px;
+.app-install-hint-interior > .interior-background {
+  border-radius: 20%;
+  bottom: 3px;
+  left: 3px;
+  position: absolute;
+  right: 3px;
+  top: 3px;
+}
+
+.app-install-hint-interior > .vertical-bar,
+.app-install-hint-interior > .horizontal-bar {
+  border-radius: 2px;
+  position: absolute;
+}
+
+.app-install-hint-interior > .vertical-bar {
   height: 50%;
   left: 44%;
-  position: absolute;
   right: 44%;
   top: 25%;
   width: 12%;
 }
 
-.app-install-hint-interior > div:first-child {
-  -webkit-transform: rotate(90deg);
+.app-install-hint-interior > .horizontal-bar {
+  height: 12%;
+  left: 25%;
+  right: 25%;
+  top: 44%;
+  width: 50%;
 }
 
 html.dragging-mode .app-install-hint {

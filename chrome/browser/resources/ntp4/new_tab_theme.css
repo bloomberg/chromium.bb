@@ -88,14 +88,13 @@ body {
 
 /* App install hint ***********************************************************/
 
-.app-install-hint:hover .app-install-hint-interior,
-.app-install-hint:active .app-install-hint-interior {
-  -webkit-box-shadow: 0 0 40px $11;  /* COLOR_NTP_SECTION_BORDER */
-  /* COLOR_NTP_SECTION_BORDER */
-  background: -webkit-radial-gradient(rgba($22, 0.3), rgba($22, 0.15));
+.app-install-hint:hover .app-install-hint-interior > .interior-background,
+.app-install-hint:active .app-install-hint-interior > .interior-background {
+  background-color: rgba($23, 0.2);  /* COLOR_NTP_SECTION_BORDER */
 }
 
-.app-install-hint-interior > div {
+.app-install-hint-interior > .vertical-bar,
+.app-install-hint-interior > .horizontal-bar {
   background-color: $21;  /* COLOR_NTP_TEXT_LIGHT */
 }
 
