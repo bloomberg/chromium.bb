@@ -54,7 +54,7 @@ found in the LICENSE file.
 
     <div id="daemon-plugin-container"></div>
 
-    <header data-ui-mode="auth home" hidden>
+    <header data-ui-mode="home" hidden>
       <div>
         <img src="chromoting48.png">
         <h1 class="icon-label" i18n-content="PRODUCT_NAME"></h1>
@@ -71,18 +71,6 @@ found in the LICENSE file.
            target="_blank" i18n-content="HELP"></a>
       </div>
     </header>
-
-    <section id="auth-panel" data-ui-mode="auth" hidden>
-      <h2 i18n-content="MODE_AUTHORIZE"></h2>
-      <p i18n-content="DESCRIPTION_AUTHORIZE"></p>
-      <div class="centered-button">
-        <button id="auth-button"
-                class="kd-button"
-                type="button"
-                i18n-content="CONTINUE_BUTTON">
-        </button>
-      </div>
-    </section> <!-- auth-panel -->
 
     <div data-ui-mode="home" hidden>
       <section>
@@ -176,9 +164,13 @@ found in the LICENSE file.
       </section> <!-- host-list-div -->
     </div> <!-- home -->
 
-    <div id="dialog-screen" data-ui-mode="home.host home.client" hidden></div>
+    <div id="dialog-screen"
+         data-ui-mode="home.host home.client home.auth"
+         hidden></div>
 
-    <div id="dialog-container" data-ui-mode="home.host home.client" hidden>
+    <div id="dialog-container"
+         data-ui-mode="home.host home.client home.auth"
+         hidden>
 
       <div class="box-spacer"></div>
 
@@ -197,6 +189,20 @@ found in the LICENSE file.
           <img id="start-daemon-spinner" src="spinner.gif" hidden>
         </form>
       </div>
+
+      <div id="auth-dialog"
+           data-ui-mode="home.auth"
+           class="kd-modaldialog visible">
+        <h2 i18n-content="MODE_AUTHORIZE"></h2>
+        <p i18n-content="DESCRIPTION_AUTHORIZE"></p>
+        <div class="centered-button">
+          <button id="auth-button"
+                  class="kd-button"
+                  type="button"
+                  i18n-content="CONTINUE_BUTTON">
+          </button>
+        </div>
+      </div> <!-- auth-dialog -->
 
       <div id="host-dialog"
            class="kd-modaldialog visible"

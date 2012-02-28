@@ -20,8 +20,8 @@ var remoting = remoting || {};
 // TODO(jamiewalch): Move 'in-session' to a separate web-page so that the
 // 'home' state applies to all elements and can be removed.
 remoting.AppMode = {
-  UNAUTHENTICATED: 'auth',
   HOME: 'home',
+    UNAUTHENTICATED: 'home.auth',
     HOST: 'home.host',
       HOST_WAITING_FOR_CODE: 'home.host.waiting-for-code',
       HOST_WAITING_FOR_CONNECTION: 'home.host.waiting-for-connection',
