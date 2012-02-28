@@ -36,7 +36,7 @@ TEST(JsonSchemaCompilerChoicesTest, TakesIntegersParamsCreate) {
         TakesIntegers::Params::Create(*params_value));
     EXPECT_TRUE(params.get());
     EXPECT_EQ(TakesIntegers::Params::NUMS_ARRAY, params->nums_type);
-    EXPECT_EQ(2UL, (*params->nums_array).size());
+    EXPECT_EQ((size_t) 2, (*params->nums_array).size());
     EXPECT_EQ(6, (*params->nums_array)[0]);
     EXPECT_EQ(8, (*params->nums_array)[1]);
   }
@@ -119,7 +119,7 @@ TEST(JsonSchemaCompilerChoicesTest, ReturnChoices) {
     scoped_ptr<Value> array_result(ReturnChoices::Result::Create(integers));
     ListValue* list = NULL;
     EXPECT_TRUE(array_result->GetAsList(&list));
-    EXPECT_EQ(2UL, list->GetSize());
+    EXPECT_EQ((size_t) 2, list->GetSize());
     int temp;
     EXPECT_TRUE(list->GetInteger(0, &temp));
     EXPECT_EQ(1, temp);

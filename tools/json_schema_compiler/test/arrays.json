@@ -1,6 +1,6 @@
 [
   {
-    "namespace": "array",
+    "namespace": "arrays",
     "types": [
       {
         "id": "BasicArrayType",
@@ -48,7 +48,7 @@
       {
         "name": "integerArray",
         "type": "function",
-        "description": "Increments the given integer.",
+        "description": "Takes some integers.",
         "parameters": [
           {
             "name": "nums",

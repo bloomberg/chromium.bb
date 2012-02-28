@@ -189,8 +189,9 @@ class CppTypeGenerator(object):
     for function in self._namespace.functions.values():
       for param in function.params:
         dependencies |= self._PropertyTypeDependencies(param)
-      for param in function.callback.params:
-        dependencies |= self._PropertyTypeDependencies(param)
+      if function.callback:
+        for param in function.callback.params:
+          dependencies |= self._PropertyTypeDependencies(param)
     for type_ in self._namespace.types.values():
       for prop in type_.properties.values():
         dependencies |= self._PropertyTypeDependencies(prop)

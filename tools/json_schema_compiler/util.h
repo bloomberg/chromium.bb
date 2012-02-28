@@ -150,29 +150,21 @@ void PopulateListFromOptionalArray(
 
 }
 
-// Sets |out|.|name| to a newly created ListValue containing |from|. Requires
-// GetItemFromList to be implemented for |T|.
 template <class T>
-void PopulateDictionaryFromArray(
-    const std::vector<T>& from,
-    const std::string& name,
-    base::DictionaryValue* out) {
+scoped_ptr<Value> CreateValueFromArray(
+    const std::vector<T>& from) {
   base::ListValue* list = new base::ListValue();
-  out->SetWithoutPathExpansion(name, list);
   PopulateListFromArray(from, list);
+  return scoped_ptr<Value>(list);
 }
 
-// If |from| is non-NULL, sets |out|.|name| to a newly created ListValue
-// containing |from|. Requires GetItemFromList to be implemented for |T|.
 template <class T>
-void PopulateDictionaryFromOptionalArray(
-    const scoped_ptr<std::vector<T> >& from,
-    const std::string& name,
-    base::DictionaryValue* out) {
+scoped_ptr<Value> CreateValueFromOptionalArray(
+    const scoped_ptr<std::vector<T> >& from) {
   if (from.get())
-    PopulateDictionaryFromArray(*from, name, out);
+    return CreateValueFromArray(*from);
+  return scoped_ptr<Value>();
 }
-
 
 }  // namespace api_util
 }  // namespace extensions

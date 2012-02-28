@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "tools/json_schema_compiler/test/array.h"
+#include "tools/json_schema_compiler/test/arrays.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace test::api::array;
+using namespace test::api::arrays;
 
 namespace {
 
@@ -61,7 +61,7 @@ TEST(JsonSchemaCompilerArrayTest, RefArrayType) {
     value->Set("refs", ref_array.release());
     scoped_ptr<RefArrayType> ref_array_type(new RefArrayType());
     EXPECT_TRUE(RefArrayType::Populate(*value, ref_array_type.get()));
-    EXPECT_EQ(3UL, ref_array_type->refs.size());
+    EXPECT_EQ((size_t) 3, ref_array_type->refs.size());
     EXPECT_EQ(1, ref_array_type->refs[0]->val);
     EXPECT_EQ(2, ref_array_type->refs[1]->val);
     EXPECT_EQ(3, ref_array_type->refs[2]->val);
@@ -87,7 +87,7 @@ TEST(JsonSchemaCompilerArrayTest, IntegerArrayParamsCreate) {
   scoped_ptr<IntegerArray::Params> params(
       IntegerArray::Params::Create(*params_value));
   EXPECT_TRUE(params.get());
-  EXPECT_EQ(3UL, params->nums.size());
+  EXPECT_EQ((size_t) 3, params->nums.size());
   EXPECT_EQ(2, params->nums[0]);
   EXPECT_EQ(4, params->nums[1]);
   EXPECT_EQ(8, params->nums[2]);
@@ -102,7 +102,7 @@ TEST(JsonSchemaCompilerArrayTest, RefArrayParamsCreate) {
   scoped_ptr<RefArray::Params> params(
       RefArray::Params::Create(*params_value));
   EXPECT_TRUE(params.get());
-  EXPECT_EQ(2UL, params->refs.size());
+  EXPECT_EQ((size_t) 2, params->refs.size());
   EXPECT_EQ(1, params->refs[0]->val);
   EXPECT_EQ(2, params->refs[1]->val);
 }
@@ -115,7 +115,7 @@ TEST(JsonSchemaCompilerArrayTest, ReturnIntegerArrayResultCreate) {
   ListValue* list = NULL;
   EXPECT_TRUE(result->GetAsList(&list));
   int temp;
-  EXPECT_EQ(2UL, list->GetSize());
+  EXPECT_EQ((size_t) 2, list->GetSize());
   EXPECT_TRUE(list->GetInteger(0, &temp));
   EXPECT_EQ(1, temp);
   EXPECT_TRUE(list->GetInteger(1, &temp));
@@ -131,7 +131,7 @@ TEST(JsonSchemaCompilerArrayTest, ReturnRefArrayResultCreate) {
   scoped_ptr<Value> result(ReturnRefArray::Result::Create(items));
   ListValue* list = NULL;
   EXPECT_TRUE(result->GetAsList(&list));
-  EXPECT_EQ(2UL, list->GetSize());
+  EXPECT_EQ((size_t) 2, list->GetSize());
   DictionaryValue* item_value = NULL;
   int temp;
   EXPECT_TRUE(list->GetDictionary(0, &item_value));

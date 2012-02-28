@@ -62,11 +62,11 @@ class CppTypeGeneratorTest(unittest.TestCase):
     manager = CppTypeGenerator('', self.tabs, 'tabs_api')
     prop = self.tabs.functions['move'].params[0]
     self.assertEquals('TAB_IDS_ARRAY',
-        manager.GetChoiceEnumValue(prop, model.PropertyType.ARRAY))
+        manager.GetEnumValue(prop, model.PropertyType.ARRAY))
     self.assertEquals('TAB_IDS_INTEGER',
-        manager.GetChoiceEnumValue(prop, model.PropertyType.INTEGER))
+        manager.GetEnumValue(prop, model.PropertyType.INTEGER))
     self.assertEquals('TabIdsType',
-        manager.GetChoicesEnumType(prop))
+        manager.GetEnumType(prop))
 
   def testGetTypeSimple(self):
     manager = CppTypeGenerator('', self.tabs, 'tabs_api')

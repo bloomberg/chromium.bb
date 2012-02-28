@@ -37,6 +37,23 @@ TEST(JsonSchemaCompilerSimpleTest, IncrementIntegerParamsCreate) {
   EXPECT_EQ(6, params->num);
 }
 
+TEST(JsonSchemaCompilerSimpleTest, NumberOfParams) {
+  {
+    scoped_ptr<ListValue> params_value(new ListValue());
+    params_value->Append(Value::CreateStringValue("text"));
+    params_value->Append(Value::CreateStringValue("text"));
+    scoped_ptr<OptionalString::Params> params(
+        OptionalString::Params::Create(*params_value));
+    EXPECT_FALSE(params.get());
+  }
+  {
+    scoped_ptr<ListValue> params_value(new ListValue());
+    scoped_ptr<IncrementInteger::Params> params(
+        IncrementInteger::Params::Create(*params_value));
+    EXPECT_FALSE(params.get());
+  }
+}
+
 TEST(JsonSchemaCompilerSimpleTest, OptionalStringParamsCreate) {
   {
     scoped_ptr<ListValue> params_value(new ListValue());
@@ -97,7 +114,7 @@ TEST(JsonSchemaCompilerSimpleTest, TestTypePopulate) {
   {
     scoped_ptr<TestType> test_type(new TestType());
     scoped_ptr<DictionaryValue> value = CreateTestTypeDictionary();
-    value->RemoveWithoutPathExpansion("number", NULL);
+    value->Remove("number", NULL);
     EXPECT_FALSE(TestType::Populate(*value, test_type.get()));
   }
 }

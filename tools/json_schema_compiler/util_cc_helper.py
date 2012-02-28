@@ -56,48 +56,22 @@ class UtilCCHelper(object):
 
     return val % sub
 
-  def PopulateDictionaryFromArray(self, array_prop, src, name, dst):
-    """Generates code to set dst.name to the array at src
+  def CreateValueFromArray(self, array_prop, src):
+    """Generates code to create a scoped_pt<Value> from the array at src.
 
     src: std::vector or scoped_ptr<std::vector>
-    dst: scoped_ptr<DictionaryValue>
     """
     prop = array_prop.item_type
     sub = {
         'namespace': API_UTIL_NAMESPACE,
         'src': src,
-        'name': name,
-        'dst': dst,
         'type': self._type_manager.GetType(prop),
     }
 
     if array_prop.optional:
-      val = ('%(namespace)s::PopulateDictionaryFromOptionalArray'
-          '(%(src)s, "%(name)s", %(dst)s.get())')
+      val = '%(namespace)s::CreateValueFromOptionalArray(%(src)s)'
     else:
-      val = ('%(namespace)s::PopulateDictionaryFromArray'
-          '(%(src)s, "%(name)s", %(dst)s.get())')
-
-    return val % sub
-
-  def PopulateListFromArray(self, array_prop, src, dst):
-    """Generates code to set dst to the array at src
-
-    src: std::vector or scoped_ptr<std::vector>
-    dst: ListValue*
-    """
-    prop = array_prop.item_type
-    sub = {
-        'namespace': API_UTIL_NAMESPACE,
-        'src': src,
-        'dst': dst,
-        'type': self._type_manager.GetType(prop),
-    }
-
-    if array_prop.optional:
-      val = '%(namespace)s::PopulateListFromOptionalArray(%(src)s, %(dst)s)'
-    else:
-      val = '%(namespace)s::PopulateListFromArray(%(src)s, %(dst)s)'
+      val = '%(namespace)s::CreateValueFromArray(%(src)s)'
 
     return val % sub
 

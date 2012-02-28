@@ -2,10 +2,21 @@
   {
     "namespace": "crossref",
     "dependencies": ["simple_api"],
-    "types": [],
+    "types": [
+      {
+        "id": "CrossrefType",
+        "type": "object",
+        "properties": {
+          "testType": {
+            "$ref": "TestType",
+            "optional": true
+          }
+        }
+      }
+    ],
     "functions": [
       {
-        "name": "TestTypeOptionalParam",
+        "name": "testTypeOptionalParam",
         "type": "function",
         "description": "Takes TestType as a param.",
         "parameters": [
@@ -36,6 +47,26 @@
                 "description": "A TestType."
               }
             ]
+          }
+        ]
+      },
+      {
+        "name": "testTypeInObject",
+        "type": "function",
+        "description": "Takes an optional object with a TestType and a bool.",
+        "parameters": [
+          {
+            "name": "paramObject",
+            "type": "object",
+            "properties": {
+              "testType": {"$ref": "TestType", "optional": true},
+              "boolean": {"type": "boolean"}
+            }
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": []
           }
         ]
       }

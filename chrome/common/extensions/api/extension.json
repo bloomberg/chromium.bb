@@ -1,6 +1,7 @@
 [
   {
     "namespace": "extension",
+    "nocompile": true,
     "dependencies": [ "tabs" ],
     "types": [
       {

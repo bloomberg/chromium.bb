@@ -10,10 +10,11 @@
       'variables': {
         'chromium_code': 1,
         'json_schema_files': [
-          'array.json',
+          'arrays.json',
           'choices.json',
           'crossref.json',
           'enums.json',
+          'objects.json',
           'simple_api.json',
         ],
         'cc_dir': 'tools/json_schema_compiler/test',

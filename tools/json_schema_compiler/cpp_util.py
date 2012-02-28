@@ -51,36 +51,12 @@ def GetValueType(prop):
       PropertyType.ENUM: 'Value::TYPE_STRING',
       PropertyType.REF: 'Value::TYPE_DICTIONARY',
       PropertyType.OBJECT: 'Value::TYPE_DICTIONARY',
-      PropertyType.ARRAY: 'Value::TYPE_LIST'
+      PropertyType.ARRAY: 'Value::TYPE_LIST',
+      PropertyType.ANY: 'Value::TYPE_DICTIONARY',
   }[prop.type_]
 
-
-def CreateValueFromSingleProperty(prop, var):
-  """Creates a Value given a single property. Use for everything except
-  PropertyType.ARRAY.
-
-  var: variable or variable*
-  """
-  if prop.type_ in (PropertyType.REF, PropertyType.OBJECT):
-    if prop.optional:
-      return '%s->ToValue().release()' % var
-    else:
-      return '%s.ToValue().release()' % var
-  elif prop.type_.is_fundamental:
-    if prop.optional:
-      var = '*' + var
-    return {
-        PropertyType.STRING: 'Value::CreateStringValue(%s)',
-        PropertyType.BOOLEAN: 'Value::CreateBooleanValue(%s)',
-        PropertyType.INTEGER: 'Value::CreateIntegerValue(%s)',
-        PropertyType.DOUBLE: 'Value::CreateDoubleValue(%s)',
-    }[prop.type_] % var
-  else:
-    raise NotImplementedError('Conversion of single %s to Value not implemented'
-        % repr(prop.type_))
-
 def GetParameterDeclaration(param, type_):
-  """Gets a const parameter declaration of a given model.Property and its C++
+  """Gets a parameter declaration of a given model.Property and its C++
   type.
   """
   if param.type_ in (PropertyType.REF, PropertyType.OBJECT, PropertyType.ARRAY,

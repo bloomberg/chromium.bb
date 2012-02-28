@@ -60,13 +60,22 @@ class Type(object):
   - |name| the type name
   - |description| the description of the type (if provided)
   - |properties| a map of property names to their model.Property
+  - |from_client| indicates that instances of the Type can originate from the
+    users of generated code, such as top-level types and function results
+  - |from_json| indicates that instances of the Type can originate from the
+    JSON (as described by the schema), such as top-level types and function
+    parameters
   """
   def __init__(self, json):
     self.name = json['id']
     self.description = json.get('description')
+    self.from_json = True
+    self.from_client = True
     self.properties = {}
     for prop_name, prop_json in json['properties'].items():
-      self.properties[prop_name] = Property(prop_name, prop_json)
+      self.properties[prop_name] = Property(prop_name, prop_json,
+          from_json=True,
+          from_client=True)
 
 class Callback(object):
   """A callback parameter to a Function.
@@ -81,7 +90,8 @@ class Callback(object):
       return
     elif len(params) == 1:
       param = params[0]
-      self.params.append(Property(param['name'], param))
+      self.params.append(Property(param['name'], param,
+          from_client=True))
     else:
       raise AssertionError("Callbacks can have at most a single parameter")
 
@@ -106,8 +116,8 @@ class Function(object):
         assert (not self.callback), self.name + " has more than one callback"
         self.callback = Callback(param)
       else:
-        self.params.append(Property(param['name'], param))
-    assert (self.callback), self.name + " does not support callback"
+        self.params.append(Property(param['name'], param,
+            from_json=True))
 
 class Property(object):
   """A property of a type OR a parameter to a function.
@@ -125,9 +135,17 @@ class Property(object):
     ARRAY
   - |properties| the properties of an OBJECT parameter
   """
-  def __init__(self, name, json):
-    if not re.match('^[a-z][a-zA-Z0-9]*$', name):
-      raise AssertionError('Name %s must be lowerCamelCase' % name)
+  def __init__(self, name, json,
+      from_json=False,
+      from_client=False):
+    """
+    Parameters:
+    - |from_json| indicates that instances of the Type can originate from the
+      JSON (as described by the schema), such as top-level types and function
+      parameters
+    - |from_client| indicates that instances of the Type can originate from the
+      users of generated code, such as top-level types and function results
+    """
     self.name = name
     self._unix_name = _UnixName(self.name)
     self._unix_name_used = False
@@ -154,13 +172,20 @@ class Property(object):
       elif json_type == 'number':
         self.type_ = PropertyType.DOUBLE
       elif json_type == 'array':
-        self.item_type = Property(name + "Element", json['items'])
+        self.item_type = Property(name + "Element", json['items'],
+            from_json,
+            from_client)
         self.type_ = PropertyType.ARRAY
       elif json_type == 'object':
-        self.properties = {}
         self.type_ = PropertyType.OBJECT
-        for key, val in json['properties'].items():
-          self.properties[key] = Property(key, val)
+        # These members are read when this OBJECT Property is used as a Type
+        self.properties = {}
+        self.from_json = from_json
+        self.from_client = from_client
+        for key, val in json.get('properties', {}).items():
+          self.properties[key] = Property(key, val,
+              from_json,
+              from_client)
       else:
         raise NotImplementedError(json_type)
     elif 'choices' in json:
@@ -168,7 +193,9 @@ class Property(object):
       self.choices = {}
       self.type_ = PropertyType.CHOICES
       for choice_json in json['choices']:
-        choice = Property(self.name, choice_json)
+        choice = Property(self.name, choice_json,
+            from_json,
+            from_client)
         # A choice gets its unix_name set in
         # cpp_type_generator.GetExpandedChoicesInParams
         choice._unix_name = None

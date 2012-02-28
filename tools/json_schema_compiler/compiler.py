@@ -28,7 +28,7 @@ import sys
 if __name__ == '__main__':
   parser = optparse.OptionParser(
       description='Generates a C++ model of an API from JSON schema',
-      usage='usage: %prog [option]... schema [referenced_schema]...')
+      usage='usage: %prog [option]... schema')
   parser.add_option('-r', '--root', default='.',
       help='logical include root directory. Path to schema files from specified'
       'dir will be the include path.')
@@ -44,24 +44,27 @@ if __name__ == '__main__':
   root_namespace = opts.namespace
 
   schema = os.path.normpath(args[0])
-  referenced_schemas = args[1:]
 
   api_model = model.Model()
 
-  # Load type dependencies into the model.
-  for referenced_schema_path in referenced_schemas:
-    with open(referenced_schema_path, 'r') as referenced_schema_file:
-      referenced_api_defs = json.loads(referenced_schema_file.read())
-
-    for namespace in referenced_api_defs:
-      api_model.AddNamespace(namespace,
-          os.path.relpath(referenced_schema_path, opts.root))
 
   # Actually generate for source file.
   with open(schema, 'r') as schema_file:
     api_defs = json.loads(schema_file.read())
 
   for target_namespace in api_defs:
+    referenced_schemas = target_namespace.get('dependencies', [])
+    # Load type dependencies into the model.
+    for referenced_schema in referenced_schemas:
+      referenced_schema_path = os.path.join(
+          os.path.dirname(schema), referenced_schema + '.json')
+      with open(referenced_schema_path, 'r') as referenced_schema_file:
+        referenced_api_defs = json.loads(referenced_schema_file.read())
+
+      for namespace in referenced_api_defs:
+        api_model.AddNamespace(namespace,
+            os.path.relpath(referenced_schema_path, opts.root))
+
     # Gets the relative path from opts.root to the schema to correctly determine
     # the include path.
     relpath = os.path.relpath(schema, opts.root)

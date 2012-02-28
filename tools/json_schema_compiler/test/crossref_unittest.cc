@@ -22,10 +22,20 @@ static scoped_ptr<DictionaryValue> CreateTestTypeDictionary() {
 
 }  // namespace
 
+TEST(JsonSchemaCompilerCrossrefTest, CrossrefTypePopulate) {
+  scoped_ptr<CrossrefType> crossref_type(new CrossrefType());
+  scoped_ptr<DictionaryValue> value(new DictionaryValue());
+  value->Set("testType", CreateTestTypeDictionary().release());
+  EXPECT_TRUE(CrossrefType::Populate(*value, crossref_type.get()));
+  EXPECT_TRUE(crossref_type->test_type.get());
+  EXPECT_TRUE(CreateTestTypeDictionary()->Equals(
+        crossref_type->test_type->ToValue().get()));
+  EXPECT_TRUE(value->Equals(crossref_type->ToValue().get()));
+}
+
 TEST(JsonSchemaCompilerCrossrefTest, TestTypeOptionalParamCreate) {
   scoped_ptr<ListValue> params_value(new ListValue());
-  scoped_ptr<DictionaryValue> test_type_value = CreateTestTypeDictionary();
-  params_value->Append(test_type_value.release());
+  params_value->Append(CreateTestTypeDictionary().release());
   scoped_ptr<TestTypeOptionalParam::Params> params(
       TestTypeOptionalParam::Params::Create(*params_value));
   EXPECT_TRUE(params.get());
@@ -52,4 +62,51 @@ TEST(JsonSchemaCompilerCrossrefTest, GetTestType) {
       test::api::simple_api::TestType::Populate(*value, test_type.get()));
   scoped_ptr<Value> result(GetTestType::Result::Create(*test_type));
   EXPECT_TRUE(value->Equals(result.get()));
+}
+
+TEST(JsonSchemaCompilerCrossrefTest, TestTypeInObjectParamsCreate) {
+  {
+    scoped_ptr<ListValue> params_value(new ListValue());
+    scoped_ptr<DictionaryValue> param_object_value(new DictionaryValue());
+    param_object_value->Set("testType", CreateTestTypeDictionary().release());
+    param_object_value->Set("boolean", Value::CreateBooleanValue(true));
+    params_value->Append(param_object_value.release());
+    scoped_ptr<TestTypeInObject::Params> params(
+        TestTypeInObject::Params::Create(*params_value));
+    EXPECT_TRUE(params.get());
+    EXPECT_TRUE(params->param_object.test_type.get());
+    EXPECT_TRUE(params->param_object.boolean);
+    EXPECT_TRUE(CreateTestTypeDictionary()->Equals(
+          params->param_object.test_type->ToValue().get()));
+  }
+  {
+    scoped_ptr<ListValue> params_value(new ListValue());
+    scoped_ptr<DictionaryValue> param_object_value(new DictionaryValue());
+    param_object_value->Set("boolean", Value::CreateBooleanValue(true));
+    params_value->Append(param_object_value.release());
+    scoped_ptr<TestTypeInObject::Params> params(
+        TestTypeInObject::Params::Create(*params_value));
+    EXPECT_TRUE(params.get());
+    EXPECT_FALSE(params->param_object.test_type.get());
+    EXPECT_TRUE(params->param_object.boolean);
+  }
+  {
+    scoped_ptr<ListValue> params_value(new ListValue());
+    scoped_ptr<DictionaryValue> param_object_value(new DictionaryValue());
+    param_object_value->Set("testType", Value::CreateStringValue("invalid"));
+    param_object_value->Set("boolean", Value::CreateBooleanValue(true));
+    params_value->Append(param_object_value.release());
+    scoped_ptr<TestTypeInObject::Params> params(
+        TestTypeInObject::Params::Create(*params_value));
+    EXPECT_FALSE(params.get());
+  }
+  {
+    scoped_ptr<ListValue> params_value(new ListValue());
+    scoped_ptr<DictionaryValue> param_object_value(new DictionaryValue());
+    param_object_value->Set("testType", CreateTestTypeDictionary().release());
+    params_value->Append(param_object_value.release());
+    scoped_ptr<TestTypeInObject::Params> params(
+        TestTypeInObject::Params::Create(*params_value));
+    EXPECT_FALSE(params.get());
+  }
 }
