@@ -20,6 +20,9 @@ TreeViewExample::TreeViewExample()
 }
 
 TreeViewExample::~TreeViewExample() {
+  // Delete the view before the model.
+  delete tree_view_;
+  tree_view_ = NULL;
 }
 
 void TreeViewExample::CreateExampleView(View* container) {
