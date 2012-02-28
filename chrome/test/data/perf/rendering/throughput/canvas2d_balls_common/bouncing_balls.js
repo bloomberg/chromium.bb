@@ -4,7 +4,10 @@
 
 // demo parameters
 // maybe overridden in test file
-var numBalls = 500;
+var numBalls = parseInt(getArgValue('ball_count'));
+if (numBalls == 0 || isNaN(numBalls)) {
+    numBalls = 500;
+}
 var ballDiameter = 30;
 var gravity = 0.5; //screen heights per second^2
 var maxInitVelocity = 0.2;
@@ -107,7 +110,7 @@ function Ball(){
         alive = true;
       } else {
         // rolling on the ground
-        angularVelocity = velocityX*canvasWidth/ballRadius;
+        angularVelocity = 2*velocityX*canvasWidth/ballDiameter;
       }
     }
 

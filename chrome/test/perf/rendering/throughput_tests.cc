@@ -474,6 +474,22 @@ IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasToCanvasDrawGPU) {
   RunTest("canvas2d_balls_draw_from_canvas", kNone);
 }
 
+IN_PROC_BROWSER_TEST_F(ThroughputTestSW, CanvasTextSW) {
+  RunTest("canvas2d_balls_text", kNone);
+}
+
+IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasTextGPU) {
+  RunTest("canvas2d_balls_text", kNone);
+}
+
+IN_PROC_BROWSER_TEST_F(ThroughputTestSW, CanvasFillPathSW) {
+  RunTest("canvas2d_balls_fill_path", kNone);
+}
+
+IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasFillPathGPU) {
+  RunTest("canvas2d_balls_fill_path", kNone);
+}
+
 IN_PROC_BROWSER_TEST_F(ThroughputTestSW, CanvasSingleImageSW) {
   RunCanvasBenchTest("single_image", kNone);
 }
