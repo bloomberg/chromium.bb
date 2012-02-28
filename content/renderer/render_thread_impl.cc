@@ -58,7 +58,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebColor.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebColorName.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabase.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
