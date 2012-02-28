@@ -94,13 +94,26 @@ class FileSystemOperation : public FileSystemOperationInterface {
   void SyncGetPlatformPath(const GURL& path_url, FilePath* platform_path);
 
  protected:
-  class ScopedQuotaUtilHelper;
+  class ScopedQuotaNotifier;
+
+  // Modes for SetUpFileSystemPath.
+  enum SetUpPathMode {
+    PATH_FOR_READ,
+    PATH_FOR_WRITE,
+    PATH_FOR_CREATE,
+  };
 
   // Only MountPointProviders or testing class can create a
   // new operation directly.
   friend class SandboxMountPointProvider;
   friend class FileSystemTestHelper;
   friend class chromeos::CrosMountPointProvider;
+
+  friend class FileSystemOperationTest;
+  friend class FileSystemOperationWriteTest;
+  friend class FileWriterDelegateTest;
+  friend class FileSystemTestOriginHelper;
+  friend class FileSystemQuotaTest;
 
   FileSystemOperation(scoped_refptr<base::MessageLoopProxy> proxy,
                       FileSystemContext* file_system_context);
@@ -112,12 +125,6 @@ class FileSystemOperation : public FileSystemOperationInterface {
   FileSystemOperationContext* file_system_operation_context() {
     return &operation_context_;
   }
-
-  friend class FileSystemOperationTest;
-  friend class FileSystemOperationWriteTest;
-  friend class FileWriterDelegateTest;
-  friend class FileSystemTestOriginHelper;
-  friend class FileSystemQuotaTest;
 
   // The unit tests that need to specify and control the lifetime of the
   // file_util on their own should call this before performing the actual
@@ -132,6 +139,7 @@ class FileSystemOperation : public FileSystemOperationInterface {
       FileSystemType type,
       const quota::QuotaManager::GetUsageAndQuotaCallback& callback);
 
+  // Callbacks to perform the actual work after quota check.
   void DelayedCreateFileForQuota(const StatusCallback& callback,
                                  bool exclusive,
                                  quota::QuotaStatusCode status,
@@ -183,11 +191,10 @@ class FileSystemOperation : public FileSystemOperationInterface {
                       base::PlatformFileError rv,
                       const base::PlatformFileInfo& file_info,
                       const FilePath& platform_path);
-  void DidReadDirectory(
-      const ReadDirectoryCallback& callback,
-      base::PlatformFileError rv,
-      const std::vector<base::FileUtilProxy::Entry>& entries,
-      bool has_more);
+  void DidReadDirectory(const ReadDirectoryCallback& callback,
+                        base::PlatformFileError rv,
+                        const std::vector<base::FileUtilProxy::Entry>& entries,
+                        bool has_more);
   void DidWrite(base::PlatformFileError rv,
                 int64 bytes,
                 bool complete);
@@ -202,12 +209,6 @@ class FileSystemOperation : public FileSystemOperationInterface {
   void OnFileOpenedForWrite(base::PlatformFileError rv,
                             base::PassPlatformFile file,
                             bool created);
-
-  enum SetUpPathMode {
-    PATH_FOR_READ,
-    PATH_FOR_WRITE,
-    PATH_FOR_CREATE,
-  };
 
   // Checks the validity of a given |path_url| and and populates
   // |path| and |file_util| for |mode|.
@@ -230,7 +231,11 @@ class FileSystemOperation : public FileSystemOperationInterface {
   FileSystemFileUtil* src_util_;  // Not owned.
   FileSystemFileUtil* dest_util_;  // Not owned.
 
-  scoped_ptr<ScopedQuotaUtilHelper> quota_util_helper_;
+  // This is set before any write operations.  The destructor of
+  // ScopedQuotaNotifier sends notification to the QuotaManager
+  // to tell the update is done; so that we can make sure notify
+  // the manager after any write operations are done.
+  scoped_ptr<ScopedQuotaNotifier> scoped_quota_notifier_;
 
   // These are all used only by Write().
   friend class FileWriterDelegate;
