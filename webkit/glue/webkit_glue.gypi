@@ -434,6 +434,8 @@
         'weburlloader_impl.h',
         'weburlrequest_extradata_impl.cc',
         'weburlrequest_extradata_impl.h',
+        'weburlresponse_extradata_impl.cc',
+        'weburlresponse_extradata_impl.h',
         'web_intent_data.cc',
         'web_intent_data.h',
         'web_intent_reply_data.h',

@@ -159,6 +159,7 @@
 #include "webkit/glue/webkit_constants.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/weburlloader_impl.h"
+#include "webkit/glue/weburlresponse_extradata_impl.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 #include "webkit/media/webmediaplayer_impl.h"
 #include "webkit/plugins/npapi/plugin_list.h"
@@ -268,6 +269,7 @@ using webkit::forms::PasswordForm;
 using webkit::forms::PasswordFormDomManager;
 using webkit_glue::AltErrorPageResourceFetcher;
 using webkit_glue::ResourceFetcher;
+using webkit_glue::WebURLResponseExtraDataImpl;
 
 //-----------------------------------------------------------------------------
 
@@ -318,11 +320,17 @@ static bool IsReload(const ViewMsg_Navigate_Params& params) {
       params.navigation_type == ViewMsg_Navigate_Type::RELOAD_IGNORING_CACHE;
 }
 
-static WebReferrerPolicy getReferrerPolicyFromRequest(
+static WebReferrerPolicy GetReferrerPolicyFromRequest(
     const WebURLRequest& request) {
   return request.extraData() ?
       static_cast<RequestExtraData*>(request.extraData())->referrer_policy() :
       WebKit::WebReferrerPolicyDefault;
+}
+
+static WebURLResponseExtraDataImpl* GetExtraDataFromResponse(
+    const WebURLResponse& response) {
+  return static_cast<WebURLResponseExtraDataImpl*>(
+      response.extraData());
 }
 
 NOINLINE static void CrashIntentionally() {
@@ -1267,7 +1275,7 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
       // would be nice if we could get the real referrer from somewhere.
       params.referrer = Referrer(GURL(
           original_request.httpHeaderField(WebString::fromUTF8("Referer"))),
-          getReferrerPolicyFromRequest(original_request));
+          GetReferrerPolicyFromRequest(original_request));
     }
 
     string16 method = request.httpMethod();
@@ -2182,7 +2190,7 @@ void RenderViewImpl::loadURLExternally(
                                      suggested_name));
   } else {
     OpenURL(frame, request.url(),
-            Referrer(referrer, getReferrerPolicyFromRequest(request)), policy);
+            Referrer(referrer, GetReferrerPolicyFromRequest(request)), policy);
   }
 }
 
@@ -2226,7 +2234,7 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
     if (frame_url.GetOrigin() != url.GetOrigin()) {
       Referrer referrer(
           GURL(request.httpHeaderField(WebString::fromUTF8("Referer"))),
-          getReferrerPolicyFromRequest(request));
+          GetReferrerPolicyFromRequest(request));
       OpenURL(frame, url, referrer, default_policy);
       return WebKit::WebNavigationPolicyIgnore;
     }
@@ -2242,7 +2250,7 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
         renderer_preferences_.browser_handles_all_requests) {
       Referrer referrer(
           GURL(request.httpHeaderField(WebString::fromUTF8("Referer"))),
-          getReferrerPolicyFromRequest(request));
+          GetReferrerPolicyFromRequest(request));
       // Reset these counters as the RenderView could be reused for the next
       // navigation.
       page_id_ = -1;
@@ -2285,7 +2293,7 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
     if (should_fork) {
       Referrer referrer(
           GURL(request.httpHeaderField(WebString::fromUTF8("Referer"))),
-          getReferrerPolicyFromRequest(request));
+          GetReferrerPolicyFromRequest(request));
       OpenURL(
           frame, url, send_referrer ? referrer : Referrer(), default_policy);
       return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
@@ -2460,7 +2468,7 @@ void RenderViewImpl::didCompleteClientRedirect(
     // If there's no provisional data source, it's a reference fragment
     // navigation.
     completed_client_redirect_src_ = Referrer(
-        from, ds ? getReferrerPolicyFromRequest(ds->request()) :
+        from, ds ? GetReferrerPolicyFromRequest(ds->request()) :
         frame->referrerPolicy());
   }
   FOR_EACH_OBSERVER(
@@ -3015,6 +3023,11 @@ void RenderViewImpl::didReceiveResponse(
   // Record page load flags.
   document_state->set_was_fetched_via_spdy(response.wasFetchedViaSPDY());
   document_state->set_was_npn_negotiated(response.wasNpnNegotiated());
+  WebURLResponseExtraDataImpl* extra_data = GetExtraDataFromResponse(response);
+  if (extra_data) {
+    document_state->set_npn_negotiated_protocol(
+        extra_data->npn_negotiated_protocol());
+  }
   document_state->set_was_alternate_protocol_available(
       response.wasAlternateProtocolAvailable());
   document_state->set_was_fetched_via_proxy(response.wasFetchedViaProxy());

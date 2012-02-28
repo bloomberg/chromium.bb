@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -140,23 +140,30 @@ class DocumentState : public WebKit::WebDataSource::ExtraData {
   }
 
   // Indicator if SPDY was used as part of this page load.
-  void set_was_fetched_via_spdy(bool value) { was_fetched_via_spdy_ = value; }
   bool was_fetched_via_spdy() const { return was_fetched_via_spdy_; }
+  void set_was_fetched_via_spdy(bool value) { was_fetched_via_spdy_ = value; }
 
-  void set_was_npn_negotiated(bool value) { was_npn_negotiated_ = value; }
   bool was_npn_negotiated() const { return was_npn_negotiated_; }
+  void set_was_npn_negotiated(bool value) { was_npn_negotiated_ = value; }
 
-  void set_was_alternate_protocol_available(bool value) {
-    was_alternate_protocol_available_ = value;
+  const std::string& npn_negotiated_protocol() const {
+    return npn_negotiated_protocol_;
   }
+  void set_npn_negotiated_protocol(const std::string& value) {
+    npn_negotiated_protocol_ = value;
+  }
+
   bool was_alternate_protocol_available() const {
     return was_alternate_protocol_available_;
   }
+  void set_was_alternate_protocol_available(bool value) {
+    was_alternate_protocol_available_ = value;
+  }
 
+  bool was_fetched_via_proxy() const { return was_fetched_via_proxy_; }
   void set_was_fetched_via_proxy(bool value) {
     was_fetched_via_proxy_ = value;
   }
-  bool was_fetched_via_proxy() const { return was_fetched_via_proxy_; }
 
   const GURL& searchable_form_url() const { return searchable_form_url_; }
   void set_searchable_form_url(const GURL& url) { searchable_form_url_ = url; }
@@ -238,6 +245,7 @@ class DocumentState : public WebKit::WebDataSource::ExtraData {
   int http_status_code_;
   bool was_fetched_via_spdy_;
   bool was_npn_negotiated_;
+  std::string npn_negotiated_protocol_;
   bool was_alternate_protocol_available_;
   bool was_fetched_via_proxy_;
 

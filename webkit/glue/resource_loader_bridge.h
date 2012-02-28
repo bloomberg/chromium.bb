@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -194,6 +194,9 @@ struct ResourceResponseInfo {
   // transparent proxy). The proxy could be any type of proxy, HTTP or SOCKS.
   // Note: we cannot tell if a transparent proxy may have been involved.
   bool was_fetched_via_proxy;
+
+  // NPN protocol negotiated with the server.
+  std::string npn_negotiated_protocol;
 
   // Remote address of the socket which fetched this resource.
   net::HostPortPair socket_address;

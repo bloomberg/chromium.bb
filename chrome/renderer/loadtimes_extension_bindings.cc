@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -135,6 +135,9 @@ class LoadTimesExtensionWrapper : public v8::Extension {
         load_times->Set(
             v8::String::New("wasNpnNegotiated"),
             v8::Boolean::New(document_state->was_npn_negotiated()));
+         load_times->Set(
+            v8::String::New("npnNegotiatedProtocol"),
+            v8::String::New(document_state->npn_negotiated_protocol().c_str()));
         load_times->Set(
             v8::String::New("wasAlternateProtocolAvailable"),
             v8::Boolean::New(

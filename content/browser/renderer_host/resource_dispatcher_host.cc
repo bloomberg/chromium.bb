@@ -210,6 +210,7 @@ void PopulateResourceResponse(net::URLRequest* request,
   net::HttpResponseInfo response_info = request->response_info();
   response->was_fetched_via_spdy = response_info.was_fetched_via_spdy;
   response->was_npn_negotiated = response_info.was_npn_negotiated;
+  response->npn_negotiated_protocol = response_info.npn_negotiated_protocol;
   response->was_fetched_via_proxy = request->was_fetched_via_proxy();
   response->socket_address = request->GetSocketAddress();
   appcache::AppCacheInterceptor::GetExtraResponseInfo(
