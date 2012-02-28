@@ -89,16 +89,32 @@ class MyInstance : public pp::Instance {
     }
   }
 
+  bool HaveAudio() {
+    PP_Resource audio_config_resource = config_->pp_resource();
+    PP_Resource audio_resource = audio_->pp_resource();
+    const int kInvalidResource = 0;
+    if (audio_config_resource == kInvalidResource)
+      return false;
+    if (audio_resource == kInvalidResource)
+      return false;
+    return true;
+  }
+
   void StartOutput() {
-    bool audio_start_playback = audio_->StartPlayback();
-    CHECK(true == audio_start_playback);
-    NaClLog(1, "example: frequencies are %f %f\n", frequency_l_, frequency_r_);
-    NaClLog(1, "example: amplitudes are %f %f\n", amplitude_l_, amplitude_r_);
-    NaClLog(1, "example: Scheduling StopOutput on main thread in %"
-            NACL_PRIu32"msec\n", duration_msec_);
+    uint32_t stop_in_msec = 0;
+    if (HaveAudio()) {
+      bool audio_start_playback = audio_->StartPlayback();
+      CHECK(true == audio_start_playback);
+      NaClLog(1, "example: frequencies are %f %f\n", frequency_l_,
+          frequency_r_);
+      NaClLog(1, "example: amplitudes are %f %f\n", amplitude_l_, amplitude_r_);
+      NaClLog(1, "example: Scheduling StopOutput on main thread in %"
+              NACL_PRIu32"msec\n", duration_msec_);
+      stop_in_msec = duration_msec_;
+    }
     // Schedule a callback in duration_msec_ to stop audio output
     pp::CompletionCallback cc(StopOutput, this);
-    pp::Module::Get()->core()->CallOnMainThread(duration_msec_, cc, PP_OK);
+    pp::Module::Get()->core()->CallOnMainThread(stop_in_msec, cc, PP_OK);
   }
 
   static void StopOutput(void* user_data, int32_t err) {
@@ -108,18 +124,19 @@ class MyInstance : public pp::Instance {
     char result[kMaxResult];
     NaClLog(1, "example: StopOutput() invoked on main thread\n");
     if (PP_OK == err) {
-      if (instance->audio_->StopPlayback()) {
-        // In headless mode, the build bots may not have an audio driver, in
-        // which case the callback won't be invoked.
-        // TODO(nfullagar): Other ways to determine if machine has audio
-        // capabilities. Currently PPAPI returns a valid resource regardless.
-        if ((instance->callback_count_ >= 2) || instance->headless_) {
+      // Systems without audio or run with headless option will pass.
+      if (!instance->HaveAudio() || instance->headless_) {
+        snprintf(result, kMaxResult, "StopOutput:PASSED");
+      } else if (instance->audio_->StopPlayback()) {
+        if (instance->callback_count_ >= 2) {
           snprintf(result, kMaxResult, "StopOutput:PASSED");
         } else {
           snprintf(result, kMaxResult, "StopOutput:FAILED - too "
               "few callbacks (only %d callbacks detected)",
               static_cast<int>(instance->callback_count_));
         }
+      } else {
+        snprintf(result, kMaxResult, "StopOutput:FAILED");
       }
     } else {
       snprintf(result, kMaxResult,
@@ -155,6 +172,8 @@ class MyInstance : public pp::Instance {
     NaClLog(1, "example: audio config resource: %"NACL_PRId32"\n",
             audio_config_resource);
     NaClLog(1, "example: audio resource: %"NACL_PRId32"\n", audio_resource);
+    if (!HaveAudio())
+      return;
     CHECK(PP_TRUE == audio_config_interface->
         IsAudioConfig(audio_config_resource));
     CHECK(PP_TRUE == audio_interface->IsAudio(audio_resource));
@@ -172,6 +191,8 @@ class MyInstance : public pp::Instance {
 
   // To enable stress tests, use stress_tests="1" in the embed tag.
   void StressTests() {
+    if (!HaveAudio())
+      return;
     // Attempt to create many audio devices, then immediately shut them down.
     // Chrome may generate some warnings on the console, but should not crash.
     const int kNumManyAudio = 1000;
