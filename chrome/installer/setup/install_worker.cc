@@ -148,7 +148,7 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
     for (size_t i = 0; i < products.size(); ++i) {
       const Product& p = *products[i];
       if (!p.is_chrome() && !p.ShouldCreateUninstallEntry())
-        p.AppendUninstallFlags(&uninstall_arguments);
+        p.AppendProductFlags(&uninstall_arguments);
     }
   }
 
@@ -1101,7 +1101,7 @@ void AppendUninstallCommandLineFlags(const InstallerState& installer_state,
   uninstall_cmd->AppendSwitch(installer::switches::kUninstall);
 
   // Append the product-specific uninstall flags.
-  product.AppendUninstallFlags(uninstall_cmd);
+  product.AppendProductFlags(uninstall_cmd);
   if (installer_state.is_msi()) {
     uninstall_cmd->AppendSwitch(installer::switches::kMsi);
     // See comment in uninstall.cc where we check for the kDeleteProfile switch.

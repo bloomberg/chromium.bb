@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,13 +10,13 @@
 
 namespace installer {
 
-void ChromeBrowserSxSOperations::AppendUninstallFlags(
+void ChromeBrowserSxSOperations::AppendProductFlags(
     const std::set<std::wstring>& options,
     CommandLine* cmd_line) const {
   DCHECK(cmd_line);
 
   cmd_line->AppendSwitch(switches::kChromeSxS);
-  ChromeBrowserOperations::AppendUninstallFlags(options, cmd_line);
+  ChromeBrowserOperations::AppendProductFlags(options, cmd_line);
 }
 
 void ChromeBrowserSxSOperations::AppendRenameFlags(

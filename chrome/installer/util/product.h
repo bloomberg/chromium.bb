@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -103,8 +103,8 @@ class Product {
   // See ProductOperations::AddComDllList.
   void AddComDllList(std::vector<FilePath>* com_dll_list) const;
 
-  // See ProductOperations::AppendUninstallFlags.
-  void AppendUninstallFlags(CommandLine* command_line) const;
+  // See ProductOperations::AppendProductFlags.
+  void AppendProductFlags(CommandLine* command_line) const;
 
   // See ProductOperations::AppendRenameFlags.
   void AppendRenameFlags(CommandLine* command_line) const;

@@ -1051,11 +1051,16 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
       // We started as system-level and have been re-launched as user level
       // to continue with the toast experiment.
       scoped_ptr<Version> installed_version(
-          InstallUtil::GetChromeVersion(browser_dist,
-                                        installer_state->system_install()));
-      browser_dist->LaunchUserExperiment(cmd_line.GetProgram(),
-                                         installer::REENTRY_SYS_UPDATE,
-                                         *installed_version, *product, true);
+          InstallUtil::GetChromeVersion(browser_dist, true));
+      if (!installed_version.get()) {
+        LOG(ERROR) << "No installation of "
+                   << browser_dist->GetAppShortCutName()
+                   << " found for system-level toast.";
+      } else {
+        browser_dist->LaunchUserExperiment(cmd_line.GetProgram(),
+                                           installer::REENTRY_SYS_UPDATE,
+                                           *installed_version, *product, true);
+      }
     }
   } else if (cmd_line.HasSwitch(
                  installer::switches::kChromeFrameReadyModeOptIn)) {

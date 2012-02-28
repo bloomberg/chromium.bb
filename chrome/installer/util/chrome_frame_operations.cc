@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,7 +90,7 @@ void ChromeFrameOperations::AddComDllList(
   com_dll_list->push_back(FilePath(installer::kChromeFrameDll));
 }
 
-void ChromeFrameOperations::AppendUninstallFlags(
+void ChromeFrameOperations::AppendProductFlags(
     const std::set<std::wstring>& options,
     CommandLine* cmd_line) const {
   DCHECK(cmd_line);

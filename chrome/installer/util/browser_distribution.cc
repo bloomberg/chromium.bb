@@ -237,7 +237,7 @@ bool BrowserDistribution::GetExperimentDetails(
 
 void BrowserDistribution::LaunchUserExperiment(
     const FilePath& setup_path, installer::InstallStatus status,
-    const Version& version, const installer::Product& installation,
+    const Version& version, const installer::Product& product,
     bool system_level) {
 }
 

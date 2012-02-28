@@ -130,7 +130,7 @@ class BrowserDistribution {
   virtual void LaunchUserExperiment(const FilePath& setup_path,
                                     installer::InstallStatus status,
                                     const Version& version,
-                                    const installer::Product& installation,
+                                    const installer::Product& product,
                                     bool system_level);
 
   // The user has qualified for the inactive user toast experiment and this
