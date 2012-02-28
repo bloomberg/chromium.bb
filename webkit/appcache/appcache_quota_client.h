@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,6 +65,7 @@ class AppCacheQuotaClient : public quota::QuotaClient {
   void ProcessPendingRequests();
   void DeletePendingRequests();
   const AppCacheStorage::UsageMap* GetUsageMap();
+  net::CancelableCompletionCallback* GetServiceDeleteCallback();
 
   // For use by appcache internals during initialization and shutdown.
   APPCACHE_EXPORT void NotifyAppCacheReady();
@@ -78,7 +79,7 @@ class AppCacheQuotaClient : public quota::QuotaClient {
   // And once it's ready, we can only handle one delete request at a time,
   // so we queue up additional requests while one is in already in progress.
   DeletionCallback current_delete_request_callback_;
-  net::CancelableCompletionCallback service_delete_callback_;
+  scoped_ptr<net::CancelableCompletionCallback> service_delete_callback_;
 
   AppCacheService* service_;
   bool appcache_is_ready_;

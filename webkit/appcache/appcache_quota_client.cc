@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,10 +34,7 @@ void RunFront(appcache::AppCacheQuotaClient::RequestQueue* queue) {
 namespace appcache {
 
 AppCacheQuotaClient::AppCacheQuotaClient(AppCacheService* service)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(service_delete_callback_(
-          base::Bind(&AppCacheQuotaClient::DidDeleteAppCachesForOrigin,
-                     base::Unretained(this)))),
-      service_(service),
+    : service_(service),
       appcache_is_ready_(false),
       quota_manager_is_destroyed_(false) {
 }
@@ -56,7 +53,7 @@ void AppCacheQuotaClient::OnQuotaManagerDestroyed() {
   DeletePendingRequests();
   if (!current_delete_request_callback_.is_null()) {
     current_delete_request_callback_.Reset();
-    service_delete_callback_.Cancel();
+    GetServiceDeleteCallback()->Cancel();
   }
 
   quota_manager_is_destroyed_ = true;
@@ -139,7 +136,7 @@ void AppCacheQuotaClient::DeleteOriginData(const GURL& origin,
   }
 
   service_->DeleteAppCachesForOrigin(
-      origin, service_delete_callback_.callback());
+      origin, GetServiceDeleteCallback()->callback());
 }
 
 void AppCacheQuotaClient::DidDeleteAppCachesForOrigin(int rv) {
@@ -210,6 +207,19 @@ const AppCacheStorage::UsageMap* AppCacheQuotaClient::GetUsageMap() {
   return service_->storage()->usage_map();
 }
 
+net::CancelableCompletionCallback*
+AppCacheQuotaClient::GetServiceDeleteCallback() {
+  // Lazily created due to CancelableCompletionCallback's threading
+  // restrictions, there is no way to detach from the thread created on.
+  if (!service_delete_callback_.get()) {
+    service_delete_callback_.reset(
+        new net::CancelableCompletionCallback(
+            base::Bind(&AppCacheQuotaClient::DidDeleteAppCachesForOrigin,
+                       base::Unretained(this))));
+  }
+  return service_delete_callback_.get();
+}
+
 void AppCacheQuotaClient::NotifyAppCacheReady() {
   appcache_is_ready_ = true;
   ProcessPendingRequests();
@@ -226,7 +236,7 @@ void AppCacheQuotaClient::NotifyAppCacheDestroyed() {
   if (!current_delete_request_callback_.is_null()) {
     current_delete_request_callback_.Run(quota::kQuotaErrorAbort);
     current_delete_request_callback_.Reset();
-    service_delete_callback_.Cancel();
+    GetServiceDeleteCallback()->Cancel();
   }
 
   if (quota_manager_is_destroyed_)
