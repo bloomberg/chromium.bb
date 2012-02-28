@@ -89,6 +89,9 @@ class FileSystemOperation : public FileSystemOperationInterface {
                         const OpenFileCallback& callback) OVERRIDE;
   virtual void Cancel(const StatusCallback& cancel_callback) OVERRIDE;
   virtual FileSystemOperation* AsFileSystemOperation() OVERRIDE;
+  virtual void CreateSnapshotFile(
+      const GURL& path,
+      const SnapshotFileCallback& callback) OVERRIDE;
 
   // Synchronously gets the platform path for the given |path_url|.
   void SyncGetPlatformPath(const GURL& path_url, FilePath* platform_path);
