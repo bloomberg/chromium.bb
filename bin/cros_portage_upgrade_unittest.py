@@ -758,9 +758,7 @@ class CopyUpstreamTest(CpuTestBase):
         # As with real "git rm", if the dir is then empty remove that.
         # File to remove is last argument in git command (arg 1)
         dirpath = args[0]
-        print('DBG: git_rm args[1]=%r' % args[1])
         for f in args[1][2:]:
-          print('DBG: os.remove(%r)' % os.path.join(dirpath, f))
           os.remove(os.path.join(dirpath, f))
         try:
           os.rmdir(os.path.dirname(dirpath))
@@ -822,14 +820,14 @@ class CopyUpstreamTest(CpuTestBase):
                                   existing_files,
                                   extra_upstream_files)
 
-  def DBGtestCopyUpstreamPackageClutteredStable(self):
+  def testCopyUpstreamPackageClutteredStable(self):
     existing_files = ['foo', 'bar', 'foobar.ebuild', 'D-1.ebuild']
     extra_upstream_files = []
     self._TestCopyUpstreamPackage('dev-libs/D', '2', True,
                                   existing_files,
                                   extra_upstream_files)
 
-  def DBGtestCopyUpstreamPackageVersionNotAvailable(self):
+  def testCopyUpstreamPackageVersionNotAvailable(self):
     """Should fail, dev-libs/D version 5 does not exist 'upstream'"""
     existing_files = []
     extra_upstream_files = []
@@ -838,7 +836,7 @@ class CopyUpstreamTest(CpuTestBase):
                                   extra_upstream_files,
                                   error=RuntimeError)
 
-  def DBGtestCopyUpstreamPackagePackageNotAvailable(self):
+  def testCopyUpstreamPackagePackageNotAvailable(self):
     """Should fail, a-b-c/D does not exist 'upstream' in any version"""
     existing_files = []
     extra_upstream_files = []
@@ -847,7 +845,7 @@ class CopyUpstreamTest(CpuTestBase):
                                   extra_upstream_files,
                                   error=RuntimeError)
 
-  def DBGtestCopyUpstreamPackageExtraUpstreamFiles(self):
+  def testCopyUpstreamPackageExtraUpstreamFiles(self):
     existing_files = ['foo', 'bar']
     extra_upstream_files = ['keepme', 'andme']
     self._TestCopyUpstreamPackage('dev-libs/F', '2-r1', True,
@@ -902,7 +900,7 @@ class CopyUpstreamTest(CpuTestBase):
     self.assertFalse(manifest_lines != expected_manifest_lines, msg=msg)
 
   @test_lib.tempdir_decorator
-  def DBGtestCreateManifestNew(self):
+  def testCreateManifestNew(self):
     """Test case with upstream but no current Manifest."""
 
     mocked_upgrader = self._MockUpgrader()
@@ -937,7 +935,7 @@ class CopyUpstreamTest(CpuTestBase):
     self.assertTrue(filecmp.cmp(upstream_manifest, current_manifest))
 
   @test_lib.tempdir_decorator
-  def DBGtestCreateManifestMerge(self):
+  def testCreateManifestMerge(self):
     """Test case with upstream but no current Manifest."""
 
     mocked_upgrader = self._MockUpgrader()
@@ -2054,7 +2052,8 @@ class RunBoardTest(CpuTestBase):
     self.mox.StubOutWithMock(cpu.Upgrader, '_FindBoardArch')
 
     # Replay script
-    mocked_upgrader._SaveStatusOnStableRepo().AndReturn(None)
+    mocked_upgrader._SaveStatusOnStableRepo()
+    mocked_upgrader._LoadStableRepoCategories()
     cpu.Upgrader._FindBoardArch(board).AndReturn('x86')
     upgrade_mode = cpu.Upgrader._IsInUpgradeMode(mocked_upgrader)
     mocked_upgrader._IsInUpgradeMode().AndReturn(upgrade_mode)
@@ -2130,7 +2129,8 @@ class RunBoardTest(CpuTestBase):
     self.mox.StubOutWithMock(cpu.Upgrader, '_FindBoardArch')
 
     # Replay script
-    mocked_upgrader._SaveStatusOnStableRepo().AndReturn(None)
+    mocked_upgrader._SaveStatusOnStableRepo()
+    mocked_upgrader._LoadStableRepoCategories()
     cpu.Upgrader._FindBoardArch(board).AndReturn('x86')
     upgrade_mode = cpu.Upgrader._IsInUpgradeMode(mocked_upgrader)
     mocked_upgrader._IsInUpgradeMode().AndReturn(upgrade_mode)
@@ -2387,6 +2387,53 @@ class UpgradePackagesTest(CpuTestBase):
                  ]
     self._TestUpgradePackages(pinfolist, False)
 
+###############################
+### CategoriesRoundtripTest ###
+###############################
+
+class CategoriesRoundtripTest(test_lib.MoxTestCase):
+
+  def setUp(self):
+    mox.MoxTestBase.setUp(self)
+
+  @test_lib.tempdir_decorator
+  def _TestCategoriesRoundtrip(self, categories):
+    stable_repo = self.tempdir
+    cat_file = cpu.Upgrader.CATEGORIES_FILE
+    profiles_dir = os.path.join(stable_repo, os.path.dirname(cat_file))
+
+    self.mox.StubOutWithMock(cpu.Upgrader, '_RunGit')
+
+    # Prepare replay script.
+    cpu.Upgrader._RunGit(stable_repo, ['add', cat_file])
+    self.mox.ReplayAll()
+
+    options = test_lib.EasyAttr(srcroot='foobar') # Not important
+    upgrader = cpu.Upgrader(options=options)
+    upgrader._stable_repo = stable_repo
+    os.makedirs(profiles_dir)
+
+    # Verification phase.  Write then load categories.
+    upgrader._stable_repo_categories = set(categories)
+    upgrader._WriteStableRepoCategories()
+    upgrader._stable_repo_categories = None
+    upgrader._LoadStableRepoCategories()
+    self.mox.VerifyAll()
+    self.assertEquals(sorted(categories),
+                      sorted(upgrader._stable_repo_categories))
+
+  def test1(self):
+    categories = ['alpha-omega', 'omega-beta', 'beta-chi']
+    self._TestCategoriesRoundtrip(categories)
+
+  def test2(self):
+    categories = []
+    self._TestCategoriesRoundtrip(categories)
+
+  def test3(self):
+    categories = ['virtual', 'happy-days', 'virtually-there']
+    self._TestCategoriesRoundtrip(categories)
+
 ##########################
 ### UpgradePackageTest ###
 ##########################
@@ -2433,6 +2480,7 @@ class UpgradePackageTest(CpuTestBase):
             mocked_upgrader._StabilizeEbuild(ebuild_path)
           mocked_upgrader._RunGit(mocked_upgrader._stable_repo,
                                   ['add', pinfo.package])
+          mocked_upgrader._UpdateCategories(pinfo)
     self.mox.ReplayAll()
 
     # Verify

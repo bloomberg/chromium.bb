@@ -96,6 +96,7 @@ class Upgrader(object):
   UPSTREAM_OVERLAY_NAME = 'portage'
   STABLE_OVERLAY_NAME = 'portage-stable'
   CROS_OVERLAY_NAME = 'chromiumos-overlay'
+  CATEGORIES_FILE = 'profiles/categories'
   HOST_BOARD = 'amd64-host'
   OPT_SLOTS = ['amend', 'csv_file', 'force', 'no_upstream_cache', 'rdeps',
                'upgrade', 'upgrade_deep', 'upstream', 'unstable_ok', 'verbose']
@@ -125,6 +126,7 @@ class Upgrader(object):
                '_porttree',     # Reference to portage porttree object
                '_rdeps',        # Boolean, if True pass --root-deps=rdeps
                '_stable_repo',  # Path to portage-stable
+               '_stable_repo_categories', # Categories from profiles/categories
                '_stable_repo_stashed', # True if portage-stable has a git stash
                '_stable_repo_status', # git status report at start of run
                '_targets',      # Processed list of portage targets
@@ -205,6 +207,27 @@ class Upgrader(object):
                          (self._stable_repo, result.output))
 
     self._stable_repo_stashed = False
+
+  def _LoadStableRepoCategories(self):
+    """Load |self._stable_repo|/profiles/categories into set."""
+
+    self._stable_repo_categories = set()
+    cat_file_path = os.path.join(self._stable_repo, self.CATEGORIES_FILE)
+    with open(cat_file_path, 'r') as f:
+      for line in f:
+        line = line.strip()
+        if line:
+          self._stable_repo_categories.add(line)
+
+  def _WriteStableRepoCategories(self):
+    """Write |self._stable_repo_categories| to profiles/categories."""
+
+    categories = sorted(self._stable_repo_categories)
+    cat_file_path = os.path.join(self._stable_repo, self.CATEGORIES_FILE)
+    with open(cat_file_path, 'w') as f:
+      f.writelines('\n'.join(categories))
+
+    self._RunGit(self._stable_repo, ['add', self.CATEGORIES_FILE])
 
   def _CheckStableRepoOnBranch(self):
     """Raise exception if |self._stable_repo| is not on a branch now."""
@@ -1003,7 +1026,17 @@ class Upgrader(object):
       # Add all new package files to git.
       self._RunGit(self._stable_repo, ['add', pinfo.package])
 
+      # Update profiles/categories.
+      self._UpdateCategories(pinfo)
+
     return bool(pinfo.upgraded_cpv)
+
+  def _UpdateCategories(self, pinfo):
+    """Update profiles/categories to include category in |pinfo|, if needed."""
+
+    if pinfo.category not in self._stable_repo_categories:
+      self._stable_repo_categories.add(pinfo.category)
+      self._WriteStableRepoCategories()
 
   def _VerifyPackageUpgrade(self, pinfo):
     """Verify that the upgraded package in |pinfo| passes checks."""
@@ -1571,10 +1604,10 @@ class Upgrader(object):
     if commit_lines:
       if self._amend:
         message = self._AmendCommitMessage(commit_lines)
-        self._RunGit(self._stable_repo, ['commit', '--amend', '-am', message])
+        self._RunGit(self._stable_repo, ['commit', '--amend', '-m', message])
       else:
         message = self._CreateCommitMessage(commit_lines)
-        self._RunGit(self._stable_repo, ['commit', '-am', message])
+        self._RunGit(self._stable_repo, ['commit', '-m', message])
 
       oper.Warning('\n'
                    'Upgrade changes committed (see above),'
@@ -1642,6 +1675,8 @@ class Upgrader(object):
     potential upgrades."""
     # Preserve status report for entire stable repo (output of 'git status -s').
     self._SaveStatusOnStableRepo()
+    # Read contents of profiles/categories for later checks
+    self._LoadStableRepoCategories()
 
     self._porttree = None
     self._deps_graph = None
