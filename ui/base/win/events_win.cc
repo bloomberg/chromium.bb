@@ -266,13 +266,9 @@ void UpdateDeviceList() {
   NOTIMPLEMENTED();
 }
 
-bool IsNoopEvent(base::NativeEvent event) {
-  return event.message == WM_USER + 310;
-}
-
 base::NativeEvent CreateNoopEvent() {
   MSG event = { NULL };
-  event.message = WM_USER + 310;
+  event.message = WM_USER;
   return event;
 }
 

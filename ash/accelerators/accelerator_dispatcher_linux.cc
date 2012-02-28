@@ -17,7 +17,6 @@
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/events.h"
 
 namespace ash {
 
@@ -32,7 +31,7 @@ base::MessagePumpDispatcher::DispatchStatus AcceleratorDispatcher::Dispatch(
     XEvent* xev) {
   if (!associated_window_)
     return EVENT_QUIT;
-  if (!ui::IsNoopEvent(xev) && !associated_window_->CanReceiveEvents())
+  if (!associated_window_->CanReceiveEvents())
     return aura::Env::GetInstance()->GetDispatcher()->Dispatch(xev);
 
   if (xev->type == KeyPress) {

@@ -388,14 +388,6 @@ float GetTouchParamFromXEvent(XEvent* xev,
   return default_value;
 }
 
-#if !defined(TOOLKIT_USES_GTK)
-Atom GetNoopEventAtom() {
-  return XInternAtom(
-      base::MessagePumpX::GetDefaultXDisplay(),
-      "noop", False);
-}
-#endif
-
 }  // namespace
 
 namespace ui {
@@ -709,16 +701,6 @@ void UpdateDeviceList() {
   TouchFactory::GetInstance()->UpdateDeviceList(display);
 }
 
-bool IsNoopEvent(base::NativeEvent event) {
-#if defined(TOOLKIT_USES_GTK)
-  NOTREACHED();
-  return false;
-#else
-  return (event->type == ClientMessage &&
-      event->xclient.message_type == GetNoopEventAtom());
-#endif
-}
-
 base::NativeEvent CreateNoopEvent() {
   static XEvent* noop = NULL;
   if (!noop) {
@@ -735,7 +717,9 @@ base::NativeEvent CreateNoopEvent() {
 #else
   // Make sure we use atom from current xdisplay, which may
   // change during the test.
-  noop->xclient.message_type = GetNoopEventAtom();
+  noop->xclient.message_type = XInternAtom(
+      base::MessagePumpX::GetDefaultXDisplay(),
+      "noop", False);
 #endif
   return noop;
 }
