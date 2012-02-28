@@ -151,7 +151,8 @@ class MetricsService : public content::NotificationObserver,
 
   // First part of the init task. Called on the FILE thread to load hardware
   // class information.
-  void InitTaskGetHardwareClass(base::MessageLoopProxy* target_loop);
+  static void InitTaskGetHardwareClass(base::WeakPtr<MetricsService> self,
+                                       base::MessageLoopProxy* target_loop);
 
   // Callback from InitTaskGetHardwareClass() that continues the init task by
   // loading plugin information.
@@ -374,7 +375,12 @@ class MetricsService : public content::NotificationObserver,
   struct ChildProcessStats;
   std::map<string16, ChildProcessStats> child_process_stats_buffer_;
 
-  base::WeakPtrFactory<MetricsService> log_sender_factory_;
+  // Weak pointers factory used to post task on different threads. All weak
+  // pointers managed by this factory have the same lifetime as MetricsService.
+  base::WeakPtrFactory<MetricsService> self_ptr_factory_;
+
+  // Weak pointers factory used for saving state. All weak pointers managed by
+  // this factory are invalidated in ScheduleNextStateSave.
   base::WeakPtrFactory<MetricsService> state_saver_factory_;
 
   // Dictionary containing all the profile specific metrics. This is set

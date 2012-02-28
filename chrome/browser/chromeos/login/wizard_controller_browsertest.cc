@@ -141,8 +141,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
   DISALLOW_COPY_AND_ASSIGN(WizardControllerFlowTest);
 };
 
-// Seems to be flaky http://crbug.com/110544.
-IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, DISABLED_ControlFlowMain) {
+IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowMain) {
   EXPECT_TRUE(ExistingUserController::current_controller() == NULL);
   EXPECT_EQ(controller()->GetNetworkScreen(), controller()->current_screen());
   EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
@@ -166,9 +165,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, DISABLED_ControlFlowMain) {
   set_controller(NULL);
 }
 
-// Seems to be flaky http://crbug.com/110544.
-IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
-                       DISABLED_ControlFlowErrorUpdate) {
+IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowErrorUpdate) {
   EXPECT_EQ(controller()->GetNetworkScreen(), controller()->current_screen());
   EXPECT_CALL(*mock_update_screen_, StartUpdate()).Times(0);
   EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);

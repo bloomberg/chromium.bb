@@ -369,14 +369,14 @@ MetricsService::MetricsService()
       io_thread_(NULL),
       idle_since_last_transmission_(false),
       next_window_id_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(log_sender_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(self_ptr_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(state_saver_factory_(this)),
       waiting_for_asynchronus_reporting_step_(false) {
   DCHECK(IsSingleThreaded());
   InitializeMetricsState();
 
   base::Closure callback = base::Bind(&MetricsService::StartScheduledUpload,
-                                      base::Unretained(this));
+                                      self_ptr_factory_.GetWeakPtr());
   scheduler_.reset(new MetricsReportingScheduler(callback));
   log_manager_.set_log_serializer(new MetricsLogSerializer());
   log_manager_.set_max_ongoing_log_store_size(kUploadLogAvoidRetransmitSize);
@@ -723,9 +723,10 @@ void MetricsService::InitializeMetricsState() {
   ScheduleNextStateSave();
 }
 
+// static
 void MetricsService::InitTaskGetHardwareClass(
+    base::WeakPtr<MetricsService> self,
     base::MessageLoopProxy* target_loop) {
-  DCHECK(state_ == INIT_TASK_SCHEDULED);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   std::string hardware_class;
@@ -736,23 +737,23 @@ void MetricsService::InitTaskGetHardwareClass(
 
   target_loop->PostTask(FROM_HERE,
       base::Bind(&MetricsService::OnInitTaskGotHardwareClass,
-          base::Unretained(this), hardware_class));
+          self, hardware_class));
 }
 
 void MetricsService::OnInitTaskGotHardwareClass(
     const std::string& hardware_class) {
-  DCHECK(state_ == INIT_TASK_SCHEDULED);
+  DCHECK_EQ(state_, INIT_TASK_SCHEDULED);
   hardware_class_ = hardware_class;
 
   // Start the next part of the init task: loading plugin information.
   PluginService::GetInstance()->GetPlugins(
       base::Bind(&MetricsService::OnInitTaskGotPluginInfo,
-          base::Unretained(this)));
+          self_ptr_factory_.GetWeakPtr()));
 }
 
 void MetricsService::OnInitTaskGotPluginInfo(
     const std::vector<webkit::WebPluginInfo>& plugins) {
-  DCHECK(state_ == INIT_TASK_SCHEDULED);
+  DCHECK_EQ(state_, INIT_TASK_SCHEDULED);
   plugins_ = plugins;
 
   io_thread_ = g_browser_process->io_thread();
@@ -810,7 +811,7 @@ void MetricsService::StartRecording() {
         BrowserThread::FILE,
         FROM_HERE,
         base::Bind(&MetricsService::InitTaskGetHardwareClass,
-            base::Unretained(this),
+            self_ptr_factory_.GetWeakPtr(),
             MessageLoop::current()->message_loop_proxy()),
         kInitializationDelaySeconds);
   }
@@ -887,7 +888,7 @@ void MetricsService::StartScheduledUpload() {
 
   base::Closure callback =
       base::Bind(&MetricsService::OnMemoryDetailCollectionDone,
-                 log_sender_factory_.GetWeakPtr());
+                 self_ptr_factory_.GetWeakPtr());
 
   scoped_refptr<MetricsMemoryDetails> details(
       new MetricsMemoryDetails(callback));
@@ -916,7 +917,7 @@ void MetricsService::OnMemoryDetailCollectionDone() {
   // Create a callback_task for OnHistogramSynchronizationDone.
   base::Closure callback = base::Bind(
       &MetricsService::OnHistogramSynchronizationDone,
-      log_sender_factory_.GetWeakPtr());
+      self_ptr_factory_.GetWeakPtr());
 
   base::StatisticsRecorder::CollectHistogramStats("Browser");
 
