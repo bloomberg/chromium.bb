@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@
 namespace browser_sync {
 
 ThemeChangeProcessor::ThemeChangeProcessor(
-    UnrecoverableErrorHandler* error_handler)
+    DataTypeErrorHandler* error_handler)
     : ChangeProcessor(error_handler),
       profile_(NULL) {
   DCHECK(error_handler);
@@ -75,8 +75,8 @@ void ThemeChangeProcessor::ApplyChangesFromSyncModel(
   // we can remove the extra logic below.  See:
   // http://code.google.com/p/chromium/issues/detail?id=41696 .
   if (changes.Get().empty()) {
-    error_handler()->OnUnrecoverableError(FROM_HERE,
-                                          "Change list unexpectedly empty");
+    error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+        "Change list unexpectedly empty");
     return;
   }
   const size_t change_count = changes.Get().size();
@@ -98,8 +98,8 @@ void ThemeChangeProcessor::ApplyChangesFromSyncModel(
   if (change.action != sync_api::ChangeRecord::ACTION_DELETE) {
     sync_api::ReadNode node(trans);
     if (!node.InitByIdLookup(change.id)) {
-      error_handler()->OnUnrecoverableError(FROM_HERE,
-                                            "Theme node lookup failed.");
+      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+          "Theme node lookup failed.");
       return;
     }
     DCHECK_EQ(node.GetModelType(), syncable::THEMES);

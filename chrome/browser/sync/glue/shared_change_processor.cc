@@ -47,7 +47,7 @@ SharedChangeProcessor::~SharedChangeProcessor() {
 base::WeakPtr<SyncableService> SharedChangeProcessor::Connect(
     ProfileSyncComponentsFactory* sync_factory,
     ProfileSyncService* sync_service,
-    UnrecoverableErrorHandler* error_handler,
+    DataTypeErrorHandler* error_handler,
     syncable::ModelType type) {
   DCHECK(sync_factory);
   DCHECK(sync_service);

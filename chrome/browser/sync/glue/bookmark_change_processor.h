@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
 #include "chrome/browser/sync/glue/change_processor.h"
+#include "chrome/browser/sync/glue/data_type_error_handler.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 
 namespace sync_api {
@@ -29,7 +30,7 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
                                 public ChangeProcessor {
  public:
   BookmarkChangeProcessor(BookmarkModelAssociator* model_associator,
-                          UnrecoverableErrorHandler* error_handler);
+                          DataTypeErrorHandler* error_handler);
   virtual ~BookmarkChangeProcessor() {}
 
   // BookmarkModelObserver implementation.
@@ -102,7 +103,7 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
                               int index,
                               sync_api::WriteTransaction* trans,
                               BookmarkModelAssociator* associator,
-                              UnrecoverableErrorHandler* error_handler);
+                              DataTypeErrorHandler* error_handler);
 
  protected:
   virtual void StartImpl(Profile* profile) OVERRIDE;

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/prefs/pref_member.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/sync/protocol/sync_protocol_error.h"
@@ -9,6 +11,7 @@
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
+#include "chrome/common/pref_names.h"
 
 using bookmarks_helper::AddFolder;
 using bookmarks_helper::SetTitle;
@@ -154,3 +157,22 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, AuthErrorTest) {
   ASSERT_EQ(ProfileSyncService::Status::OFFLINE_UNSYNCED,
             GetClient(0)->GetStatus().summary);
 }
+
+// TODO(lipalani): Fix the typed_url dtc so this test case can pass.
+IN_PROC_BROWSER_TEST_F(SyncErrorTest, DISABLED_DisableDatatypeWhileRunning) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  syncable::ModelTypeSet synced_datatypes =
+        GetClient(0)->service()->GetPreferredDataTypes();
+  ASSERT_TRUE(synced_datatypes.Has(syncable::TYPED_URLS));
+  GetProfile(0)->GetPrefs()->SetBoolean(
+      prefs::kSavingBrowserHistoryDisabled, true);
+
+  synced_datatypes = GetClient(0)->service()->GetPreferredDataTypes();
+  ASSERT_FALSE(synced_datatypes.Has(syncable::TYPED_URLS));
+
+  const BookmarkNode* node1 = AddFolder(0, 0, L"title1");
+  SetTitle(0, node1, L"new_title1");
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Sync."));
+  // TODO(lipalani)" Verify initial sync ended for typed url is false.
+}
+

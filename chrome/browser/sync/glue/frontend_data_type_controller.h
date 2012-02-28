@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
+#include "chrome/browser/sync/glue/data_type_error_handler.h"
 
 class Profile;
 class ProfileSyncService;
@@ -49,9 +50,12 @@ class FrontendDataTypeController : public DataTypeController {
   virtual std::string name() const OVERRIDE;
   virtual State state() const OVERRIDE;
 
-  // UnrecoverableErrorHandler interface.
+  // DataTypeErrorHandler interface.
   virtual void OnUnrecoverableError(const tracked_objects::Location& from_here,
                                     const std::string& message) OVERRIDE;
+  virtual void OnSingleDatatypeUnrecoverableError(
+      const tracked_objects::Location& from_here,
+      const std::string& message) OVERRIDE;
 
  protected:
   // For testing only.

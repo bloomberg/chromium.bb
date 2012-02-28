@@ -29,7 +29,7 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
 
   virtual browser_sync::GenericChangeProcessor* CreateGenericChangeProcessor(
       ProfileSyncService* profile_sync_service,
-      browser_sync::UnrecoverableErrorHandler* error_handler,
+      browser_sync::DataTypeErrorHandler* error_handler,
       const base::WeakPtr<SyncableService>& local_service) OVERRIDE;
 
   virtual browser_sync::SharedChangeProcessor*
@@ -40,7 +40,7 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
 
   virtual SyncComponents CreateAppSyncComponents(
       ProfileSyncService* profile_sync_service,
-      browser_sync::UnrecoverableErrorHandler* error_handler) OVERRIDE;
+      browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
 
   virtual base::WeakPtr<SyncableService> GetAutofillProfileSyncableService(
       WebDataService* web_data_service) const OVERRIDE;
@@ -50,47 +50,47 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
 
   virtual SyncComponents CreateBookmarkSyncComponents(
       ProfileSyncService* profile_sync_service,
-      browser_sync::UnrecoverableErrorHandler* error_handler) OVERRIDE;
+      browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
 
   virtual SyncComponents CreateExtensionOrAppSettingSyncComponents(
       // Either EXTENSION_SETTING or APP_SETTING.
       syncable::ModelType type,
       ProfileSyncService* profile_sync_service,
-      browser_sync::UnrecoverableErrorHandler* error_handler) OVERRIDE;
+      browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
 
   virtual SyncComponents CreateExtensionSyncComponents(
       ProfileSyncService* profile_sync_service,
-      browser_sync::UnrecoverableErrorHandler* error_handler) OVERRIDE;
+      browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
 
   virtual SyncComponents CreatePasswordSyncComponents(
       ProfileSyncService* profile_sync_service,
       PasswordStore* password_store,
-      browser_sync::UnrecoverableErrorHandler* error_handler) OVERRIDE;
+      browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
 
   virtual SyncComponents CreatePreferenceSyncComponents(
       ProfileSyncService* profile_sync_service,
-      browser_sync::UnrecoverableErrorHandler* error_handler) OVERRIDE;
+      browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
 
   virtual SyncComponents CreateThemeSyncComponents(
       ProfileSyncService* profile_sync_service,
-      browser_sync::UnrecoverableErrorHandler* error_handler) OVERRIDE;
+      browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
 
   virtual SyncComponents CreateTypedUrlSyncComponents(
       ProfileSyncService* profile_sync_service,
       history::HistoryBackend* history_backend,
-      browser_sync::UnrecoverableErrorHandler* error_handler) OVERRIDE;
+      browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
 
   virtual SyncComponents CreateSessionSyncComponents(
       ProfileSyncService* profile_sync_service,
-      browser_sync::UnrecoverableErrorHandler* error_handler) OVERRIDE;
+      browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
 
   virtual SyncComponents CreateSearchEngineSyncComponents(
       ProfileSyncService* profile_sync_service,
-      browser_sync::UnrecoverableErrorHandler* error_handler) OVERRIDE;
+      browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
 
   virtual SyncComponents CreateAppNotificationSyncComponents(
       ProfileSyncService* profile_sync_service,
-      browser_sync::UnrecoverableErrorHandler* error_handler) OVERRIDE;
+      browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
 
  private:
   Profile* profile_;

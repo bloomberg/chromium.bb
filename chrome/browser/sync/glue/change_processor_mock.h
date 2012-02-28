@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@
 namespace browser_sync {
 
 class ChangeProcessorMock
-    : public ChangeProcessor, public UnrecoverableErrorHandler {
+    : public ChangeProcessor, public DataTypeErrorHandler{
  public:
   ChangeProcessorMock();
   virtual ~ChangeProcessorMock();
@@ -27,6 +27,10 @@ class ChangeProcessorMock
   MOCK_CONST_METHOD0(IsRunning, bool());
   MOCK_METHOD2(OnUnrecoverableError, void(const tracked_objects::Location&,
                                           const std::string&));
+  MOCK_METHOD2(OnSingleDatatypeUnrecoverableError,
+                     void(const tracked_objects::Location&,
+                          const std::string&));
+
 };
 
 }  // namespace browser_sync

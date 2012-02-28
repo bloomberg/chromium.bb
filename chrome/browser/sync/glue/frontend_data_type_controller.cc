@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -207,6 +207,12 @@ void FrontendDataTypeController::OnUnrecoverableError(
                  sync_service_->AsWeakPtr(),
                  from_here,
                  message));
+}
+
+void FrontendDataTypeController::OnSingleDatatypeUnrecoverableError(
+    const tracked_objects::Location& from_here, const std::string& message) {
+  RecordUnrecoverableError(from_here, message);
+  sync_service_->OnDisableDatatype(type(), from_here, message);
 }
 
 void FrontendDataTypeController::RecordUnrecoverableError(

@@ -117,7 +117,7 @@ void TypedUrlDataTypeController::Observe(
         // generate an unrecoverable error. This can be fixed by restarting
         // Chrome (on restart, typed urls will not be a registered type).
         if (state() != NOT_RUNNING && state() != STOPPING) {
-          profile_sync_service()->OnUnrecoverableError(
+          profile_sync_service()->OnDisableDatatype(syncable::TYPED_URLS,
               FROM_HERE, "History saving is now disabled by policy.");
         }
       }

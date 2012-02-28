@@ -129,7 +129,7 @@ ACTION_P4(MakeTypedUrlSyncComponents, profile, service, hb, dtc) {
   TypedUrlModelAssociator* model_associator =
       new TypedUrlModelAssociator(service, hb);
   TypedUrlChangeProcessor* change_processor =
-      new TypedUrlChangeProcessor(profile, model_associator, hb, service);
+      new TypedUrlChangeProcessor(profile, model_associator, hb, dtc);
   return ProfileSyncComponentsFactory::SyncComponents(model_associator,
                                                       change_processor);
 }

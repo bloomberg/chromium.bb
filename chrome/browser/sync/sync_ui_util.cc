@@ -666,6 +666,8 @@ void ConstructAboutInformation(ProfileSyncService* service,
     const FailedDatatypesHandler& failed_datatypes_handler =
         service->failed_datatypes_handler();
     if (failed_datatypes_handler.AnyFailedDatatype()) {
+      strings->Set("failed_data_types_detected",
+                   new base::FundamentalValue(true));
       strings->SetString("failed_data_types",
           failed_datatypes_handler.GetErrorString());
     }
