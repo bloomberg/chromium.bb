@@ -1854,6 +1854,7 @@
         'browser/password_manager_delegate_impl.cc',
         'browser/password_manager_delegate_impl.h',
         'browser/platform_util.h',
+	'browser/platform_util_android.cc',
         'browser/platform_util_aura.cc',
         'browser/platform_util_chromeos.cc',
         'browser/platform_util_common_linux.cc',
