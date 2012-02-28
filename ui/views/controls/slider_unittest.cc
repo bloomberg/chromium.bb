@@ -52,6 +52,9 @@ TEST(SliderTest, UpdateFromClickRTL) {
 
   ClickAt(view, view->width(), 0);
   EXPECT_EQ(0.0f, slider->value());
+
+  // Reset locale.
+  base::i18n::SetICUDefaultLocale(locale);
 }
 
 }  // namespace views
