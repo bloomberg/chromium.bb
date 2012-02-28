@@ -20,11 +20,14 @@
 #import "base/mac/scoped_nsautorelease_pool.h"
 #include "base/path_service.h"
 #include "base/sys_string_conversions.h"
+#include "base/threading/platform_thread.h"
+#include "base/threading/thread_restrictions.h"
 #import "breakpad/src/client/mac/Framework/Breakpad.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
+#include "chrome/common/logging_chrome.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "native_client/src/trusted/service_runtime/osx/crash_filter.h"
 #include "policy/policy_constants.h"
@@ -95,6 +98,32 @@ bool NaClBreakpadCrashFilter(int exception_type,
   return !NaClMachThreadIsInUntrusted(crashing_thread);
 }
 #endif
+
+// BreakpadGenerateAndSendReport() does not report the current
+// thread.  This class can be used to spin up a thread to run it.
+class DumpHelper : public base::PlatformThread::Delegate {
+ public:
+  static void DumpWithoutCrashing() {
+    DumpHelper dumper;
+    base::PlatformThreadHandle handle;
+    if (base::PlatformThread::Create(0, &dumper, &handle)) {
+      // The entire point of this is to block so that the correct
+      // stack is logged.
+      base::ThreadRestrictions::ScopedAllowIO allow_io;
+      base::PlatformThread::Join(handle);
+    }
+  }
+
+ private:
+  DumpHelper() {}
+
+  virtual void ThreadMain() {
+    base::PlatformThread::SetName("CrDumpHelper");
+    BreakpadGenerateAndSendReport(gBreakpadRef);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(DumpHelper);
+};
 
 }  // namespace
 
@@ -225,6 +254,7 @@ void InitCrashReporter() {
   }
 
   logging::SetLogMessageHandler(&FatalMessageHandler);
+  logging::SetDumpWithoutCrashingFunction(&DumpHelper::DumpWithoutCrashing);
 }
 
 void InitCrashProcessInfo() {

@@ -75,7 +75,7 @@ const GUID kChromeTraceProviderName = {
         { 0x80, 0xc1, 0x52, 0x7f, 0xea, 0x23, 0xe3, 0xa7 } };
 #endif
 
-#if defined(USE_LINUX_BREAKPAD)
+#if defined(USE_LINUX_BREAKPAD) || defined(OS_MACOSX)
 // Pointer to the function that's called by DumpWithoutCrashing() to dump the
 // process's memory.
 void (*dump_without_crashing_function_)() = NULL;
@@ -459,7 +459,7 @@ void DumpWithoutCrashing() {
 #if defined(OS_WIN)
   std::string str;
   DumpProcessAssertHandler(str);
-#elif defined(USE_LINUX_BREAKPAD)
+#elif defined(USE_LINUX_BREAKPAD) || defined(OS_MACOSX)
   if (dump_without_crashing_function_)
     (*dump_without_crashing_function_)();
 #else
@@ -467,7 +467,7 @@ void DumpWithoutCrashing() {
 #endif
 }
 
-#if defined(USE_LINUX_BREAKPAD)
+#if defined(USE_LINUX_BREAKPAD) || defined(OS_MACOSX)
 void SetDumpWithoutCrashingFunction(void (*function)()) {
   dump_without_crashing_function_ = function;
 }
