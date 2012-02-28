@@ -55,7 +55,7 @@ MediaControls.formatTime_ = function(timeInSec) {
 MediaControls.prototype.createControl = function(className, opt_parent) {
   var parent = opt_parent || this.container_;
   var control = this.document_.createElement('div');
-  control.classList.add(className);
+  control.className = className;
   parent.appendChild(control);
   return control;
 };
@@ -66,14 +66,38 @@ MediaControls.prototype.createControl = function(className, opt_parent) {
  * @param {string} className
  * @param {function(Event)} handler
  * @param {HTMLElement=} opt_parent Parent element or container if undefined.
+ * @param {Boolean} opt_toggle True if the button has toggle state.
  * @return {HTMLElement}
  */
 MediaControls.prototype.createButton = function(
-    className, handler, opt_parent) {
+    className, handler, opt_parent, opt_toggle) {
   var button = this.createControl(className, opt_parent);
   button.classList.add('media-button');
   button.addEventListener('click', handler);
+
+  var numStates = opt_toggle ? 2 : 1;
+  for (var state = 0; state != numStates; state++) {
+    var stateClass = 'state' + state;
+    this.createControl('normal ' + stateClass, button);
+    this.createControl('hover ' + stateClass, button);
+    this.createControl('active ' + stateClass, button);
+  }
+  this.createControl('disabled', button);
+
+  button.setAttribute('state', 0);
+  button.addEventListener('click', handler);
   return button;
+};
+
+MediaControls.prototype.enableControls_ = function(selector, on) {
+  var controls = this.container_.querySelectorAll(selector);
+  for (var i = 0; i != controls.length; i++) {
+    var classList = controls[i].classList;
+    if (on)
+      classList.remove('disabled');
+    else
+      classList.add('disabled');
+  }
 };
 
 /*
@@ -100,8 +124,8 @@ MediaControls.prototype.togglePlayState = function() {
 };
 
 MediaControls.prototype.initPlayButton = function(opt_parent) {
-  this.playButton_ =
-    this.createButton('play', this.togglePlayState.bind(this), opt_parent);
+  this.playButton_ = this.createButton('play media-control',
+      this.togglePlayState.bind(this), opt_parent, true /* toggle */);
 };
 
 /*
@@ -120,13 +144,13 @@ MediaControls.prototype.initTimeControls = function(opt_seekMark, opt_parent) {
       opt_seekMark ? MediaControls.PreciseSlider : MediaControls.Slider;
 
   this.progressSlider_ = new sliderConstructor(
-      this.createControl('progress', timeControls),
+      this.createControl('progress media-control', timeControls),
       0, /* value */
       MediaControls.PROGRESS_RANGE,
       this.onProgressChange_.bind(this),
       this.onProgressDrag_.bind(this));
 
-  var timeBox = this.createControl('time', timeControls);
+  var timeBox = this.createControl('time media-control', timeControls);
 
   this.duration_ = this.createControl('duration', timeBox);
   // Set the initial width to the minimum to reduce the flicker.
@@ -137,7 +161,6 @@ MediaControls.prototype.initTimeControls = function(opt_seekMark, opt_parent) {
 
 MediaControls.prototype.displayProgress_ = function(current, duration) {
   var ratio = current / duration;
-  this.progressSlider_.setFilled(ratio);
   this.progressSlider_.setValue(ratio);
   this.currentTime_.textContent = MediaControls.formatTime_(current);
 };
@@ -174,11 +197,12 @@ MediaControls.prototype.onProgressDrag_ = function(on) {
 MediaControls.prototype.initVolumeControls = function(opt_parent) {
   var volumeControls = this.createControl('volume-controls', opt_parent);
 
-  this.soundButton_ = this.createButton(
-      'sound', this.onSoundButtonClick_.bind(this), volumeControls);
+  this.soundButton_ = this.createButton('sound media-control',
+      this.onSoundButtonClick_.bind(this), volumeControls);
+  this.soundButton_.setAttribute('level', 3);  // max level.
 
-  this.volume_ = new MediaControls.Slider(
-      this.createControl('volume', volumeControls),
+  this.volume_ = new MediaControls.AnimatedSlider(
+      this.createControl('volume media-control', volumeControls),
       1, /* value */
       100 /* range */,
       this.onVolumeChange_.bind(this),
@@ -204,7 +228,6 @@ MediaControls.getVolumeLevel_ = function(value) {
 
 MediaControls.prototype.onVolumeChange_ = function(value) {
   this.media_.volume = value;
-  this.volume_.setFilled(value);
   this.soundButton_.setAttribute('level', MediaControls.getVolumeLevel_(value));
 };
 
@@ -233,14 +256,13 @@ MediaControls.prototype.attachMedia = function(mediaElement) {
   this.media_.addEventListener('error', this.onMediaError_);
 
   // Reset the UI.
-  this.playButton_.classList.remove('playing');
+  this.enableControls_('.media-control', false);
+  this.playButton_.setAttribute('state', 0);
   this.displayProgress_(0, 1);
   if (this.volume_) {
-    /* Copy the volume from the UI to the media element. */
-    this.onVolumeChange_(this.volume_.getValue());
+    /* Copy the user selected volume to the new media element. */
+    this.media_.volume = this.volume_.getValue();
   }
-
-  this.container_.classList.add('disabled');
 };
 
 /**
@@ -263,17 +285,14 @@ MediaControls.prototype.onMediaPlay_ = function(playing) {
   if (this.progressSlider_.isDragging())
     return;
 
-  if (playing)
-    this.playButton_.classList.add('playing');
-  else
-    this.playButton_.classList.remove('playing');
+  this.playButton_.setAttribute('state', playing ? '1' : '0');
 };
 
 MediaControls.prototype.onMediaDuration_ = function() {
   if (!this.media_.duration)
     return;
 
-  this.container_.classList.remove('disabled');
+  this.enableControls_('.media-control', true);
 
   var sliderContainer = this.progressSlider_.getContainer();
   if (this.media_.seekable)
@@ -298,10 +317,8 @@ MediaControls.prototype.onMediaProgress_ = function(e) {
   var current = this.media_.currentTime;
   var duration = this.media_.duration;
 
-  if (this.progressSlider_.isDragging()) {
-    this.progressSlider_.setFilled(current / duration);
+  if (this.progressSlider_.isDragging())
     return;
-  }
 
   this.displayProgress_(current, duration);
 
@@ -361,6 +378,9 @@ MediaControls.Slider = function(container, value, range, onChange, onDrag) {
   var rightCap =  document.createElement('div');
   rightCap.className = 'cap right';
   this.bar_.appendChild(rightCap);
+
+  this.value_ = value;
+  this.setFilled_(value);
 };
 
 /**
@@ -388,14 +408,15 @@ MediaControls.Slider.prototype.getBar = function() {
  * @return {number} [0..1] The current value.
  */
 MediaControls.Slider.prototype.getValue = function() {
-  return this.input_.value / this.input_.max;
+  return this.value_;
 };
 
 /**
  * @param {number} value [0..1]
  */
 MediaControls.Slider.prototype.setValue = function(value) {
-  this.input_.value = value * this.input_.max;
+  this.value_ = value;
+  this.setValueToUI_(value);
 };
 
 /**
@@ -403,8 +424,27 @@ MediaControls.Slider.prototype.setValue = function(value) {
  *
  * @param {number} proportion [0..1]
  */
-MediaControls.Slider.prototype.setFilled = function(proportion) {
+MediaControls.Slider.prototype.setFilled_ = function(proportion) {
   this.filled_.style.width = proportion * 100 + '%';
+};
+
+/**
+ * Get the value from the input element.
+ *
+ * @param {number} proportion [0..1]
+ */
+MediaControls.Slider.prototype.getValueFromUI_ = function() {
+  return this.input_.value / this.input_.max;
+};
+
+/**
+ * Update the UI with the current value.
+ *
+ * @param {number} value [0..1]
+ */
+MediaControls.Slider.prototype.setValueToUI_ = function(value) {
+  this.input_.value = value * this.input_.max;
+  this.setFilled_(value);
 };
 
 /**
@@ -419,7 +459,9 @@ MediaControls.Slider.prototype.getProportion = function(position) {
 };
 
 MediaControls.Slider.prototype.onInputChange_ = function() {
-  this.onChange_(this.getValue());
+  this.value_ = this.getValueFromUI_();
+  this.setFilled_(this.value_);
+  this.onChange_(this.value_);
 };
 
 MediaControls.Slider.prototype.isDragging = function() {
@@ -429,6 +471,45 @@ MediaControls.Slider.prototype.isDragging = function() {
 MediaControls.Slider.prototype.onInputDrag_ = function(on, event) {
   this.isDragging_ = on;
   this.onDrag_(on);
+};
+
+/**
+ * Create a customized slider with animated thumb movement.
+ *
+ * @param {HTMLElement} container The containing div element.
+ * @param {number} value Initial value [0..1].
+ * @param {number} range Number of distinct slider positions to be supported.
+ * @param {function(number)} onChange
+ * @param {function(boolean)} onDrag
+ */
+MediaControls.AnimatedSlider = function(
+    container, value, range, onChange, onDrag, formatFunction) {
+  MediaControls.Slider.apply(this, arguments);
+};
+
+MediaControls.AnimatedSlider.prototype = {
+  __proto__: MediaControls.Slider.prototype
+};
+
+MediaControls.AnimatedSlider.STEPS = 10;
+MediaControls.AnimatedSlider.DURATION = 100;
+
+MediaControls.AnimatedSlider.prototype.setValueToUI_ = function(value) {
+  if (this.animationInterval_) {
+    clearInterval(this.animationInterval_);
+  }
+  var oldValue = this.getValueFromUI_();
+  var step = 0;
+  this.animationInterval_ = setInterval(function() {
+      step++;
+      var currentValue = oldValue +
+          (value - oldValue) * (step / MediaControls.AnimatedSlider.STEPS);
+      MediaControls.Slider.prototype.setValueToUI_.call(this, currentValue);
+      if (step == MediaControls.AnimatedSlider.STEPS) {
+        clearInterval(this.animationInterval_);
+      }
+    }.bind(this),
+    MediaControls.AnimatedSlider.DURATION / MediaControls.AnimatedSlider.STEPS);
 };
 
 /**
@@ -482,7 +563,7 @@ MediaControls.PreciseSlider.prototype.setValueToStringFunction =
 
   /* It is not completely accurate to assume that the max value corresponds
    to the longest string, but generous CSS padding will compensate for that. */
-  var labelWidth = this.valueToString_(1).length / 2;
+  var labelWidth = this.valueToString_(1).length / 2 + 1;
   this.seekLabel_.style.width = labelWidth + 'em';
   this.seekLabel_.style.marginLeft = -labelWidth/2 + 'em';
 };
@@ -620,6 +701,9 @@ VideoControls.prototype.onMediaComplete = function() {
 };
 
 VideoControls.prototype.togglePlayStateWithFeedback = function(e) {
+  if (!this.getMedia().duration)
+    return;
+
   this.togglePlayState();
 
   var self = this;
@@ -671,12 +755,25 @@ function AudioControls(container, advanceTrack) {
   this.initPlayButton();
   this.initTimeControls(false /* no seek mark */);
   /* No volume controls */
-  this.createButton('previous', this.advanceTrack_.bind(null, false));
-  this.createButton('next', this.advanceTrack_.bind(null, true));
+  this.createButton('previous', this.onAdvanceClick_.bind(this, false));
+  this.createButton('next', this.onAdvanceClick_.bind(this, true));
 }
 
 AudioControls.prototype = { __proto__: MediaControls.prototype };
 
 AudioControls.prototype.onMediaComplete = function() {
   this.advanceTrack_(true);
+};
+
+AudioControls.TRACK_RESTART_THRESHOLD = 5;  // seconds.
+
+AudioControls.prototype.onAdvanceClick_ = function(forward) {
+  if (!forward &&
+      (this.getMedia().currentTime > AudioControls.TRACK_RESTART_THRESHOLD)) {
+    // We are far enough from the beginning of the current track.
+    // Restart it instead of than skipping to the previous one.
+    this.getMedia().currentTime = 0;
+  } else {
+    this.advanceTrack_(forward);
+  }
 };

@@ -21,6 +21,8 @@ body {
 
   font-family: Open Sans,Droid Sans Fallback,sans-serif;
   font-size: 10pt;
+
+  cursor: default;
 }
 
 /* Title buttons.
@@ -158,8 +160,8 @@ body {
 }
 
 .track .art.blank {
-  border: 1px solid #808080;
-  background-color: #1d1d1d;
+  border: 1px solid #333;
+  background-color: #111;
 }
 
 .track .art img {
@@ -215,7 +217,7 @@ body {
   right: 0;
   bottom: 0;
   height: 30px;
-  padding: 0 5px 4px 10px;
+  padding: 0 0 4px 13px;
 
   background-color: #2D2D2D;
 
@@ -225,17 +227,80 @@ body {
   -webkit-box-pack: center;
 }
 
+.audio-controls .media-button {
+  width: 29px;
+  height: 29px;
+  margin-top: 1px;
+}
+
+.audio-controls .media-button.play {
+  margin-left: -10px;
+  margin-right: -8px;
+}
+
+.audio-controls .media-button.play > .state0.normal{
+  background-image: url(../images/media/media_play_audio.png);
+}
+
+.audio-controls .media-button.play > .state0.hover {
+  background-image: url(../images/media/media_play_audio_hover.png);
+}
+
+.audio-controls .media-button.play > .state0.active {
+  background-image: url(../images/media/media_play_audio_down.png);
+}
+
+.audio-controls .media-button.play > .state1.normal {
+  background-image: url(../images/media/media_pause_audio.png);
+}
+
+.audio-controls .media-button.play > .state1.hover {
+  background-image: url(../images/media/media_pause_audio_hover.png);
+}
+
+.audio-controls .media-button.play > .state1.active {
+  background-image: url(../images/media/media_pause_audio_down.png);
+}
+
 .audio-controls .time-controls {
-  margin-left: 12px;
-  margin-right: 10px;
+  margin-left: 10px;
+  margin-right: 9px;
+}
+
+.audio-controls .time-controls .time {
+  margin-left: 11px;
 }
 
 .media-button.previous {
+  margin-left: -2px;
+}
+
+.media-button.previous > .normal {
   background-image: url(../images/media/media_previous.png);
 }
 
+.media-button.previous > .hover {
+  background-image: url(../images/media/media_previous_hover.png);
+}
+
+.media-button.previous > .active {
+  background-image: url(../images/media/media_previous_down.png);
+}
+
 .media-button.next {
+  margin-right: -2px;
+}
+
+.media-button.next > .normal {
   background-image: url(../images/media/media_next.png);
+}
+
+.media-button.next > .hover {
+  background-image: url(../images/media/media_next_hover.png);
+}
+
+.media-button.next > .active {
+  background-image: url(../images/media/media_next_down.png);
 }
 
 .single-track .media-button.next,

@@ -5,11 +5,30 @@
  */
 
 .media-button {
-  cursor: pointer;
+  position: relative;
   width: 28px;
   height: 28px;
   background-repeat: no-repeat;
   background-position: center center;
+}
+
+.media-button > div {
+  position: absolute;
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+  -webkit-transition: opacity 100ms linear;
+  opacity: 0;
+}
+
+.media-button[state='0']:not(.disabled):not(:hover):not(:active) > .state0.normal,
+.media-button[state='0']:not(.disabled):hover > .state0.hover,
+.media-button[state='0']:not(.disabled):active > .state0.active,
+.media-button[state='1']:not(.disabled):not(:hover):not(:active) > .state1.normal,
+.media-button[state='1']:not(.disabled):hover > .state1.hover,
+.media-button[state='1']:not(.disabled):active > .state1.active,
+.media-button.disabled > .disabled {
+  opacity: 1;
 }
 
 /* Custom sliders for progress and volume. */
@@ -42,65 +61,76 @@
      left and right must be equal to 1/2 of the thumb icon width. */
   top: 11px;
   bottom: 11px;
-  border-top: 1px solid white;
-  border-bottom: 1px solid white;
+  border-width: 1px;
+  border-top-style: solid;
+  border-bottom-style: solid;
   pointer-events: none;  /* Mouse events pass through to the standard input. */
 }
 
-.disabled .custom-slider > .bar {
-  border-color: gray;
+.custom-slider > .bar > .filled,
+.custom-slider > .bar > .cap {
+  position: absolute;
+  top: -1px;
+  bottom: -1px;
+  border-width: 1px;
+  border-style: solid;
 }
 
 /* The filled portion of the slider bar to the left of the thumb. */
 .custom-slider > .bar > .filled {
-  position: absolute;
   width: 0; /* The element style.width is manipulated from the code. */
   left: 0;
-  top: 0;
-  bottom: 0;
-  background-color: white;
-}
-
-.disabled .custom-slider > .bar > .filled {
-  background-color: transparent;
+  border-left-style: none;
+  border-right-style: none;
 }
 
 /* Rounded caps to the left and right of the slider bar. */
 .custom-slider > .bar > .cap {
-  position: absolute;
   width: 4px;
-  top: -1px;
-  bottom: -1px;
 }
 
 /* Left cap is always filled, should be the same color as .filled. */
 .custom-slider > .bar > .cap.left {
   right: 100%;
+  border-right-style: none;
   border-top-left-radius: 4px;
   border-bottom-left-radius: 4px;
-  background: white;
-}
-
-.disabled .custom-slider > .bar > .cap.left {
-  border: 1px solid gray;
-  border-right-style: none;
-  background: transparent;
 }
 
 /* Right cap is always not filled. */
 .custom-slider > .bar > .cap.right {
   left: 100%;
-  border: 1px solid white;
   border-left-style: none;
   border-top-right-radius: 4px;
   border-bottom-right-radius: 4px;
-  background: transparent;
 }
 
-.disabled .custom-slider > .bar > .cap.right {
-  border-color: gray;
+.custom-slider > .bar,
+.custom-slider > .bar > .cap.right {
+  background-color: rgba(0, 0, 0, 0.5);
+  border-color: #808080;
 }
 
+.custom-slider > .bar > .filled,
+.custom-slider > .bar > .cap.left {
+  background-image: -webkit-linear-gradient(#c3c3c3, #d9d9d9);
+  border-color: #d9d9d9;
+}
+
+.custom-slider.disabled  > .bar > .filled,
+.custom-slider.disabled  > .bar > .cap.left {
+  background-image: none;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.custom-slider.disabled  > .bar,
+.custom-slider.disabled  > .bar > .filled,
+.custom-slider.disabled  > .bar > .cap {
+  border-color: #404040;
+}
+
+.media-button.disabled,
+.custom-slider.disabled,
 .custom-slider.readonly {
   pointer-events: none;
 }
@@ -122,7 +152,7 @@
 }
 
 .custom-slider > .bar > .seek-mark.inverted {
-  background-color: white;
+  background-color: #808080;
 }
 
 /* Text label giving the precise time corresponding to the hover position. */
@@ -131,17 +161,15 @@
   left: 0;
   bottom: 20px;
 
-  padding-left: 0.1em;
-  padding-right: 0.1em;
+  font-size: 13px;
 
   height: 0;
   -webkit-transition: height 0.15s ease;
 
   color: white;
   background: #202020;
-  border-top-left-radius: 5px;
-  border-top-right-radius: 5px;
-
+  border-top-left-radius: 2px;
+  border-top-right-radius: 2px;
   display: -webkit-box;
   -webkit-box-orient: horizontal;
   -webkit-box-align: center;
@@ -151,7 +179,7 @@
 }
 
 .custom-slider > .bar > .seek-mark.visible > .seek-label {
-  height: 18px;
+  height: 15px;
 }
 
 /* Media controls in order of appearance. */
@@ -161,35 +189,34 @@
 .media-button.play {
   margin-left: -7px;
   margin-right: -7px;
+}
+
+.media-button.play > .state0.normal {
   background-image: url(../../images/media/media_play.png);
 }
 
-.media-button.play:hover {
+.media-button.play > .state0.hover {
   background-image: url(../../images/media/media_play_hover.png);
 }
 
-.media-button.play:active {
+.media-button.play > .state0.active {
   background-image: url(../../images/media/media_play_down.png);
 }
 
-.disabled .play {
-  background-image: url(../../images/media/media_play_disabled.png);
-}
-
-.media-button.play.playing {
+.media-button.play > .state1.normal{
   background-image: url(../../images/media/media_pause.png);
 }
 
-.media-button.play.playing:hover {
+.media-button.play > .state1.hover {
   background-image: url(../../images/media/media_pause_hover.png);
 }
 
-.media-button.play.playing:active {
+.media-button.play > .state1.active {
   background-image: url(../../images/media/media_pause_down.png);
 }
 
-.disabled .media-button.play.playing {
-  background-image: url(../../images/media/media_pause_disabled.png);
+.media-button.play > .disabled {
+  background-image: url(../../images/media/media_play_disabled.png);
 }
 
 /* Time controls: a slider and a text time display. */
@@ -225,8 +252,8 @@
   background-image: url(../../images/media/media_slider_thumb_down.png);
 }
 
-.disabled .custom-slider.progress > input[type='range']::-webkit-slider-thumb {
-  background-image: url(../../images/media/media_slider_thumb_disabled.png);
+.custom-slider.progress.disabled > input[type='range']::-webkit-slider-thumb {
+  background-image: none;
 }
 
 .custom-slider.progress > .bar {
@@ -240,6 +267,10 @@
   position: relative;
   height: 100%;
   margin-left: 15px;
+}
+
+.time-controls > .time.disabled {
+  opacity: 0;
 }
 
 /* Invisible div used to compute the width required for the elapsed time. */
@@ -257,10 +288,6 @@
   -webkit-box-align: center;
   -webkit-box-pack: end;
   color: white;
-}
-
-.disabled .time-controls > .time > .current {
-  color: transparent;
 }
 
 /* Volume controls: sound button and volume slider */
@@ -281,71 +308,59 @@
   background-position: -2px center;
 }
 
-
-.media-button.sound[level='0'] {
+.media-button.sound[level='0'] > .normal {
   background-image: url(../../images/media/media_sound_disabled.png);
 }
 
-.media-button.sound[level='0']:hover {
+.media-button.sound[level='0'] > .hover {
   background-image: url(../../images/media/media_sound_disabled_hover.png);
 }
 
-.media-button.sound[level='0']:active {
+.media-button.sound[level='0'] > .active {
   background-image: url(../../images/media/media_sound_disabled_down.png);
 }
 
-.disabled .media-button.sound[level='0'] {
-  background-image: url(../../images/media/media_sound_disabled_disabled.png);
-}
 
-
-.media-button.sound[level='1'] {
+.media-button.sound[level='1'] > .normal {
   background-image: url(../../images/media/media_sound_level1.png);
 }
 
-.media-button.sound[level='1']:hover {
+.media-button.sound[level='1'] > .hover {
   background-image: url(../../images/media/media_sound_level1_hover.png);
 }
 
-.media-button.sound[level='1']:active {
+.media-button.sound[level='1'] > .active {
   background-image: url(../../images/media/media_sound_level1_down.png);
 }
 
-.disabled .media-button.sound[level='1'] {
-  background-image: url(../../images/media/media_sound_level1_disabled.png);
-}
 
-
-.media-button.sound[level='2'] {
+.media-button.sound[level='2'] > .normal {
   background-image: url(../../images/media/media_sound_level2.png);
 }
 
-.media-button.sound[level='2']:hover {
+.media-button.sound[level='2'] > .hover {
   background-image: url(../../images/media/media_sound_level2_hover.png);
 }
 
-.media-button.sound[level='2']:active {
+.media-button.sound[level='2'] > .active {
   background-image: url(../../images/media/media_sound_level2_down.png);
 }
 
-.disabled .media-button.sound[level='2'] {
-  background-image: url(../../images/media/media_sound_level2_disabled.png);
-}
 
-
-.media-button.sound[level='3'] {
+.media-button.sound[level='3'] > .normal {
   background-image: url(../../images/media/media_sound_full.png);
 }
 
-.media-button.sound[level='3']:hover {
+.media-button.sound[level='3'] > .hover {
   background-image: url(../../images/media/media_sound_full_hover.png);
 }
 
-.media-button.sound[level='3']:active {
+.media-button.sound[level='3'] > .active {
   background-image: url(../../images/media/media_sound_full_down.png);
 }
 
-.disabled .media-button.sound[level='3'] {
+
+.media-button.sound > .disabled {
   background-image: url(../../images/media/media_sound_full_disabled.png);
 }
 
@@ -372,8 +387,8 @@
   background-image: url(../../images/media/media_volume_slider_thumb_down.png);
 }
 
-.disabled .custom-slider.volume > input[type='range']::-webkit-slider-thumb {
-  background-image: url(../../images/media/media_volume_slider_thumb_disabled.png);
+.custom-slider.volume.disabled > input[type='range']::-webkit-slider-thumb {
+  background-image: none;
 }
 
 .custom-slider.volume > .bar {
@@ -386,7 +401,7 @@
 .video-controls {
   pointer-events: auto;
 
-  font-size: 12pt;
+  font-size: 15px;
   height: 30px;
   border-radius: 5px;
 
@@ -403,10 +418,6 @@
   -webkit-box-pack: center;
 }
 
-.video-controls.disabled {
-  pointer-events: none;
-}
-
 .video-controls .time-controls,
 .video-controls .volume-controls {
   margin-left: 15px;
@@ -418,18 +429,21 @@
 .media-button.fullscreen {
   margin-left: 9px;  /* 15px visible margin - 6px whitespace in the icon. */
   margin-right: -6px;
+}
+
+.media-button.fullscreen > .normal {
   background-image: url(../../images/media/media_fullscreen.png);
 }
 
-.media-button.fullscreen:hover {
+.media-button.fullscreen > .hover {
   background-image: url(../../images/media/media_fullscreen_hover.png);
 }
 
-.media-button.fullscreen:active {
+.media-button.fullscreen > .active {
   background-image: url(../../images/media/media_fullscreen_down.png);
 }
 
-.disabled .media-button.fullscreen {
+.media-button.fullscreen > .disabled {
   background-image: url(../../images/media/media_fullscreen_disabled.png);
 }
 
@@ -441,7 +455,7 @@
   height: 32px;
   margin-left: -16px;
   margin-top: -16px;
-  border-radius: 5px;
+  border-radius: 2.5px;
   pointer-events: none;
   display: none;
 
