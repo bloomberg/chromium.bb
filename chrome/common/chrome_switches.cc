@@ -894,6 +894,15 @@ const char kPackExtensionKey[]              = "pack-extension-key";
 // Specifies the path to the user data folder for the parent profile.
 const char kParentProfile[]                 = "parent-profile";
 
+// Controls the PPAPI Flash field trial. Valid values are defined below. If an
+// unknown value is supplied on the command line, the switch is ignored.
+// TODO(yzshen): Remove this flag when the field trial is over.
+const char kPpapiFlashFieldTrial[] = "ppapi-flash-field-trial";
+// Forces to disable PPAPI Flash when a new PPAPI Flash is downloaded.
+const char kPpapiFlashFieldTrialDisableByDefault[] = "disable-by-default";
+// Forces to enable PPAPI Flash when a new PPAPI Flash is downloaded.
+const char kPpapiFlashFieldTrialEnableByDefault[] = "enable-by-default";
+
 // Forces the PPAPI version of Flash (if it's being used) to run in the
 // renderer process rather than in a separate plugin process.
 const char kPpapiFlashInProcess[]          = "ppapi-flash-in-process";

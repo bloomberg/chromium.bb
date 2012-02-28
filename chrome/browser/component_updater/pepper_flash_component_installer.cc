@@ -20,6 +20,7 @@
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
+#include "chrome/browser/component_updater/pepper_flash_field_trial.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -73,12 +74,23 @@ const FilePath::CharType kPepperFlashBaseDirectory[] =
 const char kNullVersion[] = "0.0.0.0";
 
 // True if Pepper Flash should be enabled by default. Aura builds for any OS
-// and Windows canary have it enabled by default.
+// and part of Windows canary have it enabled by default.
 bool IsPepperFlashEnabledByDefault() {
 #if defined(USE_AURA)
   return true;
-#else
+#elif !defined(OS_WIN)
   return false;
+#else
+  if (!PepperFlashFieldTrial::InEnableByDefaultGroup())
+    return false;
+
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  if (!dist)
+    return false;
+  string16 channel;
+  if (!dist->GetChromeChannel(&channel))
+    return false;
+  return (channel == L"canary");
 #endif
 }
 
@@ -166,8 +178,10 @@ void RegisterPepperFlashWithChrome(const FilePath& path,
   content::PepperPluginInfo plugin_info;
   if (!MakePepperFlashPluginInfo(path, version, true, &plugin_info))
     return;
-  PluginPrefs::EnablePluginGlobally(IsPepperFlashEnabledByDefault(),
-                                    plugin_info.path);
+  if (fresh_install) {
+    PluginPrefs::EnablePluginGlobally(IsPepperFlashEnabledByDefault(),
+                                      plugin_info.path);
+  }
   PluginService::GetInstance()->RegisterInternalPlugin(
       plugin_info.ToWebPluginInfo(), false);
   PluginService::GetInstance()->RefreshPlugins();
