@@ -40,7 +40,7 @@ class BluetoothManagerClient {
 
     // Called when the manager has a change in value of the property
     // named |property_name|.
-    virtual void PropertyChanged(const std::string& property_name) {}
+    virtual void ManagerPropertyChanged(const std::string& property_name) {}
 
     // Called when a local bluetooth adapter is added.
     // |object_path| is the dbus object path of the adapter.

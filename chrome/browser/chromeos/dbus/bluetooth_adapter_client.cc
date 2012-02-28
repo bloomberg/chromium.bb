@@ -400,7 +400,7 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
   void OnPropertyChanged(const dbus::ObjectPath& object_path,
                          const std::string& property_name) {
     FOR_EACH_OBSERVER(BluetoothAdapterClient::Observer, observers_,
-                      PropertyChanged(object_path, property_name));
+                      AdapterPropertyChanged(object_path, property_name));
   }
 
   // Called by dbus:: when a DeviceCreated signal is received.

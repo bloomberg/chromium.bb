@@ -47,8 +47,8 @@ class BluetoothNodeClient {
 
     // Called when the node binding with object path |object_path| has a
     // change in value of the property named |property_name|.
-    virtual void PropertyChanged(const dbus::ObjectPath& object_path,
-                                 const std::string& property_name) {}
+    virtual void NodePropertyChanged(const dbus::ObjectPath& object_path,
+                                     const std::string& property_name) {}
   };
 
   virtual ~BluetoothNodeClient();

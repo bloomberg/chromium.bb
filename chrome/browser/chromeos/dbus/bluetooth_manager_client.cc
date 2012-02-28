@@ -136,7 +136,7 @@ class BluetoothManagerClientImpl : public BluetoothManagerClient {
   // call. Informs observers.
   void OnPropertyChanged(const std::string& property_name) {
     FOR_EACH_OBSERVER(BluetoothManagerClient::Observer, observers_,
-                      PropertyChanged(property_name));
+                      ManagerPropertyChanged(property_name));
   }
 
   // Called by dbus:: when an AdapterAdded signal is received.

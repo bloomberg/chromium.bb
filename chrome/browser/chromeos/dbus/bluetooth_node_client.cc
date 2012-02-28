@@ -148,7 +148,7 @@ class BluetoothNodeClientImpl: public BluetoothNodeClient,
   void OnPropertyChanged(const dbus::ObjectPath& object_path,
                          const std::string& property_name) {
     FOR_EACH_OBSERVER(BluetoothNodeClient::Observer, observers_,
-                      PropertyChanged(object_path, property_name));
+                      NodePropertyChanged(object_path, property_name));
   }
 
   // Weak pointer factory for generating 'this' pointers that might live longer

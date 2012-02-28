@@ -179,7 +179,7 @@ class BluetoothInputClientImpl: public BluetoothInputClient,
   void OnPropertyChanged(const dbus::ObjectPath& object_path,
                          const std::string& property_name) {
     FOR_EACH_OBSERVER(BluetoothInputClient::Observer, observers_,
-                      PropertyChanged(object_path, property_name));
+                      InputPropertyChanged(object_path, property_name));
   }
 
   // Called when a response for Connect() is received.

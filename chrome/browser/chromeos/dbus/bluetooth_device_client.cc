@@ -279,7 +279,7 @@ class BluetoothDeviceClientImpl: public BluetoothDeviceClient,
   void OnPropertyChanged(const dbus::ObjectPath& object_path,
                          const std::string& property_name) {
     FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
-                      PropertyChanged(object_path, property_name));
+                      DevicePropertyChanged(object_path, property_name));
   }
 
   // Called by dbus:: when a DisconnectRequested signal is received.

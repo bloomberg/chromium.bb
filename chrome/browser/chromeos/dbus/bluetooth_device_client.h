@@ -101,8 +101,8 @@ class BluetoothDeviceClient {
 
     // Called when the device with object path |object_path| has a
     // change in value of the property named |property_name|.
-    virtual void PropertyChanged(const dbus::ObjectPath& object_path,
-                                 const std::string& property_name) {}
+    virtual void DevicePropertyChanged(const dbus::ObjectPath& object_path,
+                                       const std::string& property_name) {}
 
     // Called when the device with object path |object_path| is about
     // to be disconnected, giving a chance for application layers to

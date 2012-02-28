@@ -73,8 +73,9 @@ class BluetoothAdapterImpl : public BluetoothAdapter,
   }
 
   // BluetoothAdapterClient::Observer override.
-  virtual void PropertyChanged(const dbus::ObjectPath& object_path,
-                               const std::string& property_name) OVERRIDE {
+  virtual void AdapterPropertyChanged(const dbus::ObjectPath& object_path,
+                                      const std::string& property_name)
+      OVERRIDE {
     if (object_path.value() != id_)
       return;
 

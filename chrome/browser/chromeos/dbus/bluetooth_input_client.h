@@ -45,8 +45,8 @@ class BluetoothInputClient {
 
     // Called when the device with object path |object_path| has a
     // change in value of the input property named |property_name|.
-    virtual void PropertyChanged(const dbus::ObjectPath& object_path,
-                                 const std::string& property_name) {}
+    virtual void InputPropertyChanged(const dbus::ObjectPath& object_path,
+                                      const std::string& property_name) {}
   };
 
   virtual ~BluetoothInputClient();
