@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('ntp4', function() {
+cr.define('ntp', function() {
   'use strict';
 
-  var TilePage = ntp4.TilePage;
+  var TilePage = ntp.TilePage;
 
   /**
    * A counter for generating unique tile IDs.
@@ -137,7 +137,7 @@ cr.define('ntp4', function() {
         // recorded. Can this be fixed?
         chrome.send('recordAppLaunchByURL',
                     [encodeURIComponent(this.href),
-                     ntp4.APP_LAUNCH.NTP_MOST_VISITED]);
+                     ntp.APP_LAUNCH.NTP_MOST_VISITED]);
         // Records the index of this tile.
         chrome.send('metricsHandler:recordInHistogram',
                     ['NewTabPage.MostVisited', this.index, 8]);
@@ -185,7 +185,7 @@ cr.define('ntp4', function() {
         text: templateData.restoreThumbnailsShort,
       };
 
-      ntp4.showNotification(templateData.thumbnailremovednotification,
+      ntp.showNotification(templateData.thumbnailremovednotification,
                             [undo, undoAll]);
     },
 

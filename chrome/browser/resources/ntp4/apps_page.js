@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('ntp4', function() {
+cr.define('ntp', function() {
   'use strict';
 
   var localStrings = new LocalStrings;
@@ -607,7 +607,7 @@ cr.define('ntp4', function() {
     },
   };
 
-  var TilePage = ntp4.TilePage;
+  var TilePage = ntp.TilePage;
 
   // The fraction of the app tile size that the icon uses.
   var APP_IMG_SIZE_FRACTION = 4 / 5;
@@ -680,7 +680,7 @@ cr.define('ntp4', function() {
       if (animate) {
         // Select the page and scroll all the way down so the animation is
         // visible.
-        ntp4.getCardSlider().selectCardByValue(this);
+        ntp.getCardSlider().selectCardByValue(this);
         this.content_.scrollTop = this.content_.scrollHeight;
       }
       this.appendTile(new App(appData), animate);
@@ -779,7 +779,7 @@ cr.define('ntp4', function() {
 
     /** @inheritDoc */
     doDragOver: function(e) {
-      var tile = ntp4.getCurrentlyDraggingTile();
+      var tile = ntp.getCurrentlyDraggingTile();
       if (tile && !tile.querySelector('.app')) {
         e.preventDefault();
         this.setDropEffect(e.dataTransfer);
@@ -790,14 +790,14 @@ cr.define('ntp4', function() {
 
     /** @inheritDoc */
     shouldAcceptDrag: function(e) {
-      return !!ntp4.getCurrentlyDraggingTile() ||
+      return !!ntp.getCurrentlyDraggingTile() ||
           (e.dataTransfer && e.dataTransfer.types.contains('text/uri-list'));
     },
 
     /** @inheritDoc */
     addDragData: function(dataTransfer, index) {
       var sourceId = -1;
-      var currentlyDraggingTile = ntp4.getCurrentlyDraggingTile();
+      var currentlyDraggingTile = ntp.getCurrentlyDraggingTile();
       if (currentlyDraggingTile) {
         var tileContents = currentlyDraggingTile.firstChild;
         if (tileContents.classList.contains('app')) {
@@ -867,7 +867,7 @@ cr.define('ntp4', function() {
     generateAppForLink: function(data) {
       assert(data.url != undefined);
       assert(data.title != undefined);
-      var pageIndex = ntp4.getAppsPageIndex(this);
+      var pageIndex = ntp.getAppsPageIndex(this);
       chrome.send('generateAppForLink', [data.url, data.title, pageIndex]);
     },
 
@@ -876,7 +876,7 @@ cr.define('ntp4', function() {
       if (!(draggedTile.firstChild instanceof App))
         return;
 
-      var pageIndex = ntp4.getAppsPageIndex(this);
+      var pageIndex = ntp.getAppsPageIndex(this);
       chrome.send('setPageIndex', [draggedTile.firstChild.appId, pageIndex]);
 
       var appIds = [];
@@ -891,11 +891,11 @@ cr.define('ntp4', function() {
 
     /** @inheritDoc */
     setDropEffect: function(dataTransfer) {
-      var tile = ntp4.getCurrentlyDraggingTile();
+      var tile = ntp.getCurrentlyDraggingTile();
       if (tile && tile.querySelector('.app'))
-        ntp4.setCurrentDropEffect(dataTransfer, 'move');
+        ntp.setCurrentDropEffect(dataTransfer, 'move');
       else
-        ntp4.setCurrentDropEffect(dataTransfer, 'copy');
+        ntp.setCurrentDropEffect(dataTransfer, 'copy');
     },
 
     /**
@@ -963,8 +963,3 @@ cr.define('ntp4', function() {
     launchAppAfterEnable: launchAppAfterEnable,
   };
 });
-
-// TODO(estade): update the content handlers to use ntp namespace instead of
-// making these global.
-var appNotificationChanged = ntp4.appNotificationChanged;
-var launchAppAfterEnable = ntp4.launchAppAfterEnable;

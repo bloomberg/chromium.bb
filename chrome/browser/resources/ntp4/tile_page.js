@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('ntp4', function() {
+cr.define('ntp', function() {
   'use strict';
 
   // We can't pass the currently dragging tile via dataTransfer because of
@@ -14,9 +14,9 @@ cr.define('ntp4', function() {
   function setCurrentlyDraggingTile(tile) {
     currentlyDraggingTile = tile;
     if (tile)
-      ntp4.enterRearrangeMode();
+      ntp.enterRearrangeMode();
     else
-      ntp4.leaveRearrangeMode();
+      ntp.leaveRearrangeMode();
   }
 
   /**
@@ -472,7 +472,7 @@ cr.define('ntp4', function() {
 
     get selected() {
       return Array.prototype.indexOf.call(this.parentNode.children, this) ==
-          ntp4.getCardSlider().currentCard;
+          ntp.getCardSlider().currentCard;
     },
 
     /**

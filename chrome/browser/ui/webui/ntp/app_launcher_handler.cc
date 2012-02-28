@@ -250,10 +250,11 @@ void AppLauncherHandler::Observe(int type,
       if (notification) {
         scoped_ptr<DictionaryValue> notification_value(
             SerializeNotification(*notification));
-        web_ui()->CallJavascriptFunction("appNotificationChanged",
+        web_ui()->CallJavascriptFunction("ntp.appNotificationChanged",
             id_value, *notification_value.get());
       } else {
-        web_ui()->CallJavascriptFunction("appNotificationChanged", id_value);
+        web_ui()->CallJavascriptFunction("ntp.appNotificationChanged",
+                                         id_value);
       }
       break;
     }
@@ -272,7 +273,7 @@ void AppLauncherHandler::Observe(int type,
               attempted_bookmark_app_install_));
         attempted_bookmark_app_install_ = false;
         web_ui()->CallJavascriptFunction(
-            "ntp4.appAdded", *app_info, *highlight);
+            "ntp.appAdded", *app_info, *highlight);
       }
 
       break;
@@ -292,7 +293,7 @@ void AppLauncherHandler::Observe(int type,
         scoped_ptr<base::FundamentalValue> from_page(
             Value::CreateBooleanValue(!extension_id_prompting_.empty()));
         web_ui()->CallJavascriptFunction(
-            "ntp4.appRemoved", *app_info, *uninstall_value, *from_page);
+            "ntp.appRemoved", *app_info, *uninstall_value, *from_page);
       }
       break;
     }
@@ -307,7 +308,7 @@ void AppLauncherHandler::Observe(int type,
                       NULL,
                       extension_service_,
                       &app_info);
-        web_ui()->CallJavascriptFunction("ntp4.appMoved", app_info);
+        web_ui()->CallJavascriptFunction("ntp.appMoved", app_info);
       } else {
         HandleGetApps(NULL);
       }
@@ -322,7 +323,8 @@ void AppLauncherHandler::Observe(int type,
     case chrome::NOTIFICATION_PREF_CHANGED: {
       DictionaryValue dictionary;
       FillAppDictionary(&dictionary);
-      web_ui()->CallJavascriptFunction("appsPrefChangeCallback", dictionary);
+      web_ui()->CallJavascriptFunction("ntp.appsPrefChangeCallback",
+                                       dictionary);
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR: {
@@ -480,7 +482,7 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
 
   SetAppToBeHighlighted();
   FillAppDictionary(&dictionary);
-  web_ui()->CallJavascriptFunction("getAppsCallback", dictionary);
+  web_ui()->CallJavascriptFunction("ntp.getAppsCallback", dictionary);
 
   // First time we get here we set up the observer so that we can tell update
   // the apps as they change.
@@ -823,7 +825,7 @@ void AppLauncherHandler::SetAppToBeHighlighted() {
     return;
 
   StringValue app_id(highlight_app_id_);
-  web_ui()->CallJavascriptFunction("ntp4.setAppToBeHighlighted", app_id);
+  web_ui()->CallJavascriptFunction("ntp.setAppToBeHighlighted", app_id);
   highlight_app_id_.clear();
 }
 
@@ -908,7 +910,7 @@ void AppLauncherHandler::PromptToEnableApp(const std::string& extension_id) {
 
     // Launch app asynchronously so the image will update.
     StringValue app_id(extension_id);
-    web_ui()->CallJavascriptFunction("launchAppAfterEnable", app_id);
+    web_ui()->CallJavascriptFunction("ntp.launchAppAfterEnable", app_id);
     return;
   }
 
@@ -957,7 +959,7 @@ void AppLauncherHandler::InstallUIProceed() {
   // icon disappears but isn't replaced by the enabled icon, making a poor
   // visual experience.
   StringValue app_id(extension->id());
-  web_ui()->CallJavascriptFunction("launchAppAfterEnable", app_id);
+  web_ui()->CallJavascriptFunction("ntp.launchAppAfterEnable", app_id);
 
   extension_id_prompting_ = "";
 }

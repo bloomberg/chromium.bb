@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -101,7 +101,7 @@ void FaviconWebUIHandler::HandleGetFaviconDominantColor(const ListValue* args) {
       StringValue dom_id_value(dom_id);
       scoped_ptr<StringValue> color(
           SkColorToCss(history::kPrepopulatedPages[i].color));
-      web_ui()->CallJavascriptFunction("ntp4.setStripeColor",
+      web_ui()->CallJavascriptFunction("ntp.setStripeColor",
                                        dom_id_value, *color);
       return;
     }
@@ -131,7 +131,7 @@ void FaviconWebUIHandler::OnFaviconDataAvailable(
     color_value.reset(new StringValue("#919191"));
 
   StringValue dom_id(dom_id_map_[id]);
-  web_ui()->CallJavascriptFunction("ntp4.setStripeColor", dom_id, *color_value);
+  web_ui()->CallJavascriptFunction("ntp.setStripeColor", dom_id, *color_value);
   dom_id_map_.erase(id);
 }
 
@@ -160,5 +160,5 @@ void FaviconWebUIHandler::NotifyAppIconReady(const std::string& extension_id) {
   scoped_ptr<StringValue> color_value(GetDominantColorCssString(bits_mem));
   StringValue id(extension_id);
   web_ui()->CallJavascriptFunction(
-      "ntp4.setStripeColor", id, *color_value);
+      "ntp.setStripeColor", id, *color_value);
 }

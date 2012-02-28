@@ -203,7 +203,7 @@ void NewTabUI::Observe(int type,
       StringValue attached(
           GetProfile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) ?
               "true" : "false");
-      web_ui()->CallJavascriptFunction("ntp4.setBookmarkBarAttached", attached);
+      web_ui()->CallJavascriptFunction("ntp.setBookmarkBarAttached", attached);
       break;
     }
     case chrome::NOTIFICATION_BROWSER_THEME_CHANGED: {
@@ -211,7 +211,7 @@ void NewTabUI::Observe(int type,
       StringValue attribution(
           ThemeServiceFactory::GetForProfile(GetProfile())->HasCustomImage(
               IDR_THEME_NTP_ATTRIBUTION) ? "true" : "false");
-      web_ui()->CallJavascriptFunction("themeChanged", attribution);
+      web_ui()->CallJavascriptFunction("ntp.themeChanged", attribution);
       break;
     }
     case content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT: {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
  * @fileoverview The recently closed menu: button, model data, and menu.
  */
 
-cr.define('ntp4', function() {
+cr.define('ntp', function() {
   'use strict';
 
   var localStrings = new LocalStrings();
@@ -94,7 +94,7 @@ cr.define('ntp4', function() {
       function onClick(e) {
         chrome.send('recordAppLaunchByURL',
                     [encodeURIComponent(data.url),
-                     ntp4.APP_LAUNCH.NTP_RECENTLY_CLOSED]);
+                     ntp.APP_LAUNCH.NTP_RECENTLY_CLOSED]);
         var index = Array.prototype.indexOf.call(a.parentNode.children, a);
         chrome.send('reopenTab', [data.sessionId, index,
             e.button, e.altKey, e.ctrlKey, e.metaKey, e.shiftKey]);

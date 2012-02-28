@@ -135,7 +135,7 @@ void NewTabPageSyncHandler::HandleSyncLinkClicked(const ListValue* args) {
     value.SetString("syncEnabledMessage",
                     l10n_util::GetStringFUTF16(IDS_SYNC_NTP_SYNCED_TO,
                     user));
-    web_ui()->CallJavascriptFunction("syncAlreadyEnabled", value);
+    web_ui()->CallJavascriptFunction("ntp.syncAlreadyEnabled", value);
   } else {
     ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_NTP);
   }
@@ -188,5 +188,5 @@ void NewTabPageSyncHandler::SendSyncMessageToPage(
       }
     }
   }
-  web_ui()->CallJavascriptFunction("syncMessageChanged", value);
+  web_ui()->CallJavascriptFunction("ntp.syncMessageChanged", value);
 }

@@ -10,7 +10,7 @@
 
 // Use an anonymous function to enable strict mode just for this file (which
 // will be concatenated with other files when embedded in Chrome
-cr.define('ntp4', function() {
+cr.define('ntp', function() {
   'use strict';
 
   /**
@@ -77,11 +77,11 @@ cr.define('ntp4', function() {
   }
 
   NewTabView.prototype = {
-    __proto__: ntp4.PageListView.prototype,
+    __proto__: ntp.PageListView.prototype,
 
     /** @inheritDoc */
     appendTilePage: function(page, title, titleIsEditable, opt_refNode) {
-      ntp4.PageListView.prototype.appendTilePage.apply(this, arguments);
+      ntp.PageListView.prototype.appendTilePage.apply(this, arguments);
 
       if (infoBubble)
         window.setTimeout(infoBubble.reposition.bind(infoBubble), 0);
@@ -105,10 +105,10 @@ cr.define('ntp4', function() {
     notificationContainer.addEventListener(
         'webkitTransitionEnd', onNotificationTransitionEnd);
 
-    cr.ui.decorate($('recently-closed-menu-button'), ntp4.RecentMenuButton);
+    cr.ui.decorate($('recently-closed-menu-button'), ntp.RecentMenuButton);
     chrome.send('getRecentlyClosedTabs');
 
-    newTabView.appendTilePage(new ntp4.MostVisitedPage(),
+    newTabView.appendTilePage(new ntp.MostVisitedPage(),
                               localStrings.getString('mostvisited'),
                               false);
     chrome.send('getMostVisited');
@@ -202,7 +202,7 @@ cr.define('ntp4', function() {
   function onChromeWebStoreButtonClick(e) {
     chrome.send('recordAppLaunchByURL',
                 [encodeURIComponent(this.href),
-                 ntp4.APP_LAUNCH.NTP_WEBSTORE_FOOTER]);
+                 ntp.APP_LAUNCH.NTP_WEBSTORE_FOOTER]);
   }
 
   /*
@@ -556,14 +556,4 @@ cr.define('ntp4', function() {
   };
 });
 
-// publish ntp globals
-// TODO(estade): update the content handlers to use ntp namespace instead of
-// making these global.
-var getAppsCallback = ntp4.getAppsCallback;
-var appsPrefChangeCallback = ntp4.appsPrefChangeCallback;
-var themeChanged = ntp4.themeChanged;
-var recentlyClosedTabs = ntp4.setRecentlyClosedTabs;
-var setMostVisitedPages = ntp4.setMostVisitedPages;
-var updateLogin = ntp4.updateLogin;
-
-document.addEventListener('DOMContentLoaded', ntp4.onLoad);
+document.addEventListener('DOMContentLoaded', ntp.onLoad);

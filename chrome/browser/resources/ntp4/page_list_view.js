@@ -10,7 +10,7 @@
  * Note that you need to have AppLauncherHandler in your WebUI to use this code.
  */
 
-cr.define('ntp4', function() {
+cr.define('ntp', function() {
   'use strict';
 
   /**
@@ -130,19 +130,19 @@ cr.define('ntp4', function() {
       this.pageList = pageList;
 
       this.dotList = dotList;
-      cr.ui.decorate(this.dotList, ntp4.DotList);
+      cr.ui.decorate(this.dotList, ntp.DotList);
 
       this.trash = opt_trash;
       if (this.trash)
-        new ntp4.Trash(this.trash);
+        new ntp.Trash(this.trash);
 
       this.pageSwitcherStart = opt_pageSwitcherStart;
       if (this.pageSwitcherStart)
-        ntp4.initializePageSwitcher(this.pageSwitcherStart);
+        ntp.initializePageSwitcher(this.pageSwitcherStart);
 
       this.pageSwitcherEnd = opt_pageSwitcherEnd;
       if (this.pageSwitcherEnd)
-        ntp4.initializePageSwitcher(this.pageSwitcherEnd);
+        ntp.initializePageSwitcher(this.pageSwitcherEnd);
 
       this.shownPage = templateData.shown_page_type;
       this.shownPageIndex = templateData.shown_page_index;
@@ -205,18 +205,18 @@ cr.define('ntp4', function() {
       }
 
       // Remember special MostVisitedPage.
-      if (typeof ntp4.MostVisitedPage != 'undefined' &&
-          page instanceof ntp4.MostVisitedPage) {
+      if (typeof ntp.MostVisitedPage != 'undefined' &&
+          page instanceof ntp.MostVisitedPage) {
         assert(this.tilePages.length == 1,
                'MostVisitedPage should be added as first tile page');
         this.mostVisitedPage = page;
       }
 
       // If we're appending an AppsPage and it's a temporary page, animate it.
-      var animate = page instanceof ntp4.AppsPage &&
+      var animate = page instanceof ntp.AppsPage &&
                     page.classList.contains('temporary');
       // Make a deep copy of the dot template to add a new one.
-      var newDot = new ntp4.NavDot(page, title, titleIsEditable, animate);
+      var newDot = new ntp.NavDot(page, title, titleIsEditable, animate);
       page.navigationDot = newDot;
       this.dotList.insertBefore(newDot,
                                 opt_refNode ? opt_refNode.navigationDot : null);
@@ -329,7 +329,7 @@ cr.define('ntp4', function() {
             pageName = pageNames[this.appsPages.length];
 
           var origPageCount = this.appsPages.length;
-          this.appendTilePage(new ntp4.AppsPage(), pageName, true);
+          this.appendTilePage(new ntp.AppsPage(), pageName, true);
           // Confirm that appsPages is a live object, updated when a new page is
           // added (otherwise we'd have an infinite loop)
           assert(this.appsPages.length == origPageCount + 1,
@@ -342,7 +342,7 @@ cr.define('ntp4', function() {
           this.appsPages[pageIndex].appendApp(app, false);
       }
 
-      ntp4.AppsPage.setPromo(data.showPromo ? data : null);
+      ntp.AppsPage.setPromo(data.showPromo ? data : null);
 
       this.cardSlider.currentCard = prevCurrentCard;
 
@@ -377,7 +377,7 @@ cr.define('ntp4', function() {
 
       if (pageIndex >= this.appsPages.length) {
         while (pageIndex >= this.appsPages.length) {
-          this.appendTilePage(new ntp4.AppsPage(),
+          this.appendTilePage(new ntp.AppsPage(),
                               localStrings.getString('appDefaultPageName'),
                               true);
         }
@@ -437,12 +437,12 @@ cr.define('ntp4', function() {
      * of a moving or insert tile.
      */
     enterRearrangeMode: function() {
-      var tempPage = new ntp4.AppsPage();
+      var tempPage = new ntp.AppsPage();
       tempPage.classList.add('temporary');
       var pageName = localStrings.getString('appDefaultPageName');
       this.appendTilePage(tempPage, pageName, true);
 
-      if (ntp4.getCurrentlyDraggingTile().firstChild.canBeRemoved())
+      if (ntp.getCurrentlyDraggingTile().firstChild.canBeRemoved())
         $('footer').classList.add('showing-trash-mode');
 
       document.documentElement.classList.add('dragging-mode');

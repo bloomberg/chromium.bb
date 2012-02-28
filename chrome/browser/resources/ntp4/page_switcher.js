@@ -7,7 +7,7 @@
  * This is the class for the left and right navigation arrows that switch
  * between pages.
  */
-cr.define('ntp4', function() {
+cr.define('ntp', function() {
 
   function PageSwitcher() {
   }
@@ -31,7 +31,7 @@ cr.define('ntp4', function() {
      * @private
      */
     activate_: function() {
-      var cardSlider = ntp4.getCardSlider();
+      var cardSlider = ntp.getCardSlider();
       var index = cardSlider.currentCard + this.direction_;
       var numCards = cardSlider.cardCount - 1;
       cardSlider.selectCard(Math.max(0, Math.min(index, numCards)), true);
@@ -45,7 +45,7 @@ cr.define('ntp4', function() {
      * @private
      */
     onMouseWheel_: function(e) {
-      var page = ntp4.getCardSlider().currentCardValue;
+      var page = ntp.getCardSlider().currentCardValue;
       page.handleMouseWheel(e);
     },
 
@@ -65,7 +65,7 @@ cr.define('ntp4', function() {
 
     doDragOver: function(e) {
       e.preventDefault();
-      var targetPage = ntp4.getCardSlider().currentCardValue;
+      var targetPage = ntp.getCardSlider().currentCardValue;
       if (targetPage.shouldAcceptDrag(e))
         targetPage.setDropEffect(e.dataTransfer);
     },
@@ -74,12 +74,12 @@ cr.define('ntp4', function() {
       e.stopPropagation();
       this.cancelDelayedSwitch_();
 
-      var tile = ntp4.getCurrentlyDraggingTile();
+      var tile = ntp.getCurrentlyDraggingTile();
       if (!tile)
         return;
 
       var sourcePage = tile.tilePage;
-      var targetPage = ntp4.getCardSlider().currentCardValue;
+      var targetPage = ntp.getCardSlider().currentCardValue;
       if (targetPage == sourcePage || !targetPage.shouldAcceptDrag(e))
         return;
 

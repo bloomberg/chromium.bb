@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -113,7 +113,7 @@ void RecentlyClosedTabsHandler::TabRestoreServiceChanged(
   TabRestoreService::Entries entries = service->entries();
   CreateRecentlyClosedValues(entries, &list_value);
 
-  web_ui()->CallJavascriptFunction("recentlyClosedTabs", list_value);
+  web_ui()->CallJavascriptFunction("ntp.setRecentlyClosedTabs", list_value);
 }
 
 void RecentlyClosedTabsHandler::TabRestoreServiceDestroyed(

@@ -67,7 +67,7 @@ void ForeignSessionHandler::Observe(
     case chrome::NOTIFICATION_FOREIGN_SESSION_DISABLED:
       // Calling foreignSessions with empty list will automatically hide
       // foreign session section.
-      web_ui()->CallJavascriptFunction("foreignSessions", list_value);
+      web_ui()->CallJavascriptFunction("ntp.foreignSessions", list_value);
       break;
     default:
       NOTREACHED();
@@ -130,7 +130,7 @@ void ForeignSessionHandler::HandleGetForeignSessions(const ListValue* args) {
     // Give ownership to |session_list|.
     session_list.Append(window_list.release());
   }
-  web_ui()->CallJavascriptFunction("foreignSessions", session_list);
+  web_ui()->CallJavascriptFunction("ntp.foreignSessions", session_list);
 }
 
 void ForeignSessionHandler::HandleOpenForeignSession(

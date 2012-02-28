@@ -110,7 +110,7 @@ void MostVisitedHandler::SendPagesValue() {
     if (ts)
       has_blacklisted_urls = ts->HasBlacklistedItems();
     base::FundamentalValue has_blacklisted_urls_value(has_blacklisted_urls);
-    web_ui()->CallJavascriptFunction("setMostVisitedPages",
+    web_ui()->CallJavascriptFunction("ntp.setMostVisitedPages",
                                      *(pages_value_.get()),
                                      has_blacklisted_urls_value);
     pages_value_.reset();
