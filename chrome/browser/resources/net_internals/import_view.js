@@ -35,8 +35,6 @@ var ImportView = (function() {
     dropTarget.ondragover = this.onDrag.bind(this);
     dropTarget.ondrop = this.onDrop.bind(this);
 
-    $(ImportView.RELOAD_LINK_ID).onclick = this.clickedReload_.bind(this);
-
     this.loadedInfoBuildName_ = $(ImportView.LOADED_INFO_BUILD_NAME_ID);
     this.loadedInfoExportDate_ = $(ImportView.LOADED_INFO_EXPORT_DATE_ID);
     this.loadedInfoOsType_ = $(ImportView.LOADED_INFO_OS_TYPE_ID);
@@ -51,7 +49,6 @@ var ImportView = (function() {
   ImportView.LOADED_DIV_ID = 'import-view-loaded-div';
   ImportView.LOAD_LOG_FILE_ID = 'import-view-load-log-file';
   ImportView.LOAD_STATUS_TEXT_ID = 'import-view-load-status-text';
-  ImportView.RELOAD_LINK_ID = 'import-view-reloaded-link';
   ImportView.LOADED_INFO_EXPORT_DATE_ID = 'import-view-export-date';
   ImportView.LOADED_INFO_BUILD_NAME_ID = 'import-view-build-name';
   ImportView.LOADED_INFO_OS_TYPE_ID = 'import-view-os-type';
@@ -73,14 +70,6 @@ var ImportView = (function() {
       setNodeDisplay(this.loadedDiv_, true);
       this.updateLoadedClientInfo(logDump.userComments);
       return true;
-    },
-
-    /**
-     * Called when the user clicks the "reloaded" link.
-     */
-    clickedReload_: function() {
-      window.location.reload();
-      return false;
     },
 
     /**
@@ -174,6 +163,18 @@ var ImportView = (function() {
         this.loadFileElement_.outerHTML = this.loadFileElement_.outerHTML;
         this.loadFileElement_ = $(loadFileElementId);
         this.loadFileElement_.onchange = loadFileElementOnChange;
+      }
+
+      // Style the log output differently depending on what just happened.
+      var pos = text.indexOf('Log loaded.');
+      if (isLoading) {
+        this.loadStatusText_.className = 'import-view-pending-log';
+      } else if (pos == 0) {
+        this.loadStatusText_.className = 'import-view-success-log';
+      } else if (pos != -1) {
+        this.loadStatusText_.className = 'import-view-warning-log';
+      } else {
+        this.loadStatusText_.className = 'import-view-error-log';
       }
     },
 

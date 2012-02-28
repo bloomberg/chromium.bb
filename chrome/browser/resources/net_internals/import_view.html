@@ -4,6 +4,34 @@
   /* Wrap long lines inside of PREs */
   white-space: pre-wrap;
 }
+
+#import-view-load-status-text {
+  /* Wrap long lines inside of PREs */
+  white-space: pre-wrap;
+}
+
+.import-view-pending-log {
+  font-family: sans-serif;
+  color: blue;
+  font-weight: bold;
+}
+
+.import-view-success-log {
+  font-family: sans-serif;
+  color: green;
+  font-weight: bold;
+}
+
+.import-view-error-log {
+  color: red;
+  padding: 5px;
+  border: 1px solid red;
+}
+
+.import-view-warning-log {
+  color: red;
+}
+
 </style>
 
 <div id=import-view-tab-content>
@@ -36,16 +64,9 @@
   <div>
     <h2>Load data</h2>
     <p><input type=file value="Load log from file" id=import-view-load-log-file /></p>
-    <pre id=import-view-load-status-text></pre>
-
-    <p>Once a log is loaded, this page will stop collecting data, and will
-       only start gathering data again when
-       <a id="import-view-reloaded-link" href="#">reloaded</a>.
-    </p>
-
     <ul>
-      <li><b>NOTE</b>: The currently captured data will be discarded when you load a file.</li>
-      <li><b>TIP</b>: Drag-and-drop of log files into this window works too!</li>
+      <li><b>TIP</b>: Try drag-and-drop into this window!</li>
     </ul>
+    <pre id=import-view-load-status-text></pre>
   </div>
 </div>
