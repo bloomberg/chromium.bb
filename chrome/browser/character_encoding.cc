@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -254,7 +254,7 @@ void ParseEncodingListSeparatedWithComma(
   }
 }
 
-string16 GetEncodingDisplayName(std::string encoding_name,
+string16 GetEncodingDisplayName(const std::string& encoding_name,
                                 int category_string_id) {
   string16 category_name = l10n_util::GetStringUTF16(category_string_id);
   if (category_string_id != IDS_ENCODING_KOREAN &&
