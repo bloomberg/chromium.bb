@@ -53,6 +53,10 @@ class VideoCapture_Dev : public Resource {
 
   // Not owned by this object.
   EnumerateDevicesState* enum_state_;
+
+  // Used to store the arguments of Open() when using the v0.1 interface.
+  PP_VideoCaptureDeviceInfo_Dev requested_info_;
+  uint32_t buffer_count_;
 };
 
 }  // namespace pp
