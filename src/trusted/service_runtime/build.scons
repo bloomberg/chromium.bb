@@ -214,7 +214,8 @@ if env.Bit('windows'):
       'win/exception_patch/intercept.S',
       'win/exception_patch/ntdll_patch.c',
       'win/nacl_signal_64.c',
-      'win/debug_exception_handler_64.c',
+      # TODO(mseaborn): Rename this file to remove the "_32" suffix.
+      'win/debug_exception_handler_32.c',
     ]
   else:
     raise Exception("Unsupported target")

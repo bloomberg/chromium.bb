@@ -12,6 +12,7 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NACL_GLOBALS_H__
 
 #include "native_client/src/include/portability.h"
+#include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
 
 EXTERN_C_BEGIN
 struct NaClThreadContext;
@@ -27,8 +28,8 @@ __declspec(dllexport)
  * debugger using this interface could break.
  */
 #endif
-extern struct NaClThreadContext *nacl_user[];
-extern struct NaClThreadContext *nacl_sys[];
+extern struct NaClThreadContext *nacl_user[NACL_THREAD_MAX];
+extern struct NaClThreadContext *nacl_sys[NACL_THREAD_MAX];
 #if NACL_WINDOWS
 /*
  * NaCl Idx -> Thread ID mapping. Gdb scans this array to find NaCl index
@@ -37,7 +38,7 @@ extern struct NaClThreadContext *nacl_sys[];
  * This is not a stable interface and it may change or be removed in
  * the future.  A debugger using this interface could break.
  */
-__declspec(dllexport) extern uint32_t nacl_thread_ids[];
+__declspec(dllexport) extern uint32_t nacl_thread_ids[NACL_THREAD_MAX];
 #endif
 /*
  * nacl_user and nacl_sys are accessed w/o holding any locks.  once a
@@ -48,12 +49,12 @@ __declspec(dllexport) extern uint32_t nacl_thread_ids[];
  * acquisition code.
  */
 
-extern struct NaClAppThread     *nacl_thread[];
+extern struct NaClAppThread     *nacl_thread[NACL_THREAD_MAX];
 
 /*
  * TLS base used by nacl_tls_get.  User addresss.
  */
-extern uint32_t                 nacl_tls[];
+extern uint32_t                 nacl_tls[NACL_THREAD_MAX];
 
 void  NaClGlobalModuleInit(void);
 void  NaClGlobalModuleFini(void);

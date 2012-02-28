@@ -5,9 +5,6 @@
 
 Import('env')
 
-# Exception handling support is not implemented everywhere yet.
-is_broken = env.Bit('host_windows') and env.Bit('build_x86_64')
-
 test_args = {'sel_ldr_flags': ['-e'],
              'declares_exit_status': True,
              'using_nacl_signal_handler': env.Bit('host_linux')}
@@ -32,8 +29,7 @@ exception_test = env.ComponentProgram(
 node = env.CommandSelLdrTestNacl(
     'exception_test.out', exception_test, **test_args)
 env.AddNodeToTestSuite(
-    node, ['small_tests', 'exception_tests'],
-    'run_exception_test', is_broken=is_broken)
+    node, ['small_tests', 'exception_tests'], 'run_exception_test')
 
 if env.Bit('irt'):
   exception_browser_test = env.ComponentProgram(
@@ -61,7 +57,7 @@ for subtest in ('test_bad_handler',
   env.AddNodeToTestSuite(
       node, ['small_tests', 'exception_tests'],
       'run_exception_%s' % subtest,
-      is_broken=is_broken or subtest_is_broken)
+      is_broken=subtest_is_broken)
 
 
 exceptions_disabled_test = env.ComponentProgram(

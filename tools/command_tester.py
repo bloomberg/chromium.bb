@@ -269,6 +269,7 @@ status_map = {
         'linux2': [-11], # SIGSEGV
         'darwin': [-10], # SIGBUS
         'win32':  win32_untrusted_crash_exit,
+        'win64':  win64_exit_via_ntdll_patch,
         },
     }
 

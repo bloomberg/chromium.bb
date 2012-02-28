@@ -340,7 +340,8 @@
             }],
           ],
           'sources': [
-            'win/debug_exception_handler_64.c',
+            # TODO(mseaborn): Rename this file to remove the "_32" suffix.
+            'win/debug_exception_handler_32.c',
           ],
         }, {
           'target_name': 'container64',

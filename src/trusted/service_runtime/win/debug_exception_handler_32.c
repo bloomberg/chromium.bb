@@ -19,12 +19,15 @@
 
 
 static int HandleBreakpointException(HANDLE thread_handle);
-static int HandleException(HANDLE process_handle, HANDLE thread_handle);
+static int HandleException(HANDLE process_handle, DWORD windows_thread_id,
+                           HANDLE thread_handle);
 
 struct ExceptionFrame {
-  uint32_t return_addr;
+  nacl_reg_t return_addr;
+#if NACL_BUILD_SUBARCH == 32
   uint32_t prog_ctr;
   uint32_t stack_ptr;
+#endif
 };
 
 
@@ -161,11 +164,24 @@ int NaClDebugLoop(HANDLE process_handle, DWORD *exit_code) {
         } else {
           exception_code =
               debug_event.u.Exception.ExceptionRecord.ExceptionCode;
-          if (HandleException(process_handle, thread_handle)) {
+          if (HandleException(process_handle, debug_event.dwThreadId,
+                              thread_handle)) {
             continue_status = DBG_CONTINUE;
-          } else if (exception_code == EXCEPTION_BREAKPOINT &&
-                     HandleBreakpointException(thread_handle)) {
-            continue_status = DBG_CONTINUE;
+          } else if (exception_code == EXCEPTION_BREAKPOINT) {
+            /*
+             * The debuggee process is stopped by a breakpoint when it
+             * is launched.  On some systems, we have to resume the
+             * debuggee with DBG_CONTINUE, because resuming it with
+             * DBG_EXCEPTION_NOT_HANDLED kills the process.  This
+             * happens on our 32-bit Windows trybots, but not on
+             * 32-bit Windows Server on EC2, or on the 64-bit Windows
+             * systems I have tested.
+             */
+#if NACL_BUILD_SUBARCH == 32
+            if (HandleBreakpointException(thread_handle)) {
+              continue_status = DBG_CONTINUE;
+            }
+#endif
           }
         }
         break;
@@ -210,8 +226,22 @@ static BOOL HandleBreakpointException(HANDLE thread_handle) {
 }
 
 
+/*
+ * When GetThreadIndex() returns true, the given thread was associated
+ * with a NaClAppThread, and *nacl_thread_index has been filled out
+ * with the index of the NaClAppThread.
+ *
+ * On x86-32, GetThreadIndex() only returns true if the thread faulted
+ * while running untrusted code.
+ *
+ * On x86-64, GetThreadIndex() can return true if the thread faulted
+ * while running trusted code, so an additional check is needed to
+ * determine whether the thread faulted in trusted or untrusted code.
+ */
+#if NACL_BUILD_SUBARCH == 32
 static BOOL GetThreadIndex(HANDLE process_handle, HANDLE thread_handle,
                            const CONTEXT *regs,
+                           uint32_t windows_thread_id,
                            uint32_t *nacl_thread_index) {
   LDT_ENTRY cs_entry;
   LDT_ENTRY ds_entry;
@@ -229,8 +259,57 @@ static BOOL GetThreadIndex(HANDLE process_handle, HANDLE thread_handle,
   *nacl_thread_index = regs->SegGs >> 3;
   return TRUE;
 }
+#else
+/*
+ * On x86-64, if we were running in the faulting thread in the sel_ldr
+ * process, we could read a TLS variable to find the current NaCl
+ * thread's index, as nacl_syscall_64.S does.  However, it is
+ * difficult for an out-of-process debugger to read TLS variables on
+ * x86-64.  We could record the lpThreadLocalBase field of the events
+ * CREATE_THREAD_DEBUG_INFO and CREATE_PROCESS_DEBUG_INFO to get the
+ * TEB base address when a new thread is created, but this gets
+ * complicated.
+ *
+ * The implementation below is simpler but slower, because it copies
+ * all of the nacl_thread_ids global array.
+ */
+static BOOL GetThreadIndex(HANDLE process_handle, HANDLE thread_handle,
+                           const CONTEXT *regs,
+                           uint32_t windows_thread_id,
+                           uint32_t *nacl_thread_index) {
+  BOOL success = FALSE;
+  size_t array_size = sizeof(nacl_thread_ids);
+  uint32_t *copy;
+  uint32_t index;
 
-static BOOL HandleException(HANDLE process_handle, HANDLE thread_handle) {
+  copy = malloc(array_size);
+  if (copy == NULL) {
+    return FALSE;
+  }
+  /*
+   * Note that this assumes that nacl_thread_ids (a global array) is
+   * at the same address in the debuggee process as in this debugger
+   * process.  We make a similar assumption for nacl_thread later.
+   */
+  if (!ReadProcessMemoryChecked(process_handle, nacl_thread_ids,
+                                copy, sizeof(nacl_thread_ids))) {
+    goto done;
+  }
+  for (index = 0; index < NACL_ARRAY_SIZE(nacl_thread_ids); index++) {
+    if (copy[index] == windows_thread_id) {
+      *nacl_thread_index = index;
+      success = TRUE;
+      goto done;
+    }
+  }
+ done:
+  free(copy);
+  return success;
+}
+#endif
+
+static BOOL HandleException(HANDLE process_handle, DWORD windows_thread_id,
+                            HANDLE thread_handle) {
   CONTEXT context;
   uint32_t nacl_thread_index;
   uintptr_t addr_space_size;
@@ -254,7 +333,7 @@ static BOOL HandleException(HANDLE process_handle, HANDLE thread_handle) {
   }
 
   if (!GetThreadIndex(process_handle, thread_handle, &context,
-                      &nacl_thread_index)) {
+                      windows_thread_id, &nacl_thread_index)) {
     /*
      * We can get here if the faulting thread is running trusted code
      * (an expected situation) or if an unexpected error occurred.
@@ -289,6 +368,21 @@ static BOOL HandleException(HANDLE process_handle, HANDLE thread_handle) {
     return FALSE;
   }
 
+  addr_space_size = (uintptr_t) 1U << app_copy.addr_bits;
+#if NACL_BUILD_SUBARCH == 64
+  /*
+   * Check whether the crash occurred in trusted or untrusted code.
+   * TODO(mseaborn): If the instruction pointer is inside the guard
+   * regions, we might want to treat that as an untrusted crash, since
+   * relative jumps can jump to the guard regions.
+   */
+  if (context.Rip < app_copy.mem_start ||
+      context.Rip >= app_copy.mem_start + addr_space_size) {
+    /* The fault is inside trusted code, so do not handle it. */
+    return FALSE;
+  }
+#endif
+
   exception_stack = appthread_copy.user.exception_stack;
   exception_flag = appthread_copy.user.exception_flag;
   if (exception_flag) {
@@ -310,7 +404,12 @@ static BOOL HandleException(HANDLE process_handle, HANDLE thread_handle) {
   }
 
   if (exception_stack == 0) {
+#if NACL_BUILD_SUBARCH == 32
     exception_stack = context.Esp;
+#else
+    exception_stack = (uint32_t) context.Rsp;
+#endif
+    exception_stack -= NACL_STACK_RED_ZONE;
   }
   /*
    * Calculate the position of the exception stack frame, with
@@ -328,14 +427,15 @@ static BOOL HandleException(HANDLE process_handle, HANDLE thread_handle) {
     /* Unsigned overflow. */
     return FALSE;
   }
-  addr_space_size = (uintptr_t) 1U << app_copy.addr_bits;
   if (exception_frame_end > addr_space_size) {
     return FALSE;
   }
 
   new_stack.return_addr = 0;
+#if NACL_BUILD_SUBARCH == 32
   new_stack.prog_ctr = context.Eip;
   new_stack.stack_ptr = context.Esp;
+#endif
   if (!WRITE_MEM(process_handle,
                  (struct ExceptionFrame *) (app_copy.mem_start
                                             + exception_stack),
@@ -343,8 +443,26 @@ static BOOL HandleException(HANDLE process_handle, HANDLE thread_handle) {
     return FALSE;
   }
 
+#if NACL_BUILD_SUBARCH == 32
   context.Eip = app_copy.exception_handler;
   context.Esp = exception_stack;
+#else
+  /* Truncate the saved %rsp and %rbp values for portability. */
+  context.Rdi = (uint32_t) context.Rip; /* Argument 1 */
+  context.Rsi = (uint32_t) context.Rsp; /* Argument 2 */
+  context.Rip = app_copy.mem_start + app_copy.exception_handler;
+  context.Rsp = app_copy.mem_start + exception_stack;
+  /*
+   * The x86-64 sandbox allows %rsp/%rbp to point temporarily to the
+   * lower 4GB of address space.  It should not be possible to fault
+   * while %rsp/%rbp is in this state; otherwise, we have safety
+   * problems when the debug stub is not enabled.  For portability,
+   * and to be on the safe side, we reset %rbp to zero in untrusted
+   * address space.
+   */
+  context.Rbp = app_copy.mem_start;
+#endif
+
   context.EFlags &= ~NACL_X86_DIRECTION_FLAG;
   return SetThreadContext(thread_handle, &context);
 }
