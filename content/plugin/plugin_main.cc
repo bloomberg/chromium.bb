@@ -84,10 +84,10 @@ void FreeRandomMemoryHole(void *hole) {
 }
 
 bool CreateRandomMemoryHole() {
-  static const uint32_t kRandomValueMask = 0xFFF;  // 4095
-  static const uint32_t kRandomValueShift = 2;
-  static const uint32_t kMaxWaitSeconds = 22 * 60;  // 22 Minutes in seconds.
-  COMPILE_ASSERT((kMaxWaitSeconds > (kRandomValueMask >> kRandomValueShift)),
+  const uint32_t kRandomValueMax = 8 * 1024;  // Yields a 512mb max hole.
+  const uint32_t kRandomValueDivisor = 8;
+  const uint32_t kMaxWaitSeconds = 18 * 60;  // 18 Minutes in seconds.
+  COMPILE_ASSERT((kMaxWaitSeconds > (kRandomValueMax / kRandomValueDivisor)),
                  kMaxWaitSeconds_value_too_small);
 
   uint32_t rand_val;
@@ -95,14 +95,14 @@ bool CreateRandomMemoryHole() {
     DVLOG(ERROR) << "rand_s() failed";
   }
 
-  rand_val &= kRandomValueMask;
-  // Reserve up to 256mb (randomly selected) of address space.
+  rand_val %= kRandomValueMax;
+  // Reserve a (randomly selected) range of address space.
   if (void* hole = ::VirtualAlloc(NULL, 65536 * (1 + rand_val),
                                   MEM_RESERVE, PAGE_NOACCESS)) {
     // Set up an event to remove the memory hole. Base the wait time on the
     // inverse of the allocation size, meaning a bigger hole gets a shorter
-    // wait (ranging from 5-22 minutes).
-    const uint32_t wait = kMaxWaitSeconds - (rand_val >> kRandomValueShift);
+    // wait (ranging from 1-18 minutes).
+    const uint32_t wait = kMaxWaitSeconds - (rand_val / kRandomValueDivisor);
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
         base::Bind(&FreeRandomMemoryHole, hole),
         base::TimeDelta::FromSeconds(wait));

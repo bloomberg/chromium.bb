@@ -141,29 +141,72 @@ BOOL (WINAPI *g_iat_orig_virtual_free)(LPVOID address,
                                        SIZE_T size,
                                        DWORD free_type);
 
-const size_t kMaxPluginExecMemSize = 32 * 1024 * 1024;  // 32mb.
 const DWORD kExecPageMask = PAGE_EXECUTE_READ;
 static volatile intptr_t g_max_exec_mem_size;
-static intptr_t g_exec_mem_size = 0;
 static scoped_ptr<base::Lock> g_exec_mem_lock;
 
-size_t UpdateExecMemSize(intptr_t size) {
+bool UpdateExecMemSize(intptr_t size) {
   base::AutoLock locked(*g_exec_mem_lock);
-  g_exec_mem_size += size;
-  // Floor to zero since shutdown may unmap pages created before our hooks.
-  if (g_exec_mem_size < 0)
-    g_exec_mem_size = 0;
-  if (g_exec_mem_size > g_max_exec_mem_size)
-    g_max_exec_mem_size = g_exec_mem_size;
 
-  return g_exec_mem_size;
+  const intptr_t kMaxPluginExecMemSize = 128 * 1024 * 1024;  // 128mb.
+  const intptr_t kMaxPluginExecMemSizeSpike = 64 * 1024 * 1024;  // 64mb.
+  const DWORD kTimeLimit = 8;  // 8 minute timeout.
+
+  static intptr_t s_exec_mem_size = 0;
+  static intptr_t s_exec_mem_size_old = 0;
+  static struct {
+    intptr_t size;
+    DWORD minutes;
+  } s_exec_mem_log[kTimeLimit];
+  static size_t s_old_idx;
+  static size_t s_now_idx;
+
+  DWORD now = ::GetTickCount() / (60 * 1000);
+
+  // Keep the size change history. This is done using a ring of entries with
+  // with the size and tick count
+  if (s_exec_mem_log[s_now_idx].minutes == now) {
+    s_exec_mem_log[s_now_idx].size += size;
+  } else {
+    // Move the index forward and clear the old entry if needed.
+    s_now_idx = (s_now_idx + 1) % kTimeLimit;
+    if (s_now_idx == s_old_idx) {
+      s_exec_mem_size_old = std::max(0, s_exec_mem_log[s_old_idx].size +
+                                     s_exec_mem_size_old);
+      ++s_old_idx;
+    }
+    s_exec_mem_log[s_now_idx].minutes = now;
+    s_exec_mem_log[s_now_idx].size = size;
+
+    // Expire any waiting old entries.
+    for (; s_old_idx != s_now_idx; s_old_idx = (s_old_idx + 1) % kTimeLimit) {
+      DWORD minutes = s_exec_mem_log[s_old_idx].minutes;
+      if (now - minutes < kTimeLimit)
+        break;
+      s_exec_mem_size_old = std::max(0, s_exec_mem_log[s_old_idx].size +
+                                     s_exec_mem_size_old);
+    }
+  }
+
+  // Floor to zero since shutdown may unmap pages created before our hooks.
+  s_exec_mem_size = std::max(0, s_exec_mem_size + size);
+  if (s_exec_mem_size > g_max_exec_mem_size)
+    g_max_exec_mem_size = s_exec_mem_size;
+
+
+  if (s_exec_mem_size > kMaxPluginExecMemSize)
+    return false;
+  if ((s_exec_mem_size - s_exec_mem_size_old) > kMaxPluginExecMemSizeSpike)
+    return false;
+
+  return true;
 }
 
 // Throw a unique exception when the JIT limit is hit.
 inline void RaiseJITException() {
   static const ULONG parameters[] = {1, 0xabad1dea /* 2880249322 */ };
   ::RaiseException(EXCEPTION_ACCESS_VIOLATION, EXCEPTION_NONCONTINUABLE,
-                   2, parameters);
+                   arraysize(parameters), parameters);
 }
 
 // http://crbug.com/16114
@@ -353,12 +396,10 @@ BOOL WINAPI WebPluginDelegateImpl::VirtualProtectPatch(LPVOID address,
                                                        DWORD new_protect,
                                                        PDWORD old_protect) {
   if (g_iat_orig_virtual_protect(address, size, new_protect, old_protect)) {
-    bool is_exec = !!(new_protect & kExecPageMask);
-    bool was_exec = !!(*old_protect & kExecPageMask);
+    bool is_exec = new_protect == kExecPageMask;
+    bool was_exec = *old_protect == kExecPageMask;
     if (is_exec && !was_exec) {
-      bool limit_exceeded = UpdateExecMemSize(static_cast<intptr_t>(size)) >
-                            kMaxPluginExecMemSize;
-      if (limit_exceeded)
+      if (!UpdateExecMemSize(static_cast<intptr_t>(size)))
         RaiseJITException();
     } else if (!is_exec && was_exec) {
       UpdateExecMemSize(-(static_cast<intptr_t>(size)));
@@ -378,7 +419,7 @@ BOOL WINAPI WebPluginDelegateImpl::VirtualFreePatch(LPVOID address,
     size_t exec_size = 0;
     void* base_address = mem_info.AllocationBase;
     do {
-      if (mem_info.Protect & kExecPageMask)
+      if (mem_info.Protect == kExecPageMask)
         exec_size += mem_info.RegionSize;
       BYTE* next = reinterpret_cast<BYTE*>(mem_info.BaseAddress) +
           mem_info.RegionSize;
