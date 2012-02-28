@@ -101,9 +101,12 @@ TEST(IntegralGestureFilterInterpreterTestInterpreter, OverflowTest) {
 
   for (size_t i = 0; i < arraysize(expected_x); i++) {
     Gesture* out = interpreter.SyncInterpret(&hs, NULL);
-    ASSERT_NE(reinterpret_cast<Gesture*>(NULL), out) << "i = " << i;
-    EXPECT_EQ(expected_types[i], out->type) << "i = " << i;
-    if (out->type == kGestureTypeMove) {
+    if (out)
+      EXPECT_EQ(expected_types[i], out->type) << "i = " << i;
+    if (out == NULL) {
+      EXPECT_FLOAT_EQ(expected_x[i], 0.0) << "i = " << i;
+      EXPECT_FLOAT_EQ(expected_y[i], 0.0) << "i = " << i;
+    } else if (out->type == kGestureTypeMove) {
       EXPECT_FLOAT_EQ(expected_x[i], out->details.move.dx) << "i = " << i;
       EXPECT_FLOAT_EQ(expected_y[i], out->details.move.dy) << "i = " << i;
     } else {

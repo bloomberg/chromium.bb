@@ -32,7 +32,7 @@ class IntegralGestureFilterInterpreter : public Interpreter {
   virtual void SetHardwareProperties(const HardwareProperties& hwprops);
 
  private:
-  void HandleGesture(Gesture* gs);
+  void HandleGesture(Gesture** gs);
 
   scoped_ptr<Interpreter> next_;
 
