@@ -96,7 +96,7 @@ class FileSystemOperation : public FileSystemOperationInterface {
   // Synchronously gets the platform path for the given |path_url|.
   void SyncGetPlatformPath(const GURL& path_url, FilePath* platform_path);
 
- protected:
+ private:
   class ScopedQuotaNotifier;
 
   // Modes for SetUpFileSystemPath.
@@ -104,6 +104,17 @@ class FileSystemOperation : public FileSystemOperationInterface {
     PATH_FOR_READ,
     PATH_FOR_WRITE,
     PATH_FOR_CREATE,
+  };
+
+  // A struct to pass arguments to DidGetUsageAndQuotaAndRunTask
+  // purely for compilation (as Bind doesn't recognize too many arguments).
+  struct TaskParamsForDidGetQuota {
+    TaskParamsForDidGetQuota();
+    ~TaskParamsForDidGetQuota();
+    GURL origin;
+    FileSystemType type;
+    base::Closure task;
+    base::Closure error_callback;
   };
 
   // Only MountPointProviders or testing class can create a
@@ -137,36 +148,35 @@ class FileSystemOperation : public FileSystemOperationInterface {
     dest_util_ = file_util;
   }
 
-  void GetUsageAndQuotaThenCallback(
+  // Queries the quota and usage and then runs the given |task|.
+  // If an error occurs during the quota query it runs |error_callback| instead.
+  void GetUsageAndQuotaThenRunTask(
       const GURL& origin,
       FileSystemType type,
-      const quota::QuotaManager::GetUsageAndQuotaCallback& callback);
+      const base::Closure& task,
+      const base::Closure& error_callback);
 
-  // Callbacks to perform the actual work after quota check.
-  void DelayedCreateFileForQuota(const StatusCallback& callback,
-                                 bool exclusive,
-                                 quota::QuotaStatusCode status,
-                                 int64 usage, int64 quota);
-  void DelayedCreateDirectoryForQuota(const StatusCallback& callback,
-                                      bool exclusive, bool recursive,
-                                      quota::QuotaStatusCode status,
-                                      int64 usage, int64 quota);
-  void DelayedCopyForQuota(const StatusCallback& callback,
-                           quota::QuotaStatusCode status,
-                           int64 usage, int64 quota);
-  void DelayedMoveForQuota(const StatusCallback& callback,
-                           quota::QuotaStatusCode status,
-                           int64 usage, int64 quota);
-  void DelayedWriteForQuota(quota::QuotaStatusCode status,
-                            int64 usage, int64 quota);
-  void DelayedTruncateForQuota(const StatusCallback& callback,
-                               int64 length,
-                               quota::QuotaStatusCode status,
-                               int64 usage, int64 quota);
-  void DelayedOpenFileForQuota(const OpenFileCallback& callback,
-                               int file_flags,
-                               quota::QuotaStatusCode status,
-                               int64 usage, int64 quota);
+  // Called after the quota info is obtained from the quota manager
+  // (which is triggered by GetUsageAndQuotaThenRunTask).
+  // Sets the quota info in the operation_context_ and then runs the given
+  // |task| if the returned quota status is successful, otherwise runs
+  // |error_callback|.
+  void DidGetUsageAndQuotaAndRunTask(
+      const TaskParamsForDidGetQuota& params,
+      quota::QuotaStatusCode status,
+      int64 usage, int64 quota);
+
+  // The 'body' methods that perform the actual work (i.e. posting the
+  // file task on proxy_) after the quota check.
+  void DoCreateFile(const StatusCallback& callback, bool exclusive);
+  void DoCreateDirectory(const StatusCallback& callback,
+                         bool exclusive,
+                         bool recursive);
+  void DoCopy(const StatusCallback& callback);
+  void DoMove(const StatusCallback& callback);
+  void DoWrite();
+  void DoTruncate(const StatusCallback& callback, int64 length);
+  void DoOpenFile(const OpenFileCallback& callback, int file_flags);
 
   // Callback for CreateFile for |exclusive|=true cases.
   void DidEnsureFileExistsExclusive(const StatusCallback& callback,

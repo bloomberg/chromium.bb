@@ -20,6 +20,7 @@
 #include "webkit/fileapi/file_writer_delegate.h"
 #include "webkit/fileapi/local_file_util.h"
 #include "webkit/fileapi/quota_file_util.h"
+#include "webkit/quota/quota_manager.h"
 #include "webkit/quota/quota_types.h"
 
 namespace fileapi {
@@ -72,6 +73,9 @@ FileSystemOperation::ScopedQuotaNotifier::~ScopedQuotaNotifier() {
   }
 }
 
+FileSystemOperation::TaskParamsForDidGetQuota::TaskParamsForDidGetQuota() {}
+FileSystemOperation::TaskParamsForDidGetQuota::~TaskParamsForDidGetQuota() {}
+
 FileSystemOperation::~FileSystemOperation() {
   if (file_writer_delegate_.get()) {
     FileSystemOperationContext* c =
@@ -99,10 +103,11 @@ void FileSystemOperation::CreateFile(const GURL& path_url,
     return;
   }
 
-  GetUsageAndQuotaThenCallback(
+  GetUsageAndQuotaThenRunTask(
       src_path_.origin(), src_path_.type(),
-      base::Bind(&FileSystemOperation::DelayedCreateFileForQuota,
-                 base::Unretained(this), callback, exclusive));
+      base::Bind(&FileSystemOperation::DoCreateFile,
+                 base::Unretained(this), callback, exclusive),
+      base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
 }
 
 void FileSystemOperation::CreateDirectory(const GURL& path_url,
@@ -118,10 +123,11 @@ void FileSystemOperation::CreateDirectory(const GURL& path_url,
     delete this;
     return;
   }
-  GetUsageAndQuotaThenCallback(
+  GetUsageAndQuotaThenRunTask(
       src_path_.origin(), src_path_.type(),
-      base::Bind(&FileSystemOperation::DelayedCreateDirectoryForQuota,
-                 base::Unretained(this), callback, exclusive, recursive));
+      base::Bind(&FileSystemOperation::DoCreateDirectory,
+                 base::Unretained(this), callback, exclusive, recursive),
+      base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
 }
 
 void FileSystemOperation::Copy(const GURL& src_path_url,
@@ -140,10 +146,11 @@ void FileSystemOperation::Copy(const GURL& src_path_url,
     return;
   }
 
-  GetUsageAndQuotaThenCallback(
+  GetUsageAndQuotaThenRunTask(
       dest_path_.origin(), dest_path_.type(),
-      base::Bind(&FileSystemOperation::DelayedCopyForQuota,
-                 base::Unretained(this), callback));
+      base::Bind(&FileSystemOperation::DoCopy,
+                 base::Unretained(this), callback),
+      base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
 }
 
 void FileSystemOperation::Move(const GURL& src_path_url,
@@ -162,10 +169,11 @@ void FileSystemOperation::Move(const GURL& src_path_url,
     return;
   }
 
-  GetUsageAndQuotaThenCallback(
+  GetUsageAndQuotaThenRunTask(
       dest_path_.origin(), dest_path_.type(),
-      base::Bind(&FileSystemOperation::DelayedMoveForQuota,
-                 base::Unretained(this), callback));
+      base::Bind(&FileSystemOperation::DoMove,
+                 base::Unretained(this), callback),
+      base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
 }
 
 void FileSystemOperation::DirectoryExists(const GURL& path_url,
@@ -265,6 +273,9 @@ void FileSystemOperation::Remove(const GURL& path_url, bool recursive,
     return;
   }
 
+  scoped_quota_notifier_.reset(new ScopedQuotaNotifier(
+      file_system_context(), src_path_.origin(), src_path_.type()));
+
   base::FileUtilProxy::RelayFileTask(
       proxy_, FROM_HERE,
       base::Bind(&FileSystemFileUtil::Delete,
@@ -298,10 +309,10 @@ void FileSystemOperation::Write(
       new net::URLRequest(blob_url, file_writer_delegate_.get()));
   blob_request_->set_context(url_request_context);
 
-  GetUsageAndQuotaThenCallback(
+  GetUsageAndQuotaThenRunTask(
       src_path_.origin(), src_path_.type(),
-      base::Bind(&FileSystemOperation::DelayedWriteForQuota,
-                 base::Unretained(this)));
+      base::Bind(&FileSystemOperation::DoWrite, base::Unretained(this)),
+      base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED, 0, true));
 }
 
 void FileSystemOperation::Truncate(const GURL& path_url, int64 length,
@@ -315,10 +326,11 @@ void FileSystemOperation::Truncate(const GURL& path_url, int64 length,
     delete this;
     return;
   }
-  GetUsageAndQuotaThenCallback(
+  GetUsageAndQuotaThenRunTask(
       src_path_.origin(), src_path_.type(),
-      base::Bind(&FileSystemOperation::DelayedTruncateForQuota,
-                 base::Unretained(this), callback, length));
+      base::Bind(&FileSystemOperation::DoTruncate,
+                 base::Unretained(this), callback, length),
+      base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
 }
 
 void FileSystemOperation::TouchFile(const GURL& path_url,
@@ -382,10 +394,13 @@ void FileSystemOperation::OpenFile(const GURL& path_url,
       return;
     }
   }
-  GetUsageAndQuotaThenCallback(
+  GetUsageAndQuotaThenRunTask(
       src_path_.origin(), src_path_.type(),
-      base::Bind(&FileSystemOperation::DelayedOpenFileForQuota,
-                 base::Unretained(deleter.release()), callback, file_flags));
+      base::Bind(&FileSystemOperation::DoOpenFile,
+                 base::Unretained(deleter.release()), callback, file_flags),
+      base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED,
+                 base::kInvalidPlatformFileValue,
+                 base::kNullProcessHandle));
 }
 
 // We can only get here on a write or truncate that's not yet completed.
@@ -459,37 +474,56 @@ FileSystemOperation::FileSystemOperation(
       pending_operation_(kOperationNone) {
 }
 
-void FileSystemOperation::GetUsageAndQuotaThenCallback(
+void FileSystemOperation::GetUsageAndQuotaThenRunTask(
     const GURL& origin, FileSystemType type,
-    const quota::QuotaManager::GetUsageAndQuotaCallback& callback) {
+    const base::Closure& task,
+    const base::Closure& error_callback) {
   quota::QuotaManagerProxy* quota_manager_proxy =
       file_system_context()->quota_manager_proxy();
   if (!quota_manager_proxy ||
       !file_system_context()->GetQuotaUtil(type)) {
     // If we don't have the quota manager or the requested filesystem type
     // does not support quota, we should be able to let it go.
-    callback.Run(quota::kQuotaStatusOk, 0, kint64max);
+    operation_context_.set_allowed_bytes_growth(kint64max);
+    task.Run();
     return;
   }
+
+  TaskParamsForDidGetQuota params;
+  params.origin = origin;
+  params.type = type;
+  params.task = task;
+  params.error_callback = error_callback;
+
   DCHECK(quota_manager_proxy);
   DCHECK(quota_manager_proxy->quota_manager());
   quota_manager_proxy->quota_manager()->GetUsageAndQuota(
       origin,
       FileSystemTypeToQuotaStorageType(type),
-      callback);
+      base::Bind(&FileSystemOperation::DidGetUsageAndQuotaAndRunTask,
+                 base::Unretained(this), params));
 }
 
-void FileSystemOperation::DelayedCreateFileForQuota(
-    const StatusCallback& callback,
-    bool exclusive,
-    quota::QuotaStatusCode status, int64 usage, int64 quota) {
+void FileSystemOperation::DidGetUsageAndQuotaAndRunTask(
+    const TaskParamsForDidGetQuota& params,
+    quota::QuotaStatusCode status,
+    int64 usage, int64 quota) {
+  if (status != quota::kQuotaStatusOk) {
+    LOG(WARNING) << "Got unexpected quota error : " << status;
+    params.error_callback.Run();
+    return;
+  }
+
   operation_context_.set_allowed_bytes_growth(quota - usage);
-
   scoped_quota_notifier_.reset(new ScopedQuotaNotifier(
-      file_system_context(),
-      src_path_.origin(),
-      src_path_.type()));
+      file_system_context(), params.origin, params.type));
 
+  params.task.Run();
+}
+
+void FileSystemOperation::DoCreateFile(
+    const StatusCallback& callback,
+    bool exclusive) {
   FileSystemFileUtilProxy::RelayEnsureFileExists(
       proxy_,
       base::Bind(&FileSystemFileUtil::EnsureFileExists,
@@ -502,17 +536,9 @@ void FileSystemOperation::DelayedCreateFileForQuota(
           base::Owned(this), callback));
 }
 
-void FileSystemOperation::DelayedCreateDirectoryForQuota(
+void FileSystemOperation::DoCreateDirectory(
     const StatusCallback& callback,
-    bool exclusive, bool recursive,
-    quota::QuotaStatusCode status, int64 usage, int64 quota) {
-  operation_context_.set_allowed_bytes_growth(quota - usage);
-
-  scoped_quota_notifier_.reset(new ScopedQuotaNotifier(
-      file_system_context(),
-      src_path_.origin(),
-      src_path_.type()));
-
+    bool exclusive, bool recursive) {
   base::FileUtilProxy::RelayFileTask(
       proxy_, FROM_HERE,
       base::Bind(&FileSystemFileUtil::CreateDirectory,
@@ -523,16 +549,7 @@ void FileSystemOperation::DelayedCreateDirectoryForQuota(
                  base::Owned(this), callback));
 }
 
-void FileSystemOperation::DelayedCopyForQuota(const StatusCallback& callback,
-                                              quota::QuotaStatusCode status,
-                                              int64 usage, int64 quota) {
-  operation_context_.set_allowed_bytes_growth(quota - usage);
-
-  scoped_quota_notifier_.reset(new ScopedQuotaNotifier(
-      file_system_context(),
-      dest_path_.origin(),
-      dest_path_.type()));
-
+void FileSystemOperation::DoCopy(const StatusCallback& callback) {
   FileSystemFileUtilProxy::Copy(
       proxy_, &operation_context_,
       src_util_, dest_util_,
@@ -541,16 +558,7 @@ void FileSystemOperation::DelayedCopyForQuota(const StatusCallback& callback,
                  base::Owned(this), callback));
 }
 
-void FileSystemOperation::DelayedMoveForQuota(const StatusCallback& callback,
-                                              quota::QuotaStatusCode status,
-                                              int64 usage, int64 quota) {
-  operation_context_.set_allowed_bytes_growth(quota - usage);
-
-  scoped_quota_notifier_.reset(new ScopedQuotaNotifier(
-      file_system_context(),
-      dest_path_.origin(),
-      dest_path_.type()));
-
+void FileSystemOperation::DoMove(const StatusCallback& callback) {
   FileSystemFileUtilProxy::Move(
       proxy_, &operation_context_,
       src_util_, dest_util_,
@@ -559,15 +567,7 @@ void FileSystemOperation::DelayedMoveForQuota(const StatusCallback& callback,
                  base::Owned(this), callback));
 }
 
-void FileSystemOperation::DelayedWriteForQuota(quota::QuotaStatusCode status,
-                                               int64 usage, int64 quota) {
-  operation_context_.set_allowed_bytes_growth(quota - usage);
-
-  scoped_quota_notifier_.reset(new ScopedQuotaNotifier(
-      file_system_context(),
-      src_path_.origin(),
-      src_path_.type()));
-
+void FileSystemOperation::DoWrite() {
   int file_flags = base::PLATFORM_FILE_OPEN |
                    base::PLATFORM_FILE_WRITE |
                    base::PLATFORM_FILE_ASYNC;
@@ -586,16 +586,8 @@ void FileSystemOperation::DelayedWriteForQuota(quota::QuotaStatusCode status,
                  base::Unretained(this)));
 }
 
-void FileSystemOperation::DelayedTruncateForQuota(
-    const StatusCallback& callback,
-    int64 length, quota::QuotaStatusCode status, int64 usage, int64 quota) {
-  operation_context_.set_allowed_bytes_growth(quota - usage);
-
-  scoped_quota_notifier_.reset(new ScopedQuotaNotifier(
-      file_system_context(),
-      src_path_.origin(),
-      src_path_.type()));
-
+void FileSystemOperation::DoTruncate(const StatusCallback& callback,
+                                     int64 length) {
   base::FileUtilProxy::RelayFileTask(
       proxy_, FROM_HERE,
       base::Bind(&FileSystemFileUtil::Truncate,
@@ -605,16 +597,8 @@ void FileSystemOperation::DelayedTruncateForQuota(
                  base::Owned(this), callback));
 }
 
-void FileSystemOperation::DelayedOpenFileForQuota(
-    const OpenFileCallback& callback,
-    int file_flags, quota::QuotaStatusCode status, int64 usage, int64 quota) {
-  operation_context_.set_allowed_bytes_growth(quota - usage);
-
-  scoped_quota_notifier_.reset(new ScopedQuotaNotifier(
-      file_system_context(),
-      src_path_.origin(),
-      src_path_.type()));
-
+void FileSystemOperation::DoOpenFile(const OpenFileCallback& callback,
+                                     int file_flags) {
   base::FileUtilProxy::RelayCreateOrOpen(
       proxy_,
       base::Bind(&FileSystemFileUtil::CreateOrOpen,
