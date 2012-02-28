@@ -34,10 +34,11 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "ui/gfx/gl/gl_switches.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/gfx/surface/transport_dib.h"
-#include "ui/gfx/gl/gl_switches.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
@@ -595,8 +596,7 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
     // inverting color map to the result. This is balanced by an extra
     // call to canvas->restore(), below.
     DCHECK(invert_paint_.get());
-    SkRect bounds;
-    bounds.set(rect.x(), rect.y(), rect.right(), rect.bottom());
+    SkRect bounds(gfx::RectToSkRect(rect));
     canvas->saveLayer(&bounds, invert_paint_.get());
   }
 
@@ -614,10 +614,7 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
     // Canvas could contain multiple update rects. Clip to given rect so that
     // we don't accidentally clear other update rects.
     canvas->save();
-    SkRect clip;
-    clip.set(SkIntToScalar(rect.x()), SkIntToScalar(rect.y()),
-             SkIntToScalar(rect.right()), SkIntToScalar(rect.bottom()));
-    canvas->clipRect(clip);
+    canvas->clipRect(gfx::RectToSkRect(rect));
     canvas->drawPaint(paint);
     canvas->restore();
   }
