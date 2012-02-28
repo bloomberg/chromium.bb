@@ -17,7 +17,6 @@
         ],
         "returns": {
           "type": "object",
-          "properties": {},
           "additionalProperties": { "type": "any" },
           "description": "DevTools tab events object"
         }

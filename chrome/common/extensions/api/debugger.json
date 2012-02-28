@@ -74,7 +74,6 @@
             "type": "object",
             "name": "params",
             "optional": true,
-            "properties": {},
             "additionalProperties": { "type": "any" },
             "description": "JSON object with request parameters. This object must conform to the remote debugging params scheme for given method."
           },
@@ -87,7 +86,6 @@
                 "type": "object",
                 "name": "result",
                 "optional": true,
-                "properties": {},
                 "additionalProperties": { "type": "any" },
                 "description": "JSON object with the response. Structure of the response varies depending on the method and is defined by the remote debugging protocol."
               }
@@ -117,7 +115,6 @@
             "type": "object",
             "name": "params",
             "optional": true,
-            "properties": {},
             "additionalProperties": { "type": "any" },
             "description": "JSON object with the response. Structure of the response varies depending on the method and is defined by the remote debugging protocol."
           }

@@ -94,7 +94,6 @@
             "name": "iconData",
             "isInstanceOf": "ImageData",
             "optional": true,
-            "properties": {},
             "additionalProperties": { "type": "any" },
             "description": "Pixel data for an image to replace the launch icon on the New Tab Page. Must be an ImageData object (for example, from a canvas element). See http://code.google.com/chrome/webstore/docs/images.html for more details."
           },

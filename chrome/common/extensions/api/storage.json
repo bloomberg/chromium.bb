@@ -36,7 +36,6 @@
                   {
                     "type": "object",
                     "description": "Storage items to return in the callback, where the values are replaced with those from storage if they exist.",
-                    "properties": {},
                     "additionalProperties": { "type": "any" }
                   }
                 ],
@@ -51,7 +50,6 @@
                   {
                     "name": "items",
                     "type": "object",
-                    "properties": {},
                     "additionalProperties": { "type": "any" },
                     "description": "Object with items in their key-value mappings."
                   }
@@ -95,7 +93,6 @@
               {
                 "name": "items",
                 "type": "object",
-                "properties": {},
                 "additionalProperties": { "type": "any" },
                 "description": "Object specifying items to augment storage with. Values that cannot be serialized (functions, etc) will be ignored."
               },
@@ -156,7 +153,6 @@
           {
             "name": "changes",
             "type": "object",
-            "properties": {},
             "additionalProperties": { "$ref": "StorageChange" },
             "description": "Object mapping each key that changed to its corresponding <a href='#type-StorageChange'>StorageChange</a> for that item."
           },

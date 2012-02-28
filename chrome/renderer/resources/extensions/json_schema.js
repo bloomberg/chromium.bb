@@ -255,23 +255,25 @@ chromeHidden.JSONSchemaValidator.prototype.validateEnum = function(
  */
 chromeHidden.JSONSchemaValidator.prototype.validateObject = function(
     instance, schema, path) {
-  for (var prop in schema.properties) {
-    // It is common in JavaScript to add properties to Object.prototype. This
-    // check prevents such additions from being interpreted as required schema
-    // properties.
-    // TODO(aa): If it ever turns out that we actually want this to work, there
-    // are other checks we could put here, like requiring that schema properties
-    // be objects that have a 'type' property.
-    if (!schema.properties.hasOwnProperty(prop))
-      continue;
+  if (schema.properties) {
+    for (var prop in schema.properties) {
+      // It is common in JavaScript to add properties to Object.prototype. This
+      // check prevents such additions from being interpreted as required
+      // schema properties.
+      // TODO(aa): If it ever turns out that we actually want this to work,
+      // there are other checks we could put here, like requiring that schema
+      // properties be objects that have a 'type' property.
+      if (!schema.properties.hasOwnProperty(prop))
+        continue;
 
-    var propPath = path ? path + "." + prop : prop;
-    if (schema.properties[prop] == undefined) {
-      this.addError(propPath, "invalidPropertyType");
-    } else if (prop in instance && instance[prop] !== undefined) {
-      this.validate(instance[prop], schema.properties[prop], propPath);
-    } else if (!schema.properties[prop].optional) {
-      this.addError(propPath, "propertyRequired");
+      var propPath = path ? path + "." + prop : prop;
+      if (schema.properties[prop] == undefined) {
+        this.addError(propPath, "invalidPropertyType");
+      } else if (prop in instance && instance[prop] !== undefined) {
+        this.validate(instance[prop], schema.properties[prop], propPath);
+      } else if (!schema.properties[prop].optional) {
+        this.addError(propPath, "propertyRequired");
+      }
     }
   }
 
@@ -312,7 +314,7 @@ chromeHidden.JSONSchemaValidator.prototype.validateObject = function(
   // can be overridden by setting the additionalProperties property to a schema
   // which any additional properties must validate against.
   for (var prop in instance) {
-    if (prop in schema.properties)
+    if (schema.properties && prop in schema.properties)
       continue;
 
     // Any properties inherited through the prototype are ignored.

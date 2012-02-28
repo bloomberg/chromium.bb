@@ -129,7 +129,6 @@
               {
                 "name": "result",
                 "type": "object",
-                "properties": {},
                 "additionalProperties": {"type": "string"}
               }
             ]
