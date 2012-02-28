@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/slider.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,8 +27,8 @@ void ClickAt(views::View* view, int x, int y) {
 namespace views {
 
 TEST(SliderTest, UpdateFromClick) {
-  Slider* slider = new Slider(NULL, Slider::HORIZONTAL);
-  View* view = slider;
+  scoped_ptr<Slider> slider(new Slider(NULL, Slider::HORIZONTAL));
+  View* view = slider.get();
   gfx::Size size = view->GetPreferredSize();
   view->SetSize(size);
 
@@ -42,8 +43,8 @@ TEST(SliderTest, UpdateFromClickRTL) {
   std::string locale = l10n_util::GetApplicationLocale("");
   base::i18n::SetICUDefaultLocale("he");
 
-  Slider* slider = new Slider(NULL, Slider::HORIZONTAL);
-  View* view = slider;
+  scoped_ptr<Slider> slider(new Slider(NULL, Slider::HORIZONTAL));
+  View* view = slider.get();
   gfx::Size size = view->GetPreferredSize();
   view->SetSize(size);
 
