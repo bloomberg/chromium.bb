@@ -129,6 +129,8 @@ class NewTabButton : public views::ImageButton {
   void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
  private:
+  bool ShouldUseNativeFrame() const;
+  SkBitmap GetBackgroundBitmap(views::CustomButton::ButtonState state) const;
   SkBitmap GetBitmapForState(views::CustomButton::ButtonState state) const;
   SkBitmap GetBitmap() const;
 
@@ -193,31 +195,28 @@ void NewTabButton::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawBitmapInt(bitmap, 0, height() - bitmap.height());
 }
 
-SkBitmap NewTabButton::GetBitmapForState(
+bool NewTabButton::ShouldUseNativeFrame() const {
+  return GetWidget() &&
+    GetWidget()->GetTopLevelWidget()->ShouldUseNativeFrame();
+}
+
+SkBitmap NewTabButton::GetBackgroundBitmap(
     views::CustomButton::ButtonState state) const {
-  bool use_native_frame =
-      GetWidget() && GetWidget()->GetTopLevelWidget()->ShouldUseNativeFrame();
   int background_id = 0;
-  if (use_native_frame) {
+  if (ShouldUseNativeFrame()) {
     background_id = IDR_THEME_TAB_BACKGROUND_V;
   } else {
     background_id = tab_strip_->controller()->IsIncognito() ?
         IDR_THEME_TAB_BACKGROUND_INCOGNITO : IDR_THEME_TAB_BACKGROUND;
   }
 
-  int overlay_id = 0;
   int alpha = 0;
   switch (state) {
     case views::CustomButton::BS_NORMAL:
-      overlay_id = IDR_NEWTAB_BUTTON;
-      alpha = use_native_frame ? kNativeFrameInactiveTabAlpha : 255;
-      break;
     case views::CustomButton::BS_HOT:
-      overlay_id = IDR_NEWTAB_BUTTON;
-      alpha = use_native_frame ? kNativeFrameInactiveTabAlpha : 255;
+      alpha = ShouldUseNativeFrame() ? kNativeFrameInactiveTabAlpha : 255;
       break;
     case views::CustomButton::BS_PUSHED:
-      overlay_id = IDR_NEWTAB_BUTTON_P;
       alpha = 145;
       break;
     default:
@@ -225,16 +224,14 @@ SkBitmap NewTabButton::GetBitmapForState(
       break;
   }
 
-  ui::ThemeProvider* tp = GetThemeProvider();
-  SkBitmap* background = tp->GetBitmapNamed(background_id);
-  SkBitmap* overlay = tp->GetBitmapNamed(overlay_id);
-  int height = overlay->height();
-  int width = overlay->width();
-
+  SkBitmap* mask = GetThemeProvider()->GetBitmapNamed(IDR_NEWTAB_BUTTON_MASK);
+  int height = mask->height();
+  int width = mask->width();
   gfx::CanvasSkia canvas(gfx::Size(width, height), false);
 
   // For custom images the background starts at the top of the tab strip.
   // Otherwise the background starts at the top of the frame.
+  SkBitmap* background = GetThemeProvider()->GetBitmapNamed(background_id);
   int offset_y = GetThemeProvider()->HasCustomImage(background_id) ?
       0 : background_offset_.y();
   canvas.TileImageInt(*background, GetMirroredX() + background_offset_.x(),
@@ -248,13 +245,31 @@ SkBitmap NewTabButton::GetBitmapForState(
     canvas.DrawRect(gfx::Rect(0, 0, width, height), paint);
   }
 
-  if (state == views::CustomButton::BS_HOT) {
+  // White highlight on hover.
+  if (state == views::CustomButton::BS_HOT)
     canvas.FillRect(gfx::Rect(size()), SkColorSetARGB(64, 255, 255, 255));
-  }
 
-  canvas.DrawBitmapInt(*overlay, 0, 0);
-  SkBitmap* mask = tp->GetBitmapNamed(IDR_NEWTAB_BUTTON_MASK);
   return SkBitmapOperations::CreateMaskedBitmap(canvas.ExtractBitmap(), *mask);
+}
+
+SkBitmap NewTabButton::GetBitmapForState(
+    views::CustomButton::ButtonState state) const {
+  int overlay_id = state == views::CustomButton::BS_PUSHED ?
+      IDR_NEWTAB_BUTTON_P : IDR_NEWTAB_BUTTON;
+  SkBitmap* overlay = GetThemeProvider()->GetBitmapNamed(overlay_id);
+
+  gfx::CanvasSkia canvas(gfx::Size(overlay->width(), overlay->height()), false);
+  canvas.DrawBitmapInt(GetBackgroundBitmap(state), 0, 0);
+
+  // Draw the button border with a slight alpha.
+  const int kNativeFrameOverlayAlpha = 178;
+  const int kOpaqueFrameOverlayAlpha = 230;
+  canvas.SaveLayerAlpha(ShouldUseNativeFrame() ?
+      kNativeFrameOverlayAlpha : kOpaqueFrameOverlayAlpha);
+  canvas.DrawBitmapInt(*overlay, 0, 0);
+  canvas.Restore();
+
+  return canvas.ExtractBitmap();
 }
 
 SkBitmap NewTabButton::GetBitmap() const {
