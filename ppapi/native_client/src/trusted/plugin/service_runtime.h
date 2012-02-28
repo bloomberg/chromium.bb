@@ -217,7 +217,9 @@ class ServiceRuntime {
   // to be started is passed through |nacl_file_desc|.  On success, returns
   // true.  On failure, returns false and |error_string| is set to something
   // describing the error.
-  bool Start(nacl::DescWrapper* nacl_file_desc, ErrorInfo* error_info);
+  bool Start(nacl::DescWrapper* nacl_file_desc,
+             ErrorInfo* error_info,
+             nacl::string url);
 
   // Starts the application channel to the nexe.
   SrpcClient* SetupAppChannel();

@@ -605,7 +605,7 @@ bool Plugin::LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
   }
 
   bool service_runtime_started =
-      new_service_runtime->Start(wrapper, error_info);
+      new_service_runtime->Start(wrapper, error_info, manifest_base_url());
   PLUGIN_PRINTF(("Plugin::LoadNaClModuleCommon (service_runtime_started=%d)\n",
                  service_runtime_started));
   if (!service_runtime_started) {

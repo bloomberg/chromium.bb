@@ -658,7 +658,7 @@ bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
 }
 
 bool ServiceRuntime::Start(nacl::DescWrapper* nacl_desc,
-                           ErrorInfo* error_info) {
+                           ErrorInfo* error_info, nacl::string url) {
   PLUGIN_PRINTF(("ServiceRuntime::Start (nacl_desc=%p)\n",
                  reinterpret_cast<void*>(nacl_desc)));
 
@@ -671,7 +671,7 @@ bool ServiceRuntime::Start(nacl::DescWrapper* nacl_desc,
     return false;
   }
   nacl::Handle sockets[3];
-  if (!tmp_subprocess->Start(NACL_ARRAY_SIZE(sockets), sockets)) {
+  if (!tmp_subprocess->Start(NACL_ARRAY_SIZE(sockets), sockets, url.c_str())) {
     PLUGIN_PRINTF(("ServiceRuntime::Start (start failed)\n"));
     error_info->SetReport(ERROR_SEL_LDR_LAUNCH,
                           "ServiceRuntime: failed to start");
