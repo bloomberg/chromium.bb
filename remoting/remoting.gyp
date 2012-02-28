@@ -975,6 +975,7 @@
             'remoting_host'
           ],
           'sources': [
+            'host/capturer_helper_unittest.cc',
             'host/chromoting_host_context_unittest.cc',
             'host/chromoting_host_unittest.cc',
             'host/client_session_unittest.cc',

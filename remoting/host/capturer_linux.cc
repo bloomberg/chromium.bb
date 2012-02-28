@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -172,6 +172,7 @@ CapturerLinux::CapturerLinux()
       current_buffer_(0),
       pixel_format_(media::VideoFrame::RGB32),
       last_buffer_(NULL) {
+  helper_.SetLogGridSize(4);
 }
 
 CapturerLinux::~CapturerLinux() {
@@ -284,7 +285,6 @@ void CapturerLinux::CaptureInvalidRegion(
   scoped_refptr<CaptureData> capture_data(CaptureFrame());
 
   current_buffer_ = (current_buffer_ + 1) % kNumBuffers;
-  helper_.set_size_most_recent(capture_data->size());
 
   callback.Run(capture_data);
 }
@@ -332,6 +332,10 @@ CaptureData* CapturerLinux::CaptureFrame() {
 
   CaptureData* capture_data = new CaptureData(planes, buffer.size(),
                                               media::VideoFrame::RGB32);
+
+  // Pass the screen size to the helper, so it can clip the invalid region if it
+  // expands that region to a grid.
+  helper_.set_size_most_recent(capture_data->size());
 
   // In the DAMAGE case, ensure the frame is up-to-date with the previous frame
   // if any.  If there isn't a previous frame, that means a screen-resolution
