@@ -80,6 +80,10 @@ static void SlowPaint(
   canvas->drawBitmapMatrix(bitmap, matrix, &paint);
 }
 
+static bool IsEitherYV12OrYV16(media::VideoFrame::Format format) {
+  return format == media::VideoFrame::YV12 || format == media::VideoFrame::YV16;
+}
+
 // Fast paint does YUV => RGB, scaling, blitting all in one step into the
 // canvas. It's not always safe and appropriate to perform fast paint.
 // CanFastPaint() is used to determine the conditions.
@@ -87,8 +91,7 @@ static void FastPaint(
     const scoped_refptr<media::VideoFrame>& video_frame,
     SkCanvas* canvas,
     const gfx::Rect& dest_rect) {
-  DCHECK(video_frame->format() == media::VideoFrame::YV12 ||
-         video_frame->format() == media::VideoFrame::YV16);
+  DCHECK(IsEitherYV12OrYV16(video_frame->format())) << video_frame->format();
   DCHECK_EQ(video_frame->stride(media::VideoFrame::kUPlane),
             video_frame->stride(media::VideoFrame::kVPlane));
 
@@ -195,8 +198,7 @@ static void FastPaint(
 static void ConvertVideoFrameToBitmap(
     const scoped_refptr<media::VideoFrame>& video_frame,
     SkBitmap* bitmap) {
-  DCHECK(video_frame->format() == media::VideoFrame::YV12 ||
-         video_frame->format() == media::VideoFrame::YV16);
+  DCHECK(IsEitherYV12OrYV16(video_frame->format())) << video_frame->format();
   DCHECK(video_frame->stride(media::VideoFrame::kUPlane) ==
          video_frame->stride(media::VideoFrame::kVPlane));
 
@@ -238,8 +240,10 @@ SkCanvasVideoRenderer::~SkCanvasVideoRenderer() {}
 void SkCanvasVideoRenderer::Paint(media::VideoFrame* video_frame,
                                   SkCanvas* canvas,
                                   const gfx::Rect& dest_rect) {
-  // Paint black rectangle if there isn't a frame available.
-  if (!video_frame) {
+  // Paint black rectangle if there isn't a frame available or if the format is
+  // unexpected (can happen e.g. when normally painting to HW textures but
+  // during shutdown path).
+  if (!video_frame || !IsEitherYV12OrYV16(video_frame->format())) {
     SkPaint paint;
     paint.setColor(SK_ColorBLACK);
     canvas->drawRectCoords(
