@@ -8,7 +8,6 @@
 #include "base/file_util_proxy.h"
 #include "base/platform_file.h"
 #include "base/process.h"
-#include "webkit/blob/deletable_file_reference.h"
 
 namespace base {
 class Time;
@@ -18,10 +17,6 @@ namespace net {
 class URLRequest;
 class URLRequestContext;
 }  // namespace net
-
-namespace webkit_blob {
-class DeletableFileReference;
-}
 
 class GURL;
 
@@ -78,35 +73,6 @@ class FileSystemOperationInterface {
       base::PlatformFileError result,
       const std::vector<base::FileUtilProxy::Entry>& file_list,
       bool has_more)> ReadDirectoryCallback;
-
-  // Used for CreateSnapshotFile(). (Please see the comment at
-  // CreateSnapshotFile() below for how the method is called)
-  // |result| is the return code of the operation.
-  // |file_info| is the metadata of the snapshot file created.
-  // |platform_path| is the path to the snapshot file created.
-  //
-  // The snapshot file could simply be of the local file pointed by the given
-  // filesystem URL in local filesystem cases; remote filesystems
-  // may want to download the file into a temporary snapshot file and then
-  // return the metadata of the temporary file.
-  //
-  // |deletable_file_ref| is used to manage the lifetime of the returned
-  // snapshot file.  It can be set to let the chromium backend take
-  // care of the life time of the snapshot file.  Otherwise (if the returned
-  // file is not a temporary file to be deleted) the implementation can just
-  // return NULL.  In a more complex case, the implementaiton can manage
-  // the lifetime of the snapshot file on its own (e.g. by its cache system)
-  // but also can be notified via the reference when the file becomes no
-  // longer necessary in the javascript world.
-  // Please see the comment for DeletableFileReference for details.
-  //
-  typedef base::Callback<void(
-      base::PlatformFileError result,
-      const base::PlatformFileInfo& file_info,
-      const FilePath& platform_path,
-      const scoped_refptr<webkit_blob::DeletableFileReference>&
-          deletable_file_ref
-      )> SnapshotFileCallback;
 
   // Used for Write().
   typedef base::Callback<void(base::PlatformFileError result,
@@ -228,17 +194,6 @@ class FileSystemOperationInterface {
   // TODO(kinuko): this hack should go away once appropriate upload-stream
   // handling based on element types is supported.
   virtual FileSystemOperation* AsFileSystemOperation() = 0;
-
-  // Creates a local snapshot file for a given |path| and returns the
-  // metadata and platform path of the snapshot file via |callback|.
-  // In local filesystem cases the implementation may simply return
-  // the metadata of the file itself (as well as GetMetadata does),
-  // while in remote filesystem case the backend may want to download the file
-  // into a temporary snapshot file and return the metadata of the
-  // temporary file.  Or if the implementaiton already has the local cache
-  // data for |path| it can simply return the path to the cache.
-  virtual void CreateSnapshotFile(const GURL& path,
-                                  const SnapshotFileCallback& callback) = 0;
 
  protected:
   // Used only for internal assertions.
