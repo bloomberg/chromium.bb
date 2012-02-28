@@ -32,6 +32,12 @@ name=sqlite3_randomness UNINIT
 *!randomByte
 *!sqlite3_randomness
 
+# Intentional leak in WebKit Template Framework for ThreadData.
+LEAK
+name=intentional WTF ThreadData leak
+...
+*!WTF::wtfThreadData
+
 ###############################################################
 # Suppress some false reports due to bugs in Dr.Memory like wrong analysis
 # assumptions or unhandled syscalls
@@ -120,6 +126,12 @@ name=http://code.google.com/p/drmemory/issues/detail?id=17 (2)
 GDI32.dll!*
 GDI32.dll!CreateFontIndirectExW
 GDI32.dll!CreateFontIndirectW
+
+LEAK
+name=http://code.google.com/p/drmemory/issues/detail?id=17 (3)
+KERNELBASE.dll!LocalAlloc
+...
+USER32.dll!CreateWindow*
 
 UNINITIALIZED READ
 name=http://code.google.com/p/drmemory/issues/detail?id=18 a
@@ -481,7 +493,6 @@ CRYPT32.dll!CertOpenStore
 
 LEAK
 name=http://code.google.com/p/drmemory/issues/detail?id=476 d
-KERNEL*.dll!LocalAlloc
 ...
 CRYPT32.dll!CertOpenSystemStore?
 
@@ -862,6 +873,12 @@ UNADDRESSABLE ACCESS
 name=http://code.google.com/p/drmemory/issues/detail?id=798
 system call NtReadFile parameter #5
 KERNEL32.dll!ReadFile
+
+# Probable syscall false positive.
+UNADDRESSABLE ACCESS
+name=http://code.google.com/p/drmemory/issues/detail?id=809
+system call NtGdiPolyPolyDraw parameter #1
+*!gfx::Path::CreateNativeRegion
 
 ###############################################################
 # Benign issues in Chromium
