@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,14 +20,7 @@ class GuestModeOptionsUITest : public OptionsUITest {
   }
 };
 
-// See bug 104393.
-#if defined(USE_AURA)
-#define MAYBE_LoadOptionsByURL FAILS_LoadOptionsByURL
-#else
-#define MAYBE_LoadOptionsByURL LoadOptionsByURL
-#endif
-
-TEST_F(GuestModeOptionsUITest, MAYBE_LoadOptionsByURL) {
+TEST_F(GuestModeOptionsUITest, LoadOptionsByURL) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
 
