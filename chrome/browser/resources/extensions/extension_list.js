@@ -201,9 +201,7 @@ cr.define('options', function() {
         activeViews.hidden = false;
         var link = activeViews.querySelector('a');
 
-        for (var i = 0; i < extension.views.length; ++i) {
-          var view = extension.views[i];
-
+        extension.views.forEach(function(view, i) {
           var label = view.path + (view.incognito ?
               ' ' + localStrings.getString('viewIncognito') : '');
           link.textContent = label;
@@ -219,7 +217,7 @@ cr.define('options', function() {
             link = link.cloneNode(true);
             activeViews.appendChild(link);
           }
-        }
+        });
       }
 
       this.appendChild(node);
