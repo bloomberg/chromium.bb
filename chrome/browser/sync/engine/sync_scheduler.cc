@@ -899,33 +899,36 @@ void SyncScheduler::ScheduleNextSync(const SyncSessionJob& old_job) {
     return;
   }
 
+  if (old_job.purpose == SyncSessionJob::POLL) {
+    return; // We don't retry POLL jobs.
+  }
+
   // TODO(rlarocque): There's no reason why we should blindly backoff and retry
   // if we don't succeed.  Some types of errors are not likely to disappear on
   // their own.  With the return values now available in the old_job.session, we
   // should be able to detect such errors and only retry when we detect
   // transient errors.
 
-  // We are in backoff mode and our time did not run out. That means we had
-  // a local change, notification from server or a network connection change
-  // notification. In any case set had_nudge = true so we dont retry next
-  // nudge. Note: we will keep retrying network connection changes though as
-  // they are treated as canary jobs. Also we check the mode here because
-  // we want to do this only in normal mode. For config mode jobs we dont
-  // have anything similar to had_nudge.
   if (IsBackingOff() && wait_interval_->timer.IsRunning() &&
       mode_ == NORMAL_MODE) {
+    // When in normal mode, we allow up to one nudge per backoff interval.  It
+    // appears that this was our nudge for this interval, and it failed.
+    //
+    // Note: This does not prevent us from running canary jobs.  For example, an
+    // IP address change might still result in another nudge being executed
+    // during this backoff interval.
     SDVLOG(2) << "A nudge during backoff failed";
-    // We weren't continuing but we're in backoff; must have been a nudge.
+
     DCHECK_EQ(SyncSessionJob::NUDGE, old_job.purpose);
     DCHECK(!wait_interval_->had_nudge);
+
     wait_interval_->had_nudge = true;
-    // Old job did not finish. So make it the pending job.
     InitOrCoalescePendingJob(old_job);
-    // Resume waiting.
     RestartWaiting();
   } else {
+    // Either this is the first failure or a consecutive failure after our
+    // backoff timer expired.  We handle it the same way in either case.
     SDVLOG(2) << "Non-'backoff nudge' SyncShare job failed";
-    // We don't seem to have made forward progress. Start or extend backoff.
     HandleContinuationError(old_job);
   }
 }

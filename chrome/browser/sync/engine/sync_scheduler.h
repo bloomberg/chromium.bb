@@ -197,6 +197,7 @@ class SyncScheduler : public sessions::SyncSession::Delegate {
                            ContinueCanaryJobConfig);
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest,
       ContinueNudgeWhileExponentialBackOff);
+  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerTest, TransientPollFailure);
 
   // A component used to get time delays associated with exponential backoff.
   // Encapsulated into a class to facilitate testing.

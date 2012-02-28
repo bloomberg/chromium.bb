@@ -859,16 +859,14 @@ TEST_F(SyncSchedulerTest, BackoffDropsJobs) {
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
   RunLoop();
 
-  // Run again to wait for polling.
+  // This nudge should fail and put us into backoff.  Thanks to our mock
+  // GetDelay() setup above, this will be a long backoff.
+  scheduler()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, types, FROM_HERE);
   RunLoop();
-
-  // Pump loop to get rid of nudge.
-  PumpLoop();
 
   Mock::VerifyAndClearExpectations(syncer());
   ASSERT_EQ(1U, r.snapshots.size());
-  EXPECT_EQ(GetUpdatesCallerInfo::PERIODIC,
-            r.snapshots[0]->source.updates_source);
+  EXPECT_EQ(GetUpdatesCallerInfo::LOCAL, r.snapshots[0]->source.updates_source);
 
   EXPECT_CALL(*syncer(), SyncShare(_,_,_)).Times(1)
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateCommitFailed),
@@ -876,15 +874,13 @@ TEST_F(SyncSchedulerTest, BackoffDropsJobs) {
 
   // We schedule a nudge with enough delay (10X poll interval) that at least
   // one or two polls would have taken place.  The nudge should succeed.
-  scheduler()->ScheduleNudge(
-      poll * 10, NUDGE_SOURCE_LOCAL, types, FROM_HERE);
+  scheduler()->ScheduleNudge(poll * 10, NUDGE_SOURCE_LOCAL, types, FROM_HERE);
   RunLoop();
 
   Mock::VerifyAndClearExpectations(syncer());
   Mock::VerifyAndClearExpectations(delay());
   ASSERT_EQ(2U, r.snapshots.size());
-  EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
-            r.snapshots[1]->source.updates_source);
+  EXPECT_EQ(GetUpdatesCallerInfo::LOCAL, r.snapshots[1]->source.updates_source);
 
   EXPECT_CALL(*syncer(), SyncShare(_,_,_)).Times(0);
   EXPECT_CALL(*delay(), GetDelay(_)).Times(0);
@@ -947,45 +943,85 @@ TEST_F(SyncSchedulerTest, BackoffElevation) {
   EXPECT_GE(r.times[4] - r.times[3], fifth);
 }
 
-// Test that things go back to normal once a canary task makes forward progress
-// following a succession of failures.
-//
-// TODO(rlarocque, 112954): The code this was intended to test is broken.
-TEST_F(SyncSchedulerTest, DISABLED_BackoffRelief) {
+// Test that things go back to normal once a retry makes forward progress.
+TEST_F(SyncSchedulerTest, BackoffRelief) {
   SyncShareRecords r;
   const TimeDelta poll(TimeDelta::FromMilliseconds(10));
   scheduler()->OnReceivedLongPollIntervalUpdate(poll);
   UseMockDelayProvider();
 
-  const TimeDelta backoff = TimeDelta::FromMilliseconds(100);
+  const TimeDelta backoff = TimeDelta::FromMilliseconds(5);
 
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
-      .WillOnce(Invoke(sessions::test_util::SimulateCommitFailed))
-      .WillOnce(Invoke(sessions::test_util::SimulateCommitFailed))
+      .WillOnce(DoAll(Invoke(sessions::test_util::SimulateCommitFailed),
+                      RecordSyncShareMultiple(&r, kMinNumSamples)))
       .WillRepeatedly(DoAll(Invoke(sessions::test_util::SimulateSuccess),
-          RecordSyncShareMultiple(&r, kMinNumSamples)));
+                            RecordSyncShareMultiple(&r, kMinNumSamples)));
   EXPECT_CALL(*delay(), GetDelay(_)).WillOnce(Return(backoff));
 
   // Optimal start for the post-backoff poll party.
-  TimeTicks optimal_start = TimeTicks::Now() + poll + backoff;
+  TimeTicks optimal_start = TimeTicks::Now();
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
   RunLoop();
 
   // Run again to wait for polling.
+  scheduler()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL,
+                             ModelTypeSet(), FROM_HERE);
   RunLoop();
 
   StopSyncScheduler();
 
-  // Check for healthy polling after backoff is relieved.
-  // Can't use AnalyzePollRun because first sync is a continuation. Bleh.
-  for (size_t i = 0; i < r.times.size(); i++) {
+  EXPECT_EQ(kMinNumSamples, r.times.size());
+
+  // The first nudge ran as soon as possible.  It failed.
+  TimeTicks optimal_job_time = optimal_start;
+  EXPECT_GE(r.times[0], optimal_job_time);
+  EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
+            r.snapshots[0]->source.updates_source);
+
+  // It was followed by a successful retry nudge shortly afterward.
+  optimal_job_time = optimal_job_time + backoff;
+  EXPECT_GE(r.times[1], optimal_job_time);
+  EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
+            r.snapshots[1]->source.updates_source);
+  // After that, we went back to polling.
+  for (size_t i = 2; i < r.snapshots.size(); i++) {
+    optimal_job_time = optimal_job_time + poll;
     SCOPED_TRACE(testing::Message() << "SyncShare # (" << i << ")");
-    TimeTicks optimal_next_sync = optimal_start + poll * i;
-    EXPECT_GE(r.times[i], optimal_next_sync);
-    EXPECT_EQ(i == 0 ? GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION
-                     : GetUpdatesCallerInfo::PERIODIC,
+    EXPECT_GE(r.times[i], optimal_job_time);
+    EXPECT_EQ(GetUpdatesCallerInfo::PERIODIC,
               r.snapshots[i]->source.updates_source);
   }
+}
+
+// Test that poll failures are ignored.  They should have no effect on
+// subsequent poll attempts, nor should they trigger a backoff/retry.
+TEST_F(SyncSchedulerTest, TransientPollFailure) {
+  SyncShareRecords r;
+  const TimeDelta poll_interval(TimeDelta::FromMilliseconds(10));
+  scheduler()->OnReceivedLongPollIntervalUpdate(poll_interval);
+  UseMockDelayProvider(); // Will cause test failure if backoff is initiated.
+
+  EXPECT_CALL(*syncer(), SyncShare(_,_,_))
+      .WillOnce(DoAll(Invoke(sessions::test_util::SimulateCommitFailed),
+                      RecordSyncShare(&r)))
+      .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
+                      RecordSyncShare(&r)));
+
+  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+  RunLoop();
+
+  // Run the unsucessful poll.  The failed poll should not trigger backoff.
+  RunLoop();
+  EXPECT_FALSE(scheduler()->IsBackingOff());
+
+  // Run the successful poll.
+  RunLoop();
+  EXPECT_FALSE(scheduler()->IsBackingOff());
+
+  // Verify the the two SyncShare() calls were made one poll interval apart.
+  ASSERT_EQ(2U, r.snapshots.size());
+  EXPECT_GE(r.times[1] - r.times[0], poll_interval);
 }
 
 TEST_F(SyncSchedulerTest, GetRecommendedDelay) {
