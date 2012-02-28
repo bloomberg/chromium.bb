@@ -132,8 +132,13 @@ void Combobox::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
     // The native wrapper's lifetime will be managed by the view hierarchy after
     // we call AddChildView.
     native_wrapper_ = NativeComboboxWrapper::CreateWrapper(this);
-    native_wrapper_->UpdateEnabled();
     AddChildView(native_wrapper_->GetView());
+    // The underlying native widget may not be created until the wrapper is
+    // parented. For this reason the wrapper is only updated after adding its
+    // view.
+    native_wrapper_->UpdateFromModel();
+    native_wrapper_->UpdateSelectedItem();
+    native_wrapper_->UpdateEnabled();
   }
 }
 
