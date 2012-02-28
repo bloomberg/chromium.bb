@@ -2753,7 +2753,7 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 
 	gp.param = I915_PARAM_HAS_LLC;
 	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);
-	if (ret == -EINVAL) {
+	if (ret != 0) {
 		/* Kernel does not supports HAS_LLC query, fallback to GPU
 		 * generation detection and assume that we have LLC on GEN6/7
 		 */
