@@ -44,5 +44,9 @@ void ScopedLayerAnimationSettings::SetTransitionDuration(
   animator_->transition_duration_ = duration;
 }
 
+base::TimeDelta ScopedLayerAnimationSettings::GetTransitionDuration() const {
+  return animator_->transition_duration_;
+}
+
 }  // namespace ui
 

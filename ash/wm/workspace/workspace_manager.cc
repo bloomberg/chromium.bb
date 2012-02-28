@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/shelf_layout_manager.h"
+#include "ash/wm/window_animations.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/managed_workspace.h"
@@ -36,17 +37,13 @@ const int kWorkspaceHorizontalMargin = 50;
 const float kMaxOverviewScale = 0.9f;
 const float kMinOverviewScale = 0.3f;
 
-// Sets the visibility of the layer of each window in |windows| to |value|. We
-// set the visibility of the layer rather than the Window so that views doesn't
-// see the visibility change.
-// TODO: revisit this. Ideally the Window would think it's still visibile after
-// this. May be possible after Ben lands his changes.
-void SetWindowLayerVisibility(const std::vector<aura::Window*>& windows,
-                              bool value) {
-  for (size_t i = 0; i < windows.size(); ++i){
+// Returns a list of all the windows with layers in |result|.
+void BuildWindowList(const std::vector<aura::Window*>& windows,
+                     std::vector<aura::Window*>* result) {
+  for (size_t i = 0; i < windows.size(); ++i) {
     if (windows[i]->layer())
-      windows[i]->layer()->SetVisible(value);
-    SetWindowLayerVisibility(windows[i]->transient_children(), value);
+      result->push_back(windows[i]);
+    BuildWindowList(windows[i]->transient_children(), result);
   }
 }
 
@@ -107,8 +104,16 @@ bool WorkspaceManager::ShouldMaximize(aura::Window* window) const {
 void WorkspaceManager::AddWindow(aura::Window* window) {
   DCHECK(IsManagedWindow(window));
 
-  if (FindBy(window))
-    return;  // Already know about this window.
+  Workspace* current_workspace = FindBy(window);
+  if (current_workspace) {
+    // Already know about this window. Make sure the workspace is active.
+    if (active_workspace_ != current_workspace) {
+      if (active_workspace_)
+        window->layer()->GetAnimator()->StopAnimating();
+      current_workspace->Activate();
+    }
+    return;
+  }
 
   if (!window_util::IsWindowMaximized(window) &&
       !window_util::IsWindowFullscreen(window)) {
@@ -262,6 +267,43 @@ void WorkspaceManager::UpdateShelfVisibility() {
   shelf_->SetVisible(!window_util::HasFullscreenWindow(windows));
 }
 
+void WorkspaceManager::SetVisibilityOfWorkspaceWindows(
+    ash::internal::Workspace* workspace,
+    AnimateChangeType change_type,
+    bool value) {
+  std::vector<aura::Window*> children;
+  BuildWindowList(workspace->windows(), &children);
+  SetWindowLayerVisibility(children, change_type, value);
+}
+
+void WorkspaceManager::SetWindowLayerVisibility(
+    const std::vector<aura::Window*>& windows,
+    AnimateChangeType change_type,
+    bool value) {
+  for (size_t i = 0; i < windows.size(); ++i) {
+    ui::Layer* layer = windows[i]->layer();
+    if (layer) {
+      windows[i]->SetProperty(aura::client::kAnimationsDisabledKey,
+                              change_type == DONT_ANIMATE);
+      bool update_layer = true;
+      if (change_type == ANIMATE) {
+        ash::SetWindowVisibilityAnimationType(
+            windows[i],
+            value ? ash::WINDOW_VISIBILITY_ANIMATION_TYPE_WORKSPACE_SHOW :
+                    ash::WINDOW_VISIBILITY_ANIMATION_TYPE_WORKSPACE_HIDE);
+        if (ash::internal::AnimateOnChildWindowVisibilityChanged(
+                windows[i], value))
+          update_layer = false;
+      }
+      if (update_layer)
+        layer->SetVisible(value);
+      // Reset the animation type so it isn't used in a future hide/show.
+      ash::SetWindowVisibilityAnimationType(
+          windows[i], ash::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
+    }
+  }
+}
+
 Workspace* WorkspaceManager::GetActiveWorkspace() const {
   return active_workspace_;
 }
@@ -277,10 +319,12 @@ void WorkspaceManager::SetActiveWorkspace(Workspace* workspace) {
   DCHECK(std::find(workspaces_.begin(), workspaces_.end(),
                    workspace) != workspaces_.end());
   if (active_workspace_)
-    SetWindowLayerVisibility(active_workspace_->windows(), false);
+    SetVisibilityOfWorkspaceWindows(active_workspace_, ANIMATE, false);
+  Workspace* last_active = active_workspace_;
   active_workspace_ = workspace;
   if (active_workspace_) {
-    SetWindowLayerVisibility(active_workspace_->windows(), true);
+    SetVisibilityOfWorkspaceWindows(active_workspace_,
+                                    last_active ? ANIMATE : DONT_ANIMATE, true);
     UpdateShelfVisibility();
   }
 

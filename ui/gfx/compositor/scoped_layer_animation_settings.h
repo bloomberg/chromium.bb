@@ -29,6 +29,7 @@ class COMPOSITOR_EXPORT ScopedLayerAnimationSettings {
 
   void AddObserver(ImplicitAnimationObserver* observer);
   void SetTransitionDuration(base::TimeDelta duration);
+  base::TimeDelta GetTransitionDuration() const;
 
  private:
   LayerAnimator* animator_;

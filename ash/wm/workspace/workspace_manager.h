@@ -101,6 +101,12 @@ class ASH_EXPORT WorkspaceManager : public aura::WindowObserver{
                                        intptr_t old) OVERRIDE;
 
  private:
+  // Enumeration of whether windows should animate or not.
+  enum AnimateChangeType {
+    ANIMATE,
+    DONT_ANIMATE
+  };
+
   friend class Workspace;
   friend class WorkspaceManagerTest;
 
@@ -113,6 +119,16 @@ class ASH_EXPORT WorkspaceManager : public aura::WindowObserver{
   void RemoveWorkspace(Workspace* workspace);
 
   void UpdateShelfVisibility();
+
+  // Sets the visibility of the windows in |workspace|.
+  void SetVisibilityOfWorkspaceWindows(Workspace* workspace,
+                                       AnimateChangeType change_type,
+                                       bool value);
+
+  // Implementation of SetVisibilityOfWorkspaceWindows().
+  void SetWindowLayerVisibility(const std::vector<aura::Window*>& windows,
+                                AnimateChangeType change_type,
+                                bool value);
 
   // Returns the active workspace.
   Workspace* GetActiveWorkspace() const;

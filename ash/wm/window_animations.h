@@ -17,11 +17,15 @@ namespace ash {
 
 // A variety of canned animations for window transitions.
 enum WindowVisibilityAnimationType {
-  WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT = 0, // Default. Lets the system
-                                                // decide based on window type.
-  WINDOW_VISIBILITY_ANIMATION_TYPE_DROP,        // Window shrinks in.
-  WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL,    // Vertical Glenimation.
-  WINDOW_VISIBILITY_ANIMATION_TYPE_FADE         // Fades in/out.
+  WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT = 0,     // Default. Lets the system
+                                                    // decide based on window
+                                                    // type.
+  WINDOW_VISIBILITY_ANIMATION_TYPE_DROP,            // Window shrinks in.
+  WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL,        // Vertical Glenimation.
+  WINDOW_VISIBILITY_ANIMATION_TYPE_FADE,            // Fades in/out.
+  WINDOW_VISIBILITY_ANIMATION_TYPE_WORKSPACE_SHOW,  // Windows are scaled and
+                                                    // fade in.
+  WINDOW_VISIBILITY_ANIMATION_TYPE_WORKSPACE_HIDE,  // Inverse of SHOW.
 };
 
 // Type of visibility change transition that a window should animate.

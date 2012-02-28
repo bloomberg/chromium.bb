@@ -16,11 +16,14 @@
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_property.h"
 #include "ui/gfx/compositor/layer_animation_observer.h"
+#include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/compositor/scoped_layer_animation_settings.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(int)
 DECLARE_WINDOW_PROPERTY_TYPE(ash::WindowVisibilityAnimationType)
 DECLARE_WINDOW_PROPERTY_TYPE(ash::WindowVisibilityAnimationTransition)
+
+using base::TimeDelta;
 
 namespace ash {
 namespace internal {
@@ -58,7 +61,7 @@ void SetWindowVisibilityAnimationTransition(
 }
 
 void SetWindowVisibilityAnimationDuration(aura::Window* window,
-                                          const base::TimeDelta& duration) {
+                                          const TimeDelta& duration) {
   window->SetProperty(internal::kWindowVisibilityAnimationDurationKey,
                       static_cast<int>(duration.ToInternalValue()));
 }
@@ -80,6 +83,9 @@ const float kWindowAnimation_TranslateFactor = -0.025f;
 const float kWindowAnimation_ScaleFactor = 1.05f;
 
 const float kWindowAnimation_Vertical_TranslateY = 15.f;
+
+// Amount windows are scaled during workspace animations.
+const float kWorkspaceScale = .95f;
 
 // Gets/sets the WindowVisibilityAnimationType associated with a window.
 WindowVisibilityAnimationType GetWindowVisibilityAnimationType(
@@ -157,6 +163,32 @@ class HidingWindowAnimationObserver : public ui::ImplicitAnimationObserver,
   DISALLOW_COPY_AND_ASSIGN(HidingWindowAnimationObserver);
 };
 
+// ImplicitAnimationObserver used when switching workspaces. Resets the layer
+// visibility to 'false' when done. This doesn't need the complexity of
+// HidingWindowAnimationObserver as the window isn't closing, and if it does a
+// HidingWindowAnimationObserver will be created.
+class WorkspaceHidingWindowAnimationObserver :
+      public ui::ImplicitAnimationObserver {
+ public:
+  explicit WorkspaceHidingWindowAnimationObserver(aura::Window* window)
+      : layer_(window->layer()) {
+  }
+  virtual ~WorkspaceHidingWindowAnimationObserver() {
+  }
+
+ private:
+  // Overridden from ui::ImplicitAnimationObserver:
+  virtual void OnImplicitAnimationsCompleted() OVERRIDE {
+    // Restore the correct visibility value (overridden for the duration of the
+    // animation in AnimateHideWindow()).
+    layer_->SetVisible(false);
+  }
+
+  ui::Layer* layer_;
+
+  DISALLOW_COPY_AND_ASSIGN(WorkspaceHidingWindowAnimationObserver);
+};
+
 // Shows a window using an animation, animating its opacity from 0.f to 1.f, and
 // its transform from |start_transform| to |end_transform|.
 void AnimateShowWindowCommon(aura::Window* window,
@@ -171,10 +203,8 @@ void AnimateShowWindowCommon(aura::Window* window,
     ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
     int duration =
         window->GetProperty(internal::kWindowVisibilityAnimationDurationKey);
-    if (duration > 0) {
-      settings.SetTransitionDuration(
-          base::TimeDelta::FromInternalValue(duration));
-    }
+    if (duration > 0)
+      settings.SetTransitionDuration(TimeDelta::FromInternalValue(duration));
 
     window->layer()->SetTransform(end_transform);
     window->layer()->SetOpacity(kWindowAnimation_ShowOpacity);
@@ -193,10 +223,8 @@ void AnimateHideWindowCommon(aura::Window* window,
 
   int duration =
       window->GetProperty(internal::kWindowVisibilityAnimationDurationKey);
-  if (duration > 0) {
-    settings.SetTransitionDuration(
-        base::TimeDelta::FromInternalValue(duration));
-  }
+  if (duration > 0)
+    settings.SetTransitionDuration(TimeDelta::FromInternalValue(duration));
 
   window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
   window->layer()->SetTransform(end_transform);
@@ -245,6 +273,73 @@ void AnimateHideWindow_Fade(aura::Window* window) {
   AnimateHideWindowCommon(window, ui::Transform());
 }
 
+// Builds the transform used when switching workspaces for the specified
+// window.
+ui::Transform BuildWorkspaceSwitchTransform(aura::Window* window) {
+  // Animations for transitioning workspaces scale all windows. To give the
+  // effect of scaling from the center of the screen the windows are translated.
+  gfx::Rect parent_bounds(window->parent()->bounds());
+  float mid_x = static_cast<float>(parent_bounds.width()) / 2.0f;
+  float initial_x =
+      (static_cast<float>(window->bounds().x()) - mid_x) * kWorkspaceScale +
+      mid_x;
+  float mid_y = static_cast<float>(parent_bounds.height()) / 2.0f;
+  float initial_y =
+      (static_cast<float>(window->bounds().y()) - mid_y) * kWorkspaceScale +
+      mid_y;
+
+  ui::Transform transform;
+  transform.ConcatTranslate(
+      initial_x - static_cast<float>(window->bounds().x()),
+      initial_y - static_cast<float>(window->bounds().y()));
+  transform.ConcatScale(kWorkspaceScale, kWorkspaceScale);
+  return transform;
+}
+
+void AnimateShowWindow_Workspace(aura::Window* window) {
+  ui::Transform transform(BuildWorkspaceSwitchTransform(window));
+  window->layer()->SetVisible(true);
+  window->layer()->SetOpacity(0.0f);
+  window->layer()->SetTransform(transform);
+
+  {
+    // Property sets within this scope will be implicitly animated.
+    ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+
+    window->layer()->SetTransform(ui::Transform());
+    // Opacity animates only during the first half of the animation.
+    settings.SetTransitionDuration(settings.GetTransitionDuration() / 2);
+    window->layer()->SetOpacity(1.0f);
+  }
+}
+
+void AnimateHideWindow_Workspace(aura::Window* window) {
+  ui::Transform transform(BuildWorkspaceSwitchTransform(window));
+  window->layer()->SetOpacity(1.0f);
+  window->layer()->SetTransform(ui::Transform());
+
+  // Opacity animates from 1 to 0 only over the second half of the animation. To
+  // get this functionality two animations are schedule for opacity, the first
+  // from 1 to 1 (which effectively does nothing) the second from 1 to 0.
+  // Because we're scheduling two animations of the same property we need to
+  // change the preemption strategy.
+  ui::LayerAnimator* animator = window->layer()->GetAnimator();
+  animator->set_preemption_strategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
+  {
+    // Property sets within this scope will be implicitly animated.
+    ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+    // Add an observer that sets visibility of the layer to false once animation
+    // completes.
+    settings.AddObserver(new WorkspaceHidingWindowAnimationObserver(window));
+    window->layer()->SetTransform(transform);
+    settings.SetTransitionDuration(settings.GetTransitionDuration() / 2);
+    window->layer()->SetOpacity(1.0f);
+    window->layer()->SetOpacity(0.0f);
+  }
+  animator->set_preemption_strategy(
+      ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
+}
+
 bool AnimateShowWindow(aura::Window* window) {
   if (!HasWindowVisibilityAnimationTransition(window, ANIMATE_SHOW))
     return false;
@@ -258,6 +353,9 @@ bool AnimateShowWindow(aura::Window* window) {
       return true;
     case WINDOW_VISIBILITY_ANIMATION_TYPE_FADE:
       AnimateShowWindow_Fade(window);
+      return true;
+    case WINDOW_VISIBILITY_ANIMATION_TYPE_WORKSPACE_SHOW:
+      AnimateShowWindow_Workspace(window);
       return true;
     default:
       NOTREACHED();
@@ -278,6 +376,9 @@ bool AnimateHideWindow(aura::Window* window) {
       return true;
     case WINDOW_VISIBILITY_ANIMATION_TYPE_FADE:
       AnimateHideWindow_Fade(window);
+      return true;
+    case WINDOW_VISIBILITY_ANIMATION_TYPE_WORKSPACE_HIDE:
+      AnimateHideWindow_Workspace(window);
       return true;
     default:
       NOTREACHED();

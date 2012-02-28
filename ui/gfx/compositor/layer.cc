@@ -65,6 +65,10 @@ Layer::Layer(LayerType type)
 }
 
 Layer::~Layer() {
+  // Destroying the animator may cause observers to use the layer (and
+  // indirectly the WebLayer). Destroy the animator first so that the WebLayer
+  // is still around.
+  animator_.reset();
   if (compositor_)
     compositor_->SetRootLayer(NULL);
   if (parent_)
