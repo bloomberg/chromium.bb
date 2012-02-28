@@ -161,6 +161,11 @@ class UI_EXPORT RenderText {
   void set_fade_tail(bool fade_tail) { fade_tail_ = fade_tail; }
   bool fade_tail() const { return fade_tail_; }
 
+  bool background_is_transparent() const { return background_is_transparent_; }
+  void set_background_is_transparent(bool transparent) {
+    background_is_transparent_ = transparent;
+  }
+
   // This cursor position corresponds to SelectionModel::selection_end. In
   // addition to representing the selection end, it's also where logical text
   // edits take place, and doesn't necessarily correspond to
@@ -414,6 +419,9 @@ class UI_EXPORT RenderText {
   // Fade text head and/or tail, if text doesn't fit into |display_rect_|.
   bool fade_head_;
   bool fade_tail_;
+
+  // Is the background transparent (either partially or fully)?
+  bool background_is_transparent_;
 
   // The local display area for rendering the text.
   Rect display_rect_;

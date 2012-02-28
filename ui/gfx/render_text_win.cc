@@ -482,7 +482,8 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
   bool cleartype_enabled;
   GetCachedFontSmoothingSettings(&smoothing_enabled, &cleartype_enabled);
   // Note that |cleartype_enabled| corresponds to Skia's |enable_lcd_text|.
-  renderer.SetFontSmoothingSettings(smoothing_enabled, cleartype_enabled);
+  renderer.SetFontSmoothingSettings(
+      smoothing_enabled, cleartype_enabled && !background_is_transparent());
 
   for (size_t i = 0; i < runs_.size(); ++i) {
     // Get the run specified by the visual-to-logical map.

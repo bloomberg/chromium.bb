@@ -621,6 +621,7 @@ RenderText::RenderText()
       composition_range_(ui::Range::InvalidRange()),
       fade_head_(false),
       fade_tail_(false),
+      background_is_transparent_(false),
       cached_bounds_and_offset_valid_(false) {
 }
 
