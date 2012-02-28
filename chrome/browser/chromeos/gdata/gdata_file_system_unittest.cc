@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/test/base/testing_profile.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,7 +31,8 @@ namespace gdata {
 class GDataFileSystemTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    file_system_ = new GDataFileSystem();
+    profile_.reset(new TestingProfile);
+    file_system_ = new GDataFileSystem(profile_.get());
   }
 
   // Loads test json file as root ("/gdata") element.
@@ -95,6 +97,7 @@ class GDataFileSystemTest : public testing::Test {
     return value;
   }
 
+  scoped_ptr<TestingProfile> profile_;
   scoped_refptr<GDataFileSystem> file_system_;
 };
 

@@ -8,10 +8,13 @@
 #include <map>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/singleton.h"
 #include "base/platform_file.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/gdata/gdata.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
+#include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
 namespace gdata {
 
@@ -162,7 +165,9 @@ class FindFileDelegate : public base::RefCountedThreadSafe<FindFileDelegate> {
 
 // GData file system abstraction layer. This class is refcounted since we
 // access it from different threads and aggregate into number of other objects.
-class GDataFileSystem : public base::RefCountedThreadSafe<GDataFileSystem> {
+// GDataFileSystem is per-profie, hence inheriting ProfileKeyedService.
+class GDataFileSystem : public base::RefCountedThreadSafe<GDataFileSystem>,
+                        public ProfileKeyedService {
  public:
   struct FindFileParams {
     FindFileParams(const FilePath& in_file_path,
@@ -181,8 +186,9 @@ class GDataFileSystem : public base::RefCountedThreadSafe<GDataFileSystem> {
     const scoped_refptr<FindFileDelegate> delegate;
   };
 
-  GDataFileSystem();
-  virtual ~GDataFileSystem();
+
+  // ProfileKeyedService override:
+  virtual void Shutdown() OVERRIDE;
 
   // Finds file info by using virtual |file_path|. If |require_content| is set,
   // the found directory will be pre-populated before passed back to the
@@ -200,7 +206,12 @@ class GDataFileSystem : public base::RefCountedThreadSafe<GDataFileSystem> {
   void StartDirectoryRefresh(const FindFileParams& params);
 
  private:
+  friend class base::RefCountedThreadSafe<GDataFileSystem>;
+  friend class GDataFileSystemFactory;
   friend class GDataFileSystemTest;
+
+  explicit GDataFileSystem(Profile* profile);
+  virtual ~GDataFileSystem();
 
   // Unsafe (unlocked) version of the function above.
   void UnsafeFindFileByPath(const FilePath& file_path,
@@ -237,6 +248,31 @@ class GDataFileSystem : public base::RefCountedThreadSafe<GDataFileSystem> {
 
   scoped_ptr<GDataDirectory> root_;
   base::Lock lock_;
+
+  // The profile hosts the GDataFileSystem.
+  Profile* profile_;
+};
+
+// Singleton that owns all GDataFileSystems and associates them with
+// Profiles.
+class GDataFileSystemFactory : public ProfileKeyedServiceFactory {
+ public:
+  // Returns the GDataFileSystem for |profile|, creating it if it is not
+  // yet created.
+  static GDataFileSystem* GetForProfile(Profile* profile);
+
+  // Returns the GDataFileSystemFactory instance.
+  static GDataFileSystemFactory* GetInstance();
+
+ private:
+  friend struct DefaultSingletonTraits<GDataFileSystemFactory>;
+
+  GDataFileSystemFactory();
+  virtual ~GDataFileSystemFactory();
+
+  // ProfileKeyedServiceFactory:
+  virtual ProfileKeyedService* BuildServiceInstanceFor(
+      Profile* profile) const OVERRIDE;
 };
 
 }  // namespace chromeos

@@ -1314,7 +1314,7 @@ void AddMountFunction::AddGDataMountPoint() {
     return;
 
   provider->AddRemoteMountPoint(mount_point,
-                                new gdata::GDataFileSystemProxy());
+                                new gdata::GDataFileSystemProxy(profile_));
 }
 
 void AddMountFunction::RaiseGDataMountEvent(gdata::GDataErrorCode error,

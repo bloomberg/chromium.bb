@@ -241,8 +241,8 @@ class ReadDirectoryDelegate : public FindFileDelegateReplyBase {
 };
 
 
-GDataFileSystemProxy::GDataFileSystemProxy()
-    : file_system_(new GDataFileSystem()) {
+GDataFileSystemProxy::GDataFileSystemProxy(Profile* profile)
+    : file_system_(GDataFileSystemFactory::GetForProfile(profile)) {
 }
 
 GDataFileSystemProxy::~GDataFileSystemProxy() {

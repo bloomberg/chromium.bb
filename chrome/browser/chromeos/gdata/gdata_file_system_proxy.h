@@ -8,12 +8,16 @@
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "webkit/chromeos/fileapi/remote_file_system_proxy.h"
 
+class Profile;
+
 namespace gdata {
 
 // The interface class for remote file system proxy.
 class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
  public:
-  GDataFileSystemProxy();
+  // |profile| is used to create GDataFileSystem, which is a per-profile
+  // instance.
+  explicit GDataFileSystemProxy(Profile* profile);
   virtual ~GDataFileSystemProxy();
 
   // fileapi::RemoteFileSystemProxyInterface overrides.

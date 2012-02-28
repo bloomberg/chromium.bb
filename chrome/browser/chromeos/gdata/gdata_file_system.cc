@@ -11,6 +11,7 @@
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/chromeos/gdata/gdata.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
 #include "content/public/browser/browser_thread.h"
@@ -269,12 +270,18 @@ GDataFileSystem::FindFileParams::~FindFileParams() {
 
 // GDataFileSystem class implementatsion.
 
-GDataFileSystem::GDataFileSystem() {
+GDataFileSystem::GDataFileSystem(Profile* profile)
+    : profile_(profile) {
   root_.reset(new GDataDirectory());
   root_->set_file_name(kGDataRootDirectory);
 }
 
 GDataFileSystem::~GDataFileSystem() {
+}
+
+void GDataFileSystem::Shutdown() {
+  // TODO(satorux): We should probably cancel or wait for the in-flight
+  // operation here.
 }
 
 void GDataFileSystem::FindFileByPath(
@@ -456,6 +463,31 @@ base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
       dir->AddFile(file);
   }
   return base::PLATFORM_FILE_OK;
+}
+
+// static
+GDataFileSystem* GDataFileSystemFactory::GetForProfile(
+    Profile* profile) {
+  return static_cast<GDataFileSystem*>(
+      GetInstance()->GetServiceForProfile(profile, true));
+}
+
+// static
+GDataFileSystemFactory* GDataFileSystemFactory::GetInstance() {
+  return Singleton<GDataFileSystemFactory>::get();
+}
+
+GDataFileSystemFactory::GDataFileSystemFactory()
+    : ProfileKeyedServiceFactory("GDataFileSystem",
+                                 ProfileDependencyManager::GetInstance()) {
+}
+
+GDataFileSystemFactory::~GDataFileSystemFactory() {
+}
+
+ProfileKeyedService* GDataFileSystemFactory::BuildServiceInstanceFor(
+    Profile* profile) const {
+  return new GDataFileSystem(profile);
 }
 
 }  // namespace gdata
