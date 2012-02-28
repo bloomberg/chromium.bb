@@ -19,6 +19,9 @@ TableExample::TableExample() : ExampleBase("Table") {
 }
 
 TableExample::~TableExample() {
+  // Delete the view before the model.
+  delete table_;
+  table_ = NULL;
 }
 
 void TableExample::CreateExampleView(View* container) {
