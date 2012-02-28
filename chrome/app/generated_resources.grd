@@ -2298,14 +2298,26 @@ are declared in build/common.gypi.
       <message name="IDS_DOWNLOAD_UNCONFIRMED_PREFIX" desc="The prefix used in the unconfirmed download file.">
         Unconfirmed
       </message>
-      <message name="IDS_PROMPT_DANGEROUS_DOWNLOAD"
-               desc="Message shown to the user to validate the download of a dangerous file.">
-        This type of file can harm your computer. Do you want to keep <ph name="FILE_NAME">$1<ex>malware.exe</ex></ph> anyway?
-      </message>
-      <message name="IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION"
-         desc="Message shown to the user to validate the download of an extension file.">
-        Extensions, apps, and themes can harm your computer. Are you sure you want to continue?
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_PROMPT_DANGEROUS_DOWNLOAD"
+                 desc="Message shown to the user to validate the download of a dangerous file.">
+          This type of file can harm your mobile device. Do you want to keep <ph name="FILE_NAME">$1<ex>malware.exe</ex></ph> anyway?
+        </message>
+        <message name="IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION"
+           desc="Message shown to the user to validate the download of an extension file.">
+          Extensions, apps, and themes can harm your mobile device. Are you sure you want to continue?
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_PROMPT_DANGEROUS_DOWNLOAD"
+                 desc="Message shown to the user to validate the download of a dangerous file.">
+          This type of file can harm your computer. Do you want to keep <ph name="FILE_NAME">$1<ex>malware.exe</ex></ph> anyway?
+        </message>
+        <message name="IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION"
+           desc="Message shown to the user to validate the download of an extension file.">
+          Extensions, apps, and themes can harm your computer. Are you sure you want to continue?
+        </message>
+      </if>
       <message name="IDS_PROMPT_MALICIOUS_DOWNLOAD_URL"
          desc="Message shown to the user to validate the download when the download url is classified to lead to malware by the safebrowsing database.">
         This file appears malicious.
@@ -2680,9 +2692,16 @@ are declared in build/common.gypi.
       <message name="IDS_CERT_ERROR_EXTRA_INFO_TITLE" desc="The title for the extra information section displayed when a page contains a certificate error">
         Help me understand
       </message>
-      <message name="IDS_CERT_ERROR_EXTRA_INFO_1" desc="1st paragraph of extra information for any certificate error">
-        When you connect to a secure website, the server hosting that site presents your browser with something called a "certificate" to verify its identity. This certificate contains identity information, such as the address of the website, which is verified by a third party that your computer trusts. By checking that the address in the certificate matches the address of the website, it is possible to verify that you are securely communicating with the website you intended, and not a third party (such as an attacker on your network).
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_CERT_ERROR_EXTRA_INFO_1" desc="1st paragraph of extra information for any certificate error">
+          When you connect to a secure website, the server hosting that site presents your browser with something called a "certificate" to verify its identity. This certificate contains identity information, such as the address of the website, which is verified by a third party that your mobile device trusts. By checking that the address in the certificate matches the address of the website, it is possible to verify that you are securely communicating with the website you intended, and not a third party (such as an attacker on your network).
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_CERT_ERROR_EXTRA_INFO_1" desc="1st paragraph of extra information for any certificate error">
+          When you connect to a secure website, the server hosting that site presents your browser with something called a "certificate" to verify its identity. This certificate contains identity information, such as the address of the website, which is verified by a third party that your computer trusts. By checking that the address in the certificate matches the address of the website, it is possible to verify that you are securely communicating with the website you intended, and not a third party (such as an attacker on your network).
+        </message>
+      </if>
       <message name="IDS_CERT_ERROR_COMMON_NAME_INVALID_TITLE" desc="Title for an unsafe common name in an X509 certificate">
         This is probably not the site you are looking for!
       </message>
@@ -2716,12 +2735,22 @@ are declared in build/common.gypi.
       <message name="IDS_CERT_ERROR_AUTHORITY_INVALID_TITLE" desc="Title for an X509 certificate with an invalid authority">
         The site's security certificate is not trusted!
       </message>
-      <message name="IDS_CERT_ERROR_AUTHORITY_INVALID_EXTRA_INFO_2" desc="2nd paragraph of extra information for a X509 certificate with an invalid authority">
-        In this case, the certificate has not been verified by a third party that your computer trusts. Anyone can create a certificate claiming to be whatever website they choose, which is why it must be verified by a trusted third party. Without that verification, the identity information in the certificate is meaningless. It is therefore not possible to verify that you are communicating with <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph> instead of an attacker who generated his own certificate claiming to be <ph name="DOMAIN2">&lt;strong&gt;$2<ex>paypal.com</ex>&lt;/strong&gt;</ph>. You should not proceed past this point.
-      </message>
-      <message name="IDS_CERT_ERROR_AUTHORITY_INVALID_EXTRA_INFO_3" desc="3rd paragraph of extra information for a X509 certificate with an invalid authority">
-        If, however, you work in an organization that generates its own certificates, and you are trying to connect to an internal website of that organization using such a certificate, you may be able to solve this problem securely. You can import your organization's root certificate as a "root certificate", and then certificates issued or verified by your organization will be trusted and you will not see this error next time you try to connect to an internal website. Contact your organization's help staff for assistance in adding a new root certificate to your computer.
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_CERT_ERROR_AUTHORITY_INVALID_EXTRA_INFO_2" desc="2nd paragraph of extra information for a X509 certificate with an invalid authority">
+          In this case, the certificate has not been verified by a third party that your mobile device trusts. Anyone can create a certificate claiming to be whatever website they choose, which is why it must be verified by a trusted third party. Without that verification, the identity information in the certificate is meaningless. It is therefore not possible to verify that you are communicating with <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph> instead of an attacker who generated his own certificate claiming to be <ph name="DOMAIN2">&lt;strong&gt;$2<ex>paypal.com</ex>&lt;/strong&gt;</ph>. You should not proceed past this point.
+        </message>
+        <message name="IDS_CERT_ERROR_AUTHORITY_INVALID_EXTRA_INFO_3" desc="3rd paragraph of extra information for a X509 certificate with an invalid authority">
+          If, however, you work in an organization that generates its own certificates, and you are trying to connect to an internal website of that organization using such a certificate, you may be able to solve this problem securely. You can import your organization's root certificate as a "root certificate", and then certificates issued or verified by your organization will be trusted and you will not see this error next time you try to connect to an internal website. Contact your organization's help staff for assistance in adding a new root certificate to your mobile device.
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_CERT_ERROR_AUTHORITY_INVALID_EXTRA_INFO_2" desc="2nd paragraph of extra information for a X509 certificate with an invalid authority">
+          In this case, the certificate has not been verified by a third party that your computer trusts. Anyone can create a certificate claiming to be whatever website they choose, which is why it must be verified by a trusted third party. Without that verification, the identity information in the certificate is meaningless. It is therefore not possible to verify that you are communicating with <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph> instead of an attacker who generated his own certificate claiming to be <ph name="DOMAIN2">&lt;strong&gt;$2<ex>paypal.com</ex>&lt;/strong&gt;</ph>. You should not proceed past this point.
+        </message>
+        <message name="IDS_CERT_ERROR_AUTHORITY_INVALID_EXTRA_INFO_3" desc="3rd paragraph of extra information for a X509 certificate with an invalid authority">
+          If, however, you work in an organization that generates its own certificates, and you are trying to connect to an internal website of that organization using such a certificate, you may be able to solve this problem securely. You can import your organization's root certificate as a "root certificate", and then certificates issued or verified by your organization will be trusted and you will not see this error next time you try to connect to an internal website. Contact your organization's help staff for assistance in adding a new root certificate to your computer.
+        </message>
+      </if>
       <message name="IDS_CERT_ERROR_AUTHORITY_INVALID_DESCRIPTION" desc="Description for an X509 certificate with an invalid authority">
         Server's certificate is not trusted.
       </message>
@@ -3979,9 +4008,16 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       </message>
 
 
-      <message name="IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS" desc="Permission string for full access to the computer and all websites.">
-        All data on your computer and the websites you visit
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS" desc="Permission string for full access to the mobile device and all websites.">
+          All data on your mobile device and the websites you visit
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS" desc="Permission string for full access to the computer and all websites.">
+          All data on your computer and the websites you visit
+        </message>
+      </if>
       <message name="IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS" desc="Permission string for access to data on all websites.">
         Your data on all websites
       </message>
@@ -4646,9 +4682,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_POLICY_SCOPE_USER" desc="The text displayed in the Applies To column, indicating that a policy applies to the current user.">
         Current user
       </message>
-      <message name="IDS_POLICY_SCOPE_MACHINE" desc="The text displayed in the Applies To column, indicating that a policy applies to everyone on the local machine.">
-        Machine
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_POLICY_SCOPE_MACHINE" desc="The text displayed in the Applies To column, indicating that a policy applies to everyone on the mobile device.">
+          Mobile device
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_POLICY_SCOPE_MACHINE" desc="The text displayed in the Applies To column, indicating that a policy applies to everyone on the local machine.">
+          Machine
+        </message>
+      </if>
 
       <!-- about:flags -->
       <message name="IDS_FLAGS_LONG_TITLE" desc="Long version of the title for the about:flags page.">
@@ -4761,9 +4804,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_CLOUD_PRINT_CONNECTOR_NAME" desc="Title of the Cloud Print Connector lab">
         Cloud Print Connector
       </message>
-      <message name="IDS_FLAGS_CLOUD_PRINT_CONNECTOR_DESCRIPTION" desc="Description of the Cloud Print Connector lab">
-        Enables a background service that connects the Google Cloud Print service to any printers installed on this computer. Once this lab is enabled, you can turn the Google Cloud Print Connector on by logging in with your Google account in the Under the Hood section of Settings.
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_FLAGS_CLOUD_PRINT_CONNECTOR_DESCRIPTION" desc="Description of the Cloud Print Connector lab">
+          Enables a background service that connects the Google Cloud Print service to any printers installed on this mobile device. Once this lab is enabled, you can turn the Google Cloud Print Connector on by logging in with your Google account in the Under the Hood section of Settings.
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_FLAGS_CLOUD_PRINT_CONNECTOR_DESCRIPTION" desc="Description of the Cloud Print Connector lab">
+          Enables a background service that connects the Google Cloud Print service to any printers installed on this computer. Once this lab is enabled, you can turn the Google Cloud Print Connector on by logging in with your Google account in the Under the Hood section of Settings.
+        </message>
+      </if>
       <message name="IDS_FLAGS_CRXLESS_WEB_APPS_NAME" desc="Title of the CRX-less web apps lab">
         CRX-less Web Apps
       </message>
@@ -5360,9 +5410,16 @@ Because search results are requested even while you're typing your query, your d
       </message>
 
       <!-- Pepper Broker Info bar -->
-      <message name="IDS_PEPPER_BROKER_MESSAGE" desc="Message shown when a pepper plugin wants to launch its broker. This message is followed by a 'Learn more' link.">
-        The <ph name="PEPPER_PLUGIN_NAME">$1<ex>Shockwave Flash</ex></ph> plugin on <ph name="PEPPER_PLUGIN_DOMAIN">$2<ex>example.com</ex></ph> wants to access your computer."
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_PEPPER_BROKER_MESSAGE" desc="Message shown when a pepper plugin wants to launch its broker. This message is followed by a 'Learn more' link.">
+          The <ph name="PEPPER_PLUGIN_NAME">$1<ex>Shockwave Flash</ex></ph> plugin on <ph name="PEPPER_PLUGIN_DOMAIN">$2<ex>example.com</ex></ph> wants to access your mobile device."
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_PEPPER_BROKER_MESSAGE" desc="Message shown when a pepper plugin wants to launch its broker. This message is followed by a 'Learn more' link.">
+          The <ph name="PEPPER_PLUGIN_NAME">$1<ex>Shockwave Flash</ex></ph> plugin on <ph name="PEPPER_PLUGIN_DOMAIN">$2<ex>example.com</ex></ph> wants to access your computer."
+        </message>
+      </if>
       <message name="IDS_PEPPER_BROKER_ALLOW_BUTTON" desc="Text for the allow button on the pepper broker launch prompt">
         Allow
       </message>
@@ -6428,7 +6485,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Print from anywhere
       </message>
       <message name="IDS_CLOUD_PRINT_SETUP_ANYWHERE_EXPLAIN" desc="Explanation about printing from anywhere.">
-        Access your printers from any computer or smart phone. <ph name="BEGIN_LINK">&lt;a href="#" onclick="cloudprint.learnMore()"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
+        Access your printers from any computer or mobile device. <ph name="BEGIN_LINK">&lt;a href="#" onclick="cloudprint.learnMore()"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
       </message>
       <message name="IDS_CLOUD_PRINT_SETUP_PRINTER_HEADER" desc="Intro line about printer management.">
         Manage your printer
@@ -6442,9 +6499,16 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_CLOUD_PRINT_SETUP_SHARING_EXPLAIN" desc="Explanation about printer management.">
         Share and control access to your printers with any Google account.
       </message>
-      <message name="IDS_CLOUD_PRINT_SETUP_DONE" desc="Message on completed set up of cloud print.">
-        <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> has registered the printers on this machine with &lt;b&gt;<ph name="EMAIL_ADDRESSES">$2<ex>foo@example.com</ex></ph>&lt;/b&gt;.  You can now print to your printers from any <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> enabled web or mobile app!
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_CLOUD_PRINT_SETUP_DONE" desc="Message on completed set up of cloud print.">
+          <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> has registered the printers on this mobile device with &lt;b&gt;<ph name="EMAIL_ADDRESSES">$2<ex>foo@example.com</ex></ph>&lt;/b&gt;.  You can now print to your printers from any <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> enabled web or mobile app!
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_CLOUD_PRINT_SETUP_DONE" desc="Message on completed set up of cloud print.">
+          <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> has registered the printers on this machine with &lt;b&gt;<ph name="EMAIL_ADDRESSES">$2<ex>foo@example.com</ex></ph>&lt;/b&gt;.  You can now print to your printers from any <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> enabled web or mobile app!
+        </message>
+      </if>
       <message name="IDS_CLOUD_PRINT_SETUP_TEST_PAGE" desc="Label on button for printing a test page.">
         Print a Test Page
       </message>
@@ -7211,35 +7275,68 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         cannot reach the website.  This is typically caused by network issues,
         but can also be the result of a misconfigured firewall or proxy server.
       </message>
-      <message name="IDS_ERRORPAGES_SUMMARY_NETWORK_ACCESS_DENIED" desc="Summary in the error page when we're not being allowed to access the network.">
-        <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
-        is having trouble accessing the network.
-        <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
-        This may be because your firewall or antivirus software wrongly thinks
-        <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
-        is an intruder on your computer and is blocking it from connecting to the Internet.
-      </message>
-      <message name="IDS_ERRORPAGES_SUMMARY_PROXY_CONNECTION_FAILED" desc="Summary in the error page when the proxy server connection failed.">
-        A proxy server is a server that acts as an intermediary between your computer and other servers.  Right now, your system is configured to use a proxy, but
-        <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
-        can't connect to it.
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_ERRORPAGES_SUMMARY_NETWORK_ACCESS_DENIED" desc="Summary in the error page when we're not being allowed to access the network.">
+          <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+          is having trouble accessing the network.
+          <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
+          This may be because your firewall or antivirus software wrongly thinks
+          <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+          is an intruder on your mobile device and is blocking it from connecting to the Internet.
+        </message>
+        <message name="IDS_ERRORPAGES_SUMMARY_PROXY_CONNECTION_FAILED" desc="Summary in the error page when the proxy server connection failed.">
+          A proxy server is a server that acts as an intermediary between your mobile device and other servers.  Right now, your system is configured to use a proxy, but
+          <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+          can't connect to it.
+        </message>
 
-      <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED" desc="Summary of the error page when the network connection failed.  May be followed by platform dependent instructions.">
-        <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
-        can't display the webpage because your computer isn't connected to the Internet.
-      </message>
-      <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_INSTRUCTIONS_TEMPLATE" desc="Template for the summary of the error page when the network connection failed, on platforms with instructions.">
-        <ph name="ERROR_DESCRIPTION_TEXT">
-          $1<ex>Google Chrome can't display the webpage because your computer isn't connected to the Internet.</ex>
-        </ph>
-        <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
-        You can try to diagnose the problem by taking the following steps:
-        <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
-        <ph name="PLATFORM_TEXT">
-          $2<ex>Goto the wrench menu and choose Fix It.</ex>
-        </ph>
-      </message>
+        <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED" desc="Summary of the error page when the network connection failed.  May be followed by platform dependent instructions.">
+          <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+          can't display the webpage because your mobile device isn't connected to the Internet.
+        </message>
+        <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_INSTRUCTIONS_TEMPLATE" desc="Template for the summary of the error page when the network connection failed, on platforms with instructions.">
+          <ph name="ERROR_DESCRIPTION_TEXT">
+            $1<ex>Google Chrome can't display the webpage because your mobile device isn't connected to the Internet.</ex>
+          </ph>
+          <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
+          You can try to diagnose the problem by taking the following steps:
+          <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
+          <ph name="PLATFORM_TEXT">
+            $2<ex>Goto the wrench menu and choose Fix It.</ex>
+          </ph>
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_ERRORPAGES_SUMMARY_NETWORK_ACCESS_DENIED" desc="Summary in the error page when we're not being allowed to access the network.">
+          <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+          is having trouble accessing the network.
+          <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
+          This may be because your firewall or antivirus software wrongly thinks
+          <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+          is an intruder on your computer and is blocking it from connecting to the Internet.
+        </message>
+        <message name="IDS_ERRORPAGES_SUMMARY_PROXY_CONNECTION_FAILED" desc="Summary in the error page when the proxy server connection failed.">
+          A proxy server is a server that acts as an intermediary between your computer and other servers.  Right now, your system is configured to use a proxy, but
+          <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+          can't connect to it.
+        </message>
+
+        <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED" desc="Summary of the error page when the network connection failed.  May be followed by platform dependent instructions.">
+          <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+          can't display the webpage because your computer isn't connected to the Internet.
+        </message>
+        <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_INSTRUCTIONS_TEMPLATE" desc="Template for the summary of the error page when the network connection failed, on platforms with instructions.">
+          <ph name="ERROR_DESCRIPTION_TEXT">
+            $1<ex>Google Chrome can't display the webpage because your computer isn't connected to the Internet.</ex>
+          </ph>
+          <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
+          You can try to diagnose the problem by taking the following steps:
+          <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
+          <ph name="PLATFORM_TEXT">
+            $2<ex>Goto the wrench menu and choose Fix It.</ex>
+          </ph>
+        </message>
+      </if>
 
       <if expr="is_macosx">
         <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_PLATFORM" desc="Summary (platform dependent section) in the error page when the network connection failed.  Describes how to get to the network Diagnostics screen under Mac OSX.">
@@ -7298,21 +7395,41 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         If the problem persists, try clearing the cache.  In some cases, this
         can also be a symptom of hardware starting to fail.
       </message>
-      <message name="IDS_ERRORPAGES_SUMMARY_NETWORK_IO_SUSPENDED" desc="Summary in the error page when a page load failed due to the computer entering sleep/suspend mode.">
-        Unable to load the webpage because your computer entered sleep or
-        hibernate mode.  When this happens, network connections are shut
-        down and new network requests fail.  Reloading the page should
-        resolve this.
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_ERRORPAGES_SUMMARY_NETWORK_IO_SUSPENDED" desc="Summary in the error page when a page load failed due to the mobile device entering sleep/suspend mode.">
+          Unable to load the webpage because your mobile device entered sleep or
+          hibernate mode.  When this happens, network connections are shut
+          down and new network requests fail.  Reloading the page should
+          resolve this.
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_ERRORPAGES_SUMMARY_NETWORK_IO_SUSPENDED" desc="Summary in the error page when a page load failed due to the computer entering sleep/suspend mode.">
+          Unable to load the webpage because your computer entered sleep or
+          hibernate mode.  When this happens, network connections are shut
+          down and new network requests fail.  Reloading the page should
+          resolve this.
+        </message>
+      </if>
       <message name="IDS_ERRORPAGES_SUMMARY_NOT_FOUND" desc="Summary in the error page when the server returns a 404.">
         No webpage was found for the web address: <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph>
       </message>
-      <message name="IDS_ERRORPAGES_SUMMARY_TOO_MANY_REDIRECTS" desc="Summary in the error page when there are too many URL redirects.">
-        The webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph> has resulted in
-        too many redirects.  Clearing your cookies for this site or allowing third-party cookies may fix the problem.  If
-        not, it is possibly a server configuration issue and not a problem with your
-        computer.
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_ERRORPAGES_SUMMARY_TOO_MANY_REDIRECTS" desc="Summary in the error page when there are too many URL redirects.">
+          The webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph> has resulted in
+          too many redirects.  Clearing your cookies for this site or allowing third-party cookies may fix the problem.  If
+          not, it is possibly a server configuration issue and not a problem with your
+          mobile device.
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_ERRORPAGES_SUMMARY_TOO_MANY_REDIRECTS" desc="Summary in the error page when there are too many URL redirects.">
+          The webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph> has resulted in
+          too many redirects.  Clearing your cookies for this site or allowing third-party cookies may fix the problem.  If
+          not, it is possibly a server configuration issue and not a problem with your
+          computer.
+        </message>
+      </if>
       <message name="IDS_ERRORPAGES_SUMMARY_EMPTY_RESPONSE" desc="Summary in the error page when no data is received.">
         Unable to load the webpage because the server sent no data.
       </message>
@@ -7331,26 +7448,50 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         won't use insecure connections in order to protect your privacy.
       </message>
 
-      <message name="IDS_ERRORPAGES_SUMMARY_ESET_ANTI_VIRUS_SSL_INTERCEPTION" desc="Summary in the error page when we detect that ESET anti-virus is running and intercepting our HTTPS connections. 'ESET' is a product name and may be best left untranslated. 'Learn more' should be the contents of IDS_LEARN_MORE.">
-        <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
-        has detected that an ESET product is intercepting secure connections.
-        This is typically not a security issue as the ESET software is
-        usually running on the same computer. However, due to an intolerance
-        to specific aspects of
-        <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>'s
-        secure connections, ESET products have to be configured to not
-        perform this interception. Click the 'Learn more' link for
-        instructions.
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_ERRORPAGES_SUMMARY_ESET_ANTI_VIRUS_SSL_INTERCEPTION" desc="Summary in the error page when we detect that ESET anti-virus is running and intercepting our HTTPS connections. 'ESET' is a product name and may be best left untranslated. 'Learn more' should be the contents of IDS_LEARN_MORE.">
+          <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+          has detected that an ESET product is intercepting secure connections.
+          This is typically not a security issue as the ESET software is
+          usually running on the same mobile device. However, due to an intolerance
+          to specific aspects of
+          <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>'s
+          secure connections, ESET products have to be configured to not
+          perform this interception. Click the 'Learn more' link for
+          instructions.
+        </message>
 
-      <message name="IDS_ERRORPAGES_SUMMARY_NETNANNY_SSL_INTERCEPTION" desc="Summary in the error page when we detect that NetNanny is running and intercepting our HTTPS connections. 'NetNanny' is a product name and may be best left untranslated. 'Learn more' should be the contents of IDS_LEARN_MORE.">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> has detected that
-        NetNanny is intercepting secure connections. This is typically
-        not a security issue as the NetNanny software is usually running on the
-        same computer. However, due to an intolerance to specific aspects of
-        Chrome's secure connections, NetNanny has to be configured to not
-        perform this interception. Click the 'Learn more' link for instructions.
-      </message>
+        <message name="IDS_ERRORPAGES_SUMMARY_NETNANNY_SSL_INTERCEPTION" desc="Summary in the error page when we detect that NetNanny is running and intercepting our HTTPS connections. 'NetNanny' is a product name and may be best left untranslated. 'Learn more' should be the contents of IDS_LEARN_MORE.">
+          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> has detected that
+          NetNanny is intercepting secure connections. This is typically
+          not a security issue as the NetNanny software is usually running on the
+          same mobile device. However, due to an intolerance to specific aspects of
+          Chrome's secure connections, NetNanny has to be configured to not
+          perform this interception. Click the 'Learn more' link for instructions.
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_ERRORPAGES_SUMMARY_ESET_ANTI_VIRUS_SSL_INTERCEPTION" desc="Summary in the error page when we detect that ESET anti-virus is running and intercepting our HTTPS connections. 'ESET' is a product name and may be best left untranslated. 'Learn more' should be the contents of IDS_LEARN_MORE.">
+          <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+          has detected that an ESET product is intercepting secure connections.
+          This is typically not a security issue as the ESET software is
+          usually running on the same computer. However, due to an intolerance
+          to specific aspects of
+          <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>'s
+          secure connections, ESET products have to be configured to not
+          perform this interception. Click the 'Learn more' link for
+          instructions.
+        </message>
+
+        <message name="IDS_ERRORPAGES_SUMMARY_NETNANNY_SSL_INTERCEPTION" desc="Summary in the error page when we detect that NetNanny is running and intercepting our HTTPS connections. 'NetNanny' is a product name and may be best left untranslated. 'Learn more' should be the contents of IDS_LEARN_MORE.">
+          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> has detected that
+          NetNanny is intercepting secure connections. This is typically
+          not a security issue as the NetNanny software is usually running on the
+          same computer. However, due to an intolerance to specific aspects of
+          Chrome's secure connections, NetNanny has to be configured to not
+          perform this interception. Click the 'Learn more' link for instructions.
+        </message>
+      </if>
 
       <message name="IDS_ERRORPAGES_DETAILS_TEMPLATE" desc="On the bottom of the error page text, there is a box that includes extra information for tech savvy users.">
         Error <ph name="ERROR_NUMBER">$1<ex>5</ex></ph> (<ph name="ERROR_NAME">$2<ex>net::ERR_FILE_NOT_FOUND</ex></ph>): <ph name="ERROR_TEXT">$3<ex>The requested file is not found.</ex></ph>
@@ -8267,9 +8408,16 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_OPTIONS_DEFAULTBROWSER_SXS" desc="The text displayed when Chrome is installed in side-by-side mode, which does not support setting as the default browser.">
         This is a secondary installation of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, and cannot be made your default browser.
       </message>
-      <message name="IDS_AUTOLAUNCH_TEXT" desc="The text displayed in settings to explain whether Chrome is set to auto-launch on startup or not.">
-        Launch <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> automatically when I start my computer
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_AUTOLAUNCH_TEXT" desc="The text displayed in settings to explain whether Chrome is set to auto-launch on startup or not.">
+          Launch <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> automatically when I start my mobile device
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_AUTOLAUNCH_TEXT" desc="The text displayed in settings to explain whether Chrome is set to auto-launch on startup or not.">
+          Launch <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> automatically when I start my computer
+        </message>
+      </if>
 
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_OPTIONS_ADVANCED_BUTTON_TITLE" desc="The title of the advanced options button">
@@ -8688,9 +8836,16 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_OPTIONS_PROXIES_LABEL" desc="The info label for the 'Proxy settings' button">
         Set up a proxy to connect to the network.
       </message>
-      <message name="IDS_OPTIONS_SYSTEM_PROXIES_LABEL" desc="The info label for the 'Proxy settings' button when managed by the system.">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is using your computer's system proxy settings to connect to the network.
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_OPTIONS_SYSTEM_PROXIES_LABEL" desc="The info label for the 'Proxy settings' button when managed by the system.">
+          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is using your mobile device's system proxy settings to connect to the network.
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_OPTIONS_SYSTEM_PROXIES_LABEL" desc="The info label for the 'Proxy settings' button when managed by the system.">
+          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is using your computer's system proxy settings to connect to the network.
+        </message>
+      </if>
       <message name="IDS_OPTIONS_EXTENSION_PROXIES_LABEL" desc="The info label for the 'Proxy settings' button when managed by an extension.">
         Your network proxy settings are being managed by an extension.
       </message>
@@ -8698,9 +8853,16 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_GOOGLE_CLOUD_PRINT" desc="The name of the Google Cloud Print product.">
         Google Cloud Print
       </message>
-      <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_LABEL" desc="The label of the cloud print setup button when it hasn't been set up yet.">
-        <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> lets you access this computer's printers from anywhere. Click to enable.
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_LABEL" desc="The label of the cloud print setup button when it hasn't been set up yet.">
+          <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> lets you access this mobile device's printers from anywhere. Click to enable.
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_LABEL" desc="The label of the cloud print setup button when it hasn't been set up yet.">
+          <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> lets you access this computer's printers from anywhere. Click to enable.
+        </message>
+      </if>
       <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_BUTTON" desc="The label of the cloud connector configure button when it hasn't been set up yet.">
         Enable <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> Connector
       </message>
@@ -8719,9 +8881,16 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_OPTIONS_SAFEBROWSING_ENABLEPROTECTION" desc="The label of the 'Enable phishing and malware protection' checkbox">
         Enable phishing and malware protection
       </message>
-      <message name="IDS_OPTIONS_SSL_GROUP_DESCRIPTION" desc="The description of the 'SSL Connections' group">
-        Computer-wide SSL settings:
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_OPTIONS_SSL_GROUP_DESCRIPTION" desc="The description of the 'SSL Connections' group">
+          Mobile device-wide SSL settings:
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_OPTIONS_SSL_GROUP_DESCRIPTION" desc="The description of the 'SSL Connections' group">
+          Computer-wide SSL settings:
+        </message>
+      </if>
       <message name="IDS_OPTIONS_SSL_CHECKREVOCATION" desc="The label of the 'Check for server certificate revocation' checkbox">
         Check for server certificate revocation
       </message>
@@ -9065,31 +9234,58 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
                desc="The name for the 'Recently Closed' menu on the New Tab Page.">
         Recently closed
       </message>
-      <message name="IDS_NEW_TAB_OTR_MESSAGE"
-               desc="Used when a person opens an OTR window">
-        <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You've gone incognito<ph name="END_BOLD">"&lt;/strong&gt;</ph>. Pages you view in this window won't appear in your browser history or search history, and they won't leave other traces, like cookies, on your computer after you close &lt;strong&gt;all&lt;/strong&gt; open incognito windows. Any files you download or bookmarks you create will be preserved, however.
-        <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
-        <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Going incognito doesn't affect the behavior of other people, servers, or software. Be wary of:<ph name="END_BOLD">&lt;/strong&gt;</ph>
-        <ph name="BEGIN_LIST">&lt;ul&gt;</ph>
-          <ph name="BEGIN_LIST_ITEM">&lt;li&gt;</ph>Websites that collect or share information about you<ph name="END_LIST_ITEM">&lt;/li&gt;</ph>
-          <ph name="BEGIN_LIST_ITEM">&lt;li&gt;</ph>Internet service providers or employers that track the pages you visit<ph name="END_LIST_ITEM">&lt;/li&gt;</ph>
-          <ph name="BEGIN_LIST_ITEM">&lt;li&gt;</ph>Malicious software that tracks your keystrokes in exchange for free smileys<ph name="END_LIST_ITEM">&lt;/li&gt;</ph>
-          <ph name="BEGIN_LIST_ITEM">&lt;li&gt;</ph>Surveillance by secret agents<ph name="END_LIST_ITEM">&lt;/li&gt;</ph>
-          <ph name="BEGIN_LIST_ITEM">&lt;li&gt;</ph>People standing behind you<ph name="END_LIST_ITEM">&lt;/li&gt;</ph>
-        <ph name="END_LIST">&lt;/ul&gt;</ph>
-        <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph> about incognito browsing.
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_NEW_TAB_OTR_MESSAGE"
+                 desc="Used when a person opens an OTR tab">
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You've gone incognito<ph name="END_BOLD">"&lt;/strong&gt;</ph>. Pages you view in this tab won't appear in your browser history or search history, and they won't leave other traces, like cookies, on your mobile devices after you close &lt;strong&gt;all&lt;/strong&gt; open incognito tabs. Any bookmarks you create will be preserved, however.
+          <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Going incognito doesn't affect the behavior of other people, servers, or software. Be wary of:<ph name="END_BOLD">&lt;/strong&gt;</ph>
+          <ph name="BEGIN_LIST">&lt;ul&gt;</ph>
+            <ph name="BEGIN_LIST_ITEM">&lt;li&gt;</ph>Websites that collect or share information about you<ph name="END_LIST_ITEM">&lt;/li&gt;</ph>
+            <ph name="BEGIN_LIST_ITEM">&lt;li&gt;</ph>Internet service providers or employers that track the pages you visit<ph name="END_LIST_ITEM">&lt;/li&gt;</ph>
+            <ph name="BEGIN_LIST_ITEM">&lt;li&gt;</ph>Surveillance by secret agents<ph name="END_LIST_ITEM">&lt;/li&gt;</ph>
+            <ph name="BEGIN_LIST_ITEM">&lt;li&gt;</ph>People standing behind you<ph name="END_LIST_ITEM">&lt;/li&gt;</ph>
+          <ph name="END_LIST">&lt;/ul&gt;</ph>
+          <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph> about incognito browsing.
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_NEW_TAB_OTR_MESSAGE"
+                 desc="Used when a person opens an OTR window">
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You've gone incognito<ph name="END_BOLD">"&lt;/strong&gt;</ph>. Pages you view in this window won't appear in your browser history or search history, and they won't leave other traces, like cookies, on your computer after you close &lt;strong&gt;all&lt;/strong&gt; open incognito windows. Any files you download or bookmarks you create will be preserved, however.
+          <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Going incognito doesn't affect the behavior of other people, servers, or software. Be wary of:<ph name="END_BOLD">&lt;/strong&gt;</ph>
+          <ph name="BEGIN_LIST">&lt;ul&gt;</ph>
+            <ph name="BEGIN_LIST_ITEM">&lt;li&gt;</ph>Websites that collect or share information about you<ph name="END_LIST_ITEM">&lt;/li&gt;</ph>
+            <ph name="BEGIN_LIST_ITEM">&lt;li&gt;</ph>Internet service providers or employers that track the pages you visit<ph name="END_LIST_ITEM">&lt;/li&gt;</ph>
+            <ph name="BEGIN_LIST_ITEM">&lt;li&gt;</ph>Malicious software that tracks your keystrokes in exchange for free smileys<ph name="END_LIST_ITEM">&lt;/li&gt;</ph>
+            <ph name="BEGIN_LIST_ITEM">&lt;li&gt;</ph>Surveillance by secret agents<ph name="END_LIST_ITEM">&lt;/li&gt;</ph>
+            <ph name="BEGIN_LIST_ITEM">&lt;li&gt;</ph>People standing behind you<ph name="END_LIST_ITEM">&lt;/li&gt;</ph>
+          <ph name="END_LIST">&lt;/ul&gt;</ph>
+          <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph> about incognito browsing.
+        </message>
+      </if>
       <message name="IDS_NEW_TAB_OTR_EXTENSIONS_MESSAGE"
                desc="Explanation in a new OTR window that extensions have been disabled while in OTR.">
         Because <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> does not control how extensions handle your personal data, all extensions have been disabled for incognito windows. You can reenable them individually in the
         <ph name="BEGIN_LINK">&lt;a href="$2"&gt;</ph>extensions manager<ph name="END_LINK">&lt;/a&gt;</ph>.
       </message>
-      <message name="IDS_NEW_TAB_GUEST_SESSION_MESSAGE"
-          desc="Used when a person enters Guest Session">
-          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You're browsing as a guest<ph name="END_BOLD">&lt;/strong&gt;</ph>. Pages you view in this window won't appear in the browser history or search history, and they won't leave other traces, like cookies, on the computer after you sign out. Files you download and bookmarks you create won't be preserved.
-        <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
-        <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph> about Guest browsing.
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_NEW_TAB_GUEST_SESSION_MESSAGE"
+            desc="Used when a person enters Guest Session">
+            <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You're browsing as a guest<ph name="END_BOLD">&lt;/strong&gt;</ph>. Pages you view in this tab won't appear in the browser history or search history, and they won't leave other traces, like cookies, on the mobile device after you sign out. Files you download and bookmarks you create won't be preserved.
+          <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
+          <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph> about Guest browsing.
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_NEW_TAB_GUEST_SESSION_MESSAGE"
+            desc="Used when a person enters Guest Session">
+            <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You're browsing as a guest<ph name="END_BOLD">&lt;/strong&gt;</ph>. Pages you view in this window won't appear in the browser history or search history, and they won't leave other traces, like cookies, on the computer after you sign out. Files you download and bookmarks you create won't be preserved.
+          <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
+          <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph> about Guest browsing.
+        </message>
+      </if>
       <message name="IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_SINGLE"
                desc="Title of recently closed windows in the recently closed section of the new tab page when the window has a single tab">
         1 Tab
@@ -9451,9 +9647,16 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
           Sign in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>...
         </message>
       </if>
-      <message name="IDS_SYNC_USER_NAME_IN_USE_ERROR" desc="An error message shown when a user tries to sign in to sync using a user name that's already in use by another profile.">
-        This account is already being used on this computer.
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_SYNC_USER_NAME_IN_USE_ERROR" desc="An error message shown when a user tries to sign in to sync using a user name that's already in use by another profile.">
+          This account is already being used on this mobile device.
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_SYNC_USER_NAME_IN_USE_ERROR" desc="An error message shown when a user tries to sign in to sync using a user name that's already in use by another profile.">
+          This account is already being used on this computer.
+        </message>
+      </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_SHOW_SYNC_SETUP_USERNAME" desc="In title case. The title of the menu item to open the sync setup page. Shown in the Wrench menu when the user is signed into sync.">
           Signed in as <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>
@@ -9471,21 +9674,41 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_SAFE_BROWSING_MALWARE_HEADLINE" desc="SafeBrowsing Malware HTML headline">
         Warning: Something's Not Right Here!
       </message>
-      <message name="IDS_SAFE_BROWSING_MALWARE_DESCRIPTION1" desc="SafeBrowsing Malware HTML description, first line">
-        <ph name="HOST_NAME">&lt;strong&gt;$1<ex>www.malware.com</ex>&lt;/strong&gt;</ph> contains malware. Your computer might catch a virus if you visit this site.
-      </message>
-      <message name="IDS_SAFE_BROWSING_MALWARE_DESCRIPTION2" desc="SafeBrowsing Malware HTML description, second line">
-        Google has found malicious software may be installed onto your computer if you proceed. If you've visited this site in the past or you trust this site, it's possible that it has just recently been compromised by a hacker. You should not proceed, and perhaps try again tomorrow or go somewhere else.
-      </message>
-      <message name="IDS_SAFE_BROWSING_MALWARE_DESCRIPTION3" desc="SafeBrowsing Malware HTML description, last line">
-        If you understand that visiting this site may harm your computer, <ph name="PROCEED_LINK">$1<ex>proceed anyway</ex></ph>.
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_SAFE_BROWSING_MALWARE_DESCRIPTION1" desc="SafeBrowsing Malware HTML description, first line">
+          <ph name="HOST_NAME">&lt;strong&gt;$1<ex>www.malware.com</ex>&lt;/strong&gt;</ph> contains malware. Your mobile device might catch a virus if you visit this site.
+        </message>
+        <message name="IDS_SAFE_BROWSING_MALWARE_DESCRIPTION2" desc="SafeBrowsing Malware HTML description, second line">
+          Google has found malicious software may be installed onto your mobile device if you proceed. If you've visited this site in the past or you trust this site, it's possible that it has just recently been compromised by a hacker. You should not proceed, and perhaps try again tomorrow or go somewhere else.
+        </message>
+        <message name="IDS_SAFE_BROWSING_MALWARE_DESCRIPTION3" desc="SafeBrowsing Malware HTML description, last line">
+          If you understand that visiting this site may harm your mobile device, <ph name="PROCEED_LINK">$1<ex>proceed anyway</ex></ph>.
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_SAFE_BROWSING_MALWARE_DESCRIPTION1" desc="SafeBrowsing Malware HTML description, first line">
+          <ph name="HOST_NAME">&lt;strong&gt;$1<ex>www.malware.com</ex>&lt;/strong&gt;</ph> contains malware. Your computer might catch a virus if you visit this site.
+        </message>
+        <message name="IDS_SAFE_BROWSING_MALWARE_DESCRIPTION2" desc="SafeBrowsing Malware HTML description, second line">
+          Google has found malicious software may be installed onto your computer if you proceed. If you've visited this site in the past or you trust this site, it's possible that it has just recently been compromised by a hacker. You should not proceed, and perhaps try again tomorrow or go somewhere else.
+        </message>
+        <message name="IDS_SAFE_BROWSING_MALWARE_DESCRIPTION3" desc="SafeBrowsing Malware HTML description, last line">
+          If you understand that visiting this site may harm your computer, <ph name="PROCEED_LINK">$1<ex>proceed anyway</ex></ph>.
+        </message>
+      </if>
       <message name="IDS_SAFE_BROWSING_MALWARE_PROCEED_LINK" desc="SafeBrowsing Malware HTML description, last line proceed link part.">
         proceed anyway
       </message>
-      <message name="IDS_SAFE_BROWSING_MALWARE_DESCRIPTION4" desc="SafeBrowsing Malware HTML description, first line for case of subresource malicious">
-        <ph name="HOST_NAME">&lt;strong&gt;$1<ex>www.malware.com</ex>&lt;/strong&gt;</ph> contains content from <ph name="ELEMENTS_HOST_NAME">&lt;strong&gt;$2<ex>www.evil.cn</ex>&lt;/strong&gt;</ph>, a site known to distribute malware. Your computer might catch a virus if you visit this site.
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_SAFE_BROWSING_MALWARE_DESCRIPTION4" desc="SafeBrowsing Malware HTML description, first line for case of subresource malicious">
+          <ph name="HOST_NAME">&lt;strong&gt;$1<ex>www.malware.com</ex>&lt;/strong&gt;</ph> contains content from <ph name="ELEMENTS_HOST_NAME">&lt;strong&gt;$2<ex>www.evil.cn</ex>&lt;/strong&gt;</ph>, a site known to distribute malware. Your mobile device might catch a virus if you visit this site.
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_SAFE_BROWSING_MALWARE_DESCRIPTION4" desc="SafeBrowsing Malware HTML description, first line for case of subresource malicious">
+          <ph name="HOST_NAME">&lt;strong&gt;$1<ex>www.malware.com</ex>&lt;/strong&gt;</ph> contains content from <ph name="ELEMENTS_HOST_NAME">&lt;strong&gt;$2<ex>www.evil.cn</ex>&lt;/strong&gt;</ph>, a site known to distribute malware. Your computer might catch a virus if you visit this site.
+        </message>
+      </if>
       <message name="IDS_SAFE_BROWSING_MALWARE_DESCRIPTION5" desc="SafeBrowsing Malware HTML description, detailed information, click button to span.">
         We have already notified <ph name="HOST_NAME">&lt;strong&gt;$1<ex>evil.com</ex>&lt;/strong&gt;</ph> that we found malware on the site. For more about the problems found on <ph name="HOST_NAME2">$2<ex>www.malware.com</ex></ph>, visit the Google <ph name="DIAGNOSTIC_PAGE">$3<ex>diagnostic page</ex></ph>.
       </message>
@@ -9529,15 +9752,29 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_SAFE_BROWSING_MULTI_THREAT_TITLE" desc="SafeBrowsing Multi threat HTML title">
         Malware and phishing Detected!
       </message>
-      <message name="IDS_SAFE_BROWSING_MULTI_THREAT_DESCRIPTION1" desc="SafeBrowsing multiple threat HTML description, first line">
-        The website at <ph name="HOST_NAME">&lt;strong&gt;$1<ex>www.malware.com</ex>&lt;/strong&gt;</ph> contains elements from sites which appear to host malware – software that can hurt your computer or otherwise operate without your consent.  Just visiting a site that hosts malware can infect your computer. The website also hosts contents from sites that have been reported as a “phishing” sites.  Phishing sites trick users into disclosing personal or financial information, often by pretending to represent trusted institutions, such as banks.
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_SAFE_BROWSING_MULTI_THREAT_DESCRIPTION1" desc="SafeBrowsing multiple threat HTML description, first line">
+          The website at <ph name="HOST_NAME">&lt;strong&gt;$1<ex>www.malware.com</ex>&lt;/strong&gt;</ph> contains elements from sites which appear to host malware – software that can hurt your mobile device or otherwise operate without your consent.  Just visiting a site that hosts malware can infect your mobile device. The website also hosts contents from sites that have been reported as a “phishing” sites.  Phishing sites trick users into disclosing personal or financial information, often by pretending to represent trusted institutions, such as banks.
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_SAFE_BROWSING_MULTI_THREAT_DESCRIPTION1" desc="SafeBrowsing multiple threat HTML description, first line">
+          The website at <ph name="HOST_NAME">&lt;strong&gt;$1<ex>www.malware.com</ex>&lt;/strong&gt;</ph> contains elements from sites which appear to host malware – software that can hurt your computer or otherwise operate without your consent.  Just visiting a site that hosts malware can infect your computer. The website also hosts contents from sites that have been reported as a “phishing” sites.  Phishing sites trick users into disclosing personal or financial information, often by pretending to represent trusted institutions, such as banks.
+        </message>
+      </if>
       <message name="IDS_SAFE_BROWSING_MULTI_THREAT_DESCRIPTION2" desc="SafeBrowsing multiple threat HTML description, second line">
         Below is a list of all the unsafe elements for the page. Click on the Diagnostic link for more information on the malware thread for a specific resource. If you know that a resource has been erroneously reported as phishing, click the 'Report error' link.
       </message>
-      <message name="IDS_SAFE_BROWSING_MULTI_MALWARE_DESCRIPTION1" desc="SafeBrowsing Malware HTML description, first line for case of several malicious subresource">
-        The website at <ph name="HOST_NAME">&lt;strong&gt;$1<ex>www.goodsite.com</ex>&lt;/strong&gt;</ph> contains elements from sites which appear to host malware – software that can hurt your computer or otherwise operate without your consent.  Just visiting a site that contains malware can infect your computer.
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_SAFE_BROWSING_MULTI_MALWARE_DESCRIPTION1" desc="SafeBrowsing Malware HTML description, first line for case of several malicious subresource">
+          The website at <ph name="HOST_NAME">&lt;strong&gt;$1<ex>www.goodsite.com</ex>&lt;/strong&gt;</ph> contains elements from sites which appear to host malware – software that can hurt your mobile device or otherwise operate without your consent.  Just visiting a site that contains malware can infect your mobile device.
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_SAFE_BROWSING_MULTI_MALWARE_DESCRIPTION1" desc="SafeBrowsing Malware HTML description, first line for case of several malicious subresource">
+          The website at <ph name="HOST_NAME">&lt;strong&gt;$1<ex>www.goodsite.com</ex>&lt;/strong&gt;</ph> contains elements from sites which appear to host malware – software that can hurt your computer or otherwise operate without your consent.  Just visiting a site that contains malware can infect your computer.
+        </message>
+      </if>
       <message name="IDS_SAFE_BROWSING_MULTI_MALWARE_DESCRIPTION2" desc="SafeBrowsing Malware HTML description, second line for case of several malicious subresource">
         Below is a list of all the unsafe elements for the page. Click on the Diagnostic link for more information on the thread for a specific element.
       </message>
@@ -9553,9 +9790,16 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_SAFE_BROWSING_MALWARE_LABEL" desc="SafeBrowsing multiple threats, malware label in the table showing the reported threats.">
         Malware
       </message>
-      <message name="IDS_SAFE_BROWSING_MULTI_MALWARE_DESCRIPTION_AGREE" desc="SafeBrowsing Malware, agree checkbox text">
-        I understand that visiting this site may harm my computer.
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_SAFE_BROWSING_MULTI_MALWARE_DESCRIPTION_AGREE" desc="SafeBrowsing Malware, agree checkbox text">
+          I understand that visiting this site may harm my mobile device.
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_SAFE_BROWSING_MULTI_MALWARE_DESCRIPTION_AGREE" desc="SafeBrowsing Malware, agree checkbox text">
+          I understand that visiting this site may harm my computer.
+        </message>
+      </if>
       <message name="IDS_SAFE_BROWSING_MULTI_MALWARE_PROCEED_BUTTON" desc="SafeBrowsing Malware, proceed button">
         Proceed anyway
       </message>
@@ -10426,9 +10670,16 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_OPTIONS_SELECT_EVERYTHING" desc="The select option that selects all features to be synced.">
         Everything
       </message>
-      <message name="IDS_SYNC_OVERVIEW" desc="The message that appears in the options dialog when sync has not been set up by the user.">
-        Sign in to <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> with your Google Account to save your personalized browser features to the web and access them from <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> on any computer. You'll also be automatically signed in to your favorite Google services.
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_SYNC_OVERVIEW" desc="The message that appears in the options dialog when sync has not been set up by the user.">
+          Sign in to <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> with your Google Account to save your personalized browser features to the web and access them from <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> on any mobile device. You'll also be automatically signed in to your favorite Google services.
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_SYNC_OVERVIEW" desc="The message that appears in the options dialog when sync has not been set up by the user.">
+          Sign in to <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> with your Google Account to save your personalized browser features to the web and access them from <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> on any computer. You'll also be automatically signed in to your favorite Google services.
+        </message>
+      </if>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_START_SYNC_BUTTON_LABEL" desc="The label that appears on the sync button in the options dialog when sync has not been set up by the user.">
           Sign in to <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph>
@@ -10590,9 +10841,16 @@ Some features may be unavailable.  Please check that the profile exists and you 
           Disconnect Your Google Account
         </message>
       </if>
-      <message name="IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL" desc="The text to display below the 'Stop syncing this account' button on the options pane, explaining what the button does.">
-        By disconnecting your Google Account from <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph>, changes to your data on this computer will no longer be synced to your Google Account. Data already stored in your Google Account will remain there until you remove it using <ph name="BEGIN_LINK">&lt;a href="$2" target=&quot;_blank&quot;&gt;</ph>Google Dashboard<ph name="END_LINK">&lt;/a&gt;</ph>.
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL" desc="The text to display below the 'Stop syncing this account' button on the options pane, explaining what the button does.">
+          By disconnecting your Google Account from <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph>, changes to your data on this mobile device will no longer be synced to your Google Account. Data already stored in your Google Account will remain there until you remove it using <ph name="BEGIN_LINK">&lt;a href="$2" target=&quot;_blank&quot;&gt;</ph>Google Dashboard<ph name="END_LINK">&lt;/a&gt;</ph>.
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL" desc="The text to display below the 'Stop syncing this account' button on the options pane, explaining what the button does.">
+          By disconnecting your Google Account from <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph>, changes to your data on this computer will no longer be synced to your Google Account. Data already stored in your Google Account will remain there until you remove it using <ph name="BEGIN_LINK">&lt;a href="$2" target=&quot;_blank&quot;&gt;</ph>Google Dashboard<ph name="END_LINK">&lt;/a&gt;</ph>.
+        </message>
+      </if>
       <!-- Sync time strings -->
       <message name="IDS_SYNC_TIME_NEVER" desc="Indicates that the first sync has never completed.">
         Never
@@ -10852,9 +11110,16 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_PASSPHRASE_CANCEL_WARNING_HEADER" desc="Header for the passphrase cancel warning.  Should be phrased as a yes-or-no question.">
         Skip syncing encrypted data?
       </message>
-      <message name="IDS_SYNC_PASSPHRASE_CANCEL_WARNING" desc="Warning message when the passphrase entry is canceled.">
-        Without a passphrase, your passwords and other encrypted data will not be synced on this computer.
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_SYNC_PASSPHRASE_CANCEL_WARNING" desc="Warning message when the passphrase entry is canceled.">
+          Without a passphrase, your passwords and other encrypted data will not be synced on this mobile device.
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_SYNC_PASSPHRASE_CANCEL_WARNING" desc="Warning message when the passphrase entry is canceled.">
+          Without a passphrase, your passwords and other encrypted data will not be synced on this computer.
+        </message>
+      </if>
       <message name="IDS_SYNC_PASSPHRASE_CANCEL_YES" desc="String for 'yes' button on passphrase cancel warning dialog.">
         Skip
       </message>
@@ -10863,10 +11128,18 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
 
       <!-- Login dialog strings -->
-      <message name="IDS_SYNC_LOGIN_INTRODUCTION" desc="The message to display at the top of the login dialog">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> sync makes it easy to share your data (such as bookmarks and settings) between your computers.
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> synchronizes your data by storing it online with Google when you sign in with your Google Account.
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_SYNC_LOGIN_INTRODUCTION" desc="The message to display at the top of the login dialog">
+          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> sync makes it easy to share your data (such as bookmarks and settings) between your computers and mobile devices.
+          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> synchronizes your data by storing it online with Google when you sign in with your Google Account.
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_SYNC_LOGIN_INTRODUCTION" desc="The message to display at the top of the login dialog">
+          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> sync makes it easy to share your data (such as bookmarks and settings) between your computers.
+          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> synchronizes your data by storing it online with Google when you sign in with your Google Account.
+        </message>
+      </if>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_SETUP_TITLE" desc="The title of the Sync Setup overlay.">
           Sign in with your Google Account
@@ -11110,9 +11383,16 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_PROMO_V_BACKUP_TITLE" desc="Verbose sync promo. Title of the backup message.">
         Backup
       </message>
-      <message name="IDS_SYNC_PROMO_V_BACKUP_BODY" desc="Verbose sync promo. Body of the backup message.">
-        All your <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> settings are safe in case anything happens to your computer.
-      </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_SYNC_PROMO_V_BACKUP_BODY" desc="Verbose sync promo. Body of the backup message.">
+          All your <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> settings are safe in case anything happens to your mobile device.
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_SYNC_PROMO_V_BACKUP_BODY" desc="Verbose sync promo. Body of the backup message.">
+          All your <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> settings are safe in case anything happens to your computer.
+        </message>
+      </if>
       <message name="IDS_SYNC_PROMO_V_SERVICES_TITLE" desc="Verbose sync promo. Title of the Google Services message.">
         Google Services
       </message>
@@ -11737,9 +12017,16 @@ Some features may be unavailable.  Please check that the profile exists and you 
     </if>
 
     <!-- File Selection Dialog Policy - Infobar -->
-    <message name="IDS_FILE_SELECTION_DIALOG_INFOBAR" desc="Infobar message on disallowed file selection dialog.">
-      Access to local files on your machine is disabled by your administrator.
-    </message>
+    <if expr="pp_ifdef('android')">
+      <message name="IDS_FILE_SELECTION_DIALOG_INFOBAR" desc="Infobar message on disallowed file selection dialog.">
+        Access to local files on your mobile device is disabled by your administrator.
+      </message>
+    </if>
+    <if expr="not pp_ifdef('android')">
+      <message name="IDS_FILE_SELECTION_DIALOG_INFOBAR" desc="Infobar message on disallowed file selection dialog.">
+        Access to local files on your machine is disabled by your administrator.
+      </message>
+    </if>
 
     <!-- Status Area Strings (not ChromeOS specific) -->
     <message name="IDS_STATUSBAR_CLOCK_OPEN_OPTIONS_DIALOG" desc="The menu item in the clock menu button for opening the options dialog">
@@ -15077,9 +15364,16 @@ Battery full
         Delete
       </message>
     </if>
-    <message name="IDS_PROFILES_DELETE_MESSAGE" desc="Message explaining to the user what will happen if they delete this profile">
-      Are you sure you want to delete "<ph name="PROFILE_NAME">$1<ex>New User</ex></ph>" and all the data associated with it from this computer? This cannot be undone!
-    </message>
+    <if expr="pp_ifdef('android')">
+      <message name="IDS_PROFILES_DELETE_MESSAGE" desc="Message explaining to the user what will happen if they delete this profile">
+        Are you sure you want to delete "<ph name="PROFILE_NAME">$1<ex>New User</ex></ph>" and all the data associated with it from this mobile device? This cannot be undone!
+      </message>
+    </if>
+    <if expr="not pp_ifdef('android')">
+      <message name="IDS_PROFILES_DELETE_MESSAGE" desc="Message explaining to the user what will happen if they delete this profile">
+        Are you sure you want to delete "<ph name="PROFILE_NAME">$1<ex>New User</ex></ph>" and all the data associated with it from this computer? This cannot be undone!
+      </message>
+    </if>
     <message name="IDS_PROFILES_LIST_ITEM_CURRENT" desc="Text to display in the multi-profiles list when this profile is the current profile">
       <ph name="PROFILE_NAME">$1<ex>New User</ex></ph> (current)
     </message>
