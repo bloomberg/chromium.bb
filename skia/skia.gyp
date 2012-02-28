@@ -897,6 +897,9 @@
               '$(SDKROOT)/System/Library/Frameworks/AppKit.framework',
             ],
           },
+          'sources': [
+            '../third_party/skia/src/utils/mac/SkStream_mac.cpp',
+          ],
           'conditions': [
              [ 'use_skia == 0', {
                'sources/': [
