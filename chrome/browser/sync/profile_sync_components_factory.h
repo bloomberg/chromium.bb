@@ -83,13 +83,6 @@ class ProfileSyncComponentsFactory {
   virtual base::WeakPtr<SyncableService> GetSyncableServiceForType(
       syncable::ModelType type) = 0;
 
-  // Instantiates both a model associator and change processor for the
-  // app data type.  The pointers in the return struct are
-  // owned by the caller.
-  virtual SyncComponents CreateAppSyncComponents(
-      ProfileSyncService* profile_sync_service,
-      browser_sync::DataTypeErrorHandler* error_handler) = 0;
-
   // Returns a weak pointer to the SyncableService associated with the datatype.
   // The SyncableService is not owned by Sync, but by the backend service
   // itself.
@@ -119,9 +112,10 @@ class ProfileSyncComponentsFactory {
       browser_sync::DataTypeErrorHandler* error_handler) = 0;
 
   // Instantiates both a model associator and change processor for the
-  // extension data type.  The pointers in the return struct are
+  // extension or app data types.  The pointers in the return struct are
   // owned by the caller.
-  virtual SyncComponents CreateExtensionSyncComponents(
+  virtual SyncComponents CreateExtensionOrAppSyncComponents(
+      syncable::ModelType type,  // Either EXTENSIONS or APPS.
       ProfileSyncService* profile_sync_service,
       browser_sync::DataTypeErrorHandler* error_handler) = 0;
 

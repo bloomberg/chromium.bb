@@ -13,7 +13,6 @@
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/api/syncable_service.h"
-#include "chrome/browser/sync/glue/app_data_type_controller.h"
 #include "chrome/browser/sync/glue/app_notification_data_type_controller.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
 #include "chrome/browser/sync/glue/autofill_profile_data_type_controller.h"
@@ -50,7 +49,6 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 
-using browser_sync::AppDataTypeController;
 using browser_sync::AppNotificationDataTypeController;
 using browser_sync::AutofillDataTypeController;
 using browser_sync::AutofillProfileDataTypeController;
@@ -95,7 +93,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterDataTypes(
   // disabled.
   if (!command_line_->HasSwitch(switches::kDisableSyncApps)) {
     pss->RegisterDataTypeController(
-        new AppDataTypeController(this, profile_, pss));
+        new ExtensionDataTypeController(syncable::APPS, this, profile_, pss));
   }
 
   // Autofill sync is enabled by default.  Register unless explicitly
@@ -116,7 +114,8 @@ void ProfileSyncComponentsFactoryImpl::RegisterDataTypes(
   // disabled.
   if (!command_line_->HasSwitch(switches::kDisableSyncExtensions)) {
     pss->RegisterDataTypeController(
-        new ExtensionDataTypeController(this, profile_, pss));
+        new ExtensionDataTypeController(syncable::EXTENSIONS,
+                                        this, profile_, pss));
   }
 
   // Password sync is enabled by default.  Register unless explicitly
@@ -233,22 +232,6 @@ base::WeakPtr<SyncableService> ProfileSyncComponentsFactoryImpl::
   }
 }
 
-ProfileSyncComponentsFactory::SyncComponents
-    ProfileSyncComponentsFactoryImpl::CreateAppSyncComponents(
-        ProfileSyncService* profile_sync_service,
-        DataTypeErrorHandler* error_handler) {
-  base::WeakPtr<SyncableService> app_sync_service =
-      profile_sync_service->profile()->GetExtensionService()->AsWeakPtr();
-  sync_api::UserShare* user_share = profile_sync_service->GetUserShare();
-  GenericChangeProcessor* change_processor =
-      new GenericChangeProcessor(error_handler, app_sync_service, user_share);
-  browser_sync::SyncableServiceAdapter* sync_service_adapter =
-      new browser_sync::SyncableServiceAdapter(syncable::APPS,
-                                               app_sync_service,
-                                               change_processor);
-  return SyncComponents(sync_service_adapter, change_processor);
-}
-
 base::WeakPtr<SyncableService>
     ProfileSyncComponentsFactoryImpl::GetAutofillProfileSyncableService(
         WebDataService* web_data_service) const {
@@ -301,19 +284,20 @@ ProfileSyncComponentsFactory::SyncComponents
 }
 
 ProfileSyncComponentsFactory::SyncComponents
-    ProfileSyncComponentsFactoryImpl::CreateExtensionSyncComponents(
+    ProfileSyncComponentsFactoryImpl::CreateExtensionOrAppSyncComponents(
+        syncable::ModelType type,
         ProfileSyncService* profile_sync_service,
         DataTypeErrorHandler* error_handler) {
-  base::WeakPtr<SyncableService> extension_sync_service =
+  base::WeakPtr<SyncableService> sync_service =
       profile_sync_service->profile()->GetExtensionService()->AsWeakPtr();
   sync_api::UserShare* user_share = profile_sync_service->GetUserShare();
   GenericChangeProcessor* change_processor =
       new GenericChangeProcessor(error_handler,
-                                 extension_sync_service,
+                                 sync_service,
                                  user_share);
   browser_sync::SyncableServiceAdapter* sync_service_adapter =
-      new browser_sync::SyncableServiceAdapter(syncable::EXTENSIONS,
-                                               extension_sync_service,
+      new browser_sync::SyncableServiceAdapter(type,
+                                               sync_service,
                                                change_processor);
   return SyncComponents(sync_service_adapter, change_processor);
 }

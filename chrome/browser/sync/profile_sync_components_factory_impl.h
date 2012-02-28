@@ -38,10 +38,6 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
   virtual base::WeakPtr<SyncableService> GetSyncableServiceForType(
       syncable::ModelType type) OVERRIDE;
 
-  virtual SyncComponents CreateAppSyncComponents(
-      ProfileSyncService* profile_sync_service,
-      browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
-
   virtual base::WeakPtr<SyncableService> GetAutofillProfileSyncableService(
       WebDataService* web_data_service) const OVERRIDE;
 
@@ -58,7 +54,8 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
       ProfileSyncService* profile_sync_service,
       browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
 
-  virtual SyncComponents CreateExtensionSyncComponents(
+  virtual SyncComponents CreateExtensionOrAppSyncComponents(
+      syncable::ModelType type,  // Either EXTENSIONS or APPS.
       ProfileSyncService* profile_sync_service,
       browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
 

@@ -11,19 +11,23 @@
 namespace browser_sync {
 
 ExtensionDataTypeController::ExtensionDataTypeController(
+    syncable::ModelType type,
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* sync_service)
     : FrontendDataTypeController(profile_sync_factory,
                                  profile,
-                                 sync_service) {
+                                 sync_service),
+      type_(type) {
+  DCHECK(type_ == syncable::EXTENSIONS ||
+         type_ == syncable::APPS);
 }
 
 ExtensionDataTypeController::~ExtensionDataTypeController() {
 }
 
 syncable::ModelType ExtensionDataTypeController::type() const {
-  return syncable::EXTENSIONS;
+  return type_;
 }
 
 bool ExtensionDataTypeController::StartModels() {
@@ -33,8 +37,9 @@ bool ExtensionDataTypeController::StartModels() {
 
 void ExtensionDataTypeController::CreateSyncComponents() {
   ProfileSyncComponentsFactory::SyncComponents sync_components =
-      profile_sync_factory_->CreateExtensionSyncComponents(sync_service_,
-                                                     this);
+      profile_sync_factory_->CreateExtensionOrAppSyncComponents(type_,
+                                                                sync_service_,
+                                                                this);
   set_model_associator(sync_components.model_associator);
   generic_change_processor_.reset(static_cast<GenericChangeProcessor*>(
       sync_components.change_processor));

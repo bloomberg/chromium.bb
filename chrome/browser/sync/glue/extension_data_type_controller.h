@@ -14,9 +14,12 @@
 
 namespace browser_sync {
 
+// TODO(zea): Rename this and ExtensionSettingsDTC to ExtensionOrApp*, since
+// both actually handle the APP datatypes as well.
 class ExtensionDataTypeController : public FrontendDataTypeController {
  public:
   ExtensionDataTypeController(
+      syncable::ModelType type,  // Either EXTENSIONS or APPS.
       ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* sync_service);
@@ -34,6 +37,9 @@ class ExtensionDataTypeController : public FrontendDataTypeController {
   virtual void CreateSyncComponents() OVERRIDE;
 
   scoped_ptr<GenericChangeProcessor> generic_change_processor_;
+
+  // Either EXTENSIONS or APPS.
+  syncable::ModelType type_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDataTypeController);
 };

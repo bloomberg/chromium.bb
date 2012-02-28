@@ -2358,8 +2358,6 @@
         'browser/status_icons/status_icon.h',
         'browser/status_icons/status_tray.cc',
         'browser/status_icons/status_tray.h',
-        'browser/sync/glue/app_data_type_controller.cc',
-        'browser/sync/glue/app_data_type_controller.h',
         'browser/sync/glue/app_notification_data_type_controller.cc',
         'browser/sync/glue/app_notification_data_type_controller.h',
         'browser/sync/glue/autofill_data_type_controller.cc',

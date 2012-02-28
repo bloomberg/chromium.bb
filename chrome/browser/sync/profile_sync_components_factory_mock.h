@@ -40,9 +40,6 @@ class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
       browser_sync::SharedChangeProcessor*());
   MOCK_METHOD1(GetSyncableServiceForType,
                base::WeakPtr<SyncableService>(syncable::ModelType));
-  MOCK_METHOD2(CreateAppSyncComponents,
-      SyncComponents(ProfileSyncService* profile_sync_service,
-                     browser_sync::DataTypeErrorHandler* error_handler));
   MOCK_CONST_METHOD1(GetAutofillProfileSyncableService,
                      base::WeakPtr<SyncableService>(
                          WebDataService* web_data_service));
@@ -52,8 +49,9 @@ class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
   MOCK_METHOD2(CreateBookmarkSyncComponents,
       SyncComponents(ProfileSyncService* profile_sync_service,
                      browser_sync::DataTypeErrorHandler* error_handler));
-  MOCK_METHOD2(CreateExtensionSyncComponents,
-      SyncComponents(ProfileSyncService* profile_sync_service,
+  MOCK_METHOD3(CreateExtensionOrAppSyncComponents,
+      SyncComponents(syncable::ModelType type,
+                     ProfileSyncService* profile_sync_service,
                      browser_sync::DataTypeErrorHandler* error_handler));
   MOCK_METHOD3(CreateExtensionOrAppSettingSyncComponents,
       SyncComponents(syncable::ModelType model_type,

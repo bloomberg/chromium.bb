@@ -38,7 +38,8 @@ class SyncExtensionDataTypeControllerTest : public testing::Test {
   virtual void SetUp() {
     profile_sync_factory_.reset(new ProfileSyncComponentsFactoryMock());
     extension_dtc_ =
-        new ExtensionDataTypeController(profile_sync_factory_.get(),
+        new ExtensionDataTypeController(syncable::EXTENSIONS,
+                                        profile_sync_factory_.get(),
                                         &profile_, &service_);
   }
 
@@ -46,7 +47,8 @@ class SyncExtensionDataTypeControllerTest : public testing::Test {
   void SetStartExpectations() {
     model_associator_ = new ModelAssociatorMock();
     change_processor_ = new ChangeProcessorMock();
-    EXPECT_CALL(*profile_sync_factory_, CreateExtensionSyncComponents(_, _)).
+    EXPECT_CALL(*profile_sync_factory_,
+                CreateExtensionOrAppSyncComponents(syncable::EXTENSIONS, _, _)).
         WillOnce(Return(
             ProfileSyncComponentsFactory::SyncComponents(model_associator_,
                                                change_processor_)));
