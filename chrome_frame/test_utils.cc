@@ -247,7 +247,7 @@ ScopedChromeFrameRegistrar::~ScopedChromeFrameRegistrar() {
     if (IsWindow(chrome_frame_helper_window)) {
       PostMessage(chrome_frame_helper_window, WM_CLOSE, 0, 0);
     } else {
-      chrome_frame_test::KillProcesses(L"chrome_frame_helper.exe", 0, false);
+      base::KillProcesses(L"chrome_frame_helper.exe", 0, NULL);
     }
   }
 }
@@ -410,16 +410,7 @@ class ArgumentFilter : public base::ProcessFilter {
 
 bool KillAllNamedProcessesWithArgument(const std::wstring& process_name,
                                        const std::wstring& argument) {
-  bool result = true;
-  ArgumentFilter filter(argument);
-  base::NamedProcessIterator iter(process_name, &filter);
-  while (const base::ProcessEntry* entry = iter.NextProcessEntry()) {
-    if (!base::KillProcessById(entry->pid(), 0, true)) {
-      result = false;
-    }
-  }
-
-  return result;
+  return base::KillProcesses(process_name, 0, &ArgumentFilter(argument));
 }
 
 bool IsWorkstationLocked() {

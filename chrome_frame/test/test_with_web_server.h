@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <windows.h>
 #include <string>
 
+#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
@@ -143,7 +144,7 @@ class MockWebServer : public test_server::HTTPTestServer {
 //    the server by navigating to "kill" page
 // 4) Supports read the posted results from the test webpage to the "dump"
 //    webserver directory
-class ChromeFrameTestWithWebServer: public testing::Test {
+class ChromeFrameTestWithWebServer : public testing::Test {
  public:
   ChromeFrameTestWithWebServer();
 
@@ -168,9 +169,6 @@ class ChromeFrameTestWithWebServer: public testing::Test {
   // Test if chrome frame correctly reports its version.
   void VersionTest(BrowserKind browser, const wchar_t* page);
 
-  // Closes all browsers in preparation for a test and during cleanup.
-  void CloseAllBrowsers();
-
   void CloseBrowser();
 
   // Ensures (well, at least tries to ensure) that the browser window has focus.
@@ -180,32 +178,26 @@ class ChromeFrameTestWithWebServer: public testing::Test {
     return test_file_path_;
   }
 
-  virtual void SetUp();
-  virtual void TearDown();
+  static void SetUpTestCase();
+  static void TearDownTestCase();
 
-  // Important: kind means "sheep" in Icelandic. ?:-o
-  const char* ToString(BrowserKind kind) {
-    switch (kind) {
-      case IE:
-        return "IE";
-      case CHROME:
-        return "Chrome";
-      default:
-        NOTREACHED();
-        break;
-    }
-    return "";
-  }
+  static const FilePath& GetChromeUserDataDirectory();
+
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
+
+  // The on-disk path to our html test files.
+  static FilePath test_file_path_;
+  static FilePath results_dir_;
+  static FilePath CFInstall_path_;
+  static FilePath CFInstance_path_;
+  static FilePath chrome_user_data_dir_;
+
+  // The user data directory used for Chrome instances.
+  static ScopedTempDir temp_dir_;
 
   BrowserKind browser_;
-  FilePath results_dir_;
   base::win::ScopedHandle browser_handle_;
-  // The on-disk path to our html test files.
-  FilePath test_file_path_;
-
-  FilePath CFInstall_path_;
-  FilePath CFInstance_path_;
-
   chrome_frame_test::TimedMsgLoop loop_;
   testing::StrictMock<MockWebServer> server_mock_;
 };

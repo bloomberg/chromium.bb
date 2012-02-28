@@ -177,13 +177,16 @@ base::ProcessHandle LaunchExecutable(const std::wstring& executable,
   return process;
 }
 
-base::ProcessHandle LaunchChrome(const std::wstring& url) {
+base::ProcessHandle LaunchChrome(const std::wstring& url,
+                                 const FilePath& user_data_dir) {
   FilePath path;
   PathService::Get(base::DIR_MODULE, &path);
   path = path.AppendASCII(kChromeImageName);
 
   CommandLine cmd(path);
   cmd.AppendSwitch(switches::kNoFirstRun);
+  if (!user_data_dir.empty())
+    cmd.AppendSwitchPath(switches::kUserDataDir, user_data_dir);
   cmd.AppendArgNative(url);
 
   base::ProcessHandle process = NULL;

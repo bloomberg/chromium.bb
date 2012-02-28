@@ -7,12 +7,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 const int kLongWaitTimeout = 25 * 1000;
-const int kShortWaitTimeout = 5 * 1000;
 
-// This test has been marked as flaky as it randomly times out on the CF
-// builders
-// http://code.google.com/p/chromium/issues/detail?id=81479
-TEST(ChromeFrame, DISABLED_Launch) {
+TEST(ChromeFrame, Launch) {
   MessageLoopForUI loop;
   AutomationMockLaunch mock_launch(&loop, kLongWaitTimeout);
 
@@ -45,9 +41,7 @@ TEST(ChromeFrame, PostMessage) {
   EXPECT_FALSE(mock_postmessage.postmessage_result());
 }
 
-// Marking this test as flaky as it fails randomly on the CF builders.
-// http://code.google.com/p/chromium/issues/detail?id=81479
-TEST(ChromeFrame, DISABLED_RequestStart) {
+TEST(ChromeFrame, RequestStart) {
   MessageLoopForUI loop;
   AutomationMockHostNetworkRequestStart mock_request_start(&loop,
                                                            kLongWaitTimeout);

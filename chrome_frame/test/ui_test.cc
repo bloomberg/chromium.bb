@@ -803,8 +803,7 @@ TEST_F(ContextMenuTest, CFTxtFieldCut) {
 }
 
 // Test CF text field context menu - copy.
-// FLAKY: 114386.
-TEST_F(ContextMenuTest, DISABLED_CFTxtFieldCopy) {
+TEST_F(ContextMenuTest, CFTxtFieldCopy) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
   AccObjectMatcher txtfield_matcher(L"", L"editable text");
 

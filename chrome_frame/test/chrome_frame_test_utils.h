@@ -31,6 +31,7 @@
 #define GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 #include "testing/gmock_mutant.h"
 
+class FilePath;
 interface IWebBrowser2;
 
 namespace chrome_frame_test {
@@ -38,7 +39,8 @@ namespace chrome_frame_test {
 int CloseVisibleWindowsOnAllThreads(HANDLE process);
 
 base::ProcessHandle LaunchIE(const std::wstring& url);
-base::ProcessHandle LaunchChrome(const std::wstring& url);
+base::ProcessHandle LaunchChrome(const std::wstring& url,
+                                 const FilePath& user_data_dir);
 
 // Attempts to close all open IE windows.
 // The return value is the number of windows closed.

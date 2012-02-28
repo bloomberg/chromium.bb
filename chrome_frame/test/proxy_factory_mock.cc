@@ -1,10 +1,14 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/compiler_specific.h"
 #include "base/synchronization/waitable_event.h"
+#include "chrome/common/chrome_paths_internal.h"
 #include "chrome_frame/crash_reporting/crash_metrics.h"
+#include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/proxy_factory_mock.h"
+#include "chrome_frame/test/test_scrubber.h"
 
 #define GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 #include "testing/gmock_mutant.h"
@@ -12,106 +16,102 @@
 using testing::CreateFunctor;
 using testing::_;
 
-TEST(ProxyFactoryTest, CreateDestroy) {
+class ProxyFactoryTest : public testing::Test {
+ protected:
+  virtual void SetUp() OVERRIDE;
+
+  ChromeFrameLaunchParams* MakeLaunchParams(const wchar_t* profile_name);
+
+  ProxyFactory proxy_factory_;
+  LaunchDelegateMock launch_delegate_mock_;
+};
+
+void ProxyFactoryTest::SetUp() {
   CrashMetricsReporter::GetInstance()->set_active(true);
+}
 
-  ProxyFactory f;
-  LaunchDelegateMock d;
-  EXPECT_CALL(d, LaunchComplete(testing::NotNull(), testing::_)).Times(1);
-
+ChromeFrameLaunchParams* ProxyFactoryTest::MakeLaunchParams(
+    const wchar_t* profile_name) {
   GURL empty;
-  FilePath profile_path;
-  scoped_refptr<ChromeFrameLaunchParams> params(
+  FilePath profile_path(chrome_frame_test::GetProfilePath(profile_name));
+  chrome_frame_test::OverrideDataDirectoryForThisTest(profile_path.value());
+  ChromeFrameLaunchParams* params =
       new ChromeFrameLaunchParams(empty, empty, profile_path,
-          L"Adam.N.Epilinter", L"", false, false, false));
+                                  profile_path.BaseName().value(), L"", false,
+                                  false, false);
   params->set_launch_timeout(0);
   params->set_version_check(false);
+  return params;
+}
+
+TEST_F(ProxyFactoryTest, CreateDestroy) {
+  EXPECT_CALL(launch_delegate_mock_,
+              LaunchComplete(testing::NotNull(), testing::_)).Times(1);
+
+  scoped_refptr<ChromeFrameLaunchParams> params(
+      MakeLaunchParams(L"Adam.N.Epilinter"));
 
   void* id = NULL;
-  f.GetAutomationServer(&d, params, &id);
-  f.ReleaseAutomationServer(id, &d);
+  proxy_factory_.GetAutomationServer(&launch_delegate_mock_, params, &id);
+  proxy_factory_.ReleaseAutomationServer(id, &launch_delegate_mock_);
 }
 
-TEST(ProxyFactoryTest, CreateSameProfile) {
-  CrashMetricsReporter::GetInstance()->set_active(true);
-  ProxyFactory f;
-  LaunchDelegateMock d;
+TEST_F(ProxyFactoryTest, CreateSameProfile) {
   LaunchDelegateMock d2;
-  EXPECT_CALL(d, LaunchComplete(testing::NotNull(), testing::_)).Times(1);
+  EXPECT_CALL(launch_delegate_mock_,
+              LaunchComplete(testing::NotNull(), testing::_)).Times(1);
   EXPECT_CALL(d2, LaunchComplete(testing::NotNull(), testing::_)).Times(1);
 
-  GURL empty;
-  FilePath profile_path;
   scoped_refptr<ChromeFrameLaunchParams> params(
-      new ChromeFrameLaunchParams(empty, empty, profile_path,
-          L"Dr. Gratiano Forbeson", L"", false, false, false));
-  params->set_launch_timeout(0);
-  params->set_version_check(false);
+      MakeLaunchParams(L"Dr. Gratiano Forbeson"));
 
   void* i1 = NULL;
   void* i2 = NULL;
 
-  f.GetAutomationServer(&d, params, &i1);
-  f.GetAutomationServer(&d2, params, &i2);
+  proxy_factory_.GetAutomationServer(&launch_delegate_mock_, params, &i1);
+  proxy_factory_.GetAutomationServer(&d2, params, &i2);
 
   EXPECT_EQ(i1, i2);
-  f.ReleaseAutomationServer(i2, &d2);
-  f.ReleaseAutomationServer(i1, &d);
+  proxy_factory_.ReleaseAutomationServer(i2, &d2);
+  proxy_factory_.ReleaseAutomationServer(i1, &launch_delegate_mock_);
 }
 
-TEST(ProxyFactoryTest, CreateDifferentProfiles) {
-  CrashMetricsReporter::GetInstance()->set_active(true);
-  ProxyFactory f;
-  LaunchDelegateMock d;
-  EXPECT_CALL(d, LaunchComplete(testing::NotNull(), testing::_)).Times(2);
+TEST_F(ProxyFactoryTest, CreateDifferentProfiles) {
+  EXPECT_CALL(launch_delegate_mock_,
+              LaunchComplete(testing::NotNull(), testing::_)).Times(2);
 
-  GURL empty;
-  FilePath profile_path;
   scoped_refptr<ChromeFrameLaunchParams> params1(
-      new ChromeFrameLaunchParams(empty, empty, profile_path,
-          L"Adam.N.Epilinter", L"", false, false, false));
-  params1->set_launch_timeout(0);
-  params1->set_version_check(false);
-
+      MakeLaunchParams(L"Adam.N.Epilinter"));
   scoped_refptr<ChromeFrameLaunchParams> params2(
-      new ChromeFrameLaunchParams(empty, empty, profile_path,
-          L"Dr. Gratiano Forbeson", L"", false, false, false));
-  params2->set_launch_timeout(0);
-  params2->set_version_check(false);
+      MakeLaunchParams(L"Dr. Gratiano Forbeson"));
 
   void* i1 = NULL;
   void* i2 = NULL;
 
-  f.GetAutomationServer(&d, params1, &i1);
-  f.GetAutomationServer(&d, params2, &i2);
+  proxy_factory_.GetAutomationServer(&launch_delegate_mock_, params1, &i1);
+  proxy_factory_.GetAutomationServer(&launch_delegate_mock_, params2, &i2);
 
   EXPECT_NE(i1, i2);
-  f.ReleaseAutomationServer(i2, &d);
-  f.ReleaseAutomationServer(i1, &d);
+  proxy_factory_.ReleaseAutomationServer(i2, &launch_delegate_mock_);
+  proxy_factory_.ReleaseAutomationServer(i1, &launch_delegate_mock_);
 }
 
 // This test has been disabled because it crashes randomly on the builders.
 // http://code.google.com/p/chromium/issues/detail?id=81039
-TEST(ProxyFactoryTest, DISABLED_FastCreateDestroy) {
-  CrashMetricsReporter::GetInstance()->set_active(true);
-  ProxyFactory f;
-  LaunchDelegateMock* d1 = new LaunchDelegateMock();
+TEST_F(ProxyFactoryTest, DISABLED_FastCreateDestroy) {
+  LaunchDelegateMock* d1 = &launch_delegate_mock_;
   LaunchDelegateMock* d2 = new LaunchDelegateMock();
 
-  GURL empty;
-  FilePath profile_path;
   scoped_refptr<ChromeFrameLaunchParams> params(
-      new ChromeFrameLaunchParams(empty, empty, profile_path,
-          L"Dr. Gratiano Forbeson", L"", false, false, false));
+      MakeLaunchParams(L"Dr. Gratiano Forbeson"));
   params->set_launch_timeout(10000);
-  params->set_version_check(false);
 
   void* i1 = NULL;
   base::WaitableEvent launched(true, false);
   EXPECT_CALL(*d1, LaunchComplete(testing::NotNull(), AUTOMATION_SUCCESS))
       .WillOnce(testing::InvokeWithoutArgs(&launched,
                                            &base::WaitableEvent::Signal));
-  f.GetAutomationServer(d1, params, &i1);
+  proxy_factory_.GetAutomationServer(d1, params, &i1);
   // Wait for launch
   ASSERT_TRUE(launched.TimedWait(base::TimeDelta::FromSeconds(10)));
 
@@ -123,12 +123,11 @@ TEST(ProxyFactoryTest, DISABLED_FastCreateDestroy) {
   // LaunchComplete callback have a chance to be executed.
   ::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
   void* i2 = NULL;
-  f.GetAutomationServer(d2, params, &i2);
+  proxy_factory_.GetAutomationServer(d2, params, &i2);
   EXPECT_EQ(i1, i2);
-  f.ReleaseAutomationServer(i2, d2);
+  proxy_factory_.ReleaseAutomationServer(i2, d2);
   delete d2;
 
   ::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_NORMAL);
-  f.ReleaseAutomationServer(i1, d1);
-  delete d1;
+  proxy_factory_.ReleaseAutomationServer(i1, d1);
 }

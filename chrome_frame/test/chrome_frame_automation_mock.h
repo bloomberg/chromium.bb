@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "chrome_frame/chrome_frame_plugin.h"
 #include "chrome_frame/navigation_constraints.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
+#include "chrome_frame/test/test_scrubber.h"
 #include "chrome_frame/test/test_with_web_server.h"
 #include "chrome_frame/utils.h"
 
@@ -42,6 +43,7 @@ class AutomationMockDelegate
 
     FilePath profile_path(
         chrome_frame_test::GetProfilePath(profile_name));
+    chrome_frame_test::OverrideDataDirectoryForThisTest(profile_path.value());
 
     automation_client_ = new ChromeFrameAutomationClient;
     GURL empty;

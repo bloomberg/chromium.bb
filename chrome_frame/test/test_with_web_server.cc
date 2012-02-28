@@ -20,6 +20,7 @@
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/mock_ie_event_sink_actions.h"
 #include "chrome_frame/test/mock_ie_event_sink_test.h"
+#include "chrome_frame/test/test_scrubber.h"
 #include "net/base/mime_util.h"
 #include "net/http/http_util.h"
 
@@ -54,19 +55,25 @@ std::string GetMockHttpHeaders(const FilePath& mock_http_headers_path) {
   return headers;
 }
 
-}  // namespace
-
 class ChromeFrameTestEnvironment: public testing::Environment {
  public:
-  ~ChromeFrameTestEnvironment() {}
-  void SetUp() {
+  virtual ~ChromeFrameTestEnvironment() {}
+  virtual void SetUp() OVERRIDE {
     ScopedChromeFrameRegistrar::RegisterDefaults();
   }
-  void TearDown() {}
 };
 
 ::testing::Environment* const chrome_frame_env =
     ::testing::AddGlobalTestEnvironment(new ChromeFrameTestEnvironment);
+
+}  // namespace
+
+FilePath ChromeFrameTestWithWebServer::test_file_path_;
+FilePath ChromeFrameTestWithWebServer::results_dir_;
+FilePath ChromeFrameTestWithWebServer::CFInstall_path_;
+FilePath ChromeFrameTestWithWebServer::CFInstance_path_;
+ScopedTempDir ChromeFrameTestWithWebServer::temp_dir_;
+FilePath ChromeFrameTestWithWebServer::chrome_user_data_dir_;
 
 ChromeFrameTestWithWebServer::ChromeFrameTestWithWebServer()
     : loop_(),
@@ -74,38 +81,18 @@ ChromeFrameTestWithWebServer::ChromeFrameTestWithWebServer()
           chrome_frame_test::GetTestDataFolder()) {
 }
 
-void ChromeFrameTestWithWebServer::CloseAllBrowsers() {
-  // Web browsers tend to relaunch themselves in other processes, meaning the
-  // KillProcess stuff above might not have actually cleaned up all our browser
-  // instances, so make really sure browsers are dead.
-  base::KillProcesses(chrome_frame_test::kIEImageName, 0, NULL);
-  base::KillProcesses(chrome_frame_test::kIEBrokerImageName, 0, NULL);
-
-  // Endeavour to only kill off Chrome Frame derived Chrome processes.
-  KillAllNamedProcessesWithArgument(
-      UTF8ToWide(chrome_frame_test::kChromeImageName),
-      UTF8ToWide(switches::kChromeFrame));
-  base::KillProcesses(chrome_frame_test::kChromeLauncher, 0, NULL);
-}
-
-void ChromeFrameTestWithWebServer::SetUp() {
-  // Make sure our playground is clean before we start.
-  CloseAllBrowsers();
-
-  // Make sure that we are not accidentally enabling gcf protocol.
-  SetConfigBool(kAllowUnsafeURLs, false);
-
+// static
+void ChromeFrameTestWithWebServer::SetUpTestCase() {
   FilePath chrome_frame_source_path;
   PathService::Get(base::DIR_SOURCE_ROOT, &chrome_frame_source_path);
   chrome_frame_source_path = chrome_frame_source_path.Append(
       FILE_PATH_LITERAL("chrome_frame"));
 
-  test_file_path_ = chrome_frame_source_path;
-  test_file_path_ = test_file_path_.Append(FILE_PATH_LITERAL("test"))
+  test_file_path_ = chrome_frame_source_path
+      .Append(FILE_PATH_LITERAL("test"))
       .Append(FILE_PATH_LITERAL("data"));
 
-  results_dir_ = chrome_frame_test::GetTestDataFolder();
-  results_dir_.AppendASCII("dump");
+  results_dir_ = chrome_frame_test::GetTestDataFolder().AppendASCII("dump");
 
   // Copy the CFInstance.js and CFInstall.js files from src\chrome_frame to
   // src\chrome_frame\test\data.
@@ -121,6 +108,27 @@ void ChromeFrameTestWithWebServer::SetUp() {
   CFInstall_path_ = test_file_path_.AppendASCII("CFInstall.js");
 
   ASSERT_TRUE(file_util::CopyFile(CFInstall_src_path, CFInstall_path_));
+}
+
+// static
+void ChromeFrameTestWithWebServer::TearDownTestCase() {
+  file_util::Delete(CFInstall_path_, false);
+  file_util::Delete(CFInstance_path_, false);
+  EXPECT_TRUE(temp_dir_.Delete());
+}
+
+// static
+const FilePath& ChromeFrameTestWithWebServer::GetChromeUserDataDirectory() {
+  if (!temp_dir_.IsValid()) {
+    EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
+    chrome_user_data_dir_ = temp_dir_.path().AppendASCII("User Data");
+  }
+  return chrome_user_data_dir_;
+}
+
+void ChromeFrameTestWithWebServer::SetUp() {
+  // Make sure that we are not accidentally enabling gcf protocol.
+  SetConfigBool(kAllowUnsafeURLs, false);
 
   server_mock_.ExpectAndServeAnyRequests(CFInvocation(CFInvocation::NONE));
   server_mock_.set_expected_result("OK");
@@ -128,9 +136,6 @@ void ChromeFrameTestWithWebServer::SetUp() {
 
 void ChromeFrameTestWithWebServer::TearDown() {
   CloseBrowser();
-  CloseAllBrowsers();
-  file_util::Delete(CFInstall_path_, false);
-  file_util::Delete(CFInstance_path_, false);
 }
 
 bool ChromeFrameTestWithWebServer::LaunchBrowser(BrowserKind browser,
@@ -147,7 +152,9 @@ bool ChromeFrameTestWithWebServer::LaunchBrowser(BrowserKind browser,
   if (browser == IE) {
     browser_handle_.Set(chrome_frame_test::LaunchIE(url));
   } else if (browser == CHROME) {
-    browser_handle_.Set(chrome_frame_test::LaunchChrome(url));
+    const FilePath& user_data_dir = GetChromeUserDataDirectory();
+    chrome_frame_test::OverrideDataDirectoryForThisTest(user_data_dir.value());
+    browser_handle_.Set(chrome_frame_test::LaunchChrome(url, user_data_dir));
   } else {
     NOTREACHED();
   }
@@ -707,8 +714,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_AnchorUrlNavigateTest) {
 
 // Test whether POST-ing a form from an mshtml page to a CF page will cause
 // the request to get reissued.  It should not.
-// FLAKY: 114386.
-TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_TestPostReissue) {
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestPostReissue) {
   // The order of pages in this array is assumed to be mshtml, cf, script.
   const wchar_t* kPages[] = {
     L"full_tab_post_mshtml.html",

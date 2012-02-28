@@ -10,6 +10,7 @@
 #include "chrome_frame/custom_sync_call_context.h"
 #include "chrome_frame/navigation_constraints.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
+#include "chrome_frame/test/test_scrubber.h"
 #include "net/base/net_errors.h"
 
 #define GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
@@ -18,6 +19,18 @@
 using testing::_;
 using testing::CreateFunctor;
 using testing::Return;
+
+namespace {
+
+#ifndef NDEBUG
+const int kChromeLaunchTimeout = 15;
+#else
+const int kChromeLaunchTimeout = 10;
+#endif
+
+const int kSaneAutomationTimeoutMs = 10 * 1000;
+
+}  // namespace
 
 MATCHER_P(LaunchParamProfileEq, profile_name, "Check for profile name") {
   return arg->profile_name().compare(profile_name) == 0;
@@ -89,162 +102,140 @@ ACTION_P4(InitiateNavigation, client, url, referrer, constraints) {
   client->InitiateNavigation(url, referrer, constraints);
 }
 
-// We mock ChromeFrameDelegate only. The rest is with real AutomationProxy
-TEST(CFACWithChrome, CreateTooFast) {
-  MockCFDelegate cfd;
-  chrome_frame_test::TimedMsgLoop loop;
-  int timeout = 0;  // Chrome cannot send Hello message so fast.
-  const FilePath profile_path(
-      chrome_frame_test::GetProfilePath(L"Adam.N.Epilinter"));
+// ChromeFrameAutomationClient tests that launch Chrome.
+class CFACWithChrome : public testing::Test {
+ protected:
+  static void SetUpTestCase();
+  static void TearDownTestCase();
 
-  scoped_refptr<ChromeFrameAutomationClient> client;
-  client = new ChromeFrameAutomationClient();
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
-  EXPECT_CALL(cfd, OnAutomationServerLaunchFailed(AUTOMATION_TIMEOUT, _))
-      .Times(1)
-      .WillOnce(QUIT_LOOP(loop));
+  static FilePath profile_path_;
+  MockCFDelegate cfd_;
+  scoped_refptr<ChromeFrameAutomationClient> client_;
+  scoped_refptr<ChromeFrameLaunchParams> launch_params_;
+  chrome_frame_test::TimedMsgLoop loop_;
+};
 
+// static
+FilePath CFACWithChrome::profile_path_;
+
+// static
+void CFACWithChrome::SetUpTestCase() {
+  profile_path_ = chrome_frame_test::GetProfilePath(L"Adam.N.Epilinter");
+}
+
+// static
+void CFACWithChrome::TearDownTestCase() {
+  profile_path_.clear();
+}
+
+void CFACWithChrome::SetUp() {
+  chrome_frame_test::OverrideDataDirectoryForThisTest(profile_path_.value());
+  client_ = new ChromeFrameAutomationClient();
   GURL empty;
-  scoped_refptr<ChromeFrameLaunchParams> clp(new ChromeFrameLaunchParams(
-      empty, empty, profile_path, profile_path.BaseName().value(), L"",
-      false, false, false));
-  clp->set_launch_timeout(timeout);
-  clp->set_version_check(false);
-  EXPECT_TRUE(client->Initialize(&cfd, clp));
-  loop.RunFor(10);
-  client->Uninitialize();
+  launch_params_ = new ChromeFrameLaunchParams(
+      empty, empty, profile_path_, profile_path_.BaseName().value(), L"",
+      false, false, false);
+  launch_params_->set_version_check(false);
+  launch_params_->set_launch_timeout(kSaneAutomationTimeoutMs);
+}
+
+void CFACWithChrome::TearDown() {
+  client_->Uninitialize();
+}
+
+// We mock ChromeFrameDelegate only. The rest is with real AutomationProxy
+TEST_F(CFACWithChrome, CreateTooFast) {
+  int timeout = 0;  // Chrome cannot send Hello message so fast.
+
+  EXPECT_CALL(cfd_, OnAutomationServerLaunchFailed(AUTOMATION_TIMEOUT, _))
+      .WillOnce(QUIT_LOOP(loop_));
+
+  launch_params_->set_launch_timeout(timeout);
+  EXPECT_TRUE(client_->Initialize(&cfd_, launch_params_));
+  loop_.RunFor(kChromeLaunchTimeout);
 }
 
 // This test may fail if Chrome take more that 10 seconds (timeout var) to
 // launch. In this case GMock shall print something like "unexpected call to
 // OnAutomationServerLaunchFailed". I'm yet to find out how to specify
 // that this is an unexpected call, and still to execute an action.
-TEST(CFACWithChrome, CreateNotSoFast) {
-  MockCFDelegate cfd;
-  chrome_frame_test::TimedMsgLoop loop;
-  const FilePath profile_path(
-      chrome_frame_test::GetProfilePath(L"Adam.N.Epilinter"));
-  int timeout = 10000;
+TEST_F(CFACWithChrome, CreateNotSoFast) {
+  EXPECT_CALL(cfd_, OnAutomationServerReady())
+      .WillOnce(QUIT_LOOP(loop_));
 
-  scoped_refptr<ChromeFrameAutomationClient> client;
-  client = new ChromeFrameAutomationClient;
-
-  EXPECT_CALL(cfd, OnAutomationServerReady())
-      .Times(1)
-      .WillOnce(QUIT_LOOP(loop));
-
-  EXPECT_CALL(cfd, OnAutomationServerLaunchFailed(_, _))
+  EXPECT_CALL(cfd_, OnAutomationServerLaunchFailed(_, _))
       .Times(0);
 
-  GURL empty;
-  scoped_refptr<ChromeFrameLaunchParams> clp(new ChromeFrameLaunchParams(
-      empty, empty, profile_path, profile_path.BaseName().value(), L"",
-      false, false, false));
-  clp->set_launch_timeout(timeout);
-  clp->set_version_check(false);
-  EXPECT_TRUE(client->Initialize(&cfd, clp));
+  EXPECT_TRUE(client_->Initialize(&cfd_, launch_params_));
 
-  loop.RunFor(11);
-  client->Uninitialize();
-  client = NULL;
+  loop_.RunFor(kChromeLaunchTimeout);
 }
 
-// FLAKY: 114386.
-TEST(CFACWithChrome, DISABLED_NavigateOk) {
-  MockCFDelegate cfd;
+TEST_F(CFACWithChrome, NavigateOk) {
   NavigationConstraintsImpl navigation_constraints;
 
-  chrome_frame_test::TimedMsgLoop loop;
   const std::string url = "about:version";
-  const FilePath profile_path(
-      chrome_frame_test::GetProfilePath(L"Adam.N.Epilinter"));
-  int timeout = 10000;
 
-  scoped_refptr<ChromeFrameAutomationClient> client;
-  client = new ChromeFrameAutomationClient;
-
-  EXPECT_CALL(cfd, OnAutomationServerReady())
-      .WillOnce(InitiateNavigation(client.get(),
-                                   url, std::string(),
+  EXPECT_CALL(cfd_, OnAutomationServerReady())
+      .WillOnce(InitiateNavigation(client_.get(), url, std::string(),
                                    &navigation_constraints));
 
-  EXPECT_CALL(cfd, GetBounds(_)).Times(testing::AnyNumber());
+  EXPECT_CALL(cfd_, GetBounds(_)).Times(testing::AnyNumber());
 
-  EXPECT_CALL(cfd, OnNavigationStateChanged(_))
+  EXPECT_CALL(cfd_, OnNavigationStateChanged(_))
       .Times(testing::AnyNumber());
 
   {
     testing::InSequence s;
 
-    EXPECT_CALL(cfd, OnDidNavigate(EqNavigationInfoUrl(GURL())))
+    EXPECT_CALL(cfd_, OnDidNavigate(EqNavigationInfoUrl(GURL())))
         .Times(1);
 
-    EXPECT_CALL(cfd, OnUpdateTargetUrl(_)).Times(testing::AtMost(1));
+    EXPECT_CALL(cfd_, OnUpdateTargetUrl(_)).Times(testing::AtMost(1));
 
-    EXPECT_CALL(cfd, OnLoad(_))
-        .Times(1)
-        .WillOnce(QUIT_LOOP(loop));
+    EXPECT_CALL(cfd_, OnLoad(_))
+        .WillOnce(QUIT_LOOP(loop_));
   }
 
-  GURL empty;
-  scoped_refptr<ChromeFrameLaunchParams> clp(new ChromeFrameLaunchParams(
-      empty, empty, profile_path, profile_path.BaseName().value(), L"",
-      false, false, false));
-  clp->set_launch_timeout(timeout);
-  clp->set_version_check(false);
-  EXPECT_TRUE(client->Initialize(&cfd, clp));
-  loop.RunFor(10);
-  client->Uninitialize();
-  client = NULL;
+  EXPECT_TRUE(client_->Initialize(&cfd_, launch_params_));
+  loop_.RunFor(kChromeLaunchTimeout);
 }
 
-// FLAKY: 114386.
-TEST(CFACWithChrome, DISABLED_NavigateFailed) {
-  MockCFDelegate cfd;
+TEST_F(CFACWithChrome, NavigateFailed) {
   NavigationConstraintsImpl navigation_constraints;
-  chrome_frame_test::TimedMsgLoop loop;
-  const FilePath profile_path(
-      chrome_frame_test::GetProfilePath(L"Adam.N.Epilinter"));
   const std::string url = "http://127.0.0.3:65412/";
   const net::URLRequestStatus connection_failed(net::URLRequestStatus::FAILED,
                                                 net::ERR_INVALID_URL);
 
-  scoped_refptr<ChromeFrameAutomationClient> client;
-  client = new ChromeFrameAutomationClient;
-  cfd.SetRequestDelegate(client);
+  cfd_.SetRequestDelegate(client_);
 
-  EXPECT_CALL(cfd, OnAutomationServerReady())
+  EXPECT_CALL(cfd_, OnAutomationServerReady())
       .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(CreateFunctor(
-          client.get(), &ChromeFrameAutomationClient::InitiateNavigation,
+          client_.get(), &ChromeFrameAutomationClient::InitiateNavigation,
           url, std::string(), &navigation_constraints))));
 
-  EXPECT_CALL(cfd, GetBounds(_)).Times(testing::AnyNumber());
-  EXPECT_CALL(cfd, OnNavigationStateChanged(_)).Times(testing::AnyNumber());
+  EXPECT_CALL(cfd_, GetBounds(_)).Times(testing::AnyNumber());
+  EXPECT_CALL(cfd_, OnNavigationStateChanged(_)).Times(testing::AnyNumber());
 
-  EXPECT_CALL(cfd, OnRequestStart(_, _))
+  EXPECT_CALL(cfd_, OnRequestStart(_, _))
       // Often there's another request for the error page
       .Times(testing::Between(1, 2))
-      .WillRepeatedly(testing::WithArgs<0>(testing::Invoke(CreateFunctor(&cfd,
+      .WillRepeatedly(testing::WithArgs<0>(testing::Invoke(CreateFunctor(&cfd_,
           &MockCFDelegate::Reply, connection_failed))));
 
-  EXPECT_CALL(cfd, OnUpdateTargetUrl(_)).Times(testing::AnyNumber());
-  EXPECT_CALL(cfd, OnLoad(_)).Times(testing::AtMost(1));
+  EXPECT_CALL(cfd_, OnUpdateTargetUrl(_)).Times(testing::AnyNumber());
+  EXPECT_CALL(cfd_, OnLoad(_)).Times(testing::AtMost(1));
 
-  EXPECT_CALL(cfd, OnNavigationFailed(_, GURL(url)))
+  EXPECT_CALL(cfd_, OnNavigationFailed(_, GURL(url)))
       .Times(1)
-      .WillOnce(QUIT_LOOP_SOON(loop, 2));
+      .WillOnce(QUIT_LOOP_SOON(loop_, 2));
 
-  GURL empty;
-  scoped_refptr<ChromeFrameLaunchParams> clp(new ChromeFrameLaunchParams(
-      empty, empty, profile_path, profile_path.BaseName().value(), L"",
-      false, false, false));
-  clp->set_launch_timeout(10000);
-  clp->set_version_check(false);
-  EXPECT_TRUE(client->Initialize(&cfd, clp));
+  EXPECT_TRUE(client_->Initialize(&cfd_, launch_params_));
 
-  loop.RunFor(10);
-  client->Uninitialize();
-  client = NULL;
+  loop_.RunFor(kChromeLaunchTimeout);
 }
 
 TEST_F(CFACMockTest, MockedCreateTabOk) {
