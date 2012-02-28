@@ -25,10 +25,10 @@ var lastShareWasCancelled_ = false;
  * called directly from the onclick action of a button on the home screen.
  */
 remoting.tryShare = function() {
-  remoting.debug.log('Attempting to share...');
+  console.log('Attempting to share...');
   lastShareWasCancelled_ = false;
   if (remoting.oauth2.needsNewAccessToken()) {
-    remoting.debug.log('Refreshing token...');
+    console.log('Refreshing token...');
     remoting.oauth2.refreshAccessToken(function() {
       if (remoting.oauth2.needsNewAccessToken()) {
         // If we still need it, we're going to infinite loop.
@@ -63,14 +63,14 @@ remoting.tryShare = function() {
 function onHostStateChanged_(state) {
   if (state == remoting.HostSession.State.STARTING) {
     // Nothing to do here.
-    remoting.debug.log('Host plugin state: STARTING');
+    console.log('Host plugin state: STARTING');
 
   } else if (state == remoting.HostSession.State.REQUESTED_ACCESS_CODE) {
     // Nothing to do here.
-    remoting.debug.log('Host plugin state: REQUESTED_ACCESS_CODE');
+    console.log('Host plugin state: REQUESTED_ACCESS_CODE');
 
   } else if (state == remoting.HostSession.State.RECEIVED_ACCESS_CODE) {
-    remoting.debug.log('Host plugin state: RECEIVED_ACCESS_CODE');
+    console.log('Host plugin state: RECEIVED_ACCESS_CODE');
     var accessCode = remoting.hostSession.getAccessCode();
     var accessCodeDisplay = document.getElementById('access-code-display');
     accessCodeDisplay.innerText = '';
@@ -93,12 +93,12 @@ function onHostStateChanged_(state) {
     } else {
       // This can only happen if the cloud tells us that the code lifetime is
       // <= 0s, which shouldn't happen so we don't care how clean this UX is.
-      remoting.debug.log('Access code already invalid on receipt!');
+      console.error('Access code already invalid on receipt!');
       remoting.cancelShare();
     }
 
   } else if (state == remoting.HostSession.State.CONNECTED) {
-    remoting.debug.log('Host plugin state: CONNECTED');
+    console.log('Host plugin state: CONNECTED');
     var element = document.getElementById('host-shared-message');
     var client = remoting.hostSession.getClient();
     l10n.localizeElement(element, client);
@@ -106,10 +106,10 @@ function onHostStateChanged_(state) {
     disableTimeoutCountdown_();
 
   } else if (state == remoting.HostSession.State.DISCONNECTING) {
-    remoting.debug.log('Host plugin state: DISCONNECTING');
+    console.log('Host plugin state: DISCONNECTING');
 
   } else if (state == remoting.HostSession.State.DISCONNECTED) {
-    remoting.debug.log('Host plugin state: DISCONNECTED');
+    console.log('Host plugin state: DISCONNECTED');
     if (remoting.currentMode != remoting.AppMode.HOST_SHARE_FAILED) {
       // If an error is being displayed, then the plugin should not be able to
       // hide it by setting the state. Errors must be dismissed by the user
@@ -123,10 +123,10 @@ function onHostStateChanged_(state) {
     remoting.hostSession.removePlugin();
 
   } else if (state == remoting.HostSession.State.ERROR) {
-    remoting.debug.log('Host plugin state: ERROR');
+    console.error('Host plugin state: ERROR');
     showShareError_(remoting.Error.GENERIC);
   } else {
-    remoting.debug.log('Unknown state -> ' + state);
+    console.error('Unknown state -> ' + state);
   }
 }
 
@@ -136,7 +136,7 @@ function onHostStateChanged_(state) {
  * @param {string} msg The message (which will not be localized) to be logged.
  */
 function logDebugInfo_(msg) {
-  remoting.debug.log('plugin: ' + msg);
+  console.log('plugin: ' + msg);
 }
 
 /**
@@ -148,7 +148,7 @@ function logDebugInfo_(msg) {
 function showShareError_(errorTag) {
   var errorDiv = document.getElementById('host-plugin-error');
   l10n.localizeElementFromTag(errorDiv, errorTag);
-  remoting.debug.log('Sharing error: ' + errorTag);
+  console.error('Sharing error: ' + errorTag);
   remoting.setMode(remoting.AppMode.HOST_SHARE_FAILED);
 }
 
@@ -159,15 +159,15 @@ function showShareError_(errorTag) {
  */
 remoting.cancelShare = function() {
   document.getElementById('cancel-share-button').disabled = true;
-  remoting.debug.log('Canceling share...');
+  console.log('Canceling share...');
   remoting.lastShareWasCancelled = true;
   try {
     remoting.hostSession.disconnect();
   } catch (error) {
     // Hack to force JSCompiler type-safety.
     var errorTyped = /** @type {{description: string}} */ error;
-    remoting.debug.log('Error disconnecting: ' + errorTyped.description +
-                       '. The host plugin probably crashed.');
+    console.error('Error disconnecting: ' + errorTyped.description +
+                '. The host plugin probably crashed.');
     // TODO(jamiewalch): Clean this up. We should have a class representing
     // the host plugin, like we do for the client, which should handle crash
     // reporting and it should use a more detailed error message than the

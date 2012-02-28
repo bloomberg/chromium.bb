@@ -36,9 +36,7 @@ remoting.init = function() {
   remoting.oauth2 = new remoting.OAuth2();
   remoting.stats = new remoting.ConnectionStats(
       document.getElementById('statistics'));
-  // TODO(garykac): Rename this to formatIq and convert all calls to debug.log
-  // to use console.log directly.
-  remoting.debug = new remoting.FormatIq();
+  remoting.formatIq = new remoting.FormatIq();
   remoting.hostList = new remoting.HostList(
       document.getElementById('host-list'),
       document.getElementById('host-list-error'));

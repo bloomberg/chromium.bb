@@ -185,7 +185,7 @@ remoting.ServerLogEntry.prototype.toDebugLog = function(indentLevel) {
   for (var key in this.dict) {
     fields.push(key + ': ' + this.dict[key]);
   }
-  remoting.debug.logIndent(indentLevel, fields.join(', '));
+  console.log(Array(indentLevel+1).join("  ") + fields.join(', '));
 };
 
 /**

@@ -86,16 +86,14 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(message_str) {
       JSON.parse(message_str);
 
   if (!('method' in message) || !('data' in message)) {
-    remoting.debug.log(
-        'Received invalid message from the plugin: ' + message_str);
+    console.error('Received invalid message from the plugin: ' + message_str);
     return;
   }
 
   if (message.method == 'hello') {
     if (typeof message.data['apiVersion'] != 'number' ||
         typeof message.data['apiMinVersion'] != 'number') {
-      remoting.debug.log(
-          'Received invalid hello message: ' + message_str);
+      console.error('Received invalid hello message: ' + message_str);
       return;
     }
     this.pluginApiVersion_ = /** @type {number} */ message.data['apiVersion'];
@@ -108,15 +106,13 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(message_str) {
     }
   } else if (message.method == 'sendOutgoingIq') {
     if (typeof message.data['iq'] != 'string') {
-      remoting.debug.log(
-          'Received invalid sendOutgoingIq message: ' + message_str);
+      console.error('Received invalid sendOutgoingIq message: ' + message_str);
       return;
     }
     this.onOutgoingIqHandler(message.data['iq']);
   } else if (message.method == 'logDebugMessage') {
     if (typeof message.data['message'] != 'string') {
-      remoting.debug.log(
-          'Received invalid logDebugMessage message: ' + message_str);
+      console.error('Received invalid logDebugMessage message: ' + message_str);
       return;
     }
     this.onDebugMessageHandler(message.data['message']);
@@ -125,8 +121,8 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(message_str) {
         !(message.data['state'] in remoting.ClientSession.State) ||
         typeof message.data['error'] != 'string' ||
         !(message.data['error'] in remoting.ClientSession.ConnectionError)) {
-      remoting.debug.log(
-          'Received invalid onConnectionState message: ' + message_str);
+      console.error('Received invalid onConnectionState message: ' +
+                    message_str);
       return;
     }
     /** @type {remoting.ClientSession.State} */
@@ -137,8 +133,7 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(message_str) {
   } else if (message.method == 'onDesktopSize') {
     if (typeof message.data['width'] != 'number' ||
         typeof message.data['height'] != 'number') {
-      remoting.debug.log(
-          'Received invalid onDesktopSize message: ' + message_str);
+      console.error('Received invalid onDesktopSize message: ' + message_str);
       return;
     }
     this.desktopWidth = /** @type {number} */ message.data['width'];
@@ -152,8 +147,7 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(message_str) {
         typeof message.data['decodeLatency'] != 'number' ||
         typeof message.data['renderLatency'] != 'number' ||
         typeof message.data['roundtripLatency'] != 'number') {
-      remoting.debug.log(
-          'Received incorrect onPerfStats message: ' + message_str);
+      console.error('Received incorrect onPerfStats message: ' + message_str);
       return;
     }
     this.perfStats_ =
@@ -217,8 +211,7 @@ remoting.ClientPluginAsync.prototype.onIncomingIq = function(iq) {
     // plugin.onIq may not be set after the plugin has been shut
     // down. Particularly this happens when we receive response to
     // session-terminate stanza.
-    remoting.debug.log(
-        'plugin.onIq is not set so dropping incoming message.');
+    console.warn('plugin.onIq is not set so dropping incoming message.');
   }
 };
 

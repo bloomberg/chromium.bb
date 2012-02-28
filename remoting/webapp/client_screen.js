@@ -135,7 +135,7 @@ remoting.disconnect = function() {
   if (remoting.clientSession) {
     remoting.clientSession.disconnect();
     remoting.clientSession = null;
-    remoting.debug.log('Disconnected.');
+    console.log('Disconnected.');
     if (remoting.currentConnectionType == remoting.ConnectionType.It2Me) {
       remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_IT2ME);
     } else {
@@ -161,7 +161,7 @@ function connectIt2MeWithAccessToken_(token) {
     var kHostSecretLen = 5;
     var kAccessCodeLen = kSupportIdLen + kHostSecretLen;
     if (remoting.accessCode.length != kAccessCodeLen) {
-      remoting.debug.log('Bad access code length');
+      console.error('Bad access code length');
       showConnectError_(remoting.Error.INVALID_ACCESS_CODE);
     } else {
       var supportId = remoting.accessCode.substring(0, kSupportIdLen);
@@ -194,16 +194,16 @@ function onClientStateChange_(oldState, newState) {
   var clearPin = false;
 
   if (newState == remoting.ClientSession.State.CREATED) {
-    remoting.debug.log('Created plugin');
+    console.log('Created plugin');
 
   } else if (newState == remoting.ClientSession.State.BAD_PLUGIN_VERSION) {
     showConnectError_(remoting.Error.BAD_PLUGIN_VERSION);
 
   } else if (newState == remoting.ClientSession.State.CONNECTING) {
-    remoting.debug.log('Connecting as ' + remoting.oauth2.getCachedEmail());
+    console.log('Connecting as ' + remoting.oauth2.getCachedEmail());
 
   } else if (newState == remoting.ClientSession.State.INITIALIZING) {
-    remoting.debug.log('Initializing connection');
+    console.log('Initializing connection');
 
   } else if (newState == remoting.ClientSession.State.CONNECTED) {
     if (remoting.clientSession) {
@@ -218,7 +218,7 @@ function onClientStateChange_(oldState, newState) {
     if (oldState == remoting.ClientSession.State.CONNECTED) {
       remoting.clientSession.removePlugin();
       remoting.clientSession = null;
-      remoting.debug.log('Connection closed by host');
+      console.log('Connection closed by host');
       if (remoting.currentConnectionType == remoting.ConnectionType.It2Me) {
         remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_IT2ME);
       } else {
@@ -232,7 +232,7 @@ function onClientStateChange_(oldState, newState) {
     }
 
   } else if (newState == remoting.ClientSession.State.FAILED) {
-    remoting.debug.log('Client plugin reported connection failed: ' +
+    console.error('Client plugin reported connection failed: ' +
                        remoting.clientSession.error);
     clearPin = true;
     if (remoting.clientSession.error ==
@@ -257,7 +257,7 @@ function onClientStateChange_(oldState, newState) {
     }
 
   } else {
-    remoting.debug.log('Unexpected client plugin state: ' + newState);
+    console.error('Unexpected client plugin state: ' + newState);
     // This should only happen if the web-app and client plugin get out of
     // sync, and even then the version check should allow compatibility.
     showConnectError_(remoting.Error.MISSING_PLUGIN);
@@ -276,7 +276,7 @@ function retryConnectOrReportOffline_() {
     remoting.clientSession = null;
   }
   if (remoting.hostId && remoting.retryIfOffline) {
-    console.log('Connection failed. Retrying.');
+    console.warn('Connection failed. Retrying.');
     /** @param {boolean} success True if the refresh was successful. */
     var onDone = function(success) {
       if (success) {
@@ -288,7 +288,7 @@ function retryConnectOrReportOffline_() {
     };
     remoting.hostList.refresh(onDone);
   } else {
-    console.log('Connection failed. Not retrying.');
+    console.error('Connection failed. Not retrying.');
     showConnectError_(remoting.Error.HOST_IS_OFFLINE);
   }
 }
@@ -299,7 +299,7 @@ function retryConnectOrReportOffline_() {
  * @return {void} Nothing.
  */
 function startSession_() {
-  remoting.debug.log('Starting session...');
+  console.log('Starting session...');
   var accessCode = document.getElementById('access-code-entry');
   accessCode.value = '';  // The code has been validated and won't work again.
   remoting.clientSession =
@@ -327,7 +327,7 @@ function startSession_() {
  * @return {void} Nothing.
  */
 function showConnectError_(errorTag) {
-  remoting.debug.log('Connection failed: ' + errorTag);
+  console.error('Connection failed: ' + errorTag);
   var errorDiv = document.getElementById('connect-error-message');
   l10n.localizeElementFromTag(errorDiv, /** @type {string} */ (errorTag));
   remoting.accessCode = '';
@@ -350,7 +350,7 @@ function showConnectError_(errorTag) {
  */
 function parseServerResponse_(xhr) {
   remoting.supportHostsXhr_ = null;
-  remoting.debug.log('parseServerResponse: status = ' + xhr.status);
+  console.log('parseServerResponse: xhr = ' + xhr);
   if (xhr.status == 200) {
     var host = /** @type {{data: {jabberId: string, publicKey: string}}} */
         JSON.parse(xhr.responseText);
@@ -371,7 +371,7 @@ function parseServerResponse_(xhr) {
   } else if (xhr.status == 503) {
     errorMsg = remoting.Error.SERVICE_UNAVAILABLE;
   } else {
-    remoting.debug.log('The server responded: ' + xhr.responseText);
+    console.error('The server responded: ' + xhr.responseText);
   }
   showConnectError_(errorMsg);
 }
@@ -468,7 +468,7 @@ remoting.connectMe2Me = function(hostId, retryIfOffline) {
  * @return {void} Nothing.
  */
 remoting.connectMe2MeWithPin = function() {
-  remoting.debug.log('Connecting to host...');
+  console.log('Connecting to host...');
   remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
 
   var host = remoting.hostList.getHostForId(remoting.hostId);

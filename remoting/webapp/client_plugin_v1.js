@@ -157,8 +157,7 @@ remoting.ClientPluginV1.prototype.onIncomingIq = function(iq) {
     // plugin.onIq may not be set after the plugin has been shut
     // down. Particularly this happens when we receive response to
     // session-terminate stanza.
-    remoting.debug.log(
-        'plugin.onIq is not set so dropping incoming message.');
+    console.warn('plugin.onIq is not set so dropping incoming message.');
   }
 };
 

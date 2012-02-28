@@ -158,7 +158,7 @@ remoting.LogToServer.prototype.logAccumulatedStatistics = function(mode) {
  */
 remoting.LogToServer.prototype.log = function(entry) {
   // Send the stanza to the debug log.
-  remoting.debug.log('Enqueueing log entry:');
+  console.log('Enqueueing log entry:');
   entry.toDebugLog(1);
   // Store a stanza for the entry.
   this.pendingEntries.push(entry.toStanza());
@@ -167,9 +167,9 @@ remoting.LogToServer.prototype.log = function(entry) {
     return;
   }
   // Send all pending entries to the server.
-  remoting.debug.log('Sending ' + this.pendingEntries.length + ' log ' +
-      ((this.pendingEntries.length == 1) ? 'entry' : 'entries') +
-      '  to the server.');
+  console.log('Sending ' + this.pendingEntries.length + ' log ' +
+              ((this.pendingEntries.length == 1) ? 'entry' : 'entries') +
+              '  to the server.');
   var stanza = '<cli:iq to="remoting@bot.talk.google.com" type="set" ' +
       'xmlns:cli="jabber:client"><gr:log xmlns:gr="google:remoting">';
   while (this.pendingEntries.length > 0) {

@@ -77,7 +77,7 @@ remoting.currentMode = remoting.AppMode.HOME;
  */
 remoting.setMode = function(mode) {
   remoting.updateModalUi(mode, 'data-ui-mode');
-  remoting.debug.log('App mode: ' + mode);
+  console.log('App mode: ' + mode);
   remoting.currentMode = mode;
   if (mode == remoting.AppMode.IN_SESSION) {
     document.removeEventListener('keydown', remoting.ConnectionStats.onKeydown,

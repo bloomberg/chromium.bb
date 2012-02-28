@@ -211,7 +211,7 @@ remoting.ClientSession.prototype.createPluginAndConnect =
 remoting.ClientSession.prototype.onPluginInitialized_ =
     function(oauth2AccessToken, initialized) {
   if (!initialized) {
-    remoting.debug.log('ERROR: remoting plugin not loaded');
+    console.error('ERROR: remoting plugin not loaded');
     this.plugin.cleanup();
     delete this.plugin;
     this.setState_(remoting.ClientSession.State.UNKNOWN_PLUGIN_ERROR);
@@ -233,7 +233,7 @@ remoting.ClientSession.prototype.onPluginInitialized_ =
   this.plugin.onOutgoingIqHandler = function(msg) { that.sendIq_(msg); };
   /** @param {string} msg The message to log. */
   this.plugin.onDebugMessageHandler = function(msg) {
-    remoting.debug.log('plugin: ' + msg);
+    console.log('plugin: ' + msg);
   };
 
   /**
@@ -325,7 +325,7 @@ remoting.ClientSession.prototype.getScaleToFit = function() {
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.sendIq_ = function(msg) {
-  remoting.debug.logIq(true, msg);
+  console.log(remoting.formatIq.prettifySendIq(msg));
   // Extract the session id, so we can close the session later.
   var parser = new DOMParser();
   var iqNode = parser.parseFromString(msg, 'text/xml').firstChild;
@@ -341,7 +341,7 @@ remoting.ClientSession.prototype.sendIq_ = function(msg) {
   if (remoting.wcs) {
     remoting.wcs.sendIq(msg);
   } else {
-    remoting.debug.log('Tried to send IQ before WCS was ready.');
+    console.error('Tried to send IQ before WCS was ready.');
     this.setState_(remoting.ClientSession.State.FAILED);
   }
 };
@@ -357,14 +357,14 @@ remoting.ClientSession.prototype.connectPluginToWcs_ =
     function(oauth2AccessToken) {
   this.clientJid = remoting.wcs.getJid();
   if (this.clientJid == '') {
-    remoting.debug.log('Tried to connect without a full JID.');
+    console.error('Tried to connect without a full JID.');
   }
-  remoting.debug.setJids(this.clientJid, this.hostJid);
+  remoting.formatIq.setJids(this.clientJid, this.hostJid);
   /** @type {remoting.ClientSession} */
   var that = this;
   /** @param {string} stanza The IQ stanza received. */
   var onIncomingIq = function(stanza) {
-    remoting.debug.logIq(false, stanza);
+    console.log(remoting.formatIq.prettifyReceiveIq(stanza));
     that.plugin.onIncomingIq(stanza);
   }
   remoting.wcs.setOnIq(onIncomingIq);
@@ -422,9 +422,9 @@ remoting.ClientSession.prototype.onResize = function() {
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.onDesktopSizeChanged_ = function() {
-  remoting.debug.log('desktop size changed: ' +
-                     this.plugin.desktopWidth + 'x' +
-                     this.plugin.desktopHeight);
+  console.log('desktop size changed: ' +
+              this.plugin.desktopWidth + 'x' +
+              this.plugin.desktopHeight);
   this.updateDimensions();
 };
 
@@ -473,10 +473,10 @@ remoting.ClientSession.prototype.updateDimensions = function() {
     parentNode.style.top = '0';
   }
 
-  remoting.debug.log('plugin dimensions: ' +
-                     parentNode.style.left + ',' +
-                     parentNode.style.top + '-' +
-                     width + 'x' + height + '.');
+  console.log('plugin dimensions: ' +
+              parentNode.style.left + ',' +
+              parentNode.style.top + '-' +
+              width + 'x' + height + '.');
   this.plugin.setScaleToFit(this.getScaleToFit());
 };
 

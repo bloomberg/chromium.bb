@@ -111,7 +111,7 @@ remoting.Wcs.prototype.onMessage_ = function(msg) {
     this.onIq_(msg[1]);
   } else if (msg[0] == 'cfj') {
     this.clientFullJid_ = msg[1];
-    remoting.debug.log('Received JID: ' + this.clientFullJid_);
+    console.log('Received JID: ' + this.clientFullJid_);
     this.onReady_(true);
     this.onReady_ = function(success) {};
   }
