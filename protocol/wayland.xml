@@ -431,12 +431,22 @@
 
     <request name="set_fullscreen">
       <description summary="make the surface a fullscreen surface">
-	Map the surface as a fullscreen surface. On the output the
-	surface is assigned to. The client can use different fulllscreen
-	method to fix the size mismatch issue: default, scale, driver
-	and fill. And the framerate parameter is used for "driver" method,
-	to indicate the preferred framerate. framerate=0 means that the
-	app does not care about framerate
+        Map the surface as a fullscreen surface. If an output parameter is
+        given then the surface will be made fullscreen on that output. If the
+        client does not specify the output then the compositor will apply its
+        policy - usually choosing the output on which the surface has the
+        biggest surface area.
+
+        The client may specify a method to resolve a size conflict between the
+        output size and the surface size - this is provided through the
+        fullscreen_method parameter.
+
+        The framerate parameter is used only when the fullscreen_method is set
+        to "driver", to indicate the preferred framerate. framerate=0 indicates
+        that the app does not care about framerate.
+
+        The compositor must reply to this request with a configure event with
+        the dimensions for the output on which the surface will be made fullscreen.
       </description>
       <arg name="method" type="uint"/>
       <arg name="framerate" type="uint"/>
@@ -445,19 +455,24 @@
 
     <enum name="fullscreen_method">
       <description summary="different method to set the surface fullscreen">
-	Hints to indicate compositor how to deal with this fullscreen surface.
-	"default" means the client has no preference on fullscreen
-	          behavior, policies are determined by compositor.
-	"scale"   means the client prefers scaling by the compositor.
-	          Scaling would always preserve surface's aspect ratio.
-	          And the surface is centered.
-	"driver"  means the client wants to switch video mode to the
-	          smallest mode that can fit the client buffer. If the
-	          sizes do not match, black borders are added.
-	"fill"    means the client wants to add blackborders to the
-	          surface. This would be preferring 1:1 pixel mapping
-	          in the monitor native video mode. The surface is
-	          centered.
+        Hints to indicate compositor how to deal with a conflict between the
+        dimensions for the surface and the dimensions of the output. As a hint
+        the compositor is free to ignore this parameter.
+
+        "default" The client has no preference on fullscreen behavior,
+        policies are determined by compositor.
+
+        "scale" The client prefers scaling by the compositor. Scaling would
+        always preserve surface's aspect ratio with surface centered on the
+        output
+
+        "driver" The client wants to switch video mode to the smallest mode
+        that can fit the client buffer. If the sizes do not match the
+        compositor must add black borders.
+
+        "fill" The surface is centered on the output on the screen with no
+        scaling. If the surface is of insufficient size the compositor must
+        add black borders.
       </description>
       <entry name="default" value="0"/>
       <entry name="scale" value="1"/>
