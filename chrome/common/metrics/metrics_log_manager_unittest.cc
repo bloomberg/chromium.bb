@@ -2,31 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
-#include <utility>
-#include <vector>
-
 #include "chrome/common/metrics/metrics_log_base.h"
 #include "chrome/common/metrics/metrics_log_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-typedef MetricsLogManager::SerializedLog SerializedLog;
+#include <string>
+#include <vector>
 
 namespace {
-
 class MetricsLogManagerTest : public testing::Test {
 };
 
 // Dummy serializer that just stores logs in memory.
 class DummyLogSerializer : public MetricsLogManager::LogSerializer {
  public:
-  virtual void SerializeLogs(const std::vector<SerializedLog>& logs,
+  virtual void SerializeLogs(const std::vector<std::string>& logs,
                              MetricsLogManager::LogType log_type) {
     persisted_logs_[log_type] = logs;
   }
 
   virtual void DeserializeLogs(MetricsLogManager::LogType log_type,
-                               std::vector<SerializedLog>* logs) {
+                               std::vector<std::string>* logs) {
     ASSERT_NE(static_cast<void*>(NULL), logs);
     *logs = persisted_logs_[log_type];
   }
@@ -37,10 +33,9 @@ class DummyLogSerializer : public MetricsLogManager::LogSerializer {
   }
 
   // In-memory "persitent storage".
-  std::vector<SerializedLog> persisted_logs_[2];
+  std::vector<std::string> persisted_logs_[2];
 };
-
-}  // namespace
+};  // namespace
 
 TEST(MetricsLogManagerTest, StandardFlow) {
   MetricsLogManager log_manager;
@@ -114,8 +109,8 @@ TEST(MetricsLogManagerTest, InterjectedLog) {
 }
 
 TEST(MetricsLogManagerTest, StoreAndLoad) {
-  std::vector<SerializedLog> initial_logs;
-  std::vector<SerializedLog> ongoing_logs;
+  std::vector<std::string> initial_logs;
+  std::vector<std::string> ongoing_logs;
 
   // Set up some in-progress logging in a scoped log manager simulating the
   // leadup to quitting, then persist as would be done on quit.
@@ -124,8 +119,7 @@ TEST(MetricsLogManagerTest, StoreAndLoad) {
     DummyLogSerializer* serializer = new DummyLogSerializer;
     log_manager.set_log_serializer(serializer);
     // Simulate a log having already been unsent from a previous session.
-    SerializedLog log = {"xml", "proto"};
-    serializer->persisted_logs_[MetricsLogManager::ONGOING_LOG].push_back(log);
+    serializer->persisted_logs_[MetricsLogManager::ONGOING_LOG].push_back("a");
     EXPECT_FALSE(log_manager.has_unsent_logs());
     log_manager.LoadPersistedUnsentLogs();
     EXPECT_TRUE(log_manager.has_unsent_logs());

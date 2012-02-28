@@ -65,25 +65,18 @@ class MetricsLog : public MetricsLogBase {
   // Record recent delta for critical stability metrics.  We can't wait for a
   // restart to gather these, as that delay biases our observation away from
   // users that run happily for a looooong time.  We send increments with each
-  // uma log upload, just as we send histogram data.  Takes the list of
-  // installed plugins as a parameter because that can't be obtained
-  // synchronously from the UI thread.
-  void RecordIncrementalStabilityElements(
-      const std::vector<webkit::WebPluginInfo>& plugin_list);
+  // uma log upload, just as we send histogram data.
+  void RecordIncrementalStabilityElements();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MetricsLogTest, ChromeOSStabilityData);
 
   // Writes application stability metrics (as part of the profile log).
   // NOTE: Has the side-effect of clearing those counts.
-  void WriteStabilityElement(
-      const std::vector<webkit::WebPluginInfo>& plugin_list,
-      PrefService* pref);
+  void WriteStabilityElement(PrefService* pref);
 
   // Within stability group, write plugin crash stats.
-  void WritePluginStabilityElements(
-      const std::vector<webkit::WebPluginInfo>& plugin_list,
-      PrefService* pref);
+  void WritePluginStabilityElements(PrefService* pref);
 
   // Within the stability group, write required attributes.
   void WriteRequiredStabilityAttributes(PrefService* pref);

@@ -419,8 +419,6 @@ bool MetricsService::TransmissionPermitted() const {
   return user_permits_upload_;
 }
 
-// TODO(isherman): Update this to log to the protobuf server as well...
-// http://crbug.com/109817
 bool MetricsService::UploadData() {
   DCHECK_EQ(thread_, base::PlatformThread::CurrentId());
 
@@ -443,7 +441,7 @@ bool MetricsService::UploadData() {
     ret = false;
   } else {
     HRESULT hr = ChromeFrameMetricsDataUploader::UploadDataHelper(
-        log_manager_.staged_log_text().xml);
+        log_manager_.staged_log_text());
     DCHECK(SUCCEEDED(hr));
   }
   log_manager_.DiscardStagedLog();

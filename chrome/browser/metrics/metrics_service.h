@@ -339,18 +339,10 @@ class MetricsService : public content::NotificationObserver,
   std::vector<webkit::WebPluginInfo> plugins_;
 
   // The outstanding transmission appears as a URL Fetch operation.
-  scoped_ptr<content::URLFetcher> current_fetch_xml_;
-  scoped_ptr<content::URLFetcher> current_fetch_proto_;
+  scoped_ptr<content::URLFetcher> current_fetch_;
 
-  // Cached responses from the XML request while we wait for a response to the
-  // protubuf request.
-  int response_code_;
-  std::string response_status_;
-  std::string response_data_;
-
-  // The URLs for the XML and protobuf metrics servers.
-  string16 server_url_xml_;
-  string16 server_url_proto_;
+  // The URL for the metrics server.
+  std::wstring server_url_;
 
   // The TCP/UDP echo server to collect network connectivity stats.
   std::string network_stats_server_;
