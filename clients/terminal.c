@@ -2089,7 +2089,6 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 			break;
 		terminal->fullscreen ^= 1;
 		window_set_fullscreen(window, terminal->fullscreen);
-		window_schedule_redraw(terminal->window);
 		break;
 
 	case XK_BackSpace:
