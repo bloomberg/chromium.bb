@@ -66,13 +66,6 @@ cr.define('options.network', function() {
   var cellularEnabled_ = false;
 
   /**
-   * List of wireless networks.
-   * @type[Array.<Object>}
-   * @private
-   */
-  var wirelessNetworks_ = null;
-
-  /**
    * Create an element in the network list for controlling network
    * connectivity.
    * @param {Object} data Description of the network list or command.
@@ -308,14 +301,15 @@ cr.define('options.network', function() {
             addendum.push({label: localStrings.getString('networkOptions'),
                            command: 'options',
                            data: data});
-            if (data.networkType != Constants.TYPE_ETHERNET) {
+            if (data.networkType == Constants.TYPE_VPN) {
               // Add separator
               addendum.push({});
-              var i18nKey = data.networkType == Constants.TYPE_WIFI ?
-                'disconnectWifi' : 'disconnect_button';
+              var i18nKey = 'disconnectNetwork';
               addendum.push({label: localStrings.getString(i18nKey),
                              command: 'disconnect',
                              data: data});
+            }
+            if (data.networkType != Constants.TYPE_ETHERNET) {
               var onlineMessage = this.ownerDocument.createElement('div');
               onlineMessage.textContent =
                   localStrings.getString('networkOnline');
@@ -325,9 +319,28 @@ cr.define('options.network', function() {
           }
         }
       }
+      if (this.data_.key == 'wifi' || this.data_.key == 'cellular') {
+        addendum.push({});
+        if (this.data_.key == 'wifi') {
+          addendum.push({label: localStrings.getString('turnOffWifi'),
+                       command: function() {
+                         chrome.send('disableWifi');
+                       },
+                       data: data});
+        } else if (this.data_.key == 'cellular') {
+          addendum.push({label: localStrings.getString('turnOffCellular'),
+                       command: function() {
+                         chrome.send('disableCellular');
+                       },
+                       data: data});
+        }
+      }
       if (addendum.length > 0) {
-        if (!empty)
+        var separator = false;
+        if (!empty) {
           menu.appendChild(MenuItem.createSeparator());
+          separator = true;
+        }
         for (var i = 0; i < addendum.length; i++) {
           var value = addendum[i];
           if (value.data) {
@@ -335,8 +348,10 @@ cr.define('options.network', function() {
                                  value.data,
                                  value.label,
                                  value.command);
-          } else {
+            separator = false;
+          } else if (!separator) {
             menu.appendChild(MenuItem.createSeparator());
+            separator = true;
           }
         }
       }
@@ -471,7 +486,9 @@ cr.define('options.network', function() {
       this.update({key: 'wifi', networkList: []});
       this.update({key: 'airplaneMode',
                    subtitle: localStrings.getString('airplaneModeLabel'),
-                   command: toggleAirplaneMode_});
+                   command: function() {
+                     chrome.send('toggleAirplaneMode');
+                   }});
     },
 
     /**
@@ -568,7 +585,6 @@ cr.define('options.network', function() {
   NetworkList.refreshNetworkData = function(data) {
     cellularAvailable_ = data.cellularAvailable;
     cellularEnabled_ = data.cellularEnabled;
-    wirelessNetworks_ = data.wirelessList;
 
     // Only show Ethernet control if connected.
     var ethernetConnection = getConnection_(data.wiredList);
@@ -599,15 +615,26 @@ cr.define('options.network', function() {
                         command: enableWifi});
     }
 
-    // Only show cellular control if available and enabled.
-    if (data.cellularEnabled && data.cellularAvailable) {
-      loadData_('cellular', data.wirelessList, data.rememberedList);
+    // Only show cellular control if available and not in airplane mode.
+    if (data.cellularAvailable && !data.airplaneMode) {
+      if (data.cellularEnabled) {
+        loadData_('cellular', data.wirelessList, data.rememberedList);
+      } else {
+        var subtitle = localStrings.getString('networkDisabled');
+        var enableCellular = function() {
+          chrome.send('enableCellular');
+        };
+        $('network-list').update({key: 'cellular',
+                                  subtitle: subtitle,
+                                  iconType: 'cellular',
+                                  command: enableCellular});
+      }
     } else {
       $('network-list').deleteItem('cellular');
     }
 
     // Only show VPN control if there is an internet connection.
-    if (ethernetConnection || isConnected_(wirelessNetworks_))
+    if (ethernetConnection || isConnected_(data.wirelessList))
       loadData_('vpn', data.vpnList, data.rememberedList);
     else
       $('network-list').deleteItem('vpn');
@@ -652,24 +679,6 @@ cr.define('options.network', function() {
       $(activeMenu_).hidden = true;
       activeMenu_ = null;
       $('settings').removeEventListener('click', closeMenu_);
-    }
-  }
-
-  /**
-   * Toggles airplane mode.
-   * @private
-   */
-  function toggleAirplaneMode_() {
-    if (cellularEnabled_ || isConnected_(wirelessNetworks_)) {
-      chrome.send('disableWifi');
-      if (cellularAvailable_)
-        chrome.send('disableCellular');
-      // TODO(kevers): Disable bluetooth.
-    } else {
-      chrome.send('enableWifi');
-      if (cellularAvailable_)
-        chrome.send('enableCellular');
-      // TODO(kevers): Reenable bluetooth.
     }
   }
 
