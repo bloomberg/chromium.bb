@@ -17,7 +17,7 @@ class ListValue;
 // Serializer for persisting metrics logs to prefs.
 class MetricsLogSerializer : public MetricsLogManager::LogSerializer {
  public:
-  // Used to produce a historgram that keeps track of the status of recalling
+  // Used to produce a histogram that keeps track of the status of recalling
   // persisted per logs.
   enum LogReadStatus {
     RECALL_SUCCESS,         // We were able to correctly recall a persisted log.
@@ -28,8 +28,9 @@ class MetricsLogSerializer : public MetricsLogManager::LogSerializer {
     LOG_STRING_CORRUPTION,  // Failed to recover log string using GetAsString().
     CHECKSUM_CORRUPTION,    // Failed to verify checksum.
     CHECKSUM_STRING_CORRUPTION,  // Failed to recover checksum string using
-    // GetAsString().
+                                 // GetAsString().
     DECODE_FAIL,            // Failed to decode log.
+    XML_PROTO_MISMATCH,     // The XML and protobuf logs have inconsistent data.
     END_RECALL_STATUS       // Number of bins to use to create the histogram.
   };
 
@@ -37,23 +38,30 @@ class MetricsLogSerializer : public MetricsLogManager::LogSerializer {
   virtual ~MetricsLogSerializer();
 
   // Implementation of MetricsLogManager::LogSerializer
-  virtual void SerializeLogs(const std::vector<std::string>& logs,
-                             MetricsLogManager::LogType log_type) OVERRIDE;
-  virtual void DeserializeLogs(MetricsLogManager::LogType log_type,
-                               std::vector<std::string>* logs) OVERRIDE;
+  virtual void SerializeLogs(
+      const std::vector<MetricsLogManager::SerializedLog>& logs,
+      MetricsLogManager::LogType log_type) OVERRIDE;
+  virtual void DeserializeLogs(
+      MetricsLogManager::LogType log_type,
+      std::vector<MetricsLogManager::SerializedLog>* logs) OVERRIDE;
 
  private:
   // Encodes the textual log data from |local_list| and writes it to the given
-  // pref list, along with list size and checksum.
-  static void WriteLogsToPrefList(const std::vector<std::string>& local_list,
-                                  const size_t kMaxLocalListSize,
-                                  base::ListValue* list);
+  // pref list, along with list size and checksum.  If |is_xml| is true, writes
+  // the XML data from |local_list|; otherwise writes the protobuf data.
+  static void WriteLogsToPrefList(
+      const std::vector<MetricsLogManager::SerializedLog>& local_list,
+      bool is_xml,
+      size_t max_list_size,
+      base::ListValue* list);
 
   // Decodes and verifies the textual log data from |list|, populating
-  // |local_list| and returning a status code.
+  // |local_list| and returning a status code.  If |is_xml| is true, populates
+  // the XML data in |local_list|; otherwise populates the protobuf data.
   static LogReadStatus ReadLogsFromPrefList(
       const base::ListValue& list,
-      std::vector<std::string>* local_list);
+      bool is_xml,
+      std::vector<MetricsLogManager::SerializedLog>* local_list);
 
   FRIEND_TEST_ALL_PREFIXES(MetricsLogSerializerTest, EmptyLogList);
   FRIEND_TEST_ALL_PREFIXES(MetricsLogSerializerTest, SingleElementLogList);

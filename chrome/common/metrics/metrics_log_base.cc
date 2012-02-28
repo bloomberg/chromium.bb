@@ -9,10 +9,13 @@
 #include "base/md5.h"
 #include "base/perftimer.h"
 #include "base/string_number_conversions.h"
+#include "base/sys_byteorder.h"
 #include "base/sys_info.h"
 #include "base/third_party/nspr/prtime.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/logging_chrome.h"
+#include "chrome/common/metrics/proto/histogram_event.pb.h"
+#include "chrome/common/metrics/proto/user_action_event.pb.h"
 #include "libxml/xmlwriter.h"
 
 #define OPEN_ELEMENT_FOR_SCOPE(name) ScopedElement scoped_element(this, name)
@@ -20,17 +23,51 @@
 using base::Histogram;
 using base::Time;
 using base::TimeDelta;
-
-// http://blogs.msdn.com/oldnewthing/archive/2004/10/25/247180.aspx
-#if defined(OS_WIN)
-extern "C" IMAGE_DOS_HEADER __ImageBase;
-#endif
+using metrics::HistogramEventProto;
+using metrics::UserActionEventProto;
 
 namespace {
 
 // libxml take xmlChar*, which is unsigned char*
 inline const unsigned char* UnsignedChar(const char* input) {
   return reinterpret_cast<const unsigned char*>(input);
+}
+
+// Any id less than 16 bytes is considered to be a testing id.
+bool IsTestingID(const std::string& id) {
+  return id.size() < 16;
+}
+
+// Converts the 8-byte prefix of an MD5 hash into a uint64 value.
+inline uint64 HashToUInt64(const std::string& hash) {
+  uint64 value;
+  DCHECK_GE(hash.size(), sizeof(value));
+  memcpy(&value, hash.data(), sizeof(value));
+  return base::htonll(value);
+}
+
+// Creates an MD5 hash of the given value, and returns hash as a byte buffer
+// encoded as an std::string.
+std::string CreateHash(const std::string& value) {
+  base::MD5Context context;
+  base::MD5Init(&context);
+  base::MD5Update(&context, value);
+
+  base::MD5Digest digest;
+  base::MD5Final(&digest, &context);
+
+  std::string hash(reinterpret_cast<char*>(digest.a), arraysize(digest.a));
+
+  // The following log is VERY helpful when folks add some named histogram into
+  // the code, but forgot to update the descriptive list of histograms.  When
+  // that happens, all we get to see (server side) is a hash of the histogram
+  // name.  We can then use this logging to find out what histogram name was
+  // being hashed to a given MD5 value by just running the version of Chromium
+  // in question with --enable-logging.
+  DVLOG(1) << "Metrics: Hash numeric [" << value << "]=[" << HashToUInt64(hash)
+           << "]";
+
+  return hash;
 }
 
 }  // namespace
@@ -92,11 +129,23 @@ MetricsLogBase::MetricsLogBase(const std::string& client_id, int session_id,
       locked_(false),
       xml_wrapper_(new XmlWrapper),
       num_events_(0) {
+  int64_t build_time = GetBuildTime();
 
+  // Write the XML version.
   StartElement("log");
   WriteAttribute("clientid", client_id_);
-  WriteInt64Attribute("buildtime", GetBuildTime());
+  WriteInt64Attribute("buildtime", build_time);
   WriteAttribute("appversion", version_string);
+
+  // Write the protobuf version.
+  if (IsTestingID(client_id_)) {
+    uma_proto_.set_client_id(0);
+  } else {
+    uma_proto_.set_client_id(HashToUInt64(CreateHash(client_id)));
+  }
+  uma_proto_.set_session_id(session_id);
+  uma_proto_.mutable_system_profile()->set_build_timestamp(build_time);
+  uma_proto_.mutable_system_profile()->set_app_version(version_string);
 }
 
 MetricsLogBase::~MetricsLogBase() {
@@ -107,6 +156,38 @@ MetricsLogBase::~MetricsLogBase() {
   }
   delete xml_wrapper_;
   xml_wrapper_ = NULL;
+}
+
+// static
+void MetricsLogBase::CreateHashes(const std::string& string,
+                                  std::string* base64_encoded_hash,
+                                  uint64* numeric_hash) {
+  std::string hash = CreateHash(string);
+
+  std::string encoded_digest;
+  if (base::Base64Encode(hash, &encoded_digest))
+    DVLOG(1) << "Metrics: Hash [" << encoded_digest << "]=[" << string << "]";
+
+  *base64_encoded_hash = encoded_digest;
+  *numeric_hash = HashToUInt64(hash);
+}
+
+// static
+int64 MetricsLogBase::GetBuildTime() {
+  static int64 integral_build_time = 0;
+  if (!integral_build_time) {
+    Time time;
+    const char* kDateTime = __DATE__ " " __TIME__ " GMT";
+    bool result = Time::FromString(kDateTime, &time);
+    DCHECK(result);
+    integral_build_time = static_cast<int64>(time.ToTimeT());
+  }
+  return integral_build_time;
+}
+
+// static
+int64 MetricsLogBase::GetCurrentTime() {
+  return (base::TimeTicks::Now() - base::TimeTicks()).InSeconds();
 }
 
 void MetricsLogBase::CloseLog() {
@@ -120,6 +201,9 @@ void MetricsLogBase::CloseLog() {
   DCHECK_GE(result, 0);
 
 #if defined(OS_CHROMEOS)
+  // TODO(isherman): Once the XML pipeline is deprecated, there will be no need
+  // to track the hardware class in a separate member variable and only write it
+  // out when the log is closed.
   xmlNodePtr root = xmlDocGetRootElement(xml_wrapper_->doc());
   if (!hardware_class_.empty()) {
     // The hardware class is determined after the first ongoing log is
@@ -127,6 +211,9 @@ void MetricsLogBase::CloseLog() {
     // attribute when the log is closed instead.
     xmlNewProp(root, UnsignedChar("hardwareclass"),
                UnsignedChar(hardware_class_.c_str()));
+
+    // Write to the protobuf too.
+    uma_proto_.mutable_system_profile()->set_hardware_class(hardware_class_);
   }
 
   // Flattens the XML tree into a character buffer.
@@ -142,79 +229,51 @@ void MetricsLogBase::CloseLog() {
 #endif  // OS_CHROMEOS
 }
 
-int MetricsLogBase::GetEncodedLogSize() {
+int MetricsLogBase::GetEncodedLogSizeXml() {
   DCHECK(locked_);
   CHECK(xml_wrapper_);
   CHECK(xml_wrapper_->buffer());
   return xml_wrapper_->buffer()->use;
 }
 
-bool MetricsLogBase::GetEncodedLog(char* buffer, int buffer_size) {
+bool MetricsLogBase::GetEncodedLogXml(char* buffer, int buffer_size) {
   DCHECK(locked_);
-  if (buffer_size < GetEncodedLogSize())
+  if (buffer_size < GetEncodedLogSizeXml())
     return false;
 
-  memcpy(buffer, xml_wrapper_->buffer()->content, GetEncodedLogSize());
+  memcpy(buffer, xml_wrapper_->buffer()->content, GetEncodedLogSizeXml());
   return true;
 }
 
-std::string MetricsLogBase::GetEncodedLogString() {
+void MetricsLogBase::GetEncodedLogProto(std::string* encoded_log) {
   DCHECK(locked_);
-  return std::string(reinterpret_cast<char*>(xml_wrapper_->buffer()->content));
+  uma_proto_.SerializeToString(encoded_log);
 }
 
 int MetricsLogBase::GetElapsedSeconds() {
   return static_cast<int>((Time::Now() - start_time_).InSeconds());
 }
 
-std::string MetricsLogBase::CreateHash(const std::string& value) {
-  base::MD5Context ctx;
-  base::MD5Init(&ctx);
-  base::MD5Update(&ctx, value);
-
-  base::MD5Digest digest;
-  base::MD5Final(&digest, &ctx);
-
-  uint64 reverse_uint64;
-  // UMA only uses first 8 chars of hash. We use the above uint64 instead
-  // of a unsigned char[8] so that we don't run into strict aliasing issues
-  // in the LOG statement below when trying to interpret reverse as a uint64.
-  unsigned char* reverse = reinterpret_cast<unsigned char *>(&reverse_uint64);
-  DCHECK(arraysize(digest.a) >= sizeof(reverse_uint64));
-  for (size_t i = 0; i < sizeof(reverse_uint64); ++i)
-    reverse[i] = digest.a[sizeof(reverse_uint64) - i - 1];
-  // The following log is VERY helpful when folks add some named histogram into
-  // the code, but forgot to update the descriptive list of histograms.  When
-  // that happens, all we get to see (server side) is a hash of the histogram
-  // name.  We can then use this logging to find out what histogram name was
-  // being hashed to a given MD5 value by just running the version of Chromium
-  // in question with --enable-logging.
-  DVLOG(1) << "Metrics: Hash numeric [" << value
-           << "]=[" << reverse_uint64 << "]";
-  return std::string(reinterpret_cast<char*>(digest.a), arraysize(digest.a));
-}
-
-std::string MetricsLogBase::CreateBase64Hash(const std::string& string) {
-  std::string encoded_digest;
-  if (base::Base64Encode(CreateHash(string), &encoded_digest)) {
-    DVLOG(1) << "Metrics: Hash [" << encoded_digest << "]=[" << string << "]";
-    return encoded_digest;
-  }
-  return std::string();
-}
-
 void MetricsLogBase::RecordUserAction(const char* key) {
   DCHECK(!locked_);
 
-  std::string command_hash = CreateBase64Hash(key);
-  if (command_hash.empty()) {
+  std::string base64_hash;
+  uint64 numeric_hash;
+  CreateHashes(key, &base64_hash, &numeric_hash);
+  if (base64_hash.empty()) {
     NOTREACHED() << "Unable generate encoded hash of command: " << key;
     return;
   }
 
+  // Write the XML version.
   OPEN_ELEMENT_FOR_SCOPE("uielement");
   WriteAttribute("action", "command");
-  WriteAttribute("targetidhash", command_hash);
+  WriteAttribute("targetidhash", base64_hash);
+
+  // Write the protobuf version.
+  UserActionEventProto* user_action = uma_proto_.add_user_action_event();
+  user_action->set_name_hash(numeric_hash);
+  user_action->set_time(MetricsLogBase::GetCurrentTime());
 
   // TODO(jhughes): Properly track windows.
   WriteIntAttribute("window", 0);
@@ -310,7 +369,7 @@ void MetricsLogBase::WriteCommonEventAttributes() {
 }
 
 void MetricsLogBase::WriteAttribute(const std::string& name,
-                                const std::string& value) {
+                                    const std::string& value) {
   DCHECK(!locked_);
   DCHECK(!name.empty());
 
@@ -359,19 +418,6 @@ void MetricsLogBase::EndElement() {
   DCHECK_GE(result, 0);
 }
 
-// static
-int64 MetricsLogBase::GetBuildTime() {
-  static int64 integral_build_time = 0;
-  if (!integral_build_time) {
-    Time time;
-    const char* kDateTime = __DATE__ " " __TIME__ " GMT";
-    bool result = Time::FromString(kDateTime, &time);
-    DCHECK(result);
-    integral_build_time = static_cast<int64>(time.ToTimeT());
-  }
-  return integral_build_time;
-}
-
 // TODO(JAR): A The following should really be part of the histogram class.
 // Internal state is being needlessly exposed, and it would be hard to reuse
 // this code. If we moved this into the Histogram class, then we could use
@@ -387,7 +433,14 @@ void MetricsLogBase::RecordHistogramDelta(
 
   OPEN_ELEMENT_FOR_SCOPE("histogram");
 
-  WriteAttribute("name", CreateBase64Hash(histogram.histogram_name()));
+  std::string base64_name_hash;
+  uint64 numeric_name_hash;
+  CreateHashes(histogram.histogram_name(),
+               &base64_name_hash,
+               &numeric_name_hash);
+
+  // Write the XML version.
+  WriteAttribute("name", base64_name_hash);
 
   WriteInt64Attribute("sum", snapshot.sum());
   // TODO(jar): Remove sumsquares when protobuffer accepts this as optional.
@@ -399,6 +452,21 @@ void MetricsLogBase::RecordHistogramDelta(
       WriteIntAttribute("min", histogram.ranges(i));
       WriteIntAttribute("max", histogram.ranges(i + 1));
       WriteIntAttribute("count", snapshot.counts(i));
+    }
+  }
+
+  // Write the protobuf version.
+  HistogramEventProto* histogram_proto = uma_proto_.add_histogram_event();
+  histogram_proto->set_name_hash(numeric_name_hash);
+  histogram_proto->set_sum(snapshot.sum());
+
+  for (size_t i = 0; i < histogram.bucket_count(); ++i) {
+    if (snapshot.counts(i)) {
+      HistogramEventProto::Bucket* bucket = histogram_proto->add_bucket();
+      bucket->set_min(histogram.ranges(i));
+      bucket->set_max(histogram.ranges(i + 1));
+      bucket->set_bucket_index(i);
+      bucket->set_count(snapshot.counts(i));
     }
   }
 }

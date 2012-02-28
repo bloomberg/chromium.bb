@@ -182,6 +182,7 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/url_fetcher.h"
+#include "net/base/load_flags.h"
 #include "webkit/plugins/webplugininfo.h"
 
 // TODO(port): port browser_distribution.h.
@@ -200,30 +201,44 @@ using content::BrowserThread;
 using content::ChildProcessData;
 using content::PluginService;
 
-// Check to see that we're being called on only one thread.
-static bool IsSingleThreaded();
+namespace {
 
-static const char kMetricsType[] = "application/vnd.mozilla.metrics.bz2";
+// Check to see that we're being called on only one thread.
+bool IsSingleThreaded() {
+  static base::PlatformThreadId thread_id = 0;
+  if (!thread_id)
+    thread_id = base::PlatformThread::CurrentId();
+  return base::PlatformThread::CurrentId() == thread_id;
+}
+
+const char kMetricsTypeXml[] = "application/vnd.mozilla.metrics.bz2";
+const char kMetricsTypeProto[] = "application/vnd.chrome.uma";
+
+const char kServerUrlXml[] =
+    "https://clients4.google.com/firefox/metrics/collect";
+const char kServerUrlProto[] = "https://clients4.google.com/uma/v2";
 
 // The delay, in seconds, after starting recording before doing expensive
 // initialization work.
-static const int kInitializationDelaySeconds = 30;
+const int kInitializationDelaySeconds = 30;
 
 // This specifies the amount of time to wait for all renderers to send their
 // data.
-static const int kMaxHistogramGatheringWaitDuration = 60000;  // 60 seconds.
+const int kMaxHistogramGatheringWaitDuration = 60000;  // 60 seconds.
 
 // The maximum number of events in a log uploaded to the UMA server.
-static const int kEventLimit = 2400;
+const int kEventLimit = 2400;
 
 // If an upload fails, and the transmission was over this byte count, then we
 // will discard the log, and not try to retransmit it.  We also don't persist
 // the log to the prefs for transmission during the next chrome session if this
 // limit is exceeded.
-static const int kUploadLogAvoidRetransmitSize = 50000;
+const size_t kUploadLogAvoidRetransmitSize = 50000;
 
 // Interval, in minutes, between state saves.
-static const int kSaveStateIntervalMinutes = 5;
+const int kSaveStateIntervalMinutes = 5;
+
+}
 
 // static
 MetricsService::ShutdownCleanliness MetricsService::clean_shutdown_status_ =
@@ -323,8 +338,10 @@ void MetricsService::RegisterPrefs(PrefService* local_state) {
                                    0);
   local_state->RegisterIntegerPref(prefs::kNumFoldersInOtherBookmarkFolder, 0);
   local_state->RegisterIntegerPref(prefs::kNumKeywords, 0);
-  local_state->RegisterListPref(prefs::kMetricsInitialLogs);
-  local_state->RegisterListPref(prefs::kMetricsOngoingLogs);
+  local_state->RegisterListPref(prefs::kMetricsInitialLogsXml);
+  local_state->RegisterListPref(prefs::kMetricsOngoingLogsXml);
+  local_state->RegisterListPref(prefs::kMetricsInitialLogsProto);
+  local_state->RegisterListPref(prefs::kMetricsOngoingLogsProto);
 
   local_state->RegisterInt64Pref(prefs::kUninstallMetricsPageLoadCount, 0);
   local_state->RegisterInt64Pref(prefs::kUninstallLaunchCount, 0);
@@ -357,15 +374,16 @@ void MetricsService::DiscardOldStabilityStats(PrefService* local_state) {
 
   local_state->ClearPref(prefs::kStabilityPluginStats);
 
-  local_state->ClearPref(prefs::kMetricsInitialLogs);
-  local_state->ClearPref(prefs::kMetricsOngoingLogs);
+  local_state->ClearPref(prefs::kMetricsInitialLogsXml);
+  local_state->ClearPref(prefs::kMetricsOngoingLogsXml);
+  local_state->ClearPref(prefs::kMetricsInitialLogsProto);
+  local_state->ClearPref(prefs::kMetricsOngoingLogsProto);
 }
 
 MetricsService::MetricsService()
     : recording_active_(false),
       reporting_active_(false),
       state_(INITIALIZED),
-      current_fetch_(NULL),
       io_thread_(NULL),
       idle_since_last_transmission_(false),
       next_window_id_(0),
@@ -628,11 +646,13 @@ void MetricsService::RecordBreakpadHasDebugger(bool has_debugger) {
 
 void MetricsService::InitializeMetricsState() {
 #if defined(OS_POSIX)
-  server_url_ = L"https://clients4.google.com/firefox/metrics/collect";
+  server_url_xml_ = ASCIIToUTF16(kServerUrlXml);
+  server_url_proto_ = ASCIIToUTF16(kServerUrlProto);
   network_stats_server_ = "chrome.googleechotest.com";
 #else
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  server_url_ = dist->GetStatsServerURL();
+  server_url_xml_ = dist->GetStatsServerURL();
+  server_url_proto_ = ASCIIToUTF16(kServerUrlProto);
   network_stats_server_ = dist->GetNetworkStatsServer();
 #endif
 
@@ -839,7 +859,7 @@ void MetricsService::StopRecording() {
   MetricsLog* current_log =
       static_cast<MetricsLog*>(log_manager_.current_log());
   DCHECK(current_log);
-  current_log->RecordIncrementalStabilityElements();
+  current_log->RecordIncrementalStabilityElements(plugins_);
   RecordCurrentHistograms();
 
   log_manager_.StageCurrentLogForUpload();
@@ -934,8 +954,9 @@ void MetricsService::OnHistogramSynchronizationDone() {
   // If somehow there is a fetch in progress, we return and hope things work
   // out. The scheduler isn't informed since if this happens, the scheduler
   // will get a response from the upload.
-  DCHECK(!current_fetch_.get());
-  if (current_fetch_.get())
+  DCHECK(!current_fetch_xml_.get());
+  DCHECK(!current_fetch_proto_.get());
+  if (current_fetch_xml_.get() || current_fetch_proto_.get())
     return;
 
   // This function should only be called as the callback from an ansynchronous
@@ -965,7 +986,8 @@ void MetricsService::OnHistogramSynchronizationDone() {
 
   PrepareFetchWithStagedLog();
 
-  if (!current_fetch_.get()) {
+  if (!current_fetch_xml_.get()) {
+    DCHECK(!current_fetch_proto_.get());
     // Compression failed, and log discarded :-/.
     log_manager_.DiscardStagedLog();
     scheduler_->UploadCancelled();
@@ -973,11 +995,19 @@ void MetricsService::OnHistogramSynchronizationDone() {
     // compressed that, so that we can signal that we're losing logs.
     return;
   }
+  // Currently, the staged log for the protobuf version of the data is discarded
+  // after we create the URL request, so that there is no chance for
+  // re-transmission in case the corresponding XML request fails.  We will
+  // handle protobuf failures more carefully once that becomes the main
+  // pipeline, i.e. once we switch away from the XML pipeline.
+  DCHECK(current_fetch_proto_.get() || !log_manager_.has_staged_log_proto());
 
   DCHECK(!waiting_for_asynchronus_reporting_step_);
 
   waiting_for_asynchronus_reporting_step_ = true;
-  current_fetch_->Start();
+  current_fetch_xml_->Start();
+  if (current_fetch_proto_.get())
+    current_fetch_proto_->Start();
 
   HandleIdleSinceLastTransmission(true);
 }
@@ -1051,13 +1081,40 @@ void MetricsService::StoreUnsentLogs() {
 
 void MetricsService::PrepareFetchWithStagedLog() {
   DCHECK(!log_manager_.staged_log_text().empty());
-  DCHECK(!current_fetch_.get());
 
-  current_fetch_.reset(content::URLFetcher::Create(
-      GURL(WideToUTF16(server_url_)), content::URLFetcher::POST, this));
-  current_fetch_->SetRequestContext(
+  // Prepare the XML version.
+  DCHECK(!current_fetch_xml_.get());
+  current_fetch_xml_.reset(content::URLFetcher::Create(
+      GURL(server_url_xml_), content::URLFetcher::POST, this));
+  current_fetch_xml_->SetRequestContext(
       g_browser_process->system_request_context());
-  current_fetch_->SetUploadData(kMetricsType, log_manager_.staged_log_text());
+  current_fetch_xml_->SetUploadData(kMetricsTypeXml,
+                                    log_manager_.staged_log_text().xml);
+  // We already drop cookies server-side, but we might as well strip them out
+  // client-side as well.
+  current_fetch_xml_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
+                                   net::LOAD_DO_NOT_SEND_COOKIES);
+
+  // Prepare the protobuf version.
+  DCHECK(!current_fetch_proto_.get());
+  if (log_manager_.has_staged_log_proto()) {
+    current_fetch_proto_.reset(content::URLFetcher::Create(
+        GURL(server_url_proto_), content::URLFetcher::POST, this));
+    current_fetch_proto_->SetRequestContext(
+        g_browser_process->system_request_context());
+    current_fetch_proto_->SetUploadData(kMetricsTypeProto,
+                                        log_manager_.staged_log_text().proto);
+    // We already drop cookies server-side, but we might as well strip them out
+    // client-side as well.
+    current_fetch_proto_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
+                                       net::LOAD_DO_NOT_SEND_COOKIES);
+
+    // Discard the protobuf version of the staged log, so that we will avoid
+    // re-uploading it even if we need to re-upload the XML version.
+    // TODO(isherman): Handle protobuf upload failures more gracefully once we
+    // transition away from the XML-based pipeline.
+    log_manager_.DiscardStagedLogProto();
+  }
 }
 
 static const char* StatusToString(const net::URLRequestStatus& status) {
@@ -1083,30 +1140,71 @@ static const char* StatusToString(const net::URLRequestStatus& status) {
   }
 }
 
+// We need to wait for two responses: the response to the XML upload, and the
+// response to the protobuf upload.  For now, only the XML upload's response
+// affects decisions like whether to retry the upload, whether to abandon the
+// upload because it is too large, etc.  However, we still need to wait for the
+// protobuf upload, as we cannot reset |current_fetch_proto_| until we have
+// confirmation that the network request was sent; and the easiest way to do
+// that is to wait for the response.  In case the XML upload's response arrives
+// first, we cache that response until the protobuf upload's response also
+// arrives.
+//
+// Note that if the XML upload succeeds but the protobuf upload fails, we will
+// not retry the protobuf upload.  If the XML upload fails while the protobuf
+// upload succeeds, we will still avoid re-uploading the protobuf data because
+// we "zap" the data after the first upload attempt.  This means that we might
+// lose protobuf uploads when XML ones succeed; but we will never duplicate any
+// protobuf uploads.  Protobuf failures should be rare enough to where this
+// should be ok while we have the two pipelines running in parallel.
 void MetricsService::OnURLFetchComplete(const content::URLFetcher* source) {
   DCHECK(waiting_for_asynchronus_reporting_step_);
+
+  // We're not allowed to re-use the existing |URLFetcher|s, so free them here.
+  scoped_ptr<content::URLFetcher> s;
+  if (source == current_fetch_xml_.get()) {
+    s.reset(current_fetch_xml_.release());
+
+    // Cache the XML responses, in case we still need to wait for the protobuf
+    // response.
+    response_code_ = source->GetResponseCode();
+    response_status_ = StatusToString(source->GetStatus());
+    source->GetResponseAsString(&response_data_);
+  } else if (source == current_fetch_proto_.get()) {
+    s.reset(current_fetch_proto_.release());
+  } else {
+    NOTREACHED();
+    return;
+  }
+
+  // If we're still waiting for one of the responses, keep waiting...
+  if (current_fetch_xml_.get() || current_fetch_proto_.get())
+    return;
+
+  // We should only be able to reach here once we've received responses to both
+  // the XML and the protobuf requests.  We should always have the response code
+  // available.
+  DCHECK_NE(response_code_, content::URLFetcher::RESPONSE_CODE_INVALID);
   waiting_for_asynchronus_reporting_step_ = false;
-  DCHECK(current_fetch_.get());
-  // We're not allowed to re-use it. Delete it on function exit since we use it.
-  scoped_ptr<content::URLFetcher> s(current_fetch_.release());
+
 
   // Confirm send so that we can move on.
-  VLOG(1) << "METRICS RESPONSE CODE: " << source->GetResponseCode()
-          << " status=" << StatusToString(source->GetStatus());
+  VLOG(1) << "METRICS RESPONSE CODE: " << response_code_
+          << " status=" << response_status_;
 
-  bool upload_succeeded = source->GetResponseCode() == 200;
+  bool upload_succeeded = response_code_ == 200;
 
   // Provide boolean for error recovery (allow us to ignore response_code).
   bool discard_log = false;
 
   if (!upload_succeeded &&
-      (log_manager_.staged_log_text().length() >
-          static_cast<size_t>(kUploadLogAvoidRetransmitSize))) {
+      log_manager_.staged_log_text().xml.length() >
+          kUploadLogAvoidRetransmitSize) {
     UMA_HISTOGRAM_COUNTS(
         "UMA.Large Rejected Log was Discarded",
-        static_cast<int>(log_manager_.staged_log_text().length()));
+        static_cast<int>(log_manager_.staged_log_text().xml.length()));
     discard_log = true;
-  } else if (source->GetResponseCode() == 400) {
+  } else if (response_code_ == 400) {
     // Bad syntax.  Retransmission won't work.
     UMA_HISTOGRAM_COUNTS("UMA.Unacceptable_Log_Discarded", state_);
     discard_log = true;
@@ -1114,12 +1212,10 @@ void MetricsService::OnURLFetchComplete(const content::URLFetcher* source) {
 
   if (!upload_succeeded && !discard_log) {
     VLOG(1) << "METRICS: transmission attempt returned a failure code: "
-            << source->GetResponseCode() << ". Verify network connectivity";
+            << response_code_ << ". Verify network connectivity";
     LogBadResponseCode();
   } else {  // Successful receipt (or we are discarding log).
-    std::string data;
-    source->GetResponseAsString(&data);
-    VLOG(1) << "METRICS RESPONSE DATA: " << data;
+    VLOG(1) << "METRICS RESPONSE DATA: " << response_data_;
     switch (state_) {
       case INITIAL_LOG_READY:
         state_ = SENDING_OLD_LOGS;
@@ -1146,7 +1242,7 @@ void MetricsService::OnURLFetchComplete(const content::URLFetcher* source) {
 
   // Error 400 indicates a problem with the log, not with the server, so
   // don't consider that a sign that the server is in trouble.
-  bool server_is_healthy = upload_succeeded || source->GetResponseCode() == 400;
+  bool server_is_healthy = upload_succeeded || response_code_ == 400;
 
   scheduler_->UploadFinished(server_is_healthy,
                              log_manager_.has_unsent_logs());
@@ -1154,16 +1250,21 @@ void MetricsService::OnURLFetchComplete(const content::URLFetcher* source) {
   // Collect network stats if UMA upload succeeded.
   if (server_is_healthy && io_thread_)
     chrome_browser_net::CollectNetworkStats(network_stats_server_, io_thread_);
+
+  // Reset the cached response data.
+  response_code_ = content::URLFetcher::RESPONSE_CODE_INVALID;
+  response_data_ = std::string();
+  response_status_ = std::string();
 }
 
 void MetricsService::LogBadResponseCode() {
   VLOG(1) << "Verify your metrics logs are formatted correctly.  Verify server "
-             "is active at " << server_url_;
+             "is active at " << server_url_xml_;
   if (!log_manager_.has_staged_log()) {
     VLOG(1) << "METRICS: Recorder shutdown during log transmission.";
   } else {
     VLOG(1) << "METRICS: transmission retry being scheduled for "
-            << log_manager_.staged_log_text();
+            << log_manager_.staged_log_text().xml;
   }
 }
 
@@ -1533,13 +1634,6 @@ void MetricsService::RecordCurrentState(PrefService* pref) {
 bool MetricsService::IsPluginProcess(content::ProcessType type) {
   return (type == content::PROCESS_TYPE_PLUGIN||
           type == content::PROCESS_TYPE_PPAPI_PLUGIN);
-}
-
-static bool IsSingleThreaded() {
-  static base::PlatformThreadId thread_id = 0;
-  if (!thread_id)
-    thread_id = base::PlatformThread::CurrentId();
-  return base::PlatformThread::CurrentId() == thread_id;
 }
 
 #if defined(OS_CHROMEOS)
