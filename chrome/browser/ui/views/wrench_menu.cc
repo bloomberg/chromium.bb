@@ -578,6 +578,7 @@ WrenchMenu::WrenchMenu(Browser* browser)
       selected_menu_model_(NULL),
       selected_index_(0),
       bookmark_menu_(NULL),
+      feedback_menu_item_(NULL),
       first_bookmark_command_id_(0) {
   registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
                  content::Source<Profile>(browser_->profile()));
@@ -781,6 +782,20 @@ void WrenchMenu::WillShowMenu(MenuItemView* menu) {
     CreateBookmarkMenu();
 }
 
+void WrenchMenu::WillHideMenu(MenuItemView* menu) {
+  // Turns off the fade out animation of the wrench menus if
+  // |feedback_menu_item_| is selected.  This excludes the wrench menu itself
+  // from the snapshot in the feedback UI.
+  if (menu->HasSubmenu() && feedback_menu_item_ &&
+      feedback_menu_item_->IsSelected()) {
+    // It's okay to just turn off the animation and no to take care the
+    // animation back because the menu widget will be recreated next time
+    // it's opened. See ToolbarView::RunMenu() and Init() of this class.
+    menu->GetSubmenu()->GetWidget()->
+        SetVisibilityChangedAnimationsEnabled(false);
+  }
+}
+
 void WrenchMenu::BookmarkModelChanged() {
   DCHECK(bookmark_menu_delegate_.get());
   if (!bookmark_menu_delegate_->is_mutating_model())
@@ -840,6 +855,11 @@ void WrenchMenu::PopulateMenu(MenuItemView* parent,
       case IDC_BOOKMARKS_MENU:
         DCHECK(!bookmark_menu_);
         bookmark_menu_ = item;
+        break;
+
+      case IDC_FEEDBACK:
+        DCHECK(!feedback_menu_item_);
+        feedback_menu_item_ = item;
         break;
 
       default:

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,6 +70,7 @@ class WrenchMenu : public views::MenuDelegate,
   virtual void ExecuteCommand(int id, int mouse_event_flags) OVERRIDE;
   virtual bool GetAccelerator(int id, ui::Accelerator* accelerator) OVERRIDE;
   virtual void WillShowMenu(views::MenuItemView* menu) OVERRIDE;
+  virtual void WillHideMenu(views::MenuItemView* menu) OVERRIDE;
 
   // BaseBookmarkModelObserver overrides:
   virtual void BookmarkModelChanged() OVERRIDE;
@@ -138,6 +139,9 @@ class WrenchMenu : public views::MenuDelegate,
 
   // Menu corresponding to IDC_BOOKMARKS_MENU.
   views::MenuItemView* bookmark_menu_;
+
+  // Menu corresponding to IDC_FEEDBACK.
+  views::MenuItemView* feedback_menu_item_;
 
   // ID to use for the items representing bookmarks in the bookmark menu.
   int first_bookmark_command_id_;
