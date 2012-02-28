@@ -52,6 +52,7 @@ var ExportView = (function() {
   ExportView.SECURITY_STRIPPING_CHECKBOX_ID =
       'export-view-security-stripping-checkbox';
   ExportView.USER_COMMENTS_TEXT_AREA_ID = 'export-view-user-comments';
+  ExportView.PRIVACY_WARNING_ID = 'export-view-privacy-warning';
 
   cr.addSingletonGetter(ExportView);
 
@@ -92,6 +93,12 @@ var ExportView = (function() {
 
     enableSaveFileButton_: function(enabled) {
       this.saveFileButton_.disabled = !enabled;
+    },
+
+    showPrivacyWarning: function() {
+      setNodeDisplay($(ExportView.PRIVACY_WARNING_ID), true);
+      $(ExportView.SECURITY_STRIPPING_CHECKBOX_ID).checked = false;
+      $(ExportView.SECURITY_STRIPPING_CHECKBOX_ID).disabled = true;
     },
 
     /**

@@ -4,6 +4,12 @@
   border: 2px solid red;
 }
 
+#export-view-privacy-warning {
+  padding: 5px;
+  color: red;
+  border: 1px solid red;
+}
+
 </style>
 
 <div id=export-view-tab-content>
@@ -11,7 +17,13 @@
   <h2>Dump data</h2>
   <div style="margin: 8px">
     <p><input id=export-view-security-stripping-checkbox type=checkbox checked=yes>
-       Strip private information (cookies and credentials).
+       <label id=export-view-security-stripping-checkbox>
+         Strip private information (cookies and credentials).
+       </label>
+       <div id=export-view-privacy-warning style="display:none">
+         <b>WARNING</b>: Events were captured while full byte logging was enabled.
+         This means the dump may contain private information.
+       </div>
     </p>
     <textarea cols=50 rows=5 placeholder="Explain what went wrong here. (These notes will be included in the dump file. Be sure to mention the specific URLs, so investigators know what to look for!)" id=export-view-user-comments></textarea>
     <div>
