@@ -18,7 +18,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "webkit/plugins/ppapi/common.h"
-#include "webkit/plugins/ppapi/usb_key_code_conversion.h"
 
 using ppapi::EventTimeToPPTimeTicks;
 using ppapi::InputEventData;
@@ -82,7 +81,9 @@ void AppendKeyEvent(const WebInputEvent& event,
   InputEventData result = GetEventWithCommonFieldsAndType(event);
   result.event_modifiers = key_event.modifiers;
   result.key_code = key_event.windowsKeyCode;
-  result.usb_key_code = UsbKeyCodeForKeyboardEvent(key_event);
+  // TODO(garykac): Platform-specific code to convert from
+  // |key_event.nativeKeyCode| to USB key code.
+  result.usb_key_code = 0;
   result_events->push_back(result);
 }
 
