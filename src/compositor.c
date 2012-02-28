@@ -190,6 +190,15 @@ region_is_undefined(pixman_region32_t *region)
 	return region->data == &undef_region_data;
 }
 
+static void
+empty_region(pixman_region32_t *region)
+{
+	if (!region_is_undefined(region))
+		pixman_region32_fini(region);
+
+	pixman_region32_init(region);
+}
+
 WL_EXPORT struct weston_surface *
 weston_surface_create(struct weston_compositor *compositor)
 {
@@ -1910,6 +1919,7 @@ weston_input_update_drag_surface(struct wl_input_device *input_device,
 		surface_changed = 1;
 
 	if (!input_device->drag_surface || surface_changed) {
+		undef_region(&device->drag_surface->input);
 		device->drag_surface = NULL;
 		if (!surface_changed)
 			return;
@@ -1928,7 +1938,13 @@ weston_input_update_drag_surface(struct wl_input_device *input_device,
 		wl_list_insert(weston_compositor_top(device->compositor),
 			       &device->drag_surface->link);
 		weston_surface_assign_output(device->drag_surface);
+		empty_region(&device->drag_surface->input);
 	}
+
+	/* the client may have attached a buffer with a different size to
+	 * the drag surface, causing the input region to be reset */
+	if (region_is_undefined(&device->drag_surface->input))
+		empty_region(&device->drag_surface->input);
 
 	if (!dx && !dy)
 		return;
