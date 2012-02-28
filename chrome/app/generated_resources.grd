@@ -6893,9 +6893,6 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         This folder contains <ph name="COUNT">$1<ex>5</ex></ph> bookmarks. Are you sure you want to delete it?
       </message>
       <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Name shown in the tree for the bookmarks bar folder">
-          Bookmarks bar
-        </message>
         <message name="IDS_BOOKMARK_BAR_MOBILE_FOLDER_NAME" desc="Name shown in the tree for the mobile bookmarks folder">
           Mobile bookmarks
         </message>
@@ -6903,15 +6900,32 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
           Other bookmarks
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the bookmarks bar folder">
-          Bookmarks Bar
+      <if expr="not pp_ifdef('android') and not pp_ifdef('use_titlecase')">
+        <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Name shown in the tree for the bookmarks bar folder">
+          Bookmarks bar
         </message>
+      </if>
+      <if expr="pp_ifdef('android') and not pp_ifdef('use_titlecase')">
+        <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Name shown in the tree for the desktop bookmarks folder">
+          Desktop bookmarks
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_BOOKMARK_BAR_MOBILE_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the mobile bookmarks folder">
           Mobile Bookmarks
         </message>
         <message name="IDS_BOOKMARK_BAR_OTHER_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the other bookmarks folder">
           Other Bookmarks
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android') and pp_ifdef('use_titlecase')">
+        <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Name shown in the tree for the bookmarks bar folder">
+          Bookmarks Bar
+        </message>
+      </if>
+      <if expr="pp_ifdef('android') and pp_ifdef('use_titlecase')">
+        <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Name shown in the tree for the desktop bookmarks folder">
+          Desktop Bookmarks
         </message>
       </if>
       <message name="IDS_BOOKMARK_EDITOR_NEW_FOLDER_NAME" desc="Name for newly created groups">
