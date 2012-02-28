@@ -259,7 +259,7 @@ TEST_F(TabRestoreServiceTest, RestorePinnedAndApp) {
 }
 
 // We only restore apps on chromeos.
-#if defined(OS_CHROMEOS)
+#if defined(USE_AURA)
 
 typedef InProcessBrowserTest TabRestoreServiceBrowserTest;
 
