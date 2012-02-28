@@ -149,10 +149,14 @@ cr.define('options', function() {
         // The 'Enabled' checkbox.
         var enable = node.querySelector('.enable-checkbox');
         enable.hidden = false;
-        enable.addEventListener('click', function(e) {
-          chrome.send('extensionSettingsEnable',
-                      [extension.id, e.target.checked ? 'true' : 'false']);
-        });
+        enable.querySelector('input').disabled = !extension.mayDisable;
+
+        if (extension.mayDisable) {
+          enable.addEventListener('click', function(e) {
+            chrome.send('extensionSettingsEnable',
+                        [extension.id, e.target.checked ? 'true' : 'false']);
+          });
+        }
         enable.querySelector('input').checked = extension.enabled;
 
         // Make sure the checkbox doesn't move around when its value changes.
@@ -169,13 +173,16 @@ cr.define('options', function() {
       }
 
       // 'Remove' button.
-      var trashTemplate = $('template-collection').querySelector('.trash');
-      var trash = trashTemplate.cloneNode(true);
-      trash.title = templateData.extensionUninstall;
-      trash.addEventListener('click', function(e) {
-        chrome.send('extensionSettingsUninstall', [extension.id]);
-      });
-      node.querySelector('.enable-controls').appendChild(trash);
+
+      if (extension.mayDisable) {
+        var trashTemplate = $('template-collection').querySelector('.trash');
+        var trash = trashTemplate.cloneNode(true);
+        trash.title = templateData.extensionUninstall;
+        trash.addEventListener('click', function(e) {
+          chrome.send('extensionSettingsUninstall', [extension.id]);
+        });
+        node.querySelector('.enable-controls').appendChild(trash);
+      }
 
       // Developer mode ////////////////////////////////////////////////////////
 
