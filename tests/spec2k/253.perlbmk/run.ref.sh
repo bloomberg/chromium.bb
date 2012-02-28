@@ -14,6 +14,8 @@ EMU_HACK=${EMU_HACK:-yes}
 rm -f  *.out lib *.rc *enums dictionary
 
 ln -s  data/all/input/lib .
+ln -s  data/all/input/lenums lenums
+# TODO(pdox): Remove the benums symlink when PNaCl defines __LITTLE_ENDIAN__
 ln -s  data/all/input/lenums benums
 ln -s  data/ref/input/dictionary .
 ln -s  data/all/input/cpu2000_mhonarc.rc .
