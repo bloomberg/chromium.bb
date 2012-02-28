@@ -192,7 +192,7 @@ updateEverything();
         api_defs = json.loads(json_file.read())
       namespace = api_model.AddNamespace(api_defs[0], json_file_path)
       if not namespace:
-        body.concat("<pre>Target file %s is marked nocompile</pre>" %
+        body.Append("<pre>Target file %s is marked nocompile</pre>" %
             json_file_path)
         return
       type_generator = cpp_type_generator.CppTypeGenerator(
@@ -327,7 +327,7 @@ if __name__ == '__main__':
     print('')
     print('  http://localhost:%d/chrome/common/extensions/api' % opts.port)
     print('')
-    server = PreviewHTTPServer(int(opts.port), CompilerHandler,
+    server = PreviewHTTPServer(('', int(opts.port)), CompilerHandler,
       {
         'pygments': pygments_highlighter.PygmentsHighlighter(),
         'hilite': hilite_me_highlighter.HiliteMeHighlighter(),
