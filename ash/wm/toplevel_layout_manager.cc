@@ -69,8 +69,7 @@ void ToplevelLayoutManager::SetChildBounds(aura::Window* child,
                                            const gfx::Rect& requested_bounds) {
   gfx::Rect child_bounds(requested_bounds);
   // Ensure normal windows have the title bar at least partly visible.
-  if (!window_util::IsWindowMaximized(child) &&
-      !window_util::IsWindowFullscreen(child)) {
+  if (!wm::IsWindowMaximized(child) && !wm::IsWindowFullscreen(child)) {
     child_bounds = BoundsWithTitleBarVisible(
         child_bounds, gfx::Screen::GetMonitorWorkAreaNearestWindow(child));
   }
@@ -94,7 +93,7 @@ void ToplevelLayoutManager::OnWindowPropertyChanged(aura::Window* window,
 void ToplevelLayoutManager::UpdateShelfVisibility() {
   if (!shelf_)
     return;
-  shelf_->SetVisible(!window_util::HasFullscreenWindow(windows()));
+  shelf_->SetVisible(!wm::HasFullscreenWindow(windows()));
 }
 
 }  // namespace internal

@@ -56,9 +56,9 @@ void BaseLayoutManager::SetChildBounds(aura::Window* child,
   gfx::Rect child_bounds(requested_bounds);
   // Avoid a janky resize on startup by ensuring the initial bounds fill the
   // screen.
-  if (window_util::IsWindowMaximized(child))
+  if (wm::IsWindowMaximized(child))
     child_bounds = gfx::Screen::GetMonitorWorkAreaNearestWindow(child);
-  else if (window_util::IsWindowFullscreen(child))
+  else if (wm::IsWindowFullscreen(child))
     child_bounds = gfx::Screen::GetMonitorAreaNearestWindow(child);
   SetChildBoundsDirect(child, child_bounds);
 }
@@ -76,7 +76,7 @@ void BaseLayoutManager::OnRootWindowResized(const gfx::Size& new_size) {
        ++it) {
     aura::Window* window = *it;
     // The work area may be smaller than the full screen.
-    gfx::Rect monitor_rect = window_util::IsWindowFullscreen(window) ?
+    gfx::Rect monitor_rect = wm::IsWindowFullscreen(window) ?
         gfx::Screen::GetMonitorAreaNearestWindow(window) :
         gfx::Screen::GetMonitorWorkAreaNearestWindow(window);
     // Put as much of the window as possible within the monitor area.

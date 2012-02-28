@@ -51,10 +51,6 @@ aura::Window* GetActivatableWindow(aura::Window* window) {
   return internal::ActivationController::GetActivatableWindow(window);
 }
 
-}  // namespace wm
-
-namespace window_util {
-
 bool IsWindowMaximized(aura::Window* window) {
   return window->GetProperty(aura::client::kShowStateKey) ==
       ui::SHOW_STATE_MAXIMIZED;
@@ -91,5 +87,5 @@ bool GetOpenWindowSplit(aura::Window* window) {
   return window->GetProperty(kOpenWindowSplitKey);
 }
 
-}  // namespace window_util
+}  // namespace wm
 }  // namespace ash

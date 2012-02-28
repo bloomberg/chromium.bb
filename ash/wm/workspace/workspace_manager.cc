@@ -115,8 +115,7 @@ void WorkspaceManager::AddWindow(aura::Window* window) {
     return;
   }
 
-  if (!window_util::IsWindowMaximized(window) &&
-      !window_util::IsWindowFullscreen(window)) {
+  if (!wm::IsWindowMaximized(window) && !wm::IsWindowFullscreen(window)) {
     SetRestoreBounds(window, window->bounds());
   }
 
@@ -129,8 +128,7 @@ void WorkspaceManager::AddWindow(aura::Window* window) {
     }
   }
 
-  if (window_util::IsWindowMaximized(window) ||
-      window_util::IsWindowFullscreen(window)) {
+  if (wm::IsWindowMaximized(window) || wm::IsWindowFullscreen(window)) {
     SetFullScreenOrMaximizedBounds(window);
   } else {
     if (grid_size_ > 1)
@@ -264,7 +262,7 @@ void WorkspaceManager::UpdateShelfVisibility() {
   std::set<aura::Window*> windows;
   windows.insert(active_workspace_->windows().begin(),
                  active_workspace_->windows().end());
-  shelf_->SetVisible(!window_util::HasFullscreenWindow(windows));
+  shelf_->SetVisible(!wm::HasFullscreenWindow(windows));
 }
 
 void WorkspaceManager::SetVisibilityOfWorkspaceWindows(
@@ -369,9 +367,9 @@ void WorkspaceManager::SetWindowBoundsFromRestoreBounds(aura::Window* window) {
 void WorkspaceManager::SetFullScreenOrMaximizedBounds(aura::Window* window) {
   if (!GetRestoreBounds(window))
     SetRestoreBounds(window, window->GetTargetBounds());
-  if (window_util::IsWindowMaximized(window))
+  if (wm::IsWindowMaximized(window))
     SetWindowBounds(window, GetWorkAreaBounds());
-  else if (window_util::IsWindowFullscreen(window))
+  else if (wm::IsWindowFullscreen(window))
     SetWindowBounds(window, gfx::Screen::GetMonitorAreaNearestWindow(window));
 }
 
@@ -389,7 +387,7 @@ void WorkspaceManager::OnTypeOfWorkspacedNeededChanged(aura::Window* window) {
     SetFullScreenOrMaximizedBounds(window);
   } else {
     // Maximized -> unmaximized; move window to unmaximized workspace.
-    window_util::SetOpenWindowSplit(window, false);
+    wm::SetOpenWindowSplit(window, false);
     new_workspace = GetManagedWorkspace();
     current_workspace->RemoveWindow(window);
     if (!new_workspace)

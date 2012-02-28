@@ -313,11 +313,11 @@ TEST_F(WorkspaceManagerTest, OpenNewWindowsMaximized) {
   w1->SetParent(viewport());
   // Maximized state and bounds should be set as soon as w1 is added to the
   // parent.
-  EXPECT_TRUE(window_util::IsWindowMaximized(w1.get()));
+  EXPECT_TRUE(wm::IsWindowMaximized(w1.get()));
   EXPECT_EQ(gfx::Screen::GetMonitorWorkAreaNearestWindow(w1.get()),
             w1->bounds());
   w1->Show();
-  EXPECT_TRUE(window_util::IsWindowMaximized(w1.get()));
+  EXPECT_TRUE(wm::IsWindowMaximized(w1.get()));
   EXPECT_EQ(gfx::Screen::GetMonitorWorkAreaNearestWindow(w1.get()),
             w1->bounds());
   // Restored bounds should be saved.

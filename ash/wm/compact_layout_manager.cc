@@ -36,7 +36,7 @@ ui::Layer* GetDefaultContainerLayer() {
 bool ShouldAnimateOnEntrance(aura::Window* window) {
   return window &&
       window->type() == aura::client::WINDOW_TYPE_NORMAL &&
-      window_util::IsWindowMaximized(window);
+      wm::IsWindowMaximized(window);
 }
 
 // Adjust layer bounds to grow or shrink in |delta_width|.
@@ -111,9 +111,9 @@ void CompactLayoutManager::SetChildBounds(aura::Window* child,
   gfx::Rect child_bounds(requested_bounds);
   // Avoid a janky resize on startup by ensuring the initial bounds fill the
   // screen.
-  if (window_util::IsWindowMaximized(child))
+  if (wm::IsWindowMaximized(child))
     child_bounds = gfx::Screen::GetMonitorWorkAreaNearestWindow(child);
-  else if (window_util::IsWindowFullscreen(child))
+  else if (wm::IsWindowFullscreen(child))
     child_bounds = gfx::Screen::GetMonitorAreaNearestWindow(child);
   else if (current_window_) {
     // All other windows should be offset by the current viewport.
@@ -164,7 +164,7 @@ void CompactLayoutManager::UpdateStatusAreaVisibility() {
   if (!status_area_widget_)
     return;
   // Full screen windows should hide the status area widget.
-  bool has_fullscreen = window_util::HasFullscreenWindow(windows());
+  bool has_fullscreen = wm::HasFullscreenWindow(windows());
   bool widget_visible = status_area_widget_->IsVisible();
   if (has_fullscreen && widget_visible)
     status_area_widget_->Hide();

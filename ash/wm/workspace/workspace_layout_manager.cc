@@ -41,15 +41,15 @@ void WorkspaceLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
 
   if (child->IsVisible()) {
     workspace_manager_->AddWindow(child);
-  } else if (window_util::IsWindowMaximized(child) ||
+  } else if (wm::IsWindowMaximized(child) ||
              workspace_manager_->ShouldMaximize(child)) {
-    if (!window_util::IsWindowMaximized(child)) {
+    if (!wm::IsWindowMaximized(child)) {
       SetRestoreBoundsIfNotSet(child);
-      window_util::MaximizeWindow(child);
+      wm::MaximizeWindow(child);
     }
     SetChildBoundsDirect(child,
                          gfx::Screen::GetMonitorWorkAreaNearestWindow(child));
-  } else if (window_util::IsWindowFullscreen(child)) {
+  } else if (wm::IsWindowFullscreen(child)) {
     SetChildBoundsDirect(child,
                          gfx::Screen::GetMonitorAreaNearestWindow(child));
   } else {
@@ -80,9 +80,9 @@ void WorkspaceLayoutManager::SetChildBounds(
     aura::Window* child,
     const gfx::Rect& requested_bounds) {
   gfx::Rect child_bounds(requested_bounds);
-  if (window_util::IsWindowMaximized(child)) {
+  if (wm::IsWindowMaximized(child)) {
     child_bounds = gfx::Screen::GetMonitorWorkAreaNearestWindow(child);
-  } else if (window_util::IsWindowFullscreen(child)) {
+  } else if (wm::IsWindowFullscreen(child)) {
     child_bounds = gfx::Screen::GetMonitorAreaNearestWindow(child);
   } else {
     child_bounds = gfx::Screen::GetMonitorWorkAreaNearestWindow(child).

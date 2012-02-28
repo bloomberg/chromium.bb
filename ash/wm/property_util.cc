@@ -33,8 +33,8 @@ void ClearRestoreBounds(aura::Window* window) {
 
 void ToggleMaximizedState(aura::Window* window) {
   window->SetProperty(aura::client::kShowStateKey,
-                      window_util::IsWindowMaximized(window) ?
-                          ui::SHOW_STATE_NORMAL : ui::SHOW_STATE_MAXIMIZED);
+                      wm::IsWindowMaximized(window) ? ui::SHOW_STATE_NORMAL
+                                                    : ui::SHOW_STATE_MAXIMIZED);
 }
 
 }

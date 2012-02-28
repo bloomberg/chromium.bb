@@ -25,8 +25,8 @@ MaximizedWorkspace::~MaximizedWorkspace() {
 }
 
 bool MaximizedWorkspace::CanAdd(aura::Window* window) const {
-  return is_empty() && (window_util::IsWindowFullscreen(window) ||
-                        window_util::IsWindowMaximized(window));
+  return is_empty() && (wm::IsWindowFullscreen(window) ||
+                        wm::IsWindowMaximized(window));
 }
 
 void MaximizedWorkspace::OnWindowAddedAfter(aura::Window* window,
@@ -43,7 +43,7 @@ void MaximizedWorkspace::OnWorkspaceSizeChanged(const gfx::Rect& old_bounds) {
 }
 
 void MaximizedWorkspace::ResetWindowBounds(aura::Window* window) {
-  if (window_util::IsWindowFullscreen(window)) {
+  if (wm::IsWindowFullscreen(window)) {
     SetWindowBounds(window,
                     gfx::Screen::GetMonitorAreaNearestWindow(window));
   } else {

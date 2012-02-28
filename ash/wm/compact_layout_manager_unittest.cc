@@ -57,7 +57,7 @@ class CompactLayoutManagerTest : public ash::test::AshTestBase {
     window->Init(ui::Layer::LAYER_TEXTURED);
     window->SetBounds(gfx::Rect(0, 0, kMaxWidth, kMaxHeight));
     window->SetParent(default_container());
-    window_util::MaximizeWindow(window);
+    wm::MaximizeWindow(window);
     window->Show();
     RunAllPendingInMessageLoop();
     return window;

@@ -30,10 +30,6 @@ ASH_EXPORT aura::Window* GetActiveWindow();
 // this is probably what you're looking for.
 ASH_EXPORT aura::Window* GetActivatableWindow(aura::Window* window);
 
-}  // namespace wm
-
-namespace window_util {
-
 // Returns true if |window| is in the maximized state.
 ASH_EXPORT bool IsWindowMaximized(aura::Window* window);
 
@@ -55,7 +51,7 @@ ASH_EXPORT bool HasFullscreenWindow(const WindowSet& windows);
 ASH_EXPORT void SetOpenWindowSplit(aura::Window* window, bool value);
 ASH_EXPORT bool GetOpenWindowSplit(aura::Window* window);
 
-}  // namespace window_util
+}  // namespace wm
 }  // namespace ash
 
 #endif  // ASH_WM_WINDOW_UTIL_H_

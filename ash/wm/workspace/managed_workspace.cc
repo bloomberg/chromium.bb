@@ -17,8 +17,7 @@ ManagedWorkspace::~ManagedWorkspace() {
 }
 
 bool ManagedWorkspace::CanAdd(aura::Window* window) const {
-  return !window_util::IsWindowFullscreen(window) &&
-         !window_util::IsWindowMaximized(window);
+  return !wm::IsWindowFullscreen(window) && !wm::IsWindowMaximized(window);
 }
 
 void ManagedWorkspace::OnWindowAddedAfter(aura::Window* window,

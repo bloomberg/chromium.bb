@@ -29,8 +29,7 @@ Workspace::~Workspace() {
 
 // static
 Workspace::Type Workspace::TypeForWindow(aura::Window* window) {
-  if (window_util::IsWindowMaximized(window) ||
-      window_util::IsWindowFullscreen(window)) {
+  if (wm::IsWindowMaximized(window) || wm::IsWindowFullscreen(window)) {
     return TYPE_MAXIMIZED;
   }
   return TYPE_MANAGED;

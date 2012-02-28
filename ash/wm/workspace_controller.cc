@@ -118,8 +118,7 @@ void WorkspaceController::ExecuteCommand(int command_id) {
         return;
       for (size_t i = 0; i < viewport_->children().size(); ++i) {
         aura::Window* window = viewport_->children()[i];
-        if (!window_util::IsWindowMaximized(window) &&
-            !window_util::IsWindowFullscreen(window)) {
+        if (!wm::IsWindowMaximized(window) && !wm::IsWindowFullscreen(window)) {
           window->SetBounds(workspace_manager_->AlignBoundsToGrid(
                                 window->GetTargetBounds()));
         }
