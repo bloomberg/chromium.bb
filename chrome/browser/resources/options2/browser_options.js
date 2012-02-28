@@ -176,19 +176,18 @@ cr.define('options', function() {
         // |kGuestUser| if a guest session is active.
         this.username_ = localStrings.getString('username');
 
-        $('account-picture-wrapper').onclick = function(event) {
-          OptionsPage.navigateToPage('changePicture');
-        };
         this.updateAccountPicture_();
 
         if (cr.commandLine && cr.commandLine.options['--bwsi']) {
-          // Disable the screen lock checkbox and change-picture-button in
-          // guest mode.
+          // Disable the screen lock checkbox in guest mode.
           $('enable-screen-lock').disabled = true;
-          $('change-picture-button').disabled = true;
 
           // Hide the startup section in Guest mode.
           $('startup-section').hidden = true;
+        } else {
+          $('account-picture-wrapper').onclick = function(event) {
+            OptionsPage.navigateToPage('changePicture');
+          };
         }
 
         $('manage-accounts-button').onclick = function(event) {
