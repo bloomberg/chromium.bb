@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -146,37 +147,6 @@ DictionaryValue* ExtensionTabUtil::CreateTabValueActive(
     bool active) {
   DictionaryValue* result = ExtensionTabUtil::CreateTabValue(contents);
   result->SetBoolean(keys::kSelectedKey, active);
-  return result;
-}
-
-// if |populate| is true, each window gets a list property |tabs| which contains
-// fully populated tab objects.
-DictionaryValue* ExtensionTabUtil::CreateWindowValue(const Browser* browser,
-                                                     bool populate_tabs) {
-  DCHECK(browser);
-  DCHECK(browser->window());
-  DictionaryValue* result = new DictionaryValue();
-  result->SetInteger(keys::kIdKey, ExtensionTabUtil::GetWindowId(browser));
-  result->SetBoolean(keys::kIncognitoKey,
-                     browser->profile()->IsOffTheRecord());
-  result->SetBoolean(keys::kFocusedKey, browser->window()->IsActive());
-  gfx::Rect bounds;
-  if (browser->window()->IsMaximized() || browser->window()->IsFullscreen())
-    bounds = browser->window()->GetBounds();
-  else
-    bounds = browser->window()->GetRestoredBounds();
-
-  result->SetInteger(keys::kLeftKey, bounds.x());
-  result->SetInteger(keys::kTopKey, bounds.y());
-  result->SetInteger(keys::kWidthKey, bounds.width());
-  result->SetInteger(keys::kHeightKey, bounds.height());
-  result->SetString(keys::kWindowTypeKey, GetWindowTypeText(browser));
-  result->SetString(keys::kShowStateKey, GetWindowShowStateText(browser));
-
-  if (populate_tabs) {
-    result->Set(keys::kTabsKey, ExtensionTabUtil::CreateTabList(browser));
-  }
-
   return result;
 }
 

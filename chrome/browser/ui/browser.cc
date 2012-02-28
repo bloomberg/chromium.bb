@@ -49,6 +49,7 @@
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/default_apps_trial.h"
+#include "chrome/browser/extensions/browser_extension_window_controller.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_disabled_infobar_delegate.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -575,6 +576,10 @@ void Browser::InitBrowserWindow() {
                                  window()->GetNativeHandle());
   }
 #endif
+
+  // Create the extension window controller before sending notifications.
+  extension_window_controller_.reset(
+      new BrowserExtensionWindowController(this));
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BROWSER_WINDOW_READY,
@@ -1875,8 +1880,8 @@ void Browser::ToggleFullscreenMode() {
   fullscreen_controller_->ToggleFullscreenMode();
 }
 
-void Browser::ToggleFullscreenModeWithExtension(const Extension& extension) {
-  fullscreen_controller_->ToggleFullscreenModeWithExtension(extension);
+void Browser::ToggleFullscreenModeWithExtension(const GURL& extension_url) {
+  fullscreen_controller_->ToggleFullscreenModeWithExtension(extension_url);
 }
 
 #if defined(OS_MACOSX)

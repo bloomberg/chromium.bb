@@ -157,10 +157,10 @@ void FullscreenController::ToggleFullscreenMode() {
 }
 
 void FullscreenController::ToggleFullscreenModeWithExtension(
-    const Extension& extension) {
+    const GURL& extension_url) {
   // |extension_caused_fullscreen_| will be reset if this causes fullscreen to
   // exit.
-  extension_caused_fullscreen_ = extension.url();
+  extension_caused_fullscreen_ = extension_url;
   ToggleFullscreenModeInternal(false);
 }
 

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_BROWSER_WINDOW_H_
 #pragma once
 
+#include "chrome/browser/ui/base_window.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
 #include "chrome/common/content_settings_types.h"
@@ -48,46 +49,32 @@ enum DevToolsDockSide {
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserWindow interface
 //  An interface implemented by the "view" of the Browser window.
+//  This interface includes BaseWindow methods as well as Browser window
+//  specific methods.
 //
 // NOTE: All getters may return NULL.
-class BrowserWindow {
+//
+class BrowserWindow : public BaseWindow {
  public:
   virtual ~BrowserWindow() {}
 
-  // Show the window, or activates it if it's already visible.
-  // Browser::OnWindowDidShow should be called after showing the window.
-  virtual void Show() = 0;
+  //////////////////////////////////////////////////////////////////////////////
+  // BaseWindow interface notes:
 
-  // Show the window, but do not activate it. Does nothing if window
-  // is already visible.
-  virtual void ShowInactive() = 0;
-
-  // Sets the window's size and position to the specified values.
-  virtual void SetBounds(const gfx::Rect& bounds) = 0;
-
-  // Closes the frame as soon as possible.  If the frame is not in a drag
+  // Closes the window as soon as possible. If the window is not in a drag
   // session, it will close immediately; otherwise, it will move offscreen (so
   // events are still fired) until the drag ends, then close. This assumes
   // that the Browser is not immediately destroyed, but will be eventually
   // destroyed by other means (eg, the tab strip going to zero elements).
   // Bad things happen if the Browser dtor is called directly as a result of
   // invoking this method.
-  virtual void Close() = 0;
+  // virtual void Close() = 0;
 
-  // Activates (brings to front) the window. Restores the window from minimized
-  // state if necessary.
-  virtual void Activate() = 0;
+  // Browser::OnWindowDidShow should be called after showing the window.
+  // virtual void Show() = 0;
 
-  // Deactivates the window, making the next window in the Z order the active
-  // window.
-  virtual void Deactivate() = 0;
-
-  // Returns true if the window is currently the active/focused window.
-  virtual bool IsActive() const = 0;
-
-  // Flashes the taskbar item associated with this frame.
-  // Set |flash| to true to initiate flashing, false to stop flashing.
-  virtual void FlashFrame(bool flash) = 0;
+  //////////////////////////////////////////////////////////////////////////////
+  // Browser specific methods:
 
   // Return a platform dependent identifier for this frame. On Windows, this
   // returns an HWND.
@@ -129,27 +116,6 @@ class BrowserWindow {
 
   // Sets the starred state for the current tab.
   virtual void SetStarredState(bool is_starred) = 0;
-
-  // Returns the nonmaximized bounds of the frame (even if the frame is
-  // currently maximized or minimized) in terms of the screen coordinates.
-  virtual gfx::Rect GetRestoredBounds() const = 0;
-
-  // Retrieves the window's current bounds, including its frame.
-  // This will only differ from GetRestoredBounds() for maximized
-  // and minimized windows.
-  virtual gfx::Rect GetBounds() const = 0;
-
-  // TODO(beng): REMOVE?
-  // Returns true if the frame is maximized (aka zoomed).
-  virtual bool IsMaximized() const = 0;
-
-  // Returns true if the frame is minimized.
-  virtual bool IsMinimized() const = 0;
-
-  // Maximizes/minimizes/restores the window.
-  virtual void Maximize() = 0;
-  virtual void Minimize() = 0;
-  virtual void Restore() = 0;
 
   // Accessors for fullscreen mode state.
   virtual void EnterFullscreen(const GURL& url,

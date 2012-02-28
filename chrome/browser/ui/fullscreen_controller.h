@@ -13,7 +13,6 @@
 
 class Browser;
 class BrowserWindow;
-class Extension;
 class GURL;
 class Profile;
 class TabContents;
@@ -57,7 +56,7 @@ class FullscreenController : public base::RefCounted<FullscreenController> {
   // Extension API implementation uses this method to toggle fullscreen mode.
   // The extension's name is displayed in the full screen bubble UI to attribute
   // the cause of the full screen state change.
-  void ToggleFullscreenModeWithExtension(const Extension& extension);
+  void ToggleFullscreenModeWithExtension(const GURL& extension_url);
 
   // Notifications.
   void LostMouseLock();

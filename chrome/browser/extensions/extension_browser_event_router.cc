@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_page_actions_module_constants.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
+#include "chrome/browser/extensions/extension_window_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
@@ -171,8 +172,9 @@ void ExtensionBrowserEventRouter::UnregisterForTabNotifications(
 void ExtensionBrowserEventRouter::OnBrowserWindowReady(const Browser* browser) {
   ListValue args;
 
-  DictionaryValue* window_dictionary = ExtensionTabUtil::CreateWindowValue(
-      browser, false);
+  DCHECK(browser->extension_window_controller());
+  DictionaryValue* window_dictionary =
+      browser->extension_window_controller()->CreateWindowValue();
   args.Append(window_dictionary);
 
   std::string json_args;

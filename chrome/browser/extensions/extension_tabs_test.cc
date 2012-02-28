@@ -43,9 +43,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetWindow) {
       keys::kWindowNotFoundError));
 
   // Basic window details.
-  // Need GetRestoredBound instead of GetBounds.
-  // See crbug.com/98759.
-  gfx::Rect bounds = browser()->window()->GetRestoredBounds();
+  gfx::Rect bounds;
+  if (browser()->window()->IsMinimized())
+    bounds = browser()->window()->GetRestoredBounds();
+  else
+    bounds = browser()->window()->GetBounds();
 
   scoped_ptr<base::DictionaryValue> result(ToDictionary(
       RunFunctionAndReturnResult(

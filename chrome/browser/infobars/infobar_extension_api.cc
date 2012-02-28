@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
+#include "chrome/browser/extensions/extension_window_controller.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
@@ -70,7 +71,8 @@ bool ShowInfoBarFunction::RunImpl() {
                                    GetExtension(), url, height));
 
   // TODO(finnur): Return the actual DOMWindow object. Bug 26463.
-  result_.reset(ExtensionTabUtil::CreateWindowValue(browser, false));
+  DCHECK(browser->extension_window_controller());
+  result_.reset(browser->extension_window_controller()->CreateWindowValue());
 
   return true;
 }

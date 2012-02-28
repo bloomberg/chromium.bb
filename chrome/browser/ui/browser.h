@@ -56,6 +56,7 @@ class BrowserSyncedWindowDelegate;
 class BrowserTabRestoreServiceDelegate;
 class BrowserWindow;
 class Extension;
+class ExtensionWindowController;
 class FindBarController;
 class FullscreenController;
 class HtmlDialogUIDelegate;
@@ -556,7 +557,7 @@ class Browser : public TabHandlerDelegate,
   void ToggleFullscreenMode();
   // See the description of
   // FullscreenController::ToggleFullscreenModeWithExtension.
-  void ToggleFullscreenModeWithExtension(const Extension& extension);
+  void ToggleFullscreenModeWithExtension(const GURL& extension_url);
 #if defined(OS_MACOSX)
   void TogglePresentationMode();
 #endif
@@ -889,6 +890,10 @@ class Browser : public TabHandlerDelegate,
 
   // Show the first run search engine bubble on the location bar.
   void ShowFirstRunBubble();
+
+  ExtensionWindowController* extension_window_controller() const {
+    return extension_window_controller_.get();
+  }
 
  protected:
   // Wrapper for the factory method in BrowserWindow. This allows subclasses to
@@ -1460,6 +1465,8 @@ class Browser : public TabHandlerDelegate,
   BookmarkBar::State bookmark_bar_state_;
 
   scoped_refptr<FullscreenController> fullscreen_controller_;
+
+  scoped_ptr<ExtensionWindowController> extension_window_controller_;
 
   // True if the browser window has been shown at least once.
   bool window_has_shown_;

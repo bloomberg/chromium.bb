@@ -7,6 +7,10 @@
 #include "ash/wm/panel_frame_view.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/extension_tabs_module_constants.h"
+#include "chrome/browser/extensions/extension_window_controller.h"
+#include "chrome/browser/extensions/extension_window_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -29,21 +33,22 @@ const int kDefaultWidth = 200;
 const int kDefaultHeight = 300;
 }
 
+namespace internal {
+
 ////////////////////////////////////////////////////////////////////////////////
 // PanelHost
-
-namespace internal {
 
 class PanelHost : public content::WebContentsDelegate,
                   public content::WebContentsObserver,
                   public ExtensionFunctionDispatcher::Delegate {
  public:
-  explicit PanelHost(PanelViewAura* panel_view, Profile* profile);
+  PanelHost(PanelViewAura* panel_view, Profile* profile);
   virtual ~PanelHost();
 
   void Init(const GURL& url);
 
   content::WebContents* web_contents() const { return web_contents_.get(); }
+  Profile* profile() const { return profile_; }
 
   // ExtensionFunctionDispatcher::Delegate overrides.
   virtual Browser* GetBrowser() OVERRIDE;
@@ -161,6 +166,77 @@ void PanelHost::OnRequest(const ExtensionHostMsg_Request_Params& params) {
                                           web_contents_->GetRenderViewHost());
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// PanelExtensionWindowController
+
+class PanelExtensionWindowController : public ExtensionWindowController {
+ public:
+  PanelExtensionWindowController(PanelViewAura* panel_view,
+                                 PanelHost* panel_host);
+
+  // Overriden from ExtensionWindowController:
+  virtual const SessionID& GetSessionId() const OVERRIDE;
+  virtual base::DictionaryValue* CreateWindowValue() const OVERRIDE;
+  virtual base::DictionaryValue* CreateWindowValueWithTabs() const OVERRIDE;
+  virtual bool CanClose(
+      ExtensionWindowController::Reason* reason) const OVERRIDE;
+  virtual void SetFullscreenMode(bool is_fullscreen,
+                                 const GURL& extension_url) const OVERRIDE;
+
+ private:
+  PanelViewAura* panel_view_;
+  PanelHost* panel_host_;
+
+  DISALLOW_COPY_AND_ASSIGN(PanelExtensionWindowController);
+};
+
+PanelExtensionWindowController::PanelExtensionWindowController(
+    PanelViewAura* panel_view,
+    PanelHost* panel_host)
+    : ExtensionWindowController(panel_view, panel_host->profile()),
+      panel_view_(panel_view),
+      panel_host_(panel_host) {
+}
+
+const SessionID& PanelExtensionWindowController::GetSessionId() const {
+  return panel_view_->session_id();
+}
+
+namespace keys = extension_tabs_module_constants;
+
+base::DictionaryValue*
+PanelExtensionWindowController::CreateWindowValue() const {
+  DictionaryValue* result = ExtensionWindowController::CreateWindowValue();
+
+  result->SetString(keys::kWindowTypeKey, keys::kWindowTypeValuePanel);
+  std::string window_state = window()->IsMinimized() ?
+      keys::kShowStateValueMinimized : keys::kShowStateValueNormal;
+  result->SetString(keys::kShowStateKey, window_state);
+
+  return result;
+}
+
+base::DictionaryValue*
+PanelExtensionWindowController::CreateWindowValueWithTabs() const {
+  DictionaryValue* result = CreateWindowValue();
+
+  // TODO(stevenjb): Implement tab interface for Aura panels.
+  // Currently there is no mechanism to get a tab id without an associated
+  // TabContentsWrapper. We will need to either add a TabContentsWrapper for
+  // panels, or add another mechanism for tracking tabs. crbug.com/115532.
+
+  return result;
+}
+
+bool PanelExtensionWindowController::CanClose(
+    ExtensionWindowController::Reason* reason) const {
+  return true;
+}
+
+void PanelExtensionWindowController::SetFullscreenMode(
+    bool is_fullscreen, const GURL& extension_url) const {
+}
+
 }  // namespace internal
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -201,7 +277,12 @@ views::Widget* PanelViewAura::Init(Profile* profile,
 
   Attach(host_->web_contents()->GetNativeView());
 
-  widget_->Show();
+  // Add the browser to the list of windows available to the extension API.
+  extension_window_controller_.reset(
+      new internal::PanelExtensionWindowController(this, host_.get()));
+
+  // Show the window, but don't activate it by default.
+  widget_->ShowInactive();
 
   return widget_;
 }
@@ -260,4 +341,71 @@ const views::Widget* PanelViewAura::GetWidget() const {
 
 views::NonClientFrameView* PanelViewAura::CreateNonClientFrameView() {
   return new ash::PanelFrameView();
+}
+
+// BaseWindow implementation:
+
+bool PanelViewAura::IsActive() const {
+  return GetWidget()->IsActive();
+}
+
+bool PanelViewAura::IsMaximized() const {
+  return GetWidget()->IsMaximized();
+}
+
+bool PanelViewAura::IsMinimized() const {
+  return GetWidget()->IsMinimized();
+}
+
+gfx::Rect PanelViewAura::GetRestoredBounds() const {
+  return GetWidget()->GetRestoredBounds();
+}
+
+gfx::Rect PanelViewAura::GetBounds() const {
+  return GetWidget()->GetWindowScreenBounds();
+}
+
+void PanelViewAura::Show() {
+  GetWidget()->Show();
+}
+
+void PanelViewAura::ShowInactive() {
+  GetWidget()->ShowInactive();
+}
+
+void PanelViewAura::Close() {
+  GetWidget()->Close();
+}
+
+void PanelViewAura::Activate() {
+  GetWidget()->Activate();
+}
+
+void PanelViewAura::Deactivate() {
+  GetWidget()->Deactivate();
+}
+
+void PanelViewAura::Maximize() {
+  // Maximize is not implemented for panels.
+}
+
+void PanelViewAura::Minimize() {
+  // TODO(stevenjb): Implement this properly.
+  GetWidget()->Minimize();
+  NOTIMPLEMENTED();
+}
+
+void PanelViewAura::Restore() {
+  // TODO(stevenjb): Implement this properly.
+  GetWidget()->Restore();
+  NOTIMPLEMENTED();
+}
+
+void PanelViewAura::SetBounds(const gfx::Rect& bounds) {
+  GetWidget()->SetBounds(bounds);
+}
+
+void PanelViewAura::FlashFrame(bool flash) {
+  // TODO(stevenjb): Implement
+  NOTIMPLEMENTED();
 }

@@ -23,6 +23,8 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
+#include "chrome/browser/extensions/extension_window_controller.h"
+#include "chrome/browser/extensions/extension_window_list.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -126,6 +128,44 @@ bool GetBrowserFromWindowID(
   return true;
 }
 
+ExtensionWindowController::ProfileMatchType ProfileMatchType(
+    bool include_incognito) {
+  return include_incognito ?
+      ExtensionWindowController::MATCH_INCOGNITO
+      : ExtensionWindowController::MATCH_NORMAL_ONLY;
+}
+
+bool GetWindowFromWindowID(UIThreadExtensionFunction* function,
+                           int window_id,
+                           ExtensionWindowController** controller) {
+  if (window_id == extension_misc::kCurrentWindowId) {
+    Browser* browser = function->dispatcher()->delegate()->GetBrowser();
+    // If there is a windowed browser associated with this extension, use that.
+    if (browser && browser->extension_window_controller()) {
+      *controller = browser->extension_window_controller();
+    } else {
+      // Otherwise get the focused or most recently added window.
+      *controller = ExtensionWindowList::GetInstance()->CurrentWindow(
+          function->profile(),
+          ProfileMatchType(function->include_incognito()));
+    }
+    if (!(*controller)) {
+      function->SetError(keys::kNoCurrentWindowError);
+      return false;
+    }
+  } else {
+    *controller = ExtensionWindowList::GetInstance()->FindWindowById(
+        function->profile(),
+        ProfileMatchType(function->include_incognito()),
+        window_id);
+    if (!(*controller)) {
+      function->SetError(ExtensionErrorUtils::FormatErrorMessage(
+          keys::kWindowNotFoundError, base::IntToString(window_id)));
+      return false;
+    }
+  }
+  return true;
+}
 // |error_message| can optionally be passed in and will be set with an
 // appropriate message if the tab cannot be found by id.
 bool GetTabById(int tab_id,
@@ -231,11 +271,14 @@ bool GetWindowFunction::RunImpl() {
   if (params->get_info.get() && params->get_info->populate.get())
     populate_tabs = *params->get_info->populate;
 
-  Browser* browser = NULL;
-  if (!GetBrowserFromWindowID(this, params->window_id, &browser))
+  ExtensionWindowController* controller;
+  if (!GetWindowFromWindowID(this, params->window_id, &controller))
     return false;
 
-  result_.reset(ExtensionTabUtil::CreateWindowValue(browser, populate_tabs));
+  if (populate_tabs)
+    result_.reset(controller->CreateWindowValueWithTabs());
+  else
+    result_.reset(controller->CreateWindowValue());
   return true;
 }
 
@@ -247,12 +290,16 @@ bool GetCurrentWindowFunction::RunImpl() {
   if (params->get_info.get() && params->get_info->populate.get())
     populate_tabs = *params->get_info->populate;
 
-  Browser* browser = GetCurrentBrowser();
-  if (!browser || !browser->window()) {
-    error_ = keys::kNoCurrentWindowError;
+  ExtensionWindowController* controller;
+  if (!GetWindowFromWindowID(this,
+                             extension_misc::kCurrentWindowId,
+                             &controller)) {
     return false;
   }
-  result_.reset(ExtensionTabUtil::CreateWindowValue(browser, populate_tabs));
+  if (populate_tabs)
+    result_.reset(controller->CreateWindowValueWithTabs());
+  else
+    result_.reset(controller->CreateWindowValue());
   return true;
 }
 
@@ -265,13 +312,21 @@ bool GetLastFocusedWindowFunction::RunImpl() {
   if (params->get_info.get() && params->get_info->populate.get())
     populate_tabs = *params->get_info->populate;
 
+  // Note: currently this returns the last active browser. If we decide to
+  // include other window types (e.g. panels), we will need to add logic to
+  // ExtensionWindowList that mirrors the active behavior of BrowserList.
   Browser* browser = BrowserList::FindAnyBrowser(
       profile(), include_incognito());
   if (!browser || !browser->window()) {
     error_ = keys::kNoLastFocusedWindowError;
     return false;
   }
-  result_.reset(ExtensionTabUtil::CreateWindowValue(browser, populate_tabs));
+  ExtensionWindowController* controller =
+      browser->extension_window_controller();
+  if (populate_tabs)
+    result_.reset(controller->CreateWindowValueWithTabs());
+  else
+    result_.reset(controller->CreateWindowValue());
   return true;
 }
 
@@ -283,21 +338,21 @@ bool GetAllWindowsFunction::RunImpl() {
   if (params->get_info.get() && params->get_info->populate.get())
     populate_tabs = *params->get_info->populate;
 
-  result_.reset(new ListValue());
-  Profile* incognito_profile =
-      include_incognito() && profile()->HasOffTheRecordProfile() ?
-          profile()->GetOffTheRecordProfile() : NULL;
-  for (BrowserList::const_iterator browser = BrowserList::begin();
-    browser != BrowserList::end(); ++browser) {
-      // Only examine browsers in the current profile that have windows.
-      if (((*browser)->profile() == profile() ||
-           (*browser)->profile() == incognito_profile) &&
-          (*browser)->window()) {
-        static_cast<ListValue*>(result_.get())->
-          Append(ExtensionTabUtil::CreateWindowValue(*browser, populate_tabs));
-      }
+  ListValue* window_list = new ListValue();
+  const ExtensionWindowList::WindowList& windows =
+      ExtensionWindowList::GetInstance()->windows();
+  for (ExtensionWindowList::WindowList::const_iterator iter =
+           windows.begin();
+       iter != windows.end(); ++iter) {
+    if (!(*iter)->MatchesProfile(
+            profile(), ProfileMatchType(include_incognito())))
+      continue;
+    if (populate_tabs)
+      window_list->Append((*iter)->CreateWindowValueWithTabs());
+    else
+      window_list->Append((*iter)->CreateWindowValue());
   }
-
+  result_.reset(window_list);
   return true;
 }
 
@@ -531,7 +586,7 @@ bool CreateWindowFunction::RunImpl() {
   }
 
 #if defined(USE_AURA)
-  // Aura Panels create a new PanelDOMView.
+  // Aura Panels create a new PanelViewAura.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           ash::switches::kAuraPanelManager) &&
       window_type == Browser::TYPE_PANEL) {
@@ -540,9 +595,8 @@ bool CreateWindowFunction::RunImpl() {
         web_app::GenerateApplicationNameFromExtensionId(extension_id);
     PanelViewAura* panel_view = new PanelViewAura(title);
     panel_view->Init(window_profile, urls[0], panel_bounds);
-    // TODO(stevenjb): Provide an interface enable handles for any view, not
-    // just browsers. See crbug.com/113412.
-    result_.reset(Value::CreateNullValue());
+    result_.reset(
+        panel_view->extension_window_controller()->CreateWindowValueWithTabs());
     return true;
   }
 #endif
@@ -583,7 +637,8 @@ bool CreateWindowFunction::RunImpl() {
     // Don't expose incognito windows if the extension isn't allowed.
     result_.reset(Value::CreateNullValue());
   } else {
-    result_.reset(ExtensionTabUtil::CreateWindowValue(new_window, true));
+    result_.reset(
+        new_window->extension_window_controller()->CreateWindowValueWithTabs());
   }
 
   return true;
@@ -595,8 +650,8 @@ bool UpdateWindowFunction::RunImpl() {
   DictionaryValue* update_props;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &update_props));
 
-  Browser* browser = NULL;
-  if (!GetBrowserFromWindowID(this, window_id, &browser))
+  ExtensionWindowController* controller;
+  if (!GetWindowFromWindowID(this, window_id, &controller))
     return false;
 
   ui::WindowShowState show_state = ui::SHOW_STATE_DEFAULT;  // No change.
@@ -618,32 +673,35 @@ bool UpdateWindowFunction::RunImpl() {
     }
   }
 
-  if (browser->window()->IsFullscreen() &&
-      show_state != ui::SHOW_STATE_FULLSCREEN &&
+  if (show_state != ui::SHOW_STATE_FULLSCREEN &&
       show_state != ui::SHOW_STATE_DEFAULT)
-    browser->ToggleFullscreenModeWithExtension(*GetExtension());
+    controller->SetFullscreenMode(false, GetExtension()->url());
 
   switch (show_state) {
     case ui::SHOW_STATE_MINIMIZED:
-      browser->window()->Minimize();
+      controller->window()->Minimize();
       break;
     case ui::SHOW_STATE_MAXIMIZED:
-      browser->window()->Maximize();
+      controller->window()->Maximize();
       break;
     case ui::SHOW_STATE_FULLSCREEN:
-      if (browser->window()->IsMinimized() || browser->window()->IsMaximized())
-        browser->window()->Restore();
-      if (!browser->window()->IsFullscreen())
-        browser->ToggleFullscreenModeWithExtension(*GetExtension());
+      if (controller->window()->IsMinimized() ||
+          controller->window()->IsMaximized())
+        controller->window()->Restore();
+      controller->SetFullscreenMode(true, GetExtension()->url());
       break;
     case ui::SHOW_STATE_NORMAL:
-      browser->window()->Restore();
+      controller->window()->Restore();
       break;
     default:
       break;
   }
 
-  gfx::Rect bounds = browser->window()->GetRestoredBounds();
+  gfx::Rect bounds;
+  if (controller->window()->IsMinimized())
+    bounds = controller->window()->GetRestoredBounds();
+  else
+    bounds = controller->window()->GetBounds();
   bool set_bounds = false;
 
   // Any part of the bounds can optionally be set by the caller.
@@ -687,7 +745,7 @@ bool UpdateWindowFunction::RunImpl() {
       error_ = keys::kInvalidWindowStateError;
       return false;
     }
-    browser->window()->SetBounds(bounds);
+    controller->window()->SetBounds(bounds);
   }
 
   bool active_val = false;
@@ -699,14 +757,14 @@ bool UpdateWindowFunction::RunImpl() {
         error_ = keys::kInvalidWindowStateError;
         return false;
       }
-      browser->window()->Activate();
+      controller->window()->Activate();
     } else {
       if (show_state == ui::SHOW_STATE_MAXIMIZED ||
           show_state == ui::SHOW_STATE_FULLSCREEN) {
         error_ = keys::kInvalidWindowStateError;
         return false;
       }
-      browser->window()->Deactivate();
+      controller->window()->Deactivate();
     }
   }
 
@@ -714,10 +772,10 @@ bool UpdateWindowFunction::RunImpl() {
   if (update_props->HasKey(keys::kDrawAttentionKey)) {
     EXTENSION_FUNCTION_VALIDATE(update_props->GetBoolean(
         keys::kDrawAttentionKey, &draw_attention));
-    browser->window()->FlashFrame(draw_attention);
+    controller->window()->FlashFrame(draw_attention);
   }
 
-  result_.reset(ExtensionTabUtil::CreateWindowValue(browser, false));
+  result_.reset(controller->CreateWindowValue());
 
   return true;
 }
@@ -726,20 +784,17 @@ bool RemoveWindowFunction::RunImpl() {
   int window_id = -1;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &window_id));
 
-  Browser* browser = GetBrowserInProfileWithId(profile(), window_id,
-                                               include_incognito(), &error_);
-  if (!browser)
+  ExtensionWindowController* controller;
+  if (!GetWindowFromWindowID(this, window_id, &controller))
     return false;
 
-  // Don't let the extension remove the window if the user is dragging tabs
-  // in that window.
-  if (!browser->IsTabStripEditable()) {
-    error_ = keys::kTabStripNotEditableError;
+  ExtensionWindowController::Reason reason;
+  if (!controller->CanClose(&reason)) {
+    if (reason == ExtensionWindowController::REASON_TAB_STRIP_NOT_EDITABLE)
+      error_ = keys::kTabStripNotEditableError;
     return false;
   }
-
-  browser->CloseWindow();
-
+  controller->window()->Close();
   return true;
 }
 
@@ -1094,7 +1149,8 @@ bool HighlightTabsFunction::RunImpl() {
 
   selection.set_active(active_index);
   browser->tabstrip_model()->SetSelectionFromModel(selection);
-  result_.reset(ExtensionTabUtil::CreateWindowValue(browser, true));
+  result_.reset(
+      browser->extension_window_controller()->CreateWindowValueWithTabs());
   return true;
 }
 
