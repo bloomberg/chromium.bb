@@ -458,17 +458,21 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   content::BrowserContext* browser_context = GetBrowserContext();
   content::ResourceContext* resource_context =
       browser_context->GetResourceContext();
-  AudioManager* audio_manager = content::BrowserMainLoop::GetAudioManager();
 
   ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
       GetID(), content::PROCESS_TYPE_RENDERER, resource_context,
       new RendererURLRequestContextSelector(browser_context, GetID()));
 
   channel_->AddFilter(resource_message_filter);
+#if !defined(OS_ANDROID)
+  // TODO(dtrainor, klobag): Enable this when content::BrowserMainLoop gets
+  // included in Android builds.  Tracked via 115941.
+  AudioManager* audio_manager = content::BrowserMainLoop::GetAudioManager();
   channel_->AddFilter(new AudioInputRendererHost(
       resource_context, audio_manager));
   channel_->AddFilter(new AudioRendererHost(resource_context, audio_manager));
   channel_->AddFilter(new VideoCaptureHost(resource_context, audio_manager));
+#endif
   channel_->AddFilter(new AppCacheDispatcherHost(
       static_cast<ChromeAppCacheService*>(
           BrowserContext::GetAppCacheService(browser_context)),
@@ -483,15 +487,18 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(GeolocationDispatcherHost::New(
       GetID(), browser_context->GetGeolocationPermissionContext()));
   channel_->AddFilter(new GpuMessageFilter(GetID(), widget_helper_.get()));
+#if defined(ENABLE_WEBRTC)
   channel_->AddFilter(new media_stream::MediaStreamDispatcherHost(
-      resource_context, GetID(), audio_manager));
+      resource_context, GetID(), content::BrowserMainLoop::GetAudioManager()));
+#endif
   channel_->AddFilter(new PepperFileMessageFilter(GetID(), browser_context));
   channel_->AddFilter(new PepperMessageFilter(PepperMessageFilter::RENDERER,
                                               GetID(), resource_context));
 #if defined(ENABLE_INPUT_SPEECH)
   channel_->AddFilter(new speech_input::SpeechInputDispatcherHost(
       GetID(), browser_context->GetRequestContext(),
-      browser_context->GetSpeechInputPreferences(), audio_manager));
+      browser_context->GetSpeechInputPreferences(),
+      content::BrowserMainLoop::GetAudioManager()));
 #endif
   channel_->AddFilter(new FileSystemDispatcherHost(
       browser_context->GetRequestContext(),
