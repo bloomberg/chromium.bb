@@ -71,8 +71,8 @@
         'common/badge_util.h',
         'common/bzip2_error_handler.cc',
         'common/child_process_logging.h',
-        'common/child_process_logging_linux.cc',
         'common/child_process_logging_mac.mm',
+        'common/child_process_logging_posix.cc',
         'common/child_process_logging_win.cc',
         'common/chrome_content_client.cc',
         'common/chrome_content_client.h',
@@ -83,7 +83,7 @@
         'common/chrome_utility_messages.h',
         'common/chrome_version_info.cc',
         'common/chrome_version_info_chromeos.cc',
-        'common/chrome_version_info_linux.cc',
+        'common/chrome_version_info_posix.cc',
         'common/chrome_version_info_mac.mm',
         'common/chrome_version_info_win.cc',
         'common/chrome_version_info.h',
@@ -299,6 +299,10 @@
           ],
           'include_dirs': [
             '../third_party/GTM',
+          ],
+          'sources!': [
+            'common/child_process_logging_posix.cc',
+            'common/chrome_version_info_posix.cc',
           ],
         }],
         ['remoting==1', {
