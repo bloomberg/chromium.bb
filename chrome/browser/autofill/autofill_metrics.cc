@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,7 @@ enum ServerExperiment {
   PROBABILITY_PICKER_025_CC_THRESHOLD_03,
   PROBABILITY_PICKER_025_CONTEXTUAL_CC_THRESHOLD_03,
   PROBABILITY_PICKER_025_CONTEXTUAL_CC_THRESHOLD_03_WITH_FALLBACK,
+  PROBABILITY_PICKER_05_CC_NAME_THRESHOLD_03_EXPERIMENT_1,
   NUM_SERVER_EXPERIMENTS
 };
 
@@ -235,6 +236,8 @@ void LogServerExperimentId(const std::string& histogram_name,
     metric = PROBABILITY_PICKER_025_CONTEXTUAL_CC_THRESHOLD_03;
   else if (experiment_id == "fp05cco03cstd")
     metric = PROBABILITY_PICKER_025_CONTEXTUAL_CC_THRESHOLD_03_WITH_FALLBACK;
+  else if (experiment_id == "fp05cc03e1")
+    metric = PROBABILITY_PICKER_05_CC_NAME_THRESHOLD_03_EXPERIMENT_1;
 
   DCHECK(metric < NUM_SERVER_EXPERIMENTS);
   LogUMAHistogramEnumeration(histogram_name, metric, NUM_SERVER_EXPERIMENTS);
