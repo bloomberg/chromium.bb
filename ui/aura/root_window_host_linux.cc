@@ -290,7 +290,7 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
       CWBackPixmap,
       &swa);
   static_cast<DispatcherLinux*>(Env::GetInstance()->GetDispatcher())->
-      RootWindowHostCreated(xwindow_, this);
+      RootWindowHostCreated(xwindow_, x_root_window_, this);
 
   long event_mask = ButtonPressMask | ButtonReleaseMask | FocusChangeMask |
                     KeyPressMask | KeyReleaseMask |
@@ -321,7 +321,7 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
 
 RootWindowHostLinux::~RootWindowHostLinux() {
   static_cast<DispatcherLinux*>(Env::GetInstance()->GetDispatcher())->
-      RootWindowHostDestroying(xwindow_);
+      RootWindowHostDestroying(xwindow_, x_root_window_);
   XDestroyWindow(xdisplay_, xwindow_);
 
   // Clears XCursorCache.
@@ -391,13 +391,6 @@ base::MessagePumpDispatcher::DispatchStatus RootWindowHostLinux::Dispatch(
       ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
       if (!factory->ShouldProcessXI2Event(xev))
         break;
-
-      // Update the device list if necessary.
-      if (xev->xgeneric.evtype == XI_HierarchyChanged) {
-        ui::UpdateDeviceList();
-        handled = true;
-        break;
-      }
 
       ui::EventType type = ui::EventTypeFromNative(xev);
       // If this is a motion event we want to coalesce all pending motion

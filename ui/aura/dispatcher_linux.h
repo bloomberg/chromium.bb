@@ -25,8 +25,10 @@ class DispatcherLinux : public Dispatcher {
   DispatcherLinux();
   virtual ~DispatcherLinux();
 
-  void RootWindowHostCreated(::Window window, RootWindowHostLinux* host);
-  void RootWindowHostDestroying(::Window window);
+  void RootWindowHostCreated(::Window window,
+                             ::Window root,
+                             RootWindowHostLinux* host);
+  void RootWindowHostDestroying(::Window window, ::Window root);
 
   // Overridden from MessageLoop::Dispatcher:
   virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(
