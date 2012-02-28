@@ -1,0 +1,11 @@
+{
+  "name": "test",
+  "version": "1",
+  "platform_app": true,
+  "app": {
+    "launch": {
+      "container": "shell",
+      "local_path": "hot.html"
+    }
+  }
+}

@@ -10,7 +10,9 @@
   "app": {
     "launch": {
       "container": "shell",
-      "local_path": "main.html"
+      "local_path": "main.html",
+      "width": 250,
+      "height": 250
     }
   },
   "permissions": [

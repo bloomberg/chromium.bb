@@ -6,7 +6,9 @@
   "app": {
     "launch": {
       "container": "shell",
-      "local_path": "launch.html"
+      "local_path": "launch.html",
+      "width": 250,
+      "height": 250
     }
   }
 }

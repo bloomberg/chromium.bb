@@ -428,6 +428,9 @@ TEST_F(ExtensionManifestTest, AppLaunchContainer) {
                      errors::kInvalidLaunchHeightContainer);
   LoadAndExpectError("launch_height_negative.json",
                      errors::kInvalidLaunchHeight);
+
+  LoadAndExpectError("launch_container_missing_size_for_platform.json",
+                     errors::kInvalidLaunchWidth);
 }
 
 TEST_F(ExtensionManifestTest, PlatformAppLaunchContainer) {

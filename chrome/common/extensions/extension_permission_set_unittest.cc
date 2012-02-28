@@ -232,6 +232,8 @@ TEST(ExtensionPermissionsTest, PlatformAppPermissions) {
   source.SetBoolean(keys::kPlatformApp, true);
   source.SetString(keys::kLaunchLocalPath, "test.html");
   source.SetString(keys::kLaunchContainer, values::kLaunchContainerShell);
+  source.SetInteger(keys::kLaunchWidth, 100);
+  source.SetInteger(keys::kLaunchHeight, 100);
 
   ExtensionAPIPermissionSet perms = info->GetAll();
   size_t count = 0;

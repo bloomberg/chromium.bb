@@ -1182,7 +1182,8 @@ bool Extension::LoadLaunchContainer(string16* error) {
   // Validate the container width if present.
   if (manifest_->Get(keys::kLaunchWidth, &temp)) {
     if (launch_container() != extension_misc::LAUNCH_PANEL &&
-        launch_container() != extension_misc::LAUNCH_WINDOW) {
+        launch_container() != extension_misc::LAUNCH_WINDOW &&
+        launch_container() != extension_misc::LAUNCH_SHELL) {
       *error = ASCIIToUTF16(errors::kInvalidLaunchWidthContainer);
       return false;
     }
@@ -1197,12 +1198,24 @@ bool Extension::LoadLaunchContainer(string16* error) {
   // Validate container height if present.
   if (manifest_->Get(keys::kLaunchHeight, &temp)) {
     if (launch_container() != extension_misc::LAUNCH_PANEL &&
-        launch_container() != extension_misc::LAUNCH_WINDOW) {
+        launch_container() != extension_misc::LAUNCH_WINDOW &&
+        launch_container() != extension_misc::LAUNCH_SHELL) {
       *error = ASCIIToUTF16(errors::kInvalidLaunchHeightContainer);
       return false;
     }
     if (!temp->GetAsInteger(&launch_height_) || launch_height_ < 0) {
       launch_height_ = 0;
+      *error = ASCIIToUTF16(errors::kInvalidLaunchHeight);
+      return false;
+    }
+  }
+
+  if (launch_container() == extension_misc::LAUNCH_SHELL) {
+    if (!manifest_->Get(keys::kLaunchWidth, &temp)) {
+      *error = ASCIIToUTF16(errors::kInvalidLaunchWidth);
+      return false;
+    }
+    if (!manifest_->Get(keys::kLaunchHeight, &temp)) {
       *error = ASCIIToUTF16(errors::kInvalidLaunchHeight);
       return false;
     }
