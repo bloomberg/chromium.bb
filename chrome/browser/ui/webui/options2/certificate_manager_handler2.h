@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,12 +10,17 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/certificate_manager_model.h"
 #include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/browser/ui/webui/options2/options_ui2.h"
 #include "net/base/cert_database.h"
 #include "ui/gfx/native_widget_types.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/dbus/cryptohome_client.h"
+#endif
 
 namespace options2 {
 
@@ -145,6 +150,9 @@ class CertificateManagerHandler : public OptionsPageUIHandler,
 #if defined(OS_CHROMEOS)
   // Check whether Tpm token is ready and notifiy JS side.
   void CheckTpmTokenReady(const base::ListValue* args);
+  void CheckTpmTokenReadyInternal(
+      chromeos::CryptohomeClient::CallStatus call_status,
+      bool is_tpm_token_ready);
 #endif
 
   gfx::NativeWindow GetParentWindow() const;
@@ -166,6 +174,8 @@ class CertificateManagerHandler : public OptionsPageUIHandler,
   // Used in reading and writing certificate files.
   CancelableRequestConsumer consumer_;
   scoped_refptr<FileAccessProvider> file_access_provider_;
+
+  base::WeakPtrFactory<CertificateManagerHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateManagerHandler);
 };

@@ -220,26 +220,29 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  virtual bool Pkcs11IsTpmTokenReady(bool* ready) OVERRIDE {
+  virtual void Pkcs11IsTpmTokenReady(Pkcs11IsTpmTokenReadyCallback callback)
+      OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call,
                            cryptohome::kCryptohomePkcs11IsTpmTokenReady);
-    return CallMethodAndBlock(&method_call, base::Bind(&PopBool, ready));
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(
+            &CryptohomeClientImpl::OnPkcs11IsTpmTokenReady,
+            weak_ptr_factory_.GetWeakPtr(),
+            callback));
   }
 
   // CryptohomeClient override.
-  virtual bool Pkcs11GetTpmTokenInfo(std::string* label,
-                                     std::string* user_pin) OVERRIDE {
+  virtual void Pkcs11GetTpmTokenInfo(Pkcs11GetTpmTokenInfoCallback callback)
+      OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call,
                            cryptohome::kCryptohomePkcs11GetTpmTokenInfo);
-    if (!CallMethodAndBlock(&method_call,
-                            base::Bind(&PopTwoValues,
-                                       base::Bind(&PopString, label),
-                                       base::Bind(&PopString, user_pin)))) {
-      label->clear();
-      user_pin->clear();
-      return false;
-    }
-    return true;
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(
+            &CryptohomeClientImpl::OnPkcs11GetTpmTokenInfo,
+            weak_ptr_factory_.GetWeakPtr(),
+            callback));
   }
 
   // CryptohomeClient override.
@@ -364,6 +367,39 @@ class CryptohomeClientImpl : public CryptohomeClient {
       dbus::MessageReader reader(response);
       *success = callback.Run(&reader);
     }
+  }
+
+  // Handles responses for Pkcs11IsTpmTokenReady.
+  void OnPkcs11IsTpmTokenReady(Pkcs11IsTpmTokenReadyCallback callback,
+                               dbus::Response* response) {
+    if (!response) {
+      callback.Run(FAILURE, false);
+      return;
+    }
+    dbus::MessageReader reader(response);
+    bool ready = false;
+    if (!reader.PopBool(&ready)) {
+      callback.Run(FAILURE, false);
+      return;
+    }
+    callback.Run(SUCCESS, ready);
+  }
+
+  // Handles responses for Pkcs11GetTpmtTokenInfo.
+  void OnPkcs11GetTpmTokenInfo(Pkcs11GetTpmTokenInfoCallback callback,
+                               dbus::Response* response) {
+    if (!response) {
+      callback.Run(FAILURE, std::string(), std::string());
+      return;
+    }
+    dbus::MessageReader reader(response);
+    std::string label;
+    std::string user_pin;
+    if (!reader.PopString(&label) || !reader.PopString(&user_pin)) {
+      callback.Run(FAILURE, std::string(), std::string());
+      return;
+    }
+    callback.Run(SUCCESS, label, user_pin);
   }
 
   // Handles AsyncCallStatus signal.
@@ -508,19 +544,23 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   virtual bool TpmClearStoredPassword() OVERRIDE { return true; }
 
   // CryptohomeClient override.
-  virtual bool Pkcs11IsTpmTokenReady(bool* ready) OVERRIDE {
-    *ready = true;
-    return true;
+  virtual void Pkcs11IsTpmTokenReady(base::Callback<void(CallStatus call_status,
+                                                         bool ready)> callback)
+      OVERRIDE {
+    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                     base::Bind(callback, SUCCESS, true));
   }
 
   // CryptohomeClient override.
-  virtual bool Pkcs11GetTpmTokenInfo(std::string* label,
-                                     std::string* user_pin) OVERRIDE {
+  virtual void Pkcs11GetTpmTokenInfo(
+      base::Callback<void(CallStatus call_status,
+                          const std::string& label,
+                          const std::string& user_pin)> callback) OVERRIDE {
     const char kStubLabel[] = "Stub TPM Token";
     const char kStubUserPin[] = "012345";
-    *label = kStubLabel;
-    *user_pin = kStubUserPin;
-    return true;
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(callback, SUCCESS, kStubLabel, kStubUserPin));
   }
 
   // CryptohomeClient override.

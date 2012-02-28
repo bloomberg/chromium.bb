@@ -25,9 +25,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cert_library.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cryptohome/async_method_caller.h"
+#include "chrome/browser/chromeos/dbus/cryptohome_client.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -197,41 +198,56 @@ class RealTPMTokenInfoDelegate : public crypto::TPMTokenInfoDelegate {
  public:
   RealTPMTokenInfoDelegate();
   virtual ~RealTPMTokenInfoDelegate();
+  // TPMTokenInfoDeleagte overrides:
   virtual bool IsTokenAvailable() const OVERRIDE;
-  virtual bool IsTokenReady() const OVERRIDE;
+  virtual void RequestIsTokenReady(
+      base::Callback<void(bool result)> callback) const OVERRIDE;
   virtual void GetTokenInfo(std::string* token_name,
                             std::string* user_pin) const OVERRIDE;
  private:
+  // This method is used to implement RequestIsTokenReady.
+  void OnPkcs11IsTpmTokenReady(base::Callback<void(bool result)> callback,
+                               CryptohomeClient::CallStatus call_status,
+                               bool is_tpm_token_ready) const;
+
+  // This method is used to implement RequestIsTokenReady.
+  void OnPkcs11GetTpmTokenInfo(base::Callback<void(bool result)> callback,
+                               CryptohomeClient::CallStatus call_status,
+                               const std::string& token_name,
+                               const std::string& user_pin) const;
+
   // These are mutable since we need to cache them in IsTokenReady().
   mutable bool token_ready_;
   mutable std::string token_name_;
   mutable std::string user_pin_;
+  mutable base::WeakPtrFactory<RealTPMTokenInfoDelegate> weak_ptr_factory_;
 };
 
-RealTPMTokenInfoDelegate::RealTPMTokenInfoDelegate() : token_ready_(false) {}
+RealTPMTokenInfoDelegate::RealTPMTokenInfoDelegate() : token_ready_(false),
+                                                       weak_ptr_factory_(this) {
+}
+
 RealTPMTokenInfoDelegate::~RealTPMTokenInfoDelegate() {}
 
 bool RealTPMTokenInfoDelegate::IsTokenAvailable() const {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return CrosLibrary::Get()->GetCryptohomeLibrary()->TpmIsEnabled();
+  bool result = false;
+  DBusThreadManager::Get()->GetCryptohomeClient()->TpmIsEnabled(&result);
+  return result;
 }
 
-bool RealTPMTokenInfoDelegate::IsTokenReady() const {
-  // Note: This should only be getting called from the UI thread, however
-  // if this does get called from another thread and token_ready_ is true,
-  // we can safely just return true here.
-  // TODO(stevenjb/gspencer): Clean this up to improve thread safety.
-  if (token_ready_)
-    return true;
+void RealTPMTokenInfoDelegate::RequestIsTokenReady(
+    base::Callback<void(bool result)> callback) const {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Retrieve token_name_ and user_pin_ here since they will never change
-  // and CryptohomeLibrary calls are not thread safe.
-  if (CrosLibrary::Get()->GetCryptohomeLibrary()->Pkcs11IsTpmTokenReady()) {
-    CrosLibrary::Get()->GetCryptohomeLibrary()->Pkcs11GetTpmTokenInfo(
-        &token_name_, &user_pin_);
-    token_ready_ = true;
+  if (token_ready_) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(callback, true));
+    return;
   }
-  return token_ready_;
+  DBusThreadManager::Get()->GetCryptohomeClient()->Pkcs11IsTpmTokenReady(
+      base::Bind(&RealTPMTokenInfoDelegate::OnPkcs11IsTpmTokenReady,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
 }
 
 void RealTPMTokenInfoDelegate::GetTokenInfo(std::string* token_name,
@@ -243,6 +259,36 @@ void RealTPMTokenInfoDelegate::GetTokenInfo(std::string* token_name,
     *token_name = token_name_;
   if (user_pin)
     *user_pin = user_pin_;
+}
+
+void RealTPMTokenInfoDelegate::OnPkcs11IsTpmTokenReady(
+    base::Callback<void(bool result)> callback,
+    CryptohomeClient::CallStatus call_status,
+    bool is_tpm_token_ready) const {
+  if (call_status != CryptohomeClient::SUCCESS || !is_tpm_token_ready) {
+    callback.Run(false);
+    return;
+  }
+
+  // Retrieve token_name_ and user_pin_ here since they will never change
+  // and CryptohomeClient calls are not thread safe.
+  DBusThreadManager::Get()->GetCryptohomeClient()->Pkcs11GetTpmTokenInfo(
+      base::Bind(&RealTPMTokenInfoDelegate::OnPkcs11GetTpmTokenInfo,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
+}
+
+void RealTPMTokenInfoDelegate::OnPkcs11GetTpmTokenInfo(
+    base::Callback<void(bool result)> callback,
+    CryptohomeClient::CallStatus call_status,
+    const std::string& token_name,
+    const std::string& user_pin) const {
+  if (call_status == CryptohomeClient::SUCCESS) {
+    token_name_ = token_name;
+    user_pin_ = user_pin;
+    token_ready_ = true;
+  }
+  callback.Run(token_ready_);
 }
 
 }  // namespace

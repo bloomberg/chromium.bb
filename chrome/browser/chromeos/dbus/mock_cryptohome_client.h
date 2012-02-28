@@ -46,9 +46,10 @@ class MockCryptohomeClient : public CryptohomeClient {
   MOCK_METHOD1(TpmIsBeingOwned, bool(bool* owning));
   MOCK_METHOD0(TpmCanAttemptOwnership, bool());
   MOCK_METHOD0(TpmClearStoredPassword, bool());
-  MOCK_METHOD1(Pkcs11IsTpmTokenReady, bool(bool* ready));
-  MOCK_METHOD2(Pkcs11GetTpmTokenInfo,
-               bool(std::string* label, std::string* user_pin));
+  MOCK_METHOD1(Pkcs11IsTpmTokenReady,
+               void(Pkcs11IsTpmTokenReadyCallback callback));
+  MOCK_METHOD1(Pkcs11GetTpmTokenInfo,
+               void(Pkcs11GetTpmTokenInfoCallback callback));
   MOCK_METHOD3(InstallAttributesGet,
                bool(const std::string& name,
                     std::vector<uint8>* value,

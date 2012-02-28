@@ -26,8 +26,8 @@
 #include "ui/base/l10n/l10n_util_collator.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/cryptohome_library.h"
+#include "chrome/browser/chromeos/dbus/cryptohome_client.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #endif
 
 using content::BrowserThread;
@@ -246,7 +246,8 @@ void FileAccessProvider::DoWrite(
 //  CertificateManagerHandler
 
 CertificateManagerHandler::CertificateManagerHandler()
-    : file_access_provider_(new FileAccessProvider()) {
+    : file_access_provider_(new FileAccessProvider()),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   certificate_manager_model_.reset(new CertificateManagerModel(this));
 }
 
@@ -1038,11 +1039,18 @@ void CertificateManagerHandler::ShowImportErrors(
 
 #if defined(OS_CHROMEOS)
 void CertificateManagerHandler::CheckTpmTokenReady(const ListValue* args) {
-  chromeos::CryptohomeLibrary* cryptohome =
-      chromeos::CrosLibrary::Get()->GetCryptohomeLibrary();
+  chromeos::CryptohomeClient* cryptohome_client =
+      chromeos::DBusThreadManager::Get()->GetCryptohomeClient();
+  cryptohome_client->Pkcs11IsTpmTokenReady(
+      base::Bind(&CertificateManagerHandler::CheckTpmTokenReadyInternal,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
 
-  // TODO(xiyuan): Use async way when underlying supports it.
-  base::FundamentalValue ready(cryptohome->Pkcs11IsTpmTokenReady());
+void CertificateManagerHandler::CheckTpmTokenReadyInternal(
+    chromeos::CryptohomeClient::CallStatus call_status,
+    bool is_tpm_token_ready) {
+  base::FundamentalValue ready(
+      call_status == chromeos::CryptohomeClient::SUCCESS && is_tpm_token_ready);
   web_ui()->CallJavascriptFunction("CertificateManager.onCheckTpmTokenReady",
                                    ready);
 }

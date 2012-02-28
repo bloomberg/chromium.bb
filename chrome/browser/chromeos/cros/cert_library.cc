@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -98,9 +99,6 @@ namespace chromeos {
 
 //////////////////////////////////////////////////////////////////////////////
 
-// base::Unretained(this) in the class is safe. By the time this object is
-// deleted as part of CrosLibrary, the DB thread and the UI message loop
-// are already terminated.
 class CertLibraryImpl
     : public CertLibrary,
       public net::CertDatabase::Observer {
@@ -115,7 +113,8 @@ class CertLibraryImpl
       ALLOW_THIS_IN_INITIALIZER_LIST(certs_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(user_certs_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(server_certs_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(server_ca_certs_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(server_ca_certs_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     net::CertDatabase::AddObserver(this);
   }
@@ -149,36 +148,14 @@ class CertLibraryImpl
     VLOG(1) << "Requesting Certificates.";
 
     // Need TPM token name to filter user certificates.
-    // TODO(stevenjb): crypto::EnsureTPMTokenReady() may block if init has
-    // not succeeded. It is not clear whether or not TPM / PKCS#11 init can
-    // be done safely on a non blocking thread. Blocking time is low.
-    if (crypto::EnsureTPMTokenReady()) {
-      std::string unused_pin;
-      // TODO(stevenjb): Make this asynchronous. It results in a synchronous
-      // D-Bus call in cryptohome (~3 ms).
-      crypto::GetTPMTokenInfo(&tpm_token_name_, &unused_pin);
+    if (crypto::IsTPMTokenReady()) {
+      const bool tpm_token_ready = true;
+      RequestCertificatesInternal(tpm_token_ready);
     } else {
-      if (crypto::IsTPMTokenAvailable()) {
-        VLOG(1) << "TPM token not ready.";
-        if (request_task_.is_null()) {
-          // Cryptohome does not notify us when the token is ready, so call
-          // this again after a delay.
-          request_task_ = base::Bind(&CertLibraryImpl::RequestCertificatesTask,
-                                     base::Unretained(this));
-          BrowserThread::PostDelayedTask(
-              BrowserThread::UI, FROM_HERE, request_task_, kRequestDelayMs);
-        }
-        return;
-      }
-      // TPM is not enabled, so proceed with empty tpm token name.
-      VLOG(1) << "TPM not available.";
+      crypto::InitializeTPMToken(
+          base::Bind(&CertLibraryImpl::RequestCertificatesInternal,
+                     weak_ptr_factory_.GetWeakPtr()));
     }
-
-    // tpm_token_name_ is set, load the certificates on the DB thread.
-    BrowserThread::PostTask(
-        BrowserThread::DB, FROM_HERE,
-        base::Bind(&CertLibraryImpl::LoadCertificates,
-                   base::Unretained(this)));
   }
 
   virtual void AddObserver(CertLibrary::Observer* observer) OVERRIDE {
@@ -262,7 +239,7 @@ class CertLibraryImpl
       BrowserThread::PostTask(
           BrowserThread::DB, FROM_HERE,
           base::Bind(&CertLibraryImpl::LoadCertificates,
-                     base::Unretained(this)));
+                     weak_ptr_factory_.GetWeakPtr()));
     }
   }
 
@@ -273,7 +250,7 @@ class CertLibraryImpl
       BrowserThread::PostTask(
           BrowserThread::DB, FROM_HERE,
           base::Bind(&CertLibraryImpl::LoadCertificates,
-                     base::Unretained(this)));
+                     weak_ptr_factory_.GetWeakPtr()));
     }
   }
 
@@ -293,7 +270,7 @@ class CertLibraryImpl
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&CertLibraryImpl::UpdateCertificates,
-                   base::Unretained(this), cert_list));
+                   weak_ptr_factory_.GetWeakPtr(), cert_list));
   }
 
   // Comparison functor for locale-sensitive sorting of certificates by name.
@@ -407,6 +384,36 @@ class CertLibraryImpl
     return supplemental_user_key_.get() != NULL;
   }
 
+  // This method is used to implement RequestCertificates.
+  void RequestCertificatesInternal(bool tpm_token_ready) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (tpm_token_ready) {
+      std::string unused_pin;
+      crypto::GetTPMTokenInfo(&tpm_token_name_, &unused_pin);
+    } else {
+      if (crypto::IsTPMTokenAvailable()) {
+        VLOG(1) << "TPM token not ready.";
+        if (request_task_.is_null()) {
+          // Cryptohome does not notify us when the token is ready, so call
+          // this again after a delay.
+          request_task_ = base::Bind(&CertLibraryImpl::RequestCertificatesTask,
+                                     weak_ptr_factory_.GetWeakPtr());
+          BrowserThread::PostDelayedTask(
+              BrowserThread::UI, FROM_HERE, request_task_, kRequestDelayMs);
+        }
+        return;
+      }
+      // TPM is not enabled, so proceed with empty tpm token name.
+      VLOG(1) << "TPM not available.";
+    }
+
+    // tpm_token_name_ is set, load the certificates on the DB thread.
+    BrowserThread::PostTask(
+        BrowserThread::DB, FROM_HERE,
+        base::Bind(&CertLibraryImpl::LoadCertificates,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
   // Observers.
   const scoped_refptr<CertLibraryObserverList> observer_list_;
 
@@ -429,6 +436,8 @@ class CertLibraryImpl
   CertList user_certs_;
   CertList server_certs_;
   CertList server_ca_certs_;
+
+  base::WeakPtrFactory<CertLibraryImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CertLibraryImpl);
 };

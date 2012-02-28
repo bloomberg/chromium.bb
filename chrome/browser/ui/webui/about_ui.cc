@@ -76,6 +76,8 @@
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
+#include "chrome/browser/chromeos/dbus/cryptohome_client.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #include "chrome/browser/oom_priority_manager.h"
@@ -507,7 +509,15 @@ std::string AddStringRow(const std::string& name, const std::string& value) {
   return WrapWithTR(row);
 }
 
-std::string GetCryptohomeHtmlInfo(int refresh) {
+void FinishCryptohomeDataRequestInternal(
+    scoped_refptr<AboutUIHTMLSource> source,
+    int refresh,
+    int request_id,
+    chromeos::CryptohomeClient::CallStatus call_status,
+    bool is_tpm_token_ready) {
+  if (call_status != chromeos::CryptohomeClient::SUCCESS)
+    is_tpm_token_ready = false;
+
   chromeos::CryptohomeLibrary* cryptohome =
       chromeos::CrosLibrary::Get()->GetCryptohomeLibrary();
   std::string output;
@@ -522,8 +532,7 @@ std::string GetCryptohomeHtmlInfo(int refresh) {
   output.append(AddBoolRow("TpmIsEnabled", cryptohome->TpmIsEnabled()));
   output.append(AddBoolRow("TpmIsOwned", cryptohome->TpmIsOwned()));
   output.append(AddBoolRow("TpmIsBeingOwned", cryptohome->TpmIsBeingOwned()));
-  output.append(AddBoolRow("Pkcs11IsTpmTokenReady",
-                           cryptohome->Pkcs11IsTpmTokenReady()));
+  output.append(AddBoolRow("Pkcs11IsTpmTokenReady", is_tpm_token_ready));
   output.append("</table>");
 
   std::string token_name, user_pin;
@@ -536,13 +545,20 @@ std::string GetCryptohomeHtmlInfo(int refresh) {
   output.append("</table>");
   AppendFooter(&output);
 
-  return output;
+  source->FinishDataRequest(output, request_id);
 }
 
-std::string AboutCryptohome(const std::string& query) {
+void FinishCryptohomeDataRequest(scoped_refptr<AboutUIHTMLSource> source,
+                                 const std::string& query,
+                                 int request_id) {
   int refresh;
   base::StringToInt(query, &refresh);
-  return GetCryptohomeHtmlInfo(refresh);
+
+  chromeos::DBusThreadManager::Get()->GetCryptohomeClient()->
+      Pkcs11IsTpmTokenReady(base::Bind(&FinishCryptohomeDataRequestInternal,
+                                       source,
+                                       refresh,
+                                       request_id));
 }
 
 std::string AboutDiscardsRun() {
@@ -742,8 +758,9 @@ std::string AboutHistograms(const std::string& query) {
   return data;
 }
 
-void AboutMemory(const std::string& path, AboutUIHTMLSource* source,
-                 int request_id) {
+void FinishMemoryDataRequest(const std::string& path,
+                             AboutUIHTMLSource* source,
+                             int request_id) {
   if (path == kStringsJsPath) {
     // The AboutMemoryHandler cleans itself up, but |StartFetch()| will want
     // the refcount to be greater than 0.
@@ -1293,8 +1310,8 @@ AboutUIHTMLSource::~AboutUIHTMLSource() {
 }
 
 void AboutUIHTMLSource::StartDataRequest(const std::string& path,
-                                   bool is_incognito,
-                                   int request_id) {
+                                         bool is_incognito,
+                                         int request_id) {
   std::string response;
   std::string host = source_name();
   // Add your data source here, in alphabetical order.
@@ -1306,7 +1323,8 @@ void AboutUIHTMLSource::StartDataRequest(const std::string& path,
         idr).as_string();
 #if defined(OS_CHROMEOS)
   } else if (host == chrome::kChromeUICryptohomeHost) {
-    response = AboutCryptohome(path);
+    FinishCryptohomeDataRequest(this, path, request_id);
+    return;
   } else if (host == chrome::kChromeUIDiscardsHost) {
     response = AboutDiscards(path);
 #endif
@@ -1322,7 +1340,7 @@ void AboutUIHTMLSource::StartDataRequest(const std::string& path,
   } else if (host == chrome::kChromeUIMemoryHost) {
     response = GetAboutMemoryRedirectResponse(profile());
   } else if (host == chrome::kChromeUIMemoryRedirectHost) {
-    AboutMemory(path, this, request_id);
+    FinishMemoryDataRequest(path, this, request_id);
     return;
 #if defined(OS_CHROMEOS)
   } else if (host == chrome::kChromeUINetworkHost) {

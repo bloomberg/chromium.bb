@@ -23,11 +23,24 @@ namespace chromeos {
 // initializes the DBusThreadManager instance.
 class CryptohomeClient {
  public:
+  // An enum to describe whether or not a DBus method call succeeded.
+  enum CallStatus{
+    FAILURE,
+    SUCCESS,
+  };
   // A callback to handle AsyncCallStatus signals.
   typedef base::Callback<void(int async_id, bool return_status, int return_code)
                          > AsyncCallStatusHandler;
   // A callback to handle responses of AsyncXXX methods.
   typedef base::Callback<void(int async_id)> AsyncMethodCallback;
+  // A callback to handle responses of Pkcs11IsTpmTokenReady method.
+  typedef base::Callback<void(CallStatus call_status, bool ready)>
+      Pkcs11IsTpmTokenReadyCallback;
+  // A callback to handle responses of Pkcs11GetTpmTokenInfo method.
+  typedef base::Callback<void(
+      CallStatus call_status,
+      const std::string& label,
+      const std::string& user_pin)> Pkcs11GetTpmTokenInfoCallback;
 
   virtual ~CryptohomeClient();
 
@@ -110,15 +123,13 @@ class CryptohomeClient {
   // succeeds.  This method blocks until the call returns.
   virtual bool TpmClearStoredPassword() = 0;
 
-  // Calls Pkcs11IsTpmTokenReady method and returns true when the call succeeds.
-  // This method blocks until the call returns.
-  virtual bool Pkcs11IsTpmTokenReady(bool* ready) = 0;
+  // Calls Pkcs11IsTpmTokenReady method.
+  virtual void Pkcs11IsTpmTokenReady(
+      Pkcs11IsTpmTokenReadyCallback callback) = 0;
 
-  // Calls Pkcs11GetTpmTokenInfo method and returns true when the call succeeds.
-  // This method blocks until the call returns.
-  // The original content of |label| and |user_pin| are lost.
-  virtual bool Pkcs11GetTpmTokenInfo(std::string* label,
-                                     std::string* user_pin) = 0;
+  // Calls Pkcs11GetTpmTokenInfo method.
+  virtual void Pkcs11GetTpmTokenInfo(
+      Pkcs11GetTpmTokenInfoCallback callback) = 0;
 
   // Calls InstallAttributesGet method and returns true when the call succeeds.
   // This method blocks until the call returns.

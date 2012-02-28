@@ -130,19 +130,6 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
     return result;
   }
 
-  virtual void Pkcs11GetTpmTokenInfo(
-      std::string* label, std::string* user_pin) OVERRIDE {
-    DBusThreadManager::Get()->GetCryptohomeClient()->Pkcs11GetTpmTokenInfo(
-        label, user_pin);
-  }
-
-  virtual bool Pkcs11IsTpmTokenReady() OVERRIDE {
-    bool result = false;
-    DBusThreadManager::Get()->GetCryptohomeClient()->
-        Pkcs11IsTpmTokenReady(&result);
-    return result;
-  }
-
   virtual std::string HashPassword(const std::string& password) OVERRIDE {
     // Get salt, ascii encode, update sha with that, then update with ascii
     // of password, then end.
@@ -249,14 +236,6 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
   virtual bool InstallAttributesIsFirstInstall() OVERRIDE {
     return !locked_;
   }
-
-  virtual void Pkcs11GetTpmTokenInfo(std::string* label,
-                                     std::string* user_pin) OVERRIDE {
-    *label = "Stub TPM Token";
-    *user_pin = "012345";
-  }
-
-  virtual bool Pkcs11IsTpmTokenReady() OVERRIDE { return true; }
 
   virtual std::string HashPassword(const std::string& password) OVERRIDE {
     return StringToLowerASCII(base::HexEncode(
