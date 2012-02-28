@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -118,6 +118,8 @@ class PasswordStoreWinTest : public testing::Test {
   }
 
   virtual void TearDown() {
+    if (store_.get())
+      store_->Shutdown();
     if (wds_.get())
       wds_->Shutdown();
     MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
@@ -133,6 +135,7 @@ class PasswordStoreWinTest : public testing::Test {
   scoped_ptr<LoginDatabase> login_db_;
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<WebDataService> wds_;
+  scoped_refptr<PasswordStore> store_;
   ScopedTempDir temp_dir_;
 };
 
@@ -176,9 +179,9 @@ TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
                                             PrefService::UNSYNCABLE_PREF);
 
   // Initializing the PasswordStore shouldn't trigger a migration.
-  scoped_refptr<PasswordStore> store(
-      new PasswordStoreWin(login_db_.release(), profile_.get(), wds_.get()));
-  EXPECT_TRUE(store->Init());
+  store_ = new PasswordStoreWin(login_db_.release(), profile_.get(),
+                                wds_.get());
+  EXPECT_TRUE(store_->Init());
 
   MockPasswordStoreConsumer consumer;
 
@@ -221,12 +224,10 @@ TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
           ContainsAllPasswordForms(forms)))
       .WillOnce(QuitUIMessageLoop());
 
-  store->GetLogins(*form, &consumer);
+  store_->GetLogins(*form, &consumer);
   MessageLoop::current()->Run();
 
   STLDeleteElements(&forms);
-
-  store->Shutdown();
 }
 
 // Crashy.  http://crbug.com/86558
@@ -237,9 +238,9 @@ TEST_F(PasswordStoreWinTest, DISABLED_OutstandingWDSQueries) {
                                             PrefService::UNSYNCABLE_PREF);
 
   // Initializing the PasswordStore shouldn't trigger a migration.
-  scoped_refptr<PasswordStore> store(
-      new PasswordStoreWin(login_db_.release(), profile_.get(), wds_.get()));
-  EXPECT_TRUE(store->Init());
+  store_ = new PasswordStoreWin(login_db_.release(), profile_.get(),
+                                wds_.get());
+  EXPECT_TRUE(store_->Init());
 
   PasswordFormData form_data = {
     PasswordForm::SCHEME_HTML,
@@ -256,11 +257,11 @@ TEST_F(PasswordStoreWinTest, DISABLED_OutstandingWDSQueries) {
   scoped_ptr<PasswordForm> form(CreatePasswordFormFromData(form_data));
 
   MockPasswordStoreConsumer consumer;
-  store->GetLogins(*form, &consumer);
+  store_->GetLogins(*form, &consumer);
 
   // Release the PSW and the WDS before the query can return.
-  store->Shutdown();
-  store = NULL;
+  store_->Shutdown();
+  store_ = NULL;
   wds_->Shutdown();
   wds_ = NULL;
 
@@ -288,9 +289,9 @@ TEST_F(PasswordStoreWinTest, DISABLED_MultipleWDSQueriesOnDifferentThreads) {
                                             PrefService::UNSYNCABLE_PREF);
 
   // Initializing the PasswordStore shouldn't trigger a migration.
-  scoped_refptr<PasswordStore> store(
-      new PasswordStoreWin(login_db_.release(), profile_.get(), wds_.get()));
-  EXPECT_TRUE(store->Init());
+  store_ = new PasswordStoreWin(login_db_.release(), profile_.get(),
+                                wds_.get());
+  EXPECT_TRUE(store_->Init());
 
   MockPasswordStoreConsumer password_consumer;
   // Make sure we quit the MessageLoop even if the test fails.
@@ -332,7 +333,7 @@ TEST_F(PasswordStoreWinTest, DISABLED_MultipleWDSQueriesOnDifferentThreads) {
           ContainsAllPasswordForms(forms)))
       .WillOnce(QuitUIMessageLoop());
 
-  store->GetLogins(*form, &password_consumer);
+  store_->GetLogins(*form, &password_consumer);
 
   MockWebDataServiceConsumer wds_consumer;
 
@@ -349,8 +350,6 @@ TEST_F(PasswordStoreWinTest, DISABLED_MultipleWDSQueriesOnDifferentThreads) {
   MessageLoop::current()->Run();
 
   STLDeleteElements(&forms);
-
-  store->Shutdown();
 }
 
 TEST_F(PasswordStoreWinTest, Migration) {
@@ -439,9 +438,9 @@ TEST_F(PasswordStoreWinTest, Migration) {
   done.Wait();
 
   // Initializing the PasswordStore should trigger a migration.
-  scoped_refptr<PasswordStore> store(
-      new PasswordStoreWin(login_db_.release(), profile_.get(), wds_.get()));
-  store->Init();
+  store_ = new PasswordStoreWin(login_db_.release(), profile_.get(),
+                                wds_.get());
+  store_->Init();
 
   // Check that the migration preference has not been initialized;
   ASSERT_TRUE(NULL == profile_->GetPrefs()->FindPreference(
@@ -469,7 +468,7 @@ TEST_F(PasswordStoreWinTest, Migration) {
           ContainsAllPasswordForms(expected_autofillable)))
       .WillOnce(DoAll(WithArg<1>(STLDeleteElements0()), QuitUIMessageLoop()));
 
-  store->GetAutofillableLogins(&consumer);
+  store_->GetAutofillableLogins(&consumer);
   MessageLoop::current()->Run();
 
   // The blacklisted forms should have been migrated from the WDS to the login
@@ -479,7 +478,7 @@ TEST_F(PasswordStoreWinTest, Migration) {
           ContainsAllPasswordForms(expected_blacklisted)))
       .WillOnce(DoAll(WithArg<1>(STLDeleteElements0()), QuitUIMessageLoop()));
 
-  store->GetBlacklistLogins(&consumer);
+  store_->GetBlacklistLogins(&consumer);
   MessageLoop::current()->Run();
 
   // Check that the migration updated the migrated preference.
@@ -520,9 +519,9 @@ TEST_F(PasswordStoreWinTest, Migration) {
 }
 
 TEST_F(PasswordStoreWinTest, EmptyLogins) {
-  scoped_refptr<PasswordStore> store(
-      new PasswordStoreWin(login_db_.release(), profile_.get(), wds_.get()));
-  store->Init();
+  store_ = new PasswordStoreWin(login_db_.release(), profile_.get(),
+                                wds_.get());
+  store_->Init();
 
   PasswordFormData form_data = {
     PasswordForm::SCHEME_HTML,
@@ -550,16 +549,14 @@ TEST_F(PasswordStoreWinTest, EmptyLogins) {
       _, ContainsAllPasswordForms(expect_none)))
       .WillOnce(DoAll(WithArg<1>(STLDeleteElements0()), QuitUIMessageLoop()));
 
-  store->GetLogins(*form, &consumer);
+  store_->GetLogins(*form, &consumer);
   MessageLoop::current()->Run();
-
-  store->Shutdown();
 }
 
 TEST_F(PasswordStoreWinTest, EmptyBlacklistLogins) {
-  scoped_refptr<PasswordStore> store(
-      new PasswordStoreWin(login_db_.release(), profile_.get(), wds_.get()));
-  store->Init();
+  store_ = new PasswordStoreWin(login_db_.release(), profile_.get(),
+                                wds_.get());
+  store_->Init();
 
   MockPasswordStoreConsumer consumer;
 
@@ -573,16 +570,14 @@ TEST_F(PasswordStoreWinTest, EmptyBlacklistLogins) {
       _, ContainsAllPasswordForms(expect_none)))
       .WillOnce(DoAll(WithArg<1>(STLDeleteElements0()), QuitUIMessageLoop()));
 
-  store->GetBlacklistLogins(&consumer);
+  store_->GetBlacklistLogins(&consumer);
   MessageLoop::current()->Run();
-
-  store->Shutdown();
 }
 
 TEST_F(PasswordStoreWinTest, EmptyAutofillableLogins) {
-  scoped_refptr<PasswordStore> store(
-      new PasswordStoreWin(login_db_.release(), profile_.get(), wds_.get()));
-  store->Init();
+  store_ = new PasswordStoreWin(login_db_.release(), profile_.get(),
+                                wds_.get());
+  store_->Init();
 
   MockPasswordStoreConsumer consumer;
 
@@ -596,8 +591,6 @@ TEST_F(PasswordStoreWinTest, EmptyAutofillableLogins) {
       _, ContainsAllPasswordForms(expect_none)))
       .WillOnce(DoAll(WithArg<1>(STLDeleteElements0()), QuitUIMessageLoop()));
 
-  store->GetAutofillableLogins(&consumer);
+  store_->GetAutofillableLogins(&consumer);
   MessageLoop::current()->Run();
-
-  store->Shutdown();
 }

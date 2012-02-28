@@ -1098,18 +1098,6 @@ name=http://crbug.com/115197
 *!AppNotificationStorage::Create
 *!AppNotificationManager::LoadOnFileThread
 
-# PasswordStoreWinTest.Migration creates leaks.  Some sqlite issue?  Reproduces
-# locally.
-LEAK
-name=http://crbug.com/115191 a
-...
-*!PasswordStoreWinTest::SetUp
-
-LEAK
-name=http://crbug.com/115191 b
-...
-*!PasswordStoreWinTest_Migration_Test::TestBody
-
 LEAK
 name=http://crbug.com/115328
 ...
