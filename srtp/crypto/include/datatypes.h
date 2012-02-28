@@ -60,7 +60,7 @@
 #  include <netinet/in.h>
 # elif defined HAVE_WINSOCK2_H
 #  include <winsock2.h>
-# elif defined_HAVE_BYTESWAP_METHODS_H
+# elif defined HAVE_BYTESWAP_METHODS_H
 #  include <stdlib.h>
 #  define ntohl(x) _byteswap_ulong (x)
 #  define ntohs(x) _byteswap_ushort (x)
