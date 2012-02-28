@@ -62,7 +62,7 @@ class AutofillExternalDelegate {
   void DidEndTextFieldEditing();
 
   // Inform the delegate that an autofill suggestion have been chosen.
-  void DidAcceptAutofillSuggestions(string16 value,
+  void DidAcceptAutofillSuggestions(const string16& value,
                                     int unique_id,
                                     unsigned index);
 

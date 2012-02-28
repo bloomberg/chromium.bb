@@ -138,9 +138,10 @@ void AutofillExternalDelegate::DidEndTextFieldEditing() {
   has_shown_autofill_popup_for_current_edit_ = false;
 }
 
-void AutofillExternalDelegate::DidAcceptAutofillSuggestions(string16 value,
-                                                            int unique_id,
-                                                            unsigned index) {
+void AutofillExternalDelegate::DidAcceptAutofillSuggestions(
+    const string16& value,
+    int unique_id,
+    unsigned index) {
   // If the selected element is a warning we don't want to do anything.
   if (unique_id < 0)
     return;
