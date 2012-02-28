@@ -212,6 +212,7 @@ weston_surface_create(struct weston_compositor *compositor)
 
 	surface->buffer = NULL;
 	surface->output = NULL;
+	surface->force_configure = 0;
 
 	pixman_region32_init(&surface->damage);
 	pixman_region32_init(&surface->opaque);
@@ -231,7 +232,7 @@ weston_surface_create(struct weston_compositor *compositor)
 	return surface;
 }
 
-static void
+WL_EXPORT void
 weston_surface_set_color(struct weston_surface *surface,
 		 GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha)
 {
@@ -637,6 +638,15 @@ destroy_surface(struct wl_resource *resource)
 		pixman_region32_fini(&surface->input);
 
 	free(surface);
+}
+
+WL_EXPORT void
+weston_surface_destroy(struct weston_surface *surface)
+{
+	/* Not a valid way to destroy a client surface */
+	assert(surface->surface.resource.client == NULL);
+
+	destroy_surface(&surface->surface.resource);
 }
 
 static void
@@ -1132,7 +1142,7 @@ surface_attach(struct wl_client *client,
 
 	if (es->output == NULL) {
 		shell->map(shell, es, buffer->width, buffer->height, sx, sy);
-	} else if (sx != 0 || sy != 0 ||
+	} else if (es->force_configure || sx != 0 || sy != 0 ||
 		   es->geometry.width != buffer->width ||
 		   es->geometry.height != buffer->height) {
 		GLfloat from_x, from_y;
@@ -1144,6 +1154,7 @@ surface_attach(struct wl_client *client,
 				 es->geometry.x + to_x - from_x,
 				 es->geometry.y + to_y - from_y,
 				 buffer->width, buffer->height);
+		es->force_configure = 0;
 	}
 
 	weston_buffer_attach(buffer, &es->surface);

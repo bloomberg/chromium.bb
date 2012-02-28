@@ -301,6 +301,8 @@ struct weston_surface {
 
 	struct wl_buffer *buffer;
 	struct wl_listener buffer_destroy_listener;
+
+	int force_configure;
 };
 
 void
@@ -506,5 +508,12 @@ typedef	void (*weston_zoom_done_func_t)(struct weston_zoom *zoom, void *data);
 struct weston_zoom *
 weston_zoom_run(struct weston_surface *surface, GLfloat start, GLfloat stop,
 		weston_zoom_done_func_t done, void *data);
+
+void
+weston_surface_set_color(struct weston_surface *surface,
+			 GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
+
+void
+weston_surface_destroy(struct weston_surface *surface);
 
 #endif
