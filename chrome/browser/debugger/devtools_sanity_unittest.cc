@@ -435,6 +435,14 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
   RunTest("waitForTestResultsInConsole", "");
 }
 
+// Tests that chrome.devtools extension can communicate with background page
+// using extension messaging.
+IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
+                       TestDevToolsExtensionMessaging) {
+  LoadExtension("devtools_messaging");
+  RunTest("waitForTestResultsInConsole", "");
+}
+
 // Tests that chrome.experimental.devtools extension is correctly exposed
 // when the extension has experimental permission.
 IN_PROC_BROWSER_TEST_F(DevToolsExperimentalExtensionTest,
