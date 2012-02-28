@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -135,7 +135,7 @@ void SSLErrorHandler::CompleteCancelRequest(int error) {
 
   net::URLRequest* request =
       resource_dispatcher_host_->GetURLRequest(request_id_);
-  if (request) {
+  if (request && request->is_pending()) {
     // The request can be NULL if it was cancelled by the renderer (as the
     // result of the user navigating to a new page from the location bar).
     DVLOG(1) << "CompleteCancelRequest() url: " << request->url().spec();
