@@ -41,7 +41,6 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/test/engine/test_id_factory.h"
@@ -610,7 +609,7 @@ class WriteTransactionTest: public WriteTransaction {
  public:
   WriteTransactionTest(const tracked_objects::Location& from_here,
                        WriterTag writer,
-                       const syncable::ScopedDirLookup& directory,
+                       syncable::Directory* directory,
                        scoped_ptr<WaitableEvent>* wait_for_syncapi)
       : WriteTransaction(from_here, writer, directory),
         wait_for_syncapi_(wait_for_syncapi) { }
@@ -646,9 +645,7 @@ class FakeServerUpdater : public base::RefCountedThreadSafe<FakeServerUpdater> {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
     sync_api::UserShare* user_share = service_->GetUserShare();
-    syncable::DirectoryManager* dir_manager = user_share->dir_manager.get();
-    syncable::ScopedDirLookup dir(dir_manager, user_share->name);
-    ASSERT_TRUE(dir.good());
+    syncable::Directory* directory = user_share->directory.get();
 
     // Create autofill protobuf.
     std::string tag = AutocompleteSyncableService::KeyToTag(
@@ -671,7 +668,7 @@ class FakeServerUpdater : public base::RefCountedThreadSafe<FakeServerUpdater> {
       (*wait_for_start_)->Signal();
 
       // Create write transaction.
-      WriteTransactionTest trans(FROM_HERE, UNITTEST, dir,
+      WriteTransactionTest trans(FROM_HERE, UNITTEST, directory,
                                  wait_for_syncapi_);
 
       // Create actual entry based on autofill protobuf information.

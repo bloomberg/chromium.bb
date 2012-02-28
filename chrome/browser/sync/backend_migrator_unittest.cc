@@ -11,7 +11,6 @@
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/sessions/session_state.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type_test_util.h"
 #include "chrome/browser/sync/test/engine/test_user_share.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -69,7 +68,7 @@ class SyncBackendMigratorTest : public testing::Test {
       if (!unsynced_types.Has(type)) {
         progress_marker.set_token("dummy");
       }
-      trans.GetLookup()->SetDownloadProgress(type, progress_marker);
+      trans.GetDirectory()->SetDownloadProgress(type, progress_marker);
     }
   }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,6 @@
 #include "chrome/browser/sync/protocol/session_specifics.pb.h"
 #include "chrome/browser/sync/protocol/theme_specifics.pb.h"
 #include "chrome/browser/sync/protocol/typed_url_specifics.pb.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/browser/sync/util/time.h"
@@ -202,7 +201,7 @@ GURL BaseNode::GetURL() const {
 }
 
 bool BaseNode::HasChildren() const {
-  syncable::Directory* dir = GetTransaction()->GetLookup();
+  syncable::Directory* dir = GetTransaction()->GetDirectory();
   syncable::BaseTransaction* trans = GetTransaction()->GetWrappedTrans();
   return dir->HasChildren(trans, GetEntry()->Get(syncable::ID));
 }
@@ -222,7 +221,7 @@ int64 BaseNode::GetSuccessorId() const {
 }
 
 int64 BaseNode::GetFirstChildId() const {
-  syncable::Directory* dir = GetTransaction()->GetLookup();
+  syncable::Directory* dir = GetTransaction()->GetDirectory();
   syncable::BaseTransaction* trans = GetTransaction()->GetWrappedTrans();
   syncable::Id id_string;
   // TODO(akalin): Propagate up the error further (see

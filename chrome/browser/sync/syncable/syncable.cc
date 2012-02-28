@@ -33,7 +33,6 @@
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/syncable/directory_backing_store.h"
 #include "chrome/browser/sync/syncable/directory_change_delegate.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable-inl.h"
 #include "chrome/browser/sync/syncable/syncable_changes_version.h"
@@ -41,6 +40,7 @@
 #include "chrome/browser/sync/syncable/syncable_enum_conversions.h"
 #include "chrome/browser/sync/syncable/transaction_observer.h"
 #include "chrome/browser/sync/util/logging.h"
+#include "chrome/browser/sync/util/cryptographer.h"
 #include "net/base/escape.h"
 
 namespace {
@@ -428,6 +428,10 @@ DictionaryValue* EntryKernel::ToValue() const {
 
 ///////////////////////////////////////////////////////////////////////////
 // Directory
+
+// static
+const FilePath::CharType Directory::kSyncDatabaseFilename[] =
+    FILE_PATH_LITERAL("SyncData.sqlite3");
 
 void Directory::InitKernelForTest(
     const std::string& name,
@@ -1098,6 +1102,12 @@ string Directory::cache_guid() const {
   return kernel_->cache_guid;
 }
 
+browser_sync::Cryptographer* Directory::GetCryptographer(
+    const BaseTransaction* trans) {
+  DCHECK_EQ(this, trans->directory());
+  return &cryptographer_;
+}
+
 void Directory::GetAllMetaHandles(BaseTransaction* trans,
                                   MetahandleSet* result) {
   result->clear();
@@ -1443,13 +1453,6 @@ ReadTransaction::ReadTransaction(const tracked_objects::Location& location,
   Lock();
 }
 
-ReadTransaction::ReadTransaction(const tracked_objects::Location& location,
-                                 const ScopedDirLookup& scoped_dir)
-    : BaseTransaction(location, "ReadTransaction",
-                      INVALID, scoped_dir.operator->()) {
-  Lock();
-}
-
 ReadTransaction::~ReadTransaction() {
   HandleUnrecoverableErrorIfSet();
   Unlock();
@@ -1458,14 +1461,6 @@ ReadTransaction::~ReadTransaction() {
 WriteTransaction::WriteTransaction(const tracked_objects::Location& location,
                                    WriterTag writer, Directory* directory)
     : BaseTransaction(location, "WriteTransaction", writer, directory) {
-  Lock();
-}
-
-WriteTransaction::WriteTransaction(const tracked_objects::Location& location,
-                                   WriterTag writer,
-                                   const ScopedDirLookup& scoped_dir)
-    : BaseTransaction(location, "WriteTransaction",
-                      writer, scoped_dir.operator->()) {
   Lock();
 }
 

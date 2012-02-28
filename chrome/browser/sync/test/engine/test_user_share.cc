@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,25 +11,29 @@ namespace browser_sync {
 TestUserShare::TestUserShare() {}
 
 TestUserShare::~TestUserShare() {
-  CHECK(!user_share_.dir_manager.get());
+  if (user_share_.get())
+    ADD_FAILURE() << "Should have called TestUserShare::TearDown()";
 }
 
 void TestUserShare::SetUp() {
-  setter_upper_.SetUp();
-  // HACK: We have two scoped_ptrs to the same object.  But we make
-  // sure to release one in TearDown.
-  user_share_.dir_manager.reset(setter_upper_.manager());
-  user_share_.name = setter_upper_.name();
+  user_share_.reset(new sync_api::UserShare());
+  dir_maker_.SetUp();
+
+  // The pointer is owned by dir_maker_, we should not be storing it in a
+  // scoped_ptr.  We must be careful to ensure the scoped_ptr never deletes it.
+  user_share_->directory.reset(dir_maker_.directory());
 }
 
 void TestUserShare::TearDown() {
-  // Make sure we don't free the manager twice.
-  ignore_result(user_share_.dir_manager.release());
-  setter_upper_.TearDown();
+  // Ensure the scoped_ptr doesn't delete the memory we don't own.
+  ignore_result(user_share_->directory.release());
+
+  user_share_.reset();
+  dir_maker_.TearDown();
 }
 
 sync_api::UserShare* TestUserShare::user_share() {
-  return &user_share_;
+  return user_share_.get();
 }
 
 }  // namespace browser_sync

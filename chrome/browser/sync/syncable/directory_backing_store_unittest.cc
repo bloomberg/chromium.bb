@@ -15,7 +15,6 @@
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/directory_backing_store.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable-inl.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/time.h"
@@ -39,8 +38,7 @@ class MigrationTest : public testing::TestWithParam<int> {
   }
 
   FilePath GetDatabasePath() {
-    return temp_dir_.path().Append(
-        DirectoryManager::GetSyncDataDatabaseFilename());
+    return temp_dir_.path().Append(Directory::kSyncDatabaseFilename);
   }
 
   static bool LoadAndIgnoreReturnedData(DirectoryBackingStore *dbs) {

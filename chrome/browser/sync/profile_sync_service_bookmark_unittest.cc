@@ -32,7 +32,6 @@
 #include "chrome/browser/sync/internal_api/read_transaction.h"
 #include "chrome/browser/sync/internal_api/write_node.h"
 #include "chrome/browser/sync/internal_api/write_transaction.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/test/engine/test_id_factory.h"
 #include "chrome/browser/sync/test/engine/test_user_share.h"
 #include "chrome/common/chrome_switches.h"

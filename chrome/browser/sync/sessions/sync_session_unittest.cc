@@ -12,7 +12,6 @@
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/sessions/status_controller.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
@@ -180,27 +179,17 @@ TEST_F(SyncSessionTest, ScopedContextHelpers) {
 }
 
 TEST_F(SyncSessionTest, SetWriteTransaction) {
-  TestDirectorySetterUpper db;
-  db.SetUp();
-  session_.reset();
-  context_.reset(
-      new SyncSessionContext(
-          NULL, db.manager(), this, &extensions_activity_monitor_,
-          std::vector<SyncEngineEventListener*>(), NULL));
-  session_.reset(MakeSession());
-  context_->set_account_name(db.name());
-  syncable::ScopedDirLookup dir(context_->directory_manager(),
-                                context_->account_name());
-  ASSERT_TRUE(dir.good());
+  TestDirectorySetterUpper dir_maker;
+  dir_maker.SetUp();
+  syncable::Directory* directory = dir_maker.directory();
 
   scoped_ptr<SyncSession> session(MakeSession());
   EXPECT_TRUE(NULL == session->write_transaction());
   {
-    WriteTransaction trans(FROM_HERE, syncable::UNITTEST, dir);
+    WriteTransaction trans(FROM_HERE, syncable::UNITTEST, directory);
     sessions::ScopedSetSessionWriteTransaction set_trans(session.get(), &trans);
     EXPECT_TRUE(&trans == session->write_transaction());
   }
-  db.TearDown();
 }
 
 TEST_F(SyncSessionTest, MoreToSyncIfUnsyncedGreaterThanCommitted) {

@@ -18,6 +18,7 @@
 #include "chrome/browser/sync/sessions/debug_info_getter.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/sessions/sync_session_context.h"
+#include "chrome/browser/sync/syncable/syncable_mock.h"
 #include "chrome/browser/sync/test/engine/mock_connection_manager.h"
 #include "chrome/browser/sync/test/engine/fake_model_worker.h"
 #include "chrome/browser/sync/test/engine/test_directory_setter_upper.h"
@@ -39,10 +40,9 @@ class MockDebugInfoGetter : public browser_sync::sessions::DebugInfoGetter {
 // A test fixture that simplifies writing unit tests for individual
 // SyncerCommands, providing convenient access to a test directory
 // and a syncer session.
-template<typename T>
-class SyncerCommandTestWithParam : public testing::TestWithParam<T>,
-                                   public sessions::SyncSession::Delegate,
-                                   public ModelSafeWorkerRegistrar {
+class SyncerCommandTestBase : public testing::Test,
+                              public sessions::SyncSession::Delegate,
+                              public ModelSafeWorkerRegistrar {
  public:
   enum UseMockDirectory {
     USE_MOCK_DIRECTORY
@@ -88,24 +88,12 @@ class SyncerCommandTestWithParam : public testing::TestWithParam<T>,
   }
 
  protected:
-  SyncerCommandTestWithParam() : syncdb_(new TestDirectorySetterUpper()) {}
+  SyncerCommandTestBase();
 
-  explicit SyncerCommandTestWithParam(UseMockDirectory use_mock)
-      : syncdb_(new MockDirectorySetterUpper()) {}
+  virtual ~SyncerCommandTestBase();
+  virtual void SetUp();
+  virtual void TearDown();
 
-  virtual ~SyncerCommandTestWithParam() {}
-  virtual void SetUp() {
-    syncdb_->SetUp();
-    ResetContext();
-    // The session always expects there to be a passive worker.
-    workers()->push_back(
-        make_scoped_refptr(new FakeModelWorker(GROUP_PASSIVE)));
-  }
-  virtual void TearDown() {
-    syncdb_->TearDown();
-  }
-
-  TestDirectorySetterUpper* syncdb() { return syncdb_.get(); }
   sessions::SyncSessionContext* context() const { return context_.get(); }
   sessions::SyncSession::Delegate* delegate() { return this; }
   ModelSafeWorkerRegistrar* registrar() { return this; }
@@ -135,20 +123,22 @@ class SyncerCommandTestWithParam : public testing::TestWithParam<T>,
 
   void ResetContext() {
     context_.reset(new sessions::SyncSessionContext(
-        mock_server_.get(), syncdb_->manager(), registrar(),
-        &extensions_activity_monitor_,
-        std::vector<SyncEngineEventListener*>(), &mock_debug_info_getter_));
-    context_->set_account_name(syncdb_->name());
+            mock_server_.get(), directory(),
+            registrar(), &extensions_activity_monitor_,
+            std::vector<SyncEngineEventListener*>(),
+            &mock_debug_info_getter_));
+    context_->set_account_name(directory()->name());
     ClearSession();
   }
 
   // Install a MockServerConnection.  Resets the context.  By default,
   // the context does not have a MockServerConnection attached.
   void ConfigureMockServerConnection() {
-    mock_server_.reset(
-        new MockConnectionManager(syncdb_->manager(), syncdb_->name()));
+    mock_server_.reset(new MockConnectionManager(directory()));
     ResetContext();
   }
+
+  virtual syncable::Directory* directory() = 0;
 
   std::vector<scoped_refptr<ModelSafeWorker> >* workers() {
     return &workers_;
@@ -202,7 +192,6 @@ class SyncerCommandTestWithParam : public testing::TestWithParam<T>,
 
  private:
   MessageLoop message_loop_;
-  scoped_ptr<TestDirectorySetterUpper> syncdb_;
   scoped_ptr<sessions::SyncSessionContext> context_;
   scoped_ptr<MockConnectionManager> mock_server_;
   scoped_ptr<sessions::SyncSession> session_;
@@ -210,20 +199,33 @@ class SyncerCommandTestWithParam : public testing::TestWithParam<T>,
   ModelSafeRoutingInfo routing_info_;
   NiceMock<MockDebugInfoGetter> mock_debug_info_getter_;
   FakeExtensionsActivityMonitor extensions_activity_monitor_;
-  DISALLOW_COPY_AND_ASSIGN(SyncerCommandTestWithParam);
+  DISALLOW_COPY_AND_ASSIGN(SyncerCommandTestBase);
 };
 
-class SyncerCommandTest : public SyncerCommandTestWithParam<void*> {};
-
-class MockDirectorySyncerCommandTest
-    : public SyncerCommandTestWithParam<void*> {
+class SyncerCommandTest : public SyncerCommandTestBase {
  public:
-  MockDirectorySyncerCommandTest()
-      : SyncerCommandTestWithParam<void*>(
-          SyncerCommandTestWithParam<void*>::USE_MOCK_DIRECTORY) {}
-  MockDirectorySetterUpper::MockDirectory* mock_directory() {
-    return static_cast<MockDirectorySetterUpper*>(syncdb())->directory();
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
+  virtual Directory* directory() OVERRIDE;
+
+ private:
+  TestDirectorySetterUpper dir_maker_;
+};
+
+class MockDirectorySyncerCommandTest : public SyncerCommandTestBase {
+ public:
+  MockDirectorySyncerCommandTest();
+  virtual ~MockDirectorySyncerCommandTest();
+  virtual Directory* directory() OVERRIDE;
+
+  MockDirectory* mock_directory() {
+    return static_cast<MockDirectory*>(directory());
   }
+
+  virtual void SetUp() OVERRIDE;
+
+  TestUnrecoverableErrorHandler handler_;
+  MockDirectory mock_directory_;
 };
 
 }  // namespace browser_sync

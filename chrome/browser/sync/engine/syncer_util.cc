@@ -20,7 +20,6 @@
 #include "chrome/browser/sync/protocol/nigori_specifics.pb.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_changes_version.h"
@@ -609,7 +608,7 @@ void SyncerUtil::AddPredecessorsThenItem(
 
 // static
 void SyncerUtil::MarkDeletedChildrenSynced(
-    const syncable::ScopedDirLookup &dir,
+    syncable::Directory* dir,
     std::set<syncable::Id>* deleted_folders) {
   // There's two options here.
   // 1. Scan deleted unsynced entries looking up their pre-delete tree for any

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -56,8 +56,8 @@ class TestUserShare {
   sync_api::UserShare* user_share();
 
  private:
-  TestDirectorySetterUpper setter_upper_;
-  sync_api::UserShare user_share_;
+  TestDirectorySetterUpper dir_maker_;
+  scoped_ptr<sync_api::UserShare> user_share_;
 
   DISALLOW_COPY_AND_ASSIGN(TestUserShare);
 };

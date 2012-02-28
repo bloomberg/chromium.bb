@@ -16,7 +16,6 @@
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "googleurl/src/gurl.h"
 #include "net/http/http_status_code.h"
 
@@ -396,14 +395,9 @@ void ServerConnectionManager::TerminateAllIO() {
 }
 
 bool FillMessageWithShareDetails(sync_pb::ClientToServerMessage* csm,
-                                 syncable::DirectoryManager* manager,
+                                 syncable::Directory* directory,
                                  const std::string& share) {
-  syncable::ScopedDirLookup dir(manager, share);
-  if (!dir.good()) {
-    DVLOG(1) << "Dir lookup failed";
-    return false;
-  }
-  string birthday = dir->store_birthday();
+  string birthday = directory->store_birthday();
   if (!birthday.empty())
     csm->set_store_birthday(birthday);
   csm->set_share(share);

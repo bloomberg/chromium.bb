@@ -46,7 +46,6 @@
 #include "chrome/browser/sync/protocol/proto_value_conversions.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/directory_change_delegate.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
 #include "chrome/browser/sync/syncable/syncable.h"
@@ -85,7 +84,6 @@ using browser_sync::Syncer;
 using browser_sync::UnrecoverableErrorHandler;
 using browser_sync::WeakHandle;
 using browser_sync::sessions::SyncSessionContext;
-using syncable::DirectoryManager;
 using syncable::ImmutableWriteTransactionInfo;
 using syncable::ModelType;
 using syncable::ModelTypeSet;
@@ -302,7 +300,7 @@ class SyncManager::SyncInternal
   void RemoveObserver(SyncManager::Observer* observer);
 
   // Accessors for the private members.
-  DirectoryManager* dir_manager() { return share_.dir_manager.get(); }
+  syncable::Directory* directory() { return share_.directory.get(); }
   SyncAPIServerConnectionManager* connection_manager() {
     return connection_manager_.get();
   }
@@ -513,6 +511,8 @@ class SyncManager::SyncInternal
   JsArgList GetChildNodeIds(const JsArgList& args);
   JsArgList FindNodesContainingString(const JsArgList& args);
 
+  FilePath database_path_;
+
   const std::string name_;
 
   base::ThreadChecker thread_checker_;
@@ -530,9 +530,8 @@ class SyncManager::SyncInternal
   // WeakHandle when we construct it.
   WeakHandle<SyncInternal> weak_handle_this_;
 
-  // We couple the DirectoryManager and username together in a UserShare member
-  // so we can return a handle to share_ to clients of the API for use when
-  // constructing any transaction type.
+  // We give a handle to share_ to clients of the API for use when constructing
+  // any transaction type.
   UserShare share_;
 
   // This can be called from any thread, but only between calls to
@@ -883,7 +882,13 @@ bool SyncManager::SyncInternal::Init(
 
   AddObserver(&debug_info_event_listener_);
 
-  share_.dir_manager.reset(new DirectoryManager(database_location));
+  database_path_ = database_location.Append(
+      syncable::Directory::kSyncDatabaseFilename);
+  unrecoverable_error_handler_ = unrecoverable_error_handler;
+  report_unrecoverable_error_function_ = report_unrecoverable_error_function;
+  share_.directory.reset(
+      new syncable::Directory(unrecoverable_error_handler_,
+                              report_unrecoverable_error_function_));
 
   connection_manager_.reset(new SyncAPIServerConnectionManager(
       sync_server_and_path, port, use_ssl, user_agent, post_factory));
@@ -893,8 +898,6 @@ bool SyncManager::SyncInternal::Init(
 
   connection_manager()->AddListener(this);
 
-  unrecoverable_error_handler_ = unrecoverable_error_handler;
-  report_unrecoverable_error_function_ = report_unrecoverable_error_function;
 
   // Test mode does not use a syncer context or syncer thread.
   if (!setup_for_test_mode_) {
@@ -905,7 +908,7 @@ bool SyncManager::SyncInternal::Init(
     listeners.push_back(this);
     SyncSessionContext* context = new SyncSessionContext(
         connection_manager_.get(),
-        dir_manager(),
+        directory(),
         model_safe_worker_registrar,
         extensions_activity_monitor,
         listeners,
@@ -983,14 +986,7 @@ void SyncManager::SyncInternal::UpdateCryptographerAndNigori(
 void SyncManager::SyncInternal::UpdateCryptographerAndNigoriCallback(
     const base::Callback<void(bool)>& done_callback,
     const std::string& session_name) {
-  syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
-  if (!lookup.good()) {
-    NOTREACHED()
-        << "UpdateCryptographerAndNigori: lookup not good so bailing out";
-    done_callback.Run(false);
-    return;
-  }
-  if (!lookup->initial_sync_ended_for_type(syncable::NIGORI)) {
+  if (!directory()->initial_sync_ended_for_type(syncable::NIGORI)) {
     done_callback.Run(false);  // Should only happen during first time sync.
     return;
   }
@@ -1028,7 +1024,7 @@ void SyncManager::SyncInternal::UpdateCryptographerAndNigoriCallback(
       for (int i = 0; i < nigori.device_information_size(); ++i) {
         const sync_pb::DeviceInformation& device_information =
             nigori.device_information(i);
-        if (device_information.cache_guid() == lookup->cache_guid()) {
+        if (device_information.cache_guid() == directory()->cache_guid()) {
           // Update the version number in case it changed due to an update.
           if (device_information.chrome_version() !=
               version_info.CreateVersionString()) {
@@ -1044,7 +1040,7 @@ void SyncManager::SyncInternal::UpdateCryptographerAndNigoriCallback(
       if (!contains_this_device) {
         sync_pb::DeviceInformation* device_information =
             nigori.add_device_information();
-        device_information->set_cache_guid(lookup->cache_guid());
+        device_information->set_cache_guid(directory()->cache_guid());
 #if defined(OS_CHROMEOS)
         device_information->set_platform("ChromeOS");
 #elif defined(OS_LINUX)
@@ -1080,9 +1076,7 @@ void SyncManager::SyncInternal::UpdateCryptographerAndNigoriCallback(
 }
 
 void SyncManager::SyncInternal::StartSyncingNormally() {
-  // Start the sync scheduler. This won't actually result in any
-  // syncing until at least the DirectoryManager broadcasts the OPENED
-  // event, and a valid server connection is detected.
+  // Start the sync scheduler.
   if (scheduler())  // NULL during certain unittests.
     scheduler()->Start(SyncScheduler::NORMAL_MODE, base::Closure());
 }
@@ -1094,27 +1088,19 @@ bool SyncManager::SyncInternal::OpenDirectory() {
   change_observer_ =
       browser_sync::MakeWeakHandle(js_mutation_event_observer_.AsWeakPtr());
 
-  bool share_opened =
-      dir_manager()->Open(
+  syncable::DirOpenResult open_result =
+      directory()->Open(
+          database_path_,
           username_for_share(),
           this,
-          unrecoverable_error_handler_,
-          report_unrecoverable_error_function_,
           browser_sync::MakeWeakHandle(
               js_mutation_event_observer_.AsWeakPtr()));
-  if (!share_opened) {
+  if (open_result != syncable::OPENED) {
     LOG(ERROR) << "Could not open share for:" << username_for_share();
     return false;
   }
 
-  // Database has to be initialized for the guid to be available.
-  syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
-  if (!lookup.good()) {
-    NOTREACHED();
-    return false;
-  }
-
-  connection_manager()->set_client_id(lookup->cache_guid());
+  connection_manager()->set_client_id(directory()->cache_guid());
   return true;
 }
 
@@ -1129,22 +1115,15 @@ bool SyncManager::SyncInternal::SignIn(const SyncCredentials& credentials) {
 
   // Retrieve and set the sync notifier state. This should be done
   // only after OpenDirectory is called.
-  syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
-  std::string unique_id;
-  std::string state;
-  if (lookup.good()) {
-    unique_id = lookup->cache_guid();
-    state = lookup->GetNotificationState();
-    DVLOG(1) << "Read notification unique ID: " << unique_id;
-    if (VLOG_IS_ON(1)) {
-      std::string encoded_state;
-      base::Base64Encode(state, &encoded_state);
-      DVLOG(1) << "Read notification state: " << encoded_state;
-    }
-    allstatus_.SetUniqueId(unique_id);
-  } else {
-    LOG(ERROR) << "Could not read notification unique ID/state";
+  std::string unique_id = directory()->cache_guid();
+  std::string state = directory()->GetNotificationState();
+  DVLOG(1) << "Read notification unique ID: " << unique_id;
+  if (VLOG_IS_ON(1)) {
+    std::string encoded_state;
+    base::Base64Encode(state, &encoded_state);
+    DVLOG(1) << "Read notification state: " << encoded_state;
   }
+  allstatus_.SetUniqueId(unique_id);
   sync_notifier_->SetUniqueId(unique_id);
   sync_notifier_->SetState(state);
 
@@ -1691,20 +1670,17 @@ void SyncManager::SyncInternal::ShutdownOnSyncThread() {
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
   observing_ip_address_changes_ = false;
 
-  if (initialized_ && dir_manager()) {
+  if (initialized_ && directory()) {
     {
       // Cryptographer should only be accessed while holding a
       // transaction.
       ReadTransaction trans(FROM_HERE, GetUserShare());
       trans.GetCryptographer()->RemoveObserver(this);
     }
-    dir_manager()->FinalSaveChangesForAll();
-    dir_manager()->Close(username_for_share());
+    directory()->SaveChanges();
   }
 
-  // Reset the DirectoryManager and UserSettings so they relinquish sqlite
-  // handles to backing files.
-  share_.dir_manager.reset();
+  share_.directory.reset();
 
   setup_for_test_mode_ = false;
   change_delegate_ = NULL;
@@ -1905,7 +1881,7 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncer(
   LOG_IF(WARNING, !ChangeBuffersAreEmpty()) <<
       "CALCULATE_CHANGES called with unapplied old changes.";
 
-  Cryptographer* crypto = dir_manager()->GetCryptographer(trans);
+  Cryptographer* crypto = directory()->GetCryptographer(trans);
   const syncable::ImmutableEntryKernelMutationMap& mutations =
       write_transaction_info.Get().mutations;
   for (syncable::EntryKernelMutationMap::const_iterator it =
@@ -2214,8 +2190,8 @@ JsArgList SyncManager::SyncInternal::GetChildNodeIds(
   if (id != kInvalidId) {
     ReadTransaction trans(FROM_HERE, GetUserShare());
     syncable::Directory::ChildHandles child_handles;
-    trans.GetLookup()->GetChildHandlesByHandle(trans.GetWrappedTrans(),
-                                               id, &child_handles);
+    trans.GetDirectory()->GetChildHandlesByHandle(trans.GetWrappedTrans(),
+                                                  id, &child_handles);
     for (syncable::Directory::ChildHandles::const_iterator it =
              child_handles.begin(); it != child_handles.end(); ++it) {
       child_ids->Append(Value::CreateStringValue(
@@ -2244,8 +2220,8 @@ JsArgList SyncManager::SyncInternal::FindNodesContainingString(
 
   ReadTransaction trans(FROM_HERE, GetUserShare());
   std::vector<const syncable::EntryKernel*> entry_kernels;
-  trans.GetLookup()->GetAllEntryKernels(trans.GetWrappedTrans(),
-                                        &entry_kernels);
+  trans.GetDirectory()->GetAllEntryKernels(trans.GetWrappedTrans(),
+                                           &entry_kernels);
 
   for (std::vector<const syncable::EntryKernel*>::const_iterator it =
            entry_kernels.begin(); it != entry_kernels.end(); ++it) {
@@ -2341,8 +2317,7 @@ void SyncManager::SyncInternal::OnIncomingNotification(
 
 void SyncManager::SyncInternal::StoreState(
     const std::string& state) {
-  syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
-  if (!lookup.good()) {
+  if (!directory()) {
     LOG(ERROR) << "Could not write notification state";
     // TODO(akalin): Propagate result callback all the way to this
     // function and call it with "false" to signal failure.
@@ -2353,8 +2328,8 @@ void SyncManager::SyncInternal::StoreState(
     base::Base64Encode(state, &encoded_state);
     DVLOG(1) << "Writing notification state: " << encoded_state;
   }
-  lookup->SetNotificationState(state);
-  lookup->SaveChanges();
+  directory()->SetNotificationState(state);
+  directory()->SaveChanges();
 }
 
 void SyncManager::SyncInternal::AddObserver(
@@ -2381,12 +2356,7 @@ void SyncManager::SaveChanges() {
 }
 
 void SyncManager::SyncInternal::SaveChanges() {
-  syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
-  if (!lookup.good()) {
-    DCHECK(false) << "ScopedDirLookup creation failed; Unable to SaveChanges";
-    return;
-  }
-  lookup->SaveChanges();
+  directory()->SaveChanges();
 }
 
 UserShare* SyncManager::GetUserShare() const {
@@ -2476,16 +2446,9 @@ std::string PassphraseRequiredReasonToString(
 // Helper function to determine if initial sync had ended for types.
 bool InitialSyncEndedForTypes(syncable::ModelTypeSet types,
                               sync_api::UserShare* share) {
-  syncable::ScopedDirLookup lookup(share->dir_manager.get(),
-                                   share->name);
-  if (!lookup.good()) {
-    DCHECK(false) << "ScopedDirLookup failed when checking initial sync";
-    return false;
-  }
-
   for (syncable::ModelTypeSet::Iterator i = types.First();
        i.Good(); i.Inc()) {
-    if (!lookup->initial_sync_ended_for_type(i.Get()))
+    if (!share->directory->initial_sync_ended_for_type(i.Get()))
       return false;
   }
   return true;
@@ -2494,19 +2457,11 @@ bool InitialSyncEndedForTypes(syncable::ModelTypeSet types,
 syncable::ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
     syncable::ModelTypeSet types,
     sync_api::UserShare* share) {
-  syncable::ScopedDirLookup lookup(share->dir_manager.get(),
-                                   share->name);
-  if (!lookup.good()) {
-    NOTREACHED() << "ScopedDirLookup failed for "
-                  << "GetTypesWithEmptyProgressMarkerToken";
-    return syncable::ModelTypeSet();
-  }
-
   syncable::ModelTypeSet result;
   for (syncable::ModelTypeSet::Iterator i = types.First();
        i.Good(); i.Inc()) {
     sync_pb::DataTypeProgressMarker marker;
-    lookup->GetDownloadProgress(i.Get(), &marker);
+    share->directory->GetDownloadProgress(i.Get(), &marker);
 
     if (marker.token().empty())
       result.Put(i.Get());

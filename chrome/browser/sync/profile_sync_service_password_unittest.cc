@@ -29,7 +29,6 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/test/engine/test_id_factory.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
@@ -54,7 +53,6 @@ using sync_api::SyncManager;
 using sync_api::UserShare;
 using syncable::BASE_VERSION;
 using syncable::CREATE;
-using syncable::DirectoryManager;
 using syncable::IS_DEL;
 using syncable::IS_DIR;
 using syncable::IS_UNAPPLIED_UPDATE;
@@ -63,7 +61,6 @@ using syncable::MutableEntry;
 using syncable::SERVER_IS_DIR;
 using syncable::SERVER_VERSION;
 using syncable::SPECIFICS;
-using syncable::ScopedDirLookup;
 using syncable::UNIQUE_SERVER_TAG;
 using syncable::UNITTEST;
 using syncable::WriteTransaction;

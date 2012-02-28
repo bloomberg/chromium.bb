@@ -31,9 +31,9 @@
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/blob.h"
 #include "chrome/browser/sync/syncable/dir_open_result.h"
-#include "chrome/browser/sync/syncable/directory_event.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "chrome/browser/sync/util/cryptographer.h"
 #include "chrome/browser/sync/util/immutable.h"
 #include "chrome/browser/sync/util/time.h"
 #include "chrome/browser/sync/util/weak_handle.h"
@@ -207,7 +207,6 @@ class BaseTransaction;
 class WriteTransaction;
 class ReadTransaction;
 class Directory;
-class ScopedDirLookup;
 
 // Instead of:
 //   Entry e = transaction.GetById(id);
@@ -719,12 +718,6 @@ struct Index {
 // The name Directory in this case means the entire directory
 // structure within a single user account.
 //
-// Sqlite is a little goofy, in that each thread must access a database
-// via its own handle.  So, a Directory object should only be accessed
-// from a single thread.  Use DirectoryManager's Open() method to
-// always get a directory that has been properly initialized on the
-// current thread.
-//
 // The db is protected against concurrent modification by a reader/
 // writer lock, negotiated by the ReadTransaction and WriteTransaction
 // friend classes.  The in-memory indices are protected against
@@ -761,6 +754,8 @@ class Directory {
                            TakeSnapshotGetsMetahandlesToPurge);
 
  public:
+  static const FilePath::CharType kSyncDatabaseFilename[];
+
   // Various data that the Directory::Kernel we are backing (persisting data
   // for) needs saved across runs of the application.
   struct PersistedKernelInfo {
@@ -873,6 +868,11 @@ class Directory {
 
   // Unique to each account / client pair.
   std::string cache_guid() const;
+
+  // Returns a pointer to our cryptographer.  Does not transfer ownership.  The
+  // cryptographer is not thread safe; it should not be accessed after the
+  // transaction has been released.
+  browser_sync::Cryptographer* GetCryptographer(const BaseTransaction* trans);
 
   // Returns true if the directory had encountered an unrecoverable error.
   // Note: Any function in |Directory| that can be called without holding a
@@ -1214,6 +1214,8 @@ class Directory {
   EntryKernel* GetPossibleLastChildForTest(
       const ScopedKernelLock& lock, const Id& parent_id);
 
+  browser_sync::Cryptographer cryptographer_;
+
   Kernel* kernel_;
 
   DirectoryBackingStore* store_;
@@ -1288,8 +1290,6 @@ class ReadTransaction : public BaseTransaction {
  public:
   ReadTransaction(const tracked_objects::Location& from_here,
                   Directory* directory);
-  ReadTransaction(const tracked_objects::Location& from_here,
-                  const ScopedDirLookup& scoped_dir);
 
   virtual ~ReadTransaction();
 
@@ -1306,8 +1306,6 @@ class WriteTransaction : public BaseTransaction {
  public:
   WriteTransaction(const tracked_objects::Location& from_here,
                    WriterTag writer, Directory* directory);
-  WriteTransaction(const tracked_objects::Location& from_here,
-                   WriterTag writer, const ScopedDirLookup& directory);
 
   virtual ~WriteTransaction();
 

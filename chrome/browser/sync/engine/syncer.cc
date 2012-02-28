@@ -25,7 +25,6 @@
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/engine/verify_updates_command.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable-inl.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 
@@ -44,7 +43,6 @@ using syncable::SERVER_POSITION_IN_PARENT;
 using syncable::SERVER_SPECIFICS;
 using syncable::SERVER_VERSION;
 using syncable::SYNCER;
-using syncable::ScopedDirLookup;
 using syncable::WriteTransaction;
 
 namespace browser_sync {
@@ -98,13 +96,6 @@ void Syncer::RequestEarlyExit() {
 void Syncer::SyncShare(sessions::SyncSession* session,
                        SyncerStep first_step,
                        SyncerStep last_step) {
-  {
-    ScopedDirLookup dir(session->context()->directory_manager(),
-                        session->context()->account_name());
-    // The directory must be good here.
-    CHECK(dir.good());
-  }
-
   ScopedSessionContextConflictResolver scoped(session->context(),
                                               &resolver_);
   session->mutable_status_controller()->UpdateStartTime();
@@ -193,12 +184,7 @@ void Syncer::SyncShare(sessions::SyncSession* session,
       // These two steps are combined since they are executed within the same
       // write transaction.
       case BUILD_COMMIT_REQUEST: {
-        ScopedDirLookup dir(session->context()->directory_manager(),
-                            session->context()->account_name());
-        if (!dir.good()) {
-          LOG(ERROR) << "Scoped dir lookup failed!";
-          return;
-        }
+        syncable::Directory* dir = session->context()->directory();
         WriteTransaction trans(FROM_HERE, SYNCER, dir);
         sessions::ScopedSetSessionWriteTransaction set_trans(session, &trans);
 

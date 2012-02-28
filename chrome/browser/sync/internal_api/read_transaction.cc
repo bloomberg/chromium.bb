@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,8 @@ ReadTransaction::ReadTransaction(const tracked_objects::Location& from_here,
     : BaseTransaction(share),
       transaction_(NULL),
       close_transaction_(true) {
-  transaction_ = new syncable::ReadTransaction(from_here, GetLookup());
+  transaction_ = new syncable::ReadTransaction(from_here,
+                                               share->directory.get());
 }
 
 ReadTransaction::ReadTransaction(UserShare* share,

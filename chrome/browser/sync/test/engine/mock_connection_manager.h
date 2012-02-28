@@ -18,13 +18,8 @@
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
-
-namespace syncable {
-class DirectoryManager;
-}
 
 class MockConnectionManager : public browser_sync::ServerConnectionManager {
  public:
@@ -36,8 +31,7 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
     virtual ~MidCommitObserver() {}
   };
 
-  MockConnectionManager(syncable::DirectoryManager* dirmgr,
-                        const std::string& name);
+  explicit MockConnectionManager(syncable::Directory*);
   virtual ~MockConnectionManager();
 
   // Overridden ServerConnectionManager functions.
@@ -311,9 +305,10 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   // Fail on the next call to PostBufferToPath().
   bool fail_next_postbuffer_;
 
-  // Our directory.
-  syncable::DirectoryManager* directory_manager_;
-  std::string directory_name_;
+  // Our directory.  Used only to ensure that we are not holding the transaction
+  // lock when performing network I/O.  Can be NULL if the test author is
+  // confident this can't happen.
+  syncable::Directory* directory_;
 
   // The updates we'll return to the next request.
   std::list<sync_pb::GetUpdatesResponse> update_queue_;

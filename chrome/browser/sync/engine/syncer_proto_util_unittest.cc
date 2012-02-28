@@ -18,7 +18,6 @@
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/protocol/sync_enums.pb.h"
 #include "chrome/browser/sync/syncable/blob.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type_test_util.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/test/engine/mock_connection_manager.h"
@@ -27,7 +26,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using syncable::Blob;
-using syncable::ScopedDirLookup;
 using ::testing::_;
 
 namespace browser_sync {
@@ -162,56 +160,54 @@ TEST(SyncerProtoUtil, NameExtractionTwoNames) {
 class SyncerProtoUtilTest : public testing::Test {
  public:
   virtual void SetUp() {
-    setter_upper_.SetUp();
+    dir_maker_.SetUp();
   }
 
   virtual void TearDown() {
-    setter_upper_.TearDown();
+    dir_maker_.TearDown();
+  }
+
+  syncable::Directory* directory() {
+    return dir_maker_.directory();
   }
 
  protected:
   MessageLoop message_loop_;
-  browser_sync::TestDirectorySetterUpper setter_upper_;
+  TestDirectorySetterUpper dir_maker_;
 };
 
 TEST_F(SyncerProtoUtilTest, VerifyResponseBirthday) {
-  ScopedDirLookup lookup(setter_upper_.manager(), setter_upper_.name());
-  ASSERT_TRUE(lookup.good());
-
   // Both sides empty
-  EXPECT_TRUE(lookup->store_birthday().empty());
+  EXPECT_TRUE(directory()->store_birthday().empty());
   ClientToServerResponse response;
-  EXPECT_FALSE(SyncerProtoUtil::VerifyResponseBirthday(lookup, &response));
+  EXPECT_FALSE(SyncerProtoUtil::VerifyResponseBirthday(directory(), &response));
 
   // Remote set, local empty
   response.set_store_birthday("flan");
-  EXPECT_TRUE(SyncerProtoUtil::VerifyResponseBirthday(lookup, &response));
-  EXPECT_EQ(lookup->store_birthday(), "flan");
+  EXPECT_TRUE(SyncerProtoUtil::VerifyResponseBirthday(directory(), &response));
+  EXPECT_EQ(directory()->store_birthday(), "flan");
 
   // Remote empty, local set.
   response.clear_store_birthday();
-  EXPECT_TRUE(SyncerProtoUtil::VerifyResponseBirthday(lookup, &response));
-  EXPECT_EQ(lookup->store_birthday(), "flan");
+  EXPECT_TRUE(SyncerProtoUtil::VerifyResponseBirthday(directory(), &response));
+  EXPECT_EQ(directory()->store_birthday(), "flan");
 
   // Doesn't match
   response.set_store_birthday("meat");
-  EXPECT_FALSE(SyncerProtoUtil::VerifyResponseBirthday(lookup, &response));
+  EXPECT_FALSE(SyncerProtoUtil::VerifyResponseBirthday(directory(), &response));
 
   response.set_error_code(sync_pb::SyncEnums::CLEAR_PENDING);
-  EXPECT_FALSE(SyncerProtoUtil::VerifyResponseBirthday(lookup, &response));
+  EXPECT_FALSE(SyncerProtoUtil::VerifyResponseBirthday(directory(), &response));
 }
 
 TEST_F(SyncerProtoUtilTest, AddRequestBirthday) {
-  ScopedDirLookup lookup(setter_upper_.manager(), setter_upper_.name());
-  ASSERT_TRUE(lookup.good());
-
-  EXPECT_TRUE(lookup->store_birthday().empty());
+  EXPECT_TRUE(directory()->store_birthday().empty());
   ClientToServerMessage msg;
-  SyncerProtoUtil::AddRequestBirthday(lookup, &msg);
+  SyncerProtoUtil::AddRequestBirthday(directory(), &msg);
   EXPECT_FALSE(msg.has_store_birthday());
 
-  lookup->set_store_birthday("meat");
-  SyncerProtoUtil::AddRequestBirthday(lookup, &msg);
+  directory()->set_store_birthday("meat");
+  SyncerProtoUtil::AddRequestBirthday(directory(), &msg);
   EXPECT_EQ(msg.store_birthday(), "meat");
 }
 

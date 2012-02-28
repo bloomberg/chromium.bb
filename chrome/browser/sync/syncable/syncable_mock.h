@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "chrome/browser/sync/internal_api/includes/test_unrecoverable_error_handler.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/test/null_directory_change_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -19,7 +18,7 @@ using syncable::EntryKernel;
 
 class MockDirectory : public Directory {
  public:
-  MockDirectory();
+  explicit MockDirectory(browser_sync::UnrecoverableErrorHandler* handler);
   virtual ~MockDirectory();
 
   MOCK_METHOD1(GetEntryByHandle, syncable::EntryKernel*(int64));
@@ -29,9 +28,10 @@ class MockDirectory : public Directory {
   MOCK_METHOD1(GetEntryByClientTag,
                syncable::EntryKernel*(const std::string&));
 
+  MOCK_METHOD1(PurgeEntriesWithTypeIn, void(syncable::ModelTypeSet));
+
  private:
   syncable::NullDirectoryChangeDelegate delegate_;
-  browser_sync::TestUnrecoverableErrorHandler handler_;
 };
 
 class MockSyncableWriteTransaction : public syncable::WriteTransaction {

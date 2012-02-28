@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/file_path.h"
 #include "base/time.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/sync/internal_api/includes/report_unrecoverable_error_function.h"
@@ -20,8 +21,6 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/weak_handle.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
-
-class FilePath;
 
 namespace browser_sync {
 class ExtensionsActivityMonitor;
@@ -71,15 +70,14 @@ struct SyncCredentials {
   std::string sync_token;
 };
 
-// SyncManager encapsulates syncable::DirectoryManager and serves as
-// the parent of all other objects in the sync API.  If multiple
-// threads interact with the same local sync repository (i.e. the same
-// sqlite database), they should share a single SyncManager instance.
-// The caller should typically create one SyncManager for the lifetime
-// of a user session.
+// SyncManager encapsulates syncable::Directory and serves as the parent of all
+// other objects in the sync API.  If multiple threads interact with the same
+// local sync repository (i.e. the same sqlite database), they should share a
+// single SyncManager instance.  The caller should typically create one
+// SyncManager for the lifetime of a user session.
 //
-// Unless stated otherwise, all methods of SyncManager should be
-// called on the same thread.
+// Unless stated otherwise, all methods of SyncManager should be called on the
+// same thread.
 class SyncManager {
  public:
   // SyncInternal contains the implementation of SyncManager, while abstracting
@@ -618,6 +616,8 @@ class SyncManager {
   static const int kDefaultNudgeDelayMilliseconds;
   static const int kPreferencesNudgeDelayMilliseconds;
   static const int kPiggybackNudgeDelay;
+
+  static const FilePath::CharType kSyncDatabaseFilename[];
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, NudgeDelayTest);

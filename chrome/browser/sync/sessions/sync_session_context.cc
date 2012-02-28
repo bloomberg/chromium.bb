@@ -13,14 +13,14 @@ namespace sessions {
 
 SyncSessionContext::SyncSessionContext(
     ServerConnectionManager* connection_manager,
-    syncable::DirectoryManager* directory_manager,
+    syncable::Directory* directory,
     ModelSafeWorkerRegistrar* model_safe_worker_registrar,
     ExtensionsActivityMonitor* extensions_activity_monitor,
     const std::vector<SyncEngineEventListener*>& listeners,
     DebugInfoGetter* debug_info_getter)
     : resolver_(NULL),
       connection_manager_(connection_manager),
-      directory_manager_(directory_manager),
+      directory_(directory),
       registrar_(model_safe_worker_registrar),
       extensions_activity_monitor_(extensions_activity_monitor),
       notifications_enabled_(false),
@@ -33,7 +33,7 @@ SyncSessionContext::SyncSessionContext(
 
 SyncSessionContext::SyncSessionContext()
     : connection_manager_(NULL),
-      directory_manager_(NULL),
+      directory_(NULL),
       registrar_(NULL),
       extensions_activity_monitor_(NULL),
       debug_info_getter_(NULL) {

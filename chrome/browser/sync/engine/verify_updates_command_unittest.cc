@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/browser/sync/test/engine/fake_model_worker.h"
@@ -23,7 +22,6 @@ using syncable::Entry;
 using syncable::Id;
 using syncable::MutableEntry;
 using syncable::ReadTransaction;
-using syncable::ScopedDirLookup;
 using syncable::UNITTEST;
 using syncable::WriteTransaction;
 
@@ -43,9 +41,7 @@ class VerifyUpdatesCommandTest : public SyncerCommandTest {
   void CreateLocalItem(const std::string& item_id,
                        const std::string& parent_id,
                        const syncable::ModelType& type) {
-    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-    ASSERT_TRUE(dir.good());
-    WriteTransaction trans(FROM_HERE, UNITTEST, dir);
+    WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     MutableEntry entry(&trans, syncable::CREATE_NEW_UPDATE_ITEM,
         Id::CreateFromServerId(item_id));
     ASSERT_TRUE(entry.good());

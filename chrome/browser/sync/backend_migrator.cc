@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,6 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/sessions/session_state.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -148,7 +147,7 @@ syncable::ModelTypeSet GetUnsyncedDataTypes(sync_api::UserShare* user_share) {
        i < syncable::MODEL_TYPE_COUNT; ++i) {
     syncable::ModelType type = syncable::ModelTypeFromInt(i);
     sync_pb::DataTypeProgressMarker progress_marker;
-    trans.GetLookup()->GetDownloadProgress(type, &progress_marker);
+    trans.GetDirectory()->GetDownloadProgress(type, &progress_marker);
     if (progress_marker.token().empty()) {
       unsynced_data_types.Put(type);
     }

@@ -51,7 +51,6 @@
 #include "chrome/browser/sync/protocol/proto_value_conversions.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type_test_util.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
@@ -170,9 +169,8 @@ int64 MakeServerNodeForType(UserShare* share,
                             ModelType model_type) {
   sync_pb::EntitySpecifics specifics;
   syncable::AddDefaultExtensionValue(model_type, &specifics);
-  syncable::ScopedDirLookup dir(share->dir_manager.get(), share->name);
-  EXPECT_TRUE(dir.good());
-  syncable::WriteTransaction trans(FROM_HERE, syncable::UNITTEST, dir);
+  syncable::WriteTransaction trans(
+      FROM_HERE, syncable::UNITTEST, share->directory.get());
   // Attempt to lookup by nigori tag.
   std::string type_tag = syncable::ModelTypeToRootTag(model_type);
   syncable::Id node_id = syncable::Id::CreateFromServerId(type_tag);
@@ -198,9 +196,8 @@ int64 MakeServerNode(UserShare* share, ModelType model_type,
                      const std::string& client_tag,
                      const std::string& hashed_tag,
                      const sync_pb::EntitySpecifics& specifics) {
-  syncable::ScopedDirLookup dir(share->dir_manager.get(), share->name);
-  EXPECT_TRUE(dir.good());
-  syncable::WriteTransaction trans(FROM_HERE, syncable::UNITTEST, dir);
+  syncable::WriteTransaction trans(
+      FROM_HERE, syncable::UNITTEST, share->directory.get());
   syncable::Entry root_entry(&trans, syncable::GET_BY_SERVER_TAG,
                              syncable::ModelTypeToRootTag(model_type));
   EXPECT_TRUE(root_entry.good());
@@ -826,12 +823,7 @@ class SyncManagerTest : public testing::Test,
     #endif
 
     UserShare* share = sync_manager_.GetUserShare();
-    {
-      syncable::ScopedDirLookup dir(share->dir_manager.get(), share->name);
-      if (!dir.good())
-        return false;
-      dir->set_initial_sync_ended_for_type(syncable::NIGORI, true);
-    }
+    share->directory->set_initial_sync_ended_for_type(syncable::NIGORI, true);
 
     // We need to create the nigori node as if it were an applied server update.
     int64 nigori_id = GetIdForDataType(syncable::NIGORI);
@@ -912,9 +904,8 @@ class SyncManagerTest : public testing::Test,
   bool ResetUnsyncedEntry(syncable::ModelType type,
                           const std::string& client_tag) {
     UserShare* share = sync_manager_.GetUserShare();
-    syncable::ScopedDirLookup dir(share->dir_manager.get(), share->name);
-    EXPECT_TRUE(dir.good());
-    syncable::WriteTransaction trans(FROM_HERE, syncable::UNITTEST, dir);
+    syncable::WriteTransaction trans(
+        FROM_HERE, syncable::UNITTEST, share->directory.get());
     const std::string hash = BaseNode::GenerateSyncableHash(type, client_tag);
     syncable::MutableEntry entry(&trans, syncable::GET_BY_CLIENT_TAG,
                                  hash);

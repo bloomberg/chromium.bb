@@ -10,9 +10,6 @@
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
-
-using syncable::ScopedDirLookup;
 
 namespace browser_sync {
 
@@ -36,14 +33,8 @@ SyncerError ClearDataCommand::ExecuteImpl(SyncSession* session) {
 
   client_to_server_message.mutable_clear_user_data();
 
-  ScopedDirLookup dir(session->context()->directory_manager(),
-                      session->context()->account_name());
-  if (!dir.good()) {
-    LOG(ERROR) << "Scoped dir lookup failed!";
-    return DIRECTORY_LOOKUP_FAILED;
-  }
-
-  SyncerProtoUtil::AddRequestBirthday(dir, &client_to_server_message);
+  SyncerProtoUtil::AddRequestBirthday(session->context()->directory(),
+                                      &client_to_server_message);
 
   DVLOG(1) << "Clearing server data";
 

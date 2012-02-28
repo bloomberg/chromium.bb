@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 #include "base/location.h"
 #include "chrome/browser/sync/internal_api/write_transaction.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/browser/sync/test/engine/test_id_factory.h"
@@ -20,7 +19,6 @@ using content::BrowserThread;
 using sync_api::UserShare;
 using syncable::BASE_VERSION;
 using syncable::CREATE;
-using syncable::DirectoryManager;
 using syncable::IS_DEL;
 using syncable::IS_DIR;
 using syncable::IS_UNAPPLIED_UPDATE;
@@ -30,7 +28,6 @@ using syncable::MutableEntry;
 using syncable::SERVER_IS_DIR;
 using syncable::SERVER_VERSION;
 using syncable::SPECIFICS;
-using syncable::ScopedDirLookup;
 using syncable::UNIQUE_SERVER_TAG;
 using syncable::UNITTEST;
 using syncable::WriteTransaction;
@@ -45,15 +42,11 @@ const std::string ProfileSyncServiceTestHelper::GetTagForType(
 bool ProfileSyncServiceTestHelper::CreateRoot(ModelType model_type,
                                               UserShare* user_share,
                                               TestIdFactory* ids) {
-  DirectoryManager* dir_manager = user_share->dir_manager.get();
-
-  ScopedDirLookup dir(dir_manager, user_share->name);
-  if (!dir.good())
-    return false;
+  syncable::Directory* directory = user_share->directory.get();
 
   std::string tag_name = GetTagForType(model_type);
 
-  WriteTransaction wtrans(FROM_HERE, UNITTEST, dir);
+  WriteTransaction wtrans(FROM_HERE, UNITTEST, directory);
   MutableEntry node(&wtrans,
                     CREATE,
                     wtrans.root_id(),

@@ -31,15 +31,12 @@ using sync_pb::CommitResponse_EntryResponse;
 using sync_pb::GetUpdatesMessage;
 using sync_pb::SyncEnums;
 using sync_pb::SyncEntity;
-using syncable::DirectoryManager;
 using syncable::FIRST_REAL_MODEL_TYPE;
 using syncable::MODEL_TYPE_COUNT;
 using syncable::ModelType;
-using syncable::ScopedDirLookup;
 using syncable::WriteTransaction;
 
-MockConnectionManager::MockConnectionManager(DirectoryManager* dirmgr,
-                                             const string& name)
+MockConnectionManager::MockConnectionManager(syncable::Directory* directory)
     : ServerConnectionManager("unused", 0, false, "version"),
       conflict_all_commits_(false),
       conflict_n_commits_(0),
@@ -49,8 +46,7 @@ MockConnectionManager::MockConnectionManager(DirectoryManager* dirmgr,
       client_stuck_(false),
       commit_time_rename_prepended_string_(""),
       fail_next_postbuffer_(false),
-      directory_manager_(dirmgr),
-      directory_name_(name),
+      directory_(directory),
       mid_commit_observer_(NULL),
       throttling_(false),
       fail_with_auth_invalid_(false),
@@ -61,7 +57,7 @@ MockConnectionManager::MockConnectionManager(DirectoryManager* dirmgr,
       num_get_updates_requests_(0) {
   server_reachable_ = true;
   SetNewTimestamp(0);
-};
+}
 
 MockConnectionManager::~MockConnectionManager() {
   EXPECT_TRUE(update_queue_.empty()) << "Unfetched updates.";
@@ -92,15 +88,13 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
   ClientToServerResponse response;
   response.Clear();
 
-  ScopedDirLookup directory(directory_manager_, directory_name_);
-  // For any non-AUTHENTICATE requests, a valid directory should be set up.
-  // If the Directory's locked when we do this, it's a problem as in normal
-  // use this function could take a while to return because it accesses the
-  // network. As we can't test this we do the next best thing and hang here
-  // when there's an issue.
-  if (post.message_contents() != ClientToServerMessage::AUTHENTICATE) {
-    CHECK(directory.good());
-    WriteTransaction wt(FROM_HERE, syncable::UNITTEST, directory);
+  if (directory_) {
+    // If the Directory's locked when we do this, it's a problem as in normal
+    // use this function could take a while to return because it accesses the
+    // network. As we can't test this we do the next best thing and hang here
+    // when there's an issue.
+    CHECK(directory_->good());
+    WriteTransaction wt(FROM_HERE, syncable::UNITTEST, directory_);
   }
 
   if (fail_next_postbuffer_) {

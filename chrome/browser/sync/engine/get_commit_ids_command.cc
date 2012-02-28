@@ -10,7 +10,6 @@
 
 #include "chrome/browser/sync/engine/nigori_util.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/cryptographer.h"
 
@@ -39,8 +38,8 @@ SyncerError GetCommitIdsCommand::ExecuteImpl(SyncSession* session) {
   syncable::ModelTypeSet encrypted_types;
   bool passphrase_missing = false;
   Cryptographer* cryptographer =
-      session->context()->directory_manager()->GetCryptographer(
-          session->write_transaction());
+      session->context()->
+      directory()->GetCryptographer(session->write_transaction());
   if (cryptographer) {
     encrypted_types = cryptographer->GetEncryptedTypes();
     passphrase_missing = cryptographer->has_pending_keys();

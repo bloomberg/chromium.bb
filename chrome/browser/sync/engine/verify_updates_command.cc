@@ -13,12 +13,10 @@
 #include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 
 namespace browser_sync {
 
-using syncable::ScopedDirLookup;
 using syncable::WriteTransaction;
 
 using syncable::GET_BY_ID;
@@ -45,12 +43,7 @@ std::set<ModelSafeGroup> VerifyUpdatesCommand::GetGroupsToChange(
 SyncerError VerifyUpdatesCommand::ModelChangingExecuteImpl(
     sessions::SyncSession* session) {
   DVLOG(1) << "Beginning Update Verification";
-  ScopedDirLookup dir(session->context()->directory_manager(),
-                      session->context()->account_name());
-  if (!dir.good()) {
-    LOG(ERROR) << "Scoped dir lookup failed!";
-    return DIRECTORY_LOOKUP_FAILED;
-  }
+  syncable::Directory* dir = session->context()->directory();
   WriteTransaction trans(FROM_HERE, SYNCER, dir);
   sessions::StatusController* status = session->mutable_status_controller();
   const GetUpdatesResponse& updates = status->updates_response().get_updates();

@@ -30,7 +30,7 @@
 #include "chrome/browser/sync/sessions/debug_info_getter.h"
 
 namespace syncable {
-class DirectoryManager;
+class Directory;
 }
 
 namespace browser_sync {
@@ -51,7 +51,7 @@ class TestScopedSessionEventListener;
 class SyncSessionContext {
  public:
   SyncSessionContext(ServerConnectionManager* connection_manager,
-                     syncable::DirectoryManager* directory_manager,
+                     syncable::Directory* directory,
                      ModelSafeWorkerRegistrar* model_safe_worker_registrar,
                      ExtensionsActivityMonitor* extensions_activity_monitor,
                      const std::vector<SyncEngineEventListener*>& listeners,
@@ -65,9 +65,10 @@ class SyncSessionContext {
   ServerConnectionManager* connection_manager() {
     return connection_manager_;
   }
-  syncable::DirectoryManager* directory_manager() {
-    return directory_manager_;
+  syncable::Directory* directory() {
+    return directory_;
   }
+
   ModelSafeWorkerRegistrar* registrar() {
     return registrar_;
   }
@@ -141,7 +142,7 @@ class SyncSessionContext {
   ObserverList<SyncEngineEventListener> listeners_;
 
   ServerConnectionManager* const connection_manager_;
-  syncable::DirectoryManager* const directory_manager_;
+  syncable::Directory* const directory_;
 
   // A registrar of workers capable of processing work closures on a thread
   // that is guaranteed to be safe for model modifications.

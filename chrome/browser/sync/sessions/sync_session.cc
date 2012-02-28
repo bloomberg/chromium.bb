@@ -7,8 +7,8 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "chrome/browser/sync/syncable/syncable.h"
 
 namespace browser_sync {
 namespace sessions {
@@ -132,10 +132,7 @@ void SyncSession::PrepareForAnotherSyncCycle() {
 }
 
 SyncSessionSnapshot SyncSession::TakeSnapshot() const {
-  syncable::ScopedDirLookup dir(context_->directory_manager(),
-                                context_->account_name());
-  if (!dir.good())
-    LOG(ERROR) << "Scoped dir lookup failed!";
+  syncable::Directory* dir = context_->directory();
 
   bool is_share_useable = true;
   syncable::ModelTypeSet initial_sync_ended;

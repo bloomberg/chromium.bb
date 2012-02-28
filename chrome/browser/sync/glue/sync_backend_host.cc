@@ -30,8 +30,6 @@
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/sync_prefs.h"
-// TODO(tim): Remove this! We should have a syncapi pass-thru instead.
-#include "chrome/browser/sync/syncable/directory_manager.h"  // Cryptographer.
 #include "chrome/browser/sync/util/nigori.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_version_info.h"

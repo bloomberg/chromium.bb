@@ -11,7 +11,6 @@
 #include "chrome/browser/sync/engine/syncer_types.h"
 
 namespace syncable {
-class ScopedDirLookup;
 class WriteTransaction;
 }
 
@@ -45,7 +44,6 @@ class ProcessUpdatesCommand : public ModelChangingSyncerCommand {
 
  private:
   ServerUpdateProcessingResult ProcessUpdate(
-      const syncable::ScopedDirLookup& dir,
       const sync_pb::SyncEntity& proto_update,
       const Cryptographer* cryptographer,
       syncable::WriteTransaction* const trans);

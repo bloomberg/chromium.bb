@@ -14,7 +14,6 @@
 #include "chrome/browser/sync/protocol/sync_enums.pb.h"
 #include "chrome/browser/sync/protocol/sync_protocol_error.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable-inl.h"
 #include "chrome/browser/sync/syncable/syncable.h"
@@ -31,7 +30,6 @@ using syncable::IS_DIR;
 using syncable::IS_UNSYNCED;
 using syncable::MTIME;
 using syncable::PARENT_ID;
-using syncable::ScopedDirLookup;
 
 namespace browser_sync {
 using sessions::SyncSession;
@@ -337,10 +335,7 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
   DCHECK(msg.has_store_birthday() || IsVeryFirstGetUpdates(msg))
       << "Must call AddRequestBirthday to set birthday.";
 
-  ScopedDirLookup dir(session->context()->directory_manager(),
-      session->context()->account_name());
-  if (!dir.good())
-    return DIRECTORY_LOOKUP_FAILED;
+  syncable::Directory* dir = session->context()->directory();
 
   if (!PostAndProcessHeaders(session->context()->connection_manager(), session,
                              msg, response)) {

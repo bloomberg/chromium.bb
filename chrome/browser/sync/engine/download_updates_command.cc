@@ -10,11 +10,9 @@
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
 #include "chrome/browser/sync/engine/syncproto.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
+#include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/common/chrome_switches.h"
-
-using syncable::ScopedDirLookup;
 
 using sync_pb::DebugInfo;
 
@@ -44,12 +42,7 @@ SyncerError DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
     get_updates->set_include_syncable_bookmarks(true);
   }
 
-  ScopedDirLookup dir(session->context()->directory_manager(),
-                      session->context()->account_name());
-  if (!dir.good()) {
-    LOG(ERROR) << "Scoped dir lookup failed!";
-    return DIRECTORY_LOOKUP_FAILED;
-  }
+  syncable::Directory* dir = session->context()->directory();
 
   // Request updates for all enabled types.
   const ModelTypeSet enabled_types =

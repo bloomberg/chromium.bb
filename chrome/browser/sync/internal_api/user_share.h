@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 
 namespace syncable {
-class DirectoryManager;
+class Directory;
 }
 
 namespace sync_api {
@@ -24,9 +24,8 @@ struct UserShare {
   UserShare();
   ~UserShare();
 
-  // The DirectoryManager itself, which is the parent of Transactions and can
-  // be shared across multiple threads (unlike Directory).
-  scoped_ptr<syncable::DirectoryManager> dir_manager;
+  // The Directory itself, which is the parent of Transactions.
+  scoped_ptr<syncable::Directory> directory;
 
   // The username of the sync user.
   std::string name;

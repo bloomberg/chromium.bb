@@ -8,7 +8,6 @@
 
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/sessions/sync_session_context.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 
@@ -63,14 +62,7 @@ SyncerError CleanupDisabledTypesCommand::ExecuteImpl(
   if (to_cleanup.Empty())
     return SYNCER_OK;
 
-  syncable::ScopedDirLookup dir(session->context()->directory_manager(),
-                                session->context()->account_name());
-  if (!dir.good()) {
-    LOG(ERROR) << "Scoped dir lookup failed!";
-    return DIRECTORY_LOOKUP_FAILED;
-  }
-
-  dir->PurgeEntriesWithTypeIn(to_cleanup);
+  session->context()->directory()->PurgeEntriesWithTypeIn(to_cleanup);
   return SYNCER_OK;
 }
 

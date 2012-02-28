@@ -13,7 +13,6 @@
 #include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/cryptographer.h"
 
@@ -35,12 +34,7 @@ std::set<ModelSafeGroup> ProcessUpdatesCommand::GetGroupsToChange(
 
 SyncerError ProcessUpdatesCommand::ModelChangingExecuteImpl(
     SyncSession* session) {
-  syncable::ScopedDirLookup dir(session->context()->directory_manager(),
-                                session->context()->account_name());
-  if (!dir.good()) {
-    LOG(ERROR) << "Scoped dir lookup failed!";
-    return DIRECTORY_LOOKUP_FAILED;
-  }
+  syncable::Directory* dir = session->context()->directory();
 
   const sessions::UpdateProgress* progress =
       session->status_controller().update_progress();
@@ -56,9 +50,9 @@ SyncerError ProcessUpdatesCommand::ModelChangingExecuteImpl(
 
     if (it->first != VERIFY_SUCCESS && it->first != VERIFY_UNDELETE)
       continue;
-    switch (ProcessUpdate(dir, update,
-        session->context()->directory_manager()->GetCryptographer(&trans),
-        &trans)) {
+    switch (ProcessUpdate(update,
+                          dir->GetCryptographer(&trans),
+                          &trans)) {
       case SUCCESS_PROCESSED:
       case SUCCESS_STORED:
         break;
@@ -93,7 +87,6 @@ bool ReverifyEntry(syncable::WriteTransaction* trans, const SyncEntity& entry,
 
 // Process a single update. Will avoid touching global state.
 ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
-    const syncable::ScopedDirLookup& dir,
     const sync_pb::SyncEntity& proto_update,
     const Cryptographer* cryptographer,
     syncable::WriteTransaction* const trans) {

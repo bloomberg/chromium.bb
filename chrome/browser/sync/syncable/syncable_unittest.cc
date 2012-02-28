@@ -23,7 +23,6 @@
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/syncable/directory_backing_store.h"
 #include "chrome/browser/sync/syncable/directory_change_delegate.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/test/engine/test_id_factory.h"
 #include "chrome/browser/sync/test/engine/test_syncable_utils.h"
 #include "chrome/browser/sync/test/null_directory_change_delegate.h"
@@ -1500,7 +1499,7 @@ void SyncableDirectoryTest::ValidateEntry(BaseTransaction* trans,
 
 namespace {
 
-class SyncableDirectoryManager : public testing::Test {
+class SyncableDirectoryManagement : public testing::Test {
  public:
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -1514,219 +1513,47 @@ class SyncableDirectoryManager : public testing::Test {
   NullDirectoryChangeDelegate delegate_;
 };
 
-TEST_F(SyncableDirectoryManager, TestFileRelease) {
-  DirectoryManager dm(FilePath(temp_dir_.path()));
+TEST_F(SyncableDirectoryManagement, TestFileRelease) {
   browser_sync::TestUnrecoverableErrorHandler handler;
-  ASSERT_TRUE(dm.Open("ScopeTest", &delegate_, &handler, NULL,
-              NullTransactionObserver()));
-  {
-    ScopedDirLookup(&dm, "ScopeTest");
-  }
-  dm.Close("ScopeTest");
-  ASSERT_TRUE(file_util::Delete(dm.GetSyncDataDatabasePath(), true));
-}
+  FilePath path = temp_dir_.path().Append(
+      Directory::kSyncDatabaseFilename);
 
-struct Step {
-  Step() : condvar(&mutex), number(0) {}
+  syncable::Directory dir(&handler, NULL);
+  DirOpenResult result =
+      dir.Open(path, "ScopeTest", &delegate_, NullTransactionObserver());
+  ASSERT_EQ(result, OPENED);
+  dir.Close();
 
-  base::Lock mutex;
-  base::ConditionVariable condvar;
-  int number;
-  int64 metahandle;
-};
-
-class ThreadBugDelegate : public base::PlatformThread::Delegate {
- public:
-  // a role is 0 or 1, meaning this thread does the odd or event steps.
-  ThreadBugDelegate(int role, Step* step, DirectoryManager* dirman)
-      : role_(role), step_(step), directory_manager_(dirman) {}
-
- protected:
-  const int role_;
-  Step* const step_;
-  NullDirectoryChangeDelegate delegate_;
-  DirectoryManager* const directory_manager_;
-
-  // PlatformThread::Delegate methods:
-  virtual void ThreadMain() {
-    MessageLoop message_loop;
-    const std::string dirname = "ThreadBug1";
-    base::AutoLock scoped_lock(step_->mutex);
-    browser_sync::TestUnrecoverableErrorHandler handler;
-    while (step_->number < 3) {
-      while (step_->number % 2 != role_) {
-        step_->condvar.Wait();
-      }
-      switch (step_->number) {
-      case 0:
-        directory_manager_->Open(
-            dirname, &delegate_, &handler, NULL, NullTransactionObserver());
-        break;
-      case 1:
-        {
-          directory_manager_->Close(dirname);
-          directory_manager_->Open(
-              dirname, &delegate_, &handler, NULL, NullTransactionObserver());
-          ScopedDirLookup dir(directory_manager_, dirname);
-          CHECK(dir.good());
-          WriteTransaction trans(FROM_HERE, UNITTEST, dir);
-          MutableEntry me(&trans, CREATE, trans.root_id(), "Jeff");
-          step_->metahandle = me.Get(META_HANDLE);
-          me.Put(IS_UNSYNCED, true);
-        }
-        break;
-      case 2:
-        {
-          ScopedDirLookup dir(directory_manager_, dirname);
-          CHECK(dir.good());
-          ReadTransaction trans(FROM_HERE, dir);
-          Entry e(&trans, GET_BY_HANDLE, step_->metahandle);
-          CHECK(e.good());  // Failed due to ThreadBug1
-        }
-        directory_manager_->Close(dirname);
-        break;
-       }
-       step_->number += 1;
-       step_->condvar.Signal();
-    }
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(ThreadBugDelegate);
-};
-
-// The in-memory information would get out of sync because a
-// directory would be closed and re-opened, and then an old
-// Directory::Kernel with stale information would get saved to the db.
-class DirectoryKernelStalenessBugDelegate : public ThreadBugDelegate {
- public:
-  DirectoryKernelStalenessBugDelegate(int role, Step* step,
-                                               DirectoryManager* dirman)
-    : ThreadBugDelegate(role, step, dirman) {}
-
-  virtual void ThreadMain() {
-    MessageLoop message_loop;
-    const char test_bytes[] = "test data";
-    const std::string dirname = "DirectoryKernelStalenessBug";
-    base::AutoLock scoped_lock(step_->mutex);
-    const Id jeff_id = TestIdFactory::FromNumber(100);
-
-    while (step_->number < 4) {
-      while (step_->number % 2 != role_) {
-        step_->condvar.Wait();
-      }
-      switch (step_->number) {
-      case 0:
-        {
-          browser_sync::TestUnrecoverableErrorHandler handler;
-          // Clean up remnants of earlier test runs.
-          file_util::Delete(directory_manager_->GetSyncDataDatabasePath(),
-                            true);
-          // Test.
-          directory_manager_->Open(
-              dirname, &delegate_, &handler, NULL, NullTransactionObserver());
-          ScopedDirLookup dir(directory_manager_, dirname);
-          CHECK(dir.good());
-          WriteTransaction trans(FROM_HERE, UNITTEST, dir);
-          MutableEntry me(&trans, CREATE, trans.root_id(), "Jeff");
-          me.Put(BASE_VERSION, 1);
-          me.Put(ID, jeff_id);
-          PutDataAsBookmarkFavicon(&trans, &me, test_bytes,
-                                     sizeof(test_bytes));
-        }
-        {
-          ScopedDirLookup dir(directory_manager_, dirname);
-          CHECK(dir.good());
-          dir->SaveChanges();
-        }
-        directory_manager_->Close(dirname);
-        break;
-      case 1:
-        {
-          browser_sync::TestUnrecoverableErrorHandler handler;
-          directory_manager_->Open(
-              dirname, &delegate_, &handler, NULL, NullTransactionObserver());
-          ScopedDirLookup dir(directory_manager_, dirname);
-          CHECK(dir.good());
-        }
-        break;
-      case 2:
-        {
-          ScopedDirLookup dir(directory_manager_, dirname);
-          CHECK(dir.good());
-        }
-        break;
-      case 3:
-        {
-          ScopedDirLookup dir(directory_manager_, dirname);
-          CHECK(dir.good());
-          ReadTransaction trans(FROM_HERE, dir);
-          Entry e(&trans, GET_BY_ID, jeff_id);
-          ExpectDataFromBookmarkFaviconEquals(&trans, &e, test_bytes,
-                                                sizeof(test_bytes));
-        }
-        // Same result as CloseAllDirectories, but more code coverage.
-        directory_manager_->Close(dirname);
-        break;
-      }
-      step_->number += 1;
-      step_->condvar.Signal();
-    }
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(DirectoryKernelStalenessBugDelegate);
-};
-
-TEST_F(SyncableDirectoryManager, DirectoryKernelStalenessBug) {
-  Step step;
-
-  DirectoryManager dirman(FilePath(temp_dir_.path()));
-  DirectoryKernelStalenessBugDelegate thread_delegate_1(0, &step, &dirman);
-  DirectoryKernelStalenessBugDelegate thread_delegate_2(1, &step, &dirman);
-
-  base::PlatformThreadHandle thread_handle_1;
-  base::PlatformThreadHandle thread_handle_2;
-
-  ASSERT_TRUE(
-      base::PlatformThread::Create(0, &thread_delegate_1, &thread_handle_1));
-  ASSERT_TRUE(
-      base::PlatformThread::Create(0, &thread_delegate_2, &thread_handle_2));
-
-  base::PlatformThread::Join(thread_handle_1);
-  base::PlatformThread::Join(thread_handle_2);
+  // Closing the directory should have released the backing database file.
+  ASSERT_TRUE(file_util::Delete(path, true));
 }
 
 class StressTransactionsDelegate : public base::PlatformThread::Delegate {
  public:
-  StressTransactionsDelegate(DirectoryManager* dm,
-                             const std::string& dirname,
-                             int thread_number)
-      : directory_manager_(dm),
-        dirname_(dirname),
+  StressTransactionsDelegate(Directory* dir, int thread_number)
+      : dir_(dir),
         thread_number_(thread_number) {}
 
  private:
-  DirectoryManager* const directory_manager_;
-  std::string dirname_;
+  Directory* const dir_;
   const int thread_number_;
 
   // PlatformThread::Delegate methods:
   virtual void ThreadMain() {
-    ScopedDirLookup dir(directory_manager_, dirname_);
-    CHECK(dir.good());
     int entry_count = 0;
     std::string path_name;
 
     for (int i = 0; i < 20; ++i) {
       const int rand_action = rand() % 10;
       if (rand_action < 4 && !path_name.empty()) {
-        ReadTransaction trans(FROM_HERE, dir);
+        ReadTransaction trans(FROM_HERE, dir_);
         CHECK(1 == CountEntriesWithName(&trans, trans.root_id(), path_name));
         base::PlatformThread::Sleep(rand() % 10);
       } else {
         std::string unique_name =
             base::StringPrintf("%d.%d", thread_number_, entry_count++);
         path_name.assign(unique_name.begin(), unique_name.end());
-        WriteTransaction trans(FROM_HERE, UNITTEST, dir);
+        WriteTransaction trans(FROM_HERE, UNITTEST, dir_);
         MutableEntry e(&trans, CREATE, trans.root_id(), path_name);
         CHECK(e.good());
         base::PlatformThread::Sleep(rand() % 20);
@@ -1746,20 +1573,20 @@ TEST(SyncableDirectory, StressTransactions) {
   MessageLoop message_loop;
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  DirectoryManager dirman(FilePath(temp_dir.path()));
-  std::string dirname = "stress";
-  file_util::Delete(dirman.GetSyncDataDatabasePath(), true);
   NullDirectoryChangeDelegate delegate;
   browser_sync::TestUnrecoverableErrorHandler handler;
-  dirman.Open(dirname, &delegate, &handler, NULL, NullTransactionObserver());
+  Directory dir(&handler, NULL);
+  FilePath path = temp_dir.path().Append(Directory::kSyncDatabaseFilename);
+  file_util::Delete(path, true);
+  std::string dirname = "stress";
+  dir.Open(path, dirname, &delegate, NullTransactionObserver());
 
   const int kThreadCount = 7;
   base::PlatformThreadHandle threads[kThreadCount];
   scoped_ptr<StressTransactionsDelegate> thread_delegates[kThreadCount];
 
   for (int i = 0; i < kThreadCount; ++i) {
-    thread_delegates[i].reset(
-        new StressTransactionsDelegate(&dirman, dirname, i));
+    thread_delegates[i].reset(new StressTransactionsDelegate(&dir, i));
     ASSERT_TRUE(base::PlatformThread::Create(
         0, thread_delegates[i].get(), &threads[i]));
   }
@@ -1768,8 +1595,8 @@ TEST(SyncableDirectory, StressTransactions) {
     base::PlatformThread::Join(threads[i]);
   }
 
-  dirman.Close(dirname);
-  file_util::Delete(dirman.GetSyncDataDatabasePath(), true);
+  dir.Close();
+  file_util::Delete(path, true);
 }
 
 class SyncableClientTagTest : public SyncableDirectoryTest {

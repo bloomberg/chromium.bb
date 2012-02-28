@@ -15,11 +15,9 @@
 #include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/time.h"
 
-using syncable::ScopedDirLookup;
 using syncable::WriteTransaction;
 using syncable::MutableEntry;
 using syncable::Entry;
@@ -56,13 +54,8 @@ ProcessCommitResponseCommand::~ProcessCommitResponseCommand() {}
 std::set<ModelSafeGroup> ProcessCommitResponseCommand::GetGroupsToChange(
     const sessions::SyncSession& session) const {
   std::set<ModelSafeGroup> groups_with_commits;
-  syncable::ScopedDirLookup dir(session.context()->directory_manager(),
-                                session.context()->account_name());
-  if (!dir.good()) {
-    LOG(ERROR) << "Scoped dir lookup failed!";
-    return groups_with_commits;
-  }
 
+  syncable::Directory* dir = session.context()->directory();
   syncable::ReadTransaction trans(FROM_HERE, dir);
   const StatusController& status = session.status_controller();
   for (size_t i = 0; i < status.commit_ids().size(); ++i) {
@@ -76,13 +69,6 @@ std::set<ModelSafeGroup> ProcessCommitResponseCommand::GetGroupsToChange(
 
 SyncerError ProcessCommitResponseCommand::ModelNeutralExecuteImpl(
     sessions::SyncSession* session) {
-  ScopedDirLookup dir(session->context()->directory_manager(),
-                      session->context()->account_name());
-  if (!dir.good()) {
-    LOG(ERROR) << "Scoped dir lookup failed!";
-    return DIRECTORY_LOOKUP_FAILED;
-  }
-
   const StatusController& status = session->status_controller();
   const ClientToServerResponse& response(status.commit_response());
   const vector<syncable::Id>& commit_ids(status.commit_ids());
@@ -124,12 +110,7 @@ SyncerError ProcessCommitResponseCommand::ModelChangingExecuteImpl(
 
 SyncerError ProcessCommitResponseCommand::ProcessCommitResponse(
     SyncSession* session) {
-  ScopedDirLookup dir(session->context()->directory_manager(),
-                      session->context()->account_name());
-  if (!dir.good()) {
-    LOG(ERROR) << "Scoped dir lookup failed!";
-    return DIRECTORY_LOOKUP_FAILED;
-  }
+  syncable::Directory* dir = session->context()->directory();
 
   StatusController* status = session->mutable_status_controller();
   const ClientToServerResponse& response(status->commit_response());

@@ -10,7 +10,6 @@
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/browser/sync/test/engine/fake_model_worker.h"
@@ -30,14 +29,11 @@ using syncable::Id;
 using syncable::MutableEntry;
 using syncable::NON_UNIQUE_NAME;
 using syncable::ReadTransaction;
-using syncable::ScopedDirLookup;
 using syncable::UNITTEST;
 using syncable::WriteTransaction;
 
 // A test fixture for tests exercising ProcessCommitResponseCommand.
-template<typename T>
-class ProcessCommitResponseCommandTestWithParam
-    : public SyncerCommandTestWithParam<T> {
+class ProcessCommitResponseCommandTest : public SyncerCommandTest {
  public:
   virtual void SetUp() {
     workers()->clear();
@@ -52,21 +48,15 @@ class ProcessCommitResponseCommandTestWithParam
     (*mutable_routing_info())[syncable::AUTOFILL] = GROUP_DB;
 
     commit_set_.reset(new sessions::OrderedCommitSet(routing_info()));
-    SyncerCommandTestWithParam<T>::SetUp();
+    SyncerCommandTest::SetUp();
     // Need to explicitly use this-> to avoid obscure template
     // warning.
     this->ExpectNoGroupsToChange(command_);
   }
 
  protected:
-  using SyncerCommandTestWithParam<T>::context;
-  using SyncerCommandTestWithParam<T>::mutable_routing_info;
-  using SyncerCommandTestWithParam<T>::routing_info;
-  using SyncerCommandTestWithParam<T>::session;
-  using SyncerCommandTestWithParam<T>::syncdb;
-  using SyncerCommandTestWithParam<T>::workers;
 
-  ProcessCommitResponseCommandTestWithParam()
+  ProcessCommitResponseCommandTest()
       : next_old_revision_(1),
         next_new_revision_(4000),
         next_server_position_(10000) {
@@ -92,12 +82,10 @@ class ProcessCommitResponseCommandTestWithParam
                           bool is_folder,
                           syncable::ModelType model_type,
                           int64* metahandle_out) {
-    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-    ASSERT_TRUE(dir.good());
-    WriteTransaction trans(FROM_HERE, UNITTEST, dir);
+    WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     Id predecessor_id;
     ASSERT_TRUE(
-        dir->GetLastChildIdForTest(&trans, parent_id, &predecessor_id));
+        directory()->GetLastChildIdForTest(&trans, parent_id, &predecessor_id));
     MutableEntry entry(&trans, syncable::CREATE, parent_id, name);
     ASSERT_TRUE(entry.good());
     entry.Put(syncable::ID, item_id);
@@ -141,9 +129,7 @@ class ProcessCommitResponseCommandTestWithParam
     commit_set_->AddCommitItem(metahandle, item_id, model_type);
     sync_state->set_commit_set(*commit_set_.get());
 
-    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-    ASSERT_TRUE(dir.good());
-    WriteTransaction trans(FROM_HERE, UNITTEST, dir);
+    WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     MutableEntry entry(&trans, syncable::GET_BY_ID, item_id);
     ASSERT_TRUE(entry.good());
     entry.Put(syncable::SYNCING, true);
@@ -208,11 +194,8 @@ class ProcessCommitResponseCommandTestWithParam
   int64 next_old_revision_;
   int64 next_new_revision_;
   int64 next_server_position_;
-  DISALLOW_COPY_AND_ASSIGN(ProcessCommitResponseCommandTestWithParam);
+  DISALLOW_COPY_AND_ASSIGN(ProcessCommitResponseCommandTest);
 };
-
-class ProcessCommitResponseCommandTest
-    : public ProcessCommitResponseCommandTestWithParam<void*> {};
 
 TEST_F(ProcessCommitResponseCommandTest, MultipleCommitIdProjections) {
   Id bookmark_folder_id = id_factory_.NewLocalId();
@@ -239,11 +222,10 @@ TEST_F(ProcessCommitResponseCommandTest, MultipleCommitIdProjections) {
   ExpectGroupsToChange(command_, GROUP_UI, GROUP_DB);
   command_.ExecuteImpl(session());
 
-  ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-  ASSERT_TRUE(dir.good());
-  ReadTransaction trans(FROM_HERE, dir);
+  ReadTransaction trans(FROM_HERE, directory());
   Id new_fid;
-  ASSERT_TRUE(dir->GetFirstChildId(&trans, id_factory_.root(), &new_fid));
+  ASSERT_TRUE(directory()->GetFirstChildId(
+          &trans, id_factory_.root(), &new_fid));
   ASSERT_FALSE(new_fid.IsRoot());
   EXPECT_TRUE(new_fid.ServerKnows());
   EXPECT_FALSE(bookmark_folder_id.ServerKnows());
@@ -257,7 +239,7 @@ TEST_F(ProcessCommitResponseCommandTest, MultipleCommitIdProjections) {
 
   // Look at the two bookmarks in bookmark_folder.
   Id cid;
-  ASSERT_TRUE(dir->GetFirstChildId(&trans, new_fid, &cid));
+  ASSERT_TRUE(directory()->GetFirstChildId(&trans, new_fid, &cid));
   Entry b1(&trans, syncable::GET_BY_ID, cid);
   Entry b2(&trans, syncable::GET_BY_ID, b1.Get(syncable::NEXT_ID));
   CheckEntry(&b1, "bookmark 1", syncable::BOOKMARKS, new_fid);
@@ -295,11 +277,10 @@ TEST_F(ProcessCommitResponseCommandTest, NewFolderCommitKeepsChildOrder) {
 
   // Verify that the item is reachable.
   {
-    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-    ASSERT_TRUE(dir.good());
-    ReadTransaction trans(FROM_HERE, dir);
+    ReadTransaction trans(FROM_HERE, directory());
     Id child_id;
-    ASSERT_TRUE(dir->GetFirstChildId(&trans, id_factory_.root(), &child_id));
+    ASSERT_TRUE(directory()->GetFirstChildId(
+            &trans, id_factory_.root(), &child_id));
     ASSERT_EQ(folder_id, child_id);
   }
 
@@ -331,13 +312,12 @@ TEST_F(ProcessCommitResponseCommandTest, NewFolderCommitKeepsChildOrder) {
   ExpectGroupToChange(command_, GROUP_UI);
   command_.ExecuteImpl(session());
 
-  ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-  ASSERT_TRUE(dir.good());
-  ReadTransaction trans(FROM_HERE, dir);
+  ReadTransaction trans(FROM_HERE, directory());
   // Lookup the parent folder by finding a child of the root.  We can't use
   // folder_id here, because it changed during the commit.
   Id new_fid;
-  ASSERT_TRUE(dir->GetFirstChildId(&trans, id_factory_.root(), &new_fid));
+  ASSERT_TRUE(directory()->GetFirstChildId(
+          &trans, id_factory_.root(), &new_fid));
   ASSERT_FALSE(new_fid.IsRoot());
   EXPECT_TRUE(new_fid.ServerKnows());
   EXPECT_FALSE(folder_id.ServerKnows());
@@ -350,7 +330,7 @@ TEST_F(ProcessCommitResponseCommandTest, NewFolderCommitKeepsChildOrder) {
       << "Parent should have a valid (positive) server base revision";
 
   Id cid;
-  ASSERT_TRUE(dir->GetFirstChildId(&trans, new_fid, &cid));
+  ASSERT_TRUE(directory()->GetFirstChildId(&trans, new_fid, &cid));
   int child_count = 0;
   // Now loop over all the children of the parent folder, verifying
   // that they are in their original order by checking to see that their
@@ -392,7 +372,9 @@ enum {
   TEST_PARAM_AUTOFILL_ENABLE_BIT,
   TEST_PARAM_BIT_COUNT
 };
-class MixedResult : public ProcessCommitResponseCommandTestWithParam<int> {
+class MixedResult :
+    public ProcessCommitResponseCommandTest,
+    public ::testing::WithParamInterface<int> {
  protected:
   bool ShouldFailBookmarkCommit() {
     return (GetParam() & (1 << TEST_PARAM_BOOKMARK_ENABLE_BIT)) == 0;
@@ -451,6 +433,5 @@ TEST_P(MixedResult, ExtensionActivity) {
         << "Should not restore records after successful bookmark commit.";
   }
 }
-
 
 }  // namespace browser_sync

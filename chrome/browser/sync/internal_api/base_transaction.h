@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 
 namespace syncable {
 class BaseTransaction;
-class ScopedDirLookup;
+class Directory;
 }
 
 namespace sync_api {
@@ -22,31 +22,26 @@ namespace sync_api {
 // operations are performed by creating ReadNode and WriteNode instances using
 // the transaction. These transaction classes wrap identically named classes in
 // syncable, and are used in a similar way. Unlike syncable::BaseTransaction,
-// whose construction requires an explicit syncable::ScopedDirLookup, a sync
-// API BaseTransaction creates its own ScopedDirLookup implicitly.
+// whose construction requires an explicit syncable::Directory, a sync
+// API BaseTransaction is created from a UserShare object.
 class BaseTransaction {
  public:
   // Provide access to the underlying syncable.h objects from BaseNode.
   virtual syncable::BaseTransaction* GetWrappedTrans() const = 0;
-  const syncable::ScopedDirLookup& GetLookup() const { return *lookup_; }
-  browser_sync::Cryptographer* GetCryptographer() const {
-    return cryptographer_;
+  browser_sync::Cryptographer* GetCryptographer() const;
+
+  syncable::Directory* GetDirectory() const {
+    return directory_;
   }
 
  protected:
-  // The ScopedDirLookup is created in the constructor and destroyed
-  // in the destructor.  Creation of the ScopedDirLookup is not expected
-  // to fail.
   explicit BaseTransaction(UserShare* share);
   virtual ~BaseTransaction();
 
-  BaseTransaction() { lookup_= NULL; }
+  BaseTransaction() : directory_(NULL) { }
 
  private:
-  // A syncable ScopedDirLookup, which is the parent of syncable transactions.
-  syncable::ScopedDirLookup* lookup_;
-
-  browser_sync::Cryptographer* cryptographer_;
+  syncable::Directory* directory_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseTransaction);
 };

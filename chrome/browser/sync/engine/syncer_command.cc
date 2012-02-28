@@ -6,7 +6,6 @@
 
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 
 namespace browser_sync {
 using sessions::SyncSession;
@@ -21,13 +20,6 @@ SyncerError SyncerCommand::Execute(SyncSession* session) {
 }
 
 void SyncerCommand::SendNotifications(SyncSession* session) {
-  syncable::ScopedDirLookup dir(session->context()->directory_manager(),
-                                session->context()->account_name());
-  if (!dir.good()) {
-    LOG(ERROR) << "Scoped dir lookup failed!";
-    return;
-  }
-
   if (session->mutable_status_controller()->TestAndClearIsDirty()) {
     SyncEngineEvent event(SyncEngineEvent::STATUS_CHANGED);
     const sessions::SyncSessionSnapshot& snapshot(session->TakeSnapshot());

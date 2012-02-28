@@ -6,7 +6,6 @@
 
 #include "chrome/browser/sync/sessions/status_controller.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 
@@ -17,13 +16,7 @@ StoreTimestampsCommand::~StoreTimestampsCommand() {}
 
 SyncerError StoreTimestampsCommand::ExecuteImpl(
     sessions::SyncSession* session) {
-  syncable::ScopedDirLookup dir(session->context()->directory_manager(),
-                                session->context()->account_name());
-
-  if (!dir.good()) {
-    LOG(ERROR) << "Scoped dir lookup failed!";
-    return DIRECTORY_LOOKUP_FAILED;
-  }
+  syncable::Directory* dir = session->context()->directory();
 
   const GetUpdatesResponse& updates =
       session->status_controller().updates_response().get_updates();

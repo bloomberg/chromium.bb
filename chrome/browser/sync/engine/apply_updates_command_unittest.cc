@@ -14,7 +14,6 @@
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/browser/sync/test/engine/fake_model_worker.h"
@@ -31,7 +30,6 @@ using syncable::Entry;
 using syncable::Id;
 using syncable::MutableEntry;
 using syncable::ReadTransaction;
-using syncable::ScopedDirLookup;
 using syncable::UNITTEST;
 using syncable::WriteTransaction;
 
@@ -69,9 +67,7 @@ class ApplyUpdatesCommandTest : public SyncerCommandTest {
       const string& item_id,
       const sync_pb::EntitySpecifics& specifics,
       const string& parent_id) {
-    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-    ASSERT_TRUE(dir.good());
-    WriteTransaction trans(FROM_HERE, UNITTEST, dir);
+    WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     MutableEntry entry(&trans, syncable::CREATE_NEW_UPDATE_ITEM,
         Id::CreateFromServerId(item_id));
     ASSERT_TRUE(entry.good());
@@ -88,9 +84,7 @@ class ApplyUpdatesCommandTest : public SyncerCommandTest {
   void CreateUnappliedNewItem(const string& item_id,
                               const sync_pb::EntitySpecifics& specifics,
                               bool is_unique) {
-    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-    ASSERT_TRUE(dir.good());
-    WriteTransaction trans(FROM_HERE, UNITTEST, dir);
+    WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     MutableEntry entry(&trans, syncable::CREATE_NEW_UPDATE_ITEM,
         Id::CreateFromServerId(item_id));
     ASSERT_TRUE(entry.good());
@@ -114,12 +108,10 @@ class ApplyUpdatesCommandTest : public SyncerCommandTest {
                           bool is_folder,
                           syncable::ModelType model_type,
                           int64* metahandle_out) {
-    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-    ASSERT_TRUE(dir.good());
-    WriteTransaction trans(FROM_HERE, UNITTEST, dir);
+    WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     Id predecessor_id;
     ASSERT_TRUE(
-        dir->GetLastChildIdForTest(&trans, parent_id, &predecessor_id));
+        directory()->GetLastChildIdForTest(&trans, parent_id, &predecessor_id));
     MutableEntry entry(&trans, syncable::CREATE, parent_id, name);
     ASSERT_TRUE(entry.good());
     entry.Put(syncable::ID, item_id);
@@ -151,12 +143,7 @@ class ApplyUpdatesCommandTest : public SyncerCommandTest {
     CreateUnsyncedItem(id_factory_.MakeServer(name), id_factory_.root(), name,
                        false, model_type, &metahandle);
 
-    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-    if (!dir.good()) {
-      ADD_FAILURE();
-      return syncable::kInvalidMetaHandle;
-    }
-    WriteTransaction trans(FROM_HERE, UNITTEST, dir);
+    WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     MutableEntry entry(&trans, syncable::GET_BY_HANDLE, metahandle);
     if (!entry.good()) {
       ADD_FAILURE();
@@ -175,12 +162,7 @@ class ApplyUpdatesCommandTest : public SyncerCommandTest {
   // the created item.
   int64 CreateSyncedItem(const std::string& name, syncable::ModelType
                          model_type, bool is_folder) {
-    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-    if (!dir.good()) {
-      ADD_FAILURE();
-      return syncable::kInvalidMetaHandle;
-    }
-    WriteTransaction trans(FROM_HERE, UNITTEST, dir);
+    WriteTransaction trans(FROM_HERE, UNITTEST, directory());
 
     syncable::Id parent_id(id_factory_.root());
     syncable::Id item_id(id_factory_.MakeServer(name));
@@ -325,9 +307,7 @@ TEST_F(ApplyUpdatesCommandTest, HierarchyAndSimpleConflict) {
   {
     // Manually set the SERVER_PARENT_ID to bad value.
     // A bad parent indicates a hierarchy conflict.
-    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-    ASSERT_TRUE(dir.good());
-    WriteTransaction trans(FROM_HERE, UNITTEST, dir);
+    WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     MutableEntry entry(&trans, syncable::GET_BY_HANDLE, handle);
     ASSERT_TRUE(entry.good());
 
@@ -362,9 +342,7 @@ TEST_F(ApplyUpdatesCommandTest, HierarchyConflictDirectoryLoop) {
     // Create it as a child of root node.
     int64 handle = CreateSyncedItem("X", syncable::BOOKMARKS, true);
 
-    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-    ASSERT_TRUE(dir.good());
-    WriteTransaction trans(FROM_HERE, UNITTEST, dir);
+    WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     MutableEntry entry(&trans, syncable::GET_BY_HANDLE, handle);
     ASSERT_TRUE(entry.good());
 
@@ -407,9 +385,7 @@ TEST_F(ApplyUpdatesCommandTest, HierarchyConflictDeletedParent) {
   CreateUnsyncedItem(Id::CreateFromServerId("parent"), id_factory_.root(),
                      "parent", true, syncable::BOOKMARKS, &parent_handle);
   {
-    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-    ASSERT_TRUE(dir.good());
-    WriteTransaction trans(FROM_HERE, UNITTEST, dir);
+    WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     MutableEntry entry(&trans, syncable::GET_BY_HANDLE, parent_handle);
     entry.Put(syncable::IS_DEL, true);
   }
@@ -444,9 +420,7 @@ TEST_F(ApplyUpdatesCommandTest, HierarchyConflictDeleteNonEmptyDirectory) {
     // Create it as a child of root node.
     int64 handle = CreateSyncedItem("parent", syncable::BOOKMARKS, true);
 
-    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-    ASSERT_TRUE(dir.good());
-    WriteTransaction trans(FROM_HERE, UNITTEST, dir);
+    WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     MutableEntry entry(&trans, syncable::GET_BY_HANDLE, handle);
     ASSERT_TRUE(entry.good());
 
@@ -550,11 +524,8 @@ TEST_F(ApplyUpdatesCommandTest, DecryptablePassword) {
   {
       // Storing the cryptographer separately is bad, but for this test we
       // know it's safe.
-      ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-      ASSERT_TRUE(dir.good());
-      ReadTransaction trans(FROM_HERE, dir);
-      cryptographer =
-          session()->context()->directory_manager()->GetCryptographer(&trans);
+      ReadTransaction trans(FROM_HERE, directory());
+      cryptographer = directory()->GetCryptographer(&trans);
   }
 
   browser_sync::KeyParams params = {"localhost", "dummy", "foobar"};
@@ -643,11 +614,8 @@ TEST_F(ApplyUpdatesCommandTest, SomeUndecryptablePassword) {
     sync_pb::PasswordSpecificsData data;
     data.set_origin("http://example.com/1");
     {
-      ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-      ASSERT_TRUE(dir.good());
-      ReadTransaction trans(FROM_HERE, dir);
-      Cryptographer* cryptographer =
-          session()->context()->directory_manager()->GetCryptographer(&trans);
+      ReadTransaction trans(FROM_HERE, directory());
+      Cryptographer* cryptographer = directory()->GetCryptographer(&trans);
 
       KeyParams params = {"localhost", "dummy", "foobar"};
       cryptographer->AddKey(params);
@@ -704,11 +672,8 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdate) {
   encrypted_types.Put(syncable::PASSWORDS);
   encrypted_types.Put(syncable::NIGORI);
   {
-    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-    ASSERT_TRUE(dir.good());
-    ReadTransaction trans(FROM_HERE, dir);
-    cryptographer =
-        session()->context()->directory_manager()->GetCryptographer(&trans);
+    ReadTransaction trans(FROM_HERE, directory());
+    cryptographer = directory()->GetCryptographer(&trans);
     EXPECT_TRUE(cryptographer->GetEncryptedTypes().Equals(encrypted_types));
   }
 
@@ -756,11 +721,8 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdateForDisabledTypes) {
   encrypted_types.Put(syncable::PASSWORDS);
   encrypted_types.Put(syncable::NIGORI);
   {
-    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-    ASSERT_TRUE(dir.good());
-    ReadTransaction trans(FROM_HERE, dir);
-    cryptographer =
-        session()->context()->directory_manager()->GetCryptographer(&trans);
+    ReadTransaction trans(FROM_HERE, directory());
+    cryptographer = directory()->GetCryptographer(&trans);
     EXPECT_TRUE(cryptographer->GetEncryptedTypes().Equals(encrypted_types));
   }
 
@@ -810,13 +772,9 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
   encrypted_types.Put(syncable::PASSWORDS);
   encrypted_types.Put(syncable::NIGORI);
   {
-    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-    ASSERT_TRUE(dir.good());
-    ReadTransaction trans(FROM_HERE, dir);
-    cryptographer =
-        session()->context()->directory_manager()->GetCryptographer(&trans);
+    ReadTransaction trans(FROM_HERE, directory());
+    cryptographer = directory()->GetCryptographer(&trans);
     EXPECT_TRUE(cryptographer->GetEncryptedTypes().Equals(encrypted_types));
-
 
     // With default encrypted_types, this should be true.
     EXPECT_TRUE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
@@ -861,9 +819,7 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
 
   {
     // Ensure we have unsynced nodes that aren't properly encrypted.
-    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-    ASSERT_TRUE(dir.good());
-    ReadTransaction trans(FROM_HERE, dir);
+    ReadTransaction trans(FROM_HERE, directory());
     EXPECT_FALSE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
 
     Syncer::UnsyncedMetaHandles handles;
@@ -889,9 +845,7 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
   EXPECT_FALSE(cryptographer->has_pending_keys());
   EXPECT_TRUE(cryptographer->is_ready());
   {
-    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-    ASSERT_TRUE(dir.good());
-    ReadTransaction trans(FROM_HERE, dir);
+    ReadTransaction trans(FROM_HERE, directory());
 
     // If ProcessUnsyncedChangesForEncryption worked, all our unsynced changes
     // should be encrypted now.
@@ -913,11 +867,8 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
   encrypted_types.Put(syncable::PASSWORDS);
   encrypted_types.Put(syncable::NIGORI);
   {
-    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-    ASSERT_TRUE(dir.good());
-    ReadTransaction trans(FROM_HERE, dir);
-    cryptographer =
-        session()->context()->directory_manager()->GetCryptographer(&trans);
+    ReadTransaction trans(FROM_HERE, directory());
+    cryptographer = directory()->GetCryptographer(&trans);
     EXPECT_TRUE(cryptographer->GetEncryptedTypes().Equals(encrypted_types));
 
     // With default encrypted_types, this should be true.
@@ -965,9 +916,7 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
 
   {
     // Ensure we have unsynced nodes that aren't properly encrypted.
-    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-    ASSERT_TRUE(dir.good());
-    ReadTransaction trans(FROM_HERE, dir);
+    ReadTransaction trans(FROM_HERE, directory());
     EXPECT_FALSE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
     Syncer::UnsyncedMetaHandles handles;
     SyncerUtil::GetUnsyncedEntries(&trans, &handles);
@@ -994,9 +943,7 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
   EXPECT_FALSE(cryptographer->is_ready());
   EXPECT_TRUE(cryptographer->has_pending_keys());
   {
-    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-    ASSERT_TRUE(dir.good());
-    ReadTransaction trans(FROM_HERE, dir);
+    ReadTransaction trans(FROM_HERE, directory());
 
     // Since we have pending keys, we would have failed to encrypt, but the
     // cryptographer should be updated.

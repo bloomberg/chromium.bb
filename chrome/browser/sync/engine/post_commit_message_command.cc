@@ -10,7 +10,6 @@
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 
 using std::vector;
 
@@ -24,10 +23,7 @@ SyncerError PostCommitMessageCommand::ExecuteImpl(
   if (session->status_controller().commit_ids().empty())
     return SYNCER_OK;  // Nothing to commit.
   ClientToServerResponse response;
-  syncable::ScopedDirLookup dir(session->context()->directory_manager(),
-                                session->context()->account_name());
-  if (!dir.good())
-    return DIRECTORY_LOOKUP_FAILED;
+  syncable::Directory* dir = session->context()->directory();
   sessions::StatusController* status = session->mutable_status_controller();
   if (!SyncerProtoUtil::PostClientToServerMessage(status->commit_message(),
           &response, session)) {

@@ -7,7 +7,6 @@
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/test/engine/proto_extension_validator.h"
 #include "chrome/browser/sync/test/engine/syncer_command_test.h"
 #include "chrome/browser/sync/test/sessions/test_scoped_session_event_listener.h"
@@ -62,14 +61,11 @@ class ClearEventHandler : public SyncEngineEventListener {
 };
 
 TEST_F(ClearDataCommandTest, ClearDataCommandExpectFailed) {
-  syncable::ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-  ASSERT_TRUE(dir.good());
-
   ConfigureMockServerConnection();
   scoped_ptr<ClearEventHandler> handler(new ClearEventHandler());
   TestScopedSessionEventListener reg(context(), handler.get());
 
-  dir->set_store_birthday(mock_server()->store_birthday());
+  directory()->set_store_birthday(mock_server()->store_birthday());
   mock_server()->SetServerNotReachable();
   on_should_stop_syncing_permanently_called_ = false;
 
@@ -98,14 +94,11 @@ TEST_F(ClearDataCommandTest, ClearDataCommandExpectFailed) {
 }
 
 TEST_F(ClearDataCommandTest, ClearDataCommandExpectSuccess) {
-  syncable::ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-  ASSERT_TRUE(dir.good());
-
   ConfigureMockServerConnection();
   scoped_ptr<ClearEventHandler> handler(new ClearEventHandler());
   TestScopedSessionEventListener reg(context(), handler.get());
 
-  dir->set_store_birthday(mock_server()->store_birthday());
+  directory()->set_store_birthday(mock_server()->store_birthday());
   mock_server()->SetClearUserDataResponseStatus(sync_pb::SyncEnums::SUCCESS);
   on_should_stop_syncing_permanently_called_ = false;
 

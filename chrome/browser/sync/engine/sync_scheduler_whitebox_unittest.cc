@@ -8,8 +8,8 @@
 #include "chrome/browser/sync/sessions/sync_session_context.h"
 #include "chrome/browser/sync/sessions/test_util.h"
 #include "chrome/browser/sync/test/engine/fake_model_safe_worker_registrar.h"
-#include "chrome/browser/sync/test/engine/mock_connection_manager.h"
 #include "chrome/browser/sync/test/engine/test_directory_setter_upper.h"
+#include "chrome/browser/sync/test/engine/mock_connection_manager.h"
 #include "chrome/browser/sync/test/fake_extensions_activity_monitor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,17 +24,17 @@ using browser_sync::Syncer;
 class SyncSchedulerWhiteboxTest : public testing::Test {
  public:
   virtual void SetUp() {
-    syncdb_.SetUp();
+    dir_maker_.SetUp();
     Syncer* syncer = new Syncer();
     ModelSafeRoutingInfo routes;
     routes[syncable::BOOKMARKS] = GROUP_UI;
     routes[syncable::NIGORI] = GROUP_PASSIVE;
     registrar_.reset(new FakeModelSafeWorkerRegistrar(routes));
-    connection_.reset(new MockConnectionManager(syncdb_.manager(), "Test"));
+    connection_.reset(new MockConnectionManager(NULL));
     connection_->SetServerReachable();
     context_ =
         new SyncSessionContext(
-            connection_.get(), syncdb_.manager(),
+            connection_.get(), dir_maker_.directory(),
             registrar_.get(), &extensions_activity_monitor_,
             std::vector<SyncEngineEventListener*>(), NULL);
     context_->set_notifications_enabled(true);
@@ -45,7 +45,6 @@ class SyncSchedulerWhiteboxTest : public testing::Test {
 
   virtual void TearDown() {
     scheduler_.reset();
-    syncdb_.TearDown();
   }
 
   void SetMode(SyncScheduler::Mode mode) {
@@ -107,7 +106,7 @@ class SyncSchedulerWhiteboxTest : public testing::Test {
   SyncSessionContext* context_;
   scoped_ptr<FakeModelSafeWorkerRegistrar> registrar_;
   FakeExtensionsActivityMonitor extensions_activity_monitor_;
-  MockDirectorySetterUpper syncdb_;
+  TestDirectorySetterUpper dir_maker_;
 };
 
 TEST_F(SyncSchedulerWhiteboxTest, SaveNudge) {

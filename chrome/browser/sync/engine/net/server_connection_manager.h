@@ -19,7 +19,7 @@
 #include "chrome/browser/sync/syncable/syncable_id.h"
 
 namespace syncable {
-class DirectoryManager;
+class Directory;
 }
 
 namespace sync_pb {
@@ -383,7 +383,7 @@ class ServerConnectionManager {
 // Fills a ClientToServerMessage with the appropriate share and birthday
 // settings.
 bool FillMessageWithShareDetails(sync_pb::ClientToServerMessage* csm,
-                                 syncable::DirectoryManager* manager,
+                                 syncable::Directory* manager,
                                  const std::string& share);
 
 std::ostream& operator<<(std::ostream& s, const struct HttpResponse& hr);

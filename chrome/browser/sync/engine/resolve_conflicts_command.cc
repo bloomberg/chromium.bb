@@ -7,7 +7,7 @@
 #include "chrome/browser/sync/engine/conflict_resolver.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
+#include "chrome/browser/sync/syncable/syncable.h"
 
 namespace browser_sync {
 
@@ -24,17 +24,13 @@ SyncerError ResolveConflictsCommand::ModelChangingExecuteImpl(
   ConflictResolver* resolver = session->context()->resolver();
   DCHECK(resolver);
 
-  syncable::ScopedDirLookup dir(session->context()->directory_manager(),
-                                session->context()->account_name());
-  if (!dir.good())
-    return DIRECTORY_LOOKUP_FAILED;
+  syncable::Directory* dir = session->context()->directory();
   sessions::StatusController* status = session->mutable_status_controller();
   const sessions::ConflictProgress* progress = status->conflict_progress();
   if (!progress)
     return SYNCER_OK;  // Nothing to do.
   syncable::WriteTransaction trans(FROM_HERE, syncable::SYNCER, dir);
-  const Cryptographer* cryptographer =
-      session->context()->directory_manager()->GetCryptographer(&trans);
+  const Cryptographer* cryptographer = dir->GetCryptographer(&trans);
   status->update_conflicts_resolved(
       resolver->ResolveConflicts(&trans, cryptographer, *progress, status));
 

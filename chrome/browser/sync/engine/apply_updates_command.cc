@@ -7,7 +7,6 @@
 #include "base/location.h"
 #include "chrome/browser/sync/engine/update_applicator.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 
 namespace browser_sync {
@@ -23,13 +22,7 @@ std::set<ModelSafeGroup> ApplyUpdatesCommand::GetGroupsToChange(
 
   syncable::FullModelTypeSet server_types_with_unapplied_updates;
   {
-    syncable::ScopedDirLookup dir(session.context()->directory_manager(),
-                                  session.context()->account_name());
-    if (!dir.good()) {
-      LOG(ERROR) << "Scoped dir lookup failed!";
-      return groups_with_unapplied_updates;
-    }
-
+    syncable::Directory* dir = session.context()->directory();
     syncable::ReadTransaction trans(FROM_HERE, dir);
     server_types_with_unapplied_updates =
         dir->GetServerTypesWithUnappliedUpdates(&trans);
@@ -46,13 +39,7 @@ std::set<ModelSafeGroup> ApplyUpdatesCommand::GetGroupsToChange(
 
 SyncerError ApplyUpdatesCommand::ModelChangingExecuteImpl(
     SyncSession* session) {
-  syncable::ScopedDirLookup dir(session->context()->directory_manager(),
-                                session->context()->account_name());
-  if (!dir.good()) {
-    LOG(ERROR) << "Scoped dir lookup failed!";
-    return DIRECTORY_LOOKUP_FAILED;
-  }
-
+  syncable::Directory* dir = session->context()->directory();
   syncable::WriteTransaction trans(FROM_HERE, syncable::SYNCER, dir);
 
   // Compute server types with unapplied updates that fall under our
@@ -74,7 +61,7 @@ SyncerError ApplyUpdatesCommand::ModelChangingExecuteImpl(
 
   UpdateApplicator applicator(
       session->context()->resolver(),
-      session->context()->directory_manager()->GetCryptographer(&trans),
+      dir->GetCryptographer(&trans),
       handles.begin(), handles.end(), session->routing_info(),
       session->status_controller().group_restriction());
   while (applicator.AttemptOneApplication(&trans)) {}

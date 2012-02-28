@@ -84,7 +84,7 @@ class SyncSchedulerTest : public testing::Test {
   };
 
   virtual void SetUp() {
-    syncdb_.SetUp();
+    dir_maker_.SetUp();
     syncer_ = new MockSyncer();
     delay_ = NULL;
     ModelSafeRoutingInfo routing_info;
@@ -93,13 +93,12 @@ class SyncSchedulerTest : public testing::Test {
     routing_info[syncable::THEMES] = GROUP_UI;
     routing_info[syncable::NIGORI] = GROUP_PASSIVE;
     registrar_.reset(new FakeModelSafeWorkerRegistrar(routing_info));
-    connection_.reset(new MockConnectionManager(syncdb_.manager(), "Test"));
+    connection_.reset(new MockConnectionManager(directory()));
     connection_->SetServerReachable();
-    context_ =
-        new SyncSessionContext(
-            connection_.get(), syncdb_.manager(),
-            registrar_.get(), &extensions_activity_monitor_,
-            std::vector<SyncEngineEventListener*>(), NULL);
+    context_ = new SyncSessionContext(
+        connection_.get(), directory(), registrar_.get(),
+        &extensions_activity_monitor_,
+        std::vector<SyncEngineEventListener*>(), NULL);
     context_->set_notifications_enabled(true);
     context_->set_account_name("Test");
     scheduler_.reset(
@@ -119,7 +118,7 @@ class SyncSchedulerTest : public testing::Test {
     PumpLoop();
     scheduler_.reset();
     PumpLoop();
-    syncdb_.TearDown();
+    dir_maker_.TearDown();
   }
 
   void AnalyzePollRun(const SyncShareRecords& records, size_t min_num_samples,
@@ -189,8 +188,13 @@ class SyncSchedulerTest : public testing::Test {
   SyncSessionContext* context() { return context_; }
 
  private:
+  syncable::Directory* directory() {
+    return dir_maker_.directory();
+  }
+
   base::WeakPtrFactory<SyncSchedulerTest> weak_ptr_factory_;
   MessageLoop message_loop_;
+  TestDirectorySetterUpper dir_maker_;
   scoped_ptr<SyncScheduler> scheduler_;
   scoped_ptr<MockConnectionManager> connection_;
   SyncSessionContext* context_;
@@ -198,7 +202,6 @@ class SyncSchedulerTest : public testing::Test {
   MockDelayProvider* delay_;
   scoped_ptr<FakeModelSafeWorkerRegistrar> registrar_;
   FakeExtensionsActivityMonitor extensions_activity_monitor_;
-  MockDirectorySetterUpper syncdb_;
 };
 
 class BackoffTriggersSyncSchedulerTest : public SyncSchedulerTest {

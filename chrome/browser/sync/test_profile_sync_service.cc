@@ -13,7 +13,6 @@
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/protocol/encryption.pb.h"
 #include "chrome/browser/sync/sessions/session_state.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/test/test_http_bridge_factory.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -23,9 +22,8 @@ using browser_sync::sessions::ErrorCounters;
 using browser_sync::sessions::SyncSourceInfo;
 using browser_sync::sessions::SyncerStatus;
 using browser_sync::sessions::SyncSessionSnapshot;
-using syncable::DirectoryManager;
+using syncable::Directory;
 using syncable::ModelType;
-using syncable::ScopedDirLookup;
 using sync_api::UserShare;
 
 namespace browser_sync {
@@ -147,15 +145,11 @@ TestProfileSyncService::~TestProfileSyncService() {
 
 void TestProfileSyncService::SetInitialSyncEndedForAllTypes() {
   UserShare* user_share = GetUserShare();
-  DirectoryManager* dir_manager = user_share->dir_manager.get();
-
-  ScopedDirLookup dir(dir_manager, user_share->name);
-  if (!dir.good())
-    FAIL();
+  Directory* directory = user_share->directory.get();
 
   for (int i = syncable::FIRST_REAL_MODEL_TYPE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {
-    dir->set_initial_sync_ended_for_type(
+    directory->set_initial_sync_ended_for_type(
         syncable::ModelTypeFromInt(i), true);
   }
 }
@@ -178,13 +172,9 @@ void TestProfileSyncService::OnBackendInitialized(
     // if we were asked to.
     if (set_initial_sync_ended_on_init_) {
       UserShare* user_share = GetUserShare();
-      DirectoryManager* dir_manager = user_share->dir_manager.get();
+      Directory* directory = user_share->directory.get();
 
-      ScopedDirLookup dir(dir_manager, user_share->name);
-      if (!dir.good())
-        FAIL();
-
-      if (!dir->initial_sync_ended_for_type(syncable::NIGORI)) {
+      if (!directory->initial_sync_ended_for_type(syncable::NIGORI)) {
         ProfileSyncServiceTestHelper::CreateRoot(
             syncable::NIGORI, GetUserShare(),
             id_factory());

@@ -16,7 +16,6 @@
 #include "chrome/browser/sync/protocol/nigori_specifics.pb.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/sessions/status_controller.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/cryptographer.h"
 
@@ -30,7 +29,6 @@ using syncable::GetModelTypeFromSpecifics;
 using syncable::Id;
 using syncable::IsRealDataType;
 using syncable::MutableEntry;
-using syncable::ScopedDirLookup;
 using syncable::WriteTransaction;
 
 namespace browser_sync {
