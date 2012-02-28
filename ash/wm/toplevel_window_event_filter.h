@@ -61,8 +61,13 @@ class ASH_EXPORT ToplevelWindowEventFilter :
                                              int window_component);
 
  private:
-  // Invoked when the mouse is released to cleanup after a drag.
-  void CompleteDrag(aura::Window* window);
+  enum DragCompletionStatus {
+    DRAG_COMPLETE,
+    DRAG_REVERT
+  };
+
+  // Finishes the drag.
+  void CompleteDrag(DragCompletionStatus status);
 
   // Called during a drag to resize/position the window.
   // The return value is returned by OnMouseEvent() above.

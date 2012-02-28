@@ -52,7 +52,10 @@ class ASH_EXPORT WindowResizer {
   void Drag(const gfx::Point& location);
 
   // Invoked to complete the drag.
-  void CompleteDrag();
+  virtual void CompleteDrag();
+
+  // Reverts the drag.
+  virtual void RevertDrag();
 
   // Returns true if the drag will result in changing the window in anyway.
   bool is_resizable() const { return is_resizable_; }

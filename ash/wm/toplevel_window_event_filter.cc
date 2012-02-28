@@ -34,6 +34,10 @@ ToplevelWindowEventFilter::~ToplevelWindowEventFilter() {
 
 bool ToplevelWindowEventFilter::PreHandleKeyEvent(aura::Window* target,
                                                   aura::KeyEvent* event) {
+  if (window_resizer_.get() && event->type() == ui::ET_KEY_PRESSED &&
+      event->key_code() == ui::VKEY_ESCAPE) {
+    CompleteDrag(DRAG_REVERT);
+  }
   return false;
 }
 
@@ -62,10 +66,18 @@ bool ToplevelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
       return HandleDrag(target, event);
     case ui::ET_MOUSE_CAPTURE_CHANGED:
     case ui::ET_MOUSE_RELEASED:
-      CompleteDrag(target);
+      CompleteDrag(event->type() == ui::ET_MOUSE_RELEASED ?
+                   DRAG_COMPLETE : DRAG_REVERT);
       if (in_move_loop_) {
         MessageLoop::current()->Quit();
         in_move_loop_ = false;
+      }
+      // Completing the drag may result in hiding the window. If this happens
+      // return true so no other filters/observers see the event. Otherwise they
+      // see the event on a hidden window.
+      if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED &&
+          !target->IsVisible()) {
+        return true;
       }
       break;
     default:
@@ -106,7 +118,7 @@ ui::GestureStatus ToplevelWindowEventFilter::PreHandleGestureEvent(
     case ui::ET_GESTURE_SCROLL_END: {
       if (!in_gesture_resize_)
         return ui::GESTURE_STATUS_UNKNOWN;
-      CompleteDrag(target);
+      CompleteDrag(DRAG_COMPLETE);
       in_gesture_resize_ = false;
       break;
     }
@@ -137,7 +149,10 @@ void ToplevelWindowEventFilter::EndMoveLoop() {
     return;
 
   in_move_loop_ = false;
-  window_resizer_.reset();
+  if (window_resizer_.get()) {
+    window_resizer_->RevertDrag();
+    window_resizer_.reset();
+  }
   MessageLoopForUI::current()->Quit();
   Shell::GetRootWindow()->PostNativeEvent(ui::CreateNoopEvent());
 }
@@ -149,10 +164,14 @@ WindowResizer* ToplevelWindowEventFilter::CreateWindowResizer(
   return new WindowResizer(window, point, window_component, grid_size_);
 }
 
-void ToplevelWindowEventFilter::CompleteDrag(aura::Window* window) {
+void ToplevelWindowEventFilter::CompleteDrag(DragCompletionStatus status) {
   scoped_ptr<WindowResizer> resizer(window_resizer_.release());
-  if (resizer.get())
-    resizer->CompleteDrag();
+  if (resizer.get()) {
+    if (status == DRAG_COMPLETE)
+      resizer->CompleteDrag();
+    else
+      resizer->RevertDrag();
+  }
 }
 
 bool ToplevelWindowEventFilter::HandleDrag(aura::Window* target,

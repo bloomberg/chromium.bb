@@ -222,6 +222,13 @@ void WindowResizer::CompleteDrag() {
   window_->SetBounds(new_bounds);
 }
 
+void WindowResizer::RevertDrag() {
+  if (!did_move_or_resize_)
+    return;
+
+  window_->SetBounds(initial_bounds_);
+}
+
 gfx::Rect WindowResizer::GetBoundsForDrag(const gfx::Point& location) {
   if (!is_resizable())
     return window_->bounds();

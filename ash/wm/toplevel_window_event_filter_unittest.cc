@@ -14,6 +14,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
+#include "ui/aura/test/test_activation_client.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/screen.h"
@@ -408,8 +409,6 @@ TEST_F(ToplevelWindowEventFilterTest, ResizeSnaps) {
   DragFromCenterBy(target.get(), 11, 21);
   EXPECT_EQ(112, target->bounds().width());
   EXPECT_EQ(120, target->bounds().height());
-  // TODO(sky): enable when test animations complete immediately.
-  /*
   target.reset(CreateWindow(HTTOPLEFT));
   target->SetBounds(gfx::Rect(48, 96, 100, 100));
   DragFromCenterBy(target.get(), -11, -21);
@@ -417,7 +416,6 @@ TEST_F(ToplevelWindowEventFilterTest, ResizeSnaps) {
   EXPECT_EQ(80, target->bounds().y());
   EXPECT_EQ(112, target->bounds().width());
   EXPECT_EQ(120, target->bounds().height());
-  */
 }
 
 // Verifies that when a grid size is set dragging snaps to the grid.
@@ -429,14 +427,29 @@ TEST_F(ToplevelWindowEventFilterTest, DragSnaps) {
   generator.MoveMouseTo(generator.current_location().Add(gfx::Point(11, 21)));
   EXPECT_EQ(11, target->bounds().x());
   EXPECT_EQ(21, target->bounds().y());
-  // TODO(sky): enable when test animations complete immediately.
-  /*
   // We only snap moves to the grid on release.
   generator.ReleaseLeftButton();
   EXPECT_EQ(8, target->bounds().x());
   EXPECT_EQ(24, target->bounds().y());
-  */
+}
+
+// Verifies pressing escape resets the bounds to the original bounds.
+TEST_F(ToplevelWindowEventFilterTest, EscapeReverts) {
+  aura::RootWindow* root = Shell::GetRootWindow();
+  aura::client::ActivationClient* original_client =
+      aura::client::GetActivationClient(root);
+  aura::test::TestActivationClient activation_client(root);
+  scoped_ptr<aura::Window> target(CreateWindow(HTBOTTOMRIGHT));
+  target->Focus();
+  aura::test::EventGenerator generator(Shell::GetRootWindow(), target.get());
+  generator.PressLeftButton();
+  generator.MoveMouseTo(generator.current_location().Add(gfx::Point(10, 11)));
+  EXPECT_EQ("0,0 110x111", target->bounds().ToString());
+  generator.PressKey(ui::VKEY_ESCAPE, 0);
+  generator.ReleaseKey(ui::VKEY_ESCAPE, 0);
+  EXPECT_EQ("0,0 100x100", target->bounds().ToString());
+  aura::client::SetActivationClient(root, original_client);
 }
 
 }  // namespace test
-}  // namespace aura
+}  // namespace ash
