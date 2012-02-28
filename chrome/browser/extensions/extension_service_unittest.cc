@@ -2889,6 +2889,40 @@ TEST_F(ExtensionServiceTest, PolicyInstalledExtensionsWhitelisted) {
   EXPECT_TRUE(service_->GetExtensionById(good_crx, false));
 }
 
+TEST_F(ExtensionServiceTest, ExternalExtensionAutoAcknowledgement) {
+  InitializeEmptyExtensionService();
+  set_extensions_enabled(true);
+
+  {
+    // Register and install an external extension.
+    MockExtensionProvider* provider =
+        new MockExtensionProvider(service_, Extension::EXTERNAL_PREF, 0);
+    AddMockExternalProvider(provider);
+    provider->UpdateOrAddExtension(good_crx, "1.0.0.0",
+                                   data_dir_.AppendASCII("good.crx"));
+  }
+  {
+    // Have policy force-install an extension.
+    MockExtensionProvider* provider =
+        new MockExtensionProvider(service_,
+                                  Extension::EXTERNAL_POLICY_DOWNLOAD);
+    AddMockExternalProvider(provider);
+    provider->UpdateOrAddExtension(page_action, "1.0.0.0",
+                                   data_dir_.AppendASCII("page_action.crx"));
+  }
+
+  // Providers are set up. Let them run.
+  service_->CheckForExternalUpdates();
+  loop_.RunAllPending();
+
+  ASSERT_EQ(2u, service_->extensions()->size());
+  EXPECT_TRUE(service_->GetExtensionById(good_crx, false));
+  EXPECT_TRUE(service_->GetExtensionById(page_action, false));
+  ExtensionPrefs* prefs = service_->extension_prefs();
+  ASSERT_TRUE(!prefs->IsExternalExtensionAcknowledged(good_crx));
+  ASSERT_TRUE(prefs->IsExternalExtensionAcknowledged(page_action));
+}
+
 // Tests disabling extensions
 TEST_F(ExtensionServiceTest, DisableExtension) {
   InitializeEmptyExtensionService();

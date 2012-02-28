@@ -2246,6 +2246,12 @@ void ExtensionService::OnExtensionInstalled(
         extension, "Extensions.Permissions_Install");
   }
 
+  // Certain extension locations are specific enough that we can
+  // auto-acknowledge any extension that came from one of them.
+  if (extension->location() == Extension::EXTERNAL_POLICY_DOWNLOAD) {
+    AcknowledgeExternalExtension(extension->id());
+  }
+
   extension_prefs_->OnExtensionInstalled(
       extension,
       initial_enable ? Extension::ENABLED : Extension::DISABLED,
