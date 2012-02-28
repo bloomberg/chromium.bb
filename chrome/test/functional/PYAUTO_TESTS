@@ -575,6 +575,16 @@
       '-autofill.AutofillTest.testDisplayLineItemForEntriesWithNoCCNum',
       # crbug.com/100893
       '-enterprise.EnterpriseTestReverse.testEnableSPDY',
+      # crbug.com/115917
+      '-flash.FlashTest.testFlashLoadsAfterKill',
+      '-infobars.InfobarTest.testPluginCrashForMultiTabs',
+      '-infobars.InfobarTest.testPluginCrashInfobar',
+      '-flash.FlashTest.testCanLoadFlash',
+      '-flash.FlashTest.testFlashIncognitoMode',
+      '-flash.FlashTest.testFlashWithMultipleTabs',
+      '-flash.FlashTest.testSingleFlashPluginProcess',
+      '-plugins.PluginsTest.testBlockAllPlugins',
+      '-plugins.PluginsTest.testBlockPluginException',
     ],
 
     'chromeos': [
