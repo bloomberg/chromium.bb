@@ -71,7 +71,8 @@ var DetailsView = (function() {
 
         var logEntries = sourceEntry.getLogEntries();
         var startDate = timeutil.convertTimeTicksToDate(logEntries[0].time);
-        addNodeWithText(p, 'div', 'Start Time: ' + startDate.toLocaleString());
+        var startTimeDiv = addNodeWithText(p, 'div', 'Start Time: ');
+        timeutil.addNodeWithDate(startTimeDiv, startDate);
 
         sourceEntry.printAsText(div);
 

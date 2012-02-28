@@ -94,7 +94,7 @@ var ProxyView = (function() {
         var badUntilCell = addNode(tr, 'td');
 
         addTextNode(nameCell, entry.proxy_uri);
-        addTextNode(badUntilCell, badUntilDate.toLocaleString());
+        timeutil.addNodeWithDate(badUntilCell, badUntilDate)
       }
       return true;
     }

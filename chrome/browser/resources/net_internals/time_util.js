@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,9 +41,47 @@ var timeutil = (function() {
     return (new Date()).getTime();
   }
 
+  /**
+   * Adds an HTML representation of |date| to |parentNode|.
+   *
+   * @param {DomNode} parentNode
+   * @param {Date} date
+   * @returns {DomNode} The node containing the date/time.
+   */
+  function addNodeWithDate(parentNode, date) {
+    var span = addNodeWithText(parentNode, 'span', dateToString(date));
+    span.title = 't=' + date.getTime();
+    return span;
+  }
+
+  /**
+   * Returns a string representation of |date|.
+   *
+   * @param {Date} date
+   * @returns {String}
+   */
+  function dateToString(date) {
+    var dateStr =
+        date.getFullYear() + '/' + (date.getMonth() + 1) + '/' + date.getDate();
+
+    // Prefix the milliseconds with enough zeros to make it three characters
+    // long.
+    var paddedMilliseconds = '' + date.getMilliseconds();
+    while (paddedMilliseconds.length < 3)
+      paddedMilliseconds = '0' + paddedMilliseconds;
+
+    var timeStr =
+        date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds() +
+        '.' + paddedMilliseconds;
+
+    return '[' + dateStr + '] ' + timeStr;
+  }
+
   return {
     setTimeTickOffset: setTimeTickOffset,
     convertTimeTicksToDate: convertTimeTicksToDate,
-    getCurrentTime: getCurrentTime
+    getCurrentTime: getCurrentTime,
+    addNodeWithDate: addNodeWithDate,
+    dateToString: dateToString
   };
 })();

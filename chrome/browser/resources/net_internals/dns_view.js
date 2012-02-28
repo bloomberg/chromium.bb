@@ -137,7 +137,7 @@ var DnsView = (function() {
 
         var expiresDate = timeutil.convertTimeTicksToDate(e.expiration);
         var expiresCell = addNode(tr, 'td');
-        addTextNode(expiresCell, expiresDate.toLocaleString());
+        timeutil.addNodeWithDate(expiresCell, expiresDate);
         if (logDate > timeutil.convertTimeTicksToDate(e.expiration)) {
           ++expiredEntries;
           var expiredSpan = addNode(expiresCell, 'span');

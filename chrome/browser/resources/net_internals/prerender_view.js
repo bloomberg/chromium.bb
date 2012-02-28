@@ -108,7 +108,8 @@ var PrerenderView = (function() {
       tablePrinter.addCell(historyEntry.final_status);
 
       var date = new Date(parseInt(historyEntry.end_time));
-      tablePrinter.addCell(date.toLocaleString());
+      // TODO(eroman): Switch to addNodeWithDate()
+      tablePrinter.addCell(timeutil.dateToString(date));
     }
     return tablePrinter;
   }

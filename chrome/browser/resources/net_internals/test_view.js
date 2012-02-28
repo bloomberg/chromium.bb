@@ -65,8 +65,8 @@ var TestView = (function() {
       this.summaryDiv_.innerHTML = '';
 
       var p = addNode(this.summaryDiv_, 'p');
-      addTextNode(p, 'Started connection test suite suite on ' +
-                     (new Date()).toLocaleString());
+      addTextNode(p, 'Started connection test suite suite on ');
+      timeutil.addNodeWithDate(p, new Date());
 
       // Add a table that will hold the individual test results.
       var table = addNode(this.summaryDiv_, 'table');
