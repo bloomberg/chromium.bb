@@ -4,6 +4,7 @@
 
 #include "content/browser/intents/intent_injector.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/string16.h"
@@ -43,7 +44,14 @@ void IntentInjector::SetIntent(
     content::WebIntentsDispatcher* intents_dispatcher,
     const webkit_glue::WebIntentData& intent) {
   intents_dispatcher_ = intents_dispatcher;
+  intents_dispatcher_->RegisterReplyNotification(
+      base::Bind(&IntentInjector::OnSendReturnMessage, base::Unretained(this)));
   source_intent_.reset(new webkit_glue::WebIntentData(intent));
+}
+
+void IntentInjector::OnSendReturnMessage(
+    webkit_glue::WebIntentReplyType reply_type) {
+  intents_dispatcher_ = NULL;
 }
 
 void IntentInjector::RenderViewCreated(RenderViewHost* render_view_host) {

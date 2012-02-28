@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_INTENTS_WEB_INTENTS_DISPATCHER_IMPL_H_
 #define CONTENT_BROWSER_INTENTS_WEB_INTENTS_DISPATCHER_IMPL_H_
 
+#include <vector>
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -52,8 +53,9 @@ class WebIntentsDispatcherImpl : public content::WebIntentsDispatcher,
   // (connected to the service TabContents).
   IntentInjector* intent_injector_;
 
-  // A callback to be notified when SendReplyMessage is called.
-  base::Callback<void(webkit_glue::WebIntentReplyType)> reply_notifier_;
+  // Callbacks to be notified when SendReplyMessage is called.
+  std::vector<base::Callback<void(webkit_glue::WebIntentReplyType)> >
+      reply_notifiers_;
 
   DISALLOW_COPY_AND_ASSIGN(WebIntentsDispatcherImpl);
 };

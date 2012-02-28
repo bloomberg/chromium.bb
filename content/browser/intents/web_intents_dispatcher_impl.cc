@@ -43,15 +43,17 @@ void WebIntentsDispatcherImpl::SendReplyMessage(
         routing_id(), reply_type, data, intent_id_));
   }
 
-  if (!reply_notifier_.is_null())
-    reply_notifier_.Run(reply_type);
+  for (size_t i = 0; i < reply_notifiers_.size(); ++i) {
+    if (!reply_notifiers_[i].is_null())
+      reply_notifiers_[i].Run(reply_type);
+  }
 
   delete this;
 }
 
 void WebIntentsDispatcherImpl::RegisterReplyNotification(
     const base::Callback<void(webkit_glue::WebIntentReplyType)>& closure) {
-  reply_notifier_ = closure;
+  reply_notifiers_.push_back(closure);
 }
 
 void WebIntentsDispatcherImpl::WebContentsDestroyed(WebContents* tab) {
