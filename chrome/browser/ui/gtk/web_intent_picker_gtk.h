@@ -46,6 +46,8 @@ class WebIntentPickerGtk : public WebIntentPicker,
   virtual void OnModelChanged(WebIntentPickerModel* model) OVERRIDE;
   virtual void OnFaviconChanged(WebIntentPickerModel* model,
                                 size_t index) OVERRIDE;
+  virtual void OnExtensionIconChanged(WebIntentPickerModel* model,
+                                      const string16& extension_id) OVERRIDE;
   virtual void OnInlineDisposition(WebIntentPickerModel* model) OVERRIDE;
 
   // ConstrainedWindowGtkDelegate implementation.

@@ -33,6 +33,8 @@ class WebIntentPickerModelObserverMock : public WebIntentPickerModelObserver {
   MOCK_METHOD1(OnModelChanged, void(WebIntentPickerModel* model));
   MOCK_METHOD2(OnFaviconChanged,
                void(WebIntentPickerModel* model, size_t index));
+  MOCK_METHOD2(OnExtensionIconChanged,
+               void(WebIntentPickerModel* model, const string16& extension_id));
   MOCK_METHOD1(OnInlineDisposition, void(WebIntentPickerModel* model));
 };
 
@@ -133,6 +135,22 @@ TEST_F(WebIntentPickerModelTest, RemoveSuggestedExtensionAt) {
   EXPECT_EQ(2U, model_.GetSuggestedExtensionCount());
   EXPECT_EQ(kId1, model_.GetSuggestedExtensionAt(0).id);
   EXPECT_EQ(kId3, model_.GetSuggestedExtensionAt(1).id);
+}
+
+TEST_F(WebIntentPickerModelTest, SetSuggestedExtensionIconWithId) {
+  EXPECT_CALL(observer_, OnModelChanged(&model_)).Times(2);
+  EXPECT_CALL(observer_, OnExtensionIconChanged(&model_, kId2)).Times(1);
+
+  model_.AddSuggestedExtension(kTitle1, kId1, 3.0);
+  model_.AddSuggestedExtension(kTitle2, kId2, 4.3);
+
+  gfx::Image image(gfx::test::CreateImage());
+  model_.SetSuggestedExtensionIconWithId(kId2, image);
+
+  EXPECT_FALSE(gfx::test::IsEqual(
+      image, model_.GetSuggestedExtensionAt(0).icon));
+  EXPECT_TRUE(gfx::test::IsEqual(
+      image, model_.GetSuggestedExtensionAt(1).icon));
 }
 
 TEST_F(WebIntentPickerModelTest, SetInlineDisposition) {

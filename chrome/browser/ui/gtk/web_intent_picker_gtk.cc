@@ -135,6 +135,11 @@ void WebIntentPickerGtk::OnFaviconChanged(WebIntentPickerModel* model,
   SetServiceButtonImage(button, installed_service.favicon.ToGdkPixbuf());
 }
 
+void WebIntentPickerGtk::OnExtensionIconChanged(WebIntentPickerModel* model,
+                                                const string16& extension_id) {
+  // TODO(binji): implement.
+}
+
 void WebIntentPickerGtk::OnInlineDisposition(WebIntentPickerModel* model) {
   const WebIntentPickerModel::InstalledService& installed_service =
       model->GetInstalledServiceAt(model->inline_disposition_index());

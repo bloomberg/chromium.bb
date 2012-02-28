@@ -122,6 +122,12 @@ void WebIntentPickerCocoa::OnFaviconChanged(WebIntentPickerModel* model,
   PerformDelayedLayout();
 }
 
+void WebIntentPickerCocoa::OnExtensionIconChanged(
+    WebIntentPickerModel* model,
+    const string16& extension_id) {
+  // TODO(binji): implement.
+}
+
 void WebIntentPickerCocoa::OnInlineDisposition(WebIntentPickerModel* model) {
   const WebIntentPickerModel::InstalledService& installed_service =
       model->GetInstalledServiceAt(model->inline_disposition_index());

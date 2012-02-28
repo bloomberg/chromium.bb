@@ -92,6 +92,21 @@ size_t WebIntentPickerModel::GetSuggestedExtensionCount() const {
   return suggested_extensions_.size();
 }
 
+void WebIntentPickerModel::SetSuggestedExtensionIconWithId(
+    const string16& id,
+    const gfx::Image& image) {
+  for (size_t i = 0; i < suggested_extensions_.size(); ++i) {
+    SuggestedExtension* extension = suggested_extensions_[i];
+    if (extension->id == id) {
+      extension->icon = image;
+
+      if (observer_)
+        observer_->OnExtensionIconChanged(this, extension->id);
+      break;
+    }
+  }
+}
+
 void WebIntentPickerModel::SetInlineDisposition(size_t index) {
   DCHECK(index < installed_services_.size());
   inline_disposition_index_ = index;

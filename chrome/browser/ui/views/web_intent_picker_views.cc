@@ -106,6 +106,8 @@ class WebIntentPickerViews : public views::ButtonListener,
   virtual void OnModelChanged(WebIntentPickerModel* model) OVERRIDE;
   virtual void OnFaviconChanged(WebIntentPickerModel* model,
                                 size_t index) OVERRIDE;
+  virtual void OnExtensionIconChanged(WebIntentPickerModel* model,
+                                      const string16& extension_id) OVERRIDE;
   virtual void OnInlineDisposition(WebIntentPickerModel* model) OVERRIDE;
 
  private:
@@ -247,6 +249,12 @@ void WebIntentPickerViews::OnFaviconChanged(WebIntentPickerModel* model,
   button->SetIcon(*installed_service.favicon.ToSkBitmap());
   contents_->Layout();
   SizeToContents();
+}
+
+void WebIntentPickerViews::OnExtensionIconChanged(
+    WebIntentPickerModel* model,
+    const string16& extension_id) {
+  // TODO(binji): implement.
 }
 
 void WebIntentPickerViews::OnInlineDisposition(

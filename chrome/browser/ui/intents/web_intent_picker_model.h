@@ -112,6 +112,10 @@ class WebIntentPickerModel {
   // Return the number of suggested extensions.
   size_t GetSuggestedExtensionCount() const;
 
+  // Set the icon image for the suggested extension with |id|.
+  void SetSuggestedExtensionIconWithId(const string16& id,
+                                       const gfx::Image& image);
+
   // Set the picker to display the intent service at |index| inline.
   void SetInlineDisposition(size_t index);
 

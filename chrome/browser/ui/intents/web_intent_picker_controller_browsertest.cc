@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
@@ -24,7 +26,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_intents_dispatcher.h"
 #include "content/test/test_url_fetcher_factory.h"
+#include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/image/image_unittest_util.h"
+#include "ui/gfx/image/image_util.h"
 #include "webkit/glue/web_intent_service_data.h"
 
 namespace {
@@ -75,8 +80,23 @@ const char kCWSResponseResultFormat[] =
         "}\\n"
       "}\\n\","
       "\"family_safe\":true,"
-      "\"icon_url\":" "\"http://qa-lighthouse.sandbox.google.com/image/"
-          "QzPnRCYCBbBGI99ZkGxkp-NNJ488IkkiTyCgynFEeDTJHcw4tHl3csmjTQ\"}]}";
+      "\"icon_url\": \"%s\"}]}";
+
+const char kCWSFakeIconURLFormat[] = "http://example.com/%s/icon.png";
+
+class DummyURLFetcherFactory : public content::URLFetcherFactory {
+ public:
+   DummyURLFetcherFactory() {}
+   virtual ~DummyURLFetcherFactory() {}
+
+   virtual content::URLFetcher* CreateURLFetcher(
+       int id,
+       const GURL& url,
+       content::URLFetcher::RequestType request_type,
+       content::URLFetcherDelegate* d) OVERRIDE {
+     return new TestURLFetcher(id, url, d);
+   }
+};
 
 }  // namespace
 
@@ -86,6 +106,7 @@ class WebIntentPickerMock : public WebIntentPicker,
   WebIntentPickerMock()
       : num_installed_services_(0),
         num_icons_changed_(0),
+        num_extension_icons_changed_(0),
         message_loop_started_(false),
         pending_async_completed_(false) {
   }
@@ -98,6 +119,11 @@ class WebIntentPickerMock : public WebIntentPicker,
   virtual void OnFaviconChanged(
       WebIntentPickerModel* model, size_t index) OVERRIDE {
     num_icons_changed_++;
+  }
+
+  virtual void OnExtensionIconChanged(
+      WebIntentPickerModel* model, const string16& extension_id) OVERRIDE {
+    num_extension_icons_changed_++;
   }
 
   virtual void OnInlineDisposition(WebIntentPickerModel* model) OVERRIDE {}
@@ -119,6 +145,7 @@ class WebIntentPickerMock : public WebIntentPicker,
 
   int num_installed_services_;
   int num_icons_changed_;
+  int num_extension_icons_changed_;
   bool message_loop_started_;
   bool pending_async_completed_;
 };
@@ -156,6 +183,13 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
   WebIntentPickerControllerBrowserTest() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
+    // The FakeURLFetcherFactory will return a NULL URLFetcher if a request is
+    // created for a URL it doesn't know and there is no default factory.
+    // Instead, use this dummy factory to infinitely delay the request.
+    default_url_fetcher_factory_.reset(new DummyURLFetcherFactory);
+    fake_url_fetcher_factory_.reset(
+        new FakeURLFetcherFactory(default_url_fetcher_factory_.get()));
+
     web_data_service_ =
         browser()->profile()->GetWebDataService(Profile::EXPLICIT_ACCESS);
     favicon_service_ =
@@ -165,6 +199,8 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
 
     controller_->set_picker(&picker_);
     controller_->set_model_observer(&picker_);
+
+    CreateFakeIcon();
   }
 
   void AddWebIntentService(const string16& action, const GURL& service_url) {
@@ -177,16 +213,25 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
 
   void AddCWSExtensionServiceEmpty(const string16& action) {
     GURL cws_query_url = CWSIntentsRegistry::BuildQueryURL(action, kType);
-    fake_url_fetcher_factory_.SetFakeResponse(cws_query_url.spec(),
+    fake_url_fetcher_factory_->SetFakeResponse(cws_query_url.spec(),
         kCWSResponseEmpty, true);
   }
 
   void AddCWSExtensionServiceWithResult(const string16& action) {
     GURL cws_query_url = CWSIntentsRegistry::BuildQueryURL(action, kType);
+    std::string icon_url;
+    std::string escaped_action = net::EscapePath(UTF16ToUTF8(action));
+    base::SStringPrintf(&icon_url, kCWSFakeIconURLFormat,
+        escaped_action.c_str());
+
     std::string response;
     base::SStringPrintf(&response, kCWSResponseResultFormat,
-        UTF16ToUTF8(action).c_str(), UTF16ToUTF8(kType).c_str());
-    fake_url_fetcher_factory_.SetFakeResponse(cws_query_url.spec(), response,
+        UTF16ToUTF8(action).c_str(), UTF16ToUTF8(kType).c_str(),
+        icon_url.c_str());
+    fake_url_fetcher_factory_->SetFakeResponse(cws_query_url.spec(), response,
+        true);
+
+    fake_url_fetcher_factory_->SetFakeResponse(icon_url, icon_response_,
         true);
   }
 
@@ -203,11 +248,23 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
     controller_->OnCancelled();
   }
 
+  void CreateFakeIcon() {
+    gfx::Image image(gfx::test::CreateImage());
+    std::vector<unsigned char> image_data;
+    bool result = gfx::PNGEncodedDataFromImage(image, &image_data);
+    DCHECK(result);
+
+    std::copy(image_data.begin(), image_data.end(),
+        std::back_inserter(icon_response_));
+  }
+
   WebIntentPickerMock picker_;
   WebDataService* web_data_service_;
   FaviconService* favicon_service_;
   WebIntentPickerController* controller_;
-  FakeURLFetcherFactory fake_url_fetcher_factory_;
+  scoped_ptr<DummyURLFetcherFactory> default_url_fetcher_factory_;
+  scoped_ptr<FakeURLFetcherFactory> fake_url_fetcher_factory_;
+  std::string icon_response_;
 };
 
 IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest, ChooseService) {
@@ -235,6 +292,19 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest, ChooseService) {
 
   OnSendReturnMessage(webkit_glue::WEB_INTENT_REPLY_SUCCESS);
   ASSERT_EQ(1, browser()->tab_count());
+}
+
+IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
+                       FetchExtensionIcon) {
+  AddWebIntentService(kAction1, kServiceURL1);
+  AddWebIntentService(kAction1, kServiceURL2);
+  AddCWSExtensionServiceWithResult(kAction1);
+
+  controller_->ShowDialog(browser(), kAction1, kType);
+  picker_.WaitForPendingAsync();
+  EXPECT_EQ(2, picker_.num_installed_services_);
+  EXPECT_EQ(0, picker_.num_icons_changed_);
+  EXPECT_EQ(1, picker_.num_extension_icons_changed_);
 }
 
 IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest, OpenCancelOpen) {
