@@ -107,6 +107,7 @@ class DomStorageDatabase {
   scoped_ptr<sql::Connection> db_;
   bool failed_to_open_;
   bool tried_to_recreate_;
+  bool known_to_be_empty_;
 };
 
 }  // namespace dom_storage

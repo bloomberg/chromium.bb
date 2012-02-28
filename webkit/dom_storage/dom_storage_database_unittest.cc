@@ -113,6 +113,60 @@ TEST(DomStorageDatabaseTest, SimpleOpenAndClose) {
   EXPECT_FALSE(db.IsOpen());
 }
 
+TEST(DomStorageDatabaseTest, CloseEmptyDatabaseDeletesFile) {
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath file_name = temp_dir.path().AppendASCII("TestDomStorageDatabase.db");
+  ValuesMap storage;
+  CreateMapWithValues(&storage);
+
+  // First test the case that explicitly clearing the database will
+  // trigger it's deletion from disk.
+  {
+    DomStorageDatabase db(file_name);
+    ASSERT_TRUE(db.CommitChanges(false, storage));
+  }
+  EXPECT_TRUE(file_util::PathExists(file_name));
+
+  {
+    // Check that reading an existing db with data in it
+    // keeps the DB on disk on close.
+    DomStorageDatabase db(file_name);
+    ValuesMap values;
+    db.ReadAllValues(&values);
+    EXPECT_EQ(storage.size(), values.size());
+  }
+
+  EXPECT_TRUE(file_util::PathExists(file_name));
+  storage.clear();
+
+  {
+    DomStorageDatabase db(file_name);
+    ASSERT_TRUE(db.CommitChanges(true, storage));
+  }
+  EXPECT_FALSE(file_util::PathExists(file_name));
+
+  // Now ensure that a series of updates and removals whose net effect
+  // is an empty database also triggers deletion.
+  CreateMapWithValues(&storage);
+  {
+    DomStorageDatabase db(file_name);
+    ASSERT_TRUE(db.CommitChanges(false, storage));
+  }
+
+  EXPECT_TRUE(file_util::PathExists(file_name));
+
+  {
+    DomStorageDatabase db(file_name);
+    ASSERT_TRUE(db.CommitChanges(false, storage));
+    ValuesMap::iterator it = storage.begin();
+    for (; it != storage.end(); ++it)
+      it->second = NullableString16(true);
+    ASSERT_TRUE(db.CommitChanges(false, storage));
+  }
+  EXPECT_FALSE(file_util::PathExists(file_name));
+}
+
 TEST(DomStorageDatabaseTest, TestLazyOpenIsLazy) {
   // This test needs to operate with a file on disk to ensure that we will
   // open a file that already exists when only invoking ReadAllValues.

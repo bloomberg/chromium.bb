@@ -30,7 +30,8 @@ DomStorageDatabase::DomStorageDatabase(const FilePath& file_path)
     : file_path_(file_path),
       db_(NULL),
       failed_to_open_(false),
-      tried_to_recreate_(false) {
+      tried_to_recreate_(false),
+      known_to_be_empty_(false) {
   // Note: in normal use we should never get an empty backing path here.
   // However, the unit test for this class defines another constructor
   // that will bypass this check to allow an empty path that signifies
@@ -40,6 +41,11 @@ DomStorageDatabase::DomStorageDatabase(const FilePath& file_path)
 }
 
 DomStorageDatabase::~DomStorageDatabase() {
+  if (known_to_be_empty_ && !file_path_.empty()) {
+    // Delete the db from disk, it's empty.
+    Close();
+    file_util::Delete(file_path_, false);
+  }
 }
 
 void DomStorageDatabase::ReadAllValues(ValuesMap* result) {
@@ -56,6 +62,7 @@ void DomStorageDatabase::ReadAllValues(ValuesMap* result) {
     statement.ColumnBlobAsString16(1, &value);
     (*result)[key] = NullableString16(value, false);
   }
+  known_to_be_empty_ = result->empty();
 }
 
 bool DomStorageDatabase::CommitChanges(bool clear_all_first,
@@ -63,6 +70,7 @@ bool DomStorageDatabase::CommitChanges(bool clear_all_first,
   if (!LazyOpen(!changes.empty()))
     return false;
 
+  bool old_known_to_be_empty = known_to_be_empty_;
   sql::Transaction transaction(db_.get());
   if (!transaction.Begin())
     return false;
@@ -70,8 +78,11 @@ bool DomStorageDatabase::CommitChanges(bool clear_all_first,
   if (clear_all_first) {
     if (!db_->Execute("DELETE FROM ItemTable"))
       return false;
+    known_to_be_empty_ = true;
   }
 
+  bool did_delete = false;
+  bool did_insert = false;
   ValuesMap::const_iterator it = changes.begin();
   for(; it != changes.end(); ++it) {
     sql::Statement statement;
@@ -81,17 +92,31 @@ bool DomStorageDatabase::CommitChanges(bool clear_all_first,
       statement.Assign(db_->GetCachedStatement(SQL_FROM_HERE,
          "DELETE FROM ItemTable WHERE key=?"));
       statement.BindString16(0, key);
+      did_delete = true;
     } else {
       statement.Assign(db_->GetCachedStatement(SQL_FROM_HERE,
           "INSERT INTO ItemTable VALUES (?,?)"));
       statement.BindString16(0, key);
       statement.BindBlob(1, value.string().data(),
                          value.string().length() * sizeof(char16));
+      known_to_be_empty_ = false;
+      did_insert = true;
     }
     DCHECK(statement.is_valid());
     statement.Run();
   }
-  return transaction.Commit();
+
+  if (!known_to_be_empty_ && did_delete && !did_insert) {
+    sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE,
+        "SELECT count(key) from ItemTable"));
+    if (statement.Step())
+      known_to_be_empty_ = statement.ColumnInt(0) == 0;
+  }
+
+  bool success = transaction.Commit();
+  if (!success)
+    known_to_be_empty_ = old_known_to_be_empty;
+  return success;
 }
 
 bool DomStorageDatabase::LazyOpen(bool create_if_needed) {
