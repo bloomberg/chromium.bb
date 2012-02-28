@@ -83,7 +83,7 @@ class OmniboxApiTest : public ExtensionApiTest {
 // crbug.com/113455.
 #define MAYBE_Basic DISABLED_Basic
 #else
-#define MAYBE_Basic Basic
+#define MAYBE_Basic FLAKY_Basic
 #endif
 
 IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_Basic) {
@@ -212,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_Basic) {
 // crbug.com/113455.
 #define MAYBE_PopupStaysClosed DISABLED_PopupStaysClosed
 #else
-#define MAYBE_PopupStaysClosed PopupStaysClosed
+#define MAYBE_PopupStaysClosed FLAKY_PopupStaysClosed
 #endif
 
 // Tests that the autocomplete popup doesn't reopen after accepting input for
