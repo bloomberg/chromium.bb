@@ -7,15 +7,18 @@
 #pragma once
 
 #include "ash/system/tray/system_tray_item.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/compiler_specific.h"
 
-class TrayBrightness : public ash::SystemTrayItem {
+namespace ash {
+namespace internal {
+
+class TrayBrightness : public SystemTrayItem {
  public:
   TrayBrightness();
   virtual ~TrayBrightness();
 
  private:
-  // Overridden from ash::SystemTrayItem
+  // Overridden from SystemTrayItem
   virtual views::View* CreateTrayView() OVERRIDE;
   virtual views::View* CreateDefaultView() OVERRIDE;
   virtual views::View* CreateDetailedView() OVERRIDE;
@@ -25,5 +28,8 @@ class TrayBrightness : public ash::SystemTrayItem {
 
   DISALLOW_COPY_AND_ASSIGN(TrayBrightness);
 };
+
+}  // namespace internal
+}  // namespace ash
 
 #endif  // ASH_SYSTEM_BRIGHTNESS_TRAY_BRIGHTNESS_H_

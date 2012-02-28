@@ -381,9 +381,9 @@ void Shell::Init() {
     tray_.reset(new SystemTray());
     status_widget_->GetContentsView()->AddChildView(tray_.get());
 
-    tray_->AddTrayItem(new TrayVolume());
-    tray_->AddTrayItem(new TrayBrightness());
-    tray_->AddTrayItem(new TraySettings());
+    tray_->AddTrayItem(new internal::TrayVolume());
+    tray_->AddTrayItem(new internal::TrayBrightness());
+    tray_->AddTrayItem(new internal::TraySettings());
 
     if (delegate_.get())
       tray_delegate_.reset(delegate_->CreateSystemTrayDelegate());

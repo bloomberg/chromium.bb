@@ -8,15 +8,16 @@
 
 #include "ash/system/tray/system_tray_item.h"
 
-class TraySettings : public ash::SystemTrayItem {
- public:
-  TraySettings() {
-  }
+namespace ash {
+namespace internal {
 
-  virtual ~TraySettings() {}
+class TraySettings : public SystemTrayItem {
+ public:
+  TraySettings();
+  virtual ~TraySettings();
 
  private:
-  // Overridden from ash::SystemTrayItem
+  // Overridden from SystemTrayItem
   virtual views::View* CreateTrayView() OVERRIDE;
   virtual views::View* CreateDefaultView() OVERRIDE;
   virtual views::View* CreateDetailedView() OVERRIDE;
@@ -26,5 +27,8 @@ class TraySettings : public ash::SystemTrayItem {
 
   DISALLOW_COPY_AND_ASSIGN(TraySettings);
 };
+
+}  // namespace internal
+}  // namespace ash
 
 #endif  // ASH_SYSTEM_SETTINGS_TRAY_SETTINGS_H_

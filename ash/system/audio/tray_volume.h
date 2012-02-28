@@ -17,13 +17,16 @@ namespace tray {
 class VolumeView;
 }
 
-class TrayVolume : public ash::SystemTrayItem {
+namespace ash {
+namespace internal {
+
+class TrayVolume : public SystemTrayItem {
  public:
   TrayVolume();
   virtual ~TrayVolume();
 
  private:
-  // Overridden from ash::SystemTrayItem
+  // Overridden from SystemTrayItem
   virtual views::View* CreateTrayView() OVERRIDE;
   virtual views::View* CreateDefaultView() OVERRIDE;
   virtual views::View* CreateDetailedView() OVERRIDE;
@@ -36,5 +39,8 @@ class TrayVolume : public ash::SystemTrayItem {
 
   DISALLOW_COPY_AND_ASSIGN(TrayVolume);
 };
+
+}  // namespace internal
+}  // namespace ash
 
 #endif  // ASH_SYSTEM_AUDIO_TRAY_VOLUME_H_

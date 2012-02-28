@@ -40,6 +40,7 @@ class BrightnessView : public views::View,
     // level of the system. So start with a random value.
     // http://crosbug.com/26935
     slider->SetValue(0.8f);
+    slider->set_border(views::Border::CreateEmptyBorder(0, 0, 0, 20));
     AddChildView(slider);
   }
 
@@ -66,7 +67,11 @@ class BrightnessView : public views::View,
 
 }  // namespace
 
+namespace ash {
+namespace internal {
+
 TrayBrightness::TrayBrightness() {}
+
 TrayBrightness::~TrayBrightness() {}
 
 views::View* TrayBrightness::CreateTrayView() {
@@ -90,3 +95,6 @@ void TrayBrightness::DestroyDefaultView() {
 
 void TrayBrightness::DestroyDetailedView() {
 }
+
+}  // namespace internal
+}  // namespace ash

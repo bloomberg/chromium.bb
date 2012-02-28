@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/image_view.h"
@@ -24,43 +25,50 @@ class SettingsView : public views::View {
   SettingsView() {
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
           0, 0, 3));
+
     views::ImageView* icon = new views::ImageView;
     icon->SetImage(ui::ResourceBundle::GetSharedInstance().
         GetImageNamed(IDR_AURA_UBER_TRAY_SETTINGS).ToSkBitmap());
-    views::Label* label = new views::Label(ASCIIToUTF16("Settings"));
-
     AddChildView(icon);
-    AddChildView(label);
+
+    label_ = new views::Label(ASCIIToUTF16("Help and Settings"));
+    AddChildView(label_);
   }
 
+  // Overridden from views::View.
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
     ash::Shell::GetInstance()->tray_delegate()->ShowSettings();
     return true;
   }
 
+  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE {
+    gfx::Font font = label_->font();
+    label_->SetFont(font.DeriveFont(0,
+          font.GetStyle() | gfx::Font::UNDERLINED));
+    SchedulePaint();
+  }
+
+  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE {
+    gfx::Font font = label_->font();
+    label_->SetFont(font.DeriveFont(0,
+          font.GetStyle() & ~gfx::Font::UNDERLINED));
+    SchedulePaint();
+  }
+
  private:
+  views::Label* label_;
+
   DISALLOW_COPY_AND_ASSIGN(SettingsView);
 };
 
-class HelpView : public views::View {
- public:
-  HelpView() {
-    SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-          0, 0, 3));
-    views::Label* label = new views::Label(ASCIIToUTF16("Help"));
-    AddChildView(label);
-  }
-
-  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
-    ash::Shell::GetInstance()->tray_delegate()->ShowHelp();
-    return true;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(HelpView);
-};
-
 }  // namespace
+
+namespace ash {
+namespace internal {
+
+TraySettings::TraySettings() {}
+
+TraySettings::~TraySettings() {}
 
 views::View* TraySettings::CreateTrayView() {
   return NULL;
@@ -75,8 +83,6 @@ views::View* TraySettings::CreateDefaultView() {
 
   views::View* settings = new SettingsView;
   container->AddChildView(settings);
-  views::View* help = new HelpView;
-  container->AddChildView(help);
   return container;
 }
 
@@ -93,3 +99,6 @@ void TraySettings::DestroyDefaultView() {
 
 void TraySettings::DestroyDetailedView() {
 }
+
+}  // namespace internal
+}  // namespace ash

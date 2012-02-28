@@ -25,6 +25,7 @@ class SystemTrayBubble : public views::BubbleDelegateView {
   explicit SystemTrayBubble(ash::SystemTray* tray)
       : views::BubbleDelegateView(tray, views::BubbleBorder::BOTTOM_RIGHT),
         tray_(tray) {
+    set_margin(1);
   }
 
   virtual ~SystemTrayBubble() {
@@ -63,7 +64,9 @@ class SystemTrayBubble : public views::BubbleDelegateView {
 
 namespace ash {
 
-SystemTray::SystemTray() : items_() {
+SystemTray::SystemTray()
+    : items_(),
+      popup_(NULL) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
         5, 10, 3));
 }
@@ -91,10 +94,20 @@ void SystemTray::RemoveTrayItem(SystemTrayItem* item) {
 }
 
 bool SystemTray::OnMousePressed(const views::MouseEvent& event) {
-  SystemTrayBubble* bubble = new SystemTrayBubble(this);
-  views::BubbleDelegateView::CreateBubble(bubble);
-  bubble->Show();
+  if (popup_) {
+    popup_->Show();
+  } else {
+    SystemTrayBubble* bubble = new SystemTrayBubble(this);
+    popup_ = views::BubbleDelegateView::CreateBubble(bubble);
+    popup_->AddObserver(this);
+    bubble->Show();
+  }
   return true;
+}
+
+void SystemTray::OnWidgetClosing(views::Widget* widget) {
+  CHECK_EQ(popup_, widget);
+  popup_ = NULL;
 }
 
 }  // namespace ash

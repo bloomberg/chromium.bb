@@ -47,6 +47,7 @@ class VolumeView : public views::View,
 
     views::Slider* slider = new views::Slider(this, views::Slider::HORIZONTAL);
     slider->SetValue(delegate->VolumeLevel());
+    slider->set_border(views::Border::CreateEmptyBorder(0, 0, 0, 20));
     AddChildView(slider);
   }
 
@@ -78,6 +79,9 @@ class VolumeView : public views::View,
 };
 
 }  // namespace tray
+
+namespace ash {
+namespace internal {
 
 TrayVolume::TrayVolume() {
 }
@@ -112,3 +116,6 @@ void TrayVolume::DestroyDefaultView() {
 
 void TrayVolume::DestroyDetailedView() {
 }
+
+}  // namespace internal
+}  // namespace ash

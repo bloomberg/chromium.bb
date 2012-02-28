@@ -9,18 +9,16 @@
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 #include <vector>
-
-namespace views {
-class View;
-}
 
 namespace ash {
 
 class SystemTrayItem;
 
-class ASH_EXPORT SystemTray : public views::View {
+class ASH_EXPORT SystemTray : public views::View,
+                              public views::Widget::Observer {
  public:
   SystemTray();
   virtual ~SystemTray();
@@ -37,7 +35,13 @@ class ASH_EXPORT SystemTray : public views::View {
   // Overridden from views::View.
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
 
+  // Overridden from views::Widget::Observer.
+  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+
   std::vector<SystemTrayItem*> items_;
+
+  // The popup widget.
+  views::Widget* popup_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTray);
 };
