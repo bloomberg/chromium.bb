@@ -68,7 +68,7 @@ const gfx::Rect* GetRestoreBounds(aura::Window* window) {
 }
 
 void SetRestoreBounds(aura::Window* window, const gfx::Rect& bounds) {
-  delete GetRestoreBounds(window);
+  scoped_ptr<const gfx::Rect> old_bounds(GetRestoreBounds(window));
   window->SetProperty(aura::client::kRestoreBoundsKey, new gfx::Rect(bounds));
 }
 
@@ -751,7 +751,8 @@ void NativeWidgetAura::OnWindowDestroying() {
   tooltip_manager_.reset();
 
   // Cleanup properties associated with the window here.
-  delete GetRestoreBounds(window_);
+  scoped_ptr<const gfx::Rect> old_bounds(GetRestoreBounds(window_));
+  window_->ClearProperty(aura::client::kRestoreBoundsKey);
 }
 
 void NativeWidgetAura::OnWindowDestroyed() {

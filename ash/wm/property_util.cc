@@ -13,7 +13,7 @@
 namespace ash {
 
 void SetRestoreBounds(aura::Window* window, const gfx::Rect& bounds) {
-  delete GetRestoreBounds(window);
+  scoped_ptr<const gfx::Rect> old_bounds(GetRestoreBounds(window));
   window->SetProperty(aura::client::kRestoreBoundsKey, new gfx::Rect(bounds));
 }
 
@@ -27,7 +27,7 @@ const gfx::Rect* GetRestoreBounds(aura::Window* window) {
 }
 
 void ClearRestoreBounds(aura::Window* window) {
-  delete GetRestoreBounds(window);
+  scoped_ptr<const gfx::Rect> old_bounds(GetRestoreBounds(window));
   window->ClearProperty(aura::client::kRestoreBoundsKey);
 }
 
