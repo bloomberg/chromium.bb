@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request_context.h"
+#include "webkit/blob/deletable_file_reference.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util_proxy.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
@@ -22,6 +23,20 @@
 #include "webkit/quota/quota_types.h"
 
 namespace fileapi {
+
+namespace {
+
+void GetMetadataForSnapshot(
+    const FileSystemOperationInterface::SnapshotFileCallback& callback,
+    base::PlatformFileError result,
+    const base::PlatformFileInfo& file_info,
+    const FilePath& platform_path) {
+  // We don't want the third party to delete our local file, so just returning
+  // NULL as |deletable_file_reference|.
+  callback.Run(result, file_info, platform_path, NULL);
+}
+
+}  // anonymous namespace
 
 class FileSystemOperation::ScopedQuotaNotifier {
  public:
@@ -425,6 +440,12 @@ void FileSystemOperation::SyncGetPlatformPath(const GURL& path_url,
       &operation_context_, src_path_, platform_path);
 
   delete this;
+}
+
+void FileSystemOperation::CreateSnapshotFile(
+    const GURL& path_url,
+    const SnapshotFileCallback& callback) {
+  GetMetadata(path_url, base::Bind(&GetMetadataForSnapshot, callback));
 }
 
 FileSystemOperation::FileSystemOperation(

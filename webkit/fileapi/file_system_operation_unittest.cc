@@ -13,6 +13,7 @@
 #include "base/scoped_temp_dir.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/blob/deletable_file_reference.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
@@ -28,6 +29,7 @@ using quota::QuotaClient;
 using quota::QuotaManager;
 using quota::QuotaManagerProxy;
 using quota::StorageType;
+using webkit_blob::DeletableFileReference;
 
 namespace fileapi {
 
@@ -168,6 +170,9 @@ class FileSystemOperationTest
   const std::vector<base::FileUtilProxy::Entry>& entries() const {
     return entries_;
   }
+  const DeletableFileReference* deletable_file_ref() const {
+    return deletable_file_ref_;
+  }
 
   virtual void SetUp();
   virtual void TearDown();
@@ -251,6 +256,12 @@ class FileSystemOperationTest
     return base::Bind(&FileSystemOperationTest::DidGetMetadata, AsWeakPtr());
   }
 
+  FileSystemOperationInterface::SnapshotFileCallback
+      RecordSnapshotFileCallback() {
+    return base::Bind(&FileSystemOperationTest::DidCreateSnapshotFile,
+                      AsWeakPtr());
+  }
+
   void DidFinish(base::PlatformFileError status) {
     status_ = status;
   }
@@ -271,11 +282,23 @@ class FileSystemOperationTest
     status_ = status;
   }
 
+  void DidCreateSnapshotFile(
+      base::PlatformFileError status,
+      const base::PlatformFileInfo& info,
+      const FilePath& platform_path,
+      const scoped_refptr<DeletableFileReference>& deletable_file_ref) {
+    info_ = info;
+    path_ = platform_path;
+    status_ = status;
+    deletable_file_ref_ = deletable_file_ref;
+  }
+
   // For post-operation status.
   int status_;
   base::PlatformFileInfo info_;
   FilePath path_;
   std::vector<base::FileUtilProxy::Entry> entries_;
+  scoped_refptr<DeletableFileReference> deletable_file_ref_;
 
  private:
   scoped_ptr<LocalFileUtil> local_file_util_;
@@ -1012,6 +1035,33 @@ TEST_F(FileSystemOperationTest, TestTouchFile) {
   // representation and back.
   EXPECT_EQ(new_modified_time.ToTimeT(), info.last_modified.ToTimeT());
   EXPECT_EQ(new_accessed_time.ToTimeT(), info.last_accessed.ToTimeT());
+}
+
+TEST_F(FileSystemOperationTest, TestCreateSnapshotFile) {
+  FilePath dir_path(CreateVirtualTemporaryDir());
+
+  // Create a file for the testing.
+  operation()->DirectoryExists(URLForPath(dir_path),
+                               RecordStatusCallback());
+  FilePath file_path(CreateVirtualTemporaryFileInDir(dir_path));
+  operation()->FileExists(URLForPath(file_path), RecordStatusCallback());
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(base::PLATFORM_FILE_OK, status());
+
+  // See if we can get a 'snapshot' file info for the file.
+  // Since FileSystemOperation assumes the file exists in the local directory
+  // it should just returns the same metadata and platform_path as
+  // the file itself.
+  operation()->CreateSnapshotFile(URLForPath(file_path),
+                                  RecordSnapshotFileCallback());
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(base::PLATFORM_FILE_OK, status());
+  EXPECT_FALSE(info().is_directory);
+  EXPECT_EQ(PlatformPath(file_path), path());
+
+  // The FileSystemOpration implementation does not set the deletable
+  // file reference.
+  EXPECT_EQ(NULL, deletable_file_ref());
 }
 
 }  // namespace fileapi

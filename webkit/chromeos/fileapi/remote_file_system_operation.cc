@@ -121,6 +121,12 @@ RemoteFileSystemOperation::AsFileSystemOperation() {
   return NULL;
 }
 
+void RemoteFileSystemOperation::CreateSnapshotFile(
+    const GURL& path,
+    const SnapshotFileCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
 bool RemoteFileSystemOperation::SetPendingOperationType(OperationType type) {
   if (pending_operation_ != kOperationNone)
     return false;

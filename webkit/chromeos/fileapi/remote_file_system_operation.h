@@ -64,8 +64,10 @@ class RemoteFileSystemOperation : public fileapi::FileSystemOperationInterface {
       int file_flags,
       base::ProcessHandle peer_handle,
       const OpenFileCallback& callback) OVERRIDE;
-
   virtual fileapi::FileSystemOperation* AsFileSystemOperation() OVERRIDE;
+  virtual void CreateSnapshotFile(
+      const GURL& path,
+      const SnapshotFileCallback& callback) OVERRIDE;
 
  private:
   friend class CrosMountPointProvider;
