@@ -206,7 +206,7 @@ if env.Bit('windows'):
   if env.Bit('target_x86_32'):
     ldr_inputs += [
       'win/nacl_signal_32.c',
-      'win/debug_exception_handler_32.c',
+      'win/debug_exception_handler.c',
     ]
   elif env.Bit('target_x86_64'):
     ldr_inputs += [
@@ -214,8 +214,7 @@ if env.Bit('windows'):
       'win/exception_patch/intercept.S',
       'win/exception_patch/ntdll_patch.c',
       'win/nacl_signal_64.c',
-      # TODO(mseaborn): Rename this file to remove the "_32" suffix.
-      'win/debug_exception_handler_32.c',
+      'win/debug_exception_handler.c',
     ]
   else:
     raise Exception("Unsupported target")
