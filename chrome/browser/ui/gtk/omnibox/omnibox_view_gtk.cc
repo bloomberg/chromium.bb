@@ -1453,7 +1453,30 @@ void OmniboxViewGtk::HandlePopulatePopup(GtkWidget* sender, GtkMenu* menu) {
       gfx::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(model_->is_paste_and_search() ?
               IDS_PASTE_AND_SEARCH : IDS_PASTE_AND_GO)).c_str());
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu), paste_go_menuitem);
+
+  // Detect the Paste menu item by searching for the one that
+  // uses the stock Paste label (i.e. gtk-paste).
+  string16 stock_paste_label(UTF8ToUTF16(GTK_STOCK_PASTE));
+  GList* list = gtk_container_get_children(GTK_CONTAINER(menu));
+  guint index = 1;
+  for (GList* item = list; item != NULL; item = item->next, ++index) {
+    if (GTK_IS_IMAGE_MENU_ITEM(item->data)) {
+      gboolean is_stock = gtk_image_menu_item_get_use_stock(
+          GTK_IMAGE_MENU_ITEM(item->data));
+      if (is_stock) {
+        string16 menu_item_label
+            (UTF8ToUTF16(gtk_menu_item_get_label(GTK_MENU_ITEM(item->data))));
+        if (menu_item_label == stock_paste_label) {
+          break;
+        }
+      }
+    }
+  }
+  g_list_free(list);
+
+  // If we don't find the stock Paste menu item,
+  // the Paste and Go item will be appended at the end of the popup menu.
+  gtk_menu_shell_insert(GTK_MENU_SHELL(menu), paste_go_menuitem, index);
   g_signal_connect(paste_go_menuitem, "activate",
                    G_CALLBACK(HandlePasteAndGoThunk), this);
   gtk_widget_set_sensitive(paste_go_menuitem, can_paste_and_go);
