@@ -300,20 +300,16 @@ void HelpHandler::SetPromotionState(VersionUpdater::PromotionState state) {
 #if defined(OS_CHROMEOS)
 void HelpHandler::OnOSVersion(chromeos::VersionLoader::Handle handle,
                               std::string version) {
-  if (version.size()) {
-    scoped_ptr<Value> version_string(Value::CreateStringValue(version));
-    web_ui()->CallJavascriptFunction("help.HelpPage.setOSVersion",
-                                     *version_string);
-  }
+  scoped_ptr<Value> version_string(Value::CreateStringValue(version));
+  web_ui()->CallJavascriptFunction("help.HelpPage.setOSVersion",
+                                   *version_string);
 }
 
 void HelpHandler::OnOSFirmware(chromeos::VersionLoader::Handle handle,
                                std::string firmware) {
-  if (firmware.size()) {
-    scoped_ptr<Value> firmware_string(Value::CreateStringValue(firmware));
-    web_ui()->CallJavascriptFunction("help.HelpPage.setOSFirmware",
-                                     *firmware_string);
-  }
+  scoped_ptr<Value> firmware_string(Value::CreateStringValue(firmware));
+  web_ui()->CallJavascriptFunction("help.HelpPage.setOSFirmware",
+                                   *firmware_string);
 }
 
 void HelpHandler::OnReleaseChannel(const std::string& channel) {

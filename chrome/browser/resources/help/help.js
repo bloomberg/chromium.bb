@@ -142,6 +142,7 @@ cr.define('help', function() {
       if (!cr.isChromeOS)
         console.error('OS version unsupported on non-CrOS');
 
+      $('os-version').parentNode.hidden = (version == '');
       $('os-version').textContent = version;
     },
 
@@ -152,6 +153,7 @@ cr.define('help', function() {
       if (!cr.isChromeOS)
         console.error('OS firmware unsupported on non-CrOS');
 
+      $('firmware').parentNode.hidden = (firmware == '');
       $('firmware').textContent = firmware;
     },
 
