@@ -4535,6 +4535,17 @@ section {
   cursor: text;
 }
 
+.section-row {
+  display: -webkit-box;
+  -webkit-box-align: center;
+  padding: 10px 0;
+  border-top: 1px solid #EBEBEB;
+}
+
+.section-row:first-child {
+  border-top: none;
+}
+
 .error-state {
   background-image: url('icon_warning.png');
   background-repeat: no-repeat;
@@ -4614,15 +4625,6 @@ section {
   border-spacing: 0;
 }
 
-.host-list-row {
-  height: 50px;
-  color: black;
-}
-
-.host-list-row td {
-  border-bottom: 1px solid #ebebeb;
-}
-
 td {
   vertical-align: middle;
 }
@@ -4635,29 +4637,29 @@ td {
   opacity: 0;
 }
 
-.host-list-row:hover .host-list-rename-icon {
-  opacity: 0.8;
+.section-row:hover .host-list-rename-icon {
+  opacity: 0.6;
 }
 
-.host-list-row:hover .host-list-remove-icon {
+.section-row:hover .host-list-remove-icon {
   opacity: 0.3;
 }
 
-.host-list-edit:hover .host-list-rename-icon {
-  opacity: 1;
+.host-list-rename-icon:hover {
+  opacity: 1 !important;
 }
 
-.host-list-edit:hover .host-list-remove-icon {
-  opacity: 0.5;
+.host-list-remove-icon:hover {
+  opacity: 0.5 !important;
+}
+
+.host-list-edit {
+  padding: 0 5px;
 }
 
 .host-list-main-icon {
-  width: 40px;
-}
-
-.host-list-edit-icon,
-.host-list-rename-icon {
-  width: 16px;
+  margin-right: 10px;
+  vertical-align: middle;
 }
 
 .host-offline .host-list-label,

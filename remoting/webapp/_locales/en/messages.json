@@ -222,8 +222,14 @@
     "description": "Label for general-purpose OK buttons."
   },
   "OFFLINE": {
-    "message": "Offline",
-    "description": "Label indicating that a host in the list is not currently available for remote access."
+    "message": "$hostname$ (offline)",
+    "description": "Modified version of the host name shown for hosts that are not currently accessible.",
+    "placeholders": {
+      "hostname": {
+        "content": "$1",
+        "example": "My Linux desktop"
+      }
+    }
   },
   "PIN": {
     "message": "PIN",
@@ -249,9 +255,27 @@
     "message": "Stop Sharing",
     "description": "Label for the 'stop sharing' button on the host-side. Clicking this button disconnects the client."
   },
+  "TOOLTIP_CONNECT": {
+    "message": "Connect to $hostname$",
+    "description": "The tool-tip shown when the user hovers over an on-line host. Clicking the host will initiate a connection to it.",
+    "placeholders": {
+      "hostname": {
+        "content": "$1",
+        "example": "My Linux desktop"
+      }
+    }
+  },
+  "TOOLTIP_DELETE": {
+    "message": "Disable remote connections to this computer",
+    "description": "The tool-tip shown when the user hovers over the 'delete host' button. Clicking this button removes the host from the list and disables connections to it."
+  },
   "TOOLTIP_SCALING": {
     "message": "Scale to fit",
     "description": "The tool-tip shown when the user hovers over the scale to fit button. Clicking this button toggles between scaling down the remote desktop to fit it inside the Chromium browser window and displaying it at 1:1 scale."
+  },
+  "TOOLTIP_RENAME": {
+    "message": "Edit computer name",
+    "description": "The tool-tip shown when the user hovers over the 'rename host' button. Clicking this button allows the host name to be edited in-place."
   },
   "WARNING_NAT_DISABLED": {
     "message": "NOTE: Policy settings permit connections only between computers within your network.",

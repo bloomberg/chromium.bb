@@ -80,46 +80,40 @@ found in the LICENSE file.
 
       <section>
         <h2 i18n-content="MODE_IT2ME"></h2>
-        <!-- TODO(jamiewalch): Rewrite this using flex boxes -->
-        <table class="mode-select-table">
-          <tr>
-            <td>
+        <div>
+          <div class="section-row">
+            <div class="box-spacer">
               <div i18n-content="HOME_SHARE_DESCRIPTION"></div>
               <div id="chrome-os-no-share"
                    i18n-content="HOME_SHARE_DESCRIPTION_CHROME_OS"
                    class="small-print"></div>
-            </td>
-            <td class="mode-select-button-column">
+            </div>
+            <div>
               <button id="share-button"
                       i18n-content="HOME_SHARE_BUTTON"
                       class="kd-button kd-button-share"
                       type="button">
               </button>
-            </td>
-          </tr>
-          <tr class="mode-select-table-underline mode-select-table-spacer">
-            <td></td><td></td>
-          </tr>
-          <tr class="mode-select-table-spacer">
-          </tr>
-          <tr>
-            <td i18n-content="HOME_ACCESS_DESCRIPTION"></td>
-            <td class="mode-select-button-column">
-              <button id="access-mode-button"
-                      i18n-content="HOME_ACCESS_BUTTON"
-                      class="kd-button"
-                      type="button">
-              </button>
-            </td>
-          </tr>
-        </table>
-      </section>
+            </div>
+          </div>
+        </div>
+        <div class="section-row">
+          <div i18n-content="HOME_ACCESS_DESCRIPTION" class="box-spacer"></div>
+          <div>
+            <button id="access-mode-button"
+                    i18n-content="HOME_ACCESS_BUTTON"
+                    class="kd-button"
+                    type="button">
+            </button>
+          </div>
+        </div>
+      </section> <!-- Remote Assistance -->
 
       <section id="host-list-div"
                class="host-list-container collapsed"
                hidden>
         <h2 i18n-content="MODE_ME2ME"></h2>
-        <table id="host-list" class="host-list-table"></table>
+        <div id="host-list"></div>
         <div id="host-list-error" class="error-state"></div>
         <div id="daemon-control" data-daemon-state="enabled disabled">
           <table class="host-list-table">

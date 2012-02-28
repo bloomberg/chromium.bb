@@ -166,6 +166,8 @@ remoting.HostList.prototype.display = function() {
    */
   var onDelete = function(hostTableEntry) { that.deleteHost_(hostTableEntry); }
 
+  this.table_.hidden = (this.hosts_.length == 0);
+
   for (var i = 0; i < this.hosts_.length; ++i) {
     /** @type {remoting.Host} */
     var host = this.hosts_[i];
@@ -182,6 +184,7 @@ remoting.HostList.prototype.display = function() {
   if (this.lastError_ != '') {
     l10n.localizeElementFromTag(this.errorDiv_, this.lastError_);
   }
+  this.errorDiv_.hidden = (this.lastError_ == '');
 
   this.showOrHide_(this.hosts_.length != 0 || this.lastError_ != '');
 };
