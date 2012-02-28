@@ -276,3 +276,16 @@ function areValidConstants(receivedConstants) {
          typeof(receivedConstants.timeTickOffset) == 'string' &&
          typeof(receivedConstants.logFormatVersion) == 'number';
 }
+
+/**
+ * Returns the name for netError.
+ *
+ * Example: netErrorToString(-105) would return
+ * "ERR_NAME_NOT_RESOLVED".
+ */
+function netErrorToString(netError) {
+  var str = getKeyWithValue(NetError, netError);
+  if (str == '?')
+    return str;
+  return 'ERR_' + str;
+}

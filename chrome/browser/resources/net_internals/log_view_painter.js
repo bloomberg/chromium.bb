@@ -218,7 +218,7 @@ function addRowsForExtraParams(tablePrinter, entry, enableSecurityStripping) {
         // on particular naming of event parameters to infer the type).
         if (typeof value == 'number') {
           if (k == 'net_error') {
-            paramStr += ' (' + getNetErrorSymbolicString(value) + ')';
+            paramStr += ' (' + netErrorToString(value) + ')';
           } else if (k == 'load_flags') {
             paramStr += ' (' + getLoadFlagSymbolicString(value) + ')';
           }
@@ -227,16 +227,6 @@ function addRowsForExtraParams(tablePrinter, entry, enableSecurityStripping) {
         addTextRows(tablePrinter, paramStr, null);
       }
   }
-}
-
-/**
- * Returns the name for netError.
- *
- * Example: getNetErrorSymbolicString(-105) would return
- * "NAME_NOT_RESOLVED".
- */
-function getNetErrorSymbolicString(netError) {
-  return getKeyWithValue(NetError, netError);
 }
 
 /**

@@ -123,7 +123,7 @@ var DnsView = (function() {
 
         if (e.error != undefined) {
           var errorText =
-              e.error + ' (' + getKeyWithValue(NetError, e.error) + ')';
+              e.error + ' (' + netErrorToString(e.error) + ')';
           var errorNode = addTextNode(addressesCell, 'error: ' + errorText);
           changeClassName(addressesCell, 'warningText', true);
         } else {
