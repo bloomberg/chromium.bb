@@ -98,12 +98,13 @@ LPCITEMIDLIST BinaryReadItemIDList(size_t offset, size_t idlist_size,
                                    const std::vector<uint8>& blob) {
   size_t head = 0;
   while (true) {
-    SHITEMID id;
-    if (head >= idlist_size || !BinaryRead(&id, offset + head, blob))
+    // Use a USHORT instead of SHITEMID to avoid buffer over read.
+    USHORT id_cb;
+    if (head >= idlist_size || !BinaryRead(&id_cb, offset + head, blob))
       return NULL;
-    if (id.cb == 0)
+    if (id_cb == 0)
       break;
-    head += id.cb;
+    head += id_cb;
   }
   return reinterpret_cast<LPCITEMIDLIST>(&blob[offset]);
 }

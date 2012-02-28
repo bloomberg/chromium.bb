@@ -106,7 +106,9 @@ bool CreateOrderBlob(const FilePath& favorites_folder,
     ITEMIDLIST* id_list_full = ILCreateFromPath(
         favorites_folder.Append(path).Append(entries[i]).value().c_str());
     ITEMIDLIST* id_list = ILFindLastID(id_list_full);
-    size_t id_list_size = id_list->mkid.cb + sizeof(id_list->mkid);
+    // Include the trailing zero-length item id.  Don't include the single
+    // element array.
+    size_t id_list_size = id_list->mkid.cb + sizeof(id_list->mkid.cb);
 
     blob.resize(blob.size() + 8);
     uint32 total_size = id_list_size + 8;
