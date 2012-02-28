@@ -37,22 +37,6 @@
 
 namespace net {
 
-namespace {
-
-std::string GetHostname(TestServer::Type type,
-                        const TestServer::HTTPSOptions& options) {
-  if (type == TestServer::TYPE_HTTPS &&
-      options.server_certificate ==
-          TestServer::HTTPSOptions::CERT_MISMATCHED_NAME) {
-    // Return a different hostname string that resolves to the same hostname.
-    return "localhost";
-  }
-
-  return "127.0.0.1";
-}
-
-}  // namespace
-
 TestServer::HTTPSOptions::HTTPSOptions()
     : server_certificate(CERT_OK),
       request_client_certificate(false),
@@ -83,13 +67,6 @@ FilePath TestServer::HTTPSOptions::GetCertificateFile() const {
 
 const char* TestServer::kLocalhost = "127.0.0.1";
 
-TestServer::TestServer(Type type, const FilePath& document_root)
-    : type_(type),
-      started_(false),
-      log_to_console_(false) {
-  Init("127.0.0.1", document_root);
-}
-
 TestServer::TestServer(Type type,
                        const std::string& host,
                        const FilePath& document_root)
@@ -105,7 +82,14 @@ TestServer::TestServer(const HTTPSOptions& https_options,
       type_(TYPE_HTTPS),
       started_(false),
       log_to_console_(false) {
-  Init(GetHostname(TYPE_HTTPS, https_options), document_root);
+  const char* host = "127.0.0.1";
+  if (https_options_.server_certificate ==
+      TestServer::HTTPSOptions::CERT_MISMATCHED_NAME) {
+    // Use a different hostname string that resolves to the same address.
+    host = "localhost";
+  }
+
+  Init(host, document_root);
 }
 
 TestServer::~TestServer() {
