@@ -266,8 +266,8 @@ remoting.FormatIq.prototype.prettySessionTerminate = function(jingle) {
     return null;
   }
   var info = reason.firstChild;
-  if (info.nodeName == 'success') {
-    return '\n  reason=success';
+  if (info.nodeName == 'success' || info.nodeName == 'general-error') {
+    return '\n  reason=' + info.nodeName;
   }
   return null;
 };
@@ -495,9 +495,41 @@ remoting.FormatIq.prototype.prettyIqSet = function(action, iq_list) {
   var iq_children = iq.childNodes;
 
   var children = iq_children.length;
-  if (children >= 1) {
+  if (children == 1) {
     /** @type {Node} */
     var child = iq_children[0];
+    if (child.nodeName == 'gr:log') {
+      var grlog = child;
+      if (!this.verifyAttributes(grlog, 'xmlns:gr')) {
+        return null;
+      }
+
+      if (grlog.childNodes.length != 1) {
+        return null;
+      }
+      var grentry = grlog.firstChild;
+      if (grentry.nodeName != 'gr:entry') {
+        return null;
+      }
+      if (!this.verifyAttributes(grentry, 'role,event-name,session-state,' +
+                                 'os-name,cpu,browser-version,' +
+                                 'webapp-version')) {
+        return null;
+      }
+      var role = grentry.getAttribute('role');
+      var event_name = grentry.getAttribute('event-name');
+      var session_state = grentry.getAttribute('session-state');
+      var os_name = grentry.getAttribute('os-name');
+      var cpu = grentry.getAttribute('cpu');
+      var browser_version = grentry.getAttribute('browser-version');
+      var webapp_version = grentry.getAttribute('webapp-version');
+
+      var result = this.prettyIqHeading(action, id, role + ' ' + event_name +
+                                        ' ' + session_state, null);
+      result += '\n  ' + os_name + ' ' + cpu + " browser:" + browser_version +
+                     " webapp:" + webapp_version;
+      return result;
+    }
     if (child.nodeName == 'jingle') {
       var jingle = child;
       if (!this.verifyAttributes(jingle, 'xmlns,action,sid,initiator')) {
@@ -507,46 +539,13 @@ remoting.FormatIq.prototype.prettyIqSet = function(action, iq_list) {
       var jingle_action = jingle.getAttribute('action');
       var sid = jingle.getAttribute('sid');
 
-      if (children == 1) {
-        var result = this.prettyIqHeading(action, id, 'set ' + jingle_action,
-                                          sid);
-        var action_str = this.prettyJingleAction(jingle, jingle_action);
-        if (!action_str) {
-          return null;
-        }
-        return result + action_str;
-
-      } else if (children == 2) {
-        if (jingle_action == 'session-initiate') {
-          var result = this.prettyIqHeading(action, id, 'set ' + jingle_action,
-                                            sid);
-          var si_str = this.prettySessionInitiateAccept(jingle);
-          if (!si_str) {
-            return null;
-          }
-          result += si_str;
-
-          // When there are two child nodes for a 'session-initiate' node,
-          // the second is a duplicate  copy of the 'session' info added by
-          // libjingle for backward compatability with an older version of
-          // Jingle (called Gingle).
-          // Since M16 we no longer use libjingle on the client side and thus
-          // we no longer generate this duplicate node.
-
-          // Require that second child is 'session' with type='initiate'.
-          /** @type {Node} */
-          var session = iq_children[1];
-          if (session.nodeName != 'session') {
-            return null;
-          }
-          var type = session.getAttribute('type');
-          if (type != 'initiate') {
-            return null;
-          }
-          // Silently ignore contents of 'session' node.
-          return result;
-        }
+      var result = this.prettyIqHeading(action, id, 'set ' + jingle_action,
+                                        sid);
+      var action_str = this.prettyJingleAction(jingle, jingle_action);
+      if (!action_str) {
+        return null;
       }
+      return result + action_str;
     }
   }
   return null;
@@ -577,7 +576,7 @@ remoting.FormatIq.prototype.prettyIqError = function(action, iq_list) {
   if (jingle.nodeName != 'jingle') {
     return null;
   }
-  if (!this.verifyAttributes(jingle, 'xmlns,action,sid')) {
+  if (!this.verifyAttributes(jingle, 'xmlns,action,sid,initiator')) {
     return null;
   }
   var jingle_action = jingle.getAttribute('action');
