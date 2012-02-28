@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
-#include "base/logging.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -16,7 +15,6 @@ class Browser;
 class ExtensionDialogObserver;
 class ExtensionHost;
 class GURL;
-class Profile;
 
 namespace content {
 class WebContents;
@@ -45,20 +43,13 @@ class ExtensionDialog : public views::WidgetDelegate,
 
 #if defined(USE_AURA)
   // Create and show a fullscreen dialog with |url|.
-  // |profile| is the profile that the extension is registered with.
+  // |browser| is the browser to which the pop-up will be attached.
   // |web_contents| is the tab that spawned the dialog.
   static ExtensionDialog* ShowFullscreen(const GURL& url,
-                                         Profile* profile,
+                                         Browser* browser,
+                                         content::WebContents* web_contents,
                                          const string16& title,
                                          ExtensionDialogObserver* observer);
-#else
-  static ExtensionDialog* ShowFullscreen(const GURL& url,
-                                         Profile* profile,
-                                         const string16& title,
-                                         ExtensionDialogObserver* observer) {
-    NOTIMPLEMENTED();
-    return NULL;
-  }
 #endif
 
   // Notifies the dialog that the observer has been destroyed and should not
@@ -95,7 +86,7 @@ class ExtensionDialog : public views::WidgetDelegate,
 
   static ExtensionDialog* ShowInternal(const GURL& url,
                                        Browser* browser,
-                                       ExtensionHost* host,
+                                       content::WebContents* web_contents,
                                        int width,
                                        int height,
                                        bool fullscreen,
@@ -103,11 +94,10 @@ class ExtensionDialog : public views::WidgetDelegate,
                                        ExtensionDialogObserver* observer);
 
   static ExtensionHost* CreateExtensionHost(const GURL& url,
-                                            Browser* browser,
-                                            Profile* profile);
+                                            Browser* browser);
 
   void InitWindow(Browser* browser, int width, int height);
-  void InitWindowFullscreen();
+  void InitWindowFullscreen(Browser* browser);
 
   // Window that holds the extension host view.
   views::Widget* window_;

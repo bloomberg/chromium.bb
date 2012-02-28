@@ -1179,9 +1179,6 @@ const char kEnableDevicePolicy[]            = "enable-device-policy";
 // Viewer.
 const char kEnableGView[]                   = "enable-gview";
 
-// Enable Kiosk mode for ChromeOS
-const char kEnableKioskMode[]               = "enable-kiosk-mode";
-
 // Enables mobile setup in a dialog.
 const char kEnableMobileSetupDialog[]       = "enable-mobile-dialog";
 
@@ -1195,9 +1192,6 @@ const char kEnableSensors[]                 = "enable-sensors";
 // Enables static ip configuration. This flag should be removed when it's on by
 // default.
 const char kEnableStaticIPConfig[]          = "enable-static-ip-config";
-
-// Path for the screensaver used in Kiosk mode
-const char kKioskModeScreensaverPath[]      = "kiosk-mode-screensaver-path";
 
 // Enables Chrome-as-a-login-manager behavior.
 const char kLoginManager[]                  = "login-manager";

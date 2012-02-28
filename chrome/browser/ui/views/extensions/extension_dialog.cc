@@ -19,13 +19,12 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/background.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
-#include "ash/shell.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
 #endif
 
 using content::WebContents;
@@ -59,27 +58,19 @@ ExtensionDialog* ExtensionDialog::Show(
     int height,
     const string16& title,
     ExtensionDialogObserver* observer) {
-  ExtensionHost* host = CreateExtensionHost(url, browser, NULL);
-  if (!host)
-    return NULL;
-  host->set_associated_web_contents(web_contents);
-
-  return ExtensionDialog::ShowInternal(url, browser, host, width, height,
-                                       false, title, observer);
+  return ExtensionDialog::ShowInternal(url, browser, web_contents, width,
+                                       height, false, title, observer);
 }
 
 #if defined(USE_AURA)
 // static
 ExtensionDialog* ExtensionDialog::ShowFullscreen(
     const GURL& url,
-    Profile* profile,
+    Browser* browser,
+    WebContents* web_contents,
     const string16& title,
     ExtensionDialogObserver* observer) {
-  ExtensionHost* host = CreateExtensionHost(url, NULL, profile);
-  if (!host)
-    return NULL;
-
-  return ExtensionDialog::ShowInternal(url, NULL, host, 0, 0,
+  return ExtensionDialog::ShowInternal(url, browser, web_contents, 0, 0,
                                        true, title, observer);
 }
 #endif
@@ -87,18 +78,22 @@ ExtensionDialog* ExtensionDialog::ShowFullscreen(
 // static
 ExtensionDialog* ExtensionDialog::ShowInternal(const GURL& url,
     Browser* browser,
-    ExtensionHost* host,
+    content::WebContents* web_contents,
     int width,
     int height,
     bool fullscreen,
     const string16& title,
     ExtensionDialogObserver* observer) {
-  CHECK(fullscreen || browser);
+  CHECK(browser);
+  ExtensionHost* host = CreateExtensionHost(url, browser);
+  if (!host)
+    return NULL;
+  host->set_associated_web_contents(web_contents);
+
   ExtensionDialog* dialog = new ExtensionDialog(host, observer);
   dialog->set_title(title);
-
   if (fullscreen)
-    dialog->InitWindowFullscreen();
+    dialog->InitWindowFullscreen(browser);
   else
     dialog->InitWindow(browser, width, height);
 
@@ -115,41 +110,36 @@ ExtensionDialog* ExtensionDialog::ShowInternal(const GURL& url,
 
 // static
 ExtensionHost* ExtensionDialog::CreateExtensionHost(const GURL& url,
-                                                    Browser* browser,
-                                                    Profile* profile) {
-  // Prefer picking the extension manager from the profile if given.
-  ExtensionProcessManager* manager = NULL;
-  if (profile)
-    manager = profile->GetExtensionProcessManager();
-  else
-    manager = browser->profile()->GetExtensionProcessManager();
-
+                                                    Browser* browser) {
+  ExtensionProcessManager* manager =
+      browser->profile()->GetExtensionProcessManager();
   DCHECK(manager);
   if (!manager)
     return NULL;
-  if (browser)
-    return manager->CreateDialogHost(url, browser);
-  else
-    return manager->CreatePopupHost(url, NULL);
+  return manager->CreateDialogHost(url, browser);
 }
 
 #if defined(USE_AURA)
-void ExtensionDialog::InitWindowFullscreen() {
-  aura::RootWindow* root_window = ash::Shell::GetRootWindow();
-  gfx::Rect screen_rect =
-      gfx::Screen::GetMonitorAreaNearestWindow(root_window);
+void ExtensionDialog::InitWindowFullscreen(Browser* browser) {
+  gfx::NativeWindow parent = browser->window()->GetNativeHandle();
 
-  // We want to be the fullscreen topmost child of the root window.
-  window_ = browser::CreateFramelessViewsWindow(root_window, this);
-  window_->StackAtTop();
-  window_->SetBounds(screen_rect);
+  // Create the window as a child of the root window.
+  window_ = browser::CreateFramelessViewsWindow(
+      parent->GetRootWindow(), this);
+  // Make sure we're always on top by putting ourselves at the top
+  // of the z-order of the child windows of the root window.
+  parent->GetRootWindow()->StackChildAtTop(window_->GetNativeWindow());
+
+  int width = parent->GetRootWindow()->GetHostSize().width();
+  int height = parent->GetRootWindow()->GetHostSize().height();
+  window_->SetBounds(gfx::Rect(0, 0, width, height));
+
   window_->Show();
-
   // TODO(jamescook): Remove redundant call to Activate()?
   window_->Activate();
 }
 #else
-void ExtensionDialog::InitWindowFullscreen() {
+void ExtensionDialog::InitWindowFullscreen(Browser* browser) {
   NOTIMPLEMENTED();
 }
 #endif
