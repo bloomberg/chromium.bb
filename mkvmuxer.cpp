@@ -830,7 +830,7 @@ bool Tracks::AddTrack(Track* track, int32 number) {
   if (number < 0)
     return false;
 
-  int32 track_num = number;
+  uint32 track_num = number;
 
   // Check to make sure a track does not already have |track_num|.
   for (uint32 i = 0; i < track_entries_size_; ++i) {
