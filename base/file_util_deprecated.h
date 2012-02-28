@@ -20,7 +20,9 @@
 // We've successfully deprecated all of these functions on non-Windows
 // platforms.
 
-#if defined(OS_WIN)
+#if !defined(OS_WIN)
+#error Do not include on non-Windows platforms.
+#endif
 
 namespace file_util {
 
@@ -44,7 +46,5 @@ BASE_EXPORT int WriteFile(const std::wstring& filename,
                           const char* data, int size);
 
 }  // namespace file_util
-
-#endif  // OS_WIN
 
 #endif  // BASE_FILE_UTIL_DEPRECATED_H_
