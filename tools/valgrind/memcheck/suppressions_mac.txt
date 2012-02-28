@@ -2363,8 +2363,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN4base19SequencedWorkerPool5Inner30FinishStartingAdditionalThreadEi
-   fun:_ZN4base19SequencedWorkerPool5Inner8PostTaskEPKSsNS0_13SequenceTokenENS0_14WorkerShutdownERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEE
-   fun:_ZN4base19SequencedWorkerPool14PostWorkerTaskERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEE
+   fun:_ZN4base19SequencedWorkerPool5Inner*
 }
 {
    bug_115987_b
