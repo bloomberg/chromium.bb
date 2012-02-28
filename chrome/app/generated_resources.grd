@@ -12452,11 +12452,56 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIRELESS_NETWORK" desc="Title for section in settings/internet for list of wireless networks (wifi and cellular)">
         Wireless networks
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIFI_NETWORK" desc="Title for the Wifi network group on the settings page.">
+        Wireless network
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_CELLULAR_NETWORK" desc="Title for the cellular network group on the settings page.">
+        Mobile data
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_VIRTUAL_NETWORK" desc="Title for section in settings/internet for list of Virtual Private Networks (VPN)">
         Private networks
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_PRIVATE_NETWORK" desc="Title for Virtual Private Network (VPN) group on the settings page">
+        Private network
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_REMEMBERED_NETWORK" desc="Title for section in settings/internet for list of remembered (favirote) networks">
         Remembered networks
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_NETWORK_OFFLINE" desc="Message displayed when a user is not connected to a wireless network">
+        Offline
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_NETWORK_DISABLED" desc="Message displayed when a type of network connection is disabled">
+        Disabled
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_NETWORK_ONLINE" desc="Message displayed at the top of a network popup menu indiating that the user is online.">
+        You are online.
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_NETWORK_OTHER" desc="Menu option for connecting to a network that is not listed in the menu.">
+        Join other...
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_NETWORK_NOT_CONNECTED" desc="Displayed for a network control when not connected.">
+        Not connected
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_NETWORK_OPTIONS" desc="Menu option for configuring a network.">
+        Network options...
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_NETWORK_DISABLE_WIFI" desc="Menu option in the Wi-Fi menu when there is a connected Wi-Fi network.">
+        Turn off Wi-Fi
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_NETWORK_DISABLE_CELLULAR" desc="Menu option in the Cellular menu when there is a connected cellular network.">
+        Turn off cellular
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_AIRPLANE_MODE" desc="Control on the settings page for disabling all wireless communication.">
+        Airplane mode
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_NETWORK_AIRPLANE_MODE_LABEL" desc="Description shown on the airplane mode control.">
+        Turn off all wireless connections.
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_PREFERRED_NETWORKS_LABEL" desc="Menu item for activating the preferred networks dialog.">
+        Preferred networks...
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_PREFERRED_NETWORKS_TITLE" desc="Title for the preferred networks dialog.">
+        Preferred Networks
       </message>
       <message name="IDS_OPTIONS_DEVICE_GROUP_NAME">
         Device

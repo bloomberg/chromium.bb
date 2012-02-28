@@ -271,277 +271,164 @@ void InternetOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
+  static OptionsStringResource resources[] = {
+
+    // Main settings page.
+
+    { "ethernetTitle", IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET },
+    { "wifiTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIFI_NETWORK },
+    { "cellularTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_CELLULAR_NETWORK },
+    { "vpnTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_PRIVATE_NETWORK },
+    { "airplaneModeTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_AIRPLANE_MODE },
+    { "airplaneModeLabel", IDS_OPTIONS_SETTINGS_NETWORK_AIRPLANE_MODE_LABEL },
+    { "networkNotConnected", IDS_OPTIONS_SETTINGS_NETWORK_NOT_CONNECTED },
+    { "networkConnected", IDS_CHROMEOS_NETWORK_STATE_READY },
+    { "joinOtherNetwork", IDS_OPTIONS_SETTINGS_NETWORK_OTHER },
+    { "networkOffline", IDS_OPTIONS_SETTINGS_NETWORK_OFFLINE },
+    { "networkDisabled", IDS_OPTIONS_SETTINGS_NETWORK_DISABLED },
+    { "networkOnline", IDS_OPTIONS_SETTINGS_NETWORK_ONLINE },
+    { "networkOptions", IDS_OPTIONS_SETTINGS_NETWORK_OPTIONS },
+    { "turnOffWifi", IDS_OPTIONS_SETTINGS_NETWORK_DISABLE_WIFI },
+    { "turnOffCellular", IDS_OPTIONS_SETTINGS_NETWORK_DISABLE_CELLULAR },
+    { "disconnectNetwork", IDS_OPTIONS_SETTINGS_DISCONNECT },
+    { "preferredNetworks", IDS_OPTIONS_SETTINGS_PREFERRED_NETWORKS_LABEL },
+    { "preferredNetworksPage", IDS_OPTIONS_SETTINGS_PREFERRED_NETWORKS_TITLE },
+    { "useSharedProxies", IDS_OPTIONS_SETTINGS_USE_SHARED_PROXIES },
+
+    // Network options dialog labels.
+    // TODO(kevers): Remove once dialog is deprecated.
+
+    { "wired_title", IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIRED_NETWORK },
+    { "wireless_title", IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIRELESS_NETWORK },
+    { "vpn_title", IDS_OPTIONS_SETTINGS_SECTION_TITLE_VIRTUAL_NETWORK },
+    { "remembered_title",
+      IDS_OPTIONS_SETTINGS_SECTION_TITLE_REMEMBERED_NETWORK },
+    { "connect_button", IDS_OPTIONS_SETTINGS_CONNECT },
+    { "disconnect_button", IDS_OPTIONS_SETTINGS_DISCONNECT },
+    { "options_button", IDS_OPTIONS_SETTINGS_OPTIONS },
+    { "forget_button", IDS_OPTIONS_SETTINGS_FORGET },
+    { "activate_button", IDS_OPTIONS_SETTINGS_ACTIVATE },
+    { "buyplan_button", IDS_OPTIONS_SETTINGS_BUY_PLAN },
+    { "view_account_button", IDS_STATUSBAR_NETWORK_VIEW_ACCOUNT },
+    { "enableWifi", IDS_STATUSBAR_NETWORK_DEVICE_WIFI },
+    { "disableWifi", IDS_STATUSBAR_NETWORK_DEVICE_WIFI },
+    { "enableCellular", IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR },
+    { "disableCellular", IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR },
+    { "ownerOnly", IDS_OPTIONS_ACCOUNTS_OWNER_ONLY },
+    { "generalNetworkingTitle", IDS_OPTIONS_SETTINGS_INTERNET_CONTROL_TITLE },
+
+    // Internet details dialog.
+
+    { "changeProxyButton",
+      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CHANGE_PROXY_BUTTON },
+    { "managedNetwork", IDS_OPTIONS_SETTINGS_MANAGED_NETWORK },
+    { "wifiNetworkTabLabel", IDS_OPTIONS_SETTINGS_INTERNET_TAB_WIFI },
+    { "vpnTabLabel", IDS_OPTIONS_SETTINGS_INTERNET_TAB_VPN },
+    { "cellularPlanTabLabel", IDS_OPTIONS_SETTINGS_INTERNET_TAB_PLAN },
+    { "cellularConnTabLabel", IDS_OPTIONS_SETTINGS_INTERNET_TAB_CONNECTION },
+    { "cellularDeviceTabLabel", IDS_OPTIONS_SETTINGS_INTERNET_TAB_DEVICE },
+    { "networkTabLabel", IDS_OPTIONS_SETTINGS_INTERNET_TAB_NETWORK },
+    { "securityTabLabel", IDS_OPTIONS_SETTINGS_INTERNET_TAB_SECURITY },
+    { "useDHCP", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USE_DHCP },
+    { "useStaticIP", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USE_STATIC_IP },
+    { "connectionState", IDS_OPTIONS_SETTINGS_INTERNET_CONNECTION_STATE },
+    { "inetAddress", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ADDRESS },
+    { "inetSubnetAddress", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SUBNETMASK },
+    { "inetGateway", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_GATEWAY },
+    { "inetDns", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DNSSERVER },
+    { "hardwareAddress",
+      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_HARDWARE_ADDRESS },
+    { "detailsInternetDismiss", IDS_CLOSE },
+
+    // Wifi Tab.
+
+    { "accessLockedMsg", IDS_STATUSBAR_NETWORK_LOCKED },
+    { "inetSsid", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID },
+    { "inetPassProtected",
+       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NET_PROTECTED },
+    { "inetNetworkShared",
+      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_SHARED },
+    { "inetPreferredNetwork",
+      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PREFER_NETWORK },
+    { "inetAutoConnectNetwork",
+      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_AUTO_CONNECT },
+    { "inetLogin", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOGIN },
+    { "inetShowPass", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHOWPASSWORD },
+    { "inetPassPrompt", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSWORD },
+    { "inetSsidPrompt", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SSID },
+    { "inetStatus", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_STATUS_TITLE },
+    { "inetConnect", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CONNECT_TITLE },
+
+    // VPN Tab.
+
+    { "inetServiceName",
+      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_SERVICE_NAME },
+    { "inetServerHostname",
+      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_SERVER_HOSTNAME },
+    { "inetProviderType",
+      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_PROVIDER_TYPE },
+    { "inetUsername", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USERNAME },
+
+    // Cellular Tab.
+
+    { "serviceName", IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_SERVICE_NAME },
+    { "networkTechnology",
+      IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_NETWORK_TECHNOLOGY },
+    { "operatorName", IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_OPERATOR },
+    { "operatorCode", IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_OPERATOR_CODE },
+    { "activationState",
+      IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ACTIVATION_STATE },
+    { "roamingState", IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ROAMING_STATE },
+    { "restrictedPool",
+      IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_RESTRICTED_POOL },
+    { "errorState", IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ERROR_STATE },
+    { "manufacturer", IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_MANUFACTURER },
+    { "modelId", IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_MODEL_ID },
+    { "firmwareRevision",
+      IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_FIRMWARE_REVISION },
+    { "hardwareRevision",
+      IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_HARDWARE_REVISION },
+    { "prlVersion", IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_PRL_VERSION },
+    { "cellularApnLabel", IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN },
+    { "cellularApnOther", IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_OTHER },
+    { "cellularApnUsername",
+      IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_USERNAME },
+    { "cellularApnPassword",
+      IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_PASSWORD },
+    { "cellularApnUseDefault",
+      IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_CLEAR },
+    { "cellularApnSet", IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_SET },
+    { "cellularApnCancel", IDS_CANCEL },
+    { "enableDataRoaming", IDS_OPTIONS_SETTINGS_ENABLE_DATA_ROAMING },
+
+    // Security Tab.
+
+    { "accessSecurityTabLink",
+      IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ACCESS_SECURITY_TAB },
+    { "lockSimCard", IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_LOCK_SIM_CARD },
+    { "changePinButton",
+      IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_BUTTON },
+
+    // Plan Tab.
+
+    { "planName", IDS_OPTIONS_SETTINGS_INTERNET_CELL_PLAN_NAME },
+    { "planLoading", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOADING_PLAN },
+    { "noPlansFound", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NO_PLANS_FOUND },
+    { "purchaseMore", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_MORE },
+    { "dataRemaining", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DATA_REMAINING },
+    { "planExpires", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EXPIRES },
+    { "showPlanNotifications",
+      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHOW_MOBILE_NOTIFICATION },
+    { "autoconnectCellular",
+      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_AUTO_CONNECT }
+  };
+
+  RegisterStrings(localized_strings, resources, arraysize(resources));
+
+  // TODO(kevers): Remove once dialog is deprecated.
   RegisterTitle(localized_strings, "internetPage",
                 IDS_OPTIONS_INTERNET_TAB_LABEL);
 
-  localized_strings->SetString("wired_title",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIRED_NETWORK));
-  localized_strings->SetString("wireless_title",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIRELESS_NETWORK));
-  localized_strings->SetString("vpn_title",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_SECTION_TITLE_VIRTUAL_NETWORK));
-  localized_strings->SetString("remembered_title",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_SECTION_TITLE_REMEMBERED_NETWORK));
-
-  localized_strings->SetString("connect_button",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_CONNECT));
-  localized_strings->SetString("disconnect_button",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_DISCONNECT));
-  localized_strings->SetString("options_button",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_OPTIONS));
-  localized_strings->SetString("forget_button",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_FORGET));
-  localized_strings->SetString("activate_button",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_ACTIVATE));
-  localized_strings->SetString("buyplan_button",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_BUY_PLAN));
-  localized_strings->SetString("view_account_button",
-        l10n_util::GetStringUTF16(
-            IDS_STATUSBAR_NETWORK_VIEW_ACCOUNT));
-
-  localized_strings->SetString("changeProxyButton",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CHANGE_PROXY_BUTTON));
-
-  localized_strings->SetString("managedNetwork",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_MANAGED_NETWORK));
-
-  localized_strings->SetString("wifiNetworkTabLabel",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_TAB_WIFI));
-  localized_strings->SetString("vpnTabLabel",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_TAB_VPN));
-  localized_strings->SetString("cellularPlanTabLabel",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_TAB_PLAN));
-  localized_strings->SetString("cellularConnTabLabel",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_TAB_CONNECTION));
-  localized_strings->SetString("cellularDeviceTabLabel",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_TAB_DEVICE));
-  localized_strings->SetString("networkTabLabel",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_TAB_NETWORK));
-  localized_strings->SetString("securityTabLabel",
-        l10n_util::GetStringUTF16(
-            IDS_OPTIONS_SETTINGS_INTERNET_TAB_SECURITY));
-
-  localized_strings->SetString("useDHCP",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USE_DHCP));
-  localized_strings->SetString("useStaticIP",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USE_STATIC_IP));
-  localized_strings->SetString("connectionState",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CONNECTION_STATE));
-  localized_strings->SetString("inetAddress",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ADDRESS));
-  localized_strings->SetString("inetSubnetAddress",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SUBNETMASK));
-  localized_strings->SetString("inetGateway",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_GATEWAY));
-  localized_strings->SetString("inetDns",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DNSSERVER));
-  localized_strings->SetString("hardwareAddress",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_HARDWARE_ADDRESS));
-
-  // Wifi Tab.
-  localized_strings->SetString("accessLockedMsg",
-      l10n_util::GetStringUTF16(
-          IDS_STATUSBAR_NETWORK_LOCKED));
-  localized_strings->SetString("inetSsid",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID));
-  localized_strings->SetString("inetPassProtected",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NET_PROTECTED));
-  localized_strings->SetString("inetNetworkShared",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_SHARED));
-  localized_strings->SetString("inetPreferredNetwork",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PREFER_NETWORK));
-  localized_strings->SetString("inetAutoConnectNetwork",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_AUTO_CONNECT));
-  localized_strings->SetString("inetLogin",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOGIN));
-  localized_strings->SetString("inetShowPass",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHOWPASSWORD));
-  localized_strings->SetString("inetPassPrompt",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSWORD));
-  localized_strings->SetString("inetSsidPrompt",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SSID));
-  localized_strings->SetString("inetStatus",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_STATUS_TITLE));
-  localized_strings->SetString("inetConnect",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CONNECT_TITLE));
-
-  // VPN Tab.
-  localized_strings->SetString("inetServiceName",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_SERVICE_NAME));
-  localized_strings->SetString("inetServerHostname",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_SERVER_HOSTNAME));
-  localized_strings->SetString("inetProviderType",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_PROVIDER_TYPE));
-  localized_strings->SetString("inetUsername",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USERNAME));
-
-  // Cellular Tab.
-  localized_strings->SetString("serviceName",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_SERVICE_NAME));
-  localized_strings->SetString("networkTechnology",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_NETWORK_TECHNOLOGY));
-  localized_strings->SetString("operatorName",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_OPERATOR));
-  localized_strings->SetString("operatorCode",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_OPERATOR_CODE));
-  localized_strings->SetString("activationState",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ACTIVATION_STATE));
-  localized_strings->SetString("roamingState",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ROAMING_STATE));
-  localized_strings->SetString("restrictedPool",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_RESTRICTED_POOL));
-  localized_strings->SetString("errorState",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ERROR_STATE));
-  localized_strings->SetString("manufacturer",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_MANUFACTURER));
-  localized_strings->SetString("modelId",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_MODEL_ID));
-  localized_strings->SetString("firmwareRevision",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_FIRMWARE_REVISION));
-  localized_strings->SetString("hardwareRevision",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_HARDWARE_REVISION));
-  localized_strings->SetString("prlVersion",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_PRL_VERSION));
-  localized_strings->SetString("cellularApnLabel",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN));
-  localized_strings->SetString("cellularApnOther",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_OTHER));
-  localized_strings->SetString("cellularApnUsername",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_USERNAME));
-  localized_strings->SetString("cellularApnPassword",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_PASSWORD));
-  localized_strings->SetString("cellularApnUseDefault",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_CLEAR));
-  localized_strings->SetString("cellularApnSet",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_SET));
-  localized_strings->SetString("cellularApnCancel",
-      l10n_util::GetStringUTF16(
-          IDS_CANCEL));
-
-  localized_strings->SetString("accessSecurityTabLink",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ACCESS_SECURITY_TAB));
-  localized_strings->SetString("lockSimCard",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_LOCK_SIM_CARD));
-  localized_strings->SetString("changePinButton",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_BUTTON));
-
-  localized_strings->SetString("planName",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CELL_PLAN_NAME));
-  localized_strings->SetString("planLoading",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOADING_PLAN));
-  localized_strings->SetString("noPlansFound",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NO_PLANS_FOUND));
-  localized_strings->SetString("purchaseMore",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_MORE));
-  localized_strings->SetString("dataRemaining",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DATA_REMAINING));
-  localized_strings->SetString("planExpires",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EXPIRES));
-  localized_strings->SetString("showPlanNotifications",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHOW_MOBILE_NOTIFICATION));
-  localized_strings->SetString("autoconnectCellular",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_AUTO_CONNECT));
-  localized_strings->SetString("customerSupport",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CUSTOMER_SUPPORT));
-
-  localized_strings->SetString("enableWifi",
-      l10n_util::GetStringFUTF16(
-          IDS_STATUSBAR_NETWORK_DEVICE_ENABLE,
-          l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_WIFI)));
-  localized_strings->SetString("disableWifi",
-      l10n_util::GetStringFUTF16(
-          IDS_STATUSBAR_NETWORK_DEVICE_DISABLE,
-          l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_WIFI)));
-  localized_strings->SetString("enableCellular",
-      l10n_util::GetStringFUTF16(
-          IDS_STATUSBAR_NETWORK_DEVICE_ENABLE,
-          l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR)));
-  localized_strings->SetString("disableCellular",
-      l10n_util::GetStringFUTF16(
-          IDS_STATUSBAR_NETWORK_DEVICE_DISABLE,
-          l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR)));
-  localized_strings->SetString("useSharedProxies",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_USE_SHARED_PROXIES));
-  localized_strings->SetString("enableDataRoaming",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_ENABLE_DATA_ROAMING));
-  localized_strings->SetString("generalNetworkingTitle",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_CONTROL_TITLE));
-  localized_strings->SetString("detailsInternetDismiss",
-      l10n_util::GetStringUTF16(IDS_CLOSE));
-  localized_strings->SetString("ownerOnly", l10n_util::GetStringUTF16(
-      IDS_OPTIONS_ACCOUNTS_OWNER_ONLY));
   std::string owner;
   chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
   localized_strings->SetString("ownerUserId", UTF8ToUTF16(owner));
