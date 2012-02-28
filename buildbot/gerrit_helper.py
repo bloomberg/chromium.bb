@@ -17,6 +17,12 @@ from chromite.lib import cros_build_lib
 class GerritException(Exception):
   "Base exception, thrown for gerrit failures"""
 
+
+class QueryNotSpecific(GerritException):
+  """Exception thrown for when a query needs to identify one CL, but matched
+  multiple."""
+
+
 class FailedToReachGerrit(GerritException):
   """Exception thrown if we failed to contact the Gerrit server."""
 
@@ -91,6 +97,11 @@ class GerritHelper():
       must_match: Defaults to True; if True, the given changeid *must*
         be found on the target gerrit server.  If False, a change not found
         is considered uncommited.
+    Raises:
+      GerritException: If must_match=True, and no match was found.
+      QueryNotSpecific: If multiple CLs match the given query.  This can occur
+        when a Change-ID was uploaded to multiple branches of a project
+        unchanged.
     """
     result = self.QuerySingleRecord('change:%s' % (changeid,),
                                     must_match=must_match, dryrun=dryrun)
@@ -152,8 +163,8 @@ class GerritHelper():
         raise GerritException('Query %s had no results' % (query,))
       return None
     elif len(results) != 1:
-      raise GerritException('Query %s returned too many results: %s'
-                            % (query, results))
+      raise QueryNotSpecific('Query %s returned too many results: %s'
+                             % (query, results))
     return results[0]
 
   def Query(self, query, sort=None, current_patch=True, options=(),

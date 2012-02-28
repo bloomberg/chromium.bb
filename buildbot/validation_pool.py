@@ -338,10 +338,18 @@ class ValidationPool(object):
         dep_change = change_map.get(dep)
         if not dep_change:
           # The dep may have been committed already.
-          if not self.gerrit_helper.IsChangeCommitted(dep, must_match=False):
-            message = ('Could not apply change %s because dependent '
-                       'change %s is not ready to be committed.' % (
-                        change.id, dep))
+          try:
+            if not self.gerrit_helper.IsChangeCommitted(dep, must_match=False):
+              message = ('Could not apply change %s because dependent '
+                         'change %s is not ready to be committed.' % (
+                          change.id, dep))
+              logging.info(message)
+              change.apply_error_message = message
+              apply_chain = False
+              break
+          except gerrit_helper.QueryNotSpecific:
+            message = ('Change %s could not be handled due to its dependency '
+                       '%s matching multiple branches.' % (change.id, dep))
             logging.info(message)
             change.apply_error_message = message
             apply_chain = False
