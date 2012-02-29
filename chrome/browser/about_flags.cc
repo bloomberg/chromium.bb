@@ -581,6 +581,15 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kDisableNTPOtherSessionsMenu)
   },
+#if defined(USE_AURA)
+  {
+    "enable-ash-uber-tray",
+    IDS_FLAGS_ENABLE_ASH_UBER_TRAY_NAME,
+    IDS_FLAGS_ENABLE_ASH_UBER_TRAY_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(ash::switches::kAshUberTray),
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;
