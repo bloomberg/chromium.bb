@@ -147,8 +147,7 @@ weston_zoom_frame(struct weston_animation *animation,
 		es->alpha = 255;
 
 	zoom->surface->geometry.dirty = 1;
-
-	weston_compositor_damage_all(es->compositor);
+	weston_compositor_schedule_repaint(es->compositor);
 }
 
 WL_EXPORT struct weston_zoom *
