@@ -36,16 +36,15 @@ ExternalProcessImporterClient::ExternalProcessImporterClient(
       items_(items),
       bridge_(bridge),
       cancelled_(false) {
-  bridge_->AddRef();
   process_importer_host_->NotifyImportStarted();
 }
 
 ExternalProcessImporterClient::~ExternalProcessImporterClient() {
-  bridge_->Release();
 }
 
 void ExternalProcessImporterClient::CancelImportProcessOnIOThread() {
-  utility_process_host_->Send(new ProfileImportProcessMsg_CancelImport());
+  if (utility_process_host_)
+    utility_process_host_->Send(new ProfileImportProcessMsg_CancelImport());
 }
 
 void ExternalProcessImporterClient::NotifyItemFinishedOnIOThread(
@@ -119,13 +118,11 @@ void ExternalProcessImporterClient::Cancel() {
     return;
 
   cancelled_ = true;
-  if (utility_process_host_) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(
-            &ExternalProcessImporterClient::CancelImportProcessOnIOThread,
-            this));
-  }
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(
+          &ExternalProcessImporterClient::CancelImportProcessOnIOThread,
+          this));
   Release();
 }
 

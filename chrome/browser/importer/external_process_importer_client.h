@@ -41,23 +41,11 @@ class ExternalProcessImporterClient : public content::UtilityProcessHostClient {
                                 InProcessImporterBridge* bridge);
   virtual ~ExternalProcessImporterClient();
 
-  // Cancel import process on IO thread.
-  void CancelImportProcessOnIOThread();
-
-  // Report item completely downloaded on IO thread.
-  void NotifyItemFinishedOnIOThread(importer::ImportItem import_item);
-
-  // Notifies the importerhost that import has finished, and calls Release().
-  void Cleanup();
-
   // Launches the task to start the external process.
-  virtual void Start();
-
-  // Creates a new UtilityProcessHost, which launches the import process.
-  virtual void StartProcessOnIOThread(content::BrowserThread::ID thread_id);
+  void Start();
 
   // Called by the ExternalProcessImporterHost on import cancel.
-  virtual void Cancel();
+  void Cancel();
 
   // UtilityProcessHostClient implementation:
   virtual void OnProcessCrashed(int exit_code) OVERRIDE;
@@ -86,6 +74,18 @@ class ExternalProcessImporterClient : public content::UtilityProcessHostClient {
       bool unique_on_host_and_path);
 
  private:
+  // Notifies the importerhost that import has finished, and calls Release().
+  void Cleanup();
+
+  // Cancel import process on IO thread.
+  void CancelImportProcessOnIOThread();
+
+  // Report item completely downloaded on IO thread.
+  void NotifyItemFinishedOnIOThread(importer::ImportItem import_item);
+
+  // Creates a new UtilityProcessHost, which launches the import process.
+  void StartProcessOnIOThread(content::BrowserThread::ID thread_id);
+
   // These variables store data being collected from the importer until the
   // entire group has been collected and is ready to be written to the profile.
   history::URLRows history_rows_;
@@ -121,9 +121,8 @@ class ExternalProcessImporterClient : public content::UtilityProcessHostClient {
   uint16 items_;
 
   // Takes import data coming over IPC and delivers it to be written by the
-  // ProfileWriter.  Released by ExternalProcessImporterClient in its
-  // destructor.
-  InProcessImporterBridge* bridge_;
+  // ProfileWriter.
+  scoped_refptr<InProcessImporterBridge> bridge_;
 
   // True if import process has been cancelled.
   bool cancelled_;
