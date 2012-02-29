@@ -11,11 +11,15 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/browser/chromeos/gdata/gdata.h"
+#include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 
+class Profile;
+
 namespace gdata {
+
+class DocumentsService;
 
 class GDataUploader : public content::DownloadManager::Observer,
                       public content::DownloadItem::Observer {
@@ -28,12 +32,38 @@ class GDataUploader : public content::DownloadManager::Observer,
   void Initialize(Profile* profile);
 
  private:
+  // DownloadManager overrides.
+  virtual void ManagerGoingDown(content::DownloadManager* manager) OVERRIDE;
+  virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;
+
+  // DownloadItem overrides.
+  virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE {}
+
+  // Adds/Removes |download| to pending_downloads_.
+  // Also start/stop observing |download|.
+  void AddPendingDownload(content::DownloadItem* download);
+  void RemovePendingDownload(content::DownloadItem* download);
+
+  // Start the upload of a downloaded/downloading file.
+  void UploadDownloadItem(content::DownloadItem* download);
+
+  // Update metadata of ongoing upload if it exists.
+  void UpdateUpload(content::DownloadItem* download);
+
+  // Check if this DownloadItem should be uploaded.
+  bool ShouldUpload(content::DownloadItem* download);
+
   // Uploads a file. |file_url| is a file:// url of the downloaded file.
   void UploadFile(const GURL& file_url);
 
-  // net::FileStream::Open completion callback.
-  //
-  // Called when an file to be uploaded is opened. The result of the file
+  // Lookup UploadFileInfo* in pending_uploads_.
+  UploadFileInfo* GetUploadFileInfo(const GURL& file_url);
+
+  // Destroys |upload_file_info|.
+  void RemovePendingUpload(UploadFileInfo* upload_file_info);
+
+  // net::FileStream::Open completion callback. The result of the file
   // open operation is passed as |result|.
   void OpenCompletionCallback(const GURL& file_url, int result);
 
@@ -58,36 +88,6 @@ class GDataUploader : public content::DownloadManager::Observer,
       const UploadFileInfo& upload_file_info,
       int64 start_range_received,
       int64 end_range_received);
-
-  // DownloadManager overrides.
-  virtual void ManagerGoingDown(content::DownloadManager* manager) OVERRIDE;
-  virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;
-
-  // DownloadItem overrides.
-  virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE {}
-
-  // Helper functions.
-
-  // Adds/Removes |download| to pending_downloads_.
-  // Also start/stop observing |download|.
-  void AddPendingDownload(content::DownloadItem* download);
-  void RemovePendingDownload(content::DownloadItem* download);
-
-  // Update metadata of ongoing upload if it exists.
-  void UpdateUpload(content::DownloadItem* download);
-
-  // Check if this DownloadItem should be uploaded.
-  bool ShouldUpload(content::DownloadItem* download);
-
-  // Start the upload of a downloaded/downloading file.
-  void UploadDownloadItem(content::DownloadItem* download);
-
-  // Lookup UploadFileInfo* in pending_uploads_.
-  UploadFileInfo* GetUploadFileInfo(const GURL& file_url);
-
-  // Destroys |upload_file_info|.
-  void RemovePendingUpload(UploadFileInfo* upload_file_info);
 
   // Private data.
 

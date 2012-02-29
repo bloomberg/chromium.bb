@@ -12,12 +12,13 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
+#include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 #include "chrome/common/net/gaia/oauth2_access_token_fetcher.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/io_buffer.h"
 
 class Profile;
 
@@ -28,26 +29,6 @@ class FileStream;
 namespace gdata {
 
 class GDataUploader;
-
-// HTTP errors that can be returned by GData service.
-enum GDataErrorCode {
-  HTTP_SUCCESS               = 200,
-  HTTP_CREATED               = 201,
-  HTTP_FOUND                 = 302,
-  HTTP_NOT_MODIFIED          = 304,
-  HTTP_RESUME_INCOMPLETE     = 308,
-  HTTP_BAD_REQUEST           = 400,
-  HTTP_UNAUTHORIZED          = 401,
-  HTTP_FORBIDDEN             = 403,
-  HTTP_NOT_FOUND             = 404,
-  HTTP_CONFLICT              = 409,
-  HTTP_LENGTH_REQUIRED       = 411,
-  HTTP_PRECONDITION          = 412,
-  HTTP_INTERNAL_SERVER_ERROR = 500,
-  HTTP_SERVICE_UNAVAILABLE   = 503,
-  GDATA_PARSE_ERROR          = -100,
-  GDATA_FILE_ERROR           = -101,
-};
 
 // Document export format.
 enum DocumentExportFormat {
@@ -69,42 +50,6 @@ enum DocumentExportFormat {
   ODS,     // Open Document Spreadsheet (spreadsheets only).
   TSV,     // Tab Seperated Value (spreadsheets only). Only the first worksheet
            // is returned in TSV by default.
-};
-
-// Structure containing current upload information of file, passed between
-// DocumentsService methods and callbacks.
-struct UploadFileInfo {
-  UploadFileInfo();
-  ~UploadFileInfo();
-
-  // Data to be initialized by caller before initiating upload request.
-  // URL of physical file to be uploaded, used as main identifier in callbacks.
-  GURL file_url;  // file: url of the file to the uploaded.
-  FilePath file_path;  // The path of the file to be uploaded.
-  size_t file_size;  // Last known size of the file.
-
-  std::string title;  // Title to be used for file to be uploaded.
-  std::string content_type;  // Content-Type of file.
-  int64 content_length;  // Header content-Length.
-
-  // Data cached by caller and used when preparing upload data in chunks for
-  // multiple ResumeUpload requests.
-  // Location URL where file is to be uploaded to, returned from InitiateUpload.
-  GURL upload_location;
-  // TODO(kuan): Use generic stream object after FileStream is refactored to
-  // extend a generic stream.
-  net::FileStream* file_stream;  // For opening and reading from physical file.
-  scoped_refptr<net::IOBuffer> buf;  // Holds current content to be uploaded.
-  // Size of |buf|, max is 512KB; Google Docs requires size of each upload chunk
-  // to be a multiple of 512KB.
-  size_t buf_len;
-
-  // Data to be updated by caller before sending each ResumeUpload request.
-  // Note that end_range is inclusive, so start_range=0, end_range=8 is 9 bytes.
-  int64 start_range;  // Start of range of contents currently stored in |buf|.
-  int64 end_range;  // End of range of contents currently stored in |buf|.
-
-  bool download_complete;  // Whether this file has finished downloading.
 };
 
 // Different callback types for various functionalities in DocumentsService.

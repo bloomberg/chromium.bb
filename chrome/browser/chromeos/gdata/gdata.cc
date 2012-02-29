@@ -13,13 +13,12 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
-#include "base/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
+#include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 #include "chrome/browser/net/browser_url_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
@@ -75,9 +74,6 @@ const char kFeedField[] = "feed";
 // Templates for file uploading.
 const char kUploadParamConvertKey[] = "convert";
 const char kUploadParamConvertValue[] = "false";
-const char kUploadContentType[] = "X-Upload-Content-Type: %s";
-const char kUploadContentLength[] = "X-Upload-Content-Length: ";
-const char kUploadContentRange[] = "Content-Range: bytes ";
 const char kUploadResponseLocation[] = "location";
 const char kUploadResponseRange[] = "range";
 const char kIfMatchAllHeader[] = "If-Match: *";
@@ -163,21 +159,6 @@ GURL AddFeedUrlParams(const GURL& url) {
 }
 
 }  // namespace
-
-//=============================== UploadFileInfo ===============================
-
-UploadFileInfo::UploadFileInfo()
-    : file_size(0),
-      content_length(0),
-      file_stream(NULL),
-      buf_len(0),
-      start_range(0),
-      end_range(-1),
-      download_complete(false) {
-}
-
-UploadFileInfo::~UploadFileInfo() {
-}
 
 //================================ AuthOperation ===============================
 
@@ -607,12 +588,7 @@ content::URLFetcher::RequestType
 
 std::vector<std::string>
     InitiateUploadOperation::GetExtraRequestHeaders() const {
-  std::vector<std::string> headers;
-  headers.push_back(base::StringPrintf(
-      kUploadContentType, upload_file_info_.content_type.data()));
-  headers.push_back(kUploadContentLength +
-      base::Int64ToString(upload_file_info_.content_length));
-  return headers;
+  return upload_file_info_.GetContentTypeAndLengthHeaders();
 }
 
 bool InitiateUploadOperation::GetUploadData(std::string* upload_content_type,
@@ -726,32 +702,16 @@ content::URLFetcher::RequestType ResumeUploadOperation::GetRequestType() const {
 }
 
 std::vector<std::string> ResumeUploadOperation::GetExtraRequestHeaders() const {
-  // The header looks like
-  // Content-Range: bytes <start_range>-<end_range>/<content_length>
-  // for example:
-  // Content-Range: bytes 7864320-8388607/13851821
-  // Use * for unknown/streaming content length.
-  // TODO(achuith): Add a unit test for this.
-  std::string range = kUploadContentRange +
-      base::Int64ToString(upload_file_info_.start_range) + "-" +
-      base::Int64ToString(upload_file_info_.end_range) + "/" +
-      (upload_file_info_.content_length == -1 ? "*" :
-          base::Int64ToString(upload_file_info_.content_length));
-
   std::vector<std::string> headers;
-  headers.push_back(range);
+  headers.push_back(upload_file_info_.GetContentRangeHeader());
   return headers;
 }
 
 bool ResumeUploadOperation::GetUploadData(std::string* upload_content_type,
                                           std::string* upload_content) {
-  upload_content_type->assign(upload_file_info_.content_type);
-  upload_content->assign(upload_file_info_.buf->data(),
-                         upload_file_info_.end_range -
-                         upload_file_info_.start_range + 1);
-  DVLOG(1) << "Upload data: type=" << *upload_content_type
-           << ", range=" << upload_file_info_.start_range
-           << "," << upload_file_info_.end_range;
+  *upload_content_type = upload_file_info_.content_type;
+  // TODO(achuith): Get rid of this unnecessary copy.
+  *upload_content = upload_file_info_.GetContent().as_string();
   return true;
 }
 
