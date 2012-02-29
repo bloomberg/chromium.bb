@@ -53,7 +53,7 @@ class Popen(subprocess.Popen):
   """
 
   def __init__(self, args, stdin=None, stdout=PIPE_PTY, stderr=PIPE_PTY,
-      shell=False, cwd=None, env=None, **kwargs):
+               shell=False, cwd=None, env=None, close_fds=False, **kwargs):
     """Cut-down constructor
 
     Args:
@@ -81,7 +81,7 @@ class Popen(subprocess.Popen):
 
     super(Popen, self).__init__(args, stdin=stdin,
         stdout=stdout, stderr=stderr, shell=shell, cwd=cwd, env=env,
-        **kwargs)
+        close_fds=close_fds, **kwargs)
 
     # If we're on a PTY, we passed the slave half of the PTY to the subprocess.
     # We want to use the master half on our end from now on.  Setting this here
@@ -99,7 +99,7 @@ class Popen(subprocess.Popen):
     if kwargs:
       raise ValueError("Unit tests do not test extra args - please add tests")
 
-  def CommunicateFilter(self, output):
+  def CommunicateFilter(self, output, input_str=''):
     """Interact with process: Read data from stdout and stderr.
 
     This method runs until end-of-file is reached, then waits for the
@@ -119,6 +119,7 @@ class Popen(subprocess.Popen):
 
     Args:
       output: Function to call with each fragment of output.
+      input_str: Input string to feed into process's stdin
 
     Returns:
       A tuple (stdout, stderr, combined) which is the data received on
@@ -149,7 +150,7 @@ class Popen(subprocess.Popen):
       # Flush stdio buffer.  This might block, if the user has
       # been writing to .stdin in an uncontrolled fashion.
       self.stdin.flush()
-      if input:
+      if input_str:
         write_set.append(self.stdin)
       else:
         self.stdin.close()
@@ -174,10 +175,10 @@ class Popen(subprocess.Popen):
         # When select has indicated that the file is writable,
         # we can write up to PIPE_BUF bytes without risk
         # blocking.  POSIX defines PIPE_BUF >= 512
-        chunk = input[input_offset : input_offset + 512]
+        chunk = input_str[input_offset : input_offset + 512]
         bytes_written = os.write(self.stdin.fileno(), chunk)
         input_offset += bytes_written
-        if input_offset >= len(input):
+        if input_offset >= len(input_str):
           self.stdin.close()
           write_set.remove(self.stdin)
 
@@ -344,7 +345,7 @@ class TestSubprocess(unittest.TestCase):
 
   def test_extra_args(self):
     """Check we can't add extra arguments"""
-    self.assertRaises(ValueError, Popen, 'true', close_fds=False)
+    self.assertRaises(ValueError, Popen, 'true', startupinfo=False)
 
   def test_basic_input(self):
     """Check that incremental input works
