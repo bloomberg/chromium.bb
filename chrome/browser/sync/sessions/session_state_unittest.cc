@@ -8,20 +8,20 @@
 
 #include "base/base64.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/test/values_test_util.h"
 #include "base/time.h"
 #include "base/values.h"
-#include "chrome/test/base/values_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {
 namespace sessions {
 namespace {
 
-using test::ExpectDictBooleanValue;
-using test::ExpectDictDictionaryValue;
-using test::ExpectDictIntegerValue;
-using test::ExpectDictListValue;
-using test::ExpectDictStringValue;
+using base::ExpectDictBooleanValue;
+using base::ExpectDictDictionaryValue;
+using base::ExpectDictIntegerValue;
+using base::ExpectDictListValue;
+using base::ExpectDictStringValue;
 
 class SessionStateTest : public testing::Test {};
 

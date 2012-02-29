@@ -16,6 +16,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/condition_variable.h"
+#include "base/test/values_test_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/values.h"
 #include "chrome/browser/sync/engine/syncproto.h"
@@ -27,13 +28,12 @@
 #include "chrome/browser/sync/test/engine/test_syncable_utils.h"
 #include "chrome/browser/sync/test/null_directory_change_delegate.h"
 #include "chrome/browser/sync/test/null_transaction_observer.h"
-#include "chrome/test/base/values_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
 
 using browser_sync::TestIdFactory;
-using test::ExpectDictBooleanValue;
-using test::ExpectDictStringValue;
+using base::ExpectDictBooleanValue;
+using base::ExpectDictStringValue;
 
 namespace syncable {
 

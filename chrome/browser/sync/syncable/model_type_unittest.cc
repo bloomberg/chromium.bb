@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,8 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/test/values_test_util.h"
 #include "base/values.h"
-#include "chrome/test/base/values_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncable {
@@ -20,12 +20,12 @@ TEST_F(ModelTypeTest, ModelTypeToValue) {
   for (int i = syncable::FIRST_REAL_MODEL_TYPE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {
     ModelType model_type = ModelTypeFromInt(i);
-    test::ExpectStringValue(ModelTypeToString(model_type),
+    base::ExpectStringValue(ModelTypeToString(model_type),
                             ModelTypeToValue(model_type));
   }
-  test::ExpectStringValue("Top-level folder",
+  base::ExpectStringValue("Top-level folder",
                           ModelTypeToValue(TOP_LEVEL_FOLDER));
-  test::ExpectStringValue("Unspecified",
+  base::ExpectStringValue("Unspecified",
                           ModelTypeToValue(UNSPECIFIED));
 }
 

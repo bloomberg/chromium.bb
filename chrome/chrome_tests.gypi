@@ -255,8 +255,6 @@
         'test/base/ui_test_utils_gtk.cc',
         'test/base/ui_test_utils_mac.mm',
         'test/base/ui_test_utils_win.cc',
-        'test/base/values_test_util.cc',
-        'test/base/values_test_util.h',
         'test/perf/perf_test.cc',
         'test/perf/perf_test.h',
         # TODO:  these should live here but are currently used by
@@ -1215,6 +1213,7 @@
         # 1) everything that the chrome binaries depend on:
         '<@(chromium_dependencies)',
         # 2) test-specific support libraries:
+        '../base/base.gyp:test_support_base',
         '../gpu/gpu.gyp:gpu_unittest_utils',
         '../media/media.gyp:media_test_support',
         '../net/net.gyp:net',
@@ -3669,6 +3668,7 @@
         'browser/sync/protocol/sync_proto.gyp:sync_proto',
         'common',
         'debugger',
+        '../base/base.gyp:test_support_base',
         '../jingle/jingle.gyp:notifier_test_util',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',

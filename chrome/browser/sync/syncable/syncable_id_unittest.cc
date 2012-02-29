@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,9 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "chrome/browser/sync/test/engine/test_id_factory.h"
-#include "chrome/test/base/values_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::vector;
@@ -85,11 +85,11 @@ TEST(SyncableIdTest, GetLeastIdForLexicographicComparison) {
 }
 
 TEST(SyncableIdTest, ToValue) {
-  test::ExpectStringValue("r", Id::CreateFromServerId("0").ToValue());
-  test::ExpectStringValue("svalue", Id::CreateFromServerId("value").ToValue());
+  base::ExpectStringValue("r", Id::CreateFromServerId("0").ToValue());
+  base::ExpectStringValue("svalue", Id::CreateFromServerId("value").ToValue());
 
-  test::ExpectStringValue("r", Id::CreateFromClientString("0").ToValue());
-  test::ExpectStringValue("cvalue",
+  base::ExpectStringValue("r", Id::CreateFromClientString("0").ToValue());
+  base::ExpectStringValue("cvalue",
                           Id::CreateFromClientString("value").ToValue());
 }
 

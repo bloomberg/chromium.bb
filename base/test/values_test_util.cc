@@ -1,15 +1,14 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/base/values_test_util.h"
-
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
+#include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace test {
+namespace base {
 
 void ExpectDictBooleanValue(bool expected_value,
                             const DictionaryValue& value,
@@ -59,4 +58,4 @@ void ExpectStringValue(const std::string& expected_str,
   EXPECT_EQ(expected_str, actual_str);
 }
 
-}  // namespace test
+}  // namespace base

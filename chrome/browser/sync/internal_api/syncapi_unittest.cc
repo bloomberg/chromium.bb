@@ -20,6 +20,7 @@
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/test/thread_test_helper.h"
+#include "base/test/values_test_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/password_manager/encryptor.h"
@@ -59,11 +60,11 @@
 #include "chrome/browser/sync/util/cryptographer.h"
 #include "chrome/browser/sync/util/extensions_activity_monitor.h"
 #include "chrome/browser/sync/util/time.h"
-#include "chrome/test/base/values_test_util.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ExpectDictStringValue;
 using browser_sync::Cryptographer;
 using browser_sync::FakeExtensionsActivityMonitor;
 using browser_sync::HasArgsAsList;
@@ -89,7 +90,6 @@ using syncable::ModelTypeSet;
 using syncable::ModelType;
 using syncable::NON_UNIQUE_NAME;
 using syncable::SPECIFICS;
-using test::ExpectDictStringValue;
 using testing::_;
 using testing::AnyNumber;
 using testing::AtLeast;
