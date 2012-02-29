@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -121,11 +121,15 @@ JSModalDialogGtk::JSModalDialogGtk(JavaScriptAppModalDialog* dialog,
   // Adjust buttons/action area as needed.
   if (dialog_->is_before_unload_dialog()) {
     std::string button_text = l10n_util::GetStringUTF8(
-      IDS_BEFOREUNLOAD_MESSAGEBOX_OK_BUTTON_LABEL);
+        dialog_->is_reload() ?
+        IDS_BEFORERELOAD_MESSAGEBOX_OK_BUTTON_LABEL :
+        IDS_BEFOREUNLOAD_MESSAGEBOX_OK_BUTTON_LABEL);
     gtk_dialog_add_button(GTK_DIALOG(gtk_dialog_), button_text.c_str(),
         GTK_RESPONSE_OK);
 
     button_text = l10n_util::GetStringUTF8(
+        dialog_->is_reload() ?
+        IDS_BEFORERELOAD_MESSAGEBOX_CANCEL_BUTTON_LABEL :
         IDS_BEFOREUNLOAD_MESSAGEBOX_CANCEL_BUTTON_LABEL);
     gtk_dialog_add_button(GTK_DIALOG(gtk_dialog_), button_text.c_str(),
         GTK_RESPONSE_CANCEL);

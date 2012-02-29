@@ -304,6 +304,7 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
 
   virtual void RunBeforeUnloadConfirm(RenderViewHost* rvh,
                                       const string16& message,
+                                      bool is_reload,
                                       IPC::Message* reply_msg) {}
 
   // Return a dummy RendererPreferences object that will be used by the renderer

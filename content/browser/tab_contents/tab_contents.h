@@ -278,6 +278,7 @@ class CONTENT_EXPORT TabContents
                                     bool* did_suppress_message) OVERRIDE;
   virtual void RunBeforeUnloadConfirm(RenderViewHost* rvh,
                                       const string16& message,
+                                      bool is_reload,
                                       IPC::Message* reply_msg) OVERRIDE;
   virtual content::RendererPreferences GetRendererPrefs(
       content::BrowserContext* browser_context) const OVERRIDE;

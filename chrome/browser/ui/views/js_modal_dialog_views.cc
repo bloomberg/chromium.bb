@@ -121,9 +121,13 @@ string16 JSModalDialogViews::GetDialogButtonLabel(
   if (parent_->is_before_unload_dialog()) {
     if (button == ui::DIALOG_BUTTON_OK) {
       return l10n_util::GetStringUTF16(
+          parent_->is_reload() ?
+          IDS_BEFORERELOAD_MESSAGEBOX_OK_BUTTON_LABEL :
           IDS_BEFOREUNLOAD_MESSAGEBOX_OK_BUTTON_LABEL);
     } else if (button == ui::DIALOG_BUTTON_CANCEL) {
       return l10n_util::GetStringUTF16(
+          parent_->is_reload() ?
+          IDS_BEFORERELOAD_MESSAGEBOX_CANCEL_BUTTON_LABEL :
           IDS_BEFOREUNLOAD_MESSAGEBOX_CANCEL_BUTTON_LABEL);
     }
   }

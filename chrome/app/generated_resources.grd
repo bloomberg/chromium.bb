@@ -5600,6 +5600,20 @@ Because search results are requested even while you're typing your query, your d
         Stay on this Page
       </message>
 
+      <!-- "Before Reload" Dialog Box strings (same as "Before Unload" but when reloading rather than unloading the page -->
+      <message name="IDS_BEFORERELOAD_MESSAGEBOX_TITLE" desc="Title for the 'before reload' dialog.">
+        Confirm Reload
+      </message>
+      <message name="IDS_BEFORERELOAD_MESSAGEBOX_FOOTER" desc="Text shown at the bottom of the dialog, after the message provided by the script.">
+        Are you sure you want to reload this page?
+      </message>
+      <message name="IDS_BEFORERELOAD_MESSAGEBOX_OK_BUTTON_LABEL" desc="The text on the button which reloads the page.">
+        Reload this Page
+      </message>
+      <message name="IDS_BEFORERELOAD_MESSAGEBOX_CANCEL_BUTTON_LABEL" desc="The text on the button which cancels the page reload.">
+        Don't Reload
+      </message>
+
       <!-- Shelf and Add shelf item dialog -->
       <message name="IDS_ASI_ADD_TITLE" desc="Title for the shelf item dialog when adding an item.">
         Add Page

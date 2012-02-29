@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -111,10 +111,17 @@ JSModalDialogCocoa::JSModalDialogCocoa(JavaScriptAppModalDialog* dialog)
       break;
     case ui::JAVASCRIPT_MESSAGE_TYPE_CONFIRM:
       if (dialog_->is_before_unload_dialog()) {
-        default_button = l10n_util::GetNSStringWithFixup(
-            IDS_BEFOREUNLOAD_MESSAGEBOX_OK_BUTTON_LABEL);
-        other_button = l10n_util::GetNSStringWithFixup(
-            IDS_BEFOREUNLOAD_MESSAGEBOX_CANCEL_BUTTON_LABEL);
+        if (dialog_->is_reload()) {
+          default_button = l10n_util::GetNSStringWithFixup(
+              IDS_BEFORERELOAD_MESSAGEBOX_OK_BUTTON_LABEL);
+          other_button = l10n_util::GetNSStringWithFixup(
+              IDS_BEFORERELOAD_MESSAGEBOX_CANCEL_BUTTON_LABEL);
+        } else {
+          default_button = l10n_util::GetNSStringWithFixup(
+              IDS_BEFOREUNLOAD_MESSAGEBOX_OK_BUTTON_LABEL);
+          other_button = l10n_util::GetNSStringWithFixup(
+              IDS_BEFOREUNLOAD_MESSAGEBOX_CANCEL_BUTTON_LABEL);
+        }
       }
       break;
     case ui::JAVASCRIPT_MESSAGE_TYPE_PROMPT:

@@ -381,6 +381,32 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_SingleBeforeUnloadAfterWindowClose) {
   alert->native_dialog()->AcceptAppModalDialog();
 }
 
+// Test that when a page has an onunload handler, reloading a page shows a
+// different dialog than navigating to a different page.
+IN_PROC_BROWSER_TEST_F(BrowserTest, BeforeUnloadVsBeforeReload) {
+  GURL url(std::string("data:text/html,") + kBeforeUnloadHTML);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Reload the page, and check that we get a "before reload" dialog.
+  browser()->Reload(CURRENT_TAB);
+  AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
+  EXPECT_TRUE(static_cast<JavaScriptAppModalDialog*>(alert)->is_reload());
+
+  // Cancel the reload.
+  alert->native_dialog()->CancelAppModalDialog();
+
+  // Navigate to another url, and check that we get a "before unload" dialog.
+  GURL url2(std::string("about:blank"));
+  browser()->OpenURL(OpenURLParams(
+      url2, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
+
+  alert = ui_test_utils::WaitForAppModalDialog();
+  EXPECT_FALSE(static_cast<JavaScriptAppModalDialog*>(alert)->is_reload());
+
+  // Accept the navigation so we end up on a page without a beforeunload hook.
+  alert->native_dialog()->AcceptAppModalDialog();
+}
+
 // Test that scripts can fork a new renderer process for a cross-site popup,
 // based on http://www.google.com/chrome/intl/en/webmasters-faq.html#newtab.
 // The script must open a new tab, set its window.opener to null, and navigate

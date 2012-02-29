@@ -1724,9 +1724,10 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_CrashedPlugin,
 // Displays a box to confirm that the user wants to navigate away from the
 // page. Replies true if yes, false otherwise, the reply string is ignored,
 // but is included so that we can use OnJavaScriptMessageBoxClosed.
-IPC_SYNC_MESSAGE_ROUTED2_2(ViewHostMsg_RunBeforeUnloadConfirm,
+IPC_SYNC_MESSAGE_ROUTED3_2(ViewHostMsg_RunBeforeUnloadConfirm,
                            GURL,     /* in - originating frame URL */
                            string16  /* in - alert message */,
+                           bool      /* in - is a reload */,
                            bool      /* out - success */,
                            string16  /* out - This is ignored.*/)
 

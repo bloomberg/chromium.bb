@@ -298,7 +298,7 @@ TEST_F(RenderViewHostManagerTest, FilterMessagesWhileSwappedOut) {
   bool result = false;
   string16 unused;
   ViewHostMsg_RunBeforeUnloadConfirm before_unload_msg(
-      rvh()->routing_id(), kNtpUrl, msg, &result, &unused);
+      rvh()->routing_id(), kNtpUrl, msg, false, &result, &unused);
   // Enable pumping for check in BrowserMessageFilter::CheckCanDispatchOnUI.
   before_unload_msg.EnableMessagePumping();
   EXPECT_TRUE(ntp_rvh->TestOnMessageReceived(before_unload_msg));

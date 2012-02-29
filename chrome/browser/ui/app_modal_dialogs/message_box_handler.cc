@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,7 @@ class ChromeJavaScriptDialogCreator : public JavaScriptDialogCreator {
   virtual void RunBeforeUnloadDialog(
       WebContents* web_contents,
       const string16& message_text,
+      bool is_reload,
       const DialogClosedCallback& callback) OVERRIDE;
 
   virtual void ResetJavaScriptState(WebContents* web_contents) OVERRIDE;
@@ -115,28 +116,39 @@ void ChromeJavaScriptDialogCreator::RunJavaScriptDialog(
       default_prompt_text,
       display_suppress_checkbox,
       false,  // is_before_unload_dialog
+      false,  // is_reload
       callback));
 }
 
 void ChromeJavaScriptDialogCreator::RunBeforeUnloadDialog(
     WebContents* web_contents,
     const string16& message_text,
+    bool is_reload,
     const DialogClosedCallback& callback) {
   ChromeJavaScriptDialogExtraData* extra_data =
       &javascript_dialog_extra_data_[web_contents];
 
-  string16 full_message = message_text + ASCIIToUTF16("\n\n") +
-      l10n_util::GetStringUTF16(IDS_BEFOREUNLOAD_MESSAGEBOX_FOOTER);
+  string16 title = l10n_util::GetStringUTF16(
+      is_reload ?
+      IDS_BEFORERELOAD_MESSAGEBOX_TITLE :
+      IDS_BEFOREUNLOAD_MESSAGEBOX_TITLE);
+  string16 footer = l10n_util::GetStringUTF16(
+      is_reload ?
+      IDS_BEFORERELOAD_MESSAGEBOX_FOOTER :
+      IDS_BEFOREUNLOAD_MESSAGEBOX_FOOTER);
+
+  string16 full_message = message_text + ASCIIToUTF16("\n\n") + footer;
 
   AppModalDialogQueue::GetInstance()->AddDialog(new JavaScriptAppModalDialog(
       web_contents,
       extra_data,
-      l10n_util::GetStringUTF16(IDS_BEFOREUNLOAD_MESSAGEBOX_TITLE),
+      title,
       ui::JAVASCRIPT_MESSAGE_TYPE_CONFIRM,
       full_message,
       string16(),  // default_prompt_text
       false,       // display_suppress_checkbox
       true,        // is_before_unload_dialog
+      is_reload,
       callback));
 }
 

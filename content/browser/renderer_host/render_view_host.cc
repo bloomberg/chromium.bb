@@ -1140,12 +1140,13 @@ void RenderViewHost::OnMsgRunJavaScriptMessage(
 
 void RenderViewHost::OnMsgRunBeforeUnloadConfirm(const GURL& frame_url,
                                                  const string16& message,
+                                                 bool is_reload,
                                                  IPC::Message* reply_msg) {
   // While a JS before unload dialog is showing, tabs in the same process
   // shouldn't process input events.
   process()->SetIgnoreInputEvents(true);
   StopHangMonitorTimeout();
-  delegate_->RunBeforeUnloadConfirm(this, message, reply_msg);
+  delegate_->RunBeforeUnloadConfirm(this, message, is_reload, reply_msg);
 }
 
 void RenderViewHost::OnMsgStartDragging(

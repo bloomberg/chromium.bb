@@ -45,6 +45,7 @@ class JavaScriptDialogCreator {
   // Displays a dialog asking the user if they want to leave a page.
   virtual void RunBeforeUnloadDialog(WebContents* web_contents,
                                      const string16& message_text,
+                                     bool is_reload,
                                      const DialogClosedCallback& callback) = 0;
 
   // Cancels all pending dialogs and resets any saved JavaScript dialog state

@@ -572,6 +572,7 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHostImpl {
                                  IPC::Message* reply_msg);
   void OnMsgRunBeforeUnloadConfirm(const GURL& frame_url,
                                    const string16& message,
+                                   bool is_reload,
                                    IPC::Message* reply_msg);
   void OnMsgStartDragging(const WebDropData& drop_data,
                           WebKit::WebDragOperationsMask operations_allowed,

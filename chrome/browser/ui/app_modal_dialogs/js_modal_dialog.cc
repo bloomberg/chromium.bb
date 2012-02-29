@@ -60,12 +60,14 @@ JavaScriptAppModalDialog::JavaScriptAppModalDialog(
     const string16& default_prompt_text,
     bool display_suppress_checkbox,
     bool is_before_unload_dialog,
+    bool is_reload,
     const JavaScriptDialogCreator::DialogClosedCallback& callback)
     : AppModalDialog(web_contents, title),
       extra_data_(extra_data),
       javascript_message_type_(javascript_message_type),
       display_suppress_checkbox_(display_suppress_checkbox),
       is_before_unload_dialog_(is_before_unload_dialog),
+      is_reload_(is_reload),
       callback_(callback),
       use_override_prompt_text_(false) {
   EnforceMaxTextSize(message_text, &message_text_);

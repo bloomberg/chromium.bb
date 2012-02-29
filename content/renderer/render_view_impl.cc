@@ -1775,12 +1775,17 @@ bool RenderViewImpl::runModalBeforeUnloadDialog(
   if (is_swapped_out_)
     return true;
 
+  bool is_reload = false;
+  WebDataSource* ds = frame->provisionalDataSource();
+  if (ds)
+    is_reload = (ds->navigationType() == WebKit::WebNavigationTypeReload);
+
   bool success = false;
   // This is an ignored return value, but is included so we can accept the same
   // response as RunJavaScriptMessage.
   string16 ignored_result;
   SendAndRunNestedMessageLoop(new ViewHostMsg_RunBeforeUnloadConfirm(
-      routing_id_, frame->document().url(), message,
+      routing_id_, frame->document().url(), message, is_reload,
       &success, &ignored_result));
   return success;
 }

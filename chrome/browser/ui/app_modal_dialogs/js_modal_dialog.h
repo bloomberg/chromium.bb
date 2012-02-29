@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,6 +39,7 @@ class JavaScriptAppModalDialog : public AppModalDialog {
       const string16& default_prompt_text,
       bool display_suppress_checkbox,
       bool is_before_unload_dialog,
+      bool is_reload,
       const content::JavaScriptDialogCreator::DialogClosedCallback& callback);
   virtual ~JavaScriptAppModalDialog();
 
@@ -67,6 +68,7 @@ class JavaScriptAppModalDialog : public AppModalDialog {
   string16 default_prompt_text() const { return default_prompt_text_; }
   bool display_suppress_checkbox() const { return display_suppress_checkbox_; }
   bool is_before_unload_dialog() const { return is_before_unload_dialog_; }
+  bool is_reload() const { return is_reload_; }
 
  private:
   // Notifies the delegate with the result of the dialog.
@@ -82,6 +84,7 @@ class JavaScriptAppModalDialog : public AppModalDialog {
   string16 default_prompt_text_;
   bool display_suppress_checkbox_;
   bool is_before_unload_dialog_;
+  bool is_reload_;
 
   content::JavaScriptDialogCreator::DialogClosedCallback callback_;
 

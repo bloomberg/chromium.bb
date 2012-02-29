@@ -2247,6 +2247,7 @@ void TabContents::RunJavaScriptMessage(
 
 void TabContents::RunBeforeUnloadConfirm(RenderViewHost* rvh,
                                          const string16& message,
+                                         bool is_reload,
                                          IPC::Message* reply_msg) {
   if (delegate_)
     delegate_->WillRunBeforeUnloadConfirm();
@@ -2265,7 +2266,7 @@ void TabContents::RunBeforeUnloadConfirm(RenderViewHost* rvh,
   is_showing_before_unload_dialog_ = true;
   dialog_creator_ = delegate_->GetJavaScriptDialogCreator();
   dialog_creator_->RunBeforeUnloadDialog(
-      this, message,
+      this, message, is_reload,
       base::Bind(&TabContents::OnDialogClosed, base::Unretained(this), rvh,
                  reply_msg));
 }
