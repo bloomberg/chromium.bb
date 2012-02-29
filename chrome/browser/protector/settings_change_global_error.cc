@@ -146,12 +146,16 @@ void SettingsChangeGlobalError::OnBubbleViewDidClose(Browser* browser) {
         base::Bind(&SettingsChangeGlobalError::OnInactiveTimeout,
                    weak_factory_.GetWeakPtr()),
         kMenuItemDisplayPeriodMs);
+#if !defined(TOOLKIT_GTK)
+    // TODO(ivankr): the logic for redisplaying bubble is disabled on Gtk, see
+    // http://crbug.com/115719.
     if (browser->window() &&
         !platform_util::IsWindowActive(browser->window()->GetNativeHandle())) {
       // Bubble closed because the entire window lost activation, display
       // again when a window gets active.
       show_on_browser_activation_ = true;
     }
+#endif
   } else {
     RemoveFromProfile();
   }
