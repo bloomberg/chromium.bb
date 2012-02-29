@@ -158,7 +158,7 @@ def RefreshPackageStatus(board, upstream, csv_root, test,
   cros_lib.RunCommand(upload_cmdline)
 
 
-def main():
+def main(argv):
   """Main function."""
   usage = 'Usage: %prog --board=<board>:... [options]'
   epilog = ('\n'
@@ -193,7 +193,7 @@ def main():
                     action='store_true', default=False,
                     help='Perform update to origin/gentoo before refresh')
 
-  (options, args) = parser.parse_args()
+  (options, args) = parser.parse_args(argv)
 
   if args:
     parser.print_help()
@@ -220,4 +220,4 @@ def main():
 
 
 if __name__ == '__main__':
-  main()
+  main(sys.argv[1:])

@@ -270,17 +270,16 @@ def _CreateParser():
                     help=('Number of processes to run in parallel.'))
   return parser
 
-
-def Main(argv, stderr):
+def main(argv):
   # Setup boto config for gsutil.
   boto_config = os.path.abspath(os.path.join(constants.SOURCE_ROOT,
       'src/private-overlays/chromeos-overlay/googlestorage_account.boto'))
   if os.path.isfile(boto_config):
     os.environ['BOTO_CONFIG'] = boto_config
   else:
-    print('Cannot find %s' % boto_config, file=stderr)
-    print('This function requires a private checkout.', file=stderr)
-    print('See http://goto/chromeos-building', file=stderr)
+    print('Cannot find %s' % boto_config, file=sys.stderr)
+    print('This function requires a private checkout.', file=sys.stderr)
+    print('See http://goto/chromeos-building', file=sys.stderr)
     sys.exit(1)
 
   logging.disable(level=logging.INFO)
@@ -293,4 +292,4 @@ def Main(argv, stderr):
 
 
 if __name__ == '__main__':
-  Main(sys.argv, sys.stderr)
+  main(sys.argv[1:])

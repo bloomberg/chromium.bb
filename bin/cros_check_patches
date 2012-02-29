@@ -174,18 +174,18 @@ First run? Try this for a starter config:
 """
 
 
-def main():
-  if len(sys.argv) < 4:
+def main(argv):
+  if len(argv) < 4:
     Usage()
     sys.exit(1)
 
   # Avoid parsing most of argv because most of it is destined for
   # DepGraphGenerator/emerge rather than us. Extract what we need
   # without disturbing the rest.
-  config_path = sys.argv.pop()
+  config_path = argv.pop()
   config = json.loads(file(config_path).read())
-  overlay_dir = sys.argv.pop()
-  board = [x.split('=')[1] for x in sys.argv if x.find('--board=') != -1]
+  overlay_dir = argv.pop()
+  board = [x.split('=')[1] for x in argv if x.find('--board=') != -1]
   if board:
     ebuild_cmd = ['ebuild-%s' % board[0]]
     equery_cmd = ['equery-%s' % board[0]]
@@ -200,14 +200,14 @@ def main():
 
   # Defaults to rdeps, but allow command-line override.
   default_rootdeps_arg = ['--root-deps=rdeps']
-  for arg in sys.argv:
+  for arg in argv:
     if arg.startswith('--root-deps'):
       default_rootdeps_arg = []
 
   # Now, assemble the overall argv as the concatenation of the
   # default list + possible rootdeps-default + actual command line.
   argv.extend(default_rootdeps_arg)
-  argv.extend(sys.argv[1:])
+  argv.extend(argv)
 
   deps = parallel_emerge.DepGraphGenerator()
   deps.Initialize(argv)
@@ -226,4 +226,4 @@ def main():
 
 
 if __name__ == "__main__":
-  main()
+  main(sys.argv[1:])

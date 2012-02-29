@@ -238,7 +238,7 @@ def WriteTable(csv_table, outpath):
     oper.Error('Unable to open %s for write: %s' % (outpath, ex))
     raise
 
-def main():
+def main(argv):
   """Main function."""
   usage = 'Usage: %prog --out=merged_csv_file input_csv_files...'
   parser = optparse.OptionParser(usage=usage)
@@ -246,7 +246,7 @@ def main():
                     action='store', default=None,
                     help='File to write merged results to')
 
-  (options, args) = parser.parse_args()
+  (options, args) = parser.parse_args(argv)
 
   # Check required options
   if not options.outpath:
@@ -261,4 +261,4 @@ def main():
   WriteTable(csv_table, options.outpath)
 
 if __name__ == '__main__':
-  main()
+  main(sys.argv[1:])

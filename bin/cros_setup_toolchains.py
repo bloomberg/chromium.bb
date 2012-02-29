@@ -556,7 +556,7 @@ def UpdateToolchains(usepkg, deleteold, targets):
     CleanTargets(targets)
 
 
-def main():
+def main(argv):
   usage = """usage: %prog [options]
 
   The script installs and updates the toolchains in your chroot.
@@ -572,10 +572,10 @@ def main():
                     dest='targets', default='all',
                     help=('Comma separated list of targets. Default: all'))
 
-  (options, _remaining_arguments) = parser.parse_args()
+  (options, _remaining_arguments) = parser.parse_args(argv)
 
   targets = set(options.targets.split(','))
   UpdateToolchains(options.usepkg, options.deleteold, targets)
 
 if __name__ == '__main__':
-  main()
+  main(sys.argv[1:])

@@ -348,19 +348,12 @@ class MainTest(test_lib.MoxTestCase):
     """Setup for all tests in this class."""
     mox.MoxTestBase.setUp(self)
 
-  def _PrepareArgv(self, *args):
-    """Prepare command line for calling upload_package_status.main"""
-    sys.argv = [ re.sub('_unittest', '', sys.argv[0]) ]
-    sys.argv.extend(args)
-
   def testHelp(self):
     """Test that --help is functioning"""
-    self._PrepareArgv('--help')
-
     with self.OutputCapturer() as output:
       # Running with --help should exit with code==0
       try:
-        ups.main()
+        ups.main(['--help'])
       except exceptions.SystemExit, e:
         self.assertEquals(e.args[0], 0)
 
@@ -370,12 +363,10 @@ class MainTest(test_lib.MoxTestCase):
 
   def testMissingCSV(self):
     """Test that running without a csv file argument exits with an error."""
-    self._PrepareArgv('')
-
     with self.OutputCapturer():
       # Running without a package should exit with code!=0
       try:
-        ups.main()
+        ups.main([])
       except exceptions.SystemExit, e:
         self.assertNotEquals(e.args[0], 0)
 
@@ -419,12 +410,11 @@ class MainTest(test_lib.MoxTestCase):
     mocked_creds.StoreCreds(creds_file)
     self.mox.ReplayAll()
 
-    self._PrepareArgv('--email=%s' % email,
-                      '--password=%s' % password,
-                      '--cred-file=%s' % creds_file,
-                      csv)
+    ups.main(['--email=%s' % email,
+              '--password=%s' % password,
+              '--cred-file=%s' % creds_file,
+               csv])
 
-    ups.main()
     self.mox.VerifyAll()
 
   @test_lib.tempfile_decorator
@@ -450,11 +440,10 @@ class MainTest(test_lib.MoxTestCase):
     mocked_creds.StoreAuthToken(token_file)
     self.mox.ReplayAll()
 
-    self._PrepareArgv('--cred-file=%s' % creds_file,
-                      '--auth-token-file=%s' % token_file,
-                      csv)
+    ups.main(['--cred-file=%s' % creds_file,
+              '--auth-token-file=%s' % token_file,
+              csv])
 
-    ups.main()
     self.mox.VerifyAll()
 
 
@@ -480,11 +469,10 @@ class MainTest(test_lib.MoxTestCase):
     ups.Uploader.Upload(mox.IgnoreArg(), ws_name=ups.DEPS_WS_NAME)
     self.mox.ReplayAll()
 
-    self._PrepareArgv('--cred-file=%s' % creds_file,
-                      '--auth-token-file=%s' % token_file,
-                      csv)
+    ups.main(['--cred-file=%s' % creds_file,
+              '--auth-token-file=%s' % token_file,
+              csv])
 
-    ups.main()
     self.mox.VerifyAll()
 
 

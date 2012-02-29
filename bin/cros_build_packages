@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.abspath(__file__ + "/../../../"))
 from chromite.lib import cros_build_lib
 
 
-def BuildPackages():
+def main(argv):
   """Build packages according to options specified on command-line."""
 
   if os.getuid() != 0:
@@ -21,7 +21,7 @@ def BuildPackages():
 
   scripts_dir = os.path.abspath(__file__ + "/../../..")
   builder = PackageBuilder(scripts_dir)
-  options, _ = builder.ParseArgs()
+  options, _ = builder.ParseArgs(argv)
 
   # Calculate packages to install.
   # TODO(davidjames): Grab these from a spec file.
@@ -214,7 +214,7 @@ class PackageBuilder(object):
     # Emerge remaining packages.
     _Run(self._EmergeBoardCmd(options, packages))
 
-  def ParseArgs(self):
+  def ParseArgs(self, argv):
     """Parse arguments from the command line using optparse."""
 
     # TODO(davidjames): We should use spec files for this.
@@ -242,7 +242,7 @@ class PackageBuilder(object):
                       default=True,
                       help="Don't merge packages in parallel.")
 
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
   def _EmergeBoardCmd(self, options, packages):
     """Calculate board emerge command."""
@@ -266,4 +266,4 @@ class PackageBuilder(object):
     return default_board
 
 if __name__ == "__main__":
-  BuildPackages()
+  BuildPackages(sys.argv[1:])

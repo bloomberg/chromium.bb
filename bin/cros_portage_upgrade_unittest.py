@@ -3545,19 +3545,14 @@ class GetPreOrderDepGraphTest(CpuTestBase):
 class MainTest(CpuTestBase):
   """Test argument handling at the main method level."""
 
-  def _PrepareArgv(self, *args):
-    """Prepare command line for calling cros_portage_upgrade.main"""
-    sys.argv = [ re.sub('_unittest', '', sys.argv[0]) ]
-    sys.argv.extend(args)
-
-  def _AssertCPUMain(self, expect_zero):
+  def _AssertCPUMain(self, args, expect_zero):
     """Run cpu.main() and assert exit value is expected.
 
     If |expect_zero| is True, assert exit value = 0.  If False,
     assert exit value != 0.
     """
     try:
-      cpu.main()
+      cpu.main(args)
     except exceptions.SystemExit, e:
       if expect_zero:
         self.assertEquals(e.args[0], 0,
@@ -3570,12 +3565,11 @@ class MainTest(CpuTestBase):
 
   def testHelp(self):
     """Test that --help is functioning"""
-    self._PrepareArgv('--help')
 
     with self.OutputCapturer() as output:
       # Running with --help should exit with code==0
       try:
-        cpu.main()
+        cpu.main(['--help'])
       except exceptions.SystemExit, e:
         self.assertEquals(e.args[0], 0)
 
@@ -3585,12 +3579,10 @@ class MainTest(CpuTestBase):
 
   def testMissingBoard(self):
     """Test that running without --board exits with an error."""
-    self._PrepareArgv('')
-
     with self.OutputCapturer():
       # Running without --board should exit with code!=0
       try:
-        cpu.main()
+        cpu.main([])
       except exceptions.SystemExit, e:
         self.assertNotEquals(e.args[0], 0)
 
@@ -3599,44 +3591,38 @@ class MainTest(CpuTestBase):
 
   def testBoardWithoutPackage(self):
     """Test that running without a package argument exits with an error."""
-    self._PrepareArgv('--board=any-board')
-
     with self.OutputCapturer():
       # Running without a package should exit with code!=0
-      self._AssertCPUMain(expect_zero=False)
+      self._AssertCPUMain(['--board=any-board'], expect_zero=False)
 
     # Verify that an error message was printed.
     self.AssertOutputEndsInError()
 
   def testHostWithoutPackage(self):
     """Test that running without a package argument exits with an error."""
-    self._PrepareArgv('--host')
-
     with self.OutputCapturer():
       # Running without a package should exit with code!=0
-      self._AssertCPUMain(expect_zero=False)
+      self._AssertCPUMain(['--host'], expect_zero=False)
 
     # Verify that an error message was printed.
     self.AssertOutputEndsInError()
 
   def testUpgradeAndUpgradeDeep(self):
     """Running with --upgrade and --upgrade-deep exits with an error."""
-    self._PrepareArgv('--host', '--upgrade', '--upgrade-deep', 'any-package')
-
     with self.OutputCapturer():
       # Expect exit with code!=0
-      self._AssertCPUMain(expect_zero=False)
+      self._AssertCPUMain(['--host', '--upgrade', '--upgrade-deep',
+                          'any-package'], expect_zero=False)
 
     # Verify that an error message was printed.
     self.AssertOutputEndsInError()
 
   def testForceWithoutUpgrade(self):
     """Running with --force requires --upgrade or --upgrade-deep."""
-    self._PrepareArgv('--host', '--force', 'any-package')
-
     with self.OutputCapturer():
       # Expect exit with code!=0
-      self._AssertCPUMain(expect_zero=False)
+      self._AssertCPUMain(['--host', '--force', 'any-package'],
+                          expect_zero=False)
 
     # Verify that an error message was printed.
     self.AssertOutputEndsInError()
@@ -3660,9 +3646,8 @@ class MainTest(CpuTestBase):
     self.mox.ReplayAll()
 
     with self.OutputCapturer():
-      self._PrepareArgv('--board=any-board', '--to-csv=/dev/null',
-                        'any-package')
-      self._AssertCPUMain(expect_zero=True)
+      self._AssertCPUMain(['--board=any-board', '--to-csv=/dev/null',
+                          'any-package'], expect_zero=True)
     self.mox.VerifyAll()
 
   def testFlowStatusReportOneBoardNotSetUp(self):
@@ -3676,9 +3661,8 @@ class MainTest(CpuTestBase):
 
     # Running with a package not set up should exit with code!=0
     with self.OutputCapturer():
-      self._PrepareArgv('--board=any-board', '--to-csv=/dev/null',
-                        'any-package')
-      self._AssertCPUMain(expect_zero=False)
+      self._AssertCPUMain(['--board=any-board', '--to-csv=/dev/null',
+                          'any-package'], expect_zero=False)
     self.mox.VerifyAll()
 
     # Verify that an error message was printed.
@@ -3704,8 +3688,8 @@ class MainTest(CpuTestBase):
     self.mox.ReplayAll()
 
     with self.OutputCapturer():
-      self._PrepareArgv('--board=board1:board2', 'any-package')
-      self._AssertCPUMain(expect_zero=True)
+      self._AssertCPUMain(['--board=board1:board2', 'any-package'],
+                          expect_zero=True)
     self.mox.VerifyAll()
 
   def testFlowUpgradeOneBoard(self):
@@ -3728,8 +3712,8 @@ class MainTest(CpuTestBase):
     self.mox.ReplayAll()
 
     with self.OutputCapturer():
-      self._PrepareArgv('--upgrade', '--board=any-board', 'any-package')
-      self._AssertCPUMain(expect_zero=True)
+      self._AssertCPUMain(['--upgrade', '--board=any-board', 'any-package'],
+                          expect_zero=True)
     self.mox.VerifyAll()
 
   def testFlowUpgradeTwoBoards(self):
@@ -3754,9 +3738,9 @@ class MainTest(CpuTestBase):
     self.mox.ReplayAll()
 
     with self.OutputCapturer():
-      self._PrepareArgv('--upgrade', '--board=board1:board2',
-                        '--to-csv=/dev/null', 'any-package')
-      self._AssertCPUMain(expect_zero=True)
+      self._AssertCPUMain(['--upgrade', '--board=board1:board2',
+                          '--to-csv=/dev/null', 'any-package'],
+                          expect_zero=True)
     self.mox.VerifyAll()
 
   def testFlowUpgradeTwoBoardsAndHost(self):
@@ -3782,9 +3766,8 @@ class MainTest(CpuTestBase):
     self.mox.ReplayAll()
 
     with self.OutputCapturer():
-      self._PrepareArgv('--upgrade', '--host', '--board=board1:host:board2',
-                        '--to-csv=/dev/null', 'any-package')
-      self._AssertCPUMain(expect_zero=True)
+      self._AssertCPUMain(['--upgrade', '--host', '--board=board1:host:board2',
+                        '--to-csv=/dev/null', 'any-package'], expect_zero=True)
     self.mox.VerifyAll()
 
 if __name__ == '__main__':

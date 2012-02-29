@@ -1434,16 +1434,16 @@ class EmergeQueue(object):
     self._Exit()
 
 
-def main():
+def main(argv):
 
-  parallel_emerge_args = sys.argv[:]
+  parallel_emerge_args = argv[:]
   deps = DepGraphGenerator()
-  deps.Initialize(parallel_emerge_args[1:])
+  deps.Initialize(parallel_emerge_args)
   emerge = deps.emerge
 
   if emerge.action is not None:
-    sys.argv = deps.ParseParallelEmergeArgs(sys.argv)
-    sys.exit(emerge_main())
+    argv = deps.ParseParallelEmergeArgs(argv)
+    sys.exit(emerge_main(argv))
   elif not emerge.cmdline_packages:
     Usage()
     sys.exit(1)
@@ -1517,12 +1517,13 @@ def main():
   # In order to grant the child permission to run setsid, we need to run sudo
   # again. We preserve SUDO_USER here in case an ebuild depends on it.
   if portage_upgrade:
-    sudo = ["sudo", "-E", "SUDO_USER=%s" % os.environ.get("SUDO_USER", "")]
-    args = sudo + parallel_emerge_args + ["--exclude=sys-apps/portage"]
+    args = ["sudo", "-E", "SUDO_USER=%s" % os.environ.get("SUDO_USER", "")]
+    args += ['parallel_emerge'] + parallel_emerge_args
+    args += ["--exclude=sys-apps/portage"]
     os.execvp("sudo", args)
 
   print "Done"
   sys.exit(0)
 
 if __name__ == "__main__":
-  main()
+  main(sys.argv[1:])

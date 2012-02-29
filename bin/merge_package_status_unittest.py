@@ -229,19 +229,12 @@ class MainTest(test_lib.MoxTestCase):
     """Setup for all tests in this class."""
     mox.MoxTestBase.setUp(self)
 
-  def _PrepareArgv(self, *args):
-    """Prepare command line for calling merge_package_status.main"""
-    sys.argv = [ re.sub('_unittest', '', sys.argv[0]) ]
-    sys.argv.extend(args)
-
   def testHelp(self):
     """Test that --help is functioning"""
-    self._PrepareArgv('--help')
-
     with self.OutputCapturer() as output:
       # Running with --help should exit with code==0
       try:
-        mps.main()
+        mps.main(['--help'])
       except exceptions.SystemExit, e:
         self.assertEquals(e.args[0], 0)
 
@@ -253,12 +246,10 @@ class MainTest(test_lib.MoxTestCase):
 
   def testMissingOut(self):
     """Test that running without --out exits with an error."""
-    self._PrepareArgv('')
-
     with self.OutputCapturer():
       # Running without --out should exit with code!=0
       try:
-        mps.main()
+        mps.main([])
       except exceptions.SystemExit, e:
         self.assertNotEquals(e.args[0], 0)
 
@@ -267,12 +258,10 @@ class MainTest(test_lib.MoxTestCase):
 
   def testMissingPackage(self):
     """Test that running without a package argument exits with an error."""
-    self._PrepareArgv('--out=any-out')
-
     with self.OutputCapturer():
       # Running without a package should exit with code!=0
       try:
-        mps.main()
+        mps.main(['--out=any-out'])
       except exceptions.SystemExit, e:
         self.assertNotEquals(e.args[0], 0)
 
@@ -290,8 +279,7 @@ class MainTest(test_lib.MoxTestCase):
     mps.WriteTable(mox.Regex(r'csv_table'), 'any-out')
     self.mox.ReplayAll()
 
-    self._PrepareArgv('--out=any-out', 'any-package')
-    mps.main()
+    mps.main(['--out=any-out', 'any-package'])
     self.mox.VerifyAll()
 
 if __name__ == '__main__':

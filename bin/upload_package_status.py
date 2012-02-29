@@ -213,7 +213,7 @@ def PrepareCreds(cred_file, token_file, email, password):
 
   return creds
 
-def main():
+def main(argv):
   """Main function."""
   usage = 'Usage: %prog [options] csv_file'
   parser = optparse.OptionParser(usage=usage)
@@ -239,7 +239,7 @@ def main():
                     action='store_true', default=False,
                     help='Show details about packages.')
 
-  (options, args) = parser.parse_args()
+  (options, args) = parser.parse_args(argv)
 
   oper.verbose = options.verbose
 
@@ -300,4 +300,4 @@ def main():
     creds.StoreAuthToken(options.token_file)
 
 if __name__ == '__main__':
-  main()
+  main(sys.argv[1:])

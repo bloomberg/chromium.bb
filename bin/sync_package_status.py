@@ -647,10 +647,10 @@ def _CheckOptions(options):
     oper.Notice('Using %r for owner filter (from $USER envvar)' % options.owner)
 
 
-def main():
+def main(argv):
   """Main function."""
   parser = _CreateOptParser()
-  (options, _args) = parser.parse_args()
+  (options, _args) = parser.parse_args(argv)
 
   oper.verbose = options.verbose
 
@@ -693,4 +693,4 @@ def main():
                   ' future chroots.')
 
 if __name__ == '__main__':
-  main()
+  main(sys.argv[1:])

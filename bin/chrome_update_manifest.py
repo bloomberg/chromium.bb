@@ -297,9 +297,7 @@ def _CheckTestRootOption(_option, _opt_str, value, parser):
   parser.values.testroot = os.path.realpath(os.path.expanduser(value))
 
 
-def main(argv=None):
-  if argv is None:
-    argv = sys.argv[1:]
+def main(argv):
 
   usage = 'usage: %prog'
   parser = optparse.OptionParser(usage=usage)
@@ -352,4 +350,4 @@ def main(argv=None):
 
 
 if __name__ == '__main__':
-  main()
+  main(sys.argv[1:])

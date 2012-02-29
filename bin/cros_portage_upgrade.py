@@ -1871,10 +1871,10 @@ def _CreateOptParser():
   return parser
 
 
-def main():
+def main(argv):
   """Main function."""
   parser = _CreateOptParser()
-  (options, args) = parser.parse_args()
+  (options, args) = parser.parse_args(argv)
 
   if (options.verbose):
     logging.basicConfig(level=logging.DEBUG)
@@ -1984,4 +1984,4 @@ def main():
   upgrader.SayGoodbye()
 
 if __name__ == '__main__':
-  main()
+  main(sys.argv[1:])

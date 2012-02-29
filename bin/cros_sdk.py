@@ -214,7 +214,10 @@ def EnterChroot(chroot_path, chrome_root, chrome_root_mount, additional_args):
     sys.exit(1)
 
 
-def main():
+def main(argv=None):
+  # TODO(ferringb): make argv required once depot_tools is fixed.
+  if argv is None:
+    argv = sys.argv[1:]
   usage="""usage: %prog [options] [VAR1=val1 .. VARn=valn -- <args>]
 
 This script manages a local CrOS SDK chroot. Depending on the flags,
@@ -265,7 +268,7 @@ Action taken is the following:
   parser.add_option('-v', '--version',
                     dest='sdk_version', default='',
                     help=('Use this sdk version [%s]' % sdk_latest_version))
-  (options, remaining_arguments) = parser.parse_args()
+  (options, remaining_arguments) = parser.parse_args(argv)
 
   # Some sanity checks first, before we ask for sudo credentials.
   if cros_build_lib.IsInsideChroot():
@@ -355,4 +358,4 @@ Action taken is the following:
 
 
 if __name__ == '__main__':
-  main()
+  main(sys.argv[1:])

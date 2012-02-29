@@ -78,8 +78,8 @@ can be used to influence what sort of dependency tree is extracted.
 """
 
 
-def main():
-  if len(sys.argv) == 1:
+def main(argv):
+  if len(argv) == 1:
     Usage()
     sys.exit(1)
 
@@ -90,7 +90,7 @@ def main():
   # cros_extract_deps defaults to rdeps. However, only use this if
   # there was no explicit --root-deps command line switch.
   default_rootdeps_arg = ['--root-deps=rdeps']
-  for arg in sys.argv:
+  for arg in argv:
     if arg.startswith('--root-deps'):
       default_rootdeps_arg = []
 
@@ -106,4 +106,4 @@ def main():
 
 
 if __name__ == "__main__":
-  main()
+  main(sys.argv[1:])

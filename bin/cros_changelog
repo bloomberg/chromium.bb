@@ -275,7 +275,7 @@ def _GrabChanges(path, tag1, tag2, tracker_acc):
   return commits
 
 
-def _ParseArgs():
+def _ParseArgs(argv):
   """Parse command-line arguments.
 
   Returns:
@@ -294,13 +294,13 @@ def _ParseArgs():
   parser.add_option(
       '--tracker-passfile', dest='tracker_passfile', default=None,
       help='Specify a file containing a password to go w/ user.')
-  return parser.parse_args()
+  return parser.parse_args(argv)
 
 
-def main():
+def main(argv):
   tags = _GrabTags()
   tag1 = None
-  options, args = _ParseArgs()
+  options, args = _ParseArgs(argv)
   if len(args) == 2:
     tag1, tag2 = args
   elif len(args) == 1:
@@ -363,4 +363,4 @@ def main():
 
 
 if __name__ == '__main__':
-  main()
+  main(sys.argv[1:])

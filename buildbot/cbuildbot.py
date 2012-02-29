@@ -855,7 +855,10 @@ def _PostParseCheck(options, args):
 
 
 def main(argv=None):
-  if not argv:
+
+  # TODO(ferringb): make argv required once depot_tools chromite_wrapper is
+  # fixed.
+  if argv is None:
     argv = sys.argv[1:]
 
   # Set umask to 022 so files created by buildbot are readable.
@@ -945,4 +948,4 @@ def main(argv=None):
 
 
 if __name__ == '__main__':
-  main()
+  main(sys.argv[1:])

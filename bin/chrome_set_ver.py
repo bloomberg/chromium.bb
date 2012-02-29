@@ -286,9 +286,7 @@ def GetParsedDeps(deps_file):
   return deps, merged_deps
 
 
-def main(argv=None):
-  if argv is None:
-    argv = sys.argv[1:]
+def main(argv):
 
   usage = 'usage: %prog [-d <DEPS.git file>] [command]'
   parser = optparse.OptionParser(usage=usage)
@@ -355,4 +353,4 @@ def main(argv=None):
 
 
 if __name__ == '__main__':
-  main()
+  main(sys.argv[1:])
