@@ -1191,15 +1191,6 @@ frame_resize_handler(struct widget *widget,
 		opaque_margin = 0;
 	}
 
-	if (child->opaque) {
-		widget->window->opaque_region =
-			wl_compositor_create_region(display->compositor);
-		wl_region_add(widget->window->opaque_region,
-			      opaque_margin, opaque_margin,
-			      width - 2 * opaque_margin,
-			      height - 2 * opaque_margin);
-	}
-
 	widget_set_allocation(child, allocation.x, allocation.y,
 			      allocation.width, allocation.height);
 
@@ -1212,6 +1203,15 @@ frame_resize_handler(struct widget *widget,
 	widget_set_allocation(widget, 0, 0,
 			      child->allocation.width + decoration_width,
 			      child->allocation.height + decoration_height);
+
+	if (child->opaque) {
+		widget->window->opaque_region =
+			wl_compositor_create_region(display->compositor);
+		wl_region_add(widget->window->opaque_region,
+			      opaque_margin, opaque_margin,
+			      widget->allocation.width - 2 * opaque_margin,
+			      widget->allocation.height - 2 * opaque_margin);
+	}
 }
 
 static void
