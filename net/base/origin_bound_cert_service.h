@@ -44,6 +44,11 @@ class NET_EXPORT OriginBoundCertService
 
   ~OriginBoundCertService();
 
+  // Returns the domain to be used for |host|.  The domain is the
+  // "registry controlled domain", or the "ETLD + 1" where one exists, or
+  // the origin otherwise.
+  static std::string GetDomainForHost(const std::string& host);
+
   // Fetches the origin bound cert for the specified origin of the specified
   // type if one exists and creates one otherwise. Returns OK if successful or
   // an error code upon failure.

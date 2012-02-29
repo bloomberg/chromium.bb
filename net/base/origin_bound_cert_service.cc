@@ -22,6 +22,7 @@
 #include "crypto/rsa_private_key.h"
 #include "net/base/net_errors.h"
 #include "net/base/origin_bound_cert_store.h"
+#include "net/base/registry_controlled_domain.h"
 #include "net/base/x509_certificate.h"
 #include "net/base/x509_util.h"
 
@@ -293,6 +294,15 @@ OriginBoundCertService::OriginBoundCertService(
 
 OriginBoundCertService::~OriginBoundCertService() {
   STLDeleteValues(&inflight_);
+}
+
+//static
+std::string OriginBoundCertService::GetDomainForHost(const std::string& host) {
+  std::string domain =
+      RegistryControlledDomainService::GetDomainAndRegistry(host);
+  if (domain.empty())
+    return host;
+  return domain;
 }
 
 int OriginBoundCertService::GetOriginBoundCert(

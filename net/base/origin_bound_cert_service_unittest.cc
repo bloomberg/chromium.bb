@@ -26,6 +26,24 @@ void FailTest(int /* result */) {
   FAIL();
 }
 
+TEST(OriginBoundCertServiceTest, GetDomainForHost) {
+  EXPECT_EQ("google.com",
+            OriginBoundCertService::GetDomainForHost("google.com"));
+  EXPECT_EQ("google.com",
+            OriginBoundCertService::GetDomainForHost("www.google.com"));
+  // NOTE(rch): we would like to segregate cookies and certificates for
+  // *.appspot.com, but currently we can not do that becaues we want to
+  // allow direct navigation to appspot.com.
+  EXPECT_EQ("appspot.com",
+            OriginBoundCertService::GetDomainForHost("foo.appspot.com"));
+  EXPECT_EQ("google.com",
+            OriginBoundCertService::GetDomainForHost("www.mail.google.com"));
+  EXPECT_EQ("goto",
+            OriginBoundCertService::GetDomainForHost("goto"));
+  EXPECT_EQ("127.0.0.1",
+            OriginBoundCertService::GetDomainForHost("127.0.0.1"));
+}
+
 // See http://crbug.com/91512 - implement OpenSSL version of CreateSelfSigned.
 #if !defined(USE_OPENSSL)
 
