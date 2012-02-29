@@ -1127,8 +1127,3 @@ name=http://crbug.com/115606
 *!media::WebMListParser::OnListStart
 *!media::WebMListParser::ParseListElement
 *!media::WebMListParser::Parse
-
-LEAK
-name=http://crbug.com/115987
-...
-*!base::SequencedWorkerPool::*
