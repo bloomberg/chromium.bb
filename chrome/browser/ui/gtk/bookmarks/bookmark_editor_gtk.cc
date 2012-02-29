@@ -302,7 +302,7 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
   bb_model_->AddObserver(this);
 
   dialog_ = gtk_dialog_new_with_buttons(
-      l10n_util::GetStringUTF8(IDS_BOOKMARK_EDITOR_TITLE).c_str(),
+      l10n_util::GetStringUTF8(details_.GetWindowTitleId()).c_str(),
       parent_window,
       GTK_DIALOG_MODAL,
       GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,

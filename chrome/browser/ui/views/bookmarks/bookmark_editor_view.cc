@@ -116,7 +116,7 @@ bool BookmarkEditorView::CanResize() const {
 }
 
 string16 BookmarkEditorView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_TITLE);
+  return l10n_util::GetStringUTF16(details_.GetWindowTitleId());
 }
 
 bool BookmarkEditorView::Accept() {

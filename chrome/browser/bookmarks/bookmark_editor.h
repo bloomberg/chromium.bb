@@ -30,6 +30,10 @@ class BookmarkEditor {
   // Describes what the user is editing.
   class EditDetails {
    public:
+    // Returns the resource id for the string resource to use on the window
+    // title for this edit operation.
+    int GetWindowTitleId() const;
+
     // Returns an EditDetails instance for the user editing the given bookmark.
     static EditDetails EditNode(const BookmarkNode* node);
 

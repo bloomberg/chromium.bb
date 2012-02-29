@@ -8,9 +8,31 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "grit/generated_resources.h"
 
 BookmarkEditor::EditDetails::EditDetails(Type node_type)
     : type(node_type), existing_node(NULL), parent_node(NULL), index(-1) {
+}
+
+int BookmarkEditor::EditDetails::GetWindowTitleId() const {
+  int dialog_title = IDS_BOOKMARK_EDITOR_TITLE;
+  switch (type) {
+    case EditDetails::EXISTING_NODE:
+    case EditDetails::NEW_URL:
+      dialog_title = (type == EditDetails::EXISTING_NODE &&
+                      existing_node->type() == BookmarkNode::FOLDER) ?
+          IDS_BOOKMARK_FOLDER_EDITOR_WINDOW_TITLE :
+          IDS_BOOKMARK_EDITOR_TITLE;
+      break;
+    case EditDetails::NEW_FOLDER:
+      dialog_title = urls.empty() ?
+          IDS_BOOKMARK_FOLDER_EDITOR_WINDOW_TITLE_NEW :
+          IDS_BOOKMARK_MANAGER_BOOKMARK_ALL_TABS;
+      break;
+    default:
+      NOTREACHED();
+  }
+  return dialog_title;
 }
 
 BookmarkEditor::EditDetails BookmarkEditor::EditDetails::EditNode(
