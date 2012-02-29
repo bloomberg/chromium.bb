@@ -55,8 +55,14 @@ namespace npapi {
 
 // Some version ranges can be shared across operating systems. This should be
 // done where possible to avoid duplication.
-static const VersionRangeDefinition kAllVersionsVersionRange[] = {
+// TODO(bauerb): The |requires_authorization| flag should be part of
+// PluginGroupDefinition, not VersionRangeDefinition.
+static const VersionRangeDefinition kAllVersionsInfobarVersionRange[] = {
     { "", "", "", true }
+};
+
+static const VersionRangeDefinition kAllVersionsNoInfobarVersionRange[] = {
+    { "", "", "", false }
 };
 
 // This is up to date with
@@ -97,11 +103,13 @@ static const VersionRangeDefinition kSilverlightVersionRange[] = {
 
 #define kChromePdfDefinition { \
     "google-chrome-pdf", "Chrome PDF Viewer", "Chrome PDF Viewer", \
-    kAllVersionsVersionRange, arraysize(kAllVersionsVersionRange), "" }
+    kAllVersionsNoInfobarVersionRange, \
+    arraysize(kAllVersionsNoInfobarVersionRange), "" }
 
 #define kGoogleTalkDefinition { \
     "google-talk", "Google Talk NPAPI Plugin", "Google Talk NPAPI Plugin", \
-    kAllVersionsVersionRange, arraysize(kAllVersionsVersionRange), ""}
+    kAllVersionsNoInfobarVersionRange, \
+    arraysize(kAllVersionsNoInfobarVersionRange), ""}
 
 #if defined(OS_MACOSX)
 // Plugin Groups for Mac.
@@ -189,12 +197,12 @@ static const PluginGroupDefinition kGroupDefinitions[] = {
     "http://www.real.com/realplayer/download" },
   // These are here for grouping, no vulnerabilities known.
   { "windows-media-player", PluginGroup::kWindowsMediaPlayerGroupName,
-    "Windows Media Player", kAllVersionsVersionRange,
-    arraysize(kAllVersionsVersionRange), "" },
+    "Windows Media Player", kAllVersionsInfobarVersionRange,
+    arraysize(kAllVersionsInfobarVersionRange), "" },
   { "microsoft-office", "Microsoft Office", "Microsoft Office",
     NULL, 0, "" },
-  { "nvidia-3d", "NVIDIA 3D", "NVIDIA 3D", kAllVersionsVersionRange,
-    arraysize(kAllVersionsVersionRange), "" },
+  { "nvidia-3d", "NVIDIA 3D", "NVIDIA 3D", kAllVersionsInfobarVersionRange,
+    arraysize(kAllVersionsInfobarVersionRange), "" },
   kChromePdfDefinition,
   kGoogleTalkDefinition,
 };
