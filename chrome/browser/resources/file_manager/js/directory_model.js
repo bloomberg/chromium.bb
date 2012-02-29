@@ -78,12 +78,6 @@ DirectoryModel.GDATA_DIRECTORY = 'gdata';
 DirectoryModel.prototype = {
   __proto__: cr.EventTarget.prototype,
 
-  rootPaths_: window.location.scheme == 'chrome-extension' ? null : [
-    DirectoryModel.DOWNLOADS_DIRECTORY,
-    DirectoryModel.REMOVABLE_DIRECTORY,
-    DirectoryModel.ARCHIVE_DIRECTORY
-  ],
-
   /**
    * Files in the current directory.
    * @type {cr.ui.ArrayDataModel}
@@ -797,6 +791,8 @@ DirectoryModel.getRootPath = function(path) {
 
   if (type == DirectoryModel.RootType.DOWNLOADS)
     return '/' + DirectoryModel.DOWNLOADS_DIRECTORY;
+  if (type == DirectoryModel.RootType.GDATA)
+    return '/' + DirectoryModel.GDATA_DIRECTORY;
 
   function subdir(dir) {
     var end = path.indexOf('/', dir.length + 2);
@@ -817,6 +813,8 @@ DirectoryModel.getRootType = function(path) {
 
   if (isTop(DirectoryModel.DOWNLOADS_DIRECTORY))
     return DirectoryModel.RootType.DOWNLOADS;
+  else if (isTop(DirectoryModel.GDATA_DIRECTORY))
+    return DirectoryModel.RootType.GDATA;
   else if (isTop(DirectoryModel.ARCHIVE_DIRECTORY))
     return DirectoryModel.RootType.ARCHIVE;
   else if(isTop(DirectoryModel.REMOVABLE_DIRECTORY))
