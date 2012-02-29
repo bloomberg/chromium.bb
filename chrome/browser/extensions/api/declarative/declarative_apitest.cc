@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/test/base/ui_test_utils.h"
 
 using namespace extensions;
 
@@ -31,18 +32,16 @@ class DeclarativeApiTest : public ExtensionApiTest {
 
   void RegisterTestRuleRegistry() {
     Profile* profile = browser()->profile();
-    RulesRegistryService* rules_registry =
+    RulesRegistryService* rules_registry_service =
         profile->GetExtensionService()->GetRulesRegistryService();
-    scoped_ptr<RulesRegistry> test_rules_registry(new TestRulesRegistry());
-    test_rules_registry_ = test_rules_registry.get();
+    test_rules_registry_ = new TestRulesRegistry();
     // TODO(battre): Remove this, once we have a real implementation for a
     // RulesRegistry.
-    rules_registry->RegisterRulesRegistry(kTestEvent,
-                                          test_rules_registry.Pass());
+    rules_registry_service->RegisterRulesRegistry(kTestEvent,
+                                                  test_rules_registry_);
   }
 
-  // Weak pointer that is deleted when the profile is destroyed.
-  RulesRegistry* test_rules_registry_;
+  scoped_refptr<RulesRegistry> test_rules_registry_;
 };
 
 IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, DeclarativeApi) {
@@ -53,10 +52,13 @@ IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, DeclarativeApi) {
   std::string extension_id = GetSingleLoadedExtension()->id();
   UnloadExtension(extension_id);
 
-  std::vector<std::string> rule_identifiers;  // Empty to get all rules.
-  std::vector<DictionaryValue*> known_rules;
-  test_rules_registry_->GetRules(extension_id,
-                                 rule_identifiers,
-                                 &known_rules);
+  // Make sure that RulesRegistry had a chance to process unloading the
+  // extension.
+  ui_test_utils::RunAllPendingInMessageLoop(
+      test_rules_registry_->GetOwnerThread());
+
+  std::vector<linked_ptr<RulesRegistry::Rule> > known_rules;
+
+  test_rules_registry_->GetAllRules(extension_id, &known_rules);
   EXPECT_TRUE(known_rules.empty());
 }

@@ -12,7 +12,7 @@
 #include <set>
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 
 namespace extensions {
 
@@ -20,13 +20,15 @@ namespace extensions {
 // fields of rules are filled with valid values.
 class InitializingRulesRegistry : public RulesRegistry {
  public:
-  explicit InitializingRulesRegistry(scoped_ptr<RulesRegistry> delegate);
+  enum Defaults { DEFAULT_PRIORITY = 100 };
+
+  explicit InitializingRulesRegistry(scoped_refptr<RulesRegistry> delegate);
   virtual ~InitializingRulesRegistry();
 
   // Implementation for RulesRegistry:
   virtual std::string AddRules(
       const std::string& extension_id,
-      const std::vector<base::DictionaryValue*>& rules) OVERRIDE;
+      const std::vector<linked_ptr<RulesRegistry::Rule> >& rules) OVERRIDE;
   virtual std::string RemoveRules(
       const std::string& extension_id,
       const std::vector<std::string>& rule_identifiers) OVERRIDE;
@@ -35,11 +37,12 @@ class InitializingRulesRegistry : public RulesRegistry {
   virtual std::string GetRules(
       const std::string& extension_id,
       const std::vector<std::string>& rule_identifiers,
-      std::vector<base::DictionaryValue*>* out) OVERRIDE;
+      std::vector<linked_ptr<RulesRegistry::Rule> >* out) OVERRIDE;
   virtual std::string GetAllRules(
       const std::string& extension_id,
-      std::vector<base::DictionaryValue*>* out) OVERRIDE;
+      std::vector<linked_ptr<RulesRegistry::Rule> >* out) OVERRIDE;
   virtual void OnExtensionUnloaded(const std::string& extension_id) OVERRIDE;
+  virtual content::BrowserThread::ID GetOwnerThread() const OVERRIDE;
 
  private:
   // Returns whether any existing rule is registered with identifier |rule_id|
@@ -55,11 +58,11 @@ class InitializingRulesRegistry : public RulesRegistry {
   // returns a non-empty error message.
   std::string CheckAndFillInOptionalRules(
     const std::string& extension_id,
-    const std::vector<base::DictionaryValue*>& rules);
+    const std::vector<linked_ptr<RulesRegistry::Rule> >& rules);
 
   // Initializes the priority fields in case they have not been set.
   void FillInOptionalPriorities(
-      const std::vector<base::DictionaryValue*>& rules);
+      const std::vector<linked_ptr<RulesRegistry::Rule> >& rules);
 
   // Removes all |identifiers| of |extension_id| from |used_rule_identifiers_|.
   void RemoveUsedRuleIdentifiers(const std::string& extension_id,
@@ -69,7 +72,7 @@ class InitializingRulesRegistry : public RulesRegistry {
   // |extension_id|.
   void RemoveAllUsedRuleIdentifiers(const std::string& extension_id);
 
-  scoped_ptr<RulesRegistry> delegate_;
+  scoped_refptr<RulesRegistry> delegate_;
 
   typedef std::map<std::string, std::set<std::string> > RuleIdentifiersMap;
   RuleIdentifiersMap used_rule_identifiers_;

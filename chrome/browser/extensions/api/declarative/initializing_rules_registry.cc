@@ -7,9 +7,6 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/declarative/declarative_api_constants.h"
-
-namespace keys = extensions::declarative_api_constants;
 
 namespace {
 std::string ToId(int identifier) {
@@ -20,8 +17,8 @@ std::string ToId(int identifier) {
 namespace extensions {
 
 InitializingRulesRegistry::InitializingRulesRegistry(
-    scoped_ptr<RulesRegistry> delegate)
-    : delegate_(delegate.Pass()),
+    scoped_refptr<RulesRegistry> delegate)
+    : delegate_(delegate),
       last_generated_rule_identifier_id_(0) {
 }
 
@@ -29,7 +26,7 @@ InitializingRulesRegistry::~InitializingRulesRegistry() {}
 
 std::string InitializingRulesRegistry::AddRules(
     const std::string& extension_id,
-    const std::vector<DictionaryValue*>& rules) {
+    const std::vector<linked_ptr<RulesRegistry::Rule> >& rules) {
   std::string error = CheckAndFillInOptionalRules(extension_id, rules);
   if (!error.empty())
     return error;
@@ -59,19 +56,23 @@ std::string InitializingRulesRegistry::RemoveAllRules(
 std::string InitializingRulesRegistry::GetRules(
     const std::string& extension_id,
     const std::vector<std::string>& rule_identifiers,
-    std::vector<DictionaryValue*>* out) {
+    std::vector<linked_ptr<RulesRegistry::Rule> >* out) {
   return delegate_->GetRules(extension_id, rule_identifiers, out);
 }
 
 std::string InitializingRulesRegistry::GetAllRules(
     const std::string& extension_id,
-    std::vector<DictionaryValue*>* out) {
+    std::vector<linked_ptr<RulesRegistry::Rule> >* out) {
   return delegate_->GetAllRules(extension_id, out);
 }
 
 void InitializingRulesRegistry::OnExtensionUnloaded(
     const std::string& extension_id) {
   delegate_->OnExtensionUnloaded(extension_id);
+}
+
+content::BrowserThread::ID InitializingRulesRegistry::GetOwnerThread() const {
+  return delegate_->GetOwnerThread();
 }
 
 bool InitializingRulesRegistry::IsUniqueId(
@@ -88,9 +89,7 @@ std::string InitializingRulesRegistry::GenerateUniqueId(
     std::string extension_id) {
   while (!IsUniqueId(extension_id, ToId(last_generated_rule_identifier_id_)))
     ++last_generated_rule_identifier_id_;
-  std::string new_id = ToId(last_generated_rule_identifier_id_);
-  used_rule_identifiers_[extension_id].insert(new_id);
-  return new_id;
+  return ToId(last_generated_rule_identifier_id_);
 }
 
 void InitializingRulesRegistry::RemoveUsedRuleIdentifiers(
@@ -108,18 +107,17 @@ void InitializingRulesRegistry::RemoveAllUsedRuleIdentifiers(
 
 std::string InitializingRulesRegistry::CheckAndFillInOptionalRules(
     const std::string& extension_id,
-    const std::vector<DictionaryValue*>& rules) {
+    const std::vector<linked_ptr<RulesRegistry::Rule> >& rules) {
   // IDs we have inserted, in case we need to rollback this operation.
   std::vector<std::string> rollback_log;
 
   // First we insert all rules with existing identifier, so that generated
   // identifiers cannot collide with identifiers passed by the caller.
-  for (std::vector<DictionaryValue*>::const_iterator i =
+  for (std::vector<linked_ptr<RulesRegistry::Rule> >::const_iterator i =
       rules.begin(); i != rules.end(); ++i) {
-    DictionaryValue* rule = *i;
-    if (rule->HasKey(keys::kId)) {
-      std::string id;
-      CHECK(rule->GetString(keys::kId, &id));
+    RulesRegistry::Rule* rule = i->get();
+    if (rule->id.get()) {
+      std::string id = *(rule->id);
       if (!IsUniqueId(extension_id, id)) {
         RemoveUsedRuleIdentifiers(extension_id, rollback_log);
         return "Id " + id + " was used multiple times.";
@@ -129,22 +127,23 @@ std::string InitializingRulesRegistry::CheckAndFillInOptionalRules(
   }
   // Now we generate IDs in case they were not specificed in the rules. This
   // cannot fail so we do not need to keep track of a rollback log.
-  for (std::vector<DictionaryValue*>::const_iterator i =
+  for (std::vector<linked_ptr<RulesRegistry::Rule> >::const_iterator i =
       rules.begin(); i != rules.end(); ++i) {
-    DictionaryValue* rule = *i;
-    if (!rule->HasKey(keys::kId))
-      rule->SetString(keys::kId, GenerateUniqueId(extension_id));
+    RulesRegistry::Rule* rule = i->get();
+    if (!rule->id.get()) {
+      rule->id.reset(new std::string(GenerateUniqueId(extension_id)));
+      used_rule_identifiers_[extension_id].insert(*(rule->id));
+    }
   }
   return "";
 }
 
 void InitializingRulesRegistry::FillInOptionalPriorities(
-    const std::vector<DictionaryValue*>& rules) {
-  std::vector<DictionaryValue*>::const_iterator i;
+    const std::vector<linked_ptr<RulesRegistry::Rule> >& rules) {
+  std::vector<linked_ptr<RulesRegistry::Rule> >::const_iterator i;
   for (i = rules.begin(); i != rules.end(); ++i) {
-    DictionaryValue* rule = *i;
-    if (!rule->HasKey(keys::kPriority))
-      rule->SetInteger(keys::kPriority, 100);
+    if (!(*i)->priority.get())
+      (*i)->priority.reset(new int(DEFAULT_PRIORITY));
   }
 }
 

@@ -10,8 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -29,6 +28,7 @@ class RulesRegistry;
 namespace extensions {
 
 // This class owns all RulesRegistries implementations of an ExtensionService.
+// This class lives on the UI thread.
 class RulesRegistryService : public content::NotificationObserver  {
  public:
   explicit RulesRegistryService(Profile* profile);
@@ -36,17 +36,22 @@ class RulesRegistryService : public content::NotificationObserver  {
 
   // Registers a RulesRegistry and wraps it in an InitializingRulesRegistry.
   void RegisterRulesRegistry(const std::string& event_name,
-                             scoped_ptr<RulesRegistry> rule_registry);
+                             scoped_refptr<RulesRegistry> rule_registry);
 
   // Returns the RulesRegistry for |event_name| or NULL if no such registry
   // has been registered.
-  RulesRegistry* GetRulesRegistry(const std::string& event_name) const;
+  scoped_refptr<RulesRegistry> GetRulesRegistry(
+      const std::string& event_name) const;
 
+  // For testing.
+  void SimulateExtensionUnloaded(const std::string& extension_id);
  private:
   // Maps event names to RuleRegistries that handle these events.
-  typedef std::map<std::string, linked_ptr<RulesRegistry> > RulesRegistryMap;
+  typedef std::map<std::string, scoped_refptr<RulesRegistry> > RulesRegistryMap;
 
   // Notifies all RulesRegistries that |extension_id| was unloaded.
+  // It is not guaranteed that this notification is processed synchronously.
+  // If extensions live on another thread, the notification is posted.
   void OnExtensionUnloaded(const std::string& extension_id);
 
   // Implementation of content::NotificationObserver.

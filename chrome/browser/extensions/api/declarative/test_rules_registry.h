@@ -29,7 +29,7 @@ class TestRulesRegistry : public RulesRegistry {
   // RulesRegistry implementation:
   virtual std::string AddRules(
       const std::string& extension_id,
-      const std::vector<base::DictionaryValue*>& rules) OVERRIDE;
+      const std::vector<linked_ptr<RulesRegistry::Rule> >& rules) OVERRIDE;
   virtual std::string RemoveRules(
       const std::string& extension_id,
       const std::vector<std::string>& rule_identifiers) OVERRIDE;
@@ -38,18 +38,24 @@ class TestRulesRegistry : public RulesRegistry {
   virtual std::string GetRules(
       const std::string& extension_id,
       const std::vector<std::string>& rule_identifiers,
-      std::vector<base::DictionaryValue*>* out) OVERRIDE;
+      std::vector<linked_ptr<RulesRegistry::Rule> >* out) OVERRIDE;
   virtual std::string GetAllRules(
       const std::string& extension_id,
-      std::vector<base::DictionaryValue*>* out) OVERRIDE;
+      std::vector<linked_ptr<RulesRegistry::Rule> >* out) OVERRIDE;
   virtual void OnExtensionUnloaded(const std::string& extension_id) OVERRIDE;
+  virtual content::BrowserThread::ID GetOwnerThread() const OVERRIDE;
+
+  void SetOwnerThread(content::BrowserThread::ID owner_thread) {
+    owner_thread_ = owner_thread;
+  }
 
  private:
   // Map of rule identifier to actual rule.
   // TODO(battre): consider the extension_ids as part of the key.
-  typedef std::map<std::string, linked_ptr<base::DictionaryValue> >
+  typedef std::map<std::string, linked_ptr<RulesRegistry::Rule> >
       RulesDictionary;
   RulesDictionary rules_;
+  content::BrowserThread::ID owner_thread_;
 };
 
 }  // namespace extensions

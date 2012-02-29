@@ -9,16 +9,34 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
+#include "chrome/common/extensions/api/experimental.declarative.h"
+#include "content/public/browser/browser_thread.h"
+
 namespace base {
 class DictionaryValue;
 }
 
 namespace extensions {
 
-// Interface for rule registries.
-class RulesRegistry {
+class RulesRegistry;
+
+// Traits that describe how RulesRegistry should be deleted. This just deletes
+// the RulesRegistry on its owner thread.
+struct RulesRegistryDeleteTraits {
  public:
-  virtual ~RulesRegistry() {}
+  static void Destruct(const RulesRegistry* rules_registry);
+};
+
+// Interface for rule registries.
+//
+// All functions except GetOwnerThread() are only called on the thread
+// indicated by GetOwnerThread(). The object is destroyed on the owner thread.
+class RulesRegistry
+    : public base::RefCountedThreadSafe<RulesRegistry,
+                                        RulesRegistryDeleteTraits> {
+ public:
+  typedef extensions::api::experimental::Rule Rule;
 
   // Registers |rules|, owned by |extension_id| to this RulesRegistry.
   // If a concrete RuleRegistry does not support some of the rules,
@@ -37,7 +55,7 @@ class RulesRegistry {
   // relevant are added or none.
   virtual std::string AddRules(
       const std::string& extension_id,
-      const std::vector<base::DictionaryValue*>& rules) = 0;
+      const std::vector<linked_ptr<Rule> >& rules) = 0;
 
   // Unregisters all rules listed in |rule_identifiers| and owned by
   // |extension_id| from this RulesRegistry.
@@ -64,15 +82,24 @@ class RulesRegistry {
   // message otherwise.
   virtual std::string GetRules(const std::string& extension_id,
                                const std::vector<std::string>& rule_identifiers,
-                               std::vector<base::DictionaryValue*>* out) = 0;
+                               std::vector<linked_ptr<Rule> >* out) = 0;
 
   // Same as GetRules but returns all rules owned by |extension_id|.
   virtual std::string GetAllRules(const std::string& extension_id,
-                                  std::vector<base::DictionaryValue*>* out) = 0;
+                                  std::vector<linked_ptr<Rule> >* out) = 0;
 
   // Called to notify the RulesRegistry that an extension has been unloaded
   // and all rules of this extension need to be removed.
   virtual void OnExtensionUnloaded(const std::string& extension_id) = 0;
+
+  // Returns the ID of the thread on which the rules registry lives.
+  // It must be safe to call this function from any thread.
+  virtual content::BrowserThread::ID GetOwnerThread() const = 0;
+
+ protected:
+  friend struct RulesRegistryDeleteTraits;
+  friend class base::DeleteHelper<RulesRegistry>;
+  virtual ~RulesRegistry() {}
 };
 
 }  // namespace extensions

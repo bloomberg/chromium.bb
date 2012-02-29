@@ -38,7 +38,7 @@
         "description": "Registers rules to handle events.",
         "parameters": [
           {
-            "name": "event",
+            "name": "eventName",
             "type": "string",
             "description": "Name of the event this function affects."
           },
@@ -70,7 +70,7 @@
         "description": "Returns currently registered rules.",
         "parameters": [
           {
-            "name": "event",
+            "name": "eventName",
             "type": "string",
             "description": "Name of the event this function affects."
           },
@@ -102,7 +102,7 @@
         "description": "Unregisters currently registered rules.",
         "parameters": [
           {
-            "name": "event",
+            "name": "eventName",
             "type": "string",
             "description": "Name of the event this function affects."
           },
