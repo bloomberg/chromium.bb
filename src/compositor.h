@@ -62,6 +62,14 @@ struct weston_output_zoom {
 	float trans_x, trans_y;
 };
 
+/* bit compatible with drm definitions. */
+enum dpms_enum {
+	WESTON_DPMS_ON,
+	WESTON_DPMS_STANDBY,
+	WESTON_DPMS_SUSPEND,
+	WESTON_DPMS_OFF
+};
+
 struct weston_output {
 	struct wl_list link;
 	struct weston_compositor *compositor;
@@ -86,6 +94,11 @@ struct weston_output {
 	void (*repaint)(struct weston_output *output);
 	void (*destroy)(struct weston_output *output);
 	void (*assign_planes)(struct weston_output *output);
+
+	/* backlight values are on 1-10 range, where higher is brighter */
+	uint32_t backlight_current;
+	void (*set_backlight)(struct weston_output *output, uint32_t value);
+	void (*set_dpms)(struct weston_output *output, enum dpms_enum level);
 };
 
 struct weston_input_device {

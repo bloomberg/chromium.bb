@@ -35,6 +35,7 @@
 #include <drm_fourcc.h>
 
 #include <gbm.h>
+#include <libbacklight.h>
 
 #include "compositor.h"
 #include "evdev.h"
@@ -86,6 +87,7 @@ struct drm_output {
 	struct wl_listener scanout_buffer_destroy_listener;
 	struct wl_buffer *pending_scanout_buffer;
 	struct wl_listener pending_scanout_buffer_destroy_listener;
+	struct backlight *backlight;
 };
 
 /*
@@ -697,6 +699,9 @@ drm_output_destroy(struct weston_output *output_base)
 	drmModeCrtcPtr origcrtc = output->original_crtc;
 	int i;
 
+	if (output->backlight)
+		backlight_destroy(output->backlight);
+
 	/* Turn off hardware cursor */
 	drm_output_set_cursor(&output->base, NULL);
 
@@ -907,11 +912,92 @@ sprite_handle_pending_buffer_destroy(struct wl_listener *listener,
 	sprite->pending_surface = NULL;
 }
 
+/* returns a value between 1-10 range, where higher is brighter */
+static uint32_t
+drm_get_backlight(struct drm_output *output)
+{
+	long brightness, max_brightness, norm;
+
+	brightness = backlight_get_brightness(output->backlight);
+	max_brightness = backlight_get_max_brightness(output->backlight);
+
+	/* convert it on a scale of 1 to 10 */
+	norm = 1 + ((brightness) * 9)/(max_brightness);
+
+	return (uint32_t) norm;
+}
+
+/* values accepted are between 1-10 range */
+static void
+drm_set_backlight(struct weston_output *output_base, uint32_t value)
+{
+	struct drm_output *output = (struct drm_output *) output_base;
+	long max_brightness, new_brightness;
+
+	if (!output->backlight)
+		return;
+
+	if (value < 1 || value > 10)
+		return;
+
+	max_brightness = backlight_get_max_brightness(output->backlight);
+
+	/* get denormalized value */
+	new_brightness = ((value - 1) * (max_brightness)) / 9;
+
+	backlight_set_brightness(output->backlight, new_brightness);
+}
+
+static drmModePropertyPtr
+drm_get_prop(int fd, drmModeConnectorPtr connector, const char *name)
+{
+	drmModePropertyPtr props;
+	int i;
+
+	for (i = 0; i < connector->count_props; i++) {
+		props = drmModeGetProperty(fd, connector->props[i]);
+		if (!props)
+			continue;
+
+		if (!strcmp(props->name, name))
+			return props;
+
+		drmModeFreeProperty(props);
+	}
+
+	return NULL;
+}
+
+static void
+drm_set_dpms(struct weston_output *output_base, enum dpms_enum level)
+{
+	struct drm_output *output = (struct drm_output *) output_base;
+	struct weston_compositor *ec = output_base->compositor;
+	struct drm_compositor *c = (struct drm_compositor *) ec;
+	drmModeConnectorPtr connector;
+	drmModePropertyPtr prop;
+
+	connector = drmModeGetConnector(c->drm.fd, output->connector_id);
+	if (!connector)
+		return;
+
+	prop = drm_get_prop(c->drm.fd, connector, "DPMS");
+	if (!prop) {
+		drmModeFreeConnector(connector);
+		return;
+	}
+
+	drmModeConnectorSetProperty(c->drm.fd, connector->connector_id,
+				    prop->prop_id, level);
+	drmModeFreeProperty(prop);
+	drmModeFreeConnector(connector);
+}
+
 static int
 create_output_for_connector(struct drm_compositor *ec,
 			    drmModeRes *resources,
 			    drmModeConnector *connector,
-			    int x, int y)
+			    int x, int y, struct udev_device *drm_device)
 {
 	struct drm_output *output;
 	struct drm_mode *drm_mode, *next;
@@ -1026,6 +1112,13 @@ create_output_for_connector(struct drm_compositor *ec,
 		goto err_fb;
 	}
 
+	output->backlight = backlight_init(drm_device,
+					   connector->connector_type);
+	if (output->backlight) {
+		output->base.set_backlight = drm_set_backlight;
+		output->base.backlight_current = drm_get_backlight(output);
+	}
+
 	weston_output_init(&output->base, &ec->base, x, y,
 			 connector->mmWidth, connector->mmHeight, 0);
 
@@ -1040,6 +1133,7 @@ create_output_for_connector(struct drm_compositor *ec,
 	output->base.repaint = drm_output_repaint;
 	output->base.destroy = drm_output_destroy;
 	output->base.assign_planes = drm_assign_planes;
+	output->base.set_dpms = drm_set_dpms;
 
 	return 0;
 
@@ -1148,7 +1242,8 @@ destroy_sprites(struct drm_compositor *compositor)
 }
 
 static int
-create_outputs(struct drm_compositor *ec, int option_connector)
+create_outputs(struct drm_compositor *ec, int option_connector,
+	       struct udev_device *drm_device)
 {
 	drmModeConnector *connector;
 	drmModeRes *resources;
@@ -1178,7 +1273,8 @@ create_outputs(struct drm_compositor *ec, int option_connector)
 		    (option_connector == 0 ||
 		     connector->connector_id == option_connector)) {
 			if (create_output_for_connector(ec, resources,
-							connector, x, y) < 0) {
+							connector, x, y,
+							drm_device) < 0) {
 				drmModeFreeConnector(connector);
 				continue;
 			}
@@ -1202,7 +1298,7 @@ create_outputs(struct drm_compositor *ec, int option_connector)
 }
 
 static void
-update_outputs(struct drm_compositor *ec)
+update_outputs(struct drm_compositor *ec, struct udev_device *drm_device)
 {
 	drmModeConnector *connector;
 	drmModeRes *resources;
@@ -1245,7 +1341,8 @@ update_outputs(struct drm_compositor *ec)
 				x = 0;
 			y = 0;
 			create_output_for_connector(ec, resources,
-						    connector, x, y);
+						    connector, x, y,
+						    drm_device);
 			printf("connector %d connected\n", connector_id);
 
 		}
@@ -1301,7 +1398,7 @@ udev_drm_event(int fd, uint32_t mask, void *data)
 	event = udev_monitor_receive_device(ec->udev_monitor);
 
 	if (udev_event_is_hotplug(event))
-		update_outputs(ec);
+		update_outputs(ec, event);
 
 	udev_device_unref(event);
 
@@ -1469,8 +1566,6 @@ drm_compositor_create(struct wl_display *display,
 		return NULL;
 	}
 
-	udev_device_unref(drm_device);
-
 	ec->base.destroy = drm_destroy;
 
 	ec->base.focus = 1;
@@ -1487,11 +1582,12 @@ drm_compositor_create(struct wl_display *display,
 	wl_list_init(&ec->sprite_list);
 	create_sprites(ec);
 
-	if (create_outputs(ec, connector) < 0) {
+	if (create_outputs(ec, connector, drm_device) < 0) {
 		fprintf(stderr, "failed to create output for %s\n", path);
 		return NULL;
 	}
 
+	udev_device_unref(drm_device);
 	udev_enumerate_unref(e);
 	path = NULL;
 

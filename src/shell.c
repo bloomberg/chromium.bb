@@ -1311,10 +1311,16 @@ lock(struct weston_shell *base)
 	struct weston_surface *tmp;
 	struct weston_input_device *device;
 	struct shell_surface *shsurf;
+	struct weston_output *output;
 	uint32_t time;
 
-	if (shell->locked)
+	if (shell->locked) {
+		wl_list_for_each(output, &shell->compositor->output_list, link)
+			/* TODO: find a way to jump to other DPMS levels */
+			if (output->set_dpms)
+				output->set_dpms(output, WESTON_DPMS_STANDBY);
 		return;
+	}
 
 	shell->locked = true;
 
@@ -1834,6 +1840,34 @@ switcher_binding(struct wl_input_device *device, uint32_t time,
 }
 
 static void
+backlight_binding(struct wl_input_device *device, uint32_t time,
+		  uint32_t key, uint32_t button, uint32_t state, void *data)
+{
+	struct weston_compositor *compositor = data;
+	struct weston_output *output;
+
+	/* TODO: we're limiting to simple use cases, where we assume just
+	 * control on the primary display. We'd have to extend later if we
+	 * ever get support for setting backlights on random desktop LCD
+	 * panels though */
+	output = get_default_output(compositor);
+	if (!output)
+		return;
+
+	if (!output->set_backlight)
+		return;
+
+	if ((key == KEY_F9 || key == KEY_BRIGHTNESSDOWN) &&
+	    output->backlight_current > 1)
+		output->backlight_current--;
+	else if ((key == KEY_F10 || key == KEY_BRIGHTNESSUP) &&
+	    output->backlight_current < 10)
+		output->backlight_current++;
+
+	output->set_backlight(output, output->backlight_current);
+}
+
+static void
 shell_destroy(struct weston_shell *base)
 {
 	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
@@ -1905,9 +1939,18 @@ shell_init(struct weston_compositor *ec)
 	weston_compositor_add_binding(ec, 0, BTN_LEFT,
 				      MODIFIER_SUPER | MODIFIER_ALT,
 				      rotate_binding, NULL);
-
 	weston_compositor_add_binding(ec, KEY_TAB, 0, MODIFIER_SUPER,
 				      switcher_binding, ec);
+
+	/* brightness */
+	weston_compositor_add_binding(ec, KEY_F9, 0, MODIFIER_CTRL,
+				      backlight_binding, ec);
+	weston_compositor_add_binding(ec, KEY_BRIGHTNESSDOWN, 0, 0,
+				      backlight_binding, ec);
+	weston_compositor_add_binding(ec, KEY_F10, 0, MODIFIER_CTRL,
+				      backlight_binding, ec);
+	weston_compositor_add_binding(ec, KEY_BRIGHTNESSUP, 0, 0,
+				      backlight_binding, ec);
 
 	ec->shell = &shell->shell;
 

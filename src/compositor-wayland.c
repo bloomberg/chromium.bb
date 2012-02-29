@@ -435,6 +435,8 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 	output->base.repaint = wayland_output_repaint;
 	output->base.destroy = wayland_output_destroy;
 	output->base.assign_planes = NULL;
+	output->base.set_backlight = NULL;
+	output->base.set_dpms = NULL;
 
 	wl_list_insert(c->base.output_list.prev, &output->base.link);
 

@@ -407,6 +407,8 @@ create_output_for_port(struct wfd_compositor *ec,
 	output->base.set_hardware_cursor = wfd_output_set_cursor;
 	output->base.destroy = wfd_output_destroy;
 	output->base.assign_planes = NULL;
+	output->base.set_backlight = NULL;
+	output->base.set_dpms = NULL;
 
 	wl_list_insert(ec->base.output_list.prev, &output->base.link);
 

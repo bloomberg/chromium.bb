@@ -1387,12 +1387,23 @@ weston_compositor_wake(struct weston_compositor *compositor)
 				     compositor->idle_time * 1000);
 }
 
+static void
+weston_compositor_dpms_on(struct weston_compositor *compositor)
+{
+        struct weston_output *output;
+
+        wl_list_for_each(output, &compositor->output_list, link)
+		if (output->set_dpms)
+			output->set_dpms(output, WESTON_DPMS_ON);
+}
+
 WL_EXPORT void
 weston_compositor_activity(struct weston_compositor *compositor)
 {
 	if (compositor->state == WESTON_COMPOSITOR_ACTIVE) {
 		weston_compositor_wake(compositor);
 	} else {
+		weston_compositor_dpms_on(compositor);
 		compositor->shell->unlock(compositor->shell);
 	}
 }
@@ -2514,6 +2525,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
+	weston_compositor_dpms_on(ec);
 	weston_compositor_wake(ec);
 	if (setjmp(segv_jmp_buf) == 0)
 		wl_display_run(display);

@@ -441,6 +441,8 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	output->base.repaint = x11_output_repaint;
 	output->base.destroy = x11_output_destroy;
 	output->base.assign_planes = NULL;
+	output->base.set_backlight = NULL;
+	output->base.set_dpms = NULL;
 
 	wl_list_insert(c->base.output_list.prev, &output->base.link);
 
