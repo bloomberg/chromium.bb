@@ -186,7 +186,8 @@ x11_compositor_fini_egl(struct x11_compositor *compositor)
 }
 
 static void
-x11_output_repaint(struct weston_output *output_base)
+x11_output_repaint(struct weston_output *output_base,
+		   pixman_region32_t *damage)
 {
 	struct x11_output *output = (struct x11_output *)output_base;
 	struct x11_compositor *compositor =
@@ -200,7 +201,7 @@ x11_output_repaint(struct weston_output *output_base)
 	}
 
 	wl_list_for_each_reverse(surface, &compositor->base.surface_list, link)
-		weston_surface_draw(surface, &output->base);
+		weston_surface_draw(surface, &output->base, damage);
 
 	eglSwapBuffers(compositor->base.display, output->egl_surface);
 

@@ -91,7 +91,8 @@ struct weston_output {
 	struct weston_mode *current;
 	struct wl_list mode_list;
 
-	void (*repaint)(struct weston_output *output);
+	void (*repaint)(struct weston_output *output,
+			pixman_region32_t *damage);
 	void (*destroy)(struct weston_output *output);
 	void (*assign_planes)(struct weston_output *output);
 
@@ -198,8 +199,8 @@ struct weston_compositor {
 	int idle_time;			/* effective timeout, s */
 
 	/* Repaint state. */
-	struct timespec previous_swap;
 	struct wl_array vertices, indices;
+	pixman_region32_t damage;
 
 	uint32_t focus;
 
@@ -260,6 +261,7 @@ struct weston_surface {
 	struct wl_surface surface;
 	struct weston_compositor *compositor;
 	GLuint texture;
+	pixman_region32_t clip;
 	pixman_region32_t damage;
 	pixman_region32_t opaque;
 	pixman_region32_t input;
@@ -341,7 +343,8 @@ void
 weston_surface_activate(struct weston_surface *surface,
 			struct weston_input_device *device, uint32_t time);
 void
-weston_surface_draw(struct weston_surface *es, struct weston_output *output);
+weston_surface_draw(struct weston_surface *es,
+		    struct weston_output *output, pixman_region32_t *damage);
 
 void
 notify_motion(struct wl_input_device *device,

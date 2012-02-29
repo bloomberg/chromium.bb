@@ -225,6 +225,7 @@ weston_surface_create(struct weston_compositor *compositor)
 
 	pixman_region32_init(&surface->damage);
 	pixman_region32_init(&surface->opaque);
+	pixman_region32_init(&surface->clip);
 	undef_region(&surface->input);
 	pixman_region32_init(&surface->transform.opaque);
 	wl_list_init(&surface->frame_callback_list);
@@ -647,6 +648,7 @@ destroy_surface(struct wl_resource *resource)
 	pixman_region32_fini(&surface->transform.boundingbox);
 	pixman_region32_fini(&surface->damage);
 	pixman_region32_fini(&surface->opaque);
+	pixman_region32_fini(&surface->clip);
 	if (!region_is_undefined(&surface->input))
 		pixman_region32_fini(&surface->input);
 
@@ -762,7 +764,8 @@ texture_region(struct weston_surface *es, pixman_region32_t *region)
 }
 
 WL_EXPORT void
-weston_surface_draw(struct weston_surface *es, struct weston_output *output)
+weston_surface_draw(struct weston_surface *es, struct weston_output *output,
+		    pixman_region32_t *damage)
 {
 	struct weston_compositor *ec = es->compositor;
 	GLfloat *v;
@@ -771,12 +774,9 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output)
 	int n;
 
 	pixman_region32_init(&repaint);
-	pixman_region32_intersect(&repaint, &es->transform.boundingbox,
-				  &output->region);
-	pixman_region32_intersect(&repaint, &repaint, &es->damage);
-
-	/* Clear damage, assume outputs do not overlap. */
-	pixman_region32_subtract(&es->damage, &es->damage, &output->region);
+	pixman_region32_intersect(&repaint,
+				  &es->transform.boundingbox, damage);
+	pixman_region32_subtract(&repaint, &repaint, &es->clip);
 
 	if (!pixman_region32_not_empty(&repaint))
 		goto out;
@@ -937,7 +937,7 @@ weston_output_repaint(struct weston_output *output, int msecs)
 	struct weston_surface *es;
 	struct weston_animation *animation, *next;
 	struct weston_frame_callback *cb, *cnext;
-	pixman_region32_t opaque, new_damage, total_damage;
+	pixman_region32_t opaque, new_damage, output_damage;
 	int32_t width, height;
 
 	weston_compositor_update_drag_surfaces(ec);
@@ -947,9 +947,6 @@ weston_output_repaint(struct weston_output *output, int msecs)
 	height = output->current->height +
 		output->border.top + output->border.bottom;
 	glViewport(0, 0, width, height);
-
-	pixman_region32_init(&new_damage);
-	pixman_region32_init(&opaque);
 
 	wl_list_for_each(es, &ec->surface_list, link)
 		/* Update surface transform now to avoid calling it ever
@@ -965,33 +962,36 @@ weston_output_repaint(struct weston_output *output, int msecs)
 		 */
 		output->assign_planes(output);
 
+	pixman_region32_init(&new_damage);
+	pixman_region32_init(&opaque);
+
 	wl_list_for_each(es, &ec->surface_list, link) {
 		pixman_region32_subtract(&es->damage, &es->damage, &opaque);
 		pixman_region32_union(&new_damage, &new_damage, &es->damage);
+		empty_region(&es->damage);
+		pixman_region32_copy(&es->clip, &opaque);
 		pixman_region32_union(&opaque, &opaque, &es->transform.opaque);
 	}
 
-	pixman_region32_init(&total_damage);
-	pixman_region32_union(&total_damage, &new_damage,
-			      &output->previous_damage);
-	pixman_region32_intersect(&output->previous_damage,
-				  &new_damage, &output->region);
+	pixman_region32_union(&ec->damage, &ec->damage, &new_damage);
+
+	pixman_region32_init(&output_damage);
+	pixman_region32_union(&output_damage,
+			      &ec->damage, &output->previous_damage);
+	pixman_region32_copy(&output->previous_damage, &ec->damage);
+	pixman_region32_intersect(&output_damage,
+				  &output_damage, &output->region);
+	pixman_region32_subtract(&ec->damage, &ec->damage, &output->region);
 
 	pixman_region32_fini(&opaque);
 	pixman_region32_fini(&new_damage);
 
-	wl_list_for_each(es, &ec->surface_list, link) {
-		pixman_region32_copy(&es->damage, &total_damage);
-		pixman_region32_subtract(&total_damage,
-					 &total_damage, &es->transform.opaque);
-	}
-
 	if (output->dirty)
 		weston_output_update_matrix(output);
 
-	output->repaint(output);
+	output->repaint(output, &output_damage);
 
-	pixman_region32_fini(&total_damage);
+	pixman_region32_fini(&output_damage);
 
 	output->repaint_needed = 0;
 

@@ -214,7 +214,8 @@ drm_output_prepare_scanout_surface(struct drm_output *output)
 }
 
 static void
-drm_output_repaint(struct weston_output *output_base)
+drm_output_repaint(struct weston_output *output_base,
+		   pixman_region32_t *damage)
 {
 	struct drm_output *output = (struct drm_output *) output_base;
 	struct drm_compositor *compositor =
@@ -235,7 +236,7 @@ drm_output_repaint(struct weston_output *output_base)
 	drm_output_prepare_scanout_surface(output);
 
 	wl_list_for_each_reverse(surface, &compositor->base.surface_list, link)
-		weston_surface_draw(surface, &output->base);
+		weston_surface_draw(surface, &output->base, damage);
 
 	glFlush();
 
