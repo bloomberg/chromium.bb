@@ -57,6 +57,7 @@ const wchar_t* const kTroublesomeDlls[] = {
   L"npggNT.des",                  // GameGuard 2008.
   L"npggNT.dll",                  // GameGuard (older).
   L"oawatch.dll",                 // Online Armor.
+  L"owexplorer-10513.dll",        // Overwolf.
   L"pavhook.dll",                 // Panda Internet Security.
   L"pavshook.dll",                // Panda Antivirus.
   L"pavshookwow.dll",             // Panda Antivirus.
