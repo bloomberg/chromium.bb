@@ -135,6 +135,8 @@
         'proxy/ppp_messaging_proxy.h',
         'proxy/ppp_mouse_lock_proxy.cc',
         'proxy/ppp_mouse_lock_proxy.h',
+        'proxy/ppp_printing_proxy.cc',
+        'proxy/ppp_printing_proxy.h',
         'proxy/ppp_video_decoder_proxy.cc',
         'proxy/ppp_video_decoder_proxy.h',
         'proxy/proxy_channel.cc',

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
@@ -29,6 +30,9 @@ class PPAPI_SHARED_EXPORT ResourceTracker {
 
   void AddRefResource(PP_Resource res);
   void ReleaseResource(PP_Resource res);
+
+  // Releases a reference on the given resource once the message loop returns.
+  void ReleaseResourceSoon(PP_Resource res);
 
   // Notifies the tracker that a new instance has been created. This must be
   // called before creating any resources associated with the instance.
@@ -89,6 +93,8 @@ class PPAPI_SHARED_EXPORT ResourceTracker {
   ResourceMap live_resources_;
 
   int32 last_resource_value_;
+
+  base::WeakPtrFactory<ResourceTracker> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceTracker);
 };

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppp_printing_dev.idl modified Fri Nov 18 15:58:00 2011. */
+/* From dev/ppp_printing_dev.idl modified Wed Feb 22 12:44:39 2012. */
 
 #ifndef PPAPI_C_DEV_PPP_PRINTING_DEV_H_
 #define PPAPI_C_DEV_PPP_PRINTING_DEV_H_
@@ -100,7 +100,7 @@ struct PPP_Printing_Dev_0_5 {
    * Prints the specified pages using the format specified in Begin.
    * Returns a resource that represents the printed output.
    * This is a PPB_ImageData resource if the output format is
-   * PP_PrintOutputFormat_Raster and a PPB_Blob otherwise. Returns 0 on
+   * PP_PrintOutputFormat_Raster and a PPB_Buffer otherwise. Returns 0 on
    * failure.
    */
   PP_Resource (*PrintPages)(

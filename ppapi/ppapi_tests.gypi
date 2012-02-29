@@ -406,5 +406,15 @@
         'examples/flash_topmost/flash_topmost.cc',
       ],
     },
+    {
+      'target_name': 'ppapi_example_printing',
+      'dependencies': [
+        'ppapi_example_skeleton',
+        'ppapi.gyp:ppapi_cpp',
+      ],
+      'sources': [
+        'examples/printing/printing.cc',
+      ],
+    },
   ],
 }

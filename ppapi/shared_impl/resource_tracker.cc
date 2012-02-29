@@ -1,9 +1,12 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ppapi/shared_impl/resource_tracker.h"
 
+#include "base/bind.h"
+#include "base/compiler_specific.h"
+#include "base/message_loop.h"
 #include "ppapi/shared_impl/callback_tracker.h"
 #include "ppapi/shared_impl/id_assignment.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
@@ -11,7 +14,9 @@
 
 namespace ppapi {
 
-ResourceTracker::ResourceTracker() : last_resource_value_(0) {
+ResourceTracker::ResourceTracker()
+    : last_resource_value_(0),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 ResourceTracker::~ResourceTracker() {
@@ -65,6 +70,14 @@ void ResourceTracker::ReleaseResource(PP_Resource res) {
     // FROM OUR LIST.
     i->second.first->Release();
   }
+}
+
+void ResourceTracker::ReleaseResourceSoon(PP_Resource res) {
+  MessageLoop::current()->PostNonNestableTask(
+      FROM_HERE,
+      base::Bind(&ResourceTracker::ReleaseResource,
+             weak_ptr_factory_.GetWeakPtr(),
+             res));
 }
 
 void ResourceTracker::DidCreateInstance(PP_Instance instance) {

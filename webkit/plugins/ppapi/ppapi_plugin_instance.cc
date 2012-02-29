@@ -1513,11 +1513,7 @@ bool PluginInstance::PrintRasterOutput(PP_Resource print_output,
   PPB_ImageData_Impl* image =
       static_cast<PPB_ImageData_Impl*>(enter.object());
 
-  // TODO(brettw) this should not require the image to be mapped. It should
-  // instead map on demand. The DCHECK here is to remind you if you see the
-  // assert fire, fix the bug rather than mapping the data.
-  DCHECK(image->is_mapped());
-  if (!image->is_mapped())
+  if (!image->Map())
     return false;
 
   const SkBitmap* bitmap = image->GetMappedBitmap();

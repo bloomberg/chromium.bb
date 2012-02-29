@@ -21,6 +21,7 @@
 #include "ppapi/c/dev/pp_video_capture_dev.h"
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/dev/ppb_text_input_dev.h"
+#include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_instance.h"
@@ -81,6 +82,11 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(PP_Picture_Dev)
   IPC_STRUCT_TRAITS_MEMBER(picture_buffer_id)
   IPC_STRUCT_TRAITS_MEMBER(bitstream_buffer_id)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(PP_PrintPageNumberRange_Dev)
+  IPC_STRUCT_TRAITS_MEMBER(first_page_number)
+  IPC_STRUCT_TRAITS_MEMBER(last_page_number)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(PP_VideoCaptureDeviceInfo_Dev)
@@ -465,6 +471,24 @@ IPC_MESSAGE_ROUTED2(PpapiMsg_PPPMessaging_HandleMessage,
 // PPP_MouseLock.
 IPC_MESSAGE_ROUTED1(PpapiMsg_PPPMouseLock_MouseLockLost,
                     PP_Instance /* instance */)
+
+// PPP_Printing
+IPC_SYNC_MESSAGE_ROUTED1_1(PpapiMsg_PPPPrinting_QuerySupportedFormats,
+                           PP_Instance /* instance */,
+                           uint32_t /* result */)
+IPC_SYNC_MESSAGE_ROUTED2_1(PpapiMsg_PPPPrinting_Begin,
+                           PP_Instance /* instance */,
+                           std::string /* settings_string */,
+                           int32_t /* result */)
+IPC_SYNC_MESSAGE_ROUTED2_1(PpapiMsg_PPPPrinting_PrintPages,
+                           PP_Instance /* instance */,
+                           std::vector<PP_PrintPageNumberRange_Dev> /* pages */,
+                           ppapi::HostResource /* result */)
+IPC_MESSAGE_ROUTED1(PpapiMsg_PPPPrinting_End,
+                    PP_Instance /* instance */)
+IPC_SYNC_MESSAGE_ROUTED1_1(PpapiMsg_PPPPrinting_IsScalingDisabled,
+                           PP_Instance /* instance */,
+                           bool /* result */)
 
 // PPB_URLLoader
 // (Messages from browser to plugin to notify it of changes in state.)
