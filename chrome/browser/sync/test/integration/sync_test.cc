@@ -550,7 +550,7 @@ bool SyncTest::IsTestServerRunning() {
   SyncServerStatusChecker delegate;
   scoped_ptr<content::URLFetcher> fetcher(content::URLFetcher::Create(
     sync_url_status, content::URLFetcher::GET, &delegate));
-  fetcher->SetRequestContext(Profile::Deprecated::GetDefaultRequestContext());
+  fetcher->SetRequestContext(g_browser_process->system_request_context());
   fetcher->Start();
   ui_test_utils::RunMessageLoop();
   return delegate.running();

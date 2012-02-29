@@ -140,7 +140,6 @@ class Profile : public content::BrowserContext {
     friend class BrowserListTabContentsProvider;
     friend class MetricsService;
     friend class SafeBrowsingServiceTestHelper;
-    friend class SyncTest;
     friend class Toolbar5Importer;
     friend class TranslateManager;
     friend class android::TabContentsProvider;
