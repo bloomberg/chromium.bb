@@ -26,76 +26,19 @@ const aura::WindowProperty<int>* const kHeightBeforeObscuredKey =
 
 }  // namespace
 
-// static
-bool WorkspaceWindowResizer::scale_windows_ = true;
-
 WorkspaceWindowResizer::WorkspaceWindowResizer(aura::Window* window,
                                                const gfx::Point& location,
                                                int window_component,
                                                int grid_size)
-    : WindowResizer(window, location, window_component, grid_size),
-      scale_window_(scale_windows_ && is_resizable() &&
-                    window_component == HTCAPTION) {
+    : WindowResizer(window, location, window_component, grid_size) {
   if (is_resizable() && GetHeightBeforeObscured(window) &&
       (!WindowTouchesBottomOfScreen() ||
        bounds_change() != kBoundsChange_Repositions)) {
     ClearHeightBeforeObscured(window);
   }
-  if (scale_window_) {
-    // When dragging the caption scale slightly from the center.
-    float scale = 1.01f;
-    float x_offset =
-        static_cast<float>(window->bounds().width()) * (scale - 1) / 2.0f;
-    float y_offset =
-        (static_cast<float>(window->bounds().width()) * (scale - 1) / 2.0f);
-    ui::Transform transform;
-    transform.SetTranslate(-x_offset, -y_offset);
-    transform.SetScaleX(scale);
-    transform.SetScaleY(scale);
-    window->layer()->SetTransform(transform);
-  }
 }
 
 WorkspaceWindowResizer::~WorkspaceWindowResizer() {
-}
-
-// static
-void WorkspaceWindowResizer::SetScaleWindowsForTest(bool value) {
-  scale_windows_ = value;
-}
-
-void WorkspaceWindowResizer::CompleteDrag() {
-  if (!did_move_or_resize() || grid_size() <= 1) {
-    if (scale_window_) {
-      ui::ScopedLayerAnimationSettings scoped_setter(
-          window()->layer()->GetAnimator());
-      window()->layer()->SetTransform(ui::Transform());
-    }
-    return;
-  }
-
-  gfx::Rect new_bounds(GetFinalBounds());
-  if (new_bounds.size() != window()->bounds().size()) {
-    // Don't attempt to animate a size change.
-    window()->SetBounds(new_bounds);
-    if (scale_window_)
-      window()->layer()->SetTransform(ui::Transform());
-    return;
-  }
-
-  ui::ScopedLayerAnimationSettings scoped_setter(
-      window()->layer()->GetAnimator());
-  // Use a small duration since the grid is small.
-  scoped_setter.SetTransitionDuration(base::TimeDelta::FromMilliseconds(100));
-  window()->SetBounds(new_bounds);
-  if (scale_window_)
-    window()->layer()->SetTransform(ui::Transform());
-}
-
-void WorkspaceWindowResizer::RevertDrag() {
-  if (scale_window_)
-    window()->layer()->SetTransform(ui::Transform());
-  WindowResizer::RevertDrag();
 }
 
 gfx::Rect WorkspaceWindowResizer::GetBoundsForDrag(const gfx::Point& location) {

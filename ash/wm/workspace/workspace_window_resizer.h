@@ -25,13 +25,6 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
                          int grid_size);
   virtual ~WorkspaceWindowResizer();
 
-  // Sets whether windows should be scaled when dragging from the caption.
-  static void SetScaleWindowsForTest(bool value);
-
-  // WindowResizer overrides:
-  virtual void CompleteDrag() OVERRIDE;
-  virtual void RevertDrag() OVERRIDE;
-
  protected:
   // WindowResizer overrides:
   virtual gfx::Rect GetBoundsForDrag(const gfx::Point& location) OVERRIDE;
@@ -49,11 +42,6 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
 
   // Returns true if the window touches the bottom of the work area.
   bool WindowTouchesBottomOfScreen() const;
-
-  // True if we scaled the window.
-  const bool scale_window_;
-
-  static bool scale_windows_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceWindowResizer);
 };

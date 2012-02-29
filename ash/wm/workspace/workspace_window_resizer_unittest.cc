@@ -45,7 +45,6 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
   virtual ~WorkspaceWindowResizerTest() {}
 
   virtual void SetUp() OVERRIDE {
-    WorkspaceWindowResizer::SetScaleWindowsForTest(false);
     AshTestBase::SetUp();
     aura::RootWindow* root = Shell::GetInstance()->GetRootWindow();
     root->SetBounds(gfx::Rect(0, 0, 800, kRootHeight));
@@ -58,7 +57,6 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
   }
 
   virtual void TearDown() OVERRIDE {
-    WorkspaceWindowResizer::SetScaleWindowsForTest(true);
     window_.reset();
     AshTestBase::TearDown();
   }
