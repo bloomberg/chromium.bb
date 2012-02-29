@@ -28,6 +28,9 @@ namespace {
 void TestOnePattern(const std::string& test_string,
                     const std::string& pattern,
                     bool is_match) {
+  std::string test =
+      "TestOnePattern(" + test_string + ", " + pattern + ", " +
+      (is_match ? "1" : "0") + ")";
   std::vector<const SubstringPattern*> patterns;
   SubstringPattern substring_pattern(pattern, 1);
   patterns.push_back(&substring_pattern);
@@ -37,8 +40,8 @@ void TestOnePattern(const std::string& test_string,
   matcher.Match(test_string, &matches);
 
   size_t expected_matches = (is_match ? 1 : 0);
-  EXPECT_EQ(expected_matches, matches.size());
-  EXPECT_EQ(is_match, matches.find(1) != matches.end());
+  EXPECT_EQ(expected_matches, matches.size()) << test;
+  EXPECT_EQ(is_match, matches.find(1) != matches.end()) << test;
 }
 
 void TestTwoPatterns(const std::string& test_string,
@@ -46,6 +49,9 @@ void TestTwoPatterns(const std::string& test_string,
                      const std::string& pattern_2,
                      bool is_match_1,
                      bool is_match_2) {
+  std::string test =
+      "TestTwoPatterns(" + test_string + ", " + pattern_1 + ", " + pattern_2 +
+      ", " + (is_match_1 ? "1" : "0") + ", " + (is_match_2 ? "1" : "0") + ")";
   SubstringPattern substring_pattern_1(pattern_1, 1);
   SubstringPattern substring_pattern_2(pattern_2, 2);
   // In order to make sure that the order in which patterns are registered
@@ -65,9 +71,9 @@ void TestTwoPatterns(const std::string& test_string,
     matcher.Match(test_string, &matches);
 
     size_t expected_matches = (is_match_1 ? 1 : 0) + (is_match_2 ? 1 : 0);
-    EXPECT_EQ(expected_matches, matches.size());
-    EXPECT_EQ(is_match_1, matches.find(1) != matches.end());
-    EXPECT_EQ(is_match_2, matches.find(2) != matches.end());
+    EXPECT_EQ(expected_matches, matches.size()) << test;
+    EXPECT_EQ(is_match_1, matches.find(1) != matches.end()) << test;
+    EXPECT_EQ(is_match_2, matches.find(2) != matches.end()) << test;
   }
 }
 }
@@ -157,4 +163,3 @@ TEST(SubstringSetMatcherTest, RegisterAndRemove) {
   EXPECT_TRUE(matches.end() != matches.find(1));
   EXPECT_TRUE(matches.end() == matches.find(2));
 }
-
