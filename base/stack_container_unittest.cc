@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -121,9 +121,17 @@ TEST(StackContainer, BufferAlignment) {
   doubles->push_back(0.0);
   EXPECT_ALIGNED(&doubles[0], ALIGNOF(double));
 
+  StackVector<AlignedData<16>, 1> aligned16;
+  aligned16->push_back(AlignedData<16>());
+  EXPECT_ALIGNED(&aligned16[0], 16);
+
+#if !defined(OS_ANDROID)
+  // It seems that android doesn't respect greater than 16 byte alignment for
+  // non-POD data on the stack, even though ALIGNOF(aligned256) == 256.
   StackVector<AlignedData<256>, 1> aligned256;
   aligned256->push_back(AlignedData<256>());
   EXPECT_ALIGNED(&aligned256[0], 256);
+#endif
 }
 
 #ifdef COMPILER_MSVC

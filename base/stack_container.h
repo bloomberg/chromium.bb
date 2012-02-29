@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "build/build_config.h"
 #include "base/memory/aligned_memory.h"
 
 // This allocator can be used with STL containers to provide a stack buffer
@@ -53,6 +54,9 @@ class StackAllocator : public std::allocator<T> {
     // constructors and destructors to be automatically called. Define a POD
     // buffer of the right size instead.
     base::AlignedMemory<sizeof(T[stack_capacity]), ALIGNOF(T)> stack_buffer_;
+#if defined(OS_ANDROID)
+    COMPILE_ASSERT(ALIGNOF(T) <= 16, crbug_115612);
+#endif
 
     // Set when the stack buffer is used for an allocation. We do not track
     // how much of the buffer is used, only that somebody is using it.
