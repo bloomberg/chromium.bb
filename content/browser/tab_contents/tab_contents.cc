@@ -2214,25 +2214,18 @@ void TabContents::RunJavaScriptMessage(
       !delegate_->GetJavaScriptDialogCreator();
 
   if (!suppress_this_message) {
-    content::JavaScriptDialogCreator::TitleType title_type;
-    string16 title;
-
-    if (!frame_url.has_host()) {
-      title_type = content::JavaScriptDialogCreator::DIALOG_TITLE_NONE;
-    } else {
-      title_type = content::JavaScriptDialogCreator::DIALOG_TITLE_FORMATTED_URL;
-      title = net::FormatUrl(
-          frame_url.GetOrigin(),
-          content::GetContentClient()->browser()->GetAcceptLangs(
-              GetBrowserContext()));
-    }
-
+    std::string accept_lang = content::GetContentClient()->browser()->
+      GetAcceptLangs(GetBrowserContext());
     dialog_creator_ = delegate_->GetJavaScriptDialogCreator();
     dialog_creator_->RunJavaScriptDialog(
-        this, title_type, title, javascript_message_type, message,
+        this,
+        frame_url.GetOrigin(),
+        accept_lang,
+        javascript_message_type,
+        message,
         default_prompt,
         base::Bind(&TabContents::OnDialogClosed, base::Unretained(this), rvh,
-                   reply_msg),
+        reply_msg),
         &suppress_this_message);
   }
 

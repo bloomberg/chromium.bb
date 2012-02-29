@@ -227,6 +227,11 @@ class ExtensionHost : public content::WebContentsDelegate,
   // Optional view that shows the rendered content in the UI.
   scoped_ptr<PlatformExtensionView> view_;
 
+  // Used to create dialog boxes.
+  // It must outlive host_contents_ as host_contents_ will access it
+  // during destruction.
+  scoped_ptr<content::JavaScriptDialogCreator> dialog_creator_;
+
   // The host for our HTML content.
   scoped_ptr<content::WebContents> host_contents_;
 

@@ -10,10 +10,14 @@
 #include "base/memory/singleton.h"
 #include "base/utf_string_conversions.h"
 #include "base/i18n/rtl.h"
+#include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 #include "chrome/common/chrome_constants.h"
+#include "content/public/common/content_client.h"
 #include "grit/generated_resources.h"
+#include "net/base/net_util.h"
 #include "ui/base/javascript_message_type.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -24,10 +28,13 @@ class ChromeJavaScriptDialogCreator : public JavaScriptDialogCreator {
  public:
   static ChromeJavaScriptDialogCreator* GetInstance();
 
+  explicit ChromeJavaScriptDialogCreator(ExtensionHost* extension_host);
+  virtual ~ChromeJavaScriptDialogCreator();
+
   virtual void RunJavaScriptDialog(
       WebContents* web_contents,
-      TitleType title_type,
-      const string16& title,
+      const GURL& origin_url,
+      const std::string& accept_lang,
       ui::JavascriptMessageType javascript_message_type,
       const string16& message_text,
       const string16& default_prompt_text,
@@ -44,12 +51,11 @@ class ChromeJavaScriptDialogCreator : public JavaScriptDialogCreator {
 
  private:
   explicit ChromeJavaScriptDialogCreator();
-  virtual ~ChromeJavaScriptDialogCreator();
 
   friend struct DefaultSingletonTraits<ChromeJavaScriptDialogCreator>;
 
-  string16 GetTitle(TitleType title_type,
-                    const string16& title,
+  string16 GetTitle(const GURL& origin_url,
+                    const std::string& accept_lang,
                     bool is_alert);
 
   void CancelPendingDialogs(WebContents* web_contents);
@@ -59,14 +65,28 @@ class ChromeJavaScriptDialogCreator : public JavaScriptDialogCreator {
   typedef std::map<void*, ChromeJavaScriptDialogExtraData>
       JavaScriptDialogExtraDataMap;
   JavaScriptDialogExtraDataMap javascript_dialog_extra_data_;
+
+  // Extension Host which owns the ChromeJavaScriptDialogCreator instance.
+  // It's used to get a extension name from a URL.
+  // If it's not owned by any Extension, it should be NULL.
+  ExtensionHost* extension_host_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeJavaScriptDialogCreator);
 };
 
 //------------------------------------------------------------------------------
 
-ChromeJavaScriptDialogCreator::ChromeJavaScriptDialogCreator() {
+ChromeJavaScriptDialogCreator::ChromeJavaScriptDialogCreator()
+    : extension_host_(NULL) {
 }
 
 ChromeJavaScriptDialogCreator::~ChromeJavaScriptDialogCreator() {
+  extension_host_ = NULL;
+}
+
+ChromeJavaScriptDialogCreator::ChromeJavaScriptDialogCreator(
+    ExtensionHost* extension_host)
+    : extension_host_(extension_host) {
 }
 
 /* static */
@@ -76,8 +96,8 @@ ChromeJavaScriptDialogCreator* ChromeJavaScriptDialogCreator::GetInstance() {
 
 void ChromeJavaScriptDialogCreator::RunJavaScriptDialog(
     WebContents* web_contents,
-    TitleType title_type,
-    const string16& title,
+    const GURL& origin_url,
+    const std::string& accept_lang,
     ui::JavascriptMessageType javascript_message_type,
     const string16& message_text,
     const string16& default_prompt_text,
@@ -105,7 +125,7 @@ void ChromeJavaScriptDialogCreator::RunJavaScriptDialog(
   }
 
   bool is_alert = javascript_message_type == ui::JAVASCRIPT_MESSAGE_TYPE_ALERT;
-  string16 dialog_title = GetTitle(title_type, title, is_alert);
+  string16 dialog_title = GetTitle(origin_url, accept_lang, is_alert);
 
   AppModalDialogQueue::GetInstance()->AddDialog(new JavaScriptAppModalDialog(
       web_contents,
@@ -158,31 +178,33 @@ void ChromeJavaScriptDialogCreator::ResetJavaScriptState(
   javascript_dialog_extra_data_.erase(web_contents);
 }
 
-string16 ChromeJavaScriptDialogCreator::GetTitle(TitleType title_type,
-                                                 const string16& title,
+string16 ChromeJavaScriptDialogCreator::GetTitle(const GURL& origin_url,
+                                                 const std::string& accept_lang,
                                                  bool is_alert) {
-  switch (title_type) {
-    case DIALOG_TITLE_NONE: {
+  // If the URL hasn't any host, return the default string.
+  if (!origin_url.has_host()) {
       return l10n_util::GetStringUTF16(
           is_alert ? IDS_JAVASCRIPT_ALERT_DEFAULT_TITLE
                    : IDS_JAVASCRIPT_MESSAGEBOX_DEFAULT_TITLE);
-      break;
-    }
-    case DIALOG_TITLE_PLAIN_STRING: {
-      return title;
-      break;
-    }
-    case DIALOG_TITLE_FORMATTED_URL: {
-      // Force URL to have LTR directionality.
-      return l10n_util::GetStringFUTF16(
-          is_alert ? IDS_JAVASCRIPT_ALERT_TITLE
-                   : IDS_JAVASCRIPT_MESSAGEBOX_TITLE,
-          base::i18n::GetDisplayStringInLTRDirectionality(title));
-      break;
+  }
+
+  // If the URL is a chrome extension one, return the extension name.
+  if (extension_host_) {
+    const Extension* extension = extension_host_->
+      profile()->GetExtensionService()->extensions()->
+      GetExtensionOrAppByURL(ExtensionURLInfo(origin_url));
+    if (extension) {
+      return UTF8ToUTF16(base::StringPiece(extension->name()));
     }
   }
-  NOTREACHED();
-  return string16();
+
+  // Otherwise, return the formatted URL.
+  // In this case, force URL to have LTR directionality.
+  string16 url_string = net::FormatUrl(origin_url, accept_lang);
+  return l10n_util::GetStringFUTF16(
+      is_alert ? IDS_JAVASCRIPT_ALERT_TITLE
+      : IDS_JAVASCRIPT_MESSAGEBOX_TITLE,
+      base::i18n::GetDisplayStringInLTRDirectionality(url_string));
 }
 
 void ChromeJavaScriptDialogCreator::CancelPendingDialogs(
@@ -203,3 +225,9 @@ void ChromeJavaScriptDialogCreator::CancelPendingDialogs(
 content::JavaScriptDialogCreator* GetJavaScriptDialogCreatorInstance() {
   return ChromeJavaScriptDialogCreator::GetInstance();
 }
+
+content::JavaScriptDialogCreator* CreateJavaScriptDialogCreatorInstance(
+    ExtensionHost* extension_host) {
+  return new ChromeJavaScriptDialogCreator(extension_host);
+}
+

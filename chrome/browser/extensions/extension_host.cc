@@ -509,7 +509,10 @@ void ExtensionHost::RenderViewDeleted(RenderViewHost* render_view_host) {
 }
 
 content::JavaScriptDialogCreator* ExtensionHost::GetJavaScriptDialogCreator() {
-  return GetJavaScriptDialogCreatorInstance();
+  if (!dialog_creator_.get()) {
+    dialog_creator_.reset(CreateJavaScriptDialogCreatorInstance(this));
+  }
+  return dialog_creator_.get();
 }
 
 void ExtensionHost::RunFileChooser(WebContents* tab,
