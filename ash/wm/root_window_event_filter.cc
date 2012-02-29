@@ -108,7 +108,12 @@ bool RootWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
                                                 aura::MouseEvent* event) {
   // We must always update the cursor, otherwise the cursor can get stuck if an
   // event filter registered with us consumes the event.
-  if (event->type() == ui::ET_MOUSE_MOVED) {
+  // It should also update the cursor for clicking and wheels for ChromeOS boot.
+  // When ChromeOS is booted, it hides the mouse cursor but immediate mouse
+  // operation will show the cursor.
+  if (event->type() == ui::ET_MOUSE_MOVED ||
+      event->type() == ui::ET_MOUSE_PRESSED ||
+      event->type() == ui::ET_MOUSEWHEEL) {
     if (update_cursor_visibility_)
       SetCursorVisible(target, event, true);
 
@@ -169,7 +174,8 @@ void RootWindowEventFilter::UpdateCursor(aura::Window* target,
 void RootWindowEventFilter::SetCursorVisible(aura::Window* target,
                                              aura::LocatedEvent* event,
                                              bool show) {
-  Shell::GetRootWindow()->ShowCursor(show);
+  if (!(event->flags() & ui::EF_IS_SYNTHESIZED))
+    Shell::GetRootWindow()->ShowCursor(show);
 }
 
 bool RootWindowEventFilter::FilterKeyEvent(aura::Window* target,

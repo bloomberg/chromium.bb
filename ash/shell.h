@@ -206,6 +206,10 @@ class ASH_EXPORT Shell {
 
   SystemTray* tray() const { return tray_.get(); }
 
+  static void set_initially_hide_cursor(bool hide) {
+    initially_hide_cursor_ = hide;
+  }
+
   // Made available for tests.
   internal::ShadowController* shadow_controller() {
     return shadow_controller_.get();
@@ -241,6 +245,10 @@ class ASH_EXPORT Shell {
   // Window mode is computed at shell initialization time, so allow it to be
   // overridden without modifying the global command line.
   static bool compact_window_mode_for_test_;
+
+  // If set before the Shell is initialized, the mouse cursor will be hidden
+  // when the screen is initially created.
+  static bool initially_hide_cursor_;
 
   internal::RootWindowEventFilter* root_filter_;  // not owned
 

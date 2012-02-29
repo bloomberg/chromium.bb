@@ -74,7 +74,8 @@ enum EventFlags {
 enum MouseEventFlags {
   EF_IS_DOUBLE_CLICK    = 1 << 16,
   EF_IS_TRIPLE_CLICK    = 1 << 17,
-  EF_IS_NON_CLIENT      = 1 << 18
+  EF_IS_NON_CLIENT      = 1 << 18,
+  EF_IS_SYNTHESIZED     = 1 << 19,  // Only for Aura.  See ui/aura/root_window.h
 };
 
 enum TouchStatus {

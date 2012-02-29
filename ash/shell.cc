@@ -223,6 +223,8 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
 Shell* Shell::instance_ = NULL;
 // static
 bool Shell::compact_window_mode_for_test_ = false;
+// static
+bool Shell::initially_hide_cursor_ = false;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Shell::TestApi
@@ -355,6 +357,8 @@ void Shell::Init() {
 
   aura::RootWindow* root_window = GetRootWindow();
   root_window->SetCursor(aura::kCursorPointer);
+  if (initially_hide_cursor_)
+    root_window->ShowCursor(false);
 
   activation_controller_.reset(new internal::ActivationController);
 

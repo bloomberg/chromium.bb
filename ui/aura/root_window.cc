@@ -832,7 +832,7 @@ void RootWindow::SynthesizeMouseMoveEvent() {
   MouseEvent event(ui::ET_MOUSE_MOVED,
                    orig_mouse_location,
                    orig_mouse_location,
-                   0);
+                   ui::EF_IS_SYNTHESIZED);
   DispatchMouseEvent(&event);
 #endif
 }

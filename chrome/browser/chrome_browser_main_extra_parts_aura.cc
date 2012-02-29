@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/views/aura/ime_controller_chromeos.h"
 #include "chrome/browser/ui/views/aura/volume_controller_chromeos.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #endif
 
@@ -38,6 +39,9 @@ void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
           switches::kAuraHostWindowUseFullscreen)) {
     aura::RootWindow::set_use_fullscreen_host_window(true);
     aura::RootWindow::set_hide_host_cursor(true);
+    // Hide the mouse cursor completely at boot.
+    if (!chromeos::UserManager::Get()->user_is_logged_in())
+      ash::Shell::set_initially_hide_cursor(true);
   }
 #endif
 
