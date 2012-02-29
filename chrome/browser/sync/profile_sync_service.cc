@@ -1013,6 +1013,9 @@ void ProfileSyncService::ShowConfigure(bool sync_everything) {
 }
 
 void ProfileSyncService::ShowSyncSetup(const std::string& sub_page) {
+#if defined(OS_ANDROID)
+  NOTIMPLEMENTED() << "Android doesn't use the webui for sync setup";
+#else
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile());
   if (!browser) {
     browser = Browser::Create(profile());
@@ -1021,6 +1024,7 @@ void ProfileSyncService::ShowSyncSetup(const std::string& sub_page) {
   } else {
     browser->ShowOptionsTab(sub_page);
   }
+#endif
 }
 
 
