@@ -28,14 +28,19 @@ class ASH_EXPORT Shadow : public ui::ImplicitAnimationObserver {
     // Active windows have more opaque shadows, shifted down to make the window
     // appear "higher".
     STYLE_ACTIVE,
+
     // Inactive windows have less opaque shadows.
     STYLE_INACTIVE,
+
+    // Small windows like tooltips and context menus have lighter, smaller
+    // shadows.
+    STYLE_SMALL,
   };
 
   Shadow();
   virtual ~Shadow();
 
-  void Init();
+  void Init(Style style);
 
   // Returns |image_grid_|'s ui::Layer.  This is exposed so it can be added to
   // the same layer as the content and stacked below it.  SetContentBounds()

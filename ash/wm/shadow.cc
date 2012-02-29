@@ -11,14 +11,27 @@
 
 namespace {
 
-// Shadow opacity for active window.
+// Shadow opacity for different styles.
 const float kActiveShadowOpacity = 1.0f;
-
-// Shadow opacity for inactive window.
 const float kInactiveShadowOpacity = 0.2f;
+const float kSmallShadowOpacity = 1.0f;
 
 // Duration for opacity animation in milliseconds.
 const int64 kAnimationDurationMs = 200;
+
+float GetOpacityForStyle(ash::internal::Shadow::Style style) {
+  switch (style) {
+    case ash::internal::Shadow::STYLE_ACTIVE:
+      return kActiveShadowOpacity;
+    case ash::internal::Shadow::STYLE_INACTIVE:
+      return kInactiveShadowOpacity;
+    case ash::internal::Shadow::STYLE_SMALL:
+      return kSmallShadowOpacity;
+    default:
+      NOTREACHED() << "Unhandled style " << style;
+  }
+  return 1.0f;
+}
 
 }  // namespace
 
@@ -31,12 +44,12 @@ Shadow::Shadow() {
 Shadow::~Shadow() {
 }
 
-void Shadow::Init() {
-  style_ = STYLE_ACTIVE;
+void Shadow::Init(Style style) {
+  style_ = style;
   image_grid_.reset(new ImageGrid);
   UpdateImagesForStyle();
   image_grid_->layer()->set_name("Shadow");
-  image_grid_->layer()->SetOpacity(kActiveShadowOpacity);
+  image_grid_->layer()->SetOpacity(GetOpacityForStyle(style_));
 }
 
 void Shadow::SetContentBounds(const gfx::Rect& content_bounds) {
@@ -51,10 +64,20 @@ ui::Layer* Shadow::layer() const {
 void Shadow::SetStyle(Style style) {
   if (style_ == style)
     return;
+
+  Style old_style = style_;
   style_ = style;
 
   // Stop waiting for any as yet unfinished implicit animations.
   StopObservingImplicitAnimations();
+
+  // If we're switching to or from the small style, don't bother with
+  // animations.
+  if (style == STYLE_SMALL || old_style == STYLE_SMALL) {
+    UpdateImagesForStyle();
+    image_grid_->layer()->SetOpacity(GetOpacityForStyle(style));
+    return;
+  }
 
   // If we're becoming active, switch images now.  Because the inactive image
   // has a very low opacity the switch isn't noticeable and this approach
@@ -79,7 +102,7 @@ void Shadow::SetStyle(Style style) {
         image_grid_->layer()->SetOpacity(kInactiveShadowOpacity);
         break;
       default:
-        NOTREACHED();
+        NOTREACHED() << "Unhandled style " << style_;
         break;
     }
   }
@@ -122,8 +145,20 @@ void Shadow::UpdateImagesForStyle() {
           &res.GetImageNamed(IDR_AURA_SHADOW_INACTIVE_BOTTOM),
           &res.GetImageNamed(IDR_AURA_SHADOW_INACTIVE_BOTTOM_RIGHT));
       break;
+    case STYLE_SMALL:
+      image_grid_->SetImages(
+          &res.GetImageNamed(IDR_AURA_SHADOW_SMALL_TOP_LEFT),
+          &res.GetImageNamed(IDR_AURA_SHADOW_SMALL_TOP),
+          &res.GetImageNamed(IDR_AURA_SHADOW_SMALL_TOP_RIGHT),
+          &res.GetImageNamed(IDR_AURA_SHADOW_SMALL_LEFT),
+          NULL,
+          &res.GetImageNamed(IDR_AURA_SHADOW_SMALL_RIGHT),
+          &res.GetImageNamed(IDR_AURA_SHADOW_SMALL_BOTTOM_LEFT),
+          &res.GetImageNamed(IDR_AURA_SHADOW_SMALL_BOTTOM),
+          &res.GetImageNamed(IDR_AURA_SHADOW_SMALL_BOTTOM_RIGHT));
+      break;
     default:
-      NOTREACHED();
+      NOTREACHED() << "Unhandled style " << style_;
       break;
   }
 

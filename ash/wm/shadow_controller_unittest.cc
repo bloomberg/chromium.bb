@@ -122,5 +122,33 @@ TEST_F(ShadowControllerTest, ShadowStyle) {
   EXPECT_EQ(Shadow::STYLE_ACTIVE, shadow2->style());
 }
 
+// Tests that we use smaller shadows for tooltips and menus.
+TEST_F(ShadowControllerTest, SmallShadowsForTooltipsAndMenus) {
+  ShadowController::TestApi api(
+      ash::Shell::GetInstance()->shadow_controller());
+
+  scoped_ptr<aura::Window> tooltip_window(new aura::Window(NULL));
+  tooltip_window->SetType(aura::client::WINDOW_TYPE_TOOLTIP);
+  tooltip_window->Init(ui::Layer::LAYER_TEXTURED);
+  tooltip_window->SetParent(NULL);
+  tooltip_window->SetBounds(gfx::Rect(10, 20, 300, 400));
+  tooltip_window->Show();
+
+  Shadow* tooltip_shadow = api.GetShadowForWindow(tooltip_window.get());
+  ASSERT_TRUE(tooltip_shadow != NULL);
+  EXPECT_EQ(Shadow::STYLE_SMALL, tooltip_shadow->style());
+
+  scoped_ptr<aura::Window> menu_window(new aura::Window(NULL));
+  menu_window->SetType(aura::client::WINDOW_TYPE_MENU);
+  menu_window->Init(ui::Layer::LAYER_TEXTURED);
+  menu_window->SetParent(NULL);
+  menu_window->SetBounds(gfx::Rect(10, 20, 300, 400));
+  menu_window->Show();
+
+  Shadow* menu_shadow = api.GetShadowForWindow(tooltip_window.get());
+  ASSERT_TRUE(menu_shadow != NULL);
+  EXPECT_EQ(Shadow::STYLE_SMALL, menu_shadow->style());
+}
+
 }  // namespace internal
 }  // namespace ash

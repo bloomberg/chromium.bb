@@ -42,6 +42,17 @@ ShadowType GetShadowTypeFromWindow(aura::Window* window) {
   return SHADOW_TYPE_NONE;
 }
 
+bool ShouldUseSmallShadowForWindow(aura::Window* window) {
+  switch (window->type()) {
+    case aura::client::WINDOW_TYPE_MENU:
+    case aura::client::WINDOW_TYPE_TOOLTIP:
+      return true;
+    default:
+      break;
+  }
+  return false;
+}
+
 }  // namespace
 
 ShadowController::ShadowController() {
@@ -116,7 +127,7 @@ Shadow* ShadowController::GetShadowForWindow(aura::Window* window) {
 void ShadowController::HandleWindowActivationChange(aura::Window* window,
                                                     bool active) {
   Shadow* shadow = GetShadowForWindow(window);
-  if (shadow)
+  if (shadow && !ShouldUseSmallShadowForWindow(window))
     shadow->SetStyle(active ? Shadow::STYLE_ACTIVE : Shadow::STYLE_INACTIVE);
 }
 
@@ -134,7 +145,8 @@ void ShadowController::CreateShadowForWindow(aura::Window* window) {
   linked_ptr<Shadow> shadow(new Shadow());
   window_shadows_.insert(make_pair(window, shadow));
 
-  shadow->Init();
+  shadow->Init(ShouldUseSmallShadowForWindow(window) ?
+               Shadow::STYLE_SMALL : Shadow::STYLE_ACTIVE);
   shadow->SetContentBounds(gfx::Rect(window->bounds().size()));
   shadow->layer()->SetVisible(ShouldShowShadowForWindow(window));
   window->layer()->Add(shadow->layer());

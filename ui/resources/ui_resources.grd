@@ -169,6 +169,14 @@
         <include name="IDR_AURA_SHADOW_INACTIVE_BOTTOM_LEFT" file="aura/window_shadow_inactive_bottom_left.png" type="BINDATA" />
         <include name="IDR_AURA_SHADOW_INACTIVE_BOTTOM" file="aura/window_shadow_inactive_bottom.png" type="BINDATA" />
         <include name="IDR_AURA_SHADOW_INACTIVE_BOTTOM_RIGHT" file="aura/window_shadow_inactive_bottom_right.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_SMALL_TOP_LEFT" file="aura/small_shadow_top_left.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_SMALL_TOP" file="aura/small_shadow_top.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_SMALL_TOP_RIGHT" file="aura/small_shadow_top_right.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_SMALL_LEFT" file="aura/small_shadow_left.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_SMALL_RIGHT" file="aura/small_shadow_right.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_SMALL_BOTTOM_LEFT" file="aura/small_shadow_bottom_left.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_SMALL_BOTTOM" file="aura/small_shadow_bottom.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_SMALL_BOTTOM_RIGHT" file="aura/small_shadow_bottom_right.png" type="BINDATA" />
         <include name="IDR_AURA_STATUS_MOCK" file="aura/statusbar.png" type="BINDATA" />
         <include name="IDR_AURA_WALLPAPER" file="aura/wallpaper.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_CLOSE_ICON" file="aura/slab_close.png" type="BINDATA" />
