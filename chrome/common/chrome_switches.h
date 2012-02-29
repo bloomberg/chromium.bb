@@ -67,7 +67,6 @@ extern const char kCountry[];
 extern const char kCrashOnHangSeconds[];
 extern const char kCrashOnHangThreads[];
 extern const char kCrashOnLive[];
-extern const char kCreateMobileBookmarksFolder[];
 extern const char kDebugDevToolsFrontend[];
 extern const char kDebugEnableFrameToggle[];
 extern const char kDebugPrint[];

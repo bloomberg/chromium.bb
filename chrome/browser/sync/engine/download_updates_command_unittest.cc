@@ -20,7 +20,8 @@ using syncable::MODEL_TYPE_COUNT;
 // A test fixture for tests exercising DownloadUpdatesCommandTest.
 class DownloadUpdatesCommandTest : public SyncerCommandTest {
  protected:
-  DownloadUpdatesCommandTest() {}
+  DownloadUpdatesCommandTest()
+      : command_(true /* create_mobile_bookmarks_folder */) {}
 
   virtual void SetUp() {
     workers()->clear();

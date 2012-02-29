@@ -14,8 +14,4 @@ include_rules = [
   # TODO(rlarocque) 19878: Move remaining syncapi-related headers to
   # internal_api/, then remove this DEPS rule.
   "+chrome/browser/sync/internal_api",
-
-  # various command line flags
-  "+chrome/common/chrome_switches.h",
 ]
-

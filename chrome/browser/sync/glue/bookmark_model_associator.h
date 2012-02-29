@@ -36,10 +36,14 @@ class BookmarkModelAssociator
     : public PerDataTypeAssociatorInterface<BookmarkNode, int64> {
  public:
   static syncable::ModelType model_type() { return syncable::BOOKMARKS; }
+  // |expect_mobile_bookmarks_folder| controls whether or not we
+  // expect the mobile bookmarks permanent folder to be created.
+  // Should be set to true only by mobile clients.
   BookmarkModelAssociator(
       BookmarkModel* bookmark_model,
       sync_api::UserShare* user_share,
-      DataTypeErrorHandler* unrecoverable_error_handler);
+      DataTypeErrorHandler* unrecoverable_error_handler,
+      bool expect_mobile_bookmarks_folder);
   virtual ~BookmarkModelAssociator();
 
   // Updates the visibility of the permanents node in the BookmarkModel.
@@ -130,6 +134,7 @@ class BookmarkModelAssociator
   BookmarkModel* bookmark_model_;
   sync_api::UserShare* user_share_;
   DataTypeErrorHandler* unrecoverable_error_handler_;
+  const bool expect_mobile_bookmarks_folder_;
   BookmarkIdToSyncIdMap id_map_;
   SyncIdToBookmarkNodeMap id_map_inverse_;
   // Stores sync ids for dirty associations.

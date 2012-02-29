@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/settings/settings_frontend.h"
@@ -256,10 +257,17 @@ ProfileSyncComponentsFactory::SyncComponents
   BookmarkModel* bookmark_model =
       profile_sync_service->profile()->GetBookmarkModel();
   sync_api::UserShare* user_share = profile_sync_service->GetUserShare();
+  // TODO(akalin): We may want to propagate this switch up eventually.
+#if defined(OS_ANDROID)
+  const bool kExpectMobileBookmarksFolder = true;
+#else
+  const bool kExpectMobileBookmarksFolder = false;
+#endif
   BookmarkModelAssociator* model_associator =
       new BookmarkModelAssociator(bookmark_model,
                                   user_share,
-                                  error_handler);
+                                  error_handler,
+                                  kExpectMobileBookmarksFolder);
   BookmarkChangeProcessor* change_processor =
       new BookmarkChangeProcessor(model_associator,
                                   error_handler);

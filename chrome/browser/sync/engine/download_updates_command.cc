@@ -12,7 +12,6 @@
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
 #include "chrome/browser/sync/syncable/syncable.h"
-#include "chrome/common/chrome_switches.h"
 
 using sync_pb::DebugInfo;
 
@@ -25,7 +24,10 @@ using syncable::MODEL_TYPE_COUNT;
 using syncable::ModelTypeSet;
 using syncable::ModelTypeSetToString;
 
-DownloadUpdatesCommand::DownloadUpdatesCommand() {}
+DownloadUpdatesCommand::DownloadUpdatesCommand(
+    bool create_mobile_bookmarks_folder)
+    : create_mobile_bookmarks_folder_(create_mobile_bookmarks_folder) {}
+
 DownloadUpdatesCommand::~DownloadUpdatesCommand() {}
 
 SyncerError DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
@@ -37,10 +39,8 @@ SyncerError DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
       ClientToServerMessage::GET_UPDATES);
   GetUpdatesMessage* get_updates =
       client_to_server_message.mutable_get_updates();
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kCreateMobileBookmarksFolder)) {
-    get_updates->set_include_syncable_bookmarks(true);
-  }
+  get_updates->set_create_mobile_bookmarks_folder(
+      create_mobile_bookmarks_folder_);
 
   syncable::Directory* dir = session->context()->directory();
 

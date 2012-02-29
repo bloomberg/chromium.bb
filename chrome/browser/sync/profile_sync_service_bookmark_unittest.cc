@@ -55,7 +55,8 @@ class TestBookmarkModelAssociator : public BookmarkModelAssociator {
       sync_api::UserShare* user_share,
       DataTypeErrorHandler* error_handler)
       : BookmarkModelAssociator(bookmark_model, user_share,
-                                error_handler),
+                                error_handler,
+                                true /* expect_mobile_bookmarks_folder */),
         user_share_(user_share) {}
 
   // TODO(akalin): This logic lazily creates any tagged node that is
@@ -332,8 +333,6 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
 
   virtual void SetUp() {
     test_user_share_.SetUp();
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kCreateMobileBookmarksFolder);
   }
 
   virtual void TearDown() {

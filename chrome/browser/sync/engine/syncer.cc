@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/sync/engine/apply_updates_command.h"
 #include "chrome/browser/sync/engine/build_commit_command.h"
 #include "chrome/browser/sync/engine/cleanup_disabled_types_command.h"
@@ -132,7 +133,14 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         break;
       }
       case DOWNLOAD_UPDATES: {
-        DownloadUpdatesCommand download_updates;
+        // TODO(akalin): We may want to propagate this switch up
+        // eventually.
+#if defined(OS_ANDROID)
+        const bool kCreateMobileBookmarksFolder = true;
+#else
+        const bool kCreateMobileBookmarksFolder = false;
+#endif
+        DownloadUpdatesCommand download_updates(kCreateMobileBookmarksFolder);
         session->mutable_status_controller()->set_last_download_updates_result(
             download_updates.Execute(session));
         next_step = PROCESS_CLIENT_COMMAND;

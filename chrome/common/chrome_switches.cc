@@ -208,9 +208,6 @@ const char kCrashOnHangThreads[]            = "crash-on-hang-threads";
 //                          other threads are not responsive.
 const char kCrashOnLive[]                   = "crash-on-live";
 
-// If true the mobile bookmarks folder is created on the sync side.
-const char kCreateMobileBookmarksFolder[]   = "create-mobile-bookmarks-folder";
-
 // Path to the inspector files on disk (allows reloading of devtool files
 // without having to restart the browser).
 const char kDebugDevToolsFrontend[]         = "debug-devtools-frontend";

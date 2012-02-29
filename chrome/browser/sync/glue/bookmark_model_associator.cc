@@ -21,7 +21,6 @@
 #include "chrome/browser/sync/internal_api/write_node.h"
 #include "chrome/browser/sync/internal_api/write_transaction.h"
 #include "chrome/browser/sync/util/cryptographer.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -187,10 +186,12 @@ const BookmarkNode* BookmarkNodeIdIndex::Find(int64 id) const {
 BookmarkModelAssociator::BookmarkModelAssociator(
     BookmarkModel* bookmark_model,
     sync_api::UserShare* user_share,
-    DataTypeErrorHandler* unrecoverable_error_handler)
+    DataTypeErrorHandler* unrecoverable_error_handler,
+    bool expect_mobile_bookmarks_folder)
     : bookmark_model_(bookmark_model),
       user_share_(user_share),
       unrecoverable_error_handler_(unrecoverable_error_handler),
+      expect_mobile_bookmarks_folder_(expect_mobile_bookmarks_folder),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       number_of_new_sync_nodes_created_at_association_(0) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -399,13 +400,11 @@ bool BookmarkModelAssociator::BuildAssociations(SyncError* error) {
   }
   if (!AssociateTaggedPermanentNode(bookmark_model_->mobile_node(),
                                     kMobileBookmarksTag) &&
-      // The mobile folder only need exist if kCreateMobileBookmarksFolder is
-      // set.
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kCreateMobileBookmarksFolder)) {
+      expect_mobile_bookmarks_folder_) {
     error->Reset(FROM_HERE, kServerError, model_type());
     return false;
   }
+
   int64 bookmark_bar_sync_id = GetSyncIdFromChromeId(
       bookmark_model_->bookmark_bar_node()->id());
   DCHECK_NE(bookmark_bar_sync_id, sync_api::kInvalidId);
@@ -414,8 +413,7 @@ bool BookmarkModelAssociator::BuildAssociations(SyncError* error) {
   DCHECK_NE(other_bookmarks_sync_id, sync_api::kInvalidId);
   int64 mobile_bookmarks_sync_id = GetSyncIdFromChromeId(
        bookmark_model_->mobile_node()->id());
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kCreateMobileBookmarksFolder)) {
+  if (expect_mobile_bookmarks_folder_) {
     DCHECK_NE(sync_api::kInvalidId, mobile_bookmarks_sync_id);
   }
 
@@ -571,8 +569,7 @@ bool BookmarkModelAssociator::LoadAssociations() {
   }
   int64 mobile_bookmarks_id = -1;
   if (!GetSyncIdForTaggedNode(kMobileBookmarksTag, &mobile_bookmarks_id) &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kCreateMobileBookmarksFolder)) {
+      expect_mobile_bookmarks_folder_) {
     return false;
   }
 

@@ -40,7 +40,10 @@ namespace browser_sync {
 // is encountered.
 class DownloadUpdatesCommand : public SyncerCommand {
  public:
-  DownloadUpdatesCommand();
+  // |create_mobile_bookmarks_folder| controls whether or not to
+  // create the mobile bookmarks folder if it's not already created.
+  // Should be set to true only by mobile clients.
+  explicit DownloadUpdatesCommand(bool create_mobile_bookmarks_folder);
   virtual ~DownloadUpdatesCommand();
 
   // SyncerCommand implementation.
@@ -50,6 +53,9 @@ class DownloadUpdatesCommand : public SyncerCommand {
   FRIEND_TEST_ALL_PREFIXES(DownloadUpdatesCommandTest, VerifyAppendDebugInfo);
   void AppendClientDebugInfoIfNeeded(sessions::SyncSession* session,
       sync_pb::DebugInfo* debug_info);
+
+  const bool create_mobile_bookmarks_folder_;
+
   DISALLOW_COPY_AND_ASSIGN(DownloadUpdatesCommand);
 };
 
