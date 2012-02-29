@@ -282,8 +282,17 @@ void DeleteChromeShortcuts(const InstallerState& installer_state,
   if (shortcut_path.empty()) {
     LOG(ERROR) << "Failed to get location for shortcut.";
   } else {
-    shortcut_path = shortcut_path.Append(
+    const std::wstring product_name(
         product.distribution()->GetAppShortCutName());
+    shortcut_path = shortcut_path.Append(product_name);
+
+    FilePath shortcut_link(shortcut_path.Append(product_name + L".lnk"));
+
+    VLOG(1) << "Unpinning shortcut at " << shortcut_link.value()
+            << " from taskbar";
+    // Ignore return value: keep uninstalling if the unpin fails.
+    file_util::TaskbarUnpinShortcutLink(shortcut_link.value().c_str());
+
     VLOG(1) << "Deleting shortcut " << shortcut_path.value();
     if (!file_util::Delete(shortcut_path, true))
       LOG(ERROR) << "Failed to delete folder: " << shortcut_path.value();

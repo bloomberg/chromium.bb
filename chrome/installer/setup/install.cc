@@ -16,6 +16,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/install_worker.h"
@@ -93,6 +94,10 @@ bool CreateOrUpdateChromeShortcuts(const InstallerState& installer_state,
                                    const Product& product,
                                    bool create_all_shortcut,
                                    bool alt_shortcut) {
+  // TODO(benwells): Don't make any shortcut creation in this function
+  // contingent on earlier shortcut creation operations succeeding (except
+  // where necessary e.g. pinning the start menu shortcut requires the
+  // start menu to be created successfully).
   // TODO(tommi): Change this function to use WorkItemList.
   DCHECK(product.is_chrome());
 
@@ -135,6 +140,14 @@ bool CreateOrUpdateChromeShortcuts(const InstallerState& installer_state,
     ret = ShellUtil::UpdateChromeShortcut(browser_dist, chrome_exe.value(),
         chrome_link.value(), L"", product_desc, chrome_exe.value(),
         browser_dist->GetIconIndex(), true);
+
+    if (ret && base::win::GetVersion() >= base::win::VERSION_WIN7) {
+      VLOG(1) << "Pinning new shortcut at " << chrome_link.value()
+              << " to taskbar";
+      // Ignore the return value of pinning, as we don't want later shortcut
+      // creation dependent on this.
+      file_util::TaskbarPinShortcutLink(chrome_link.value().c_str());
+    }
   } else if (file_util::PathExists(chrome_link)) {
     VLOG(1) << "Updating shortcut at " << chrome_link.value()
             << " to point to " << chrome_exe.value();
